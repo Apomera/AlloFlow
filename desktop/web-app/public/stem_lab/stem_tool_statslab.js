@@ -1417,7 +1417,20 @@ window.StemLab = window.StemLab || {
       { id: 'sl_regression', label: 'Fit a regression model', icon: '📈',
         check: function(d) { return !!(d.regressionRun); },
         progress: function(d) { return d.regressionRun ? '✓' : 'pending'; } },
-      { id: 'sl_significance_found', label: 'Find a significant result (p < .05)', icon: '🎯',
+      // This badge used to award XP simply for obtaining p < .05, in the one
+      // tool whose job is to teach why that is not the goal. It set a
+      // student's incentive to keep testing until something crossed the line,
+      // which is p-hacking with a target icon on it, and it contradicted this
+      // same tool's quiz items ("p < .001 but a tiny effect size — best
+      // interpretation?") and its own warning that a significant study at n=10
+      // is weaker evidence than the same effect at n=50.
+      //
+      // Now rewards NOTICING that significance and importance are different
+      // things. Earnable from either direction — a significant trivial effect,
+      // or a non-significant sizeable one — so chasing p cannot get you it, and
+      // the second route is how students meet statistical power.
+      { id: 'sl_significance_found', label: 'Spot significance ≠ importance', icon: '⚖️',
+        desc: 'Run a test where the p-value and the effect size tell different stories',
         check: function(d) { return !!(d.significantResult); },
         progress: function(d) { return d.significantResult ? '✓' : 'pending'; } },
       { id: 'sl_meaningful_effect', label: 'Find a large effect size', icon: '💪',
@@ -1655,7 +1668,24 @@ window.StemLab = window.StemLab || {
             if (/ttest_|anova_/.test(testType)) bumps.compareMeansRun = true;
             if (testType === 'pearson' || testType === 'spearman') bumps.correlationRun = true;
             if (/[rR]egression/.test(testType)) bumps.regressionRun = true;
-            if (typeof result.p === 'number' && result.p < 0.05) bumps.significantResult = true;
+            // Fires when p and the effect size disagree, in EITHER direction —
+            // not when p merely crosses .05. Conventional Cohen benchmarks:
+            // d .2/.5/.8, eta-squared .01/.06/.14, r .1/.3/.5.
+            (function() {
+              var p = result.p;
+              if (typeof p !== 'number' || isNaN(p)) return;
+              var mag = null;   // 'small' | 'mid' | 'big'
+              var band = function(v, sm, big) { return v >= big ? 'big' : (v < sm ? 'small' : 'mid'); };
+              if (result.cohensD != null) mag = band(Math.abs(result.cohensD), 0.2, 0.5);
+              else if (result.etaSquared != null) mag = band(result.etaSquared, 0.01, 0.06);
+              else if (result.r != null) mag = band(Math.abs(result.r), 0.1, 0.3);
+              if (!mag) return;
+              // Significant but trivial → "significant" does not mean "matters".
+              // Not significant but sizeable → underpowered, meet statistical power.
+              if ((p < 0.05 && mag === 'small') || (p >= 0.05 && mag === 'big')) {
+                bumps.significantResult = true;
+              }
+            })();
             // Large effect detection
             if (result.cohensD != null && Math.abs(result.cohensD) >= 0.8) bumps.largeEffectFound = true;
             if (result.etaSquared != null && result.etaSquared >= 0.14) bumps.largeEffectFound = true;

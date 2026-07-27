@@ -185,6 +185,324 @@ window.StemLab = window.StemLab || {
   var _galtonAnim = { interval: null };
   var _piAnim = { interval: null };
 
+  // ══ 3D Monte Carlo volume estimator ═════════════════════════════════════
+  // Throw random darts into a 1×1×1 box holding a solid; the fraction that land
+  // inside IS the solid's volume, because the box's volume is exactly 1.
+  //
+  // Every shape lives in [-0.5, 0.5]³ and each one's inside() test and mesh()
+  // MUST describe the same solid — if they drift, darts render outside the
+  // surface while counting as hits and the whole simulation is a lie. The tests
+  // pin them against each other by sampling.
+  //
+  // The last entry has no volume formula on purpose: that is the payoff. For a
+  // shape nobody can integrate, the dart estimate is not an approximation of a
+  // known answer, it is the answer — reported with a confidence interval.
+  function _v3BlobRadius(ux, uy, uz) {
+    // Radius as a function of DIRECTION (ux,uy,uz must be unit length). Smooth
+    // and lumpy. Worst-case radius is 0.38+0.05+0.035+0.03 = 0.495 < 0.5, so the
+    // potato can never poke through a box wall — a dart outside the box is a
+    // dart the sampler never throws, which would silently bias the estimate.
+    return 0.38 + 0.05 * ux * uy + 0.035 * Math.sin(3 * uz) + 0.03 * Math.cos(4 * ux);
+  }
+  var V3_SHAPES = [
+    {
+      id: 'sphere', label: 'Sphere', color: 0x38bdf8,
+      inside: function (x, y, z) { return x * x + y * y + z * z <= 0.25; },
+      exact: Math.PI / 6,
+      formula: '4⁄₃ · π · r³, r = ½  →  π⁄6',
+      piFactor: 6,  // volume × 6 = π, so this shape also estimates π
+      mesh: function (T) { return new T.SphereGeometry(0.5, 48, 32); }
+    },
+    {
+      id: 'cone', label: 'Cone', color: 0xa78bfa,
+      // Apex at +y, base radius ½ at −y. Radius shrinks linearly with height.
+      inside: function (x, y, z) {
+        if (y < -0.5 || y > 0.5) return false;
+        var r = 0.5 * (0.5 - y);
+        return x * x + z * z <= r * r;
+      },
+      exact: Math.PI / 12,
+      formula: '⅓ · π · r² · h, r = ½, h = 1  →  π⁄12',
+      piFactor: 12,
+      mesh: function (T) { return new T.ConeGeometry(0.5, 1, 48); }
+    },
+    {
+      id: 'pyramid', label: 'Pyramid', color: 0xfbbf24,
+      // Square base of side 1 at −y, apex at +y. No π anywhere — a control case
+      // showing the method is not a π trick: the answer is exactly ⅓.
+      inside: function (x, y, z) {
+        if (y < -0.5 || y > 0.5) return false;
+        var hw = 0.5 * (0.5 - y);
+        return Math.abs(x) <= hw && Math.abs(z) <= hw;
+      },
+      exact: 1 / 3,
+      formula: '⅓ · base · height, base = 1, h = 1  →  ⅓',
+      piFactor: null,
+      // radialSegments 4 = square pyramid; thetaStart π/4 turns the base square
+      // to axis-aligned so it matches inside() exactly. Circumradius ½√2 puts
+      // its corners on (±½, ±½).
+      mesh: function (T) { return new T.ConeGeometry(0.5 * Math.SQRT2, 1, 4, 1, false, Math.PI / 4); }
+    },
+    {
+      id: 'blob', label: 'Potato', color: 0x34d399,
+      inside: function (x, y, z) {
+        var r = Math.sqrt(x * x + y * y + z * z);
+        if (r < 1e-9) return true;
+        return r <= _v3BlobRadius(x / r, y / r, z / r);
+      },
+      exact: null,      // ← the point of this shape
+      formula: null,
+      piFactor: null,
+      mesh: function (T) {
+        var g = new T.SphereGeometry(1, 64, 48);
+        var pos = g.attributes.position;
+        for (var i = 0; i < pos.count; i++) {
+          var x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
+          var R = _v3BlobRadius(x, y, z);   // sphere verts are already unit length
+          pos.setXYZ(i, x * R, y * R, z * R);
+        }
+        pos.needsUpdate = true;
+        g.computeVertexNormals();
+        return g;
+      }
+    }
+  ];
+  function v3Shape(id) {
+    for (var i = 0; i < V3_SHAPES.length; i++) if (V3_SHAPES[i].id === id) return V3_SHAPES[i];
+    return V3_SHAPES[0];
+  }
+
+  // Imperative 3D handle. React owns the <canvas> node; this owns what is drawn
+  // on it. The two meet at _v3.want, a plain snapshot the render writes and the
+  // animation frame reconciles — no hooks, so nothing here can trip the
+  // hook-in-a-conditional-branch crash that kills STEM tools on navigation.
+  var _v3 = {
+    canvas: null, renderer: null, scene: null, camera: null, controls: null,
+    solid: null, cloud: null, boxLines: null, raf: null, ro: null,
+    shapeId: null, cloudLen: -1, want: null, onStatus: null, booted: false
+  };
+  // Orbit the camera by a yaw/pitch delta, in radians, around the origin.
+  // OrbitControls is pointer-only, so without this a keyboard user could never
+  // turn the solid round — and turning it round is the entire point of showing
+  // the cloud in 3D rather than as a number. Works with or without OrbitControls
+  // loaded, since the camera is ours either way.
+  function _v3Orbit(dYaw, dPitch) {
+    if (!_v3.camera) return;
+    var p = _v3.camera.position;
+    var r = Math.sqrt(p.x * p.x + p.y * p.y + p.z * p.z) || 1;
+    var yaw = Math.atan2(p.x, p.z) + dYaw;
+    // Clamp pitch just shy of the poles; at exactly ±90° the up-vector flips and
+    // the view snaps upside down.
+    var pitch = Math.max(-1.45, Math.min(1.45, Math.asin(Math.max(-1, Math.min(1, p.y / r))) + dPitch));
+    var c = Math.cos(pitch);
+    _v3.camera.position.set(r * c * Math.sin(yaw), r * Math.sin(pitch), r * c * Math.cos(yaw));
+    _v3.camera.lookAt(0, 0, 0);
+    if (_v3.controls && _v3.controls.update) _v3.controls.update();
+  }
+  function _v3Zoom(factor) {
+    if (!_v3.camera) return;
+    var p = _v3.camera.position;
+    var r = Math.sqrt(p.x * p.x + p.y * p.y + p.z * p.z) || 1;
+    var nr = Math.max(1.1, Math.min(5, r * factor));   // same bounds as OrbitControls
+    var s = nr / r;
+    _v3.camera.position.set(p.x * s, p.y * s, p.z * s);
+    _v3.camera.lookAt(0, 0, 0);
+    if (_v3.controls && _v3.controls.update) _v3.controls.update();
+  }
+  // Stable handler, for the same reason _v3Attach is stable.
+  function _v3Keys(e) {
+    var STEP = 0.18;
+    var k = e.key;
+    if (k === 'ArrowLeft') _v3Orbit(-STEP, 0);
+    else if (k === 'ArrowRight') _v3Orbit(STEP, 0);
+    else if (k === 'ArrowUp') _v3Orbit(0, STEP);
+    else if (k === 'ArrowDown') _v3Orbit(0, -STEP);
+    else if (k === '+' || k === '=') _v3Zoom(1 / 1.15);
+    else if (k === '-' || k === '_') _v3Zoom(1.15);
+    else return;
+    // Arrow keys scroll the page by default, which would yank the canvas out of
+    // view the moment a keyboard user tried to rotate it.
+    e.preventDefault();
+    // Any deliberate steer means the student is driving; stop fighting them.
+    if (_v3.controls) _v3.controls.autoRotate = false;
+  }
+  function _v3Reduced() {
+    try {
+      return !!(document.querySelector('.reduce-motion') ||
+        (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches));
+    } catch (e) { return false; }
+  }
+  function _v3SetShape(T, id) {
+    if (_v3.shapeId === id || !_v3.scene) return;
+    if (_v3.solid) { _v3.scene.remove(_v3.solid); _v3.solid.geometry.dispose(); _v3.solid.material.dispose(); }
+    var sh = v3Shape(id);
+    _v3.solid = new T.Mesh(sh.mesh(T), new T.MeshPhongMaterial({
+      color: sh.color, transparent: true, opacity: 0.22, depthWrite: false,
+      side: T.DoubleSide, shininess: 30
+    }));
+    _v3.scene.add(_v3.solid);
+    _v3.shapeId = id;
+  }
+  function _v3SetCloud(T, flat) {
+    // flat = [x, y, z, inside, …]. Rebuilt only when the length changes, so
+    // idle frames cost nothing.
+    if (!_v3.scene) return;
+    var n = flat ? flat.length / 4 : 0;
+    if (_v3.cloud) { _v3.scene.remove(_v3.cloud); _v3.cloud.geometry.dispose(); _v3.cloud.material.dispose(); _v3.cloud = null; }
+    if (!n) { _v3.cloudLen = 0; return; }
+    var pos = new Float32Array(n * 3), col = new Float32Array(n * 3);
+    for (var i = 0; i < n; i++) {
+      pos[i * 3] = flat[i * 4]; pos[i * 3 + 1] = flat[i * 4 + 1]; pos[i * 3 + 2] = flat[i * 4 + 2];
+      var hit = flat[i * 4 + 3];
+      // Hits bright, misses dim — otherwise the miss shell hides the solid.
+      col[i * 3] = hit ? 0.13 : 0.62; col[i * 3 + 1] = hit ? 0.93 : 0.65; col[i * 3 + 2] = hit ? 0.55 : 0.70;
+    }
+    var g = new T.BufferGeometry();
+    g.setAttribute('position', new T.BufferAttribute(pos, 3));
+    g.setAttribute('color', new T.BufferAttribute(col, 3));
+    _v3.cloud = new T.Points(g, new T.PointsMaterial({ size: 0.014, vertexColors: true, transparent: true, opacity: 0.95 }));
+    _v3.scene.add(_v3.cloud);
+    _v3.cloudLen = flat.length;
+  }
+  function _v3Boot() {
+    var T = window.THREE;
+    if (!T || !_v3.canvas || _v3.booted) return;
+    try {
+      _v3.renderer = new T.WebGLRenderer({ canvas: _v3.canvas, antialias: true, alpha: true });
+      _v3.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    } catch (e) {
+      if (_v3.onStatus) _v3.onStatus('webgl');
+      return;
+    }
+    _v3.scene = new T.Scene();
+    _v3.camera = new T.PerspectiveCamera(42, 1, 0.05, 100);
+    _v3.camera.position.set(1.45, 1.05, 1.6);
+    _v3.camera.lookAt(0, 0, 0);
+    _v3.scene.add(new T.AmbientLight(0xffffff, 0.72));
+    var dir = new T.DirectionalLight(0xffffff, 0.65); dir.position.set(2, 3, 2); _v3.scene.add(dir);
+    _v3.boxLines = new T.LineSegments(
+      new T.EdgesGeometry(new T.BoxGeometry(1, 1, 1)),
+      new T.LineBasicMaterial({ color: 0x94a3b8, transparent: true, opacity: 0.85 })
+    );
+    _v3.scene.add(_v3.boxLines);
+    if (T.OrbitControls) {
+      _v3.controls = new T.OrbitControls(_v3.camera, _v3.canvas);
+      _v3.controls.enableDamping = true;
+      _v3.controls.dampingFactor = 0.08;
+      _v3.controls.enablePan = false;
+      _v3.controls.minDistance = 1.1;
+      _v3.controls.maxDistance = 5;
+      // Idle spin gives the depth cue that makes a point cloud read as a solid,
+      // but it is motion — off when the student asked for less of it.
+      _v3.controls.autoRotate = !_v3Reduced();
+      _v3.controls.autoRotateSpeed = 0.85;
+    }
+    var lastW = -1;
+    var resize = function () {
+      var host = _v3.canvas && _v3.canvas.parentNode;
+      if (!host || !_v3.renderer) return;
+      var w = Math.max(120, host.clientWidth || 320);
+      // ★ Act on WIDTH changes only. We observe the parent, and our own output
+      // (the canvas box) is part of what the parent measures — so reacting to
+      // height would let the observer feed itself. Layout then never settles,
+      // and Playwright reports it as buttons that are never clickable and
+      // elements "not attached", not as anything resembling a resize loop.
+      if (w === lastW) return;
+      lastW = w;
+      // Capped: unclamped 0.72×width made the viewport ~630px tall on a wide
+      // screen, pushing every number below the fold and leaving the canvas
+      // taller than its own container.
+      var h = Math.max(180, Math.min(420, Math.round(w * 0.62)));
+      // updateStyle OFF, then both CSS dimensions set here from the SAME pair of
+      // numbers as the drawing buffer. Letting the library own one dimension
+      // while we owned the other is how they drifted apart.
+      _v3.renderer.setSize(w, h, false);
+      _v3.canvas.style.width = w + 'px';
+      _v3.canvas.style.height = h + 'px';
+      _v3.camera.aspect = w / h;
+      _v3.camera.updateProjectionMatrix();
+    };
+    // ★ A canvas defaults to display:inline, whose line-box adds descender
+    // height to the parent every measure → setSize → measure cycle. That is an
+    // unbounded resize loop, and it has taken down 3D tools in this repo before.
+    _v3.canvas.style.display = 'block';
+    // NB: no style.width here — renderer.setSize owns both CSS dimensions now.
+    _v3.canvas.style.touchAction = 'none';
+    resize();
+    try {
+      if (window.ResizeObserver && _v3.canvas.parentNode) {
+        _v3.ro = new window.ResizeObserver(resize);
+        _v3.ro.observe(_v3.canvas.parentNode);
+      }
+    } catch (e) { /* resize stays static — still usable */ }
+    _v3.booted = true;
+    var tick = function () {
+      _v3.raf = window.requestAnimationFrame(tick);
+      var w = _v3.want;
+      if (w) {
+        _v3SetShape(T, w.shapeId);
+        if (w.cloud && w.cloud.length !== _v3.cloudLen) _v3SetCloud(T, w.cloud);
+        else if (!w.cloud && _v3.cloudLen !== 0) _v3SetCloud(T, null);
+      }
+      if (_v3.controls) _v3.controls.update();
+      _v3.renderer.render(_v3.scene, _v3.camera);
+    };
+    tick();
+    if (_v3.onStatus) _v3.onStatus('ok');
+  }
+  function _v3Teardown() {
+    if (_v3.raf) { window.cancelAnimationFrame(_v3.raf); _v3.raf = null; }
+    if (_v3.ro) { try { _v3.ro.disconnect(); } catch (e) {} _v3.ro = null; }
+    if (_v3.controls && _v3.controls.dispose) { try { _v3.controls.dispose(); } catch (e) {} }
+    [_v3.solid, _v3.cloud, _v3.boxLines].forEach(function (o) {
+      if (!o) return;
+      if (_v3.scene) _v3.scene.remove(o);
+      if (o.geometry) o.geometry.dispose();
+      if (o.material) o.material.dispose();
+    });
+    if (_v3.renderer) { try { _v3.renderer.dispose(); } catch (e) {} }
+    _v3.renderer = _v3.scene = _v3.camera = _v3.controls = null;
+    _v3.solid = _v3.cloud = _v3.boxLines = _v3.canvas = null;
+    _v3.shapeId = null; _v3.cloudLen = -1; _v3.booted = false;
+  }
+  // Three.js is ~600KB from a CDN. Probability Lab is a heavily used 2D tool, so
+  // it loads lazily on first entry to the 3D mode rather than in init() — a coin
+  // -flip lesson should not pull a 3D engine over a school connection.
+  var _v3Load = { state: 'idle' };
+  function _v3EnsureThree(onDone) {
+    if (window.THREE && window.THREE.OrbitControls) _v3Load.state = 'ready';
+    if (_v3Load.state === 'ready') { if (onDone) onDone('ready'); return; }
+    if (_v3Load.state === 'loading') return;
+    _v3Load.state = 'loading';
+    if (onDone) onDone('loading');
+    try {
+      window.StemLab.ensureThree({
+        orbit: true,
+        failMessage: 'The 3D engine could not load. School networks often block CDNs — the numbers below still work without it.'
+      }).then(function () {
+        _v3Load.state = 'ready';
+        if (onDone) onDone('ready');
+      }).catch(function () {
+        _v3Load.state = 'failed';
+        if (onDone) onDone('failed');
+      });
+    } catch (e) {
+      _v3Load.state = 'failed';
+      if (onDone) onDone('failed');
+    }
+  }
+
+  // STABLE identity — declared once at module scope. An inline arrow here would
+  // be a new function every render, and React tears down and re-runs a ref whose
+  // identity changed, so the scene would be rebuilt on every keystroke.
+  function _v3Attach(node) {
+    if (!node) { _v3Teardown(); return; }
+    if (_v3.canvas === node && _v3.booted) return;
+    if (_v3.canvas !== node && _v3.booted) _v3Teardown();
+    _v3.canvas = node;
+    if (window.THREE) _v3Boot();
+  }
+
   window.StemLab.registerTool('probability', {
     icon: '\uD83C\uDFB2',
     label: 'Probability Lab',
@@ -294,6 +612,40 @@ var d = (labToolData.probability) || {};
           var customModel = probabilityPrepareCustomOutcomes(rawCustomOutcomes, d.mode === 'marbleBag' ? 'marbleBag' : customSubMode);
           var customOutcomes = customModel.outcomes;
           var customCanRun = (d.mode !== 'custom' && d.mode !== 'marbleBag') || customModel.valid;
+
+          // ── Running Monte Carlo π totals ────────────────────────────────────
+          // _piPoints is capped (it feeds the scatter, which only draws the last
+          // 400 anyway). The ESTIMATE must not be derived from it: past the cap
+          // the tool was recomputing π from the most recent 1,000 darts only, so
+          // accuracy froze — 100,000 darts scored no better than 1,000 (mean
+          // |error| stuck near 0.04 instead of falling to 0.004), and the "Pi
+          // Hunter" badge became a 67% coin flip that more work could not improve.
+          // That is the exact opposite of the O(1/√N) lesson the mode teaches.
+          // Counts are unbounded; the point array stays capped for rendering.
+          // Falls back to the array so state saved before this change still reads.
+          var piTotal = d._piTotal != null ? d._piTotal : (d._piPoints || []).length;
+          var piInside = d._piInside != null ? d._piInside : (d._piPoints || []).filter(function (p) { return p.inside; }).length;
+          var piEstimate = piTotal > 0 ? (4 * piInside / piTotal) : 0;
+          // With no darts the estimate is 0, so the error genuinely is π. (Also
+          // keeps check_free_vars quiet — its globals list has no Infinity.)
+          var piError = piTotal > 0 ? Math.abs(piEstimate - Math.PI) : Math.PI;
+
+          // ── Which outcome the convergence chart tracks ──────────────────────
+          // Two-dice sum used to track the sum of 2 — the RAREST outcome in the
+          // one mode whose entire lesson is "middle sums are much more common".
+          // At 2d20 that is P=1/400, a flat line pinned to the axis. It now tracks
+          // the MODAL sum (N+1, P=1/N), which is the sum the mode's own hint talks
+          // about and the one that actually demonstrates the point.
+          // Defined once here because the roll handler, the auto-run loop, the
+          // expected-value line and the chart heading all need to agree.
+          var convTrackedSum = (d.diceSides || 6) + 1;
+          var convTrackedKey = d.mode === 'coin' ? 'H'
+            : d.mode === 'dice' ? 1
+            : d.mode === 'dice2' ? convTrackedSum
+            : d.mode === 'spinner' ? 'Red'
+            : d.mode === 'sports' ? activeSport.outcomes[0]
+            : d.mode === 'pi' ? 'inside'
+            : customOutcomes[0] ? customOutcomes[0].label : 'Red';
 
           var setProbabilityOutcomes = function(outcomes) {
             if (_autoRun.interval) { clearInterval(_autoRun.interval); _autoRun.interval = null; }
@@ -408,6 +760,11 @@ var d = (labToolData.probability) || {};
 
               upd('_piPoints', _allPiPts);
 
+              // Counters take EVERY dart, including the ones the cap drops.
+              upd('_piTotal', piTotal + newPiPoints.length);
+
+              upd('_piInside', piInside + newPiPoints.filter(function (p) { return p.inside; }).length);
+
             }
 
             upd('results', results);
@@ -432,7 +789,7 @@ var d = (labToolData.probability) || {};
 
             if (total > 0) {
 
-              var firstKey = d.mode === 'coin' ? 'H' : d.mode === 'dice' ? 1 : d.mode === 'dice2' ? 2 : d.mode === 'spinner' ? 'Red' : d.mode === 'sports' ? activeSport.outcomes[0] : d.mode === 'pi' ? 'inside' : customOutcomes[0] ? customOutcomes[0].label : 'Red';
+              var firstKey = convTrackedKey;
 
               var cnt = results.filter(function (r) { return r === firstKey; }).length;
 
@@ -521,7 +878,7 @@ var d = (labToolData.probability) || {};
                 return Object.assign({}, prev, { probability: Object.assign({}, _pd, { _autoRunning: false }) });
               }
 
-              var _newPiPts3 = null;
+              var _newPiPts3 = null, _newPiTot3 = null, _newPiIn3 = null;
               var _newMbRemaining3 = _pd._mbRemaining;
 
               if (_pd.mode === 'coin') {
@@ -565,6 +922,12 @@ var d = (labToolData.probability) || {};
 
                 if (_newPiPts3.length > 1000) _newPiPts3 = _newPiPts3.slice(-1000);
 
+                // Unbounded totals off _pd, so the estimate keeps converging past
+                // the point-array cap. Seeded from the array for legacy state.
+                _newPiTot3 = (_pd._piTotal != null ? _pd._piTotal : (_pd._piPoints || []).length) + 1;
+
+                _newPiIn3 = (_pd._piInside != null ? _pd._piInside : (_pd._piPoints || []).filter(function (p) { return p.inside; }).length) + (_pIn3 ? 1 : 0);
+
               } else {
 
                 var _cr3 = Math.random(), _cc3 = 0;
@@ -583,7 +946,10 @@ var d = (labToolData.probability) || {};
 
               if (_res.length > 0) {
 
-                var _fk3 = _pd.mode === 'coin' ? 'H' : _pd.mode === 'dice' ? 1 : _pd.mode === 'dice2' ? 2 : _pd.mode === 'spinner' ? 'Red' : _pd.mode === 'sports' ? _asp2.outcomes[0] : _pd.mode === 'pi' ? 'inside' : (_cos3[0] ? _cos3[0].label : 'Red');
+                // Must mirror convTrackedKey, but off _pd (the state this updater
+                // was handed) rather than the render-scope d. dice2 tracks the
+                // modal sum N+1, not the rarest sum 2.
+                var _fk3 = _pd.mode === 'coin' ? 'H' : _pd.mode === 'dice' ? 1 : _pd.mode === 'dice2' ? ((_pd.diceSides || 6) + 1) : _pd.mode === 'spinner' ? 'Red' : _pd.mode === 'sports' ? _asp2.outcomes[0] : _pd.mode === 'pi' ? 'inside' : (_cos3[0] ? _cos3[0].label : 'Red');
 
                 var _cnt4 = _res.filter(function(r) { return r === _fk3; }).length;
 
@@ -601,6 +967,8 @@ var d = (labToolData.probability) || {};
               });
 
               if (_newPiPts3) _newPd3._piPoints = _newPiPts3;
+
+              if (_newPiTot3 != null) { _newPd3._piTotal = _newPiTot3; _newPd3._piInside = _newPiIn3; }
               if (_pd.mode === 'marbleBag' && _pd.mbWithoutReplacement) _newPd3._mbRemaining = _newMbRemaining3;
 
               return Object.assign({}, prev, { probability: _newPd3 });
@@ -701,9 +1069,46 @@ var d = (labToolData.probability) || {};
 
           var df = Object.keys(expected).length - 1;
 
-          var chiCritical = df === 1 ? 3.84 : df === 3 ? 7.81 : df === 5 ? 11.07 : df === 2 ? 5.99 : df === 6 ? 12.59 : 11.07;
+          // Upper 5% critical value of the chi-squared distribution.
+          //
+          // This used to be a five-branch lookup (df 1/2/3/5/6) that fell back to
+          // 11.07 for everything else — so every die bigger than a d6, and EVERY
+          // two-dice sum except 2d4, was judged against the d6's threshold. A
+          // perfectly fair d20 (df=19, where chi-squared averages 19) was labelled
+          // "Biased" 93% of the time, and 2d6 — the classroom default — 36% of the
+          // time. The tool was teaching students that fair dice are loaded.
+          //
+          // Exact table to df=10, Wilson-Hilferty beyond it (worst error 0.07%
+          // through df=40, which covers 2d20's df=38).
+          var CHI_05 = [3.841, 5.991, 7.815, 9.488, 11.070, 12.592, 14.067, 15.507, 16.919, 18.307];
+          var chiCriticalAt05 = function (dof) {
+            if (dof < 1) return CHI_05[0];
+            if (dof <= CHI_05.length) return CHI_05[dof - 1];
+            var a = 2 / (9 * dof);
+            var w = 1 - a + 1.6448536 * Math.sqrt(a);
+            return dof * w * w * w;
+          };
+          var chiCritical = chiCriticalAt05(df);
 
+          // Chi-squared only means anything once every outcome expects ~5 hits.
+          // 2d20 has 39 sums and P(2)=1/400, so the tails need 2,000 rolls before
+          // the statistic is interpretable. Below that we withhold the verdict
+          // instead of printing a confident Fair/Biased on noise.
+          var minExpectedP = 1;
+          Object.keys(expected).forEach(function (k) { if (expected[k] < minExpectedP) minExpectedP = expected[k]; });
+          var chiTrialsNeeded = minExpectedP > 0 ? Math.ceil(5 / minExpectedP) : 0;
+          // Chi-squared assumes INDEPENDENT draws. Drawing without replacement
+          // breaks that outright: a full pass through the bag returns exactly the
+          // bag's contents, so at every multiple of the bag size the statistic is
+          // exactly 0 and the tool used to print "✅ Fair" at maximum confidence.
+          // That is arithmetic, not evidence — and it taught the reverse of the
+          // truth, since the with-replacement bag (genuinely random, χ²≈0.4)
+          // looked WORSE than the one with no randomness left in it.
+          var chiIndependent = !(d.mode === 'marbleBag' && d.mbWithoutReplacement);
+          var chiReady = chiIndependent && d.trials > 0 && Object.keys(expected).length > 1 && d.trials >= chiTrialsNeeded;
           var chiPass = chiSq < chiCritical;
+          // Neutral (neither green nor red) until the test is actually valid.
+          var chiTone = !chiReady ? 'text-slate-500' : chiPass ? 'text-emerald-600' : 'text-red-600';
 
 
 
@@ -711,7 +1116,7 @@ var d = (labToolData.probability) || {};
 
           var convExpected = d.mode === 'coin' ? 50
             : d.mode === 'dice' ? (100 / (d.diceSides || 6))
-            : d.mode === 'dice2' ? (100 / ((d.diceSides || 6) * (d.diceSides || 6)) * Math.min(2 - 1, 2 * (d.diceSides || 6) - 2 + 1))  // P of the smallest sum (2)
+            : d.mode === 'dice2' ? (100 / (d.diceSides || 6))  // P of the modal sum N+1 = N ways / N² = 1/N
             : d.mode === 'spinner' ? 25
             : d.mode === 'sports' ? activeSport.probs[0] * 100
             : d.mode === 'pi' ? Math.PI / 4 * 100
@@ -815,11 +1220,17 @@ var d = (labToolData.probability) || {};
           // The diagonals visually demonstrate why 7 has 6 ways but 2 and 12 only 1:
           // the (1,1) cell is alone in the top-left corner, the diagonal d1+d2=7
           // sweeps through 6 cells, and (6,6) is alone in the bottom-right. The
-          // triangular distribution becomes spatial intuition. Skipped for d12+
-          // because 144 / 400 cells is too crowded to read.
+          // triangular distribution becomes spatial intuition.
+          //
+          // d12/d20 used to render NOTHING here — 144/400 numbered cells are too
+          // crowded, so the whole panel was skipped and those students lost the
+          // lesson entirely. Past d10 the grid now degrades instead of vanishing:
+          // cells shrink, per-cell numerals drop, and edge labels thin out, which
+          // leaves the diagonal banding — the actual point — perfectly legible.
           var renderTwoDiceGrid = function(sides, lastSum) {
-            if (sides > 10) return null;  // d12/d20 grids would be unreadable
-            var cellSize = sides <= 6 ? 32 : (sides <= 8 ? 26 : 22);
+            var cellSize = sides <= 6 ? 32 : sides <= 8 ? 26 : sides <= 10 ? 22 : sides <= 12 ? 18 : 9;
+            var showSums = cellSize >= 18;          // numerals stop fitting below this
+            var labelStride = sides <= 12 ? 1 : 5;  // every 5th index on a d20 grid
             var pad = 22;
             var gridW = sides * cellSize;
             var svgW = gridW + pad + 6;
@@ -829,6 +1240,7 @@ var d = (labToolData.probability) || {};
             // Top-edge labels (die 2 values)
             var topLabels = [];
             for (var c = 1; c <= sides; c++) {
+              if (c !== 1 && c !== sides && c % labelStride !== 0) continue;
               topLabels.push(React.createElement("text", {
                 key: 'cl-' + c,
                 x: pad + (c - 0.5) * cellSize, y: pad - 4,
@@ -838,6 +1250,7 @@ var d = (labToolData.probability) || {};
             // Left-edge labels (die 1 values)
             var leftLabels = [];
             for (var r = 1; r <= sides; r++) {
+              if (r !== 1 && r !== sides && r % labelStride !== 0) continue;
               leftLabels.push(React.createElement("text", {
                 key: 'rl-' + r,
                 x: pad - 4, y: pad + (r - 0.5) * cellSize + 4,
@@ -848,7 +1261,7 @@ var d = (labToolData.probability) || {};
               for (var ci = 1; ci <= sides; ci++) {
                 var sum = ri + ci;
                 var dist = Math.abs(sum - midSum);
-                var maxDist = sides;
+                var maxDist = sides - 1 || 1;  // the extreme sums are N-1 off centre, so they reach the end of the ramp
                 var hue = 220 - (dist / maxDist) * 220;  // red center, blue tails
                 var isHighlight = lastSum === sum;
                 rows.push(React.createElement("g", { key: 'gc-' + ri + '-' + ci },
@@ -859,10 +1272,10 @@ var d = (labToolData.probability) || {};
                     height: cellSize - 1,
                     fill: 'hsl(' + Math.round(hue) + ', ' + (isHighlight ? '85' : '65') + '%, ' + (isHighlight ? '50' : '70') + '%)',
                     stroke: isHighlight ? '#0f172a' : 'rgba(255,255,255,0.6)',
-                    strokeWidth: isHighlight ? 2 : 0.8,
-                    rx: 3
+                    strokeWidth: isHighlight ? (cellSize < 18 ? 1.5 : 2) : (cellSize < 18 ? 0.3 : 0.8),
+                    rx: cellSize < 18 ? 1 : 3
                   }),
-                  React.createElement("text", {
+                  showSums && React.createElement("text", {
                     x: pad + (ci - 0.5) * cellSize,
                     y: pad + (ri - 0.5) * cellSize + 4,
                     textAnchor: 'middle',
@@ -875,10 +1288,11 @@ var d = (labToolData.probability) || {};
             }
             return React.createElement("div", { className: 'mb-3 rounded-xl p-3', style: { background: isDark || isContrast ? 'rgba(185,28,28,0.08)' : '#fff', border: '2px solid ' + (isDark || isContrast ? 'rgba(185,28,28,0.3)' : '#fecaca') } },
               React.createElement("p", { className: 'text-[11px] font-bold mb-1', style: { color: isDark || isContrast ? '#fca5a5' : '#991b1b' } },
-                '🎯 Sample space — all ' + (sides * sides) + ' (d1, d2) pairs, colored by sum'
+                '🎯 Sample space — all ' + (sides * sides).toLocaleString() + ' (d1, d2) pairs, colored by sum'
               ),
               React.createElement("p", { className: 'text-[10px] italic mb-2', style: { color: isDark || isContrast ? '#fca5a5' : '#7f1d1d' } },
                 'The diagonals from top-right to bottom-left are constant sums. The longest diagonal (sum = ' + midSum + ') has ' + sides + ' cells — that is why ' + midSum + ' is the most common. Sum = 2 and sum = ' + (2 * sides) + ' each have only 1 cell.'
+                + (showSums ? '' : ' At ' + (sides * sides).toLocaleString() + ' cells the sums no longer fit inside them, so colour alone carries the sum here — warm centre band, cool corners.')
               ),
               React.createElement("div", { className: 'flex justify-center overflow-x-auto' },
                 React.createElement("svg", { width: svgW, height: svgH, viewBox: '0 0 ' + svgW + ' ' + svgH, 'aria-label': sides + ' by ' + sides + ' sample space grid for two-dice sums' },
@@ -1033,6 +1447,8 @@ var d = (labToolData.probability) || {};
             upd('lastResult', null);
             upd('_mbRemaining', null);
             upd('_piPoints', null);
+            upd('_piTotal', 0);
+            upd('_piInside', 0);
             upd('_autoRunning', false);
             upd('galtonFalling', []);
           };
@@ -1056,7 +1472,8 @@ var d = (labToolData.probability) || {};
               pi: { label: 'Monte Carlo', icon: '\uD83E\uDD67', color: '#c2410c', desc: 'Estimate pi through random sampling.' },
               birthday: { label: 'Birthday', icon: '\uD83C\uDF82', color: '#be185d', desc: 'Track how pair counts change intuition.' },
               monty: { label: 'Monty Hall', icon: '\uD83D\uDEAA', color: '#4338ca', desc: 'Test a famous counterintuitive strategy.' },
-              galton: { label: 'Galton Board', icon: '\u2699', color: '#0f766e', desc: 'Watch randomness settle into a curve.' }
+              galton: { label: 'Galton Board', icon: '\u2699', color: '#0f766e', desc: 'Watch randomness settle into a curve.' },
+              volume3d: { label: '3D Volume', icon: '\ud83e\uddca', color: '#0369a1', desc: 'Measure a solid by throwing darts at it.' }
             };
             var currentRoute = routeMeta[d.mode] || routeMeta.coin;
             var stats = [
@@ -1069,7 +1486,10 @@ var d = (labToolData.probability) || {};
               { title: t('stem.probability.route_foundations', 'Foundations'), modes: ['coin', 'dice', 'dice2', 'spinner'], action: 'coin', note: t('stem.probability.route_foundations_note', 'Equally likely outcomes and sample spaces.') },
               { title: t('stem.probability.route_weighted', 'Weighted Odds'), modes: ['sports', 'marbleBag', 'custom'], action: 'sports', note: t('stem.probability.route_weighted_note', 'Uneven chances, bags, and real-world rates.') },
               { title: t('stem.probability.route_surprises', 'Probability Surprises'), modes: ['monty', 'birthday', 'galton'], action: 'monty', note: t('stem.probability.route_surprises_note', 'Simulations that challenge intuition.') },
-              { title: t('stem.probability.route_monte_carlo', 'Monte Carlo'), modes: ['pi', 'tree'], action: 'pi', note: t('stem.probability.route_monte_carlo_note', 'Random sampling and compound events.') }
+              // volume3d belongs here, not in its own row: it is the same dart-throwing
+              // idea as pi, one dimension up. Without an entry the route card also fails
+              // to light up when a student is standing in the 3D mode.
+              { title: t('stem.probability.route_monte_carlo', 'Monte Carlo'), modes: ['pi', 'volume3d', 'tree'], action: 'pi', note: t('stem.probability.route_monte_carlo_note', 'Random sampling, volumes, and compound events.') }
             ];
             return React.createElement("section", {
               'data-probability-command': 'true',
@@ -1175,7 +1595,7 @@ var d = (labToolData.probability) || {};
 
             React.createElement("div", { className: "flex flex-wrap gap-2 mb-3" },
 
-              [['coin', '\uD83E\uDE99 Coin'], ['dice', '\uD83C\uDFB2 Dice'], ['dice2', '\uD83C\uDFB2\u00D72 Two-Dice Sum'], ['spinner', '\uD83C\uDFA1 Spinner'], ['sports', '\uD83C\uDFC6 Sports'], ['marbleBag', '\uD83C\uDFB1 Marble Bag'], ['custom', '\u2699\uFE0F Custom'], ['tree', '\uD83C\uDF33 Tree'], ['pi', '\uD83E\uDD67 Pi'], ['birthday', '\uD83C\uDF82 Birthday'], ['monty', '\uD83D\uDEAA Monty Hall'], ['galton', '\u2699\uFE0F Galton Board']].map(([m, label]) =>
+              [['coin', '\uD83E\uDE99 Coin'], ['dice', '\uD83C\uDFB2 Dice'], ['dice2', '\uD83C\uDFB2\u00D72 Two-Dice Sum'], ['spinner', '\uD83C\uDFA1 Spinner'], ['sports', '\uD83C\uDFC6 Sports'], ['marbleBag', '\uD83C\uDFB1 Marble Bag'], ['custom', '\u2699\uFE0F Custom'], ['tree', '\uD83C\uDF33 Tree'], ['pi', '\uD83E\uDD67 Pi'], ['birthday', '\uD83C\uDF82 Birthday'], ['monty', '\uD83D\uDEAA Monty Hall'], ['galton', '\u2699\uFE0F Galton Board'], ['volume3d', '\uD83E\uDDCA 3D Volume']].map(([m, label]) =>
 
                 React.createElement("button", { "aria-label": "Select mode: " + label, key: m, onClick: function() { selectMode(m); }, className: "px-4 py-2 rounded-lg text-sm font-bold transition-all", style: { background: d.mode === m ? _btnBg : (isDark || isContrast ? 'rgba(139,92,246,0.1)' : '#f1f5f9'), color: d.mode === m ? _btnText : (isDark || isContrast ? '#c4b5fd' : '#475569'), boxShadow: d.mode === m ? '0 4px 6px -1px rgba(139,92,246,0.3)' : 'none' } }, label)
 
@@ -1188,9 +1608,14 @@ var d = (labToolData.probability) || {};
               var MODE_META = {
                 coin:      { accent: '#94a3b8', soft: 'rgba(148,163,184,0.10)', icon: '\uD83E\uDE99', title: t('stem.probability.coin_the_simplest_50_50', 'Coin \u2014 the simplest 50/50'),                  hint: t('stem.probability.p_h_p_t_0_5_law_of_large_numbers_as_tr', 'P(H) = P(T) = 0.5. Law of large numbers: as trials grow, the proportion of heads converges to 0.5. After 1,000 flips you\u2019ll be within ~3% of 50%, but in any short streak anything is possible.') },
                 dice:      { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',   icon: '\uD83C\uDFB2', title: t('stem.probability.dice_uniform_1_n_each_d4_d6_d8_d10_d12', 'Dice \u2014 uniform 1/N each (d4 / d6 / d8 / d10 / d12 / d20)'), hint: t('stem.probability.pick_any_die_size_each_face_equally_li', 'Pick any die size. Each face equally likely: P = 1/N. The math is identical across die types \u2014 what changes is the denominator. d4 is 1/4, d20 is 1/20.') },
-                dice2:     { accent: '#b91c1c', soft: 'rgba(185,28,28,0.10)',   icon: '\uD83C\uDFB2', title: t('stem.probability.two_dice_sum_the_triangular_distributi', 'Two-Dice Sum \u2014 the triangular distribution'),     hint: t('stem.probability.roll_two_dice_of_the_chosen_type_and_a', 'Roll TWO dice of the chosen type and add. The sum is no longer uniform: middle sums are MUCH more common. For 2d6, P(7)=6/36, P(2)=1/36. This is why orange properties in Monopoly get landed on the most \u2014 6, 7, 8 are the most common sums after rolling from Jail.') },
+                dice2:     { accent: '#b91c1c', soft: 'rgba(185,28,28,0.10)',   icon: '\uD83C\uDFB2', title: t('stem.probability.two_dice_sum_the_triangular_distributi', 'Two-Dice Sum \u2014 the triangular distribution'),     // Key deliberately renamed. The old copy justified Monopoly's orange
+                           // properties by citing the three most frequent sums — but a 7 past
+                           // Jail lands on Community Chest, not orange. Orange sits at +6, +8
+                           // and +9. Renaming forces the 57 translated packs to fall back to
+                           // correct English rather than keep serving the wrong reason.
+                           hint: t('stem.probability.roll_two_dice_sum_monopoly_orange_39', 'Roll TWO dice of the chosen type and add. The sum is no longer uniform: middle sums are MUCH more common. For 2d6, P(7)=6/36, P(2)=1/36. It is why Monopoly\u2019s orange properties get landed on more than any other colour group: they sit 6, 8 and 9 steps past Jail, and those three sums come up 14 times in 36 \u2014 so a player leaving Jail hits orange nearly 39% of the time.') },
                 spinner:   { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)',  icon: '\uD83C\uDFA1', title: t('stem.probability.spinner_4_color_uniform', 'Spinner \u2014 4-color uniform'),                    hint: t('stem.probability.equal_area_sectors_equal_probability_u', 'Equal-area sectors = equal probability. Unequal sectors → weighted draws. Spinners are the gentlest path into discrete distributions for elementary students.') },
-                sports:    { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',   icon: '\uD83C\uDFC6', title: t('stem.probability.sports_weighted_real_world_odds', 'Sports \u2014 weighted real-world odds'),             hint: t('stem.probability.free_throw_75_nba_3_point_36_mlb_hit_2', 'Free-throw 75%, NBA 3-point 36%, MLB hit ~25%. Probability isn\u2019t always 50/50 \u2014 the math handles unequal weights the same way, just with different denominators.') },
+                sports:    { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',   icon: '\uD83C\uDFC6', title: t('stem.probability.sports_weighted_real_world_odds', 'Sports \u2014 weighted real-world odds'),             hint: t('stem.probability.free_throw_77_nba_3_point_36_mlb_hit_2', 'Free-throw 77%, NBA 3-point 36%, MLB hit ~25%. Probability isn\u2019t always 50/50 \u2014 the math handles unequal weights the same way, just with different denominators.') },
                 marbleBag: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)',  icon: '\uD83C\uDFB1', title: t('stem.probability.marble_bag_with_vs_without_replacement', 'Marble Bag \u2014 with vs without replacement'),     hint: t('stem.probability.with_replacement_independent_draws_wit', 'With replacement: independent draws. Without: probabilities CHANGE each pull \u2014 conditional probability. The exact mechanism behind hypergeometric distribution and card-game odds.') },
                 custom:    { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',   icon: '\u2699',         title: t('stem.probability.custom_design_your_own_outcome_set', 'Custom \u2014 design your own outcome set'),         hint: t('stem.probability.build_any_discrete_distribution_test_t', 'Build any discrete distribution. Test the law of large numbers with skewed odds, demonstrate that simulations can answer ANY closed-form question if you have enough trials. Monte Carlo in miniature.') },
                 tree:      { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',   icon: '\uD83C\uDF33', title: t('stem.probability.tree_multi_stage_probability', 'Tree \u2014 multi-stage probability'),                 hint: t('stem.probability.multiply_along_branches_add_across_lea', 'Multiply along branches; add across leaves. Two coin flips: HH HT TH TT each 0.25. Tree diagrams scale up to medical-test base-rate problems and Bayes\u2019 theorem.') },
@@ -1766,6 +2191,19 @@ var d = (labToolData.probability) || {};
                 // Strategy stats — side by side comparison + outcome strip
                 (ms.stayN > 0 || ms.switchN > 0) && (function() {
                   var strip = d.montyStrip || { stay: [], switch: [] };
+                  // Accessible name for an outcome strip. The strip is 20 colour
+                  // squares and nothing else, so without this a screen-reader user
+                  // gets no version of it at all — and the old aria-label sat on a
+                  // bare div (role=generic), where ARIA drops the name outright.
+                  // Carries the counts, not just the colour legend.
+                  function stripLabel(strategy, outcomes) {
+                    if (!outcomes.length) return strategy + ' strategy: no manual plays yet.';
+                    var wins = outcomes.filter(Boolean).length;
+                    return 'Last ' + outcomes.length + ' manual ' + strategy + ' plays: '
+                      + wins + ' ' + (wins === 1 ? 'win' : 'wins') + ', '
+                      + (outcomes.length - wins) + ' ' + (outcomes.length - wins === 1 ? 'loss' : 'losses')
+                      + '. Most recent last: ' + outcomes.map(function(w) { return w ? 'win' : 'loss'; }).join(', ') + '.';
+                  }
                   function renderStrip(outcomes, winColor) {
                     // Pad to 20 slots: empty placeholders for unused positions
                     var slots = [];
@@ -1798,7 +2236,7 @@ var d = (labToolData.probability) || {};
                           React.createElement('div', { className: 'h-full bg-slate-300', style: { width: stayPct + '%' } })
                         ),
                         // Outcome strip — last 20 manual plays of this strategy
-                        React.createElement('div', { className: 'mt-2', 'aria-label': t('stem.probability.last_20_manual_stay_plays_green_wins_d', 'Last 20 manual Stay plays — green wins, dark red losses') },
+                        React.createElement('div', { className: 'mt-2', role: 'img', 'aria-label': stripLabel('Stay', strip.stay || []) },
                           renderStrip(strip.stay || [], '#22c55e')
                         )
                       ),
@@ -1809,7 +2247,7 @@ var d = (labToolData.probability) || {};
                         React.createElement('div', { className: 'w-full h-2 rounded-full bg-black/30 overflow-hidden mt-1' },
                           React.createElement('div', { className: 'h-full bg-amber-400', style: { width: switchPct + '%' } })
                         ),
-                        React.createElement('div', { className: 'mt-2', 'aria-label': t('stem.probability.last_20_manual_switch_plays_green_wins', 'Last 20 manual Switch plays — green wins, dark red losses') },
+                        React.createElement('div', { className: 'mt-2', role: 'img', 'aria-label': stripLabel('Switch', strip.switch || []) },
                           renderStrip(strip.switch || [], '#fbbf24')
                         )
                       )
@@ -1874,7 +2312,13 @@ var d = (labToolData.probability) || {};
               var binAreaH = svgH - binAreaY - 24;
               var colW = svgW / GB_BINS;
               var rowSpacing = (pegAreaH - 30) / Math.max(1, GB_ROWS - 1);
-              var pegSpacing = svgW / (GB_ROWS + 2);
+              // The peg lattice must share the bins' horizontal pitch. It used to
+              // be svgW/(ROWS+2) — a different pitch from colW = svgW/BINS — so a
+              // ball's last peg position and its bin centre disagreed by up to
+              // ~12px and the ball visibly jogged sideways as it dropped in. With
+              // one pitch, x after all ROWS deflections lands exactly on the bin
+              // centre: svgW/2 + (rights - ROWS/2)*colW === rights*colW + colW/2.
+              var pegSpacing = colW;
 
               // Precompute the screen-space path for an animated ball with the
               // given deflection sequence. Returns an array of {x, y} points;
@@ -1979,7 +2423,7 @@ var d = (labToolData.probability) || {};
                 var pegsInRow = r + 1;
                 var rowY = 20 + (r * (pegAreaH - 30) / Math.max(1, GB_ROWS - 1));
                 for (var c = 0; c < pegsInRow; c++) {
-                  var pegX = svgW / 2 + (c - (pegsInRow - 1) / 2) * (svgW / (GB_ROWS + 2));
+                  var pegX = svgW / 2 + (c - (pegsInRow - 1) / 2) * pegSpacing;
                   pegs.push(React.createElement('circle', { key: 'peg-' + r + '-' + c, cx: pegX, cy: rowY, r: 2.5, fill: '#94a3b8' }));
                 }
               }
@@ -2008,11 +2452,13 @@ var d = (labToolData.probability) || {};
                   fillColor = 'hsl(' + hue + ', 70%, 55%)';
                 } else {
                   // Color by ratio to expected
-                  var expected = expectedCountFor(idx);
-                  if (expected < 0.5) {
+                  // `binExpected`, not `expected`: the render-scope `expected` is
+                  // the outcome→probability map, a different thing entirely.
+                  var binExpected = expectedCountFor(idx);
+                  if (binExpected < 0.5) {
                     fillColor = '#cbd5e1'; // tail bin with negligible expected mass
                   } else {
-                    var ratio = count / expected;
+                    var ratio = count / binExpected;
                     if (ratio >= 0.85 && ratio <= 1.15) fillColor = '#10b981';      // green — within 15%
                     else if (ratio >= 0.6 && ratio <= 1.4) fillColor = '#f59e0b';   // amber — within 40%
                     else fillColor = '#ef4444';                                     // red — significant deviation
@@ -2137,6 +2583,193 @@ var d = (labToolData.probability) || {};
                 totalDropped >= 50 && React.createElement('div', { className: 'text-[10px] text-center mt-3 italic text-amber-100' },
                   t('stem.probability.gold_dashed_line_theoretical_normal_cu', '⬆ Gold dashed line: theoretical normal curve. Your empirical bars should hug it more closely with more drops.')
                 )
+              );
+            })(),
+
+            // ── 3D Monte Carlo volume estimator ──────────────────────────────
+            d.mode === 'volume3d' && (function() {
+              var h = React.createElement;
+              var shapeId = d.v3Shape || 'sphere';
+              var sh = v3Shape(shapeId);
+              var total = d.v3Total || 0;
+              var inside = d.v3Inside || 0;
+              var ratio = total > 0 ? inside / total : 0;
+              // The box is exactly 1×1×1, so the hit ratio IS the volume. That
+              // identity is the whole lesson — no scaling factor to explain away.
+              var vol = ratio;
+              // 95% CI on a proportion. For the shape with no formula this is not
+              // decoration: it is the only honest statement of the answer.
+              var se = total > 0 ? Math.sqrt(Math.max(ratio * (1 - ratio), 0) / total) : 0;
+              var ci = 1.96 * se;
+              var engine = d._v3Engine || _v3Load.state;
+              var showMiss = d.v3ShowMiss !== false;
+
+              // Kick the loader for state restored straight into this mode (no
+              // mode-button click ever fires in that path). Guarded by the module
+              // flag, so re-renders cannot stack loads.
+              if (engine === 'idle') _v3EnsureThree(function(s) { upd('_v3Engine', s); });
+              // Plain data handoff to the imperative scene; the animation frame
+              // reconciles it. Idempotent, so a double render is harmless.
+              _v3.onStatus = function(s) { if (s === 'webgl') upd('_v3Engine', 'webgl-failed'); };
+              var cloud = d.v3Cloud || [];
+              if (!showMiss && cloud.length) {
+                var onlyHits = [];
+                for (var ci2 = 0; ci2 < cloud.length; ci2 += 4) {
+                  if (cloud[ci2 + 3]) onlyHits.push(cloud[ci2], cloud[ci2 + 1], cloud[ci2 + 2], 1);
+                }
+                cloud = onlyHits;
+              }
+              _v3.want = { shapeId: shapeId, cloud: cloud };
+
+              function throwDarts(n) {
+                sfxProbClick();
+                var next = (d.v3Cloud || []).slice();
+                var hits = 0;
+                for (var i = 0; i < n; i++) {
+                  var x = Math.random() - 0.5, y = Math.random() - 0.5, z = Math.random() - 0.5;
+                  var hit = sh.inside(x, y, z);
+                  if (hit) hits++;
+                  next.push(x, y, z, hit ? 1 : 0);
+                }
+                // Cloud is capped for rendering; the COUNTERS are not. Deriving
+                // the estimate from a capped array is what froze the 2D π mode's
+                // accuracy — see the piTotal note above.
+                var CAP = 2400 * 4;
+                if (next.length > CAP) next = next.slice(next.length - CAP);
+                upd('v3Cloud', next);
+                upd('v3Total', total + n);
+                upd('v3Inside', inside + hits);
+                upd('totalTrials', (d.totalTrials || 0) + n);
+                upd('experimentsUsed', Object.assign({}, d.experimentsUsed || {}, { volume3d: true }));
+                if (announceToSR) {
+                  var nt = total + n, nr = (inside + hits) / nt;
+                  announceToSR(n.toLocaleString() + ' darts thrown. ' + (inside + hits).toLocaleString() +
+                    ' of ' + nt.toLocaleString() + ' landed inside. Estimated volume ' + nr.toFixed(4) + '.');
+                }
+              }
+              function resetDarts() {
+                sfxProbClick();
+                upd('v3Cloud', []); upd('v3Total', 0); upd('v3Inside', 0);
+              }
+
+              var card = { background: isDark || isContrast ? 'rgba(3,105,161,0.08)' : 'linear-gradient(135deg,#f0f9ff,#ecfeff)',
+                border: '2px solid ' + (isDark || isContrast ? 'rgba(56,189,248,0.32)' : '#bae6fd') };
+              var head = isDark || isContrast ? '#7dd3fc' : '#075985';
+              var body = isDark || isContrast ? '#e0f2fe' : '#0c4a6e';
+              var statBox = { background: isDark || isContrast ? 'rgba(15,23,42,0.55)' : '#ffffff',
+                border: '1px solid ' + (isDark || isContrast ? 'rgba(100,116,139,0.4)' : '#cbd5e1'), borderRadius: 8, padding: '6px 8px' };
+
+              function stat(label, value, sub) {
+                return h('div', { style: statBox },
+                  h('div', { className: 'text-[10px] font-bold uppercase tracking-wider', style: { color: head } }, label),
+                  h('div', { className: 'text-lg font-black font-mono', style: { color: body } }, value),
+                  sub ? h('div', { className: 'text-[10px]', style: { color: isDark || isContrast ? '#94a3b8' : '#64748b' } }, sub) : null
+                );
+              }
+
+              // Everything the canvas conveys, in words. Present whether or not
+              // WebGL ever loads, so the mode is never graphics-only.
+              var sceneDesc = 'A 1 by 1 by 1 box containing a ' + sh.label.toLowerCase() + '. ' +
+                total.toLocaleString() + ' darts thrown at random positions inside the box; ' +
+                inside.toLocaleString() + ' landed inside the ' + sh.label.toLowerCase() + '. ' +
+                (total > 0 ? 'That is a fraction of ' + ratio.toFixed(4) + ', so the estimated volume is ' + vol.toFixed(4) + '.' : 'No darts thrown yet.');
+
+              return h('div', { className: 'mb-4 rounded-xl p-4', style: card },
+                h('p', { className: 'text-sm font-black mb-1', style: { color: head } }, t('stem.probability.volume3d_title', '🧊 3D Monte Carlo — measure a volume by throwing darts')),
+                h('p', { className: 'text-xs italic mb-3', style: { color: body } },
+                  t('stem.probability.volume3d_intro', 'The box is exactly 1×1×1, so its volume is 1. Throw darts at random spots inside it and the fraction that land in the solid IS the solid’s volume. No formula required — which is how you measure shapes that don’t have one.')),
+
+                // Shape picker
+                h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
+                  V3_SHAPES.map(function(s) {
+                    var active = s.id === shapeId;
+                    var hex = '#' + s.color.toString(16).padStart(6, '0');
+                    return h('button', {
+                      key: 'v3s-' + s.id,
+                      onClick: function() { sfxProbClick(); upd('v3Shape', s.id); upd('v3Cloud', []); upd('v3Total', 0); upd('v3Inside', 0); },
+                      'aria-pressed': active,
+                      className: 'px-3 py-1.5 rounded-lg text-xs font-bold border-2 transition-all',
+                      style: active
+                        ? { background: hex, color: '#0f172a', borderColor: hex }
+                        : { background: isDark || isContrast ? 'rgba(15,23,42,0.5)' : '#fff', color: isDark || isContrast ? '#e0f2fe' : '#075985', borderColor: hex + '99' }
+                    }, s.label + (s.exact == null ? ' *' : ''));
+                  })
+                ),
+
+                h('div', { className: 'flex flex-wrap gap-3 items-start' },
+                  // ── Viewport ──
+                  h('div', { style: { flex: '1 1 300px', minWidth: 260 } },
+                    engine === 'ready'
+                      ? h('div', { style: { position: 'relative', borderRadius: 10, overflow: 'hidden', border: '1px solid ' + (isDark || isContrast ? 'rgba(100,116,139,0.45)' : '#cbd5e1'), background: isDark || isContrast ? '#0b1220' : '#f8fafc' } },
+                          // tabIndex + keydown: OrbitControls is pointer-only, so
+                          // without these the view is unreachable by keyboard.
+                          // role="img" carries the description; aria-keyshortcuts
+                          // advertises the controls to screen readers.
+                          h('canvas', {
+                            ref: _v3Attach, role: 'img', 'aria-label': sceneDesc,
+                            tabIndex: 0, onKeyDown: _v3Keys,
+                            'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown Plus Minus',
+                            style: { outlineOffset: '2px' }
+                          }),
+                          h('div', { className: 'text-[10px] text-center py-1', style: { color: isDark || isContrast ? '#94a3b8' : '#64748b' } },
+                            t('stem.probability.volume3d_drag', 'Drag to rotate · scroll to zoom · or focus the view and use arrow keys, + and −'))
+                        )
+                      : h('div', { className: 'rounded-lg p-4 text-center text-xs', style: { border: '1px dashed ' + (isDark || isContrast ? 'rgba(100,116,139,0.5)' : '#cbd5e1'), color: body, minHeight: 120 } },
+                          engine === 'loading' ? t('stem.probability.volume3d_loading', '⏳ Loading the 3D engine…')
+                          : engine === 'failed' || engine === 'webgl-failed'
+                            ? t('stem.probability.volume3d_no_gl', '📊 The 3D view is unavailable — school networks often block the graphics library, and some devices have no WebGL. The experiment still works: every number below is real, and the dart-throwing is done in maths, not in the picture.')
+                            : t('stem.probability.volume3d_idle', 'Preparing the 3D view…')
+                        )
+                  ),
+
+                  // ── Numbers ──
+                  h('div', { style: { flex: '1 1 240px', minWidth: 220, display: 'grid', gap: 6 } },
+                    h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 } },
+                      stat(t('stem.probability.volume3d_darts', 'Darts thrown'), total.toLocaleString()),
+                      stat(t('stem.probability.volume3d_hits', 'Landed inside'), inside.toLocaleString())
+                    ),
+                    stat(t('stem.probability.volume3d_estimate', 'Estimated volume'),
+                      total > 0 ? vol.toFixed(4) : '—',
+                      total > 0 ? '95% confident: ' + Math.max(0, vol - ci).toFixed(4) + ' to ' + Math.min(1, vol + ci).toFixed(4) : 'throw some darts'),
+                    sh.exact != null
+                      ? stat(t('stem.probability.volume3d_exact', 'Exact volume'), sh.exact.toFixed(4),
+                          total > 0 ? 'off by ' + Math.abs(vol - sh.exact).toFixed(4) + ' (' + (Math.abs(vol - sh.exact) / sh.exact * 100).toFixed(2) + '%)' : sh.formula)
+                      : h('div', { style: Object.assign({}, statBox, { borderColor: isDark || isContrast ? 'rgba(52,211,153,0.5)' : '#6ee7b7' }) },
+                          h('div', { className: 'text-[10px] font-bold uppercase tracking-wider', style: { color: head } }, t('stem.probability.volume3d_no_formula', '* No volume formula')),
+                          h('div', { className: 'text-[11px] leading-snug', style: { color: body } },
+                            t('stem.probability.volume3d_no_formula_body', 'This lumpy solid isn’t in any textbook, so there is nothing to check the darts against. The estimate above is not an approximation of a known answer — it IS the answer, and the 95% range is how precisely you know it. Throw more darts to narrow it.')))
+                  )
+                ),
+
+                // ── Controls ──
+                h('div', { className: 'flex flex-wrap gap-2 mt-3 items-center' },
+                  [100, 1000, 10000].map(function(n) {
+                    return h('button', {
+                      key: 'v3t-' + n, onClick: function() { throwDarts(n); },
+                      className: 'px-3 py-1.5 rounded-lg text-xs font-bold text-white',
+                      style: { background: '#0369a1' }
+                    }, '+' + n.toLocaleString() + ' ' + t('stem.probability.volume3d_darts_word', 'darts'));
+                  }),
+                  h('button', { onClick: resetDarts, className: 'px-3 py-1.5 rounded-lg text-xs font-semibold border',
+                    style: { color: body, borderColor: isDark || isContrast ? 'rgba(100,116,139,0.5)' : '#cbd5e1' } }, t('stem.probability.volume3d_reset', '↺ Reset')),
+                  h('label', { className: 'flex items-center gap-1 text-[11px] font-bold cursor-pointer ml-auto', style: { color: body } },
+                    h('input', { type: 'checkbox', checked: showMiss, onChange: function(e) { upd('v3ShowMiss', e.target.checked); }, className: 'w-3 h-3' }),
+                    t('stem.probability.volume3d_show_misses', 'show misses')),
+                  cloud.length >= 2400 * 4 && h('span', { className: 'text-[10px] italic w-full', style: { color: isDark || isContrast ? '#94a3b8' : '#64748b' } },
+                    t('stem.probability.volume3d_cloud_cap', 'The picture shows the most recent 2,400 darts so it stays readable — every dart still counts toward the numbers.'))
+                ),
+
+                // ── The dimension insight (sphere only) ──
+                shapeId === 'sphere' && h('div', { className: 'mt-3 p-2 rounded text-[11px] leading-relaxed',
+                  style: { background: isDark || isContrast ? 'rgba(56,189,248,0.08)' : '#ffffff', border: '1px solid ' + (isDark || isContrast ? 'rgba(56,189,248,0.3)' : '#bae6fd'), color: body } },
+                  h('span', { className: 'font-black' }, t('stem.probability.volume3d_dim_head', 'Why does the sphere catch so few? ')),
+                  t('stem.probability.volume3d_dim_body', 'A circle fills 78.5% of its square (π⁄4). A sphere fills only 52.4% of its cube (π⁄6). Same shape, same snug fit — but a cube has 8 corners to a square’s 4, and corners are where the round thing isn’t. Keep adding dimensions and the ball all but vanishes: in 10D it catches about 1 dart in 400.'),
+                  sh.piFactor && total > 0 ? h('div', { className: 'mt-1 font-mono' },
+                    'π ≈ ' + sh.piFactor + ' × ' + ratio.toFixed(4) + ' = ' + (sh.piFactor * ratio).toFixed(4)) : null
+                ),
+                shapeId !== 'sphere' && sh.piFactor && total > 0 && h('div', { className: 'mt-3 p-2 rounded text-[11px] font-mono',
+                  style: { background: isDark || isContrast ? 'rgba(56,189,248,0.08)' : '#ffffff', border: '1px solid ' + (isDark || isContrast ? 'rgba(56,189,248,0.3)' : '#bae6fd'), color: body } },
+                  sh.formula + '  →  π ≈ ' + sh.piFactor + ' × ' + ratio.toFixed(4) + ' = ' + (sh.piFactor * ratio).toFixed(4))
               );
             })(),
 
@@ -2287,8 +2920,12 @@ var d = (labToolData.probability) || {};
                   }
                   // Convert day-of-year to month/day for display
                   function dayLabel(day) {
-                    var d = new Date(2025, 0, day + 1); // arbitrary leap-free year
-                    return (d.getMonth() + 1) + '/' + d.getDate();
+                    // `dt`, not `d`: `d` is the tool-data object for this whole
+                    // render, and a var of that name here would shadow it for the
+                    // entire function. Harmless while this body ignores tool data,
+                    // a silent wrong-object bug the moment someone touches it.
+                    var dt = new Date(2025, 0, day + 1); // arbitrary leap-free year
+                    return (dt.getMonth() + 1) + '/' + dt.getDate();
                   }
                   function resample() {
                     sfxProbClick();
@@ -2299,7 +2936,10 @@ var d = (labToolData.probability) || {};
                   function runMany() {
                     sfxProbClick();
                     var matched = 0;
-                    for (var t = 0; t < 100; t++) {
+                    // `ti`, not `t`: `t` is the translation function, and `var t`
+                    // hoists over this entire function — any t('key','English')
+                    // added here later would throw "t is not a function".
+                    for (var ti = 0; ti < 100; ti++) {
                       var seen = {};
                       var hit = false;
                       for (var bi = 0; bi < _bn; bi++) {
@@ -2387,7 +3027,7 @@ var d = (labToolData.probability) || {};
 
             // Visual result display (hidden in tree mode)
 
-            d.mode !== 'tree' && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && d.mode !== 'pi' && d.mode !== 'galton' && React.createElement("div", { key: 'result-' + (d.animTick || 0), className: "flex items-center justify-center gap-6 mb-4 py-4 rounded-xl", style: { background: isDark || isContrast ? 'rgba(139,92,246,0.08)' : 'linear-gradient(to bottom, #f5f3ff, #fff)', border: '2px solid ' + (isDark || isContrast ? 'rgba(139,92,246,0.25)' : '#ddd6fe'), animation: (d.animTick || 0) > 0 ? 'resultPop 0.35s ease-out' : 'none' } },
+            d.mode !== 'tree' && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && d.mode !== 'volume3d' && d.mode !== 'pi' && d.mode !== 'galton' && React.createElement("div", { key: 'result-' + (d.animTick || 0), className: "flex items-center justify-center gap-6 mb-4 py-4 rounded-xl", style: { background: isDark || isContrast ? 'rgba(139,92,246,0.08)' : 'linear-gradient(to bottom, #f5f3ff, #fff)', border: '2px solid ' + (isDark || isContrast ? 'rgba(139,92,246,0.25)' : '#ddd6fe'), animation: (d.animTick || 0) > 0 ? 'resultPop 0.35s ease-out' : 'none' } },
 
               d.mode === 'coin' && React.createElement("div", { style: { animation: (d.animTick||0)>0?'coinFlip 0.42s cubic-bezier(0.25,0.46,0.45,0.94)':'none', transformOrigin:'center' } }, coinSvg(d.lastResult || 'H')),
 
@@ -2508,7 +3148,7 @@ var d = (labToolData.probability) || {};
             // makes that pattern visible at a glance for coin/dice/spinner/sports/
             // marble/custom modes. Skipped for pi (uses its own scatter plot),
             // tree/birthday/monty/galton (have their own visuals).
-            d.mode !== 'tree' && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && d.mode !== 'pi' && (d.results || []).length > 0 && (function() {
+            d.mode !== 'tree' && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && d.mode !== 'volume3d' && d.mode !== 'pi' && (d.results || []).length > 0 && (function() {
               var last20 = (d.results || []).slice(-20);
               // Color resolver — maps an outcome label to a display color per mode.
               function colorFor(label) {
@@ -2518,7 +3158,9 @@ var d = (labToolData.probability) || {};
                   // Peak in the middle (most common sum) → red; tails (least common) → blue
                   var mid = (diceSides || 6) + 1;
                   var dist = Math.abs(label - mid);
-                  var maxDist = diceSides || 6;
+                  // Must match renderTwoDiceGrid's ramp or the same sum is one
+                  // colour in the strip and another in the sample-space grid.
+                  var maxDist = (diceSides || 6) - 1 || 1;
                   var hue = 220 - (dist / maxDist) * 220;  // 220 (blue) at extremes, 0 (red) at center
                   return 'hsl(' + Math.round(hue) + ', 70%, 55%)';
                 }
@@ -2540,7 +3182,11 @@ var d = (labToolData.probability) || {};
               return React.createElement('div', {
                 className: 'rounded-xl p-2 mb-3',
                 style: { background: isDark || isContrast ? 'rgba(139,92,246,0.06)' : '#faf5ff', border: '1px solid ' + (isDark || isContrast ? 'rgba(139,92,246,0.18)' : '#e9d5ff') },
-                'aria-label': 'Last 20 outcomes: ' + last20.join(', ')
+                // role is required: on a bare div (role=generic) ARIA prohibits an
+                // accessible name, so this label never reached assistive tech and
+                // the strip — which is colour squares only — read as nothing.
+                role: 'img',
+                'aria-label': 'Last ' + last20.length + ' outcomes, oldest first: ' + last20.join(', ')
               },
                 React.createElement('div', { className: 'flex items-center gap-2 flex-wrap' },
                   React.createElement('span', { className: 'text-[10px] font-bold uppercase tracking-wider', style: { color: isDark || isContrast ? '#c4b5fd' : '#7c3aed' } }, 'Last ' + last20.length + ':'),
@@ -2569,7 +3215,7 @@ var d = (labToolData.probability) || {};
             })(),
 
             // ── Auto-Run Controls ──
-            d.mode !== 'tree' && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && React.createElement("div", { className: "flex flex-wrap gap-2 mb-3 justify-center items-center" },
+            d.mode !== 'tree' && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && d.mode !== 'volume3d' && React.createElement("div", { className: "flex flex-wrap gap-2 mb-3 justify-center items-center" },
 
               React.createElement("button", { "aria-label": d._autoRunning ? t('stem.probability.pause_auto_run', "Pause automatic simulation") : t('stem.probability.start_auto_run', "Start automatic simulation"), "aria-pressed": d._autoRunning ? "true" : "false",
 
@@ -2625,7 +3271,7 @@ var d = (labToolData.probability) || {};
 
             // Trial buttons (hidden in tree mode)
 
-            d.mode !== 'tree' && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && React.createElement("div", { className: "flex gap-2 mb-4 justify-center flex-wrap" },
+            d.mode !== 'tree' && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && d.mode !== 'volume3d' && React.createElement("div", { className: "flex gap-2 mb-4 justify-center flex-wrap" },
 
               [1, 10, 50, 100, 500].map(n => React.createElement("button", { "aria-label": "Run " + n + " trials", disabled: !customCanRun, key: n, onClick: () => runTrial(n), className: "px-4 py-2 bg-violet-100 text-violet-700 font-bold rounded-lg hover:bg-violet-200 transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed" }, "+" + n)),
 
@@ -2689,7 +3335,7 @@ var d = (labToolData.probability) || {};
 
               React.createElement("p", { className: "text-[11px] font-bold uppercase tracking-wider mb-2", style: { color: _accent } },
 
-                "\uD83D\uDCC8 Convergence to Expected (" + (d.mode === 'coin' ? 'P(H)=50%' : d.mode === 'dice' ? 'P(1)=' + (100 / (d.diceSides || 6)).toFixed(1) + '%' : d.mode === 'dice2' ? 'P(2)=' + (100 / ((d.diceSides || 6) * (d.diceSides || 6))).toFixed(1) + '%' : d.mode === 'pi' ? 'P(inside)=78.5%' : d.mode === 'sports' ? 'P(' + activeSport.outcomes[0] + ')=' + (activeSport.probs[0] * 100).toFixed(0) + '%' : (d.mode === 'custom' || d.mode === 'marbleBag') && customOutcomes[0] ? 'P(' + customOutcomes[0].label + ')=' + (customOutcomes[0].prob * 100).toFixed(0) + '%' : 'P(Red)=25%') + ")"
+                "\uD83D\uDCC8 Convergence to Expected (" + (d.mode === 'coin' ? 'P(H)=50%' : d.mode === 'dice' ? 'P(1)=' + (100 / (d.diceSides || 6)).toFixed(1) + '%' : d.mode === 'dice2' ? 'P(' + convTrackedSum + ')=' + (100 / (d.diceSides || 6)).toFixed(1) + '%' : d.mode === 'pi' ? 'P(inside)=78.5%' : d.mode === 'sports' ? 'P(' + activeSport.outcomes[0] + ')=' + (activeSport.probs[0] * 100).toFixed(0) + '%' : (d.mode === 'custom' || d.mode === 'marbleBag') && customOutcomes[0] ? 'P(' + customOutcomes[0].label + ')=' + (customOutcomes[0].prob * 100).toFixed(0) + '%' : 'P(Red)=25%') + ")"
 
               ),
 
@@ -2708,13 +3354,17 @@ var d = (labToolData.probability) || {};
                   React.createElement("text", { x: 2, y: Math.max(8, ymap(convExpected) - 3), fill: "#22c55e", style: { fontSize: '7px', fontWeight: 'bold' } }, convExpected.toFixed(1) + '% expected'),
                   React.createElement("polyline", {
                     fill: "none", stroke: "#8b5cf6", strokeWidth: 2, style: { filter: 'drop-shadow(0 0 3px rgba(139,92,246,0.55))' },
-                    points: convHist.map(function (h, i) { var x = (i / Math.max(convHist.length - 1, 1)) * 400; return x + ',' + ymap(h.pct); }).join(' ')
+                    // `pt`, not `h`: `h` is this render's React.createElement alias.
+                    // These two bodies happen to spell out React.createElement, so
+                    // the shadow was harmless — but it is a trap set for whoever
+                    // edits them next.
+                    points: convHist.map(function (pt, i) { var x = (i / Math.max(convHist.length - 1, 1)) * 400; return x + ',' + ymap(pt.pct); }).join(' ')
                   }),
-                  convHist.slice(-5).map(function (h, i) {
+                  convHist.slice(-5).map(function (pt, i) {
                     var idx = convHist.length - 5 + i;
                     if (idx < 0) return null;
                     var x = (idx / Math.max(convHist.length - 1, 1)) * 400;
-                    return React.createElement("circle", { key: i, cx: x, cy: ymap(h.pct), r: 2.5, fill: "#8b5cf6" });
+                    return React.createElement("circle", { key: i, cx: x, cy: ymap(pt.pct), r: 2.5, fill: "#8b5cf6" });
                   }),
                   React.createElement("text", { x: 2, y: 8, fill: "#94a3b8", style: { fontSize: '6px' } }, yHi.toFixed(0) + '%'),
                   React.createElement("text", { x: 2, y: 99, fill: "#94a3b8", style: { fontSize: '6px' } }, yLo.toFixed(0) + '%'),
@@ -2727,7 +3377,7 @@ var d = (labToolData.probability) || {};
 
             // Statistical analysis
 
-            d.trials >= 10 && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: _statBg, border: '1px solid ' + _border } },
+            d.trials >= 10 && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && d.mode !== 'volume3d' && React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: _statBg, border: '1px solid ' + _border } },
 
               React.createElement("p", { className: "text-[11px] font-bold uppercase tracking-wider mb-2", style: { color: _accent } }, t('stem.probability.statistical_analysis', "\uD83D\uDCCA Statistical Analysis")),
 
@@ -2769,7 +3419,9 @@ var d = (labToolData.probability) || {};
 
                   React.createElement("p", { className: "text-[11px] font-bold text-violet-500" }, t('stem.probability.statistic', "\u03C7\u00B2 Statistic")),
 
-                  React.createElement("p", { className: "text-lg font-black " + (chiPass ? 'text-emerald-600' : 'text-red-600') }, chiSq.toFixed(2))
+                  React.createElement("p", { className: "text-lg font-black " + chiTone }, chiSq.toFixed(2)),
+
+                  React.createElement("p", { className: "text-[10px] font-mono text-slate-500" }, 'df=' + df + ' \u00B7 crit ' + chiCritical.toFixed(2))
 
                 ),
 
@@ -2777,7 +3429,16 @@ var d = (labToolData.probability) || {};
 
                   React.createElement("p", { className: "text-[11px] font-bold text-violet-500" }, t('stem.probability.fairness_0_05', "Fairness (\u03B1=0.05)")),
 
-                  React.createElement("p", { className: "text-lg font-black " + (chiPass ? 'text-emerald-600' : 'text-red-600') }, chiPass ? '\u2705 Fair' : '\u274C Biased')
+                  React.createElement("p", { className: "text-lg font-black " + chiTone },
+                    !chiIndependent ? '\uD83D\uDEAB ' + t('stem.probability.chi_na', 'N/A here')
+                      : !chiReady ? '\u23F3 ' + t('stem.probability.not_yet', 'Not yet')
+                      : chiPass ? '\u2705 Fair' : '\u274C Biased'),
+
+                  !chiIndependent
+                    ? React.createElement("p", { className: "text-[10px] text-slate-500 leading-snug" },
+                        t('stem.probability.chi_not_independent', 'this test needs independent draws \u2014 switch replacement back on'))
+                    : !chiReady && React.createElement("p", { className: "text-[10px] text-slate-500 leading-snug" },
+                        t('stem.probability.chi_needs_trials', 'needs ') + chiTrialsNeeded.toLocaleString() + t('stem.probability.chi_needs_trials_suffix', ' trials (5 expected per outcome)'))
 
                 )
 
@@ -2785,11 +3446,14 @@ var d = (labToolData.probability) || {};
 
               React.createElement("p", { className: "mt-2 text-xs italic", style: { color: isDark || isContrast ? '#a5b4fc' : '#6d28d9' } },
 
-                d.trials < 30 ? '\uD83D\uDCA1 Need more trials! With only ' + d.trials + ' trials, randomness dominates. Try 100+ for reliable patterns.'
+                // "Try 100+" was fine advice for a d6 and wrong for everything
+                // else: 2d20 needs 2,000 rolls before chi-squared is valid. The
+                // target now comes from the model on screen.
+                !chiIndependent ? '\uD83D\uDCA1 Drawing WITHOUT replacement, every full pass through the bag hands back exactly the bag\u2019s contents \u2014 so \u03C7\u00B2 lands on 0 no matter how many draws you make. That is not the bag proving itself fair, it is arithmetic: \u03C7\u00B2 assumes each draw is independent, and here each draw changes what is left. Turn replacement back on to test fairness; keep it off to study how the odds shift mid-bag.'
 
-                  : d.trials < 100 ? '\uD83D\uDCA1 Getting better! At ' + d.trials + ' trials, patterns are emerging. Watch the convergence chart.'
+                  : !chiReady ? '\uD83D\uDCA1 At ' + d.trials + ' trials the \u03C7\u00B2 test can\u2019t run yet \u2014 it needs about 5 expected hits in EVERY outcome, which is ' + chiTrialsNeeded.toLocaleString() + ' trials for this setup (rarest outcome: ' + (minExpectedP * 100).toFixed(minExpectedP < 0.01 ? 2 : 1) + '%). Keep rolling and watch the convergence chart meanwhile.'
 
-                    : '\uD83D\uDCA1 Great sample size! At ' + d.trials + ' trials, the Law of Large Numbers is clearly visible. \u03C7\u00B2(' + df + ')=' + chiSq.toFixed(2) + ' vs critical ' + chiCritical.toFixed(2) + ' \u2192 ' + (chiPass ? 'fail to reject H\u2080 (fair)' : 'reject H\u2080 (potentially biased)')
+                  : '\uD83D\uDCA1 Great sample size! At ' + d.trials + ' trials, the Law of Large Numbers is clearly visible. \u03C7\u00B2(' + df + ')=' + chiSq.toFixed(2) + ' vs critical ' + chiCritical.toFixed(2) + ' \u2192 ' + (chiPass ? 'fail to reject H\u2080 (fair)' : 'reject H\u2080 (potentially biased)')
 
               )
 
@@ -2797,7 +3461,7 @@ var d = (labToolData.probability) || {};
 
             // â”€â”€ Did You Know? â€” Pedagogical Insights â”€â”€
 
-            d.trials >= 10 && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: isDark || isContrast ? 'rgba(251,191,36,0.06)' : '#fffbeb', border: '1px solid ' + (isDark || isContrast ? 'rgba(251,191,36,0.2)' : '#fde68a') } },
+            d.trials >= 10 && d.mode !== 'birthday' && d.mode !== 'monty' && d.mode !== 'galton' && d.mode !== 'volume3d' && React.createElement("div", { className: "rounded-xl p-3 mb-3", style: { background: isDark || isContrast ? 'rgba(251,191,36,0.06)' : '#fffbeb', border: '1px solid ' + (isDark || isContrast ? 'rgba(251,191,36,0.2)' : '#fde68a') } },
 
               React.createElement("p", { className: "text-xs font-bold mb-1", style: { color: isDark || isContrast ? '#fbbf24' : '#b45309' } }, t('stem.probability.did_you_know', "\uD83D\uDCA1 Did You Know?")),
 
@@ -2805,11 +3469,23 @@ var d = (labToolData.probability) || {};
 
                 d.trials < 30 ? 'The Law of Large Numbers says observed frequencies get closer to expected probabilities as you run more trials. Try 100+ to see it in action!'
 
-                  : d.trials < 100 ? 'Jakob Bernoulli proved the Law of Large Numbers in 1713. He showed that with enough coin flips, the proportion of heads will always converge to 50%. You\'re seeing this happen right now!'
+                  // Bernoulli died in 1705. He proved this years earlier; 1713 is
+                  // when his nephew published Ars Conjectandi posthumously — the
+                  // old wording had him proving theorems eight years dead. And the
+                  // law he proved is the WEAK one: the proportion converges in
+                  // probability, which is not the same as "always".
+                  : d.trials < 100 ? 'Jakob Bernoulli proved the Law of Large Numbers in the 1680s; it reached print in 1713, in Ars Conjectandi, published by his nephew eight years after Bernoulli died. He showed that with enough coin flips, the proportion of heads gets arbitrarily close to 50% — and stays close. You\'re seeing this happen right now!'
 
                     : d.trials < 200 ? 'The Gambler\'s Fallacy is the mistaken belief that past results affect future outcomes. Each ' + (d.mode === 'coin' ? 'coin flip' : d.mode === 'dice' ? 'dice roll' : 'trial') + ' is independent \u2014 the coin has no memory! Just because you got 5 heads in a row doesn\'t make tails more likely next.'
 
-                      : d.trials < 500 ? 'At ' + d.trials + ' trials, you\'re witnessing the Central Limit Theorem in action! The sampling distribution of the mean approaches a normal (bell) curve shape, regardless of the underlying distribution. This is why statisticians love large samples.'
+                      // This used to say the student was watching the Central Limit
+                      // Theorem. They are not. The CLT is about the distribution of
+                      // sample MEANS across repeated samples; what is on screen is
+                      // one running sample settling onto its expected frequencies,
+                      // which is the Law of Large Numbers. The tool does have a real
+                      // CLT demo — the Galton board — so point at it instead of
+                      // mislabelling this one.
+                      : d.trials < 500 ? 'At ' + d.trials + ' trials the observed bars are locking onto the expected ones — still the Law of Large Numbers, not yet the Central Limit Theorem. The two get muddled constantly: this is ONE sample settling down, while the Central Limit Theorem describes the bell shape you get from the AVERAGES of many separate samples. Try the Galton Board mode to watch that second one happen.'
 
                         : (function () {
                             var _mx = 0; for (var _k in counts) { if (counts[_k] > _mx) _mx = counts[_k]; }
@@ -2921,13 +3597,15 @@ var d = (labToolData.probability) || {};
 
               var _piPtsV = d._piPoints || [];
 
-              var _piInV = _piPtsV.filter(function(p) { return p.inside; }).length;
+              // From the running totals, NOT the capped point array — see the
+              // piTotal note in render scope.
+              var _piInV = piInside;
 
-              var _piTotV = _piPtsV.length;
+              var _piTotV = piTotal;
 
-              var _piEstV = _piTotV > 0 ? (4 * _piInV / _piTotV) : 0;
+              var _piEstV = piEstimate;
 
-              var _piErrV = Math.abs(_piEstV - Math.PI);
+              var _piErrV = _piTotV > 0 ? piError : 0;
 
               var _piErrCol = _piErrV < 0.02 ? '#16a34a' : _piErrV < 0.1 ? '#f59e0b' : '#ef4444';
 
@@ -3023,7 +3701,10 @@ var d = (labToolData.probability) || {};
                             var nextPts = (_pp._piPoints || []).concat([{ x: x, y: y, inside: inside }]);
                             if (nextPts.length > 1000) nextPts = nextPts.slice(-1000);
                             var nextRes = (_pp.results || []).concat([inside ? 'inside' : 'outside']);
-                            return Object.assign({}, prev, { probability: Object.assign({}, _pp, { _piPoints: nextPts, results: nextRes, trials: nextRes.length }) });
+                            // Unbounded totals — see the piTotal note in render scope.
+                            var nextTot = (_pp._piTotal != null ? _pp._piTotal : (_pp._piPoints || []).length) + 1;
+                            var nextIn = (_pp._piInside != null ? _pp._piInside : (_pp._piPoints || []).filter(function (p) { return p.inside; }).length) + (inside ? 1 : 0);
+                            return Object.assign({}, prev, { probability: Object.assign({}, _pp, { _piPoints: nextPts, _piTotal: nextTot, _piInside: nextIn, results: nextRes, trials: nextRes.length }) });
                           });
                           dropped++;
                           if (dropped >= 100) {
@@ -3047,7 +3728,7 @@ var d = (labToolData.probability) || {};
 
             // Last 10 results
 
-            d.trials > 0 && React.createElement("div", { className: "text-center" },
+            d.trials > 0 && d.mode !== 'volume3d' && React.createElement("div", { className: "text-center" },
 
               d.mode === 'marbleBag' && React.createElement("div", { className: "mb-3 bg-white rounded-lg p-3 border shadow-sm mx-auto", style: { maxWidth: 500 } },
 
@@ -3085,19 +3766,25 @@ var d = (labToolData.probability) || {};
 
                 React.createElement("div", { className: "flex flex-wrap gap-0.5 justify-center" },
 
-                  d.results.slice(-30).map(function(r, ri) {
+                  // Guarded like every other read of results in this file. This
+                  // block is gated on trials > 0, and a state restored from a
+                  // snapshot can carry a trial count with no results array — which
+                  // took the whole tool down on render, not just this strip.
+                  (d.results || []).slice(-30).map(function(r, ri) {
 
                     var _rc = barColors[r] || '#94a3b8';
 
-                    var _isLast = ri === Math.min(d.results.length, 30) - 1;
+                    var _shown = Math.min((d.results || []).length, 30);
 
-                    return React.createElement("div", { key: ri, title: String(r), style: { width: 18, height: 18, borderRadius: 4, background: _rc, border: _isLast ? '2px solid rgba(255,255,255,0.7)' : '1px solid rgba(0,0,0,0.1)', boxShadow: _isLast ? '0 0 6px ' + _rc + '90' : 'none', opacity: 0.55 + 0.45 * (ri / Math.min(d.results.length, 30)) } });
+                    var _isLast = ri === _shown - 1;
+
+                    return React.createElement("div", { key: ri, title: String(r), style: { width: 18, height: 18, borderRadius: 4, background: _rc, border: _isLast ? '2px solid rgba(255,255,255,0.7)' : '1px solid rgba(0,0,0,0.1)', boxShadow: _isLast ? '0 0 6px ' + _rc + '90' : 'none', opacity: 0.55 + 0.45 * (ri / Math.max(_shown, 1)) } });
 
                   })
 
                 ),
 
-                d.results.length > 30 && React.createElement("p", { className:"text-[11px] text-center mt-1", style:{color:_muted} }, '(showing last 30 of ' + d.results.length + ')')
+                (d.results || []).length > 30 && React.createElement("p", { className:"text-[11px] text-center mt-1", style:{color:_muted} }, '(showing last 30 of ' + (d.results || []).length + ')')
 
               )
 
@@ -3118,9 +3805,10 @@ var d = (labToolData.probability) || {};
 
               })();
 
-              var _piPtsC = d._piPoints || [];
-
-              var _piErrC = _piPtsC.length >= 1000 ? Math.abs(4*_piPtsC.filter(function(p){return p.inside;}).length/_piPtsC.length - Math.PI) : 999;
+              // Pi Hunter used to read the capped array, so its error never
+              // improved past 1,000 darts — the badge was a ~67% coin flip that
+              // more work could not move. Running totals make it earnable.
+              var _piErrC = piTotal >= 1000 ? piError : 999;
 
               var _chals = [
 
@@ -3130,9 +3818,23 @@ var d = (labToolData.probability) || {};
 
                 { id:'law1000', icon:'📈', name:t('stem.probability.law_witness', 'Law Witness'), desc:t('stem.probability.1000_coin_trials_with_max_deviation_3', '1000 coin trials with max deviation < 3%'), xp:100, check:function(){return d.mode==='coin'&&d.trials>=1000&&_maxDevC<0.03;} },
 
-                { id:'piHunter', icon:'🥧', name:t('stem.probability.pi_hunter', 'Pi Hunter'), desc:t('stem.probability.1000_monte_carlo_pi_trials_error_0_05', '1000+ Monte Carlo Pi trials, error < 0.05'), xp:75, check:function(){return d.mode==='pi'&&_piPtsC.length>=1000&&_piErrC<0.05;} },
+                { id:'piHunter', icon:'🥧', name:t('stem.probability.pi_hunter', 'Pi Hunter'), desc:t('stem.probability.1000_monte_carlo_pi_trials_error_0_05', '1000+ Monte Carlo Pi trials, error < 0.05'), xp:75, check:function(){return d.mode==='pi'&&piTotal>=1000&&_piErrC<0.05;} },
 
-                { id:'birthday23', icon:'🎂', name:t('stem.probability.birthday_breaker', 'Birthday Breaker'), desc:t('stem.probability.set_n_23_in_birthday_mode_to_see_the_p', 'Set n=23 in Birthday mode to see the paradox'), xp:30, check:function(){return d.mode==='birthday'&&(d.birthdayN||23)===23;} }
+                { id:'birthday23', icon:'🎂', name:t('stem.probability.birthday_breaker', 'Birthday Breaker'), desc:t('stem.probability.set_n_23_in_birthday_mode_to_see_the_p', 'Set n=23 in Birthday mode to see the paradox'), xp:30, check:function(){return d.mode==='birthday'&&(d.birthdayN||23)===23;} },
+
+                // Earnable by more work, unlike the old Pi Hunter: the volume
+                // estimate keeps converging, so more darts really do help. The
+                // 0.01 window is ~1.4-1.6 SE at the 5,000-dart floor (roughly an
+                // 85% chance), and a near-certainty by 20,000 — so persistence
+                // pays instead of a lucky first throw deciding it.
+                { id:'volumeSurveyor', icon:'🧊', name:t('stem.probability.volume_surveyor', 'Volume Surveyor'), desc:t('stem.probability.5000_darts_in_3d_within_0_01_of_the_tr', '5,000+ darts in 3D, estimate within 0.01 of the true volume'), xp:75, check:function(){
+                  if (d.mode !== 'volume3d') return false;
+                  var _vt = d.v3Total || 0;
+                  if (_vt < 5000) return false;
+                  var _vs = v3Shape(d.v3Shape || 'sphere');
+                  if (_vs.exact == null) return false;   // the potato has no truth to be within 0.01 of
+                  return Math.abs((d.v3Inside || 0) / _vt - _vs.exact) < 0.01;
+                } }
 
               ];
 
@@ -3209,8 +3911,12 @@ var d = (labToolData.probability) || {};
                       var topPct = topOutcome && d.trials > 0 ? ((counts[topOutcome]||0)/d.trials*100).toFixed(1) : '0';
                       summary = 'Mode: ' + d.mode + '. Total trials: ' + d.trials + '. ' +
                         'Most frequent outcome: ' + (topOutcome||'none') + ' (' + topPct + '%). ' +
-                        'Chi-square: ' + chiSq.toFixed(2) + ' (critical ' + chiCritical + '). ' +
-                        'Fairness test: ' + (chiPass ? 'PASS (fair)' : 'FAIL (biased)') + '. ' +
+                        'Chi-square: ' + chiSq.toFixed(2) + ' on ' + df + ' degrees of freedom (critical value ' + chiCritical.toFixed(2) + '). ' +
+                        (!chiIndependent
+                          ? 'Fairness test: DOES NOT APPLY — draws are without replacement, so they are not independent and chi-squared is meaningless here. Do NOT call the bag fair or biased; explain that a full pass through the bag always returns its exact contents. '
+                          : chiReady
+                          ? 'Fairness test: ' + (chiPass ? 'PASS (fair)' : 'FAIL (biased)') + '. '
+                          : 'Fairness test: NOT VALID YET — this setup needs ' + chiTrialsNeeded + ' trials for 5 expected hits per outcome, so do NOT tell the student the die is fair or biased; say the sample is still too small. ') +
                         'Max deviation from expected: ' + (function(){ var mx=0; Object.keys(expected).forEach(function(k){ var d2=Math.abs((counts[k]||0)/Math.max(d.trials,1)-expected[k]); if(d2>mx)mx=d2; }); return (mx*100).toFixed(1); })() + '%.';
                     }
                     callGemini(
@@ -3227,7 +3933,7 @@ var d = (labToolData.probability) || {};
                     var topOutcome = Object.keys(counts).sort(function(a,b){ return (counts[b]||0)-(counts[a]||0); })[0];
                     var narration = 'Probability Lab results. Mode: ' + d.mode + '. ' + d.trials + ' trials run. ' +
                       'Most frequent: ' + (topOutcome||'unknown') + ' at ' + (topOutcome&&d.trials>0?((counts[topOutcome]||0)/d.trials*100).toFixed(0):'0') + ' percent. ' +
-                      'Chi-square test: ' + (chiPass?'fair':'potentially biased') + '.';
+                      'Chi-square test: ' + (!chiIndependent ? 'does not apply, because draws without replacement are not independent' : chiReady ? (chiPass?'fair':'potentially biased') : 'not enough trials yet, it needs ' + chiTrialsNeeded + ' for this setup') + '.';
                     callTTS(narration, null);
                   },
                   className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
