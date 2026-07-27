@@ -636,6 +636,410 @@
   // transform) with live earthquake markers, mountain uplift, and
   // mid-ocean rift formation.
   // ===============================================================
+  // ═══════════════════════════════════════════════════════════════════════
+  // WADATI-BENIOFF GEOMETRY — shared by the 2D section and the 3D block
+  // ───────────────────────────────────────────────────────────────────────
+  // Earthquakes at a subduction zone are not scattered: they lie on the
+  // descending slab, so a focus's horizontal distance from the trench is set
+  // by its depth and the slab's dip. That correlation IS the evidence the
+  // widget's own "Try this" panel points at ("deep-focus earthquakes are
+  // strong evidence of a subducting slab").
+  //
+  // The section already DREW a slab; what it did not do was put the foci on
+  // it. Depth drove only the marker colour while x came from a fixed random
+  // band, so the markers sat beside the slab rather than along it and the
+  // Wadati-Benioff plane never appeared. Sign matters here: the section's
+  // slab descends to the RIGHT of the boundary (Plate A subducts beneath
+  // Plate B, which carries the volcanic arc), so distance runs +x.
+  //
+  // Simplification, stated plainly for honesty: real Benioff zones commonly
+  // shallow near the trench and steepen with depth (~30 deg to ~60 deg), and
+  // each arc differs. One constant dip is a teaching model, not a survey.
+  var TECT_DIP_DEG = 45;
+  var TECT_MAX_DEPTH_KM = 700;
+  // Section pixels per km. Matches the depth scale the 2D view already used
+  // (it drew depthKm/9, i.e. 72px for 650km), so applying the SAME scale
+  // horizontally makes the dip read at its true angle on screen.
+  var TECT_PX_PER_KM = 72 / 650;
+  var TECT_SEISMO_JITTER_KM = 22;   // thickness of the seismogenic layer
+
+  function tectSlabDistKm(depthKm) {
+    return depthKm / Math.tan(TECT_DIP_DEG * Math.PI / 180);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // 3D BLOCK VIEW — progressive enhancement over the 2D cross-section
+  // ───────────────────────────────────────────────────────────────────────
+  // The 2D section is a good annotated diagram and stays the default and the
+  // guaranteed floor. Three things it cannot do, which is why this exists:
+  //
+  //   1. A Wadati-Benioff zone is a PLANE. Flattened into a section it is a
+  //      line of dots; you can only see it is planar (and not a smear) by
+  //      turning it. That is the single strongest piece of evidence for
+  //      subduction and the widget already claims to teach it.
+  //   2. Strike-slip motion at a transform boundary is perpendicular to the
+  //      section plane, so a cross-section CANNOT show it — the 2D view
+  //      resorts to drawing an offset road as a proxy. In a block it is the
+  //      literal motion.
+  //   3. Cutting the block with a clip plane along strike produces exactly
+  //      the 2D section, which is what tells a student where the textbook
+  //      diagram comes from.
+  //
+  // Scene units: 1 unit = 10 km. Surface at y = 0, depth downward negative.
+  // x is across strike (trench at x = 0, overriding plate to -x), z is along
+  // strike. Same module-singleton + one stable ref callback as the Volume
+  // tool: an inline ref would rebuild the scene on every simulation tick.
+  var TECT_KM = 0.1;                 // scene units per km
+  var TECT_HALF_X = 60, TECT_HALF_Z = 25, TECT_DEPTH = 70;
+
+  var TectGL = (function () {
+    var DEG = Math.PI / 180;
+    var T = null;
+    var state = 'idle';              // idle | loading | ready | failed
+    var canvasEl = null, renderer = null, scene = null, camera = null;
+    var plateGroup = null, slabMesh = null, quakeMesh = null, arcGroup = null;
+    var clipPlane = null, dirLight = null;
+    var rafId = 0, capacity = 0, resizeObs = null;
+    var dummy = null, colorTmp = null;
+    var pending = null, appliedSig = '', appliedCamSig = '', dirty = true;
+
+    function fail(reason) {
+      state = 'failed';
+      if (pending && typeof pending.onFail === 'function') { try { pending.onFail(reason); } catch (e) {} }
+    }
+
+    function build() {
+      scene = new T.Scene();
+      camera = new T.PerspectiveCamera(42, 1, 0.5, 4000);
+      scene.add(new T.HemisphereLight(0xcbd5e1, 0x1c1917, 0.9));
+      dirLight = new T.DirectionalLight(0xffffff, 0.7);
+      dirLight.position.set(-90, 130, 110);
+      scene.add(dirLight);
+
+      // Mantle: a translucent shell so the slab and the foci inside stay
+      // visible. depthWrite off keeps it from occluding them from any angle.
+      var mantle = new T.Mesh(
+        new T.BoxGeometry(TECT_HALF_X * 2, TECT_DEPTH, TECT_HALF_Z * 2),
+        new T.MeshLambertMaterial({
+          color: 0x7f1d1d, transparent: true, opacity: 0.18,
+          depthWrite: false, side: T.DoubleSide, clippingPlanes: [clipPlane]
+        })
+      );
+      mantle.position.set(0, -TECT_DEPTH / 2, 0);
+      scene.add(mantle);
+
+      plateGroup = new T.Group();
+      arcGroup = new T.Group();
+      scene.add(plateGroup);
+      scene.add(arcGroup);
+
+      dummy = new T.Object3D();
+      colorTmp = new T.Color();
+    }
+
+    function clearGroup(g) {
+      if (!g) return;
+      for (var i = g.children.length - 1; i >= 0; i--) {
+        var c = g.children[i];
+        g.remove(c);
+        if (c.geometry) c.geometry.dispose();
+        if (c.material) c.material.dispose();
+      }
+    }
+
+    function slab(w, hgt, d, color, opacity) {
+      return new T.Mesh(
+        new T.BoxGeometry(w, hgt, d),
+        new T.MeshLambertMaterial({
+          color: color, transparent: opacity < 1, opacity: opacity,
+          side: T.DoubleSide, clippingPlanes: [clipPlane]
+        })
+      );
+    }
+
+    // Lithosphere geometry per boundary mode. Thickness follows the real
+    // contrast that drives subduction: oceanic lithosphere is thin and dense,
+    // continental is thick and buoyant, which is why the ocean plate goes down.
+    function buildPlates(m) {
+      clearGroup(plateGroup);
+      clearGroup(arcGroup);
+      if (slabMesh) { scene.remove(slabMesh); slabMesh.geometry.dispose(); slabMesh.material.dispose(); slabMesh = null; }
+
+      var Z = TECT_HALF_Z * 2;
+      var contT = 5.0, oceT = 2.5;    // 50 km vs 25 km
+
+      if (m.mode === 'convergent') {
+        // Orientation follows the 2D section exactly, so the cutaway lands on
+        // the diagram students already know: subducting plate on -x (Plate A),
+        // overriding plate carrying the arc on +x (Plate B), slab descending
+        // to the RIGHT from the trench at x = 0.
+        var oce = slab(TECT_HALF_X, oceT, Z, 0x1e3a5f, 1);
+        oce.position.set(-TECT_HALF_X / 2, -oceT / 2, 0);
+        plateGroup.add(oce);
+
+        var cont = slab(TECT_HALF_X, contT, Z, 0x8b6914, 1);
+        cont.position.set(TECT_HALF_X / 2, -contT / 2, 0);
+        plateGroup.add(cont);
+
+        // The descending slab, dipping beneath the overriding plate at
+        // TECT_DIP_DEG. Its length is set by how deep the model puts quakes.
+        // A box spans both ways from its centre, so placing the centre at
+        // half-reach along the dip direction puts one end exactly at the trench.
+        var reach = TECT_MAX_DEPTH_KM * TECT_KM / Math.sin(TECT_DIP_DEG * DEG);
+        slabMesh = slab(reach, oceT, Z, 0x1e3a5f, 0.92);
+        slabMesh.position.set(
+          Math.cos(TECT_DIP_DEG * DEG) * reach / 2,
+          -Math.sin(TECT_DIP_DEG * DEG) * reach / 2,
+          0
+        );
+        slabMesh.rotation.z = -TECT_DIP_DEG * DEG;
+        scene.add(slabMesh);
+
+        // Mountains on the overriding plate, driven by the same
+        // mountainHeight the 2D view reports in its HUD.
+        var mh = Math.max(0.4, (m.mountainHeight / 8000) * 7);
+        var range = new T.Mesh(
+          new T.ConeGeometry(4.5, mh, 4),
+          new T.MeshLambertMaterial({ color: 0x9ca3af, clippingPlanes: [clipPlane] })
+        );
+        range.position.set(9, mh / 2, 0);
+        range.rotation.y = Math.PI / 4;
+        arcGroup.add(range);
+
+        // Volcanic arc sits where the slab reaches ~100 km, which is why arcs
+        // stand a fixed distance behind the trench rather than at it.
+        var arcX = tectSlabDistKm(100) * TECT_KM;
+        for (var v = -1; v <= 1; v++) {
+          var cone = new T.Mesh(
+            new T.ConeGeometry(2.2, 4.2, 12),
+            new T.MeshLambertMaterial({ color: 0x44403c, clippingPlanes: [clipPlane] })
+          );
+          cone.position.set(arcX, 2.1, v * 14);
+          arcGroup.add(cone);
+        }
+      } else if (m.mode === 'divergent') {
+        // Two plates pulled apart; the gap is the rift the 2D HUD reports.
+        var gap = Math.max(1.5, (m.rift / 180) * 16);
+        var lp = slab(TECT_HALF_X - gap / 2, oceT, Z, 0x2a4a6f, 1);
+        lp.position.set(-(TECT_HALF_X + gap / 2) / 2, -oceT / 2, 0);
+        plateGroup.add(lp);
+        var rp = slab(TECT_HALF_X - gap / 2, oceT, Z, 0x2a4a6f, 1);
+        rp.position.set((TECT_HALF_X + gap / 2) / 2, -oceT / 2, 0);
+        plateGroup.add(rp);
+
+        // New crust welling up to fill the gap — the ridge.
+        var ridge = slab(gap, oceT * 0.8, Z, 0xdc2626, 1);
+        ridge.position.set(0, -oceT * 0.4, 0);
+        plateGroup.add(ridge);
+        var plume = new T.Mesh(
+          new T.CylinderGeometry(gap * 0.42, gap * 0.9, 22, 16, 1, true),
+          new T.MeshLambertMaterial({
+            color: 0xf97316, transparent: true, opacity: 0.4,
+            side: T.DoubleSide, depthWrite: false, clippingPlanes: [clipPlane]
+          })
+        );
+        plume.position.set(0, -13, 0);
+        arcGroup.add(plume);
+      } else {
+        // Transform: the offset is ALONG STRIKE, perpendicular to the section
+        // plane. This is the motion a cross-section structurally cannot show.
+        var off = Math.min(TECT_HALF_Z * 0.7, (m.offset / 400) * TECT_HALF_Z);
+        var a = slab(TECT_HALF_X, contT, Z, 0x8b6914, 1);
+        a.position.set(-TECT_HALF_X / 2, -contT / 2, off);
+        plateGroup.add(a);
+        var b = slab(TECT_HALF_X, contT, Z, 0xa16207, 1);
+        b.position.set(TECT_HALF_X / 2, -contT / 2, -off);
+        plateGroup.add(b);
+
+        // Fault trace, so the offset is readable as displacement of a line.
+        var trace = slab(0.7, 0.4, Z, 0xfbbf24, 1);
+        trace.position.set(0, 0.2, 0);
+        arcGroup.add(trace);
+      }
+    }
+
+    function ensureQuakes(n) {
+      if (quakeMesh && capacity >= n) return;
+      if (quakeMesh) { scene.remove(quakeMesh); quakeMesh.geometry.dispose(); quakeMesh.material.dispose(); }
+      capacity = Math.max(48, n);
+      // Unlit on purpose. A focus marker's colour IS its depth class, keyed to
+      // the same legend the 2D view prints, so it must not be modulated by
+      // scene lighting — a lit violet marker washes out to white and reads as
+      // a different category. Markers are also drawn well above true scale
+      // (a hypocentre is a point) so they stay visible across a 1200 km block.
+      quakeMesh = new T.InstancedMesh(
+        new T.SphereGeometry(1.7, 12, 8),
+        new T.MeshBasicMaterial({ color: 0xffffff, clippingPlanes: [clipPlane] }),
+        capacity
+      );
+      quakeMesh.frustumCulled = false;   // r128 has no per-instance bounds
+      quakeMesh.instanceMatrix.setUsage(T.DynamicDrawUsage);
+      // Allocate instanceColor NOW, before the first render. r128 decides
+      // whether to compile USE_INSTANCING_COLOR into the shader from whether
+      // instanceColor is null at compile time, and the compiled program is
+      // then cached. The first frame here has zero foci, so if the attribute
+      // were left until the first setColorAt the program would already be
+      // cached colourless and every depth colour would be silently dropped —
+      // markers render white and read as the wrong depth class.
+      if (typeof quakeMesh.setColorAt === 'function') {
+        var seed = new T.Color(0xffffff);
+        for (var ci = 0; ci < capacity; ci++) quakeMesh.setColorAt(ci, seed);
+        if (quakeMesh.instanceColor) quakeMesh.instanceColor.needsUpdate = true;
+      }
+      scene.add(quakeMesh);
+    }
+
+    function apply(m) {
+      buildPlates(m);
+      var qs = m.quakes || [];
+      ensureQuakes(qs.length);
+      for (var i = 0; i < qs.length; i++) {
+        var q = qs[i];
+        // Same depth colour ramp the 2D markers use, so the two views read as
+        // one dataset: shallow red, intermediate orange, deep violet.
+        var hex = q.depthKm >= 300 ? 0xa78bfa : q.depthKm >= 70 ? 0xfb923c : 0xf43f5e;
+        dummy.position.set(
+          (q.distKm || 0) * TECT_KM,      // +x: down-dip, matching the section
+          -(q.depthKm || 0) * TECT_KM,
+          (q.strikeKm || 0) * TECT_KM
+        );
+        dummy.rotation.set(0, 0, 0);
+        var sc = 0.6 + (q.m || 4) * 0.16;
+        dummy.scale.set(sc, sc, sc);
+        dummy.updateMatrix();
+        quakeMesh.setMatrixAt(i, dummy.matrix);
+        if (typeof quakeMesh.setColorAt === 'function') {
+          colorTmp.setHex(hex);
+          quakeMesh.setColorAt(i, colorTmp);
+        }
+      }
+      quakeMesh.count = qs.length;
+      quakeMesh.instanceMatrix.needsUpdate = true;
+      if (quakeMesh.instanceColor) quakeMesh.instanceColor.needsUpdate = true;
+
+      // Cut along strike. At full extent the plane is outside the block, so
+      // nothing is clipped; sliding it in carves out the 2D section.
+      clipPlane.constant = m.cut != null ? m.cut : 1e6;
+    }
+
+    function applyCam(m) {
+      var el = Math.max(-88, Math.min(88, -m.rotX)) * DEG;
+      var az = -m.rotY * DEG;
+      var dist = 210 / Math.max(0.25, m.scale);
+      var ty = -TECT_DEPTH * 0.32;
+      camera.position.set(
+        dist * Math.cos(el) * Math.sin(az),
+        ty + dist * Math.sin(el),
+        dist * Math.cos(el) * Math.cos(az)
+      );
+      camera.lookAt(0, ty, 0);
+      camera.updateProjectionMatrix();
+    }
+
+    function resize() {
+      if (!renderer || !canvasEl) return;
+      var w = canvasEl.clientWidth || 1, hh = canvasEl.clientHeight || 1;
+      renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+      renderer.setSize(w, hh, false);
+      camera.aspect = w / hh;
+      camera.updateProjectionMatrix();
+      dirty = true;
+    }
+
+    function frame() {
+      rafId = requestAnimationFrame(frame);
+      if (state !== 'ready' || !pending) return;
+      var m = pending;
+      try {
+        if (m.sig !== appliedSig) { apply(m); appliedSig = m.sig; dirty = true; }
+        var cs = m.rotX + ',' + m.rotY + ',' + m.scale;
+        if (cs !== appliedCamSig) { applyCam(m); appliedCamSig = cs; dirty = true; }
+        if (!dirty) return;
+        dirty = false;
+        renderer.render(scene, camera);
+      } catch (err) {
+        console.error('[tectonics] WebGL frame failed, falling back to the 2D section', err);
+        if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+        fail('frame');
+      }
+    }
+
+    return {
+      isReady: function () { return state === 'ready'; },
+      submit: function (m) { pending = m; },
+      debug: function () {
+        if (state !== 'ready' || !renderer) return { state: state };
+        var gl = renderer.getContext();
+        // Raw (depth, distance-from-trench) pairs for the live foci. Exposed
+        // as data rather than as a pass/fail number so the test computes the
+        // Wadati-Benioff fit itself instead of trusting this file's own grade.
+        // Foci are short-lived (age < 3s), so a caller samples over time.
+        var slabSample = (pending && pending.quakes)
+          ? pending.quakes.map(function (q) { return { depthKm: q.depthKm || 0, distKm: q.distKm || 0 }; })
+          : [];
+        return {
+          state: state,
+          mode: pending ? pending.mode : null,
+          slabSample: slabSample,
+          quakeCount: quakeMesh ? quakeMesh.count : 0,
+          plateCount: plateGroup ? plateGroup.children.length : 0,
+          hasSlab: !!slabMesh,
+          // Dip is conventionally a positive angle from horizontal; the mesh
+          // carries the sign that points it down-dip (+x).
+          slabDipDeg: slabMesh ? Math.round(Math.abs(slabMesh.rotation.z / DEG)) : null,
+          arcCount: arcGroup ? arcGroup.children.length : 0,
+          clipConstant: clipPlane ? clipPlane.constant : null,
+          camera: camera ? { x: camera.position.x, y: camera.position.y, z: camera.position.z } : null,
+          canvas: canvasEl ? { w: canvasEl.clientWidth, h: canvasEl.clientHeight } : null,
+          contextLost: gl ? gl.isContextLost() : null
+        };
+      },
+      mount: function (el) {
+        if (canvasEl === el) return;
+        canvasEl = el;
+        if (state === 'ready' || state === 'loading') return;
+        state = 'loading';
+        var loader = (window.StemLab && window.StemLab.ensureThree)
+          ? window.StemLab.ensureThree({ failMessage: 'The 3D engine could not load. The 2D cross-section still works.' })
+          : Promise.reject(new Error('no-loader'));
+        loader.then(function (three) {
+          if (!canvasEl) return;
+          T = three;
+          try {
+            renderer = new T.WebGLRenderer({ canvas: canvasEl, antialias: true, alpha: true });
+          } catch (e) { fail('no-webgl'); return; }
+          renderer.setClearColor(0x000000, 0);
+          renderer.localClippingEnabled = true;
+          clipPlane = new T.Plane(new T.Vector3(0, 0, -1), 1e6);
+          build();
+          resize();
+          if (typeof ResizeObserver === 'function') {
+            resizeObs = new ResizeObserver(resize);
+            resizeObs.observe(canvasEl);
+          } else { window.addEventListener('resize', resize); }
+          state = 'ready';
+          appliedSig = ''; appliedCamSig = ''; dirty = true;
+          if (!rafId) rafId = requestAnimationFrame(frame);
+          if (pending && typeof pending.onReady === 'function') { try { pending.onReady(); } catch (e2) {} }
+        }).catch(function () { fail('cdn'); });
+      },
+      unmount: function () {
+        if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+        if (resizeObs) { try { resizeObs.disconnect(); } catch (e) {} resizeObs = null; }
+        else window.removeEventListener('resize', resize);
+        if (scene) { clearGroup(plateGroup); clearGroup(arcGroup); }
+        if (renderer) { try { renderer.dispose(); } catch (e) {} }
+        plateGroup = arcGroup = slabMesh = quakeMesh = null;
+        renderer = scene = camera = null; canvasEl = null; pending = null;
+        capacity = 0; appliedSig = ''; appliedCamSig = '';
+        if (state !== 'failed') state = 'idle';
+      }
+    };
+  })();
+
+  function tectGlRef(el) { if (el) TectGL.mount(el); else TectGL.unmount(); }
+  try { window.__alloTectGL = TectGL; } catch (e) {}
+
   window.AlloTectonicsInteractive = function(props) {
     var React = window.React;
     var h = React.createElement;
@@ -661,6 +1065,18 @@
     var s = st[0];
     var setS = st[1];
     var update = function(patch) { setS(function(prev) { return Object.assign({}, prev, patch); }); };
+
+    // 3D block view. Declared unconditionally at the top level — a hook behind
+    // a view branch crashes the tool on navigation, which is a known trap in
+    // this codebase. Defaults OFF: unlike the Volume tool, 3D does not strictly
+    // dominate here. The 2D section is a well-annotated diagram with a HUD and
+    // labels; the block adds the three things a section structurally cannot
+    // show, so it complements rather than replaces it.
+    var v3 = useState({ on: false, rotX: -22, rotY: -38, scale: 1, cut: null });
+    var view3d = v3[0];
+    var setView3d = v3[1];
+    var updView = function(patch) { setView3d(function(prev) { return Object.assign({}, prev, patch); }); };
+    var dragRef = useRef(null);
 
     var canvasRef = useRef(null);
     var animRef = useRef(null);
@@ -736,10 +1152,22 @@
             var depthKm = cur.mode === 'convergent'
               ? (Math.random() < 0.55 ? 5 + Math.random() * 65 : 70 + Math.random() * 580)
               : 2 + Math.random() * 28;
-            var qx = 220 + (Math.random() - 0.5) * 100;
-            var qy = 150 + Math.min(72, depthKm / 9);
+            // Place the focus ON the slab. Only convergent boundaries have a
+            // descending slab to place it on; divergent and transform quakes
+            // stay shallow and clustered at the boundary itself.
+            var jitterKm = (Math.random() - 0.5) * TECT_SEISMO_JITTER_KM;
+            var distKm = cur.mode === 'convergent'
+              ? tectSlabDistKm(depthKm) + jitterKm
+              : jitterKm * 1.8;
+            // Along-strike position: the trench runs into the screen, so this
+            // is the axis the 2D section collapses and the 3D block restores.
+            var strikeKm = (Math.random() - 0.5) * 420;
+            var qx = 270 + distKm * TECT_PX_PER_KM;
+            // Unclamped: the old min(...,72) flattened everything below ~648km
+            // onto one line, hiding the deepest third of the slab.
+            var qy = 150 + depthKm * TECT_PX_PER_KM;
             var newQ = (cur.quakes || []).slice();
-            newQ.push({ x: qx, y: qy, m: magnitude, depthKm: depthKm, age: 0 });
+            newQ.push({ x: qx, y: qy, m: magnitude, depthKm: depthKm, distKm: distKm, strikeKm: strikeKm, age: 0 });
             if (newQ.length > 40) newQ.shift();
             patch.quakes = newQ;
             patch.quakeTotal = (cur.quakeTotal || 0) + 1;
@@ -1079,6 +1507,35 @@
   var titleClass = 'text-sm font-bold ' + (isDark ? 'text-orange-400' : 'text-orange-900');
   var subtitleClass = 'text-[11px] ' + (isDark ? 'text-slate-400' : 'text-orange-800');
 
+  // ── Hand the 3D block this frame's model (plain data; no GPU work here) ──
+  var deepCount = (s.quakes || []).filter(function(q) { return (q.depthKm || 0) >= 70; }).length;
+  var tectGlAlt = 'Rotatable 3D block of a ' + info.name.toLowerCase() + ' boundary. '
+    + (s.mode === 'convergent'
+        ? ('Oceanic plate descending beneath continental plate at about ' + TECT_DIP_DEG + ' degrees. '
+           + deepCount + ' of ' + (s.quakes || []).length + ' shown earthquakes are 70 km or deeper, lying on the slab.')
+        : s.mode === 'divergent'
+          ? 'Two plates separating, with new crust filling the ridge between them. Earthquakes are shallow.'
+          : 'Two plates sliding past each other along the fault, offset along strike. Earthquakes are shallow.');
+  var tectGlModel = {
+    mode: s.mode,
+    mountainHeight: s.mountainHeight, rift: s.rift, offset: s.offset,
+    quakes: s.quakes || [],
+    rotX: view3d.rotX, rotY: view3d.rotY, scale: view3d.scale, cut: view3d.cut,
+    onReady: function() {
+      updView({ readyAt: Date.now() });   // flips tectGlLive on the next render
+      if (typeof announceToSR === 'function') announceToSR('3D block view ready.');
+    },
+    onFail: function() {
+      updView({ on: false });
+      if (typeof announceToSR === 'function') announceToSR('The 3D block could not load. Showing the 2D cross-section.');
+    },
+    sig: [s.mode, Math.round(s.mountainHeight), Math.round(s.rift), Math.round(s.offset),
+          (s.quakes || []).length, view3d.cut,
+          (s.quakes || []).length ? Math.round((s.quakes[s.quakes.length - 1].depthKm || 0)) : ''].join('|')
+  };
+  if (view3d.on) TectGL.submit(tectGlModel);
+  var tectGlLive = view3d.on && TectGL.isReady();
+
   return h('div', { className: containerClass, style: containerStyle, 'data-plate-theme': isContrast ? 'contrast' : (isDark ? 'dark' : 'light') },
     h('div', { className: headerBorderClass, style: headerStyle },
       h('span', { className: badgeClass, style: badgeStyle }, '🎮 INTERACTIVE'),
@@ -1086,16 +1543,113 @@
       h('span', { className: subtitleClass }, '- pick a boundary type and watch geology happen in fast-forward')
     ),
     h('div', { className: 'p-3 grid grid-cols-1 md:grid-cols-3 gap-3' },
-      h('div', { className: 'md:col-span-2 rounded-xl overflow-hidden border ' + (isDark ? 'border-slate-800 bg-slate-950' : 'border-orange-400 bg-white') },
+      h('div', { className: 'md:col-span-2 rounded-xl overflow-hidden border relative ' + (isDark ? 'border-slate-800 bg-slate-950' : 'border-orange-400 bg-white') },
+        // 2D cross-section — always rendered, and the guaranteed floor. Hidden
+        // (not unmounted) while the block view is live so its rAF loop, HUD and
+        // aria-label stay intact and one toggle brings it straight back.
         h('canvas', {
           ref: canvasRef,
           role: 'img',
           tabIndex: 0,
           'aria-label': info.name + ' boundary cross-section. ' + evidence.motion + '. ' + depthSummary + '.',
-          style: { width: '100%', height: 'auto', aspectRatio: '540 / 300', display: 'block' }
-        })
+          style: {
+            width: '100%', height: 'auto', aspectRatio: '540 / 300', display: 'block',
+            visibility: tectGlLive ? 'hidden' : 'visible'
+          }
+        }),
+        view3d.on && h('canvas', {
+          ref: tectGlRef,
+          'data-tect-gl': 'true',
+          role: 'img',
+          'data-a11y-static': 'true',
+          'aria-describedby': 'tect-gl-description',
+          'aria-label': tectGlAlt,
+          style: {
+            position: 'absolute', inset: '0', width: '100%', height: '100%',
+            visibility: tectGlLive ? 'visible' : 'hidden'
+          },
+          onPointerDown: function(e) {
+            dragRef.current = { x: e.clientX, y: e.clientY, rx: view3d.rotX, ry: view3d.rotY };
+            try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_) {}
+          },
+          onPointerMove: function(e) {
+            if (!dragRef.current) return;
+            updView({
+              rotX: Math.max(-88, Math.min(88, dragRef.current.rx + (e.clientY - dragRef.current.y) * 0.4)),
+              rotY: dragRef.current.ry + (e.clientX - dragRef.current.x) * 0.4
+            });
+          },
+          onPointerUp: function(e) {
+            dragRef.current = null;
+            try { e.currentTarget.releasePointerCapture(e.pointerId); } catch (_) {}
+          },
+          onPointerCancel: function() { dragRef.current = null; },
+          onWheel: function(e) { updView({ scale: Math.max(0.4, Math.min(2.6, view3d.scale + (e.deltaY > 0 ? -0.1 : 0.1))) }); }
+        }),
+        view3d.on && !tectGlLive && h('div', {
+          className: 'pointer-events-none absolute inset-0 flex items-center justify-center text-xs font-bold text-orange-200/80'
+        }, 'Loading 3D block…'),
+        h('p', { id: 'tect-gl-description', className: 'sr-only' },
+          'A rotatable 3D block of the boundary. Drag it, or use the rotate buttons, to see that the deep earthquakes lie on a single dipping plane rather than scattered through the mantle. Use the cutaway slider to slice the block down to the same cross-section the 2D view shows.')
       ),
       h('div', { className: 'flex flex-col gap-2' },
+        // ── View: 2D section vs 3D block ──
+        h('div', { className: 'rounded-lg p-2 border ' + (isDark ? 'bg-slate-900/60 border-slate-800 text-slate-200' : 'bg-white border-orange-300') },
+          h('div', { className: 'text-[10px] font-bold uppercase mb-1 ' + (isDark ? 'text-orange-400' : 'text-orange-700') }, 'View'),
+          h('div', { className: 'flex gap-1', role: 'group', 'aria-label': 'Choose the cross-section or the 3D block view' },
+            [['2d', 'Cross-section'], ['3d', '3D block']].map(function(o) {
+              var active = (o[0] === '3d') === view3d.on;
+              return h('button', {
+                key: o[0],
+                type: 'button',
+                'data-tect-view': o[0],
+                'aria-pressed': active,
+                onClick: function() {
+                  var want = o[0] === '3d';
+                  if (want === view3d.on) return;
+                  updView({ on: want });
+                  if (typeof announceToSR === 'function') {
+                    announceToSR(want ? 'Switched to the 3D block view.' : 'Switched to the 2D cross-section.');
+                  }
+                },
+                className: 'flex-1 px-2 py-1.5 text-[11px] rounded transition-colors focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (active ? 'bg-orange-600 text-white font-bold' : (isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-orange-50 text-orange-800 hover:bg-orange-100'))
+              }, o[1]);
+            })
+          ),
+          view3d.on && h('div', { className: 'mt-2' },
+            h('div', { className: 'flex gap-1 mb-1', role: 'group', 'aria-label': 'Rotate the 3D block' },
+              [['Turn left', { rotY: view3d.rotY - 20 }], ['Turn right', { rotY: view3d.rotY + 20 }],
+               ['Tilt up', { rotX: Math.max(-88, view3d.rotX - 15) }], ['Tilt down', { rotX: Math.min(88, view3d.rotX + 15) }]]
+                .map(function(b, i) {
+                  return h('button', {
+                    key: i, type: 'button', 'aria-label': b[0],
+                    onClick: function() { updView(b[1]); },
+                    className: 'flex-1 min-h-8 px-1 py-1 text-[10px] rounded border focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700' : 'border-orange-300 bg-orange-50 text-orange-800 hover:bg-orange-100')
+                  }, ['◀', '▶', '▲', '▼'][i]);
+                })
+            ),
+            // The cutaway is the bridge between the two views: slide it all
+            // the way in and the block becomes the 2D section on the left.
+            h('label', { htmlFor: 'tect-cut', className: 'text-[10px] font-bold ' + (isDark ? 'text-orange-400' : 'text-orange-700') },
+              view3d.cut == null ? 'Cutaway: off' : 'Cutaway: slicing to the cross-section'),
+            h('input', {
+              id: 'tect-cut', type: 'range', min: 0, max: 100, step: 1,
+              value: view3d.cut == null ? 100 : Math.round((view3d.cut / TECT_HALF_Z) * 100),
+              'aria-label': 'Cut the 3D block away along the boundary to reveal the cross-section',
+              onChange: function(e) {
+                var pct = parseInt(e.target.value, 10);
+                updView({ cut: pct >= 100 ? null : (pct / 100) * TECT_HALF_Z });
+              },
+              className: 'focus:ring-2 focus:ring-yellow-500 focus:outline-none',
+              style: { width: '100%', accentColor: '#ea580c' }
+            }),
+            h('button', {
+              type: 'button',
+              onClick: function() { updView({ rotX: -22, rotY: -38, scale: 1, cut: null }); },
+              className: 'w-full mt-1 px-2 py-1 text-[10px] rounded border focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700' : 'border-orange-300 bg-orange-50 text-orange-800 hover:bg-orange-100')
+            }, 'Reset view')
+          )
+        ),
         // Mode selector
         h('div', { className: 'rounded-lg p-2 border ' + (isDark ? 'bg-slate-900/60 border-slate-800 text-slate-200' : 'bg-white border-orange-300') },
           h('div', { className: 'text-[10px] font-bold uppercase mb-1 ' + (isDark ? 'text-orange-400' : 'text-orange-700') }, 'Boundary type'),
