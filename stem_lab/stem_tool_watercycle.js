@@ -860,6 +860,15 @@
       var t = function (k, fb) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var ArrowLeft=ctx.icons.ArrowLeft;
       var announceToSR=ctx.announceToSR;
+      // ctx.addToast was never bound here, yet the tool calls addToast in 14
+      // places — so every one threw "addToast is not defined". Worst case is the
+      // quiz: on a CORRECT answer the throw came before awardStemXP on the next
+      // line, so the student got no toast, no XP and no streak bonus. Event
+      // handlers do not hit a React error boundary, so this failed silently
+      // rather than visibly. The `if (addToast)` guards elsewhere in the file
+      // could not help — only `typeof` tolerates an undeclared name; a bare
+      // reference in an if() throws just the same.
+      var addToast=ctx.addToast;
       var a11yClick=ctx.a11yClick;
       var awardStemXP=ctx.awardXP; var getStemXP=ctx.getXP;
       var stemCelebrate=ctx.celebrate; var stemBeep=ctx.beep;

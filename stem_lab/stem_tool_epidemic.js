@@ -776,6 +776,14 @@ window.StemLab = window.StemLab || {
     }
   ];
 
+  // Module scope on purpose. The OUTBREAK_EVENTS below are module-level data
+  // whose apply() bodies clamp trust and infection numbers, but the only clamp
+  // that existed lived inside the render closure — invisible from here. Every
+  // random event therefore threw "clamp is not defined" the moment it fired,
+  // taking out the whole event system mid-simulation. (An identical clamp
+  // remains in the render closure; it shadows this one harmlessly.)
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+
   var OUTBREAK_EVENTS = [
     { id: 'variantEmerges', name: 'New variant emerges', icon: '🧬', desc: 'A new variant with higher transmission appears. Transmission rate +25% for the next 4 weeks.', apply: function(state) { state.activeMods.push({ id: 'variantTransmission', weeks: 4, transmissionMult: 1.25 }); } },
     { id: 'vaccineSupply', name: 'Vaccine supply shock', icon: '💉', desc: 'Federal vaccine supply is delayed. Vaccine clinic and targeted vaccination are unavailable for 2 weeks.', apply: function(state) { state.activeMods.push({ id: 'vaccineLockout', weeks: 2 }); } },
@@ -879,6 +887,10 @@ window.StemLab = window.StemLab || {
       var h = React.createElement;
       var d = (ctx.toolData && ctx.toolData.epidemicSim) || {};
       var callGemini = ctx.callGemini;
+      // Never bound, yet the Outbreak Response module calls addToast in five
+      // places. `if (addToast)` does not save it — a bare reference to an
+      // undeclared name throws inside the if() itself; only typeof tolerates one.
+      var addToast = ctx.addToast;
       var callTTS = ctx.callTTS;
       var a11yClick = ctx.a11yClick;
       var canvasNarrate = ctx.canvasNarrate;
