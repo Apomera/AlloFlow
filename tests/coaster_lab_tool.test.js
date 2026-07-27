@@ -1689,6 +1689,24 @@ describe('coaster lab — you can ride any row, and shape hills to win rows', ()
     expect(src).not.toContain('debugScene');   // no debug scaffolding shipped
   });
 
+  it.each(TOOL_PATHS)('%s: a trackside photo is taken at every checkpoint, not just the valley', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    // queued per marker, launch skipped, capped so a long circuit cannot fill memory
+    expect(src).toContain("if(key !== 'L' && tele.photos.length + 1 < 5) sim.wantPhoto = key;");
+    expect(src).toContain('photos: [],');
+    expect(src).toContain("const PHOTO_LABEL = { A: 'the first crest', B: 'the valley', C: 'the loop apex', D: 'the marked turn' };");
+    // the crowd is posed for the instant being photographed, even in a headless run
+    expect(src).toContain('// pose the riders for this exact instant: a synchronous fastRun never runs');
+    expect(src).toContain('updateRiders();\n    const iB = mk.idx;');
+    // framed on the middle of the train, close enough that riders read
+    expect(src).toContain('frameAt(sim.S - (TRAIN_CARS - 1) * CAR_GAP / 2, _p, _t, _u);');
+    // the valley stays the headline shot, so anything reading tele.photo still works
+    expect(src).toContain("if(key === 'B' || !tele.photo) tele.photo = url;");
+    // and the report falls back to that single photo if a run predates the strip
+    expect(src).toContain('const shots = (tele.photos && tele.photos.length) ? tele.photos');
+    expect(src).toContain('alt="Trackside photo of your train at ${s.where}');
+  });
+
   it.each(TOOL_PATHS)('%s: three missions are graded row by row', (p) => {
     const src = readFileSync(resolve(process.cwd(), p), 'utf8');
     for (const id of ['lapbar', 'ejector', 'evenkeel']) expect(src).toContain(`id: '${id}'`);

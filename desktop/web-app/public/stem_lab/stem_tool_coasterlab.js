@@ -2227,7 +2227,7 @@ function freshTele(){
     maxV: 0, maxGV: -Infinity, minGV: Infinity, maxLat: 0,
     airtime: 0, latSec: 0, inversions: 0, wasInverted: false,
     heat: 0, status: null, duration: 0, violations: [], markers: {},
-    trace: [], lastTraceS: -9, rolledBack: false, markSs: null,
+    trace: [], lastTraceS: -9, rolledBack: false, markSs: null, photos: [],
     sus: freshSustain(), seats: freshSeats(TRAIN_CARS)
   };
 }
@@ -2376,7 +2376,9 @@ function stepSim(dtFrame){
         const mk = analysis[key];
         if(mk && sim.prevS < mk.s && sim.S >= mk.s && !tele.markers[key]){
           tele.markers[key] = { v: sim.v, gV, gLat };
-          if(key === 'B' && !tele.photo) sim.wantPhoto = true;
+          // a shot at each checkpoint — the launch marker is skipped because the
+          // train has barely left the station and there is nothing to see yet
+          if(key !== 'L' && tele.photos.length + 1 < 5) sim.wantPhoto = key;
         }
       }
     }
@@ -2771,10 +2773,28 @@ function renderReport(tele){
   html += renderSeatCard(tele);
   const insights = buildRideInsights(tele, sc);
   html += `<div class="card"><p class="eyebrow">Engineer next steps</p><ul class="clab-insights">${insights.map(tip => `<li>${tip}</li>`).join('')}</ul></div>`;
-  if(tele.photo){
-    html += `<div class="card photo"><p class="eyebrow">On-ride photo</p>
-      <img src="${tele.photo}" alt="On-ride photo of your coaster at the valley">
-      <p style="margin:6px 0 0;text-align:right"><a href="${tele.photo}" download="coaster_lab_photo.jpg">⬇ Save photo</a></p></div>`;
+  const shots = (tele.photos && tele.photos.length) ? tele.photos
+    : (tele.photo ? [{ key: 'B', url: tele.photo, where: 'the valley', kmh: null, gV: null }] : []);
+  if(shots.length){
+    /* Trackside shots at each checkpoint. Worth looking at now that there are
+       riders in the train: the same crowd is pressed into the seats at the
+       valley and out of them over a crest, in the same run. */
+    html += '<div class="card photo"><p class="eyebrow">Ride photos · one at each checkpoint</p>' +
+      `<div style="display:grid;grid-template-columns:${shots.length > 1 ? '1fr 1fr' : '1fr'};gap:8px">` +
+      shots.map(s => {
+        const facts = [s.kmh != null ? s.kmh + ' km/h' : '', (s.gV != null && isFinite(s.gV)) ? ((s.gV >= 0 ? '+' : '') + fmt(s.gV, 1) + ' g') : '']
+          .filter(Boolean).join(' · ');
+        return `<figure style="margin:0">
+          <img src="${s.url}" alt="Trackside photo of your train at ${s.where}${facts ? ', ' + facts : ''}">
+          <figcaption class="chnote" style="display:flex;justify-content:space-between;gap:6px">
+            <span>${s.where}${facts ? ' · ' + facts : ''}</span>
+            <a href="${s.url}" download="coaster_lab_${s.key}.jpg">⬇</a>
+          </figcaption></figure>`;
+      }).join('') + '</div>' +
+      (shots.length > 1
+        ? '<p class="chnote" style="margin-top:8px">Same riders, same run. Compare what the forces are doing to them.</p>'
+        : '') +
+      '</div>';
   }
   /* park economics — playful, derived from geometry and ratings */
   html += `<div class="card"><p class="eyebrow">Park economics (est.)</p>
@@ -4407,21 +4427,28 @@ for(const b of tabButtons){
 }
 
 /* ---------------- on-ride photo: snapped as the train hits the valley --- */
-const PHOTO_W = 640, PHOTO_H = 400;
+const PHOTO_W = 520, PHOTO_H = 330;
+const PHOTO_LABEL = { A: 'the first crest', B: 'the valley', C: 'the loop apex', D: 'the marked turn' };
 let photoTarget = null;
 const photoCam = new THREE.PerspectiveCamera(46, PHOTO_W / PHOTO_H, 0.1, 1200);
-function capturePhoto(tele){
+function capturePhoto(tele, key){
   try{
-    if(!analysis || !analysis.B) return;
+    const mk = analysis && analysis[key || 'B'];
+    if(!mk) return;
     if(!photoTarget){
       photoTarget = new THREE.WebGLRenderTarget(PHOTO_W, PHOTO_H);
       photoTarget.texture.encoding = THREE.sRGBEncoding;
     }
-    const iB = analysis.B.idx;
-    frameAt(sim.S, _p, _t, _u);
-    photoCam.position.copy(track.pos[iB]).addScaledVector(track.side[iB], 15);
-    photoCam.position.y = track.pos[iB].y + 5;
-    photoCam.lookAt(_p.x, _p.y + 1, _p.z);
+    // pose the riders for this exact instant: a synchronous fastRun never runs
+    // the render loop, so without this the crowd would be photographed stale
+    updateRiders();
+    const iB = mk.idx;
+    // Frame the MIDDLE of the train, close enough that riders read — a trackside
+    // camera, the way a real park shoots it.
+    frameAt(sim.S - (TRAIN_CARS - 1) * CAR_GAP / 2, _p, _t, _u);
+    photoCam.position.copy(track.pos[iB]).addScaledVector(track.side[iB], 10);
+    photoCam.position.y = track.pos[iB].y + 2.6;
+    photoCam.lookAt(_p.x, _p.y + 1.1, _p.z);
     renderer.setRenderTarget(photoTarget);
     renderer.render(scene, photoCam);
     const px = new Uint8Array(PHOTO_W * PHOTO_H * 4);
@@ -4435,12 +4462,17 @@ function capturePhoto(tele){
       img.data.set(px.subarray((PHOTO_H - 1 - y) * PHOTO_W * 4, (PHOTO_H - y) * PHOTO_W * 4), y * PHOTO_W * 4);
     }
     g.putImageData(img, 0, 0);
+    const where = PHOTO_LABEL[key] || 'the valley';
+    const shot = tele.markers && tele.markers[key];
+    const gTxt = shot && Number.isFinite(shot.gV) ? `${shot.gV >= 0 ? '+' : ''}${shot.gV.toFixed(1)} g` : '';
     g.fillStyle = '#161f29'; g.fillRect(0, PHOTO_H, PHOTO_W, 46);
-    g.fillStyle = '#f2a63c'; g.font = '700 17px Segoe UI, sans-serif';
-    g.fillText('COASTERLAB · ON-RIDE PHOTO', 14, PHOTO_H + 29);
-    g.fillStyle = '#9fb0c1'; g.font = '13px Consolas, monospace'; g.textAlign = 'right';
-    g.fillText(`${(Math.abs(sim.v) * 3.6).toFixed(0)} km/h at the valley`, PHOTO_W - 14, PHOTO_H + 29);
-    tele.photo = cv.toDataURL('image/jpeg', 0.85);
+    g.fillStyle = '#f2a63c'; g.font = '700 15px Segoe UI, sans-serif';
+    g.fillText('COASTERLAB · ' + where.toUpperCase(), 12, PHOTO_H + 28);
+    g.fillStyle = '#9fb0c1'; g.font = '12px Consolas, monospace'; g.textAlign = 'right';
+    g.fillText(`${(Math.abs(sim.v) * 3.6).toFixed(0)} km/h${gTxt ? ' · ' + gTxt : ''}`, PHOTO_W - 12, PHOTO_H + 28);
+    const url = cv.toDataURL('image/jpeg', 0.82);
+    tele.photos.push({ key, url, where, kmh: Math.round(Math.abs(sim.v) * 3.6), gV: shot ? shot.gV : null });
+    if(key === 'B' || !tele.photo) tele.photo = url;   // the valley stays the headline shot
   }catch(_e){ /* photo is a bonus — never let it break a run */ }
 }
 
@@ -5691,7 +5723,7 @@ function animate(){
     handleGroup.children[selIdx].scale.setScalar(pulse);
   }
 
-  if(sim.wantPhoto){ sim.wantPhoto = false; capturePhoto(sim.tele); }
+  if(sim.wantPhoto){ const k = sim.wantPhoto; sim.wantPhoto = null; capturePhoto(sim.tele, k); }
   updatePhysicsVectors();
   if(xrOn && renderer.xr.isPresenting) placeXrRig();
   else placeCamera();
@@ -5750,7 +5782,7 @@ rootEl._lab = {
     let guard = 0;
     while(sim.running && guard++ < 40000){
       stepSim(0.05);
-      if(sim.wantPhoto){ sim.wantPhoto = false; placeTrain(); capturePhoto(sim.tele); }
+      if(sim.wantPhoto){ const k = sim.wantPhoto; sim.wantPhoto = null; placeTrain(); capturePhoto(sim.tele, k); }
     }
     if(sim.running) stopRun();
     return sim.tele && sim.tele.status;
