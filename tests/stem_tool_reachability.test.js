@@ -66,6 +66,10 @@ function tiledIds(src) {
 }
 
 const MODULE_COPIES = ['stem_lab/stem_lab_module.js', 'desktop/web-app/public/stem_lab/stem_lab_module.js'];
+// The loader list exists twice as well — the canonical ANTI and the desktop app's
+// copy. Checking only the canonical one would let the desktop build silently stop
+// registering a tool while this gate stayed green.
+const ANTI_COPIES = ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt'];
 
 describe('STEM tool reachability — all three wiring points agree', () => {
   const exempt = exemptIds();
@@ -93,9 +97,16 @@ describe('STEM tool reachability — all three wiring points agree', () => {
   });
 
   it('every tool file is in the ANTI loader list, so registration actually happens', () => {
-    const seg = block(read('AlloFlowANTI.txt'), /var stemToolModules = \[([\s\S]*?)\];/, 'stemToolModules');
     const files = [...new Set(ids.map((id) => registered.get(id)))].sort();
-    expect(files.filter((f) => seg.indexOf(f) === -1), 'tool files that never load').toEqual([]);
+    for (const rel of ANTI_COPIES) {
+      const seg = block(read(rel), /var stemToolModules = \[([\s\S]*?)\];/, 'stemToolModules in ' + rel);
+      expect(files.filter((f) => seg.indexOf(f) === -1), rel + ' — tool files that never load').toEqual([]);
+    }
+  });
+
+  it('the two ANTI copies carry the same loader list', () => {
+    const [a, b] = ANTI_COPIES.map((rel) => block(read(rel), /var stemToolModules = \[([\s\S]*?)\];/, rel));
+    expect(a).toBe(b);
   });
 
   it('the two module copies stay in step on both registries', () => {
