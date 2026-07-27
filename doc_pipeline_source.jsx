@@ -5216,7 +5216,16 @@ var createDocPipeline = function(deps) {
           var _perm = !!(err.isAuth || err.isQuota || err.isConfig ||
             (err.message && /API_(AUTH_FAILED|QUOTA_EXHAUSTED|MODEL_NOT_FOUND)/.test(err.message)));
           var _canvasAuth = !!(err.canvasTransientAuth && !err.isQuota && !err.isConfig);
-          if (_perm && _isBurstQuotaErr(err)) { _perm = false; _canvasAuth = true; }
+          // A Canvas 401/403 is almost always a BRIEF THROTTLE, not a dead key — the classifier
+          // flags it canvasTransientAuth while the message still reads API_AUTH_FAILED. Dropping
+          // this de-escalation (as the first version of this extraction did) makes every throttle
+          // look permanent, so the breaker is never fed: the cap stays at 3, no cooldown is set,
+          // `storming` stays false, wait-not-stop returns instantly, and the run hammers a
+          // throttled proxy indefinitely. Field log 2026-07-27 showed 60+ calls over 5,000s with
+          // not one [GeminiGate] line. Order matches the retry path below exactly.
+          if (_perm && _canvasAuth) _perm = false;
+          var _burst = _perm && _isBurstQuotaErr(err);
+          if (_burst) { _perm = false; _canvasAuth = true; }
           if (_perm) return; // real auth/quota/config: permanent, and never fed the breaker
           _rememberGeminiFailure(requestProfile);
           if (_canvasAuth) _geminiNoteAuthFail(_callStats, owner);
