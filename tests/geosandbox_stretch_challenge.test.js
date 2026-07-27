@@ -647,3 +647,153 @@ describe('saved construction safety', () => {
     expect(P.geoNormalizeConstruction({ objects: 'not-an-array', selection: 2 })).toEqual({ objects: [], selection: null });
   });
 });
+
+// The axis picker does not govern every build move, and where it does it can be
+// overridden. Both were silent, so the control read as broken. geoEffectiveAxis is
+// what the UI now says out loud — which only helps if it agrees with the builders.
+describe('geoEffectiveAxis (what the axis picker will really do)', () => {
+  const AXES = ['x', 'y', 'z'];
+  const seg = (vector) => ({ type: 'segment', position: [0, 0, 0], vector });
+  const rect = () => P.stretchSegment(seg([3, 0, 0]), 'y', 2);
+
+  it('reports that a rectangle ignores the picker for stretch and taper', () => {
+    ['stretch', 'taper'].forEach((verb) => {
+      const eff = P.geoEffectiveAxis(rect(), 'x', verb);
+      expect(eff.applies).toBe(false);
+      expect(eff.reason).toBe('normal');
+    });
+  });
+
+  it('keeps the picker live for revolve, where it IS the spin axis', () => {
+    const eff = P.geoEffectiveAxis(rect(), 'z', 'revolve');
+    expect(eff).toMatchObject({ applies: true, axis: 'z', reason: 'ok' });
+  });
+
+  it('honours the picked axis for a point, which can stretch any way', () => {
+    AXES.forEach((a) => {
+      expect(P.geoEffectiveAxis({ type: 'point', position: [0, 0, 0] }, a, 'stretch'))
+        .toMatchObject({ applies: true, axis: a, reason: 'ok' });
+    });
+  });
+
+  it('flags the substituted axis when the pick runs along the segment', () => {
+    expect(P.geoEffectiveAxis(seg([3, 0, 0]), 'x', 'stretch')).toMatchObject({ applies: true, reason: 'parallel' });
+    expect(P.geoEffectiveAxis(seg([3, 0, 0]), 'x', 'stretch').axis).not.toBe('x');
+    // A pick that is genuinely perpendicular is left alone.
+    expect(P.geoEffectiveAxis(seg([3, 0, 0]), 'y', 'stretch')).toMatchObject({ axis: 'y', reason: 'ok' });
+  });
+
+  it('never lies: the announced axis is the axis stretchSegment actually uses', () => {
+    // [3,0.5,0] is the discriminating case: ~0.986 against x, so it is "parallel"
+    // at the real 0.95 threshold but not at a stricter one. If the hint's threshold
+    // ever drifts from stretchSegment's, this direction catches it.
+    const dirs = [[3, 0, 0], [0, 2, 0], [0, 0, 4], [3, 0.1, 0], [3, 0.5, 0], [1, 1, 0]];
+    const vecOf = { x: [1, 0, 0], y: [0, 1, 0], z: [0, 0, 1] };
+    dirs.forEach((vector) => {
+      AXES.forEach((picked) => {
+        const s = seg(vector);
+        const eff = P.geoEffectiveAxis(s, picked, 'stretch');
+        const built = P.stretchSegment(s, picked, 2);
+        const want = vecOf[eff.axis];
+        // v is the announced axis scaled by the length — parallel, same sign.
+        expect(built.v[0]).toBeCloseTo(want[0] * 2, 6);
+        expect(built.v[1]).toBeCloseTo(want[1] * 2, 6);
+        expect(built.v[2]).toBeCloseTo(want[2] * 2, 6);
+      });
+    });
+  });
+
+  it('says nothing is selected rather than guessing', () => {
+    expect(P.geoEffectiveAxis(null, 'x', 'stretch')).toMatchObject({ applies: false, reason: 'no_selection' });
+  });
+});
+
+// The placement ghost added to the 3-D view is purely visual. geoDescribePlacement
+// is the only channel that tells a screen-reader user the drop target moved — which
+// went from "nice to have" to load-bearing the moment the target could leave the
+// floor, because height is exactly what cannot be inferred from anything else.
+describe('geoDescribePlacement (the ghost, in words)', () => {
+  it('stays quiet when there is nothing worth saying', () => {
+    // Disarmed and on the floor: the origin is the default, so narrating it would
+    // just be noise on every single canvas focus.
+    expect(P.geoDescribePlacement({ armed: false, x: 0, y: 0, z: 0 })).toBe('');
+    expect(P.geoDescribePlacement(null)).toBe('');
+    expect(P.geoDescribePlacement(undefined)).toBe('');
+  });
+
+  it('reports the height whenever the target has left the floor', () => {
+    const said = P.geoDescribePlacement({ armed: false, x: 1, y: 3, z: -2 });
+    expect(said).toContain('height 3');
+    expect(said).toContain('x 1');
+    expect(said).toContain('z -2');
+  });
+
+  it('distinguishes tapping from the Place button while armed', () => {
+    const armed = P.geoDescribePlacement({ armed: true, x: 1, y: 2, z: 0 });
+    expect(armed).toContain('Click-to-place is on');
+    expect(armed).toContain('height 2');
+
+    const numeric = P.geoDescribePlacement({ armed: false, x: 1, y: 2, z: 0 });
+    expect(numeric).toContain('Place button');
+    expect(numeric).not.toContain('Click-to-place is on');
+  });
+
+  it('says floor level rather than a bare zero when armed on the ground', () => {
+    const said = P.geoDescribePlacement({ armed: true, x: 0, y: 0, z: 0 });
+    expect(said).toContain('floor level');
+    expect(said).not.toContain('height 0');
+  });
+
+  it('rounds instead of reading out floating-point noise', () => {
+    expect(P.geoDescribePlacement({ armed: false, x: 0.1 + 0.2, y: 1, z: 0 })).toContain('x 0.3');
+  });
+});
+
+describe('geoDescribeScene carries the placement into the canvas description', () => {
+  const scene = { objects: [{ id: 1, type: 'point', position: [0, 0, 0] }], selection: 1 };
+
+  it('appends it to a populated scene', () => {
+    const said = P.geoDescribeScene('stretch', null, null, scene, 'u', { armed: false, x: 0, y: 4, z: 0 });
+    expect(said).toContain('Selected Point');
+    expect(said).toContain('height 4');
+  });
+
+  it('appends it to an empty scene too, where it matters most', () => {
+    const said = P.geoDescribeScene('stretch', null, null, { objects: [], selection: null }, 'u', { armed: true, x: 0, y: 0, z: 0 });
+    expect(said).toContain('Add a point to begin');
+    expect(said).toContain('Click-to-place is on');
+  });
+
+  it('is unchanged when no placement is passed — old callers keep working', () => {
+    const withArg = P.geoDescribeScene('stretch', null, null, scene, 'u', null);
+    const without = P.geoDescribeScene('stretch', null, null, scene, 'u');
+    expect(withArg).toBe(without);
+    expect(without).not.toContain('Place button');
+  });
+});
+
+describe('geoVerbApplies (keyboard and VR obey the same rule as the button)', () => {
+  const point = { type: 'point', position: [0, 0, 0] };
+  const segment = { type: 'segment', position: [0, 0, 0], vector: [3, 0, 0] };
+  const rectangle = { type: 'rect', position: [0, 0, 0], u: [3, 0, 0], v: [0, 2, 0] };
+  const solid = { type: 'prism', position: [0, 0, 0], u: [3, 0, 0], v: [0, 2, 0], w: [0, 0, 4] };
+
+  it('allows stretch on anything below 3D and nothing above it', () => {
+    [point, segment, rectangle].forEach((o) => expect(P.geoVerbApplies(o, 'stretch')).toBe(true));
+    expect(P.geoVerbApplies(solid, 'stretch')).toBe(false);
+    expect(P.geoVerbApplies({ type: 'pyramid' }, 'stretch')).toBe(false);
+    expect(P.geoVerbApplies({ type: 'revolution' }, 'stretch')).toBe(false);
+  });
+
+  it('restricts taper and revolve to a rectangle', () => {
+    ['taper', 'revolve'].forEach((verb) => {
+      expect(P.geoVerbApplies(rectangle, verb)).toBe(true);
+      [point, segment, solid].forEach((o) => expect(P.geoVerbApplies(o, verb)).toBe(false));
+    });
+  });
+
+  it('refuses an empty selection', () => {
+    expect(P.geoVerbApplies(null, 'stretch')).toBe(false);
+    expect(P.geoVerbApplies(undefined, 'taper')).toBe(false);
+  });
+});

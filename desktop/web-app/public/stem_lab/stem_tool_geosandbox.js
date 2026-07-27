@@ -1171,6 +1171,46 @@ window.StemLab = window.StemLab || {
     if (slant) w = vec3Add(w, vec3Scale(vec3Norm(u), slant * length));
     return { type: 'prism', position: rect.position.slice(), u: u.slice(), v: v.slice(), w: w };
   }
+  // ── What the axis picker will ACTUALLY do (PURE) ────────────────────────────
+  // The picker does not apply to every move, and where it does apply it can be
+  // overridden. Both were silent, which reads as "this control is broken":
+  //   • rect + stretch/taper — stretchRect/taperRect ignore `axis` entirely and
+  //     extrude along the rectangle's own normal. That is not a bug to fix, it is
+  //     the lesson (only the perpendicular direction adds a third dimension), so
+  //     the UI should SAY it rather than offer three buttons that do nothing.
+  //   • segment + stretch — stretchSegment falls back to a perpendicular axis when
+  //     the chosen one lies along the segment, because stretching a segment along
+  //     itself would just make it longer, not 2D.
+  // The 0.95 threshold MUST track stretchSegment's, or the hint lies.
+  function geoEffectiveAxis(sel, axis, verb) {
+    var v = verb || 'stretch';
+    if (!sel) return { applies: false, axis: axis, reason: 'no_selection' };
+    if (sel.type === 'rect' && (v === 'stretch' || v === 'taper')) {
+      return { applies: false, axis: null, reason: 'normal' };
+    }
+    if (sel.type === 'segment' && v === 'stretch') {
+      var segLen = vec3Mag(sel.vector || [0, 0, 0]);
+      var normSeg = segLen > 1e-9 ? vec3Scale(sel.vector, 1 / segLen) : [1, 0, 0];
+      var ax = STRETCH_AXES.find(function(a) { return a.id === axis; }) || STRETCH_AXES[1];
+      if (Math.abs(normSeg[0] * ax.vec[0] + normSeg[1] * ax.vec[1] + normSeg[2] * ax.vec[2]) > 0.95) {
+        var perp = vec3Perp(sel.vector);
+        var fallback = STRETCH_AXES.find(function(a) {
+          return a.vec[0] === perp[0] && a.vec[1] === perp[1] && a.vec[2] === perp[2];
+        });
+        return { applies: true, axis: fallback ? fallback.id : axis, reason: 'parallel' };
+      }
+    }
+    return { applies: true, axis: axis, reason: 'ok' };
+  }
+  // Whether a build verb can act on this selection at all. The Stretch button
+  // already greyed out for taper/revolve on a non-rectangle; the keyboard and VR
+  // paths call performStretch() directly and used to silently do a plain stretch
+  // instead, so the same rule has to live somewhere both can read.
+  function geoVerbApplies(sel, verb) {
+    if (!sel) return false;
+    if (verb === 'taper' || verb === 'revolve') return sel.type === 'rect';
+    return sel.type === 'point' || sel.type === 'segment' || sel.type === 'rect';
+  }
   // ── Taper (PURE) — extrude a rectangle up by `length` but SHRINK the top face
   //    toward the base centre by topScale s (1 = prism, 0 = apex/pyramid, between =
   //    frustum). This is where the ⅓ comes from: as the top collapses, the cross-
@@ -1635,17 +1675,35 @@ window.StemLab = window.StemLab || {
     return name + id + '\n' + m.label + ': ' + value + ' ' + suffix + '\n' + m.dim + 'D';
   }
 
-  function geoDescribeScene(mode, shape, dims, construction, unitShort) {
+  // Where the next point will land, in words. The placement ghost in the 3-D view
+  // is purely visual, so without this a screen-reader user has no way to know the
+  // drop target moved — which matters far more now that it can leave the floor.
+  function geoDescribePlacement(placement) {
+    if (!placement) return '';
+    var armed = !!placement.armed;
+    var y = +placement.y || 0;
+    if (!armed && y <= 0) return '';
+    var n = function(v) { return Math.round((+v || 0) * 100) / 100; };
+    var at = 'x ' + n(placement.x) + ', z ' + n(placement.z) +
+      (y > 0 ? ', height ' + n(y) + ' above the grid' : ', on the floor');
+    return armed
+      ? ' Click-to-place is on: tapping the view drops a point at ' + (y > 0 ? 'height ' + n(y) + ' above the grid' : 'floor level') +
+        '. The Place button uses ' + at + '.'
+      : ' The Place button will drop a point at ' + at + '.';
+  }
+
+  function geoDescribeScene(mode, shape, dims, construction, unitShort, placement) {
     var units = unitShort || 'u';
     if (mode === 'stretch') {
       var objs = (construction && construction.objects) || [];
-      if (!objs.length) return 'Empty dimensional-stretch scene. Add a point to begin.';
+      var place = geoDescribePlacement(placement);
+      if (!objs.length) return 'Empty dimensional-stretch scene. Add a point to begin.' + place;
       var counts = {};
       objs.forEach(function(o) { counts[o.type] = (counts[o.type] || 0) + 1; });
       var parts = Object.keys(counts).sort().map(function(type) { return counts[type] + ' ' + type + (counts[type] === 1 ? '' : 's'); });
       var selected = objs.find(function(o) { return o.id === construction.selection; });
       return 'Dimensional-stretch scene with ' + objs.length + ' objects: ' + parts.join(', ') + '. ' +
-        (selected ? 'Selected ' + geoObjectLabelText(selected, units).replace(/\n/g, ', ') + '.' : 'No object selected.');
+        (selected ? 'Selected ' + geoObjectLabelText(selected, units).replace(/\n/g, ', ') + '.' : 'No object selected.') + place;
     }
     if (mode === 'sculpt') return 'AI sculpture scene. Use the sculpture controls to create or edit primitive parts.';
     var names = { box: 'box', sphere: 'sphere', cylinder: 'cylinder', cone: 'cone', pyramid: 'square pyramid', torus: 'torus', prism: 'triangular prism' };
@@ -1817,23 +1875,43 @@ window.StemLab = window.StemLab || {
   function buildConstructionGroup(THREE, objects, selectedId, showLabels, unitShort) {
     var group = new THREE.Group();
     if (!objects) return group;
+    // Selection must not rest on hue alone. A translucent amber solid beside a
+    // translucent violet one is a weak signal at 0.7 opacity, and no signal at all
+    // for a student with a colour-vision deficiency — which also makes it a WCAG
+    // 1.4.1 "colour as the only visual means" problem. The selected object gets a
+    // bright outline that reads THROUGH whatever is in front of it; everything else
+    // keeps the dark, depth-tested edge that just adds definition.
+    var edgeLines = function(geo, isSelected) {
+      var lines = new THREE.LineSegments(
+        new THREE.EdgesGeometry(geo),
+        isSelected
+          ? new THREE.LineBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.95, depthTest: false })
+          : new THREE.LineBasicMaterial({ color: 0x0f172a })
+      );
+      if (isSelected) lines.renderOrder = 3000;
+      return lines;
+    };
     objects.forEach(function(o) {
       var isSel = (o.id === selectedId);
       var color = isSel ? 0xfbbf24 : (o.type === 'point' ? 0xef4444 : o.type === 'segment' ? 0x22c55e : o.type === 'rect' ? 0x3b82f6 : o.type === 'pyramid' ? 0xf472b6 : o.type === 'revolution' ? 0x2dd4bf : 0xa78bfa);
       var mesh;
       if (o.type === 'point') {
-        var pg = new THREE.SphereGeometry(0.12, 16, 16);
+        // Size is the non-colour half of the cue, and unlike an outline ring it
+        // reads from every camera angle. Same reason the endpoints below grow.
+        var pg = new THREE.SphereGeometry(isSel ? 0.18 : 0.12, 16, 16);
         mesh = new THREE.Mesh(pg, new THREE.MeshStandardMaterial({ color: color, emissive: isSel ? 0x444400 : 0x000000 }));
         mesh.position.set(o.position[0], o.position[1], o.position[2]);
       } else if (o.type === 'segment') {
         var p0 = new THREE.Vector3(o.position[0], o.position[1], o.position[2]);
         var p1 = new THREE.Vector3(o.position[0] + o.vector[0], o.position[1] + o.vector[1], o.position[2] + o.vector[2]);
         var lineGeo = new THREE.BufferGeometry().setFromPoints([p0, p1]);
-        mesh = new THREE.Line(lineGeo, new THREE.LineBasicMaterial({ color: color, linewidth: 4 }));
+        mesh = new THREE.Line(lineGeo, new THREE.LineBasicMaterial({ color: color, linewidth: 4, transparent: true, depthTest: !isSel }));
+        if (isSel) mesh.renderOrder = 3000;          // reads through, like the solids' outline
         // Add endpoints
-        var s1 = new THREE.Mesh(new THREE.SphereGeometry(0.08, 12, 12), new THREE.MeshBasicMaterial({ color: color }));
+        var capR = isSel ? 0.12 : 0.08;
+        var s1 = new THREE.Mesh(new THREE.SphereGeometry(capR, 12, 12), new THREE.MeshBasicMaterial({ color: color }));
         s1.position.copy(p0);
-        var s2 = new THREE.Mesh(new THREE.SphereGeometry(0.08, 12, 12), new THREE.MeshBasicMaterial({ color: color }));
+        var s2 = new THREE.Mesh(new THREE.SphereGeometry(capR, 12, 12), new THREE.MeshBasicMaterial({ color: color }));
         s2.position.copy(p1);
         var sgGroup = new THREE.Group();
         sgGroup.add(mesh); sgGroup.add(s1); sgGroup.add(s2);
@@ -1855,12 +1933,22 @@ window.StemLab = window.StemLab || {
         ]);
         rectGeo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
         rectGeo.computeVertexNormals();
-        mesh = new THREE.Mesh(rectGeo, new THREE.MeshStandardMaterial({ color: color, side: THREE.DoubleSide, transparent: true, opacity: 0.75 }));
+        // polygonOffset is load-bearing after a stretch. stretchRect reuses the
+        // rectangle's own position/u/v, so the prism it produces has this exact
+        // plane as its base face — and the tool RETAINS the rectangle. Two coplanar
+        // translucent faces both writing depth have no defined winner, so which one
+        // owns each pixel flips as the camera moves: the shimmer students report
+        // while rotating. Pushing the rectangle a hair away from the viewer makes
+        // the solid win its own face, every frame, deterministically. The rectangle
+        // is still in the object list, and selecting it draws its outline with
+        // depthTest off — so it stays findable without fighting for pixels.
+        mesh = new THREE.Mesh(rectGeo, new THREE.MeshStandardMaterial({
+          color: color, side: THREE.DoubleSide, transparent: true, opacity: 0.75,
+          polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1
+        }));
         // Border
-        var edgesGeo = new THREE.EdgesGeometry(rectGeo);
-        var edges = new THREE.LineSegments(edgesGeo, new THREE.LineBasicMaterial({ color: 0x0f172a }));
         var rectGroup = new THREE.Group();
-        rectGroup.add(mesh); rectGroup.add(edges);
+        rectGroup.add(mesh); rectGroup.add(edgeLines(rectGeo, isSel));
         mesh = rectGroup;
       } else if (o.type === 'prism') {
         // Build a parallelepiped via 8 corners
@@ -1897,10 +1985,8 @@ window.StemLab = window.StemLab || {
         // side: DoubleSide to match every other solid here — a student looking up at
         // the base from under the grid should see a face, not straight through it.
         mesh = new THREE.Mesh(prismGeo, new THREE.MeshStandardMaterial({ color: color, transparent: true, opacity: 0.7, side: THREE.DoubleSide }));
-        var prismEdges = new THREE.EdgesGeometry(prismGeo);
-        var prismEdgeLines = new THREE.LineSegments(prismEdges, new THREE.LineBasicMaterial({ color: 0x0f172a }));
         var prismGroup = new THREE.Group();
-        prismGroup.add(mesh); prismGroup.add(prismEdgeLines);
+        prismGroup.add(mesh); prismGroup.add(edgeLines(prismGeo, isSel));
         mesh = prismGroup;
       } else if (o.type === 'pyramid') {
         // Tapered solid (pyramid / frustum): base + scaled top via taperCorners.
@@ -1917,10 +2003,8 @@ window.StemLab = window.StemLab || {
         pyGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertsPy), 3));
         pyGeo.computeVertexNormals();
         mesh = new THREE.Mesh(pyGeo, new THREE.MeshStandardMaterial({ color: color, transparent: true, opacity: 0.72, side: THREE.DoubleSide }));
-        var pyEdges = new THREE.EdgesGeometry(pyGeo);
-        var pyEdgeLines = new THREE.LineSegments(pyEdges, new THREE.LineBasicMaterial({ color: 0x0f172a }));
         var pyGroup = new THREE.Group();
-        pyGroup.add(mesh); pyGroup.add(pyEdgeLines);
+        pyGroup.add(mesh); pyGroup.add(edgeLines(pyGeo, isSel));
         mesh = pyGroup;
       } else if (o.type === 'revolution') {
         // Solid of revolution: sweep the rect profile around the axis (lathe mesh).
@@ -1985,6 +2069,40 @@ window.StemLab = window.StemLab || {
     return group;
   }
 
+  // ── Placement ghost — where the next point will land ────────────────────────
+  // Adding a height axis made placement ambiguous in a way it never was on the
+  // floor: "Y = 3" is a number in a box with nothing in the 3-D view to match it
+  // against, and a raised plane is invisible by definition. The ring marks the
+  // target, and the drop line to the grid is what makes the height READABLE —
+  // the floor is the only reference the student can measure against by eye.
+  // An affordance, so it draws over everything like the labels do.
+  function buildPlacementGhost(THREE, x, y, z) {
+    var group = new THREE.Group();
+    if (!THREE) return group;
+    var V = function(a, b, c) { return new THREE.Vector3(a, b, c); };
+    var glow = function(opacity) {
+      return new THREE.LineBasicMaterial({ color: 0x34d399, transparent: true, opacity: opacity, depthTest: false });
+    };
+    var ring = function(cy, r, opacity) {
+      var pts = [];
+      for (var i = 0; i <= 32; i++) {
+        var a = (i / 32) * Math.PI * 2;
+        pts.push(V(x + Math.cos(a) * r, cy, z + Math.sin(a) * r));
+      }
+      var line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), glow(opacity));
+      line.renderOrder = 5000;
+      return line;
+    };
+    group.add(ring(y, 0.34, 0.95));
+    if (y > 0.02) {
+      var drop = new THREE.Line(new THREE.BufferGeometry().setFromPoints([V(x, y, z), V(x, 0, z)]), glow(0.5));
+      drop.renderOrder = 5000;
+      group.add(drop);
+      group.add(ring(0.002, 0.15, 0.6));          // footprint on the grid, just clear of the shadow plane
+    }
+    return group;
+  }
+
   // Real-world unit conversion (shared with Volume Explorer)
   var GEO_UNITS = [
     { id: 'unit', short: 'u',   long: 'unit',        toL: 1 },
@@ -2003,10 +2121,12 @@ window.StemLab = window.StemLab || {
       geoPrismSurfaceArea: geoPrismSurfaceArea,
       stretchPoint: stretchPoint, stretchSegment: stretchSegment, stretchRect: stretchRect,
       taperRect: taperRect, taperCorners: taperCorners, geoPyramidSurfaceArea: geoPyramidSurfaceArea,
+      geoEffectiveAxis: geoEffectiveAxis, geoVerbApplies: geoVerbApplies,
       revolveRect: revolveRect, revolutionVolume: revolutionVolume,
       resizeObject: resizeObject,
       geoStretchMeasure: geoStretchMeasure,
       geoDescribeScene: geoDescribeScene,
+      geoDescribePlacement: geoDescribePlacement,
       geoBuildTutorPrompt: geoBuildTutorPrompt,
       geoUniqueSaveName: geoUniqueSaveName,
       geoNormalizeConstruction: geoNormalizeConstruction,
@@ -2031,6 +2151,19 @@ window.StemLab = window.StemLab || {
       geoShapeNet: geoShapeNet, geoRealWorldScale: geoRealWorldScale,
       geoPrimitiveMeasure: geoPrimitiveMeasure, geoSculptMeasure: geoSculptMeasure,
       geoPrismNet: geoPrismNet
+    };
+  } catch (e) {}
+
+  // Scene builders take THREE as a parameter, so a test can drive them with a stub
+  // and assert on the geometry that comes out. Face winding and the per-object sort
+  // transform decide whether a solid is VISIBLE at all, and neither is observable
+  // from the pure math above — a prism with an inside-out base measures perfectly.
+  try {
+    window.StemLab.geoRender = {
+      buildConstructionGroup: buildConstructionGroup,
+      buildSliceGroup: buildSliceGroup,
+      buildPlacementGhost: buildPlacementGhost,
+      recentreForSort: recentreForSort
     };
   } catch (e) {}
 
@@ -2241,7 +2374,17 @@ window.StemLab = window.StemLab || {
           return Object.assign({}, p, { geoSandbox: Object.assign({}, g, { construction: { objects: newObjs, selection: newId } }) });
         });
         geoSound('shapeChange');
-        if (announceToSR) announceToSR('Point added. Select an axis and stretch to create a segment.');
+        // Say WHERE it landed. The placement ghost is visual only, so this is the
+        // sole channel telling a screen-reader user the drop target left the floor.
+        if (announceToSR) {
+          var r2 = function(v) { return Math.round((+v || 0) * 100) / 100; };
+          var p = pos || [0, 0, 0];
+          var at = (p[0] || p[1] || p[2])
+            ? ' x ' + r2(p[0]) + ', z ' + r2(p[2]) + (p[1] > 0 ? ', ' + t('stem.geosandbox.sr_height', 'height') + ' ' + r2(p[1]) : '')
+            : ' ' + t('stem.geosandbox.sr_at_origin', 'at the origin');
+          announceToSR(t('stem.geosandbox.sr_point_added', 'Point added') + at + '. ' +
+            t('stem.geosandbox.sr_point_next', 'Select an axis and stretch to create a segment.'));
+        }
       }
       // Build the stretched object WITHOUT committing (so predict-mode can measure
       // the result before revealing it). Returns null if the source can't stretch.
@@ -2271,7 +2414,25 @@ window.StemLab = window.StemLab || {
       function performStretch(axisOverride) {
         var ax = (axisOverride === 'x' || axisOverride === 'y' || axisOverride === 'z') ? axisOverride : stretchAxis;
         var sel = construction.objects.find(function(o) { return o.id === construction.selection; });
-        if (!sel) { addToast('Select an object first', 'error'); return; }
+        // A toast is a visual channel. These are the paths a keyboard or VR user
+        // reaches — exactly the people a toast alone leaves with nothing — so every
+        // refusal is spoken as well as shown.
+        var refuse = function(message, level) {
+          if (addToast) addToast(message, level || 'info');
+          if (announceToSR) announceToSR(message);
+        };
+        if (!sel) { refuse(t('stem.geosandbox.sr_select_first', 'Select an object first'), 'error'); return; }
+        // The Stretch button greys out for a verb that cannot act on this
+        // selection, but the keyboard and VR paths call straight in here and used
+        // to silently perform a plain stretch instead of the taper/revolve the
+        // student had chosen. Same rule, same answer, whichever way you drive it.
+        if (!geoVerbApplies(sel, buildVerb)) {
+          refuse((buildVerb === 'taper' || buildVerb === 'revolve')
+            ? ((buildVerb === 'taper' ? t('stem.geosandbox.verb_taper_word', 'Taper') : t('stem.geosandbox.verb_revolve_word', 'Revolve')) +
+               ' ' + t('stem.geosandbox.sr_needs_rectangle', 'needs a rectangle — stretch up to one first'))
+            : t('stem.geosandbox.sr_already_solid', 'That is already a solid — there is no fourth dimension to stretch into'));
+          return;
+        }
         var newObj = buildStretchObj(sel, ax, stretchLength, stretchSlant, buildVerb, topScale, revolveAngle);
         if (!newObj) { addToast('Cannot stretch this further in this dimension', 'info'); return; }
         // Predict-then-reveal: pause and ask for a guess before committing.
@@ -2467,7 +2628,8 @@ window.StemLab = window.StemLab || {
 
       // ── Measurements ──
       var m = calcMeasurements(shape, dims);
-      var canvasDescription = geoDescribeScene(mode, shape, dims, construction, unitDef.short);
+      var canvasDescription = geoDescribeScene(mode, shape, dims, construction, unitDef.short,
+        { armed: mode === 'stretch' && placeArmed, x: placeX, y: placeY, z: placeZ });
       var showMath = !!gd.showMath;                       // "show the math" substituted steps
       var steps = geoFormulaSteps(shape, dims);
       // Cross-section explorer (single mode)
@@ -3000,6 +3162,8 @@ window.StemLab = window.StemLab || {
         var _clearConstruction = function() { if (window._geoScene.constructionGroup) { window._geoScene.scene.remove(window._geoScene.constructionGroup); disposeGeoObject3D(window._geoScene.constructionGroup); window._geoScene.constructionGroup = null; } };
         var _clearSlice = function() { if (window._geoScene.sliceGroup) { window._geoScene.scene.remove(window._geoScene.sliceGroup); try { window._geoScene.sliceGroup.traverse(function(o){ if(o.geometry&&o.geometry.dispose)o.geometry.dispose(); if(o.material&&o.material.dispose)o.material.dispose(); }); } catch(e){} window._geoScene.sliceGroup = null; } };
         var _clearMesh = function() { if (window._geoScene.mesh) { window._geoScene.scene.remove(window._geoScene.mesh); window._geoScene.mesh.traverse(function(o) { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); window._geoScene.mesh = null; } };
+        var _clearGhost = function() { if (window._geoScene.ghostGroup) { window._geoScene.scene.remove(window._geoScene.ghostGroup); disposeGeoObject3D(window._geoScene.ghostGroup); window._geoScene.ghostGroup = null; } };
+        _clearGhost();
         if (mode === 'single') {
           _clearConstruction(); _clearSculpt(); _clearSlice();
           updateMesh(window._geoScene, shape, dims, shapeColor, wireframe, opacity);
@@ -3034,6 +3198,13 @@ window.StemLab = window.StemLab || {
               window._geoScene.scene.add(window._geoScene.sliceGroup);
             }
           }
+          // Show the target only when it is genuinely in question: while click-place
+          // is armed, or whenever the drop height is off the floor. At the origin
+          // with placement disarmed it would be pure clutter.
+          if (placeArmed || placeY > 0) {
+            window._geoScene.ghostGroup = buildPlacementGhost(window.THREE, placeX, placeY, placeZ);
+            window._geoScene.scene.add(window._geoScene.ghostGroup);
+          }
         }
         // Resize handler
         var handleResize = function() {
@@ -3045,7 +3216,7 @@ window.StemLab = window.StemLab || {
         };
         window.addEventListener('resize', handleResize);
         return function() { window.removeEventListener('resize', handleResize); };
-      }, [shape, dims, shapeColor, wireframe, opacity, theme, mode, JSON.stringify(construction), JSON.stringify(sculptRecipe), prim3dReady, gd.sliceOn, gd.sliceT, showSceneLabels, unitId, selPart]);
+      }, [shape, dims, shapeColor, wireframe, opacity, theme, mode, JSON.stringify(construction), JSON.stringify(sculptRecipe), prim3dReady, gd.sliceOn, gd.sliceT, showSceneLabels, unitId, selPart, placeArmed, placeX, placeY, placeZ]);
 
       // Cleanup on unmount
       React.useEffect(function() {
@@ -3648,24 +3819,64 @@ window.StemLab = window.StemLab || {
                 revolveProfile === 'triangle' && h('p', { className: 'text-[10px] text-teal-200/70 mt-0.5' },
                   t('stem.geosandbox.cone_note', 'Spinning a right triangle gives a cone — and Pappus lands exactly on V = ⅓πr²h.'))
               ),
-              // Stretch axis selector
-              h('div', null,
-                h('div', { className: 'text-[11px] font-bold text-purple-200 mb-1' }, t('stem.geosandbox.stretch_axis', 'Stretch axis:')),
-                h('div', { className: 'flex gap-1', role: 'radiogroup', 'aria-label': t('stem.geosandbox.stretch_axis_2', 'Stretch axis') },
-                  STRETCH_AXES.map(function(ax) {
-                    var active = stretchAxis === ax.id;
-                    return h('button', {
-                      key: 'ax-' + ax.id,
-                      role: 'radio',
-                      'aria-checked': active,
-                      onClick: function() { upd('stretchAxis', ax.id); },
-                      style: { borderColor: active ? ax.color : 'transparent' },
-                      className: 'flex-1 px-2 py-1 rounded text-[11px] font-bold border-2 ' +
-                        (active ? 'bg-slate-700 text-white' : 'bg-slate-800/60 text-slate-300 hover:bg-slate-700')
-                    }, ax.id.toUpperCase());
-                  })
-                )
-              ),
+              // Stretch axis selector. The picker does not govern every move, and
+              // it used to give no sign of that — three buttons that quietly did
+              // nothing on a rectangle, and a silent substitution on a segment.
+              (function() {
+                var axSel = construction.objects.find(function(o) { return o.id === construction.selection; });
+                var eff = geoEffectiveAxis(axSel, stretchAxis, buildVerb);
+                var isSpin = buildVerb === 'revolve' && axSel && axSel.type === 'rect';
+                // Where the picker genuinely cannot apply — a rectangle extrudes along
+                // its own normal — swap it for a plain readout of the real direction
+                // instead of dimming three buttons. A dimmed control says "you are
+                // locked out"; the truth is "there is nothing here to choose", and
+                // those are different messages. With no selection the buttons stay
+                // live: the axis is a preset for the next move you make.
+                var fixedByNormal = eff.reason === 'normal';
+                return h('div', null,
+                  h('div', { className: 'text-[11px] font-bold text-purple-200 mb-1' },
+                    isSpin ? t('stem.geosandbox.spin_axis', 'Spin axis:')
+                      : fixedByNormal ? t('stem.geosandbox.stretch_direction', 'Stretch direction:')
+                      : t('stem.geosandbox.stretch_axis', 'Stretch axis:')),
+                  fixedByNormal
+                  ? h('div', { className: 'flex items-center gap-2 px-2 py-1.5 rounded bg-slate-800/70 border border-slate-300/40' },
+                      h('span', { className: 'text-sm text-purple-200', 'aria-hidden': 'true' }, '⊥'),
+                      h('span', { className: 'text-[11px] font-bold text-slate-100' },
+                        t('stem.geosandbox.axis_out_of_face', 'Straight out of the face')))
+                  : h('div', {
+                    className: 'flex gap-1',
+                    role: 'radiogroup',
+                    'aria-label': t('stem.geosandbox.stretch_axis_2', 'Stretch axis')
+                  },
+                    STRETCH_AXES.map(function(ax) {
+                      var active = stretchAxis === ax.id;
+                      // The axis that will really be used, when it isn't the picked one.
+                      var substituted = eff.reason === 'parallel' && eff.axis === ax.id;
+                      return h('button', {
+                        key: 'ax-' + ax.id,
+                        role: 'radio',
+                        'aria-checked': active,
+                        onClick: function() { upd('stretchAxis', ax.id); },
+                        style: { borderColor: active ? ax.color : (substituted ? '#fbbf24' : 'transparent') },
+                        className: 'flex-1 px-2 py-1 rounded text-[11px] font-bold border-2 ' +
+                          (active ? 'bg-slate-700 text-white'
+                            : substituted ? 'bg-amber-900/40 text-amber-100 hover:bg-amber-900/60'
+                            : 'bg-slate-800/60 text-slate-300 hover:bg-slate-700')
+                      }, ax.id.toUpperCase() + (substituted ? ' ←' : ''));
+                    })
+                  ),
+                  // Say WHY, in the terms the lesson uses.
+                  fixedByNormal && h('p', { className: 'text-[10px] text-slate-300/90 mt-0.5' },
+                    t('stem.geosandbox.axis_normal_note', 'A rectangle extrudes straight out of its own face — that perpendicular is the only direction that adds a third dimension.')),
+                  eff.reason === 'no_selection' && h('p', { className: 'text-[10px] text-slate-300/90 mt-0.5' },
+                    t('stem.geosandbox.axis_no_selection_note', 'Select an object to see which way it will stretch.')),
+                  !fixedByNormal && eff.reason === 'parallel' && h('p', { className: 'text-[10px] text-amber-300/90 mt-0.5', 'aria-live': 'polite' },
+                    t('stem.geosandbox.axis_parallel_note', 'That axis runs along the segment, so stretching there would only make it longer. It will use') +
+                    ' ' + String(eff.axis).toUpperCase() + ' ' + t('stem.geosandbox.axis_parallel_note_2', 'instead, to open out a rectangle.')),
+                  isSpin && h('p', { className: 'text-[10px] text-teal-200/70 mt-0.5' },
+                    t('stem.geosandbox.axis_spin_note', 'This is the line the rectangle spins around, not a stretch direction.'))
+                );
+              })(),
               // Stretch length — slider for quick feel + a precise number box so a
               // student can dial in an exact value (needed to hit a challenge target).
               h('div', null,
@@ -3744,27 +3955,33 @@ window.StemLab = window.StemLab || {
               // Stretch button (context label changes based on selection)
               (function() {
                 var sel = construction.objects.find(function(o) { return o.id === construction.selection; });
-                var label = 'Select an object first';
+                var label = '';                          // every branch below assigns one
                 var enabled = false;
-                if (sel) {
-                  if (buildVerb === 'taper' && sel.type === 'rect') {
-                    label = topScale <= 0.001 ? 'Taper rectangle → pyramid (3D)' : topScale >= 0.999 ? 'Taper rectangle → prism (3D)' : 'Taper rectangle → frustum (3D)';
-                    enabled = true;
-                  }
-                  else if (buildVerb === 'revolve' && sel.type === 'rect') {
-                    label = revolveProfile === 'triangle' ? (revolveAngle >= 360 ? 'Revolve triangle → cone (3D)' : 'Revolve triangle → cone wedge (3D)')
-                      : (revolveAngle >= 360 ? 'Revolve rectangle → cylinder/ring (3D)' : 'Revolve rectangle → wedge (3D)');
-                    enabled = true;
-                  }
-                  else if ((buildVerb === 'taper' || buildVerb === 'revolve') && sel.type !== 'rect') {
-                    label = (buildVerb === 'taper' ? 'Taper' : 'Revolve') + ' needs a rectangle — select or build one';
-                    enabled = false;
-                  }
-                  else if (sel.type === 'point')    { label = 'Stretch point → segment (1D)'; enabled = true; }
-                  else if (sel.type === 'segment')  { label = 'Stretch segment → rectangle (2D)'; enabled = true; }
-                  else if (sel.type === 'rect')     { label = 'Stretch rectangle → prism (3D)'; enabled = true; }
-                  else                              { label = '✓ Already a solid (3D)'; enabled = false; }
-                }
+                if (!construction.objects.length) {
+                  // "Select an object first" is advice you cannot act on when the
+                  // scene is empty. Name the actual next move instead.
+                  label = t('stem.geosandbox.btn_start_with_point', 'Start with a point — add one above');
+                } else if (!sel) {
+                  label = t('stem.geosandbox.btn_select_first', 'Select an object first');
+                } else if (buildVerb === 'taper' && sel.type === 'rect') {
+                  label = topScale <= 0.001 ? t('stem.geosandbox.btn_taper_pyramid', 'Taper rectangle → pyramid (3D)')
+                    : topScale >= 0.999 ? t('stem.geosandbox.btn_taper_prism', 'Taper rectangle → prism (3D)')
+                    : t('stem.geosandbox.btn_taper_frustum', 'Taper rectangle → frustum (3D)');
+                  enabled = true;
+                } else if (buildVerb === 'revolve' && sel.type === 'rect') {
+                  label = revolveProfile === 'triangle'
+                    ? (revolveAngle >= 360 ? t('stem.geosandbox.btn_revolve_cone', 'Revolve triangle → cone (3D)')
+                                           : t('stem.geosandbox.btn_revolve_cone_wedge', 'Revolve triangle → cone wedge (3D)'))
+                    : (revolveAngle >= 360 ? t('stem.geosandbox.btn_revolve_cylinder', 'Revolve rectangle → cylinder or ring (3D)')
+                                           : t('stem.geosandbox.btn_revolve_wedge', 'Revolve rectangle → wedge (3D)'));
+                  enabled = true;
+                } else if (buildVerb === 'taper' || buildVerb === 'revolve') {
+                  label = (buildVerb === 'taper' ? t('stem.geosandbox.verb_taper_word', 'Taper') : t('stem.geosandbox.verb_revolve_word', 'Revolve')) +
+                    ' ' + t('stem.geosandbox.btn_needs_rectangle', 'needs a rectangle — select or build one');
+                } else if (sel.type === 'point')   { label = t('stem.geosandbox.btn_point_to_segment', 'Stretch point → segment (1D)'); enabled = true; }
+                else if (sel.type === 'segment')   { label = t('stem.geosandbox.btn_segment_to_rect', 'Stretch segment → rectangle (2D)'); enabled = true; }
+                else if (sel.type === 'rect')      { label = t('stem.geosandbox.btn_rect_to_prism', 'Stretch rectangle → prism (3D)'); enabled = true; }
+                else { label = '✓ ' + t('stem.geosandbox.btn_already_solid', 'Already a solid (3D)'); }
                 return h('button', {
                   onClick: performStretch,
                   disabled: !enabled || !!pendingPredict,
@@ -3775,7 +3992,8 @@ window.StemLab = window.StemLab || {
               })(),
               // Construction object list
               construction.objects.length > 0 && h('div', { className: 'border-t border-purple-500/30 pt-2' },
-                h('div', { className: 'text-[11px] font-bold text-purple-200 mb-1' }, 'Construction (' + construction.objects.length + ' objects):'),
+                h('div', { className: 'text-[11px] font-bold text-purple-200 mb-1' },
+                  t('stem.geosandbox.construction_heading', 'Construction') + ' (' + construction.objects.length + ')'),
                 h('div', { className: 'text-[10px] text-purple-300/70 mb-1' }, t('stem.geosandbox.click_to_select_hint', '💡 Tip: click a shape in the 3D view — or the list — to select it, then stretch.')),
                 h('div', { className: 'space-y-1 max-h-40 overflow-y-auto' },
                   construction.objects.map(function(o) {

@@ -1,6 +1,6 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-07-26T21:36:25.986Z
+Generated: 2026-07-27T16:20:47.625Z
 
 ## Scope
 
@@ -13,11 +13,11 @@ Generated: 2026-07-26T21:36:25.986Z
 
 | Metric | Count |
 | --- | ---: |
-| Total findings | 22 |
+| Total findings | 20 |
 | High-confidence errors | 0 |
 | Tool-level warnings | 3 |
-| Review notices | 19 |
-| Tools with any finding | 22 |
+| Review notices | 17 |
+| Tools with any finding | 20 |
 | Tools with high-confidence errors | 0 |
 | Tools with canvas surfaces | 37 |
 
@@ -26,7 +26,7 @@ Generated: 2026-07-26T21:36:25.986Z
 | Severity | Code | Findings | Tools | Example tools | Recommendation |
 | --- | --- | ---: | ---: | --- | --- |
 | warning | `tiny-text` | 3 | 3 | anatomy, galaxy, probability | Avoid persistent 8px/9px instructional text; keep small labels at 10px+ with clear line height. |
-| notice | `metadata` | 18 | 18 | accessLens, archStudio, circuitShelf, codingPlayground, cyberDefense, dataLab, dinoLab, evoLab, geologyExplorer, geometryWorld, moleculeShelf, nutritionLab | Fill in label, description, category, and aliases so discovery and context labels stay clear. |
+| notice | `metadata` | 16 | 16 | accessLens, archStudio, circuitShelf, codingPlayground, cyberDefense, dataLab, dinoLab, evoLab, geologyExplorer, geometryWorld, moleculeShelf, nutritionLab | Fill in label, description, category, and aliases so discovery and context labels stay clear. |
 | notice | `horizontal-overflow-risk` | 1 | 1 | areaPerimeter | Review fixed-width elements at 360px and 768px widths so panels and canvases do not overflow. |
 
 ## Recommended Next Passes
@@ -61,7 +61,7 @@ Generated: 2026-07-26T21:36:25.986Z
 | `atcTower` ATC Tower | applied | standard | 10 | 0 | 0 | 0 | 0 | 0 |  |
 | `autoRepair` Auto Repair Shop | life-skills | standard | 41 | 0 | 0 | 0 | 0 | 0 |  |
 | `bakingScience` Baking Lab | science | standard | 16 | 0 | 0 | 0 | 0 | 0 |  |
-| `base10` Math Manipulatives | math | standard | 51 | 1 | 0 | 0 | 0 | 0 |  |
+| `base10` Math Manipulatives | math | standard | 52 | 1 | 0 | 0 | 0 | 0 |  |
 | `beehive` Beehive Simulator | science | standard | 76 | 5 | 1 | 0 | 0 | 0 |  |
 | `behaviorLab` Behavior Lab | science | standard | 24 | 5 | 0 | 0 | 0 | 0 |  |
 | `bikeLab` BikeLab: Physics & Repair | life-skills | standard | 11 | 0 | 0 | 0 | 0 | 0 |  |
@@ -135,18 +135,18 @@ Generated: 2026-07-26T21:36:25.986Z
 | `particleLab3d` Particle Lab 3D | science | standard | 42 | 10 | 1 | 0 | 0 | 0 |  |
 | `petsLab` Science of Pets Lab | life-earth-science | standard | 35 | 7 | 0 | 0 | 0 | 0 |  |
 | `physics` Physics Simulator | science | standard | 0 | 0 | 0 | 0 | 0 | 0 |  |
-| `plateTectonics` Plate Tectonics | science | standard | 25 | 5 | 6 | 0 | 0 | 0 |  |
+| `plateTectonics` Plate Tectonics | science | standard | 27 | 5 | 6 | 0 | 0 | 0 |  |
 | `playlab` PlayLab | science | standard | 31 | 5 | 1 | 0 | 0 | 0 |  |
 | `printingPress` PrintingPress | history-engineering | standard | 25 | 0 | 0 | 0 | 0 | 0 |  |
-| `probability` Probability Lab | math | standard | 38 | 5 | 0 | 0 | 1 | 0 | tiny-text x1 |
+| `probability` Probability Lab | math | standard | 39 | 5 | 0 | 0 | 1 | 0 | tiny-text x1 |
 | `protractor` Angle Explorer | math | standard | 69 | 5 | 0 | 0 | 0 | 0 |  |
 | `punnett` Punnett Square Lab | science | standard | 26 | 2 | 0 | 0 | 0 | 0 |  |
 | `raptorHunt` Raptor Hunt: Predator Physics + Biology | science | standard | 48 | 1 | 0 | 0 | 0 | 0 |  |
 | `ratioLab` Ratios, Rates & Proportions Lab | math | standard | 11 | 4 | 0 | 0 | 0 | 0 |  |
 | `renewablesLab` Renewables Lab | physics-chemistry | standard | 12 | 0 | 0 | 0 | 0 | 0 |  |
 | `roadReady` RoadReady: Driver's Ed & Auto Science | life-skills | standard | 64 | 3 | 0 | 0 | 0 | 0 |  |
-| `rockCycle` rockCycle | science | standard | 13 | 1 | 1 | 0 | 0 | 1 | metadata x1 |
-| `rocks` rocks | science | standard | 9 | 0 | 1 | 0 | 0 | 1 | metadata x1 |
+| `rockCycle` Rock Cycle | science | standard | 16 | 1 | 1 | 0 | 0 | 0 |  |
+| `rocks` Rocks & Minerals Explorer | science | standard | 9 | 0 | 1 | 0 | 0 | 0 |  |
 | `schoolBehaviorToolkit` School Behavior Toolkit | science | standard | 13 | 0 | 0 | 0 | 0 | 0 |  |
 | `semiconductor` Semiconductor Lab | science | standard | 37 | 2 | 1 | 0 | 0 | 0 |  |
 | `simShelf` Sim Shelf | general | standard | 2 | 0 | 0 | 0 | 0 | 1 | metadata x1 |
@@ -166,7 +166,7 @@ Generated: 2026-07-26T21:36:25.986Z
 | `typingPractice` Typing Practice | life-skills | standard | 25 | 0 | 0 | 0 | 0 | 0 |  |
 | `unitConvert` Unit Converter | math | standard | 22 | 4 | 1 | 0 | 0 | 0 |  |
 | `universe` Universe Explorer | science | standard | 78 | 4 | 1 | 0 | 0 | 0 |  |
-| `volume` 3D Volume Explorer | math | standard | 32 | 8 | 1 | 0 | 0 | 0 |  |
+| `volume` 3D Volume Explorer | math | standard | 33 | 8 | 2 | 0 | 0 | 0 |  |
 | `waterCycle` Water Cycle | science | standard | 30 | 6 | 1 | 0 | 0 | 0 |  |
 | `wave` Wave Simulator | science | standard | 0 | 0 | 0 | 0 | 0 | 0 |  |
 | `weatherSystems` Weather Systems & Forecasting | science | standard | 43 | 10 | 1 | 0 | 0 | 0 |  |

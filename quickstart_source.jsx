@@ -521,18 +521,46 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
       await handleWizardUrlFetch(option.url);
       setLocalData(prev => ({ ...prev, resourceMeta: { title: option.title, description: option.description } }));
   };
+  // Every outcome here has to say something. This handler used to swallow the
+  // error and ignore a non-array result, so the three most likely outcomes —
+  // search unavailable, zero matches, malformed response — were pixel-identical
+  // to a button that isn't wired up at all.
   const handleGoalSearch = async () => {
       if (!learningGoal.trim() || !onLookupStandards) return;
       setIsSearching(true);
       try {
           const results = await onLookupStandards(localData.grade, learningGoal, region);
-          if (results && Array.isArray(results)) {
-              setSuggestedStandards(results);
-              setTimeout(() => {
-                  if (standardsListRef.current) standardsListRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-              }, 100);
+          if (!Array.isArray(results)) {
+              warnLog("Standards lookup returned a non-array result:", results);
+              if (addToast) addToast(t('toasts.standards_parse_error'), "warning");
+              return;
           }
-      } catch (e) { warnLog("Unhandled error:", e); } finally { setIsSearching(false); }
+          setSuggestedStandards(results);
+          if (results.length === 0) {
+              if (addToast) addToast(t('toasts.no_standards_found'), "info");
+              return;
+          }
+          if (addToast) {
+              const unverified = results.some(std => std && std.webVerified === false);
+              addToast(
+                  t(unverified ? 'toasts.standards_found_unverified' : 'toasts.standards_found_verified', { count: results.length }),
+                  unverified ? "warning" : "success"
+              );
+          }
+          setTimeout(() => {
+              if (standardsListRef.current) standardsListRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }, 100);
+      } catch (e) {
+          warnLog("Standards lookup failed:", e);
+          if (addToast) {
+              addToast(
+                  e && e.code === 'allo/search-unavailable'
+                      ? t('toasts.standards_search_unavailable')
+                      : t('toasts.standards_search_failed'),
+                  "error"
+              );
+          }
+      } finally { setIsSearching(false); }
   };
   const toggleStandard = (stdString) => {
       setLocalData(prev => {
@@ -669,6 +697,16 @@ const QuickStartWizard = React.memo(({ isOpen, onClose, onComplete, onUpload, on
                       {suggestedStandards.length > 0 && (
                           <div ref={standardsListRef} className="space-y-2 animate-in motion-reduce:animate-none slide-in-from-top-2">
                               <div id="quickstart-standards-selection-label" className="block text-sm font-bold text-slate-700">{t('wizard.standards_selection_label')}</div>
+                              {/* Codes that came from the model's own knowledge rather than a
+                                  web lookup. A teacher pastes these into a lesson plan or an
+                                  IEP, so the distinction has to be visible at the point of
+                                  selection — not just in a toast that has already faded. */}
+                              {suggestedStandards.some(std => std && std.webVerified === false) && (
+                                  <p role="status" className="flex items-start gap-2 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-2.5">
+                                      <AlertTriangle size={14} className="mt-0.5 shrink-0" aria-hidden="true" />
+                                      <span>{t('wizard.standards_unverified_notice')}</span>
+                                  </p>
+                              )}
                               <div role="group" aria-labelledby="quickstart-standards-selection-label" className="max-h-[200px] overflow-y-auto custom-scrollbar p-1 border border-slate-100 rounded-xl bg-slate-50/50">
                                   {suggestedStandards.map((std, i) => {
                                       const val = `${std.code}: ${std.description}`;

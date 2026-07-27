@@ -91,6 +91,466 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
     if (document.head) document.head.appendChild(st);
   })();
 
+  // ─────────────────────────────────────────────────────────
+  // BODY POSITION IN 3D — compression placement + recovery position
+  //
+  // The existing CPR module teaches RATE with a rhythm trainer. Rate is the
+  // easy half. The half a flat diagram teaches worst is WHERE your hands go on
+  // a real chest and WHAT the recovery position actually looks like as a
+  // three-dimensional shape. That is what this module is for.
+  //
+  // Clinical scope, stated plainly and repeatedly in the UI: adult, lay
+  // rescuer, hands-only. This is orientation and practice — it is NOT
+  // certification, and it does not replace a hands-on course with a manikin,
+  // where an instructor can feel whether your depth is real.
+  //
+  // Guidance reflected here follows current widely-taught lay-rescuer teaching
+  // (American Heart Association / Red Cross, consistent with ERC):
+  //   · centre of the chest, lower half of the breastbone
+  //   · at least 2 inches / 5 cm, and not more than about 2.4 inches / 6 cm
+  //   · 100-120 per minute, full recoil, minimise interruptions
+  // Numbers are given with both units because students meet both.
+  // ─────────────────────────────────────────────────────────
+
+  // Click zones on the torso. Coordinates are normalised (-1..1 across the
+  // chest, 0 at the sternal notch down to 1 at the navel) so the 3D pick and
+  // the 2D fallback grid can share one verdict function.
+  var CPR_ZONES = [
+    { id: 'correct', verdict: 'correct', label: 'Centre of the chest, lower half of the breastbone',
+      why: 'This is the target. Heel of one hand here, the other hand on top, fingers interlaced, shoulders stacked directly above your hands and arms locked straight so the push comes from your body weight, not your arms.' },
+    { id: 'high', verdict: 'poor', label: 'Too high — upper breastbone',
+      why: 'Up here you are over the top of the breastbone and the collarbones. Compressions are much less effective because you are not squeezing the heart between the breastbone and the spine. Slide down to the centre of the chest.' },
+    { id: 'low', verdict: 'harm', label: 'Too low — over the xiphoid process',
+      why: 'That small pointed tip at the bottom of the breastbone is the xiphoid process. Compressing on it risks driving it into the organs underneath. Move up to the lower half of the breastbone, not the very bottom.' },
+    { id: 'side', verdict: 'harm', label: 'Off to the side — over the ribs',
+      why: 'Off-centre compressions land on ribs rather than the breastbone. That both wastes force and raises the risk of injury. Find the centre line of the chest.' },
+    { id: 'belly', verdict: 'harm', label: 'Too low — on the abdomen',
+      why: 'This is below the ribcage entirely. Compressions here do nothing for circulation and can injure the liver and stomach.' }
+  ];
+
+  // Depth and recoil — the two mechanics students get wrong after placement.
+  var CPR_MECHANICS = [
+    { id: 'shallow', label: 'Shallow — about an inch', verdict: 'poor',
+      why: 'The most common real-world error, and it is understandable: pushing hard on a person feels wrong. But shallow compressions do not move enough blood. Adult depth is at least 2 inches (5 cm).' },
+    { id: 'right', label: 'At least 2 inches (5 cm), not more than about 2.4 inches (6 cm)', verdict: 'correct',
+      why: 'This is the target range for an adult. Push hard, push fast, and let the chest come all the way back up between compressions. Ribs sometimes crack during effective CPR — that is not a reason to stop.' },
+    { id: 'toodeep', label: 'As deep as you possibly can', verdict: 'poor',
+      why: 'There is an upper bound — beyond roughly 2.4 inches (6 cm) the added depth stops helping and injury risk rises. "Push hard" is not the same as "push without limit."' },
+    { id: 'lean', label: 'Correct depth, but resting your weight between pushes', verdict: 'poor',
+      why: 'Leaning is easy to do when you are tired and it quietly undoes your work. The chest has to recoil FULLY so the heart can refill before the next compression. Come all the way up without lifting your hands off the chest.' }
+  ];
+
+  // The gate that matters more than any of the above.
+  var BREATHING_GATE = [
+    { id: 'notbreathing', label: 'Not breathing, or only occasional gasps', action: 'cpr', correct: true,
+      why: 'Those irregular gasps are called agonal breathing and they are a sign of cardiac arrest, not of recovery. People lose lives because a bystander saw gasping and assumed breathing. Not breathing normally means: call 911 (or send someone), get an AED, start compressions.' },
+    { id: 'breathing', label: 'Breathing normally, but will not wake up', action: 'recovery', correct: true,
+      why: 'Someone unresponsive but breathing normally needs their airway protected, not compressions. Recovery position, keep watching their breathing, and be ready to start CPR if it stops or turns to gasping.' }
+  ];
+
+  var RECOVERY_STEPS = [
+    { id: 'check', icon: '👂', label: 'Confirm they are breathing normally and call for help',
+      why: 'The recovery position is only for someone unresponsive who IS breathing normally. Confirm first, and get emergency services coming either way.' },
+    { id: 'arm', icon: '💪', label: 'Place the near arm out at a right angle, palm up',
+      why: 'This arm stays put and stops them rolling too far onto their front.' },
+    { id: 'hand', icon: '🤚', label: 'Bring the far hand across to their cheek and hold it there',
+      why: 'The back of their hand cushions the head as it turns, and holding it keeps the head supported through the roll.' },
+    { id: 'knee', icon: '🦵', label: 'Bend the far knee up, foot flat on the ground',
+      why: 'That bent leg is the lever you will pull on. It does the work so you are not hauling on their body.' },
+    { id: 'roll', icon: '🔄', label: 'Pull on the bent knee to roll them towards you onto their side',
+      why: 'Towards you, so they cannot roll away from you and end up face down. Keep supporting the head with their own hand as they turn.' },
+    { id: 'airway', icon: '🫁', label: 'Tilt the head back gently and point the mouth slightly down',
+      why: 'The head tilt opens the airway; the downward angle lets fluid drain out of the mouth instead of into the lungs. This is the whole reason the position exists.' },
+    { id: 'stable', icon: '⚖️', label: 'Adjust the top leg so the hip and knee are bent at right angles',
+      why: 'That is what stops them rolling onto their front once you let go.' },
+    { id: 'watch', icon: '👀', label: 'Keep watching their breathing until help arrives',
+      why: 'This is not a finished job. If breathing stops or turns into gasping, roll them onto their back and start compressions immediately.' }
+  ];
+
+  // Never correct, at any point in this module.
+  var BODY_HAZARDS = [
+    { id: 'compressbreathing', icon: '⛔', label: 'Start compressions on someone who is breathing normally',
+      why: 'Compressions on a breathing person can cause real injury and do not help. Breathing normally but unresponsive means recovery position and close monitoring — not CPR.' },
+    { id: 'spine', icon: '⛔', label: 'Roll them despite a suspected neck or spinal injury, with no other reason to move them',
+      why: 'If you suspect a spinal injury and they are breathing, the general guidance is to leave them as they are and keep the airway open, unless staying put is itself dangerous. If they are NOT breathing normally, that overrides everything: an airway and circulation come first.' },
+    { id: 'delay', icon: '⛔', label: 'Look for a pulse first and only start once you are sure',
+      why: 'Lay rescuers are not expected to check for a pulse, and hunting for one wastes the minutes that matter most. Unresponsive and not breathing normally is enough to start.' }
+  ];
+
+  // ── Age variants ──────────────────────────────────────────────────────────
+  // Adult technique is not simply "smaller" for a child or an infant — the
+  // hands change, the depth changes, and the reason arrest happened usually
+  // changes too. A teen who babysits is far more likely to meet an infant
+  // emergency than an adult one, so leaving this at adult-only was a real gap.
+  //
+  // Depths follow AHA 2020: roughly one third of the depth of the chest in
+  // every case, which works out at about 5 cm for an adult and a child and
+  // about 4 cm for an infant. (The existing quick-reference in the CPR + AED
+  // module had the child figure at 4 cm, matching the infant — corrected.)
+  var CPR_AGES = [
+    { id: 'adult', icon: '🧍', label: 'Adult', who: 'Puberty and older',
+      hands: 'Two hands — heel of one on the breastbone, the other on top, fingers interlaced, arms locked, shoulders stacked over your hands.',
+      where: 'Centre of the chest, on the lower half of the breastbone.',
+      depth: 'At least 2 inches (5 cm), and no more than about 2.4 inches (6 cm).',
+      breaths: 'For an adult who collapses suddenly, hands-only CPR is the standard advice for an untrained rescuer, and it works. If you are trained, 30 compressions to 2 breaths.',
+      scale: 1 },
+    { id: 'child', icon: '🧒', label: 'Child', who: 'About 1 year to puberty',
+      hands: 'One hand, or two if one is not enough to reach the depth. Use whatever gets you deep enough on that particular child.',
+      where: 'Same place as an adult — centre of the chest, lower half of the breastbone.',
+      depth: 'About 2 inches (5 cm) — roughly one third of the depth of the chest.',
+      breaths: 'In children, arrest is more often caused by a breathing problem than by a sudden heart rhythm, so breaths matter more than they do for adults. If you are trained, give 30 compressions to 2 breaths. If you are not, compressions alone are still far better than nothing.',
+      scale: 0.72 },
+    { id: 'infant', icon: '👶', label: 'Infant', who: 'Under 1 year (not a newborn)',
+      hands: 'Two fingers on the breastbone, just below an imaginary line between the nipples. If two rescuers are present, the two-thumbs-encircling technique is preferred.',
+      where: 'Centre of the chest, just below the nipple line.',
+      depth: 'About 1.5 inches (4 cm) — again roughly one third of the depth of the chest.',
+      breaths: 'Infant arrest is usually a breathing problem. Breaths matter. If trained, 30 compressions to 2 breaths as a single rescuer. Cover the mouth and nose, and give only enough air to make the chest rise — an infant\'s lungs are tiny.',
+      scale: 0.46 }
+  ];
+
+  // ── AED pad placement ─────────────────────────────────────────────────────
+  // Genuinely spatial and, until now, one line of text in the CPR + AED
+  // walkthrough. The pads themselves carry a picture — this teaches the shape
+  // so the picture makes sense under pressure.
+  var AED_PADS = [
+    { id: 'padUR', verdict: 'correct', label: 'Upper right chest, below the collarbone',
+      why: 'One pad goes here, to the right of the breastbone and just under the collarbone. Paired with the lower-left pad it puts the heart between them, which is the whole point — the current has to cross the heart to do anything.' },
+    { id: 'padLL', verdict: 'correct', label: 'Lower left side, below the armpit',
+      why: 'The second pad goes on the left side of the chest, below and to the outside of the left nipple, over the lower ribs. Diagonally opposite the first one.' },
+    { id: 'padTogether', verdict: 'wrong', label: 'Both pads side by side on the upper chest',
+      why: 'With the pads close together the current takes the short path between them and largely misses the heart. They have to be diagonally opposite so the heart sits in between.' },
+    { id: 'padBelly', verdict: 'wrong', label: 'On the abdomen',
+      why: 'Too low to put the heart in the path of the current. Follow the picture printed on the pads themselves.' }
+  ];
+
+  var AED_RULES = [
+    { id: 'bare', icon: '👕', label: 'Bare skin, and dry',
+      why: 'Pads have to make skin contact. Cut or tear the shirt off. If the chest is wet — sweat, rain, pool water — wipe it dry first, because water spreads the current across the skin instead of through the chest.' },
+    { id: 'hair', icon: '✂️', label: 'A very hairy chest may need shaving',
+      why: 'Thick hair stops the pad touching skin and the AED will tell you it cannot read. Many AED cases include a razor for exactly this.' },
+    { id: 'patch', icon: '🩹', label: 'Take medication patches off',
+      why: 'A patch under a pad blocks contact and can burn the skin. Peel it off — ideally with a gloved hand so you do not dose yourself — and wipe the area.' },
+    { id: 'device', icon: '🔋', label: 'Avoid an implanted pacemaker or defibrillator',
+      why: 'A hard lump under the skin, usually on the upper chest. Do not put a pad directly over it — shift the pad an inch or so to the side.' },
+    { id: 'clear', icon: '🙌', label: 'Nobody touches during analysis or shock',
+      why: 'Say "clear" out loud, look, and make sure no one is in contact — including you. Touching during the analysis can confuse the reading, and touching during the shock puts it through you.' },
+    { id: 'kids', icon: '🧒', label: 'Under about 8 — use child pads if they exist',
+      why: 'Use paediatric pads or a child setting if the AED has one. If it only has adult pads, use them rather than doing nothing — but the pads must not touch each other, so on a small chest put one on the front and one on the back.' },
+    { id: 'resume', icon: '🔁', label: 'Start compressions again straight after the shock',
+      why: 'Do not wait to see whether it worked. The AED will re-analyse on its own in about two minutes, and compressions in the meantime are what keeps blood moving.' }
+  ];
+
+  // ── Run the call ──────────────────────────────────────────────────────────
+  // The five reference tabs each teach one thing well and none of them make
+  // you COMBINE them. Real calls do: you assess, you pick a technique for the
+  // age in front of you, you place your hands, and then an AED turns up and
+  // changes what you are doing. This is the synthesis, and it is graded on
+  // safety first — same shape as the Repair Bay and the tyre change.
+  //
+  // Case 3 exists specifically to test the gate in the direction people fail:
+  // someone who is breathing and does NOT need compressions.
+  var CALL_CASES = [
+    {
+      id: 'gym', icon: '🏋️', title: 'Adult collapse at the gym', age: 'adult',
+      scene: 'A man in his fifties drops to the floor mid-workout. He does not respond when you shout and shake his shoulders. Every few seconds he makes a long, noisy gasp. Someone has run for the AED on the wall.',
+      steps: [
+        { prompt: 'Those occasional gasps — what are you looking at?',
+          options: [
+            { id: 'a', label: 'He is breathing, just badly — put him in the recovery position', verdict: 'wrong',
+              why: 'This is the misread that costs lives. Occasional noisy gasps are agonal breathing, and they are a sign of cardiac arrest, not of breathing. Recovery position here means he gets no circulation at all.' },
+            { id: 'b', label: 'Not breathing normally — send for help and start compressions', verdict: 'correct',
+              why: 'Correct. Agonal gasping counts as NOT breathing normally. Unresponsive plus not breathing normally is enough to start; you are not expected to find a pulse first.' },
+            { id: 'c', label: 'Check for a pulse before committing', verdict: 'unsafe',
+              why: 'Lay rescuers are not expected to check for a pulse, and it is unreliable even for professionals under stress. Every second spent hunting for one is a second without circulation.' }
+          ] },
+        { prompt: 'Hands — what and where?',
+          options: [
+            { id: 'a', label: 'Two hands, centre of the chest, on the lower half of the breastbone', verdict: 'correct',
+              why: 'Adult technique. Heel of one hand down, the other on top, fingers interlaced, arms locked and shoulders stacked over your hands so the push comes from your body weight.' },
+            { id: 'b', label: 'Two hands, high on the chest just under the collarbones', verdict: 'wrong',
+              why: 'Too high to squeeze the heart between the breastbone and the spine. Slide down to the centre of the chest.' },
+            { id: 'c', label: 'Two fingers, centre of the chest', verdict: 'wrong',
+              why: 'That is the infant technique. Two fingers cannot move an adult chest 5 cm.' }
+          ] },
+        { prompt: 'The AED arrives while you are compressing. What happens now?',
+          options: [
+            { id: 'a', label: 'Finish your two minutes of CPR, then deal with it', verdict: 'wrong',
+              why: 'Use it as soon as it arrives. For a shockable rhythm, time to defibrillation is the single biggest factor in survival — waiting costs more than the pause does.' },
+            { id: 'b', label: 'Turn it on and do exactly what it says, while someone bares his chest', verdict: 'correct',
+              why: 'Right. It is built for untrained people and it will talk you through every step. Keep compressions going while the pads are being placed if there is someone to do both.' },
+            { id: 'c', label: 'Check for a pulse to see whether the AED is still needed', verdict: 'unsafe',
+              why: 'Still no pulse checks, and still no reason to stop compressions to perform one.' }
+          ] },
+        { prompt: 'Where do the pads go?',
+          options: [
+            { id: 'a', label: 'Upper right chest below the collarbone, and lower left side below the armpit', verdict: 'correct',
+              why: 'Diagonally opposite, so the heart sits between them and the current has to cross it. The pads carry a picture of exactly this.' },
+            { id: 'b', label: 'Both side by side on the upper chest, near each other', verdict: 'wrong',
+              why: 'Close together, the current takes the short path between the pads and largely misses the heart.' },
+            { id: 'c', label: 'One on the chest, one on the belly', verdict: 'wrong',
+              why: 'The lower pad is too low to put the heart between them, so most of the current passes through the abdomen instead of across the heart. The pad has to sit on the lower ribs at the side of the chest, not below them.' }
+          ] },
+        { prompt: 'It says "shock delivered". What is your next move?',
+          options: [
+            { id: 'a', label: 'Start compressions again straight away', verdict: 'correct',
+              why: 'Do not wait to see whether it worked. The AED re-analyses on its own in about two minutes; compressions in between are what keeps blood moving.' },
+            { id: 'b', label: 'Stand back and watch for him to wake up', verdict: 'wrong',
+              why: 'A heart that has just been shocked usually needs help pumping before it does anything useful. Waiting wastes the window the shock just bought.' },
+            { id: 'c', label: 'Take the pads off now the shock is done', verdict: 'wrong',
+              why: 'Leave them on. The AED needs them to re-analyse, and it will.' }
+          ] }
+      ],
+      debrief: 'The two things that decide this call are recognising agonal gasping as arrest, and getting the AED on early. Neither requires strength or training you do not have.'
+    },
+    {
+      id: 'infant', icon: '👶', title: 'Infant, babysitting', age: 'infant',
+      scene: 'You are babysitting a seven-month-old. She has been quiet longer than feels right. You find her limp in the cot, and she does not respond when you tap her foot and call her name. Her chest is not moving.',
+      steps: [
+        { prompt: 'First move?',
+          options: [
+            { id: 'a', label: 'Shout for help, get 911 on speaker, and start compressions', verdict: 'correct',
+              why: 'Unresponsive and not breathing means start. Speakerphone lets the dispatcher coach you while your hands keep working — they do this every day.' },
+            { id: 'b', label: 'Pick her up and drive to the hospital', verdict: 'unsafe',
+              why: 'Nobody is doing compressions in a moving car, and you may be minutes away. Care starts where she is.' },
+            { id: 'c', label: 'Shake her hard to wake her up', verdict: 'unsafe',
+              why: 'Never shake an infant. Tap the foot and call to her — that is enough to check responsiveness.' }
+          ] },
+        { prompt: 'How do you compress an infant chest?',
+          options: [
+            { id: 'a', label: 'Two hands, as you would for an adult', verdict: 'unsafe',
+              why: 'Far too much force for an infant. This is the difference the age selector exists to teach.' },
+            { id: 'b', label: 'Two fingers on the breastbone, just below the nipple line', verdict: 'correct',
+              why: 'Correct for a single rescuer. With two rescuers, the two-thumbs-encircling technique is preferred. Depth is about 1.5 inches (4 cm), roughly a third of the depth of her chest.' },
+            { id: 'c', label: 'One hand, same place as an adult', verdict: 'wrong',
+              why: 'That is the child technique, for roughly one year to puberty. She is under a year.' }
+          ] },
+        { prompt: 'Do rescue breaths matter here?',
+          options: [
+            { id: 'a', label: 'No — hands-only is the modern advice for everyone', verdict: 'wrong',
+              why: 'Hands-only is the advice for an ADULT who collapses suddenly. Infant arrest is usually a breathing problem, so breaths matter a great deal here.' },
+            { id: 'b', label: 'Yes — if trained, 30 compressions to 2 breaths, covering mouth and nose', verdict: 'correct',
+              why: 'Right. Cover her mouth and nose, and give only enough air to make the chest rise — an infant\'s lungs are tiny and over-inflating does harm. If you are not trained in breaths, compressions alone are still far better than nothing.' },
+            { id: 'c', label: 'Yes — full deep breaths, as much air as you can', verdict: 'unsafe',
+              why: 'Too much. Just enough to see the chest start to rise, then stop.' }
+          ] },
+        { prompt: 'A neighbour arrives with an AED. It only has adult pads.',
+          options: [
+            { id: 'a', label: 'Do not use it — adult pads are not safe on a baby', verdict: 'wrong',
+              why: 'Use it. Paediatric pads or a child setting are preferred, but an AED with adult pads is far better than no AED at all.' },
+            { id: 'b', label: 'Use it — one pad on the front of the chest, one on the back', verdict: 'correct',
+              why: 'On a chest that small the pads must not touch each other, so front-and-back is the placement. Otherwise, follow the prompts exactly as normal.' },
+            { id: 'c', label: 'Use it — both pads on the front, overlapping slightly', verdict: 'unsafe',
+              why: 'Pads that touch each other short the current across the skin instead of sending it through the chest, and can burn her.' }
+          ] }
+      ],
+      debrief: 'This is the call a teenager is most likely to face, and it is the one where adult habits are most wrong: two fingers not two hands, breaths matter, and an AED with the wrong pads still beats no AED.'
+    },
+    {
+      id: 'breathing', icon: '😴', title: 'Unresponsive, but breathing', age: 'adult',
+      scene: 'A friend has been drinking heavily at a party. He is slumped on a sofa and you cannot wake him. He is breathing — slow, deep, snoring breaths — and his colour looks normal.',
+      steps: [
+        { prompt: 'What does he need?',
+          options: [
+            { id: 'a', label: 'Compressions, to be on the safe side', verdict: 'unsafe',
+              why: 'Never "to be on the safe side". He is breathing, so his heart is beating. Compressions on a breathing person cause real injury and help nothing.' },
+            { id: 'b', label: 'Recovery position, help on the way, and someone watching him', verdict: 'correct',
+              why: 'Unresponsive but breathing normally means the job is protecting his airway. Recovery position, call for help, and stay with him.' },
+            { id: 'c', label: 'Leave him to sleep it off and check back later', verdict: 'unsafe',
+              why: 'Someone who cannot be woken is not asleep. Left on his back he can choke on vomit, and his breathing can stop without anyone noticing. This is how people die at parties.' }
+          ] },
+        { prompt: 'Why does the recovery position matter so much for him specifically?',
+          options: [
+            { id: 'a', label: 'It is more comfortable', verdict: 'wrong',
+              why: 'Comfort is not the reason, and thinking of it that way makes the position sound optional. It is an airway measure — the point is what happens if he vomits while unconscious.' },
+            { id: 'b', label: 'On his side with the mouth angled down, vomit drains out instead of into the lungs', verdict: 'correct',
+              why: 'Exactly. Alcohol makes vomiting likely and blunts the reflexes that would normally protect the airway. The head tilt opens the airway; the downward angle lets fluid escape.' },
+            { id: 'c', label: 'It stops him rolling off the sofa', verdict: 'wrong',
+              why: 'Not the reason, though moving him to the floor is a sensible idea.' }
+          ] },
+        { prompt: 'He is positioned and help is coming. What now?',
+          options: [
+            { id: 'a', label: 'Stay and keep checking that his breathing is still normal', verdict: 'correct',
+              why: 'This is not a finished job. If his breathing stops or turns into occasional gasps, roll him onto his back and start compressions immediately.' },
+            { id: 'b', label: 'Go back to the party — he is in the right position now', verdict: 'unsafe',
+              why: 'The position protects his airway; it does not monitor him. Breathing can stop after you walk away.' },
+            { id: 'c', label: 'Try to make him drink water or coffee', verdict: 'unsafe',
+              why: 'Someone who cannot be woken cannot swallow safely. Pouring anything into his mouth risks it going into his lungs.' }
+          ] }
+      ],
+      debrief: 'Every wrong answer here is one that gets chosen in real life, usually kindly. Breathing means position and monitor. Not breathing normally means compressions. That single distinction is the most useful thing in this whole module.'
+    },
+    {
+      id: 'pool', icon: '🌊', title: 'Pulled from the pool', age: 'adult',
+      scene: 'A teenager is pulled from the deep end and laid on the wet tiles at the poolside. She is unresponsive and not breathing. Water is pooling around her.',
+      steps: [
+        { prompt: 'Drowning changes one thing about your priorities. What?',
+          options: [
+            { id: 'a', label: 'Nothing — compressions only, same as any adult collapse', verdict: 'wrong',
+              why: 'Drowning arrest is caused by lack of oxygen, not usually by a sudden rhythm problem. If you are trained in breaths, they matter here more than in a typical adult collapse.' },
+            { id: 'b', label: 'Breaths matter more than usual, because this is an oxygen problem', verdict: 'correct',
+              why: 'Right. If you are trained, use 30 compressions to 2 breaths. If you are not, start compressions anyway — untrained compressions still beat waiting.' },
+            { id: 'c', label: 'Drain the water from her lungs before starting', verdict: 'unsafe',
+              why: 'There is no useful way to do that, and trying wastes the minutes that matter. Start CPR.' }
+          ] },
+        { prompt: 'An AED arrives. She is soaking wet and lying in a puddle.',
+          options: [
+            { id: 'a', label: 'Use it as-is — water makes no difference', verdict: 'unsafe',
+              why: 'Water spreads the current across wet skin instead of driving it through the chest, and standing water puts everyone nearby in the path.' },
+            { id: 'b', label: 'Move her clear of the puddle and wipe her chest dry, then apply the pads', verdict: 'correct',
+              why: 'Both halves matter. Get her off standing water and dry the chest where the pads go — the pads need skin contact, and a wet chest defeats it. This takes seconds.' },
+            { id: 'c', label: 'Skip the AED entirely because of the water', verdict: 'wrong',
+              why: 'No — dry her and use it. An AED is the thing most likely to restart a shockable rhythm.' }
+          ] }
+      ],
+      debrief: 'Drowning is the clearest case of "hands-only is not the whole story". It is an oxygen problem, and the water itself changes how you use the AED.'
+    }
+  ];
+
+  // Pickable regions of the torso, in the order the raycaster should see them.
+  // Deliberately schematic: this is a diagram you can walk around, not a
+  // medical model, and the UI says so.
+  var BODY_PARTS = [
+    { id: 'high',    label: 'Upper breastbone' },
+    { id: 'correct', label: 'Centre of the chest' },
+    { id: 'low',     label: 'Bottom of the breastbone' },
+    { id: 'belly',   label: 'Abdomen' },
+    { id: 'sideL',   label: 'Ribs (left)' },
+    { id: 'sideR',   label: 'Ribs (right)' },
+    // AED pad targets share the same body and the same pick machinery.
+    { id: 'padUR',        label: 'Upper right chest' },
+    { id: 'padLL',        label: 'Lower left side' },
+    { id: 'padTogether',  label: 'Both pads side by side' },
+    { id: 'padBelly',     label: 'Abdomen (pad)' }
+  ];
+
+  // -- Body scene content --
+  // api.phase drives the recovery-position roll: 0 = flat on the back,
+  // rising to 1 = fully on the side with the airway open.
+  function buildBodyScene(THREE, api) {
+    var meshes = {};
+    var picks = [];
+    var roll = Math.max(0, Math.min(1, (api.phase || 0) / RECOVERY_STEPS.length));
+    var sp = api.sceneProps || {};
+    var mode = sp.tab || 'place';                      // place | aed | recovery | gate
+    // Age scales the whole figure. An infant is not a small adult, and seeing
+    // the size difference is part of understanding why the technique changes.
+    var ageScale = 1;
+    for (var ai = 0; ai < CPR_AGES.length; ai++) if (CPR_AGES[ai].id === sp.age) ageScale = CPR_AGES[ai].scale;
+
+    var ground = new THREE.Mesh(new THREE.BoxGeometry(7, 0.06, 5),
+      api.trim(api.contrast ? 0x111111 : (api.dark ? 0x131c2e : 0x9aa5b4), 4));
+    ground.position.y = -0.03;
+    if (api.wantShadow) ground.receiveShadow = true;
+    api.scene.add(ground);
+
+    var skin = api.contrast ? 0xffffff : 0xc89a78;
+    var shirt = api.contrast ? 0xdddddd : 0x3f6fa5;
+
+    // Whole body rolls as one group for the recovery position.
+    var body = new THREE.Group();
+    body.rotation.z = -roll * (Math.PI / 2) * 0.78;   // onto their side
+    body.position.y = 0.30 * ageScale;
+    body.scale.setScalar(ageScale);
+    api.scene.add(body);
+
+    // Chest tapers to the waist and the shoulders sit proud, so the figure
+    // reads as a person from any angle rather than as a stack of slabs.
+    var torso = new THREE.Mesh(new THREE.BoxGeometry(1.00, 0.44, 1.55), api.trim(shirt, 12));
+    torso.position.z = -0.05;
+    body.add(torso);
+    var shoulders = new THREE.Mesh(new THREE.BoxGeometry(1.28, 0.40, 0.42), api.trim(shirt, 12));
+    shoulders.position.set(0, 0.02, -0.66);
+    body.add(shoulders);
+    var neck = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.16, 0.26, 12), api.trim(skin, 10));
+    neck.rotation.x = Math.PI / 2;
+    neck.position.set(0, 0.04, -0.92);
+    body.add(neck);
+    var head = new THREE.Mesh(new THREE.SphereGeometry(0.30, 20, 16), api.trim(skin, 10));
+    head.scale.set(0.92, 1, 1.12);
+    head.position.set(0, 0.07, -1.26);
+    head.rotation.x = roll * 0.28;                    // tilted back, mouth down
+    body.add(head);
+    var hips = new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.40, 0.55), api.trim(0x334155, 10));
+    hips.position.set(0, -0.02, 0.92);
+    body.add(hips);
+
+    // Near arm out at a right angle once that step is done
+    var armOut = (api.phase || 0) >= 2;
+    var armL = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.20, 0.20), api.trim(skin, 10));
+    if (armOut) armL.position.set(-0.95, 0.02, -0.5);
+    else { armL.position.set(-0.62, 0, -0.1); armL.rotation.y = 0.25; }
+    body.add(armL);
+    var armR = new THREE.Mesh(new THREE.BoxGeometry(0.20, 0.20, 0.9), api.trim(skin, 10));
+    armR.position.set(0.55, 0.06, -0.62);
+    body.add(armR);
+
+    // Far knee bent up once that step is done
+    var kneeUp = (api.phase || 0) >= 4;
+    var legL = new THREE.Mesh(new THREE.BoxGeometry(0.30, 0.30, 1.3), api.trim(0x334155, 10));
+    legL.position.set(-0.24, -0.02, 1.85);
+    body.add(legL);
+    var legR = new THREE.Mesh(new THREE.BoxGeometry(0.30, 0.30, kneeUp ? 0.8 : 1.3), api.trim(0x334155, 10));
+    legR.position.set(0.26, kneeUp ? 0.22 : -0.02, kneeUp ? 1.55 : 1.85);
+    if (kneeUp) legR.rotation.x = -0.7;
+    body.add(legR);
+
+    if (api.wantShadow) body.traverse(function (o) { if (o.isMesh) o.castShadow = true; });
+
+    // Target patches on the chest. Only meaningful before the roll starts,
+    // so they fade out as the body turns.
+    function patch(id, w, hgt, x, z, colorHex) {
+      var g = new THREE.Group();
+      var m = new THREE.Mesh(new THREE.BoxGeometry(w, 0.05, hgt), api.trim(colorHex, 30));
+      m.material.transparent = true;
+      m.material.opacity = roll > 0.05 ? 0.12 : 0.55;
+      g.add(m);
+      g.position.set(x, 0.22, z);
+      g.userData.partId = id;
+      g.traverse(function (o) { if (o.isMesh) { o.userData.partId = id; picks.push(o); } });
+      body.add(g);
+      meshes[id] = g;
+    }
+    // Sternal notch is around z = -0.72; navel around z = +0.62.
+    // Targets belong to the tab that asks about them. On the gate, recovery
+    // and scenario tabs the coloured patches are just noise on the body.
+    if (mode !== 'place' && mode !== 'aed') {
+      // no target patches
+    } else if (mode === 'aed') {
+      // Pad targets. The two correct ones sit diagonally opposite so the heart
+      // ends up between them — which is the thing worth seeing in 3D.
+      patch('padUR',       0.36, 0.34, -0.30, -0.52, api.contrast ? 0xffffff : 0x22c55e);
+      patch('padLL',       0.36, 0.34,  0.32,  0.16, api.contrast ? 0xffffff : 0x22c55e);
+      patch('padTogether', 0.34, 0.30,  0.30, -0.52, api.contrast ? 0xffffff : 0xf59e0b);
+      patch('padBelly',    0.42, 0.36,  0,     0.60, api.contrast ? 0xffffff : 0xef4444);
+    } else {
+      patch('high',    0.34, 0.34, 0,     -0.60, api.contrast ? 0xffffff : 0xf59e0b);
+      patch('correct', 0.34, 0.36, 0,     -0.20, api.contrast ? 0xffffff : 0x22c55e);
+      patch('low',     0.34, 0.26, 0,      0.13, api.contrast ? 0xffffff : 0xf59e0b);
+      patch('belly',   0.42, 0.40, 0,      0.55, api.contrast ? 0xffffff : 0xef4444);
+      patch('sideL',   0.28, 0.9,  -0.36, -0.20, api.contrast ? 0xffffff : 0xef4444);
+      patch('sideR',   0.28, 0.9,   0.36, -0.20, api.contrast ? 0xffffff : 0xef4444);
+    }
+
+    return { meshes: meshes, picks: picks, anchor: ground };
+  }
+
+  // Shared 3D viewer shell, from the host (beside ensureThree). If the host is
+  // absent this degrades to a permanently-failed viewer and the module falls
+  // back to its 2D controls, which carry the whole lesson anyway.
+  var FR_NULL_VIEWER = {
+    attach: function () {}, sync: function () {}, nudge: function () {},
+    zoom: function () {}, reset: function () {}, status: function () { return 'failed'; }
+  };
+  var BODY3D = (function () {
+    var mk = (typeof window !== 'undefined') && window.StemLab && window.StemLab.makeBayViewer;
+    if (!mk) return FR_NULL_VIEWER;
+    return mk({
+      parts: BODY_PARTS,
+      buildScene: buildBodyScene,
+      home: { yaw: 0.1, pitch: 0.86, dist: 5.2 }
+    });
+  })();
+
   // ── Live-region announcers (rate-limited; mirror RoadReady pattern) ──
   var _frPoliteTimer = null, _frAssertTimer = null;
   function frAnnounce(text) {
@@ -610,6 +1070,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         { id: 'recognize', icon: '👁️', label: __alloT('stem.firstresponse.recognize', 'Recognize'), desc: __alloT('stem.firstresponse.visual_signs_of_12_emergencies_quiz_at', 'Visual signs of 12 emergencies. Quiz at the end.'), ready: true },
         { id: 'call', icon: '📞', label: __alloT('stem.firstresponse.call_911_988', 'Call (911 + 988)'), desc: __alloT('stem.firstresponse.what_to_say_text_to_911_when_988_vs_91', 'What to say. Text-to-911. When 988 vs 911.'), ready: true },
         { id: 'cprAed', icon: '❤️', label: __alloT('stem.firstresponse.cpr_aed', 'CPR + AED'), desc: __alloT('stem.firstresponse.hands_only_rhythm_trainer_aed_walkthro', 'Hands-only rhythm trainer. AED walkthrough.'), ready: true },
+        { id: 'body3d', icon: '🫀', label: __alloT('stem.firstresponse.body_position_3d', 'Body position (3D)'), desc: __alloT('stem.firstresponse.body_position_3d_desc', 'Where your hands go — adult, child, infant. Depth and recoil. AED pad placement. The recovery position. Then ' + CALL_CASES.length + ' scenarios that make you combine them.'), ready: true },
         { id: 'bleed', icon: '🩸', label: __alloT('stem.firstresponse.stop_the_bleed', 'Stop the Bleed'), desc: __alloT('stem.firstresponse.pressure_packing_tourniquet', 'Pressure → packing → tourniquet.'), ready: true },
         { id: 'choking', icon: '😬', label: __alloT('stem.firstresponse.choking', 'Choking'), desc: __alloT('stem.firstresponse.infant_child_adult_pregnant_alone', 'Infant, child, adult, pregnant, alone.'), ready: true },
         { id: 'disabilityAware', icon: '♾️', label: __alloT('stem.firstresponse.disability_aware_response', 'Disability-aware response'), desc: __alloT('stem.firstresponse.deaf_hoh_autistic_epilepsy_hidden_disa', 'Deaf/HoH, autistic, epilepsy, hidden disability.'), ready: true },
@@ -1202,7 +1663,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                 h('li', null, h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.use_the_aed', 'Use the AED')), __alloT('stem.firstresponse.as_soon_as_it_arrives_it_talks_you_thr', ' as soon as it arrives — it talks you through it.'))
               ),
               h('div', { style: { marginTop: 10, padding: '8px 10px', borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 11, color: T.dim, fontStyle: 'italic' } },
-                __alloT('stem.firstresponse.depth_2_in_5_cm_adult_1_5_in_4_cm_chil', 'Depth: 2 in (5 cm) adult, ~1.5 in (4 cm) child, ~1.5 in (4 cm) infant. Source: AHA 2020 Guidelines for CPR & ECC.'))
+                __alloT('stem.firstresponse.depth_adult_child_infant', 'Depth: at least 2 in (5 cm) and no more than about 2.4 in (6 cm) for an adult; about 2 in (5 cm) for a child; about 1.5 in (4 cm) for an infant — in each case roughly one third of the depth of the chest. Source: AHA 2020 Guidelines for CPR & ECC.'))
             ),
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
               h('h3', { style: { margin: '0 0 8px', fontSize: 16, color: T.text } }, __alloT('stem.firstresponse.aed_in_one_paragraph', '⚡ AED in one paragraph')),
@@ -3168,11 +3629,408 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       if (!consentAccepted && view !== 'resources') {
         return renderConsent();
       }
+      // ─────────────────────────────────────────
+      // BODY 3D — hand placement, depth/recoil, recovery position
+      //
+      // Same accessibility contract used across these 3D modules: the canvas
+      // is aria-hidden and every target is also a real button. A student on a
+      // screen reader, a locked-down Chromebook or a blocked CDN loses the
+      // picture and loses none of the teaching.
+      // ─────────────────────────────────────────
+      function renderBody3D() {
+        var tab = d.b3dTab || 'gate';
+        var placed = d.b3dPlaced || null;
+        var pad = d.b3dPad || null;
+        var mech = d.b3dMech || null;
+        var gate = d.b3dGate || null;
+        var age = d.b3dAge || 'adult';
+        var recDone = d.b3dRec || [];
+        var violations = d.b3dViolations || [];
+        var st3 = (BODY3D.status() === 'failed') ? 'failed' : (d.b3dStatus || 'idle');
+
+        var ageInfo = CPR_AGES[0];
+        for (var agi = 0; agi < CPR_AGES.length; agi++) if (CPR_AGES[agi].id === age) ageInfo = CPR_AGES[agi];
+
+        // The scenario tab drives the figure from the case being run, not from
+        // the age selector (which only appears on the placement/depth tabs).
+        var sceneAge = age;
+        if (tab === 'call') {
+          var _run = d.b3dCall || {};
+          for (var cci = 0; cci < CALL_CASES.length; cci++) {
+            if (CALL_CASES[cci].id === _run.caseId) { sceneAge = CALL_CASES[cci].age || 'adult'; break; }
+          }
+        }
+
+        BODY3D.sync({
+          // Only surface a target while the tab that owns it is open. Otherwise
+          // a stale chip floats over the body labelling something the student
+          // is not being asked about.
+          selected: (tab === 'place' ? placed : (tab === 'aed' ? pad : null)),
+          phase: tab === 'recovery' ? recDone.length : 0,
+          // On the scenario tab the body should be the person in the story —
+          // an adult figure during the infant call would undercut the whole
+          // point of the age selector.
+          sceneProps: { tab: tab, age: sceneAge },
+          sceneKey: tab + ':' + sceneAge,
+          dark: true, contrast: !!ctx.isContrast,
+          onPick: function (id) { pickZone(id); },
+          onStatus: function (n) { upd('b3dStatus', n); }
+        });
+
+        function zoneById(id) {
+          var key = (id === 'sideL' || id === 'sideR') ? 'side' : id;
+          for (var i = 0; i < CPR_ZONES.length; i++) if (CPR_ZONES[i].id === key) return CPR_ZONES[i];
+          return null;
+        }
+        function padById(id) {
+          for (var i = 0; i < AED_PADS.length; i++) if (AED_PADS[i].id === id) return AED_PADS[i];
+          return null;
+        }
+        // One pick handler for both target sets — the 3D scene only shows the
+        // targets belonging to the open tab, so the id tells us which it is.
+        function pickZone(id) {
+          var p = padById(id);
+          if (p) { upd('b3dPad', p.id); frAnnounce(p.label + '. ' + p.why); return; }
+          var z = zoneById(id);
+          if (!z) return;
+          upd('b3dPlaced', z.id === 'side' ? 'sideL' : z.id);
+          frAnnounce(z.label + '. ' + z.why);
+        }
+
+        var placedZone = placed ? zoneById(placed) : null;
+
+        function tabBtn(id, label) {
+          var active = tab === id;
+          return h('button', {
+            key: id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
+            onClick: function () { upd('b3dTab', id); frAnnounce(label); },
+            style: btn({
+              padding: '7px 12px', fontSize: 13,
+              background: active ? T.accent : T.card,
+              color: active ? '#fff' : T.text,
+              border: '1px solid ' + (active ? T.accent : T.border)
+            })
+          }, label);
+        }
+
+        function note(title, body, tone) {
+          var c = tone === 'bad' ? T.danger : (tone === 'ok' ? T.ok : (tone === 'warn' ? T.warn : T.border));
+          return h('div', { style: { marginTop: 10, padding: 11, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + c, borderLeft: '4px solid ' + c } },
+            h('div', { style: { fontSize: 11.5, fontWeight: 800, color: c, marginBottom: 4 } }, title),
+            h('div', { style: { fontSize: 12.5, color: T.text, lineHeight: 1.6 } }, body));
+        }
+
+        function hazardRow(hz) {
+          var hit = violations.indexOf(hz.id) !== -1;
+          return h('div', { key: hz.id },
+            h('button', {
+              onClick: function () {
+                if (hit) return;
+                upd('b3dViolations', violations.concat([hz.id]));
+                frAnnounceUrgent('That is never correct. ' + hz.why);
+              },
+              style: btn({ width: '100%', fontSize: 12.5, fontWeight: 600, border: '1px solid ' + (hit ? T.danger : T.border) })
+            }, h('span', { 'aria-hidden': 'true' }, hz.icon + ' '), hz.label),
+            hit && h('div', { style: { padding: '8px 11px', fontSize: 12.5, color: T.text, lineHeight: 1.6, background: T.cardAlt, borderLeft: '3px solid ' + T.danger, marginTop: 3, borderRadius: 4 } },
+              h('strong', { style: { color: T.danger } }, 'Never correct. '), hz.why));
+        }
+
+        return h('div', { style: { padding: 16, maxWidth: 1040, margin: '0 auto' } },
+          h('button', { onClick: function () { upd('view', 'menu'); }, style: btn({ padding: '6px 12px', fontSize: 12, marginBottom: 12 }) },
+            __alloT('stem.firstresponse.b3d_back', '← Menu')),
+          h('h1', { style: { margin: '0 0 6px', fontSize: 20, color: T.text } },
+            h('span', { 'aria-hidden': 'true' }, '🫀 '), __alloT('stem.firstresponse.b3d_title', 'Body position in 3D')),
+          h('p', { style: { margin: '0 0 8px', fontSize: 13, color: T.muted, lineHeight: 1.6 } },
+            __alloT('stem.firstresponse.b3d_intro', 'The rhythm trainer teaches you how FAST. This teaches you WHERE — where your hands go on a real chest, where the AED pads go, and what the recovery position actually looks like from every side. Those are the things a flat diagram teaches worst.')),
+          h('div', { role: 'note', style: { margin: '0 0 12px', padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.accent, fontSize: 12, color: T.text, lineHeight: 1.6 } },
+            h('strong', { style: { color: T.accentHi } }, __alloT('stem.firstresponse.b3d_scope_lead', 'Scope: ')),
+            __alloT('stem.firstresponse.b3d_scope', 'lay rescuer, compression-focused, covering adult, child and infant. This is orientation and practice, not certification — it cannot tell you whether your depth is real, which is exactly what an instructor with a manikin can. Take a hands-on course. In a real emergency, call 911 first or send someone to.')),
+
+          h('div', { role: 'tablist', style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 10 } },
+            tabBtn('gate', __alloT('stem.firstresponse.b3d_tab_gate', '1 · Which one do they need?')),
+            tabBtn('place', __alloT('stem.firstresponse.b3d_tab_place', '2 · Hand placement')),
+            tabBtn('depth', __alloT('stem.firstresponse.b3d_tab_depth', '3 · Depth + recoil')),
+            tabBtn('aed', __alloT('stem.firstresponse.b3d_tab_aed', '4 · AED pads')),
+            tabBtn('recovery', __alloT('stem.firstresponse.b3d_tab_recovery', '5 · Recovery position')),
+            tabBtn('call', __alloT('stem.firstresponse.b3d_tab_call', '6 · Run the call'))
+          ),
+
+          // Age selector — only meaningful where the technique actually differs.
+          (tab === 'place' || tab === 'depth') && h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center', marginBottom: 12, padding: 9, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
+            h('span', { style: { fontSize: 12, fontWeight: 700, color: T.muted } }, __alloT('stem.firstresponse.b3d_age', 'Who is it?')),
+            CPR_AGES.map(function (a) {
+              var on = age === a.id;
+              return h('button', { key: a.id, 'aria-pressed': on ? 'true' : 'false',
+                'aria-label': a.label + ' — ' + a.who,
+                onClick: function () { upd('b3dAge', a.id); frAnnounce(a.label + '. ' + a.who + '. ' + a.where + ' ' + a.depth); },
+                style: btn({ padding: '6px 11px', fontSize: 12.5, background: on ? T.accent : T.card, color: on ? '#fff' : T.text, border: '1px solid ' + (on ? T.accent : T.border) }) },
+                h('span', { 'aria-hidden': 'true' }, a.icon + ' '), a.label);
+            }),
+            h('span', { style: { fontSize: 11, color: T.dim } }, ageInfo.who)
+          ),
+
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 14, alignItems: 'start' } },
+            h('div', null,
+              h('div', {
+                ref: BODY3D.attach, tabIndex: 0, role: 'group',
+                'aria-label': __alloT('stem.firstresponse.b3d_viewer_label', 'Body diagram, 3D. Interactive. Arrow keys rotate, plus and minus zoom, zero resets. Every target here is also a button below.'),
+                onKeyDown: function (e) {
+                  var k = e.key, handled = true;
+                  if (k === 'ArrowLeft') BODY3D.nudge(-0.16, 0);
+                  else if (k === 'ArrowRight') BODY3D.nudge(0.16, 0);
+                  else if (k === 'ArrowUp') BODY3D.nudge(0, 0.10);
+                  else if (k === 'ArrowDown') BODY3D.nudge(0, -0.10);
+                  else if (k === '+' || k === '=') BODY3D.zoom(-0.4);
+                  else if (k === '-' || k === '_') BODY3D.zoom(0.4);
+                  else if (k === '0') BODY3D.reset();
+                  else handled = false;
+                  if (handled) { e.preventDefault(); e.stopPropagation(); }
+                },
+                style: { position: 'relative', width: '100%', height: 320, borderRadius: 10, overflow: 'hidden', background: '#0b1220', border: '1px solid ' + T.border }
+              },
+                st3 !== 'ready' && h('div', { style: { position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: 18, fontSize: 12.5, color: T.muted, lineHeight: 1.55 } },
+                  st3 === 'failed'
+                    ? __alloT('stem.firstresponse.b3d_failed', '3D view unavailable on this device or network. Every target and every step is a button below — nothing here needs the picture.')
+                    : __alloT('stem.firstresponse.b3d_loading', 'Loading the body diagram…'))
+              ),
+              h('div', { style: { display: 'flex', gap: 5, marginTop: 8, flexWrap: 'wrap' } },
+                [['Rotate view left', '⟲', function () { BODY3D.nudge(-0.28, 0); }],
+                 ['Rotate view right', '⟳', function () { BODY3D.nudge(0.28, 0); }],
+                 ['Tilt view up', '▲', function () { BODY3D.nudge(0, 0.16); }],
+                 ['Tilt view down', '▼', function () { BODY3D.nudge(0, -0.16); }],
+                 ['Zoom in', '＋', function () { BODY3D.zoom(-0.5); }],
+                 ['Zoom out', '－', function () { BODY3D.zoom(0.5); }],
+                 ['Reset the view', '⌂', function () { BODY3D.reset(); }]].map(function (c) {
+                  return h('button', { key: c[0], 'aria-label': c[0], disabled: st3 !== 'ready', onClick: c[2],
+                    style: btn({ padding: '6px 10px', fontSize: 12, minWidth: 34, opacity: st3 === 'ready' ? 1 : 0.45 }) }, c[1]);
+                })
+              ),
+              h('div', { style: { marginTop: 6, fontSize: 10.5, color: T.dim, lineHeight: 1.5 } },
+                __alloT('stem.firstresponse.b3d_hint', 'Schematic on purpose — a diagram you can walk around, not an anatomical model. Drag or arrow keys to spin.'))
+            ),
+
+            h('div', null,
+              tab === 'gate' && h('div', null,
+                h('h2', { style: { margin: '0 0 6px', fontSize: 15, color: T.accentHi } },
+                  __alloT('stem.firstresponse.b3d_gate_h', 'Before anything else: are they breathing normally?')),
+                h('p', { style: { margin: '0 0 10px', fontSize: 12.5, color: T.muted, lineHeight: 1.6 } },
+                  __alloT('stem.firstresponse.b3d_gate_p', 'This single question decides everything that follows. Getting it backwards is the most consequential mistake in this whole module.')),
+                h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+                  BREATHING_GATE.map(function (g) {
+                    var picked = gate === g.id;
+                    return h('div', { key: g.id },
+                      h('button', { onClick: function () { upd('b3dGate', g.id); frAnnounce(g.label + '. ' + g.why); },
+                        style: btn({ width: '100%', border: '1px solid ' + (picked ? T.ok : T.border) }) }, g.label),
+                      picked && note(g.action === 'cpr'
+                        ? __alloT('stem.firstresponse.b3d_gate_cpr', '→ Compressions')
+                        : __alloT('stem.firstresponse.b3d_gate_rec', '→ Recovery position'), g.why, 'ok'));
+                  })
+                ),
+                h('h3', { style: { margin: '14px 0 6px', fontSize: 13, color: T.danger } },
+                  __alloT('stem.firstresponse.b3d_never', 'Never correct')),
+                h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } }, BODY_HAZARDS.map(hazardRow))
+              ),
+
+              tab === 'place' && h('div', null,
+                h('h2', { style: { margin: '0 0 6px', fontSize: 15, color: T.accentHi } },
+                  __alloT('stem.firstresponse.b3d_place_h', 'Where do your hands go?')),
+                h('p', { style: { margin: '0 0 10px', fontSize: 12.5, color: T.muted, lineHeight: 1.6 } },
+                  __alloT('stem.firstresponse.b3d_place_p', 'Tap a spot on the chest in the 3D view, or pick from the list. Both do the same thing.')),
+                h('div', { style: { display: 'flex', flexDirection: 'column', gap: 5 } },
+                  BODY_PARTS.map(function (p) {
+                    return h('button', { key: p.id, 'aria-pressed': placed === p.id ? 'true' : 'false',
+                      onClick: function () { pickZone(p.id); },
+                      style: btn({ width: '100%', fontSize: 13, border: '1px solid ' + (placed === p.id ? T.accent : T.border) }) }, p.label);
+                  })
+                ),
+                placedZone && note(
+                  placedZone.verdict === 'correct' ? '✓ ' + placedZone.label : '✗ ' + placedZone.label,
+                  placedZone.verdict === 'correct'
+                    ? ageInfo.where + ' ' + ageInfo.hands
+                    : placedZone.why,
+                  placedZone.verdict === 'correct' ? 'ok' : (placedZone.verdict === 'harm' ? 'bad' : 'warn')),
+                note(__alloT('stem.firstresponse.b3d_age_hands', ageInfo.icon + ' ' + ageInfo.label + ' — what changes'),
+                  ageInfo.hands, 'ok')
+              ),
+
+              tab === 'aed' && h('div', null,
+                h('h2', { style: { margin: '0 0 6px', fontSize: 15, color: T.accentHi } },
+                  __alloT('stem.firstresponse.b3d_aed_h', 'Where do the AED pads go?')),
+                h('p', { style: { margin: '0 0 10px', fontSize: 12.5, color: T.muted, lineHeight: 1.6 } },
+                  __alloT('stem.firstresponse.b3d_aed_p', 'The pads carry a picture showing this, and the AED talks you through it. Knowing the shape in advance means the picture makes sense when you are under pressure. Two pads, diagonally opposite, so the heart sits between them.')),
+                h('div', { style: { display: 'flex', flexDirection: 'column', gap: 5 } },
+                  AED_PADS.map(function (p) {
+                    return h('button', { key: p.id, 'aria-pressed': pad === p.id ? 'true' : 'false',
+                      onClick: function () { pickZone(p.id); },
+                      style: btn({ width: '100%', fontSize: 13, border: '1px solid ' + (pad === p.id ? T.accent : T.border) }) }, p.label);
+                  })
+                ),
+                (function () {
+                  var sel = pad ? padById(pad) : null;
+                  return sel ? note(sel.verdict === 'correct' ? '✓ ' + sel.label : '✗ ' + sel.label, sel.why,
+                    sel.verdict === 'correct' ? 'ok' : 'warn') : null;
+                })(),
+                h('h3', { style: { margin: '14px 0 6px', fontSize: 13, color: T.accentHi } },
+                  __alloT('stem.firstresponse.b3d_aed_rules', 'Before you press the button')),
+                h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+                  AED_RULES.map(function (r) {
+                    return h('div', { key: r.id, style: { padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
+                      h('div', { style: { fontSize: 12.5, fontWeight: 800, color: T.text, marginBottom: 3 } },
+                        h('span', { 'aria-hidden': 'true' }, r.icon + ' '), r.label),
+                      h('div', { style: { fontSize: 12.5, color: T.muted, lineHeight: 1.6 } }, r.why));
+                  })
+                )
+              ),
+
+              tab === 'depth' && h('div', null,
+                h('h2', { style: { margin: '0 0 6px', fontSize: 15, color: T.accentHi } },
+                  __alloT('stem.firstresponse.b3d_depth_h', 'How hard, and what happens between pushes')),
+                h('div', { style: { display: 'flex', flexDirection: 'column', gap: 5 } },
+                  CPR_MECHANICS.map(function (m) {
+                    return h('button', { key: m.id, 'aria-pressed': mech === m.id ? 'true' : 'false',
+                      onClick: function () { upd('b3dMech', m.id); frAnnounce(m.label + '. ' + m.why); },
+                      style: btn({ width: '100%', fontSize: 13, border: '1px solid ' + (mech === m.id ? T.accent : T.border) }) }, m.label);
+                  })
+                ),
+                (function () {
+                  var sel = null;
+                  for (var i = 0; i < CPR_MECHANICS.length; i++) if (CPR_MECHANICS[i].id === mech) sel = CPR_MECHANICS[i];
+                  return sel ? note(sel.verdict === 'correct' ? '✓ ' + sel.label : '✗ ' + sel.label, sel.why, sel.verdict === 'correct' ? 'ok' : 'warn') : null;
+                })(),
+                note(ageInfo.icon + ' ' + ageInfo.label + __alloT('stem.firstresponse.b3d_depth_for', ' — depth for this age'),
+                  ageInfo.depth, 'ok'),
+                note(__alloT('stem.firstresponse.b3d_breaths', 'Do breaths matter here?'), ageInfo.breaths,
+                  age === 'adult' ? null : 'warn'),
+                note(__alloT('stem.firstresponse.b3d_rate', 'And the rate'),
+                  __alloT('stem.firstresponse.b3d_rate_body', '100 to 120 compressions a minute for every age, which is faster than most people expect. The CPR + AED module has a rhythm trainer for exactly this. Keep interruptions as short as you can, and if an AED arrives, turn it on and do what it says.'))
+              ),
+
+              tab === 'call' && (function () {
+                var run = d.b3dCall || { caseId: null, step: 0, wrong: 0, unsafe: [], picked: null };
+                function setRun(patch) { upd('b3dCall', Object.assign({}, run, patch)); }
+                var kase = null;
+                for (var ci = 0; ci < CALL_CASES.length; ci++) if (CALL_CASES[ci].id === run.caseId) kase = CALL_CASES[ci];
+
+                if (!kase) {
+                  return h('div', null,
+                    h('h2', { style: { margin: '0 0 6px', fontSize: 15, color: T.accentHi } },
+                      __alloT('stem.firstresponse.b3d_call_h', 'Run the call')),
+                    h('p', { style: { margin: '0 0 10px', fontSize: 12.5, color: T.muted, lineHeight: 1.6 } },
+                      __alloT('stem.firstresponse.b3d_call_p', 'The other tabs each teach one piece. Here you have to put them together the way a real call makes you — assess, choose a technique for the person in front of you, place your hands, and adapt when an AED turns up.')),
+                    h('div', { style: { display: 'flex', flexDirection: 'column', gap: 7 } },
+                      CALL_CASES.map(function (c) {
+                        return h('button', { key: c.id,
+                          'aria-label': 'Start scenario: ' + c.title,
+                          onClick: function () { setRun({ caseId: c.id, step: 0, wrong: 0, unsafe: [], picked: null }); frAnnounce('Scenario: ' + c.title + '. ' + c.scene); },
+                          style: btn({ width: '100%' }) },
+                          h('div', { style: { fontSize: 13.5, fontWeight: 800, color: T.text, marginBottom: 3 } },
+                            h('span', { 'aria-hidden': 'true' }, c.icon + ' '), c.title),
+                          h('div', { style: { fontSize: 11.5, color: T.muted, lineHeight: 1.5, fontWeight: 400 } }, c.scene.slice(0, 110) + '…'));
+                      })
+                    ));
+                }
+
+                var finished = run.step >= kase.steps.length;
+                var step = finished ? null : kase.steps[run.step];
+                var pickedOpt = null;
+                if (step && run.picked) {
+                  for (var oi = 0; oi < step.options.length; oi++) if (step.options[oi].id === run.picked) pickedOpt = step.options[oi];
+                }
+                var grade = run.unsafe.length >= 2 ? 'F' : (run.unsafe.length ? 'D' : (run.wrong >= 3 ? 'C' : (run.wrong ? 'B' : 'A')));
+
+                return h('div', null,
+                  h('button', { onClick: function () { setRun({ caseId: null }); }, style: btn({ padding: '5px 10px', fontSize: 12, marginBottom: 10 }) },
+                    __alloT('stem.firstresponse.b3d_call_back', '← Scenarios')),
+                  h('h2', { style: { margin: '0 0 4px', fontSize: 15, color: T.accentHi } },
+                    h('span', { 'aria-hidden': 'true' }, kase.icon + ' '), kase.title),
+                  h('p', { style: { margin: '0 0 10px', fontSize: 12.5, color: T.text, lineHeight: 1.6, fontStyle: 'italic' } }, kase.scene),
+
+                  !finished && h('div', null,
+                    h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 6 } },
+                      __alloT('stem.firstresponse.b3d_call_step', 'Step ') + (run.step + 1) + ' / ' + kase.steps.length),
+                    h('div', { style: { fontSize: 13.5, fontWeight: 800, color: T.text, marginBottom: 8, lineHeight: 1.5 } }, step.prompt),
+                    h('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
+                      step.options.map(function (o) {
+                        var isPick = run.picked === o.id;
+                        var tone = !run.picked ? T.border : (o.verdict === 'correct' ? T.ok : (o.verdict === 'unsafe' ? T.danger : T.warn));
+                        return h('div', { key: o.id },
+                          h('button', { disabled: !!run.picked,
+                            onClick: function () {
+                              var patch = { picked: o.id };
+                              if (o.verdict === 'unsafe' && run.unsafe.indexOf(o.id) === -1) patch.unsafe = run.unsafe.concat([kase.id + ':' + run.step + ':' + o.id]);
+                              if (o.verdict === 'wrong') patch.wrong = run.wrong + 1;
+                              setRun(patch);
+                              if (o.verdict === 'correct') frAnnounce('Correct. ' + o.why);
+                              else frAnnounceUrgent((o.verdict === 'unsafe' ? 'Unsafe. ' : 'Not right. ') + o.why);
+                            },
+                            style: btn({ width: '100%', fontSize: 13, border: '1px solid ' + (isPick ? tone : T.border), background: isPick ? T.cardAlt : T.card }) },
+                            (run.picked ? (o.verdict === 'correct' ? '✓ ' : (o.verdict === 'unsafe' ? '⛔ ' : '✗ ')) : '') + o.label),
+                          run.picked && isPick && h('div', { style: { padding: '8px 11px', fontSize: 12.5, color: T.text, lineHeight: 1.6, background: T.cardAlt, borderLeft: '3px solid ' + tone, marginTop: 3, borderRadius: 4 } },
+                            o.verdict === 'unsafe' && h('strong', { style: { color: T.danger } }, __alloT('stem.firstresponse.b3d_call_unsafe', 'Unsafe. ')),
+                            o.why));
+                      })
+                    ),
+                    pickedOpt && h('button', {
+                      onClick: function () { setRun({ step: run.step + 1, picked: null }); },
+                      style: btn({ marginTop: 10, background: T.accent, color: '#fff', border: '1px solid ' + T.accent, fontSize: 13 }) },
+                      run.step + 1 >= kase.steps.length
+                        ? __alloT('stem.firstresponse.b3d_call_finish', 'See how you did →')
+                        : __alloT('stem.firstresponse.b3d_call_next', 'Next →'))
+                  ),
+
+                  finished && h('div', { style: { padding: 13, borderRadius: 10, background: T.card, border: '2px solid ' + (grade === 'A' ? T.ok : (run.unsafe.length ? T.danger : T.warn)) } },
+                    h('div', { style: { fontSize: 20, fontWeight: 900, color: grade === 'A' ? T.ok : (run.unsafe.length ? T.danger : T.warn), marginBottom: 4 } },
+                      __alloT('stem.firstresponse.b3d_call_grade', 'Grade: ') + grade),
+                    h('div', { style: { fontSize: 12, color: T.muted, marginBottom: 8 } },
+                      run.wrong + __alloT('stem.firstresponse.b3d_call_wrongs', ' wrong · ') + run.unsafe.length + __alloT('stem.firstresponse.b3d_call_unsafes', ' unsafe')),
+                    run.unsafe.length > 0 && note(__alloT('stem.firstresponse.b3d_call_unsafe_h', 'The unsafe choices matter more than the grade'),
+                      __alloT('stem.firstresponse.b3d_call_unsafe_b', 'Every unsafe option in this scenario is one people really choose, usually while trying to help. Run it again and notice what made it look reasonable at the time.'), 'bad'),
+                    note(__alloT('stem.firstresponse.b3d_call_debrief', 'What this call teaches'), kase.debrief, 'ok'),
+                    h('div', { style: { display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' } },
+                      h('button', { onClick: function () { setRun({ step: 0, wrong: 0, unsafe: [], picked: null }); }, style: btn({ fontSize: 12.5 }) },
+                        __alloT('stem.firstresponse.b3d_call_again', '↺ Run it again')),
+                      h('button', { onClick: function () { setRun({ caseId: null }); }, style: btn({ fontSize: 12.5, background: T.accent, color: '#fff', border: '1px solid ' + T.accent }) },
+                        __alloT('stem.firstresponse.b3d_call_next_case', 'Another scenario →')))
+                  )
+                );
+              })(),
+
+              tab === 'recovery' && h('div', null,
+                h('h2', { style: { margin: '0 0 6px', fontSize: 15, color: T.accentHi } },
+                  __alloT('stem.firstresponse.b3d_rec_h', 'Recovery position, in order')),
+                h('p', { style: { margin: '0 0 10px', fontSize: 12.5, color: T.muted, lineHeight: 1.6 } },
+                  __alloT('stem.firstresponse.b3d_rec_p', 'Only for someone unresponsive who IS breathing normally. Work through it and watch the body turn.')),
+                h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 6 } }, recDone.length + ' / ' + RECOVERY_STEPS.length),
+                h('ol', { style: { margin: '0 0 10px', paddingLeft: 20, display: 'flex', flexDirection: 'column', gap: 4 } },
+                  RECOVERY_STEPS.map(function (s, i) {
+                    var done = recDone.indexOf(s.id) !== -1;
+                    var next = recDone.length === i;
+                    return h('li', { key: s.id, style: { fontSize: 12.5, color: done ? T.ok : (next ? T.text : T.dim), lineHeight: 1.5 } },
+                      h('button', { disabled: !next,
+                        onClick: function () { upd('b3dRec', recDone.concat([s.id])); frAnnounce('Step ' + (i + 1) + '. ' + s.label + '. ' + s.why); },
+                        style: btn({ padding: '6px 9px', fontSize: 12.5, width: '100%', opacity: next ? 1 : 0.75, cursor: next ? 'pointer' : 'default', border: '1px solid ' + (done ? T.ok : T.border) }) },
+                        h('span', { 'aria-hidden': 'true' }, s.icon + ' '), s.label),
+                      done && h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.55, padding: '4px 2px 0' } }, s.why));
+                  })
+                ),
+                recDone.length > 0 && h('button', { onClick: function () { upd('b3dRec', []); frAnnounce('Reset'); }, style: btn({ padding: '6px 10px', fontSize: 12 }) },
+                  __alloT('stem.firstresponse.b3d_rec_reset', '↺ Start again')),
+                recDone.length >= RECOVERY_STEPS.length && note(
+                  __alloT('stem.firstresponse.b3d_rec_done', 'Positioned — now keep watching'),
+                  __alloT('stem.firstresponse.b3d_rec_done_body', 'The recovery position buys a protected airway; it does not end the emergency. Stay with them, keep checking that breathing is still normal, and if it stops or turns to gasping, roll them onto their back and start compressions straight away.'),
+                  'ok')
+              )
+            )
+          )
+        );
+      }
+
       var viewBody;
       switch (view) {
         case 'recognize':       viewBody = renderRecognize(); break;
         case 'call':            viewBody = renderCall(); break;
         case 'cprAed':          viewBody = renderCprAed(); break;
+        case 'body3d':          viewBody = renderBody3D(); break;
         case 'bleed':           viewBody = renderBleed(); break;
         case 'choking':         viewBody = renderChoking(); break;
         case 'disabilityAware': viewBody = renderDisabilityAware(); break;

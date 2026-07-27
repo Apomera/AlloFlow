@@ -16,6 +16,7 @@
   var useContext = React.useContext;
   var LanguageContext = window.AlloLanguageContext;
   var _IconFallback = function() { return null; };
+  var AlertTriangle = window.AlertTriangle || _IconFallback;
   var AlignJustify = window.AlignJustify || _IconFallback;
   var ArrowDown = window.ArrowDown || _IconFallback;
   var ArrowRight = window.ArrowRight || _IconFallback;
@@ -705,22 +706,42 @@ const QuickStartWizard = React.memo(({
       }
     }));
   };
+  // Every outcome here has to say something. This handler used to swallow the
+  // error and ignore a non-array result, so the three most likely outcomes —
+  // search unavailable, zero matches, malformed response — were pixel-identical
+  // to a button that isn't wired up at all.
   const handleGoalSearch = async () => {
     if (!learningGoal.trim() || !onLookupStandards) return;
     setIsSearching(true);
     try {
       const results = await onLookupStandards(localData.grade, learningGoal, region);
-      if (results && Array.isArray(results)) {
-        setSuggestedStandards(results);
-        setTimeout(() => {
-          if (standardsListRef.current) standardsListRef.current.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center'
-          });
-        }, 100);
+      if (!Array.isArray(results)) {
+        warnLog("Standards lookup returned a non-array result:", results);
+        if (addToast) addToast(t('toasts.standards_parse_error'), "warning");
+        return;
       }
+      setSuggestedStandards(results);
+      if (results.length === 0) {
+        if (addToast) addToast(t('toasts.no_standards_found'), "info");
+        return;
+      }
+      if (addToast) {
+        const unverified = results.some(std => std && std.webVerified === false);
+        addToast(t(unverified ? 'toasts.standards_found_unverified' : 'toasts.standards_found_verified', {
+          count: results.length
+        }), unverified ? "warning" : "success");
+      }
+      setTimeout(() => {
+        if (standardsListRef.current) standardsListRef.current.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+      }, 100);
     } catch (e) {
-      warnLog("Unhandled error:", e);
+      warnLog("Standards lookup failed:", e);
+      if (addToast) {
+        addToast(e && e.code === 'allo/search-unavailable' ? t('toasts.standards_search_unavailable') : t('toasts.standards_search_failed'), "error");
+      }
     } finally {
       setIsSearching(false);
     }
@@ -926,7 +947,14 @@ const QuickStartWizard = React.memo(({
   }, /*#__PURE__*/React.createElement("div", {
     id: "quickstart-standards-selection-label",
     className: "block text-sm font-bold text-slate-700"
-  }, t('wizard.standards_selection_label')), /*#__PURE__*/React.createElement("div", {
+  }, t('wizard.standards_selection_label')), suggestedStandards.some(std => std && std.webVerified === false) && /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    className: "flex items-start gap-2 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg p-2.5"
+  }, /*#__PURE__*/React.createElement(AlertTriangle, {
+    size: 14,
+    className: "mt-0.5 shrink-0",
+    "aria-hidden": "true"
+  }), /*#__PURE__*/React.createElement("span", null, t('wizard.standards_unverified_notice'))), /*#__PURE__*/React.createElement("div", {
     role: "group",
     "aria-labelledby": "quickstart-standards-selection-label",
     className: "max-h-[200px] overflow-y-auto custom-scrollbar p-1 border border-slate-100 rounded-xl bg-slate-50/50"

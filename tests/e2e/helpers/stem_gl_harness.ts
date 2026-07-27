@@ -53,12 +53,24 @@ export interface HarnessOptions {
   height?: number;
   /** Extra <script> src URLs (repo-relative) loaded before the tool. */
   extraScripts?: string[];
+  /**
+   * Scripts loaded BEFORE the fallback StemLab registry below — use this to
+   * load the real host (stem_lab/stem_lab_module.js) when a tool depends on
+   * something only the host provides, e.g. window.StemLab.makeBayViewer.
+   *
+   * Order matters and is easy to get wrong: the host installs its registry
+   * behind `if (!window.StemLab)`, so anything that defines a stub first wins
+   * permanently. That is why the fallback below fills gaps instead of
+   * replacing wholesale.
+   */
+  preScripts?: string[];
   /** Injected verbatim into the page after mount helpers — define your own probes. */
   probes?: string;
 }
 
 function harnessHtml(o: HarnessOptions): string {
   const extra = (o.extraScripts || []).map((s) => '<script src="/' + s + '"></script>').join('\n');
+  const pre = (o.preScripts || []).map((s) => '<script src="/' + s + '"></script>').join('\n');
   return `<!doctype html>
 <html><head><meta charset="utf-8"><title>${o.toolId} harness</title>
 <style>html,body{margin:0;height:100%;background:#0f172a}
@@ -70,14 +82,27 @@ function harnessHtml(o: HarnessOptions): string {
 <script>
   window.__events = { toasts: [], errors: [] };
   window.addEventListener('error', function (e) { window.__events.errors.push(String(e.message)); });
-  window.StemLab = {
-    _registry: {},
-    registerTool: function (id, cfg) { cfg.id = id; this._registry[id] = cfg; },
-    isRegistered: function (id) { return !!this._registry[id]; },
-    loadScriptResilient: function () { return new Promise(function () {}); },
-    ensureThree: function () { return Promise.resolve(window.THREE); },
-    getRegisteredTools: function () { var s = this; return Object.keys(s._registry).map(function (k) { return s._registry[k]; }); }
-  };
+</script>
+${pre}
+<script>
+  // Fill in only what is missing. When preScripts loaded the real host this
+  // keeps its registry and its extras (makeBayViewer); with no preScripts it
+  // behaves exactly as the original minimal stub did.
+  window.StemLab = window.StemLab || { _registry: {}, _order: [] };
+  if (!window.StemLab._registry) window.StemLab._registry = {};
+  if (!window.StemLab.registerTool) {
+    window.StemLab.registerTool = function (id, cfg) { cfg.id = id; this._registry[id] = cfg; };
+  }
+  if (!window.StemLab.isRegistered) {
+    window.StemLab.isRegistered = function (id) { return !!this._registry[id]; };
+  }
+  if (!window.StemLab.getRegisteredTools) {
+    window.StemLab.getRegisteredTools = function () { var s = this; return Object.keys(s._registry).map(function (k) { return s._registry[k]; }); };
+  }
+  // Always overridden, host or not: the harness guarantees no network, and
+  // three.js is already on the page.
+  window.StemLab.loadScriptResilient = function () { return new Promise(function () {}); };
+  window.StemLab.ensureThree = function () { return Promise.resolve(window.THREE); };
 </script>
 ${extra}
 <script src="/${o.toolFile}"></script>

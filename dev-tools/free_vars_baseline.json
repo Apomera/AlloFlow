@@ -6,8 +6,7 @@
     "TIER2_RULE_IDS",
     "UI_STRINGS",
     "chunkReport",
-    "chunkWeightedScore",
-    "storageDB"
+    "chunkWeightedScore"
   ],
   "view_pdf_audit_source.jsx": [
     "FileDown",
@@ -24,5 +23,48 @@
     "warnLog"
   ],
   "gemini_api_source.jsx": [],
-  "immersive_reader_source.jsx": []
+  "immersive_reader_source.jsx": [],
+  "phase_o_misc_handlers_source.jsx": [
+    "callGemini",
+    "generatedContent",
+    "gradeLevel",
+    "lightweightResources",
+    "setGeneratedContent",
+    "setHistory",
+    "setIsGeneratingGuide",
+    "warnLog"
+  ],
+  "quickstart_source.jsx": [
+    "AlertTriangle",
+    "AlignJustify",
+    "ArrowDown",
+    "ArrowRight",
+    "Brain",
+    "CheckCircle",
+    "CheckCircle2",
+    "Download",
+    "ExternalLink",
+    "Globe",
+    "GraduationCap",
+    "HelpCircle",
+    "LanguageContext",
+    "Languages",
+    "MessageSquare",
+    "Plus",
+    "RefreshCw",
+    "Search",
+    "ShieldCheck",
+    "Sparkles",
+    "Type",
+    "Upload",
+    "Wrench",
+    "X",
+    "safeSetItem",
+    "useCallback",
+    "useContext",
+    "useEffect",
+    "useRef",
+    "useState",
+    "warnLog"
+  ]
 }

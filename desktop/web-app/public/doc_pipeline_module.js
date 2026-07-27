@@ -546,6 +546,36 @@ var _alloLoopPolicy = {
       ? ('introduced ' + (p.newAxe - p.bestAxe) + ' new axe/WCAG violation(s) despite AI gains')
       : ((aiWorse && !axeWorse) ? ('AI rubric dropped ' + p.bestAi + '→' + p.newAi + ' without fixing any axe violation') : 'both scores got worse');
   },
+  // ── L12 (audit 2026-07-26): the AUTO-CONTINUE round's two decisions ──────────────────────
+  // These lived inline in runAutoFixLoop and were tested only through hand-written mirrors in
+  // tests/autofix_loop_noise_robust.test.js — a mirror proves the mirror self-consistent and
+  // nothing else. They are the decisions that keep or throw away a round of a teacher's work, so
+  // they belong here with the rest of the golden-tested policy, where the real function is what
+  // the tests call.
+  //
+  // roundRegressed: revert ONLY on a REAL regression. The blended score wobbles on AI noise, and
+  // reverting on that stalled the loop short of target. "Real" means the DETERMINISTIC component
+  // (axe ∧ Equal Access — reproducible) dropped beyond tolerance, or the AI flagged strictly MORE
+  // issues than before. The issue-count half is gated to the axe-CLEAN branch: in the
+  // axe-violation branch the fix is deterministic, so AI-enumeration noise must not revert a
+  // legitimate axe fix. Content loss is gated inside aiFixChunked, not here.
+  roundRegressed: function (p) {
+    var detTol = (p.detTol == null) ? 1 : p.detTol;
+    var detRegressed = (p.newDet !== null && p.newDet !== undefined)
+      && (typeof p.prevDet === 'number')
+      && p.newDet < (p.prevDet - detTol);
+    var moreIssues = (p.violations === 0) && ((p.newIssues || 0) > (p.prevIssues || 0));
+    return !!(detRegressed || moreIssues);
+  },
+  // roundProgressed: did this round move ANY needle? Fewer axe violations, a meaningfully higher
+  // deterministic score, or — when axe is already clean — fewer AI-flagged issues. Two consecutive
+  // rounds without progress end the loop.
+  roundProgressed: function (p) {
+    var detTol = (p.detTol == null) ? 1 : p.detTol;
+    return !!(p.violations < p.prevViolations
+      || (typeof p.newDet === 'number' && p.newDet > (p.prevDet + detTol))
+      || (p.violations === 0 && (p.newIssues || 0) < (p.prevIssues || 0)));
+  },
   // Keep-best promotion: a genuinely at-least-as-good pass — higher AI score, or fewer axe
   // violations without an AI regression. Under a PARTIAL audit the AI score is inflated, so
   // promote only on a real (full-doc) axe gain.
@@ -1982,6 +2012,22 @@ function readingOrderSequenceRatio(textA, textB) {
   }
   var _r = tails.length / present;
   return _r;
+}
+
+// ── FERPA: fidelity messages are teacher-safe, LOGS are not (deep dive 2026-07-27) ──────────
+// A fidelity note legitimately quotes the document back at the teacher — "8 source numeric values
+// not found unchanged (76, 112, 04/17/2019, …)" is precisely what makes it actionable, and the
+// teacher owns the document. warnLog is a different audience: it feeds window.__alloDiagLog, the
+// panel a teacher COPIES INTO A BUG REPORT. On a psychoeducational report or an IEP those tokens
+// are standard scores, percentiles, dates of birth and dates of testing, and the folio sample is
+// page content. This strips the parenthesised sample for the log only; the count, which is what
+// makes the log useful for diagnosis, is kept.
+function _alloLogSafeFidelityMsg(msg) {
+  return String(msg == null ? '' : msg)
+    // "…output (76, 112, 04/17/2019, …). A remediation…" -> "…output (sample withheld — FERPA). A remediation…"
+    .replace(/\(([^()]*\d[^()]*)\)/g, '(sample withheld from the log — FERPA)')
+    // "Page number(s) 194, 195 from the scanned pages…" -> the count, not the numbers
+    .replace(/Page number\(s\) [^—]*? from the scanned pages/i, 'Page number(s) [withheld — FERPA] from the scanned pages');
 }
 
 // ── Completion-toast selection (audit finding H3, 2026-07-26) ───────────────
@@ -4257,6 +4303,8 @@ var createDocPipeline = function(deps) {
         recoveredRetries: progressStats.recoveredRetries || 0,
         terminalFailures: progressStats.terminalFailures || 0,
         authThrottles: progressStats.authThrottles || 0,
+        probeCalls: progressStats.probeCalls || 0,   // L6: recovery-probe traffic, or the pause looks like idleness
+        probeMs: Math.round(progressStats.probeMs || 0),
         totalApiMs: Math.round(progressStats.totalApiMs || 0),
       };
       var next = Object.assign({}, _activeRemediationProgress || {}, patch || {}, {
@@ -4748,6 +4796,14 @@ var createDocPipeline = function(deps) {
     _geminiCooldownUntil = 0;
     _geminiStormAnnounced = false;
     _geminiLastFailureProfile = null;
+    // Deep dive 2026-07-27: this field was added by L7 and never added to the reset, so a storm on
+    // document A leaked into document B for 120s — `recentlyThrottled` returned true on a
+    // completely calm gate, which is the flag the final-audit sites use to attribute a coverage
+    // shortfall to a rate limit. B could publish "the rest were throttled by a temporary Canvas
+    // rate-limit" having never been throttled. Same invariant the rest of this function documents:
+    // a storm signal must be EARNED by the current run, never inherited.
+    _geminiLastStormTripAt = 0;
+    _geminiOffRouteOkStreak = 0;
     if (_geminiCooldownTimer) { try { clearTimeout(_geminiCooldownTimer); } catch (_) {} _geminiCooldownTimer = null; }
     // Pacing is per-run too — clear any heavy-doc stagger from the previous document; the current run re-applies
     // it via _applyGeminiPacing once it knows whether THIS doc is heavy/scanned.
@@ -5188,7 +5244,16 @@ var createDocPipeline = function(deps) {
           var _perm = !!(err.isAuth || err.isQuota || err.isConfig ||
             (err.message && /API_(AUTH_FAILED|QUOTA_EXHAUSTED|MODEL_NOT_FOUND)/.test(err.message)));
           var _canvasAuth = !!(err.canvasTransientAuth && !err.isQuota && !err.isConfig);
-          if (_perm && _isBurstQuotaErr(err)) { _perm = false; _canvasAuth = true; }
+          // A Canvas 401/403 is almost always a BRIEF THROTTLE, not a dead key — the classifier
+          // flags it canvasTransientAuth while the message still reads API_AUTH_FAILED. Dropping
+          // this de-escalation (as the first version of this extraction did) makes every throttle
+          // look permanent, so the breaker is never fed: the cap stays at 3, no cooldown is set,
+          // `storming` stays false, wait-not-stop returns instantly, and the run hammers a
+          // throttled proxy indefinitely. Field log 2026-07-27 showed 60+ calls over 5,000s with
+          // not one [GeminiGate] line. Order matches the retry path below exactly.
+          if (_perm && _canvasAuth) _perm = false;
+          var _burst = _perm && _isBurstQuotaErr(err);
+          if (_burst) { _perm = false; _canvasAuth = true; }
           if (_perm) return; // real auth/quota/config: permanent, and never fed the breaker
           _rememberGeminiFailure(requestProfile);
           if (_canvasAuth) _geminiNoteAuthFail(_callStats, owner);
@@ -5983,6 +6048,15 @@ var createDocPipeline = function(deps) {
   // needsExpertReview, the distribution verdict's cautions, and the exported accessibility
   // statement. Both lanes now go through here.
   const _REFIX_RECOMPUTED_FIDELITY_KINDS = Object.assign({}, _RECOMPUTABLE_FIDELITY_KINDS, { 'reading-order': 1 });
+  // Deep dive 2026-07-27: the view's "Fix Remaining" lane recomputes a SMALLER set than the
+  // reducer does — it has no preserved-block orphan scan, so it never produces a `placement` note.
+  // Passing it the set above meant it FILTERED placement out of the carried-forward notes and then
+  // never regenerated one, silently deleting the "4 source passages could not be placed… gathered
+  // in the Preserved source content box" disclosure on the first re-fix.
+  //
+  // The rule this encodes: NEVER FILTER A KIND YOU DO NOT RECOMPUTE. Exported so the two lanes
+  // share one definition instead of each keeping a literal that can drift apart again.
+  const _REFIX_LANE_RECOMPUTED_FIDELITY_KINDS = { links: 1, tables: 1, refusal: 1, numeric: 1, 'reading-order': 1 };
   const _mergeFidelityNotes = function (prevNotes, freshNotes, recomputedKinds) {
     const kinds = recomputedKinds || _REFIX_RECOMPUTED_FIDELITY_KINDS;
     const prev = Array.isArray(prevNotes) ? prevNotes : [];
@@ -7189,7 +7263,11 @@ var createDocPipeline = function(deps) {
         // Do not guess that an 8-second sleep cleared a rolling quota. Wait through the live
         // cooldown and require two representative confirmations before revisiting document-sized prompts.
         let _calm = null;
-        try { _calm = await waitForGeminiCalm({ maxWaitMs: _alloCalmBudgetMs(90000, _control && _control.perFileDeadlineTs), shouldAbort: _control && _control.shouldAbort, signal: _control && _control.signal, owner: _control && _control.owner }); } catch (_) {}
+        // Deep dive 2026-07-27: reserve the DRAIN's own 60s, not the calm default's 30s. With the
+        // mismatch the wait could consume budget down to deadline-30s while _drainOutOfTime() trips at
+        // deadline-60s — so the drain paused for its full clamped wait and then revisited ZERO chunks,
+        // spending the wall on nothing. The two numbers must be the same number.
+        try { _calm = await waitForGeminiCalm({ maxWaitMs: _alloCalmBudgetMs(90000, _control && _control.perFileDeadlineTs, _DRAIN_RESERVE_MS), shouldAbort: _control && _control.shouldAbort, signal: _control && _control.signal, owner: _control && _control.owner }); } catch (_) {}
         if ((_calm && _calm.aborted) || _controlAborted()) _throwIfControlAborted(true);
         _deferredIdx.length = 0; // re-collect any chunk STILL throttled this round
         // Recovery stays serial even for the cloud backend. Parallel catch-up was the exact
@@ -9386,7 +9464,31 @@ var createDocPipeline = function(deps) {
   // for partial/malformed records — the user can still download what's there.
   const mergeRangesToFullHtml = (ranges, totalPages) => {
     if (!Array.isArray(ranges) || ranges.length === 0) return '';
-    const sorted = ranges.slice().sort((a, b) => (a.pages[0] || 0) - (b.pages[0] || 0));
+    // L1 (audit 2026-07-26): `pages` was dereferenced unguarded in four places — the sort
+    // comparator, the section attribute, the boundary call and the trailing-gap check. A stored
+    // record missing it (a legacy save, a hand-edited project file, a half-written range) threw a
+    // TypeError out of the merge, and this is the LAST step of a multi-day workflow: the teacher
+    // loses every session's work to one malformed record. Nothing is worth less than the content
+    // here, so a range with unusable page numbers keeps its HTML and simply loses its position —
+    // sorted last, and emitted without a page-range attribute rather than with "undefined-undefined".
+    const _num = (v) => { const n = Number(v); return Number.isFinite(n) && n > 0 ? Math.floor(n) : null; };
+    const _pagesOf = (rg) => {
+      const p = rg && rg.pages;
+      if (!Array.isArray(p)) return { start: null, end: null };
+      const start = _num(p[0]);
+      let end = _num(p[1]);
+      if (start !== null && end !== null && end < start) end = start; // a reversed record is not a reason to lose it
+      return { start, end };
+    };
+    const _positioned = ranges.filter((r) => _pagesOf(r).start !== null);
+    const _unpositioned = ranges.filter((r) => _pagesOf(r).start === null);
+    if (_unpositioned.length) {
+      warnLog('[MultiSession] ' + _unpositioned.length + ' saved range(s) carry no usable page numbers — their content is kept and appended at the end rather than dropped.');
+    }
+    const sorted = _positioned.slice()
+      .sort((a, b) => (_pagesOf(a).start || 0) - (_pagesOf(b).start || 0))
+      .concat(_unpositioned);
+    if (sorted.length === 0) return '';
     // Helper: extract body inner content from a single remediated range's HTML.
     // Tries <main>...</main> first (the preferred landmark), falls back to
     // <body>...</body>, then to the raw string if neither is present.
@@ -9447,21 +9549,30 @@ var createDocPipeline = function(deps) {
     const bodies = [];
     for (let i = 0; i < sorted.length; i++) {
       const r = sorted[i];
+      const _rp = _pagesOf(r);
+      // L1: no page numbers → no page-range attribute, rather than "undefined-undefined".
+      const _rangeAttr = (_rp.start !== null)
+        ? ' data-page-range="' + _rp.start + '-' + (_rp.end === null ? _rp.start : _rp.end) + '"'
+        : ' data-page-range-unknown="true"';
       bodies.push(
-        '<section data-page-range="' + r.pages[0] + '-' + r.pages[1] + '"' +
+        '<section' + _rangeAttr +
         (r.completedAt ? ' data-completed-at="' + new Date(r.completedAt).toISOString() + '"' : '') +
         '>\n' +
         _extractBodyContent(_rangeHtml(r)) +
         '\n</section>'
       );
       if (i < sorted.length - 1) {
-        bodies.push(_boundary(r.pages[1], sorted[i + 1].pages[0]));
+        const _next = _pagesOf(sorted[i + 1]);
+        // A boundary can only describe a GAP when both sides know where they are.
+        if (_rp.end !== null && _next.start !== null) bodies.push(_boundary(_rp.end, _next.start));
+        else bodies.push('\n<hr data-multi-session-boundary="section" aria-label="Section break — resumed remediation session">\n');
       }
     }
     // Optional final gap notice if the last range doesn't reach totalPages.
     let trailingNotice = '';
-    if (totalPages && lastRange.pages[1] < totalPages) {
-      const remStart = lastRange.pages[1] + 1;
+    const _lastPages = _pagesOf(lastRange);
+    if (totalPages && _lastPages.end !== null && _lastPages.end < totalPages) {
+      const remStart = _lastPages.end + 1;
       trailingNotice = '\n<hr data-multi-session-boundary="end-of-completed" ' +
         'aria-label="End of completed pages">\n' +
         '<p data-multi-session-gap="' + remStart + '-' + totalPages + '" role="note" ' +
@@ -9846,7 +9957,17 @@ var createDocPipeline = function(deps) {
       // net read 0 source links on every born-digital PDF and could not fire, no matter how many
       // hyperlinks the remediation dropped. A PDF's links are annotations, not text: ask for them
       // directly and give the net a baseline that actually exists for this input.
-      let _srcLinkAnnotations = 0;
+      // Deep dive 2026-07-27: count only EXTERNAL, DISTINCT destinations, and only when the run
+      // covers the whole document. Three systematic over-counts made this net cry wolf on documents
+      // that lost nothing — and a disclosure that fires falsely is worse than none, because it drives
+      // needsExpertReview and teaches the teacher to ignore the amber banner:
+      //   (1) dest/action-only annotations are INTERNAL navigation — a Word table of contents,
+      //       'see page 12' cross-references, and every footnote reference/back-reference PAIR. A
+      //       20-page report with 18 footnotes reports ~37 'links' the output can never carry.
+      //   (2) one hyperlink spanning two rendered lines is TWO annotation rects, counted twice.
+      //   (3) the same URL repeated on every page (a district footer) counted once per page.
+      // The output side counts <a href> elements, so the honest baseline is DISTINCT EXTERNAL URLs.
+      const _srcLinkUrls = new Set();
       for (let p = 1; p <= pdf.numPages; p++) {
         try {
           const page = await _withTimeout(pdf.getPage(p), 30000, 'getPage (text layer) p' + p);
@@ -9856,7 +9977,10 @@ var createDocPipeline = function(deps) {
               const _a = _annots[ai];
               // A Link annotation with no destination at all is decorative chrome, not a link the
               // output owes an <a> for.
-              if (_a && _a.subtype === 'Link' && (_a.url || _a.unsafeUrl || _a.dest || _a.action)) _srcLinkAnnotations++;
+              if (!_a || _a.subtype !== 'Link') continue;
+              const _u = String(_a.url || _a.unsafeUrl || '').trim();
+              if (!_u) continue; // internal destination (TOC/footnote/cross-reference) — the output owes it no <a href>
+              _srcLinkUrls.add(_u);
             }
           } catch (_) { /* annotations are a bonus signal — never fail a page over them */ }
           const tc = await _withTimeout(page.getTextContent(), 30000, 'getTextContent (text layer) p' + p);
@@ -9883,6 +10007,17 @@ var createDocPipeline = function(deps) {
       }
       // M12: park the real source-link count for the structural fidelity net. Same idiom as H14 —
       // the net runs thousands of lines away, long after this function has returned.
+      // Deep dive 2026-07-27: a PAGE-RANGE run remediates a slice, so a whole-document baseline
+      // guarantees a false 'dropped links' warning (30 source links vs a 10-page output). Publish the
+      // baseline only when the run covers everything; null means 'not measured' and the net falls back
+      // to the markdown count, which is correct for the OCR path.
+      const _srcLinkAnnotations = _srcLinkUrls.size;
+      // The PAGE-RANGE guard lives at the CONSUMER, not here: this extractor takes only `base64`
+      // and has no idea whether the run is remediating a slice. See _srcStructCounts in
+      // fixAndVerifyPdf and _srcLinks in the view's Fix Remaining lane — both refuse the baseline
+      // when a range is set, because a whole-document count against a 10-page output is a
+      // guaranteed false "dropped links" warning. (check_free_vars caught the first attempt to read
+      // a `pageRange` that does not exist in this scope — three ReferenceErrors in waiting.)
       try { if (typeof window !== 'undefined') window.__alloSourceLinkCount = _srcLinkAnnotations; } catch (_) {}
       if (_srcLinkAnnotations > 0) { try { warnLog('[PDF Det] ' + _srcLinkAnnotations + ' hyperlink annotation(s) in the source — the output is expected to carry them'); } catch (_) {} }
       const fullText = pages.map(p => p.text).filter(Boolean).join('\n\n');
@@ -14831,7 +14966,15 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
       });
       return _alloNormalizeStoredVerification(stored, derived);
     };
-    const fullyVerifiedItems = done.filter(q => _batchVerificationFor(q.result).verificationState === 'complete');
+    // Deep dive 2026-07-27: H3's rule applies to the BATCH lane too. verificationState is derived
+    // ONLY from engine statuses (ai/axe/EqualAccess) — _alloDeriveVerificationState never sees
+    // needsExpertReview or the fidelity notes — so a document that lost hyperlinks or a table, or
+    // whose alt text is information-free, comes back 'complete' and was counted as FULLY VERIFIED in
+    // the batch summary, the toast, the CSV and the report. That is the same false claim the
+    // single-file completion ladder was fixed for; a batch of 30 must not be graded more loosely
+    // than one file run by hand.
+    const _batchFullyVerified = (q) => _batchVerificationFor(q.result).verificationState === 'complete' && !(q.result && q.result.needsExpertReview);
+    const fullyVerifiedItems = done.filter(_batchFullyVerified);
     const reviewRequiredItems = done.filter(q => _batchVerificationFor(q.result).requiresManualReview);
     const totalElapsed = Math.round((Date.now() - startTime) / 1000);
     setPdfBatchSummary({
@@ -14911,7 +15054,7 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
     } else if (_batchHandoffStopped) {
       addToast(`Batch paused safely: a timed-out file is still shutting down. ${done.length}/${queue.length} processed${_failList}. ${_queuedTail || 'Remaining files stay queued for Resume.'}`, 'warning');
     } else {
-      const _verifiedDone = done.filter(q => _batchVerificationFor(q.result).verificationState === 'complete').length;
+      const _verifiedDone = done.filter(_batchFullyVerified).length; // deep dive 2026-07-27: same rule as the summary above
       const _reviewDone = done.length - _verifiedDone;
       addToast(`Batch complete: ${done.length}/${queue.length} PDFs processed · ${_verifiedDone} fully verified${_reviewDone > 0 ? ` · ${_reviewDone} require review` : ''} (avg +${(function(){ var _v = done.filter(q => q.result && q.result.afterScore != null && q.result.beforeScore != null); return _v.length ? Math.round(_v.reduce((s, q) => s + (q.result.afterScore - q.result.beforeScore), 0) / _v.length) : 0; })()} points)${_failList}`, (failed.length > 0 || _reviewDone > 0) ? 'warning' : 'success');
     }
@@ -18388,7 +18531,7 @@ HTML section ${chunkNum}/${chunks.length}:
         && _sharedEpoch === _chunkDocumentEpoch);
       let _invocationChunkState = _stateMatchesInvocation ? _cloneChunkStateForInvocation(_sharedChunkState) : null;
       if (_sharedChunkState && !_stateMatchesInvocation) {
-        _pipeLog('AutoFix', 'Discarding prior shared chunk state for this invocation; document identity or epoch changed.');
+        _pipeLog('AutoFix', 'Discarding prior shared chunk state for this invocation; document identity or epoch changed.', null, _sessMeta.owner || null); // M20: stamp the caller's identity when it supplies one
         _autoFixChunkStateCoordinator.publish(_chunkStateOwner, null);
       }
       let currentHtml = htmlContent;
@@ -24984,7 +25127,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
             integrityWarning = integrityWarning ? (integrityWarning + ' ' + _valWarn) : _valWarn;
             _numericLossWarn = _valWarn; // also surface in the persistent fidelity panel + fidelityLimited (below)
             if (!_silentMode) addToast('⚠ ' + _valWarn, 'warning');
-            warnLog('[Integrity] VALUE-FIDELITY — ' + _valWarn);
+            warnLog('[Integrity] VALUE-FIDELITY — ' + _alloLogSafeFidelityMsg(_valWarn)); // FERPA: the VALUES are for the teacher's panel/Diff, never the copyable log
           }
         } catch (_valErr) { warnLog('[Integrity] value-fidelity check failed (non-critical): ' + (_valErr && _valErr.message)); }
         // #F (2026-07-05): the REVERSE of the numeric check for page folios — a running-head page number
@@ -25002,7 +25145,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
               && !new RegExp('(^|[^0-9])' + n + '([^0-9]|$)').test(_srcRaw || ''));
             if (_leaked.length) {
               _folioLeakWarn = 'Page number(s) ' + _leaked.join(', ') + ' from the scanned pages appear inline in the output text — a running-head/folio the AI transcription carried into a sentence. Search the document for the stray number(s) and delete them.';
-              warnLog('[Integrity] FOLIO-LEAK — ' + _folioLeakWarn);
+              warnLog('[Integrity] FOLIO-LEAK — ' + _alloLogSafeFidelityMsg(_folioLeakWarn)); // FERPA: the leaked numbers are document content
             }
           }
         } catch (_) {}
@@ -25041,7 +25184,14 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         // produces no markdown for the link net to count. Null on the OCR path, where the Vision
         // prompt does ask for `[text](url)` and the markdown count is the right baseline.
         let _srcStructCounts = null;
-        try { const _lc = (typeof window !== 'undefined') ? window.__alloSourceLinkCount : null; if (Number.isFinite(_lc) && _lc > 0) _srcStructCounts = { links: _lc }; } catch (_) {}
+        // Deep dive 2026-07-27: refuse the whole-document baseline on a PAGE-RANGE run. Comparing 30
+        // source links against a 10-page output is a guaranteed false 'dropped links' warning, and a
+        // disclosure that cries wolf teaches the teacher to ignore the amber banner.
+        try {
+          const _lc = (typeof window !== 'undefined') ? window.__alloSourceLinkCount : null;
+          const _sliceRun = !!(_pageRange && (_pageRange[0] || _pageRange[1]));
+          if (!_sliceRun && Number.isFinite(_lc) && _lc > 0) _srcStructCounts = { links: _lc };
+        } catch (_) {}
         _structuralFidelityNotes = _computeStructuralFidelityNotes((extractedText || '').replace(_ALLO_MARKER_RE, ''), accessibleHtml, _srcStructCounts);
         // H14 (audit 2026-07-26): the image/caption pairing check runs back in Step 2, long before
         // this array exists, so it parks its finding on a run-scoped signal. Consume it here — a
@@ -25051,7 +25201,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           const _ip = (typeof window !== 'undefined') ? window.__alloImagePairingUncertain : null;
           if (_ip && _ip.msg) _structuralFidelityNotes.push({ kind: 'imagePairing', msg: _ip.msg });
         } catch (_) {}
-        _structuralFidelityNotes.forEach((n) => warnLog('[Fidelity] ' + n.msg));
+        _structuralFidelityNotes.forEach((n) => warnLog('[Fidelity] ' + _alloLogSafeFidelityMsg(n.msg))); // FERPA: see _alloLogSafeFidelityMsg
       } catch (_sfErr) { warnLog('[Fidelity] structural net failed (non-critical): ' + (_sfErr && _sfErr.message)); }
       // A changed NUMBER is the highest-stakes fidelity loss for an assessment report, but the bulk
       // char-coverage % barely moves on it and the structural nets don't look for it. Push it into the
@@ -25607,6 +25757,8 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
           recoveredRetries: _runStats.recoveredRetries || 0,
           terminalFailures: _runStats.terminalFailures || 0,
           authThrottles: _runStats.authThrottles || 0,
+          probeCalls: _runStats.probeCalls || 0,
+          probeMs: Math.round(_runStats.probeMs || 0),
           durationMs: Date.now() - _startTime,
         },
       };
@@ -25827,6 +25979,8 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         recoveredRetries: _runStats.recoveredRetries || 0,
         terminalFailures: _runStats.terminalFailures || 0,
         authThrottles: _runStats.authThrottles || 0,
+        probeCalls: _runStats.probeCalls || 0,
+        probeMs: Math.round(_runStats.probeMs || 0),
         lastOpenStep: _runStats.lastOpenStep || null,
         lastOpenStepLabel: _runStats.lastOpenStepLabel || '',
         durationMs: Math.max(0, Date.now() - _startTime),
@@ -38828,6 +38982,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     // gate each round on these instead of firing into an active Canvas rate-limit storm — the run
     // waits (bounded) and then proceeds at full strength; nothing is ever skipped or stopped.
     geminiThrottleInfo: _geminiThrottleInfo,
+    resetGeminiBreaker: _resetGeminiBreaker, // deep dive 2026-07-27: so a test can prove a storm signal is not inherited across runs
     waitForGeminiCalm: waitForGeminiCalm,
     clampPaletteContrast: clampPaletteContrast,
     buildPaletteCss: buildPaletteCss,
@@ -38852,6 +39007,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     // whole array — durable extraction-time disclosures are not theirs to drop.
     mergeFidelityNotes: _mergeFidelityNotes,
     refixRecomputedFidelityKinds: _REFIX_RECOMPUTED_FIDELITY_KINDS,
+    refixLaneRecomputedFidelityKinds: _REFIX_LANE_RECOMPUTED_FIDELITY_KINDS, // deep dive 2026-07-27: the view lane's SMALLER set — it has no placement scan
+    sourceLinkCount: () => { try { const n = (typeof window !== 'undefined') ? window.__alloSourceLinkCount : null; return (Number.isFinite(n) && n > 0) ? n : null; } catch (_) { return null; } }, // M12 baseline, so every recompute lane reads it the same way
     htmlToPlainText: htmlToPlainText,
     restyleBlock: restyleBlock,
     listifyTableCellBullets: listifyTableCellBullets,
@@ -38999,6 +39156,7 @@ window.AlloModules.createDocPipeline.latexToSpeakable = _alloLatexToSpeakable; /
 window.AlloModules.createDocPipeline.orderTextItems = _alloOrderTextItems; // static: H12 (2026-07-26) — column + RTL reading-order repair; pure, so the direction fix is unit-testable without pdf.js
 window.AlloModules.createDocPipeline.resolveExtractionPageCount = _alloResolveExtractionPageCount; // static: M13 (2026-07-26) — guessed-page-count precedence + cap for the Vision fan-out
 window.AlloModules.createDocPipeline.selectCompletionToast = _alloSelectCompletionToast; // static: H3 (2026-07-26) — the completion-toast ladder, testable against the real decision
+window.AlloModules.createDocPipeline.logSafeFidelityMsg = _alloLogSafeFidelityMsg; // static: FERPA redactor for the copyable diagnostics log (deep dive 2026-07-27) — every lane must use the SAME one
 window.AlloModules.createDocPipeline.cleanScannedOcrText = _cleanScannedOcrText; // static: P2-a folio-strip + hyphen-rejoin (2026-07-03), unit-tested
 window.AlloModules.createDocPipeline.stripRestoreMarkdown = _stripRestoreMarkdown; // static: P2-b restore markdown-strip (2026-07-03), unit-tested
 window.AlloModules.createDocPipeline.stripPageEdgeArtifacts = _stripPageEdgeArtifacts; // static: #F page-edge running-head/folio strip (2026-07-05), unit-tested

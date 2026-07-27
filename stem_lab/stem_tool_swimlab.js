@@ -2409,10 +2409,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
               h('h3', { style: { margin: 0, fontSize: 13, fontWeight: 700, color: T.muted, textTransform: 'uppercase', letterSpacing: '0.06em' } },
                 '🕒 Recent answers (last ' + askHistory.length + ')'),
               h('button', {
-                onClick: function() {
-                  if (typeof window !== 'undefined' && window.confirm && !window.confirm('Clear all saved AI answers? This cannot be undone.')) return;
+                type: 'button',
+                onClick: async function() {
+                  // AlloFlowUX has a native-confirm fallback during early app startup.
+                  // SwimLab is destructive here, so require the real accessible dialog
+                  // module and fail closed rather than invoking that fallback.
+                  var dialogModule = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.ConfirmDialog && window.AlloModules.ConfirmDialog.ConfirmDialog;
+                  var confirmApi = typeof window !== 'undefined' && window.AlloFlowUX && window.AlloFlowUX.confirm;
+                  if (typeof dialogModule !== 'function' || typeof confirmApi !== 'function') {
+                    var unavailable = __alloT('stem.swimlab.clear_history_confirmation_unavailable', 'Confirmation is unavailable, so your saved answers were not changed.');
+                    addToast(unavailable, 'warning');
+                    wsAnnounce(unavailable);
+                    return;
+                  }
+                  var shouldClear = false;
+                  try {
+                    shouldClear = await confirmApi(
+                      __alloT('stem.swimlab.clear_history_confirmation', 'Clear all saved AI answers? This cannot be undone.'),
+                      {
+                        title: __alloT('stem.swimlab.clear_history_confirmation_title', 'Clear saved AI answers?'),
+                        confirmText: __alloT('stem.swimlab.clear_history', 'Clear history'),
+                        cancelText: __alloT('stem.swimlab.keep_saved_answers', 'Keep answers'),
+                        tone: 'danger'
+                      }
+                    );
+                  } catch (err) {
+                    addToast(__alloT('stem.swimlab.clear_history_confirmation_failed', 'The confirmation could not open, so your saved answers were not changed.'), 'warning');
+                    return;
+                  }
+                  if (!shouldClear) {
+                    wsAnnounce(__alloT('stem.swimlab.saved_answers_kept', 'Saved answers kept.'));
+                    return;
+                  }
                   upd('askHistory', []);
-                  wsAnnounce('History cleared');
+                  wsAnnounce(__alloT('stem.swimlab.history_cleared', 'History cleared.'));
                 },
                 'aria-label': __alloT('stem.swimlab.clear_all_saved_ai_answers', 'Clear all saved AI answers'),
                 style: btn({ padding: '4px 10px', fontSize: 11 })

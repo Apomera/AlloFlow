@@ -245,7 +245,33 @@
  * Returns Gemini-compatible groundingMetadata so existing citation rendering works unchanged.
  */
 
+// ── Search diagnostics ring (2026-07-27) ──
+// Web-search failures are SILENT by design: every transport error is caught and
+// turned into "no results", which downstream reads as "nothing to cite". When
+// the maintainer Canvas proxy was retired, that made every grounded feature in
+// Canvas quietly stop working with no console error and no UI message — the
+// Quick Start "Find standards" button just spun and returned nothing.
+// Everything the search chain attempts now lands here, and the Diagnostics
+// panel's Search tab reads it. Capped ring; never throws.
+const SEARCH_TRACE_LIMIT = 60;
+function _searchTrace(event, detail) {
+    try {
+        if (typeof window === 'undefined') return;
+        if (!Array.isArray(window.__alloSearchTrace)) window.__alloSearchTrace = [];
+        window.__alloSearchTrace.push({
+            at: Date.now(),
+            event: String(event || ''),
+            detail: String(detail == null ? '' : detail).slice(0, 400),
+        });
+        if (window.__alloSearchTrace.length > SEARCH_TRACE_LIMIT) {
+            window.__alloSearchTrace.splice(0, window.__alloSearchTrace.length - SEARCH_TRACE_LIMIT);
+        }
+    } catch (_) { /* diagnostics must never break a search */ }
+}
+
 const WebSearchProvider = {
+
+    _trace: _searchTrace,
 
     // Configuration
     searxngUrl: 'http://localhost:8888',
@@ -311,6 +337,90 @@ const WebSearchProvider = {
             this._serperProxyMode = null;
             console.log('[WebSearch] No optional Firebase search proxy configured; using the environment search path.');
         }
+        _searchTrace('proxy-init', `mode=${this._serperProxyMode || 'none'} url=${this._serperProxyUrl || 'none'} canvas=${this._isCanvas}`);
+    },
+
+    // ── Bring-your-own Serper.dev key (2026-07-27) ──
+    // Direct browser → google.serper.dev. This is the only transport that needs
+    // no server of any kind, which is what makes it usable in Gemini Canvas
+    // where the app is pasted code with no backend of its own.
+    // The key is the USER'S OWN and lives in their localStorage; it is readable
+    // by anything running on the page, so this is appropriate for a personal
+    // free-tier key and NOT for a shared district key. The hosted-proxy paths
+    // above keep the key server-side and stay preferred whenever available.
+    _serperDirectKey() {
+        try {
+            if (typeof window === 'undefined') return '';
+            if (window.ALLOFLOW_DISABLE_DIRECT_SERPER) return '';
+            const cfg = JSON.parse(window.localStorage.getItem('alloflow_ai_config') || '{}');
+            return String(cfg.serperApiKey || '').trim();
+        } catch (_) { return ''; }
+    },
+
+    async _fetchSerperDirect(query, maxResults) {
+        const key = this._serperDirectKey();
+        if (!key) throw new Error('No Serper key configured.');
+        const safeQuery = String(query || '').replace(/[\u0000-\u001F\u007F]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 200);
+        const num = Math.max(1, Math.min(Number(maxResults) || 5, 10));
+        if (safeQuery.length < 2) throw new Error('Query too short.');
+        const timeoutMs = (typeof window !== 'undefined' && window.AlloFlowConfig && window.AlloFlowConfig.timeouts && window.AlloFlowConfig.timeouts.webSearchMs) || 15000;
+        const response = await fetch('https://google.serper.dev/search', {
+            method: 'POST',
+            mode: 'cors',
+            headers: { 'X-API-KEY': key, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ q: safeQuery, num }),
+            signal: AbortSignal.timeout ? AbortSignal.timeout(timeoutMs) : undefined,
+        });
+        if (!response.ok) {
+            // 401/403 = bad or restricted key; 429 = plan exhausted. Distinguish
+            // them in the trace, because "search is broken" and "your free tier
+            // ran out" need completely different responses from the teacher.
+            _searchTrace('serper-direct-http', `status=${response.status}`);
+            throw new Error(`Serper direct error: ${response.status}`);
+        }
+        const data = await response.json();
+        if (data && data.credits != null) _searchTrace('serper-direct-credits', String(data.credits));
+        return (Array.isArray(data.organic) ? data.organic : [])
+            .slice(0, num)
+            .map((item) => ({
+                url: String(item && item.link || '').trim(),
+                title: String(item && item.title || 'Web source').replace(/[\u0000-\u001F\u007F]/g, ' ').trim().slice(0, 300),
+                snippet: String(item && item.snippet || '').replace(/[\u0000-\u001F\u007F]/g, ' ').trim().slice(0, 1000),
+                source: 'Serper (direct)',
+            }))
+            .filter((item) => {
+                try {
+                    const parsed = new URL(item.url);
+                    return parsed.protocol === 'https:' || parsed.protocol === 'http:';
+                } catch (_) { return false; }
+            });
+    },
+
+    /**
+     * What transports are actually available right now, and why. Read by the
+     * Diagnostics panel's Search tab so "web search isn't working" is a
+     * question with an answer on screen instead of a console-archaeology task.
+     */
+    describeTransports() {
+        this._initSearchProxy();
+        const canvas = this._isCanvas;
+        const directKey = this._serperDirectKey();
+        return {
+            isCanvas: canvas,
+            online: typeof navigator !== 'undefined' ? navigator.onLine : true,
+            proxyUrl: this._serperProxyUrl,
+            proxyMode: this._serperProxyMode,
+            proxyAvailable: this._serperAvailable,
+            consecutiveFailures: this._serperConsecutiveFailures,
+            cooldownUntil: this._serperCooldownUntil || 0,
+            directSerperConfigured: !!directKey,
+            directSerperKeyHint: directKey ? `…${directKey.slice(-4)}` : null,
+            // SearXNG and DuckDuckGo are deliberately skipped in Canvas:
+            // localhost is unreachable and DDG Instant Answers is too erratic.
+            searxngEligible: !canvas,
+            duckduckgoEligible: !canvas,
+            anyTransport: !!(this._serperProxyUrl && this._serperAvailable) || !!directKey || !canvas,
+        };
     },
 
     /**
@@ -354,17 +464,37 @@ const WebSearchProvider = {
                 isCanvas: this._isCanvas,
             });
 
-            // 1️⃣ Serper.dev proxy (best results — real Google SERP via Firebase Cloud Function)
+            _searchTrace('search-start', `q="${searchQuery}" canvas=${this._isCanvas} proxy=${this._serperProxyMode || 'none'} directKey=${!!this._serperDirectKey()}`);
+
+            // 1️⃣ Serper.dev proxy (best results — real Google SERP via a
+            //    server that holds the API key). Preferred whenever present.
             if (this._serperProxyUrl && this._serperAvailable) {
                 try {
                     results = await this._fetchSerper(searchQuery, maxResults);
                     source = 'Serper';
+                    _searchTrace('serper-proxy-ok', `${results.length} result(s)`);
                 } catch (err) {
                     console.log('[WebSearch] Serper proxy failed:', err.message);
+                    _searchTrace('serper-proxy-fail', err && err.message);
+                }
+            } else {
+                _searchTrace('serper-proxy-skip', this._serperProxyUrl ? 'in cooldown after repeated failures' : 'no proxy configured');
+            }
+
+            // 1️⃣b Direct Serper with the user's own key. This is the transport
+            //     that works in Canvas, where there is no server to proxy through.
+            if (results.length === 0 && this._serperDirectKey()) {
+                try {
+                    results = await this._fetchSerperDirect(searchQuery, maxResults);
+                    source = 'Serper (direct)';
+                    _searchTrace('serper-direct-ok', `${results.length} result(s)`);
+                } catch (err) {
+                    console.log('[WebSearch] Direct Serper failed:', err.message);
+                    _searchTrace('serper-direct-fail', err && err.message);
                 }
             }
 
-            // In Canvas, Serper proxy is the ONLY search source.
+            // In Canvas, the Serper transports are the ONLY search sources.
             // SearXNG (localhost) is unreachable, and DDG Instant Answers API
             // is too inconsistent — it returns results unpredictably.
             if (!this._isCanvas) {
@@ -391,10 +521,18 @@ const WebSearchProvider = {
 
             if (results.length === 0) {
                 console.log(`[WebSearch] No results from ${this._isCanvas ? 'Serper (Canvas mode — DDG/SearXNG skipped)' : 'any source'}`);
-                return { results: [], contextPrompt: '', groundingMetadata: null };
+                // "No transport at all" and "transports ran and found nothing"
+                // are the same empty result to every caller, but they need
+                // opposite fixes. Say which one happened.
+                const t = this.describeTransports();
+                _searchTrace('search-empty', t.anyTransport
+                    ? 'transports ran but returned no results'
+                    : 'NO SEARCH TRANSPORT CONFIGURED - nothing was queried');
+                return { results: [], contextPrompt: '', groundingMetadata: null, noTransport: !t.anyTransport };
             }
 
             console.log(`[WebSearch] Found ${results.length} results via ${source}`);
+            _searchTrace('search-ok', `${results.length} result(s) via ${source}`);
 
             const contextPrompt = this._buildContextPrompt(results);
             const groundingMetadata = this._buildGroundingMetadata(results);
@@ -403,6 +541,7 @@ const WebSearchProvider = {
 
         } catch (err) {
             console.warn('[WebSearch] Search failed:', err.message);
+            _searchTrace('search-error', err && err.message);
             return { results: [], contextPrompt: '', groundingMetadata: null };
         }
     },
@@ -840,69 +979,66 @@ const WebSearchProvider = {
     },
 
     /**
-     * Diagnostic: test CSE connectivity from browser console.
-     * Usage: WebSearchProvider.testCSE()
+     * Run a real search and report exactly what happened. Backs the "Run test
+     * search" button in the Diagnostics panel's Search tab.
+     *
+     * Deliberately performs a live query rather than a reachability probe: the
+     * failure that started all of this (no transport configured at all) looks
+     * perfectly healthy to every check short of actually asking for results.
+     */
+    async selfTest(query = 'common core reading standards grade 3') {
+        const started = Date.now();
+        const transports = this.describeTransports();
+        _searchTrace('selftest-start', `q="${query}"`);
+        if (!transports.anyTransport) {
+            _searchTrace('selftest-result', 'no transport configured');
+            return {
+                ok: false,
+                reason: 'no-transport',
+                message: transports.isCanvas
+                    ? 'No web-search transport is configured for Canvas. Add your own Serper.dev API key in Settings, or point ALLOFLOW_CANVAS_SEARCH_PROXY at a search proxy you control.'
+                    : 'No web-search transport is configured.',
+                transports,
+                elapsedMs: Date.now() - started,
+            };
+        }
+        try {
+            const out = await this.search(query, 3);
+            const count = (out && Array.isArray(out.results)) ? out.results.length : 0;
+            _searchTrace('selftest-result', `${count} result(s) via ${out && out.source || 'none'}`);
+            return {
+                ok: count > 0,
+                reason: count > 0 ? 'ok' : 'no-results',
+                message: count > 0
+                    ? `${count} result(s) via ${out.source}.`
+                    : 'The search ran but returned no results.',
+                source: out && out.source || null,
+                sample: count > 0 ? out.results.slice(0, 3).map(r => ({ title: r.title, url: r.url })) : [],
+                transports,
+                elapsedMs: Date.now() - started,
+            };
+        } catch (err) {
+            _searchTrace('selftest-error', err && err.message);
+            return {
+                ok: false,
+                reason: 'error',
+                message: String(err && err.message || err),
+                transports,
+                elapsedMs: Date.now() - started,
+            };
+        }
+    },
+
+    /**
+     * Google Programmable Search (CSE) is NOT part of the search chain. The old
+     * testCSE() called this._loadCSEKeys(), which has never existed in this
+     * module — so the "diagnostic" threw TypeError on its first line and told
+     * whoever ran it nothing. Kept as a signpost to the check that does work.
      */
     async testCSE() {
-        console.log('=== CSE DIAGNOSTIC START ===');
-        console.log('Page origin:', window.location.origin);
-        console.log('Page hostname:', window.location.hostname);
-
-        // 1. Load keys
-        await this._loadCSEKeys();
-        console.log('CSE keys loaded:', this._cseKeys.length);
-        if (this._cseKeys.length === 0) {
-            console.log('❌ NO CSE KEYS — cannot test. Check cse-config.json');
-            return { error: 'no_keys' };
-        }
-        console.log('CSE engine ID:', this._cseEngineId);
-        console.log('Key prefix:', this._cseKeys[0].slice(0, 10) + '...');
-
-        // 2. Test googleapis.com reachability (simple HEAD)
-        console.log('\n--- Test 1: googleapis.com reachability ---');
-        try {
-            const headResp = await fetch('https://www.googleapis.com/customsearch/v1?key=INVALID', { mode: 'cors' });
-            console.log('✅ googleapis.com reachable. Status:', headResp.status);
-        } catch (e) {
-            console.log('❌ googleapis.com UNREACHABLE:', e.message);
-            console.log('This confirms CORS/CSP is blocking CSE requests in this environment.');
-            return { error: 'cors_blocked', message: e.message };
-        }
-
-        // 3. Test actual CSE query
-        console.log('\n--- Test 2: Actual CSE API call ---');
-        const key = this._cseKeys[0];
-        const testUrl = `https://www.googleapis.com/customsearch/v1?key=${key}&cx=${this._cseEngineId}&q=test&num=1`;
-        try {
-            const resp = await fetch(testUrl, { mode: 'cors' });
-            const body = await resp.text();
-            console.log('HTTP Status:', resp.status);
-            console.log('Response body (first 500 chars):', body.slice(0, 500));
-            if (resp.ok) {
-                const data = JSON.parse(body);
-                console.log('✅ CSE WORKING! Items returned:', data.items?.length || 0);
-                return { status: 'ok', items: data.items?.length || 0 };
-            } else if (resp.status === 429) {
-                console.log('⚠️ QUOTA EXHAUSTED (429) — daily limit reached for this key');
-                return { error: 'quota_429', body: body.slice(0, 300) };
-            } else if (resp.status === 403) {
-                console.log('⚠️ FORBIDDEN (403) — key may have IP/referer restrictions or API not enabled');
-                try {
-                    const errData = JSON.parse(body);
-                    const reason = errData?.error?.errors?.[0]?.reason || 'unknown';
-                    const msg = errData?.error?.message || '';
-                    console.log('Reason:', reason);
-                    console.log('Message:', msg);
-                    return { error: 'forbidden_403', reason, message: msg };
-                } catch { return { error: 'forbidden_403', body: body.slice(0, 300) }; }
-            } else {
-                console.log('❌ UNEXPECTED STATUS:', resp.status);
-                return { error: `http_${resp.status}`, body: body.slice(0, 300) };
-            }
-        } catch (e) {
-            console.log('❌ FETCH FAILED:', e.message);
-            return { error: 'fetch_failed', message: e.message };
-        }
+        const msg = '[WebSearch] Google CSE is not wired into the search chain. Use WebSearchProvider.selfTest() instead.';
+        console.warn(msg);
+        return { error: 'cse-not-supported', message: msg };
     },
 };
 

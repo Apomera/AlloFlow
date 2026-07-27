@@ -97,6 +97,54 @@ describe('Geometry Sandbox visual clarity', () => {
     expect(source).toContain('sliceFill.renderOrder = 4000');
   });
 
+  it('shows where a raised point will land, and cleans the marker up', () => {
+    const source = read(SOURCE_FILE);
+
+    expect(source).toContain('function buildPlacementGhost(THREE, x, y, z)');
+    expect(source).toContain('if (placeArmed || placeY > 0) {');
+    // Every other scene group has a clear/dispose path; this one must too, or the
+    // marker accumulates GPU resources on every placement tweak.
+    expect(source).toContain('var _clearGhost = function()');
+    expect(source).toContain('disposeGeoObject3D(window._geoScene.ghostGroup)');
+    // A stale ghost is worse than none — the scene effect has to re-run when the
+    // target moves, so the placement values belong in its dependency array.
+    expect(source).toContain('selPart, placeArmed, placeX, placeY, placeZ]);');
+  });
+
+  it('gives the non-visual channel the same information as the 3D view', () => {
+    const source = read(SOURCE_FILE);
+
+    // The ghost is WebGL-only; this is the screen-reader equivalent, and it has to
+    // be wired into the canvas description or it describes a scene that no longer
+    // matches what placement is about to do.
+    expect(source).toContain('function geoDescribePlacement(placement)');
+    expect(source).toContain('{ armed: mode === \'stretch\' && placeArmed, x: placeX, y: placeY, z: placeZ }');
+    expect(source).toContain('geoDescribePlacement: geoDescribePlacement,');
+
+    // Where a point landed is otherwise unknowable without sight.
+    expect(source).toContain("t('stem.geosandbox.sr_point_added', 'Point added')");
+    expect(source).toContain("t('stem.geosandbox.sr_height', 'height')");
+
+    // A toast is a visual channel. Refusals on the keyboard/VR paths speak too.
+    expect(source).toContain('var refuse = function(message, level)');
+    expect(source).toContain('if (announceToSR) announceToSR(message);');
+    expect(source).not.toContain("addToast('Select an object first', 'error')");
+  });
+
+  it('marks the selected object with more than a hue change', () => {
+    const source = read(SOURCE_FILE);
+
+    // WCAG 1.4.1: an amber translucent solid beside a violet one is colour as the
+    // only visual means. The selected object gets an outline that reads through.
+    expect(source).toContain('var edgeLines = function(geo, isSelected)');
+    expect(source).toContain('color: 0xfbbf24, transparent: true, opacity: 0.95, depthTest: false');
+    expect(source).toContain('if (isSelected) lines.renderOrder = 3000;');
+    // The three solids share one edge builder rather than three copies drifting apart.
+    expect(source).toContain('rectGroup.add(edgeLines(rectGeo, isSel))');
+    expect(source).toContain('prismGroup.add(edgeLines(prismGeo, isSel))');
+    expect(source).toContain('pyGroup.add(edgeLines(pyGeo, isSel))');
+  });
+
   it('lets points be placed at a height, not only on the floor', () => {
     const source = read(SOURCE_FILE);
 
@@ -110,6 +158,45 @@ describe('Geometry Sandbox visual clarity', () => {
     expect(source).toContain('_groundPlane.constant = -_ph;');
     expect(source).toContain('window._geoPlaceY = placeY;');
     expect(source).toContain('window._geoPlacePoint(_gpHit.x, _gpHit.z, _gpHit.y)');
+  });
+
+  it('translates the stretch builder’s primary control', () => {
+    const source = read(SOURCE_FILE);
+
+    // These labels are the whole 0D->3D ladder in words, and they double as the
+    // button's aria-label — they shipped hard-coded in English while every other
+    // string in the file went through t().
+    [
+      'btn_start_with_point', 'btn_select_first', 'btn_point_to_segment',
+      'btn_segment_to_rect', 'btn_rect_to_prism', 'btn_already_solid',
+      'btn_taper_pyramid', 'btn_taper_frustum', 'btn_taper_prism',
+      'btn_revolve_cone', 'btn_revolve_cylinder', 'btn_needs_rectangle',
+    ].forEach((key) => expect(source).toContain("t('stem.geosandbox." + key + "'"));
+
+    expect(source).not.toContain("label = 'Stretch point → segment (1D)'");
+    expect(source).not.toContain("label = 'Select an object first'");
+    expect(source).not.toContain("'Construction (' + construction.objects.length");
+  });
+
+  it('tells the student what the axis picker will actually do', () => {
+    const source = read(SOURCE_FILE);
+
+    expect(source).toContain('function geoEffectiveAxis(sel, axis, verb)');
+    expect(source).toContain('function geoVerbApplies(sel, verb)');
+    expect(source).toContain('geoEffectiveAxis: geoEffectiveAxis, geoVerbApplies: geoVerbApplies,');
+
+    // Where the picker cannot apply it is REPLACED by a readout of the real
+    // direction, not dimmed — a dimmed control reads as "locked out" when the
+    // truth is "there is nothing to choose". No disabled axis buttons anywhere.
+    expect(source).toContain("var fixedByNormal = eff.reason === 'normal';");
+    expect(source).toContain("t('stem.geosandbox.axis_out_of_face', 'Straight out of the face')");
+    expect(source).not.toContain('bg-slate-800/60 text-slate-400 cursor-not-allowed');
+    expect(source).toContain("t('stem.geosandbox.axis_normal_note'");
+    expect(source).toContain("t('stem.geosandbox.axis_parallel_note'");
+    expect(source).toContain("t('stem.geosandbox.axis_spin_note'");
+
+    // Keyboard/VR must refuse the same combinations the button refuses.
+    expect(source).toContain('if (!geoVerbApplies(sel, buildVerb)) {');
   });
 
   it('keeps the 3D canvas and supporting graphics keyboard and screen-reader accessible', () => {

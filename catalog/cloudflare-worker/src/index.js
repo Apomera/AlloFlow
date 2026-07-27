@@ -1456,6 +1456,199 @@ async function handlePdVerify(request, env) {
   return jsonResponse({ ok: true, valid, credential_profile: profile, assurance: noAssurance });
 }
 
+// ─── Web search proxy (2026-07-27) ───────────────────────────────────────────
+// Gemini Canvas runs AlloFlow as pasted code with no backend of its own, and
+// Google's google_search grounding tool 401s there. Until now the only Canvas
+// search transport was a maintainer-owned Firebase endpoint; when that was
+// retired, every grounded feature (Find standards, Research with Web Search,
+// source fact-checking) silently stopped working.
+//
+// This endpoint replaces it on infrastructure the project already owns. The
+// Serper key lives in `wrangler secret put SERPER_API_KEY` and never reaches
+// the browser.
+//
+// It is deliberately unauthenticated, because Canvas cannot mint Firebase
+// Auth/App Check tokens — which is exactly why the old authenticated Cloud
+// Function path could not serve it.
+//
+// LIMIT DESIGN. Serper's free tier is a ONE-TIME 2,500-search credit, not a
+// monthly refill, so what needs protecting is TOTAL SPEND, not request rate.
+// The two guards are asymmetric on purpose:
+//
+//   * The per-IP cap is deliberately LOOSE. Schools NAT an entire building
+//     behind one address, so a tight per-IP limit throttles thirty teachers as
+//     though they were one abuser. It exists only to stop a runaway client
+//     loop, which looks nothing like classroom traffic.
+//   * The DAILY budget is the real protection. It bounds worst-case spend per
+//     day so one bad day cannot drain the whole credit, and it refuses with a
+//     distinct code so the app can say "today's search budget is used up"
+//     rather than "search is broken".
+//
+// The cache does most of the real saving: standards lookups repeat heavily
+// ("3rd grade main idea CCSS"), and a cache hit costs no credit and consumes
+// no budget.
+//
+// Every limit is overridable from wrangler.toml [vars], so moving to a paid
+// plan is a config change, not a code change.
+const SEARCH_DEFAULTS = {
+  ratePerMinute: 60,   // per IP — a whole school shares one
+  dailyBudget: 500,    // total searches/day across all users
+};
+const SEARCH_MAX_RESULTS = 10;
+const SEARCH_MAX_QUERY_CHARS = 200;
+const SEARCH_CACHE_SECONDS = 900; // 15 min — standards lookups repeat a lot
+
+function searchLimit(env, name, fallback) {
+  const n = Number.parseInt(env && env[`SEARCH_${name}`], 10);
+  return Number.isFinite(n) && n > 0 ? n : fallback;
+}
+
+// Only http(s) survives. Upstream result links are rendered as clickable
+// sources in the app, so a javascript:/data: URL reaching the client would be
+// a stored-XSS vector via search results.
+function searchSafeHttpUrl(value) {
+  try {
+    const parsed = new URL(String(value || ''));
+    return (parsed.protocol === 'https:' || parsed.protocol === 'http:') ? parsed.toString() : '';
+  } catch (_) {
+    return '';
+  }
+}
+
+function searchClientKey(request) {
+  const ip = request.headers.get('CF-Connecting-IP')
+    || request.headers.get('X-Forwarded-For')
+    || 'unknown';
+  return `searchrate:${String(ip).split(',')[0].trim()}`;
+}
+
+// Fixed-window counters in the SEARCH_RATE KV namespace. Approximate by
+// design: KV is eventually consistent, so a burst across colos can slip
+// through. That is acceptable — these are budget guards, not authorization
+// controls, and Serper's own plan ceiling is the hard backstop.
+//
+// Returns null when the request may proceed, or a reason string to refuse with.
+async function searchBudgetRefusal(request, env) {
+  if (!env.SEARCH_RATE) return null; // namespace not bound — fail open; cache still applies
+
+  const perMinute = searchLimit(env, 'RATE_PER_MINUTE', SEARCH_DEFAULTS.ratePerMinute);
+  const perDay = searchLimit(env, 'DAILY_BUDGET', SEARCH_DEFAULTS.dailyBudget);
+
+  const minuteKey = `${searchClientKey(request)}:${Math.floor(Date.now() / 60000)}`;
+  const dayKey = `searchday:${new Date().toISOString().slice(0, 10)}`;
+
+  let minuteCount = 0;
+  let dayCount = 0;
+  try {
+    const [m, d] = await Promise.all([
+      env.SEARCH_RATE.get(minuteKey),
+      env.SEARCH_RATE.get(dayKey),
+    ]);
+    minuteCount = Number(m) || 0;
+    dayCount = Number(d) || 0;
+  } catch (_) { return null; }
+
+  // Daily budget is checked first: it is the limit that actually protects the
+  // credit balance, and it deserves the more specific error.
+  if (dayCount >= perDay) return 'daily-budget-exhausted';
+  if (minuteCount >= perMinute) return 'rate-limited';
+
+  try {
+    await Promise.all([
+      env.SEARCH_RATE.put(minuteKey, String(minuteCount + 1), { expirationTtl: 120 }),
+      // 48h TTL so the day counter self-cleans with no cron.
+      env.SEARCH_RATE.put(dayKey, String(dayCount + 1), { expirationTtl: 172800 }),
+    ]);
+  } catch (_) { /* counting is best-effort */ }
+  return null;
+}
+
+async function handleSearch(request, env, url) {
+  if (env.DISABLE_SEARCH_PROXY === 'true' || env.DISABLE_SEARCH_PROXY === true) {
+    return jsonResponse({ ok: false, error: 'search-disabled' }, 503);
+  }
+  if (!env.SERPER_API_KEY) {
+    return jsonResponse({ ok: false, error: 'search-not-configured' }, 503);
+  }
+
+  const query = String(url.searchParams.get('q') || '')
+    .replace(/[\u0000-\u001F\u007F]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, SEARCH_MAX_QUERY_CHARS);
+  if (query.length < 2) {
+    return jsonResponse({ ok: false, error: 'invalid-query' }, 400);
+  }
+
+  const requested = Number.parseInt(url.searchParams.get('num') || url.searchParams.get('limit'), 10);
+  const num = Number.isFinite(requested) ? Math.max(1, Math.min(requested, SEARCH_MAX_RESULTS)) : 5;
+
+  // Cache first, so repeated identical lookups (the common case for standards)
+  // cost nothing and do not consume the rate-limit budget.
+  const cacheKey = new Request(
+    `https://search-cache.alloflow.invalid/?q=${encodeURIComponent(query)}&num=${num}`,
+    { method: 'GET' },
+  );
+  const cache = caches.default;
+  const cached = await cache.match(cacheKey);
+  if (cached) {
+    const body = await cached.json();
+    return jsonResponse({ ...body, cached: true });
+  }
+
+  const refusal = await searchBudgetRefusal(request, env);
+  if (refusal) {
+    // Distinct codes so the client can tell "slow down" from "the shared
+    // budget for today is spent" — the second is not the teacher's fault and
+    // retrying will not help until tomorrow.
+    return jsonResponse({ ok: false, error: refusal, retryAfterHint: refusal === 'daily-budget-exhausted' ? 'tomorrow' : '1 minute' }, 429);
+  }
+
+  let upstream;
+  try {
+    upstream = await fetch('https://google.serper.dev/search', {
+      method: 'POST',
+      headers: { 'X-API-KEY': env.SERPER_API_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ q: query, num }),
+      signal: AbortSignal.timeout(8000),
+    });
+  } catch (err) {
+    return jsonResponse({ ok: false, error: 'search-upstream-unreachable' }, 502);
+  }
+  if (!upstream.ok) {
+    // Never forward the upstream body — it can echo request details.
+    return jsonResponse({ ok: false, error: 'search-provider-error', status: upstream.status }, 502);
+  }
+
+  let data;
+  try {
+    data = await upstream.json();
+  } catch (_) {
+    return jsonResponse({ ok: false, error: 'search-provider-bad-json' }, 502);
+  }
+
+  // Normalize to the shape WebSearchProvider._fetchSerper already expects, so
+  // the client treats this identically to the retired Firebase proxy.
+  const results = (Array.isArray(data.organic) ? data.organic : [])
+    .slice(0, num)
+    .map((item) => ({
+      url: searchSafeHttpUrl(item && item.link),
+      title: String(item && item.title || 'Web source').replace(/[\u0000-\u001F\u007F]/g, ' ').trim().slice(0, 300),
+      snippet: String(item && item.snippet || '').replace(/[\u0000-\u001F\u007F]/g, ' ').trim().slice(0, 1000),
+      source: 'Serper',
+    }))
+    .filter((item) => !!item.url);
+
+  const payload = { ok: true, query, results };
+  try {
+    await cache.put(cacheKey, new Response(JSON.stringify(payload), {
+      headers: { 'Content-Type': 'application/json', 'Cache-Control': `max-age=${SEARCH_CACHE_SECONDS}` },
+    }));
+  } catch (_) { /* caching is best-effort */ }
+
+  return jsonResponse(payload);
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -1466,6 +1659,13 @@ export default {
 
     if (request.method === 'GET' && url.pathname === '/healthz') {
       return jsonResponse({ ok: true });
+    }
+
+    // GET (not POST) because the Canvas client sends a simple cross-origin
+    // request with no preflight — the same contract the retired proxy used,
+    // so WebSearchProvider's canvas-compat-get path works unchanged.
+    if (request.method === 'GET' && url.pathname === '/search') {
+      return handleSearch(request, env, url);
     }
 
     if (request.method === 'POST' && url.pathname === '/submitTranslation') {

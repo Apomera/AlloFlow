@@ -82,20 +82,30 @@ const renderJsonToHtml = (blocks) => {
               // The allow-list stays strict: ONLY href, only schemes safeHref permits, and the href
               // is re-escaped — so no other attribute (onclick, target, style) can survive, which is
               // the property that made attribute-less tags safe in the first place.
-              .replace(/&lt;a\s+href=(?:&quot;|&#39;)([^&]*?)(?:&quot;|&#39;)&gt;/gi, (m, rawHref) => {
-                _openAnchors++;
+              // Deep dive 2026-07-27 — TWO defects in the first version of this, both fixed by
+              // matching the opener and its closer in ONE pass instead of counting and replaying:
+              //
+              //   1. the href capture was `[^&]*?`, which cannot span `&amp;`. Since escapeTextField
+              //      runs `.replace(/&/g,'&amp;')` FIRST, every href with a query string
+              //      (…?topic=iep&lang=en — district portals, Google Docs, any utm-tagged link)
+              //      failed the allow-list and shipped as visible literal markup, which is the exact
+              //      bug H9 was written to fix.
+              //   2. the closer pass assigned `</a>` in DOCUMENT ORDER while the counter only knew
+              //      HOW MANY openers succeeded. With one failing and one passing anchor in the same
+              //      paragraph, the closer belonging to the still-escaped anchor was consumed,
+              //      leaving an orphan `</a>` and a real link that never closes — unbalanced markup
+              //      in a document this pipeline validates against PDF/UA and axe.
+              //
+              // Pairing them removes both: an anchor either converts whole or stays escaped whole,
+              // so the output is balanced no matter how many fail. The allow-list is unchanged and
+              // still strict — ONLY href, only safeHref's schemes, href re-escaped, and the `&gt;`
+              // immediately after the closing quote still bars any second attribute.
+              .replace(/&lt;a\s+href=(?:&quot;|&#39;)((?:(?!&quot;|&#39;|&gt;).)*?)(?:&quot;|&#39;)&gt;([\s\S]*?)&lt;\/a&gt;/gi, (m, rawHref, inner) => {
                 const decoded = String(rawHref).replace(/&amp;/g, '&');
-                return '<a href="' + safeHref(decoded) + '">';
+                _openAnchors++;
+                return '<a href="' + safeHref(decoded) + '">' + inner + '</a>';
               });
-            // Close only as many anchors as were actually opened. An <a> carrying any extra
-            // attribute (onclick, target, style) deliberately FAILS the allow-list above and stays
-            // escaped — so unconditionally un-escaping every &lt;/a&gt; would emit a stray closing
-            // tag with no opener. Harmless in a browser, but this pipeline's output is validated
-            // against PDF/UA and axe, where unbalanced markup is exactly the kind of thing that
-            // shows up as a defect in the document we just promised was clean.
-            return _openAnchors > 0
-              ? withInline.replace(/&lt;\/a&gt;/gi, () => (_openAnchors-- > 0 ? '</a>' : '&lt;/a&gt;'))
-              : withInline;
+            return withInline;
           };
           // Only allow safe URL schemes in link hrefs (block javascript:, data:, etc.).
           const safeHref = (u) => { const v = String(u || '').trim(); return /^(https?:|mailto:|tel:|#|\/|\.)/i.test(v) ? v.replace(/"/g, '&quot;') : '#'; };

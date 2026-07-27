@@ -57,7 +57,12 @@ const KNOWN_GLOBALS = new Set([
 const args = process.argv.slice(2);
 const UPDATE = args.includes('--update');
 const files = args.filter((a) => a !== '--update');
-if (!files.length) files.push('doc_pipeline_source.jsx', 'view_pdf_audit_source.jsx', 'gemini_api_source.jsx', 'immersive_reader_source.jsx');
+// phase_o_misc_handlers_source.jsx joined the list 2026-07-27: `webSearchProvider`
+// was used by both standards-lookup handlers but never destructured from deps
+// (and never passed in the deps bag either), so the local-backend standards path
+// threw ReferenceError instead of searching. Nothing caught it because this file
+// was outside the gate's default set.
+if (!files.length) files.push('doc_pipeline_source.jsx', 'view_pdf_audit_source.jsx', 'gemini_api_source.jsx', 'immersive_reader_source.jsx', 'phase_o_misc_handlers_source.jsx', 'quickstart_source.jsx');
 
 const BASELINE_PATH = path.resolve(__dirname, 'free_vars_baseline.json');
 const baseline = (!UPDATE && fs.existsSync(BASELINE_PATH)) ? JSON.parse(fs.readFileSync(BASELINE_PATH, 'utf8')) : {};

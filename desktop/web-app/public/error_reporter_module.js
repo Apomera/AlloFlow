@@ -439,6 +439,94 @@
     return payload;
   }
 
+  // ── Web search tab (2026-07-27) ──
+  // Grounded features (Find standards, Research with Web Search, source
+  // discovery, fact-check) all funnel through WebSearchProvider, and every
+  // transport failure in that chain is caught and flattened into "no results".
+  // When the Canvas search proxy was retired, that turned into a whole class of
+  // features that silently did nothing — no error, no toast, no console error.
+  // This tab answers the two questions that were unanswerable from the UI:
+  // is a transport configured at all, and what did the last searches actually do.
+  function searchProviderRef() {
+    try { return window.WebSearchProvider || null; } catch (_) { return null; }
+  }
+
+  function searchTransportSummary() {
+    var p = searchProviderRef();
+    if (!p) return 'Search provider not loaded (ai_backend_module.js has not registered yet).';
+    if (typeof p.describeTransports !== 'function') return 'Search provider loaded, but this build predates transport reporting.';
+    try {
+      var t = p.describeTransports();
+      if (!t.anyTransport) {
+        return 'NO SEARCH TRANSPORT CONFIGURED' + (t.isCanvas ? ' (Canvas)' : '') +
+          ' - grounded features cannot search. Add a Serper.dev API key in Settings.';
+      }
+      var parts = [];
+      if (t.proxyUrl) parts.push('proxy ' + t.proxyMode + (t.proxyAvailable ? '' : ' (in cooldown)'));
+      if (t.directSerperConfigured) parts.push('Serper direct key ' + (t.directSerperKeyHint || ''));
+      if (t.searxngEligible) parts.push('SearXNG eligible');
+      if (t.duckduckgoEligible) parts.push('DuckDuckGo eligible');
+      return (t.isCanvas ? 'Canvas' : 'Standard') + ' - ' + (parts.join(' | ') || 'none') +
+        (t.online === false ? ' - OFFLINE' : '');
+    } catch (e) { return 'Transport state unavailable: ' + String(e && e.message || e); }
+  }
+
+  function searchTraceEntries() {
+    try { return (window.__alloSearchTrace || []).slice(-80); } catch (_) { return []; }
+  }
+
+  function buildSearchDiagText() {
+    var payload;
+    try {
+      var p = searchProviderRef();
+      payload = JSON.stringify({
+        at: new Date().toISOString(),
+        surface: 'error-reporter',
+        identity: identityLine(),
+        transports: (p && typeof p.describeTransports === 'function') ? p.describeTransports() : null,
+        lastSelfTest: window.__alloSearchSelfTest || null,
+        trace: searchTraceEntries()
+      }, null, 2);
+    } catch (e) { payload = 'diagnostics-serialize-failed: ' + String(e && e.message || e); }
+    return payload;
+  }
+
+  function searchTabHtml() {
+    var entries = searchTraceEntries();
+    var rows = entries.length === 0
+      ? '<p style="color:#64748b;font-style:italic;text-align:center;padding:20px 0;margin:0;">No web-search activity recorded yet. Run a test search, or use a feature that searches (Find standards, Research with Web Search).</p>'
+      : entries.slice().reverse().map(ttsEntryHtml).join('');
+
+    var last = window.__alloSearchSelfTest;
+    var resultHtml = '';
+    if (last) {
+      var good = !!last.ok;
+      var sample = (last.sample || []).map(function (s) {
+        return '<li style="margin:2px 0;"><a href="' + escapeHtml(s.url) + '" target="_blank" rel="noopener noreferrer" style="color:#0d9488;">' + escapeHtml(s.title) + '</a></li>';
+      }).join('');
+      resultHtml =
+        '<div style="margin:0 18px 4px;padding:10px 12px;border-radius:8px;border:1px solid ' + (good ? '#5eead4' : '#fca5a5') + ';background:' + (good ? '#f0fdfa' : '#fef2f2') + ';">' +
+          '<p style="margin:0;font:700 12px/1.4 system-ui,sans-serif;color:' + (good ? '#0f766e' : '#b91c1c') + ';">' +
+            (good ? 'Test search succeeded' : 'Test search failed') + ' (' + escapeHtml(String(last.reason || '')) + ', ' + escapeHtml(String(last.elapsedMs || 0)) + 'ms)' +
+          '</p>' +
+          '<p style="margin:4px 0 0;font:12px/1.4 system-ui,sans-serif;color:#334155;">' + escapeHtml(String(last.message || '')) + '</p>' +
+          (sample ? '<ul style="margin:6px 0 0;padding-left:18px;font:12px/1.4 system-ui,sans-serif;">' + sample + '</ul>' : '') +
+        '</div>';
+    }
+
+    return '<div style="padding:10px 18px;border-bottom:1px solid #e2e8f0;background:#fff;display:flex;flex-wrap:wrap;align-items:center;gap:10px;">' +
+        '<span style="font:600 11px/1.4 system-ui,sans-serif;color:#475569;flex:1;min-width:200px;">' + escapeHtml(searchTransportSummary()) + '</span>' +
+        '<button id="aer-search-test" type="button" style="background:#0d9488;border:none;color:#fff;padding:5px 10px;border-radius:6px;font:700 11px/1 system-ui,sans-serif;cursor:pointer;">Run test search</button>' +
+        '<button id="aer-search-refresh" type="button" style="background:#fff;border:1px solid #94a3b8;color:#475569;padding:5px 10px;border-radius:6px;font:600 11px/1 system-ui,sans-serif;cursor:pointer;">Refresh</button>' +
+        '<button id="aer-search-copy" type="button" style="background:#fff;border:1px solid #94a3b8;color:#475569;padding:5px 10px;border-radius:6px;font:600 11px/1 system-ui,sans-serif;cursor:pointer;">Copy diagnostics</button>' +
+      '</div>' +
+      resultHtml +
+      '<div role="region" aria-label="Web search diagnostic events" style="flex:1;overflow-y:auto;padding:12px 18px;background:#f8fafc;">' + rows + '</div>' +
+      '<footer style="padding:10px 18px;border-top:1px solid #e2e8f0;background:#fff;">' +
+        '<p style="margin:0;font:12px/1.4 system-ui,sans-serif;color:#64748b;">Web search backs Find standards, Research with Web Search, and source fact-checking. When no transport is configured those features fall back to the AI\'s own knowledge and label their output as not web-verified.</p>' +
+      '</footer>';
+  }
+
   // ── Session sync tab (2026-07-20) ──
   // Live-session delivery failures are usually SILENT (a privacy-gate
   // refusal once killed resource sync for 2.5 days with only a console
@@ -517,7 +605,7 @@
       : visible.slice().reverse().map(logEntryHtml).join('');
 
     var filterVal = prefs.filter || 'errors';
-    var onErrors = activeTab !== 'tts' && activeTab !== 'session';
+    var onErrors = activeTab !== 'tts' && activeTab !== 'session' && activeTab !== 'search';
     var tabStyle = function (on) {
       return 'padding:7px 14px;border:none;border-bottom:2px solid ' + (on ? '#0d9488' : 'transparent') + ';background:transparent;color:' + (on ? '#0f172a' : '#64748b') + ';font:700 12px/1 system-ui,sans-serif;cursor:pointer;';
     };
@@ -556,6 +644,8 @@
       '</footer>';
     } else if (activeTab === 'session') {
       body = sessionTabHtml();
+    } else if (activeTab === 'search') {
+      body = searchTabHtml();
     } else {
       body = ttsTabHtml();
     }
@@ -566,7 +656,7 @@
         '<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">' +
           '<div>' +
             '<h2 style="margin:0;font:800 16px/1.2 system-ui,sans-serif;color:#0f172a;">🩺 AlloFlow Diagnostics</h2>' +
-            '<p style="margin:2px 0 0;font:12px/1.4 system-ui,sans-serif;color:#64748b;">' + (onErrors ? ('Captured ' + buffer.length + ' entr' + (buffer.length === 1 ? 'y' : 'ies') + '. Send to the developers with one click.') : (activeTab === 'session' ? 'Live-session sync activity for this session.' : 'Read-aloud & text-to-speech activity for this session.')) + '</p>' +
+            '<p style="margin:2px 0 0;font:12px/1.4 system-ui,sans-serif;color:#64748b;">' + (onErrors ? ('Captured ' + buffer.length + ' entr' + (buffer.length === 1 ? 'y' : 'ies') + '. Send to the developers with one click.') : (activeTab === 'session' ? 'Live-session sync activity for this session.' : (activeTab === 'search' ? 'Web-search transports and query activity for this session.' : 'Read-aloud & text-to-speech activity for this session.'))) + '</p>' +
             '<p style="margin:2px 0 0;font:11px/1.4 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#94a3b8;">' + escapeHtml(identityLine()) + '</p>' +
           '</div>' +
           '<button id="aer-close" type="button" aria-label="Close diagnostics" style="background:transparent;border:1px solid #cbd5e1;color:#475569;width:32px;height:32px;border-radius:8px;font-size:18px;cursor:pointer;line-height:1;">✕</button>' +
@@ -575,6 +665,7 @@
           '<button id="aer-tab-errors" type="button" role="tab" aria-selected="' + (onErrors ? 'true' : 'false') + '" style="' + tabStyle(onErrors) + '">⚠ Errors</button>' +
           '<button id="aer-tab-tts" type="button" role="tab" aria-selected="' + (activeTab === 'tts' ? 'true' : 'false') + '" style="' + tabStyle(activeTab === 'tts') + '">🔊 Read-aloud</button>' +
           '<button id="aer-tab-session" type="button" role="tab" aria-selected="' + (activeTab === 'session' ? 'true' : 'false') + '" style="' + tabStyle(activeTab === 'session') + '">🛰 Session</button>' +
+          '<button id="aer-tab-search" type="button" role="tab" aria-selected="' + (activeTab === 'search' ? 'true' : 'false') + '" style="' + tabStyle(activeTab === 'search') + '">🔎 Web search</button>' +
         '</div>' +
       '</header>' +
       body +
@@ -583,7 +674,7 @@
 
 
   function openPanel(tab) {
-    if (tab === 'tts' || tab === 'errors' || tab === 'session') activeTab = tab;
+    if (tab === 'tts' || tab === 'errors' || tab === 'session' || tab === 'search') activeTab = tab;
     if (panel) {
       // Already open: a tab request switches tabs instead of toggling closed.
       if (tab) { refreshPanelIfOpen(); return; }
@@ -624,6 +715,35 @@
     wirePanelHandlers();
   }
 
+  // Clipboard write + button flash, shared by the diagnostics tabs. Mirrors the
+  // existing per-tab copy handlers (async clipboard, execCommand fallback).
+  function copyDiagnosticsText(text, btnId) {
+    var $ = function (id) { return document.getElementById(id); };
+    var flash = function (label) {
+      var b = $(btnId);
+      if (!b) return;
+      b.textContent = label;
+      setTimeout(function () { var b2 = $(btnId); if (b2) b2.textContent = 'Copy diagnostics'; }, 1500);
+    };
+    var fallback = function () {
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        var ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        flash(ok ? 'Copied ✓' : 'Copy failed');
+      } catch (_) { flash('Copy failed'); }
+    };
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function () { flash('Copied ✓'); }).catch(fallback);
+      } else fallback();
+    } catch (_) { fallback(); }
+  }
+
   function wirePanelHandlers() {
     var $ = function (id) { return document.getElementById(id); };
     if ($('aer-close')) $('aer-close').onclick = closePanel;
@@ -635,6 +755,34 @@
     };
     if ($('aer-tab-session')) $('aer-tab-session').onclick = function () {
       if (activeTab !== 'session') { activeTab = 'session'; refreshPanelIfOpen(); }
+    };
+    if ($('aer-tab-search')) $('aer-tab-search').onclick = function () {
+      if (activeTab !== 'search') { activeTab = 'search'; refreshPanelIfOpen(); }
+    };
+    if ($('aer-search-refresh')) $('aer-search-refresh').onclick = refreshPanelIfOpen;
+    if ($('aer-search-test')) $('aer-search-test').onclick = function () {
+      var btn = $('aer-search-test');
+      var p = searchProviderRef();
+      if (!p || typeof p.selfTest !== 'function') {
+        window.__alloSearchSelfTest = {
+          ok: false, reason: 'provider-missing', elapsedMs: 0,
+          message: 'WebSearchProvider is not loaded, so no search can be attempted.'
+        };
+        refreshPanelIfOpen();
+        return;
+      }
+      if (btn) { btn.disabled = true; btn.textContent = 'Searching...'; }
+      p.selfTest().then(function (res) {
+        window.__alloSearchSelfTest = res;
+      }).catch(function (err) {
+        window.__alloSearchSelfTest = {
+          ok: false, reason: 'error', elapsedMs: 0,
+          message: String(err && err.message || err)
+        };
+      }).then(function () { refreshPanelIfOpen(); });
+    };
+    if ($('aer-search-copy')) $('aer-search-copy').onclick = function () {
+      copyDiagnosticsText(buildSearchDiagText(), 'aer-search-copy');
     };
     if ($('aer-sess-refresh')) $('aer-sess-refresh').onclick = refreshPanelIfOpen;
     if ($('aer-sess-copy')) $('aer-sess-copy').onclick = function () {
@@ -804,13 +952,17 @@
     // exposes this so the log is reachable with ZERO captured errors — a
     // stuck read-aloud rarely throws, it just stalls).
     openReadAloudLog: function () { openPanel('tts'); },
+    // Same reasoning for web search: a missing transport throws nothing and
+    // captures no error, so the Search tab has to be reachable with an empty
+    // error buffer. Grounded features link here when a search comes back dry.
+    openSearchLog: function () { openPanel('search'); },
     // Alias kept for API stability — just opens the panel. The form's "what
     // happened?" field falls back to "(No errors captured. Sending a manual
     // report.)" when the buffer is empty, so we don't need to inject anything.
     openManualReport: openPanel
   };
   // Global convenience hook for host surfaces (settings panels, help flows).
-  try { window.__alloOpenDiagnosticsLog = function (tab) { openPanel(tab === 'tts' || tab === 'session' ? tab : 'errors'); }; } catch (_) {}
+  try { window.__alloOpenDiagnosticsLog = function (tab) { openPanel(tab === 'tts' || tab === 'session' || tab === 'search' ? tab : 'errors'); }; } catch (_) {}
 
   // Show the badge if there are pre-existing errors from a previous session.
   // document.body may not be ready yet during early load; defer.

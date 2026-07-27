@@ -2670,14 +2670,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
 
   // ─────────────────────────────────────────────────────────
   // SECTION 9.964: RECOMMENDED LEARNING PATH — 4-week curated walkthrough
-  // For new users / instructors: a paced curriculum order through the 28
-  // modules. Each week has theme + target modules + outcome.
+  // For new users / instructors: a paced curriculum order through the modules.
+  // Each week has theme + target modules + outcome. Deliberately no count in
+  // the prose — it went stale twice before anything enforced it.
   // ─────────────────────────────────────────────────────────
   var LEARNING_PATH = [
     { week: 1, title: 'Week 1 — Know your car (foundation)', icon: '🚗',
       theme: 'Build the basic mental model. Who is this car? What\'s its history? What\'s normal?',
       modules: [
         { id: 'firstcar', why: 'The 30-day owner plan anchors every other module. Even if you\'ve owned the car a while, walk through it once.' },
+        { id: 'underhood', why: 'Open the bonnet and nothing is labelled. Spin the 3D bay and find all 12 parts, then do it once on your own car with the engine cold. Every later module assumes you can point at these.' },
         { id: 'vin', why: 'Decode your VIN. Run the free recall lookup. Know your country/maker/year details.' },
         { id: 'glossary', why: 'Skim the 50+ terms so vocabulary in later modules doesn\'t slow you down.' },
         { id: 'maint', why: 'Build a personalized schedule from your odometer + last service date. Set a baseline.' }
@@ -2689,18 +2691,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         { id: 'diagnose', why: 'The 4-channel diagnostic flow: OBD-II, listening, fluids, visual. Spend 30 min in each tab.' },
         { id: 'tree', why: 'Walk through 3-4 of the 6 decision trees. Each takes 5 min and trains active reasoning.' },
         { id: 'damage', why: 'Visual-pattern game. 15 cases of "what does this look like + what is it." Builds tech-eye.' },
-        { id: 'lab', why: 'Capstone of the diagnostic week — 6 graded scenarios. Each takes ~10 min. Aim for at least B grades.' }
+        { id: 'lab', why: 'Capstone of the diagnostic week — 6 graded scenarios. Each takes ~10 min. Aim for at least B grades.' },
+        { id: 'repairbay', why: 'The other capstone, and the one that trains restraint. 7 cases in the 3D bay where every wrong answer is a part somebody really gets charged for. It grades your EVIDENCE, not just your answer — landing on the right repair with nothing to back it still scores badly, because that habit is what sells people parts they did not need.' }
       ],
-      outcome: 'You can read a customer-style symptom + walk through a defensible diagnostic sequence. You earn at least 2 lab simulator badges.' },
+      outcome: 'You can read a customer-style symptom + walk through a defensible diagnostic sequence. You earn at least 2 lab simulator badges, and you diagnose at least 4 Repair Bay cases correctly without a safety violation.' },
     { week: 3, title: 'Week 3 — Hands-on + safe', icon: '🔧',
       theme: 'Move from theory to actual hands. Pick small jobs, do them safely, log them.',
       modules: [
         { id: 'safety', why: 'Walk through ALL 6 safety modules first. Especially jack stands + electrical + refrigerant. These rules don\'t bend.' },
         { id: 'tools', why: 'Library of 22 tools. Identify what you have + what you\'d need. Play the 13-question tool-selection mini-game.' },
         { id: 'repair', why: 'Pick 2-3 step-by-step jobs at difficulty 1: oil change, tire rotation, air filter, wipers, headlight bulb. Read all the steps.' },
+        { id: 'tyre', why: 'The one procedure you are most likely to need at the roadside, and the one where order matters most. Run it until you can do all 13 steps clean with no unsafe actions — then find your actual jack and spare and check the spare holds air.' },
         { id: 'log', why: 'Whenever you actually do a job, record it. Service Log is your portfolio of competence.' }
       ],
-      outcome: 'You complete one real-world Tier-1 maintenance job (oil change, tire rotation, or filter swap) on your own car. You record it in the Service Log.' },
+      outcome: 'You complete one real-world Tier-1 maintenance job (oil change, tire rotation, or filter swap) on your own car, and you can change a wheel in the right order without prompting. You record the job in the Service Log.' },
     { week: 4, title: 'Week 4 — Savvy consumer + career exploration', icon: '🛒',
       theme: 'Protect yourself when you DO need a shop. Look at the trade as a career path.',
       modules: [
@@ -2711,7 +2715,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         { id: 'career', why: 'ASE A1-A8 + Maine vocational programs. Even if you\'re not headed to mechanic school, the pathway is interesting.' },
         { id: 'race', why: 'For sports-minded learners: the path from Maine high school auto shop to NASCAR runs through here.' }
       ],
-      outcome: 'You complete the Knowledge Quiz (50 questions) at 80%+. You have at least 12 badges. You know what 1-2 modules you want to revisit deeper.' }
+      outcome: 'You complete the Knowledge Quiz at 80%+. You have at least 12 badges. You know what 1-2 modules you want to revisit deeper.' }
   ];
 
   // ─────────────────────────────────────────────────────────
@@ -4125,565 +4129,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     return { meshes: meshes, picks: picks, anchor: floor };
   }
 
-  // Generic 3D viewer shell — everything that is NOT scene content: attach and
-  // teardown, pause-when-unseen, WebGL context-loss recovery, theme rebuild,
-  // drag + raycast picking, keyboard camera, and label chips with de-overlap.
-  //
-  // Scene content comes from cfg.buildScene, so the tyre-change module reuses
-  // this whole lifecycle rather than copying ~200 lines of it. cfg is:
-  //   parts      — [{id, label, ...}] used for labels and pick mapping
-  //   buildScene — (THREE, api) => { meshes: {id: Group}, picks: [Mesh], anchor: Mesh }
-  //   home       — { yaw, pitch, dist } default camera
-  function makeBayViewer(cfg) {
-    var S = null;                 // live scene state, null when detached
-    var props = { selected: null, onPick: null, onStatus: null, dark: true, contrast: false };
-    var status = 'idle';          // idle | loading | ready | failed
-    var restoreAttempts = 0;      // WebGL context-loss rebuilds, capped at 1
-
-    function setStatus(next) {
-      if (status === next) return;
-      status = next;
-      if (props.onStatus) { try { props.onStatus(next); } catch (e) {} }
-    }
-
-    function partColor(p) {
-      if (props.contrast) return '#ffffff';
-      return p.color;
-    }
-
-    function partLabel(id) {
-      for (var i = 0; i < cfg.parts.length; i++) {
-        if (cfg.parts[i].id === id) return cfg.parts[i].label;
-      }
-      return id;
-    }
-
-    function build(THREE, node) {
-      var renderer;
-      try {
-        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-      } catch (e) {
-        return null;              // no WebGL on this device — 2D list carries on
-      }
-      var w = node.clientWidth || 480;
-      var hgt = node.clientHeight || 340;
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-      renderer.setSize(w, hgt);
-      node.appendChild(renderer.domElement);
-      renderer.domElement.style.display = 'block';
-      renderer.domElement.style.width = '100%';
-      renderer.domElement.style.height = '100%';
-      renderer.domElement.style.borderRadius = '10px';
-      // pan-y, NOT none. With touch-action:none a full-width canvas swallows
-      // every vertical swipe, so on a phone or tablet the student cannot
-      // scroll past the bay to reach the parts list underneath — the canvas
-      // becomes a scroll trap. pan-y gives vertical swipes back to the page
-      // and keeps horizontal drag for rotation; the ▲▼ buttons and arrow keys
-      // still cover tilt.
-      renderer.domElement.style.touchAction = 'pan-y';
-      renderer.domElement.setAttribute('aria-hidden', 'true');
-
-      // Floating label chip. Owned by this module and mutated directly in the
-      // RAF loop — routing a per-frame screen position through React state
-      // would re-render the whole tool 60 times a second.
-      // One chip per part, created once and positioned in the RAF loop. The
-      // "label everything" mode turns the bay into the map the module claims
-      // to be, which is exactly what a first-time owner staring at an unlabelled
-      // engine actually needs.
-      function chipCss(strong) {
-        return 'position:absolute;pointer-events:none;padding:' + (strong ? '3px 8px' : '2px 6px') +
-          ';border-radius:999px;font:' + (strong ? '700 11px' : '600 10px') + '/1.3 system-ui,sans-serif;' +
-          'white-space:nowrap;transform:translate(-50%,-50%);opacity:0;' +
-          'transition:opacity .12s linear;z-index:2;' +
-          (props.contrast
-            ? 'background:#000;color:#fff;border:' + (strong ? '2px' : '1px') + ' solid #fff;'
-            : strong
-              ? 'background:rgba(15,23,42,.94);color:#fbbf24;border:1px solid #fbbf24;'
-              : 'background:rgba(15,23,42,.72);color:#e2e8f0;border:1px solid rgba(148,163,184,.55);');
-      }
-      var labels = {};
-      UNDER_HOOD_PARTS.forEach(function (p) {
-        var el = document.createElement('div');
-        el.setAttribute('aria-hidden', 'true');
-        el.textContent = p.label;
-        el.style.cssText = chipCss(false);
-        node.appendChild(el);
-        labels[p.id] = el;
-      });
-
-      // Shadows are what make a box read as an OBJECT SITTING IN a bay rather
-      // than a sprite floating on a background. Cheap here: a dozen casters.
-      // Skipped in high-contrast, where soft grey gradients fight the mode.
-      var wantShadow = !props.contrast;
-      if (wantShadow) {
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-      }
-
-      var scene = new THREE.Scene();
-      scene.background = new THREE.Color(props.contrast ? 0x000000 : (props.dark ? 0x0b1220 : 0xdfe6ef));
-      if (!props.contrast) {
-        scene.fog = new THREE.Fog(props.dark ? 0x0b1220 : 0xdfe6ef, 5.2, 11.0);
-      }
-
-      var camera = new THREE.PerspectiveCamera(42, w / hgt, 0.1, 100);
-
-      scene.add(new THREE.AmbientLight(0xffffff, props.contrast ? 0.95 : 0.44));
-      var key = new THREE.DirectionalLight(0xfff4e0, props.contrast ? 0.4 : 0.92);
-      key.position.set(2.4, 4.6, 2.8);
-      if (wantShadow) {
-        key.castShadow = true;
-        key.shadow.mapSize.width = 1024;
-        key.shadow.mapSize.height = 1024;
-        var sc = key.shadow.camera;
-        sc.left = -3.2; sc.right = 3.2; sc.top = 3.2; sc.bottom = -3.2;
-        sc.near = 0.5; sc.far = 14;
-        key.shadow.bias = -0.0012;
-      }
-      scene.add(key);
-      var fill = new THREE.DirectionalLight(0xbcd4ff, props.contrast ? 0.2 : 0.34);
-      fill.position.set(-2.6, 1.6, -2.0);
-      scene.add(fill);
-      // Low warm bounce off the bay floor — stops undersides going pure black.
-      var bounce = new THREE.DirectionalLight(0xffd9a0, props.contrast ? 0 : 0.20);
-      bounce.position.set(-0.6, -1.8, 1.2);
-      scene.add(bounce);
-
-      // ── Scene content ──
-      // Everything above is generic. What actually gets modelled comes from the
-      // caller, which is how the engine bay and the wheel corner share one
-      // viewer. Shared material helpers go in so both scenes look alike.
-      function trim(hex, shiny) {
-        return new THREE.MeshPhongMaterial({
-          color: props.contrast ? 0xffffff : hex,
-          shininess: props.contrast ? 0 : (shiny == null ? 30 : shiny),
-          specular: props.contrast ? 0x000000 : 0x6b7688
-        });
-      }
-      var content = cfg.buildScene(THREE, {
-        scene: scene, contrast: props.contrast, dark: props.dark,
-        wantShadow: wantShadow, trim: trim, partColor: partColor, parts: cfg.parts,
-        phase: props.phase || null
-      });
-      var meshes = content.meshes;
-      var picks = content.picks;
-      var anchor = content.anchor;
-
-      // Selection cage. Emissive alone is not enough — on the pale translucent
-      // reservoirs an amber glow washes straight out, and the selected part is
-      // often behind the radiator from the default angle. A wireframe box with
-      // depthTest off reads on ANY part colour and shows through occluders,
-      // which is the whole job: "the thing you asked about is HERE."
-      // In high-contrast mode every part is flattened to white, so a white cage
-      // would be invisible against them. Yellow is the tool's contrast accent
-      // and sits at ~19:1 on black.
-      var selBox = new THREE.BoxHelper(anchor, props.contrast ? 0xffff00 : 0xfbbf24);
-      selBox.material.depthTest = false;
-      selBox.material.transparent = true;
-      selBox.material.linewidth = 2;
-      selBox.renderOrder = 999;
-      selBox.visible = false;
-      scene.add(selBox);
-
-      return {
-        THREE: THREE, node: node, renderer: renderer, scene: scene, camera: camera,
-        labels: labels, chipCss: chipCss, meshes: meshes, picks: picks, selBox: selBox,
-        raycaster: new THREE.Raycaster(), pointer: new THREE.Vector2(),
-        builtDark: props.dark, builtContrast: props.contrast, builtPhase: (props.phase || 0),
-        paused: false, io: null,
-        yaw: cfg.home.yaw, pitch: cfg.home.pitch, dist: cfg.home.dist,
-        dragging: false, lastX: 0, lastY: 0, moved: 0,
-        hovered: null, t0: 0, raf: 0, handlers: [],
-        reduced: (function () {
-          try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
-          catch (e) { return false; }
-        })()
-      };
-    }
-
-    function placeCamera() {
-      var cy = Math.max(0.12, Math.min(1.35, S.pitch));
-      S.camera.position.set(
-        Math.sin(S.yaw) * Math.cos(cy) * S.dist,
-        Math.sin(cy) * S.dist,
-        Math.cos(S.yaw) * Math.cos(cy) * S.dist
-      );
-      S.camera.lookAt(0, 0.30, 0);
-    }
-
-    // Screen-space position of a part, for the HTML label chip. Returns null
-    // when the part is behind the camera.
-    function project(id) {
-      var g = S.meshes[id];
-      if (!g) return null;
-      var v = new S.THREE.Vector3();
-      g.getWorldPosition(v);
-      v.y += 0.30;
-      v.project(S.camera);
-      if (v.z > 1) return null;
-      var r = S.renderer.domElement;
-      return { x: (v.x * 0.5 + 0.5) * r.clientWidth, y: (-v.y * 0.5 + 0.5) * r.clientHeight };
-    }
-
-    // Rendering pauses when the bay is off-screen or the tab is hidden. This
-    // tool's audience is on school Chromebooks, often with a dozen tabs open;
-    // spinning a WebGL loop for a canvas nobody can see burns battery and
-    // frame budget for nothing.
-    function pauseLoop() {
-      if (!S || S.paused) return;
-      S.paused = true;
-      if (S.raf) cancelAnimationFrame(S.raf);
-      S.raf = 0;
-    }
-    function resumeLoop() {
-      if (!S || !S.paused) return;
-      S.paused = false;
-      S.raf = requestAnimationFrame(frame);
-    }
-
-    function frame() {
-      if (!S || S.paused) return;
-
-      // Scene colours are baked at build time from the theme. If the user
-      // toggles dark/light/high-contrast while sitting in this module, rebuild
-      // rather than leaving a stale background. Done here, not in sync(),
-      // because sync() runs during React's render pass and must not touch DOM.
-      // Theme AND phase are baked at build time. The tyre scene changes shape
-      // as the procedure advances (car lifts, wheel comes off), so a phase
-      // change rebuilds exactly like a theme change does.
-      if (S.builtDark !== props.dark || S.builtContrast !== props.contrast ||
-          S.builtPhase !== (props.phase || 0)) {
-        var node = S.node;
-        var keep = { yaw: S.yaw, pitch: S.pitch, dist: S.dist };
-        teardown();
-        if (window.THREE && node && node.isConnected) {
-          start(window.THREE, node);
-          if (S) { S.yaw = keep.yaw; S.pitch = keep.pitch; S.dist = keep.dist; }
-        }
-        return;
-      }
-
-      S.raf = requestAnimationFrame(frame);
-      S.t0 += 1;
-      placeCamera();
-
-      var sel = props.selected;
-      // Repair Bay marks already-inspected parts green so the student can see
-      // what ground they have covered without leaving the 3D view.
-      var marks = props.marks || {};
-      // Selection has to be unmistakable at a glance: bright emissive + a
-      // small scale bump, with everything else only GENTLY pushed back. An
-      // earlier build dimmed non-selected parts to 0.35 and the whole bay just
-      // read as fog — recede the context, don't erase it.
-      var pulse = S.reduced ? 1 : (0.78 + 0.22 * Math.sin(S.t0 * 0.08));
-      for (var id in S.meshes) {
-        if (!S.meshes.hasOwnProperty(id)) continue;
-        var isSel = (id === sel);
-        var isHov = (id === S.hovered && !isSel);
-        var recede = (sel && !isSel);
-        var g = S.meshes[id];
-
-        var wantScale = isSel ? (S.reduced ? 1.12 : 1.06 + 0.06 * pulse) : 1;
-        g.scale.setScalar(g.scale.x + (wantScale - g.scale.x) * 0.25);
-
-        g.traverse(function (o) {
-          if (!o.isMesh || !o.material) return;
-          if (o.material.emissive) {
-            // Restrained on purpose. The wireframe cage answers "where is it";
-            // a hot emissive on top of that just repaints the part gold and
-            // destroys the colour cue the student is meant to transfer to a
-            // real engine bay.
-            if (isSel) o.material.emissive.setRGB(0.26 * pulse, 0.19 * pulse, 0.03 * pulse);
-            else if (isHov) o.material.emissive.setRGB(0.16, 0.17, 0.20);
-            else if (marks[id] === 'checked') o.material.emissive.setRGB(0.02, 0.13, 0.07);
-            else o.material.emissive.setRGB(0, 0, 0);
-          }
-          if (o.material.userData._baseOpacity === undefined) {
-            o.material.userData._baseOpacity = (o.material.opacity === undefined) ? 1 : o.material.opacity;
-          }
-          var base = o.material.userData._baseOpacity;
-          var want = recede ? base * 0.70 : base;
-          if (Math.abs(o.material.opacity - want) > 0.01) {
-            o.material.opacity = want;
-            var nextTransparent = want < 1;
-            if (o.material.transparent !== nextTransparent) {
-              o.material.transparent = nextTransparent;
-              o.material.needsUpdate = true;   // only on the actual flip
-            }
-          }
-        });
-      }
-
-      if (sel && S.meshes[sel]) {
-        S.selBox.visible = true;
-        S.selBox.setFromObject(S.meshes[sel]);
-        S.selBox.material.opacity = S.reduced ? 1 : (0.6 + 0.4 * pulse);
-      } else if (S.selBox.visible) {
-        S.selBox.visible = false;
-      }
-
-      S.renderer.render(S.scene, S.camera);
-
-      // Label chips. Focused chip (selected/hovered) always shows; the rest
-      // only in "label everything" mode, and dimmer so focus still reads.
-      var focusId = sel || S.hovered;
-      var showAll = !!props.showAllLabels;
-      var placed = [];
-      var viewW = S.renderer.domElement.clientWidth;
-      var viewH = S.renderer.domElement.clientHeight;
-
-      for (var li = 0; li < UNDER_HOOD_PARTS.length; li++) {
-        var pid = UNDER_HOOD_PARTS[li].id;
-        var el = S.labels[pid];
-        var strong = (pid === focusId);
-        var want = strong || showAll;
-        if (!want) {
-          if (el.style.opacity !== '0') el.style.opacity = '0';
-          continue;
-        }
-        var at = project(pid);
-        if (!at) { if (el.style.opacity !== '0') el.style.opacity = '0'; continue; }
-        if (el._strong !== strong) {
-          el._strong = strong;
-          el.style.cssText = S.chipCss(strong);
-          el._w = 0;                       // restyle changes the measured size
-        }
-        // Measure once per style; offsetWidth forces layout, so never per-frame.
-        if (!el._w) {
-          el.style.opacity = '0.01';
-          el._w = el.offsetWidth || 90;
-          el._h = el.offsetHeight || 18;
-        }
-        placed.push({ el: el, x: at.x, y: at.y, w: el._w, h: el._h, strong: strong });
-      }
-
-      // Label-everything mode put twelve chips on a small canvas and several
-      // landed on top of each other, which defeats the point of a map. Greedy
-      // de-overlap: keep the focused chip anchored, nudge the rest downward
-      // until they clear. O(n²) over twelve items — nothing.
-      placed.sort(function (a, b) { return (b.strong ? 1 : 0) - (a.strong ? 1 : 0) || a.y - b.y; });
-      var settled = [];
-      for (var pi2 = 0; pi2 < placed.length; pi2++) {
-        var c = placed[pi2];
-        if (!c.strong) {
-          var guard = 0;
-          while (guard++ < 14) {
-            var hit = false;
-            for (var si = 0; si < settled.length; si++) {
-              var o = settled[si];
-              if (Math.abs(c.x - o.x) < (c.w + o.w) / 2 + 4 &&
-                  Math.abs(c.y - o.y) < (c.h + o.h) / 2 + 3) { hit = true; break; }
-            }
-            if (!hit) break;
-            c.y += c.h + 4;
-          }
-          // Pushed off the bottom? Better to hide it than to stack it on the edge.
-          if (c.y > viewH - c.h / 2) { c.el.style.opacity = '0'; continue; }
-        }
-        // Keep chips inside the viewport horizontally.
-        c.x = Math.max(c.w / 2 + 2, Math.min(viewW - c.w / 2 - 2, c.x));
-        settled.push(c);
-        c.el.style.left = c.x + 'px';
-        c.el.style.top = c.y + 'px';
-        c.el.style.opacity = c.strong ? '1' : '0.92';
-      }
-    }
-
-    function bind() {
-      var el = S.renderer.domElement;
-      function on(target, type, fn, opts) {
-        target.addEventListener(type, fn, opts || false);
-        S.handlers.push([target, type, fn, opts || false]);
-      }
-      function ndc(ev) {
-        var r = el.getBoundingClientRect();
-        S.pointer.x = ((ev.clientX - r.left) / r.width) * 2 - 1;
-        S.pointer.y = -((ev.clientY - r.top) / r.height) * 2 + 1;
-      }
-      function hit() {
-        S.raycaster.setFromCamera(S.pointer, S.camera);
-        var xs = S.raycaster.intersectObjects(S.picks, false);
-        return xs.length ? xs[0].object.userData.partId : null;
-      }
-      on(el, 'pointerdown', function (ev) {
-        S.dragging = true; S.moved = 0;
-        S.lastX = ev.clientX; S.lastY = ev.clientY;
-        try { el.setPointerCapture(ev.pointerId); } catch (e) {}
-      });
-      on(el, 'pointermove', function (ev) {
-        if (S.dragging) {
-          var dx = ev.clientX - S.lastX, dy = ev.clientY - S.lastY;
-          S.moved += Math.abs(dx) + Math.abs(dy);
-          S.yaw -= dx * 0.008;
-          S.pitch = Math.max(0.12, Math.min(1.35, S.pitch + dy * 0.006));
-          S.lastX = ev.clientX; S.lastY = ev.clientY;
-        } else {
-          ndc(ev);
-          var over = hit();
-          if (over !== S.hovered) {
-            S.hovered = over;
-            el.style.cursor = over ? 'pointer' : 'grab';
-          }
-        }
-      });
-      on(el, 'pointerup', function (ev) {
-        var wasDrag = S.moved > 6;
-        S.dragging = false;
-        try { el.releasePointerCapture(ev.pointerId); } catch (e) {}
-        if (wasDrag) return;                       // rotating, not picking
-        ndc(ev);
-        var id = hit();
-        if (id && props.onPick) { try { props.onPick(id); } catch (e) {} }
-      });
-      on(el, 'pointerleave', function () {
-        S.dragging = false;
-        if (S.hovered) { S.hovered = null; el.style.cursor = 'grab'; }
-      });
-      on(el, 'wheel', function (ev) {
-        ev.preventDefault();
-        S.dist = Math.max(2.6, Math.min(8.5, S.dist + (ev.deltaY > 0 ? 0.4 : -0.4)));
-      }, { passive: false });
-      el.style.cursor = 'grab';
-
-      var onResize = function () {
-        if (!S || !S.node) return;
-        var w = S.node.clientWidth, hh = S.node.clientHeight;
-        if (!w || !hh) return;
-        S.renderer.setSize(w, hh);
-        S.camera.aspect = w / hh;
-        S.camera.updateProjectionMatrix();
-      };
-      on(window, 'resize', onResize);
-
-      on(el, 'pointercancel', function () {
-        // Fires when the browser takes the gesture over for scrolling
-        // (touch-action: pan-y). Without this the scene stays stuck in
-        // "dragging" and the next pointermove yanks the camera.
-        S.dragging = false;
-      });
-
-      // ── Context loss ──
-      // Real on low-memory Chromebooks: the GPU process drops contexts under
-      // pressure. Previously this was a permanent "failed". Now we rebuild
-      // once, and only fall back to the 2D list if the rebuild also fails.
-      on(el, 'webglcontextlost', function (ev) {
-        ev.preventDefault();
-        console.warn('[AutoRepair] WebGL context lost — attempting one rebuild');
-        var node = S ? S.node : null;
-        var keep = S ? { yaw: S.yaw, pitch: S.pitch, dist: S.dist } : null;
-        teardown();
-        if (restoreAttempts >= 1 || !node || !node.isConnected) { setStatus('failed'); return; }
-        restoreAttempts++;
-        setStatus('loading');
-        window.setTimeout(function () {
-          if (!node.isConnected) return;
-          try {
-            start(window.THREE, node);
-            if (S && keep) { S.yaw = keep.yaw; S.pitch = keep.pitch; S.dist = keep.dist; }
-          } catch (e) { setStatus('failed'); }
-        }, 350);
-      }, false);
-
-      // ── Pause when unseen ──
-      var onVis = function () {
-        if (document.hidden) pauseLoop(); else resumeLoop();
-      };
-      on(document, 'visibilitychange', onVis);
-
-      if (typeof IntersectionObserver === 'function') {
-        try {
-          S.io = new IntersectionObserver(function (entries) {
-            for (var i = 0; i < entries.length; i++) {
-              if (entries[i].isIntersecting && !document.hidden) resumeLoop();
-              else if (!entries[i].isIntersecting) pauseLoop();
-            }
-          }, { threshold: 0.01 });
-          S.io.observe(S.node);
-        } catch (e) { S.io = null; }
-      }
-    }
-
-    function teardown() {
-      if (!S) return;
-      if (S.raf) cancelAnimationFrame(S.raf);
-      if (S.io) { try { S.io.disconnect(); } catch (e) {} S.io = null; }
-      S.handlers.forEach(function (hd) {
-        try { hd[0].removeEventListener(hd[1], hd[2], hd[3]); } catch (e) {}
-      });
-      try {
-        S.scene.traverse(function (o) {
-          if (o.geometry && o.geometry.dispose) o.geometry.dispose();
-          if (o.material) {
-            var ms = Array.isArray(o.material) ? o.material : [o.material];
-            ms.forEach(function (m) { if (m && m.dispose) m.dispose(); });
-          }
-        });
-        if (S.renderer.domElement && S.renderer.domElement.parentNode) {
-          S.renderer.domElement.parentNode.removeChild(S.renderer.domElement);
-        }
-        Object.keys(S.labels || {}).forEach(function (k) {
-          var el = S.labels[k];
-          if (el && el.parentNode) el.parentNode.removeChild(el);
-        });
-        S.renderer.dispose();
-        if (S.renderer.forceContextLoss) S.renderer.forceContextLoss();
-      } catch (e) {}
-      S = null;
-      status = 'idle';
-    }
-
-    function start(THREE, node) {
-      var built = build(THREE, node);
-      if (!built) { setStatus('failed'); return; }
-      S = built;
-      bind();
-      placeCamera();
-      setStatus('ready');
-      S.raf = requestAnimationFrame(frame);
-    }
-
-    return {
-      // STABLE identity — never recreate this function.
-      attach: function (node) {
-        if (!node) { teardown(); return; }
-        if (S && S.node === node) return;
-        teardown();
-        restoreAttempts = 0;      // fresh visit gets its own context-loss retry
-        setStatus('loading');
-        if (window.THREE) { start(window.THREE, node); return; }
-        if (!window.StemLab || !window.StemLab.ensureThree) { setStatus('failed'); return; }
-        window.StemLab.ensureThree({
-          orbit: false,
-          failMessage: 'The 3D engine could not load. School network filters sometimes block CDNs. The full labelled parts list below remains available.'
-        }).then(function (THREE) {
-          if (!node.isConnected) return;           // navigated away mid-load
-          start(THREE, node);
-        }).catch(function () {
-          console.warn('[AutoRepair] Three.js failed to load — under-hood tour falling back to the 2D list');
-          setStatus('failed');
-        });
-      },
-      sync: function (next) { props = next; },
-      nudge: function (dYaw, dPitch) {
-        if (!S) return;
-        S.yaw += dYaw;
-        S.pitch = Math.max(0.12, Math.min(1.35, S.pitch + dPitch));
-      },
-      // Zoom was wheel-only, which left keyboard, touch and switch users with
-      // no way to get closer. Same clamp as the wheel handler.
-      zoom: function (delta) {
-        if (!S) return;
-        S.dist = Math.max(2.6, Math.min(8.5, S.dist + delta));
-      },
-      reset: function () {
-        if (!S) return;
-        S.yaw = cfg.home.yaw; S.pitch = cfg.home.pitch; S.dist = cfg.home.dist;
-      },
-      status: function () { return status; }
-    };
+  // The viewer shell now lives on the host (window.StemLab.makeBayViewer),
+  // beside ensureThree, so any tool can drive a 3D scene without copying the
+  // lifecycle. If this file is ever loaded without the host — the
+  // self-registration stub at the top of this file — every module degrades to
+  // its 2D path, which is already the tested fallback.
+  var NULL_VIEWER = {
+    attach: function () {}, sync: function () {}, nudge: function () {},
+    zoom: function () {}, reset: function () {}, status: function () { return 'failed'; }
+  };
+  function makeViewer(cfg) {
+    var mk = window.StemLab && window.StemLab.makeBayViewer;
+    if (!mk) { console.warn('[AutoRepair] host viewer shell unavailable — 3D disabled, 2D paths intact'); return NULL_VIEWER; }
+    return mk(cfg);
   }
 
-  var UH3D = makeBayViewer({
+  var UH3D = makeViewer({
     parts: UNDER_HOOD_PARTS,
     buildScene: buildEngineBayScene,
     home: { yaw: -0.42, pitch: 0.74, dist: 4.1 }
@@ -4692,7 +4153,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
   // Second viewer instance, same lifecycle, different scene. Both are
   // singletons and only one module is mounted at a time, so they never
   // contend for the canvas.
-  var TIRE3D = makeBayViewer({
+  var TIRE3D = makeViewer({
     parts: TIRE_PARTS,
     buildScene: buildWheelCornerScene,
     home: { yaw: 0.34, pitch: 0.34, dist: 6.4 }
@@ -4889,7 +4350,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     { id: 'q47', icon: '🏆',
       stem: 'You earn a badge when you complete a module milestone (full safety walk, first lab simulator scenario, full inspection self-walk, etc.). Where can you see all your earned + unearned badges?',
       choices: ['Twitter', 'The Badge Gallery on the menu — shows everything earned + everything still locked, grouped by module', 'Print them out', 'They\'re hidden'],
-      correct: 1, why: 'Badge Gallery view shows your full progress across all 28 modules. Lets you see what you\'ve mastered + what\'s still ahead. Useful for self-pacing through the curriculum.' },
+      correct: 1, why: 'Badge Gallery view shows your full progress across every module. Lets you see what you\'ve mastered + what\'s still ahead. Useful for self-pacing through the curriculum.' },
     { id: 'q48', icon: '🛡️',
       stem: 'You\'re working on a hybrid vehicle. The 12-volt battery is dead. Can you safely jump-start the high-voltage drive battery from another car\'s 12V?',
       choices: ['Yes — same as a regular car', 'NO — never connect 12V to high-voltage components. The 12V auxiliary is what you jump (just like any car); the HV drive battery is sealed + serviced only with HV-rated equipment + procedures.', 'Only with adapter', 'Hybrids can\'t be jumped'],
@@ -4919,7 +4380,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       choices: ['Engine internals', 'Tire flat or low, missing lug nuts, burnt-out lights, fluid drip on the ground, hood unlatched, mirror missing — surprise issues that would otherwise become highway emergencies', 'Computer software', 'Future repairs'],
       correct: 1, why: 'Pro drivers + truckers walk around their vehicles before EVERY drive. 60 seconds catches 90% of "I would have wished I noticed before driving" surprises. Especially valuable in winter when problems hide.' },
     { id: 'q55', icon: '📚',
-      stem: 'If you\'re NEW to this tool, what\'s the smart way to work through 28 modules?',
+      stem: 'If you\'re NEW to this tool, what\'s the smart way to work through this many modules?',
       choices: ['Random tabs', 'Use the Recommended Learning Path — 4-week curated walkthrough with weekly themes (Know your car / Diagnose / Hands-on safe / Savvy + career)', 'Try to do everything in one day', 'Skip everything'],
       correct: 1, why: 'The Learning Path orders modules pedagogically: vocabulary first (week 1), reasoning second (week 2), hands-on third (week 3), consumer-protection + career exploration fourth (week 4). Each week has goals + outcomes you can verify.' },
     { id: 'q56', icon: '♿',
@@ -4933,7 +4394,53 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     { id: 'q58', icon: '🔇',
       stem: 'On a button like "🔍 Search," the magnifying-glass emoji should ideally...',
       choices: ['Be left as-is for screen readers', 'Be wrapped in a span with aria-hidden="true" so screen readers don\'t read "magnifying glass" before the word "Search" — the visible text already conveys the meaning', 'Be removed', 'Be in red'],
-      correct: 1, why: 'Decorative emoji + paired text = redundant for SR users. Wrap the emoji in aria-hidden="true" so SRs read just the text. Keeps visual meaning + cleans up the SR announcement. Common pattern across this tool.' }
+      correct: 1, why: 'Decorative emoji + paired text = redundant for SR users. Wrap the emoji in aria-hidden="true" so SRs read just the text. Keeps visual meaning + cleans up the SR announcement. Common pattern across this tool.' },
+
+    // ── From the three 3D modules ──
+    // The under-hood tour, Repair Bay and tyre change each teach a handful of
+    // specific, high-consequence facts that the quiz had no coverage of. A
+    // module whose lessons never appear in the assessment is a module the
+    // curriculum does not really believe in.
+    { id: 'q59', icon: '🔋',
+      stem: 'You are driving and the battery-shaped warning light comes on. A few minutes later the headlights dim and the car stalls. What most likely failed?',
+      choices: ['The battery went flat on its own', 'The charging system — usually the alternator — so the car has been running off the battery and flattening it', 'A headlight bulb', 'The starter motor'],
+      correct: 1, why: 'That light is a CHARGING warning, not a fuel gauge for the battery. Measure voltage with the engine RUNNING: a working system holds roughly 13.7-14.7 V at idle, and anything below resting voltage means nothing is charging. Fitting a new battery here is the most common misdiagnosis in the trade — it goes flat again within days because nothing is recharging it.' },
+    { id: 'q60', icon: '🔧',
+      stem: 'You are changing a flat. When do you break the lug nuts loose?',
+      choices: ['Once the wheel is off the ground so it turns freely', 'While the wheel is still on the ground', 'It makes no practical difference', 'After the jack has been removed'],
+      correct: 1, why: 'On the ground the tyre grips the road and holds the wheel still while you push. In the air the wheel simply spins, and heaving on a wrench against a car balanced on a jack can shove it off. The full rhythm: loosen on the ground, snug by hand in the air, tighten properly once it is back down.' },
+    { id: 'q61', icon: '⭐',
+      stem: 'Why are lug nuts tightened in a star (criss-cross) pattern rather than going round the circle in order?',
+      choices: ['It is faster', 'Crossing over pulls the wheel squarely onto the hub so it clamps evenly', 'It stops the threads seizing', 'It is a convention with no real effect'],
+      correct: 1, why: 'Working across the wheel draws it flat against the hub as each nut comes up. Going round in sequence can cock the wheel very slightly and leave it clamped unevenly, which is how nuts work loose in service.' },
+    { id: 'q62', icon: '🧰',
+      stem: 'Why get the spare, jack and wrench out BEFORE you lift the car?',
+      choices: ['It saves time', 'So you find out now if the spare is flat, the wrench is missing, or the lock-nut key is not in the car', 'It keeps the boot tidy', 'It warms up the jack'],
+      correct: 1, why: 'Discovering a soft spare or a missing lock-nut key is an inconvenience while the car is still on all four wheels. Discovering it with one corner in the air, at night, on a verge, is a much worse moment — and you cannot drive anywhere to solve it.' },
+    { id: 'q63', icon: '🔋',
+      stem: 'A battery reads 12.4 V resting, but the car cranks slowly every cold morning. Which test actually settles whether the battery is finished?',
+      choices: ['Measure the resting voltage again', 'A load test', 'Check alternator output only', 'Nothing — 12.4 V proves it is healthy'],
+      correct: 1, why: 'Resting voltage tells you state of CHARGE; a load test tells you remaining CAPACITY. A battery can hold a respectable voltage sitting still and still be unable to deliver cranking current. Under load a healthy one stays above roughly 9.6 V — one that collapses well below that is finished no matter what it reads at rest.' },
+    { id: 'q64', icon: '🔌',
+      stem: 'A car clicks and will not crank. You measure 12.5 V at the battery POST but only 10.9 V at the cable CLAMP sitting on that post. What does that tell you?',
+      choices: ['The battery is dead', 'The starter has failed', 'The connection itself is bad — corroded or loose between post and clamp', 'The alternator is overcharging'],
+      correct: 2, why: 'That missing volt and a half is being burned crossing a bad joint. A healthy connection loses almost nothing, so measuring across it is how you find bad connections. The battery is fine; its power cannot get out. Clean and tighten first — and never try to judge a starter through a connection you already know is bad.' },
+    { id: 'q65', icon: '📍',
+      stem: 'Where does the jack go when you lift a car to change a wheel?',
+      choices: ['Anywhere flat underneath', 'On the reinforced jack point shown in the manual, usually marked on the sill', 'Under a suspension arm, since it is strong', 'Under the floor pan near the wheel'],
+      correct: 1, why: 'Jack points are built to carry the whole weight of that corner. The floor pan beside them is thin sheet metal that folds, and a suspension arm can move under load. Most cars mark the points with a notch, an arrow or a triangle.' },
+    { id: 'q66', icon: '🛞',
+      stem: 'You have fitted a narrow temporary spare — a "donut". What now?',
+      choices: ['Drive normally; it is a wheel like any other', 'Observe its speed and distance limits — usually around 50 mph and a short trip — and drive to a tyre shop', 'It is fine for a few thousand miles', 'Move it to the front for better grip'],
+      correct: 1, why: 'A temporary spare is a get-to-the-shop wheel, not a replacement. The real limits are printed on the spare itself, so read it rather than guessing. It is narrower and has less grip than the tyre it replaced, which matters most in the wet.' },
+    { id: 'q67', icon: '🌡️',
+      stem: 'The temperature gauge is high and you want to check the coolant level. What is the safe move?',
+      choices: ['Open the radiator cap slowly using a rag', 'Read the level at the translucent overflow tank, and open nothing until the engine is cold', 'Crack the cap quickly to release the pressure', 'Pour cold water straight in'],
+      correct: 1, why: 'The cooling system is held under pressure, which is what raises coolant\'s boiling point. Releasing that pressure while hot lets superheated coolant flash to steam and spray out, and it causes serious burns. The overflow tank is see-through precisely so routine checks never require opening the system at all.' },
+    { id: 'q68', icon: '🌬️',
+      stem: 'A car sits at normal temperature on the highway but overheats in stop-start traffic. Where do you look first?',
+      choices: ['The thermostat', 'The radiator core', 'Low-speed airflow — the cooling fan, its fuse or its relay', 'The water pump'],
+      correct: 2, why: 'At speed, air is rammed through the radiator by motion alone. In traffic there is no ram air, so the fan has to supply it. "Fine at speed, hot when stopped" points squarely at the fan circuit. A stuck thermostat would overheat everywhere — usually worse on the highway under load — so the pattern rules it out.' }
   ];
 
   // ─────────────────────────────────────────────────────────
@@ -5118,7 +4625,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             desc: __alloT('stem.autorepair.self_test_learning_path_achievements_c', 'Self-test, learning path, achievements, citations.'),
             modules: [
               { id: 'path', icon: '🛤️', label: __alloT('stem.autorepair.learning_path', 'Learning path'), desc: __alloT('stem.autorepair.new_here_4_week_curated_walkthrough_of', 'New here? 4-week curated walkthrough of the modules in optimal order.') },
-              { id: 'quiz', icon: '🧪', label: __alloT('stem.autorepair.knowledge_quiz', 'Knowledge quiz'), desc: __alloT('stem.autorepair.55_questions_across_the_full_curriculu', '55 questions across the full curriculum.') },
+              { id: 'quiz', icon: '🧪', label: __alloT('stem.autorepair.knowledge_quiz', 'Knowledge quiz'), desc: QUIZ.length + __alloT('stem.autorepair.questions_across_the_full_curriculum', ' questions across the full curriculum.') },
               { id: 'badges', icon: '🏆', label: __alloT('stem.autorepair.badge_gallery', 'Badge gallery'), desc: __alloT('stem.autorepair.all_earned_unlockable_badges_track_you', 'All earned + unlockable badges. Track your progress.') },
               { id: 'resources', icon: '📚', label: __alloT('stem.autorepair.resources', 'Resources'), desc: __alloT('stem.autorepair.every_cited_org_with_working_url', 'Every cited org with working URL.') }
             ]
@@ -8940,7 +8447,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       // ─────────────────────────────────────────
       function bayViewport(cfg) {
         var V = cfg.viewer || UH3D;
-        var st3 = d.uh3dStatus || 'idle';
+        // A viewer with no shell behind it reports 'failed' immediately and
+        // never calls onStatus, so read it directly rather than waiting for a
+        // React update that will never come.
+        var st3 = (V.status() === 'failed') ? 'failed' : (d.uh3dStatus || 'idle');
         var note = st3 === 'failed' ? cfg.failText : (st3 === 'loading' ? cfg.loadText : null);
         function onKey(e) {
           var k = e.key;
@@ -8973,7 +8483,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
 
       function bayControls(cfg) {
         var V = (cfg && cfg.viewer) || UH3D;
-        var st3 = d.uh3dStatus || 'idle';
+        var st3 = (V.status() === 'failed') ? 'failed' : (d.uh3dStatus || 'idle');
         var live = st3 === 'ready';
         function ctl(aria, glyph, fn) {
           return h('button', { key: aria, 'data-ar-focusable': true, 'aria-label': aria,
@@ -9775,8 +9285,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             { id: 'diesel-aware', icon: '🚜', name: __alloT('stem.autorepair.diesel_aware', 'Diesel Aware'), how: 'Tap any diesel key-difference in the Diesel module.' }
           ] },
           { group: '🧪 Self-test + path', items: [
-            { id: 'quiz-passed', icon: '🧪', name: __alloT('stem.autorepair.quiz_passed', 'Quiz Passed'), how: 'Score 80%+ on the 55-question knowledge quiz.' },
-            { id: 'path-graduate', icon: '🛤️', name: __alloT('stem.autorepair.curriculum_path_graduate', 'Curriculum Path Graduate'), how: 'Mark all 18 Learning Path modules as visited.' }
+            { id: 'quiz-passed', icon: '🧪', name: __alloT('stem.autorepair.quiz_passed', 'Quiz Passed'), how: 'Score 80%+ on the ' + QUIZ.length + '-question knowledge quiz.' },
+            { id: 'path-graduate', icon: '🛤️', name: __alloT('stem.autorepair.curriculum_path_graduate', 'Curriculum Path Graduate'), how: 'Mark all ' + LEARNING_PATH.reduce(function (n, w) { return n + w.modules.length; }, 0) + ' Learning Path modules as visited.' }
           ] }
         ];
 

@@ -30,6 +30,7 @@ const output = `/**
   var useContext = React.useContext;
   var LanguageContext = window.AlloLanguageContext;
   var _IconFallback = function() { return null; };
+  var AlertTriangle = window.AlertTriangle || _IconFallback;
   var AlignJustify = window.AlignJustify || _IconFallback;
   var ArrowDown = window.ArrowDown || _IconFallback;
   var ArrowRight = window.ArrowRight || _IconFallback;
