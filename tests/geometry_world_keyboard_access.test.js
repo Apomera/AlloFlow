@@ -464,3 +464,61 @@ describe('Geometry World single measurement path', () => {
     expect(SOURCE).toContain('var shapeDef2 = BLOCK_SHAPES[ps.selectedShape] || BLOCK_SHAPES[0];');
   });
 });
+
+describe('Geometry World application mode is scoped to the 3D surface', () => {
+  let cfg;
+
+  beforeAll(() => {
+    resetStemLab();
+    window.THREE = makeThreeStub();
+    cfg = loadTool(FILE, 'geometryWorld');
+  });
+
+  beforeEach(() => {
+    window.THREE = makeThreeStub();
+    window[ENGINE_KEY] = makeFakeEngine();
+  });
+
+  afterEach(() => {
+    delete window[ENGINE_KEY];
+    document.body.innerHTML = '';
+  });
+
+  it('does not put the whole tool into application mode', () => {
+    // role="application" switches a screen reader out of browse mode for everything
+    // inside. The root contains the lesson picker, the reflection textarea, the help
+    // panel and the objectives — all ordinary content a blind student needs browse
+    // mode to read. Exactly ONE element should claim the exception.
+    const m = mountTool(cfg, { _introShownOnce: true, worldActive: true });
+    const apps = m.container.querySelectorAll('[role="application"]');
+
+    expect(apps).toHaveLength(1);
+    expect(apps[0].id, 'the only application should be the 3D surface').toBe('geoworld-fs-wrap');
+    m.unmount();
+  }, 20000);
+
+  it('exposes the tool as a named landmark instead', () => {
+    // A landmark is navigable without changing interaction mode.
+    const m = mountTool(cfg, { _introShownOnce: true, worldActive: true });
+    const root = m.container.querySelector('[role="region"]');
+
+    expect(root, 'no landmark for the tool').toBeTruthy();
+    expect(root.getAttribute('aria-label')).toBe('Geometry World');
+    m.unmount();
+  }, 20000);
+
+  it('keeps the control list on the surface it describes, and current', () => {
+    // The root label used to recite the controls, duplicating the surface's own
+    // description and going stale: it predated B/X, arrow-key look and L.
+    const m = mountTool(cfg, { _introShownOnce: true, worldActive: true });
+    const root = m.container.querySelector('[role="region"]');
+    expect(root.getAttribute('aria-label')).not.toMatch(/WASD|left-click|right-click/i);
+
+    const wrap = m.container.querySelector('#geoworld-fs-wrap');
+    const desc = m.container.querySelector('#' + wrap.getAttribute('aria-describedby'));
+    expect(desc.textContent).toMatch(/W A S D/i);
+    expect(desc.textContent).toMatch(/\bB builds\b/i);
+    expect(desc.textContent).toMatch(/arrow keys/i);
+    m.unmount();
+  }, 20000);
+});

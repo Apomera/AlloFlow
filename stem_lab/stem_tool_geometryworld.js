@@ -5998,7 +5998,21 @@
         }
       }
 
-      return el('div', { role: 'application', 'aria-label': __alloT('stem.geometryworld.geometry_world_3d_block_based_math_exp', 'Geometry World - 3D block-based math explorer. Use WASD to move, mouse to look, left-click to break blocks, right-click to place blocks.'), style: { display: 'flex', flexDirection: 'column', height: '100%', position: 'relative', background: 'var(--allo-stem-canvas, #000)' } },
+      // A landmark, NOT an application. This was role="application", which switches a
+      // screen reader out of browse mode for everything inside — and everything inside
+      // is mostly ordinary content: the lesson picker <select>, the reflection
+      // textarea, the help panel, the objectives, the completion summary. Browse mode
+      // is how a blind student reads and navigates that, so the old role took it away
+      // across the whole tool to serve one child that needs raw keystrokes. That child
+      // — the 3D surface — carries its own role="application" and its own
+      // aria-describedby key list, which is where the exception belongs.
+      //
+      // The label is now just the tool's name. It used to recite "WASD to move, mouse
+      // to look, left-click to break, right-click to place", which was both duplicated
+      // and out of date: it predates B/X (build without a mouse), the arrow-key look
+      // and L (speak where characters are), and it implied the tool was mouse-only to
+      // exactly the students who most needed to hear otherwise.
+      return el('div', { role: 'region', 'aria-label': __alloT('stem.geometryworld.tool_name', 'Geometry World'), style: { display: 'flex', flexDirection: 'column', height: '100%', position: 'relative', background: 'var(--allo-stem-canvas, #000)' } },
         // Top bar — glass style
         el('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: 'var(--allo-stem-deeper, rgba(15,23,42,0.85))', backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(100,116,139,0.15)', flexShrink: 0, flexWrap: 'wrap' } },
           el('span', { style: { fontSize: '18px' } }, '\uD83E\uDDF1'),
