@@ -46,8 +46,14 @@ describe('audit coherence — no-text-layer story is enforced by the math', () =
 
 describe('audit coherence — expert-edit re-score cannot inflate past Equal Access', () => {
   it('C4: _reauditAndScore runs EA and takes min(axe, EA) as the deterministic operand', () => {
-    expect(vw).toContain('_safeAudit(() => _docPipeline.runEqualAccessAudit(newHtml))');
-    expect(vw).toMatch(/const \[_wv, _wa, _wea\] = await Promise\.all\(\[[\s\S]{0,320}_safeAudit\(\(\) => auditOutputAccessibility\(newHtml\)\)[\s\S]{0,220}_safeAudit\(\(\) => runAxeAudit\(newHtml\)\)/);
+    // Now carries the re-audit abort signal so a superseded run stops early.
+    expect(vw).toContain('_safeAudit(() => _docPipeline.runEqualAccessAudit(newHtml, { signal: _reauditSignal }))');
+    // All three still run in one Promise.all, but each now carries the
+    // re-audit abort signal in its OPTIONS argument. It used to be passed as a
+    // third argument and silently dropped, so a superseded run kept burning the
+    // Gemini quota to completion. The window is wider because the fix carries a
+    // long explanatory comment inside the array.
+    expect(vw).toMatch(/const \[_wv, _wa, _wea\] = await Promise\.all\(\[[\s\S]{0,1400}_safeAudit\(\(\) => auditOutputAccessibility\(newHtml, \{ signal: _reauditSignal \}\)\)[\s\S]{0,220}_safeAudit\(\(\) => runAxeAudit\(newHtml, \{ signal: _reauditSignal \}\)\)/);
     expect(vw).toMatch(/const _wdet = _waOk \? \(_weaOk \? Math\.min\(_wa\.score, _wea\.score\) : _wa\.score\) : \(_weaOk \? _wea\.score : null\);/);
     // and the displayed EA audit stays in sync with the score that used it
     expect(vw).toMatch(/secondEngineAudit: _weaOk \? _wea : null,/);
@@ -99,7 +105,12 @@ describe('cross-document OCR guard (review F1/F5)', () => {
 describe('builder honesty + editor safety (review A2/A4)', () => {
   it('C11: ungrounded generations carry the AI-assistance disclosure footer', () => {
     const ce = readFileSync(resolve(process.cwd(), 'content_engine_source.jsx'), 'utf8');
-    expect(ce).toMatch(/if \(!effIncludeCitations \|\| allGroundingChunks\.length === 0\) \{/);
+    // The gate moved from "grounding returned no chunks" to "no source was
+    // actually PUBLISHED into the bibliography", which is the sharper test:
+    // chunks can come back and still be unattributable, leaving the document
+    // un-sourced. The disclosure fires in strictly more of the cases that
+    // deserve it.
+    expect(ce).toMatch(/if \(!effIncludeCitations \|\| _publishedSourceCount === 0\) \{/);
     expect(ce).toMatch(/drafted with AI assistance/);
     expect(ce).toMatch(/review for accuracy before classroom use/);
   });
@@ -123,14 +134,41 @@ describe('builder review round 2 (A5 merged cells, A3 support stats, A1 capture)
 
   it('C14: computeGroundingSupportStats — coverage union + unsupported-citation detection (behavioral)', () => {
     const ce = readFileSync(resolve(process.cwd(), 'content_engine_source.jsx'), 'utf8');
-    const m = ce.match(/var computeGroundingSupportStats = function \(text, groundingMetadata\) \{[\s\S]*?\n  \};/);
-    expect(m).toBeTruthy();
-    const stats = new Function('"use strict"; ' + m[0].replace(/^  var /, 'var ') + ' return computeGroundingSupportStats;')();
+    // The function now delegates segment resolution to _resolveGroundingStatsRange,
+    // which in turn uses the UTF-8 offset helpers (Gemini reports byte offsets,
+    // JS indexes code units). Those sit contiguously just above it, so slice the
+    // whole block. Extracting the function alone left the helper undefined — and
+    // because the body is wrapped in try/catch, that surfaced as hasSupports:false
+    // rather than a throw, which reads like a behaviour change and is not one.
+    const helpersAt = ce.indexOf('var _utf8ByteLength = function');
+    const statsAt = ce.indexOf('var computeGroundingSupportStats = function');
+    expect(helpersAt).toBeGreaterThan(-1);
+    expect(statsAt).toBeGreaterThan(helpersAt);
+    const block = ce.slice(helpersAt, ce.indexOf('\n  };', statsAt) + '\n  };'.length);
+    expect(block).toMatch(/_resolveGroundingStatsRange/);
+    const stats = new Function('"use strict"; ' + block + ' return computeGroundingSupportStats;')();
     // 100-char text; supports covering [0,30) and [20,50) → union 50 chars.
     // One citation site inside support (pos ~10), one far outside (pos ~80).
     // Second citation sits at pos ~152 — beyond the supports' reach ([0,50) + the ±40
     // proximity window = 90), so it must count as unsupported.
     const text = 'aaaaaaaaa [Sources 1] ' + 'b'.repeat(130) + ' [Sources 2] cccccccc';
+    // ⚠ THIS ASSERTION IS LEFT FAILING ON PURPOSE — it is the one place in the
+    // 2026-07-28 test sweep where the CODE, not the test, looks wrong.
+    //
+    // _resolveGroundingStatsRange (content_engine_source.jsx, added in
+    // 08df4edd2 without touching this test) resolves a segment whose startIndex
+    // is absent AND whose text is absent to `startByte = endByte` — a
+    // zero-length range. Gemini's Segment.startIndex is proto3 int32, so a value
+    // of 0 is OMITTED from the JSON: absent means "starts at byte 0", which is
+    // what this fixture encodes and what the union below expects.
+    //
+    // Effect if the reading is wrong: any support beginning at offset 0 is
+    // discarded, supportedChars undercounts, and the partial-grounding /
+    // unsupported-text disclosures fire on documents that were in fact grounded.
+    // It fails safe (over-warns) but mislabels good work.
+    //
+    // Left red rather than repointed, because making it green would bless the
+    // behaviour. Fix is one line — `else startByte = 0;` — if the reading holds.
     const gm = { groundingSupports: [
       { segment: { endIndex: 30 } },                    // startIndex omitted = 0 (Gemini quirk)
       { segment: { startIndex: 20, endIndex: 50 } },
@@ -148,7 +186,10 @@ describe('builder review round 2 (A5 merged cells, A3 support stats, A1 capture)
 
   it('C15: support disclosure + ungrounded footer + A1 capture are wired', () => {
     const ce = readFileSync(resolve(process.cwd(), 'content_engine_source.jsx'), 'utf8');
-    expect(ce).toMatch(/computeGroundingSupportStats\(rawSection, result\.groundingMetadata\)/);
+    // The metadata is now wrapped so per-part grounding travels with it, and
+    // the raw textParts are passed alongside. Still the same call, same source
+    // section — assert the section and the wrapper, not the old argument list.
+    expect(ce).toMatch(/computeGroundingSupportStats\(rawSection, metadataWithGroundingTextParts\(result\)/);
     expect(ce).toMatch(/Source-support check \(automated, from the grounding engine/);
     expect(ce).toMatch(/it does not guarantee the source states the claim/);
     const ve = readFileSync(resolve(process.cwd(), 'view_export_preview_source.jsx'), 'utf8');
@@ -272,10 +313,16 @@ describe('assessment mode + answer-key toggle + auto-recovery (Aaron decisions 2
     // resets" — clearing the Tier-4 persisted batch (pre-fix behavior: only user-abort was
     // spared) destroyed the very resume it advertised, and the completion toast misreported
     // a paused run as finished.
-    expect(dpNow).toMatch(/if \(!_batchAbortCtrl\.signal\.aborted && !_quotaStopped\) \{\s*\n\s*_clearActiveBatch\(_batchId\)/);
+    // A third condition was added: only clear when nothing is still pending, so
+    // a batch that ends with queued files keeps the state it promised to resume.
+    expect(dpNow).toMatch(/if \(!_batchAbortCtrl\.signal\.aborted && !_quotaStopped && pending\.length === 0\) \{\s*\n\s*_clearActiveBatch\(_batchId\)/);
     expect(dpNow).toMatch(/Batch paused at the AI quota/);
     // the paused toast must be the quota branch, and the "complete" toast must be its else
-    expect(dpNow).toMatch(/if \(_quotaStopped\) \{[\s\S]{0,200}?Batch paused at the AI quota[\s\S]{0,400}?\} else \{/);
+    // Two more stop reasons were added between this branch and the final else
+    // (_aborted, _batchHandoffStopped), each with its own message. C32's point
+    // is that the quota stop is distinguished and does not fall into the generic
+    // completion path, so accept `else if` as well as `else`.
+    expect(dpNow).toMatch(/if \(_quotaStopped\) \{[\s\S]{0,200}?Batch paused at the AI quota[\s\S]{0,400}?\} else (?:if \()?/);
   });
 });
 
@@ -297,13 +344,23 @@ describe('deep-dive queue fixes (2026-07-02)', () => {
     // share _deadlineAt via _remainingMs() instead of each minting a fresh _PER_FILE_MS budget.
     expect(dpNow).toMatch(/const _deadlineAt = Date\.now\(\) \+ _PER_FILE_MS;/);
     expect(dpNow).toMatch(/await _withTimeout\(\s*\n?\s*runPdfAccessibilityAudit\(item\.base64[\s\S]*?_remainingMs\(\)/);
-    expect(dpNow).toMatch(/await _withTimeout\(fixAndVerifyPdf\(\{[\s\S]*?\}\), _remainingMs\(\)/);
+    // The fix call is hoisted to _fixPromise before being timed out, so a
+    // timeout can also drain it rather than leaving an unhandled rejection.
+    // D1's invariant — the fix runs under the same per-file wall clock — holds.
+    expect(dpNow).toMatch(/const _fixPromise = fixAndVerifyPdf\(\{/);
+    expect(dpNow).toMatch(/await _withTimeout\(_fixPromise, _remainingMs\(\)/);
   });
 
   it('D2: caption/description hints fed into Vision prompts are fence-neutralized (B1)', () => {
     // all three Vision reconstruction sites must neutralize the prior-pass caption/desc
-    expect(dpNow.match(/_neutralizePromptFence\(String\(originalBlock\.caption\)\.slice/g)).toHaveLength(3);
-    expect(dpNow.match(/_neutralizePromptFence\(String\(originalBlock\.description\)\.slice/g)).toHaveLength(2);
+    // The hints are now wrapped in _untrustedPromptDataBlock, which fences the
+    // payload as UNTRUSTED DATA *and* calls _neutralizePromptFence inside — a
+    // strictly stronger boundary than the bare neutralise these once used. Same
+    // site counts: three captions (two figure, one table), two descriptions.
+    expect(dpNow.match(/_untrustedPromptDataBlock\('PRIOR (?:FIGURE|TABLE) CAPTION HINT', String\(originalBlock\.caption\)\.slice/g)).toHaveLength(3);
+    expect(dpNow.match(/_untrustedPromptDataBlock\('PRIOR VISUAL DESCRIPTION HINT', String\(originalBlock\.description\)\.slice/g)).toHaveLength(2);
+    // And the wrapper really does neutralise, so the boundary is not cosmetic.
+    expect(dpNow).toMatch(/function _untrustedPromptDataBlock\([\s\S]{0,400}_neutralizePromptFence\(value\)/);
   });
 
   it('D3: _neutralizePromptFence actually breaks a triple-fence injection (behavioral)', () => {
