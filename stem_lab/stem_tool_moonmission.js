@@ -1692,6 +1692,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   var tick = 0;
                   // 1.5 orbits over ~22 seconds of viewing (60fps × 22 = 1320 frames → angSpeed ~0.0071)
                   var orbitAngSpeed = 0.0071;
+                  var _lastTliState = null, _lastTliOff = -99;   // throttle the state publish
                   // Moon's "future position" sits ~48° ahead of current; TLI must fire when CSM is at the opposite side of its orbit
                   function drawEarthOrbit() {
                     tick++;
@@ -1735,6 +1736,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     var angDiff = ((orbAng - tliTargetAng + Math.PI) % (Math.PI * 2)) - Math.PI;
                     var windowHalfWidth = 0.35; // radians ~20°
                     var inWindow = Math.abs(angDiff) < windowHalfWidth && orbits > 1.35;
+                    // ── Publish the window to React ──
+                    // The canvas has always drawn a burn window, flipped it to GO, and
+                    // counted down to it — and the Execute TLI Burn button underneath knew
+                    // nothing about any of it and fired identically whenever it was pressed.
+                    // The phase was teaching that timing decides whether you hit the Moon
+                    // while demonstrating that it does not matter. Written only when the
+                    // state actually changes, so this is a handful of commits per orbit,
+                    // not one per frame.
+                    var offByDeg = Math.round(Math.abs(angDiff) * 180 / Math.PI);
+                    var readyState = orbits <= 1.35 ? 'systems' : (inWindow ? 'go' : 'aligning');
+                    // How long until the window opens. Without this the student stares at
+                    // "aligning" for up to ~35 seconds with no idea whether that is five
+                    // seconds or the rest of the lesson — an unexplained wait reads as a
+                    // broken button, and the whole point is that they CHOOSE to wait.
+                    var toEdge = (-windowHalfWidth) - angDiff;           // angDiff climbs toward 0
+                    if (toEdge < 0) toEdge += Math.PI * 2;               // just missed it — go round again
+                    var framesAlign = toEdge / orbitAngSpeed;
+                    var framesSystems = Math.max(0, (1.35 * Math.PI * 2 / orbitAngSpeed) - tick);
+                    var secsToGo = Math.max(0, Math.round(Math.max(framesAlign, framesSystems) / 60));
+                    if (readyState !== _lastTliState || Math.abs(offByDeg - _lastTliOff) >= 5) {
+                      _lastTliState = readyState;
+                      _lastTliOff = offByDeg;
+                      upd('tliWindow', { state: readyState, offByDeg: offByDeg, secsToGo: secsToGo, orbits: Math.round(orbits * 100) / 100 });
+                    }
                     // Draw TLI burn window as highlighted arc on the orbit
                     ctx.save();
                     ctx.strokeStyle = inWindow ? 'rgba(34,197,94,0.85)' : 'rgba(251,191,36,0.55)';
@@ -1857,17 +1882,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             )
             )
           ),
-          h('button', {
-            'aria-label': t('stem.moonmission.execute_trans_lunar_injection_burn_to_', 'Execute trans-lunar injection burn to begin 3-day journey to the Moon'),
-            onClick: function() {
-              advancePhase(3);
-              upd('showQuiz', true); // Trigger quiz during coast
-              log('\uD83D\uDE80 TLI burn complete! En route to the Moon.');
-              addXP(15);
-              if (addToast) addToast('\uD83C\uDF11 Trans-lunar injection successful! Time for a space knowledge check.', 'success');
-            },
-            className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg'
-          }, t('stem.moonmission.execute_tli_burn_head_to_the_moon', '\uD83D\uDE80 Execute TLI Burn \u2014 Head to the Moon'))
+          // \u2500\u2500 TLI burn, now actually timed \u2500\u2500
+          // Firing outside the window is still allowed: making a student wait out an
+          // alignment is a worse lesson than letting them fire early and showing what it
+          // costs. Real missions fly mid-course corrections for exactly this reason, so an
+          // off-nominal burn buys one \u2014 it just spends propellant and says so.
+          (function() {
+            var tw = d.tliWindow || { state: 'systems', offByDeg: 0, orbits: 0 };
+            var go = tw.state === 'go';
+            var waitingOnSystems = tw.state === 'systems';
+            return h('div', null,
+              h('div', {
+                role: 'status', 'aria-live': 'polite',
+                className: 'mb-2 rounded-lg px-3 py-2 text-[11px] font-bold border ' +
+                  (go ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
+                      : 'bg-amber-500/10 border-amber-500/30 text-amber-300')
+              },
+                go ? '\u2705 In the burn window \u2014 velocity vector is pointing at where the Moon will be. GO for TLI.'
+                  : waitingOnSystems ? ('\u23F3 Houston is still verifying systems \u2014 the window opens after 1.5 orbits'
+                      + (tw.secsToGo ? ', about ' + tw.secsToGo + ' s away.' : '.'))
+                  : ('\u23F3 Aligning \u2014 about ' + tw.offByDeg + '\u00B0 off the burn point'
+                      + (tw.secsToGo ? ', window opens in ~' + tw.secsToGo + ' s.' : '.')
+                      + ' Watch the green arc, or burn now and correct later.')
+              ),
+              h('button', {
+                'aria-label': go
+                  ? t('stem.moonmission.execute_tli_in_window', 'Execute trans-lunar injection burn. You are inside the burn window.')
+                  : t('stem.moonmission.execute_tli_early', 'Execute trans-lunar injection burn early, outside the burn window. This will need a mid-course correction.'),
+                onClick: function() {
+                  advancePhase(3);
+                  upd('showQuiz', true); // Trigger quiz during coast
+                  upd('tliAccuracy', { onTime: go, offByDeg: tw.offByDeg });
+                  if (go) {
+                    log('\uD83D\uDE80 TLI burn on time \u2014 trajectory nominal.');
+                    addXP(25);
+                    if (addToast) addToast('\uD83C\uDF11 Nominal trans-lunar injection! Time for a space knowledge check.', 'success');
+                    if (typeof announceToSR === 'function') announceToSR('Trans-lunar injection burn executed inside the window. Trajectory is nominal.');
+                  } else {
+                    log('\uD83D\uDE80 TLI burn fired ' + tw.offByDeg + '\u00B0 off the window \u2014 a mid-course correction will be needed.');
+                    addXP(10);
+                    if (addToast) addToast('\uD83C\uDF11 Burn away \u2014 but ' + tw.offByDeg + '\u00B0 off the aim point. You will spend propellant on a mid-course correction.', 'info');
+                    if (typeof announceToSR === 'function') announceToSR('Trans-lunar injection executed ' + tw.offByDeg + ' degrees outside the burn window. A mid-course correction will be required.');
+                  }
+                },
+                className: 'w-full py-3 rounded-xl text-sm font-bold text-white shadow-lg transition-all ' +
+                  (go ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700'
+                      : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700')
+              }, go ? t('stem.moonmission.execute_tli_go', '\uD83D\uDE80 Execute TLI Burn \u2014 GO')
+                    : t('stem.moonmission.execute_tli_burn_head_to_the_moon', '\uD83D\uDE80 Execute TLI Burn \u2014 Head to the Moon'))
+            );
+          })()
         ),
 
         // ═══ PHASE 3: TRANS-LUNAR COAST (Animated Canvas) ═══
@@ -4446,6 +4510,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   );
                 })
               ),
+              // Burn timing \u2014 the other decision the mission actually grades.
+              d.tliAccuracy && h('div', { className: 'bg-white/5 rounded-lg p-2 border border-white/10 mb-2' },
+                h('p', { className: 'text-[11px] font-bold mb-0.5 ' + (d.tliAccuracy.onTime ? 'text-green-300' : 'text-yellow-300') },
+                  d.tliAccuracy.onTime
+                    ? '\ud83d\ude80 TLI ON TIME \u2014 you burned inside the window'
+                    : '\ud83d\ude80 TLI ' + d.tliAccuracy.offByDeg + '\u00b0 EARLY \u2014 outside the burn window'),
+                h('p', { className: 'text-[11px] text-slate-200' },
+                  d.tliAccuracy.onTime
+                    ? 'Your velocity vector pointed at where the Moon was going to be, so the coast needed no correcting.'
+                    : 'Apollo flew mid-course corrections for exactly this. It is recoverable \u2014 it just costs propellant you might want later.')
+              ),
               // Landing performance \u2014 computed inside the descent canvas and, until now,
               // thrown away with it. The one piloting task in the mission deserves a line
               // in the debrief alongside samples and quiz.
@@ -4558,6 +4633,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 upd('eventOutcome', null);
                 upd('crewMorale', 75);          // 75 is the first-flight default — replay used to start 25 points richer
                 upd('landingResult', null);
+                upd('tliWindow', null);
+                upd('tliAccuracy', null);
                 upd('aiBriefing', null);
                 upd('aiBriefingLoading', false);
                 upd('descentStarted', false);
