@@ -2000,15 +2000,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     var moonR = 8 + progress * 30;
                     var moonX = W - 50 - (1 - progress) * 10;
                     drawDetailedMoon(ctx, moonX, H3 * 0.5, moonR, 42);
-                    // Spacecraft (CSM shape with trail)
-                    var scX = earthX + earthR + 15 + (moonX - earthX - earthR - moonR - 30) * progress;
-                    var scY = H3 * 0.5 + Math.sin(tick * 0.008) * 5;
-                    // Fading dashed trail
+                    // ── Spacecraft, on an actual trajectory ──
+                    // The coast used to be a dead-straight horizontal slide with a straight
+                    // dashed line behind it, which is the one shape a trans-lunar path is
+                    // not: you leave on a long arc that climbs away from Earth and falls
+                    // toward the Moon. Same curve for the craft and its trail, so the path
+                    // it has flown is the path it is on.
+                    function transitPos(p) {
+                      return {
+                        x: earthX + earthR + 15 + (moonX - earthX - earthR - moonR - 30) * p,
+                        y: H3 * 0.5 - Math.sin(p * Math.PI) * (H3 * 0.19)
+                      };
+                    }
+                    var scPt = transitPos(progress);
+                    var scX = scPt.x;
+                    var scY = scPt.y + Math.sin(tick * 0.008) * 4;
+                    // Fading dashed trail, sampled along the same arc
                     ctx.save();
-                    ctx.strokeStyle = 'rgba(56,189,248,0.12)';
+                    ctx.strokeStyle = 'rgba(56,189,248,0.14)';
                     ctx.lineWidth = 1;
                     ctx.setLineDash([3, 4]);
-                    ctx.beginPath(); ctx.moveTo(earthX + earthR + 10, H3 * 0.5); ctx.lineTo(scX - 8, scY); ctx.stroke();
+                    ctx.beginPath();
+                    for (var tp = 0; tp <= 40; tp++) {
+                      var pp = (progress * tp) / 40;
+                      var q = transitPos(pp);
+                      if (tp === 0) ctx.moveTo(q.x, q.y); else ctx.lineTo(q.x, q.y);
+                    }
+                    ctx.stroke();
                     ctx.setLineDash([]);
                     ctx.restore();
                     // CSM body (command module cone + service module rectangle)
@@ -2033,14 +2051,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.fillStyle = 'rgba(100,180,255,0.5)';
                     ctx.beginPath(); ctx.arc(-13, 0, 1.5, 0, Math.PI * 2); ctx.fill();
                     ctx.restore();
-                    // Distance readout
+                    // ── Distance readout ──
+                    // These two lines used to be centred ON the spacecraft, one 12px above
+                    // and one 18px below, so both ran straight through the hull and each
+                    // other. In a HUD panel like every other phase uses.
                     var distFromEarth = Math.round(progress * 384400);
                     var distToMoon = 384400 - distFromEarth;
-                    ctx.font = '9px monospace'; ctx.textAlign = 'center';
-                    ctx.fillStyle = '#38bdf8';
-                    ctx.fillText(distFromEarth.toLocaleString() + ' km from Earth', scX, scY - 12);
-                    ctx.fillStyle = '#94a3b8';
-                    ctx.fillText(distToMoon.toLocaleString() + ' km to Moon', scX, scY + 18);
+                    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+                    ctx.fillRect(8, 8, 150, 62);
+                    ctx.textAlign = 'left'; ctx.font = 'bold 9px monospace';
+                    ctx.fillStyle = '#38bdf8'; ctx.fillText('FROM EARTH', 14, 22);
+                    ctx.fillStyle = '#fff'; ctx.font = 'bold 12px monospace';
+                    ctx.fillText(distFromEarth.toLocaleString() + ' km', 14, 36);
+                    ctx.font = 'bold 9px monospace'; ctx.fillStyle = '#38bdf8';
+                    ctx.fillText('TO MOON', 14, 50);
+                    ctx.fillStyle = '#fff'; ctx.font = '11px monospace';
+                    ctx.fillText(distToMoon.toLocaleString() + ' km', 14, 64);
                     // Comms chatter
                     var commsMessages = [
                       'Houston: "You are GO for TLI."',
@@ -4140,14 +4166,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     var earthR = 10 + progress * progress * 52;   // grows fastest at the end: you are falling in
                     var earthX = W - 58 + (1 - progress) * 14;
                     drawDetailedEarth(ctx, earthX, HT * 0.5, earthR, tick);
-                    var scX = moonX + moonR + 18 + (earthX - earthR - moonX - moonR - 40) * progress;
-                    var scY = HT * 0.5 + Math.sin(tick * 0.008) * 5;
+                    // Same arc treatment as the outbound leg — a coast is not a straight
+                    // horizontal slide, and the trail follows the path actually flown.
+                    function teiPos(p) {
+                      return {
+                        x: moonX + moonR + 18 + (earthX - earthR - moonX - moonR - 40) * p,
+                        y: HT * 0.5 - Math.sin(p * Math.PI) * (HT * 0.17)
+                      };
+                    }
+                    var teiPt = teiPos(progress);
+                    var scX = teiPt.x;
+                    var scY = teiPt.y + Math.sin(tick * 0.008) * 4;
                     var jettisoned = progress > 0.82;   // SM separation shortly before entry interface
-                    // Fading dashed trail back toward the Moon
+                    // Fading dashed trail back toward the Moon, sampled along the same arc
                     ctx.save();
-                    ctx.strokeStyle = 'rgba(148,163,184,0.12)';
+                    ctx.strokeStyle = 'rgba(148,163,184,0.14)';
                     ctx.lineWidth = 1; ctx.setLineDash([3, 4]);
-                    ctx.beginPath(); ctx.moveTo(moonX + moonR + 10, HT * 0.5); ctx.lineTo(scX - 10, scY); ctx.stroke();
+                    ctx.beginPath();
+                    for (var tq = 0; tq <= 40; tq++) {
+                      var pq = (progress * tq) / 40;
+                      var qq = teiPos(pq);
+                      if (tq === 0) ctx.moveTo(qq.x, qq.y); else ctx.lineTo(qq.x, qq.y);
+                    }
+                    ctx.stroke();
                     ctx.setLineDash([]);
                     ctx.restore();
                     // Jettisoned Service Module tumbling away behind the capsule
@@ -4195,25 +4236,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       ctx.fillText('SEXTANT MARK \u2014 star sighting', starX, starY + 26);
                       ctx.restore();
                     }
-                    // Readouts pinned to the spacecraft
+                    // HUD \u2014 everything in the panel. The distance and the configuration
+                    // line used to be centred ON the spacecraft and ran through the hull.
                     var distToEarth = Math.max(0, Math.round((1 - progress) * 384400));
-                    ctx.font = '9px monospace'; ctx.textAlign = 'center';
-                    ctx.fillStyle = '#38bdf8';
-                    ctx.fillText(distToEarth.toLocaleString() + ' km to Earth', scX, scY - 12);
-                    ctx.fillStyle = '#94a3b8';
-                    ctx.fillText(jettisoned ? 'CM only \u2014 SM jettisoned' : 'CSM \u2014 homeward coast', scX, scY + 18);
-                    // HUD \u2014 closing speed climbs as Earth's gravity takes hold
                     ctx.fillStyle = 'rgba(0,0,0,0.55)';
-                    ctx.fillRect(8, 8, 142, 64);
+                    ctx.fillRect(8, 8, 158, 92);
                     ctx.textAlign = 'left'; ctx.font = 'bold 9px monospace';
                     ctx.fillStyle = '#38bdf8'; ctx.fillText('CLOSING SPEED', 14, 22);
                     var closing = Math.round(3200 + progress * progress * 36700);
                     ctx.fillStyle = '#fff'; ctx.font = 'bold 13px monospace';
                     ctx.fillText(closing.toLocaleString() + ' km/h', 14, 36);
                     ctx.font = 'bold 9px monospace'; ctx.fillStyle = '#38bdf8';
-                    ctx.fillText('COAST ELAPSED', 14, 50);
+                    ctx.fillText('TO EARTH', 14, 50);
                     ctx.fillStyle = '#fff'; ctx.font = '11px monospace';
-                    ctx.fillText((progress * 3).toFixed(1) + ' of ~3 days', 14, 64);
+                    ctx.fillText(distToEarth.toLocaleString() + ' km', 14, 64);
+                    ctx.font = 'bold 9px monospace'; ctx.fillStyle = '#38bdf8';
+                    ctx.fillText('COAST ELAPSED', 14, 78);
+                    ctx.fillStyle = '#fff'; ctx.font = '11px monospace';
+                    ctx.fillText((progress * 3).toFixed(1) + ' of ~3 days', 14, 92);
+                    // Configuration, kept clear of the hull.
+                    ctx.textAlign = 'center'; ctx.font = '9px monospace';
+                    ctx.fillStyle = jettisoned ? '#fbbf24' : '#94a3b8';
+                    ctx.fillText(jettisoned ? 'CM only \u2014 SM jettisoned' : 'CSM \u2014 homeward coast', scX, scY + 24);
                     // Lesson captions (same cadence as the LEO panel)
                     var teiLessons = [
                       'Outbound you slowed the whole way up. Homebound you speed up.',
@@ -4477,10 +4521,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.textAlign = 'center'; ctx.font = 'bold 11px system-ui';
                     ctx.fillStyle = reentryPhase === 4 ? '#22c55e' : reentryPhase <= 1 ? '#f97316' : '#38bdf8';
                     ctx.fillText(phaseLabels[reentryPhase], W * 0.5, HR - 8);
-                    // Comms
+                    // Comms — pushed to the bottom during blackout, where the phase label
+                    // already lives, because the banner occupies the top three text rows
+                    // (y=30 and y=46) and the comms line at y=16 was crowding straight into
+                    // it. During blackout the line is also the crew being unheard, so it
+                    // belongs away from the warning that explains why.
                     var reComms = ['CDR: "Getting warm in here..."', 'Houston: "...Apollo, do you read?... Apollo..."', 'Houston: "We see your chutes! Welcome back!"', 'CDR: "Main chutes look good!"', 'Houston: "SPLASHDOWN! Welcome home!"'];
                     ctx.globalAlpha = 0.6; ctx.font = 'italic 9px system-ui'; ctx.fillStyle = '#a5b4fc';
-                    ctx.fillText(reComms[reentryPhase], W * 0.5, 16);
+                    ctx.textAlign = 'center';
+                    ctx.fillText(reComms[reentryPhase], W * 0.5, reentryPhase === 1 ? (HR - 22) : 16);
                     ctx.globalAlpha = 1;
                     drawVignette(ctx, W, HR, 0.35);
                     if (reentryPhase < 4 && document.contains(cvEl)) requestAnimationFrame(drawReentry);
