@@ -2048,16 +2048,391 @@
   // Malus: I = I₀ cos²(Δθ between consecutive polarizer axes).
   // After unpolarized light through ONE polarizer: I drops to I₀/2.
   // ──────────────────────────────────────────────────────────────────
+  // ──────────────────────────────────────────────────────────────────
+  // 3D polarization viewer
+  //
+  // The E field of a light wave lives in the two-dimensional plane transverse
+  // to the beam. The flat sim spends its horizontal axis on the beam itself,
+  // which leaves exactly one axis for polarization — so it draws the transverse
+  // plane collapsed onto the page. Two consequences, both real:
+  //
+  //   * a polarizer at 30 deg and one at 150 deg draw identically;
+  //   * circular polarization cannot be drawn at all, though this tool
+  //     describes it in its glossary, its phenomena database and a hands-on
+  //     experiment whose whole point ("circularly polarized light is NOT
+  //     extinguished by a linear polarizer at any angle") the sim could not
+  //     demonstrate.
+  //
+  // Giving the transverse plane its own two axes also makes Malus's law
+  // visible as what it actually is — a projection of a vector onto an axis,
+  // squared — rather than a cos^2 to be memorised.
+  // ──────────────────────────────────────────────────────────────────
+  var OP_BEAM_LEN = 19;          // world units along the beam
+  var OP_WAVE_SEGS = 240;        // samples along the tip locus
+  var OP_COMB_EVERY = 8;         // draw a field vector every Nth sample
+  var OP_DISC_R = 2.45;          // polarizer disc radius; sets the transverse framing
+
+  /** Unit vector of a polarizer axis at `deg`, in the transverse (y,z) plane. */
+  function opAxisVec(THREE, deg) {
+    var r = deg * Math.PI / 180;
+    return new THREE.Vector3(0, Math.cos(r), Math.sin(r));
+  }
+
+  var OpticsGL = (function () {
+    var S = null, status = 'idle', pending = null, node = null, sig = '';
+    var notify = null, restoreAttempts = 0;
+
+    function setStatus(next) {
+      if (status === next) return;
+      status = next;
+      if (notify) { try { notify(next); } catch (e) {} }
+    }
+
+    function debug() {
+      return {
+        state: status,
+        contextLost: !!(S && S.contextLost),
+        segments: S ? S.segCount : 0,
+        discs: S ? S.discCount : 0,
+        mode: S ? S.mode : null,
+        // Peak excursion of each named segment along its own axis vs the
+        // perpendicular one. Linear light is flat — all excursion on one axis
+        // and none across it. Circular light is round: equal on both. This is
+        // the whole physical claim of the view, so it is measurable, not just
+        // visible.
+        spreads: S ? S.spreads : null,
+        animating: !!(S && S.animate),
+        canvas: S && S.renderer ? { w: S.renderer.domElement.width, h: S.renderer.domElement.height } : null
+      };
+    }
+
+    function disposeGroup(group) {
+      if (!group) return;
+      for (var i = group.children.length - 1; i >= 0; i--) {
+        var c = group.children[i];
+        if (c.geometry) c.geometry.dispose();
+        if (c.material) c.material.dispose();
+        group.remove(c);
+      }
+    }
+
+    /**
+     * E field of one segment at distance x along the beam, at time phase `ph`.
+     * Linear: a single axis oscillating. Circular: two perpendicular components
+     * a quarter period apart, so the tip goes round instead of back and forth.
+     */
+    function fieldAt(THREE, seg, x, ph) {
+      var k = 2 * Math.PI / seg.wavelength;
+      var ang = k * x - ph;
+      if (seg.circular) {
+        var a = opAxisVec(THREE, seg.deg);
+        var b = opAxisVec(THREE, seg.deg + 90);
+        var hand = seg.handed < 0 ? -1 : 1;
+        return new THREE.Vector3()
+          .addScaledVector(a, seg.amp * Math.cos(ang))
+          .addScaledVector(b, seg.amp * Math.sin(ang) * hand);
+      }
+      return opAxisVec(THREE, seg.deg).multiplyScalar(seg.amp * Math.cos(ang));
+    }
+
+    /** Rewrite the wave vertex buffers in place. Called per frame when animating. */
+    function writeWave(ph) {
+      if (!S || !S.segs.length) return;
+      var THREE = S.THREE;
+      S.spreads = {};
+      for (var si = 0; si < S.segs.length; si++) {
+        var seg = S.segs[si];
+        var locus = seg._locus, comb = seg._comb;
+        if (!locus) continue;
+        var lp = locus.geometry.attributes.position.array;
+        var cp = comb ? comb.geometry.attributes.position.array : null;
+        var ci = 0;
+        var spreadA = 0, spreadB = 0;
+        var aAxis = opAxisVec(THREE, seg.deg), bAxis = opAxisVec(THREE, seg.deg + 90);
+        for (var i = 0; i <= OP_WAVE_SEGS; i++) {
+          var t = i / OP_WAVE_SEGS;
+          var x = seg.x0 + (seg.x1 - seg.x0) * t;
+          var E = fieldAt(THREE, seg, x, ph);
+          lp[i * 3] = x; lp[i * 3 + 1] = E.y; lp[i * 3 + 2] = E.z;
+          var da = Math.abs(E.dot(aAxis)), db = Math.abs(E.dot(bAxis));
+          if (da > spreadA) spreadA = da;
+          if (db > spreadB) spreadB = db;
+          if (cp && i % OP_COMB_EVERY === 0 && ci + 5 < cp.length) {
+            cp[ci] = x; cp[ci + 1] = 0; cp[ci + 2] = 0;
+            cp[ci + 3] = x; cp[ci + 4] = E.y; cp[ci + 5] = E.z;
+            ci += 6;
+          }
+        }
+        locus.geometry.attributes.position.needsUpdate = true;
+        if (comb) comb.geometry.attributes.position.needsUpdate = true;
+        if (seg.tag) S.spreads[seg.tag] = { along: +spreadA.toFixed(3), across: +spreadB.toFixed(3) };
+      }
+    }
+
+    function applyModel(m) {
+      if (!S || !S.THREE) return;
+      var THREE = S.THREE;
+      disposeGroup(S.model);
+      S.segs = [];
+      S.mode = m.mode;
+      S.animate = !!m.animate;
+
+      var n = m.segments.length;
+      var span = OP_BEAM_LEN;
+      var x0 = -span / 2;
+      var segLen = span / Math.max(1, n);
+
+      // The beam axis itself, so "forward" is unambiguous.
+      var axisGeo = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(x0 - 1, 0, 0), new THREE.Vector3(x0 + span + 1, 0, 0)
+      ]);
+      S.model.add(new THREE.Line(axisGeo, new THREE.LineBasicMaterial({ color: 0x475569 })));
+
+      for (var i = 0; i < n; i++) {
+        var src = m.segments[i];
+        var seg = {
+          deg: src.deg, amp: src.amp, circular: !!src.circular, handed: src.handed || 1,
+          tag: src.tag || null,
+          wavelength: m.wavelength || 4.4,
+          x0: x0 + i * segLen, x1: x0 + (i + 1) * segLen
+        };
+        // Unpolarised light is not one wave — it is many, at every orientation.
+        if (src.unpolarized) {
+          for (var u = 0; u < 6; u++) {
+            var sub = {
+              deg: u * 30, amp: src.amp * 0.62, circular: false, handed: 1,
+              wavelength: seg.wavelength, x0: seg.x0, x1: seg.x1
+            };
+            buildSegment(THREE, sub, 0xfde68a, 0.5, false);
+          }
+          continue;
+        }
+        buildSegment(THREE, seg, src.color || 0xfacc15, 1, true);
+      }
+
+      // Polarizer discs, edge-on to the beam.
+      S.discCount = 0;
+      for (var p = 0; p < m.discs.length; p++) {
+        var disc = m.discs[p];
+        var dx = x0 + disc.at * span;
+        var ring = new THREE.Mesh(
+          new THREE.CircleGeometry(OP_DISC_R, 40),
+          new THREE.MeshBasicMaterial({
+            color: disc.plate ? 0x38bdf8 : 0x6366f1,
+            transparent: true, opacity: 0.16, side: THREE.DoubleSide
+          })
+        );
+        ring.position.set(dx, 0, 0);
+        ring.rotation.y = Math.PI / 2;
+        S.model.add(ring);
+        // The transmission axis: the line the field gets projected onto.
+        var av = opAxisVec(THREE, disc.deg).multiplyScalar(OP_DISC_R * 0.96);
+        var axG = new THREE.BufferGeometry().setFromPoints([
+          new THREE.Vector3(dx, -av.y, -av.z), new THREE.Vector3(dx, av.y, av.z)
+        ]);
+        S.model.add(new THREE.Line(axG, new THREE.LineBasicMaterial({
+          color: disc.plate ? 0x7dd3fc : 0xfbbf24, linewidth: 2
+        })));
+        S.discCount++;
+      }
+
+      S.segCount = S.segs.length;
+      writeWave(0);
+      S.target = new THREE.Vector3(0, 0, 0);
+      var tr = OP_DISC_R + 0.25;
+      S.half = new THREE.Vector3(span / 2 + 1.0, tr, tr);
+    }
+
+    function buildSegment(THREE, seg, color, opacity, track) {
+      var pos = new Float32Array((OP_WAVE_SEGS + 1) * 3);
+      var g = new THREE.BufferGeometry();
+      g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+      var line = new THREE.Line(g, new THREE.LineBasicMaterial({
+        color: color, transparent: opacity < 1, opacity: opacity
+      }));
+      line.frustumCulled = false;
+      seg._locus = line;
+      S.model.add(line);
+      if (track) {
+        var combN = Math.floor(OP_WAVE_SEGS / OP_COMB_EVERY) + 1;
+        var cpos = new Float32Array(combN * 6);
+        var cg = new THREE.BufferGeometry();
+        cg.setAttribute('position', new THREE.BufferAttribute(cpos, 3));
+        var comb = new THREE.LineSegments(cg, new THREE.LineBasicMaterial({
+          color: color, transparent: true, opacity: 0.45
+        }));
+        comb.frustumCulled = false;
+        seg._comb = comb;
+        S.model.add(comb);
+      }
+      S.segs.push(seg);
+    }
+
+    function frame(now) {
+      if (!S) return;
+      S.raf = requestAnimationFrame(frame);
+      if (S.contextLost || !S.renderer) return;
+      if (pending) {
+        var next = pending; pending = null;
+        if (next.sig !== sig) { sig = next.sig; applyModel(next); }
+        S.rotY = next.rotY; S.rotX = next.rotX; S.zoom = next.zoom;
+      }
+      if (S.animate) {
+        if (!S.t0) S.t0 = now || 0;
+        writeWave(((now || 0) - S.t0) * 0.0032);
+      }
+      var el = S.renderer.domElement;
+      var w = el.clientWidth || 1, hgt = el.clientHeight || 1;
+      if (w !== S.lastW || hgt !== S.lastH) {
+        S.lastW = w; S.lastH = hgt;
+        S.renderer.setSize(w, hgt, false);
+        S.camera.aspect = w / Math.max(1, hgt);
+      }
+      var ry = (S.rotY || 0) * Math.PI / 180, rx = (S.rotX || 0) * Math.PI / 180;
+      var dir = new S.THREE.Vector3(
+        Math.cos(rx) * Math.sin(ry), Math.sin(rx), Math.cos(rx) * Math.cos(ry)
+      ).normalize();
+      var fit = 1;
+      if (S.half) {
+        var up0 = new S.THREE.Vector3(0, 1, 0);
+        var right = new S.THREE.Vector3().crossVectors(up0, dir);
+        if (right.lengthSq() < 1e-6) right.set(1, 0, 0);
+        right.normalize();
+        var up = new S.THREE.Vector3().crossVectors(dir, right).normalize();
+        var tanV = Math.tan(S.camera.fov * Math.PI / 360);
+        var tanH = tanV * Math.max(0.2, S.camera.aspect);
+        for (var sx = -1; sx <= 1; sx += 2) {
+          for (var sy = -1; sy <= 1; sy += 2) {
+            for (var sz = -1; sz <= 1; sz += 2) {
+              var v = new S.THREE.Vector3(sx * S.half.x, sy * S.half.y, sz * S.half.z);
+              var along = v.dot(dir);
+              var nh = Math.abs(v.dot(right)) / tanH + along;
+              var nv = Math.abs(v.dot(up)) / tanV + along;
+              if (nh > fit) fit = nh;
+              if (nv > fit) fit = nv;
+            }
+          }
+        }
+        fit *= 1.05;
+      }
+      var dist = fit / Math.max(0.3, S.zoom || 1);
+      S.camera.position.copy(S.target).addScaledVector(dir, dist);
+      S.camera.near = Math.max(0.05, dist * 0.01);
+      S.camera.far = dist * 8 + 100;
+      S.camera.updateProjectionMatrix();
+      S.camera.lookAt(S.target);
+      try { S.renderer.render(S.scene, S.camera); } catch (e) { /* keep looping */ }
+    }
+
+    function build(THREE, host) {
+      var renderer;
+      try { renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false }); }
+      catch (e) { return false; }
+      var w = host.clientWidth || 460, hgt = host.clientHeight || 300;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.setSize(w, hgt);
+      renderer.setClearColor(0x0b1220, 1);
+      var el = renderer.domElement;
+      el.style.display = 'block';
+      el.style.width = '100%';
+      el.style.height = '100%';
+      el.style.borderRadius = '8px';
+      el.style.touchAction = 'pan-y';
+      el.setAttribute('data-optics-gl', 'true');
+      el.setAttribute('aria-hidden', 'true');
+      host.appendChild(el);
+
+      var scene = new THREE.Scene();
+      var camera = new THREE.PerspectiveCamera(40, w / Math.max(1, hgt), 0.1, 2000);
+      scene.add(new THREE.AmbientLight(0xffffff, 0.9));
+      var model = new THREE.Group();
+      scene.add(model);
+
+      S = {
+        THREE: THREE, renderer: renderer, scene: scene, camera: camera, model: model,
+        segs: [], segCount: 0, discCount: 0, mode: null, lastSpread: null,
+        rotY: 34, rotX: 23, zoom: 1, animate: false, t0: 0,
+        target: new THREE.Vector3(), half: null,
+        contextLost: false, lastW: w, lastH: hgt, raf: 0
+      };
+
+      el.addEventListener('webglcontextlost', function (ev) {
+        ev.preventDefault(); S.contextLost = true; setStatus('failed');
+      });
+      el.addEventListener('webglcontextrestored', function () {
+        if (restoreAttempts >= 1) return;
+        restoreAttempts++; S.contextLost = false; sig = ''; setStatus('ready');
+      });
+
+      sig = '';
+      S.raf = requestAnimationFrame(frame);
+      return true;
+    }
+
+    return {
+      attach: function (host) {
+        if (!host) { this.dispose(); return; }
+        if (node === host && S) return;
+        if (S) this.dispose();
+        node = host;
+        setStatus('loading');
+        var ensure = window.StemLab && window.StemLab.ensureThree
+          ? window.StemLab.ensureThree({ orbit: false, failMessage: '3D polarization view unavailable' })
+          : Promise.reject(new Error('no host loader'));
+        ensure.then(function (THREE) {
+          if (node !== host) return;
+          if (!THREE) { setStatus('failed'); return; }
+          setStatus(build(THREE, host) ? 'ready' : 'failed');
+        }).catch(function () { setStatus('failed'); });
+      },
+      push: function (data) { pending = data; },
+      onStatusChange: function (fn) { notify = fn; },
+      status: function () { return status; },
+      debug: debug,
+      dispose: function () {
+        if (S) {
+          if (S.raf) cancelAnimationFrame(S.raf);
+          disposeGroup(S.model);
+          if (S.renderer) {
+            try { S.renderer.forceContextLoss(); } catch (e) {}
+            try { S.renderer.dispose(); } catch (e) {}
+            if (S.renderer.domElement && S.renderer.domElement.parentNode) {
+              S.renderer.domElement.parentNode.removeChild(S.renderer.domElement);
+            }
+          }
+        }
+        S = null; node = null; pending = null; sig = ''; restoreAttempts = 0;
+        notify = null;
+        setStatus('idle');
+      }
+    };
+  })();
+
+  // ONE stable ref callback — an inline arrow would rebuild the scene every render.
+  function opticsGlRef(nodeOrNull) { OpticsGL.attach(nodeOrNull); }
+  var opticsDrag = { current: null };
+  if (typeof window !== 'undefined') window.__alloOpticsGL = OpticsGL;
+
   function _renderPolarizationSim(state, upd, h) {
     var W = 460, H = 280;
     var pad = { l: 12, r: 12, t: 12, b: 28 };
     var theta2 = state.polTheta2 != null ? state.polTheta2 : 30;   // degrees, axis of P2
     var theta3 = state.polTheta3 != null ? state.polTheta3 : 90;   // degrees, axis of P3
     var useP3 = !!state.polUseP3;
+    // Quarter-wave plate after P1, fast axis at 45 deg to P1. Converts the linear
+    // light to circular. This tool's own experiment sheet asks the student to show
+    // that circularly polarized light is NOT extinguished by a linear polarizer at
+    // any angle; before this switch existed the sim could not produce circular
+    // light, so the claim had nothing to check it against.
+    var useQwp = !!state.polQwp;
     // P1 axis fixed at 0° (vertical for our visualization). After P1, intensity = I₀/2 of unpolarized.
     var I0 = 1.0;
     var afterP1 = 0.5 * I0;                              // unpolarized → 1/2
-    var afterP2 = malus(afterP1, degToRad(theta2 - 0));  // P1=0°, so Δ = theta2
+    // Circular light has no preferred axis: a linear polarizer passes exactly half
+    // of it whatever its angle. That is the whole point of the demonstration, so
+    // the numbers have to follow it too, not just the picture.
+    var afterP2 = useQwp ? afterP1 * 0.5 : malus(afterP1, degToRad(theta2 - 0));
+    // After P2 the light is linear again, along P2's axis, so P3 is Malus as usual.
     var afterP3 = useP3 ? malus(afterP2, degToRad(theta3 - theta2)) : null;
     // Layout: three vertical polarizer disks across the width
     var disk1X = 110, disk2X = useP3 ? 230 : 290, disk3X = 350;
@@ -2092,7 +2467,136 @@
         h('text', { x: cx, y: midY - diskR - 8, fill: '#86efac', fontSize: 10, textAnchor: 'middle', fontFamily: 'monospace' }, 'I = ' + (intensity * 100).toFixed(1) + '% I₀')
       );
     }
+    // ── The transverse plane, given both of its axes ──────────────────
+    // Amplitude is the square root of intensity; the picture is of the FIELD,
+    // and it is the field that gets projected onto each polarizer's axis.
+    var reduceMotion = false;
+    try {
+      reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    } catch (e) {}
+    var animate = state.polAnimate !== false && !reduceMotion;
+    var segs = [
+      { unpolarized: true, amp: 1.55, deg: 0, tag: 'unpol' },
+      { deg: 0, amp: 1.55 * Math.sqrt(afterP1 / 0.5), color: 0xfacc15, tag: 'p1' }
+    ];
+    if (useQwp) {
+      segs.push({ deg: 0, amp: 1.55 * Math.sqrt(afterP1 / 0.5), circular: true, handed: 1, color: 0x7dd3fc, tag: 'qwp' });
+    }
+    segs.push({ deg: theta2, amp: 1.55 * Math.sqrt(Math.max(afterP2, 0) / 0.5), color: 0xfacc15, tag: 'p2' });
+    if (useP3) segs.push({ deg: theta3, amp: 1.55 * Math.sqrt(Math.max(afterP3, 0) / 0.5), color: 0xfacc15, tag: 'p3' });
+
+    var discs = [{ at: (1 / segs.length), deg: 0 }];
+    if (useQwp) discs.push({ at: 2 / segs.length, deg: 45, plate: true });
+    discs.push({ at: (useQwp ? 3 : 2) / segs.length, deg: theta2 });
+    if (useP3) discs.push({ at: (useQwp ? 4 : 3) / segs.length, deg: theta3 });
+
+    var glLive = OpticsGL.status() === 'ready';
+    OpticsGL.onStatusChange(function () { upd('polGlTick', ((state.polGlTick || 0) + 1)); });
+    OpticsGL.push({
+      sig: [theta2, theta3, useP3, useQwp, animate, afterP1.toFixed(4), afterP2.toFixed(4),
+            afterP3 == null ? 'x' : afterP3.toFixed(4)].join('|'),
+      segments: segs, discs: discs, mode: useQwp ? 'circular' : 'linear',
+      animate: animate, wavelength: 4.4,
+      rotY: state.polRot ? state.polRot.rotY : 34,
+      rotX: state.polRot ? state.polRot.rotX : 23,
+      zoom: state.polZoom || 1
+    });
+
+    var glAlt = 'Three-dimensional view along the beam. '
+      + 'Unpolarized light enters as waves oscillating at every orientation, then P1 at 0 degrees '
+      + 'leaves a wave oscillating in one plane. '
+      + (useQwp
+          ? 'A quarter-wave plate at 45 degrees turns that into circular polarization, whose field vector '
+            + 'sweeps a helix around the beam. The next linear polarizer at ' + theta2.toFixed(0)
+            + ' degrees transmits half of it, and would transmit half at any angle.'
+          : 'P2 at ' + theta2.toFixed(0) + ' degrees projects that wave onto its own axis, which is what '
+            + 'Malus\'s law squares.')
+      + (useP3 ? ' P3 at ' + theta3.toFixed(0) + ' degrees projects once more.' : '');
+
+    var gl3d = h('div', { style: { marginBottom: 10 } },
+      h('div', {
+        style: {
+          position: 'relative', height: 260, maxWidth: 460, borderRadius: 8, overflow: 'hidden',
+          background: 'var(--allo-stem-deeper, #0b1220)', border: '1px solid var(--allo-stem-border, #334155)'
+        }
+      },
+        h('div', {
+          ref: opticsGlRef,
+          role: 'img',
+          'data-a11y-static': 'true',
+          'aria-describedby': 'optics-pol-gl-desc',
+          'aria-label': glAlt,
+          style: { position: 'absolute', inset: 0 },
+          onPointerDown: function (ev) {
+            opticsDrag.current = { x: ev.clientX, y: ev.clientY,
+              rotY: state.polRot ? state.polRot.rotY : 34, rotX: state.polRot ? state.polRot.rotX : 23 };
+            try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (e) {}
+          },
+          onPointerMove: function (ev) {
+            var g = opticsDrag.current;
+            if (!g) return;
+            upd('polRot', {
+              rotY: g.rotY + (ev.clientX - g.x) * 0.5,
+              rotX: Math.max(-80, Math.min(80, g.rotX + (ev.clientY - g.y) * 0.35))
+            });
+          },
+          onPointerUp: function () { opticsDrag.current = null; },
+          onPointerCancel: function () { opticsDrag.current = null; },
+          onWheel: function (ev) {
+            ev.preventDefault();
+            upd('polZoom', Math.max(0.5, Math.min(3, (state.polZoom || 1) * (ev.deltaY < 0 ? 1.12 : 0.89))));
+          }
+        }),
+        !glLive ? h('div', {
+          style: {
+            position: 'absolute', inset: 0, display: 'flex', alignItems: 'center',
+            justifyContent: 'center', textAlign: 'center', padding: 12,
+            color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, pointerEvents: 'none'
+          }
+        }, OpticsGL.status() === 'failed'
+            ? '3D view unavailable on this device — the flat diagram below shows the same polarizer chain.'
+            : 'Loading 3D view…') : null,
+        glLive ? h('div', {
+          style: {
+            position: 'absolute', left: 8, bottom: 6, fontSize: 10,
+            color: 'var(--allo-stem-text-soft, #94a3b8)', pointerEvents: 'none',
+            background: 'rgba(11,18,32,.7)', padding: '2px 7px', borderRadius: 999
+          }
+        }, 'Drag — orbit  ·  Scroll — zoom  ·  look down the beam to see the axis') : null,
+        h('p', {
+          id: 'optics-pol-gl-desc',
+          style: {
+            position: 'absolute', width: 1, height: 1, padding: 0, margin: -1,
+            overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap', border: 0
+          }
+        }, 'Intensities after each polarizer are given as text beside the flat diagram below.')
+      ),
+      h('div', { style: { display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center', marginTop: 6 } },
+        h('label', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', alignItems: 'center', gap: 6 } },
+          h('input', {
+            type: 'checkbox', checked: useQwp,
+            onChange: function (e) { upd('polQwp', e.target.checked); },
+            'data-op-focusable': 'true', 'aria-label': 'Insert a quarter-wave plate after P1 to make the light circularly polarized'
+          }),
+          'Quarter-wave plate after P₁ (circular)'
+        ),
+        h('label', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', alignItems: 'center', gap: 6 } },
+          h('input', {
+            type: 'checkbox', checked: animate, disabled: reduceMotion,
+            onChange: function (e) { upd('polAnimate', e.target.checked); },
+            'data-op-focusable': 'true', 'aria-label': 'Animate the travelling wave'
+          }),
+          reduceMotion ? 'Animation off (system setting)' : 'Animate the wave'
+        )
+      ),
+      useQwp ? h('p', {
+        style: { fontSize: 11, color: '#7dd3fc', lineHeight: 1.5, margin: '6px 0 0', maxWidth: 460 }
+      }, 'Circular light has no axis to be aligned with, so P₂ passes exactly half of it — '
+        + 'drag the P₂ slider and watch the intensity refuse to move. That is the experiment on the lab-kit card.') : null
+    );
+
     return h('div', null,
+      gl3d,
       // Slider for P2 axis (and P3 if active)
       h('div', { style: { display: 'flex', gap: 12, alignItems: 'center', marginBottom: 10, flexWrap: 'wrap' } },
         h('label', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', alignItems: 'center', gap: 6 } },
