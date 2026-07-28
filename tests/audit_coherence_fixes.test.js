@@ -152,23 +152,22 @@ describe('builder review round 2 (A5 merged cells, A3 support stats, A1 capture)
     // Second citation sits at pos ~152 — beyond the supports' reach ([0,50) + the ±40
     // proximity window = 90), so it must count as unsupported.
     const text = 'aaaaaaaaa [Sources 1] ' + 'b'.repeat(130) + ' [Sources 2] cccccccc';
-    // ⚠ THIS ASSERTION IS LEFT FAILING ON PURPOSE — it is the one place in the
-    // 2026-07-28 test sweep where the CODE, not the test, looks wrong.
+    // This was the one CODE bug found in the 2026-07-28 stale-test sweep, and
+    // this assertion was deliberately left red until it was fixed rather than
+    // repointed, because repointing would have blessed the behaviour.
     //
-    // _resolveGroundingStatsRange (content_engine_source.jsx, added in
-    // 08df4edd2 without touching this test) resolves a segment whose startIndex
-    // is absent AND whose text is absent to `startByte = endByte` — a
-    // zero-length range. Gemini's Segment.startIndex is proto3 int32, so a value
-    // of 0 is OMITTED from the JSON: absent means "starts at byte 0", which is
-    // what this fixture encodes and what the union below expects.
+    // _resolveGroundingStatsRange (content_engine_source.jsx, added in 08df4edd2
+    // without touching this test) resolved a segment whose startIndex is absent
+    // AND whose text is absent to `startByte = endByte` — an empty range.
+    // Segment.startIndex is a proto3 int32, so 0 is OMITTED from the JSON:
+    // absent means "starts at byte 0", which is what this fixture encodes.
+    // The adjacent text-present branch already resolved that same case to 0,
+    // so the two disagreed on identical input; the else branch was the wrong one.
     //
-    // Effect if the reading is wrong: any support beginning at offset 0 is
-    // discarded, supportedChars undercounts, and the partial-grounding /
-    // unsupported-text disclosures fire on documents that were in fact grounded.
-    // It fails safe (over-warns) but mislabels good work.
-    //
-    // Left red rather than repointed, because making it green would bless the
-    // behaviour. Fix is one line — `else startByte = 0;` — if the reading holds.
+    // Effect while it was live: any support beginning at offset 0 was discarded,
+    // supportedChars undercounted, and the partial-grounding / unsupported-text
+    // disclosures fired on documents that were in fact grounded. It failed safe
+    // (over-warned) but mislabelled good work.
     const gm = { groundingSupports: [
       { segment: { endIndex: 30 } },                    // startIndex omitted = 0 (Gemini quirk)
       { segment: { startIndex: 20, endIndex: 50 } },

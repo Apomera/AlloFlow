@@ -472,7 +472,13 @@ var createContentEngine = function(deps) {
     var startByte;
     if (typeof segment.startIndex === 'number') startByte = segment.startIndex;
     else if (typeof segment.text === 'string') startByte = endByte - _utf8ByteLength(segment.text);
-    else startByte = endByte;
+    // Segment.startIndex is a proto3 int32, so a value of 0 is OMITTED from the
+    // JSON: absent means "this support starts at byte 0", never "starts where it
+    // ends". The branch above already resolves that same case to 0 whenever text
+    // is present (endByte - byteLength(text) === 0); this branch has to agree, or
+    // a support anchored at offset 0 collapses to an empty range, supportedChars
+    // undercounts, and the partial-grounding disclosure fires on grounded text.
+    else startByte = 0;
     var start = _utf8ByteOffsetToCodeUnit(partText, startByte);
     var end = _utf8ByteOffsetToCodeUnit(partText, endByte);
     if (start === null || end === null || start < 0 || end < start) return null;
