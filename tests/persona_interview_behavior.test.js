@@ -170,7 +170,13 @@ describe('Persona interview state integrity', () => {
     });
 
     await harness.api.handlePersonaChatSubmit('Pregunta', true);
-    expect(harness.generated.data[0].chatHistory).toHaveLength(3);
+    // The transcript lives in live state, never on the resource: persisting it
+    // through updateStoredPersona is exactly what let a late portrait edit
+    // clobber it with a stale copy, which is the failure THIS test guards. So
+    // the turn is checked where it actually is, and the resource is checked for
+    // the durable persona metadata that a late edit must not erase.
+    expect(harness.state.chatHistory).toHaveLength(3);
+    expect(harness.generated.data[0].chatHistory).toBeUndefined();
     expect(harness.generated.data[0].rapport).toBe(15);
     expect(harness.generated.data[0].quests[0].isCompleted).toBe(true);
     expect(harness.generated.data[0].accumulatedXP).toBe(60);
@@ -180,7 +186,10 @@ describe('Persona interview state integrity', () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
 
     const saved = harness.generated.data[0];
-    expect(saved.chatHistory).toHaveLength(3);
+    // after the late portrait edit resolves: the turn survives in state, the
+    // resource still has no transcript to be clobbered, and the metadata stands
+    expect(harness.state.chatHistory).toHaveLength(3);
+    expect(saved.chatHistory).toBeUndefined();
     expect(saved.rapport).toBe(15);
     expect(saved.quests[0].isCompleted).toBe(true);
     expect(saved.accumulatedXP).toBe(60);
@@ -374,7 +383,12 @@ describe('Persona interview state integrity', () => {
     expect(savedA.panelHarmonyScore).toBe(30);
     expect(savedA.panelPartner).toBe('B');
     expect(savedB.panelPartner).toBe('A');
-    expect(savedA.chatHistory).toHaveLength(5);
+    // Panel close persists both panelists' durable attributes; the transcript
+    // stays in live state and is never written onto either persona (see the
+    // deliberate strip in updateStoredPersona).
+    expect(harness.state.chatHistory).toHaveLength(5);
+    expect(savedA.chatHistory).toBeUndefined();
+    expect(savedB.chatHistory).toBeUndefined();
     expect(harness.generated.title).toBe(resource.title);
     expect(harness.isOpen).toBe(false);
   });
