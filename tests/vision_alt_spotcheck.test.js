@@ -13,9 +13,25 @@ const pipe = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'ut
 const start = pipe.indexOf('const _visionAltSpotCheck = async');
 const end = pipe.indexOf('const fixAndVerifyPdf = async', start);
 if (start < 0 || end < 0) throw new Error('spot-check slice markers missing');
+// The spot-check now fences the prior alt text as untrusted prompt data and
+// restores the fences afterwards, so the slice closes over
+// _neutralizePromptFence / _untrustedPromptDataBlock / _restoreNeutralizedPromptFences.
+// They sit contiguously well above it. Sliced in rather than stubbed — the
+// fencing is a security boundary, and a stub would let a regression through.
+// Span the three from whichever appears first to whichever appears last, so a
+// reordering of the group does not silently drop one of them.
+const fenceNames = ['_untrustedPromptDataBlock', '_neutralizePromptFence', '_restoreNeutralizedPromptFences'];
+const fenceAt = fenceNames.map((n) => pipe.indexOf('function ' + n + '('));
+if (fenceAt.some((i) => i < 0)) throw new Error('prompt-fence helper slice markers missing');
+const fenceStart = Math.min(...fenceAt);
+const fenceEnd = pipe.indexOf('\n}', Math.max(...fenceAt)) + 2;
+const fenceHelpers = pipe.slice(fenceStart, fenceEnd);
+for (const n of fenceNames) {
+  if (!fenceHelpers.includes('function ' + n + '(')) throw new Error('fence slice missed ' + n);
+}
 const makeSpotCheck = (callGeminiVision, altQuality) => new Function(
   'callGeminiVision', '_alloAltQuality', 'DOMParser', 'window',
-  pipe.slice(start, end) + '\nreturn _visionAltSpotCheck;'
+  fenceHelpers + '\n' + pipe.slice(start, end) + '\nreturn _visionAltSpotCheck;'
 )(callGeminiVision, altQuality || (() => ({ issues: [] })), globalThis.DOMParser, {});
 
 const png1x1 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
@@ -62,7 +78,13 @@ describe('_visionAltSpotCheck', () => {
     const html = doc(img('A detailed caption of the water cycle') + img('image'));
     const r = await fn(html, { sample: 1 });
     expect(r.checked).toBe(1);
-    expect(seen[0]).toContain('"A detailed caption of the water cycle"');
+    // The alt now travels inside an UNTRUSTED DOCUMENT ALT TEXT block rather
+    // than bare double quotes, so assert the text and the fence around it. The
+    // point of the test is unchanged: the PLAUSIBLE alt was sampled first, not
+    // the obviously-bad 'image' one, because plausible alts are the blind spot.
+    expect(seen[0]).toContain('A detailed caption of the water cycle');
+    expect(seen[0]).toContain('UNTRUSTED DOCUMENT ALT TEXT DATA');
+    expect(seen[0]).not.toContain('"image"');
   });
 
   it('resolves production deferred-image tokens without restoring them into the HTML', async () => {
@@ -105,6 +127,12 @@ describe('pipeline wiring (anti-drift)', () => {
   });
   it('aborted runs stop sampling (abort signal polled between calls)', () => {
     const sliceText = pipe.slice(start, end);
-    expect(sliceText).toContain('window.__alloPdfAbortSignal && window.__alloPdfAbortSignal.aborted) break;');
+    // Cancellation moved off the shared global slot onto a per-run signal
+    // passed in opts, checked through _spotCancelled(). That is strictly
+    // better: a spot-check now stops for ITS OWN abort rather than for whatever
+    // happened to be in the global slot at the time.
+    expect(sliceText).toContain('const _spotSignal = (opts && opts.signal) || null;');
+    expect(sliceText).toContain('const _spotCancelled = () => !!(_spotSignal && _spotSignal.aborted);');
+    expect(sliceText).toContain('if (_spotCancelled()) break;');
   });
 });
