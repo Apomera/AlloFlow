@@ -3963,10 +3963,47 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex-1' }),
             // Save current construction
             h('button', {
-              onClick: function() {
-                if (typeof window === 'undefined' || typeof window.prompt !== 'function') return;
-                var name = window.prompt('Name this construction:', 'My build ' + new Date().toLocaleDateString());
-                if (name) saveCurrent(name);
+              type: 'button',
+              onClick: async function() {
+                // AlloFlowUX.prompt may use a native fallback during startup.
+                // Require the real accessible dialog and fail closed instead.
+                var dialogModule = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.PromptDialog && window.AlloModules.PromptDialog.PromptDialog;
+                var promptApi = typeof window !== 'undefined' && window.AlloFlowUX && window.AlloFlowUX.prompt;
+                if (typeof dialogModule !== 'function' || typeof promptApi !== 'function') {
+                  var unavailable = __alloT('stem.volume.save_name_dialog_unavailable', 'The save-name dialog is unavailable, so this construction was not saved.');
+                  if (addToast) addToast(unavailable, 'warning');
+                  if (announceToSR) announceToSR(unavailable);
+                  return;
+                }
+                var name = null;
+                try {
+                  name = await promptApi(
+                    __alloT('stem.volume.name_this_construction', 'Name this construction.'),
+                    __alloT('stem.volume.default_construction_name', 'My build') + ' ' + new Date().toLocaleDateString(),
+                    {
+                      title: __alloT('stem.volume.save_construction_title', 'Save construction'),
+                      placeholder: __alloT('stem.volume.construction_name_placeholder', 'Construction name'),
+                      confirmText: __alloT('stem.volume.save_construction_confirm', 'Save construction'),
+                      cancelText: __alloT('common.cancel', 'Cancel'),
+                      maxLength: 40
+                    }
+                  );
+                } catch (err) {
+                  var failed = __alloT('stem.volume.save_name_dialog_failed', 'The save-name dialog could not open, so this construction was not saved.');
+                  if (addToast) addToast(failed, 'warning');
+                  if (announceToSR) announceToSR(failed);
+                  return;
+                }
+                if (name === null) {
+                  if (announceToSR) announceToSR(__alloT('stem.volume.save_cancelled', 'Save cancelled.'));
+                  return;
+                }
+                name = String(name).trim();
+                if (!name) {
+                  if (announceToSR) announceToSR(__alloT('stem.volume.save_name_required', 'Enter a name before saving this construction.'));
+                  return;
+                }
+                saveCurrent(name);
               },
               'aria-label': __alloT('stem.volume.save_current_construction', 'Save current construction'),
               title: __alloT('stem.volume.save_current_dims_cubes_with_a_name', 'Save current dims + cubes with a name'),
