@@ -3,9 +3,6 @@
   "updated": "2026-07-27",
   "stale": [
     "anchor_charts_module.js",
-    "math_helpers_module.js",
-    "story_forge_module.js",
-    "view_hints_modal_module.js",
     "view_sentence_frames_module.js"
   ]
 }
