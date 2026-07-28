@@ -2141,6 +2141,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               )
             )
           ),
+          // \u2500\u2500 Mid-course correction \u2500\u2500
+          // The TLI phase already tells a student who burns outside the window that they
+          // have bought a mid-course correction. Until now that was a sentence and
+          // nothing else happened, which teaches that the timing did not matter after
+          // all. This is the bill arriving, and it is a real choice with a real cost on
+          // both sides: propellant spent here is propellant the landing does not have,
+          // and skipping it means arriving faster than you want to be going.
+          (function() {
+            var acc = d.tliAccuracy;
+            if (!acc) return null;                       // reached this phase another way
+            if (acc.onTime) {
+              return phaseStatus(true, '',
+                'Trajectory nominal. The TLI burn was inside the window, so no mid-course correction is needed \u2014 and that is propellant you keep for the landing.');
+            }
+            var choice = d.mccChoice;
+            if (choice) {
+              return phaseStatus(true, '',
+                choice === 'corrected'
+                  ? 'Mid-course correction complete. You are back on the nominal path, and the descent stage is carrying 8% less fuel because of it.'
+                  : 'Correction declined. You will arrive off the nominal path and faster across the ground, which the landing will have to absorb.');
+            }
+            return h('div', { className: 'mb-2 rounded-xl p-3 border border-amber-500/40 bg-amber-500/10' },
+              h('p', { className: 'text-[11px] font-bold text-amber-300 mb-1' },
+                '\u26A0\uFE0F MID-COURSE CORRECTION \u2014 your TLI burn was ' + acc.offByDeg + '\u00B0 off the aim point'),
+              h('p', { className: 'text-[11px] text-amber-100/90 mb-2 leading-relaxed' },
+                'A small error at the burn becomes a large one over 384,400 km. Apollo carried propellant for exactly this and used it on nearly every flight. Correcting costs fuel the Lunar Module will want later; not correcting means you cross the surface faster when you try to land.'),
+              h('div', { className: 'flex gap-2 flex-wrap' },
+                h('button', {
+                  'aria-label': t('stem.moonmission.burn_the_correction', 'Burn the mid-course correction. Costs 8 percent of the descent fuel and puts you back on the nominal trajectory.'),
+                  onClick: function() {
+                    upd('mccChoice', 'corrected');
+                    log('\uD83D\uDEE0\uFE0F Mid-course correction burned \u2014 back on the nominal path, 8% descent fuel spent.');
+                    addXP(15);
+                    if (addToast) addToast('\uD83D\uDEE0\uFE0F Correction burned. Back on track, with a lighter fuel margin for the landing.', 'success');
+                    if (typeof announceToSR === 'function') announceToSR('Mid-course correction executed. Trajectory nominal, descent fuel reduced by 8 percent.');
+                  },
+                  className: 'flex-1 min-w-[150px] py-2 rounded-lg text-[11px] font-bold text-white bg-emerald-700 hover:bg-emerald-800'
+                }, t('stem.moonmission.burn_correction_label', '\uD83D\uDEE0\uFE0F Burn the correction (\u22128% descent fuel)')),
+                h('button', {
+                  'aria-label': t('stem.moonmission.press_on_uncorrected', 'Press on without correcting. Saves fuel but you arrive off the nominal path with more horizontal speed to bleed off during landing.'),
+                  onClick: function() {
+                    upd('mccChoice', 'skipped');
+                    log('\u27A1\uFE0F Correction declined \u2014 arriving off-nominal to save fuel.');
+                    addXP(5);
+                    if (addToast) addToast('\u27A1\uFE0F Pressing on. You keep the fuel, but you will arrive moving faster across the ground.', 'info');
+                    if (typeof announceToSR === 'function') announceToSR('Correction declined. You will arrive off the nominal path with additional horizontal speed at the landing.');
+                  },
+                  className: 'flex-1 min-w-[150px] py-2 rounded-lg text-[11px] font-bold text-white bg-slate-600 hover:bg-slate-700'
+                }, t('stem.moonmission.press_on_label', '\u27A1\uFE0F Press on, keep the fuel'))
+              )
+            );
+          })(),
           h('button', {
             'aria-label': t('stem.moonmission.arrive_at_the_moon_and_enter_lunar_orb', 'Arrive at the Moon and enter lunar orbit at 110 kilometer altitude'),
             onClick: function() {
@@ -2358,6 +2410,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 h('p', { className: 'text-[11px] text-slate-600' }, t('stem.moonmission.v_3_m_s_h_5_m_s', 'V < 3 m/s, H < 5 m/s'))
               )
             ),
+            // Carry the coast decision forward in words, not just in the numbers. A
+            // student who declined the correction should not have to work out for
+            // themselves why the ground is moving faster than the briefing implied.
+            d.mccChoice && h('div', { className: 'rounded-lg p-3 border mb-4 max-w-sm mx-auto ' +
+              (d.mccChoice === 'corrected' ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-orange-500/10 border-orange-500/30') },
+              h('p', { className: 'text-[11px] font-bold ' + (d.mccChoice === 'corrected' ? 'text-emerald-300' : 'text-orange-300') },
+                d.mccChoice === 'corrected'
+                  ? '\uD83D\uDEE0\uFE0F You burned the mid-course correction, so you start on the nominal path \u2014 with 8% less fuel in the tank.'
+                  : '\u27A1\uFE0F You declined the correction, so you arrive off-nominal: about 44% more horizontal speed to kill before you can touch down.')
+            ),
             h('div', { className: 'bg-amber-500/10 rounded-lg p-3 border border-amber-500/20 mb-4 max-w-sm mx-auto' },
               h('p', { className: 'text-[11px] text-amber-300 font-bold mb-1' }, t('stem.moonmission.tips_from_mission_control', '\u26A0\uFE0F Tips from Mission Control:')),
               h('ul', { className: 'text-[11px] text-amber-200 space-y-1 text-left pl-4' },
@@ -2390,8 +2452,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   var tick = 0;
                   var alt = 15000; // meters
                   var vVel = -20; // vertical velocity (negative = descending)
-                  var hVel = 500; // horizontal velocity
-                  var fuel = (diffSettings && diffSettings.fuel) || 100;      // difficulty was a dead setting here
+                  // ── Where the trans-lunar decisions actually land ──
+                  // Burning the mid-course correction costs 8% of the descent fuel;
+                  // declining it means arriving with ~44% more ground speed to bleed off.
+                  // Getting the TLI burn inside its window costs neither. Without this the
+                  // coast was a sentence about consequences and the descent never knew.
+                  var _mcc = d.mccChoice || null;
+                  var hVel = 500 + (_mcc === 'skipped' ? 220 : 0);
+                  var fuel = ((diffSettings && diffSettings.fuel) || 100) - (_mcc === 'corrected' ? 8 : 0);
                   var thrust = 0;
                   var landed = false;
                   var crashed = false;
@@ -4892,6 +4960,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 upd('ascentStatus', null);
                 upd('reentryStatus', null);
                 upd('seismoDeployed', false);
+                upd('mccChoice', null);
                 upd('aiBriefing', null);
                 upd('aiBriefingLoading', false);
                 upd('descentStarted', false);
