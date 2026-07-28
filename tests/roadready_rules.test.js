@@ -21,8 +21,16 @@ const ROADREADY_UI_STRING_FILES = [
   'desktop/web-app/public/ui_strings.js',
 ];
 
+// Memoised: the file is ~2.4 MB and this is called by every assertion for every
+// copy — roughly 80 reads, ~190 MB of I/O, against a 5 s per-test timeout. That is
+// enough to time out on a busy machine, and it did: this suite failed on
+// "keeps every hazard-perception event and reaction window available" with a
+// timeout (not an assertion) while other work was running, then passed 78/78 in
+// isolation. The contents cannot change mid-run, so read each file once.
+const _rrCache = new Map();
 function readRoadReady(relPath) {
-  return readFileSync(resolve(process.cwd(), relPath), 'utf8');
+  if (!_rrCache.has(relPath)) _rrCache.set(relPath, readFileSync(resolve(process.cwd(), relPath), 'utf8'));
+  return _rrCache.get(relPath);
 }
 
 function decodeJsStringLiteral(raw, quote) {
