@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { loadTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 /**
  * WeldLab is a 9.7k-line vocational tool whose numbers a student is graded against,
@@ -271,6 +271,78 @@ describe('WeldLab carbon equivalent', () => {
       expect(carbonEquivalentIIW(more), `${k} did not raise CE`)
         .toBeGreaterThan(carbonEquivalentIIW(base));
     });
+  });
+});
+
+describe('WeldLab progress tier never claims a credential', () => {
+  // The menu tier is computed purely from how many modules have been OPENED. It
+  // used to be named off the AWS ladder, so touring all 22 announced "AWS Certified
+  // Master Welder" and eight announced "Broad expertise ... to AWS-certified".
+  // Apprentice and Journeyman are real apprenticeship classifications and AWS
+  // certification is a witnessed performance test; none of it is earned by reading,
+  // and this same tool teaches that correctly elsewhere. Guard the regression.
+  const ALL_MODULES = [
+    'heatInput', 'beadLab', 'defectHunt', 'processCompare', 'jointCatalog',
+    'symbolsReader', 'ppeSafety', 'careerPaths', 'underwater', 'speedChallenge',
+    'defectCatalog', 'metallurgy', 'codes', 'qualPrep', 'pipeWelding', 'robotic',
+    'inspection', 'consumables', 'maineEcosystem', 'safetyHealth', 'mathBlueprint',
+    'careerStories'
+  ];
+
+  const renderWithVisits = (n) => {
+    const weldBadges = {};
+    ALL_MODULES.slice(0, n).forEach((id) => { weldBadges[id] = true; });
+    return renderTool('weldLab', { weldLab: { weldBadges } });
+  };
+
+  // Scope to the tier panel. The rest of the menu legitimately discusses the AWS
+  // ladder and apprenticeships in module descriptions — that is real content and
+  // must not be flagged. Only the tier the student is AWARDED is under test.
+  const tierPanel = (html) => {
+    const at = html.indexOf('Your tier');
+    expect(at, 'tier panel not found in menu markup').toBeGreaterThan(-1);
+    return html.slice(at, at + 700);
+  };
+
+  const HONEST_TIERS = [
+    'New to the shop', 'Looking around', 'Finding your way around',
+    'Knows the way around', 'Toured every station'
+  ];
+
+  it.each([0, 1, 4, 8, 21, 22])('awards only an exploration tier at %i modules opened', (n) => {
+    const panel = tierPanel(renderWithVisits(n));
+
+    // Exactly one of the honest names, and nothing claiming a qualification.
+    expect(HONEST_TIERS.filter((t) => panel.includes(t))).toHaveLength(1);
+    expect(panel).not.toMatch(/AWS Certified/i);
+    expect(panel).not.toMatch(/AWS-certified/i);
+    expect(panel).not.toMatch(/Master Welder/i);
+    // Real registered-apprenticeship classifications, previously used as tier names.
+    expect(panel).not.toMatch(/\bJourneyman\b/);
+    expect(panel).not.toMatch(/\bApprentice\b/);
+    // A competence claim for what is only a page visit.
+    expect(panel).not.toMatch(/Broad expertise/i);
+  });
+
+  it('still shows an exploration ladder that moves with progress', () => {
+    // The fix must not have flattened the motivation, only the claim.
+    const none = renderWithVisits(0);
+    const some = renderWithVisits(4);
+    const all = renderWithVisits(22);
+
+    expect(none).toMatch(/New to the shop/);
+    expect(some).toMatch(/Finding your way around/);
+    expect(all).toMatch(/Toured every station/);
+
+    // Progress counter tracks the real number.
+    expect(none).toMatch(/0 \/ 22 modules/);
+    expect(all).toMatch(/22 \/ 22 modules/);
+  });
+
+  it('points a fully-explored student at what certification actually takes', () => {
+    const all = renderWithVisits(22);
+    expect(all).toMatch(/witnessed weld test/i);
+    expect(all).toMatch(/Welder Qualification Prep/);
   });
 });
 

@@ -807,29 +807,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               speedChallenge: 'Speed Challenge',
               defectCatalog: "Welder's Defect Catalog"
             };
-            // Career tier from visit count. Mirrors the AWS certification
-            // ladder loosely: entry-level → working → master → certified.
+            // Progress tier from visit count — and it counts VISITS, so it is named
+            // for what it measures.
+            //
+            // This deliberately does NOT mirror the AWS ladder, which is what it used
+            // to do: opening all 22 modules announced "AWS Certified Master Welder",
+            // and eight of them announced "Broad expertise. N modules to AWS-certified."
+            // Apprentice and Journeyman are real classifications in a registered
+            // apprenticeship, and AWS certification is a third-party credential earned
+            // on a witnessed performance test to a written procedure, documented by a
+            // CWI. None of it can be earned by reading, and this tool tells students so
+            // itself — the Welder Qualification Prep module quizzes them on D1.1 and
+            // ASME IX, and the career stories describe multi-year paths. Handing out
+            // the credential for clicking contradicted the tool's own content, in a
+            // module whose entire job is helping teenagers judge a real career.
+            //
+            // Exploration is still worth encouraging, so the ladder stays; it just
+            // claims exploration rather than qualification, and the top rung points at
+            // what the real thing actually takes.
             var tier, tierColor, tierIcon, tierBlurb;
             if (allDone) {
-              tier = 'AWS Certified Master Welder';
+              tier = 'Toured every station';
               tierColor = 'text-orange-700';
-              tierIcon = '🏆';
-              tierBlurb = 'You toured every station in the shop. Revisit any to deepen the craft.';
+              tierIcon = '🗺️';
+              tierBlurb = 'You have opened every module in the shop. That is the reading done — real AWS certification is earned on a witnessed weld test. Welder Qualification Prep covers what that involves.';
             } else if (visitedCount >= 8) {
-              tier = 'Master Welder (in progress)';
+              tier = 'Knows the way around';
               tierColor = 'text-orange-600';
               tierIcon = '🔥';
-              tierBlurb = 'Broad expertise. ' + (totalCount - visitedCount) + ' module' + (totalCount - visitedCount === 1 ? '' : 's') + ' to AWS-certified.';
+              tierBlurb = 'You have seen the breadth of the trade. ' + (totalCount - visitedCount) + ' module' + (totalCount - visitedCount === 1 ? '' : 's') + ' left to explore.';
             } else if (visitedCount >= 4) {
-              tier = 'Journeyman';
+              tier = 'Finding your way around';
               tierColor = 'text-amber-700';
               tierIcon = '⚒️';
-              tierBlurb = 'Working knowledge. ' + (8 - visitedCount) + ' more to Master.';
+              tierBlurb = 'Good spread so far. ' + (8 - visitedCount) + ' more to see the full breadth.';
             } else if (visitedCount >= 1) {
-              tier = 'Apprentice';
+              tier = 'Looking around';
               tierColor = 'text-yellow-700';
               tierIcon = '🛠️';
-              tierBlurb = 'Just getting started. ' + (4 - visitedCount) + ' more to Journeyman.';
+              tierBlurb = 'Just getting started. ' + (4 - visitedCount) + ' more modules to go.';
             } else {
               tier = 'New to the shop';
               tierColor = 'text-slate-700';
