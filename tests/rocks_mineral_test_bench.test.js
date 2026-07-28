@@ -421,9 +421,15 @@ describe('scratch bench — the mark is visible on every specimen', () => {
     // This bug has appeared four times. The rule lives in one place now, and
     // the rock swatch delegates to it rather than keeping a second copy.
     const src = readFileSync(ROCKS_FILE, 'utf8');
-    expect(src).toContain('function rkMarkOn(mark, base, minSep)');
-    expect(src).toContain('var separate = function (hex) { return rkMarkOn(hex, cols[0], MIN_SEP); };');
-    // Only one body of the shifting maths.
-    expect([...src.matchAll(/baseLum > 0\.5 \? -/g)].length).toBe(1);
+    expect(src).toContain('function rkMarkOn(mark, base, minRatio)');
+    // It targets a WCAG RATIO now, not a luminance gap. The first version made
+    // marks visible but left the scratch groove as low as 1.07:1 against its
+    // specimen — visible, and nowhere near SC 1.4.11's 3:1.
+    expect(src).toContain('function rkContrast(a, b)');
+    expect(src).toContain("var grooveInk = rkMarkOn('#1f2937', body, 3.0);");
+    expect(src).toContain("var edge = rkMarkOn('#0f172a', cols[0], MIN_RATIO);");
+    // Still exactly one implementation — the whole point of hoisting it.
+    expect([...src.matchAll(/function rkMarkOn\(/g)].length).toBe(1);
+    expect([...src.matchAll(/function rkContrast\(/g)].length).toBe(1);
   });
 });

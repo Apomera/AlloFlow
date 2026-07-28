@@ -410,25 +410,70 @@ describe('specimen art — the picture shows what the words promise', () => {
     expect(Math.abs(dark - light)).toBeLessThan(Math.max(dark, light));
   });
 
-  it('keeps a texture mark visible against its own rock', () => {
-    // Pale rocks picked their texture marks from the same near-white palette as
-    // the body, so chalk's plankton shells, limestone's fossils and marble's
-    // sugary crystals were all rendered and none of them could be seen.
+  it('keeps a texture mark visible against its own rock, without falsifying it', () => {
+    // Two requirements pulling against each other, and the test has to hold
+    // both. Pale rocks used to pick their marks from the same near-white
+    // palette as the body, so chalk's plankton shells, limestone's fossils and
+    // marble's sugary crystals were rendered and invisible. But forcing the
+    // FILL to WCAG's 3:1 repainted 51 of 60 grain colours — sandstone's quartz
+    // went dark brown, rhyolite's pale phenocrysts black — and on an
+    // identification tool the grain colour IS the information.
+    //
+    // So the fill stays true and the BOUNDARY carries the contrast, which is
+    // what SC 1.4.11 asks for.
     const src = readFileSync(ROCKS_FILE, 'utf8');
-    expect(src).toContain('var MIN_SEP = 0.12;');
-    expect(src).toContain('var pick = function (n) { return separate(cols[n % cols.length]); };');
+    expect(src).toContain('var MIN_RATIO = 3.0;');
+    expect(src).toContain("var edge = rkMarkOn('#0f172a', cols[0], MIN_RATIO);");
+
+    // WCAG contrast, not a luminance gap — the two are not the same thing, and
+    // the first version of this rule conflated them.
+    const srgb = (hex) => {
+      const c = [1, 3, 5].map((i) => {
+        const v = parseInt(hex.slice(i, i + 2), 16) / 255;
+        return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+      });
+      return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+    };
+    const ratio = (a, b) => {
+      const x = srgb(a), y = srgb(b);
+      return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+    };
+
+    // Marks are stroked in hex OR in rgba (obsidian's conchoidal ripples are
+    // translucent white over near-black glass), so composite the translucent
+    // ones over the body before measuring rather than skipping them.
+    const overBody = (stroke, body) => {
+      const m = /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/.exec(stroke);
+      if (!m) return stroke;
+      const a = m[4] === undefined ? 1 : parseFloat(m[4]);
+      const b = [1, 3, 5].map((i) => parseInt(body.slice(i, i + 2), 16));
+      return '#' + [1, 2, 3].map((k) => {
+        const v = Math.round(parseInt(m[k], 10) * a + b[k - 1] * (1 - a));
+        return (v < 16 ? '0' : '') + v.toString(16);
+      }).join('');
+    };
 
     const s = swatches();
-    ['chalk', 'limestone', 'marble'].forEach((id) => {
+    const block = src.slice(src.indexOf('const ROCKS = ['), src.indexOf('const MINERALS = ['));
+    ['chalk', 'limestone', 'marble', 'sandstone', 'granite', 'obsidian'].forEach((id) => {
       const body = /<path[^>]*fill="(#[0-9a-fA-F]{6})"/.exec(s[id]);
       expect(body, `${id} has no body fill`).toBeTruthy();
-      const marks = [...s[id].matchAll(/stroke="(#[0-9a-fA-F]{6})"/g)].map((m) => m[1])
-        .concat([...s[id].matchAll(/<polygon[^>]*fill="(#[0-9a-fA-F]{6})"/g)].map((m) => m[1]));
-      expect(marks.length, `${id} draws no texture marks`).toBeGreaterThan(0);
-      // Every mark separated from the body by at least the threshold.
-      marks.forEach((m) => {
-        expect(Math.abs(lum(m) - lum(body[1])), `${id}: mark ${m} invisible on body ${body[1]}`)
-          .toBeGreaterThanOrEqual(0.115);
+      const strokes = [...new Set([...s[id].matchAll(/stroke="([^"]+)"/g)].map((m) => m[1]))]
+        .map((st) => overBody(st, body[1]))
+        .filter((st) => /^#[0-9a-fA-F]{6}$/.test(st));
+      expect(strokes.length, `${id} draws no outlined marks`).toBeGreaterThan(0);
+      // At least one stroke colour clears 3:1 — the mark's perceivable boundary.
+      const best = Math.max(...strokes.map((st) => ratio(st, body[1])));
+      expect(best, `${id}: no mark boundary reaches 3:1 on body ${body[1]}`).toBeGreaterThanOrEqual(3);
+    });
+
+    // ...and the grain colours themselves are still the ones in the data.
+    ['sandstone', 'rhyolite', 'conglom'].forEach((id) => {
+      const at = block.indexOf("{ id: '" + id + "',");
+      const row = block.slice(at, block.indexOf('\n', at));
+      const cols = [...(/grainColors:\s*\[([^\]]*)\]/.exec(row)[1]).matchAll(/#[0-9a-fA-F]{6}/g)].map((m) => m[0]);
+      cols.slice(1).forEach((c) => {
+        expect(s[id].toLowerCase(), `${id}: grain colour ${c} was repainted`).toContain(c.toLowerCase());
       });
     });
   });

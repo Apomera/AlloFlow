@@ -146,27 +146,62 @@
   // EXACTLY — scratching magnetite cut a groove that could not be seen at all.
   // Nothing about any of those reads as wrong in the source; only rendering it
   // and looking finds it. So the rule lives in one place now.
-  function rkLuma(hex) {
+  // The first version of this worked in luminance DIFFERENCE, which made marks
+  // visible but is not what WCAG measures. A luminance gap of 0.16 can still be
+  // a contrast ratio of 1.1, and an audit found the scratch marks running as
+  // low as 1.07:1 against their specimen — visible, and nowhere near the 3:1
+  // that SC 1.4.11 asks of a graphic you need in order to understand the
+  // content. Its comment also claimed an equal shift on all three channels
+  // moves luminance by exactly that amount; that is true in LINEAR light and
+  // this scale is gamma-encoded, so the old shift landed wherever it landed.
+  // Both are fixed by targeting the ratio itself.
+  function rkSrgbLum(hex) {
     if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return 0.5;
-    var c = [1, 3, 5].map(function (i) { return parseInt(hex.slice(i, i + 2), 16) / 255; });
+    var c = [1, 3, 5].map(function (i) {
+      var v = parseInt(hex.slice(i, i + 2), 16) / 255;
+      return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    });
     return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
   }
 
-  /** `mark` nudged away from `base` until it can be seen, or returned unchanged. */
-  function rkMarkOn(mark, base, minSep) {
-    if (!/^#[0-9a-fA-F]{6}$/.test(mark) || !/^#[0-9a-fA-F]{6}$/.test(base)) return mark;
-    var baseLum = rkLuma(base);
-    var l = rkLuma(mark);
-    if (Math.abs(l - baseLum) >= minSep) return mark;
-    // Move the mark TO the target rather than by the shortfall: shifting by the
-    // shortfall lands short whenever the mark starts on the far side of the
-    // base. Luminance weights sum to 1, so an equal shift on all three channels
-    // moves luminance by exactly that amount.
-    var shift = ((baseLum + (baseLum > 0.5 ? -minSep : minSep)) - l) * 255;
+  /** WCAG contrast ratio between two #rrggbb colours. */
+  function rkContrast(a, b) {
+    var la = rkSrgbLum(a), lb = rkSrgbLum(b);
+    return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+  }
+
+  function rkMixToward(hex, target, t) {
     return '#' + [1, 3, 5].map(function (i) {
-      var v = Math.round(Math.min(255, Math.max(0, parseInt(mark.slice(i, i + 2), 16) + shift)));
-      return (v < 16 ? '0' : '') + v.toString(16);
+      var v = parseInt(hex.slice(i, i + 2), 16);
+      var out = Math.round(v + (target - v) * t);
+      return (out < 16 ? '0' : '') + out.toString(16);
     }).join('');
+  }
+
+  /**
+   * `mark` pushed away from `base` until it reaches `minRatio`, or returned
+   * unchanged if it already does. Blends toward black on a light base and
+   * toward white on a dark one, and searches for the SMALLEST push that works
+   * so the mark keeps as much of its own hue as it can.
+   */
+  function rkMarkOn(mark, base, minRatio) {
+    if (!/^#[0-9a-fA-F]{6}$/.test(mark) || !/^#[0-9a-fA-F]{6}$/.test(base)) return mark;
+    if (rkContrast(mark, base) >= minRatio) return mark;
+    var toward = rkSrgbLum(base) > 0.18 ? 0 : 255;
+    var full = rkMixToward(mark, toward, 1);
+    // Mid-tone bases cannot reach a high ratio in either direction; take the
+    // best available rather than pretending.
+    if (rkContrast(full, base) < minRatio) {
+      var other = rkMixToward(mark, toward === 0 ? 255 : 0, 1);
+      return rkContrast(other, base) > rkContrast(full, base) ? other : full;
+    }
+    var lo = 0, hi = 1, best = full;
+    for (var s = 0; s < 12; s++) {
+      var t = (lo + hi) / 2;
+      var cand = rkMixToward(mark, toward, t);
+      if (rkContrast(cand, base) >= minRatio) { best = cand; hi = t; } else { lo = t; }
+    }
+    return best;
   }
 
   // Rock specimen swatch. `texture` drives the pattern, `grainColors` the palette.
@@ -244,7 +279,7 @@
     // into featureless white blobs — while a fixed shadow buries the dark ones.
     // Light specimens get most of their modelling from shadow, dark specimens
     // from highlight.
-    var baseLum = rkLuma(cols[0]);
+    var baseLum = rkSrgbLum(cols[0]);
 
     // The same problem one level down. Adapting the LIGHTING stopped the pale
     // specimens blowing out, but their texture marks are picked from the same
@@ -255,8 +290,27 @@
     // lands too close to the body is nudged away from it — away from white on a
     // pale rock, away from black on a dark one — and marks that already read
     // are left exactly as they were.
-    var MIN_SEP = 0.12;
-    var separate = function (hex) { return rkMarkOn(hex, cols[0], MIN_SEP); };
+    // SC 1.4.11 wants 3:1 for the parts of a graphic you need in order to
+    // understand it. Forcing that onto the FILL was the wrong way to get it:
+    // grain colours in a real rock sit close to the matrix — that is precisely
+    // why a rock looks uniform — so demanding 3:1 of the fill repainted 51 of
+    // 60 grain colours, some by 134 of 255 in a channel, and turned sandstone's
+    // quartz dark brown and rhyolite's pale phenocrysts black. On an
+    // identification tool the grain colour IS the information, which is the
+    // "essential presentation" the criterion explicitly excepts.
+    //
+    // So the fill stays true and the BOUNDARY carries the contrast, which is
+    // what the criterion actually asks for and what its own guidance suggests
+    // for this case. `edge` clears 3:1 against the body no matter how pale or
+    // dark the rock is.
+    var MIN_RATIO = 3.0;
+    var edge = rkMarkOn('#0f172a', cols[0], MIN_RATIO);
+    var separate = function (hex) { return hex; };
+    // Marks drawn as a STROKE have no fill to protect — the ink IS the mark, so
+    // it can carry the 3:1 itself. Chalk's shell arcs were stroked in the same
+    // near-white as chalk and vanished; a fossil outline has no true colour to
+    // falsify, unlike a grain of quartz.
+    var ink = function (n) { return rkMarkOn(cols[n % cols.length], cols[0], MIN_RATIO); };
     var hiOp = (0.42 - baseLum * 0.34).toFixed(3);   // .42 on black → .08 on white
     var loOp = (0.20 + baseLum * 0.34).toFixed(3);   // .20 on black → .54 on white
 
@@ -297,7 +351,10 @@
       for (i = 1; i <= 7; i++) {
         g.push(h('circle', {
           key: 'ch' + i, cx: ox.toFixed(1), cy: oy.toFixed(1), r: (S * 0.115 * i).toFixed(2),
-          fill: 'none', stroke: 'rgba(198,220,255,' + (0.36 - i * 0.032).toFixed(3) + ')',
+          fill: 'none', // SC 1.4.11: conchoidal fracture IS obsidian's diagnostic, so the
+          // ripples are a graphic required to understand the content. The old
+          // ramp faded the outermost ring to 2.44:1 on the black glass.
+          stroke: 'rgba(198,220,255,' + (0.62 - i * 0.024).toFixed(3) + ')',
           strokeWidth: (S * 0.02).toFixed(2),
         }));
       }
@@ -315,7 +372,7 @@
           var spa = (sk / spSides) * Math.PI * 2 + rnd() * 0.5;
           spPts.push((spx + Math.cos(spa) * spr).toFixed(1) + ',' + (spy + Math.sin(spa) * spr).toFixed(1));
         }
-        g.push(h('polygon', { key: 'sp' + i, points: spPts.join(' '), fill: i % 2 ? cols[0] : cols[1], opacity: 0.95 }));
+        g.push(h('polygon', { key: 'sp' + i, points: spPts.join(' '), fill: i % 2 ? cols[0] : cols[1], opacity: 0.95, stroke: edge, strokeWidth: 0.35 }));
       }
     } else if (art === 'slaty') {
       // Slate, phyllite and schist all carried texture 'foliated', so all three
@@ -327,7 +384,7 @@
         var sly = (i / 9) * S;
         g.push(h('line', {
           key: 'sl' + i, x1: 0, y1: sly.toFixed(1), x2: S, y2: sly.toFixed(1),
-          stroke: pick(i), strokeWidth: 0.9, opacity: 0.7,
+          stroke: ink(i), strokeWidth: 0.9, opacity: 0.7,
         }));
       }
       // One sheet lifted clear of the face — the cleavage you can actually split.
@@ -348,7 +405,7 @@
           crd += ' Q' + (wx - S / 12).toFixed(1) + ',' + (cry + (w % 2 ? -1 : 1) * S * 0.030).toFixed(1)
             + ' ' + wx.toFixed(1) + ',' + cry.toFixed(1);
         }
-        g.push(h('path', { key: 'cr' + i, d: crd, fill: 'none', stroke: pick(i), strokeWidth: 0.95, opacity: 0.85 }));
+        g.push(h('path', { key: 'cr' + i, d: crd, fill: 'none', stroke: ink(i), strokeWidth: 0.95, opacity: 0.85 }));
       }
     } else if (art === 'schistose') {
       // Schist is defined by mica flakes big enough to SEE, lying in one plane
@@ -367,7 +424,7 @@
         g.push(h('rect', {
           key: 'mk' + i, x: (mx - mw / 2).toFixed(1), y: (my - mh / 2).toFixed(1),
           width: mw.toFixed(1), height: mh.toFixed(2), rx: (mh / 2).toFixed(2),
-          fill: pick(i + 1), opacity: 0.92, transform: mrot,
+          fill: pick(i + 1), opacity: 0.92, stroke: edge, strokeWidth: 0.3, transform: mrot,
         }));
         // The sparkle: the flakes that happen to be angled into the light.
         if (i % 2 === 0) {
@@ -389,7 +446,7 @@
           var hrr = hr * (0.5 + rnd());
           hPts.push((hx + Math.cos(ha) * hrr).toFixed(1) + ',' + (hy + Math.sin(ha) * hrr).toFixed(1));
         }
-        g.push(h('polygon', { key: 'sd' + i, points: hPts.join(' '), fill: pick(i + 1), stroke: 'rgba(0,0,0,0.30)', strokeWidth: 0.5, opacity: 0.95 }));
+        g.push(h('polygon', { key: 'sd' + i, points: hPts.join(' '), fill: pick(i + 1), stroke: edge, strokeWidth: 0.55, opacity: 0.95 }));
       }
     } else if (tex === 'coarse-grained' || tex === 'crystalline' || tex === 'non-foliated') {
       var n = tex === 'coarse-grained' ? 9 : 12;
@@ -402,11 +459,11 @@
           var a = (k / sides) * Math.PI * 2 + rnd() * 0.4;
           pts.push((cx2 + Math.cos(a) * r).toFixed(1) + ',' + (cy2 + Math.sin(a) * r).toFixed(1));
         }
-        g.push(h('polygon', { key: 'c' + i, points: pts.join(' '), fill: pick(i + 1), stroke: 'rgba(0,0,0,0.28)', strokeWidth: 0.5 }));
+        g.push(h('polygon', { key: 'c' + i, points: pts.join(' '), fill: pick(i + 1), stroke: edge, strokeWidth: 0.6 }));
       }
     } else if (tex === 'fine-grained') {
       for (i = 0; i < 70; i++) {
-        g.push(h('circle', { key: 'f' + i, cx: (rnd() * S).toFixed(1), cy: (rnd() * S).toFixed(1), r: (0.035 * S * (0.6 + rnd())).toFixed(2), fill: pick(i + 1), opacity: 0.85 }));
+        g.push(h('circle', { key: 'f' + i, cx: (rnd() * S).toFixed(1), cy: (rnd() * S).toFixed(1), r: (0.035 * S * (0.6 + rnd())).toFixed(2), fill: pick(i + 1), opacity: 0.85, stroke: edge, strokeWidth: 0.35 }));
       }
     } else if (tex === 'glassy') {
       g.push(h('rect', { key: 'gl', x: 0, y: 0, width: S, height: S, fill: cols[0] }));
@@ -419,14 +476,14 @@
       }
     } else if (tex === 'vesicular') {
       for (i = 0; i < 26; i++) {
-        g.push(h('circle', { key: 'v' + i, cx: (rnd() * S).toFixed(1), cy: (rnd() * S).toFixed(1), r: (0.045 * S * (0.6 + rnd() * 1.4)).toFixed(2), fill: 'rgba(60,50,45,0.45)' }));
+        g.push(h('circle', { key: 'v' + i, cx: (rnd() * S).toFixed(1), cy: (rnd() * S).toFixed(1), r: (0.045 * S * (0.6 + rnd() * 1.4)).toFixed(2), fill: 'rgba(60,50,45,0.45)', stroke: edge, strokeWidth: 0.4 }));
       }
     } else if (tex === 'clastic') {
       for (i = 1; i < 5; i++) {
         g.push(h('line', { key: 'b' + i, x1: 0, y1: (i / 5) * S, x2: S, y2: (i / 5) * S, stroke: 'rgba(0,0,0,0.13)', strokeWidth: 0.7 }));
       }
       for (i = 0; i < 46; i++) {
-        g.push(h('circle', { key: 'gr' + i, cx: (rnd() * S).toFixed(1), cy: (rnd() * S).toFixed(1), r: (0.05 * S * (0.7 + rnd() * 0.6)).toFixed(2), fill: pick(i + 1), opacity: 0.9 }));
+        g.push(h('circle', { key: 'gr' + i, cx: (rnd() * S).toFixed(1), cy: (rnd() * S).toFixed(1), r: (0.05 * S * (0.7 + rnd() * 0.6)).toFixed(2), fill: pick(i + 1), opacity: 0.9, stroke: edge, strokeWidth: 0.4 }));
       }
     } else if (tex === 'clastic-coarse') {
       for (i = 0; i < 8; i++) {
@@ -434,7 +491,7 @@
           key: 'p' + i,
           cx: (rnd() * S).toFixed(1), cy: (rnd() * S).toFixed(1),
           rx: (0.13 * S * (0.7 + rnd() * 0.7)).toFixed(2), ry: (0.10 * S * (0.7 + rnd() * 0.7)).toFixed(2),
-          fill: pick(i + 1), stroke: 'rgba(0,0,0,0.25)', strokeWidth: 0.5,
+          fill: pick(i + 1), stroke: edge, strokeWidth: 0.6,
         }));
       }
     } else if (tex === 'bioclastic') {
@@ -443,16 +500,16 @@
       }
       for (i = 0; i < 9; i++) {
         var sx = rnd() * S, sy = rnd() * S, sr = 0.11 * S;
-        g.push(h('path', { key: 'sh' + i, d: 'M' + (sx - sr) + ',' + sy + ' a' + sr + ',' + sr + ' 0 0,1 ' + (sr * 2) + ',0', fill: 'none', stroke: pick(i + 1), strokeWidth: 1.1 }));
+        g.push(h('path', { key: 'sh' + i, d: 'M' + (sx - sr) + ',' + sy + ' a' + sr + ',' + sr + ' 0 0,1 ' + (sr * 2) + ',0', fill: 'none', stroke: ink(i + 1), strokeWidth: 1.1 }));
       }
     } else if (tex === 'fine-layered') {
       for (i = 1; i < 14; i++) {
-        g.push(h('line', { key: 'fl' + i, x1: 0, y1: (i / 14) * S, x2: S, y2: (i / 14) * S, stroke: pick(i), strokeWidth: 0.8, opacity: 0.75 }));
+        g.push(h('line', { key: 'fl' + i, x1: 0, y1: (i / 14) * S, x2: S, y2: (i / 14) * S, stroke: ink(i), strokeWidth: 0.8, opacity: 0.75 }));
       }
     } else if (tex === 'foliated') {
       for (i = 1; i < 11; i++) {
         var fy = (i / 11) * S;
-        g.push(h('path', { key: 'fo' + i, d: 'M0,' + fy.toFixed(1) + ' Q' + (S * 0.5) + ',' + (fy - S * 0.05).toFixed(1) + ' ' + S + ',' + fy.toFixed(1), fill: 'none', stroke: pick(i), strokeWidth: 1.0, opacity: 0.85 }));
+        g.push(h('path', { key: 'fo' + i, d: 'M0,' + fy.toFixed(1) + ' Q' + (S * 0.5) + ',' + (fy - S * 0.05).toFixed(1) + ' ' + S + ',' + fy.toFixed(1), fill: 'none', stroke: ink(i), strokeWidth: 1.0, opacity: 0.85 }));
       }
     } else if (tex === 'banded') {
       for (i = 0; i < 6; i++) {
@@ -460,12 +517,12 @@
         g.push(h('path', {
           key: 'bd' + i,
           d: 'M0,' + by.toFixed(1) + ' Q' + (S * 0.3) + ',' + (by - S * 0.07).toFixed(1) + ' ' + (S * 0.6) + ',' + by.toFixed(1) + ' T' + S + ',' + (by - S * 0.02).toFixed(1),
-          fill: 'none', stroke: pick(i), strokeWidth: S * 0.09, opacity: 0.9,
+          fill: 'none', stroke: ink(i), strokeWidth: S * 0.09, opacity: 0.9,
         }));
       }
     } else {
       for (i = 0; i < 40; i++) {
-        g.push(h('circle', { key: 'd' + i, cx: (rnd() * S).toFixed(1), cy: (rnd() * S).toFixed(1), r: 0.04 * S, fill: pick(i + 1) }));
+        g.push(h('circle', { key: 'd' + i, cx: (rnd() * S).toFixed(1), cy: (rnd() * S).toFixed(1), r: 0.04 * S, fill: pick(i + 1), stroke: edge, strokeWidth: 0.35 }));
       }
     }
 
@@ -480,7 +537,7 @@
           key: 'fb' + i,
           d: 'M0,' + fby.toFixed(1) + ' Q' + (S * 0.35).toFixed(1) + ',' + (fby - S * 0.06).toFixed(1)
             + ' ' + (S * 0.62).toFixed(1) + ',' + fby.toFixed(1) + ' T' + S + ',' + (fby + S * 0.02).toFixed(1),
-          fill: 'none', stroke: pick(i + 1), strokeWidth: (S * 0.035).toFixed(2), opacity: 0.55,
+          fill: 'none', stroke: ink(i + 1), strokeWidth: (S * 0.035).toFixed(2), opacity: 0.55,
         }));
       }
     } else if (art === 'bandedporous') {
@@ -491,7 +548,7 @@
         g.push(h('path', {
           key: 'tb' + i,
           d: 'M0,' + tby.toFixed(1) + ' Q' + (S * 0.5).toFixed(1) + ',' + (tby - S * 0.035).toFixed(1) + ' ' + S + ',' + tby.toFixed(1),
-          fill: 'none', stroke: pick(i + 1), strokeWidth: (S * 0.045).toFixed(2), opacity: 0.6,
+          fill: 'none', stroke: ink(i + 1), strokeWidth: (S * 0.045).toFixed(2), opacity: 0.6,
         }));
       }
       for (i = 0; i < 12; i++) {
@@ -1199,7 +1256,7 @@
         }
       }
     } else {
-      kids.push(h('text', { key: 'hint', x: 62, y: 43, textAnchor: 'middle', fontSize: '9', fill: '#64748b' }, 'unglazed porcelain'));
+      kids.push(h('text', { key: 'hint', x: 62, y: 43, textAnchor: 'middle', fontSize: '9', fill: '#57534e' }, 'unglazed porcelain'));
     }
 
     // Side-by-side comparison — the actual teaching point.
@@ -1246,8 +1303,11 @@
     // smear was a flat #e2e8f0, invisible on quartz, halite, calcite, talc,
     // gypsum and diamond. A scratch test whose result you cannot see is the
     // same failure as a streak plate whose powder you cannot see.
-    var grooveInk = rkMarkOn('#1f2937', body, 0.16);
-    var smearInk = rkMarkOn('#e2e8f0', body, 0.16);
+    // Same criterion: the mark IS the result of the test. Unlike a streak
+    // colour, no particular groove colour is essential information, so there is
+    // nothing here to trade against meeting 3:1.
+    var grooveInk = rkMarkOn('#1f2937', body, 3.0);
+    var smearInk = rkMarkOn('#e2e8f0', body, 3.0);
 
     // The mark left behind, revealed up to the tool's current position.
     if (p > 0) {
@@ -2270,7 +2330,7 @@ const d = labToolData.rocks || {};
 
             igneous: { label: t('stem.rocks.igneous'), icon: '🌋', color: '#ef4444', ink: '#b91c1c', desc: t('stem.rocks.formed_from_cooled_magma_or'), process: 'Cooling & Crystallization' },
 
-            sedimentary: { label: t('stem.rocks.sedimentary'), icon: '🏖️', color: '#f59e0b', ink: '#a16207', desc: t('stem.rocks.formed_from_compressed_layers_of'), process: 'Compaction & Cementation' },
+            sedimentary: { label: t('stem.rocks.sedimentary'), icon: '🏖️', color: '#f59e0b', ink: '#92400e', desc: t('stem.rocks.formed_from_compressed_layers_of'), process: 'Compaction & Cementation' },
 
             metamorphic: { label: t('stem.rocks.metamorphic'), icon: '⛰️', color: '#8b5cf6', ink: '#6d28d9', desc: t('stem.rocks.formed_when_existing_rocks_change'), process: t('stem.rock_cycle.heat_pressure') }
 
@@ -6026,7 +6086,7 @@ const d = labToolData.rockCycle || {};
 
             {
 
-              id: 'sedimentary', label: t('stem.rocks.sedimentary'), emoji: '\uD83C\uDFD6\uFE0F', color: '#eab308', glow: '#fde68a', ink: '#a16207',
+              id: 'sedimentary', label: t('stem.rocks.sedimentary'), emoji: '\uD83C\uDFD6\uFE0F', color: '#eab308', glow: '#fde68a', ink: '#92400e',
 
               desc: 'Formed from layers of sediment (sand, mud, shells, organic matter) compressed and cemented over millions of years. The only rock type that commonly contains fossils, making it essential for paleontology.',
 
@@ -7423,7 +7483,7 @@ const d = labToolData.rockCycle || {};
                   }
                   fx.push(h('rect', { key: 'bed', x: midX + 8, y: swY + swH - 4 - (prog / 100) * 9, width: midW - 16, height: 4 + (prog / 100) * 9, rx: 2, fill: '#b45309', opacity: 0.5 }));
                 } else {
-                  fx.push(h('text', { key: 'hint', x: midX + midW / 2, y: swY + swH / 2 + 4, textAnchor: 'middle', fontSize: '10', fill: '#475569' }, __alloT('stem.rocks.machine_pick_agent', 'Pick an agent of change')));
+                  fx.push(h('text', { key: 'hint', x: midX + midW / 2, y: swY + swH / 2 + 4, textAnchor: 'middle', fontSize: '10', fill: '#cbd5e1' }, __alloT('stem.rocks.machine_pick_agent', 'Pick an agent of change')));
                 }
 
                 return h('svg', {
@@ -7448,7 +7508,7 @@ const d = labToolData.rockCycle || {};
                   h('path', { key: 'a2', d: 'M240,' + (swY + swH / 2) + ' l0,-5 l8,5 l-8,5 z', fill: '#78716c', opacity: prog > 50 ? 1 : 0.3 }),
                   // Product
                   outOpacity > 0 ? rcSwatch('out', outTexture, outFamily, outX, swY, swW, swH, outOpacity) : h('rect', { key: 'outGhost', x: outX, y: swY, width: swW, height: swH, rx: 7, fill: 'none', stroke: '#cbd5e1', strokeWidth: 1.5, strokeDasharray: '5 4' }),
-                  h('text', { key: 'outLbl', x: outX + swW / 2, y: swY + swH + 15, textAnchor: 'middle', fontSize: '10', fontWeight: '700', fill: outOpacity > 0.4 ? '#334155' : '#94a3b8' },
+                  h('text', { key: 'outLbl', x: outX + swW / 2, y: swY + swH + 15, textAnchor: 'middle', fontSize: '10', fontWeight: '700', fill: outOpacity > 0.4 ? '#334155' : '#64748b' },
                     outOpacity > 0.4 && liveRec ? liveRec.product.split(' → ')[0].split(' or ')[0] : '?'),
                   h('text', { key: 'outFam', x: outX + swW / 2, y: swY - 10, textAnchor: 'middle', fontSize: '8', fontWeight: '700', fill: '#475569' }, outOpacity > 0.4 && liveRec ? liveRec.family.toUpperCase() : '')
                 );
