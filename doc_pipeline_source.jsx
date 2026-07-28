@@ -3206,7 +3206,20 @@ function _alloDistributionVerdict(r, opts) {
   var vio = (r.axeAudit && typeof r.axeAudit.totalViolations === 'number') ? r.axeAudit.totalViolations : null;
   var eaFails = (r.secondEngineAudit && typeof r.secondEngineAudit.failViolations === 'number') ? r.secondEngineAudit.failViolations : null;
   // review tier — content trust is in question
-  if (r.verificationState && r.verificationState !== 'complete') review.push('WCAG verification is ' + r.verificationState + '; review the engine coverage and unresolved evidence before distribution');
+  // 2026-07-27: a verification that is incomplete ONLY because the AI semantic audit was throttled,
+  // on a document whose deterministic engines both ran and came back CLEAN, does not put content
+  // trust in question — it means we could not get a semantic second opinion, which is a caution,
+  // and the correctly-worded one already exists in the caution tier below. Without this carve-out
+  // an incomplete AI audit always forces verificationState 'partial' (engineExecutionComplete needs
+  // all three engines), so the 2026-07-27 field-log document — axe 0, Equal Access clean, 99%
+  // content coverage, 94% OCR — was headlined "Review before handing this out", the identical
+  // verdict given to a document with real barriers. A verdict that cannot distinguish those two is
+  // not helping anyone decide.
+  //
+  // Deliberately strict: `vio === 0` requires axe to have RUN and reported zero. Unknown coverage
+  // (a checker that never loaded) is NOT clean and stays in review.
+  var _aiOnlyIncomplete = !!(r._aiVerificationIncomplete && vio === 0 && (eaFails === 0 || eaFails == null));
+  if (r.verificationState && r.verificationState !== 'complete' && !_aiOnlyIncomplete) review.push('WCAG verification is ' + r.verificationState + '; review the engine coverage and unresolved evidence before distribution');
   if (r.needsExpertReview) {
     // A2 residual (2026-07-13): expertReviewReason is a machine token
     // ('accessibility' | 'content-fidelity' | 'both') — render it as a sentence,
@@ -5245,6 +5258,55 @@ var createDocPipeline = function(deps) {
   // one (parity with the prior _withRetry). Permanent errors (real auth/quota/config, RECITATION)
   // never retry. Queue-wait never counts toward the timeout; the slot is held until the UNDERLYING
   // transport settles (45s ceiling past the timeout), not just until the race — see #3 below.
+  // ── Per-run payload ledger (2026-07-27) ─────────────────────────────────────────────────────
+  // Canvas meters PAYLOAD VOLUME, and a 6-agent review put ~90% of a run's bytes in Steps 0-2 while
+  // 75% of its wall clock goes to Step 4 — so the storm is PAID FOR early and merely SERVED late.
+  // Nothing measured that, which meant every proposal to "send less" was an intuition. This counts
+  // bytes and calls per phase off the requestProfile that _geminiCall already receives, so no call
+  // site has to be taught anything, and prints one line at the end of the run.
+  //
+  // Phase attribution: _pipeStepStart already records lastOpenStepLabel, which separates
+  // extraction / transform / audit / fix. The few sites that share a step but differ enormously in
+  // cost (style vs transform, legend re-extraction, recovery probes) set _alloPayloadPhase around
+  // themselves. FERPA: counts only — never prompt or document text.
+  var _alloPayloadPhase = null;
+  var _alloWithPayloadPhase = function (phase, work) {
+    var prev = _alloPayloadPhase;
+    _alloPayloadPhase = phase;
+    var restore = function () { _alloPayloadPhase = prev; };
+    try {
+      var out = work();
+      if (out && typeof out.then === 'function') return out.then(function (v) { restore(); return v; }, function (e) { restore(); throw e; });
+      restore();
+      return out;
+    } catch (e) { restore(); throw e; }
+  };
+  var _alloNotePayload = function (stats, profile) {
+    try {
+      if (!stats || !profile) return;
+      if (!stats.payload) stats.payload = {};
+      var phase = _alloPayloadPhase || (stats.lastOpenStepLabel || 'other');
+      var key = (profile.kind === 'vision' ? 'vision:' : 'text:') + phase;
+      var e = stats.payload[key] || (stats.payload[key] = { calls: 0, promptChars: 0, attachmentChars: 0 });
+      e.calls++;
+      e.promptChars += Math.max(0, Number(profile.promptChars) || 0);
+      e.attachmentChars += Math.max(0, Number(profile.attachmentChars) || 0);
+    } catch (_) { /* telemetry must never break a call */ }
+  };
+  // Rendered at [DocPipe][Done]. Sorted by bytes so the biggest sender is the first thing read.
+  var _alloFormatPayloadLedger = function (payload) {
+    try {
+      var rows = Object.keys(payload || {}).map(function (k) {
+        var e = payload[k];
+        return { k: k, calls: e.calls, bytes: (e.promptChars || 0) + (e.attachmentChars || 0) };
+      }).sort(function (a, b) { return b.bytes - a.bytes; });
+      if (!rows.length) return null;
+      var total = rows.reduce(function (s, r) { return s + r.bytes; }, 0);
+      var mb = function (n) { return (n / (1024 * 1024)).toFixed(2) + 'MB'; };
+      return 'uploaded ' + mb(total) + ' across ' + rows.reduce(function (s, r) { return s + r.calls; }, 0) + ' call(s) — '
+        + rows.map(function (r) { return r.k + ' ' + mb(r.bytes) + '/' + r.calls; }).join(', ');
+    } catch (_) { return null; }
+  };
   var _geminiCall = function(fn, initialMs, retryMs, label, onTransportStart, requestProfile, owner, explicitSignal) {
     // #3 (ChatGPT review 2026-07-10): capture the run's abort signal at ENQUEUE time (H7 publishes
     // per-file/batch controllers into this slot). The transport re-reads the slot only when a call
@@ -5253,6 +5315,9 @@ var createDocPipeline = function(deps) {
     // the breaker (its failure IS the cancellation).
     var _gateSignal = explicitSignal || ((typeof window !== 'undefined' && window.__alloPdfAbortSignal) ? window.__alloPdfAbortSignal : null);
     var _callStats = (owner && owner.stats) || _pipelineStats;
+    // Ledger the INTENT once per call, not per attempt: a retry re-sends the same bytes, and the
+    // question this answers is "what does one run ask Canvas to carry", which is what gets metered.
+    _alloNotePayload(_callStats, requestProfile);
     var _attempt = function(n) {
       var timeoutMs = n === 0 ? initialMs : (retryMs || initialMs);
       var _attemptQueuedAt = ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0);
@@ -20760,10 +20825,10 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       if (_mimeType !== 'application/pdf') {
         _pipeLog('Images', 'Office input — skipping PDF Vision image extraction (embedded media is spliced deterministically)');
       } else try {
-        const imgResult = await _awaitImageWork(callGeminiVision(
+        const imgResult = await _awaitImageWork(_alloWithPayloadPhase('image-inventory', () => callGeminiVision(
           `Identify and extract ALL images from this PDF document. For each image:\n1. Describe it in detail (what it shows, any text in the image, educational purpose)\n2. Note its approximate location (page number, position)\n3. Indicate if it's decorative (borders, backgrounds) or meaningful (diagrams, photos, charts)\n\nReturn ONLY JSON:\n{"images": [{"id": 1, "description": "detailed description", "page": 1, "position": "top/middle/bottom", "type": "photo|diagram|chart|illustration|logo|decorative", "educationalPurpose": "what it teaches or communicates"}]}`,
           _base64, _mimeType, { signal: _imageSignal }
-        ));
+        )));
         if (imgResult) {
           const cleaned = _stripCodeFence(imgResult);
           const parsed = JSON.parse(cleaned);
@@ -22720,10 +22785,10 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
         try {
           updateProgress(2, 'Extracting color scheme...');
           _pipeLog('Style', 'Extracting original document colors (Match Original / auto)');
-          const styleResult = await callGeminiVision(
+          const styleResult = await _alloWithPayloadPhase('style', () => callGeminiVision(
             `Analyze the visual design of this PDF. Extract the exact color scheme and typography.\n\nReturn ONLY JSON:\n{"headingColor":"hex","accentColor":"hex for links/accents","bgColor":"hex background","headerBg":"hex or CSS gradient for header area","headerText":"hex","bodyFont":"CSS font-family","tableBg":"hex for table headers","tableBorder":"hex","sectionBorderColor":"hex for section dividers","hasHeaderBanner":true/false,"hasSidebarAccents":true/false,"accentBorderSide":"left|top|none"}`,
             _base64, _mimeType
-          );
+          ));
           if (styleResult) {
             const sc = _stripCodeFence(styleResult);
             const parsed = JSON.parse(sc);
@@ -22878,7 +22943,7 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
         // Short-medium documents: single Vision pass with JSON extraction
         updateProgress(2, 'Extracting document structure...');
         try {
-          const jsonResult = await callGeminiVision(jsonPrompt, _base64, _mimeType);
+          const jsonResult = await _alloWithPayloadPhase('transform', () => callGeminiVision(jsonPrompt, _base64, _mimeType));
           let cleaned = _stripCodeFence(_restoreNeutralizedPromptFences(jsonResult));
           // Blocks must be an ARRAY with at least one RENDERABLE entry (2026-07-02,
           // corpus-caught): a refusal-shaped reply like {} or {"error":"..."} parses as
@@ -25821,6 +25886,11 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
 
       _throwIfRunCancelled();
       _pipeStepEnd(4, autoFixPasses + ' fix passes, score: ' + (verification ? verification.score : '?') + '/100', _runTelemetry);
+      // Payload ledger: the metered dimension, printed where anyone reading a field log will see it.
+      try {
+        const _ledger = _alloFormatPayloadLedger(_runStats.payload);
+        if (_ledger) _pipeLog('Payload', _ledger, null, _runTelemetry);
+      } catch (_) {}
       _pipeLog('Done', 'Pipeline complete', {
         totalElapsed: Math.round((Date.now() - _startTime) / 1000) + 's',
         apiCalls: _runStats.apiCalls,
@@ -25939,7 +26009,7 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         // (deterministic-only) is not the same methodology, so the +gain is not meaningful. Mirror the
         // neutral headline; no "remediated!" claim and no success chord. (score-blend-degraded-1, 2026-06-21)
         const _estNote = Number.isFinite(_estimatedMinimumScore) ? ` Estimated minimum from the last successful AI audit: ${_estimatedMinimumScore}/100.` : '';
-        addToast(`⚠️ Structural/automated checks: ${finalAfterScore}/100 — but the AI semantic audit was throttled and didn't finish${fixNote}.${_estNote} Re-run for a full verified score.`, 'warning');
+        addToast(`⚠️ Structural/automated checks: ${finalAfterScore}/100 — but the AI semantic audit was throttled and didn't finish${fixNote}.${_estNote} Use “Complete final audit” in the verification panel to finish the AI check when the service is calm — it re-audits only, and keeps everything already done.`, 'warning');
         try { window.remediationAudio && window.remediationAudio.refixSuccess(); } catch(e) {}
       } else if (_toastBranch === 'sliced-baseline') {
         // The BEFORE audit was a page-slice approximation (the whole-document audit failed), so
@@ -26419,7 +26489,7 @@ tr { page-break-inside: avoid; }
       html += `<div class="score-num" style="color:${(typeof score === 'number' && !_rptIncomplete) ? scoreColor(score) : '#64748b'}">${_rptIncomplete ? '&mdash;' : score}<span style="font-size:1.2rem;opacity:0.6">/100</span></div>`;
     }
     html += `<div style="font-size:14px;margin-top:8px;color:#475569">${esc(d.summary || d.before?.audit?.summary || '')}</div>`;
-    if (_rptIncomplete) html += `<p style="font-size:12px;color:#92400e;padding:6px 10px;margin:10px auto 0;max-width:560px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px">&#9888; The AI semantic audit was throttled and did not finish &mdash; the &ldquo;after&rdquo; figure is an automated/structural-only check, NOT a verified content score.${_rptEstimate !== null ? ' Estimated minimum from the last successful AI audit plus current automated checks: <strong>' + _rptEstimate + '/100</strong>.' : ''} Re-run for a full score.</p>`;
+    if (_rptIncomplete) html += `<p style="font-size:12px;color:#92400e;padding:6px 10px;margin:10px auto 0;max-width:560px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px">&#9888; The AI semantic audit was throttled and did not finish &mdash; the &ldquo;after&rdquo; figure is an automated/structural-only check, NOT a verified content score.${_rptEstimate !== null ? ' Estimated minimum from the last successful AI audit plus current automated checks: <strong>' + _rptEstimate + '/100</strong>.' : ''} Use “Complete final audit” in the verification panel when the service is calm — it re-checks only the audit and keeps this document as it is.</p>`;
     else if (_rptSliced) html += `<p style="font-size:12px;color:#92400e;padding:6px 10px;margin:10px auto 0;max-width:560px;background:#fef3c7;border:1px solid #fcd34d;border-radius:6px">&#9888; The &ldquo;before&rdquo; audit was a page-slice approximation (the document was too large for a single pass), so this change is approximate &mdash; not an exact apples-to-apples delta.</p>`;
     html += `</div>`;
 

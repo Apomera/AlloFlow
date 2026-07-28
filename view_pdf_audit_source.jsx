@@ -5180,8 +5180,29 @@ function PdfAuditView(props) {
           afterScoreVerified: _verification.afterScoreVerified,
           _scoreIsBlended: !!(_wvOk && _wdet !== null),
           _aiVerificationIncomplete: !_wvOk,
-          _estimatedMinimumScore: (!_wvOk && Number.isFinite(_wscore)) ? _wscore : null,
-          _estimatedScoreBasis: (!_wvOk && Number.isFinite(_wscore)) ? 'deterministic-only re-audit; AI semantic audit unavailable' : null,
+          // 2026-07-27: two defects in this pair, both visible to the teacher.
+          //  (1) _estimatedMinimumScore was set to _wscore — the deterministic headline ITSELF — so
+          //      the panel showed the SAME number twice under two different labels ("structural
+          //      only: 90" and "estimated minimum: 90"), one of which claims to incorporate the
+          //      last successful AI audit. An estimate that equals the thing it is meant to qualify
+          //      tells the teacher nothing and implies corroboration that does not exist. There is
+          //      no last-successful-AI score available in this lane, so the honest value is NULL —
+          //      the panel then simply omits the estimate rather than fabricating one.
+          //  (2) _estimatedScoreBasis was written as a STRING here while the pipeline writes an
+          //      OBJECT (doc_pipeline_source.jsx ~24904) and the UI reads it as an object
+          //      (:11375 reads .lastSuccessfulAiScore / .automatedScore) — so after using the
+          //      deferred-audit path, the very workflow this disclosure exists for, it rendered
+          //      "Basis: AI ? / automated ?". Same shape as the pipeline, or nothing.
+          _estimatedMinimumScore: null,
+          _estimatedScoreBasis: (!_wvOk && Number.isFinite(_wdet)) ? {
+            kind: 'deterministic-only-reaudit',
+            confidence: 'lower',
+            estimatedMinimumScore: null,
+            lastSuccessfulAiScore: null,
+            automatedScore: _wdet,
+            finalAuditReason: 'audit-only-retry-incomplete',
+            finalAuditThrottled: true,
+          } : null,
           _finalAuditRetryAvailable: !_wvOk,
           _scoreSource: _wvOk && _wdet !== null ? 'min' : _wvOk ? 'content-only' : _wdet !== null ? 'deterministic-only' : 'unavailable',
           // Fresh unavailable engines clear prior objects: stale evidence must never attest to edited HTML.
@@ -5236,7 +5257,21 @@ function PdfAuditView(props) {
         };
         _applied = _commitAsyncHtmlIfCurrent(_reauditHtmlToken, (prev) => (prev && prev.accessibleHtml === newHtml) ? _bound : prev);
       }
-      if (_applied && !_sameBoundHtml) {
+      // 2026-07-27: only discard independent PDF/UA evidence when the HTML ACTUALLY CHANGED.
+      // _sameBoundHtml requires the non-enumerable _verificationHtmlSnapshot proof, which does not
+      // survive serialization — so on a RESTORED PROJECT (or any result whose proof was dropped)
+      // this cleared a veraPDF verdict that nothing had invalidated. The exact workflow it broke is
+      // the one this whole phase is about: ship early, save the project, come back when the service
+      // is calm, click "Complete final audit" — and get your AI score back at the cost of the ISO
+      // 14289-1 verdict and the tagged artifact.
+      //
+      // A byte comparison against the html the evidence was taken on is a weaker proof than the
+      // binding, but it is a SOUND one for the only question being asked here: did these bytes
+      // change? When neither proof is available, keep the evidence and let the binding-based
+      // staleness checks elsewhere govern — deleting evidence on absence-of-proof is what caused
+      // the loss.
+      const _htmlUnchangedByBytes = !!(pdfFixResultRef.current && pdfFixResultRef.current.accessibleHtml === newHtml);
+      if (_applied && !_sameBoundHtml && !_htmlUnchangedByBytes) {
         setLastTaggedValidation(null);
         setVeraPdfResult(null);
         _selectTaggedArtifact(null);
@@ -10746,6 +10781,20 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                     setVerificationRefreshBusy(true);
                                     setPdfFixStep('Re-running verification without changing the document...');
                                     try {
+                                      // 2026-07-27: wait for the gate to calm first, like the sibling
+                                      // "Complete final audit" control does. These two buttons do the same
+                                      // operation but used to behave OPPOSITELY under a storm — that one
+                                      // paced politely, this one fired straight into it and came back
+                                      // "Verification could not complete" in seconds. A teacher facing two
+                                      // controls where the wrong choice silently fails is worse off than
+                                      // with one. Bounded, and wait-not-stop proceeds anyway on timeout.
+                                      if (_docPipeline && typeof _docPipeline.waitForGeminiCalm === 'function') {
+                                        try {
+                                          setPdfFixStep('Waiting for the AI service to ease before re-checking...');
+                                          await _docPipeline.waitForGeminiCalm({ maxWaitMs: 240000 });
+                                        } catch (_) {}
+                                        setPdfFixStep('Re-running verification without changing the document...');
+                                      }
                                       const result = await _reauditAndScore(pdfFixResult.accessibleHtml, null);
                                       if (result && result.ok) addToast('Verification refreshed: ' + result.verificationState + '.', result.verificationState === 'complete' ? 'success' : 'warning');
                                       else addToast('Verification could not complete. The document was not changed.', 'warning');
@@ -11358,14 +11407,22 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       })()}
 
                       {/* Verification details */}
-                      {pdfFixResult.verificationAudit && (
+                      {/* 2026-07-27: this block used to be gated on verificationAudit ALONE — but a
+                          failed audit-only retry sets verificationAudit: null together with
+                          _aiVerificationIncomplete: true (:5178/:5182). So the recovery control
+                          DELETED ITSELF the first time it failed under throttle, which is precisely
+                          the storm it exists for: the teacher clicked "Complete final audit", it came
+                          back still-incomplete, and the button vanished — leaving re-running the
+                          entire pipeline as the only visible option. Survive a null audit; the inner
+                          reads are null-safe below. */}
+                      {(pdfFixResult.verificationAudit || pdfFixResult._aiVerificationIncomplete) && (
                         <div className="space-y-2">
                           {/* (2026-06-20) When the AI audit was throttle-degraded, the raw summary says
                               "Score unavailable…" — but the headline now shows the deterministic structural
                               score. Render ONE reconciled amber line instead of the contradictory green one. */}
                           <div className={`text-xs font-medium ${pdfFixResult._aiVerificationIncomplete ? 'text-amber-700' : 'text-emerald-700'}`}>{pdfFixResult._aiVerificationIncomplete
-                            ? (t('pdf_audit.verification.ai_incomplete_summary') || ('AI semantic verification incomplete' + (pdfFixResult.verificationAudit.chunksAudited != null && pdfFixResult.verificationAudit.chunksRequested != null ? ' (' + pdfFixResult.verificationAudit.chunksAudited + ' of ' + pdfFixResult.verificationAudit.chunksRequested + ' sections audited — the AI service was throttled)' : '') + '. The score shown is structural/automated checks; re-run for a full AI-verified score.'))
-                            : pdfFixResult.verificationAudit.summary}</div>
+                            ? (t('pdf_audit.verification.ai_incomplete_summary') || ('AI semantic verification incomplete' + (pdfFixResult.verificationAudit?.chunksAudited != null && pdfFixResult.verificationAudit?.chunksRequested != null ? ' (' + pdfFixResult.verificationAudit.chunksAudited + ' of ' + pdfFixResult.verificationAudit.chunksRequested + ' sections audited — the AI service was throttled)' : '') + '. The score shown is structural/automated checks; use “Complete final audit” below to finish the AI check when the service is calm — it audits only, and keeps this document as it is.'))
+                            : pdfFixResult.verificationAudit?.summary}</div>
                           {pdfFixResult._aiVerificationIncomplete && Number.isFinite(pdfFixResult._estimatedMinimumScore) && (
                             <div className="bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-[11px] text-amber-900">
                               <span className="font-black">{t('pdf_audit.verification.estimated_min_label') || 'Estimated minimum'}: {pdfFixResult._estimatedMinimumScore}/100.</span>{' '}
@@ -11410,7 +11467,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                               data-help-key="pdf_audit_reaudit_button"
                             >🔁 {pdfFixLoading ? (t('pdf_audit.verification.reauditing_short') || 'Completing audit...') : (t('pdf_audit.verification.reaudit') || 'Complete final audit')}</button>
                           )}
-                          {(pdfFixResult.verificationAudit.issues || []).length > 0 && (
+                          {(pdfFixResult.verificationAudit?.issues || []).length > 0 && (
                             <div className="bg-amber-50 rounded-lg p-2 border border-amber-200">
                               <div className="text-[11px] font-bold text-amber-600 uppercase mb-1">Remaining Issues ({pdfFixResult.verificationAudit.issues.length})</div>
                               {pdfFixResult.verificationAudit.issues.map((issue, i) => {
