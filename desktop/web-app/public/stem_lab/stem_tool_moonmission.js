@@ -277,7 +277,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     ctx.beginPath(); ctx.ellipse(cx + r * 0.1, cy + r * 0.25, r * 0.3, r * 0.18, 0, 0, Math.PI * 2); ctx.fill(); // Tranquillitatis
     ctx.fillStyle = 'rgba(80,80,90,0.1)';
     ctx.beginPath(); ctx.ellipse(cx + r * 0.4, cy - r * 0.2, r * 0.12, r * 0.12, 0, 0, Math.PI * 2); ctx.fill(); // Crisium
-    // Procedural craters
+    // ── Procedural craters ──
+    // A crater used to be a flat 8%-black disc with a highlight arc on top, which reads
+    // as a grey coin lying on the surface. A real one is a BOWL: with the sun up and to
+    // the left, its near (upper-left) inner wall is in shadow, the far (lower-right)
+    // inner wall is the brightest thing in the frame, and the outer rim catches light on
+    // its sunward slope. Three cheap crescents instead of one disc, and the Moon reads
+    // as a solid body at every size this helper is used at.
     var craterCount = Math.min(25, Math.max(8, Math.round(r * 0.5)));
     for (var ci = 0; ci < craterCount; ci++) {
       var ccx = cx + (rng.next() - 0.5) * r * 1.6;
@@ -286,14 +292,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       // Only draw if inside the moon circle
       var dx = ccx - cx, dy = ccy - cy;
       if (Math.sqrt(dx * dx + dy * dy) + cr > r * 0.95) continue;
-      // Crater shadow
-      ctx.fillStyle = 'rgba(0,0,0,0.08)';
+      var off = cr * 0.22;                       // sun is up-left, so shadow sits up-left
+      // Bowl floor
+      ctx.fillStyle = 'rgba(90,86,80,0.16)';
       ctx.beginPath(); ctx.arc(ccx, ccy, cr, 0, Math.PI * 2); ctx.fill();
-      // Bright rim on sun-facing side
-      ctx.strokeStyle = 'rgba(255,255,255,0.15)';
-      ctx.lineWidth = Math.max(0.5, cr * 0.15);
-      ctx.beginPath(); ctx.arc(ccx, ccy, cr, -2.2, -0.5); ctx.stroke();
+      // Shadowed near wall (upper-left crescent)
+      ctx.fillStyle = 'rgba(28,26,24,0.30)';
+      ctx.beginPath(); ctx.arc(ccx - off, ccy - off, cr * 0.92, 0, Math.PI * 2); ctx.fill();
+      // Sunlit far wall (lower-right crescent) — punched back over the shadow
+      ctx.fillStyle = 'rgba(255,252,244,0.22)';
+      ctx.beginPath(); ctx.arc(ccx + off * 0.9, ccy + off * 0.9, cr * 0.78, 0, Math.PI * 2); ctx.fill();
+      // Outer rim, brightest on the sunward slope
+      ctx.strokeStyle = 'rgba(255,255,255,0.22)';
+      ctx.lineWidth = Math.max(0.5, cr * 0.16);
+      ctx.beginPath(); ctx.arc(ccx, ccy, cr, -2.5, -0.4); ctx.stroke();
     }
+    // ── Limb darkening ──
+    // The single cheapest cue that this is a sphere and not a disc: the edge falls away
+    // from the viewer, so it dims. Without it the Moon read as a flat cut-out circle.
+    var lg = ctx.createRadialGradient(cx, cy, r * 0.62, cx, cy, r);
+    lg.addColorStop(0, 'rgba(0,0,0,0)');
+    lg.addColorStop(0.75, 'rgba(0,0,0,0.10)');
+    lg.addColorStop(1, 'rgba(0,0,0,0.42)');
+    ctx.fillStyle = lg; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
     // Terminator shadow (day/night)
     var tg = ctx.createLinearGradient(cx + r * 0.3, cy, cx + r, cy);
     tg.addColorStop(0, 'transparent'); tg.addColorStop(1, 'rgba(0,0,0,0.55)'); // deeper terminator — lunar night is near-black
@@ -1836,7 +1857,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             h('div', { className: 'relative', style: { height: '240px' } },
               h('canvas', { 
                 role: 'img',
-                'aria-label': t('stem.moonmission.animated_view_of_spacecraft_orbiting_t', 'Animated view of spacecraft orbiting the Moon at 110 kilometer altitude. Shows the Moon surface with craters, Sea of Tranquility landing site marked in green, and the spacecraft dot orbiting.'),
+                'aria-label': t('stem.moonmission.animated_view_of_spacecraft_orbiting_t', 'Animated view of the docked Command and Lunar Module stack orbiting the Moon at 110 kilometer altitude. The Moon shows craters and the Sea of Tranquility landing site marked in green. The spacecraft passes behind the Moon on each orbit and loses radio contact with Earth while it is there, and Earth rises above the lunar limb.'),
                 style: { width: '100%', height: '100%', display: 'block' },
                 ref: function(cvEl) {
                   if (!cvEl || cvEl._orbitInit) return;
@@ -1845,19 +1866,96 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   var W = cvEl.offsetWidth || 500, HO = cvEl.offsetHeight || 240;
                   cvEl.width = W * 2; cvEl.height = HO * 2; ctx.scale(2, 2); if (typeof ResizeObserver === 'function' && !cvEl._mmRO) { cvEl._mmRO = new ResizeObserver(function() { var nw = cvEl.offsetWidth, nh = cvEl.offsetHeight; if (nw > 0 && nh > 0 && (nw !== W || nh !== HO)) { W = nw; HO = nh; cvEl.width = nw * 2; cvEl.height = nh * 2; ctx.setTransform(2, 0, 0, 2, 0, 0); } }); cvEl._mmRO.observe(cvEl); }   // rotate/resize used to leave the canvas stretched (backing store was locked at first mount)
                   var tick = 0;
+
+                  // The docked stack, drawn to scale and banked along its velocity vector.
+                  // Until now this was a 2px white dot with a "CSM + LM" caption — the one
+                  // object the whole phase is about, rendered as a speck.
+                  function drawOrbitCraft(x, y, ang, dimmed) {
+                    ctx.save();
+                    ctx.translate(x, y);
+                    ctx.rotate(Math.sin(ang) * 0.25);          // slight bank as it comes round
+                    if (dimmed) ctx.globalAlpha = 0.35;        // slipping behind the limb
+                    // LM, docked nose-to-nose ahead of the CSM
+                    ctx.fillStyle = '#c9a04a';
+                    ctx.fillRect(7, -2.4, 5, 4.8);
+                    ctx.fillStyle = '#b9bcc2';
+                    ctx.fillRect(5.6, -1.4, 1.6, 2.8);         // docking tunnel
+                    // Service module
+                    ctx.fillStyle = '#c0c8d0';
+                    ctx.fillRect(-8, -2.2, 12, 4.4);
+                    ctx.fillStyle = 'rgba(0,0,0,0.18)';        // shadowed underside
+                    ctx.fillRect(-8, 0.8, 12, 1.6);
+                    // Engine bell
+                    ctx.fillStyle = '#8a929c';
+                    ctx.beginPath();
+                    ctx.moveTo(-8, -1.6); ctx.lineTo(-11.5, -2.8); ctx.lineTo(-11.5, 2.8); ctx.lineTo(-8, 1.6);
+                    ctx.closePath(); ctx.fill();
+                    // Command module cone
+                    ctx.fillStyle = '#e8ecf0';
+                    ctx.beginPath();
+                    ctx.moveTo(4, -2.2); ctx.lineTo(5.6, -1.2); ctx.lineTo(5.6, 1.2); ctx.lineTo(4, 2.2);
+                    ctx.closePath(); ctx.fill();
+                    // Window glint
+                    ctx.fillStyle = '#38bdf8';
+                    ctx.fillRect(1.5, -0.9, 1.4, 1.4);
+                    ctx.restore();
+                    if (!dimmed) {
+                      // Clear of the hull, and outlined: the caption sat 6px off the craft
+                      // and rendered pale blue straight onto the bright lunar disc.
+                      ctx.font = 'bold 8px monospace'; ctx.textAlign = 'center';
+                      ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(2,6,23,0.85)';
+                      ctx.strokeText('CSM + LM', x, y - 18);
+                      ctx.fillStyle = '#7dd3fc';
+                      ctx.fillText('CSM + LM', x, y - 18);
+                    }
+                  }
+
                   function drawOrbit() {
                     tick++;
                     ctx.clearRect(0, 0, W, HO);
                     ctx.fillStyle = '#000008'; ctx.fillRect(0, 0, W, HO);
                     // Enhanced starfield
                     drawStarfield(ctx, W, HO, tick, 100);
-                    // Earthrise — small Earth visible near top-right
-                    drawDetailedEarth(ctx, W - 35, 25, 12, tick);
-                    ctx.font = '6px system-ui'; ctx.fillStyle = 'rgba(147,197,253,0.5)'; ctx.textAlign = 'center';
-                    ctx.fillText('Earth', W - 35, 42);
-                    // Moon (large, fills most of the view) — detailed procedural rendering
+
                     var moonCx = W * 0.5, moonCy = HO * 0.55;
                     var moonR = Math.min(W, HO) * 0.38;
+
+                    // ── Orbit geometry, computed before anything is drawn so the scene can
+                    // be layered by depth. The old view had none: the spacecraft was a 2px
+                    // dot that slid across the Moon's face and never went behind it, so an
+                    // orbit read as a flat circle drawn on top of a picture. ──
+                    var orbitR = moonR * 1.2, orbitRy = orbitR * 0.3;
+                    var scAngle = tick * 0.012;
+                    var scX = moonCx + Math.cos(scAngle) * orbitR;
+                    var scY = moonCy + Math.sin(scAngle) * orbitRy;
+                    var farSide = Math.sin(scAngle) < 0;                 // upper half of the ellipse = behind the Moon
+                    var dxm = scX - moonCx, dym = scY - moonCy;
+                    var occluded = farSide && (dxm * dxm + dym * dym) < moonR * moonR;
+
+                    // ── Earthrise. Drawn BEFORE the Moon, so the lunar disc genuinely
+                    // occludes it and the Earth climbs out from behind the limb the way it
+                    // does from orbit — the single most famous thing anyone ever saw from
+                    // here. (It used to be a fixed 12px dot pinned to the top-right corner.)
+                    var riseCycle = (Math.sin(scAngle * 0.5 - 0.6) + 1) / 2;
+                    var earthR2 = 13;
+                    var earthX2 = moonCx - moonR * 0.62;
+                    var earthY2 = moonCy - moonR * 0.35 - riseCycle * (moonR * 0.95 + earthR2);
+                    drawDetailedEarth(ctx, earthX2, earthY2, earthR2, tick);
+                    var earthClear = earthY2 + earthR2 < moonCy - moonR * 0.15;
+                    if (earthClear) {
+                      ctx.font = '7px system-ui'; ctx.fillStyle = 'rgba(147,197,253,0.65)'; ctx.textAlign = 'center';
+                      ctx.fillText('Earthrise', earthX2, earthY2 - earthR2 - 6);
+                    }
+
+                    // Far half of the orbit path — dimmer, and behind the Moon.
+                    ctx.save();
+                    ctx.strokeStyle = 'rgba(56,189,248,0.10)'; ctx.lineWidth = 0.5;
+                    ctx.setLineDash([3, 3]);
+                    ctx.beginPath(); ctx.ellipse(moonCx, moonCy, orbitR, orbitRy, 0, Math.PI, Math.PI * 2); ctx.stroke();
+                    ctx.restore();
+                    if (farSide) drawOrbitCraft(scX, scY, scAngle, occluded);
+
+                    // Moon (large, fills most of the view) — detailed procedural rendering
                     drawDetailedMoon(ctx, moonCx, moonCy, moonR, 77);
                     // Landing site marker (over the detailed moon)
                     ctx.save(); ctx.beginPath(); ctx.arc(moonCx, moonCy, moonR, 0, Math.PI * 2); ctx.clip();
@@ -1866,35 +1964,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.fillStyle = 'rgba(34,197,94,' + (0.4 + Math.sin(tick * 0.06) * 0.3) + ')';
                     ctx.beginPath(); ctx.arc(lsX, lsY, 3, 0, Math.PI * 2); ctx.fill();
                     ctx.shadowBlur = 0;
-                    ctx.font = '7px system-ui'; ctx.fillStyle = '#4ade80'; ctx.textAlign = 'left';
-                    ctx.fillText('Tranquility Base', lsX + 6, lsY + 3);
+                    // Outlined — mid-green on the sunlit regolith was close to unreadable.
+                    ctx.font = 'bold 8px system-ui'; ctx.textAlign = 'left';
+                    ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(2,6,23,0.8)';
+                    ctx.strokeText('Tranquility Base', lsX + 7, lsY + 3);
+                    ctx.fillStyle = '#86efac';
+                    ctx.fillText('Tranquility Base', lsX + 7, lsY + 3);
                     ctx.restore();
-                    // Orbiting spacecraft
-                    var orbitR = moonR * 1.2;
-                    var scAngle = tick * 0.012;
-                    var scX = moonCx + Math.cos(scAngle) * orbitR;
-                    var scY = moonCy + Math.sin(scAngle) * orbitR * 0.3;
-                    // Orbit path
-                    ctx.strokeStyle = 'rgba(56,189,248,0.15)'; ctx.lineWidth = 0.5;
-                    ctx.beginPath(); ctx.ellipse(moonCx, moonCy, orbitR, orbitR * 0.3, 0, 0, Math.PI * 2); ctx.stroke();
-                    // Spacecraft
-                    ctx.fillStyle = '#ffffff';
-                    ctx.beginPath(); ctx.arc(scX, scY, 2, 0, Math.PI * 2); ctx.fill();
-                    ctx.fillStyle = 'rgba(56,189,248,0.3)';
-                    ctx.beginPath(); ctx.arc(scX, scY, 5, 0, Math.PI * 2); ctx.fill();
-                    // Label
-                    ctx.font = '8px monospace'; ctx.fillStyle = '#38bdf8'; ctx.textAlign = 'center';
-                    ctx.fillText('CSM + LM', scX, scY - 8);
+                    // Near half of the orbit path \u2014 brighter, and in front of the Moon.
+                    ctx.strokeStyle = 'rgba(56,189,248,0.30)'; ctx.lineWidth = 0.9;
+                    ctx.beginPath(); ctx.ellipse(moonCx, moonCy, orbitR, orbitRy, 0, 0, Math.PI); ctx.stroke();
+                    if (!farSide) drawOrbitCraft(scX, scY, scAngle, false);
+
                     // HUD
                     ctx.font = 'bold 9px monospace'; ctx.textAlign = 'left';
                     ctx.fillStyle = '#94a3b8';
                     ctx.fillText('LUNAR ORBIT \u2022 ALT 110 km \u2022 PERIOD 2h', 10, 14);
-                    // Comms
-                    var orbitComms = ['Houston: "You are GO for undocking."', 'CMP: "I\'ll keep Columbia warm for you."', 'CDR: "The landing site looks smooth."', 'LMP: "Eagle systems nominal."'];
-                    var ocIdx = Math.floor(tick / 250) % orbitComms.length;
-                    ctx.globalAlpha = Math.min(1, (tick % 250) < 200 ? (tick % 250) / 30 : (250 - tick % 250) / 50) * 0.6;
-                    ctx.font = 'italic 9px system-ui'; ctx.fillStyle = '#a5b4fc'; ctx.textAlign = 'center';
-                    ctx.fillText(orbitComms[ocIdx], W * 0.5, HO - 10);
+                    // \u2500\u2500 Loss of signal. Falls straight out of the new depth handling: while
+                    // the stack is behind the Moon there is no line of sight to Earth, which
+                    // is why every Apollo crew went silent on the far side. \u2500\u2500
+                    if (occluded) {
+                      ctx.textAlign = 'left'; ctx.font = 'bold 9px monospace';
+                      ctx.fillStyle = '#f59e0b';
+                      ctx.fillText('\u26a0 LOS \u2014 NO RADIO CONTACT (far side)', 10, 28);
+                    }
+                    // Comms \u2014 silenced during loss of signal.
+                    if (!occluded) {
+                      var orbitComms = ['Houston: "You are GO for undocking."', 'CMP: "I\'ll keep Columbia warm for you."', 'CDR: "The landing site looks smooth."', 'LMP: "Eagle systems nominal."', 'Houston: "Reacquired you coming around the limb."'];
+                      var ocIdx = Math.floor(tick / 250) % orbitComms.length;
+                      ctx.globalAlpha = Math.min(1, (tick % 250) < 200 ? (tick % 250) / 30 : (250 - tick % 250) / 50) * 0.6;
+                      ctx.font = 'italic 9px system-ui'; ctx.fillStyle = '#a5b4fc'; ctx.textAlign = 'center';
+                      ctx.fillText(orbitComms[ocIdx], W * 0.5, HO - 10);
+                    }
                     ctx.globalAlpha = 1;
                     drawVignette(ctx, W, HO, 0.2);
                     if (document.contains(cvEl)) requestAnimationFrame(drawOrbit);
@@ -2547,21 +2648,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     try { _evaLowPower = (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) || (!!navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4); } catch (eLP) {}
                     scene.add(new THREE.AmbientLight(0x1a1a1e, 0.35));
                     scene.add(new THREE.HemisphereLight(0x050508, 0x35302a, 0.35));   // black sky above, regolith bounce below
+                    var _sunOffset = new THREE.Vector3(40, 25, 15);
                     var sun = new THREE.DirectionalLight(0xfff8e1, 1.6);
-                    sun.position.set(40, 25, 15);
+                    sun.position.copy(_sunOffset);
+                    // The shadow frustum TRACKS the astronaut instead of covering the whole
+                    // 120x120 plain from a fixed point. At ±60 with a 1024 map each texel
+                    // was ~12cm of ground, so a suit leg landed on about two of them and its
+                    // shadow came out as a dark smear. Following the player lets the same
+                    // map cover ±26, roughly a 5x gain in shadow detail exactly where anyone
+                    // is looking — and lunar shadows are the hardest-edged in the solar
+                    // system, so mush is the one thing they must not be.
+                    var sunTarget = new THREE.Object3D();
+                    scene.add(sunTarget);
+                    sun.target = sunTarget;
                     if (!_evaLowPower) {
                       renderer.shadowMap.enabled = true;
                       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
                       sun.castShadow = true;
+                      // Stays at 1024. The detail gain here comes from the 5x tighter
+                      // frustum, not from a bigger map: 2048 with PCFSoft cost enough frame
+                      // time under software rendering that the WebGL suite's walk test
+                      // stopped registering steps, which is a fair proxy for what it would
+                      // do to a low-end classroom laptop. ±26 at 1024 is ~5cm per texel,
+                      // against ~12cm before.
                       sun.shadow.mapSize.width = 1024; sun.shadow.mapSize.height = 1024;
-                      sun.shadow.camera.left = -60; sun.shadow.camera.right = 60;
-                      sun.shadow.camera.top = 60; sun.shadow.camera.bottom = -60;
-                      sun.shadow.camera.near = 1; sun.shadow.camera.far = 160;
-                      sun.shadow.bias = -0.0015;
+                      sun.shadow.camera.left = -26; sun.shadow.camera.right = 26;
+                      sun.shadow.camera.top = 26; sun.shadow.camera.bottom = -26;
+                      sun.shadow.camera.near = 1; sun.shadow.camera.far = 120;
+                      sun.shadow.bias = -0.0009;
+                      sun.shadow.normalBias = 0.02;
+                      sun.shadow.camera.updateProjectionMatrix();
                     }
                     scene.add(sun);
                     // The sun itself — a hot disc in the sky along the light direction so the
                     // bloom pass (tuned for "Earth + sun glow") finally has a sun to bloom.
+                    var _sunSprite = null;
                     (function addSunDisc() {
                       var sc = document.createElement('canvas'); sc.width = 128; sc.height = 128;
                       var sg = sc.getContext('2d');
@@ -2577,6 +2698,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       sunSprite.position.copy(sd);
                       sunSprite.scale.set(26, 26, 1);
                       scene.add(sunSprite);
+                      _sunSprite = sunSprite;
                     })();
 
                     // ── Lunar Module on surface ──
@@ -2843,6 +2965,85 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     var isJumping = false;
                     var speed3d = 0.06; // slower in spacesuit
 
+                    // ── The astronaut's own body ──
+                    // You were a floating camera: no suit, and — because a camera casts
+                    // nothing — no shadow. A hard black shadow thrown across the regolith
+                    // ahead of you is THE signature of every Apollo surface photograph, and
+                    // its absence is most of why the scene read as a diorama rather than a
+                    // place you were standing in. This proxy sits below the eye line, so it
+                    // is only in frame when you look down at your own boots, but it casts
+                    // for real. Added after the caster traverse above, so castShadow is set
+                    // by hand here.
+                    var suitGroup = new THREE.Group();
+                    // Deliberately off-white and very rough. A pure-white suit under a 1.6
+                    // sun sails past the bloom threshold and the chest renders as a glowing
+                    // ball hanging in the middle of the down-view. Apollo suits do blow out
+                    // in the real photographs, but not into a light source.
+                    var suitWhite = new THREE.MeshStandardMaterial({ color: 0xbfbfba, roughness: 0.97, metalness: 0.0 });
+                    var suitDark = new THREE.MeshStandardMaterial({ color: 0x8a9096, roughness: 0.9, metalness: 0.08 });
+                    // CapsuleGeometry landed in three r141 and this app pins r128, so the
+                    // constructor must be TESTED, not invoked, before choosing.
+                    // Sized and placed off the EYE, which sits 1.8 above the ground: chest
+                    // top at -0.72 keeps it out of the way at the -1.2 rad pitch limit, and
+                    // the boots land at -1.78 so they rest on the regolith rather than
+                    // sinking into it. First pass put the chest 0.12 below the eyes and
+                    // looking down filled the whole screen with a white wall.
+                    // Low-poly on purpose: this body is a shadow caster first and a glimpse
+                    // of your own boots second, and every triangle here is paid for twice —
+                    // once in the shadow pass and once on screen.
+                    var torsoGeo = (typeof THREE.CapsuleGeometry === 'function')
+                      ? new THREE.CapsuleGeometry(0.2, 0.42, 3, 10)
+                      : new THREE.CylinderGeometry(0.2, 0.2, 0.62, 10);
+                    var torso = new THREE.Mesh(torsoGeo, suitWhite);
+                    torso.position.y = -1.03;
+                    suitGroup.add(torso);
+                    if (typeof THREE.CapsuleGeometry !== 'function') {
+                      // r128 has no capsule, so the cylinder's flat lid was the first thing
+                      // you saw looking down — a white polygon where your chest should be.
+                      var shoulder = new THREE.Mesh(new THREE.SphereGeometry(0.2, 10, 6), suitWhite);
+                      shoulder.position.y = -0.72;
+                      shoulder.scale.y = 0.62;
+                      suitGroup.add(shoulder);
+                    }
+                    var plss = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.46, 0.2), suitDark);  // life-support backpack
+                    plss.position.set(0, -1.0, 0.25);
+                    suitGroup.add(plss);
+                    [[-0.13, 0], [0.13, 0]].forEach(function (lp) {
+                      var leg = new THREE.Mesh(new THREE.CylinderGeometry(0.095, 0.11, 0.62, 6), suitWhite);
+                      leg.position.set(lp[0], -1.46, 0);
+                      suitGroup.add(leg);
+                      var boot = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.11, 0.3), suitDark);
+                      boot.position.set(lp[0], -1.78, 0.05);
+                      suitGroup.add(boot);
+                    });
+                    suitGroup.traverse(function (n) { if (n.isMesh) { n.castShadow = !_evaLowPower; n.receiveShadow = false; } });
+                    // The chest is 0.7 below the eye and square-on to a 1.6 sun, so it
+                    // renders as a blown-out white ball parked in the middle of the
+                    // down-view no matter how far the albedo comes down. Move the upper body
+                    // to layer 1, which the camera does not draw but the shadow camera is
+                    // told to include: the full silhouette still falls across the regolith,
+                    // while what you actually see when you look down is your legs and boots.
+                    [torso, plss].concat(typeof shoulder !== 'undefined' && shoulder ? [shoulder] : [])
+                      .forEach(function (m) { if (m) m.layers.set(1); });
+                    if (!_evaLowPower) sun.shadow.camera.layers.enable(1);
+                    scene.add(suitGroup);
+                    // Unit vector toward the sun, matching the DirectionalLight above.
+                    var _sunDir = new THREE.Vector3(40, 25, 15).normalize();
+                    var _glareFwd = new THREE.Vector3();   // reused so the loop allocates nothing
+                    var _glarePrev = -1;
+
+                    // Visor glare overlay — a DOM layer rather than a post pass, so it costs
+                    // nothing on the GPU and degrades to "no glare" if anything goes wrong.
+                    var glareEl = null;
+                    try {
+                      glareEl = document.createElement('div');
+                      glareEl.setAttribute('aria-hidden', 'true');
+                      glareEl.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:8;opacity:0;'
+                        + 'background:radial-gradient(circle at 50% 42%, rgba(255,252,238,0.85) 0%, rgba(255,246,214,0.45) 18%, rgba(255,240,200,0.12) 42%, rgba(255,240,200,0) 68%);'
+                        + 'transition:opacity 0.12s linear';
+                      if (canvasEl.parentElement) canvasEl.parentElement.appendChild(glareEl);
+                    } catch (eGl) { glareEl = null; }
+
                     // ── Comfort mode (reduced motion / mouse-sensitivity / vignette) ──
                     // Auto-enable if OS prefers-reduced-motion; persisted per-student in toolData.
                     var prefersReducedMotion = false;
@@ -3055,6 +3256,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       camera.rotation.y = yaw;
                       camera.rotation.x = pitch;
 
+                      // Body follows the camera (yaw only — it should not tip when you look up).
+                      suitGroup.position.copy(playerPos);
+                      suitGroup.rotation.y = yaw;
+
+                      // Keep the tight shadow frustum centred on the astronaut, and hold the
+                      // sun and Earth at a fixed bearing in the sky: both are effectively at
+                      // infinity, so walking must not shift them.
+                      sunTarget.position.set(playerPos.x, groundH - 1.8, playerPos.z);
+                      sun.position.copy(sunTarget.position).add(_sunOffset);
+                      if (_sunSprite) _sunSprite.position.copy(playerPos).addScaledVector(_sunDir, 170);
+                      earthSprite.position.set(playerPos.x - 60, playerPos.y + 68, playerPos.z - 120);
+
+                      // ── Visor glare ──
+                      // With no atmosphere the sun is a bare arc-lamp: turning into it washes
+                      // the visor out completely. Driven by how closely the view direction
+                      // lines up with the light, so it blooms and fades as you turn rather
+                      // than sitting there as a static overlay. Skipped in comfort mode,
+                      // where a full-screen brightness sweep is exactly the wrong thing.
+                      if (glareEl) {
+                        _glareFwd.set(0, 0, -1).applyQuaternion(camera.quaternion);
+                        var align = _glareFwd.dot(_sunDir);           // 1 = looking straight at it
+                        var glare = align > 0.55 ? Math.pow((align - 0.55) / 0.45, 1.6) : 0;
+                        glare = comfortMode ? glare * 0.25 : glare * 0.8;
+                        // Only touch the DOM when it would actually read differently: writing
+                        // style.opacity every frame forces a style recalc and a composite on
+                        // every single frame, for a value that mostly does not change.
+                        if (Math.abs(glare - _glarePrev) > 0.02 || (glare === 0) !== (_glarePrev === 0)) {
+                          _glarePrev = glare;
+                          glareEl.style.opacity = glare.toFixed(2);
+                        }
+                      }
+
                       // O2 depletion (rate based on difficulty)
                       if (evaTick % 60 === 0) evaO2 = Math.max(0, evaO2 - diffSettings.o2Rate);
                       // O2 warnings
@@ -3252,6 +3485,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       renderer.dispose();
                       if (evaHud.parentElement) evaHud.parentElement.removeChild(evaHud);
                       if (vignetteEl && vignetteEl.parentElement) vignetteEl.parentElement.removeChild(vignetteEl);
+                      if (glareEl && glareEl.parentElement) glareEl.parentElement.removeChild(glareEl);
                       ['eva-o2-out', 'eva-o2-warning', 'eva-discovery', 'eva-comms'].forEach(function(id) {
                         var el = document.getElementById(id);
                         if (el && el.parentElement) el.parentElement.removeChild(el);
