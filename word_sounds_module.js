@@ -692,12 +692,18 @@
     // module finished loading before misc_components. The fallback also keeps a
     // Start button usable so nobody is ever hard-stuck on it.
     const WordSoundsReviewPanel = (props) => {
+      // ts arrives as a PROP — this component sits at MODULE scope, where there
+      // is deliberately no `ts` binding (see the note where the old module-level
+      // one was removed). A free ts() here is a ReferenceError at render, which
+      // is exactly what this fallback must never do: it is the escape hatch a
+      // student sees when misc_components has not loaded yet.
+      const ts = typeof props.ts === "function" ? props.ts : () => "";
       const Impl = window.WordSoundsReviewPanel;
       if (typeof Impl === "function") return React.createElement(Impl, props);
       return React.createElement(
         "div",
         { className: "p-6 text-center text-slate-600 text-sm space-y-3" },
-        React.createElement("div", null, "📋 Review Panel (loading...)"),
+        React.createElement("div", null, ts("word_sounds.review_panel_loading") || "📋 Review Panel (loading...)"),
         React.createElement(
           "button",
           {
@@ -705,7 +711,7 @@
             className:
               "px-4 py-2 bg-violet-600 text-white font-bold rounded-lg text-sm hover:bg-violet-700",
           },
-          "Start Activity",
+          ts("word_sounds.start") || "Start Activity",
         ),
       );
     };
@@ -1308,6 +1314,88 @@
       }
       return a;
     };
+    // Reference glyph paths for letter tracing. MODULE scope on purpose: this
+    // is a 63-entry constant lookup that depends on nothing, but it used to sit
+    // inside LetterTraceView's body, so every render of that view rebuilt the
+    // whole table. The views re-render often (each audio play flips
+    // isPlayingAudio on the parent; probe mode ticks a 1s timer).
+    const LETTER_SVG_PATHS = {
+      a: "M 200 100 Q 230 180 200 260 Q 160 280 120 230 Q 100 180 140 140 Q 180 120 220 160 L 220 260",
+      b: "M 120 80 L 120 260 M 120 180 Q 120 120 180 120 Q 240 120 240 190 Q 240 260 180 260 Q 120 260 120 200",
+      c: "M 220 130 Q 180 80 120 120 Q 80 160 80 200 Q 80 260 140 280 Q 200 280 220 240",
+      d: "M 200 80 L 200 260 M 200 180 Q 200 120 140 120 Q 80 140 80 200 Q 80 260 140 260 Q 200 260 200 200",
+      e: "M 100 180 L 220 180 Q 220 120 160 100 Q 100 120 100 180 Q 100 260 160 280 Q 220 260 220 220",
+      f: "M 200 90 Q 160 60 140 100 L 140 260 M 100 160 L 180 160",
+      g: "M 200 110 Q 200 80 160 80 Q 100 95 100 140 Q 100 190 160 210 Q 200 190 200 140 L 200 270 Q 180 300 120 285",
+      h: "M 100 80 L 100 260 M 100 160 Q 100 120 160 120 Q 220 120 220 180 L 220 260",
+      i: "M 160 100 L 160 100 M 160 140 L 160 260",
+      j: "M 180 80 L 180 80 M 180 110 L 180 250 Q 160 285 120 270",
+      k: "M 100 80 L 100 260 M 200 120 L 100 180 L 200 260",
+      l: "M 160 80 L 160 260",
+      m: "M 80 260 L 80 140 Q 80 100 120 100 Q 160 100 160 160 L 160 260 M 160 140 Q 160 100 200 100 Q 240 100 240 160 L 240 260",
+      n: "M 100 260 L 100 140 Q 100 100 160 100 Q 220 100 220 160 L 220 260",
+      o: "M 160 100 Q 100 100 100 180 Q 100 260 160 260 Q 220 260 220 180 Q 220 100 160 100",
+      p: "M 100 110 L 100 285 M 100 140 Q 100 95 160 95 Q 220 95 220 140 Q 220 190 160 190 Q 100 190 100 160",
+      q: "M 220 110 L 220 285 M 220 140 Q 220 95 160 95 Q 100 95 100 140 Q 100 190 160 190 Q 220 190 220 160",
+      r: "M 100 260 L 100 140 Q 120 100 180 120",
+      s: "M 200 130 Q 160 100 120 130 Q 80 160 160 190 Q 240 220 200 260 Q 160 280 100 250",
+      t: "M 150 80 L 150 260 M 100 130 L 200 130",
+      u: "M 100 140 L 100 220 Q 100 260 160 260 Q 220 260 220 220 L 220 140 L 220 260",
+      v: "M 80 140 L 160 260 L 240 140",
+      w: "M 60 140 L 110 260 L 160 180 L 210 260 L 260 140",
+      x: "M 100 140 L 220 260 M 220 140 L 100 260",
+      y: "M 100 110 L 160 160 M 220 110 L 160 160 L 120 270",
+      z: "M 100 140 L 220 140 L 100 260 L 220 260",
+      A: "M 60 260 L 160 60 L 260 260 M 100 180 L 220 180",
+      B: "M 80 60 L 80 260 M 80 60 L 180 60 Q 240 60 240 110 Q 240 160 180 160 L 80 160 M 80 160 L 180 160 Q 250 160 250 210 Q 250 260 180 260 L 80 260",
+      C: "M 240 100 Q 200 40 140 40 Q 60 60 60 160 Q 60 260 140 280 Q 200 280 240 220",
+      D: "M 80 60 L 80 260 M 80 60 L 160 60 Q 260 80 260 160 Q 260 240 160 260 L 80 260",
+      E: "M 220 60 L 80 60 L 80 260 L 220 260 M 80 160 L 180 160",
+      F: "M 220 60 L 80 60 L 80 260 M 80 160 L 180 160",
+      G: "M 240 100 Q 200 40 140 40 Q 60 60 60 160 Q 60 260 140 280 Q 220 280 240 200 L 240 160 L 180 160",
+      H: "M 80 60 L 80 260 M 240 60 L 240 260 M 80 160 L 240 160",
+      I: "M 120 60 L 200 60 M 160 60 L 160 260 M 120 260 L 200 260",
+      J: "M 140 60 L 220 60 M 180 60 L 180 220 Q 180 280 120 280 Q 80 260 80 220",
+      K: "M 80 60 L 80 260 M 240 60 L 80 160 L 240 260",
+      L: "M 80 60 L 80 260 L 220 260",
+      M: "M 60 260 L 60 60 L 160 180 L 260 60 L 260 260",
+      N: "M 80 260 L 80 60 L 240 260 L 240 60",
+      O: "M 160 40 Q 60 40 60 160 Q 60 280 160 280 Q 260 280 260 160 Q 260 40 160 40",
+      P: "M 80 60 L 80 260 M 80 60 L 180 60 Q 240 60 240 110 Q 240 160 180 160 L 80 160",
+      Q: "M 160 40 Q 60 40 60 160 Q 60 280 160 280 Q 260 280 260 160 Q 260 40 160 40 M 200 220 L 260 280",
+      R: "M 80 60 L 80 260 M 80 60 L 180 60 Q 240 60 240 110 Q 240 160 180 160 L 80 160 M 160 160 L 240 260",
+      S: "M 220 80 Q 180 40 120 60 Q 60 80 60 120 Q 60 160 160 180 Q 260 200 260 240 Q 260 280 180 280 Q 100 280 60 240",
+      T: "M 60 60 L 260 60 M 160 60 L 160 260",
+      U: "M 80 60 L 80 200 Q 80 280 160 280 Q 240 280 240 200 L 240 60",
+      V: "M 60 60 L 160 260 L 260 60",
+      W: "M 40 60 L 100 260 L 160 120 L 220 260 L 280 60",
+      X: "M 60 60 L 260 260 M 260 60 L 60 260",
+      Y: "M 60 60 L 160 160 L 160 260 M 260 60 L 160 160",
+      Z: "M 60 60 L 260 60 L 60 260 L 260 260",
+      // ── Digraphs and trigraphs ──
+      // The canvas draws these as multi-character strings via strokeText()
+      // (which natively handles 2- and 3-character strings); the M
+      // coordinates below are used only as start-dot anchors for the
+      // animated hand. The mask-search loop snaps each anchor to the
+      // nearest filled stroke pixel within a 40px radius, so these only
+      // need to land near the first letter's expected position when
+      // the digraph is rendered centered at (width/2, height/2 + 20)
+      // with the auto-scaled font (150px for 2-char, 110px for 3-char).
+      // For a 320px canvas at 150px font, two chars span roughly x=80–240.
+      sh:  "M 130 130",   // top of 's' in "sh"
+      ch:  "M 130 130",   // top arc of 'c' in "ch"
+      th:  "M 100 80",    // top of 't' in "th"
+      wh:  "M 80 140",    // top-left of 'w' in "wh"
+      ng:  "M 100 140",   // top of 'n' in "ng"
+      ck:  "M 100 140",   // top arc of 'c' in "ck"
+      ph:  "M 90 110",    // top of 'p' in "ph"
+      qu:  "M 120 110",   // top of 'q' in "qu"
+      // Trigraphs (rendered at 110px font; spans roughly x=80–240)
+      igh: "M 130 140",   // top of 'i' in "igh"
+      tch: "M 100 90",    // top of 't' in "tch"
+      dge: "M 120 100",   // top of 'd' in "dge"
+    };
+
     // ── Activity sub-views ──────────────────────────────────────────────
     // These live at MODULE scope on purpose. Defined inside WordSoundsModal
     // they were re-created on every parent render, so React saw a new
@@ -1500,7 +1588,7 @@
             /*#__PURE__*/ React.createElement(
               "p",
               { className: "text-slate-600 text-sm font-medium animate-pulse motion-reduce:animate-none" },
-              "Building your Sound Swap task\u2026",
+              ts("word_sounds.building_swap_task") || "Building your Sound Swap task\u2026",
             ),
           );
         }
@@ -1508,7 +1596,7 @@
           return /*#__PURE__*/ React.createElement(
             "div",
             { className: "text-center text-slate-600 text-sm py-6" },
-            "Loading task\u2026",
+            ts("word_sounds.loading_task") || "Loading task\u2026",
           );
         }
         return /*#__PURE__*/ React.createElement(
@@ -1552,7 +1640,7 @@
                   "mt-3 inline-flex items-center gap-2 px-4 py-2 bg-violet-100 hover:bg-violet-200 text-violet-700 rounded-full text-sm font-medium transition-colors",
               },
               /*#__PURE__*/ React.createElement(Volume2, { size: 16 }),
-              "Listen Again",
+              ts("word_sounds.listen_again") || "Listen Again",
             ),
           ),
           // Options grid
@@ -1704,7 +1792,7 @@
             React.createElement(
               "p",
               { className: "text-slate-600 text-sm" },
-              "Building syllable activity\u2026",
+              ts("word_sounds.building_syllable_activity") || "Building syllable activity\u2026",
             ),
           );
         }
@@ -1723,7 +1811,7 @@
                 className:
                   "text-xs font-semibold text-sky-600 uppercase tracking-wide text-center",
               },
-              "Listen to the syllables",
+              ts("word_sounds.listen_to_syllables") || "Listen to the syllables",
             ),
             React.createElement(
               "div",
@@ -1761,7 +1849,7 @@
                 className:
                   "mx-auto flex items-center gap-2 px-4 py-2 bg-sky-100 hover:bg-sky-200 text-sky-700 rounded-full text-sm font-semibold transition-colors disabled:opacity-50",
               },
-              "\u25b6 Play Syllables",
+              ts("word_sounds.play_syllables") || "\u25b6 Play Syllables",
             ),
           ),
           blendingOptions && blendingOptions.length > 0
@@ -1829,7 +1917,7 @@
             : React.createElement(
                 "p",
                 { className: "text-center text-slate-600 text-sm py-4" },
-                "Speak your answer or tap the mic below",
+                ts("word_sounds.speak_or_tap_mic") || "Speak your answer or tap the mic below",
               ),
         );
       },
@@ -1860,7 +1948,7 @@
             React.createElement(
               "p",
               { className: "text-slate-600 text-sm" },
-              "Getting ready\u2026",
+              ts("word_sounds.getting_ready") || "Getting ready\u2026",
             ),
           );
         }
@@ -1879,7 +1967,7 @@
                 className:
                   "text-xs font-semibold text-amber-600 uppercase tracking-wide mb-2",
               },
-              "Tap once for each syllable you hear",
+              ts("word_sounds.tap_each_syllable") || "Tap once for each syllable you hear",
             ),
             React.createElement(
               "button",
@@ -1889,7 +1977,7 @@
                 className:
                   "flex items-center gap-2 mx-auto px-4 py-2 bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-full font-semibold text-sm transition-colors disabled:opacity-50",
               },
-              "\ud83d\udd0a Hear the word again",
+              ts("word_sounds.hear_word_again") || "\ud83d\udd0a Hear the word again",
             ),
           ),
           React.createElement(
@@ -1917,7 +2005,7 @@
               className:
                 "text-xs text-slate-600 hover:text-slate-600 underline",
             },
-            "Reset",
+            ts("word_sounds.reset") || "Reset",
           ),
           tapCount > 0
             ? React.createElement(
@@ -1935,7 +2023,7 @@
                     className:
                       "px-8 py-3 bg-amber-700 hover:bg-amber-700 text-white rounded-xl font-bold shadow transition-all hover:scale-105",
                   },
-                  "Submit \u2713",
+                  ts("word_sounds.submit") || "Submit \u2713",
                 ),
               )
             : null,
@@ -2026,7 +2114,7 @@
                   { className: "bg-amber-200 p-1 rounded", "aria-hidden": "true" },
                   "\u270F\uFE0F",
                 ),
-                " Edit Spelling Word",
+                " " + (ts("word_sounds.edit_spelling_word") || "Edit Spelling Word"),
               ),
               /*#__PURE__*/ React.createElement(
                 "div",
@@ -2353,82 +2441,6 @@
       const [isAnimating, setIsAnimating] = React.useState(true);
       const audioCtxRef = React.useRef(null);
       const noiseNodeRef = React.useRef(null);
-      const LETTER_SVG_PATHS = {
-        a: "M 200 100 Q 230 180 200 260 Q 160 280 120 230 Q 100 180 140 140 Q 180 120 220 160 L 220 260",
-        b: "M 120 80 L 120 260 M 120 180 Q 120 120 180 120 Q 240 120 240 190 Q 240 260 180 260 Q 120 260 120 200",
-        c: "M 220 130 Q 180 80 120 120 Q 80 160 80 200 Q 80 260 140 280 Q 200 280 220 240",
-        d: "M 200 80 L 200 260 M 200 180 Q 200 120 140 120 Q 80 140 80 200 Q 80 260 140 260 Q 200 260 200 200",
-        e: "M 100 180 L 220 180 Q 220 120 160 100 Q 100 120 100 180 Q 100 260 160 280 Q 220 260 220 220",
-        f: "M 200 90 Q 160 60 140 100 L 140 260 M 100 160 L 180 160",
-        g: "M 200 110 Q 200 80 160 80 Q 100 95 100 140 Q 100 190 160 210 Q 200 190 200 140 L 200 270 Q 180 300 120 285",
-        h: "M 100 80 L 100 260 M 100 160 Q 100 120 160 120 Q 220 120 220 180 L 220 260",
-        i: "M 160 100 L 160 100 M 160 140 L 160 260",
-        j: "M 180 80 L 180 80 M 180 110 L 180 250 Q 160 285 120 270",
-        k: "M 100 80 L 100 260 M 200 120 L 100 180 L 200 260",
-        l: "M 160 80 L 160 260",
-        m: "M 80 260 L 80 140 Q 80 100 120 100 Q 160 100 160 160 L 160 260 M 160 140 Q 160 100 200 100 Q 240 100 240 160 L 240 260",
-        n: "M 100 260 L 100 140 Q 100 100 160 100 Q 220 100 220 160 L 220 260",
-        o: "M 160 100 Q 100 100 100 180 Q 100 260 160 260 Q 220 260 220 180 Q 220 100 160 100",
-        p: "M 100 110 L 100 285 M 100 140 Q 100 95 160 95 Q 220 95 220 140 Q 220 190 160 190 Q 100 190 100 160",
-        q: "M 220 110 L 220 285 M 220 140 Q 220 95 160 95 Q 100 95 100 140 Q 100 190 160 190 Q 220 190 220 160",
-        r: "M 100 260 L 100 140 Q 120 100 180 120",
-        s: "M 200 130 Q 160 100 120 130 Q 80 160 160 190 Q 240 220 200 260 Q 160 280 100 250",
-        t: "M 150 80 L 150 260 M 100 130 L 200 130",
-        u: "M 100 140 L 100 220 Q 100 260 160 260 Q 220 260 220 220 L 220 140 L 220 260",
-        v: "M 80 140 L 160 260 L 240 140",
-        w: "M 60 140 L 110 260 L 160 180 L 210 260 L 260 140",
-        x: "M 100 140 L 220 260 M 220 140 L 100 260",
-        y: "M 100 110 L 160 160 M 220 110 L 160 160 L 120 270",
-        z: "M 100 140 L 220 140 L 100 260 L 220 260",
-        A: "M 60 260 L 160 60 L 260 260 M 100 180 L 220 180",
-        B: "M 80 60 L 80 260 M 80 60 L 180 60 Q 240 60 240 110 Q 240 160 180 160 L 80 160 M 80 160 L 180 160 Q 250 160 250 210 Q 250 260 180 260 L 80 260",
-        C: "M 240 100 Q 200 40 140 40 Q 60 60 60 160 Q 60 260 140 280 Q 200 280 240 220",
-        D: "M 80 60 L 80 260 M 80 60 L 160 60 Q 260 80 260 160 Q 260 240 160 260 L 80 260",
-        E: "M 220 60 L 80 60 L 80 260 L 220 260 M 80 160 L 180 160",
-        F: "M 220 60 L 80 60 L 80 260 M 80 160 L 180 160",
-        G: "M 240 100 Q 200 40 140 40 Q 60 60 60 160 Q 60 260 140 280 Q 220 280 240 200 L 240 160 L 180 160",
-        H: "M 80 60 L 80 260 M 240 60 L 240 260 M 80 160 L 240 160",
-        I: "M 120 60 L 200 60 M 160 60 L 160 260 M 120 260 L 200 260",
-        J: "M 140 60 L 220 60 M 180 60 L 180 220 Q 180 280 120 280 Q 80 260 80 220",
-        K: "M 80 60 L 80 260 M 240 60 L 80 160 L 240 260",
-        L: "M 80 60 L 80 260 L 220 260",
-        M: "M 60 260 L 60 60 L 160 180 L 260 60 L 260 260",
-        N: "M 80 260 L 80 60 L 240 260 L 240 60",
-        O: "M 160 40 Q 60 40 60 160 Q 60 280 160 280 Q 260 280 260 160 Q 260 40 160 40",
-        P: "M 80 60 L 80 260 M 80 60 L 180 60 Q 240 60 240 110 Q 240 160 180 160 L 80 160",
-        Q: "M 160 40 Q 60 40 60 160 Q 60 280 160 280 Q 260 280 260 160 Q 260 40 160 40 M 200 220 L 260 280",
-        R: "M 80 60 L 80 260 M 80 60 L 180 60 Q 240 60 240 110 Q 240 160 180 160 L 80 160 M 160 160 L 240 260",
-        S: "M 220 80 Q 180 40 120 60 Q 60 80 60 120 Q 60 160 160 180 Q 260 200 260 240 Q 260 280 180 280 Q 100 280 60 240",
-        T: "M 60 60 L 260 60 M 160 60 L 160 260",
-        U: "M 80 60 L 80 200 Q 80 280 160 280 Q 240 280 240 200 L 240 60",
-        V: "M 60 60 L 160 260 L 260 60",
-        W: "M 40 60 L 100 260 L 160 120 L 220 260 L 280 60",
-        X: "M 60 60 L 260 260 M 260 60 L 60 260",
-        Y: "M 60 60 L 160 160 L 160 260 M 260 60 L 160 160",
-        Z: "M 60 60 L 260 60 L 60 260 L 260 260",
-        // ── Digraphs and trigraphs ──
-        // The canvas draws these as multi-character strings via strokeText()
-        // (which natively handles 2- and 3-character strings); the M
-        // coordinates below are used only as start-dot anchors for the
-        // animated hand. The mask-search loop snaps each anchor to the
-        // nearest filled stroke pixel within a 40px radius, so these only
-        // need to land near the first letter's expected position when
-        // the digraph is rendered centered at (width/2, height/2 + 20)
-        // with the auto-scaled font (150px for 2-char, 110px for 3-char).
-        // For a 320px canvas at 150px font, two chars span roughly x=80–240.
-        sh:  "M 130 130",   // top of 's' in "sh"
-        ch:  "M 130 130",   // top arc of 'c' in "ch"
-        th:  "M 100 80",    // top of 't' in "th"
-        wh:  "M 80 140",    // top-left of 'w' in "wh"
-        ng:  "M 100 140",   // top of 'n' in "ng"
-        ck:  "M 100 140",   // top arc of 'c' in "ck"
-        ph:  "M 90 110",    // top of 'p' in "ph"
-        qu:  "M 120 110",   // top of 'q' in "qu"
-        // Trigraphs (rendered at 110px font; spans roughly x=80–240)
-        igh: "M 130 140",   // top of 'i' in "igh"
-        tch: "M 100 90",    // top of 't' in "tch"
-        dge: "M 120 100",   // top of 'd' in "dge"
-      };
 
       // Render-font-size selector: scales down for multi-character graphemes
       // so digraphs (sh, ch, th, wh, ng, ck, ph, qu) and trigraphs (igh,
@@ -2876,7 +2888,8 @@
         /*#__PURE__*/ React.createElement(
           "p",
           { id: "word-sounds-tracing-path-note", className: "sr-only" },
-          "This handwriting exercise uses path-dependent input because it evaluates the complete drawing path. Use a mouse, stylus, or touch gesture to trace from the green start dot.",
+          ts("word_sounds.tracing_path_note") ||
+            "This handwriting exercise uses path-dependent input because it evaluates the complete drawing path. Use a mouse, stylus, or touch gesture to trace from the green start dot.",
         ),
         /*#__PURE__*/ React.createElement(
           "div",
@@ -2970,7 +2983,7 @@
             /*#__PURE__*/ React.createElement(
             "span",
             { className: "text-lg text-slate-600 font-medium" },
-            "for ",
+            (ts("word_sounds.for_word") || "for") + " ",
               /*#__PURE__*/ React.createElement(
               "span",
               { className: "font-bold text-slate-700" },
@@ -2991,7 +3004,7 @@
               className:
                 "px-6 py-3 rounded-xl font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors",
             },
-            "Clear",
+            ts("word_sounds.word_scramble_clear") || "Clear",
           ),
           /*#__PURE__*/ React.createElement(
             "button",
@@ -3000,7 +3013,7 @@
               className:
                 "px-8 py-3 rounded-xl font-bold bg-violet-600 text-white shadow-lg hover:scale-105 transition-transform",
             },
-            "Check \u2713",
+            ts("word_sounds.word_scramble_check") || "Check \u2713",
           ),
         ),
       );
@@ -5329,8 +5342,7 @@
                             : /*#__PURE__*/ React.createElement(
                                 "span",
                                 { className: "text-sm text-slate-600 font-normal" },
-                                "Sound ",
-                                idx + 1,
+                                ts("word_sounds.sound_n", { n: idx + 1 }) || ("Sound " + (idx + 1)),
                               );
                         })(),
                       ),
@@ -5512,7 +5524,7 @@
                   /*#__PURE__*/ React.createElement(
                     "h3",
                     { className: "text-xl font-bold text-slate-600 mb-2" },
-                    "Editing Word Family: ",
+                    (ts("word_sounds.editing_word_family") || "Editing Word Family") + ": ",
                     /*#__PURE__*/ React.createElement(
                       "span",
                       { className: "text-violet-600" },
@@ -5546,7 +5558,7 @@
                         { className: "bg-violet-200 p-1 rounded", "aria-hidden": "true" },
                         "\uD83C\uDFE0",
                       ),
-                      " Family Members",
+                      " " + (ts("word_sounds.family_members") || "Family Members"),
                     ),
                     /*#__PURE__*/ React.createElement(
                       "div",
@@ -5600,7 +5612,7 @@
                           className:
                             "w-full py-2 border-2 border-dashed border-violet-200 rounded-lg text-violet-700 hover:text-violet-600 hover:border-violet-400 transition-all text-sm font-bold",
                         },
-                        "+ Add Word",
+                        ts("word_sounds.add_word") || "+ Add Word",
                       ),
                     ),
                   ),
@@ -5621,7 +5633,7 @@
                         { className: "bg-amber-200 p-1 rounded" },
                         "\uD83D\uDEAB",
                       ),
-                      " Distractors",
+                      " " + (ts("word_sounds.distractors") || "Distractors"),
                     ),
                     /*#__PURE__*/ React.createElement(
                       "div",
@@ -5675,7 +5687,7 @@
                           className:
                             "w-full py-2 border-2 border-dashed border-amber-200 rounded-lg text-amber-700 hover:text-amber-600 hover:border-amber-400 transition-all text-sm font-bold",
                         },
-                        "+ Add Distractor",
+                        ts("word_sounds.add_distractor") || "+ Add Distractor",
                       ),
                     ),
                   ),
@@ -5897,7 +5909,7 @@
                     title: t("common.play_all_remaining_words_aloud"),
                   },
                     /*#__PURE__*/ React.createElement(Volume2, { size: 16 }),
-                  " Hear All Words",
+                  " " + (ts("word_sounds.hear_all_words") || "Hear All Words"),
                 ),
               ),
               /*#__PURE__*/ React.createElement(
@@ -7143,7 +7155,7 @@
             /*#__PURE__*/ React.createElement(
             "span",
             { style: { fontSize: "10px", opacity: 0.7 } },
-            "(Auto)",
+            ts("word_sounds.difficulty_auto_paren") || "(Auto)",
           ),
         );
       }, [getEffectiveDifficulty, wordSoundsDifficulty]);
@@ -13312,7 +13324,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 /*#__PURE__*/ React.createElement("img", {
               loading: "lazy",
               src: currentWordImage,
-              alt: "Mystery Word",
+              alt: ts("word_sounds.mystery_word") || "Mystery Word",
               className:
                 "w-32 h-32 object-cover rounded-xl shadow-md mb-2 border-2 border-slate-100",
             }),
@@ -13817,7 +13829,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                         : /*#__PURE__*/ React.createElement(
                           "span",
                           { className: "text-sm opacity-50" },
-                          "Drop",
+                          ts("word_sounds.drop") || "Drop",
                         ),
                     );
                   }),
@@ -14002,7 +14014,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       className:
                         "absolute -top-3 left-4 bg-violet-100 text-violet-700 px-2 text-xs font-bold uppercase tracking-wider rounded border border-violet-200",
                     },
-                    "Edit Sounds",
+                    ts("word_sounds.edit_sounds") || "Edit Sounds",
                   ),
                       /*#__PURE__*/ React.createElement(
                     "div",
@@ -14158,8 +14170,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                                     className:
                                       "text-slate-600 text-sm font-normal",
                                   },
-                                  "Option ",
-                                  idx + 1,
+                                  ts("word_sounds.option_n", { n: idx + 1 }) || ("Option " + (idx + 1)),
                                 ),
                             ),
                                     /*#__PURE__*/ React.createElement(
@@ -14198,7 +14209,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                             /*#__PURE__*/ React.createElement(Mic, {
                         size: 20,
                       }),
-                      " Use Microphone",
+                      " " + (ts("word_sounds.use_microphone") || "Use Microphone"),
                     ),
                   ),
               ),
@@ -14433,10 +14444,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 /*#__PURE__*/ React.createElement(
                 "div",
                 { className: "text-sm text-slate-600" },
-                correctCount,
-                "/",
-                currentWordSoundsWord?.length,
-                " letters correct",
+                ts("word_sounds.letters_correct", { count: correctCount, total: currentWordSoundsWord?.length }) ||
+                  (correctCount + "/" + currentWordSoundsWord?.length + " letters correct"),
               ),
               useMicInput
                 ? renderVoiceInputOverlay("Say the letters or word!")
@@ -14836,7 +14845,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     disabled: !userAnswer,
                     className: `px-8 py-3 rounded-xl font-bold shadow-lg transition-all ${userAnswer ? "bg-emerald-500 hover:bg-emerald-700 text-white hover:scale-105" : "bg-slate-200 text-slate-600 cursor-not-allowed"}`,
                   },
-                  "Check Answer \u2713",
+                  ts("word_sounds.check_answer") || "Check Answer \u2713",
                 ),
               /*#__PURE__*/ React.createElement(
                   "div",
@@ -14895,7 +14904,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     "mx-auto flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full text-slate-600 hover:bg-slate-200 transition-colors",
                 },
                 /*#__PURE__*/ React.createElement(Mic, { size: 20 }),
-                " Use Microphone",
+                " " + (ts("word_sounds.use_microphone") || "Use Microphone"),
               ),
             );
           }
@@ -14934,7 +14943,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     "mx-auto flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full text-slate-600 hover:bg-slate-200 transition-colors",
                 },
                 /*#__PURE__*/ React.createElement(Mic, { size: 20 }),
-                " Use Microphone",
+                " " + (ts("word_sounds.use_microphone") || "Use Microphone"),
               ),
             );
           }
@@ -15074,7 +15083,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     "mx-auto flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full text-slate-600 hover:bg-slate-200 transition-colors",
                 },
                 /*#__PURE__*/ React.createElement(Mic, { size: 20 }),
-                " Use Microphone",
+                " " + (ts("word_sounds.use_microphone") || "Use Microphone"),
               ),
             );
           }
@@ -15219,7 +15228,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       className:
                         "text-2xl font-black text-emerald-600 tracking-wide",
                     },
-                    "Bonus!",
+                    ts("word_sounds.bonus") || "Bonus!",
                   ),
                     /*#__PURE__*/ React.createElement(
                     "span",
@@ -15312,7 +15321,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   className:
                     "text-sm text-slate-600 hover:text-slate-600 underline transition-colors",
                 },
-                "Skip lowercase \u2192",
+                ts("word_sounds.skip_lowercase") || "Skip lowercase \u2192",
               ),
             );
           }
@@ -15679,8 +15688,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   className:
                     "mt-2 inline-flex items-center gap-1 bg-white/20 rounded-full px-4 py-1 text-sm font-bold",
                 },
-                "\u2B50 Level ",
-                wordSoundsLevel,
+                ts("word_sounds.level_n", { n: wordSoundsLevel }) || ("\u2B50 Level " + wordSoundsLevel),
               ),
             ),
             /*#__PURE__*/ React.createElement(
@@ -15822,7 +15830,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   className:
                     "text-xs uppercase tracking-wider text-white/80 font-bold mb-2",
                 },
-                "Word Recap",
+                ts("word_sounds.word_recap") || "Word Recap",
               ),
                 /*#__PURE__*/ React.createElement(
                 "div",
@@ -15936,7 +15944,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   className:
                     "w-full py-4 bg-amber-400 text-amber-900 rounded-full font-bold text-lg shadow-lg hover:scale-105 transition-transform",
                 },
-                "\uD83C\uDFAF Practice Missed Words (",
+                "\uD83C\uDFAF " + (ts("word_sounds.practice_missed_words") || "Practice Missed Words") + " (",
                 [
                   ...new Set(
                     sessionWordResults.current
@@ -16009,6 +16017,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
       }
       if (showReviewPanel) {
         return /*#__PURE__*/ React.createElement(WordSoundsReviewPanel, {
+          ts: ts,
           preloadedWords: preloadedWords,
           onUpdateWord: handleUpdatePreloadedWord,
           onReorderWords: handleReorderPreloadedWords,
@@ -16142,12 +16151,12 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     /*#__PURE__*/ React.createElement(
                     "span",
                     null,
-                    "Processing...",
+                    ts("word_sounds.processing") || "Processing...",
                   ),
                     /*#__PURE__*/ React.createElement(
                     "span",
                     { className: "animate-pulse motion-reduce:animate-none" },
-                    "Active",
+                    ts("word_sounds.active") || "Active",
                   ),
                 ),
                   /*#__PURE__*/ React.createElement(
@@ -16186,7 +16195,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     className:
                       "w-full py-2 bg-violet-600 text-white rounded-lg text-sm font-bold shadow-md hover:bg-violet-700 transition-colors",
                   },
-                  "Resume Activity",
+                  ts("word_sounds.resume_activity") || "Resume Activity",
                 ),
               ),
           ),
@@ -16342,7 +16351,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       "data-dialog-initial-focus": "true",
                       className: "text-xl font-bold",
                     },
-                    "\uD83D\uDD24 Word Sounds Studio",
+                    ts("word_sounds.studio_title") || "\uD83D\uDD24 Word Sounds Studio",
                   ),
                   /*#__PURE__*/ React.createElement(
                     "p",
@@ -16441,12 +16450,14 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   /*#__PURE__*/ React.createElement(
                   "span",
                   null,
-                  masteryStats[wordSoundsActivity]?.attempted || 0,
-                  "/",
-                  lessonPlanConfig.activities?.find(
-                    (a) => a.id === wordSoundsActivity,
-                  )?.count || 5,
-                  " items",
+                  (function () {
+                    const _done = masteryStats[wordSoundsActivity]?.attempted || 0;
+                    const _goal = lessonPlanConfig.activities?.find(
+                      (a) => a.id === wordSoundsActivity,
+                    )?.count || 5;
+                    return ts("word_sounds.items_done_of", { done: _done, goal: _goal }) ||
+                      (_done + "/" + _goal + " items");
+                  })(),
                 ),
                   /*#__PURE__*/ React.createElement(
                   "span",
@@ -16549,7 +16560,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       "flex items-center gap-1 px-3 py-1.5 bg-amber-700 text-white rounded-full text-sm font-bold hover:bg-amber-600 transition-colors shadow-md",
                     title: t("common.review_and_edit_word_list"),
                   },
-                  "\u270F\uFE0F Review Words",
+                  ts("word_sounds.review_words") || "\u270F\uFE0F Review Words",
                 ),
                 !isProbeMode &&
                 /*#__PURE__*/ React.createElement(
@@ -16675,7 +16686,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   /*#__PURE__*/ React.createElement(
                     "span",
                     { className: "hidden sm:inline" },
-                    "Help",
+                    ts("word_sounds.help") || "Help",
                   ),
                 ),
                 !isStudentLocked &&
@@ -16693,27 +16704,27 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     /*#__PURE__*/ React.createElement(
                     "option",
                     { value: "auto", className: "text-slate-800" },
-                    "\uD83E\uDD16 Auto",
+                    ts("word_sounds.difficulty_auto_emoji") || "\uD83E\uDD16 Auto",
                   ),
                     /*#__PURE__*/ React.createElement(
                     "option",
                     { value: "sequential", className: "text-slate-800" },
-                    "\uD83D\uDCDD Sequential",
+                    ts("word_sounds.sequential") || "\uD83D\uDCDD Sequential",
                   ),
                     /*#__PURE__*/ React.createElement(
                     "option",
                     { value: "easy", className: "text-slate-800" },
-                    "\uD83D\uDFE2 Easy",
+                    ts("word_sounds.difficulty_easy_emoji") || "\uD83D\uDFE2 Easy",
                   ),
                     /*#__PURE__*/ React.createElement(
                     "option",
                     { value: "medium", className: "text-slate-800" },
-                    "\uD83D\uDFE1 Medium",
+                    ts("word_sounds.difficulty_medium_emoji") || "\uD83D\uDFE1 Medium",
                   ),
                     /*#__PURE__*/ React.createElement(
                     "option",
                     { value: "hard", className: "text-slate-800" },
-                    "\uD83D\uDD34 Hard",
+                    ts("word_sounds.difficulty_hard_emoji") || "\uD83D\uDD34 Hard",
                   ),
                 ),
                 /*#__PURE__*/ React.createElement(
@@ -16830,7 +16841,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 React.createElement("span", { className: "text-lg" }, "🌱"),
                 React.createElement("div", { className: "flex-1" },
                   React.createElement("div", { className: "text-sm font-bold text-emerald-800" },
-                    "Word Garden phonics lesson ready!"),
+                    ts("word_sounds.garden_lesson_ready") || "Word Garden phonics lesson ready!"),
                   React.createElement("div", { className: "text-xs text-emerald-600" },
                     gardenPhonicsWords.length + " words from the student\u2019s vocabulary: " + gardenPhonicsWords.slice(0, 5).join(", ") + (gardenPhonicsWords.length > 5 ? "..." : ""))),
                 React.createElement("button", {
@@ -16846,7 +16857,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     if (addToast) addToast("🌱 Garden words loaded! Activities will use the student\u2019s vocabulary.", "success");
                   },
                   className: "px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-bold hover:bg-emerald-700 transition-colors whitespace-nowrap"
-                }, "📖 Use Garden Words"),
+                }, ts("word_sounds.use_garden_words") || "📖 Use Garden Words"),
                 React.createElement("button", {
                   onClick: function () { setShowGardenBanner(false); },
                   className: "text-emerald-700 hover:text-emerald-600 text-lg",
@@ -16869,9 +16880,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 {
                   className:
                     "flex items-center gap-1 px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-bold border border-amber-200 whitespace-nowrap mr-1",
-                  title: "Home Practice Mode",
+                  title: ts("word_sounds.home_practice_mode") || "Home Practice Mode",
                 },
-                "\uD83C\uDFE0 Home Practice",
+                ts("word_sounds.home_practice") || "\uD83C\uDFE0 Home Practice",
               ),
               // Honesty chip: in a non-English session some activities are
               // hidden because their machinery is English-specific (letter
@@ -16929,7 +16940,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     : "Turn on AAC Symbol Overlay (generates images for answer choices)",
                 },
                 /*#__PURE__*/ React.createElement("span", null, "\uD83D\uDDBC\uFE0F"),
-                /*#__PURE__*/ React.createElement("span", null, "AAC"),
+                /*#__PURE__*/ React.createElement("span", null, ts("word_sounds.aac_abbrev") || "AAC"),
               ),
             ),
           ),
@@ -16946,15 +16957,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 /*#__PURE__*/ React.createElement(
                 "span",
                 { className: "bg-white/20 px-2 py-0.5 rounded-full text-xs" },
-                "\uD83D\uDCCA PROBE MODE",
+                ts("word_sounds.probe_mode_badge") || "\uD83D\uDCCA PROBE MODE",
               ),
                 /*#__PURE__*/ React.createElement(
                 "span",
                 null,
-                "Word ",
-                wordSoundsScore.total + 1,
-                " of ",
-                wordSoundsSessionGoal,
+                ts("word_sounds.word_n_of_m", { n: wordSoundsScore.total + 1, m: wordSoundsSessionGoal }) ||
+                  ("Word " + (wordSoundsScore.total + 1) + " of " + wordSoundsSessionGoal),
               ),
             ),
               /*#__PURE__*/ React.createElement(
@@ -16963,10 +16972,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 /*#__PURE__*/ React.createElement(
                 "span",
                 null,
-                wordSoundsScore.correct,
-                " correct / ",
-                wordSoundsScore.total,
-                " total",
+                ts("word_sounds.correct_of_total", { correct: wordSoundsScore.correct, total: wordSoundsScore.total }) ||
+                  (wordSoundsScore.correct + " correct / " + wordSoundsScore.total + " total"),
               ),
               probeStartTimeRef.current &&
                   /*#__PURE__*/ React.createElement(
@@ -17022,7 +17029,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     "px-3 py-1.5 bg-white border border-amber-200 hover:bg-amber-100 text-amber-800 text-xs font-bold rounded-lg transition-colors flex items-center gap-1 shadow-sm",
                 },
                   /*#__PURE__*/ React.createElement(RefreshCw, { size: 12 }),
-                "Retry",
+                ts("word_sounds.retry") || "Retry",
               ),
             ),
             /*#__PURE__*/ React.createElement(
