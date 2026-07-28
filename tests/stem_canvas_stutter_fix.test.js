@@ -34,15 +34,101 @@ const ECO_PATHS = [
 ];
 const read = (p) => readFileSync(p, 'utf8');
 
+// Extract sizeDnaCanvas and RUN it, rather than matching its source text.
+//
+// The original version of this test pinned exact spellings —
+// "ctx2d.scale(2, 2)" and "cv.width !== _tw". Commit 54027cf33 rewrote the DNA
+// renderer and reimplemented the same guard BETTER: real devicePixelRatio clamped
+// to 1-3 instead of a hard-coded x2, and setTransform (idempotent) instead of
+// scale (which compounds if called twice). The behaviour was never lost, but the
+// test went red and stayed red, reporting a regression that had not happened.
+//
+// So: pin the INVARIANT. Assigning canvas.width CLEARS the canvas, which is the
+// stutter; the fix is that it only happens when the size actually changed.
+function loadSizer(path) {
+  const src = readFileSync(path, 'utf8');
+  const start = src.indexOf('function sizeDnaCanvas(cv, ctx2d) {');
+  const end = src.indexOf('function createDnaCanvasLoop(', start);
+  if (start < 0 || end < 0) throw new Error(`sizeDnaCanvas not found in ${path}`);
+  // eslint-disable-next-line no-new-func
+  return new Function(`${src.slice(start, end)}\nreturn sizeDnaCanvas;`)();
+}
+
+// A canvas whose width/height assignments are counted, the way the DOM behaves:
+// writing either one resets the bitmap.
+function fakeCanvas(cssW, cssH) {
+  const state = { _w: 0, _h: 0, writes: 0 };
+  return {
+    offsetWidth: cssW,
+    offsetHeight: cssH,
+    getBoundingClientRect: () => ({ width: cssW, height: cssH }),
+    get width() { return state._w; },
+    set width(v) { state.writes += 1; state._w = v; },
+    get height() { return state._h; },
+    set height(v) { state._h = v; },
+    _writes: () => state.writes,
+  };
+}
+const fakeCtx = () => {
+  const calls = { setTransform: 0, scale: 0 };
+  return { setTransform: () => { calls.setTransform += 1; }, scale: () => { calls.scale += 1; }, _calls: calls };
+};
+
 describe('DNA Lab canvas anti-stutter', () => {
   DNA_PATHS.forEach((p) => {
-    it(`resizes only on change + persists the tick — ${p}`, () => {
+    describe(p, () => {
+      it('sizes the canvas on first call', () => {
+        const sizer = loadSizer(p);
+        const cv = fakeCanvas(300, 150);
+        const out = sizer(cv, fakeCtx());
+        expect(cv._writes()).toBe(1);
+        expect(cv.width).toBeGreaterThan(0);
+        // Returns CSS dimensions, not device pixels — callers lay out in CSS units.
+        expect(out).toEqual({ width: 300, height: 150 });
+      });
+
+      it('does NOT rewrite width when the size has not changed — this IS the fix', () => {
+        // React re-fires the inline ref on every render. Rewriting canvas.width
+        // each time blanks the canvas mid-animation, which is the stutter.
+        const sizer = loadSizer(p);
+        const cv = fakeCanvas(300, 150);
+        const ctx = fakeCtx();
+        sizer(cv, ctx);
+        const afterFirst = cv._writes();
+        for (let i = 0; i < 5; i += 1) sizer(cv, ctx);
+        expect(cv._writes(), 'canvas was re-sized on an unchanged ref fire').toBe(afterFirst);
+      });
+
+      it('does resize when the element actually changes size', () => {
+        const sizer = loadSizer(p);
+        const cv = fakeCanvas(300, 150);
+        const ctx = fakeCtx();
+        sizer(cv, ctx);
+        cv.offsetWidth = 640;
+        cv.getBoundingClientRect = () => ({ width: 640, height: 150 });
+        sizer(cv, ctx);
+        expect(cv._writes()).toBe(2);
+      });
+
+      it('re-applies the transform on every call, so scale never compounds', () => {
+        // setTransform is absolute; scale is relative. Applying scale repeatedly
+        // without a resize would shrink the drawing every frame.
+        const sizer = loadSizer(p);
+        const cv = fakeCanvas(300, 150);
+        const ctx = fakeCtx();
+        sizer(cv, ctx);
+        sizer(cv, ctx);
+        sizer(cv, ctx);
+        expect(ctx._calls.setTransform).toBe(3);
+        expect(ctx._calls.scale, 'relative scale() applied on an unchanged canvas').toBe(0);
+      });
+    });
+
+    it(`persists the animation tick on the node — ${p}`, () => {
+      // Cheap to keep as a text pin: it is a property name on the DOM node, so
+      // there is no behaviour to drive without the whole render loop.
       const src = read(p);
-      // Guarded resize: no unconditional cv.width = ... on every ref fire.
-      expect(src).toContain('if (cv.width !== _tw || cv.height !== _th) { cv.width = _tw; cv.height = _th; ctx2d.scale(2, 2); }');
-      expect(src).not.toContain('var W = cv.width = cv.offsetWidth * 2;');
-      // Tick persisted on the node so the wobble is continuous across re-fires.
-      expect(src).toContain('var _tick = cv._dnaTick || 0;');
+      expect(src).toMatch(/cv\._dnaTick\s*\|\|\s*0/);
       expect(src).toContain('cv._dnaTick = _tick;');
     });
   });
