@@ -1176,9 +1176,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
                   ? h('div', { className: 'relative' },
                       h('img', { src: characterPortrait, alt: (characterName || 'Character') + ' portrait', className: 'w-24 h-24 rounded-xl object-cover border-2 border-violet-300 shadow-lg' }),
                       callGeminiImageEdit && h('button', {
-                        onClick: function() {
-                          var edit = prompt('Describe how to change your portrait:');
-                          if (edit && edit.trim()) refineCharacterPortrait(edit);
+                        type: 'button',
+                        onClick: async function() {
+                          // AlloFlowUX.prompt has a native fallback during early startup.
+                          // Require the real accessible module so this tool never invokes it.
+                          var dialogModule = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.PromptDialog && window.AlloModules.PromptDialog.PromptDialog;
+                          var promptApi = typeof window !== 'undefined' && window.AlloFlowUX && window.AlloFlowUX.prompt;
+                          if (typeof dialogModule !== 'function' || typeof promptApi !== 'function') {
+                            var unavailable = __alloT('stem.worldbuilder.portrait_editor_unavailable', 'Portrait editing is unavailable, so your portrait was not changed.');
+                            if (addToast) addToast(unavailable, 'warning');
+                            if (announceToSR) announceToSR(unavailable);
+                            return;
+                          }
+                          var edit = null;
+                          try {
+                            edit = await promptApi(
+                              __alloT('stem.worldbuilder.describe_portrait_change', 'Describe how to change your portrait.'),
+                              '',
+                              {
+                                title: __alloT('stem.worldbuilder.refine_portrait_title', 'Refine character portrait'),
+                                placeholder: __alloT('stem.worldbuilder.refine_portrait_placeholder', 'For example: add round glasses and a blue scarf'),
+                                confirmText: __alloT('stem.worldbuilder.refine_portrait_confirm', 'Refine portrait'),
+                                cancelText: __alloT('common.cancel', 'Cancel'),
+                                multiline: true,
+                                maxLength: 500
+                              }
+                            );
+                          } catch (err) {
+                            var failed = __alloT('stem.worldbuilder.portrait_editor_failed', 'The portrait editor could not open, so your portrait was not changed.');
+                            if (addToast) addToast(failed, 'warning');
+                            if (announceToSR) announceToSR(failed);
+                            return;
+                          }
+                          if (edit === null) {
+                            if (announceToSR) announceToSR(__alloT('stem.worldbuilder.portrait_unchanged', 'Portrait unchanged.'));
+                            return;
+                          }
+                          edit = String(edit).trim();
+                          if (!edit) {
+                            if (announceToSR) announceToSR(__alloT('stem.worldbuilder.no_portrait_changes_requested', 'No portrait changes requested.'));
+                            return;
+                          }
+                          refineCharacterPortrait(edit);
                         },
                         className: 'absolute -bottom-1 -right-1 w-6 h-6 bg-violet-600 text-white rounded-full text-[11px] font-bold hover:bg-violet-700 transition-colors shadow-md',
                         'aria-label': __alloT('stem.worldbuilder.refine_character_portrait', 'Refine character portrait')
