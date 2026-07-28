@@ -37,8 +37,15 @@ describe('Word Sounds reduced motion', () => {
 
   it('covers overlay roots and the minimized widget, including descendant transitions', async () => {
     const style = document.getElementById('ws-a11y-css');
-    expect(style.textContent).toContain('.fixed.inset-0, .fixed.inset-0::before');
+    expect(style.textContent).toContain('.word-sounds-root, .word-sounds-root::before');
     expect(style.textContent).toContain('.word-sounds-minimized *::after');
+
+    // The injected stylesheet must stay SCOPED to this module's own overlays.
+    // It is added at module load and never removed, so anchoring any rule to the
+    // shared `.fixed.inset-0` Tailwind class (used by the host and 20+ other CDN
+    // modules) silently restyles every modal in the app — including forcing
+    // !important text colours onto other tools' dark overlays.
+    expect(style.textContent).not.toContain('.fixed.inset-0');
 
     const host = document.createElement('div');
     document.body.appendChild(host);

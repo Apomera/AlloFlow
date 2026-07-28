@@ -108,8 +108,15 @@ function installAmbientGlobals() {
     window[k] = stubs[k];
     globalThis[k] = stubs[k];
   }
-  window.ts = emptyTranslationT;
-  globalThis.ts = emptyTranslationT;
+  // NO `window.ts` stub. Nothing in the real app ever assigns window.ts, so
+  // stubbing it here made the harness MORE FORGIVING than production: the module
+  // used to bind a module-scope `ts` from it, and under the stub that returned ""
+  // so the inline English fallbacks fired in snapshots — while in production the
+  // same code fell through to `(key) => key` and rendered literal
+  // "word_sounds.anchor_badge" text at the child. The module-scope binding is
+  // gone (module-scope components take `ts` as a prop); leaving this unstubbed
+  // keeps the harness honest and turns any reintroduced free `ts` into a loud
+  // ReferenceError here instead of silent raw-key output in front of a student.
   if (typeof globalThis.warnLog !== 'function') globalThis.warnLog = noop;
   if (typeof globalThis.debugLog !== 'function') globalThis.debugLog = noop;
 }
@@ -141,7 +148,6 @@ export function setupWordSounds() {
 }
 
 const passthroughT = (key, fallback) => fallback || key;
-const emptyTranslationT = () => '';
 const FALLBACK_STRING_KEYS = new Set(['word_sounds.sr_welcome', 'word_sounds.sr_number', 'word_sounds.sr_tap_count_syllables', 'word_sounds.sr_tracing_canvas']);
 const wordSoundsStringStub = (_t, key) => {
   // Keep the golden harness mostly key-stable, but exercise explicit English

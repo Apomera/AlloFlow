@@ -32,15 +32,25 @@
     } catch (e) { /* announcement is best-effort */ }
   }
 
-  // WCAG 2.1 AA: Accessibility CSS injection
+  // WCAG 2.1 AA: Accessibility CSS injection.
+  //
+  // SCOPING: every selector below is anchored to `.word-sounds-root` (the class
+  // this module puts on its own overlays) or `.word-sounds-minimized`. They used
+  // to be anchored to `.fixed.inset-0`, which is the shared Tailwind fullscreen-
+  // overlay class — it appears 30x in AlloFlowANTI.txt and across 20+ other CDN
+  // modules. Since this stylesheet is injected at module LOAD (not mount) and is
+  // never removed, those rules were silently restyling every modal in the app,
+  // forcing !important colours onto other tools' overlays (a darker grey is a
+  // contrast REGRESSION on a dark backdrop) and imposing this module's
+  // reduced-motion policy app-wide. Keep new selectors scoped the same way.
   if (!document.getElementById('ws-a11y-css')) {
     var wsA11yStyle = document.createElement('style');
     wsA11yStyle.id = 'ws-a11y-css';
     wsA11yStyle.textContent = [
-      '@media (prefers-reduced-motion: reduce) { .fixed.inset-0, .fixed.inset-0::before, .fixed.inset-0::after, .fixed.inset-0 *, .fixed.inset-0 *::before, .fixed.inset-0 *::after, .word-sounds-minimized, .word-sounds-minimized::before, .word-sounds-minimized::after, .word-sounds-minimized *, .word-sounds-minimized *::before, .word-sounds-minimized *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }',
+      '@media (prefers-reduced-motion: reduce) { .word-sounds-root, .word-sounds-root::before, .word-sounds-root::after, .word-sounds-root *, .word-sounds-root *::before, .word-sounds-root *::after, .word-sounds-minimized, .word-sounds-minimized::before, .word-sounds-minimized::after, .word-sounds-minimized *, .word-sounds-minimized *::before, .word-sounds-minimized *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }',
       // WCAG 1.4.3: Force AA-passing slate-600 (#475569 ≈ 7.42:1 on white) and gray-500 (#6b7280 ≈ 4.83:1) on Tailwind classes that otherwise fail.
-      '.fixed.inset-0 .text-gray-400 { color: #6b7280 !important; }',
-      '.fixed.inset-0 .text-slate-600 { color: #475569 !important; }',
+      '.word-sounds-root .text-gray-400 { color: #6b7280 !important; }',
+      '.word-sounds-root .text-slate-600 { color: #475569 !important; }',
       '/* Word Sounds celebration animations */',
       '@keyframes ws-confetti-fall { 0% { transform: translateY(-10px) rotate(0deg); opacity: 1; } 100% { transform: translateY(120px) rotate(720deg); opacity: 0; } }',
       '@keyframes ws-star-burst { 0% { transform: scale(0) rotate(0deg); opacity: 1; } 50% { transform: scale(1.5) rotate(180deg); opacity: 1; } 100% { transform: scale(0) rotate(360deg); opacity: 0; } }',
@@ -63,7 +73,7 @@
   // ── Celebration Effects — confetti, stars, XP float for K-2 engagement ──
   function wsSpawnConfetti(count) {
     try {
-      var container = document.querySelector('.fixed.inset-0') || document.body;
+      var container = document.querySelector('.word-sounds-root') || document.body;
       var colors = ['#ef4444', '#f59e0b', '#22c55e', '#3b82f6', '#8b5cf6', '#ec4899', '#14b8a6'];
       for (var i = 0; i < (count || 12); i++) {
         (function(delay) {
@@ -85,7 +95,7 @@
   }
   function wsSpawnStars(count) {
     try {
-      var container = document.querySelector('.fixed.inset-0') || document.body;
+      var container = document.querySelector('.word-sounds-root') || document.body;
       var emojis = ['\u2B50', '\uD83C\uDF1F', '\u2728', '\uD83D\uDCAB'];
       for (var i = 0; i < (count || 5); i++) {
         (function(delay) {
@@ -104,7 +114,7 @@
   }
   function wsSpawnXPFloat(text, x, y) {
     try {
-      var container = document.querySelector('.fixed.inset-0') || document.body;
+      var container = document.querySelector('.word-sounds-root') || document.body;
       var el = document.createElement('div');
       el.className = 'ws-float-xp';
       el.textContent = text;
@@ -286,6 +296,13 @@
     // Returns a React.createElement tree using the existing inline
     // compiled-JSX style of this module.
     function AnchorStrip(props) {
+      // ts arrives as a PROP. This component sits at module scope, so it used to
+      // bind a module-level `ts` that was `(key) => key` whenever window.ts was
+      // absent — which is always, since nothing in the app ever assigns it. Every
+      // `ts(k) || "English"` fallback therefore returned the truthy raw key and
+      // the strip rendered literal "word_sounds.anchor_badge" text to children.
+      // Returning "" on a missing prop keeps the inline English fallbacks working.
+      const ts = typeof props.ts === "function" ? props.ts : () => "";
       const target = props.target;
       const mode = props.mode || "full";
       if (mode === "hidden" || !target) return null;
@@ -739,7 +756,15 @@
         : () => {
           debugLog("loadProbeBanks stub (CDN)");
         };
-    const ts = typeof window.ts === "function" ? window.ts : (key) => key;
+    // NOTE: there is deliberately NO module-scope `ts` here any more. The old one
+    // (`typeof window.ts === "function" ? window.ts : (key) => key`) resolved to
+    // the key-echo branch in production — window.ts is never assigned anywhere in
+    // the app — so anything at module scope that used it silently rendered raw
+    // i18n keys. The real resolver is the component-scope `ts` useCallback (it
+    // routes through getWordSoundsString and returns "" on a key echo); module-
+    // scope components receive it as a prop. Removing the binding means a missed
+    // call site is now a hard ReferenceError caught by the render-refs gate,
+    // rather than silent raw-key output.
 
     // === CDN crash fixes: constants defined in parent monolith ===
     const SOUND_MATCH_POOL = [
@@ -1283,6 +1308,1704 @@
       }
       return a;
     };
+    // ── Activity sub-views ──────────────────────────────────────────────
+    // These live at MODULE scope on purpose. Defined inside WordSoundsModal
+    // they were re-created on every parent render, so React saw a new
+    // component type each time and remounted the subtree — wiping any
+    // in-progress child state (a typed spelling, filled sound-mapping slots,
+    // a half-traced letter) on something as ordinary as tapping a tile to
+    // hear it. Hoisted, their identity is stable and React.memo is real.
+    // Everything they used to close over from the component (t, ts,
+    // isMountedRef, playSound, speakInstructionWithPhonemes, audioInstances,
+    // feedbackAudioRef) is passed explicitly as props instead.
+    // ───────────────────────────────────────────────────────────────────
+    const RhymeView = React.memo(
+      ({
+        data,
+        showLetterHints,
+        onPlayAudio,
+        onCheckAnswer,
+        isEditing,
+        onUpdateOption,
+        highlightedIndex,
+        isAudioBusy,
+        optionImages,
+        t,
+        ts,
+      }) => {
+        const [playingIndex, setPlayingIndex] = React.useState(null);
+        const activeIndex = playingIndex ?? highlightedIndex;
+        return /*#__PURE__*/ React.createElement(
+          "div",
+          {
+            className:
+              "flex flex-col items-center gap-8 animate-in slide-in-from-right duration-500",
+          },
+
+          /*#__PURE__*/ React.createElement(
+            "div",
+            { className: "grid grid-cols-2 gap-4 w-full max-w-lg" },
+            (data.options || []).map((opt, i) =>
+              isEditing
+                ? /*#__PURE__*/ React.createElement(
+                  "div",
+                  {
+                    key: i,
+                    className: `p-4 rounded-2xl bg-white border-2 shadow-md flex items-center gap-2 relative ${opt?.toLowerCase() === data.rhymeWord?.toLowerCase() ? "border-green-400 ring-2 ring-green-200" : "border-amber-200"}`,
+                  },
+                    /*#__PURE__*/ React.createElement(
+                    "button",
+                    {
+                      "aria-label":
+                        opt?.toLowerCase() === data.rhymeWord?.toLowerCase()
+                          ? "Correct answer"
+                          : "Set as correct",
+                      onClick: (e) => {
+                        e.stopPropagation();
+                        onUpdateOption &&
+                          onUpdateOption(i, opt, "set_correct");
+                      },
+                      className: `p-1 rounded-full transition-colors flex-shrink-0 ${opt?.toLowerCase() === data.rhymeWord?.toLowerCase() ? "text-green-500" : "text-slate-600 hover:text-green-400"}`,
+                      title:
+                        opt?.toLowerCase() === data.rhymeWord?.toLowerCase()
+                          ? "✓ Correct answer"
+                          : "Click to set as correct answer",
+                    },
+                    opt?.toLowerCase() === data.rhymeWord?.toLowerCase()
+                      ? /*#__PURE__*/ React.createElement(Check, {
+                        size: 20,
+                      })
+                      : /*#__PURE__*/ React.createElement(Star, {
+                        size: 18,
+                      }),
+                  ),
+                    /*#__PURE__*/ React.createElement("input", {
+                    "aria-label": t("common.enter_opt"),
+                    type: "text",
+                    value: opt,
+                    onChange: (e) =>
+                      onUpdateOption && onUpdateOption(i, e.target.value),
+                    className:
+                      "w-full px-3 py-2 text-lg font-bold text-slate-700 bg-slate-50 rounded-lg outline-none focus:ring-2 focus:ring-amber-400",
+                    onKeyDown: (e) => e.stopPropagation(),
+                  }),
+                    /*#__PURE__*/ React.createElement(
+                    "button",
+                    {
+                      "aria-label": t("common.volume"),
+                      onClick: (e) => {
+                        e.stopPropagation();
+                        onPlayAudio(opt, true);
+                      },
+                      className:
+                        "absolute right-2 top-2 p-2 text-slate-600 hover:text-indigo-600",
+                    },
+                      /*#__PURE__*/ React.createElement(Volume2, {
+                      size: 16,
+                    }),
+                  ),
+                )
+                // WCAG: the tile was a role="button" div with the listen
+                // <button> nested inside — nested interactive controls
+                // (axe: nested-interactive). Same fix as the blending grid:
+                // a plain wrapper, the tile is a real answer <button>, and
+                // the listen control is an absolutely-positioned SIBLING.
+                : /*#__PURE__*/ React.createElement(
+                  "div",
+                  { key: i, className: "relative group" },
+                  /*#__PURE__*/ React.createElement(
+                    "button",
+                    {
+                      type: "button",
+                      onClick: () => onCheckAnswer(opt),
+                      className: `w-full ${optionImages ? "p-4" : "p-6"} rounded-2xl transition-all text-left cursor-pointer outline-none focus:ring-2 focus:ring-orange-400 ${activeIndex === i ? "border-orange-500 bg-orange-200 ring-4 ring-orange-400 scale-[1.05] shadow-xl font-black z-10 relative" : "bg-white border-2 border-slate-100 hover:border-orange-400 hover:bg-orange-50"}`,
+                    },
+                    optionImages && optionImages[opt]
+                      ? /*#__PURE__*/ React.createElement(
+                          "div",
+                          { className: "flex flex-col items-center gap-2" },
+                          /*#__PURE__*/ React.createElement("img", {
+                            src: `data:image/png;base64,${optionImages[opt]}`,
+                            alt: opt,
+                            className: "w-20 h-20 object-contain rounded-xl",
+                          }),
+                          /*#__PURE__*/ React.createElement(
+                            "span",
+                            {
+                              className: "text-base font-bold text-slate-700 pr-8",
+                            },
+                            showLetterHints ? opt : `${ts("word_sounds.option_label") || "Option"} ${i + 1}`,
+                          ),
+                        )
+                      : /*#__PURE__*/ React.createElement(
+                          "span",
+                          {
+                            className: "text-xl font-bold text-slate-700 pr-10 block",
+                          },
+                          showLetterHints ? opt : `${ts("word_sounds.option_label") || "Option"} ${i + 1}`,
+                        ),
+                  ),
+                  /*#__PURE__*/ React.createElement(
+                    "button",
+                    {
+                      type: "button",
+                      "aria-label": t("common.volume"),
+                      onClick: (e) => {
+                        e.stopPropagation();
+                        onPlayAudio(opt, true);
+                      },
+                      className:
+                        "absolute bottom-3 right-3 w-9 h-9 rounded-full bg-orange-50 hover:bg-orange-200 text-slate-600 hover:text-orange-600 flex items-center justify-center transition-colors z-10 shadow-sm",
+                      title: ts("common.listen") || "Listen",
+                    },
+                    /*#__PURE__*/ React.createElement(Volume2, {
+                      size: 18,
+                    }),
+                  ),
+                ),
+            ),
+          ),
+        );
+      },
+    );
+
+    // ManipulationView — phoneme deletion / substitution activity.
+    // Shows the manipulation task instruction card + 4 option buttons.
+    const ManipulationView = React.memo(
+      ({
+        data,
+        showLetterHints,
+        onPlayAudio,
+        onCheckAnswer,
+        isEditing,
+        onUpdateOption,
+        highlightedIndex,
+        isAudioBusy,
+        optionImages,
+        isLoading,
+        t,
+        ts,
+        speakInstructionWithPhonemes,
+      }) => {
+        const [playingIndex, setPlayingIndex] = React.useState(null);
+        const activeIndex = playingIndex ?? highlightedIndex;
+        if (isLoading) {
+          return /*#__PURE__*/ React.createElement(
+            "div",
+            { className: "flex flex-col items-center gap-4 py-10" },
+            /*#__PURE__*/ React.createElement("div", {
+              className:
+                "w-12 h-12 rounded-full border-4 border-violet-300 border-t-violet-600 animate-spin motion-reduce:animate-none",
+            }),
+            /*#__PURE__*/ React.createElement(
+              "p",
+              { className: "text-slate-600 text-sm font-medium animate-pulse motion-reduce:animate-none" },
+              "Building your Sound Swap task\u2026",
+            ),
+          );
+        }
+        if (!data || !data.instruction) {
+          return /*#__PURE__*/ React.createElement(
+            "div",
+            { className: "text-center text-slate-600 text-sm py-6" },
+            "Loading task\u2026",
+          );
+        }
+        return /*#__PURE__*/ React.createElement(
+          "div",
+          {
+            className:
+              "flex flex-col items-center gap-6 animate-in slide-in-from-right duration-500",
+          },
+          // Task instruction card
+          /*#__PURE__*/ React.createElement(
+            "div",
+            {
+              className:
+                "w-full max-w-lg bg-gradient-to-br from-violet-50 to-indigo-50 border-2 border-violet-200 rounded-2xl p-5 text-center",
+            },
+            /*#__PURE__*/ React.createElement(
+              "span",
+              {
+                className:
+                  "inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold mb-3 " +
+                  (data.type === "deletion"
+                    ? "bg-rose-100 text-rose-700"
+                    : "bg-amber-100 text-amber-700"),
+              },
+              data.type === "deletion"
+                ? "\u2702\uFE0F Phoneme Deletion"
+                : "\uD83D\uDD04 Phoneme Substitution",
+            ),
+            /*#__PURE__*/ React.createElement(
+              "p",
+              { className: "text-slate-700 font-semibold text-lg leading-snug" },
+              data.instruction,
+            ),
+            /*#__PURE__*/ React.createElement(
+              "button",
+              {
+                "aria-label": ts("word_sounds.sr_listen_instruction") || "Listen to instruction",
+                // Segmented playback: /X/ tokens play from the phoneme bank.
+                onClick: () => speakInstructionWithPhonemes(data.instruction),
+                className:
+                  "mt-3 inline-flex items-center gap-2 px-4 py-2 bg-violet-100 hover:bg-violet-200 text-violet-700 rounded-full text-sm font-medium transition-colors",
+              },
+              /*#__PURE__*/ React.createElement(Volume2, { size: 16 }),
+              "Listen Again",
+            ),
+          ),
+          // Options grid
+          /*#__PURE__*/ React.createElement(
+            "div",
+            { className: "grid grid-cols-2 gap-4 w-full max-w-lg" },
+            (data.options || []).map((opt, i) =>
+              isEditing
+                ? /*#__PURE__*/ React.createElement(
+                    "div",
+                    {
+                      key: i,
+                      className: `p-4 rounded-2xl bg-white border-2 shadow-md flex items-center gap-2 relative ${opt?.toLowerCase() === data.answer?.toLowerCase() ? "border-green-400 ring-2 ring-green-200" : "border-amber-200"}`,
+                    },
+                    /*#__PURE__*/ React.createElement(
+                      "button",
+                      {
+                        "aria-label":
+                          opt?.toLowerCase() === data.answer?.toLowerCase()
+                            ? "Correct answer"
+                            : "Set as correct",
+                        onClick: (e) => {
+                          e.stopPropagation();
+                          onUpdateOption &&
+                            onUpdateOption(i, opt, "set_correct");
+                        },
+                        className: `p-1 rounded-full transition-colors flex-shrink-0 ${opt?.toLowerCase() === data.answer?.toLowerCase() ? "text-green-500" : "text-slate-600 hover:text-green-400"}`,
+                        title:
+                          opt?.toLowerCase() === data.answer?.toLowerCase()
+                            ? "\u2713 Correct answer"
+                            : "Click to set as correct",
+                      },
+                      opt?.toLowerCase() === data.answer?.toLowerCase()
+                        ? /*#__PURE__*/ React.createElement(Check, { size: 20 })
+                        : /*#__PURE__*/ React.createElement(Star, { size: 18 }),
+                    ),
+                    /*#__PURE__*/ React.createElement("input", {
+                      "aria-label": t("common.enter_opt"),
+                      type: "text",
+                      value: opt,
+                      onChange: (e) =>
+                        onUpdateOption && onUpdateOption(i, e.target.value),
+                      className:
+                        "w-full px-3 py-2 text-lg font-bold text-slate-700 bg-slate-50 rounded-lg outline-none focus:ring-2 focus:ring-amber-400",
+                      onKeyDown: (e) => e.stopPropagation(),
+                    }),
+                    /*#__PURE__*/ React.createElement(
+                      "button",
+                      {
+                        "aria-label": t("common.volume"),
+                        onClick: (e) => {
+                          e.stopPropagation();
+                          onPlayAudio(opt, true);
+                        },
+                        className:
+                          "absolute right-2 top-2 p-2 text-slate-600 hover:text-indigo-600",
+                      },
+                      /*#__PURE__*/ React.createElement(Volume2, { size: 16 }),
+                    ),
+                  )
+                // WCAG: same nested-interactive fix as RhymeView — plain
+                // wrapper, real answer <button>, sibling listen button.
+                : /*#__PURE__*/ React.createElement(
+                    "div",
+                    { key: i, className: "relative group" },
+                    /*#__PURE__*/ React.createElement(
+                      "button",
+                      {
+                        type: "button",
+                        onClick: () => onCheckAnswer(opt),
+                        className: `w-full ${optionImages ? "p-4" : "p-6"} rounded-2xl transition-all text-left cursor-pointer outline-none focus:ring-2 focus:ring-violet-400 ${activeIndex === i ? "border-violet-500 bg-violet-200 ring-4 ring-violet-400 scale-[1.05] shadow-xl font-black z-10 relative" : "bg-white border-2 border-slate-100 hover:border-violet-400 hover:bg-violet-50"}`,
+                      },
+                      optionImages && optionImages[opt]
+                        ? /*#__PURE__*/ React.createElement(
+                            "div",
+                            { className: "flex flex-col items-center gap-2" },
+                            /*#__PURE__*/ React.createElement("img", {
+                              src: `data:image/png;base64,${optionImages[opt]}`,
+                              alt: opt,
+                              className: "w-20 h-20 object-contain rounded-xl",
+                            }),
+                            /*#__PURE__*/ React.createElement(
+                              "span",
+                              {
+                                className: "text-base font-bold text-slate-700 pr-8",
+                              },
+                              showLetterHints ? opt : `${ts("word_sounds.option_label") || "Option"} ${i + 1}`,
+                            ),
+                          )
+                        : /*#__PURE__*/ React.createElement(
+                            "span",
+                            {
+                              className: "text-xl font-bold text-slate-700 pr-10 block",
+                            },
+                            showLetterHints ? opt : `${ts("word_sounds.option_label") || "Option"} ${i + 1}`,
+                          ),
+                    ),
+                    /*#__PURE__*/ React.createElement(
+                      "button",
+                      {
+                        type: "button",
+                        "aria-label": t("common.volume"),
+                        onClick: (e) => {
+                          e.stopPropagation();
+                          onPlayAudio(opt, true);
+                        },
+                        className:
+                          "absolute bottom-3 right-3 w-9 h-9 rounded-full bg-violet-50 hover:bg-violet-200 text-slate-600 hover:text-violet-600 flex items-center justify-center transition-colors z-10 shadow-sm",
+                        title: ts("common.listen") || "Listen",
+                      },
+                      /*#__PURE__*/ React.createElement(Volume2, {
+                        size: 18,
+                      }),
+                    ),
+                  ),
+            ),
+          ),
+        );
+      },
+    );
+
+    // SyllableBlendingView — hear syllables played separately, pick the whole word.
+    const SyllableBlendingView = React.memo(
+      ({
+        data,
+        isLoading,
+        highlightedSyllableIndex,
+        highlightedOptionIndex,
+        showLetterHints,
+        onPlayAudio,
+        isEditing,
+        onUpdateOption,
+        isAudioBusy,
+        optionImages,
+        onCheckAnswer,
+        t,
+        ts,
+      }) => {
+        const syllables = data?.syllables || [];
+        const blendingOptions = data?.blendingOptions || null;
+        if (isLoading && !syllables.length) {
+          return React.createElement(
+            "div",
+            { className: "flex flex-col items-center gap-4 py-8" },
+            React.createElement("div", {
+              className:
+                "w-10 h-10 border-4 border-sky-400 border-t-transparent rounded-full animate-spin motion-reduce:animate-none",
+            }),
+            React.createElement(
+              "p",
+              { className: "text-slate-600 text-sm" },
+              "Building syllable activity\u2026",
+            ),
+          );
+        }
+        return React.createElement(
+          "div",
+          { className: "flex flex-col gap-5" },
+          React.createElement(
+            "div",
+            {
+              className:
+                "bg-sky-50 border border-sky-200 rounded-2xl p-4 flex flex-col gap-3",
+            },
+            React.createElement(
+              "p",
+              {
+                className:
+                  "text-xs font-semibold text-sky-600 uppercase tracking-wide text-center",
+              },
+              "Listen to the syllables",
+            ),
+            React.createElement(
+              "div",
+              { className: "flex flex-wrap justify-center gap-2" },
+              ...syllables.map((syl, i) =>
+                React.createElement(
+                  "div",
+                  {
+                    key: i,
+                    className: `px-4 py-2 rounded-xl text-xl font-bold transition-all duration-200 ${
+                        highlightedSyllableIndex === i
+                          ? "bg-sky-500 text-white scale-110 shadow-lg"
+                          : "bg-white border-2 border-sky-200 text-sky-700"
+                      }`,
+                  },
+                  syl,
+                  i < syllables.length - 1
+                    ? React.createElement(
+                        "span",
+                        { className: "text-sky-700 ml-2" },
+                        "\u00b7",
+                      )
+                    : null,
+                ),
+              ),
+            ),
+            React.createElement(
+              "button",
+              {
+                onClick: () =>
+                  syllables.forEach((syl, i) =>
+                    setTimeout(() => onPlayAudio?.(syl), i * 650),
+                  ),
+                disabled: isAudioBusy,
+                className:
+                  "mx-auto flex items-center gap-2 px-4 py-2 bg-sky-100 hover:bg-sky-200 text-sky-700 rounded-full text-sm font-semibold transition-colors disabled:opacity-50",
+              },
+              "\u25b6 Play Syllables",
+            ),
+          ),
+          blendingOptions && blendingOptions.length > 0
+            ? React.createElement(
+                "div",
+                { className: "grid grid-cols-2 gap-3" },
+                ...blendingOptions.map((opt, i) => {
+                  const imgSrc = optionImages?.[opt];
+                  return isEditing
+                    ? React.createElement("input", {
+                        key: i,
+                        defaultValue: opt,
+                        "aria-label": t("common.enter_opt") || "Edit option",
+                        className:
+                          "border-2 border-sky-200 rounded-xl px-3 py-2 text-center font-semibold",
+                        onBlur: (e) => onUpdateOption?.(i, e.target.value),
+                      })
+                    : React.createElement(
+                        "button",
+                        {
+                          key: i,
+                          onClick: () => onCheckAnswer?.(opt),
+                          disabled: isAudioBusy,
+                          className: `flex flex-col items-center gap-1 p-3 rounded-2xl border-2 font-bold text-lg transition-all bg-white hover:bg-sky-50 border-sky-200 hover:border-sky-400 hover:scale-105 active:scale-95 shadow-sm${
+                              highlightedOptionIndex === i
+                                ? " ring-4 ring-sky-400 scale-105 bg-sky-50"
+                                : ""
+                            }`,
+                        },
+                        imgSrc
+                          ? React.createElement("img", {
+                              src: imgSrc,
+                              alt: opt,
+                              className:
+                                "w-20 h-20 object-contain rounded-lg",
+                            })
+                          : null,
+                        showLetterHints
+                          ? React.createElement(
+                              "span",
+                              { className: "flex items-center gap-1" },
+                              opt,
+                              React.createElement(
+                                "button",
+                                {
+                                  onClick: (e) => {
+                                    e.stopPropagation();
+                                    onPlayAudio?.(opt);
+                                  },
+                                  className:
+                                    "text-sky-700 hover:text-sky-600 text-sm ml-1",
+                                  "aria-label": (ts("word_sounds.sr_hear") || "Hear ") + opt,
+                                },
+                                "\ud83d\udd0a",
+                              ),
+                            )
+                          : React.createElement(
+                              "span",
+                              { className: "text-sky-700 text-2xl" },
+                              "\ud83d\udd0a",
+                            ),
+                      );
+                }),
+              )
+            : React.createElement(
+                "p",
+                { className: "text-center text-slate-600 text-sm py-4" },
+                "Speak your answer or tap the mic below",
+              ),
+        );
+      },
+    );
+
+    // SyllableCountingView — tap once per syllable, then submit the count.
+    const SyllableCountingView = React.memo(
+      ({
+        data,
+        isLoading,
+        tapCount,
+        onTap,
+        onReset,
+        onCheckAnswer,
+        onPlayAudio,
+        isAudioBusy,
+        word,
+        ts,
+      }) => {
+        if (isLoading && !data) {
+          return React.createElement(
+            "div",
+            { className: "flex flex-col items-center gap-4 py-8" },
+            React.createElement("div", {
+              className:
+                "w-10 h-10 border-4 border-amber-400 border-t-transparent rounded-full animate-spin motion-reduce:animate-none",
+            }),
+            React.createElement(
+              "p",
+              { className: "text-slate-600 text-sm" },
+              "Getting ready\u2026",
+            ),
+          );
+        }
+        return React.createElement(
+          "div",
+          { className: "flex flex-col items-center gap-5" },
+          React.createElement(
+            "div",
+            {
+              className:
+                "bg-amber-50 border border-amber-200 rounded-2xl p-4 w-full text-center",
+            },
+            React.createElement(
+              "p",
+              {
+                className:
+                  "text-xs font-semibold text-amber-600 uppercase tracking-wide mb-2",
+              },
+              "Tap once for each syllable you hear",
+            ),
+            React.createElement(
+              "button",
+              {
+                onClick: () => onPlayAudio?.(word),
+                disabled: isAudioBusy,
+                className:
+                  "flex items-center gap-2 mx-auto px-4 py-2 bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-full font-semibold text-sm transition-colors disabled:opacity-50",
+              },
+              "\ud83d\udd0a Hear the word again",
+            ),
+          ),
+          React.createElement(
+            "div",
+            {
+              className:
+                "text-6xl font-black text-amber-800 w-24 h-24 rounded-full bg-amber-50 border-4 border-amber-200 flex items-center justify-center select-none",
+            },
+            tapCount > 0 ? String(tapCount) : "?",
+          ),
+          React.createElement(
+            "button",
+            {
+              onClick: onTap,
+              className:
+                "w-32 h-32 rounded-full bg-amber-700 hover:bg-amber-700 active:scale-90 text-white text-5xl shadow-lg transition-all select-none",
+              "aria-label": ts("word_sounds.sr_tap_count_syllables") || "Tap to count syllables",
+            },
+            "\ud83d\udc4f",
+          ),
+          React.createElement(
+            "button",
+            {
+              onClick: onReset,
+              className:
+                "text-xs text-slate-600 hover:text-slate-600 underline",
+            },
+            "Reset",
+          ),
+          tapCount > 0
+            ? React.createElement(
+                "div",
+                { className: "flex flex-col items-center gap-2 w-full" },
+                React.createElement(
+                  "p",
+                  { className: "text-sm text-slate-600" },
+                  `You tapped ${tapCount} ${tapCount === 1 ? "time" : "times"}. Submit?`,
+                ),
+                React.createElement(
+                  "button",
+                  {
+                    onClick: () => onCheckAnswer?.(tapCount),
+                    className:
+                      "px-8 py-3 bg-amber-700 hover:bg-amber-700 text-white rounded-xl font-bold shadow transition-all hover:scale-105",
+                  },
+                  "Submit \u2713",
+                ),
+              )
+            : null,
+        );
+      },
+    );
+
+    const OrthographyView = React.memo(
+      ({ data, onPlayAudio, onCheckAnswer, isEditing, onUpdateOption, letterBank, lengthHint, t, ts, isMountedRef }) => {
+        const [userSpelling, setUserSpelling] = React.useState("");
+        const [feedback, setFeedback] = React.useState(null);
+        const [draggedLetter, setDraggedLetter] = React.useState(null);
+        // Easy difficulty passes a scaffolded bank (word letters + a few
+        // distractors); otherwise the full alphabet.
+        const alphabet = Array.isArray(letterBank) && letterBank.length > 1
+          ? letterBank
+          : "abcdefghijklmnopqrstuvwxyz".split("");
+        React.useEffect(() => {
+          setUserSpelling("");
+          setFeedback(null);
+        }, [data.correct, data.word]);
+        const handleChipClick = (letter) => {
+          const lowerL = letter.toLowerCase();
+          if (
+            typeof LETTER_NAME_AUDIO !== "undefined" &&
+            LETTER_NAME_AUDIO[lowerL]
+          ) {
+            onPlayAudio(LETTER_NAME_AUDIO[lowerL]);
+          } else {
+            onPlayAudio(letter);
+          }
+        };
+        const handleDragStart = (e, letter) => {
+          setDraggedLetter(letter);
+          e.dataTransfer.effectAllowed = "copy";
+          e.dataTransfer.setData("text/plain", letter);
+        };
+        const handleDragOver = (e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = "copy";
+        };
+        const handleDrop = (e) => {
+          e.preventDefault();
+          const letter =
+            draggedLetter || e.dataTransfer.getData("text/plain");
+          if (letter) {
+            setUserSpelling((prev) => prev + letter);
+            setDraggedLetter(null);
+          }
+        };
+        const handleSubmit = (e) => {
+          if (e) e.preventDefault();
+          if (!userSpelling.trim()) return;
+          const target = data.correct || data.word;
+          const isCorrect =
+            target &&
+            userSpelling.trim().toLowerCase() === target.toLowerCase();
+          setFeedback(isCorrect ? "correct" : "incorrect");
+          if (isCorrect) {
+            setTimeout(() => {
+              if (isMountedRef.current) onCheckAnswer(userSpelling);
+            }, 500);
+          } else {
+            onCheckAnswer(userSpelling);
+          }
+        };
+        if (isEditing) {
+          return /*#__PURE__*/ React.createElement(
+            "div",
+            {
+              className:
+                "flex flex-col items-center gap-6 animate-in fade-in",
+            },
+            /*#__PURE__*/ React.createElement(
+              "div",
+              {
+                className:
+                  "bg-amber-50 p-6 rounded-2xl border-2 border-amber-200",
+              },
+              /*#__PURE__*/ React.createElement(
+                "h3",
+                {
+                  className:
+                    "font-bold text-amber-800 mb-4 flex items-center gap-2",
+                },
+                /*#__PURE__*/ React.createElement(
+                  "span",
+                  { className: "bg-amber-200 p-1 rounded", "aria-hidden": "true" },
+                  "\u270F\uFE0F",
+                ),
+                " Edit Spelling Word",
+              ),
+              /*#__PURE__*/ React.createElement(
+                "div",
+                { className: "flex items-center gap-2" },
+                /*#__PURE__*/ React.createElement("input", {
+                  "aria-label": t("common.edit_spelling_word"),
+                  type: "text",
+                  value: data.word,
+                  onChange: (e) =>
+                    onUpdateOption && onUpdateOption(0, e.target.value),
+                  className:
+                    "w-48 px-4 py-3 text-xl font-bold text-slate-700 bg-white rounded-xl border border-amber-600 focus:ring-4 focus:ring-amber-200 outline-none shadow-sm",
+                }),
+                /*#__PURE__*/ React.createElement(
+                  "button",
+                  {
+                    "aria-label": t("common.volume"),
+                    onClick: () => onPlayAudio(data.word),
+                    className:
+                      "p-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors shadow-sm",
+                  },
+                  /*#__PURE__*/ React.createElement(Volume2, { size: 24 }),
+                ),
+              ),
+            ),
+          );
+        }
+        return /*#__PURE__*/ React.createElement(
+          "div",
+          {
+            className:
+              "flex flex-col items-center gap-6 animate-in fade-in duration-500 w-full max-w-4xl mx-auto",
+          },
+          /*#__PURE__*/ React.createElement(
+            "div",
+            { className: "flex flex-col items-center gap-3 mb-2" },
+            /*#__PURE__*/ React.createElement(
+              "button",
+              {
+                "aria-label": t("common.volume"),
+                onClick: () => onPlayAudio(data.word),
+                className:
+                  "w-20 h-20 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 text-white flex items-center justify-center shadow-lg hover:scale-110 hover:shadow-indigo-500/30 transition-all active:scale-95 ring-4 ring-indigo-50",
+                title: ts("word_sounds.hear_word_again") || "Hear Word Again",
+              },
+              /*#__PURE__*/ React.createElement(Volume2, { size: 32 }),
+            ),
+          ),
+          /*#__PURE__*/ React.createElement(
+            "form",
+            {
+              onSubmit: handleSubmit,
+              className: "w-full max-w-lg relative group",
+            },
+            /*#__PURE__*/ React.createElement(
+              "div",
+              {
+                onDragOver: handleDragOver,
+                onDrop: handleDrop,
+                className: `relative rounded-2xl transition-all ${draggedLetter ? "scale-105 ring-4 ring-indigo-200 bg-indigo-50" : ""}`,
+              },
+              /*#__PURE__*/ React.createElement("input", {
+                "aria-label": t("common.drag_letters_here"),
+                type: "text",
+                value: userSpelling,
+                onChange: (e) => setUserSpelling(e.target.value),
+                // Easy difficulty: underscores show how many letters the
+                // word has (length scaffold).
+                placeholder: lengthHint
+                  ? Array.from({ length: lengthHint }, () => "_").join(" ")
+                  : t("common.placeholder_drag_letters_here"),
+                // lowercase display to match the letter tiles — K-2 learners
+                // match letter SHAPES, and an uppercase transform of their
+                // lowercase input broke that correspondence.
+                className: `w-full px-6 py-5 text-center text-4xl font-bold rounded-2xl border-4 outline-none focus:ring-2 focus:ring-indigo-400 transition-all shadow-sm placeholder:text-slate-600 tracking-widest lowercase
+                                ${feedback === "correct" ? "border-green-400 bg-green-50 text-green-700" : feedback === "incorrect" ? "border-red-600 bg-red-50 text-red-700 animate-shake" : "border-slate-200 bg-white text-slate-800 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"}
+                            `,
+                autoComplete: "off",
+              }),
+              userSpelling &&
+                /*#__PURE__*/ React.createElement(
+                "button",
+                {
+                  "aria-label": t("common.close"),
+                  type: "button",
+                  onClick: () => setUserSpelling(""),
+                  className:
+                    "absolute right-4 top-1/2 -translate-y-1/2 p-2 text-slate-600 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors",
+                },
+                  /*#__PURE__*/ React.createElement(X, { size: 24 }),
+              ),
+            ),
+          ),
+          /*#__PURE__*/ React.createElement(
+            "div",
+            {
+              className:
+                "bg-slate-50/50 p-6 rounded-3xl border border-slate-100 w-full",
+            },
+            /*#__PURE__*/ React.createElement(
+              "div",
+              { className: "flex flex-wrap justify-center gap-2" },
+              alphabet.map((letter) =>
+                /*#__PURE__*/ React.createElement(
+                "div",
+                {
+                  key: letter,
+                  draggable: true,
+                  role: "button",
+                  tabIndex: 0,
+                  "aria-label": letter.toUpperCase(),
+                  onDragStart: (e) => handleDragStart(e, letter),
+                  onClick: () => handleChipClick(letter),
+                  onKeyDown: (e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleChipClick(letter);
+                    }
+                  },
+                  className:
+                    "w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all flex items-center justify-center select-none cursor-grab active:cursor-grabbing",
+                },
+                letter,
+              ),
+              ),
+            ),
+            /*#__PURE__*/ React.createElement(
+              "p",
+              {
+                className:
+                  "text-center text-slate-600 text-sm mt-4 font-medium",
+              },
+              ts("word_sounds.drag_letters_hint") ||
+                "Drag letters to spell the word, or click to hear them!",
+            ),
+          ),
+          /*#__PURE__*/ React.createElement(
+            "button",
+            {
+              "aria-label": t("common.next"),
+              onClick: handleSubmit,
+              disabled: !userSpelling,
+              className: `px-10 py-4 rounded-full font-bold text-lg shadow-lg transition-all flex items-center gap-2 ${!userSpelling ? "bg-slate-100 text-slate-600 cursor-not-allowed" : "bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-indigo-500/25 hover:-translate-y-0.5 active:translate-y-0"}`,
+            },
+            ts("word_sounds.check_spelling") || "Check Spelling",
+            " ",
+            /*#__PURE__*/ React.createElement(ChevronRight, { size: 20 }),
+          ),
+        );
+      },
+    );
+
+    const SoundMappingView = React.memo(
+      ({ data, onPlayAudio, onCheckAnswer, isEditing, onUpdateOption, t, ts, isMountedRef, playSound }) => {
+        const [slots, setSlots] = React.useState(
+          new Array(data.phonemes?.length || 0).fill(null),
+        );
+        const [chips, setChips] = React.useState([]);
+        const lastWordRef = React.useRef(null);
+        React.useEffect(() => {
+          if (data.graphemes && data.word !== lastWordRef.current) {
+            lastWordRef.current = data.word;
+            const labeled = data.graphemes?.map((g, i) => ({
+              id: i,
+              text: typeof g === "string" ? g : String(g),
+              isPlaced: false,
+            }));
+            setChips(fisherYatesShuffle(labeled));
+            setSlots(new Array((data.graphemes || []).length).fill(null));
+          }
+        }, [data.word, data.graphemes ? data.graphemes.join(",") : ""]);
+        React.useEffect(() => {
+          if (data.word) {
+            const timer = setTimeout(() => {
+              debugLog("🔊 Auto-Playing Mapping:", data.word);
+              onPlayAudio(data.word, true);
+            }, 500);
+            return () => clearTimeout(timer);
+          }
+        }, [data.word]);
+        const handleChipClick = (chip) => {
+          if (isEditing) return;
+          const emptyIdx = slots.findIndex((s) => s === null);
+          if (emptyIdx !== -1) {
+            const newSlots = [...slots];
+            newSlots[emptyIdx] = chip;
+            setSlots(newSlots);
+            setChips((prev) =>
+              prev.map((c) =>
+                c.id === chip.id ? { ...c, isPlaced: true } : c,
+              ),
+            );
+            onPlayAudio(chip.text);
+            if (newSlots.every((s) => s !== null)) {
+              // Validate the arrangement: each placed grapheme must match the
+              // expected grapheme for its position (compare by text so repeated
+              // letters are interchangeable). Previously this auto-passed on fill.
+              const isCorrect = newSlots.every(
+                (s, i) =>
+                  s && String(s.text) === String((data.graphemes || [])[i]),
+              );
+              setTimeout(() => {
+                if (isMountedRef.current)
+                  onCheckAnswer(isCorrect ? "correct" : "incorrect");
+              }, 1000);
+            }
+          }
+        };
+        const handleSlotClick = (index) => {
+          if (isEditing) return;
+          const chip = slots[index];
+          if (chip) {
+            const newSlots = [...slots];
+            newSlots[index] = null;
+            setSlots(newSlots);
+            setChips((prev) =>
+              prev.map((c) =>
+                c.id === chip.id ? { ...c, isPlaced: false } : c,
+              ),
+            );
+            playSound("pop");
+          }
+        };
+        const reset = () => {
+          setSlots(new Array(data.phonemes?.length || 0).fill(null));
+          setChips((prev) => prev.map((c) => ({ ...c, isPlaced: false })));
+        };
+        return /*#__PURE__*/ React.createElement(
+          "div",
+          { className: "flex flex-col items-center gap-8" },
+          /*#__PURE__*/ React.createElement(
+            "div",
+            { className: "flex justify-center gap-4 mb-4" },
+            slots.map((slot, i) =>
+              /*#__PURE__*/ React.createElement(
+              "button",
+              {
+                key: i,
+                onClick: () => handleSlotClick(i),
+                className: `w-20 h-20 rounded-2xl border-4 border-dashed flex items-center justify-center text-3xl font-bold transition-all ${slot ? "border-indigo-500 bg-white text-indigo-700 shadow-md scale-100" : "border-slate-300 bg-slate-50 text-slate-600 scale-95"}`,
+                "aria-label": slot
+                  ? `Slot ${i + 1}: ${slot.text}`
+                  : `Empty Slot ${i + 1}`,
+              },
+              slot ? slot.text : i + 1,
+            ),
+            ),
+          ),
+          /*#__PURE__*/ React.createElement(
+            "div",
+            { className: "flex flex-wrap justify-center gap-4 py-8" },
+            isEditing
+              ? data.graphemes?.map((g, i) =>
+                  /*#__PURE__*/ React.createElement(
+                "div",
+                { key: i, className: "relative" },
+                    /*#__PURE__*/ React.createElement("input", {
+                  "aria-label": t("common.enter_g"),
+                  value: g,
+                  onChange: (e) =>
+                    onUpdateOption && onUpdateOption(i, e.target.value),
+                  className:
+                    "w-20 h-20 rounded-2xl border-4 text-center text-3xl font-bold outline-none focus:ring-4 focus:ring-amber-500 border-amber-600 bg-white text-slate-700",
+                  onKeyDown: (e) => e.stopPropagation(),
+                }),
+                    /*#__PURE__*/ React.createElement(
+                  "span",
+                  {
+                    className:
+                      "absolute -top-2 -right-2 bg-slate-200 text-slate-600 text-xs rounded-full w-6 h-6 flex items-center justify-center font-bold shadow-sm",
+                  },
+                  i + 1,
+                ),
+              ),
+              )
+              : chips
+                .filter((c) => !c.isPlaced)
+                .map((chip) =>
+                    /*#__PURE__*/ React.createElement(
+                  "button",
+                  {
+                    // Append the chip's text so each chip has a DISTINCT
+                    // accessible name (the bare key resolves to "Select
+                    // sound" for every chip, masking which sound it is).
+                    "aria-label": `${ts("word_sounds.select_sound_chip") || "Select sound"} ${chip.text}`,
+                    key: chip.id,
+                    onClick: () => handleChipClick(chip),
+                    className:
+                      "w-20 h-20 rounded-2xl bg-white border-b-4 border-slate-200 text-3xl font-bold text-slate-600 shadow-sm hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 hover:shadow-lg transition-all active:scale-95",
+                  },
+                  chip.text,
+                ),
+                ),
+          ),
+          /*#__PURE__*/ React.createElement(
+            "button",
+            {
+              "aria-label": t("common.volume"),
+              onClick: () => {
+                debugLog("🔊 Playing Mapping:", data.word);
+                onPlayAudio(data.word, true);
+              },
+              className:
+                "flex items-center gap-2 text-slate-600 hover:text-indigo-500 transition-colors",
+            },
+            /*#__PURE__*/ React.createElement(Volume2, { size: 16 }),
+            " ",
+            ts("word_sounds.listen_word") || "Listen to Word",
+          ),
+        );
+      },
+    );
+
+    const LetterTraceView = React.memo(({ letter, word, onComplete, ts, audioInstances, feedbackAudioRef }) => {
+      const canvasRef = React.useRef(null);
+      const maskRef = React.useRef(null);
+      const localMountedRef = React.useRef(true);
+      const strokesRef = React.useRef([]); // captured user stroke point arrays
+      const [isDrawing, setIsDrawing] = React.useState(false);
+      const [feedback, setFeedback] = React.useState(null);
+      const [resetKey, setResetKey] = React.useState(0);
+      const [startDotPos, setStartDotPos] = React.useState(null);
+      const [handAnimPos, setHandAnimPos] = React.useState(null);
+      const [isAnimating, setIsAnimating] = React.useState(true);
+      const audioCtxRef = React.useRef(null);
+      const noiseNodeRef = React.useRef(null);
+      const LETTER_SVG_PATHS = {
+        a: "M 200 100 Q 230 180 200 260 Q 160 280 120 230 Q 100 180 140 140 Q 180 120 220 160 L 220 260",
+        b: "M 120 80 L 120 260 M 120 180 Q 120 120 180 120 Q 240 120 240 190 Q 240 260 180 260 Q 120 260 120 200",
+        c: "M 220 130 Q 180 80 120 120 Q 80 160 80 200 Q 80 260 140 280 Q 200 280 220 240",
+        d: "M 200 80 L 200 260 M 200 180 Q 200 120 140 120 Q 80 140 80 200 Q 80 260 140 260 Q 200 260 200 200",
+        e: "M 100 180 L 220 180 Q 220 120 160 100 Q 100 120 100 180 Q 100 260 160 280 Q 220 260 220 220",
+        f: "M 200 90 Q 160 60 140 100 L 140 260 M 100 160 L 180 160",
+        g: "M 200 110 Q 200 80 160 80 Q 100 95 100 140 Q 100 190 160 210 Q 200 190 200 140 L 200 270 Q 180 300 120 285",
+        h: "M 100 80 L 100 260 M 100 160 Q 100 120 160 120 Q 220 120 220 180 L 220 260",
+        i: "M 160 100 L 160 100 M 160 140 L 160 260",
+        j: "M 180 80 L 180 80 M 180 110 L 180 250 Q 160 285 120 270",
+        k: "M 100 80 L 100 260 M 200 120 L 100 180 L 200 260",
+        l: "M 160 80 L 160 260",
+        m: "M 80 260 L 80 140 Q 80 100 120 100 Q 160 100 160 160 L 160 260 M 160 140 Q 160 100 200 100 Q 240 100 240 160 L 240 260",
+        n: "M 100 260 L 100 140 Q 100 100 160 100 Q 220 100 220 160 L 220 260",
+        o: "M 160 100 Q 100 100 100 180 Q 100 260 160 260 Q 220 260 220 180 Q 220 100 160 100",
+        p: "M 100 110 L 100 285 M 100 140 Q 100 95 160 95 Q 220 95 220 140 Q 220 190 160 190 Q 100 190 100 160",
+        q: "M 220 110 L 220 285 M 220 140 Q 220 95 160 95 Q 100 95 100 140 Q 100 190 160 190 Q 220 190 220 160",
+        r: "M 100 260 L 100 140 Q 120 100 180 120",
+        s: "M 200 130 Q 160 100 120 130 Q 80 160 160 190 Q 240 220 200 260 Q 160 280 100 250",
+        t: "M 150 80 L 150 260 M 100 130 L 200 130",
+        u: "M 100 140 L 100 220 Q 100 260 160 260 Q 220 260 220 220 L 220 140 L 220 260",
+        v: "M 80 140 L 160 260 L 240 140",
+        w: "M 60 140 L 110 260 L 160 180 L 210 260 L 260 140",
+        x: "M 100 140 L 220 260 M 220 140 L 100 260",
+        y: "M 100 110 L 160 160 M 220 110 L 160 160 L 120 270",
+        z: "M 100 140 L 220 140 L 100 260 L 220 260",
+        A: "M 60 260 L 160 60 L 260 260 M 100 180 L 220 180",
+        B: "M 80 60 L 80 260 M 80 60 L 180 60 Q 240 60 240 110 Q 240 160 180 160 L 80 160 M 80 160 L 180 160 Q 250 160 250 210 Q 250 260 180 260 L 80 260",
+        C: "M 240 100 Q 200 40 140 40 Q 60 60 60 160 Q 60 260 140 280 Q 200 280 240 220",
+        D: "M 80 60 L 80 260 M 80 60 L 160 60 Q 260 80 260 160 Q 260 240 160 260 L 80 260",
+        E: "M 220 60 L 80 60 L 80 260 L 220 260 M 80 160 L 180 160",
+        F: "M 220 60 L 80 60 L 80 260 M 80 160 L 180 160",
+        G: "M 240 100 Q 200 40 140 40 Q 60 60 60 160 Q 60 260 140 280 Q 220 280 240 200 L 240 160 L 180 160",
+        H: "M 80 60 L 80 260 M 240 60 L 240 260 M 80 160 L 240 160",
+        I: "M 120 60 L 200 60 M 160 60 L 160 260 M 120 260 L 200 260",
+        J: "M 140 60 L 220 60 M 180 60 L 180 220 Q 180 280 120 280 Q 80 260 80 220",
+        K: "M 80 60 L 80 260 M 240 60 L 80 160 L 240 260",
+        L: "M 80 60 L 80 260 L 220 260",
+        M: "M 60 260 L 60 60 L 160 180 L 260 60 L 260 260",
+        N: "M 80 260 L 80 60 L 240 260 L 240 60",
+        O: "M 160 40 Q 60 40 60 160 Q 60 280 160 280 Q 260 280 260 160 Q 260 40 160 40",
+        P: "M 80 60 L 80 260 M 80 60 L 180 60 Q 240 60 240 110 Q 240 160 180 160 L 80 160",
+        Q: "M 160 40 Q 60 40 60 160 Q 60 280 160 280 Q 260 280 260 160 Q 260 40 160 40 M 200 220 L 260 280",
+        R: "M 80 60 L 80 260 M 80 60 L 180 60 Q 240 60 240 110 Q 240 160 180 160 L 80 160 M 160 160 L 240 260",
+        S: "M 220 80 Q 180 40 120 60 Q 60 80 60 120 Q 60 160 160 180 Q 260 200 260 240 Q 260 280 180 280 Q 100 280 60 240",
+        T: "M 60 60 L 260 60 M 160 60 L 160 260",
+        U: "M 80 60 L 80 200 Q 80 280 160 280 Q 240 280 240 200 L 240 60",
+        V: "M 60 60 L 160 260 L 260 60",
+        W: "M 40 60 L 100 260 L 160 120 L 220 260 L 280 60",
+        X: "M 60 60 L 260 260 M 260 60 L 60 260",
+        Y: "M 60 60 L 160 160 L 160 260 M 260 60 L 160 160",
+        Z: "M 60 60 L 260 60 L 60 260 L 260 260",
+        // ── Digraphs and trigraphs ──
+        // The canvas draws these as multi-character strings via strokeText()
+        // (which natively handles 2- and 3-character strings); the M
+        // coordinates below are used only as start-dot anchors for the
+        // animated hand. The mask-search loop snaps each anchor to the
+        // nearest filled stroke pixel within a 40px radius, so these only
+        // need to land near the first letter's expected position when
+        // the digraph is rendered centered at (width/2, height/2 + 20)
+        // with the auto-scaled font (150px for 2-char, 110px for 3-char).
+        // For a 320px canvas at 150px font, two chars span roughly x=80–240.
+        sh:  "M 130 130",   // top of 's' in "sh"
+        ch:  "M 130 130",   // top arc of 'c' in "ch"
+        th:  "M 100 80",    // top of 't' in "th"
+        wh:  "M 80 140",    // top-left of 'w' in "wh"
+        ng:  "M 100 140",   // top of 'n' in "ng"
+        ck:  "M 100 140",   // top arc of 'c' in "ck"
+        ph:  "M 90 110",    // top of 'p' in "ph"
+        qu:  "M 120 110",   // top of 'q' in "qu"
+        // Trigraphs (rendered at 110px font; spans roughly x=80–240)
+        igh: "M 130 140",   // top of 'i' in "igh"
+        tch: "M 100 90",    // top of 't' in "tch"
+        dge: "M 120 100",   // top of 'd' in "dge"
+      };
+
+      // Render-font-size selector: scales down for multi-character graphemes
+      // so digraphs (sh, ch, th, wh, ng, ck, ph, qu) and trigraphs (igh,
+      // tch, dge) fit within the 320×320 canvas with comfortable margin.
+      function _wsTraceFontSize(text) {
+        if (!text) return 200;
+        const len = String(text).length;
+        if (len <= 1) return 200;
+        if (len === 2) return 150;
+        if (len === 3) return 110;
+        return 90;
+      }
+      // Total drawn length of a captured stroke (sum of segment distances).
+      function _wsStrokeLen(s) {
+        let L = 0;
+        for (let i = 1; i < s.length; i++) {
+          L += Math.hypot(s[i].x - s[i - 1].x, s[i].y - s[i - 1].y);
+        }
+        return L;
+      }
+      const samplePathPoints = React.useMemo(() => {
+        return (pathD, numPoints = 40) => {
+          const ns = "http://www.w3.org/2000/svg";
+          const svg = document.createElementNS(ns, "svg");
+          const path = document.createElementNS(ns, "path");
+          path.setAttribute("d", pathD);
+          svg.appendChild(path);
+          document.body.appendChild(svg);
+          const totalLength = path.getTotalLength();
+          const points = [];
+          for (let i = 0; i <= numPoints; i++) {
+            const distance = (i / numPoints) * totalLength;
+            const pt = path.getPointAtLength(distance);
+            points.push({ x: pt.x, y: pt.y });
+          }
+          document.body.removeChild(svg);
+          return points;
+        };
+      }, []);
+      React.useEffect(() => {
+        setIsAnimating(false);
+      }, [letter, resetKey]);
+      const startScratch = () => {
+        try {
+          if (!audioCtxRef.current)
+            audioCtxRef.current = new (
+              window.AudioContext || window.webkitAudioContext
+            )();
+          const ctx = audioCtxRef.current;
+          if (ctx.state === "suspended") ctx.resume();
+          const bufferSize = ctx.sampleRate * 2;
+          const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+          const data = buffer.getChannelData(0);
+          for (let i = 0; i < bufferSize; i++) {
+            data[i] = Math.random() * 2 - 1;
+          }
+          const noise = ctx.createBufferSource();
+          noise.buffer = buffer;
+          noise.loop = true;
+          const filter = ctx.createBiquadFilter();
+          filter.type = "bandpass";
+          filter.frequency.value = 800;
+          filter.Q.value = 1;
+          const gain = ctx.createGain();
+          gain.gain.value = 0.05;
+          noise.connect(filter);
+          filter.connect(gain);
+          gain.connect(ctx.destination);
+          noise.start();
+          noiseNodeRef.current = { node: noise, gain: gain };
+        } catch (e) {
+          warnLog("Audio scratch failed", e);
+        }
+      };
+      const stopScratch = () => {
+        if (noiseNodeRef.current) {
+          const { node, gain } = noiseNodeRef.current;
+          try {
+            gain.gain.exponentialRampToValueAtTime(
+              0.001,
+              node.context.currentTime + 0.1,
+            );
+            node.stop(node.context.currentTime + 0.1);
+          } catch (e) {
+            warnLog("Caught error:", e?.message || e);
+          }
+          noiseNodeRef.current = null;
+        }
+      };
+      React.useEffect(() => {
+        return () => {
+          if (typeof window !== "undefined" && window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+          }
+          if (audioInstances.current) {
+            audioInstances.current.forEach((audio) => {
+              try {
+                audio.pause();
+                audio.src = "";
+              } catch (e) {
+                warnLog("Caught error:", e?.message || e);
+              }
+            });
+            audioInstances.current.clear();
+          }
+          if (audioCtxRef.current) {
+            try {
+              audioCtxRef.current.close();
+            } catch (e) {
+              warnLog("Caught error:", e?.message || e);
+            }
+          }
+          if (feedbackAudioRef.current) {
+            feedbackAudioRef.current.pause();
+            feedbackAudioRef.current = null;
+          }
+          localMountedRef.current = false;
+        };
+      }, []);
+      React.useEffect(() => {
+        const canvas = canvasRef.current;
+        const mask = maskRef.current;
+        if (!canvas || !mask) return;
+        const width = canvas.width;
+        const height = canvas.height;
+        const ctx = canvas.getContext("2d");
+        const mCtx = mask.getContext("2d");
+        ctx.clearRect(0, 0, width, height);
+        mCtx.clearRect(0, 0, width, height);
+        strokesRef.current = []; // reset captured strokes for the new letter/attempt
+        // Multi-character graphemes (sh, ch, th, wh, ng, ck, ph, qu, igh,
+        // tch, dge) auto-scale the font down so the digraph/trigraph fits
+        // inside the 320×320 canvas. Single letters keep the original 200px.
+        const _wsFontPx = _wsTraceFontSize(letter);
+        const font =
+          'bold ' + _wsFontPx + 'px "Comic Sans MS", "Chalkboard SE", sans-serif';
+        // Stroke widths also scale proportionally so visual + hit-area
+        // detection stay consistent across grapheme lengths.
+        const _wsVisStroke  = Math.max(14, Math.round(25 * (_wsFontPx / 200)));
+        const _wsMaskStroke = Math.max(20, Math.round(35 * (_wsFontPx / 200)));
+        ctx.font = font;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = "#ffffff";
+        ctx.strokeStyle = "#e2e8f0";
+        ctx.lineWidth = _wsVisStroke;
+        ctx.setLineDash([15, 15]);
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.strokeText(letter, width / 2, height / 2 + 20);
+        mCtx.font = font;
+        mCtx.textAlign = "center";
+        mCtx.textBaseline = "middle";
+        mCtx.fillStyle = "#000000";
+        mCtx.strokeStyle = "#ff0000";
+        mCtx.lineWidth = _wsMaskStroke;
+        mCtx.setLineDash([]);
+        mCtx.lineCap = "round";
+        mCtx.lineJoin = "round";
+        mCtx.strokeText(letter, width / 2, height / 2 + 20);
+        const mData = mCtx.getImageData(0, 0, width, height).data;
+        const svgPath =
+          LETTER_SVG_PATHS[letter] || LETTER_SVG_PATHS[letter.toLowerCase()];
+        let startX = width / 2,
+          startY = 60,
+          found = false;
+        if (svgPath) {
+          const mMatch = svgPath.match(/^M\s+([\d.]+)\s+([\d.]+)/);
+          if (mMatch) {
+            const svgX = parseFloat(mMatch[1]);
+            const svgY = parseFloat(mMatch[2]);
+            const searchRadius = 40;
+            let bestDist = Infinity;
+            for (let dy = -searchRadius; dy <= searchRadius; dy += 2) {
+              for (let dx = -searchRadius; dx <= searchRadius; dx += 2) {
+                const px = Math.round(svgX + dx);
+                const py = Math.round(svgY + dy);
+                if (px < 0 || px >= width || py < 0 || py >= height) continue;
+                const idx = (py * width + px) * 4;
+                if (mData[idx + 3] > 100) {
+                  const dist = dx * dx + dy * dy;
+                  if (dist < bestDist) {
+                    bestDist = dist;
+                    startX = px;
+                    startY = py;
+                    found = true;
+                  }
+                }
+              }
+            }
+            if (!found) {
+              startX = svgX;
+              startY = svgY;
+              found = true;
+            }
+          }
+        }
+        if (!found) {
+          for (let y = 40; y < height; y += 4) {
+            for (let x = 40; x < width; x += 4) {
+              const i = (y * width + x) * 4;
+              if (mData[i + 3] > 100) {
+                startX = x;
+                startY = y;
+                found = true;
+                break;
+              }
+            }
+            if (found) break;
+          }
+        }
+        if (found) {
+          ctx.beginPath();
+          ctx.arc(startX, startY, 12, 0, Math.PI * 2);
+          ctx.fillStyle = "#10b981";
+          ctx.fill();
+          ctx.strokeStyle = "#ffffff";
+          ctx.setLineDash([]);
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          setStartDotPos({ x: startX, y: startY });
+        } else {
+          setStartDotPos(null);
+        }
+      }, [letter, resetKey]);
+      const checkTracing = () => {
+        const canvas = canvasRef.current;
+        const mask = maskRef.current;
+        if (!canvas || !mask) return;
+        const width = canvas.width;
+        const height = canvas.height;
+        const uData = canvas
+          .getContext("2d")
+          .getImageData(0, 0, width, height).data;
+        const mData = mask
+          .getContext("2d")
+          .getImageData(0, 0, width, height).data;
+        let hits = 0;
+        let totalTarget = 0;
+        let outsideInk = 0;
+        // Per-cell coverage lets us tell "traced the whole letter" from
+        // "scribbled one region" — a single global coverage % can't.
+        const GRID = 8;
+        const cellW = Math.ceil(width / GRID);
+        const cellH = Math.ceil(height / GRID);
+        const cellTarget = new Array(GRID * GRID).fill(0);
+        const cellHit = new Array(GRID * GRID).fill(0);
+        for (let i = 0; i < uData.length; i += 4) {
+          const uAlpha = uData[i + 3];
+          const mAlpha = mData[i + 3];
+          const isInk = uAlpha > 50 && uData[i] < 160 && uData[i + 1] < 160;
+          const isTarget = mAlpha > 50;
+          if (isTarget) {
+            totalTarget++;
+            const pxIndex = i / 4;
+            const ci =
+              Math.floor(Math.floor(pxIndex / width) / cellH) * GRID +
+              Math.floor((pxIndex % width) / cellW);
+            cellTarget[ci]++;
+            if (isInk) {
+              hits++;
+              cellHit[ci]++;
+            }
+          } else if (isInk) {
+            outsideInk++;
+          }
+        }
+        // Completeness: fraction of the glyph's regions that were actually traced.
+        let cellsWithTarget = 0;
+        let cellsCovered = 0;
+        for (let c = 0; c < cellTarget.length; c++) {
+          if (cellTarget[c] >= 12) {
+            cellsWithTarget++;
+            if (cellHit[c] / cellTarget[c] >= 0.35) cellsCovered++;
+          }
+        }
+        const completeness = cellsWithTarget
+          ? cellsCovered / cellsWithTarget
+          : 0;
+        // Accuracy / neatness: of all the ink laid down, how much is on the letter.
+        const totalInk = hits + outsideInk;
+        const accuracy = totalInk > 0 ? hits / totalInk : 0;
+        const coverage = hits / (totalTarget || 1); // for the "barely drawn" gate
+        // Stroke-derived signals. Digraphs/trigraphs are M-only anchors (no full
+        // path), so stroke order/count don't apply — they fall back to shape +
+        // neatness + start point only.
+        const svgPath =
+          LETTER_SVG_PATHS[letter] || LETTER_SVG_PATHS[letter.toLowerCase()];
+        const hasFullPath = !!svgPath && /[LQ]/i.test(svgPath);
+        const strokes = (strokesRef.current || []).filter(
+          (s) => s && s.length >= 3 && _wsStrokeLen(s) > 24,
+        );
+        // Did they start at the green dot?
+        let startScore = 1;
+        if (startDotPos && strokes.length) {
+          const f = strokes[0][0];
+          const d = Math.hypot(f.x - startDotPos.x, f.y - startDotPos.y);
+          startScore = d <= 35 ? 1 : d <= 70 ? 0.6 : 0.25;
+        }
+        // Plausible number of strokes? (single letters only)
+        let strokeCountScore = 1;
+        let expectedStrokes = 0;
+        if (hasFullPath) {
+          expectedStrokes = (svgPath.match(/M/g) || []).length || 1;
+          const diff = Math.abs(strokes.length - expectedStrokes);
+          strokeCountScore =
+            diff === 0 ? 1 : diff === 1 ? 0.7 : diff === 2 ? 0.4 : 0.2;
+        }
+        // Soft direction coaching (NOT scored): did the longest stroke run the
+        // same overall way as the reference path?
+        let directionOff = false;
+        if (hasFullPath && strokes.length) {
+          const pts = samplePathPoints(svgPath, 16);
+          if (pts.length > 1) {
+            const refDx = pts[pts.length - 1].x - pts[0].x;
+            const refDy = pts[pts.length - 1].y - pts[0].y;
+            const longest = strokes.reduce(
+              (a, b) => (_wsStrokeLen(b) > _wsStrokeLen(a) ? b : a),
+              strokes[0],
+            );
+            const uDx = longest[longest.length - 1].x - longest[0].x;
+            const uDy = longest[longest.length - 1].y - longest[0].y;
+            const dot = refDx * uDx + refDy * uDy;
+            const mag = Math.hypot(refDx, refDy) * Math.hypot(uDx, uDy);
+            if (mag > 1500 && dot / mag < -0.3) directionOff = true;
+          }
+        }
+        // Composite formation score (0–1), weighted by what matters most.
+        let score;
+        let passFloorOk;
+        if (hasFullPath) {
+          score =
+            0.45 * completeness +
+            0.3 * accuracy +
+            0.15 * startScore +
+            0.1 * strokeCountScore;
+          passFloorOk = completeness >= 0.55 && accuracy >= 0.45;
+        } else {
+          score = 0.55 * completeness + 0.3 * accuracy + 0.15 * startScore;
+          passFloorOk = completeness >= 0.5 && accuracy >= 0.4;
+        }
+        const score100 = Math.round(score * 100);
+        const passThreshold = hasFullPath ? 0.7 : 0.65;
+        debugLog("Trace formation:", {
+          score100,
+          completeness,
+          accuracy,
+          startScore,
+          strokeCountScore,
+          strokes: strokes.length,
+          expectedStrokes,
+          directionOff,
+        });
+        // Hardly anything drawn yet — encourage, don't score.
+        if (totalInk < 200 || coverage < 0.08) {
+          setFeedback({
+            type: "error",
+            emoji: "🔄",
+            size: "md",
+            tip: "Trace the letter!",
+          });
+          setTimeout(() => {
+            if (localMountedRef.current) setFeedback(null);
+          }, 2000);
+          return;
+        }
+        if (score >= passThreshold && passFloorOk) {
+          setFeedback({
+            type: "success",
+            emoji: "🌟",
+            size: "lg",
+            tip: "Great forming! " + score100 + "/100",
+          });
+          setTimeout(() => {
+            if (localMountedRef.current) onComplete(true, score100);
+          }, 800);
+          return;
+        }
+        // Not yet — one targeted, encouraging tip on the weakest thing.
+        let tip;
+        if (startScore <= 0.6) tip = "Start at the green dot!";
+        else if (completeness < 0.55) tip = "Trace the whole letter!";
+        else if (accuracy < 0.5) tip = "Try to stay on the lines!";
+        else if (directionOff) tip = "Follow the letter from the green dot.";
+        else tip = "Almost! Keep tracing.";
+        setFeedback({ type: "neutral", emoji: "👆", size: "md", tip: tip });
+        setTimeout(() => {
+          if (localMountedRef.current) setFeedback(null);
+        }, 2200);
+      };
+      const getPoint = (e) => {
+        const canvas = canvasRef.current;
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return { x: clientX - rect.left, y: clientY - rect.top };
+      };
+      const startDraw = (e) => {
+        setIsDrawing(true);
+        startScratch();
+        const { x, y } = getPoint(e);
+        strokesRef.current.push([{ x, y }]); // begin a new captured stroke
+        const ctx = canvasRef.current.getContext("2d");
+        ctx.setLineDash([]);
+        ctx.strokeStyle = "#7c3aed";
+        ctx.lineWidth = 30;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+      };
+      const draw = (e) => {
+        if (!isDrawing) return;
+        e.preventDefault();
+        const { x, y } = getPoint(e);
+        const curStroke = strokesRef.current[strokesRef.current.length - 1];
+        if (curStroke) curStroke.push({ x, y }); // record point for formation scoring
+        const ctx = canvasRef.current.getContext("2d");
+        ctx.lineTo(x, y);
+        ctx.stroke();
+      };
+      const endDraw = () => {
+        if (isDrawing) {
+          setIsDrawing(false);
+          stopScratch();
+          const ctx = canvasRef.current.getContext("2d");
+          ctx.beginPath();
+        }
+      };
+      return /*#__PURE__*/ React.createElement(
+        "div",
+        { className: "flex flex-col items-center animate-in fade-in" },
+        // WCAG 2.1.1 / 2.5.7: formation scoring depends on the complete
+        // movement path, not only its endpoints. The tracing gesture therefore
+        // uses the path-dependent-input exception; the internal scoring mask is
+        // decorative, while the exposed surface explains the required gesture.
+        /*#__PURE__*/ React.createElement("canvas", {
+          ref: maskRef,
+          role: "presentation",
+          "aria-hidden": "true",
+          width: 320,
+          height: 320,
+          className: "hidden",
+        }),
+        /*#__PURE__*/ React.createElement(
+          "p",
+          { id: "word-sounds-tracing-path-note", className: "sr-only" },
+          "This handwriting exercise uses path-dependent input because it evaluates the complete drawing path. Use a mouse, stylus, or touch gesture to trace from the green start dot.",
+        ),
+        /*#__PURE__*/ React.createElement(
+          "div",
+          { className: "relative" },
+          /*#__PURE__*/ React.createElement("canvas", {
+            ref: canvasRef,
+            role: "img",
+            "aria-label":
+              (ts("word_sounds.sr_tracing_canvas", { letter }) ||
+                ("Letter tracing surface for " + letter + ". Draw from the green start dot with a mouse, stylus, or touch; the exercise evaluates the complete movement path.")),
+            "aria-describedby": "word-sounds-tracing-path-note",
+            width: 320,
+            height: 320,
+            tabIndex: 0,
+            onMouseDown: startDraw,
+            onMouseMove: draw,
+            onMouseUp: endDraw,
+            onMouseLeave: endDraw,
+            onTouchStart: startDraw,
+            onTouchMove: draw,
+            onTouchEnd: endDraw,
+            className: `border-4 rounded-3xl bg-white shadow-xl touch-none cursor-crosshair mb-6 transition-all duration-500 ${feedback?.type === "success" ? "border-solid border-emerald-400 shadow-emerald-200/50 shadow-2xl" : feedback?.type === "error" ? "border-dashed border-rose-300" : "border-dashed border-violet-200"}`,
+          }),
+          !isDrawing &&
+          !feedback &&
+          (isAnimating ? handAnimPos : startDotPos) &&
+            /*#__PURE__*/ React.createElement(
+            "div",
+            {
+              className: `absolute pointer-events-none ${isAnimating ? "" : "animate-bounce motion-reduce:animate-none"}`,
+              style: {
+                left: (isAnimating ? handAnimPos?.x : startDotPos?.x) - 35,
+                top: (isAnimating ? handAnimPos?.y : startDotPos?.y) - 15,
+                transform: "translate(-50%, -50%)",
+                transition: isAnimating
+                  ? "left 0.12s ease-out, top 0.12s ease-out"
+                  : "none",
+              },
+            },
+              /*#__PURE__*/ React.createElement(
+              "span",
+              {
+                className: `text-4xl filter drop-shadow-lg transform -rotate-12 block ${isAnimating ? "scale-110" : ""}`,
+                "aria-hidden": "true",
+              },
+              "\uD83D\uDC49",
+            ),
+          ),
+          feedback &&
+            /*#__PURE__*/ React.createElement(
+            "div",
+            {
+              className:
+                "absolute inset-0 flex flex-col items-center justify-center gap-2 pointer-events-none",
+            },
+              /*#__PURE__*/ React.createElement(
+              "div",
+              {
+                className: `
+                                ${feedback.size === "lg" ? "text-8xl" : "text-5xl"}
+                                ${feedback.type === "success" ? "animate-bounce motion-reduce:animate-none" : "animate-pulse motion-reduce:animate-none"}
+                                filter drop-shadow-xl
+                                transition-all duration-300
+                            `,
+              },
+              feedback.emoji,
+            ),
+            feedback.tip &&
+              /*#__PURE__*/ React.createElement(
+              "span",
+              {
+                className:
+                  "text-sm font-bold text-slate-700 bg-white/85 px-3 py-1 rounded-full shadow",
+              },
+              feedback.tip,
+            ),
+          ),
+        ),
+        /*#__PURE__*/ React.createElement(
+          "div",
+          { className: "flex items-center justify-center gap-3 mb-6" },
+          /*#__PURE__*/ React.createElement(
+            "span",
+            {
+              className:
+                "text-5xl font-black text-violet-600 bg-violet-50 w-16 h-16 rounded-2xl flex items-center justify-center shadow-inner",
+            },
+            letter,
+          ),
+          word &&
+            /*#__PURE__*/ React.createElement(
+            "span",
+            { className: "text-lg text-slate-600 font-medium" },
+            "for ",
+              /*#__PURE__*/ React.createElement(
+              "span",
+              { className: "font-bold text-slate-700" },
+              word,
+            ),
+          ),
+        ),
+        /*#__PURE__*/ React.createElement(
+          "div",
+          { className: "flex gap-4" },
+          /*#__PURE__*/ React.createElement(
+            "button",
+            {
+              onClick: () => {
+                setResetKey((k) => k + 1);
+                setFeedback(null);
+              },
+              className:
+                "px-6 py-3 rounded-xl font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors",
+            },
+            "Clear",
+          ),
+          /*#__PURE__*/ React.createElement(
+            "button",
+            {
+              onClick: checkTracing,
+              className:
+                "px-8 py-3 rounded-xl font-bold bg-violet-600 text-white shadow-lg hover:scale-105 transition-transform",
+            },
+            "Check \u2713",
+          ),
+        ),
+      );
+    });
+
     window.AlloModules = window.AlloModules || {};
     window.AlloModules.WordSoundsModal = ({
       audioCache: providedAudioCache,
@@ -3636,853 +5359,6 @@
         },
         [t],
       );
-      const RhymeView = React.memo(
-        ({
-          data,
-          showLetterHints,
-          onPlayAudio,
-          onCheckAnswer,
-          isEditing,
-          onUpdateOption,
-          highlightedIndex,
-          isAudioBusy,
-          optionImages,
-        }) => {
-          const [playingIndex, setPlayingIndex] = React.useState(null);
-          const activeIndex = playingIndex ?? highlightedIndex;
-          return /*#__PURE__*/ React.createElement(
-            "div",
-            {
-              className:
-                "flex flex-col items-center gap-8 animate-in slide-in-from-right duration-500",
-            },
-
-            /*#__PURE__*/ React.createElement(
-              "div",
-              { className: "grid grid-cols-2 gap-4 w-full max-w-lg" },
-              (data.options || []).map((opt, i) =>
-                isEditing
-                  ? /*#__PURE__*/ React.createElement(
-                    "div",
-                    {
-                      key: i,
-                      className: `p-4 rounded-2xl bg-white border-2 shadow-md flex items-center gap-2 relative ${opt?.toLowerCase() === data.rhymeWord?.toLowerCase() ? "border-green-400 ring-2 ring-green-200" : "border-amber-200"}`,
-                    },
-                      /*#__PURE__*/ React.createElement(
-                      "button",
-                      {
-                        "aria-label":
-                          opt?.toLowerCase() === data.rhymeWord?.toLowerCase()
-                            ? "Correct answer"
-                            : "Set as correct",
-                        onClick: (e) => {
-                          e.stopPropagation();
-                          onUpdateOption &&
-                            onUpdateOption(i, opt, "set_correct");
-                        },
-                        className: `p-1 rounded-full transition-colors flex-shrink-0 ${opt?.toLowerCase() === data.rhymeWord?.toLowerCase() ? "text-green-500" : "text-slate-600 hover:text-green-400"}`,
-                        title:
-                          opt?.toLowerCase() === data.rhymeWord?.toLowerCase()
-                            ? "✓ Correct answer"
-                            : "Click to set as correct answer",
-                      },
-                      opt?.toLowerCase() === data.rhymeWord?.toLowerCase()
-                        ? /*#__PURE__*/ React.createElement(Check, {
-                          size: 20,
-                        })
-                        : /*#__PURE__*/ React.createElement(Star, {
-                          size: 18,
-                        }),
-                    ),
-                      /*#__PURE__*/ React.createElement("input", {
-                      "aria-label": t("common.enter_opt"),
-                      type: "text",
-                      value: opt,
-                      onChange: (e) =>
-                        onUpdateOption && onUpdateOption(i, e.target.value),
-                      className:
-                        "w-full px-3 py-2 text-lg font-bold text-slate-700 bg-slate-50 rounded-lg outline-none focus:ring-2 focus:ring-amber-400",
-                      onKeyDown: (e) => e.stopPropagation(),
-                    }),
-                      /*#__PURE__*/ React.createElement(
-                      "button",
-                      {
-                        "aria-label": t("common.volume"),
-                        onClick: (e) => {
-                          e.stopPropagation();
-                          onPlayAudio(opt, true);
-                        },
-                        className:
-                          "absolute right-2 top-2 p-2 text-slate-600 hover:text-indigo-600",
-                      },
-                        /*#__PURE__*/ React.createElement(Volume2, {
-                        size: 16,
-                      }),
-                    ),
-                  )
-                  // WCAG: the tile was a role="button" div with the listen
-                  // <button> nested inside — nested interactive controls
-                  // (axe: nested-interactive). Same fix as the blending grid:
-                  // a plain wrapper, the tile is a real answer <button>, and
-                  // the listen control is an absolutely-positioned SIBLING.
-                  : /*#__PURE__*/ React.createElement(
-                    "div",
-                    { key: i, className: "relative group" },
-                    /*#__PURE__*/ React.createElement(
-                      "button",
-                      {
-                        type: "button",
-                        onClick: () => onCheckAnswer(opt),
-                        className: `w-full ${optionImages ? "p-4" : "p-6"} rounded-2xl transition-all text-left cursor-pointer outline-none focus:ring-2 focus:ring-orange-400 ${activeIndex === i ? "border-orange-500 bg-orange-200 ring-4 ring-orange-400 scale-[1.05] shadow-xl font-black z-10 relative" : "bg-white border-2 border-slate-100 hover:border-orange-400 hover:bg-orange-50"}`,
-                      },
-                      optionImages && optionImages[opt]
-                        ? /*#__PURE__*/ React.createElement(
-                            "div",
-                            { className: "flex flex-col items-center gap-2" },
-                            /*#__PURE__*/ React.createElement("img", {
-                              src: `data:image/png;base64,${optionImages[opt]}`,
-                              alt: opt,
-                              className: "w-20 h-20 object-contain rounded-xl",
-                            }),
-                            /*#__PURE__*/ React.createElement(
-                              "span",
-                              {
-                                className: "text-base font-bold text-slate-700 pr-8",
-                              },
-                              showLetterHints ? opt : `${ts("word_sounds.option_label") || "Option"} ${i + 1}`,
-                            ),
-                          )
-                        : /*#__PURE__*/ React.createElement(
-                            "span",
-                            {
-                              className: "text-xl font-bold text-slate-700 pr-10 block",
-                            },
-                            showLetterHints ? opt : `${ts("word_sounds.option_label") || "Option"} ${i + 1}`,
-                          ),
-                    ),
-                    /*#__PURE__*/ React.createElement(
-                      "button",
-                      {
-                        type: "button",
-                        "aria-label": t("common.volume"),
-                        onClick: (e) => {
-                          e.stopPropagation();
-                          onPlayAudio(opt, true);
-                        },
-                        className:
-                          "absolute bottom-3 right-3 w-9 h-9 rounded-full bg-orange-50 hover:bg-orange-200 text-slate-600 hover:text-orange-600 flex items-center justify-center transition-colors z-10 shadow-sm",
-                        title: ts("common.listen") || "Listen",
-                      },
-                      /*#__PURE__*/ React.createElement(Volume2, {
-                        size: 18,
-                      }),
-                    ),
-                  ),
-              ),
-            ),
-          );
-        },
-      );
-      // ManipulationView — phoneme deletion / substitution activity.
-      // Shows the manipulation task instruction card + 4 option buttons.
-      const ManipulationView = React.memo(
-        ({
-          data,
-          showLetterHints,
-          onPlayAudio,
-          onCheckAnswer,
-          isEditing,
-          onUpdateOption,
-          highlightedIndex,
-          isAudioBusy,
-          optionImages,
-          isLoading,
-        }) => {
-          const [playingIndex, setPlayingIndex] = React.useState(null);
-          const activeIndex = playingIndex ?? highlightedIndex;
-          if (isLoading) {
-            return /*#__PURE__*/ React.createElement(
-              "div",
-              { className: "flex flex-col items-center gap-4 py-10" },
-              /*#__PURE__*/ React.createElement("div", {
-                className:
-                  "w-12 h-12 rounded-full border-4 border-violet-300 border-t-violet-600 animate-spin motion-reduce:animate-none",
-              }),
-              /*#__PURE__*/ React.createElement(
-                "p",
-                { className: "text-slate-600 text-sm font-medium animate-pulse motion-reduce:animate-none" },
-                "Building your Sound Swap task\u2026",
-              ),
-            );
-          }
-          if (!data || !data.instruction) {
-            return /*#__PURE__*/ React.createElement(
-              "div",
-              { className: "text-center text-slate-600 text-sm py-6" },
-              "Loading task\u2026",
-            );
-          }
-          return /*#__PURE__*/ React.createElement(
-            "div",
-            {
-              className:
-                "flex flex-col items-center gap-6 animate-in slide-in-from-right duration-500",
-            },
-            // Task instruction card
-            /*#__PURE__*/ React.createElement(
-              "div",
-              {
-                className:
-                  "w-full max-w-lg bg-gradient-to-br from-violet-50 to-indigo-50 border-2 border-violet-200 rounded-2xl p-5 text-center",
-              },
-              /*#__PURE__*/ React.createElement(
-                "span",
-                {
-                  className:
-                    "inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold mb-3 " +
-                    (data.type === "deletion"
-                      ? "bg-rose-100 text-rose-700"
-                      : "bg-amber-100 text-amber-700"),
-                },
-                data.type === "deletion"
-                  ? "\u2702\uFE0F Phoneme Deletion"
-                  : "\uD83D\uDD04 Phoneme Substitution",
-              ),
-              /*#__PURE__*/ React.createElement(
-                "p",
-                { className: "text-slate-700 font-semibold text-lg leading-snug" },
-                data.instruction,
-              ),
-              /*#__PURE__*/ React.createElement(
-                "button",
-                {
-                  "aria-label": ts("word_sounds.sr_listen_instruction") || "Listen to instruction",
-                  // Segmented playback: /X/ tokens play from the phoneme bank.
-                  onClick: () => speakInstructionWithPhonemes(data.instruction),
-                  className:
-                    "mt-3 inline-flex items-center gap-2 px-4 py-2 bg-violet-100 hover:bg-violet-200 text-violet-700 rounded-full text-sm font-medium transition-colors",
-                },
-                /*#__PURE__*/ React.createElement(Volume2, { size: 16 }),
-                "Listen Again",
-              ),
-            ),
-            // Options grid
-            /*#__PURE__*/ React.createElement(
-              "div",
-              { className: "grid grid-cols-2 gap-4 w-full max-w-lg" },
-              (data.options || []).map((opt, i) =>
-                isEditing
-                  ? /*#__PURE__*/ React.createElement(
-                      "div",
-                      {
-                        key: i,
-                        className: `p-4 rounded-2xl bg-white border-2 shadow-md flex items-center gap-2 relative ${opt?.toLowerCase() === data.answer?.toLowerCase() ? "border-green-400 ring-2 ring-green-200" : "border-amber-200"}`,
-                      },
-                      /*#__PURE__*/ React.createElement(
-                        "button",
-                        {
-                          "aria-label":
-                            opt?.toLowerCase() === data.answer?.toLowerCase()
-                              ? "Correct answer"
-                              : "Set as correct",
-                          onClick: (e) => {
-                            e.stopPropagation();
-                            onUpdateOption &&
-                              onUpdateOption(i, opt, "set_correct");
-                          },
-                          className: `p-1 rounded-full transition-colors flex-shrink-0 ${opt?.toLowerCase() === data.answer?.toLowerCase() ? "text-green-500" : "text-slate-600 hover:text-green-400"}`,
-                          title:
-                            opt?.toLowerCase() === data.answer?.toLowerCase()
-                              ? "\u2713 Correct answer"
-                              : "Click to set as correct",
-                        },
-                        opt?.toLowerCase() === data.answer?.toLowerCase()
-                          ? /*#__PURE__*/ React.createElement(Check, { size: 20 })
-                          : /*#__PURE__*/ React.createElement(Star, { size: 18 }),
-                      ),
-                      /*#__PURE__*/ React.createElement("input", {
-                        "aria-label": t("common.enter_opt"),
-                        type: "text",
-                        value: opt,
-                        onChange: (e) =>
-                          onUpdateOption && onUpdateOption(i, e.target.value),
-                        className:
-                          "w-full px-3 py-2 text-lg font-bold text-slate-700 bg-slate-50 rounded-lg outline-none focus:ring-2 focus:ring-amber-400",
-                        onKeyDown: (e) => e.stopPropagation(),
-                      }),
-                      /*#__PURE__*/ React.createElement(
-                        "button",
-                        {
-                          "aria-label": t("common.volume"),
-                          onClick: (e) => {
-                            e.stopPropagation();
-                            onPlayAudio(opt, true);
-                          },
-                          className:
-                            "absolute right-2 top-2 p-2 text-slate-600 hover:text-indigo-600",
-                        },
-                        /*#__PURE__*/ React.createElement(Volume2, { size: 16 }),
-                      ),
-                    )
-                  // WCAG: same nested-interactive fix as RhymeView — plain
-                  // wrapper, real answer <button>, sibling listen button.
-                  : /*#__PURE__*/ React.createElement(
-                      "div",
-                      { key: i, className: "relative group" },
-                      /*#__PURE__*/ React.createElement(
-                        "button",
-                        {
-                          type: "button",
-                          onClick: () => onCheckAnswer(opt),
-                          className: `w-full ${optionImages ? "p-4" : "p-6"} rounded-2xl transition-all text-left cursor-pointer outline-none focus:ring-2 focus:ring-violet-400 ${activeIndex === i ? "border-violet-500 bg-violet-200 ring-4 ring-violet-400 scale-[1.05] shadow-xl font-black z-10 relative" : "bg-white border-2 border-slate-100 hover:border-violet-400 hover:bg-violet-50"}`,
-                        },
-                        optionImages && optionImages[opt]
-                          ? /*#__PURE__*/ React.createElement(
-                              "div",
-                              { className: "flex flex-col items-center gap-2" },
-                              /*#__PURE__*/ React.createElement("img", {
-                                src: `data:image/png;base64,${optionImages[opt]}`,
-                                alt: opt,
-                                className: "w-20 h-20 object-contain rounded-xl",
-                              }),
-                              /*#__PURE__*/ React.createElement(
-                                "span",
-                                {
-                                  className: "text-base font-bold text-slate-700 pr-8",
-                                },
-                                showLetterHints ? opt : `${ts("word_sounds.option_label") || "Option"} ${i + 1}`,
-                              ),
-                            )
-                          : /*#__PURE__*/ React.createElement(
-                              "span",
-                              {
-                                className: "text-xl font-bold text-slate-700 pr-10 block",
-                              },
-                              showLetterHints ? opt : `${ts("word_sounds.option_label") || "Option"} ${i + 1}`,
-                            ),
-                      ),
-                      /*#__PURE__*/ React.createElement(
-                        "button",
-                        {
-                          type: "button",
-                          "aria-label": t("common.volume"),
-                          onClick: (e) => {
-                            e.stopPropagation();
-                            onPlayAudio(opt, true);
-                          },
-                          className:
-                            "absolute bottom-3 right-3 w-9 h-9 rounded-full bg-violet-50 hover:bg-violet-200 text-slate-600 hover:text-violet-600 flex items-center justify-center transition-colors z-10 shadow-sm",
-                          title: ts("common.listen") || "Listen",
-                        },
-                        /*#__PURE__*/ React.createElement(Volume2, {
-                          size: 18,
-                        }),
-                      ),
-                    ),
-              ),
-            ),
-          );
-        },
-      );
-      // SyllableBlendingView — hear syllables played separately, pick the whole word.
-      const SyllableBlendingView = React.memo(
-        ({
-          data,
-          isLoading,
-          highlightedSyllableIndex,
-          highlightedOptionIndex,
-          showLetterHints,
-          onPlayAudio,
-          isEditing,
-          onUpdateOption,
-          isAudioBusy,
-          optionImages,
-          onCheckAnswer,
-        }) => {
-          const syllables = data?.syllables || [];
-          const blendingOptions = data?.blendingOptions || null;
-          if (isLoading && !syllables.length) {
-            return React.createElement(
-              "div",
-              { className: "flex flex-col items-center gap-4 py-8" },
-              React.createElement("div", {
-                className:
-                  "w-10 h-10 border-4 border-sky-400 border-t-transparent rounded-full animate-spin motion-reduce:animate-none",
-              }),
-              React.createElement(
-                "p",
-                { className: "text-slate-600 text-sm" },
-                "Building syllable activity\u2026",
-              ),
-            );
-          }
-          return React.createElement(
-            "div",
-            { className: "flex flex-col gap-5" },
-            React.createElement(
-              "div",
-              {
-                className:
-                  "bg-sky-50 border border-sky-200 rounded-2xl p-4 flex flex-col gap-3",
-              },
-              React.createElement(
-                "p",
-                {
-                  className:
-                    "text-xs font-semibold text-sky-600 uppercase tracking-wide text-center",
-                },
-                "Listen to the syllables",
-              ),
-              React.createElement(
-                "div",
-                { className: "flex flex-wrap justify-center gap-2" },
-                ...syllables.map((syl, i) =>
-                  React.createElement(
-                    "div",
-                    {
-                      key: i,
-                      className: `px-4 py-2 rounded-xl text-xl font-bold transition-all duration-200 ${
-                        highlightedSyllableIndex === i
-                          ? "bg-sky-500 text-white scale-110 shadow-lg"
-                          : "bg-white border-2 border-sky-200 text-sky-700"
-                      }`,
-                    },
-                    syl,
-                    i < syllables.length - 1
-                      ? React.createElement(
-                          "span",
-                          { className: "text-sky-700 ml-2" },
-                          "\u00b7",
-                        )
-                      : null,
-                  ),
-                ),
-              ),
-              React.createElement(
-                "button",
-                {
-                  onClick: () =>
-                    syllables.forEach((syl, i) =>
-                      setTimeout(() => onPlayAudio?.(syl), i * 650),
-                    ),
-                  disabled: isAudioBusy,
-                  className:
-                    "mx-auto flex items-center gap-2 px-4 py-2 bg-sky-100 hover:bg-sky-200 text-sky-700 rounded-full text-sm font-semibold transition-colors disabled:opacity-50",
-                },
-                "\u25b6 Play Syllables",
-              ),
-            ),
-            blendingOptions && blendingOptions.length > 0
-              ? React.createElement(
-                  "div",
-                  { className: "grid grid-cols-2 gap-3" },
-                  ...blendingOptions.map((opt, i) => {
-                    const imgSrc = optionImages?.[opt];
-                    return isEditing
-                      ? React.createElement("input", {
-                          key: i,
-                          defaultValue: opt,
-                          "aria-label": t("common.enter_opt") || "Edit option",
-                          className:
-                            "border-2 border-sky-200 rounded-xl px-3 py-2 text-center font-semibold",
-                          onBlur: (e) => onUpdateOption?.(i, e.target.value),
-                        })
-                      : React.createElement(
-                          "button",
-                          {
-                            key: i,
-                            onClick: () => onCheckAnswer?.(opt),
-                            disabled: isAudioBusy,
-                            className: `flex flex-col items-center gap-1 p-3 rounded-2xl border-2 font-bold text-lg transition-all bg-white hover:bg-sky-50 border-sky-200 hover:border-sky-400 hover:scale-105 active:scale-95 shadow-sm${
-                              highlightedOptionIndex === i
-                                ? " ring-4 ring-sky-400 scale-105 bg-sky-50"
-                                : ""
-                            }`,
-                          },
-                          imgSrc
-                            ? React.createElement("img", {
-                                src: imgSrc,
-                                alt: opt,
-                                className:
-                                  "w-20 h-20 object-contain rounded-lg",
-                              })
-                            : null,
-                          showLetterHints
-                            ? React.createElement(
-                                "span",
-                                { className: "flex items-center gap-1" },
-                                opt,
-                                React.createElement(
-                                  "button",
-                                  {
-                                    onClick: (e) => {
-                                      e.stopPropagation();
-                                      onPlayAudio?.(opt);
-                                    },
-                                    className:
-                                      "text-sky-700 hover:text-sky-600 text-sm ml-1",
-                                    "aria-label": (ts("word_sounds.sr_hear") || "Hear ") + opt,
-                                  },
-                                  "\ud83d\udd0a",
-                                ),
-                              )
-                            : React.createElement(
-                                "span",
-                                { className: "text-sky-700 text-2xl" },
-                                "\ud83d\udd0a",
-                              ),
-                        );
-                  }),
-                )
-              : React.createElement(
-                  "p",
-                  { className: "text-center text-slate-600 text-sm py-4" },
-                  "Speak your answer or tap the mic below",
-                ),
-          );
-        },
-      );
-      // SyllableCountingView — tap once per syllable, then submit the count.
-      const SyllableCountingView = React.memo(
-        ({
-          data,
-          isLoading,
-          tapCount,
-          onTap,
-          onReset,
-          onCheckAnswer,
-          onPlayAudio,
-          isAudioBusy,
-          word,
-        }) => {
-          if (isLoading && !data) {
-            return React.createElement(
-              "div",
-              { className: "flex flex-col items-center gap-4 py-8" },
-              React.createElement("div", {
-                className:
-                  "w-10 h-10 border-4 border-amber-400 border-t-transparent rounded-full animate-spin motion-reduce:animate-none",
-              }),
-              React.createElement(
-                "p",
-                { className: "text-slate-600 text-sm" },
-                "Getting ready\u2026",
-              ),
-            );
-          }
-          return React.createElement(
-            "div",
-            { className: "flex flex-col items-center gap-5" },
-            React.createElement(
-              "div",
-              {
-                className:
-                  "bg-amber-50 border border-amber-200 rounded-2xl p-4 w-full text-center",
-              },
-              React.createElement(
-                "p",
-                {
-                  className:
-                    "text-xs font-semibold text-amber-600 uppercase tracking-wide mb-2",
-                },
-                "Tap once for each syllable you hear",
-              ),
-              React.createElement(
-                "button",
-                {
-                  onClick: () => onPlayAudio?.(word),
-                  disabled: isAudioBusy,
-                  className:
-                    "flex items-center gap-2 mx-auto px-4 py-2 bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-full font-semibold text-sm transition-colors disabled:opacity-50",
-                },
-                "\ud83d\udd0a Hear the word again",
-              ),
-            ),
-            React.createElement(
-              "div",
-              {
-                className:
-                  "text-6xl font-black text-amber-800 w-24 h-24 rounded-full bg-amber-50 border-4 border-amber-200 flex items-center justify-center select-none",
-              },
-              tapCount > 0 ? String(tapCount) : "?",
-            ),
-            React.createElement(
-              "button",
-              {
-                onClick: onTap,
-                className:
-                  "w-32 h-32 rounded-full bg-amber-700 hover:bg-amber-700 active:scale-90 text-white text-5xl shadow-lg transition-all select-none",
-                "aria-label": ts("word_sounds.sr_tap_count_syllables") || "Tap to count syllables",
-              },
-              "\ud83d\udc4f",
-            ),
-            React.createElement(
-              "button",
-              {
-                onClick: onReset,
-                className:
-                  "text-xs text-slate-600 hover:text-slate-600 underline",
-              },
-              "Reset",
-            ),
-            tapCount > 0
-              ? React.createElement(
-                  "div",
-                  { className: "flex flex-col items-center gap-2 w-full" },
-                  React.createElement(
-                    "p",
-                    { className: "text-sm text-slate-600" },
-                    `You tapped ${tapCount} ${tapCount === 1 ? "time" : "times"}. Submit?`,
-                  ),
-                  React.createElement(
-                    "button",
-                    {
-                      onClick: () => onCheckAnswer?.(tapCount),
-                      className:
-                        "px-8 py-3 bg-amber-700 hover:bg-amber-700 text-white rounded-xl font-bold shadow transition-all hover:scale-105",
-                    },
-                    "Submit \u2713",
-                  ),
-                )
-              : null,
-          );
-        },
-      );
-      const OrthographyView = React.memo(
-        ({ data, onPlayAudio, onCheckAnswer, isEditing, onUpdateOption, letterBank, lengthHint }) => {
-          const [userSpelling, setUserSpelling] = React.useState("");
-          const [feedback, setFeedback] = React.useState(null);
-          const [draggedLetter, setDraggedLetter] = React.useState(null);
-          // Easy difficulty passes a scaffolded bank (word letters + a few
-          // distractors); otherwise the full alphabet.
-          const alphabet = Array.isArray(letterBank) && letterBank.length > 1
-            ? letterBank
-            : "abcdefghijklmnopqrstuvwxyz".split("");
-          React.useEffect(() => {
-            setUserSpelling("");
-            setFeedback(null);
-          }, [data.correct, data.word]);
-          const handleChipClick = (letter) => {
-            const lowerL = letter.toLowerCase();
-            if (
-              typeof LETTER_NAME_AUDIO !== "undefined" &&
-              LETTER_NAME_AUDIO[lowerL]
-            ) {
-              onPlayAudio(LETTER_NAME_AUDIO[lowerL]);
-            } else {
-              onPlayAudio(letter);
-            }
-          };
-          const handleDragStart = (e, letter) => {
-            setDraggedLetter(letter);
-            e.dataTransfer.effectAllowed = "copy";
-            e.dataTransfer.setData("text/plain", letter);
-          };
-          const handleDragOver = (e) => {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = "copy";
-          };
-          const handleDrop = (e) => {
-            e.preventDefault();
-            const letter =
-              draggedLetter || e.dataTransfer.getData("text/plain");
-            if (letter) {
-              setUserSpelling((prev) => prev + letter);
-              setDraggedLetter(null);
-            }
-          };
-          const handleSubmit = (e) => {
-            if (e) e.preventDefault();
-            if (!userSpelling.trim()) return;
-            const target = data.correct || data.word;
-            const isCorrect =
-              target &&
-              userSpelling.trim().toLowerCase() === target.toLowerCase();
-            setFeedback(isCorrect ? "correct" : "incorrect");
-            if (isCorrect) {
-              setTimeout(() => {
-                if (isMountedRef.current) onCheckAnswer(userSpelling);
-              }, 500);
-            } else {
-              onCheckAnswer(userSpelling);
-            }
-          };
-          if (isEditing) {
-            return /*#__PURE__*/ React.createElement(
-              "div",
-              {
-                className:
-                  "flex flex-col items-center gap-6 animate-in fade-in",
-              },
-              /*#__PURE__*/ React.createElement(
-                "div",
-                {
-                  className:
-                    "bg-amber-50 p-6 rounded-2xl border-2 border-amber-200",
-                },
-                /*#__PURE__*/ React.createElement(
-                  "h3",
-                  {
-                    className:
-                      "font-bold text-amber-800 mb-4 flex items-center gap-2",
-                  },
-                  /*#__PURE__*/ React.createElement(
-                    "span",
-                    { className: "bg-amber-200 p-1 rounded", "aria-hidden": "true" },
-                    "\u270F\uFE0F",
-                  ),
-                  " Edit Spelling Word",
-                ),
-                /*#__PURE__*/ React.createElement(
-                  "div",
-                  { className: "flex items-center gap-2" },
-                  /*#__PURE__*/ React.createElement("input", {
-                    "aria-label": t("common.edit_spelling_word"),
-                    type: "text",
-                    value: data.word,
-                    onChange: (e) =>
-                      onUpdateOption && onUpdateOption(0, e.target.value),
-                    className:
-                      "w-48 px-4 py-3 text-xl font-bold text-slate-700 bg-white rounded-xl border border-amber-600 focus:ring-4 focus:ring-amber-200 outline-none shadow-sm",
-                  }),
-                  /*#__PURE__*/ React.createElement(
-                    "button",
-                    {
-                      "aria-label": t("common.volume"),
-                      onClick: () => onPlayAudio(data.word),
-                      className:
-                        "p-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors shadow-sm",
-                    },
-                    /*#__PURE__*/ React.createElement(Volume2, { size: 24 }),
-                  ),
-                ),
-              ),
-            );
-          }
-          return /*#__PURE__*/ React.createElement(
-            "div",
-            {
-              className:
-                "flex flex-col items-center gap-6 animate-in fade-in duration-500 w-full max-w-4xl mx-auto",
-            },
-            /*#__PURE__*/ React.createElement(
-              "div",
-              { className: "flex flex-col items-center gap-3 mb-2" },
-              /*#__PURE__*/ React.createElement(
-                "button",
-                {
-                  "aria-label": t("common.volume"),
-                  onClick: () => onPlayAudio(data.word),
-                  className:
-                    "w-20 h-20 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 text-white flex items-center justify-center shadow-lg hover:scale-110 hover:shadow-indigo-500/30 transition-all active:scale-95 ring-4 ring-indigo-50",
-                  title: ts("word_sounds.hear_word_again") || "Hear Word Again",
-                },
-                /*#__PURE__*/ React.createElement(Volume2, { size: 32 }),
-              ),
-            ),
-            /*#__PURE__*/ React.createElement(
-              "form",
-              {
-                onSubmit: handleSubmit,
-                className: "w-full max-w-lg relative group",
-              },
-              /*#__PURE__*/ React.createElement(
-                "div",
-                {
-                  onDragOver: handleDragOver,
-                  onDrop: handleDrop,
-                  className: `relative rounded-2xl transition-all ${draggedLetter ? "scale-105 ring-4 ring-indigo-200 bg-indigo-50" : ""}`,
-                },
-                /*#__PURE__*/ React.createElement("input", {
-                  "aria-label": t("common.drag_letters_here"),
-                  type: "text",
-                  value: userSpelling,
-                  onChange: (e) => setUserSpelling(e.target.value),
-                  // Easy difficulty: underscores show how many letters the
-                  // word has (length scaffold).
-                  placeholder: lengthHint
-                    ? Array.from({ length: lengthHint }, () => "_").join(" ")
-                    : t("common.placeholder_drag_letters_here"),
-                  // lowercase display to match the letter tiles — K-2 learners
-                  // match letter SHAPES, and an uppercase transform of their
-                  // lowercase input broke that correspondence.
-                  className: `w-full px-6 py-5 text-center text-4xl font-bold rounded-2xl border-4 outline-none focus:ring-2 focus:ring-indigo-400 transition-all shadow-sm placeholder:text-slate-600 tracking-widest lowercase
-                                ${feedback === "correct" ? "border-green-400 bg-green-50 text-green-700" : feedback === "incorrect" ? "border-red-600 bg-red-50 text-red-700 animate-shake" : "border-slate-200 bg-white text-slate-800 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"}
-                            `,
-                  autoComplete: "off",
-                }),
-                userSpelling &&
-                  /*#__PURE__*/ React.createElement(
-                  "button",
-                  {
-                    "aria-label": t("common.close"),
-                    type: "button",
-                    onClick: () => setUserSpelling(""),
-                    className:
-                      "absolute right-4 top-1/2 -translate-y-1/2 p-2 text-slate-600 hover:text-slate-700 hover:bg-slate-100 rounded-full transition-colors",
-                  },
-                    /*#__PURE__*/ React.createElement(X, { size: 24 }),
-                ),
-              ),
-            ),
-            /*#__PURE__*/ React.createElement(
-              "div",
-              {
-                className:
-                  "bg-slate-50/50 p-6 rounded-3xl border border-slate-100 w-full",
-              },
-              /*#__PURE__*/ React.createElement(
-                "div",
-                { className: "flex flex-wrap justify-center gap-2" },
-                alphabet.map((letter) =>
-                  /*#__PURE__*/ React.createElement(
-                  "div",
-                  {
-                    key: letter,
-                    draggable: true,
-                    role: "button",
-                    tabIndex: 0,
-                    "aria-label": letter.toUpperCase(),
-                    onDragStart: (e) => handleDragStart(e, letter),
-                    onClick: () => handleChipClick(letter),
-                    onKeyDown: (e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        handleChipClick(letter);
-                      }
-                    },
-                    className:
-                      "w-12 h-14 bg-white rounded-xl border-b-4 border-slate-200 shadow-sm text-2xl font-bold text-slate-600 hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 active:border-b-0 active:translate-y-1 active:shadow-inner transition-all flex items-center justify-center select-none cursor-grab active:cursor-grabbing",
-                  },
-                  letter,
-                ),
-                ),
-              ),
-              /*#__PURE__*/ React.createElement(
-                "p",
-                {
-                  className:
-                    "text-center text-slate-600 text-sm mt-4 font-medium",
-                },
-                ts("word_sounds.drag_letters_hint") ||
-                  "Drag letters to spell the word, or click to hear them!",
-              ),
-            ),
-            /*#__PURE__*/ React.createElement(
-              "button",
-              {
-                "aria-label": t("common.next"),
-                onClick: handleSubmit,
-                disabled: !userSpelling,
-                className: `px-10 py-4 rounded-full font-bold text-lg shadow-lg transition-all flex items-center gap-2 ${!userSpelling ? "bg-slate-100 text-slate-600 cursor-not-allowed" : "bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-indigo-500/25 hover:-translate-y-0.5 active:translate-y-0"}`,
-              },
-              ts("word_sounds.check_spelling") || "Check Spelling",
-              " ",
-              /*#__PURE__*/ React.createElement(ChevronRight, { size: 20 }),
-            ),
-          );
-        },
-      );
       const WordFamiliesView = React.useMemo(
         () =>
           ({
@@ -5066,166 +5942,6 @@
           },
         [t],
       );
-      const SoundMappingView = React.memo(
-        ({ data, onPlayAudio, onCheckAnswer, isEditing, onUpdateOption }) => {
-          const [slots, setSlots] = React.useState(
-            new Array(data.phonemes?.length || 0).fill(null),
-          );
-          const [chips, setChips] = React.useState([]);
-          const lastWordRef = React.useRef(null);
-          React.useEffect(() => {
-            if (data.graphemes && data.word !== lastWordRef.current) {
-              lastWordRef.current = data.word;
-              const labeled = data.graphemes?.map((g, i) => ({
-                id: i,
-                text: typeof g === "string" ? g : String(g),
-                isPlaced: false,
-              }));
-              setChips(fisherYatesShuffle(labeled));
-              setSlots(new Array((data.graphemes || []).length).fill(null));
-            }
-          }, [data.word, data.graphemes ? data.graphemes.join(",") : ""]);
-          React.useEffect(() => {
-            if (data.word) {
-              const timer = setTimeout(() => {
-                debugLog("🔊 Auto-Playing Mapping:", data.word);
-                onPlayAudio(data.word, true);
-              }, 500);
-              return () => clearTimeout(timer);
-            }
-          }, [data.word]);
-          const handleChipClick = (chip) => {
-            if (isEditing) return;
-            const emptyIdx = slots.findIndex((s) => s === null);
-            if (emptyIdx !== -1) {
-              const newSlots = [...slots];
-              newSlots[emptyIdx] = chip;
-              setSlots(newSlots);
-              setChips((prev) =>
-                prev.map((c) =>
-                  c.id === chip.id ? { ...c, isPlaced: true } : c,
-                ),
-              );
-              onPlayAudio(chip.text);
-              if (newSlots.every((s) => s !== null)) {
-                // Validate the arrangement: each placed grapheme must match the
-                // expected grapheme for its position (compare by text so repeated
-                // letters are interchangeable). Previously this auto-passed on fill.
-                const isCorrect = newSlots.every(
-                  (s, i) =>
-                    s && String(s.text) === String((data.graphemes || [])[i]),
-                );
-                setTimeout(() => {
-                  if (isMountedRef.current)
-                    onCheckAnswer(isCorrect ? "correct" : "incorrect");
-                }, 1000);
-              }
-            }
-          };
-          const handleSlotClick = (index) => {
-            if (isEditing) return;
-            const chip = slots[index];
-            if (chip) {
-              const newSlots = [...slots];
-              newSlots[index] = null;
-              setSlots(newSlots);
-              setChips((prev) =>
-                prev.map((c) =>
-                  c.id === chip.id ? { ...c, isPlaced: false } : c,
-                ),
-              );
-              playSound("pop");
-            }
-          };
-          const reset = () => {
-            setSlots(new Array(data.phonemes?.length || 0).fill(null));
-            setChips((prev) => prev.map((c) => ({ ...c, isPlaced: false })));
-          };
-          return /*#__PURE__*/ React.createElement(
-            "div",
-            { className: "flex flex-col items-center gap-8" },
-            /*#__PURE__*/ React.createElement(
-              "div",
-              { className: "flex justify-center gap-4 mb-4" },
-              slots.map((slot, i) =>
-                /*#__PURE__*/ React.createElement(
-                "button",
-                {
-                  key: i,
-                  onClick: () => handleSlotClick(i),
-                  className: `w-20 h-20 rounded-2xl border-4 border-dashed flex items-center justify-center text-3xl font-bold transition-all ${slot ? "border-indigo-500 bg-white text-indigo-700 shadow-md scale-100" : "border-slate-300 bg-slate-50 text-slate-600 scale-95"}`,
-                  "aria-label": slot
-                    ? `Slot ${i + 1}: ${slot.text}`
-                    : `Empty Slot ${i + 1}`,
-                },
-                slot ? slot.text : i + 1,
-              ),
-              ),
-            ),
-            /*#__PURE__*/ React.createElement(
-              "div",
-              { className: "flex flex-wrap justify-center gap-4 py-8" },
-              isEditing
-                ? data.graphemes?.map((g, i) =>
-                    /*#__PURE__*/ React.createElement(
-                  "div",
-                  { key: i, className: "relative" },
-                      /*#__PURE__*/ React.createElement("input", {
-                    "aria-label": t("common.enter_g"),
-                    value: g,
-                    onChange: (e) =>
-                      onUpdateOption && onUpdateOption(i, e.target.value),
-                    className:
-                      "w-20 h-20 rounded-2xl border-4 text-center text-3xl font-bold outline-none focus:ring-4 focus:ring-amber-500 border-amber-600 bg-white text-slate-700",
-                    onKeyDown: (e) => e.stopPropagation(),
-                  }),
-                      /*#__PURE__*/ React.createElement(
-                    "span",
-                    {
-                      className:
-                        "absolute -top-2 -right-2 bg-slate-200 text-slate-600 text-xs rounded-full w-6 h-6 flex items-center justify-center font-bold shadow-sm",
-                    },
-                    i + 1,
-                  ),
-                ),
-                )
-                : chips
-                  .filter((c) => !c.isPlaced)
-                  .map((chip) =>
-                      /*#__PURE__*/ React.createElement(
-                    "button",
-                    {
-                      // Append the chip's text so each chip has a DISTINCT
-                      // accessible name (the bare key resolves to "Select
-                      // sound" for every chip, masking which sound it is).
-                      "aria-label": `${ts("word_sounds.select_sound_chip") || "Select sound"} ${chip.text}`,
-                      key: chip.id,
-                      onClick: () => handleChipClick(chip),
-                      className:
-                        "w-20 h-20 rounded-2xl bg-white border-b-4 border-slate-200 text-3xl font-bold text-slate-600 shadow-sm hover:border-indigo-400 hover:text-indigo-600 hover:-translate-y-1 hover:shadow-lg transition-all active:scale-95",
-                    },
-                    chip.text,
-                  ),
-                  ),
-            ),
-            /*#__PURE__*/ React.createElement(
-              "button",
-              {
-                "aria-label": t("common.volume"),
-                onClick: () => {
-                  debugLog("🔊 Playing Mapping:", data.word);
-                  onPlayAudio(data.word, true);
-                },
-                className:
-                  "flex items-center gap-2 text-slate-600 hover:text-indigo-500 transition-colors",
-              },
-              /*#__PURE__*/ React.createElement(Volume2, { size: 16 }),
-              " ",
-              ts("word_sounds.listen_word") || "Listen to Word",
-            ),
-          );
-        },
-      );
       const ts = React.useCallback(
         (key, params = {}) => {
           const s =
@@ -5678,7 +6394,7 @@
           {
             ref: probeResultsDialogRef,
             className:
-              "fixed inset-0 z-[300] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in duration-300",
+              "word-sounds-root fixed inset-0 z-[300] bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in duration-300",
             role: "dialog",
             "aria-modal": "true",
             "aria-labelledby": "word-sounds-probe-results-title",
@@ -12557,671 +13273,6 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           });
         }
       };
-      const LetterTraceView = React.memo(({ letter, word, onComplete }) => {
-        const canvasRef = React.useRef(null);
-        const maskRef = React.useRef(null);
-        const localMountedRef = React.useRef(true);
-        const strokesRef = React.useRef([]); // captured user stroke point arrays
-        const [isDrawing, setIsDrawing] = React.useState(false);
-        const [feedback, setFeedback] = React.useState(null);
-        const [resetKey, setResetKey] = React.useState(0);
-        const [startDotPos, setStartDotPos] = React.useState(null);
-        const [handAnimPos, setHandAnimPos] = React.useState(null);
-        const [isAnimating, setIsAnimating] = React.useState(true);
-        const audioCtxRef = React.useRef(null);
-        const noiseNodeRef = React.useRef(null);
-        const LETTER_SVG_PATHS = {
-          a: "M 200 100 Q 230 180 200 260 Q 160 280 120 230 Q 100 180 140 140 Q 180 120 220 160 L 220 260",
-          b: "M 120 80 L 120 260 M 120 180 Q 120 120 180 120 Q 240 120 240 190 Q 240 260 180 260 Q 120 260 120 200",
-          c: "M 220 130 Q 180 80 120 120 Q 80 160 80 200 Q 80 260 140 280 Q 200 280 220 240",
-          d: "M 200 80 L 200 260 M 200 180 Q 200 120 140 120 Q 80 140 80 200 Q 80 260 140 260 Q 200 260 200 200",
-          e: "M 100 180 L 220 180 Q 220 120 160 100 Q 100 120 100 180 Q 100 260 160 280 Q 220 260 220 220",
-          f: "M 200 90 Q 160 60 140 100 L 140 260 M 100 160 L 180 160",
-          g: "M 200 110 Q 200 80 160 80 Q 100 95 100 140 Q 100 190 160 210 Q 200 190 200 140 L 200 270 Q 180 300 120 285",
-          h: "M 100 80 L 100 260 M 100 160 Q 100 120 160 120 Q 220 120 220 180 L 220 260",
-          i: "M 160 100 L 160 100 M 160 140 L 160 260",
-          j: "M 180 80 L 180 80 M 180 110 L 180 250 Q 160 285 120 270",
-          k: "M 100 80 L 100 260 M 200 120 L 100 180 L 200 260",
-          l: "M 160 80 L 160 260",
-          m: "M 80 260 L 80 140 Q 80 100 120 100 Q 160 100 160 160 L 160 260 M 160 140 Q 160 100 200 100 Q 240 100 240 160 L 240 260",
-          n: "M 100 260 L 100 140 Q 100 100 160 100 Q 220 100 220 160 L 220 260",
-          o: "M 160 100 Q 100 100 100 180 Q 100 260 160 260 Q 220 260 220 180 Q 220 100 160 100",
-          p: "M 100 110 L 100 285 M 100 140 Q 100 95 160 95 Q 220 95 220 140 Q 220 190 160 190 Q 100 190 100 160",
-          q: "M 220 110 L 220 285 M 220 140 Q 220 95 160 95 Q 100 95 100 140 Q 100 190 160 190 Q 220 190 220 160",
-          r: "M 100 260 L 100 140 Q 120 100 180 120",
-          s: "M 200 130 Q 160 100 120 130 Q 80 160 160 190 Q 240 220 200 260 Q 160 280 100 250",
-          t: "M 150 80 L 150 260 M 100 130 L 200 130",
-          u: "M 100 140 L 100 220 Q 100 260 160 260 Q 220 260 220 220 L 220 140 L 220 260",
-          v: "M 80 140 L 160 260 L 240 140",
-          w: "M 60 140 L 110 260 L 160 180 L 210 260 L 260 140",
-          x: "M 100 140 L 220 260 M 220 140 L 100 260",
-          y: "M 100 110 L 160 160 M 220 110 L 160 160 L 120 270",
-          z: "M 100 140 L 220 140 L 100 260 L 220 260",
-          A: "M 60 260 L 160 60 L 260 260 M 100 180 L 220 180",
-          B: "M 80 60 L 80 260 M 80 60 L 180 60 Q 240 60 240 110 Q 240 160 180 160 L 80 160 M 80 160 L 180 160 Q 250 160 250 210 Q 250 260 180 260 L 80 260",
-          C: "M 240 100 Q 200 40 140 40 Q 60 60 60 160 Q 60 260 140 280 Q 200 280 240 220",
-          D: "M 80 60 L 80 260 M 80 60 L 160 60 Q 260 80 260 160 Q 260 240 160 260 L 80 260",
-          E: "M 220 60 L 80 60 L 80 260 L 220 260 M 80 160 L 180 160",
-          F: "M 220 60 L 80 60 L 80 260 M 80 160 L 180 160",
-          G: "M 240 100 Q 200 40 140 40 Q 60 60 60 160 Q 60 260 140 280 Q 220 280 240 200 L 240 160 L 180 160",
-          H: "M 80 60 L 80 260 M 240 60 L 240 260 M 80 160 L 240 160",
-          I: "M 120 60 L 200 60 M 160 60 L 160 260 M 120 260 L 200 260",
-          J: "M 140 60 L 220 60 M 180 60 L 180 220 Q 180 280 120 280 Q 80 260 80 220",
-          K: "M 80 60 L 80 260 M 240 60 L 80 160 L 240 260",
-          L: "M 80 60 L 80 260 L 220 260",
-          M: "M 60 260 L 60 60 L 160 180 L 260 60 L 260 260",
-          N: "M 80 260 L 80 60 L 240 260 L 240 60",
-          O: "M 160 40 Q 60 40 60 160 Q 60 280 160 280 Q 260 280 260 160 Q 260 40 160 40",
-          P: "M 80 60 L 80 260 M 80 60 L 180 60 Q 240 60 240 110 Q 240 160 180 160 L 80 160",
-          Q: "M 160 40 Q 60 40 60 160 Q 60 280 160 280 Q 260 280 260 160 Q 260 40 160 40 M 200 220 L 260 280",
-          R: "M 80 60 L 80 260 M 80 60 L 180 60 Q 240 60 240 110 Q 240 160 180 160 L 80 160 M 160 160 L 240 260",
-          S: "M 220 80 Q 180 40 120 60 Q 60 80 60 120 Q 60 160 160 180 Q 260 200 260 240 Q 260 280 180 280 Q 100 280 60 240",
-          T: "M 60 60 L 260 60 M 160 60 L 160 260",
-          U: "M 80 60 L 80 200 Q 80 280 160 280 Q 240 280 240 200 L 240 60",
-          V: "M 60 60 L 160 260 L 260 60",
-          W: "M 40 60 L 100 260 L 160 120 L 220 260 L 280 60",
-          X: "M 60 60 L 260 260 M 260 60 L 60 260",
-          Y: "M 60 60 L 160 160 L 160 260 M 260 60 L 160 160",
-          Z: "M 60 60 L 260 60 L 60 260 L 260 260",
-          // ── Digraphs and trigraphs ──
-          // The canvas draws these as multi-character strings via strokeText()
-          // (which natively handles 2- and 3-character strings); the M
-          // coordinates below are used only as start-dot anchors for the
-          // animated hand. The mask-search loop snaps each anchor to the
-          // nearest filled stroke pixel within a 40px radius, so these only
-          // need to land near the first letter's expected position when
-          // the digraph is rendered centered at (width/2, height/2 + 20)
-          // with the auto-scaled font (150px for 2-char, 110px for 3-char).
-          // For a 320px canvas at 150px font, two chars span roughly x=80–240.
-          sh:  "M 130 130",   // top of 's' in "sh"
-          ch:  "M 130 130",   // top arc of 'c' in "ch"
-          th:  "M 100 80",    // top of 't' in "th"
-          wh:  "M 80 140",    // top-left of 'w' in "wh"
-          ng:  "M 100 140",   // top of 'n' in "ng"
-          ck:  "M 100 140",   // top arc of 'c' in "ck"
-          ph:  "M 90 110",    // top of 'p' in "ph"
-          qu:  "M 120 110",   // top of 'q' in "qu"
-          // Trigraphs (rendered at 110px font; spans roughly x=80–240)
-          igh: "M 130 140",   // top of 'i' in "igh"
-          tch: "M 100 90",    // top of 't' in "tch"
-          dge: "M 120 100",   // top of 'd' in "dge"
-        };
-
-        // Render-font-size selector: scales down for multi-character graphemes
-        // so digraphs (sh, ch, th, wh, ng, ck, ph, qu) and trigraphs (igh,
-        // tch, dge) fit within the 320×320 canvas with comfortable margin.
-        function _wsTraceFontSize(text) {
-          if (!text) return 200;
-          const len = String(text).length;
-          if (len <= 1) return 200;
-          if (len === 2) return 150;
-          if (len === 3) return 110;
-          return 90;
-        }
-        // Total drawn length of a captured stroke (sum of segment distances).
-        function _wsStrokeLen(s) {
-          let L = 0;
-          for (let i = 1; i < s.length; i++) {
-            L += Math.hypot(s[i].x - s[i - 1].x, s[i].y - s[i - 1].y);
-          }
-          return L;
-        }
-        const samplePathPoints = React.useMemo(() => {
-          return (pathD, numPoints = 40) => {
-            const ns = "http://www.w3.org/2000/svg";
-            const svg = document.createElementNS(ns, "svg");
-            const path = document.createElementNS(ns, "path");
-            path.setAttribute("d", pathD);
-            svg.appendChild(path);
-            document.body.appendChild(svg);
-            const totalLength = path.getTotalLength();
-            const points = [];
-            for (let i = 0; i <= numPoints; i++) {
-              const distance = (i / numPoints) * totalLength;
-              const pt = path.getPointAtLength(distance);
-              points.push({ x: pt.x, y: pt.y });
-            }
-            document.body.removeChild(svg);
-            return points;
-          };
-        }, []);
-        React.useEffect(() => {
-          setIsAnimating(false);
-        }, [letter, resetKey]);
-        const startScratch = () => {
-          try {
-            if (!audioCtxRef.current)
-              audioCtxRef.current = new (
-                window.AudioContext || window.webkitAudioContext
-              )();
-            const ctx = audioCtxRef.current;
-            if (ctx.state === "suspended") ctx.resume();
-            const bufferSize = ctx.sampleRate * 2;
-            const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-            const data = buffer.getChannelData(0);
-            for (let i = 0; i < bufferSize; i++) {
-              data[i] = Math.random() * 2 - 1;
-            }
-            const noise = ctx.createBufferSource();
-            noise.buffer = buffer;
-            noise.loop = true;
-            const filter = ctx.createBiquadFilter();
-            filter.type = "bandpass";
-            filter.frequency.value = 800;
-            filter.Q.value = 1;
-            const gain = ctx.createGain();
-            gain.gain.value = 0.05;
-            noise.connect(filter);
-            filter.connect(gain);
-            gain.connect(ctx.destination);
-            noise.start();
-            noiseNodeRef.current = { node: noise, gain: gain };
-          } catch (e) {
-            warnLog("Audio scratch failed", e);
-          }
-        };
-        const stopScratch = () => {
-          if (noiseNodeRef.current) {
-            const { node, gain } = noiseNodeRef.current;
-            try {
-              gain.gain.exponentialRampToValueAtTime(
-                0.001,
-                node.context.currentTime + 0.1,
-              );
-              node.stop(node.context.currentTime + 0.1);
-            } catch (e) {
-              warnLog("Caught error:", e?.message || e);
-            }
-            noiseNodeRef.current = null;
-          }
-        };
-        React.useEffect(() => {
-          return () => {
-            if (typeof window !== "undefined" && window.speechSynthesis) {
-              window.speechSynthesis.cancel();
-            }
-            if (audioInstances.current) {
-              audioInstances.current.forEach((audio) => {
-                try {
-                  audio.pause();
-                  audio.src = "";
-                } catch (e) {
-                  warnLog("Caught error:", e?.message || e);
-                }
-              });
-              audioInstances.current.clear();
-            }
-            if (audioCtxRef.current) {
-              try {
-                audioCtxRef.current.close();
-              } catch (e) {
-                warnLog("Caught error:", e?.message || e);
-              }
-            }
-            if (feedbackAudioRef.current) {
-              feedbackAudioRef.current.pause();
-              feedbackAudioRef.current = null;
-            }
-            localMountedRef.current = false;
-          };
-        }, []);
-        React.useEffect(() => {
-          const canvas = canvasRef.current;
-          const mask = maskRef.current;
-          if (!canvas || !mask) return;
-          const width = canvas.width;
-          const height = canvas.height;
-          const ctx = canvas.getContext("2d");
-          const mCtx = mask.getContext("2d");
-          ctx.clearRect(0, 0, width, height);
-          mCtx.clearRect(0, 0, width, height);
-          strokesRef.current = []; // reset captured strokes for the new letter/attempt
-          // Multi-character graphemes (sh, ch, th, wh, ng, ck, ph, qu, igh,
-          // tch, dge) auto-scale the font down so the digraph/trigraph fits
-          // inside the 320×320 canvas. Single letters keep the original 200px.
-          const _wsFontPx = _wsTraceFontSize(letter);
-          const font =
-            'bold ' + _wsFontPx + 'px "Comic Sans MS", "Chalkboard SE", sans-serif';
-          // Stroke widths also scale proportionally so visual + hit-area
-          // detection stay consistent across grapheme lengths.
-          const _wsVisStroke  = Math.max(14, Math.round(25 * (_wsFontPx / 200)));
-          const _wsMaskStroke = Math.max(20, Math.round(35 * (_wsFontPx / 200)));
-          ctx.font = font;
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.fillStyle = "#ffffff";
-          ctx.strokeStyle = "#e2e8f0";
-          ctx.lineWidth = _wsVisStroke;
-          ctx.setLineDash([15, 15]);
-          ctx.lineCap = "round";
-          ctx.lineJoin = "round";
-          ctx.strokeText(letter, width / 2, height / 2 + 20);
-          mCtx.font = font;
-          mCtx.textAlign = "center";
-          mCtx.textBaseline = "middle";
-          mCtx.fillStyle = "#000000";
-          mCtx.strokeStyle = "#ff0000";
-          mCtx.lineWidth = _wsMaskStroke;
-          mCtx.setLineDash([]);
-          mCtx.lineCap = "round";
-          mCtx.lineJoin = "round";
-          mCtx.strokeText(letter, width / 2, height / 2 + 20);
-          const mData = mCtx.getImageData(0, 0, width, height).data;
-          const svgPath =
-            LETTER_SVG_PATHS[letter] || LETTER_SVG_PATHS[letter.toLowerCase()];
-          let startX = width / 2,
-            startY = 60,
-            found = false;
-          if (svgPath) {
-            const mMatch = svgPath.match(/^M\s+([\d.]+)\s+([\d.]+)/);
-            if (mMatch) {
-              const svgX = parseFloat(mMatch[1]);
-              const svgY = parseFloat(mMatch[2]);
-              const searchRadius = 40;
-              let bestDist = Infinity;
-              for (let dy = -searchRadius; dy <= searchRadius; dy += 2) {
-                for (let dx = -searchRadius; dx <= searchRadius; dx += 2) {
-                  const px = Math.round(svgX + dx);
-                  const py = Math.round(svgY + dy);
-                  if (px < 0 || px >= width || py < 0 || py >= height) continue;
-                  const idx = (py * width + px) * 4;
-                  if (mData[idx + 3] > 100) {
-                    const dist = dx * dx + dy * dy;
-                    if (dist < bestDist) {
-                      bestDist = dist;
-                      startX = px;
-                      startY = py;
-                      found = true;
-                    }
-                  }
-                }
-              }
-              if (!found) {
-                startX = svgX;
-                startY = svgY;
-                found = true;
-              }
-            }
-          }
-          if (!found) {
-            for (let y = 40; y < height; y += 4) {
-              for (let x = 40; x < width; x += 4) {
-                const i = (y * width + x) * 4;
-                if (mData[i + 3] > 100) {
-                  startX = x;
-                  startY = y;
-                  found = true;
-                  break;
-                }
-              }
-              if (found) break;
-            }
-          }
-          if (found) {
-            ctx.beginPath();
-            ctx.arc(startX, startY, 12, 0, Math.PI * 2);
-            ctx.fillStyle = "#10b981";
-            ctx.fill();
-            ctx.strokeStyle = "#ffffff";
-            ctx.setLineDash([]);
-            ctx.lineWidth = 2;
-            ctx.stroke();
-            setStartDotPos({ x: startX, y: startY });
-          } else {
-            setStartDotPos(null);
-          }
-        }, [letter, resetKey]);
-        const checkTracing = () => {
-          const canvas = canvasRef.current;
-          const mask = maskRef.current;
-          if (!canvas || !mask) return;
-          const width = canvas.width;
-          const height = canvas.height;
-          const uData = canvas
-            .getContext("2d")
-            .getImageData(0, 0, width, height).data;
-          const mData = mask
-            .getContext("2d")
-            .getImageData(0, 0, width, height).data;
-          let hits = 0;
-          let totalTarget = 0;
-          let outsideInk = 0;
-          // Per-cell coverage lets us tell "traced the whole letter" from
-          // "scribbled one region" — a single global coverage % can't.
-          const GRID = 8;
-          const cellW = Math.ceil(width / GRID);
-          const cellH = Math.ceil(height / GRID);
-          const cellTarget = new Array(GRID * GRID).fill(0);
-          const cellHit = new Array(GRID * GRID).fill(0);
-          for (let i = 0; i < uData.length; i += 4) {
-            const uAlpha = uData[i + 3];
-            const mAlpha = mData[i + 3];
-            const isInk = uAlpha > 50 && uData[i] < 160 && uData[i + 1] < 160;
-            const isTarget = mAlpha > 50;
-            if (isTarget) {
-              totalTarget++;
-              const pxIndex = i / 4;
-              const ci =
-                Math.floor(Math.floor(pxIndex / width) / cellH) * GRID +
-                Math.floor((pxIndex % width) / cellW);
-              cellTarget[ci]++;
-              if (isInk) {
-                hits++;
-                cellHit[ci]++;
-              }
-            } else if (isInk) {
-              outsideInk++;
-            }
-          }
-          // Completeness: fraction of the glyph's regions that were actually traced.
-          let cellsWithTarget = 0;
-          let cellsCovered = 0;
-          for (let c = 0; c < cellTarget.length; c++) {
-            if (cellTarget[c] >= 12) {
-              cellsWithTarget++;
-              if (cellHit[c] / cellTarget[c] >= 0.35) cellsCovered++;
-            }
-          }
-          const completeness = cellsWithTarget
-            ? cellsCovered / cellsWithTarget
-            : 0;
-          // Accuracy / neatness: of all the ink laid down, how much is on the letter.
-          const totalInk = hits + outsideInk;
-          const accuracy = totalInk > 0 ? hits / totalInk : 0;
-          const coverage = hits / (totalTarget || 1); // for the "barely drawn" gate
-          // Stroke-derived signals. Digraphs/trigraphs are M-only anchors (no full
-          // path), so stroke order/count don't apply — they fall back to shape +
-          // neatness + start point only.
-          const svgPath =
-            LETTER_SVG_PATHS[letter] || LETTER_SVG_PATHS[letter.toLowerCase()];
-          const hasFullPath = !!svgPath && /[LQ]/i.test(svgPath);
-          const strokes = (strokesRef.current || []).filter(
-            (s) => s && s.length >= 3 && _wsStrokeLen(s) > 24,
-          );
-          // Did they start at the green dot?
-          let startScore = 1;
-          if (startDotPos && strokes.length) {
-            const f = strokes[0][0];
-            const d = Math.hypot(f.x - startDotPos.x, f.y - startDotPos.y);
-            startScore = d <= 35 ? 1 : d <= 70 ? 0.6 : 0.25;
-          }
-          // Plausible number of strokes? (single letters only)
-          let strokeCountScore = 1;
-          let expectedStrokes = 0;
-          if (hasFullPath) {
-            expectedStrokes = (svgPath.match(/M/g) || []).length || 1;
-            const diff = Math.abs(strokes.length - expectedStrokes);
-            strokeCountScore =
-              diff === 0 ? 1 : diff === 1 ? 0.7 : diff === 2 ? 0.4 : 0.2;
-          }
-          // Soft direction coaching (NOT scored): did the longest stroke run the
-          // same overall way as the reference path?
-          let directionOff = false;
-          if (hasFullPath && strokes.length) {
-            const pts = samplePathPoints(svgPath, 16);
-            if (pts.length > 1) {
-              const refDx = pts[pts.length - 1].x - pts[0].x;
-              const refDy = pts[pts.length - 1].y - pts[0].y;
-              const longest = strokes.reduce(
-                (a, b) => (_wsStrokeLen(b) > _wsStrokeLen(a) ? b : a),
-                strokes[0],
-              );
-              const uDx = longest[longest.length - 1].x - longest[0].x;
-              const uDy = longest[longest.length - 1].y - longest[0].y;
-              const dot = refDx * uDx + refDy * uDy;
-              const mag = Math.hypot(refDx, refDy) * Math.hypot(uDx, uDy);
-              if (mag > 1500 && dot / mag < -0.3) directionOff = true;
-            }
-          }
-          // Composite formation score (0–1), weighted by what matters most.
-          let score;
-          let passFloorOk;
-          if (hasFullPath) {
-            score =
-              0.45 * completeness +
-              0.3 * accuracy +
-              0.15 * startScore +
-              0.1 * strokeCountScore;
-            passFloorOk = completeness >= 0.55 && accuracy >= 0.45;
-          } else {
-            score = 0.55 * completeness + 0.3 * accuracy + 0.15 * startScore;
-            passFloorOk = completeness >= 0.5 && accuracy >= 0.4;
-          }
-          const score100 = Math.round(score * 100);
-          const passThreshold = hasFullPath ? 0.7 : 0.65;
-          debugLog("Trace formation:", {
-            score100,
-            completeness,
-            accuracy,
-            startScore,
-            strokeCountScore,
-            strokes: strokes.length,
-            expectedStrokes,
-            directionOff,
-          });
-          // Hardly anything drawn yet — encourage, don't score.
-          if (totalInk < 200 || coverage < 0.08) {
-            setFeedback({
-              type: "error",
-              emoji: "🔄",
-              size: "md",
-              tip: "Trace the letter!",
-            });
-            setTimeout(() => {
-              if (localMountedRef.current) setFeedback(null);
-            }, 2000);
-            return;
-          }
-          if (score >= passThreshold && passFloorOk) {
-            setFeedback({
-              type: "success",
-              emoji: "🌟",
-              size: "lg",
-              tip: "Great forming! " + score100 + "/100",
-            });
-            setTimeout(() => {
-              if (localMountedRef.current) onComplete(true, score100);
-            }, 800);
-            return;
-          }
-          // Not yet — one targeted, encouraging tip on the weakest thing.
-          let tip;
-          if (startScore <= 0.6) tip = "Start at the green dot!";
-          else if (completeness < 0.55) tip = "Trace the whole letter!";
-          else if (accuracy < 0.5) tip = "Try to stay on the lines!";
-          else if (directionOff) tip = "Follow the letter from the green dot.";
-          else tip = "Almost! Keep tracing.";
-          setFeedback({ type: "neutral", emoji: "👆", size: "md", tip: tip });
-          setTimeout(() => {
-            if (localMountedRef.current) setFeedback(null);
-          }, 2200);
-        };
-        const getPoint = (e) => {
-          const canvas = canvasRef.current;
-          const rect = canvas.getBoundingClientRect();
-          const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-          const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-          return { x: clientX - rect.left, y: clientY - rect.top };
-        };
-        const startDraw = (e) => {
-          setIsDrawing(true);
-          startScratch();
-          const { x, y } = getPoint(e);
-          strokesRef.current.push([{ x, y }]); // begin a new captured stroke
-          const ctx = canvasRef.current.getContext("2d");
-          ctx.setLineDash([]);
-          ctx.strokeStyle = "#7c3aed";
-          ctx.lineWidth = 30;
-          ctx.lineCap = "round";
-          ctx.lineJoin = "round";
-          ctx.beginPath();
-          ctx.moveTo(x, y);
-        };
-        const draw = (e) => {
-          if (!isDrawing) return;
-          e.preventDefault();
-          const { x, y } = getPoint(e);
-          const curStroke = strokesRef.current[strokesRef.current.length - 1];
-          if (curStroke) curStroke.push({ x, y }); // record point for formation scoring
-          const ctx = canvasRef.current.getContext("2d");
-          ctx.lineTo(x, y);
-          ctx.stroke();
-        };
-        const endDraw = () => {
-          if (isDrawing) {
-            setIsDrawing(false);
-            stopScratch();
-            const ctx = canvasRef.current.getContext("2d");
-            ctx.beginPath();
-          }
-        };
-        return /*#__PURE__*/ React.createElement(
-          "div",
-          { className: "flex flex-col items-center animate-in fade-in" },
-          // WCAG 2.1.1 / 2.5.7: formation scoring depends on the complete
-          // movement path, not only its endpoints. The tracing gesture therefore
-          // uses the path-dependent-input exception; the internal scoring mask is
-          // decorative, while the exposed surface explains the required gesture.
-          /*#__PURE__*/ React.createElement("canvas", {
-            ref: maskRef,
-            role: "presentation",
-            "aria-hidden": "true",
-            width: 320,
-            height: 320,
-            className: "hidden",
-          }),
-          /*#__PURE__*/ React.createElement(
-            "p",
-            { id: "word-sounds-tracing-path-note", className: "sr-only" },
-            "This handwriting exercise uses path-dependent input because it evaluates the complete drawing path. Use a mouse, stylus, or touch gesture to trace from the green start dot.",
-          ),
-          /*#__PURE__*/ React.createElement(
-            "div",
-            { className: "relative" },
-            /*#__PURE__*/ React.createElement("canvas", {
-              ref: canvasRef,
-              role: "img",
-              "aria-label":
-                (ts("word_sounds.sr_tracing_canvas", { letter }) ||
-                  ("Letter tracing surface for " + letter + ". Draw from the green start dot with a mouse, stylus, or touch; the exercise evaluates the complete movement path.")),
-              "aria-describedby": "word-sounds-tracing-path-note",
-              width: 320,
-              height: 320,
-              tabIndex: 0,
-              onMouseDown: startDraw,
-              onMouseMove: draw,
-              onMouseUp: endDraw,
-              onMouseLeave: endDraw,
-              onTouchStart: startDraw,
-              onTouchMove: draw,
-              onTouchEnd: endDraw,
-              className: `border-4 rounded-3xl bg-white shadow-xl touch-none cursor-crosshair mb-6 transition-all duration-500 ${feedback?.type === "success" ? "border-solid border-emerald-400 shadow-emerald-200/50 shadow-2xl" : feedback?.type === "error" ? "border-dashed border-rose-300" : "border-dashed border-violet-200"}`,
-            }),
-            !isDrawing &&
-            !feedback &&
-            (isAnimating ? handAnimPos : startDotPos) &&
-              /*#__PURE__*/ React.createElement(
-              "div",
-              {
-                className: `absolute pointer-events-none ${isAnimating ? "" : "animate-bounce motion-reduce:animate-none"}`,
-                style: {
-                  left: (isAnimating ? handAnimPos?.x : startDotPos?.x) - 35,
-                  top: (isAnimating ? handAnimPos?.y : startDotPos?.y) - 15,
-                  transform: "translate(-50%, -50%)",
-                  transition: isAnimating
-                    ? "left 0.12s ease-out, top 0.12s ease-out"
-                    : "none",
-                },
-              },
-                /*#__PURE__*/ React.createElement(
-                "span",
-                {
-                  className: `text-4xl filter drop-shadow-lg transform -rotate-12 block ${isAnimating ? "scale-110" : ""}`,
-                  "aria-hidden": "true",
-                },
-                "\uD83D\uDC49",
-              ),
-            ),
-            feedback &&
-              /*#__PURE__*/ React.createElement(
-              "div",
-              {
-                className:
-                  "absolute inset-0 flex flex-col items-center justify-center gap-2 pointer-events-none",
-              },
-                /*#__PURE__*/ React.createElement(
-                "div",
-                {
-                  className: `
-                                ${feedback.size === "lg" ? "text-8xl" : "text-5xl"}
-                                ${feedback.type === "success" ? "animate-bounce motion-reduce:animate-none" : "animate-pulse motion-reduce:animate-none"}
-                                filter drop-shadow-xl
-                                transition-all duration-300
-                            `,
-                },
-                feedback.emoji,
-              ),
-              feedback.tip &&
-                /*#__PURE__*/ React.createElement(
-                "span",
-                {
-                  className:
-                    "text-sm font-bold text-slate-700 bg-white/85 px-3 py-1 rounded-full shadow",
-                },
-                feedback.tip,
-              ),
-            ),
-          ),
-          /*#__PURE__*/ React.createElement(
-            "div",
-            { className: "flex items-center justify-center gap-3 mb-6" },
-            /*#__PURE__*/ React.createElement(
-              "span",
-              {
-                className:
-                  "text-5xl font-black text-violet-600 bg-violet-50 w-16 h-16 rounded-2xl flex items-center justify-center shadow-inner",
-              },
-              letter,
-            ),
-            word &&
-              /*#__PURE__*/ React.createElement(
-              "span",
-              { className: "text-lg text-slate-600 font-medium" },
-              "for ",
-                /*#__PURE__*/ React.createElement(
-                "span",
-                { className: "font-bold text-slate-700" },
-                word,
-              ),
-            ),
-          ),
-          /*#__PURE__*/ React.createElement(
-            "div",
-            { className: "flex gap-4" },
-            /*#__PURE__*/ React.createElement(
-              "button",
-              {
-                onClick: () => {
-                  setResetKey((k) => k + 1);
-                  setFeedback(null);
-                },
-                className:
-                  "px-6 py-3 rounded-xl font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors",
-              },
-              "Clear",
-            ),
-            /*#__PURE__*/ React.createElement(
-              "button",
-              {
-                onClick: checkTracing,
-                className:
-                  "px-8 py-3 rounded-xl font-bold bg-violet-600 text-white shadow-lg hover:scale-105 transition-transform",
-              },
-              "Check \u2713",
-            ),
-          ),
-        );
-      });
       const renderPrompt = () =>
         /*#__PURE__*/ React.createElement(
         "div",
@@ -14192,6 +14243,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 onCheckAnswer: (ans) => checkAnswer(ans, currentWordSoundsWord),
                 isEditing: isEditing,
                 onUpdateOption: handleOptionUpdate,
+                t: t,
+                ts: ts,
+                isMountedRef: isMountedRef,
               }),
             );
           }
@@ -14214,6 +14268,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 onCheckAnswer: (ans) => checkAnswer(ans, "correct"),
                 isEditing: isEditing,
                 onUpdateOption: handleOptionUpdate,
+                t: t,
+                ts: ts,
+                isMountedRef: isMountedRef,
+                playSound: playSound,
               }),
             );
           case "spelling_bee": {
@@ -14799,6 +14857,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     manipulationState?.answer?.toLowerCase();
                   checkAnswer(isCorrect ? "correct" : "incorrect", "correct");
                 },
+                t: t,
+                ts: ts,
+                speakInstructionWithPhonemes: speakInstructionWithPhonemes,
               }),
               /*#__PURE__*/ React.createElement(
                 "button",
@@ -14836,6 +14897,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     ans?.toLowerCase() === word.toLowerCase();
                   checkAnswer(isCorrect ? "correct" : "incorrect", "correct");
                 },
+                t: t,
+                ts: ts,
               }),
               /*#__PURE__*/ React.createElement(
                 "button",
@@ -14869,6 +14932,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   const isCorrect = taps === correct;
                   checkAnswer(isCorrect ? "correct" : "incorrect", "correct");
                 },
+                ts: ts,
               }),
             );
           }
@@ -14973,6 +15037,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       _rimeOf(_a) === _rimeOf(_tw));
                   checkAnswer(isRhyme ? "correct" : "incorrect", "correct");
                 },
+                t: t,
+                ts: ts,
               }),
               /*#__PURE__*/ React.createElement(
                 "button",
@@ -15160,6 +15226,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 key: `trace-${displayLetter}-${tracingPhase}`,
                 letter: displayLetter,
                 word: currentWordSoundsWord,
+                ts: ts,
+                audioInstances: audioInstances,
+                feedbackAudioRef: feedbackAudioRef,
                 onComplete: (success, formationScore) => {
                   if (success) {
                     playSound("success");
@@ -15521,7 +15590,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           {
             ref: sessionCompleteDialogRef,
             className:
-              "fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in motion-reduce:animate-none motion-reduce:transition-none zoom-in duration-300",
+              "word-sounds-root fixed inset-0 bg-black/50 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in motion-reduce:animate-none motion-reduce:transition-none zoom-in duration-300",
             role: "dialog",
             "aria-modal": "true",
             "aria-labelledby": "word-sounds-session-complete-title",
@@ -16103,7 +16172,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         {
           ref: modalRef,
           className:
-            "fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in",
+            "word-sounds-root fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in",
           role: "dialog",
           "aria-modal": "true",
           "aria-labelledby": "word-sounds-dialog-title",
@@ -16962,6 +17031,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   onModeChange: updateAnchorMode,
                   onPlaySound: handleAnchorPlay,
                   errorFlash: anchorErrorFlash,
+                  ts: ts,
                 });
               })(),
               renderActivityContent(),
