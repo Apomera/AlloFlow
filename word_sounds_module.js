@@ -13624,6 +13624,15 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               { className: "text-slate-600 mb-4" },
               ts("word_sounds.loading_phonemes"),
             ),
+            // No backgrounding during a probe. This loading card can appear
+            // BETWEEN items mid-probe (fetchWordData shows it whenever a word
+            // isn't already in the pack — i.e. on a teacher device generating at
+            // runtime), and the probe clock is wall-clock: it keeps counting
+            // while minimized. Backgrounding a timed CBM therefore inflates
+            // elapsed time and silently depresses the reported items/min the
+            // teacher may tier on. Same rule the module already applies to
+            // celebrations in probe mode — nothing that eats probe time.
+            !isProbeMode &&
             /*#__PURE__*/ React.createElement(
               "button",
               {

@@ -184,3 +184,25 @@ describe('sound counting: probe mode', () => {
     expect(rows[0].correct).toBe(false);
   });
 });
+
+describe('probe timing integrity', () => {
+  it('a timed probe cannot be backgrounded', async () => {
+    // The loading card can appear BETWEEN items mid-probe, and the probe clock
+    // is wall-clock — it keeps counting while minimized. Offering "Run in
+    // Background" there lets a teacher inflate elapsed time and depress the
+    // items/min they may tier a child on.
+    const src = readFileSync(resolve(process.cwd(), 'word_sounds_module.js'), 'utf8');
+    const idx = src.indexOf('word_sounds.run_in_background');
+    expect(idx, 'run_in_background affordance not found').toBeGreaterThan(0);
+    const block = src.slice(Math.max(0, idx - 900), idx);
+    expect(block, 'the background button must be gated behind !isProbeMode')
+      .toMatch(/!isProbeMode &&/);
+  });
+
+  it('probe mode still suppresses per-item celebrations', () => {
+    // Same principle, already established in checkAnswer: nothing that eats
+    // probe time or pays out XP a probe deliberately never awards.
+    const src = readFileSync(resolve(process.cwd(), 'word_sounds_module.js'), 'utf8');
+    expect(src).toMatch(/if \(!disableAnimations && !isProbeMode\) \{/);
+  });
+});
