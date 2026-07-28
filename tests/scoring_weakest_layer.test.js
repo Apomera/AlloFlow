@@ -86,7 +86,12 @@ describe('anti-drift: the engine ships min (not mean) + a reproducible content s
     expect(pipeSrc).not.toMatch(/Math\.abs\(a\.score - calculatedScore\) > 12\) \{\s*\n\s*warnLog/);
   });
   it('_scoreSource reports "min", not "blended"', () => {
-    expect(pipeSrc).toMatch(/axeCoreFailed \? 'content-only' : 'min'/);
+    // _scoreSource now derives from which evidence layers actually produced a
+    // result, rather than from an axe-failure flag. What this test guards is
+    // unchanged: with both layers present the source reads 'min', and the word
+    // 'blended' never appears as a source value.
+    expect(pipeSrc).toMatch(/_scoreSource: _finalAiEvidenceAvailable \? \(_deterministicEvidenceAvailable \? 'min' : 'content-only'\)/);
+    expect(pipeSrc).not.toMatch(/_scoreSource: [^\n]*'blended'/);
   });
 });
 
@@ -119,7 +124,21 @@ describe('single source of truth: one computeHeadline, consumed everywhere (2026
 
 describe('anti-drift: the degraded success toast is gated (score-blend-degraded-1)', () => {
   it('a throttle-degraded run no longer claims "PDF remediated!" — it warns instead', () => {
-    expect(pipeSrc).toMatch(/else if \(_aiVerificationIncomplete && finalAfterScore !== null\)/);
+    // The inline toast ladder became the pure _alloSelectCompletionToast
+    // selector, precisely so this gate stops being pinned by source spelling —
+    // an earlier ladder had a branch sitting one rung BELOW success that was
+    // therefore unreachable, and a string pin could not have caught that.
+    // Exercise the real selector instead: the condition is what matters, not
+    // where it is written.
+    const _selStart = pipeSrc.indexOf('function _alloSelectCompletionToast(state) {');
+    expect(_selStart).toBeGreaterThan(-1);
+    const _selSrc = pipeSrc.slice(_selStart, pipeSrc.indexOf('\n}', _selStart) + 2);
+    const selectToast = new Function(_selSrc + '\nreturn _alloSelectCompletionToast;')();
+    expect(selectToast({ aiVerificationIncomplete: true, finalAfterScore: 90 })).toBe('ai-incomplete');
+    // and it must still outrank the plain success branch, which is the bug class
+    expect(selectToast({ aiVerificationIncomplete: true, finalAfterScore: 90, outcomeState: 'success' })).toBe('ai-incomplete');
+    // an unscored degraded run is not an 'ai-incomplete' score claim at all
+    expect(selectToast({ aiVerificationIncomplete: true, finalAfterScore: null })).not.toBe('ai-incomplete');
     expect(pipeSrc).toMatch(/the AI semantic audit was throttled and didn't finish/);
   });
 });

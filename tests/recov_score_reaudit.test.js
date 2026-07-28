@@ -56,11 +56,20 @@ describe('recov-score-order — re-score changes the reported number when the do
 describe('recov-score-order — anti-drift on the gated re-audit block', () => {
   it('the gated, fail-soft re-audit/re-blend block is present', () => {
     expect(src).toContain('const _imageRecoveryInjected = accessibleHtml.indexOf(\'data-image-recovery="true"\') !== -1;');
-    expect(src).toContain('if (_autoRestore || _imageRecoveryInjected) {');
+    // The trigger widened to include _htmlChangedAfterFinalAiAudit: any html
+    // mutation after the final AI audit invalidates that audit, not just the two
+    // recovery paths originally enumerated. Strictly more conservative.
+    expect(src).toContain('if (_autoRestore || _imageRecoveryInjected || _htmlChangedAfterFinalAiAudit) {');
     expect(src).toContain('Re-scored after recovery mutations (weakest-layer)');
   });
   it('the triage vars it reassigns were promoted to let', () => {
-    expect(src).toContain('let axeViolations = axeResults ? axeResults.totalViolations : 0;');
+    // Still a `let` (the point of this test), but the fallback moved from 0 to
+    // null and the truthiness check became _alloUsableAxeAudit. That matters
+    // beyond spelling: `? ... : 0` made "axe never ran" indistinguishable from
+    // "axe found zero violations", which is the exact confusion that let an
+    // axe-only-clean verdict be claimed off an axe run that had failed.
+    expect(src).toContain('let axeViolations = _alloUsableAxeAudit(axeResults) ? axeResults.totalViolations : null;');
+    expect(src).toMatch(/function _alloUsableAxeAudit\(audit\) \{[\s\S]{0,200}Number\.isFinite\(audit\.score\)[\s\S]{0,120}Number\.isFinite\(audit\.totalViolations\)/);
     expect(src).toContain('let needsExpertReview = _accessibilityConcern || _contentFidelityConcern;');
   });
   it('runs AFTER the recovery mutations and BEFORE the result/issue-resolution (ordering guard)', () => {

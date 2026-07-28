@@ -38,13 +38,29 @@ describe('#10 lang-text-floor — target-aware CJK floor', () => {
 
 describe('#11 recov-score-order — re-audit success keys off the FRESH axe result', () => {
   it('anti-drift: _reAxeOk is computed from _reAxe (fresh), not the stale axeResults', () => {
-    expect(src).toContain("const _reAxeOk = !!(_reAxe && typeof _reAxe.score === 'number' && Number.isFinite(_reAxe.score));");
+    // The inline check became the shared _alloUsableAxeAudit guard, which is
+    // strictly stronger: it also requires totalViolations to be a finite,
+    // non-negative number, so an axe result carrying a score but no usable
+    // violation count no longer reads as OK. Pin the call and the guard body.
+    expect(src).toContain('const _reAxeOk = _alloUsableAxeAudit(_reAxe);');
+    expect(src).toMatch(/function _alloUsableAxeAudit\(audit\) \{[\s\S]{0,200}Number\.isFinite\(audit\.score\)[\s\S]{0,120}Number\.isFinite\(audit\.totalViolations\)[\s\S]{0,80}audit\.totalViolations >= 0/);
     // det is computed from the fresh values, not the possibly-stale prior results
     expect(src).toMatch(/const _reDet = _reAxeOk\s*\n\s*\? \(_reEaOk \? Math\.min\(_reAxe\.score, _reEa\.score\) : _reAxe\.score\)\s*\n\s*: \(_reEaOk \? _reEa\.score : null\);/);
     expect(src).toContain('axeResults = _reAxeOk ? _reAxe : null;');
   });
   it('anti-drift: a failed re-audit falls back to AI-only and reports axe as failed (consistent triage)', () => {
-    expect(src).toContain('if (_reAi !== null) finalAfterScore = _reAi;');
-    expect(src).toContain('axeFailed = !_reAxeOk;');
+    // What was one unconditional assignment is now a three-way ladder, because
+    // `if (_reAi !== null) finalAfterScore = _reAi` took the AI number even when
+    // that audit was DEGRADED and even when fresh deterministic evidence existed
+    // and was lower — i.e. it silently abandoned weakest-layer on exactly the
+    // path where the score had just been invalidated by recovery mutations.
+    //   AI usable + det usable  -> weakest-layer min, verification complete
+    //   AI degraded + det usable -> deterministic headline, marked incomplete
+    //   no det evidence          -> AI-only, axe reported failed (no stale blend)
+    expect(src).toContain('if (_reAi !== null && !_reAiDegraded && _reDet !== null) {');
+    expect(src).toContain('} else if (_reAiDegraded && _reDet !== null) {');
+    expect(src).toContain('} else if (_reDet === null) {');
+    expect(src).toContain('finalAfterScore = _reAi;');
+    expect(src).toContain('axeCoreFailed = !_reAxeOk;');
   });
 });

@@ -79,13 +79,36 @@ describe('anti-drift: the buyback UI is gone', () => {
 describe('anti-drift: doc_pipeline ships the audit-honesty fixes', () => {
   it('the chunked merge derives count from DISTINCT REAL pages only (not chunk-index fallbacks that double-count boundary straddlers)', () => {
     // audit-floor-countweight-1 (2026-06-21): count from realPages.size, never pagesArr.length.
-    expect(pipeSrc).toMatch(/count: Math\.max\(iss\.count \|\| 1, realPageCount \|\| 1\)/);
+    // A third term joined the max: evidenceLocationCount, for issues whose
+    // location does not resolve to a page number at all. Without it an issue
+    // occurring at five distinct non-page anchors counted as ONE and was
+    // under-weighted. It cannot reintroduce the boundary-straddler
+    // double-count that this test was written for, because it only accrues
+    // when realPage is null (so it never overlaps realPages), it is keyed by
+    // the normalised location string, it stores max-per-key rather than
+    // accumulating, and document-global issues are excluded — otherwise
+    // "document has no title" would multiply once per chunk. Those four
+    // properties are what keep the count honest, so pin them, not the literal.
+    expect(pipeSrc).toMatch(/count: Math\.max\(iss\.count \|\| 1, realPageCount \|\| 1, evidenceLocationCount \|\| 1\)/);
     expect(pipeSrc).toMatch(/const realPage = _extractPageNum\(issue\.location\)/);
+    expect(pipeSrc).toMatch(/if \(realPage == null && locationKey && !_alloAuditIssueIsDocumentGlobal\(issue\)\)/);
+    expect(pipeSrc).toMatch(/stored\.evidenceLocations\.set\(locationKey, Math\.max\(stored\.evidenceLocations\.get\(locationKey\) \|\| 0, occurrenceCount\)\)/);
     expect(pipeSrc).not.toMatch(/count: Math\.max\(iss\.count \|\| 1, pagesArr\.length\)/);
   });
   it('the partial-audit floor nulls the score past the threshold', () => {
-    expect(pipeSrc).toMatch(/_coverageTooLow = chunks\.length > 0 && \(_failedChunks \/ chunks\.length\) > 0\.25/);
+    // The gate is no longer the bare >25% ratio. Two deliberate changes:
+    //   _globalCoverageMissing  nulls outright when chunk 0 never returned;
+    //   (_failedChunks >= 2 || _auditedCount < 2)  keeps ONE transient failure
+    //   on a tiny 2-3 chunk audit from nulling the whole score, which used to
+    //   drive the auto-continue loop to grind under a throttle storm.
+    // The narrowing does not cost honesty: the kept case still discloses
+    // "score covers audited sections only", which is asserted below. Pinned as
+    // the three components plus that disclosure, not as one literal expression.
+    expect(pipeSrc).toMatch(/_coverageTooLow = _globalCoverageMissing \|\| \(chunks\.length > 0 && \(_failedChunks \/ chunks\.length\) > 0\.25 && \(_failedChunks >= 2 \|\| _auditedCount < 2\)\)/);
+    expect(pipeSrc).toMatch(/const _globalCoverageMissing = !chunkResults\[0\]/);
     expect(pipeSrc).toMatch(/score: _coverageTooLow \? null : mergedScore/);
+    // a partial audit that KEEPS its score must say so
+    expect(pipeSrc).toMatch(/_coverageTooLow \? '' : ' — score covers audited sections only'/);
   });
   it('the engine still applies NO pass buyback (passFactor=1 unchanged)', () => {
     expect(pipeSrc).toMatch(/const passFactor = 1;/);
