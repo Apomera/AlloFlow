@@ -5098,6 +5098,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       var dataRef = React.useRef(d);
       dataRef.current = d;
       var upd = function(key, val) { ctx.update('roadReady', key, val); };
+      // Spreads onClick + onKeyDown (Enter/Space) + role=button + tabIndex onto a
+      // non-native element.
+      //
+      // Uses the host's ctx.a11yClick when it supplies a key handler, but does NOT
+      // assume it does. role + tabIndex WITHOUT onKeyDown is the worse failure in this
+      // family: a screen reader announces an operable control, the element takes
+      // focus, and Enter does nothing — and it passes a casual audit precisely because
+      // the ARIA is present. Since this wrapper's whole job is preventing that, it
+      // guarantees the key handler rather than trusting the shape of what it is given.
+      var a11yClick = function(handler) {
+        var props = ctx.a11yClick
+          ? Object.assign({}, ctx.a11yClick(handler))
+          : { onClick: handler, role: 'button', tabIndex: 0 };
+        if (!props.onKeyDown) {
+          props.onKeyDown = function(e) {
+            if (e.key !== 'Enter' && e.key !== ' ') return;
+            e.preventDefault();
+            handler(e);
+          };
+        }
+        if (props.role == null) props.role = 'button';
+        if (props.tabIndex == null) props.tabIndex = 0;
+        return props;
+      };
       var updMulti = function(obj) { ctx.updateMulti ? ctx.updateMulti('roadReady', obj) : Object.keys(obj).forEach(function(k) { upd(k, obj[k]); }); };
       // Hydrate persisted state from localStorage on first render only. Gated by a ref so
       // we don't loop: the upd() schedules a re-render, on which the ref is already true
@@ -28356,9 +28380,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           h('style', null,
             __alloT('stem.roadready.keyframes_rrcardflip_from_transform_ro', '@keyframes rrCardFlip { from{transform:rotateY(90deg);opacity:0} to{transform:rotateY(0);opacity:1} }')
           ),
-          h('div', {
+          h('div', Object.assign({
             key: 'card-' + fcIdx + '-' + fcFlipped,
-            onClick: function() { upd('permitFlashFlipped', !fcFlipped); },
+            // Flipping was mouse-only, which made the whole flashcard deck unusable
+            // without a pointer. aria-pressed carries the face to a screen reader.
+            'aria-label': fcFlipped ? 'Flashcard, answer side. Activate to show the question.' : 'Flashcard, question side. Activate to show the answer.',
+            'aria-pressed': fcFlipped ? 'true' : 'false',
             style: {
               minHeight: '260px',
               background: fcFlipped ? 'linear-gradient(135deg, #0c4a6e, #1e3a5f)' : 'linear-gradient(135deg, #fef3c7, #fde68a)',
@@ -28372,7 +28399,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
               marginBottom: '16px'
             }
-          },
+          }, a11yClick(function() { upd('permitFlashFlipped', !fcFlipped); })),
             h('div', { style: { fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px', color: fcFlipped ? '#38bdf8' : '#a07830', textAlign: 'center' } }, fcFlipped ? 'Answer' : 'Question ' + (fcIdx + 1)),
             !fcFlipped ? h('div', { style: { fontSize: '16px', fontWeight: 700, lineHeight: '1.5', textAlign: 'center' } }, curCard.q.q) :
               h('div', null,
@@ -29022,10 +29049,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             setupSteps.map(function(_, si) {
               var active = si === ssStep;
               var done = si < ssStep;
-              return h('div', { key: si,
+              return h('div', Object.assign({ key: si,
                 style: { width: active ? '24px' : '8px', height: '8px', borderRadius: '4px', background: active ? '#8b5cf6' : done ? '#c4b5fd' : 'rgba(255,255,255,0.15)', transition: 'all 0.3s', cursor: 'pointer' },
-                onClick: function() { upd('ssStep', si); }
-              });
+                // Step jump-dots. 8px pointer targets were the only way to move
+                // between steps directly; a11yClick makes each one focusable and
+                // Enter/Space operable, and the label says which step it goes to
+                // since the dot itself carries no text.
+                'aria-label': 'Go to step ' + (si + 1) + (active ? ', current' : done ? ', completed' : ''),
+                'aria-current': active ? 'step' : undefined
+              }, a11yClick(function() { upd('ssStep', si); })));
             })
           ),
           // Current step
@@ -31623,6 +31655,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             )
           ) : h('div', null,
             h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '14px', padding: '30px', border: '2px solid #f43f5e', textAlign: 'center', minHeight: '200px', display: 'flex', flexDirection: 'column', justifyContent: 'center', cursor: 'pointer' },
+              // A reaction-time exercise reachable only by mouse cannot be attempted
+              // at all without one — not merely awkward, excluded. a11yClick adds the
+              // Enter/Space handler alongside the click.
+              'aria-label': htState.responded ? 'Hazard response recorded' : 'Hazard spotted — press Enter or Space, or click, as fast as you can',
+              onKeyDown: function(e) {
+                if (e.key !== 'Enter' && e.key !== ' ') return;
+                e.preventDefault();
+                e.currentTarget.click();
+              },
+              role: 'button',
+              tabIndex: 0,
               onClick: function() {
                 if (htState.responded) return;
                 var elapsed = (Date.now() - htState.startTime) / 1000;
@@ -32486,6 +32529,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               minHeight: '200px', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
               border: '2px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', transition: 'background 0.1s'
             },
+            // Same exclusion as the hazard drill: this measures reaction speed, so a
+            // pointer-only target locks keyboard users out of the exercise entirely.
+            // The colour alone carries the state, hence the spoken label too.
+            'aria-label': rtState.phase === 'waiting' ? 'Reaction trainer. Press Enter or Space to start.'
+              : rtState.phase === 'ready' ? 'Wait for green, then press Enter or Space.'
+              : rtState.phase === 'go' ? 'Green — press Enter or Space now.'
+              : 'Result shown. Press Enter or Space to try again.',
+            onKeyDown: function(e) {
+              if (e.key !== 'Enter' && e.key !== ' ') return;
+              e.preventDefault();
+              e.currentTarget.click();
+            },
+            role: 'button',
+            tabIndex: 0,
             onClick: function() {
               if (rtState.phase === 'waiting') {
                 // Start: show red, then after random delay, show green
