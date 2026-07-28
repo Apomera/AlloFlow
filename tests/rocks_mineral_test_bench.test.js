@@ -310,3 +310,120 @@ describe('streak plate — the powder is visible for every mineral', () => {
     expect(a).toBe(b);
   });
 });
+
+// ── The scratch result has to be visible on the specimen ────────────────────
+//
+// Fourth appearance of the same bug. The groove was a flat #1f2937, which is
+// magnetite's body colour EXACTLY, so scratching magnetite cut a groove with
+// zero separation from the rock it was cut into. The softer-tool smear was a
+// flat #e2e8f0, invisible on quartz, halite, calcite, talc, gypsum and diamond.
+// Ten of the eighteen minerals had an unreadable result in a test whose whole
+// output is the mark left behind.
+describe('scratch bench — the mark is visible on every specimen', () => {
+  const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+  const separation = (a, b) => {
+    const [x, y, z] = rgb(a), [p, q, r] = rgb(b);
+    return Math.sqrt((x - p) ** 2 + (y - q) ** 2 + (z - r) ** 2);
+  };
+
+  function minerals() {
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    return src.split('\n')
+      .filter((l) => /\{\s*id:\s*'/.test(l) && /streak:/.test(l) && /luster:/.test(l))
+      .map((l) => ({
+        id: /\{\s*id:\s*'(\w+)'/.exec(l)[1],
+        hardness: parseFloat(/hardness:\s*([\d.]+)/.exec(l)[1]),
+        colour: /\bcolor:\s*'([^']+)'/.exec(l)[1],
+      }));
+  }
+
+  function bench(mineralId, toolId) {
+    const { markup } = render({ selectedMineral: mineralId, scratchTool: toolId, scratchAnimProgress: 100 });
+    const anchor = markup.indexOf('viewBox="0 0 168 118"');
+    expect(anchor, `no scratch bench for ${mineralId}/${toolId}`).toBeGreaterThan(-1);
+    const start = markup.lastIndexOf('<svg', anchor);
+    return markup.slice(start, markup.indexOf('</svg>', anchor) + 6);
+  }
+
+  it('separates both the groove and the smear from the body they are drawn on', () => {
+    const mins = minerals();
+    expect(mins.length).toBe(18);
+    let checked = 0;
+    // A diamond scribe cuts everything; a fingernail cuts almost nothing. Between
+    // them every mineral gets tested for both marks.
+    ['diamond_scribe', 'fingernail'].forEach((tool) => {
+      mins.forEach((m) => {
+        const svg = bench(m.id, tool);
+        const body = /<rect[^>]*width="144"[^>]*fill="(#[0-9a-fA-F]{6})"/.exec(svg);
+        expect(body, `${m.id}: no specimen body`).toBeTruthy();
+        // The groove is 2.6 wide, the smear 3.4 — whichever this case produced.
+        const mark = /<line[^>]*stroke="(#[0-9a-fA-F]{6})"[^>]*stroke-width="(?:2\.6|3\.4)"/.exec(svg)
+          || /<line[^>]*stroke-width="(?:2\.6|3\.4)"[^>]*stroke="(#[0-9a-fA-F]{6})"/.exec(svg);
+        expect(mark, `${m.id}/${tool}: no mark drawn at all`).toBeTruthy();
+        checked++;
+        expect(separation(mark[1], body[1]),
+          `${m.id}/${tool}: mark ${mark[1]} is invisible on body ${body[1]}`).toBeGreaterThan(0.10);
+      });
+    });
+    expect(checked).toBe(36);
+  });
+
+  it('was genuinely broken before — magnetite scored exactly zero', () => {
+    // Guards the guard: a threshold that everything passes proves nothing.
+    // #1f2937 was the literal groove colour AND magnetite's literal body.
+    const magnetite = minerals().find((m) => m.id === 'magnetite');
+    expect(magnetite.colour).toBe('#1f2937');
+    expect(separation('#1f2937', magnetite.colour)).toBe(0);
+  });
+
+  it('keeps the Mohs captions inside the frame at both ends of the scale', () => {
+    // At hardness 10 the marker lands at x=156 of a 168-wide viewBox, so
+    // "mineral 10" ran off the right edge and rendered as "mineral " — on
+    // diamond, whose hardness is the entire point of it.
+    const texts = (svg) => [...svg.matchAll(/<text[^>]*\bx="([-\d.]+)"[^>]*>([^<]*)</g)]
+      .map((m) => ({ x: parseFloat(m[1]), label: m[2] }));
+
+    const hardest = bench('diamond', 'diamond_scribe');
+    const mineralCap = texts(hardest).find((t) => t.label.startsWith('mineral'));
+    expect(mineralCap.label).toBe('mineral 10');
+    // Centred, ~7.5px font: half-width of "mineral 10" is about 20 units.
+    expect(mineralCap.x + 20).toBeLessThanOrEqual(168);
+    expect(mineralCap.x - 20).toBeGreaterThanOrEqual(0);
+
+    const softest = bench('talc', 'fingernail');
+    const talcCap = texts(softest).find((t) => t.label.startsWith('mineral'));
+    expect(talcCap.label).toBe('mineral 1');
+    expect(talcCap.x - 20).toBeGreaterThanOrEqual(0);
+  });
+
+  it('keeps the marker itself at the true hardness even when the caption moves', () => {
+    // Clamping the caption must not lie about where the value sits.
+    const svg = bench('diamond', 'diamond_scribe');
+    // Mineral marker triangle is filled #7c3aed; its apex x is the true position.
+    const marker = /<polygon[^>]*points="([\d.]+),[\d.]+ [^"]*"[^>]*fill="#7c3aed"/.exec(svg);
+    expect(marker, 'no mineral marker').toBeTruthy();
+    expect(parseFloat(marker[1])).toBeCloseTo(12 + (10 / 10) * 144, 1);
+  });
+
+  it('does not print the caption on top of the specimen', () => {
+    // The specimen bar ends at y=70. At the old scaleY the caption's glyphs
+    // started around y=68.5, so dark purple text sat on magnetite's near-black
+    // body.
+    const svg = bench('magnetite', 'diamond_scribe');
+    const cap = /<text[^>]*\by="([\d.]+)"[^>]*>mineral/.exec(svg);
+    expect(cap, 'no mineral caption').toBeTruthy();
+    const baseline = parseFloat(cap[1]);
+    // Glyph top for a 7.5px font sits roughly 5.5 above the baseline.
+    expect(baseline - 5.5).toBeGreaterThan(70);
+  });
+
+  it('shares one implementation of the keep-it-visible rule', () => {
+    // This bug has appeared four times. The rule lives in one place now, and
+    // the rock swatch delegates to it rather than keeping a second copy.
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    expect(src).toContain('function rkMarkOn(mark, base, minSep)');
+    expect(src).toContain('var separate = function (hex) { return rkMarkOn(hex, cols[0], MIN_SEP); };');
+    // Only one body of the shifting maths.
+    expect([...src.matchAll(/baseLum > 0\.5 \? -/g)].length).toBe(1);
+  });
+});

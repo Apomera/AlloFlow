@@ -137,6 +137,38 @@
     };
   }
 
+  // ══ Keeping a mark visible on the thing it is drawn on ══
+  // This bug has now turned up four separate times in this tool, always the
+  // same shape: a mark is drawn in a colour close to whatever is behind it, so
+  // it is present in the markup and invisible on screen. Pale rocks hid their
+  // own texture; eleven minerals left a white streak on a white plate; and the
+  // scratch groove was painted #1f2937, which is magnetite's body colour
+  // EXACTLY — scratching magnetite cut a groove that could not be seen at all.
+  // Nothing about any of those reads as wrong in the source; only rendering it
+  // and looking finds it. So the rule lives in one place now.
+  function rkLuma(hex) {
+    if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return 0.5;
+    var c = [1, 3, 5].map(function (i) { return parseInt(hex.slice(i, i + 2), 16) / 255; });
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  }
+
+  /** `mark` nudged away from `base` until it can be seen, or returned unchanged. */
+  function rkMarkOn(mark, base, minSep) {
+    if (!/^#[0-9a-fA-F]{6}$/.test(mark) || !/^#[0-9a-fA-F]{6}$/.test(base)) return mark;
+    var baseLum = rkLuma(base);
+    var l = rkLuma(mark);
+    if (Math.abs(l - baseLum) >= minSep) return mark;
+    // Move the mark TO the target rather than by the shortfall: shifting by the
+    // shortfall lands short whenever the mark starts on the far side of the
+    // base. Luminance weights sum to 1, so an equal shift on all three channels
+    // moves luminance by exactly that amount.
+    var shift = ((baseLum + (baseLum > 0.5 ? -minSep : minSep)) - l) * 255;
+    return '#' + [1, 3, 5].map(function (i) {
+      var v = Math.round(Math.min(255, Math.max(0, parseInt(mark.slice(i, i + 2), 16) + shift)));
+      return (v < 16 ? '0' : '') + v.toString(16);
+    }).join('');
+  }
+
   // Rock specimen swatch. `texture` drives the pattern, `grainColors` the palette.
   // How a rock BREAKS shapes how a specimen looks, so the silhouette is picked
   // from the texture family rather than being one shared rounded square:
@@ -212,12 +244,7 @@
     // into featureless white blobs — while a fixed shadow buries the dark ones.
     // Light specimens get most of their modelling from shadow, dark specimens
     // from highlight.
-    var rkLum = function (hex) {
-      if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return 0.5;
-      var c = [1, 3, 5].map(function (i) { return parseInt(hex.slice(i, i + 2), 16) / 255; });
-      return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
-    };
-    var baseLum = rkLum(cols[0]);
+    var baseLum = rkLuma(cols[0]);
 
     // The same problem one level down. Adapting the LIGHTING stopped the pale
     // specimens blowing out, but their texture marks are picked from the same
@@ -229,22 +256,7 @@
     // pale rock, away from black on a dark one — and marks that already read
     // are left exactly as they were.
     var MIN_SEP = 0.12;
-    var separate = function (hex) {
-      if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return hex;
-      var l = rkLum(hex);
-      if (Math.abs(l - baseLum) >= MIN_SEP) return hex;
-      // Move the mark TO the target, rather than by the shortfall. Shifting by
-      // the shortfall lands short whenever the mark starts on the far side of
-      // the body — chalk's white shells sat 0.02 above a near-white body, got
-      // pushed down 0.10, and ended up 0.08 below it: still invisible.
-      // Luminance weights sum to 1, so an equal shift on all three channels
-      // moves luminance by exactly that amount.
-      var shift = ((baseLum + (baseLum > 0.5 ? -MIN_SEP : MIN_SEP)) - l) * 255;
-      return '#' + [1, 3, 5].map(function (i) {
-        var v = Math.round(Math.min(255, Math.max(0, parseInt(hex.slice(i, i + 2), 16) + shift)));
-        return (v < 16 ? '0' : '') + v.toString(16);
-      }).join('');
-    };
+    var separate = function (hex) { return rkMarkOn(hex, cols[0], MIN_SEP); };
     var hiOp = (0.42 - baseLum * 0.34).toFixed(3);   // .42 on black → .08 on white
     var loOp = (0.20 + baseLum * 0.34).toFixed(3);   // .20 on black → .54 on white
 
@@ -1228,19 +1240,28 @@
     kids.push(h('rect', { key: 'surf', x: 12, y: 40, width: 144, height: 30, rx: 4, fill: body, stroke: '#475569', strokeWidth: 1.2 }));
     kids.push(h('rect', { key: 'shine', x: 12, y: 40, width: 144, height: 9, rx: 4, fill: '#ffffff', opacity: 0.22 }));
 
+    // Both marks are drawn ON the specimen, so both have to be separated from
+    // it. The groove was a flat #1f2937 — magnetite's body colour EXACTLY, so
+    // scratching magnetite produced a groove that could not be seen — and the
+    // smear was a flat #e2e8f0, invisible on quartz, halite, calcite, talc,
+    // gypsum and diamond. A scratch test whose result you cannot see is the
+    // same failure as a streak plate whose powder you cannot see.
+    var grooveInk = rkMarkOn('#1f2937', body, 0.16);
+    var smearInk = rkMarkOn('#e2e8f0', body, 0.16);
+
     // The mark left behind, revealed up to the tool's current position.
     if (p > 0) {
       if (scratches) {
-        kids.push(h('line', { key: 'groove', x1: x0, y1: y, x2: tipX, y2: y, stroke: '#1f2937', strokeWidth: 2.6, strokeLinecap: 'round', opacity: 0.85 }));
+        kids.push(h('line', { key: 'groove', x1: x0, y1: y, x2: tipX, y2: y, stroke: grooveInk, strokeWidth: 2.6, strokeLinecap: 'round', opacity: 0.85 }));
         kids.push(h('line', { key: 'grooveHi', x1: x0, y1: y - 1.6, x2: tipX, y2: y - 1.6, stroke: '#ffffff', strokeWidth: 1, strokeLinecap: 'round', opacity: 0.45 }));
         // Debris thrown ahead of the tip.
         for (i = 0; i < 6; i++) {
           var dr = rkSeed((mineral ? mineral.id : 'x') + 'd' + i)();
-          kids.push(h('circle', { key: 'db' + i, cx: (tipX + 2 + dr * 7).toFixed(1), cy: (y + 4 + dr * 5).toFixed(1), r: 0.9, fill: '#1f2937', opacity: 0.5 }));
+          kids.push(h('circle', { key: 'db' + i, cx: (tipX + 2 + dr * 7).toFixed(1), cy: (y + 4 + dr * 5).toFixed(1), r: 0.9, fill: grooveInk, opacity: 0.5 }));
         }
       } else {
         // Softer tool: its own material rubs off as a faint smear. No groove.
-        kids.push(h('line', { key: 'smear', x1: x0, y1: y, x2: tipX, y2: y, stroke: '#e2e8f0', strokeWidth: 3.4, strokeLinecap: 'round', opacity: 0.75 }));
+        kids.push(h('line', { key: 'smear', x1: x0, y1: y, x2: tipX, y2: y, stroke: smearInk, strokeWidth: 3.4, strokeLinecap: 'round', opacity: 0.75 }));
       }
     }
 
@@ -1253,24 +1274,36 @@
     kids.push(h('rect', { key: 'shaft', x: tipX - 4, y: 12, width: 8, height: 18, rx: 2, fill: '#64748b', stroke: '#0f172a', strokeWidth: 0.9 }));
 
     // Mohs comparison strip — the reason, not just the outcome.
-    var scaleY = 84;
+    // At scaleY 84 the "mineral N" caption's glyphs ran from y≈68.5, and the
+    // specimen bar ends at y=70, so the caption sat ON the specimen — dark
+    // purple text over magnetite's near-black body. Six units is not enough
+    // clearance for a 7.5px font, so the whole strip moved down and the
+    // viewBox grew to match.
+    var scaleY = 90;
     kids.push(h('rect', { key: 'scale', x: 12, y: scaleY, width: 144, height: 7, rx: 3.5, fill: '#e2e8f0' }));
     for (i = 1; i <= 10; i++) {
       kids.push(h('line', { key: 'tick' + i, x1: 12 + (i / 10) * 144, y1: scaleY, x2: 12 + (i / 10) * 144, y2: scaleY + 7, stroke: '#cbd5e1', strokeWidth: 0.7 }));
     }
     var mx = 12 + (mh / 10) * 144;
     var tx = 12 + (toolH / 10) * 144;
+    // The MARKER sits at the true hardness, but the CAPTION has to stay inside
+    // the viewBox. At hardness 10 the marker lands at x=156 of 168, so
+    // "mineral 10" ran off the right edge and rendered as "mineral " — diamond,
+    // the one specimen whose hardness is the entire point of it. Same class as
+    // the vertical clipping already fixed on the tool caption below.
+    var capX = function (v) { return Math.max(20, Math.min(148, v)); };
     kids.push(h('polygon', { key: 'mMark', points: [mx + ',' + (scaleY - 1), (mx - 4) + ',' + (scaleY - 8), (mx + 4) + ',' + (scaleY - 8)].join(' '), fill: '#7c3aed' }));
-    kids.push(h('text', { key: 'mTxt', x: mx, y: scaleY - 10, textAnchor: 'middle', fontSize: '7.5', fontWeight: '700', fill: '#5b21b6' }, 'mineral ' + mh));
+    kids.push(h('text', { key: 'mTxt', x: capX(mx), y: scaleY - 10, textAnchor: 'middle', fontSize: '7.5', fontWeight: '700', fill: '#5b21b6' }, 'mineral ' + mh));
     kids.push(h('polygon', { key: 'tMark', points: [tx + ',' + (scaleY + 8), (tx - 4) + ',' + (scaleY + 15), (tx + 4) + ',' + (scaleY + 15)].join(' '), fill: '#0f766e' }));
-    kids.push(h('text', { key: 'tTxt', x: tx, y: scaleY + 23, textAnchor: 'middle', fontSize: '7.5', fontWeight: '700', fill: '#115e59' }, 'tool ' + toolH));
+    kids.push(h('text', { key: 'tTxt', x: capX(tx), y: scaleY + 23, textAnchor: 'middle', fontSize: '7.5', fontWeight: '700', fill: '#115e59' }, 'tool ' + toolH));
 
     return h('svg', {
-      // 112 tall, not 100: the tool marker's caption sits at y=107 and was being
-      // clipped clean off, so the strip showed the mineral's hardness with an
-      // unlabelled triangle opposite it — exactly the comparison the strip exists
-      // to make.
-      viewBox: '0 0 168 112', width: '100%', role: 'img',
+      // 118 tall, not 100: the tool marker's caption was being clipped clean
+      // off, so the strip showed the mineral's hardness with an unlabelled
+      // triangle opposite it — exactly the comparison the strip exists to make.
+      // The extra six units are the clearance that stops the mineral caption
+      // printing on top of the specimen.
+      viewBox: '0 0 168 118', width: '100%', role: 'img',
       style: { maxWidth: '360px', display: 'block' },
       'aria-label': !done
         ? ('Scratch test in progress: ' + toolLabel + ', hardness ' + toolH + ', drawn across ' + (mineral ? mineral.label : '') + ', hardness ' + mh + '.')
