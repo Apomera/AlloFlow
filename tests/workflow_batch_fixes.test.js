@@ -113,7 +113,11 @@ describe('anti-drift: the host auto-continue loop scores by min + clears the deg
     // Tightened 2026-07-10 (ChatGPT review, finding 6): a PARTIAL re-audit can carry a numeric
     // score — clearing on "numeric" alone erased the incomplete disclosure from 2-of-3 coverage.
     // #6-full (2026-07-16): the coverage-based clear lives in the canonical reducer now.
-    expect(pipe).toContain("const _aiVerificationIncomplete = _verificationCoverage.ai !== 'complete';");
+    // 'complete-with-review' now counts as complete, and it must: that state
+    // means the AI audit DID finish and flagged items for manual review. The
+    // strict !== 'complete' test read it as incomplete, which neutralised the
+    // headline and suppressed the gain for an audit that had actually run.
+    expect(pipe).toContain("const _aiVerificationIncomplete = !/^complete(?:-with-review)?$/.test(String(_verificationCoverage.ai || ''));");
   });
 });
 
@@ -139,7 +143,10 @@ describe('anti-drift: doc_pipeline ships the numeric / resume / lang fixes', () 
 
 describe('anti-drift: the view ships the veraPDF popup/chip fixes', () => {
   it('validateOnWarmWindow fast-fails when warming failed', () => {
-    expect(view).toMatch(/if \(!handle\.warmed\) \{ cleanup\(\); try \{ win\.close\(\); \} catch \(e\) \{\} reject\(new Error\('veraPDF validator did not start/);
+    // Still rejects; it now claims `done` first and prefers handle.error, so a
+    // warm-up that failed for a KNOWN reason (identity/page mismatch) surfaces
+    // that reason instead of a generic "did not start (boot/CDN failure)".
+    expect(view).toMatch(/if \(!handle\.warmed\) \{ done = true; cleanup\(\); try \{ win\.close\(\); \} catch \(e\) \{\} reject\(handle\.error \|\| new Error\('veraPDF validator did not start/);
   });
   it('the dashboard chip is busy-aware (no stale verdict vs a validating headline)', () => {
     expect(view).toMatch(/\{veraPdfBusy && \(/);

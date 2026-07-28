@@ -136,8 +136,12 @@ describe('H7 — the batch wall cancels WORK, not just results', () => {
     expect(dp).toContain("_batchAbortCtrl.signal.addEventListener('abort', _onBatchAbort);");
   });
   it('the main fix loop self-terminates before the wall so keep-best work ships', () => {
-    // M8 (batch 4) appended the genStale probe to the same ctx.
-    expect(dp).toContain('perFileDeadlineTs: _perFileDeadlineTs, genStale: _runGenStale });');
+    // M8 (batch 4) appended the genStale probe to the same ctx, and the
+    // cancellation work later appended signal/owner/documentEpoch after it. The
+    // pin included the closing `});`, so it was really asserting "genStale is
+    // the LAST argument" — which nothing requires and every later addition
+    // breaks. Assert the pair is passed, not where the list ends.
+    expect(dp).toContain('perFileDeadlineTs: _perFileDeadlineTs, genStale: _runGenStale,');
     expect(dp).toContain('if (loopCtx.perFileDeadlineTs && Date.now() > loopCtx.perFileDeadlineTs - 90000) {');
   });
 });

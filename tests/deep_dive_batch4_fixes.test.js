@@ -85,8 +85,16 @@ describe('M7 — the 12-min dead-man is heartbeat-aware', () => {
   it('re-arms on alloflow:pipeline-warn and fires only after 12 SILENT minutes', () => {
     const at = anti.indexOf('pdfAutoContinueRunning stuck on');
     expect(at).toBeGreaterThan(-1);
-    const block = anti.slice(at - 2200, at + 1600);
+    // Widened from +1600: onActivity grew a run-identity check, which pushed the
+    // listener registration past the old window and made this read as "the
+    // listener is gone" when it had only moved down.
+    const block = anti.slice(at - 2200, at + 3200);
     expect(block).toContain("window.addEventListener('alloflow:pipeline-warn', onActivity);");
+    // The heartbeat must belong to THIS run before it re-arms. Previously any
+    // pipeline-warn re-armed the watchdog, so a superseded or unrelated run's
+    // heartbeat kept a genuinely stuck run's dead-man switch from ever firing.
+    expect(block).toMatch(/if \(!detail \|\| detail\.documentEpoch !== watchdogEpoch \|\| !detail\.runId\) return;/);
+    expect(block).toMatch(/if \(detail\.runId !== watchdogRunId\) return;/);
     expect(block).toContain('const arm = () => { if (id) clearTimeout(id); id = setTimeout(fire, 12 * 60 * 1000); };');
     expect(block).toContain('no pipeline heartbeat');
   });

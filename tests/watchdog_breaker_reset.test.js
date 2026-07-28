@@ -18,7 +18,11 @@ describe('acl-1: the watchdog can actually stop the auto-continue loop', () => {
     // The fire() body must contain the stop-ref set; the controller abort alone is insufficient.
     const fireStart = host.indexOf('const fire = () => {');
     expect(fireStart).toBeGreaterThan(0);
-    const fireBody = host.slice(fireStart, fireStart + 3200);
+    // Widened from 3200: fire() grew a set of ownership guards (it now bails
+    // when another run owns the host or the abort controller has been replaced)
+    // which pushed the stop-ref set past the old window. Both the set and the
+    // ordering below are intact -- the slice was simply cutting before them.
+    const fireBody = host.slice(fireStart, fireStart + 7000);
     expect(fireBody).toMatch(/pdfAutoContinueAbortRef\.current = true;/);
     // ordering: the ref-set appears before the controller.abort() inside fire()
     expect(fireBody.indexOf('pdfAutoContinueAbortRef.current = true'))

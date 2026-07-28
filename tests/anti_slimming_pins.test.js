@@ -31,8 +31,15 @@ describe('deps-builder dedupe pins (all three hosts)', () => {
       const text = read(host);
       for (const [family, minCalls] of Object.entries(BUILDERS)) {
         const builder = '_allo' + family + 'Deps';
-        expect(text, family + ' builder declaration').toContain('const ' + builder + ' = () => ({');
-        const calls = text.split(builder + '()').length - 1;
+        // A deps builder may take parameters now: _alloMiscHandlersDeps accepts
+        // documentIntakeEpoch so the upload handler can tell a superseded
+        // document from the current one. The pin is that each family HAS a
+        // single builder and that its call sites survived slimming, not that
+        // every builder stays zero-arg — so match an optional parameter list,
+        // and count calls by name rather than by the literal "()" spelling
+        // (which silently stopped counting the epoch-passing call site).
+        expect(text, family + ' builder declaration').toMatch(new RegExp('const ' + builder + ' = \\([A-Za-z0-9_, ]*\\) => \\(\\{'));
+        const calls = text.split(builder + '(').length - 1;
         expect(calls, family + ' builder call sites').toBeGreaterThanOrEqual(minCalls);
       }
     });
@@ -43,7 +50,7 @@ describe('deps-builder dedupe pins (all three hosts)', () => {
       const text = read(host);
       return Object.keys(BUILDERS).map((family) => {
         const builder = '_allo' + family + 'Deps';
-        return family + ':' + (text.split(builder + '()').length - 1);
+        return family + ':' + (text.split(builder + '(').length - 1); // by name, so a parameterised call still counts
       }).join('|');
     });
     expect(inventories[1]).toBe(inventories[0]);

@@ -53,8 +53,21 @@ describe('M16 — un-escape only after a REAL JSON unwrap (behavioral slice)', (
     expect(r.text).toBe(odd);
   });
   it('both call sites gate the un-escape on stripped', () => {
-    const gated = dp.match(/if \(!unwrapped\.stripped\) return unwrapped\.text;/g) || [];
-    expect(gated.length).toBe(2);
+    // One of the two sites was rewritten from an early return to a ternary, so
+    // counting the early-return spelling found 1 and read like a lost guard. It
+    // is not: both still gate. Check the property directly at every
+    // _safeStripJsonWrapper call site — if that site un-escapes at all, the
+    // un-escape is reached only through a `stripped` test. This also catches a
+    // NEW third call site that forgets the gate, which the count never could.
+    const sites = [];
+    for (let i = dp.indexOf('_safeStripJsonWrapper('); i !== -1; i = dp.indexOf('_safeStripJsonWrapper(', i + 1)) sites.push(i);
+    expect(sites.length).toBeGreaterThanOrEqual(2);
+    for (const at of sites) {
+      const window = dp.slice(at, at + 400);
+      const unescapeAt = window.indexOf("replace(/\\\\n/g, '\\n')");
+      if (unescapeAt === -1) continue;              // this site does not un-escape at all
+      expect(window.slice(0, unescapeAt)).toMatch(/\.stripped/);
+    }
     // and no call site un-escapes a bare string anymore
     expect(dp).not.toContain('return unwrapped\n');
   });
@@ -84,7 +97,11 @@ describe('M1/M2/M6 — circle-back covers null audits, respects the wall, and ke
     expect(dp).toContain("Math.max(5000, _deferHardStop - Date.now()), 'deferred re-audit round ' + _roundNow");
   });
   it('M6: the wait ticks the visible step and a gen bump stops the spend', () => {
-    expect(dp).toContain("const _genStale = () => (!_silentMode && typeof window !== 'undefined' && (window.__alloPdfRunGen || 0) !== _myRunGen);");
+    // Hoisted to run scope as _runGenStale and widened: the original generation
+    // check is now the SECOND clause, behind an abort-signal check, so an
+    // explicitly cancelled run reads as stale immediately instead of waiting for
+    // a generation bump that a plain cancel never produces.
+    expect(dp).toMatch(/const _runGenStale = \(\) => !!\(_runAbortSignal && _runAbortSignal\.aborted\)\s*\n\s*\|\| \(!_silentMode && typeof window !== 'undefined' && \(window\.__alloPdfRunGen \|\| 0\) !== _myRunGen\);/);
     expect(dp).toContain("onTick: (w) => { try { updateProgress(4, 'AI re-reading '");
     expect(dp).toContain("if (Date.now() >= _deferHardStop || _genStale()) break;");
   });

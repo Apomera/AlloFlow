@@ -42,7 +42,16 @@ describe('anti-drift: zombie-run guard wired end-to-end', () => {
   });
   it('the watchdog fire() bumps the generation + aborts the auto-continue controller', () => {
     expect(hostSrc).toMatch(/window\.__alloPdfRunGen = \(window\.__alloPdfRunGen \|\| 0\) \+ 1/);
-    expect(hostSrc).toMatch(/Dead-man switch fired[\s\S]{0,400}pdfAutoContinueAbortCtrlRef\.current\.abort\(\)/);
+    // The watchdog now aborts the controller it CAPTURED when it armed, not
+    // whatever pdfAutoContinueAbortCtrlRef happens to hold when it fires. If a
+    // newer run had replaced that ref, the old form reached across and aborted
+    // the new run. It also only clears the ref when it still points at its own
+    // controller, for the same reason.
+    expect(hostSrc).toMatch(/Dead-man switch fired[\s\S]{0,400}watchdogAbortCtrl\.abort\(\)/);
+    expect(hostSrc).toMatch(/if \(pdfAutoContinueAbortCtrlRef\.current === watchdogAbortCtrl\) pdfAutoContinueAbortCtrlRef\.current = null;/);
+    // H18: the switch must also clear what it strands, or the teacher is told
+    // "auto-continue was reset" while _remediationBusy stays true forever.
+    expect(hostSrc).toMatch(/watchdogAbortCtrl\.abort\(\)[\s\S]{0,1400}setPdfFixLoading\(false\);/);
   });
 });
 
