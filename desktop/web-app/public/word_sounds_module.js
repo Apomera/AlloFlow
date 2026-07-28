@@ -6427,7 +6427,7 @@
                 className:
                   "text-xs font-bold text-slate-600 uppercase tracking-wider mb-6",
               },
-              "Grade ",
+              ts("word_sounds.grade_label") || "Grade ",
               probeGradeLevel,
               " \u2022 ",
               wordSoundsActivity,
@@ -6453,7 +6453,7 @@
                   {
                     className: "text-[11px] font-bold text-slate-600 uppercase",
                   },
-                  "Items Attempted",
+                  ts("word_sounds.items_attempted") || "Items Attempted",
                 ),
               ),
               /*#__PURE__*/ React.createElement(
@@ -6472,7 +6472,7 @@
                   {
                     className: "text-[11px] font-bold text-slate-600 uppercase",
                   },
-                  "Items Correct",
+                  ts("word_sounds.items_correct") || "Items Correct",
                 ),
               ),
               /*#__PURE__*/ React.createElement(
@@ -6494,7 +6494,7 @@
                   {
                     className: "text-[11px] font-bold text-slate-600 uppercase",
                   },
-                  "Accuracy",
+                  ts("word_sounds.accuracy") || "Accuracy",
                 ),
               ),
               /*#__PURE__*/ React.createElement(
@@ -6513,7 +6513,7 @@
                   {
                     className: "text-[11px] font-bold text-slate-600 uppercase",
                   },
-                  "Items / Min",
+                  ts("word_sounds.items_per_min") || "Items / Min",
                 ),
               ),
             ),
@@ -6521,19 +6521,19 @@
             /*#__PURE__*/ React.createElement(
               "div",
               { className: "bg-slate-50 border border-slate-200 rounded-xl p-3 mb-4 text-left" },
-              /*#__PURE__*/ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1" }, "Accuracy by word difficulty"),
+              /*#__PURE__*/ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1" }, ts("word_sounds.accuracy_by_difficulty") || "Accuracy by word difficulty"),
               ...["easy", "medium", "hard"].filter((b) => _byBand[b].t > 0).map((b) =>
                 /*#__PURE__*/ React.createElement("div", { key: "bd-" + b, className: "flex justify-between text-sm text-slate-700" },
-                  /*#__PURE__*/ React.createElement("span", { className: "capitalize" }, b === "easy" ? "CVC / easy" : b),
+                  /*#__PURE__*/ React.createElement("span", { className: "capitalize" }, b === "easy" ? (ts("word_sounds.band_cvc_easy") || "CVC / easy") : (b === "hard" ? (ts("word_sounds.band_hard") || "Hard") : (ts("word_sounds.band_medium") || "Medium"))),
                   /*#__PURE__*/ React.createElement("span", { className: "font-mono" }, _byBand[b].c + "/" + _byBand[b].t + " (" + _bandPct(b) + "%)"),
                 ),
               ),
-              /*#__PURE__*/ React.createElement("div", { className: "text-[10px] text-slate-600 italic mt-1" }, "Compare like with like: a shift in word difficulty (not a skill change) can move the overall number."),
+              /*#__PURE__*/ React.createElement("div", { className: "text-[10px] text-slate-600 italic mt-1" }, ts("word_sounds.band_compare_caveat") || "Compare like with like: a shift in word difficulty (not a skill change) can move the overall number."),
             ),
             /*#__PURE__*/ React.createElement(
               "div",
               { className: "text-xs text-slate-600 mb-4" },
-              "Duration: ",
+              ts("word_sounds.duration_label") || "Duration: ",
               Math.floor(totalTime / 60),
               ":",
               Math.round(totalTime % 60)
@@ -6550,7 +6550,7 @@
                   className:
                     "flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-colors",
                 },
-                "\uD83D\uDCE5 Download CSV",
+                "\uD83D\uDCE5 " + (ts("word_sounds.download_csv") || "Download CSV"),
               ),
               /*#__PURE__*/ React.createElement(
                 "button",
@@ -6559,7 +6559,7 @@
                   className:
                     "flex items-center gap-2 px-4 py-2 rounded-lg font-bold text-sm bg-violet-600 text-white hover:bg-violet-700 transition-colors",
                 },
-                "Done",
+                t("common.done") || "Done",
               ),
             ),
           ),
