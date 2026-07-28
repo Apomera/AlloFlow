@@ -1125,11 +1125,135 @@
   // wipes the inspector's badges/styles, even though the React boolean
   // `a11yInspectMode` stays `true` — which is exactly the "flash and
   // disappear" bug AlloFlow-generated docs hit.
+
+  // Opens a text editor inside the preview iframe instead of relying on the
+  // browser's native prompt. Native prompts do not expose a consistent
+  // accessible name, focus order, or cancellation experience across AT.
+  const openA11yInspectorEditor = (doc, options) => {
+    if (!doc || !doc.body) return;
+    const opts = options || {};
+    const existing = doc.getElementById('a11y-inspect-editor-overlay');
+    if (existing && typeof existing.__alloClose === 'function') existing.__alloClose(false);
+    else if (existing) existing.remove();
+
+    const returnFocus = opts.returnFocus && opts.returnFocus.isConnected ? opts.returnFocus : null;
+    const overlay = doc.createElement('div');
+    overlay.id = 'a11y-inspect-editor-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:100001;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(15,23,42,.72);';
+
+    const dialog = doc.createElement('div');
+    dialog.className = 'a11y-inspect-editor';
+    dialog.setAttribute('role', 'dialog');
+    dialog.setAttribute('aria-modal', 'true');
+    dialog.setAttribute('aria-labelledby', 'a11y-inspect-editor-title');
+    dialog.setAttribute('aria-describedby', 'a11y-inspect-editor-instructions');
+    dialog.style.cssText = 'width:min(460px,100%);box-sizing:border-box;background:#fff;color:#0f172a;border:2px solid #334155;border-radius:14px;padding:22px;box-shadow:0 24px 60px rgba(15,23,42,.45);font:16px/1.5 system-ui,sans-serif;';
+
+    const title = doc.createElement('h2');
+    title.id = 'a11y-inspect-editor-title';
+    title.textContent = opts.title || 'Edit accessibility text';
+    title.style.cssText = 'margin:0 0 8px;font-size:1.25rem;line-height:1.3;';
+
+    const instructions = doc.createElement('p');
+    instructions.id = 'a11y-inspect-editor-instructions';
+    instructions.textContent = 'Enter the new value. Choose Save changes to apply it, or Cancel to keep the current value.';
+    instructions.style.cssText = 'margin:0 0 16px;color:#334155;';
+
+    const form = doc.createElement('form');
+    form.setAttribute('novalidate', '');
+    const label = doc.createElement('label');
+    label.setAttribute('for', 'a11y-inspect-editor-value');
+    label.textContent = opts.label || 'New value';
+    label.style.cssText = 'display:block;margin-bottom:6px;font-weight:700;';
+    const input = doc.createElement('input');
+    input.id = 'a11y-inspect-editor-value';
+    input.type = 'text';
+    input.value = opts.currentValue == null ? '' : String(opts.currentValue);
+    input.style.cssText = 'display:block;width:100%;min-height:44px;box-sizing:border-box;border:2px solid #64748b;border-radius:8px;padding:8px 10px;font:inherit;color:#0f172a;background:#fff;';
+
+    const actions = doc.createElement('div');
+    actions.style.cssText = 'display:flex;justify-content:flex-end;gap:10px;margin-top:20px;flex-wrap:wrap;';
+    const cancel = doc.createElement('button');
+    cancel.type = 'button';
+    cancel.textContent = 'Cancel';
+    cancel.style.cssText = 'min-width:96px;min-height:44px;border:2px solid #475569;border-radius:8px;padding:8px 14px;background:#e2e8f0;color:#0f172a;font:inherit;font-weight:700;cursor:pointer;';
+    const save = doc.createElement('button');
+    save.type = 'submit';
+    save.textContent = 'Save changes';
+    save.style.cssText = 'min-width:132px;min-height:44px;border:2px solid #1e40af;border-radius:8px;padding:8px 14px;background:#1d4ed8;color:#fff;font:inherit;font-weight:700;cursor:pointer;';
+    actions.appendChild(cancel);
+    actions.appendChild(save);
+    form.appendChild(label);
+    form.appendChild(input);
+    form.appendChild(actions);
+    dialog.appendChild(title);
+    dialog.appendChild(instructions);
+    dialog.appendChild(form);
+    overlay.appendChild(dialog);
+    doc.body.appendChild(overlay);
+
+    const background = Array.prototype.slice.call(doc.body.children).filter(function(el) { return el !== overlay; }).map(function(el) {
+      return {
+        el: el,
+        inert: el.hasAttribute('inert'),
+        ariaHidden: el.hasAttribute('aria-hidden') ? el.getAttribute('aria-hidden') : null
+      };
+    });
+    background.forEach(function(item) {
+      item.el.setAttribute('inert', '');
+      item.el.setAttribute('aria-hidden', 'true');
+    });
+
+    let closed = false;
+    const close = function(restoreFocus) {
+      if (closed) return;
+      closed = true;
+      background.forEach(function(item) {
+        if (!item.inert) item.el.removeAttribute('inert');
+        if (item.ariaHidden === null) item.el.removeAttribute('aria-hidden');
+        else item.el.setAttribute('aria-hidden', item.ariaHidden);
+      });
+      overlay.remove();
+      if (restoreFocus !== false && returnFocus && returnFocus.isConnected && typeof returnFocus.focus === 'function') returnFocus.focus();
+    };
+    overlay.__alloClose = close;
+
+    cancel.addEventListener('click', function() { close(true); });
+    form.addEventListener('submit', function(ev) {
+      ev.preventDefault();
+      if (typeof opts.onSave === 'function') opts.onSave(input.value);
+      close(true);
+    });
+    dialog.addEventListener('keydown', function(ev) {
+      if (ev.key === 'Escape') {
+        ev.preventDefault();
+        ev.stopPropagation();
+        close(true);
+        return;
+      }
+      if (ev.key !== 'Tab') return;
+      const focusable = [input, cancel, save].filter(function(el) { return !el.disabled; });
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (ev.shiftKey && doc.activeElement === first) {
+        ev.preventDefault();
+        last.focus();
+      } else if (!ev.shiftKey && doc.activeElement === last) {
+        ev.preventDefault();
+        first.focus();
+      }
+    });
+    input.focus();
+    if (typeof input.select === 'function') input.select();
+  };
+
   const applyA11yInspector = (deps) => {
     const { exportPreviewRef, enabled } = deps || {};
     const iframe = exportPreviewRef && exportPreviewRef.current;
     const doc = iframe && iframe.contentDocument;
     if (!doc || !doc.body) return;
+    const existingEditor = doc.getElementById('a11y-inspect-editor-overlay');
+    if (existingEditor && typeof existingEditor.__alloClose === 'function') existingEditor.__alloClose(false);
     // Always tear down any existing overlay first so this is idempotent.
     const existingStyle = doc.getElementById('a11y-inspect-styles');
     if (existingStyle) existingStyle.remove();
@@ -1196,13 +1320,18 @@
           const activate = function(ev) {
             ev.stopPropagation();
             const current = el.getAttribute(attrName) || '';
-            const newVal = prompt('Edit ' + attrName + ':', current);
-            if (newVal !== null) {
-              el.setAttribute(attrName, newVal);
-              b.textContent = (attrName === 'aria-label' ? 'ARIA: ' : attrName.toUpperCase() + ': ') + (newVal || '(empty)');
-              b.setAttribute('aria-label', 'Edit ' + attrName + ': ' + (newVal || 'empty'));
-              try { if (doc.body) doc.body.setAttribute('data-allo-user-edited', '1'); doc.body.dispatchEvent(new doc.defaultView.Event('input', { bubbles: true })); } catch (_) {}
-            }
+            openA11yInspectorEditor(doc, {
+              returnFocus: b,
+              currentValue: current,
+              title: 'Edit ' + attrName,
+              label: 'New ' + attrName + ' value',
+              onSave: function(newVal) {
+                el.setAttribute(attrName, newVal);
+                b.textContent = (attrName === 'aria-label' ? 'ARIA: ' : attrName.toUpperCase() + ': ') + (newVal || '(empty)');
+                b.setAttribute('aria-label', 'Edit ' + attrName + ': ' + (newVal || 'empty'));
+                try { if (doc.body) doc.body.setAttribute('data-allo-user-edited', '1'); doc.body.dispatchEvent(new doc.defaultView.Event('input', { bubbles: true })); } catch (_) {}
+              }
+            });
           };
           b.addEventListener('click', activate);
           b.addEventListener('keydown', function(ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); activate(ev); } });
@@ -1231,14 +1360,19 @@
         const editAlt = function(ev) {
           ev.stopPropagation();
           const currentAlt = img.getAttribute('alt') || '';
-          const newAlt = prompt('Edit alt text for this image:', currentAlt);
-          if (newAlt !== null) {
-            img.setAttribute('alt', newAlt);
-            b.textContent = 'ALT: ' + (newAlt || '(empty)');
-            b.dataset.attrValue = newAlt;
-            b.setAttribute('aria-label', 'Edit image alternative text: ' + (newAlt || 'empty'));
-            try { if (doc.body) doc.body.setAttribute('data-allo-user-edited', '1'); doc.body.dispatchEvent(new doc.defaultView.Event('input', { bubbles: true })); } catch (_) {}
-          }
+          openA11yInspectorEditor(doc, {
+            returnFocus: b,
+            currentValue: currentAlt,
+            title: 'Edit image alternative text',
+            label: 'Alternative text',
+            onSave: function(newAlt) {
+              img.setAttribute('alt', newAlt);
+              b.textContent = 'ALT: ' + (newAlt || '(empty)');
+              b.dataset.attrValue = newAlt;
+              b.setAttribute('aria-label', 'Edit image alternative text: ' + (newAlt || 'empty'));
+              try { if (doc.body) doc.body.setAttribute('data-allo-user-edited', '1'); doc.body.dispatchEvent(new doc.defaultView.Event('input', { bubbles: true })); } catch (_) {}
+            }
+          });
         };
         b.addEventListener('click', editAlt);
         b.addEventListener('keydown', function(ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); editAlt(ev); } });
