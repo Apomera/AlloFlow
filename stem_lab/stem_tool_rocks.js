@@ -1525,8 +1525,8 @@
     diamond:   { kind: 'diamond',   a: 'C',  b: 'C',  exact: true,  why: 'Every carbon is bonded to four others in a rigid three-dimensional net. Nothing in the structure is weak, which is why diamond is the hardest mineral at Mohs 10.' },
     pyrite:    { kind: 'pyrite',    a: 'Fe', b: 'S',  exact: true,  why: 'Iron on a face-centred cube with sulfur in bonded PAIRS (S₂). The paired sulfur is what makes it a disulfide rather than a simple sulfide.' },
     calcite:   { kind: 'carbonate', a: 'Ca', b: 'O',  exact: true,  why: 'Layers of calcium alternate with flat triangular CO₃ groups. The layers are stacked at a slant, which is why calcite always breaks into leaning rhombs.' },
-    mica:      { kind: 'sheet',     a: 'Al', b: 'Si', exact: true,  why: 'Strongly bonded silicate sheets held together only weakly between layers. That contrast is the whole story: mica peels into transparent flakes but is tough within a sheet.' },
-    talc:      { kind: 'sheet',     a: 'Mg', b: 'Si', exact: true,  why: 'Silicate sheets with almost nothing holding one sheet to the next, so they slide over each other. That is why talc is the softest mineral at Mohs 1 and feels slippery.' },
+    mica:      { kind: 'sheet',     a: 'Al', b: 'Si', exact: false, why: 'Strongly bonded silicate sheets held together only weakly between layers. That contrast is the whole story: mica peels into transparent flakes but is tough within a sheet.' },
+    talc:      { kind: 'sheet',     a: 'Mg', b: 'Si', exact: false, why: 'Silicate sheets with almost nothing holding one sheet to the next, so they slide over each other. That is why talc is the softest mineral at Mohs 1 and feels slippery.' },
     quartz:    { kind: 'silica',    a: 'Si', b: 'O',  exact: true,  why: 'Every silicon sits at the centre of an oxygen tetrahedron, and every tetrahedron shares all four corners with its neighbours. The framework has no weak plane, so quartz fractures like glass instead of cleaving.' },
     gypsum:    { kind: 'sheet',     a: 'Ca', b: 'O',  exact: false, why: 'Layers of calcium sulfate separated by sheets of water molecules. The water layers are the weak planes gypsum splits along.' },
     garnet:    { kind: 'isolated',  a: 'Fe', b: 'Si', c: 'Al', exact: true, why: 'A nesosilicate like olivine — isolated SiO₄ tetrahedra — but held together by TWO different cation sites, a larger one and a smaller one, packed tightly in three dimensions. No chains, no sheets, no framework means no plane of weakness anywhere: garnet has no cleavage at all and fractures instead, and that even packing is why it reaches Mohs 7 and grows those equant twelve-sided crystals.' },
@@ -1591,13 +1591,25 @@
         push(B, 0.5 + i, 0.5 + j, 0.5 + k);
       }
     } else if (kind === 'diamond') {
-      var dfcc = [[0,0,0],[2,0,0],[0,2,0],[0,0,2],[2,2,0],[2,0,2],[0,2,2],[2,2,2],[1,1,0],[1,0,1],[0,1,1],[2,1,1],[1,2,1],[1,1,2]];
+      // Diamond occupies only HALF the tetrahedral sites, so four of the
+      // fourteen face-centred-cubic positions have no occupied neighbour inside
+      // the drawn block — their partners live in the next cell along. Drawn,
+      // they were four carbons floating with no bonds at all, under a caption
+      // reading "every carbon is bonded to four others ... nothing in the
+      // structure is weak". A textbook cell can get away with that because the
+      // reader knows it continues; a picture whose whole job is to show bonding
+      // cannot. They are omitted, and what remains is a true fragment in which
+      // every atom drawn really is bonded.
+      var dfcc = [[0,0,0],[2,2,0],[2,0,2],[0,2,2],[1,1,0],[1,0,1],[0,1,1],[2,1,1],[1,2,1],[1,1,2]];
       for (i = 0; i < dfcc.length; i++) push(A, dfcc[i][0], dfcc[i][1], dfcc[i][2]);
       // Four of the eight tetrahedral sites — the diamond half-occupancy.
       var tet = [[0.5,0.5,0.5],[1.5,1.5,0.5],[1.5,0.5,1.5],[0.5,1.5,1.5]];
       for (i = 0; i < tet.length; i++) push(A, tet[i][0], tet[i][1], tet[i][2]);
     } else if (kind === 'pyrite') {
-      var pf = [[0,0,0],[2,0,0],[0,2,0],[0,0,2],[2,2,0],[2,0,2],[0,2,2],[2,2,2],[1,1,0],[1,0,1],[0,1,1],[2,1,1],[1,2,1],[1,1,2]];
+      // Same omission as diamond, and for the same reason: the S₂ dumbbells sit
+      // on only half the tetrahedral sites, so these four corners had no
+      // neighbour in range and rendered as loose iron atoms.
+      var pf = [[0,0,0],[2,2,0],[2,0,2],[0,2,2],[1,1,0],[1,0,1],[0,1,1],[2,1,1],[1,2,1],[1,1,2]];
       for (i = 0; i < pf.length; i++) push(A, pf[i][0], pf[i][1], pf[i][2]);
       // S2 dumbbells straddling the tetrahedral sites.
       var db = [[0.5,0.5,0.5],[1.5,1.5,0.5],[1.5,0.5,1.5],[0.5,1.5,1.5]];
@@ -1629,17 +1641,30 @@
         }
       }
     } else if (kind === 'silica') {
-      // Corner-sharing SiO4 tetrahedra in a ring — the framework idea.
+      // Corner-sharing SiO4 tetrahedra in a ring. The whole claim quartz's
+      // caption makes — "every tetrahedron shares all four corners with its
+      // neighbours" — is about SHARING, and it is the one thing that separates
+      // a framework silicate from the isolated tetrahedra of olivine two
+      // entries below. The old layout gave every silicon its own four oxygens
+      // at fixed offsets, so nothing was shared by construction and quartz drew
+      // essentially the same motif as the nesosilicates it is supposed to
+      // contrast with. Each BRIDGING oxygen is now a single atom placed on the
+      // line between two silicons, so it belongs to both tetrahedra at once.
       var ring = 6;
+      var si = [];
       for (i = 0; i < ring; i++) {
         var a = (i / ring) * Math.PI * 2;
-        var cx = Math.cos(a) * 1.12, cz = Math.sin(a) * 1.12;
-        var cy = (i % 2) * 0.55;
-        push(A, cx, cy, cz);
-        push(B, cx + 0.42, cy + 0.40, cz);
-        push(B, cx - 0.42, cy + 0.40, cz);
-        push(B, cx, cy - 0.40, cz + 0.42);
-        push(B, cx, cy - 0.40, cz - 0.42);
+        si.push({ x: Math.cos(a) * 1.12, y: (i % 2) * 0.55, z: Math.sin(a) * 1.12 });
+      }
+      for (i = 0; i < ring; i++) push(A, si[i].x, si[i].y, si[i].z);
+      for (i = 0; i < ring; i++) {
+        var nx = si[(i + 1) % ring];
+        // One shared corner per Si-Si link, sitting between the two centres.
+        push(B, (si[i].x + nx.x) / 2, (si[i].y + nx.y) / 2, (si[i].z + nx.z) / 2);
+        // The other two corners of each tetrahedron point out of the ring
+        // plane, where they would bridge to the rings above and below.
+        push(B, si[i].x * 1.34, si[i].y + 0.46, si[i].z * 1.34);
+        push(B, si[i].x * 1.34, si[i].y - 0.46, si[i].z * 1.34);
       }
     } else if (kind === 'spinel') {
       // Close-packed oxygen with iron in TWO different kinds of hole: small
@@ -1667,16 +1692,22 @@
       // aluminium substituting for some of the silicon. Al carries one less
       // positive charge than Si, so a cation (K, Na or Ca) sits in the cavities
       // to balance it — that substitution is the whole difference from quartz.
+      // Same corner-sharing geometry as quartz — that identity is the point,
+      // because the ONLY difference feldspar's caption claims is the aluminium
+      // substitution and the cavity cation that balances its charge. Drawing
+      // the framework differently would have invented a second difference.
       var fr = 6;
+      var tet = [];
       for (i = 0; i < fr; i++) {
         var fa = (i / fr) * Math.PI * 2;
-        var fx = Math.cos(fa) * 1.12, fz = Math.sin(fa) * 1.12;
-        var fy = (i % 2) * 0.55;
-        push(i === 0 || i === 3 ? 'Al' : B, fx, fy, fz);
-        push('O', fx + 0.42, fy + 0.40, fz);
-        push('O', fx - 0.42, fy + 0.40, fz);
-        push('O', fx, fy - 0.40, fz + 0.42);
-        push('O', fx, fy - 0.40, fz - 0.42);
+        tet.push({ x: Math.cos(fa) * 1.12, y: (i % 2) * 0.55, z: Math.sin(fa) * 1.12 });
+      }
+      for (i = 0; i < fr; i++) push(i === 0 || i === 3 ? 'Al' : B, tet[i].x, tet[i].y, tet[i].z);
+      for (i = 0; i < fr; i++) {
+        var tn = tet[(i + 1) % fr];
+        push('O', (tet[i].x + tn.x) / 2, (tet[i].y + tn.y) / 2, (tet[i].z + tn.z) / 2);
+        push('O', tet[i].x * 1.34, tet[i].y + 0.46, tet[i].z * 1.34);
+        push('O', tet[i].x * 1.34, tet[i].y - 0.46, tet[i].z * 1.34);
       }
       push(A, 0, 0.28, 0);   // cation in the cavity
     } else if (kind === 'rings') {
@@ -1720,8 +1751,13 @@
           push(B, i + off, k * 0.88, j + off * 0.6);
         }
         if (k < 2) {
-          for (i = 0; i < 2; i++) for (j = 0; j < 2; j++) {
-            if ((i + j) % 3 === 2) continue;  // two thirds occupancy
+          // Two thirds occupancy, which is the defining number of the corundum
+          // structure — Al₂O₃ needs exactly two metals per three oxygens. On a
+          // 2x2 grid the old filter skipped one site of four and delivered
+          // THREE quarters while the comment claimed two thirds. A 3x3 grid
+          // divides exactly: (i+j)%3===2 removes three of the nine.
+          for (i = 0; i < 3; i++) for (j = 0; j < 3; j++) {
+            if ((i + j) % 3 === 2) continue;
             push(A, i + 0.5 + off, k * 0.88 + 0.44, j + 0.5);
           }
         }
@@ -1769,9 +1805,20 @@
         : spec.kind === 'silica' ? 0.95
         : spec.kind === 'rings' ? 1.15
         : spec.kind === 'isolated' ? 1.10
-        : spec.kind === 'closepacked' ? 1.05
-        : spec.kind === 'framework' ? 0.95
-        : spec.kind === 'spinel' ? 1.05
+        // 1.21, not 1.05: once like-species pairs stopped bonding, three
+        // oxygens in corundum's top layer and two in magnetite's were left
+        // with no partner inside the old cutoff — orphaned by the gaps the
+        // two-thirds occupancy leaves, not by the edge of the block. A few
+        // slightly long bonds read far better than floating spheres.
+        : spec.kind === 'closepacked' ? 1.21
+        // 1.00, not 0.95: the cavity cation's nearest oxygen sits at 0.97, so
+        // at 0.95 the potassium floated unbonded in the middle of the
+        // framework — under a caption whose whole point is that it SITS there
+        // balancing the aluminium's charge. A cavity cation really is bonded,
+        // just at longer range than Si-O; 1.00 seats it and pulls in nothing
+        // else (the pairs stay Al-O, Si-O and K-O).
+        : spec.kind === 'framework' ? 1.00
+        : spec.kind === 'spinel' ? 1.21
         : 1.15;
     } else {
       atoms = rkCellAtoms(rkCellGeometryFor(m.crystal).geo);
@@ -1830,9 +1877,57 @@
     // rather than a cloud of loose spheres.
     var bondMat = new THREE.MeshPhongMaterial({ color: api.contrast ? 0xffffff : 0x94a3b8, shininess: 20 });
     var bondGeo = new THREE.CylinderGeometry(0.032, 0.032, 1, 8);
+    // Bond budget. This was 220, which four structures exceeded — calcite wants
+    // 315 and the three sheet silicates want 291 each. The loop walks i
+    // ascending and the sheets are pushed layer by layer, so the atoms that
+    // lost their bonds were the whole TOP slab: seventeen spheres left floating
+    // above a structure whose entire caption is about how strongly the sheets
+    // are bonded within a layer. Silent truncation is the worst kind, because
+    // the picture still looks deliberate. The budget is now above what any
+    // structure asks for, and a test fails if a new one ever reaches it.
+    var BOND_BUDGET = 600;
+
+    // A distance cutoff alone cannot tell a BOND from two ions that merely sit
+    // near each other, and it was drawing a great many that do not exist:
+    // calcite came out with 109 oxygen-to-oxygen bonds, 24 calcium-to-calcium
+    // and 12 carbon-to-carbon, and the silicate sheets were laced with Si-Si
+    // and Al-Al. In an ionic or a polyhedral structure the bonds run between
+    // UNLIKE species — cation to anion, centre to ligand — so like-to-like is
+    // refused unless the mineral genuinely has element-to-element bonding.
+    // Diamond is carbon bonded to carbon throughout; sulfur's crown and
+    // pyrite's dumbbell are both S-S, and pyrite being a DISULFIDE rather than
+    // a simple sulfide is the thing its caption exists to point out.
+    var RK_HOMOATOMIC = { diamond: { C: 1 }, rings: { S: 1 }, pyrite: { S: 1 } };
+    var homoOk = (spec && RK_HOMOATOMIC[spec.kind]) || {};
+
+    // A few structures need more than one cutoff. In a carbonate the carbon
+    // bonds ONLY to the three oxygens of its own triangle — a tight covalent
+    // unit — while the calcium sits between the layers as an ion, in contact
+    // with oxygens that are much further away. A single distance cannot say
+    // both: set it loose enough to seat the calcium and every carbon picked up
+    // six oxygens plus thirty bonds straight to calcium, which is not a bond in
+    // any sense. Returning 0 refuses the pair outright.
+    var pairLimit = null;
+    if (spec && spec.kind === 'carbonate') {
+      pairLimit = function (p, q) {
+        if (p === 'C' || q === 'C') return (p === 'O' || q === 'O') ? 0.60 : 0;
+        return 1.05;   // Ca to O, the ionic contact between the layers
+      };
+    } else if (spec && spec.kind === 'pyrite') {
+      // Pyrite needs the same trick for the same reason. Its sulfur comes in
+      // discrete S₂ dumbbells, and being a DISULFIDE rather than a simple
+      // sulfide is the one thing its caption exists to point out — but sulfurs
+      // in NEIGHBOURING dumbbells sit 1.01 apart, inside the cutoff, so the
+      // structure drew seven S-S bonds where only four are pairs and the
+      // dumbbells joined into a chain. Iron-to-sulfur reaches 1.14, so a single
+      // distance cannot separate the two; the pair bond gets its own short
+      // limit instead.
+      pairLimit = function (p, q) { return (p === 'S' && q === 'S') ? 0.70 : 1.15; };
+    }
+
     var placed = 0;
-    for (var i = 0; i < atoms.length && placed < 220; i++) {
-      for (var j = i + 1; j < atoms.length && placed < 220; j++) {
+    for (var i = 0; i < atoms.length && placed < BOND_BUDGET; i++) {
+      for (var j = i + 1; j < atoms.length && placed < BOND_BUDGET; j++) {
         // Unit-cell corners connect along the cell's EDGES only — neighbours
         // differing in exactly one axis index. A distance cutoff would also
         // catch the face and body diagonals and bury the cell's shape.
@@ -1842,11 +1937,18 @@
             + (atoms[i].k !== atoms[j].k ? 1 : 0);
           if (steps !== 1) continue;
         }
+        // The unit-cell fallback is lattice POINTS, not atoms, so the
+        // like-species rule does not apply to it — its edges are the whole
+        // picture.
+        if (!(atoms[i].cell && atoms[j].cell)
+          && atoms[i].sp === atoms[j].sp && !homoOk[atoms[i].sp]) continue;
         var dx = (atoms[i].x - atoms[j].x) * SCALE;
         var dy = (atoms[i].y - atoms[j].y) * SCALE;
         var dz = (atoms[i].z - atoms[j].z) * SCALE;
         var dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
-        if (!(atoms[i].cell && atoms[j].cell) && (dist > bondLen * SCALE || dist < 0.0001)) continue;
+        var limit = pairLimit ? pairLimit(atoms[i].sp, atoms[j].sp) : bondLen;
+        if (!(atoms[i].cell && atoms[j].cell)
+          && (limit <= 0 || dist > limit * SCALE || dist < 0.0001)) continue;
         var bond = new THREE.Mesh(bondGeo, bondMat);
         bond.position.set(
           ((atoms[i].x + atoms[j].x) / 2 - cx) * SCALE,
@@ -5075,10 +5177,17 @@ const d = labToolData.rocks || {};
                       React.createElement("span", { "aria-hidden": true }, "🧊"),
                       React.createElement("span", null, __alloT('stem.rocks.crystal3d_title', "3D crystal structure"))
                     ),
+                    // `exact` was set on every row in RK_LATTICE and read by
+                    // nothing — a disclosure that lived in the data and never
+                    // reached a student. Every mineral with a structure was
+                    // introduced as "how the atoms are actually stacked",
+                    // including the ones drawn as a simplified layer model.
                     React.createElement("p", { className: "text-[11px] text-slate-700 mb-2" },
-                      spec
-                        ? __alloT('stem.rocks.crystal3d_intro_exact', "This is how the atoms are actually stacked inside the mineral. Drag to rotate.")
-                        : __alloT('stem.rocks.crystal3d_intro_cell', "Drag to rotate the unit cell — the smallest repeating box of this mineral's crystal system.")
+                      !spec
+                        ? __alloT('stem.rocks.crystal3d_intro_cell', "Drag to rotate the unit cell — the smallest repeating box of this mineral's crystal system.")
+                        : spec.exact
+                          ? __alloT('stem.rocks.crystal3d_intro_exact', "This is how the atoms are actually stacked inside the mineral. Drag to rotate.")
+                          : __alloT('stem.rocks.crystal3d_intro_model', "A simplified model: it shows how the layers stack, not every atom type in the real mineral. Drag to rotate.")
                     ),
 
                     // The container is KEYED on the mineral id: the host viewer

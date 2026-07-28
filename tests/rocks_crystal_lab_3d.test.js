@@ -401,3 +401,259 @@ describe('crystal lab — structure data', () => {
     expect(scene).not.toContain('Math.random');
   });
 });
+
+// ── The 3D crystal lab: the chemistry has to survive the drawing ────────────
+//
+// These execute the tool's OWN generator and its OWN bonding rules, pulled out
+// of the source, rather than re-stating the geometry in the test — a paraphrase
+// drifts, and the point is to pin what ships.
+describe('crystal lab structures', () => {
+  const src = () => readFileSync(ROCKS_FILE, 'utf8');
+
+  function fn(name) {
+    const s = src();
+    const at = s.indexOf('function ' + name + '(');
+    expect(at, `${name} not found`).toBeGreaterThan(-1);
+    let depth = 0, i = s.indexOf('{', at);
+    for (; i < s.length; i++) {
+      if (s[i] === '{') depth++;
+      else if (s[i] === '}') { depth--; if (depth === 0) break; }
+    }
+    return new Function('return (' + s.slice(at, i + 1) + ')')();
+  }
+
+  /** Every mineral that has a real structure, with its species. */
+  function specs() {
+    const s = src();
+    const tbl = s.slice(s.indexOf('var RK_LATTICE = {'), s.indexOf('// Cell geometry per crystal system'));
+    return [...tbl.matchAll(/^\s{4}(\w+):\s*\{ kind: '(\w+)',\s*a: '(\w+)',\s*b: '(\w+)'(?:,\s*c: '(\w+)')?[^\n]*exact: (true|false)/gm)]
+      .map((m) => ({ id: m[1], kind: m[2], a: m[3], b: m[4], c: m[5], exact: m[6] === 'true' }));
+  }
+
+  /** The cutoff table, read out of rkBuildCrystalScene so it cannot drift. */
+  function cutoffFor(kind) {
+    const s = src();
+    const blk = s.slice(s.indexOf('bondLen = spec.kind ==='), s.indexOf('} else {', s.indexOf('bondLen = spec.kind ===')));
+    const m = new RegExp("spec\\.kind === '" + kind + "' \\? ([\\d.]+)").exec(blk);
+    return m ? parseFloat(m[1]) : 1.15;
+  }
+
+  const HOMO = { diamond: ['C'], rings: ['S'], pyrite: ['S'] };
+
+  /** Bonds the scene would draw, applying the same rules the builder applies. */
+  function bondsOf(spec) {
+    const atoms = fn('rkLatticeAtoms')(spec.kind, spec.a, spec.b, spec.c);
+    const cut = cutoffFor(spec.kind);
+    const homo = HOMO[spec.kind] || [];
+    const pairLimit = spec.kind === 'carbonate'
+      ? (p, q) => ((p === 'C' || q === 'C') ? ((p === 'O' || q === 'O') ? 0.60 : 0) : 1.05)
+      : spec.kind === 'pyrite'
+        ? (p, q) => ((p === 'S' && q === 'S') ? 0.70 : 1.15)
+        : null;
+    const out = [];
+    for (let i = 0; i < atoms.length; i++) {
+      for (let j = i + 1; j < atoms.length; j++) {
+        if (atoms[i].sp === atoms[j].sp && homo.indexOf(atoms[i].sp) < 0) continue;
+        const lim = pairLimit ? pairLimit(atoms[i].sp, atoms[j].sp) : cut;
+        if (lim <= 0) continue;
+        const d = Math.hypot(atoms[i].x - atoms[j].x, atoms[i].y - atoms[j].y, atoms[i].z - atoms[j].z);
+        if (d > lim || d < 1e-4) continue;
+        out.push([i, j, atoms[i].sp, atoms[j].sp]);
+      }
+    }
+    return { atoms, bonds: out };
+  }
+
+  it('covers every mineral with either a real structure or a unit cell', () => {
+    expect(specs().length).toBe(18);
+  });
+
+  it('leaves no atom floating without a single bond', () => {
+    // Four structures used to. Diamond and pyrite drew four corner atoms whose
+    // partners lay outside the block, under a caption reading "every carbon is
+    // bonded to four others ... nothing in the structure is weak"; corundum and
+    // magnetite lost theirs when the like-species rule arrived.
+    specs().forEach((spec) => {
+      const { atoms, bonds } = bondsOf(spec);
+      const touched = new Set();
+      bonds.forEach(([i, j]) => { touched.add(i); touched.add(j); });
+      const loose = atoms.map((a, i) => i).filter((i) => !touched.has(i));
+      expect(loose.length, `${spec.id}: ${loose.length} atom(s) drawn with no bond`).toBe(0);
+    });
+  });
+
+  it('never draws a bond between two atoms of the same element, unless it is real', () => {
+    // A distance cutoff alone cannot tell a bond from two ions sitting near
+    // each other: calcite came out with 109 O-O bonds, 24 Ca-Ca and 12 C-C,
+    // and the silicate sheets were laced with Si-Si and Al-Al.
+    specs().forEach((spec) => {
+      const { bonds } = bondsOf(spec);
+      const homo = HOMO[spec.kind] || [];
+      bonds.forEach(([, , p, q]) => {
+        if (p !== q) return;
+        expect(homo, `${spec.id}: drew a ${p}-${q} bond, which does not exist`).toContain(p);
+      });
+    });
+  });
+
+  it('keeps the element-to-element bonds that ARE real', () => {
+    // Diamond is carbon bonded to carbon throughout; sulfur's crown and
+    // pyrite's dumbbell are both S-S, and pyrite being a DISULFIDE rather than
+    // a simple sulfide is exactly what its caption exists to point out.
+    const byId = Object.fromEntries(specs().map((s) => [s.id, s]));
+    const homoCount = (id, el) => bondsOf(byId[id]).bonds.filter(([, , p, q]) => p === el && q === el).length;
+    expect(homoCount('diamond', 'C')).toBeGreaterThan(0);
+    expect(homoCount('sulfur', 'S')).toBeGreaterThan(0);
+    expect(homoCount('pyrite', 'S')).toBe(4);          // one dumbbell per site
+    expect(homoCount('pyrite', 'Fe')).toBe(0);         // iron does not bond to iron
+  });
+
+  it('gives a carbonate exactly three oxygens per carbon and no carbon-calcium bond', () => {
+    const calcite = specs().find((s) => s.id === 'calcite');
+    const { atoms, bonds } = bondsOf(calcite);
+    const carbons = atoms.map((a, i) => ({ a, i })).filter((x) => x.a.sp === 'C');
+    expect(carbons.length).toBeGreaterThan(0);
+    carbons.forEach(({ i }) => {
+      const n = bonds.filter(([p, q]) => p === i || q === i).length;
+      expect(n, 'a carbonate carbon bonds to its own three oxygens and nothing else').toBe(3);
+    });
+    expect(bonds.some(([, , p, q]) => (p === 'C' && q === 'Ca') || (p === 'Ca' && q === 'C'))).toBe(false);
+    // The calcium still has to be held in, or it floats between the layers.
+    expect(bonds.some(([, , p, q]) => p === 'Ca' || q === 'Ca')).toBe(true);
+  });
+
+  it('shares corners in a framework silicate and shares none in a nesosilicate', () => {
+    // This is the single distinction quartz's and olivine's captions rest on —
+    // "every tetrahedron shares all four corners" against "no SiO4 tetrahedron
+    // shares an oxygen with another one". The framework used to give every
+    // silicon its own four oxygens at fixed offsets, so nothing was shared and
+    // quartz drew essentially the same motif as the nesosilicates.
+    const byId = Object.fromEntries(specs().map((s) => [s.id, s]));
+    const bridging = (id) => {
+      const spec = byId[id];
+      const atoms = fn('rkLatticeAtoms')(spec.kind, spec.a, spec.b, spec.c);
+      const cut = cutoffFor(spec.kind);
+      const si = atoms.filter((a) => a.sp === 'Si');
+      return atoms.filter((o) => o.sp === 'O')
+        .filter((o) => si.filter((s) => Math.hypot(o.x - s.x, o.y - s.y, o.z - s.z) <= cut).length >= 2)
+        .length;
+    };
+    expect(bridging('quartz'), 'quartz must share corners').toBeGreaterThan(0);
+    expect(bridging('feldspar'), 'feldspar must share corners').toBeGreaterThan(0);
+    ['olivine', 'garnet', 'topaz'].forEach((id) => {
+      expect(bridging(id), `${id} is a nesosilicate — its tetrahedra are islands`).toBe(0);
+    });
+  });
+
+  it('fills exactly two thirds of the octahedral sites in the corundum structure', () => {
+    // Al2O3 needs two metals per three oxygens, and "two thirds" is the number
+    // the comment claims. On the old 2x2 grid the filter skipped one site of
+    // four and delivered three quarters.
+    const s = src();
+    const blk = s.slice(s.indexOf("} else if (kind === 'closepacked')"), s.indexOf('return out;', s.indexOf("kind === 'closepacked'")));
+    let sites = 0, kept = 0;
+    for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) { sites++; if ((i + j) % 3 !== 2) kept++; }
+    expect(blk).toContain('for (i = 0; i < 3; i++) for (j = 0; j < 3; j++)');
+    expect(kept / sites).toBeCloseTo(2 / 3, 10);
+  });
+
+  it('has a bond budget no structure actually reaches', () => {
+    // It was 220. Calcite wanted 315 and the three sheet silicates 291 each, so
+    // the loop stopped partway and left the entire TOP slab of every sheet
+    // structure — seventeen spheres — with no bonds at all, under captions
+    // about how strongly bonded the sheets are.
+    const s = src();
+    const m = /var BOND_BUDGET = (\d+);/.exec(s);
+    expect(m, 'no bond budget declared').toBeTruthy();
+    const budget = parseInt(m[1], 10);
+    let worst = 0, worstId = '';
+    specs().forEach((spec) => {
+      const n = bondsOf(spec).bonds.length;
+      if (n > worst) { worst = n; worstId = spec.id; }
+    });
+    expect(worst, `${worstId} needs ${worst} bonds but the budget is ${budget}`).toBeLessThan(budget);
+  });
+
+  it('tells the student when a structure is a model rather than the real packing', () => {
+    // `exact` was set on all 18 rows and read by NOTHING — a disclosure that
+    // lived in the data and never reached anybody. Every mineral with a
+    // structure was introduced as "how the atoms are actually stacked",
+    // including the sheet model, which draws two species and no oxygen at all.
+    const s = src();
+    expect(s).toContain('crystal3d_intro_model');
+    expect(s).toContain('spec.exact');
+
+    // The sheet structures carry no oxygen, so they cannot claim to be exact.
+    specs().filter((sp) => sp.kind === 'sheet').forEach((sp) => {
+      const atoms = fn('rkLatticeAtoms')(sp.kind, sp.a, sp.b, sp.c);
+      expect(atoms.some((a) => a.sp === 'O' || a.sp === 'Si'), `${sp.id} sheet`).toBe(true);
+      expect(sp.exact, `${sp.id} is drawn as a layer model, so it must not claim to be exact`).toBe(false);
+    });
+    // ...and the ones that ARE the real packing still say so.
+    const byId = Object.fromEntries(specs().map((x) => [x.id, x]));
+    ['halite', 'diamond', 'quartz', 'fluorite'].forEach((id) => expect(byId[id].exact).toBe(true));
+  });
+
+  it('renders the atom key from the atoms actually present', () => {
+    // Not from the whole RK_ATOM table — a legend listing lead while you look
+    // at quartz teaches nothing.
+    const markup = render('quartz');
+    expect(markup).toContain('Silicon (Si)');
+    expect(markup).toContain('Oxygen (O)');
+    expect(markup).not.toContain('Lead (Pb');
+  });
+
+  it('offers keyboard controls, not drag only', () => {
+    const markup = render('halite');
+    ['Rotate left', 'Rotate right', 'Tilt up', 'Tilt down', 'Zoom in', 'Zoom out', 'Reset view']
+      .forEach((label) => expect(markup, label).toContain(label));
+    expect(markup).toContain('Crystal view controls');
+  });
+
+  it('describes the structure for screen readers', () => {
+    const markup = render('halite');
+    expect(markup).toContain('atomic structure');
+    expect(markup).toContain('cleaves into perfect cubes');
+  });
+});
+
+describe('crystal lab — the tests cannot drift from the builder', () => {
+  // The bonding checks above re-implement the builder's rules so they can run
+  // without WebGL. That is only safe while the two agree: if someone retunes a
+  // rule in rkBuildCrystalScene and the mirror keeps the old one, every test
+  // above would go on passing against a model that no longer ships. These
+  // assertions fail the moment the source-side rules change, which forces the
+  // mirror to be updated with them.
+  it('pins the rules the bond model mirrors', () => {
+    const s = readFileSync(ROCKS_FILE, 'utf8');
+    expect(s).toContain("var RK_HOMOATOMIC = { diamond: { C: 1 }, rings: { S: 1 }, pyrite: { S: 1 } };");
+    expect(s).toContain("if (p === 'C' || q === 'C') return (p === 'O' || q === 'O') ? 0.60 : 0;");
+    expect(s).toContain("pairLimit = function (p, q) { return (p === 'S' && q === 'S') ? 0.70 : 1.15; };");
+    expect(s).toContain("&& atoms[i].sp === atoms[j].sp && !homoOk[atoms[i].sp]) continue;");
+    expect(s).toContain("var limit = pairLimit ? pairLimit(atoms[i].sp, atoms[j].sp) : bondLen;");
+  });
+
+  it('gives pyrite four S2 dumbbells and no chain between them', () => {
+    // Sulfurs in neighbouring dumbbells sit 1.01 apart — inside the old cutoff
+    // — so the pairs were joined into a chain, in the one mineral whose caption
+    // is about it being a DISULFIDE.
+    const s = readFileSync(ROCKS_FILE, 'utf8');
+    const at = s.indexOf('function rkLatticeAtoms(');
+    let depth = 0, i = s.indexOf('{', at);
+    for (; i < s.length; i++) { if (s[i] === '{') depth++; else if (s[i] === '}') { depth--; if (depth === 0) break; } }
+    const gen = new Function('return (' + s.slice(at, i + 1) + ')')();
+    const atoms = gen('pyrite', 'Fe', 'S');
+    const sulfur = atoms.filter((a) => a.sp === 'S');
+    expect(sulfur.length).toBe(8);
+    let pairBonds = 0, chainBonds = 0;
+    for (let x = 0; x < sulfur.length; x++) {
+      for (let y = x + 1; y < sulfur.length; y++) {
+        const d = Math.hypot(sulfur[x].x - sulfur[y].x, sulfur[x].y - sulfur[y].y, sulfur[x].z - sulfur[y].z);
+        if (d <= 0.70) pairBonds++;
+        else if (d <= 1.15) chainBonds++;
+      }
+    }
+    expect(pairBonds, 'four S2 dumbbells').toBe(4);
+    expect(chainBonds, 'sulfurs close enough to have been chained under the old cutoff').toBeGreaterThan(0);
+  });
+});
