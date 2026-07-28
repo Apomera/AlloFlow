@@ -463,7 +463,14 @@
       '    saveSnapshot:noop, renderTutorial:function(){return null;}, beep:noop,',
       '    callTTS:null, callImagen:null, callGeminiVision:null, callGeminiImageEdit:null,',
       '    srOnly:function(x){return window.React.createElement("span",{className:"sr-only"},x);},',
-      '    a11yClick:function(hh){return {onClick:hh,role:"button",tabIndex:0};},',
+      // Must include onKeyDown. This ctx is what a standalone EXPORT runs against, so
+      // without it every a11yClick control in an exported tool is "announced but
+      // dead": role=button + tabIndex make a screen reader offer it and let it take
+      // focus, and only a NATIVE <button> turns Enter/Space into a click — a div or
+      // <g> does not. The tool would be accessible inside the app and silently
+      // keyboard-inert once exported. Kept identical to the host's a11yClick in
+      // stem_lab_module.js.
+      '    a11yClick:function(hh){return {onClick:hh,onKeyDown:function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();hh(e);}},role:"button",tabIndex:0};},',
       '    canvasA11yDesc:function(dd){return {role:"img","aria-label":dd};}, props:{},',
       '    activeSessionCode:null, studentNickname:null, isTeacherMode:true,',
       '    isDark:false, isContrast:false, reduceMotion:false, theme:"default", pal:pal,',
