@@ -82,11 +82,11 @@ exports[`science-sim + studio render goldens > renders + pins a digest for bridg
 {
   "buttons": 24,
   "canvases": 0,
-  "inputs": 7,
-  "lengthBucket": 219,
+  "inputs": 8,
+  "lengthBucket": 229,
   "paths": 6,
   "selects": 0,
-  "sha": "f0e2c43259475ce7",
+  "sha": "8668fbb5194dee86",
   "svgs": 2,
 }
 `;

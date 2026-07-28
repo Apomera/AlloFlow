@@ -441,6 +441,411 @@
   }
 
   // ──────────────────────────────────────────────────────────────────
+  // 3D truss viewer
+  //
+  // The elevation drawing shows one plane of what is a two-plane structure.
+  // That matters more here than it looks: this tool computes an Euler buckling
+  // check, and when the margin is thin it tells the student to "add lateral
+  // bracing" and "shorten the unbraced length" — the one direction the flat
+  // drawing has no axis for. So the 3D view exists to show the second truss,
+  // the deck between them, and the lateral bracing that sets the unbraced
+  // length of the top chord.
+  //
+  // Colours match the SVG exactly: tension red, compression blue.
+  // ──────────────────────────────────────────────────────────────────
+  var BRIDGE_TENSION_RGB = [220, 38, 38];
+  var BRIDGE_COMPRESSION_RGB = [37, 99, 235];
+  var BRIDGE_DECK_HALF_W = 0.14;   // deck half-width as a fraction of span
+  var BRIDGE_MIN_HALF_W = 2.2;     // metres — a footbridge is still walkable
+
+  /** Deck half-width in metres for a given span. */
+  function bridgeHalfWidth(span) {
+    return Math.max(BRIDGE_MIN_HALF_W, span * BRIDGE_DECK_HALF_W * 0.5);
+  }
+
+  /**
+   * Out-of-plane unbraced length of the top chord, in metres.
+   *
+   * In the plane of the truss the top chord is held at every panel point by the
+   * diagonals, so its in-plane buckling length is one bay. Out of plane it is
+   * held only where lateral bracing crosses between the two top chords. With
+   * bracing at every panel point the two lengths are equal and the check is
+   * unchanged — which is the default, so existing designs keep their numbers.
+   */
+  function bridgeUnbracedLenM(span, nBays, braceEvery) {
+    var bay = span / Math.max(1, nBays);
+    return bay * Math.max(1, Math.min(nBays, braceEvery || 1));
+  }
+
+  var BridgeGL = (function () {
+    var S = null;                 // live scene state, null when detached
+    var status = 'idle';          // idle | loading | ready | failed
+    var pending = null;           // plain data stashed by render(), read by rAF
+    var node = null;
+    var sig = '';                 // last-applied model signature
+    var restoreAttempts = 0;
+
+    function debug() {
+      return {
+        state: status,
+        contextLost: !!(S && S.contextLost),
+        memberCount: S ? S.memberCount : 0,
+        braceCount: S ? S.braceCount : 0,
+        deckPresent: !!(S && S.deck),
+        trussPlanes: S ? S.trussPlanes : 0,
+        bowedMember: S ? S.bowedMember : null,
+        bowedAxis: S ? S.bowedAxis : null,
+        extent: S ? S.extent : null,
+        canvas: S && S.renderer ? { w: S.renderer.domElement.width, h: S.renderer.domElement.height } : null
+      };
+    }
+
+    /** Build one member as a thin box stretched between two points. */
+    function addMember(THREE, group, p1, p2, colorHex, thick) {
+      var dir = new THREE.Vector3().subVectors(p2, p1);
+      var len = dir.length();
+      if (!(len > 1e-6)) return null;
+      var geo = new THREE.BoxGeometry(thick, thick, len);
+      var mat = new THREE.MeshLambertMaterial({ color: colorHex });
+      var mesh = new THREE.Mesh(geo, mat);
+      mesh.position.copy(p1).add(p2).multiplyScalar(0.5);
+      mesh.lookAt(p2);
+      mesh.castShadow = false;
+      group.add(mesh);
+      return mesh;
+    }
+
+    /**
+     * A compression member that has failed its Euler check does not stay
+     * straight — it bows. It bows in whichever direction it is least restrained,
+     * so the direction here is not decoration: when lateral bracing sets the
+     * governing length the member bows SIDEWAYS out of its own truss plane
+     * (the mode the elevation could never show), and otherwise it bows within
+     * the plane, perpendicular to its own axis.
+     */
+    function addBowedMember(THREE, group, p1, p2, colorHex, thick, amp, outOfPlane) {
+      var SEG = 12;
+      var pts = [];
+      var bow;
+      if (outOfPlane) {
+        bow = new THREE.Vector3(0, 0, p1.z >= 0 ? 1 : -1);
+      } else {
+        // Perpendicular to the member, inside the x-y plane of its truss.
+        var ax = new THREE.Vector3().subVectors(p2, p1).normalize();
+        bow = new THREE.Vector3(-ax.y, ax.x, 0);
+        if (bow.lengthSq() < 1e-9) bow.set(0, 1, 0);
+        bow.normalize();
+      }
+      for (var i = 0; i <= SEG; i++) {
+        var t = i / SEG;
+        var base = new THREE.Vector3().lerpVectors(p1, p2, t);
+        base.addScaledVector(bow, amp * Math.sin(Math.PI * t));
+        pts.push(base);
+      }
+      var curve = new THREE.CatmullRomCurve3(pts);
+      var geo = new THREE.TubeGeometry(curve, SEG * 2, thick * 0.6, 6, false);
+      var mat = new THREE.MeshLambertMaterial({ color: colorHex });
+      var mesh = new THREE.Mesh(geo, mat);
+      group.add(mesh);
+      return mesh;
+    }
+
+    function disposeGroup(THREE, group) {
+      if (!group) return;
+      for (var i = group.children.length - 1; i >= 0; i--) {
+        var c = group.children[i];
+        if (c.geometry) c.geometry.dispose();
+        if (c.material) c.material.dispose();
+        group.remove(c);
+      }
+    }
+
+    /** Rebuild the whole model. Cheap enough: a truss is tens of members. */
+    function applyModel(m) {
+      if (!S || !S.THREE) return;
+      var THREE = S.THREE;
+      disposeGroup(THREE, S.model);
+
+      var span = m.span, height = m.height, nBays = m.nBays;
+      var halfW = bridgeHalfWidth(span);
+      var maxF = 1;
+      var i, k;
+      for (k in m.forces) { var af = Math.abs(m.forces[k]); if (af > maxF) maxF = af; }
+
+      // Two truss planes at z = ±halfW.
+      var planes = [-halfW, halfW];
+      var memberCount = 0;
+      var jointById = {};
+      for (i = 0; i < m.joints.length; i++) jointById[m.joints[i].id] = m.joints[i];
+
+      for (var pi = 0; pi < planes.length; pi++) {
+        var z = planes[pi];
+        for (i = 0; i < m.members.length; i++) {
+          var mem = m.members[i];
+          var j1 = jointById[mem.j1], j2 = jointById[mem.j2];
+          if (!j1 || !j2) continue;
+          var f = m.forces[mem.id];
+          var isTension = f == null ? true : f > 0;
+          var ratio = f == null ? 0.4 : Math.max(0.22, Math.min(1, Math.abs(f) / maxF));
+          var rgb = isTension ? BRIDGE_TENSION_RGB : BRIDGE_COMPRESSION_RGB;
+          // Fade toward the deep background at low force so the loaded members read.
+          var mix = 0.35 + 0.65 * ratio;
+          var hex = (Math.round(rgb[0] * mix) << 16) | (Math.round(rgb[1] * mix) << 8) | Math.round(rgb[2] * mix);
+          var thick = (0.06 + 0.10 * ratio) * Math.max(1, span / 30);
+          var a = new THREE.Vector3(j1.x - span / 2, j1.y, z);
+          var b = new THREE.Vector3(j2.x - span / 2, j2.y, z);
+          if (m.bowedId && mem.id === m.bowedId) {
+            var amp = m.bowOutOfPlane ? halfW * 0.55 : Math.max(0.35, height * 0.16);
+            addBowedMember(THREE, S.model, a, b, 0xfbbf24, thick * 1.5, amp, m.bowOutOfPlane);
+          } else {
+            addMember(THREE, S.model, a, b, hex, thick);
+          }
+          memberCount++;
+        }
+      }
+      S.trussPlanes = 2;
+      S.memberCount = memberCount;
+      S.bowedMember = m.bowedId || null;
+      S.bowedAxis = m.bowedId ? (m.bowOutOfPlane ? 'out-of-plane' : 'in-plane') : null;
+
+      // Lateral bracing across the top chords, every `braceEvery` panel points.
+      // This is the member the failure text keeps telling students to add.
+      var braceCount = 0;
+      var bay = span / Math.max(1, nBays);
+      var every = Math.max(1, Math.min(nBays, m.braceEvery || 1));
+      // Bracing is the subject of this view, not scenery, so it is drawn thick
+      // enough to see at a glance how far apart the braces are. Cool grey, not
+      // amber: the palette is red = tension, blue = compression, grey = bracing,
+      // and amber reserved for the one member that has actually failed. Sharing
+      // a hue between "here is your bracing" and "here is your failure" would
+      // undo the point of drawing either.
+      var braceThick = 0.10 * Math.max(1, span / 30);
+      for (var bx = 0; bx + every <= nBays; bx += every) {
+        var x0 = bx * bay - span / 2;
+        var x1 = (bx + every) * bay - span / 2;
+        // An X of cross-bracing in the plane of the top chords.
+        addMember(THREE, S.model, new THREE.Vector3(x0, height, -halfW), new THREE.Vector3(x1, height, halfW), 0xcbd5e1, braceThick);
+        addMember(THREE, S.model, new THREE.Vector3(x0, height, halfW), new THREE.Vector3(x1, height, -halfW), 0xcbd5e1, braceThick);
+        // The transverse strut that actually shortens the unbraced length.
+        addMember(THREE, S.model, new THREE.Vector3(x1, height, -halfW), new THREE.Vector3(x1, height, halfW), 0xe2e8f0, braceThick * 1.35);
+        braceCount += 3;
+      }
+      // The first transverse strut, at the left portal, so both ends read as held.
+      addMember(THREE, S.model, new THREE.Vector3(-span / 2, height, -halfW), new THREE.Vector3(-span / 2, height, halfW), 0xe2e8f0, braceThick * 1.35);
+      braceCount += 1;
+      S.braceCount = braceCount;
+
+      // Floor beams at every bottom panel point, then the deck slab.
+      for (var fb = 0; fb <= nBays; fb++) {
+        var fx = fb * bay - span / 2;
+        addMember(THREE, S.model, new THREE.Vector3(fx, 0, -halfW), new THREE.Vector3(fx, 0, halfW), 0x475569, braceThick * 1.3);
+      }
+      var deckGeo = new THREE.BoxGeometry(span, 0.12 * Math.max(1, span / 30), halfW * 2);
+      var deckMat = new THREE.MeshLambertMaterial({ color: 0x334155 });
+      S.deck = new THREE.Mesh(deckGeo, deckMat);
+      S.deck.position.set(0, 0.08, 0);
+      S.model.add(S.deck);
+
+      S.extent = { w: span, h: height, d: halfW * 2 };
+      S.target = new THREE.Vector3(0, height * 0.45, 0);
+      // Half-extents of the structure about the target, for the camera fit.
+      // Bowed members swing outward past the truss planes, so allow for that.
+      S.half = new THREE.Vector3(
+        span / 2 + 0.5,
+        Math.max(height / 2 + 1.2, 2),
+        halfW * 1.7
+      );
+    }
+
+    function frame() {
+      if (!S) return;
+      S.raf = requestAnimationFrame(frame);
+      if (S.contextLost) return;
+      if (pending) {
+        var next = pending; pending = null;
+        if (next.sig !== sig) { sig = next.sig; applyModel(next); }
+        S.rotY = next.rotY; S.rotX = next.rotX; S.zoom = next.zoom;
+      }
+      if (!S.renderer) return;
+      // Keep the drawing buffer matched to the element, which resizes with the page.
+      var el = S.renderer.domElement;
+      var w = el.clientWidth || 1, hgt = el.clientHeight || 1;
+      if (w !== S.lastW || hgt !== S.lastH) {
+        S.lastW = w; S.lastH = hgt;
+        S.renderer.setSize(w, hgt, false);
+        S.camera.aspect = w / Math.max(1, hgt);
+        S.camera.updateProjectionMatrix();
+      }
+      var ry = (S.rotY || 0) * Math.PI / 180, rx = (S.rotX || 0) * Math.PI / 180;
+      var THREEc = S.THREE;
+      // Unit vector from the target toward the camera.
+      var dir = new THREEc.Vector3(
+        Math.cos(rx) * Math.sin(ry), Math.sin(rx), Math.cos(rx) * Math.cos(ry)
+      ).normalize();
+      // Exact fit: for each corner of the bounding box, the distance that just
+      // keeps it inside the frustum is |offset along the screen axis| / tan(half
+      // fov) plus however far the corner already sits toward the camera. Take the
+      // largest. Doing this per frame rather than once at build time is what makes
+      // the fit survive orbiting — a 36 m bridge seen end-on needs a very
+      // different distance than the same bridge seen broadside.
+      var fitDist = 1;
+      if (S.half) {
+        var up0 = new THREEc.Vector3(0, 1, 0);
+        var right = new THREEc.Vector3().crossVectors(up0, dir).normalize();
+        if (!isFinite(right.x) || right.lengthSq() < 1e-6) right.set(1, 0, 0);
+        var up = new THREEc.Vector3().crossVectors(dir, right).normalize();
+        var tanV = Math.tan(S.camera.fov * Math.PI / 360);
+        var tanH = tanV * Math.max(0.2, S.camera.aspect);
+        for (var sx = -1; sx <= 1; sx += 2) {
+          for (var sy = -1; sy <= 1; sy += 2) {
+            for (var sz = -1; sz <= 1; sz += 2) {
+              var v = new THREEc.Vector3(sx * S.half.x, sy * S.half.y, sz * S.half.z);
+              var along = v.dot(dir);
+              var needH = Math.abs(v.dot(right)) / tanH + along;
+              var needV = Math.abs(v.dot(up)) / tanV + along;
+              if (needH > fitDist) fitDist = needH;
+              if (needV > fitDist) fitDist = needV;
+            }
+          }
+        }
+        fitDist *= 1.06;              // a little air around the structure
+      }
+      S.fitDist = fitDist;
+      var dist = fitDist / Math.max(0.3, S.zoom || 1);
+      S.camera.position.copy(S.target).addScaledVector(dir, dist);
+      S.camera.near = Math.max(0.05, dist * 0.01);
+      S.camera.far = dist * 8 + 100;
+      S.camera.updateProjectionMatrix();
+      S.camera.lookAt(S.target);
+      try { S.renderer.render(S.scene, S.camera); } catch (e) { /* keep the loop alive */ }
+    }
+
+    function build(THREE, host) {
+      var renderer;
+      try {
+        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+      } catch (e) {
+        return false;               // no WebGL here — the SVG carries on
+      }
+      var w = host.clientWidth || 640, hgt = host.clientHeight || 340;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.setSize(w, hgt);
+      renderer.setClearColor(0x0a0e1a, 1);
+      var el = renderer.domElement;
+      el.style.display = 'block';
+      el.style.width = '100%';
+      el.style.height = '100%';
+      el.style.borderRadius = '10px';
+      el.style.touchAction = 'pan-y';   // never a scroll trap on a phone
+      el.setAttribute('data-bridge-gl', 'true');
+      el.setAttribute('aria-hidden', 'true');
+      host.appendChild(el);
+
+      var scene = new THREE.Scene();
+      var camera = new THREE.PerspectiveCamera(42, w / Math.max(1, hgt), 0.1, 4000);
+      scene.add(new THREE.AmbientLight(0xffffff, 0.72));
+      var key = new THREE.DirectionalLight(0xffffff, 0.62);
+      key.position.set(0.6, 1, 0.75);
+      scene.add(key);
+      var rim = new THREE.DirectionalLight(0x93c5fd, 0.28);
+      rim.position.set(-0.7, 0.35, -0.6);
+      scene.add(rim);
+      var model = new THREE.Group();
+      scene.add(model);
+
+      S = {
+        THREE: THREE, renderer: renderer, scene: scene, camera: camera, model: model,
+        rotY: 26, rotX: 14, zoom: 1, fitDist: 40, target: new THREE.Vector3(0, 2, 0),
+        memberCount: 0, braceCount: 0, trussPlanes: 0, bowedMember: null,
+        deck: null, extent: null, contextLost: false, lastW: w, lastH: hgt, raf: 0
+      };
+
+      el.addEventListener('webglcontextlost', function (ev) {
+        ev.preventDefault();
+        S.contextLost = true;
+        setStatus('failed');
+      });
+      el.addEventListener('webglcontextrestored', function () {
+        if (restoreAttempts >= 1) return;
+        restoreAttempts++;
+        S.contextLost = false;
+        sig = '';                     // force a rebuild on the new context
+        setStatus('ready');
+      });
+
+      sig = '';
+      S.raf = requestAnimationFrame(frame);
+      return true;
+    }
+
+    // The status flips asynchronously, well after the render that mounted the
+    // host div. Without a nudge back into React the "Loading 3D view..." overlay
+    // would sit on top of a perfectly good canvas until some unrelated state
+    // change happened to re-render — which is exactly the kind of dead overlay
+    // a passing test suite will happily ignore.
+    var notify = null;
+    function setStatus(next) {
+      if (status === next) return;
+      status = next;
+      if (notify) { try { notify(next); } catch (e) {} }
+    }
+
+    return {
+      /** Stable ref callback target. Called with the host div, or null on unmount. */
+      attach: function (host) {
+        if (!host) { this.dispose(); return; }
+        if (node === host && S) return;
+        if (S) this.dispose();
+        node = host;
+        setStatus('loading');
+        var ensure = window.StemLab && window.StemLab.ensureThree
+          ? window.StemLab.ensureThree({ orbit: false, failMessage: '3D bridge view unavailable' })
+          : Promise.reject(new Error('no host loader'));
+        ensure.then(function (THREE) {
+          if (node !== host) return;    // unmounted while loading
+          if (!THREE) { setStatus('failed'); return; }
+          setStatus(build(THREE, host) ? 'ready' : 'failed');
+        }).catch(function () { setStatus('failed'); });
+      },
+      /** render() calls this. Never touches the GPU — the rAF loop does. */
+      push: function (data) { pending = data; },
+      /** Set once per render so a status flip can pull React back through. */
+      onStatusChange: function (fn) { notify = fn; },
+      status: function () { return status; },
+      debug: debug,
+      dispose: function () {
+        if (S) {
+          if (S.raf) cancelAnimationFrame(S.raf);
+          disposeGroup(S.THREE, S.model);
+          if (S.renderer) {
+            try { S.renderer.forceContextLoss(); } catch (e) {}
+            try { S.renderer.dispose(); } catch (e) {}
+            if (S.renderer.domElement && S.renderer.domElement.parentNode) {
+              S.renderer.domElement.parentNode.removeChild(S.renderer.domElement);
+            }
+          }
+        }
+        S = null; node = null; pending = null; sig = ''; restoreAttempts = 0;
+        // Drop the callback BEFORE the final status flip: React is unmounting us,
+        // so there is nothing left to nudge and the write would land on a dead tree.
+        notify = null;
+        setStatus('idle');
+      }
+    };
+  })();
+
+  // ONE stable ref callback, defined once at module scope. An inline arrow here
+  // would be a new function identity every render, so React would detach and
+  // re-attach the node — rebuilding the whole scene on every slider tick.
+  function bridgeGlRef(nodeOrNull) { BridgeGL.attach(nodeOrNull); }
+
+  // Drag state lives at module scope alongside the viewer, so it survives the
+  // re-renders that each orbit step triggers.
+  var bridgeDrag = { current: null };
+
+  if (typeof window !== 'undefined') window.__alloBridgeGL = BridgeGL;
+
+  // ──────────────────────────────────────────────────────────────────
   // Plugin registration
   // ──────────────────────────────────────────────────────────────────
   window.StemLab.registerTool('bridgeLab', {
@@ -476,6 +881,7 @@
         loadMode: 'uniform',
         vehiclePos: 0.5,
         vehicleLoad: 150,
+        lateralBraceEvery: 1,
         selectedForce: 'tension',
         selectedCase: 'tacoma',
         selectedStep: 'define',
@@ -495,7 +901,8 @@
             trussStyle: 'warren', // warren | pratt | howe | ktruss
             loadMode: 'uniform', // uniform | vehicle
             vehiclePos: 0.5, // 0..1 along span (for vehicle mode)
-            vehicleLoad: 150, // kN
+            vehicleLoad: 150,
+        lateralBraceEvery: 1, // kN
             selectedForce: 'tension',
             selectedCase: 'tacoma',
             selectedStep: 'define',
@@ -704,6 +1111,15 @@
         var sideMm = Math.sqrt(d.crossSectionMm2);
         var I_mm4 = (sideMm * sideMm * sideMm * sideMm) / 12;
         var E_MPa = mat.modulusGPa * 1000;
+        // Lateral bracing sets the OUT-OF-PLANE buckling length of the top chord.
+        // In the plane of the truss the chord is held at every panel point by the
+        // diagonals; out of plane it is held only where bracing crosses to the
+        // other truss. A chord braced every 3 bays has 3x the unbraced length and
+        // so 1/9 the Euler capacity, which is the whole point of the 1/L² lesson
+        // the quiz already teaches. Default 1 = braced at every panel point, which
+        // reproduces the previous numbers exactly.
+        var braceEvery = Math.max(1, Math.min(d.nBays, d.lateralBraceEvery || 1));
+        var unbracedLenM = bridgeUnbracedLenM(d.span, d.nBays, braceEvery);
         var compressionCases = [];
         if (moj.ok && spec) {
           var jointByIdBuckling = {};
@@ -716,7 +1132,15 @@
             if (!j1 || !j2) return;
             var dx = j2.x - j1.x;
             var dy = j2.y - j1.y;
-            compressionCases.push({ id: member.id, forceKN: Math.abs(forceKN), lengthMm: Math.sqrt(dx * dx + dy * dy) * 1000 });
+            var ownLenM = Math.sqrt(dx * dx + dy * dy);
+            // Only the top chord is continuous between braces. Diagonals and
+            // verticals are single members pinned at both ends in both planes.
+            var isTopChord = member.id.indexOf('TC') === 0;
+            var effLenM = isTopChord ? Math.max(ownLenM, unbracedLenM) : ownLenM;
+            compressionCases.push({
+              id: member.id, forceKN: Math.abs(forceKN), lengthMm: effLenM * 1000,
+              outOfPlane: isTopChord && effLenM > ownLenM + 1e-9
+            });
           });
         }
         if (!compressionCases.length) {
@@ -727,7 +1151,7 @@
           var pcr = (Math.PI * Math.PI * E_MPa * I_mm4) / (memberCase.lengthMm * memberCase.lengthMm) / 1000;
           var margin = pcr / Math.max(0.001, memberCase.forceKN);
           if (!governingCompression || margin < governingCompression.margin) {
-            governingCompression = { id: memberCase.id, forceKN: memberCase.forceKN, lengthMm: memberCase.lengthMm, pcrKN: pcr, margin: margin };
+            governingCompression = { id: memberCase.id, forceKN: memberCase.forceKN, lengthMm: memberCase.lengthMm, pcrKN: pcr, margin: margin, outOfPlane: !!memberCase.outOfPlane };
           }
         });
         var P_cr_top_kN = governingCompression.pcrKN;
@@ -991,13 +1415,119 @@
             ({ warren: 'Warren', pratt: 'Pratt', howe: 'Howe', ktruss: 'K-truss' }[d.trussStyle] || 'Warren') + ' truss bridge stress test. Adjust the parameters below and see how force distribution changes. ',
             h('strong', { style: { color: '#f87171' } }, __alloT('stem.bridgelab.red_tension', 'Red = tension')), ', ',
             h('strong', { style: { color: '#7dd3fc' } }, __alloT('stem.bridgelab.blue_compression', 'blue = compression')),
-            __alloT('stem.bridgelab.thickness_shows_magnitude_forces_calcu', ', thickness shows magnitude. Forces calculated using the deep-beam approximation (real analysis would use method of joints or matrix structural analysis).')
+            supportsMOJ && moj.ok
+              ? __alloT('stem.bridgelab.thickness_moj', ', thickness shows magnitude. Forces are solved exactly by the method of joints — every member force satisfies equilibrium at both of its ends.')
+              : __alloT('stem.bridgelab.thickness_shows_magnitude_forces_calcu', ', thickness shows magnitude. Forces calculated using the deep-beam approximation (real analysis would use method of joints or matrix structural analysis).')
           ),
 
-          // SVG
-          h('div', { style: { padding: 12, borderRadius: 12, background: 'var(--allo-stem-deeper, #0a0e1a)', border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 8, overflowX: 'auto' } },
-            trussSvg()
-          ),
+          // 3D view + the elevation it was hiding half of.
+          //
+          // The elevation is the guaranteed floor: it ALWAYS renders, and is
+          // hidden with visibility (never display:none) so its DOM stays
+          // measurable and exportable when the 3D layer is live.
+          (function () {
+            var glLive = BridgeGL.status() === 'ready';
+            BridgeGL.onStatusChange(function () { upd({ glTick: (d.glTick || 0) + 1 }); });
+            var bowedId = buckles && governingCompression ? governingCompression.id : null;
+            var bridgeGlAlt = ({ warren: 'Warren', pratt: 'Pratt', howe: 'Howe', ktruss: 'K-truss' }[trussStyle] || 'Warren')
+              + ' truss bridge in 3D: two parallel trusses '
+              + d.span + ' metres long and ' + d.height + ' metres deep, carrying a deck between them, '
+              + 'with lateral bracing across the top chords every '
+              + (braceEvery === 1 ? 'panel point' : braceEvery + ' panel points')
+              + '. Members are coloured red in tension and blue in compression.'
+              + (bowedId ? ' Member ' + bowedId + ' has failed its buckling check and is drawn bowed '
+                  + (governingCompression.outOfPlane ? 'sideways, out of the plane of its truss.' : 'within the plane of its truss.') : '');
+            BridgeGL.push({
+              sig: [trussStyle, d.span, d.height, d.nBays, braceEvery, loadMode,
+                    d.loadPerJoint, d.vehiclePos, d.vehicleLoad, bowedId,
+                    moj.ok ? Object.keys(moj.memberForces).map(function (k) {
+                      return k + ':' + moj.memberForces[k].toFixed(1);
+                    }).join(',') : 'approx'].join('|'),
+              span: d.span, height: d.height, nBays: d.nBays,
+              joints: spec ? spec.joints : [], members: spec ? spec.members : [],
+              forces: moj.ok ? moj.memberForces : {},
+              braceEvery: braceEvery, bowedId: bowedId,
+              bowOutOfPlane: !!(bowedId && governingCompression.outOfPlane),
+              rotY: d.rot3d ? d.rot3d.rotY : 26,
+              rotX: d.rot3d ? d.rot3d.rotX : 14,
+              zoom: d.zoom3d || 1
+            });
+            return h('div', { style: { marginBottom: 8 } },
+              h('div', {
+                style: {
+                  position: 'relative', height: 340, borderRadius: 12, overflow: 'hidden',
+                  background: 'var(--allo-stem-deeper, #0a0e1a)',
+                  border: '1px solid var(--allo-stem-border, #334155)', marginBottom: 8
+                }
+              },
+                h('div', {
+                  ref: bridgeGlRef,
+                  // The canvas inside is aria-hidden, and the elevation below is
+                  // hidden while 3D is up, so this container carries the
+                  // description that would otherwise be lost with it.
+                  role: 'img',
+                  'data-a11y-static': 'true',
+                  'aria-describedby': 'bridge-gl-description',
+                  'aria-label': bridgeGlAlt,
+                  style: { position: 'absolute', inset: 0 },
+                  onPointerDown: function (ev) {
+                    bridgeDrag.current = { x: ev.clientX, y: ev.clientY,
+                      rotY: d.rot3d ? d.rot3d.rotY : 26, rotX: d.rot3d ? d.rot3d.rotX : 14 };
+                    try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (e) {}
+                  },
+                  onPointerMove: function (ev) {
+                    var g = bridgeDrag.current;
+                    if (!g) return;
+                    upd({ rot3d: {
+                      rotY: g.rotY + (ev.clientX - g.x) * 0.5,
+                      rotX: Math.max(-72, Math.min(78, g.rotX + (ev.clientY - g.y) * 0.35))
+                    } });
+                  },
+                  onPointerUp: function () { bridgeDrag.current = null; },
+                  onPointerCancel: function () { bridgeDrag.current = null; },
+                  onWheel: function (ev) {
+                    ev.preventDefault();
+                    upd({ zoom3d: Math.max(0.45, Math.min(3.2, (d.zoom3d || 1) * (ev.deltaY < 0 ? 1.12 : 0.89))) });
+                  }
+                }),
+                !glLive ? h('div', {
+                  style: {
+                    position: 'absolute', inset: 0, display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', color: 'var(--allo-stem-text-soft, #94a3b8)',
+                    fontSize: 12, pointerEvents: 'none'
+                  }
+                }, BridgeGL.status() === 'failed'
+                  ? __alloT('stem.bridgelab.gl_unavailable', '3D view unavailable on this device — the elevation below shows the same analysis.')
+                  : __alloT('stem.bridgelab.gl_loading', 'Loading 3D view…')) : null,
+                glLive ? h('div', {
+                  style: {
+                    position: 'absolute', left: 10, bottom: 8, fontSize: 10,
+                    color: 'var(--allo-stem-text-soft, #94a3b8)', pointerEvents: 'none',
+                    background: 'rgba(10,14,26,.66)', padding: '3px 8px', borderRadius: 999
+                  }
+                }, __alloT('stem.bridgelab.gl_hint', 'Drag — orbit  ·  Scroll — zoom')) : null,
+                h('p', {
+                  id: 'bridge-gl-description',
+                  style: {
+                    position: 'absolute', width: 1, height: 1, padding: 0, margin: -1,
+                    overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap', border: 0
+                  }
+                }, 'The same analysis is reported as text below: span, member forces, safety factor and buckling margin. '
+                  + 'Lateral bracing spacing is adjustable with the "Lateral bracing" slider in the Loading section.')
+              ),
+              // The elevation. Always rendered; hidden, not removed, when 3D is up.
+              h('div', {
+                style: {
+                  borderRadius: 12, background: 'var(--allo-stem-deeper, #0a0e1a)',
+                  overflowX: 'auto',
+                  visibility: glLive ? 'hidden' : 'visible',
+                  height: glLive ? 0 : undefined,
+                  padding: glLive ? 0 : 12,
+                  border: glLive ? 'none' : '1px solid var(--allo-stem-border, #334155)'
+                }
+              }, trussSvg())
+            );
+          })(),
 
           // Force-color legend (the colors were only described in prose above)
           h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 14, alignItems: 'center', marginBottom: 14, fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
@@ -1060,7 +1590,11 @@
               : sliderControl('Member cross-section (mm²)', d.crossSectionMm2, 1000, 20000, 500, function(v) { upd({ crossSectionMm2: v }); }, AMBER),
             loadMode === 'vehicle'
               ? sliderControl('Member cross-section (mm²)', d.crossSectionMm2, 1000, 20000, 500, function(v) { upd({ crossSectionMm2: v }); }, AMBER)
-              : null
+              : null,
+            // The failure text tells students to "add lateral bracing" and
+            // "shorten the unbraced length". Until this control existed that was
+            // advice they had no way to take.
+            sliderControl('Lateral bracing: every N panels (1 = every joint)', braceEvery, 1, Math.max(1, d.nBays), 1, function(v) { upd({ lateralBraceEvery: v }); }, AMBER)
           ),
 
           // Truss style + Material selector
@@ -1130,8 +1664,13 @@
               h('span', null, 'Governing member ' + governingCompression.id + ': P_cr ' + P_cr_top_kN.toFixed(0) + ' kN vs compression ' + governingCompression.forceKN.toFixed(0) + ' kN; length ' + (governingLengthMm / 1000).toFixed(1) + ' m; slenderness ' + slenderness.toFixed(0) + ' (pinned ends K=1; solid square section)')
             ),
             h('div', { style: { fontSize: 11.5, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
-              buckles ? 'BUCKLING FAILURE: member ' + governingCompression.id + ' reaches its Euler buckling load before material yield. Long, thin compression members can buckle far below crushing strength. Thicken the section, shorten the unbraced length, add bracing, or revise the geometry.' :
-              bucklingMarginal ? 'Buckling margin is thin. A real engineer would add lateral bracing or thicken the chord. Buckling sneaks up on long slender members and is the failure mode that brought down the Quebec Bridge in 1907.' :
+              buckles ? 'BUCKLING FAILURE: member ' + governingCompression.id + ' reaches its Euler buckling load before material yield. Long, thin compression members can buckle far below crushing strength. '
+                + (governingCompression.outOfPlane
+                    ? 'It is buckling SIDEWAYS, out of the plane of its own truss, over the ' + unbracedLenM.toFixed(1) + ' m between lateral braces — watch it bow in the 3D view. Tighten the bracing slider, thicken the section, or revise the geometry.'
+                    : 'Thicken the section, shorten the unbraced length, add bracing, or revise the geometry.') :
+              bucklingMarginal ? 'Buckling margin is thin. A real engineer would add lateral bracing or thicken the chord'
+                + (governingCompression.outOfPlane ? ' — the governing length here is the ' + unbracedLenM.toFixed(1) + ' m of unbraced top chord between lateral braces' : '')
+                + '. Buckling sneaks up on long slender members and is the failure mode that brought down the Quebec Bridge in 1907.' :
               yieldStatus !== 'safe' ? 'The top chord buckles fine, but stress exceeds yield. Increase cross-section, decrease load, increase truss height, or pick a stronger material.' :
               'Both yield and buckling have adequate margin. Code typically requires safety factor 2-4 for buildings and 2-6 for bridges. Brooklyn Bridge was designed with 6x for yield.'
             )
