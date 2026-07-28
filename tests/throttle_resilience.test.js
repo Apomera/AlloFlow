@@ -61,10 +61,23 @@ describe('anti-drift: the breaker + floor ship the fixes', () => {
   it('the breaker has a transient-storm handler fed from the generic-transient path', () => {
     expect(pipeSrc).toMatch(/var _geminiNoteTransientFail = function/);
     expect(pipeSrc).toMatch(/_GEMINI_TRANSIENT_TRIP = 3/);
-expect(pipeSrc).toMatch(/_geminiNoteTransientFail\(_callStats, owner\);\s*\n\s*if \(n >= 1\) throw err;/);
+    // The direct transient call before the rethrow became _noteGeminiOutcome,
+    // one recorder used by the settle, success, and rethrow paths alike. It
+    // dispatches auth vs transient internally, which is what let it absorb the
+    // 2026-07-27 field bug where a Canvas 401 read as PERMANENT: the breaker was
+    // never fed, the cap stayed at 3, storming stayed false, and a run hammered
+    // a throttled proxy for 60+ calls over 5,000s without one [GeminiGate] line.
+    // The invariant this test exists for is unchanged and still pinned: the
+    // breaker is fed BEFORE the throw, so a rethrown failure still counts.
+    expect(pipeSrc).toMatch(/_noteGeminiOutcome\(null, err\);\s*\n\s*if \(n >= 1\) throw err;/);
+    expect(pipeSrc).toMatch(/var _noteGeminiOutcome = function \(res, err\) \{/);
+    expect(pipeSrc).toMatch(/if \(_canvasAuth\) _geminiNoteAuthFail\(_callStats, owner\);\s*\n\s*else _geminiNoteTransientFail\(_callStats, owner\);/);
     expect(pipeSrc).toMatch(/var _transientBackoff = Math\.round\(2500 \* \(0\.7 \+ Math\.random\(\) \* 0\.6\)\)/);
 expect(pipeSrc).toMatch(/if \(res == null \|\| \(typeof res === 'string' && !res\.trim\(\)\)[\s\S]{0,160}_geminiNoteTransientFail\(_callStats, owner\)/);
-    expect(pipeSrc).toMatch(/if \(res == null[\s\S]{0,260}else \{\s*if \(n > 0\) _callStats\.recoveredRetries/);
+    // The if/else split; the empty-body-is-a-throttle half moved into
+    // _noteGeminiOutcome so every path shares it, leaving a negated guard here.
+    // The invariant is the same one: an empty 200 body is NOT a recovered retry.
+    expect(pipeSrc).toMatch(/if \(!\(res == null \|\| \(typeof res === 'string' && !res\.trim\(\)\)\)\) \{\s*\n\s*if \(n > 0\) _callStats\.recoveredRetries/);
   });
   it('the transient streak resets on success (so isolated blips do not trip it)', () => {
     expect(pipeSrc).toMatch(/_geminiAuthStreak = 0;\s*\n\s*_geminiTransientStreak = 0;/);

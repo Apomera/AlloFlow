@@ -51,9 +51,22 @@ describe('ocr-fidelity-5: adjacency is a WHOLE-token match, not a substring', ()
 
 describe('anti-drift: critic #1 + ocr-fidelity-5 ship in the source', () => {
   it('_keyOf reads .issue/.description/.text + widens to 80 + folds in wcag', () => {
-    expect(pipe).toMatch(/var _keyOf = function\(i\)\{ var t = \(\(i && \(i\.issue \|\| i\.description \|\| i\.text\)\)/);
-    expect(pipe).toMatch(/t\.substring\(0, 80\) \+ '\|' \+ \(\(i && i\.wcag\) \|\| ''\)/);
+    // _keyOf is now an alias for the shared _alloAuditIssueKey, and the raw
+    // substring window it pinned is gone in BOTH directions. The 80-char prefix
+    // was itself a widening of a 40-char one, and the whole approach was the
+    // problem: two issues differing only after the cutoff collided, while the
+    // same issue phrased differently ("lacks alt text" / "no alternative text")
+    // produced different keys and escaped dedupe. The successor normalises
+    // synonyms, drops stopwords, then keys on a SORTED DEDUPED token set, so
+    // wording variants of one issue collide and genuinely distinct ones do not.
+    // Pin those properties; the window assertions would now be asserting a
+    // mechanism that was deliberately removed.
+    expect(pipe).toMatch(/var _keyOf = _alloAuditIssueKey;/);
+    expect(pipe).toMatch(/var text = String\(\(issue && \(issue\.issue \|\| issue\.description \|\| issue\.text\)\) \|\| ''\)\.toLowerCase\(\)/);
+    expect(pipe).toMatch(/var tokens = Array\.from\(new Set\(text\.split\(\/\\s\+\/\)[\s\S]{0,120}\.sort\(\)/);
+    expect(pipe).toMatch(/return tokens\.length \? \(\(wcag \|\| 'wcag-unknown'\) \+ '\|tokens:' \+ tokens\.join\('-'\)\) : ''/); // wcag still folded in
     expect(pipe).not.toMatch(/\(s \|\| ''\)\.toLowerCase\(\)\.substring\(0, 40\)/);
+    expect(pipe).not.toMatch(/t\.substring\(0, 80\) \+ '\|'/);
   });
   it('the adjacency guard compares whole normalized tokens, not a raw substring window', () => {
     expect(pipe).toMatch(/if \(_ow && \(_ow === _leftTok \|\| _ow === _rightTok\)\)/);

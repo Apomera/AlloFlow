@@ -91,7 +91,12 @@ describe('anti-drift: aiFixChunked records + revisits throttle-deferred chunks',
   });
   it('the catch-up drain revisits them, including an all-deferred pass, and splices by index', () => {
     expect(pipe).toMatch(/if \(_deferredIdx\.length\) \{/);
-    expect(pipe).toMatch(/await waitForGeminiCalm\(\{ maxWaitMs: 90000,[^}]*signal:[^}]*owner:/);
+    // The flat 90000 became _alloCalmBudgetMs(90000, perFileDeadlineTs,
+    // _DRAIN_RESERVE_MS): the drain may no longer wait out a calm window longer
+    // than the file's remaining wall, and it reserves time to actually drain
+    // afterwards. Waiting 90s for calm with 20s left on the deadline spent the
+    // whole budget waiting and then timed out with nothing fixed.
+    expect(pipe).toMatch(/await waitForGeminiCalm\(\{ maxWaitMs: _alloCalmBudgetMs\(90000, _control && _control\.perFileDeadlineTs, _DRAIN_RESERVE_MS\),[^}]*signal:[^}]*owner:/);
     expect(pipe).not.toMatch(/Promise\.all\(_todo\.map/);
     expect(pipe).toMatch(/for \(const \{ ci, out \} of _again\) \{ if \(out != null\) fixed\[ci\] = out; \}/);
   });
