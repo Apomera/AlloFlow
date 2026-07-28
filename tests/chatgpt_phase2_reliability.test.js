@@ -25,7 +25,9 @@ const ci = readFileSync(resolve(process.cwd(), '.github/workflows/verify.yml'), 
 describe('finding 5 — sliced-audit coverage honesty', () => {
   it('ranges keep identity, failed ranges get one calm-gated sequential retry', () => {
     expect(dp).toContain("const rangeResults = ranges.map(([s, e]) => ({ startPage: s + 1, endPage: e, status: 'pending', audit: null }));");
-    expect(dp).toContain("if (rangeResults.some((rr) => rr.status === 'failed') && rangeResults.some((rr) => rr.status === 'ok')) {");
+    // Gained a cancellation check: a cancelled slice run no longer starts the
+    // partial-failure repair path it was already abandoning.
+    expect(dp).toContain("if (!_sliceCancelled() && rangeResults.some((rr) => rr.status === 'failed') && rangeResults.some((rr) => rr.status === 'ok')) {");
     expect(dp).toContain('retry recovered pages');
   });
   it('partial coverage is explicit and the summary names the missing pages', () => {
@@ -105,7 +107,13 @@ describe('finding 7 — Equal Access joins the loop it governs', () => {
 
 describe('finding 15 — success telemetry requires KNOWN-clean verifiers', () => {
   it('a NULL axe audit (checker never ran) can no longer enter the success numerator', () => {
-    expect(dp).toContain("var residual = r.axeAudit && typeof r.axeAudit.totalViolations === 'number' && Number.isFinite(r.axeAudit.totalViolations)");
+    // The inline usability test became the shared _alloUsableAxeAudit guard, and
+    // residual is now null (not 0) whenever axe did not complete. That is the
+    // same invariant this test was written for, expressed once: a checker that
+    // never ran cannot report "zero violations" and so cannot reach the success
+    // branch below, which requires residual === 0 exactly.
+    expect(dp).toContain('var axeCompleted = _alloUsableAxeAudit(r.axeAudit);');
+    expect(dp).toContain('var residual = axeCompleted ? Math.max(0, r.axeAudit.totalViolations) : null;');
     expect(dp).toContain("var state = reachedTarget && residual === 0 && aiCompleted ? 'success' : 'incomplete';");
     expect(anti).toContain("_docPipeline.remediationOutcome(cur, { targetScore: pdfTargetScore })");
     expect(anti).toContain('outcome: _remediationOutcome.state,');

@@ -13,7 +13,11 @@ const src = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf
 
 describe('pdf.js extraction/OCR awaits are timeboxed (anti-hang)', () => {
   it('the image-extraction loop awaits are wrapped in _withTimeout', () => {
-    expect(src).toContain("await _withTimeout(window.pdfjsLib.getDocument({ data: pdfBytes }).promise, 60000, 'pdf.js getDocument (image extract)')");
+    // Still timeboxed — the _withTimeout is the INNER promise. _awaitImageWork
+    // adds cancellation on top: it throws if image work was already cancelled
+    // and races the pending work against the abort signal, so a cancelled run
+    // stops waiting instead of riding out the full 60s wall.
+    expect(src).toContain("await _awaitImageWork(_withTimeout(window.pdfjsLib.getDocument({ data: pdfBytes }).promise, 60000, 'pdf.js getDocument (image extract)'))");
     expect(src).toContain("await _withTimeout(page.getOperatorList(), 30000, 'getOperatorList p' + pg)");
     // (2026-06-19) the image-extraction render now renders at 1.5x then retries at 1x — each attempt
     // is still _withTimeout-wrapped (30s / 20s), so a stalled page is recovered at a lower scale
@@ -55,7 +59,7 @@ describe('pdf.js extraction/OCR awaits are timeboxed (anti-hang)', () => {
   });
 
   it('the Imagen image-regen fallback (raw fetch, no inner bound) is timeboxed at its call site', () => {
-    expect(src).toContain("await _withTimeout(callImagen(");
+    expect(src).toContain("await _awaitImageWork(_withTimeout(callImagen(");
   });
 
   it('the Unicode-font fetch in createTaggedPdf is AbortController-bounded (non-Latin scanned-doc hang)', () => {

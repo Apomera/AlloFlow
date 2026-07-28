@@ -20,7 +20,11 @@ describe('final audit estimated minimum score', () => {
   it('pipeline treats a missing final audit score as incomplete and carries estimate metadata', () => {
     // Mutable because the explicit final-audit retry may recover (or lose) a usable score.
     expect(pipeSrc).toContain('let _finalAuditScoreMissing = !_finalAuditHadUsableScore;');
-    expect(pipeSrc).toMatch(/_aiDegraded = !verification \|\| verification\.score === null \|\| verification\._scoreDegraded \|\| verification\.synthesized \|\| _finalAuditScoreMissing/);
+    // The inline chain became the named _alloUsableCompleteAiAudit guard, which
+    // covers the same four conditions and adds a coverage requirement. Pin the
+    // call AND the guard body, so the semantics stay asserted, not just a name.
+    expect(pipeSrc).toMatch(/const _aiDegraded = !_alloUsableCompleteAiAudit\(verification\) \|\| _finalAuditScoreMissing;/);
+    expect(pipeSrc).toMatch(/function _alloUsableCompleteAiAudit\(audit\) \{[\s\S]{0,320}Number\.isFinite\(audit\.score\)[\s\S]{0,200}audit\._scoreDegraded !== true[\s\S]{0,200}audit\.synthesized !== true/);
     expect(pipeSrc).toContain('_estimatedMinimumScore = _alloComputeHeadline(_lastSuccessfulAiScore, deterministicScore);');
     expect(pipeSrc).toContain("kind: 'last-successful-ai-plus-current-automated'");
     expect(pipeSrc).toMatch(/_estimatedMinimumScore: Number\.isFinite\(_estimatedMinimumScore\) \? _estimatedMinimumScore : null/);
@@ -38,7 +42,16 @@ describe('final audit estimated minimum score', () => {
     expect(viewSrc).toContain("t('pdf_audit.verification.estimated_min_label')");
     expect(viewSrc).toContain('Complete final audit');
     expect(viewSrc).toContain('waitForGeminiCalm');
-    expect(viewSrc).toContain('_estimatedMinimumScore: (!_wvOk && Number.isFinite(_wscore)) ? _wscore : null');
+    // In THIS lane the estimate is now null, and that is the fix (2026-07-27).
+    // Setting it to _wscore made the panel print one number twice under two
+    // labels — "structural only: 90" and "estimated minimum: 90" — the second of
+    // which claims to fold in the last successful AI audit. No such audit exists
+    // in this lane, so the estimate implied corroboration that was never there.
+    // Null makes the panel omit the estimate instead of fabricating one.
+    expect(viewSrc).toContain('_estimatedMinimumScore: null,');
+    // and the basis must be the OBJECT shape the pipeline writes and the UI
+    // reads; it was a string here, so this very lane rendered "AI ? / automated ?"
+    expect(viewSrc).toMatch(/_estimatedScoreBasis: \(!_wvOk && Number\.isFinite\(_wdet\)\) \? \{/);
   });
 
   it('export payloads carry both verified=false and the estimate basis', () => {
