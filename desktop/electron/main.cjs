@@ -937,7 +937,8 @@ async function ensureAdminServerPosture() {
     let config = runtime.readConfig();
     const lan = (config.liveSession && config.liveSession.lan) || {};
     if (!String(lan.pin || '').trim()) {
-      const pin = String(Math.floor(100000 + Math.random() * 900000));
+      // This PIN gates LAN access to the live session — Math.random() is not a CSPRNG.
+      const pin = String(100000 + crypto.randomInt(900000));
       config = runtime.writeConfig({
         ...config,
         liveSession: { ...config.liveSession, lan: { ...lan, pin } },

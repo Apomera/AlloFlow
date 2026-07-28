@@ -5724,6 +5724,53 @@ function _buildGlossaryPreamble(glossary, targetLanguage) {
     ''
   ].join('\n');
 }
+// Language packs are untrusted: they arrive from a user-chosen file, a CDN fetch, or LLM
+// translation output, and t() resolves them BEFORE the static UI_STRINGS. Some consumers
+// concatenate t() output into innerHTML, so a pack can carry script into the page.
+// Packs legitimately contain inline markup (<strong>, and literal "</>" / "<title>" as prose),
+// so this neutralizes only executable constructs and leaves ordinary text byte-identical.
+// Only elements that execute or load code are removed outright. Presentational and
+// structural tags survive: the accessibility lab ships deliberately-bad HTML samples
+// (<img> with no alt, <html>/<title> skeletons) as lesson content in every language.
+const _I18N_EXECUTABLE_TAGS = 'script|style|iframe|object|embed|applet|frame|frameset|base|meta|link|portal';
+function _sanitizeI18nString(value) {
+  if (value.indexOf('<') === -1) return value;
+  return value
+    // Paired executable elements, including their contents.
+    .replace(new RegExp('<(' + _I18N_EXECUTABLE_TAGS + ')\\b[^>]*>[\\s\\S]*?<\\/\\1\\s*>', 'gi'), '')
+    // Unpaired or self-closing leftovers.
+    .replace(new RegExp('<\\/?(' + _I18N_EXECUTABLE_TAGS + ')\\b[^>]*>', 'gi'), '')
+    // Scrub attributes only INSIDE tag markup, so prose like "10 ones = 1 ten" is untouched.
+    .replace(/<[a-zA-Z][^>]*>/g, (tag) => tag
+      // "/" separates attributes as validly as whitespace does: <svg/onload=...> executes.
+      .replace(/[\s/]on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, ' ')
+      .replace(/((?:href|src|xlink:href|action|formaction)\s*=\s*)(?:"\s*(?:javascript|vbscript|data:text\/html)[^"]*"|'\s*(?:javascript|vbscript|data:text\/html)[^']*'|(?:javascript|vbscript|data:text\/html)[^\s>]+)/gi, '$1"#"'));
+}
+function sanitizeLanguagePack(pack) {
+  if (!pack || typeof pack !== 'object') return pack;
+  const seen = new WeakSet();
+  const walk = (node) => {
+    if (typeof node === 'string') return _sanitizeI18nString(node);
+    if (!node || typeof node !== 'object') return node;
+    if (seen.has(node)) return node;
+    seen.add(node);
+    if (Array.isArray(node)) {
+      for (let i = 0; i < node.length; i++) node[i] = walk(node[i]);
+      return node;
+    }
+    for (const key of Object.keys(node)) {
+      // Never let a pack redefine __proto__/constructor through later merges.
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+        delete node[key];
+        continue;
+      }
+      node[key] = walk(node[key]);
+    }
+    return node;
+  };
+  return walk(pack);
+}
+
 const translateChunk = async (chunkData, targetLanguage, apiKey, signal) => {
   const glossary = await _loadTranslationGlossary(signal);
   _translationThrowIfAborted(signal);
@@ -5846,7 +5893,7 @@ const useTranslation = (targetLanguage, apiKey) => {
         const json = JSON.parse(e.target.result);
         if (!translationRunRef.current || translationRunRef.current.generation !== importGeneration) return;
         if (typeof json === 'object' && json !== null) {
-          setLanguagePack(json);
+          setLanguagePack(sanitizeLanguagePack(json));
           setStatusMessage(t('language_selector.status_custom_loaded'));
           setIsTranslating(false);
         } else {
@@ -5913,7 +5960,7 @@ const useTranslation = (targetLanguage, apiKey) => {
                     _translationThrowIfAborted(signal);
                     if (cachedPack) {
                         debugLog(`[useTranslation] Loaded ${targetLanguage} from local device.`);
-                        setLanguagePack(cachedPack);
+                        setLanguagePack(sanitizeLanguagePack(cachedPack));
                         setIsTranslating(false);
                         return;
                     }
@@ -5961,21 +6008,19 @@ const useTranslation = (targetLanguage, apiKey) => {
                 try {
                     pack = JSON.parse(text);
                 } catch (parseErr) {
+                    // Packs are JSON; the .js extension is historical. Never eval the response —
+                    // a compromised pack host would get code execution in every client.
                     try {
-                        pack = new Function('return ' + text)();
-                    } catch (evalErr) {
-                        try {
-                            const cleaned = text.replace(/^\s*\/\/.*$/gm, '').trim();
-                            pack = JSON.parse(cleaned);
-                        } catch (e2) {
-                            warnLog('Pack parse failed for ' + packUrl + ':', e2?.message);
-                            continue;
-                        }
+                        const cleaned = text.replace(/^\s*\/\/.*$/gm, '').trim();
+                        pack = JSON.parse(cleaned);
+                    } catch (e2) {
+                        warnLog('Pack parse failed for ' + packUrl + ':', e2?.message);
+                        continue;
                     }
                 }
                 if (pack && Object.keys(pack).length > 10) {
                     debugLog('[useTranslation] Loaded ' + resolvedDisplay + ' from ' + packUrl);
-                    setLanguagePack(pack);
+                    setLanguagePack(sanitizeLanguagePack(pack));
                     setIsTranslating(false);
                     try { await setOwnedStorage(storageKey, pack); } catch(e) { if (e?.name !== 'AbortError') warnLog('Cache save error:', e?.message || e); }
                     loaded = true;
@@ -6042,7 +6087,7 @@ const useTranslation = (targetLanguage, apiKey) => {
         // If nothing missing AND we have a substantive existing pack → done.
         if (missingCount === 0 && resumeCount > 50) {
             const finalPack = unflattenObject(resumeFromFlatPack);
-            setLanguagePack(finalPack);
+            setLanguagePack(sanitizeLanguagePack(finalPack));
             setStatusMessage(t('language_selector.status_complete'));
             await _translationAbortableDelay(500, signal);
             setIsTranslating(false);
@@ -6053,7 +6098,7 @@ const useTranslation = (targetLanguage, apiKey) => {
             setStatusMessage(t('language_selector.status_resuming', { done: resumeCount, total: expectedCount }) || ('Resuming translation (' + resumeCount + '/' + expectedCount + ')…'));
             // Surface the partial pack immediately so the user sees translations
             // for what's already done while the missing keys fill in.
-            try { setLanguagePack(unflattenObject(resumeFromFlatPack)); } catch (_) {}
+            try { setLanguagePack(sanitizeLanguagePack(unflattenObject(resumeFromFlatPack))); } catch (_) {}
         }
 
         const chunks = chunkObject(missingFlatStrings, 200);
@@ -6103,7 +6148,7 @@ const useTranslation = (targetLanguage, apiKey) => {
                 await setOwnedStorage(storageKey, partialPack);
                 // Also surface the partial pack to the UI so newly-translated
                 // keys start rendering as they're filled in.
-                setLanguagePack(partialPack);
+                setLanguagePack(sanitizeLanguagePack(partialPack));
             } catch (e) {
                 if (e?.name === 'AbortError') throw e;
                 warnLog('Incremental save failed:', e?.message || e);
@@ -6113,7 +6158,7 @@ const useTranslation = (targetLanguage, apiKey) => {
         }
         const accumulatedPack = unflattenObject(accumulatedFlatPack);
         if (Object.keys(accumulatedPack).length > 50) {
-            setLanguagePack(accumulatedPack);
+            setLanguagePack(sanitizeLanguagePack(accumulatedPack));
             setStatusMessage(t('language_selector.status_complete'));
             try { await setOwnedStorage(storageKey, accumulatedPack); } catch(e) {
                 if (e?.name === 'AbortError') throw e;

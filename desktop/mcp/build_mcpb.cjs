@@ -31,7 +31,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
+const { execSync, spawnSync } = require('child_process');
 
 const MCP_DIR = __dirname;
 const REPO_ROOT = path.resolve(MCP_DIR, '..', '..');
@@ -191,7 +191,17 @@ function main() {
     }
     const zipTmp = BUNDLE + '.zip';
     fs.rmSync(zipTmp, { force: true });
-    execSync('powershell -NoProfile -Command "Compress-Archive -Path \'' + STAGING + '\\*\' -DestinationPath \'' + zipTmp + '\' -Force"', { stdio: ['ignore', 'inherit', 'inherit'] });
+    // Pass the paths as arguments rather than splicing them into a command string:
+    // a build path containing a quote or ';' would otherwise run as PowerShell.
+    const zip = spawnSync('powershell', [
+      '-NoProfile', '-NonInteractive', '-Command',
+      // -Path (not -LiteralPath) so the trailing \* still globs the staging contents.
+      'Compress-Archive -Path $env:ALLO_SRC -DestinationPath $env:ALLO_DEST -Force',
+    ], {
+      stdio: ['ignore', 'inherit', 'inherit'],
+      env: { ...process.env, ALLO_SRC: path.join(STAGING, '*'), ALLO_DEST: zipTmp },
+    });
+    if (zip.status !== 0) throw new Error('Compress-Archive failed with status ' + zip.status);
     fs.renameSync(zipTmp, BUNDLE);
   }
   const mb = (fs.statSync(BUNDLE).size / 1024 / 1024).toFixed(1);

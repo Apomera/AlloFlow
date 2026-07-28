@@ -7,6 +7,7 @@ Runs on port 5500. No API key needed. No Docker needed.
 import asyncio
 import http.server
 import json
+import re
 import io
 import threading
 
@@ -67,7 +68,28 @@ def generate_speech_sync(text, voice, speed):
         loop.close()
 
 
+# Only the locally-running AlloFlow app should be able to call this server. A wildcard
+# origin lets any website a user visits drive their local TTS. The desktop app and the
+# dev server both run on http://localhost:<port>, so allow loopback on any port and
+# send no CORS header at all for anything else.
+_ALLOWED_ORIGIN_RE = re.compile(r"^https?://(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$", re.IGNORECASE)
+
+
+def _allowed_origin(handler):
+    origin = handler.headers.get("Origin")
+    if origin and _ALLOWED_ORIGIN_RE.match(origin):
+        return origin
+    return None
+
+
 class TTSHandler(http.server.BaseHTTPRequestHandler):
+    def _send_cors(self):
+        """Echo the caller's origin only when it is loopback; omit the header otherwise."""
+        origin = _allowed_origin(self)
+        if origin:
+            self.send_header("Access-Control-Allow-Origin", origin)
+            self.send_header("Vary", "Origin")
+
     def do_POST(self):
         if self.path != "/v1/audio/speech":
             self.send_response(404)
@@ -84,7 +106,7 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
             
             if not text:
                 self.send_response(400)
-                self.send_header("Access-Control-Allow-Origin", "*")
+                self._send_cors()
                 self.end_headers()
                 self.wfile.write(b'{"error": "No input text"}')
                 return
@@ -93,7 +115,7 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
             
             if not audio_data:
                 self.send_response(500)
-                self.send_header("Access-Control-Allow-Origin", "*")
+                self._send_cors()
                 self.end_headers()
                 self.wfile.write(b'{"error": "TTS generation failed"}')
                 return
@@ -101,21 +123,21 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-Type", "audio/mpeg")
             self.send_header("Content-Length", str(len(audio_data)))
-            self.send_header("Access-Control-Allow-Origin", "*")
+            self._send_cors()
             self.end_headers()
             self.wfile.write(audio_data)
             
         except Exception as e:
             print(f"[EdgeTTS] Error: {e}")
             self.send_response(500)
-            self.send_header("Access-Control-Allow-Origin", "*")
+            self._send_cors()
             self.end_headers()
             self.wfile.write(json.dumps({"error": str(e)}).encode())
     
     def do_OPTIONS(self):
         """Handle CORS preflight."""
         self.send_response(200)
-        self.send_header("Access-Control-Allow-Origin", "*")
+        self._send_cors()
         self.send_header("Access-Control-Allow-Methods", "POST, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
         self.end_headers()
@@ -124,7 +146,7 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
         if self.path == "/health" or self.path == "/":
             self.send_response(200)
             self.send_header("Content-Type", "application/json")
-            self.send_header("Access-Control-Allow-Origin", "*")
+            self._send_cors()
             self.end_headers()
             self.wfile.write(json.dumps({
                 "status": "ok",
@@ -147,7 +169,7 @@ if __name__ == "__main__":
     print(f"[EdgeTTS] {len(VOICE_MAP)} voices across {len(set(v.split('-')[0]+'-'+v.split('-')[1] for v in VOICE_MAP.values()))}+ languages")
     print(f"[EdgeTTS] Powered by Microsoft Edge Neural TTS (free, no API key)")
     
-    server = http.server.HTTPServer(("0.0.0.0", PORT), TTSHandler)
+    server = http.server.HTTPServer(("127.0.0.1", PORT), TTSHandler)
     print(f"[EdgeTTS] ✅ Ready at http://localhost:{PORT}")
     
     try:

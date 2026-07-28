@@ -18,6 +18,7 @@ Environment:
 
 import http.server
 import json
+import re
 import subprocess
 import os
 import sys
@@ -117,12 +118,23 @@ def synthesize(text, voice_name, speed):
     return proc.stdout
 
 
+# Only the locally-running AlloFlow app should be able to call this server; a wildcard
+# origin lets any website the user visits drive their local TTS.
+_ALLOWED_ORIGIN_RE = re.compile(r"^https?://(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$", re.IGNORECASE)
+
+
 class TTSHandler(http.server.BaseHTTPRequestHandler):
+    def _send_cors(self):
+        """Echo the caller's origin only when it is loopback; omit the header otherwise."""
+        origin = self.headers.get("Origin")
+        if origin and _ALLOWED_ORIGIN_RE.match(origin):
+            self.send_header("Access-Control-Allow-Origin", origin)
+            self.send_header("Vary", "Origin")
     def _send_json(self, status, obj):
         body = json.dumps(obj).encode()
         self.send_response(status)
         self.send_header("Content-Type", "application/json")
-        self.send_header("Access-Control-Allow-Origin", "*")
+        self._send_cors()
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
@@ -168,7 +180,7 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-Type", "audio/wav")
             self.send_header("Content-Length", str(len(wav_audio)))
-            self.send_header("Access-Control-Allow-Origin", "*")
+            self._send_cors()
             self.end_headers()
             self.wfile.write(wav_audio)
             print(f"[Piper TTS] Generated {len(wav_audio)} bytes "
@@ -183,7 +195,7 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
 
     def do_OPTIONS(self):
         self.send_response(200)
-        self.send_header("Access-Control-Allow-Origin", "*")
+        self._send_cors()
         self.send_header("Access-Control-Allow-Methods", "POST, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
         self.end_headers()
