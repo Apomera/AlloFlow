@@ -963,6 +963,22 @@ const d = labToolData.solarSystem || {};
 
               renderer.setSize(W, H);
 
+              // ── Colour management ──
+              // The scene is lit with real lights and ~70 Standard/Physical materials, so
+              // shading is computed in linear space. Writing that straight to the canvas
+              // (r128's default) crushes the midtones: every planet sat near-black while
+              // the sun clipped to a flat white disc with no gradation. sRGB output applies
+              // the transfer function the display expects, and ACES rolls the sun's
+              // highlight off instead of clipping it. Feature-detected so an older THREE
+              // degrades to exactly the previous behaviour rather than throwing.
+              if ('outputEncoding' in renderer && THREE.sRGBEncoding !== undefined) {
+                renderer.outputEncoding = THREE.sRGBEncoding;
+              }
+              if ('toneMapping' in renderer && THREE.ACESFilmicToneMapping !== undefined) {
+                renderer.toneMapping = THREE.ACESFilmicToneMapping;
+                renderer.toneMappingExposure = 1.15;
+              }
+
               // ── Bloom post-processing: selective glow on the sun + bright bodies ──
               // Graceful + fully guarded: renders plain until the Three r128 post-processing
               // addons load, then upgrades to a bloom composer. If the addons fail to load,
@@ -1002,9 +1018,17 @@ const d = labToolData.solarSystem || {};
                     c.addPass(new T.RenderPass(scene, camera));
                     // UnrealBloomPass(resolution, strength, radius, threshold): high threshold
                     // so only the bright sun + star highlights bloom, not the whole scene.
-                    // threshold 0.82: the sun disc is 0xffdd44 (luma ~0.838) — at the
-                    // original 0.85 the sun itself never crossed the bloom threshold.
-                    c.addPass(new T.UnrealBloomPass(new T.Vector2(Math.max(1, Math.round(W * res)), Math.max(1, Math.round(H * res))), lowPower ? 0.7 : 1.1, 0.3, 0.82));
+                    // threshold 0.75, NOT the raw luma of the sun disc. 0xffdd44 has luma
+                    // ~0.838 as authored, which is why the threshold used to be 0.82 — but
+                    // ACES tone mapping now compresses that to ~0.80 before the bloom pass
+                    // samples it, and at 0.82 the centrepiece silently stopped blooming
+                    // (verified from a screenshot: the amber halo vanished).
+                    // The usable window is narrow, because a sunlit planet limb is nearly
+                    // as bright as the sun disc: at 0.62 the sun glowed beautifully but
+                    // Jupiter's bands and Saturn's rings bloomed away into white blobs,
+                    // which costs actual science. 0.75 blooms the sun and nothing else.
+                    // Re-derive BOTH ends of that window if the exposure above changes.
+                    c.addPass(new T.UnrealBloomPass(new T.Vector2(Math.max(1, Math.round(W * res)), Math.max(1, Math.round(H * res))), lowPower ? 0.7 : 1.1, 0.3, 0.75));
                     composer = c;
                   } catch (e) { composer = null; }
                 });

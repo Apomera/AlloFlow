@@ -9248,6 +9248,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
 
       // Navigation lights & beam active when dark/reduced visibility
       var dark = (tod === 'sunset' || tod === 'night' || weather === 'foggy' || weather === 'rainy');
+      // Bloom rides the same flag — see the render call in tick(). In broad daylight
+      // this scene has nothing the bloom was meant for (no sun/moon disc in frame, and
+      // the nav lights immediately below are set to 0.0), while its diffuse surfaces
+      // already clip, so the pass had nothing to find except the boat.
+      renderer._alloBloomDark = dark;
       portGlow.intensity = dark ? (tod === 'night' ? 1.2 : 0.8) : 0.0;
       stbdGlow.intensity = dark ? (tod === 'night' ? 1.2 : 0.8) : 0.0;
       sternGlow.intensity = dark ? (tod === 'night' ? 1.5 : 1.0) : 0.0;
@@ -9450,7 +9455,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var dt = Math.min(0.08, (now - lastT) / 1000);
       lastT = now;
       if (boatState.paused) {
-        var pausedComposer = renderer._alloComposer;
+        // Same daylight gate as the live path below, or pausing in daylight brings the
+        // white blob straight back on every held frame.
+        var pausedComposer = renderer._alloBloomDark ? renderer._alloComposer : null;
         if (pausedComposer) pausedComposer.render(); else renderer.render(scene, camera);
         raf = requestAnimationFrame(tick);
         return;
@@ -10022,7 +10029,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       hudCb(hudPayload);
 
       AF.update(dt, elapsed);
-      var _ac = renderer._alloComposer;
+      // Bloom only in the dark/low-visibility conditions it was tuned for (flag set in
+      // updateEnvironment). In daylight the pass found no sun disc and no nav lights,
+      // only the skiff's own clipped-white hull, and smeared the player's boat, the
+      // foreground trees and a wide patch of water into a single white blob. Verified
+      // by screenshot at both settings. Defaults to plain render until the first
+      // updateEnvironment call, which is the safe direction.
+      var _ac = renderer._alloBloomDark ? renderer._alloComposer : null;
       if (_ac) { try { _ac.render(); } catch (e) { renderer._alloComposer = null; renderer.render(scene, camera); } }
       else { renderer.render(scene, camera); }
       raf = requestAnimationFrame(tick);
