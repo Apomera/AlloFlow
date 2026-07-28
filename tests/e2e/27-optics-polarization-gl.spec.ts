@@ -84,6 +84,7 @@ const HARNESS = `<!doctype html>
   };
   window.__destroy = function () { if (window.__root) { window.__root.unmount(); window.__root = null; } };
   window.__gl = function () { return window.__alloOpticsGL ? window.__alloOpticsGL.debug() : null; };
+  window.__win = function () { return window.__alloOpticsWindowGL ? window.__alloOpticsWindowGL.debug() : null; };
   window.__set = function (patch) {
     window.__toolData = Object.assign({}, window.__toolData);
     window.__toolData.opticsLab = Object.assign({}, window.__toolData.opticsLab, patch);
@@ -268,5 +269,100 @@ test.describe('Optics Lab polarization — real WebGL', () => {
     await page.evaluate(() => (window as any).__destroy());
     await page.waitForTimeout(400);
     expect(await page.evaluate(() => (window as any).__gl().state)).toBe('idle');
+  });
+});
+
+/**
+ * Snell's window — the refraction tab.
+ *
+ * The tool states twice that a fish sees the whole sky inside a 96-degree
+ * circle, and lists `snellsWindow` as a related phenomenon for an entry that
+ * exists nowhere in the file. It is a cone; the tab drew a side-on slice.
+ */
+test.describe("Optics Lab Snell's window — real WebGL", () => {
+  test.afterEach(async ({ page }) => {
+    await page.evaluate(() => { try { (window as any).__destroy(); } catch { /* gone */ } }).catch(() => {});
+  });
+
+  async function mountWindow(page: Pg, bucket: Record<string, unknown> = {}) {
+    await page.goto(`${base}/__harness`);
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.opticsLab);
+    await page.evaluate(
+      (b) => (window as any).__mount(b),
+      Object.assign({ mode: 'refraction', refrShowWindow: true, refrN1: 1.333, refrN2: 1.0 }, bucket)
+    );
+    await page.waitForSelector('canvas[data-optics-window-gl="true"]', { timeout: 30000 });
+    await page.waitForFunction(() => (window as any).__win()?.state === 'ready', null, { timeout: 30000 });
+    await page.waitForTimeout(400);
+  }
+
+  test('★ builds the cone at the real critical angle for water', async ({ page }) => {
+    await mountWindow(page);
+    const gl = await page.evaluate(() => (window as any).__win());
+    expect(gl.state).toBe('ready');
+    expect(gl.contextLost).toBe(false);
+    // asin(1/1.333) = 48.61 degrees. The tool's own fun fact says 48.6.
+    expect(gl.coneDeg).toBeGreaterThan(48.5);
+    expect(gl.coneDeg).toBeLessThan(48.8);
+    expect(gl.skyRays).toBeGreaterThan(40);
+    expect(gl.tirRays).toBeGreaterThan(4);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('★ the whole sky really is compressed into the cone', async ({ page }) => {
+    // The claim is that rays out to the horizon all land inside the cone. The
+    // window radius at the surface is depth*tan(thetaC); if any ray escaped the
+    // cone the radius would have to grow.
+    await mountWindow(page);
+    const gl = await page.evaluate(() => (window as any).__win());
+    const expected = 6 * Math.tan((gl.coneDeg * Math.PI) / 180);
+    expect(gl.windowRadius).toBeCloseTo(expected, 2);
+  });
+
+  test('a denser second medium narrows the window', async ({ page }) => {
+    await mountWindow(page);
+    const water = await page.evaluate(() => (window as any).__win().coneDeg);
+    // Diamond to air: asin(1/2.417) = 24.4 degrees, a much tighter cone.
+    await page.evaluate(() => (window as any).__set({ refrN1: 2.417, refrN2: 1.0 }));
+    await page.waitForTimeout(500);
+    const diamond = await page.evaluate(() => (window as any).__win().coneDeg);
+    expect(diamond).toBeLessThan(water);
+    expect(diamond).toBeGreaterThan(24.2);
+    expect(diamond).toBeLessThan(24.6);
+  });
+
+  test('★ refuses to draw a window that cannot exist, and offers the fix', async ({ page }) => {
+    // Looking INTO the denser medium there is no critical angle and no window.
+    // Drawing one anyway would teach the misconception the tab exists to prevent.
+    await page.goto(`${base}/__harness`);
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.opticsLab);
+    await page.evaluate(() => (window as any).__mount({
+      mode: 'refraction', refrShowWindow: true, refrN1: 1.0, refrN2: 1.333
+    }));
+    await page.waitForTimeout(600);
+    expect(await page.evaluate(() => document.querySelectorAll('canvas[data-optics-window-gl]').length)).toBe(0);
+    const txt = await page.evaluate(() => (window as any).__text());
+    expect(txt).toContain('There is no window here');
+    expect(txt).toContain('Swap the media');
+
+    // And the swap really fixes it, in one atomic update.
+    await page.evaluate(() => {
+      const b = Array.from(document.querySelectorAll('button'))
+        .find((el) => /Swap the media/.test(el.textContent || ''));
+      (b as HTMLButtonElement).click();
+    });
+    await page.waitForSelector('canvas[data-optics-window-gl="true"]', { timeout: 30000 });
+    await page.waitForFunction(() => (window as any).__win()?.state === 'ready', null, { timeout: 30000 });
+    const b = await page.evaluate(() => (window as any).__bucket());
+    expect(b.refrN1).toBeCloseTo(1.333, 3);
+    expect(b.refrN2).toBeCloseTo(1.0, 3);
+  });
+
+  test('the window is opt-in and tears down when switched off', async ({ page }) => {
+    await mountWindow(page);
+    await page.evaluate(() => (window as any).__set({ refrShowWindow: false }));
+    await page.waitForTimeout(500);
+    expect(await page.evaluate(() => document.querySelectorAll('canvas[data-optics-window-gl]').length)).toBe(0);
+    expect(await page.evaluate(() => (window as any).__win().state)).toBe('idle');
   });
 });

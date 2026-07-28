@@ -629,6 +629,323 @@
   // ──────────────────────────────────────────────────────────────────
   // REFRACTION SIM — Snell's law + TIR
   // ──────────────────────────────────────────────────────────────────
+  // ──────────────────────────────────────────────────────────────────
+  // Snell's window
+  //
+  // This tool tells the student, twice, that a fish looking up sees the whole
+  // sky squeezed into a 96-degree circle and mirror everywhere outside it, and
+  // lists `snellsWindow` as a related phenomenon — for an entry that does not
+  // exist anywhere in the file. It is a CONE, and the refraction tab draws a
+  // side-on ray diagram, which is a slice through a cone and therefore shows a
+  // pair of lines. The compression of an entire hemisphere into a disc is the
+  // whole phenomenon and it is exactly the part a slice cannot carry.
+  //
+  // NOTE for whoever is here next: this is the second viewer in this file with
+  // the same lifecycle as OpticsGL (singleton + stable ref + pending/sig +
+  // exact projected-corner camera fit), and BridgeGL is a third elsewhere.
+  // That is the rule of three — the lifecycle wants extracting into
+  // stem_lab_module.js next to makeBayViewer. Not done here only because the
+  // host module had uncommitted work from another session at the time.
+  // ──────────────────────────────────────────────────────────────────
+  var OW_DEPTH = 6;              // how far the eye sits below the surface
+  var OW_AZIMUTHS = 14;          // ray fans around the cone
+  var OW_SKY_STEPS = 5;          // sky angles sampled per fan
+
+  var OpticsWindowGL = (function () {
+    var S = null, status = 'idle', pending = null, node = null, sig = '';
+    var notify = null, restoreAttempts = 0;
+
+    function setStatus(next) {
+      if (status === next) return;
+      status = next;
+      if (notify) { try { notify(next); } catch (e) {} }
+    }
+
+    function debug() {
+      return {
+        state: status,
+        contextLost: !!(S && S.contextLost),
+        // Half-angle of the cone, in degrees, as actually built.
+        coneDeg: S ? S.coneDeg : null,
+        // Radius of the bright circle where the cone meets the surface.
+        windowRadius: S ? S.windowRadius : null,
+        skyRays: S ? S.skyRays : 0,
+        tirRays: S ? S.tirRays : 0,
+        canvas: S && S.renderer ? { w: S.renderer.domElement.width, h: S.renderer.domElement.height } : null
+      };
+    }
+
+    function disposeGroup(group) {
+      if (!group) return;
+      for (var i = group.children.length - 1; i >= 0; i--) {
+        var c = group.children[i];
+        if (c.geometry) c.geometry.dispose();
+        if (c.material) c.material.dispose();
+        group.remove(c);
+      }
+    }
+
+    function addLine(THREE, pts, color, opacity) {
+      var g = new THREE.BufferGeometry().setFromPoints(pts);
+      var m = new THREE.LineBasicMaterial({
+        color: color, transparent: opacity < 1, opacity: opacity
+      });
+      var l = new THREE.Line(g, m);
+      l.frustumCulled = false;
+      S.model.add(l);
+      return l;
+    }
+
+    function applyModel(m) {
+      if (!S || !S.THREE) return;
+      var THREE = S.THREE;
+      disposeGroup(S.model);
+      S.skyRays = 0; S.tirRays = 0;
+
+      var thetaC = m.thetaC;                       // radians
+      var D = OW_DEPTH;
+      var R = D * Math.tan(thetaC);
+      S.coneDeg = +(thetaC * 180 / Math.PI).toFixed(2);
+      S.windowRadius = +R.toFixed(3);
+      var eye = new THREE.Vector3(0, -D, 0);
+      var surfaceHalf = Math.max(R * 2.1, 9);
+
+      // The water surface, seen from below.
+      var surf = new THREE.Mesh(
+        new THREE.PlaneGeometry(surfaceHalf * 2, surfaceHalf * 2),
+        new THREE.MeshBasicMaterial({
+          color: 0x1e3a5f, transparent: true, opacity: 0.34, side: THREE.DoubleSide
+        })
+      );
+      surf.rotation.x = -Math.PI / 2;
+      S.model.add(surf);
+
+      // The window itself: the circle where the cone cuts the surface.
+      var ringPts = [];
+      for (var a = 0; a <= 72; a++) {
+        var t = a / 72 * Math.PI * 2;
+        ringPts.push(new THREE.Vector3(R * Math.cos(t), 0.01, R * Math.sin(t)));
+      }
+      addLine(THREE, ringPts, 0xfde68a, 1);
+
+      // The bright disc of compressed sky inside it.
+      var disc = new THREE.Mesh(
+        new THREE.CircleGeometry(R, 64),
+        new THREE.MeshBasicMaterial({
+          color: 0x93c5fd, transparent: true, opacity: 0.22, side: THREE.DoubleSide
+        })
+      );
+      disc.rotation.x = -Math.PI / 2;
+      disc.position.y = 0.005;
+      S.model.add(disc);
+
+      // The cone from the eye out to the ring — the solid angle the sky occupies.
+      var cone = new THREE.Mesh(
+        new THREE.ConeGeometry(R, D, 48, 1, true),
+        new THREE.MeshBasicMaterial({
+          color: 0x60a5fa, transparent: true, opacity: 0.10, side: THREE.DoubleSide
+        })
+      );
+      cone.position.set(0, -D / 2, 0);
+      S.model.add(cone);
+
+      // The eye.
+      var eyeBall = new THREE.Mesh(
+        new THREE.SphereGeometry(0.22, 16, 12),
+        new THREE.MeshBasicMaterial({ color: 0xf8fafc })
+      );
+      eyeBall.position.copy(eye);
+      S.model.add(eyeBall);
+
+      // Sky rays. A ray arriving from the sky at phi from vertical refracts to
+      // theta, where sin(theta) = (n2/n1) sin(phi). phi runs to grazing (90),
+      // theta only ever reaches thetaC — which IS the compression, drawn.
+      for (var az = 0; az < OW_AZIMUTHS; az++) {
+        var phiAz = az / OW_AZIMUTHS * Math.PI * 2;
+        var ux = Math.cos(phiAz), uz = Math.sin(phiAz);
+        for (var s = 0; s < OW_SKY_STEPS; s++) {
+          // Bias the sample toward grazing, where the crowding actually happens.
+          var frac = (s + 1) / OW_SKY_STEPS;
+          // Cap short of grazing: at exactly 90 degrees tan() is infinite and the
+          // incoming leg would be drawn to a point at infinity.
+          var skyPhi = Math.min(Math.asin(Math.min(1, frac)), 84 * Math.PI / 180);
+          var sinT = (m.n2 / m.n1) * Math.sin(skyPhi);
+          if (sinT > 1) continue;
+          var theta = Math.asin(sinT);
+          var hitR = D * Math.tan(theta);
+          var hit = new THREE.Vector3(ux * hitR, 0, uz * hitR);
+          // Incoming leg, above the surface, at the sky angle. Fixed LENGTH along
+          // the incoming direction, not a fixed rise: near-grazing rays have
+          // tan(phi) approaching infinity, and scaling by it threw those legs
+          // clean out of the frame and wrecked the camera fit.
+          var legLen = 3.4;
+          var up = new THREE.Vector3(
+            hit.x + ux * Math.sin(skyPhi) * legLen,
+            Math.cos(skyPhi) * legLen,
+            hit.z + uz * Math.sin(skyPhi) * legLen
+          );
+          addLine(THREE, [up, hit], 0xfcd34d, 0.55);
+          addLine(THREE, [hit, eye], 0xfcd34d, 0.85);
+          S.skyRays++;
+        }
+      }
+
+      // Outside the ring the surface is a mirror: the eye sees the bottom.
+      for (var tz = 0; tz < 8; tz++) {
+        var tAz = (tz + 0.5) / 8 * Math.PI * 2;
+        var rOut = R + 1.1 + (tz % 2) * 0.9;
+        var hitT = new THREE.Vector3(Math.cos(tAz) * rOut, 0, Math.sin(tAz) * rOut);
+        // Mirror the eye through the surface to get the reflected leg's direction.
+        var from = new THREE.Vector3(hitT.x * 1.9, -D * 1.25, hitT.z * 1.9);
+        addLine(THREE, [from, hitT], 0x5eead4, 0.5);
+        addLine(THREE, [hitT, eye], 0x5eead4, 0.8);
+        S.tirRays++;
+      }
+
+      S.target = new THREE.Vector3(0, -D * 0.45, 0);
+      S.half = new THREE.Vector3(surfaceHalf, D * 0.95, surfaceHalf);
+    }
+
+    function frame() {
+      if (!S) return;
+      S.raf = requestAnimationFrame(frame);
+      if (S.contextLost || !S.renderer) return;
+      if (pending) {
+        var next = pending; pending = null;
+        if (next.sig !== sig) { sig = next.sig; applyModel(next); }
+        S.rotY = next.rotY; S.rotX = next.rotX; S.zoom = next.zoom;
+      }
+      var el = S.renderer.domElement;
+      var w = el.clientWidth || 1, hgt = el.clientHeight || 1;
+      if (w !== S.lastW || hgt !== S.lastH) {
+        S.lastW = w; S.lastH = hgt;
+        S.renderer.setSize(w, hgt, false);
+        S.camera.aspect = w / Math.max(1, hgt);
+      }
+      var ry = (S.rotY || 0) * Math.PI / 180, rx = (S.rotX || 0) * Math.PI / 180;
+      var dir = new S.THREE.Vector3(
+        Math.cos(rx) * Math.sin(ry), Math.sin(rx), Math.cos(rx) * Math.cos(ry)
+      ).normalize();
+      var fit = 1;
+      if (S.half) {
+        var up0 = new S.THREE.Vector3(0, 1, 0);
+        var right = new S.THREE.Vector3().crossVectors(up0, dir);
+        if (right.lengthSq() < 1e-6) right.set(1, 0, 0);
+        right.normalize();
+        var upv = new S.THREE.Vector3().crossVectors(dir, right).normalize();
+        var tanV = Math.tan(S.camera.fov * Math.PI / 360);
+        var tanH = tanV * Math.max(0.2, S.camera.aspect);
+        for (var sx = -1; sx <= 1; sx += 2) {
+          for (var sy = -1; sy <= 1; sy += 2) {
+            for (var sz = -1; sz <= 1; sz += 2) {
+              var v = new S.THREE.Vector3(sx * S.half.x, sy * S.half.y, sz * S.half.z);
+              var along = v.dot(dir);
+              var nh = Math.abs(v.dot(right)) / tanH + along;
+              var nv = Math.abs(v.dot(upv)) / tanV + along;
+              if (nh > fit) fit = nh;
+              if (nv > fit) fit = nv;
+            }
+          }
+        }
+        fit *= 1.05;
+      }
+      var dist = fit / Math.max(0.3, S.zoom || 1);
+      S.camera.position.copy(S.target).addScaledVector(dir, dist);
+      S.camera.near = Math.max(0.05, dist * 0.01);
+      S.camera.far = dist * 8 + 100;
+      S.camera.updateProjectionMatrix();
+      S.camera.lookAt(S.target);
+      try { S.renderer.render(S.scene, S.camera); } catch (e) { /* keep looping */ }
+    }
+
+    function build(THREE, host) {
+      var renderer;
+      try { renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false }); }
+      catch (e) { return false; }
+      var w = host.clientWidth || 460, hgt = host.clientHeight || 300;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.setSize(w, hgt);
+      renderer.setClearColor(0x081726, 1);
+      var el = renderer.domElement;
+      el.style.display = 'block';
+      el.style.width = '100%';
+      el.style.height = '100%';
+      el.style.borderRadius = '8px';
+      el.style.touchAction = 'pan-y';
+      el.setAttribute('data-optics-window-gl', 'true');
+      el.setAttribute('aria-hidden', 'true');
+      host.appendChild(el);
+
+      var scene = new THREE.Scene();
+      var camera = new THREE.PerspectiveCamera(42, w / Math.max(1, hgt), 0.1, 2000);
+      scene.add(new THREE.AmbientLight(0xffffff, 1));
+      var model = new THREE.Group();
+      scene.add(model);
+
+      S = {
+        THREE: THREE, renderer: renderer, scene: scene, camera: camera, model: model,
+        coneDeg: null, windowRadius: null, skyRays: 0, tirRays: 0,
+        rotY: 28, rotX: -18, zoom: 1,     // start below the surface, looking up
+        target: new THREE.Vector3(), half: null,
+        contextLost: false, lastW: w, lastH: hgt, raf: 0
+      };
+
+      el.addEventListener('webglcontextlost', function (ev) {
+        ev.preventDefault(); S.contextLost = true; setStatus('failed');
+      });
+      el.addEventListener('webglcontextrestored', function () {
+        if (restoreAttempts >= 1) return;
+        restoreAttempts++; S.contextLost = false; sig = ''; setStatus('ready');
+      });
+
+      sig = '';
+      S.raf = requestAnimationFrame(frame);
+      return true;
+    }
+
+    return {
+      attach: function (host) {
+        if (!host) { this.dispose(); return; }
+        if (node === host && S) return;
+        if (S) this.dispose();
+        node = host;
+        setStatus('loading');
+        var ensure = window.StemLab && window.StemLab.ensureThree
+          ? window.StemLab.ensureThree({ orbit: false, failMessage: '3D view unavailable' })
+          : Promise.reject(new Error('no host loader'));
+        ensure.then(function (THREE) {
+          if (node !== host) return;
+          if (!THREE) { setStatus('failed'); return; }
+          setStatus(build(THREE, host) ? 'ready' : 'failed');
+        }).catch(function () { setStatus('failed'); });
+      },
+      push: function (data) { pending = data; },
+      onStatusChange: function (fn) { notify = fn; },
+      status: function () { return status; },
+      debug: debug,
+      dispose: function () {
+        if (S) {
+          if (S.raf) cancelAnimationFrame(S.raf);
+          disposeGroup(S.model);
+          if (S.renderer) {
+            try { S.renderer.forceContextLoss(); } catch (e) {}
+            try { S.renderer.dispose(); } catch (e) {}
+            if (S.renderer.domElement && S.renderer.domElement.parentNode) {
+              S.renderer.domElement.parentNode.removeChild(S.renderer.domElement);
+            }
+          }
+        }
+        S = null; node = null; pending = null; sig = ''; restoreAttempts = 0;
+        notify = null;
+        setStatus('idle');
+      }
+    };
+  })();
+
+  function opticsWindowGlRef(nodeOrNull) { OpticsWindowGL.attach(nodeOrNull); }
+  var opticsWinDrag = { current: null };
+  if (typeof window !== 'undefined') window.__alloOpticsWindowGL = OpticsWindowGL;
+
   function _renderRefractionSim(state, upd, h) {
     var W = 460, H = 280;
     var pad = { l: 12, r: 12, t: 12, b: 28 };
@@ -677,7 +994,130 @@
       });
       return (best && bestDiff < 0.005) ? best.label : 'custom';
     }
+    // ── Snell's window ────────────────────────────────────────────────
+    // Only exists looking OUT of the denser medium, which is also the condition
+    // for a critical angle to exist at all — so the panel teaches the condition
+    // by refusing to draw without it, and offers the swap that fixes it.
+    var showWindow = !!state.refrShowWindow;
+    var windowPossible = theta_c != null;
+    var winLive = OpticsWindowGL.status() === 'ready';
+    if (showWindow && windowPossible) {
+      OpticsWindowGL.onStatusChange(function () { upd('refrWinTick', ((state.refrWinTick || 0) + 1)); });
+      OpticsWindowGL.push({
+        sig: [n1.toFixed(4), n2.toFixed(4)].join('|'),
+        thetaC: theta_c, n1: n1, n2: n2,
+        rotY: state.refrWinRot ? state.refrWinRot.rotY : 28,
+        rotX: state.refrWinRot ? state.refrWinRot.rotX : -18,
+        zoom: state.refrWinZoom || 1
+      });
+    }
+    var windowConeDeg = windowPossible ? (theta_c * 180 / Math.PI) : null;
+    var windowAlt = windowPossible
+      ? ('Underwater view of Snell\'s window. Looking up from inside the denser medium, the whole '
+         + 'sky is compressed into a cone of half-angle ' + windowConeDeg.toFixed(1) + ' degrees, so a '
+         + 'circle ' + (windowConeDeg * 2).toFixed(0) + ' degrees wide directly overhead. Outside that '
+         + 'circle the surface acts as a mirror and reflects the bottom back down.')
+      : 'Snell\'s window needs the observer in the denser medium.';
+
+    var windowPanel = h('div', { style: { marginBottom: 10 } },
+      h('label', {
+        style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }
+      },
+        h('input', {
+          type: 'checkbox', checked: showWindow,
+          onChange: function (e) { upd('refrShowWindow', e.target.checked); },
+          'data-op-focusable': 'true',
+          'aria-label': "Show Snell's window, the cone of compressed sky seen from under the surface"
+        }),
+        "Snell's window (3D — look up from under the surface)"
+      ),
+      showWindow && !windowPossible ? h('div', {
+        style: {
+          fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.55,
+          padding: 10, borderRadius: 8, maxWidth: 460,
+          background: 'var(--allo-stem-deeper, #0b1220)', border: '1px solid var(--allo-stem-border, #334155)'
+        }
+      },
+        'There is no window here: with n₁ = ' + n1.toFixed(3) + ' and n₂ = ' + n2.toFixed(3)
+        + ', light is entering the denser medium, so no angle is beyond total internal reflection. '
+        + 'The window is what you see looking OUT of the denser medium.',
+        h('button', {
+          // One atomic patch: two sequential upd() calls would each merge against
+          // the same prev and the second would clobber the first.
+          onClick: function () { upd({ refrN1: n2, refrN2: n1 }); },
+          'data-op-focusable': 'true',
+          style: {
+            display: 'block', marginTop: 8, fontSize: 11, padding: '4px 10px', borderRadius: 6,
+            border: '1px solid #38bdf8', background: 'rgba(56,189,248,.12)', color: '#7dd3fc', cursor: 'pointer'
+          }
+        }, 'Swap the media (n₁ ⇄ n₂)')
+      ) : null,
+      showWindow && windowPossible ? h('div', null,
+        h('div', {
+          style: {
+            position: 'relative', height: 280, maxWidth: 460, borderRadius: 8, overflow: 'hidden',
+            background: 'var(--allo-stem-deeper, #081726)', border: '1px solid var(--allo-stem-border, #334155)'
+          }
+        },
+          h('div', {
+            ref: opticsWindowGlRef,
+            role: 'img',
+            'data-a11y-static': 'true',
+            'aria-label': windowAlt,
+            style: { position: 'absolute', inset: 0 },
+            onPointerDown: function (ev) {
+              opticsWinDrag.current = { x: ev.clientX, y: ev.clientY,
+                rotY: state.refrWinRot ? state.refrWinRot.rotY : 28,
+                rotX: state.refrWinRot ? state.refrWinRot.rotX : -18 };
+              try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (e) {}
+            },
+            onPointerMove: function (ev) {
+              var g = opticsWinDrag.current;
+              if (!g) return;
+              upd('refrWinRot', {
+                rotY: g.rotY + (ev.clientX - g.x) * 0.5,
+                rotX: Math.max(-84, Math.min(84, g.rotX + (ev.clientY - g.y) * 0.35))
+              });
+            },
+            onPointerUp: function () { opticsWinDrag.current = null; },
+            onPointerCancel: function () { opticsWinDrag.current = null; },
+            onWheel: function (ev) {
+              ev.preventDefault();
+              upd('refrWinZoom', Math.max(0.5, Math.min(3, (state.refrWinZoom || 1) * (ev.deltaY < 0 ? 1.12 : 0.89))));
+            }
+          }),
+          !winLive ? h('div', {
+            style: {
+              position: 'absolute', inset: 0, display: 'flex', alignItems: 'center',
+              justifyContent: 'center', textAlign: 'center', padding: 12,
+              color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11, pointerEvents: 'none'
+            }
+          }, OpticsWindowGL.status() === 'failed'
+              ? '3D view unavailable on this device — the numbers below still describe the window.'
+              : 'Loading 3D view…') : null,
+          winLive ? h('div', {
+            style: {
+              position: 'absolute', left: 8, bottom: 6, fontSize: 10,
+              color: 'var(--allo-stem-text-soft, #94a3b8)', pointerEvents: 'none',
+              background: 'rgba(8,23,38,.72)', padding: '2px 7px', borderRadius: 999
+            }
+          }, 'Drag — orbit  ·  Scroll — zoom') : null
+        ),
+        h('p', {
+          style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, margin: '6px 0 0', maxWidth: 460 }
+        },
+          'Every ray from the whole sky — right out to the horizon — arrives inside a cone of half-angle ',
+          h('strong', { style: { color: '#fde68a' } }, windowConeDeg.toFixed(1) + '°'),
+          ', so the observer sees a circle ',
+          h('strong', { style: { color: '#fde68a' } }, (windowConeDeg * 2).toFixed(0) + '° wide'),
+          ' overhead. Outside it (teal) the surface is a mirror showing the bottom. '
+          + 'For water this is 48.6° and a 97° circle — the fish\'s-eye view.'
+        )
+      ) : null
+    );
+
     return h('div', null,
+      windowPanel,
       // Material selectors + theta slider
       h('div', { style: { display: 'flex', gap: 10, marginBottom: 8, flexWrap: 'wrap', alignItems: 'center' } },
         h('label', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', alignItems: 'center', gap: 6 } }, 'Top n₁:',
@@ -3181,7 +3621,7 @@
   window.StemLab.registerTool('opticsLab', {
     icon: '🔆',
     label: 'Optics Lab',
-    desc: 'AP Physics 2 geometric + wave optics: ray diagrams, Snell\'s law, mirrors, lenses, double-slit interference, single-slit diffraction, polarization. Side-by-side draggable sims + calculators with show-the-math, sample problems, glossary, misconceptions, AP exam quiz, and AI-graded explanations.',
+    desc: 'Geometric + wave optics: ray diagrams, Snell\'s law, mirrors, lenses, double-slit interference, single-slit diffraction, polarization in 3D. Side-by-side draggable sims + calculators with show-the-math, sample problems, glossary, misconceptions, exam-style quiz, and AI-graded explanations.',
     color: 'sky',
     category: 'science',
     questHooks: [

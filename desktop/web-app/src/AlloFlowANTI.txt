@@ -3560,12 +3560,27 @@ const _ALLO_STATION_STYLES = {
     'math-fluency-probe':    { icon: '\u{1F522}', shape: 'hexflat', fill: '#ecfdf5', stroke: '#059669', label: 'Math practice' },
     'manipulative-resource': { icon: '\u{1F9EE}', shape: 'hexflat', fill: '#ecfdf5', stroke: '#059669', label: 'Math tool' },
     'stem-assessment':       { icon: '\u{1F52C}', shape: 'hexflat', fill: '#ecfdf5', stroke: '#059669', label: 'Science' },
-    'stem':                  { icon: '\u{1F52C}', shape: 'hexflat', fill: '#ecfdf5', stroke: '#059669', label: 'Science' }
+    'stem':                  { icon: '\u{1F52C}', shape: 'hexflat', fill: '#ecfdf5', stroke: '#059669', label: 'Science' },
+    // Teacher-facing / planning family (2026-07-27). These five are TOOL_CATALOG
+    // ids that had no station style, so they fell through to the grey fallback
+    // glyph everywhere this registry renders — including the blueprint plan,
+    // where every row looked identical. Keep this registry and TOOL_CATALOG in
+    // step: a catalog id with no entry here is a silent grey square.
+    'analysis':              { icon: '\u{1F50D}', shape: 'circle',  fill: '#eef2ff', stroke: '#6366f1', label: 'Analysis' },
+    'brainstorm':            { icon: '\u{1F4A1}', shape: 'circle',  fill: '#fffbeb', stroke: '#f59e0b', label: 'Ideas' },
+    'lesson-plan':           { icon: '\u{1F5FA}', shape: 'square',  fill: '#eef2ff', stroke: '#4f46e5', label: 'Lesson plan' },
+    'alignment-report':      { icon: '✅', shape: 'diamond', fill: '#f0fdfa', stroke: '#0d9488', label: 'Standards' },
+    'gemini-bridge':         { icon: '\u{1F9EA}', shape: 'hex',     fill: '#fdf4ff', stroke: '#c026d3', label: 'Simulation' }
 };
 const _ALLO_STATION_FALLBACK = { icon: '\u{1F4C4}', shape: 'circle', fill: '#f8fafc', stroke: '#64748b', label: 'Resource' };
 function _alloStationStyle(type) {
     return _ALLO_STATION_STYLES[type] || _ALLO_STATION_FALLBACK;
 }
+// Mirrored to window so CDN modules can reuse the ONE visual registry instead
+// of inventing a sixth colour table. Modules must call it as
+// window._alloStationStyle(...) with a fallback — a bare reference is a
+// ReferenceError inside a module IIFE (the free-variable crash class).
+try { if (typeof window !== 'undefined') window._alloStationStyle = _alloStationStyle; } catch (_) {}
 // Pure geometry for a station silhouette, centered on (x, y) with radius r.
 // Returns a render descriptor ({ tag, attrs }) rather than markup so it stays
 // testable and the view stays declarative.
@@ -9818,7 +9833,19 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=355fa3d9a');
     loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=355fa3d9a');
     loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=355fa3d9a');
-    loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=355fa3d9a');
+    // Word Sounds is the largest CDN module in the app (~744KB) and was loaded
+    // eagerly here for EVERY user at boot, including the majority who never open
+    // it. It registers exactly one component, WordSoundsModal, and the only
+    // thing that renders it is `isWordSoundsMode` — the sibling Word Sounds
+    // surfaces live in their own modules (WordSoundsGenerator in
+    // word_sounds_setup_module, WordSoundsReviewPanel in misc_components,
+    // WordSoundsPreviewView in view_word_sounds_preview_module), so nothing else
+    // depends on this one being present. Lazy-loading it also stops its injected
+    // stylesheet from being installed for users who never touch the tool.
+    // The render site already has a "Loading Word Sounds..." fallback with a
+    // Close escape, and the module registry re-renders the app when the load
+    // lands, so the fallback resolves on its own.
+    window.__alloLazyWordSounds = (function() { var L=false; return function() { if(L)return; L=true; loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=355fa3d9a'); }; })();
     loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=355fa3d9a');
     loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=355fa3d9a');
     loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=355fa3d9a');
@@ -10847,6 +10874,18 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const setWordSoundsFamilies = (v) => wsDispatch({ type: 'WS_SET', field: 'wordSoundsFamilies', value: v });
   const setWordSoundsAudioLibrary = (v) => wsDispatch({ type: 'WS_SET', field: 'wordSoundsAudioLibrary', value: v });
   const setIsWordSoundsMode = (v) => wsDispatch({ type: 'WS_SET', field: 'isWordSoundsMode', value: v });
+  // Pull in the lazily-registered Word Sounds player. Driven by an effect on the
+  // STATE rather than wrapped around setIsWordSoundsMode, so it also covers any
+  // path that flips the flag without going through that setter (a restored
+  // project, a live-session push). isWordSoundsMode is a necessary condition of
+  // the render site, so watching it here cannot miss an entry point. The
+  // generator/setup view is warmed too: a teacher always configures there before
+  // launching, which overlaps the download with the time they spend picking
+  // words instead of making them wait at launch.
+  React.useEffect(() => {
+    if (!isWordSoundsMode && activeView !== 'word-sounds' && activeView !== 'word-sounds-generator') return;
+    try { window.__alloLazyWordSounds?.(); } catch (_) {}
+  }, [isWordSoundsMode, activeView]);
   const setWordSoundsActivity = (v) => wsDispatch({ type: 'WS_SET', field: 'wordSoundsActivity', value: v });
   const setWordSoundsScore = (v) => wsDispatch({ type: 'WS_SET', field: 'wordSoundsScore', value: v });
   const setCurrentWordSoundsWord = (v) => wsDispatch({ type: 'WS_SET', field: 'currentWordSoundsWord', value: v });
@@ -31487,6 +31526,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         } catch (_) {}
         if (p && p.topic) { try { setInputText(p.topic); } catch (_) {} }
         try { setIsBotVisible(true); } catch (_) {}
+        // handleAutoFillToggle SEEDS the flow and pushes the welcome message
+        // into udlMessages, but it never opens the panel — and showUDLGuide
+        // defaults false. Without this the teacher gets a talking avatar and
+        // no chat: the first turn of the guided flow is written into a closed
+        // window. Open it here, at every front door.
+        try { setShowUDLGuide(true); } catch (_) {}
         // Reuse the PRODUCTION Auto-Fill entry — same stage seeding, same
         // bot welcome — so the agent and the checkbox share one path.
         handleAutoFillToggle({ target: { checked: true } });
@@ -41958,7 +42003,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                   activeSessionCode, studentNickname, isTeacherMode
             })}
         </CDNModuleGate>
-        {showEducatorHub && <EducatorHubModal addToast={addToast} beginPdfDocumentIntake={startNewPdfAudit} handleFileUpload={handleFileUpload} isPdfDocumentIntakeCurrent={isPdfDocumentIntakeCurrent} setPdfBatchSummary={setPdfBatchSummary} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsDynamicAssessmentOpen={setIsDynamicAssessmentOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setBridgeSendOpen={setBridgeSendOpen} setShowBehaviorLens={setShowBehaviorLens} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} setShowCinematicStudio={setShowCinematicStudio} setIsVideoStudioOpen={setIsVideoStudioOpen} setIsAlloStudioOpen={setIsAlloStudioOpen} setShowBrandProfileEditor={setShowBrandProfileEditor} setShowStemLab={setShowStemLab} setStemLabTool={setStemLabTool} setLabToolData={setLabToolData} openWhiteboard={openWhiteboard} startLessonFlow={() => { try { setIsBotVisible(true); } catch (_) {} handleAutoFillToggle({ target: { checked: true } }); }} showEducatorHub={showEducatorHub} t={t} />}
+        {showEducatorHub && <EducatorHubModal addToast={addToast} beginPdfDocumentIntake={startNewPdfAudit} handleFileUpload={handleFileUpload} isPdfDocumentIntakeCurrent={isPdfDocumentIntakeCurrent} setPdfBatchSummary={setPdfBatchSummary} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsDynamicAssessmentOpen={setIsDynamicAssessmentOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setBridgeSendOpen={setBridgeSendOpen} setShowBehaviorLens={setShowBehaviorLens} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} setShowCinematicStudio={setShowCinematicStudio} setIsVideoStudioOpen={setIsVideoStudioOpen} setIsAlloStudioOpen={setIsAlloStudioOpen} setShowBrandProfileEditor={setShowBrandProfileEditor} setShowStemLab={setShowStemLab} setStemLabTool={setStemLabTool} setLabToolData={setLabToolData} openWhiteboard={openWhiteboard} startLessonFlow={() => { try { setIsBotVisible(true); } catch (_) {} try { setShowUDLGuide(true); } catch (_) {} handleAutoFillToggle({ target: { checked: true } }); }} showEducatorHub={showEducatorHub} t={t} />}
         {showLearningHub && <LearningHubModal isTeacherMode={isTeacherMode} setBridgeSendOpen={setBridgeSendOpen} setIsAlloHavenOpen={setIsAlloHavenOpen} setIsLinguaPracticeOpen={setIsLinguaPracticeOpen} setIsOpenGrooveOpen={setIsOpenGrooveOpen} setIsTestPrepHubOpen={setIsTestPrepHubOpen} setIsTimelineStudioOpen={setIsTimelineStudioOpen} setIsReadingLibraryOpen={setIsReadingLibraryOpen} setSelHubTab={setSelHubTab} setShowLearningHub={setShowLearningHub} setShowLitLab={setShowLitLab} setShowMindMap={setShowMindMap} setShowPoetTree={setShowPoetTree} setShowResearchHub={setShowResearchHub} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setStemLabTool={setStemLabTool} setLabToolData={setLabToolData} setShowStoryForge={setShowStoryForge} setStemLabTab={setStemLabTab} showLearningHub={showLearningHub} t={t} />}
         <CDNModuleGate moduleKey="ReportWriter" isOpen={showReportWriter} onClose={() => setShowReportWriter(false)} icon="📝" displayName="Report Writer" t={t}>
             {(ReportWriter) => React.createElement(ReportWriter, {
