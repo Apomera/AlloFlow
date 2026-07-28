@@ -100,7 +100,12 @@ window.StemLab = window.StemLab || {
     { name: 'Flu',       r0: 1.3,  period: 5,  latent: 2,  mortality: 0.1,  color: '#3b82f6', desc: 'Seasonal influenza. Low R\u2080 but rapid spread due to short latency.' },
     { name: 'Ebola',     r0: 2.0,  period: 12, latent: 8,  mortality: 50,   color: '#7c3aed', desc: 'High mortality but lower R\u2080 due to contact-only transmission.' },
     { name: 'Smallpox',  r0: 5.0,  period: 14, latent: 12, mortality: 30,   color: '#059669', desc: 'Eradicated in 1980 via global vaccination. Historic pandemic threat.' },
-    { name: 'Malaria',   r0: 100,  period: 60, latent: 14, mortality: 0.3,  color: '#d946ef', desc: 'Vector-borne (mosquito). Extremely high R\u2080 in endemic regions.' }
+    // Vector-borne: the SIR model on this screen assumes person-to-person spread, so
+    // its herd-immunity arithmetic does not apply to malaria. Flagged rather than
+    // removed \u2014 the mismatch is worth showing, but it has to be said out loud instead
+    // of quietly rendering "you need 99% immunity" as though it were the same kind of
+    // number as the measles one.
+    { name: 'Malaria',   r0: 100,  period: 60, latent: 14, mortality: 0.3,  color: '#d946ef', vectorBorne: true, desc: 'Vector-borne (mosquito). Extremely high R\u2080 in endemic regions \u2014 but it spreads through mosquitoes, not person to person, so this model only approximates it.' }
   ];
 
   // ── Badges ──
@@ -1129,6 +1134,18 @@ window.StemLab = window.StemLab || {
 
       function announceToSR(msg) {
         upd('srMsg', msg);
+        // ...and actually say it. This file builds a polite live region
+        // (#allo-live-epidemic) at load and then never writes to it: announceToSR only
+        // parked a string in toolData under `srMsg`, which nothing renders. Every
+        // announcement in the tool — tab switches, simulation results, NPI reductions,
+        // week summaries, contact-trace outcomes — was silent.
+        try {
+          var lr = document.getElementById('allo-live-epidemic');
+          if (!lr) return;
+          // Clear first so two identical messages in a row are both announced.
+          lr.textContent = '';
+          setTimeout(function() { lr.textContent = String(msg == null ? '' : msg); }, 30);
+        } catch (e) { /* no DOM (SSR smoke) — the state write above still happens */ }
       }
 
       // ── Defaults ──
@@ -1159,6 +1176,10 @@ window.StemLab = window.StemLab || {
       var gamma = 1 / infectPeriod;
       var beta = r0 * gamma;
       var herdThresh = r0 > 1 ? ((1 - 1 / r0) * 100) : 0;
+      // 1 - 1/R₀ is a person-to-person result. For a vector-borne preset the number is
+      // still computed (the curve needs it) but must not be presented to a student as a
+      // vaccination target.
+      var herdApplies = !PRESETS[selectedPreset] || !PRESETS[selectedPreset].vectorBorne;
       var activeData = tab === 'seir' ? seirData : sirData;
       var runMetrics = summarizeEpidemicRun(activeData, vaccRate, r0);
       var effR0 = runMetrics.initialEffectiveR;
@@ -1636,9 +1657,10 @@ window.StemLab = window.StemLab || {
         upd('hoverDay', null);
         if (tab === 'sir' || tab === 'r0explorer' || tab === 'vaccination') checkBadge('firstSim');
         if (tab === 'seir') checkBadge('seirMaster');
-        if (vaccRate >= herdThresh && herdThresh > 0) checkBadge('herdImmunity');
+        // Herd-immunity badges only mean something for a person-to-person disease.
+        if (herdApplies && vaccRate >= herdThresh && herdThresh > 0) checkBadge('herdImmunity');
         if (peakI < 20 && peakI > 0) checkBadge('flatCurve');
-        if (vaccRate >= herdThresh && herdThresh > 0) checkBadge('vaccHero');
+        if (herdApplies && vaccRate >= herdThresh && herdThresh > 0) checkBadge('vaccHero');
         awardXP(5, 'Ran simulation');
         upd('sirRunNote', { peak: peakI, day: peakDay, attackRate: totalInf, initialEffectiveR: effR0 });
         announceToSR('Simulation complete. Initial R effective: ' + effR0.toFixed(2) + '. Peak infected: ' + peakI.toFixed(1) + '% on day ' + peakDay + '. Attack rate: ' + totalInf.toFixed(1) + '%.');
@@ -1701,14 +1723,23 @@ window.StemLab = window.StemLab || {
         var newScore = ctScore + (isInfected ? 20 : -5);
         // check if all infected found
         var allFound = ctNetwork.solution.every(function(id) { return revealed.indexOf(id) >= 0; });
+        var traced = revealed.filter(function(id) { return ctNetwork.solution.indexOf(id) >= 0; }).length;
+        var personName = nodeId === ctNetwork.patientZero ? 'Patient Zero' : 'Person ' + String.fromCharCode(65 + nodeId);
         updMulti({
           ctRevealed: revealed,
           ctGuesses: newGuesses,
           ctScore: Math.max(0, newScore),
           ctComplete: allFound,
-          ctFeedback: isInfected ? '\u2705 Infected! Contact traced.' : '\u274C Clear \u2014 not in chain.'
+          // Ruling someone out is real tracing work, not a mistake \u2014 it was flagged with
+          // a red \u274C as though the student had got something wrong.
+          ctFeedback: isInfected ? '\u2705 Infected \u2014 contact traced.' : '\u2796 Clear \u2014 ruled out, and that narrows the search.'
         });
         stemBeep(isInfected);
+        if (typeof announceToSR === 'function') {
+          announceToSR(personName + (isInfected ? ' is infected. ' : ' is clear. ')
+            + traced + ' of ' + ctNetwork.solution.length + ' infections traced.'
+            + (allFound ? ' All infections found \u2014 the chain is complete.' : ''));
+        }
         if (allFound) {
           checkBadge('contactTracer');
           awardXP(25, 'Contact trace complete');
@@ -1921,7 +1952,15 @@ window.StemLab = window.StemLab || {
               }, p.name);
             })
           ),
-          h('p', { className: 'text-[11px] text-slate-600 mt-1 italic' }, PRESETS[selectedPreset].desc)
+          h('p', { className: 'text-[11px] text-slate-600 mt-1 italic' }, PRESETS[selectedPreset].desc),
+          PRESETS[selectedPreset].vectorBorne && h('div', {
+            role: 'note',
+            className: 'mt-2 rounded-lg px-3 py-2',
+            style: { background: 'rgba(217,70,239,0.10)', border: '1px solid rgba(192,38,211,0.35)', color: '#701a75', fontSize: 11, lineHeight: 1.5 }
+          },
+            h('strong', null, 'Outside this model: '),
+            'malaria travels through mosquitoes, so its R₀ is not a person-to-person number and the herd-immunity formula on this screen does not apply to it. Bed nets and mosquito control are what break its chain, not population immunity. Use this preset to see what a very large R₀ does to a curve, not to plan a malaria response.'
+          )
         ),
 
         // ═══════════════════════════════════════════
@@ -1967,7 +2006,7 @@ window.StemLab = window.StemLab || {
               { label: __alloT('stem.epidemic.peak_infected', 'Peak Infected'), value: peakI.toFixed(1) + '%', sub: 'Day ' + peakDay, color: '#ef4444' },
               { label: __alloT('stem.epidemic.attack_rate', 'Attack Rate'), value: totalInf.toFixed(1) + '%', sub: fmtNum(Math.round(totalInf / 100 * popSize)) + ' ever infected', color: '#f59e0b' },
               { label: __alloT('stem.epidemic.initial_r_effective', 'Initial R-effective'), value: effR0.toFixed(2), sub: effR0 < 1 ? 'Initially declining' : 'Initially growing', color: r0Color(effR0) },
-              { label: __alloT('stem.epidemic.herd_threshold', 'Herd Threshold'), value: herdThresh.toFixed(0) + '%', sub: vaccRate >= herdThresh && herdThresh > 0 ? '\u2705 Achieved' : 'Not yet', color: '#6366f1' }
+              { label: __alloT('stem.epidemic.herd_threshold', 'Herd Threshold'), value: herdApplies ? herdThresh.toFixed(0) + '%' : 'n/a', sub: !herdApplies ? 'Not person-to-person' : (vaccRate >= herdThresh && herdThresh > 0 ? '\u2705 Achieved' : 'Not yet'), color: '#6366f1' }
             ].map(function(s) {
               return h('div', { key: s.label, className: glassCard + ' text-center' },
                 h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, s.label),
@@ -2036,7 +2075,7 @@ window.StemLab = window.StemLab || {
               { label: __alloT('stem.epidemic.peak_infected_2', 'Peak Infected'), value: peakI.toFixed(1) + '%', sub: 'Day ' + peakDay, color: '#ef4444' },
               { label: __alloT('stem.epidemic.total_infected_2', 'Total Infected'), value: totalInf.toFixed(1) + '%', sub: fmtNum(Math.round(totalInf / 100 * popSize)), color: '#f59e0b' },
               { label: __alloT('stem.epidemic.latent_period', 'Latent Period'), value: latentPeriod + 'd', sub: '\u03C3 = ' + (1/latentPeriod).toFixed(3), color: '#f59e0b' },
-              { label: __alloT('stem.epidemic.herd_threshold_2', 'Herd Threshold'), value: herdThresh.toFixed(0) + '%', sub: vaccRate >= herdThresh && herdThresh > 0 ? '\u2705 Achieved' : 'Not yet', color: '#6366f1' }
+              { label: __alloT('stem.epidemic.herd_threshold_2', 'Herd Threshold'), value: herdApplies ? herdThresh.toFixed(0) + '%' : 'n/a', sub: !herdApplies ? 'Not person-to-person' : (vaccRate >= herdThresh && herdThresh > 0 ? '\u2705 Achieved' : 'Not yet'), color: '#6366f1' }
             ].map(function(s) {
               return h('div', { key: s.label, className: glassCard + ' text-center' },
                 h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, s.label),
@@ -2167,8 +2206,10 @@ window.StemLab = window.StemLab || {
             ),
             h('div', { className: 'flex justify-between text-[11px] text-slate-600 mt-1' },
               h('span', null, __alloT('stem.epidemic.0_vaccinated', '0% Vaccinated')),
-              h('span', { className: 'font-bold', style: { color: vaccRate >= herdThresh && herdThresh > 0 ? '#22c55e' : '#ef4444' } },
-                vaccRate >= herdThresh && herdThresh > 0 ? '\uD83D\uDEE1\uFE0F Herd Immunity Achieved!' : 'Need ' + Math.max(0, herdThresh - vaccRate).toFixed(0) + '% more'),
+              h('span', { className: 'font-bold', style: { color: !herdApplies ? '#a21caf' : (vaccRate >= herdThresh && herdThresh > 0 ? '#22c55e' : '#ef4444') } },
+                !herdApplies
+                  ? 'Vector-borne \u2014 this threshold does not apply'
+                  : (vaccRate >= herdThresh && herdThresh > 0 ? '\uD83D\uDEE1\uFE0F Herd Immunity Achieved!' : 'Need ' + Math.max(0, herdThresh - vaccRate).toFixed(0) + '% more')),
               h('span', null, '100%')
             )
           ),
@@ -3293,7 +3334,13 @@ window.StemLab = window.StemLab || {
             ),
             // Network graph (SVG)
             h('div', { className: glassCard },
-              h('svg', { viewBox: '0 0 700 400', className: 'w-full', style: { maxHeight: '400px' } },
+              h('svg', {
+                viewBox: '0 0 700 400', className: 'w-full', style: { maxHeight: '400px' },
+                role: 'group',
+                'aria-label': 'Contact network: ' + ctNetwork.nodes.length + ' people, '
+                  + ctRevealed.filter(function(id) { return ctNetwork.solution.indexOf(id) >= 0; }).length
+                  + ' of ' + ctNetwork.solution.length + ' infections traced so far. Tab to a person who is in contact with a confirmed case, then press Enter to test them.'
+              },
                 // edges
                 ctNetwork.edges.map(function(e, idx) {
                   var n1 = ctNetwork.nodes[e.from], n2 = ctNetwork.nodes[e.to];
@@ -3321,7 +3368,29 @@ window.StemLab = window.StemLab || {
                     var other = e.from === node.id ? e.to : (e.to === node.id ? e.from : -1);
                     return other >= 0 && ctRevealed.indexOf(other) >= 0 && ctNetwork.solution.indexOf(other) >= 0;
                   });
-                  return h('g', { key: 'n' + node.id, onClick: canClick && isConnected ? function() { traceNode(node.id); } : undefined, style: { cursor: canClick && isConnected ? 'pointer' : 'default' } },
+                  // The network was mouse-only: a bare <g onClick> with no role, no
+                  // tabIndex and no key handler, so a keyboard or screen-reader student
+                  // could not trace a single contact. Traceable people are now real
+                  // buttons, and everyone carries a name describing their status.
+                  var personName = node.isPatientZero ? 'Patient Zero' : 'Person ' + String.fromCharCode(65 + node.id);
+                  var statusText = node.isPatientZero ? 'the first known case'
+                    : isInfected ? 'traced, infected'
+                    : isClear ? 'traced, clear'
+                    : isConnected ? 'not yet traced, in contact with a confirmed case — activate to test'
+                    : 'not yet traced, no known contact with a confirmed case';
+                  var actionable = canClick && isConnected;
+                  return h('g', {
+                    key: 'n' + node.id,
+                    role: actionable ? 'button' : 'img',
+                    tabIndex: actionable ? 0 : undefined,
+                    'aria-label': personName + ': ' + statusText,
+                    'aria-disabled': (!actionable && !revealed) ? 'true' : undefined,
+                    onClick: actionable ? function() { traceNode(node.id); } : undefined,
+                    onKeyDown: actionable ? function(ev) {
+                      if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') { ev.preventDefault(); traceNode(node.id); }
+                    } : undefined,
+                    style: { cursor: actionable ? 'pointer' : 'default' }
+                  },
                     h('circle', {
                       cx: node.x, cy: node.y, r: node.isPatientZero ? 18 : 14,
                       fill: fill, stroke: isConnected && !revealed ? '#6366f1' : '#94a3b8', filter: node.isPatientZero ? 'drop-shadow(0 0 5px ' + fill + ')' : undefined,
@@ -3336,7 +3405,7 @@ window.StemLab = window.StemLab || {
             ),
             // Feedback
             d.ctFeedback && h('div', { className: glassCard },
-              h('p', { className: 'text-sm font-bold ' + (d.ctFeedback[0] === '\u2705' ? 'text-emerald-600' : 'text-red-600') }, d.ctFeedback)
+              h('p', { className: 'text-sm font-bold ' + (d.ctFeedback[0] === '\u2705' ? 'text-emerald-600' : 'text-slate-600') }, d.ctFeedback)
             ),
             // Controls
             h('div', { className: 'flex gap-2' },
