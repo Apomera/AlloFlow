@@ -1116,13 +1116,13 @@
 
   // Known streak colours, keyed off the MINERALS data's `streak` strings.
   var RK_STREAK_HEX = {
-    'White': '#f1f5f9',
+    'White': '#ffffff',
     'Greenish-black': '#16301c',
     'Black': '#171717',
     'Red-brown': '#8b3a2a',
     'Reddish-brown': '#8b3a2a',
     'Lead-gray': '#8d949e',
-    'White-yellow': '#fdf3c0',
+    'White-yellow': '#fffbd6',
     'Yellow': '#fadf72',
     'Brown-yellow': '#a1741f',
     'Colorless': '#e9eef5',
@@ -1144,10 +1144,17 @@
     var kids = [];
     var i;
 
-    // Unglazed porcelain plate
-    kids.push(h('rect', { key: 'plate', x: 4, y: 8, width: 116, height: 62, rx: 5, fill: '#fbfbfa', stroke: '#94a3b8', strokeWidth: 1.2 }));
+    // Unglazed porcelain plate. It used to be drawn at #fbfbfa, all but white —
+    // and ELEVEN of the tool's eighteen minerals have a White streak, which was
+    // painted at #f1f5f9. That is a luminance difference of about 0.01, so for
+    // the majority of the minerals the student saw no powder at all and had to
+    // read the answer instead of observing it, in the one test whose entire
+    // premise is looking at the residue. Real porcelain biscuit is an off-white
+    // grey and chalk-white powder shows up on it plainly, so the plate is now
+    // the colour it actually is rather than paper white.
+    kids.push(h('rect', { key: 'plate', x: 4, y: 8, width: 116, height: 62, rx: 5, fill: '#e8e5de', stroke: '#94a3b8', strokeWidth: 1.2 }));
     for (i = 0; i < 40; i++) {
-      kids.push(h('circle', { key: 'g' + i, cx: (6 + rnd() * 112).toFixed(1), cy: (10 + rnd() * 58).toFixed(1), r: 0.5, fill: '#e2e8f0' }));
+      kids.push(h('circle', { key: 'g' + i, cx: (6 + rnd() * 112).toFixed(1), cy: (10 + rnd() * 58).toFixed(1), r: 0.5, fill: '#d6d2c8' }));
     }
 
     if (revealed) {
@@ -1160,6 +1167,14 @@
         kids.push(h('text', { key: 'th', x: 62, y: 66, textAnchor: 'middle', fontSize: '8', fontWeight: '700', fill: '#334155' }, 'plate scratched — no powder'));
       } else {
         // Powder smear: a broad soft stroke plus scattered grains at the edges.
+        // A pale powder is legible because it is a deposit sitting ON the
+        // plate, so it gets the faint shadow a real one has — hue alone cannot
+        // carry a white streak, whatever colour the plate is.
+        kids.push(h('path', {
+          key: 'smearShadow',
+          d: 'M18,53.4 Q60,35.4 102,27.4', stroke: 'rgba(90,84,70,0.30)', strokeWidth: 10,
+          strokeLinecap: 'round', fill: 'none'
+        }));
         kids.push(h('path', {
           key: 'smear', className: 'rk-smear',
           d: 'M18,52 Q60,34 102,26', stroke: hex, strokeWidth: 9, strokeLinecap: 'round', fill: 'none', opacity: 0.92
@@ -7421,7 +7436,7 @@ const d = labToolData.rockCycle || {};
                       value: mSpecId,
                       disabled: running,
                       onChange: function (e) { upd("startingRock", e.target.value); sfxRockClick(); },
-                      className: "w-full p-1.5 text-xs border border-slate-300 rounded-lg bg-white font-bold text-slate-800 disabled:opacity-60"
+                      className: "w-full p-1.5 text-xs border border-slate-500 rounded-lg bg-white font-bold text-slate-800 disabled:opacity-60"
                     },
                       RC_SPECIMENS.map(function (s) {
                         return React.createElement("option", { key: s.id, value: s.id }, s.label + ' (' + s.family + ')');

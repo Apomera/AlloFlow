@@ -203,3 +203,110 @@ describe('test-bench implementation', () => {
     });
   });
 });
+
+// ── The streak has to be visible on the plate ───────────────────────────────
+//
+// The whole premise of the streak test is that you LOOK at the powder. The
+// plate was drawn at #fbfbfa — all but white — and ELEVEN of the tool's
+// eighteen minerals have a White streak, painted at #f1f5f9. That is a
+// luminance difference of about 0.01, so for the majority of minerals there
+// was nothing to see and the student had to read the answer instead of
+// observing it.
+//
+// Fixing it by tinting white streaks grey would have been a lie about the
+// mineral. Unglazed porcelain biscuit really is an off-white grey, and a pale
+// powder really does read as a deposit sitting ON the plate, so the plate is
+// now the colour it actually is and the smear carries the faint shadow a real
+// one has.
+describe('streak plate — the powder is visible for every mineral', () => {
+  const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+  // Separation, not brightness. Sulfur's pale yellow sits only 0.079 from the
+  // plate in luminance but is obvious on it, because the difference is hue —
+  // demanding luminance alone would have forced "white-yellow" to pure white
+  // and thrown away a true fact about the mineral. Straight RGB distance
+  // captures both, and still fails the state this fixed: the original
+  // #f1f5f9 streak on the original #fbfbfa plate scores 0.045.
+  const separation = (a, b) => {
+    const [x, y, z] = rgb(a), [p, q, r] = rgb(b);
+    return Math.sqrt((x - p) ** 2 + (y - q) ** 2 + (z - r) ** 2);
+  };
+
+  function minerals() {
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    return src.split('\n')
+      .filter((l) => /\{\s*id:\s*'/.test(l) && /streak:/.test(l) && /luster:/.test(l))
+      .map((l) => ({
+        id: /\{\s*id:\s*'(\w+)'/.exec(l)[1],
+        streak: /streak:\s*'([^']*)'/.exec(l)[1],
+      }));
+  }
+
+  /** The streak plate svg for one mineral, found by its own viewBox. */
+  function plate(id) {
+    // This file's render() hands back { store, markup }, not a bare string.
+    const { markup } = render({ selectedMineral: id, streakResult: true });
+    const anchor = markup.indexOf('viewBox="0 0 168 80"');
+    expect(anchor, `no streak plate rendered for ${id}`).toBeGreaterThan(-1);
+    const start = markup.lastIndexOf('<svg', anchor);
+    return markup.slice(start, markup.indexOf('</svg>', anchor) + 6);
+  }
+
+  it('separates every streak colour from the plate it is drawn on', () => {
+    const mins = minerals();
+    expect(mins.length).toBe(18);
+    let checked = 0;
+    mins.forEach((m) => {
+      const svg = plate(m.id);
+      const plateFill = /<rect[^>]*width="116"[^>]*fill="(#[0-9a-fA-F]{6})"/.exec(svg);
+      expect(plateFill, `${m.id}: no plate`).toBeTruthy();
+      const smear = /<path[^>]*class="rk-smear"[^>]*stroke="(#[0-9a-fA-F]{6})"/.exec(svg)
+        || /<path[^>]*stroke="(#[0-9a-fA-F]{6})"[^>]*class="rk-smear"/.exec(svg);
+      expect(smear, `${m.id}: nothing drawn on the plate at all`).toBeTruthy();
+      checked++;
+      // Diamond is harder than the porcelain, so what has to be visible is the
+      // GROOVE it cuts rather than a powder — it carries the same class, and
+      // it has the same job of being seen.
+      if (m.streak.includes('too hard')) expect(svg).toContain('plate scratched');
+      const d = separation(smear[1], plateFill[1]);
+      expect(d, `${m.id}: streak ${smear[1]} is invisible on plate ${plateFill[1]}`)
+        .toBeGreaterThan(0.10);
+    });
+    // Guard against the assertion quietly covering nothing.
+    expect(checked).toBe(18);
+  });
+
+  it('keeps a pale powder legible as a deposit, not as a hue', () => {
+    // Hue alone cannot carry a white streak whatever colour the plate is, so
+    // the smear sits on the faint shadow a real powder deposit casts.
+    // Assert on what RENDERS. A React key never reaches the DOM, so keying the
+    // shadow 'smearShadow' and looking for that string passes against nothing.
+    const svg = plate('quartz');
+    const shadow = /<path[^>]*\bd="M18,53\.4[^"]*"[^>]*stroke="([^"]+)"/.exec(svg);
+    expect(shadow, 'no shadow under the smear').toBeTruthy();
+    expect(shadow[1]).toMatch(/^rgba\(/);
+  });
+
+  it('does not tint a white streak to make it show up', () => {
+    // The mineral's answer must stay true: quartz streaks white, and the plate
+    // is what changed.
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    const table = src.slice(src.indexOf('var RK_STREAK_HEX = {'), src.indexOf('};', src.indexOf('var RK_STREAK_HEX = {')));
+    expect(table).toContain("'White': '#ffffff'");
+    // And the plate is no longer paper white.
+    expect(src).not.toContain("key: 'plate', x: 4, y: 8, width: 116, height: 62, rx: 5, fill: '#fbfbfa'");
+  });
+
+  it('still shows the classic pyrite contrast', () => {
+    // Brassy gold specimen, greenish-black powder — the case the whole test
+    // exists to teach.
+    const svg = plate('pyrite');
+    expect(svg).toContain('#16301c');
+    expect(svg).toContain('looks like');
+    expect(svg).toContain('streak');
+  });
+
+  it('ships the same bench in both copies', () => {
+    const [a, b] = PATHS.map((p) => readFileSync(p, 'utf8'));
+    expect(a).toBe(b);
+  });
+});
