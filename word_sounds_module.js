@@ -11763,6 +11763,22 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               difficulty: getEffectiveDifficulty(),
               wordDifficulty: categorizeWordDifficulty(currentWordSoundsWord),
               phonemes: wordSoundsPhonemes?.phonemes || [],
+              // Total presentations of THIS item, so 1 = right first time and
+              // 2 = right (or wrong) after one retry. Same base as the
+              // `attempts` on sessionWordResults below, which the session-recap
+              // chips already render as "(2×)" — one name, one meaning.
+              //
+              // In-session logic already distinguishes a retry (reduced XP, no
+              // streak extension — see `attempts > 0` above), but the PERSISTED
+              // row did not carry it, so every downstream consumer of
+              // wordSoundsHistory (getEffectiveDifficulty's auto mode, phoneme
+              // mastery, the teacher-facing accuracy panels) scored "right on
+              // the retry" identically to "right first time" and adapted upward
+              // for a child who was actually struggling. Same reasoning as
+              // aacAssisted below: don't pool responses that measure different
+              // things. Recording only — nothing weights it yet, because how
+              // much a retry should count is a pedagogical call, not a refactor.
+              attempts: attempts + 1,
               // Integrity flag: with the AAC symbol overlay on, picture-
               // supported responding changes what the item measures (access
               // vs. unassisted phonological work) — analytics must be able
