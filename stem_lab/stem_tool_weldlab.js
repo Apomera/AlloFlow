@@ -251,9 +251,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
     return { x: 0, y: 0, z: 0 };  // 1G flat (default)
   }
 
+  // ── Carbon equivalent ──
+  // IIW (International Institute of Welding) formula, the one the Metallurgy module
+  // teaches: CE = C + Mn/6 + (Cr + Mo + V)/5 + (Ni + Cu)/15, elements in weight %.
+  // Missing, blank or nonsense entries count as zero so a half-filled composition
+  // still produces a usable number instead of NaN.
+  function carbonEquivalentIIW(comp) {
+    var c = comp || {};
+    function pct(v) { var x = parseFloat(v); return (isFinite(x) && x > 0) ? x : 0; }
+    return pct(c.C)
+      + pct(c.Mn) / 6
+      + (pct(c.Cr) + pct(c.Mo) + pct(c.V)) / 5
+      + (pct(c.Ni) + pct(c.Cu)) / 15;
+  }
+
+  // Crack-susceptibility band. Boundaries match the table the module displays, with
+  // the upper bound inclusive, so the calculator and the reference table can never
+  // disagree about which row a value falls in.
+  function ceRisk(ce) {
+    if (ce < 0.40) return 'LOW';
+    if (ce <= 0.55) return 'MODERATE';
+    if (ce <= 0.70) return 'HIGH';
+    return 'VERY HIGH';
+  }
+
+  // Mid-range compositions for steels a Maine welder actually meets. Ranges are
+  // wide in the specs; these are typical mid-spec values, which is why the CE a
+  // student gets here is representative rather than a guarantee for a given heat.
+  var STEEL_PRESETS = [
+    { id: 'a36',    name: 'ASTM A36 (mild structural)',  comp: { C: 0.20, Mn: 0.75, Cr: 0,    Mo: 0,    V: 0,    Ni: 0,    Cu: 0 } },
+    { id: 'a572',   name: 'ASTM A572 Gr 50 (HSLA)',      comp: { C: 0.20, Mn: 1.20, Cr: 0,    Mo: 0,    V: 0.05, Ni: 0,    Cu: 0 } },
+    { id: '4140',   name: 'AISI 4140 (alloy shaft)',     comp: { C: 0.40, Mn: 0.85, Cr: 0.95, Mo: 0.20, V: 0,    Ni: 0,    Cu: 0 } },
+    { id: '4340',   name: 'AISI 4340 (high-strength)',   comp: { C: 0.40, Mn: 0.70, Cr: 0.80, Mo: 0.25, V: 0,    Ni: 1.80, Cu: 0 } }
+  ];
+
   // Pure physics surface, exposed for tests the same way stem_tool_fisherlab.js
   // exposes window.__FisherLabCore. Nothing here touches React, THREE or the DOM.
   window.__WeldLabCore = {
+    carbonEquivalentIIW: carbonEquivalentIIW,
+    ceRisk: ceRisk,
+    STEEL_PRESETS: STEEL_PRESETS,
     heatInputGross: heatInputGross,
     heatInputNet: heatInputNet,
     heatInputTier: heatInputTier,
@@ -6534,6 +6571,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       function MetallurgyDeepDive() {
         var sectionState = usePersistedState('met_sect', 'overview');
         var section = sectionState[0], setSection = sectionState[1];
+        // Declared here, NOT inside the section === 'ce' branch. A hook in a
+        // conditional branch changes the hook order when the student navigates
+        // between sections, which crashes the whole tool on the next render.
+        var ceState = usePersistedState('met_ce_comp', STEEL_PRESETS[2].comp);
+        var ceComp = ceState[0], setCeComp = ceState[1];
         var sections = [
           { id: 'overview',     label: __alloT('stem.weldlab.overview', '📋 Overview'),                 desc: __alloT('stem.weldlab.what_metallurgy_means_for_welding', 'What metallurgy means for welding') },
           { id: 'phase',        label: __alloT('stem.weldlab.phase_diagrams', '🌡 Phase diagrams'),           desc: __alloT('stem.weldlab.iron_carbon_austenite_martensite', 'Iron-carbon + austenite + martensite') },
@@ -6607,20 +6649,93 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               ),
               h('div', { className: 'text-xs text-slate-700 mt-2 italic' }, __alloT('stem.weldlab.where_each_element_is_in_weight_percen', 'where each element is in weight percent'))
             ),
-            h('div', { className: 'space-y-2' },
-              [{ ce: '< 0.40', risk: 'LOW', color: 'bg-emerald-100 border-emerald-400', text: __alloT('stem.weldlab.weldable_without_preheat_in_most_condi', 'Weldable without preheat in most conditions. Common mild steel (A36, A572).') },
-               { ce: '0.40 - 0.55', risk: 'MODERATE', color: 'bg-amber-100 border-amber-400', text: __alloT('stem.weldlab.preheat_may_be_needed_depending_on_thi', 'Preheat may be needed depending on thickness + restraint. Use low-hydrogen electrodes (E7018).') },
-               { ce: '0.55 - 0.70', risk: 'HIGH', color: 'bg-orange-100 border-orange-400', text: __alloT('stem.weldlab.preheat_required_interpass_temperature', 'Preheat required + interpass temperature control. Low-hydrogen practice mandatory. PWHT often required.') },
-               { ce: '> 0.70', risk: 'VERY HIGH', color: 'bg-rose-100 border-rose-400', text: __alloT('stem.weldlab.aggressive_preheat_400_600_f_strict_hy', 'Aggressive preheat (~400-600°F). Strict hydrogen control. PWHT mandatory. Often requires special procedures or alternative materials.') }].map(function(row, i) {
-                return h('div', { key: i, className: 'border-2 rounded-xl p-3 ' + row.color },
-                  h('div', { className: 'flex justify-between items-baseline mb-1' },
-                    h('span', { className: 'font-bold text-slate-900' }, 'CE ' + row.ce),
-                    h('span', { className: 'text-xs font-mono font-bold uppercase tracking-wider text-slate-900' }, row.risk)
+            // One list drives BOTH the reference table below and the calculator's
+            // verdict, so the number a student computes can never be described
+            // differently from the row they read it against.
+            (function () {
+              var CE_BANDS = [
+                { ce: '< 0.40', risk: 'LOW', color: 'bg-emerald-100 border-emerald-400', text: __alloT('stem.weldlab.weldable_without_preheat_in_most_condi', 'Weldable without preheat in most conditions. Common mild steel (A36, A572).') },
+                { ce: '0.40 - 0.55', risk: 'MODERATE', color: 'bg-amber-100 border-amber-400', text: __alloT('stem.weldlab.preheat_may_be_needed_depending_on_thi', 'Preheat may be needed depending on thickness + restraint. Use low-hydrogen electrodes (E7018).') },
+                { ce: '0.55 - 0.70', risk: 'HIGH', color: 'bg-orange-100 border-orange-400', text: __alloT('stem.weldlab.preheat_required_interpass_temperature', 'Preheat required + interpass temperature control. Low-hydrogen practice mandatory. PWHT often required.') },
+                { ce: '> 0.70', risk: 'VERY HIGH', color: 'bg-rose-100 border-rose-400', text: __alloT('stem.weldlab.aggressive_preheat_400_600_f_strict_hy', 'Aggressive preheat (~400-600°F). Strict hydrogen control. PWHT mandatory. Often requires special procedures or alternative materials.') }
+              ];
+              var ELEMENTS = [
+                { k: 'C',  label: 'C',  name: __alloT('stem.weldlab.el_carbon', 'Carbon') },
+                { k: 'Mn', label: 'Mn', name: __alloT('stem.weldlab.el_manganese', 'Manganese') },
+                { k: 'Cr', label: 'Cr', name: __alloT('stem.weldlab.el_chromium', 'Chromium') },
+                { k: 'Mo', label: 'Mo', name: __alloT('stem.weldlab.el_molybdenum', 'Molybdenum') },
+                { k: 'V',  label: 'V',  name: __alloT('stem.weldlab.el_vanadium', 'Vanadium') },
+                { k: 'Ni', label: 'Ni', name: __alloT('stem.weldlab.el_nickel', 'Nickel') },
+                { k: 'Cu', label: 'Cu', name: __alloT('stem.weldlab.el_copper', 'Copper') }
+              ];
+              var ceValue = carbonEquivalentIIW(ceComp);
+              var riskName = ceRisk(ceValue);
+              var band = CE_BANDS.filter(function (b) { return b.risk === riskName; })[0];
+
+              return h('div', { className: 'space-y-3' },
+                // ── Live calculator ──
+                h('div', { className: 'bg-white border-2 border-slate-300 rounded-xl p-3 space-y-3' },
+                  h('div', { className: 'text-xs font-bold uppercase text-slate-700' }, __alloT('stem.weldlab.ce_calculator', '🧮 Work it out — enter a composition')),
+                  h('div', { className: 'flex flex-wrap gap-2' },
+                    STEEL_PRESETS.map(function (p) {
+                      return h('button', {
+                        key: p.id,
+                        onClick: function () { setCeComp(p.comp); },
+                        className: 'px-2 py-1 rounded border-2 border-slate-400 bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 ring-orange-500/40'
+                      }, p.name);
+                    })
                   ),
-                  h('p', { className: 'text-sm text-slate-800' }, row.text)
-                );
-              })
-            ),
+                  h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
+                    ELEMENTS.map(function (el) {
+                      var inputId = 'ce-el-' + el.k;
+                      return h('div', { key: el.k },
+                        h('label', {
+                          htmlFor: inputId,
+                          className: 'block text-[11px] font-bold text-slate-700 mb-0.5'
+                        }, el.label, h('span', { className: 'font-normal text-slate-500' }, ' · ' + el.name)),
+                        h('input', {
+                          id: inputId,
+                          type: 'number', step: '0.01', min: '0', max: '10',
+                          value: ceComp[el.k] != null ? ceComp[el.k] : 0,
+                          'aria-label': el.name + ' ' + __alloT('stem.weldlab.weight_percent', 'weight percent'),
+                          onChange: function (e) {
+                            var next = Object.assign({}, ceComp);
+                            next[el.k] = e.target.value;
+                            setCeComp(next);
+                          },
+                          className: 'w-full px-2 py-1 rounded border-2 border-slate-300 text-sm text-slate-900 focus:outline-none focus:ring-2 ring-orange-500/40'
+                        })
+                      );
+                    })
+                  ),
+                  h('div', { className: 'border-2 rounded-xl p-3 ' + band.color, role: 'status', 'aria-live': 'polite' },
+                    h('div', { className: 'flex justify-between items-baseline mb-1' },
+                      h('span', { className: 'font-mono font-bold text-lg text-slate-900' }, 'CE = ' + ceValue.toFixed(3)),
+                      h('span', { className: 'text-xs font-mono font-bold uppercase tracking-wider text-slate-900' }, band.risk)
+                    ),
+                    h('p', { className: 'text-sm text-slate-800' }, band.text)
+                  ),
+                  h('p', { className: 'text-[11px] text-slate-600 italic' },
+                    __alloT('stem.weldlab.ce_caveat', 'CE is one input, not the whole decision. Section thickness, joint restraint and the hydrogen level of your consumables all move the preheat requirement. Check the governing code (AWS D1.1 Annex) before setting a procedure.'))
+                ),
+                // ── Reference table, same bands ──
+                h('div', { className: 'space-y-2' },
+                  CE_BANDS.map(function (row, i) {
+                    var isCurrent = row.risk === riskName;
+                    return h('div', {
+                      key: i,
+                      className: 'border-2 rounded-xl p-3 ' + row.color + (isCurrent ? ' ring-2 ring-slate-700' : '')
+                    },
+                      h('div', { className: 'flex justify-between items-baseline mb-1' },
+                        h('span', { className: 'font-bold text-slate-900' }, 'CE ' + row.ce),
+                        h('span', { className: 'text-xs font-mono font-bold uppercase tracking-wider text-slate-900' }, row.risk)
+                      ),
+                      h('p', { className: 'text-sm text-slate-800' }, row.text)
+                    );
+                  })
+                )
+              );
+            })(),
             h('div', { className: 'bg-blue-50 border-2 border-blue-300 rounded-xl p-3' },
               h('div', { className: 'text-xs font-bold uppercase text-blue-900 mb-1' }, __alloT('stem.weldlab.real_world_example_2', '💡 Real-world example')),
               h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.aisi_4140_a_common_alloy_steel_for_sha', 'AISI 4140 (a common alloy steel for shafts + gears): C=0.40, Mn=0.85, Cr=0.95, Mo=0.20. CE = 0.40 + 0.142 + 0.230 = 0.77. VERY HIGH — Bath Iron Works welders working on 4140 components use 300°F preheat + low-hydrogen electrodes + post-weld stress relief. Skipping any of these = cracked weld.'))

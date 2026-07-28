@@ -185,6 +185,95 @@ describe('WeldLab weld positions', () => {
   });
 });
 
+describe('WeldLab carbon equivalent', () => {
+  it('implements the IIW formula CE = C + Mn/6 + (Cr+Mo+V)/5 + (Ni+Cu)/15', () => {
+    const { carbonEquivalentIIW } = window.__WeldLabCore;
+
+    // The module's own worked example: AISI 4140, stated in the copy as 0.77.
+    expect(carbonEquivalentIIW({ C: 0.40, Mn: 0.85, Cr: 0.95, Mo: 0.20 })).toBeCloseTo(0.7717, 3);
+    // Each divisor exercised on its own.
+    expect(carbonEquivalentIIW({ C: 0.5 })).toBeCloseTo(0.5, 10);
+    expect(carbonEquivalentIIW({ Mn: 6 })).toBeCloseTo(1, 10);
+    expect(carbonEquivalentIIW({ Cr: 5 })).toBeCloseTo(1, 10);
+    expect(carbonEquivalentIIW({ Mo: 5 })).toBeCloseTo(1, 10);
+    expect(carbonEquivalentIIW({ V: 5 })).toBeCloseTo(1, 10);
+    expect(carbonEquivalentIIW({ Ni: 15 })).toBeCloseTo(1, 10);
+    expect(carbonEquivalentIIW({ Cu: 15 })).toBeCloseTo(1, 10);
+    // Cr, Mo and V share a divisor; Ni and Cu share a different one.
+    expect(carbonEquivalentIIW({ Cr: 1, Mo: 1, V: 1 })).toBeCloseTo(0.6, 10);
+    expect(carbonEquivalentIIW({ Ni: 1, Cu: 1 })).toBeCloseTo(2 / 15, 10);
+  });
+
+  it('treats blank, missing and junk entries as zero rather than NaN', () => {
+    const { carbonEquivalentIIW } = window.__WeldLabCore;
+    // The inputs are free-text number fields, so a half-filled form is normal.
+    expect(carbonEquivalentIIW({})).toBe(0);
+    expect(carbonEquivalentIIW(undefined)).toBe(0);
+    expect(carbonEquivalentIIW({ C: '', Mn: null, Cr: 'abc', Mo: undefined })).toBe(0);
+    expect(carbonEquivalentIIW({ C: '0.40', Mn: '0.85' })).toBeCloseTo(0.5417, 3);
+    expect(carbonEquivalentIIW({ C: -5, Mn: 0.6 })).toBeCloseTo(0.1, 10); // negatives ignored
+  });
+
+  it('bands CE on the boundaries the reference table shows', () => {
+    const { ceRisk } = window.__WeldLabCore;
+
+    expect(ceRisk(0)).toBe('LOW');
+    expect(ceRisk(0.399)).toBe('LOW');
+    expect(ceRisk(0.40)).toBe('MODERATE');
+    expect(ceRisk(0.55)).toBe('MODERATE');
+    expect(ceRisk(0.551)).toBe('HIGH');
+    expect(ceRisk(0.70)).toBe('HIGH');
+    expect(ceRisk(0.701)).toBe('VERY HIGH');
+  });
+
+  it('only ever returns a band the panel has a row for', () => {
+    const { ceRisk } = window.__WeldLabCore;
+    // The view looks the band up by name to colour the verdict; an unknown name
+    // would leave it undefined and throw on .color.
+    const known = ['LOW', 'MODERATE', 'HIGH', 'VERY HIGH'];
+    for (let ce = -1; ce <= 3; ce += 0.01) {
+      expect(known).toContain(ceRisk(ce));
+    }
+  });
+
+  it('ships steel presets whose CE lands where the module says it does', () => {
+    const { STEEL_PRESETS, carbonEquivalentIIW, ceRisk } = window.__WeldLabCore;
+
+    const by = (id) => STEEL_PRESETS.find((p) => p.id === id);
+    expect(STEEL_PRESETS).toHaveLength(4);
+
+    // A36 is named in the LOW row of the table as a mild structural steel.
+    expect(ceRisk(carbonEquivalentIIW(by('a36').comp))).toBe('LOW');
+    // A572 is the HSLA step up: still weldable, but out of the no-preheat band.
+    expect(ceRisk(carbonEquivalentIIW(by('a572').comp))).toBe('MODERATE');
+    // 4140 is the module's worked example, called VERY HIGH in the copy.
+    expect(carbonEquivalentIIW(by('4140').comp)).toBeCloseTo(0.7717, 3);
+    expect(ceRisk(carbonEquivalentIIW(by('4140').comp))).toBe('VERY HIGH');
+    // 4340 carries ~1.8% Ni on top of 4140-like alloying, so it must be worse.
+    expect(carbonEquivalentIIW(by('4340').comp))
+      .toBeGreaterThan(carbonEquivalentIIW(by('4140').comp));
+    expect(ceRisk(carbonEquivalentIIW(by('4340').comp))).toBe('VERY HIGH');
+
+    // Every preset must carry all seven fields, or an input renders undefined.
+    STEEL_PRESETS.forEach((p) => {
+      ['C', 'Mn', 'Cr', 'Mo', 'V', 'Ni', 'Cu'].forEach((k) => {
+        expect(typeof p.comp[k], `${p.id} missing ${k}`).toBe('number');
+      });
+    });
+  });
+
+  it('rises monotonically as any single alloying element increases', () => {
+    const { carbonEquivalentIIW } = window.__WeldLabCore;
+    const base = { C: 0.2, Mn: 0.8, Cr: 0.2, Mo: 0.1, V: 0.05, Ni: 0.3, Cu: 0.2 };
+    ['C', 'Mn', 'Cr', 'Mo', 'V', 'Ni', 'Cu'].forEach((k) => {
+      const more = Object.assign({}, base);
+      more[k] = base[k] + 0.5;
+      expect(carbonEquivalentIIW(more), `${k} did not raise CE`)
+        .toBeGreaterThan(carbonEquivalentIIW(base));
+    });
+  });
+});
+
 describe('WeldLab material table', () => {
   it('is normalised to mild steel and keeps the physical ordering', () => {
     const { MATERIAL } = window.__WeldLabCore;
