@@ -782,7 +782,19 @@ describe('Persona core enhancement contracts', () => {
 
     harness.api.handleClosePersonaChat();
     expect(harness.state.chatHistory).toEqual([{ role: 'model', text: 'Welcome', evidenceNote: 'Lesson-supported greeting.' }]);
-    expect(harness.generated.data[0].chatHistory).toEqual(harness.state.chatHistory);
+    // The resource deliberately does NOT carry chatHistory. updateStoredPersona
+    // strips chatHistory and savedDialogue from every candidate on purpose: an
+    // async portrait edit can resolve after a chat turn, or after another
+    // resource is opened, and writing the transcript through that path let a
+    // stale copy clobber the live one. Durable persistence is the explicit
+    // handleSavePersonaChat export (a markdown transcript document), not a
+    // field on the persona. So assert the invariant that replaced this: the
+    // trim lands in live state, and the resource keeps its persona attributes
+    // without ever gaining a transcript.
+    expect(harness.generated.data[0].chatHistory).toBeUndefined();
+    expect(harness.generated.data[0].savedDialogue).toBeUndefined();
+    expect(harness.generated.data[0].name).toBe('Ada');
+    expect(personaSource).toContain('const { chatHistory: _chatHistory, savedDialogue: _savedDialogue, ...safeCandidate } = candidate || {};');
 
     resolveTurn(JSON.stringify({ response: 'A stale answer', rapportChange: 0, completedQuestId: null }));
     await turn;

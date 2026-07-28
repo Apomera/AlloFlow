@@ -282,7 +282,16 @@ describe('Canvas full resource-pack recovery state', () => {
 
 describe('Canvas workspace recovery integration contracts', () => {
   it('awaits the dedicated bridge with non-queued atomic recovery writes', () => {
-    expect(anti).toContain('await deviceStorage.ready()');
+    // The bare await became a memoised, watchdog-bounded readiness promise.
+    // Both changes matter: a bare `await deviceStorage.ready()` hangs forever if
+    // the bridge never becomes ready, and every caller re-awaited its own copy.
+    // Now one shared promise is stashed on window and every wait is bounded by
+    // ALLO_STORAGE_READY_TIMEOUT_MS, so a dead bridge surfaces as an error
+    // rather than a permanently pending recovery.
+    expect(anti).toContain('Promise.resolve().then(() => deviceStorage.ready()).then(() => deviceStorage),');
+    expect(anti).toContain('if (!window.__alloDeviceStorageReadyPromise) {');
+    expect(anti).toMatch(/window\.__alloDeviceStorageReadyPromise = _alloWithWatchdog\([\s\S]{0,200}ALLO_STORAGE_READY_TIMEOUT_MS/);
+    expect(anti).toContain("throw new Error('Device storage module is unavailable.');");
     expect(anti).toContain('await deviceStorage.mutateRecovery(');
     expect(anti).toContain("action: 'markLegacyMigrated'");
     expect(anti).toContain("action: 'upsert'");

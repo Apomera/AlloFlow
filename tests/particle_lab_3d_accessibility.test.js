@@ -118,8 +118,23 @@ describe('STEM Lab Three.js loading — single canonical path (sweep)', () => {
     const toolFiles = readdirSync(resolve(process.cwd(), 'stem_lab'))
       .filter((f) => f.startsWith('stem_tool_') && f.endsWith('.js'));
     expect(toolFiles.length).toBeGreaterThan(100); // the sweep really scanned the lab
-    const offenders = toolFiles.filter((f) =>
-      readFileSync(resolve(process.cwd(), 'stem_lab', f), 'utf8').includes('three.min.js'));
+    // The rule is "one Three instance, loaded through the shared resilient
+    // loader", and mentioning three.min.js was a proxy for breaking it. The
+    // proxy is too crude: stem_tool_brainatlas names a LOCAL vendored
+    // vendor/three-r128/three.min.js ahead of the CDN fallbacks, which is
+    // better for the offline / no-egress posture, and it still goes through
+    // stem.loadScriptResilient under the SAME cacheKey 'three-core' the host's
+    // ensureThree uses -- so the shared loader dedupes and there is no second
+    // instance. Assert the actual property: a tool may name the file only if it
+    // routes through the shared loader and shares the canonical cache key.
+    const offenders = toolFiles.filter((f) => {
+      const s = readFileSync(resolve(process.cwd(), 'stem_lab', f), 'utf8');
+      if (!s.includes('three.min.js')) return false;
+      const viaShared = /(?:stem|StemLab)\.(?:loadScriptResilient|ensureThree)\(/.test(s);
+      const sharedKey = s.includes("cacheKey: 'three-core'");
+      const guarded = /if \(!stem \|\| !stem\.ensureThree \|\| !stem\.loadScriptResilient\)/.test(s);
+      return !(viaShared && sharedKey && guarded);
+    });
     expect(offenders).toEqual([]);
     // the host keeps exactly one canonical reference (inside ensureThree)
     const moduleSource = readFileSync(resolve(process.cwd(), 'stem_lab/stem_lab_module.js'), 'utf8');
