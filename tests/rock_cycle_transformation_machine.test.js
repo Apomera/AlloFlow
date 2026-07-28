@@ -16,6 +16,7 @@
 // handlers, run the timers, and assert on the resulting state.
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
 import {
   React,
   ReactDOMServer,
@@ -357,5 +358,83 @@ describe('rock cycle transformation machine', () => {
       expect(typeof t.message).toBe('string');
       expect(t.message).not.toContain('[object Object]');
     });
+  });
+});
+
+// ── The eight specimens have to look like eight rocks ───────────────────────
+//
+// rcSwatch takes its colour from the FAMILY and its pattern from the TEXTURE,
+// so two rocks sharing both draw the identical picture. Sandstone and shale
+// were both tagged sedimentary/clastic — two of the eight things a student
+// chooses between were the same image, under notes that describe different
+// rocks ("visible bedding" vs "splits into thin sheets"). The sibling rocks
+// tool had already separated them; the rock cycle's vocabulary was coarser.
+describe('rock cycle specimen art', () => {
+  const readSrc = () => readFileSync(ROCKS_FILE, 'utf8');
+
+  /** The IN swatch for one specimen, found by its own clip id — never by position. */
+  function inSwatch(specId) {
+    const store = { rocks: {}, rockCycle: { mode: 'machine', startingRock: specId } };
+    const ctx = makeCtx({ toolData: store, setToolData: () => {} });
+    const markup = ReactDOMServer.renderToStaticMarkup(
+      React.createElement(() => window.StemLab._registry.rockCycle.render(ctx))
+    );
+    const anchor = markup.indexOf('rcclip-in');
+    expect(anchor, `no IN swatch rendered for ${specId}`).toBeGreaterThan(-1);
+    const start = markup.lastIndexOf('<svg', anchor);
+    return markup.slice(start, markup.indexOf('</svg>', anchor) + 6);
+  }
+
+  function specimens() {
+    const src = readSrc();
+    const block = src.slice(src.indexOf('const RC_SPECIMENS = ['), src.indexOf('const RC_AGENTS'));
+    return [...block.matchAll(/\{ id: '(\w+)',\s*label: '([^']+)',\s*family: '(\w+)',\s*texture: '(\w+)'/g)]
+      .map((m) => ({ id: m[1], label: m[2], family: m[3], texture: m[4] }));
+  }
+
+  it('draws a different picture for every specimen', () => {
+    const specs = specimens();
+    expect(specs.length).toBe(8);
+    const seen = new Map();
+    specs.forEach((s) => {
+      const svg = inSwatch(s.id);
+      const clash = seen.get(svg);
+      expect(clash, `${s.id} and ${clash} draw the identical swatch`).toBeUndefined();
+      seen.set(svg, s.id);
+    });
+    expect(seen.size).toBe(8);
+  });
+
+  it('separates shale from sandstone, which is what their notes describe', () => {
+    const specs = specimens();
+    const byId = Object.fromEntries(specs.map((s) => [s.id, s]));
+    expect(byId.shale.texture).toBe('finelayered');
+    expect(byId.sandstone.texture).toBe('clastic');
+    // Fissility drawn as more, thinner partings than sandstone's bedding.
+    const count = (svg) => (svg.match(/<line\b/g) || []).length;
+    expect(count(inSwatch('shale'))).toBeGreaterThan(count(inSwatch('sandstone')));
+  });
+
+  it('handles by name every texture the data asks for', () => {
+    // rcSwatch's final branch is BOTH the nonfoliated renderer and the
+    // catch-all, so an unhandled texture silently draws a marble-like mosaic
+    // with no error — a typo would look like a deliberate rock.
+    const src = readSrc();
+    const block = src.slice(src.indexOf('const RC_SPECIMENS = ['), src.indexOf('// ── Animated Canvas2D for Rock Cycle'));
+    const requested = new Set([...block.matchAll(/texture:\s*'([^']+)'/g)].map((m) => m[1]));
+    expect(requested.size).toBeGreaterThan(5);
+
+    const fn = src.slice(src.indexOf('const rcSwatch = function'), src.indexOf('const RC_FAMILY_TEXTURE'));
+    requested.forEach((t) => {
+      // 'nonfoliated' is the one legitimately reached via the else.
+      if (t === 'nonfoliated') return;
+      expect(fn, `rcSwatch has no branch for texture "${t}" — it would fall through`)
+        .toContain("texture === '" + t + "'");
+    });
+  });
+
+  it('keeps the catch-all documented as a catch-all', () => {
+    const src = readSrc();
+    expect(src).toContain('this is also the catch-all');
   });
 });

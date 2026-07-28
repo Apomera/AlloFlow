@@ -5927,7 +5927,7 @@ const d = labToolData.rockCycle || {};
             { id: 'basalt',    label: 'Basalt',    family: 'igneous',     texture: 'finegrained', note: 'Dark, fine-grained; often pitted with gas vesicles.' },
             { id: 'sandstone', label: 'Sandstone', family: 'sedimentary', texture: 'clastic',     note: 'Cemented quartz sand grains with visible bedding.' },
             { id: 'limestone', label: 'Limestone', family: 'sedimentary', texture: 'bioclastic',  note: 'Calcite (CaCO₃); often fossil-rich; fizzes in acid.' },
-            { id: 'shale',     label: 'Shale',     family: 'sedimentary', texture: 'clastic',     note: 'Compacted clay; splits into thin sheets.' },
+            { id: 'shale',     label: 'Shale',     family: 'sedimentary', texture: 'finelayered', note: 'Compacted clay; splits into thin sheets.' },
             { id: 'slate',     label: 'Slate',     family: 'metamorphic', texture: 'foliated',    note: 'Low-grade; flat cleavage planes, dull sheen.' },
             { id: 'marble',    label: 'Marble',    family: 'metamorphic', texture: 'nonfoliated', note: 'Recrystallized calcite; sugary, unlayered.' },
             { id: 'gneiss',    label: 'Gneiss',    family: 'metamorphic', texture: 'banded',      note: 'High-grade; alternating light and dark mineral bands.' }
@@ -5952,7 +5952,7 @@ const d = labToolData.rockCycle || {};
             basalt: {
               melting_cooling:    { product: 'Basalt or Gabbro', family: 'igneous', texture: 'finegrained', process: 'Melting, then crystallization', conditions: '1000–1250 °C', time: 'Days (lava) to millions of years (pluton)', change: 'Basalt melts to a runny, iron- and magnesium-rich (mafic) magma. Erupted, it chills fast into fine-grained basalt; trapped at depth, the same melt cools slowly into coarse gabbro.', evidence: 'Same magma, two rocks — the only difference is cooling rate.', stages: ['Mafic rock reaches melting point', 'Low-viscosity magma pools', 'Ascent or ponding', 'Fast chill or slow crystal growth'] },
               heat_pressure:      { product: 'Greenschist, then Amphibolite', family: 'metamorphic', texture: 'foliated', process: 'Prograde regional metamorphism', conditions: '400–600 °C, 10–25 km deep', time: 'Millions of years', change: 'New minerals grow that are stable at the higher temperature: chlorite and epidote give greenschist its green colour, and at higher grade hornblende takes over to form amphibolite.', evidence: 'The colour change is the data — green means chlorite, black-and-white speckle means hornblende + plagioclase.', stages: ['Burial in a subduction zone', 'Chlorite and epidote grow', 'Greenschist stage', 'Hornblende replaces chlorite'] },
-              weathering_erosion: { product: 'Mudstone (iron-rich)', family: 'sedimentary', texture: 'clastic', process: 'Chemical weathering, transport, lithification', conditions: 'Warm, wet surface conditions', time: '1,000s–millions of years', change: 'Olivine and pyroxene weather quickly to clay minerals, and the iron they release oxidizes to rust-red iron oxide. In the tropics this leaves deep red soils (laterite) that later harden into iron-rich mudstone.', evidence: 'The red colour is oxidized iron — direct evidence that oxygen and water did the work.', stages: ['Water attacks olivine', 'Clay forms, iron released', 'Iron oxidizes rust-red', 'Deposition and compaction'] }
+              weathering_erosion: { product: 'Mudstone (iron-rich)', family: 'sedimentary', texture: 'finelayered', process: 'Chemical weathering, transport, lithification', conditions: 'Warm, wet surface conditions', time: '1,000s–millions of years', change: 'Olivine and pyroxene weather quickly to clay minerals, and the iron they release oxidizes to rust-red iron oxide. In the tropics this leaves deep red soils (laterite) that later harden into iron-rich mudstone.', evidence: 'The red colour is oxidized iron — direct evidence that oxygen and water did the work.', stages: ['Water attacks olivine', 'Clay forms, iron released', 'Iron oxidizes rust-red', 'Deposition and compaction'] }
             },
             sandstone: {
               melting_cooling:    { product: 'Rhyolite or Granite', family: 'igneous', texture: 'crystalline', process: 'Crustal melting, then crystallization', conditions: '850–1100 °C, deep burial', time: 'Millions of years', change: 'A quartz-rich sandstone must be buried very deep before it melts. The result is a silica-rich melt that crystallizes into granite at depth or rhyolite if it erupts.', evidence: 'Quartz has a high melting point, so this route needs more heat than melting basalt does.', stages: ['Deep burial', 'Quartz cement breaks down', 'Silica-rich melt forms', 'Crystallization'] },
@@ -5967,7 +5967,7 @@ const d = labToolData.rockCycle || {};
             shale: {
               melting_cooling:    { product: 'Granite (S-type)', family: 'igneous', texture: 'crystalline', process: 'Melting of sedimentary crust', conditions: '650–800 °C, deep crust', time: 'Millions of years', change: 'Clay-rich rock buried into the deep crust melts to a silica- and aluminium-rich magma. Geologists call the granite it forms "S-type" because its source was Sedimentary.', evidence: 'S-type granites carry aluminium-rich minerals inherited from the original clay.', stages: ['Deep burial of clay beds', 'Water-bearing minerals break down', 'Aluminous melt forms', 'Crystallization as S-type granite'] },
               heat_pressure:      { product: 'Slate → Phyllite → Schist → Gneiss', family: 'metamorphic', texture: 'foliated', process: 'Prograde regional metamorphism', conditions: '200 °C (slate) rising to 700 °C (gneiss)', time: 'Millions of years', change: 'This is the classic metamorphic series. Flat clay minerals rotate to sit perpendicular to the squeeze, then regrow larger at each step: slate (too small to see) → phyllite (silky sheen) → schist (visible mica flakes) → gneiss (segregated bands).', evidence: 'Grain size IS the thermometer — the coarser the mica, the higher the grade it reached.', stages: ['Clay flakes rotate — slate', 'Mica grows — phyllite sheen', 'Visible flakes — schist', 'Bands segregate — gneiss'] },
-              weathering_erosion: { product: 'Mudstone or Shale', family: 'sedimentary', texture: 'clastic', process: 'Erosion, transport, lithification', conditions: 'Surface conditions', time: '1,000s–millions of years', change: 'Clay is already the end product of chemical weathering, so it does not break down further — it just splits apart, washes into quiet water and settles again. Clay particles are so fine they only settle where currents are nearly still.', evidence: 'Shale means quiet water: deep sea floor, lake bottom, or floodplain.', stages: ['Layers split and flake', 'Clay suspended in water', 'Settles in still water', 'Compaction to new shale'] }
+              weathering_erosion: { product: 'Mudstone or Shale', family: 'sedimentary', texture: 'finelayered', process: 'Erosion, transport, lithification', conditions: 'Surface conditions', time: '1,000s–millions of years', change: 'Clay is already the end product of chemical weathering, so it does not break down further — it just splits apart, washes into quiet water and settles again. Clay particles are so fine they only settle where currents are nearly still.', evidence: 'Shale means quiet water: deep sea floor, lake bottom, or floodplain.', stages: ['Layers split and flake', 'Clay suspended in water', 'Settles in still water', 'Compaction to new shale'] }
             },
             slate: {
               melting_cooling:    { product: 'Granite (S-type)', family: 'igneous', texture: 'crystalline', process: 'Melting of metamorphosed mud', conditions: '650–800 °C, deep crust', time: 'Millions of years', change: 'Slate carries the same clay-derived chemistry as the shale it came from, so melting it yields the same aluminium-rich, S-type granitic magma.', evidence: 'The melt "forgets" the foliation entirely — igneous crystals grow in random orientations.', stages: ['Deep burial', 'Mica breaks down', 'Aluminous melt forms', 'Random crystal growth'] },
@@ -6046,6 +6046,25 @@ const d = labToolData.rockCycle || {};
               for (i = 0; i < 18; i++) {
                 g.push(h('circle', { key: 'g' + i, cx: x + ((i * 43) % 100) / 100 * w, cy: y + ((i * 71) % 100) / 100 * hgt, r: 1.3, fill: c.detail, opacity: 0.45 }));
               }
+            } else if (texture === 'finelayered') {
+              // Fissile: shale splits into thin sheets, and that is the whole
+              // difference between it and sandstone in the hand. Both were
+              // tagged 'clastic', so two of the eight specimens a student picks
+              // between were drawing the identical picture — and the sibling
+              // rocks tool had already separated them.
+              for (i = 1; i < 12; i++) {
+                g.push(h('line', {
+                  key: 'fl' + i, x1: x, y1: y + (i / 12) * hgt, x2: x + w, y2: y + (i / 12) * hgt,
+                  stroke: c.detail, strokeWidth: 0.9, opacity: 0.85,
+                }));
+              }
+              // A split running in from the edge — the layers coming apart.
+              g.push(h('path', {
+                key: 'flsplit',
+                d: 'M' + x + ',' + (y + hgt * 0.42) + ' L' + (x + w * 0.55) + ',' + (y + hgt * 0.46)
+                  + ' L' + x + ',' + (y + hgt * 0.52) + ' Z',
+                fill: c.base, opacity: 0.55,
+              }));
             } else if (texture === 'bioclastic') {
               // Bedding plus shell fragments.
               for (i = 1; i < 4; i++) {
@@ -6068,7 +6087,11 @@ const d = labToolData.rockCycle || {};
                 var by = y + (i / 5) * hgt;
                 g.push(h('path', { key: 'b' + i, d: 'M' + x + ',' + (by + 3) + ' Q' + (x + w * 0.35) + ',' + (by - 2) + ' ' + (x + w * 0.7) + ',' + (by + 3) + ' T' + (x + w) + ',' + (by + 2), fill: 'none', stroke: i % 2 ? c.detail : c.base, strokeWidth: 3.4, opacity: 0.85 }));
               }
-            } else { // nonfoliated — equant interlocking mosaic
+            } else { // nonfoliated — equant interlocking mosaic.
+              // NOTE: this is also the catch-all. A texture name that is not
+              // handled above lands here and draws a marble-like mosaic with no
+              // error, so a typo would look like a deliberate rock. A test
+              // pins that every texture the data asks for is handled by name.
               var mo = [[0.2, 0.25], [0.5, 0.2], [0.78, 0.3], [0.3, 0.58], [0.62, 0.62], [0.85, 0.7], [0.14, 0.78]];
               for (i = 0; i < mo.length; i++) {
                 g.push(h('polygon', { key: 'm' + i, points: (function (px, py, r) { var pts = []; for (var k = 0; k < 6; k++) { var a = k * Math.PI / 3 + (i * 0.4); pts.push((px + Math.cos(a) * r) + ',' + (py + Math.sin(a) * r)); } return pts.join(' '); })(x + mo[i][0] * w, y + mo[i][1] * hgt, Math.min(w, hgt) * 0.13), fill: c.detail, opacity: 0.7, stroke: c.base, strokeWidth: 0.5 }));
