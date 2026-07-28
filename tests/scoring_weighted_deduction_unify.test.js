@@ -26,10 +26,10 @@ describe('#5 weighted deduction — one formula, no chunk-boundary discontinuity
   it('GOLDEN: the same issue set yields the SAME deduction regardless of which path computes it', async () => {
     const fn = await liveWeighted();
     const issues = [
-      { deduction: 15, count: 4 },  // a critical seen on 4 pages
-      { deduction: 10, count: 1 },
-      { deduction: 5 },             // no count
-      { deduction: 2, count: 9 },
+      { severity: 'critical', count: 4 },  // a critical seen on 4 pages
+      { severity: 'serious', count: 1 },
+      { severity: 'moderate' },             // no count
+      { severity: 'minor', count: 9 },
     ];
     // Both call sites now invoke the identical fn — single-chunk: fn(parsed.issues); chunked: fn(mergedIssues).
     const singleChunkPath = fn(issues);
@@ -39,22 +39,22 @@ describe('#5 weighted deduction — one formula, no chunk-boundary discontinuity
 
   it('the formula is Σ (deduction × count-weight)', async () => {
     const fn = await liveWeighted();
-    const issues = [{ deduction: 15, count: 4 }, { deduction: 10, count: 1 }, { deduction: 2, count: 9 }];
+    const issues = [{ severity: 'critical', count: 4 }, { severity: 'serious', count: 1 }, { severity: 'minor', count: 9 }];
     const expected = 15 * weight(4) + 10 * weight(1) + 2 * weight(9);
     expect(fn(issues)).toBeCloseTo(expected, 9);
   });
 
   it('behavior-preserving for the single-chunk path: AI issues carry no count → weight 1× → plain sum', async () => {
     const fn = await liveWeighted();
-    const aiIssues = [{ deduction: 15 }, { deduction: 10 }, { deduction: 5 }, { deduction: 2 }]; // no `count` fields
+    const aiIssues = [{ severity: 'critical' }, { severity: 'serious' }, { severity: 'moderate' }, { severity: 'minor' }]; // no `count` fields
     expect(fn(aiIssues)).toBe(15 + 10 + 5 + 2); // identical to the old un-weighted single-chunk sum
   });
 
   it('a multi-occurrence issue is now weighted identically on both paths (the discontinuity is gone)', async () => {
     const fn = await liveWeighted();
     // count 4 → weight capped path = min(3, 1+log2(4)) = 3 → 15×3 = 45, not 15
-    expect(fn([{ deduction: 15, count: 4 }])).toBeCloseTo(45, 9);
-    expect(fn([{ deduction: 15, count: 1 }])).toBe(15);
+    expect(fn([{ severity: 'critical', count: 4 }])).toBeCloseTo(45, 9);
+    expect(fn([{ severity: 'critical', count: 1 }])).toBe(15);
   });
 
   it('null/empty input is safe', async () => {
@@ -78,6 +78,14 @@ describe('anti-drift: both output-audit paths route through the single shared fn
   it('the fn is defined once at module top with the weight applied', () => {
     expect(pipeSrc).toMatch(/var _alloWeightedDeductions = function \(issues\) \{/);
     // Harness repair (2026-07-09): a NaN-hardening pass wrapped the deduction in Number(...).
-    expect(pipeSrc).toMatch(/\(Number\(i && i\.deduction\) \|\| 0\) \* _alloIssueWeight\(i && i\.count\)/);
+    // The per-issue penalty no longer comes from a model-supplied i.deduction.
+    // It is looked up in SEVERITY_WEIGHTS by the issue's severity, so a model
+    // cannot set its own penalty — and the M1 coercion that was needed when a
+    // model returned "moderate" or "5 pts" as a deduction is moot. The weights
+    // are unchanged (critical 15 / serious 10 / moderate 5 / minor 2), which is
+    // why every arithmetic golden in this file still holds.
+    expect(pipeSrc).toMatch(/var deduction = Number\(SEVERITY_WEIGHTS\[severity\]\) \|\| 0;/);
+    expect(pipeSrc).toMatch(/s \+ deduction \* _alloIssueWeight\(i && i\.count\)/);
+    expect(pipeSrc).toMatch(/var SEVERITY_WEIGHTS = \{ critical: 15, serious: 10, moderate: 5, minor: 2 \};/);
   });
 });

@@ -74,9 +74,11 @@ const canonicalDerive = new Function(
 globalThis.window.AlloModules = globalThis.window.AlloModules || {};
 globalThis.window.AlloModules.VerificationPolicy = { deriveVerificationState: canonicalDerive };
 const completeInput = () => ({
-  ai: { score: 91 },
-  axe: { score: 94, totalIncomplete: 0 },
-  equalAccess: { score: 89, potentialViolations: 0, manualViolations: 0, reviewFindingCount: 0 },
+  // Each engine must report its finding COUNT, not just a score — the policy
+  // holds at 'partial' otherwise, with a reason naming what it does not know.
+  ai: { score: 91, issues: [] },
+  axe: { score: 94, totalViolations: 0, totalIncomplete: 0 },
+  equalAccess: { score: 89, failViolations: 0, potentialViolations: 0, manualViolations: 0, reviewFindingCount: 0 },
   pdfUaSelfCheck: 'not-run',
 });
 
@@ -89,8 +91,8 @@ describe('remediation view verification state', () => {
       { ...completeInput(), ai: { score: Number.NaN }, axe: { score: Number.POSITIVE_INFINITY, totalIncomplete: 0 } },
       { ...completeInput(), axe: { score: 88 } },
       { ...completeInput(), axe: { score: 88, totalIncomplete: -4 } },
-      { ...completeInput(), equalAccess: { score: 90, potentialViolations: 2, manualViolations: 1, reviewFindingCount: 1 } },
-      { ...completeInput(), equalAccess: { score: 90, reviewFindingCount: 4 } },
+      { ...completeInput(), equalAccess: { score: 90, failViolations: 0, potentialViolations: 2, manualViolations: 1, reviewFindingCount: 1 } },
+      { ...completeInput(), equalAccess: { score: 90, failViolations: 0, reviewFindingCount: 4 } },
       { ...completeInput(), languageReviewRequired: true, extraReasons: 'static-source-scope' },
     ];
     for (const input of cases) expect(helpers.derive(input, null)).toEqual(canonicalDerive(input));
@@ -147,7 +149,7 @@ describe('remediation view verification state', () => {
 
   it('does not let an IBM aggregate under-report explicit review findings', () => {
     const input = completeInput();
-    input.equalAccess = { score: 92, potentialViolations: 2, manualViolations: 1, reviewFindingCount: 1 };
+    input.equalAccess = { score: 92, failViolations: 0, potentialViolations: 2, manualViolations: 1, reviewFindingCount: 1 };
     const result = helpers.derive(input, null);
     expect(result.verificationState).toBe('review-required');
     expect(result.reviewCount).toBe(3);
@@ -401,11 +403,19 @@ describe('web and workbench integration guards', () => {
     const commitStart = source.indexOf('const _commitRefixedSection');
     const commitEnd = source.indexOf('const _runOwnedSectionRefix', commitStart);
     const commitBlock = source.slice(commitStart, commitEnd);
-    expect(commitBlock).toContain('_commitAsyncHtmlIfCurrent(operationTicket.htmlToken');
-    expect(commitBlock).toContain('verificationAudit: null');
-    expect(commitBlock).toContain('axeAudit: null');
-    expect(commitBlock).toContain('secondEngineAudit: null');
-    expect(commitBlock).toContain("verificationReasons: ['content-modified-pending-reverification']");
+    // The token-guarded swap and the audit invalidation were lifted into the
+    // shared _commitHtmlPendingVerification, so every caller that changes the
+    // html invalidates the same way instead of each doing it by hand. Assert the
+    // delegation here, and the guard + nulling inside the helper below.
+    expect(commitBlock).toContain('_commitHtmlPendingVerification(operationTicket, newHtml,');
+    const helper = source.slice(source.indexOf('const _commitHtmlPendingVerification'), source.indexOf('const _commitHtmlPendingVerification') + 3000);
+    expect(helper).toContain('_commitAsyncHtmlIfCurrent(token,');
+    // The invalidation moved into the shared helper with the swap, so all four
+    // are asserted there — one place, every caller.
+    expect(helper).toContain('verificationAudit: null');
+    expect(helper).toContain('axeAudit: null');
+    expect(helper).toContain('secondEngineAudit: null');
+    expect(helper).toContain("verificationReasons: ['content-modified-pending-reverification']");
     expect(commitBlock).toContain('const recheck = await _reauditAndScore(newHtml, null, operationTicket)');
     expect(commitBlock).toContain('if (!_remediationOperationIsCurrent(operationTicket) || (recheck && recheck.stale))');
     expect(source).not.toContain('const [reAi, reAxe] = await Promise.all');
