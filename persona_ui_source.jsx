@@ -383,13 +383,31 @@ const InteractiveBlueprintCard = React.memo(({ config, onUpdate, onConfirm, onCa
           </>
       ) : (
           <div data-help-key="blueprint_resource_list_review" className="space-y-3 mb-6">
-              {items.map((item, idx) => (
-                  <div key={item.id} className="flex gap-3 items-start p-3 bg-slate-50 rounded-lg border border-slate-100">
-                      <div className="bg-white border border-slate-400 text-slate-600 font-bold w-6 h-6 flex items-center justify-center rounded-full text-xs shrink-0 mt-0.5">
-                          {idx + 1}
+              {items.map((item, idx) => {
+                  // Per-resource visual identity comes from the ONE existing
+                  // registry (_ALLO_STATION_STYLES in the host, mirrored to
+                  // window). Without it every plan row was an identical grey
+                  // circle + indigo pill, so a twelve-step plan read as twelve
+                  // copies of the same thing. Guarded call + inert fallback:
+                  // a bare reference would be a ReferenceError in this module,
+                  // and the host mirror may not have run yet on first paint.
+                  const _st = (typeof window !== 'undefined' && typeof window._alloStationStyle === 'function')
+                      ? window._alloStationStyle(item.type)
+                      : null;
+                  return (
+                  <div key={item.id} className="flex gap-3 items-start p-3 bg-slate-50 rounded-lg border border-slate-100 border-l-4" style={_st ? { borderLeftColor: _st.stroke } : undefined}>
+                      <div
+                          className="border font-bold w-6 h-6 flex items-center justify-center rounded-full text-xs shrink-0 mt-0.5"
+                          style={_st ? { backgroundColor: _st.fill, borderColor: _st.stroke, color: _st.stroke } : { backgroundColor: '#fff', borderColor: '#94a3b8', color: '#475569' }}
+                      >
+                          {_st ? <span aria-hidden="true">{_st.icon}</span> : (idx + 1)}
                       </div>
                       <div className="flex-grow">
-                          <span className="text-xs font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 uppercase tracking-wider block w-fit mb-1">
+                          <span
+                              className="text-xs font-bold px-2 py-0.5 rounded border uppercase tracking-wider inline-flex items-center gap-1 w-fit mb-1"
+                              style={_st ? { backgroundColor: _st.fill, borderColor: _st.stroke, color: _st.stroke } : { backgroundColor: '#eef2ff', borderColor: '#e0e7ff', color: '#4338ca' }}
+                          >
+                              <span className="opacity-70 font-normal">{idx + 1}</span>
                               {getToolLabel(item.type)}
                           </span>
                           <p className="text-sm text-slate-700 leading-relaxed italic">
@@ -397,7 +415,8 @@ const InteractiveBlueprintCard = React.memo(({ config, onUpdate, onConfirm, onCa
                           </p>
                       </div>
                   </div>
-              ))}
+                  );
+              })}
               {items.length === 0 && (
                   <p className="text-center text-slate-600 text-sm italic py-4">{t('blueprint.empty_plan')}</p>
               )}

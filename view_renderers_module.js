@@ -2623,10 +2623,44 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     }
   }, [data, hasContent, ready]);
   const furnishTargets = artNodes.filter((n) => !(artRef.current || {})[n.id]);
-  const furnishEstMb = Math.round(furnishTargets.length * 0.3 * 10) / 10;
+  const furnishNoteCount = furnishing ? furnishing.total : furnishTargets.length;
+  const furnishEstMb = Math.round(furnishNoteCount * 0.3 * 10) / 10;
   const furnishHeavy = furnishMode === "image" && furnishEstMb >= 3;
   const stopFurnish = () => {
     genCancelRef.current = true;
+  };
+  React.useEffect(() => {
+    if (challenge) genCancelRef.current = true;
+  }, [challenge]);
+  const [clearArmed, setClearArmed] = React.useState(false);
+  React.useEffect(() => {
+    if (!furnishOpen) setClearArmed(false);
+  }, [furnishOpen]);
+  const artCount = Object.keys(artRef.current || {}).length;
+  const handleClearAllArt = () => {
+    if (!isTeacherMode || !persist || furnishing) return;
+    if (!clearArmed) {
+      setClearArmed(true);
+      return;
+    }
+    setClearArmed(false);
+    const H = handleRef.current;
+    const ids = Object.keys(artRef.current || {});
+    if (!ids.length) return;
+    if (H && H.clearNodeArt) ids.forEach((id) => {
+      try {
+        H.clearNodeArt(id);
+      } catch (e) {
+      }
+    });
+    artRef.current = {};
+    persist({}, "conceptArt");
+    if (selectedNodeRef.current) {
+      const meta = { ...selectedNodeRef.current, artType: null };
+      selectedNodeRef.current = meta;
+      setSelectedNode(meta);
+    }
+    if (addToast) addToast(t("concept_space.furnish_cleared") || "Removed the art from every concept.", "info");
   };
   const handleFurnishAll = () => {
     const E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
@@ -2638,7 +2672,10 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
       if (addToast) addToast(t("concept_space.art_no_imagen") || "Image generation is unavailable here \u2014 try a sculpture.", "info");
       return;
     }
-    if (!wantImages && !P3D) return;
+    if (!wantImages && !P3D) {
+      if (addToast) addToast(t("concept_space.art_failed") || "Could not create that \u2014 try again.", "error");
+      return;
+    }
     const targets = furnishTargets;
     if (!targets.length) {
       if (addToast) addToast(t("concept_space.furnish_done_already") || "Every concept already has art.", "info");
@@ -2646,13 +2683,23 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     }
     genCancelRef.current = false;
     setFurnishing({ done: 0, total: targets.length });
-    let done = 0, failures = 0;
+    let done = 0, failures = 0, storageFailed = false;
     const finishBatch = () => {
       setFurnishing(null);
       if (!addToast || !artAliveRef.current) return;
-      if (genCancelRef.current) addToast((t("concept_space.furnish_stopped") || "Stopped \u2014 {ok} made so far.").replace("{ok}", String(done)), "info");
+      if (storageFailed) addToast((t("concept_space.furnish_storage_full") || "Stopped at {ok} \u2014 there is no room left to save more art. Remove some, or use sculptures instead of images.").replace("{ok}", String(done)), "error");
+      else if (genCancelRef.current) addToast((t("concept_space.furnish_stopped") || "Stopped \u2014 {ok} made so far.").replace("{ok}", String(done)), "info");
       else if (failures) addToast((t("concept_space.furnish_partial") || "Made art for {ok} concepts; {fail} could not be generated.").replace("{ok}", String(done)).replace("{fail}", String(failures)), "info");
       else addToast(t("concept_space.furnish_done") || "\u2728 Every concept furnished \u2014 orbit the space to meet them.", "success");
+    };
+    const place = (id, art) => {
+      try {
+        _persistNodeArt(id, art);
+        done += 1;
+      } catch (e) {
+        storageFailed = true;
+        genCancelRef.current = true;
+      }
     };
     const run = (mnemonics) => {
       const step = (i) => {
@@ -2671,10 +2718,8 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
           Promise.resolve(callImagen("A vivid, memorable, slightly surreal illustration: " + subject + ". Single clear subject, bright colors, centered composition, storybook style, no text, no words.", 400)).then((b64) => {
             if (!artAliveRef.current) return;
             const url = _asDataUrl(b64);
-            if (url) {
-              done += 1;
-              _persistNodeArt(n.id, { type: "image", dataUrl: url });
-            } else failures += 1;
+            if (url) place(n.id, { type: "image", dataUrl: url });
+            else failures += 1;
           }).catch(() => {
             failures += 1;
           }).then(after);
@@ -2684,8 +2729,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
             const recipe = P3D.parseRecipe(_gemText(res));
             if (recipe) {
               recipe.name = n.label;
-              done += 1;
-              _persistNodeArt(n.id, { type: "sculpture", recipe });
+              place(n.id, { type: "sculpture", recipe });
             } else failures += 1;
           }).catch(() => {
             failures += 1;
@@ -2830,10 +2874,10 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     "p",
     {
       className: `text-[11px] rounded-lg px-2.5 py-2 mb-2 ${furnishHeavy ? "bg-amber-50 border border-amber-300 text-amber-900" : "bg-slate-50 border border-slate-200 text-slate-600"}`,
-      role: furnishHeavy ? "alert" : void 0
+      role: furnishHeavy && !furnishing ? "alert" : void 0
     },
     furnishHeavy ? "\u26A0 " : "",
-    (t("concept_space.furnish_storage_note") || "About {mb} MB of pictures would be saved with this resource ({n} images). Browser storage usually gives out near 5 MB, and each image costs a credit. Sculptures are about 1 KB each and cost none.").replace("{mb}", String(furnishEstMb)).replace("{n}", String(furnishTargets.length))
+    (t("concept_space.furnish_storage_note") || "About {mb} MB of pictures would be saved with this resource ({n} images). Browser storage usually gives out near 5 MB, and each image costs a credit. Sculptures are about 1 KB each and cost none.").replace("{mb}", String(furnishEstMb)).replace("{n}", String(furnishNoteCount))
   ), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap" }, furnishing ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
     "span",
     {
@@ -2862,6 +2906,15 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     },
     "\u2728 ",
     furnishTargets.length ? (t("concept_space.furnish_start") || "Make art for {n} concepts").replace("{n}", String(furnishTargets.length)) : t("concept_space.furnish_done_already") || "Every concept already has art."
+  ), !furnishing && artCount > 0 && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: handleClearAllArt,
+      className: `px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${clearArmed ? "bg-rose-600 text-white border-rose-600" : "bg-white text-rose-600 border-rose-300 hover:bg-rose-50"}`,
+      title: t("concept_space.furnish_clear_tooltip") || "Remove the generated art from every concept \u2014 the arrangement and the strand weights are kept"
+    },
+    "\u{1F5D1} ",
+    clearArmed ? t("concept_space.furnish_clear_confirm") || "Click again to remove all" : (t("concept_space.furnish_clear") || "Remove all art ({n})").replace("{n}", String(artCount))
   )), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 italic mt-2" }, t("concept_space.furnish_framing") || "Students can still make and refine art on any single concept by clicking it. Building the image yourself is where most of the memory benefit lives, so use this to seed a space rather than to replace their turn.")), constelOpen && hasContent && persist && !failed && /* @__PURE__ */ React.createElement("div", { className: "mb-3 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-slate-200" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-300" }, "\u{1F30C} ", t("cg3d.constel_heading") || "Constellation \u2014 weight the connections yourself"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-0.5 bg-slate-800 rounded-full p-0.5 ml-auto", role: "group", "aria-label": t("cg3d.constel_mode_label") || "Constellation view mode" }, ["off", "mine", "ai", "diff"].map((m) => /* @__PURE__ */ React.createElement(
     "button",
     {

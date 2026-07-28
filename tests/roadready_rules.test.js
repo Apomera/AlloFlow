@@ -2,10 +2,18 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 
+// The two copies that are actually served:
+//   stem_lab/…                       -> the CDN (web + Canvas)
+//   desktop/web-app/public/stem_lab/… -> the bundled desktop app / School Box,
+//     which reaches it because localizeModuleUrl rewrites the CDN host to './'
+//     while PRESERVING the stem_lab/ segment.
+// A third copy at desktop/web-app/public/stem_tool_roadready.js (no stem_lab/)
+// used to be listed here. Nothing ever loaded it — no code path builds that URL,
+// and the CDN returns the SPA fallback for it — but this suite read it as live, so
+// it silently validated a fossil that predated f3c63b90c. Deleted with the other 80.
 const ROADREADY_FILES = [
   'stem_lab/stem_tool_roadready.js',
   'desktop/web-app/public/stem_lab/stem_tool_roadready.js',
-  'desktop/web-app/public/stem_tool_roadready.js',
 ];
 
 const ROADREADY_UI_STRING_FILES = [

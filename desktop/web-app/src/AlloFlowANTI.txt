@@ -2382,9 +2382,20 @@ async function _alloMailboxCallWithRetry(execUrl, payload, tries = 3, delayMs = 
 // Poll cadence policy: jittered base, stretched when the session is idle,
 // backed off geometrically on errors, and parked while the tab is hidden.
 function _alloNextPollDelay({ baseMs = ALLO_MB_POLL_MS, idleMs = 0, errorCount = 0, hidden = false } = {}) {
-    if (hidden) return 5000;
+    // The park and the idle stretch must only ever SLOW this loop down. Both were
+    // written against the 2.5s mailbox-only base, where a flat 5s park and a 4s
+    // idle ceiling were increases. Once the WebRTC fast path started passing
+    // baseMs: 8000, the very same two lines began SHORTENING the interval —
+    // Math.min(8000 * 1.6, 4000) is 4000 — so a hidden or idle student on the
+    // fast path polled the teacher's mailbox MORE often than an active one, and
+    // spent Apps Script quota precisely when nothing was happening. Clamping to
+    // baseMs leaves the 2.5s behaviour identical and makes both relaxations
+    // monotonic at any base. Whether an RTC-connected idle student should stretch
+    // PAST its 8s base is a separate tuning question (the data channel carries
+    // the pushes, so the poll is only a replay net) and is not decided here.
+    if (hidden) return Math.max(baseMs, 5000);
     if (errorCount > 0) return Math.min(baseMs * Math.pow(2, errorCount), 15000);
-    const stretched = idleMs > 120000 ? Math.min(baseMs * 1.6, 4000) : baseMs;
+    const stretched = idleMs > 120000 ? Math.max(baseMs, Math.min(baseMs * 1.6, 4000)) : baseMs;
     return Math.round(stretched * (0.9 + Math.random() * 0.2));
 }
 // Fold one chunked-resource message into `store`; returns the assembled
@@ -3335,7 +3346,12 @@ const _alloStudentSafeResources = (items) => {
 // way. They did not: STEM accumulated WALL CLOCK (Date.now() minus mount, taken
 // on unmount), so an abandoned open tab satisfied "spend 5 minutes" there while
 // failing it here — the same phrase meaning two things in one app.
-const _ALLO_ENGAGEMENT_TIMEOUT_MS = 180000; // 3 minutes since last interaction
+// The canonical home is AlloQuestContract.ENGAGEMENT_TIMEOUT_MS; this literal is
+// the pre-module-load fallback (the heartbeat can start before the CDN module
+// lands). The conformance battery pins every copy equal to the contract's.
+const _ALLO_ENGAGEMENT_TIMEOUT_MS = (typeof window !== 'undefined' && window.AlloQuestContract && typeof window.AlloQuestContract.ENGAGEMENT_TIMEOUT_MS === 'number')
+    ? window.AlloQuestContract.ENGAGEMENT_TIMEOUT_MS
+    : 180000; // must equal AlloQuestContract.ENGAGEMENT_TIMEOUT_MS
 function _alloNormalizeDirectionsData(data) {
     if (data && typeof data === 'object' && !Array.isArray(data)) {
         const body = typeof data.body === 'string' ? data.body : '';
@@ -9819,6 +9835,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=355fa3d9a');
     loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=355fa3d9a');
     loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=355fa3d9a');
+    // Shared quest/goal vocabulary for directions goals, STEM Lab and SEL Hub
+    // quests. Tiny and dependency-free; every consumer degrades gracefully if it
+    // has not landed yet, so load order is not load-bearing.
+    loadModule('AlloQuestContract', 'https://alloflow-cdn.pages.dev/allo_quest_contract_module.js?v=355fa3d9a');
     loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=355fa3d9a');
     loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=ce049d79');
     loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=355fa3d9a');

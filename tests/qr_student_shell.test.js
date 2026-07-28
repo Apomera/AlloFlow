@@ -413,10 +413,18 @@ describe('Cloudflare student shell build wiring', () => {
     expect(files.some((file) => /alloflow_intro_(teacher|family)\.mp4$/.test(file))).toBe(false);
   });
   it('publishes the postbuild shell automatically and excludes the oversized asset tree', () => {
-    const packageJson = JSON.parse(readFileSync(resolve(process.cwd(), 'desktop/web-app/package.json'), 'utf8'));
+    const shellPackageDir = resolve(process.cwd(), 'desktop/web-app');
+    const packageJson = JSON.parse(readFileSync(resolve(shellPackageDir, 'package.json'), 'utf8'));
     const buildScript = readFileSync(resolve(process.cwd(), 'build.js'), 'utf8');
 
-    expect(packageJson.scripts.build).toContain('node ../build.js --copy-student-shell');
+    // Pin the invariant, not the spelling. The literal used to be '../build.js',
+    // which went stale the moment the shell package moved a directory deeper and
+    // then failed as a phantom regression against correct code. The relative
+    // prefix is the shell's business; what must hold is that the hand-off
+    // resolves to the repo-root build.js, so resolve it and compare.
+    const copyStudentShellStep = /node\s+(\S*build\.js)\s+--copy-student-shell/.exec(packageJson.scripts.build || '');
+    expect(copyStudentShellStep).toBeTruthy();
+    expect(resolve(shellPackageDir, copyStudentShellStep[1])).toBe(resolve(process.cwd(), 'build.js'));
     expect(buildScript).toContain("const STUDENT_SHELL_PUBLIC_DIR = path.join(ROOT, 'desktop/web-app', 'public', 'app')");
     expect(buildScript).toContain("const STUDENT_SHELL_CDN_DIR = path.join(ROOT, 'app')");
     expect(buildScript).toContain("'index.html'");

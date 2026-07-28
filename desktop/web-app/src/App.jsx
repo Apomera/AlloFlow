@@ -2382,9 +2382,20 @@ async function _alloMailboxCallWithRetry(execUrl, payload, tries = 3, delayMs = 
 // Poll cadence policy: jittered base, stretched when the session is idle,
 // backed off geometrically on errors, and parked while the tab is hidden.
 function _alloNextPollDelay({ baseMs = ALLO_MB_POLL_MS, idleMs = 0, errorCount = 0, hidden = false } = {}) {
-    if (hidden) return 5000;
+    // The park and the idle stretch must only ever SLOW this loop down. Both were
+    // written against the 2.5s mailbox-only base, where a flat 5s park and a 4s
+    // idle ceiling were increases. Once the WebRTC fast path started passing
+    // baseMs: 8000, the very same two lines began SHORTENING the interval —
+    // Math.min(8000 * 1.6, 4000) is 4000 — so a hidden or idle student on the
+    // fast path polled the teacher's mailbox MORE often than an active one, and
+    // spent Apps Script quota precisely when nothing was happening. Clamping to
+    // baseMs leaves the 2.5s behaviour identical and makes both relaxations
+    // monotonic at any base. Whether an RTC-connected idle student should stretch
+    // PAST its 8s base is a separate tuning question (the data channel carries
+    // the pushes, so the poll is only a replay net) and is not decided here.
+    if (hidden) return Math.max(baseMs, 5000);
     if (errorCount > 0) return Math.min(baseMs * Math.pow(2, errorCount), 15000);
-    const stretched = idleMs > 120000 ? Math.min(baseMs * 1.6, 4000) : baseMs;
+    const stretched = idleMs > 120000 ? Math.max(baseMs, Math.min(baseMs * 1.6, 4000)) : baseMs;
     return Math.round(stretched * (0.9 + Math.random() * 0.2));
 }
 // Fold one chunked-resource message into `store`; returns the assembled
@@ -3560,12 +3571,27 @@ const _ALLO_STATION_STYLES = {
     'math-fluency-probe':    { icon: '\u{1F522}', shape: 'hexflat', fill: '#ecfdf5', stroke: '#059669', label: 'Math practice' },
     'manipulative-resource': { icon: '\u{1F9EE}', shape: 'hexflat', fill: '#ecfdf5', stroke: '#059669', label: 'Math tool' },
     'stem-assessment':       { icon: '\u{1F52C}', shape: 'hexflat', fill: '#ecfdf5', stroke: '#059669', label: 'Science' },
-    'stem':                  { icon: '\u{1F52C}', shape: 'hexflat', fill: '#ecfdf5', stroke: '#059669', label: 'Science' }
+    'stem':                  { icon: '\u{1F52C}', shape: 'hexflat', fill: '#ecfdf5', stroke: '#059669', label: 'Science' },
+    // Teacher-facing / planning family (2026-07-27). These five are TOOL_CATALOG
+    // ids that had no station style, so they fell through to the grey fallback
+    // glyph everywhere this registry renders — including the blueprint plan,
+    // where every row looked identical. Keep this registry and TOOL_CATALOG in
+    // step: a catalog id with no entry here is a silent grey square.
+    'analysis':              { icon: '\u{1F50D}', shape: 'circle',  fill: '#eef2ff', stroke: '#6366f1', label: 'Analysis' },
+    'brainstorm':            { icon: '\u{1F4A1}', shape: 'circle',  fill: '#fffbeb', stroke: '#f59e0b', label: 'Ideas' },
+    'lesson-plan':           { icon: '\u{1F5FA}', shape: 'square',  fill: '#eef2ff', stroke: '#4f46e5', label: 'Lesson plan' },
+    'alignment-report':      { icon: '✅', shape: 'diamond', fill: '#f0fdfa', stroke: '#0d9488', label: 'Standards' },
+    'gemini-bridge':         { icon: '\u{1F9EA}', shape: 'hex',     fill: '#fdf4ff', stroke: '#c026d3', label: 'Simulation' }
 };
 const _ALLO_STATION_FALLBACK = { icon: '\u{1F4C4}', shape: 'circle', fill: '#f8fafc', stroke: '#64748b', label: 'Resource' };
 function _alloStationStyle(type) {
     return _ALLO_STATION_STYLES[type] || _ALLO_STATION_FALLBACK;
 }
+// Mirrored to window so CDN modules can reuse the ONE visual registry instead
+// of inventing a sixth colour table. Modules must call it as
+// window._alloStationStyle(...) with a fallback — a bare reference is a
+// ReferenceError inside a module IIFE (the free-variable crash class).
+try { if (typeof window !== 'undefined') window._alloStationStyle = _alloStationStyle; } catch (_) {}
 // Pure geometry for a station silhouette, centered on (x, y) with radius r.
 // Returns a render descriptor ({ tag, attrs }) rather than markup so it stays
 // testable and the view stays declarative.
@@ -31487,6 +31513,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
         } catch (_) {}
         if (p && p.topic) { try { setInputText(p.topic); } catch (_) {} }
         try { setIsBotVisible(true); } catch (_) {}
+        // handleAutoFillToggle SEEDS the flow and pushes the welcome message
+        // into udlMessages, but it never opens the panel — and showUDLGuide
+        // defaults false. Without this the teacher gets a talking avatar and
+        // no chat: the first turn of the guided flow is written into a closed
+        // window. Open it here, at every front door.
+        try { setShowUDLGuide(true); } catch (_) {}
         // Reuse the PRODUCTION Auto-Fill entry — same stage seeding, same
         // bot welcome — so the agent and the checkbox share one path.
         handleAutoFillToggle({ target: { checked: true } });
@@ -41958,7 +41990,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                   activeSessionCode, studentNickname, isTeacherMode
             })}
         </CDNModuleGate>
-        {showEducatorHub && <EducatorHubModal addToast={addToast} beginPdfDocumentIntake={startNewPdfAudit} handleFileUpload={handleFileUpload} isPdfDocumentIntakeCurrent={isPdfDocumentIntakeCurrent} setPdfBatchSummary={setPdfBatchSummary} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsDynamicAssessmentOpen={setIsDynamicAssessmentOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setBridgeSendOpen={setBridgeSendOpen} setShowBehaviorLens={setShowBehaviorLens} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} setShowCinematicStudio={setShowCinematicStudio} setIsVideoStudioOpen={setIsVideoStudioOpen} setIsAlloStudioOpen={setIsAlloStudioOpen} setShowBrandProfileEditor={setShowBrandProfileEditor} setShowStemLab={setShowStemLab} setStemLabTool={setStemLabTool} setLabToolData={setLabToolData} openWhiteboard={openWhiteboard} startLessonFlow={() => { try { setIsBotVisible(true); } catch (_) {} handleAutoFillToggle({ target: { checked: true } }); }} showEducatorHub={showEducatorHub} t={t} />}
+        {showEducatorHub && <EducatorHubModal addToast={addToast} beginPdfDocumentIntake={startNewPdfAudit} handleFileUpload={handleFileUpload} isPdfDocumentIntakeCurrent={isPdfDocumentIntakeCurrent} setPdfBatchSummary={setPdfBatchSummary} openExportPreview={openExportPreview} pdfAuditResult={pdfAuditResult} pdfFixLoading={pdfFixLoading} pdfFixResult={pdfFixResult} setIsAccessibilityLabOpen={setIsAccessibilityLabOpen} setIsCommunityCatalogOpen={setIsCommunityCatalogOpen} setIsDynamicAssessmentOpen={setIsDynamicAssessmentOpen} setIsSymbolStudioOpen={setIsSymbolStudioOpen} setPdfAuditResult={setPdfAuditResult} setPdfBatchMode={setPdfBatchMode} setPdfBatchQueue={setPdfBatchQueue} setPendingPdfBase64={setPendingPdfBase64} setPendingPdfFile={setPendingPdfFile} setBridgeSendOpen={setBridgeSendOpen} setShowBehaviorLens={setShowBehaviorLens} setShowEducatorHub={setShowEducatorHub} setShowReportWriter={setShowReportWriter} setShowCinematicStudio={setShowCinematicStudio} setIsVideoStudioOpen={setIsVideoStudioOpen} setIsAlloStudioOpen={setIsAlloStudioOpen} setShowBrandProfileEditor={setShowBrandProfileEditor} setShowStemLab={setShowStemLab} setStemLabTool={setStemLabTool} setLabToolData={setLabToolData} openWhiteboard={openWhiteboard} startLessonFlow={() => { try { setIsBotVisible(true); } catch (_) {} try { setShowUDLGuide(true); } catch (_) {} handleAutoFillToggle({ target: { checked: true } }); }} showEducatorHub={showEducatorHub} t={t} />}
         {showLearningHub && <LearningHubModal isTeacherMode={isTeacherMode} setBridgeSendOpen={setBridgeSendOpen} setIsAlloHavenOpen={setIsAlloHavenOpen} setIsLinguaPracticeOpen={setIsLinguaPracticeOpen} setIsOpenGrooveOpen={setIsOpenGrooveOpen} setIsTestPrepHubOpen={setIsTestPrepHubOpen} setIsTimelineStudioOpen={setIsTimelineStudioOpen} setIsReadingLibraryOpen={setIsReadingLibraryOpen} setSelHubTab={setSelHubTab} setShowLearningHub={setShowLearningHub} setShowLitLab={setShowLitLab} setShowMindMap={setShowMindMap} setShowPoetTree={setShowPoetTree} setShowResearchHub={setShowResearchHub} setShowSelHub={setShowSelHub} setShowStemLab={setShowStemLab} setStemLabTool={setStemLabTool} setLabToolData={setLabToolData} setShowStoryForge={setShowStoryForge} setStemLabTab={setStemLabTab} showLearningHub={showLearningHub} t={t} />}
         <CDNModuleGate moduleKey="ReportWriter" isOpen={showReportWriter} onClose={() => setShowReportWriter(false)} icon="📝" displayName="Report Writer" t={t}>
             {(ReportWriter) => React.createElement(ReportWriter, {

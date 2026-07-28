@@ -28,6 +28,30 @@
     // Canonical hand-maintained source — edited directly, NOT generated from AlloFlowANTI.txt
     // STEM Lab module for AlloFlow - loaded from GitHub CDN
 
+    // ── Shared "engaged" definition (2026-07-27) ──────────────────────────────
+    // timeSpent quests must mean the same thing as a directions `time` goal and
+    // as the host's engagedMinutes: tab visible AND interacted with inside the
+    // timeout. The host publishes window.__alloEngagement; prefer it so there is
+    // ONE clock. STEM tools also run standalone (no host — see the raw-tool
+    // harness), so keep a self-contained fallback that uses the IDENTICAL
+    // timeout. A test pins the two constants equal; if they ever diverge,
+    // "5 minutes" quietly means two things again.
+    var _STEM_ENGAGEMENT_TIMEOUT_MS = 180000; // 3 minutes — must equal _ALLO_ENGAGEMENT_TIMEOUT_MS
+    var _stemLastInteractionAt = Date.now();
+    try {
+      ['click', 'keydown', 'scroll', 'mousemove'].forEach(function (evt) {
+        window.addEventListener(evt, function () { _stemLastInteractionAt = Date.now(); }, { passive: true });
+      });
+    } catch (e) {}
+    function _stemIsEngaged() {
+      var probe = (typeof window !== 'undefined') && window.__alloEngagement;
+      if (probe && typeof probe.isEngaged === 'function') {
+        try { return !!probe.isEngaged(); } catch (e) {}
+      }
+      if (typeof document !== 'undefined' && document.hidden) return false;
+      return (Date.now() - _stemLastInteractionAt) < _STEM_ENGAGEMENT_TIMEOUT_MS;
+    }
+
     // ── AlloStemTheme JS helper (Piece A) ──
     // Exposes the same palette as the --allo-stem-* CSS variables defined
     // in AlloFlowANTI.txt, but as plain strings for JS consumers that can't
@@ -1818,29 +1842,37 @@
         }
       }, [labToolData, _activeStationId]);
 
-      // Quest time tracking — accumulates time spent in each tool
+      // Quest time tracking — accumulates ENGAGED time spent in each tool.
+      //
+      // This used to be wall clock: Date.now() minus mount, banked once on
+      // unmount. Two problems. (1) An abandoned open tab earned credit, so
+      // "spend 5 minutes" here meant something weaker than the identical phrase
+      // on a directions goal. (2) Banking only on unmount meant a student who
+      // never switched tools accrued nothing, and a crash or tab close lost the
+      // whole session. Now it ticks, and only while the learner is actually
+      // present — same definition the host uses for engagedMinutes.
       React.useEffect(function() {
         if (!_activeStation || !stemLabTool) return;
         var timeQuests = (_activeStation.quests || []).filter(function(q) {
           return q.type === 'timeSpent' && q.toolId === stemLabTool;
         });
         if (timeQuests.length === 0) return;
-        var openTs = Date.now();
-        return function() {
-          var elapsed = Date.now() - openTs;
-          if (elapsed < 1000) return; // ignore sub-second switches
+        var TICK_MS = 5000;
+        var timer = setInterval(function() {
+          if (!_stemIsEngaged()) return; // idle or hidden — not time spent
           _setQuestProgress(function(prev) {
             var sp = Object.assign({}, prev[_activeStation.id] || {});
             timeQuests.forEach(function(q) {
               var qp = Object.assign({}, sp[q.qid] || {});
-              qp.timeAccumMs = (qp.timeAccumMs || 0) + elapsed;
+              qp.timeAccumMs = (qp.timeAccumMs || 0) + TICK_MS;
               sp[q.qid] = qp;
             });
             var next = Object.assign({}, prev);
             next[_activeStation.id] = sp;
             return next;
           });
-        };
+        }, TICK_MS);
+        return function() { clearInterval(timer); };
       }, [stemLabTool, _activeStationId]);
 
 
@@ -5441,7 +5473,10 @@
                         React.createElement("span", { className: "text-[10px] " + (isActive ? 'text-green-600 font-bold' : 'text-slate-400') },
                           (isActive ? '\u25CF ' : '\u25CB ') + min + ':' + sec.toString().padStart(2, '0') + ' / ' + (quest.params.minutes || 5) + ':00'
                         ),
-                        isActive && React.createElement("span", { className: "text-[10px] text-green-500 animate-pulse" }, 'timing...')
+                        // "counting active time", not "timing" — the clock only
+                        // advances while the learner is present, so a bare
+                        // "timing..." next to a stalled number would be a lie.
+                        isActive && React.createElement("span", { className: "text-[10px] text-green-500" }, 'counting active time')
                       );
                     })(),
                     // Progress bar

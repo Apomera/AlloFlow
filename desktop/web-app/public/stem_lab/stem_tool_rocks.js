@@ -522,6 +522,9 @@
     var lus = String((mineral && mineral.luster) || '').toLowerCase();
     var id = mineral ? mineral.id : 'x';
     var kids = [];
+    // The habit branches below loop; without this the counter leaks to the
+    // global scope in sloppy mode and throws under strict.
+    var i;
 
     var metallic = lus.indexOf('metallic') !== -1;
     var earthy = lus.indexOf('earthy') !== -1;
@@ -553,7 +556,85 @@
     var shape;
     var outline = 'rgba(0,0,0,0.55)';
 
-    if (sys.indexOf('cubic') !== -1 || sys.indexOf('isometric') !== -1) {
+    // CRYSTAL SYSTEM is not crystal HABIT. The silhouette was chosen from the
+    // system alone, which is right for most minerals and wrong for the ones
+    // whose description names a habit: magnetite says "Octahedral crystal
+    // habit" and drew a cube, garnet says "dodecahedral crystals (12-sided)"
+    // and drew a four-sided block. Both are cubic-system minerals, so the
+    // system was doing its job — it simply is not the thing being described.
+    // `habit` overrides the system where a description commits to a shape.
+    var habit = String((mineral && mineral.habit) || '').toLowerCase();
+    // The facet gradient used to be laid down as a loose rectangle over the
+    // whole tile. Behind a cube that is invisible, but a narrow habit lets the
+    // rectangle's corners show on the backing plate as a grey box. Each branch
+    // records the outline of its main face so the shading can follow the
+    // crystal instead of the tile.
+    var facetPts = null;
+
+    if (habit === 'octahedral') {
+      // Two square pyramids base to base, seen edge-on: the shape magnetite
+      // and spinel actually grow.
+      var ow2 = S * 0.30, oh2 = S * 0.36;
+      shape = [
+        h('polygon', { key: 'octL', points: [c + ',' + (c - oh2), (c - ow2) + ',' + c, c + ',' + (c + oh2)].join(' '), fill: base, stroke: outline, strokeWidth: 0.9 }),
+        h('polygon', { key: 'octR', points: [c + ',' + (c - oh2), (c + ow2) + ',' + c, c + ',' + (c + oh2)].join(' '), fill: base, opacity: 0.68, stroke: outline, strokeWidth: 0.9 }),
+        // The waist edge, which is what tells you it is two pyramids.
+        h('line', { key: 'octW', x1: c - ow2, y1: c, x2: c + ow2, y2: c, stroke: 'rgba(0,0,0,0.28)', strokeWidth: 0.7 }),
+      ];
+      facetPts = [c + ',' + (c - oh2), (c + ow2) + ',' + c, c + ',' + (c + oh2), (c - ow2) + ',' + c].join(' ');
+    } else if (habit === 'dodecahedral') {
+      // A rhombic dodecahedron down its three-fold axis: a hexagon divided
+      // into three rhombic faces. Twelve faces is the thing garnet is known
+      // for, and it is how you tell a garnet from a cube of pyrite by eye.
+      var dr = S * 0.34, dv = [];
+      for (i = 0; i < 6; i++) {
+        var da = (Math.PI / 3) * i - Math.PI / 2;
+        dv.push([c + Math.cos(da) * dr, c + Math.sin(da) * dr]);
+      }
+      var quad = function (n) {
+        return [c + ',' + c, dv[n][0].toFixed(1) + ',' + dv[n][1].toFixed(1),
+          dv[(n + 1) % 6][0].toFixed(1) + ',' + dv[(n + 1) % 6][1].toFixed(1),
+          dv[(n + 2) % 6][0].toFixed(1) + ',' + dv[(n + 2) % 6][1].toFixed(1)].join(' ');
+      };
+      shape = [
+        h('polygon', { key: 'dodA', points: quad(0), fill: base, stroke: outline, strokeWidth: 0.9 }),
+        h('polygon', { key: 'dodB', points: quad(2), fill: base, opacity: 0.74, stroke: outline, strokeWidth: 0.9 }),
+        h('polygon', { key: 'dodC', points: quad(4), fill: base, opacity: 0.54, stroke: outline, strokeWidth: 0.9 }),
+      ];
+      facetPts = dv.map(function (v) { return v[0].toFixed(1) + ',' + v[1].toFixed(1); }).join(' ');
+    } else if (habit === 'blocky90') {
+      // Two cleavage directions meeting at very nearly a right angle. The lean
+      // is a few degrees of perspective, not the 20-plus of a rhomb.
+      var bw = S * 0.26, bh = S * 0.30, bo = S * 0.07;
+      shape = [
+        h('polygon', { key: 'fsFront', points: [(c - bw) + ',' + (c - bh + bo), (c + bw - bo) + ',' + (c - bh + bo), (c + bw - bo) + ',' + (c + bh), (c - bw) + ',' + (c + bh)].join(' '), fill: base, stroke: outline, strokeWidth: 0.9 }),
+        h('polygon', { key: 'fsTop', points: [(c - bw) + ',' + (c - bh + bo), (c - bw + bo) + ',' + (c - bh), (c + bw) + ',' + (c - bh), (c + bw - bo) + ',' + (c - bh + bo)].join(' '), fill: base, opacity: 0.74, stroke: outline, strokeWidth: 0.9 }),
+        h('polygon', { key: 'fsSide', points: [(c + bw - bo) + ',' + (c - bh + bo), (c + bw) + ',' + (c - bh), (c + bw) + ',' + (c + bh - bo), (c + bw - bo) + ',' + (c + bh)].join(' '), fill: base, opacity: 0.55, stroke: outline, strokeWidth: 0.9 }),
+        // The two cleavage sets, drawn square to each other so the angle reads.
+        h('line', { key: 'fsClH', x1: (c - bw + S * 0.03).toFixed(1), y1: (c + bh * 0.10).toFixed(1), x2: (c + bw - bo - S * 0.03).toFixed(1), y2: (c + bh * 0.10).toFixed(1), stroke: 'rgba(0,0,0,0.30)', strokeWidth: 0.6 }),
+        h('line', { key: 'fsClV', x1: (c - bw * 0.15).toFixed(1), y1: (c - bh + bo + S * 0.03).toFixed(1), x2: (c - bw * 0.15).toFixed(1), y2: (c + bh - S * 0.03).toFixed(1), stroke: 'rgba(0,0,0,0.30)', strokeWidth: 0.6 }),
+      ];
+      facetPts = [(c - bw) + ',' + (c - bh + bo), (c - bw + bo) + ',' + (c - bh), (c + bw) + ',' + (c - bh), (c + bw) + ',' + (c + bh - bo), (c + bw - bo) + ',' + (c + bh), (c - bw) + ',' + (c + bh)].join(' ');
+    } else if (habit === 'micaceous') {
+      // "Peels into thin, flexible sheets ... perfect basal cleavage produces
+      // incredibly thin layers." Two rules across a block does not say thin.
+      var kw = S * 0.28, kh = S * 0.24, kl = S * 0.10;
+      shape = [h('polygon', {
+        key: 'micaBody',
+        points: [(c - kw + kl) + ',' + (c - kh), (c + kw) + ',' + (c - kh * 0.82),
+          (c + kw - kl) + ',' + (c + kh), (c - kw) + ',' + (c + kh * 0.82)].join(' '),
+        fill: base, stroke: outline, strokeWidth: 0.9,
+      })];
+      for (i = 1; i < 9; i++) {
+        var kt = i / 9;
+        shape.push(h('line', {
+          key: 'mksheet' + i,
+          x1: (c - kw + kl * (1 - kt)).toFixed(1), y1: (c - kh + kt * kh * 1.82).toFixed(1),
+          x2: (c + kw - kl * kt).toFixed(1), y2: (c - kh * 0.82 + kt * kh * 1.82).toFixed(1),
+          stroke: 'rgba(0,0,0,0.26)', strokeWidth: 0.45,
+        }));
+      }
+    } else if (sys.indexOf('cubic') !== -1 || sys.indexOf('isometric') !== -1) {
       // Cube drawn in projection: front face + top + right so it reads 3-D.
       var a = S * 0.30, off = S * 0.14;
       shape = [
@@ -593,6 +674,21 @@
         h('line', { key: 'sheet2', x1: c - mw + lean * 0.3, y1: c + mh * 0.25, x2: c + mw - lean * 0.6, y2: c + mh * 0.35, stroke: 'rgba(0,0,0,0.25)', strokeWidth: 0.6 }),
       ];
     }
+    // Striations are additive: they lie ON a prism rather than changing its
+    // shape. Topaz's description ends on "prismatic crystals with vertical
+    // striations", and the striations are how you tell it from a plain quartz
+    // prism in the hand — so they cannot be the one detail left out.
+    if (habit === 'striated') {
+      for (i = 1; i < 6; i++) {
+        var stx = c - S * 0.20 + (i / 6) * S * 0.40;
+        shape.push(h('line', {
+          key: 'stri' + i, x1: stx.toFixed(1), y1: (c - S * 0.30).toFixed(1),
+          x2: stx.toFixed(1), y2: (c + S * 0.32).toFixed(1),
+          stroke: 'rgba(0,0,0,0.24)', strokeWidth: 0.5,
+        }));
+      }
+    }
+
     // Scale the habit up about the tile centre. Drawn at the original size the
     // crystal sat small inside its plate and the whole thing read as a flat app
     // icon rather than a specimen in a case; the crystal should be the object.
@@ -604,7 +700,12 @@
     // reading as a flat coloured outline. Earthy minerals are matte by
     // definition, so they are left unshaded.
     if (!earthy) {
-      kids.push(h('rect', { key: 'facet', x: S * 0.16, y: S * 0.10, width: S * 0.68, height: S * 0.72, fill: 'url(#' + faceId + ')', style: { mixBlendMode: 'soft-light' }, pointerEvents: 'none' }));
+      kids.push(facetPts
+        ? h('g', {
+          key: 'facet',
+          transform: 'translate(' + (c * (1 - 1.3)).toFixed(2) + ',' + (c * (1 - 1.3)).toFixed(2) + ') scale(1.3)',
+        }, h('polygon', { points: facetPts, fill: 'url(#' + faceId + ')', style: { mixBlendMode: 'soft-light' }, pointerEvents: 'none' }))
+        : h('rect', { key: 'facet', x: S * 0.16, y: S * 0.10, width: S * 0.68, height: S * 0.72, fill: 'url(#' + faceId + ')', style: { mixBlendMode: 'soft-light' }, pointerEvents: 'none' }));
     }
 
     // ── Lustre ──
@@ -2074,9 +2175,9 @@ const d = labToolData.rocks || {};
 
             { id: 'quartz', label: t('stem.rocks.quartz'), hardness: 7, streak: 'White', luster: 'Vitreous', crystal: 'Hexagonal', color: '#e8edf0', formula: 'SiO\u2082', desc: 'The second most abundant mineral in the crust of Earth. Forms distinctive six-sided prismatic crystals with pointed terminations. Extremely resistant to weathering. Comes in many colored varieties: amethyst (purple), citrine (yellow), rose quartz (pink), smoky quartz (brown).', uses: 'Electronics (oscillators, watches), glassmaking, abrasives, gemstones', funFact: 'Quartz is piezoelectric (when squeezed, it generates an electric charge). This property makes quartz watches accurate to within 15 seconds per month!', occurrence: 'Found in virtually all rock types worldwide. Major deposits in Brazil, Arkansas (USA), Madagascar, and the Alps.' },
 
-            { id: 'feldspar', label: t('stem.rocks.feldspar'), hardness: 6, streak: 'White', luster: 'Vitreous', crystal: 'Monoclinic/Triclinic', color: '#d9a48f', formula: 'KAlSi\u2083O\u2088', desc: 'The most abundant mineral group on Earth, making up ~60% of the crust. Two main families: orthoclase (potassium) and plagioclase (sodium-calcium). Shows distinctive cleavage at nearly 90\u00B0 angles. Often pink, white, or gray.', uses: 'Ceramics, glass, porcelain, scouring powders, dental products', funFact: 'The name means "field spar" in Swedish because early miners found it in their fields. Moonstone and labradorite are feldspar gemstones!', occurrence: 'Constituent of granite, gneiss, basalt, and most igneous and metamorphic rocks globally.' },
+            { id: 'feldspar', label: t('stem.rocks.feldspar'), hardness: 6, streak: 'White', luster: 'Vitreous', crystal: 'Monoclinic/Triclinic', habit: 'blocky90', color: '#d9a48f', formula: 'KAlSi\u2083O\u2088', desc: 'The most abundant mineral group on Earth, making up ~60% of the crust. Two main families: orthoclase (potassium) and plagioclase (sodium-calcium). Shows distinctive cleavage at nearly 90\u00B0 angles. Often pink, white, or gray.', uses: 'Ceramics, glass, porcelain, scouring powders, dental products', funFact: 'The name means "field spar" in Swedish because early miners found it in their fields. Moonstone and labradorite are feldspar gemstones!', occurrence: 'Constituent of granite, gneiss, basalt, and most igneous and metamorphic rocks globally.' },
 
-            { id: 'mica', label: t('stem.rocks.mica_muscovite'), hardness: 2.5, streak: 'White', luster: 'Pearly/Vitreous', crystal: 'Monoclinic', color: '#c9b380', formula: 'KAl\u2082(Si\u2083Al)O\u2081\u2080(OH)\u2082', desc: 'Sheet silicate that peels into thin, flexible, transparent sheets. The "sparkly" mineral in rocks. Two common types: muscovite (light/clear) and biotite (dark/black). Perfect basal cleavage produces incredibly thin layers.', uses: 'Electrical insulation, cosmetics (shimmer), paint filler, window material (historically)', funFact: 'Before glass windows were common, thin sheets of muscovite mica were used as window panes in medieval Russia, hence "Muscovy glass" \u2192 muscovite!', occurrence: 'Common in granites, schists, pegmatites. Major deposits in India, Brazil, Russia, and the USA.' },
+            { id: 'mica', label: t('stem.rocks.mica_muscovite'), hardness: 2.5, streak: 'White', luster: 'Pearly/Vitreous', crystal: 'Monoclinic', habit: 'micaceous', color: '#c9b380', formula: 'KAl\u2082(Si\u2083Al)O\u2081\u2080(OH)\u2082', desc: 'Sheet silicate that peels into thin, flexible, transparent sheets. The "sparkly" mineral in rocks. Two common types: muscovite (light/clear) and biotite (dark/black). Perfect basal cleavage produces incredibly thin layers.', uses: 'Electrical insulation, cosmetics (shimmer), paint filler, window material (historically)', funFact: 'Before glass windows were common, thin sheets of muscovite mica were used as window panes in medieval Russia, hence "Muscovy glass" \u2192 muscovite!', occurrence: 'Common in granites, schists, pegmatites. Major deposits in India, Brazil, Russia, and the USA.' },
 
             { id: 'calcite', label: t('stem.rocks.calcite'), hardness: 3, streak: 'White', luster: 'Vitreous', crystal: 'Trigonal (Rhombohedral)', color: '#efe9dc', formula: 'CaCO\u2083', desc: 'The primary mineral in limestone and marble. Shows perfect rhombohedral cleavage, always breaks into parallelogram-shaped pieces. Fizzes vigorously when dilute acid is applied. Some varieties show double refraction (text appears doubled through clear crystals).', uses: 'Cement/concrete, lime production, optical instruments, antacid tablets (Tums)', funFact: 'Iceland spar (transparent calcite) creates double images! Vikings may have used it as a "sunstone" to navigate on cloudy days by detecting polarized skylight.', occurrence: 'Limestone caves (stalactites/stalagmites), coral reefs, chalk cliffs, marble deposits worldwide.' },
 
@@ -2088,17 +2189,17 @@ const d = labToolData.rocks || {};
 
             { id: 'diamond', label: t('stem.rocks.diamond'), hardness: 10, streak: 'None (too hard)', luster: 'Adamantine', crystal: 'Cubic (Isometric)', color: '#f0f9ff', formula: 'C', desc: 'Pure crystallized carbon, the hardest natural substance on Earth. Forms deep in the mantle (150+ km below surface) under extreme pressure and temperature. Brought to surface by violent volcanic eruptions in kimberlite pipes. High refractive index creates "fire" (rainbow flashes).', uses: 'Gemstones, cutting/grinding tools, drill bits, thermal conductors, optical windows', funFact: 'Diamond and graphite (pencil lead) are both pure carbon! The only difference is how the carbon atoms are arranged. Diamond is the hardest mineral; graphite is one of the softest. Same atoms, completely different properties!', occurrence: 'Kimberlite pipes in South Africa, Russia, Australia, Canada, Botswana. Also found in river gravels (alluvial deposits).' },
 
-            { id: 'magnetite', label: t('stem.rocks.magnetite'), hardness: 5.5, streak: 'Black', luster: 'Metallic/Submetallic', crystal: 'Cubic (Isometric)', color: '#1f2937', formula: 'Fe\u2083O\u2084', desc: 'The most magnetic naturally occurring mineral on Earth. Strongly attracted to magnets and can itself act as a natural magnet ("lodestone"). Black, heavy, and opaque. Important iron ore mineral. Octahedral crystal habit.', uses: 'Iron/steel production, magnetic recording media, heavy concrete, water purification', funFact: 'Lodestone (naturally magnetized magnetite) was the first compass! Ancient Chinese and Greek navigators used floating lodestones to find north. Magnetite crystals have even been found in the brains of pigeons and sea turtles, helping them navigate!', occurrence: 'Igneous and metamorphic rocks worldwide. Major deposits in Sweden (Kiruna), Australia, Brazil, South Africa, and Minnesota (USA).' },
+            { id: 'magnetite', label: t('stem.rocks.magnetite'), hardness: 5.5, streak: 'Black', luster: 'Metallic/Submetallic', crystal: 'Cubic (Isometric)', habit: 'octahedral', color: '#1f2937', formula: 'Fe\u2083O\u2084', desc: 'The most magnetic naturally occurring mineral on Earth. Strongly attracted to magnets and can itself act as a natural magnet ("lodestone"). Black, heavy, and opaque. Important iron ore mineral. Octahedral crystal habit.', uses: 'Iron/steel production, magnetic recording media, heavy concrete, water purification', funFact: 'Lodestone (naturally magnetized magnetite) was the first compass! Ancient Chinese and Greek navigators used floating lodestones to find north. Magnetite crystals have even been found in the brains of pigeons and sea turtles, helping them navigate!', occurrence: 'Igneous and metamorphic rocks worldwide. Major deposits in Sweden (Kiruna), Australia, Brazil, South Africa, and Minnesota (USA).' },
 
             { id: 'hematite', label: t('stem.rocks.hematite'), hardness: 5.5, streak: 'Red-brown', luster: 'Metallic/Earthy', crystal: 'Trigonal', color: '#991b1b', formula: 'Fe\u2082O\u2083', desc: 'The most important iron ore mineral. Name from Greek "haima" (blood) due to its red streak. Can appear metallic silver-gray (specular hematite) or earthy red-brown. Always produces a distinctive red-brown streak regardless of surface color.', uses: 'Iron/steel production (primary ore), pigment (red ochre), polishing compound (jeweler\u2019s rouge), radiation shielding', funFact: 'The red color of Mars comes from hematite! NASA\u2019s rovers have confirmed that the Martian soil is rich in iron oxide. Hematite was also used by prehistoric humans as the first paint pigment; cave paintings from 40,000 years ago used ground hematite!', occurrence: 'Banded iron formations, volcanic rocks, red soils. Lake Superior region (USA), Minas Gerais (Brazil), Pilbara (Australia), Mars!' },
 
-            { id: 'garnet', label: t('stem.rocks.garnet'), hardness: 7, streak: 'White', luster: 'Vitreous/Resinous', crystal: 'Cubic (Isometric)', color: '#7f1d1d', formula: 'Complex silicates (e.g., Fe\u2083Al\u2082Si\u2083O\u2081\u2082)', desc: 'A group of silicate minerals known for their beautiful dodecahedral crystals (12-sided). Most commonly deep red (almandine), but can be green (tsavorite), orange (spessartine), or even color-changing. Very hard and durable. Excellent for identifying metamorphic grade.', uses: 'Abrasive blasting (sandpaper, waterjet cutting), gemstones, water filtration, indicator mineral in geology', funFact: 'Garnets grow in metamorphic rocks and their size indicates how much heat and pressure the rock experienced. Geologists use garnet composition like a geological thermometer! Some rare garnets change color from blue-green in daylight to purple under incandescent light.', occurrence: 'Schists, gneisses, contact metamorphic zones. Major gem deposits in India, Sri Lanka, Tanzania, Madagascar, and Idaho (USA).' },
+            { id: 'garnet', label: t('stem.rocks.garnet'), hardness: 7, streak: 'White', luster: 'Vitreous/Resinous', crystal: 'Cubic (Isometric)', habit: 'dodecahedral', color: '#7f1d1d', formula: 'Complex silicates (e.g., Fe\u2083Al\u2082Si\u2083O\u2081\u2082)', desc: 'A group of silicate minerals known for their beautiful dodecahedral crystals (12-sided). Most commonly deep red (almandine), but can be green (tsavorite), orange (spessartine), or even color-changing. Very hard and durable. Excellent for identifying metamorphic grade.', uses: 'Abrasive blasting (sandpaper, waterjet cutting), gemstones, water filtration, indicator mineral in geology', funFact: 'Garnets grow in metamorphic rocks and their size indicates how much heat and pressure the rock experienced. Geologists use garnet composition like a geological thermometer! Some rare garnets change color from blue-green in daylight to purple under incandescent light.', occurrence: 'Schists, gneisses, contact metamorphic zones. Major gem deposits in India, Sri Lanka, Tanzania, Madagascar, and Idaho (USA).' },
 
             { id: 'olivine', label: t('stem.rocks.olivine'), hardness: 6.5, streak: 'White', luster: 'Vitreous', crystal: 'Orthorhombic', color: '#4d7c0f', formula: '(Mg,Fe)\u2082SiO\u2084', desc: 'Olive-green mineral abundant in the upper mantle of Earth. One of the first minerals to crystallize from cooling magma. Forms small glassy grains in basalt. Gem variety is called peridot. Weathers quickly at the surface, which is why it is rare in sedimentary rocks.', uses: 'Gemstone (peridot), refractory bricks, CO\u2082 capture research, foundry sand', funFact: 'Olivine makes up most of the upper mantle of Earth! There is more olivine inside Earth than any other mineral. The green sand beaches of Hawaii (Papak\u014Dlea Beach) are made of tiny olivine crystals eroded from volcanic rock!', occurrence: 'Basalt, peridotite, meteorites. Hawaii, Canary Islands, Pakistan (peridot gems), mantle xenoliths worldwide.' },
 
             { id: 'fluorite', label: t('stem.rocks.fluorite'), hardness: 4, streak: 'White', luster: 'Vitreous', crystal: 'Cubic (Isometric)', color: '#7c3aed', formula: 'CaF\u2082', desc: 'Known as the "most colorful mineral in the world", comes in virtually every color: purple, green, blue, yellow, pink, and even colorless. Forms perfect cubic and octahedral crystals. Often fluorescent under UV light (the word "fluorescence" comes from fluorite!). Four directions of perfect cleavage.', uses: 'Steelmaking flux, hydrofluoric acid production, optical lenses, gemstone, decorative carvings', funFact: 'Fluorite literally invented the word "fluorescence"! In 1852, George Stokes described the glow of fluorite under UV light and coined the term from the name of the mineral. The element fluorine is also named after fluorite!', occurrence: 'Hydrothermal veins, limestone cavities. Major deposits in China, Mexico, South Africa, Derbyshire (England, "Blue John"), and Illinois (USA).' },
 
-            { id: 'galena', label: t('stem.rocks.galena'), hardness: 2.5, streak: 'Lead-gray', luster: 'Metallic', crystal: 'Cubic (Isometric)', color: 'var(--allo-stem-text-soft, #94a3b8)', formula: 'PbS', desc: 'Primary ore of lead. Very dense (heavy for its size) with perfect cubic cleavage, fractures into tiny cubes. Bright metallic silver color when fresh, tarnishes to dull gray. Lead-gray streak. Often found with silver as an impurity, making it a source of silver too.', uses: 'Lead production, ammunition, batteries, radiation shielding, early radio crystal detectors', funFact: 'Before transistors were invented, galena crystals were used in "crystal radio" sets! A thin wire ("cat\u2019s whisker") touching a galena crystal could detect radio signals without any battery or electricity. Galena was also used by ancient Egyptians as kohl eyeliner!', occurrence: 'Hydrothermal veins, limestone replacement deposits. Missouri (USA, largest lead deposit), Broken Hill (Australia), Germany, Mexico.' },
+            { id: 'galena', label: t('stem.rocks.galena'), hardness: 2.5, streak: 'Lead-gray', luster: 'Metallic', crystal: 'Cubic (Isometric)', color: '#94a3b8', formula: 'PbS', desc: 'Primary ore of lead. Very dense (heavy for its size) with perfect cubic cleavage, fractures into tiny cubes. Bright metallic silver color when fresh, tarnishes to dull gray. Lead-gray streak. Often found with silver as an impurity, making it a source of silver too.', uses: 'Lead production, ammunition, batteries, radiation shielding, early radio crystal detectors', funFact: 'Before transistors were invented, galena crystals were used in "crystal radio" sets! A thin wire ("cat\u2019s whisker") touching a galena crystal could detect radio signals without any battery or electricity. Galena was also used by ancient Egyptians as kohl eyeliner!', occurrence: 'Hydrothermal veins, limestone replacement deposits. Missouri (USA, largest lead deposit), Broken Hill (Australia), Germany, Mexico.' },
 
             { id: 'gypsum', label: t('stem.rocks.gypsum'), hardness: 2, streak: 'White', luster: 'Vitreous/Silky/Pearly', crystal: 'Monoclinic', color: '#efe9e0', formula: 'CaSO\u2084\u00B72H\u2082O', desc: 'A very soft evaporite mineral (can be scratched with a fingernail). Forms in a variety of habits: tabular crystals (selenite), fibrous masses (satin spar), and granular masses (alabaster). Transparent selenite crystals can be enormous. Contains water in its crystal structure.', uses: 'Drywall/plasterboard, plaster of Paris, cement, fertilizer, alabaster carvings', funFact: 'The Naica Mine in Mexico contains selenite gypsum crystals up to 12 meters (39 feet) long and weighing 55 tons, the largest crystals ever discovered on Earth! The cave is so hot (58\u00B0C/136\u00B0F) that humans can only survive inside for about 10 minutes!', occurrence: 'Evaporite deposits, desert roses (sand-included crystals), cave formations. Major deposits in USA, Mexico, Spain, Italy, and Nova Scotia.' },
 
@@ -2106,7 +2207,7 @@ const d = labToolData.rocks || {};
 
             { id: 'corundum', label: t('stem.rocks.corundum'), hardness: 9, streak: 'White', luster: 'Adamantine/Vitreous', crystal: 'Trigonal', color: '#1e40af', formula: 'Al\u2082O\u2083', desc: 'Second hardest natural mineral after diamond. Pure corundum is colorless, but trace impurities create spectacular gemstones: chromium makes ruby (red), iron and titanium make sapphire (blue). Can occur in many other colors too. Extremely durable and resistant to chemical weathering.', uses: 'Gemstones (ruby/sapphire), watch bearings, abrasive (emery), laser rods, sandpaper', funFact: 'Ruby and sapphire are the SAME mineral! The only difference is trace element impurities, where 0.01% chromium makes a ruby, while iron+titanium make a sapphire. A "padparadscha" sapphire (pink-orange) is among the rarest gems in the world!', occurrence: 'Metamorphic and igneous rocks. Major ruby deposits in Myanmar, Mozambique. Sapphires from Kashmir, Sri Lanka, Montana (USA), Australia.' },
 
-            { id: 'topaz', label: t('stem.rocks.topaz'), hardness: 8, streak: 'White', luster: 'Vitreous', crystal: 'Orthorhombic', color: '#f97316', formula: 'Al\u2082SiO\u2084(F,OH)\u2082', desc: 'Hard silicate mineral prized as a gemstone. Naturally colorless, yellow, orange, or blue (most blue topaz on the market is heat-treated). Contains fluorine and hydroxyl in its structure. Forms beautiful prismatic crystals with vertical striations. Perfect basal cleavage.', uses: 'Gemstones, Mohs hardness reference (#8), decorative carvings, optical components', funFact: 'The largest uncut topaz crystal ever found (the "El-Dorado Topaz" from Brazil) weighs 6.2 kg (31,000 carats)! Imperial topaz (rare orange-pink variety from Ouro Preto, Brazil) is among the most valuable colored gemstones.', occurrence: 'Granite pegmatites, rhyolite cavities, alluvial deposits. Major sources: Brazil (Minas Gerais), Pakistan, Russia (Ural Mts), Utah (USA).' }
+            { id: 'topaz', label: t('stem.rocks.topaz'), hardness: 8, streak: 'White', luster: 'Vitreous', crystal: 'Orthorhombic', habit: 'striated', color: '#f97316', formula: 'Al\u2082SiO\u2084(F,OH)\u2082', desc: 'Hard silicate mineral prized as a gemstone. Naturally colorless, yellow, orange, or blue (most blue topaz on the market is heat-treated). Contains fluorine and hydroxyl in its structure. Forms beautiful prismatic crystals with vertical striations. Perfect basal cleavage.', uses: 'Gemstones, Mohs hardness reference (#8), decorative carvings, optical components', funFact: 'The largest uncut topaz crystal ever found (the "El-Dorado Topaz" from Brazil) weighs 6.2 kg (31,000 carats)! Imperial topaz (rare orange-pink variety from Ouro Preto, Brazil) is among the most valuable colored gemstones.', occurrence: 'Granite pegmatites, rhyolite cavities, alluvial deposits. Major sources: Brazil (Minas Gerais), Pakistan, Russia (Ural Mts), Utah (USA).' }
 
           ];
 

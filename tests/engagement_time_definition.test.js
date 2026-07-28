@@ -37,12 +37,16 @@ function makeStemEngaged({ hidden = false, hostProbe = undefined } = {}) {
 }
 
 describe('the two engines share one timeout constant', () => {
-  it('_ALLO_ENGAGEMENT_TIMEOUT_MS and _STEM_ENGAGEMENT_TIMEOUT_MS are equal', () => {
-    const hostMatch = anti.match(/const _ALLO_ENGAGEMENT_TIMEOUT_MS = (\d+);/);
+  it('the host and STEM fallback literals agree with the contract', () => {
+    // Both now prefer AlloQuestContract.ENGAGEMENT_TIMEOUT_MS at runtime; these
+    // literals are the pre-load fallbacks and must not drift from it.
+    const contract = require('../allo_quest_contract_module.js');
+    const hostMatch = anti.match(/: (\d+); \/\/ must equal AlloQuestContract\.ENGAGEMENT_TIMEOUT_MS/);
     const stemMatch = stem.match(/var _STEM_ENGAGEMENT_TIMEOUT_MS = (\d+);/);
-    expect(hostMatch, 'host constant missing').toBeTruthy();
+    expect(hostMatch, 'host fallback literal missing').toBeTruthy();
     expect(stemMatch, 'stem constant missing').toBeTruthy();
-    expect(Number(stemMatch[1])).toBe(Number(hostMatch[1]));
+    expect(Number(hostMatch[1])).toBe(contract.ENGAGEMENT_TIMEOUT_MS);
+    expect(Number(stemMatch[1])).toBe(contract.ENGAGEMENT_TIMEOUT_MS);
   });
   it('the host heartbeat uses the hoisted constant, not its own literal', () => {
     expect(anti).toContain('const ENGAGEMENT_TIMEOUT_MS = _ALLO_ENGAGEMENT_TIMEOUT_MS;');

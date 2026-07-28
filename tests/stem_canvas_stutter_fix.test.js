@@ -19,15 +19,18 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 
+// Only the two served copies: stem_lab/ (CDN) and public/stem_lab/ (bundled desktop
+// app). The former third entry, desktop/web-app/public/stem_tool_<tool>.js with no
+// stem_lab/ segment, was a fossil no code path ever requested — deleted, along with
+// the other 80 like it, once it was confirmed the CDN serves the SPA fallback for
+// that path and no tool id lived only there.
 const DNA_PATHS = [
   'stem_lab/stem_tool_dna.js',
   'desktop/web-app/public/stem_lab/stem_tool_dna.js',
-  'desktop/web-app/public/stem_tool_dna.js',
 ];
 const ECO_PATHS = [
   'stem_lab/stem_tool_ecosystem.js',
   'desktop/web-app/public/stem_lab/stem_tool_ecosystem.js',
-  'desktop/web-app/public/stem_tool_ecosystem.js',
 ];
 const read = (p) => readFileSync(p, 'utf8');
 

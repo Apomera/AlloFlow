@@ -5,7 +5,6 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 
 const FILE = 'stem_lab/stem_tool_lifeskills.js';
 const PUBLIC_FILE = 'desktop/web-app/public/stem_lab/stem_tool_lifeskills.js';
-const PUBLIC_ROOT_FILE = 'desktop/web-app/public/stem_tool_lifeskills.js';
 const MODULE_FILES = [
   'stem_lab/stem_lab_module.js',
   'desktop/web-app/public/stem_lab/stem_lab_module.js',
@@ -36,8 +35,9 @@ describe('Life Skills Lab visibility', () => {
   it('keeps source and public copies aligned', () => {
     const source = read(FILE);
 
+    // Only the served copy. A third at desktop/web-app/public/stem_tool_lifeskills.js
+    // (no stem_lab/ segment) was a fossil nothing ever loaded — deleted with the other 80.
     expect(read(PUBLIC_FILE)).toBe(source);
-    expect(read(PUBLIC_ROOT_FILE)).toBe(source);
   });
 
   it('is present in the STEM Lab tool picker and plugin fallback list', () => {

@@ -72,6 +72,17 @@ function SessionModal({
   const [isProjectionMode, setIsProjectionMode] = React.useState(false);
   const lanJoinUrl = Array.isArray(sessionData?.joinUrls) ? sessionData.joinUrls[0] : '';
   const isLocalOnly = sessionData?.isLocalOnly === true || sessionData?.transport === 'local-preview';
+  // Gemini Canvas injects Google's own managed Firebase project, and its rules
+  // refuse a device that is not already inside Canvas. The teacher's session
+  // write succeeds (the teacher IS inside Canvas), so a standard-backend QR
+  // renders perfectly here and then dead-ends at scan time with
+  // permission-denied — verified on a real phone, 2026-07-09. A QR that cannot
+  // work is worse than no QR, so name the two paths that do: the Class Mailbox
+  // session, and the teacher's own Canvas share link for students who have
+  // Gemini access. Mailbox sessions are exempt — their QR carries a mailbox
+  // capability and touches no Firebase at all.
+  const isCanvasManagedBackend = !isMailboxSession && !isLocalOnly
+    && typeof window !== 'undefined' && window._isCanvasEnv === true;
   const [liveQrSvg, setLiveQrSvg] = React.useState('');
   const [liveQrError, setLiveQrError] = React.useState(false);
   const qrStatusText = liveQrSvg ? 'QR validated' : liveQrError ? 'QR unavailable' : 'QR loading';
@@ -205,7 +216,7 @@ function SessionModal({
   return (
     <div className={`fixed inset-0 bg-black/80 z-[150] flex items-center justify-center animate-in fade-in duration-200 motion-reduce:animate-none ${isProjectionMode ? 'p-0' : 'p-4'}`} role="presentation" onClick={handleSetShowSessionModalToFalse}>
       <div ref={dialogRef} tabIndex={-1} className={`bg-white shadow-2xl text-center w-full overflow-y-auto relative animate-in zoom-in-95 duration-200 motion-reduce:animate-none ${isProjectionMode ? 'h-screen max-w-none rounded-none p-6 sm:p-10' : 'max-h-[90vh] max-w-md rounded-2xl p-5 sm:p-8'}`} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-labelledby="alloflow-session-modal-title" aria-describedby="alloflow-session-modal-description">
-        {!isLocalOnly && liveJoinUrl && <button type="button" onClick={() => setIsProjectionMode(value => !value)} className="absolute top-4 left-4 z-10 min-h-11 flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-800 shadow-sm hover:border-indigo-400" aria-label={isProjectionMode ? 'Exit projection mode' : 'Open projection mode'}>
+        {!isLocalOnly && liveJoinUrl && !isCanvasManagedBackend && <button type="button" onClick={() => setIsProjectionMode(value => !value)} className="absolute top-4 left-4 z-10 min-h-11 flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-bold text-slate-800 shadow-sm hover:border-indigo-400" aria-label={isProjectionMode ? 'Exit projection mode' : 'Open projection mode'}>
           {isProjectionMode ? <Minimize size={16} aria-hidden="true"/> : <Maximize size={16} aria-hidden="true"/>} <span className="hidden sm:inline">{isProjectionMode ? 'Exit projection mode' : 'Open projection mode'}</span>
         </button>}
         <button type="button" onClick={handleSetShowSessionModalToFalse} className="absolute top-4 right-4 min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-full text-slate-600 hover:text-slate-600 hover:bg-slate-100 focus:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors" aria-label={t('common.close')}><X size={24} aria-hidden="true"/></button>
@@ -230,7 +241,7 @@ function SessionModal({
             <Copy size={10} aria-hidden="true"/> {t('session.click_to_copy')}
           </div>
         </button>
-        {liveJoinUrl && (
+        {liveJoinUrl && !isCanvasManagedBackend && (
           <div className={`bg-cyan-50 rounded-xl border border-cyan-200 text-left ${isProjectionMode ? 'mx-auto max-w-5xl p-5 mb-3' : 'p-4 mb-6'}`}>
             <p className="text-[11px] text-cyan-700 font-bold uppercase tracking-wider mb-2 text-center">{isMailboxSession ? 'Class Mailbox QR join' : 'Student QR join'}</p>
             <div className="flex justify-center mb-3">
@@ -263,10 +274,27 @@ function SessionModal({
             <p className="text-[11px] text-cyan-800 mt-2 text-center"><span role="status" aria-live="polite" aria-atomic="true">{connectedStudentCount > 0 ? connectedStudentCount + ' student' + (connectedStudentCount === 1 ? '' : 's') + ' connected. ' : ''}</span>{isMailboxSession ? `Ready to scan. This QR uses the mailbox session secret, requires no Firebase sign-in, and expires when the teacher ends the session. ${studentAiLabel}.` : `Ready to scan. ${studentAiPolicy === 'student-byok' ? 'Students may connect their own AI provider for this tab.' : 'AI generation stays off.'} The link stops working when the session ends.`}</p>
           </div>
         )}
-        {!liveJoinUrl && (
+        {!liveJoinUrl && !isCanvasManagedBackend && (
           <div className="mb-6 bg-amber-50 p-3 rounded-xl border border-amber-200 text-left">
             <p className="text-[11px] text-amber-800 font-bold uppercase tracking-wider mb-1 text-center">{isLocalOnly ? 'Local preview only' : 'Student QR unavailable'}</p>
             <p className="text-xs text-amber-900 text-center">{isLocalOnly ? 'This code was not saved to Firebase, so students cannot join it. Reload, start a new live session, and share only when a QR appears.' : 'This host is not configured as a student join path. Use the class code, local network link, or a student app URL.'}</p>
+          </div>
+        )}
+        {isCanvasManagedBackend && (
+          <div className="mb-6 bg-amber-50 p-3 rounded-xl border border-amber-200 text-left">
+            <p className="text-[11px] text-amber-800 font-bold uppercase tracking-wider mb-1 text-center">Scanned QR will not work from this backend</p>
+            <p className="text-xs text-amber-900">This session runs on the Firebase project Gemini Canvas provides. Its rules refuse student devices that are not already signed in to Canvas, so a scanned QR would fail on the phone even though the session started correctly here. Two paths do work:</p>
+            <ul className="mt-2 space-y-1.5 text-xs text-amber-900">
+              <li><b>No student accounts:</b> end this session and start a <b>Class Mailbox QR session</b> instead. Students scan and join with no accounts at all.</li>
+              <li><b>Students who have Gemini access:</b> share your Canvas link as usual, and give them the class code above to join from inside Canvas.</li>
+            </ul>
+            {liveJoinUrl && (
+              <details className="mt-2">
+                <summary className="cursor-pointer text-[11px] font-bold text-amber-800">Show the standard join link anyway (for troubleshooting)</summary>
+                <input aria-label="Selectable standard join link" readOnly value={liveJoinUrl} onFocus={event => event.target.select()} className="mt-2 min-h-11 w-full rounded-lg border border-amber-200 bg-white px-3 py-2 text-xs text-slate-700 outline-none focus:ring-2 focus:ring-amber-500" />
+                <p className="mt-1 text-[11px] text-amber-800">Expect a permission error on the student device. If it joins successfully, the managed rules have changed — worth reporting.</p>
+              </details>
+            )}
           </div>
         )}
         {!isProjectionMode && lanJoinUrl && (

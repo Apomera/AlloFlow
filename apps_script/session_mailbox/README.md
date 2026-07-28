@@ -103,13 +103,39 @@ and retry guidance protect the teacher's Apps Script execution capacity.
 
 ## Capacity notes
 
-Designed for classroom-scale testing: one poll every ~2.5 seconds per
-connected device, with slower polling when idle or hidden and WebRTC as the
-fast path. Google currently limits simultaneous Apps Script executions per
-user, and quotas can change; request rate is not the same as concurrency.
-Monitor the Apps Script **Executions** dashboard during pilots. Hosted packs
-are capped at ~8 MB and stored as individual download chunks. Live messages
-cap at 90 KB; AlloFlow chunks larger resource pushes automatically.
+Designed for classroom-scale testing. Each connected device makes two kinds of
+request: a **message poll** (new pushes, hand-raises, signaling) and a
+**session-document poll** (roster, groups, quiz and poll state). The message
+poll runs about every 2.5 seconds, stretching when the session is idle and
+parking while the tab is hidden.
+
+**WebRTC buys latency, not quota.** The session-document poll normally rides
+along on the message poll's response and skips its own request, but only while
+the message poll is arriving faster than every 4 seconds. Once a device
+upgrades to WebRTC its message poll backs off to roughly 8 seconds, which is
+slower than that window, so the document poll resumes making its own request
+(about every 1.8 seconds in an actively changing class). Plan for an upgraded
+device to cost at least as many Apps Script requests as a device that stayed on
+polling — the upgrade is what makes pushes instant, not what protects the
+teacher's execution capacity.
+
+Server-side ceilings, per rolling minute: **120 reads and 120 writes per
+participant**, and **1,800 reads per session** across all devices and both poll
+types. A class of 30 typically lands somewhere between 700 and 1,200 reads per
+minute depending on how many devices upgraded, so roughly 40-70% of the
+per-session ceiling. Past about 45 devices in one session, expect students to
+start meeting rate-limit backoff (AlloFlow retries with the server's own
+`retryAfterMs`, so the class degrades to slower updates rather than failing).
+
+Google also limits **simultaneous** Apps Script executions per user, and quotas
+can change; request rate is not the same as concurrency, and neither figure
+above is a Google-published guarantee. Monitor the Apps Script **Executions**
+dashboard during pilots and treat the numbers here as a starting estimate to
+check against your own account.
+
+Hosted packs are capped at ~8 MB and stored as individual download chunks.
+Live messages cap at 90 KB; AlloFlow chunks larger resource pushes
+automatically.
 
 ## Two-device smoke test (after deploying or updating the script)
 

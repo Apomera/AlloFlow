@@ -35,6 +35,67 @@ function llCleanJson(raw) { var s = String(raw || '').trim().replace(/^```(?:jso
 function llSanitize(obj, wanted) { if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return null; var out = {}, n = 0; wanted.forEach(function (k) { var v = obj[k]; if (typeof v === 'string') { v = v.slice(0, 400); if (v) { out[k] = v; n++; } } }); return n ? out : null; }
 function llPrompt(langName, list) { return ['Translate these user-interface labels for a teacher tool that imports and grades student worksheet submissions into natural, concise ' + langName + ' (buttons, headings, toasts — keep them short and professional).', 'Keep any {tokens}, numbers, and any emoji EXACTLY as written. Do NOT translate the acronyms AI, JSON, or the file extension .alloflow. No commentary.', 'Return ONLY a JSON object mapping each ENGLISH string (used verbatim as the key) to its ' + langName + ' translation.', JSON.stringify(list)].join(String.fromCharCode(10)); }
 
+// ── Work evidence (2026-07-27) ───────────────────────────────────────────────
+// A submission has always carried far more than its free-text responses:
+// `content` is the sanitized set of resources the student actually engaged with,
+// `gameCompletions` records finished practice games, and `stats` rolls up XP,
+// quizzes and notebook use. All three have ridden in the file since schema v1
+// and none of them were ever rendered, so a teacher reviewing mailbox homework
+// saw only the typed answers and had no way to tell "did nothing" apart from
+// "did the concept sort, the timeline and two games, and typed little".
+//
+// Everything here is defensive: the payload is a JSON file that arrived from a
+// student device, so no shape is assumed and every string is bounded.
+// NOTE: `stats.summary` is deliberately NOT rendered. It is an OBJECT of counts
+// ({quizzes, adventures, readings, scaffolds}) built by the student Submit
+// modal, and it is a strictly poorer version of `content`, which lists the
+// actual titles. Stringifying it is how you ship "[object Object]".
+function siWorkEvidence(payload) {
+  var p = (payload && typeof payload === 'object') ? payload : {};
+  var num = function (v) { return (typeof v === 'number' && isFinite(v) && v >= 0) ? Math.floor(v) : null; };
+
+  var activities = (Array.isArray(p.content) ? p.content : [])
+    .filter(function (item) { return item && typeof item === 'object' && typeof item.type === 'string' && item.type; })
+    .map(function (item) {
+      return {
+        type: String(item.type).slice(0, 40),
+        title: String(item.title || item.type || 'Untitled').slice(0, 80),
+      };
+    });
+
+  var rawGames = (p.gameCompletions && typeof p.gameCompletions === 'object' && !Array.isArray(p.gameCompletions))
+    ? p.gameCompletions : {};
+  var games = Object.keys(rawGames)
+    .map(function (gameType) {
+      return {
+        gameType: String(gameType).slice(0, 40),
+        plays: Array.isArray(rawGames[gameType]) ? rawGames[gameType].length : 0,
+      };
+    })
+    .filter(function (entry) { return entry.plays > 0; })
+    .sort(function (a, b) { return (b.plays - a.plays) || a.gameType.localeCompare(b.gameType); });
+
+  var stats = (p.stats && typeof p.stats === 'object' && !Array.isArray(p.stats)) ? p.stats : {};
+  var notebook = (stats.notebook && typeof stats.notebook === 'object' && !Array.isArray(stats.notebook))
+    ? stats.notebook : {};
+
+  var evidence = {
+    activities: activities,
+    games: games,
+    totalXP: num(stats.totalXP),
+    quizzesTaken: num(stats.quizzesTaken),
+    notebookEntries: num(notebook.total),
+    // Not a verdict, and labelled as such in the UI. The student device counts
+    // pastes that landed in a writable answer field; a pasted research citation
+    // and a pasted answer are indistinguishable here.
+    pastesIntoAnswers: num(stats.pasteEventResponseCount),
+  };
+  evidence.isEmpty = activities.length === 0 && games.length === 0
+    && evidence.totalXP === null && evidence.quizzesTaken === null
+    && evidence.notebookEntries === null;
+  return evidence;
+}
+
 function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
   if (!isOpen) return null;
 
@@ -415,7 +476,15 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
         if (looksJson) {
           try {
             const p = JSON.parse(text);
-            if (p && ((p.responses && typeof p.responses === 'object') || (p.answers && typeof p.answers === 'object')) && !p.ciphertext) {
+            // A submission that declares its own kind is accepted on that alone.
+            // The response-shaped heuristic below stays for other producers, but
+            // on its own it rejected a real submission from a student who worked
+            // entirely in activities and games and typed nothing — the file had
+            // no `responses` key to recognise, and the evidence of the work they
+            // DID do is exactly what the queue now renders.
+            const declaresSubmission = p && p.kind === 'alloflow-student-submission';
+            const looksResponseShaped = p && ((p.responses && typeof p.responses === 'object') || (p.answers && typeof p.answers === 'object'));
+            if (p && (declaresSubmission || looksResponseShaped) && !p.ciphertext) {
               const normalizedPayload = p.responses ? p : {
                 ...p,
                 nickname: p.nickname || p.studentName || '?',
@@ -1486,6 +1555,57 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                                   )
                                 );
                               }),
+                          // Work evidence — what the student actually did, beyond what they typed.
+                          (function () {
+                            const ev = siWorkEvidence(row.payload);
+                            if (ev.isEmpty) return null;
+                            const shownActivities = ev.activities.slice(0, 12);
+                            const moreActivities = ev.activities.length - shownActivities.length;
+                            const chip = { display: 'inline-flex', alignItems: 'baseline', gap: 4, padding: '2px 8px', borderRadius: 999, background: 'white', border: '1px solid #e2e8f0', fontSize: '0.75rem', color: '#1e293b' };
+                            const dim = { color: '#64748b', fontSize: '0.68rem' };
+                            const subheading = { fontSize: '0.72rem', fontWeight: 700, color: '#475569', marginBottom: 4 };
+                            const statBits = [];
+                            if (ev.totalXP !== null) statBits.push(tr('{n} XP', { n: ev.totalXP }));
+                            if (ev.quizzesTaken) statBits.push(tr('{n} quizzes taken', { n: ev.quizzesTaken }));
+                            if (ev.notebookEntries) statBits.push(tr('{n} notebook entries', { n: ev.notebookEntries }));
+                            return /*#__PURE__*/React.createElement('div', { style: { marginTop: 14, paddingTop: 12, borderTop: '1px dashed #cbd5e1' } },
+                              /*#__PURE__*/React.createElement('div', { style: { fontWeight: 700, color: '#475569', fontSize: '0.8rem', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' } },
+                                tr('🧾 Work in this submission')
+                              ),
+                              ev.activities.length > 0 && /*#__PURE__*/React.createElement('div', { style: { marginBottom: 8 } },
+                                /*#__PURE__*/React.createElement('div', { style: subheading }, tr('Activities included ({n})', { n: ev.activities.length })),
+                                /*#__PURE__*/React.createElement('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                                  shownActivities.map(function (activity, i) {
+                                    return /*#__PURE__*/React.createElement('span', { key: 'act-' + i, style: chip },
+                                      /*#__PURE__*/React.createElement('span', null, activity.title),
+                                      /*#__PURE__*/React.createElement('span', { style: dim }, activity.type)
+                                    );
+                                  }),
+                                  moreActivities > 0 && /*#__PURE__*/React.createElement('span', { key: 'act-more', style: Object.assign({}, chip, { color: '#64748b' }) }, tr('+{n} more', { n: moreActivities }))
+                                )
+                              ),
+                              ev.games.length > 0 && /*#__PURE__*/React.createElement('div', { style: { marginBottom: 8 } },
+                                /*#__PURE__*/React.createElement('div', { style: subheading }, tr('Practice games completed')),
+                                /*#__PURE__*/React.createElement('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                                  ev.games.map(function (game, i) {
+                                    return /*#__PURE__*/React.createElement('span', { key: 'game-' + i, style: chip },
+                                      /*#__PURE__*/React.createElement('span', null, game.gameType),
+                                      /*#__PURE__*/React.createElement('span', { style: dim }, '×' + game.plays)
+                                    );
+                                  })
+                                )
+                              ),
+                              statBits.length > 0 && /*#__PURE__*/React.createElement('div', { style: { fontSize: '0.78rem', color: '#475569' } }, statBits.join(' · ')),
+                              // Deliberately phrased as a prompt for conversation. The device counts
+                              // pastes into writable answer fields; a pasted citation and a pasted
+                              // answer are indistinguishable from here, so this must not read as a finding.
+                              ev.pastesIntoAnswers ? /*#__PURE__*/React.createElement('div', { style: { marginTop: 6, fontSize: '0.75rem', color: '#92400e', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 6, padding: '4px 8px' } },
+                                ev.pastesIntoAnswers === 1
+                                  ? tr('1 paste landed in an answer field. Worth asking about, not a conclusion.')
+                                  : tr('{n} pastes landed in answer fields. Worth asking about, not a conclusion.', { n: ev.pastesIntoAnswers })
+                              ) : null
+                            );
+                          })(),
                           // Rubric / Grade-with-AI section
                           Object.keys(row.payload.responses || {}).length > 0 && /*#__PURE__*/React.createElement('div', { style: { marginTop: 14, paddingTop: 12, borderTop: '1px dashed #cbd5e1' } },
                             /*#__PURE__*/React.createElement('div', { style: { fontWeight: 700, color: '#475569', fontSize: '0.8rem', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' } },

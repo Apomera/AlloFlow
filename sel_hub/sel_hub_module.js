@@ -4,6 +4,37 @@
 // Modeled after stem_lab_module.js but designed plugin-first (no inline tools).
 (function () {
   if (window.AlloModules && window.AlloModules.SelHub) { console.log('[CDN] SelHub already loaded, skipping duplicate'); } else {
+  // ── Shared "engaged" definition (2026-07-27, quest contract) ────────────────
+  // timeSpent quests here accrued on a bare 30s interval with NO visibility and
+  // NO interaction check — a backgrounded tab earned SEL quest credit outright,
+  // the weakest of the three engines that offer "spend N minutes". Now it uses
+  // the same definition as the directions `time` goal and STEM Lab: visible tab
+  // AND interacted with inside the timeout.
+  //
+  // Prefer, in order: the live host probe → the loaded quest contract's constant
+  // → a local literal (SEL tools can run without the host). The conformance
+  // battery pins every literal equal to the contract's.
+  var _SEL_ENGAGEMENT_TIMEOUT_MS = 180000; // must equal AlloQuestContract.ENGAGEMENT_TIMEOUT_MS
+  var _selLastInteractionAt = Date.now();
+  try {
+    ['click', 'keydown', 'scroll', 'mousemove'].forEach(function (evt) {
+      window.addEventListener(evt, function () { _selLastInteractionAt = Date.now(); }, { passive: true });
+    });
+  } catch (e) {}
+  function _selEngagementTimeout() {
+    var c = (typeof window !== 'undefined') && window.AlloQuestContract;
+    if (c && typeof c.ENGAGEMENT_TIMEOUT_MS === 'number') return c.ENGAGEMENT_TIMEOUT_MS;
+    return _SEL_ENGAGEMENT_TIMEOUT_MS;
+  }
+  function _selIsEngaged() {
+    var probe = (typeof window !== 'undefined') && window.__alloEngagement;
+    if (probe && typeof probe.isEngaged === 'function') {
+      try { return !!probe.isEngaged(); } catch (e) {}
+    }
+    if (typeof document !== 'undefined' && document.hidden) return false;
+    return (Date.now() - _selLastInteractionAt) < _selEngagementTimeout();
+  }
+
   // WCAG 2.4.3: Focus management for modal dialogs
   var _alloFocusTrigger = null;
   var _alloLastToolCardId = null;
@@ -1478,19 +1509,21 @@
         if (!activeStation || !selHubTool) return;
         var timeQuests = (activeStation.quests || []).filter(function (q) { return q.type === 'timeSpent' && q.toolId === selHubTool; });
         if (timeQuests.length === 0) return;
+        var TICK_MS = 30000;
         var interval = setInterval(function () {
+          if (!_selIsEngaged()) return; // hidden or idle — not time spent
           setQuestProgress(function (prev) {
             var next = Object.assign({}, prev);
             var sp = Object.assign({}, next[activeStation.id] || {});
             timeQuests.forEach(function (q) {
               var qp = Object.assign({}, sp[q.qid] || {});
-              qp.timeAccumMs = (qp.timeAccumMs || 0) + 30000;
+              qp.timeAccumMs = (qp.timeAccumMs || 0) + TICK_MS;
               sp[q.qid] = qp;
             });
             next[activeStation.id] = sp;
             return next;
           });
-        }, 30000);
+        }, TICK_MS);
         return function () { clearInterval(interval); };
         // activeStation is in deps so a teacher-edit to the quest list refreshes
         // the captured timeQuests instead of relying on a stale closure.

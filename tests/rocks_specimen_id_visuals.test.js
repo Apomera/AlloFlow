@@ -511,3 +511,175 @@ describe('specimen art — the picture shows what the words promise', () => {
     expect(a).toBe(b);
   });
 });
+
+// ── Mineral habit vs. the words next to it ──────────────────────────────────
+//
+// Same audit, the minerals side. The swatch chose its silhouette from the
+// crystal SYSTEM, which is right for most minerals and wrong for the ones whose
+// description commits to a HABIT — a different property. Magnetite says
+// "Octahedral crystal habit" and drew a cube; garnet says "dodecahedral
+// crystals (12-sided)" and drew a four-sided block. Both are cubic-system
+// minerals, so the system was doing its job; it simply is not what the words
+// were describing.
+describe('mineral habit — the crystal is the shape the words name', () => {
+  function mineralSwatches() {
+    const { markup } = renderRocks({ mode: 'minerals' });
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    const rows = src.split('\n').filter((l) => /\{\s*id:\s*'/.test(l) && /streak:/.test(l) && /luster:/.test(l));
+    const ids = rows.map((l) => /\{\s*id:\s*'(\w+)'/.exec(l)[1]);
+    const found = [];
+    let i = 0;
+    while ((i = markup.indexOf('<svg', i)) >= 0) {
+      const end = markup.indexOf('</svg>', i);
+      found.push(markup.slice(i, end + 6));
+      i = end + 6;
+    }
+    expect(ids.length, 'mineral rows and swatches are out of step').toBe(found.length);
+    const out = {};
+    ids.forEach((id, n) => { out[id] = found[n]; });
+    return out;
+  }
+
+  // Only the habit's own faces. A bare polygon count also sweeps in the
+  // metallic specular highlight and the facet-shading overlay, both of which
+  // are four-sided and neither of which is a crystal face — that miscount made
+  // an octahedron look like it still had cube faces.
+  const polys = (svg) => [...svg.matchAll(/<polygon\b[^>]*>/g)]
+    .map((m) => m[0])
+    .filter((tag) => tag.includes('stroke="rgba(0,0,0,0.55)"'))
+    .map((tag) => /points="([^"]+)"/.exec(tag)[1].trim().split(/\s+/).map((pt) => pt.split(',').map(Number)));
+
+  it('tags exactly the minerals whose descriptions name a habit', () => {
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    const tagged = {};
+    src.split('\n').filter((l) => /streak:/.test(l) && /luster:/.test(l) && /habit:/.test(l))
+      .forEach((l) => { tagged[/\{\s*id:\s*'(\w+)'/.exec(l)[1]] = /habit:\s*'(\w+)'/.exec(l)[1]; });
+    expect(tagged).toEqual({
+      magnetite: 'octahedral',
+      garnet: 'dodecahedral',
+      mica: 'micaceous',
+      topaz: 'striated',
+      feldspar: 'blocky90',
+    });
+  });
+
+  it('draws magnetite as an octahedron even though its system is cubic', () => {
+    const s = mineralSwatches();
+    // Cubic-system minerals with no habit override still get the cube: three
+    // quadrilateral faces. Magnetite must not.
+    const cubeFaces = (svg) => polys(svg).filter((p) => p.length === 4).length;
+    expect(cubeFaces(s.halite)).toBeGreaterThanOrEqual(3);
+    expect(cubeFaces(s.magnetite)).toBe(0);
+
+    // Two triangles sharing an apex above and below: that IS an octahedron.
+    const tris = polys(s.magnetite).filter((p) => p.length === 3);
+    expect(tris.length).toBe(2);
+    const apexes = tris.map((t) => t.slice().sort((a, b) => a[1] - b[1]));
+    expect(apexes[0][0][1]).toBeCloseTo(apexes[1][0][1], 5);   // shared top
+    expect(apexes[0][2][1]).toBeCloseTo(apexes[1][2][1], 5);   // shared bottom
+    // ...and they sit on opposite sides of the vertical axis.
+    const midX = (t) => t.reduce((acc, pt) => acc + pt[0], 0) / t.length;
+    expect((midX(tris[0]) - midX(tris[1])) !== 0).toBe(true);
+  });
+
+  it('gives garnet a twelve-sided habit rather than a cube', () => {
+    const s = mineralSwatches();
+    // A rhombic dodecahedron down its three-fold axis: three rhombic faces
+    // filling a hexagon. Each face is a quad, and their outer vertices trace
+    // six distinct points at equal radius from the centre.
+    const faces = polys(s.garnet).filter((p) => p.length === 4);
+    expect(faces.length).toBe(3);
+    const centre = faces[0][0];
+    const rim = [];
+    faces.forEach((f) => f.slice(1).forEach((pt) => rim.push(pt)));
+    const radii = rim.map((pt) => Math.hypot(pt[0] - centre[0], pt[1] - centre[1]));
+    radii.forEach((r) => expect(r).toBeCloseTo(radii[0], 1));
+    const distinct = new Set(rim.map((pt) => pt[0].toFixed(1) + ',' + pt[1].toFixed(1)));
+    expect(distinct.size).toBe(6);
+  });
+
+  it('gives mica many thin sheets rather than two rules across a block', () => {
+    // "Perfect basal cleavage produces incredibly thin layers."
+    const s = mineralSwatches();
+    const lines = [...s.mica.matchAll(/<line\b[^>]*>/g)].map((m) => m[0]);
+    expect(lines.length).toBeGreaterThanOrEqual(8);
+    // Talc keeps the plain monoclinic block, so this is a real difference and
+    // not something every sheet silicate now gets for free.
+    const talcLines = [...s.talc.matchAll(/<line\b[^>]*>/g)].map((m) => m[0]);
+    expect(lines.length).toBeGreaterThan(talcLines.length);
+  });
+
+  it('gives topaz the vertical striations its description ends on', () => {
+    const s = mineralSwatches();
+    const vertical = [...s.topaz.matchAll(/<line\b[^>]*>/g)]
+      .map((m) => m[0])
+      .filter((tag) => {
+        const x1 = /\bx1="([-\d.]+)"/.exec(tag);
+        const x2 = /\bx2="([-\d.]+)"/.exec(tag);
+        return x1 && x2 && Math.abs(parseFloat(x1[1]) - parseFloat(x2[1])) < 0.01;
+      });
+    expect(vertical.length).toBeGreaterThanOrEqual(4);
+    // Olivine is the control: same orthorhombic prism, no striations claimed.
+    const olivineVert = [...s.olivine.matchAll(/<line\b[^>]*>/g)].length;
+    expect(vertical.length).toBeGreaterThan(olivineVert);
+  });
+
+  it('shows feldspar cleaving at nearly 90 degrees, not as a leaning rhomb', () => {
+    // "Shows distinctive cleavage at nearly 90 degrees" is the property that
+    // separates feldspar from the other pale minerals in the tray, and it was
+    // drawn as a strongly leaning rhomb — the one shape that says NOT 90.
+    const s = mineralSwatches();
+    const tags = [...s.feldspar.matchAll(/<line\b[^>]*>/g)].map((m) => m[0]);
+    const num = (tag, a) => parseFloat(/\b(?:^|\s)/.source && new RegExp('\\b' + a + '="([-\\d.]+)"').exec(tag)[1]);
+    const horiz = tags.filter((t) => Math.abs(num(t, 'y1') - num(t, 'y2')) < 0.01);
+    const vert = tags.filter((t) => Math.abs(num(t, 'x1') - num(t, 'x2')) < 0.01);
+    expect(horiz.length).toBeGreaterThanOrEqual(1);
+    expect(vert.length).toBeGreaterThanOrEqual(1);
+    // Calcite keeps the leaning rhomb, because calcite really does cleave that
+    // way — this is a distinction, not a blanket squaring-up.
+    const calciteVert = [...s.calcite.matchAll(/<line\b[^>]*>/g)]
+      .map((m) => m[0])
+      .filter((t) => Math.abs(num(t, 'x1') - num(t, 'x2')) < 0.01);
+    expect(calciteVert.length).toBe(0);
+  });
+
+  it('paints galena with a mineral colour, not a text token', () => {
+    // color was var(--allo-stem-text-soft, #94a3b8). A theme retuning soft text
+    // would have silently restyled a specimen, and every luminance calculation
+    // in the swatch fails the hex test on it. Fourth time this tool has had a
+    // field doing paint duty and text duty at once.
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    const rows = src.split('\n').filter((l) => /\{\s*id:\s*'/.test(l) && /streak:/.test(l) && /luster:/.test(l));
+    expect(rows.length).toBe(18);
+    rows.forEach((l) => {
+      const colour = /\bcolor:\s*'([^']+)'/.exec(l);
+      expect(colour, `${/\{\s*id:\s*'(\w+)'/.exec(l)[1]} has no colour`).toBeTruthy();
+      expect(colour[1], 'a specimen colour must not depend on a CSS text token')
+        .toMatch(/^#[0-9a-fA-F]{6}$/);
+    });
+  });
+
+  it('keeps the facet shading on the crystal instead of the tile', () => {
+    // The gradient was a loose rectangle over the whole tile. Behind a cube
+    // that is invisible; behind a narrow octahedron its corners showed on the
+    // backing plate as a grey box.
+    const s = mineralSwatches();
+    const facetRect = /<rect[^>]*fill="url\(#rkface-magnetite\)"/;
+    expect(facetRect.test(s.magnetite)).toBe(false);
+    expect(s.magnetite).toMatch(/<polygon[^>]*fill="url\(#rkface-magnetite\)"/);
+  });
+});
+
+describe('swatch renderers declare their loop counters', () => {
+  it('does not leak a loop counter to the global scope', () => {
+    // The habit work added loops to rkMineralSwatch, which had never needed a
+    // counter and so never declared one. In sloppy mode that silently creates a
+    // global, so all 36 tests above passed while it was live; under strict mode
+    // it is a ReferenceError. check_free_vars caught it, not the suite.
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    ['function rkRockSwatch', 'function rkMineralSwatch'].forEach((fn) => {
+      const body = src.slice(src.indexOf(fn), src.indexOf('\n  }\n', src.indexOf(fn)));
+      expect(body, `${fn} loops without declaring a counter`).toMatch(/\n\s*var i;/);
+    });
+  });
+});

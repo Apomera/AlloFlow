@@ -171,7 +171,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       icon: '🐈', name: 'Cats (Felis catus)',
       principle: 'Self-domesticated ~9,500 years ago in the Fertile Crescent',
       oneLiner: 'Obligate carnivores: cannot synthesize taurine, vitamin A, or arginine internally — they MUST get them from animal protein. Adult-cat meowing evolved AS a domestication artifact specifically to communicate with humans (adult feral cats rarely meow at each other).',
-      lifespan: '12–18 years indoor; 2–5 years outdoor (predation, disease, traffic)',
+      lifespan: '12–18 years indoor; outdoor cats die younger (predation, disease, traffic) — the often-quoted 2–5 years is a rough figure drawn largely from feral-colony data',
       brain: '~250 million cortical neurons',
       cite: 'AAFP + Bradshaw 2013 (Cat Sense)'
     },
@@ -310,8 +310,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       truth: 'Dominance theory was based on captive-wolf studies that don\'t apply to dogs. L. David Mech (the researcher whose work popularized "alpha wolf") spent decades trying to retract the term. Wild wolf packs are FAMILIES, not status hierarchies. Dogs train best with cooperative reinforcement — not by you "being alpha."',
       source: 'Mech 2000 ("Alpha Status, Dominance, and Division of Labor in Wolf Packs") + AVSAB position statement on dominance' },
     { myth: '"Pit bulls have locking jaws."',
-      truth: 'Anatomically false. No dog breed has a jaw-locking mechanism — they\'re built like every other dog. Pit-bull-type bite force is comparable to other large dogs (~235 PSI vs Rottweiler 328 PSI vs Mastiff 552 PSI). Behavior is far more individual than breed-determined.',
-      source: 'AVMA + Brady Anti-Discrimination position' },
+      truth: 'Anatomically false. No dog breed has a jaw-locking mechanism — pit-bull-type skulls and jaw muscles are built like every other dog\'s, and no anatomist has ever found a locking structure. Bite force is comparable to other dogs of similar size. (You\'ll see confident PSI rankings passed around — 235 for a pit bull, 328 for a Rottweiler, 552 for a Mastiff. Those trace to a single television demonstration with a handful of dogs, not a controlled study, so cite them as trivia rather than data.) Behaviour is far more individual than breed-determined, which is why breed-specific legislation has repeatedly failed to reduce bite rates.',
+      source: 'AVMA literature review on dog bite risk + AVSAB position statement on breed-specific legislation' },
     { myth: '"Cats can\'t be trained."',
       truth: 'Cats train readily with positive reinforcement — they just don\'t train via social pressure (don\'t care if you\'re disappointed). Use food rewards, short sessions, and target training. Cats can learn sit, high-five, recall, target-touch, even agility. Karen Pryor + John Bradshaw both detail this.',
       source: 'Bradshaw 2013 + Pryor "Reaching the Animal Mind"' },
@@ -325,7 +325,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       truth: 'Adult and senior dogs learn just fine — sometimes BETTER than puppies because they have longer attention spans + impulse control. Cognitive enrichment is medically recommended for senior dogs to slow age-related cognitive dysfunction (canine analog of dementia).',
       source: 'AAHA Senior Care Guidelines' },
     { myth: '"Indoor cats are bored / cruel to keep inside."',
-      truth: 'Indoor cats live 3–4× longer (12–18 yr vs 2–5 yr outdoor). Outdoor cats kill ~2.4 BILLION birds and ~12.3 BILLION mammals annually in the US alone. Solution = indoor cats + environmental enrichment (vertical space, food puzzles, window perches, leash-walking, catios). Bored ≠ outside-only fix.',
+      truth: 'Indoor cats live substantially longer on average — outdoor access adds traffic, fights, predators, and infectious disease. (The popular "2–5 years outdoors" number is shakier than it sounds; it leans on feral-colony data rather than owned cats, so treat the direction as solid and the multiplier as rough.) Free-roaming cats also kill an estimated 1.3–4 BILLION birds and 6.3–22.3 BILLION mammals a year in the US — a wide range, midpoint ~2.4 billion birds, and mostly attributable to unowned cats. Solution = indoor cats + environmental enrichment (vertical space, food puzzles, window perches, leash-walking, catios). Bored ≠ outside-only fix.',
       source: 'Loss et al. 2013 (Nature Communications) + American Bird Conservancy + AVMA' }
   ];
 
@@ -557,7 +557,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
   ];
   var AI_GROUND_TRUTH = [
     'Dogs: 15,000–40,000 years from Pleistocene wolf. Olfactory ~300M receptors vs 5M human. Lifespan inversely correlated with size (small 14–16 yr; giant 6–8 yr).',
-    'Cats: obligate carnivores requiring taurine, vitamin A, arginine, arachidonic acid from animal protein. Indoor cats live 12–18 yr; outdoor 2–5.',
+    'Cats: obligate carnivores requiring taurine, vitamin A, arginine, arachidonic acid from animal protein. Indoor cats live 12–18 yr; cats with outdoor access die younger, though the widely-quoted "outdoor 2–5" figure is rough and leans on feral-colony data rather than owned cats.',
     'Rabbits: GI stasis is a TRUE EMERGENCY (hours matter). Need exotic-savvy vet. House Rabbit Society advises against rabbits for households with young children.',
     'Birds: respiratory air-sac anatomy makes them sensitive to PTFE/Teflon, aerosols, scented candles, smoke. Cockatoos + macaws live 50–80 years.',
     'Reptiles: ALL shed Salmonella. CDC: no reptiles in households with children under 5. Husbandry (UVB + heat gradient) is most reptile-death cause.',
@@ -648,7 +648,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       lead: 'Free-roaming domestic cats (owned cats let outdoors + stray + feral) are the single largest direct human-caused source of wild bird mortality in the United States — ahead of building strikes, vehicles, and wind turbines combined.',
       data: 'Loss et al. 2013 (Nature Communications, Smithsonian Migratory Bird Center): free-roaming cats kill 1.3–4 billion birds and 6.3–22.3 billion mammals per year in the US alone. Conservative midpoint: 2.4 billion birds. Cats are the #1 direct source of bird mortality from human activity.',
       whyItMatters: 'Domestic cats are an introduced predator on every continent except Antarctica. Native bird species evolved without ground predators of cats\' size, agility, and abundance. Cats hunt regardless of whether they\'re fed at home — predation is instinct, not hunger. Bell collars reduce kills by ~30–50% but don\'t eliminate them.',
-      ownCatLifespan: 'Indoor cats average 12–18 years. Outdoor cats average 2–5. Causes: traffic (≈half of outdoor-cat deaths in suburban areas), predation (coyotes, owls, fishers in Maine, larger dogs), parasites (fleas, ticks, intestinal worms, FIV/FeLV transmitted in fights), poisoning (antifreeze, rodenticide secondary), weather, theft.',
+      ownCatLifespan: 'Indoor cats commonly reach 12–18 years, and cats with outdoor access die younger — that direction is not seriously disputed. Be careful with the widely-quoted "2–5 years outdoors" figure, though: it comes largely from unowned and feral colony data, not from owned cats let out during the day, and it circulates in advocacy material more than in peer-reviewed studies. The mechanisms are what\'s solidly established: traffic (a large share of outdoor-cat deaths in suburban areas), predation (coyotes, owls, fishers in Maine, larger dogs), parasites (fleas, ticks, intestinal worms, FIV/FeLV transmitted in fights), poisoning (antifreeze, secondary rodenticide), weather, and theft.',
       tnrControversy: 'Trap-Neuter-Return (TNR) sterilizes existing feral colonies. AVMA + most major shelters support TNR as the only humane large-scale tool for already-established colonies. American Bird Conservancy + National Audubon argue TNR alone doesn\'t reduce predation enough fast enough to protect threatened bird species — they advocate sanctuaries / removal. Both sides are operating from real data; the disagreement is about strategy, not facts.',
       whatIndividualsCanDo: [
         '🏠 Keep owned cats indoors. The single highest-impact action.',
@@ -803,7 +803,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         choices: [
           { id: 'indoor_enrich', label: 'Stay indoor; add a window perch, food puzzles, daily play sessions',
             effects: { phys: +8, ment: +12, soc: +5, env: +5, en: -6, money: -40 },
-            note: 'Indoor cats live 12–18 years; outdoor 2–5. See Welfare & Ethics for the bird-mortality data + your cat\'s safety.' },
+            note: 'Indoor cats commonly reach 12–18 years and cats with outdoor access die younger — the popular "2–5 years" figure is rough, but the direction is well supported. See Welfare & Ethics for the bird-mortality data + your cat\'s safety.' },
           { id: 'leash', label: 'Try harness + leash training for supervised outdoor time',
             effects: { phys: +6, ment: +10, soc: +8, env: +3, en: -10, money: -25 },
             note: 'Yes, cats can be leash-trained. Takes patience but gives outdoor enrichment without predation or risk. Best of both worlds.' },
@@ -971,6 +971,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     ]
   };
 
+  // Care-sim economy constants.
+  //
+  // START_MONEY is species-scaled, not flat. A flat budget made the sim
+  // teach the wrong lesson: the cheapest path to full welfare costs $115
+  // for a dog, $296 for a cat, but $596 for a rabbit (spay + a GI-stasis
+  // emergency are both mandatory and both exotic-vet priced). On a flat
+  // $500 the *highest-welfare rabbit week was unreachable* — a student who
+  // made every correct medical call went bankrupt and was denied the
+  // badge, while one who skipped the spay kept it. These figures give each
+  // species a comparable ~$355+ margin over its best-care path while
+  // leaving every species bankruptable by careless spending (reckless
+  // weeks cost up to $707 / $1,416 / $2,946). Scaled off the tool's own
+  // Lifetime Cost profiles, where rabbits carry exotic-vet premiums.
+  var CARE_SIM_START_MONEY = { dog: 500, cat: 650, rabbit: 950 };
+
+  // Caregiver energy. Previously decorative — it was displayed and
+  // decremented but read by nothing, while the intro promised it tracked
+  // "how YOU are doing". Now it recovers overnight and, when it runs low,
+  // degrades the care you're able to give (documented caregiver-fatigue
+  // effect), which is the actual lesson the meter was there to teach.
+  var CARE_SIM_ENERGY_RECOVERY = 10;   // overnight rest, capped at 100
+  var CARE_SIM_TIRED_BELOW = 25;       // below this, routine care is half as effective
+
   // ─────────────────────────────────────────────────────────
   // SECTION 8: TOOL REGISTRATION + RENDER (helpers + view router)
   // Render functions added in subsequent edits.
@@ -997,18 +1020,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     var React = ctx.React;
     var h = React.createElement;
     var d = (ctx.toolData && ctx.toolData['petsLab']) || {};
-    var upd = function(key, val) { ctx.update('petsLab', key, val); };
+    // `val` may be an updater FUNCTION receiving the current stored value.
+    // Required anywhere two writes to one key happen in a single pass off the
+    // same render snapshot: ctx.update() stores a plain value, so each call
+    // rebuilt the map from the same stale `d.*` and the earlier write vanished.
+    // (Acing the quiz awards pass + ace together — the first was being lost.)
+    var upd = function(key, val) {
+      if (typeof val === 'function' && typeof ctx.setToolData === 'function') {
+        ctx.setToolData(function(prev) {
+          var copy = Object.assign({}, prev);
+          var td = Object.assign({}, copy['petsLab'] || {});
+          td[key] = val(td[key]);
+          copy['petsLab'] = td;
+          return copy;
+        });
+        return;
+      }
+      ctx.update('petsLab', key, val);
+    };
     var updMulti = function(obj) {
       if (ctx.updateMulti) ctx.updateMulti('petsLab', obj);
       else Object.keys(obj).forEach(function(k) { upd(k, obj[k]); });
     };
     var addToast = ctx.addToast || function(msg) { console.log('[Pets]', msg); };
 
+    // ── XP ──
+    // The host keeps awardStemXP module-local and hands it to plugins as
+    // ctx.awardXP(activityId, points, reason); `window.awardStemXP` is never
+    // assigned anywhere in the app. This tool awarded badges but no XP at all,
+    // so none of its work counted toward StemLab progress. Points are capped
+    // at 100 per activity by the host, so the table below is deliberately
+    // over-subscribed (130) — the cap is reached through breadth across the
+    // lab rather than by grinding any single view.
+    var awardHostXP = ctx.awardXP;
+    function awardXP(amount, reason) {
+      if (typeof awardHostXP === 'function') awardHostXP('petsLab', amount, reason);
+    }
+    var BADGE_XP = {
+      pets_explorer: 5, pets_pro: 10, pets_welfare_aware: 8,
+      pets_decoder_5: 8, pets_decoder_15: 12, pets_decoder_all: 20,
+      pets_body_lang: 10, pets_quiz_pass: 10, pets_quiz_ace: 15,
+      pets_trainer: 12, pets_caregiver: 15, pets_ai_designer: 5
+    };
+
     // ── Hydration + Canvas-survival persistence ──
     // Read priority: window slot (set by host's handleLoadProject) → localStorage
     // → ctx.toolData. The StemLab host doesn't persist this tool's state by
     // default; we layer our own so reloads don't wipe progress.
     var _hydratedRef = React.useRef(false);
+    // Badges already awarded by THIS mount — survives across renders, so an
+    // award scheduled during render can't fire its toast/XP twice before the
+    // state write commits. Declared here, unconditionally, to keep hook order
+    // stable across every view this tool dispatches to.
+    var _awardedBadgesRef = React.useRef({});
     if (!_hydratedRef.current) {
       _hydratedRef.current = true;
       try {
@@ -1087,10 +1151,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     var diagramView = d.diagramView || 'skull';
 
     function awardBadge(id, label) {
-      if (badges[id]) return;
-      var nextBadges = Object.assign({}, badges);
-      nextBadges[id] = { earned: new Date().toISOString(), label: label };
-      upd('badges', nextBadges);
+      // `badges` is the render snapshot, so it cannot see an award made
+      // moments ago in this same pass — and renderQuiz() calls this during
+      // render, which can re-enter before the write commits. The ref guard
+      // makes each badge fire its toast and its XP exactly once; the updater
+      // form below makes the write itself merge instead of clobber.
+      if (badges[id] || _awardedBadgesRef.current[id]) return;
+      _awardedBadgesRef.current[id] = true;
+      upd('badges', function(cur) {
+        var next = Object.assign({}, cur || {});
+        if (next[id]) return cur;
+        next[id] = { earned: new Date().toISOString(), label: label };
+        return next;
+      });
+      awardXP(BADGE_XP[id] || 5, 'Badge: ' + label);
       addToast('🏅 Badge: ' + label);
       petsAnnounce('Badge earned: ' + label);
     }
@@ -3372,8 +3446,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         correct: 1, why: 'Closed studbooks limit the gene pool. Selecting for extreme features (flat faces, certain proportions) concentrates problems. Reputable breeders screen for known conditions (OFA hips, cardiac, eyes), but the structural risks of pedigree breeding are real.' },
       { id: 'q11', icon: '🐈',
         stem: 'A friend says "outdoor cats are happier than indoor cats." What\'s the actual data?',
-        choices: ['Outdoor cats live ~3–4× LONGER', 'Indoor cats live ~3–4× longer (12–18 yr vs 2–5 yr); enrichment solves boredom', 'Lifespan is the same', 'Outdoor cats only kill rats'],
-        correct: 1, why: 'Outdoor cats face traffic, predators, disease, and weather. Indoor cats average 12–18 years; outdoor 2–5. Outdoor cats also kill an estimated 2.4 BILLION birds per year in the US alone (Loss 2013). Indoor cats + environmental enrichment is the welfare-positive answer.' },
+        choices: ['Outdoor cats live LONGER than indoor cats', 'Indoor cats live substantially longer on average; enrichment — not outdoor access — is what solves boredom', 'Lifespan is the same', 'Outdoor cats only kill rats'],
+        correct: 1, why: 'Cats with outdoor access face traffic, predators, disease, and weather, and they die younger — that much is well established. The exact multiplier is not: the popular "12–18 years indoors vs 2–5 outdoors" contrast leans on feral-colony data rather than owned cats, so treat it as a rough illustration, not a measurement. Free-roaming cats also kill an estimated 1.3–4 billion birds per year in the US (Loss et al. 2013 — a wide range, mostly unowned cats). Indoor cats + environmental enrichment is the welfare-positive answer.' },
       { id: 'q12', icon: '🐰',
         stem: 'Your friend says "rabbits are easy starter pets for kids." Which is the MOST accurate response?',
         choices: ['Yes, hardy + easy', 'Rabbits are arguably the WORST starter pet — prey-animal stress, fragile GI, 8–12 yr lifespan, exotic-vet costs, dislike being held', 'Only large rabbits are hard', 'Only baby rabbits are hard'],
@@ -3646,7 +3720,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         { id: 1, species: 'Syrian (golden) hamster', icon: '🐹', correct: 'b1',
           why: 'Hamsters live 2–3 years. The shortest-lived common pet. Often a child\'s first experience with death; many parents underestimate how soon it happens. Buy from rescue if possible — pet-store rodents are often older than labeled.' },
         { id: 2, species: 'Indoor-only cat', icon: '🐈', correct: 'b3',
-          why: '12–18 years indoors. Compare to OUTDOOR cats: 2–5 years (predation, traffic, disease). The factor of 4–7× is one of the strongest evidence-based welfare arguments for indoor-only cats. ASPCA and AVMA both back this.' },
+          why: '12–18 years indoors. Cats with outdoor access die younger — predation, traffic, and disease are the documented mechanisms, and ASPCA and AVMA both recommend indoor-only on that basis. The comparison figure you will see quoted (2–5 years outdoors) is rough and comes largely from feral-colony data, so lean on the mechanisms rather than a precise multiplier.' },
         { id: 3, species: 'Blue-and-gold macaw (parrot)', icon: '🦜', correct: 'b5',
           why: '50–80 years. Macaws and large cockatoos genuinely outlive most owners. Estate planning + designated successor caregiver is essential. Most parrot rescues are full because owners died first or could no longer care for them.' },
         { id: 4, species: 'Galápagos tortoise', icon: '🐢', correct: 'b5',
@@ -4926,10 +5000,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     function renderCareSim() {
       var careSim = d.careSim || null;
       function startSim(species) {
+        var startMoney = CARE_SIM_START_MONEY[species] != null ? CARE_SIM_START_MONEY[species] : 500;
         upd('careSim', {
           species: species, day: 0, choices: [],
           phys: 50, ment: 50, soc: 50, env: 50,
-          en: 100, money: 500, lowMoney: false, done: false
+          en: 100, money: startMoney, startMoney: startMoney,
+          lowMoney: false, tiredCare: 0, done: false
         });
       }
       function chooseAction(choiceId) {
@@ -4959,11 +5035,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       function nextDay() {
         if (!careSim) return;
         if (careSim.day < CARE_SIM_DAYS[careSim.species].length - 1) {
-          upd('careSim', Object.assign({}, careSim, { day: careSim.day + 1 }));
+          // Overnight rest. Energy is a renewable resource, not a one-way
+          // drain — a week of full care stays sustainable, but stacking
+          // energy-expensive days on top of full care still wears you down.
+          var rested = Math.max(0, Math.min(100, careSim.en + CARE_SIM_ENERGY_RECOVERY));
+          upd('careSim', Object.assign({}, careSim, { day: careSim.day + 1, en: rested }));
         } else {
-          // Done — assess + award badge if criteria met
+          // Done — assess + award badge if criteria met.
+          // All FOUR welfare domains gate the badge. Environmental was
+          // previously omitted, which let a student earn "Caring Pet-Owner"
+          // while the animal's housing was neglected — incoherent with the
+          // Five Domains framing this tool teaches elsewhere, and worst for
+          // exactly the caged species where habitat matters most.
           var c = careSim;
-          var earned = (c.phys >= 70 && c.ment >= 70 && c.soc >= 70 && !c.lowMoney);
+          var earned = (c.phys >= 70 && c.ment >= 70 && c.soc >= 70 && c.env >= 70 && !c.lowMoney);
           if (earned) awardBadge('pets_caregiver', 'Caring Pet-Owner (week complete)');
           upd('careSim', Object.assign({}, careSim, { done: true, badgeEarned: earned }));
         }
@@ -4997,19 +5082,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         todayInts[kind] = true;
         ints[d0] = todayInts;
         var clamp01 = function(v) { return Math.max(0, Math.min(100, v)); };
+        // Running on empty: a depleted caregiver still shows up, but the
+        // care lands at half strength. Energy still costs the same — being
+        // tired doesn't make the chore cheaper.
+        var tired = careSim.en < CARE_SIM_TIRED_BELOW;
+        var scale = tired ? 0.5 : 1;
         upd('careSim', Object.assign({}, careSim, {
-          phys: clamp01(careSim.phys + (fx.phys || 0)),
-          ment: clamp01(careSim.ment + (fx.ment || 0)),
-          soc:  clamp01(careSim.soc  + (fx.soc  || 0)),
-          env:  clamp01(careSim.env  + (fx.env  || 0)),
+          phys: clamp01(careSim.phys + (fx.phys || 0) * scale),
+          ment: clamp01(careSim.ment + (fx.ment || 0) * scale),
+          soc:  clamp01(careSim.soc  + (fx.soc  || 0) * scale),
+          env:  clamp01(careSim.env  + (fx.env  || 0) * scale),
           en:   clamp01(careSim.en   + (fx.en   || 0)),
           money: careSim.money + (fx.money || 0),
           lowMoney: careSim.lowMoney || (careSim.money + (fx.money || 0)) < 0,
+          tiredCare: (careSim.tiredCare || 0) + (tired ? 1 : 0),
           dailyInteractions: ints,
           lastInteract: { kind: kind, t: Date.now() }
         }));
-        if (addToast) addToast(fx.toast);
-        if (typeof petsAnnounce === 'function') petsAnnounce(fx.toast + ' ' + fx.eff);
+        var msg = tired
+          ? fx.toast + ' (You are running on empty — half effect.)'
+          : fx.toast;
+        if (addToast) addToast(msg);
+        if (typeof petsAnnounce === 'function') {
+          petsAnnounce(msg + ' ' + (tired ? fx.eff + ', halved by fatigue' : fx.eff));
+        }
       }
       function reset() { upd('careSim', null); }
       // Species picker
@@ -5022,7 +5118,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               'Pick a species and walk through 7 days of decisions. Real trade-offs: walks vs. plans, vet bills vs. budget, comfort vs. enrichment. Four welfare meters track how the pet is doing; your energy + money meters track how YOU are doing.'
             ),
             h('p', { style: { margin: 0, color: T.dim, fontSize: 12, lineHeight: 1.55, fontStyle: 'italic' } },
-              'Earn the Caring Pet-Owner badge for a week where Physical, Mental, and Social welfare all stay ≥70% AND money never goes negative.'
+              'Earn the Caring Pet-Owner badge for a week where all four welfare domains — Physical, Mental, Social, and Environmental — stay ≥70% AND money never goes negative. Your starting budget depends on the species, because their real costs do.'
             )
           ),
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 } },
@@ -5031,13 +5127,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               { id: 'cat',    icon: '🐈', label: 'Cat (newly adopted)',     sub: 'Litter, enrichment, indoor decisions, sudden-illness risk' },
               { id: 'rabbit', icon: '🐰', label: 'Rabbit (newly home)',     sub: 'GI stasis vigilance, free-roam space, exotic-vet costs' }
             ].map(function(sp) {
+              var spMoney = CARE_SIM_START_MONEY[sp.id] != null ? CARE_SIM_START_MONEY[sp.id] : 500;
               return h('button', { key: sp.id, 'data-pets-focusable': true,
                 onClick: function() { startSim(sp.id); },
+                'aria-label': sp.label + '. Starting budget $' + spMoney + '. ' + sp.sub,
                 style: btn({ padding: 16, fontSize: 14, textAlign: 'left', minHeight: 100 })
               },
                 h('div', { style: { fontSize: 28, marginBottom: 4 } }, sp.icon),
                 h('div', { style: { fontWeight: 800, color: T.accentHi, fontSize: 15, marginBottom: 4 } }, sp.label),
-                h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5 } }, sp.sub)
+                h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.5 } }, sp.sub),
+                h('div', { style: { fontSize: 11, color: T.dim, marginTop: 6, fontFamily: 'monospace' } },
+                  'Week budget: $' + spMoney)
               );
             })
           ),
@@ -5063,6 +5163,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             h('h3', { style: { margin: '0 0 6px', fontSize: 18, color: T.text } }, verdict),
             c.badgeEarned && h('div', { style: { fontSize: 14, color: T.ok, marginBottom: 6 } }, '🏅 Badge earned: Caring Pet-Owner'),
             c.lowMoney && h('div', { style: { fontSize: 13, color: T.warm, marginBottom: 6 } }, '⚠ Money went negative this week. In real life this often forces hard choices — surrendering the pet, skipping vet care, or going into debt.'),
+            (c.tiredCare > 0 || c.en <= 20) && h('div', { style: { fontSize: 13, color: T.warm, marginBottom: 6 } },
+              c.tiredCare > 0
+                ? '😮‍💨 You ran on empty for ' + c.tiredCare + ' care task' + (c.tiredCare === 1 ? '' : 's') + ' this week — those landed at half effect. Caregiver fatigue is a real welfare factor: burned-out owners miss walks, skip enrichment, and delay vet visits. Sustainable routines beat heroic ones.'
+                : '😮‍💨 You finished the week nearly out of energy. That pace is hard to hold for 10–15 years. Building in rest is part of good animal care, not a break from it.'),
             // Final meters
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10, marginTop: 10 } },
               [
@@ -5085,8 +5189,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                 h('div', { style: { fontSize: 22, fontWeight: 800, color: c.en >= 30 ? T.ok : T.warm, fontFamily: 'monospace' } }, Math.round(c.en) + '%')
               ),
               h('div', { style: { padding: 10, borderRadius: 8, background: T.cardAlt, textAlign: 'center' } },
-                h('div', { style: { fontSize: 11, color: T.dim } }, '💰 Money'),
-                h('div', { style: { fontSize: 22, fontWeight: 800, color: c.money >= 100 ? T.ok : c.money >= 0 ? T.accentHi : T.danger, fontFamily: 'monospace' } }, '$' + Math.round(c.money))
+                h('div', { style: { fontSize: 11, color: T.dim } }, '💰 Money left'),
+                h('div', { style: { fontSize: 22, fontWeight: 800, color: c.money >= 100 ? T.ok : c.money >= 0 ? T.accentHi : T.danger, fontFamily: 'monospace' } }, '$' + Math.round(c.money)),
+                h('div', { style: { fontSize: 10, color: T.dim } },
+                  'spent $' + Math.round((c.startMoney != null ? c.startMoney : 500) - c.money) + ' of $' + (c.startMoney != null ? c.startMoney : 500))
               )
             )
           ),

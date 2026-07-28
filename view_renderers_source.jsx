@@ -3357,9 +3357,36 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     const furnishTargets = artNodes.filter((n) => !(artRef.current || {})[n.id]);
     // ~300 KB of base64 per 400px illustration is a fair working estimate; the
     // number is shown (not hidden) because localStorage typically dies around 5 MB.
-    const furnishEstMb = Math.round(furnishTargets.length * 0.3 * 10) / 10;
+    // FROZEN during a run: the live target count shrinks as pieces land, and a
+    // re-rendering role="alert" would re-announce on every single item.
+    const furnishNoteCount = furnishing ? furnishing.total : furnishTargets.length;
+    const furnishEstMb = Math.round(furnishNoteCount * 0.3 * 10) / 10;
     const furnishHeavy = furnishMode === 'image' && furnishEstMb >= 3;
     const stopFurnish = () => { genCancelRef.current = true; };
+    // A Strand Challenge deliberately mounts WITHOUT art (initialNodeArt: {}), so a
+    // batch left running would pop sculptures into a live quiz. The quiz wins.
+    React.useEffect(() => { if (challenge) genCancelRef.current = true; }, [challenge]);
+    // Bulk create needs bulk undo — otherwise clearing a 30-node furnish means
+    // clicking every node. Two-step confirm: this wipes work that cost credits.
+    const [clearArmed, setClearArmed] = React.useState(false);
+    React.useEffect(() => { if (!furnishOpen) setClearArmed(false); }, [furnishOpen]);
+    const artCount = Object.keys(artRef.current || {}).length;
+    const handleClearAllArt = () => {
+        if (!isTeacherMode || !persist || furnishing) return;
+        if (!clearArmed) { setClearArmed(true); return; }
+        setClearArmed(false);
+        const H = handleRef.current;
+        const ids = Object.keys(artRef.current || {});
+        if (!ids.length) return;
+        if (H && H.clearNodeArt) ids.forEach((id) => { try { H.clearNodeArt(id); } catch (e) {} });
+        artRef.current = {};
+        persist({}, 'conceptArt');
+        if (selectedNodeRef.current) {
+            const meta = { ...selectedNodeRef.current, artType: null };
+            selectedNodeRef.current = meta; setSelectedNode(meta);
+        }
+        if (addToast) addToast(t('concept_space.furnish_cleared') || 'Removed the art from every concept.', 'info');
+    };
     const handleFurnishAll = () => {
         const E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
         const P3D = window.AlloModules && window.AlloModules.Prim3D;
@@ -3370,7 +3397,10 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
             if (addToast) addToast(t('concept_space.art_no_imagen') || 'Image generation is unavailable here — try a sculpture.', 'info');
             return;
         }
-        if (!wantImages && !P3D) return;
+        if (!wantImages && !P3D) {
+            if (addToast) addToast(t('concept_space.art_failed') || 'Could not create that — try again.', 'error');
+            return;
+        }
         const targets = furnishTargets;
         if (!targets.length) {
             if (addToast) addToast(t('concept_space.furnish_done_already') || 'Every concept already has art.', 'info');
@@ -3378,13 +3408,21 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
         }
         genCancelRef.current = false;
         setFurnishing({ done: 0, total: targets.length });
-        let done = 0, failures = 0;
+        let done = 0, failures = 0, storageFailed = false;
         const finishBatch = () => {
             setFurnishing(null);
             if (!addToast || !artAliveRef.current) return;
-            if (genCancelRef.current) addToast((t('concept_space.furnish_stopped') || 'Stopped — {ok} made so far.').replace('{ok}', String(done)), 'info');
+            if (storageFailed) addToast((t('concept_space.furnish_storage_full') || 'Stopped at {ok} — there is no room left to save more art. Remove some, or use sculptures instead of images.').replace('{ok}', String(done)), 'error');
+            else if (genCancelRef.current) addToast((t('concept_space.furnish_stopped') || 'Stopped — {ok} made so far.').replace('{ok}', String(done)), 'info');
             else if (failures) addToast((t('concept_space.furnish_partial') || 'Made art for {ok} concepts; {fail} could not be generated.').replace('{ok}', String(done)).replace('{fail}', String(failures)), 'info');
             else addToast(t('concept_space.furnish_done') || '✨ Every concept furnished — orbit the space to meet them.', 'success');
+        };
+        // A persist that throws is almost always a full storage quota. Generating the
+        // remaining N pieces would burn credits on art that cannot be saved, so the
+        // whole run stops instead of failing one item at a time.
+        const place = (id, art) => {
+            try { _persistNodeArt(id, art); done += 1; }
+            catch (e) { storageFailed = true; genCancelRef.current = true; }
         };
         // mnemonics = {nodeId: vivid image sentence} | null. Sequential from here:
         // one piece lands (and persists) before the next starts, exactly like the palace.
@@ -3403,7 +3441,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                         .then((b64) => {
                             if (!artAliveRef.current) return;
                             const url = _asDataUrl(b64);
-                            if (url) { done += 1; _persistNodeArt(n.id, { type: 'image', dataUrl: url }); } else failures += 1;
+                            if (url) place(n.id, { type: 'image', dataUrl: url }); else failures += 1;
                         })
                         .catch(() => { failures += 1; })
                         .then(after);
@@ -3412,7 +3450,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                         .then((res) => {
                             if (!artAliveRef.current) return;
                             const recipe = P3D.parseRecipe(_gemText(res));
-                            if (recipe) { recipe.name = n.label; done += 1; _persistNodeArt(n.id, { type: 'sculpture', recipe }); }
+                            if (recipe) { recipe.name = n.label; place(n.id, { type: 'sculpture', recipe }); }
                             else failures += 1;
                         })
                         .catch(() => { failures += 1; })
@@ -3581,11 +3619,11 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                     {furnishMode === 'image' && (
                         <p
                             className={`text-[11px] rounded-lg px-2.5 py-2 mb-2 ${furnishHeavy ? 'bg-amber-50 border border-amber-300 text-amber-900' : 'bg-slate-50 border border-slate-200 text-slate-600'}`}
-                            role={furnishHeavy ? 'alert' : undefined}
+                            role={furnishHeavy && !furnishing ? 'alert' : undefined}
                         >
                             {furnishHeavy ? '⚠ ' : ''}
                             {(t('concept_space.furnish_storage_note') || 'About {mb} MB of pictures would be saved with this resource ({n} images). Browser storage usually gives out near 5 MB, and each image costs a credit. Sculptures are about 1 KB each and cost none.')
-                                .replace('{mb}', String(furnishEstMb)).replace('{n}', String(furnishTargets.length))}
+                                .replace('{mb}', String(furnishEstMb)).replace('{n}', String(furnishNoteCount))}
                         </p>
                     )}
                     <div className="flex items-center gap-2 flex-wrap">
@@ -3623,6 +3661,17 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                 ✨ {furnishTargets.length
                                     ? (t('concept_space.furnish_start') || 'Make art for {n} concepts').replace('{n}', String(furnishTargets.length))
                                     : (t('concept_space.furnish_done_already') || 'Every concept already has art.')}
+                            </button>
+                        )}
+                        {!furnishing && artCount > 0 && (
+                            <button
+                                onClick={handleClearAllArt}
+                                className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${clearArmed ? 'bg-rose-600 text-white border-rose-600' : 'bg-white text-rose-600 border-rose-300 hover:bg-rose-50'}`}
+                                title={t('concept_space.furnish_clear_tooltip') || 'Remove the generated art from every concept — the arrangement and the strand weights are kept'}
+                            >
+                                🗑 {clearArmed
+                                    ? (t('concept_space.furnish_clear_confirm') || 'Click again to remove all')
+                                    : (t('concept_space.furnish_clear') || 'Remove all art ({n})').replace('{n}', String(artCount))}
                             </button>
                         )}
                     </div>
