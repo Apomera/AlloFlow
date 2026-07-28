@@ -4414,8 +4414,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                   var p = pos[s.id]; if (!p) return null;
                   var def = getSpeciesDef(s.id);
                   var fill = nodeFill(s, def);
+                  // onKeyDown is not optional here. Only a NATIVE <button> turns Enter and
+                  // Space into a click; an SVG <g> with role="button" and tabIndex does
+                  // not. Without it a screen reader announces "button, Open deep-dive for
+                  // Wolf", the student tabs to it, presses Enter, and nothing happens —
+                  // which is worse than an obviously inert graphic, because everything
+                  // about it says it should work.
                   return h('g', { key: s.id,
                     onClick: function() { openConservDeepDive(s.id); },
+                    onKeyDown: function(ev) {
+                      if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') {
+                        ev.preventDefault();
+                        openConservDeepDive(s.id);
+                      }
+                    },
                     style: { cursor: 'pointer' },
                     role: 'button', tabIndex: 0,
                     'aria-label': __alloT('stem.ecosystem.aria_open_deepdive_pre', 'Open deep-dive for ') + def.name

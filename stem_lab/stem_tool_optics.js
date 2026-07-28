@@ -9569,8 +9569,19 @@
         filtered.map(function(p) {
           var isOpen = openId === p.id;
           var difficultyColor = p.difficulty === 'easy' ? '#86efac' : (p.difficulty === 'medium' ? '#fcd34d' : '#fca5a5');
+          // Worked-problem card — same disclosure pattern, same fix: it was mouse-only,
+          // so the worked solutions were unreachable from the keyboard.
           return h('div', { key: p.id,
+            role: 'button', tabIndex: 0,
+            'aria-expanded': isOpen ? 'true' : 'false',
+            'aria-label': p.title || p.id,
             onClick: function() { upd('wpOpenId', isOpen ? null : p.id); },
+            onKeyDown: function(ev) {
+              if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') {
+                ev.preventDefault();
+                upd('wpOpenId', isOpen ? null : p.id);
+              }
+            },
             style: {
               background: isOpen ? 'rgba(59,130,246,0.08)' : 'rgba(15,23,42,0.65)',
               border: '1px solid ' + (isOpen ? 'rgba(59,130,246,0.55)' : 'rgba(100,116,139,0.30)'),
@@ -10281,8 +10292,21 @@
       h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
         active.data.map(function(s) {
           var isOpen = openId === s.id;
+          // Expand/collapse card. It was a bare clickable <div>: no role, no tabIndex, no
+          // key handler, so the deep-dive content behind it could not be opened without a
+          // mouse at all. aria-expanded is what makes a disclosure legible to a screen
+          // reader rather than just reachable.
           return h('div', { key: s.id,
+            role: 'button', tabIndex: 0,
+            'aria-expanded': isOpen ? 'true' : 'false',
+            'aria-label': s.title,
             onClick: function() { upd('deepDiveOpenId', isOpen ? null : s.id); },
+            onKeyDown: function(ev) {
+              if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar') {
+                ev.preventDefault();
+                upd('deepDiveOpenId', isOpen ? null : s.id);
+              }
+            },
             style: {
               background: isOpen ? 'rgba(99,102,241,0.08)' : 'rgba(15,23,42,0.65)',
               border: '1px solid ' + (isOpen ? 'rgba(99,102,241,0.55)' : 'rgba(100,116,139,0.30)'),
