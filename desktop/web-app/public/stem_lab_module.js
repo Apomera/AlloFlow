@@ -36,20 +36,25 @@
     // harness), so keep a self-contained fallback that uses the IDENTICAL
     // timeout. A test pins the two constants equal; if they ever diverge,
     // "5 minutes" quietly means two things again.
-    var _STEM_ENGAGEMENT_TIMEOUT_MS = 180000; // 3 minutes — must equal _ALLO_ENGAGEMENT_TIMEOUT_MS
+    var _STEM_ENGAGEMENT_TIMEOUT_MS = 180000; // must equal AlloQuestContract.ENGAGEMENT_TIMEOUT_MS
     var _stemLastInteractionAt = Date.now();
     try {
       ['click', 'keydown', 'scroll', 'mousemove'].forEach(function (evt) {
         window.addEventListener(evt, function () { _stemLastInteractionAt = Date.now(); }, { passive: true });
       });
     } catch (e) {}
+    function _stemEngagementTimeout() {
+      var c = (typeof window !== 'undefined') && window.AlloQuestContract;
+      if (c && typeof c.ENGAGEMENT_TIMEOUT_MS === 'number') return c.ENGAGEMENT_TIMEOUT_MS;
+      return _STEM_ENGAGEMENT_TIMEOUT_MS;
+    }
     function _stemIsEngaged() {
       var probe = (typeof window !== 'undefined') && window.__alloEngagement;
       if (probe && typeof probe.isEngaged === 'function') {
         try { return !!probe.isEngaged(); } catch (e) {}
       }
       if (typeof document !== 'undefined' && document.hidden) return false;
-      return (Date.now() - _stemLastInteractionAt) < _STEM_ENGAGEMENT_TIMEOUT_MS;
+      return (Date.now() - _stemLastInteractionAt) < _stemEngagementTimeout();
     }
 
     // ── AlloStemTheme JS helper (Piece A) ──
