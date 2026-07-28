@@ -477,102 +477,98 @@
     return bay * Math.max(1, Math.min(nBays, braceEvery || 1));
   }
 
-  var BridgeGL = (function () {
-    var S = null;                 // live scene state, null when detached
-    var status = 'idle';          // idle | loading | ready | failed
-    var pending = null;           // plain data stashed by render(), read by rAF
-    var node = null;
-    var sig = '';                 // last-applied model signature
-    var restoreAttempts = 0;
+  /** One member as a thin box stretched between two points. */
+  function bridgeAddMember(THREE, group, p1, p2, colorHex, thick) {
+    var dir = new THREE.Vector3().subVectors(p2, p1);
+    var len = dir.length();
+    if (!(len > 1e-6)) return null;
+    var geo = new THREE.BoxGeometry(thick, thick, len);
+    var mat = new THREE.MeshLambertMaterial({ color: colorHex });
+    var mesh = new THREE.Mesh(geo, mat);
+    mesh.position.copy(p1).add(p2).multiplyScalar(0.5);
+    mesh.lookAt(p2);
+    group.add(mesh);
+    return mesh;
+  }
 
-    function debug() {
+  /**
+   * A compression member that has failed its Euler check does not stay
+   * straight — it bows. It bows in whichever direction it is least restrained,
+   * so the direction here is not decoration: when lateral bracing sets the
+   * governing length the member bows SIDEWAYS out of its own truss plane (the
+   * mode the elevation could never show), and otherwise it bows within the
+   * plane, perpendicular to its own axis.
+   */
+  function bridgeAddBowedMember(THREE, group, p1, p2, colorHex, thick, amp, outOfPlane) {
+    var SEG = 12;
+    var pts = [];
+    var bow;
+    if (outOfPlane) {
+      bow = new THREE.Vector3(0, 0, p1.z >= 0 ? 1 : -1);
+    } else {
+      var ax = new THREE.Vector3().subVectors(p2, p1).normalize();
+      bow = new THREE.Vector3(-ax.y, ax.x, 0);
+      if (bow.lengthSq() < 1e-9) bow.set(0, 1, 0);
+      bow.normalize();
+    }
+    for (var i = 0; i <= SEG; i++) {
+      var t = i / SEG;
+      var base = new THREE.Vector3().lerpVectors(p1, p2, t);
+      base.addScaledVector(bow, amp * Math.sin(Math.PI * t));
+      pts.push(base);
+    }
+    var curve = new THREE.CatmullRomCurve3(pts);
+    var geo = new THREE.TubeGeometry(curve, SEG * 2, thick * 0.6, 6, false);
+    var mat = new THREE.MeshLambertMaterial({ color: colorHex });
+    var mesh = new THREE.Mesh(geo, mat);
+    group.add(mesh);
+    return mesh;
+  }
+
+  // The renderer lifecycle now comes from the host — see StemLab.makeOrbitViewer.
+  // Everything below is the part that is actually about bridges.
+  //
+  // A deployed host can be OLDER than a tool that ships beside it (this has
+  // bitten the rocks crystal lab before). Calling a missing factory at load
+  // time would throw before registerTool ran and take the whole tool out, not
+  // just its 3D. So: degrade to a stub, and the elevation carries on as the
+  // guaranteed floor exactly as it does on a device with no WebGL.
+  var BridgeGL = typeof window.StemLab.makeOrbitViewer === 'function'
+    ? window.StemLab.makeOrbitViewer({
+    attr: 'data-bridge-gl',
+    clearColor: 0x0a0e1a,
+    fov: 42,
+    rot: { y: 26, x: 14 },
+    fitSlack: 1.08,
+    failMessage: '3D bridge view unavailable',
+    lights: function (THREE, scene) {
+      scene.add(new THREE.AmbientLight(0xffffff, 0.72));
+      var key = new THREE.DirectionalLight(0xffffff, 0.62);
+      key.position.set(0.6, 1, 0.75);
+      scene.add(key);
+      var rim = new THREE.DirectionalLight(0x93c5fd, 0.28);
+      rim.position.set(-0.7, 0.35, -0.6);
+      scene.add(rim);
+    },
+    debug: function (S) {
       return {
-        state: status,
-        contextLost: !!(S && S.contextLost),
-        memberCount: S ? S.memberCount : 0,
-        braceCount: S ? S.braceCount : 0,
-        deckPresent: !!(S && S.deck),
-        trussPlanes: S ? S.trussPlanes : 0,
-        bowedMember: S ? S.bowedMember : null,
-        bowedAxis: S ? S.bowedAxis : null,
-        extent: S ? S.extent : null,
-        canvas: S && S.renderer ? { w: S.renderer.domElement.width, h: S.renderer.domElement.height } : null
+        memberCount: S.memberCount || 0,
+        braceCount: S.braceCount || 0,
+        deckPresent: !!S.deck,
+        trussPlanes: S.trussPlanes || 0,
+        bowedMember: S.bowedMember || null,
+        bowedAxis: S.bowedAxis || null,
+        extent: S.extent || null
       };
-    }
-
-    /** Build one member as a thin box stretched between two points. */
-    function addMember(THREE, group, p1, p2, colorHex, thick) {
-      var dir = new THREE.Vector3().subVectors(p2, p1);
-      var len = dir.length();
-      if (!(len > 1e-6)) return null;
-      var geo = new THREE.BoxGeometry(thick, thick, len);
-      var mat = new THREE.MeshLambertMaterial({ color: colorHex });
-      var mesh = new THREE.Mesh(geo, mat);
-      mesh.position.copy(p1).add(p2).multiplyScalar(0.5);
-      mesh.lookAt(p2);
-      mesh.castShadow = false;
-      group.add(mesh);
-      return mesh;
-    }
-
-    /**
-     * A compression member that has failed its Euler check does not stay
-     * straight — it bows. It bows in whichever direction it is least restrained,
-     * so the direction here is not decoration: when lateral bracing sets the
-     * governing length the member bows SIDEWAYS out of its own truss plane
-     * (the mode the elevation could never show), and otherwise it bows within
-     * the plane, perpendicular to its own axis.
-     */
-    function addBowedMember(THREE, group, p1, p2, colorHex, thick, amp, outOfPlane) {
-      var SEG = 12;
-      var pts = [];
-      var bow;
-      if (outOfPlane) {
-        bow = new THREE.Vector3(0, 0, p1.z >= 0 ? 1 : -1);
-      } else {
-        // Perpendicular to the member, inside the x-y plane of its truss.
-        var ax = new THREE.Vector3().subVectors(p2, p1).normalize();
-        bow = new THREE.Vector3(-ax.y, ax.x, 0);
-        if (bow.lengthSq() < 1e-9) bow.set(0, 1, 0);
-        bow.normalize();
-      }
-      for (var i = 0; i <= SEG; i++) {
-        var t = i / SEG;
-        var base = new THREE.Vector3().lerpVectors(p1, p2, t);
-        base.addScaledVector(bow, amp * Math.sin(Math.PI * t));
-        pts.push(base);
-      }
-      var curve = new THREE.CatmullRomCurve3(pts);
-      var geo = new THREE.TubeGeometry(curve, SEG * 2, thick * 0.6, 6, false);
-      var mat = new THREE.MeshLambertMaterial({ color: colorHex });
-      var mesh = new THREE.Mesh(geo, mat);
-      group.add(mesh);
-      return mesh;
-    }
-
-    function disposeGroup(THREE, group) {
-      if (!group) return;
-      for (var i = group.children.length - 1; i >= 0; i--) {
-        var c = group.children[i];
-        if (c.geometry) c.geometry.dispose();
-        if (c.material) c.material.dispose();
-        group.remove(c);
-      }
-    }
-
-    /** Rebuild the whole model. Cheap enough: a truss is tens of members. */
-    function applyModel(m) {
-      if (!S || !S.THREE) return;
-      var THREE = S.THREE;
-      disposeGroup(THREE, S.model);
-
+    },
+    build: function (THREE, S, m) {
       var span = m.span, height = m.height, nBays = m.nBays;
       var halfW = bridgeHalfWidth(span);
       var maxF = 1;
       var i, k;
       for (k in m.forces) { var af = Math.abs(m.forces[k]); if (af > maxF) maxF = af; }
 
-      // Two truss planes at z = ±halfW.
+      // Two truss planes at z = +/- halfW.
       var planes = [-halfW, halfW];
       var memberCount = 0;
       var jointById = {};
@@ -588,7 +584,7 @@
           var isTension = f == null ? true : f > 0;
           var ratio = f == null ? 0.4 : Math.max(0.22, Math.min(1, Math.abs(f) / maxF));
           var rgb = isTension ? BRIDGE_TENSION_RGB : BRIDGE_COMPRESSION_RGB;
-          // Fade toward the deep background at low force so the loaded members read.
+          // Fade toward the deep background at low force so loaded members read.
           var mix = 0.35 + 0.65 * ratio;
           var hex = (Math.round(rgb[0] * mix) << 16) | (Math.round(rgb[1] * mix) << 8) | Math.round(rgb[2] * mix);
           var thick = (0.06 + 0.10 * ratio) * Math.max(1, span / 30);
@@ -596,9 +592,9 @@
           var b = new THREE.Vector3(j2.x - span / 2, j2.y, z);
           if (m.bowedId && mem.id === m.bowedId) {
             var amp = m.bowOutOfPlane ? halfW * 0.55 : Math.max(0.35, height * 0.16);
-            addBowedMember(THREE, S.model, a, b, 0xfbbf24, thick * 1.5, amp, m.bowOutOfPlane);
+            bridgeAddBowedMember(THREE, S.model, a, b, 0xfbbf24, thick * 1.5, amp, m.bowOutOfPlane);
           } else {
-            addMember(THREE, S.model, a, b, hex, thick);
+            bridgeAddMember(THREE, S.model, a, b, hex, thick);
           }
           memberCount++;
         }
@@ -613,32 +609,29 @@
       var braceCount = 0;
       var bay = span / Math.max(1, nBays);
       var every = Math.max(1, Math.min(nBays, m.braceEvery || 1));
-      // Bracing is the subject of this view, not scenery, so it is drawn thick
-      // enough to see at a glance how far apart the braces are. Cool grey, not
-      // amber: the palette is red = tension, blue = compression, grey = bracing,
-      // and amber reserved for the one member that has actually failed. Sharing
-      // a hue between "here is your bracing" and "here is your failure" would
-      // undo the point of drawing either.
+      // Cool grey, not amber: the palette is red = tension, blue = compression,
+      // grey = bracing, and amber reserved for the one member that has actually
+      // failed. Sharing a hue between "here is your bracing" and "here is your
+      // failure" would undo the point of drawing either.
       var braceThick = 0.10 * Math.max(1, span / 30);
       for (var bx = 0; bx + every <= nBays; bx += every) {
         var x0 = bx * bay - span / 2;
         var x1 = (bx + every) * bay - span / 2;
-        // An X of cross-bracing in the plane of the top chords.
-        addMember(THREE, S.model, new THREE.Vector3(x0, height, -halfW), new THREE.Vector3(x1, height, halfW), 0xcbd5e1, braceThick);
-        addMember(THREE, S.model, new THREE.Vector3(x0, height, halfW), new THREE.Vector3(x1, height, -halfW), 0xcbd5e1, braceThick);
+        bridgeAddMember(THREE, S.model, new THREE.Vector3(x0, height, -halfW), new THREE.Vector3(x1, height, halfW), 0xcbd5e1, braceThick);
+        bridgeAddMember(THREE, S.model, new THREE.Vector3(x0, height, halfW), new THREE.Vector3(x1, height, -halfW), 0xcbd5e1, braceThick);
         // The transverse strut that actually shortens the unbraced length.
-        addMember(THREE, S.model, new THREE.Vector3(x1, height, -halfW), new THREE.Vector3(x1, height, halfW), 0xe2e8f0, braceThick * 1.35);
+        bridgeAddMember(THREE, S.model, new THREE.Vector3(x1, height, -halfW), new THREE.Vector3(x1, height, halfW), 0xe2e8f0, braceThick * 1.35);
         braceCount += 3;
       }
       // The first transverse strut, at the left portal, so both ends read as held.
-      addMember(THREE, S.model, new THREE.Vector3(-span / 2, height, -halfW), new THREE.Vector3(-span / 2, height, halfW), 0xe2e8f0, braceThick * 1.35);
+      bridgeAddMember(THREE, S.model, new THREE.Vector3(-span / 2, height, -halfW), new THREE.Vector3(-span / 2, height, halfW), 0xe2e8f0, braceThick * 1.35);
       braceCount += 1;
       S.braceCount = braceCount;
 
       // Floor beams at every bottom panel point, then the deck slab.
       for (var fb = 0; fb <= nBays; fb++) {
         var fx = fb * bay - span / 2;
-        addMember(THREE, S.model, new THREE.Vector3(fx, 0, -halfW), new THREE.Vector3(fx, 0, halfW), 0x475569, braceThick * 1.3);
+        bridgeAddMember(THREE, S.model, new THREE.Vector3(fx, 0, -halfW), new THREE.Vector3(fx, 0, halfW), 0x475569, braceThick * 1.3);
       }
       var deckGeo = new THREE.BoxGeometry(span, 0.12 * Math.max(1, span / 30), halfW * 2);
       var deckMat = new THREE.MeshLambertMaterial({ color: 0x334155 });
@@ -648,7 +641,6 @@
 
       S.extent = { w: span, h: height, d: halfW * 2 };
       S.target = new THREE.Vector3(0, height * 0.45, 0);
-      // Half-extents of the structure about the target, for the camera fit.
       // Bowed members swing outward past the truss planes, so allow for that.
       S.half = new THREE.Vector3(
         span / 2 + 0.5,
@@ -656,183 +648,13 @@
         halfW * 1.7
       );
     }
-
-    function frame() {
-      if (!S) return;
-      S.raf = requestAnimationFrame(frame);
-      if (S.contextLost) return;
-      if (pending) {
-        var next = pending; pending = null;
-        if (next.sig !== sig) { sig = next.sig; applyModel(next); }
-        S.rotY = next.rotY; S.rotX = next.rotX; S.zoom = next.zoom;
-      }
-      if (!S.renderer) return;
-      // Keep the drawing buffer matched to the element, which resizes with the page.
-      var el = S.renderer.domElement;
-      var w = el.clientWidth || 1, hgt = el.clientHeight || 1;
-      if (w !== S.lastW || hgt !== S.lastH) {
-        S.lastW = w; S.lastH = hgt;
-        S.renderer.setSize(w, hgt, false);
-        S.camera.aspect = w / Math.max(1, hgt);
-        S.camera.updateProjectionMatrix();
-      }
-      var ry = (S.rotY || 0) * Math.PI / 180, rx = (S.rotX || 0) * Math.PI / 180;
-      var THREEc = S.THREE;
-      // Unit vector from the target toward the camera.
-      var dir = new THREEc.Vector3(
-        Math.cos(rx) * Math.sin(ry), Math.sin(rx), Math.cos(rx) * Math.cos(ry)
-      ).normalize();
-      // Exact fit: for each corner of the bounding box, the distance that just
-      // keeps it inside the frustum is |offset along the screen axis| / tan(half
-      // fov) plus however far the corner already sits toward the camera. Take the
-      // largest. Doing this per frame rather than once at build time is what makes
-      // the fit survive orbiting — a 36 m bridge seen end-on needs a very
-      // different distance than the same bridge seen broadside.
-      var fitDist = 1;
-      if (S.half) {
-        var up0 = new THREEc.Vector3(0, 1, 0);
-        var right = new THREEc.Vector3().crossVectors(up0, dir).normalize();
-        if (!isFinite(right.x) || right.lengthSq() < 1e-6) right.set(1, 0, 0);
-        var up = new THREEc.Vector3().crossVectors(dir, right).normalize();
-        var tanV = Math.tan(S.camera.fov * Math.PI / 360);
-        var tanH = tanV * Math.max(0.2, S.camera.aspect);
-        for (var sx = -1; sx <= 1; sx += 2) {
-          for (var sy = -1; sy <= 1; sy += 2) {
-            for (var sz = -1; sz <= 1; sz += 2) {
-              var v = new THREEc.Vector3(sx * S.half.x, sy * S.half.y, sz * S.half.z);
-              var along = v.dot(dir);
-              var needH = Math.abs(v.dot(right)) / tanH + along;
-              var needV = Math.abs(v.dot(up)) / tanV + along;
-              if (needH > fitDist) fitDist = needH;
-              if (needV > fitDist) fitDist = needV;
-            }
-          }
-        }
-        fitDist *= 1.06;              // a little air around the structure
-      }
-      S.fitDist = fitDist;
-      var dist = fitDist / Math.max(0.3, S.zoom || 1);
-      S.camera.position.copy(S.target).addScaledVector(dir, dist);
-      S.camera.near = Math.max(0.05, dist * 0.01);
-      S.camera.far = dist * 8 + 100;
-      S.camera.updateProjectionMatrix();
-      S.camera.lookAt(S.target);
-      try { S.renderer.render(S.scene, S.camera); } catch (e) { /* keep the loop alive */ }
-    }
-
-    function build(THREE, host) {
-      var renderer;
-      try {
-        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-      } catch (e) {
-        return false;               // no WebGL here — the SVG carries on
-      }
-      var w = host.clientWidth || 640, hgt = host.clientHeight || 340;
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-      renderer.setSize(w, hgt);
-      renderer.setClearColor(0x0a0e1a, 1);
-      var el = renderer.domElement;
-      el.style.display = 'block';
-      el.style.width = '100%';
-      el.style.height = '100%';
-      el.style.borderRadius = '10px';
-      el.style.touchAction = 'pan-y';   // never a scroll trap on a phone
-      el.setAttribute('data-bridge-gl', 'true');
-      el.setAttribute('aria-hidden', 'true');
-      host.appendChild(el);
-
-      var scene = new THREE.Scene();
-      var camera = new THREE.PerspectiveCamera(42, w / Math.max(1, hgt), 0.1, 4000);
-      scene.add(new THREE.AmbientLight(0xffffff, 0.72));
-      var key = new THREE.DirectionalLight(0xffffff, 0.62);
-      key.position.set(0.6, 1, 0.75);
-      scene.add(key);
-      var rim = new THREE.DirectionalLight(0x93c5fd, 0.28);
-      rim.position.set(-0.7, 0.35, -0.6);
-      scene.add(rim);
-      var model = new THREE.Group();
-      scene.add(model);
-
-      S = {
-        THREE: THREE, renderer: renderer, scene: scene, camera: camera, model: model,
-        rotY: 26, rotX: 14, zoom: 1, fitDist: 40, target: new THREE.Vector3(0, 2, 0),
-        memberCount: 0, braceCount: 0, trussPlanes: 0, bowedMember: null,
-        deck: null, extent: null, contextLost: false, lastW: w, lastH: hgt, raf: 0
-      };
-
-      el.addEventListener('webglcontextlost', function (ev) {
-        ev.preventDefault();
-        S.contextLost = true;
-        setStatus('failed');
-      });
-      el.addEventListener('webglcontextrestored', function () {
-        if (restoreAttempts >= 1) return;
-        restoreAttempts++;
-        S.contextLost = false;
-        sig = '';                     // force a rebuild on the new context
-        setStatus('ready');
-      });
-
-      sig = '';
-      S.raf = requestAnimationFrame(frame);
-      return true;
-    }
-
-    // The status flips asynchronously, well after the render that mounted the
-    // host div. Without a nudge back into React the "Loading 3D view..." overlay
-    // would sit on top of a perfectly good canvas until some unrelated state
-    // change happened to re-render — which is exactly the kind of dead overlay
-    // a passing test suite will happily ignore.
-    var notify = null;
-    function setStatus(next) {
-      if (status === next) return;
-      status = next;
-      if (notify) { try { notify(next); } catch (e) {} }
-    }
-
-    return {
-      /** Stable ref callback target. Called with the host div, or null on unmount. */
-      attach: function (host) {
-        if (!host) { this.dispose(); return; }
-        if (node === host && S) return;
-        if (S) this.dispose();
-        node = host;
-        setStatus('loading');
-        var ensure = window.StemLab && window.StemLab.ensureThree
-          ? window.StemLab.ensureThree({ orbit: false, failMessage: '3D bridge view unavailable' })
-          : Promise.reject(new Error('no host loader'));
-        ensure.then(function (THREE) {
-          if (node !== host) return;    // unmounted while loading
-          if (!THREE) { setStatus('failed'); return; }
-          setStatus(build(THREE, host) ? 'ready' : 'failed');
-        }).catch(function () { setStatus('failed'); });
-      },
-      /** render() calls this. Never touches the GPU — the rAF loop does. */
-      push: function (data) { pending = data; },
-      /** Set once per render so a status flip can pull React back through. */
-      onStatusChange: function (fn) { notify = fn; },
-      status: function () { return status; },
-      debug: debug,
-      dispose: function () {
-        if (S) {
-          if (S.raf) cancelAnimationFrame(S.raf);
-          disposeGroup(S.THREE, S.model);
-          if (S.renderer) {
-            try { S.renderer.forceContextLoss(); } catch (e) {}
-            try { S.renderer.dispose(); } catch (e) {}
-            if (S.renderer.domElement && S.renderer.domElement.parentNode) {
-              S.renderer.domElement.parentNode.removeChild(S.renderer.domElement);
-            }
-          }
-        }
-        S = null; node = null; pending = null; sig = ''; restoreAttempts = 0;
-        // Drop the callback BEFORE the final status flip: React is unmounting us,
-        // so there is nothing left to nudge and the write would land on a dead tree.
-        notify = null;
-        setStatus('idle');
-      }
+  })
+    : {
+      attach: function () {}, push: function () {}, onStatusChange: function () {},
+      status: function () { return 'failed'; },
+      debug: function () { return { state: 'failed', contextLost: false, hostTooOld: true }; },
+      dispose: function () {}
     };
-  })();
 
   // ONE stable ref callback, defined once at module scope. An inline arrow here
   // would be a new function identity every render, so React would detach and
