@@ -324,3 +324,190 @@ describe('visual ID drill', () => {
     expect(src).toContain('while (picks.length < 2 && sameType.length) picks.push(pickFrom(sameType));');
   });
 });
+
+// ── Specimen art vs. the words next to it ───────────────────────────────────
+//
+// Every specimen swatch was rendered and compared against its own description.
+// The same failure the thin sections had turned up here: features a description
+// NAMES were either not drawn at all, or drawn in a colour so close to the rock
+// that they could not be seen.
+//
+// `texture` is user-facing — glossed in the detail panel, read to screen
+// readers, used by the quizzes — so these features are carried in a separate
+// `art` field rather than by inventing new texture words.
+describe('specimen art — the picture shows what the words promise', () => {
+  /** Each rock's swatch <svg>, keyed by id, from the rocks grid. */
+  function swatches() {
+    const { markup } = renderRocks({ mode: 'rocks' });
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    const block = src.slice(src.indexOf('const ROCKS = ['), src.indexOf('const MINERALS = ['));
+    const ids = [...block.matchAll(/\{ id: '(\w+)', type: '/g)]
+      .filter((m) => block.slice(m.index, block.indexOf('\n', m.index)).includes('desc:'))
+      .map((m) => m[1]);
+    const found = [];
+    let i = 0;
+    while ((i = markup.indexOf('<svg', i)) >= 0) {
+      const end = markup.indexOf('</svg>', i);
+      found.push(markup.slice(i, end + 6));
+      i = end + 6;
+    }
+    const out = {};
+    ids.forEach((id, n) => { out[id] = found[n] || ''; });
+    return out;
+  }
+
+  const lum = (hex) => {
+    const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  };
+
+  it('draws four different pictures for the four foliated grades', () => {
+    // slate -> phyllite -> schist -> gneiss IS the metamorphic grade sequence,
+    // and the differences between them are the entire lesson. Three of them
+    // carried texture 'foliated' and so drew the identical wavy lozenge,
+    // differing only in colour.
+    const s = swatches();
+    const grades = ['slate', 'phyllite', 'schist', 'gneiss'];
+    grades.forEach((g) => expect(s[g], `${g} swatch missing`).toBeTruthy());
+    for (let a = 0; a < grades.length; a++) {
+      for (let b = a + 1; b < grades.length; b++) {
+        expect(s[grades[a]], `${grades[a]} and ${grades[b]} draw the same picture`)
+          .not.toBe(s[grades[b]]);
+      }
+    }
+  });
+
+  it('gives obsidian nested conchoidal ripples, not parallel arcs', () => {
+    // Conchoidal fracture is why obsidian is on a rock chart at all, and the
+    // description says so. The art drew five arcs straight across the body,
+    // which reads as a highlight on a black pebble.
+    const svg = swatches().obsidian;
+    const circles = [...svg.matchAll(/<circle[^>]*cx="([\d.]+)"[^>]*cy="([\d.]+)"[^>]*r="([\d.]+)"[^>]*>/g)]
+      .map((m) => ({ cx: m[1], cy: m[2], r: parseFloat(m[3]) }));
+    // Ripples nest: many circles, one shared centre, increasing radii.
+    const byCentre = {};
+    circles.forEach((c) => { (byCentre[c.cx + ',' + c.cy] = byCentre[c.cx + ',' + c.cy] || []).push(c.r); });
+    const nest = Object.values(byCentre).find((rs) => rs.length >= 6);
+    expect(nest, 'no nested ripple set').toBeTruthy();
+    const sorted = [...nest].sort((x, y) => x - y);
+    expect(new Set(sorted).size).toBe(sorted.length);   // no two the same radius
+  });
+
+  it('makes diorite a fine intermix rather than two big zones', () => {
+    // "Salt and pepper" is fine speckle. Diorite listed its darkest colour
+    // first, so that became the entire body with a few large pale blocks over
+    // it — the specimen read as a cow.
+    const svg = swatches().diorite;
+    const polys = [...svg.matchAll(/<polygon[^>]*fill="(#[0-9a-fA-F]{6})"/g)].map((m) => m[1]);
+    expect(polys.length).toBeGreaterThanOrEqual(40);
+    const lums = polys.map(lum);
+    // Both ends of the range have to be present, and in comparable numbers —
+    // that is what makes it salt AND pepper.
+    const dark = lums.filter((l) => l < 0.35).length;
+    const light = lums.filter((l) => l > 0.65).length;
+    expect(dark).toBeGreaterThan(8);
+    expect(light).toBeGreaterThan(8);
+    expect(Math.abs(dark - light)).toBeLessThan(Math.max(dark, light));
+  });
+
+  it('keeps a texture mark visible against its own rock', () => {
+    // Pale rocks picked their texture marks from the same near-white palette as
+    // the body, so chalk's plankton shells, limestone's fossils and marble's
+    // sugary crystals were all rendered and none of them could be seen.
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    expect(src).toContain('var MIN_SEP = 0.12;');
+    expect(src).toContain('var pick = function (n) { return separate(cols[n % cols.length]); };');
+
+    const s = swatches();
+    ['chalk', 'limestone', 'marble'].forEach((id) => {
+      const body = /<path[^>]*fill="(#[0-9a-fA-F]{6})"/.exec(s[id]);
+      expect(body, `${id} has no body fill`).toBeTruthy();
+      const marks = [...s[id].matchAll(/stroke="(#[0-9a-fA-F]{6})"/g)].map((m) => m[1])
+        .concat([...s[id].matchAll(/<polygon[^>]*fill="(#[0-9a-fA-F]{6})"/g)].map((m) => m[1]));
+      expect(marks.length, `${id} draws no texture marks`).toBeGreaterThan(0);
+      // Every mark separated from the body by at least the threshold.
+      marks.forEach((m) => {
+        expect(Math.abs(lum(m) - lum(body[1])), `${id}: mark ${m} invisible on body ${body[1]}`)
+          .toBeGreaterThanOrEqual(0.115);
+      });
+    });
+  });
+
+  it('places schist mica flakes inside the specimen, not outside the clip', () => {
+    // A foliated silhouette is a flat lozenge filling only the middle of the
+    // box. Scattering flakes over the whole square clipped most of them away
+    // and schist came back nearly bare — slate and phyllite hid the same bug
+    // because lines drawn clear across still read as banding after clipping.
+    const svg = swatches().schist;
+    // Require whitespace before the y: a greedy [^>]*y=" happily matches the
+    // tail of opacit|y="0.92" and reports the opacity as a coordinate.
+    const ys = [...svg.matchAll(/<rect[^>]*\sy="([\d.]+)"/g)].map((m) => parseFloat(m[1]));
+    expect(ys.length).toBeGreaterThan(20);
+    // The grid swatch is 54 units; the lozenge spans roughly 0.30-0.70 of it.
+    ys.forEach((y) => {
+      expect(y).toBeGreaterThan(54 * 0.26);
+      expect(y).toBeLessThan(54 * 0.74);
+    });
+  });
+
+  it('tags exactly the rocks whose descriptions name an undrawn feature', () => {
+    // Guards against the tag landing on the wrong row: an earlier pass anchored
+    // on "{ id: x, type: y" and hit a compact id/type lookup list elsewhere in
+    // the file, tagging eight unrelated entries one position off.
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    const block = src.slice(src.indexOf('const ROCKS = ['), src.indexOf('const MINERALS = ['));
+    const tagged = {};
+    [...block.matchAll(/\{ id: '(\w+)', type: '\w+', art: '(\w+)'/g)].forEach((m) => { tagged[m[1]] = m[2]; });
+    expect(tagged).toEqual({
+      obsidian: 'conchoidal',
+      diorite: 'saltpepper',
+      tuff: 'shards',
+      rhyolite: 'flowbanded',
+      travertine: 'bandedporous',
+      slate: 'slaty',
+      phyllite: 'crenulated',
+      schist: 'schistose',
+    });
+    // And nowhere else in the file.
+    expect([...src.matchAll(/art: '/g)].length).toBe(8);
+  });
+
+  it('keeps sandstone and tuff in the buff range instead of traffic-cone orange', () => {
+    // grainColors is decorative paint only, so this is not a contrast bug — but
+    // an ID tool that renders sandstone in saturated orange and tuff in canary
+    // yellow trains the wrong search image.
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    const block = src.slice(src.indexOf('const ROCKS = ['), src.indexOf('const MINERALS = ['));
+    const sat = (hex) => {
+      const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+      const mx = Math.max(...c), mn = Math.min(...c);
+      return mx === 0 ? 0 : (mx - mn) / mx;
+    };
+    ['sandstone', 'tuff'].forEach((id) => {
+      const at = block.indexOf("{ id: '" + id + "',");
+      const row = block.slice(at, block.indexOf('\n', at));
+      const cols = [...(/grainColors:\s*\[([^\]]*)\]/.exec(row)[1]).matchAll(/#[0-9a-fA-F]{6}/g)].map((m) => m[0]);
+      expect(cols.length).toBeGreaterThan(2);
+      cols.forEach((c) => {
+        // The bound that matters is the one separating a buff rock from paint:
+        // the colours this replaced ran 0.95-0.97.
+        expect(sat(c), `${id} colour ${c} is too saturated for a rock`).toBeLessThan(0.45);
+      });
+    });
+  });
+
+  it('keeps the art field out of the user-facing texture vocabulary', () => {
+    // The whole reason for a separate field: texture strings are glossed,
+    // announced and quizzed, so adding art words there would have changed what
+    // the tool SAYS as a side effect of changing what it DRAWS.
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    const gloss = src.slice(src.indexOf('var RK_TEXTURE_GLOSS = {'), src.indexOf('}', src.indexOf('var RK_TEXTURE_GLOSS = {')));
+    ['conchoidal', 'saltpepper', 'slaty', 'crenulated', 'schistose', 'bandedporous', 'flowbanded']
+      .forEach((a) => expect(gloss, `${a} leaked into the texture vocabulary`).not.toContain("'" + a + "'"));
+  });
+
+  it('ships the same art in both copies', () => {
+    const [a, b] = PATHS.map((p) => readFileSync(p, 'utf8'));
+    expect(a).toBe(b);
+  });
+});

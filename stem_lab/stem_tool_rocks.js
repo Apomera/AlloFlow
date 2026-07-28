@@ -203,18 +203,48 @@
     var sil = rkSilhouettePath(silKind, S, rnd);
     var kids = [];
     var i;
-    var pick = function (n) { return cols[n % cols.length]; };
+    // `separate` is assigned below but only ever called from the texture code,
+    // which runs after it exists.
+    var pick = function (n) { return separate(cols[n % cols.length]); };
 
     // Adapt the lighting to the specimen's own value. A fixed white highlight
     // blows out the pale rocks — chalk, marble, quartzite and limestone turned
     // into featureless white blobs — while a fixed shadow buries the dark ones.
     // Light specimens get most of their modelling from shadow, dark specimens
     // from highlight.
-    var baseLum = (function (hex) {
+    var rkLum = function (hex) {
       if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return 0.5;
       var c = [1, 3, 5].map(function (i) { return parseInt(hex.slice(i, i + 2), 16) / 255; });
       return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
-    })(cols[0]);
+    };
+    var baseLum = rkLum(cols[0]);
+
+    // The same problem one level down. Adapting the LIGHTING stopped the pale
+    // specimens blowing out, but their texture marks are picked from the same
+    // near-white palette as the body, so the feature each description NAMES was
+    // being drawn and then disappearing into the rock: chalk's plankton shells,
+    // limestone's fossils, marble's sugary crystals and schist's mica flakes
+    // were all present in the markup and invisible on screen. Any mark that
+    // lands too close to the body is nudged away from it — away from white on a
+    // pale rock, away from black on a dark one — and marks that already read
+    // are left exactly as they were.
+    var MIN_SEP = 0.12;
+    var separate = function (hex) {
+      if (!/^#[0-9a-fA-F]{6}$/.test(hex)) return hex;
+      var l = rkLum(hex);
+      if (Math.abs(l - baseLum) >= MIN_SEP) return hex;
+      // Move the mark TO the target, rather than by the shortfall. Shifting by
+      // the shortfall lands short whenever the mark starts on the far side of
+      // the body — chalk's white shells sat 0.02 above a near-white body, got
+      // pushed down 0.10, and ended up 0.08 below it: still invisible.
+      // Luminance weights sum to 1, so an equal shift on all three channels
+      // moves luminance by exactly that amount.
+      var shift = ((baseLum + (baseLum > 0.5 ? -MIN_SEP : MIN_SEP)) - l) * 255;
+      return '#' + [1, 3, 5].map(function (i) {
+        var v = Math.round(Math.min(255, Math.max(0, parseInt(hex.slice(i, i + 2), 16) + shift)));
+        return (v < 16 ? '0' : '') + v.toString(16);
+      }).join('');
+    };
     var hiOp = (0.42 - baseLum * 0.34).toFixed(3);   // .42 on black → .08 on white
     var loOp = (0.20 + baseLum * 0.34).toFixed(3);   // .20 on black → .54 on white
 
@@ -238,7 +268,118 @@
     kids.push(h('path', { key: 'body', d: sil, fill: cols[0] }));
 
     var g = [];
-    if (tex === 'coarse-grained' || tex === 'crystalline' || tex === 'non-foliated') {
+    // ART OVERRIDES. `texture` is user-facing — it is glossed in the detail
+    // panel, read out to screen readers and used by the quizzes — so the
+    // identifying features a description NAMES are carried in a separate `art`
+    // field rather than by inventing new texture words. Every value here exists
+    // because the words promised something the picture did not show.
+    var art = (rock && rock.art) || '';
+
+    if (art === 'conchoidal') {
+      // Conchoidal fracture is the whole reason obsidian is on a rock chart:
+      // shell-like ripples nesting around the point the flake was struck. The
+      // art drew five arcs straight across the body, which reads as a highlight
+      // on a black pebble, not as a fracture.
+      g.push(h('rect', { key: 'gl', x: 0, y: 0, width: S, height: S, fill: cols[0] }));
+      var ox = S * 0.32, oy = S * 0.26;
+      for (i = 1; i <= 7; i++) {
+        g.push(h('circle', {
+          key: 'ch' + i, cx: ox.toFixed(1), cy: oy.toFixed(1), r: (S * 0.115 * i).toFixed(2),
+          fill: 'none', stroke: 'rgba(198,220,255,' + (0.36 - i * 0.032).toFixed(3) + ')',
+          strokeWidth: (S * 0.02).toFixed(2),
+        }));
+      }
+      // The struck point catches the most light.
+      g.push(h('circle', { key: 'chp', cx: ox.toFixed(1), cy: oy.toFixed(1), r: (S * 0.035).toFixed(2), fill: 'rgba(224,238,255,0.55)' }));
+    } else if (art === 'saltpepper') {
+      // "Salt and pepper" is a FINE intermix. Diorite listed its darkest colour
+      // first, so that became the whole body with a few big pale blocks on top —
+      // it read as a cow, not as the even speckle the description names.
+      g.push(h('rect', { key: 'sp0', x: 0, y: 0, width: S, height: S, fill: '#9ca3af' }));
+      for (i = 0; i < 54; i++) {
+        var spx = rnd() * S, spy = rnd() * S, spr = 0.055 * S * (0.6 + rnd() * 0.8);
+        var spSides = 4 + Math.floor(rnd() * 3), spPts = [];
+        for (var sk = 0; sk < spSides; sk++) {
+          var spa = (sk / spSides) * Math.PI * 2 + rnd() * 0.5;
+          spPts.push((spx + Math.cos(spa) * spr).toFixed(1) + ',' + (spy + Math.sin(spa) * spr).toFixed(1));
+        }
+        g.push(h('polygon', { key: 'sp' + i, points: spPts.join(' '), fill: i % 2 ? cols[0] : cols[1], opacity: 0.95 }));
+      }
+    } else if (art === 'slaty') {
+      // Slate, phyllite and schist all carried texture 'foliated', so all three
+      // drew the same wavy lozenge and differed only in colour. They are the
+      // metamorphic grade sequence — the differences between them ARE the
+      // lesson, and the art was erasing it. Slate splits into flat, smooth
+      // sheets, so its foliation is dead straight.
+      for (i = 1; i < 9; i++) {
+        var sly = (i / 9) * S;
+        g.push(h('line', {
+          key: 'sl' + i, x1: 0, y1: sly.toFixed(1), x2: S, y2: sly.toFixed(1),
+          stroke: pick(i), strokeWidth: 0.9, opacity: 0.7,
+        }));
+      }
+      // One sheet lifted clear of the face — the cleavage you can actually split.
+      g.push(h('path', {
+        key: 'sledge',
+        d: 'M0,' + (S * 0.62).toFixed(1) + ' L' + S + ',' + (S * 0.56).toFixed(1)
+          + ' L' + S + ',' + (S * 0.605).toFixed(1) + ' L0,' + (S * 0.665).toFixed(1) + ' Z',
+        fill: 'rgba(255,255,255,0.22)',
+      }));
+    } else if (art === 'crenulated') {
+      // Phyllite's description calls out a CRINKLED foliation surface and a
+      // satiny sheen. Straight lines showed neither.
+      for (i = 1; i < 12; i++) {
+        var cry = (i / 12) * S;
+        var crd = 'M0,' + cry.toFixed(1);
+        for (var w = 1; w <= 6; w++) {
+          var wx = (w / 6) * S;
+          crd += ' Q' + (wx - S / 12).toFixed(1) + ',' + (cry + (w % 2 ? -1 : 1) * S * 0.030).toFixed(1)
+            + ' ' + wx.toFixed(1) + ',' + cry.toFixed(1);
+        }
+        g.push(h('path', { key: 'cr' + i, d: crd, fill: 'none', stroke: pick(i), strokeWidth: 0.95, opacity: 0.85 }));
+      }
+    } else if (art === 'schistose') {
+      // Schist is defined by mica flakes big enough to SEE, lying in one plane
+      // and flashing as the specimen turns. Featureless bands are exactly what
+      // schist is not.
+      // A foliated silhouette is a flat lozenge that fills only the middle of
+      // the box, so scattering flakes over the whole square put most of them
+      // outside the clip and the specimen came back nearly bare. Slate and
+      // phyllite hid this because they draw lines clear across, so whatever
+      // survived the clip still read as banding.
+      for (i = 0; i < 26; i++) {
+        var mx = S * (0.06 + rnd() * 0.88), my = S * (0.30 + rnd() * 0.40);
+        var mw = S * (0.10 + rnd() * 0.10), mh = S * 0.030;
+        var tilt = (-8 + (rnd() - 0.5) * 10).toFixed(1);
+        var mrot = 'rotate(' + tilt + ' ' + mx.toFixed(1) + ' ' + my.toFixed(1) + ')';
+        g.push(h('rect', {
+          key: 'mk' + i, x: (mx - mw / 2).toFixed(1), y: (my - mh / 2).toFixed(1),
+          width: mw.toFixed(1), height: mh.toFixed(2), rx: (mh / 2).toFixed(2),
+          fill: pick(i + 1), opacity: 0.92, transform: mrot,
+        }));
+        // The sparkle: the flakes that happen to be angled into the light.
+        if (i % 2 === 0) {
+          g.push(h('rect', {
+            key: 'mks' + i, x: (mx - mw / 2).toFixed(1), y: (my - mh / 2).toFixed(1),
+            width: mw.toFixed(1), height: (mh * 0.42).toFixed(2), rx: (mh / 4).toFixed(2),
+            fill: 'rgba(255,255,255,0.72)', transform: mrot,
+          }));
+        }
+      }
+    } else if (art === 'shards') {
+      // Tuff is welded ASH — angular glass shards and pumice scraps. The
+      // vesicular texture drew round gas bubbles, which says pumice, not tuff.
+      for (i = 0; i < 30; i++) {
+        var hx = rnd() * S, hy = rnd() * S, hr = 0.06 * S * (0.6 + rnd() * 1.1);
+        var hPts = [];
+        for (var hk = 0; hk < 4; hk++) {
+          var ha = (hk / 4) * Math.PI * 2 + rnd() * 0.9;
+          var hrr = hr * (0.5 + rnd());
+          hPts.push((hx + Math.cos(ha) * hrr).toFixed(1) + ',' + (hy + Math.sin(ha) * hrr).toFixed(1));
+        }
+        g.push(h('polygon', { key: 'sd' + i, points: hPts.join(' '), fill: pick(i + 1), stroke: 'rgba(0,0,0,0.30)', strokeWidth: 0.5, opacity: 0.95 }));
+      }
+    } else if (tex === 'coarse-grained' || tex === 'crystalline' || tex === 'non-foliated') {
       var n = tex === 'coarse-grained' ? 9 : 12;
       for (i = 0; i < n; i++) {
         var cx2 = rnd() * S, cy2 = rnd() * S;
@@ -316,12 +457,49 @@
       }
     }
 
+    // ADDITIVE features. These lie on top of the rock's own grain rather than
+    // replacing it, because the description names them IN ADDITION to the
+    // texture — a flow-banded rhyolite is still fine-grained.
+    if (art === 'flowbanded') {
+      // "Often with flow banding": the lava was still moving as it froze.
+      for (i = 0; i < 7; i++) {
+        var fby = S * (0.10 + i * 0.125);
+        g.push(h('path', {
+          key: 'fb' + i,
+          d: 'M0,' + fby.toFixed(1) + ' Q' + (S * 0.35).toFixed(1) + ',' + (fby - S * 0.06).toFixed(1)
+            + ' ' + (S * 0.62).toFixed(1) + ',' + fby.toFixed(1) + ' T' + S + ',' + (fby + S * 0.02).toFixed(1),
+          fill: 'none', stroke: pick(i + 1), strokeWidth: (S * 0.035).toFixed(2), opacity: 0.55,
+        }));
+      }
+    } else if (art === 'bandedporous') {
+      // Travertine: "often has a banded, porous appearance". It had neither —
+      // the identical omission its thin section had.
+      for (i = 0; i < 6; i++) {
+        var tby = S * (0.12 + i * 0.145);
+        g.push(h('path', {
+          key: 'tb' + i,
+          d: 'M0,' + tby.toFixed(1) + ' Q' + (S * 0.5).toFixed(1) + ',' + (tby - S * 0.035).toFixed(1) + ' ' + S + ',' + tby.toFixed(1),
+          fill: 'none', stroke: pick(i + 1), strokeWidth: (S * 0.045).toFixed(2), opacity: 0.6,
+        }));
+      }
+      for (i = 0; i < 12; i++) {
+        g.push(h('ellipse', {
+          key: 'tp' + i, cx: (rnd() * S).toFixed(1), cy: (rnd() * S).toFixed(1),
+          rx: (0.05 * S * (0.6 + rnd())).toFixed(2), ry: (0.035 * S * (0.6 + rnd())).toFixed(2),
+          fill: 'rgba(70,58,40,0.42)',
+        }));
+      }
+    }
+
     kids.push(h('g', { key: 'tex', clipPath: 'url(#' + clip + ')' }, g));
 
     // Volume shading over the texture, then a specular only where it belongs —
     // obsidian and metallic-looking rocks catch light, sandstone does not.
+    // Phyllite earns one too: "silky, satiny sheen" is the property its own
+    // description leads with.
     kids.push(h('path', { key: 'shade', d: sil, fill: 'url(#' + shadeId + ')' }));
-    if (tex === 'glassy' || tex === 'crystalline' || tex === 'non-foliated') {
+    if (art === 'conchoidal' || art === 'crenulated'
+      || tex === 'glassy' || tex === 'crystalline' || tex === 'non-foliated') {
       kids.push(h('path', { key: 'gloss', d: sil, fill: 'url(#' + glossId + ')' }));
     }
     // Rim: dark contact edge plus a light catch along the top.
@@ -1850,19 +2028,19 @@ const d = labToolData.rocks || {};
 
             { id: 'basalt', type: 'igneous', label: t('stem.rocks.basalt'), hardness: 6, texture: 'fine-grained', grainColors: ['#374151', '#1f2937', '#4b5563', '#111827'], desc: 'Extrusive igneous rock, the most common volcanic rock. Forms when lava cools quickly at the surface.', uses: 'Road aggregate, construction fill' },
 
-            { id: 'obsidian', type: 'igneous', label: t('stem.rocks.obsidian'), hardness: 5.5, texture: 'glassy', grainColors: ['#0f0f0f', '#1a1a2e', '#16213e', '#0a0a0a'], desc: 'Volcanic glass formed when lava cools extremely rapidly. Conchoidal fracture.', uses: 'Surgical scalpels, jewelry, ancient tools' },
+            { id: 'obsidian', type: 'igneous', art: 'conchoidal', label: t('stem.rocks.obsidian'), hardness: 5.5, texture: 'glassy', grainColors: ['#0f0f0f', '#1a1a2e', '#16213e', '#0a0a0a'], desc: 'Volcanic glass formed when lava cools extremely rapidly. Conchoidal fracture.', uses: 'Surgical scalpels, jewelry, ancient tools' },
 
             { id: 'pumice', type: 'igneous', label: t('stem.rocks.pumice'), hardness: 6, texture: 'vesicular', grainColors: ['#d6d3d1', '#e7e5e4', '#a8a29e', '#f5f5f4'], desc: 'Light, porous volcanic rock full of gas bubbles. So light it can float on water!', uses: 'Abrasive cleaning, lightweight aggregate' },
 
-            { id: 'rhyolite', type: 'igneous', label: t('stem.rocks.rhyolite'), hardness: 6, texture: 'fine-grained', grainColors: ['#fca5a5', '#e5e7eb', '#d1d5db', '#fecaca'], desc: 'Extrusive equivalent of granite. Light-colored fine-grained volcanic rock, often with flow banding. Rich in silica (>69%). Erupts explosively due to high viscosity.', uses: 'Aggregate, decorative stone, gemstone (thundereggs)' },
+            { id: 'rhyolite', type: 'igneous', art: 'flowbanded', label: t('stem.rocks.rhyolite'), hardness: 6, texture: 'fine-grained', grainColors: ['#fca5a5', '#e5e7eb', '#d1d5db', '#fecaca'], desc: 'Extrusive equivalent of granite. Light-colored fine-grained volcanic rock, often with flow banding. Rich in silica (>69%). Erupts explosively due to high viscosity.', uses: 'Aggregate, decorative stone, gemstone (thundereggs)' },
 
-            { id: 'diorite', type: 'igneous', label: t('stem.rocks.diorite'), hardness: 6, texture: 'coarse-grained', grainColors: ['#1e1e1e', '#fafafa', '#4b5563', '#e5e7eb'], desc: 'Intrusive igneous rock with a "salt and pepper" appearance. Intermediate composition between granite and gabbro. Contains plagioclase feldspar and hornblende.', uses: 'Building stone, cobblestones, ancient sculptures (Inca)' },
+            { id: 'diorite', type: 'igneous', art: 'saltpepper', label: t('stem.rocks.diorite'), hardness: 6, texture: 'coarse-grained', grainColors: ['#1e1e1e', '#fafafa', '#4b5563', '#e5e7eb'], desc: 'Intrusive igneous rock with a "salt and pepper" appearance. Intermediate composition between granite and gabbro. Contains plagioclase feldspar and hornblende.', uses: 'Building stone, cobblestones, ancient sculptures (Inca)' },
 
             { id: 'andesite', type: 'igneous', label: t('stem.rocks.andesite'), hardness: 6, texture: 'fine-grained', grainColors: ['#94a3b8', '#9ca3af', '#4b5563', '#d1d5db'], desc: 'Intermediate volcanic rock named after the Andes Mountains. Common at convergent plate boundaries. Often contains visible phenocrysts in a fine matrix (porphyritic texture).', uses: 'Construction aggregate, monuments' },
 
-            { id: 'tuff', type: 'igneous', label: t('stem.rocks.tuff'), hardness: 4, texture: 'vesicular', grainColors: ['#fde68a', '#d6d3d1', '#a8a29e', '#e7e5e4'], desc: 'Consolidated volcanic ash. Formed when explosive eruptions blast fine particles into the air, which settle and lithify. Can contain pumice fragments and glass shards.', uses: 'Building stone (ancient Rome), lightweight concrete, water filtration' },
+            { id: 'tuff', type: 'igneous', art: 'shards', label: t('stem.rocks.tuff'), hardness: 4, texture: 'vesicular', grainColors: ['#d9d3c6', '#c0b9a8', '#a39c8c', '#ece7dc'], desc: 'Consolidated volcanic ash. Formed when explosive eruptions blast fine particles into the air, which settle and lithify. Can contain pumice fragments and glass shards.', uses: 'Building stone (ancient Rome), lightweight concrete, water filtration' },
 
-            { id: 'sandstone', type: 'sedimentary', label: t('stem.rocks.sandstone'), hardness: 6.5, texture: 'clastic', grainColors: ['#d97706', '#fbbf24', '#b45309', '#f59e0b'], desc: 'Made of sand-sized quartz grains cemented together. Often shows cross-bedding from ancient dunes or rivers.', uses: 'Building stone, flagstone, aquifers' },
+            { id: 'sandstone', type: 'sedimentary', label: t('stem.rocks.sandstone'), hardness: 6.5, texture: 'clastic', grainColors: ['#d8c19a', '#c2a878', '#a98f61', '#eee0c6'], desc: 'Made of sand-sized quartz grains cemented together. Often shows cross-bedding from ancient dunes or rivers.', uses: 'Building stone, flagstone, aquifers' },
 
             { id: 'limestone', type: 'sedimentary', label: t('stem.rocks.limestone'), hardness: 3, texture: 'bioclastic', grainColors: ['#e5e7eb', '#d1d5db', '#f3f4f6', '#fef9c3'], desc: 'Composed mainly of calcite (CaCO\u2083). Often contains fossils. Fizzes with acid!', uses: 'Cement, lime, building stone, chalk' },
 
@@ -1872,19 +2050,19 @@ const d = labToolData.rocks || {};
 
             { id: 'chalk', type: 'sedimentary', label: t('stem.rocks.chalk'), hardness: 1, texture: 'bioclastic', grainColors: ['#fafafa', '#f5f5f4', '#e5e7eb', '#ffffff'], desc: 'Soft, white limestone made of microscopic plankton shells (coccoliths). The White Cliffs of Dover are chalk. Extremely fine-grained, each grain is a tiny fossil!', uses: 'Blackboard chalk, whiting, soil amendment, toothpaste' },
 
-            { id: 'travertine', type: 'sedimentary', label: t('stem.rocks.travertine'), hardness: 4, texture: 'crystalline', grainColors: ['#fef3c7', '#fde68a', '#fafaf9', '#e7e5e4'], desc: 'Chemical sedimentary rock deposited from mineral-rich hot springs and cave systems. Often has a banded, porous appearance. Forms stalactites and stalagmites in caves.', uses: 'Flooring, countertops, building facades (Colosseum in Rome)' },
+            { id: 'travertine', type: 'sedimentary', art: 'bandedporous', label: t('stem.rocks.travertine'), hardness: 4, texture: 'crystalline', grainColors: ['#fef3c7', '#fde68a', '#fafaf9', '#e7e5e4'], desc: 'Chemical sedimentary rock deposited from mineral-rich hot springs and cave systems. Often has a banded, porous appearance. Forms stalactites and stalagmites in caves.', uses: 'Flooring, countertops, building facades (Colosseum in Rome)' },
 
             { id: 'marble', type: 'metamorphic', label: t('stem.rocks.marble'), hardness: 3.5, texture: 'crystalline', grainColors: ['#fafafa', '#e5e7eb', '#f3f4f6', '#dbeafe'], desc: 'Metamorphosed limestone. Interlocking calcite crystals give it a sugary texture. Used by sculptors for millennia.', uses: 'Sculpture, flooring, tombstones' },
 
-            { id: 'slate', type: 'metamorphic', label: t('stem.rocks.slate'), hardness: 5.5, texture: 'foliated', grainColors: ['#374151', '#475569', '#334155', '#1e293b'], desc: 'Metamorphosed shale. Excellent foliation, splits into flat, smooth sheets.', uses: 'Roofing tiles, chalkboards, flooring' },
+            { id: 'slate', type: 'metamorphic', art: 'slaty', label: t('stem.rocks.slate'), hardness: 5.5, texture: 'foliated', grainColors: ['#374151', '#475569', '#334155', '#1e293b'], desc: 'Metamorphosed shale. Excellent foliation, splits into flat, smooth sheets.', uses: 'Roofing tiles, chalkboards, flooring' },
 
             { id: 'quartzite', type: 'metamorphic', label: t('stem.rocks.quartzite'), hardness: 7, texture: 'non-foliated', grainColors: ['#f5f5f4', '#fafaf9', '#e7e5e4', '#e0f2fe'], desc: 'Metamorphosed sandstone. Extremely hard, even harder than granite. Quartz grains fuse together.', uses: 'Railroad ballast, decorative stone' },
 
             { id: 'gneiss', type: 'metamorphic', label: t('stem.rocks.gneiss'), hardness: 7, texture: 'banded', grainColors: ['#1e1e1e', '#fafafa', '#94a3b8', '#d4d4d8'], desc: 'Shows distinct light and dark mineral banding. Forms under extreme heat and pressure deep in the crust.', uses: 'Decorative stone, construction' },
 
-            { id: 'schist', type: 'metamorphic', label: t('stem.rocks.schist'), hardness: 5, texture: 'foliated', grainColors: ['#78716c', '#a8a29e', '#57534e', '#d6d3d1'], desc: 'Medium-grade metamorphic rock with visible, aligned mica flakes that give it a sparkly, shiny appearance. Forms from shale under moderate heat and pressure. Named for its tendency to split (Greek "schizein" = to split).', uses: 'Decorative landscaping, flagstone, historical millstones' },
+            { id: 'schist', type: 'metamorphic', art: 'schistose', label: t('stem.rocks.schist'), hardness: 5, texture: 'foliated', grainColors: ['#78716c', '#a8a29e', '#57534e', '#d6d3d1'], desc: 'Medium-grade metamorphic rock with visible, aligned mica flakes that give it a sparkly, shiny appearance. Forms from shale under moderate heat and pressure. Named for its tendency to split (Greek "schizein" = to split).', uses: 'Decorative landscaping, flagstone, historical millstones' },
 
-            { id: 'phyllite', type: 'metamorphic', label: t('stem.rocks.phyllite'), hardness: 4, texture: 'foliated', grainColors: ['#4b5563', '#94a3b8', '#374151', '#9ca3af'], desc: 'Between slate and schist in metamorphic grade. Has a distinctive silky, satiny sheen from microscopic mica crystals. Crinkled foliation surface (crenulations). The stepping stone between low and medium metamorphism.', uses: 'Decorative stone, garden paths, grave markers' }
+            { id: 'phyllite', type: 'metamorphic', art: 'crenulated', label: t('stem.rocks.phyllite'), hardness: 4, texture: 'foliated', grainColors: ['#4b5563', '#94a3b8', '#374151', '#9ca3af'], desc: 'Between slate and schist in metamorphic grade. Has a distinctive silky, satiny sheen from microscopic mica crystals. Crinkled foliation surface (crenulations). The stepping stone between low and medium metamorphism.', uses: 'Decorative stone, garden paths, grave markers' }
 
           ];
 
