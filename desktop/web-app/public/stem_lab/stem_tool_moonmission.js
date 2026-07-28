@@ -1067,6 +1067,148 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 })
               )
             ),
+            // \u2500\u2500 Mission profile \u2500\u2500
+            // The briefing was the one phase with no picture at all, which is backwards:
+            // it is the moment a student most needs to see the shape of the thing. This is
+            // the diagram every Apollo crew was briefed against \u2014 the whole arc, with the
+            // five burns that define it, and a marker walking the route so the order is
+            // unmistakable before anyone touches a control.
+            h('div', { className: 'mb-3' },
+              h('p', { className: 'text-[11px] text-slate-200 font-bold mb-2' }, t('stem.moonmission.mission_profile', '\uD83D\uDDFA\uFE0F MISSION PROFILE')),
+              h('div', { className: 'relative rounded-lg overflow-hidden border border-white/10', style: { height: '190px' } },
+                h('canvas', {
+                  'data-profile-canvas': 'true',
+                  role: 'img',
+                  'aria-label': t('stem.moonmission.mission_profile_diagram', 'Diagram of the whole mission path. From Earth: launch to low Earth orbit, then the trans-lunar injection burn sends the spacecraft on a three-day coast to the Moon. Lunar orbit insertion captures it into orbit, powered descent lands the Lunar Module, ascent returns it to the Command Module, then the trans-Earth injection burn starts the coast home, ending with atmospheric entry and splashdown.'),
+                  style: { width: '100%', height: '100%', display: 'block' },
+                  ref: function(cvEl) {
+                    if (!cvEl || cvEl._profileInit) return;
+                    cvEl._profileInit = true;
+                    var ctx = cvEl.getContext('2d');
+                    if (!ctx) return;
+                    var W = cvEl.offsetWidth || 500, HP = cvEl.offsetHeight || 190;
+                    cvEl.width = W * 2; cvEl.height = HP * 2; ctx.scale(2, 2);
+                    if (typeof ResizeObserver === 'function' && !cvEl._mmRO) { cvEl._mmRO = new ResizeObserver(function() { var nw = cvEl.offsetWidth, nh = cvEl.offsetHeight; if (nw > 0 && nh > 0 && (nw !== W || nh !== HP)) { W = nw; HP = nh; cvEl.width = nw * 2; cvEl.height = nh * 2; ctx.setTransform(2, 0, 0, 2, 0, 0); } }); cvEl._mmRO.observe(cvEl); }
+                    var tick = 0;
+
+                    // One continuous parameterisation of the route, so a single marker can
+                    // walk the whole mission without the segments having to know about
+                    // each other. Fractions are eyeballed for readability, NOT to scale \u2014
+                    // the real coast dwarfs everything else and would flatten the diagram.
+                    function profilePoint(p, geom) {
+                      var eX = geom.eX, eY = geom.eY, eR = geom.eR, mX = geom.mX, mY = geom.mY, mR = geom.mR;
+                      if (p < 0.14) {                                   // launch + LEO
+                        var a = -Math.PI * 0.5 + (p / 0.14) * Math.PI * 3;
+                        var rr = eR + 12;
+                        return { x: eX + Math.cos(a) * rr, y: eY + Math.sin(a) * rr * 0.55 };
+                      }
+                      if (p < 0.46) {                                   // trans-lunar coast
+                        var q = (p - 0.14) / 0.32;
+                        var sx = eX + eR + 12, sy = eY;
+                        var cx1 = (eX + mX) * 0.5, cy1 = eY - (eY - mY) - 46;
+                        var ex1 = mX - mR - 10, ey1 = mY + mR * 0.4;
+                        var om = 1 - q;
+                        return { x: om * om * sx + 2 * om * q * cx1 + q * q * ex1,
+                                 y: om * om * sy + 2 * om * q * cy1 + q * q * ey1 };
+                      }
+                      if (p < 0.62) {                                   // lunar orbit (2 loops)
+                        var b = Math.PI * 0.85 + ((p - 0.46) / 0.16) * Math.PI * 4;
+                        var mr = mR + 17;                               // wide enough to read as an orbit, not a smudge
+                        return { x: mX + Math.cos(b) * mr, y: mY + Math.sin(b) * mr * 0.62 };
+                      }
+                      if (p < 0.94) {                                   // trans-Earth coast
+                        var q2 = (p - 0.62) / 0.32;
+                        var sx2 = mX - mR - 10, sy2 = mY + mR * 0.4;
+                        var cx2 = (eX + mX) * 0.5, cy2 = eY + 58;
+                        var ex2 = eX + eR + 10, ey2 = eY + 6;
+                        var om2 = 1 - q2;
+                        return { x: om2 * om2 * sx2 + 2 * om2 * q2 * cx2 + q2 * q2 * ex2,
+                                 y: om2 * om2 * sy2 + 2 * om2 * q2 * cy2 + q2 * q2 * ey2 };
+                      }
+                      var q3 = (p - 0.94) / 0.06;                       // entry
+                      return { x: eX + eR + 10 - q3 * (eR + 6), y: eY + 6 - q3 * 4 };
+                    }
+
+                    function drawProfile() {
+                      tick++;
+                      ctx.clearRect(0, 0, W, HP);
+                      ctx.fillStyle = '#05070f'; ctx.fillRect(0, 0, W, HP);
+                      drawStarfield(ctx, W, HP, tick, 55);
+
+                      var geom = {
+                        eX: Math.max(52, W * 0.16), eY: HP * 0.58, eR: Math.min(22, HP * 0.13),
+                        mX: Math.min(W - 44, W * 0.84), mY: HP * 0.3, mR: Math.min(12, HP * 0.08)
+                      };
+
+                      // Route first, so both bodies sit on top of it.
+                      ctx.save();
+                      ctx.strokeStyle = 'rgba(125,211,252,0.4)';
+                      ctx.lineWidth = 1.2; ctx.setLineDash([4, 3]);
+                      ctx.beginPath();
+                      for (var s = 0; s <= 240; s++) {
+                        var pt = profilePoint(s / 240, geom);
+                        if (s === 0) ctx.moveTo(pt.x, pt.y); else ctx.lineTo(pt.x, pt.y);
+                      }
+                      ctx.stroke(); ctx.setLineDash([]);
+                      ctx.restore();
+
+                      drawDetailedEarth(ctx, geom.eX, geom.eY, geom.eR, tick);
+                      drawDetailedMoon(ctx, geom.mX, geom.mY, geom.mR, 42);
+
+                      // The five burns that define the shape of the mission.
+                      // Explicit label offsets: LOI, PDI and TEI all happen within a few
+                      // pixels of the Moon, so without them the three captions stack on top
+                      // of each other and LOI simply disappears. A leader line keeps each
+                      // caption tied to its own dot.
+                      var burns = [
+                        { p: 0.14, label: 'TLI', dx: 4, dy: -13 },
+                        { p: 0.46, label: 'LOI', dx: -22, dy: -13 },
+                        { p: 0.55, label: 'PDI', dx: 6, dy: 20 },
+                        { p: 0.62, label: 'TEI', dx: 24, dy: -8 },
+                        { p: 0.98, label: 'EI', dx: -6, dy: 22 }
+                      ];
+                      burns.forEach(function(b) {
+                        var bp = profilePoint(b.p, geom);
+                        var lx = bp.x + b.dx, ly = bp.y + b.dy;
+                        ctx.strokeStyle = 'rgba(251,191,36,0.45)'; ctx.lineWidth = 0.8;
+                        ctx.beginPath(); ctx.moveTo(bp.x, bp.y); ctx.lineTo(lx, ly + (b.dy < 0 ? 2 : -6)); ctx.stroke();
+                        ctx.fillStyle = '#fbbf24';
+                        ctx.beginPath(); ctx.arc(bp.x, bp.y, 2.6, 0, Math.PI * 2); ctx.fill();
+                        ctx.font = 'bold 8px monospace'; ctx.textAlign = 'center';
+                        ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(5,7,15,0.92)';
+                        ctx.strokeText(b.label, lx, ly);
+                        ctx.fillStyle = '#fcd34d';
+                        ctx.fillText(b.label, lx, ly);
+                      });
+
+                      // Marker walking the route.
+                      var prog = (tick % 900) / 900;
+                      var cur = profilePoint(prog, geom);
+                      ctx.save();
+                      ctx.shadowColor = 'rgba(125,211,252,0.9)'; ctx.shadowBlur = 8;
+                      ctx.fillStyle = '#e0f2fe';
+                      ctx.beginPath(); ctx.arc(cur.x, cur.y, 3.1, 0, Math.PI * 2); ctx.fill();
+                      ctx.restore();
+
+                      // Name the leg the marker is on.
+                      var legName = prog < 0.14 ? 'Launch + Earth orbit'
+                        : prog < 0.46 ? 'Trans-lunar coast \u2014 3 days'
+                        : prog < 0.62 ? 'Lunar orbit, descent + ascent'
+                        : prog < 0.94 ? 'Trans-Earth coast \u2014 3 days'
+                        : 'Re-entry + splashdown';
+                      ctx.font = 'italic 10px system-ui'; ctx.textAlign = 'center';
+                      ctx.fillStyle = 'rgba(165,180,252,0.95)';
+                      ctx.fillText(legName, W * 0.5, HP - 8);
+                      ctx.font = '8px system-ui'; ctx.fillStyle = 'rgba(148,163,184,0.7)';
+                      ctx.fillText('Distances not to scale', W * 0.5, 12);
+
+                      if (document.contains(cvEl)) requestAnimationFrame(drawProfile);
+                    }
+                    drawProfile();
+                  }
+                })
+              )
+            ),
             h('div', { className: 'mb-3' },
               h('p', { className: 'text-[11px] text-slate-200 font-bold mb-2' }, t('stem.moonmission.your_crew', '\uD83D\uDC68\u200D\uD83D\uDE80 YOUR CREW')),
               h('div', { className: 'grid grid-cols-3 gap-2' },
@@ -2095,6 +2237,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   var crashed = false;
                   var alarms = [];
                   var landingRecorded = false;   // outcome is written to state exactly once
+                  // Attitude. A rocket has no sideways thruster worth the name: it TILTS and
+                  // points its main engine, so the same burn that holds you up also pushes
+                  // you across. The LM used to slide laterally bolt upright, like a lift,
+                  // which hides the one idea the descent is actually teaching.
+                  var tilt = 0;
 
                   // Controls
                   var keys = {};
@@ -2115,8 +2262,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       } else {
                         thrust *= 0.95;
                       }
-                      if (keys['ArrowLeft'] || keys['a'] || keys['A']) hVel -= 0.5;
-                      if (keys['ArrowRight'] || keys['d'] || keys['D']) hVel += 0.5;
+                      var tiltCmd = 0;
+                      if (keys['ArrowLeft'] || keys['a'] || keys['A']) { hVel -= 0.5; tiltCmd = -0.32; }
+                      if (keys['ArrowRight'] || keys['d'] || keys['D']) { hVel += 0.5; tiltCmd = 0.32; }
+                      tilt += (tiltCmd - tilt) * 0.07;   // eased, so the vehicle swings rather than snapping
 
                       // Physics
                       var gravity = (diffSettings && diffSettings.gravity) || 1.62; // Moon gravity m/s^2 (difficulty-scaled)
@@ -2184,6 +2333,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 
                     // ── Enhanced Lunar Module ──
                     var lmX = W * 0.5, lmY = Math.min(surfaceY - 18, H * 0.5);
+                    // Everything from here to the end of the exhaust plume is drawn in the
+                    // vehicle's own tilted frame, so the engine bell and flame point where
+                    // the thrust actually goes.
+                    ctx.save();
+                    ctx.translate(lmX, lmY);
+                    ctx.rotate(tilt);
+                    ctx.translate(-lmX, -lmY);
                     // Descent stage (octagonal gold foil)
                     ctx.fillStyle = '#c9a04a';
                     ctx.beginPath();
@@ -2253,17 +2409,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       ctx.quadraticCurveTo(lmX, lmY + 16 + fLen * 0.3, lmX, lmY + 16 + fLen * 0.65);
                       ctx.quadraticCurveTo(lmX, lmY + 16 + fLen * 0.3, lmX + fW * 0.3, lmY + 16);
                       ctx.fill();
-                      // Surface dust kick-up near landing
-                      if (alt < 200 && surfaceY < H) {
-                        ctx.globalAlpha = 0.15 * (1 - alt / 200);
-                        ctx.fillStyle = '#b0a898';
-                        for (var di = 0; di < 6; di++) {
-                          var dx = lmX + (Math.random() - 0.5) * 60;
-                          var dy = surfaceY + 2 + Math.random() * 8;
-                          ctx.beginPath(); ctx.arc(dx, dy, 3 + Math.random() * 6, 0, Math.PI * 2); ctx.fill();
-                        }
-                        ctx.globalAlpha = 1;
+                    }
+                    ctx.restore();   // ── end of the vehicle's tilted frame ──
+                    // Surface dust, drawn in WORLD space: the regolith does not bank with
+                    // the spacecraft. It also blows downrange of the tilt, because that is
+                    // where the plume is now pointing.
+                    if (thrust > 0.1 && fuel > 0 && alt < 200 && surfaceY < H) {
+                      ctx.globalAlpha = 0.15 * (1 - alt / 200);
+                      ctx.fillStyle = '#b0a898';
+                      for (var di = 0; di < 6; di++) {
+                        var dx = lmX + Math.sin(tilt) * 34 + (Math.random() - 0.5) * 60;
+                        var dy = surfaceY + 2 + Math.random() * 8;
+                        ctx.beginPath(); ctx.arc(dx, dy, 3 + Math.random() * 6, 0, Math.PI * 2); ctx.fill();
                       }
+                      ctx.globalAlpha = 1;
                     }
 
                     // HUD
