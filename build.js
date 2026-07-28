@@ -1920,11 +1920,26 @@ if (dryRun) {
         const isSubdir = f.includes('/');
         const destDir = isSubdir ? path.join(PUBLIC_DIR, path.dirname(f)) : PUBLIC_DIR;
         const dest = path.join(destDir, path.basename(f));
-        // For stem_lab_module.js, copy to public root (not public/stem_lab/)
-        const finalDest = f === 'stem_lab/stem_lab_module.js' ? path.join(PUBLIC_DIR, 'stem_lab_module.js') : dest;
+        // stem_lab_module.js goes to BOTH public/ and public/stem_lab/.
+        //
+        // The desktop app loads './stem_lab/stem_lab_module.js' (see
+        // desktop/web-app/src/App.jsx), so the subdirectory copy is the one it
+        // actually executes. This step used to write ONLY the public-root copy,
+        // which no loader references, leaving the live desktop file to be
+        // hand-mirrored with cp. It drifted: the desktop app was running a host
+        // module 249 lines behind root, missing StemLab.makeOrbitViewer, so
+        // Bridge Lab quietly fell back to its 2D elevation on desktop while the
+        // CDN build (which serves the repo-root stem_lab/) was fine.
+        // The public-root copy is kept so anything still resolving the old path
+        // does not break.
+        const finalDests = f === 'stem_lab/stem_lab_module.js'
+            ? [path.join(PUBLIC_DIR, 'stem_lab_module.js'), dest]
+            : [dest];
         if (fs.existsSync(src)) {
-            if (!fs.existsSync(path.dirname(finalDest))) fs.mkdirSync(path.dirname(finalDest), { recursive: true });
-            fs.copyFileSync(src, finalDest);
+            finalDests.forEach((finalDest) => {
+                if (!fs.existsSync(path.dirname(finalDest))) fs.mkdirSync(path.dirname(finalDest), { recursive: true });
+                fs.copyFileSync(src, finalDest);
+            });
             copyCount++;
         }
     });
