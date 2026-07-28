@@ -728,3 +728,104 @@ describe('swatch renderers declare their loop counters', () => {
     });
   });
 });
+
+// ── The quiz has to be answerable ───────────────────────────────────────────
+//
+// A question is marked right by comparing the chosen option to `a` BY VALUE:
+//   const correct = opt === quizQ.a;
+// So a typo in either — or an `a` that was edited without its option, or an
+// option list translated through t() while `a` stayed a literal — makes that
+// question silently unanswerable. Every choice reads "Incorrect", the student
+// cannot proceed to a correct answer, and nothing logs anything.
+//
+// These drive the REAL option handlers for every question in the bank rather
+// than parsing the source, because the failure is a runtime value comparison.
+describe('quiz bank is answerable', () => {
+  /** Click option `optIdx` on question `qIdx` and report what the tool decided. */
+  function answer(qIdx, optIdx) {
+    const store = { rocks: { mode: 'quiz', quizMode: true, quizIdx: qIdx, quizFeedback: null }, rockCycle: {} };
+    const ctx = makeCtx({
+      toolData: store,
+      setToolData: (fnOrObj) => {
+        const next = typeof fnOrObj === 'function' ? fnOrObj(store) : fnOrObj;
+        Object.assign(store, next);
+      },
+    });
+    const tree = window.StemLab._registry.rocks.render(ctx);
+    // Option buttons are the ones labelled "Answer N: <option>". An earlier
+    // version of this helper fell back to "any button" when it could not find
+    // them, which meant it clicked page chrome, recorded nothing, and skipped
+    // every question — the suite passed with a deliberately broken answer.
+    const opts = findAll(tree, (n) =>
+      n.type === 'button' && n.props && typeof n.props.onClick === 'function'
+      && typeof n.props['aria-label'] === 'string' && /^Answer \d+:/.test(n.props['aria-label']));
+    if (!opts[optIdx]) return null;
+    opts[optIdx].props.onClick();
+    return store.rocks.quizFeedback;
+  }
+
+  function quizLength() {
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    const start = src.indexOf('const QUIZ_BANK = [');
+    const bank = src.slice(start, src.indexOf('\n          ];', start));
+    return bank.split(/\n            \{\n/).length - 1;
+  }
+
+  it('has a bank of questions', () => {
+    expect(quizLength()).toBeGreaterThanOrEqual(30);
+  });
+
+  it('marks exactly one option correct for every question', () => {
+    const n = quizLength();
+    const unanswerable = [];
+    const ambiguous = [];
+    for (let q = 0; q < n; q++) {
+      let correctCount = 0;
+      let reached = 0;
+      for (let o = 0; o < 4; o++) {
+        const fb = answer(q, o);
+        if (!fb) continue;
+        reached++;
+        if (fb.correct) correctCount++;
+      }
+      // Never skip: a question whose options cannot be reached is itself the
+      // bug this test exists to catch, and skipping is how it went vacuous.
+      expect(reached, `question ${q + 1}: no option buttons rendered`).toBeGreaterThan(0);
+      if (correctCount === 0) unanswerable.push(q + 1);
+      if (correctCount > 1) ambiguous.push(q + 1);
+    }
+    expect(unanswerable, 'question(s) where no option is accepted as correct').toEqual([]);
+    expect(ambiguous, 'question(s) where more than one option is accepted').toEqual([]);
+  });
+
+  it('gives every option its own explanation', () => {
+    // wrongFeedback is indexed by the option the student chose, so a short
+    // array hands the LAST options an undefined explanation.
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    const start = src.indexOf('const QUIZ_BANK = [');
+    const bank = src.slice(start, src.indexOf('\n          ];', start));
+    const entries = bank.split(/\n            \{\n/).slice(1);
+    const countTop = (body) => {
+      let depth = 0, quote = null, n = body.trim() ? 1 : 0;
+      for (let i = 0; i < body.length; i++) {
+        const c = body[i];
+        if (quote) { if (c === quote && body[i - 1] !== '\\') quote = null; continue; }
+        if (c === "'" || c === '"') { quote = c; continue; }
+        if (c === '(' || c === '[') depth++;
+        else if (c === ')' || c === ']') depth--;
+        else if (c === ',' && depth === 0) n++;
+      }
+      return n;
+    };
+    const bad = [];
+    entries.forEach((e, i) => {
+      const om = /options:\s*\[([\s\S]*?)\],\n/.exec(e);
+      const wm = /wrongFeedback:\s*\[([\s\S]*?)\]\n/.exec(e);
+      if (!om || !wm) return;
+      const nOpts = countTop(om[1]);
+      const nFb = countTop(wm[1]);
+      if (nOpts !== nFb) bad.push(`Q${i + 1}: ${nOpts} options vs ${nFb} explanations`);
+    });
+    expect(bad).toEqual([]);
+  });
+});
