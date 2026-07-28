@@ -126,8 +126,40 @@ const highlightGlossaryTerms = (text, glossary, isCloze = false, isDarkBg = fals
       });
       const sortedTerms = Array.from(termMap.keys()).sort((a, b) => b.length - a.length);
       if (sortedTerms.length === 0) return text;
-      const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]]/g, '$&');
-      const pattern = new RegExp(`\\b(${sortedTerms.map(t => escapeRegExp(t)).join('|')})\\b`, 'gi');
+      // '$&' is the MATCHED TEXT — the old version replaced each metacharacter
+      // with itself, so this escaped nothing. A term like "C++" went into the
+      // pattern raw.
+      const escapeRegExp = (string) => String(string).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      // \b is ASCII-only in JS: it treats every non-Latin character as a
+      // non-word char, so `\bмозг\b` never matched and NO blanks were created
+      // at all for Russian, Arabic, Chinese, Greek… Cloze silently did nothing
+      // in those languages.
+      //
+      // Latin/Cyrillic/Greek/Arabic separate words with spaces, so they need a
+      // Unicode-aware boundary to avoid matching inside a longer word. CJK and
+      // Thai are written without word separators — a boundary assertion there
+      // would reject every legitimate match — so those terms match as plain
+      // substrings.
+      const NO_WORD_BREAK = /[぀-ヿ㐀-䶿一-鿿豈-﫿฀-๿]/;
+      const boundaried = [];
+      const substringy = [];
+      sortedTerms.forEach((term) => {
+        (NO_WORD_BREAK.test(term) ? substringy : boundaried).push(escapeRegExp(term));
+      });
+      const buildPattern = () => {
+        const branches = [];
+        if (boundaried.length) branches.push(`(?<![\\p{L}\\p{N}])(?:${boundaried.join('|')})(?![\\p{L}\\p{N}])`);
+        if (substringy.length) branches.push(`(?:${substringy.join('|')})`);
+        return new RegExp(`(${branches.join('|')})`, 'giu');
+      };
+      let pattern;
+      try {
+        pattern = buildPattern();
+      } catch (_) {
+        // Lookbehind is unavailable on some older engines — fall back to the
+        // ASCII boundary rather than crashing the whole passage render.
+        pattern = new RegExp(`\\b(${sortedTerms.map(t => escapeRegExp(t)).join('|')})\\b`, 'gi');
+      }
       const parts = text.split(pattern);
       return parts.map((part, i) => {
            if (part == null) return part;
@@ -136,10 +168,22 @@ const highlightGlossaryTerms = (text, glossary, isCloze = false, isDarkBg = fals
               const item = termMap.get(lowerPart);
               if (isCloze) {
                   const uniqueId = `cloze-${i}-${item.term}-${text.length}`;
+                  // The bank may offer the term in the passage's language while
+                  // the glossary's canonical term is English. Accept EITHER, or
+                  // dragging the correct chip is rejected: the bank showed
+                  // "célula" and the blank was still checking against "cell".
+                  const _translated = (() => {
+                    if (leveledTextLanguage === 'English') return '';
+                    const tr = item.translations && item.translations[leveledTextLanguage];
+                    if (!tr) return '';
+                    return String(tr).includes(':') ? String(tr).split(':')[0].trim() : String(tr).trim();
+                  })();
                   return (
                       <ClozeInput
                           key={i}
                           targetWord={item.term}
+                          acceptedAnswers={_translated ? [item.term, _translated] : [item.term]}
+                          displayWord={_translated || item.term}
                           isSolved={clozeInstanceSet.has(uniqueId)}
                           onCorrect={(word) => {
                               if (!clozeInstanceSet.has(uniqueId)) {

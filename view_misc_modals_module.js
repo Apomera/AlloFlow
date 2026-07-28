@@ -19,6 +19,8 @@ var _lazyIcon = function (name) {
 };
 // Icons used across the 4 modals (de-duplicated):
 var Check = _lazyIcon('Check');
+var ChevronDown = _lazyIcon('ChevronDown');
+var ChevronRight = _lazyIcon('ChevronRight');
 var CheckCircle2 = _lazyIcon('CheckCircle2');
 var Clock = _lazyIcon('Clock');
 var FileText = _lazyIcon('FileText');
@@ -100,7 +102,45 @@ function UDLGuideModal(props) {
     udlStandardFramework,
     udlStandardGrade
   } = props;
+  const [standardToolsOpen, setStandardToolsOpen] = useState(() => {
+    try {
+      return localStorage.getItem("allo_udl_standard_tools_open") === "1";
+    } catch (_) {
+      return false;
+    }
+  });
+  const toggleStandardTools = () => setStandardToolsOpen((prev) => {
+    const next = !prev;
+    try {
+      localStorage.setItem("allo_udl_standard_tools_open", next ? "1" : "0");
+    } catch (_) {
+    }
+    return next;
+  });
+  const [isCollapsed, setIsCollapsed] = useState(false);
   if (!showUDLGuide) return null;
+  if (isCollapsed) {
+    return /* @__PURE__ */ React.createElement("div", { style: { zIndex: showStemLab ? 10490 : void 0 }, className: `allo-docsuite fixed z-[100] bottom-4 right-4 rounded-2xl shadow-lg overflow-hidden ${chatStyles.container}` }, /* @__PURE__ */ React.createElement("div", { className: `px-3 py-2 flex items-center gap-2 ${chatStyles.header}` }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 16 }), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-sm" }, t("chat_guide.header")), isChatProcessing && /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "animate-spin" }), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => setIsCollapsed(false),
+        className: "hover:bg-white/20 p-1 rounded transition-colors ml-1",
+        title: t("chat_guide.restore") || "Restore chat",
+        "aria-label": t("chat_guide.restore") || "Restore chat"
+      },
+      /* @__PURE__ */ React.createElement(Maximize, { size: 16 })
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: handleSetShowUDLGuideToFalse,
+        className: "hover:bg-white/20 p-1 rounded transition-colors",
+        "aria-label": t("common.close")
+      },
+      /* @__PURE__ */ React.createElement(X, { size: 16 })
+    )));
+  }
   return /* @__PURE__ */ React.createElement("div", { style: { zIndex: showStemLab ? 10490 : void 0 }, className: `allo-docsuite fixed z-[100] rounded-2xl flex flex-col animate-in fade-in slide-in-from-right-5 duration-300 overflow-hidden transition-all ${isUDLGuideExpanded ? "inset-4 top-24" : "top-24 right-4 bottom-4 w-96"} ${isSpotlightMode ? "opacity-20 hover:opacity-100 pointer-events-none hover:pointer-events-auto" : "opacity-100"} ${chatStyles.container}` }, /* @__PURE__ */ React.createElement("div", { className: `p-4 flex justify-between items-center shrink-0 ${chatStyles.header}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 font-bold" }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 18 }), " ", t("chat_guide.header")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -167,7 +207,18 @@ function UDLGuideModal(props) {
       title: isUDLGuideExpanded ? t("common.minimize") : t("common.maximize")
     },
     isUDLGuideExpanded ? /* @__PURE__ */ React.createElement(Minimize, { size: 18 }) : /* @__PURE__ */ React.createElement(Maximize, { size: 18 })
-  ), /* @__PURE__ */ React.createElement("button", { "data-help-key": "chat_close", onClick: handleSetShowUDLGuideToFalse, className: "hover:bg-white/20 p-1 rounded", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 18 })))), /* @__PURE__ */ React.createElement("div", { className: `flex-1 p-4 overflow-y-auto space-y-4 custom-scrollbar ${chatStyles.body}`, ref: udlScrollRef }, udlMessages.map((msg, idx) => /* @__PURE__ */ React.createElement("div", { key: idx, className: `flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}` }, !msg.type && /* @__PURE__ */ React.createElement("div", { className: `max-w-[85%] p-3 rounded-xl text-sm shadow-sm ${msg.role === "user" ? `${chatStyles.userBubble} rounded-br-none` : `${chatStyles.modelBubble} rounded-bl-none`}` }, renderFormattedText(msg.text)), msg.type === "blueprint" && activeBlueprint && /* @__PURE__ */ React.createElement("div", { className: "w-full max-w-[95%]" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "data-help-key": "chat_collapse",
+      onClick: () => setIsCollapsed(true),
+      className: "hover:bg-white/20 p-1 rounded transition-colors",
+      title: t("chat_guide.collapse") || "Collapse to a bar (keeps the conversation)",
+      "aria-label": t("chat_guide.collapse") || "Collapse to a bar (keeps the conversation)"
+    },
+    /* @__PURE__ */ React.createElement(ChevronDown, { size: 18 })
+  ), /* @__PURE__ */ React.createElement("button", { "data-help-key": "chat_close", onClick: handleSetShowUDLGuideToFalse, className: "hover:bg-white/20 p-1 rounded", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 18 })))), /* @__PURE__ */ React.createElement("div", { className: `flex-1 p-4 overflow-y-auto space-y-4 custom-scrollbar ${chatStyles.body}`, ref: udlScrollRef }, udlMessages.map((msg, idx) => /* @__PURE__ */ React.createElement("div", { key: idx, className: `flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}` }, !msg.type && /* @__PURE__ */ React.createElement("div", { className: `max-w-[85%] p-3 rounded-xl text-sm shadow-sm ${msg.role === "user" ? `${chatStyles.userBubble} rounded-br-none` : `${chatStyles.modelBubble} rounded-bl-none`}` }, renderFormattedText(msg.text)), msg.type === "blueprint" && activeBlueprint && /* @__PURE__ */ React.createElement("div", { className: "w-full" }, /* @__PURE__ */ React.createElement(
     InteractiveBlueprintCard,
     {
       config: activeBlueprint,
@@ -178,17 +229,26 @@ function UDLGuideModal(props) {
         setActiveBlueprint(null);
       }
     }
-  )), msg.type === "choices" && /* @__PURE__ */ React.createElement("div", { className: `max-w-[85%] p-3 rounded-xl text-sm shadow-sm ${chatStyles.modelBubble} rounded-bl-none` }, renderFormattedText(msg.text), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 mt-3", role: "group", "aria-label": t("chat_guide.header") }, (msg.choices || []).map((choice, cIdx) => /* @__PURE__ */ React.createElement(
+  )), msg.type === "choices" && /* @__PURE__ */ React.createElement("div", { className: `max-w-[92%] p-3 rounded-xl text-sm shadow-sm ${chatStyles.modelBubble} rounded-bl-none` }, renderFormattedText(msg.text), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 mt-3", role: "group", "aria-label": t("chat_guide.header") }, (msg.choices || []).map((choice, cIdx) => /* @__PURE__ */ React.createElement(
     "button",
     {
       key: cIdx,
       type: "button",
       disabled: isChatProcessing || idx !== udlMessages.length - 1,
-      onClick: () => handleSendUDLMessage(choice.value),
-      className: `px-3 py-1.5 rounded-full text-xs font-bold shadow-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${chatStyles.button}`
+      title: choice.hint || void 0,
+      "aria-label": choice.hint ? `${choice.label} \u2014 ${choice.hint}` : void 0,
+      onClick: () => {
+        if (choice.action === "focus-input") {
+          setUdlInput("");
+          if (udlInputRef && udlInputRef.current) udlInputRef.current.focus();
+          return;
+        }
+        handleSendUDLMessage(choice.value);
+      },
+      className: `px-3 py-1.5 rounded-full text-xs font-bold shadow-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${choice.tone === "secondary" ? chatStyles.secondaryButton : chatStyles.button}`
     },
     choice.label
-  )))), !msg.type && msg.role === "model" && msg.isActionable && idx > 0 && /* @__PURE__ */ React.createElement(
+  ))), idx === udlMessages.length - 1 && /* @__PURE__ */ React.createElement("p", { className: `mt-2 text-[11px] italic ${chatStyles.subText}` }, t("chat_guide.chips.or_type") || "\u2026or just type your answer below.")), !msg.type && msg.role === "model" && msg.isActionable && idx > 0 && /* @__PURE__ */ React.createElement(
     "button",
     {
       "aria-label": t("common.refresh"),
@@ -199,7 +259,21 @@ function UDLGuideModal(props) {
     },
     isSavingAdvice ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 10, className: "animate-spin" }) : /* @__PURE__ */ React.createElement(Save, { size: 10 }),
     isSavingAdvice ? t("chat_guide.save_actionable_loading") : t("chat_guide.save_actionable_btn")
-  ))), isChatProcessing && /* @__PURE__ */ React.createElement("div", { className: "flex items-start" }, /* @__PURE__ */ React.createElement("div", { className: `p-3 rounded-xl rounded-bl-none flex items-center gap-2 text-sm ${chatStyles.modelBubble}` }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin" }), " ", t("bot.mood_thinking")))), /* @__PURE__ */ React.createElement("div", { className: `p-3 border-t ${theme === "dark" ? "border-slate-700" : "border-slate-200"} ${chatStyles.inputArea}` }, /* @__PURE__ */ React.createElement("div", { className: `mb-3 p-2 rounded-lg border ${theme === "dark" ? "bg-slate-800 border-slate-700" : theme === "contrast" ? "bg-black border-white" : "bg-slate-50 border-slate-200"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("label", { className: `text-[11px] font-bold uppercase tracking-wider flex items-center gap-1 ${chatStyles.subText}` }, /* @__PURE__ */ React.createElement(Search, { size: 10 }), " ", t("standards.finder_header"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-2" }, /* @__PURE__ */ React.createElement(
+  ))), isChatProcessing && /* @__PURE__ */ React.createElement("div", { className: "flex items-start" }, /* @__PURE__ */ React.createElement("div", { className: `p-3 rounded-xl rounded-bl-none flex items-center gap-2 text-sm ${chatStyles.modelBubble}` }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin" }), " ", t("bot.mood_thinking")))), /* @__PURE__ */ React.createElement("div", { className: `p-3 border-t ${theme === "dark" ? "border-slate-700" : "border-slate-200"} ${chatStyles.inputArea}` }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: toggleStandardTools,
+      "aria-expanded": standardToolsOpen,
+      "aria-controls": "udl-standard-tools",
+      "data-help-key": "chat_standard_tools_toggle",
+      className: `w-full mb-2 flex items-center gap-1.5 px-1 py-1 rounded text-[11px] font-bold uppercase tracking-wider transition-colors ${chatStyles.subText} hover:opacity-100 opacity-80`
+    },
+    standardToolsOpen ? /* @__PURE__ */ React.createElement(ChevronDown, { size: 12 }) : /* @__PURE__ */ React.createElement(ChevronRight, { size: 12 }),
+    /* @__PURE__ */ React.createElement(ShieldCheck, { size: 11 }),
+    t("standards.tools_disclosure") || "Standards tools",
+    !standardToolsOpen && /* @__PURE__ */ React.createElement("span", { className: "font-normal normal-case ml-auto opacity-80" }, t("standards.tools_disclosure_hint") || "find / consult")
+  ), /* @__PURE__ */ React.createElement("div", { id: "udl-standard-tools", hidden: !standardToolsOpen }, /* @__PURE__ */ React.createElement("div", { className: `mb-3 p-2 rounded-lg border ${theme === "dark" ? "bg-slate-800 border-slate-700" : theme === "contrast" ? "bg-black border-white" : "bg-slate-50 border-slate-200"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("label", { className: `text-[11px] font-bold uppercase tracking-wider flex items-center gap-1 ${chatStyles.subText}` }, /* @__PURE__ */ React.createElement(Search, { size: 10 }), " ", t("standards.finder_header"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-2" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.standards_region_framework_placeholder"),
@@ -291,7 +365,7 @@ function UDLGuideModal(props) {
       title: t("standards.consult_btn_title")
     },
     /* @__PURE__ */ React.createElement(ArrowRight, { size: 14 })
-  ))), /* @__PURE__ */ React.createElement("div", { className: `flex items-center gap-2 mb-2 px-2 py-1.5 rounded-lg transition-all duration-500 select-none ${!isAutoFillMode && !hasUsedAutoFill ? "bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 shadow-sm animate-pulse" : `border border-transparent px-1 ${chatStyles.subText}`}` }, /* @__PURE__ */ React.createElement(
+  )))), /* @__PURE__ */ React.createElement("div", { className: `flex items-center gap-2 mb-2 px-2 py-1.5 rounded-lg transition-all duration-500 select-none ${!isAutoFillMode && !hasUsedAutoFill ? "bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 shadow-sm animate-pulse" : `border border-transparent px-1 ${chatStyles.subText}`}` }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.toggle_is_auto_fill_mode"),

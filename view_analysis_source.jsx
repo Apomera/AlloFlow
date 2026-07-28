@@ -10,6 +10,10 @@ var _lazyIcon = function (name) {
   var Wrench = _lazyIcon('Wrench');
   var RefreshCw = _lazyIcon('RefreshCw');
   var Wand2 = _lazyIcon('Wand2');
+  // Dismiss control on a grammar notice. Must be declared here: icons in this
+  // view resolve through _lazyIcon, NOT as bare globals, so using <X/> without
+  // this line is an undeclared identifier that ReferenceErrors at render.
+  var X = _lazyIcon('X');
   var Pencil = _lazyIcon('Pencil');
   var Sparkles = _lazyIcon('Sparkles');
   var Send = _lazyIcon('Send');
@@ -96,12 +100,52 @@ var _lazyIcon = function (name) {
         };
         const realGrammarErrors = rawGrammarNotes.filter(g => !isInvalidGrammarNote(g));
         const hasGrammarErrors = realGrammarErrors.length > 0;
+        // ── Resolved states are deliberately DISTINCT ─────────────────────
+        // '✓ FIXED:'     the AI rewrote the source text for this note.
+        // '✓ DISMISSED:' the teacher judged it a false positive, or corrected
+        //                it by hand. The source text was NOT touched.
+        // Collapsing these into one marker would claim the document changed
+        // when it did not, so they stay separate everywhere — including the
+        // "Issues" badge and anything that later reads data.grammar.
+        const GRAMMAR_FIXED_PREFIX = '✓ FIXED: ';
+        const GRAMMAR_DISMISSED_PREFIX = '✓ DISMISSED: ';
+        const isFixedNote = g => typeof g === 'string' && g.startsWith('✓ FIXED:');
+        const isDismissedNote = g => typeof g === 'string' && g.startsWith('✓ DISMISSED:');
+        const isResolvedNote = g => isFixedNote(g) || isDismissedNote(g);
+        // Only UNRESOLVED notes are outstanding work — the badge counted every
+        // note forever, so a teacher who had dealt with all of them still saw
+        // "3 Issues".
+        const openGrammarErrors = realGrammarErrors.filter(g => !isResolvedNote(g));
+        // Dismiss / restore are pure list edits: no AI call, no text rewrite.
+        // Restore exists because a mis-click would otherwise silently discard a
+        // real issue with no way back.
+        const setGrammarNoteAt = (idx, next) => {
+          setGeneratedContent(prev => ({
+            ...prev,
+            data: { ...prev.data, grammar: (prev.data.grammar || []).map((g, i) => (i === idx ? next : g)) }
+          }));
+        };
+        const dismissGrammarNote = (idx) => {
+          const note = rawGrammarNotes[idx];
+          if (typeof note !== 'string' || isResolvedNote(note)) return;
+          setGrammarNoteAt(idx, GRAMMAR_DISMISSED_PREFIX + note);
+          // Drop it from the AI selection so the "Fix (N)" count stays truthful.
+          if (selectedGrammarErrors.has(idx)) toggleGrammarErrorSelection(idx);
+        };
+        const restoreGrammarNote = (idx) => {
+          const note = rawGrammarNotes[idx];
+          if (!isDismissedNote(note)) return;
+          setGrammarNoteAt(idx, note.slice(GRAMMAR_DISMISSED_PREFIX.length));
+        };
         const handleFixGrammarErrors = async () => {
           if (!generatedContent?.data?.originalText || selectedGrammarErrors.size === 0) return;
           setIsProcessing(true);
           setGenerationStep(t('process.fixing_grammar') || 'Fixing grammar errors...');
           try {
-            const isFixable = g => typeof g === 'string' && !isInvalidGrammarNote(g) && !g.startsWith('✓ FIXED:');
+            // A dismissed note must never be sent to the AI — the teacher has
+            // already ruled on it, and "fixing" a false positive would edit
+            // text that is correct.
+            const isFixable = g => typeof g === 'string' && !isInvalidGrammarNote(g) && !isResolvedNote(g);
             const errorsToFix = rawGrammarNotes.filter((g, i) => selectedGrammarErrors.has(i) && isFixable(g));
             const originalText = generatedContent?.data.originalText;
             if (errorsToFix.length === 0) {
@@ -171,12 +215,24 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
             setGenerationStep('');
           }
         };
-        return <div className="bg-white p-5 rounded-xl border border-slate-400 shadow-sm mb-6"><div className="flex items-center gap-3 mb-3"><h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('output.analysis_grammar')}</h4>{hasGrammarErrors && <span className="px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide border bg-amber-100 text-amber-700 border-amber-200">{realGrammarErrors.length} {realGrammarErrors.length === 1 ? 'Issue' : 'Issues'}</span>}</div>{hasGrammarErrors ? <><div className="space-y-2 mb-3">{rawGrammarNotes.map((note, idx) => {
+        return <div className="bg-white p-5 rounded-xl border border-slate-400 shadow-sm mb-6"><div className="flex items-center gap-3 mb-3"><h4 className="text-xs font-bold text-slate-600 uppercase tracking-wider">{t('output.analysis_grammar')}</h4>{hasGrammarErrors && openGrammarErrors.length > 0 && <span className="px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide border bg-amber-100 text-amber-700 border-amber-200">{openGrammarErrors.length} {openGrammarErrors.length === 1 ? 'Issue' : 'Issues'}</span>}{hasGrammarErrors && openGrammarErrors.length === 0 && <span className="px-2 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wide border bg-green-100 text-green-700 border-green-200">{t('analysis.grammar_all_resolved') || 'All resolved'}</span>}</div>{hasGrammarErrors ? <><div className="space-y-2 mb-3">{rawGrammarNotes.map((note, idx) => {
                 if (isInvalidGrammarNote(note)) return null;
                 const isSelected = selectedGrammarErrors.has(idx);
-                const isFixed = note.startsWith('✓ FIXED:');
-                return <div key={idx} className={`flex items-start gap-2 p-2 rounded transition-colors ${isFixed ? 'bg-green-50 border border-green-100' : isSelected ? 'bg-amber-50' : 'opacity-60'}`}>{isTeacherMode && !isFixed && <input aria-label={t('common.toggle_is_selected')} type="checkbox" checked={isSelected} onChange={() => toggleGrammarErrorSelection(idx)} className="mt-1 w-4 h-4 text-amber-600 border-amber-300 rounded focus:ring-amber-500 cursor-pointer shrink-0" title={isSelected ? "Include in correction" : "Ignore this error"} />}{isFixed && <CheckCircle2 size={16} className="text-green-600 mt-0.5 shrink-0" />}<div className={`text-sm text-slate-700 leading-relaxed ${!isSelected && !isFixed ? 'line-through text-slate-600' : ''}`}>{formatInlineText(isFixed ? note.replace('✓ FIXED: ', '') : note, false)}</div></div>;
-              })}</div>{isTeacherMode && realGrammarErrors.some(g => !g.startsWith('✓ FIXED:')) && <button aria-label={t('common.fix_grammar_errors')} onClick={handleFixGrammarErrors} disabled={isProcessing || selectedGrammarErrors.size === 0} aria-busy={isProcessing} className="w-full flex items-center justify-center gap-2 bg-white border border-amber-600 text-amber-600 hover:bg-amber-100 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">{isProcessing ? <RefreshCw size={12} className="animate-spin" /> : <Wand2 size={12} />}{t('analysis.fix_grammar_button') || 'Fix Grammar Errors'} ({selectedGrammarErrors.size})</button>}{isTeacherMode && realGrammarErrors.length > 0 && realGrammarErrors.every(g => g.startsWith('✓ FIXED:')) && <button aria-label={t('common.check')} onClick={() => {
+                const isFixed = isFixedNote(note);
+                const isDismissed = isDismissedNote(note);
+                const bareNote = isFixed ? note.replace(GRAMMAR_FIXED_PREFIX, '')
+                  : isDismissed ? note.slice(GRAMMAR_DISMISSED_PREFIX.length)
+                  : note;
+                return <div key={idx} className={`flex items-start gap-2 p-2 rounded transition-colors ${isFixed ? 'bg-green-50 border border-green-100' : isDismissed ? 'bg-slate-50 border border-slate-200' : isSelected ? 'bg-amber-50' : 'opacity-60'}`}>{isTeacherMode && !isFixed && !isDismissed && <input aria-label={t('common.toggle_is_selected')} type="checkbox" checked={isSelected} onChange={() => toggleGrammarErrorSelection(idx)} className="mt-1 w-4 h-4 text-amber-600 border-amber-300 rounded focus:ring-amber-500 cursor-pointer shrink-0" title={isSelected ? "Include in correction" : "Ignore this error"} />}{isFixed && <CheckCircle2 size={16} className="text-green-600 mt-0.5 shrink-0" aria-hidden="true" />}{isDismissed && <CheckCircle2 size={16} className="text-slate-400 mt-0.5 shrink-0" aria-hidden="true" />}<div className={`flex-1 text-sm text-slate-700 leading-relaxed ${(!isSelected && !isFixed && !isDismissed) || isDismissed ? 'line-through text-slate-600' : ''}`}>{formatInlineText(bareNote, false)}{isDismissed && <span className="ml-2 not-italic no-underline inline-block align-middle px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-slate-200 text-slate-600">{t('analysis.grammar_dismissed_tag') || 'Dismissed'}</span>}</div>{/* Dismiss = "this one is handled" WITHOUT calling the AI: the teacher
+                     fixed it by hand, or the flag was simply wrong. Restore is the
+                     undo, so a mis-click never silently buries a real issue. */}
+                {isTeacherMode && !isFixed && !isDismissed && <button type="button" onClick={() => dismissGrammarNote(idx)} title={t('analysis.grammar_dismiss_hint') || 'Dismiss this notice without using AI (already fixed by hand, or not a real error)'} aria-label={`${t('analysis.grammar_dismiss_one') || 'Dismiss notice'}: ${bareNote.slice(0, 80)}`} className="shrink-0 ml-1 px-1.5 py-0.5 rounded text-slate-400 hover:text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400 transition-colors"><X size={14} aria-hidden="true" /></button>}
+                {isTeacherMode && isDismissed && <button type="button" onClick={() => restoreGrammarNote(idx)} aria-label={`${t('analysis.grammar_restore_one') || 'Restore notice'}: ${bareNote.slice(0, 80)}`} className="shrink-0 ml-1 px-1.5 py-0.5 rounded text-[11px] font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-400 transition-colors">{t('analysis.grammar_restore_one') || 'Restore'}</button>}</div>;
+              })}</div>{isTeacherMode && openGrammarErrors.length > 0 && <button aria-label={t('common.fix_grammar_errors')} onClick={handleFixGrammarErrors} disabled={isProcessing || selectedGrammarErrors.size === 0} aria-busy={isProcessing} className="w-full flex items-center justify-center gap-2 bg-white border border-amber-600 text-amber-600 hover:bg-amber-100 px-3 py-1.5 rounded text-xs font-bold transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">{isProcessing ? <RefreshCw size={12} className="animate-spin" /> : <Wand2 size={12} />}{t('analysis.fix_grammar_button') || 'Fix Grammar Errors'} ({selectedGrammarErrors.size})</button>}{/* Clearing the whole panel now unlocks once every note is RESOLVED —
+                  fixed by AI or dismissed by hand. It previously required all of
+                  them to be AI-fixed, so a teacher who corrected anything manually
+                  could never clear the list. */}
+              {isTeacherMode && realGrammarErrors.length > 0 && openGrammarErrors.length === 0 && <button aria-label={t('common.check')} onClick={() => {
               setGeneratedContent(prev => ({
                 ...prev,
                 data: {

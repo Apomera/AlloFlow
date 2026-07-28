@@ -1596,14 +1596,19 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
     const effectiveLanguage = langOverride || leveledTextLanguage;
     const differentiationContext = getGroupDifferentiationContext();
     const dialectInstruction = effectiveLanguage !== 'English' ? "STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese' vs 'European Portuguese'), explicitly use that region's vocabulary, spelling, and grammar conventions." : "";
+    const languageDirective = (effectiveLanguage && effectiveLanguage !== 'English' && effectiveLanguage !== 'All Selected Languages')
+        ? `LANGUAGE: Write ALL generated student-facing text in ${effectiveLanguage}. Keep JSON keys, machine-role id values, and code/math notation in English. ${dialectInstruction}`
+        : '';
     if (effectiveLanguage === 'All Selected Languages' && !langOverride) {
-        if (type === 'glossary') {
+        // Opt-IN list: types whose prompts genuinely honor effectiveLanguage.
+        // Anything not listed regenerates once in English instead of fanning out into
+        // N identical copies. New resource types default to safe (no duplicate spend).
+        const MULTILINGUAL_FANOUT_TYPES = ['simplified', 'outline', 'image', 'quiz', 'faq',
+            'sentence-frames', 'timeline', 'concept-sort', 'dbq', 'lesson-plan', 'adventure',
+            'gemini-bridge', 'math', 'note-taking', 'anchor-chart', 'persona'];
+        if (!MULTILINGUAL_FANOUT_TYPES.includes(type)) {
             await handleGenerate(type, 'English', keepLoading, textToProcess, configOverride, switchView, deps);
             return;
-        }
-        if (['analysis', 'brainstorm', 'udl-advice', 'alignment-report'].includes(type)) {
-             await handleGenerate(type, 'English', keepLoading, textToProcess, configOverride, switchView, deps);
-             return;
         }
         setIsProcessing(true);
         try {
@@ -4484,6 +4489,8 @@ ${modeListForAuto}
                 - If this is a solver/explainer, solve or explain the given problem in 3-5 clear steps.
                 - Keep all prose concise and student-friendly.
                 - Do not generate SVG or graph markup; set "graphData" to null.
+                ${languageDirective ? '- ' + languageDirective + ' Keep mathematical expressions in standard notation.' : ''}
+                ${studentInterests.length > 0 ? `- Frame the word problems using these student interests: ${studentInterests.join(', ')}.` : ''}
                 Return ONLY valid JSON:
                 {
                   "title": "Short title",
@@ -4501,7 +4508,7 @@ ${modeListForAuto}
           } else if (mode === 'Problem Set Generator') {
               prompt = `
                 You are an expert Math Curriculum Designer.
-                ${leveledTextLanguage && leveledTextLanguage !== 'English' ? 'IMPORTANT: Generate ALL text content (questions, explanations, steps, real-world applications) in ' + leveledTextLanguage + '. After each text field, include an English translation in parentheses. Keep mathematical expressions and JSON keys in English.' : ''}
+                ${effectiveLanguage && effectiveLanguage !== 'English' ? 'IMPORTANT: Generate ALL text content (questions, explanations, steps, real-world applications) in ' + effectiveLanguage + '. After each text field, include an English translation in parentheses. Keep mathematical expressions and JSON keys in English.' : ''}
                 Topic/Skill: "${problemToSolve}"
                 ${mathContextPrompt}
                 Instruction: Create EXACTLY the number and types of problems described in the Topic/Skill above. Match the count, types, and difficulty the user specified. If no specific count is given, create 5 problems.
@@ -4525,7 +4532,7 @@ ${modeListForAuto}
           } else {
               prompt = `
                 You are an Expert Math & Science Tutor.
-                ${leveledTextLanguage && leveledTextLanguage !== 'English' ? 'IMPORTANT: Generate ALL text content (explanations, steps, real-world applications) in ' + leveledTextLanguage + '. After each text field, include an English translation in parentheses. Keep mathematical expressions and JSON keys in English.' : ''}
+                ${effectiveLanguage && effectiveLanguage !== 'English' ? 'IMPORTANT: Generate ALL text content (explanations, steps, real-world applications) in ' + effectiveLanguage + '. After each text field, include an English translation in parentheses. Keep mathematical expressions and JSON keys in English.' : ''}
                 Subject: ${subject}
                 Mode: ${mode}
                 Problem: "${problemToSolve}"
@@ -5131,6 +5138,7 @@ Return ONLY JSON:
                 Source Text:
                 "${personaSourceText}",
                 Task: Identify ${personaCount} specific historical figures, experts, or fictional archetypes (e.g., 'A Union Soldier', 'Marie Curie', 'A Red Blood Cell') relevant to this content that a ${gradeLevel} student could interview to learn more.
+                ${languageDirective}
                 Return ONLY a JSON array of objects with this exact structure:
                 [
                     {
@@ -5224,6 +5232,7 @@ Return ONLY JSON:
               const prompt = `
                   Analyze the following source text. Extract 5-8 key terms or anticipated student questions that would belong in the LEFT-COLUMN ("Cues") of a Cornell Notes template for a ${effectiveGrade} student. Each cue should be short (1-6 words) and act as a memory anchor or question prompt the student can return to.
                   Source: "${noteSourceText}"
+                  ${languageDirective}
                   Return ONLY a JSON object:
                   { "title": "Lesson title", "cues": ["Cue 1", "Cue 2", "Cue 3", ...] }
               `;
@@ -5243,6 +5252,7 @@ Return ONLY JSON:
               const prompt = `
                   Analyze the following science-related source text. Extract: 1) a research question this text raises that a student could investigate, 2) a list of likely materials needed (if the source describes any experimental setup), and 3) a relevant title for the experiment. Target audience: ${effectiveGrade} student.
                   Source: "${noteSourceText}"
+                  ${languageDirective}
                   Return ONLY a JSON object:
                   { "title": "Experiment title", "question": "Research question?", "materials": ["material 1", "material 2", ...] }
               `;
@@ -5266,6 +5276,7 @@ Return ONLY JSON:
               const prompt = `
                   Analyze the following source text. Extract the title and author (if present in the text or its metadata). If not explicit, infer the best title from the content.
                   Source: "${noteSourceText}"
+                  ${languageDirective}
                   Return ONLY a JSON object:
                   { "title": "Reading title", "author": "Author name or empty string" }
               `;
@@ -5285,8 +5296,9 @@ Return ONLY JSON:
           } else if (templateType === 'double-entry') {
               // Seed the LEFT column with salient quotes; the student writes responses.
               const prompt = `
-                  Analyze the following source text. Extract 3-5 short, vivid QUOTES or passages (each 1-2 sentences, copied verbatim) that a ${effectiveGrade} student could respond to in a double-entry (dialectical) journal. Pick lines that are striking, puzzling, or important — the kind worth thinking about. Also extract the title and author if present.
+                  Analyze the following source text. Extract 3-5 short, vivid QUOTES or passages (each 1-2 sentences, copied verbatim from the source in its ORIGINAL language, never translated) that a ${effectiveGrade} student could respond to in a double-entry (dialectical) journal. Pick lines that are striking, puzzling, or important — the kind worth thinking about. Also extract the title and author if present.
                   Source: "${noteSourceText}"
+                  ${languageDirective}
                   Return ONLY a JSON object:
                   { "title": "Reading title", "author": "Author or empty string", "quotes": ["Quote 1", "Quote 2", ...] }
               `;
@@ -5307,6 +5319,7 @@ Return ONLY JSON:
               const prompt = `
                   Create GUIDED NOTES (fill-in-the-blank) from the following source text for a ${effectiveGrade} student. Produce 6-10 statements that capture the most important facts/concepts. In each statement, blank out ONE key term (the single most important word or short phrase). Split each statement into the text BEFORE the blank, the ANSWER (the blanked term), and the text AFTER the blank. Keep statements concise and factually grounded in the source.
                   Source: "${noteSourceText}"
+                  ${languageDirective}
                   Return ONLY a JSON object:
                   { "title": "Lesson title", "blanks": [ { "before": "The powerhouse of the cell is the ", "answer": "mitochondria", "after": "." }, ... ] }
               `;
@@ -5331,6 +5344,7 @@ Return ONLY JSON:
               const prompt = `
                   Analyze the following source text. Generate 4-6 STUDY QUESTIONS a ${effectiveGrade} student could use for self-testing (active recall). Mix recall ("what/when") with higher-order ("why/how") questions. For each, also write a concise, correct model answer grounded in the source.
                   Source: "${noteSourceText}"
+                  ${languageDirective}
                   Return ONLY a JSON object:
                   { "title": "Study set title", "pairs": [ { "question": "Why does ...?", "answer": "Because ..." }, ... ] }
               `;
@@ -5395,6 +5409,8 @@ Return ONLY JSON:
 
               Source text for context (may be empty): "${chartSourceText}"
 
+              ${languageDirective}
+              The "chartType" value and every "iconPrompt" must stay in English (machine id / image-generator input).
               Return ONLY a JSON object with this exact shape:
               {
                 "chartType": "reference",

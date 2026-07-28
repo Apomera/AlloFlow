@@ -19,6 +19,12 @@ function ClozeInteractionPanel(props) {
     interactionMode, latestGlossary, leveledTextLanguage, playSound,
     setClozeCompletedSet, t, wordBankPosition, wordBankRef,
   } = props;
+  const isEnglishPassage = !leveledTextLanguage || leveledTextLanguage === 'English';
+  // Kept local: it is a per-student display preference, not lesson content, so
+  // it does not belong in the host's state or in the saved resource.
+  // Defaults to the passage's own language — that is the text the student is
+  // reading, and English is one tap away.
+  const [bankLang, setBankLang] = React.useState('target');
   return (
               <div
                   ref={wordBankRef}
@@ -60,23 +66,60 @@ function ClozeInteractionPanel(props) {
                         </button>
                       </div>
                   </div>
+                  {/* Language toggle — only when the passage isn't English, so a
+                      monolingual classroom never sees a control it cannot use.
+                      The blank accepts EITHER spelling, so switching this changes
+                      what is offered, never what counts as correct. */}
+                  {!isEnglishPassage && (
+                    <div role="group" aria-label={t('simplified.word_bank_language') || 'Word bank language'} className="flex items-center justify-center gap-1 mb-2">
+                      {[
+                        { id: 'target', label: leveledTextLanguage },
+                        { id: 'english', label: t('simplified.word_bank_english') || 'English' },
+                        { id: 'both', label: t('simplified.word_bank_both') || 'Both' },
+                      ].map((opt) => (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          aria-pressed={bankLang === opt.id}
+                          onClick={() => setBankLang(opt.id)}
+                          className={`px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wide border transition-colors ${bankLang === opt.id ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-blue-700 border-blue-200 hover:bg-blue-100'}`}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                   <div className="flex flex-wrap gap-2 justify-center max-h-32 overflow-y-auto custom-scrollbar p-1">
                       {latestGlossary.map((item, idx) => {
-                          let displayTerm = item.term;
-                          if (leveledTextLanguage !== 'English' && item.translations && item.translations[leveledTextLanguage]) {
-                              const transString = item.translations[leveledTextLanguage];
-                              if (transString.includes(':')) {
-                                  displayTerm = transString.split(':')[0].trim();
-                              }
+                          const englishTerm = item.term;
+                          // A translation is usable even without the "term: definition"
+                          // shape — the old code only split on ':' and otherwise fell
+                          // back to English, which is why the bank so often looked
+                          // English-only even for a translated passage.
+                          let translatedTerm = '';
+                          if (!isEnglishPassage && item.translations && item.translations[leveledTextLanguage]) {
+                              const transString = String(item.translations[leveledTextLanguage]);
+                              translatedTerm = transString.includes(':')
+                                  ? transString.split(':')[0].trim()
+                                  : transString.trim();
                           }
+                          // What the chip shows. What it CARRIES on drop is always the
+                          // target-language word when one exists, so the solved sentence
+                          // reads in the passage's language.
+                          const showTranslated = translatedTerm && bankLang !== 'english';
+                          const dragPayload = translatedTerm || englishTerm;
+                          const label = !translatedTerm ? englishTerm
+                            : bankLang === 'both' ? `${translatedTerm} / ${englishTerm}`
+                            : showTranslated ? translatedTerm
+                            : englishTerm;
                           return (
                               <span
                                 key={idx}
                                 className="px-3 py-1.5 bg-white text-blue-700 font-bold text-sm rounded-lg border border-blue-200 shadow-sm cursor-grab active:cursor-grabbing hover:scale-105 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all select-none"
                                 draggable="true"
-                                onDragStart={(e) => e.dataTransfer.setData("text/plain", displayTerm)}
+                                onDragStart={(e) => e.dataTransfer.setData("text/plain", bankLang === 'english' ? englishTerm : dragPayload)}
                               >
-                                  {displayTerm}
+                                  {label}
                               </span>
                           );
                       })}

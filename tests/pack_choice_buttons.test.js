@@ -158,6 +158,67 @@ describe('Step/Pack chooser routing (handleSendUDLMessage)', () => {
     expect(deps.parseUserIntent).not.toHaveBeenCalled();
   });
 
+  // ── Every guided-flow question is a chooser, not just the first one ──
+  // Reported UX bug: step 1 (Step/Pack) rendered pills, step 2 ("how
+  // extensive?") rendered a bare bubble, so the teacher had to guess that
+  // 'auto'/'all'/a number were the magic words.
+  it('posts the pack-count question as its own chooser (pills, not a bare bubble)', async () => {
+    const { deps, store } = makeDeps({
+      messages: [stepPackChoicesMsg()],
+      guidedFlowState: { isFlowActive: true, currentStage: 'initial_choice' },
+      isAutoFillMode: true,
+    });
+    await handleSendUDLMessage('pack', deps);
+    const last = store.messages[store.messages.length - 1];
+    expect(last.type).toBe('choices');
+    expect(last.stage).toBe('pack_count_selection');
+    expect(last.choices.map(c => c.value)).toEqual(['auto', 'all', '5', '10', 'custom']);
+    // The free-value answer parks the cursor in the input instead of sending
+    // a placeholder word — the modal handles it, the flow never sees it.
+    expect(last.choices.find(c => c.value === 'custom').action).toBe('focus-input');
+  });
+
+  it('routes an "all" pill click into a comprehensive blueprint', async () => {
+    const { deps, store } = makeDeps({
+      messages: [{
+        role: 'model', type: 'choices', stage: 'pack_count_selection', text: 'How extensive?',
+        choices: [{ label: 'All', value: 'all' }],
+      }],
+      guidedFlowState: { isFlowActive: true, currentStage: 'pack_count_selection' },
+      isAutoFillMode: true,
+    });
+    await handleSendUDLMessage('all', deps);
+    expect(deps.autoConfigureSettings).toHaveBeenCalledTimes(1);
+    expect(deps.autoConfigureSettings.mock.calls[0][6]).toBe('All'); // targetCount
+    expect(store.guidedFlowState.currentStage).toBe('blueprint_review');
+    expect(deps.parseUserIntent).not.toHaveBeenCalled();
+  });
+
+  // A Skip pill must land in the stage's NEGATIVE branch. Choice replies skip
+  // the LLM intent pass entirely, so without an intent field on the chip every
+  // pill would read as CONFIRM and "Skip" would generate the resource instead.
+  it('routes a Skip pill to the negative branch without an LLM pass', async () => {
+    const { deps, store } = makeDeps({
+      messages: [{
+        role: 'model', type: 'choices', stage: 'analysis', text: 'Analyze the text?',
+        choices: [
+          { label: 'Yes', value: 'yes', intent: 'CONFIRM' },
+          { label: 'Skip', value: 'skip', intent: 'SKIP' },
+        ],
+      }],
+      guidedFlowState: { isFlowActive: true, currentStage: 'analysis' },
+      isAutoFillMode: true,
+    });
+    await handleSendUDLMessage('skip', deps);
+    expect(store.guidedFlowState.currentStage).toBe('glossary');
+    expect(deps.detectWorkflowIntent).not.toHaveBeenCalled();
+    expect(deps.parseUserIntent).not.toHaveBeenCalled();
+    // …and the next question carries its own pills.
+    const last = store.messages[store.messages.length - 1];
+    expect(last.type).toBe('choices');
+    expect(last.stage).toBe('glossary');
+  });
+
   it('does NOT hijack an unrelated reply when the flow is inactive', async () => {
     const { deps, store } = makeDeps({
       messages: [stepPackChoicesMsg()],
@@ -200,6 +261,12 @@ describe('Step/Pack chooser copy-sync guardrails', () => {
     expect(src).toContain("buildStepPackChoices(msg, 'initial_choice')");
     expect(src).toContain("'post_analysis_route')]");
     expect(src).not.toContain("(Type 'Step' or 'Pack')");
+    // Every stage question is a chooser, and a Skip pill keeps its SKIP intent.
+    expect(src).toContain('const askStage');
+    expect(src).toContain('buildPackCountChoices');
+    expect(src).toContain("_choiceHit.intent || 'CONFIRM'");
+    // The old bare-bubble count question must not come back.
+    expect(src).not.toContain("sendBotMsg(t('chat_guide.pack.count_selection'))");
   });
 
   it.each(modalFiles)('%s renders choices messages as buttons', (file) => {
@@ -207,6 +274,10 @@ describe('Step/Pack chooser copy-sync guardrails', () => {
     expect(src).toMatch(/msg\.type === ['"]choices['"]/);
     expect(src).toContain('handleSendUDLMessage(choice.value)');
     expect(src).toContain('idx !== udlMessages.length - 1');
+    // Free-value pills focus the input instead of sending a placeholder word.
+    expect(src).toMatch(/choice\.action === ['"]focus-input['"]/);
+    // The standards panels collapse so the transcript gets the room.
+    expect(src).toContain('standardToolsOpen');
   });
 
   it.each(hostFiles)('%s posts the auto-fill chooser as a choices message', (file) => {

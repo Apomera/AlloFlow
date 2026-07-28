@@ -76,26 +76,50 @@ const AnimatedNumber = ({ value, duration = 1e3, disableAnimations = false }) =>
   }, [value, duration, disableAnimations, prefersReducedMotion]);
   return /* @__PURE__ */ React.createElement(React.Fragment, null, displayValue);
 };
-const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved }) => {
+const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved, acceptedAnswers, displayWord }) => {
   const { t } = useContext(LanguageContext);
-  const [val, setVal] = useState(isSolved ? targetWord : "");
+  const _solved = displayWord || targetWord;
+  const [val, setVal] = useState(isSolved ? _solved : "");
   const [status, setStatus] = useState(isSolved ? "success" : "neutral");
   useEffect(() => {
     if (isSolved) {
-      setVal(targetWord);
+      setVal(_solved);
       setStatus("success");
     } else {
       setVal("");
       setStatus("neutral");
     }
-  }, [isSolved, targetWord]);
-  const normalize = (str) => str ? str.toLowerCase().trim().replace(/[^a-z0-9]/g, "") : "";
+  }, [isSolved, _solved]);
+  const normalize = (str) => {
+    if (!str) return "";
+    let s = String(str).toLowerCase().trim();
+    try {
+      s = s.normalize("NFD").replace(/[̀-ͯ]/g, "");
+    } catch (_) {
+    }
+    try {
+      s = s.replace(/[^\p{L}\p{N}]/gu, "");
+    } catch (_) {
+      s = s.replace(/[^a-z0-9]/g, "");
+    }
+    return s;
+  };
+  const answerMatches = (input, target) => {
+    const a = normalize(input);
+    const b = normalize(target);
+    if (a && b) return a === b;
+    const raw = (s) => String(s || "").toLowerCase().trim();
+    return raw(target).length > 0 && raw(input) === raw(target);
+  };
+  const acceptedList = (Array.isArray(acceptedAnswers) ? acceptedAnswers : []).concat([targetWord]).filter(Boolean);
+  const isAcceptedAnswer = (value) => acceptedList.some((ans) => answerMatches(value, ans));
+  const solvedWord = displayWord || targetWord;
   const handleDrop = (e) => {
     e.preventDefault();
     if (status === "success") return;
     const droppedText = e.dataTransfer.getData("text/plain");
-    if (normalize(droppedText) === normalize(targetWord)) {
-      setVal(targetWord);
+    if (isAcceptedAnswer(droppedText)) {
+      setVal(solvedWord);
       setStatus("success");
       if (onCorrect) onCorrect(targetWord);
     } else {
@@ -116,12 +140,12 @@ const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved }) => {
     if (status === "success") return;
     const newVal = e.target.value;
     setVal(newVal);
-    if (normalize(newVal) === normalize(targetWord)) {
+    if (isAcceptedAnswer(newVal)) {
       setStatus("success");
       if (onCorrect) onCorrect(targetWord);
     }
   };
-  const width = Math.max(80, targetWord.length * 12) + "px";
+  const width = Math.max(80, Math.max(String(targetWord || "").length, String(solvedWord || "").length) * 12) + "px";
   return /* @__PURE__ */ React.createElement(
     "span",
     {
@@ -797,7 +821,7 @@ const WordSoundsReviewPanel = ({
           },
           onDragEnd: handleDragEnd
         },
-        /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-pink-100 to-violet-100 text-violet-700 font-bold rounded-lg border-2 border-violet-200", title: typeof p === "string" && typeof PHONEME_GUIDE !== "undefined" && PHONEME_GUIDE[p] ? `${PHONEME_GUIDE[p].label} (${PHONEME_GUIDE[p].ipa}) \u2014 ${PHONEME_GUIDE[p].examples}` : typeof p === "string" ? p : "" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 text-xs mr-1" }, "\u283F"), p, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handlePhonemeReorder(idx, i, i - 1), disabled: i === 0, "aria-label": `Move ${typeof p === "string" ? p : "phoneme"} earlier`, className: "w-6 h-6 flex items-center justify-center rounded-full bg-violet-100 text-violet-700 hover:bg-violet-200 disabled:opacity-40", title: "Move earlier" }, "\xE2\u2014\u20AC"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handlePhonemeReorder(idx, i, i + 1), disabled: i === (word.phonemes || []).length - 1, "aria-label": `Move ${typeof p === "string" ? p : "phoneme"} later`, className: "w-6 h-6 flex items-center justify-center rounded-full bg-violet-100 text-violet-700 hover:bg-violet-200 disabled:opacity-40", title: "Move later" }, "\xE2\u2013\xB6"), /* @__PURE__ */ React.createElement(
+        /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-1 px-3 py-1.5 bg-gradient-to-r from-pink-100 to-violet-100 text-violet-700 font-bold rounded-lg border-2 border-violet-200", title: typeof p === "string" && typeof PHONEME_GUIDE !== "undefined" && PHONEME_GUIDE[p] ? `${PHONEME_GUIDE[p].label} (${PHONEME_GUIDE[p].ipa}) \u2014 ${PHONEME_GUIDE[p].examples}` : typeof p === "string" ? p : "" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600 text-xs mr-1" }, "\u283F"), p, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handlePhonemeReorder(idx, i, i - 1), disabled: i === 0, "aria-label": `Move ${typeof p === "string" ? p : "phoneme"} earlier`, className: "w-6 h-6 flex items-center justify-center rounded-full bg-violet-100 text-violet-700 hover:bg-violet-200 disabled:opacity-40", title: "Move earlier" }, "\u25C0"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handlePhonemeReorder(idx, i, i + 1), disabled: i === (word.phonemes || []).length - 1, "aria-label": `Move ${typeof p === "string" ? p : "phoneme"} later`, className: "w-6 h-6 flex items-center justify-center rounded-full bg-violet-100 text-violet-700 hover:bg-violet-200 disabled:opacity-40", title: "Move later" }, "\u25B6"), /* @__PURE__ */ React.createElement(
           "button",
           {
             type: "button",

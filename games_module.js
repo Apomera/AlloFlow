@@ -5224,7 +5224,7 @@ const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
     );
   })))), isWon && /* @__PURE__ */ React.createElement("div", { role: "status", className: "p-4 bg-green-100 border-t border-green-200 text-center motion-safe:animate-in motion-safe:slide-in-from-bottom-4 motion-safe:duration-300" }, /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-green-700 motion-safe:animate-bounce" }, t("bingo.win_header")), /* @__PURE__ */ React.createElement("p", { className: "text-green-800 text-sm" }, t("bingo.win_message")))));
 });
-const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }) => {
+const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete }) => {
   const { t } = useContext(LanguageContext);
   const [gameItems, setGameItems] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -5257,6 +5257,23 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
       setScrambled(scrambleWord(items[0].term));
     }
   }, [data]);
+  const scrambleCompleteFiredRef = useRef(false);
+  useEffect(() => {
+    if (!isGameOver) {
+      scrambleCompleteFiredRef.current = false;
+      return;
+    }
+    if (scrambleCompleteFiredRef.current || typeof onGameComplete !== "function") return;
+    scrambleCompleteFiredRef.current = true;
+    const correctCount = results.filter((r) => r && r.correct).length;
+    const totalItems = gameItems.length;
+    onGameComplete("wordScramble", {
+      score,
+      correctCount,
+      totalItems,
+      isPerfect: totalItems > 0 && correctCount === totalItems
+    });
+  }, [isGameOver, results, gameItems.length, score, onGameComplete]);
   const nextRound = (currentScore) => {
     if (currentIndex < gameItems.length - 1) {
       const nextIdx = currentIndex + 1;

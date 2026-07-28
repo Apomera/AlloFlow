@@ -209,3 +209,157 @@ describe('applyAIConfig — change log', () => {
     expect(r.some(s => s.toLowerCase().includes('formal'))).toBe(true);
   });
 });
+
+// handleGenerateTermEtymology — per-locale root glosses.
+//
+// The renderer does `r.meaningByLang?.[lang] || r.meaning`, and r.meaning is
+// English by definition. So when the model omits meaningByLang the Spanish
+// column silently renders "servare LATÍN = to keep or watch" — the origin
+// language localized (it has a hardcoded fallback table) but the gloss not.
+// These tests pin the repair pass that closes that gap.
+
+const GLOSSARY = (translations = { Spanish: 'Conservación' }) => ({
+  id: 'g1',
+  type: 'glossary',
+  data: [{ term: 'Conservation', def: 'Careful management of the environment.', translations }],
+});
+
+// Runs the handler and returns the roots array it committed to state.
+const runEtymology = async (deps) => {
+  await GH.handleGenerateTermEtymology(0, 'Conservation', deps);
+  const updater = deps.setGeneratedContent.mock.calls[0]?.[0];
+  if (typeof updater !== 'function') return null;
+  const next = updater(deps.generatedContent);
+  return next.data[0].roots;
+};
+
+const ROOTS_NO_LOCALE = JSON.stringify({
+  prosePerLanguage: { English: 'From Latin.', Spanish: 'Del latín.' },
+  roots: [{ root: 'servare', lang: 'Latin', meaning: 'to keep or watch', related: ['preserve'] }],
+});
+
+describe('handleGenerateTermEtymology — per-locale root glosses', () => {
+  it('repairs a missing meaningByLang instead of falling back to English', async () => {
+    const callGemini = vi.fn()
+      .mockResolvedValueOnce(ROOTS_NO_LOCALE)
+      .mockResolvedValueOnce(JSON.stringify({
+        0: { Spanish: { lang: 'latín', meaning: 'guardar o vigilar' } },
+      }));
+    const deps = makeDeps({
+      generatedContent: GLOSSARY(),
+      selectedLanguages: ['Spanish'],
+      callGemini,
+    });
+
+    const roots = await runEtymology(deps);
+
+    expect(callGemini).toHaveBeenCalledTimes(2);
+    expect(roots[0].meaningByLang.Spanish).toBe('guardar o vigilar');
+    expect(roots[0].langByLocale.Spanish).toBe('latín');
+    // English stays available for the English column.
+    expect(roots[0].meaningByLang.English).toBe('to keep or watch');
+    expect(roots[0].meaning).toBe('to keep or watch');
+  });
+
+  it('does not fire a repair call when the model already filled every locale', async () => {
+    const callGemini = vi.fn().mockResolvedValueOnce(JSON.stringify({
+      prosePerLanguage: { English: 'From Latin.', Spanish: 'Del latín.' },
+      roots: [{
+        root: 'servare',
+        lang: 'Latin',
+        meaning: 'to keep or watch',
+        langByLocale: { English: 'Latin', Spanish: 'latín' },
+        meaningByLang: { English: 'to keep or watch', Spanish: 'guardar o vigilar' },
+      }],
+    }));
+    const deps = makeDeps({
+      generatedContent: GLOSSARY(),
+      selectedLanguages: ['Spanish'],
+      callGemini,
+    });
+
+    const roots = await runEtymology(deps);
+
+    expect(callGemini).toHaveBeenCalledTimes(1);
+    expect(roots[0].meaningByLang.Spanish).toBe('guardar o vigilar');
+  });
+
+  it('skips the repair entirely for an English-only glossary', async () => {
+    const callGemini = vi.fn().mockResolvedValueOnce(ROOTS_NO_LOCALE);
+    const deps = makeDeps({
+      generatedContent: GLOSSARY({}),
+      selectedLanguages: [],
+      callGemini,
+    });
+
+    const roots = await runEtymology(deps);
+
+    expect(callGemini).toHaveBeenCalledTimes(1);
+    expect(roots[0].meaning).toBe('to keep or watch');
+  });
+
+  it('still saves the etymology when the repair call fails', async () => {
+    const callGemini = vi.fn()
+      .mockResolvedValueOnce(ROOTS_NO_LOCALE)
+      .mockRejectedValueOnce(new Error('429 rate limited'));
+    const deps = makeDeps({
+      generatedContent: GLOSSARY(),
+      selectedLanguages: ['Spanish'],
+      callGemini,
+    });
+
+    const roots = await runEtymology(deps);
+
+    expect(roots[0].root).toBe('servare');
+    expect(roots[0].meaningByLang.Spanish).toBeUndefined(); // renderer falls back, as before
+    expect(deps.warnLog).toHaveBeenCalled();
+    expect(deps.addToast).toHaveBeenCalledWith(expect.stringContaining('etymology_generated'), 'success');
+  });
+
+  it('survives unparseable repair JSON without losing the roots', async () => {
+    const callGemini = vi.fn()
+      .mockResolvedValueOnce(ROOTS_NO_LOCALE)
+      .mockResolvedValueOnce('sorry, I cannot do that');
+    const deps = makeDeps({
+      generatedContent: GLOSSARY(),
+      selectedLanguages: ['Spanish'],
+      callGemini,
+    });
+
+    const roots = await runEtymology(deps);
+
+    expect(roots).toHaveLength(1);
+    expect(roots[0].meaning).toBe('to keep or watch');
+    expect(deps.warnLog).toHaveBeenCalled();
+  });
+
+  it('asks the repair call only for the locales that are actually missing', async () => {
+    const callGemini = vi.fn()
+      .mockResolvedValueOnce(JSON.stringify({
+        prosePerLanguage: { English: 'From Latin.', Spanish: 'Del latín.', French: 'Du latin.' },
+        roots: [{
+          root: 'servare',
+          lang: 'Latin',
+          meaning: 'to keep or watch',
+          langByLocale: { Spanish: 'latín' },
+          meaningByLang: { Spanish: 'guardar o vigilar' },
+        }],
+      }))
+      .mockResolvedValueOnce(JSON.stringify({
+        0: { French: { lang: 'latin', meaning: 'garder ou surveiller' } },
+      }));
+    const deps = makeDeps({
+      generatedContent: GLOSSARY({ Spanish: 'Conservación', French: 'Conservation' }),
+      selectedLanguages: ['Spanish', 'French'],
+      callGemini,
+    });
+
+    const roots = await runEtymology(deps);
+
+    const repairPrompt = callGemini.mock.calls[1][0];
+    expect(repairPrompt).toContain('French');
+    expect(repairPrompt).not.toMatch(/EVERY one of these languages:.*Spanish/);
+    expect(roots[0].meaningByLang.French).toBe('garder ou surveiller');
+    expect(roots[0].meaningByLang.Spanish).toBe('guardar o vigilar');
+  });
+});

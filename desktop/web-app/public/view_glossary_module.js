@@ -1501,7 +1501,8 @@ function GlossaryView(props) {
     data: generatedContent?.data,
     onClose: handleCloseWordScramble,
     playSound: playSound,
-    onScoreUpdate: handleGameScoreUpdate
+    onScoreUpdate: handleGameScoreUpdate,
+    onGameComplete: handleGameCompletion
   })), screenerSession && screenerSession.status === 'interstitial' && /*#__PURE__*/React.createElement("div", {
     role: "presentation",
     className: "fixed inset-0 z-[250] bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300 motion-reduce:animate-none"

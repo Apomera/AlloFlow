@@ -289,15 +289,22 @@ function classifyFailure(caseResult) {
   return message ? 'runtime-error' : 'unknown';
 }
 
-function loadDispatcher(targetName) {
+// backendName: 'local' (default, preserves existing behaviour) or 'cloud'.
+// This flips usesLocalTextBackend at generate_dispatcher_source.jsx:1441-1457,
+// which selects between a branch's cloud prompt and its local-backend twin.
+// Those twins have drifted in several branches, and no source-text scrape can
+// tell them apart because both live in the same branch body.
+function loadDispatcher(targetName, backendName) {
+  const isLocal = backendName !== 'cloud';
+  const backendId = isLocal ? 'alloflow-local' : 'gemini';
   const windowObj = {
     AlloModules: {
       QuizLiveAggregators: { normalizeConceptId: (s) => String(s || '').trim().toLowerCase() },
     },
-    AIBackendLocal: { isLocalTextBackend: () => true },
-    __alloActiveAIBackend: { backend: 'alloflow-local' },
+    AIBackendLocal: { isLocalTextBackend: () => isLocal },
+    __alloActiveAIBackend: { backend: backendId },
     localStorage: {
-      getItem: () => JSON.stringify({ backend: 'alloflow-local' }),
+      getItem: () => JSON.stringify({ backend: backendId }),
       setItem: () => {},
     },
     __alloLocalTaskProgress: (event) => {
@@ -348,7 +355,16 @@ function makeDeps(caseState, currentTypeRef) {
     return key || '';
   };
   const callGemini = async (prompt, jsonMode) => {
-    state.calls.push({ type: currentTypeRef.type, jsonMode: !!jsonMode, promptChars: String(prompt || '').length });
+    // The prompt TEXT is what makes capability claims falsifiable: a source-text
+    // scrape can only prove a branch mentions a variable, not that the value
+    // reaches the model. --capabilities reads this back. Kept out of --json
+    // output (see runCase) so the normal matrix report stays small.
+    state.calls.push({
+      type: currentTypeRef.type,
+      jsonMode: !!jsonMode,
+      promptChars: String(prompt || '').length,
+      prompt: String(prompt || ''),
+    });
     if (LIVE) return liveResponse(prompt, !!jsonMode);
     return cannedResponse(currentTypeRef.type, String(prompt || ''), !!jsonMode);
   };
@@ -653,7 +669,204 @@ function summarizeShape(data) {
   return 'object{' + Object.keys(data).slice(0, 6).join(',') + '}';
 }
 
+// ──────────────────────────────────────────────────────────────────────────
+// --capabilities: measure which cross-cutting settings actually reach a prompt.
+//
+// The shared settings panel advertises seven settings as global, but each
+// dispatcher branch hand-inlines them, so coverage is per-type and silent when
+// absent. Grepping a branch for a variable name is only a LOWER BOUND - it
+// proves a mention, not an effect. Two ways that misleads, both real here:
+//   - effCustomInstructions is interpolated by concept-sort, dbq and lesson-plan
+//     but the resolver at generate_dispatcher_source.jsx:1519-1533 has no case
+//     for them, so the value is structurally always ''. Grep says HIT, teacher
+//     gets nothing.
+//   - note-taking and anchor-chart once stamped `language: effectiveLanguage`
+//     into lessonRef metadata no prompt ever read.
+//
+// So instead of reading code, drive the REAL handleGenerate with a poison-pill
+// value per setting and ask whether that exact string surfaced in any prompt.
+// Detection is by substring, never by diffing whole prompts, so a changed
+// prompt cannot cascade into a changed canned response and corrupt later axes.
+// ──────────────────────────────────────────────────────────────────────────
+const CUSTOM_FIELDS = [
+  'leveledTextCustomInstructions', 'quizCustomInstructions', 'glossaryCustomInstructions',
+  'frameCustomInstructions', 'adventureCustomInstructions', 'brainstormCustomInstructions',
+  'faqCustomInstructions', 'outlineCustomInstructions', 'visualCustomInstructions',
+  'lessonCustomAdditions', 'timelineTopic', 'sourceCustomInstructions',
+];
+
+const CAPABILITY_AXES = [
+  // Sentinels keep the shape downstream code parses. '6th Grade ZZ..' stays
+  // grade-like; 'Level 3: ZZ..' preserves the split(':') the quiz meta relies on.
+  { key: 'grade', sentinel: 'ZZGRADEZZ', apply: (d) => { d.gradeLevel = '6th Grade ZZGRADEZZ'; } },
+  { key: 'lang', sentinel: 'ZZLANGZZ', apply: (d) => { d.leveledTextLanguage = 'ZZLANGZZ'; } },
+  // The dispatcher destructures standardsPromptString directly from deps
+  // (generate_dispatcher_source.jsx:1439); standardsInput/targetStandards are
+  // separate deps it also reads. makeDeps supplies the latter two but not the
+  // first, so before this probe existed every standards-gated block in the
+  // matrix run was falsy and untested. Set all three.
+  { key: 'standards', sentinel: 'ZZSTDZZ', apply: (d) => { d.standardsInput = 'ZZSTDZZ'; d.targetStandards = 'ZZSTDZZ'; d.standardsPromptString = 'ZZSTDZZ'; } },
+  { key: 'interests', sentinel: 'ZZINTZZ', apply: (d) => { d.studentInterests = ['ZZINTZZ']; } },
+  { key: 'dok', sentinel: 'ZZDOKZZ', apply: (d) => { d.dokLevel = 'Level 3: ZZDOKZZ'; } },
+  { key: 'custom', sentinel: 'ZZCUSTZZ', apply: (d) => { CUSTOM_FIELDS.forEach((f) => { d[f] = 'ZZCUSTZZ'; }); } },
+  // useEmojis is a boolean with no value to poison, so it is the one axis that
+  // must be measured differentially. Guarded for determinism below.
+  { key: 'emoji', differential: true, apply: (d) => { d.useEmojis = true; d.enableEmojiInline = true; } },
+];
+
+async function capturePrompts(handleGenerate, matrixCase, mutate) {
+  const state = {
+    history: [], calls: [], warns: [], toasts: [], progressEvents: [],
+    generatedContent: null, setError: '', activeView: '', processingProgress: null,
+  };
+  const deps = makeDeps(state, { type: matrixCase.type });
+  // Neutral baseline. The shipped default is dokLevel:'Mixed', which is not an
+  // absent setting - leaving it would make the dok axis unmeasurable.
+  deps.dokLevel = '';
+  mutate(deps);
+  handleGenerate.windowObj.__alloLocalProgressSink = () => {};
+  try {
+    await handleGenerate(matrixCase.type, null, false, SAMPLE_TEXT, Object.assign({}, matrixCase.config || {}), false, deps);
+  } catch (_) {
+    // A branch that throws still recorded whatever prompts it built first.
+  } finally {
+    handleGenerate.windowObj.__alloLocalProgressSink = null;
+  }
+  return { text: state.calls.map((c) => c.prompt).join('\n---\n'), calls: state.calls.length };
+}
+
+// Blind spots that make an X here mean "not measurable", not "not implemented".
+// Listing them in the artifact is the point: a coverage table that hides its own
+// limits is the same silent-failure problem one level up.
+const PROBE_CAVEATS = [
+  '`alignment-report` is absent from `CASES`, so 19 of the 20 dispatcher types are measured.',
+  '`generateVisualPlan` is stubbed to `async () => null`, so grade/style values the **image** branch passes into it are never seen. Image `grade` reads X for that reason, not because the branch ignores it.',
+  '`buildLessonPlanPrompt` / `buildStudyGuidePrompt` / `buildParentGuidePrompt` are stubbed to `json({})`, so **lesson-plan**\'s cloud prompt is never built. Its cloud row is not evidence.',
+  '`handleGenerateMath`, `handleGenerateLessonPlan` and `handleGenerateSource` are `noOp`, so any branch that delegates to them contributes no prompt.',
+  '`getGroupDifferentiationContext` returns `\'\'`, so roster-group text never appears.',
+  'Retry/repair prompts and image stage 2 are not exercised.',
+  'Canned model responses are fixed, so a branch whose prompt depends on an earlier response is measured against the canned one.',
+];
+
+function renderCoverageMarkdown(rows) {
+  const axes = CAPABILITY_AXES.map((a) => a.key);
+  const mark = (v) => (v === 'reaches' ? '✅' : v === 'unknown' ? '❔' : '❌');
+  const out = [];
+  out.push('# Resource × setting coverage (measured)');
+  out.push('');
+  out.push('Generated by `node dev-tools/check_local_llm_resource_matrix.cjs --capabilities`.');
+  out.push('**Do not hand-edit.** Regenerate after any dispatcher prompt change.');
+  out.push('');
+  out.push('Each cell is measured by driving the real `handleGenerate` with a poison-pill value for');
+  out.push('one setting and checking whether that exact string surfaced in a prompt sent to the model.');
+  out.push('This is stronger than grepping a branch for a variable name, which only proves a mention:');
+  out.push('`concept-sort`, `dbq` and `lesson-plan` all interpolate `effCustomInstructions`, but the');
+  out.push('resolver at `generate_dispatcher_source.jsx:1519-1533` has no case for them, so the value is');
+  out.push('structurally always `\'\'`. Grep says covered; the teacher gets nothing.');
+  out.push('');
+  out.push('✅ reached the model  ❌ never appeared  ❔ undecidable (nondeterministic prompt)');
+  out.push('');
+  for (const backend of [...new Set(rows.map((r) => r.backend))]) {
+    const sub = rows.filter((r) => r.backend === backend);
+    out.push('## ' + backend + ' backend');
+    out.push('');
+    out.push('| resource type | ' + axes.join(' | ') + ' |');
+    out.push('|---|' + axes.map(() => '---').join('|') + '|');
+    for (const r of sub) out.push('| `' + r.type + '` | ' + axes.map((a) => mark(r.axes[a])).join(' | ') + ' |');
+    out.push('| **reaching / ' + sub.length + '** | ' + axes.map((a) => '**' + sub.filter((r) => r.axes[a] === 'reaches').length + '**').join(' | ') + ' |');
+    out.push('');
+  }
+  const local = rows.filter((r) => r.backend === 'local');
+  const cloud = rows.filter((r) => r.backend === 'cloud');
+  if (local.length && cloud.length) {
+    out.push('## Local/cloud prompt divergence');
+    out.push('');
+    out.push('Many branches ship two prompts behind `if (usesLocalTextBackend)`. A source-text scrape');
+    out.push('cannot tell them apart because both live in the same branch body. Divergence here means');
+    out.push('the offline no-egress path silently behaves differently from the cloud path.');
+    out.push('');
+    const cloudBy = Object.fromEntries(cloud.map((r) => [r.type, r.axes]));
+    const diffs = local.flatMap((r) => axes
+      .filter((a) => cloudBy[r.type] && r.axes[a] !== cloudBy[r.type][a])
+      .map((a) => '- `' + r.type + '` — **' + a + '**: cloud ' + mark(cloudBy[r.type][a]) + ' / local ' + mark(r.axes[a])));
+    out.push(diffs.length ? diffs.join('\n') : '- none');
+    out.push('');
+  }
+  out.push('## What this probe cannot see');
+  out.push('');
+  out.push(PROBE_CAVEATS.map((c) => '- ' + c).join('\n'));
+  out.push('');
+  return out.join('\n');
+}
+
+async function runCapabilityProbe() {
+  const backends = args.includes('--backend=cloud') ? ['cloud']
+    : args.includes('--backend=local') ? ['local']
+      : ['local', 'cloud'];
+  const targetName = TARGET_NAMES[0];
+  const rows = [];
+
+  for (const backend of backends) {
+    const dispatcher = loadDispatcher(targetName, backend);
+    const handleGenerate = dispatcher.handleGenerate;
+    handleGenerate.windowObj = dispatcher.windowObj;
+
+    for (const matrixCase of CASES) {
+      const baselineRun = await capturePrompts(handleGenerate, matrixCase, () => {});
+      const baseline = baselineRun.text;
+      const baselineAgain = (await capturePrompts(handleGenerate, matrixCase, () => {})).text;
+      const deterministic = baseline === baselineAgain;
+      const row = { backend, type: matrixCase.type, deterministic, prompts: baselineRun.calls, axes: {} };
+
+      for (const axis of CAPABILITY_AXES) {
+        const text = (await capturePrompts(handleGenerate, matrixCase, axis.apply)).text;
+        if (axis.differential) {
+          // Only trustworthy when the branch builds byte-stable prompts.
+          row.axes[axis.key] = !deterministic ? 'unknown' : (text !== baseline ? 'reaches' : 'absent');
+        } else {
+          row.axes[axis.key] = text.includes(axis.sentinel) ? 'reaches' : 'absent';
+        }
+      }
+      rows.push(row);
+      if (!QUIET) {
+        const marks = CAPABILITY_AXES.map((a) => {
+          const v = row.axes[a.key];
+          return (v === 'reaches' ? '.' : v === 'unknown' ? '?' : 'X').padStart(Math.max(6, a.key.length + 1));
+        }).join('');
+        console.log('  ' + backend.padEnd(6) + matrixCase.type.padEnd(17) + marks + (deterministic ? '' : '   (nondeterministic)'));
+      }
+    }
+  }
+  return rows;
+}
+
 (async () => {
+  if (args.includes('--capabilities')) {
+    if (!QUIET) {
+      console.log('');
+      console.log('Resource x setting coverage - MEASURED by driving the real handleGenerate');
+      console.log('. = value reached a prompt    X = never appeared    ? = undecidable');
+      console.log('='.repeat(88));
+      console.log('  ' + 'backend'.padEnd(6) + 'type'.padEnd(17)
+        + CAPABILITY_AXES.map((a) => a.key.padStart(Math.max(6, a.key.length + 1))).join(''));
+    }
+    const rows = await runCapabilityProbe();
+    const outJson = path.join(ROOT, 'docs', 'resource_setting_coverage.json');
+    fs.mkdirSync(path.dirname(outJson), { recursive: true });
+    fs.writeFileSync(outJson, JSON.stringify({ generatedBy: 'check_local_llm_resource_matrix.cjs --capabilities', target: TARGET_NAMES[0], axes: CAPABILITY_AXES.map((a) => a.key), rows }, null, 2) + '\n', 'utf8');
+    fs.writeFileSync(path.join(ROOT, 'docs', 'resource_setting_coverage.md'), renderCoverageMarkdown(rows), 'utf8');
+    if (!QUIET) {
+      console.log('='.repeat(88));
+      for (const axis of CAPABILITY_AXES) {
+        const local = rows.filter((r) => r.backend === 'local');
+        const hit = local.filter((r) => r.axes[axis.key] === 'reaches').length;
+        console.log('  ' + axis.key.padEnd(11) + hit + '/' + local.length + ' types (local backend)');
+      }
+      console.log('');
+      console.log('  wrote ' + path.relative(ROOT, outJson));
+    }
+    process.exit(0);
+  }
   const results = [];
   for (const targetName of TARGET_NAMES) {
     const dispatcher = loadDispatcher(targetName);

@@ -125,8 +125,25 @@ const highlightGlossaryTerms = (text, glossary, isCloze = false, isDarkBg = fals
   });
   const sortedTerms = Array.from(termMap.keys()).sort((a, b) => b.length - a.length);
   if (sortedTerms.length === 0) return text;
-  const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]]/g, "$&");
-  const pattern = new RegExp(`\\b(${sortedTerms.map((t2) => escapeRegExp(t2)).join("|")})\\b`, "gi");
+  const escapeRegExp = (string) => String(string).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const NO_WORD_BREAK = /[぀-ヿ㐀-䶿一-鿿豈-﫿฀-๿]/;
+  const boundaried = [];
+  const substringy = [];
+  sortedTerms.forEach((term) => {
+    (NO_WORD_BREAK.test(term) ? substringy : boundaried).push(escapeRegExp(term));
+  });
+  const buildPattern = () => {
+    const branches = [];
+    if (boundaried.length) branches.push(`(?<![\\p{L}\\p{N}])(?:${boundaried.join("|")})(?![\\p{L}\\p{N}])`);
+    if (substringy.length) branches.push(`(?:${substringy.join("|")})`);
+    return new RegExp(`(${branches.join("|")})`, "giu");
+  };
+  let pattern;
+  try {
+    pattern = buildPattern();
+  } catch (_) {
+    pattern = new RegExp(`\\b(${sortedTerms.map((t2) => escapeRegExp(t2)).join("|")})\\b`, "gi");
+  }
   const parts = text.split(pattern);
   return parts.map((part, i) => {
     if (part == null) return part;
@@ -135,11 +152,19 @@ const highlightGlossaryTerms = (text, glossary, isCloze = false, isDarkBg = fals
       const item = termMap.get(lowerPart);
       if (isCloze) {
         const uniqueId = `cloze-${i}-${item.term}-${text.length}`;
+        const _translated = (() => {
+          if (leveledTextLanguage === "English") return "";
+          const tr = item.translations && item.translations[leveledTextLanguage];
+          if (!tr) return "";
+          return String(tr).includes(":") ? String(tr).split(":")[0].trim() : String(tr).trim();
+        })();
         return /* @__PURE__ */ React.createElement(
           ClozeInput,
           {
             key: i,
             targetWord: item.term,
+            acceptedAnswers: _translated ? [item.term, _translated] : [item.term],
+            displayWord: _translated || item.term,
             isSolved: clozeInstanceSet.has(uniqueId),
             onCorrect: (word) => {
               if (!clozeInstanceSet.has(uniqueId)) {

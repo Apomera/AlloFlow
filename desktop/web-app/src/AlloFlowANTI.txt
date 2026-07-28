@@ -3327,13 +3327,32 @@ const _alloStudentSafeResources = (items) => {
 // ── Directions objectives (Phase 1, 2026-07-19) — pure helpers ─────────────
 // Backward-compatible: directions.data is a legacy markdown STRING or
 // { body, objectives[] }. One normalizer for every reader; one pure evaluator
-// (signals = { globalPoints, gameCompletions }) so behavior is unit-testable.
+// (signals = { globalPoints, gameCompletions, ... }) so behavior is unit-testable.
 // NO GATING lives here by design — the checklist informs and celebrates.
+// ── ONE definition of "engaged" (2026-07-27) ──────────────────────────────────
+// Hoisted from inside the focus heartbeat so the heartbeat, the directions
+// `time` goal, and STEM Lab's `timeSpent` quest all measure a minute the same
+// way. They did not: STEM accumulated WALL CLOCK (Date.now() minus mount, taken
+// on unmount), so an abandoned open tab satisfied "spend 5 minutes" there while
+// failing it here — the same phrase meaning two things in one app.
+const _ALLO_ENGAGEMENT_TIMEOUT_MS = 180000; // 3 minutes since last interaction
 function _alloNormalizeDirectionsData(data) {
     if (data && typeof data === 'object' && !Array.isArray(data)) {
         const body = typeof data.body === 'string' ? data.body : '';
+        // Resource-backed kinds (2026-07-27) carry a resourceRef and are DROPPED
+        // without one — an unbound 'visited'/'responded'/'completed' goal could
+        // never resolve, which is exactly the failure mode that let the dead
+        // 'wordScramble' chip ship. 'game' stays valid unbound for back-compat
+        // (v1/v2 goals matched any resource of that type).
         const objectives = Array.isArray(data.objectives)
-            ? data.objectives.filter(o => o && typeof o === 'object' && o.id && typeof o.label === 'string' && o.label && ['xp', 'game', 'manual'].includes(o.kind))
+            ? data.objectives.filter(o => {
+                if (!o || typeof o !== 'object' || !o.id) return false;
+                if (typeof o.label !== 'string' || !o.label) return false;
+                if (!['xp', 'game', 'manual', 'visited', 'responded', 'completed', 'time'].includes(o.kind)) return false;
+                if (['visited', 'responded', 'completed', 'time'].includes(o.kind) && !o.resourceRef) return false;
+                if (o.kind === 'game' && !o.gameType) return false;
+                return true;
+            })
             : [];
         // softGate (Phase 2): a GENTLE nudge flag — suggests finishing goals before the rest
         // of the pack. Never blocks anything; hard gates are Phase 3, opt-in, with a recorded
@@ -3341,6 +3360,112 @@ function _alloNormalizeDirectionsData(data) {
         return { body, objectives, softGate: data.softGate === true };
     }
     return { body: typeof data === 'string' ? data : '', objectives: [], softGate: false };
+}
+// ── Goal capability registry (2026-07-27) — what a resource can actually PROVE ─
+// The composer used to offer a fixed chip row, which is how 'wordScramble' rotted
+// into a goal that could never tick (the game never reported a completion at all).
+// Here the offer is DERIVED from the resource: a teacher picks something in the
+// pack and gets only the goal kinds that thing can emit. A dead goal becomes
+// unrepresentable rather than merely discouraged.
+//
+// Every student-safe resource additionally supports 'visited' (it was opened) and
+// 'manual' (free-text self-check) — those are universal and not listed per type.
+const _ALLO_GAME_LABELS = {
+    crossword: 'Crossword', memory: 'Memory', matching: 'Matching', bingo: 'Bingo',
+    wordScramble: 'Word Scramble', syntaxScramble: 'Sentence Scramble',
+    conceptSort: 'Concept Sort', timeline: 'Sequence Game', vennDiagram: 'Venn Diagram',
+    tchartSort: 'T-Chart Sort', fishboneSort: 'Fishbone Sort', causeEffectSort: 'Cause & Effect Sort',
+    problemSolutionSort: 'Problem/Solution Sort', conceptMapSort: 'Concept Map Sort',
+    frayerSort: 'Frayer Sort', seeThinkWonderSort: 'See-Think-Wonder Sort',
+    storyMapSort: 'Story Map Sort', outlineSort: 'Outline Sort', pipelineBuilder: 'Flow Builder'
+};
+// `outline` is polymorphic: data.structureType picks the renderer AND the game.
+// Keys mirror the exact strings renderOutlineContent branches on — a typo here
+// silently offers a goal the student can never trigger, so they are pinned.
+const _ALLO_OUTLINE_GAMES = {
+    'Venn Diagram': 'vennDiagram',
+    'T-Chart': 'tchartSort',
+    'Fishbone': 'fishboneSort',
+    'Cause and Effect': 'causeEffectSort',
+    'Problem Solution': 'problemSolutionSort',
+    'Key Concept Map': 'conceptMapSort',
+    'Mind Map': 'conceptMapSort',
+    'Frayer Model': 'frayerSort',
+    'See-Think-Wonder': 'seeThinkWonderSort',
+    'Story Map': 'storyMapSort',
+    'Flow Chart': 'pipelineBuilder',
+    'Process Flow / Sequence': 'pipelineBuilder',
+    'Structured Outline': 'outlineSort'
+};
+const _ALLO_GOAL_CAPABILITIES = {
+    'glossary':        { games: ['crossword', 'memory', 'matching', 'bingo', 'wordScramble'] },
+    'concept-sort':    { games: ['conceptSort'] },
+    'timeline':        { games: ['timeline'] },
+    'sentence-frames': { games: ['syntaxScramble'], responded: true },
+    'outline':         { outlineGames: true },
+    'math':            { responded: true },
+    'dbq':             { responded: true },
+    'quiz':            { completed: true }
+};
+// How many response fields a resource EXPECTS, and how many are filled. Derived
+// from the resource's own data — never by counting keys in the response bag,
+// because views stash UI state in there too (DBQ writes _dbqTab/_dbqActiveDoc
+// just from clicking a tab, which would score "browsed" as "answered").
+// Returns null when the type has no response contract — the composer then never
+// offers a 'responded' goal for it.
+function _alloResponseProgress(item, responses) {
+    if (!item || !item.type) return null;
+    const d = (item.data && typeof item.data === 'object') ? item.data : {};
+    const r = (responses && typeof responses === 'object') ? responses : {};
+    const filled = (v) => v !== undefined && v !== null && String(v).trim().length > 0;
+    if (item.type === 'sentence-frames') {
+        if (d.mode === 'list') {
+            const items = Array.isArray(d.items) ? d.items : [];
+            return { answered: items.filter((_, i) => filled(r[i])).length, total: items.length };
+        }
+        const matches = String(d.text || '').match(/\[.*?\]/g) || [];
+        return { answered: matches.filter((_, i) => filled(r['paragraph-' + i])).length, total: matches.length };
+    }
+    if (item.type === 'math') {
+        const problems = Array.isArray(d.problems) ? d.problems : [];
+        return { answered: problems.filter((_, i) => filled(r[i])).length, total: problems.length };
+    }
+    if (item.type === 'dbq') {
+        // The essay IS the deliverable; annotations and self-scores are scaffolding.
+        return { answered: filled(r._essayText) ? 1 : 0, total: 1 };
+    }
+    return null;
+}
+// The goal kinds a given pack resource can back with real evidence. Pure, so the
+// composer and the tests agree by construction. `label` is the English fallback;
+// the composer runs it through t() with `labelKey`.
+function _alloGoalOptionsForResource(item) {
+    if (!item || !item.id || !item.type) return [];
+    const title = String(item.title || '').trim();
+    const named = title ? ' “' + title + '”' : '';
+    const cap = _ALLO_GOAL_CAPABILITIES[item.type] || {};
+    // Time reads as an OBSERVATION ("Spent 10 minutes on…"), never a requirement
+    // ("Spend at least…"). A floor would punish the student who reads fluently and
+    // finishes in four minutes, and it is the one goal satisfiable by idling — so
+    // the wording stays descriptive and, like every other kind, it gates nothing.
+    const out = [
+        { kind: 'visited', labelKey: 'directions.goal_visited', label: 'Open' + (named || ' this') },
+        { kind: 'time', minutes: 10, labelKey: 'directions.goal_time', label: 'Spent 10 minutes on' + (named || ' this') }
+    ];
+    let games = Array.isArray(cap.games) ? cap.games.slice() : [];
+    if (cap.outlineGames) {
+        const st = (item.data && typeof item.data === 'object') ? item.data.structureType : '';
+        const g = _ALLO_OUTLINE_GAMES[st || 'Structured Outline'];
+        if (g) games = [g];
+    }
+    games.forEach(g => out.push({
+        kind: 'game', gameType: g, labelKey: 'directions.goal_game',
+        label: 'Finish the ' + (_ALLO_GAME_LABELS[g] || g)
+    }));
+    if (cap.responded) out.push({ kind: 'responded', labelKey: 'directions.goal_responded', label: 'Answer every part of' + (named || ' this') });
+    if (cap.completed) out.push({ kind: 'completed', labelKey: 'directions.goal_completed', label: 'Finish' + (named || ' this') });
+    out.push({ kind: 'manual', labelKey: 'directions.goal_manual', label: 'I finished my work' });
+    return out;
 }
 function _alloEvaluateObjectives(objectives, signals, progress) {
     const s = signals || {};
@@ -3364,8 +3489,44 @@ function _alloEvaluateObjectives(objectives, signals, progress) {
         } else if (o.kind === 'game') {
             const entries = (s.gameCompletions && Array.isArray(s.gameCompletions[o.gameType])) ? s.gameCompletions[o.gameType] : [];
             done = entries.some(e => e && (!startedAt || (e.completedAt && e.completedAt >= startedAt)) && (!o.resourceRef || e.resourceId === o.resourceRef));
+        } else if (o.kind === 'time') {
+            // Engaged minutes on THIS resource, from the same heartbeat that drives
+            // engagedMinutes (visible tab + interaction inside 3 min). Cumulative,
+            // not per-sitting: a student who reads for 4 minutes tonight and 6 more
+            // tomorrow has genuinely spent 10 on it.
+            const want = Math.max(1, Number(o.minutes) || 0);
+            const spent = (s.resourceMinutes && typeof s.resourceMinutes === 'object')
+                ? Math.max(0, Number(s.resourceMinutes[o.resourceRef]) || 0) : 0;
+            done = spent >= want;
+            progressText = Math.min(spent, want) + '/' + want + ' min';
+        } else if (o.kind === 'visited') {
+            // The '_visited' map lives at the TOP level of the progress store (it is
+            // shared across directions resources), so it arrives via signals — NOT
+            // via `progress`, which is scoped to one directions id.
+            done = !!(s.visited && s.visited[o.resourceRef] === true);
+        } else if (o.kind === 'responded') {
+            const item = (Array.isArray(s.resources) ? s.resources : []).find(it => it && it.id === o.resourceRef);
+            const all = (s.studentResponses && typeof s.studentResponses === 'object') ? s.studentResponses : {};
+            const prog = _alloResponseProgress(item, all[o.resourceRef]);
+            if (prog && prog.total > 0) {
+                done = prog.answered >= prog.total;
+                progressText = prog.answered + '/' + prog.total;
+            }
+        } else if (o.kind === 'completed') {
+            // Same freshness rule as games: a completion from before the assignment
+            // started is last week's work, not tonight's.
+            const rec = (s.resourceCompletions && typeof s.resourceCompletions === 'object') ? s.resourceCompletions[o.resourceRef] : null;
+            const fresh = !!(rec && (!startedAt || (rec.completedAt && rec.completedAt >= startedAt)));
+            done = fresh;
+            if (rec && typeof rec.total === 'number' && rec.total > 0) {
+                progressText = Math.min(Number(rec.answered) || 0, rec.total) + '/' + rec.total;
+            }
         }
-        return { id: o.id, label: o.label, kind: o.kind, done, progressText };
+        // Self-report vs device-observed. The teacher panel renders these
+        // differently; 'manual' is the student's word, everything else is a
+        // signal the device actually recorded. Neither one is a grade.
+        const confirmed = o.kind !== 'manual';
+        return { id: o.id, label: o.label, kind: o.kind, done, progressText, confirmed };
     }).filter(Boolean);
 }
 // ── Quest map station identity (2026-07-20) — ONE registry, per-type design ───
@@ -10600,6 +10761,33 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           causeEffectSort: []
       };
   });
+  // Per-RESOURCE completion ledger (2026-07-27). Games report into
+  // gameCompletions keyed by game type; non-game activities had nowhere to
+  // report at all — the quiz persists its attempt receipt under a CONTENT-HASH
+  // namespace, which a directions goal's resourceRef can never match. This map
+  // is keyed by resourceId so a 'completed' goal can resolve. Values stay small
+  // and non-evaluative: { completedAt, answered, total } — no score, by design.
+  const [resourceCompletions, setResourceCompletions] = useState(() => {
+      if (typeof window !== 'undefined') {
+          try {
+              const saved = safeGetItem('allo_resource_completions_v1');
+              if (saved) return JSON.parse(saved);
+          } catch (e) { warnLog("Failed to load resource completions", e); }
+      }
+      return {};
+  });
+  const recordResourceCompletion = useCallback((resourceId, info) => {
+      if (!resourceId) return;
+      const d = info || {};
+      setResourceCompletions(prev => ({
+          ...prev,
+          [resourceId]: {
+              completedAt: new Date().toISOString(),
+              answered: Math.max(0, Number(d.answered) || 0),
+              total: Math.max(0, Number(d.total) || 0)
+          }
+      }));
+  }, []);
   const [labelChallengeResults, setLabelChallengeResults] = useState(() => {
       if (typeof window !== 'undefined') {
           try {
@@ -10735,7 +10923,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
               if (saved) return JSON.parse(saved);
           } catch (e) { warnLog("Failed to load time on task", e); }
       }
-      return { totalSessionMinutes: 0, byResourceType: {} };
+      // byResource (id-keyed) added 2026-07-27 alongside the original type-keyed
+      // map, because a directions goal binds to a resourceRef, not to a type.
+      return { totalSessionMinutes: 0, byResourceType: {}, byResource: {} };
   });
   const sessionStartRef = useRef(Date.now());
   const currentResourceRef = useRef({ type: null, startTime: null });
@@ -10743,7 +10933,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       if (!lzLoaded) return;
       try { safeSetItem('allo_game_completions', JSON.stringify(gameCompletions)); } catch(e) { warnLog('localStorage write failed', e); }
       try { safeSetItem('allo_label_challenge_results', JSON.stringify(labelChallengeResults)); } catch(e) { warnLog('localStorage write failed', e); }
-  }, [gameCompletions, labelChallengeResults, lzLoaded]);
+      try { safeSetItem('allo_resource_completions_v1', JSON.stringify(resourceCompletions)); } catch(e) { warnLog('localStorage write failed', e); }
+  }, [gameCompletions, labelChallengeResults, resourceCompletions, lzLoaded]);
   useEffect(() => {
       if (!lzLoaded) return;
       try { safeSetItem('allo_escape_completions', JSON.stringify(escapeRoomCompletions)); } catch(e) { warnLog('localStorage write failed', e); }
@@ -11541,11 +11732,24 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.addEventListener('keydown', trackInteraction);
     window.addEventListener('scroll', trackInteraction);
     window.addEventListener('mousemove', trackInteraction);
+    // Publish the engagement probe for CDN modules that measure their own
+    // "time spent" (STEM Lab quests, SEL Hub). They cannot see this ref, and
+    // without it they fall back to wall clock — which is how STEM ended up
+    // crediting an abandoned open tab. Read-only and defensive: a module that
+    // loads standalone (no host) must degrade, never throw.
+    window.__alloEngagement = {
+      timeoutMs: _ALLO_ENGAGEMENT_TIMEOUT_MS,
+      isEngaged: () => {
+        if (typeof document !== 'undefined' && document.hidden) return false;
+        return (Date.now() - lastInteractionTimeRef.current) < _ALLO_ENGAGEMENT_TIMEOUT_MS;
+      }
+    };
     return () => {
       window.removeEventListener('click', trackInteraction);
       window.removeEventListener('keydown', trackInteraction);
       window.removeEventListener('scroll', trackInteraction);
       window.removeEventListener('mousemove', trackInteraction);
+      try { delete window.__alloEngagement; } catch (_) { window.__alloEngagement = null; }
     };
   }, []);
   useEffect(() => {
@@ -11577,14 +11781,44 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   }, []);
   const focusDataRef = useRef(focusData);
   focusDataRef.current = focusData;
+  // Which resource the engagement heartbeat should credit (2026-07-27). A ref,
+  // not a dep, because the heartbeat interval mounts once with `[]` — re-creating
+  // it whenever the open resource changed would restart the 60s clock on every
+  // navigation and quietly under-count every short visit.
+  const _openResourceRef = useRef(null);
+  _openResourceRef.current = (generatedContent && generatedContent.id && generatedContent.type)
+      ? { id: generatedContent.id, type: generatedContent.type }
+      : null;
   const focusStreakTimerRef = useRef(null);
   useEffect(() => {
     const STREAK_MILESTONES = [5, 10, 15, 20, 30];
-    const ENGAGEMENT_TIMEOUT_MS = 180000; // 3 minutes
+    const ENGAGEMENT_TIMEOUT_MS = _ALLO_ENGAGEMENT_TIMEOUT_MS;
     focusStreakTimerRef.current = setInterval(() => {
       if (!document.hidden) {
         const isEngaged = (Date.now() - lastInteractionTimeRef.current) < ENGAGEMENT_TIMEOUT_MS;
         const isStreakEligible = !isParentMode;
+        // Per-resource time-on-task. This ledger was declared in 2026 and NEVER
+        // written by anything — totalSessionMinutes/byResourceType sat at zero
+        // forever while the progress export reported them as measured. Credit it
+        // from the SAME heartbeat that drives engagedMinutes, so "10 minutes"
+        // means ten minutes visible AND interacting — not ten minutes of an
+        // abandoned open tab. Idle minutes are deliberately not credited.
+        if (isEngaged && _openResourceRef.current) {
+          const _open = _openResourceRef.current;
+          setTimeOnTask(prev => {
+            const base = (prev && typeof prev === 'object') ? prev : {};
+            const byResource = { ...(base.byResource || {}) };
+            const byResourceType = { ...(base.byResourceType || {}) };
+            byResource[_open.id] = (Number(byResource[_open.id]) || 0) + 1;
+            byResourceType[_open.type] = (Number(byResourceType[_open.type]) || 0) + 1;
+            return {
+              ...base,
+              totalSessionMinutes: (Number(base.totalSessionMinutes) || 0) + 1,
+              byResource,
+              byResourceType
+            };
+          });
+        }
         setFocusData(prev => {
           const updatedEngaged = prev.engagedMinutes + (isEngaged ? 1 : 0);
           const updatedIdle = prev.idleMinutes + (isEngaged ? 0 : 1);
@@ -17189,6 +17423,11 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   // students actually DO; works plan-less). One-way snapshot: the teacher reviews and edits;
   // regenerating never clobbers an added resource. Provenance rides meta.derivedFrom.
   const [showDirectionsComposer, setShowDirectionsComposer] = useState(false);
+  // Resource-first goal picker (2026-07-27): which pack resource the teacher is
+  // currently attaching a goal to. '' = none picked, so only the free-text and
+  // XP paths show.
+  const [mbDirectionsGoalRes, setMbDirectionsGoalRes] = useState('');
+  const [mbDirectionsGoalText, setMbDirectionsGoalText] = useState('');
   const [directionsDeriving, setDirectionsDeriving] = useState(false);
   // Objectives Phase 1: per-directions progress { [dirId]: { startedAt, xpBaseline, manual: {objId:true}, celebrated } }.
   // Device-local (storageDB) — a formative guide, never a grade; Phase 2 syncs evidence at next join.
@@ -17199,6 +17438,29 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [mbHwEvidence, setMbHwEvidence] = useState({});
   const _softGateNudgedRef = useRef(new Set());
   const [showQuestMap, setShowQuestMap] = useState(true); // the directions view's knowledge-web toggle
+  // ONE signals object for every _alloEvaluateObjectives call site (2026-07-27).
+  // Six callers previously hand-built `{ globalPoints, gameCompletions }`; adding
+  // resource-backed kinds to only some of them would make the same goal read
+  // "done" in the view and "not done" in the evidence report. Declared here —
+  // after directionsProgress, before the first caller — so no site sees a TDZ.
+  // NOTE: `_visited` lives at the TOP level of the progress store (shared across
+  // directions resources), which is why it rides signals and not `progress`.
+  const _alloObjectiveSignals = React.useMemo(() => ({
+      globalPoints,
+      gameCompletions,
+      resourceCompletions,
+      studentResponses,
+      resources: history,
+      resourceMinutes: (timeOnTask && typeof timeOnTask.byResource === 'object' && timeOnTask.byResource) ? timeOnTask.byResource : {},
+      visited: (directionsProgress._visited && typeof directionsProgress._visited === 'object') ? directionsProgress._visited : {}
+  }), [globalPoints, gameCompletions, resourceCompletions, studentResponses, history, timeOnTask, directionsProgress]);
+  // Pack resources a goal may be attached to: student-safe only (teacher-only
+  // types must never surface in a student-facing checklist) and never a
+  // 'directions' item, which would let an assignment reference itself.
+  const _alloDirectionsGoalResources = React.useMemo(
+      () => _alloStudentSafeResources(history).filter(it => it.type !== 'directions'),
+      [history]
+  );
   useEffect(() => {
       let cancelled = false;
       (async () => {
@@ -17239,7 +17501,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       const dirId = generatedContent.id;
       const _dir = _alloNormalizeDirectionsData(generatedContent.data);
       if (!_dir.objectives.length) return;
-      const _evald = _alloEvaluateObjectives(_dir.objectives, { globalPoints, gameCompletions }, directionsProgress[dirId]);
+      const _evald = _alloEvaluateObjectives(_dir.objectives, _alloObjectiveSignals, directionsProgress[dirId]);
       if (!_evald.length || !_evald.every(o => o.done)) return;
       if (directionsProgress[dirId] && directionsProgress[dirId].celebrated) return;
       setDirectionsProgress(prev => ({ ...prev, [dirId]: { ...(prev[dirId] || {}), celebrated: true } }));
@@ -17350,7 +17612,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                   if (!prog || !prog.startedAt) continue; // never started here — nothing honest to report
                   const norm = _alloNormalizeDirectionsData(it.data);
                   if (!norm.objectives.length) continue;
-                  const evald = _alloEvaluateObjectives(norm.objectives, { globalPoints, gameCompletions }, prog);
+                  const evald = _alloEvaluateObjectives(norm.objectives, _alloObjectiveSignals, prog);
                   const doneCount = evald.filter(o => o.done).length;
                   const sent = prog.evidenceSent || {};
                   if (sent.code === mbStudent.code && sent.doneCount === doneCount) continue;
@@ -17363,7 +17625,10 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                       doneCount,
                       total: evald.length,
                       xpEarned: (typeof prog.xpBaseline === 'number' && typeof globalPoints === 'number') ? Math.max(0, globalPoints - prog.xpBaseline) : 0,
-                      objectives: evald.map(o => ({ label: String(o.label).slice(0, 80), kind: o.kind, done: o.done })),
+                      // `confirmed` distinguishes a signal the device actually recorded
+                      // from the student's own checkbox. Both are formative; only one is
+                      // the student's word, and the teacher panel should not blur them.
+                      objectives: evald.map(o => ({ label: String(o.label).slice(0, 80), kind: o.kind, done: o.done, confirmed: !!o.confirmed })),
                       reportedAt: new Date().toISOString(),
                   };
                   const dc = mbRtcRef.current?.dc;
@@ -18077,7 +18342,10 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                   doneCount: Math.max(0, Number(v.doneCount) || 0),
                   total: Math.max(0, Number(v.total) || 0),
                   xpEarned: Math.max(0, Number(v.xpEarned) || 0),
-                  objectives: (Array.isArray(v.objectives) ? v.objectives : []).slice(0, 20).map(o => ({ label: String(o && o.label || '').slice(0, 80), kind: String(o && o.kind || '').slice(0, 10), done: !!(o && o.done) })),
+                  // confirmed=false means the student ticked it themselves. Older
+                  // students' devices send no flag at all; treat that as unconfirmed
+                  // rather than silently promoting it to device-observed.
+                  objectives: (Array.isArray(v.objectives) ? v.objectives : []).slice(0, 20).map(o => ({ label: String(o && o.label || '').slice(0, 80), kind: String(o && o.kind || '').slice(0, 10), done: !!(o && o.done), confirmed: !!(o && o.confirmed) })),
                   at: Date.now(),
               },
           }));
@@ -28613,7 +28881,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
               const _sgDir = (Array.isArray(history) ? history : []).find(h => h && h.type === 'directions' && _alloNormalizeDirectionsData(h.data).softGate);
               if (_sgDir && !_softGateNudgedRef.current.has(item.id)) {
                   const _sgNorm = _alloNormalizeDirectionsData(_sgDir.data);
-                  const _sgEval = _alloEvaluateObjectives(_sgNorm.objectives, { globalPoints, gameCompletions }, directionsProgress[_sgDir.id] || {});
+                  const _sgEval = _alloEvaluateObjectives(_sgNorm.objectives, _alloObjectiveSignals, directionsProgress[_sgDir.id] || {});
                   const _sgDone = _sgEval.filter(o => o.done).length;
                   if (_sgEval.length && _sgDone < _sgEval.length) {
                       _softGateNudgedRef.current.add(item.id);
@@ -30898,14 +31166,14 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     const getAssignmentProgress = () => {
       if (!assignmentDirections || !assignmentDirections.id) return null;
       const normalized = _alloNormalizeDirectionsData(assignmentDirections.data);
-      const evaluated = _alloEvaluateObjectives(normalized.objectives, { globalPoints, gameCompletions }, directionsProgress[assignmentDirections.id]);
+      const evaluated = _alloEvaluateObjectives(normalized.objectives, _alloObjectiveSignals, directionsProgress[assignmentDirections.id]);
       return { title: assignmentDirections.title || (t('directions.title') || 'Assignment Directions'), done: evaluated.filter((goal) => goal.done).length, total: evaluated.length };
     };
     const getAssignmentMapItems = () => (Array.isArray(history) ? history : []).filter((item) => item && item.id && item.type && item.type !== 'directions' && !TEACHER_ONLY_TYPES.includes(item.type)).slice(0, 12);
     const getNextAssignmentStep = () => {
       if (!assignmentDirections || !assignmentDirections.id) return null;
       const normalized = _alloNormalizeDirectionsData(assignmentDirections.data);
-      const evaluated = _alloEvaluateObjectives(normalized.objectives, { globalPoints, gameCompletions }, directionsProgress[assignmentDirections.id]);
+      const evaluated = _alloEvaluateObjectives(normalized.objectives, _alloObjectiveSignals, directionsProgress[assignmentDirections.id]);
       const visited = (directionsProgress._visited && typeof directionsProgress._visited === 'object') ? directionsProgress._visited : {};
       const recommendation = _alloRecommendNextStations(getAssignmentMapItems(), visited, normalized.objectives, evaluated);
       if (recommendation.next && recommendation.next.item) return { item: recommendation.next.item, title: recommendation.next.item.title || recommendation.next.item.type, goalLabel: recommendation.next.goalLabel || '' };
@@ -35468,18 +35736,82 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 <p className="text-[11px] font-bold text-slate-600 mb-1">{t('directions.objectives') || 'Goals (auto-check where possible)'}</p>
                 {(mbDirectionsDraft?.objectives || []).map((o, oi) => (
                   <div key={o.id} className="flex items-center gap-1.5 mb-1">
-                    <span className={'text-[9px] font-bold uppercase rounded px-1 py-0.5 flex-shrink-0 ' + (o.kind === 'xp' ? 'bg-indigo-50 text-indigo-700' : (o.kind === 'game' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'))}>{o.kind === 'manual' ? (t('directions.kind_manual') || 'self-check') : o.kind}</span>
+                    <span className={'text-[9px] font-bold uppercase rounded px-1 py-0.5 flex-shrink-0 ' + (o.kind === 'xp' ? 'bg-indigo-50 text-indigo-700' : (o.kind === 'game' ? 'bg-emerald-50 text-emerald-700' : (o.kind === 'manual' ? 'bg-slate-100 text-slate-600' : 'bg-sky-50 text-sky-700')))}>{o.kind === 'manual' ? (t('directions.kind_manual') || 'self-check') : (o.kind === 'visited' ? (t('directions.kind_visited') || 'opened') : (o.kind === 'responded' ? (t('directions.kind_responded') || 'answered') : (o.kind === 'completed' ? (t('directions.kind_completed') || 'finished') : (o.kind === 'time' ? (t('directions.kind_time') || 'time') : o.kind))))}</span>
                     <input value={o.label} onChange={e => setMbDirectionsDraft(p => { const list = [...((p && p.objectives) || [])]; list[oi] = { ...list[oi], label: e.target.value }; return { ...(p || {}), objectives: list }; })} aria-label={t('directions.objective_label') || 'Goal label'} className="flex-1 min-w-0 text-[11px] border border-slate-200 rounded p-1 bg-white text-slate-800" />
                     {o.kind === 'xp' && <input type="number" min="1" max="1000" value={o.amount || 25} onChange={e => setMbDirectionsDraft(p => { const list = [...((p && p.objectives) || [])]; const amt = Math.max(1, Math.min(1000, Number(e.target.value) || 1)); list[oi] = { ...list[oi], amount: amt }; return { ...(p || {}), objectives: list }; })} aria-label={t('directions.xp_amount') || 'XP amount'} className="w-14 text-[11px] border border-slate-200 rounded p-1 bg-white text-slate-800 flex-shrink-0" />}
+                    {o.kind === 'time' && <input type="number" min="1" max="240" value={o.minutes || 10} onChange={e => setMbDirectionsDraft(p => { const list = [...((p && p.objectives) || [])]; const mins = Math.max(1, Math.min(240, Number(e.target.value) || 1)); list[oi] = { ...list[oi], minutes: mins }; return { ...(p || {}), objectives: list }; })} aria-label={t('directions.time_minutes') || 'Minutes'} className="w-14 text-[11px] border border-slate-200 rounded p-1 bg-white text-slate-800 flex-shrink-0" />}
                     <button onClick={() => setMbDirectionsDraft(p => ({ ...(p || {}), objectives: ((p && p.objectives) || []).filter(x => x.id !== o.id) }))} aria-label={t('directions.remove_objective') || 'Remove goal'} className="text-slate-400 hover:text-rose-600 p-0.5 flex-shrink-0"><X size={12} /></button>
                   </div>
                 ))}
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {[['crossword', 'Crossword'], ['wordScramble', 'Word Scramble'], ['memory', 'Memory'], ['matching', 'Matching'], ['bingo', 'Bingo']].map(([gt, glabel]) => (
-                    <button key={gt} onClick={() => setMbDirectionsDraft(p => ({ ...(p || {}), objectives: [...((p && p.objectives) || []), { id: generateUUID(), kind: 'game', gameType: gt, label: 'Complete the ' + glabel }] }))} className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 hover:border-emerald-400 rounded-full px-2 py-0.5 transition-all">+ {glabel}</button>
-                  ))}
+                {/* Write-your-own comes FIRST: most goals a teacher actually wants
+                    ("explain it in your own words") can never be auto-checked, and
+                    burying that behind a row of game chips taught the opposite. */}
+                <div className="flex items-center gap-1.5 mt-1">
+                  <input
+                    value={mbDirectionsGoalText}
+                    onChange={e => setMbDirectionsGoalText(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key !== 'Enter' || !mbDirectionsGoalText.trim()) return;
+                      e.preventDefault();
+                      setMbDirectionsDraft(p => ({ ...(p || {}), objectives: [...((p && p.objectives) || []), { id: generateUUID(), kind: 'manual', label: mbDirectionsGoalText.trim() }] }));
+                      setMbDirectionsGoalText('');
+                    }}
+                    placeholder={t('directions.goal_write_placeholder') || 'Write a goal in your own words…'}
+                    aria-label={t('directions.goal_write_label') || 'Write a goal'}
+                    className="flex-1 min-w-0 text-[11px] border border-slate-300 rounded p-1.5 bg-white text-slate-800"
+                  />
+                  <button
+                    onClick={() => {
+                      if (!mbDirectionsGoalText.trim()) return;
+                      setMbDirectionsDraft(p => ({ ...(p || {}), objectives: [...((p && p.objectives) || []), { id: generateUUID(), kind: 'manual', label: mbDirectionsGoalText.trim() }] }));
+                      setMbDirectionsGoalText('');
+                    }}
+                    disabled={!mbDirectionsGoalText.trim()}
+                    className="text-[10px] font-bold text-slate-700 bg-slate-100 border border-slate-300 hover:border-slate-400 rounded px-2 py-1 transition-all disabled:opacity-40 flex-shrink-0"
+                  >+ {t('directions.goal_add') || 'Add'}</button>
+                </div>
+                {/* Auto-checking goals are DERIVED from the resource, never a fixed
+                    chip row. A fixed row is how "+ Word Scramble" survived for weeks
+                    pointing at a game that never reported a completion. */}
+                <div className="mt-2">
+                  <label className="block text-[10px] font-bold text-slate-500 mb-1" htmlFor="dir-goal-res">{t('directions.goal_attach') || 'Auto-check against a resource'}</label>
+                  <select
+                    id="dir-goal-res"
+                    value={mbDirectionsGoalRes}
+                    onChange={e => setMbDirectionsGoalRes(e.target.value)}
+                    className="w-full text-[11px] border border-slate-300 rounded p-1.5 bg-white text-slate-800"
+                  >
+                    <option value="">{_alloDirectionsGoalResources.length ? (t('directions.goal_pick_resource') || 'Pick something in this pack…') : (t('directions.goal_no_resources') || 'No pack resources yet')}</option>
+                    {_alloDirectionsGoalResources.map(it => (
+                      <option key={it.id} value={it.id}>{(_alloStationStyle(it.type).icon || '') + ' ' + (it.title || it.type)}</option>
+                    ))}
+                  </select>
+                  {mbDirectionsGoalRes && (() => {
+                    const _res = _alloDirectionsGoalResources.find(it => it.id === mbDirectionsGoalRes);
+                    const _opts = _alloGoalOptionsForResource(_res);
+                    if (!_opts.length) return null;
+                    return (
+                      <div className="flex flex-wrap gap-1 mt-1.5">
+                        {_opts.map(opt => (
+                          <button
+                            key={opt.kind + ':' + (opt.gameType || '')}
+                            onClick={() => setMbDirectionsDraft(p => ({ ...(p || {}), objectives: [...((p && p.objectives) || []), {
+                              id: generateUUID(),
+                              kind: opt.kind,
+                              label: t(opt.labelKey, { title: (_res && _res.title) || '' }) || opt.label,
+                              ...(opt.gameType ? { gameType: opt.gameType } : {}),
+                              ...(opt.minutes ? { minutes: opt.minutes } : {}),
+                              ...(opt.kind === 'manual' ? {} : { resourceRef: mbDirectionsGoalRes })
+                            }] }))}
+                            className={'text-[10px] font-bold rounded-full px-2 py-0.5 border transition-all ' + (opt.kind === 'game' ? 'text-emerald-700 bg-emerald-50 border-emerald-200 hover:border-emerald-400' : (opt.kind === 'manual' ? 'text-slate-600 bg-slate-50 border-slate-200 hover:border-slate-400' : 'text-sky-700 bg-sky-50 border-sky-200 hover:border-sky-400'))}
+                          >+ {opt.label}</button>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
+                <div className="flex flex-wrap gap-1 mt-2">
                   <button onClick={() => setMbDirectionsDraft(p => ({ ...(p || {}), objectives: [...((p && p.objectives) || []), { id: generateUUID(), kind: 'xp', amount: 25, label: 'Earn 25 XP' }] }))} className="text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 hover:border-indigo-400 rounded-full px-2 py-0.5 transition-all">+ XP</button>
-                  <button onClick={() => setMbDirectionsDraft(p => ({ ...(p || {}), objectives: [...((p && p.objectives) || []), { id: generateUUID(), kind: 'manual', label: 'I finished my work' }] }))} className="text-[10px] font-bold text-slate-600 bg-slate-50 border border-slate-200 hover:border-slate-400 rounded-full px-2 py-0.5 transition-all">+ {t('directions.chip_manual') || 'Self-check'}</button>
                 </div>
                 <p className="text-[10px] text-slate-400 mt-1">{t('directions.objectives_note') || "Goals check off on the student's device — a formative guide, not a grade, and nothing is ever locked."}</p>
                 {(mbDirectionsDraft?.objectives || []).length > 0 && (
@@ -35871,14 +36203,31 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                   {Object.keys(mbHwEvidence).length > 0 && (
                     <div className="border-t border-indigo-100 pt-2 mt-2" role="region" aria-label={t('takehome.evidence_title') || 'Homework check-ins'}>
                       <p className="text-[10px] font-bold text-indigo-700 mb-1">📥 {t('takehome.evidence_title') || 'Homework check-ins'} <span className="font-normal text-slate-400">({t('takehome.evidence_caveat') || 'student-device reported — formative, not a grade'})</span></p>
-                      {Object.values(mbHwEvidence).sort((a, b) => (b.at || 0) - (a.at || 0)).slice(0, 12).map(ev => (
-                        <p key={ev.uid + '|' + ev.directionsId} className="text-[10px] text-slate-600 truncate" title={ev.objectives.map(o => (o.done ? '✓ ' : '· ') + o.label).join('\n')}>
-                          <span className={'font-bold ' + (ev.doneCount >= ev.total && ev.total > 0 ? 'text-emerald-700' : 'text-slate-700')}>{ev.name}</span>
-                          {' — ' + ev.doneCount + '/' + ev.total + ' ' + (t('takehome.evidence_goals') || 'goals')}
-                          {ev.xpEarned > 0 ? ' · +' + ev.xpEarned + ' XP' : ''}
-                          {' · ' + ev.title}
-                        </p>
-                      ))}
+                      {Object.values(mbHwEvidence).sort((a, b) => (b.at || 0) - (a.at || 0)).slice(0, 12).map(ev => {
+                        // Split the count: goals the device observed vs goals the
+                        // student ticked. Both are formative — but "3 of 4 recorded"
+                        // and "3 of 4 self-checked" are different claims, and the
+                        // panel used to render them identically.
+                        const _obs = ev.objectives.filter(o => o.done && o.confirmed).length;
+                        const _self = ev.objectives.filter(o => o.done && !o.confirmed).length;
+                        return (
+                          <p key={ev.uid + '|' + ev.directionsId} className="text-[10px] text-slate-600 truncate" title={ev.objectives.map(o => (o.done ? '✓ ' : '· ') + o.label + (o.done ? (o.confirmed ? ' (recorded on device)' : ' (self-checked)') : '')).join('\n')}>
+                            <span className={'font-bold ' + (ev.doneCount >= ev.total && ev.total > 0 ? 'text-emerald-700' : 'text-slate-700')}>{ev.name}</span>
+                            {' — ' + ev.doneCount + '/' + ev.total + ' ' + (t('takehome.evidence_goals') || 'goals')}
+                            {(_obs > 0 || _self > 0) && (
+                              <span className="text-slate-400">
+                                {' ('}
+                                {_obs > 0 && <span className="text-emerald-700">{_obs + ' ' + (t('takehome.evidence_recorded') || 'recorded')}</span>}
+                                {_obs > 0 && _self > 0 ? ', ' : ''}
+                                {_self > 0 && <span>{_self + ' ' + (t('takehome.evidence_self') || 'self-checked')}</span>}
+                                {')'}
+                              </span>
+                            )}
+                            {ev.xpEarned > 0 ? ' · +' + ev.xpEarned + ' XP' : ''}
+                            {' · ' + ev.title}
+                          </p>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -38505,7 +38854,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 {activeView === 'directions' && generatedContent?.type === 'directions' && (() => {
                     const _dir = _alloNormalizeDirectionsData(generatedContent.data);
                     const _dirProg = directionsProgress[generatedContent.id] || {};
-                    const _evald = _alloEvaluateObjectives(_dir.objectives, { globalPoints, gameCompletions }, _dirProg);
+                    const _evald = _alloEvaluateObjectives(_dir.objectives, _alloObjectiveSignals, _dirProg);
                     const _doneCount = _evald.filter(o => o.done).length;
                     // ── Quest map (knowledge web): pack resources as stations on a trail, goals as
                     // satellites, completion lighting from the SAME signals as the checklist. The
@@ -38739,6 +39088,10 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     // imports (device-local model; no cloud conceptMastery reads).
                     conceptMasteryByUid: teacherConceptMasteryByUid,
                     onSubmitLiveAnswer: handleSubmitLiveAnswer,
+                    // Resource-keyed completion bridge (2026-07-27): the quiz's own
+                    // attempt receipt is namespaced by content hash, so directions
+                    // goals cannot find it. This reports by resourceId instead.
+                    onResourceComplete: recordResourceCompletion,
                     isPresentationMode, isReviewGame, isEditingQuiz,
                     escapeRoomState, escapeTimeLeft, isEscapeTimerRunning,
                     gameTeams, reviewGameState, scoreAnimation, soundEnabled,

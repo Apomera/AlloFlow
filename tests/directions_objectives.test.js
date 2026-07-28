@@ -77,7 +77,7 @@ describe('wiring pins', () => {
   });
   it("the 'directions' view branch exists (the type previously rendered a BLANK content area)", () => {
     expect(anti).toContain("activeView === 'directions' && generatedContent?.type === 'directions'");
-    expect(anti).toContain('_alloEvaluateObjectives(_dir.objectives, { globalPoints, gameCompletions }, _dirProg)');
+    expect(anti).toContain('_alloEvaluateObjectives(_dir.objectives, _alloObjectiveSignals, _dirProg)');
     expect(anti).toContain('parseMarkdownToHTML(_dir.body)');
   });
   it('baseline captures on FIRST view; celebration fires once via the existing bot event', () => {

@@ -21,6 +21,11 @@ function makeApi(isCanvas, fetchRef) {
   return window.AlloModules.createGeminiAPI({
     apiKey: 'k', _isCanvasEnv: isCanvas, GEMINI_MODELS,
     fetchWithExponentialBackoff: (...a) => fetchRef.fn(...a),
+    // callGemini retries a Canvas 401 (it is almost always a brief throttle —
+    // 2026-07-27). Keep the retry ACTIVE here so these tests still prove the
+    // banner debounce counts USER-LEVEL failures rather than internal attempts,
+    // but drop the backoff to zero so three failing calls don't spend ~13s.
+    canvasAuthBackoffMs: [0, 0],
     optimizeImage: async (u) => u, warnLog: () => {}, debugLog: () => {}, getAbortSignal: () => null,
   });
 }

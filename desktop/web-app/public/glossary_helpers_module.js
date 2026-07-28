@@ -143,7 +143,7 @@ const handleGenerateTermEtymology = async (index, term, deps) => {
     const hangGuard = setTimeout(() => {
         setIsGeneratingEtymology(prev => ({ ...prev, [index]: false }));
         warnLog("Etymology hang guard tripped for:", term);
-    }, 30000);
+    }, 45000); // two sequential calls on the multilingual path (generate + locale repair)
     try {
         const def = generatedContent?.data[index]?.def || "";
         const isElementary = gradeLevel && /K|1st|2nd|3rd|4th|5th/.test(gradeLevel);
@@ -190,6 +190,12 @@ const handleGenerateTermEtymology = async (index, term, deps) => {
           "related" = 1-3 modern English words sharing this root (optional per-root; include when genuine).
           "langByLocale" = REQUIRED. An object mapping EACH of [${targetLanguages.join(', ')}] → the origin language name rendered in THAT locale (e.g. Latin → "latin" in French, "lateinisch" in German, "латинский" in Russian, "اللاتينية" in Arabic). Use native-script, lowercase-unless-grammar-requires-caps.
           "meaningByLang" = REQUIRED. An object mapping EACH of [${targetLanguages.join(', ')}] → the 1-4 word meaning in that locale (e.g. "light" → "lumière" French, "licht" German). Keep meaning plain, no quotes.
+
+          Worked example of a correctly filled root — copy the SHAPE, never these values:
+          {"root":"photo","lang":"Greek","meaning":"light","related":["photograph","photon"],
+           "langByLocale":{"English":"Greek","Spanish":"griego","French":"grec"},
+           "meaningByLang":{"English":"light","Spanish":"luz","French":"lumière"}}
+          Every root object MUST carry BOTH langByLocale and meaningByLang, each with an entry for EVERY language in [${targetLanguages.join(', ')}] — English included. Omitting one makes the app print English inside a non-English column.
         `;
         const raw = await callGemini(prompt, true);
         const stripped = (raw || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
@@ -241,6 +247,69 @@ const handleGenerateTermEtymology = async (index, term, deps) => {
         } catch (parseErr) {
             warnLog('Etymology JSON parse failed — falling back to raw prose:', parseErr?.message, 'raw response preview:', (stripped || '').substring(0, 200));
             etymologyByLang['English'] = stripped;
+        }
+        // Repair pass. The model routinely returns prosePerLanguage for every
+        // target language but drops langByLocale/meaningByLang, and the renderer
+        // then falls back to r.meaning — which is English by definition. The
+        // result is a half-localized chip ("servare LATÍN = to keep or watch" in
+        // a Spanish column), so fill the gaps rather than shipping the fallback.
+        if (roots.length > 0 && targetLanguages.length > 1) {
+            roots.forEach(r => {
+                r.langByLocale = r.langByLocale || {};
+                r.meaningByLang = r.meaningByLang || {};
+                if (r.lang && !r.langByLocale['English']) r.langByLocale['English'] = r.lang;
+                if (r.meaning && !r.meaningByLang['English']) r.meaningByLang['English'] = r.meaning;
+            });
+            const gaps = targetLanguages.filter(L => L !== 'English'
+                && roots.some(r => !r.meaningByLang[L] || !r.langByLocale[L]));
+            if (gaps.length > 0) {
+                try {
+                    const repairPrompt = `
+                      Translate short etymology labels. Return ONLY a JSON object — no markdown fences, no commentary.
+                      Provide an entry for EVERY numbered root below in EVERY one of these languages: ${gaps.join(', ')}.
+
+                      Roots:
+${roots.map((r, i) => `                      ${i}. root "${r.root}" — origin language "${r.lang || 'unknown'}" — English meaning "${r.meaning || ''}"`).join('\n')}
+
+                      Shape (top-level keys are the root numbers above, as strings — include ALL of ${roots.map((r, i) => `"${i}"`).join(', ')}):
+                      {
+                        "0": { ${gaps.map(L => `"${L}": { "lang": "...", "meaning": "..." }`).join(', ')} }
+                      }
+
+                      Rules:
+                      - "lang" = the ORIGIN language name (Latin, Greek, Old English…) written in the target language's own words and script: Latin → "latín" in Spanish, "latin" in French, "lateinisch" in German, "латинский" in Russian, "اللاتينية" in Arabic. Lowercase unless that language's grammar requires a capital.
+                      - "meaning" = a natural translation of the English meaning, 1-4 words, no quotes, no explanation: "to keep or watch" → "guardar o vigilar" in Spanish.
+                      - Never translate the root morpheme itself, and never return English text for a non-English language.
+                    `;
+                    const rawFix = await callGemini(repairPrompt, true);
+                    const strippedFix = (rawFix || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+                    const fixed = JSON.parse(strippedFix);
+                    if (fixed && typeof fixed === 'object') {
+                        roots.forEach((r, i) => {
+                            const entry = fixed[String(i)];
+                            if (!entry || typeof entry !== 'object') return;
+                            gaps.forEach(L => {
+                                const slot = entry[L];
+                                if (!slot || typeof slot !== 'object') return;
+                                if (!r.meaningByLang[L] && typeof slot.meaning === 'string' && slot.meaning.trim()) {
+                                    r.meaningByLang[L] = slot.meaning.trim().slice(0, 60);
+                                }
+                                if (!r.langByLocale[L] && typeof slot.lang === 'string' && slot.lang.trim()) {
+                                    r.langByLocale[L] = slot.lang.trim().slice(0, 60);
+                                }
+                            });
+                        });
+                    }
+                    const stillMissing = gaps.filter(L => roots.some(r => !r.meaningByLang[L]));
+                    if (stillMissing.length > 0) warnLog('Etymology locale repair incomplete for:', stillMissing.join(', '));
+                } catch (repairErr) {
+                    warnLog('Etymology locale repair failed — chips may show English glosses:', repairErr?.message);
+                }
+            }
+            roots.forEach(r => {
+                if (Object.keys(r.langByLocale).length === 0) delete r.langByLocale;
+                if (Object.keys(r.meaningByLang).length === 0) delete r.meaningByLang;
+            });
         }
         const primaryProse = etymologyByLang[leveledTextLanguage] || etymologyByLang['English']
             || etymologyByLang[Object.keys(etymologyByLang)[0]] || '';

@@ -1,6 +1,6 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-07-27T16:20:47.625Z
+Generated: 2026-07-28T00:22:56.525Z
 
 ## Scope
 
@@ -19,7 +19,7 @@ Generated: 2026-07-27T16:20:47.625Z
 | Review notices | 17 |
 | Tools with any finding | 20 |
 | Tools with high-confidence errors | 0 |
-| Tools with canvas surfaces | 37 |
+| Tools with canvas surfaces | 38 |
 
 ## Top Findings
 
@@ -51,7 +51,7 @@ Generated: 2026-07-27T16:20:47.625Z
 | `aquacultureLab` AquacultureLab: Mussel Farm Sim | science | standard | 178 | 5 | 0 | 0 | 0 | 0 |  |
 | `aquarium` Aquarium Lab | science | standard | 27 | 0 | 0 | 0 | 0 | 0 |  |
 | `arccity` Arc City | strategy | standard | 27 | 0 | 0 | 0 | 0 | 0 |  |
-| `archStudio` Architecture Studio | explore | standard | 83 | 2 | 0 | 0 | 0 | 1 | metadata x1 |
+| `archStudio` Architecture Studio | explore | standard | 83 | 2 | 1 | 0 | 0 | 1 | metadata x1 |
 | `areaPerimeter` Area & Perimeter Lab | math | standard | 8 | 2 | 0 | 0 | 0 | 1 | horizontal-overflow-risk x1 |
 | `areamodel` Area Model | math | standard | 18 | 3 | 0 | 0 | 0 | 0 |  |
 | `arithmeticStudio` Arithmetic Strategy Studio | math | standard | 11 | 2 | 0 | 0 | 0 | 0 |  |
@@ -67,7 +67,7 @@ Generated: 2026-07-27T16:20:47.625Z
 | `bikeLab` BikeLab: Physics & Repair | life-skills | standard | 11 | 0 | 0 | 0 | 0 | 0 |  |
 | `birdLab` BirdLab — I-Spy Ornithology | science | standard | 127 | 1 | 0 | 0 | 0 | 0 |  |
 | `brainAtlas` Brain Atlas Explorer | science | standard | 58 | 1 | 1 | 0 | 0 | 0 |  |
-| `bridgeLab` Bridge Engineering Lab | science | standard | 24 | 8 | 0 | 0 | 0 | 0 |  |
+| `bridgeLab` Bridge Engineering Lab | science | standard | 24 | 9 | 0 | 0 | 0 | 0 |  |
 | `calculus` Calculus | math | standard | 29 | 9 | 0 | 0 | 0 | 0 |  |
 | `cell` Cell Simulator | science | standard | 41 | 3 | 1 | 0 | 0 | 0 |  |
 | `cellularLab` Cellular Automaton Lab | math | standard | 52 | 3 | 0 | 0 | 0 | 0 |  |
@@ -87,7 +87,7 @@ Generated: 2026-07-27T16:20:47.625Z
 | `decomposer` Material Decomposer | science | standard | 30 | 0 | 0 | 0 | 0 | 0 |  |
 | `dinoLab` Dino Lab | explore | standard | 408 | 1 | 0 | 0 | 0 | 1 | metadata x1 |
 | `dissection` Virtual Dissection Lab | science | standard | 59 | 7 | 1 | 0 | 0 | 0 |  |
-| `dnaLab` DNA Lab | biology | standard | 87 | 1 | 1 | 0 | 0 | 0 |  |
+| `dnaLab` DNA Lab | biology | standard | 88 | 1 | 1 | 0 | 0 | 0 |  |
 | `echoTrainer` Echo Navigator | applied | standard | 28 | 5 | 1 | 0 | 0 | 0 |  |
 | `echolocation` Echolocation Lab | science | standard | 10 | 0 | 0 | 0 | 0 | 0 |  |
 | `economicsLab` Economics Lab | science | standard | 25 | 8 | 1 | 0 | 0 | 0 |  |

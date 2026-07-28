@@ -1,0 +1,585 @@
+{
+  "generatedBy": "check_local_llm_resource_matrix.cjs --capabilities",
+  "target": "source",
+  "axes": [
+    "grade",
+    "lang",
+    "standards",
+    "interests",
+    "dok",
+    "custom",
+    "emoji"
+  ],
+  "rows": [
+    {
+      "backend": "local",
+      "type": "simplified",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "reaches",
+        "lang": "reaches",
+        "standards": "reaches",
+        "interests": "reaches",
+        "dok": "reaches",
+        "custom": "reaches",
+        "emoji": "reaches"
+      }
+    },
+    {
+      "backend": "local",
+      "type": "glossary",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "reaches",
+        "lang": "reaches",
+        "standards": "absent",
+        "interests": "absent",
+        "dok": "absent",
+        "custom": "reaches",
+        "emoji": "reaches"
+      }
+    },
+    {
+      "backend": "local",
+      "type": "outline",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "reaches",
+        "lang": "reaches",
+        "standards": "reaches",
+        "interests": "absent",
+        "dok": "absent",
+        "custom": "reaches",
+        "emoji": "reaches"
+      }
+    },
+    {
+      "backend": "local",
+      "type": "image",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "absent",
+        "lang": "reaches",
+        "standards": "absent",
+        "interests": "absent",
+        "dok": "absent",
+        "custom": "reaches",
+        "emoji": "reaches"
+      }
+    },
+    {
+      "backend": "local",
+      "type": "quiz",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "reaches",
+        "lang": "reaches",
+        "standards": "reaches",
+        "interests": "absent",
+        "dok": "reaches",
+        "custom": "reaches",
+        "emoji": "reaches"
+      }
+    },
+    {
+      "backend": "local",
+      "type": "analysis",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "absent",
+        "lang": "absent",
+        "standards": "absent",
+        "interests": "absent",
+        "dok": "absent",
+        "custom": "absent",
+        "emoji": "absent"
+      }
+    },
+    {
+      "backend": "local",
+      "type": "faq",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "reaches",
+        "lang": "reaches",
+        "standards": "absent",
+        "interests": "reaches",
+        "dok": "absent",
+        "custom": "reaches",
+        "emoji": "reaches"
+      }
+    },
+    {
+      "backend": "local",
+      "type": "brainstorm",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "reaches",
+        "lang": "absent",
+        "standards": "reaches",
+        "interests": "reaches",
+        "dok": "absent",
+        "custom": "reaches",
+        "emoji": "absent"
+      }
+    },
+    {
+      "backend": "local",
+      "type": "sentence-frames",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "reaches",
+        "lang": "reaches",
+        "standards": "reaches",
+        "interests": "reaches",
+        "dok": "absent",
+        "custom": "reaches",
+        "emoji": "reaches"
+      }
+    },
+    {
+      "backend": "local",
+      "type": "timeline",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "reaches",
+        "lang": "reaches",
+        "standards": "absent",
+        "interests": "absent",
+        "dok": "absent",
+        "custom": "reaches",
+        "emoji": "absent"
+      }
+    },
+    {
+      "backend": "local",
+      "type": "math",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "reaches",
+        "lang": "reaches",
+        "standards": "absent",
+        "interests": "reaches",
+        "dok": "absent",
+        "custom": "absent",
+        "emoji": "absent"
+      }
+    },
+    {
+      "backend": "local",
+      "type": "gemini-bridge",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "reaches",
+        "lang": "reaches",
+        "standards": "absent",
+        "interests": "absent",
+        "dok": "absent",
+        "custom": "absent",
+        "emoji": "absent"
+      }
+    },
+    {
+      "backend": "local",
+      "type": "concept-sort",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "reaches",
+        "lang": "reaches",
+        "standards": "absent",
+        "interests": "absent",
+        "dok": "absent",
+        "custom": "absent",
+        "emoji": "absent"
+      }
+    },
+    {
+      "backend": "local",
+      "type": "dbq",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "reaches",
+        "lang": "reaches",
+        "standards": "absent",
+        "interests": "absent",
+        "dok": "absent",
+        "custom": "absent",
+        "emoji": "absent"
+      }
+    },
+    {
+      "backend": "local",
+      "type": "lesson-plan",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "reaches",
+        "lang": "reaches",
+        "standards": "absent",
+        "interests": "absent",
+        "dok": "absent",
+        "custom": "absent",
+        "emoji": "absent"
+      }
+    },
+    {
+      "backend": "local",
+      "type": "adventure",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "reaches",
+        "lang": "reaches",
+        "standards": "absent",
+        "interests": "reaches",
+        "dok": "absent",
+        "custom": "reaches",
+        "emoji": "absent"
+      }
+    },
+    {
+      "backend": "local",
+      "type": "persona",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "reaches",
+        "lang": "reaches",
+        "standards": "absent",
+        "interests": "absent",
+        "dok": "absent",
+        "custom": "absent",
+        "emoji": "absent"
+      }
+    },
+    {
+      "backend": "local",
+      "type": "note-taking",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "reaches",
+        "lang": "reaches",
+        "standards": "absent",
+        "interests": "absent",
+        "dok": "absent",
+        "custom": "absent",
+        "emoji": "absent"
+      }
+    },
+    {
+      "backend": "local",
+      "type": "anchor-chart",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "reaches",
+        "lang": "reaches",
+        "standards": "absent",
+        "interests": "absent",
+        "dok": "absent",
+        "custom": "absent",
+        "emoji": "absent"
+      }
+    },
+    {
+      "backend": "cloud",
+      "type": "simplified",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "reaches",
+        "lang": "reaches",
+        "standards": "reaches",
+        "interests": "reaches",
+        "dok": "reaches",
+        "custom": "reaches",
+        "emoji": "reaches"
+      }
+    },
+    {
+      "backend": "cloud",
+      "type": "glossary",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "reaches",
+        "lang": "reaches",
+        "standards": "absent",
+        "interests": "absent",
+        "dok": "absent",
+        "custom": "reaches",
+        "emoji": "reaches"
+      }
+    },
+    {
+      "backend": "cloud",
+      "type": "outline",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "reaches",
+        "lang": "reaches",
+        "standards": "reaches",
+        "interests": "absent",
+        "dok": "absent",
+        "custom": "reaches",
+        "emoji": "reaches"
+      }
+    },
+    {
+      "backend": "cloud",
+      "type": "image",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "absent",
+        "lang": "reaches",
+        "standards": "absent",
+        "interests": "absent",
+        "dok": "absent",
+        "custom": "reaches",
+        "emoji": "reaches"
+      }
+    },
+    {
+      "backend": "cloud",
+      "type": "quiz",
+      "deterministic": true,
+      "prompts": 4,
+      "axes": {
+        "grade": "reaches",
+        "lang": "reaches",
+        "standards": "reaches",
+        "interests": "absent",
+        "dok": "reaches",
+        "custom": "reaches",
+        "emoji": "reaches"
+      }
+    },
+    {
+      "backend": "cloud",
+      "type": "analysis",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "absent",
+        "lang": "absent",
+        "standards": "absent",
+        "interests": "absent",
+        "dok": "absent",
+        "custom": "absent",
+        "emoji": "absent"
+      }
+    },
+    {
+      "backend": "cloud",
+      "type": "faq",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "reaches",
+        "lang": "reaches",
+        "standards": "absent",
+        "interests": "reaches",
+        "dok": "absent",
+        "custom": "reaches",
+        "emoji": "reaches"
+      }
+    },
+    {
+      "backend": "cloud",
+      "type": "brainstorm",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "reaches",
+        "lang": "absent",
+        "standards": "reaches",
+        "interests": "reaches",
+        "dok": "absent",
+        "custom": "reaches",
+        "emoji": "absent"
+      }
+    },
+    {
+      "backend": "cloud",
+      "type": "sentence-frames",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "reaches",
+        "lang": "reaches",
+        "standards": "reaches",
+        "interests": "reaches",
+        "dok": "absent",
+        "custom": "reaches",
+        "emoji": "reaches"
+      }
+    },
+    {
+      "backend": "cloud",
+      "type": "timeline",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "reaches",
+        "lang": "reaches",
+        "standards": "absent",
+        "interests": "absent",
+        "dok": "absent",
+        "custom": "reaches",
+        "emoji": "absent"
+      }
+    },
+    {
+      "backend": "cloud",
+      "type": "math",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "reaches",
+        "lang": "reaches",
+        "standards": "absent",
+        "interests": "reaches",
+        "dok": "absent",
+        "custom": "absent",
+        "emoji": "absent"
+      }
+    },
+    {
+      "backend": "cloud",
+      "type": "gemini-bridge",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "reaches",
+        "lang": "reaches",
+        "standards": "absent",
+        "interests": "absent",
+        "dok": "absent",
+        "custom": "absent",
+        "emoji": "absent"
+      }
+    },
+    {
+      "backend": "cloud",
+      "type": "concept-sort",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "reaches",
+        "lang": "reaches",
+        "standards": "absent",
+        "interests": "absent",
+        "dok": "absent",
+        "custom": "absent",
+        "emoji": "absent"
+      }
+    },
+    {
+      "backend": "cloud",
+      "type": "dbq",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "reaches",
+        "lang": "reaches",
+        "standards": "absent",
+        "interests": "absent",
+        "dok": "absent",
+        "custom": "absent",
+        "emoji": "absent"
+      }
+    },
+    {
+      "backend": "cloud",
+      "type": "lesson-plan",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "absent",
+        "lang": "absent",
+        "standards": "absent",
+        "interests": "absent",
+        "dok": "absent",
+        "custom": "absent",
+        "emoji": "absent"
+      }
+    },
+    {
+      "backend": "cloud",
+      "type": "adventure",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "reaches",
+        "lang": "reaches",
+        "standards": "absent",
+        "interests": "reaches",
+        "dok": "absent",
+        "custom": "reaches",
+        "emoji": "absent"
+      }
+    },
+    {
+      "backend": "cloud",
+      "type": "persona",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "reaches",
+        "lang": "reaches",
+        "standards": "absent",
+        "interests": "absent",
+        "dok": "absent",
+        "custom": "absent",
+        "emoji": "absent"
+      }
+    },
+    {
+      "backend": "cloud",
+      "type": "note-taking",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "reaches",
+        "lang": "reaches",
+        "standards": "absent",
+        "interests": "absent",
+        "dok": "absent",
+        "custom": "absent",
+        "emoji": "absent"
+      }
+    },
+    {
+      "backend": "cloud",
+      "type": "anchor-chart",
+      "deterministic": true,
+      "prompts": 1,
+      "axes": {
+        "grade": "reaches",
+        "lang": "reaches",
+        "standards": "absent",
+        "interests": "absent",
+        "dok": "absent",
+        "custom": "absent",
+        "emoji": "absent"
+      }
+    }
+  ]
+}

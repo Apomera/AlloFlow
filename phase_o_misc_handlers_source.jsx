@@ -710,7 +710,20 @@ const handleExecuteBlueprint = async (deps) => {
         essentialQuestion: activeBlueprint.lessonDNA?.essentialQuestion || "",
     };
     setActiveBlueprint(null);
-    setShowUDLGuide(false);
+    // The chat panel used to be force-closed here, which threw away the
+    // conversation the plan came out of — and, because the guided-flow stage
+    // was never cleared, reopening it stranded every later message in the
+    // blueprint reviser. Keep it open, report progress in the thread, and
+    // retire the stage. The teacher can collapse the panel to a bar to watch
+    // the resources land without losing the thread.
+    // (tests/blueprint_review_lanes.test.js pins that this module never
+    // closes the guide panel — reintroducing that call fails the suite.)
+    setGuidedFlowState({ currentStage: null, isFlowActive: false, pendingContext: null });
+    setUdlMessages(prev => [...prev, {
+        role: 'model',
+        text: t('blueprint.execution_started', { count: finalResources.length })
+            || `Building your lesson pack now — ${finalResources.length} resource${finalResources.length === 1 ? "" : "s"}. You can minimize this panel to watch them land.`
+    }]);
     setIsProcessing(true);
     addToast(`Executing Blueprint: Generating ${finalResources.length} resources...`, "info");
     try {
@@ -729,13 +742,21 @@ const handleExecuteBlueprint = async (deps) => {
         if (Array.isArray(nulls) && nulls.length > 0) {
             const failedList = nulls.slice(0, 3).join(", ");
             const extra = nulls.length > 3 ? ` and ${nulls.length - 3} more` : "";
-            addToast(`Blueprint finished, but ${nulls.length} resource${nulls.length === 1 ? "" : "s"} did not generate: ${failedList}${extra}.`, "warning");
+            const warnMsg = `Blueprint finished, but ${nulls.length} resource${nulls.length === 1 ? "" : "s"} did not generate: ${failedList}${extra}.`;
+            addToast(warnMsg, "warning");
+            setUdlMessages(prev => [...prev, { role: 'model', text: warnMsg }]);
         } else {
             addToast(t('blueprint.execution_complete'), "success");
+            setUdlMessages(prev => [...prev, {
+                role: 'model',
+                text: t('blueprint.execution_complete_chat', { count: finalResources.length })
+                    || `Done — ${finalResources.length} resource${finalResources.length === 1 ? "" : "s"} are in your lesson. Tell me what to refine, or ask me anything about them.`
+            }]);
         }
     } catch (e) {
         warnLog("Unhandled error:", e);
         addToast(t('blueprint.execution_error'), "error");
+        setUdlMessages(prev => [...prev, { role: 'model', text: t('blueprint.execution_error') }]);
     } finally {
         setIsProcessing(false);
     }

@@ -29,6 +29,8 @@ function ClozeInteractionPanel(props) {
     wordBankPosition,
     wordBankRef
   } = props;
+  const isEnglishPassage = !leveledTextLanguage || leveledTextLanguage === "English";
+  const [bankLang, setBankLang] = React.useState("target");
   return /* @__PURE__ */ React.createElement(
     "div",
     {
@@ -73,23 +75,40 @@ function ClozeInteractionPanel(props) {
         /* @__PURE__ */ React.createElement(X, { size: 14 })
       ))
     ),
+    !isEnglishPassage && /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": t("simplified.word_bank_language") || "Word bank language", className: "flex items-center justify-center gap-1 mb-2" }, [
+      { id: "target", label: leveledTextLanguage },
+      { id: "english", label: t("simplified.word_bank_english") || "English" },
+      { id: "both", label: t("simplified.word_bank_both") || "Both" }
+    ].map((opt) => /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key: opt.id,
+        type: "button",
+        "aria-pressed": bankLang === opt.id,
+        onClick: () => setBankLang(opt.id),
+        className: `px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wide border transition-colors ${bankLang === opt.id ? "bg-blue-600 text-white border-blue-600" : "bg-white text-blue-700 border-blue-200 hover:bg-blue-100"}`
+      },
+      opt.label
+    ))),
     /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 justify-center max-h-32 overflow-y-auto custom-scrollbar p-1" }, latestGlossary.map((item, idx) => {
-      let displayTerm = item.term;
-      if (leveledTextLanguage !== "English" && item.translations && item.translations[leveledTextLanguage]) {
-        const transString = item.translations[leveledTextLanguage];
-        if (transString.includes(":")) {
-          displayTerm = transString.split(":")[0].trim();
-        }
+      const englishTerm = item.term;
+      let translatedTerm = "";
+      if (!isEnglishPassage && item.translations && item.translations[leveledTextLanguage]) {
+        const transString = String(item.translations[leveledTextLanguage]);
+        translatedTerm = transString.includes(":") ? transString.split(":")[0].trim() : transString.trim();
       }
+      const showTranslated = translatedTerm && bankLang !== "english";
+      const dragPayload = translatedTerm || englishTerm;
+      const label = !translatedTerm ? englishTerm : bankLang === "both" ? `${translatedTerm} / ${englishTerm}` : showTranslated ? translatedTerm : englishTerm;
       return /* @__PURE__ */ React.createElement(
         "span",
         {
           key: idx,
           className: "px-3 py-1.5 bg-white text-blue-700 font-bold text-sm rounded-lg border border-blue-200 shadow-sm cursor-grab active:cursor-grabbing hover:scale-105 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all select-none",
           draggable: "true",
-          onDragStart: (e) => e.dataTransfer.setData("text/plain", displayTerm)
+          onDragStart: (e) => e.dataTransfer.setData("text/plain", bankLang === "english" ? englishTerm : dragPayload)
         },
-        displayTerm
+        label
       );
     })),
     /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-blue-500 mt-2 text-center font-medium pointer-events-none" }, t("simplified.cloze_instructions"))

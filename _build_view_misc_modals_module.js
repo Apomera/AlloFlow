@@ -50,6 +50,8 @@ var _lazyIcon = function (name) {
 };
 // Icons used across the 4 modals (de-duplicated):
 var Check = _lazyIcon('Check');
+var ChevronDown = _lazyIcon('ChevronDown');
+var ChevronRight = _lazyIcon('ChevronRight');
 var CheckCircle2 = _lazyIcon('CheckCircle2');
 var Clock = _lazyIcon('Clock');
 var FileText = _lazyIcon('FileText');

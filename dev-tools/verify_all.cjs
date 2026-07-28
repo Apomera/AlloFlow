@@ -69,6 +69,19 @@ const checks = [
     description: 'StemLab + SelHub registerTool schemas',
   },
   {
+    name: 'Tool catalog ↔ dispatcher sync',
+    cmd: ['node', '_check_tool_catalog.cjs'],
+    description: 'Every catalog id has a dispatcher branch and vice versa; sidebarKeys resolve in ui_strings.js',
+  },
+  {
+    name: 'Local-LLM resource matrix',
+    cmd: ['node', 'dev-tools/check_local_llm_resource_matrix.cjs'],
+    description:
+      'Drives the real handleGenerate for every resource type on the local backend (691 lines, ' +
+      'reachable only via `npm run verify:local-llm`, which nothing invoked until 2026-07-27)',
+    informational: true,
+  },
+  {
     name: 'Source/module pair drift',
     cmd: ['node', 'dev-tools/audit_pair_drift.js'],
     description: 'Declaration-level diff between *_source.jsx and *_module.js',

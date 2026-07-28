@@ -6013,7 +6013,10 @@ const StudentBingoGame = React.memo(({ data, onClose, playSound, onGameComplete 
     </div>
   );
 });
-const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }) => {
+// onGameComplete added 2026-07-27: this game never reported a completion, so the
+// 'wordScramble' ledger key stayed permanently empty and the directions composer's
+// "+ Word Scramble" goal could never tick. Every other game already reported.
+const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate, onGameComplete }) => {
   const { t } = useContext(LanguageContext);
   const [gameItems, setGameItems] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -6046,6 +6049,24 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate }
         setScrambled(scrambleWord(items[0].term));
     }
   }, [data]);
+  // Report the completion once per playthrough. Fired from an effect rather than
+  // inline in nextRound because `results` is set in the same tick and would still
+  // be stale there — and never from inside a setState updater, which React may
+  // replay. The ref re-arms when the student plays again.
+  const scrambleCompleteFiredRef = useRef(false);
+  useEffect(() => {
+      if (!isGameOver) { scrambleCompleteFiredRef.current = false; return; }
+      if (scrambleCompleteFiredRef.current || typeof onGameComplete !== 'function') return;
+      scrambleCompleteFiredRef.current = true;
+      const correctCount = results.filter(r => r && r.correct).length;
+      const totalItems = gameItems.length;
+      onGameComplete('wordScramble', {
+          score,
+          correctCount,
+          totalItems,
+          isPerfect: totalItems > 0 && correctCount === totalItems
+      });
+  }, [isGameOver, results, gameItems.length, score, onGameComplete]);
   const nextRound = (currentScore) => {
       if (currentIndex < gameItems.length - 1) {
           const nextIdx = currentIndex + 1;

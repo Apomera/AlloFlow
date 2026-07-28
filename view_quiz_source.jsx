@@ -2743,6 +2743,14 @@ var _lazyIcon = function (name) {
           });
         } catch (e) {}
       }
+      // Report by resourceId so a directions 'completed' goal can resolve — the
+      // receipt above is keyed by content hash and is invisible to resourceRef.
+      // answered/total only; deliberately NOT a score.
+      if (typeof props.onResourceComplete === 'function' && props.generatedContent && props.generatedContent.id) {
+        try {
+          props.onResourceComplete(props.generatedContent.id, { answered: progress.answered, total: progress.total });
+        } catch (e) {}
+      }
       setReviewOpen(false);
       setAttemptReceipt(receipt);
       if (typeof props.addToast === 'function') props.addToast('Assessment submitted.', 'success');

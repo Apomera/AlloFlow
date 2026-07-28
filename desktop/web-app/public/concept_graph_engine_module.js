@@ -688,6 +688,54 @@
     ].filter(Boolean).join('\n');
   }
 
+  // ── Method-of-loci imagery layer (borrowed from the Memory Palace) ──
+  // The palace's Furnish is driven by each locus's MNEMONIC, not its bare label:
+  // a vivid, concrete, slightly surreal picture is what makes a locus stick. A
+  // concept space has no mnemonic field — only the Memory Palace organizer type
+  // asks the dispatcher for one — so a batch furnish generates them on demand in
+  // ONE call, then feeds `mnemonic || label` to the image/sculpture generator
+  // exactly the way the palace does. PURE builder; the host owns callGemini.
+  function buildNodeMnemonicPrompt(items, opts) {
+    opts = opts || {};
+    var list = (Array.isArray(items) ? items : []).map(function (it) {
+      return {
+        id: String((it && it.id != null) ? it.id : ''),
+        label: String((it && it.label != null) ? it.label : '')
+      };
+    }).filter(function (it) { return it.id && it.label; });
+    return [
+      opts.topic ? 'Topic: ' + opts.topic : '',
+      opts.gradeLevel ? 'Grade band: ' + opts.gradeLevel : '',
+      'For each concept below write ONE vivid, concrete picture that stands for it — the kind of image a method-of-loci memory practice uses.',
+      'Rules: describe something a person could actually SEE (objects, exaggerated size, action, colour); one sentence, under 20 words;',
+      'the image must be a HONEST cue for the concept (never a pun or a visual that would teach the wrong idea); school-appropriate; no text or lettering in the picture.',
+      'Concepts: ' + JSON.stringify(list),
+      'Return ONLY a JSON array of {"id","mnemonic"} objects — no prose, no markdown fences.'
+    ].filter(Boolean).join('\n');
+  }
+
+  // PURE: model text → { [nodeId]: mnemonic }. Tolerates fenced JSON and drops
+  // anything that is not a usable {id, mnemonic} pair, so a partial or malformed
+  // reply degrades to "some nodes keep their label" rather than failing the batch.
+  function parseNodeMnemonics(text) {
+    var out = {};
+    var s = String(text || '').trim();
+    if (!s) return out;
+    s = s.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
+    var a = s.indexOf('['), b = s.lastIndexOf(']');
+    if (a < 0 || b <= a) return out;
+    var arr;
+    try { arr = JSON.parse(s.slice(a, b + 1)); } catch (e) { return out; }
+    if (!Array.isArray(arr)) return out;
+    arr.forEach(function (row) {
+      if (!row || typeof row !== 'object') return;
+      var id = (typeof row.id === 'string') ? row.id.trim() : '';
+      var m = (typeof row.mnemonic === 'string') ? row.mnemonic.trim() : '';
+      if (id && m) out[id] = m.slice(0, 240);
+    });
+    return out;
+  }
+
   // placed = {nodeId: strand} (from the emitted arrangement's categories).
   function scoreStrandChallenge(answerKey, placed) {
     placed = placed || {};
@@ -926,6 +974,8 @@
     buildStrandChallenge: buildStrandChallenge,
     scoreStrandChallenge: scoreStrandChallenge,
     buildStrandHintPrompt: buildStrandHintPrompt,
+    buildNodeMnemonicPrompt: buildNodeMnemonicPrompt,
+    parseNodeMnemonics: parseNodeMnemonics,
     fromThroughlineUnit: fromThroughlineUnit,
     toThroughlineUnit: toThroughlineUnit,
     fromConceptMap: fromConceptMap,

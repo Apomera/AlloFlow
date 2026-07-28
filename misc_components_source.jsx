@@ -68,26 +68,66 @@ const AnimatedNumber = ({ value, duration = 1000, disableAnimations = false }) =
   return <>{displayValue}</>;
 };
 
-const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved }) => {
+const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved, acceptedAnswers, displayWord }) => {
   const { t } = useContext(LanguageContext);
-  const [val, setVal] = useState(isSolved ? targetWord : '');
+  const _solved = displayWord || targetWord;
+  const [val, setVal] = useState(isSolved ? _solved : '');
   const [status, setStatus] = useState(isSolved ? 'success' : 'neutral');
   useEffect(() => {
       if (isSolved) {
-          setVal(targetWord);
+          setVal(_solved);
           setStatus('success');
       } else {
           setVal('');
           setStatus('neutral');
       }
-  }, [isSolved, targetWord]);
-  const normalize = (str) => str ? str.toLowerCase().trim().replace(/[^a-z0-9]/g, '') : '';
+  }, [isSolved, _solved]);
+  // The old normalizer was `replace(/[^a-z0-9]/g, '')`, which deletes every
+  // character outside ASCII. For Russian, Arabic, Chinese, Thai — any
+  // non-Latin script — BOTH the answer and the target collapsed to '', so
+  // '' === '' marked EVERY answer correct: typing "печень" (liver) or even
+  // "совершенно неправильно" scored as "мозг" (brain). Cloze was not
+  // assessing anything in those languages, it was rubber-stamping.
+  // Accented Latin was merely lossy ("élève" -> "lve").
+  //
+  // Now: fold diacritics (so a student typing "eleve" for "élève" is still
+  // right — fair leniency), then strip punctuation/space while KEEPING
+  // letters and digits of every script.
+  const normalize = (str) => {
+    if (!str) return '';
+    let s = String(str).toLowerCase().trim();
+    try { s = s.normalize('NFD').replace(/[̀-ͯ]/g, ''); } catch (_) { /* older engine */ }
+    try { s = s.replace(/[^\p{L}\p{N}]/gu, ''); } catch (_) { s = s.replace(/[^a-z0-9]/g, ''); }
+    return s;
+  };
+  // Never let an empty normalization stand in for a match. If stripping
+  // erased either side (a script this engine cannot classify), compare the
+  // raw strings instead — falling through to '' === '' is exactly the bug
+  // above, and a silent false "correct" is worse than a rejected answer.
+  const answerMatches = (input, target) => {
+    const a = normalize(input);
+    const b = normalize(target);
+    if (a && b) return a === b;
+    const raw = (s) => String(s || '').toLowerCase().trim();
+    return raw(target).length > 0 && raw(input) === raw(target);
+  };
+  // Every spelling that counts: the glossary's own term plus, when the passage
+  // is translated, the term in the passage's language. A student is right
+  // whichever one they drag or type.
+  const acceptedList = (Array.isArray(acceptedAnswers) ? acceptedAnswers : [])
+    .concat([targetWord])
+    .filter(Boolean);
+  const isAcceptedAnswer = (value) => acceptedList.some((ans) => answerMatches(value, ans));
+  // What lands in the blank once solved: the word that belongs in THIS
+  // passage, so a Spanish text does not end up with an English word wedged
+  // into the sentence.
+  const solvedWord = displayWord || targetWord;
   const handleDrop = (e) => {
     e.preventDefault();
     if (status === 'success') return;
     const droppedText = e.dataTransfer.getData("text/plain");
-    if (normalize(droppedText) === normalize(targetWord)) {
-        setVal(targetWord);
+    if (isAcceptedAnswer(droppedText)) {
+        setVal(solvedWord);
         setStatus('success');
         if (onCorrect) onCorrect(targetWord);
     } else {
@@ -108,12 +148,14 @@ const ClozeInput = React.memo(({ targetWord, onCorrect, isSolved }) => {
       if (status === 'success') return;
       const newVal = e.target.value;
       setVal(newVal);
-      if (normalize(newVal) === normalize(targetWord)) {
+      if (isAcceptedAnswer(newVal)) {
           setStatus('success');
           if (onCorrect) onCorrect(targetWord);
       }
   };
-  const width = Math.max(80, targetWord.length * 12) + 'px';
+  // Size to the longest word the blank will hold, so a translated term does
+  // not overflow a box measured against the English one.
+  const width = Math.max(80, Math.max(String(targetWord || '').length, String(solvedWord || '').length) * 12) + 'px';
   return (
       <span
         className="inline-block mx-1 relative align-middle"

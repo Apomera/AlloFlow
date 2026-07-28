@@ -459,7 +459,9 @@ const createGeminiAPI = (deps) => {
       }
     };
 
-    const callGemini = async (prompt, jsonMode = false, useSearch = false, temperature = null, searchQuery = null, signal = null, useCodeExecution = false) => {
+    // One attempt. The retrying wrapper `callGemini` is defined immediately below —
+    // call THAT everywhere, not this.
+    const _callGeminiAttempt = async (prompt, jsonMode = false, useSearch = false, temperature = null, searchQuery = null, signal = null, useCodeExecution = false) => {
       if (!apiKey && !_isCanvasEnv) {
         console.warn('[callGemini] No API key available — skipping request.');
         if (jsonMode) return "{}";
@@ -676,6 +678,70 @@ const createGeminiAPI = (deps) => {
         }
         throw err;
       }
+    };
+
+    // ── Canvas transient-401 retry (2026-07-27) ────────────────────────────
+    // In Gemini Canvas the app never holds a key — Canvas injects it — so a
+    // 401/403 is almost always a BRIEF THROTTLE, not a dead credential. The
+    // classifier has flagged that as `canvasTransientAuth` since 2026-06-19
+    // precisely so a retry layer could de-escalate it… but only doc_pipeline
+    // and view_pdf_audit ever read the flag. Every other caller (grammar
+    // repair, glossary, personas, adventure, ~20 handler files) treated one
+    // throttled call as a permanent failure and surfaced its own generic
+    // "…failed" message, which reads as a feature bug rather than a hiccup.
+    //
+    // Field evidence 2026-07-27: a teacher's read-aloud trace logged 401, 401,
+    // then a clean success on the same key in the same session, while grammar
+    // repair — one call, no retry — reported failure.
+    //
+    // Retrying HERE fixes every call site at once. doc_pipeline's own retry
+    // still sits on top; both are bounded, so the worst case stays finite.
+    // Deliberately narrow: ONLY Canvas, ONLY auth. Quota, config, refusal and
+    // real non-Canvas auth failures keep throwing immediately, because
+    // retrying those is how you turn a dead key into a hammering loop.
+    // Backoff is injectable so tests can exercise the retry without spending
+    // real seconds on it (an un-tunable sleep here pushed the auth-banner
+    // debounce tests past their timeout). Production leaves it at the default.
+    const CANVAS_AUTH_BACKOFF_MS = Array.isArray(deps && deps.canvasAuthBackoffMs)
+      ? deps.canvasAuthBackoffMs
+      : [1200, 3000];
+    const CANVAS_AUTH_RETRIES = CANVAS_AUTH_BACKOFF_MS.length; // attempts = retries + 1
+    const _sleep = (ms) => (ms > 0 ? new Promise((r) => setTimeout(r, ms)) : Promise.resolve());
+
+    const callGemini = async (prompt, jsonMode = false, useSearch = false, temperature = null, searchQuery = null, signal = null, useCodeExecution = false) => {
+      let lastErr = null;
+      for (let attempt = 0; attempt <= CANVAS_AUTH_RETRIES; attempt++) {
+        // The auth banner debounces on CONSECUTIVE USER-LEVEL failures
+        // (_AUTH_BANNER_THRESHOLD). Each internal attempt runs through
+        // _showQuotaBanner and bumps that streak, so without this snapshot one
+        // retried call would advance it by three and fire the alarming
+        // "regenerate your key" banner on the user's very first action —
+        // defeating the debounce it exists to provide.
+        const _streakBefore = _authFailStreak;
+        try {
+          return await _callGeminiAttempt(prompt, jsonMode, useSearch, temperature, searchQuery, signal, useCodeExecution);
+        } catch (err) {
+          lastErr = err;
+          // Never retry a caller-initiated abort — Stop must stop.
+          if (err && err.name === 'AbortError') throw err;
+          const retryable = !!(err && err.canvasTransientAuth && !err.isQuota && !err.isConfig);
+          if (!retryable || attempt === CANVAS_AUTH_RETRIES) throw err;
+          // Respect an abort that landed while we were waiting to retry.
+          if (signal && signal.aborted) throw err;
+          // Roll the streak back: this call has not failed yet, it is retrying.
+          // If the retry succeeds, _noteApiSuccess() clears the streak anyway;
+          // if every attempt fails, the final one's increment stands, so the
+          // net effect per user-level call is unchanged from before the retry.
+          _authFailStreak = _streakBefore;
+          // Nullish, not `||` — a configured 0 (tests) is a valid wait and
+          // `0 || 3000` would silently restore the full production backoff.
+          const _cfg = CANVAS_AUTH_BACKOFF_MS[attempt];
+          const wait = (typeof _cfg === 'number' && _cfg >= 0) ? _cfg : 3000;
+          console.warn(`[callGemini] Canvas auth throttle (HTTP 401) — retrying in ${wait}ms (attempt ${attempt + 2}/${CANVAS_AUTH_RETRIES + 1}).`);
+          await _sleep(wait);
+        }
+      }
+      throw lastErr;
     };
 
     const callGeminiImageEdit = async (prompt, base64Image, width = 800, qual = 0.9, referenceBase64 = null, options = null) => {

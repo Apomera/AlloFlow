@@ -94,18 +94,115 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
       const result = await _getAgentCoreUIAdapter().reviseLegacy(legacyConfig, instruction, _agentCoreContext());
       return result.legacyConfig;
   };
-  // Builds the Step-by-Step vs Full Pack chooser (rendered as buttons by
-  // UDLGuideModal). `stage` names the guided-flow stage that consumes the
-  // answer; `keywords` keeps typed replies (incl. localized) working.
-  const buildStepPackChoices = (text, stage) => ({
-      role: 'model', type: 'choices', stage, text,
-      choices: [
-          { label: t('chat_guide.flow.option_step') || 'Step-by-Step', value: 'step',
-            keywords: ['step', (t('chat_guide.flow.keyword_step') || '').toLowerCase()].filter(Boolean) },
-          { label: t('chat_guide.flow.option_pack') || 'Full Pack', value: 'pack',
-            keywords: ['pack', 'full', 'auto', (t('chat_guide.flow.keyword_pack') || '').toLowerCase()].filter(Boolean) }
-      ]
+  // ── Guided-flow answer chips ──────────────────────────────────────────
+  // Every guided-flow question is posted as a `type: 'choices'` message so
+  // UDLGuideModal renders its answers as clickable pills instead of leaving
+  // the teacher to guess the magic word. `stage` names the guided-flow stage
+  // that consumes the answer.
+  //
+  // `keywords` (substring match) is reserved for the Step/Pack chooser, whose
+  // vocabulary is distinctive AND whose typed replies double as blueprint
+  // guidance ("full pack focused on vocabulary"). Every other chip matches by
+  // EXACT value only — a substring keyword like 'yes' or 'no' would hijack
+  // ordinary prose ("eyes", "not sure") straight past the intent parser.
+  //
+  // `intent` overrides the CONFIRM default so a Skip pill reads as SKIP.
+  // `action: 'focus-input'` is handled in the modal (focus the box, send
+  // nothing) for answers that need the teacher to type a value.
+  const buildChoices = (text, stage, choices) => ({
+      role: 'model', type: 'choices', stage, text, choices
   });
+  const chipYes = (label) => ({ label: label || t('chat_guide.chips.yes') || 'Yes', value: 'yes', intent: 'CONFIRM' });
+  const chipSkip = (label) => ({ label: label || t('chat_guide.chips.skip') || 'Skip', value: 'skip', intent: 'SKIP', tone: 'secondary' });
+  const yesSkip = (yesLabel, skipLabel) => [chipYes(yesLabel), chipSkip(skipLabel)];
+  const buildStepPackChoices = (text, stage) => buildChoices(text, stage, [
+      { label: t('chat_guide.flow.option_step') || 'Step-by-Step', value: 'step',
+        keywords: ['step', (t('chat_guide.flow.keyword_step') || '').toLowerCase()].filter(Boolean) },
+      { label: t('chat_guide.flow.option_pack') || 'Full Pack', value: 'pack',
+        keywords: ['pack', 'full', 'auto', (t('chat_guide.flow.keyword_pack') || '').toLowerCase()].filter(Boolean) }
+  ]);
+  // The "how many resources" question that follows a Full Pack choice. Was a
+  // plain bubble whose only affordance was typing 'auto'/'all'/a number —
+  // the step the teacher hit right after clicking a pill.
+  const buildPackCountChoices = () => buildChoices(
+      t('chat_guide.pack.count_selection'), 'pack_count_selection', [
+      { label: t('chat_guide.chips.count_auto') || 'Auto', value: 'auto', hint: t('chat_guide.chips.count_auto_hint') || 'AI picks the best fit' },
+      { label: t('chat_guide.chips.count_all') || 'All', value: 'all', hint: t('chat_guide.chips.count_all_hint') || 'Generate everything' },
+      { label: '5', value: '5', tone: 'secondary' },
+      { label: '10', value: '10', tone: 'secondary' },
+      { label: t('chat_guide.chips.count_custom') || 'Custom...', value: 'custom', tone: 'secondary',
+        action: 'focus-input', hint: t('chat_guide.chips.count_custom_hint') || 'Type a number (1-20)' }
+  ]);
+  // Per-stage answer sets. Each `value` is the literal text the stage handler
+  // receives, so it must still satisfy that handler's keyword test (e.g. the
+  // outline branch looks for 'flow' / 'venn' / 'map' / 'cause').
+  const languageCheckChoices = () => [
+      { label: t('chat_guide.chips.add_language') || 'Add a language...', value: 'add-language', action: 'focus-input',
+        hint: t('chat_guide.chips.add_language_hint') || "Type a language name (e.g. 'Spanish')" },
+      { label: t('chat_guide.chips.english_only') || 'English only', value: 'no', tone: 'secondary' }
+  ];
+  const interestCheckChoices = () => [
+      { label: t('chat_guide.chips.add_interest') || 'Add an interest...', value: 'add-interest', action: 'focus-input',
+        hint: t('chat_guide.chips.add_interest_hint') || "Type an interest (e.g. 'Soccer')" },
+      { label: t('chat_guide.chips.no_thanks') || 'No thanks', value: 'no', tone: 'secondary' }
+  ];
+  const organizerChoices = () => [
+      { label: t('chat_guide.chips.org_outline') || 'Outline', value: 'structured outline' },
+      { label: t('chat_guide.chips.org_flow') || 'Flow Chart', value: 'flow chart' },
+      { label: t('chat_guide.chips.org_venn') || 'Venn Diagram', value: 'venn diagram' },
+      { label: t('chat_guide.chips.org_map') || 'Concept Map', value: 'concept map' },
+      { label: t('chat_guide.chips.org_cause') || 'Cause & Effect', value: 'cause and effect' },
+      chipSkip()
+  ];
+  const visualChoices = () => [
+      { label: t('chat_guide.chips.visual_diagram') || 'Diagram', value: 'diagram' },
+      { label: t('chat_guide.chips.visual_worksheet') || 'Worksheet', value: 'worksheet',
+        hint: t('chat_guide.chips.visual_worksheet_hint') || 'Fill-in-the-blank version' },
+      chipSkip()
+  ];
+  const scaffoldChoices = () => [
+      { label: t('chat_guide.chips.frames_starters') || 'Sentence Starters', value: 'sentence starters' },
+      { label: t('chat_guide.chips.frames_paragraph') || 'Paragraph Frames', value: 'paragraph frames' },
+      { label: t('chat_guide.chips.frames_discussion') || 'Discussion Prompts', value: 'discussion prompts' },
+      chipSkip()
+  ];
+  const quizCountChoices = () => [
+      { label: '3', value: '3' },
+      { label: '5', value: '5', hint: t('chat_guide.chips.quiz_default_hint') || 'Default' },
+      { label: '10', value: '10' },
+      { label: t('chat_guide.chips.count_custom') || 'Custom...', value: 'custom', tone: 'secondary',
+        action: 'focus-input', hint: t('chat_guide.chips.count_custom_hint') || 'Type a number (1-20)' }
+  ];
+  const adventureModeChoices = () => [
+      { label: t('chat_guide.chips.adv_choice') || 'Multiple Choice', value: 'multiple choice story' },
+      { label: t('chat_guide.chips.adv_debate') || 'Debate', value: 'debate' }
+  ];
+  // The blueprint review is the one place where "execute the plan" and "keep
+  // talking about the plan" collide. `mode` puts the teacher in an explicit
+  // lane; the values read as normal sentences so the transcript stays legible.
+  const blueprintChoices = () => [
+      { label: t('chat_guide.chips.bp_generate') || 'Generate it', value: 'go',
+        hint: t('chat_guide.chips.bp_generate_hint') || 'Build every resource in the plan' },
+      { label: t('chat_guide.chips.bp_change') || 'Change something', value: 'I want to change something', mode: 'edit', tone: 'secondary',
+        hint: t('chat_guide.chips.bp_change_hint') || 'Add, remove, or swap a resource' },
+      { label: t('chat_guide.chips.bp_ask') || 'Ask about this plan', value: 'I have a question about this plan', mode: 'question', tone: 'secondary',
+        hint: t('chat_guide.chips.bp_ask_hint') || 'The plan stays exactly as it is' }
+  ];
+  // The blueprint card renders from `activeBlueprint`, so a chooser posted
+  // after it always describes the CURRENT plan.
+  const buildBlueprintReviewChoices = (text) => buildChoices(
+      text || t('chat_guide.blueprint.presented'), 'blueprint_review', blueprintChoices());
+  // generateStandardChatResponse only sees `history` — it has no idea a plan is
+  // pending. Hand it a one-line digest so "why a Venn diagram?" is answerable.
+  const blueprintQuestionContext = () => {
+      try {
+          const plan = (activeBlueprint && (activeBlueprint.resourcePlan || activeBlueprint.resources)) || [];
+          const items = plan.map(r => r && (r.tool || r.type)).filter(Boolean);
+          if (!items.length) return '';
+          return "\n\n[Context: the teacher is looking at a PROPOSED lesson blueprint (not yet generated) containing: "
+              + items.join(', ') + ". Answer their question about it. Do not restate the whole plan unless asked.]";
+      } catch (_) { return ''; }
+  };
     const textToSend = typeof manualText === 'string' ? manualText : udlInput;
     if (!textToSend.trim()) return;
     const userMsg = { role: 'user', text: textToSend };
@@ -129,7 +226,17 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                 (Array.isArray(c.keywords) && c.keywords.some(k => k && _choiceReply.includes(String(k).toLowerCase())))))
             : null;
         const _isBareChoice = !!(_choiceHit && String(_choiceHit.value).toLowerCase() === _choiceReply);
-        const _activeStage = (isAutoFillMode && guidedFlowState.isFlowActive && guidedFlowState.currentStage) ? guidedFlowState.currentStage : null;
+        const _rawActiveStage = (isAutoFillMode && guidedFlowState.isFlowActive && guidedFlowState.currentStage) ? guidedFlowState.currentStage : null;
+        // blueprint_review with nothing left to review is a FINISHED stage, not
+        // a live one. Both exits from the card null the blueprint without
+        // clearing the stage — Generate (handleExecuteBlueprint) and Cancel —
+        // so every later message was handed to the reviser with `null`, came
+        // back "I couldn't make that change", and left the stage set: the
+        // generic chat/command parser was unreachable until the teacher typed
+        // 'stop'. Retire the stage instead and let the message fall through.
+        const _staleBlueprintReview = _rawActiveStage === 'blueprint_review' && !activeBlueprint;
+        if (_staleBlueprintReview) setGuidedFlowState({ currentStage: null, isFlowActive: false });
+        const _activeStage = _staleBlueprintReview ? null : _rawActiveStage;
         const _effectiveStage = _activeStage || (_choiceHit ? _pendingChoiceMsg.stage : null);
         if (_effectiveStage && !_activeStage) {
             setIsAutoFillMode(true);
@@ -139,8 +246,10 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
              const lowerInput = textToSend.toLowerCase();
              // A direct button/keyword answer needs no LLM intent pass — and must
              // not risk a STOP misread killing the flow mid-question.
+             // A Skip pill carries intent:'SKIP' so it lands in the stage's
+             // negative branch; everything else defaults to CONFIRM.
              const intentResult = _choiceHit
-                 ? { intent: 'CONFIRM', modification: null }
+                 ? { intent: _choiceHit.intent || 'CONFIRM', modification: null }
                  : await detectWorkflowIntent(textToSend, _effectiveStage, udlMessages.slice(-3));
              const isAffirmative = intentResult.intent === 'CONFIRM' || intentResult.intent === 'MODIFY';
              const isNegative = intentResult.intent === 'SKIP';
@@ -148,6 +257,14 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                  setUdlMessages(prev => [...prev, { role: 'model', text }]);
              };
              const advanceStage = (stage) => setGuidedFlowState(prev => ({ ...prev, currentStage: stage }));
+             // Posts a question whose answers are pills. `stage` is the stage
+             // that will consume the reply (usually the one we're advancing
+             // to); omit `choices` for the plain Yes/Skip pair. Typing still
+             // works exactly as before — the pills are an added affordance,
+             // not a replacement for the input box.
+             const askStage = (text, stage, choices) => {
+                 setUdlMessages(prev => [...prev, buildChoices(text, stage, choices || yesSkip())]);
+             };
              if (intentResult.intent === 'STOP' || lowerInput === 'stop' || lowerInput === 'cancel' || lowerInput === 'exit') {
                  setGuidedFlowState({ currentStage: null, isFlowActive: false });
                  setIsAutoFillMode(false);
@@ -171,7 +288,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                          context.Topic = sourceTopic;
                          context.LastResult = "Source text generated via Chat.";
                          const bridgeMsg = await generateDynamicBridge('Source Material', 'Source Analysis', context);
-                         sendBotMsg(bridgeMsg);
+                         askStage(bridgeMsg, 'analysis');
                          flyToElement(getStageElementId('analysis'));
                          advanceStage('analysis');
                          setIsChatProcessing(false);
@@ -184,7 +301,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                          const context = getWorkflowContext();
                          context.LastResult = "URL Content Fetched.";
                          const bridgeMsg = await generateDynamicBridge('Source Material', 'Source Analysis', context);
-                         sendBotMsg(bridgeMsg);
+                         askStage(bridgeMsg, 'analysis');
                          flyToElement(getStageElementId('analysis'));
                          advanceStage('analysis');
                      }
@@ -232,7 +349,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                      const localizedPackKeyword = t('chat_guide.flow.keyword_pack').toLowerCase();
                      if (lowerInput.includes('pack') || lowerInput.includes('auto') || lowerInput.includes('full') || (localizedPackKeyword && lowerInput.includes(localizedPackKeyword))) {
                          const pendingBlueprintContext = _isBareChoice ? "" : textToSend.trim();
-                         sendBotMsg(t('chat_guide.pack.count_selection'));
+                         setUdlMessages(prev => [...prev, buildPackCountChoices()]);
                          setGuidedFlowState(prev => ({ ...prev, currentStage: 'pack_count_selection', pendingBlueprintContext }));
                          setIsChatProcessing(false);
                          return;
@@ -253,11 +370,14 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                                  interests: studentInterests,
                              });
                             setActiveBlueprint(config);
-                             setUdlMessages(prev => [...prev, {
-                                 role: 'model',
-                                 type: 'blueprint',
-                                 text: t('chat_guide.blueprint.presented')
-                             }]);
+                             // Card first, then the chooser — the chooser must be the
+                             // LAST message for _pendingChoiceMsg to see it. The card
+                             // renderer ignores msg.text, so the 'presented' guidance
+                             // was invisible until it moved onto the chooser.
+                             setUdlMessages(prev => [...prev,
+                                 { role: 'model', type: 'blueprint', text: t('chat_guide.blueprint.presented') },
+                                 buildBlueprintReviewChoices()
+                             ]);
                              setGuidedFlowState(prev => ({ ...prev, currentStage: 'blueprint_review', pendingBlueprintContext: null }));
                          } catch (e) {
                              warnLog("Unhandled error:", e);
@@ -306,11 +426,10 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                              interests: studentInterests,
                          });
                         setActiveBlueprint(config);
-                        setUdlMessages(prev => [...prev, {
-                             role: 'model',
-                             type: 'blueprint',
-                             text: t('chat_guide.blueprint.presented')
-                         }]);
+                        setUdlMessages(prev => [...prev,
+                             { role: 'model', type: 'blueprint', text: t('chat_guide.blueprint.presented') },
+                             buildBlueprintReviewChoices()
+                         ]);
                          setGuidedFlowState(prev => ({ ...prev, currentStage: 'blueprint_review', pendingBlueprintContext: null }));
                      } catch (e) {
                          warnLog("Unhandled error:", e);
@@ -320,31 +439,71 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                          setIsChatProcessing(false);
                      }
                      return;
-                 case 'blueprint_review':
+                 case 'blueprint_review': {
                      const reviewInput = textToSend.trim().toLowerCase();
+                     // A mode pill only picks the lane — it must not touch the
+                     // plan. The next message is what carries the intent.
+                     if (_choiceHit && _choiceHit.mode) {
+                         const _isEdit = _choiceHit.mode === 'edit';
+                         setGuidedFlowState(prev => ({ ...prev, pendingContext: _isEdit ? 'blueprint_edit' : 'blueprint_question' }));
+                         sendBotMsg(_isEdit
+                             ? (t('chat_guide.blueprint.edit_prompt') || "What should I change? Tell me what to add, remove, or swap.")
+                             : (t('chat_guide.blueprint.question_prompt') || "Go ahead. I'll answer without touching the plan."));
+                         setIsChatProcessing(false);
+                         return;
+                     }
+                     const _pendingMode = guidedFlowState.pendingContext === 'blueprint_edit' ? 'edit'
+                         : guidedFlowState.pendingContext === 'blueprint_question' ? 'question' : null;
+                     if (_pendingMode) setGuidedFlowState(prev => ({ ...prev, pendingContext: null }));
                      const hasBlueprintEditRequest = /\b(add|remove|change|edit|modify|revise|instead|but|except|focus|include|exclude|replace|make)\b/i.test(textToSend);
                      const isExecutionCommand = /^(please\s+)?(go|go ahead|start|start it|run|run it|execute|execute it|confirm|yes|yes please|y|proceed|generate|generate it|looks good|do it|let'?s go)(\s+(now|please))?[.!]?$/i.test(reviewInput) && !hasBlueprintEditRequest;
-                     if (isExecutionCommand) {
+                     if (_pendingMode !== 'question' && isExecutionCommand) {
                          try {
-                             setGuidedFlowState(prev => ({ ...prev, isFlowActive: false }));
+                             setGuidedFlowState(prev => ({ ...prev, isFlowActive: false, pendingContext: null }));
                              await Promise.resolve(handleExecuteBlueprint());
                          } finally {
                              setIsChatProcessing(false);
                          }
-                     } else {
+                         return;
+                     }
+                     // Edit vs. question. Every typed reply already pays for a
+                     // detectWorkflowIntent pass above (its QUESTION verdict was
+                     // simply discarded here), so classifying costs nothing new.
+                     // Asking used to REWRITE the plan and answer "Blueprint
+                     // updated!" — the classifier fails safe to QUESTION, so a
+                     // misread now leaves the plan alone instead of editing it.
+                     const _isQuestion = _pendingMode === 'question'
+                         || (!_pendingMode && !hasBlueprintEditRequest && intentResult.intent === 'QUESTION');
+                     if (_isQuestion) {
                          setIsChatProcessing(true);
-                         sendBotMsg(t('common.adjusting') + "...");
                          try {
-                            const updatedConfig = await _reviseAgentCoreLegacyBlueprint(activeBlueprint, textToSend);
-                            setActiveBlueprint(updatedConfig);
-                            sendBotMsg(t('chat_guide.blueprint.updated'));
+                             await generateStandardChatResponse(textToSend + blueprintQuestionContext());
                          } catch (e) {
-                             sendBotMsg(t('chat_guide.blueprint.change_fail'));
+                             warnLog("Blueprint question failed", e);
+                             sendBotMsg(t('chat_guide.blueprint.question_fail') || "I couldn't answer that one. The plan is unchanged.");
                          } finally {
                              setIsChatProcessing(false);
                          }
+                         // Re-offer the pills: the chooser attached to the card
+                         // is stale now, so without this the plan has no live
+                         // affordance left.
+                         setUdlMessages(prev => [...prev, buildBlueprintReviewChoices(
+                             t('chat_guide.blueprint.still_pending') || "The plan above is unchanged. Ready when you are.")]);
+                         return;
+                     }
+                     setIsChatProcessing(true);
+                     sendBotMsg(t('common.adjusting') + "...");
+                     try {
+                        const updatedConfig = await _reviseAgentCoreLegacyBlueprint(activeBlueprint, textToSend);
+                        setActiveBlueprint(updatedConfig);
+                        setUdlMessages(prev => [...prev, buildBlueprintReviewChoices(t('chat_guide.blueprint.updated'))]);
+                     } catch (e) {
+                         setUdlMessages(prev => [...prev, buildBlueprintReviewChoices(t('chat_guide.blueprint.change_fail'))]);
+                     } finally {
+                         setIsChatProcessing(false);
                      }
                      return;
+                 }
                  case 'fullpack_context':
                      const userContextFull = lowerInput.includes('auto') ? "" : textToSend;
                      if (textToSend && !isNegative) {
@@ -353,7 +512,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                          context.LastResult = `Generated source text on topic: ${textToSend}`;
                          context.Topic = textToSend;
                          const bridgeMsg = await generateDynamicBridge('Source Material', 'Source Analysis', context);
-                         sendBotMsg(bridgeMsg);
+                         askStage(bridgeMsg, 'analysis');
                          flyToElement(getStageElementId('analysis'));
                          advanceStage('analysis');
                      } else {
@@ -370,17 +529,17 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                          setIsChatProcessing(false);
                          return;
                      } else if (isNegative) {
-                         sendBotMsg(t('chat_guide.flow.skipping_analysis'));
+                         askStage(t('chat_guide.flow.skipping_analysis'), 'glossary');
                          flyToElement(getStageElementId('glossary'));
                          advanceStage('glossary');
                      } else {
-                         sendBotMsg(t('chat_guide.flow.offer_analysis'));
+                         askStage(t('chat_guide.flow.offer_analysis'), 'analysis');
                      }
                      break;
                  case 'post_analysis_route':
                      if (lowerInput.includes('pack') || lowerInput.includes('full') || lowerInput.includes('auto')) {
                          const pendingBlueprintContext = _isBareChoice ? "" : textToSend.trim();
-                         sendBotMsg(t('chat_guide.pack.count_selection'));
+                         setUdlMessages(prev => [...prev, buildPackCountChoices()]);
                          setGuidedFlowState(prev => ({ ...prev, currentStage: 'pack_count_selection', pendingBlueprintContext }));
                      }
                      else {
@@ -392,7 +551,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                              context.LastResult = `Analysis found Reading Level: ${levelRange}.`;
                          }
                          const bridgeMsg = await generateDynamicBridge('Source Analysis', 'Glossary', context);
-                         sendBotMsg(bridgeMsg);
+                         askStage(bridgeMsg, 'glossary');
                          flyToElement(getStageElementId('glossary'));
                          setGuidedFlowState(prev => ({ ...prev, currentStage: 'glossary' }));
                      }
@@ -426,7 +585,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                                  context.Instruction = "The student has specific interests. Ask if the teacher wants to adapt the Leveled Text format (e.g. Sports Commentary, Social Media Thread) to match these interests.";
                              }
                              const bridgeMsg = await generateDynamicBridge('Glossary', 'Leveled Text', context);
-                             sendBotMsg(bridgeMsg);
+                             askStage(bridgeMsg, 'simplified');
                              flyToElement(getStageElementId('simplified'));
                              advanceStage('simplified');
                          }, 200);
@@ -435,7 +594,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                      }
                      if (isAffirmative) {
                          if (selectedLanguages.length === 0) {
-                             sendBotMsg(t('chat_guide.flow.no_langs_warning'));
+                             askStage(t('chat_guide.flow.no_langs_warning'), 'glossary', languageCheckChoices());
                              setGuidedFlowState(prev => ({ ...prev, pendingContext: 'language_check' }));
                              setIsChatProcessing(false);
                              return;
@@ -450,15 +609,15 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                              context.Instruction = "The student has specific interests. Ask if the teacher wants to adapt the Leveled Text format (e.g. Sports Commentary, Social Media Thread) to match these interests.";
                          }
                          const bridgeMsg = await generateDynamicBridge('Glossary', 'Leveled Text', context);
-                         sendBotMsg(bridgeMsg);
+                         askStage(bridgeMsg, 'simplified');
                          flyToElement(getStageElementId('simplified'));
                          advanceStage('simplified');
                      } else if (isNegative) {
-                         sendBotMsg("Skipping glossary. Ready for **Leveled Text**?");
+                         askStage("Skipping glossary. Ready for **Leveled Text**?", 'simplified');
                          flyToElement(getStageElementId('simplified'));
                          advanceStage('simplified');
                      } else {
-                         sendBotMsg(t('chat_guide.flow.offer_glossary'));
+                         askStage(t('chat_guide.flow.offer_glossary'), 'glossary');
                      }
                      break;
                  case 'simplified':
@@ -479,7 +638,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                                      const context = getWorkflowContext();
                                      context.LastResult = `Text adapted for ${gradeLevel}.`;
                                      const bridgeMsg = await generateDynamicBridge('Leveled Text', 'Visual Organizer', context);
-                                     sendBotMsg(bridgeMsg);
+                                     askStage(bridgeMsg, 'outline', organizerChoices());
                                      flyToElement(getStageElementId('outline'));
                                      setGuidedFlowState(prev => ({ ...prev, currentStage: 'outline', pendingContext: null }));
                                  }, 200);
@@ -494,7 +653,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                          const context = getWorkflowContext();
                          context.LastResult = `Text adapted for ${gradeLevel}.`;
                          const bridgeMsg = await generateDynamicBridge('Leveled Text', 'Visual Organizer', context);
-                         sendBotMsg(bridgeMsg);
+                         askStage(bridgeMsg, 'outline', organizerChoices());
                          flyToElement(getStageElementId('outline'));
                          advanceStage('outline');
                          setIsChatProcessing(false);
@@ -503,7 +662,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                      if (isAffirmative) {
                          if (intentData?.params) applyWorkflowModification(intentData);
                          if (studentInterests.length === 0) {
-                             sendBotMsg(t('chat_guide.flow.interest_check'));
+                             askStage(t('chat_guide.flow.interest_check'), 'simplified', interestCheckChoices());
                              setGuidedFlowState(prev => ({ ...prev, pendingContext: 'interest_check' }));
                              setIsChatProcessing(false);
                              return;
@@ -514,15 +673,15 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                          const context = getWorkflowContext();
                          context.LastResult = `Text adapted for ${gradeLevel}.`;
                          const bridgeMsg = await generateDynamicBridge('Leveled Text', 'Visual Organizer', context);
-                         sendBotMsg(bridgeMsg);
+                         askStage(bridgeMsg, 'outline', organizerChoices());
                          flyToElement(getStageElementId('outline'));
                          advanceStage('outline');
                      } else if (isNegative) {
-                         sendBotMsg(t('chat_guide.flow.skipping_text'));
+                         askStage(t('chat_guide.flow.skipping_text'), 'outline', organizerChoices());
                          flyToElement(getStageElementId('outline'));
                          advanceStage('outline');
                      } else {
-                         sendBotMsg(t('chat_guide.flow.offer_text', { grade: gradeLevel }));
+                         askStage(t('chat_guide.flow.offer_text', { grade: gradeLevel }), 'simplified');
                      }
                      break;
                  case 'outline':
@@ -540,15 +699,15 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                          const context = getWorkflowContext();
                          context.LastResult = `Visual Organizer (${outlineType}) created.`;
                          const bridgeMsg = await generateDynamicBridge('Visual Organizer', 'Visual Support', context);
-                         sendBotMsg(bridgeMsg);
+                         askStage(bridgeMsg, 'image', visualChoices());
                          flyToElement(getStageElementId('image'));
                          advanceStage('image');
                      } else if (isNegative) {
-                         sendBotMsg("Skipping organizer. Ready for visuals. Should I generate a standard **Diagram** or a **Worksheet**?");
+                         askStage("Skipping organizer. Ready for visuals. Should I generate a standard **Diagram** or a **Worksheet**?", 'image', visualChoices());
                          flyToElement(getStageElementId('image'));
                          advanceStage('image');
                      } else {
-                         sendBotMsg("Shall we create a Visual Organizer? Do you prefer a 'Flow Chart', 'Venn Diagram', or standard 'Outline'?");
+                         askStage("Shall we create a Visual Organizer? Pick a format below, or tell me what you have in mind.", 'outline', organizerChoices());
                      }
                      break;
                  case 'image':
@@ -566,15 +725,15 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                          const context = getWorkflowContext();
                          context.LastResult = `Visual generated. Type: ${fillInTheBlank ? "Worksheet" : "Diagram"}.`;
                          const bridgeMsg = await generateDynamicBridge('Visual Support', 'FAQ List', context);
-                         sendBotMsg(bridgeMsg);
+                         askStage(bridgeMsg, 'faq');
                          flyToElement(getStageElementId('faq'));
                          advanceStage('faq');
                      } else if (isNegative) {
-                         sendBotMsg(t('chat_guide.flow.skipping_visual'));
+                         askStage(t('chat_guide.flow.skipping_visual'), 'faq');
                          flyToElement(getStageElementId('faq'));
                          advanceStage('faq');
                      } else {
-                         sendBotMsg(t('chat_guide.flow.offer_visual'));
+                         askStage(t('chat_guide.flow.offer_visual'), 'image', visualChoices());
                      }
                      break;
                  case 'faq':
@@ -582,15 +741,15 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                          sendBotMsg("Generating FAQs to clarify misconceptions...");
                          await handleGenerate('faq');
                          if (isShowMeMode) performHighlight('tour-tool-faq');
-                         sendBotMsg("FAQs ready. Do you need **Writing Scaffolds** (Sentence Starters or Paragraph Frames)?");
+                         askStage("FAQs ready. Do you need **Writing Scaffolds**?", 'sentence-frames', scaffoldChoices());
                          flyToElement(getStageElementId('sentence-frames'));
                          advanceStage('sentence-frames');
                      } else if (isNegative) {
-                         sendBotMsg("Skipping FAQs. Need **Writing Scaffolds**?");
+                         askStage("Skipping FAQs. Need **Writing Scaffolds**?", 'sentence-frames', scaffoldChoices());
                          flyToElement(getStageElementId('sentence-frames'));
                          advanceStage('sentence-frames');
                      } else {
-                         sendBotMsg("Generate FAQs? (Yes/Skip)");
+                         askStage("Generate FAQs?", 'faq');
                      }
                      break;
                  case 'sentence-frames':
@@ -601,15 +760,15 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                          sendBotMsg("Building writing supports...");
                          await handleGenerate('sentence-frames');
                          if (isShowMeMode) performHighlight('tour-tool-scaffolds');
-                         sendBotMsg("Scaffolds created. Is there a sequence of events or steps for a **Timeline**?");
+                         askStage("Scaffolds created. Is there a sequence of events or steps for a **Timeline**?", 'timeline');
                          flyToElement(getStageElementId('timeline'));
                          advanceStage('timeline');
                      } else if (isNegative) {
-                         sendBotMsg("Skipping scaffolds. Does this topic need a **Timeline**?");
+                         askStage("Skipping scaffolds. Does this topic need a **Timeline**?", 'timeline');
                          flyToElement(getStageElementId('timeline'));
                          advanceStage('timeline');
                      } else {
-                         sendBotMsg("Create Writing Scaffolds? (Yes/Skip, or say 'Paragraph')");
+                         askStage("Create Writing Scaffolds?", 'sentence-frames', scaffoldChoices());
                      }
                      break;
                  case 'timeline':
@@ -617,15 +776,15 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                          sendBotMsg("Extracting chronological sequence...");
                          await handleGenerate('timeline');
                          if (isShowMeMode) performHighlight('tour-tool-timeline');
-                         sendBotMsg("Timeline built. Should we create a **Concept Sort** activity to categorize ideas?");
+                         askStage("Timeline built. Should we create a **Concept Sort** activity to categorize ideas?", 'concept-sort');
                          flyToElement(getStageElementId('concept-sort'));
                          advanceStage('concept-sort');
                      } else if (isNegative) {
-                         sendBotMsg("Skipping timeline. How about a **Concept Sort**?");
+                         askStage("Skipping timeline. How about a **Concept Sort**?", 'concept-sort');
                          flyToElement(getStageElementId('concept-sort'));
                          advanceStage('concept-sort');
                      } else {
-                         sendBotMsg("Build a Timeline Sequence? (Yes/Skip)");
+                         askStage("Build a Timeline Sequence?", 'timeline');
                      }
                      break;
                  case 'concept-sort':
@@ -633,15 +792,15 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                          sendBotMsg("Creating categorization activity...");
                          await handleGenerate('concept-sort');
                          if (isShowMeMode) performHighlight('tour-tool-concept-sort');
-                         sendBotMsg("Sorting activity ready. Shall we **Brainstorm** hands-on activity ideas next?");
+                         askStage("Sorting activity ready. Shall we **Brainstorm** hands-on activity ideas next?", 'brainstorm');
                          flyToElement(getStageElementId('brainstorm'));
                          advanceStage('brainstorm');
                      } else if (isNegative) {
-                         sendBotMsg("Skipping sort. Want to **Brainstorm** activity ideas?");
+                         askStage("Skipping sort. Want to **Brainstorm** activity ideas?", 'brainstorm');
                          flyToElement(getStageElementId('brainstorm'));
                          advanceStage('brainstorm');
                      } else {
-                         sendBotMsg("Create a Concept Sort? (Yes/Skip)");
+                         askStage("Create a Concept Sort?", 'concept-sort');
                      }
                      break;
                  case 'brainstorm':
@@ -649,15 +808,15 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                          sendBotMsg("Brainstorming engagement strategies...");
                          await handleGenerate('brainstorm');
                          if (isShowMeMode) performHighlight('tour-tool-brainstorm');
-                         sendBotMsg("Ideas generated. Ready to create the **Exit Ticket** (Quiz)?");
+                         askStage("Ideas generated. Ready to create the **Exit Ticket** (Quiz)?", 'quiz');
                          flyToElement(getStageElementId('quiz'));
                          advanceStage('quiz');
                      } else if (isNegative) {
-                         sendBotMsg("Skipping ideas. Ready for the **Exit Ticket**?");
+                         askStage("Skipping ideas. Ready for the **Exit Ticket**?", 'quiz');
                          flyToElement(getStageElementId('quiz'));
                          advanceStage('quiz');
                      } else {
-                         sendBotMsg("Brainstorm activity ideas? (Yes/Skip)");
+                         askStage("Brainstorm activity ideas?", 'brainstorm');
                      }
                      break;
                  case 'quiz':
@@ -679,12 +838,12 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                              context.LastResult = `Quiz generated with ${quizMcqCount} questions.`;
                              if (standardsInput) {
                                  const bridgeMsg = await generateDynamicBridge('Exit Ticket', 'Standard Audit', context);
-                                 sendBotMsg(bridgeMsg);
+                                 askStage(bridgeMsg, 'alignment-report');
                                  flyToElement(getStageElementId('alignment-report'));
                                  advanceStage('alignment-report');
                              } else {
                                  const bridgeMsg = await generateDynamicBridge('Exit Ticket', 'Lesson Plan', context);
-                                 sendBotMsg(bridgeMsg);
+                                 askStage(bridgeMsg, 'lesson-plan');
                                  flyToElement(getStageElementId('lesson-plan'));
                                  advanceStage('lesson-plan');
                              }
@@ -694,17 +853,17 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                      }
                      if (isAffirmative) {
                          if (intentData?.params) applyWorkflowModification(intentData);
-                         sendBotMsg("Drafting the Exit Ticket. How many questions would you like? (Default is 5)");
+                         askStage("Drafting the Exit Ticket. How many questions would you like?", 'quiz', quizCountChoices());
                          setGuidedFlowState(prev => ({ ...prev, pendingContext: 'quiz_count' }));
                          setIsChatProcessing(false);
                          return;
                      } else if (isNegative) {
                          const next = standardsInput ? 'alignment-report' : 'lesson-plan';
-                         sendBotMsg("Skipping quiz. " + (standardsInput ? "Run **Alignment Audit**?" : "Generate **Lesson Plan**?"));
+                         askStage("Skipping quiz. " + (standardsInput ? "Run **Alignment Audit**?" : "Generate **Lesson Plan**?"), next);
                          flyToElement(getStageElementId(next));
                          advanceStage(next);
                      } else {
-                         sendBotMsg("Generate Exit Ticket? (Yes/No)");
+                         askStage("Generate an Exit Ticket?", 'quiz');
                      }
                      break;
                  case 'alignment-report':
@@ -712,15 +871,15 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                          sendBotMsg("Auditing content rigor against standards...");
                          await handleGenerate('alignment-report');
                          if (isShowMeMode) performHighlight('tour-tool-alignment');
-                         sendBotMsg("Audit complete. Shall we synthesize everything into a **Lesson Plan**?");
+                         askStage("Audit complete. Shall we synthesize everything into a **Lesson Plan**?", 'lesson-plan');
                          flyToElement(getStageElementId('lesson-plan'));
                          advanceStage('lesson-plan');
                      } else if (isNegative) {
-                         sendBotMsg("Skipping audit. Generate **Lesson Plan**?");
+                         askStage("Skipping audit. Generate **Lesson Plan**?", 'lesson-plan');
                          flyToElement(getStageElementId('lesson-plan'));
                          advanceStage('lesson-plan');
                      } else {
-                         sendBotMsg("Run Standard Alignment Audit? (Yes/Skip)");
+                         askStage("Run the Standard Alignment Audit?", 'alignment-report');
                      }
                      break;
                  case 'lesson-plan':
@@ -728,15 +887,15 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                          sendBotMsg("Synthesizing resources into a Lesson Plan...");
                          await handleGenerateLessonPlan();
                          if (isShowMeMode) performHighlight('tour-tool-lesson-plan');
-                         sendBotMsg("Lesson Plan drafted. Finally, want to launch **Adventure Mode** for students?");
+                         askStage("Lesson Plan drafted. Finally, want to launch **Adventure Mode** for students?", 'adventure');
                          flyToElement(getStageElementId('adventure'));
                          advanceStage('adventure');
                      } else if (isNegative) {
-                         sendBotMsg("Skipping plan. Launch **Adventure Mode**?");
+                         askStage("Skipping plan. Launch **Adventure Mode**?", 'adventure');
                          flyToElement(getStageElementId('adventure'));
                          advanceStage('adventure');
                      } else {
-                         sendBotMsg("Generate Lesson Plan? (Yes/Skip)");
+                         askStage("Generate the Lesson Plan?", 'lesson-plan');
                      }
                      break;
                  case 'adventure':
@@ -763,7 +922,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                          return;
                      }
                      if (isAffirmative) {
-                         sendBotMsg("Ready for Adventure Mode. Should this be a standard 'Multiple Choice' story, or a 'Debate' where the student argues a perspective?");
+                         askStage("Ready for Adventure Mode. Should this be a standard Multiple Choice story, or a Debate where the student argues a perspective?", 'adventure', adventureModeChoices());
                          setGuidedFlowState(prev => ({ ...prev, pendingContext: 'adventure_mode' }));
                          setIsChatProcessing(false);
                          return;
@@ -774,7 +933,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                          flyToElement(getStageElementId('done'));
                          advanceStage('done');
                      } else {
-                         sendBotMsg("Start Adventure Mode? (Yes/No)");
+                         askStage("Start Adventure Mode?", 'adventure');
                      }
                      break;
                  case 'done':
@@ -1564,7 +1723,7 @@ async function planAndSendUdlMessage(manualText, deps) {
             const _pr = await _AC.runPlan(() => _alloCmdCtx(), _steps, {
               shouldStop: () => _planRunRef.current.stop,
               onStep: (i, phase, cmd, narr) => {
-                if (phase === 'start') { setUdlMessages(prev => [...prev, { role: 'model', text: '⏳ ' + (i + 1) + '/' + _steps.length + ' — ' + ((cmd && cmd.label) || 'working') + '…' }]); }
+                if (phase === 'start') { setUdlMessages(prev => [...prev, { role: 'model', text: '⏳ ' + (i + 1) + '/' + _steps.length + ' — ' + ((cmd && cmd.label) || 'working') + '...' }]); }
                 else {
                   setUdlMessages(prev => [...prev, { role: 'model', text: '✅ ' + (i + 1) + '/' + _steps.length + ' — ' + (narr || 'Done.') }]);
                   try { if (window.alloAnnounce) window.alloAnnounce(narr || (((cmd && cmd.label) || 'Step') + ' done.')); } catch (_) {}

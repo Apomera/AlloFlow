@@ -177,6 +177,32 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
       { label: t('chat_guide.chips.adv_choice') || 'Multiple Choice', value: 'multiple choice story' },
       { label: t('chat_guide.chips.adv_debate') || 'Debate', value: 'debate' }
   ];
+  // The blueprint review is the one place where "execute the plan" and "keep
+  // talking about the plan" collide. `mode` puts the teacher in an explicit
+  // lane; the values read as normal sentences so the transcript stays legible.
+  const blueprintChoices = () => [
+      { label: t('chat_guide.chips.bp_generate') || 'Generate it', value: 'go',
+        hint: t('chat_guide.chips.bp_generate_hint') || 'Build every resource in the plan' },
+      { label: t('chat_guide.chips.bp_change') || 'Change something', value: 'I want to change something', mode: 'edit', tone: 'secondary',
+        hint: t('chat_guide.chips.bp_change_hint') || 'Add, remove, or swap a resource' },
+      { label: t('chat_guide.chips.bp_ask') || 'Ask about this plan', value: 'I have a question about this plan', mode: 'question', tone: 'secondary',
+        hint: t('chat_guide.chips.bp_ask_hint') || 'The plan stays exactly as it is' }
+  ];
+  // The blueprint card renders from `activeBlueprint`, so a chooser posted
+  // after it always describes the CURRENT plan.
+  const buildBlueprintReviewChoices = (text) => buildChoices(
+      text || t('chat_guide.blueprint.presented'), 'blueprint_review', blueprintChoices());
+  // generateStandardChatResponse only sees `history` — it has no idea a plan is
+  // pending. Hand it a one-line digest so "why a Venn diagram?" is answerable.
+  const blueprintQuestionContext = () => {
+      try {
+          const plan = (activeBlueprint && (activeBlueprint.resourcePlan || activeBlueprint.resources)) || [];
+          const items = plan.map(r => r && (r.tool || r.type)).filter(Boolean);
+          if (!items.length) return '';
+          return "\n\n[Context: the teacher is looking at a PROPOSED lesson blueprint (not yet generated) containing: "
+              + items.join(', ') + ". Answer their question about it. Do not restate the whole plan unless asked.]";
+      } catch (_) { return ''; }
+  };
     const textToSend = typeof manualText === 'string' ? manualText : udlInput;
     if (!textToSend.trim()) return;
     const userMsg = { role: 'user', text: textToSend };
@@ -200,7 +226,17 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                 (Array.isArray(c.keywords) && c.keywords.some(k => k && _choiceReply.includes(String(k).toLowerCase())))))
             : null;
         const _isBareChoice = !!(_choiceHit && String(_choiceHit.value).toLowerCase() === _choiceReply);
-        const _activeStage = (isAutoFillMode && guidedFlowState.isFlowActive && guidedFlowState.currentStage) ? guidedFlowState.currentStage : null;
+        const _rawActiveStage = (isAutoFillMode && guidedFlowState.isFlowActive && guidedFlowState.currentStage) ? guidedFlowState.currentStage : null;
+        // blueprint_review with nothing left to review is a FINISHED stage, not
+        // a live one. Both exits from the card null the blueprint without
+        // clearing the stage — Generate (handleExecuteBlueprint) and Cancel —
+        // so every later message was handed to the reviser with `null`, came
+        // back "I couldn't make that change", and left the stage set: the
+        // generic chat/command parser was unreachable until the teacher typed
+        // 'stop'. Retire the stage instead and let the message fall through.
+        const _staleBlueprintReview = _rawActiveStage === 'blueprint_review' && !activeBlueprint;
+        if (_staleBlueprintReview) setGuidedFlowState({ currentStage: null, isFlowActive: false });
+        const _activeStage = _staleBlueprintReview ? null : _rawActiveStage;
         const _effectiveStage = _activeStage || (_choiceHit ? _pendingChoiceMsg.stage : null);
         if (_effectiveStage && !_activeStage) {
             setIsAutoFillMode(true);
@@ -334,11 +370,14 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                                  interests: studentInterests,
                              });
                             setActiveBlueprint(config);
-                             setUdlMessages(prev => [...prev, {
-                                 role: 'model',
-                                 type: 'blueprint',
-                                 text: t('chat_guide.blueprint.presented')
-                             }]);
+                             // Card first, then the chooser — the chooser must be the
+                             // LAST message for _pendingChoiceMsg to see it. The card
+                             // renderer ignores msg.text, so the 'presented' guidance
+                             // was invisible until it moved onto the chooser.
+                             setUdlMessages(prev => [...prev,
+                                 { role: 'model', type: 'blueprint', text: t('chat_guide.blueprint.presented') },
+                                 buildBlueprintReviewChoices()
+                             ]);
                              setGuidedFlowState(prev => ({ ...prev, currentStage: 'blueprint_review', pendingBlueprintContext: null }));
                          } catch (e) {
                              warnLog("Unhandled error:", e);
@@ -387,11 +426,10 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                              interests: studentInterests,
                          });
                         setActiveBlueprint(config);
-                        setUdlMessages(prev => [...prev, {
-                             role: 'model',
-                             type: 'blueprint',
-                             text: t('chat_guide.blueprint.presented')
-                         }]);
+                        setUdlMessages(prev => [...prev,
+                             { role: 'model', type: 'blueprint', text: t('chat_guide.blueprint.presented') },
+                             buildBlueprintReviewChoices()
+                         ]);
                          setGuidedFlowState(prev => ({ ...prev, currentStage: 'blueprint_review', pendingBlueprintContext: null }));
                      } catch (e) {
                          warnLog("Unhandled error:", e);
@@ -401,31 +439,71 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                          setIsChatProcessing(false);
                      }
                      return;
-                 case 'blueprint_review':
+                 case 'blueprint_review': {
                      const reviewInput = textToSend.trim().toLowerCase();
+                     // A mode pill only picks the lane — it must not touch the
+                     // plan. The next message is what carries the intent.
+                     if (_choiceHit && _choiceHit.mode) {
+                         const _isEdit = _choiceHit.mode === 'edit';
+                         setGuidedFlowState(prev => ({ ...prev, pendingContext: _isEdit ? 'blueprint_edit' : 'blueprint_question' }));
+                         sendBotMsg(_isEdit
+                             ? (t('chat_guide.blueprint.edit_prompt') || "What should I change? Tell me what to add, remove, or swap.")
+                             : (t('chat_guide.blueprint.question_prompt') || "Go ahead. I'll answer without touching the plan."));
+                         setIsChatProcessing(false);
+                         return;
+                     }
+                     const _pendingMode = guidedFlowState.pendingContext === 'blueprint_edit' ? 'edit'
+                         : guidedFlowState.pendingContext === 'blueprint_question' ? 'question' : null;
+                     if (_pendingMode) setGuidedFlowState(prev => ({ ...prev, pendingContext: null }));
                      const hasBlueprintEditRequest = /\b(add|remove|change|edit|modify|revise|instead|but|except|focus|include|exclude|replace|make)\b/i.test(textToSend);
                      const isExecutionCommand = /^(please\s+)?(go|go ahead|start|start it|run|run it|execute|execute it|confirm|yes|yes please|y|proceed|generate|generate it|looks good|do it|let'?s go)(\s+(now|please))?[.!]?$/i.test(reviewInput) && !hasBlueprintEditRequest;
-                     if (isExecutionCommand) {
+                     if (_pendingMode !== 'question' && isExecutionCommand) {
                          try {
-                             setGuidedFlowState(prev => ({ ...prev, isFlowActive: false }));
+                             setGuidedFlowState(prev => ({ ...prev, isFlowActive: false, pendingContext: null }));
                              await Promise.resolve(handleExecuteBlueprint());
                          } finally {
                              setIsChatProcessing(false);
                          }
-                     } else {
+                         return;
+                     }
+                     // Edit vs. question. Every typed reply already pays for a
+                     // detectWorkflowIntent pass above (its QUESTION verdict was
+                     // simply discarded here), so classifying costs nothing new.
+                     // Asking used to REWRITE the plan and answer "Blueprint
+                     // updated!" — the classifier fails safe to QUESTION, so a
+                     // misread now leaves the plan alone instead of editing it.
+                     const _isQuestion = _pendingMode === 'question'
+                         || (!_pendingMode && !hasBlueprintEditRequest && intentResult.intent === 'QUESTION');
+                     if (_isQuestion) {
                          setIsChatProcessing(true);
-                         sendBotMsg(t('common.adjusting') + "...");
                          try {
-                            const updatedConfig = await _reviseAgentCoreLegacyBlueprint(activeBlueprint, textToSend);
-                            setActiveBlueprint(updatedConfig);
-                            sendBotMsg(t('chat_guide.blueprint.updated'));
+                             await generateStandardChatResponse(textToSend + blueprintQuestionContext());
                          } catch (e) {
-                             sendBotMsg(t('chat_guide.blueprint.change_fail'));
+                             warnLog("Blueprint question failed", e);
+                             sendBotMsg(t('chat_guide.blueprint.question_fail') || "I couldn't answer that one. The plan is unchanged.");
                          } finally {
                              setIsChatProcessing(false);
                          }
+                         // Re-offer the pills: the chooser attached to the card
+                         // is stale now, so without this the plan has no live
+                         // affordance left.
+                         setUdlMessages(prev => [...prev, buildBlueprintReviewChoices(
+                             t('chat_guide.blueprint.still_pending') || "The plan above is unchanged. Ready when you are.")]);
+                         return;
+                     }
+                     setIsChatProcessing(true);
+                     sendBotMsg(t('common.adjusting') + "...");
+                     try {
+                        const updatedConfig = await _reviseAgentCoreLegacyBlueprint(activeBlueprint, textToSend);
+                        setActiveBlueprint(updatedConfig);
+                        setUdlMessages(prev => [...prev, buildBlueprintReviewChoices(t('chat_guide.blueprint.updated'))]);
+                     } catch (e) {
+                         setUdlMessages(prev => [...prev, buildBlueprintReviewChoices(t('chat_guide.blueprint.change_fail'))]);
+                     } finally {
+                         setIsChatProcessing(false);
                      }
                      return;
+                 }
                  case 'fullpack_context':
                      const userContextFull = lowerInput.includes('auto') ? "" : textToSend;
                      if (textToSend && !isNegative) {

@@ -26,7 +26,54 @@ function UDLGuideModal(props) {
     t, theme, udlInput, udlInputRef,
     udlMessages, udlScrollRef, udlStandardFramework, udlStandardGrade
   } = props;
+  // The standards finder + framework consult are power-user tools that were
+  // pinned open above the input box, leaving the transcript ~40% of a 24rem
+  // panel — cramped enough that a guided-flow question and its answer pills
+  // couldn't be on screen together. They collapse now; the choice is sticky.
+  // NOTE: hooks must stay above the showUDLGuide early-return.
+  const [standardToolsOpen, setStandardToolsOpen] = useState(() => {
+      try { return localStorage.getItem('allo_udl_standard_tools_open') === '1'; } catch (_) { return false; }
+  });
+  const toggleStandardTools = () => setStandardToolsOpen(prev => {
+      const next = !prev;
+      try { localStorage.setItem('allo_udl_standard_tools_open', next ? '1' : '0'); } catch (_) {}
+      return next;
+  });
+  // Executing a blueprint no longer closes the panel, so it needs a way to get
+  // out of the way WITHOUT unmounting — closing would throw away the thread the
+  // plan came out of. Collapsed = header bar only, pinned bottom-right, so the
+  // resources land in full view while the conversation stays alive. Local state
+  // on purpose: the component stays mounted for the whole session.
+  const [isCollapsed, setIsCollapsed] = useState(false);
   if (!(showUDLGuide)) return null;
+  if (isCollapsed) {
+      return (
+        <div style={{ zIndex: showStemLab ? 10490 : undefined }} className={`allo-docsuite fixed z-[100] bottom-4 right-4 rounded-2xl shadow-lg overflow-hidden ${chatStyles.container}`}>
+          <div className={`px-3 py-2 flex items-center gap-2 ${chatStyles.header}`}>
+              <HelpCircle size={16} />
+              <span className="font-bold text-sm">{t('chat_guide.header')}</span>
+              {isChatProcessing && <RefreshCw size={12} className="animate-spin" />}
+              <button
+                  type="button"
+                  onClick={() => setIsCollapsed(false)}
+                  className="hover:bg-white/20 p-1 rounded transition-colors ml-1"
+                  title={t('chat_guide.restore') || 'Restore chat'}
+                  aria-label={t('chat_guide.restore') || 'Restore chat'}
+              >
+                  <Maximize size={16} />
+              </button>
+              <button
+                  type="button"
+                  onClick={handleSetShowUDLGuideToFalse}
+                  className="hover:bg-white/20 p-1 rounded transition-colors"
+                  aria-label={t('common.close')}
+              >
+                  <X size={16} />
+              </button>
+          </div>
+        </div>
+      );
+  }
   return (
         <div style={{ zIndex: showStemLab ? 10490 : undefined }} className={`allo-docsuite fixed z-[100] rounded-2xl flex flex-col animate-in fade-in slide-in-from-right-5 duration-300 overflow-hidden transition-all ${isUDLGuideExpanded ? 'inset-4 top-24' : 'top-24 right-4 bottom-4 w-96'} ${isSpotlightMode ? 'opacity-20 hover:opacity-100 pointer-events-none hover:pointer-events-auto' : 'opacity-100'} ${chatStyles.container}`}>
           <div className={`p-4 flex justify-between items-center shrink-0 ${chatStyles.header}`}>
@@ -91,6 +138,16 @@ function UDLGuideModal(props) {
                 >
                     {isUDLGuideExpanded ? <Minimize size={18}/> : <Maximize size={18}/>}
                 </button>
+                <button
+                    type="button"
+                    data-help-key="chat_collapse"
+                    onClick={() => setIsCollapsed(true)}
+                    className="hover:bg-white/20 p-1 rounded transition-colors"
+                    title={t('chat_guide.collapse') || 'Collapse to a bar (keeps the conversation)'}
+                    aria-label={t('chat_guide.collapse') || 'Collapse to a bar (keeps the conversation)'}
+                >
+                    <ChevronDown size={18}/>
+                </button>
                 <button data-help-key="chat_close" onClick={handleSetShowUDLGuideToFalse} className="hover:bg-white/20 p-1 rounded" aria-label={t('common.close')}><X size={18}/></button>
           </div>
         </div>
@@ -103,7 +160,7 @@ function UDLGuideModal(props) {
                 </div>
               )}
               {msg.type === 'blueprint' && activeBlueprint && (
-                  <div className="w-full max-w-[95%]">
+                  <div className="w-full">
                       <InteractiveBlueprintCard
                           config={activeBlueprint}
                           onUpdate={handleBlueprintUIUpdate}
@@ -116,7 +173,7 @@ function UDLGuideModal(props) {
                   </div>
               )}
               {msg.type === 'choices' && (
-                  <div className={`max-w-[85%] p-3 rounded-xl text-sm shadow-sm ${chatStyles.modelBubble} rounded-bl-none`}>
+                  <div className={`max-w-[92%] p-3 rounded-xl text-sm shadow-sm ${chatStyles.modelBubble} rounded-bl-none`}>
                       {renderFormattedText(msg.text)}
                       <div className="flex flex-wrap gap-2 mt-3" role="group" aria-label={t('chat_guide.header')}>
                           {(msg.choices || []).map((choice, cIdx) => (
@@ -124,13 +181,31 @@ function UDLGuideModal(props) {
                                   key={cIdx}
                                   type="button"
                                   disabled={isChatProcessing || idx !== udlMessages.length - 1}
-                                  onClick={() => handleSendUDLMessage(choice.value)}
-                                  className={`px-3 py-1.5 rounded-full text-xs font-bold shadow-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${chatStyles.button}`}
+                                  title={choice.hint || undefined}
+                                  aria-label={choice.hint ? `${choice.label} — ${choice.hint}` : undefined}
+                                  onClick={() => {
+                                      // Answers that are a free value (a count, a
+                                      // language, a student interest) can't be a fixed
+                                      // pill — this one parks the cursor in the box
+                                      // instead of sending a placeholder word.
+                                      if (choice.action === 'focus-input') {
+                                          setUdlInput('');
+                                          if (udlInputRef && udlInputRef.current) udlInputRef.current.focus();
+                                          return;
+                                      }
+                                      handleSendUDLMessage(choice.value);
+                                  }}
+                                  className={`px-3 py-1.5 rounded-full text-xs font-bold shadow-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${choice.tone === 'secondary' ? chatStyles.secondaryButton : chatStyles.button}`}
                               >
                                   {choice.label}
                               </button>
                           ))}
                       </div>
+                      {idx === udlMessages.length - 1 && (
+                          <p className={`mt-2 text-[11px] italic ${chatStyles.subText}`}>
+                              {t('chat_guide.chips.or_type') || '…or just type your answer below.'}
+                          </p>
+                      )}
                   </div>
               )}
               {!msg.type && msg.role === 'model' && msg.isActionable && idx > 0 && (
@@ -155,6 +230,24 @@ function UDLGuideModal(props) {
           )}
         </div>
         <div className={`p-3 border-t ${theme === 'dark' ? 'border-slate-700' : 'border-slate-200'} ${chatStyles.inputArea}`}>
+          <button
+              type="button"
+              onClick={toggleStandardTools}
+              aria-expanded={standardToolsOpen}
+              aria-controls="udl-standard-tools"
+              data-help-key="chat_standard_tools_toggle"
+              className={`w-full mb-2 flex items-center gap-1.5 px-1 py-1 rounded text-[11px] font-bold uppercase tracking-wider transition-colors ${chatStyles.subText} hover:opacity-100 opacity-80`}
+          >
+              {standardToolsOpen ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+              <ShieldCheck size={11} />
+              {t('standards.tools_disclosure') || 'Standards tools'}
+              {!standardToolsOpen && (
+                  <span className="font-normal normal-case ml-auto opacity-80">
+                      {t('standards.tools_disclosure_hint') || 'find / consult'}
+                  </span>
+              )}
+          </button>
+          <div id="udl-standard-tools" hidden={!standardToolsOpen}>
           <div className={`mb-3 p-2 rounded-lg border ${theme === 'dark' ? 'bg-slate-800 border-slate-700' : theme === 'contrast' ? 'bg-black border-white' : 'bg-slate-50 border-slate-200'}`}>
               <div className="flex justify-between items-center mb-2">
                   <label className={`text-[11px] font-bold uppercase tracking-wider flex items-center gap-1 ${chatStyles.subText}`}>
@@ -262,6 +355,7 @@ function UDLGuideModal(props) {
                       <ArrowRight size={14} />
                   </button>
               </div>
+          </div>
           </div>
           <div className={`flex items-center gap-2 mb-2 px-2 py-1.5 rounded-lg transition-all duration-500 select-none ${
              !isAutoFillMode && !hasUsedAutoFill

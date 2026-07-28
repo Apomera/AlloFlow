@@ -2938,6 +2938,21 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     const [directBusy, setDirectBusy] = React.useState(null);    // 'evaluating' | 'generating' | null
     const [refinePrompt, setRefinePrompt] = React.useState('');
     const [refineBusy, setRefineBusy] = React.useState(false);
+    // ── Batch furnish (TEACHER ONLY) — the Memory Palace's Furnish/Sculpt pass
+    //    ported to the concept space: walk every un-arted node, make one piece
+    //    each, reveal it live, persist incrementally (no remount, so a mid-run
+    //    close keeps whatever was already made). Two deliberate differences from
+    //    the palace: (1) SCULPTURES are the default lane — a Prim3D recipe is
+    //    ~1 KB of JSON while a batch of base64 images can blow past the browser
+    //    storage budget, and a concept space has far more nodes than a palace has
+    //    loci; (2) an optional mnemonic pre-pass supplies the vivid imagery that
+    //    the palace gets from the dispatcher. Per-node creation below stays open
+    //    to students — the generation effect is the point of that path. ──
+    const [furnishOpen, setFurnishOpen] = React.useState(false);
+    const [furnishMode, setFurnishMode] = React.useState('sculpture');   // 'sculpture' | 'image'
+    const [furnishing, setFurnishing] = React.useState(null);            // {done, total} | null
+    const [useMnemonics, setUseMnemonics] = React.useState(true);
+    const genCancelRef = React.useRef(false);   // Stop button → halt an in-progress batch
     // ── Strand Challenge (the 3D-native sort game) ──
     // challenge = {graph, answerKey, targets, strands} from engine.buildStrandChallenge.
     // Placements arrive through the SAME edit pipeline students already use
@@ -3217,6 +3232,10 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
         if (persist) {
             const next = { ...(artRef.current || {}) };
             if (art) next[id] = art; else delete next[id];
+            // Write through immediately: a batch furnish fires these back-to-back and
+            // must never merge into a pre-write snapshot (the render-time assignment
+            // above only refreshes once the parent has round-tripped the persist).
+            artRef.current = next;
             persist(next, 'conceptArt');
         }
         // Switch the panel between "create" and "refine" without waiting for a re-render.
@@ -3323,6 +3342,94 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     };
     const nodeArtType = (selectedNode && selectedNode.artType) || (selectedNode && artRef.current[selectedNode.id] && artRef.current[selectedNode.id].type) || null;
 
+    // ── Batch furnish handlers (teacher only) ──
+    // adaptGenerated is the SAME id convention the scene and data.conceptArt use
+    // (root / b0 / b0_i1), so "already has art" is a straight key lookup.
+    const artNodes = React.useMemo(() => {
+        try {
+            const E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
+            if (!E || !E.adaptGenerated || !hasContent) return [];
+            return (E.adaptGenerated(data || {}).nodes || [])
+                .map((n) => ({ id: n && n.id, label: String((n && n.label) || '') }))
+                .filter((n) => n.id && n.label);
+        } catch (e) { return []; }
+    }, [data, hasContent, ready]);
+    const furnishTargets = artNodes.filter((n) => !(artRef.current || {})[n.id]);
+    // ~300 KB of base64 per 400px illustration is a fair working estimate; the
+    // number is shown (not hidden) because localStorage typically dies around 5 MB.
+    const furnishEstMb = Math.round(furnishTargets.length * 0.3 * 10) / 10;
+    const furnishHeavy = furnishMode === 'image' && furnishEstMb >= 3;
+    const stopFurnish = () => { genCancelRef.current = true; };
+    const handleFurnishAll = () => {
+        const E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
+        const P3D = window.AlloModules && window.AlloModules.Prim3D;
+        if (!isTeacherMode || !persist || furnishing || challenge) return;
+        if (typeof window.callGemini !== 'function') return;
+        const wantImages = furnishMode === 'image';
+        if (wantImages && !canImagen) {
+            if (addToast) addToast(t('concept_space.art_no_imagen') || 'Image generation is unavailable here — try a sculpture.', 'info');
+            return;
+        }
+        if (!wantImages && !P3D) return;
+        const targets = furnishTargets;
+        if (!targets.length) {
+            if (addToast) addToast(t('concept_space.furnish_done_already') || 'Every concept already has art.', 'info');
+            return;
+        }
+        genCancelRef.current = false;
+        setFurnishing({ done: 0, total: targets.length });
+        let done = 0, failures = 0;
+        const finishBatch = () => {
+            setFurnishing(null);
+            if (!addToast || !artAliveRef.current) return;
+            if (genCancelRef.current) addToast((t('concept_space.furnish_stopped') || 'Stopped — {ok} made so far.').replace('{ok}', String(done)), 'info');
+            else if (failures) addToast((t('concept_space.furnish_partial') || 'Made art for {ok} concepts; {fail} could not be generated.').replace('{ok}', String(done)).replace('{fail}', String(failures)), 'info');
+            else addToast(t('concept_space.furnish_done') || '✨ Every concept furnished — orbit the space to meet them.', 'success');
+        };
+        // mnemonics = {nodeId: vivid image sentence} | null. Sequential from here:
+        // one piece lands (and persists) before the next starts, exactly like the palace.
+        const run = (mnemonics) => {
+            const step = (i) => {
+                if (i >= targets.length || genCancelRef.current || !artAliveRef.current) { finishBatch(); return; }
+                const n = targets[i];
+                const subject = (mnemonics && mnemonics[n.id]) || n.label;
+                const after = () => {
+                    if (!artAliveRef.current) return;
+                    setFurnishing({ done: i + 1, total: targets.length });
+                    step(i + 1);
+                };
+                if (wantImages) {
+                    Promise.resolve(callImagen('A vivid, memorable, slightly surreal illustration: ' + subject + '. Single clear subject, bright colors, centered composition, storybook style, no text, no words.', 400))
+                        .then((b64) => {
+                            if (!artAliveRef.current) return;
+                            const url = _asDataUrl(b64);
+                            if (url) { done += 1; _persistNodeArt(n.id, { type: 'image', dataUrl: url }); } else failures += 1;
+                        })
+                        .catch(() => { failures += 1; })
+                        .then(after);
+                } else {
+                    Promise.resolve(window.callGemini(P3D.buildRecipePrompt(subject), true))
+                        .then((res) => {
+                            if (!artAliveRef.current) return;
+                            const recipe = P3D.parseRecipe(_gemText(res));
+                            if (recipe) { recipe.name = n.label; done += 1; _persistNodeArt(n.id, { type: 'sculpture', recipe }); }
+                            else failures += 1;
+                        })
+                        .catch(() => { failures += 1; })
+                        .then(after);
+                }
+            };
+            step(0);
+        };
+        // One extra call up front turns bare labels into method-of-loci imagery.
+        // A failure here is non-fatal — the batch falls back to the plain labels.
+        if (useMnemonics && E && E.buildNodeMnemonicPrompt && E.parseNodeMnemonics) {
+            Promise.resolve(window.callGemini(E.buildNodeMnemonicPrompt(targets, { topic: data?.main || title || '' }), true))
+                .then((res) => { if (artAliveRef.current) run(E.parseNodeMnemonics(_gemText(res))); })
+                .catch(() => { if (artAliveRef.current) run(null); });
+        } else run(null);
+    };
+
     return (
         <div className="max-w-6xl mx-auto">
             <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
@@ -3398,6 +3505,19 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                     ↺ {t('concept_space.reset') || 'Reset arrangement'}
                                 </button>
                             )}
+                            {hasContent && persist && isTeacherMode && !failed && typeof window.callGemini === 'function' && (
+                                <button
+                                    onClick={() => setFurnishOpen((o) => !o)}
+                                    aria-pressed={furnishOpen ? 'true' : 'false'}
+                                    className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${furnishOpen || furnishing ? 'bg-fuchsia-600 text-white border-fuchsia-600' : 'bg-white text-fuchsia-700 border-fuchsia-300 hover:bg-fuchsia-50'}`}
+                                    title={t('concept_space.furnish_tooltip') || 'Teacher: generate a sculpture or illustration for every concept at once, the way the Memory Palace furnishes its loci'}
+                                >
+                                    🎨 {furnishing
+                                        ? (t('concept_space.furnishing') || 'Furnishing {done}/{total}…')
+                                            .replace('{done}', String(furnishing.done)).replace('{total}', String(furnishing.total))
+                                        : (t('concept_space.furnish') || 'Furnish all')}
+                                </button>
+                            )}
                             {hasContent && persist && !failed && (
                                 <button
                                     onClick={() => setConstelOpen((o) => !o)}
@@ -3421,6 +3541,96 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                     )}
                 </div>
             </div>
+            {furnishOpen && hasContent && persist && isTeacherMode && !failed && (
+                <div className="mb-3 bg-white border border-fuchsia-300 rounded-xl px-4 py-3 text-slate-800" role="group" aria-label={t('concept_space.furnish_panel_aria') || 'Furnish every concept'}>
+                    <div className="flex items-center gap-2 flex-wrap mb-2">
+                        <span className="text-xs font-extrabold text-fuchsia-700">🎨 {t('concept_space.furnish_heading') || 'Furnish every concept'}</span>
+                        <span className="text-[11px] text-slate-500 ml-auto">
+                            {(t('concept_space.furnish_pending') || '{n} still need art').replace('{n}', String(furnishTargets.length))}
+                        </span>
+                    </div>
+                    <div className="flex items-center gap-0.5 bg-slate-100 rounded-full p-0.5 w-fit mb-2" role="group" aria-label={t('concept_space.furnish_mode_label') || 'What to generate'}>
+                        <button
+                            onClick={() => setFurnishMode('sculpture')}
+                            aria-pressed={furnishMode === 'sculpture' ? 'true' : 'false'}
+                            disabled={!!furnishing}
+                            className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors disabled:opacity-50 ${furnishMode === 'sculpture' ? 'bg-fuchsia-600 text-white' : 'text-slate-600 hover:bg-slate-200'}`}
+                        >
+                            🧊 {t('concept_space.furnish_mode_sculpture') || 'Sculptures'}
+                        </button>
+                        <button
+                            onClick={() => setFurnishMode('image')}
+                            aria-pressed={furnishMode === 'image' ? 'true' : 'false'}
+                            disabled={!canImagen || !!furnishing}
+                            title={!canImagen ? (t('concept_space.art_no_imagen') || 'Image generation is unavailable here — try a sculpture.') : undefined}
+                            className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors disabled:opacity-40 ${furnishMode === 'image' ? 'bg-fuchsia-600 text-white' : 'text-slate-600 hover:bg-slate-200'}`}
+                        >
+                            🖼 {t('concept_space.furnish_mode_image') || 'Images'}
+                        </button>
+                    </div>
+                    <label className="flex items-start gap-2 text-[11px] text-slate-600 mb-2 cursor-pointer">
+                        <input
+                            type="checkbox"
+                            checked={useMnemonics}
+                            disabled={!!furnishing}
+                            onChange={(e) => setUseMnemonics(e.target.checked)}
+                            className="accent-fuchsia-600 mt-0.5"
+                        />
+                        <span>{t('concept_space.furnish_mnemonics') || 'Write a vivid memory image for each concept first (the method-of-loci step). One extra AI call, much stronger cues.'}</span>
+                    </label>
+                    {furnishMode === 'image' && (
+                        <p
+                            className={`text-[11px] rounded-lg px-2.5 py-2 mb-2 ${furnishHeavy ? 'bg-amber-50 border border-amber-300 text-amber-900' : 'bg-slate-50 border border-slate-200 text-slate-600'}`}
+                            role={furnishHeavy ? 'alert' : undefined}
+                        >
+                            {furnishHeavy ? '⚠ ' : ''}
+                            {(t('concept_space.furnish_storage_note') || 'About {mb} MB of pictures would be saved with this resource ({n} images). Browser storage usually gives out near 5 MB, and each image costs a credit. Sculptures are about 1 KB each and cost none.')
+                                .replace('{mb}', String(furnishEstMb)).replace('{n}', String(furnishTargets.length))}
+                        </p>
+                    )}
+                    <div className="flex items-center gap-2 flex-wrap">
+                        {furnishing ? (
+                            <>
+                                {/* progressbar, NOT a live region: a batch fires one update per
+                                    generated piece, and an aria-live counter would interrupt a
+                                    screen reader on every single one. AT reads the value on
+                                    demand; the finishing toast does the announcing. */}
+                                <span
+                                    className="text-xs font-bold text-fuchsia-700 tabular-nums"
+                                    role="progressbar"
+                                    aria-valuemin={0}
+                                    aria-valuemax={furnishing.total}
+                                    aria-valuenow={furnishing.done}
+                                    aria-valuetext={(t('concept_space.furnishing') || 'Furnishing {done}/{total}…')
+                                        .replace('{done}', String(furnishing.done)).replace('{total}', String(furnishing.total))}
+                                >
+                                    {(t('concept_space.furnishing') || 'Furnishing {done}/{total}…')
+                                        .replace('{done}', String(furnishing.done)).replace('{total}', String(furnishing.total))}
+                                </span>
+                                <button
+                                    onClick={stopFurnish}
+                                    className="px-3 py-1.5 rounded-full text-xs font-bold bg-white text-rose-600 border border-rose-300 hover:bg-rose-50 transition-colors"
+                                >
+                                    ⏹ {t('concept_space.furnish_stop') || 'Stop'}
+                                </button>
+                            </>
+                        ) : (
+                            <button
+                                onClick={handleFurnishAll}
+                                disabled={!furnishTargets.length}
+                                className="px-3 py-1.5 rounded-full text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                ✨ {furnishTargets.length
+                                    ? (t('concept_space.furnish_start') || 'Make art for {n} concepts').replace('{n}', String(furnishTargets.length))
+                                    : (t('concept_space.furnish_done_already') || 'Every concept already has art.')}
+                            </button>
+                        )}
+                    </div>
+                    <p className="text-[11px] text-slate-500 italic mt-2">
+                        {t('concept_space.furnish_framing') || 'Students can still make and refine art on any single concept by clicking it. Building the image yourself is where most of the memory benefit lives, so use this to seed a space rather than to replace their turn.'}
+                    </p>
+                </div>
+            )}
             {constelOpen && hasContent && persist && !failed && (
                 <div className="mb-3 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-slate-200">
                     <div className="flex items-center gap-2 flex-wrap mb-2">

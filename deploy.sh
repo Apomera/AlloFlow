@@ -121,6 +121,8 @@ if [[ "${SKIP_RENDER_CHECK:-0}" != "1" ]]; then
   echo "  ✓ host↔module wrapper seams agree on arity (the playSequence deps-in-contentId class; 2026-07-20)."
   node dev-tools/check_module_freshness.cjs
   echo "  ✓ no NEW source/module drift — a *_source.jsx committed without rebuilding its hand-built module DOES NOT SHIP, and every test reads the source, so nothing else can see it (cost four remediation fixes; 2026-07-27)."
+  node _check_tool_catalog.cjs
+  echo "  ✓ tool catalog ↔ dispatcher branches in sync both ways (a resource type present in one and absent from the other silently drops it from AlloBot autofill / lesson packs, or leaves a catalog entry pointing at a branch that no longer exists; the checker shipped 2026-07 telling you to 'run before deploys' and then had zero callers until 2026-07-27)."
   node dev-tools/check_keyless_map.cjs --quiet
   echo "  ✓ no keyless list children in CDN modules / STEM tools."
   node dev-tools/check_search_queries.cjs

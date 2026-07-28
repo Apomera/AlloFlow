@@ -117,7 +117,30 @@ function UDLGuideModal(props) {
     }
     return next;
   });
+  const [isCollapsed, setIsCollapsed] = useState(false);
   if (!showUDLGuide) return null;
+  if (isCollapsed) {
+    return /* @__PURE__ */ React.createElement("div", { style: { zIndex: showStemLab ? 10490 : void 0 }, className: `allo-docsuite fixed z-[100] bottom-4 right-4 rounded-2xl shadow-lg overflow-hidden ${chatStyles.container}` }, /* @__PURE__ */ React.createElement("div", { className: `px-3 py-2 flex items-center gap-2 ${chatStyles.header}` }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 16 }), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-sm" }, t("chat_guide.header")), isChatProcessing && /* @__PURE__ */ React.createElement(RefreshCw, { size: 12, className: "animate-spin" }), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => setIsCollapsed(false),
+        className: "hover:bg-white/20 p-1 rounded transition-colors ml-1",
+        title: t("chat_guide.restore") || "Restore chat",
+        "aria-label": t("chat_guide.restore") || "Restore chat"
+      },
+      /* @__PURE__ */ React.createElement(Maximize, { size: 16 })
+    ), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: handleSetShowUDLGuideToFalse,
+        className: "hover:bg-white/20 p-1 rounded transition-colors",
+        "aria-label": t("common.close")
+      },
+      /* @__PURE__ */ React.createElement(X, { size: 16 })
+    )));
+  }
   return /* @__PURE__ */ React.createElement("div", { style: { zIndex: showStemLab ? 10490 : void 0 }, className: `allo-docsuite fixed z-[100] rounded-2xl flex flex-col animate-in fade-in slide-in-from-right-5 duration-300 overflow-hidden transition-all ${isUDLGuideExpanded ? "inset-4 top-24" : "top-24 right-4 bottom-4 w-96"} ${isSpotlightMode ? "opacity-20 hover:opacity-100 pointer-events-none hover:pointer-events-auto" : "opacity-100"} ${chatStyles.container}` }, /* @__PURE__ */ React.createElement("div", { className: `p-4 flex justify-between items-center shrink-0 ${chatStyles.header}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 font-bold" }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 18 }), " ", t("chat_guide.header")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -184,6 +207,17 @@ function UDLGuideModal(props) {
       title: isUDLGuideExpanded ? t("common.minimize") : t("common.maximize")
     },
     isUDLGuideExpanded ? /* @__PURE__ */ React.createElement(Minimize, { size: 18 }) : /* @__PURE__ */ React.createElement(Maximize, { size: 18 })
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "data-help-key": "chat_collapse",
+      onClick: () => setIsCollapsed(true),
+      className: "hover:bg-white/20 p-1 rounded transition-colors",
+      title: t("chat_guide.collapse") || "Collapse to a bar (keeps the conversation)",
+      "aria-label": t("chat_guide.collapse") || "Collapse to a bar (keeps the conversation)"
+    },
+    /* @__PURE__ */ React.createElement(ChevronDown, { size: 18 })
   ), /* @__PURE__ */ React.createElement("button", { "data-help-key": "chat_close", onClick: handleSetShowUDLGuideToFalse, className: "hover:bg-white/20 p-1 rounded", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 18 })))), /* @__PURE__ */ React.createElement("div", { className: `flex-1 p-4 overflow-y-auto space-y-4 custom-scrollbar ${chatStyles.body}`, ref: udlScrollRef }, udlMessages.map((msg, idx) => /* @__PURE__ */ React.createElement("div", { key: idx, className: `flex flex-col ${msg.role === "user" ? "items-end" : "items-start"}` }, !msg.type && /* @__PURE__ */ React.createElement("div", { className: `max-w-[85%] p-3 rounded-xl text-sm shadow-sm ${msg.role === "user" ? `${chatStyles.userBubble} rounded-br-none` : `${chatStyles.modelBubble} rounded-bl-none`}` }, renderFormattedText(msg.text)), msg.type === "blueprint" && activeBlueprint && /* @__PURE__ */ React.createElement("div", { className: "w-full" }, /* @__PURE__ */ React.createElement(
     InteractiveBlueprintCard,
     {

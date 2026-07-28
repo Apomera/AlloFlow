@@ -1927,7 +1927,7 @@ function SimplifiedView(props) {
   }) : /*#__PURE__*/React.createElement(ChevronRight, {
     size: 14
   })), /*#__PURE__*/React.createElement("div", {
-    className: `flex items-center gap-2 overflow-hidden transition-all duration-300 ease-in-out flex-wrap ${isTeacherToolbarExpanded ? 'max-w-[920px] opacity-100 ml-2' : 'max-w-0 opacity-0'}`
+    className: `flex items-center gap-2 overflow-hidden transition-all duration-300 ease-in-out ${isTeacherToolbarExpanded ? 'flex-wrap max-w-[920px] opacity-100 ml-2' : 'flex-nowrap max-w-0 opacity-0'}`
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: handleDuplicateResource,

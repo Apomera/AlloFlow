@@ -2154,6 +2154,11 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   const [directBusy, setDirectBusy] = React.useState(null);
   const [refinePrompt, setRefinePrompt] = React.useState("");
   const [refineBusy, setRefineBusy] = React.useState(false);
+  const [furnishOpen, setFurnishOpen] = React.useState(false);
+  const [furnishMode, setFurnishMode] = React.useState("sculpture");
+  const [furnishing, setFurnishing] = React.useState(null);
+  const [useMnemonics, setUseMnemonics] = React.useState(true);
+  const genCancelRef = React.useRef(false);
   const [challenge, setChallenge] = React.useState(null);
   const [placedCount, setPlacedCount] = React.useState(0);
   const placedRef = React.useRef({});
@@ -2472,6 +2477,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
       const next = { ...artRef.current || {} };
       if (art) next[id] = art;
       else delete next[id];
+      artRef.current = next;
       persist(next, "conceptArt");
     }
     if (selectedNodeRef.current && selectedNodeRef.current.id === id) {
@@ -2607,6 +2613,95 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     if (addToast) addToast(t("concept_space.art_removed") || "Removed.", "info");
   };
   const nodeArtType = selectedNode && selectedNode.artType || selectedNode && artRef.current[selectedNode.id] && artRef.current[selectedNode.id].type || null;
+  const artNodes = React.useMemo(() => {
+    try {
+      const E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
+      if (!E || !E.adaptGenerated || !hasContent) return [];
+      return (E.adaptGenerated(data || {}).nodes || []).map((n) => ({ id: n && n.id, label: String(n && n.label || "") })).filter((n) => n.id && n.label);
+    } catch (e) {
+      return [];
+    }
+  }, [data, hasContent, ready]);
+  const furnishTargets = artNodes.filter((n) => !(artRef.current || {})[n.id]);
+  const furnishEstMb = Math.round(furnishTargets.length * 0.3 * 10) / 10;
+  const furnishHeavy = furnishMode === "image" && furnishEstMb >= 3;
+  const stopFurnish = () => {
+    genCancelRef.current = true;
+  };
+  const handleFurnishAll = () => {
+    const E = window.AlloModules && window.AlloModules.ConceptGraphEngine;
+    const P3D = window.AlloModules && window.AlloModules.Prim3D;
+    if (!isTeacherMode || !persist || furnishing || challenge) return;
+    if (typeof window.callGemini !== "function") return;
+    const wantImages = furnishMode === "image";
+    if (wantImages && !canImagen) {
+      if (addToast) addToast(t("concept_space.art_no_imagen") || "Image generation is unavailable here \u2014 try a sculpture.", "info");
+      return;
+    }
+    if (!wantImages && !P3D) return;
+    const targets = furnishTargets;
+    if (!targets.length) {
+      if (addToast) addToast(t("concept_space.furnish_done_already") || "Every concept already has art.", "info");
+      return;
+    }
+    genCancelRef.current = false;
+    setFurnishing({ done: 0, total: targets.length });
+    let done = 0, failures = 0;
+    const finishBatch = () => {
+      setFurnishing(null);
+      if (!addToast || !artAliveRef.current) return;
+      if (genCancelRef.current) addToast((t("concept_space.furnish_stopped") || "Stopped \u2014 {ok} made so far.").replace("{ok}", String(done)), "info");
+      else if (failures) addToast((t("concept_space.furnish_partial") || "Made art for {ok} concepts; {fail} could not be generated.").replace("{ok}", String(done)).replace("{fail}", String(failures)), "info");
+      else addToast(t("concept_space.furnish_done") || "\u2728 Every concept furnished \u2014 orbit the space to meet them.", "success");
+    };
+    const run = (mnemonics) => {
+      const step = (i) => {
+        if (i >= targets.length || genCancelRef.current || !artAliveRef.current) {
+          finishBatch();
+          return;
+        }
+        const n = targets[i];
+        const subject = mnemonics && mnemonics[n.id] || n.label;
+        const after = () => {
+          if (!artAliveRef.current) return;
+          setFurnishing({ done: i + 1, total: targets.length });
+          step(i + 1);
+        };
+        if (wantImages) {
+          Promise.resolve(callImagen("A vivid, memorable, slightly surreal illustration: " + subject + ". Single clear subject, bright colors, centered composition, storybook style, no text, no words.", 400)).then((b64) => {
+            if (!artAliveRef.current) return;
+            const url = _asDataUrl(b64);
+            if (url) {
+              done += 1;
+              _persistNodeArt(n.id, { type: "image", dataUrl: url });
+            } else failures += 1;
+          }).catch(() => {
+            failures += 1;
+          }).then(after);
+        } else {
+          Promise.resolve(window.callGemini(P3D.buildRecipePrompt(subject), true)).then((res) => {
+            if (!artAliveRef.current) return;
+            const recipe = P3D.parseRecipe(_gemText(res));
+            if (recipe) {
+              recipe.name = n.label;
+              done += 1;
+              _persistNodeArt(n.id, { type: "sculpture", recipe });
+            } else failures += 1;
+          }).catch(() => {
+            failures += 1;
+          }).then(after);
+        }
+      };
+      step(0);
+    };
+    if (useMnemonics && E && E.buildNodeMnemonicPrompt && E.parseNodeMnemonics) {
+      Promise.resolve(window.callGemini(E.buildNodeMnemonicPrompt(targets, { topic: data?.main || title || "" }), true)).then((res) => {
+        if (artAliveRef.current) run(E.parseNodeMnemonics(_gemText(res)));
+      }).catch(() => {
+        if (artAliveRef.current) run(null);
+      });
+    } else run(null);
+  };
   return /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-3 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-500" }, challenge ? t("concept_space.challenge_hint") || "\u{1F3AF} Click a fallen concept, then give it a strand (chips in its panel, or [ and ] keys). Check when ready." : t("concept_space.hint") || "Position carries meaning: left \u2192 right = sequence \xB7 higher = more abstract \xB7 depth = strand."), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, challenge ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1.5 rounded-full tabular-nums" }, "\u23F1 ", fmtTime(elapsed), " \xB7 ", (t("concept_space.challenge_progress") || "{placed}/{total} placed").replace("{placed}", String(placedCount)).replace("{total}", String(challenge.targets.length))), /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -2672,6 +2767,16 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     },
     "\u21BA ",
     t("concept_space.reset") || "Reset arrangement"
+  ), hasContent && persist && isTeacherMode && !failed && typeof window.callGemini === "function" && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => setFurnishOpen((o) => !o),
+      "aria-pressed": furnishOpen ? "true" : "false",
+      className: `flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${furnishOpen || furnishing ? "bg-fuchsia-600 text-white border-fuchsia-600" : "bg-white text-fuchsia-700 border-fuchsia-300 hover:bg-fuchsia-50"}`,
+      title: t("concept_space.furnish_tooltip") || "Teacher: generate a sculpture or illustration for every concept at once, the way the Memory Palace furnishes its loci"
+    },
+    "\u{1F3A8} ",
+    furnishing ? (t("concept_space.furnishing") || "Furnishing {done}/{total}\u2026").replace("{done}", String(furnishing.done)).replace("{total}", String(furnishing.total)) : t("concept_space.furnish") || "Furnish all"
   ), hasContent && persist && !failed && /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -2691,7 +2796,73 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     },
     "\u26F6 ",
     t("concept_space.fullscreen") || "Fullscreen"
-  )))), constelOpen && hasContent && persist && !failed && /* @__PURE__ */ React.createElement("div", { className: "mb-3 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-slate-200" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-300" }, "\u{1F30C} ", t("cg3d.constel_heading") || "Constellation \u2014 weight the connections yourself"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-0.5 bg-slate-800 rounded-full p-0.5 ml-auto", role: "group", "aria-label": t("cg3d.constel_mode_label") || "Constellation view mode" }, ["off", "mine", "ai", "diff"].map((m) => /* @__PURE__ */ React.createElement(
+  )))), furnishOpen && hasContent && persist && isTeacherMode && !failed && /* @__PURE__ */ React.createElement("div", { className: "mb-3 bg-white border border-fuchsia-300 rounded-xl px-4 py-3 text-slate-800", role: "group", "aria-label": t("concept_space.furnish_panel_aria") || "Furnish every concept" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-extrabold text-fuchsia-700" }, "\u{1F3A8} ", t("concept_space.furnish_heading") || "Furnish every concept"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-500 ml-auto" }, (t("concept_space.furnish_pending") || "{n} still need art").replace("{n}", String(furnishTargets.length)))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-0.5 bg-slate-100 rounded-full p-0.5 w-fit mb-2", role: "group", "aria-label": t("concept_space.furnish_mode_label") || "What to generate" }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => setFurnishMode("sculpture"),
+      "aria-pressed": furnishMode === "sculpture" ? "true" : "false",
+      disabled: !!furnishing,
+      className: `px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors disabled:opacity-50 ${furnishMode === "sculpture" ? "bg-fuchsia-600 text-white" : "text-slate-600 hover:bg-slate-200"}`
+    },
+    "\u{1F9CA} ",
+    t("concept_space.furnish_mode_sculpture") || "Sculptures"
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => setFurnishMode("image"),
+      "aria-pressed": furnishMode === "image" ? "true" : "false",
+      disabled: !canImagen || !!furnishing,
+      title: !canImagen ? t("concept_space.art_no_imagen") || "Image generation is unavailable here \u2014 try a sculpture." : void 0,
+      className: `px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors disabled:opacity-40 ${furnishMode === "image" ? "bg-fuchsia-600 text-white" : "text-slate-600 hover:bg-slate-200"}`
+    },
+    "\u{1F5BC} ",
+    t("concept_space.furnish_mode_image") || "Images"
+  )), /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 text-[11px] text-slate-600 mb-2 cursor-pointer" }, /* @__PURE__ */ React.createElement(
+    "input",
+    {
+      type: "checkbox",
+      checked: useMnemonics,
+      disabled: !!furnishing,
+      onChange: (e) => setUseMnemonics(e.target.checked),
+      className: "accent-fuchsia-600 mt-0.5"
+    }
+  ), /* @__PURE__ */ React.createElement("span", null, t("concept_space.furnish_mnemonics") || "Write a vivid memory image for each concept first (the method-of-loci step). One extra AI call, much stronger cues.")), furnishMode === "image" && /* @__PURE__ */ React.createElement(
+    "p",
+    {
+      className: `text-[11px] rounded-lg px-2.5 py-2 mb-2 ${furnishHeavy ? "bg-amber-50 border border-amber-300 text-amber-900" : "bg-slate-50 border border-slate-200 text-slate-600"}`,
+      role: furnishHeavy ? "alert" : void 0
+    },
+    furnishHeavy ? "\u26A0 " : "",
+    (t("concept_space.furnish_storage_note") || "About {mb} MB of pictures would be saved with this resource ({n} images). Browser storage usually gives out near 5 MB, and each image costs a credit. Sculptures are about 1 KB each and cost none.").replace("{mb}", String(furnishEstMb)).replace("{n}", String(furnishTargets.length))
+  ), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap" }, furnishing ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
+    "span",
+    {
+      className: "text-xs font-bold text-fuchsia-700 tabular-nums",
+      role: "progressbar",
+      "aria-valuemin": 0,
+      "aria-valuemax": furnishing.total,
+      "aria-valuenow": furnishing.done,
+      "aria-valuetext": (t("concept_space.furnishing") || "Furnishing {done}/{total}\u2026").replace("{done}", String(furnishing.done)).replace("{total}", String(furnishing.total))
+    },
+    (t("concept_space.furnishing") || "Furnishing {done}/{total}\u2026").replace("{done}", String(furnishing.done)).replace("{total}", String(furnishing.total))
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: stopFurnish,
+      className: "px-3 py-1.5 rounded-full text-xs font-bold bg-white text-rose-600 border border-rose-300 hover:bg-rose-50 transition-colors"
+    },
+    "\u23F9 ",
+    t("concept_space.furnish_stop") || "Stop"
+  )) : /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: handleFurnishAll,
+      disabled: !furnishTargets.length,
+      className: "px-3 py-1.5 rounded-full text-xs font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+    },
+    "\u2728 ",
+    furnishTargets.length ? (t("concept_space.furnish_start") || "Make art for {n} concepts").replace("{n}", String(furnishTargets.length)) : t("concept_space.furnish_done_already") || "Every concept already has art."
+  )), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 italic mt-2" }, t("concept_space.furnish_framing") || "Students can still make and refine art on any single concept by clicking it. Building the image yourself is where most of the memory benefit lives, so use this to seed a space rather than to replace their turn.")), constelOpen && hasContent && persist && !failed && /* @__PURE__ */ React.createElement("div", { className: "mb-3 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-slate-200" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-300" }, "\u{1F30C} ", t("cg3d.constel_heading") || "Constellation \u2014 weight the connections yourself"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-0.5 bg-slate-800 rounded-full p-0.5 ml-auto", role: "group", "aria-label": t("cg3d.constel_mode_label") || "Constellation view mode" }, ["off", "mine", "ai", "diff"].map((m) => /* @__PURE__ */ React.createElement(
     "button",
     {
       key: m,
