@@ -4518,12 +4518,79 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             )
             )
           ),
+          // \u2500\u2500 Entry corridor \u2500\u2500
+          // Re-entry was pure spectacle: an animation and a button. It is also the single
+          // most unforgiving number in the mission. Come in too shallow and the atmosphere
+          // bounces you back into space; too steep and the deceleration and heating climb
+          // fast. Apollo's corridor was about two degrees wide after a quarter of a
+          // million miles, which is the fact worth feeling rather than reading.
+          (function() {
+            var ang = d.entryAngle != null ? d.entryAngle : -6.5;
+            var mag = Math.abs(ang);
+            var tooShallow = mag < 5.3, tooSteep = mag > 7.4;
+            var inCorridor = !tooShallow && !tooSteep;
+            var pct = Math.max(0, Math.min(100, ((mag - 4) / 5) * 100));
+            var peakG = Math.round((4 + (mag - 5.3) * 2.38) * 10) / 10;
+            return h('div', { className: 'bg-slate-900/70 rounded-xl p-3 border border-slate-700 mb-2' },
+              h('p', { className: 'text-[11px] font-bold text-sky-300 mb-1' }, t('stem.moonmission.entry_corridor', '\uD83C\uDFAF SET THE ENTRY CORRIDOR')),
+              h('p', { className: 'text-[11px] text-slate-300 mb-2 leading-relaxed' },
+                t('stem.moonmission.entry_corridor_help', 'The flight path angle is how steeply you meet the atmosphere. The safe corridor is about two degrees wide, and you have been aiming at it since you left the Moon.')),
+              // Corridor bar: the safe band sits between 5.3\u00B0 and 7.4\u00B0 of the 4-9\u00B0 range.
+              h('div', { className: 'relative h-6 rounded-full bg-slate-800 overflow-hidden mb-1' },
+                h('div', { className: 'absolute inset-y-0 bg-emerald-500/30 border-x border-emerald-400/50',
+                  style: { left: (((5.3 - 4) / 5) * 100) + '%', width: (((7.4 - 5.3) / 5) * 100) + '%' } }),
+                h('div', { className: 'absolute top-0 bottom-0 w-0.5 bg-white',
+                  style: { left: pct + '%', boxShadow: '0 0 6px rgba(255,255,255,0.8)' } })
+              ),
+              h('div', { className: 'flex justify-between text-[11px] text-slate-500 mb-2' },
+                h('span', null, t('stem.moonmission.skip_out', '4\u00B0 skip out')),
+                h('span', { className: 'text-emerald-400 font-bold' }, t('stem.moonmission.corridor', 'corridor')),
+                h('span', null, t('stem.moonmission.too_steep', '9\u00B0 too steep'))
+              ),
+              h('label', { className: 'block text-[11px] font-bold text-slate-300 mb-1', htmlFor: 'mm-entry-angle' },
+                t('stem.moonmission.flight_path_angle', 'Flight path angle: ') + ang.toFixed(1) + '\u00B0'),
+              h('input', {
+                id: 'mm-entry-angle', type: 'range', min: -9, max: -4, step: 0.1, value: ang,
+                'aria-label': t('stem.moonmission.entry_flight_path_angle', 'Entry flight path angle in degrees'),
+                'aria-valuetext': ang.toFixed(1) + ' degrees, ' + (tooShallow ? 'too shallow, you will skip off the atmosphere' : tooSteep ? 'too steep, severe deceleration' : 'inside the safe corridor'),
+                onChange: function(e) { upd('entryAngle', parseFloat(e.target.value)); },
+                className: 'w-full'
+              }),
+              h('div', {
+                role: 'status', 'aria-live': 'polite',
+                className: 'mt-2 rounded-lg px-3 py-2 text-[11px] font-bold border ' +
+                  (inCorridor ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
+                              : 'bg-amber-500/10 border-amber-500/40 text-amber-300')
+              },
+                tooShallow
+                  ? '\u26A0\uFE0F Too shallow. You will graze the atmosphere and bounce back out \u2014 a skip-out, and the next pass takes hours you do not have.'
+                  : tooSteep
+                    ? ('\u26A0\uFE0F Too steep. Peak deceleration about ' + peakG + ' g, and the heat shield gets a harder ride than it was built for.')
+                    : ('\u2705 In the corridor. Peak deceleration about ' + peakG + ' g \u2014 Apollo 11 pulled roughly 6.5.')
+              )
+            );
+          })(),
           h('button', {
             'aria-label': t('stem.moonmission.begin_atmospheric_re_entry_sequence_at', 'Begin atmospheric re-entry sequence at 39,900 kilometers per hour'),
             onClick: function() {
+              var ang2 = d.entryAngle != null ? d.entryAngle : -6.5;
+              var mag2 = Math.abs(ang2);
+              var outcome = mag2 < 5.3 ? 'skip' : mag2 > 7.4 ? 'steep' : 'nominal';
+              upd('entryOutcome', { outcome: outcome, angle: ang2, peakG: Math.round((4 + (mag2 - 5.3) * 2.38) * 10) / 10 });
               advancePhase(9);
-              log('\uD83C\uDF0D Approaching Earth. Preparing for re-entry.');
-              addXP(15);
+              log(outcome === 'nominal'
+                ? '\uD83C\uDF0D Entry interface at ' + ang2.toFixed(1) + '\u00B0 \u2014 inside the corridor.'
+                : outcome === 'skip'
+                  ? '\uD83C\uDF0D Entry at ' + ang2.toFixed(1) + '\u00B0 \u2014 too shallow, the capsule skipped before catching.'
+                  : '\uD83C\uDF0D Entry at ' + ang2.toFixed(1) + '\u00B0 \u2014 steep, and the crew wore it.');
+              addXP(outcome === 'nominal' ? 25 : 10);
+              if (typeof announceToSR === 'function') {
+                announceToSR(outcome === 'nominal'
+                  ? 'Entry interface at ' + ang2.toFixed(1) + ' degrees, inside the corridor.'
+                  : outcome === 'skip'
+                    ? 'Entry angle too shallow at ' + ang2.toFixed(1) + ' degrees. The capsule skipped off the atmosphere before it caught.'
+                    : 'Steep entry at ' + ang2.toFixed(1) + ' degrees. Peak deceleration will be high.');
+              }
             },
             className: 'w-full py-3 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg'
           }, t('stem.moonmission.begin_re_entry_sequence', '\uD83C\uDF0A Begin Re-entry Sequence'))
@@ -4546,6 +4613,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   var tick = 0;
                   var reentryPhase = 0; // 0=heat, 1=blackout, 2=drogue, 3=main chutes, 4=splash
                   var _lastReentryPhase = -1;   // throttle the readiness publish
+                  // Corridor the student set back on the coast, captured at mount.
+                  var _entryRes = d.entryOutcome || {};
+                  var _entryOutcome = _entryRes.outcome || 'nominal';
+                  var _entryAngle = _entryRes.angle != null ? _entryRes.angle : -6.5;
+                  var _entryPeakG = _entryRes.peakG != null ? _entryRes.peakG : 6.9;
                   function drawReentry() {
                     tick++;
                     ctx.clearRect(0, 0, W, HR);
@@ -4729,15 +4801,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         ctx.beginPath(); ctx.arc(spx, spy, 2 + Math.random() * 3, 0, Math.PI * 2); ctx.fill();
                       }
                     }
-                    // Temperature HUD
+                    // Temperature HUD, now reporting the corridor the student chose.
                     if (reentryPhase <= 1) {
-                      ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(8, HR - 40, 140, 32);
+                      ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(8, HR - 58, 168, 50);
                       ctx.font = 'bold 9px monospace'; ctx.textAlign = 'left';
-                      ctx.fillStyle = '#ef4444'; ctx.fillText('HEAT SHIELD', 14, HR - 26);
+                      ctx.fillStyle = '#ef4444'; ctx.fillText('HEAT SHIELD', 14, HR - 44);
                       var shieldTemp = Math.round(Math.min(2760, tick * 15));
                       ctx.fillStyle = shieldTemp > 2000 ? '#ef4444' : '#f59e0b';
                       ctx.font = 'bold 14px monospace';
-                      ctx.fillText(shieldTemp + '\u00B0C', 14, HR - 12);
+                      ctx.fillText(shieldTemp + '\u00B0C', 14, HR - 30);
+                      ctx.font = 'bold 9px monospace'; ctx.fillStyle = '#94a3b8';
+                      ctx.fillText('ENTRY ' + _entryAngle.toFixed(1) + '\u00B0  \u2022  PEAK ' + _entryPeakG + ' g', 14, HR - 14);
+                    }
+                    // A skip-out is the one entry mistake the animation can actually show:
+                    // the capsule grazes the atmosphere and is thrown back out.
+                    if (_entryOutcome === 'skip' && tick > 120 && tick < 300) {
+                      ctx.textAlign = 'center'; ctx.font = 'bold 13px monospace';
+                      ctx.fillStyle = '#fbbf24';
+                      ctx.fillText('\u26A0 SKIP-OUT \u2014 ANGLE TOO SHALLOW', W * 0.5, HR * 0.62);
+                      ctx.font = '9px system-ui'; ctx.fillStyle = '#fcd34d';
+                      ctx.fillText('The atmosphere threw the capsule back toward space before it caught.', W * 0.5, HR * 0.68);
                     }
                     // Phase label
                     var phaseLabels = ['ATMOSPHERIC ENTRY', 'RADIO BLACKOUT', 'DROGUE CHUTES', 'MAIN CHUTES', 'SPLASHDOWN!'];
@@ -4824,6 +4907,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     h('p', { className: 'text-[11px] text-slate-600' }, s[2])
                   );
                 })
+              ),
+              // Entry corridor \u2014 the last number the mission asks you to get right.
+              d.entryOutcome && h('div', { className: 'bg-white/5 rounded-lg p-2 border border-white/10 mb-2' },
+                h('p', { className: 'text-[11px] font-bold mb-0.5 ' + (d.entryOutcome.outcome === 'nominal' ? 'text-green-300' : 'text-yellow-300') },
+                  d.entryOutcome.outcome === 'nominal'
+                    ? '\ud83c\udfaf ENTRY IN THE CORRIDOR \u2014 ' + d.entryOutcome.angle.toFixed(1) + '\u00b0, about ' + d.entryOutcome.peakG + ' g'
+                    : d.entryOutcome.outcome === 'skip'
+                      ? '\u26a0\ufe0f SKIP-OUT \u2014 entered at ' + d.entryOutcome.angle.toFixed(1) + '\u00b0, too shallow'
+                      : '\u26a0\ufe0f STEEP ENTRY \u2014 ' + d.entryOutcome.angle.toFixed(1) + '\u00b0, about ' + d.entryOutcome.peakG + ' g'),
+                h('p', { className: 'text-[11px] text-slate-200' },
+                  d.entryOutcome.outcome === 'nominal'
+                    ? 'A corridor roughly two degrees wide, hit after a quarter of a million miles. Apollo 11 pulled about 6.5 g coming home.'
+                    : d.entryOutcome.outcome === 'skip'
+                      ? 'Too shallow and the atmosphere behaves like a stone skipping on water \u2014 it throws you back out, and the next chance is hours away.'
+                      : 'Steeper means shorter, hotter and heavier. The shield is built to burn away, but the crew feels every g of it.')
               ),
               // Surface experiment \u2014 the one thing you left behind that is still working.
               d.seismoDeployed && h('div', { className: 'bg-white/5 rounded-lg p-2 border border-white/10 mb-2' },
@@ -4961,6 +5059,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 upd('reentryStatus', null);
                 upd('seismoDeployed', false);
                 upd('mccChoice', null);
+                upd('entryAngle', null);
+                upd('entryOutcome', null);
                 upd('aiBriefing', null);
                 upd('aiBriefingLoading', false);
                 upd('descentStarted', false);
