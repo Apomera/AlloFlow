@@ -14,15 +14,38 @@ import { resolve } from 'node:path';
 const src = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
 
 function extractLane(noteMarker) {
-  const start = src.indexOf("const _note = '<p " + noteMarker);
-  if (start === -1) throw new Error('note marker not found: ' + noteMarker);
+  const noteAt = src.indexOf("const _note = '<p " + noteMarker);
+  if (noteAt === -1) throw new Error('note marker not found: ' + noteMarker);
+  // Each lane splits its note text into its own const on the line directly
+  // above the banner — _translationNoteText for the translate lane,
+  // _plainNoteText for the plain-language one. Start at that line rather than
+  // naming them individually, so a third lane needs no change here.
+  const lineStart = src.lastIndexOf('\n', noteAt) + 1;
+  const prevLineStart = src.lastIndexOf('\n', lineStart - 2) + 1;
+  const prevLine = src.slice(prevLineStart, lineStart);
+  const start = /const _\w*NoteText\s*=/.test(prevLine) ? prevLineStart : noteAt;
   const resultIdx = src.indexOf("result = result.includes('<main')", start);
   const prepIdx = src.indexOf('(_note + result)', resultIdx);
   if (resultIdx === -1 || prepIdx === -1) throw new Error('three-way fall-through missing for ' + noteMarker);
   const end = src.indexOf(';', prepIdx) + 1;
   const slice = src.slice(start, end);
-  // result + opts + targetLang are the only free identifiers in the tail.
-  return new Function('result', 'opts', 'targetLang', slice + '\n; return result;');
+  // The banner was later hardened to HTML-escape the language name, so the tail
+  // now also closes over _alloEscapePromptDisplayText, declared above the lane.
+  // Sliced in rather than stubbed: a stub would let an escaping regression pass
+  // here, and escaping the display text is exactly what these tests are for.
+  const escStart = src.indexOf('const _alloEscapePromptDisplayText = (value) =>');
+  const escEnd = src.indexOf('const translateAccessibleHtml = async', escStart);
+  if (escStart === -1 || escEnd < escStart) throw new Error('extraction markers for _alloEscapePromptDisplayText missing');
+  const esc = src.slice(escStart, escEnd);
+  // The banner also reads _targetLang — targetLang after control-character
+  // stripping and length-clamping. Slice the real derivation in rather than
+  // aliasing it, so these tests keep covering the sanitiser.
+  const tlAt = src.indexOf('const _targetLang = String(targetLang)');
+  const tlEnd = src.indexOf('\n', tlAt);
+  if (tlAt === -1 || tlEnd < tlAt) throw new Error('extraction marker for _targetLang missing');
+  const tl = src.slice(tlAt, tlEnd);
+  // result + opts + targetLang remain the only injected identifiers.
+  return new Function('result', 'opts', 'targetLang', esc + '\n' + tl + '\n' + slice + '\n; return result;');
 }
 
 const runTranslate = extractLane('data-allo-translation-note');

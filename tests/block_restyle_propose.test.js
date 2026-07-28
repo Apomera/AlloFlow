@@ -12,13 +12,21 @@ const view = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), '
 
 // proposeRestyles closes over callGemini + stripFence + restyleBlock (+ the guard). Inject the pure restyle
 // span (guard → restyleBlock) AND the proposeRestyles closure together, supplying callGemini/stripFence.
+// proposeRestyles was later hardened to wrap document-derived hints in an
+// untrusted-data fence, so it now also closes over _untrustedPromptDataBlock
+// (and _neutralizePromptFence beneath it). Those live above the restyle span,
+// so the extraction below missed them and every test here died with
+// "_untrustedPromptDataBlock is not defined" — a broken extraction, not broken
+// product code. Sliced in by marker like everything else.
+const helpers = dp.slice(dp.indexOf('function _neutralizePromptFence(s) {'), dp.indexOf('\n// Cross-check AI audit issues'));
 const span = dp.slice(dp.indexOf('function checkReadingOrderPreserved(beforeHtml, afterHtml) {'), dp.indexOf('\n// Convert an INTERACTIVE image-placeholder'));
 const _ps = dp.indexOf('const proposeRestyles = async (html, opts) => {');
 const _pe = dp.indexOf('\n  };', _ps) + '\n  };'.length;
 if (span.length < 100 || _ps === -1 || _pe < 0) throw new Error('extraction markers for proposeRestyles missing');
+if (helpers.length < 100 || !/_untrustedPromptDataBlock/.test(helpers)) throw new Error('extraction markers for the untrusted-prompt helpers missing');
 const propSrc = dp.slice(_ps, _pe).replace('const proposeRestyles', 'var proposeRestyles');
 const make = (callGemini) => new Function('callGemini', 'stripFence',
-  span + '\n' + propSrc + '\nreturn proposeRestyles;'
+  helpers + '\n' + span + '\n' + propSrc + '\nreturn proposeRestyles;'
 )(callGemini, (s) => String(s || '').replace(/```json|```/gi, '').trim());
 
 const DOC = '<body>'
@@ -182,11 +190,23 @@ describe('anti-drift: exported + wired into an accept/revert plan UI', () => {
   });
   it('_suggestRestyles fetches gated proposals; _applyProposal splices + snapshots revert + re-audits', () => {
     const s = view.slice(view.indexOf('const _suggestRestyles = async'), view.indexOf('const _suggestRestyles = async') + 2400);
-    expect(s).toMatch(/_docPipeline\.proposeRestyles\(pdfFixResult\.accessibleHtml/);
-    const a = view.slice(view.indexOf('const _applyProposal = async'), view.indexOf('const _applyProposal = async') + 1400);
-    expect(a).toMatch(/_spliceBlock\(pdfFixResult\.accessibleHtml, p\.original, p\.html\)/);
+    // The call was later given cancellation support, so the argument moved from
+    // the literal pdfFixResult.accessibleHtml into a sourceHtml local carrying
+    // an abort signal. Pin the invariant — proposals are requested through the
+    // pipeline, from the accessible HTML — rather than the old spelling.
+    expect(s).toMatch(/_docPipeline\.proposeRestyles\(\s*sourceHtml/);
+    expect(s).toMatch(/const sourceHtml = String\(\(source && source\.accessibleHtml\)/);
+    // 2600, not 1400: the cancellation rework pushed the re-audit call past the
+    // old window, so the assertion below was reading a truncated body.
+    const a = view.slice(view.indexOf('const _applyProposal = async'), view.indexOf('const _applyProposal = async') + 2600);
+    // Same refactor as above: the splice reads the accessible HTML through the
+    // sourceHtml local the operation ticket is built from.
+    expect(a).toMatch(/const sourceHtml = String\(\(source && source\.accessibleHtml\)/);
+    expect(a).toMatch(/_spliceBlock\(sourceHtml, p\.original, p\.html\)/);
     expect(a).toMatch(/_preCmdHtml: _before/);
-    expect(a).toMatch(/await _reauditAndScore\(sp\.html, null\)/);
+    // Re-audit now also receives the operation ticket, so a stale run cannot
+    // overwrite a newer one's score.
+    expect(a).toMatch(/await _reauditAndScore\(sp\.html, null, operationTicket\)/);
   });
   it('the plan UI offers per-suggestion Apply + an honest "only PICKS blocks" note', () => {
     expect(view).toMatch(/onClick=\{\(\) => _applyProposal\(p\)\}/);

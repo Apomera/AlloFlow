@@ -28,7 +28,18 @@ const _ve = dp.indexOf('\n}', dp.indexOf('headline: level ===', _vs)) + 2;
 const verdict = new Function(dp.slice(_vs, _ve) + '\nreturn _alloDistributionVerdict;')();
 const _os = dp.indexOf('function _alloRemediationOutcome(r, opts) {');
 const _oe = dp.indexOf('function _alloDistributionVerdict(r, opts) {', _os);
-const remediationOutcome = new Function(dp.slice(_os, _oe) + '\nreturn _alloRemediationOutcome;')();
+// _alloRemediationOutcome gained a call to _alloUsableAxeAudit, which is
+// declared near the top of the file rather than beside it — outside this slice,
+// so the extracted function threw "_alloUsableAxeAudit is not defined". Slice
+// the helper in too rather than stubbing it, so the real usability rule (a
+// finite score and a non-negative violation count) is what the tests exercise.
+// Both _alloUsable* guards sit together at the top of the file, so one slice
+// covers the pair.
+const _ua = dp.indexOf('function _alloUsableCompleteAiAudit(audit) {');
+const _uae = dp.indexOf('function _alloLiveAbortSignalOrNull', _ua);
+if (_ua === -1 || _uae < _ua) throw new Error('extraction markers for the _alloUsable* audit guards missing');
+if (!/_alloUsableAxeAudit/.test(dp.slice(_ua, _uae))) throw new Error('_alloUsableAxeAudit no longer sits beside _alloUsableCompleteAiAudit');
+const remediationOutcome = new Function(dp.slice(_ua, _uae) + '\n' + dp.slice(_os, _oe) + '\nreturn _alloRemediationOutcome;')();
 
 describe('remediation outcome is separate from verification completeness', () => {
   it('calls a target-reaching, axe-clean, AI-complete run successful even when verification needs review', () => {
