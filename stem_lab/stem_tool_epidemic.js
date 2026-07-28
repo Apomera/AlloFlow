@@ -413,7 +413,13 @@ window.StemLab = window.StemLab || {
   }
 
   function getGradeBand(ctx) {
-    var g = parseInt(ctx.gradeLevel) || 5;
+    // "Kindergarten" / "K" parse to NaN, and `|| 5` then dropped the youngest students
+    // into the 3-5 band — the one audience for whom the K-2 wording actually matters.
+    var raw = String((ctx && ctx.gradeLevel) || '');
+    if (/^\s*(k|kg|kinder)/i.test(raw) || /kindergarten/i.test(raw)) return 'K-2';
+    if (/pre-?k|preschool/i.test(raw)) return 'K-2';
+    var g = parseInt(raw, 10);
+    if (isNaN(g)) g = 5;
     if (g <= 2) return 'K-2';
     if (g <= 5) return '3-5';
     if (g <= 8) return '6-8';
@@ -510,7 +516,7 @@ window.StemLab = window.StemLab || {
   }
 
   window.__EpidemicCore = Object.assign({}, window.__EpidemicCore || {}, {
-    normalizeAnswer: normalizeAnswer, answerMatches: answerMatches
+    normalizeAnswer: normalizeAnswer, answerMatches: answerMatches, getGradeBand: getGradeBand
   });
 
   // ── SIR Euler Solver ──
@@ -530,7 +536,13 @@ window.StemLab = window.StemLab || {
     return { peakInfected: peakInfected, peakDay: peakDay, attackRate: attackRate, initialEffectiveR: initialEffectiveR };
   }
 
-  window.__EpidemicCore = Object.assign({}, window.__EpidemicCore || {}, { summarizeEpidemicRun: summarizeEpidemicRun });
+  // Function declarations hoist, so the solvers below are safe to reference here.
+  // SEVERE_CASE_FATALITY is a `var` declared much further down and is exported at its
+  // own definition instead — naming it here would capture undefined.
+  window.__EpidemicCore = Object.assign({}, window.__EpidemicCore || {}, {
+    summarizeEpidemicRun: summarizeEpidemicRun, solveSIR: solveSIR, solveSEIR: solveSEIR,
+    gridRates: gridRates
+  });
 
   function solveSIR(params) {
     var r0 = params.r0, vaccRate = params.vaccRate || 0, infectPeriod = params.infectPeriod, popSize = params.popSize;
@@ -546,9 +558,15 @@ window.StemLab = window.StemLab || {
       var dS = -beta * S * I * dt;
       var dI = (beta * S * I - gamma * I) * dt;
       var dR = gamma * I * dt;
-      S = Math.max(0, Math.min(1, S + dS));
-      I = Math.max(0, Math.min(1, I + dI));
-      R = Math.max(0, Math.min(1, R + dR));
+      S = Math.max(0, S + dS);
+      I = Math.max(0, I + dI);
+      R = Math.max(0, R + dR);
+      // Clamping each compartment to [0,1] independently let the population quietly grow
+      // or shrink when a large R₀ made an Euler step overshoot — the three curves are
+      // supposed to sum to the whole population at every instant. Renormalising restores
+      // that and is a no-op on well-behaved runs.
+      var total = S + I + R;
+      if (total > 0) { S /= total; I /= total; R /= total; }
       if (Math.round(t * 2) % 2 === 0) {
         data.push({ day: Math.round(t), S: S * 100, I: I * 100, R: R * 100 });
       }
@@ -574,10 +592,12 @@ window.StemLab = window.StemLab || {
       var dE = (beta * S * I - sigma * E) * dt;
       var dI = (sigma * E - gamma * I) * dt;
       var dR = gamma * I * dt;
-      S = Math.max(0, Math.min(1, S + dS));
-      E = Math.max(0, Math.min(1, E + dE));
-      I = Math.max(0, Math.min(1, I + dI));
-      R = Math.max(0, Math.min(1, R + dR));
+      S = Math.max(0, S + dS);
+      E = Math.max(0, E + dE);
+      I = Math.max(0, I + dI);
+      R = Math.max(0, R + dR);
+      var totalSEIR = S + E + I + R;   // same conservation fix as solveSIR
+      if (totalSEIR > 0) { S /= totalSEIR; E /= totalSEIR; I /= totalSEIR; R /= totalSEIR; }
       if (Math.round(t * 2) % 2 === 0) {
         data.push({ day: Math.round(t), S: S * 100, E: E * 100, I: I * 100, R: R * 100 });
       }
@@ -619,10 +639,28 @@ window.StemLab = window.StemLab || {
     return grid;
   }
 
-  function stepGrid(grid, r0, quarantineZones) {
+  // One grid step is one day. Recovery used to be a flat 15% per step no matter what the
+  // Infectious Period slider said, and the per-neighbour infection chance was an arbitrary
+  // r0 * 0.08 — so the map's spread had no arithmetic relationship to the R₀ that the rest
+  // of the tool spends four tabs teaching. Now it does:
+  //   pRecover = 1 / infectious period          (a case lasts as long as the slider says)
+  //   pInfect  = R₀ * pRecover / 8 neighbours   (⇒ ~R₀ secondary infections per case)
+  // Realised spread still lands below R₀ because empty cells and already-infected
+  // neighbours absorb contacts — which is exactly the R₀-vs-R-effective distinction the
+  // Dense City and Rural Area scenarios exist to show.
+  var GRID_NEIGHBOURS = 8;
+  function gridRates(r0, infectPeriod) {
+    var period = Math.max(1, infectPeriod || 10);
+    var pRecover = Math.min(0.6, Math.max(0.02, 1 / period));
+    var pInfect = Math.min(0.95, Math.max(0, r0) * pRecover / GRID_NEIGHBOURS);
+    return { pInfect: pInfect, pRecover: pRecover, period: period };
+  }
+
+  function stepGrid(grid, r0, quarantineZones, infectPeriod) {
     var size = grid.length;
-    var pInfect = Math.min(0.95, r0 * 0.08);
-    var pRecover = 0.15;
+    var rates = gridRates(r0, infectPeriod);
+    var pRecover = rates.pRecover;
+    var pInfect = rates.pInfect;
     var next = grid.map(function(row) { return row.slice(); });
     for (var r = 0; r < size; r++) {
       for (var c = 0; c < size; c++) {
@@ -684,9 +722,11 @@ window.StemLab = window.StemLab || {
       var dS = -betaEff * S * I * dt;
       var dI = (betaEff * S * I - gamma * I) * dt;
       var dR = gamma * I * dt;
-      S = Math.max(0, Math.min(1, S + dS));
-      I = Math.max(0, Math.min(1, I + dI));
-      R = Math.max(0, Math.min(1, R + dR));
+      S = Math.max(0, S + dS);
+      I = Math.max(0, I + dI);
+      R = Math.max(0, R + dR);
+      var totalNPI = S + I + R;   // same conservation fix as solveSIR
+      if (totalNPI > 0) { S /= totalNPI; I /= totalNPI; R /= totalNPI; }
       if (Math.round(t * 2) % 2 === 0) {
         data.push({ day: Math.round(t), S: S * 100, I: I * 100, R: R * 100, hospitalPct: Math.min(500, (I / hospitalCapacity) * 100) });
       }
@@ -879,7 +919,7 @@ window.StemLab = window.StemLab || {
     },
     {
       id: 'contactTrace', name: 'Contact tracing', icon: '🔗', hours: 6,
-      desc: 'Identify and notify contacts of confirmed cases. Effective when case counts are low; breaks down above ~50 active cases.',
+      desc: 'Identify and notify contacts of confirmed cases. Only bites while total active infection across the four groups stays under about 35% — above that, contacts outnumber tracers and it stops helping.',
       effects: { transmissionMultIfLow: 0.82 }, durationWeeks: 2,
       appliesTo: 'all'
     },
@@ -921,6 +961,16 @@ window.StemLab = window.StemLab || {
     { id: 'schoolToFamily', when: function(state) { var s = state.groups.find(function(g) { return g.id === 'schoolAge'; }); return s && s.infected > 12; }, apply: function(state) { var wa = state.groups.find(function(g) { return g.id === 'workingAge'; }); if (wa) wa.infected = clamp(wa.infected + 2, 0, 100); }, msg: 'School-age infections spread to working-age households.' },
     { id: 'workingToElderly', when: function(state) { var wa = state.groups.find(function(g) { return g.id === 'workingAge'; }); return wa && wa.infected > 10; }, apply: function(state) { var el = state.groups.find(function(g) { return g.id === 'elderly'; }); if (el) el.infected = clamp(el.infected + 1.5, 0, 100); }, msg: 'Working-age caregivers carried infections into the elderly population.' }
   ];
+
+  // `severityRate` is a SEVERE-CASE rate — the share of infections that need a hospital
+  // bed — and the group descriptions say so. The campaign then used the very same number
+  // as the death rate, so the debrief reported every hospitalisation as a death, in
+  // absolute human counts, to a middle-school audience. Deaths are now a fraction of
+  // severe cases. Roughly 15-20% of hospitalised COVID patients died in the first waves;
+  // 0.18 sits inside that band and is deliberately a single named constant rather than a
+  // number sprinkled through the dynamics.
+  var SEVERE_CASE_FATALITY = 0.18;
+  window.__EpidemicCore = Object.assign({}, window.__EpidemicCore || {}, { SEVERE_CASE_FATALITY: SEVERE_CASE_FATALITY });
 
   var RESPONSE_DIFFICULTIES = {
     apprentice: { id: 'apprentice', label: 'New PHO', hoursPerWeek: 16, eventSkip: 0.3, severity: 0.8, desc: '16 hrs/week, gentler events. For first runs.' },
@@ -1540,7 +1590,7 @@ window.StemLab = window.StemLab || {
         window._epiMapTimer = setTimeout(function() {
           window._epiMapTimer = null;
           if (!document.querySelector('[data-epidemic-tool]')) return;   // tool unmounted mid-step
-          var newGrid = stepGrid(mapGrid, r0, mapQuarantineZones);
+          var newGrid = stepGrid(mapGrid, r0, mapQuarantineZones, infectPeriod);
           var counts = countGrid(newGrid);
           var hist = (mapHistory || []).concat([counts]);
           var stillInfected = counts.I > 0;
@@ -2372,10 +2422,12 @@ window.StemLab = window.StemLab || {
                 var susceptiblePct = clamp(100 - ng.infected - ng.recovered - ng.vaccinated, 0, 100);
                 var newInf = ng.contactRate * (ng.infected / 100) * (susceptiblePct / 100) * 100;
                 var recoveries = ng.infected * 0.35;
-                var deaths = ng.infected * def.severityRate;
+                var severeCases = ng.infected * def.severityRate;   // same split as the live campaign
+                var deaths = severeCases * SEVERE_CASE_FATALITY;
                 ng.infected = clamp(ng.infected + newInf - recoveries - deaths, 0, 100);
                 ng.recovered = clamp(ng.recovered + recoveries, 0, 100);
                 ng.cumulative.cases = (ng.cumulative.cases || 0) + newInf;
+                ng.cumulative.severe = (ng.cumulative.severe || 0) + severeCases;
                 ng.cumulative.deaths = (ng.cumulative.deaths || 0) + deaths;
                 return ng;
               });
@@ -2599,8 +2651,10 @@ window.StemLab = window.StemLab || {
               if (m.transmissionMultIfLow && lowCases) transMult *= m.transmissionMultIfLow;
               if (m.groupTransmissionMult) Object.keys(m.groupTransmissionMult).forEach(function(gid) { groupTransMults[gid] = (groupTransMults[gid] || 1) * m.groupTransmissionMult[gid]; });
               if (m.hospitalBoost) hospitalBoost += m.hospitalBoost;
-              // Variant transmission
-              if (m.id === 'variantTransmission' && m.transmissionMult) transMult *= m.transmissionMult;
+              // (The variant mod carries a plain transmissionMult, so the first branch
+              // above already applied it. A second variant-specific multiply used to run
+              // here as well, squaring the effect: the event promises "+25% for 4 weeks"
+              // and delivered +56%.)
               var nm = Object.assign({}, m, { weeks: (m.weeks || 1) - 1 });
               if (nm.weeks > 0) newMods.push(nm);
             });
@@ -2615,11 +2669,13 @@ window.StemLab = window.StemLab || {
               var newInf = baseR * (ng.infected / 100) * (susceptiblePct / 100) * 100;
               // Recoveries: 35% of infected per week
               var recoveries = ng.infected * 0.35;
-              // Deaths: severityRate of infections drive deaths over time
-              var deaths = ng.infected * def.severityRate;
+              // Severe cases need a hospital bed; only a fraction of them are deaths.
+              var severeCases = ng.infected * def.severityRate;
+              var deaths = severeCases * SEVERE_CASE_FATALITY;
               ng.infected = clamp(ng.infected + newInf - recoveries - deaths, 0, 100);
               ng.recovered = clamp(ng.recovered + recoveries, 0, 100);
               ng.cumulative.cases = (ng.cumulative.cases || 0) + newInf;
+              ng.cumulative.severe = (ng.cumulative.severe || 0) + severeCases;
               ng.cumulative.deaths = (ng.cumulative.deaths || 0) + deaths;
               return ng;
             });
@@ -2668,11 +2724,14 @@ window.StemLab = window.StemLab || {
               hospitalLoad: hospitalLoad
             };
 
-            // Spot badges
+            // Spot badges.
+            // trustBuilder and flattener claim campaign-long achievements ("hold average
+            // trust above 70 ACROSS the campaign", "keep peak infection below 10% in the
+            // campaign") but were handed out for a single qualifying week. flattener was
+            // effectively free: the campaign opens at 1-4% infected per group, so week 1
+            // always satisfied it. Both now settle at the end of the campaign, in
+            // advanceFromOutbreakReview, against every logged week.
             var avgTrust = newGroups.reduce(function(a, g) { return a + g.trust; }, 0) / newGroups.length;
-            if (avgTrust >= 75) awardOutbreakBadge('trustBuilder');
-            var peakInf = Math.max.apply(null, newGroups.map(function(g) { return g.infected; }));
-            if (peakInf < 10) awardOutbreakBadge('flattener');
             var eldVacc = (newGroups.find(function(g) { return g.id === 'elderly'; }) || {}).vaccinated || 0;
             if (eldVacc >= 80 && avgTrust >= 65) awardOutbreakBadge('equityPHO');
 
@@ -2699,13 +2758,29 @@ window.StemLab = window.StemLab || {
               var overloads = outbreak.hospitalOverloadWeeks;
 
               var outcome;
-              if (totalDeaths < 15 && avgTrust > 65 && overloads === 0) outcome = { tier: 'mastery', label: __alloT('stem.epidemic.pandemic_response_mastery', 'Pandemic Response Mastery'), color: '#16a34a', icon: '🏆', desc: __alloT('stem.epidemic.low_deaths_high_trust_zero_hospital_ov', 'Low deaths, high trust, zero hospital overload. This is what a well-run public health response looks like, and it required real tradeoffs along the way.') };
-              else if (totalDeaths < 35 && avgTrust > 50) outcome = { tier: 'solid', label: __alloT('stem.epidemic.solid_public_health_response', 'Solid Public Health Response'), color: '#22c55e', icon: '🩺', desc: __alloT('stem.epidemic.you_kept_the_curve_flattened_most_of_t', 'You kept the curve flattened most of the time and maintained public engagement. Real-world responses look like this on the good days.') };
-              else if (totalDeaths < 60) outcome = { tier: 'mixed', label: __alloT('stem.epidemic.mixed_outcomes', 'Mixed Outcomes'), color: '#f59e0b', icon: '⚖️', desc: __alloT('stem.epidemic.significant_illness_some_hospital_stra', 'Significant illness, some hospital strain, eroded trust. The system held together but at real cost.') };
+              // Tiers are the pre-split thresholds scaled by SEVERE_CASE_FATALITY, so the
+              // campaign is exactly as hard as before — only the quantity being counted
+              // changed from "severe cases" to "deaths".
+              var T_MASTERY = 15 * SEVERE_CASE_FATALITY, T_SOLID = 35 * SEVERE_CASE_FATALITY, T_MIXED = 60 * SEVERE_CASE_FATALITY;
+              if (totalDeaths < T_MASTERY && avgTrust > 65 && overloads === 0) outcome = { tier: 'mastery', label: __alloT('stem.epidemic.pandemic_response_mastery', 'Pandemic Response Mastery'), color: '#16a34a', icon: '🏆', desc: __alloT('stem.epidemic.low_deaths_high_trust_zero_hospital_ov', 'Low deaths, high trust, zero hospital overload. This is what a well-run public health response looks like, and it required real tradeoffs along the way.') };
+              else if (totalDeaths < T_SOLID && avgTrust > 50) outcome = { tier: 'solid', label: __alloT('stem.epidemic.solid_public_health_response', 'Solid Public Health Response'), color: '#22c55e', icon: '🩺', desc: __alloT('stem.epidemic.you_kept_the_curve_flattened_most_of_t', 'You kept the curve flattened most of the time and maintained public engagement. Real-world responses look like this on the good days.') };
+              else if (totalDeaths < T_MIXED) outcome = { tier: 'mixed', label: __alloT('stem.epidemic.mixed_outcomes', 'Mixed Outcomes'), color: '#f59e0b', icon: '⚖️', desc: __alloT('stem.epidemic.significant_illness_some_hospital_stra', 'Significant illness, some hospital strain, eroded trust. The system held together but at real cost.') };
               else outcome = { tier: 'catastrophic', label: __alloT('stem.epidemic.system_strain', 'System Strain'), color: '#ef4444', icon: '⚠️', desc: __alloT('stem.epidemic.high_deaths_or_sustained_hospital_over', 'High deaths or sustained hospital overload. This is the trajectory communities and health systems work to avoid.') };
 
               if (outbreak.hospitalOverloadWeeks === 0) awardOutbreakBadge('capacityKeeper');
               if (outbreak.difficulty === 'state' && (outcome.tier === 'mastery' || outcome.tier === 'solid')) awardOutbreakBadge('phoMastery');
+              // Settle the two campaign-long badges against EVERY week, not one lucky one.
+              var weeks = outbreak.weekLog || [];
+              var weekAvgTrust = weeks.map(function(w) {
+                var gs = w.post || [];
+                return gs.length ? gs.reduce(function(a, g) { return a + g.trust; }, 0) / gs.length : 0;
+              });
+              var weekPeakInfected = weeks.map(function(w) {
+                var gs = w.post || [];
+                return gs.length ? Math.max.apply(null, gs.map(function(g) { return g.infected; })) : 0;
+              });
+              if (weeks.length === outbreak.maxWeeks && weekAvgTrust.every(function(t) { return t > 70; })) awardOutbreakBadge('trustBuilder');
+              if (weeks.length === outbreak.maxWeeks && weekPeakInfected.every(function(p) { return p < 10; })) awardOutbreakBadge('flattener');
 
               setOutbreak({ phase: 'debrief', finalOutcome: outcome, totalDeaths: totalDeaths, totalCases: totalCases, avgTrust: avgTrust });
               awardXP(50, 'Outbreak campaign complete — ' + outcome.label);
@@ -2797,6 +2872,15 @@ window.StemLab = window.StemLab || {
                 h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 12, borderRadius: 10 } },
                   h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.epidemic.cumulative_deaths', 'Cumulative deaths')),
                   h('div', { style: { fontSize: 24, fontWeight: 800, color: '#ef4444' } }, Math.round(outbreak.totalDeaths))
+                ),
+                // Severe cases sit beside deaths on purpose: the two used to be the same
+                // number, which taught that a hospitalisation is a death.
+                h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 12, borderRadius: 10 } },
+                  h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.epidemic.severe_cases_hospitalised', 'Severe cases (hospitalised)')),
+                  h('div', { style: { fontSize: 24, fontWeight: 800, color: '#fb923c' } },
+                    Math.round(outbreak.groups.reduce(function(a, g) { return a + (g.cumulative.severe || 0); }, 0))),
+                  h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2 } },
+                    __alloT('stem.epidemic.most_severe_cases_survive', 'Most severe cases survive — hospital care is why.'))
                 ),
                 h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', padding: 12, borderRadius: 10 } },
                   h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.epidemic.average_trust', 'Average trust')),
