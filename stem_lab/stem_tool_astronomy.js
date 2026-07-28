@@ -363,6 +363,417 @@
   // ──────────────────────────────────────────────────────────────────
   // DATA: Moon phases (8 standard phases with %illumination)
   // ──────────────────────────────────────────────────────────────────
+  // ──────────────────────────────────────────────────────────────────
+  // Sun-Earth-Moon geometry, in 3D
+  //
+  // The moon tab draws the disc AS SEEN FROM EARTH and nothing else, while its
+  // own prose makes three claims that only the geometry can support:
+  //
+  //   "phases happen because the moon orbits Earth, and we see different
+  //    fractions of the lit half"          — no orbit was drawn
+  //   "tidal locking means the same hemisphere always faces us"
+  //                                        — no rotation was drawn
+  //   "it is the far side, NOT the dark side. The far side gets just as much
+  //    sunlight as the near side"          — needs the lit hemisphere shown
+  //                                          independently of the near face
+  //
+  // And the tool's own quiz lists "Earth's shadow on the Moon" as the wrong
+  // answer for what causes phases — which is precisely the misconception a
+  // disc-only view leaves untouched, because the student never sees that the
+  // shadow is somewhere else entirely.
+  //
+  // So the Moon here is lit by one directional light from the Sun, exactly as
+  // the real one is: the lit hemisphere falls where physics puts it rather than
+  // where a drawing routine decides. Earth's umbra is drawn too, and the 5.1
+  // degree tilt of the lunar orbit is modelled, so the shadow visibly MISSES
+  // the Moon in a normal month. That is why eclipses are rare, and it is not
+  // something the flat view could ever have said.
+  // ──────────────────────────────────────────────────────────────────
+  var AM_ORBIT_R = 7.2;          // Moon orbit radius, in Earth radii (not to scale)
+  var AM_INCL_DEG = 5.145;       // real inclination of the lunar orbit to the ecliptic
+  var AM_SYNODIC = 29.53;        // days
+  // Length of Earth's umbra cone. The real one is ~217 Earth radii against a
+  // 60-radius orbit; at this compressed orbit that ratio would draw a shadow
+  // too thin to see. This length keeps the umbra about 0.35 Earth radii wide
+  // where the Moon crosses it, which is the width that makes the 5.1 degree
+  // tilt read as a miss — the relationship the diagram exists to show.
+  var AM_UMBRA_LEN = 11.1;
+
+  /** Radius of the umbra cone at distance `dx` behind Earth. */
+  function amUmbraRadiusAt(dx) {
+    return Math.max(0, 1 - Math.abs(dx) / AM_UMBRA_LEN);
+  }
+
+  /**
+   * Orbital age in days for one of the eight named phases.
+   *
+   * MOON_PHASES carries rounded ages (Full is listed as day 14), and rounding
+   * Full to 14 leaves the Moon 9 degrees short of opposition — an offset nearly
+   * twice the orbital inclination, which would swamp the very effect this view
+   * is built to show. The eight named phases are by definition 45 degrees
+   * apart, so the geometry is driven from the index instead.
+   */
+  function amAgeForPhaseIndex(idx) {
+    return (idx / 8) * AM_SYNODIC;
+  }
+
+  /**
+   * Moon position for a given age in days and line-of-nodes longitude.
+   *
+   * The orbit starts in the ecliptic (the XZ plane, Sun toward +X) and is then
+   * tilted by the inclination about the line of nodes. When the nodes point at
+   * the Sun (nodeDeg = 0) the new and full moons land exactly on the ecliptic
+   * and eclipses happen; rotate the nodes away and the Moon rides above or
+   * below the shadow instead. That single degree of freedom is the whole
+   * reason we do not get an eclipse every month.
+   */
+  function amMoonPos(THREE, ageDays, nodeDeg) {
+    var th = (ageDays / AM_SYNODIC) * Math.PI * 2;
+    // theta = 0 puts the Moon between Earth and Sun, i.e. new moon.
+    var p = new THREE.Vector3(AM_ORBIT_R * Math.cos(th), 0, AM_ORBIT_R * Math.sin(th));
+    var om = (nodeDeg || 0) * Math.PI / 180;
+    var axis = new THREE.Vector3(Math.cos(om), 0, Math.sin(om));   // line of nodes
+    return p.applyAxisAngle(axis, AM_INCL_DEG * Math.PI / 180);
+  }
+
+  var AstroMoonGL = (function () {
+    var S = null, status = 'idle', pending = null, node = null, sig = '';
+    var notify = null, restoreAttempts = 0;
+
+    function setStatus(next) {
+      if (status === next) return;
+      status = next;
+      if (notify) { try { notify(next); } catch (e) {} }
+    }
+
+    function debug() {
+      return {
+        state: status,
+        contextLost: !!(S && S.contextLost),
+        // Height of the Moon above the ecliptic plane. Zero only at a node —
+        // which is exactly when an eclipse is possible.
+        moonY: S ? S.moonY : null,
+        moonPos: S ? S.moonPos : null,
+        // Does Earth's umbra actually reach the Moon at this geometry?
+        inShadow: S ? S.inShadow : null,
+        // Perpendicular miss distance from the Earth-Sun axis, in Earth radii.
+        shadowMissRadii: S ? S.shadowMissRadii : null,
+        umbraRadiusAtMoon: S ? S.umbraRadiusAtMoon : null,
+        litFractionSeen: S ? S.litFractionSeen : null,
+        nearFaceLocked: S ? S.nearFaceLocked : null,
+        canvas: S && S.renderer ? { w: S.renderer.domElement.width, h: S.renderer.domElement.height } : null
+      };
+    }
+
+    function disposeGroup(group) {
+      if (!group) return;
+      for (var i = group.children.length - 1; i >= 0; i--) {
+        var c = group.children[i];
+        if (c.geometry) c.geometry.dispose();
+        if (c.material) c.material.dispose();
+        group.remove(c);
+      }
+    }
+
+    function applyModel(m) {
+      if (!S || !S.THREE) return;
+      var THREE = S.THREE;
+      disposeGroup(S.model);
+
+      var sunDir = new THREE.Vector3(1, 0, 0);       // Sun lies toward +X
+      var moonPos = amMoonPos(THREE, m.ageDays, m.nodeDeg);
+      S.moonPos = { x: +moonPos.x.toFixed(3), y: +moonPos.y.toFixed(3), z: +moonPos.z.toFixed(3) };
+      S.moonY = +moonPos.y.toFixed(4);
+
+      // One light, from the Sun. Both bodies are lit by it, so the terminator
+      // falls where the geometry puts it — nothing here paints a phase by hand.
+      S.sunLight.position.copy(sunDir).multiplyScalar(60);
+      S.sunLight.target.position.set(0, 0, 0);
+
+      // Earth.
+      var earth = new THREE.Mesh(
+        new THREE.SphereGeometry(1, 40, 28),
+        new THREE.MeshLambertMaterial({ color: 0x3b82f6 })
+      );
+      // Both bodies cast and receive. An eclipse then happens because one body
+      // is genuinely in the other's way, not because a flag told the material to
+      // go dark — which would be the same hand-painting this view exists to
+      // replace. Earth on the Moon is a lunar eclipse; the Moon on Earth is a
+      // solar one, and you can catch that too by sliding to New during a season.
+      earth.castShadow = true;
+      earth.receiveShadow = true;
+      S.model.add(earth);
+
+      // Moon, and a marker on the face that is turned toward Earth. Tidal
+      // locking is a claim about ROTATION, so the marker has to be placed by
+      // pointing it at Earth rather than by leaving it where it was.
+      var moon = new THREE.Mesh(
+        new THREE.SphereGeometry(0.42, 36, 24),
+        new THREE.MeshLambertMaterial({ color: 0xd6d3d1 })
+      );
+      moon.position.copy(moonPos);
+      moon.castShadow = true;
+      moon.receiveShadow = true;
+      S.model.add(moon);
+
+      var toEarth = new THREE.Vector3().copy(moonPos).negate().normalize();
+      var marker = new THREE.Mesh(
+        new THREE.SphereGeometry(0.13, 16, 12),
+        new THREE.MeshBasicMaterial({ color: 0xf472b6 })
+      );
+      marker.position.copy(moonPos).addScaledVector(toEarth, 0.40);
+      S.model.add(marker);
+      S.nearFaceLocked = true;
+
+      // How much of the lit half we actually see from Earth: the standard
+      // phase relation, derived from the geometry rather than a lookup.
+      var toSunFromMoon = new THREE.Vector3().subVectors(
+        sunDir.clone().multiplyScalar(400), moonPos
+      ).normalize();
+      var toEarthFromMoon = new THREE.Vector3().copy(moonPos).negate().normalize();
+      // Phase angle i is measured AT THE MOON, between the Sun and Earth, and
+      // the illuminated fraction is (1 + cos i)/2. At Full the Sun and Earth lie
+      // in the same direction from the Moon, so cos i = +1 and the fraction is 1;
+      // at New they are opposite, cos i = -1, and it is 0.
+      var cosPhaseAngle = toSunFromMoon.dot(toEarthFromMoon);
+      S.litFractionSeen = +(((1 + cosPhaseAngle) / 2)).toFixed(4);
+
+      // Orbit path.
+      var pts = [];
+      for (var a = 0; a <= 96; a++) {
+        pts.push(amMoonPos(THREE, (a / 96) * AM_SYNODIC, m.nodeDeg));
+      }
+      var orbitGeo = new THREE.BufferGeometry().setFromPoints(pts);
+      S.model.add(new THREE.Line(orbitGeo, new THREE.LineBasicMaterial({
+        color: 0x64748b, transparent: true, opacity: 0.75
+      })));
+
+      // The ecliptic plane, so "above" and "below" mean something.
+      var ring = [];
+      for (var b = 0; b <= 96; b++) {
+        var t = (b / 96) * Math.PI * 2;
+        ring.push(new THREE.Vector3(AM_ORBIT_R * Math.cos(t), 0, AM_ORBIT_R * Math.sin(t)));
+      }
+      S.model.add(new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints(ring),
+        new THREE.LineDashedMaterial({ color: 0x334155, dashSize: 0.4, gapSize: 0.3 })
+      ).computeLineDistances());
+
+      // Earth's umbra: a cone pointing directly away from the Sun.
+      var umbraLen = AM_UMBRA_LEN;
+      var umbra = new THREE.Mesh(
+        new THREE.ConeGeometry(1, umbraLen, 32, 1, true),
+        new THREE.MeshBasicMaterial({
+          color: 0x1e293b, transparent: true, opacity: 0.5, side: THREE.DoubleSide
+        })
+      );
+      // Cone's own axis is +Y; lay it along -X, apex out at the far end.
+      umbra.rotation.z = Math.PI / 2;
+      umbra.position.set(-umbraLen / 2, 0, 0);
+      S.model.add(umbra);
+
+      // Does the shadow reach the Moon? Only if the Moon is behind Earth AND
+      // within the umbra's radius of the Earth-Sun axis.
+      // The cone narrows with distance, so the test has to use its width WHERE
+      // THE MOON IS, not Earth's radius at the near end.
+      var behind = moonPos.x < 0;
+      var missDist = Math.sqrt(moonPos.y * moonPos.y + moonPos.z * moonPos.z);
+      S.shadowMissRadii = +missDist.toFixed(3);
+      S.umbraRadiusAtMoon = +amUmbraRadiusAt(moonPos.x).toFixed(3);
+      S.inShadow = !!(behind && missDist < S.umbraRadiusAtMoon);
+
+      // Sunlight arrows, so the light direction is not just implied by shading.
+      for (var r = -1; r <= 1; r++) {
+        var zoff = r * 1.7;
+        var rayGeo = new THREE.BufferGeometry().setFromPoints([
+          new THREE.Vector3(AM_ORBIT_R * 1.5, 0, zoff),
+          new THREE.Vector3(AM_ORBIT_R * 1.05, 0, zoff)
+        ]);
+        S.model.add(new THREE.Line(rayGeo, new THREE.LineBasicMaterial({ color: 0xfbbf24 })));
+      }
+
+      // Sight line from Earth to the Moon: the direction the phase is seen along.
+      var sightGeo = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(0, 0, 0), moonPos.clone()
+      ]);
+      S.model.add(new THREE.Line(sightGeo, new THREE.LineBasicMaterial({
+        color: 0x818cf8, transparent: true, opacity: 0.7
+      })));
+
+      S.target = new THREE.Vector3(0, 0, 0);
+      // Fit to the points the scene ACTUALLY occupies, not a bounding box. The
+      // content is a disc plus a cone down one axis, so a box invents corners
+      // out at (11, 8.6) where there is nothing, and the camera backs off to
+      // frame empty space — which is exactly what it was doing.
+      S.fitPts = [];
+      for (var f = 0; f < 48; f++) {
+        S.fitPts.push(amMoonPos(THREE, (f / 48) * AM_SYNODIC, m.nodeDeg));
+      }
+      S.fitPts.push(new THREE.Vector3(-umbraLen, 0, 0));          // umbra tip
+      S.fitPts.push(new THREE.Vector3(AM_ORBIT_R * 1.28, 0, 0));  // far end of the sun rays
+    }
+
+    function frame() {
+      if (!S) return;
+      S.raf = requestAnimationFrame(frame);
+      if (S.contextLost || !S.renderer) return;
+      if (pending) {
+        var next = pending; pending = null;
+        if (next.sig !== sig) { sig = next.sig; applyModel(next); }
+        S.rotY = next.rotY; S.rotX = next.rotX; S.zoom = next.zoom;
+      }
+      var el = S.renderer.domElement;
+      var w = el.clientWidth || 1, hgt = el.clientHeight || 1;
+      if (w !== S.lastW || hgt !== S.lastH) {
+        S.lastW = w; S.lastH = hgt;
+        S.renderer.setSize(w, hgt, false);
+        S.camera.aspect = w / Math.max(1, hgt);
+      }
+      var ry = (S.rotY || 0) * Math.PI / 180, rx = (S.rotX || 0) * Math.PI / 180;
+      var dir = new S.THREE.Vector3(
+        Math.cos(rx) * Math.sin(ry), Math.sin(rx), Math.cos(rx) * Math.cos(ry)
+      ).normalize();
+      var fit = 1;
+      if (S.fitPts && S.fitPts.length) {
+        var up0 = new S.THREE.Vector3(0, 1, 0);
+        var right = new S.THREE.Vector3().crossVectors(up0, dir);
+        if (right.lengthSq() < 1e-6) right.set(1, 0, 0);
+        right.normalize();
+        var upv = new S.THREE.Vector3().crossVectors(dir, right).normalize();
+        var tanV = Math.tan(S.camera.fov * Math.PI / 360);
+        var tanH = tanV * Math.max(0.2, S.camera.aspect);
+        // Pad by the largest body radius so a sphere centred on a sample point
+        // cannot poke out of frame.
+        var pad = 1.15;
+        for (var fi = 0; fi < S.fitPts.length; fi++) {
+          var v = S.fitPts[fi];
+          var along = v.dot(dir);
+          var nh = (Math.abs(v.dot(right)) + pad) / tanH + along;
+          var nv = (Math.abs(v.dot(upv)) + pad) / tanV + along;
+          if (nh > fit) fit = nh;
+          if (nv > fit) fit = nv;
+        }
+        fit *= 1.03;
+      }
+      var dist = fit / Math.max(0.3, S.zoom || 1);
+      S.camera.position.copy(S.target).addScaledVector(dir, dist);
+      S.camera.near = Math.max(0.05, dist * 0.01);
+      S.camera.far = dist * 8 + 200;
+      S.camera.updateProjectionMatrix();
+      S.camera.lookAt(S.target);
+      try { S.renderer.render(S.scene, S.camera); } catch (e) { /* keep looping */ }
+    }
+
+    function build(THREE, host) {
+      var renderer;
+      try { renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false }); }
+      catch (e) { return false; }
+      var w = host.clientWidth || 460, hgt = host.clientHeight || 300;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.setSize(w, hgt);
+      renderer.setClearColor(0x060912, 1);
+      var el = renderer.domElement;
+      el.style.display = 'block';
+      el.style.width = '100%';
+      el.style.height = '100%';
+      el.style.borderRadius = '8px';
+      el.style.touchAction = 'pan-y';
+      el.setAttribute('data-astro-moon-gl', 'true');
+      el.setAttribute('aria-hidden', 'true');
+      host.appendChild(el);
+
+      var scene = new THREE.Scene();
+      var camera = new THREE.PerspectiveCamera(38, w / Math.max(1, hgt), 0.1, 4000);
+      // Very little ambient: the night side has to actually read as night, or
+      // the "far side is not the dark side" point has nothing to stand on.
+      scene.add(new THREE.AmbientLight(0xffffff, 0.10));
+      var sunLight = new THREE.DirectionalLight(0xfff8e7, 1.25);
+      // Real shadows, so an eclipse is one body blocking another rather than a
+      // material being told to darken. The frustum has to cover the whole orbit
+      // or the Moon falls outside the shadow camera and is never shaded.
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      sunLight.castShadow = true;
+      sunLight.shadow.mapSize.width = 1024;
+      sunLight.shadow.mapSize.height = 1024;
+      sunLight.shadow.camera.left = -(AM_ORBIT_R + 2);
+      sunLight.shadow.camera.right = AM_ORBIT_R + 2;
+      sunLight.shadow.camera.top = AM_ORBIT_R + 2;
+      sunLight.shadow.camera.bottom = -(AM_ORBIT_R + 2);
+      sunLight.shadow.camera.near = 1;
+      sunLight.shadow.camera.far = 140;
+      sunLight.shadow.bias = -0.0012;
+      scene.add(sunLight);
+      scene.add(sunLight.target);
+      var model = new THREE.Group();
+      scene.add(model);
+
+      S = {
+        THREE: THREE, renderer: renderer, scene: scene, camera: camera, model: model,
+        sunLight: sunLight,
+        moonY: null, moonPos: null, inShadow: null, shadowMissRadii: null,
+        litFractionSeen: null, nearFaceLocked: null,
+        rotY: 18, rotX: 34, zoom: 1,
+        target: new THREE.Vector3(), half: null,
+        contextLost: false, lastW: w, lastH: hgt, raf: 0
+      };
+
+      el.addEventListener('webglcontextlost', function (ev) {
+        ev.preventDefault(); S.contextLost = true; setStatus('failed');
+      });
+      el.addEventListener('webglcontextrestored', function () {
+        if (restoreAttempts >= 1) return;
+        restoreAttempts++; S.contextLost = false; sig = ''; setStatus('ready');
+      });
+
+      sig = '';
+      S.raf = requestAnimationFrame(frame);
+      return true;
+    }
+
+    return {
+      attach: function (host) {
+        if (!host) { this.dispose(); return; }
+        if (node === host && S) return;
+        if (S) this.dispose();
+        node = host;
+        setStatus('loading');
+        var ensure = window.StemLab && window.StemLab.ensureThree
+          ? window.StemLab.ensureThree({ orbit: false, failMessage: '3D view unavailable' })
+          : Promise.reject(new Error('no host loader'));
+        ensure.then(function (THREE) {
+          if (node !== host) return;
+          if (!THREE) { setStatus('failed'); return; }
+          setStatus(build(THREE, host) ? 'ready' : 'failed');
+        }).catch(function () { setStatus('failed'); });
+      },
+      push: function (data) { pending = data; },
+      onStatusChange: function (fn) { notify = fn; },
+      status: function () { return status; },
+      debug: debug,
+      dispose: function () {
+        if (S) {
+          if (S.raf) cancelAnimationFrame(S.raf);
+          disposeGroup(S.model);
+          if (S.renderer) {
+            try { S.renderer.forceContextLoss(); } catch (e) {}
+            try { S.renderer.dispose(); } catch (e) {}
+            if (S.renderer.domElement && S.renderer.domElement.parentNode) {
+              S.renderer.domElement.parentNode.removeChild(S.renderer.domElement);
+            }
+          }
+        }
+        S = null; node = null; pending = null; sig = ''; restoreAttempts = 0;
+        notify = null;
+        setStatus('idle');
+      }
+    };
+  })();
+
+  function astroMoonGlRef(nodeOrNull) { AstroMoonGL.attach(nodeOrNull); }
+  var astroMoonDrag = { current: null };
+  if (typeof window !== 'undefined') window.__alloAstroMoonGL = AstroMoonGL;
+
   var MOON_PHASES = [
     { id: 'new',           name: 'New Moon',          pct: 0,   age: 0,    desc: 'The Moon is between Earth and Sun. The lit side faces away from us. Sky is darkest — best for stargazing.', visibility: 'Rises and sets with the Sun. Not visible.' },
     { id: 'waxing_cresc',  name: 'Waxing Crescent',   pct: 25,  age: 3.5,  desc: 'A thin crescent of light grows on the right side (Northern Hemisphere). "Waxing" = growing.', visibility: 'Visible in the western sky after sunset.' },
@@ -1303,8 +1714,114 @@
             h('circle', { cx: 0, cy: 0, r: R, fill: 'none', stroke: '#94a3b8', strokeWidth: 1.5 })
           );
         }
+        // ── The geometry behind the disc ──────────────────────────────
+        var nodeDeg = typeof d.moonNodeDeg === 'number' ? d.moonNodeDeg : 72;
+        var moonGlLive = AstroMoonGL.status() === 'ready';
+        AstroMoonGL.onStatusChange(function () { upd({ moonGlTick: (d.moonGlTick || 0) + 1 }); });
+        AstroMoonGL.push({
+          sig: [moonPhaseIdx, nodeDeg].join('|'),
+          ageDays: amAgeForPhaseIndex(moonPhaseIdx), nodeDeg: nodeDeg,
+          rotY: d.moonRot ? d.moonRot.rotY : 18,
+          rotX: d.moonRot ? d.moonRot.rotX : 34,
+          zoom: d.moonZoom || 1
+        });
+        var moonGlAlt = 'Sun, Earth and Moon seen from outside the orbit, at ' + phase.name + '. '
+          + 'Sunlight arrives from the right and lights one half of each body. The Moon sits '
+          + (moonPhaseIdx * 45) + ' degrees round its orbit, and the pink marker shows the face kept '
+          + 'turned toward Earth by tidal locking. Earth\'s shadow cone stretches away from the Sun; '
+          + 'with the line of nodes at ' + nodeDeg + ' degrees the Moon passes '
+          + (nodeDeg <= 35 && moonPhaseIdx === 4 ? 'through' : 'clear of') + ' it.';
+
+        var moonGeometryPanel = h('div', { style: { marginBottom: 16 } },
+          h('div', {
+            style: {
+              position: 'relative', height: 300, borderRadius: 10, overflow: 'hidden',
+              background: '#060912', border: '1px solid #334155'
+            }
+          },
+            h('div', {
+              ref: astroMoonGlRef,
+              role: 'img',
+              'data-a11y-static': 'true',
+              'aria-label': moonGlAlt,
+              style: { position: 'absolute', inset: 0 },
+              onPointerDown: function (ev) {
+                astroMoonDrag.current = { x: ev.clientX, y: ev.clientY,
+                  rotY: d.moonRot ? d.moonRot.rotY : 18, rotX: d.moonRot ? d.moonRot.rotX : 34 };
+                try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (e) {}
+              },
+              onPointerMove: function (ev) {
+                var g = astroMoonDrag.current;
+                if (!g) return;
+                upd({ moonRot: {
+                  rotY: g.rotY + (ev.clientX - g.x) * 0.5,
+                  rotX: Math.max(-86, Math.min(86, g.rotX + (ev.clientY - g.y) * 0.35))
+                } });
+              },
+              onPointerUp: function () { astroMoonDrag.current = null; },
+              onPointerCancel: function () { astroMoonDrag.current = null; },
+              onWheel: function (ev) {
+                ev.preventDefault();
+                upd({ moonZoom: Math.max(0.5, Math.min(3, (d.moonZoom || 1) * (ev.deltaY < 0 ? 1.12 : 0.89))) });
+              }
+            }),
+            !moonGlLive ? h('div', {
+              style: {
+                position: 'absolute', inset: 0, display: 'flex', alignItems: 'center',
+                justifyContent: 'center', textAlign: 'center', padding: 12,
+                color: '#94a3b8', fontSize: 11, pointerEvents: 'none'
+              }
+            }, AstroMoonGL.status() === 'failed'
+                ? '3D view unavailable on this device — the phase disc and description below still apply.'
+                : 'Loading 3D view…') : null,
+            moonGlLive ? h('div', {
+              style: {
+                position: 'absolute', left: 8, bottom: 6, fontSize: 10, color: '#94a3b8',
+                pointerEvents: 'none', background: 'rgba(6,9,18,.72)', padding: '2px 7px', borderRadius: 999
+              }
+            }, 'Drag — orbit  ·  Scroll — zoom') : null
+          ),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 12, fontSize: 10.5, color: '#94a3b8', marginTop: 6 } },
+            h('span', null, '🔵 Earth'),
+            h('span', null, '⚪ Moon — half lit, always'),
+            h('span', { style: { color: '#f472b6' } }, '● the face tidal locking keeps toward Earth'),
+            h('span', { style: { color: '#fbbf24' } }, '→ sunlight'),
+            h('span', null, '▨ Earth\'s shadow')
+          ),
+          h('p', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.65, margin: '8px 0 0' } },
+            'Nothing here paints a phase. One light shines from the Sun and lands where it lands — '
+            + 'so exactly half the Moon is lit at every moment, including at New Moon. What changes is '
+            + 'where ',
+            h('em', null, 'we'),
+            ' are looking from. Orbit the view until you are behind the Moon and you will see the same '
+            + 'lit half that the "dark" New Moon has all along.'
+          ),
+          h('div', { style: { marginTop: 12 } },
+            h('div', { style: { fontSize: 12, color: '#94a3b8', fontWeight: 700, marginBottom: 4 } },
+              'Line of nodes: ' + nodeDeg + '°  ',
+              h('span', { style: { fontWeight: 400 } },
+                nodeDeg <= 35
+                  ? '— close enough to the Sun line for an eclipse season. At Full Moon the shadow reaches it.'
+                  : '— tilted away from the Sun, as in most months. The Moon rides above or below the shadow.')
+            ),
+            h('input', {
+              type: 'range', min: 0, max: 90, step: 1, value: nodeDeg,
+              onChange: function (e) { upd({ moonNodeDeg: parseInt(e.target.value, 10) }); },
+              'aria-label': 'Line of nodes angle, which sets whether eclipses can happen this month',
+              style: { width: '100%', accentColor: INDIGO }
+            }),
+            h('p', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.6, margin: '6px 0 0' } },
+              'The Moon\'s orbit is tilted 5.1° to Earth\'s. That is why there is not an eclipse every '
+              + 'month: at Full Moon the Moon usually passes above or below the shadow entirely. Set this '
+              + 'to 0°, slide to Full Moon, and watch it finally line up.'
+            )
+          )
+        );
+
         return h('div', { style: { padding: 16 } },
           softNote('The moon doesn\'t generate light. It reflects sunlight. Phases happen because the moon orbits Earth, and we see different fractions of the lit half over the ~29.5-day lunar cycle.'),
+
+          moonGeometryPanel,
 
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: 20, alignItems: 'start', marginBottom: 16 } },
             h('div', { style: { textAlign: 'center' } },
