@@ -1393,7 +1393,9 @@
       kids.push(h('circle', { key: 'sun', cx: 168, cy: 24, r: 11, fill: '#fcd34d' }));
       kids.push(h('polygon', { key: 'rock', points: '62,84 74,34 108,26 134,46 138,84', fill: '#8b8378', stroke: '#4b4640', strokeWidth: 2, strokeLinejoin: 'miter' }));
       kids.push(h('polygon', { key: 'face', points: '74,34 108,26 112,58 80,62', fill: '#9c9488', opacity: 0.85 }));
-      kids.push(h('text', { key: 'lbl', x: 100, y: 102, textAnchor: 'middle', fontSize: '9', fontWeight: '700', fill: '#f8fafc' }, 'edges stay sharp'));
+      // y=104 like the other three, so the caption does not jump as the state
+      // changes under the sliders.
+      kids.push(h('text', { key: 'lbl', x: 100, y: 104, textAnchor: 'middle', fontSize: '9', fontWeight: '700', fill: '#f8fafc' }, 'edges stay sharp'));
 
     } else if (state === 'physDom') {
       // Freeze–thaw: water in joints freezes, wedges the rock apart along
@@ -1426,7 +1428,12 @@
       // solution hollow — the karst signature.
       for (i = 0; i < 9; i++) {
         var dx = 12 + i * 21;
-        kids.push(h('line', { key: 'rain' + i, x1: dx, y1: 8 + (i % 3) * 6, x2: dx - 3, y2: 18 + (i % 3) * 6, stroke: '#84cc16', strokeWidth: 1.6, strokeLinecap: 'round', opacity: 0.85 }));
+        // Ordinary rain blue, NOT the lime green this used to be. Acid rain
+        // looks exactly like any other rain — that you cannot see it is the
+        // whole point, and green rain teaches a child to expect a visible
+        // warning that does not exist. The grey overcast sky and the caption
+        // carry "acidic"; the drawing should not invent a colour for it.
+        kids.push(h('line', { key: 'rain' + i, x1: dx, y1: 8 + (i % 3) * 6, x2: dx - 3, y2: 18 + (i % 3) * 6, stroke: '#38bdf8', strokeWidth: 1.6, strokeLinecap: 'round', opacity: 0.85 }));
       }
       // Rounded, slumped profile — no sharp corners left.
       kids.push(h('path', { key: 'rock', d: 'M62,84 Q60,50 84,38 Q106,28 124,44 Q140,58 138,84 Z', fill: '#96907f', stroke: '#4b4640', strokeWidth: 2 }));

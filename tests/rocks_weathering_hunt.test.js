@@ -189,3 +189,77 @@ describe('weathering trial log', () => {
     });
   });
 });
+
+// ── The outcrop drawing ─────────────────────────────────────────────────────
+describe('weathering outcrop art', () => {
+  /** The outcrop svg for a given set of slider values. */
+  function outcrop(weathHunt) {
+    const { markup } = render(Object.assign({ hypothesis: '', log: [] }, weathHunt));
+    const anchor = markup.indexOf('viewBox="0 0 200 110"');
+    expect(anchor, `no outcrop rendered for ${JSON.stringify(weathHunt)}`).toBeGreaterThan(-1);
+    const start = markup.lastIndexOf('<svg', anchor);
+    return markup.slice(start, markup.indexOf('</svg>', anchor) + 6);
+  }
+
+  // One representative setting per reachable state.
+  const MINIMAL = { tempSwing: 5, rainfall: 50, pH: 7 };
+  const PHYS = { tempSwing: 45, rainfall: 60, pH: 7 };
+  const CHEM = { tempSwing: 5, rainfall: 480, pH: 3.2 };
+  const MIXED = { tempSwing: 30, rainfall: 400, pH: 4.5 };
+
+  it('draws a different outcrop for each of the four states', () => {
+    const arts = [MINIMAL, PHYS, CHEM, MIXED].map(outcrop);
+    expect(new Set(arts).size).toBe(4);
+    expect(arts[0]).toContain('edges stay sharp');
+    expect(arts[1]).toContain('angular blocks');
+    expect(arts[2]).toContain('rounded and pitted');
+    expect(arts[3]).toContain('cracks and rounding');
+  });
+
+  it('does not paint acid rain a colour real acid rain does not have', () => {
+    // It was lime green (#84cc16). Acid rain looks exactly like ordinary rain —
+    // that you CANNOT see it is the whole point, and green rain teaches a child
+    // to expect a visible warning that does not exist. The grey overcast sky
+    // and the caption carry "acidic" instead.
+    const chem = outcrop(CHEM);
+    expect(chem).not.toContain('#84cc16');
+    // Same rain as any other rain in this widget.
+    const rainOf = (svg) => {
+      const m = /<line[^>]*stroke="(#[0-9a-fA-F]{6})"[^>]*stroke-width="1\.[56]"/.exec(svg)
+        || /<line[^>]*stroke-width="1\.[56]"[^>]*stroke="(#[0-9a-fA-F]{6})"/.exec(svg);
+      return m && m[1];
+    };
+    expect(rainOf(chem)).toBe(rainOf(outcrop(MIXED)));
+    // And the caption still says what is happening.
+    expect(chem).toContain('acid dissolves it');
+  });
+
+  it('is driven ONLY by the discrete state, never by the raw slider values', () => {
+    // The widget's design note pins "discrete 4-state weathering marker; no rate
+    // score; no reveal — by design". Scaling crack counts or pit sizes off the
+    // sliders would smuggle a continuous intensity readout back in through the
+    // artwork, which is exactly what that note forbids. Two very different
+    // settings that classify the same way must draw the same picture.
+    const chemA = outcrop({ tempSwing: 5, rainfall: 480, pH: 3.2 });
+    const chemB = outcrop({ tempSwing: 12, rainfall: 300, pH: 4.0 });
+    expect(chemA).toBe(chemB);
+
+    const physA = outcrop({ tempSwing: 45, rainfall: 60, pH: 7 });
+    const physB = outcrop({ tempSwing: 50, rainfall: 20, pH: 6.8 });
+    expect(physA).toBe(physB);
+
+    // Sanity: those pairs really are different inputs reaching the same state.
+    expect(chemA).not.toBe(physA);
+  });
+
+  it('keeps the caption in the same place as the state changes', () => {
+    // 'minimal' sat at y=102 and the other three at y=104, so the caption
+    // hopped as a student moved a slider.
+    const ys = [MINIMAL, PHYS, CHEM, MIXED].map((s) => {
+      const m = /<text[^>]*\by="([\d.]+)"/.exec(outcrop(s));
+      return m && m[1];
+    });
+    expect(new Set(ys).size).toBe(1);
+    expect(ys[0]).toBe('104');
+  });
+});
