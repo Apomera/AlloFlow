@@ -48,8 +48,18 @@ describe('standalone accessible HTML reader', () => {
   });
 
   it('adds the same reader to translated, plain-language, and edited-preview HTML downloads', () => {
-    expect(source).toContain("new Blob([_wrapAsReaderApp(pdfFixResult._translation.html)], { type: 'text/html' })");
-    expect(source).toContain("new Blob([_wrapAsReaderApp(pdfFixResult._plainLanguage.html)], { type: 'text/html' })");
-    expect(source).toMatch(/setPdfFixResult\(prev => \(\{ \.\.\.prev, accessibleHtml: html \}\)\);\s+const blob = new Blob\(\[_wrapAsReaderApp\(html\)\]/);
+    // Both lanes now sanitise the markup BEFORE wrapping it as a reader app,
+    // rather than wrapping the raw translated/plain-language html. The wrap is
+    // still the last step, so the reading-control bar is present in every
+    // exported file; only the input to it got safer.
+    expect(source).toContain('_viewSanitizeMarkupForExport(pdfFixResult._translation.html, _docPipeline)');
+    expect(source).toContain("new Blob([_wrapAsReaderApp(_translatedReaderHtml)], { type: 'text/html' })");
+    expect(source).toContain('_viewSanitizeMarkupForExport(pdfFixResult._plainLanguage.html, _docPipeline)');
+    expect(source).toContain("new Blob([_wrapAsReaderApp(_plainReaderHtml)], { type: 'text/html' })");
+    // Same sanitise-then-wrap change in the edited-preview lane: the result is
+    // still committed as the edited html, but the DOWNLOADED file is built from
+    // the sanitised copy rather than the raw preview markup.
+    expect(source).toMatch(/setPdfFixResult\(prev => \(\{ \.\.\.prev, accessibleHtml: html \}\)\);\s+let _editedReaderHtml;\s+try \{ _editedReaderHtml = _viewSanitizeMarkupForExport\(html, _docPipeline\); \}/);
+    expect(source).toContain("const blob = new Blob([_wrapAsReaderApp(_editedReaderHtml)], { type: 'text/html' });");
   });
 });

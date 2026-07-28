@@ -27,7 +27,18 @@ describe('remediation pipeline WCAG 2.2 upgrade', () => {
   });
 
   it('moves cache identity when deterministic rules change', () => {
-    expect(pipeline).toContain("const _PIPELINE_PROMPT_VERSION = '20260711-1';");
+    // Pin the FORMAT and a floor, not the literal value. This constant exists to
+    // be bumped — every deterministic-rule change moves it to invalidate cached
+    // audits — so pinning the exact string means the test fails on precisely the
+    // change it is meant to encourage, and the safest way to make it pass again
+    // is to stop bumping. The floor still catches deletion or a backwards move.
+    const _m = /const _PIPELINE_PROMPT_VERSION = '(\d{8})-(\d+)';/.exec(pipeline);
+    expect(_m, '_PIPELINE_PROMPT_VERSION missing or malformed').toBeTruthy();
+    expect(Number(_m[1])).toBeGreaterThanOrEqual(20260711); // last value asserted by hand
+    expect(Number(_m[2])).toBeGreaterThanOrEqual(1);
+    // and it must actually key the caches, or bumping it changes nothing
+    expect(pipeline).toContain('pdf_audit_${_PIPELINE_PROMPT_VERSION}_${_cacheBackendId()}_');
+    expect(pipeline).toContain('pdf_remed_${_PIPELINE_PROMPT_VERSION}_${_cacheBackendId()}_');
   });
 
   it('treats indeterminate automated rules as manual-review evidence, not confirmed failures', () => {

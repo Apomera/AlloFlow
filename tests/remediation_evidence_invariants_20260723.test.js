@@ -152,7 +152,17 @@ describe('source-level anti-drift wiring', () => {
 
   it('serializes unknown axe evidence as null and gates green UI on the outcome', () => {
     expect(src).toContain('axeViolations: _alloUsableAxeAudit(axeResults) ? axeResults.totalViolations : null');
-    expect(src).toContain("else if (_remediationOutcome.state === 'success')");
+    // The green-UI gate moved into the pure _alloSelectCompletionToast
+    // selector, which is fed _remediationOutcome.state as outcomeState. The
+    // property this test wants — green requires a 'success' OUTCOME, not merely
+    // a score — is unchanged, so exercise the selector instead of the branch.
+    expect(src).toContain('outcomeState: _remediationOutcome.state,');
+    const _selStart = src.indexOf('function _alloSelectCompletionToast(state) {');
+    expect(_selStart).toBeGreaterThan(-1);
+    const selectToast = new Function(src.slice(_selStart, src.indexOf('\n}', _selStart) + 2) + '\nreturn _alloSelectCompletionToast;')();
+    expect(selectToast({ outcomeState: 'success', finalAfterScore: 96 })).toBe('success');
+    // a high score without a success outcome is NOT the green branch
+    expect(selectToast({ outcomeState: 'incomplete', finalAfterScore: 96 })).not.toBe('success');
     expect(src).not.toContain('axeViolations: axeResults ? axeResults.totalViolations : 0');
   });
 

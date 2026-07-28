@@ -20,11 +20,23 @@ describe('Compare popup — after-frame is hardened against AI-injected scripts'
   });
 
   it('accessibleHtml is stripped of active content before it is written into the frame', () => {
-    expect(viewSrc).toContain('const _safeHtml = String(pdfFixResult.accessibleHtml');
-    expect(viewSrc).toContain(".replace(/<script[\\s\\S]*?<\\/script>/gi, '')");
-    expect(viewSrc).toContain(".replace(/[\\s/]on[a-z]+\\s*=\\s*(?:\"[^\"]*\"|'[^']*'|[^\\s>]+)/gi, '')");
-    expect(viewSrc).toContain(".replace(/(?:javascript|vbscript)\\s*:/gi, '')");
-    // and the SANITIZED copy is what gets base64-encoded for the frame
-    expect(viewSrc).toContain('btoa(unescape(encodeURIComponent(_safeHtml)))');
+    // The hand-rolled regex chain was replaced by the shared sanitiser, and the
+    // regexes should NOT come back: stripping active content by regex is
+    // routinely bypassable (nested <scr<script>ipt>, malformed attribute
+    // quoting, entity-encoded javascript&#58;), so pinning those three replaces
+    // was pinning the weaker mechanism.
+    //
+    // What matters is unchanged and is asserted directly: the html written into
+    // the frame is the SANITISED copy, sanitisation goes through the pipeline's
+    // sanitizeRemediationHtml, and the path FAILS CLOSED — if the security
+    // module has not loaded, or it returns something non-string/empty, the
+    // helper throws, the popup is closed and the user is told, rather than the
+    // frame being written with unsanitised markup.
+    expect(viewSrc).toContain('_safeCompareAfterHtml = _viewSanitizeMarkupForExport(pdfFixResult.accessibleHtml, _docPipeline);');
+    expect(viewSrc).toContain('btoa(unescape(encodeURIComponent(_safeCompareAfterHtml)))');
+    expect(viewSrc).toMatch(/function _viewSanitizeMarkupForExport\(html, pipeline\) \{[\s\S]{0,400}if \(typeof helper !== 'function'\) throw new Error\(/);
+    expect(viewSrc).toMatch(/if \(typeof clean !== 'string' \|\| !clean\.trim\(\)\) throw new Error\('The markup could not be sanitized safely\.'\);/);
+    // the catch must close the window, not fall through to writing the frame
+    expect(viewSrc).toMatch(/catch \(error\) \{\s*\n\s*_clearComparePopupCallbacks\(_comparePopupOwnerRef\.current\);\s*\n\s*try \{ if \(!win\.closed\) win\.close\(\); \} catch \(_\) \{\}[\s\S]{0,300}return;/);
   });
 });

@@ -95,7 +95,10 @@ describe('B4 — batch HTML dashboard popup tells the verification truth', () =>
 
 describe('A1 residual — history CSV carries the verification column', () => {
   it('head and rows include verification, and history rows produce it', () => {
-    expect(view).toContain('date,file,outcome,verification,fail_stage');
+    // A `source` column was added after `file`; the rest of the header is
+    // unchanged. Pinned as "these columns, in this order" rather than as one
+    // literal prefix, so an added column does not read as a removed one.
+    expect(view).toMatch(/date,file,source,outcome,verification,fail_stage,fail_reason,before,after,gain/);
     expect(view).toContain('_csv(r.verificationState || \'\')');
     expect(host).toContain("verificationState: cur.verificationState || 'unavailable'");
   });

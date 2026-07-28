@@ -91,7 +91,12 @@ const CONTRACT = [
   },
   {
     field: 'ocrTextLayer (searchable-layer coverage of the tagged export)',
-    producer: /ocrTextLayer: \{ coveragePct: _ocrCoveragePct/,
+    // Key-order tolerant. The literal form required coveragePct to be the FIRST
+    // key, so adding `scanned:` ahead of it reported the whole disclosure as
+    // removed when nothing had been removed at all. Still anchored on the
+    // ocrTextLayer object AND the real coverage source, so genuinely dropping
+    // or renaming the field is still caught.
+    producer: /ocrTextLayer: \{[^}]*coveragePct: _ocrCoveragePct/,
     readers: [{ src: 'view', re: /ocrTextLayer/ }],
   },
   {

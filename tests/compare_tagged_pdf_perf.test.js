@@ -13,8 +13,13 @@ const view = readFileSync(resolve(process.cwd(), 'view_pdf_audit_source.jsx'), '
 
 describe('#5 Compare tagged PDF — no hang, lighter render with live progress', () => {
   it('the bridge bounds ensurePdfBase64 so the popup spinner can never freeze forever', () => {
-    const i = view.indexOf('window.__alloflowCompareGetTagged = async () => {');
-    const body = view.slice(i, i + 1100);
+    // The bridge takes a `request` argument now, so the zero-arg anchor missed
+    // and sliced an EMPTY string — every assertion below then failed against ''
+    // rather than against the code, which reads as "the bound was removed" when
+    // it is right there. Anchor on the assignment instead of the signature.
+    const i = view.indexOf('window.__alloflowCompareGetTagged = async (');
+    expect(i).toBeGreaterThan(-1);
+    const body = view.slice(i, i + 1400);
     expect(body).toContain('Promise.race([');
     expect(body).toContain('ensurePdfBase64()');
     expect(body).toContain('setTimeout(() => r(null), 30000)');

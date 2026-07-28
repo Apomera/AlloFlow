@@ -80,7 +80,14 @@ describe('#4 link preservation + #3 table preservation', () => {
 
 describe('pipeline + UI wiring (source-pinned)', () => {
   it('the pipeline runs the structural nets and folds them into the content-fidelity concern', () => {
-    expect(src).toContain('_structuralFidelityNotes = _computeStructuralFidelityNotes((extractedText || \'\').replace(_ALLO_MARKER_RE, \'\'), accessibleHtml);');
+    // Takes a third argument now: the source structural baseline, published only
+    // when the run covers the WHOLE document. A page-range run remediates a
+    // slice, so measuring its output against a whole-document link count is a
+    // guaranteed false "dropped links" warning (30 source links vs a 10-page
+    // output). null means "not measured" and the net falls back to the markdown
+    // count, which is the correct behaviour for the OCR path.
+    expect(src).toContain("_structuralFidelityNotes = _computeStructuralFidelityNotes((extractedText || '').replace(_ALLO_MARKER_RE, ''), accessibleHtml, _srcStructCounts);");
+    expect(src).toContain('if (!_sliceRun && Number.isFinite(_lc) && _lc > 0) _srcStructCounts = { links: _lc };');
     expect(src).toContain('const _contentFidelityConcern = !!integrityWarning || _structuralFidelityNotes.length > 0;');
   });
   it('the result carries fidelityNotes + the #1 fidelityLimited score qualifier', () => {
