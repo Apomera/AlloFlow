@@ -52,7 +52,12 @@ describe('L2 — alt overwrite only replaces a placeholder', () => {
 
 describe('L4 — "axe-only clean" requires axe to have actually run', () => {
   it('gates the clean claim + log on reAxe being non-null', () => {
-    expect(src).toContain('if (reAxe && newAxeViolations === 0 && addToast)');
+    // Strengthened in the direction this test already wanted. A truthy `reAxe`
+    // only proved an object came back; _alloUsableAxeAudit additionally requires
+    // a finite score and a finite non-negative totalViolations, so an axe run
+    // that returned a husk can no longer underwrite an "axe-only clean" claim.
+    expect(src).toContain('if (_reAxeUsable && newAxeViolations === 0 && addToast)');
+    expect(src).toContain('const _reAxeUsable = _alloUsableAxeAudit(reAxe);');
     expect(src).toContain('axe ALSO unavailable this pass');
   });
   it('mirror: a null axe result is not treated as "clean"', () => {

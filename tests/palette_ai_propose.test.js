@@ -87,7 +87,10 @@ describe('anti-drift: exported + wired into the picker, feeding the SAME clamp p
   });
   it('the picker has an AI-suggest form whose result flows through _applyPalette (same clamp/apply/re-audit)', () => {
     const h = view.slice(view.indexOf('const _suggestPalette = async'), view.indexOf('const _revertPalette = async'));
-    expect(h).toMatch(/_docPipeline\.proposePaletteFromIntent\(intent\)/);
+    // Now forwards the operation's abort signal, so cancelling the palette
+    // suggestion actually stops the model call instead of leaving it running to
+    // resolve into a superseded operation.
+    expect(h).toMatch(/_docPipeline\.proposePaletteFromIntent\(intent, \{ signal: operationTicket\.controller && operationTicket\.controller\.signal \}/);
     expect(h).toMatch(/await _applyPalette\(\{ id: 'ai:'/);   // AI tokens reuse the deterministic apply
     expect(h).toMatch(/pdf_audit\.palette\.ai_failed/);        // graceful fallback to presets
     expect(view).toMatch(/onSubmit=\{\(e\) => \{ e\.preventDefault\(\); _suggestPalette\(\); \}\}/);

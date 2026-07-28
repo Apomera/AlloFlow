@@ -245,11 +245,19 @@ describe('anti-drift: exported on the factory + wired into the region editor via
   it('_restyleRegion runs the transform, splices via _spliceBlock, snapshots revert, surfaces a failed re-audit', () => {
     const h = view.slice(view.indexOf('const _restyleRegion = async (kind) => {'), view.indexOf('const _restyleRegion = async (kind) => {') + 5400);
     expect(h).toMatch(/_docPipeline\.restyleBlock\(original, kind, topts\)/);
-    expect(h).toMatch(/precedingHeadingLevel\(pdfFixResult\.accessibleHtml, original\)/);   // outline-safe leveling
+    // Reads sourceHtml — the html this operation captured when it started —
+    // rather than whatever pdfFixResult holds by the time the line runs, so a
+    // concurrent commit cannot make the restyle level against a different doc.
+    expect(h).toMatch(/precedingHeadingLevel\(sourceHtml, original\)/);   // outline-safe leveling
     expect(h).toMatch(/badAncestor = !!rgn\.badAncestor/);                                  // outline-hostile-ancestor refusal
-    expect(h).toMatch(/const sp = _spliceBlock\(pdfFixResult\.accessibleHtml, original, res\.html\)/);
-    expect(h).toMatch(/accessibleHtml: sp\.html, _preCmdHtml: _before/);
-    expect(h).toMatch(/await _reauditAndScore\(sp\.html, null\)/);
+    // Splices into the SAME captured sourceHtml the heading level was computed
+    // against, so the restyle reads and writes one consistent snapshot.
+    expect(h).toMatch(/const sp = _spliceBlock\(sourceHtml, original, res\.html\)/);
+    // Commits through the shared _commitHtmlPendingVerification, which does the
+    // ticket-guarded swap and invalidates the now-stale audits; the pre-command
+    // html still rides along as _preCmdHtml so the generic undo covers a restyle.
+    expect(h).toMatch(/_commitHtmlPendingVerification\(operationTicket, sp\.html, \{ _preCmdHtml: _before \}\)/);
+    expect(h).toMatch(/await _reauditAndScore\(sp\.html, null, operationTicket\)/); // superseded restyle cannot score
     expect(h).toMatch(/why === 'reading-order'/);
     expect(h).toMatch(/why === 'bad-context'/);   // honest refusal for invalid-nesting targets
     expect(h).toMatch(/_rescore && _rescore\.ok === false/);   // surfaces a throttled re-audit (R11)

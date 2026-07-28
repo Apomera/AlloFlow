@@ -38,7 +38,11 @@ describe('PDF-Issue2: the reliability experiment measures the PRODUCTION pipelin
     const endIdx = dp.indexOf('const proceedWithPdfTransform', expIdx);
     const body = dp.slice(expIdx, endIdx);
     expect(body).toMatch(/const _audit = await runPdfAccessibilityAudit\(base64Data, \{ skipUiUpdates: true, fileName: fileName \}\)/);
-    expect(body).toMatch(/await fixAndVerifyPdf\(\{\s*base64: base64Data,\s*fileName: fileName,\s*auditResult: _audit,/);
+    // documentEpoch now leads the call: the experiment refuses to start without
+    // a current ownership epoch and tags each run with it, so a run started
+    // against a document the user has since replaced cannot report results as
+    // if they belonged to the new one.
+    expect(body).toMatch(/await fixAndVerifyPdf\(\{\s*documentEpoch: _experimentDocumentEpoch,\s*base64: base64Data,\s*fileName: fileName,\s*auditResult: _audit,/);
     expect(body).not.toMatch(/await processSinglePdfForBatch\(/); // legacy loop no longer used by the experiment
   });
   it('the experiment output labels which pipeline it measured (honesty)', () => {

@@ -54,7 +54,9 @@ describe('_spliceBlock: precise single-occurrence replacement, minimal mutation'
 
 describe('anti-drift: the mini-audit is shared (no drift between Workbench + direct-edit)', () => {
   it('_reauditAndScore exists and folds in score + issueResolution', () => {
-    expect(src).toMatch(/const _reauditAndScore = async \(newHtml, onActivity\) => \{/);
+    // Takes an operationTicket now, so a re-audit whose operation was
+    // superseded cannot publish its score over the newer one's.
+    expect(src).toMatch(/const _reauditAndScore = async \(newHtml, onActivity, operationTicket\) => \{/);
     expect(src).toContain('const _safeAudit = (run) => Promise.resolve().then(run).catch(() => null);');
     expect(src).toContain('_safeAudit(() => auditOutputAccessibility(newHtml)),');
     expect(src).toContain('_safeAudit(() => runAxeAudit(newHtml)),');

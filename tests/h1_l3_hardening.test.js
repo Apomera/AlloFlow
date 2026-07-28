@@ -17,7 +17,9 @@ describe('H1 — STEM image intel runs AFTER the token restore (real images)', (
     expect(src).toContain('STEM image intelligence MOVED to after the deferred-image token restore');
   });
   it('the classifier call now lives after the token-restore log', () => {
-    expect(src).toContain('const _stemIntel = await describeAndClassifyImages(accessibleHtml, { cap: 10 });');
+    // Now passes the run's abort signal so a cancelled run stops classifying
+    // instead of finishing up to 10 image descriptions nobody will read.
+    expect(src).toContain('const _stemIntel = await describeAndClassifyImages(accessibleHtml, { cap: 10, signal: _runAbortSignal });');
     const restoreIdx = src.indexOf('image data URL(s) from placeholder tokens');
     const stemIdx = src.indexOf('const _stemIntel = await describeAndClassifyImages');
     expect(restoreIdx).toBeGreaterThan(-1);

@@ -87,6 +87,14 @@ describe('anti-drift: wired into both audit paths + verbatim prompt', () => {
   });
   it('both audit paths normalize ONCE then attach iss.locator', () => {
     expect((src.match(/_normLocatorText\(htmlContent\)/g) || []).length).toBe(2);
-    expect((src.match(/iss\.locator = _resolveIssueLocator\(iss\.location, _nh(?:Merged)?, iss\.pages\)/g) || []).length).toBe(2);
+    // Only the chunked path still assigns the resolver's result directly. The
+    // merged path resolves first and then, when the resolver could pin nothing
+    // better than 'none'/'page' and the issue has sourceChunks but no pages and
+    // is not document-global, falls back to a chunk locator. So the count went
+    // 2 -> 1 by ADDING a locator where issues previously got none, not by
+    // dropping one. Assert both paths resolve, and assert the fallback.
+    expect((src.match(/_resolveIssueLocator\(iss\.location, _nh(?:Merged)?, iss\.pages\)/g) || []).length).toBe(2);
+    expect(src).toContain('parsed.issues.forEach((iss) => { try { iss.locator = _resolveIssueLocator(iss.location, _nh, iss.pages); } catch (_) {} });');
+    expect(src).toMatch(/iss\.locator = \(\(!resolved \|\| resolved\.kind === 'none' \|\| resolved\.kind === 'page'\)[\s\S]{0,240}\? \{ kind: 'chunk', chunks: iss\.sourceChunks\.slice\(\), reason: resolved && resolved\.reason \}\s*\n\s*: resolved;/);
   });
 });

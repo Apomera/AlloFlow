@@ -35,7 +35,11 @@ describe('M2 — a chunk reply without issues[] is a failure, not a clean audit'
   it('_auditOneChunk routes replies lacking a valid issues[] schema to self-heal', () => {
     expect(src).toContain('const p = _requireStrictOutputAudit(parseAuditJson(r));');
     expect(src).toContain('_outputAuditIssueArrayIsValid(parsed.issues)');
-    expect(src).toMatch(/const p = _requireStrictOutputAudit\(parseAuditJson\(r\)\);[\s\S]{0,500}_auditMemoPut\(_memoKey, p\);[\s\S]{0,100}catch \{ return null; \}/);
+    // The memo now keys on the PROMPT as well as the key, so two audits of the
+    // same chunk under different prompts cannot serve each other's cached
+    // result. The ordering this test cares about is unchanged: strict-parse,
+    // then memoise, then return, all inside the try that yields null.
+    expect(src).toMatch(/const p = _requireStrictOutputAudit\(parseAuditJson\(r\)\);[\s\S]{0,500}_auditMemoPut\(_memoKey, prompt, p\);[\s\S]{0,100}catch \(_\) \{ return null; \}/);
   });
   it('mirror: {}, {passes:[]}, null are rejected; {issues:[]} is accepted', () => {
     const ok = (p) => !(!p || !Array.isArray(p.issues));

@@ -35,10 +35,23 @@ describe('post-remediation toast — never claim success when content integrity 
     expect(toastSeverity(false, 60)).toBe('info');
   });
   it('anti-drift: the integrity-warning branch precedes the success branch in source', () => {
-    const iIntegrity = src.indexOf('if (integrityWarning && finalAfterScore !== null) {');
-    const iSuccess = src.indexOf('✅ PDF remediated! Score:');
-    expect(iIntegrity).toBeGreaterThan(0);
-    expect(iIntegrity).toBeLessThan(iSuccess); // the gate fires first
+    // The inline ladder became the pure _alloSelectCompletionToast selector, and
+    // precedence is now a property of that function rather than of where two
+    // strings happen to sit in the file. Testing it by source ORDER was always
+    // a proxy: this very ladder once had a branch placed below success and so
+    // unreachable, which a source-order check reports as correctly ordered.
+    const _selStart = src.indexOf('function _alloSelectCompletionToast(state) {');
+    expect(_selStart).toBeGreaterThan(0);
+    const selectToast = new Function(src.slice(_selStart, src.indexOf('\n}', _selStart) + 2) + '\nreturn _alloSelectCompletionToast;')();
+    // integrity wins over an otherwise-successful outcome
+    expect(selectToast({ integrityWarning: true, finalAfterScore: 95, outcomeState: 'success' })).toBe('integrity');
+    // ...and over the other qualified branches too
+    expect(selectToast({ integrityWarning: true, finalAfterScore: 95, aiVerificationIncomplete: true })).toBe('integrity');
+    // without a score there is no number to qualify, so it is not the integrity claim
+    expect(selectToast({ integrityWarning: true, finalAfterScore: null, outcomeState: 'success' })).not.toBe('integrity');
+    // and a clean successful run still reaches success
+    expect(selectToast({ integrityWarning: false, finalAfterScore: 95, outcomeState: 'success' })).toBe('success');
+    expect(src).toContain('✅ PDF remediated! Score:');
     expect(src).toContain('some source text may be missing — review the Diff before distributing');
   });
 });
