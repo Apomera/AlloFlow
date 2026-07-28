@@ -19,22 +19,34 @@ describe('palette state + handlers', () => {
     const fn = view.slice(view.indexOf('const _applyPalette = async'), view.indexOf('const _revertPalette = async'));
     expect(fn).toMatch(/_docPipeline\.applyPaletteToHtml\(origin, preset\.tokens\)/);
     expect(fn).toMatch(/_docPipeline\.buildPaletteCss\(preset\.tokens\)/);
-    expect(fn).toMatch(/await _reauditAndScore\(newHtml, null\)/);
+    // Carries the operation ticket so a superseded palette apply cannot score.
+    expect(fn).toMatch(/await _reauditAndScore\(newHtml, null, operationTicket\)/);
     expect(fn).not.toMatch(/callGemini|callGeminiVision/); // deterministic — no AI dependency
   });
   it('applies onto the ORIGINAL pre-palette html (switching presets cannot stack)', () => {
     const fn = view.slice(view.indexOf('const _applyPalette = async'), view.indexOf('const _revertPalette = async'));
-    expect(fn).toMatch(/const origin = _paletteSnapshotRef\.current \|\| pdfFixResult\.accessibleHtml/);
+    // Reads the html the operation captured (sourceHtml) rather than whatever
+    // pdfFixResult happens to hold when this line runs.
+    expect(fn).toMatch(/const origin = _paletteSnapshotRef\.current \|\| sourceHtml/);
     // first apply snapshots the pre-palette state; sets _preCmdHtml so the generic revert covers it too
-    expect(fn).toMatch(/if \(!_paletteSnapshotRef\.current\) _paletteSnapshotRef\.current = pdfFixResult\.accessibleHtml/);
-    expect(fn).toMatch(/accessibleHtml: newHtml, _preCmdHtml: _snap/);
+    expect(fn).toMatch(/if \(!_paletteSnapshotRef\.current\) _paletteSnapshotRef\.current = sourceHtml/);
+    // Same shared commit helper as the revert — the pre-palette snapshot rides
+    // along as _preCmdHtml so the generic undo covers a palette apply too.
+    expect(fn).toMatch(/_commitHtmlPendingVerification\(operationTicket, newHtml, \{ _preCmdHtml: _snap \}\)/);
   });
   it('_revertPalette restores the snapshot, clears it, and re-audits', () => {
-    const fn = view.slice(view.indexOf('const _revertPalette = async'), view.indexOf('const _revertPalette = async') + 600);
+    // Anchored on the next declaration rather than a byte count: the ticket +
+    // shared-commit rework grew this function past the old 600-char window, so
+    // the slice was cutting before the assertions' targets and failing blind.
+    const _revStart = view.indexOf('const _revertPalette = async');
+    const fn = view.slice(_revStart, view.indexOf('const _axeTarget =', _revStart));
     expect(fn).toMatch(/const snap = _paletteSnapshotRef\.current/);
-    expect(fn).toMatch(/accessibleHtml: snap/);
+    // The revert commits through the shared _commitHtmlPendingVerification,
+    // which performs the token-guarded swap and invalidates the stale audits —
+    // so the snapshot html is no longer written as a bare accessibleHtml field.
+    expect(fn).toMatch(/_commitHtmlPendingVerification\(operationTicket, snap/);
     expect(fn).toMatch(/_paletteSnapshotRef\.current = null/);
-    expect(fn).toMatch(/await _reauditAndScore\(snap, null\)/);
+    expect(fn).toMatch(/await _reauditAndScore\(snap, null, operationTicket\)/);
   });
 });
 

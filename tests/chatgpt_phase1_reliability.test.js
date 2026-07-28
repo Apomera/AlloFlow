@@ -65,10 +65,13 @@ describe('finding 4 — ONE absolute per-file wall', () => {
   it('the deadline is minted once at _processOne entry; both phases get only what remains', () => {
     const processOneAt = dp.indexOf('const _processOne = async (item, i, isRetry) => {');
     const deadlineAt = dp.indexOf('const _deadlineAt = Date.now() + _PER_FILE_MS;', processOneAt);
-    const auditWallAt = dp.indexOf("_remainingMs(), 'batch audit: ' + item.fileName);", deadlineAt);
+    // The wall labels route the filename through _alloDiagnosticDocumentLabel,
+    // which reduces it to '[document.pdf]' — student filenames are PII and were
+    // reaching timeout/telemetry strings verbatim. Pin the redacted form.
+    const auditWallAt = dp.indexOf("_remainingMs(), 'batch audit: ' + _alloDiagnosticDocumentLabel(item.fileName));", deadlineAt);
     const fixPromiseAt = dp.indexOf('const _fixPromise = fixAndVerifyPdf({', auditWallAt);
     const sharedDeadlineAt = dp.indexOf('perFileDeadlineTs: _deadlineAt,', fixPromiseAt);
-    const fixWallAt = dp.indexOf("result = await _withTimeout(_fixPromise, _remainingMs(), 'batch fix: ' + item.fileName);", sharedDeadlineAt);
+    const fixWallAt = dp.indexOf("result = await _withTimeout(_fixPromise, _remainingMs(), 'batch fix: ' + _alloDiagnosticDocumentLabel(item.fileName));", sharedDeadlineAt);
     const cancellationDrainAt = dp.indexOf("'batch remediation cancellation drain'", fixWallAt);
     expect(processOneAt).toBeGreaterThan(-1);
     expect(deadlineAt).toBeGreaterThan(processOneAt);
@@ -140,7 +143,19 @@ describe('finding 2 — single-mode failures propagate (typed contract, phase 1)
     expect(dp.slice(at, at + 700)).toContain('throw err;');
   });
   it('every fire-and-forget caller attaches rejection hygiene (the pipeline already toasted)', () => {
-    const wrapped = view.match(/fixAndVerifyPdf\(\{[^}]*\}\)\.catch\(\(\) => \{\}\)/g) || [];
-    expect(wrapped.length).toBe(4);
+    // Pinned at the invariant rather than a call-site count: consolidating the
+    // launch args legitimately took this from 4 sites to 2, and a hard-coded
+    // total turns every such refactor into a red test while a genuinely
+    // unhandled NEW caller would still slip through if it kept the tally even.
+    // So: locate every call, and require that each one is either awaited or
+    // carries its own rejection handler.
+    const callSites = [];
+    for (let i = view.indexOf('fixAndVerifyPdf('); i !== -1; i = view.indexOf('fixAndVerifyPdf(', i + 1)) callSites.push(i);
+    expect(callSites.length).toBeGreaterThan(0);
+    const unhandled = callSites.filter((i) => {
+      if (/\bawait\s+$/.test(view.slice(Math.max(0, i - 12), i))) return false; // awaited → caller owns it
+      return !/^[\s\S]{0,400}?\)\.catch\(\(\) => \{\}\)/.test(view.slice(i));
+    });
+    expect(unhandled).toEqual([]);
   });
 });

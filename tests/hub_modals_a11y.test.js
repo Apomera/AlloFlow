@@ -32,10 +32,19 @@ describe('Learning Hub launcher grid accessibility', () => {
   const source = fs.readFileSync('view_learning_hub_modal_source.jsx', 'utf8');
   it('uses visible naming, explicit controls, decorative icons, and reduced motion', () => {
     expect(source).toContain('aria-labelledby="learning-hub-title" aria-describedby="learning-hub-subtitle"');
-    expect(source.match(/<button\b/g)).toHaveLength(15);
-    expect(source.match(/type="button"/g)).toHaveLength(15);
+    // The a11y invariant is that EVERY button declares an explicit type (an
+    // untyped button inside a form submits it), not that there are exactly N of
+    // them — adding a launcher tile is normal and used to redden this file.
+    // Equality catches the real defect; the floor catches a mass deletion.
+    expect(source.match(/<button\b/g).length).toBeGreaterThanOrEqual(15);
+    expect(source.match(/type="button"/g).length).toBe(source.match(/<button\b/g).length);
     expect(source).toContain('min-w-11 min-h-11');
-    expect(source.match(/motion-reduce:transform-none/g)).toHaveLength(14);
+    // WCAG 2.3.3: every hover TRANSFORM needs a reduced-motion escape. Pinned as
+    // a pairing, not a tally, so a new tile that correctly brings its own
+    // motion-reduce class passes while one that forgets it fails. The
+    // disabled:hover:scale-100 reset is excluded — it cancels motion, not causes it.
+    expect(source.match(/motion-reduce:transform-none/g).length)
+      .toBe((source.match(/(?<!disabled:)hover:scale-/g) || []).length);
     expect(source).not.toMatch(/<span className="text-4xl"(?![^>]*aria-hidden)/);
   });
 });
@@ -45,9 +54,10 @@ describe('Educator Hub launcher grid accessibility', () => {
   const source = fs.readFileSync('view_educator_hub_modal_source.jsx', 'utf8');
   it('uses visible naming, explicit controls, reduced motion, and a separate status summary', () => {
     expect(source).toContain('aria-labelledby="educator-hub-title" aria-describedby="educator-hub-subtitle"');
-    expect(source.match(/<button\b/g)).toHaveLength(19);
-    expect(source.match(/type="button"/g)).toHaveLength(19);
-    expect(source.match(/motion-reduce:transform-none/g)).toHaveLength(14);
+    expect(source.match(/<button\b/g).length).toBeGreaterThanOrEqual(19);
+    expect(source.match(/type="button"/g).length).toBe(source.match(/<button\b/g).length);
+    expect(source.match(/motion-reduce:transform-none/g).length)
+      .toBe((source.match(/(?<!disabled:)hover:scale-/g) || []).length);
     expect(source).toContain('role="region" aria-labelledby="educator-platform-results-title"');
     expect(source).toContain('role="status" aria-live="polite" aria-atomic="true">Platform check complete.');
     expect(source).not.toContain('rounded-lg p-2 text-[11px]" role="status"');

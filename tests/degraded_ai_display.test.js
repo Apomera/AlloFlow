@@ -53,7 +53,12 @@ describe('score selection — show the reliable structural number when AI is deg
 
 describe('anti-drift: pipeline ships the degraded flag + deterministic fallback', () => {
   it('degraded keyed off null/_scoreDegraded/synthesized, NOT _partialAudit', () => {
-    expect(pipeSrc).toMatch(/_aiDegraded = !verification \|\| verification\.score === null \|\| verification\._scoreDegraded \|\| verification\.synthesized/);
+    // The inline chain became the named _alloUsableCompleteAiAudit guard, which
+    // covers the same four conditions (no audit, non-finite score, degraded,
+    // synthesized) and adds a coverage requirement. Pin the call AND the guard's
+    // contents, so the semantics stay asserted rather than just the name.
+    expect(pipeSrc).toMatch(/const _aiDegraded = !_alloUsableCompleteAiAudit\(verification\) \|\| _finalAuditScoreMissing;/);
+    expect(pipeSrc).toMatch(/function _alloUsableCompleteAiAudit\(audit\) \{[\s\S]{0,320}Number\.isFinite\(audit\.score\)[\s\S]{0,200}audit\._scoreDegraded !== true[\s\S]{0,200}audit\.synthesized !== true/);
     expect(pipeSrc).not.toMatch(/_aiDegraded =[^\n]*_partialAudit/);
   });
   it('the deterministic-fallback branch sets finalAfterScore + the incomplete flag', () => {
@@ -64,7 +69,7 @@ describe('anti-drift: pipeline ships the degraded flag + deterministic fallback'
     // The bug: deterministicScore was computed axe-ONLY, so when axe failed but EA succeeded it went null,
     // the blend gate (which required axeScoreAvailable) was skipped, and the big AFTER number showed the
     // raw AI score (e.g. 100) while the caption correctly said the governing layer was automated (90).
-    expect(pipeSrc).toMatch(/const deterministicScore = \(axeScoreAvailable && eaScoreAvailable\)/);
+    expect(pipeSrc).toMatch(/let deterministicScore = \(axeScoreAvailable && eaScoreAvailable\)/);
     expect(pipeSrc).toMatch(/axeScoreAvailable \? axeResults\.score : \(eaScoreAvailable \? eaResults\.score : null\)/);
     // both the blend gate and the AI-only fallback now key off deterministicScore, not axeScoreAvailable
     expect(pipeSrc).toMatch(/if \(finalAfterScore !== null && !_aiDegraded && deterministicScore !== null\) \{/);
@@ -72,9 +77,16 @@ describe('anti-drift: pipeline ships the degraded flag + deterministic fallback'
     expect(pipeSrc).not.toMatch(/!_aiDegraded && axeScoreAvailable\) \{/); // old axe-only gate is gone
   });
   it('the result object carries the flags + de-blends when incomplete', () => {
-    expect(pipeSrc).toMatch(/_scoreIsBlended: !axeCoreFailed && !_aiVerificationIncomplete/);
+    // Stated positively now: blended means BOTH layers actually produced
+    // evidence and a score exists, rather than being inferred from two
+    // negations that could both be false for unrelated reasons.
+    expect(pipeSrc).toMatch(/_scoreIsBlended: _deterministicEvidenceAvailable && _finalAiEvidenceAvailable && finalAfterScore !== null,/);
     expect(pipeSrc).toMatch(/_aiVerificationIncomplete,/);
-    expect(pipeSrc).toMatch(/_scoreSource: _aiVerificationIncomplete \? 'deterministic-only'/);
+    // Derived from which evidence actually exists rather than from the
+    // incomplete flag, which gives four honest states instead of two —
+    // including 'unavailable' for the case where neither layer produced a
+    // score, previously indistinguishable from deterministic-only.
+    expect(pipeSrc).toMatch(/_scoreSource: _finalAiEvidenceAvailable \? \(_deterministicEvidenceAvailable \? 'min' : 'content-only'\) : \(_deterministicEvidenceAvailable \? 'deterministic-only' : 'unavailable'\)/);
   });
 });
 

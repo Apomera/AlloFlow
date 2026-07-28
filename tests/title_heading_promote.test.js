@@ -21,8 +21,14 @@ const { restyleBlock, _proposeTitleHeading } = lib;
 const _ps = dp.indexOf('const proposeRestyles = async (html, opts) => {');
 const _pe = dp.indexOf('\n  };', _ps) + '\n  };'.length;
 const propSrc = dp.slice(_ps, _pe).replace('const proposeRestyles', 'var proposeRestyles');
+// proposeRestyles now wraps the document text in the shared untrusted-data fence
+// before it reaches the model. Slice the REAL helpers in rather than stubbing
+// them, so the prompt-injection boundary stays under test here instead of being
+// quietly replaced by an identity function.
+const _fenceSrc = dp.slice(dp.indexOf('function _neutralizePromptFence(s) {'), dp.indexOf('\n// Cross-check AI audit issues against DETERMINISTIC ground truth'));
+if (!/_untrustedPromptDataBlock/.test(_fenceSrc)) throw new Error('prompt-fence helper span extraction markers missing');
 const makePropose = (callGemini) => new Function('callGemini', 'stripFence',
-  span + '\n' + propSrc + '\nreturn proposeRestyles;'
+  _fenceSrc + '\n' + span + '\n' + propSrc + '\nreturn proposeRestyles;'
 )(callGemini, (s) => String(s || '').replace(/```json|```/gi, '').trim());
 
 const dparse = (s) => new DOMParser().parseFromString(String(s), 'text/html');
