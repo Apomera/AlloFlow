@@ -178,6 +178,91 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
     stainless: { name: 'Stainless 304',  kFactor: 0.65, meltK: 1700, density: 7980, color: 'var(--allo-stem-text, #e2e8f0)' }
   };
 
+  // Heat-input tier for steel, per the AWS Welding Handbook ranges. Boundaries are
+  // in kJ/in of NET heat input. Kept out of the view so the thresholds a student is
+  // graded against are a single testable fact rather than an if-chain inside JSX.
+  function heatInputTier(net) {
+    if (net < 25) return 'LOW';
+    if (net <= 50) return 'MEDIUM';
+    if (net <= 75) return 'HIGH';
+    return 'EXCESSIVE';
+  }
+
+  // ── Defect computation: derive defect set from current parameters ──
+  // Pure function; called by the render loop each frame to determine which defects
+  // (if any) should appear in the bead. Returns an object whose keys are defect
+  // names; values are severity 0–1 (0 = absent, 1 = severe).
+  //
+  // Defect rules of thumb (taught in CWI prep + AWS SENSE Level 1):
+  //   burnthrough    — net heat input too high for plate thickness
+  //                    (specific to thin plate; rare on thick plate)
+  //   lack of fusion — net heat too LOW for plate thickness
+  //                    (cold bead floats on top of base metal)
+  //   undercut       — high amperage + high travel speed
+  //                    (groove carved into base metal alongside bead)
+  //   overlap        — low amperage + slow travel speed
+  //                    (bead overhangs edges without fusing)
+  //   spatter        — amperage above process-appropriate maximum
+  //                    (molten metal droplets scattered around bead)
+  //   porosity       — process-specific shielding/cleanliness issue
+  //                    (bubbles/pinholes embedded in bead surface)
+  function _computeWeldDefects(net, TH, V, A, TS, P) {
+    var d = {
+      burnthrough: 0, lackOfFusion: 0, undercut: 0,
+      overlap: 0, spatter: 0, porosity: 0
+    };
+    // Burnthrough — heat density per unit plate thickness too high
+    // Threshold scales with thickness: thicker = more headroom.
+    var heatDensity = net / Math.max(0.06, TH);
+    if (heatDensity > 100) d.burnthrough = Math.min(1, (heatDensity - 100) / 80);
+    // Lack of fusion — heat density too low to melt base + filler together
+    if (heatDensity < 25) d.lackOfFusion = Math.min(1, (25 - heatDensity) / 25);
+    // Undercut — high amperage + fast travel carves a groove next to bead
+    if (A > 230 && TS > 14) {
+      d.undercut = Math.min(1, ((A - 230) / 80) * ((TS - 14) / 10));
+    }
+    // Overlap — low amperage + slow travel makes bead overhang without fusing
+    if (A < 130 && TS < 8) {
+      d.overlap = Math.min(1, ((130 - A) / 60) * ((8 - TS) / 4));
+    }
+    // Spatter — amperage above process-specific max
+    var ampMax = (P === 'tig') ? 200 : (P === 'stick') ? 250 : (P === 'oxy') ? 150 : 300;
+    if (A > ampMax) d.spatter = Math.min(1, (A - ampMax) / 80);
+    // Porosity — process-specific
+    //   MIG: low voltage with high amperage → narrow + porous arc
+    //   TIG: insufficient amperage for material → contamination pickup
+    //   Stick: damp electrode (modeled as low V with mid-range A)
+    //   Oxy: improper flame chemistry (modeled as off-target amperage)
+    if (P === 'mig' && V < 18 && A > 180) d.porosity = Math.min(1, (18 - V) / 8);
+    else if (P === 'tig' && A < 80) d.porosity = Math.min(1, (80 - A) / 30);
+    else if (P === 'stick' && V < 22 && A > 120 && A < 180) d.porosity = 0.45;
+    else if (P === 'oxy' && (A < 75 || A > 130)) d.porosity = Math.min(1, Math.abs(A - 100) / 50);
+    return d;
+  }
+
+  // ── Position rotation helper ──
+  // Returns a Euler-angle triplet (x, y, z) to rotate the entire joint+torch group
+  // so the SAME welding action is visualized in 1G (flat), 2G (horizontal),
+  // 3G (vertical), or 4G (overhead) position.
+  function _positionRotation(pos) {
+    if (pos === '2G') return { x: 0,        y: 0, z: Math.PI / 2 };
+    if (pos === '3G') return { x: -Math.PI / 2, y: 0, z: 0 };
+    if (pos === '4G') return { x: 0,        y: 0, z: Math.PI };
+    return { x: 0, y: 0, z: 0 };  // 1G flat (default)
+  }
+
+  // Pure physics surface, exposed for tests the same way stem_tool_fisherlab.js
+  // exposes window.__FisherLabCore. Nothing here touches React, THREE or the DOM.
+  window.__WeldLabCore = {
+    heatInputGross: heatInputGross,
+    heatInputNet: heatInputNet,
+    heatInputTier: heatInputTier,
+    computeWeldDefects: _computeWeldDefects,
+    positionRotation: _positionRotation,
+    ARC_EFFICIENCY: ARC_EFFICIENCY,
+    MATERIAL: MATERIAL
+  };
+
   window.StemLab.registerTool('weldLab', {
     name: 'WeldLab — Welding & Metal Joining',
     icon: '🔥',
@@ -847,24 +932,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         // are typical for steel; aluminum and stainless shift the boundaries
         // (handled in Bead Lab). For the calculator we report the canonical
         // ranges for steel.
-        var tier, tierColor, tierMsg;
-        if (net < 25) {
-          tier = 'LOW';
-          tierColor = 'bg-blue-100 text-blue-900 border-blue-400';
-          tierMsg = 'Risk: lack of fusion, narrow heat-affected zone, cold-lap defects. The base metal may not melt enough to fuse with filler.';
-        } else if (net <= 50) {
-          tier = 'MEDIUM';
-          tierColor = 'bg-emerald-100 text-emerald-900 border-emerald-400';
-          tierMsg = 'Typical operating range for most structural welds. Good fusion, manageable distortion, acceptable HAZ properties.';
-        } else if (net <= 75) {
-          tier = 'HIGH';
-          tierColor = 'bg-amber-100 text-amber-900 border-amber-400';
-          tierMsg = 'Risk: grain coarsening in HAZ, increased distortion, reduced toughness. Acceptable for thick sections; problematic for thin plate.';
-        } else {
-          tier = 'EXCESSIVE';
-          tierColor = 'bg-rose-100 text-rose-900 border-rose-400';
-          tierMsg = 'Risk: severe warping, hot cracking, mechanical property degradation. Reduce amperage or speed up travel.';
-        }
+        // Thresholds live in heatInputTier() at top level so they are testable; this
+        // block only maps the tier onto its presentation.
+        var tier = heatInputTier(net);
+        var TIER_PRESENTATION = {
+          LOW: {
+            color: 'bg-blue-100 text-blue-900 border-blue-400',
+            msg: 'Risk: lack of fusion, narrow heat-affected zone, cold-lap defects. The base metal may not melt enough to fuse with filler.'
+          },
+          MEDIUM: {
+            color: 'bg-emerald-100 text-emerald-900 border-emerald-400',
+            msg: 'Typical operating range for most structural welds. Good fusion, manageable distortion, acceptable HAZ properties.'
+          },
+          HIGH: {
+            color: 'bg-amber-100 text-amber-900 border-amber-400',
+            msg: 'Risk: grain coarsening in HAZ, increased distortion, reduced toughness. Acceptable for thick sections; problematic for thin plate.'
+          },
+          EXCESSIVE: {
+            color: 'bg-rose-100 text-rose-900 border-rose-400',
+            msg: 'Risk: severe warping, hot cracking, mechanical property degradation. Reduce amperage or speed up travel.'
+          }
+        };
+        var tierColor = TIER_PRESENTATION[tier].color;
+        var tierMsg = TIER_PRESENTATION[tier].msg;
 
         var processInfo = {
           mig:   { label: __alloT('stem.weldlab.mig_gmaw', 'MIG / GMAW'),  eff: '80%', note: __alloT('stem.weldlab.low_spatter_most_arc_energy_reaches_th', 'Low spatter, most arc energy reaches the weld.') },
@@ -1513,71 +1603,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       // pointer-drag and wheel-zoom. Reset button restores defaults.
       // Reduced-motion: arc holds at end of travel; sparks suppressed;
       // arc pulse disabled.
-      // ── Defect computation: derive defect set from current parameters ──
-      // Pure function; called by render loop each frame to determine
-      // which defects (if any) should appear in the bead. Returns an
-      // object whose keys are defect names; values are severity 0–1
-      // (0 = absent, 1 = severe).
-      //
-      // Defect rules of thumb (taught in CWI prep + AWS SENSE Level 1):
-      //   burnthrough   — net heat input too high for plate thickness
-      //                   (specific to thin plate; rare on thick plate)
-      //   lack of fusion — net heat too LOW for plate thickness
-      //                   (cold bead floats on top of base metal)
-      //   undercut      — high amperage + high travel speed
-      //                   (groove carved into base metal alongside bead)
-      //   overlap       — low amperage + slow travel speed
-      //                   (bead overhangs edges without fusing)
-      //   spatter       — amperage above process-appropriate maximum
-      //                   (molten metal droplets scattered around bead)
-      //   porosity      — process-specific shielding/cleanliness issue
-      //                   (bubbles/pinholes embedded in bead surface)
-      function _computeWeldDefects(net, TH, V, A, TS, P) {
-        var d = {
-          burnthrough: 0, lackOfFusion: 0, undercut: 0,
-          overlap: 0, spatter: 0, porosity: 0
-        };
-        // Burnthrough — heat density per unit plate thickness too high
-        // Threshold scales with thickness: thicker = more headroom.
-        var heatDensity = net / Math.max(0.06, TH);
-        if (heatDensity > 100) d.burnthrough = Math.min(1, (heatDensity - 100) / 80);
-        // Lack of fusion — heat density too low to melt base + filler together
-        if (heatDensity < 25) d.lackOfFusion = Math.min(1, (25 - heatDensity) / 25);
-        // Undercut — high amperage + fast travel carves a groove next to bead
-        if (A > 230 && TS > 14) {
-          d.undercut = Math.min(1, ((A - 230) / 80) * ((TS - 14) / 10));
-        }
-        // Overlap — low amperage + slow travel makes bead overhang without fusing
-        if (A < 130 && TS < 8) {
-          d.overlap = Math.min(1, ((130 - A) / 60) * ((8 - TS) / 4));
-        }
-        // Spatter — amperage above process-specific max
-        var ampMax = (P === 'tig') ? 200 : (P === 'stick') ? 250 : (P === 'oxy') ? 150 : 300;
-        if (A > ampMax) d.spatter = Math.min(1, (A - ampMax) / 80);
-        // Porosity — process-specific
-        //   MIG: low voltage with high amperage → narrow + porous arc
-        //   TIG: insufficient amperage for material → contamination pickup
-        //   Stick: damp electrode (modeled as low V with mid-range A)
-        //   Oxy: improper flame chemistry (modeled as off-target amperage)
-        if (P === 'mig' && V < 18 && A > 180) d.porosity = Math.min(1, (18 - V) / 8);
-        else if (P === 'tig' && A < 80) d.porosity = Math.min(1, (80 - A) / 30);
-        else if (P === 'stick' && V < 22 && A > 120 && A < 180) d.porosity = 0.45;
-        else if (P === 'oxy' && (A < 75 || A > 130)) d.porosity = Math.min(1, Math.abs(A - 100) / 50);
-        return d;
-      }
-
-      // ── Position rotation helper ──
-      // Returns a Euler-angle triplet (x, y, z) to rotate the entire
-      // joint+torch group so the SAME welding action is visualized in
-      // 1G (flat), 2G (horizontal), 3G (vertical), or 4G (overhead)
-      // position. Camera default also adjusted per position to keep the
-      // weld visible.
-      function _positionRotation(pos) {
-        if (pos === '2G') return { x: 0,        y: 0, z: Math.PI / 2 };
-        if (pos === '3G') return { x: -Math.PI / 2, y: 0, z: 0 };
-        if (pos === '4G') return { x: 0,        y: 0, z: Math.PI };
-        return { x: 0, y: 0, z: 0 };  // 1G flat (default)
-      }
+      // _computeWeldDefects and _positionRotation now live at module top level,
+      // beside the rest of the welding physics, so they can be unit-tested. They
+      // were always pure — they read nothing but their arguments.
 
       function WeldBeadLab3D(props) {
         var canvasRef = useRef(null);
