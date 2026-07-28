@@ -3327,13 +3327,32 @@ const _alloStudentSafeResources = (items) => {
 // ── Directions objectives (Phase 1, 2026-07-19) — pure helpers ─────────────
 // Backward-compatible: directions.data is a legacy markdown STRING or
 // { body, objectives[] }. One normalizer for every reader; one pure evaluator
-// (signals = { globalPoints, gameCompletions }) so behavior is unit-testable.
+// (signals = { globalPoints, gameCompletions, ... }) so behavior is unit-testable.
 // NO GATING lives here by design — the checklist informs and celebrates.
+// ── ONE definition of "engaged" (2026-07-27) ──────────────────────────────────
+// Hoisted from inside the focus heartbeat so the heartbeat, the directions
+// `time` goal, and STEM Lab's `timeSpent` quest all measure a minute the same
+// way. They did not: STEM accumulated WALL CLOCK (Date.now() minus mount, taken
+// on unmount), so an abandoned open tab satisfied "spend 5 minutes" there while
+// failing it here — the same phrase meaning two things in one app.
+const _ALLO_ENGAGEMENT_TIMEOUT_MS = 180000; // 3 minutes since last interaction
 function _alloNormalizeDirectionsData(data) {
     if (data && typeof data === 'object' && !Array.isArray(data)) {
         const body = typeof data.body === 'string' ? data.body : '';
+        // Resource-backed kinds (2026-07-27) carry a resourceRef and are DROPPED
+        // without one — an unbound 'visited'/'responded'/'completed' goal could
+        // never resolve, which is exactly the failure mode that let the dead
+        // 'wordScramble' chip ship. 'game' stays valid unbound for back-compat
+        // (v1/v2 goals matched any resource of that type).
         const objectives = Array.isArray(data.objectives)
-            ? data.objectives.filter(o => o && typeof o === 'object' && o.id && typeof o.label === 'string' && o.label && ['xp', 'game', 'manual'].includes(o.kind))
+            ? data.objectives.filter(o => {
+                if (!o || typeof o !== 'object' || !o.id) return false;
+                if (typeof o.label !== 'string' || !o.label) return false;
+                if (!['xp', 'game', 'manual', 'visited', 'responded', 'completed', 'time'].includes(o.kind)) return false;
+                if (['visited', 'responded', 'completed', 'time'].includes(o.kind) && !o.resourceRef) return false;
+                if (o.kind === 'game' && !o.gameType) return false;
+                return true;
+            })
             : [];
         // softGate (Phase 2): a GENTLE nudge flag — suggests finishing goals before the rest
         // of the pack. Never blocks anything; hard gates are Phase 3, opt-in, with a recorded
@@ -3341,6 +3360,112 @@ function _alloNormalizeDirectionsData(data) {
         return { body, objectives, softGate: data.softGate === true };
     }
     return { body: typeof data === 'string' ? data : '', objectives: [], softGate: false };
+}
+// ── Goal capability registry (2026-07-27) — what a resource can actually PROVE ─
+// The composer used to offer a fixed chip row, which is how 'wordScramble' rotted
+// into a goal that could never tick (the game never reported a completion at all).
+// Here the offer is DERIVED from the resource: a teacher picks something in the
+// pack and gets only the goal kinds that thing can emit. A dead goal becomes
+// unrepresentable rather than merely discouraged.
+//
+// Every student-safe resource additionally supports 'visited' (it was opened) and
+// 'manual' (free-text self-check) — those are universal and not listed per type.
+const _ALLO_GAME_LABELS = {
+    crossword: 'Crossword', memory: 'Memory', matching: 'Matching', bingo: 'Bingo',
+    wordScramble: 'Word Scramble', syntaxScramble: 'Sentence Scramble',
+    conceptSort: 'Concept Sort', timeline: 'Sequence Game', vennDiagram: 'Venn Diagram',
+    tchartSort: 'T-Chart Sort', fishboneSort: 'Fishbone Sort', causeEffectSort: 'Cause & Effect Sort',
+    problemSolutionSort: 'Problem/Solution Sort', conceptMapSort: 'Concept Map Sort',
+    frayerSort: 'Frayer Sort', seeThinkWonderSort: 'See-Think-Wonder Sort',
+    storyMapSort: 'Story Map Sort', outlineSort: 'Outline Sort', pipelineBuilder: 'Flow Builder'
+};
+// `outline` is polymorphic: data.structureType picks the renderer AND the game.
+// Keys mirror the exact strings renderOutlineContent branches on — a typo here
+// silently offers a goal the student can never trigger, so they are pinned.
+const _ALLO_OUTLINE_GAMES = {
+    'Venn Diagram': 'vennDiagram',
+    'T-Chart': 'tchartSort',
+    'Fishbone': 'fishboneSort',
+    'Cause and Effect': 'causeEffectSort',
+    'Problem Solution': 'problemSolutionSort',
+    'Key Concept Map': 'conceptMapSort',
+    'Mind Map': 'conceptMapSort',
+    'Frayer Model': 'frayerSort',
+    'See-Think-Wonder': 'seeThinkWonderSort',
+    'Story Map': 'storyMapSort',
+    'Flow Chart': 'pipelineBuilder',
+    'Process Flow / Sequence': 'pipelineBuilder',
+    'Structured Outline': 'outlineSort'
+};
+const _ALLO_GOAL_CAPABILITIES = {
+    'glossary':        { games: ['crossword', 'memory', 'matching', 'bingo', 'wordScramble'] },
+    'concept-sort':    { games: ['conceptSort'] },
+    'timeline':        { games: ['timeline'] },
+    'sentence-frames': { games: ['syntaxScramble'], responded: true },
+    'outline':         { outlineGames: true },
+    'math':            { responded: true },
+    'dbq':             { responded: true },
+    'quiz':            { completed: true }
+};
+// How many response fields a resource EXPECTS, and how many are filled. Derived
+// from the resource's own data — never by counting keys in the response bag,
+// because views stash UI state in there too (DBQ writes _dbqTab/_dbqActiveDoc
+// just from clicking a tab, which would score "browsed" as "answered").
+// Returns null when the type has no response contract — the composer then never
+// offers a 'responded' goal for it.
+function _alloResponseProgress(item, responses) {
+    if (!item || !item.type) return null;
+    const d = (item.data && typeof item.data === 'object') ? item.data : {};
+    const r = (responses && typeof responses === 'object') ? responses : {};
+    const filled = (v) => v !== undefined && v !== null && String(v).trim().length > 0;
+    if (item.type === 'sentence-frames') {
+        if (d.mode === 'list') {
+            const items = Array.isArray(d.items) ? d.items : [];
+            return { answered: items.filter((_, i) => filled(r[i])).length, total: items.length };
+        }
+        const matches = String(d.text || '').match(/\[.*?\]/g) || [];
+        return { answered: matches.filter((_, i) => filled(r['paragraph-' + i])).length, total: matches.length };
+    }
+    if (item.type === 'math') {
+        const problems = Array.isArray(d.problems) ? d.problems : [];
+        return { answered: problems.filter((_, i) => filled(r[i])).length, total: problems.length };
+    }
+    if (item.type === 'dbq') {
+        // The essay IS the deliverable; annotations and self-scores are scaffolding.
+        return { answered: filled(r._essayText) ? 1 : 0, total: 1 };
+    }
+    return null;
+}
+// The goal kinds a given pack resource can back with real evidence. Pure, so the
+// composer and the tests agree by construction. `label` is the English fallback;
+// the composer runs it through t() with `labelKey`.
+function _alloGoalOptionsForResource(item) {
+    if (!item || !item.id || !item.type) return [];
+    const title = String(item.title || '').trim();
+    const named = title ? ' “' + title + '”' : '';
+    const cap = _ALLO_GOAL_CAPABILITIES[item.type] || {};
+    // Time reads as an OBSERVATION ("Spent 10 minutes on…"), never a requirement
+    // ("Spend at least…"). A floor would punish the student who reads fluently and
+    // finishes in four minutes, and it is the one goal satisfiable by idling — so
+    // the wording stays descriptive and, like every other kind, it gates nothing.
+    const out = [
+        { kind: 'visited', labelKey: 'directions.goal_visited', label: 'Open' + (named || ' this') },
+        { kind: 'time', minutes: 10, labelKey: 'directions.goal_time', label: 'Spent 10 minutes on' + (named || ' this') }
+    ];
+    let games = Array.isArray(cap.games) ? cap.games.slice() : [];
+    if (cap.outlineGames) {
+        const st = (item.data && typeof item.data === 'object') ? item.data.structureType : '';
+        const g = _ALLO_OUTLINE_GAMES[st || 'Structured Outline'];
+        if (g) games = [g];
+    }
+    games.forEach(g => out.push({
+        kind: 'game', gameType: g, labelKey: 'directions.goal_game',
+        label: 'Finish the ' + (_ALLO_GAME_LABELS[g] || g)
+    }));
+    if (cap.responded) out.push({ kind: 'responded', labelKey: 'directions.goal_responded', label: 'Answer every part of' + (named || ' this') });
+    if (cap.completed) out.push({ kind: 'completed', labelKey: 'directions.goal_completed', label: 'Finish' + (named || ' this') });
+    out.push({ kind: 'manual', labelKey: 'directions.goal_manual', label: 'I finished my work' });
+    return out;
 }
 function _alloEvaluateObjectives(objectives, signals, progress) {
     const s = signals || {};
@@ -3364,8 +3489,44 @@ function _alloEvaluateObjectives(objectives, signals, progress) {
         } else if (o.kind === 'game') {
             const entries = (s.gameCompletions && Array.isArray(s.gameCompletions[o.gameType])) ? s.gameCompletions[o.gameType] : [];
             done = entries.some(e => e && (!startedAt || (e.completedAt && e.completedAt >= startedAt)) && (!o.resourceRef || e.resourceId === o.resourceRef));
+        } else if (o.kind === 'time') {
+            // Engaged minutes on THIS resource, from the same heartbeat that drives
+            // engagedMinutes (visible tab + interaction inside 3 min). Cumulative,
+            // not per-sitting: a student who reads for 4 minutes tonight and 6 more
+            // tomorrow has genuinely spent 10 on it.
+            const want = Math.max(1, Number(o.minutes) || 0);
+            const spent = (s.resourceMinutes && typeof s.resourceMinutes === 'object')
+                ? Math.max(0, Number(s.resourceMinutes[o.resourceRef]) || 0) : 0;
+            done = spent >= want;
+            progressText = Math.min(spent, want) + '/' + want + ' min';
+        } else if (o.kind === 'visited') {
+            // The '_visited' map lives at the TOP level of the progress store (it is
+            // shared across directions resources), so it arrives via signals — NOT
+            // via `progress`, which is scoped to one directions id.
+            done = !!(s.visited && s.visited[o.resourceRef] === true);
+        } else if (o.kind === 'responded') {
+            const item = (Array.isArray(s.resources) ? s.resources : []).find(it => it && it.id === o.resourceRef);
+            const all = (s.studentResponses && typeof s.studentResponses === 'object') ? s.studentResponses : {};
+            const prog = _alloResponseProgress(item, all[o.resourceRef]);
+            if (prog && prog.total > 0) {
+                done = prog.answered >= prog.total;
+                progressText = prog.answered + '/' + prog.total;
+            }
+        } else if (o.kind === 'completed') {
+            // Same freshness rule as games: a completion from before the assignment
+            // started is last week's work, not tonight's.
+            const rec = (s.resourceCompletions && typeof s.resourceCompletions === 'object') ? s.resourceCompletions[o.resourceRef] : null;
+            const fresh = !!(rec && (!startedAt || (rec.completedAt && rec.completedAt >= startedAt)));
+            done = fresh;
+            if (rec && typeof rec.total === 'number' && rec.total > 0) {
+                progressText = Math.min(Number(rec.answered) || 0, rec.total) + '/' + rec.total;
+            }
         }
-        return { id: o.id, label: o.label, kind: o.kind, done, progressText };
+        // Self-report vs device-observed. The teacher panel renders these
+        // differently; 'manual' is the student's word, everything else is a
+        // signal the device actually recorded. Neither one is a grade.
+        const confirmed = o.kind !== 'manual';
+        return { id: o.id, label: o.label, kind: o.kind, done, progressText, confirmed };
     }).filter(Boolean);
 }
 // ── Quest map station identity (2026-07-20) — ONE registry, per-type design ───
@@ -9339,7 +9500,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // safety net for other components.
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
-    var pluginCdnVersion = '79d56f07e';
+    var pluginCdnVersion = '355fa3d9a';
     var isDesktopBundledApp = typeof window !== 'undefined'
       && /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname || '')
       && (window.location.pathname || '').startsWith('/app/');
@@ -9639,129 +9800,129 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=79d56f07e');
-    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=79d56f07e');
-    loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=79d56f07e');
-    loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=79d56f07e');
-    loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=79d56f07e');
+    loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=355fa3d9a');
+    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=355fa3d9a');
+    loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=355fa3d9a');
+    loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=355fa3d9a');
+    loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=355fa3d9a');
     loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=ce049d79');
-    loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=79d56f07e');
-    loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=79d56f07e');
-    loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=79d56f07e');
-    loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=79d56f07e');
-    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=79d56f07e');
-    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=79d56f07e');
+    loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=355fa3d9a');
+    loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=355fa3d9a');
+    loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=355fa3d9a');
+    loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=355fa3d9a');
+    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=355fa3d9a');
+    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=355fa3d9a');
     loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=69b2ba76');
     loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=0e96a73e');
     loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=52997ac7');
-    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=79d56f07e');
-    loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=79d56f07e');
-    loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=79d56f07e');
-    loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=79d56f07e');
-    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=79d56f07e');
-    loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=79d56f07e');
-    loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=79d56f07e');
-    loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=79d56f07e');
-    loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js?v=79d56f07e');
+    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=355fa3d9a');
+    loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=355fa3d9a');
+    loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=355fa3d9a');
+    loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=355fa3d9a');
+    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=355fa3d9a');
+    loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=355fa3d9a');
+    loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=355fa3d9a');
+    loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=355fa3d9a');
+    loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js?v=355fa3d9a');
     // Pyodide is ~10MB on first hit; load lazily so non–Report-Writer users
     // don't pay the cost at boot. Report Writer's generateReport() calls
     // window.__alloLazyPyodide() as soon as the user clicks Generate.
     window.__alloLazyPyodide = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PyodideRuntime', 'https://alloflow-cdn.pages.dev/pyodide_runtime_module.js'); }; })();
-    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=79d56f07e'); }; })();
+    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=355fa3d9a'); }; })();
     window.__alloLazyVideoStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TutorialCompilerModule', 'https://alloflow-cdn.pages.dev/tutorial_compiler_module.js?v=1e5f07c6'); loadModule('VideoStudio', 'https://alloflow-cdn.pages.dev/video_studio_module.js?v=1e5f07c6'); }; })();
-    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', 'https://alloflow-cdn.pages.dev/studio_module.js?v=79d56f07e'); }; })();
-    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=79d56f07e'); }; })();
+    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', 'https://alloflow-cdn.pages.dev/studio_module.js?v=355fa3d9a'); }; })();
+    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=355fa3d9a'); }; })();
     // Dynamic Assessment Studio (Phase A+B) — clinical tool, lazy-loaded.
     // School-psych workflow: pretest → AI-mediated or clinician-led mediation
     // → posttest with graduated prompt hierarchies + modifiability scoring.
     window.__alloLazyDynamicAssessment = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DynamicAssessment', 'https://alloflow-cdn.pages.dev/dynamic_assessment_module.js'); }; })();
     // Seating Chart (Ring 0+1, July 21 2026) — teacher-only roster tool,
     // lazy-loaded from the Roster panel's Seating Chart button.
-    window.__alloLazySeatingChart = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SeatingChart', 'https://alloflow-cdn.pages.dev/seating_chart_module.js?v=79d56f07e'); }; })();
+    window.__alloLazySeatingChart = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SeatingChart', 'https://alloflow-cdn.pages.dev/seating_chart_module.js?v=355fa3d9a'); }; })();
     // Voice infrastructure (Phase 3v) — shared dictation + audio surface.
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
     // onto in subsequent commits.
-    loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js?v=79d56f07e');
-    loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js?v=79d56f07e');
-    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=79d56f07e');
-    loadModule('ReadingLibrary', 'https://alloflow-cdn.pages.dev/reading_library_module.js?v=79d56f07e');
-    loadModule('AccessibilityEvidence', 'https://alloflow-cdn.pages.dev/accessibility_evidence_module.js?v=79d56f07e');
-    loadModule('AccessibilityLab', 'https://alloflow-cdn.pages.dev/accessibility_lab_module.js?v=79d56f07e');
-    loadModule('AuditRemediator', 'https://alloflow-cdn.pages.dev/audit_remediator_module.js?v=79d56f07e');
-    loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js?v=79d56f07e');
-    loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js?v=79d56f07e');
-    loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js?v=79d56f07e');
-    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=79d56f07e');
-    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=79d56f07e');
-    loadModule('AlloBot', 'https://alloflow-cdn.pages.dev/allobot_module.js?v=79d56f07e');
-    loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js?v=79d56f07e');
-    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js?v=79d56f07e'); }; })();
-    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js?v=79d56f07e'); }; })();
-    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', 'https://alloflow-cdn.pages.dev/mind_map_module.js?v=79d56f07e'); }; })();
-    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js?v=79d56f07e'); }; })();
+    loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js?v=355fa3d9a');
+    loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js?v=355fa3d9a');
+    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=355fa3d9a');
+    loadModule('ReadingLibrary', 'https://alloflow-cdn.pages.dev/reading_library_module.js?v=355fa3d9a');
+    loadModule('AccessibilityEvidence', 'https://alloflow-cdn.pages.dev/accessibility_evidence_module.js?v=355fa3d9a');
+    loadModule('AccessibilityLab', 'https://alloflow-cdn.pages.dev/accessibility_lab_module.js?v=355fa3d9a');
+    loadModule('AuditRemediator', 'https://alloflow-cdn.pages.dev/audit_remediator_module.js?v=355fa3d9a');
+    loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js?v=355fa3d9a');
+    loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js?v=355fa3d9a');
+    loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js?v=355fa3d9a');
+    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=355fa3d9a');
+    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=355fa3d9a');
+    loadModule('AlloBot', 'https://alloflow-cdn.pages.dev/allobot_module.js?v=355fa3d9a');
+    loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js?v=355fa3d9a');
+    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js?v=355fa3d9a'); }; })();
+    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js?v=355fa3d9a'); }; })();
+    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', 'https://alloflow-cdn.pages.dev/mind_map_module.js?v=355fa3d9a'); }; })();
+    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js?v=355fa3d9a'); }; })();
     window.__alloLazyResearchHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ResearchHub', 'https://alloflow-cdn.pages.dev/research_hub_module.js'); loadModule('ResearchLaneScientific', 'https://alloflow-cdn.pages.dev/research_lane_scientific_module.js'); loadModule('ResearchLaneEngineering', 'https://alloflow-cdn.pages.dev/research_lane_engineering_module.js'); loadModule('ResearchLaneHumanities', 'https://alloflow-cdn.pages.dev/research_lane_humanities_module.js'); loadModule('ResearchHubEducator', 'https://alloflow-cdn.pages.dev/research_hub_educator_module.js'); }; })();
-    loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=79d56f07e');
-    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=79d56f07e');
-    loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=79d56f07e');
+    loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=355fa3d9a');
+    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=355fa3d9a');
+    loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=355fa3d9a');
     loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=216a1867');
-    loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=79d56f07e');
-    loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=79d56f07e');
-    loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=79d56f07e');
-    loadModule('VoiceConfig', 'https://alloflow-cdn.pages.dev/voice_config_module.js?v=79d56f07e');
-    loadModule('CanvasTips', 'https://alloflow-cdn.pages.dev/canvas_tips_module.js?v=79d56f07e');
+    loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=355fa3d9a');
+    loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=355fa3d9a');
+    loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=355fa3d9a');
+    loadModule('VoiceConfig', 'https://alloflow-cdn.pages.dev/voice_config_module.js?v=355fa3d9a');
+    loadModule('CanvasTips', 'https://alloflow-cdn.pages.dev/canvas_tips_module.js?v=355fa3d9a');
     // ── Lazy-loaded modal modules (May 12 2026) ──
     // Each modal is gated by a wrapped setter that fires its ensure-loader on
     // first true. Until that happens the script is not fetched, cutting ~9
     // requests off cold boot. The embedded loadModule(...) call still matches
     // build.js's URL rewriter regex, so hashes auto-update on deploy.
-    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js?v=79d56f07e'); }; })();
+    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js?v=355fa3d9a'); }; })();
     // ConfirmDialog stays eager — used by many widgets (delete unit, end session, clear edges, etc.).
-    loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js?v=79d56f07e');
+    loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js?v=355fa3d9a');
     // PromptDialog (May 2026 polish pass): polished replacement for window.prompt(); shared by AlloFlowUX.
-    loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js?v=79d56f07e');
-    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js?v=79d56f07e'); }; })();
-    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js?v=79d56f07e'); }; })();
+    loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js?v=355fa3d9a');
+    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js?v=355fa3d9a'); }; })();
+    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js?v=355fa3d9a'); }; })();
     window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js?v=059104c5'); }; })();
-    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=79d56f07e'); }; })();
-    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=79d56f07e'); }; })();
+    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=355fa3d9a'); }; })();
+    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=355fa3d9a'); }; })();
     window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', 'https://alloflow-cdn.pages.dev/view_socratic_chat_module.js?v=e7423298'); }; })();
-    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=79d56f07e'); }; })();
-    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=79d56f07e');
-    loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=79d56f07e');
-    loadModule('LiveLessonRun', 'https://alloflow-cdn.pages.dev/view_live_lesson_run_module.js?v=79d56f07e');
+    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=355fa3d9a'); }; })();
+    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=355fa3d9a');
+    loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=355fa3d9a');
+    loadModule('LiveLessonRun', 'https://alloflow-cdn.pages.dev/view_live_lesson_run_module.js?v=355fa3d9a');
     loadModule('StudentJoinPanel', 'https://alloflow-cdn.pages.dev/view_student_join_panel_module.js?v=d4463f3d');
     loadModule('StudentSaveAdventurePanel', 'https://alloflow-cdn.pages.dev/view_student_save_adventure_module.js?v=ea313f84');
-    loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=79d56f07e');
-    loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=79d56f07e');
-    loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=79d56f07e');
-    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=79d56f07e');
-    loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js?v=79d56f07e');
-    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js?v=79d56f07e'); }; })();
-    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js?v=79d56f07e'); }; })();
-    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', 'https://alloflow-cdn.pages.dev/brand_profile_editor_module.js?v=79d56f07e'); }; })();
-    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js?v=79d56f07e'); }; })();
-    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js?v=79d56f07e'); }; })();
-    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_core.js?v=79d56f07e'); loadModule('OpenGrooveScheduler', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_scheduler.js?v=79d56f07e'); loadModule('OpenGrooveAudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_audio.js?v=79d56f07e'); loadModule('OpenGrooveStudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_module.js?v=79d56f07e'); }; })();
-    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', 'https://alloflow-cdn.pages.dev/timeline_studio_module.js?v=79d56f07e'); }; })();
-    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LinguaPractice', 'https://alloflow-cdn.pages.dev/lingua_practice_module.js?v=79d56f07e'); }; })();
-    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', 'https://alloflow-cdn.pages.dev/test_prep_hub_module.js?v=79d56f07e'); }; })();
-    loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js?v=79d56f07e');
-    loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js?v=79d56f07e');
-    loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js?v=79d56f07e');
+    loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=355fa3d9a');
+    loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=355fa3d9a');
+    loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=355fa3d9a');
+    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=355fa3d9a');
+    loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js?v=355fa3d9a');
+    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js?v=355fa3d9a'); }; })();
+    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js?v=355fa3d9a'); }; })();
+    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', 'https://alloflow-cdn.pages.dev/brand_profile_editor_module.js?v=355fa3d9a'); }; })();
+    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js?v=355fa3d9a'); }; })();
+    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js?v=355fa3d9a'); }; })();
+    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_core.js?v=355fa3d9a'); loadModule('OpenGrooveScheduler', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_scheduler.js?v=355fa3d9a'); loadModule('OpenGrooveAudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_audio.js?v=355fa3d9a'); loadModule('OpenGrooveStudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_module.js?v=355fa3d9a'); }; })();
+    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', 'https://alloflow-cdn.pages.dev/timeline_studio_module.js?v=355fa3d9a'); }; })();
+    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LinguaPractice', 'https://alloflow-cdn.pages.dev/lingua_practice_module.js?v=355fa3d9a'); }; })();
+    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', 'https://alloflow-cdn.pages.dev/test_prep_hub_module.js?v=355fa3d9a'); }; })();
+    loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js?v=355fa3d9a');
+    loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js?v=355fa3d9a');
+    loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js?v=355fa3d9a');
     // Fuzzy-match user-typed language strings against known packs (typos, endonyms, variants)
     loadModule('LanguageMatcher', 'https://alloflow-cdn.pages.dev/language_matcher_module.js');
-    loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js?v=79d56f07e');
-    loadModule('VerificationPolicy', 'https://alloflow-cdn.pages.dev/verification_policy_module.js?v=79d56f07e');
-    loadModule('DocBuilderRenderer', 'https://alloflow-cdn.pages.dev/doc_builder_renderer_module.js?v=79d56f07e');
-    loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=79d56f07e');
-    loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=79d56f07e');
-    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=79d56f07e');
-    loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=79d56f07e');
-    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=79d56f07e');
-    loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=79d56f07e');
-    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=79d56f07e');
-    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=79d56f07e');
+    loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js?v=355fa3d9a');
+    loadModule('VerificationPolicy', 'https://alloflow-cdn.pages.dev/verification_policy_module.js?v=355fa3d9a');
+    loadModule('DocBuilderRenderer', 'https://alloflow-cdn.pages.dev/doc_builder_renderer_module.js?v=355fa3d9a');
+    loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=355fa3d9a');
+    loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=355fa3d9a');
+    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=355fa3d9a');
+    loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=355fa3d9a');
+    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=355fa3d9a');
+    loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=355fa3d9a');
+    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=355fa3d9a');
+    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=355fa3d9a');
     // ModuleScopeExtras exposes isRtlLang, getSpeechLangCode, ErrorBoundary, etc.
     // The generic loadModule() doesn't accept post-load callbacks, and the
     // upgrade-on-parse calls at lines ~693 and ~2002 fire before the CDN script
@@ -9799,22 +9960,22 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       setTimeout(function () { awaitModuleScopeExtras(tries - 1); }, 100);
     })(50);
     loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=d4205d9b');
-    loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=79d56f07e');
-    loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=79d56f07e');
+    loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=355fa3d9a');
+    loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=355fa3d9a');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
-    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=79d56f07e');
-    loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=79d56f07e');
-    loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=79d56f07e');
-    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=79d56f07e');
-    loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=79d56f07e');
-    loadModule('AgentCoreContracts', 'https://alloflow-cdn.pages.dev/agent_core_contracts_module.js?v=79d56f07e');
-    loadModule('AgentCoreBlueprintService', 'https://alloflow-cdn.pages.dev/agent_core_blueprint_service_module.js?v=79d56f07e');
-    loadModule('AgentCoreUIAdapter', 'https://alloflow-cdn.pages.dev/agent_core_ui_adapter_module.js?v=79d56f07e');
-    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js?v=79d56f07e');
-    loadModule('AdventureHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_handlers_module.js?v=79d56f07e');
-    loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=79d56f07e');
-    loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=79d56f07e');
-    loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=79d56f07e');
+    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=355fa3d9a');
+    loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=355fa3d9a');
+    loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=355fa3d9a');
+    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=355fa3d9a');
+    loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=355fa3d9a');
+    loadModule('AgentCoreContracts', 'https://alloflow-cdn.pages.dev/agent_core_contracts_module.js?v=355fa3d9a');
+    loadModule('AgentCoreBlueprintService', 'https://alloflow-cdn.pages.dev/agent_core_blueprint_service_module.js?v=355fa3d9a');
+    loadModule('AgentCoreUIAdapter', 'https://alloflow-cdn.pages.dev/agent_core_ui_adapter_module.js?v=355fa3d9a');
+    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js?v=355fa3d9a');
+    loadModule('AdventureHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_handlers_module.js?v=355fa3d9a');
+    loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=355fa3d9a');
+    loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=355fa3d9a');
+    loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=355fa3d9a');
     loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=d1304d57');
     // Word-by-word karaoke timing (deterministic envelope + valley snapping).
     loadModule('WordTimingModule', 'https://alloflow-cdn.pages.dev/word_timing_module.js?v=df764e1d');
@@ -9824,49 +9985,49 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ReadAloudArtifactContractModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_contract_module.js?v=501639a2');
     loadModule('ReadAloudArtifactAudioModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_audio_module.js?v=3a046659');
     loadModule('PersonaSessionArtifactModule', 'https://alloflow-cdn.pages.dev/persona_session_artifact_module.js?v=b41bcb0a');
-    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=79d56f07e');
-    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=79d56f07e');
-    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=79d56f07e');
-    loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=79d56f07e');
-    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=79d56f07e');
-    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=79d56f07e');
+    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=355fa3d9a');
+    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=355fa3d9a');
+    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=355fa3d9a');
+    loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=355fa3d9a');
+    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=355fa3d9a');
+    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=355fa3d9a');
     loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=5ab2822e');
-    loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=79d56f07e');
-    loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=79d56f07e');
-    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=79d56f07e');
-    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=79d56f07e');
-    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=79d56f07e');
-    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=79d56f07e');
+    loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=355fa3d9a');
+    loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=355fa3d9a');
+    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=355fa3d9a');
+    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=355fa3d9a');
+    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=355fa3d9a');
+    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=355fa3d9a');
     loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=2c2f5ff1');
-    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=79d56f07e');
-    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=79d56f07e');
-    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=79d56f07e');
-    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=79d56f07e');
-    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=79d56f07e');
-    loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=e5795c7a');
-    loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=79d56f07e');
-    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=79d56f07e');
-    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=79d56f07e');
-    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=79d56f07e');
-    loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=79d56f07e');
-    loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=79d56f07e');
+    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=355fa3d9a');
+    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=355fa3d9a');
+    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=355fa3d9a');
+    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=355fa3d9a');
+    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=355fa3d9a');
+    loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=07825e64');
+    loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=355fa3d9a');
+    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=355fa3d9a');
+    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=355fa3d9a');
+    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=355fa3d9a');
+    loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=355fa3d9a');
+    loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=355fa3d9a');
     loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=d12e82b7');
-    loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=79d56f07e');
-    loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=79d56f07e');
-    loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=79d56f07e');
+    loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=355fa3d9a');
+    loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=355fa3d9a');
+    loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=355fa3d9a');
     loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
     loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js');
     loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
-    loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=79d56f07e');
-    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=79d56f07e');
-    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=79d56f07e');
-    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=79d56f07e');
-    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=79d56f07e');
-    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=79d56f07e');
-    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=79d56f07e');
-    loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=79d56f07e');
-    loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=79d56f07e');
-    loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=79d56f07e');
+    loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=355fa3d9a');
+    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=355fa3d9a');
+    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=355fa3d9a');
+    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=355fa3d9a');
+    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=355fa3d9a');
+    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=355fa3d9a');
+    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=355fa3d9a');
+    loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=355fa3d9a');
+    loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=355fa3d9a');
+    loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=355fa3d9a');
     (function() {
       var s = document.createElement('script');
       s.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjs/13.2.0/math.min.js';
@@ -10600,6 +10761,33 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           causeEffectSort: []
       };
   });
+  // Per-RESOURCE completion ledger (2026-07-27). Games report into
+  // gameCompletions keyed by game type; non-game activities had nowhere to
+  // report at all — the quiz persists its attempt receipt under a CONTENT-HASH
+  // namespace, which a directions goal's resourceRef can never match. This map
+  // is keyed by resourceId so a 'completed' goal can resolve. Values stay small
+  // and non-evaluative: { completedAt, answered, total } — no score, by design.
+  const [resourceCompletions, setResourceCompletions] = useState(() => {
+      if (typeof window !== 'undefined') {
+          try {
+              const saved = safeGetItem('allo_resource_completions_v1');
+              if (saved) return JSON.parse(saved);
+          } catch (e) { warnLog("Failed to load resource completions", e); }
+      }
+      return {};
+  });
+  const recordResourceCompletion = useCallback((resourceId, info) => {
+      if (!resourceId) return;
+      const d = info || {};
+      setResourceCompletions(prev => ({
+          ...prev,
+          [resourceId]: {
+              completedAt: new Date().toISOString(),
+              answered: Math.max(0, Number(d.answered) || 0),
+              total: Math.max(0, Number(d.total) || 0)
+          }
+      }));
+  }, []);
   const [labelChallengeResults, setLabelChallengeResults] = useState(() => {
       if (typeof window !== 'undefined') {
           try {
@@ -10735,7 +10923,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
               if (saved) return JSON.parse(saved);
           } catch (e) { warnLog("Failed to load time on task", e); }
       }
-      return { totalSessionMinutes: 0, byResourceType: {} };
+      // byResource (id-keyed) added 2026-07-27 alongside the original type-keyed
+      // map, because a directions goal binds to a resourceRef, not to a type.
+      return { totalSessionMinutes: 0, byResourceType: {}, byResource: {} };
   });
   const sessionStartRef = useRef(Date.now());
   const currentResourceRef = useRef({ type: null, startTime: null });
@@ -10743,7 +10933,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       if (!lzLoaded) return;
       try { safeSetItem('allo_game_completions', JSON.stringify(gameCompletions)); } catch(e) { warnLog('localStorage write failed', e); }
       try { safeSetItem('allo_label_challenge_results', JSON.stringify(labelChallengeResults)); } catch(e) { warnLog('localStorage write failed', e); }
-  }, [gameCompletions, labelChallengeResults, lzLoaded]);
+      try { safeSetItem('allo_resource_completions_v1', JSON.stringify(resourceCompletions)); } catch(e) { warnLog('localStorage write failed', e); }
+  }, [gameCompletions, labelChallengeResults, resourceCompletions, lzLoaded]);
   useEffect(() => {
       if (!lzLoaded) return;
       try { safeSetItem('allo_escape_completions', JSON.stringify(escapeRoomCompletions)); } catch(e) { warnLog('localStorage write failed', e); }
@@ -11541,11 +11732,24 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.addEventListener('keydown', trackInteraction);
     window.addEventListener('scroll', trackInteraction);
     window.addEventListener('mousemove', trackInteraction);
+    // Publish the engagement probe for CDN modules that measure their own
+    // "time spent" (STEM Lab quests, SEL Hub). They cannot see this ref, and
+    // without it they fall back to wall clock — which is how STEM ended up
+    // crediting an abandoned open tab. Read-only and defensive: a module that
+    // loads standalone (no host) must degrade, never throw.
+    window.__alloEngagement = {
+      timeoutMs: _ALLO_ENGAGEMENT_TIMEOUT_MS,
+      isEngaged: () => {
+        if (typeof document !== 'undefined' && document.hidden) return false;
+        return (Date.now() - lastInteractionTimeRef.current) < _ALLO_ENGAGEMENT_TIMEOUT_MS;
+      }
+    };
     return () => {
       window.removeEventListener('click', trackInteraction);
       window.removeEventListener('keydown', trackInteraction);
       window.removeEventListener('scroll', trackInteraction);
       window.removeEventListener('mousemove', trackInteraction);
+      try { delete window.__alloEngagement; } catch (_) { window.__alloEngagement = null; }
     };
   }, []);
   useEffect(() => {
@@ -11577,14 +11781,44 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   }, []);
   const focusDataRef = useRef(focusData);
   focusDataRef.current = focusData;
+  // Which resource the engagement heartbeat should credit (2026-07-27). A ref,
+  // not a dep, because the heartbeat interval mounts once with `[]` — re-creating
+  // it whenever the open resource changed would restart the 60s clock on every
+  // navigation and quietly under-count every short visit.
+  const _openResourceRef = useRef(null);
+  _openResourceRef.current = (generatedContent && generatedContent.id && generatedContent.type)
+      ? { id: generatedContent.id, type: generatedContent.type }
+      : null;
   const focusStreakTimerRef = useRef(null);
   useEffect(() => {
     const STREAK_MILESTONES = [5, 10, 15, 20, 30];
-    const ENGAGEMENT_TIMEOUT_MS = 180000; // 3 minutes
+    const ENGAGEMENT_TIMEOUT_MS = _ALLO_ENGAGEMENT_TIMEOUT_MS;
     focusStreakTimerRef.current = setInterval(() => {
       if (!document.hidden) {
         const isEngaged = (Date.now() - lastInteractionTimeRef.current) < ENGAGEMENT_TIMEOUT_MS;
         const isStreakEligible = !isParentMode;
+        // Per-resource time-on-task. This ledger was declared in 2026 and NEVER
+        // written by anything — totalSessionMinutes/byResourceType sat at zero
+        // forever while the progress export reported them as measured. Credit it
+        // from the SAME heartbeat that drives engagedMinutes, so "10 minutes"
+        // means ten minutes visible AND interacting — not ten minutes of an
+        // abandoned open tab. Idle minutes are deliberately not credited.
+        if (isEngaged && _openResourceRef.current) {
+          const _open = _openResourceRef.current;
+          setTimeOnTask(prev => {
+            const base = (prev && typeof prev === 'object') ? prev : {};
+            const byResource = { ...(base.byResource || {}) };
+            const byResourceType = { ...(base.byResourceType || {}) };
+            byResource[_open.id] = (Number(byResource[_open.id]) || 0) + 1;
+            byResourceType[_open.type] = (Number(byResourceType[_open.type]) || 0) + 1;
+            return {
+              ...base,
+              totalSessionMinutes: (Number(base.totalSessionMinutes) || 0) + 1,
+              byResource,
+              byResourceType
+            };
+          });
+        }
         setFocusData(prev => {
           const updatedEngaged = prev.engagedMinutes + (isEngaged ? 1 : 0);
           const updatedIdle = prev.idleMinutes + (isEngaged ? 0 : 1);
@@ -17189,6 +17423,11 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   // students actually DO; works plan-less). One-way snapshot: the teacher reviews and edits;
   // regenerating never clobbers an added resource. Provenance rides meta.derivedFrom.
   const [showDirectionsComposer, setShowDirectionsComposer] = useState(false);
+  // Resource-first goal picker (2026-07-27): which pack resource the teacher is
+  // currently attaching a goal to. '' = none picked, so only the free-text and
+  // XP paths show.
+  const [mbDirectionsGoalRes, setMbDirectionsGoalRes] = useState('');
+  const [mbDirectionsGoalText, setMbDirectionsGoalText] = useState('');
   const [directionsDeriving, setDirectionsDeriving] = useState(false);
   // Objectives Phase 1: per-directions progress { [dirId]: { startedAt, xpBaseline, manual: {objId:true}, celebrated } }.
   // Device-local (storageDB) — a formative guide, never a grade; Phase 2 syncs evidence at next join.
@@ -17199,6 +17438,29 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   const [mbHwEvidence, setMbHwEvidence] = useState({});
   const _softGateNudgedRef = useRef(new Set());
   const [showQuestMap, setShowQuestMap] = useState(true); // the directions view's knowledge-web toggle
+  // ONE signals object for every _alloEvaluateObjectives call site (2026-07-27).
+  // Six callers previously hand-built `{ globalPoints, gameCompletions }`; adding
+  // resource-backed kinds to only some of them would make the same goal read
+  // "done" in the view and "not done" in the evidence report. Declared here —
+  // after directionsProgress, before the first caller — so no site sees a TDZ.
+  // NOTE: `_visited` lives at the TOP level of the progress store (shared across
+  // directions resources), which is why it rides signals and not `progress`.
+  const _alloObjectiveSignals = React.useMemo(() => ({
+      globalPoints,
+      gameCompletions,
+      resourceCompletions,
+      studentResponses,
+      resources: history,
+      resourceMinutes: (timeOnTask && typeof timeOnTask.byResource === 'object' && timeOnTask.byResource) ? timeOnTask.byResource : {},
+      visited: (directionsProgress._visited && typeof directionsProgress._visited === 'object') ? directionsProgress._visited : {}
+  }), [globalPoints, gameCompletions, resourceCompletions, studentResponses, history, timeOnTask, directionsProgress]);
+  // Pack resources a goal may be attached to: student-safe only (teacher-only
+  // types must never surface in a student-facing checklist) and never a
+  // 'directions' item, which would let an assignment reference itself.
+  const _alloDirectionsGoalResources = React.useMemo(
+      () => _alloStudentSafeResources(history).filter(it => it.type !== 'directions'),
+      [history]
+  );
   useEffect(() => {
       let cancelled = false;
       (async () => {
@@ -17239,7 +17501,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       const dirId = generatedContent.id;
       const _dir = _alloNormalizeDirectionsData(generatedContent.data);
       if (!_dir.objectives.length) return;
-      const _evald = _alloEvaluateObjectives(_dir.objectives, { globalPoints, gameCompletions }, directionsProgress[dirId]);
+      const _evald = _alloEvaluateObjectives(_dir.objectives, _alloObjectiveSignals, directionsProgress[dirId]);
       if (!_evald.length || !_evald.every(o => o.done)) return;
       if (directionsProgress[dirId] && directionsProgress[dirId].celebrated) return;
       setDirectionsProgress(prev => ({ ...prev, [dirId]: { ...(prev[dirId] || {}), celebrated: true } }));
@@ -17350,7 +17612,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                   if (!prog || !prog.startedAt) continue; // never started here — nothing honest to report
                   const norm = _alloNormalizeDirectionsData(it.data);
                   if (!norm.objectives.length) continue;
-                  const evald = _alloEvaluateObjectives(norm.objectives, { globalPoints, gameCompletions }, prog);
+                  const evald = _alloEvaluateObjectives(norm.objectives, _alloObjectiveSignals, prog);
                   const doneCount = evald.filter(o => o.done).length;
                   const sent = prog.evidenceSent || {};
                   if (sent.code === mbStudent.code && sent.doneCount === doneCount) continue;
@@ -17363,7 +17625,10 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                       doneCount,
                       total: evald.length,
                       xpEarned: (typeof prog.xpBaseline === 'number' && typeof globalPoints === 'number') ? Math.max(0, globalPoints - prog.xpBaseline) : 0,
-                      objectives: evald.map(o => ({ label: String(o.label).slice(0, 80), kind: o.kind, done: o.done })),
+                      // `confirmed` distinguishes a signal the device actually recorded
+                      // from the student's own checkbox. Both are formative; only one is
+                      // the student's word, and the teacher panel should not blur them.
+                      objectives: evald.map(o => ({ label: String(o.label).slice(0, 80), kind: o.kind, done: o.done, confirmed: !!o.confirmed })),
                       reportedAt: new Date().toISOString(),
                   };
                   const dc = mbRtcRef.current?.dc;
@@ -18077,7 +18342,10 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
                   doneCount: Math.max(0, Number(v.doneCount) || 0),
                   total: Math.max(0, Number(v.total) || 0),
                   xpEarned: Math.max(0, Number(v.xpEarned) || 0),
-                  objectives: (Array.isArray(v.objectives) ? v.objectives : []).slice(0, 20).map(o => ({ label: String(o && o.label || '').slice(0, 80), kind: String(o && o.kind || '').slice(0, 10), done: !!(o && o.done) })),
+                  // confirmed=false means the student ticked it themselves. Older
+                  // students' devices send no flag at all; treat that as unconfirmed
+                  // rather than silently promoting it to device-observed.
+                  objectives: (Array.isArray(v.objectives) ? v.objectives : []).slice(0, 20).map(o => ({ label: String(o && o.label || '').slice(0, 80), kind: String(o && o.kind || '').slice(0, 10), done: !!(o && o.done), confirmed: !!(o && o.confirmed) })),
                   at: Date.now(),
               },
           }));
@@ -18784,10 +19052,21 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
         && (liveOwner.documentEpoch !== watchdogEpoch || (watchdogRunId && liveOwner.runId !== watchdogRunId));
       const _otherAbortOwner = !!(liveAbortOwner && (liveAbortOwner.documentEpoch !== watchdogEpoch || (watchdogRunId && liveAbortOwner.runId !== watchdogRunId)))
         || !!(initialWatchdogAbortCtrl && liveAbortCtrl !== initialWatchdogAbortCtrl);
-      if (_staleDocument || _otherRunOwnsHost || _otherAbortOwner) {
-        warnLog('[PdfFix] Ignoring superseded remediation watchdog timeout; a newer document or run owns the host.');
-        try { if (typeof _docPipeline?.logHostDiagnostic === 'function') _docPipeline.logHostDiagnostic('Watchdog', 'Idle timeout ignored — a newer document or run owns the host.', { runId: watchdogRunId, documentEpoch: watchdogEpoch }); } catch (_) {}
-        arm(); // re-check rather than dying: the newer run may finish and strand the flag in turn
+      if (_staleDocument) {
+        // A DIFFERENT DOCUMENT is loaded. watchdogEpoch was captured once when this effect ran, so
+        // this instance can never become valid again — re-arming it just relogs every IDLE_LIMIT
+        // for the life of the page. Let it die; the current document has its own watchdog.
+        //
+        // Field log 2026-07-27 caught exactly that: three "Idle timeout ignored" lines ~8 minutes
+        // apart, all stamped {runId: null, documentEpoch: 0}, while the live run was epoch 1. The
+        // re-arm added by M7 was right for a superseded RUN and wrong for a superseded DOCUMENT.
+        warnLog('[PdfFix] Retiring a remediation watchdog for a document that is no longer loaded.');
+        return;
+      }
+      if (_otherRunOwnsHost || _otherAbortOwner) {
+        warnLog('[PdfFix] Ignoring superseded remediation watchdog timeout; a newer run owns the host.');
+        try { if (typeof _docPipeline?.logHostDiagnostic === 'function') _docPipeline.logHostDiagnostic('Watchdog', 'Idle timeout ignored — a newer run owns the host.', { runId: watchdogRunId, documentEpoch: watchdogEpoch }); } catch (_) {}
+        arm(); // this one CAN resolve: the newer run may finish and strand the flag in turn
         return;
       }
       if (!liveOwner) {
@@ -28613,7 +28892,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
               const _sgDir = (Array.isArray(history) ? history : []).find(h => h && h.type === 'directions' && _alloNormalizeDirectionsData(h.data).softGate);
               if (_sgDir && !_softGateNudgedRef.current.has(item.id)) {
                   const _sgNorm = _alloNormalizeDirectionsData(_sgDir.data);
-                  const _sgEval = _alloEvaluateObjectives(_sgNorm.objectives, { globalPoints, gameCompletions }, directionsProgress[_sgDir.id] || {});
+                  const _sgEval = _alloEvaluateObjectives(_sgNorm.objectives, _alloObjectiveSignals, directionsProgress[_sgDir.id] || {});
                   const _sgDone = _sgEval.filter(o => o.done).length;
                   if (_sgEval.length && _sgDone < _sgEval.length) {
                       _softGateNudgedRef.current.add(item.id);
@@ -30898,14 +31177,14 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
     const getAssignmentProgress = () => {
       if (!assignmentDirections || !assignmentDirections.id) return null;
       const normalized = _alloNormalizeDirectionsData(assignmentDirections.data);
-      const evaluated = _alloEvaluateObjectives(normalized.objectives, { globalPoints, gameCompletions }, directionsProgress[assignmentDirections.id]);
+      const evaluated = _alloEvaluateObjectives(normalized.objectives, _alloObjectiveSignals, directionsProgress[assignmentDirections.id]);
       return { title: assignmentDirections.title || (t('directions.title') || 'Assignment Directions'), done: evaluated.filter((goal) => goal.done).length, total: evaluated.length };
     };
     const getAssignmentMapItems = () => (Array.isArray(history) ? history : []).filter((item) => item && item.id && item.type && item.type !== 'directions' && !TEACHER_ONLY_TYPES.includes(item.type)).slice(0, 12);
     const getNextAssignmentStep = () => {
       if (!assignmentDirections || !assignmentDirections.id) return null;
       const normalized = _alloNormalizeDirectionsData(assignmentDirections.data);
-      const evaluated = _alloEvaluateObjectives(normalized.objectives, { globalPoints, gameCompletions }, directionsProgress[assignmentDirections.id]);
+      const evaluated = _alloEvaluateObjectives(normalized.objectives, _alloObjectiveSignals, directionsProgress[assignmentDirections.id]);
       const visited = (directionsProgress._visited && typeof directionsProgress._visited === 'object') ? directionsProgress._visited : {};
       const recommendation = _alloRecommendNextStations(getAssignmentMapItems(), visited, normalized.objectives, evaluated);
       if (recommendation.next && recommendation.next.item) return { item: recommendation.next.item, title: recommendation.next.item.title || recommendation.next.item.type, goalLabel: recommendation.next.goalLabel || '' };
@@ -35468,18 +35747,82 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 <p className="text-[11px] font-bold text-slate-600 mb-1">{t('directions.objectives') || 'Goals (auto-check where possible)'}</p>
                 {(mbDirectionsDraft?.objectives || []).map((o, oi) => (
                   <div key={o.id} className="flex items-center gap-1.5 mb-1">
-                    <span className={'text-[9px] font-bold uppercase rounded px-1 py-0.5 flex-shrink-0 ' + (o.kind === 'xp' ? 'bg-indigo-50 text-indigo-700' : (o.kind === 'game' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'))}>{o.kind === 'manual' ? (t('directions.kind_manual') || 'self-check') : o.kind}</span>
+                    <span className={'text-[9px] font-bold uppercase rounded px-1 py-0.5 flex-shrink-0 ' + (o.kind === 'xp' ? 'bg-indigo-50 text-indigo-700' : (o.kind === 'game' ? 'bg-emerald-50 text-emerald-700' : (o.kind === 'manual' ? 'bg-slate-100 text-slate-600' : 'bg-sky-50 text-sky-700')))}>{o.kind === 'manual' ? (t('directions.kind_manual') || 'self-check') : (o.kind === 'visited' ? (t('directions.kind_visited') || 'opened') : (o.kind === 'responded' ? (t('directions.kind_responded') || 'answered') : (o.kind === 'completed' ? (t('directions.kind_completed') || 'finished') : (o.kind === 'time' ? (t('directions.kind_time') || 'time') : o.kind))))}</span>
                     <input value={o.label} onChange={e => setMbDirectionsDraft(p => { const list = [...((p && p.objectives) || [])]; list[oi] = { ...list[oi], label: e.target.value }; return { ...(p || {}), objectives: list }; })} aria-label={t('directions.objective_label') || 'Goal label'} className="flex-1 min-w-0 text-[11px] border border-slate-200 rounded p-1 bg-white text-slate-800" />
                     {o.kind === 'xp' && <input type="number" min="1" max="1000" value={o.amount || 25} onChange={e => setMbDirectionsDraft(p => { const list = [...((p && p.objectives) || [])]; const amt = Math.max(1, Math.min(1000, Number(e.target.value) || 1)); list[oi] = { ...list[oi], amount: amt }; return { ...(p || {}), objectives: list }; })} aria-label={t('directions.xp_amount') || 'XP amount'} className="w-14 text-[11px] border border-slate-200 rounded p-1 bg-white text-slate-800 flex-shrink-0" />}
+                    {o.kind === 'time' && <input type="number" min="1" max="240" value={o.minutes || 10} onChange={e => setMbDirectionsDraft(p => { const list = [...((p && p.objectives) || [])]; const mins = Math.max(1, Math.min(240, Number(e.target.value) || 1)); list[oi] = { ...list[oi], minutes: mins }; return { ...(p || {}), objectives: list }; })} aria-label={t('directions.time_minutes') || 'Minutes'} className="w-14 text-[11px] border border-slate-200 rounded p-1 bg-white text-slate-800 flex-shrink-0" />}
                     <button onClick={() => setMbDirectionsDraft(p => ({ ...(p || {}), objectives: ((p && p.objectives) || []).filter(x => x.id !== o.id) }))} aria-label={t('directions.remove_objective') || 'Remove goal'} className="text-slate-400 hover:text-rose-600 p-0.5 flex-shrink-0"><X size={12} /></button>
                   </div>
                 ))}
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {[['crossword', 'Crossword'], ['wordScramble', 'Word Scramble'], ['memory', 'Memory'], ['matching', 'Matching'], ['bingo', 'Bingo']].map(([gt, glabel]) => (
-                    <button key={gt} onClick={() => setMbDirectionsDraft(p => ({ ...(p || {}), objectives: [...((p && p.objectives) || []), { id: generateUUID(), kind: 'game', gameType: gt, label: 'Complete the ' + glabel }] }))} className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 hover:border-emerald-400 rounded-full px-2 py-0.5 transition-all">+ {glabel}</button>
-                  ))}
+                {/* Write-your-own comes FIRST: most goals a teacher actually wants
+                    ("explain it in your own words") can never be auto-checked, and
+                    burying that behind a row of game chips taught the opposite. */}
+                <div className="flex items-center gap-1.5 mt-1">
+                  <input
+                    value={mbDirectionsGoalText}
+                    onChange={e => setMbDirectionsGoalText(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key !== 'Enter' || !mbDirectionsGoalText.trim()) return;
+                      e.preventDefault();
+                      setMbDirectionsDraft(p => ({ ...(p || {}), objectives: [...((p && p.objectives) || []), { id: generateUUID(), kind: 'manual', label: mbDirectionsGoalText.trim() }] }));
+                      setMbDirectionsGoalText('');
+                    }}
+                    placeholder={t('directions.goal_write_placeholder') || 'Write a goal in your own words…'}
+                    aria-label={t('directions.goal_write_label') || 'Write a goal'}
+                    className="flex-1 min-w-0 text-[11px] border border-slate-300 rounded p-1.5 bg-white text-slate-800"
+                  />
+                  <button
+                    onClick={() => {
+                      if (!mbDirectionsGoalText.trim()) return;
+                      setMbDirectionsDraft(p => ({ ...(p || {}), objectives: [...((p && p.objectives) || []), { id: generateUUID(), kind: 'manual', label: mbDirectionsGoalText.trim() }] }));
+                      setMbDirectionsGoalText('');
+                    }}
+                    disabled={!mbDirectionsGoalText.trim()}
+                    className="text-[10px] font-bold text-slate-700 bg-slate-100 border border-slate-300 hover:border-slate-400 rounded px-2 py-1 transition-all disabled:opacity-40 flex-shrink-0"
+                  >+ {t('directions.goal_add') || 'Add'}</button>
+                </div>
+                {/* Auto-checking goals are DERIVED from the resource, never a fixed
+                    chip row. A fixed row is how "+ Word Scramble" survived for weeks
+                    pointing at a game that never reported a completion. */}
+                <div className="mt-2">
+                  <label className="block text-[10px] font-bold text-slate-500 mb-1" htmlFor="dir-goal-res">{t('directions.goal_attach') || 'Auto-check against a resource'}</label>
+                  <select
+                    id="dir-goal-res"
+                    value={mbDirectionsGoalRes}
+                    onChange={e => setMbDirectionsGoalRes(e.target.value)}
+                    className="w-full text-[11px] border border-slate-300 rounded p-1.5 bg-white text-slate-800"
+                  >
+                    <option value="">{_alloDirectionsGoalResources.length ? (t('directions.goal_pick_resource') || 'Pick something in this pack…') : (t('directions.goal_no_resources') || 'No pack resources yet')}</option>
+                    {_alloDirectionsGoalResources.map(it => (
+                      <option key={it.id} value={it.id}>{(_alloStationStyle(it.type).icon || '') + ' ' + (it.title || it.type)}</option>
+                    ))}
+                  </select>
+                  {mbDirectionsGoalRes && (() => {
+                    const _res = _alloDirectionsGoalResources.find(it => it.id === mbDirectionsGoalRes);
+                    const _opts = _alloGoalOptionsForResource(_res);
+                    if (!_opts.length) return null;
+                    return (
+                      <div className="flex flex-wrap gap-1 mt-1.5">
+                        {_opts.map(opt => (
+                          <button
+                            key={opt.kind + ':' + (opt.gameType || '')}
+                            onClick={() => setMbDirectionsDraft(p => ({ ...(p || {}), objectives: [...((p && p.objectives) || []), {
+                              id: generateUUID(),
+                              kind: opt.kind,
+                              label: t(opt.labelKey, { title: (_res && _res.title) || '' }) || opt.label,
+                              ...(opt.gameType ? { gameType: opt.gameType } : {}),
+                              ...(opt.minutes ? { minutes: opt.minutes } : {}),
+                              ...(opt.kind === 'manual' ? {} : { resourceRef: mbDirectionsGoalRes })
+                            }] }))}
+                            className={'text-[10px] font-bold rounded-full px-2 py-0.5 border transition-all ' + (opt.kind === 'game' ? 'text-emerald-700 bg-emerald-50 border-emerald-200 hover:border-emerald-400' : (opt.kind === 'manual' ? 'text-slate-600 bg-slate-50 border-slate-200 hover:border-slate-400' : 'text-sky-700 bg-sky-50 border-sky-200 hover:border-sky-400'))}
+                          >+ {opt.label}</button>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </div>
+                <div className="flex flex-wrap gap-1 mt-2">
                   <button onClick={() => setMbDirectionsDraft(p => ({ ...(p || {}), objectives: [...((p && p.objectives) || []), { id: generateUUID(), kind: 'xp', amount: 25, label: 'Earn 25 XP' }] }))} className="text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 hover:border-indigo-400 rounded-full px-2 py-0.5 transition-all">+ XP</button>
-                  <button onClick={() => setMbDirectionsDraft(p => ({ ...(p || {}), objectives: [...((p && p.objectives) || []), { id: generateUUID(), kind: 'manual', label: 'I finished my work' }] }))} className="text-[10px] font-bold text-slate-600 bg-slate-50 border border-slate-200 hover:border-slate-400 rounded-full px-2 py-0.5 transition-all">+ {t('directions.chip_manual') || 'Self-check'}</button>
                 </div>
                 <p className="text-[10px] text-slate-400 mt-1">{t('directions.objectives_note') || "Goals check off on the student's device — a formative guide, not a grade, and nothing is ever locked."}</p>
                 {(mbDirectionsDraft?.objectives || []).length > 0 && (
@@ -35871,14 +36214,31 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                   {Object.keys(mbHwEvidence).length > 0 && (
                     <div className="border-t border-indigo-100 pt-2 mt-2" role="region" aria-label={t('takehome.evidence_title') || 'Homework check-ins'}>
                       <p className="text-[10px] font-bold text-indigo-700 mb-1">📥 {t('takehome.evidence_title') || 'Homework check-ins'} <span className="font-normal text-slate-400">({t('takehome.evidence_caveat') || 'student-device reported — formative, not a grade'})</span></p>
-                      {Object.values(mbHwEvidence).sort((a, b) => (b.at || 0) - (a.at || 0)).slice(0, 12).map(ev => (
-                        <p key={ev.uid + '|' + ev.directionsId} className="text-[10px] text-slate-600 truncate" title={ev.objectives.map(o => (o.done ? '✓ ' : '· ') + o.label).join('\n')}>
-                          <span className={'font-bold ' + (ev.doneCount >= ev.total && ev.total > 0 ? 'text-emerald-700' : 'text-slate-700')}>{ev.name}</span>
-                          {' — ' + ev.doneCount + '/' + ev.total + ' ' + (t('takehome.evidence_goals') || 'goals')}
-                          {ev.xpEarned > 0 ? ' · +' + ev.xpEarned + ' XP' : ''}
-                          {' · ' + ev.title}
-                        </p>
-                      ))}
+                      {Object.values(mbHwEvidence).sort((a, b) => (b.at || 0) - (a.at || 0)).slice(0, 12).map(ev => {
+                        // Split the count: goals the device observed vs goals the
+                        // student ticked. Both are formative — but "3 of 4 recorded"
+                        // and "3 of 4 self-checked" are different claims, and the
+                        // panel used to render them identically.
+                        const _obs = ev.objectives.filter(o => o.done && o.confirmed).length;
+                        const _self = ev.objectives.filter(o => o.done && !o.confirmed).length;
+                        return (
+                          <p key={ev.uid + '|' + ev.directionsId} className="text-[10px] text-slate-600 truncate" title={ev.objectives.map(o => (o.done ? '✓ ' : '· ') + o.label + (o.done ? (o.confirmed ? ' (recorded on device)' : ' (self-checked)') : '')).join('\n')}>
+                            <span className={'font-bold ' + (ev.doneCount >= ev.total && ev.total > 0 ? 'text-emerald-700' : 'text-slate-700')}>{ev.name}</span>
+                            {' — ' + ev.doneCount + '/' + ev.total + ' ' + (t('takehome.evidence_goals') || 'goals')}
+                            {(_obs > 0 || _self > 0) && (
+                              <span className="text-slate-400">
+                                {' ('}
+                                {_obs > 0 && <span className="text-emerald-700">{_obs + ' ' + (t('takehome.evidence_recorded') || 'recorded')}</span>}
+                                {_obs > 0 && _self > 0 ? ', ' : ''}
+                                {_self > 0 && <span>{_self + ' ' + (t('takehome.evidence_self') || 'self-checked')}</span>}
+                                {')'}
+                              </span>
+                            )}
+                            {ev.xpEarned > 0 ? ' · +' + ev.xpEarned + ' XP' : ''}
+                            {' · ' + ev.title}
+                          </p>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -38505,7 +38865,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                 {activeView === 'directions' && generatedContent?.type === 'directions' && (() => {
                     const _dir = _alloNormalizeDirectionsData(generatedContent.data);
                     const _dirProg = directionsProgress[generatedContent.id] || {};
-                    const _evald = _alloEvaluateObjectives(_dir.objectives, { globalPoints, gameCompletions }, _dirProg);
+                    const _evald = _alloEvaluateObjectives(_dir.objectives, _alloObjectiveSignals, _dirProg);
                     const _doneCount = _evald.filter(o => o.done).length;
                     // ── Quest map (knowledge web): pack resources as stations on a trail, goals as
                     // satellites, completion lighting from the SAME signals as the checklist. The
@@ -38739,6 +39099,10 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     // imports (device-local model; no cloud conceptMastery reads).
                     conceptMasteryByUid: teacherConceptMasteryByUid,
                     onSubmitLiveAnswer: handleSubmitLiveAnswer,
+                    // Resource-keyed completion bridge (2026-07-27): the quiz's own
+                    // attempt receipt is namespaced by content hash, so directions
+                    // goals cannot find it. This reports by resourceId instead.
+                    onResourceComplete: recordResourceCompletion,
                     isPresentationMode, isReviewGame, isEditingQuiz,
                     escapeRoomState, escapeTimeLeft, isEscapeTimerRunning,
                     gameTeams, reviewGameState, scoreAnimation, soundEnabled,
