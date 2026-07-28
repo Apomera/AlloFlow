@@ -1880,7 +1880,28 @@ window.StemLab = window.StemLab || {
       // `custom: true` flag so the UI can mark + offer delete.
       var MAX_CUSTOM_SCENARIOS = 12;
 
-      function saveCustomScenario() {
+      // AlloFlowUX.prompt can fall back to window.prompt during startup.
+      // Require the real accessible module and return an explicit outcome so
+      // callers do not mistake startup/error failure for user cancellation.
+      async function requestThrowLabText(message, defaultValue, options, unavailableMessage, failedMessage) {
+        var dialogModule = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.PromptDialog && window.AlloModules.PromptDialog.PromptDialog;
+        var promptApi = typeof window !== 'undefined' && window.AlloFlowUX && window.AlloFlowUX.prompt;
+        if (typeof dialogModule !== 'function' || typeof promptApi !== 'function') {
+          if (addToast) addToast(unavailableMessage, 'warning');
+          tlAnnounce(unavailableMessage);
+          return { status: 'unavailable', value: null };
+        }
+        try {
+          var value = await promptApi(message, defaultValue, options || {});
+          return { status: value === null ? 'cancelled' : 'submitted', value: value };
+        } catch (err) {
+          if (addToast) addToast(failedMessage, 'warning');
+          tlAnnounce(failedMessage);
+          return { status: 'failed', value: null };
+        }
+      }
+
+      async function saveCustomScenario() {
         var defaultName;
         var modeLbl = (MODES[d.mode] || {}).label || d.mode;
         var presetId = d.mode === 'pitching' ? d.pitchType
@@ -1901,12 +1922,29 @@ window.StemLab = window.StemLab || {
         var gravLbl = (GRAVITY_PRESETS.find(function(g) { return g.id === (d.gravityId || 'earth'); }) || {}).label || 'Earth';
         defaultName = (preset ? preset.label : modeLbl) + ' on ' + gravLbl
                     + (d.windMph ? ' + ' + d.windMph + ' mph wind' : '');
-        var name = (typeof window !== 'undefined' && typeof window.prompt === 'function')
-          ? window.prompt('Name this scenario:', defaultName)
-          : defaultName;
-        if (!name) return; // user cancelled
-        name = String(name).trim().slice(0, 60);
-        if (!name) return;
+        var promptResult = await requestThrowLabText(
+          __alloT('stem.throwlab.name_scenario_message', 'Name this scenario.'),
+          defaultName,
+          {
+            title: __alloT('stem.throwlab.save_scenario_title', 'Save custom scenario'),
+            placeholder: __alloT('stem.throwlab.scenario_name_placeholder', 'Scenario name'),
+            confirmText: __alloT('stem.throwlab.save_scenario_confirm', 'Save scenario'),
+            cancelText: __alloT('common.cancel', 'Cancel'),
+            maxLength: 60
+          },
+          __alloT('stem.throwlab.scenario_dialog_unavailable', 'The scenario-name dialog is unavailable, so this scenario was not saved.'),
+          __alloT('stem.throwlab.scenario_dialog_failed', 'The scenario-name dialog could not open, so this scenario was not saved.')
+        );
+        if (promptResult.status === 'cancelled') {
+          tlAnnounce(__alloT('stem.throwlab.scenario_save_cancelled', 'Scenario save cancelled.'));
+          return;
+        }
+        if (promptResult.status !== 'submitted') return;
+        var name = String(promptResult.value).trim().slice(0, 60);
+        if (!name) {
+          tlAnnounce(__alloT('stem.throwlab.scenario_name_required', 'Enter a name before saving this scenario.'));
+          return;
+        }
         var newScenario = {
           id: 'custom_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
           label: name,
@@ -1953,7 +1991,7 @@ window.StemLab = window.StemLab || {
       // on first use; cached in toolData so subsequent exports just go.
       // Alternative to the academic activity-sheet PDF — a printable
       // shareable artifact a kid would actually pin to their wall.
-      function exportTradingCard() {
+      async function exportTradingCard() {
         if (!d.lastResult) {
           tlAnnounce('Throw something first, then export a trading card.');
           if (addToast) addToast('Throw first — card needs a result');
@@ -1961,12 +1999,29 @@ window.StemLab = window.StemLab || {
         }
         var name = d.playerName;
         if (!name) {
-          name = (typeof window !== 'undefined' && typeof window.prompt === 'function')
-            ? window.prompt('What\'s your player name? (Saved for next time)', 'Lab Athlete')
-            : 'Lab Athlete';
-          if (!name) return;
-          name = String(name).trim().slice(0, 30);
-          if (!name) return;
+          var playerPromptResult = await requestThrowLabText(
+            __alloT('stem.throwlab.player_name_message', 'What is your player name? It will be saved for next time.'),
+            __alloT('stem.throwlab.default_player_name', 'Lab Athlete'),
+            {
+              title: __alloT('stem.throwlab.player_name_title', 'Name your trading card'),
+              placeholder: __alloT('stem.throwlab.player_name_placeholder', 'Player name'),
+              confirmText: __alloT('stem.throwlab.create_card_confirm', 'Create card'),
+              cancelText: __alloT('common.cancel', 'Cancel'),
+              maxLength: 30
+            },
+            __alloT('stem.throwlab.player_dialog_unavailable', 'The player-name dialog is unavailable, so the trading card was not created.'),
+            __alloT('stem.throwlab.player_dialog_failed', 'The player-name dialog could not open, so the trading card was not created.')
+          );
+          if (playerPromptResult.status === 'cancelled') {
+            tlAnnounce(__alloT('stem.throwlab.card_export_cancelled', 'Trading card export cancelled.'));
+            return;
+          }
+          if (playerPromptResult.status !== 'submitted') return;
+          name = String(playerPromptResult.value).trim().slice(0, 30);
+          if (!name) {
+            tlAnnounce(__alloT('stem.throwlab.player_name_required', 'Enter a player name before creating the trading card.'));
+            return;
+          }
           // Persist for future exports
           setLabToolData(function(prev) {
             return Object.assign({}, prev, { throwlab: Object.assign({}, prev.throwlab, { playerName: name })});
