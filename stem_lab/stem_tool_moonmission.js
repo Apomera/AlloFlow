@@ -3478,13 +3478,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     // ── EVA HUD ──
                     var evaHud = document.createElement('div');
                     evaHud.style.cssText = 'position:absolute;top:8px;left:8px;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);border-radius:10px;padding:8px 12px;color:#38bdf8;font-family:monospace;font-size:10px;pointer-events:none;z-index:10;border:1px solid rgba(56,189,248,0.2);max-width:200px';
+                    // \u2500\u2500 EVA HUD \u2500\u2500
+                    // Now carries a cuff checklist and a bearing to the nearest rock. An
+                    // Apollo crew never walked out without a wrist-mounted task list, and
+                    // more to the point: the old HUD counted what you had done and never
+                    // said what to do. Eight small orbs on a 200x200 plain with no pointer
+                    // is a scavenger hunt with no clue, which is the least intuitive moment
+                    // in the whole tool.
                     evaHud.innerHTML = '<div style="font-weight:bold;font-size:11px;color:#fbbf24;margin-bottom:4px">\uD83D\uDC68\u200D\uD83D\uDE80 LUNAR EVA</div>' +
                       '<div style="display:grid;grid-template-columns:auto 1fr;gap:2px 6px">' +
                       '<span style="color:#64748b">O\u2082</span><span id="eva-o2" style="color:#22c55e">100%</span>' +
                       '<span style="color:#64748b">\uD83E\uDEA8</span><span id="eva-samples">0 / ' + LUNAR_SAMPLES_DATA.length + ' samples</span>' +
                       '<span style="color:#64748b">\uD83D\uDC63</span><span id="eva-steps">0 steps</span>' +
+                      '<span style="color:#64748b">\uD83C\uDFAF</span><span id="eva-target">\u2014</span>' +
                       '</div>' +
-                      '<div style="border-top:1px solid rgba(56,189,248,0.1);margin-top:4px;padding-top:4px;color:#94a3b8;font-size:8px">WASD move \u2022 Q/E turn \u2022 SPACE jump (1/6g!) \u2022 F collect \u2022 Mouse look \u2022 C comfort \u2022 M click-to-move</div>';
+                      '<div style="border-top:1px solid rgba(56,189,248,0.12);margin-top:5px;padding-top:5px">' +
+                      '<div style="color:#fbbf24;font-size:9px;font-weight:bold;margin-bottom:2px">CUFF CHECKLIST</div>' +
+                      '<div id="eva-tasks" style="font-size:9px;line-height:1.5;color:#cbd5e1"></div>' +
+                      '</div>' +
+                      '<div style="border-top:1px solid rgba(56,189,248,0.1);margin-top:4px;padding-top:4px;color:#94a3b8;font-size:8px">WASD move \u2022 Q/E turn \u2022 SPACE jump (1/6g!) \u2022 F collect / deploy \u2022 Mouse look \u2022 C comfort \u2022 M click-to-move</div>';
                     canvasEl.parentElement.appendChild(evaHud);
 
                     // ── Animation ──
@@ -3494,6 +3506,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     var evaSampleCount = 0;
                     var evaSampleCooldown = 0;
                     var o2Exhausted = false;   // consumables gone: collection stops, banner + SR announcement
+                    // The seismometer is the one landmark you can DO something with. Every
+                    // Apollo surface crew spent a large slice of its EVA deploying ALSEP,
+                    // and until now the instruments here were scenery you walked past and
+                    // read a card about.
+                    var seismoDeployed = !!d.seismoDeployed;
+                    var _seismoPulse = 0;
+                    // Deliberately just inside the 6-unit radius at which the discovery
+                    // card appears, so the card that says "Seismometer" and the range in
+                    // which F does something are effectively the same place. A tighter
+                    // radius meant the tool told you that you had arrived while the key
+                    // still did nothing — which reads as a broken control, not as "walk
+                    // three steps closer".
+                    var EVA_INTERACT_RANGE = 5;
 
                     function animateEva() {
                       // Stop + tear down if the EVA canvas left the DOM (tab switch / tool unmount). The loop
@@ -3672,13 +3697,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         }
                       });
 
+                      // ── Deploy the seismometer (F, when you are standing at it) ──
+                      // F is contextual: a rock at your feet gets collected, the instrument
+                      // gets deployed. One key, and what it does is whatever you are next to.
+                      if (!seismoDeployed && !o2Exhausted) {
+                        var seiDx = playerPos.x - (alsepX + 2), seiDz = playerPos.z - (alsepZ + 1);
+                        var seiDist = Math.sqrt(seiDx * seiDx + seiDz * seiDz);
+                        if (seiDist < EVA_INTERACT_RANGE) {
+                          // Idle pulse so it reads as interactive before you press anything.
+                          _seismoPulse += 0.08;
+                          seismo.position.y = alsepY + 0.15 + Math.sin(_seismoPulse) * 0.04;
+                          if (moveState.sample && evaSampleCooldown <= 0) {
+                            seismoDeployed = true;
+                            evaSampleCooldown = 60;
+                            seismo.position.y = alsepY + 0.15;
+                            // Deployed: the instrument levels out and puts up its antenna.
+                            var seiMast = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.7, 6),
+                              new THREE.MeshStandardMaterial({ color: 0xd4d4d8, metalness: 0.5, roughness: 0.4 }));
+                            seiMast.position.set(alsepX + 2, alsepY + 0.6, alsepZ + 1);
+                            if (!_evaLowPower) seiMast.castShadow = true;
+                            scene.add(seiMast);
+                            var seiDish = new THREE.Mesh(new THREE.CircleGeometry(0.22, 12),
+                              new THREE.MeshStandardMaterial({ color: 0xfef3c7, side: THREE.DoubleSide, metalness: 0.3 }));
+                            seiDish.position.set(alsepX + 2, alsepY + 0.95, alsepZ + 1);
+                            seiDish.rotation.x = -0.9;
+                            scene.add(seiDish);
+                            upd('seismoDeployed', true);
+                            sfxSampleCollect();
+                            addXP(20);
+                            if (addToast) addToast('📊 Seismometer deployed — it will keep listening for moonquakes long after you leave.', 'success');
+                            if (typeof announceToSR === 'function') announceToSR('Seismometer deployed. The Apollo seismometers kept recording moonquakes and meteorite strikes for years after the crews went home.');
+                          }
+                        }
+                      }
+
                       // ── Proximity-based discovery cards ──
                       if (evaTick % 30 === 0) {
                         var landmarks = [
                           { x: alsepX, z: alsepZ, name: t('stem.moonmission.alsep_science_station', 'ALSEP Science Station'), fact: t('stem.moonmission.the_apollo_lunar_surface_experiments_p', 'The Apollo Lunar Surface Experiments Package ran for years after the astronauts left. The seismometer detected moonquakes and meteorite impacts until 1977.'), icon: '\uD83D\uDEF0' },
                           { x: 8, z: -4, name: t('stem.moonmission.lunar_rover_lrv', 'Lunar Rover (LRV)'), fact: t('stem.moonmission.the_lunar_roving_vehicle_cost_38_milli', 'The Lunar Roving Vehicle cost $38 million. Apollo 17\'s rover traveled 35.7 km \u2014 still parked on the Moon with the keys in it!'), icon: '\uD83D\uDE97' },
                           { x: 4, z: 2, name: t('stem.moonmission.american_flag', 'American Flag'), fact: t('stem.moonmission.the_flags_on_the_moon_have_been_bleach', 'The flags were exposed to decades of harsh sunlight and likely faded badly. Lunar Reconnaissance Orbiter images show several Apollo flag poles still casting shadows; Apollo 11\'s flag was probably knocked over by engine exhaust.'), icon: '\uD83C\uDDFA\uD83C\uDDF8' },
-                          { x: alsepX + 2, z: alsepZ + 1, name: t('stem.moonmission.seismometer', 'Seismometer'), fact: t('stem.moonmission.lunar_seismometers_detected_deep_moonq', 'Lunar seismometers detected deep moonquakes at 700-1100 km depth, caused by tidal forces from Earth. The Moon still has a partially molten core!'), icon: '\uD83D\uDCCA' },
+                          { id: 'seismo', x: alsepX + 2, z: alsepZ + 1, name: t('stem.moonmission.seismometer', 'Seismometer'), fact: t('stem.moonmission.lunar_seismometers_detected_deep_moonq', 'Lunar seismometers detected deep moonquakes at 700-1100 km depth, caused by tidal forces from Earth. The Moon still has a partially molten core!'), icon: '\uD83D\uDCCA' },
                           { x: alsepX - 2, z: alsepZ - 1, name: t('stem.moonmission.laser_retroreflector', 'Laser Retroreflector'), fact: t('stem.moonmission.scientists_bounce_lasers_off_this_mirr', 'Scientists bounce lasers off this mirror to measure the Earth-Moon distance to within 1 cm accuracy. The Moon moves 3.8 cm farther from Earth each year.'), icon: '\uD83D\uDD2C' }
                         ];
                         var nearestLM = null;
@@ -3695,8 +3754,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                           canvasEl.parentElement.appendChild(discEl);
                         }
                         if (nearestLM && nearestLMDist < 6) {
+                          // If a landmark can be acted on, the card is where the student
+                          // finds that out. Nothing else in the scene says the seismometer
+                          // is anything but decoration.
+                          var prompt = (nearestLM.id === 'seismo' && !seismoDeployed && nearestLMDist < EVA_INTERACT_RANGE)
+                            ? '<div style="margin-top:5px;padding-top:5px;border-top:1px solid rgba(251,191,36,0.3);color:#fbbf24;font-weight:bold">▸ Press F to deploy it</div>'
+                            : (nearestLM.id === 'seismo' && seismoDeployed
+                              ? '<div style="margin-top:5px;padding-top:5px;border-top:1px solid rgba(134,239,172,0.3);color:#86efac;font-weight:bold">☑ Deployed — it will outlive the mission</div>'
+                              : '');
                           discEl.innerHTML = '<div style="font-weight:bold;font-size:12px;color:#fbbf24;margin-bottom:3px">' + nearestLM.icon + ' ' + nearestLM.name + '</div>' +
-                            '<div style="color:#cbd5e1;line-height:1.4">' + nearestLM.fact + '</div>';
+                            '<div style="color:#cbd5e1;line-height:1.4">' + nearestLM.fact + '</div>' + prompt;
                           discEl.style.opacity = '1';
                         } else {
                           discEl.style.opacity = '0';
@@ -3743,6 +3810,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         if (o2El) { o2El.textContent = evaO2.toFixed(0) + '%'; o2El.style.color = evaO2 > 50 ? '#22c55e' : evaO2 > 20 ? '#f59e0b' : '#ef4444'; }
                         if (sampEl) sampEl.textContent = evaSampleCount + ' / ' + LUNAR_SAMPLES_DATA.length + ' samples';
                         if (stepsEl) stepsEl.textContent = evaSteps + ' steps';
+
+                        // ── Bearing to the nearest rock still on the ground ──
+                        // Rotated relative to where you are FACING, so the arrow means
+                        // "walk that way" rather than "north is over there" — which is the
+                        // difference between a compass and a hint.
+                        var tgtEl = document.getElementById('eva-target');
+                        if (tgtEl) {
+                          var best = null, bestD = 1e9;
+                          for (var ti = 0; ti < lunarSampleOrbs.length; ti++) {
+                            var orbT = lunarSampleOrbs[ti];
+                            if (orbT._collected) continue;
+                            var dT = playerPos.distanceTo(orbT.position);
+                            if (dT < bestD) { bestD = dT; best = orbT; }
+                          }
+                          if (!best) {
+                            tgtEl.innerHTML = '<span style="color:#22c55e">all rocks collected</span>';
+                          } else {
+                            var bx = best.position.x - playerPos.x, bz = best.position.z - playerPos.z;
+                            var rel = Math.atan2(bx, -bz) - yaw;              // 0 = dead ahead
+                            while (rel > Math.PI) rel -= Math.PI * 2;
+                            while (rel < -Math.PI) rel += Math.PI * 2;
+                            var deg = Math.round(rel * 180 / Math.PI);
+                            tgtEl.innerHTML = '<span style="display:inline-block;transform:rotate(' + deg + 'deg)">↑</span> '
+                              + Math.round(bestD) + ' m';
+                          }
+                        }
+
+                        // ── Cuff checklist ──
+                        var tasksEl = document.getElementById('eva-tasks');
+                        if (tasksEl) {
+                          var row = function(done, label) {
+                            return '<div style="color:' + (done ? '#86efac' : '#cbd5e1') + '">'
+                              + (done ? '☑' : '☐') + ' ' + label + '</div>';
+                          };
+                          tasksEl.innerHTML =
+                            row(evaSampleCount >= 4, 'Collect 4 rock samples (' + Math.min(evaSampleCount, 4) + '/4)') +
+                            row(seismoDeployed, 'Deploy the seismometer') +
+                            row(evaSampleCount >= LUNAR_SAMPLES_DATA.length, 'Bonus: collect all ' + LUNAR_SAMPLES_DATA.length);
+                        }
                       }
 
                       if (composer) { try { composer.render(); } catch (e) { composer = null; renderer.render(scene, camera); } }
@@ -4651,6 +4757,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   );
                 })
               ),
+              // Surface experiment \u2014 the one thing you left behind that is still working.
+              d.seismoDeployed && h('div', { className: 'bg-white/5 rounded-lg p-2 border border-white/10 mb-2' },
+                h('p', { className: 'text-[11px] font-bold text-green-300 mb-0.5' }, '\ud83d\udcca SEISMOMETER DEPLOYED'),
+                h('p', { className: 'text-[11px] text-slate-200' },
+                  'The real Apollo seismometers ran until 1977 and recorded thousands of moonquakes and meteorite strikes. Almost everything we know about the inside of the Moon came from instruments the crews set down by hand and walked away from.')
+              ),
               // Burn timing \u2014 the other decision the mission actually grades.
               d.tliAccuracy && h('div', { className: 'bg-white/5 rounded-lg p-2 border border-white/10 mb-2' },
                 h('p', { className: 'text-[11px] font-bold mb-0.5 ' + (d.tliAccuracy.onTime ? 'text-green-300' : 'text-yellow-300') },
@@ -4779,6 +4891,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 upd('launchStatus', null);
                 upd('ascentStatus', null);
                 upd('reentryStatus', null);
+                upd('seismoDeployed', false);
                 upd('aiBriefing', null);
                 upd('aiBriefingLoading', false);
                 upd('descentStarted', false);
