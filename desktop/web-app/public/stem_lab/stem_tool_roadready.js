@@ -26143,7 +26143,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', { style: { fontSize: '72px' } }, rtr.passed ? '🪪' : '❌'),
             h('h2', { style: { fontSize: '28px', fontWeight: 900, marginBottom: '6px' } }, rtr.passed ? 'PASSED' : 'Not Yet — Try Again'),
             h('div', { style: { fontSize: '48px', fontWeight: 900, margin: '8px 0', color: rtr.passed ? '#bbf7d0' : '#fca5a5' } }, rtr.score + ' / 100'),
-            h('div', { style: { fontSize: '12px', color: rtr.passed ? '#bbf7d0' : '#fca5a5' } }, rtr.passed ? 'You would pass the Maine BMV road test at this level. Great work.' : 'Need 90+ to pass. Review the deductions below and try again.')
+            h('div', { style: { fontSize: '12px', color: rtr.passed ? '#bbf7d0' : '#fca5a5' } }, rtr.passed ? 'You cleared this simulator\'s 90-point bar — your rules and hazard decisions are solid. The real Maine BMV road test is scored by an examiner riding with you, on car control and observation a keyboard cannot measure.' : 'Need 90+ to pass. Review the deductions below and try again.')
           ),
           // Deductions breakdown
           ded.length > 0 ? h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '16px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))', marginBottom: '12px' } },
