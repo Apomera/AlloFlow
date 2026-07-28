@@ -139,45 +139,67 @@ window.StemLab = window.StemLab || {
     { tier: 1, q: 'What does the "S" stand for in SIR model?', a: 'susceptible', h: 'People who can catch the disease.' },
     { tier: 1, q: 'What does the "I" stand for in SIR model?', a: 'infected', h: 'People who currently have the disease.' },
     { tier: 1, q: 'What does the "R" stand for in SIR model?', a: 'recovered', h: 'People who had the disease and got better.' },
-    { tier: 1, q: 'What does R\u2080 measure?', a: 'spread', h: 'How many people one sick person infects.' },
-    { tier: 1, q: 'Name one way to slow a pandemic.', a: 'vaccination', h: 'Think about what protects people before they get sick.' },
-    { tier: 1, q: 'What insect spreads malaria?', a: 'mosquito', h: 'It bites and buzzes.' },
+    { tier: 1, q: 'What does R\u2080 measure?', a: 'spread', h: 'How many people one sick person infects.',
+      alt: ['contagiousness', 'transmissibility', 'how many people one person infects', 'how contagious', 'how fast it spreads', 'secondary infections'] },
+    { tier: 1, q: 'Name one way to slow a pandemic.', a: 'vaccination', h: 'Think about what protects people before they get sick.',
+      alt: ['vaccines', 'vaccinate', 'masks', 'wearing masks', 'mask', 'social distancing', 'distancing', 'staying apart', 'handwashing', 'washing hands', 'hand hygiene', 'quarantine', 'isolation', 'contact tracing', 'testing', 'ventilation', 'school closures', 'staying home'] },
+    { tier: 1, q: 'What insect spreads malaria?', a: 'mosquito', h: 'It bites and buzzes.',
+      alt: ['mosquitoes', 'anopheles', 'anopheles mosquito'] },
     { tier: 1, q: 'True or false: Measles has a higher R\u2080 than COVID-19.', a: 'true', h: 'Measles R\u2080 is about 15!' },
     { tier: 1, q: 'What was the first disease eradicated by vaccines?', a: 'smallpox', h: 'Eradicated in 1980.' },
 
     // Medium tier
     { tier: 2, q: 'If R\u2080 = 4, what fraction must be immune for herd immunity?', a: '75%', h: 'Herd immunity threshold = 1 - 1/R\u2080.' },
     { tier: 2, q: 'In the SEIR model, what does "E" represent?', a: 'exposed', h: 'Infected but not yet infectious.' },
-    { tier: 2, q: 'What is the herd immunity threshold formula?', a: '1-1/r0', h: 'Involves the basic reproduction number.' },
-    { tier: 2, q: 'If R\u2080 = 2.5 and infectious period = 10 days, what is \u03B3?', a: '0.1', h: '\u03B3 = 1 / infectious period.' },
-    { tier: 2, q: 'What does "flattening the curve" mean?', a: 'reducing peak', h: 'Spreading infections over more time to not overwhelm hospitals.' },
+    { tier: 2, q: 'What is the herd immunity threshold formula?', a: '1-1/r0', h: 'Involves the basic reproduction number.',
+      alt: ['1 - 1/r0', '1-1/ r0', 'one minus one over r0', '1 minus 1 divided by r0', 'p c 1-1/r0'] },
+    { tier: 2, q: 'If R\u2080 = 2.5 and infectious period = 10 days, what is \u03B3?', a: '0.1', h: '\u03B3 = 1 / infectious period.',
+      alt: ['1/10', '0.10', '1 per 10 days'] },
+    { tier: 2, q: 'What does "flattening the curve" mean?', a: 'reducing peak', h: 'Spreading infections over more time to not overwhelm hospitals.',
+      alt: ['reduce peak', 'lowering peak', 'lower peak', 'reducing peak infections', 'spreading infections over more time', 'spreading cases out over time', 'slowing spread so hospitals cope', 'fewer people sick at once'] },
     { tier: 2, q: 'Which has higher R\u2080: Flu (1.3) or Ebola (2.0)?', a: 'ebola', h: 'Compare the two numbers.' },
-    { tier: 2, q: 'What is the effective reproduction number called?', a: 'rt', h: 'R-subscript-t or R-effective.' },
-    { tier: 2, q: 'What does \u03B2 (beta) represent in SIR equations?', a: 'transmission rate', h: 'Rate at which S becomes I.' },
+    { tier: 2, q: 'What is the effective reproduction number called?', a: 'rt', h: 'R-subscript-t or R-effective.',
+      alt: ['r t', 'r effective', 'r eff', 'reff', 'r sub t', 'effective reproduction number'] },
+    { tier: 2, q: 'What does \u03B2 (beta) represent in SIR equations?', a: 'transmission rate', h: 'Rate at which S becomes I.',
+      alt: ['rate of transmission', 'infection rate', 'contact rate times transmission probability', 'how quickly susceptible people become infected'] },
 
     // Hard tier
-    { tier: 3, q: 'Write the SIR equation for dI/dt.', a: 'beta*s*i-gamma*i', h: 'New infections minus recoveries.' },
+    { tier: 3, q: 'Write the SIR equation for dI/dt.', a: 'beta*s*i-gamma*i', h: 'New infections minus recoveries.',
+      alt: ['beta s i - gamma i', 'bsi-gi', 'bsi - gi', 'beta si - gamma i', 'beta*s*i - gamma*i', 'beta x s x i - gamma x i'] },
     { tier: 3, q: 'If R\u2080=15 (measles), what % must be vaccinated for herd immunity?', a: '93%', h: '1 - 1/15 \u2248 0.933...' },
-    { tier: 3, q: 'What is the relationship between R\u2080, \u03B2, and \u03B3?', a: 'r0=beta/gamma', h: 'R\u2080 equals transmission rate divided by recovery rate.' },
-    { tier: 3, q: 'In SEIR, what parameter governs E\u2192I transition rate?', a: 'sigma', h: '\u03C3 = 1 / latent period.' },
-    { tier: 3, q: 'What mathematical method is commonly used to solve SIR numerically?', a: 'euler', h: 'A simple first-order ODE solver.' },
-    { tier: 3, q: 'What is R_effective when 60% of population is immune and R\u2080=2.5?', a: '1', h: 'R_eff = R\u2080 \u00D7 (1 - fraction immune).' },
-    { tier: 3, q: 'Name the phenomenon where indirect protection arises from high immunity.', a: 'herd immunity', h: 'Even unvaccinated people are protected.' },
+    { tier: 3, q: 'What is the relationship between R\u2080, \u03B2, and \u03B3?', a: 'r0=beta/gamma', h: 'R\u2080 equals transmission rate divided by recovery rate.',
+      alt: ['r0 = beta/gamma', 'beta/gamma', 'beta divided by gamma', 'r0 beta/gamma', 'r0=b/g'] },
+    { tier: 3, q: 'In SEIR, what parameter governs E\u2192I transition rate?', a: 'sigma', h: '\u03C3 = 1 / latent period.',
+      alt: ['sigma 1/latent period', '1/latent period'] },
+    // Runge-Kutta is at least as standard an answer here as Euler; the original key
+    // marked it wrong.
+    { tier: 3, q: 'What mathematical method is commonly used to solve SIR numerically?', a: 'euler', h: 'A step-by-step numerical ODE solver.',
+      alt: ['eulers method', 'euler method', 'runge kutta', 'runge-kutta', 'rk4', 'numerical integration', 'finite difference'] },
+    { tier: 3, q: 'What is R_effective when 60% of population is immune and R\u2080=2.5?', a: '1', h: 'R_eff = R\u2080 \u00D7 (1 - fraction immune).',
+      alt: ['1.0', 'r eff 1'] },
+    { tier: 3, q: 'Name the phenomenon where indirect protection arises from high immunity.', a: 'herd immunity', h: 'Even unvaccinated people are protected.',
+      alt: ['community immunity', 'population immunity', 'indirect protection'] },
     { tier: 3, q: 'What year was smallpox officially declared eradicated?', a: '1980', h: 'The WHO declared it in the early 1980s.' }
   ];
 
   // ── Battle Questions (10 static + AI) ──
   var BATTLE_QS = [
     { q: 'What does SIR stand for?', a: 'susceptible infected recovered', h: 'Three compartments of the model.' },
-    { q: 'If R\u2080 < 1, what happens to the epidemic?', a: 'dies out', h: 'Each person infects fewer than one other.' },
-    { q: 'What is the herd immunity threshold for R\u2080 = 3?', a: '67%', h: '1 - 1/3 \u2248 0.667.' },
+    { q: 'If R\u2080 < 1, what happens to the epidemic?', a: 'dies out', h: 'Each person infects fewer than one other.',
+      alt: ['dies', 'fades out', 'disappears', 'goes away', 'shrinks', 'declines', 'it ends', 'no outbreak'] },
+    { q: 'What is the herd immunity threshold for R\u2080 = 3?', a: '67%', h: '1 - 1/3 \u2248 0.667.',
+      alt: ['67', '66.7%', '66.7', '2/3', 'two thirds'] },
     { q: 'Name the "E" compartment in SEIR.', a: 'exposed', h: 'Latent period before becoming infectious.' },
     { q: 'Which disease has R\u2080 \u2248 15?', a: 'measles', h: 'One of the most contagious diseases known.' },
     { q: 'What Greek letter represents the recovery rate?', a: 'gamma', h: '\u03B3 = 1/infectious period.' },
-    { q: 'Vaccines work by increasing which compartment?', a: 'recovered', h: 'They create immunity without infection.' },
-    { q: 'What happens to peak infection if R\u2080 is halved?', a: 'decreases', h: 'Lower transmission = flatter curve.' },
-    { q: 'What organization declared smallpox eradicated?', a: 'who', h: 'World Health Organization.' },
-    { q: 'What vector transmits malaria?', a: 'mosquito', h: 'Anopheles genus specifically.' }
+    { q: 'Vaccines work by increasing which compartment?', a: 'recovered', h: 'They create immunity without infection.',
+      alt: ['r', 'r compartment', 'immune', 'removed'] },
+    { q: 'What happens to peak infection if R\u2080 is halved?', a: 'decreases', h: 'Lower transmission = flatter curve.',
+      alt: ['it decreases', 'goes down', 'lower', 'falls', 'drops', 'smaller', 'flattens', 'reduces'] },
+    { q: 'What organization declared smallpox eradicated?', a: 'who', h: 'World Health Organization.',
+      alt: ['world health organization'] },
+    { q: 'What vector transmits malaria?', a: 'mosquito', h: 'Anopheles genus specifically.',
+      alt: ['mosquitoes', 'anopheles', 'anopheles mosquito'] }
   ];
 
   // ── Learn Topics (4 topics × 4 grade bands) ──
@@ -405,6 +427,92 @@ window.StemLab = window.StemLab || {
     return g912;
   }
 
+  // ── Free-text answer grading ──────────────────────────────────────────────
+  // Both the Challenge and Battle graders used to ask whether the student's text
+  // CONTAINED the expected answer after stripping punctuation. That fails in both
+  // directions, and both directions were reachable:
+  //   FALSE POSITIVES — the R_effective question expects "1", so "100", "0.1" and
+  //     "I don't know, 1 maybe" all scored; "true" scored for "not true".
+  //   FALSE NEGATIVES — "75 percent" missed "75%", "the rate of transmission"
+  //     missed "transmission rate", and the dI/dt question demanded one exact
+  //     keyboard spelling of an equation.
+  // Since the Challenge pays XP and drives the streak badges, a grader that can be
+  // gamed by typing a digit is worse than no grader.
+  var ANSWER_FILLER = /\b(the|a|an|is|are|it|its|of|to|for|about|that|this|i|think|answer|equals|equal|be|would|will|in|on|at|and|would|maybe|guess)\b/g;
+  var ANSWER_NEGATION = /\b(not|no|isnt|arent|dont|doesnt|never|except|opposite|false)\b/;
+
+  function normalizeAnswer(s) {
+    return String(s == null ? '' : s)
+      .toLowerCase()
+      .replace(/[‘’“”]/g, '')
+      .replace(/\bper ?cent(age)?\b/g, '%')
+      .replace(/[^a-z0-9%./*\-+=\s]/g, ' ')
+      .replace(ANSWER_FILLER, ' ')
+      .replace(/\s+/g, ' ')
+      .replace(/\s+%/g, '%')
+      .trim();
+  }
+
+  // A lone number, or null when the text carries none / more than one.
+  function soleNumber(s) {
+    var m = String(s).match(/-?\d+(?:\.\d+)?/g);
+    return (m && m.length === 1) ? parseFloat(m[0]) : null;
+  }
+
+  function matchesOneAnswer(student, expectedRaw) {
+    var expected = normalizeAnswer(expectedRaw);
+    if (!student || !expected) return false;
+    if (student === expected) return true;
+
+    // Numbers compare AS NUMBERS, so "75%" and "75" agree while "1" stops matching
+    // "100" and "0.1" the way substring search did. Only when the student's reply is
+    // essentially just that number — "R is 100" must not pass a question whose
+    // answer is 1.
+    var en = soleNumber(expected), sn = soleNumber(student);
+    if (en !== null && sn !== null && Math.abs(en - sn) < 1e-9) {
+      if (student.replace(/[-\d.%]+/g, ' ').replace(/\s+/g, ' ').trim() === '') return true;
+    }
+
+    var sWords = student.split(' ').filter(Boolean);
+    var eWords = expected.split(' ').filter(Boolean);
+    // Word order should not decide a science answer: "rate of transmission" is the
+    // same answer as "transmission rate".
+    if (sWords.slice().sort().join(' ') === eWords.slice().sort().join(' ')) return true;
+    // "Runge-Kutta" and "runge kutta" are one answer. Only a hyphen BETWEEN TWO LETTERS
+    // is treated as a word break — the exact-string and numeric comparisons above have
+    // already run, so equation answers keep their operators intact.
+    var deHyphen = function (s) { return s.replace(/([a-z])-([a-z])/g, '$1 $2').replace(/([a-z])-([a-z])/g, '$1 $2'); };
+    var sHy = deHyphen(student), eHy = deHyphen(expected);
+    if ((sHy !== student || eHy !== expected)
+      && sHy.split(' ').filter(Boolean).sort().join(' ') === eHy.split(' ').filter(Boolean).sort().join(' ')) return true;
+    // A multi-word answer may be embedded in a fuller sentence, but only if the
+    // student did not negate it — this is the guard the old contains() check lacked.
+    if (eWords.length > 1 && !ANSWER_NEGATION.test(student)) {
+      var all = eWords.every(function(w) { return sWords.indexOf(w) !== -1; });
+      if (all) return true;
+    }
+    return false;
+  }
+
+  // `q` may carry `alt`: further wordings that are genuinely correct. Several bank
+  // questions are open enough that one string cannot be the whole answer key —
+  // "name one way to slow a pandemic" had exactly one accepted answer.
+  function answerMatches(studentRaw, q) {
+    if (!q) return false;
+    var student = normalizeAnswer(studentRaw);
+    if (!student) return false;
+    if (matchesOneAnswer(student, q.a)) return true;
+    var alts = q.alt || [];
+    for (var i = 0; i < alts.length; i++) {
+      if (matchesOneAnswer(student, alts[i])) return true;
+    }
+    return false;
+  }
+
+  window.__EpidemicCore = Object.assign({}, window.__EpidemicCore || {}, {
+    normalizeAnswer: normalizeAnswer, answerMatches: answerMatches
+  });
+
   // ── SIR Euler Solver ──
   function summarizeEpidemicRun(data, immuneAtStartPct, basicR0) {
     var rows = Array.isArray(data) ? data : [];
@@ -544,6 +652,13 @@ window.StemLab = window.StemLab || {
     return next;
   }
 
+  // One capacity definition for the whole tool: the share of the population that can be
+  // infected AT ONCE before hospitals are overwhelmed. A deliberate teaching
+  // simplification (it folds the hospitalisation rate and beds-per-capita into a single
+  // number), but it has to be ONE number — the SIR chart drew its line at 20% while the
+  // NPI gauge scored the same quantity against 5%, so the two disagreed by 4x on screen.
+  var HOSP_CAPACITY_PCT = 5;
+
   // ── SIR solver with NPI interventions ──
   function solveSIR_NPI(params, activeNPIs) {
     var r0 = params.r0, vaccRate = params.vaccRate || 0, infectPeriod = params.infectPeriod, popSize = params.popSize;
@@ -563,7 +678,7 @@ window.StemLab = window.StemLab || {
     var S = 1 - initR - 0.001;
     var I = 0.001;
     var R = initR;
-    var hospitalCapacity = 0.05; // 5% of pop can be hospitalized
+    var hospitalCapacity = HOSP_CAPACITY_PCT / 100; // shared with the chart's capacity line
     var data = [{ day: 0, S: S * 100, I: I * 100, R: R * 100, hospitalPct: (I / hospitalCapacity) * 100 }];
     for (var t = dt; t <= simDays; t += dt) {
       var dS = -betaEff * S * I * dt;
@@ -908,7 +1023,12 @@ window.StemLab = window.StemLab || {
         ctx.setToolData(function(prev) {
           var copy = Object.assign({}, prev);
           var td = Object.assign({}, copy.epidemicSim || {});
-          td[k] = v;
+          // `v` may be an updater function receiving the CURRENT stored value. Required
+          // anywhere several writes to one key happen in a single handler off the same
+          // render snapshot — runSim() can unlock four badges in one click, and with a
+          // plain value each write rebuilt the map from the same stale `d.badges`, so
+          // three of the four silently vanished along with their XP.
+          td[k] = (typeof v === 'function') ? v(td[k]) : v;
           copy.epidemicSim = td;
           return copy;
         });
@@ -924,14 +1044,26 @@ window.StemLab = window.StemLab || {
       }
 
       // ── XP + Badge helpers ──
+      // The host hands its XP writer to plugins as ctx.awardXP (stem_lab_module.js keeps
+      // awardStemXP module-local and passes it through the plugin ctx). `window.awardStemXP`
+      // is never assigned anywhere in the app — so every award in this file, from running a
+      // simulation to winning a battle to unlocking a badge, was a no-op behind a `typeof`
+      // guard that made the silence look deliberate.
+      var awardHostXP = ctx.awardXP;
       function awardXP(amount, reason) {
-        if (typeof window.awardStemXP === 'function') window.awardStemXP('epidemicSim', amount, reason);
+        if (typeof awardHostXP === 'function') awardHostXP('epidemicSim', amount, reason);
       }
+      // Same-pass guard: several checkBadge calls run inside ONE handler, before any of
+      // their writes have committed, so `d.badges` cannot see the ones just awarded.
+      var _badgedThisPass = {};
       function checkBadge(id) {
-        if (d.badges && d.badges[id]) return;
-        var badges = Object.assign({}, d.badges || {});
-        badges[id] = Date.now();
-        upd('badges', badges);
+        if ((d.badges && d.badges[id]) || _badgedThisPass[id]) return;
+        _badgedThisPass[id] = true;
+        upd('badges', function(cur) {
+          var next = Object.assign({}, cur || {});
+          next[id] = Date.now();
+          return next;
+        });
         awardXP(15, 'Badge: ' + id);
         var b = EPI_BADGES.find(function(x) { return x.id === id; });
         if (b) { upd('badgeToast', b.icon + ' ' + b.name); sfxVaccinate(); }
@@ -939,7 +1071,10 @@ window.StemLab = window.StemLab || {
       }
 
       function stemBeep(correct) {
-        if (typeof window.stemBeep === 'function') window.stemBeep(correct);
+        if (typeof window.stemBeep === 'function') { window.stemBeep(correct); return; }
+        // window.stemBeep does not exist either, so answer feedback was silent while the
+        // tool carried a purpose-built pair of cues at the top of this file, never called.
+        if (correct) sfxEpCorrect(); else sfxEpWrong();
       }
 
       function announceToSR(msg) {
@@ -986,15 +1121,22 @@ window.StemLab = window.StemLab || {
 
       // ── Particle canvas logic (via callback ref) ──
       function particleRef(canvas) {
-        // Always tear down any live loop FIRST — when Stop flips particleRunning
-        // false the component re-renders and particleRef runs again; cancelling
-        // here (before the early return) is the only path that actually stops a
-        // running sim. Previously the cancel sat after the guard and was skipped.
+        // React invokes an INLINE ref with null and then the element on every single
+        // render, and the old body tore the loop down and rebuilt it each time. Because
+        // the chart writes hoverDay on mouse-move, sliding the pointer across the SIR
+        // curves silently restarted the outbreak from three seed cases, over and over.
+        // Re-initialise only when the run signature actually changes; the loop itself
+        // now self-terminates once the canvas leaves the DOM, so the detach call no
+        // longer has to cancel anything.
+        if (!canvas) return;
+        var signature = particleRunning ? [r0, vaccRate, infectPeriod, popSize].join('|') : 'stopped';
+        if (canvas._epiSignature === signature) return;
+        canvas._epiSignature = signature;
         if (window._epiParticles) {
           cancelAnimationFrame(window._epiParticles);
           window._epiParticles = null;
         }
-        if (!canvas || !particleRunning) return;
+        if (!particleRunning) return;
         var cw = 700, ch = 200;
         // PL7 batch 3: HiDPI — scale internal buffer by dpr, keep CSS at logical.
         var _epiDpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
@@ -1099,12 +1241,14 @@ window.StemLab = window.StemLab || {
 
         initParticles();
         function animate() {
+          // Self-terminate when the canvas leaves the DOM (tab switch, tool exit) —
+          // otherwise the loop runs forever against a detached canvas.
+          if (!document.contains(canvas)) { window._epiParticles = null; return; }
           step();
           draw();
           window._epiParticles = requestAnimationFrame(animate);
         }
         animate();
-        checkBadge('particlePro');
       }
 
       // ── SVG Chart renderer ──
@@ -1139,12 +1283,15 @@ window.StemLab = window.StemLab || {
           gridChildren.push(h('text', { key: 'herdt', x: w - padR - 2, y: herdY - 4, textAnchor: 'end', fill: '#f59e0b', fontSize: 8, fontWeight: 'bold' }, 'Herd immunity: S < ' + (100 - herdThresh).toFixed(0) + '%'));
         }
 
-        // ── Healthcare-capacity line ("flatten the curve") — an infected peak
-        // ABOVE this overwhelms hospitals; the whole point of flattening is to
-        // keep the curve under it. Matches the "below 20%" Flatten challenge. ──
-        var capY = yPos(20);
+        // ── Healthcare-capacity line ("flatten the curve") — an infected peak ABOVE
+        // this overwhelms hospitals. Drawn at HOSP_CAPACITY_PCT so the chart, the NPI
+        // hospital gauge and the outbreak map all describe the SAME capacity: the line
+        // used to sit at 20% while solveSIR_NPI scored the identical quantity against
+        // 5%, so the chart could show a peak comfortably "under capacity" while the
+        // gauge beside it read 300% and OVERWHELMED. ──
+        var capY = yPos(HOSP_CAPACITY_PCT);
         gridChildren.push(h('line', { key: 'capline', x1: padL, x2: w - padR, y1: capY, y2: capY, stroke: '#ef4444', strokeWidth: 1, strokeDasharray: '2,2', opacity: 0.75 }));
-        gridChildren.push(h('text', { key: 'capt', x: padL + 2, y: capY - 3, textAnchor: 'start', fill: '#ef4444', fontSize: 8, fontWeight: 'bold' }, __alloT('stem.epidemic.healthcare_capacity_20', '🏥 Healthcare capacity (~20%)')));
+        gridChildren.push(h('text', { key: 'capt', x: padL + 2, y: capY - 3, textAnchor: 'start', fill: '#ef4444', fontSize: 8, fontWeight: 'bold' }, __alloT('stem.epidemic.healthcare_capacity', '🏥 Hospital capacity (' + HOSP_CAPACITY_PCT + '% infected at once)')));
 
         // area fills + lines
         var curves = [];
@@ -1252,13 +1399,15 @@ window.StemLab = window.StemLab || {
 
       function chalCheck() {
         if (!chalAnswer.trim()) return;
-        var correct = chalAnswer.trim().toLowerCase().replace(/[^a-z0-9%\/\-\*\.]/g, '').indexOf(chalQ.a.toLowerCase().replace(/[^a-z0-9%\/\-\*\.]/g, '')) >= 0;
+        var correct = answerMatches(chalAnswer, activeChalQ);
         var newStreak = correct ? chalStreak + 1 : 0;
         var bonus = correct ? (newStreak >= 5 ? 3 : newStreak >= 3 ? 2 : 1) : 0;
         var newScore = chalScore + (correct ? 10 * bonus : 0);
         stemBeep(correct);
         updMulti({
-          chalFeedback: correct ? ('\u2705 Correct!' + (bonus > 1 ? ' x' + bonus + ' streak!' : '')) : ('\u274C Answer: ' + chalQ.a),
+          // activeChalQ, not chalQ: when an AI-generated question is on screen the
+          // student was graded against \u2014 and shown \u2014 the STATIC tier question's answer.
+          chalFeedback: correct ? ('\u2705 Correct!' + (bonus > 1 ? ' x' + bonus + ' streak!' : '')) : ('\u274C Answer: ' + activeChalQ.a),
           chalStreak: newStreak,
           chalScore: newScore,
           chalAnswer: ''
@@ -1342,7 +1491,7 @@ window.StemLab = window.StemLab || {
       function battleAttack() {
         var q = getCurrentBattleQ();
         if (!q || !battleAnswer.trim()) return;
-        var correct = battleAnswer.trim().toLowerCase().replace(/[^a-z0-9%\/\-\*\.]/g, '').indexOf(q.a.toLowerCase().replace(/[^a-z0-9%\/\-\*\.]/g, '')) >= 0;
+        var correct = answerMatches(battleAnswer, q);
         var dmg = correct ? 20 + Math.floor(Math.random() * 10) : 0;
         var enemyDmg = correct ? 0 : 15 + Math.floor(Math.random() * 10);
         var newEHP = Math.max(0, battleEnemyHP - dmg);
@@ -1381,9 +1530,16 @@ window.StemLab = window.StemLab || {
         checkBadge('outbreakMapper');
       }
 
-      // Map stepping via timer in render body
-      if (mapRunning && mapGrid) {
-        setTimeout(function() {
+      // Map stepping via timer in render body.
+      // The schedule is now token-guarded. It used to fire on EVERY render while the map
+      // was running, not only when the map advanced — so a slider nudge or a chart hover
+      // (which sets hoverDay) forked a second stepper chain, and each fork forked again.
+      // The outbreak visibly accelerated the more the student touched anything.
+      if (!mapRunning && window._epiMapTimer) { clearTimeout(window._epiMapTimer); window._epiMapTimer = null; }
+      if (mapRunning && mapGrid && !window._epiMapTimer) {
+        window._epiMapTimer = setTimeout(function() {
+          window._epiMapTimer = null;
+          if (!document.querySelector('[data-epidemic-tool]')) return;   // tool unmounted mid-step
           var newGrid = stepGrid(mapGrid, r0, mapQuarantineZones);
           var counts = countGrid(newGrid);
           var hist = (mapHistory || []).concat([counts]);
@@ -1528,7 +1684,7 @@ window.StemLab = window.StemLab || {
       }
 
       // ── Hospital capacity for outbreak map ──
-      var hospitalBeds = d.hospitalBeds != null ? d.hospitalBeds : 5; // % of pop
+      var hospitalBeds = d.hospitalBeds != null ? d.hospitalBeds : HOSP_CAPACITY_PCT; // % of pop
 
       // ── AI Scenarios state ──
       var scenarioData = d.scenarioData || null;
@@ -1647,7 +1803,11 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'flex flex-wrap gap-1.5', role: 'tablist', },
           visibleSubtools.map(function(st) {
             var active = tab === st.id;
-            return h('button', { 'aria-label': __alloT('stem.epidemic.select_intervention_strategy', 'Select intervention strategy'),
+            // Every one of these 13 tabs carried the same hardcoded aria-label
+            // ("Select intervention strategy"), which overrides the visible text — so a
+            // screen-reader user heard thirteen identically-named buttons and could not
+            // tell SIR from History. The name now matches what is on screen (WCAG 2.5.3).
+            return h('button', { 'aria-label': st.label,
               key: st.id,
               onClick: function() { updMulti({ tab: st.id, hoverDay: null }); announceToSR('Switched to ' + st.label); },
               className: 'px-3 py-1.5 rounded-xl text-xs font-bold transition-all ' + (active ? 'bg-indigo-600 text-white shadow-md' : 'bg-white/70 text-slate-600 hover:bg-indigo-50 border border-slate-400'),
@@ -1700,7 +1860,10 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex flex-wrap gap-1.5' },
             PRESETS.map(function(p, idx) {
               var active = selectedPreset === idx;
-              return h('button', { 'aria-label': __alloT('stem.epidemic.apply_preset', 'Apply Preset'),
+              // Was "Apply Preset" on all six, so every disease button announced the
+              // same thing and the selected one announced no state at all.
+              return h('button', { 'aria-label': p.name + ' preset, R nought ' + p.r0 + ', infectious period ' + p.period + ' days',
+                'aria-pressed': active ? 'true' : 'false',
                 key: p.name,
                 onClick: function() { applyPreset(idx); },
                 className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ' + (active ? 'text-white shadow-md' : 'bg-white text-slate-600 hover:bg-slate-50 border border-slate-400'),
@@ -1767,7 +1930,17 @@ window.StemLab = window.StemLab || {
           h('div', { className: glassCard },
             h('div', { className: 'flex items-center justify-between mb-2' },
               h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wide' }, __alloT('stem.epidemic.particle_simulation', 'Particle Simulation')),
-              h('button', { onClick: function() { upd('particleRunning', !particleRunning); },
+              h('button', {
+                'aria-pressed': particleRunning ? 'true' : 'false',
+                onClick: function() {
+                  if (particleRunning) { upd('particleRunning', false); return; }
+                  // "Particle Pro \u2014 run 3 particle simulations" used to be handed out on
+                  // the FIRST mount of the canvas. Count actual starts so the badge means
+                  // what it says.
+                  var runs = (d.particleRuns || 0) + 1;
+                  updMulti({ particleRunning: true, particleRuns: runs });
+                  if (runs >= 3) checkBadge('particlePro');
+                },
                 className: 'px-3 py-1 text-[11px] font-bold rounded-lg ' + (particleRunning ? 'bg-red-100 text-red-600' : 'bg-emerald-100 text-emerald-600')
               }, particleRunning ? '\u23F9 Stop' : '\u25B6 Start')
             ),
@@ -1984,7 +2157,9 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2' },
               NPI_INTERVENTIONS.map(function(npi) {
                 var active = activeNPIs.indexOf(npi.id) >= 0;
-                return h('button', { 'aria-label': __alloT('stem.epidemic.subtract', 'Subtract'),
+                // Every intervention toggle announced "Subtract" — no name, no state.
+                return h('button', { 'aria-label': npi.label + ', reduces transmission by ' + Math.round(npi.betaReduction * 100) + ' percent, cost ' + npi.cost,
+                  'aria-pressed': active ? 'true' : 'false',
                   key: npi.id,
                   onClick: function() { toggleNPI(npi.id); },
                   className: 'p-2 rounded-xl text-left transition-all border ' + (active ? 'bg-teal-50 border-teal-400 ring-2 ring-teal-200' : 'bg-white border-slate-200 hover:border-teal-600')
@@ -2085,7 +2260,9 @@ window.StemLab = window.StemLab || {
             if (opts.seed) fresh.seed = opts.seed;
             setOutbreak(fresh);
             if (addToast) addToast('🏥 Outbreak Response begins. Week 1 of 26 on ' + diff.label + '.', 'success');
-            awardXP && awardXP('outbreak_start', 10, 'Outbreak campaign (' + diff.label + ')');
+            // awardXP takes (amount, reason) — this passed an activity id as the amount,
+            // so the host was handed the string "outbreak_start" where points belong.
+            awardXP(10, 'Outbreak campaign (' + diff.label + ')');
             if (announceToSR) announceToSR('Outbreak Response campaign started on ' + diff.label + '. Week 1 of 26.');
           }
 
@@ -2093,7 +2270,10 @@ window.StemLab = window.StemLab || {
 
           function awardOutbreakBadge(id) {
             if ((d.badges || {})[id]) return;
-            var nb = Object.assign({}, d.badges || {}); nb[id] = true; upd({ badges: nb });
+            // Functional merge: the campaign can end with several badges qualifying at
+            // once (flattener, trustBuilder, capacityKeeper, equityPHO, phoMastery), and
+            // rebuilding from the same render snapshot each time kept only the last.
+            upd('badges', function(cur) { var nb = Object.assign({}, cur || {}); nb[id] = true; return nb; });
             var b = EPI_BADGES.find(function(x) { return x.id === id; });
             if (b && addToast) addToast('🏅 ' + b.name + ': ' + b.desc, 'success');
           }
@@ -2528,7 +2708,7 @@ window.StemLab = window.StemLab || {
               if (outbreak.difficulty === 'state' && (outcome.tier === 'mastery' || outcome.tier === 'solid')) awardOutbreakBadge('phoMastery');
 
               setOutbreak({ phase: 'debrief', finalOutcome: outcome, totalDeaths: totalDeaths, totalCases: totalCases, avgTrust: avgTrust });
-              awardXP && awardXP('outbreak_complete', 50, outcome.label);
+              awardXP(50, 'Outbreak campaign complete — ' + outcome.label);
             } else {
               setOutbreak({ phase: 'week', week: outbreak.week + 1, hoursLeft: outbreak.hoursPerWeek + (outbreak.activeMods.some(function(m) { return m.id === 'fundingBoost'; }) ? 6 : 0), weekActions: [], lastEvent: null });
               if (announceToSR) announceToSR('Week ' + (outbreak.week + 1) + ' begins.');
