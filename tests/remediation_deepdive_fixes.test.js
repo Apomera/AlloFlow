@@ -356,3 +356,77 @@ describe('H15 — the drain does not spend its budget on nothing', () => {
     expect((dp.match(/probeMs: /g) || []).length).toBeGreaterThanOrEqual(3);
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Background-tab resilience (field log 2026-07-27).
+//
+// A hidden tab keeps running fetch but SUSPENDS canvas rasterization, so pdf.js page.render stalls
+// while its timeout keeps counting — and both rungs of the scale-retry ladder fail identically,
+// because the scale was never the problem. The log showed a 20s render timeout taking ~136s of
+// wall clock to fire (background timer clamping), both image pages lost; the same document
+// foreground cropped both in about a second.
+// ─────────────────────────────────────────────────────────────────────────────
+describe('canvas work waits for a visible tab', () => {
+  let waitForVisibleTab;
+  beforeAll(() => {
+    loadAlloModule('doc_pipeline_module.js');
+    waitForVisibleTab = window.AlloModules.createDocPipeline.waitForVisibleTab;
+  });
+
+  const setHidden = (hidden) => {
+    Object.defineProperty(document, 'hidden', { configurable: true, get: () => hidden });
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => (hidden ? 'hidden' : 'visible') });
+  };
+
+  it('resolves immediately when the tab is already visible', async () => {
+    setHidden(false);
+    const t0 = Date.now();
+    await expect(waitForVisibleTab(5000, 'test')).resolves.toBe('visible');
+    expect(Date.now() - t0).toBeLessThan(200);
+  });
+
+  it('resolves as soon as the tab comes back', async () => {
+    setHidden(true);
+    const p = waitForVisibleTab(10000, 'test');
+    setTimeout(() => { setHidden(false); document.dispatchEvent(new Event('visibilitychange')); }, 30);
+    await expect(p).resolves.toBe('became-visible');
+  });
+
+  it('is BOUNDED — a tab left hidden all run still finishes', async () => {
+    // Otherwise a teacher who backgrounds the tab and walks away would hang the pipeline, which is
+    // worse than the degraded behaviour this replaces.
+    setHidden(true);
+    await expect(waitForVisibleTab(60, 'test')).resolves.toBe('still-hidden');
+    setHidden(false);
+  });
+
+  it('never rejects — the caller keeps its own timeout ladder for real failures', async () => {
+    setHidden(true);
+    await expect(waitForVisibleTab(30, 'test')).resolves.toBeTruthy();
+    setHidden(false);
+    await expect(waitForVisibleTab(0, 'test')).resolves.toBeTruthy();
+  });
+
+  it('the image render actually waits on it', () => {
+    expect(dp).toContain("await _awaitImageWork(_alloWaitForVisibleTab(45000, 'page.render p' + pg));");
+    const i = dp.indexOf("_alloWaitForVisibleTab(45000, 'page.render p' + pg)");
+    const j = dp.indexOf('for (const _sc of [1.5, 1.0]) {', i);
+    expect(i).toBeGreaterThan(0);
+    expect(j, 'the wait must come BEFORE the scale ladder, not inside it').toBeGreaterThan(i);
+  });
+});
+
+describe('a watchdog for a document that is gone retires instead of relogging', () => {
+  const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
+
+  it('a stale DOCUMENT ends the watchdog; a stale RUN re-arms', () => {
+    // watchdogEpoch is captured once, so a stale document can never become valid again — M7's
+    // re-arm turned that into a permanent every-8-minute log loop (three instances visible in the
+    // 2026-07-27 field log, all stamped documentEpoch: 0 while the run was epoch 1).
+    const stale = anti.slice(anti.indexOf('if (_staleDocument) {'), anti.indexOf('if (_otherRunOwnsHost || _otherAbortOwner) {'));
+    expect(stale).toContain('Retiring a remediation watchdog');
+    expect(stale, 'a document-stale watchdog must NOT re-arm').not.toContain('arm();');
+    const otherRun = anti.slice(anti.indexOf('if (_otherRunOwnsHost || _otherAbortOwner) {'), anti.indexOf('if (!liveOwner) {'));
+    expect(otherRun, 'a run-stale watchdog SHOULD re-arm — that one can resolve').toContain('arm();');
+  });
+});

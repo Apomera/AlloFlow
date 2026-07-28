@@ -19052,10 +19052,21 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
         && (liveOwner.documentEpoch !== watchdogEpoch || (watchdogRunId && liveOwner.runId !== watchdogRunId));
       const _otherAbortOwner = !!(liveAbortOwner && (liveAbortOwner.documentEpoch !== watchdogEpoch || (watchdogRunId && liveAbortOwner.runId !== watchdogRunId)))
         || !!(initialWatchdogAbortCtrl && liveAbortCtrl !== initialWatchdogAbortCtrl);
-      if (_staleDocument || _otherRunOwnsHost || _otherAbortOwner) {
-        warnLog('[PdfFix] Ignoring superseded remediation watchdog timeout; a newer document or run owns the host.');
-        try { if (typeof _docPipeline?.logHostDiagnostic === 'function') _docPipeline.logHostDiagnostic('Watchdog', 'Idle timeout ignored — a newer document or run owns the host.', { runId: watchdogRunId, documentEpoch: watchdogEpoch }); } catch (_) {}
-        arm(); // re-check rather than dying: the newer run may finish and strand the flag in turn
+      if (_staleDocument) {
+        // A DIFFERENT DOCUMENT is loaded. watchdogEpoch was captured once when this effect ran, so
+        // this instance can never become valid again — re-arming it just relogs every IDLE_LIMIT
+        // for the life of the page. Let it die; the current document has its own watchdog.
+        //
+        // Field log 2026-07-27 caught exactly that: three "Idle timeout ignored" lines ~8 minutes
+        // apart, all stamped {runId: null, documentEpoch: 0}, while the live run was epoch 1. The
+        // re-arm added by M7 was right for a superseded RUN and wrong for a superseded DOCUMENT.
+        warnLog('[PdfFix] Retiring a remediation watchdog for a document that is no longer loaded.');
+        return;
+      }
+      if (_otherRunOwnsHost || _otherAbortOwner) {
+        warnLog('[PdfFix] Ignoring superseded remediation watchdog timeout; a newer run owns the host.');
+        try { if (typeof _docPipeline?.logHostDiagnostic === 'function') _docPipeline.logHostDiagnostic('Watchdog', 'Idle timeout ignored — a newer run owns the host.', { runId: watchdogRunId, documentEpoch: watchdogEpoch }); } catch (_) {}
+        arm(); // this one CAN resolve: the newer run may finish and strand the flag in turn
         return;
       }
       if (!liveOwner) {

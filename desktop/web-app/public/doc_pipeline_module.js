@@ -2014,6 +2014,45 @@ function readingOrderSequenceRatio(textA, textB) {
   return _r;
 }
 
+// ── Background-tab guard for canvas work (field log 2026-07-27) ─────────────────────────────
+// Network calls keep running in a hidden tab; CANVAS RASTERIZATION does not. Anything that goes
+// through pdf.js page.render therefore stalls indefinitely while its timeout keeps counting, and
+// the pipeline records a content failure for what is really a suspended tab. Timers are clamped
+// too (~once a minute), so the failure is reported long after the deadline it names — in the field
+// log a 20s render timeout took about 136 seconds of wall clock to fire.
+//
+// Resolves as soon as the tab is visible, immediately if it already is, and always by maxWaitMs so
+// a teacher who leaves the tab in the background for the whole run still finishes. Never rejects:
+// the caller's existing timeout/fallback ladder stays in charge of real failures.
+function _alloWaitForVisibleTab(maxWaitMs, label) {
+  try {
+    if (typeof document === 'undefined' || document.visibilityState === undefined) return Promise.resolve('no-visibility-api');
+    if (!document.hidden) return Promise.resolve('visible');
+    var bound = Math.max(0, Number(maxWaitMs) || 0);
+    if (!bound) return Promise.resolve('not-waiting');
+    return new Promise(function (resolve) {
+      var done = false;
+      var t0 = ((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0);
+      var finish = function (why) {
+        if (done) return;
+        done = true;
+        try { document.removeEventListener('visibilitychange', onVis); } catch (_) {}
+        if (timer) { try { clearTimeout(timer); } catch (_) {} }
+        try {
+          var waited = (((typeof Date !== 'undefined' && Date.now) ? Date.now() : 0) - t0);
+          if (waited > 250) warnLog('[Tab] ' + (label || 'canvas work') + ': waited ' + Math.round(waited / 1000) + 's for the tab to come back (' + why + ') — a hidden tab suspends canvas rendering.');
+        } catch (_) {}
+        resolve(why);
+      };
+      var onVis = function () { if (!document.hidden) finish('became-visible'); };
+      try { document.addEventListener('visibilitychange', onVis); } catch (_) {}
+      // The timer is itself clamped in a hidden tab, so this bound is a floor, not a ceiling. That
+      // is acceptable: it only ever delays work that could not have succeeded anyway.
+      var timer = setTimeout(function () { finish('still-hidden'); }, bound);
+    });
+  } catch (_) { return Promise.resolve('error'); }
+}
+
 // ── FERPA: fidelity messages are teacher-safe, LOGS are not (deep dive 2026-07-27) ──────────
 // A fidelity note legitimately quotes the document back at the teacher — "8 source numeric values
 // not found unchanged (76, 112, 04/17/2019, …)" is precisely what makes it actionable, and the
@@ -20819,6 +20858,23 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
                   // its images instead of dropping them after the timeout — mirrors the OCR render
                   // retry. viewport + canvas track the scale that actually rendered, so the crop math
                   // below (viewport.scale / canvas dims) stays consistent. (2026-06-19)
+                  // ── Background-tab guard (field log 2026-07-27) ────────────────────────────
+                  // pdf.js rasterizes into a <canvas>, and a browser SUSPENDS canvas rasterization
+                  // in a hidden tab. So this render does not run slowly when the teacher switches
+                  // away — it does not run at all, while the timeout keeps counting. Both rungs of
+                  // the scale ladder above then fail identically, because the problem is not the
+                  // scale, and the page is recorded as a content failure: the teacher's document
+                  // shipped with its figures silently replaced by text placeholders.
+                  //
+                  // The field log shows both halves of this. Backgrounded: "Page 2 extraction
+                  // failed: Timeout after 20s (page.render p2 @1x)" — and that 20s timer took ~136s
+                  // of wall clock to fire, which is background timer clamping. Same document,
+                  // foreground, minutes later: both pages cropped in about one second each.
+                  //
+                  // Wait for the tab to come back before rasterizing. Bounded, so a teacher who
+                  // leaves it backgrounded for the whole run still finishes — just with the old
+                  // behaviour, which is what they get today anyway.
+                  await _awaitImageWork(_alloWaitForVisibleTab(45000, 'page.render p' + pg));
                   let viewport = null, canvas = null;
                   for (const _sc of [1.5, 1.0]) {
                     const _vp = page.getViewport({ scale: _sc });
@@ -39156,7 +39212,8 @@ window.AlloModules.createDocPipeline.latexToSpeakable = _alloLatexToSpeakable; /
 window.AlloModules.createDocPipeline.orderTextItems = _alloOrderTextItems; // static: H12 (2026-07-26) — column + RTL reading-order repair; pure, so the direction fix is unit-testable without pdf.js
 window.AlloModules.createDocPipeline.resolveExtractionPageCount = _alloResolveExtractionPageCount; // static: M13 (2026-07-26) — guessed-page-count precedence + cap for the Vision fan-out
 window.AlloModules.createDocPipeline.selectCompletionToast = _alloSelectCompletionToast; // static: H3 (2026-07-26) — the completion-toast ladder, testable against the real decision
-window.AlloModules.createDocPipeline.logSafeFidelityMsg = _alloLogSafeFidelityMsg; // static: FERPA redactor for the copyable diagnostics log (deep dive 2026-07-27) — every lane must use the SAME one
+window.AlloModules.createDocPipeline.logSafeFidelityMsg = _alloLogSafeFidelityMsg;
+window.AlloModules.createDocPipeline.waitForVisibleTab = _alloWaitForVisibleTab; // static: background-tab guard for canvas work (field log 2026-07-27) // static: FERPA redactor for the copyable diagnostics log (deep dive 2026-07-27) — every lane must use the SAME one
 window.AlloModules.createDocPipeline.cleanScannedOcrText = _cleanScannedOcrText; // static: P2-a folio-strip + hyphen-rejoin (2026-07-03), unit-tested
 window.AlloModules.createDocPipeline.stripRestoreMarkdown = _stripRestoreMarkdown; // static: P2-b restore markdown-strip (2026-07-03), unit-tested
 window.AlloModules.createDocPipeline.stripPageEdgeArtifacts = _stripPageEdgeArtifacts; // static: #F page-edge running-head/folio strip (2026-07-05), unit-tested
