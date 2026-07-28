@@ -1616,7 +1616,10 @@ window.StemLab = window.StemLab || {
         ctx.setToolData(function(prev) {
           var copy = Object.assign({}, prev);
           var td = Object.assign({}, copy.lifeSkills || {});
-          td[k] = v;
+          // `v` may be an updater function receiving the CURRENT stored value — needed
+          // wherever one handler writes the same key more than once, since all those
+          // writes would otherwise be computed from the same stale render snapshot.
+          td[k] = (typeof v === 'function') ? v(td[k]) : v;
           copy.lifeSkills = td;
           return copy;
         });
@@ -1631,14 +1634,27 @@ window.StemLab = window.StemLab || {
         });
       }
 
+      // The host keeps awardStemXP module-local (stem_lab_module.js) and hands it to
+      // plugins as ctx.awardXP. `window.awardStemXP` is never assigned anywhere in the
+      // app, so every award in this tool — 40-odd badges plus the checklist and scenario
+      // XP — was a no-op behind a `typeof` guard that made the silence look deliberate.
+      var awardHostXP = ctx.awardXP;
       function awardXP(amount, reason) {
-        if (typeof window.awardStemXP === 'function') window.awardStemXP('lifeSkills', amount, reason);
+        if (typeof awardHostXP === 'function') awardHostXP('lifeSkills', amount, reason);
       }
+      // Same-pass guard: state has not committed while a handler awards its second
+      // badge, so `d.badges` cannot see the first.
+      var _badgedThisPass = {};
       function checkBadge(id) {
-        if (d.badges && d.badges[id]) return;
-        var badges = Object.assign({}, d.badges || {});
-        badges[id] = Date.now();
-        upd('badges', badges);
+        if ((d.badges && d.badges[id]) || _badgedThisPass[id]) return;
+        _badgedThisPass[id] = true;
+        // Updater form — rebuilding the map from the render snapshot meant two badges
+        // unlocked in one handler kept only the last, and its XP with it.
+        upd('badges', function(cur) {
+          var next = Object.assign({}, cur || {});
+          next[id] = Date.now();
+          return next;
+        });
         awardXP(15, 'Badge: ' + id);
         var b = LS_BADGES.find(function(x) { return x.id === id; });
         if (b) upd('badgeToast', b.icon + ' ' + b.name);
