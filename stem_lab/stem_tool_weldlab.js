@@ -1609,6 +1609,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           s.syncCamera();
         }
 
+        // Tilt without a vertical drag. The canvas is touch-action: pan-y so that a
+        // vertical swipe scrolls the page instead of being swallowed by the scene
+        // (see the canvas style below), which costs touch users the drag axis that
+        // used to control elevation. These buttons give it back, and they are the
+        // same clamps the pointer and key handlers use.
+        function tiltCamera(delta) {
+          if (!sceneRef.current) return;
+          var s = sceneRef.current;
+          s.camAngle.el = Math.max(0.05, Math.min(Math.PI / 2 - 0.05, s.camAngle.el + delta));
+          s.syncCamera();
+        }
+
         useEffect(function () {
           var cancelled = false;
           var _weldVR = null, _weldVRBtnOff = null;   // effect scope: set inside init(), torn down in the cleanup closure
@@ -2701,9 +2713,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             ref: canvasRef,
             tabIndex: 0,
             role: 'img',
-            'aria-label': '3D welding scene. ' + (props.ariaLabel || '') + ' Drag to orbit camera, scroll to zoom, arrow keys to orbit, plus or minus to zoom.',
+            'aria-label': '3D welding scene. ' + (props.ariaLabel || '') + ' Drag to orbit camera, scroll to zoom, arrow keys to orbit, plus or minus to zoom. On a touchscreen, swipe sideways to orbit and use the tilt buttons to change the viewing angle.',
             className: 'w-full block rounded-lg outline-none focus:ring-2 focus:ring-orange-500/40',
-            style: { height: 280, touchAction: 'none', cursor: 'grab' }
+            // pan-y, NOT none. This canvas is full width, so with touch-action: none a
+            // vertical swipe anywhere on it was swallowed by the orbit handler and the
+            // page would not scroll — on a touchscreen Chromebook the 3D view became a
+            // scroll trap the student had to swipe around. pan-y hands vertical swipes
+            // back to the page and keeps horizontal drag for orbiting; elevation moves
+            // to the tilt buttons and the arrow keys, which already existed. Same
+            // trade-off, and the same reasoning, as StemLab.makeBayViewer in the host.
+            style: { height: 280, touchAction: 'pan-y', cursor: 'grab' }
           }),
           // Loading state
           status === 'loading' && h('div', {
@@ -2734,6 +2753,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           ),
           // Camera controls overlay (only when scene is ready)
           status === 'ready' && h('div', { className: 'absolute top-3 right-3 flex gap-2' },
+            // Tilt up/down: the touch replacement for the vertical drag that pan-y now
+            // gives back to the page. Also a plain pointer-free control for anyone who
+            // finds dragging hard, which the arrow keys only cover if you can tab here.
+            h('button', {
+              'aria-label': __alloT('stem.weldlab.tilt_camera_up', 'Tilt camera up'),
+              onClick: function () { tiltCamera(0.12); },
+              className: 'transition-colors px-2 py-1 rounded bg-slate-800/85 text-slate-200 text-xs font-bold border border-slate-600 hover:bg-slate-700 focus:outline-none focus:ring-2 ring-orange-500/40'
+            }, '▲'),
+            h('button', {
+              'aria-label': __alloT('stem.weldlab.tilt_camera_down', 'Tilt camera down'),
+              onClick: function () { tiltCamera(-0.12); },
+              className: 'transition-colors px-2 py-1 rounded bg-slate-800/85 text-slate-200 text-xs font-bold border border-slate-600 hover:bg-slate-700 focus:outline-none focus:ring-2 ring-orange-500/40'
+            }, '▼'),
             h('button', {
               'aria-label': __alloT('stem.weldlab.reset_camera_to_default_angle', 'Reset camera to default angle'),
               onClick: resetCamera,
@@ -2745,6 +2777,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             h('span', null, __alloT('stem.weldlab.drag_to_orbit', '🖱 Drag to orbit')),
             h('span', null, __alloT('stem.weldlab.wheel_to_zoom', '⚙ Wheel to zoom')),
             h('span', null, __alloT('stem.weldlab.arrow_keys_for_keyboard_control', '⌨ Arrow keys + / − for keyboard control')),
+            h('span', null, __alloT('stem.weldlab.touch_swipe_sideways_tilt_buttons', '👆 Touch: swipe sideways to orbit, ▲▼ to tilt')),
             h('span', { className: 'text-slate-400' }, __alloT('stem.weldlab.same_v_a_ts_controls_above_drive_both_', '— same V/A/TS controls above drive both views'))
           ),
           // Cross-section inset — visible only when toggle is on
