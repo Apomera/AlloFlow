@@ -24,8 +24,14 @@ describe('DB-B2: chunk-retry body swap treats document text as DATA, not a repla
   it('demonstrates the old string form WOULD have corrupted it', () => {
     expect(swapBuggy(doc, tricky)).not.toContain('$&'); // $& expanded to the whole match → corruption
   });
-  it('source uses a function replacer at the body-swap site', () => {
-    expect(dp).toMatch(/\.replace\(\/<body\[\^>\]\*>\[\\s\\S\]\*<\\\/body>\/, \(\) => '<body>' \+ bodyContent/);
+  it('the reassembly site never treats document text as a replace pattern', () => {
+    // Stronger than the function replacer this used to pin: the body swap was
+    // replaced outright with concatenation, so there is no replacement-pattern
+    // context for $&/$1/$$ to be interpreted in. Assert the concatenation and
+    // that the reassembly is adopted only when it survives the preservation
+    // gate — the corruption class DB-B2 describes cannot arise here at all.
+    expect(dp).toMatch(/const reassembled = preambleStr \+ '\\n' \+ fixedChunks\.join\('\\n'\) \+ '\\n' \+ postamble;/);
+    expect(dp).toMatch(/const _reassemblyAccepted = reassembled\.length > _origInputHtml\.length \* 0\.7;/);
   });
   it('the deterministic-fix handlers (title/lang/lang-span/svg-desc) also use function replacers', () => {
     // these substitute AI-generated p.title/p.lang/p.text/p.desc — same $-token corruption class
@@ -109,12 +115,23 @@ describe('B2-2: "Fix Remaining" re-fix lane runs the main fidelity sweep + carri
     expect(dp).toMatch(/htmlToPlainText: htmlToPlainText/);
   });
   it('the Fix Remaining handler sweeps THIS run and commits fidelityNotes/fidelityLimited (WARN-only)', () => {
-    expect(vp).toMatch(/_docPipeline\.computeStructuralFidelityNotes\(_srcRaw, bestHtml\)/);
+    // Now also receives the source links, so link loss is part of the fidelity
+    // comparison rather than a separate afterthought.
+    expect(vp).toMatch(/_docPipeline\.computeStructuralFidelityNotes\(_srcRaw, bestHtml, _srcLinks/);
     expect(vp).toMatch(/_docPipeline\.numericFidelityLosses\(_srcRaw, _outText\)/);
     expect(vp).toMatch(/_docPipeline\.checkReadingOrderPreserved\(prevSnapshot\.html, bestHtml\)/);
     // Harness repair (2026-07-09): M22 added the coverage<90 half so the header chip can't
     // vanish while the panel still reports low coverage on the same screen.
-    expect(vp).toMatch(/commit: \{ autoFixPasses:[^}]*fidelityNotes: _refixNotes, fidelityLimited: _refixNotes\.length > 0 \|\| \(typeof pdfFixResult\.integrityCoverage === 'number' && pdfFixResult\.integrityCoverage < 90\) \}/);
+    // The flat `commit: { … }` object became a CAS updater spread, and C1
+    // (2026-07-26) changed _refixNotes from a REPLACE to a merge — the flat
+    // assignment had been silently dropping durable extraction-time disclosures
+    // (lowOcrAccuracy, altQuality, folioLeak …) that stay true after any number
+    // of fix passes, which also cleared fidelityLimited and needsExpertReview.
+    // Pin the merge and both halves of fidelityLimited; the source it reads is
+    // now _fixRemainingSource rather than pdfFixResult.
+    expect(vp).toMatch(/_refixNotes = \(_docPipeline && typeof _docPipeline\.mergeFidelityNotes === 'function'\)/);
+    expect(vp).toMatch(/const fidelityLimited = _refixNotes\.length > 0 \|\| \(typeof _fixRemainingSource\.integrityCoverage === 'number'/);
+    expect(vp).toMatch(/autoFixPasses: \(_fixRemainingSource\.autoFixPasses \|\| 0\) \+ totalPasses,/);
   });
 });
 
@@ -193,7 +210,10 @@ describe('B3-4: RTL dir is set on the single-file remediation output for RTL lan
 describe('B3-5: H-8 — the loaded-project loader resets per-doc holdovers (palette snapshot etc.)', () => {
   it('clears _paletteSnapshotRef + the sibling per-doc state after loading a project', () => {
     // Harness repair (2026-07-09): M12 added the PDF/UA badge clears inside this block — window widened.
-    expect(vp).toMatch(/setPendingPdfFile\(\{ name: project\.fileName \|\| 'loaded-project\.pdf' \}\);[\s\S]{0,1600}?_paletteSnapshotRef\.current = null;[\s\S]{0,900}?setTagOutline\(null\);/);
+    // The placeholder file now carries a size too, so the object no longer ends
+    // right after name. H-8's point is the ORDER — restore the pending file,
+    // then clear the per-document holdovers — which is what the sequence pins.
+    expect(vp).toMatch(/setPendingPdfFile\(\{ name: project\.fileName \|\| 'loaded-project\.pdf', size:[\s\S]{0,1600}?_paletteSnapshotRef\.current = null;[\s\S]{0,900}?setTagOutline\(null\);/);
   });
 });
 
@@ -313,7 +333,8 @@ describe('B5: re-OCR splice gate only adopts non-junkier text (pure-logic mirror
 describe('B6: large-document page-slice audit (chunk-first router + reactive fallback)', () => {
   // ── Source-pins: the design is present and the safety net is preserved ──
   it('defines the _auditPdfInSlices helper + tunable threshold constants', () => {
-    expect(dp).toMatch(/const _auditPdfInSlices = async \(base64Data, auditPromptBase\)/);
+    // Gained a shouldCancel callback so a slice run can bail between slices.
+    expect(dp).toMatch(/const _auditPdfInSlices = async \(base64Data, auditPromptBase, shouldCancel\)/);
     expect(dp).toMatch(/_AUDIT_SLICE_BYTES_KB = 9000/);
     expect(dp).toMatch(/_AUDIT_SLICE_PAGES\b\s*=\s*20/);
     expect(dp).toMatch(/_AUDIT_SLICE_MAX\s*=\s*40/);
@@ -401,7 +422,12 @@ describe('B7: sliced-audit UI honesty (the score/info surfaces disclose the appr
   });
   // (3) the post-fix toast does NOT claim "remediated!" / play the success chord on a sliced baseline
   it('a sliced-baseline delta gets a neutral info toast, not the green success branch', () => {
-    expect(dp).toMatch(/_auditResult && _auditResult\._slicedAudit && finalAfterScore !== null/);
+    // The if/else ladder became a pure selector, _alloSelectCompletionToast,
+    // precisely BECAUSE inline string pins like this one kept going dead (see
+    // the comment above it in doc_pipeline_source.jsx). Pin the selector's rule
+    // and the branch it drives, not the condition it replaced.
+    expect(dp).toMatch(/if \(s\.slicedAudit && scored\) return 'sliced-baseline';/);
+    expect(dp).toMatch(/_toastBranch === 'sliced-baseline'/);
     expect(dp).toMatch(/page-slice approximation, so this change is approximate/);
   });
   // (4) the permanent compliance report stops asserting "Multi-pass self-consistency" for a sliced audit
@@ -661,8 +687,14 @@ describe('refusal-shaped JSON cannot erase a document (corpus-caught 2026-07-02)
   // 98 with ZERO document text. Two-layer fix, pinned here at the source level so the
   // fast suite fails even when the browser corpus is not run.
   it('repairSingle accepts only renderable block ARRAYS (refusal shapes -> repair failure -> HTML fallback path)', () => {
-    expect(dp).toContain('const _renderableBlock = (b)');
-    expect(dp).toContain('const _asBlockArray = (v)');
+    // The inline predicate was lifted into a shared _alloRenderableBlock so the
+    // several call sites cannot drift apart; the local name is now an alias.
+    expect(dp).toContain('const _renderableBlock = _alloRenderableBlock;');
+    expect(dp).toMatch(/(?:function|const|var)\s+_alloRenderableBlock/);
+    // H8 (2026-07-26) hoisted this to file scope alongside _alloRenderableBlock
+    // so the parsers cannot drift apart; the local is now an alias.
+    expect(dp).toContain('const _asBlockArray = _alloAsBlockArray;');
+    expect(dp).toMatch(/function _alloAsBlockArray\(v\)/);
     // both parse attempts go through the coercion, not raw JSON.parse returns
     expect((dp.match(/_asBlockArray\(JSON\.parse\(/g) || []).length).toBeGreaterThanOrEqual(2);
   });
