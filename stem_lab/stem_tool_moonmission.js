@@ -553,6 +553,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         return APOLLO_FACTS[(phase * 7 + 3) % APOLLO_FACTS.length];
       }
 
+      // ── Phase-readiness banner ──
+      // Every passive phase already animates toward an unmistakable milestone — orbit
+      // achieved, hard dock, splashdown — and the Proceed button underneath knew nothing
+      // about any of it. So a student either sat waiting with no idea what they were
+      // waiting for, or clicked straight through and missed the thing the phase exists to
+      // show. This narrates what the spacecraft is doing right now, and turns green when
+      // the milestone lands. Advancing early stays possible on purpose: the point is to
+      // make the wait legible, not to enforce it.
+      function phaseStatus(ready, waitingText, readyText) {
+        return h('div', {
+          role: 'status', 'aria-live': 'polite',
+          className: 'mb-2 rounded-lg px-3 py-2 text-[11px] font-bold border ' +
+            (ready ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
+                   : 'bg-sky-500/10 border-sky-500/30 text-sky-300')
+        }, (ready ? '✅ ' : '⏳ ') + (ready ? readyText : waitingText));
+      }
+
       var LUNAR_SAMPLES_DATA = [
         { name: t('stem.moonmission.anorthosite', 'Anorthosite'), icon: '\u26AA', type: 'Highland Rock', xp: 15, fact: t('stem.moonmission.this_ancient_rock_from_the_lunar_highl', 'This ancient rock from the lunar highlands is 4.4 billion years old \u2014 nearly as old as the Moon itself. It tells us the Moon once had a global magma ocean.') },
         { name: t('stem.moonmission.basalt', 'Basalt'), icon: '\u26AB', type: 'Mare Rock', xp: 10, fact: t('stem.moonmission.dark_volcanic_basalt_filled_the_moon_s', 'Dark volcanic basalt filled the Moon\'s giant impact basins to create the dark "seas" (maria) visible from Earth. These lavas erupted 3-3.5 billion years ago.') },
@@ -1342,10 +1359,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   var stage = 1;
                   var maxAlt = 0;
                   var shakeIntensity = 0;
+                  var _lastLaunchState = null;   // throttle the readiness publish
 
                   function drawLaunch() {
                     tick++;
                     ctx.clearRect(0, 0, W, H);
+                    // Narrate the ascent to the button below (state changes only).
+                    var lState = countdown > 0 ? 'countdown'
+                      : altitude > 20000 ? 'orbit'
+                      : ('stage' + stage);
+                    if (lState !== _lastLaunchState) {
+                      _lastLaunchState = lState;
+                      upd('launchStatus', lState);
+                    }
 
                     // Countdown phase
                     if (countdown > 0) {
@@ -1688,6 +1714,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             ),
             // Launch controls
             h('div', { className: 'p-3 border-t border-slate-700' },
+              (function() {
+                var ls = d.launchStatus || 'countdown';
+                var inOrbit = ls === 'orbit';
+                return phaseStatus(inOrbit,
+                  ls === 'countdown' ? 'Final countdown at Kennedy \u2014 hold for liftoff.'
+                    : ls === 'stage1' ? 'First stage burning \u2014 7.5 million pounds of thrust, and most of that is spent lifting its own fuel.'
+                    : ls === 'stage2' ? 'Stage 1 away. Second stage burning, and the vehicle is pitching downrange.'
+                    : 'Stage 2 away. Third stage pushing for orbital velocity.',
+                  'Orbit achieved at 185 km. Ready to plan the trans-lunar burn.');
+              })(),
               h('div', { className: 'flex items-center justify-between' },
                 h('div', null,
                   h('p', { className: 'text-xs text-slate-600' }, t('stem.moonmission.saturn_v_3_stages_7_5_million_lbs_thru', '\uD83D\uDE80 Saturn V \u2022 3 stages \u2022 7.5 million lbs thrust')),
@@ -3820,6 +3856,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   var W = cvEl.offsetWidth || 500, HA = cvEl.offsetHeight || 300;
                   cvEl.width = W * 2; cvEl.height = HA * 2; ctx.scale(2, 2); if (typeof ResizeObserver === 'function' && !cvEl._mmRO) { cvEl._mmRO = new ResizeObserver(function() { var nw = cvEl.offsetWidth, nh = cvEl.offsetHeight; if (nw > 0 && nh > 0 && (nw !== W || nh !== HA)) { W = nw; HA = nh; cvEl.width = nw * 2; cvEl.height = nh * 2; ctx.setTransform(2, 0, 0, 2, 0, 0); } }); cvEl._mmRO.observe(cvEl); }   // rotate/resize used to leave the canvas stretched (backing store was locked at first mount)
                   var tick = 0;
+                  var _lastAscentState = null;   // throttle the readiness publish
                   function drawAscent() {
                     tick++;
                     ctx.clearRect(0, 0, W, HA);
@@ -3831,6 +3868,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     var launching = tick >= 90 && tick < 450;
                     var rendezvous = tick >= 450 && tick < 780;
                     var docked = tick >= 780;
+                    var aState = docked ? 'docked' : rendezvous ? 'rendezvous' : launching ? 'ascent' : 'prelaunch';
+                    if (aState !== _lastAscentState) { _lastAscentState = aState; upd('ascentStatus', aState); }
                     // Lunar surface with curving horizon (we're on a small world)
                     var horizonY = HA * 0.78;
                     ctx.save();
@@ -4114,6 +4153,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               )
             )
           ),
+          (function() {
+            var as = d.ascentStatus || 'prelaunch';
+            return phaseStatus(as === 'docked',
+              as === 'prelaunch' ? 'Ascent engine armed. It has a single start and no abort — if it does not light, there is no second try.'
+                : as === 'ascent' ? 'Ascent burn — climbing off the descent stage, which stays behind as the launch pad.'
+                : 'Closing on Columbia. Rendezvous is the CMP flying to meet you.',
+              'Hard dock confirmed. Eagle is secured to Columbia and the samples are aboard.');
+          })(),
           h('button', {
             'aria-label': t('stem.moonmission.fire_trans_earth_injection_burn_to_beg', 'Fire trans-Earth injection burn to begin 3-day return journey home'),
             onClick: function() {
@@ -4324,6 +4371,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   cvEl.width = W * 2; cvEl.height = HR * 2; ctx.scale(2, 2); if (typeof ResizeObserver === 'function' && !cvEl._mmRO) { cvEl._mmRO = new ResizeObserver(function() { var nw = cvEl.offsetWidth, nh = cvEl.offsetHeight; if (nw > 0 && nh > 0 && (nw !== W || nh !== HR)) { W = nw; HR = nh; cvEl.width = nw * 2; cvEl.height = nh * 2; ctx.setTransform(2, 0, 0, 2, 0, 0); } }); cvEl._mmRO.observe(cvEl); }   // rotate/resize used to leave the canvas stretched (backing store was locked at first mount)
                   var tick = 0;
                   var reentryPhase = 0; // 0=heat, 1=blackout, 2=drogue, 3=main chutes, 4=splash
+                  var _lastReentryPhase = -1;   // throttle the readiness publish
                   function drawReentry() {
                     tick++;
                     ctx.clearRect(0, 0, W, HR);
@@ -4332,6 +4380,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     if (tick > 360 && reentryPhase === 1) reentryPhase = 2; // drogue
                     if (tick > 480 && reentryPhase === 2) reentryPhase = 3; // main chutes
                     if (tick > 600 && reentryPhase === 3) reentryPhase = 4; // splash
+                    if (reentryPhase !== _lastReentryPhase) { _lastReentryPhase = reentryPhase; upd('reentryStatus', reentryPhase); }
                     var capsuleY = HR * 0.35;
                     // Background changes with phase
                     if (reentryPhase <= 1) {
@@ -4545,6 +4594,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               )
             )
           ),
+          (function() {
+            var rs = d.reentryStatus != null ? d.reentryStatus : 0;
+            return phaseStatus(rs >= 4,
+              rs === 0 ? 'Entry interface. The heat shield is taking 2,760°C, and it protects you by burning away on purpose.'
+                : rs === 1 ? 'Radio blackout. Ionised air around the capsule blocks every signal — Houston cannot hear you, and this is the part everyone counts through.'
+                : rs === 2 ? 'Drogue chutes out, slowing and steadying the capsule.'
+                : 'Three main chutes. Two would have been enough.',
+              'Splashdown in the Pacific. The crew is home.');
+          })(),
           h('button', {
             'aria-label': t('stem.moonmission.complete_the_mission_with_pacific_ocea', 'Complete the mission with Pacific Ocean splashdown. Welcome home Commander!'),
             onClick: function() {
@@ -4718,6 +4776,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 upd('landingResult', null);
                 upd('tliWindow', null);
                 upd('tliAccuracy', null);
+                upd('launchStatus', null);
+                upd('ascentStatus', null);
+                upd('reentryStatus', null);
                 upd('aiBriefing', null);
                 upd('aiBriefingLoading', false);
                 upd('descentStarted', false);
