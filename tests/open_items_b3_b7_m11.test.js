@@ -23,14 +23,20 @@ async function livePolicy() {
 const engines = {
   ai: { score: 96, issues: [] },
   axe: { score: 98, totalViolations: 0, totalIncomplete: 0 },
-  equalAccess: { score: 97, potentialViolations: 0, manualViolations: 0, reviewFindingCount: 0 },
+  // failViolations is what makes the Equal Access finding count KNOWN; without
+  // it the policy correctly refuses to call the run complete.
+  equalAccess: { score: 97, failViolations: 0, potentialViolations: 0, manualViolations: 0, reviewFindingCount: 0 },
 };
 
 describe('B3 — context reasons no longer make complete unreachable (live policy module)', () => {
   it('a clean static-web audit reaches complete WITH the scope caveat still listed', async () => {
     const derive = await livePolicy();
     const r = derive({ ...engines, extraReasons: ['Static HTML/source audit excludes live scripts.'] });
-    expect(r.verificationState).toBe('complete');
+    // The policy now reads this caveat and narrows the claim to the tested
+    // scope instead of saying plain 'complete' — static checks can run to
+    // completion while still skipping runtime scripts and interaction. B3's
+    // point stands: it is NOT review-required, so the success branch is live.
+    expect(r.verificationState).toBe('complete-for-tested-scope');
     expect(r.reasons.join(' ')).toContain('Static HTML/source audit');
     expect(r.reviewCount).toBe(0);
   });
@@ -41,7 +47,7 @@ describe('B3 — context reasons no longer make complete unreachable (live polic
   });
   it('genuine review evidence still gates (EA potential findings)', async () => {
     const derive = await livePolicy();
-    const r = derive({ ...engines, equalAccess: { score: 90, potentialViolations: 2, manualViolations: 0, reviewFindingCount: 2 } });
+    const r = derive({ ...engines, equalAccess: { score: 90, failViolations: 0, potentialViolations: 2, manualViolations: 0, reviewFindingCount: 2 } });
     expect(r.verificationState).toBe('review-required');
   });
   it('languageReviewRequired remains a genuine gate', async () => {
@@ -60,7 +66,15 @@ describe('B7 — ANTI fallback derive matches the canonical policy', () => {
   });
   it('unavailable beats review evidence in both ANTI copies (policy precedence)', () => {
     for (const src of [host, hostMirror]) {
-      expect(src).toContain("_allUnavailable ? 'unavailable' : (_hasReviewEvidence ? 'review-required' : (_allComplete ? 'complete' : 'partial'))");
+      // The fallback was rewritten to mirror the canonical policy exactly,
+      // including the partial rung and the static-source scope narrowing, so
+      // the old one-line ternary no longer exists. B7's point is the PRECEDENCE
+      // — unavailable outranks everything, and review evidence outranks
+      // complete — so assert that ordering rather than a single spelling.
+      expect(src).toContain("_allUnavailable\n      ? 'unavailable'");
+      expect(src).toContain("? 'partial'");
+      expect(src).toMatch(/_hasKnownFailures \|\| _hasReviewEvidence\s*\n\s*\? 'review-required'/);
+      expect(src).toContain("_staticSourceScope ? 'complete-for-tested-scope' : 'complete'");
     }
   });
   it('fallback extraReasons are context, not review findings (mirrors the policy)', () => {
@@ -100,8 +114,15 @@ describe('C7 — remaining leftovers', () => {
   });
   it('the re-audit decision is computed BEFORE setPdfFixResult (no eager-updater reliance)', () => {
     expect(view).toContain('const _curFix = pdfFixResultRef.current;');
-    expect(view).toContain("const _applied = !!(_curFix && _curFix.accessibleHtml === newHtml);");
-    expect(view).toContain('setPdfFixResult(prev => (prev && prev.accessibleHtml === newHtml) ? _bound : prev);');
+    // Now `let`, and gated on _reauditIsCurrent() so a superseded re-audit
+    // cannot mark itself applied. Same invariant — applied only when the
+    // current fix's HTML is the one we just wrote — plus a staleness guard.
+    expect(view).toContain("let _applied = !!(_reauditIsCurrent() && _curFix && _curFix.accessibleHtml === newHtml);");
+    // The bare setter is now routed through _commitAsyncHtmlIfCurrent with an
+    // html token, so a superseded async re-audit cannot commit at all. The CAS
+    // guard inside is unchanged — still only swaps when prev is the html we
+    // audited — which is what C7 is really asserting.
+    expect(view).toContain('_commitAsyncHtmlIfCurrent(_reauditHtmlToken, (prev) => (prev && prev.accessibleHtml === newHtml) ? _bound : prev);');
     expect(view).not.toContain('_applied = true;');
   });
   it('a fresh upload invalidates in-flight project loads', () => {
@@ -126,6 +147,9 @@ describe('M11 — abort-slot save/restore at every publisher', () => {
   });
   it('the batch publisher saves and hands back too', () => {
     expect(pipe).toContain('const _prevBatchAbortSlot = ');
-    expect(pipe).toContain('window.__alloPdfAbortSignal = _prevBatchAbortSlot || null; // M11');
+    // The restore now filters through _alloLiveAbortSignalOrNull, so an
+    // already-aborted previous signal is handed back as null instead of
+    // poisoning whatever runs next. Strictly safer than the old `|| null`.
+    expect(pipe).toContain('window.__alloPdfAbortSignal = _alloLiveAbortSignalOrNull(_prevBatchAbortSlot); // M11');
   });
 });

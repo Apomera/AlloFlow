@@ -19,10 +19,19 @@ const applyVerificationHtmlBinding = verificationHelpers.applyBinding;
 const enforceVerificationHtmlBinding = verificationHelpers.enforceBinding;
 const rehydrateVerificationHtmlBinding = verificationHelpers.rehydrateBinding;
 
+// The policy was later hardened so a score alone is not evidence: each engine
+// must also report HOW MANY findings it had, or it stays 'partial' with an
+// explicit reason ('axe-violation-count-unknown' and friends). That is the
+// honest rule — a 100 with an unknown violation count proves nothing — so the
+// fixture supplies the counts the engines really do return, rather than the
+// policy being relaxed back.
+//   ai  → issues[]            (aiFindingCount)
+//   axe → totalViolations     (axeFindingCount)
+//   ea  → failViolations      (eaFindingCount)
 const completeEvidence = () => ({
-  ai: { score: 96 },
-  axe: { score: 100, totalIncomplete: 0 },
-  equalAccess: { score: 98, potentialViolations: 0, manualViolations: 0, reviewFindingCount: 0 },
+  ai: { score: 96, issues: [] },
+  axe: { score: 100, totalViolations: 0, totalIncomplete: 0 },
+  equalAccess: { score: 98, failViolations: 0, potentialViolations: 0, manualViolations: 0, reviewFindingCount: 0 },
 });
 
 describe('canonical remediation verification-state matrix', () => {
@@ -69,7 +78,9 @@ describe('canonical remediation verification-state matrix', () => {
 
   it('counts Equal Access potential and manual rule findings', () => {
     const input = completeEvidence();
-    input.equalAccess = { score: 92, potentialViolations: 2, manualViolations: 1, reviewFindingCount: 3 };
+    // failViolations: 0 — this case is about REVIEW findings; without the fail
+    // count the engine reads as "count unknown" and the state stops at partial.
+    input.equalAccess = { score: 92, failViolations: 0, potentialViolations: 2, manualViolations: 1, reviewFindingCount: 3 };
     const result = deriveVerificationState(input);
     expect(result.verificationState).toBe('review-required');
     expect(result.verificationCoverage.equalAccess).toBe('complete-with-review');
@@ -123,7 +134,12 @@ describe('canonical remediation verification-state matrix', () => {
     // 'complete' unreachable for every web audit and left the success branches
     // dead. The caveat still renders (reasons), it just no longer gates.
     const extra = deriveVerificationState({ ...completeEvidence(), extraReasons: ['static-source-audit'] });
-    expect(extra.verificationState).toBe('complete');
+    // The policy now RECOGNISES this caveat text and narrows the claim to the
+    // scope actually tested, rather than saying plain 'complete'. Static checks
+    // can execute fully while still excluding runtime scripts, external CSS,
+    // responsive states and interaction behaviour — so 'complete' would
+    // overclaim. Still not review-required, which is what B3 was protecting.
+    expect(extra.verificationState).toBe('complete-for-tested-scope');
     expect(extra.reviewCount).toBe(0);
     expect(extra.reasons).toContain('static-source-audit');
     expect(extra.verificationCoverage.ai).toBe('complete');
@@ -134,7 +150,7 @@ describe('canonical remediation verification-state matrix', () => {
   });
   it('fails closed when aggregate Equal Access counts under-report explicit manual findings', () => {
     const input = completeEvidence();
-    input.equalAccess = { score: 94, potentialViolations: 1, manualViolations: 2, reviewFindingCount: 1 };
+    input.equalAccess = { score: 94, failViolations: 0, potentialViolations: 1, manualViolations: 2, reviewFindingCount: 1 };
     const result = deriveVerificationState(input);
     expect(result.verificationState).toBe('review-required');
     expect(result.reviewCount).toBe(3);
@@ -360,7 +376,9 @@ describe('verification policy source wiring', () => {
     expect(source).toContain('axeResults = _cleanAxeOk ? _cleanAxe : null');
     expect(source).toContain('axeResults = _reAxeOk ? _reAxe : null');
     expect(source).toContain(': (_reEaOk ? _reEa.score : null)');
-    expect(source).toContain('|| !Number.isFinite(verification.score)');
+    // The inline finiteness check became a named guard that also requires the
+    // finding counts, so pin the guard rather than the arithmetic it replaced.
+    expect(source).toContain('!_alloUsableCompleteAiAudit(verification)');
     expect(source).toContain('|| _finalAuditScoreMissing;');
     expect(source).toContain('_alloNormalizeStoredVerification(stored, derived)');
     expect(source).toContain('const _eaConfirmedFailures = eaResults');
