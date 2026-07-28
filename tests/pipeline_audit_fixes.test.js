@@ -27,7 +27,10 @@ describe('H-1: stale OCR window globals are reset per run (cross-document text b
 describe('H-2: image-extraction pdf.js doc is destroyed in a finally (worker/transport leak)', () => {
   it('pdfDoc is hoisted to let and released in a finally', () => {
     expect(dp).toMatch(/let pdfDoc = null; \/\/ H-2/);
-    expect(dp).toMatch(/pdfDoc = await _withTimeout\(window\.pdfjsLib\.getDocument\(\{ data: pdfBytes \}\)/);   // assignment, not a fresh const
+    // Now routed through _awaitImageWork so the render work is tracked, but the
+    // point stands: an assignment to the outer pdfDoc, not a fresh const that
+    // would shadow it.
+    expect(dp).toMatch(/pdfDoc = await _awaitImageWork\(_withTimeout\(window\.pdfjsLib\.getDocument\(\{ data: pdfBytes \}\)/);
     expect(dp).not.toMatch(/const pdfDoc = await _withTimeout\(window\.pdfjsLib\.getDocument\(\{ data: pdfBytes \}\)/);
     expect(dp).toMatch(/if \(pdfDoc\) \{ try \{ pdfDoc\.destroy\(\); \} catch \(_\) \{\} pdfDoc = null; \}/);
   });
@@ -86,8 +89,10 @@ describe('H-9: _reauditAndScore drops a stale write (score must describe the byt
   it('the terminal setPdfFixResult bails when the audited html is no longer current', () => {
     const fn = view.slice(view.indexOf('const _reauditAndScore = async'), view.indexOf('const _spliceBlock = '));
     expect(fn).toContain('const _curFix = pdfFixResultRef.current;');
-    expect(fn).toContain('const _applied = !!(_reauditIsCurrent() && _curFix && _curFix.accessibleHtml === newHtml);');
-    expect(fn).toContain('setPdfFixResult(prev => (prev && prev.accessibleHtml === newHtml) ? _bound : prev);'); // pure CAS stale guard
+    expect(fn).toContain('let _applied = !!(_reauditIsCurrent() && _curFix && _curFix.accessibleHtml === newHtml);');
+    // Routed through _commitAsyncHtmlIfCurrent with an html token — the CAS
+    // guard inside is unchanged, plus a token so a superseded run cannot commit.
+    expect(fn).toContain('_commitAsyncHtmlIfCurrent(_reauditHtmlToken, (prev) => (prev && prev.accessibleHtml === newHtml) ? _bound : prev);');
     expect(fn).toMatch(/stale: !_applied/);                                     // reported to callers
   });
 });
@@ -127,10 +132,16 @@ describe('Canvas-test fixes (2026-06-23): conformance overclaim, re-scan save, r
 
 describe('Auto-fix loop: a PARTIAL audit does not count as "target met" (do not stop early on incomplete coverage)', () => {
   it('the loop entry gate keeps going when the audit was partial (mirrors the per-pass !_rePartial break)', () => {
-    expect(dp).toMatch(/const _auditPartial = !!\(verification && verification\._partialAudit\);/);
+    // The partial check now rides the same usability guard the rest of the
+    // pipeline uses (_initialAiUsable, which requires a finite score AND known
+    // counts) instead of trusting a _partialAudit flag the model may not set.
+    expect(dp).toMatch(/const _auditPartial = !_initialAiUsable;/);
     // Carry incomplete AI coverage and unresolved manual-review evidence through
     // both halves; neither may masquerade as "target met".
-    expect(dp).toMatch(/if \(maxFixPasses > 0 && \(_totalIssues > 0 \|\| _auditPartial \|\| _auditReviewRequired\) && \(bestAxeViolations > 0 \|\| bestAiScore < _targetScore \|\| _auditPartial \|\| _auditReviewRequired\)\)/);
+    // Reformatted across lines, and the trigger broadened: _initialEvidenceIncomplete
+    // now gates BOTH clauses, so a run whose evidence never completed still
+    // enters the fix loop instead of being treated as nothing-to-do.
+    expect(dp).toMatch(/if \(maxFixPasses > 0\s*\n\s*&& \(_totalIssues > 0 \|\| _initialEvidenceIncomplete \|\| _auditReviewRequired\)\s*\n\s*&& \(_initialEvidenceIncomplete \|\| bestAxeViolations > 0 \|\| bestAiScore < _targetScore \|\| _auditReviewRequired\)\)/);
   });
 });
 

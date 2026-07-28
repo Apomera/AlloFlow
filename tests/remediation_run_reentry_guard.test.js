@@ -8,7 +8,12 @@ const pipelineSource = readFileSync(resolve(root, 'doc_pipeline_source.jsx'), 'u
 
 function extractPipelineGuardFactory() {
   const start = pipelineSource.indexOf('var _activeSingleFixPromise = null;');
-  const end = pipelineSource.indexOf('  return {', start);
+  // '  return {' is no longer unique in this span — _getActiveRemediationRun
+  // now returns an object literal at the same indent, so the slice was cutting
+  // mid-function and the extracted body failed to parse ("Unexpected token )").
+  // Anchor on the end of _wrapFixAndVerify itself, which is what this file is
+  // actually extracting.
+  const end = pipelineSource.indexOf('  }; };', pipelineSource.indexOf('var _wrapFixAndVerify = function(fn)', start)) + '  }; };'.length;
   if (start < 0 || end < 0) throw new Error('Could not locate the remediation guard wrapper');
   const body = pipelineSource.slice(start, end);
   return new Function('window', 'warnLog', 'addToast', '_bindState', `${body}\nreturn _wrapFixAndVerify;`);
