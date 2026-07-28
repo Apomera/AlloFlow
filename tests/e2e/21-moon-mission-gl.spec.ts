@@ -93,14 +93,22 @@ test.describe('Moon Mission — real WebGL EVA', () => {
     const before = await page.evaluate(() => (window as any).__eva());
     expect(before.steps, 'step counter missing from HUD').not.toBeNull();
 
+    // Wait on the OBSERVABLE, not on wall-clock. The HUD ticks a step every 20 frames
+    // and SwiftShader renders this scene at ~13fps, so a fixed 1200ms window buys about
+    // 16 frames — under the 20 a step costs. The old fixed wait passed or failed on
+    // timing luck. The 8s ceiling still fails loudly if movement breaks completely or
+    // the frame rate collapses several times below where it sits today.
     await page.keyboard.down('KeyW');
-    await page.waitForTimeout(1200);
+    const walked = await page.waitForFunction(
+      (b: number) => {
+        const e = (window as any).__eva();
+        return e && e.steps !== null && e.steps > b ? e.steps : false;
+      },
+      before.steps, { timeout: 8000 },
+    ).catch(() => null);
     await page.keyboard.up('KeyW');
-    await page.waitForTimeout(300);
 
-    const after = await page.evaluate(() => (window as any).__eva());
-    expect(after.steps, 'W did not move the astronaut — movement is mouse-gated')
-      .toBeGreaterThan(before.steps);
+    expect(walked, 'W did not move the astronaut — movement is mouse-gated').not.toBeNull();
   });
 
   test('arrow keys walk too, for students who never learned WASD', async ({ page }) => {
@@ -110,12 +118,16 @@ test.describe('Moon Mission — real WebGL EVA', () => {
 
     const before = await page.evaluate(() => (window as any).__eva());
     await page.keyboard.down('ArrowUp');
-    await page.waitForTimeout(1200);
+    const walked = await page.waitForFunction(
+      (b: number) => {
+        const e = (window as any).__eva();
+        return e && e.steps !== null && e.steps > b ? e.steps : false;
+      },
+      before.steps, { timeout: 8000 },
+    ).catch(() => null);
     await page.keyboard.up('ArrowUp');
-    await page.waitForTimeout(300);
 
-    const after = await page.evaluate(() => (window as any).__eva());
-    expect(after.steps, 'ArrowUp does not walk').toBeGreaterThan(before.steps);
+    expect(walked, 'ArrowUp does not walk').not.toBeNull();
   });
 
   test('every rock you pick up stays in the bag', async ({ page }) => {
@@ -148,11 +160,16 @@ test.describe('Moon Mission — real WebGL EVA', () => {
     expect(await bag(), 'started the EVA with rocks already collected').toEqual([]);
 
     // Hold F down rather than tapping it: the pickup cooldown is 60 FRAMES, and
-    // SwiftShader renders well short of 60fps, so a fixed tap interval collects on
+    // SwiftShader renders this scene at ~13fps, so a fixed tap interval collects on
     // some presses and not others. Holding lets the loop bank one rock per cooldown
-    // however fast it happens to be running.
+    // however fast it happens to be running — and the wait is on the BAG reaching three
+    // rather than on a wall-clock guess, because 12s at 13fps is 156 frames and three
+    // pickups need 180. The 40s ceiling still fails if collection is broken outright.
     await page.keyboard.down('KeyF');
-    await page.waitForTimeout(12000);
+    await page.waitForFunction(
+      () => ((((window as any).__toolData || {}).moonMission || {}).lunarSamples || []).length >= 3,
+      null, { timeout: 40000 },
+    ).catch(() => null);
     await page.keyboard.up('KeyF');
     await page.waitForTimeout(300);
 

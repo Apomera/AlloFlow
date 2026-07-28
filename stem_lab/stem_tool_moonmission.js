@@ -1325,7 +1325,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               h('canvas', { 
                 'data-launch-canvas': 'true',
                 role: 'img',
-                'aria-label': t('stem.moonmission.animated_saturn_v_rocket_launch_sequen', 'Animated Saturn V rocket launch sequence. 5-second countdown followed by ascent through atmosphere to orbit. Shows altitude, velocity, G-force, and stage separations.'),
+                'aria-label': t('stem.moonmission.animated_saturn_v_rocket_launch_sequen', 'Animated Saturn V rocket launch sequence. A 5-second countdown, then ascent through the atmosphere to orbit. The rocket pitches over into a gravity turn shortly after liftoff, trading vertical climb for the sideways speed that orbit actually requires, and drifts downrange as it goes. Shows altitude, velocity, pitch angle from vertical, G-force, and stage separations.'),
                 style: { width: '100%', height: '100%', display: 'block' },
                 ref: function(cvEl) {
                   if (!cvEl || cvEl._launchInit) return;
@@ -1473,26 +1473,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         ctx.restore();
                       }
 
-                      // Earth horizon curves away
+                      // ── Earth horizon curving away below ──
+                      // This used to flood the entire frame flat green from 3 km upward,
+                      // so most of every ascent was a blank green screen. The disc was
+                      // centred about 1,500px below the canvas with a radius near 2,700,
+                      // and its gradient's INNER stop sat at 95% of that radius — further
+                      // out than any pixel on screen was from the centre. Every pixel
+                      // therefore resolved to stop 0, the land colour, and painted over the
+                      // sky, the stars and the horizon it was supposed to be drawing.
+                      // Anchoring the LIMB to a screen position instead, and spanning the
+                      // stops across the band that is actually visible, makes it a horizon.
                       if (skyPct > 0.2) {
-                        var earthR = W * 3 * (1 - skyPct * 0.3);
-                        var earthY = H + earthR * (0.3 + skyPct * 0.5);
-                        var earthGrad = ctx.createRadialGradient(W * 0.5, earthY, earthR * 0.95, W * 0.5, earthY, earthR);
-                        earthGrad.addColorStop(0, '#2a6a3a');
-                        earthGrad.addColorStop(0.7, '#3a7aca');
-                        earthGrad.addColorStop(0.9, '#88ccff');
-                        earthGrad.addColorStop(1, 'transparent');
+                        var horizonY = H * (0.72 + skyPct * 0.2);   // curve drops away as you climb
+                        var earthR = W * 2.4;
+                        var earthCy = horizonY + earthR;
+                        var earthGrad = ctx.createRadialGradient(W * 0.5, earthCy, earthR * 0.92, W * 0.5, earthCy, earthR);
+                        earthGrad.addColorStop(0, '#1f5c33');       // land, deep inside the disc
+                        earthGrad.addColorStop(0.45, '#2a6a3a');
+                        earthGrad.addColorStop(0.78, '#2f6f9f');    // ocean + haze
+                        earthGrad.addColorStop(0.94, '#88ccff');    // atmosphere on the limb
+                        earthGrad.addColorStop(1, 'rgba(136,204,255,0)');
                         ctx.fillStyle = earthGrad;
                         ctx.beginPath();
-                        ctx.arc(W * 0.5, earthY, earthR, 0, Math.PI * 2);
+                        ctx.arc(W * 0.5, earthCy, earthR, 0, Math.PI * 2);
                         ctx.fill();
                       }
 
                       // ── Saturn V Rocket (enhanced detail) ──
-                      var rocketX = W * 0.5, rocketY = H * 0.55;
+                      // ── Gravity turn ──
+                      // The stack used to climb vertically for the entire ascent, which is
+                      // the one thing a launch definitely does not do. Getting to orbit is
+                      // about going FAST SIDEWAYS, not high: the vehicle pitches over
+                      // shortly after tower clear and spends most of the burn tipping
+                      // toward the horizon, trading altitude for orbital velocity. Drawn as
+                      // a pitch that grows with altitude plus real downrange drift, so the
+                      // shape of the trajectory is visible rather than asserted.
+                      var pitchTurn = Math.min(1.15, Math.max(0, (altitude - 400) / 11000) * 1.15);
+                      var downrange = Math.min(W * 0.2, Math.max(0, (altitude - 400) / 20000) * W * 0.3);
+                      var rocketX = W * 0.5 + downrange, rocketY = H * 0.55;
                       var rocketH = 50;
                       var rBase = rocketY + rocketH / 2;
                       var rTop = rocketY - rocketH / 2;
+                      ctx.save();                                   // ── vehicle attitude frame ──
+                      ctx.translate(rocketX, rocketY);
+                      ctx.rotate(pitchTurn);
+                      ctx.translate(-rocketX, -rocketY);
                       // Body gradient (silver with panel lines)
                       var bodyGrad = ctx.createLinearGradient(rocketX - 10, 0, rocketX + 10, 0);
                       bodyGrad.addColorStop(0, '#c8ccd0'); bodyGrad.addColorStop(0.3, '#e8ecf0'); bodyGrad.addColorStop(0.7, '#f0f4f8'); bodyGrad.addColorStop(1, '#b8bcc0');
@@ -1583,13 +1608,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                         }
                         ctx.globalAlpha = 1;
                       }
+                      ctx.restore(); // ── end vehicle attitude frame (flame + smoke trail
+                                     //    stay inside it, so the exhaust follows the nose) ──
 
                       ctx.restore(); // end shake
 
                       // HUD overlay
                       ctx.fillStyle = 'rgba(0,0,0,0.5)';
-                      ctx.fillRect(8, 8, 150, 90);
-                      ctx.fillRect(W - 158, W < 330 ? 106 : 8, 150, 70);   // right box drops under the left on narrow canvases (they collided < ~324px)
+                      ctx.fillRect(8, 8, 150, 108);
+                      ctx.fillRect(W - 158, W < 330 ? 124 : 8, 150, 70);   // right box drops under the left on narrow canvases (they collided < ~324px)
                       ctx.font = 'bold 10px monospace';
                       ctx.textAlign = 'left';
                       ctx.fillStyle = '#38bdf8';
@@ -1606,10 +1633,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       ctx.font = 'bold 10px monospace';
                       ctx.fillStyle = '#38bdf8';
                       ctx.fillText('STAGE ' + stage + '/3', 14, 88);
+                      // Pitch: 0° is straight up, 90° is flat along the horizon. Watching
+                      // this climb is watching the vehicle trade "up" for "sideways", which
+                      // is the whole of how you reach orbit.
+                      ctx.fillStyle = '#38bdf8'; ctx.font = 'bold 10px monospace';
+                      ctx.fillText('PITCH', 14, 104);
+                      ctx.fillStyle = '#fff'; ctx.font = '12px monospace';
+                      ctx.fillText(Math.round(pitchTurn * 180 / Math.PI) + '° from vertical', 52, 104);
 
                       // G-force meter (right side; follows the narrow-screen drop)
                       ctx.save();
-                      if (W < 330) ctx.translate(0, 98);
+                      if (W < 330) ctx.translate(0, 116);
                       ctx.textAlign = 'right';
                       ctx.font = 'bold 10px monospace';
                       ctx.fillStyle = '#fbbf24';
