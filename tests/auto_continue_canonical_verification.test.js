@@ -45,7 +45,13 @@ describe('auto-continue canonical verification', () => {
       'autoFixAxeViolations(',
       'aiFixChunked(',
       'const reVerify = await auditOutputAccessibility(result.html);',
-      'const _detRegressed =',
+      // The inline _detRegressed / _moreIssues locals became a pure
+      // _loopPolicy.roundRegressed({...}), overridable from the shared pipeline
+      // module. Same direction as the completion-toast selector: a decision the
+      // loop USES rather than a condition spelled inside it, so it can be tested
+      // directly instead of pinned as source text. Its semantics are asserted
+      // against the real policy below.
+      '_loopPolicy.roundRegressed({',
       '_mergedRound = await _finalizeRound(cur, {',
       'setPdfFixResult(snapshot);',
       'const _staleAtExit = _genStale();',
@@ -90,7 +96,19 @@ describe('auto-continue canonical verification', () => {
     expect(loop).toContain('const _auditOnlyRefresh = _vio === 0 && _aiIssues.length === 0 && _eaFails === 0 && !_isCanonicalComplete(cur);');
     expect(loop).toContain('} else if (_auditOnlyRefresh) {');
     expect(loop).toContain('result = { html: cur.accessibleHtml, axe: _refreshAxe, passes: 0, _auditOnly: true };');
-    expect(loop).toContain('if (!result._auditOnly && (_detRegressed || _moreIssues)) {');
+    expect(loop).toContain('if (!result._auditOnly && _roundRegressed) {');
+    // Exercise the real fallback policy rather than restating its condition.
+    const _polStart = miscSrc.indexOf('    roundRegressed: (p) => {');
+    expect(_polStart).toBeGreaterThan(-1);
+    const roundRegressed = new Function('return ' + miscSrc.slice(_polStart + '    roundRegressed: '.length, miscSrc.indexOf('\n    },', _polStart)) + '\n}')();
+    // a deterministic score dropping more than a point is a regression
+    expect(roundRegressed({ newDet: 80, prevDet: 90, violations: 0, newIssues: 0, prevIssues: 0 })).toBe(true);
+    // ...but a 1-point wobble is not, and a missing prior score cannot regress
+    expect(roundRegressed({ newDet: 89, prevDet: 90, violations: 0, newIssues: 0, prevIssues: 0 })).toBe(false);
+    expect(roundRegressed({ newDet: 10, prevDet: null, violations: 0, newIssues: 0, prevIssues: 0 })).toBe(false);
+    // new issues count as a regression only once the automated violations are clear
+    expect(roundRegressed({ newDet: 90, prevDet: 90, violations: 0, newIssues: 3, prevIssues: 1 })).toBe(true);
+    expect(roundRegressed({ newDet: 90, prevDet: 90, violations: 5, newIssues: 3, prevIssues: 1 })).toBe(false);
     expect(loop).toContain('if (result._auditOnly) break;');
   });
 
@@ -270,7 +288,14 @@ describe('auto-continue canonical verification', () => {
     expect(src).toContain('const _eaAggregate = _count(_ea.reviewFindingCount);');
     // B7 (2026-07-13): precedence now matches the canonical policy — unavailable
     // beats review evidence — and the EA count uses the same max() the policy uses.
-    expect(src).toContain("_allUnavailable ? 'unavailable' : (_hasReviewEvidence ? 'review-required' : (_allComplete ? 'complete' : 'partial'))");
+    // The flat ternary became an ordered ladder, and the ORDER is the fix. The
+    // old form tested _hasReviewEvidence BEFORE completeness, so a run whose
+    // engines had not all finished still reported 'review-required' — a verdict
+    // that reads as "we looked and found things to check" when the truth was
+    // "we did not finish looking". It also never consulted actual failures.
+    // Now: unavailable -> partial -> review-required -> complete, with
+    // 'complete-for-tested-scope' when only a static source scope was covered.
+    expect(src).toMatch(/const _verificationState = _allUnavailable\s*\n\s*\? 'unavailable'\s*\n\s*: \(!_engineExecutionComplete\s*\n\s*\? 'partial'\s*\n\s*: \(_hasKnownFailures \|\| _hasReviewEvidence\s*\n\s*\? 'review-required'\s*\n\s*: \(_staticSourceScope \? 'complete-for-tested-scope' : 'complete'\)\)\)/);
     expect(src).toContain('Math.max(_eaAggregate, (_eaPotential || 0) + (_eaManual || 0))');
   });
 

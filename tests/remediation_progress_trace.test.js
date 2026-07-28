@@ -184,7 +184,9 @@ describe('remediation ownership and lifecycle regressions', () => {
     expect(pipeline).toContain('window.__alloRemediationProgress = next;');
     expect(view).toContain('const remediationProgressOwnerRef = useRef');
     expect(view).toContain('if (owner.runId !== detail.runId) return;');
-    expect(view).toContain('if (latest) onProgress({ detail: latest });');
+    // Replayed history is now tagged { hydration: true } so a consumer can tell
+    // a rehydrated detail from a live tick rather than treating both as progress.
+    expect(view).toContain('if (latest) onProgress({ detail: latest }, { hydration: true });');
     expect(view).toContain('remediationProgressOwnerRef.current = { documentEpoch: pdfDocumentEpoch, runId: null, runSequence: 0, startedAt: 0 };');
     expect(pipeline).toContain('var _remediationRunSequence = 0;');
     expect(pipeline).toContain('const _runSequence = ++_remediationRunSequence;');
@@ -267,8 +269,20 @@ describe('remediation ownership and lifecycle regressions', () => {
     expect(pipeline).toContain("status: 'cancelled', stepName: 'Remediation cancelled'");
     expect(host).toContain("err && err.pipelineStats && typeof err.pipelineStats === 'object'");
     expect(host).toContain("_st && _st.outcome === 'cancelled'");
-    expect(host).toContain('if (!_cancelled) setPdfRunHistory');
-    expect(host).toContain('if (!_cancelled) _maybeSaveIncompleteProject();');
+    // The run-history guard flipped from _cancelled to _neverStarted, and that
+    // is the point rather than a rename. Two audit findings drove it:
+    //   M6  a CANCELLED run is now recorded, with outcome 'cancelled'. Stalls,
+    //       aborts and superseded runs used to vanish from BOTH the numerator
+    //       and the denominator of the success rate, so that figure was
+    //       structurally incapable of showing the failure mode it most needed to.
+    //   M5  a run that NEVER STARTED (double-click, pre-flight refusal) is not a
+    //       failure of anything, and recording it punished the rate unfairly.
+    // So: skip only never-started; record cancelled as its own outcome.
+    expect(host).toContain('if (!_neverStarted) setPdfRunHistory');
+    expect(host).toMatch(/const _neverStarted = !!\(err && \(err\.isAlreadyRunning/);
+    expect(host).toContain("outcome: _cancelled ? 'cancelled' : 'failed'");
+    // the incomplete-project save also now covers a cancelled run holding banked work
+    expect(host).toContain('if (!_cancelled || _stalledBank) _maybeSaveIncompleteProject();');
   });
 
   it('feeds structured data logs through the in-app diagnostics sink', () => {
