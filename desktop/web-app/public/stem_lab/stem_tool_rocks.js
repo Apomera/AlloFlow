@@ -6981,7 +6981,14 @@ const d = labToolData.rockCycle || {};
                 ctx.beginPath();
                 ctx.moveTo(fromN.x * dpr, fromN.y * dpr);
                 ctx.quadraticCurveTo(midX * dpr, midY * dpr, toN.x * dpr, toN.y * dpr);
-                ctx.strokeStyle = shortcut ? 'rgba(148,163,184,0.22)' : 'rgba(148,163,184,0.45)';
+                // The panel two sections down says "the diagram's 6 arrows show
+                // every path", and the three branch arrows were drawn at 0.22
+                // alpha in mid-slate — composited over this backdrop that is
+                // roughly 1.4:1, so the diagram did not really show what the
+                // text claimed. Lighter base colour and higher alpha for both,
+                // keeping the forward/branch distinction that makes the
+                // canonical loop readable at a glance.
+                ctx.strokeStyle = shortcut ? 'rgba(226,232,240,0.52)' : 'rgba(226,232,240,0.78)';
                 ctx.lineWidth = (shortcut ? 1 : 1.5) * dpr;
                 ctx.setLineDash([6, 4]);
                 ctx.stroke();
@@ -6992,7 +6999,7 @@ const d = labToolData.rockCycle || {};
                 var by = (1 - tt) * (1 - tt) * fromN.y + 2 * (1 - tt) * tt * midY + tt * tt * toN.y;
                 var ang = Math.atan2(2 * (1 - tt) * (midY - fromN.y) + 2 * tt * (toN.y - midY), 2 * (1 - tt) * (midX - fromN.x) + 2 * tt * (toN.x - midX));
                 var ah = (shortcut ? 5 : 7) * dpr;
-                ctx.fillStyle = shortcut ? 'rgba(148,163,184,0.45)' : 'rgba(148,163,184,0.75)';
+                ctx.fillStyle = shortcut ? 'rgba(226,232,240,0.74)' : 'rgba(226,232,240,0.95)';
                 ctx.beginPath();
                 ctx.moveTo(bx * dpr, by * dpr);
                 ctx.lineTo(bx * dpr - ah * Math.cos(ang - 0.42), by * dpr - ah * Math.sin(ang - 0.42));

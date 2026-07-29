@@ -246,4 +246,53 @@ describe('rock cycle colour contrast', () => {
       expect(body).not.toContain('text-slate-400');
     });
   });
+
+  // ── The diagram canvas ──
+  // Canvas2D pixels are invisible to jsdom, so this composites the rgba()
+  // literals the way the browser does and checks the RESULT, rather than
+  // asserting a colour string is present. Lowering an alpha moves the number.
+  describe('process arrows on the animated diagram', () => {
+    // The arcs cross an earth cross-section that runs dark slate at the top
+    // through brown crust; this is the mid-crust tone they spend most of their
+    // length on, and the darkest realistic case for a light stroke.
+    const BACKDROP = '#44403c';
+
+    function over(rgba, bg) {
+      const m = /rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)/.exec(rgba);
+      const a = parseFloat(m[4]);
+      const b = [1, 3, 5].map((i) => parseInt(bg.slice(i, i + 2), 16));
+      const mix = [1, 2, 3].map((i) =>
+        Math.round(parseInt(m[i], 10) * a + b[i - 1] * (1 - a)));
+      return '#' + mix.map((v) => v.toString(16).padStart(2, '0')).join('');
+    }
+
+    function strokes(src) {
+      const body = rockCycleBody(src);
+      const line = /ctx\.strokeStyle = shortcut \? '(rgba\([^']+\))' : '(rgba\([^']+\))';/.exec(body);
+      expect(line, 'could not find the process-arrow stroke line').toBeTruthy();
+      return { shortcut: line[1], forward: line[2] };
+    }
+
+    it('draws all six arrows findably — the tool claims they show every path', () => {
+      PATHS.forEach((p) => {
+        const { shortcut, forward } = strokes(readFileSync(p, 'utf8'));
+        // The three branch arrows shipped at rgba(148,163,184,0.22) = ~1.4:1,
+        // while the panel below says "the diagram's 6 arrows show every path".
+        expect(contrast(over(shortcut, BACKDROP), BACKDROP),
+          `branch arrows composite to ${over(shortcut, BACKDROP)}`).toBeGreaterThanOrEqual(3);
+        expect(contrast(over(forward, BACKDROP), BACKDROP),
+          `forward arrows composite to ${over(forward, BACKDROP)}`).toBeGreaterThanOrEqual(3);
+      });
+    });
+
+    it('still de-emphasises the branches relative to the canonical loop', () => {
+      PATHS.forEach((p) => {
+        const { shortcut, forward } = strokes(readFileSync(p, 'utf8'));
+        const cs = contrast(over(shortcut, BACKDROP), BACKDROP);
+        const cf = contrast(over(forward, BACKDROP), BACKDROP);
+        // Readable, but the three-step loop still reads first.
+        expect(cs).toBeLessThan(cf);
+      });
+    });
+  });
 });

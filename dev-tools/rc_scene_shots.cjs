@@ -16,10 +16,16 @@ const fs = require('fs');
 const path = require('path');
 const ROOT = process.cwd();
 const OUT = process.argv[2] || '.';
+const CANVAS_MODE = process.argv.includes('--canvas');
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const react = read('desktop/web-app/node_modules/react/umd/react.production.min.js');
 const reactDom = read('desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js');
 const tool = read('stem_lab/stem_tool_rocks.js');
+// The canonical English, so shots show what a user sees. A stub `t` returning
+// the key renders the diagram's node labels as "stem.rocks.igneous" — which is
+// what the tool would show only if the key were missing, so a screenshot taken
+// that way cannot be read as evidence about the real UI.
+const uiStrings = read('ui_strings.js');
 
 // specimen, agent, progress-or-result, caption
 const STATES = [
@@ -63,7 +69,22 @@ window.__mount = function (state) {
     callGemini: null, callTTS: null, callImagen: null, callGeminiVision: null, gradeLevel: '5th',
     stemLabTab: 'explore', stemLabTool: null, toolSnapshots: [], props: {}, srOnly: {},
     a11yClick: function (f) { return { onClick: f }; }, icons: Icons,
-    t: function (k, fb) { return fb || k; }, getXP: function () { return 0; } };
+    // Mirrors the host: resolve the dotted key against the nested canonical
+    // English (AlloFlowANTI.txt:1748 does key.split('.')), then fall back the
+    // way __alloT does. With a key-returning stub the diagram's node labels
+    // render as "stem.rocks.igneous", which is what the tool would show only
+    // if the key were MISSING — so shots taken that way are unreadable as
+    // evidence about the real UI.
+    t: function (k, fb) {
+      var cur = window.__uiStrings, segs = String(k).split('.');
+      for (var si = 0; si < segs.length; si++) {
+        if (cur == null || typeof cur !== 'object') { cur = null; break; }
+        cur = cur[segs[si]];
+      }
+      if (typeof cur === 'string') return cur;
+      return fb != null ? fb : k;
+    },
+    getXP: function () { return 0; } };
     return cfg.render(ctx);
   };
   ReactDOM.unmountComponentAtNode(document.getElementById('slot'));
@@ -93,10 +114,36 @@ function stateFor(spec, agent, prog) {
 <style>body{margin:0;padding:12px;background:#fff;font-family:system-ui}</style></head>
 <body><main id="slot"></main>
 <script>${react}<\/script><script>${reactDom}<\/script>
+<script>window.__uiStrings = ${uiStrings};<\/script>
 <script>${SHELL}<\/script><script>window.React = React;<\/script>
 <script>${tool}<\/script></body></html>`, 'utf8');
   await pg.goto('file://' + page.replace(/\\/g, '/'));
   await pg.waitForTimeout(3500);
+
+  // --canvas: shoot the animated diagram instead of the machine. It is the
+  // 420px-tall thing a student sees first and the only surface here that is
+  // Canvas2D rather than SVG, so nothing in the SSR tests can see it at all.
+  // Needs a real animation frame or two, hence the longer settle.
+  if (CANVAS_MODE) {
+    const CANVAS_STATES = [
+      [null, 'nothing selected'],
+      ['igneous', 'igneous selected'],
+      ['sedimentary', 'sedimentary selected'],
+      ['metamorphic', 'metamorphic selected'],
+    ];
+    for (let i = 0; i < CANVAS_STATES.length; i++) {
+      const [sel, caption] = CANVAS_STATES[i];
+      await pg.evaluate((s) => window.__mount(s ? { selectedRock: s } : {}), sel);
+      await pg.waitForTimeout(900);
+      const label = 'canvas-' + String(i).padStart(2, '0') + '-' + (sel || 'none');
+      const el = (await pg.$('canvas')) || (await pg.$('#slot'));
+      await el.screenshot({ path: path.join(OUT, label + '.png') });
+      console.log(label.padEnd(42) + caption);
+    }
+    await b.close();
+    console.log('\nwrote ' + CANVAS_STATES.length + ' canvas shots to ' + OUT);
+    return;
+  }
 
   for (let i = 0; i < STATES.length; i++) {
     const [spec, agent, prog, caption] = STATES[i];
