@@ -74,7 +74,12 @@ describe('Gemini request-shape regression fixtures', () => {
     expect(calls).toHaveLength(1);
     expect(calls[0].url).toBe(fixture.text.url);
     expect(calls[0].options.method).toBe('POST');
-    expect(calls[0].options.headers).toEqual({ 'Content-Type': 'application/json' });
+    expect(calls[0].options.headers).toEqual({
+      'Content-Type': 'application/json',
+      // The key rides the header, never the URL: query strings reach browser
+      // history, proxy logs, and Referer headers.
+      'x-goog-api-key': 'fixture-key',
+    });
     expect(JSON.parse(calls[0].options.body)).toEqual(fixture.text.body);
   });
 
@@ -109,7 +114,12 @@ describe('Gemini request-shape regression fixtures', () => {
     );
     expect(result).toBe('data:image/png;base64,aW1hZ2U=');
     expect(calls[0].url).toBe(fixture.imageGeneration.url);
-    expect(calls[0].options.headers).toEqual({ 'Content-Type': 'application/json' });
+    expect(calls[0].options.headers).toEqual({
+      'Content-Type': 'application/json',
+      // The key rides the header, never the URL: query strings reach browser
+      // history, proxy logs, and Referer headers.
+      'x-goog-api-key': 'fixture-key',
+    });
     expect(JSON.parse(calls[0].options.body)).toEqual(fixture.imageGeneration.body);
   });
 
@@ -131,7 +141,12 @@ describe('Gemini request-shape regression fixtures', () => {
     );
     expect(result).toBe('data:image/png;base64,ZWRpdGVk');
     expect(calls[0].url).toBe(fixture.imageEditing.url);
-    expect(calls[0].options.headers).toEqual({ 'Content-Type': 'application/json' });
+    expect(calls[0].options.headers).toEqual({
+      'Content-Type': 'application/json',
+      // The key rides the header, never the URL: query strings reach browser
+      // history, proxy logs, and Referer headers.
+      'x-goog-api-key': 'fixture-key',
+    });
     expect(JSON.parse(calls[0].options.body)).toEqual(fixture.imageEditing.body);
   });
 });
