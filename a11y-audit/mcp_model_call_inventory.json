@@ -1,0 +1,110 @@
+{
+  "input": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\artifacts\\remediation-e2e.source.pdf",
+  "fixPasses": 1,
+  "tagged": false,
+  "failed": null,
+  "totalCalls": 7,
+  "pdfCalls": 0,
+  "transportableCalls": 7,
+  "pdfKilobytes": 0,
+  "families": [
+    {
+      "family": "output-audit (HTML)",
+      "needs": "text",
+      "n": 3,
+      "withPdf": 0,
+      "bytes": 0,
+      "promptChars": 35229
+    },
+    {
+      "family": "source-audit (vision)",
+      "needs": "pdf",
+      "n": 1,
+      "withPdf": 0,
+      "bytes": 0,
+      "promptChars": 6261
+    },
+    {
+      "family": "image-describe (vision)",
+      "needs": "image",
+      "n": 1,
+      "withPdf": 0,
+      "bytes": 0,
+      "promptChars": 893
+    },
+    {
+      "family": "style-extraction (vision)",
+      "needs": "image",
+      "n": 1,
+      "withPdf": 0,
+      "bytes": 0,
+      "promptChars": 828
+    },
+    {
+      "family": "structure-extraction",
+      "needs": "pdf-or-image",
+      "n": 1,
+      "withPdf": 0,
+      "bytes": 0,
+      "promptChars": 4968
+    }
+  ],
+  "calls": [
+    {
+      "family": "source-audit (vision)",
+      "declaredNeeds": "pdf",
+      "attachedMime": "image/png",
+      "attachedParts": 2,
+      "attachedBytes": 194085,
+      "promptChars": 6261
+    },
+    {
+      "family": "image-describe (vision)",
+      "declaredNeeds": "image",
+      "attachedMime": "image/png",
+      "attachedParts": 2,
+      "attachedBytes": 194085,
+      "promptChars": 893
+    },
+    {
+      "family": "style-extraction (vision)",
+      "declaredNeeds": "image",
+      "attachedMime": "image/png",
+      "attachedParts": 2,
+      "attachedBytes": 194085,
+      "promptChars": 828
+    },
+    {
+      "family": "structure-extraction",
+      "declaredNeeds": "pdf-or-image",
+      "attachedMime": "image/png",
+      "attachedParts": 2,
+      "attachedBytes": 194085,
+      "promptChars": 4968
+    },
+    {
+      "family": "output-audit (HTML)",
+      "declaredNeeds": "text",
+      "attachedMime": null,
+      "attachedParts": 0,
+      "attachedBytes": 0,
+      "promptChars": 20687
+    },
+    {
+      "family": "output-audit (HTML)",
+      "declaredNeeds": "text",
+      "attachedMime": null,
+      "attachedParts": 0,
+      "attachedBytes": 0,
+      "promptChars": 5622
+    },
+    {
+      "family": "output-audit (HTML)",
+      "declaredNeeds": "text",
+      "attachedMime": null,
+      "attachedParts": 0,
+      "attachedBytes": 0,
+      "promptChars": 8920
+    }
+  ]
+}

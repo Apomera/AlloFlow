@@ -41,7 +41,12 @@ const BUNDLE = path.join(OUT_DIR, 'alloflow-remediation.mcpb');
 const LEAN = process.argv.includes('--lean');
 
 const SERVER_FILES = ['alloflow-remediation-mcp-stdio.cjs', 'remediation_headless_driver.cjs', 'README_REMEDIATION.md'];
-const ASSET_FILES = ['verification_policy_module.js', 'doc_builder_renderer_module.js', 'doc_pipeline_module.js'];
+// view_pdf_audit_module.js carries the accessible Office (DOCX/ODT) export. It is a VIEW module
+// that needs React at load time, so the driver loads it ON DEMAND with React from a CDN rather
+// than at pipeline boot — but it has to be IN the bundle or export_accessible_office cannot work
+// on a packaged install. Adding it was the 2026-07-28 capability-inventory finding: the connector
+// reached 11% of the pipeline, partly because capabilities lived in modules it never shipped.
+const ASSET_FILES = ['verification_policy_module.js', 'doc_builder_renderer_module.js', 'doc_pipeline_module.js', 'view_pdf_audit_module.js'];
 const ASSET_DIRS = ['verapdf'];
 
 function log(m) { process.stderr.write('[build-mcpb] ' + m + '\n'); }
@@ -51,14 +56,34 @@ function copyRecursive(src, dest) {
 }
 
 function buildManifest() {
-  // Tool metadata mirrors the server's registry (names + one-line summaries).
+  // Tool metadata mirrors the server's registry (names + one-line summaries). Parity with the
+  // real registry is PINNED by tests/mcp_remediation_stdio_smoke.test.js — this list silently
+  // omitted remediation_setup until 2026-07-28, so the installed bundle advertised a tool set
+  // the server did not have.
   const tools = [
     { name: 'remediation_capabilities', description: 'Report whether this machine can run PDF remediation (key, Chromium, assets). Read-only.' },
+    { name: 'remediation_selftest', description: 'Prove the install can actually remediate: real pipeline, scripted local model, no API key or quota.' },
+    { name: 'remediation_setup', description: 'One-time Chromium download via Playwright. Idempotent; needs no API key.' },
     { name: 'pdf_audit', description: 'Accessibility audit of a local PDF/DOCX/PPTX: score, issues, scanned detection, language.' },
     { name: 'pdf_validate_ua', description: 'Independent PDF/UA-1 (ISO 14289-1) validation via veraPDF. Needs no API key.' },
     { name: 'pdf_remediate', description: 'Full remediation (synchronous): accessible HTML + tagged PDF + honesty-checked verdict.' },
     { name: 'pdf_remediate_start', description: 'Start a remediation as a background job; returns a job id immediately.' },
+    { name: 'pdf_batch_audit_start', description: 'Background job auditing a whole folder into one triage scoreboard (JSON + CSV). The cheap pass before remediating.' },
     { name: 'pdf_batch_remediate_start', description: 'Background job remediating every PDF in a folder, continuing past per-file failures.' },
+    { name: 'pdf_remediate_from_scoreboard_start', description: 'Remediate only the documents a triage scoreboard flagged (default: the needs-work band).' },
+    { name: 'export_accessible_office', description: 'Convert accessible HTML into an accessible Word (.docx) or OpenDocument (.odt) file. No API key.' },
+    { name: 'fix_contrast', description: 'Deterministic WCAG colour-contrast repair on accessible HTML. No API key.' },
+    { name: 'generate_conformance_report', description: "AlloFlow's own Accessibility Conformance Report as HTML, from an axe audit and an optional veraPDF verdict. No API key." },
+    { name: 'transcribe_media', description: 'Transcribe local audio/video into an accessible transcript (speech, visual, dual or synthesis). Needs an API key.' },
+    { name: 'translate_accessible_html', description: 'Translate accessible HTML into another language, preserving structure and protecting embedded images. Needs an API key.' },
+    { name: 'describe_images', description: 'Vision pass that writes alt text for images in accessible HTML, classifying equations, charts and decorative chrome. Needs an API key.' },
+    { name: 'audit_two_engines', description: 'Audit HTML with axe-core AND IBM Equal Access and report where they disagree. No API key.' },
+    { name: 'check_document_structure', description: 'Heading-hierarchy check (skipped levels) plus plain-text extraction. No API key.' },
+    { name: 'redact_document', description: 'Remove named PII strings from accessible HTML and verify nothing survived. No API key.' },
+    { name: 'extract_document_text', description: 'Deterministic text extraction from DOCX, PPTX, XLSX or PDF. No API key.' },
+    { name: 'detect_form_fields', description: 'Find fillable blanks in accessible HTML and flag unlabelled ones. No API key.' },
+    { name: 'apply_form_fields', description: 'Convert accepted blanks into labelled form inputs. No API key.' },
+    { name: 'simplify_accessible_html', description: 'Rewrite accessible HTML in plain language, preserving structure. Needs an API key.' },
     { name: 'remediation_job_status', description: 'Job state plus recent pipeline telemetry lines. Read-only.' },
     { name: 'remediation_job_result', description: 'The completed job\'s summary (per-file for batches). Read-only.' },
     { name: 'remediation_job_cancel', description: 'Cancel a queued job or kill the running one.' },
@@ -150,4 +175,8 @@ function main() {
   log('Claude Desktop provides the Node runtime for type:node MCPB extensions; other hosts need Node 18+ on PATH.');
 }
 
-main();
+// Guarded so the manifest can be imported and checked against the live tool registry without
+// building a bundle as a side effect (tests/mcp_remediation_stdio_smoke.test.js pins that parity).
+// Same require.main pattern as remediation_headless_driver.cjs's direct CLI.
+module.exports = { buildManifest };
+if (require.main === module) main();

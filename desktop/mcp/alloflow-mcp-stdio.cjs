@@ -523,6 +523,10 @@ function sendError(id, code, message) {
 
 let initialized = false;
 
+// In-flight tools/call requests, keyed by String(id) so a numeric id still matches the value a
+// client echoes back in notifications/cancelled.
+const IN_FLIGHT = new Map();
+
 async function handleRequest(msg) {
   const { id, method, params } = msg;
   if (!initialized && method !== 'initialize' && method !== 'ping') {
@@ -552,6 +556,9 @@ async function handleRequest(msg) {
       const name = params && params.name;
       const handler = TOOL_HANDLERS[name];
       if (!handler) { sendError(id, -32602, 'Unknown tool: ' + String(name)); return; }
+      const inFlightKey = String(id);
+      const inFlight = { tool: name, cancelled: false };
+      IN_FLIGHT.set(inFlightKey, inFlight);
       try {
         const args = (params && params.arguments) || {};
         const output = await handler(args);
@@ -559,8 +566,12 @@ async function handleRequest(msg) {
         if (AUDITED_TOOLS.has(name)) {
           if (!output || output.__pendingWrite !== true || typeof output.commit !== 'function') throw new Error('Audited tool did not provide a pending state change');
           appendAudit(name, output.auditOutcome || 'succeeded', output.audit || auditContextFromArgs(args));
+          // The audit entry and the commit stay UNCONDITIONAL: a cancellation suppresses the
+          // reply, never the record of a state change that already happened. An audit log with a
+          // hole in it where someone cancelled would be worse than a late answer.
           output.commit(); structured = output.payload;
         }
+        if (inFlight.cancelled) return; // per spec: no response for a cancelled request
         sendResult(id, {
           content: [{ type: 'text', text: JSON.stringify(structured, null, 2) }],
           structuredContent: structured,
@@ -574,18 +585,36 @@ async function handleRequest(msg) {
             appendAudit(name, 'rejected', context);
           } catch (auditError) { e = auditError; }
         }
+        if (inFlight.cancelled) return;
         if (e && e.rpcCode) { sendError(id, e.rpcCode, e.message); return; }
         // Tool execution failure — reported in-band per MCP so the model can react.
         sendResult(id, {
           content: [{ type: 'text', text: 'Tool failed: ' + (e && e.message ? e.message : 'unknown error') }],
           isError: true
         });
+      } finally {
+        IN_FLIGHT.delete(inFlightKey);
       }
       return;
     }
     default:
       sendError(id, -32601, 'Method not found: ' + String(method));
   }
+}
+
+// Protocol parity with the remediation sibling (2026-07-28). Two connectors from the same
+// project behaving differently at the protocol level is a papercut for anyone writing against
+// both. The stakes are lower here — these tools are deterministic and return in milliseconds, so
+// a cancel almost always arrives after the answer — but "almost always" is why the suppression
+// below checks rather than assumes.
+function handleNotification(msg) {
+  if (msg.method !== 'notifications/cancelled') return;
+  const p = msg.params || {};
+  if (p.requestId === undefined || p.requestId === null) return;
+  const entry = IN_FLIGHT.get(String(p.requestId));
+  if (!entry) return; // already answered, or never ours
+  entry.cancelled = true;
+  log('cancellation requested for request ' + String(p.requestId) + ' (' + entry.tool + ')');
 }
 
 function handleMessage(line) {
@@ -596,9 +625,9 @@ function handleMessage(line) {
   catch (_) { sendError(null, -32700, 'Parse error'); return; }
   if (!msg || msg.jsonrpc !== '2.0') { sendError(msg && msg.id !== undefined ? msg.id : null, -32600, 'Invalid request'); return; }
   if (msg.id === undefined || msg.id === null) {
-    // Notification — never respond. notifications/initialized and
-    // notifications/cancelled are expected; others are ignored.
-    return;
+    // Notification — never answered. notifications/cancelled is acted on; notifications/initialized
+    // and everything else stay ignored.
+    return handleNotification(msg);
   }
   return handleRequest(msg);
 }

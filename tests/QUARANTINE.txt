@@ -56,7 +56,6 @@ tests/lang_banner_fragment.test.js  # 10 failing · lang-banner-fragment — dis
 tests/lumen_documents_ui.test.js  # 1 failing · Lumen local-document import UI imports a selected local file, exposes provenance, and opens its exact page pas
 tests/lumen_render_golden.test.js  # 21 failing · Lumen — render golden master (SSR, §15) empty state — no observations (entry + sample, no chart)
 tests/lumen_source_controls_ui.test.js  # 1 failing · Lumen active sources, labels and stored-passage viewer persists source controls, filters retrieval scope and o
-tests/mcp_driver_scripted_e2e.test.js  # 1 failing · driver behavioral e2e (scripted loopback Gemini) remediates the fixture end-to-end; auto-continue rounds merge
 tests/misc_handlers_error_alerts_a11y.test.js  # 1 failing · project-load error announcement accessibility announces invalid and unreadable projects once through the acces
 tests/non_eppp_eppp_guided_qa.test.js  # 1 failing · EPPP-guided QA for every non-EPPP test-prep pack binds the suite verdict to every reviewed source artifact
 tests/open_items_b3_b7_m11.test.js  # 6 failing · B3 — context reasons no longer make complete unreachable (live policy module) a clean static-web audit reaches

@@ -28,6 +28,8 @@
 
 const fs = require('fs');
 const path = require('path');
+const os = require('os');       // self-test scratch dir
+const http = require('http');   // self-test loopback model (127.0.0.1, no listener beyond the run)
 
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const MODULE_FILES = [
@@ -208,6 +210,7 @@ function createDriver(options) {
   const log = typeof o.log === 'function' ? o.log : defaultLog;
   let browser = null;
   let activeContext = null; // the in-flight run's browser context (single-flight callers only)
+  let documentEpochSeq = 0; // one document-ownership epoch per run page (see newPipelinePage)
 
   function requireModuleFiles() {
     const missing = MODULE_FILES.filter((f) => !fs.existsSync(path.join(ASSETS_ROOT, f)));
@@ -231,6 +234,80 @@ function createDriver(options) {
     });
     browser.on('disconnected', () => { browser = null; });
     return browser;
+  }
+
+  // ── Page rendering: the PDF as pictures ─────────────────────────────────────
+  // Why this exists: MCP sampling can carry text, images and audio, but there is no PDF content
+  // type. Measured on a real run (dev-tools/mcp_model_call_inventory.cjs), the calls that attach
+  // the document are all INPUT UNDERSTANDING — audit it, describe its figures, read its colours,
+  // find its headings — and every one of those is a question a rendered page answers. None of
+  // them writes the deliverable, and the gates that carry the real guarantee (axe-core on the
+  // produced HTML, veraPDF on the exported bytes) are deterministic and modelless.
+  //
+  // So: render the pages, send pictures, and the whole pipeline becomes transportable over model
+  // access the HOST provides — no API key from the user at all.
+  //
+  // What it costs, stated plainly because the honesty surfaces depend on it: a picture of a page
+  // cannot show a tag tree, a text layer, /Lang, /Title, or an existing /Alt. The audit of the
+  // SOURCE therefore gets rougher, and its "before" score becomes an estimate from appearance.
+  // The audit of the OUTPUT does not change at all.
+  const PDFJS_CDNS = [
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
+    'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js',
+    'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js',
+  ];
+  const PDFJS_WORKERS = [
+    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js',
+    'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js',
+    'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js',
+  ];
+  const RENDER_TARGET_WIDTH = Number(process.env.ALLOFLOW_MCP_PAGE_WIDTH) || 1600;
+  const RENDER_MAX_PAGES = Number(process.env.ALLOFLOW_MCP_MAX_PAGE_IMAGES) || 30;
+
+  async function renderPdfToPageImages(b64, opts) {
+    const o = opts || {};
+    const rlog = typeof o.onLog === 'function' ? o.onLog : log;
+    const b = await getBrowser();
+    const context = await b.newContext();
+    try {
+      const page = await context.newPage();
+      await page.goto('about:blank');
+      let loaded = false;
+      for (const url of PDFJS_CDNS) {
+        try { await page.addScriptTag({ url }); loaded = await page.evaluate(() => !!(window.pdfjsLib && window.pdfjsLib.getDocument)); } catch (_) { loaded = false; }
+        if (loaded) break;
+      }
+      if (!loaded) throw new Error('Could not load pdf.js from any CDN — page rendering needs it.');
+      const out = await page.evaluate(async ({ b64: data, workers, targetWidth, maxPages }) => {
+        for (const w of workers) { try { window.pdfjsLib.GlobalWorkerOptions.workerSrc = w; break; } catch (_) {} }
+        const bin = atob(data);
+        const bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        const pdf = await window.pdfjsLib.getDocument({ data: bytes }).promise;
+        const total = pdf.numPages;
+        const pages = [];
+        for (let n = 1; n <= Math.min(total, maxPages); n++) {
+          const pg = await pdf.getPage(n);
+          const base = pg.getViewport({ scale: 1 });
+          const viewport = pg.getViewport({ scale: Math.min(3, Math.max(1, targetWidth / base.width)) });
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.round(viewport.width);
+          canvas.height = Math.round(viewport.height);
+          await pg.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+          pages.push(canvas.toDataURL('image/png').split(',')[1] || '');
+          canvas.width = 0; canvas.height = 0; // release the backing store now, not at GC
+        }
+        return { pages, totalPages: total };
+      }, { b64, workers: PDFJS_WORKERS, targetWidth: RENDER_TARGET_WIDTH, maxPages: RENDER_MAX_PAGES });
+
+      const bytes = out.pages.reduce((n, p) => n + Math.round(p.length * 0.75), 0);
+      const truncated = out.totalPages > out.pages.length;
+      rlog('rendered ' + out.pages.length + '/' + out.totalPages + ' page(s) to PNG (' + Math.round(bytes / 1024) + ' KB)'
+        + (truncated ? ' — TRUNCATED at the ' + RENDER_MAX_PAGES + '-page cap' : ''));
+      return { pages: out.pages, totalPages: out.totalPages, renderedPages: out.pages.length, bytes, truncated };
+    } finally {
+      try { await context.close(); } catch (_) {}
+    }
   }
 
   async function newPipelinePage(runOpts) {
@@ -257,9 +334,22 @@ function createDriver(options) {
       return geminiCallWithFallback({ apiKey, model: DEFAULT_MODEL, parts: [{ text: String(prompt) }], log: rlog });
     });
     await page.exposeFunction('__mcpGeminiVision', async (prompt, base64Data, mimeType) => {
+      const mime = mimeType || 'application/pdf';
+      // Image mode: swap the attached document for its rendered pages. Scoped to PDFs on purpose
+      // — audio/video transcription and already-image payloads pass through untouched, since the
+      // point is to remove the PDF content type, not to re-encode everything.
+      const pageImages = runOpts.pageImages;
+      if (pageImages && pageImages.length && mime === 'application/pdf') {
+        return geminiCallWithFallback({
+          apiKey, model: DEFAULT_MODEL, log: rlog,
+          parts: [{ text: String(prompt) }].concat(
+            pageImages.map((p) => ({ inline_data: { mime_type: 'image/png', data: p } }))
+          ),
+        });
+      }
       return geminiCallWithFallback({
         apiKey, model: DEFAULT_MODEL, log: rlog,
-        parts: [{ text: String(prompt) }, { inline_data: { mime_type: mimeType || 'application/pdf', data: String(base64Data || '') } }],
+        parts: [{ text: String(prompt) }, { inline_data: { mime_type: mime, data: String(base64Data || '') } }],
       });
     });
     await page.exposeFunction('__mcpProgress', async (line) => { rlog('progress: ' + String(line).slice(0, 300)); });
@@ -273,7 +363,17 @@ function createDriver(options) {
     await page.evaluate((cfg) => {
       const w = window;
       // Host-state slot the OCR path reads (language picker parity).
-      w.__docPipelineState = { pdfOcrLanguage: cfg.ocrLanguage || '' };
+      w.__docPipelineState = { pdfOcrLanguage: cfg.ocrLanguage || '', pdfDocumentEpoch: cfg.documentEpoch };
+      // ── Document ownership stamp (required since the pipeline's ownership-epoch gate) ──
+      // fixAndVerifyPdf refuses to start an "unstamped" run: an unowned document means a
+      // completion could be attributed to a document that was swapped mid-run. In the app the
+      // epoch is republished every time the teacher selects a new file. Here the invariant is
+      // stronger and structural — withRunPage gives every run its own browser context holding
+      // exactly ONE document for its whole lifetime — so the run IS the ownership scope and we
+      // stamp it once at page setup. Published on the authoritative global (the pipeline treats
+      // __alloPdfDocumentEpoch as final and deliberately will NOT fall back past it), which also
+      // puts the epoch on the run's telemetry and warning envelopes.
+      w.__alloPdfDocumentEpoch = cfg.documentEpoch;
       const rethrow = (envelope) => {
         const err = new Error(envelope && envelope.message ? envelope.message : 'Gemini call failed');
         if (envelope) {
@@ -304,7 +404,7 @@ function createDriver(options) {
         getDefaultTitle: () => cfg.fileName || 'Document',
         state: {},
       });
-    }, { ocrLanguage: runOpts.ocrLanguage || '', fileName: runOpts.fileName || '' });
+    }, { ocrLanguage: runOpts.ocrLanguage || '', fileName: runOpts.fileName || '', documentEpoch: ++documentEpochSeq });
 
     return { page, context };
   }
@@ -331,7 +431,21 @@ function createDriver(options) {
     throw new Error('Unsupported file type (need .pdf, .docx, or .pptx): ' + filePath);
   }
 
-  async function withRunPage(runOpts, fn) {
+  // Rendered ONCE per run, before the pipeline page exists, rather than lazily inside the vision
+  // bridge: rendering needs its own page, and calling back into the browser from a handler the
+  // page is already awaiting is how you get a deadlock.
+  async function prepareVisionMode(runOpts) {
+    if (runOpts.visionMode !== 'images') return runOpts;
+    if (!/\.pdf$/i.test(runOpts.fileName || '')) {
+      (runOpts.onLog || log)('vision mode "images" ignored — page rendering applies to PDFs only');
+      return runOpts;
+    }
+    const rendered = await renderPdfToPageImages(runOpts.base64ForRender, { onLog: runOpts.onLog });
+    return Object.assign({}, runOpts, { pageImages: rendered.pages, renderReport: rendered });
+  }
+
+  async function withRunPage(runOptsIn, fn) {
+    const runOpts = await prepareVisionMode(runOptsIn);
     const maxMs = Math.max(60000, (Number(runOpts.maxRunMinutes) || Number(process.env.ALLOFLOW_MCP_MAX_RUN_MINUTES) || 30) * 60000);
     const { page, context } = await newPipelinePage(runOpts);
     activeContext = context;
@@ -363,7 +477,7 @@ function createDriver(options) {
     const fileName = path.basename(opts.filePath);
     const b64 = readDocBase64(opts.filePath);
     (opts.onLog || log)('audit: ' + fileName + ' (' + Math.round(b64.length * 0.75 / 1024) + ' KB)');
-    return withRunPage(Object.assign({ fileName }, opts), (page) =>
+    return withRunPage(Object.assign({ fileName, base64ForRender: b64 }, opts), (page) =>
       page.evaluate(async ({ b64, fileName }) => {
         const a = await window.__mcpPipeline.runPdfAccessibilityAudit(b64, { skipUiUpdates: true, skipCache: true, fileName });
         return {
@@ -393,7 +507,7 @@ function createDriver(options) {
     const b64 = readDocBase64(opts.filePath);
     const _isPdfInput = /\.pdf$/i.test(fileName);
     (opts.onLog || log)('remediate: ' + fileName + ' (' + Math.round(b64.length * 0.75 / 1024) + ' KB, target ' + (opts.targetScore || 95) + ')');
-    return withRunPage(Object.assign({ fileName }, opts), (page) =>
+    return withRunPage(Object.assign({ fileName, base64ForRender: b64 }, opts), (page) =>
       page.evaluate(async ({ b64, fileName, targetScore, fixPasses, polishPasses, wantTaggedPdf, wantAutoContinue, autoContinueRounds, pdfLibCdn }) => {
         const pipeline = window.__mcpPipeline;
         const progress = (stage, msg) => { try { window.__mcpProgress(stage + ' — ' + msg); } catch (_) {} };
@@ -660,13 +774,526 @@ function createDriver(options) {
     }
   }
 
+  // ── Self-test: does this install actually REMEDIATE, not merely have the parts? ──────────
+  // remediation_capabilities answers "are the pieces present" (key, Chromium, module files). It
+  // answered `ready: true` for an install where every single run died at the pipeline's
+  // ownership-epoch gate, because presence is not function. This runs the REAL pipeline, in the
+  // REAL browser, over the REAL fixAndVerifyPdf — against a scripted loopback model, so it needs
+  // NO Gemini key and spends NO quota — and reports which stage broke.
+  //
+  // It is deliberately a CANARY for connector-vs-pipeline drift: the scripted replies below must
+  // satisfy the pipeline's current strict-parse contract, so when the pipeline hardens again this
+  // goes red and names the stage instead of every real run failing mysteriously. A red self-test
+  // means the connector is out of date with the pipeline it ships beside, which is exactly the
+  // failure the two 2026-07-28 bugs were.
+  const SELFTEST_MARKER = 'AlloFlow connector self test document';
+
+  // A minimal but genuinely valid single-page PDF, built here rather than shipped as a fixture:
+  // the MCPB bundle carries server/ and assets/ only, never tests/, so a file dependency would
+  // make the self-test work in the repo and not in the thing users install.
+  function buildSelfTestPdf() {
+    const body = 'BT /F1 16 Tf 72 700 Td (' + SELFTEST_MARKER + ') Tj ET\n';
+    const objs = [
+      null,
+      '<</Type/Catalog/Pages 2 0 R>>',
+      '<</Type/Pages/Kids[3 0 R]/Count 1>>',
+      '<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Resources<</Font<</F1 5 0 R>>>>/Contents 4 0 R>>',
+      '<</Length ' + Buffer.byteLength(body, 'latin1') + '>>\nstream\n' + body + 'endstream',
+      '<</Type/Font/Subtype/Type1/BaseFont/Helvetica>>',
+    ];
+    let out = '%PDF-1.4\n';
+    const offsets = [];
+    for (let i = 1; i < objs.length; i++) {
+      offsets[i] = Buffer.byteLength(out, 'latin1');
+      out += i + ' 0 obj\n' + objs[i] + '\nendobj\n';
+    }
+    const xrefStart = Buffer.byteLength(out, 'latin1');
+    out += 'xref\n0 ' + objs.length + '\n0000000000 65535 f \n';
+    for (let i = 1; i < objs.length; i++) out += String(offsets[i]).padStart(10, '0') + ' 00000 n \n';
+    out += 'trailer\n<</Size ' + objs.length + '/Root 1 0 R>>\nstartxref\n' + xrefStart + '\n%%EOF\n';
+    return Buffer.from(out, 'latin1');
+  }
+
+  // Scripted model replies. Shape is pinned by the pipeline's own prompt skeletons — issues need
+  // ruleId/claimKind/count, replies need confidence + the document-metadata booleans — because
+  // _parseStrictInitialAudit / _requireStrictOutputAudit discard anything less as "no evidence".
+  const SELFTEST_AUDIT_PDF = JSON.stringify({
+    score: 70, summary: 'self-test scripted PDF audit', confidence: 'high', documentLanguage: 'en',
+    pageCount: 1, hasSearchableText: true, hasImages: false, hasTables: false, hasForms: false,
+    critical: [],
+    serious: [{ ruleId: 'document-title', claimKind: 'absence', issue: 'The document has no title entry.', wcag: '2.4.2', count: 1, location: 'document' }],
+    moderate: [], minor: [], passes: ['document has a language'],
+  });
+  const SELFTEST_AUDIT_HTML = JSON.stringify({
+    score: 80, summary: 'self-test scripted HTML audit',
+    issues: [{ ruleId: 'document-title', claimKind: 'absence', issue: 'The document has no title entry.', wcag: '2.4.2', count: 1 }],
+    passes: ['document has a language'],
+  });
+
+  function selfTestReply(prompt) {
+    if (/Reply with exactly: OK/.test(prompt)) return 'OK';
+    if (/accessibility auditor for educational documents/i.test(prompt) || /SLICE CONTEXT/i.test(prompt)) return SELFTEST_AUDIT_PDF;
+    if (/Audit this HTML/i.test(prompt)) return SELFTEST_AUDIT_HTML;
+    if (/Return ONLY a JSON array/i.test(prompt)) return JSON.stringify([{ type: 'h1', text: SELFTEST_MARKER, id: 'self-test' }]);
+    if (/Extract ALL text content/i.test(prompt)) return '# ' + SELFTEST_MARKER;
+    // HTML-expecting prompts say so explicitly, and several ALSO contain the word "JSON" (as in
+    // "do NOT wrap in JSON") — so they must be claimed before the generic JSON rules below.
+    if (/raw HTML only|do NOT wrap in JSON|Return the COMPLETE fixed HTML|Return ONLY the fixed fragment/i.test(prompt)) {
+      return '<p>' + SELFTEST_MARKER + '</p>';
+    }
+    // Generic well-formed-but-empty JSON for the optional enrichment passes (image inventory,
+    // style/palette extraction, ...). Returning HTML to those made them throw a parse error that
+    // the pipeline swallows as non-blocking — harmless for the run, but it meant a genuinely
+    // broken enrichment path looked exactly like our own stub noise, which is a blind canary.
+    // Empty-but-valid says "nothing to add" and keeps a real parse failure visible.
+    if (/JSON array/i.test(prompt)) return '[]';
+    if (/\bJSON\b/i.test(prompt)) return '{}';
+    return '<p>' + SELFTEST_MARKER + '</p>';
+  }
+
+  // Which stage a failure belongs to, from the error the pipeline actually threw. Keeps the
+  // report actionable ("the ownership gate rejected the run") instead of a raw stack.
+  function classifySelfTestFailure(message) {
+    const m = String(message || '');
+    if (/Pipeline module file\(s\) missing/i.test(m)) return { stage: 'assets', hint: 'The pipeline module files are missing from the assets directory. Reinstall the connector, or set ALLOFLOW_MCP_ASSETS_DIR.' };
+    if (/executable doesn't exist|Executable doesn't exist|browserType\.launch|playwright/i.test(m)) return { stage: 'browser', hint: 'Chromium could not launch. Run remediation_setup once (a ~200MB one-time download).' };
+    if (/ALLO_DOCUMENT_EPOCH_REQUIRED|DocumentOwnershipError|ownership epoch/i.test(m)) return { stage: 'ownership-gate', hint: 'The pipeline refused an unstamped run: the driver is not publishing a document-ownership epoch this pipeline build accepts. Connector and pipeline are out of sync.' };
+    if (/BASELINE_AUDIT_REQUIRED|BaselineAuditRequiredError|baseline accessibility audit/i.test(m)) return { stage: 'audit-contract', hint: 'The audit produced no usable evidence, so remediation refused to start. The pipeline\'s strict audit-reply contract has almost certainly changed underneath the connector.' };
+    if (/waitForFunction|AlloModules|createDocPipeline/i.test(m)) return { stage: 'module-boot', hint: 'The pipeline modules loaded but did not expose the expected globals. Connector and pipeline are out of sync.' };
+    return { stage: 'run', hint: 'The run failed after boot. See `error` for the pipeline\'s own message.' };
+  }
+
+  async function selfTest(opts) {
+    const o = opts || {};
+    const rlog = typeof o.onLog === 'function' ? o.onLog : log;
+    const startedAt = Date.now();
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'alloflow-selftest-'));
+    const pdfPath = path.join(tmpDir, 'self-test.pdf');
+    fs.writeFileSync(pdfPath, buildSelfTestPdf());
+
+    let calls = 0;
+    const server = http.createServer((req, res) => {
+      let raw = '';
+      req.on('data', (c) => { raw += c; });
+      req.on('end', () => {
+        calls++;
+        let prompt = '';
+        try {
+          const j = JSON.parse(raw);
+          prompt = (((j.contents || [])[0] || {}).parts || []).map((p) => p.text || '').join('\n');
+        } catch (_) {}
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ candidates: [{ content: { parts: [{ text: selfTestReply(String(prompt)) }] }, finishReason: 'STOP' }] }));
+      });
+    });
+    await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+
+    // The driver reads both of these per call, so redirecting them for the duration is enough to
+    // keep the run entirely local. Restored in `finally` — a self-test must never leave the
+    // process pointed at a loopback model or holding a fake key.
+    const prevBase = process.env.ALLOFLOW_MCP_GEMINI_BASE;
+    const prevKey = process.env.GEMINI_API_KEY;
+    process.env.ALLOFLOW_MCP_GEMINI_BASE = 'http://127.0.0.1:' + server.address().port + '/v1beta/models';
+    process.env.GEMINI_API_KEY = 'self-test-loopback-key';
+
+    rlog('self-test: running the real pipeline against a scripted loopback model (no key, no quota)');
+    try {
+      const out = await remediate({
+        filePath: pdfPath, onLog: o.onLog,
+        targetScore: 100, fixPasses: 0, polishPasses: 0, taggedPdf: false, autoContinue: false,
+      });
+      const producedHtml = !!(out && typeof out.accessibleHtml === 'string' && out.accessibleHtml.trim());
+      const carriedContent = producedHtml && out.accessibleHtml.indexOf(SELFTEST_MARKER) !== -1;
+      const scoredHonestly = !!(out && Number.isFinite(Number(out.beforeScore)) && Number(out.beforeScore) >= 0);
+      const ok = producedHtml && carriedContent && scoredHonestly;
+      return {
+        ok,
+        stage: ok ? 'complete' : 'output',
+        durationMs: Date.now() - startedAt,
+        modelCalls: calls,
+        checks: {
+          browserLaunched: true,
+          modulesBooted: true,
+          auditAccepted: scoredHonestly,     // the strict audit parse produced usable evidence
+          remediationStarted: producedHtml,  // ownership + baseline gates let the run begin
+          contentPreserved: carriedContent,  // the document survived the round trip
+        },
+        beforeScore: out && out.beforeScore,
+        afterScore: out && out.afterScore,
+        note: ok
+          ? 'This install can remediate: real pipeline, real browser, real fixAndVerifyPdf. Only the model was scripted, so a live run additionally needs a valid GEMINI_API_KEY.'
+          : 'The run completed but its output was not usable — see checks for which assertion failed.',
+      };
+    } catch (e) {
+      const message = (e && e.message) || String(e);
+      const { stage, hint } = classifySelfTestFailure(message);
+      rlog('self-test FAILED at ' + stage + ': ' + message.slice(0, 200));
+      return {
+        ok: false, stage, hint, durationMs: Date.now() - startedAt, modelCalls: calls,
+        error: message.slice(0, 600),
+        note: 'The connector cannot remediate on this machine. This ran with a scripted model, so the failure is NOT an API-key or quota problem.',
+      };
+    } finally {
+      if (prevBase === undefined) delete process.env.ALLOFLOW_MCP_GEMINI_BASE; else process.env.ALLOFLOW_MCP_GEMINI_BASE = prevBase;
+      if (prevKey === undefined) delete process.env.GEMINI_API_KEY; else process.env.GEMINI_API_KEY = prevKey;
+      try { server.close(); } catch (_) {}
+      try { fs.rmSync(tmpDir, { recursive: true, force: true }); } catch (_) {}
+    }
+  }
+
+  // ── Accessible Office export (DOCX / ODT) ───────────────────────────────────
+  // The connector shipped three modules and reached 11% of the pipeline (see
+  // dev-tools/mcp_capability_inventory.cjs). Office export was one of the missing pieces, and it
+  // lives in view_pdf_audit_module.js — a VIEW module that destructures React hooks at top level
+  // and throws "Cannot read properties of undefined (reading 'useState')" without React present.
+  //
+  // That is why it could not simply be added to MODULE_FILES. It loads cleanly once React is
+  // there, and then exposes _buildAccessibleOfficeExport as window.AlloModules.AccessibleOfficeExport.
+  // Loaded on demand rather than for every run, since most runs never export Office and the
+  // module is ~1.4 MB.
+  //
+  // NOT fixed by this: ePub 3, DAISY and Braille. Their generation lives INSIDE the PdfAuditView
+  // component as download handlers (calling addToast, touching URL.createObjectURL), so they are
+  // not callable without rendering the view. Making those reachable needs the generation logic
+  // extracted from the handlers in view_pdf_audit_source.jsx — a source change, not a bundling one.
+  const REACT_CDN = 'https://unpkg.com/react@18.3.1/umd/react.production.min.js';
+  const REACT_DOM_CDN = 'https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js';
+  const JSZIP_CDN = 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js';
+  const EXPORT_MODULE = 'view_pdf_audit_module.js';
+
+  async function exportAccessibleOffice(opts) {
+    const o = opts || {};
+    const rlog = typeof o.onLog === 'function' ? o.onLog : log;
+    const format = String(o.format || '').toLowerCase();
+    if (format !== 'docx' && format !== 'odt') throw new Error("format must be 'docx' or 'odt'");
+    if (!o.html || typeof o.html !== 'string') throw new Error('html is required');
+    const modulePath = path.join(ASSETS_ROOT, EXPORT_MODULE);
+    if (!fs.existsSync(modulePath)) {
+      throw new Error(EXPORT_MODULE + ' is missing from ' + ASSETS_ROOT + ' — this connector build cannot export Office formats.');
+    }
+    const b = await getBrowser();
+    const context = await b.newContext();
+    try {
+      const page = await context.newPage();
+      const pageErrors = [];
+      page.on('pageerror', (e) => pageErrors.push(String(e).slice(0, 200)));
+      await page.goto('about:blank');
+      rlog('office export: loading React + JSZip + the export module');
+      await page.addScriptTag({ url: REACT_CDN });
+      await page.addScriptTag({ url: REACT_DOM_CDN });
+      await page.addScriptTag({ url: JSZIP_CDN }); // ODT packaging needs it and the module will not fetch it itself
+      await page.waitForFunction(() => !!(window.React && window.ReactDOM && window.JSZip), null, { timeout: 30000 });
+      await page.addScriptTag({ path: modulePath });
+      await page.waitForFunction(
+        () => !!(window.AlloModules && window.AlloModules.AccessibleOfficeExport && typeof window.AlloModules.AccessibleOfficeExport.build === 'function'),
+        null, { timeout: 30000 }
+      );
+      const out = await page.evaluate(async ({ html, title, format: fmt }) => {
+        const res = await window.AlloModules.AccessibleOfficeExport.build({ html, title, format: fmt });
+        if (!res || !res.blob) throw new Error('Office export returned no data');
+        const buf = new Uint8Array(await res.blob.arrayBuffer());
+        let s = '';
+        for (let i = 0; i < buf.length; i += 8192) s += String.fromCharCode.apply(null, buf.subarray(i, i + 8192));
+        return { b64: btoa(s), fileName: res.fileName, message: res.message || null, counts: res.counts || null };
+      }, { html: o.html, title: o.title || 'AlloFlow Document', format });
+      if (pageErrors.length) rlog('office export page errors: ' + pageErrors.slice(0, 2).join(' | '));
+      rlog('office export: ' + out.fileName + ' (' + Math.round(out.b64.length * 0.75 / 1024) + ' KB)');
+      return out;
+    } finally {
+      try { await context.close(); } catch (_) {}
+    }
+  }
+
+  // ── HTML-in / HTML-out pipeline operations ──────────────────────────────────
+  // Three capabilities the capability inventory flagged as present-but-unreachable. They share a
+  // shape: give the pipeline HTML, get something back. What differs is whether a model is needed,
+  // and that difference is load-bearing rather than incidental:
+  //
+  //   contrast repair   — fixContrastViolations / fixAxeContrastViolationsTargeted /
+  //                       sanitizeStyleForWCAG are all SYNCHRONOUS. Pure contrast math, no model.
+  //                       So this works with no API key at all.
+  //   conformance report— generateAccessibilityReportHtml is synchronous templating.  No key.
+  //   image alt text    — describeAndClassifyImages is async and makes callGeminiVision calls
+  //                       (2 sites). This one genuinely needs a model, and says so.
+  //
+  // `aiRequired` decides whether the AI seams are wired to the real bridge or to throwing stubs,
+  // so a no-key operation cannot silently start spending quota if the pipeline changes underneath.
+  async function withHtmlPage(aiRequired, fn, runOpts) {
+    const o = runOpts || {};
+    const rlog = typeof o.onLog === 'function' ? o.onLog : log;
+    if (aiRequired) {
+      // Real pipeline page: AI bridges live, page-per-run isolation, cancellable.
+      return withRunPage(Object.assign({ fileName: o.fileName || 'document.html' }, o), fn);
+    }
+    requireModuleFiles();
+    const b = await getBrowser();
+    const context = await b.newContext();
+    try {
+      const page = await context.newPage();
+      await page.goto('about:blank');
+      await page.addScriptTag({ url: AXE_CDN_URL });
+      for (const f of MODULE_FILES) await page.addScriptTag({ path: path.join(ASSETS_ROOT, f) });
+      await page.waitForFunction(() => !!(window.AlloModules && window.AlloModules.createDocPipeline), null, { timeout: 30000 });
+      await page.evaluate(() => {
+        const boom = (w) => async () => { throw new Error('this operation is model-free; ' + w + ' must not be called'); };
+        window.__mcpPipeline = window.AlloModules.createDocPipeline({
+          callGemini: boom('callGemini'), callGeminiVision: boom('callGeminiVision'),
+          callImagen: async () => null, addToast: () => {}, t: (k) => k, isRtlLang: () => false,
+          updateExportPreview: () => {}, getDefaultTitle: () => 'Document', state: {},
+        });
+      });
+      rlog('model-free page ready');
+      return await fn(page);
+    } finally { try { await context.close(); } catch (_) {} }
+  }
+  const AXE_CDN_URL = 'https://cdnjs.cloudflare.com/ajax/libs/axe-core/4.10.2/axe.min.js';
+
+  // Deterministic contrast repair. Runs the axe audit first so the targeted fixer has real
+  // violations to work from, then re-audits so the caller sees what actually changed rather than
+  // a promise that something did.
+  async function fixContrast(opts) {
+    const o = opts || {};
+    return withHtmlPage(false, async (page) => page.evaluate(async (html) => {
+      const p = window.__mcpPipeline;
+      // These three return DIFFERENT shapes. fixContrastViolations and
+      // fixAxeContrastViolationsTargeted return HTML strings; sanitizeStyleForWCAG returns
+      // { html, fixCount }. Assuming a uniform string silently replaced the document with
+      // "[object Object]" downstream, so normalise explicitly.
+      const asHtml = (v, fallback) => (typeof v === 'string' ? v : (v && typeof v.html === 'string' ? v.html : fallback));
+
+      const before = await p.runAxeAudit(html);
+      const pass1 = asHtml(p.fixContrastViolations(html), html);
+      const mid = await p.runAxeAudit(pass1);
+      const pass2 = asHtml(p.fixAxeContrastViolationsTargeted(pass1, mid), pass1);
+      const sanitizedRes = p.sanitizeStyleForWCAG(pass2);
+      const sanitized = asHtml(sanitizedRes, pass2);
+      const styleFixes = (sanitizedRes && typeof sanitizedRes.fixCount === 'number') ? sanitizedRes.fixCount : null;
+      const after = await p.runAxeAudit(sanitized);
+
+      // axe reports contrast it cannot fully resolve as INCOMPLETE, not as a violation. Counting
+      // only violations reported zero contrast problems on text at roughly 1.6:1, which is worse
+      // than useless — it would have certified a document nobody can read.
+      const contrastNodes = (a) => {
+        const pick = (arr) => (arr || []).filter((v) => /contrast/i.test(v.id || '')).reduce((n, v) => n + (v.nodes || 1), 0);
+        return { violations: pick(a && a.violations), incomplete: pick(a && a.incomplete) };
+      };
+      return {
+        html: sanitized,
+        beforeViolations: before && before.totalViolations, afterViolations: after && after.totalViolations,
+        beforeContrast: contrastNodes(before), afterContrast: contrastNodes(after),
+        beforeScore: before && before.score, afterScore: after && after.score,
+        styleFixes, changed: sanitized !== html,
+        beforeViolationIds: ((before && before.violations) || []).map((v) => v.id),
+        afterViolationIds: ((after && after.violations) || []).map((v) => v.id),
+        // Measured 2026-07-29: axe reported ZERO contrast findings, in violations AND incomplete,
+        // on text at roughly 1.6:1 — before and after. The fixer meanwhile made real changes
+        // (#dddddd -> #636363, ~5.9:1). So in this harness axe does not corroborate contrast, and
+        // the honest evidence is the deterministic fix count, not an axe delta. Reporting an axe
+        // improvement here would be citing a measurement that never happened.
+        evidence: 'styleFixes is the deterministic count of colour corrections applied by the pipeline. '
+          + 'axe-core does NOT reliably detect contrast in this iframe harness (it reported none on text at ~1.6:1), '
+          + 'so the axe numbers here are context, not proof that contrast improved. Verify visually or with a contrast checker.',
+      };
+    }, o.html), o);
+  }
+
+  // AlloFlow's own conformance report. Deterministic templating over artifacts the caller already
+  // has, so the report an agent produces is the report the app produces.
+  async function buildConformanceReport(opts) {
+    const o = opts || {};
+    return withHtmlPage(false, async (page) => page.evaluate(({ fixResult, auditResult, pdfUa, reportOpts }) => {
+      return window.__mcpPipeline.generateAccessibilityReportHtml(fixResult, auditResult, pdfUa, reportOpts);
+    }, { fixResult: o.fixResult || {}, auditResult: o.auditResult || {}, pdfUa: o.pdfUa || null, reportOpts: o.reportOpts || {} }), o);
+  }
+
+  // Image alt text. The one of the three that genuinely needs a model.
+  async function describeImages(opts) {
+    const o = opts || {};
+    return withHtmlPage(true, async (page) => page.evaluate(async ({ html, cap }) => {
+      const r = await window.__mcpPipeline.describeAndClassifyImages(html, { cap });
+      return { html: r.html, classified: r.classified, equations: r.equations, charts: r.charts, visionCalls: r.visionCalls, dedupedCopies: r.dedupedCopies };
+    }, { html: o.html, cap: o.cap || 10 }), Object.assign({ base64ForRender: null }, o));
+  }
+
+  // ── Media transcription and translation ─────────────────────────────────────
+  // The two capabilities that turn this connector from "PDF remediation" into the UDL story the
+  // app actually tells: an audio or video file becomes an accessible transcript, and any
+  // accessible output can be produced in another language. Both are genuinely AI-dependent
+  // (translateAccessibleHtml throws 'AI unavailable' without callGemini), so both take the real
+  // pipeline page and both are key-gated at the tool layer rather than pretending otherwise.
+  const MEDIA_MIME = {
+    '.mp3': 'audio/mpeg', '.m4a': 'audio/mp4', '.wav': 'audio/wav', '.aac': 'audio/aac',
+    '.ogg': 'audio/ogg', '.flac': 'audio/flac', '.webm': 'video/webm', '.mp4': 'video/mp4',
+    '.mov': 'video/quicktime', '.mpeg': 'video/mpeg', '.mpg': 'video/mpeg',
+  };
+
+  async function transcribeMedia(opts) {
+    const o = opts || {};
+    const fileName = path.basename(o.filePath);
+    const ext = path.extname(fileName).toLowerCase();
+    const mime = o.mimeType || MEDIA_MIME[ext];
+    if (!mime) throw new Error('Unsupported media type "' + ext + '". Supported: ' + Object.keys(MEDIA_MIME).join(', '));
+    const bytes = fs.readFileSync(o.filePath);
+    (o.onLog || log)('transcribe: ' + fileName + ' (' + Math.round(bytes.length / 1024 / 1024 * 10) / 10 + ' MB, ' + mime + ', mode=' + (o.mode || 'speech') + ')');
+    const b64 = bytes.toString('base64');
+    return withRunPage(Object.assign({ fileName }, o), (page) =>
+      page.evaluate(async ({ data, mimeType, mode }) => {
+        const r = await window.__mcpPipeline.transcribeMediaToPayload(data, mimeType, { mode });
+        return { payload: r.payload, words: r.words, mode: r.mode };
+      }, { data: b64, mimeType: mime, mode: o.mode || 'speech' }));
+  }
+
+  async function translateHtml(opts) {
+    const o = opts || {};
+    (o.onLog || log)('translate: -> ' + o.targetLang + ' (' + Math.round(String(o.html || '').length / 1024) + ' KB of HTML)');
+    return withRunPage(Object.assign({ fileName: o.fileName || 'document.html' }, o), (page) =>
+      page.evaluate(async ({ html, targetLang }) => {
+        // The pipeline swaps data-URI images for placeholders before chunking and restores them
+        // after, so images survive translation without being sent through the model as base64.
+        const out = await window.__mcpPipeline.translateAccessibleHtml(html, targetLang, {});
+        return typeof out === 'string' ? { html: out } : { html: (out && out.html) || '', meta: out };
+      }, { html: o.html, targetLang: o.targetLang }));
+  }
+
+  // ── Redaction, extraction, forms, simplification ────────────────────────────
+  // Four more capability areas the inventory flagged. Measured, not assumed: _redactDocument,
+  // detectFormBlanks and applyFormBlanks are SYNCHRONOUS; the *Deterministic extractors and
+  // convertXlsxToMarkdownTables are async only because they load parsing libraries, and contain
+  // zero callGemini sites. So all four run model-free. simplifyAccessibleHtml is the exception.
+  //
+  // _redactDocument is worth noting: it redacts, then runs _redactionLeaks over its own output and
+  // returns { clean, leaks }. It verifies its own work, which is exactly the property a redaction
+  // tool needs — a redaction that silently missed something is worse than none.
+  async function redactDocumentHtml(opts) {
+    const o = opts || {};
+    return withHtmlPage(false, async (page) => page.evaluate(({ html, targets, options }) => {
+      const r = window.__mcpPipeline.redactDocument(html, targets, options || {});
+      return { html: r.html, count: r.count, redacted: r.redacted, clean: r.clean, leaks: r.leaks };
+    }, { html: o.html, targets: o.targets, options: o.options }), o);
+  }
+
+  // One entry point for "get the text out of this file", because a caller should not have to know
+  // which extractor matches which extension.
+  async function extractDocumentText(opts) {
+    const o = opts || {};
+    const ext = path.extname(o.filePath).toLowerCase();
+    const b64 = fs.readFileSync(o.filePath).toString('base64');
+    (o.onLog || log)('extract: ' + path.basename(o.filePath) + ' (' + ext + ')');
+    return withHtmlPage(false, async (page) => page.evaluate(async ({ data, kind }) => {
+      const p = window.__mcpPipeline;
+      // Each extractor returns its OWN shape. The Office ones use `fullText` (with a `method`
+      // field that can be 'failed' plus an `error`), the XLSX one produces markdown. Reading a
+      // `text` property that never existed returned empty strings while reporting success — the
+      // same object-shape trap as sanitizeStyleForWCAG. Normalise explicitly and carry `method`
+      // and `error` through, so a failed extraction cannot masquerade as an empty document.
+      const pick = (r) => {
+        if (typeof r === 'string') return { text: r, method: null, error: null };
+        if (!r || typeof r !== 'object') return { text: '', method: null, error: 'extractor returned nothing usable' };
+        const text = [r.fullText, r.markdown, r.text].find((v) => typeof v === 'string' && v.length) || '';
+        return { text, method: r.method || null, error: r.error || null, sourceCharCount: r.sourceCharCount, mediaImages: (r.mediaImages || []).length || 0 };
+      };
+      let raw;
+      if (kind === '.docx') raw = await p.extractDocxTextDeterministic(data);
+      else if (kind === '.pptx') raw = await p.extractPptxTextDeterministic(data);
+      else if (kind === '.xlsx' || kind === '.xlsm') raw = await p.convertXlsxToMarkdownTables(data, {});
+      else if (kind === '.pdf') raw = await p.extractPdfTextDeterministic(data, {});
+      else throw new Error('Unsupported extension for deterministic extraction: ' + kind);
+      return Object.assign({ kind: kind.replace('.', '') }, pick(raw));
+    }, { data: b64, kind: ext }), o);
+  }
+
+  async function inspectFormFields(opts) {
+    const o = opts || {};
+    return withHtmlPage(false, async (page) => page.evaluate(({ html }) => {
+      return { blanks: window.__mcpPipeline.detectFormBlanks(html) || [] };
+    }, { html: o.html }), o);
+  }
+
+  async function applyFormFields(opts) {
+    const o = opts || {};
+    return withHtmlPage(false, async (page) => page.evaluate(({ html, accepted }) => {
+      const out = window.__mcpPipeline.applyFormBlanks(html, accepted);
+      return { html: typeof out === 'string' ? out : (out && out.html) || html };
+    }, { html: o.html, accepted: o.accepted }), o);
+  }
+
+  async function simplifyHtml(opts) {
+    const o = opts || {};
+    (o.onLog || log)('simplify: ' + Math.round(String(o.html || '').length / 1024) + ' KB of HTML');
+    return withRunPage(Object.assign({ fileName: o.fileName || 'document.html' }, o), (page) =>
+      page.evaluate(async ({ html, options }) => {
+        const out = await window.__mcpPipeline.simplifyAccessibleHtml(html, options || {});
+        return typeof out === 'string' ? { html: out } : { html: (out && out.html) || '', meta: out };
+      }, { html: o.html, options: o.options }));
+  }
+
+  // ── Second-engine audit, plain text, structure check ────────────────────────
+  // runEqualAccessAudit is IBM Equal Access: a genuinely INDEPENDENT rule engine, in-browser,
+  // zero callGemini sites. That matters more here than it looks. axe-core was measured on this
+  // project reporting no contrast findings on text at ~1.6:1, and reporting 100/0 on a document
+  // veraPDF then failed. A single automated engine is one opinion; two that disagree is a signal
+  // a human can act on. Cross-engine disagreement is the cheapest accessibility evidence there is.
+  async function auditWithBothEngines(opts) {
+    const o = opts || {};
+    return withHtmlPage(false, async (page) => page.evaluate(async (html) => {
+      const p = window.__mcpPipeline;
+      const axe = await p.runAxeAudit(html);
+      let equalAccess = null;
+      let equalAccessError = null;
+      try { equalAccess = await p.runEqualAccessAudit(html); }
+      catch (e) { equalAccessError = String((e && e.message) || e).slice(0, 300); }
+      const ids = (a, key) => new Set(((a && a[key]) || []).map((v) => v.id).filter(Boolean));
+      const axeIds = ids(axe, 'violations');
+      const eaIds = new Set(((equalAccess && (equalAccess.fails || equalAccess.violations)) || []).map((v) => v.ruleId || v.id).filter(Boolean));
+      return {
+        axe: {
+          score: axe && axe.score, violations: axe && axe.totalViolations,
+          incomplete: axe && axe.totalIncomplete, ids: [...axeIds],
+        },
+        equalAccess: equalAccess ? {
+          score: equalAccess.score,
+          failViolations: equalAccess.failViolations != null ? equalAccess.failViolations : (equalAccess.fails || []).length,
+          ids: [...eaIds],
+        } : null,
+        equalAccessError,
+        onlyAxe: [...axeIds].filter((i) => !eaIds.has(i)),
+        onlyEqualAccess: [...eaIds].filter((i) => !axeIds.has(i)),
+      };
+    }, o.html), o);
+  }
+
+  // Plain text and heading-structure check. Both synchronous in the pipeline; useful on their own
+  // (a plain-text alternative is a legitimate accessible format) and as cheap sanity checks.
+  async function htmlDerivatives(opts) {
+    const o = opts || {};
+    return withHtmlPage(false, async (page) => page.evaluate((html) => {
+      const p = window.__mcpPipeline;
+      const text = p.htmlToPlainText(html) || '';
+      let headingIssue = null;
+      try { headingIssue = p.headingOutlineIssue ? p.headingOutlineIssue(html) : null; } catch (_) { headingIssue = null; }
+      const heads = (html.match(/<h([1-6])\b/gi) || []).map((h) => Number(h.slice(2)));
+      const counts = heads.reduce((acc, n) => { acc['h' + n] = (acc['h' + n] || 0) + 1; return acc; }, {});
+      // A skipped level (h2 -> h4) is a WCAG 1.3.1 problem and is cheap to detect here rather than
+      // hoping an engine flags it.
+      let skips = 0;
+      for (let i = 1; i < heads.length; i++) if (heads[i] > heads[i - 1] + 1) skips++;
+      return { text, characters: text.length, headingCounts: counts, headingSkips: skips, headingIssue };
+    }, o.html), o);
+  }
+
   async function close() {
     activeContext = null;
     if (verapdfServer) { try { verapdfServer.close(); } catch (_) {} verapdfServer = null; }
     if (browser) { try { await browser.close(); } catch (_) {} browser = null; }
   }
 
-  return { audit, remediate, validatePdfUa, cancelActiveRun, close };
+  return {
+    audit, remediate, validatePdfUa, selfTest, renderPdfToPageImages, exportAccessibleOffice,
+    fixContrast, buildConformanceReport, describeImages, transcribeMedia, translateHtml,
+    redactDocumentHtml, extractDocumentText, inspectFormFields, applyFormFields, simplifyHtml,
+    auditWithBothEngines, htmlDerivatives,
+    cancelActiveRun, close,
+  };
 }
 
 module.exports = { createDriver, classifyHttpFailure, resolveGeminiApiKey, resolveChromium, installChromium, REPO_ROOT, ASSETS_ROOT, MODULE_FILES };

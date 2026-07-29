@@ -1,0 +1,262 @@
+{
+  "factoryFunctions": 117,
+  "reachedByConnector": 28,
+  "mcpTools": 24,
+  "shippedModules": [
+    "verification_policy_module.js",
+    "doc_builder_renderer_module.js",
+    "doc_pipeline_module.js"
+  ],
+  "capabilities": [
+    {
+      "capability": "Audit a document",
+      "inPipeline": true,
+      "reachedByConnector": true,
+      "functions": [
+        "runPdfAccessibilityAudit",
+        "auditOutputAccessibility",
+        "runAxeAudit",
+        "runEqualAccessAudit"
+      ],
+      "wiredFunctions": [
+        "runPdfAccessibilityAudit",
+        "auditOutputAccessibility",
+        "runAxeAudit",
+        "runEqualAccessAudit"
+      ]
+    },
+    {
+      "capability": "Remediate to accessible HTML",
+      "inPipeline": true,
+      "reachedByConnector": true,
+      "functions": [
+        "fixAndVerifyPdf",
+        "runAutonomousRemediation",
+        "aiFixChunked",
+        "remediateSurgicallyThenAI"
+      ],
+      "wiredFunctions": [
+        "fixAndVerifyPdf",
+        "aiFixChunked"
+      ]
+    },
+    {
+      "capability": "Tagged PDF export",
+      "inPipeline": true,
+      "reachedByConnector": true,
+      "functions": [
+        "createTaggedPdf",
+        "createTypesetTaggedPdf",
+        "downloadAccessiblePdf"
+      ],
+      "wiredFunctions": [
+        "createTaggedPdf"
+      ]
+    },
+    {
+      "capability": "Batch a folder",
+      "inPipeline": true,
+      "reachedByConnector": false,
+      "functions": [
+        "runPdfBatchRemediation",
+        "downloadBatchResults"
+      ],
+      "wiredFunctions": []
+    },
+    {
+      "capability": "Conformance reports",
+      "inPipeline": true,
+      "reachedByConnector": true,
+      "functions": [
+        "generateAccessibilityReportHtml",
+        "generateAuditReportHtml"
+      ],
+      "wiredFunctions": [
+        "generateAccessibilityReportHtml"
+      ]
+    },
+    {
+      "capability": "Audio / video input (transcripts)",
+      "inPipeline": true,
+      "reachedByConnector": true,
+      "functions": [
+        "transcribeMediaToPayload"
+      ],
+      "wiredFunctions": [
+        "transcribeMediaToPayload"
+      ]
+    },
+    {
+      "capability": "XLSX / spreadsheet input",
+      "inPipeline": true,
+      "reachedByConnector": true,
+      "functions": [
+        "convertXlsxToMarkdownTables"
+      ],
+      "wiredFunctions": [
+        "convertXlsxToMarkdownTables"
+      ]
+    },
+    {
+      "capability": "Office text extraction",
+      "inPipeline": true,
+      "reachedByConnector": true,
+      "functions": [
+        "extractDocxTextDeterministic",
+        "extractPptxTextDeterministic"
+      ],
+      "wiredFunctions": [
+        "extractDocxTextDeterministic",
+        "extractPptxTextDeterministic"
+      ]
+    },
+    {
+      "capability": "Translate the accessible output",
+      "inPipeline": true,
+      "reachedByConnector": true,
+      "functions": [
+        "translateAccessibleHtml"
+      ],
+      "wiredFunctions": [
+        "translateAccessibleHtml"
+      ]
+    },
+    {
+      "capability": "Plain-language simplification",
+      "inPipeline": true,
+      "reachedByConnector": true,
+      "functions": [
+        "simplifyAccessibleHtml"
+      ],
+      "wiredFunctions": [
+        "simplifyAccessibleHtml"
+      ]
+    },
+    {
+      "capability": "PII redaction",
+      "inPipeline": true,
+      "reachedByConnector": true,
+      "functions": [
+        "redactDocument",
+        "redactDocHtml",
+        "redactionLeaks"
+      ],
+      "wiredFunctions": [
+        "redactDocument"
+      ]
+    },
+    {
+      "capability": "Fillable form fields",
+      "inPipeline": true,
+      "reachedByConnector": true,
+      "functions": [
+        "detectFormBlanks",
+        "applyFormBlanks",
+        "overlayPdfFormFields",
+        "detectPdfBlankFields",
+        "extractPdfFormFieldsDeterministic"
+      ],
+      "wiredFunctions": [
+        "detectFormBlanks",
+        "applyFormBlanks"
+      ]
+    },
+    {
+      "capability": "Image alt text / classification",
+      "inPipeline": true,
+      "reachedByConnector": true,
+      "functions": [
+        "describeAndClassifyImages",
+        "visionAltSpotCheck"
+      ],
+      "wiredFunctions": [
+        "describeAndClassifyImages"
+      ]
+    },
+    {
+      "capability": "Contrast repair",
+      "inPipeline": true,
+      "reachedByConnector": true,
+      "functions": [
+        "fixContrastViolations",
+        "fixAxeContrastViolationsTargeted",
+        "contrastFixPair",
+        "sanitizeStyleForWCAG"
+      ],
+      "wiredFunctions": [
+        "fixContrastViolations",
+        "fixAxeContrastViolationsTargeted",
+        "sanitizeStyleForWCAG"
+      ]
+    },
+    {
+      "capability": "Resource / pack HTML generation",
+      "inPipeline": true,
+      "reachedByConnector": false,
+      "functions": [
+        "generateFullPackHTML",
+        "generateResourceHTML"
+      ],
+      "wiredFunctions": []
+    },
+    {
+      "capability": "Preview + expert commands",
+      "inPipeline": true,
+      "reachedByConnector": false,
+      "functions": [
+        "getPdfPreviewHtml",
+        "updatePdfPreview",
+        "processExpertCommand"
+      ],
+      "wiredFunctions": []
+    }
+  ],
+  "outOfBundleFormats": [
+    {
+      "format": "ePub 3 export",
+      "implementedIn": [
+        "view_pdf_audit_module.js",
+        "view_export_preview_module.js",
+        "test_prep_hub_module.js"
+      ],
+      "shippedWithConnector": true,
+      "callable": false,
+      "state": "shipped but trapped in the React view"
+    },
+    {
+      "format": "DAISY export",
+      "implementedIn": [
+        "view_pdf_audit_module.js"
+      ],
+      "shippedWithConnector": true,
+      "callable": false,
+      "state": "shipped but trapped in the React view"
+    },
+    {
+      "format": "ODT export",
+      "implementedIn": [
+        "view_pdf_audit_module.js"
+      ],
+      "shippedWithConnector": true,
+      "callable": true,
+      "state": "reachable"
+    },
+    {
+      "format": "Braille / BRF",
+      "implementedIn": [
+        "view_export_preview_module.js",
+        "view_pdf_audit_module.js",
+        "view_info_modal_module.js"
+      ],
+      "shippedWithConnector": true,
+      "callable": false,
+      "state": "shipped but trapped in the React view"
+    }
+  ],
+  "gaps": [
+    "Batch a folder",
+    "Resource / pack HTML generation",
+    "Preview + expert commands"
+  ],
+  "note": "A capability that is \"in pipeline\" but not reached is a candidate MCP tool. A format not shipped with the bundle is unreachable until the bundle includes its module."
+}

@@ -27,14 +27,24 @@ let server = null;
 let driver = null;
 const calls = { total: 0, htmlAudits: 0, chunkish: 0, probes: 0 };
 
+// These stubs must emit what the pipeline's own prompts INSTRUCT a model to emit — the audit
+// replies are strict-parsed (_parseStrictInitialAudit / _requireStrictOutputAudit) and a reply
+// that misses the contract is discarded as "no usable evidence" (score -1), which the baseline
+// gate then correctly refuses to remediate from. Contract source of truth: the JSON skeletons in
+// doc_pipeline_source.jsx (initial audit ~L13962, output audit ~L15704). Required per issue:
+// ruleId (canonical enum), claimKind, count. Required per reply: confidence, pageCount,
+// hasSearchableText, hasImages, hasTables, hasForms, documentLanguage.
 const AUDIT_PDF = JSON.stringify({
   score: 55, summary: 'scripted PDF audit', confidence: 'high', documentLanguage: 'en',
-  critical: [], serious: [{ issue: 'Images without alternative text', wcag: '1.1.1', location: 'page 1' }],
+  pageCount: 1, hasSearchableText: true, hasImages: true, hasTables: false, hasForms: false,
+  critical: [],
+  serious: [{ ruleId: 'image-alt', claimKind: 'absence', issue: 'Images without alternative text', wcag: '1.1.1', count: 1, location: 'page 1' }],
   moderate: [], minor: [], passes: ['document has a title'],
 });
 const AUDIT_HTML_WEAK = JSON.stringify({
   score: 70, summary: 'scripted weak audit',
-  issues: [{ issue: 'Heading structure is unclear', wcag: '1.3.1' }], passes: ['lang present'],
+  issues: [{ ruleId: 'heading-order', claimKind: 'structure', issue: 'Heading structure is unclear', wcag: '1.3.1', count: 1 }],
+  passes: ['lang present'],
 });
 
 const promptHeads = [];
@@ -127,4 +137,23 @@ describe('driver behavioral e2e (scripted loopback Gemini)', () => {
     expect(calls.htmlAudits).toBeGreaterThanOrEqual(2);
     expect(calls.total).toBeGreaterThanOrEqual(7); // vision audit + extraction + audits + fixes
   }, 360000);
+
+  // The connector ships its own runtime canary (`remediation_selftest`), whose scripted replies
+  // must satisfy the same strict-parse contract this file's fixtures do. Two hand-maintained
+  // encodings of one contract is exactly the drift that produced the 2026-07-28 bugs, so CI runs
+  // the REAL canary rather than a second copy of it: if the pipeline hardens again, this goes red
+  // here before a user ever sees it fail on their machine. It brings its own loopback model and
+  // generated PDF, so it is independent of the scripted server above.
+  it('the shipped self-test canary is green against this pipeline build', async () => {
+    const report = await driver.selfTest({});
+    expect(report.error).toBeUndefined();
+    expect(report.stage).toBe('complete');
+    expect(report.ok).toBe(true);
+    expect(report.checks).toEqual({
+      browserLaunched: true, modulesBooted: true,
+      auditAccepted: true, remediationStarted: true, contentPreserved: true,
+    });
+    // A canary that never calls the model would pass while proving nothing.
+    expect(report.modelCalls).toBeGreaterThan(0);
+  }, 180000);
 });
