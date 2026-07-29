@@ -1033,7 +1033,12 @@ if (!window._galaxyHasLoadedOnce) {
             // no point pulling a multi-megabyte 3-D library over what may be a
             // school connection purely to watch the renderer throw — go
             // straight to the flat view and say why.
-            if (!galaxyWebglStatus().supported) {
+            //
+            // Only when THREE is not already loaded: the saving here is the
+            // DOWNLOAD, so if the library is already in the page there is
+            // nothing to skip, and short-circuiting anyway would refuse to
+            // build a scene in any environment that supplies its own THREE.
+            if (!window.THREE && !galaxyWebglStatus().supported) {
               var noGlRuntime = galaxyRuntimeRef.current;
               if (noGlRuntime && noGlRuntime.reportInitFailure) noGlRuntime.reportInitFailure('noWebgl');
               return;
@@ -2537,6 +2542,16 @@ if (!window._galaxyHasLoadedOnce) {
                 var rimSprite = new THREE.Sprite(rimMaterial); rimSprite.position.y = rimIndex ? 0.045 : -0.038; rimSprite.scale.set(rimIndex ? 1.82 : 1.68, 0.045, 1); rimSprite.renderOrder = 8; edgeOnDustSilhouette.add(rimSprite); edgeOnRimSprites.push(rimSprite);
               }
             })();
+            // These two were declared ~80 lines BELOW the loop that fills them.
+            // `var` hoists the name but not the assignment, so the loop was
+            // calling `.add()` on undefined and the whole scene build threw —
+            // taking barred spiral, grand design and irregular down with it.
+            // Only elliptical survived, and only because the early return just
+            // below it skips the loop entirely, which is what made this look
+            // like a device problem rather than an ordering one.
+            var dustBacklightGroup = new THREE.Group(); dustBacklightGroup.name = 'dustLaneBacklightingShafts'; dustGroup.add(dustBacklightGroup);
+            var dustBacklightSprites = [], dustBacklightMode = 1, dustBacklightAngleFactor = 0;
+
             // Tapered, low-opacity shafts expose backlit dust only from oblique
             // viewpoints, where real lanes carve the strongest depth cues.
             (function () {
@@ -2623,8 +2638,8 @@ if (!window._galaxyHasLoadedOnce) {
             var foregroundDepthGroup = new THREE.Group(); foregroundDepthGroup.name = 'foregroundParallaxDust';
             var foregroundStarGroup = new THREE.Group(); foregroundStarGroup.name = 'foregroundStellarParallax'; foregroundDepthGroup.add(foregroundStarGroup);
             var foregroundParallaxStars = [], foregroundStarMode = 1;
-            var dustBacklightGroup = new THREE.Group(); dustBacklightGroup.name = 'dustLaneBacklightingShafts'; dustGroup.add(dustBacklightGroup);
-            var dustBacklightSprites = [], dustBacklightMode = 1, dustBacklightAngleFactor = 0;
+            // (dustBacklightGroup / dustBacklightSprites are declared above,
+            // before the loop that populates them.)
             dustGroup.add(molecularCloudGroup); dustGroup.add(foregroundDepthGroup); gasGroup.add(protostarKnotGroup);
             var shockFrontDustGroup = new THREE.Group(); shockFrontDustGroup.name = 'spiralDensityWaveShockFronts'; dustGroup.add(shockFrontDustGroup);
             var shockFrontFormationGroup = new THREE.Group(); shockFrontFormationGroup.name = 'downstreamStarFormationOffsets'; gasGroup.add(shockFrontFormationGroup);
@@ -5572,7 +5587,7 @@ if (!window._galaxyHasLoadedOnce) {
                           onClick: function () { patchGalaxy({ webglError: false, webglErrorReason: null }); },
                           className: "min-h-[44px] px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-md transition-colors text-xs"
                         }, __alloT('stem.galaxy.retry_3d_mode', 'Retry 3D Mode')),
-                        probe.renderer ? React.createElement("p", { className: "mt-2 text-[10px] text-slate-400" },
+                        probe.renderer ? React.createElement("p", { className: "mt-2 text-[11px] text-slate-300" },
                           __alloT('stem.galaxy.fallback_gpu_label', 'Graphics reported by this browser:') + ' ' + probe.renderer) : null
                       )
                     );

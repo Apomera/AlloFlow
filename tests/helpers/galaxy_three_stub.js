@@ -99,6 +99,34 @@ function vec(x = 0, y = 0, z = 0) {
     add() { return v; },
     length() { return Math.hypot(v.x, v.y, v.z); },
     clone() { return vec(v.x, v.y, v.z); },
+    // Filled out so a missing vector method cannot masquerade as a scene bug.
+    // Every one of these was reached by the tool and threw, and because the
+    // throw happened inside initGalaxy's catch it surfaced as the SAME
+    // "3-D unavailable" card a real device limitation would produce.
+    setScalar(s) { v.x = s; v.y = s; v.z = s; return v; },
+    addScalar(s) { v.x += s; v.y += s; v.z += s; return v; },
+    setX(x) { v.x = x; return v; },
+    setY(y) { v.y = y; return v; },
+    setZ(z) { v.z = z; return v; },
+    sub() { return v; },
+    subVectors() { return v; },
+    addVectors() { return v; },
+    addScaledVector() { return v; },
+    applyQuaternion() { return v; },
+    applyMatrix4() { return v; },
+    project() { return v; },
+    unproject() { return v; },
+    cross() { return v; },
+    crossVectors() { return v; },
+    dot() { return 0; },
+    distanceTo(o) { return Math.hypot(v.x - o.x, v.y - o.y, v.z - o.z); },
+    lengthSq() { return v.x * v.x + v.y * v.y + v.z * v.z; },
+    lerp() { return v; },
+    lerpVectors() { return v; },
+    negate() { v.x = -v.x; v.y = -v.y; v.z = -v.z; return v; },
+    divideScalar() { return v; },
+    setLength() { return v; },
+    setFromSpherical() { return v; },
   };
   return v;
 }
@@ -128,12 +156,35 @@ function object3D(kind) {
   return o;
 }
 
+// A Color with the methods the tool actually calls. The previous stub exposed
+// only r/g/b/setHSL, so `mat.color.clone()` threw — and because every scene
+// build died on it, the suite could not see the real ordering bug underneath.
+function colorLike(input) {
+  const c = { r: 1, g: 1, b: 1, isColor: true };
+  c.set = function (v) {
+    if (typeof v === 'number') { c.r = ((v >> 16) & 255) / 255; c.g = ((v >> 8) & 255) / 255; c.b = (v & 255) / 255; }
+    else if (v && typeof v === 'object') { c.r = v.r || 0; c.g = v.g || 0; c.b = v.b || 0; }
+    return c;
+  };
+  c.setHex = function (v) { return c.set(v); };
+  c.setRGB = function (r, g, b) { c.r = r; c.g = g; c.b = b; return c; };
+  c.setHSL = function (h, s, l) { c.r = h; c.g = s; c.b = l; return c; };
+  c.getHex = function () { return (Math.round(c.r * 255) << 16) ^ (Math.round(c.g * 255) << 8) ^ Math.round(c.b * 255); };
+  c.copy = function (o) { return c.set(o); };
+  c.clone = function () { return colorLike({ r: c.r, g: c.g, b: c.b }); };
+  c.lerp = function () { return c; };
+  c.multiplyScalar = function (s) { c.r *= s; c.g *= s; c.b *= s; return c; };
+  c.offsetHSL = function () { return c; };
+  c.convertSRGBToLinear = function () { return c; };
+  if (input !== undefined && input !== null) c.set(input);
+  return c;
+}
+
 function material(params) {
-  return Object.assign({
+  const m = Object.assign({
     __kind: 'Material',
     opacity: 1,
     transparent: false,
-    color: null,
     map: null,
     userData: {},
     uniforms: undefined,
@@ -141,6 +192,11 @@ function material(params) {
     dispose() {},
     needsUpdate: false,
   }, params || {});
+  // Real materials always carry a Color, whether or not one was passed, and a
+  // numeric `color: 0x93c5fd` argument is converted rather than kept as a
+  // number. Mirroring that is what lets `.color.clone()` / `.color.set()` work.
+  m.color = colorLike(m.color);
+  return m;
 }
 
 function geometry(kind) {
@@ -186,11 +242,7 @@ export function installThreeStub() {
     },
     Vector2: function (x, y) { return vec(x, y, 0); },
     Vector3: function (x, y, z) { return vec(x, y, z); },
-    Color: function (input) {
-      const c = { r: 1, g: 1, b: 1, setHSL(h, s, l) { c.r = h; c.g = s; c.b = l; return c; } };
-      if (typeof input === 'number') { c.r = 0.5; c.g = 0.5; c.b = 0.5; }
-      return c;
-    },
+    Color: function (input) { return colorLike(input); },
     BufferAttribute: function (array, itemSize) {
       return { __kind: 'BufferAttribute', array, itemSize, needsUpdate: false };
     },
@@ -212,6 +264,12 @@ export function installThreeStub() {
     Points: meshLike('Points'),
     Mesh: meshLike('Mesh'),
     Line: meshLike('Line'),
+    // The tool builds magnetic filaments, supernova ejecta webs and the radio
+    // polarization field out of LineSegments. Omitting it here made every
+    // scene-build test die on "not a constructor" — so the suite that exists to
+    // catch scene-build regressions was itself reporting a stub gap, and could
+    // not see a real ordering bug sitting underneath it.
+    LineSegments: meshLike('LineSegments'),
     Sprite: function (mat) { const s = object3D('Sprite'); s.material = mat || material(); return s; },
     PointLight: function () { const l = object3D('PointLight'); l.intensity = 0; return l; },
     GridHelper: function () { const g = object3D('GridHelper'); g.material = material({ opacity: 1 }); return g; },

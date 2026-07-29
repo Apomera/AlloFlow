@@ -13,8 +13,28 @@ describe('galaxy canvas lifecycle', () => {
   let host;
   let root;
 
+  // These tests are about the three.js LOAD lifecycle — that it is fetched once
+  // and re-run only when the morphology or quality changes. That premise needs
+  // a device which can actually run 3-D. jsdom has no WebGL, and the tool now
+  // (correctly) refuses to download a multi-megabyte library on a device that
+  // cannot use it, so without this the whole suite would be asserting against
+  // the no-WebGL fallback path instead.
+  let restoreGetContext = null;
+  function pretendWebglWorks() {
+    const proto = window.HTMLCanvasElement.prototype;
+    const original = proto.getContext;
+    proto.getContext = function (kind) {
+      if (typeof kind === 'string' && /webgl/i.test(kind)) {
+        return { getExtension() { return null; }, getParameter() { return 'stub-renderer'; } };
+      }
+      return original ? original.apply(this, arguments) : null;
+    };
+    restoreGetContext = () => { proto.getContext = original; };
+  }
+
   beforeEach(() => {
     resetStemLab();
+    pretendWebglWorks();
     globalThis.IS_REACT_ACT_ENVIRONMENT = true;
     window._galaxyHasLoadedOnce = true;
     delete window.THREE;
@@ -26,6 +46,7 @@ describe('galaxy canvas lifecycle', () => {
   });
 
   afterEach(async () => {
+    if (restoreGetContext) { restoreGetContext(); restoreGetContext = null; }
     if (root) await React.act(async () => root.unmount());
     host.remove();
     root = null;
