@@ -92,10 +92,11 @@ describe('remediation MCP: protocol + tool registry', () => {
     child.stdin.write(JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' }) + '\n');
   });
 
-  it('lists exactly the twenty-six tools, underscore-named, each with title + annotations', async () => {
+  it('lists exactly the twenty-seven tools, underscore-named, each with title + annotations', async () => {
     const { tools } = (await request('tools/list', {})).result;
     expect(tools.map((t) => t.name).sort()).toEqual([
-      'apply_form_fields', 'audit_two_engines', 'check_document_structure', 'describe_images', 'detect_form_fields', 'export_accessible_office',
+      'apply_form_fields', 'audit_two_engines', 'check_document_structure', 'describe_images', 'detect_form_fields',
+      'export_accessible_office', 'export_alt_format',
       'extract_document_text', 'fix_contrast', 'generate_conformance_report',
       'pdf_audit', 'pdf_batch_audit_start', 'pdf_batch_remediate_start', 'pdf_remediate',
       'pdf_remediate_from_scoreboard_start', 'pdf_remediate_start',

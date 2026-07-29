@@ -746,7 +746,7 @@ const TOOLS = [
   {
     name: 'export_accessible_office',
     title: 'Export accessible HTML to Word or ODT',
-    description: 'Convert an accessible HTML file (the -accessible.html a remediation produced) into an accessible Word (.docx) or OpenDocument (.odt) file, preserving heading structure, lists, and tables. Deterministic packaging: needs NO Gemini key and spends no quota, though it does fetch React and JSZip from public CDNs. Use when someone needs the remediated document in an editable Office format rather than a PDF. Note: ePub 3, DAISY and Braille exports exist in the AlloFlow app but are NOT available through this connector.',
+    description: 'Convert an accessible HTML file (the -accessible.html a remediation produced) into an accessible Word (.docx) or OpenDocument (.odt) file, preserving heading structure, lists, and tables. Deterministic packaging: needs NO Gemini key and spends no quota, though it does fetch React and JSZip from public CDNs. Use when someone needs the remediated document in an editable Office format rather than a PDF. For ePub 3, DAISY 3 or Braille, use export_alt_format instead.',
     inputSchema: {
       type: 'object', required: ['file_path', 'format'],
       properties: {
@@ -758,6 +758,22 @@ const TOOLS = [
       additionalProperties: false,
     },
     annotations: { title: 'Export accessible HTML to Word or ODT', readOnlyHint: false, destructiveHint: false, openWorldHint: true },
+  },
+  {
+    name: 'export_alt_format',
+    title: 'Export to ePub 3, DAISY 3, or Braille (no API key)',
+    description: "Convert an accessible HTML file into an ePub 3 ebook, a DAISY 3 full-text talking-book package, or an uncontracted (Grade 1) Braille BRF file for embossers and refreshable displays. Deterministic restructuring: needs NO Gemini key, spends no quota, and packages entirely offline (unlike export_accessible_office it does not need JSZip from a CDN, though React is still fetched). Use when a student needs an ebook, a DAISY reader, or hard-copy braille rather than a PDF. ePub output is checked by a built-in structural self-check whose findings are returned as `structuralErrors` — that is NOT epubcheck, so a book reported valid here can still be worth running through epubcheck. Braille is Grade 1 only (contracted UEB needs the liblouis plugin, which is in the app, not here) and reports how many characters had no braille equivalent and were dropped.",
+    inputSchema: {
+      type: 'object', required: ['file_path', 'format'],
+      properties: {
+        file_path: { type: 'string', description: 'Absolute path to a local accessible .html file' },
+        format: { type: 'string', enum: ['epub', 'daisy', 'brf'], description: "'epub' = ePub 3 ebook; 'daisy' = DAISY 3 talking-book zip (text only, the reader supplies speech/braille/large print); 'brf' = ASCII Braille ready to emboss" },
+        output_dir: { type: 'string', description: 'Directory for the output file (default: alongside the input)' },
+        title: { type: 'string', description: 'Document title embedded in the package metadata (default: the input file name)' },
+      },
+      additionalProperties: false,
+    },
+    annotations: { title: 'Export to ePub 3, DAISY 3, or Braille', readOnlyHint: false, destructiveHint: false, openWorldHint: true },
   },
   {
     name: 'fix_contrast',
@@ -1192,6 +1208,16 @@ const OUTPUT_SCHEMAS = {
     input: S_STR, output: S_STR, format: { type: 'string', enum: ['docx', 'odt'] },
     bytes: S_NUM, counts: {}, note: S_STR,
   }, ['input', 'output', 'format']),
+  export_alt_format: obj({
+    input: S_STR, output: S_STR, format: { type: 'string', enum: ['epub', 'daisy', 'brf'] },
+    bytes: S_NUM, modelFree: S_BOOL,
+    // ePub / DAISY only
+    entries: { type: 'array' }, language: S_STR, identifier: S_STR, navEntries: S_NUM,
+    selfChecked: S_BOOL, valid: S_BOOL, structuralErrors: { type: 'array' },
+    // BRF only
+    grade: S_NUM, code: S_STR, droppedCharacters: S_NUM, sourceCharacters: S_NUM,
+    warnings: { type: 'array' }, note: S_STR,
+  }, ['input', 'output', 'format']),
   pdf_audit: S_AUDIT,
   pdf_validate_ua: obj({
     input: S_STR, standard: S_STR, validator: S_STR,
@@ -1293,6 +1319,45 @@ const TOOL_HANDLERS = {
         counts: out.counts || undefined,
         note: (out.message || '') + ' Structure comes from the HTML, so verify the source HTML is the remediated one, not the original.',
       };
+    });
+  },
+
+  async export_alt_format(args, ctx) {
+    assertAllowedKeys(args, ['file_path', 'format', 'output_dir', 'title'], 'arguments');
+    const htmlPath = _requireFileOfType(args, /\.html?$/i, '.html');
+    const format = String(args.format || '').toLowerCase();
+    if (!['epub', 'daisy', 'brf'].includes(format)) throw invalidParams("arguments.format must be 'epub', 'daisy' or 'brf'");
+    if (args.title !== undefined && (typeof args.title !== 'string' || !args.title.trim())) throw invalidParams('arguments.title must be a non-empty string');
+    const outDir = resolveOutputDir(args, htmlPath);
+    const title = args.title || path.basename(htmlPath).replace(/\.html?$/i, '');
+    return withSingleFlight('export_alt_format', async () => {
+      const out = await getDriver().exportAltFormat({
+        html: fs.readFileSync(htmlPath, 'utf8'), title, format, onLog: ctx && ctx.onProgress,
+      });
+      const dest = claimOutputPath(outDir, out.fileName);
+      fs.writeFileSync(dest, Buffer.from(out.b64, 'base64'));
+      const res = {
+        input: htmlPath, output: dest, format: out.format,
+        bytes: fs.statSync(dest).size, modelFree: true,
+        warnings: out.warnings || [],
+      };
+      if (format === 'brf') {
+        Object.assign(res, {
+          grade: out.grade, code: out.code,
+          droppedCharacters: out.droppedCharacters, sourceCharacters: out.sourceCharacters,
+          note: 'Uncontracted (Grade 1) braille. Most experienced braille readers expect contracted UEB (Grade 2), which this connector cannot produce — say so rather than implying this is the finished article. Have a certified transcriber review anything going to a student.',
+        });
+      } else {
+        Object.assign(res, {
+          entries: out.entries, language: out.language, identifier: out.identifier,
+          navEntries: out.navEntries, selfChecked: out.selfChecked,
+          valid: out.valid, structuralErrors: out.structuralErrors,
+          note: format === 'epub'
+            ? 'Structure comes from the source HTML, so verify it is the remediated file. The self-check is structural only and is not epubcheck; a clean result is not a conformance claim.'
+            : 'DAISY 3 full text, no recorded audio. A DAISY reader supplies speech, braille or large print from this text. NOTHING validated this package — there is no DAISY validator in this connector, so absence of errors is not evidence of correctness; run it through a DAISY reader or ZedVal before relying on it.',
+        });
+      }
+      return res;
     });
   },
 

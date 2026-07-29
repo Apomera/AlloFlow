@@ -40,7 +40,9 @@ const STAGING = path.join(OUT_DIR, 'staging');
 const BUNDLE = path.join(OUT_DIR, 'alloflow-remediation.mcpb');
 const LEAN = process.argv.includes('--lean');
 
-const SERVER_FILES = ['alloflow-remediation-mcp-stdio.cjs', 'remediation_headless_driver.cjs', 'README_REMEDIATION.md'];
+// zip_writer.cjs is required by the driver at load time — omitting it makes the packaged server
+// fail to start, not merely lose a feature.
+const SERVER_FILES = ['alloflow-remediation-mcp-stdio.cjs', 'remediation_headless_driver.cjs', 'zip_writer.cjs', 'README_REMEDIATION.md'];
 // view_pdf_audit_module.js carries the accessible Office (DOCX/ODT) export. It is a VIEW module
 // that needs React at load time, so the driver loads it ON DEMAND with React from a CDN rather
 // than at pipeline boot — but it has to be IN the bundle or export_accessible_office cannot work
@@ -72,6 +74,7 @@ function buildManifest() {
     { name: 'pdf_batch_remediate_start', description: 'Background job remediating every PDF in a folder, continuing past per-file failures.' },
     { name: 'pdf_remediate_from_scoreboard_start', description: 'Remediate only the documents a triage scoreboard flagged (default: the needs-work band).' },
     { name: 'export_accessible_office', description: 'Convert accessible HTML into an accessible Word (.docx) or OpenDocument (.odt) file. No API key.' },
+    { name: 'export_alt_format', description: 'Convert accessible HTML into an ePub 3 ebook, a DAISY 3 talking-book package, or an uncontracted Braille BRF file. No API key, packages offline.' },
     { name: 'fix_contrast', description: 'Deterministic WCAG colour-contrast repair on accessible HTML. No API key.' },
     { name: 'generate_conformance_report', description: "AlloFlow's own Accessibility Conformance Report as HTML, from an axe audit and an optional veraPDF verdict. No API key." },
     { name: 'transcribe_media', description: 'Transcribe local audio/video into an accessible transcript (speech, visual, dual or synthesis). Needs an API key.' },

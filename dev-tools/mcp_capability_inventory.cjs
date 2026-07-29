@@ -51,11 +51,14 @@ const CAPABILITY_MAP = [
 
 // Formats implemented OUTSIDE the three modules the bundle ships. Grep-verified per format so the
 // claim "the connector cannot do this" is evidence, not assumption.
+// The third column, `builder`, names the key on window.AlloModules.AltFormatExports that makes the
+// format callable headlessly. Null means the format has no published builder — either it does not
+// need one (ODT goes out through AccessibleOfficeExport) or nothing has extracted it yet.
 const OUT_OF_BUNDLE_FORMATS = [
-  ['ePub 3 export', /epub/i],
-  ['DAISY export', /daisy/i],
-  ['ODT export', /\bodt\b/i],
-  ['Braille / BRF', /\bbrf\b|braille/i],
+  ['ePub 3 export', /epub/i, 'epub'],
+  ['DAISY export', /daisy/i, 'daisy'],
+  ['ODT export', /\bodt\b/i, null],
+  ['Braille / BRF', /\bbrf\b|braille/i, 'braille'],
 ];
 
 const argv = process.argv.slice(2);
@@ -112,11 +115,26 @@ const BUNDLE_ASSETS = (() => {
   return m ? [...m[1].matchAll(/'([^']+)'/g)].map((x) => x[1]) : [];
 })();
 
-// Shipping a module is necessary but not sufficient. ePub/DAISY/Braille generation lives INSIDE
-// the PdfAuditView React component as download handlers, so the code is present in the bundle and
-// still not callable without rendering the view. That is a third state, and collapsing it into
-// "shipped" would overstate what the connector can do.
-const REACT_TRAPPED = /^(ePub 3 export|DAISY export|Braille \/ BRF)$/;
+// Shipping a module is necessary but not sufficient. A format whose generation lives INSIDE the
+// PdfAuditView React component as a download handler is present in the bundle and still not
+// callable without rendering the view — a third state, and collapsing it into "shipped" would
+// overstate what the connector can do.
+//
+// ePub 3, DAISY and Braille WERE in that state. Their generation was extracted to module scope on
+// 2026-07-29 and published as window.AlloModules.AltFormatExports, so they are now reachable
+// through export_alt_format. This regex is kept, empty of matches by design: it is the mechanism
+// that catches the next format that gets written into a handler, and deleting it would remove the
+// only thing that distinguishes "shipped" from "callable".
+const REACT_TRAPPED = /^(?!)/;
+
+// A format is only genuinely reachable if the builder is PUBLISHED, not merely present. This is
+// what the earlier inventory could not see: it read the bundle list and concluded a format was
+// available while the code sat unreachable inside a component.
+const PUBLISHED_BUILDERS = (() => {
+  const src = fs.readFileSync(path.join(REPO, '_build_view_pdf_audit_module.js'), 'utf8');
+  const m = src.match(/window\.AlloModules\.AltFormatExports\s*=\s*\{([\s\S]*?)\}/);
+  return m ? [...m[1].matchAll(/^\s*(\w+)\s*:/gm)].map((x) => x[1]) : [];
+})();
 
 function moduleHomeFor(pattern) {
   const candidates = fs.readdirSync(REPO).filter((f) => /_module\.js$/.test(f));
@@ -147,16 +165,22 @@ function moduleHomeFor(pattern) {
     };
   });
 
-  const formats = OUT_OF_BUNDLE_FORMATS.map(([label, re]) => {
+  const formats = OUT_OF_BUNDLE_FORMATS.map(([label, re, builder]) => {
     const homes = moduleHomeFor(re);
     const shipped = homes.some((h) => h.shipped);
     const trapped = REACT_TRAPPED.test(label);
+    // A named builder that is not published is the trapped case wearing a disguise: the code
+    // exists, the module ships, and calling it still fails. Treat it as unreachable.
+    const published = builder ? PUBLISHED_BUILDERS.includes(builder) : true;
     return {
       format: label,
       implementedIn: homes.map((h) => h.module),
       shippedWithConnector: shipped,
-      callable: shipped && !trapped,
-      state: !shipped ? 'not shipped' : (trapped ? 'shipped but trapped in the React view' : 'reachable'),
+      publishedBuilder: builder || null,
+      callable: shipped && !trapped && published,
+      state: !shipped ? 'not shipped'
+        : (trapped ? 'shipped but trapped in the React view'
+          : (!published ? 'shipped, builder exists but is not published on window' : 'reachable')),
     };
   });
 
@@ -177,8 +201,8 @@ function moduleHomeFor(pattern) {
 
   console.log('\n── Alternative export formats ──');
   for (const f of formats) {
-    const tag = f.callable ? '[REACHABLE]'
-      : (f.shippedWithConnector ? '[shipped, but generation is inside the React view — needs extracting at source]'
+    const tag = f.callable ? '[REACHABLE' + (f.publishedBuilder ? ' via AltFormatExports.' + f.publishedBuilder : '') + ']'
+      : (f.shippedWithConnector ? '[shipped, but the generator is not callable — extract/publish it at source]'
         : '[NOT SHIPPED — unreachable; adding a tool would not help]');
     console.log('  ' + pad(f.format, 18) + tag);
   }

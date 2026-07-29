@@ -85,6 +85,17 @@ ${compiled}
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.PdfAuditView = (typeof PdfAuditView !== 'undefined') ? PdfAuditView : null;
 window.AlloModules.AccessibleOfficeExport = { build: _buildAccessibleOfficeExport };
+// Alternative-format builders (2026-07-29). These were reachable only by clicking a
+// button inside PdfAuditView, which put ePub / DAISY / braille out of reach of the MCP
+// connector. Each takes an HTML string and returns a { path: contents } map; the caller
+// owns zipping. Publishing them here is what makes the formats callable headlessly.
+window.AlloModules.AltFormatExports = {
+  epub: _buildEpubPackageFiles,
+  daisy: _buildDaisyPackageFiles,
+  braille: _buildBrailleBrf,
+  plainText: _altFmtHtmlToPlainText,
+  validateEpub: validateEpubStructure,
+};
 window.AlloModules.ViewPdfAuditModule = true;
 console.log('[CDN] ViewPdfAuditModule loaded — PdfAuditView registered');
 })();

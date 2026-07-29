@@ -30,6 +30,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');       // self-test scratch dir
 const http = require('http');   // self-test loopback model (127.0.0.1, no listener beyond the run)
+const { zipFileMap } = require('./zip_writer.cjs'); // ePub/DAISY packaging, no CDN, works offline
 
 const REPO_ROOT = path.resolve(__dirname, '..', '..');
 const MODULE_FILES = [
@@ -952,10 +953,10 @@ function createDriver(options) {
   // Loaded on demand rather than for every run, since most runs never export Office and the
   // module is ~1.4 MB.
   //
-  // NOT fixed by this: ePub 3, DAISY and Braille. Their generation lives INSIDE the PdfAuditView
-  // component as download handlers (calling addToast, touching URL.createObjectURL), so they are
-  // not callable without rendering the view. Making those reachable needs the generation logic
-  // extracted from the handlers in view_pdf_audit_source.jsx — a source change, not a bundling one.
+  // ePub 3, DAISY and Braille used to be excluded here for the same reason plus one more: their
+  // generation lived INSIDE the PdfAuditView component as download handlers. That was extracted to
+  // module scope on 2026-07-29 (view_pdf_audit_source.jsx, `_build*PackageFiles`), and the builders
+  // are published as window.AlloModules.AltFormatExports. See exportAltFormat below.
   const REACT_CDN = 'https://unpkg.com/react@18.3.1/umd/react.production.min.js';
   const REACT_DOM_CDN = 'https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js';
   const JSZIP_CDN = 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js';
@@ -999,6 +1000,109 @@ function createDriver(options) {
       if (pageErrors.length) rlog('office export page errors: ' + pageErrors.slice(0, 2).join(' | '));
       rlog('office export: ' + out.fileName + ' (' + Math.round(out.b64.length * 0.75 / 1024) + ' KB)');
       return out;
+    } finally {
+      try { await context.close(); } catch (_) {}
+    }
+  }
+
+  // ── Alternative accessible formats (ePub 3 / DAISY 3 / BRF) ─────────────────
+  // All three are MODEL-FREE: they restructure HTML that has already been remediated, so no key.
+  //
+  // The view module is loaded for the same reason the Office export loads it — the builders live
+  // there — but the packaging is done in Node with desktop/mcp/zip_writer.cjs rather than by
+  // pulling JSZip off a CDN. These are the formats a user reaches for when they have no network,
+  // and a CDN dependency would make an offline install quietly unable to produce an ebook.
+  const ALT_FORMATS = { epub: 'epub', daisy: 'daisy', brf: 'brf', braille: 'brf' };
+
+  async function loadViewModulePage(context, rlog, what) {
+    const modulePath = path.join(ASSETS_ROOT, EXPORT_MODULE);
+    if (!fs.existsSync(modulePath)) {
+      throw new Error(EXPORT_MODULE + ' is missing from ' + ASSETS_ROOT + ' — this connector build cannot produce ' + what + '.');
+    }
+    const page = await context.newPage();
+    const pageErrors = [];
+    page.on('pageerror', (e) => pageErrors.push(String(e).slice(0, 200)));
+    await page.goto('about:blank');
+    rlog(what + ': loading React + the view module');
+    // React is not optional: the module destructures hooks at top level and throws without it.
+    await page.addScriptTag({ url: REACT_CDN });
+    await page.addScriptTag({ url: REACT_DOM_CDN });
+    await page.waitForFunction(() => !!(window.React && window.ReactDOM), null, { timeout: 30000 });
+    await page.addScriptTag({ path: modulePath });
+    await page.waitForFunction(
+      () => !!(window.AlloModules && window.AlloModules.AltFormatExports && typeof window.AlloModules.AltFormatExports.epub === 'function'),
+      null, { timeout: 30000 }
+    );
+    return { page, pageErrors };
+  }
+
+  async function exportAltFormat(opts) {
+    const o = opts || {};
+    const rlog = typeof o.onLog === 'function' ? o.onLog : log;
+    const format = ALT_FORMATS[String(o.format || '').toLowerCase()];
+    if (!format) throw new Error("format must be one of: epub, daisy, brf");
+    if (!o.html || typeof o.html !== 'string') throw new Error('html is required');
+    const title = String(o.title || 'document').replace(/\.\w+$/, '') || 'document';
+
+    const b = await getBrowser();
+    const context = await b.newContext();
+    try {
+      const { page, pageErrors } = await loadViewModulePage(context, rlog, format);
+      const built = await page.evaluate(({ html, title: ttl, format: fmt }) => {
+        const A = window.AlloModules.AltFormatExports;
+        if (fmt === 'brf') {
+          const r = A.braille(html);
+          return { kind: 'text', brf: r.brf, dropped: r.dropped, grade: r.grade, code: r.code, chars: r.text.length };
+        }
+        const pkg = fmt === 'epub' ? A.epub(html, { title: ttl }) : A.daisy(html, { title: ttl });
+        return {
+          kind: 'package', files: pkg.files, storeFirst: pkg.storeFirst || null,
+          lang: pkg.lang, uid: pkg.uid,
+          headings: typeof pkg.headings === 'number' ? pkg.headings : null,
+          validation: pkg.validation || null,
+        };
+      }, { html: o.html, title, format });
+      if (pageErrors.length) rlog(format + ' page errors: ' + pageErrors.slice(0, 2).join(' | '));
+
+      if (built.kind === 'text') {
+        // A .brf is emitted as-is. Not zipped, not re-encoded: an embosser reads the raw ASCII
+        // bytes, and any transcoding on the way out is the bug this format is prone to.
+        const buf = Buffer.from(built.brf, 'ascii');
+        rlog('brf: ' + buf.length + ' bytes, grade ' + built.grade + ', ' + built.dropped + ' character(s) dropped');
+        return {
+          format: 'brf', fileName: title + '.brf', b64: buf.toString('base64'), bytes: buf.length,
+          grade: built.grade, code: built.code, droppedCharacters: built.dropped,
+          sourceCharacters: built.chars, modelFree: true,
+          // Surfaced rather than swallowed: characters with no Grade-1 equivalent are gone from
+          // the braille, and a reader has no way to know unless the caller is told.
+          warnings: built.dropped > 0
+            ? [built.dropped + ' character(s) had no uncontracted-braille equivalent and were dropped.']
+            : [],
+        };
+      }
+
+      const errs = ((built.validation && built.validation.issues) || []).filter((i) => i.severity === 'error');
+      const buf = zipFileMap(built.files, built.storeFirst || undefined);
+      rlog(format + ': ' + Object.keys(built.files).length + ' entries, ' + buf.length + ' bytes'
+        + (errs.length ? ', ' + errs.length + ' structural error(s)' : ''));
+      return {
+        format, fileName: title + (format === 'epub' ? '.epub' : '-daisy.zip'),
+        b64: buf.toString('base64'), bytes: buf.length,
+        entries: Object.keys(built.files), language: built.lang, identifier: built.uid,
+        navEntries: typeof built.headings === 'number' ? built.headings : undefined, modelFree: true,
+        // The EPUB self-check runs inside the builder so no caller can skip it. Reported as
+        // structuralErrors rather than folded into a boolean: an invalid EPUB opens nowhere, and
+        // "downloaded successfully" is how that used to reach a user unnoticed.
+        structuralErrors: errs,
+        // `valid` is ONLY meaningful where something validated. There is no DAISY validator here,
+        // and reporting valid:true off an empty error list would be a clean bill of health nobody
+        // issued — the same failure as calling a document compliant because axe was quiet.
+        selfChecked: format === 'epub',
+        valid: format === 'epub' ? errs.length === 0 : undefined,
+        warnings: errs.length
+          ? [errs.length + ' structural issue(s) found by the built-in EPUB self-check; this file may not open in all readers. Not a substitute for epubcheck.']
+          : [],
+      };
     } finally {
       try { await context.close(); } catch (_) {}
     }
@@ -1291,7 +1395,7 @@ function createDriver(options) {
     audit, remediate, validatePdfUa, selfTest, renderPdfToPageImages, exportAccessibleOffice,
     fixContrast, buildConformanceReport, describeImages, transcribeMedia, translateHtml,
     redactDocumentHtml, extractDocumentText, inspectFormFields, applyFormFields, simplifyHtml,
-    auditWithBothEngines, htmlDerivatives,
+    auditWithBothEngines, htmlDerivatives, exportAltFormat,
     cancelActiveRun, close,
   };
 }

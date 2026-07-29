@@ -1741,6 +1741,243 @@ function validateEpubStructure(files) {
   return { valid: issues.filter((i) => i.severity === 'error').length === 0, issues };
 }
 
+// ── Alternative-format package builders (2026-07-29) ────────────────────────
+// ePub 3, DAISY 3 and BRF generation used to live inside PdfAuditView as download
+// handlers, so the only way to produce those formats was to render the React tree.
+// That put them out of reach of the MCP connector — the surface agents use to drive
+// this pipeline — even though the module ships with the bundle.
+//
+// The generation itself was never React-dependent, only its packaging was. These take
+// an HTML string and return a plain { path: contents } map. The handlers below zip and
+// download that map; the connector zips it in Node. Returning a map rather than a Blob
+// is deliberate: it is what validateEpubStructure already consumes, it is inspectable in
+// a test without a browser, and neither caller owns the format rules any more.
+
+// Document language for export metadata. Three exports read it out of the <html> tag
+// with the same regex; a missing lang is a WCAG 3.1.1 failure downstream, so default
+// loudly to 'en' in ONE place rather than in each caller.
+function _altFmtHtmlLang(html) {
+  return ((typeof html === 'string' && html.match(/<html[^>]*lang=["']([^"']+)["']/i)) || [])[1] || 'en';
+}
+// Package identifier. Injectable so a test can assert byte-identical output twice.
+function _altFmtUid(prefix) {
+  const rand = (globalThis.crypto && typeof globalThis.crypto.randomUUID === 'function')
+    ? globalThis.crypto.randomUUID()
+    : (Date.now() + '-' + Math.random().toString(16).slice(2));
+  return (prefix || 'alloflow-') + rand;
+}
+
+// HTML -> well-formed XHTML. XMLSerializer handles every void element and named entity;
+// the fallback covers hosts without DOMParser. The old inline version self-closed only
+// <br>/<hr>/<img>, missing <input>/<col>/<source>/<wbr> and &mdash;-style entities that
+// are undefined in XML — epubcheck and Apple Books reject the WHOLE book for one of them.
+function _altFmtXhtmlFromHtml(html) {
+  let xhtml;
+  try {
+    const d = new DOMParser().parseFromString(String(html), 'text/html');
+    xhtml = new XMLSerializer().serializeToString(d.documentElement).replace(/\sxmlns="([^"]+)"(?=[^<>]*\sxmlns="\1")/g, '');
+  } catch (_) {
+    xhtml = String(html).replace(/<br>/g, '<br/>').replace(/<hr>/g, '<hr/>').replace(/<img([^>]*[^/])>/g, '<img$1/>').replace(/&nbsp;/g, '&#160;');
+  }
+  // ALWAYS restore the XHTML namespace on the ROOT element. The old `!includes('xmlns')`
+  // test was defeated by any child xmlns (one MathML or SVG equation), leaving the root
+  // in no namespace so readers reject the book.
+  if (!/^<html\b[^>]*\sxmlns=/i.test(xhtml)) xhtml = xhtml.replace(/^<html\b/i, '<html xmlns="http://www.w3.org/1999/xhtml"');
+  return xhtml;
+}
+
+// ePub 3 package as a file map. Caller zips it with 'mimetype' STORED FIRST — that
+// ordering is required by the OCF spec and is the caller's one obligation.
+function _buildEpubPackageFiles(html, opts) {
+  const o = opts || {};
+  const title = String(o.title || 'document');
+  const lang = o.lang || _altFmtHtmlLang(html);
+  const uid = o.uid || _altFmtUid('alloflow-');
+  const nowIso = o.modifiedIso || new Date().toISOString();
+  const xmlTitle = _expXmlEsc(title);
+  // Declare svg/mathml on the content item or a reading system may refuse to render
+  // an equation it was never told to expect.
+  const props = [];
+  if (/<svg\b/i.test(html)) props.push('svg');
+  if (/<math\b/i.test(html)) props.push('mathml');
+  const propAttr = props.length ? ' properties="' + props.join(' ') + '"' : '';
+
+  const opf = '<?xml version="1.0" encoding="UTF-8"?>\n' +
+    '<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid">\n' +
+    '  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">\n' +
+    '    <dc:identifier id="uid">' + _expXmlEsc(uid) + '</dc:identifier>\n' +
+    '    <dc:title>' + xmlTitle + '</dc:title>\n' +
+    '    <dc:language>' + _expXmlEsc(lang) + '</dc:language>\n' +
+    '    <dc:creator>AlloFlow Document Pipeline</dc:creator>\n' +
+    '    <dc:date>' + nowIso.split('T')[0] + '</dc:date>\n' +
+    '    <meta property="dcterms:modified">' + nowIso.replace(/\.\d+Z/, 'Z') + '</meta>\n' +
+    '    <meta property="schema:accessMode">textual</meta>\n' +
+    '    <meta property="schema:accessMode">visual</meta>\n' +
+    '    <meta property="schema:accessModeSufficient">textual</meta>\n' +
+    '    <meta property="schema:accessibilityFeature">structuralNavigation</meta>\n' +
+    '    <meta property="schema:accessibilityFeature">tableOfContents</meta>\n' +
+    '    <meta property="schema:accessibilityFeature">readingOrder</meta>\n' +
+    '    <meta property="schema:accessibilityFeature">alternativeText</meta>\n' +
+    '    <meta property="schema:accessibilityHazard">none</meta>\n' +
+    '    <meta property="schema:accessibilitySummary">Remediated for accessibility by AlloFlow: semantic headings, logical reading order, table of contents, and alternative text for images.</meta>\n' +
+    '  </metadata>\n' +
+    '  <manifest>\n' +
+    '    <item id="content" href="content.xhtml" media-type="application/xhtml+xml"' + propAttr + '/>\n' +
+    '    <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>\n' +
+    '  </manifest>\n' +
+    '  <spine><itemref idref="content"/></spine>\n' +
+    '</package>';
+
+  // Escape the id AND the heading text into nav.xhtml: an unescaped & produced malformed
+  // XML, and a heading starting with an inline tag silently lost its entry. Capture the
+  // FULL heading, then strip inline tags.
+  const navEsc = (s) => _expXmlEsc(String(s == null ? '' : s));
+  const headings = [...String(html).matchAll(/<h([1-3])[^>]*\bid="([^"]*)"[^>]*>([\s\S]*?)<\/h\1>/gi)];
+  const navItems = headings.length > 0
+    ? headings.map((m) => '<li><a href="content.xhtml#' + navEsc(m[2]) + '">' + (navEsc(m[3].replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()) || 'Section') + '</a></li>').join('\n')
+    : '<li><a href="content.xhtml">Document</a></li>';
+
+  const files = {
+    'mimetype': 'application/epub+zip',
+    'META-INF/container.xml': '<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>',
+    'OEBPS/content.opf': opf,
+    'OEBPS/content.xhtml': _altFmtXhtmlFromHtml(html),
+    'OEBPS/nav.xhtml': '<?xml version="1.0" encoding="UTF-8"?>\n' +
+      '<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">\n' +
+      '<head><title>Navigation</title></head>\n' +
+      '<body><nav epub:type="toc"><h1>Table of Contents</h1><ol>' + navItems + '</ol></nav></body>\n' +
+      '</html>',
+  };
+  // Self-check here rather than at each call site, so no caller can skip it. Advisory:
+  // a structural warning should surface, not block a download the user asked for.
+  let validation = { valid: true, issues: [] };
+  try { validation = validateEpubStructure(files); } catch (_) {}
+  return { files, title, lang, uid, headings: headings.length, validation, storeFirst: 'mimetype' };
+}
+
+// DAISY 3 (DTBook 2005-3) full-text talking book as a file map. Text-only by design:
+// DAISY readers supply speech, braille or large print themselves. Synced audio is the
+// separate read-along ePub.
+function _buildDaisyPackageFiles(html, opts) {
+  const o = opts || {};
+  const title = String(o.title || 'document');
+  const lang = o.lang || _altFmtHtmlLang(html);
+  const uid = o.uid || _altFmtUid('urn:uuid:');
+  return {
+    files: {
+      'dtbook.xml': _htmlToDtbookXml(html, lang, uid),
+      'navigation.ncx': _htmlToDaisyNcx(html, title, uid),
+      'book.smil': _htmlToDaisySmil(html, uid),
+      'package.opf': _DAISY_OPF_XML(title, lang, uid),
+    },
+    title, lang, uid,
+  };
+}
+
+// HTML -> the plain text a braille transcriber should see. Drops non-content
+// (script/style/head, editor chrome, the AI math/chart source panels), then flattens
+// one line per block. The old tag-strip embossed <style> bodies, shattered a line at
+// every inline tag, and its greedy &[^;]+; could swallow real text across newlines.
+function _altFmtHtmlToPlainText(html) {
+  try {
+    const d = new DOMParser().parseFromString(String(html), 'text/html');
+    d.querySelectorAll('script, style, title, head, .allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], details.allo-math-source').forEach((el) => { try { el.remove(); } catch (_) {} });
+    d.querySelectorAll('details.allo-chart-data > summary').forEach((el) => { try { el.remove(); } catch (_) {} });
+    d.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach((el) => { try { el.insertAdjacentText('beforebegin', '\n\n'); el.appendChild(d.createTextNode('\n')); } catch (_) {} });
+    d.querySelectorAll('p,li,tr,figcaption,blockquote,div,br').forEach((el) => { try { el.appendChild(d.createTextNode('\n')); } catch (_) {} });
+    return ((d.body && d.body.textContent) || '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+  } catch (_) {
+    return String(html).replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<[^>]*>/g, '\n').replace(/&nbsp;/gi, ' ').replace(/&amp;/gi, '&').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&#?[a-z0-9]+;/gi, ' ').replace(/\n{3,}/g, '\n\n').trim();
+  }
+}
+
+// Real ASCII Braille (BRF), Grade 1 / uncontracted. A .brf must be ASCII braille
+// (0x20-0x5F North-American Braille Computer Code), NOT Unicode U+2800 patterns —
+// embossers and braille displays read the ASCII bytes, so U+2800 output is
+// un-embossable garbage under a "BRF" label. Capital sign (,) before each capital;
+// number sign (#) before a 1-0 -> A-J digit run; standard punctuation; 40-cell wrap.
+const _BRF_DIGIT = { '1': 'A', '2': 'B', '3': 'C', '4': 'D', '5': 'E', '6': 'F', '7': 'G', '8': 'H', '9': 'I', '0': 'J' };
+const _BRF_PUNCT = { ',': '1', ';': '2', ':': '3', '.': '4', '!': '6', '?': '8', '(': '"<', ')': '">', "'": "'", '-': '-', '/': '_/', '*': '"9', '&': '@&', '+': '"6', '=': '"7', '<': '@<', '>': '@>' };
+const _BRF_SMART = { '\u2018': "'", '\u2019': "'", '\u2013': '-', '\u2014': '-', '\u2026': '...', '\u00a0': ' ', '\u2022': '*' };
+// Private-use sentinels: curly quotes carry openness that a straight " does not, and
+// braille distinguishes an opening quote (8) from a closing one (0). Park them out of
+// band so the ASCII pass cannot confuse them with a literal quote. Written as escapes,
+// never as literals: a re-encode of this file turns a PUA codepoint into a NUL.
+const _BRF_OPEN_QUOTE = '\ue000', _BRF_CLOSE_QUOTE = '\ue001';
+const _BRF_PREFIX = /[#,;@_^".]$/;
+function _brfHardSplit(word, into, cells) {
+  if (/^#[A-J14]+$/.test(word)) {
+    while (word.length > cells) { into.push(word.slice(0, cells - 1) + '"'); word = word.slice(cells - 1); }
+    if (word) into.push(word);
+    return;
+  }
+  while (word.length > cells) {
+    let cut = cells;
+    // Never end a line on a prefix cell (capital/number/emphasis sign) — it would
+    // re-bind to the wrong character on the next line.
+    while (cut > 1 && _BRF_PREFIX.test(word.slice(0, cut))) cut--;
+    into.push(word.slice(0, cut)); word = word.slice(cut);
+  }
+  if (word) into.push(word);
+}
+function _brfWrap(line, into, cells) {
+  if (line.length <= cells) { into.push(line); return; }
+  const words = line.split(' '); let cur = '';
+  for (let word of words) {
+    if (word.length > cells) { if (cur) { into.push(cur); cur = ''; } _brfHardSplit(word, into, cells); continue; }
+    if (!cur) cur = word;
+    else if (cur.length + 1 + word.length <= cells) cur += ' ' + word;
+    else { into.push(cur); cur = word; }
+  }
+  if (cur) into.push(cur);
+}
+function _altFmtToBRF(src, opts) {
+  const cells = (opts && opts.cellsPerLine) || 40;
+  let norm = String(src == null ? '' : src).replace(/[\u201c\u00ab]/g, _BRF_OPEN_QUOTE).replace(/[\u201d\u00bb]/g, _BRF_CLOSE_QUOTE);
+  norm = norm.replace(/[\u2018\u2019\u2013\u2014\u2026\u00a0\u2022]/g, (c) => _BRF_SMART[c] || '');
+  try { norm = norm.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); } catch (_) {}
+  const out = []; let dropped = 0;
+  for (const line of norm.replace(/\r\n?/g, '\n').split('\n')) {
+    const chars = Array.from(line); let bl = ''; let numMode = false;
+    for (let i = 0; i < chars.length; i++) {
+      const ch = chars[i];
+      if (ch >= '0' && ch <= '9') { if (!numMode) { bl += '#'; numMode = true; } bl += _BRF_DIGIT[ch]; continue; }
+      if (numMode && (ch === ',' || ch === '.')) { bl += _BRF_PUNCT[ch]; continue; }
+      if (numMode && ch >= 'a' && ch <= 'j') bl += ';';
+      numMode = false;
+      if (ch >= 'a' && ch <= 'z') { bl += ch.toUpperCase(); continue; }
+      if (ch >= 'A' && ch <= 'Z') {
+        let end = i;
+        while (end < chars.length && chars[end] >= 'A' && chars[end] <= 'Z') end++;
+        const prevIsLetter = i > 0 && /[A-Za-z]/.test(chars[i - 1]);
+        const nextIsLetter = end < chars.length && /[A-Za-z]/.test(chars[end]);
+        if (!prevIsLetter && !nextIsLetter && end - i >= 2) { bl += ',,' + chars.slice(i, end).join(''); i = end - 1; }
+        else bl += ',' + ch;
+        continue;
+      }
+      if (ch === ' ' || ch === '\t') { bl += ' '; continue; }
+      if (ch === _BRF_OPEN_QUOTE) { bl += '8'; continue; }
+      if (ch === _BRF_CLOSE_QUOTE) { bl += '0'; continue; }
+      if (ch === '"') { const prev = i > 0 ? chars[i - 1] : ''; bl += (!prev || /\s|[([{]/.test(prev)) ? '8' : '0'; continue; }
+      if (_BRF_PUNCT[ch] !== undefined) { bl += _BRF_PUNCT[ch]; continue; }
+      // A character with no Grade-1 equivalent is DROPPED, and the count is returned
+      // so a caller can say so. Silent loss in a braille file is unacceptable.
+      dropped++;
+    }
+    _brfWrap(bl, out, cells);
+  }
+  const brf = out.join('\r\n');
+  return (opts && opts.withMeta) ? { brf, dropped } : brf;
+}
+// HTML straight to Grade-1 BRF, for callers with no braille plugin available.
+// The in-app handler still prefers window.AlloBraille (UEB Grade 2 via liblouis) and
+// falls back to this; the connector uses this directly and says which grade it used.
+function _buildBrailleBrf(html, opts) {
+  const text = _altFmtHtmlToPlainText(html);
+  const r = _altFmtToBRF(text, Object.assign({ withMeta: true }, opts || {}));
+  return { brf: r.brf, dropped: r.dropped, text, grade: 1, code: 'North American Braille Computer Code (uncontracted)' };
+}
+
 // _buildDocxBlobFromSpec: map the pure spec onto the docx UMD library (d).
 // Accessibility mapping: real HeadingN styles, tableHeader rows, real list
 // numbering/bullets, ExternalHyperlink (keeps link semantics), ImageRun with
@@ -4255,13 +4492,11 @@ function PdfAuditView(props) {
     if (!window.JSZip) { addToast(t('toasts.zip_library_loading') || 'Compression library loading — try again in a moment.', 'info'); return; }
     try {
       const title = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '');
-      const lang = (html.match(/<html[^>]*lang=["']([^"']+)["']/i) || [])[1] || 'en';
       const zip = new window.JSZip();
-      const uid = 'urn:uuid:' + ((globalThis.crypto && typeof globalThis.crypto.randomUUID === 'function') ? globalThis.crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(16).slice(2)));
-      zip.file('dtbook.xml', _htmlToDtbookXml(html, lang, uid));
-      zip.file('navigation.ncx', _htmlToDaisyNcx(html, title, uid));
-      zip.file('book.smil', _htmlToDaisySmil(html, uid));
-      zip.file('package.opf', _DAISY_OPF_XML(title, lang, uid));
+      // Package assembly is _buildDaisyPackageFiles (module scope), shared with the MCP
+      // connector; this handler only zips and downloads.
+      const _pkg = _buildDaisyPackageFiles(html, { title });
+      Object.keys(_pkg.files).forEach((p) => zip.file(p, _pkg.files[p]));
       const blob = await zip.generateAsync({ type: 'blob' });
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = title + '-daisy.zip';
       document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
@@ -14109,75 +14344,25 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             if (!html) return;
                             try { html = _viewSanitizeMarkupForExport(html, _docPipeline); } catch (error) { addToast((t('toasts.export_security_unavailable') || 'The EPUB could not be exported safely. Please retry after the security module finishes loading.') + (error?.message ? ' ' + error.message : ''), 'error'); return; }
                             const title = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '');
-                            const textContent = html.replace(/<[^>]*>/g, '').replace(/\s{2,}/g, ' ').trim();
-                            const xmlTitle = title.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
                             if (!window.JSZip) { addToast(t('toasts.zip_library_loading'), 'info'); return; }
+                            // Format rules live in _buildEpubPackageFiles (module scope) so the MCP connector
+                            // reaches the same generator. This handler owns only zipping and the download.
+                            const _pkg = _buildEpubPackageFiles(html, { title });
                             const zip = new window.JSZip();
-                            zip.file('mimetype', 'application/epub+zip', { compression: 'STORE' });
-                            zip.file('META-INF/container.xml', '<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>');
-                            const epubLang = ((typeof html === 'string' && html.match(/<html[^>]*lang=["']([^"']+)["']/i)) || [])[1] || 'en';
-                            const _epubContentProps = [];
-                            if (/<svg\b/i.test(html)) _epubContentProps.push('svg');
-                            if (/<math\b/i.test(html)) _epubContentProps.push('mathml');
-                            const _epubContentPropAttr = _epubContentProps.length ? ' properties="' + _epubContentProps.join(' ') + '"' : '';
-                            const opf = `<?xml version="1.0" encoding="UTF-8"?>
-<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid">
-  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
-    <dc:identifier id="uid">alloflow-${Date.now()}</dc:identifier>
-    <dc:title>${xmlTitle}</dc:title>
-    <dc:language>${epubLang}</dc:language>
-    <dc:creator>AlloFlow Document Pipeline</dc:creator>
-    <dc:date>${new Date().toISOString().split('T')[0]}</dc:date>
-    <meta property="dcterms:modified">${new Date().toISOString().replace(/\.\d+Z/, 'Z')}</meta>
-    <meta property="schema:accessMode">textual</meta>
-    <meta property="schema:accessMode">visual</meta>
-    <meta property="schema:accessModeSufficient">textual</meta>
-    <meta property="schema:accessibilityFeature">structuralNavigation</meta>
-    <meta property="schema:accessibilityFeature">tableOfContents</meta>
-    <meta property="schema:accessibilityFeature">readingOrder</meta>
-    <meta property="schema:accessibilityFeature">alternativeText</meta>
-    <meta property="schema:accessibilityHazard">none</meta>
-    <meta property="schema:accessibilitySummary">Remediated for accessibility by AlloFlow: semantic headings, logical reading order, table of contents, and alternative text for images.</meta>
-  </metadata>
-  <manifest>
-    <item id="content" href="content.xhtml" media-type="application/xhtml+xml"${_epubContentPropAttr}/>
-    <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
-  </manifest>
-  <spine><itemref idref="content"/></spine>
-</package>`;
-                            zip.file('OEBPS/content.opf', opf);
-                            // Serialize the whole doc as XML so content.xhtml is well-formed: the
-                            // old hand-rolled regex only self-closed <br>/<hr>/<img> and missed
-                            // <input>/<col>/<source>/<wbr> + named entities, which epubcheck/Apple
-                            // Books reject. XMLSerializer handles all void elements + entities. (#1)
-                            let xhtml;
-                            try {
-                              const _d = new DOMParser().parseFromString(html, 'text/html');
-                              xhtml = new XMLSerializer().serializeToString(_d.documentElement).replace(/\sxmlns="([^"]+)"(?=[^<>]*\sxmlns="\1")/g, '');
-                            } catch (_) { xhtml = html.replace(/<br>/g, '<br/>').replace(/<hr>/g, '<hr/>').replace(/<img([^>]*[^/])>/g, '<img$1/>').replace(/&nbsp;/g, '&#160;'); }
-                            // #8: ALWAYS restore the XHTML namespace on the ROOT html element. The old
-                            // `!includes('xmlns')` check was defeated by any child xmlns (a MathML/SVG
-                            // equation), leaving the root in no namespace so readers reject the book.
-                            if (!/^<html\b[^>]*\sxmlns=/i.test(xhtml)) xhtml = xhtml.replace(/^<html\b/i, '<html xmlns="http://www.w3.org/1999/xhtml"');
-                            zip.file('OEBPS/content.xhtml', xhtml);
-                            // Escape the id + heading text into nav.xhtml (an unescaped & or a heading
-                            // that starts with an inline tag produced malformed XML / a missing entry);
-                            // capture the FULL heading text, then strip inline tags.
-                            const _navEsc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-                            const headings = [...html.matchAll(/<h([1-3])[^>]*\bid="([^"]*)"[^>]*>([\s\S]*?)<\/h\1>/gi)];
-                            const navItems = headings.length > 0
-                              ? headings.map(m => `<li><a href="content.xhtml#${_navEsc(m[2])}">${_navEsc(m[3].replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()) || 'Section'}</a></li>`).join('\n')
-                              : '<li><a href="content.xhtml">Document</a></li>';
-                            zip.file('OEBPS/nav.xhtml', `<?xml version="1.0" encoding="UTF-8"?>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
-<head><title>Navigation</title></head>
-<body><nav epub:type="toc"><h1>Table of Contents</h1><ol>${navItems}</ol></nav></body>
-</html>`);
+                            // 'mimetype' MUST be the first entry and STORED, uncompressed (OCF spec) or a
+                            // reader cannot sniff the container.
+                            zip.file('mimetype', _pkg.files['mimetype'], { compression: 'STORE' });
+                            Object.keys(_pkg.files).forEach((p) => { if (p !== 'mimetype') zip.file(p, _pkg.files[p]); });
+                            const _epubErrs = (_pkg.validation.issues || []).filter((i) => i.severity === 'error');
+                            if (_epubErrs.length) { try { console.warn('[EPUB self-check] ' + _epubErrs.length + ' structural issue(s):', _epubErrs); } catch (_) {} }
                             zip.generateAsync({ type: 'blob', mimeType: 'application/epub+zip' }).then(blob => {
                               const url = URL.createObjectURL(blob);
                               const a = document.createElement('a'); a.href = url; a.download = title + '.epub';
                               document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-                              addToast(t('toasts.epub_downloaded_open_any_reader'), 'success');
+                              // Never claim success over a structural failure: an invalid EPUB opens nowhere,
+                              // and a green toast is how that used to reach the user unnoticed.
+                              if (_epubErrs.length) addToast(_epubErrs.length + ' structural issue(s) flagged by the EPUB self-check (see console) - the file may not open in all readers.', 'error');
+                              else addToast(t('toasts.epub_downloaded_open_any_reader'), 'success');
                             });
                           }} data-help-key="pdf_audit_alt_formats_epub_btn" className="w-full px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2">
                             📚 ePub (e-readers, mobile, Kindle)
@@ -14187,118 +14372,32 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                           <button onClick={() => {
                             const html = pdfFixResult?.accessibleHtml;
                             if (!html) return;
-                            // #3 (export-format review R2): the old tag-strip embossed <style>/<title>
-                            // bodies, shattered a line at every inline tag, and its greedy &[^;]+;
-                            // could swallow real text across newlines. Parse + drop non-content
-                            // (script/style/head, editor chrome, and the AI math/chart source panels),
-                            // then flatten one line per block — matching the Document Builder lane.
-                            let text = '';
-                            try {
-                              const _d = new DOMParser().parseFromString(html, 'text/html');
-                              _d.querySelectorAll('script, style, title, head, .allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], details.allo-math-source').forEach(el => { try { el.remove(); } catch (_) {} });
-                              _d.querySelectorAll('details.allo-chart-data > summary').forEach(el => { try { el.remove(); } catch (_) {} });
-                              _d.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(el => { try { el.insertAdjacentText('beforebegin', '\n\n'); el.appendChild(_d.createTextNode('\n')); } catch (_) {} });
-                              _d.querySelectorAll('p,li,tr,figcaption,blockquote,div,br').forEach(el => { try { el.appendChild(_d.createTextNode('\n')); } catch (_) {} });
-                              text = ((_d.body && _d.body.textContent) || '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
-                            } catch (_) {
-                              text = html.replace(/<style[\s\S]*?<\/style>/gi, ' ').replace(/<script[\s\S]*?<\/script>/gi, ' ').replace(/<[^>]*>/g, '\n').replace(/&nbsp;/gi, ' ').replace(/&amp;/gi, '&').replace(/&lt;/gi, '<').replace(/&gt;/gi, '>').replace(/&#?[a-z0-9]+;/gi, ' ').replace(/\n{3,}/g, '\n\n').trim();
-                            }
-                            // Real ASCII Braille (BRF), Grade 1 / uncontracted (audit
-                            // 2026-06-13): a .brf must be ASCII braille (0x20–0x5F North-
-                            // American Braille Computer Code), NOT Unicode U+2800 patterns —
-                            // embossers and braille displays read the ASCII bytes, so the old
-                            // U+2800 output was un-embossable garbage under a "BRF" label.
-                            // Ported from the export-preview lane's _toBRF so both braille
-                            // exports match: capital sign (,) before each capital; number
-                            // sign (#) before a 1-0→A-J digit run; standard BRF punctuation;
-                            // 40-cell line wrap.
-                            const _brfDigit = { '1': 'A', '2': 'B', '3': 'C', '4': 'D', '5': 'E', '6': 'F', '7': 'G', '8': 'H', '9': 'I', '0': 'J' };
-                            const _brfPunct = { ',': '1', ';': '2', ':': '3', '.': '4', '!': '6', '?': '8', '(': '"<', ')': '">', "'": "'", '-': '-', '/': '_/', '*': '"9', '&': '@&', '+': '"6', '=': '"7', '<': '@<', '>': '@>' };
-                            const _brfSmart = { '\u2018': "'", '\u2019': "'", '\u2013': '-', '\u2014': '-', '\u2026': '...', '\u00a0': ' ', '\u2022': '*' };
-                            const _brfOpenQuote = '\ue000', _brfCloseQuote = '\ue001';
-                            const _brfPrefix = /[#,;@_^".]$/;
-                            const _brfHardSplit = (word, into, cells) => {
-                              if (/^#[A-J14]+$/.test(word)) {
-                                while (word.length > cells) { into.push(word.slice(0, cells - 1) + '"'); word = word.slice(cells - 1); }
-                                if (word) into.push(word);
-                                return;
-                              }
-                              while (word.length > cells) {
-                                let cut = cells;
-                                while (cut > 1 && _brfPrefix.test(word.slice(0, cut))) cut--;
-                                into.push(word.slice(0, cut)); word = word.slice(cut);
-                              }
-                              if (word) into.push(word);
-                            };
-                            const _brfWrap = (line, into, cells) => {
-                              if (line.length <= cells) { into.push(line); return; }
-                              const words = line.split(' '); let cur = '';
-                              for (let word of words) {
-                                if (word.length > cells) { if (cur) { into.push(cur); cur = ''; } _brfHardSplit(word, into, cells); continue; }
-                                if (!cur) cur = word;
-                                else if (cur.length + 1 + word.length <= cells) cur += ' ' + word;
-                                else { into.push(cur); cur = word; }
-                              }
-                              if (cur) into.push(cur);
-                            };
-                            const _toBRF = (src, opts) => {
-                              const cells = (opts && opts.cellsPerLine) || 40;
-                              let norm = String(src == null ? '' : src).replace(/[\u201c\u00ab]/g, _brfOpenQuote).replace(/[\u201d\u00bb]/g, _brfCloseQuote);
-                              norm = norm.replace(/[\u2018\u2019\u2013\u2014\u2026\u00a0\u2022]/g, (c) => _brfSmart[c] || '');
-                              try { norm = norm.normalize('NFD').replace(/[\u0300-\u036f]/g, ''); } catch (_) {}
-                              const out = []; let dropped = 0;
-                              for (const line of norm.replace(/\r\n?/g, '\n').split('\n')) {
-                                const chars = Array.from(line); let bl = ''; let numMode = false;
-                                for (let i = 0; i < chars.length; i++) {
-                                  const ch = chars[i];
-                                  if (ch >= '0' && ch <= '9') { if (!numMode) { bl += '#'; numMode = true; } bl += _brfDigit[ch]; continue; }
-                                  if (numMode && (ch === ',' || ch === '.')) { bl += _brfPunct[ch]; continue; }
-                                  if (numMode && ch >= 'a' && ch <= 'j') bl += ';';
-                                  numMode = false;
-                                  if (ch >= 'a' && ch <= 'z') { bl += ch.toUpperCase(); continue; }
-                                  if (ch >= 'A' && ch <= 'Z') {
-                                    let end = i;
-                                    while (end < chars.length && chars[end] >= 'A' && chars[end] <= 'Z') end++;
-                                    const prevIsLetter = i > 0 && /[A-Za-z]/.test(chars[i - 1]);
-                                    const nextIsLetter = end < chars.length && /[A-Za-z]/.test(chars[end]);
-                                    if (!prevIsLetter && !nextIsLetter && end - i >= 2) { bl += ',,' + chars.slice(i, end).join(''); i = end - 1; }
-                                    else bl += ',' + ch;
-                                    continue;
-                                  }
-                                  if (ch === ' ' || ch === '\t') { bl += ' '; continue; }
-                                  if (ch === _brfOpenQuote) { bl += '8'; continue; }
-                                  if (ch === _brfCloseQuote) { bl += '0'; continue; }
-                                  if (ch === '"') { const prev = i > 0 ? chars[i - 1] : ''; bl += (!prev || /\s|[([{]/.test(prev)) ? '8' : '0'; continue; }
-                                  if (_brfPunct[ch] !== undefined) { bl += _brfPunct[ch]; continue; }
-                                  dropped++;
-                                }
-                                _brfWrap(bl, out, cells);
-                              }
-                              const brf = out.join('\r\n');
-                              return (opts && opts.withMeta) ? { brf, dropped } : brf;
-                            };
-const _downloadBRF = (brf) => {
+                            // Text flattening and the Grade-1 fallback are module scope (_buildBrailleBrf), shared
+                            // with the connector. UEB Grade 2 via liblouis stays here: it needs a plugin load.
+                            const _g1 = _buildBrailleBrf(html);
+                            const text = _g1.text;
+                            const _downloadBRF = (brf) => {
                               const blob = new Blob([brf], { type: 'application/x-brf' });
                               const url = URL.createObjectURL(blob);
                               const a = document.createElement('a'); a.href = url;
                               a.download = (pendingPdfFile?.name || 'document').replace(/\.\w+$/, '') + '.brf';
                               document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
                             };
-                            // Prefer UEB Grade 2 via liblouis; fall back to the shared canonical
-                            // Grade-1 converter (same loader file), then to the inline _toBRF if the
-                            // load fails — parity with the Document Builder braille export.
+                            // Prefer UEB Grade 2 via liblouis; fall back to the shared canonical Grade-1
+                            // converter (same loader file), then to the module-scope builder if the load fails -
+                            // parity with the Document Builder braille export.
                             const _ensureBrailleLoader = (window.AlloBraille && typeof window.AlloBraille.toUEB === 'function')
                               ? Promise.resolve(true)
                               : (window.__alloLoadPlugin ? window.__alloLoadPlugin('liblouis_braille_loader.js') : Promise.resolve(false));
                             Promise.resolve(_ensureBrailleLoader).catch(() => false).then(() => {
-                              let _g1Dropped = 0, _grade1;
+                              let _g1Dropped = _g1.dropped, _grade1 = _g1.brf;
                               if (window.AlloBraille && typeof window.AlloBraille.toGrade1BRF === 'function') {
                                 const _r = window.AlloBraille.toGrade1BRF(text, { withMeta: true });
                                 _grade1 = _r.brf; _g1Dropped = _r.dropped;
-                              } else { const _r = _toBRF(text, { withMeta: true }); _grade1 = _r.brf; _g1Dropped = _r.dropped; }
+                              }
                               const _warnDrop = () => { if (_g1Dropped > 0 && addToast) addToast(_g1Dropped + ' character(s) had no Grade-1 braille equivalent and were skipped. Try the UEB option or check the source.', 'info'); };
                               if (window.AlloBraille && typeof window.AlloBraille.toUEB === 'function') {
-                                addToast('Preparing contracted braille (UEB Grade 2)…', 'info');
+                                addToast('Preparing contracted braille (UEB Grade 2)...', 'info');
                                 Promise.resolve(window.AlloBraille.toUEB(text)).then((ueb) => {
                                   if (ueb && ueb.replace(/\s/g, '').length) {
                                     _downloadBRF(ueb);

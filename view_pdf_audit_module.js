@@ -1742,6 +1742,228 @@ function validateEpubStructure(files) {
   }
   return { valid: issues.filter((i) => i.severity === "error").length === 0, issues };
 }
+function _altFmtHtmlLang(html) {
+  return (typeof html === "string" && html.match(/<html[^>]*lang=["']([^"']+)["']/i) || [])[1] || "en";
+}
+function _altFmtUid(prefix) {
+  const rand = globalThis.crypto && typeof globalThis.crypto.randomUUID === "function" ? globalThis.crypto.randomUUID() : Date.now() + "-" + Math.random().toString(16).slice(2);
+  return (prefix || "alloflow-") + rand;
+}
+function _altFmtXhtmlFromHtml(html) {
+  let xhtml;
+  try {
+    const d = new DOMParser().parseFromString(String(html), "text/html");
+    xhtml = new XMLSerializer().serializeToString(d.documentElement).replace(/\sxmlns="([^"]+)"(?=[^<>]*\sxmlns="\1")/g, "");
+  } catch (_) {
+    xhtml = String(html).replace(/<br>/g, "<br/>").replace(/<hr>/g, "<hr/>").replace(/<img([^>]*[^/])>/g, "<img$1/>").replace(/&nbsp;/g, "&#160;");
+  }
+  if (!/^<html\b[^>]*\sxmlns=/i.test(xhtml)) xhtml = xhtml.replace(/^<html\b/i, '<html xmlns="http://www.w3.org/1999/xhtml"');
+  return xhtml;
+}
+function _buildEpubPackageFiles(html, opts) {
+  const o = opts || {};
+  const title = String(o.title || "document");
+  const lang = o.lang || _altFmtHtmlLang(html);
+  const uid = o.uid || _altFmtUid("alloflow-");
+  const nowIso = o.modifiedIso || (/* @__PURE__ */ new Date()).toISOString();
+  const xmlTitle = _expXmlEsc(title);
+  const props = [];
+  if (/<svg\b/i.test(html)) props.push("svg");
+  if (/<math\b/i.test(html)) props.push("mathml");
+  const propAttr = props.length ? ' properties="' + props.join(" ") + '"' : "";
+  const opf = '<?xml version="1.0" encoding="UTF-8"?>\n<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid">\n  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">\n    <dc:identifier id="uid">' + _expXmlEsc(uid) + "</dc:identifier>\n    <dc:title>" + xmlTitle + "</dc:title>\n    <dc:language>" + _expXmlEsc(lang) + "</dc:language>\n    <dc:creator>AlloFlow Document Pipeline</dc:creator>\n    <dc:date>" + nowIso.split("T")[0] + '</dc:date>\n    <meta property="dcterms:modified">' + nowIso.replace(/\.\d+Z/, "Z") + '</meta>\n    <meta property="schema:accessMode">textual</meta>\n    <meta property="schema:accessMode">visual</meta>\n    <meta property="schema:accessModeSufficient">textual</meta>\n    <meta property="schema:accessibilityFeature">structuralNavigation</meta>\n    <meta property="schema:accessibilityFeature">tableOfContents</meta>\n    <meta property="schema:accessibilityFeature">readingOrder</meta>\n    <meta property="schema:accessibilityFeature">alternativeText</meta>\n    <meta property="schema:accessibilityHazard">none</meta>\n    <meta property="schema:accessibilitySummary">Remediated for accessibility by AlloFlow: semantic headings, logical reading order, table of contents, and alternative text for images.</meta>\n  </metadata>\n  <manifest>\n    <item id="content" href="content.xhtml" media-type="application/xhtml+xml"' + propAttr + '/>\n    <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>\n  </manifest>\n  <spine><itemref idref="content"/></spine>\n</package>';
+  const navEsc = (s) => _expXmlEsc(String(s == null ? "" : s));
+  const headings = [...String(html).matchAll(/<h([1-3])[^>]*\bid="([^"]*)"[^>]*>([\s\S]*?)<\/h\1>/gi)];
+  const navItems = headings.length > 0 ? headings.map((m) => '<li><a href="content.xhtml#' + navEsc(m[2]) + '">' + (navEsc(m[3].replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim()) || "Section") + "</a></li>").join("\n") : '<li><a href="content.xhtml">Document</a></li>';
+  const files = {
+    "mimetype": "application/epub+zip",
+    "META-INF/container.xml": '<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>',
+    "OEBPS/content.opf": opf,
+    "OEBPS/content.xhtml": _altFmtXhtmlFromHtml(html),
+    "OEBPS/nav.xhtml": '<?xml version="1.0" encoding="UTF-8"?>\n<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">\n<head><title>Navigation</title></head>\n<body><nav epub:type="toc"><h1>Table of Contents</h1><ol>' + navItems + "</ol></nav></body>\n</html>"
+  };
+  let validation = { valid: true, issues: [] };
+  try {
+    validation = validateEpubStructure(files);
+  } catch (_) {
+  }
+  return { files, title, lang, uid, headings: headings.length, validation, storeFirst: "mimetype" };
+}
+function _buildDaisyPackageFiles(html, opts) {
+  const o = opts || {};
+  const title = String(o.title || "document");
+  const lang = o.lang || _altFmtHtmlLang(html);
+  const uid = o.uid || _altFmtUid("urn:uuid:");
+  return {
+    files: {
+      "dtbook.xml": _htmlToDtbookXml(html, lang, uid),
+      "navigation.ncx": _htmlToDaisyNcx(html, title, uid),
+      "book.smil": _htmlToDaisySmil(html, uid),
+      "package.opf": _DAISY_OPF_XML(title, lang, uid)
+    },
+    title,
+    lang,
+    uid
+  };
+}
+function _altFmtHtmlToPlainText(html) {
+  try {
+    const d = new DOMParser().parseFromString(String(html), "text/html");
+    d.querySelectorAll("script, style, title, head, .allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], details.allo-math-source").forEach((el) => {
+      try {
+        el.remove();
+      } catch (_) {
+      }
+    });
+    d.querySelectorAll("details.allo-chart-data > summary").forEach((el) => {
+      try {
+        el.remove();
+      } catch (_) {
+      }
+    });
+    d.querySelectorAll("h1,h2,h3,h4,h5,h6").forEach((el) => {
+      try {
+        el.insertAdjacentText("beforebegin", "\n\n");
+        el.appendChild(d.createTextNode("\n"));
+      } catch (_) {
+      }
+    });
+    d.querySelectorAll("p,li,tr,figcaption,blockquote,div,br").forEach((el) => {
+      try {
+        el.appendChild(d.createTextNode("\n"));
+      } catch (_) {
+      }
+    });
+    return (d.body && d.body.textContent || "").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+  } catch (_) {
+    return String(html).replace(/<style[\s\S]*?<\/style>/gi, " ").replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<[^>]*>/g, "\n").replace(/&nbsp;/gi, " ").replace(/&amp;/gi, "&").replace(/&lt;/gi, "<").replace(/&gt;/gi, ">").replace(/&#?[a-z0-9]+;/gi, " ").replace(/\n{3,}/g, "\n\n").trim();
+  }
+}
+const _BRF_DIGIT = { "1": "A", "2": "B", "3": "C", "4": "D", "5": "E", "6": "F", "7": "G", "8": "H", "9": "I", "0": "J" };
+const _BRF_PUNCT = { ",": "1", ";": "2", ":": "3", ".": "4", "!": "6", "?": "8", "(": '"<', ")": '">', "'": "'", "-": "-", "/": "_/", "*": '"9', "&": "@&", "+": '"6', "=": '"7', "<": "@<", ">": "@>" };
+const _BRF_SMART = { "\u2018": "'", "\u2019": "'", "\u2013": "-", "\u2014": "-", "\u2026": "...", "\xA0": " ", "\u2022": "*" };
+const _BRF_OPEN_QUOTE = "\uE000", _BRF_CLOSE_QUOTE = "\uE001";
+const _BRF_PREFIX = /[#,;@_^".]$/;
+function _brfHardSplit(word, into, cells) {
+  if (/^#[A-J14]+$/.test(word)) {
+    while (word.length > cells) {
+      into.push(word.slice(0, cells - 1) + '"');
+      word = word.slice(cells - 1);
+    }
+    if (word) into.push(word);
+    return;
+  }
+  while (word.length > cells) {
+    let cut = cells;
+    while (cut > 1 && _BRF_PREFIX.test(word.slice(0, cut))) cut--;
+    into.push(word.slice(0, cut));
+    word = word.slice(cut);
+  }
+  if (word) into.push(word);
+}
+function _brfWrap(line, into, cells) {
+  if (line.length <= cells) {
+    into.push(line);
+    return;
+  }
+  const words = line.split(" ");
+  let cur = "";
+  for (let word of words) {
+    if (word.length > cells) {
+      if (cur) {
+        into.push(cur);
+        cur = "";
+      }
+      _brfHardSplit(word, into, cells);
+      continue;
+    }
+    if (!cur) cur = word;
+    else if (cur.length + 1 + word.length <= cells) cur += " " + word;
+    else {
+      into.push(cur);
+      cur = word;
+    }
+  }
+  if (cur) into.push(cur);
+}
+function _altFmtToBRF(src, opts) {
+  const cells = opts && opts.cellsPerLine || 40;
+  let norm = String(src == null ? "" : src).replace(/[\u201c\u00ab]/g, _BRF_OPEN_QUOTE).replace(/[\u201d\u00bb]/g, _BRF_CLOSE_QUOTE);
+  norm = norm.replace(/[\u2018\u2019\u2013\u2014\u2026\u00a0\u2022]/g, (c) => _BRF_SMART[c] || "");
+  try {
+    norm = norm.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  } catch (_) {
+  }
+  const out = [];
+  let dropped = 0;
+  for (const line of norm.replace(/\r\n?/g, "\n").split("\n")) {
+    const chars = Array.from(line);
+    let bl = "";
+    let numMode = false;
+    for (let i = 0; i < chars.length; i++) {
+      const ch = chars[i];
+      if (ch >= "0" && ch <= "9") {
+        if (!numMode) {
+          bl += "#";
+          numMode = true;
+        }
+        bl += _BRF_DIGIT[ch];
+        continue;
+      }
+      if (numMode && (ch === "," || ch === ".")) {
+        bl += _BRF_PUNCT[ch];
+        continue;
+      }
+      if (numMode && ch >= "a" && ch <= "j") bl += ";";
+      numMode = false;
+      if (ch >= "a" && ch <= "z") {
+        bl += ch.toUpperCase();
+        continue;
+      }
+      if (ch >= "A" && ch <= "Z") {
+        let end = i;
+        while (end < chars.length && chars[end] >= "A" && chars[end] <= "Z") end++;
+        const prevIsLetter = i > 0 && /[A-Za-z]/.test(chars[i - 1]);
+        const nextIsLetter = end < chars.length && /[A-Za-z]/.test(chars[end]);
+        if (!prevIsLetter && !nextIsLetter && end - i >= 2) {
+          bl += ",," + chars.slice(i, end).join("");
+          i = end - 1;
+        } else bl += "," + ch;
+        continue;
+      }
+      if (ch === " " || ch === "	") {
+        bl += " ";
+        continue;
+      }
+      if (ch === _BRF_OPEN_QUOTE) {
+        bl += "8";
+        continue;
+      }
+      if (ch === _BRF_CLOSE_QUOTE) {
+        bl += "0";
+        continue;
+      }
+      if (ch === '"') {
+        const prev = i > 0 ? chars[i - 1] : "";
+        bl += !prev || /\s|[([{]/.test(prev) ? "8" : "0";
+        continue;
+      }
+      if (_BRF_PUNCT[ch] !== void 0) {
+        bl += _BRF_PUNCT[ch];
+        continue;
+      }
+      dropped++;
+    }
+    _brfWrap(bl, out, cells);
+  }
+  const brf = out.join("\r\n");
+  return opts && opts.withMeta ? { brf, dropped } : brf;
+}
+function _buildBrailleBrf(html, opts) {
+  const text = _altFmtHtmlToPlainText(html);
+  const r = _altFmtToBRF(text, Object.assign({ withMeta: true }, opts || {}));
+  return { brf: r.brf, dropped: r.dropped, text, grade: 1, code: "North American Braille Computer Code (uncontracted)" };
+}
 async function _buildDocxBlobFromSpec(spec, d, mode) {
   const academic = !!(mode && mode.academic);
   const _rtl = !!spec.rtl;
@@ -4508,13 +4730,9 @@ function PdfAuditView(props) {
     }
     try {
       const title = (pendingPdfFile?.name || "document").replace(/\.\w+$/, "");
-      const lang = (html.match(/<html[^>]*lang=["']([^"']+)["']/i) || [])[1] || "en";
       const zip = new window.JSZip();
-      const uid = "urn:uuid:" + (globalThis.crypto && typeof globalThis.crypto.randomUUID === "function" ? globalThis.crypto.randomUUID() : Date.now() + "-" + Math.random().toString(16).slice(2));
-      zip.file("dtbook.xml", _htmlToDtbookXml(html, lang, uid));
-      zip.file("navigation.ncx", _htmlToDaisyNcx(html, title, uid));
-      zip.file("book.smil", _htmlToDaisySmil(html, uid));
-      zip.file("package.opf", _DAISY_OPF_XML(title, lang, uid));
+      const _pkg = _buildDaisyPackageFiles(html, { title });
+      Object.keys(_pkg.files).forEach((p) => zip.file(p, _pkg.files[p]));
       const blob = await zip.generateAsync({ type: "blob" });
       const a = document.createElement("a");
       a.href = URL.createObjectURL(blob);
@@ -12043,63 +12261,23 @@ Return ONLY JSON:
         return;
       }
       const title = (pendingPdfFile?.name || "document").replace(/\.\w+$/, "");
-      const textContent = html.replace(/<[^>]*>/g, "").replace(/\s{2,}/g, " ").trim();
-      const xmlTitle = title.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
       if (!window.JSZip) {
         addToast(t("toasts.zip_library_loading"), "info");
         return;
       }
+      const _pkg = _buildEpubPackageFiles(html, { title });
       const zip = new window.JSZip();
-      zip.file("mimetype", "application/epub+zip", { compression: "STORE" });
-      zip.file("META-INF/container.xml", '<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>');
-      const epubLang = (typeof html === "string" && html.match(/<html[^>]*lang=["']([^"']+)["']/i) || [])[1] || "en";
-      const _epubContentProps = [];
-      if (/<svg\b/i.test(html)) _epubContentProps.push("svg");
-      if (/<math\b/i.test(html)) _epubContentProps.push("mathml");
-      const _epubContentPropAttr = _epubContentProps.length ? ' properties="' + _epubContentProps.join(" ") + '"' : "";
-      const opf = `<?xml version="1.0" encoding="UTF-8"?>
-<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid">
-  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
-    <dc:identifier id="uid">alloflow-${Date.now()}</dc:identifier>
-    <dc:title>${xmlTitle}</dc:title>
-    <dc:language>${epubLang}</dc:language>
-    <dc:creator>AlloFlow Document Pipeline</dc:creator>
-    <dc:date>${(/* @__PURE__ */ new Date()).toISOString().split("T")[0]}</dc:date>
-    <meta property="dcterms:modified">${(/* @__PURE__ */ new Date()).toISOString().replace(/\.\d+Z/, "Z")}</meta>
-    <meta property="schema:accessMode">textual</meta>
-    <meta property="schema:accessMode">visual</meta>
-    <meta property="schema:accessModeSufficient">textual</meta>
-    <meta property="schema:accessibilityFeature">structuralNavigation</meta>
-    <meta property="schema:accessibilityFeature">tableOfContents</meta>
-    <meta property="schema:accessibilityFeature">readingOrder</meta>
-    <meta property="schema:accessibilityFeature">alternativeText</meta>
-    <meta property="schema:accessibilityHazard">none</meta>
-    <meta property="schema:accessibilitySummary">Remediated for accessibility by AlloFlow: semantic headings, logical reading order, table of contents, and alternative text for images.</meta>
-  </metadata>
-  <manifest>
-    <item id="content" href="content.xhtml" media-type="application/xhtml+xml"${_epubContentPropAttr}/>
-    <item id="nav" href="nav.xhtml" media-type="application/xhtml+xml" properties="nav"/>
-  </manifest>
-  <spine><itemref idref="content"/></spine>
-</package>`;
-      zip.file("OEBPS/content.opf", opf);
-      let xhtml;
-      try {
-        const _d = new DOMParser().parseFromString(html, "text/html");
-        xhtml = new XMLSerializer().serializeToString(_d.documentElement).replace(/\sxmlns="([^"]+)"(?=[^<>]*\sxmlns="\1")/g, "");
-      } catch (_) {
-        xhtml = html.replace(/<br>/g, "<br/>").replace(/<hr>/g, "<hr/>").replace(/<img([^>]*[^/])>/g, "<img$1/>").replace(/&nbsp;/g, "&#160;");
+      zip.file("mimetype", _pkg.files["mimetype"], { compression: "STORE" });
+      Object.keys(_pkg.files).forEach((p) => {
+        if (p !== "mimetype") zip.file(p, _pkg.files[p]);
+      });
+      const _epubErrs = (_pkg.validation.issues || []).filter((i) => i.severity === "error");
+      if (_epubErrs.length) {
+        try {
+          console.warn("[EPUB self-check] " + _epubErrs.length + " structural issue(s):", _epubErrs);
+        } catch (_) {
+        }
       }
-      if (!/^<html\b[^>]*\sxmlns=/i.test(xhtml)) xhtml = xhtml.replace(/^<html\b/i, '<html xmlns="http://www.w3.org/1999/xhtml"');
-      zip.file("OEBPS/content.xhtml", xhtml);
-      const _navEsc = (s) => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-      const headings = [...html.matchAll(/<h([1-3])[^>]*\bid="([^"]*)"[^>]*>([\s\S]*?)<\/h\1>/gi)];
-      const navItems = headings.length > 0 ? headings.map((m) => `<li><a href="content.xhtml#${_navEsc(m[2])}">${_navEsc(m[3].replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim()) || "Section"}</a></li>`).join("\n") : '<li><a href="content.xhtml">Document</a></li>';
-      zip.file("OEBPS/nav.xhtml", `<?xml version="1.0" encoding="UTF-8"?>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
-<head><title>Navigation</title></head>
-<body><nav epub:type="toc"><h1>Table of Contents</h1><ol>${navItems}</ol></nav></body>
-</html>`);
       zip.generateAsync({ type: "blob", mimeType: "application/epub+zip" }).then((blob) => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
@@ -12109,163 +12287,14 @@ Return ONLY JSON:
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
-        addToast(t("toasts.epub_downloaded_open_any_reader"), "success");
+        if (_epubErrs.length) addToast(_epubErrs.length + " structural issue(s) flagged by the EPUB self-check (see console) - the file may not open in all readers.", "error");
+        else addToast(t("toasts.epub_downloaded_open_any_reader"), "success");
       });
     }, "data-help-key": "pdf_audit_alt_formats_epub_btn", className: "w-full px-3 py-2 bg-white border border-teal-600 rounded-lg text-xs font-bold text-teal-700 hover:bg-teal-50 transition-colors flex items-center gap-2" }, "\u{1F4DA} ePub (e-readers, mobile, Kindle)"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       const html = pdfFixResult?.accessibleHtml;
       if (!html) return;
-      let text = "";
-      try {
-        const _d = new DOMParser().parseFromString(html, "text/html");
-        _d.querySelectorAll("script, style, title, head, .allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], details.allo-math-source").forEach((el) => {
-          try {
-            el.remove();
-          } catch (_) {
-          }
-        });
-        _d.querySelectorAll("details.allo-chart-data > summary").forEach((el) => {
-          try {
-            el.remove();
-          } catch (_) {
-          }
-        });
-        _d.querySelectorAll("h1,h2,h3,h4,h5,h6").forEach((el) => {
-          try {
-            el.insertAdjacentText("beforebegin", "\n\n");
-            el.appendChild(_d.createTextNode("\n"));
-          } catch (_) {
-          }
-        });
-        _d.querySelectorAll("p,li,tr,figcaption,blockquote,div,br").forEach((el) => {
-          try {
-            el.appendChild(_d.createTextNode("\n"));
-          } catch (_) {
-          }
-        });
-        text = (_d.body && _d.body.textContent || "").replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
-      } catch (_) {
-        text = html.replace(/<style[\s\S]*?<\/style>/gi, " ").replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<[^>]*>/g, "\n").replace(/&nbsp;/gi, " ").replace(/&amp;/gi, "&").replace(/&lt;/gi, "<").replace(/&gt;/gi, ">").replace(/&#?[a-z0-9]+;/gi, " ").replace(/\n{3,}/g, "\n\n").trim();
-      }
-      const _brfDigit = { "1": "A", "2": "B", "3": "C", "4": "D", "5": "E", "6": "F", "7": "G", "8": "H", "9": "I", "0": "J" };
-      const _brfPunct = { ",": "1", ";": "2", ":": "3", ".": "4", "!": "6", "?": "8", "(": '"<', ")": '">', "'": "'", "-": "-", "/": "_/", "*": '"9', "&": "@&", "+": '"6', "=": '"7', "<": "@<", ">": "@>" };
-      const _brfSmart = { "\u2018": "'", "\u2019": "'", "\u2013": "-", "\u2014": "-", "\u2026": "...", "\xA0": " ", "\u2022": "*" };
-      const _brfOpenQuote = "\uE000", _brfCloseQuote = "\uE001";
-      const _brfPrefix = /[#,;@_^".]$/;
-      const _brfHardSplit = (word, into, cells) => {
-        if (/^#[A-J14]+$/.test(word)) {
-          while (word.length > cells) {
-            into.push(word.slice(0, cells - 1) + '"');
-            word = word.slice(cells - 1);
-          }
-          if (word) into.push(word);
-          return;
-        }
-        while (word.length > cells) {
-          let cut = cells;
-          while (cut > 1 && _brfPrefix.test(word.slice(0, cut))) cut--;
-          into.push(word.slice(0, cut));
-          word = word.slice(cut);
-        }
-        if (word) into.push(word);
-      };
-      const _brfWrap = (line, into, cells) => {
-        if (line.length <= cells) {
-          into.push(line);
-          return;
-        }
-        const words = line.split(" ");
-        let cur = "";
-        for (let word of words) {
-          if (word.length > cells) {
-            if (cur) {
-              into.push(cur);
-              cur = "";
-            }
-            _brfHardSplit(word, into, cells);
-            continue;
-          }
-          if (!cur) cur = word;
-          else if (cur.length + 1 + word.length <= cells) cur += " " + word;
-          else {
-            into.push(cur);
-            cur = word;
-          }
-        }
-        if (cur) into.push(cur);
-      };
-      const _toBRF = (src, opts) => {
-        const cells = opts && opts.cellsPerLine || 40;
-        let norm = String(src == null ? "" : src).replace(/[\u201c\u00ab]/g, _brfOpenQuote).replace(/[\u201d\u00bb]/g, _brfCloseQuote);
-        norm = norm.replace(/[\u2018\u2019\u2013\u2014\u2026\u00a0\u2022]/g, (c) => _brfSmart[c] || "");
-        try {
-          norm = norm.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        } catch (_) {
-        }
-        const out = [];
-        let dropped = 0;
-        for (const line of norm.replace(/\r\n?/g, "\n").split("\n")) {
-          const chars = Array.from(line);
-          let bl = "";
-          let numMode = false;
-          for (let i = 0; i < chars.length; i++) {
-            const ch = chars[i];
-            if (ch >= "0" && ch <= "9") {
-              if (!numMode) {
-                bl += "#";
-                numMode = true;
-              }
-              bl += _brfDigit[ch];
-              continue;
-            }
-            if (numMode && (ch === "," || ch === ".")) {
-              bl += _brfPunct[ch];
-              continue;
-            }
-            if (numMode && ch >= "a" && ch <= "j") bl += ";";
-            numMode = false;
-            if (ch >= "a" && ch <= "z") {
-              bl += ch.toUpperCase();
-              continue;
-            }
-            if (ch >= "A" && ch <= "Z") {
-              let end = i;
-              while (end < chars.length && chars[end] >= "A" && chars[end] <= "Z") end++;
-              const prevIsLetter = i > 0 && /[A-Za-z]/.test(chars[i - 1]);
-              const nextIsLetter = end < chars.length && /[A-Za-z]/.test(chars[end]);
-              if (!prevIsLetter && !nextIsLetter && end - i >= 2) {
-                bl += ",," + chars.slice(i, end).join("");
-                i = end - 1;
-              } else bl += "," + ch;
-              continue;
-            }
-            if (ch === " " || ch === "	") {
-              bl += " ";
-              continue;
-            }
-            if (ch === _brfOpenQuote) {
-              bl += "8";
-              continue;
-            }
-            if (ch === _brfCloseQuote) {
-              bl += "0";
-              continue;
-            }
-            if (ch === '"') {
-              const prev = i > 0 ? chars[i - 1] : "";
-              bl += !prev || /\s|[([{]/.test(prev) ? "8" : "0";
-              continue;
-            }
-            if (_brfPunct[ch] !== void 0) {
-              bl += _brfPunct[ch];
-              continue;
-            }
-            dropped++;
-          }
-          _brfWrap(bl, out, cells);
-        }
-        const brf = out.join("\r\n");
-        return opts && opts.withMeta ? { brf, dropped } : brf;
-      };
+      const _g1 = _buildBrailleBrf(html);
+      const text = _g1.text;
       const _downloadBRF = (brf) => {
         const blob = new Blob([brf], { type: "application/x-brf" });
         const url = URL.createObjectURL(blob);
@@ -12279,13 +12308,9 @@ Return ONLY JSON:
       };
       const _ensureBrailleLoader = window.AlloBraille && typeof window.AlloBraille.toUEB === "function" ? Promise.resolve(true) : window.__alloLoadPlugin ? window.__alloLoadPlugin("liblouis_braille_loader.js") : Promise.resolve(false);
       Promise.resolve(_ensureBrailleLoader).catch(() => false).then(() => {
-        let _g1Dropped = 0, _grade1;
+        let _g1Dropped = _g1.dropped, _grade1 = _g1.brf;
         if (window.AlloBraille && typeof window.AlloBraille.toGrade1BRF === "function") {
           const _r = window.AlloBraille.toGrade1BRF(text, { withMeta: true });
-          _grade1 = _r.brf;
-          _g1Dropped = _r.dropped;
-        } else {
-          const _r = _toBRF(text, { withMeta: true });
           _grade1 = _r.brf;
           _g1Dropped = _r.dropped;
         }
@@ -12293,7 +12318,7 @@ Return ONLY JSON:
           if (_g1Dropped > 0 && addToast) addToast(_g1Dropped + " character(s) had no Grade-1 braille equivalent and were skipped. Try the UEB option or check the source.", "info");
         };
         if (window.AlloBraille && typeof window.AlloBraille.toUEB === "function") {
-          addToast("Preparing contracted braille (UEB Grade 2)\u2026", "info");
+          addToast("Preparing contracted braille (UEB Grade 2)...", "info");
           Promise.resolve(window.AlloBraille.toUEB(text)).then((ueb) => {
             if (ueb && ueb.replace(/\s/g, "").length) {
               _downloadBRF(ueb);
@@ -17257,6 +17282,17 @@ Return ONLY JSON:
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.PdfAuditView = (typeof PdfAuditView !== 'undefined') ? PdfAuditView : null;
 window.AlloModules.AccessibleOfficeExport = { build: _buildAccessibleOfficeExport };
+// Alternative-format builders (2026-07-29). These were reachable only by clicking a
+// button inside PdfAuditView, which put ePub / DAISY / braille out of reach of the MCP
+// connector. Each takes an HTML string and returns a { path: contents } map; the caller
+// owns zipping. Publishing them here is what makes the formats callable headlessly.
+window.AlloModules.AltFormatExports = {
+  epub: _buildEpubPackageFiles,
+  daisy: _buildDaisyPackageFiles,
+  braille: _buildBrailleBrf,
+  plainText: _altFmtHtmlToPlainText,
+  validateEpub: validateEpubStructure,
+};
 window.AlloModules.ViewPdfAuditModule = true;
 console.log('[CDN] ViewPdfAuditModule loaded — PdfAuditView registered');
 })();
