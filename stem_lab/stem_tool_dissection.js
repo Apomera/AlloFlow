@@ -1454,11 +1454,18 @@ var d = labToolData.dissection || {};
             return { onSpecimen: ellipseDistance <= 1 || !!nearbyOrgan, organ: nearbyOrgan, edgeDistance: ellipseDistance };
           }
 
-          function cuttingTrajectorySafety(point, vector) {
+          // canvasEl is a PARAMETER, not a free variable. It used to read an undeclared `canvas`,
+          // which throws ReferenceError the first time a cut is evaluated — every caller already
+          // had the element in hand, so passing it costs nothing. Falls back to the element lookup
+          // this file uses elsewhere so a future call site that forgets the argument degrades
+          // instead of crashing the tool.
+          function cuttingTrajectorySafety(point, vector, canvasEl) {
             if (!point) return null;
+            var safetyCanvas = canvasEl || document.querySelector('[data-diss-canvas]');
+            if (!safetyCanvas) return null;
             // Predictive cutting safety evaluates the instrument's forward envelope before the tip reaches protected anatomy.
-            var safetyWidth = Number(canvas._logicalW) || canvas.width || 500;
-            var safetyHeight = Number(canvas._logicalH) || canvas.height || 600;
+            var safetyWidth = Number(safetyCanvas._logicalW) || safetyCanvas.width || 500;
+            var safetyHeight = Number(safetyCanvas._logicalH) || safetyCanvas.height || 600;
             var guide = procedureGuidePoints();
             var rawVector = vector && Math.abs(vector.x) + Math.abs(vector.y) > 0.0015
               ? vector
@@ -2636,9 +2643,16 @@ var d = labToolData.dissection || {};
             replayCanvas._toolPressure = toolId === 'probe'
               ? toolCalibration.probePressure / 100
               : (toolId === 'forceps' ? toolCalibration.forcepsGrip / 100 : 0.46);
+            // dissMotionReduced is declared inside the draw loop below, so reading it here threw
+            // ReferenceError. Recompute it from what IS in scope, matching that declaration: the
+            // user's in-tool preference OR the operating system's. The OS setting has to be part
+            // of it — honouring only the in-tool toggle would animate a replay for someone who
+            // asked their whole machine for less motion.
+            var replayMotionReduced = reducedMotionEnabled;
+            try { replayMotionReduced = reducedMotionEnabled || !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { replayMotionReduced = reducedMotionEnabled; }
             replayCanvas._toolContactPulse = {
               x: replayPoint.x, y: replayPoint.y, tool: toolId, at: Date.now(),
-              duration: dissMotionReduced ? 900 : 1400, replay: true, replayPath: path, vector: vector
+              duration: replayMotionReduced ? 900 : 1400, replay: true, replayPath: path, vector: vector
             };
           }
           function performNextProcedureStep() {
@@ -2704,7 +2718,7 @@ var d = labToolData.dissection || {};
                   + '. ' + resistanceLevel + ' resistance; pressure ' + Math.round((canvas._toolPressure || 0) * 100) + '%.';
               }
             }
-            var strokeSafety = cuttingTrajectorySafety(point, canvas._toolVector);
+            var strokeSafety = cuttingTrajectorySafety(point, canvas._toolVector, canvas);
             var strokeSafetyKey = strokeSafety ? strokeSafety.organ.id + '|' + (strokeSafety.critical ? 'stop' : 'ahead') : 'clear';
             if (canvas._cuttingSafetyState !== strokeSafetyKey) {
               canvas._cuttingSafetyState = strokeSafetyKey;
@@ -8945,7 +8959,7 @@ var d = labToolData.dissection || {};
                   var wickPreviewDistance = wickPoolPoint ? procedurePointDistance(screenPointer, wickPoolPoint) : 1;
                   var wickPreviewValid = contactOnSpecimen && !!wickPoolPoint && previewTissue.salineDrops > 2 && wickPreviewDistance <= 0.16;
                   var trajectorySafety = (responseTool === 'scalpel' || responseTool === 'scissors') && contactOnSpecimen
-                    ? cuttingTrajectorySafety(screenPointer, canvas._toolVector)
+                    ? cuttingTrajectorySafety(screenPointer, canvas._toolVector, canvas)
                     : null;
                   var interactionPreviewLabel = responseTool === 'forceps'
                     ? (forcepsPreviewValid ? 'LIFT PREVIEW: ' + forcepsGripPreview : 'MOVE FORCEPS TO OPENING')
@@ -10162,7 +10176,7 @@ var d = labToolData.dissection || {};
             // Cutting tools announce only trajectory-state changes so predictive safety remains informative without live-region chatter.
             if (!canvas._toolDrawing && !d.quizMode && !d.annotateMode && !d.rulerMode && (activeInstrument === 'scalpel' || activeInstrument === 'scissors')) {
               var hoverCuttingContact = specimenContactContext({ x: mx, y: my });
-              var hoverCuttingSafety = hoverCuttingContact.onSpecimen ? cuttingTrajectorySafety({ x: mx, y: my }, canvas._toolVector) : null;
+              var hoverCuttingSafety = hoverCuttingContact.onSpecimen ? cuttingTrajectorySafety({ x: mx, y: my }, canvas._toolVector, canvas) : null;
               var cuttingSafetyKey = hoverCuttingContact.onSpecimen ? (hoverCuttingSafety ? hoverCuttingSafety.organ.id + '|' + (hoverCuttingSafety.critical ? 'stop' : 'ahead') : 'clear') : 'tray';
               if (canvas._cuttingSafetyState !== cuttingSafetyKey) {
                 canvas._cuttingSafetyState = cuttingSafetyKey;
