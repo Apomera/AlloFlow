@@ -1,0 +1,366 @@
+{
+  "schemaVersion": 1,
+  "domainId": 4,
+  "status": "complete-source-reviewed-editorial-pass",
+  "items": [
+    {
+      "legacyId": "memory-aid-e416779969327015",
+      "title": "Temperament (Thomas & Chess)",
+      "content": "**Temperament and fit:** Easy, difficult, and slow-to-warm-up were historical profile labels from a particular longitudinal program, and many children did not fit one category. Reported percentages are not universal constants, and \"difficult\" is not a diagnosis or a judgment of worth. Goodness of fit concerns transactions between temperament and environmental expectations; development reflects biology, caregiving, culture, stress, opportunity, and bidirectional influence.",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/22534439/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Behavioral Inhibition in Childhood and the Development of Social Anxiety Disorder",
+          "organization": "Biological Psychiatry via PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/22534439/",
+          "whyReputable": "This peer-reviewed review directly evaluates temperament-related developmental risk while emphasizing probabilistic pathways and environmental moderation."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Temperament (Thomas & Chess)\" with directly aligned provenance, correcting deterministic or outdated claims and stating its model-specific inference boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-a8f5f091cd68fc2f",
+      "title": "Bronfenbrenner's Ecological Model",
+      "content": "**Nested developmental systems:** Microsystem refers to immediate activities and relationships; mesosystem to links among microsystems; exosystem to settings that affect the person indirectly; macrosystem to broader cultural and institutional patterns; chronosystem to change over time. The levels interact with characteristics of the developing person. They are analytic lenses, not concentric causes that determine outcomes or assign blame to families or cultures.",
+      "references": [
+        "https://doi.org/10.1037/0003-066X.32.7.513"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Toward an Experimental Ecology of Human Development",
+          "organization": "American Psychologist, American Psychological Association",
+          "url": "https://doi.org/10.1037/0003-066X.32.7.513",
+          "whyReputable": "Bronfenbrenner's foundational peer-reviewed article directly defines nested person-environment systems and reciprocal developmental relations."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Bronfenbrenner's Ecological Model\" with directly aligned provenance, correcting deterministic or outdated claims and stating its model-specific inference boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-f98ce6ac53dd62f3",
+      "title": "Marcia's Identity Statuses",
+      "content": "**Exploration and commitment:** Foreclosure combines commitment with little prior exploration; moratorium involves active exploration without settled commitment; achievement combines exploration and commitment; diffusion lacks both active exploration and firm commitment. Status is domain- and time-specific, not a diagnosis, permanent trait, or universal maturity ranking. Opportunity, constraint, culture, relationships, and measurement affect how exploration and commitment are expressed.",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/5939604/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Development and Validation of Ego-Identity Status",
+          "organization": "Journal of Personality and Social Psychology via PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/5939604/",
+          "whyReputable": "Marcia's peer-reviewed primary study directly operationalizes exploration or crisis and commitment while revealing the original domains and sample limitations."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Marcia's Identity Statuses\" with directly aligned provenance, correcting deterministic or outdated claims and stating its model-specific inference boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-1ed05bcf027ed828",
+      "title": "Language Milestones",
+      "content": "**Milestones as monitoring cues:** Receptive language, gestures, babbling, first words, word combinations, grammar, narrative, and pragmatic skills emerge across overlapping ranges with substantial variation. CDC milestone ages indicate what most children do by an age for surveillance; they are not deadlines or diagnoses. Hearing, language exposure, multilingual development, motor access, culture, and opportunity matter. Concerns warrant screening and evaluation rather than waiting for one memorized cutoff.",
+      "references": [
+        "https://www.cdc.gov/ncbddd/actearly/milestones/index.html"
+      ],
+      "sourceDetails": [
+        {
+          "title": "CDC Developmental Milestones",
+          "organization": "Centers for Disease Control and Prevention",
+          "url": "https://www.cdc.gov/ncbddd/actearly/milestones/index.html",
+          "whyReputable": "This current federal resource directly provides milestone checklists and explicitly distinguishes developmental monitoring from screening and diagnosis."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Language Milestones\" with directly aligned provenance, correcting deterministic or outdated claims and stating its model-specific inference boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-3535af881acb63d0",
+      "title": "Prenatal Development Stages",
+      "content": "**Prenatal periods:** Germinal development includes fertilization, early cell division, and implantation; embryonic development includes major early organ formation; fetal development emphasizes growth and maturation. Boundaries are approximate and developmental processes overlap. Exposure effects depend on timing, dose, route, genetics, placental factors, nutrition, health, and co-exposures; a named period does not make harm certain or permit causal inference about an individual child.",
+      "references": [
+        "https://www.nichd.nih.gov/health/topics/pregnancy"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Pregnancy",
+          "organization": "National Institute of Child Health and Human Development, National Institutes of Health",
+          "url": "https://www.nichd.nih.gov/health/topics/pregnancy",
+          "whyReputable": "This federal maternal-child health source directly summarizes prenatal development, health influences, and risk factors without turning broad periods into deterministic outcome rules."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Prenatal Development Stages\" with directly aligned provenance, correcting deterministic or outdated claims and stating its model-specific inference boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-14d084e768d33125",
+      "title": "Piaget's Key Concepts Deep Dive",
+      "content": "**Piagetian mechanisms:** Schemas organize action or thought; assimilation interprets experience using existing schemas; accommodation modifies schemas; equilibration describes regulation between them. Object permanence, conservation, classification, and abstract reasoning are task-linked achievements, not all-or-none global capacities. Age ranges are historical approximations, and language, familiarity, executive demands, teaching, culture, and revised tasks can change observed performance.",
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/9-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e: Lifespan Development",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/9-introduction",
+          "whyReputable": "This university chapter directly reviews Piagetian concepts and tasks while presenting contemporary qualifications involving task demands and variable performance."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Piaget's Key Concepts Deep Dive\" with directly aligned provenance, correcting deterministic or outdated claims and stating its model-specific inference boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-38e1fa348f85a22a",
+      "title": "Bowlby's Attachment Phases",
+      "content": "**Attachment-development cue:** Bowlby described increasing discrimination of caregivers and later goal-corrected partnership across early development. Phase ages are approximate historical proposals, not deadlines, and attachment behavior changes with context, stress, mobility, and the specific relationship. The framework does not establish one caregiver as the sole attachment figure, make early separation inevitably harmful, or diagnose a child or caregiver from one behavior.",
+      "references": [
+        "https://apps.who.int/iris/handle/10665/40724"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Maternal Care and Mental Health",
+          "organization": "World Health Organization",
+          "url": "https://apps.who.int/iris/handle/10665/40724",
+          "whyReputable": "Bowlby's original WHO monograph is a primary historical source for attachment theory and supports distinguishing the theory from fixed age cutoffs or caregiver blame."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Bowlby's Attachment Phases\" with directly aligned provenance, correcting deterministic or outdated claims and stating its model-specific inference boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-d8d0bdcc53d6d2de",
+      "title": "Theory of Mind & Sally-Anne",
+      "content": "**False-belief task:** The Sally-Anne task tests whether a participant predicts action from another person's outdated belief rather than current reality. Performance depends on language comprehension, memory, inhibition, attention, task format, and social demands. Passing one task does not prove a complete theory of mind, and failing does not show absence of social understanding or diagnose autism; converging measures and developmentally accessible procedures are required.",
+      "references": [
+        "https://doi.org/10.1016/0010-0277(85)90022-8"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Does the Autistic Child Have a \"Theory of Mind\"?",
+          "organization": "Cognition, Elsevier",
+          "url": "https://doi.org/10.1016/0010-0277(85)90022-8",
+          "whyReputable": "This peer-reviewed primary study introduced the Sally-Anne false-belief task while its method and sample support bounded task-specific conclusions."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Theory of Mind & Sally-Anne\" with directly aligned provenance, correcting deterministic or outdated claims and stating its model-specific inference boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-dca4d176ee9e071e",
+      "title": "Moral Development - Full Comparison",
+      "content": "**Moral-framework comparison:** Kohlberg examines structures of justification rather than chosen action alone; Gilligan broadened attention to care, relationships, and dilemma context; social-domain and cultural approaches distinguish additional concerns. Care and justice are not sex-linked stages, and meta-analysis finds small overlapping average orientation differences that depend on method. Reasoning, action, emotion, culture, power, relationships, and measurement should be assessed separately.",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/10989620/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Gender Differences in Moral Orientation: A Meta-Analysis",
+          "organization": "Psychological Bulletin via PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/10989620/",
+          "whyReputable": "This peer-reviewed meta-analysis directly tests care-versus-justice gender claims and finds small, overlapping, method-dependent average differences."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Moral Development - Full Comparison\" with directly aligned provenance, correcting deterministic or outdated claims and stating its model-specific inference boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-5466be80170b0255",
+      "title": "Self-Concept Development",
+      "content": "**Self-representation changes:** Children's self-descriptions often become more differentiated, comparative, abstract, and integrated with development, while domain-specific competence, relationships, culture, and feedback remain important. This is not a rigid sequence from \"concrete\" to \"true\" self, and apparent contradictions can reflect context-sensitive selves rather than pathology. Distinguish self-concept, self-esteem, identity, self-efficacy, and actual performance instead of collapsing them into one score.",
+      "references": [
+        "https://psycnet.apa.org/record/2003-02605-027"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The Development of Self-Representations During Childhood and Adolescence",
+          "organization": "Handbook of Self and Identity scholarly chapter",
+          "url": "https://psycnet.apa.org/record/2003-02605-027",
+          "whyReputable": "This scholarly developmental review directly addresses increasingly differentiated and integrated self-representations without imposing a rigid universal timetable."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Self-Concept Development\" with directly aligned provenance, correcting deterministic or outdated claims and stating its model-specific inference boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-6290d6a3345d5317",
+      "title": "Psychosexual vs Psychosocial Stages",
+      "content": "**Historical theory contrast:** Freud's psychosexual theory and Erikson's psychosocial theory propose different stage sequences and conflict themes. They are influential historical frameworks, not validated biological timetables or diagnostic systems. Do not infer adult symptoms, personality, parenting quality, or treatment needs from a presumed fixation or unresolved stage. Contemporary developmental formulation requires direct evidence about cognition, emotion, relationships, context, culture, health, and functioning.",
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/9-2-lifespan-theories"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Lifespan Theories",
+          "organization": "OpenStax Psychology 2e, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/9-2-lifespan-theories",
+          "whyReputable": "This openly licensed university section directly compares Freud's psychosexual stages with Erikson's psychosocial stages and states the historical and empirical limits of both frameworks."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Psychosexual vs Psychosocial Stages\" with directly aligned provenance, correcting deterministic or outdated claims and stating its model-specific inference boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-8d6268fc127222fc",
+      "title": "Language Development Milestones",
+      "content": "**Language-development map:** Gestures, shared attention, comprehension, speech sounds, words, combinations, grammar, narrative, and pragmatics develop on overlapping trajectories. Milestone checklists support monitoring, not exact prediction or diagnosis. Multilingual exposure does not itself cause disorder, and vocabulary distributed across languages matters. Hearing, communication access, motor and cognitive development, interaction, culture, and opportunity should inform screening and comprehensive evaluation.",
+      "references": [
+        "https://www.cdc.gov/ncbddd/actearly/milestones/index.html"
+      ],
+      "sourceDetails": [
+        {
+          "title": "CDC Developmental Milestones",
+          "organization": "Centers for Disease Control and Prevention",
+          "url": "https://www.cdc.gov/ncbddd/actearly/milestones/index.html",
+          "whyReputable": "This current federal resource directly provides milestone checklists and explicitly distinguishes developmental monitoring from screening and diagnosis."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Language Development Milestones\" with directly aligned provenance, correcting deterministic or outdated claims and stating its model-specific inference boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-e33b99c2b0aa1617",
+      "title": "Vygotsky's Key Concepts",
+      "content": "**Supported learning:** The zone of proximal development concerns what a learner can do with appropriate assistance relative to independent performance. Wood, Bruner, and Ross later used \"scaffolding\" for contingent tutoring functions that support and transfer control; the terms are related but not synonyms. Assistance can involve adults or more capable peers and culturally mediated tools; \"more knowledgeable other\" is later shorthand, not Vygotsky's named construct. Support must be calibrated, monitored, and faded; completing the task for the learner is not transfer.",
+      "references": [
+        "https://books.google.com/books/about/MIND_IN_SOCIETY.html?id=RxjjUefze_oC",
+        "https://pubmed.ncbi.nlm.nih.gov/932126/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Mind in Society: The Development of Higher Psychological Processes",
+          "organization": "Harvard University Press via Google Books",
+          "url": "https://books.google.com/books/about/MIND_IN_SOCIETY.html?id=RxjjUefze_oC",
+          "whyReputable": "This primary scholarly collection directly presents Vygotsky's zone of proximal development, social collaboration, and culturally mediated development."
+        },
+        {
+          "title": "The Role of Tutoring in Problem Solving",
+          "organization": "Journal of Child Psychology and Psychiatry via PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/932126/",
+          "whyReputable": "This peer-reviewed primary study introduced scaffolding functions and contingent transfer of control, supporting its relation to but distinction from the zone of proximal development."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Vygotsky's Key Concepts\" with directly aligned provenance, correcting deterministic or outdated claims and stating its model-specific inference boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-54563475dd5456e3",
+      "title": "Marcia's Identity Statuses",
+      "content": "**Identity-status cue:** Commitment after meaningful exploration fits achievement; active exploration without settled commitment fits moratorium; commitment with little exploration fits foreclosure; little exploration and commitment fits diffusion. Classify the specified domain and current process, not the whole person. Status can change, original evidence used restricted domains and samples, and no category is a diagnosis or simple maturity rank across cultures and opportunities.",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/5939604/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Development and Validation of Ego-Identity Status",
+          "organization": "Journal of Personality and Social Psychology via PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/5939604/",
+          "whyReputable": "Marcia's peer-reviewed primary study directly operationalizes exploration or crisis and commitment while revealing the original domains and sample limitations."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Marcia's Identity Statuses\" with directly aligned provenance, correcting deterministic or outdated claims and stating its model-specific inference boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-5e5e3c96c586c001",
+      "title": "Temperament - Thomas & Chess",
+      "content": "**Temperament profiles with limits:** Thomas and Chess described historical easy, difficult, and slow-to-warm-up patterns, while many participants did not fit neatly. Do not memorize sample percentages as universal prevalence or treat \"easy\" as healthy and \"difficult\" as disordered. Goodness of fit asks how a child's tendencies transact with expectations and supports; outcomes remain probabilistic and bidirectional across development and context.",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/22534439/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Behavioral Inhibition in Childhood and the Development of Social Anxiety Disorder",
+          "organization": "Biological Psychiatry via PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/22534439/",
+          "whyReputable": "This peer-reviewed review directly evaluates temperament-related developmental risk while emphasizing probabilistic pathways and environmental moderation."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Temperament - Thomas & Chess\" with directly aligned provenance, correcting deterministic or outdated claims and stating its model-specific inference boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-bbf073b71363b911",
+      "title": "Aging & Late Adulthood",
+      "content": "**Heterogeneous aging:** Processing speed, sensory function, health, social roles, and some memory tasks often change with age, while vocabulary, expertise, emotion regulation, and functioning show varied trajectories. Normal aging is not dementia, disengagement is not inevitable, and cross-sectional age differences can reflect cohort and selection effects. Evaluate change from baseline, daily function, health, medication, culture, opportunity, and supports rather than infer ability from chronological age.",
+      "references": [
+        "https://www.nia.nih.gov/health/what-do-we-know-about-healthy-aging"
+      ],
+      "sourceDetails": [
+        {
+          "title": "What Do We Know About Healthy Aging?",
+          "organization": "National Institute on Aging, National Institutes of Health",
+          "url": "https://www.nia.nih.gov/health/what-do-we-know-about-healthy-aging",
+          "whyReputable": "This federal aging resource directly summarizes heterogeneous physical, cognitive, and social change and rejects treating age alone as disease or inevitable decline."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Aging & Late Adulthood\" with directly aligned provenance, correcting deterministic or outdated claims and stating its model-specific inference boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    }
+  ]
+}

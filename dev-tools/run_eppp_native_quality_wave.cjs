@@ -92,6 +92,19 @@ function runNativeQualityWave({ dataFile, waveNumber, expectedRevisionCount = 8 
 
   const bankById = new Map(bank.map((item) => [item.id, item]));
   const actionById = new Map(actionDocket.actionItems.map((item) => [item.id, item]));
+  const diagnosticIdsBefore = {
+    lexical: new Set((diagnosticsBefore.uniqueKeyStemLexicalLeakage || []).map((entry) => entry.id)),
+    extreme: new Set((diagnosticsBefore.asymmetricExtremeDistractors || []).map((entry) => entry.id)),
+    recall: new Set((diagnosticsBefore.advancedDirectRecall || []).map((entry) => entry.id)),
+    duplicate: new Set((diagnosticsBefore.semanticConceptDuplicates?.pairs || [])
+      .flatMap((pair) => [pair.leftId, pair.rightId])),
+  };
+  const currentDiagnosticsForId = (id) => [
+    ...(diagnosticIdsBefore.lexical.has(id) ? ['unique-key/stem-lexical-leakage'] : []),
+    ...(diagnosticIdsBefore.extreme.has(id) ? ['asymmetric-extreme-distractors'] : []),
+    ...(diagnosticIdsBefore.recall.has(id) ? ['advanced-direct-recall'] : []),
+    ...(diagnosticIdsBefore.duplicate.has(id) ? ['semantic-concept-duplicate-candidate'] : []),
+  ];
   const existingAudit = fs.existsSync(existingAuditPath)
     ? JSON.parse(fs.readFileSync(existingAuditPath, 'utf8'))
     : null;
@@ -154,6 +167,8 @@ function runNativeQualityWave({ dataFile, waveNumber, expectedRevisionCount = 8 
     item.clueReviewStatus = 'editorial-pass-after-manual-option-review';
     item.biasAccessibilityStatus = 'editorial-pass';
 
+    const carriedDiagnostics = action?.diagnostics;
+    const priorDiagnostics = existingAuditById.get(item.id)?.diagnosticsBefore;
     auditItems.push({
       id: item.id,
       domainId: item.domainId,
@@ -164,7 +179,13 @@ function runNativeQualityWave({ dataFile, waveNumber, expectedRevisionCount = 8 
       cognitiveProcess: item.cognitiveProcess,
       learningObjectiveId: item.learningObjectiveId,
       sourceCheck: revision.sourceCheck,
-      diagnosticsBefore: [...(action?.diagnostics || existingAuditById.get(item.id)?.diagnosticsBefore || [])],
+      diagnosticsBefore: [...(
+        carriedDiagnostics?.length
+          ? carriedDiagnostics
+          : priorDiagnostics?.length
+            ? priorDiagnostics
+            : currentDiagnosticsForId(item.id)
+      )],
     });
   }
 

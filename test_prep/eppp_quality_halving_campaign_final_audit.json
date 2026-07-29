@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "campaignId": "eppp-quality-halving-final-verification-v1",
-  "generatedAt": "2026-07-26T06:53:50.330Z",
+  "generatedAt": "2026-07-28T21:24:46.179Z",
   "reportType": "read-only-cross-artifact-eppp-quality-halving-verification",
   "status": "pass",
   "reviewStatus": "Automated repository gates passed; no independent human, psychometric, expert, or licensed-psychologist validation is claimed.",
@@ -41,19 +41,19 @@
   },
   "currentMetrics": {
     "distractor": {
-      "uniqueKeyStemLexicalLeakageCandidates": 65,
-      "asymmetricExtremeDistractorCandidates": 130,
+      "uniqueKeyStemLexicalLeakageCandidates": 55,
+      "asymmetricExtremeDistractorCandidates": 120,
       "advancedDirectRecallCandidates": 7,
-      "semanticConceptDuplicatePairs": 114,
-      "semanticConceptDuplicateClusters": 58
+      "semanticConceptDuplicatePairs": 82,
+      "semanticConceptDuplicateClusters": 46
     },
     "feedback": {
-      "itemsWithWarnings": 635,
-      "incorrectOptionsWithWarnings": 1789,
-      "insufficientDetailOptions": 665,
-      "genericTemplateOptions": 1061,
-      "choiceRestatementOptions": 434,
-      "fullKeyEchoOptions": 270
+      "itemsWithWarnings": 617,
+      "incorrectOptionsWithWarnings": 1740,
+      "insufficientDetailOptions": 644,
+      "genericTemplateOptions": 1035,
+      "choiceRestatementOptions": 421,
+      "fullKeyEchoOptions": 260
     }
   },
   "ceilingStatus": {
@@ -61,13 +61,13 @@
       "uniqueKeyStemLexicalLeakageCandidates": {
         "baseline": 141,
         "ceiling": 70,
-        "value": 65,
+        "value": 55,
         "met": true
       },
       "asymmetricExtremeDistractorCandidates": {
         "baseline": 295,
         "ceiling": 147,
-        "value": 130,
+        "value": 120,
         "met": true
       },
       "advancedDirectRecallCandidates": {
@@ -79,13 +79,13 @@
       "semanticConceptDuplicatePairs": {
         "baseline": 240,
         "ceiling": 120,
-        "value": 114,
+        "value": 82,
         "met": true
       },
       "semanticConceptDuplicateClusters": {
         "baseline": 120,
         "ceiling": 60,
-        "value": 58,
+        "value": 46,
         "met": true
       }
     },
@@ -93,37 +93,37 @@
       "itemsWithWarnings": {
         "baseline": 1309,
         "ceiling": 654,
-        "value": 635,
+        "value": 617,
         "met": true
       },
       "incorrectOptionsWithWarnings": {
         "baseline": 3789,
         "ceiling": 1894,
-        "value": 1789,
+        "value": 1740,
         "met": true
       },
       "insufficientDetailOptions": {
         "baseline": 1357,
         "ceiling": 678,
-        "value": 665,
+        "value": 644,
         "met": true
       },
       "genericTemplateOptions": {
         "baseline": 2354,
         "ceiling": 1177,
-        "value": 1061,
+        "value": 1035,
         "met": true
       },
       "choiceRestatementOptions": {
         "baseline": 1665,
         "ceiling": 832,
-        "value": 434,
+        "value": 421,
         "met": true
       },
       "fullKeyEchoOptions": {
         "baseline": 1436,
         "ceiling": 718,
-        "value": 270,
+        "value": 260,
         "met": true
       }
     }
@@ -138,7 +138,7 @@
     ],
     "qaItemsPassing": 1500,
     "deepCampaignMarkers": 263,
-    "deepCampaignSelectedWarningsRemaining": 1,
+    "deepCampaignSelectedWarningsRemaining": 0,
     "feedbackOnlyCampaignMarkers": 420,
     "feedbackAuditItems": 420,
     "deepCohortSourceRecords": 268,
@@ -157,14 +157,14 @@
     }
   },
   "artifactSha256": {
-    "bank": "03586ff75bd15266c2b8d959c09f2499e06755cebe9a0a26d9f0da4a1fd6df86",
-    "catalog": "675de04128fabc3b8a4350fc040207b0c07ca6104aaf0bc8f429467ba2e53c84",
-    "distractorDiagnostics": "e166c4b893753651fa9a3911b70877be64dfcf7616f175f3cb25481a435b0f4a",
-    "feedbackDiagnostics": "2802c2c052d5eaee346404623694e6237c5e96be8b7e04949b2084e1e618bcf8",
-    "qa": "d32467b3665c3cb30dc098b5452c5ed57110795942fae756c4f127c1dc8032ef",
-    "distractorAudit": "f31e106b29cb82dd013734343cdd40c91ee1acf58d47d795b0005b2423caaf30",
-    "feedbackAudit": "ca181761630323f57cf705b425023e51ac0785b5e596fec7ca8e2459b9d650a9",
-    "runtime": "b4492070b3cb2ba6705c96a37322d48498455be8262dca423eb2c72397fdbf99"
+    "bank": "bba4cf58cc215e3ae634dcd64c88a5d2ceffa9b24f2439d636749b99fc7530ee",
+    "catalog": "7e11c0668ec6020799aadae0f5709977f0f43663d7aa52dce8113a80069ac307",
+    "distractorDiagnostics": "463e30073cce6b02ec333282a290225d6203dec65965f37fad55b29443b4044b",
+    "feedbackDiagnostics": "b49e78002ac973f81667afbd9d91063eae919db3768541d09c2301700c846bca",
+    "qa": "f833c9a06e2616bc4e9a7b9401cecd270e1a41b928091c6238f3ea036f43a938",
+    "distractorAudit": "7211b273e983778a664f9fa702544c08e008df3319956f43823cdbf47425edb2",
+    "feedbackAudit": "fb650e081a2686cb25f5ed96838b1f7ff17d4c3a20848caddf0a90a2e57fdc3c",
+    "runtime": "cac615c941a83744386520a3498a385f5e07975aef8eb72f362bb6bfce541b7e"
   },
   "limitations": [
     "These gates verify repository invariants and heuristic metric ceilings; they are not psychometric calibration or evidence of exam-score validity.",

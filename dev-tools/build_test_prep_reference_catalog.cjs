@@ -6,6 +6,21 @@ const root = path.resolve(__dirname, '..');
 const sourceDir = path.join(root, 'test_prep');
 const output = path.join(sourceDir, 'reference_catalog.json');
 const deployOutput = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'reference_catalog.json');
+
+function writeFileWithRetry(filePath, contents) {
+  let lastError;
+  for (let attempt = 0; attempt < 40; attempt += 1) {
+    try {
+      fs.writeFileSync(filePath, contents, 'utf8');
+      return;
+    } catch (error) {
+      lastError = error;
+      if (!['EBUSY', 'EPERM', 'EACCES', 'UNKNOWN'].includes(error.code)) throw error;
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 100);
+    }
+  }
+  throw lastError;
+}
 const decodeEntityCodePoint = (value, radix) => { const code = Number.parseInt(value, radix); return Number.isInteger(code) && code >= 0 && code <= 0x10ffff ? String.fromCodePoint(code) : ''; };
 const namedHtmlEntities = Object.freeze({ nbsp: ' ', amp: '&', quot: '"', apos: "'", lsquo: "'", rsquo: "'", ldquo: '"', rdquo: '"', ndash: '–', mdash: '—', hellip: '…', lt: '<', gt: '>', copy: '©', reg: '®' });
 const cleanText = (value) => String(value || '').replace(/<[^>]+>/g, ' ').replace(/&#x([0-9a-f]+);/gi, (_match, code) => decodeEntityCodePoint(code, 16)).replace(/&#(\d+);/g, (_match, code) => decodeEntityCodePoint(code, 10)).replace(/&([a-z]+);/gi, (match, name) => Object.prototype.hasOwnProperty.call(namedHtmlEntities, name.toLowerCase()) ? namedHtmlEntities[name.toLowerCase()] : match).replace(/\s+/g, ' ').trim();
@@ -453,8 +468,8 @@ async function main() {
   const ordered = Object.fromEntries(Object.entries(catalog).sort(([a], [b]) => a.localeCompare(b)));
   fs.mkdirSync(path.dirname(deployOutput), { recursive: true });
   const json = JSON.stringify(ordered, null, 2) + '\n';
-  fs.writeFileSync(output, json, 'utf8');
-  fs.writeFileSync(deployOutput, json, 'utf8');
+  writeFileWithRetry(output, json);
+  writeFileWithRetry(deployOutput, json);
   const resolved = doiReferences.filter((reference) => ordered[reference]?.metadataSource === 'Crossref').length;
   console.log(`Reference catalog: ${Object.keys(ordered).length} records; ${resolved}/${doiReferences.length} DOI titles resolved through Crossref.`);
 }

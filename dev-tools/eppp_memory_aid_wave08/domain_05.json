@@ -1,0 +1,697 @@
+{
+  "schemaVersion": 1,
+  "domainId": 5,
+  "status": "complete-source-reviewed-editorial-pass",
+  "items": [
+    {
+      "legacyId": "memory-aid-482b603596c65a36",
+      "title": "Personality-Disorder Clusters: DSM-5-TR Map",
+      "content": "**Cluster map, not a diagnosis:** Cluster A groups paranoid, schizoid, and schizotypal patterns as odd or eccentric; Cluster B groups antisocial, borderline, histrionic, and narcissistic patterns as dramatic, emotional, or erratic; Cluster C groups avoidant, dependent, and obsessive-compulsive personality patterns as anxious or fearful. The labels are descriptive organizers with limited demonstrated clinical utility. Diagnosis requires a pervasive, inflexible pattern, impairment or distress, developmental and cultural context, differential diagnosis, and evidence beyond a memorable adjective.",
+      "references": [
+        "https://www.merckmanuals.com/professional/psychiatric-disorders/personality-disorders/overview-of-personality-disorders"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Overview of Personality Disorders",
+          "organization": "Merck Manual Professional Edition",
+          "url": "https://www.merckmanuals.com/professional/psychiatric-disorders/personality-disorders/overview-of-personality-disorders",
+          "whyReputable": "This clinician-reviewed disorder-specific reference identifies all 10 personality disorder categories, their three descriptive clusters, common overlap, and the limited clinical utility of cluster grouping."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Personality-Disorder Clusters: DSM-5-TR Map\" for careful criterion or assessment recognition with directly aligned sources; this study aid cannot establish a diagnosis or replace the current manual, instrument documentation, or qualified evaluation.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-ff9ee0f88ec23c3c",
+      "title": "Wechsler vs Stanford-Binet",
+      "content": "**Current intelligence-test comparison:** WAIS-5 is the current English-language U.S. Wechsler adult scale, published in 2024 for ages 16:0 through 90:11, with an FSIQ, five primary indexes, and additional ancillary and process scores. SB5 spans ages 2 through 85+ and samples verbal and nonverbal performance across five factor areas. Both use age-based norms and require qualified administration. Neither is automatically better for high or low ability; choose from the referral question, age, language, motor or sensory access, normative fit, floor and ceiling evidence, validity, and the current manual.",
+      "references": [
+        "https://www.pearsonassessments.com/store/en/usd/p/P100071002.html",
+        "https://store.riversideinsights.com/shop/stanford-binet-intelligence-scales"
+      ],
+      "sourceDetails": [
+        {
+          "title": "WAIS-5 - Wechsler Adult Intelligence Scale, Fifth Edition",
+          "organization": "Pearson Assessments",
+          "url": "https://www.pearsonassessments.com/store/en/usd/p/P100071002.html",
+          "whyReputable": "The official publisher page documents the current 2024 adult edition, age range, administration structure, Full Scale IQ, primary indexes, ancillary indexes, and qualification requirements."
+        },
+        {
+          "title": "Stanford-Binet Intelligence Scales, Fifth Edition",
+          "organization": "Riverside Insights",
+          "url": "https://store.riversideinsights.com/shop/stanford-binet-intelligence-scales",
+          "whyReputable": "The official publisher page documents the SB5 age range and its intended assessment of intelligence and cognitive abilities, making it the direct source for edition and use claims."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Wechsler vs Stanford-Binet\" for careful criterion or assessment recognition with directly aligned sources; this study aid cannot establish a diagnosis or replace the current manual, instrument documentation, or qualified evaluation.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-987b61706881a2c2",
+      "title": "PTSD Diagnostic Criteria",
+      "content": "**PTSD recognition architecture:** First establish a qualifying exposure, then look for the required pattern across intrusion, active avoidance, negative changes in cognition or mood, and arousal or reactivity. The disturbance must persist beyond one month, cause clinically important distress or impairment, and not be better attributable to substances or illness. A delayed-expression specifier concerns when the full pattern is met, not whether all symptoms began six months later. Trauma exposure alone, a high screening score, distress during the first month, or one vivid symptom does not establish PTSD; assess safety, development, culture, dissociation, comorbidity, and alternatives.",
+      "references": [
+        "https://www.ptsd.va.gov/professional/treat/essentials/dsm5_ptsd.asp"
+      ],
+      "sourceDetails": [
+        {
+          "title": "PTSD and DSM-5",
+          "organization": "National Center for PTSD, U.S. Department of Veterans Affairs",
+          "url": "https://www.ptsd.va.gov/professional/treat/essentials/dsm5_ptsd.asp",
+          "whyReputable": "This federal specialty center provides a criterion-organized summary of qualifying exposure, symptom clusters, duration, impairment, exclusions, and DSM-5-TR continuity without requiring copied manual text."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"PTSD Diagnostic Criteria\" for careful criterion or assessment recognition with directly aligned sources; this study aid cannot establish a diagnosis or replace the current manual, instrument documentation, or qualified evaluation.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-864f21c56e777468",
+      "title": "GAD vs Panic vs Phobia",
+      "content": "**Anxiety differential by pattern:** GAD centers on excessive, difficult-to-control worry across multiple areas on most days for at least six months, with associated tension, restlessness, fatigue, concentration, irritability, or sleep symptoms. Panic disorder requires recurrent unexpected panic attacks plus at least a month of persistent concern, meaning-making, or maladaptive behavior change; an isolated or expected attack is not the disorder. Specific phobia centers on marked cue-linked fear and avoidance, while agoraphobia involves feared escape or help limitations across multiple situation types. Check impairment, substances, medical causes, trauma, OCD, and context before classifying.",
+      "references": [
+        "https://www.nimh.nih.gov/health/publications/generalized-anxiety-disorder-gad",
+        "https://www.nimh.nih.gov/health/publications/panic-disorder-when-fear-overwhelms",
+        "https://www.nimh.nih.gov/health/topics/anxiety-disorders"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Generalized Anxiety Disorder: What You Need to Know",
+          "organization": "National Institute of Mental Health, National Institutes of Health",
+          "url": "https://www.nimh.nih.gov/health/publications/generalized-anxiety-disorder-gad",
+          "whyReputable": "This current federal condition-specific publication describes excessive difficult-to-control worry, associated symptoms, duration, functional effects, evaluation, and medical rule-outs."
+        },
+        {
+          "title": "Panic Disorder: What You Need to Know",
+          "organization": "National Institute of Mental Health, National Institutes of Health",
+          "url": "https://www.nimh.nih.gov/health/publications/panic-disorder-when-fear-overwhelms",
+          "whyReputable": "This federal condition-specific publication distinguishes a panic attack from panic disorder and describes recurrent unexpected attacks, persistent concern or behavior change, and medical evaluation."
+        },
+        {
+          "title": "Anxiety Disorders",
+          "organization": "National Institute of Mental Health, National Institutes of Health",
+          "url": "https://www.nimh.nih.gov/health/topics/anxiety-disorders",
+          "whyReputable": "This federal topic page identifies current anxiety-disorder groupings and distinguishes persistent clinically significant anxiety from occasional fear or worry without collapsing OCD or PTSD into that group."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"GAD vs Panic vs Phobia\" for careful criterion or assessment recognition with directly aligned sources; this study aid cannot establish a diagnosis or replace the current manual, instrument documentation, or qualified evaluation.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-0268cd33a4a6a6e2",
+      "title": "ADHD Diagnostic Criteria",
+      "content": "**ADHD recognition, not checklist diagnosis:** Inattentive and hyperactive-impulsive symptoms form inattentive, hyperactive-impulsive, or combined presentations. Several symptoms must have been present before age 12, persist rather than appear only during a brief stressor, occur in at least two settings, and interfere with functioning or development. Thresholds vary by age, and presentation can change over time. Evaluation combines developmental, medical, educational, and mental health history with reports across settings and appropriate rating or performance data. Sleep, anxiety, mood, trauma, learning, substance, sensory, and medical explanations must be considered; one rating scale or classroom behavior is insufficient.",
+      "references": [
+        "https://www.nimh.nih.gov/health/publications/attention-deficit-hyperactivity-disorder-what-you-need-to-know"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Attention-Deficit/Hyperactivity Disorder: What You Need to Know",
+          "organization": "National Institute of Mental Health, National Institutes of Health",
+          "url": "https://www.nimh.nih.gov/health/publications/attention-deficit-hyperactivity-disorder-what-you-need-to-know",
+          "whyReputable": "This current federal ADHD publication covers symptom presentations, childhood onset, persistence, cross-setting impairment, developmental variation, comprehensive evaluation, and differential considerations."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"ADHD Diagnostic Criteria\" for careful criterion or assessment recognition with directly aligned sources; this study aid cannot establish a diagnosis or replace the current manual, instrument documentation, or qualified evaluation.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-716f45f325772345",
+      "title": "Autism Spectrum Disorder (ASD)",
+      "content": "**ASD recognition uses two domains and developmental evidence:** The pattern includes persistent social-communication and social-interaction differences across all three areas plus at least two types of restricted or repetitive behavior, interests, routines, or sensory response. Features begin in the developmental period, may become clearer when demands exceed capacity, and must affect functioning; language and intellectual ability are separate specifiers, not exclusions. Diagnosis integrates developmental history, caregiver or informant information, skilled observation, strengths, adaptive functioning, and differential assessment. No single screener, eye-contact behavior, interest, or test score diagnoses autism, and support levels are context-sensitive service descriptors.",
+      "references": [
+        "https://www.cdc.gov/autism/hcp/diagnosis/index.html"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Clinical Testing and Diagnosis for Autism Spectrum Disorder",
+          "organization": "Centers for Disease Control and Prevention",
+          "url": "https://www.cdc.gov/autism/hcp/diagnosis/index.html",
+          "whyReputable": "This current federal clinical page describes both required domains, developmental and functional qualifications, co-occurrence with intellectual disability, and why no single tool establishes diagnosis."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Autism Spectrum Disorder (ASD)\" for careful criterion or assessment recognition with directly aligned sources; this study aid cannot establish a diagnosis or replace the current manual, instrument documentation, or qualified evaluation.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-89c4eeffaecadf77",
+      "title": "OCD Diagnostic Features",
+      "content": "**OCD recognition:** Obsessions are recurrent intrusive and unwanted thoughts, urges, or images; compulsions are repetitive behaviors or mental acts performed under a felt rule or in response to distress. Either or both may be present. The key boundary is that symptoms are time-consuming or cause significant distress or functional interference, not merely that a person likes order or checks once. Insight varies, and children may not describe internal aims clearly. Distinguish OCD from generalized worry, psychosis, tic phenomena, autism-related routines, body-focused repetitive behaviors, and obsessive-compulsive personality traits. ERP is an evidence-supported treatment, but a mnemonic does not select treatment for an individual.",
+      "references": [
+        "https://www.nimh.nih.gov/health/publications/obsessive-compulsive-disorder-when-unwanted-thoughts-or-repetitive-behaviors-take-over"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Obsessive-Compulsive Disorder: When Unwanted Thoughts or Repetitive Behaviors Take Over",
+          "organization": "National Institute of Mental Health, National Institutes of Health",
+          "url": "https://www.nimh.nih.gov/health/publications/obsessive-compulsive-disorder-when-unwanted-thoughts-or-repetitive-behaviors-take-over",
+          "whyReputable": "This federal condition-specific publication distinguishes obsessions and compulsions, ordinary habits, distress and impairment, evaluation, common overlap, and evidence-supported treatment."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"OCD Diagnostic Features\" for careful criterion or assessment recognition with directly aligned sources; this study aid cannot establish a diagnosis or replace the current manual, instrument documentation, or qualified evaluation.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-0b8549193274b34a",
+      "title": "Bipolar Disorder Types",
+      "content": "**Bipolar classification turns on episode history:** Bipolar I requires a manic episode; a major depressive episode is common but not required. Bipolar II requires both hypomanic and major depressive episodes and no history of mania. Cyclothymia involves a chronic course of fluctuating hypomanic and depressive symptoms that do not meet full episode patterns. Mania differs from hypomania by severity, marked impairment, hospitalization, or psychosis, not by a simple good-mood scale, and bipolar II is not necessarily less burdensome. Assess the lifetime course, collateral observations, sleep and energy change, functional departure from baseline, mixed features, substances, medications, and medical causes.",
+      "references": [
+        "https://www.nimh.nih.gov/health/publications/bipolar-disorder"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Bipolar Disorder",
+          "organization": "National Institute of Mental Health, National Institutes of Health",
+          "url": "https://www.nimh.nih.gov/health/publications/bipolar-disorder",
+          "whyReputable": "This federal condition-specific publication directly compares bipolar I, bipolar II, and cyclothymia and emphasizes lifetime course, functional severity, medical and substance rule-outs, and history."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Bipolar Disorder Types\" for careful criterion or assessment recognition with directly aligned sources; this study aid cannot establish a diagnosis or replace the current manual, instrument documentation, or qualified evaluation.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-387dbae0e9f5805b",
+      "title": "Neuropsychological Tests",
+      "content": "**Task-demand map:** Trail Making A emphasizes visual scanning, sequencing, and speed; Trail Making B adds alternating-set demands. Wisconsin Card Sorting examines learning from feedback, concept formation, and shifting, with perseverative responding only one score. Naming, clock drawing, finger tapping, and Wechsler subtests sample different language, visuospatial, motor, attention, memory, or reasoning demands. A task is not a one-to-one brain-region detector, and B-minus-A is not a stand-alone diagnosis of executive dysfunction. Interpret with current manuals, appropriate norms, sensory and motor status, language, education, fatigue, validity evidence, history, and converging measures.",
+      "references": [
+        "https://www.tandfonline.com/doi/full/10.1080/13825580601025932",
+        "https://www.parinc.com/products/WCST"
+      ],
+      "sourceDetails": [
+        {
+          "title": "AACN Practice Guidelines for Neuropsychological Assessment and Consultation",
+          "organization": "American Academy of Clinical Neuropsychology",
+          "url": "https://www.tandfonline.com/doi/full/10.1080/13825580601025932",
+          "whyReputable": "These board-endorsed professional guidelines require referral-led selection, qualified administration, appropriate norms, validity assessment, multiple data sources, contextual interpretation, and documented limitations."
+        },
+        {
+          "title": "Wisconsin Card Sorting Test",
+          "organization": "PAR, official test publisher",
+          "url": "https://www.parinc.com/products/WCST",
+          "whyReputable": "The official instrument page describes the sorting and rule-shift demands, administration requirements, available scores, and normative interpretation rather than equating one error with one brain lesion."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Neuropsychological Tests\" for careful criterion or assessment recognition with directly aligned sources; this study aid cannot establish a diagnosis or replace the current manual, instrument documentation, or qualified evaluation.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-b1ff4834475cd4b8",
+      "title": "Dissociative Disorders",
+      "content": "**Dissociative disorder distinctions:** Dissociative identity disorder involves identity-state disruption together with recurrent memory gaps beyond ordinary forgetting. Dissociative amnesia centers on autobiographical memory loss that is inconsistent with normal forgetting; fugue is a specifier involving apparently purposeful travel or bewildered wandering, not a separate diagnosis. Depersonalization means detachment from self, while derealization means unreality or detachment from surroundings; reality testing remains intact in depersonalization/derealization disorder. These experiences also occur transiently and in trauma, panic, substances, seizures, sleep disruption, and other disorders, so structured differential assessment is essential.",
+      "references": [
+        "https://www.merckmanuals.com/professional/psychiatric-disorders/dissociative-disorders/overview-of-dissociative-disorders",
+        "https://www.merckmanuals.com/professional/psychiatric-disorders/dissociative-disorders/dissociative-amnesia",
+        "https://www.merckmanuals.com/professional/psychiatric-disorders/dissociative-disorders/depersonalization-derealization-disorder"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Overview of Dissociative Disorders",
+          "organization": "Merck Manual Professional Edition",
+          "url": "https://www.merckmanuals.com/professional/psychiatric-disorders/dissociative-disorders/overview-of-dissociative-disorders",
+          "whyReputable": "This clinician-reviewed disorder-specific overview distinguishes disruptions of identity, memory, and self or environmental experience while emphasizing differential diagnosis and medical assessment."
+        },
+        {
+          "title": "Dissociative Amnesia",
+          "organization": "Merck Manual Professional Edition",
+          "url": "https://www.merckmanuals.com/professional/psychiatric-disorders/dissociative-disorders/dissociative-amnesia",
+          "whyReputable": "This clinician-reviewed condition-specific reference defines autobiographical memory loss beyond ordinary forgetting and explains that dissociative fugue is a specifier rather than a separate disorder."
+        },
+        {
+          "title": "Depersonalization/Derealization Disorder",
+          "organization": "Merck Manual Professional Edition",
+          "url": "https://www.merckmanuals.com/professional/psychiatric-disorders/dissociative-disorders/depersonalization-derealization-disorder",
+          "whyReputable": "This clinician-reviewed condition-specific reference distinguishes detachment from self and surroundings, requires intact reality testing, and emphasizes exclusion of substances, seizures, and other disorders."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Dissociative Disorders\" for careful criterion or assessment recognition with directly aligned sources; this study aid cannot establish a diagnosis or replace the current manual, instrument documentation, or qualified evaluation.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-5d7c416a8764207e",
+      "title": "Somatic Symptom vs Factitious vs Malingering",
+      "content": "**Do not infer intent from unexplained symptoms:** Somatic symptom disorder concerns disproportionate, persistent thoughts, feelings, or behavior around distressing physical symptoms; symptoms may accompany a medical condition and are not intentionally produced. Factitious disorder involves deliberate falsification or induction with deception but without an obvious external reward. Malingering is intentional symptom production for an identifiable external incentive and is not a mental disorder. The old shortcut of \"real, sick role, profit\" is incomplete: motives can be unclear, medical illness can coexist, and high-stakes conclusions require records, examination, collateral data, response-validity evidence, and a nonpunitive safety-focused approach.",
+      "references": [
+        "https://www.merckmanuals.com/professional/psychiatric-disorders/somatic-symptom-and-related-disorders/overview-of-somatization"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Overview of Somatization",
+          "organization": "Merck Manual Professional Edition",
+          "url": "https://www.merckmanuals.com/professional/psychiatric-disorders/somatic-symptom-and-related-disorders/overview-of-somatization",
+          "whyReputable": "This clinician-reviewed comparison directly separates nonvolitional somatic symptom presentations, deliberate factitious production without obvious external reward, and malingering for external incentive."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Somatic Symptom vs Factitious vs Malingering\" for careful criterion or assessment recognition with directly aligned sources; this study aid cannot establish a diagnosis or replace the current manual, instrument documentation, or qualified evaluation.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-d6e2994344946855",
+      "title": "Eating Disorders",
+      "content": "**Eating-disorder recognition:** Anorexia nervosa involves restriction leading to significantly low weight together with fear of weight gain or persistent behavior interfering with weight gain and altered weight or shape experience. Bulimia nervosa involves recurrent loss-of-control binge episodes with recurrent compensatory behavior and overvaluation of weight or shape, outside an anorexia-only course. Binge-eating disorder involves recurrent distressing loss-of-control binges without the regular compensatory pattern. ARFID is not driven by weight or shape concerns. Appearance and body size do not determine diagnosis or medical risk; assess behavior, cognition, frequency, course, nutrition, vital signs, laboratory risk, suicide risk, culture, and differential causes.",
+      "references": [
+        "https://www.nimh.nih.gov/health/publications/eating-disorders"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Eating Disorders: What You Need to Know",
+          "organization": "National Institute of Mental Health, National Institutes of Health",
+          "url": "https://www.nimh.nih.gov/health/publications/eating-disorders",
+          "whyReputable": "This current federal condition-specific publication distinguishes anorexia nervosa, bulimia nervosa, binge-eating disorder, and ARFID while emphasizing serious risk across body sizes and populations."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Eating Disorders\" for careful criterion or assessment recognition with directly aligned sources; this study aid cannot establish a diagnosis or replace the current manual, instrument documentation, or qualified evaluation.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-ce4adc51c2d4de03",
+      "title": "Substance Use Disorder Criteria",
+      "content": "**SUD criterion domains:** The 11 features are organized as impaired control, social impairment, risky use, and pharmacologic adaptation. Meeting 2 or 3 within 12 months is mild, 4 or 5 moderate, and 6 or more severe for a specific substance class. Count the actual substance-linked pattern, impairment, course, and exclusions rather than any use or one consequence. Tolerance and withdrawal alone during appropriate prescribed use do not automatically establish a disorder, and some substance classes lack a defined withdrawal syndrome. Intoxication, withdrawal, substance-induced disorders, hazardous use, and SUD are related but distinct decisions; use the current substance-specific criteria and a qualified assessment.",
+      "references": [
+        "https://www.ncbi.nlm.nih.gov/books/NBK565474/table/table-3/?report=objectonly"
+      ],
+      "sourceDetails": [
+        {
+          "title": "DSM-5-TR Criteria for Diagnosing and Classifying Substance Use Disorders",
+          "organization": "Johns Hopkins University clinical guideline via NCBI Bookshelf",
+          "url": "https://www.ncbi.nlm.nih.gov/books/NBK565474/table/table-3/?report=objectonly",
+          "whyReputable": "This current clinical guideline table organizes the 11 criteria into impaired control, social impairment, risky use, and pharmacologic domains and states current severity thresholds and exceptions."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Substance Use Disorder Criteria\" for careful criterion or assessment recognition with directly aligned sources; this study aid cannot establish a diagnosis or replace the current manual, instrument documentation, or qualified evaluation.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-1c0abe04158c19c3",
+      "title": "Sleep-Wake Disorders",
+      "content": "**Sleep differential starts with timing, opportunity, and objective risk:** Chronic insomnia involves repeated difficulty initiating or maintaining sleep despite adequate opportunity, with daytime effect, at least three nights weekly for at least three months. Narcolepsy centers on excessive daytime sleepiness; cataplexy characterizes type 1 but not type 2, and testing is specialized. Obstructive sleep apnea involves recurrent upper-airway obstruction, while central apnea reflects impaired breathing signals; snoring alone is not diagnostic. Parasomnias differ by behavior and sleep timing, but recall is not an absolute shortcut. Review schedule, circadian pattern, substances, medications, breathing, movement, mood, safety, and indications for sleep study.",
+      "references": [
+        "https://www.nhlbi.nih.gov/health/insomnia/diagnosis",
+        "https://www.nhlbi.nih.gov/health/narcolepsy",
+        "https://www.nhlbi.nih.gov/health/sleep-apnea"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Insomnia - Diagnosis",
+          "organization": "National Heart, Lung, and Blood Institute, National Institutes of Health",
+          "url": "https://www.nhlbi.nih.gov/health/insomnia/diagnosis",
+          "whyReputable": "This federal sleep resource describes chronic insomnia frequency and duration, daytime impact, sleep history, contributing substances and conditions, and when additional testing is needed."
+        },
+        {
+          "title": "Narcolepsy",
+          "organization": "National Heart, Lung, and Blood Institute, National Institutes of Health",
+          "url": "https://www.nhlbi.nih.gov/health/narcolepsy",
+          "whyReputable": "This federal condition-specific resource distinguishes type 1 and type 2 narcolepsy, cataplexy, sleep paralysis, hallucinations around sleep, testing, comorbidity, and safety concerns."
+        },
+        {
+          "title": "Sleep Apnea - What Is Sleep Apnea?",
+          "organization": "National Heart, Lung, and Blood Institute, National Institutes of Health",
+          "url": "https://www.nhlbi.nih.gov/health/sleep-apnea",
+          "whyReputable": "This current federal condition-specific resource distinguishes obstructive and central sleep apnea, symptoms, diagnostic sleep studies, consequences, and individualized treatment options."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Sleep-Wake Disorders\" for careful criterion or assessment recognition with directly aligned sources; this study aid cannot establish a diagnosis or replace the current manual, instrument documentation, or qualified evaluation.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-1c6c42c0298ca5f4",
+      "title": "Anxiety, OCD & Trauma: DSM-5-TR Chapter Map",
+      "content": "**Chapter placement is a retrieval cue, not a causal theory:** Anxiety disorders include conditions organized around excessive fear, anxiety, and related avoidance, such as GAD, panic disorder, agoraphobia, and specific or social phobia. OCD belongs with obsessive-compulsive and related disorders, which also include hoarding and body-focused or appearance-focused conditions. PTSD and acute stress disorder belong with trauma- and stressor-related disorders and require qualifying exposure. Separation into chapters does not mean the groups never overlap or share anxiety, learning, or repetitive behavior. Diagnose from the full syndrome, duration, impairment, exclusions, development, and context rather than the chapter label.",
+      "references": [
+        "https://www.nimh.nih.gov/health/topics/anxiety-disorders",
+        "https://www.nimh.nih.gov/health/publications/obsessive-compulsive-disorder-when-unwanted-thoughts-or-repetitive-behaviors-take-over",
+        "https://www.ptsd.va.gov/professional/treat/essentials/dsm5_ptsd.asp"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Anxiety Disorders",
+          "organization": "National Institute of Mental Health, National Institutes of Health",
+          "url": "https://www.nimh.nih.gov/health/topics/anxiety-disorders",
+          "whyReputable": "This federal topic page identifies current anxiety-disorder groupings and distinguishes persistent clinically significant anxiety from occasional fear or worry without collapsing OCD or PTSD into that group."
+        },
+        {
+          "title": "Obsessive-Compulsive Disorder: When Unwanted Thoughts or Repetitive Behaviors Take Over",
+          "organization": "National Institute of Mental Health, National Institutes of Health",
+          "url": "https://www.nimh.nih.gov/health/publications/obsessive-compulsive-disorder-when-unwanted-thoughts-or-repetitive-behaviors-take-over",
+          "whyReputable": "This federal condition-specific publication distinguishes obsessions and compulsions, ordinary habits, distress and impairment, evaluation, common overlap, and evidence-supported treatment."
+        },
+        {
+          "title": "PTSD and DSM-5",
+          "organization": "National Center for PTSD, U.S. Department of Veterans Affairs",
+          "url": "https://www.ptsd.va.gov/professional/treat/essentials/dsm5_ptsd.asp",
+          "whyReputable": "This federal specialty center provides a criterion-organized summary of qualifying exposure, symptom clusters, duration, impairment, exclusions, and DSM-5-TR continuity without requiring copied manual text."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Anxiety, OCD & Trauma: DSM-5-TR Chapter Map\" for careful criterion or assessment recognition with directly aligned sources; this study aid cannot establish a diagnosis or replace the current manual, instrument documentation, or qualified evaluation.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-bd439c29c157b3b4",
+      "title": "Differential Diagnosis Tips",
+      "content": "**Differential diagnosis uses discriminating evidence, not slogans:** For depression versus bipolar II, obtain lifetime evidence of hypomanic episodes, collateral change, substances, and medical causes. OCD cannot be reduced to ego-dystonic and OCPD to ego-syntonic because insight and distress vary. Delirium usually has acute or fluctuating attention and awareness changes and needs urgent cause assessment; major neurocognitive disorders are not uniformly gradual or irreversible. Schizoid, schizotypal, and avoidant personality patterns differ in relational interest, eccentric cognition or perception, and rejection sensitivity, but require pervasive longitudinal evidence. Always compare onset, course, context, impairment, exclusions, and the evidence required by each candidate.",
+      "references": [
+        "https://www.nimh.nih.gov/health/publications/bipolar-disorder",
+        "https://www.nimh.nih.gov/health/publications/obsessive-compulsive-disorder-when-unwanted-thoughts-or-repetitive-behaviors-take-over",
+        "https://www.nia.nih.gov/health/health-care-professionals-information/assessing-cognitive-impairment-older-patients",
+        "https://www.nice.org.uk/guidance/cg103/chapter/Recommendations",
+        "https://www.merckmanuals.com/professional/psychiatric-disorders/personality-disorders/overview-of-personality-disorders"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Bipolar Disorder",
+          "organization": "National Institute of Mental Health, National Institutes of Health",
+          "url": "https://www.nimh.nih.gov/health/publications/bipolar-disorder",
+          "whyReputable": "This federal condition-specific publication directly compares bipolar I, bipolar II, and cyclothymia and emphasizes lifetime course, functional severity, medical and substance rule-outs, and history."
+        },
+        {
+          "title": "Obsessive-Compulsive Disorder: When Unwanted Thoughts or Repetitive Behaviors Take Over",
+          "organization": "National Institute of Mental Health, National Institutes of Health",
+          "url": "https://www.nimh.nih.gov/health/publications/obsessive-compulsive-disorder-when-unwanted-thoughts-or-repetitive-behaviors-take-over",
+          "whyReputable": "This federal condition-specific publication distinguishes obsessions and compulsions, ordinary habits, distress and impairment, evaluation, common overlap, and evidence-supported treatment."
+        },
+        {
+          "title": "Assessing Cognitive Impairment in Older Patients",
+          "organization": "National Institute on Aging, National Institutes of Health",
+          "url": "https://www.nia.nih.gov/health/health-care-professionals-information/assessing-cognitive-impairment-older-patients",
+          "whyReputable": "This federal clinical guide distinguishes screening from diagnosis and emphasizes time course, daily function, informant report, medication and medical causes, delirium, depression, and fuller evaluation."
+        },
+        {
+          "title": "Delirium: Prevention, Diagnosis and Management - Recommendations",
+          "organization": "National Institute for Health and Care Excellence",
+          "url": "https://www.nice.org.uk/guidance/cg103/chapter/Recommendations",
+          "whyReputable": "This evidence-based clinical guideline identifies recent or fluctuating changes as triggers for delirium assessment and prioritizes underlying causes rather than a simplistic reversible-versus-irreversible rule."
+        },
+        {
+          "title": "Overview of Personality Disorders",
+          "organization": "Merck Manual Professional Edition",
+          "url": "https://www.merckmanuals.com/professional/psychiatric-disorders/personality-disorders/overview-of-personality-disorders",
+          "whyReputable": "This clinician-reviewed disorder-specific reference identifies all 10 personality disorder categories, their three descriptive clusters, common overlap, and the limited clinical utility of cluster grouping."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Differential Diagnosis Tips\" for careful criterion or assessment recognition with directly aligned sources; this study aid cannot establish a diagnosis or replace the current manual, instrument documentation, or qualified evaluation.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-ff349570c3d77b98",
+      "title": "Personality Assessment Instruments",
+      "content": "**Match method to inference:** MMPI-3 is a 335-item structured self-report inventory with response-validity, higher-order, restructured clinical, problem, interpersonal, and PSY-5 scales; validity scales evaluate response patterns, not simply \"faking.\" NEO-PI-3 measures five broad normal-range trait domains and facets. R-PAS standardizes behavioral responses to inkblots; the TAT elicits stories to picture scenes. Performance-based methods do not directly reveal an unconscious truth, and self-report is not automatically objective or valid. Select and interpret from the referral question, evidence for the intended use, norms, language and culture, response process, qualifications, and convergence with interview, records, and other measures.",
+      "references": [
+        "https://www.upress.umn.edu/test-division/mmpi-3/",
+        "https://www.parinc.com/products/NEO-PI-3-NU",
+        "https://r-pas.org/Home/About",
+        "https://www.pearsonassessments.com/store/usassessments/en/p/thematic-apperception-test/100000341"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Minnesota Multiphasic Personality Inventory-3",
+          "organization": "University of Minnesota Press Test Division",
+          "url": "https://www.upress.umn.edu/test-division/mmpi-3/",
+          "whyReputable": "The test owner documents the 335-item MMPI-3, its updated norms, validity scales, higher-order and restructured clinical scales, content scales, PSY-5 scales, and qualified-use context."
+        },
+        {
+          "title": "NEO Personality Inventory-3 Normative Update",
+          "organization": "PAR, official test publisher",
+          "url": "https://www.parinc.com/products/NEO-PI-3-NU",
+          "whyReputable": "The official publisher page describes current five-domain and facet measurement, self and informant forms, updated norms, age range, validity options, and professional interpretation context."
+        },
+        {
+          "title": "About the Rorschach Performance Assessment System",
+          "organization": "R-PAS",
+          "url": "https://r-pas.org/Home/About",
+          "whyReputable": "The system developers describe R-PAS as standardized performance-based assessment with evidence-selected variables, international norms, administration controls, and bounded behavioral inferences."
+        },
+        {
+          "title": "Thematic Apperception Test",
+          "organization": "Pearson Assessments",
+          "url": "https://www.pearsonassessments.com/store/usassessments/en/p/thematic-apperception-test/100000341",
+          "whyReputable": "The official publisher page describes the picture-story task, publication history, intended personality-assessment use, administration format, and professional qualification level."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Personality Assessment Instruments\" for careful criterion or assessment recognition with directly aligned sources; this study aid cannot establish a diagnosis or replace the current manual, instrument documentation, or qualified evaluation.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-b1fef52c48b087e8",
+      "title": "Neuropsychological Assessment",
+      "content": "**Assessment is an integrated inference process:** Fixed batteries offer standardized breadth; flexible batteries select measures from the referral question, hypotheses, history, and evolving findings. Both approaches require qualified administration, current manuals, appropriate norms, behavioral observation, records and interview, performance and symptom validity, and attention to language, culture, education, sensory or motor access, medication, fatigue, pain, and emotional state. WCST, Trail Making, naming, construction, and motor tasks have multiple demands and are not lesion locators. Describe strengths, weaknesses, uncertainty, functional meaning, and alternative explanations; one low score, discrepancy, automated printout, or \"impairment index\" cannot diagnose brain damage or lateralize a lesion.",
+      "references": [
+        "https://www.tandfonline.com/doi/full/10.1080/13825580601025932",
+        "https://www.parinc.com/products/WCST"
+      ],
+      "sourceDetails": [
+        {
+          "title": "AACN Practice Guidelines for Neuropsychological Assessment and Consultation",
+          "organization": "American Academy of Clinical Neuropsychology",
+          "url": "https://www.tandfonline.com/doi/full/10.1080/13825580601025932",
+          "whyReputable": "These board-endorsed professional guidelines require referral-led selection, qualified administration, appropriate norms, validity assessment, multiple data sources, contextual interpretation, and documented limitations."
+        },
+        {
+          "title": "Wisconsin Card Sorting Test",
+          "organization": "PAR, official test publisher",
+          "url": "https://www.parinc.com/products/WCST",
+          "whyReputable": "The official instrument page describes the sorting and rule-shift demands, administration requirements, available scores, and normative interpretation rather than equating one error with one brain lesion."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Neuropsychological Assessment\" for careful criterion or assessment recognition with directly aligned sources; this study aid cannot establish a diagnosis or replace the current manual, instrument documentation, or qualified evaluation.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-dddef0fb77b1e85d",
+      "title": "Personality Disorder Clusters",
+      "content": "**Within-cluster contrasts with boundaries:** In Cluster A, paranoid emphasizes pervasive mistrust, schizoid limited desire for close relationships, and schizotypal eccentric cognition, perception, or behavior. Cluster B contrasts disregard and deceit, instability and dysregulation, excessive emotional attention seeking, and grandiosity or admiration needs. Cluster C contrasts rejection-sensitive inhibition, dependency and separation difficulty, and perfectionistic control. These prototypes overlap, do not justify stigmatizing \"mad, bad, sad\" labels, and cannot be assigned from one trait. Confirm enduring cross-situation patterns, impairment, developmental course, culture, trauma, mood or psychosis, substance or medical effects, and dimensional severity.",
+      "references": [
+        "https://www.merckmanuals.com/professional/psychiatric-disorders/personality-disorders/overview-of-personality-disorders"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Overview of Personality Disorders",
+          "organization": "Merck Manual Professional Edition",
+          "url": "https://www.merckmanuals.com/professional/psychiatric-disorders/personality-disorders/overview-of-personality-disorders",
+          "whyReputable": "This clinician-reviewed disorder-specific reference identifies all 10 personality disorder categories, their three descriptive clusters, common overlap, and the limited clinical utility of cluster grouping."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Personality Disorder Clusters\" for careful criterion or assessment recognition with directly aligned sources; this study aid cannot establish a diagnosis or replace the current manual, instrument documentation, or qualified evaluation.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-bb2b380a4f013810",
+      "title": "Schizophrenia Spectrum",
+      "content": "**Psychosis-spectrum recognition:** Psychotic symptoms include delusions, hallucinations, and disorganized thought or behavior; negative symptoms include reduced expression, motivation, speech, pleasure, or social engagement; cognitive difficulties may affect attention, memory, and planning. Schizophrenia classification depends on the required active symptoms, overall duration, dysfunction, and exclusions. Schizophreniform and brief psychotic disorder differ chiefly in course, while delusional disorder and schizoaffective disorder require different symptom and mood relationships. Medication response is variable, negative symptoms can be primary or secondary, and a simple dopamine-pathway story neither diagnoses the disorder nor explains an individual. Assess mood timing, substances, medical causes, culture, trauma, and longitudinal function.",
+      "references": [
+        "https://www.nimh.nih.gov/health/publications/schizophrenia"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Schizophrenia",
+          "organization": "National Institute of Mental Health, National Institutes of Health",
+          "url": "https://www.nimh.nih.gov/health/publications/schizophrenia",
+          "whyReputable": "This current federal condition-specific publication distinguishes psychotic, negative, and cognitive symptoms, variable course, functional effects, differential assessment, and individualized treatment."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Schizophrenia Spectrum\" for careful criterion or assessment recognition with directly aligned sources; this study aid cannot establish a diagnosis or replace the current manual, instrument documentation, or qualified evaluation.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-c03593684f409ca7",
+      "title": "Substance Use Disorder: DSM-5-TR Framework",
+      "content": "**Substance-specific application:** DSM-5-TR uses one SUD continuum rather than separate abuse and dependence diagnoses, but applies it to a specified substance class and 12-month pattern. The four recognition domains are impaired control, social impairment, risky use, and pharmacologic adaptation; current severity follows the number of criteria met. Craving was added and the former recurrent legal-problems item was removed. Do not equate physiologic dependence, prescribed exposure, intoxication, withdrawal, or any use with SUD. Tolerance and withdrawal rules vary by substance, some criteria may not apply, remission and controlled-environment specifiers have exact definitions, and co-occurring pain, psychiatric symptoms, safety, and social context require direct assessment.",
+      "references": [
+        "https://www.ncbi.nlm.nih.gov/books/NBK565474/table/table-3/?report=objectonly"
+      ],
+      "sourceDetails": [
+        {
+          "title": "DSM-5-TR Criteria for Diagnosing and Classifying Substance Use Disorders",
+          "organization": "Johns Hopkins University clinical guideline via NCBI Bookshelf",
+          "url": "https://www.ncbi.nlm.nih.gov/books/NBK565474/table/table-3/?report=objectonly",
+          "whyReputable": "This current clinical guideline table organizes the 11 criteria into impaired control, social impairment, risky use, and pharmacologic domains and states current severity thresholds and exceptions."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Substance Use Disorder: DSM-5-TR Framework\" for careful criterion or assessment recognition with directly aligned sources; this study aid cannot establish a diagnosis or replace the current manual, instrument documentation, or qualified evaluation.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-2769357408996084",
+      "title": "Eating Disorders Comparison",
+      "content": "**Compare behavior and cognition before body size:** Anorexia requires significantly low weight but may include binge-purge behavior. Bulimia requires recurrent binge episodes and compensatory behavior outside an anorexia-only course. Binge-eating disorder lacks the regular compensatory pattern, and ARFID restriction is not driven by weight or shape concerns. People with any eating disorder can present across sexes, ages, racial or ethnic groups, and outward body sizes; \"normal weight\" and \"often obese\" are unsafe diagnostic shortcuts. Ask about loss of control, restriction, compensation, frequency, overvaluation, avoidance motives, medications, gastrointestinal or endocrine causes, and functional course. Assess medical instability and suicide risk promptly; a memory aid cannot determine level of care.",
+      "references": [
+        "https://www.nimh.nih.gov/health/publications/eating-disorders"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Eating Disorders: What You Need to Know",
+          "organization": "National Institute of Mental Health, National Institutes of Health",
+          "url": "https://www.nimh.nih.gov/health/publications/eating-disorders",
+          "whyReputable": "This current federal condition-specific publication distinguishes anorexia nervosa, bulimia nervosa, binge-eating disorder, and ARFID while emphasizing serious risk across body sizes and populations."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Eating Disorders Comparison\" for careful criterion or assessment recognition with directly aligned sources; this study aid cannot establish a diagnosis or replace the current manual, instrument documentation, or qualified evaluation.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-10189232960afd2b",
+      "title": "Mood Disorders Deep Dive",
+      "content": "**Mood diagnosis follows episodes and lifetime course:** A major depressive episode requires a sustained cluster including depressed mood or loss of interest plus cognitive, physical, and functional change, but that episode occurs in several disorders. Bipolar I is established by mania; bipolar II requires hypomania plus major depression and no mania; cyclothymia is a chronic subthreshold fluctuation. Hypomania must be an observable departure from baseline, not ordinary energy or productivity, and psychosis or marked severity points away from hypomania. Before labeling unipolar depression, assess prior activation, sleep need, activity, judgment, collateral history, mixed features, seasonality, postpartum timing, substances, medications, thyroid or neurologic causes, grief, trauma, and psychotic symptoms.",
+      "references": [
+        "https://www.nimh.nih.gov/health/publications/bipolar-disorder"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Bipolar Disorder",
+          "organization": "National Institute of Mental Health, National Institutes of Health",
+          "url": "https://www.nimh.nih.gov/health/publications/bipolar-disorder",
+          "whyReputable": "This federal condition-specific publication directly compares bipolar I, bipolar II, and cyclothymia and emphasizes lifetime course, functional severity, medical and substance rule-outs, and history."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Mood Disorders Deep Dive\" for careful criterion or assessment recognition with directly aligned sources; this study aid cannot establish a diagnosis or replace the current manual, instrument documentation, or qualified evaluation.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-333459badc77f327",
+      "title": "Dissociative Disorders",
+      "content": "**Dissociation differential:** Identity disruption with recurrent amnesia suggests a different question from autobiographical memory loss alone or persistent detachment with intact reality testing. Fugue is attached to dissociative amnesia, and depersonalization or derealization can occur without the full disorder. Do not infer childhood abuse, fabrication, multiple \"personalities,\" or a defensive mechanism from symptoms alone. Establish phenomenology, timing, triggers, functional effect, and collateral history; assess PTSD, panic, depression, psychosis, sleep loss, neurologic conditions including seizures, head injury, substances, medications, culturally normative experiences, and ordinary forgetting. Diagnostic interviewing must avoid suggestive techniques, and safety or medical concerns take priority over category matching.",
+      "references": [
+        "https://www.merckmanuals.com/professional/psychiatric-disorders/dissociative-disorders/overview-of-dissociative-disorders",
+        "https://www.merckmanuals.com/professional/psychiatric-disorders/dissociative-disorders/dissociative-amnesia",
+        "https://www.merckmanuals.com/professional/psychiatric-disorders/dissociative-disorders/depersonalization-derealization-disorder"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Overview of Dissociative Disorders",
+          "organization": "Merck Manual Professional Edition",
+          "url": "https://www.merckmanuals.com/professional/psychiatric-disorders/dissociative-disorders/overview-of-dissociative-disorders",
+          "whyReputable": "This clinician-reviewed disorder-specific overview distinguishes disruptions of identity, memory, and self or environmental experience while emphasizing differential diagnosis and medical assessment."
+        },
+        {
+          "title": "Dissociative Amnesia",
+          "organization": "Merck Manual Professional Edition",
+          "url": "https://www.merckmanuals.com/professional/psychiatric-disorders/dissociative-disorders/dissociative-amnesia",
+          "whyReputable": "This clinician-reviewed condition-specific reference defines autobiographical memory loss beyond ordinary forgetting and explains that dissociative fugue is a specifier rather than a separate disorder."
+        },
+        {
+          "title": "Depersonalization/Derealization Disorder",
+          "organization": "Merck Manual Professional Edition",
+          "url": "https://www.merckmanuals.com/professional/psychiatric-disorders/dissociative-disorders/depersonalization-derealization-disorder",
+          "whyReputable": "This clinician-reviewed condition-specific reference distinguishes detachment from self and surroundings, requires intact reality testing, and emphasizes exclusion of substances, seizures, and other disorders."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Dissociative Disorders\" for careful criterion or assessment recognition with directly aligned sources; this study aid cannot establish a diagnosis or replace the current manual, instrument documentation, or qualified evaluation.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-c69828a708ce1660",
+      "title": "Test Bias & Fairness",
+      "content": "**Fairness concerns the validity of an intended interpretation and use:** Construct-irrelevant barriers can arise from language, disability access, administration, opportunity, familiarity, speed, or context; construct underrepresentation can omit important parts of what should be measured. Differential item functioning flags items with different response probabilities after matching on the measured attribute, but DIF is evidence to investigate, not automatic proof of bias. Prediction bias requires appropriate regression and criterion evidence, not different group means. Representative norms, translation and adaptation evidence, accessibility, standardized conditions, multiple methods, uncertainty, and consequences all matter. A \"culture-fair\" label or nonverbal format does not remove culture, and reliability alone does not establish validity or fairness.",
+      "references": [
+        "https://www.testingstandards.net/uploads/7/6/6/4/76643089/9780935302356.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Standards for Educational and Psychological Testing",
+          "organization": "AERA, APA, and NCME Joint Committee",
+          "url": "https://www.testingstandards.net/uploads/7/6/6/4/76643089/9780935302356.pdf",
+          "whyReputable": "The joint professional standards directly define validity as supporting intended score interpretations and uses and address fairness, construct-irrelevant barriers, DIF, norms, accommodations, and safeguards."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Test Bias & Fairness\" for careful criterion or assessment recognition with directly aligned sources; this study aid cannot establish a diagnosis or replace the current manual, instrument documentation, or qualified evaluation.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    }
+  ]
+}

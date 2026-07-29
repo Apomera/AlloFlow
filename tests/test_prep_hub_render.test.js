@@ -587,8 +587,8 @@ describe('Test Prep Hub render flow', () => {
     await clickButton('Flashcards');
     expect(host.textContent).toContain('Flashcard study');
     expect(host.textContent).toContain('Show due cards only');
-    expect(host.textContent).toContain('336 due now');
-    expect(host.textContent).toContain('1 of 336 matching cards');
+    expect(host.textContent).toContain('335 due now');
+    expect(host.textContent).toContain('1 of 335 matching cards');
     await clickButton('Reveal answer');
     expect(host.textContent).toContain('Answer:');
     await clickButton('Know it');
@@ -598,7 +598,12 @@ describe('Test Prep Hub render flow', () => {
 
     await clickButton('Memory aids');
     expect(host.textContent).toContain('Memory-aid library');
-    expect(host.textContent).toContain('Showing 56 of 56 released memory aids');
+    const releasedMemoryAids = JSON.parse(
+      fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_learning_library.json'), 'utf8'),
+    ).summary.releasedMemoryAids;
+    expect(host.textContent).toContain(
+      `Showing ${releasedMemoryAids} of ${releasedMemoryAids} released memory aids`,
+    );
     await clickButton('Show aid');
     expect(findButton('Hide aid')).toBeTruthy();
     expect(host.textContent).toContain('Why this source is reputable:');

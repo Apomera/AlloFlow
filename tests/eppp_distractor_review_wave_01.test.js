@@ -49,7 +49,7 @@ describe('EPPP distractor warning adjudication wave 01', () => {
     expect(review.items.map((item) => item.id)).toEqual(reviewedIds);
     const bankById = new Map(bank.map((item) => [item.id, item]));
     const currentAppliedIds = new Set(docket.appliedAdjudications.map((item) => item.id));
-    const staleIds = new Set(docket.staleAdjudications.map((item) => item.id));
+    const retiredIds = new Set(docket.retiredAdjudications.map((item) => item.id));
     review.items.forEach((item) => {
       const bankItem = bankById.get(item.id);
       expect(item.resolution).toBe('reviewed-no-revision');
@@ -61,38 +61,41 @@ describe('EPPP distractor warning adjudication wave 01', () => {
         expect(item.answerIndex).toBe(bankItem.answerIndex);
         expect(item.keyedChoice).toBe(bankItem.choices[bankItem.answerIndex]);
       } else {
-        expect(staleIds.has(item.id)).toBe(true);
+        expect(retiredIds.has(item.id)).toBe(true);
       }
       expect(item.pairedItems.length).toBeGreaterThan(0);
     });
   });
 
-  it('preserves raw warnings while returning stale adjudications to the current action docket', () => {
-    const appliedIds = docket.appliedAdjudications.map((item) => item.id);
-    const staleIds = docket.staleAdjudications.map((item) => item.id);
-    expect(diagnostics.priorityDocket.map((item) => item.id).slice(0, 2)).toEqual(appliedIds);
+  it('preserves raw warnings while retiring cleared history and closing the current cycle', () => {
+    const wave01AppliedIds = docket.appliedAdjudications
+      .filter((item) => item.reviewWave === 'eppp-distractor-review-wave-01')
+      .map((item) => item.id);
+    const retiredIds = docket.retiredAdjudications.map((item) => item.id);
+    expect(diagnostics.priorityDocket.map((item) => item.id).slice(0, 2))
+      .toEqual(wave01AppliedIds);
     expect(docket).toMatchObject({
-      schemaVersion: 1,
+      schemaVersion: 2,
       reportType: 'adjudication-aware-editorial-action-docket',
       summary: {
         rawPriorityDocketItems: 20,
-        currentAdjudicationsApplied: 2,
-        staleAdjudications: 3,
-        actionItems: 18,
+        currentAdjudicationsApplied: 20,
+        retiredAdjudications: 3,
+        staleAdjudications: 0,
+        actionItems: 0,
         learnerFacingItemsChanged: 0,
-        status: 'review-required',
+        independentExpertValidated: 0,
+        expertValidationStatus: 'pending',
+        status: 'pass',
       },
     });
-    expect(appliedIds).toEqual([reviewedIds[0], reviewedIds[4]]);
-    expect(staleIds).toEqual(reviewedIds.slice(1, 4));
-    expect(docket.staleAdjudications.every((item) => item.mismatchReasons.length > 0)).toBe(true);
-    expect(docket.actionItems.some((item) => appliedIds.includes(item.id))).toBe(false);
-    expect(docket.actionItems.map((item) => item.originalDiagnosticRank)).toEqual(
-      Array.from({ length: 18 }, (_value, index) => index + 3),
-    );
-    expect(docket.actionItems.map((item) => item.actionRank)).toEqual(
-      Array.from({ length: 18 }, (_value, index) => index + 1),
-    );
+    expect(wave01AppliedIds).toEqual([reviewedIds[0], reviewedIds[4]]);
+    expect(retiredIds).toEqual(reviewedIds.slice(1, 4));
+    expect(docket.retiredAdjudications.every(
+      (item) => item.retirementReason === 'reviewed-warning-cleared-by-later-quality-work',
+    )).toBe(true);
+    expect(docket.staleAdjudications).toEqual([]);
+    expect(docket.actionItems).toEqual([]);
   });
   it('publishes deterministic source/deploy-identical evidence', () => {
     const firstReview = fs.readFileSync(reviewPath, 'utf8');

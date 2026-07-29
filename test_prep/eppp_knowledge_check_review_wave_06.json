@@ -1,0 +1,238 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "knowledge-check-wave-06",
+  "reviewDate": "2026-07-28",
+  "scope": "Sixth source-review wave for learner-visible chapter knowledge checks, completing the integrative and test-strategy queue with current ASPPB rules, current FDA safety information, label-grounded medication comparisons, and assumption-bounded score conversion.",
+  "summary": {
+    "items": 6,
+    "domains": 2,
+    "sourceReviewedEditorialPass": 6,
+    "independentExpertReviewPending": 6,
+    "productionValidationPending": 6,
+    "domainCounts": {
+      "Integrative & Test Strategy": 2,
+      "Integrative Seminars": 4
+    }
+  },
+  "releasePolicy": "Only source-reviewed-editorial-pass records are emitted in chapter.knowledgeChecks for learner rendering. Preserved unreviewed records remain in the top-level inventory with review-required status.",
+  "safeguards": [
+    "Exam-format and navigation claims are tied to the January 2026 ASPPB Candidate Handbook and should be rechecked when that handbook changes.",
+    "Medication items teach recognition and relative risk rather than individualized prescribing or emergency instructions.",
+    "The 2025 removal of the Clozapine REMS is distinguished from continued label-directed ANC monitoring.",
+    "Score conversion states the conventional T metric and normal-model assumption.",
+    "Source review does not constitute independent expert validation or production validation."
+  ],
+  "items": [
+    {
+      "legacyId": "knowledge-check-5bb8ef38fb5cccab",
+      "chapterId": "ch-46",
+      "sectionId": "ch-46-section-2",
+      "domainId": null,
+      "domain": "Integrative & Test Strategy",
+      "prompt": "Under the January 2026 ASPPB Candidate Handbook, Part 1–Knowledge contains 225 items, including 175 scored and 50 unscored pretest items. Which response strategy is best supported?",
+      "choices": [
+        "Answer every item and treat each as potentially consequential, because total correct responses determine the score and ASPPB expressly advises answering even when uncertain",
+        "Answer only the 175 items that seem most representative of the published content outline",
+        "Skip unusually difficult items because difficulty is a reliable marker that an item is unscored",
+        "Assume the final 50 positions are pretest items and reserve no time for them"
+      ],
+      "answerIndex": 0,
+      "rationale": "The January 2026 handbook states that Part 1–Knowledge contains 225 items, with 175 scored and 50 unscored pretest items. It also states that the total number of correct responses determines the score and that it is advantageous to answer every item even when uncertain. Nothing in the cited instructions authorizes candidates to identify pretest status from item position, difficulty, familiarity, or resemblance to a content outline. The sound strategy is therefore to record a best answer for every item, use the tutorial's navigation tools as instructed, and avoid spending effort trying to classify which items count.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://asppb.net/wp-content/uploads/EPPP-Candidate-Handbook_01.2026.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "EPPP Candidate Handbook, January 2026",
+          "organization": "Association of State and Provincial Psychology Boards",
+          "url": "https://asppb.net/wp-content/uploads/EPPP-Candidate-Handbook_01.2026.pdf",
+          "whyReputable": "This is ASPPB's current official candidate handbook and primary source for Part 1 item counts, scoring direction, navigation tools, and test-day rules."
+        }
+      ],
+      "reviewNote": "Verified the current 225/175/50 structure and grounded the answer-every-item strategy in ASPPB's scoring direction rather than folklore about pretest placement.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-06",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-5d743c0b5a34a0a1",
+      "chapterId": "ch-46",
+      "sectionId": "ch-46-section-4",
+      "domainId": null,
+      "domain": "Integrative & Test Strategy",
+      "prompt": "A candidate has spent substantial time on an unfamiliar Part 1 item and still cannot recall the theory being tested. Which next action best combines sound item reasoning with the current test interface?",
+      "choices": [
+        "Continue indefinitely until recall returns, because changing items invalidates an earlier response",
+        "Compare the options on substantive fit, record the best-supported answer, flag the item for later review if time permits, and continue",
+        "Leave the item unanswered and rely on the review screen to supply partial credit",
+        "Select the longest option or reject every option containing an absolute word, regardless of the construct"
+      ],
+      "answerIndex": 1,
+      "rationale": "ASPPB's January 2026 handbook says candidates can flag Part 1 questions for later review, that a flagged response counts without being unflagged as long as it is answered, and that answering every item is advantageous even when uncertain. The handbook does not endorse a rigid seconds-per-item rule or verbal shortcuts such as choosing the longest response or automatically rejecting absolute wording. A defensible approach is to evaluate the content, eliminate options for substantive reasons, record the best answer, flag when useful, and preserve time for the remaining items while following the actual tutorial and current instructions.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://asppb.net/wp-content/uploads/EPPP-Candidate-Handbook_01.2026.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "EPPP Candidate Handbook, January 2026",
+          "organization": "Association of State and Provincial Psychology Boards",
+          "url": "https://asppb.net/wp-content/uploads/EPPP-Candidate-Handbook_01.2026.pdf",
+          "whyReputable": "This official ASPPB handbook describes Part 1 flagging and review behavior and explicitly advises candidates to answer every item even when uncertain."
+        }
+      ],
+      "reviewNote": "Removed the absolute-word gimmick and tied answer, flag, review, and pacing guidance to the current ASPPB interface instructions.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-06",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-c0025f429f7dd3a7",
+      "chapterId": "ch-47",
+      "sectionId": "ch-47-section-1",
+      "domainId": 9,
+      "domain": "Integrative Seminars",
+      "prompt": "Baseline and ongoing absolute neutrophil count monitoring for a patient taking clozapine is intended primarily to detect which serious labeled risk, and what changed federally in 2025?",
+      "choices": [
+        "Tardive dyskinesia; FDA replaced neurologic examination with mandatory ANC reporting",
+        "Serotonin syndrome; FDA created a new clozapine restricted-distribution program",
+        "Severe neutropenia that can lead to serious or fatal infection; FDA removed the Clozapine REMS while continuing to recommend label-directed ANC monitoring",
+        "Hypertensive crisis; FDA ended both the REMS and all recommendations for blood-count monitoring"
+      ],
+      "answerIndex": 2,
+      "rationale": "Clozapine can cause severe neutropenia, which can lead to serious or fatal infection, and ANC monitoring supports early detection. FDA removed the Clozapine REMS effective June 13, 2025, so prescriber, pharmacy, and patient enrollment and REMS reporting are no longer dispensing requirements. That regulatory change did not erase the labeled risk or the monitoring recommendation: FDA continues to recommend baseline and ongoing ANC monitoring according to prescribing information. This item tests recognition of a serious adverse effect and a current regulatory distinction, not a patient-specific decision to start, continue, interrupt, or stop medication.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.fda.gov/drugs/drug-safety-and-availability/fda-removes-risk-evaluation-and-mitigation-strategy-rems-program-antipsychotic-drug-clozapine"
+      ],
+      "sourceDetails": [
+        {
+          "title": "FDA Removes Risk Evaluation and Mitigation Strategy (REMS) Program for the Antipsychotic Drug Clozapine",
+          "organization": "U.S. Food and Drug Administration",
+          "url": "https://www.fda.gov/drugs/drug-safety-and-availability/fda-removes-risk-evaluation-and-mitigation-strategy-rems-program-antipsychotic-drug-clozapine",
+          "whyReputable": "This current FDA drug-safety communication is the primary federal source for the June 2025 REMS removal, persistent severe-neutropenia risk, and continuing ANC recommendation."
+        }
+      ],
+      "reviewNote": "Updated the item to the post-June-2025 regulatory state and kept REMS reporting, labeled risk, and clinical ANC monitoring clearly separate.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-06",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-8b926856694e3be1",
+      "chapterId": "ch-47",
+      "sectionId": "ch-47-section-3",
+      "domainId": 9,
+      "domain": "Integrative Seminars",
+      "prompt": "A patient taking lithium develops severe nausea, coarse tremor, confusion, and slurred speech after starting an NSAID. Which explanation is most concerning among these options?",
+      "choices": [
+        "Serotonin syndrome caused by lithium acting as a selective serotonin reuptake inhibitor",
+        "Stevens-Johnson syndrome, because every serious NSAID reaction primarily presents with neurologic changes",
+        "Neuroleptic malignant syndrome, because lithium is a dopamine-receptor antagonist",
+        "Lithium toxicity, because NSAIDs can reduce renal lithium clearance and increase serum concentrations"
+      ],
+      "answerIndex": 3,
+      "rationale": "Current lithium labeling warns that NSAIDs can decrease renal blood flow, reduce renal lithium clearance, and increase serum lithium concentrations. Severe gastrointestinal and neurologic changes after a new interacting medicine are therefore concerning for lithium toxicity among the listed explanations. The vignette is educational rather than a diagnostic algorithm: illness, dehydration, sodium change, kidney function, dose, timing, other interacting drugs, serum concentration, and examination all affect the assessment. New severe symptoms require prompt clinical evaluation rather than self-directed dose changes, and not every lithium-NSAID combination produces toxicity.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=df756a61-baf2-758a-e053-2a95a90a10ff&type=display"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Lithium Carbonate Capsules: Full Prescribing Information",
+          "organization": "DailyMed, U.S. National Library of Medicine",
+          "url": "https://dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=df756a61-baf2-758a-e053-2a95a90a10ff&type=display",
+          "whyReputable": "DailyMed provides FDA-submitted labeling that directly describes NSAID-related reduction in renal lithium clearance, increased concentrations, and monitoring needs."
+        }
+      ],
+      "reviewNote": "Grounded the interaction in current labeling and added differential, timing, monitoring, non-inevitability, and no-self-adjustment boundaries.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-06",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-bc837560c740d303",
+      "chapterId": "ch-47",
+      "sectionId": "ch-47-section-4",
+      "domainId": 9,
+      "domain": "Integrative Seminars",
+      "prompt": "Among buspirone, alprazolam, diazepam, and lorazepam, which option generally has lower misuse and physical-dependence liability, while still requiring individualized medication assessment?",
+      "choices": [
+        "Buspirone, a noncontrolled non-benzodiazepine whose labeling reports substantially lower abuse and dependence evidence than the listed benzodiazepines, without making it risk-free or universally preferred",
+        "Alprazolam, because rapid onset prevents tolerance and withdrawal when it is prescribed for anxiety",
+        "Diazepam, because a longer half-life eliminates misuse, accumulation, interaction, and physical-dependence concerns",
+        "Lorazepam, because an intermediate duration makes benzodiazepine class warnings inapplicable"
+      ],
+      "answerIndex": 0,
+      "rationale": "Buspirone is not a controlled substance, and its labeling reports no demonstrated physical or psychological dependence in the cited studies, whereas alprazolam, diazepam, and lorazepam are benzodiazepines with established misuse and physical-dependence concerns. This is a relative-liability comparison among the named choices, not a declaration that buspirone cannot be misused or is appropriate for every anxiety presentation. Indication, onset, prior treatment, co-occurring conditions, interactions, adverse effects, pregnancy, substance-use history, patient preference, and monitoring remain individualized, and abrupt benzodiazepine changes can carry withdrawal risk.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=b08dd2e7-e808-4b51-b404-5009076b82eb"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Buspirone Hydrochloride Tablets, USP: Full Prescribing Information",
+          "organization": "DailyMed, U.S. National Library of Medicine",
+          "url": "https://dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=b08dd2e7-e808-4b51-b404-5009076b82eb",
+          "whyReputable": "This FDA-submitted labeling states buspirone's controlled-substance status and summarizes human and animal evidence on abuse, diversion, tolerance, and dependence."
+        }
+      ],
+      "reviewNote": "Kept the relative-liability answer while removing any implication that buspirone is risk-free, universally preferred, or exempt from individualized assessment.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-06",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-62ba02f4088a829b",
+      "chapterId": "ch-48",
+      "sectionId": "ch-48-section-1",
+      "domainId": 9,
+      "domain": "Integrative Seminars",
+      "prompt": "A score uses the conventional T metric with mean 50 and standard deviation 10. If the reference distribution is modeled as normal, a T score of 70 is closest to which percentile rank?",
+      "choices": [
+        "The 84th percentile, because every 10-point increase above the T mean equals two standard deviations",
+        "The 98th percentile, because T = 70 corresponds to z = 2 and the normal cumulative area is about 97.7%",
+        "The 70th percentile, because a T score is itself a percentile on a zero-to-100 scale",
+        "The 99.9th percentile, because any score two standard deviations above the mean is effectively the maximum"
+      ],
+      "answerIndex": 1,
+      "rationale": "On the conventional T metric, z = (70 - 50) / 10 = 2. Under a normal reference-distribution model, the cumulative area below z = 2 is approximately .977, making the 98th percentile the closest option. A T score is an equal-interval linear transformation of a z score, not a percentile. The conversion is conditional: if a test uses a different T convention, normalized scores, a skewed empirical norm distribution, age- or group-specific norms, or a score table with discrete ranks, the applicable manual or empirical percentile table should control rather than this normal approximation.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://dictionary.apa.org/t-score",
+        "https://www.itl.nist.gov/div898/handbook/eda/section3/eda3671.htm"
+      ],
+      "sourceDetails": [
+        {
+          "title": "T Score",
+          "organization": "APA Dictionary of Psychology",
+          "url": "https://dictionary.apa.org/t-score",
+          "whyReputable": "APA's professional dictionary defines the conventional T-score metric as a standardized distribution with mean 50 and standard deviation 10."
+        },
+        {
+          "title": "Cumulative Distribution Function of the Standard Normal Distribution",
+          "organization": "National Institute of Standards and Technology",
+          "url": "https://www.itl.nist.gov/div898/handbook/eda/section3/eda3671.htm",
+          "whyReputable": "This official NIST statistical handbook explains standardization and the cumulative normal table used to convert z values to model-based cumulative probabilities."
+        }
+      ],
+      "reviewNote": "Preserved the 98th-percentile approximation while making the T convention, normal model, empirical norms, and test-manual precedence explicit.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-06",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    }
+  ]
+}

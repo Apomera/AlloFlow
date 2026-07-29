@@ -6,6 +6,21 @@ const path = require('path');
 const vm = require('vm');
 const { buildDiagramCatalog } = require('./eppp_diagram_catalog.cjs');
 
+function writeFileWithRetry(filePath, contents) {
+  let lastError;
+  for (let attempt = 0; attempt < 40; attempt += 1) {
+    try {
+      fs.writeFileSync(filePath, contents, 'utf8');
+      return;
+    } catch (error) {
+      lastError = error;
+      if (!['EBUSY', 'EPERM', 'EACCES', 'UNKNOWN'].includes(error.code)) throw error;
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 100);
+    }
+  }
+  throw lastError;
+}
+
 const root = path.resolve(__dirname, '..');
 const runtimeRoot = path.join(root, 'test_prep', 'eppp_legacy');
 const deployRoot = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_legacy');
@@ -89,6 +104,8 @@ const learningQaPath = path.join(root, 'test_prep', 'eppp_learning_library_qa.js
 const learningQa = fs.existsSync(learningQaPath) ? JSON.parse(fs.readFileSync(learningQaPath, 'utf8')) : null;
 const learningSummary = learningQa && learningQa.summary ? learningQa.summary : {};
 const reviewedChapters = Number(learningSummary.sourceReviewedChapters || 0);
+const reviewedSections = Number(learningSummary.sourceReviewedSections || 0);
+const reviewRequiredSections = Number(learningSummary.reviewRequiredSections || 0);
 const reviewedFlashcards = Number(learningSummary.sourceReviewedFlashcards || 0);
 const reviewedMemoryAids = Number(learningSummary.sourceReviewedMemoryAids || 0);
 const retainedReviewedFlashcards = Number(learningSummary.retainedReviewedFlashcards || 0);
@@ -143,6 +160,8 @@ const report = {
     chapterReferences,
     aiReflectiveCodas: aiCodas,
     sourceReviewedChapters: reviewedChapters,
+    sourceReviewedSections: reviewedSections,
+    reviewRequiredSections,
     sourceReviewedFlashcards: reviewedFlashcards,
     sourceReviewedMemoryAids: reviewedMemoryAids,
     retainedReviewedFlashcards,
@@ -160,10 +179,11 @@ const report = {
   chaptersByDomain: Object.entries(chapterByDomain).map(([domain, count]) => ({ domain, count })),
   migrationTracks: [
     { contentType: 'legacy questions', count: legacyAudit.summary.totalItems, status: 'active-full-review', nextGate: 're-author or correct, source QA, item-writing QA, accessibility, independent expert validation' },
-    { contentType: 'textbook chapters', count: chapters.length, status: reviewedChapters ? 'review-in-progress' : 'legacy-preserved-review-not-started', reviewedCount: reviewedChapters, nextGate: `${chapters.length - reviewedChapters} chapters still need claim-level source audit and editorial review; all chapters still require independent expert review` },
+    { contentType: 'textbook chapters', count: chapters.length, status: reviewedChapters === chapters.length ? 'first-pass-complete-expert-pending' : (reviewedChapters ? 'review-in-progress' : 'legacy-preserved-review-not-started'), reviewedCount: reviewedChapters, nextGate: `${Math.max(0, chapters.length - reviewedChapters)} chapters still need claim-level source audit and editorial review; all chapters still require independent expert review` },
+    { contentType: 'textbook sections', count: sections, status: reviewedSections === sections ? 'parent-chapter-review-complete-expert-pending' : (reviewedSections ? 'review-in-progress' : 'legacy-preserved-review-not-started'), reviewedCount: reviewedSections, reviewRequiredCount: reviewRequiredSections, reviewScope: 'containing-chapter', nextGate: 'Parent-chapter source/editorial review coverage is recorded separately from independent section-level expert validation.' },
     { contentType: 'interactive diagrams', count: diagramCatalog.summary.diagramPlacements, templateCount: diagramCatalog.summary.diagramTemplates, usedTemplateCount: diagramCatalog.summary.usedDiagramTemplates, unusedTemplateCount: diagramCatalog.summary.unusedDiagramTemplates, inlinePlacementCount: diagramCatalog.summary.inlineDiagramPlacements, reviewedCount: diagramCatalog.summary.sourceReviewedDiagramPlacements, status: diagramCatalog.summary.sourceReviewedDiagramPlacements === diagramCatalog.summary.diagramPlacements ? 'first-pass-complete-expert-pending' : (diagramCatalog.summary.sourceReviewedDiagramPlacements ? 'review-in-progress' : 'legacy-preserved-review-not-started'), nextGate: 'remaining placements need concept accuracy, label, text-alternative, source-support, bias/context, and independent expert review' },
     { contentType: 'flashcards', count: flashcardsByDomain.reduce((sum, domain) => sum + domain.count, 0), status: reviewedFlashcards === flashcardsByDomain.reduce((sum, domain) => sum + domain.count, 0) ? 'first-pass-complete-expert-pending' : (reviewedFlashcards ? 'review-in-progress' : 'legacy-preserved-review-not-started'), reviewedCount: reviewedFlashcards, retainedCount: retainedReviewedFlashcards, retiredRedundantCount: retiredRedundantFlashcards, nextGate: reviewedFlashcards === flashcardsByDomain.reduce((sum, domain) => sum + domain.count, 0) ? 'independent qualified expert validation and release decisions for retained cards; retired duplicate cards remain excluded' : 'remaining cards need deduplication, atomic-answer review, source support and clue checks' },
-    { contentType: 'memory aids', count: memoryAids.length, status: (reviewedMemoryAids || editorialMemoryAids) ? 'review-in-progress' : 'legacy-preserved-review-not-started', reviewedCount: reviewedMemoryAids, editorialSourcePendingCount: editorialMemoryAids, nextGate: 'remaining aids need oversimplification, outdated-guidance, bias, and source review' },
+    { contentType: 'memory aids', count: memoryAids.length, status: reviewedMemoryAids === memoryAids.length && editorialMemoryAids === 0 ? 'first-pass-complete-expert-pending' : ((reviewedMemoryAids || editorialMemoryAids) ? 'review-in-progress' : 'legacy-preserved-review-not-started'), reviewedCount: reviewedMemoryAids, editorialSourcePendingCount: editorialMemoryAids, nextGate: reviewedMemoryAids === memoryAids.length && editorialMemoryAids === 0 ? 'independent qualified expert validation and production validation' : 'remaining aids need oversimplification, outdated-guidance, bias, and source review' },
     { contentType: 'term definitions', count: Object.keys(termDefinitions).length, status: 'legacy-preserved-review-not-started', nextGate: 'definition/source/version audit and cross-link review' },
   ],
   learnerModes,
@@ -237,8 +257,8 @@ ${learnerModes.map((mode) => `- ${mode}`).join('\n')}
 `;
 
 for (const outputRoot of [runtimeRoot, deployRoot]) {
-  fs.writeFileSync(path.join(outputRoot, 'content_inventory.json'), JSON.stringify(report, null, 2) + '\n', 'utf8');
-  fs.writeFileSync(path.join(outputRoot, 'content_inventory.md'), markdown, 'utf8');
+  writeFileWithRetry(path.join(outputRoot, 'content_inventory.json'), JSON.stringify(report, null, 2) + '\n');
+  writeFileWithRetry(path.join(outputRoot, 'content_inventory.md'), markdown);
 }
 
 console.log('EPPP content inventory:');

@@ -1,21 +1,44 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "reportType": "adjudication-aware-editorial-action-docket",
-  "generatedAt": "2026-07-22",
+  "generatedAt": "2026-07-28",
+  "docketCycle": "eppp-distractor-action-cycle-02",
+  "sourceBank": "test_prep/eppp_native_items.json",
+  "sourceBankSha256": "bba4cf58cc215e3ae634dcd64c88a5d2ceffa9b24f2439d636749b99fc7530ee",
   "sourceDiagnostics": "test_prep/eppp_distractor_quality_diagnostics.json",
-  "sourceAdjudication": "test_prep/eppp_distractor_review_wave_01.json",
+  "sourceDiagnosticsSha256": "463e30073cce6b02ec333282a290225d6203dec65965f37fad55b29443b4044b",
+  "sourceAdjudications": [
+    {
+      "reviewWave": "eppp-distractor-review-wave-01",
+      "file": "test_prep/eppp_distractor_review_wave_01.json",
+      "sha256": "f95e262f5efe6dd8578ae30ac1f2e3d12424192a38f2c9064dccf77dffeea84f",
+      "reportType": "human-editorial-warning-adjudication"
+    },
+    {
+      "reviewWave": "eppp-distractor-review-wave-02",
+      "file": "test_prep/eppp_distractor_review_wave_02.json",
+      "sha256": "ed022233fe69aaca91e4a0d6220765874713b30ce7e8e163150790f71d736f15",
+      "definitionFile": "dev-tools/eppp_distractor_review_wave_02_data.cjs",
+      "definitionSha256": "755e01c28033c414c131997703f1b6bc0a47cd911df9b7597527daef43b9fed5",
+      "reportType": "assisted-editorial-warning-adjudication"
+    }
+  ],
   "policy": {
-    "separation": "The raw diagnostic report remains unchanged and retains every heuristic warning. This companion view filters only fingerprint-current reviewed-no-revision decisions from the actionable queue.",
-    "staleReview": "A changed prompt, key, answer position, diagnostic family, or duplicate-pair fingerprint automatically returns the item to the action docket.",
-    "limitation": "Docket priority is editorial triage, not psychometric severity, item-response analysis, or independent expert validation."
+    "separation": "The raw diagnostic remains unchanged and retains every heuristic warning. This companion view closes only fingerprint-current reviewed-no-revision entries from the bounded 20-item cycle.",
+    "staleReview": "A changed prompt, choices, source list, key, answer position, diagnostic family, raw rank, duplicate-pair fingerprint, or extreme-word fingerprint returns an active entry to the action docket.",
+    "retirement": "A historical adjudication whose warning has been cleared by later quality work is retained as retired provenance rather than mislabeled as stale.",
+    "limitation": "Docket closure is assisted editorial triage, not psychometric severity, item-response analysis, independent licensed-psychologist validation, or an official EPPP quality claim."
   },
   "summary": {
     "rawPriorityDocketItems": 20,
-    "currentAdjudicationsApplied": 2,
-    "staleAdjudications": 3,
-    "actionItems": 18,
+    "currentAdjudicationsApplied": 20,
+    "retiredAdjudications": 3,
+    "staleAdjudications": 0,
+    "actionItems": 0,
     "learnerFacingItemsChanged": 0,
-    "status": "review-required"
+    "independentExpertValidated": 0,
+    "expertValidationStatus": "pending",
+    "status": "pass"
   },
   "appliedAdjudications": [
     {
@@ -23,6 +46,8 @@
       "resolution": "reviewed-no-revision",
       "classification": "distinct-coverage-false-positive",
       "reviewWave": "eppp-distractor-review-wave-01",
+      "sourceReportType": "human-editorial-warning-adjudication",
+      "originalDiagnosticRank": 1,
       "mismatchReasons": []
     },
     {
@@ -30,383 +55,214 @@
       "resolution": "reviewed-no-revision",
       "classification": "intentional-foundation-application-scaffold",
       "reviewWave": "eppp-distractor-review-wave-01",
+      "sourceReportType": "human-editorial-warning-adjudication",
+      "originalDiagnosticRank": 2,
+      "mismatchReasons": []
+    },
+    {
+      "id": "eppp-b017-lifespan-2",
+      "resolution": "reviewed-no-revision",
+      "classification": "source-aligned-evolutionary-function-contrast",
+      "reviewWave": "eppp-distractor-review-wave-02",
+      "sourceReportType": "assisted-editorial-warning-adjudication",
+      "originalDiagnosticRank": 3,
+      "mismatchReasons": []
+    },
+    {
+      "id": "eppp-b019-intervention-1",
+      "resolution": "reviewed-no-revision",
+      "classification": "source-aligned-treatment-mechanism-contrast",
+      "reviewWave": "eppp-distractor-review-wave-02",
+      "sourceReportType": "assisted-editorial-warning-adjudication",
+      "originalDiagnosticRank": 4,
+      "mismatchReasons": []
+    },
+    {
+      "id": "eppp-b019-intervention-3",
+      "resolution": "reviewed-no-revision",
+      "classification": "source-aligned-modeling-component-contrast",
+      "reviewWave": "eppp-distractor-review-wave-02",
+      "sourceReportType": "assisted-editorial-warning-adjudication",
+      "originalDiagnosticRank": 5,
+      "mismatchReasons": []
+    },
+    {
+      "id": "eppp-b019-lifespan-2",
+      "resolution": "reviewed-no-revision",
+      "classification": "source-aligned-developmental-stage-contrast",
+      "reviewWave": "eppp-distractor-review-wave-02",
+      "sourceReportType": "assisted-editorial-warning-adjudication",
+      "originalDiagnosticRank": 6,
+      "mismatchReasons": []
+    },
+    {
+      "id": "eppp-b020-cognitive-1",
+      "resolution": "reviewed-no-revision",
+      "classification": "source-aligned-attention-mechanism-contrast",
+      "reviewWave": "eppp-distractor-review-wave-02",
+      "sourceReportType": "assisted-editorial-warning-adjudication",
+      "originalDiagnosticRank": 7,
+      "mismatchReasons": []
+    },
+    {
+      "id": "eppp-b021-assessment-3",
+      "resolution": "reviewed-no-revision",
+      "classification": "source-aligned-statistical-definition-contrast",
+      "reviewWave": "eppp-distractor-review-wave-02",
+      "sourceReportType": "assisted-editorial-warning-adjudication",
+      "originalDiagnosticRank": 8,
+      "mismatchReasons": []
+    },
+    {
+      "id": "eppp-b021-assessment-4",
+      "resolution": "reviewed-no-revision",
+      "classification": "source-aligned-assessment-method-contrast",
+      "reviewWave": "eppp-distractor-review-wave-02",
+      "sourceReportType": "assisted-editorial-warning-adjudication",
+      "originalDiagnosticRank": 9,
+      "mismatchReasons": []
+    },
+    {
+      "id": "eppp-b021-cognitive-1",
+      "resolution": "reviewed-no-revision",
+      "classification": "source-aligned-processing-depth-contrast",
+      "reviewWave": "eppp-distractor-review-wave-02",
+      "sourceReportType": "assisted-editorial-warning-adjudication",
+      "originalDiagnosticRank": 10,
+      "mismatchReasons": []
+    },
+    {
+      "id": "eppp-b021-intervention-4",
+      "resolution": "reviewed-no-revision",
+      "classification": "source-aligned-self-regulation-contrast",
+      "reviewWave": "eppp-distractor-review-wave-02",
+      "sourceReportType": "assisted-editorial-warning-adjudication",
+      "originalDiagnosticRank": 11,
+      "mismatchReasons": []
+    },
+    {
+      "id": "eppp-b021-lifespan-2",
+      "resolution": "reviewed-no-revision",
+      "classification": "source-aligned-guided-performance-boundary",
+      "reviewWave": "eppp-distractor-review-wave-02",
+      "sourceReportType": "assisted-editorial-warning-adjudication",
+      "originalDiagnosticRank": 12,
+      "mismatchReasons": []
+    },
+    {
+      "id": "eppp-b022-intervention-2",
+      "resolution": "reviewed-no-revision",
+      "classification": "source-aligned-family-therapy-model-contrast",
+      "reviewWave": "eppp-distractor-review-wave-02",
+      "sourceReportType": "assisted-editorial-warning-adjudication",
+      "originalDiagnosticRank": 13,
+      "mismatchReasons": []
+    },
+    {
+      "id": "eppp-b022-professional-2",
+      "resolution": "reviewed-no-revision",
+      "classification": "source-aligned-forensic-role-conflict-contrast",
+      "reviewWave": "eppp-distractor-review-wave-02",
+      "sourceReportType": "assisted-editorial-warning-adjudication",
+      "originalDiagnosticRank": 14,
+      "mismatchReasons": []
+    },
+    {
+      "id": "eppp-b022-professional-3",
+      "resolution": "reviewed-no-revision",
+      "classification": "source-aligned-lawful-disclosure-process-contrast",
+      "reviewWave": "eppp-distractor-review-wave-02",
+      "sourceReportType": "assisted-editorial-warning-adjudication",
+      "originalDiagnosticRank": 15,
+      "mismatchReasons": []
+    },
+    {
+      "id": "eppp-b023-biological-1",
+      "resolution": "reviewed-no-revision",
+      "classification": "source-aligned-spectrum-variability-contrast",
+      "reviewWave": "eppp-distractor-review-wave-02",
+      "sourceReportType": "assisted-editorial-warning-adjudication",
+      "originalDiagnosticRank": 16,
+      "mismatchReasons": []
+    },
+    {
+      "id": "eppp-b023-intervention-2",
+      "resolution": "reviewed-no-revision",
+      "classification": "source-aligned-developmental-medium-contrast",
+      "reviewWave": "eppp-distractor-review-wave-02",
+      "sourceReportType": "assisted-editorial-warning-adjudication",
+      "originalDiagnosticRank": 17,
+      "mismatchReasons": []
+    },
+    {
+      "id": "eppp-b023-professional-2",
+      "resolution": "reviewed-no-revision",
+      "classification": "source-aligned-permission-assent-contrast",
+      "reviewWave": "eppp-distractor-review-wave-02",
+      "sourceReportType": "assisted-editorial-warning-adjudication",
+      "originalDiagnosticRank": 18,
+      "mismatchReasons": []
+    },
+    {
+      "id": "eppp-b024-biological-2",
+      "resolution": "reviewed-no-revision",
+      "classification": "source-aligned-adverse-effect-profile-contrast",
+      "reviewWave": "eppp-distractor-review-wave-02",
+      "sourceReportType": "assisted-editorial-warning-adjudication",
+      "originalDiagnosticRank": 19,
+      "mismatchReasons": []
+    },
+    {
+      "id": "eppp-b024-cognitive-1",
+      "resolution": "reviewed-no-revision",
+      "classification": "source-aligned-probabilistic-metacognition-contrast",
+      "reviewWave": "eppp-distractor-review-wave-02",
+      "sourceReportType": "assisted-editorial-warning-adjudication",
+      "originalDiagnosticRank": 20,
       "mismatchReasons": []
     }
   ],
-  "staleAdjudications": [
+  "retiredAdjudications": [
     {
       "id": "eppp-b016-social-1",
       "resolution": "reviewed-no-revision",
       "classification": "intentional-foundation-application-scaffold",
       "reviewWave": "eppp-distractor-review-wave-01",
+      "sourceReportType": "human-editorial-warning-adjudication",
+      "originalDiagnosticRank": 2,
       "mismatchReasons": [
         "not-in-current-raw-docket",
         "duplicate-pair-fingerprint-changed"
-      ]
+      ],
+      "retirementReason": "reviewed-warning-cleared-by-later-quality-work"
     },
     {
       "id": "eppp-b022-assessment-1",
       "resolution": "reviewed-no-revision",
       "classification": "different-instrument-distinct-decision",
       "reviewWave": "eppp-distractor-review-wave-01",
+      "sourceReportType": "human-editorial-warning-adjudication",
+      "originalDiagnosticRank": 3,
       "mismatchReasons": [
         "not-in-current-raw-docket",
         "duplicate-pair-fingerprint-changed"
-      ]
+      ],
+      "retirementReason": "reviewed-warning-cleared-by-later-quality-work"
     },
     {
       "id": "eppp-v3-professional-030",
       "resolution": "reviewed-no-revision",
       "classification": "intentional-foundation-application-scaffold",
       "reviewWave": "eppp-distractor-review-wave-01",
+      "sourceReportType": "human-editorial-warning-adjudication",
+      "originalDiagnosticRank": 4,
       "mismatchReasons": [
         "not-in-current-raw-docket",
         "duplicate-pair-fingerprint-changed"
-      ]
+      ],
+      "retirementReason": "reviewed-warning-cleared-by-later-quality-work"
     }
   ],
-  "actionItems": [
-    {
-      "id": "eppp-b009-biological-1",
-      "domainId": "biological",
-      "difficulty": "foundation",
-      "practiceBank": 2,
-      "itemInBank": 45,
-      "score": 6,
-      "diagnostics": [
-        "asymmetric-extreme-distractors"
-      ],
-      "duplicateCandidateLinks": 0,
-      "prompt": "In the central nervous system, acetylcholine is especially important for:",
-      "keyedChoice": "Attention, learning, and memory",
-      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 3,
-      "originalDiagnosticRank": 3,
-      "actionRank": 1,
-      "status": "editorial-review-needed"
-    },
-    {
-      "id": "eppp-b009-social-2",
-      "domainId": "social-cultural",
-      "difficulty": "foundation",
-      "practiceBank": 2,
-      "itemInBank": 50,
-      "score": 6,
-      "diagnostics": [
-        "asymmetric-extreme-distractors"
-      ],
-      "duplicateCandidateLinks": 0,
-      "prompt": "The sleeper effect describes a pattern in which:",
-      "keyedChoice": "A message gains delayed impact as its discounting cue becomes less influential",
-      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 4,
-      "originalDiagnosticRank": 4,
-      "actionRank": 2,
-      "status": "editorial-review-needed"
-    },
-    {
-      "id": "eppp-b010-social-1",
-      "domainId": "social-cultural",
-      "difficulty": "foundation",
-      "practiceBank": 2,
-      "itemInBank": 65,
-      "score": 6,
-      "diagnostics": [
-        "asymmetric-extreme-distractors"
-      ],
-      "duplicateCandidateLinks": 0,
-      "prompt": "The identifiable-victim effect predicts that people may:",
-      "keyedChoice": "Respond more strongly to one identified person than to equivalent statistical victims",
-      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 5,
-      "originalDiagnosticRank": 5,
-      "actionRank": 3,
-      "status": "editorial-review-needed"
-    },
-    {
-      "id": "eppp-b012-biological-1",
-      "domainId": "biological",
-      "difficulty": "foundation",
-      "practiceBank": 2,
-      "itemInBank": 93,
-      "score": 6,
-      "diagnostics": [
-        "asymmetric-extreme-distractors"
-      ],
-      "duplicateCandidateLinks": 0,
-      "prompt": "Which statement best describes prefrontal-cortex development?",
-      "keyedChoice": "Structural and functional maturation continuing through adolescence and early adulthood",
-      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 6,
-      "originalDiagnosticRank": 6,
-      "actionRank": 4,
-      "status": "editorial-review-needed"
-    },
-    {
-      "id": "eppp-b012-biological-2",
-      "domainId": "biological",
-      "difficulty": "foundation",
-      "practiceBank": 2,
-      "itemInBank": 94,
-      "score": 6,
-      "diagnostics": [
-        "asymmetric-extreme-distractors"
-      ],
-      "duplicateCandidateLinks": 0,
-      "prompt": "The insular cortex is especially associated with:",
-      "keyedChoice": "Interoception and integration of internal bodily signals with conscious feeling",
-      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 7,
-      "originalDiagnosticRank": 7,
-      "actionRank": 5,
-      "status": "editorial-review-needed"
-    },
-    {
-      "id": "eppp-b012-cognitive-1",
-      "domainId": "cognitive-affective",
-      "difficulty": "foundation",
-      "practiceBank": 2,
-      "itemInBank": 95,
-      "score": 6,
-      "diagnostics": [
-        "asymmetric-extreme-distractors"
-      ],
-      "duplicateCandidateLinks": 0,
-      "prompt": "The self-reference effect predicts better memory when information is:",
-      "keyedChoice": "Related meaningfully to oneself during encoding",
-      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 8,
-      "originalDiagnosticRank": 8,
-      "actionRank": 6,
-      "status": "editorial-review-needed"
-    },
-    {
-      "id": "eppp-b012-intervention-1",
-      "domainId": "intervention",
-      "difficulty": "foundation",
-      "practiceBank": 3,
-      "itemInBank": 3,
-      "score": 6,
-      "diagnostics": [
-        "asymmetric-extreme-distractors"
-      ],
-      "duplicateCandidateLinks": 0,
-      "prompt": "A behavioral functional analysis is designed to identify:",
-      "keyedChoice": "Environmental antecedents and consequences that maintain a target behavior",
-      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 9,
-      "originalDiagnosticRank": 9,
-      "actionRank": 7,
-      "status": "editorial-review-needed"
-    },
-    {
-      "id": "eppp-b014-intervention-1",
-      "domainId": "intervention",
-      "difficulty": "foundation",
-      "practiceBank": 3,
-      "itemInBank": 35,
-      "score": 6,
-      "diagnostics": [
-        "asymmetric-extreme-distractors"
-      ],
-      "duplicateCandidateLinks": 0,
-      "prompt": "Aversion therapy attempts to reduce a target behavior by:",
-      "keyedChoice": "Pairing cues or responses with an unpleasant consequence or stimulus",
-      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 10,
-      "originalDiagnosticRank": 10,
-      "actionRank": 8,
-      "status": "editorial-review-needed"
-    },
-    {
-      "id": "eppp-b016-lifespan-1",
-      "domainId": "lifespan",
-      "difficulty": "foundation",
-      "practiceBank": 3,
-      "itemInBank": 63,
-      "score": 6,
-      "diagnostics": [
-        "asymmetric-extreme-distractors"
-      ],
-      "duplicateCandidateLinks": 0,
-      "prompt": "In Kohlberg’s conventional level, moral reasoning emphasizes:",
-      "keyedChoice": "Approval, interpersonal role expectations, laws, and preservation of social order",
-      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 11,
-      "originalDiagnosticRank": 11,
-      "actionRank": 9,
-      "status": "editorial-review-needed"
-    },
-    {
-      "id": "eppp-b017-lifespan-1",
-      "domainId": "lifespan",
-      "difficulty": "foundation",
-      "practiceBank": 3,
-      "itemInBank": 77,
-      "score": 6,
-      "diagnostics": [
-        "asymmetric-extreme-distractors"
-      ],
-      "duplicateCandidateLinks": 0,
-      "prompt": "In Piaget’s theory, accommodation occurs when a child:",
-      "keyedChoice": "Modifies an existing schema or forms a new one to fit discrepant experience",
-      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 12,
-      "originalDiagnosticRank": 12,
-      "actionRank": 10,
-      "status": "editorial-review-needed"
-    },
-    {
-      "id": "eppp-b017-lifespan-2",
-      "domainId": "lifespan",
-      "difficulty": "foundation",
-      "practiceBank": 3,
-      "itemInBank": 78,
-      "score": 6,
-      "diagnostics": [
-        "asymmetric-extreme-distractors"
-      ],
-      "duplicateCandidateLinks": 0,
-      "prompt": "From an evolutionary attachment perspective, infant attachment behavior primarily functions to:",
-      "keyedChoice": "Increase proximity to a protective caregiver under threat",
-      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 13,
-      "originalDiagnosticRank": 13,
-      "actionRank": 11,
-      "status": "editorial-review-needed"
-    },
-    {
-      "id": "eppp-b019-intervention-1",
-      "domainId": "intervention",
-      "difficulty": "foundation",
-      "practiceBank": 4,
-      "itemInBank": 15,
-      "score": 6,
-      "diagnostics": [
-        "asymmetric-extreme-distractors"
-      ],
-      "duplicateCandidateLinks": 0,
-      "prompt": "Behavioral activation for depression primarily seeks to interrupt withdrawal and low reinforcement by:",
-      "keyedChoice": "Increasing planned engagement in valued or potentially rewarding activities",
-      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 14,
-      "originalDiagnosticRank": 14,
-      "actionRank": 12,
-      "status": "editorial-review-needed"
-    },
-    {
-      "id": "eppp-b019-intervention-3",
-      "domainId": "intervention",
-      "difficulty": "foundation",
-      "practiceBank": 4,
-      "itemInBank": 17,
-      "score": 6,
-      "diagnostics": [
-        "asymmetric-extreme-distractors"
-      ],
-      "duplicateCandidateLinks": 0,
-      "prompt": "In a modeling intervention, observational learning is most directly promoted by having a learner:",
-      "keyedChoice": "Attend to a demonstration, retain it, reproduce it, and have motivation to perform",
-      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 15,
-      "originalDiagnosticRank": 15,
-      "actionRank": 13,
-      "status": "editorial-review-needed"
-    },
-    {
-      "id": "eppp-b019-lifespan-2",
-      "domainId": "lifespan",
-      "difficulty": "foundation",
-      "practiceBank": 4,
-      "itemInBank": 11,
-      "score": 6,
-      "diagnostics": [
-        "asymmetric-extreme-distractors"
-      ],
-      "duplicateCandidateLinks": 0,
-      "prompt": "In Piaget’s theory, formal-operational reasoning is distinguished by the ability to:",
-      "keyedChoice": "Reason systematically about abstractions, hypotheses, and possible outcomes",
-      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 16,
-      "originalDiagnosticRank": 16,
-      "actionRank": 14,
-      "status": "editorial-review-needed"
-    },
-    {
-      "id": "eppp-b020-cognitive-1",
-      "domainId": "cognitive-affective",
-      "difficulty": "foundation",
-      "practiceBank": 4,
-      "itemInBank": 22,
-      "score": 6,
-      "diagnostics": [
-        "asymmetric-extreme-distractors"
-      ],
-      "duplicateCandidateLinks": 0,
-      "prompt": "At a noisy reception, a person follows one conversation yet notices their name spoken across the room. This cocktail-party phenomenon illustrates:",
-      "keyedChoice": "Selective attention with some processing of unattended auditory information",
-      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 17,
-      "originalDiagnosticRank": 17,
-      "actionRank": 15,
-      "status": "editorial-review-needed"
-    },
-    {
-      "id": "eppp-b021-assessment-3",
-      "domainId": "assessment",
-      "difficulty": "foundation",
-      "practiceBank": 4,
-      "itemInBank": 47,
-      "score": 6,
-      "diagnostics": [
-        "asymmetric-extreme-distractors"
-      ],
-      "duplicateCandidateLinks": 0,
-      "prompt": "A positively skewed distribution is defined by a:",
-      "keyedChoice": "Longer tail extending toward higher or more positive values",
-      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 18,
-      "originalDiagnosticRank": 18,
-      "actionRank": 16,
-      "status": "editorial-review-needed"
-    },
-    {
-      "id": "eppp-b021-assessment-4",
-      "domainId": "assessment",
-      "difficulty": "foundation",
-      "practiceBank": 4,
-      "itemInBank": 48,
-      "score": 6,
-      "diagnostics": [
-        "asymmetric-extreme-distractors"
-      ],
-      "duplicateCandidateLinks": 0,
-      "prompt": "A defining feature of a projective assessment technique is that it:",
-      "keyedChoice": "Uses relatively ambiguous stimuli to elicit individually organized responses",
-      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 19,
-      "originalDiagnosticRank": 19,
-      "actionRank": 17,
-      "status": "editorial-review-needed"
-    },
-    {
-      "id": "eppp-b021-cognitive-1",
-      "domainId": "cognitive-affective",
-      "difficulty": "foundation",
-      "practiceBank": 4,
-      "itemInBank": 38,
-      "score": 6,
-      "diagnostics": [
-        "asymmetric-extreme-distractors"
-      ],
-      "duplicateCandidateLinks": 0,
-      "prompt": "Which study strategy best exemplifies elaborative rather than maintenance rehearsal?",
-      "keyedChoice": "Explaining how a new concept relates to prior knowledge and generating examples",
-      "editorialNote": "Combined warning score places this item in the next bounded editorial-review docket.",
-      "rank": 20,
-      "originalDiagnosticRank": 20,
-      "actionRank": 18,
-      "status": "editorial-review-needed"
-    }
-  ]
+  "staleAdjudications": [],
+  "actionItems": []
 }

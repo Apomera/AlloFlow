@@ -14,9 +14,13 @@ const releaseBuilder = fs.readFileSync(path.join(root, 'dev-tools', 'build_test_
 describe('test prep reference catalog', () => {
   it('provides readable publication metadata for the DOI collection', () => {
     const doiRecords = Object.entries(catalog).filter(([url]) => url.startsWith('https://doi.org/'));
-    const resolved = doiRecords.filter(([, detail]) => detail.metadataSource === 'Crossref');
+    const resolved = doiRecords.filter(([, detail]) => ['Crossref', 'pack-authored'].includes(detail.metadataSource));
+    const crossrefResolved = doiRecords.filter(([, detail]) => detail.metadataSource === 'Crossref');
+    const fallback = doiRecords.filter(([, detail]) => detail.metadataSource === 'fallback');
     expect(doiRecords.length).toBeGreaterThanOrEqual(200);
-    expect(resolved.length).toBeGreaterThanOrEqual(120);
+    expect(resolved.length).toBeGreaterThanOrEqual(280);
+    expect(crossrefResolved.length).toBeGreaterThanOrEqual(100);
+    expect(fallback.length).toBeLessThanOrEqual(20);
     for (const [, detail] of resolved) {
       expect(detail.title.length).toBeGreaterThan(8);
       expect(detail.summary.length).toBeGreaterThan(40);

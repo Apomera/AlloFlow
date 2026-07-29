@@ -4,6 +4,21 @@
 const fs = require('fs');
 const path = require('path');
 
+function writeFileWithRetry(filePath, contents) {
+  let lastError;
+  for (let attempt = 0; attempt < 40; attempt += 1) {
+    try {
+      fs.writeFileSync(filePath, contents, 'utf8');
+      return;
+    } catch (error) {
+      lastError = error;
+      if (!['EBUSY', 'EPERM', 'EACCES', 'UNKNOWN'].includes(error.code)) throw error;
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 100);
+    }
+  }
+  throw lastError;
+}
+
 const root = path.resolve(__dirname, '..');
 const sourceRoot = path.join(root, 'test_prep', 'eppp_legacy');
 const deployRoot = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_legacy');
@@ -184,8 +199,8 @@ ${report.safeguards.map((guardrail) => `- ${guardrail}`).join('\n')}
 `;
 
 for (const outputRoot of [sourceRoot, deployRoot]) {
-  fs.writeFileSync(path.join(outputRoot, 'next_review_docket.json'), JSON.stringify(report, null, 2) + '\n', 'utf8');
-  fs.writeFileSync(path.join(outputRoot, 'next_review_docket.md'), markdown, 'utf8');
+  writeFileWithRetry(path.join(outputRoot, 'next_review_docket.json'), JSON.stringify(report, null, 2) + '\n');
+  writeFileWithRetry(path.join(outputRoot, 'next_review_docket.md'), markdown);
 }
 
 console.log(`EPPP next-review docket: ${selected.length} quarantined candidates in 5 blueprint-weighted editorial batches; ${fastLaneCount} have no detected docket risk.`);

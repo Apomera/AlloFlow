@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-14T14:58:52.462Z",
+  "generatedAt": "2026-07-28T21:38:19.586Z",
   "goal": "Deeply review the complete 2,933-question legacy universe; correct, diversify, or retire failures; and publish only items that pass the required gates.",
   "requiredGates": [
     "stable provenance and domain tagging",
@@ -163,9 +163,9 @@
         "duplicate_prompt"
       ],
       "referenceCount": 0,
-      "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-biological-031",
-      "contentQaStatus": "pass",
+      "workflowStage": "legacy-quarantine",
+      "nativeItemId": null,
+      "contentQaStatus": "not-started",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -956,7 +956,7 @@
       ],
       "referenceCount": 1,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-biological-033",
+      "nativeItemId": "eppp-v3-biological-032",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -1807,9 +1807,9 @@
         "duplicate_prompt"
       ],
       "referenceCount": 0,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-v3-biological-047",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -4981,7 +4981,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-009",
+      "nativeItemId": "eppp-v3-lifespan-008",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -5198,7 +5198,7 @@
       ],
       "referenceCount": 1,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-052",
+      "nativeItemId": "eppp-v3-lifespan-051",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -5234,7 +5234,7 @@
       ],
       "referenceCount": 1,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-048",
+      "nativeItemId": "eppp-v3-lifespan-047",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -5269,7 +5269,7 @@
       ],
       "referenceCount": 1,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-013",
+      "nativeItemId": "eppp-v3-lifespan-012",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -5320,7 +5320,7 @@
       ],
       "referenceCount": 1,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-049",
+      "nativeItemId": "eppp-v3-lifespan-048",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -5392,7 +5392,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-004",
+      "nativeItemId": "eppp-v3-lifespan-003",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -5502,7 +5502,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-003",
+      "nativeItemId": "eppp-v3-lifespan-025",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -5612,7 +5612,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-056",
+      "nativeItemId": "eppp-v3-lifespan-055",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -5684,7 +5684,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-042",
+      "nativeItemId": "eppp-v3-lifespan-041",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -6302,7 +6302,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-assessment-035",
+      "nativeItemId": "eppp-v3-assessment-034",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -6608,7 +6608,7 @@
       ],
       "referenceCount": 1,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-assessment-030",
+      "nativeItemId": "eppp-v3-assessment-029",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -6642,7 +6642,7 @@
       ],
       "referenceCount": 1,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-assessment-015",
+      "nativeItemId": "eppp-v3-assessment-016",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -6928,7 +6928,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-assessment-011",
+      "nativeItemId": "eppp-v3-assessment-012",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -7226,7 +7226,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-assessment-010",
+      "nativeItemId": "eppp-v3-assessment-011",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -7388,7 +7388,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-assessment-026",
+      "nativeItemId": "eppp-v3-assessment-040",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -7424,7 +7424,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-assessment-020",
+      "nativeItemId": "eppp-v3-assessment-021",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -7654,7 +7654,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-assessment-027",
+      "nativeItemId": "eppp-v3-assessment-026",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -7795,7 +7795,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-assessment-031",
+      "nativeItemId": "eppp-v3-assessment-030",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -15745,7 +15745,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-biological-041",
+      "nativeItemId": "eppp-v3-biological-039",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -15831,7 +15831,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-biological-037",
+      "nativeItemId": "eppp-v3-biological-035",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -15899,7 +15899,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-biological-046",
+      "nativeItemId": "eppp-v3-biological-045",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -16435,7 +16435,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-biological-038",
+      "nativeItemId": "eppp-v3-biological-036",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -18123,7 +18123,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-biological-036",
+      "nativeItemId": "eppp-v3-biological-034",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -18260,7 +18260,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-biological-044",
+      "nativeItemId": "eppp-v3-biological-043",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -18312,7 +18312,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-biological-045",
+      "nativeItemId": "eppp-v3-biological-044",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -18399,7 +18399,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-biological-034",
+      "nativeItemId": "eppp-v3-biological-040",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -18503,7 +18503,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-biological-035",
+      "nativeItemId": "eppp-v3-biological-033",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -18607,7 +18607,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-biological-039",
+      "nativeItemId": "eppp-v3-biological-037",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -19198,7 +19198,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-biological-040",
+      "nativeItemId": "eppp-v3-biological-038",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -19266,7 +19266,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-biological-042",
+      "nativeItemId": "eppp-v3-biological-041",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -19300,7 +19300,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-biological-043",
+      "nativeItemId": "eppp-v3-biological-042",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -20468,7 +20468,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-biological-032",
+      "nativeItemId": "eppp-v3-biological-031",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -20876,7 +20876,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-biological-047",
+      "nativeItemId": "eppp-v3-biological-046",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -29571,7 +29571,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-019",
+      "nativeItemId": "eppp-v3-lifespan-018",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -29656,7 +29656,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-050",
+      "nativeItemId": "eppp-v3-lifespan-049",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -29898,7 +29898,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-007",
+      "nativeItemId": "eppp-v3-lifespan-006",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -29915,7 +29915,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-021",
+      "nativeItemId": "eppp-v3-lifespan-020",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -29950,7 +29950,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-020",
+      "nativeItemId": "eppp-v3-lifespan-019",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -29984,7 +29984,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-017",
+      "nativeItemId": "eppp-v3-lifespan-016",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -30001,7 +30001,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-005",
+      "nativeItemId": "eppp-v3-lifespan-004",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -30137,7 +30137,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-015",
+      "nativeItemId": "eppp-v3-lifespan-014",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -30171,7 +30171,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-058",
+      "nativeItemId": "eppp-v3-lifespan-057",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -30258,7 +30258,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-060",
+      "nativeItemId": "eppp-v3-lifespan-059",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -30363,7 +30363,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-046",
+      "nativeItemId": "eppp-v3-lifespan-045",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -30621,7 +30621,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-041",
+      "nativeItemId": "eppp-v3-lifespan-040",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -30848,7 +30848,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-040",
+      "nativeItemId": "eppp-v3-lifespan-039",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -31199,7 +31199,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-043",
+      "nativeItemId": "eppp-v3-lifespan-042",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -31913,7 +31913,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-025",
+      "nativeItemId": "eppp-v3-lifespan-024",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -31931,7 +31931,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-055",
+      "nativeItemId": "eppp-v3-lifespan-054",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -31966,7 +31966,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-053",
+      "nativeItemId": "eppp-v3-lifespan-052",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -31983,7 +31983,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-018",
+      "nativeItemId": "eppp-v3-lifespan-017",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -32000,7 +32000,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-024",
+      "nativeItemId": "eppp-v3-lifespan-023",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -32052,7 +32052,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-008",
+      "nativeItemId": "eppp-v3-lifespan-007",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -32121,7 +32121,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-012",
+      "nativeItemId": "eppp-v3-lifespan-011",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -32156,7 +32156,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-057",
+      "nativeItemId": "eppp-v3-lifespan-056",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -32190,7 +32190,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-044",
+      "nativeItemId": "eppp-v3-lifespan-043",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -32261,7 +32261,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-059",
+      "nativeItemId": "eppp-v3-lifespan-058",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -32400,7 +32400,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-045",
+      "nativeItemId": "eppp-v3-lifespan-044",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -32901,7 +32901,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-047",
+      "nativeItemId": "eppp-v3-lifespan-046",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -32954,7 +32954,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-016",
+      "nativeItemId": "eppp-v3-lifespan-015",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -32989,7 +32989,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-051",
+      "nativeItemId": "eppp-v3-lifespan-050",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -33025,7 +33025,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-054",
+      "nativeItemId": "eppp-v3-lifespan-053",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -33042,9 +33042,9 @@
         "correct_answer_length_clue"
       ],
       "referenceCount": 0,
-      "workflowStage": "legacy-quarantine",
-      "nativeItemId": null,
-      "contentQaStatus": "not-started",
+      "workflowStage": "native-content-qa-passed",
+      "nativeItemId": "eppp-v3-lifespan-060",
+      "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -33078,7 +33078,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-023",
+      "nativeItemId": "eppp-v3-lifespan-022",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -33197,9 +33197,9 @@
         "missing_reference"
       ],
       "referenceCount": 0,
-      "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-037",
-      "contentQaStatus": "pass",
+      "workflowStage": "legacy-quarantine",
+      "nativeItemId": null,
+      "contentQaStatus": "not-started",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
     },
@@ -33266,7 +33266,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-022",
+      "nativeItemId": "eppp-v3-lifespan-021",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -33283,7 +33283,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-014",
+      "nativeItemId": "eppp-v3-lifespan-013",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -33300,7 +33300,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-010",
+      "nativeItemId": "eppp-v3-lifespan-009",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -33419,7 +33419,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-011",
+      "nativeItemId": "eppp-v3-lifespan-010",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -33470,7 +33470,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-039",
+      "nativeItemId": "eppp-v3-lifespan-038",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -33589,7 +33589,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-006",
+      "nativeItemId": "eppp-v3-lifespan-005",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -33678,7 +33678,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-lifespan-038",
+      "nativeItemId": "eppp-v3-lifespan-037",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -35199,7 +35199,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-assessment-033",
+      "nativeItemId": "eppp-v3-assessment-032",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -35376,7 +35376,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-assessment-039",
+      "nativeItemId": "eppp-v3-assessment-038",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -35500,7 +35500,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-assessment-040",
+      "nativeItemId": "eppp-v3-assessment-039",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -35977,7 +35977,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-assessment-009",
+      "nativeItemId": "eppp-v3-assessment-010",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -36096,7 +36096,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-assessment-016",
+      "nativeItemId": "eppp-v3-assessment-017",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -36252,7 +36252,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-assessment-014",
+      "nativeItemId": "eppp-v3-assessment-015",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -36323,7 +36323,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-assessment-006",
+      "nativeItemId": "eppp-v3-assessment-005",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -36340,7 +36340,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-assessment-028",
+      "nativeItemId": "eppp-v3-assessment-027",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -36409,7 +36409,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-assessment-021",
+      "nativeItemId": "eppp-v3-assessment-007",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -36426,7 +36426,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-assessment-032",
+      "nativeItemId": "eppp-v3-assessment-031",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -36460,7 +36460,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-assessment-008",
+      "nativeItemId": "eppp-v3-assessment-009",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -36530,7 +36530,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-assessment-036",
+      "nativeItemId": "eppp-v3-assessment-035",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -36565,7 +36565,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-assessment-007",
+      "nativeItemId": "eppp-v3-assessment-008",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -36690,7 +36690,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-assessment-005",
+      "nativeItemId": "eppp-v3-assessment-006",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -36707,7 +36707,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-assessment-013",
+      "nativeItemId": "eppp-v3-assessment-014",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -36796,7 +36796,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-assessment-017",
+      "nativeItemId": "eppp-v3-assessment-018",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -36970,7 +36970,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-assessment-038",
+      "nativeItemId": "eppp-v3-assessment-037",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -37298,7 +37298,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-assessment-019",
+      "nativeItemId": "eppp-v3-assessment-020",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -37400,7 +37400,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-assessment-034",
+      "nativeItemId": "eppp-v3-assessment-033",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -37435,7 +37435,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-assessment-012",
+      "nativeItemId": "eppp-v3-assessment-013",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -37764,7 +37764,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-assessment-018",
+      "nativeItemId": "eppp-v3-assessment-019",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -38006,7 +38006,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-assessment-029",
+      "nativeItemId": "eppp-v3-assessment-028",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"
@@ -38128,7 +38128,7 @@
       ],
       "referenceCount": 0,
       "workflowStage": "native-content-qa-passed",
-      "nativeItemId": "eppp-v3-assessment-037",
+      "nativeItemId": "eppp-v3-assessment-036",
       "contentQaStatus": "pass",
       "independentExpertStatus": "not-started",
       "productionStatus": "not-production-validated"

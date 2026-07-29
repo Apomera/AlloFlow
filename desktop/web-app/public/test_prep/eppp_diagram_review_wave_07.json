@@ -1,0 +1,729 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "eppp-diagram-review-wave-07",
+  "reviewDate": "2026-07-28",
+  "status": "assisted-editorial-source-review-complete-expert-pending",
+  "standard": {
+    "meaning": "This wave records assisted editorial, accessibility, and source-alignment review for all 18 previously review-required inline diagram placements.",
+    "releaseBoundary": "Independent review by a qualified subject-matter expert and production validation remain pending."
+  },
+  "summary": {
+    "reviewedDiagramPlacements": 18,
+    "correctedDiagramPlacements": 18,
+    "sourceReviewedDiagramPlacements": 18,
+    "learnerMetadataExpanded": 5,
+    "svgLabelSizeCorrections": 1,
+    "distinctNamedSources": 23,
+    "independentExpertValidated": 0,
+    "status": "pass"
+  },
+  "projectedCatalogCounts": {
+    "sourceReviewedDiagramPlacementsBefore": 40,
+    "sourceReviewedDiagramPlacementsAfter": 58,
+    "reviewRequiredDiagramPlacementsBefore": 18,
+    "reviewRequiredDiagramPlacementsAfter": 0
+  },
+  "items": [
+    {
+      "sequence": 1,
+      "placementId": "diagram-placement-ch-3-section-11",
+      "chapterId": "ch-3",
+      "sectionIndex": 11,
+      "expectedHeading": "Choosing and Integrating Personality Assessment Methods",
+      "sourceFile": "js/textbook_ch5_3.js",
+      "title": "Personality Assessment: From Referral to Inference",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-07",
+      "reviewDate": "2026-07-28",
+      "correctionSummary": "Verified the existing accessible static diagram against named sources and preserved its already-qualified learner-facing rendering behind an exact SVG fingerprint.",
+      "reviewNote": "Assisted editorial and source-alignment review only. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://www.apa.org/about/policy/guidelines-psychological-assessment-evaluation.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "APA Guidelines for Psychological Assessment and Evaluation",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/about/policy/guidelines-psychological-assessment-evaluation.pdf",
+          "whyReputable": "APA guidance addresses referral questions, method selection, validity, response context, integration, and qualified communication of assessment findings."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "frameworkContext": "current-source-and-model-context-editorial-pass"
+      },
+      "independentExpertStatus": "pending-independent-qualified-expert-review",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 2,
+      "placementId": "diagram-placement-ch-4-section-03",
+      "chapterId": "ch-4",
+      "sectionIndex": 3,
+      "expectedHeading": "ABC Recording: Observation Before Inference",
+      "sourceFile": "js/textbook_ch4.js",
+      "title": "Function-Based Assessment Cycle",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-07",
+      "reviewDate": "2026-07-28",
+      "correctionSummary": "Verified the existing accessible static diagram against named sources and preserved its already-qualified learner-facing rendering behind an exact SVG fingerprint.",
+      "reviewNote": "Assisted editorial and source-alignment review only. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://sites.ed.gov/idea/idea-files/using-functional-behavioral-assessments-to-create-supportive-learning-environments/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Using Functional Behavioral Assessments to Create Supportive Learning Environments",
+          "organization": "Office of Special Education Programs, U.S. Department of Education",
+          "url": "https://sites.ed.gov/idea/idea-files/using-functional-behavioral-assessments-to-create-supportive-learning-environments/",
+          "whyReputable": "This federal technical resource describes observable behavior, antecedent and consequence evidence, hypothesis development, function-based planning, and ongoing monitoring."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "frameworkContext": "current-source-and-model-context-editorial-pass"
+      },
+      "independentExpertStatus": "pending-independent-qualified-expert-review",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 3,
+      "placementId": "diagram-placement-ch-12-section-02",
+      "chapterId": "ch-12",
+      "sectionIndex": 2,
+      "expectedHeading": "The Belmont Report (1979)",
+      "sourceFile": "js/textbook_ch12.js",
+      "title": "From Belmont Principles to Protocol Questions",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-07",
+      "reviewDate": "2026-07-28",
+      "correctionSummary": "Verified the existing accessible static diagram against named sources and preserved its already-qualified learner-facing rendering behind an exact SVG fingerprint.",
+      "reviewNote": "Assisted editorial and source-alignment review only. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://www.hhs.gov/ohrp/regulations-and-policy/belmont-report/read-the-belmont-report/index.html"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The Belmont Report",
+          "organization": "Office for Human Research Protections, U.S. Department of Health and Human Services",
+          "url": "https://www.hhs.gov/ohrp/regulations-and-policy/belmont-report/read-the-belmont-report/index.html",
+          "whyReputable": "The official Belmont text connects respect for persons with informed consent, beneficence with risk-benefit assessment, and justice with subject selection."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "frameworkContext": "current-source-and-model-context-editorial-pass"
+      },
+      "independentExpertStatus": "pending-independent-qualified-expert-review",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 4,
+      "placementId": "diagram-placement-ch-23-section-03",
+      "chapterId": "ch-23",
+      "sectionIndex": 3,
+      "expectedHeading": "The Autonomic Nervous System",
+      "sourceFile": "js/textbook_ch23.js",
+      "title": "Autonomic Signaling Uses a Shared Preganglionic Step and Qualified Exceptions",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-07",
+      "reviewDate": "2026-07-28",
+      "correctionSummary": "Added a complete learner-facing title and alternative, retained the qualified transmitter exceptions, and raised the sole undersized visible label from 11 to 12 units.",
+      "reviewNote": "Assisted editorial and source-alignment review only. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://www.ncbi.nlm.nih.gov/books/NBK10854/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The Autonomic Nervous System",
+          "organization": "Neuroscience, 2nd edition; NCBI Bookshelf, U.S. National Library of Medicine",
+          "url": "https://www.ncbi.nlm.nih.gov/books/NBK10854/",
+          "whyReputable": "This academic neuroscience chapter supports the shared cholinergic preganglionic step, usual postganglionic transmitters, and the sympathetic sweat-gland exception."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "frameworkContext": "current-source-and-model-context-editorial-pass"
+      },
+      "independentExpertStatus": "pending-independent-qualified-expert-review",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 5,
+      "placementId": "diagram-placement-ch-24-section-03",
+      "chapterId": "ch-24",
+      "sectionIndex": 3,
+      "expectedHeading": "Operant (Instrumental) Conditioning",
+      "sourceFile": "js/textbook_ch24.js",
+      "title": "Operant Contingencies Depend on Environmental Change and Future Behavior",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-07",
+      "reviewDate": "2026-07-28",
+      "correctionSummary": "Added a meaningful learner-facing title and expanded the alternative to define both axes, the nonmoral meaning of positive and negative, and the observed-effect boundary.",
+      "reviewNote": "Assisted editorial and source-alignment review only. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://www.ncbi.nlm.nih.gov/books/n/nap10732/pdf/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Learning: Theory and Research",
+          "organization": "National Research Council; NCBI Bookshelf, U.S. National Library of Medicine",
+          "url": "https://www.ncbi.nlm.nih.gov/books/n/nap10732/pdf/",
+          "whyReputable": "This National Academies text defines positive and negative reinforcement and punishment by presentation or removal and the observed change in future behavior."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "frameworkContext": "current-source-and-model-context-editorial-pass"
+      },
+      "independentExpertStatus": "pending-independent-qualified-expert-review",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 6,
+      "placementId": "diagram-placement-ch-26-section-03",
+      "chapterId": "ch-26",
+      "sectionIndex": 3,
+      "expectedHeading": "Dual-Process Theory (System 1 & System 2)",
+      "sourceFile": "js/textbook_ch26.js",
+      "title": "Type 1 and Type 2 Describe Interacting Processing Modes",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-07",
+      "reviewDate": "2026-07-28",
+      "correctionSummary": "Added a learner-facing title and a full alternative that states the defining contrast while preventing literal-module and good-versus-bad misconceptions.",
+      "reviewNote": "Assisted editorial and source-alignment review only. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://doi.org/10.1177/1745691612460685"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Dual-Process Theories of Higher Cognition: Advancing the Debate",
+          "organization": "Perspectives on Psychological Science",
+          "url": "https://doi.org/10.1177/1745691612460685",
+          "whyReputable": "This peer-reviewed theoretical review distinguishes defining processing features from common correlates and cautions against treating two process types as two literal systems."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "frameworkContext": "current-source-and-model-context-editorial-pass"
+      },
+      "independentExpertStatus": "pending-independent-qualified-expert-review",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 7,
+      "placementId": "diagram-placement-ch-27-section-03",
+      "chapterId": "ch-27",
+      "sectionIndex": 3,
+      "expectedHeading": "Theories of Motivation",
+      "sourceFile": "js/textbook_ch27.js",
+      "title": "Arousal-Performance Curves Are Conditional Heuristics",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-07",
+      "reviewDate": "2026-07-28",
+      "correctionSummary": "Added a learner-facing title and expanded the alternative to state the original-study boundary and the variables that prevent a universal optimal-arousal claim.",
+      "reviewNote": "Assisted editorial and source-alignment review only. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://doi.org/10.1002/cne.920180503"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The relation of strength of stimulus to rapidity of habit-formation",
+          "organization": "Journal of Comparative Neurology and Psychology",
+          "url": "https://doi.org/10.1002/cne.920180503",
+          "whyReputable": "The primary 1908 experiment establishes the historically bounded animal discrimination result behind later arousal-performance generalizations."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "frameworkContext": "current-source-and-model-context-editorial-pass"
+      },
+      "independentExpertStatus": "pending-independent-qualified-expert-review",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 8,
+      "placementId": "diagram-placement-ch-29-section-02",
+      "chapterId": "ch-29",
+      "sectionIndex": 2,
+      "expectedHeading": "Executive Functions: Unity, Diversity & Task Impurity",
+      "sourceFile": "js/textbook_ch29.js",
+      "title": "Executive-Function Inference Ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-07",
+      "reviewDate": "2026-07-28",
+      "correctionSummary": "Verified the existing accessible static diagram against named sources and preserved its already-qualified learner-facing rendering behind an exact SVG fingerprint.",
+      "reviewNote": "Assisted editorial and source-alignment review only. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC5104682/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Unity and Diversity of Executive Functions: Individual Differences as a Window on Cognitive Structure",
+          "organization": "Cortex; PubMed Central, U.S. National Library of Medicine",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5104682/",
+          "whyReputable": "This peer-reviewed review explains correlated but separable executive-function components and the task-impurity problem that constrains score interpretation."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "frameworkContext": "current-source-and-model-context-editorial-pass"
+      },
+      "independentExpertStatus": "pending-independent-qualified-expert-review",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 9,
+      "placementId": "diagram-placement-ch-30-section-02",
+      "chapterId": "ch-30",
+      "sectionIndex": 2,
+      "expectedHeading": "Causal Attribution: Person, Entity & Circumstance",
+      "sourceFile": "js/textbook_ch30.js",
+      "title": "Kelley Covariation Inference Map",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-07",
+      "reviewDate": "2026-07-28",
+      "correctionSummary": "Verified the existing accessible static diagram against named sources and preserved its already-qualified learner-facing rendering behind an exact SVG fingerprint.",
+      "reviewNote": "Assisted editorial and source-alignment review only. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://www.brandeis.edu/psychology/zebrowitz/publications/PDFs/McArthur_1972.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The How and What of Why: Some Determinants and Consequences of Causal Attribution",
+          "organization": "Journal of Personality and Social Psychology; author manuscript hosted by Brandeis University",
+          "url": "https://www.brandeis.edu/psychology/zebrowitz/publications/PDFs/McArthur_1972.pdf",
+          "whyReputable": "This classic empirical paper tests Kelley-style consensus, distinctiveness, and consistency information and documents the attribution patterns summarized in the map."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "frameworkContext": "current-source-and-model-context-editorial-pass"
+      },
+      "independentExpertStatus": "pending-independent-qualified-expert-review",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 10,
+      "placementId": "diagram-placement-ch-31-section-03",
+      "chapterId": "ch-31",
+      "sectionIndex": 3,
+      "expectedHeading": "Obedience, Roles & the Limits of a Study",
+      "sourceFile": "js/textbook_ch31.js",
+      "title": "From Classic Study to Defensible Inference",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-07",
+      "reviewDate": "2026-07-28",
+      "correctionSummary": "Verified the existing accessible static diagram against named sources and preserved its already-qualified learner-facing rendering behind an exact SVG fingerprint.",
+      "reviewNote": "Assisted editorial and source-alignment review only. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://www.columbia.edu/cu/psychology/terrace/w1001/readings/asch.pdf",
+        "https://doi.org/10.1037/h0040525",
+        "https://pubmed.ncbi.nlm.nih.gov/31380664/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Opinions and Social Pressure",
+          "organization": "Scientific American; archival copy hosted by Columbia University",
+          "url": "https://www.columbia.edu/cu/psychology/terrace/w1001/readings/asch.pdf",
+          "whyReputable": "Asch reports the original conformity procedure and findings, allowing the diagram to separate the observed group-pressure result from broader claims."
+        },
+        {
+          "title": "Behavioral Study of Obedience",
+          "organization": "Journal of Abnormal and Social Psychology",
+          "url": "https://doi.org/10.1037/h0040525",
+          "whyReputable": "Milgram reports the original obedience procedure and results, supporting a bounded study-level inference rather than a universal claim about persons."
+        },
+        {
+          "title": "Debunking the Stanford Prison Experiment",
+          "organization": "American Psychologist; PubMed, U.S. National Library of Medicine",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/31380664/",
+          "whyReputable": "This peer-reviewed archival analysis documents major procedural and interpretive problems that require especially cautious treatment of the Stanford Prison study."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "frameworkContext": "current-source-and-model-context-editorial-pass"
+      },
+      "independentExpertStatus": "pending-independent-qualified-expert-review",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 11,
+      "placementId": "diagram-placement-ch-32-section-02",
+      "chapterId": "ch-32",
+      "sectionIndex": 2,
+      "expectedHeading": "Attitudes, Dissonance & Persuasion",
+      "sourceFile": "js/textbook_ch32.js",
+      "title": "Persuasion Inference Map",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-07",
+      "reviewDate": "2026-07-28",
+      "correctionSummary": "Verified the existing accessible static diagram against named sources and preserved its already-qualified learner-facing rendering behind an exact SVG fingerprint.",
+      "reviewNote": "Assisted editorial and source-alignment review only. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://doi.org/10.1016/S0065-2601(08)60214-2"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The Elaboration Likelihood Model of Persuasion",
+          "organization": "Advances in Experimental Social Psychology",
+          "url": "https://doi.org/10.1016/S0065-2601(08)60214-2",
+          "whyReputable": "The foundational scholarly chapter describes elaboration as a continuum shaped by motivation and ability and distinguishes routes without claiming guaranteed outcomes."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "frameworkContext": "current-source-and-model-context-editorial-pass"
+      },
+      "independentExpertStatus": "pending-independent-qualified-expert-review",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 12,
+      "placementId": "diagram-placement-ch-33-section-02",
+      "chapterId": "ch-33",
+      "sectionIndex": 2,
+      "expectedHeading": "Helping, Altruism & Bystander Action",
+      "sourceFile": "js/textbook_ch33.js",
+      "title": "Helping Decision and Safety Map",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-07",
+      "reviewDate": "2026-07-28",
+      "correctionSummary": "Verified the existing accessible static diagram against named sources and preserved its already-qualified learner-facing rendering behind an exact SVG fingerprint.",
+      "reviewNote": "Assisted editorial and source-alignment review only. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/21534650/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The bystander-effect: a meta-analytic review on bystander intervention in dangerous and non-dangerous emergencies",
+          "organization": "Psychological Bulletin; PubMed, U.S. National Library of Medicine",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/21534650/",
+          "whyReputable": "This meta-analysis synthesizes 105 independent effect sizes and identifies emergency danger, perpetrator presence, and intervention costs as important moderators."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "frameworkContext": "current-source-and-model-context-editorial-pass"
+      },
+      "independentExpertStatus": "pending-independent-qualified-expert-review",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 13,
+      "placementId": "diagram-placement-ch-35-section-05",
+      "chapterId": "ch-35",
+      "sectionIndex": 5,
+      "expectedHeading": "Infant Perception, Action & Developmental Inference",
+      "sourceFile": "js/textbook_ch35.js",
+      "title": "Developmental Observation-to-Action Ladder",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-07",
+      "reviewDate": "2026-07-28",
+      "correctionSummary": "Verified the existing accessible static diagram against named sources and preserved its already-qualified learner-facing rendering behind an exact SVG fingerprint.",
+      "reviewNote": "Assisted editorial and source-alignment review only. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://www.cdc.gov/act-early/about/developmental-monitoring-and-screening.html"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Developmental Monitoring and Screening",
+          "organization": "Centers for Disease Control and Prevention",
+          "url": "https://www.cdc.gov/act-early/about/developmental-monitoring-and-screening.html",
+          "whyReputable": "CDC distinguishes ongoing milestone monitoring from standardized screening and diagnostic evaluation, supporting proportionate follow-up rather than diagnosis from one observation."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "frameworkContext": "current-source-and-model-context-editorial-pass"
+      },
+      "independentExpertStatus": "pending-independent-qualified-expert-review",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 14,
+      "placementId": "diagram-placement-ch-37-section-02",
+      "chapterId": "ch-37",
+      "sectionIndex": 2,
+      "expectedHeading": "Piaget: Structures, Tasks & Modern Qualifications",
+      "sourceFile": "js/textbook_ch37.js",
+      "title": "One Task, Multiple Developmental Demands",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-07",
+      "reviewDate": "2026-07-28",
+      "correctionSummary": "Verified the existing accessible static diagram against named sources and preserved its already-qualified learner-facing rendering behind an exact SVG fingerprint.",
+      "reviewNote": "Assisted editorial and source-alignment review only. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC3564966/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "A-not-B performance in rhesus monkeys: partial failures on the object retrieval detour task",
+          "organization": "Developmental Science; PubMed Central, U.S. National Library of Medicine",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3564966/",
+          "whyReputable": "This peer-reviewed study illustrates how looking and reaching measures can produce different developmental performance, supporting task-demand qualifications."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "frameworkContext": "current-source-and-model-context-editorial-pass"
+      },
+      "independentExpertStatus": "pending-independent-qualified-expert-review",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 15,
+      "placementId": "diagram-placement-ch-38-section-04",
+      "chapterId": "ch-38",
+      "sectionIndex": 4,
+      "expectedHeading": "Adolescent Brain Development, Sleep & Risk Context",
+      "sourceFile": "js/textbook_ch38.js",
+      "title": "Adolescent Decision Context Mixer",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-07",
+      "reviewDate": "2026-07-28",
+      "correctionSummary": "Verified the existing accessible static diagram against named sources and preserved its already-qualified learner-facing rendering behind an exact SVG fingerprint.",
+      "reviewNote": "Assisted editorial and source-alignment review only. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://www.nationalacademies.org/read/25388/chapter/2"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The Promise of Adolescence: Realizing Opportunity for All Youth",
+          "organization": "National Academies of Sciences, Engineering, and Medicine",
+          "url": "https://www.nationalacademies.org/read/25388/chapter/2",
+          "whyReputable": "This consensus report integrates developmental, social, contextual, and structural evidence and rejects a simplistic single-cause immature-brain account of adolescent behavior."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "frameworkContext": "current-source-and-model-context-editorial-pass"
+      },
+      "independentExpertStatus": "pending-independent-qualified-expert-review",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 16,
+      "placementId": "diagram-placement-ch-39-section-02",
+      "chapterId": "ch-39",
+      "sectionIndex": 2,
+      "expectedHeading": "Cognitive Aging, MCI & Dementia Assessment",
+      "sourceFile": "js/textbook_ch39.js",
+      "title": "Cognitive Concern to Clinical Inference",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-07",
+      "reviewDate": "2026-07-28",
+      "correctionSummary": "Verified the existing accessible static diagram against named sources and preserved its already-qualified learner-facing rendering behind an exact SVG fingerprint.",
+      "reviewNote": "Assisted editorial and source-alignment review only. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC4015335/",
+        "https://www.nia.nih.gov/health/health-care-professionals-information/assessing-cognitive-impairment-older-patients"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Normal Cognitive Aging",
+          "organization": "Clinical Geriatric Medicine; PubMed Central, U.S. National Library of Medicine",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4015335/",
+          "whyReputable": "This peer-reviewed clinical review distinguishes common age-related changes from pathologic decline and emphasizes variability across cognitive domains and individuals."
+        },
+        {
+          "title": "Assessing Cognitive Impairment in Older Patients",
+          "organization": "National Institute on Aging, National Institutes of Health",
+          "url": "https://www.nia.nih.gov/health/health-care-professionals-information/assessing-cognitive-impairment-older-patients",
+          "whyReputable": "This federal clinical resource emphasizes function, history, reversible contributors, screening limits, and fuller etiologic evaluation rather than diagnosis from one score."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "frameworkContext": "current-source-and-model-context-editorial-pass"
+      },
+      "independentExpertStatus": "pending-independent-qualified-expert-review",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 17,
+      "placementId": "diagram-placement-ch-47-section-01",
+      "chapterId": "ch-47",
+      "sectionIndex": 1,
+      "expectedHeading": "Antipsychotics (Neuroleptics)",
+      "sourceFile": "js/textbook_ch47.js",
+      "title": "Psychotropic Safety Recognition Map",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-07",
+      "reviewDate": "2026-07-28",
+      "correctionSummary": "Verified the recognition-only map and the surrounding 2025 clozapine REMS update against current FDA information, while preserving label-directed ANC and broader medication-safety boundaries.",
+      "reviewNote": "Assisted editorial and source-alignment review only. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://www.fda.gov/drugs/drug-safety-and-availability/fda-removes-risk-evaluation-and-mitigation-strategy-rems-program-antipsychotic-drug-clozapine",
+        "https://dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=803eab29-0d0a-4df0-b504-bcd85ec01ead&type=display"
+      ],
+      "sourceDetails": [
+        {
+          "title": "FDA removes risk evaluation and mitigation strategy program for the antipsychotic drug clozapine",
+          "organization": "U.S. Food and Drug Administration",
+          "url": "https://www.fda.gov/drugs/drug-safety-and-availability/fda-removes-risk-evaluation-and-mitigation-strategy-rems-program-antipsychotic-drug-clozapine",
+          "whyReputable": "The current FDA notice confirms the 2025 REMS removal while retaining severe-neutropenia warnings and label-directed absolute neutrophil count monitoring recommendations."
+        },
+        {
+          "title": "Lithium Carbonate Prescribing Information",
+          "organization": "DailyMed, U.S. National Library of Medicine",
+          "url": "https://dailymed.nlm.nih.gov/dailymed/fda/fdaDrugXsl.cfm?setid=803eab29-0d0a-4df0-b504-bcd85ec01ead&type=display",
+          "whyReputable": "The official drug labeling supports level, renal, thyroid, hydration, sodium, toxicity, and interaction monitoring represented in the recognition-only safety map."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "frameworkContext": "current-source-and-model-context-editorial-pass"
+      },
+      "independentExpertStatus": "pending-independent-qualified-expert-review",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 18,
+      "placementId": "diagram-placement-ch-49-section-01",
+      "chapterId": "ch-49",
+      "sectionIndex": 1,
+      "expectedHeading": "The Synaptic Cleft and Neurotransmission",
+      "sourceFile": "js/textbook_ch49.js",
+      "title": "Chemical Synaptic Transmission Has Multiple Control and Termination Points",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-07",
+      "reviewDate": "2026-07-28",
+      "correctionSummary": "Added a meaningful learner-facing title and expanded the alternative to cover release, receptor effects, and multiple signal-termination mechanisms without implying one universal pathway.",
+      "reviewNote": "Assisted editorial and source-alignment review only. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://www.ncbi.nlm.nih.gov/books/NBK11009/",
+        "https://www.ncbi.nlm.nih.gov/books/NBK539894/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Chemical Synapses",
+          "organization": "Neuroscience, 2nd edition; NCBI Bookshelf, U.S. National Library of Medicine",
+          "url": "https://www.ncbi.nlm.nih.gov/books/NBK11009/",
+          "whyReputable": "This academic neuroscience chapter describes calcium-triggered vesicle fusion, transmitter release, receptor binding, and the sequence of chemical synaptic transmission."
+        },
+        {
+          "title": "Physiology, Neurotransmitters",
+          "organization": "StatPearls; NCBI Bookshelf, U.S. National Library of Medicine",
+          "url": "https://www.ncbi.nlm.nih.gov/books/NBK539894/",
+          "whyReputable": "This clinically reviewed reference describes receptor effects and signal termination through reuptake, enzymatic degradation, diffusion, and glial handling."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "frameworkContext": "current-source-and-model-context-editorial-pass"
+      },
+      "independentExpertStatus": "pending-independent-qualified-expert-review",
+      "productionStatus": "not-production-validated"
+    }
+  ]
+}

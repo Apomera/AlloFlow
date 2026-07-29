@@ -1,0 +1,592 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "knowledge-check-wave-04",
+  "reviewDate": "2026-07-28",
+  "scope": "Fourth balanced source-review wave for learner-visible chapter knowledge checks, with two additional checks from each official EPPP content domain and focused repairs to categorical, causal, developmental, ethical, and design-inference shortcuts.",
+  "summary": {
+    "items": 16,
+    "domains": 8,
+    "itemsPerDomain": 2,
+    "sourceReviewedEditorialPass": 16,
+    "independentExpertReviewPending": 16,
+    "productionValidationPending": 16,
+    "domainCounts": {
+      "Assessment & Diagnosis": 2,
+      "Biological Bases of Behavior": 2,
+      "Cognitive-Affective Bases of Behavior": 2,
+      "Ethical, Legal & Professional Issues": 2,
+      "Growth & Lifespan Development": 2,
+      "Research Methods & Statistics": 2,
+      "Social & Cultural Bases of Behavior": 2,
+      "Treatment, Intervention & Prevention": 2
+    }
+  },
+  "releasePolicy": "Only source-reviewed-editorial-pass records are emitted in chapter.knowledgeChecks for learner rendering. Preserved unreviewed records remain in the top-level inventory with review-required status.",
+  "safeguards": [
+    "Stable legacy IDs remain anchored to the preserved pre-revision prompt and choices.",
+    "Reviewed choice order may be permuted while stable IDs remain anchored to legacy content.",
+    "Model-specific answers are distinguished from universal empirical claims, diagnoses, and practice mandates.",
+    "Legal, ethical, developmental, and research-design conclusions retain confidentiality, context, measurement, and inference boundaries.",
+    "Source review does not constitute independent expert validation or production validation."
+  ],
+  "items": [
+    {
+      "legacyId": "knowledge-check-68341ede6e4fd195",
+      "chapterId": "ch-1",
+      "sectionId": "ch-1-section-7",
+      "domainId": 1,
+      "domain": "Assessment & Diagnosis",
+      "prompt": "In the conventional three-parameter logistic IRT model, what does an item's location parameter b identify?",
+      "choices": [
+        "The latent-trait value at the curve's inflection point, where modeled success is halfway between the lower asymptote c and 1",
+        "The latent-trait value at which modeled success must equal .50, regardless of the lower asymptote",
+        "The lower-asymptote probability itself, which estimates item discrimination among high-ability examinees",
+        "A test-wide standard error that remains constant across every trait level and item response pattern"
+      ],
+      "answerIndex": 0,
+      "rationale": "In the conventional 3PL equation, b shifts the item characteristic curve along the latent-trait scale and is commonly called the item location or difficulty parameter. When theta equals b, the logistic portion is .50, so the full modeled probability is c + (1 - c)/2: halfway between the lower asymptote c and 1, not necessarily .50. The c parameter represents the lower asymptote, while a governs the curve's slope or discrimination. Interpretation remains model-dependent; b is not an observed percent-correct value, a test-wide error term, or proof that the fitted model is invariant across populations.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ets.org/Media/Research/pdf/RM-20-02.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "A Preliminary Comparison of Five Software Applications to Estimate Unidimensional Item Response Theory Models",
+          "organization": "Educational Testing Service",
+          "url": "https://www.ets.org/Media/Research/pdf/RM-20-02.pdf",
+          "whyReputable": "This official ETS research memorandum states the conventional IRT parameterization and distinguishes the item location, discrimination, and lower-asymptote parameters."
+        }
+      ],
+      "reviewNote": "Clarified the 3PL midpoint when c is nonzero and separated item location from discrimination, asymptote, and test-level error concepts.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-04",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-d874f90d659fd30f",
+      "chapterId": "ch-4",
+      "sectionId": "ch-4-section-6",
+      "domainId": 1,
+      "domain": "Assessment & Diagnosis",
+      "prompt": "Observers want to compare how often a student's clearly bounded call-outs occur across instructional observations of unequal length. Which primary measure best answers that question?",
+      "choices": [
+        "Whole-interval percentage, because it preserves the exact number of call-outs within every interval",
+        "Rate, calculated as the number of call-outs divided by the corresponding observation time",
+        "Momentary time-sampling percentage, because a sample at each interval boundary recovers every event",
+        "Total frequency alone, because raw counts remain directly comparable when observation durations differ"
+      ],
+      "answerIndex": 1,
+      "rationale": "Event recording is appropriate when responses have observable beginnings and endings and can be counted reliably. Because the observations differ in duration, dividing the count by the corresponding observation time yields a rate, such as call-outs per instructional hour, that is more interpretable across sessions than raw frequency alone. Whole-interval and momentary procedures estimate occurrence across sampled intervals and do not recover an exact event count. Rate is still only as sound as the operational definition, observer agreement, comparable opportunities, and the representativeness of the observation periods.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://iris.peabody.vanderbilt.edu/case-study/measuring-behavior/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Measuring Behavior",
+          "organization": "IRIS Center at Vanderbilt University",
+          "url": "https://iris.peabody.vanderbilt.edu/case-study/measuring-behavior/",
+          "whyReputable": "This federally supported university center's instructional resource distinguishes event, interval, duration, frequency, and rate measurement and explains adjustment for unequal observation periods."
+        }
+      ],
+      "reviewNote": "Made unequal exposure time decisive, replaced a raw-count shortcut, and added operational-definition and observation-quality limits.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-04",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-7385a079b1062377",
+      "chapterId": "ch-7",
+      "sectionId": "ch-7-section-9",
+      "domainId": 2,
+      "domain": "Ethical, Legal & Professional Issues",
+      "prompt": "A psychologist learns during a protected peer-review process that another psychologist may have committed a substantial ethics violation, but the review information cannot be disclosed outside that process. Under APA Ethics Code Standards 1.04 and 1.05, what is the best initial conclusion?",
+      "choices": [
+        "Standard 1.04 requires direct informal confrontation before any other analysis, so the peer-review protection must yield",
+        "Standard 1.05 requires an immediate licensing-board report because a substantial allegation is enough to establish reportable harm",
+        "The psychologist should determine whether the Code's confidentiality and protected-review exceptions mean those Standards do not require action based on that information, while separately considering authorized safety or legal duties",
+        "The protected-review exception establishes that no action may ever be considered, even if independently obtained and lawfully usable information later emerges"
+      ],
+      "answerIndex": 2,
+      "rationale": "Standards 1.04 and 1.05 do not create an automatic confront-or-report sequence. Each says action is not required when intervention would violate confidentiality rights, and the formal-reporting provision also addresses information obtained while reviewing another psychologist's work when retention of or access to that information is protected. The first task is therefore to identify the source and protection of the information and the scope of the Code provision, not to treat an allegation as an adjudicated fact. The exception is not blanket immunity: independently obtained information and separately applicable, lawfully authorized safety or legal duties require their own analysis, including jurisdiction and consultation where appropriate.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.apa.org/ethics/code"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Ethical Principles of Psychologists and Code of Conduct",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/ethics/code",
+          "whyReputable": "APA's official primary ethics text contains Standards 1.04 and 1.05, including the confidentiality and protected-review qualifications tested by this item."
+        }
+      ],
+      "reviewNote": "Preserved the Code's review-process exception without turning it into immunity and separated protected information from independently authorized action.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-04",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-489818f6b3d9fe27",
+      "chapterId": "ch-12",
+      "sectionId": "ch-12-section-2",
+      "domainId": 2,
+      "domain": "Ethical, Legal & Professional Issues",
+      "prompt": "Investigators recruit only residents of a low-income housing community to bear the burdens of testing an expensive reading intervention, although the research question does not require that population and the planned beneficiaries are affluent districts. Which Belmont principle is most directly implicated?",
+      "choices": [
+        "Respect for persons, because recruitment from a lower-income community by itself establishes coercion and invalid consent",
+        "Beneficence, because any intervention that may later be expensive necessarily has an unfavorable participant risk-benefit ratio",
+        "No Belmont principle can be identified until the intervention's efficacy and eventual market price are known",
+        "Justice, because subject selection may place research burdens on an already burdened group unlikely to share the intended benefits without a scientific justification for that selection"
+      ],
+      "answerIndex": 3,
+      "rationale": "The Belmont Report connects justice to fair procedures and outcomes in selecting research participants and specifically warns against drawing convenient research pools from disadvantaged groups while benefits flow mainly to more advantaged groups. That distributive mismatch makes justice the most directly implicated principle when the research question supplies no relevant scientific reason for the selection. Respect for persons and beneficence still require separate review of voluntariness, comprehension, risks, and anticipated benefits, but socioeconomic status alone does not prove coercion, and price alone does not determine the risk-benefit assessment.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.hhs.gov/ohrp/regulations-and-policy/belmont-report/read-the-belmont-report/index.html"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The Belmont Report",
+          "organization": "U.S. Department of Health and Human Services, Office for Human Research Protections",
+          "url": "https://www.hhs.gov/ohrp/regulations-and-policy/belmont-report/read-the-belmont-report/index.html",
+          "whyReputable": "This is the official federal text of the Belmont Report and directly addresses distributive justice, equitable subject selection, and the allocation of research burdens and benefits."
+        }
+      ],
+      "reviewNote": "Tied the answer to unjustified burden-benefit distribution while avoiding the false claims that poverty proves coercion or cost alone resolves beneficence.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-04",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-8e519b8927d70bb4",
+      "chapterId": "ch-13",
+      "sectionId": "ch-13-section-5",
+      "domainId": 3,
+      "domain": "Treatment, Intervention & Prevention",
+      "prompt": "A student says Rogers's 1957 proposition was that therapist empathy, congruence, and unconditional positive regard, by themselves and regardless of client perception, always guarantee therapeutic change. Which correction is most accurate?",
+      "choices": [
+        "Rogers proposed six relational conditions: the familiar three are therapist attitudes within a set that also includes psychological contact, client incongruence, and at least minimal communication or perception of empathy and regard",
+        "Rogers treated the three attitudes as standardized techniques whose effects do not depend on the therapeutic relationship",
+        "Rogers proposed the three attitudes plus interpretation of transference, behavioral rehearsal, and symptom exposure",
+        "Later outcome research established that the three attitudes are universally sufficient regardless of diagnosis, goals, safety needs, treatment preference, or setting"
+      ],
+      "answerIndex": 0,
+      "rationale": "Rogers's 1957 theoretical article enumerated six conditions, not only the three therapist attitudes often summarized in teaching. The proposition includes psychological contact, client incongruence or vulnerability, therapist congruence, unconditional positive regard, empathic understanding, and communication of empathy and regard to at least a minimal degree. The item asks what Rogers proposed; it does not convert that historical theoretical sufficiency claim into a universal contemporary outcome guarantee. Treatment planning must still consider evidence, client preferences, culture, goals, risk, setting, competence, and the limits of any single model.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/13416422/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The Necessary and Sufficient Conditions of Therapeutic Personality Change",
+          "organization": "Journal of Consulting Psychology, indexed by the U.S. National Library of Medicine",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/13416422/",
+          "whyReputable": "This PubMed record identifies Rogers's original 1957 primary theoretical article and its DOI, providing the direct source for the six-condition proposition."
+        }
+      ],
+      "reviewNote": "Separated Rogers's complete historical proposition from the three-attitude shorthand and from an unsupported universal treatment guarantee.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-04",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-b5316ced7caa3214",
+      "chapterId": "ch-17",
+      "sectionId": "ch-17-section-2",
+      "domainId": 3,
+      "domain": "Treatment, Intervention & Prevention",
+      "prompt": "A school offers depression screening to every tenth-grade student and refers students with positive screens for further evaluation. How should this activity be classified across two commonly taught prevention frameworks?",
+      "choices": [
+        "It is primary prevention and universal prevention because a whole-grade offer makes early case detection a pre-onset intervention",
+        "Its case-finding purpose fits Caplan's historical secondary-prevention category, while its whole-grade delivery can be described as universal under the IOM/Gordon audience framework",
+        "It is tertiary prevention and indicated prevention because every positive screen establishes an existing disorder requiring rehabilitation",
+        "It cannot be classified until the district knows whether the program reduces population prevalence"
+      ],
+      "answerIndex": 1,
+      "rationale": "Framework and purpose must be stated. In Caplan's historical primary-secondary-tertiary language, screening to detect otherwise unrecognized cases and enable prompt follow-up is categorized as secondary prevention. In the IOM/Gordon audience framework, offering the activity to the entire grade is universal because recipients were not selected for elevated individual risk. These labels are not interchangeable synonyms. A positive screen is not a diagnosis, and referral for evaluation is not itself tertiary rehabilitation. Program reach, diagnostic follow-up, benefit, harms, equity, privacy, and outcomes still require evaluation.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ncbi.nlm.nih.gov/books/NBK32789/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Defining the Scope of Prevention",
+          "organization": "National Research Council and Institute of Medicine, hosted by NCBI Bookshelf",
+          "url": "https://www.ncbi.nlm.nih.gov/books/NBK32789/",
+          "whyReputable": "This National Academies chapter explains Caplan's historical categories and the IOM/Gordon universal, selective, and indicated framework, including their different classification logics."
+        }
+      ],
+      "reviewNote": "Resolved the cross-framework ambiguity and kept screening, diagnosis, treatment, delivery audience, and demonstrated population benefit distinct.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-04",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-4d592d6de0a3ce9a",
+      "chapterId": "ch-20",
+      "sectionId": "ch-20-section-6",
+      "domainId": 4,
+      "domain": "Biological Bases of Behavior",
+      "prompt": "Which statement best reflects evidence about hemispheric lateralization without adopting a left-brain/right-brain personality myth?",
+      "choices": [
+        "People can be classified globally as logical left-brain thinkers or creative right-brain thinkers from their dominant network",
+        "Complex language is contained in two sharply bounded left-hemisphere centers that operate independently of distributed networks",
+        "Some functions and connections show relative lateralization, but complex cognition and personality depend on interacting networks and do not divide into two global person types",
+        "Cutting or lacking the corpus callosum makes each hemisphere a complete, independent personality in ordinary life"
+      ],
+      "answerIndex": 2,
+      "rationale": "Functional asymmetries are real: language is left-lateralized in many people, and some attentional, perceptual, and visuospatial processes show relative rightward biases. The evidence does not support sorting people into globally left-brained logical and right-brained creative personality types. Lateralization occurs for particular regions, connections, and tasks within broader interacting systems, with individual variation. Classic language areas and split-brain findings remain important, but neither licenses a two-center account of all language nor the claim that each hemisphere routinely constitutes a complete independent mind.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://doi.org/10.1371/journal.pbio.1001767"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Left Brain, Right Brain: Facts and Fantasies",
+          "organization": "PLOS Biology",
+          "url": "https://doi.org/10.1371/journal.pbio.1001767",
+          "whyReputable": "This peer-reviewed neuroscience review distinguishes documented functional asymmetries from exaggerated whole-person left-brain/right-brain claims and discusses split-brain evidence."
+        }
+      ],
+      "reviewNote": "Preserved genuine relative lateralization while rejecting global personality typing, two-center language reduction, and complete-independent-mind overreach.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-04",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-07344d032cbe42ed",
+      "chapterId": "ch-23",
+      "sectionId": "ch-23-section-3",
+      "domainId": 4,
+      "domain": "Biological Bases of Behavior",
+      "prompt": "Which comparison of autonomic neurotransmission is most accurate?",
+      "choices": [
+        "All sympathetic neurons release norepinephrine, whereas all parasympathetic neurons release acetylcholine",
+        "Sympathetic preganglionic neurons release epinephrine directly onto target organs, bypassing autonomic ganglia",
+        "Whether an organ is excited or inhibited is determined solely by the transmitter's name rather than receptor subtype and target tissue",
+        "Both divisions use acetylcholine at preganglionic synapses; most sympathetic postganglionic neurons use norepinephrine, parasympathetic postganglionic neurons use acetylcholine, and sympathetic sweat-gland fibers are a notable cholinergic exception"
+      ],
+      "answerIndex": 3,
+      "rationale": "Preganglionic neurons in both sympathetic and parasympathetic divisions release acetylcholine onto nicotinic receptors in autonomic ganglia. Most sympathetic postganglionic fibers release norepinephrine at their targets, while parasympathetic postganglionic fibers generally release acetylcholine. Sympathetic fibers to sweat glands are a standard cholinergic exception, so an all-sympathetic-equals-norepinephrine rule is false. Organ response also depends on receptor subtype, signaling pathway, target tissue, and physiological context; neurotransmitter identity alone does not determine excitation or inhibition.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ncbi.nlm.nih.gov/books/NBK10854/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Neurotransmission in the Visceral Motor System",
+          "organization": "Neuroscience, NCBI Bookshelf, U.S. National Library of Medicine",
+          "url": "https://www.ncbi.nlm.nih.gov/books/NBK10854/",
+          "whyReputable": "This university-level neuroscience chapter hosted by the National Library of Medicine directly describes autonomic preganglionic and postganglionic transmitters and the sweat-gland exception."
+        }
+      ],
+      "reviewNote": "Replaced the sympathetic-equals-norepinephrine shortcut with the two-neuron pathway, cholinergic exception, and receptor-dependent response boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-04",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-65f1dc954dbe81cb",
+      "chapterId": "ch-25",
+      "sectionId": "ch-25-section-3",
+      "domainId": 5,
+      "domain": "Cognitive-Affective Bases of Behavior",
+      "prompt": "Under Baddeley's multicomponent working-memory model, poorer immediate serial recall for longer spoken words than for otherwise comparable shorter words is most directly associated with which component and account?",
+      "choices": [
+        "The phonological loop, because the model links temporary verbal maintenance and articulatory rehearsal to the classic word-length effect, while alternative accounts of the effect remain possible",
+        "The visuospatial sketchpad, because longer spoken words occupy more spatial locations in a visual image",
+        "The episodic buffer, because word duration necessarily prevents integration with long-term memory",
+        "The central executive, because it stores every verbal item and word length directly measures executive capacity"
+      ],
+      "answerIndex": 0,
+      "rationale": "Within Baddeley's multicomponent model, the phonological loop supports temporary maintenance of speech-based material, and articulatory rehearsal is the classic account of why fewer long words can be maintained or recalled in order under specified conditions. The central executive coordinates attention rather than serving as the dedicated verbal store; the visuospatial sketchpad supports visual-spatial material; and the episodic buffer supports multimodal integration. The item asks for the model-specific explanation. Word-length findings vary with materials, output and rehearsal conditions, and competing perceptual-motor accounts exist, so the effect does not by itself prove one exclusive mechanism.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC33632/",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC12956956/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The Fractionation of Working Memory",
+          "organization": "Proceedings of the National Academy of Sciences, hosted by PubMed Central",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC33632/",
+          "whyReputable": "This peer-reviewed review by a principal architect of the multicomponent model summarizes phonological-loop evidence and qualifications surrounding the word-length effect."
+        },
+        {
+          "title": "Word Length vs. Lexical Factors: Re-examining What Causes the Word-Length Effect in Serial Recognition",
+          "organization": "Peer-reviewed article hosted by PubMed Central",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12956956/",
+          "whyReputable": "This recent peer-reviewed analysis examines alternative explanations and boundary conditions, supporting a model-specific rather than exclusive-mechanism interpretation."
+        }
+      ],
+      "reviewNote": "Turned a one-label recall question into a model-specific inference item and acknowledged boundary conditions and competing explanations.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-04",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-451dd5cdf4bfb487",
+      "chapterId": "ch-29",
+      "sectionId": "ch-29-section-3",
+      "domainId": 5,
+      "domain": "Cognitive-Affective Bases of Behavior",
+      "prompt": "A learner gives one incorrect answer with very high confidence. What is the strongest inference that can be made from this single observation?",
+      "choices": [
+        "The learner has demonstrated the Dunning-Kruger effect because any confident error identifies low performers with impaired metacognition",
+        "Confidence exceeded accuracy on this item, but a broader sample of performance and self-assessment is needed before attributing a stable pattern or mechanism",
+        "The learner lacks metacognitive ability across domains because calibration is a unitary trait",
+        "The learner must fall in the lowest performance quartile even though no comparative performance distribution was measured"
+      ],
+      "answerIndex": 1,
+      "rationale": "The observation supports only item-level miscalibration: confidence was high and the response was wrong. The original Dunning-Kruger studies compared performance and self-assessment patterns across multiple tasks and relative-performance groups; a single confident error supplies neither a performance distribution nor evidence for a stable metacognitive explanation. Later work also examines regression, measurement, task difficulty, and alternative psychological accounts. A sound interpretation therefore describes the observed mismatch, gathers repeated accuracy and confidence data, and avoids diagnosing a person, assigning a quartile, or generalizing calibration across domains.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/10626367/",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC8992690/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Unskilled and Unaware of It: How Difficulties in Recognizing One's Own Incompetence Lead to Inflated Self-Assessments",
+          "organization": "Journal of Personality and Social Psychology, indexed by the U.S. National Library of Medicine",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/10626367/",
+          "whyReputable": "This is the indexed record for the original peer-reviewed studies, which assessed performance and self-evaluation across tasks rather than labeling one confident error."
+        },
+        {
+          "title": "A Statistical Explanation of the Dunning-Kruger Effect",
+          "organization": "Peer-reviewed article hosted by PubMed Central",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8992690/",
+          "whyReputable": "This peer-reviewed analysis reviews competing explanations and replication evidence, reinforcing the need to distinguish an observed calibration error from a settled individual mechanism."
+        }
+      ],
+      "reviewNote": "Restricted the inference to observed item-level miscalibration and removed pop-psych diagnosis, quartile, and cross-domain shortcuts.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-04",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-35c91210a1758a8f",
+      "chapterId": "ch-30",
+      "sectionId": "ch-30-section-4",
+      "domainId": 6,
+      "domain": "Social & Cultural Bases of Behavior",
+      "prompt": "Teachers are randomly assigned to receive higher-expectation information about selected students, and those students later improve more on a prespecified classroom outcome. Assuming the randomization and implementation are sound, what is the strongest conclusion?",
+      "choices": [
+        "The manipulation proves that greater warmth was the sole mechanism, even though teacher behavior was not measured",
+        "The manipulation permanently increased each selected student's general intelligence across settings and measures",
+        "The result supports a causal effect of the expectancy manipulation on the measured outcome and is consistent with an expectancy effect, while mechanism, durability, and transport to other settings remain open",
+        "The result remains purely correlational because expectations are psychological rather than physical variables"
+      ],
+      "answerIndex": 2,
+      "rationale": "Sound random assignment supports a causal inference about the expectancy-information manipulation for the prespecified measured outcome, subject to attrition, adherence, contamination, measurement, and analysis quality. The pattern is therefore consistent with an expectancy effect. Randomization does not identify an unmeasured mediator such as warmth, prove permanent change in general intelligence, or guarantee replication across classrooms, populations, outcomes, or implementations. Later reviews find variability across expectation interventions, which reinforces the need to keep the treatment contrast, measured outcome, mechanism, duration, and generalizability as separate claims.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://doi.org/10.1080/13803611.2018.1550834"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The Effects of Teacher Expectation Interventions on Teachers' Expectations and Student Achievement: Narrative Review and Meta-analysis",
+          "organization": "Educational Research and Evaluation",
+          "url": "https://doi.org/10.1080/13803611.2018.1550834",
+          "whyReputable": "This peer-reviewed review and meta-analysis summarizes intervention evidence, heterogeneous effects, implementation differences, and limits on broad teacher-expectancy claims."
+        }
+      ],
+      "reviewNote": "Bounded the causal conclusion to the randomized manipulation and measured outcome while keeping mechanism, permanence, and transportability unproven.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-04",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-9f01306e26f50c17",
+      "chapterId": "ch-33",
+      "sectionId": "ch-33-section-2",
+      "domainId": 6,
+      "domain": "Social & Cultural Bases of Behavior",
+      "prompt": "Which conclusion best represents the broader evidence on the bystander effect?",
+      "choices": [
+        "The presence of additional bystanders never inhibits helping when an event is dangerous",
+        "More bystanders always reduce the probability that a victim receives help, because individual and victim-level probabilities are identical",
+        "Observers consciously complete the same fixed decision sequence in every emergency, so context and group identity cannot alter responding",
+        "An average inhibition effect is documented, but danger, communication, group relationships and identity, competence, and whether individual or victim-level helping is measured can moderate or reverse the pattern"
+      ],
+      "answerIndex": 3,
+      "rationale": "Meta-analysis supports an average bystander-inhibition effect across the experimental literature, but it also identifies important moderators and conditions in which additional bystanders do not inhibit and may facilitate intervention, including some dangerous emergencies and contexts in which others provide physical support. The probability that one particular observer helps is not identical to the probability that a victim receives help from anyone in a group. The classic decision model is a useful organizing framework, not proof of a conscious invariant sequence. One failure to intervene also does not diagnose apathy or lack of empathy.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/21534650/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The Bystander-Effect: A Meta-Analytic Review on Bystander Intervention in Dangerous and Non-Dangerous Emergencies",
+          "organization": "Psychological Bulletin, indexed by the U.S. National Library of Medicine",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/21534650/",
+          "whyReputable": "This peer-reviewed meta-analysis synthesizes 105 independent effect sizes and directly tests moderators of inhibition and facilitation across emergency contexts."
+        }
+      ],
+      "reviewNote": "Replaced the universal crowd-inhibition slogan with the meta-analytic average, moderators, measurement level, and nondiagnostic interpretation.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-04",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-59289ad835424d84",
+      "chapterId": "ch-35",
+      "sectionId": "ch-35-section-4",
+      "domainId": 7,
+      "domain": "Growth & Lifespan Development",
+      "prompt": "A toddler is initially cautious with unfamiliar people and settings but gradually engages during repeated, low-pressure exposure. Which formulation is best supported?",
+      "choices": [
+        "The behavior may reflect an inhibited temperamental tendency, but stability and later anxiety risk vary with development, regulation, relationships, and context; it is neither a diagnosis nor destiny",
+        "Behavioral inhibition establishes an anxiety disorder whenever caution appears in more than one unfamiliar setting",
+        "The child has a fixed difficult temperament whose expression cannot be shaped by caregivers, peers, or experience",
+        "Gradual engagement rules out behavioral inhibition because a biologically influenced tendency must remain unchanged across time and context"
+      ],
+      "answerIndex": 0,
+      "rationale": "Behavioral inhibition describes a temperamental tendency toward cautious, fearful, or avoidant responses to novelty and is associated on average with elevated later anxiety risk. It is not an anxiety diagnosis and does not guarantee a disorder. Developmental pathways are heterogeneous: stability of inhibition, attention and control processes, parenting and peer contexts, learning history, stress, and supports can alter expression and outcome, often bidirectionally. The child's gradual engagement is compatible with an inhibited tendency expressed under supportive conditions; it neither proves a fixed trait nor rules one out from a brief vignette.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC10690832/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Annual Research Review: Developmental Pathways Linking Early Behavioral Inhibition to Later Anxiety",
+          "organization": "Journal of Child Psychology and Psychiatry, hosted by PubMed Central",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10690832/",
+          "whyReputable": "This peer-reviewed annual research review synthesizes longitudinal evidence and social-contextual moderators linking early behavioral inhibition with varied later anxiety pathways."
+        }
+      ],
+      "reviewNote": "Removed diagnosis and destiny language and made heterogeneity, context, bidirectionality, and the limits of a brief vignette explicit.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-04",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-ea8e9d2caf9b2f0b",
+      "chapterId": "ch-35",
+      "sectionId": "ch-35-section-5",
+      "domainId": 7,
+      "domain": "Growth & Lifespan Development",
+      "prompt": "A caregiver reports that a child has not yet shown one item on a CDC developmental milestone checklist. What is the most defensible next conclusion?",
+      "choices": [
+        "The missing item establishes a developmental disorder because each milestone is a diagnostic threshold",
+        "The checklist finding is a surveillance signal to discuss in developmental context and may warrant validated screening, evaluation, or referral; the checklist alone is not diagnostic",
+        "Normal variation means the concern should be dismissed until several checklist ages have passed",
+        "The finding identifies caregiver behavior as the cause because milestone performance directly measures parenting quality"
+      ],
+      "answerIndex": 1,
+      "rationale": "CDC describes its milestone checklists as communication and developmental-surveillance tools, not validated screening or diagnostic instruments. A missing milestone is intended to prompt conversation and action rather than establish a disorder or justify waiting automatically. Depending on the child's age, history, prematurity, language and cultural context, functioning, other observations, and caregiver or professional concerns, next steps may include a validated developmental screen, fuller evaluation, or referral to early-intervention services. One checklist response does not establish etiology, severity, service eligibility, or caregiver causation.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.cdc.gov/act-early/milestones/key-points.html"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Key Points About CDC's Developmental Milestone Checklists",
+          "organization": "Centers for Disease Control and Prevention",
+          "url": "https://www.cdc.gov/act-early/milestones/key-points.html",
+          "whyReputable": "This current official CDC guidance defines the intended surveillance and communication use of the checklists and explicitly distinguishes them from screening and diagnosis."
+        }
+      ],
+      "reviewNote": "Replaced encoded option feedback and diagnostic shortcuts with the current CDC surveillance-to-screening/evaluation pathway and contextual limits.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-04",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-82b666fcdb6a7bce",
+      "chapterId": "ch-40",
+      "sectionId": "ch-40-section-2",
+      "domainId": 8,
+      "domain": "Research Methods & Statistics",
+      "prompt": "A researcher recruits volunteers and assigns odd-numbered sign-ups to a therapy group and even-numbered sign-ups to a comparison group, without randomly generating the assignment sequence. How should the design and its main allocation limitation be described?",
+      "choices": [
+        "A randomized controlled trial, because manipulation plus any alternating allocation gives each participant a random assignment probability",
+        "A correlational study, because nonrandom allocation eliminates the intervention manipulation",
+        "A quasi-experimental intervention study, because the allocation is systematic rather than randomized and baseline group differences remain a plausible threat",
+        "A one-group pre-experimental study, because alternating allocation does not create a comparison group"
+      ],
+      "answerIndex": 2,
+      "rationale": "The researcher manipulates treatment exposure and includes a comparison group, so the study is not merely correlational or one-group pre-experimental. But odd-versus-even sign-up order is a deterministic allocation rule unless the sequence itself was generated and implemented through a valid random process. Sign-up order can covary with motivation, availability, recruitment timing, or other baseline factors. The design is therefore best described here as quasi-experimental. Baseline equivalence, concurrent measurement, attrition, implementation, and appropriate adjustment can strengthen the analysis, but statistical control does not retroactively create random assignment or eliminate unmeasured confounding.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://ies.ed.gov/ncee/wwc/document/256"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Designing Quasi-Experiments: Meeting What Works Clearinghouse Standards Without Random Assignment",
+          "organization": "What Works Clearinghouse, Institute of Education Sciences, U.S. Department of Education",
+          "url": "https://ies.ed.gov/ncee/wwc/document/256",
+          "whyReputable": "This official federal methods resource distinguishes quasi-experiments from randomized studies and specifies baseline-equivalence and confounding considerations for nonrandom group formation."
+        }
+      ],
+      "reviewNote": "Clarified why deterministic alternating allocation remains nonrandom and separated manipulation, comparison, baseline equivalence, adjustment, and randomization.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-04",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-c4635089c3c2f23c",
+      "chapterId": "ch-45",
+      "sectionId": "ch-45-section-4",
+      "domainId": 8,
+      "domain": "Research Methods & Statistics",
+      "prompt": "A researcher tests separate samples of 20-, 40-, and 60-year-olds once during the same calendar year and finds lower mean memory performance in the oldest group. What is the central inference limitation?",
+      "choices": [
+        "Same-year testing eliminates period and historical influences, so the difference isolates biological aging",
+        "Any baseline similarity on education would convert the cross-sectional comparison into a longitudinal estimate of within-person change",
+        "Practice effects are the principal threat because each participant completed the memory measure only once",
+        "Age group is confounded with birth cohort, so generational exposures and selection may contribute to the difference and the study does not directly measure within-person aging"
+      ],
+      "answerIndex": 3,
+      "rationale": "In a one-time cross-sectional age comparison, participants' chronological age and birth cohort vary together. Educational opportunity, health care, nutrition, technology, test familiarity, survival and participation selection, and other cohort-linked exposures can therefore contribute to the group difference. Testing everyone in the same year holds the immediate measurement period more constant but does not remove earlier historical exposure. Because each person is observed once, attrition and repeated-test practice are not the central threats described. Longitudinal and cohort-sequential designs add useful information, but they introduce their own assumptions and do not automatically identify pure age, period, and cohort effects.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/25382943/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Why Are There Different Age Relations in Cross-Sectional and Longitudinal Comparisons of Cognitive Functioning?",
+          "organization": "Peer-reviewed article indexed by the U.S. National Library of Medicine",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/25382943/",
+          "whyReputable": "This peer-reviewed methods analysis directly compares cross-sectional and longitudinal age relations and examines how cohort and measurement design affect cognitive-aging inferences."
+        }
+      ],
+      "reviewNote": "Replaced the one-word cohort answer with an explicit age-cohort confound, concrete alternative explanations, and limits of longitudinal and sequential remedies.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-04",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    }
+  ]
+}

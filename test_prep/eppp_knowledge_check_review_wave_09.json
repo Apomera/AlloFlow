@@ -1,0 +1,295 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "knowledge-check-wave-09",
+  "reviewDate": "2026-07-28",
+  "scope": "Final claim-level source-review wave for learner-visible chapter knowledge checks, closing the remaining editorial queue in Social and Cultural Bases of Behavior and Growth and Lifespan Development.",
+  "summary": {
+    "items": 7,
+    "domains": 2,
+    "sourceReviewedEditorialPass": 7,
+    "independentExpertReviewPending": 7,
+    "productionValidationPending": 7,
+    "domainCounts": {
+      "Social & Cultural Bases of Behavior": 3,
+      "Growth & Lifespan Development": 4
+    }
+  },
+  "releasePolicy": "Only source-reviewed-editorial-pass records are eligible for learner rendering. Source review does not replace independent expert review, psychometric evaluation, or production validation.",
+  "safeguards": [
+    "Canonical theory predictions are taught as model-bounded inferences rather than descriptions of an infallible human reasoning process.",
+    "Persuasion and relationship frameworks remain probabilistic and descriptive rather than guarantees, diagnoses, or prescriptions.",
+    "Scaffolding is distinguished from completing the task and from a fixed script, with support calibrated and transferred to the learner.",
+    "Identity status is treated as domain- and time-specific rather than a diagnosis, rank, or permanent whole-person type.",
+    "Emerging adulthood is explicitly contingent on cultural, historical, economic, and institutional conditions.",
+    "Selection, optimization, and compensation are distinguished by their functions without implying that a device, strategy, or reduced goal is inherently one process in every context.",
+    "Every record remains explicitly gated for independent expert and production validation."
+  ],
+  "items": [
+    {
+      "legacyId": "knowledge-check-aea823d1720bb5a9",
+      "chapterId": "ch-30",
+      "sectionId": "ch-30-section-2",
+      "domainId": 6,
+      "domain": "Social & Cultural Bases of Behavior",
+      "prompt": "Maria presents especially well at one workplace: most colleagues also present well there, Maria presents less well in other settings, and this workplace pattern recurs. In Kelley's canonical covariation model, which inference best fits the stated information?",
+      "choices": [
+        "Attribute the effect mainly to the workplace presentation setting, because consensus, distinctiveness, and consistency are all high in the canonical pattern",
+        "Attribute the effect mainly to Maria's stable disposition, because high consistency by itself overrides consensus and distinctiveness information",
+        "Attribute the effect to a transient circumstance, because repeated performance in the same setting is the model's definition of low consistency",
+        "Withhold every attribution, because the covariation model treats consensus and distinctiveness as irrelevant whenever performance is favorable"
+      ],
+      "answerIndex": 0,
+      "rationale": "In the canonical covariation configuration, high consensus means that other people show the effect with this entity or setting, high distinctiveness means that Maria shows it less with other entities or settings, and high consistency means that the effect recurs across occasions. That high-high-high pattern supports an entity or stimulus attribution, here the workplace presentation setting. High consistency alone does not identify a person cause, and a recurring pattern is not a low-consistency circumstance pattern. McArthur's primary factorial study found that people used consensus, distinctiveness, and consistency information, while also documenting departures from a perfectly rational analysis-of-variance model. The item therefore tests the model's predicted inference, not a claim that real observers always combine cues normatively or that the setting is proven to be the true cause.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.brandeis.edu/psychology/zebrowitz/publications/PDFs/McArthur_1972.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The How and What of Why: Some Determinants and Consequences of Causal Attribution",
+          "organization": "Journal of Personality and Social Psychology; author manuscript hosted by Brandeis University",
+          "url": "https://www.brandeis.edu/psychology/zebrowitz/publications/PDFs/McArthur_1972.pdf",
+          "whyReputable": "This peer-reviewed primary factorial experiment directly tests Kelley's consensus, distinctiveness, and consistency predictions and reports both canonical effects and departures from the idealized model."
+        }
+      ],
+      "reviewNote": "Preserved the high-high-high entity attribution while distinguishing a canonical model prediction from proof of causation or a claim that people weight every cue optimally.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-09",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-fdee9c83f4a5d9bb",
+      "chapterId": "ch-32",
+      "sectionId": "ch-32-section-2",
+      "domainId": 6,
+      "domain": "Social & Cultural Bases of Behavior",
+      "prompt": "A clinician has motivation, time, and relevant background knowledge to evaluate a personally important health message. Under the elaboration likelihood model, which prediction is most defensible?",
+      "choices": [
+        "The clinician must accept the message, because high elaboration converts every carefully considered communication into durable agreement",
+        "Issue-relevant argument quality should exert more influence, but careful scrutiny can support acceptance, rejection, or no attitude change",
+        "Source expertise becomes completely inert, because a variable can function only as a peripheral cue and never as evidence or a biasing factor",
+        "Any attitude formed will remain permanent, because motivation and ability eliminate later counterarguments, new evidence, and contextual change"
+      ],
+      "answerIndex": 1,
+      "rationale": "The ELM predicts that when motivation and ability support relatively high elaboration, recipients scrutinize issue-relevant information and the quality of the arguments should matter more. In Petty, Cacioppo, and Goldman's primary experiment, argument quality had greater influence under high personal relevance, whereas source expertise had greater influence under low relevance. Careful thought does not guarantee agreement: strong arguments can produce favorable thoughts, weak arguments can produce counterarguments, and the result may be acceptance, rejection, or little change. Nor is source information necessarily irrelevant at high elaboration; depending on timing and context, a variable may serve as evidence, affect the amount or direction of thought, or influence confidence. The model predicts processing conditions and relative effects, not certain persuasion or permanent attitudes for every person and message.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://doi.org/10.1037/0022-3514.41.5.847",
+        "https://doi.org/10.1016/S0065-2601(08)60214-2"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Personal Involvement as a Determinant of Argument-Based Persuasion",
+          "organization": "Journal of Personality and Social Psychology, American Psychological Association",
+          "url": "https://doi.org/10.1037/0022-3514.41.5.847",
+          "whyReputable": "This peer-reviewed primary experiment by Petty, Cacioppo, and Goldman manipulates personal relevance, argument quality, and source expertise to test the prediction represented in the item."
+        },
+        {
+          "title": "The Elaboration Likelihood Model of Persuasion",
+          "organization": "Advances in Experimental Social Psychology, Elsevier",
+          "url": "https://doi.org/10.1016/S0065-2601(08)60214-2",
+          "whyReputable": "This foundational scholarly chapter by the model's authors states the ELM's routes, elaboration determinants, and multiple roles that persuasion variables can play."
+        }
+      ],
+      "reviewNote": "Replaced a simplistic central-route rule with the model's conditional argument-quality prediction and retained the possibilities of rejection, no change, and multiple source-cue roles.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-09",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-deb2241cffc3b025",
+      "chapterId": "ch-33",
+      "sectionId": "ch-33-section-4",
+      "domainId": 6,
+      "domain": "Social & Cultural Bases of Behavior",
+      "prompt": "Partners report strong closeness and long-term commitment but little passion. What is the most defensible application of Sternberg's triangular theory of love?",
+      "choices": [
+        "Diagnose a healthy relationship, because the component label determines clinical functioning without information about either partner's experience",
+        "Predict that passion cannot change, because the three components are fixed traits once a relationship has lasted beyond its initial period",
+        "Describe the reported intimacy-plus-commitment pattern as companionate love within the model, while assessing satisfaction, safety, context, and change separately",
+        "Diagnose an attachment disorder in one partner, because low passion establishes an individual psychopathology rather than a relationship description"
+      ],
+      "answerIndex": 2,
+      "rationale": "Sternberg's theory distinguishes intimacy, passion, and decision or commitment. Within its taxonomy, intimacy plus commitment without substantial passion is termed companionate love. That is a model-specific description of reported components, not a mental-disorder diagnosis, a judgment that the relationship is healthy, or proof that one partner has an attachment disorder. The original theory also treats component strength and its expression as capable of differing across people, relationships, cultures, and time; the label does not make passion permanently absent or specify an inevitable trajectory. Responsible application therefore separates the descriptive pattern from assessment of each partner's perspective, satisfaction, consent, safety, coercion, communication, functioning, cultural meaning, and desired change. A theory label can organize inquiry, but it cannot substitute for those clinical and contextual data.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://doi.org/10.1037/0033-295X.93.2.119"
+      ],
+      "sourceDetails": [
+        {
+          "title": "A Triangular Theory of Love",
+          "organization": "Psychological Review, American Psychological Association",
+          "url": "https://doi.org/10.1037/0033-295X.93.2.119",
+          "whyReputable": "This peer-reviewed foundational article by Sternberg defines intimacy, passion, decision or commitment, their combinations, and their relationships with lived experience and action."
+        }
+      ],
+      "reviewNote": "Retained the companionate-love classification but made it explicitly descriptive, changeable, and insufficient by itself to establish health, pathology, or relationship prognosis.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-09",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-198c6ebc2b49b1bd",
+      "chapterId": "ch-37",
+      "sectionId": "ch-37-section-3",
+      "domainId": 7,
+      "domain": "Growth & Lifespan Development",
+      "prompt": "A learner can solve a multistep problem with well-timed prompts but not yet alone. Which tutoring response best represents contingent scaffolding for work within a zone of proximal development?",
+      "choices": [
+        "Complete the difficult steps for the learner each time, because successful task completion is sufficient evidence that control has transferred",
+        "Repeat one standardized hint after every response, because keeping assistance constant prevents performance data from altering instruction",
+        "Withhold instruction until unaided mastery appears, because supported performance falls outside the zone of proximal development by definition",
+        "Offer only enough support to enable the next step, monitor the response, adjust assistance contingently, and fade it as the learner gains control"
+      ],
+      "answerIndex": 3,
+      "rationale": "Wood, Bruner, and Ross described effective tutoring as recruiting the learner's interest, simplifying or reducing degrees of freedom in the task, maintaining direction, marking critical features, controlling frustration, and demonstrating solutions when appropriate. The defining instructional logic is contingent support that makes performance possible while preserving the learner's active role and progressively transferring control. Completing every step may produce a finished product without independent learning; an invariant hint ignores performance; and waiting for unaided mastery abandons the very assisted-learning space that the ZPD identifies. Scaffolding and the ZPD are related educational concepts, but they are not synonyms and the term scaffolding was introduced by Wood and colleagues rather than by Vygotsky. Whether support is effective must be evaluated through learning and transfer, not immediate completion alone.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/932126/",
+        "https://doi.org/10.1111/j.1469-7610.1976.tb00381.x"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The Role of Tutoring in Problem Solving",
+          "organization": "Journal of Child Psychology and Psychiatry via U.S. National Library of Medicine",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/932126/",
+          "whyReputable": "This PubMed record identifies the peer-reviewed primary study by Wood, Bruner, and Ross that introduced scaffolding in an observed preschool tutoring task."
+        },
+        {
+          "title": "The Role of Tutoring in Problem Solving",
+          "organization": "Association for Child and Adolescent Mental Health and Wiley",
+          "url": "https://doi.org/10.1111/j.1469-7610.1976.tb00381.x",
+          "whyReputable": "This is the publisher DOI for the foundational primary article detailing tutoring functions and the transfer of problem-solving control to the learner."
+        }
+      ],
+      "reviewNote": "Expanded the terse example into contingent adjustment and fading, while distinguishing scaffolding from task completion, fixed hints, unsupported waiting, and the ZPD itself.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-09",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-17d7db3643a43b92",
+      "chapterId": "ch-38",
+      "sectionId": "ch-38-section-2",
+      "domainId": 7,
+      "domain": "Growth & Lifespan Development",
+      "prompt": "A student commits to the family profession without meaningfully considering alternatives, although the student may explore other life domains. In Marcia's identity-status framework, what is the best current classification?",
+      "choices": [
+        "Foreclosure in the vocational domain, because commitment is present with little prior exploration, without treating the status as a permanent diagnosis",
+        "Identity achievement across the whole person, because any firm commitment demonstrates that exploration has already occurred in every important domain",
+        "Moratorium in the vocational domain, because adopting a family expectation is equivalent to active exploration without a meaningful commitment",
+        "Identity diffusion across the whole person, because commitment to an inherited option demonstrates neither commitment nor engagement anywhere else"
+      ],
+      "answerIndex": 0,
+      "rationale": "Marcia operationalized identity statuses using exploration or crisis and commitment. Commitment with little meaningful prior exploration corresponds to foreclosure; achievement combines exploration with commitment, moratorium involves active exploration without settled commitment, and diffusion lacks both active exploration and firm commitment. The vignette therefore supports foreclosure for the vocational domain at this time. It does not establish the student's status in beliefs, relationships, politics, or other domains, and it is not a diagnosis, immutable trait, or simple rank of maturity. Marcia's original validation study used occupation and ideology in a restricted sample of college men, which also limits direct generalization. Contemporary use should assess the person's actual decision process, social opportunities and constraints, cultural meanings, domain, timing, and possible later transition rather than infer a whole identity from one inherited career plan.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/5939604/",
+        "https://doi.org/10.1037/h0023281"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Development and Validation of Ego-Identity Status",
+          "organization": "Journal of Personality and Social Psychology via U.S. National Library of Medicine",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/5939604/",
+          "whyReputable": "This PubMed record identifies Marcia's peer-reviewed primary study that operationalized and tested four identity statuses using crisis or exploration and commitment."
+        },
+        {
+          "title": "Development and Validation of Ego-Identity Status",
+          "organization": "Journal of Personality and Social Psychology, American Psychological Association",
+          "url": "https://doi.org/10.1037/h0023281",
+          "whyReputable": "This publisher DOI resolves to Marcia's foundational primary article and supports the construct definitions, original domains, method, and sample limits stated in the rationale."
+        }
+      ],
+      "reviewNote": "Preserved foreclosure as commitment without prior exploration while adding essential domain, time, sample, culture, opportunity, and non-diagnostic boundaries.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-09",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-fb4e6c309a977cc6",
+      "chapterId": "ch-38",
+      "sectionId": "ch-38-section-5",
+      "domainId": 7,
+      "domain": "Growth & Lifespan Development",
+      "prompt": "A researcher uses emerging adulthood to interpret prolonged role exploration among some people in their late teens and twenties. Which use of the construct is most defensible?",
+      "choices": [
+        "Treat it as a universal neurologic stage beginning at age 18, because chronological age establishes the same experience across all societies",
+        "Use it as a contextual framework where social conditions permit prolonged exploration, while testing cultural, economic, historical, and individual variation",
+        "Diagnose it when a young adult lives with family, because residential independence is the defining clinical criterion for adult development",
+        "Infer that assuming adult roles before age 25 is unhealthy, because exploration and stable work or family commitments cannot coexist"
+      ],
+      "answerIndex": 1,
+      "rationale": "Arnett proposed emerging adulthood as a developmental conception centered on the late teens through the twenties, especially ages 18 to 25 in the original article, and explicitly bounded it to cultures that allow a prolonged period of independent role exploration. It is therefore best used as a contextual framework and empirical hypothesis, not as a universal neurologic stage, diagnosis, or mandate to delay adult roles. Education, labor markets, family resources and obligations, migration, gender, policy, historical period, and cultural expectations influence whether and how prolonged exploration occurs. Living with family alone does not establish a developmental status, and early commitment is not inherently unhealthy. Researchers should define the population and indicators, examine within- and between-group variation, and avoid treating a pattern prominent in some industrialized contexts as the inevitable experience of every person in an age band.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://doi.org/10.1037/0003-066X.55.5.469"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Emerging Adulthood: A Theory of Development From the Late Teens Through the Twenties",
+          "organization": "American Psychologist, American Psychological Association",
+          "url": "https://doi.org/10.1037/0003-066X.55.5.469",
+          "whyReputable": "This peer-reviewed foundational article by Arnett defines the proposed period and explicitly states its dependence on cultural conditions that permit prolonged role exploration."
+        }
+      ],
+      "reviewNote": "Kept the construct's intended role-exploration focus while removing universality, neurologic-stage, diagnostic, residential, and age-normative overclaims.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-09",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-005638f0dde891b7",
+      "chapterId": "ch-39",
+      "sectionId": "ch-39-section-3",
+      "domainId": 7,
+      "domain": "Growth & Lifespan Development",
+      "prompt": "An older adult wants to continue participating in a valued discussion group despite hearing loss and begins using captions plus a hearing device. In the SOC model, which process is best illustrated?",
+      "choices": [
+        "Elective selection, because choosing any tool necessarily narrows the person's goals even when the valued activity remains unchanged",
+        "Optimization, because every increase in practice or invested effort is equivalent to substituting for a loss in functional capacity",
+        "Compensation, because alternative means are recruited to maintain goal-relevant functioning when prior means are limited",
+        "Loss-based selection, because participation must be abandoned whenever age-related constraints make the original method less effective"
+      ],
+      "answerIndex": 2,
+      "rationale": "In the selection, optimization, and compensation model, selection concerns choosing or adjusting goals, optimization concerns acquiring and investing goal-relevant resources, and compensation concerns using alternative means when existing means are lost or insufficient. Captions and a hearing device provide alternative supports that offset a hearing constraint while preserving participation in the valued group, so compensation is the best fit. The classification depends on function: the same technology could be part of optimization in another sequence, and strategies can operate together. Elective selection would emphasize choosing among goals; loss-based selection would involve reconstructing the goal system after loss rather than necessarily abandoning participation. The SOC framework describes adaptive regulation across adulthood and is not a guarantee of successful outcomes, a requirement to accept every technology, or a claim that all age-related change is loss.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.mpib-berlin.mpg.de/549034/publications-baltes?year=1990",
+        "https://doi.org/10.1006/jvbe.2000.1752"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychological Perspectives on Successful Aging: The Model of Selective Optimization With Compensation",
+          "organization": "Max Planck Institute for Human Development publication catalog",
+          "url": "https://www.mpib-berlin.mpg.de/549034/publications-baltes?year=1990",
+          "whyReputable": "This official Max Planck Institute author bibliography identifies Baltes and Baltes's foundational model chapter and its original successful-aging context."
+        },
+        {
+          "title": "Selection, Optimization, and Compensation: An Action-Related Approach to Work and Partnership",
+          "organization": "Journal of Vocational Behavior, Elsevier",
+          "url": "https://doi.org/10.1006/jvbe.2000.1752",
+          "whyReputable": "This peer-reviewed primary study by Wiese, Freund, and Baltes operationalizes SOC strategies and applies them to real goal pursuit beyond a purely age-defined setting."
+        }
+      ],
+      "reviewNote": "Retained compensation as substituting alternative means for constrained prior means while clarifying functional classification, overlap among processes, and non-deterministic limits.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-09",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    }
+  ]
+}

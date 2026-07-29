@@ -1,0 +1,460 @@
+{
+  "schemaVersion": 1,
+  "domainId": 7,
+  "status": "complete-source-reviewed-editorial-pass",
+  "items": [
+    {
+      "legacyId": "memory-aid-a8fe44b97c354b6d",
+      "title": "Threats to External Validity",
+      "content": "**Generalization targets:** External validity concerns transport across people, settings, treatments, outcomes, and times. Testing reactivity, unusual settings, restricted samples, treatment variation, and interference can limit transport, but no checklist proves or disproves generalizability. Define the target population and conditions, sample relevant heterogeneity, measure implementation, report boundaries, and use replication. Internal and external validity are not inevitably a zero-sum tradeoff.",
+      "references": [
+        "https://open.lib.umn.edu/psychologyresearchmethods/chapter/8-3-the-logic-of-generalization/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "External Validity",
+          "organization": "Research Methods in Psychology, University of Minnesota Libraries",
+          "url": "https://open.lib.umn.edu/psychologyresearchmethods/chapter/8-3-the-logic-of-generalization/",
+          "whyReputable": "This university research-methods chapter directly distinguishes generalization across people and settings from internal validity and explains replication and boundary conditions."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Threats to External Validity\" with method- or role-specific provenance, corrected overstatement, and stated the applicable inferential, ethical, or legal boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-4fd6c7da62d0bebc",
+      "title": "ANOVA Types",
+      "content": "**Choose by design and estimand:** One-way ANOVA compares modeled means across one factor; factorial ANOVA estimates main and interaction effects; repeated-measures designs model dependent observations; ANCOVA conditions on covariates under additional assumptions; MANOVA concerns multiple outcomes. Counting variables is not enough. Check independence structure, scale, residual behavior, variance assumptions, missingness, multiplicity, planned contrasts, and whether the causal interpretation is warranted.",
+      "references": [
+        "https://www.itl.nist.gov/div898/handbook/prc/section4/prc433.htm",
+        "https://www.stata.com/features/anova-manova/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "NIST/SEMATECH e-Handbook: One-Way ANOVA",
+          "organization": "National Institute of Standards and Technology",
+          "url": "https://www.itl.nist.gov/div898/handbook/prc/section4/prc433.htm",
+          "whyReputable": "This federal statistical handbook directly states the one-way ANOVA model, assumptions, hypotheses, and interpretation."
+        },
+        {
+          "title": "ANOVA / MANOVA",
+          "organization": "StataCorp",
+          "url": "https://www.stata.com/features/anova-manova/",
+          "whyReputable": "This direct statistical-methods resource distinguishes one- and multifactor ANOVA, repeated-measures ANOVA, ANCOVA, and MANOVA and describes contrasts, interactions, diagnostics, and multiplicity adjustments."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"ANOVA Types\" with method- or role-specific provenance, corrected overstatement, and stated the applicable inferential, ethical, or legal boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-4eecf0fe78ef7c8d",
+      "title": "Correlation vs Regression",
+      "content": "**Association versus conditional model:** Correlation summarizes direction and strength of association; regression models an outcome conditional on specified predictors. In simple linear regression, squared correlation corresponds to fitted sample variance accounted for, not causal explanation. Coefficients and predictions depend on scale, functional form, collinearity, range, outliers, uncertainty, and validation. Neither method establishes causation without an appropriate design and assumptions.",
+      "references": [
+        "https://www.itl.nist.gov/div898/handbook/pmd/section1/pmd141.htm"
+      ],
+      "sourceDetails": [
+        {
+          "title": "NIST/SEMATECH e-Handbook: Linear Regression",
+          "organization": "National Institute of Standards and Technology",
+          "url": "https://www.itl.nist.gov/div898/handbook/pmd/section1/pmd141.htm",
+          "whyReputable": "This federal statistical handbook directly describes linear regression models, estimation, residual assumptions, and inferential limits."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Correlation vs Regression\" with method- or role-specific provenance, corrected overstatement, and stated the applicable inferential, ethical, or legal boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-168d2b67bb291874",
+      "title": "Regression to the Mean",
+      "content": "**Extreme-score retesting:** When selection uses an extreme fallible measure and repeated measurements correlate imperfectly, later scores tend on average to be less extreme. The pattern is not improvement, deterioration, or treatment response by itself. A concurrent comparison measured under the same selection process can help, but does not automatically solve selection, attrition, instrumentation, contamination, or model misspecification. Reliability, selection rule, and design determine the threat.",
+      "references": [
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC3476454/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Regression to the Mean: What It Is and How to Deal With It",
+          "organization": "International Journal of Epidemiology via PubMed Central",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3476454/",
+          "whyReputable": "This peer-reviewed methods article directly explains regression to the mean, extreme-score selection, imperfect reliability, and appropriate design and analysis responses."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Regression to the Mean\" with method- or role-specific provenance, corrected overstatement, and stated the applicable inferential, ethical, or legal boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-9a71f94fc7176a4d",
+      "title": "Reliability Types",
+      "content": "**Precision depends on the intended score use:** Internal-consistency coefficients concern relations among item responses; test-retest evidence concerns temporal stability; interrater evidence concerns agreement or consistency among raters; alternate-form evidence concerns form comparability. A high coefficient does not prove validity, unidimensionality, fairness, or individual-score precision. Report the coefficient, design, interval, sample, conditions, uncertainty, and relevant standard error for the intended interpretation.",
+      "references": [
+        "https://www.testingstandards.net/open-access-files.html"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Standards for Educational and Psychological Testing",
+          "organization": "AERA, APA, and NCME",
+          "url": "https://www.testingstandards.net/open-access-files.html",
+          "whyReputable": "These joint professional standards directly govern reliability or precision, validity, fairness, administration, scoring, and interpretation of educational and psychological tests."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Reliability Types\" with method- or role-specific provenance, corrected overstatement, and stated the applicable inferential, ethical, or legal boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-7d2f96a594eead04",
+      "title": "Factor Analysis",
+      "content": "**Latent-structure cue:** Exploratory factor analysis estimates patterns without fixing the complete structure in advance; confirmatory factor analysis tests a prespecified measurement model. Principal components summarizes observed variance and is not identical to a common-factor model. Factor number, extraction, rotation, estimator, sample, cross-loadings, fit, and replication matter. A rotated loading pattern does not discover immutable psychological kinds or prove measurement invariance.",
+      "references": [
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC7883798/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Factor Analysis: A Means for Theory and Instrument Development in Support of Construct Validity",
+          "organization": "International Journal of Medical Education via PubMed Central",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7883798/",
+          "whyReputable": "This peer-reviewed methods article directly explains latent-variable factor analysis, exploratory and confirmatory uses, extraction, rotation, model fit, and construct-validity limits."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Factor Analysis\" with method- or role-specific provenance, corrected overstatement, and stated the applicable inferential, ethical, or legal boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-bb66fe8fb6f02c1d",
+      "title": "Chi-Square Test",
+      "content": "**Categorical-count tests:** Goodness-of-fit compares observed counts with a specified distribution; independence or homogeneity tests compare categorical distributions across variables or groups. Expected counts, independent observations, sampling design, sparse cells, and prespecified categories matter. Statistical significance does not describe effect magnitude or causality. Report cell patterns and an appropriate association measure, and use exact or model-based alternatives when asymptotic conditions are inadequate.",
+      "references": [
+        "https://openstax.org/books/introductory-statistics-2e/pages/11-5-comparison-of-the-chi-square-tests"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Comparison of the Chi-Square Tests",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/introductory-statistics-2e/pages/11-5-comparison-of-the-chi-square-tests",
+          "whyReputable": "This openly reviewed statistics chapter directly distinguishes goodness-of-fit, independence, and homogeneity chi-square tests and their expected-count requirements."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Chi-Square Test\" with method- or role-specific provenance, corrected overstatement, and stated the applicable inferential, ethical, or legal boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-837304de54d62f68",
+      "title": "Performance Rating Measurement Quality",
+      "content": "**Treat ratings as measurement evidence:** A performance score is interpretable only for its defined job, criteria, raters, occasions, and decision use. Examine score precision, interrater consistency, criterion relevance, construct underrepresentation or contamination, subgroup fairness, range restriction, and consequences. Central clustering or disagreement may reflect scale design, opportunity to observe, real performance variation, or error; it does not by itself identify a named rater bias. Forced distributions create rather than validate a score distribution.",
+      "references": [
+        "https://www.testingstandards.net/open-access-files.html",
+        "https://www.opm.gov/policy-data-oversight/performance-management/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Standards for Educational and Psychological Testing",
+          "organization": "AERA, APA, and NCME",
+          "url": "https://www.testingstandards.net/open-access-files.html",
+          "whyReputable": "These joint professional standards directly govern reliability or precision, validity, fairness, administration, scoring, and interpretation of educational and psychological tests."
+        },
+        {
+          "title": "Performance Management",
+          "organization": "U.S. Office of Personnel Management",
+          "url": "https://www.opm.gov/policy-data-oversight/performance-management/",
+          "whyReputable": "This official federal resource directly addresses job-related performance standards, observation, feedback, documentation, and appraisal-system implementation."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Performance Rating Measurement Quality\" with method- or role-specific provenance, corrected overstatement, and stated the applicable inferential, ethical, or legal boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-a61cdd6e3cd02ea2",
+      "title": "Scales of Measurement",
+      "content": "**Measurement properties guide analysis:** Nominal values label categories; ordinal values add order; interval interpretations assume meaningful equal differences; ratio interpretations also posit a meaningful zero. Real measures can only approximately support these properties, and permissible analysis is not selected by the label alone. Consider the construct, coding, distribution, design, estimand, robustness, and interpretability rather than memorizing that one statistic is universally allowed or forbidden.",
+      "references": [
+        "https://openstax.org/books/introductory-statistics-2e/pages/1-3-frequency-frequency-tables-and-levels-of-measurement"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Frequency, Frequency Tables, and Levels of Measurement",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/introductory-statistics-2e/pages/1-3-frequency-frequency-tables-and-levels-of-measurement",
+          "whyReputable": "This openly reviewed statistics chapter directly defines nominal, ordinal, interval, and ratio measurement levels and relates them to defensible statistical operations."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Scales of Measurement\" with method- or role-specific provenance, corrected overstatement, and stated the applicable inferential, ethical, or legal boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-b557559dc2425242",
+      "title": "Correlation Pitfalls",
+      "content": "**Inspect before interpreting r:** Pearson correlation targets linear association and can be changed by outliers, nonlinearity, range restriction, mixtures, measurement error, and dependence. A strong coefficient can coexist with poor transport or confounding; a weak coefficient can conceal subgroup or curved relations. Squaring r has a specific linear-model interpretation, not a universal percent-causal explanation. Plot data, report uncertainty, and distinguish association from direction and causation.",
+      "references": [
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC8572982/",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC5079093/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Conducting Correlation Analysis: Important Limitations and Pitfalls",
+          "organization": "Clinical Kidney Journal via PubMed Central",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8572982/",
+          "whyReputable": "This peer-reviewed methods article directly covers linearity, restricted range, measurement error, agreement, and noncausal limits of correlation."
+        },
+        {
+          "title": "Common Pitfalls in Statistical Analysis: The Use of Correlation Techniques",
+          "organization": "Perspectives in Clinical Research via PubMed Central",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5079093/",
+          "whyReputable": "This peer-reviewed methods article directly demonstrates how outliers, nonlinear patterns, subgroup mixtures, dependence, and heteroscedasticity can mislead correlation interpretation."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Correlation Pitfalls\" with method- or role-specific provenance, corrected overstatement, and stated the applicable inferential, ethical, or legal boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-ae5e83776d87d542",
+      "title": "Normal Distribution Properties",
+      "content": "**Normal-model cue:** A normal distribution is symmetric and determined by its mean and standard deviation; the 68-95-99.7 percentages are approximations under that model. Real data need not be normal, and mean-median-mode ordering is a heuristic rather than the definition of skewness. Kurtosis is not simply peak height. Inspect empirical distributions and residuals, use the relevant sampling model, and avoid choosing a center solely from a mnemonic.",
+      "references": [
+        "https://www.itl.nist.gov/div898/handbook/eda/section3/eda3661.htm"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Normal Distribution",
+          "organization": "NIST/SEMATECH e-Handbook of Statistical Methods",
+          "url": "https://www.itl.nist.gov/div898/handbook/eda/section3/eda3661.htm",
+          "whyReputable": "This federal statistical reference directly defines the normal distribution and its parameters without turning mean-median-mode ordering into a definition of skewness."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Normal Distribution Properties\" with method- or role-specific provenance, corrected overstatement, and stated the applicable inferential, ethical, or legal boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-0ca3b7179ab743d4",
+      "title": "Multivariate Statistics Overview",
+      "content": "**Match method to question:** Multiple regression models one outcome from several predictors; logistic models categorical outcomes; MANOVA concerns multiple continuous outcomes; factor analysis addresses latent covariance structure; principal components reduces observed dimensions; discriminant methods classify under assumptions. The multivariate label does not make a method automatically superior. Sample size, dependence, scale, missing data, collinearity, multiplicity, model fit, validation, and intended inference govern selection.",
+      "references": [
+        "https://stats.oarc.ucla.edu/spss/whatstat/what-statistical-analysis-should-i-usestatistical-analyses-using-spss/",
+        "https://www.stata.com/bookstore/multivariate-statistics-reference-manual/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "What Statistical Analysis Should I Use?",
+          "organization": "UCLA Institute for Digital Research and Education",
+          "url": "https://stats.oarc.ucla.edu/spss/whatstat/what-statistical-analysis-should-i-usestatistical-analyses-using-spss/",
+          "whyReputable": "This university statistical-consulting resource directly compares regression, logistic regression, MANOVA, factor, discriminant, and other methods by outcome, predictor, design, and assumption structure."
+        },
+        {
+          "title": "Multivariate Statistics Reference Manual",
+          "organization": "StataCorp",
+          "url": "https://www.stata.com/bookstore/multivariate-statistics-reference-manual/",
+          "whyReputable": "This direct statistical reference covers MANOVA, factor analysis, principal components, discriminant analysis, and related multivariate procedures and their model-specific assumptions."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Multivariate Statistics Overview\" with method- or role-specific provenance, corrected overstatement, and stated the applicable inferential, ethical, or legal boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-19505db8fce3750d",
+      "title": "Clinical vs Statistical Prediction",
+      "content": "**Comparative prediction evidence:** Properly developed mechanical or actuarial combination often matches or exceeds unaided holistic judgment for the same criterion and information. This is probabilistic and setting-specific, not \"statistics always wins.\" Clinicians contribute data quality, safety, feasibility, context, and information absent from a model; post-hoc overrides need evidence and documentation. Structured professional judgment is a distinct framework, and every predictive tool requires validation and monitoring in its intended population.",
+      "references": [
+        "https://doi.org/10.1037/1040-3590.12.1.19"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Clinical Versus Mechanical Prediction: A Meta-Analysis",
+          "organization": "Psychological Assessment, American Psychological Association",
+          "url": "https://doi.org/10.1037/1040-3590.12.1.19",
+          "whyReputable": "This peer-reviewed meta-analysis directly compares unaided clinical and mechanical prediction across studies and supports probabilistic, criterion-specific conclusions."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Clinical vs Statistical Prediction\" with method- or role-specific provenance, corrected overstatement, and stated the applicable inferential, ethical, or legal boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-ed054c4058da72d2",
+      "title": "Type I vs Type II Errors",
+      "content": "**Decision-error cue:** Type I error rejects a true null under a specified procedure; Type II error fails to reject a false null; power is the probability of rejection under a specified alternative. Alpha does not equal the probability that a reported finding is false, and one minus alpha is not power. Effect size, sample size, variability, design, multiplicity, assumptions, prior evidence, and consequences all shape interpretation.",
+      "references": [
+        "https://doi.org/10.1080/00031305.2016.1154108"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The ASA Statement on p-Values: Context, Process, and Purpose",
+          "organization": "American Statistical Association",
+          "url": "https://doi.org/10.1080/00031305.2016.1154108",
+          "whyReputable": "This official professional statement directly explains p-values, error control, multiplicity, effect size, uncertainty, and why a threshold alone does not establish importance or truth."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Type I vs Type II Errors\" with method- or role-specific provenance, corrected overstatement, and stated the applicable inferential, ethical, or legal boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-8a7cece1d38a2e9f",
+      "title": "ANOVA Assumptions & Post-Hocs",
+      "content": "**ANOVA diagnostics and follow-up:** Relevant assumptions concern independence or modeled dependence, residual form, and variance structure, with robustness depending on design and sample balance. A significant omnibus test does not identify every differing pair or practical importance. Planned contrasts and multiplicity-adjusted post-hoc procedures answer different questions. Choose methods before inspecting results when possible, report effect sizes and uncertainty, and consider robust or model-based alternatives when assumptions fail.",
+      "references": [
+        "https://www.itl.nist.gov/div898/handbook/prc/section4/prc433.htm",
+        "https://www.stata.com/features/anova-manova/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "NIST/SEMATECH e-Handbook: One-Way ANOVA",
+          "organization": "National Institute of Standards and Technology",
+          "url": "https://www.itl.nist.gov/div898/handbook/prc/section4/prc433.htm",
+          "whyReputable": "This federal statistical handbook directly states the one-way ANOVA model, assumptions, hypotheses, and interpretation."
+        },
+        {
+          "title": "ANOVA / MANOVA",
+          "organization": "StataCorp",
+          "url": "https://www.stata.com/features/anova-manova/",
+          "whyReputable": "This direct statistical-methods resource distinguishes one- and multifactor ANOVA, repeated-measures ANOVA, ANCOVA, and MANOVA and describes contrasts, interactions, diagnostics, and multiplicity adjustments."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"ANOVA Assumptions & Post-Hocs\" with method- or role-specific provenance, corrected overstatement, and stated the applicable inferential, ethical, or legal boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-4f5632f0dae0686b",
+      "title": "Regression to the Mean",
+      "content": "**Do not credit the intervention automatically:** Extreme baseline selection plus measurement error and imperfect stability produces expected movement toward the population mean on retest. The amount depends on reliability, selection threshold, and correlation across occasions. Randomized or otherwise credible concurrent comparisons help separate this artifact from change, but analysis must also address baseline imbalance, attrition, practice, history, and measurement change. Individual movement is not guaranteed.",
+      "references": [
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC3476454/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Regression to the Mean: What It Is and How to Deal With It",
+          "organization": "International Journal of Epidemiology via PubMed Central",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3476454/",
+          "whyReputable": "This peer-reviewed methods article directly explains regression to the mean, extreme-score selection, imperfect reliability, and appropriate design and analysis responses."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Regression to the Mean\" with method- or role-specific provenance, corrected overstatement, and stated the applicable inferential, ethical, or legal boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-d5dc3ee06263f808",
+      "title": "Threats to Internal Validity",
+      "content": "**Causal alternatives:** History, maturation, testing, instrumentation, selection, attrition, regression, contamination, and interactions can offer rival explanations for change. Random assignment and a concurrent control strengthen causal inference but do not automatically eliminate nonadherence, differential attrition, measurement problems, interference, or analysis bias. Diagnose threats from the actual assignment, timing, measurement, missingness, implementation, and estimand rather than treating \"THIS MAID\" as a universal checklist solution.",
+      "references": [
+        "https://books.google.com/books?id=o7jaAAAAMAAJ"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Experimental and Quasi-Experimental Designs for Generalized Causal Inference",
+          "organization": "Houghton Mifflin scholarly methods monograph",
+          "url": "https://books.google.com/books?id=o7jaAAAAMAAJ",
+          "whyReputable": "This foundational scholarly methods book by Shadish, Cook, and Campbell directly develops internal-validity threats, design responses, and the limits of causal inference."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Threats to Internal Validity\" with method- or role-specific provenance, corrected overstatement, and stated the applicable inferential, ethical, or legal boundary. Replaced a generalization source with the directly aligned Shadish-Cook-Campbell causal-design reference.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-b3804abcbc608dde",
+      "title": "Nonparametric Tests",
+      "content": "**Procedure-specific assumptions remain:** Mann-Whitney, Wilcoxon signed-rank, Kruskal-Wallis, Friedman, Spearman, permutation, and exact tests answer different questions. They are not simply \"small-sample ANOVA substitutes\" or assumption-free. Independence or pairing, exchangeability, shape, ranking, ties, and sampling design matter. Some target distributions or stochastic ordering rather than medians. Compare estimands and assumptions, report effect sizes and uncertainty, and avoid claiming they are always less powerful.",
+      "references": [
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC153434/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Nonparametric Statistical Tests",
+          "organization": "BMJ via PubMed Central",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC153434/",
+          "whyReputable": "This peer-reviewed methods article directly discusses rank and distribution-free procedures, their assumptions, uses, and limitations rather than treating them as assumption-free defaults."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Nonparametric Tests\" with method- or role-specific provenance, corrected overstatement, and stated the applicable inferential, ethical, or legal boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-5f22669413684db2",
+      "title": "Research Ethics - Belmont Report",
+      "content": "**Three Belmont principles:** Respect for persons supports autonomy and protection for diminished autonomy; beneficence supports systematic risk-benefit assessment; justice concerns fair distribution of research burdens and benefits. Informed consent, risk review, and subject selection are applications, not the complete regulatory rule set. IRB requirements, deception, waivers, privacy, vulnerable-population protections, and withdrawal conditions depend on applicable regulation, protocol, and setting.",
+      "references": [
+        "https://www.hhs.gov/ohrp/regulations-and-policy/belmont-report/index.html"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The Belmont Report",
+          "organization": "U.S. Department of Health and Human Services, Office for Human Research Protections",
+          "url": "https://www.hhs.gov/ohrp/regulations-and-policy/belmont-report/index.html",
+          "whyReputable": "This official federal source directly states respect for persons, beneficence, and justice and connects them to consent, risk-benefit assessment, and subject selection."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Research Ethics - Belmont Report\" with method- or role-specific provenance, corrected overstatement, and stated the applicable inferential, ethical, or legal boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    }
+  ]
+}

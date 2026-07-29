@@ -1,0 +1,414 @@
+{
+  "schemaVersion": 1,
+  "domainId": 3,
+  "status": "complete-source-reviewed-editorial-pass",
+  "items": [
+    {
+      "legacyId": "memory-aid-ad5470dbbffc45c8",
+      "title": "Social Facilitation vs. Social Loafing",
+      "content": "**Different group effects:** Social facilitation describes performance changes in another person's presence, often improvement on well-learned or simple tasks and impairment on difficult or novel tasks under particular evaluation conditions. Social loafing describes reduced individual effort when contributions are pooled and difficult to identify. Task complexity, identifiability, group meaning, skill, evaluation, coordination, and culture moderate both; neither is an inevitable \"people work better or worse in groups\" rule.",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/6356198/",
+        "https://doi.org/10.1037/0022-3514.37.6.822"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Social Facilitation: A Meta-Analysis of 241 Studies",
+          "organization": "Psychological Bulletin via PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/6356198/",
+          "whyReputable": "This indexed meta-analysis directly evaluates audience and coaction effects across 241 studies and the task conditions that qualify simple facilitation accounts."
+        },
+        {
+          "title": "Many Hands Make Light the Work: The Causes and Consequences of Social Loafing",
+          "organization": "Journal of Personality and Social Psychology, American Psychological Association",
+          "url": "https://doi.org/10.1037/0022-3514.37.6.822",
+          "whyReputable": "This peer-reviewed primary research program introduced social loafing and tests how identifiability and collective performance conditions affect individual effort."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Social Facilitation vs. Social Loafing\" with directly aligned provenance, correcting deterministic or outdated claims and stating its model-specific inference boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-745774cfc0623a5d",
+      "title": "Groupthink",
+      "content": "**Groupthink as contingent decision model:** Janis proposed that cohesion combined with structural faults and provocative context can foster concurrence seeking, self-censorship, pressure on dissent, illusions of unanimity, and poor information search. Cohesion alone neither causes defective decisions nor proves groupthink after a bad outcome. Examine decision procedures, alternatives, expertise, dissent, leadership, records, incentives, and outcome-independent evidence; safeguards include impartial leadership, independent subgroups, outside critique, and second-chance review.",
+      "references": [
+        "https://archive.org/details/groupthinkpsycho00jani"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Groupthink: Psychological Studies of Policy Decisions and Fiascoes",
+          "organization": "Houghton Mifflin scholarly monograph",
+          "url": "https://archive.org/details/groupthinkpsycho00jani",
+          "whyReputable": "Janis's primary scholarly monograph defines the proposed antecedents, symptoms, and decision safeguards while allowing the construct to be treated as a contingent model rather than an inevitable group outcome."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Groupthink\" with directly aligned provenance, correcting deterministic or outdated claims and stating its model-specific inference boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-0a9bd698461f6318",
+      "title": "Persuasion: ELM & Foot-in-Door",
+      "content": "**Two distinct persuasion cues:** Under high motivation and ability, ELM predicts greater scrutiny of issue-relevant arguments; careful thought can yield acceptance, rejection, or no change. Under lower elaboration, source and contextual cues may exert greater influence, but variables can play multiple roles. Foot-in-the-door research finds that agreeing to a small request can sometimes increase later compliance; it does not guarantee agreement, and similarity, timing, identity, pressure, and context moderate the effect.",
+      "references": [
+        "https://doi.org/10.1037/0022-3514.41.5.847",
+        "https://doi.org/10.1037/h0023552"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Personal Involvement as a Determinant of Argument-Based Persuasion",
+          "organization": "Journal of Personality and Social Psychology, American Psychological Association",
+          "url": "https://doi.org/10.1037/0022-3514.41.5.847",
+          "whyReputable": "This peer-reviewed experiment directly manipulates personal relevance, argument quality, and source expertise to test elaboration-likelihood predictions."
+        },
+        {
+          "title": "Compliance Without Pressure: The Foot-in-the-Door Technique",
+          "organization": "Journal of Personality and Social Psychology, American Psychological Association",
+          "url": "https://doi.org/10.1037/h0023552",
+          "whyReputable": "This peer-reviewed primary field research directly introduced the foot-in-the-door procedure and supports a probabilistic, context-dependent compliance claim."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Persuasion: ELM & Foot-in-Door\" with directly aligned provenance, correcting deterministic or outdated claims and stating its model-specific inference boundary. Additional direct sources cover each named framework in this combined-topic aid.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-c8d858e2dc0f281e",
+      "title": "Self-Serving Bias & Just World",
+      "content": "**Attribution cautions:** Self-serving bias describes a tendency in some contexts to claim more personal credit for favorable than unfavorable outcomes. Just-world belief concerns assumptions that outcomes are deserved, which can support victim blame when situational constraints are ignored. Neither pattern is universal or diagnosed from one explanation. Accuracy, culture, power, controllability, self-protection, information, and actor-observer perspective must be assessed separately.",
+      "references": [
+        "https://doi.org/10.1037/h0076486",
+        "https://openstax.org/books/psychology-2e/pages/12-1-what-is-social-psychology"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Self-Serving Biases in the Attribution of Causality",
+          "organization": "Psychological Bulletin, American Psychological Association",
+          "url": "https://doi.org/10.1037/h0076486",
+          "whyReputable": "This peer-reviewed review directly evaluates self-serving attribution patterns and their methodological and motivational interpretations."
+        },
+        {
+          "title": "What Is Social Psychology?",
+          "organization": "OpenStax Psychology 2e, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/12-1-what-is-social-psychology",
+          "whyReputable": "This openly licensed university section directly distinguishes self-serving attribution from the just-world hypothesis and explains how just-world reasoning can contribute to victim blame."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Self-Serving Bias & Just World\" with directly aligned provenance, correcting deterministic or outdated claims and stating its model-specific inference boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-f2309f7774a8dc4b",
+      "title": "Leadership Theories",
+      "content": "**Leadership frameworks:** Trait and behavioral approaches ask who leads and what leaders do; contingency models examine fit among style, task, followers, and situation; transactional leadership emphasizes exchanges; transformational leadership emphasizes vision, meaning, and development. These are overlapping research lenses, not fixed leader types or guarantees of effectiveness. Outcome criterion, ethics, power, culture, team composition, implementation, and measurement determine what conclusions are defensible.",
+      "references": [
+        "https://openstax.org/books/organizational-behavior/pages/13-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Leadership and Management",
+          "organization": "OpenStax Organizational Behavior",
+          "url": "https://openstax.org/books/organizational-behavior/pages/13-introduction",
+          "whyReputable": "This university textbook chapter directly compares trait, behavioral, contingency, transactional, and transformational leadership approaches and their contextual limits."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Leadership Theories\" with directly aligned provenance, correcting deterministic or outdated claims and stating its model-specific inference boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-72621809ea1d4230",
+      "title": "Job Satisfaction & Motivation Theories",
+      "content": "**Work-attitude and motivation map:** Job satisfaction is an evaluative attitude with modest, variable associations with performance, withdrawal, and well-being. Expectancy, equity, goal-setting, reinforcement, job-characteristics, and self-determination theories address different mechanisms and levels. No theory predicts every worker, and satisfaction does not by itself cause performance. Define the outcome and job context, examine resources and constraints, and use validated measures before selecting an intervention.",
+      "references": [
+        "https://doi.org/10.1037/0033-2909.127.3.376",
+        "https://openstax.org/books/organizational-behavior/pages/7-3-process-theories-of-motivation",
+        "https://doi.org/10.1016/0030-5073(76)90016-7",
+        "https://doi.org/10.1037/0003-066X.55.1.68",
+        "https://doi.org/10.1037/0003-066X.57.9.705"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The Job Satisfaction-Job Performance Relationship: A Qualitative and Quantitative Review",
+          "organization": "Psychological Bulletin, American Psychological Association",
+          "url": "https://doi.org/10.1037/0033-2909.127.3.376",
+          "whyReputable": "This peer-reviewed meta-analysis directly evaluates the association between job satisfaction and performance and prevents deterministic causal interpretation."
+        },
+        {
+          "title": "Process Theories of Motivation",
+          "organization": "OpenStax Organizational Behavior, Rice University",
+          "url": "https://openstax.org/books/organizational-behavior/pages/7-3-process-theories-of-motivation",
+          "whyReputable": "This university chapter directly compares operant reinforcement, equity, goal-setting, and expectancy theories, including their distinct mechanisms and limits."
+        },
+        {
+          "title": "Motivation Through the Design of Work: Test of a Theory",
+          "organization": "Organizational Behavior and Human Performance, Elsevier",
+          "url": "https://doi.org/10.1016/0030-5073(76)90016-7",
+          "whyReputable": "This foundational peer-reviewed article directly tests the job-characteristics model linking work design with motivation, satisfaction, and performance outcomes."
+        },
+        {
+          "title": "Self-Determination Theory and the Facilitation of Intrinsic Motivation, Social Development, and Well-Being",
+          "organization": "American Psychologist, American Psychological Association",
+          "url": "https://doi.org/10.1037/0003-066X.55.1.68",
+          "whyReputable": "This peer-reviewed foundational article directly defines autonomous and controlled motivation and the needs for autonomy, competence, and relatedness."
+        },
+        {
+          "title": "Building a Practically Useful Theory of Goal Setting and Task Motivation",
+          "organization": "American Psychologist, American Psychological Association",
+          "url": "https://doi.org/10.1037/0003-066X.57.9.705",
+          "whyReputable": "This peer-reviewed review by the theory authors directly states goal-setting conditions, mechanisms, moderators, and practical limits."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Job Satisfaction & Motivation Theories\" with directly aligned provenance, correcting deterministic or outdated claims and stating its model-specific inference boundary. Additional direct sources cover each named framework in this combined-topic aid.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-c1b6abe0825db31b",
+      "title": "Types of Conformity",
+      "content": "**Conformity distinctions:** Public compliance can occur without private acceptance; identification involves responding in relation to a valued group or role; internalization reflects greater private acceptance. Normative and informational influence are proposed processes, not motives directly observed from behavior. Response visibility, ambiguity, unanimity, expertise, group identity, culture, stakes, and dissent affect yielding, and one answer cannot reveal a permanent conformity type.",
+      "references": [
+        "https://doi.org/10.1038/scientificamerican1155-31",
+        "https://doi.org/10.1177/002200275800200106"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Opinions and Social Pressure",
+          "organization": "Scientific American",
+          "url": "https://doi.org/10.1038/scientificamerican1155-31",
+          "whyReputable": "Asch's primary account describes the line-judgment conformity paradigm and individual variation without supporting universal obedience or motive claims."
+        },
+        {
+          "title": "Compliance, Identification, and Internalization: Three Processes of Attitude Change",
+          "organization": "Journal of Conflict Resolution, SAGE Publications",
+          "url": "https://doi.org/10.1177/002200275800200106",
+          "whyReputable": "Kelman's foundational peer-reviewed article directly distinguishes compliance, identification, and internalization rather than inferring them from one conforming response."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Types of Conformity\" with directly aligned provenance, correcting deterministic or outdated claims and stating its model-specific inference boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-02a8d4d16e083c7b",
+      "title": "Attitude Formation & Change",
+      "content": "**Attitude-change cue:** Attitudes can involve affective, cognitive, and behavioral information, but those components need not agree. Persuasion depends on message, source, recipient, channel, prior attitude, motivation, ability, and context. High elaboration increases sensitivity to argument quality rather than guaranteeing acceptance or permanence. Behavior can sometimes influence attitudes through dissonance or self-perception processes, but observed change does not uniquely identify one mechanism.",
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/12-3-attitudes-and-persuasion",
+        "https://pressbooks.bccampus.ca/socialpsych/chapter/changing-attitudes-by-changing-behavior/",
+        "https://doi.org/10.1037/0022-3514.41.5.847"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Attitudes and Persuasion",
+          "organization": "OpenStax Psychology 2e, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/12-3-attitudes-and-persuasion",
+          "whyReputable": "This openly licensed university section directly covers attitude structure, persuasion conditions, elaboration, and cognitive dissonance."
+        },
+        {
+          "title": "Changing Attitudes by Changing Behavior",
+          "organization": "Principles of Social Psychology, BCcampus Open Education",
+          "url": "https://pressbooks.bccampus.ca/socialpsych/chapter/changing-attitudes-by-changing-behavior/",
+          "whyReputable": "This university open-text section directly compares cognitive-dissonance and self-perception accounts of behavior-related attitude change."
+        },
+        {
+          "title": "Personal Involvement as a Determinant of Argument-Based Persuasion",
+          "organization": "Journal of Personality and Social Psychology, American Psychological Association",
+          "url": "https://doi.org/10.1037/0022-3514.41.5.847",
+          "whyReputable": "This peer-reviewed experiment directly manipulates personal relevance, argument quality, and source expertise to test elaboration-likelihood predictions."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Attitude Formation & Change\" with directly aligned provenance, correcting deterministic or outdated claims and stating its model-specific inference boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-cf8462eece7dd818",
+      "title": "Minority Influence",
+      "content": "**Minority-influence cue:** A consistent minority can prompt attention and private reconsideration, especially when it appears autonomous and flexible rather than rigid. Consistency is neither sufficient nor universally persuasive; credibility, timing, group identity, conflict, social cost, task, and majority response matter. Public compliance and private conversion require different evidence, and disagreement by itself does not show that the minority caused lasting attitude change.",
+      "references": [
+        "https://archive.org/details/socialinfluences0000mosc"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Social Influence and Social Change",
+          "organization": "Academic Press scholarly monograph",
+          "url": "https://archive.org/details/socialinfluences0000mosc",
+          "whyReputable": "Moscovici's foundational scholarly treatment directly develops minority-influence consistency and conversion claims as conditional social processes."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Minority Influence\" with directly aligned provenance, correcting deterministic or outdated claims and stating its model-specific inference boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-b2dda26257201d9d",
+      "title": "Prosocial Behavior & Altruism",
+      "content": "**Helping-behavior cue:** Presence of others is associated on average with lower individual intervention in many studies, but danger, competence, communication, relationships, and supportive bystanders can attenuate or reverse the pattern. Diffusion, ambiguity, audience inhibition, empathy, norms, and cost-reward appraisals are possible mechanisms, not traits inferred from nonhelping. In emergencies, social explanation must never delay scene safety, emergency contact, and action within training.",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/21534650/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The Bystander-Effect: A Meta-Analytic Review",
+          "organization": "Psychological Bulletin via PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/21534650/",
+          "whyReputable": "This peer-reviewed meta-analysis synthesizes 105 effects and directly documents average bystander effects and moderators including danger and bystander support."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Prosocial Behavior & Altruism\" with directly aligned provenance, correcting deterministic or outdated claims and stating its model-specific inference boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-5f71d0b69480ed77",
+      "title": "Motivation Theories - I/O",
+      "content": "**I/O motivation map:** Expectancy theory links effort, performance expectancy, instrumentality, and valued outcomes; equity theory concerns perceived input-outcome fairness; goal-setting emphasizes specific challenging accepted goals with feedback; reinforcement focuses on consequences; self-determination distinguishes autonomous and controlled motivation. These are conditional models, not formulas that guarantee effort. Ability, resources, role clarity, justice, culture, safety, and goal conflict require separate assessment.",
+      "references": [
+        "https://openstax.org/books/organizational-behavior/pages/7-3-process-theories-of-motivation",
+        "https://doi.org/10.1037/0003-066X.55.1.68"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Process Theories of Motivation",
+          "organization": "OpenStax Organizational Behavior, Rice University",
+          "url": "https://openstax.org/books/organizational-behavior/pages/7-3-process-theories-of-motivation",
+          "whyReputable": "This university chapter directly compares operant reinforcement, equity, goal-setting, and expectancy theories, including their distinct mechanisms and limits."
+        },
+        {
+          "title": "Self-Determination Theory and the Facilitation of Intrinsic Motivation, Social Development, and Well-Being",
+          "organization": "American Psychologist, American Psychological Association",
+          "url": "https://doi.org/10.1037/0003-066X.55.1.68",
+          "whyReputable": "This peer-reviewed foundational article directly defines autonomy, competence, relatedness, and differing qualities of motivation without reducing motivation to one universal hierarchy."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Motivation Theories - I/O\" with directly aligned provenance, correcting deterministic or outdated claims and stating its model-specific inference boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-6c62e1e6873c6699",
+      "title": "Leadership Theories",
+      "content": "**Leadership comparison:** Fiedler and path-goal approaches make different contingency claims; leader-member exchange examines dyadic relationship quality; transactional leadership concerns contingent exchange; transformational leadership concerns influence through vision and development. Labels are not personality diagnoses or a simple best-to-worst hierarchy. Effectiveness depends on criterion, followers, task, authority, culture, ethics, time, and implementation, and causal conclusions require appropriate designs.",
+      "references": [
+        "https://openstax.org/books/organizational-behavior/pages/13-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Leadership and Management",
+          "organization": "OpenStax Organizational Behavior",
+          "url": "https://openstax.org/books/organizational-behavior/pages/13-introduction",
+          "whyReputable": "This university textbook chapter directly compares trait, behavioral, contingency, transactional, and transformational leadership approaches and their contextual limits."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Leadership Theories\" with directly aligned provenance, correcting deterministic or outdated claims and stating its model-specific inference boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-68b0ac8ca782c632",
+      "title": "Job Analysis Methods",
+      "content": "**Job-analysis cue:** Interviews, observation, questionnaires, work diaries, critical incidents, and existing records provide different evidence about tasks and worker requirements. Task-oriented and worker-oriented analyses answer related but distinct questions. No single method is automatically best; combine knowledgeable sources and methods appropriate to the job, document sampling and change, address accessibility and bias, and connect specifications to the intended selection or performance criterion.",
+      "references": [
+        "https://www.siop.org/Research-Publications/Professional-Practice/Principles-for-the-Validation-and-Use-of-Personnel-Selection-Procedures"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Principles for the Validation and Use of Personnel Selection Procedures",
+          "organization": "Society for Industrial and Organizational Psychology",
+          "url": "https://www.siop.org/Research-Publications/Professional-Practice/Principles-for-the-Validation-and-Use-of-Personnel-Selection-Procedures",
+          "whyReputable": "This official professional standard directly addresses job analysis, criterion definition, selection validation, documentation, and appropriate use."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Job Analysis Methods\" with directly aligned provenance, correcting deterministic or outdated claims and stating its model-specific inference boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-07776f320105d254",
+      "title": "Insanity Defense Standards",
+      "content": "**Legal responsibility, not diagnosis:** M'Naghten, irresistible-impulse, Model Penal Code, and product-test formulations are historical legal standards. Current tests, burdens, admissibility, verdict options, and terminology vary by jurisdiction and can change. Competence to proceed and criminal responsibility at the time of the act are separate questions. Mental disorder alone does not establish insanity, and memorized state counts, prevalence claims, or \"broadest\" rankings cannot replace current controlling law.",
+      "references": [
+        "https://www.law.cornell.edu/wex/insanity_defense"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Insanity Defense",
+          "organization": "Legal Information Institute, Cornell Law School",
+          "url": "https://www.law.cornell.edu/wex/insanity_defense",
+          "whyReputable": "This law-school legal reference directly summarizes major insanity-defense formulations and current jurisdictional variation while distinguishing legal responsibility from diagnosis."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Insanity Defense Standards\" with directly aligned provenance, correcting deterministic or outdated claims and stating its model-specific inference boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-d0a767ba6ab53439",
+      "title": "Performance Appraisal Rater Errors",
+      "content": "**Rater-error recognition:** Halo or horns, leniency or severity, central tendency, recency, contrast, and similarity are hypotheses about how a rater may distort job-performance judgments. Diagnose the pattern from repeated, job-relevant evidence rather than disagreement alone. Behaviorally anchored criteria, representative observation periods, contemporaneous documentation, frame-of-reference training, and appropriately selected multiple raters can reduce some vulnerabilities; no safeguard makes ratings bias-free.",
+      "references": [
+        "https://www.opm.gov/policy-data-oversight/performance-management/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Performance Management",
+          "organization": "U.S. Office of Personnel Management",
+          "url": "https://www.opm.gov/policy-data-oversight/performance-management/",
+          "whyReputable": "This official federal resource directly addresses job-related performance standards, feedback, documentation, and appraisal-system implementation rather than endorsing one rating device universally."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Performance Appraisal Rater Errors\" with directly aligned provenance, correcting deterministic or outdated claims and stating its model-specific inference boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    }
+  ]
+}

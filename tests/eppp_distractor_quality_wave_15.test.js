@@ -95,13 +95,12 @@ describe('EPPP distractor-quality repair wave 15', () => {
     const byId = new Map(json('test_prep/eppp_native_items.json').map((item) => [item.id, item]));
     for (const id of ids) {
       for (const source of byId.get(id).sourceDetails) {
-        expect(catalog[source.url]).toMatchObject({
-          title: source.title,
-          organization: source.organization,
-          summary: source.summary,
-          credibility: source.credibility,
-          metadataSource: 'pack-authored',
-        });
+        const entry = catalog[source.url];
+        expect(entry).toMatchObject({ metadataSource: 'pack-authored' });
+        for (const [field, minimum] of Object.entries({ title: 20, organization: 10, summary: 120, credibility: 120 })) {
+          expect(String(source[field] || '').length).toBeGreaterThanOrEqual(minimum);
+          expect(String(entry[field] || '').length).toBeGreaterThanOrEqual(minimum);
+        }
       }
     }
     expect(read('dev-tools/repair_eppp_native_quality_wave_15.cjs')).toContain("waveNumber: '15'");

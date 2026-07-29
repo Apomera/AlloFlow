@@ -1,0 +1,1356 @@
+{
+  "schemaVersion": 1,
+  "waveId": "eppp-memory-aid-correction-wave-01",
+  "generatedAt": "2026-07-28T00:00:00.000Z",
+  "status": "source-reviewed-editorial-corrections-independent-expert-review-pending",
+  "summary": {
+    "items": 42,
+    "titleCurrentnessRecords": 6,
+    "learnerContentUnicodeRecords": 14,
+    "sourceMetadataUnicodeRecords": 5,
+    "sourceUrlMetadataAlignmentRecords": 3,
+    "currentnessRecords": 1,
+    "stableIdProvenanceRecords": 8,
+    "duplicateTopicPairsDifferentiated": 7,
+    "duplicateTopicRecordsDifferentiated": 14,
+    "sourceDirectnessRecords": 3
+  },
+  "safeguards": [
+    "Historical numbered review-wave and manual-override evidence remains unchanged.",
+    "Corrections target known source-reviewed memory aids by stable legacy ID and verify the expected pre-correction title and artifact.",
+    "Correction waves are applied after numbered review waves and may not overlap another correction wave.",
+    "References and sourceDetails URLs must match exactly for every correction record.",
+    "Independent qualified expert review and production validation remain pending."
+  ],
+  "items": [
+    {
+      "legacyId": "memory-aid-13eb4b84a468f70e",
+      "expectedTitle": "BPD Criteria",
+      "supersedesArtifact": "eppp_learning_review_overrides.json",
+      "title": "BPD Criteria",
+      "domainId": 5,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Borderline personality disorder is a pervasive pattern involving instability in relationships, self-image, affect, and impulsivity.** Mnemonics can cue criteria but do not replace a longitudinal, culturally informed assessment or differential diagnosis. Common criterion areas include abandonment sensitivity, unstable intense relationships, identity disturbance, impulsivity, suicidal or self-injurious behavior, affective instability, chronic emptiness, intense anger, and transient stress-related paranoia or dissociation. Dialectical behavior therapy has strong evidence for recurrent self-harm and emotion dysregulation and was originally developed for chronically suicidal people with BPD. Other structured treatments also have evidence; “gold standard” should not imply one universally superior treatment.",
+      "references": [
+        "https://www.nimh.nih.gov/health/publications/borderline-personality-disorder"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Borderline Personality Disorder",
+          "organization": "National Institute of Mental Health (NIMH), National Institutes of Health",
+          "url": "https://www.nimh.nih.gov/health/publications/borderline-personality-disorder",
+          "whyReputable": "The U.S. federal agency leading mental-health research provides this evidence-grounded overview."
+        }
+      ],
+      "reviewNote": "Removed a universal gold-standard claim and clarified that multiple structured psychotherapies have evidence.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "stable-id-provenance"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-1709f623adcd8ca3",
+      "expectedTitle": "Ainsworth Strange Situation",
+      "supersedesArtifact": "eppp_learning_review_overrides.json",
+      "title": "Ainsworth Strange Situation: Procedure & Interpretation",
+      "domainId": 4,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Procedure first:** Ainsworth’s Strange Situation is a standardized series of infant–caregiver separations, reunions, and exposure to an unfamiliar adult. Trained coders consider exploration, distress, proximity seeking, contact maintenance, avoidance, resistance, and the organization of reunion behavior across the full procedure. The resulting secure, avoidant, resistant/ambivalent, or disorganized classification describes behavior in that relationship and assessment context; it is not a fixed child diagnosis, a caregiver personality label, proof of maltreatment, or a forecast of every later relationship. Distinguish this observational infant procedure from adult attachment self-reports and the Adult Attachment Interview. Culture, developmental status, stress, familiarity, and measurement conditions affect interpretation.",
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/9-3-stages-of-development"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e, Section 9.3: Stages of Development",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/9-3-stages-of-development",
+          "whyReputable": "An expert-authored, peer-reviewed textbook from nonprofit Rice University."
+        }
+      ],
+      "reviewNote": "Removed deterministic caregiver labels and prevalence claims; clarified relationship-specific observational classification.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "stable-id-provenance",
+        "learner-purpose-differentiation"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-17c813e9917a2a88",
+      "expectedTitle": "Effect Size Benchmarks",
+      "supersedesArtifact": "eppp_memory_aid_review_wave_03.json",
+      "title": "Effect-Size Benchmarks: Cohen Conventions",
+      "domainId": 7,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Effect-size benchmarks are conventions, not universal labels of practical importance.** Cohen offered d values near 0.2, 0.5, and 0.8 and r values near .10, .30, and .50 as rough defaults when a field lacks better reference information. Interpret the estimate using the outcome scale, design, population, reliability, baseline risk, costs and harms, prior studies, and a smallest effect of interest. Report the effect definition, direction, uncertainty interval, and analysis choices. A \"small\" standardized effect can matter when outcomes are consequential or exposure is broad; a \"large\" effect can be imprecise, biased, or trivial for the decision. Benchmarks do not show causality, replication, clinical significance, or the probability that a hypothesis is true.",
+      "references": [
+        "https://doi.org/10.1037/0033-2909.112.1.155",
+        "https://pubmed.ncbi.nlm.nih.gov/24324449/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "A power primer",
+          "organization": "Jacob Cohen, Psychological Bulletin",
+          "url": "https://doi.org/10.1037/0033-2909.112.1.155",
+          "whyReputable": "The peer-reviewed methodological source for the familiar conventional benchmarks and their intended fallback use."
+        },
+        {
+          "title": "Calculating and reporting effect sizes to facilitate cumulative science: a practical primer for t-tests and ANOVAs",
+          "organization": "Daniel Lakens, Frontiers in Psychology",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/24324449/",
+          "whyReputable": "A peer-reviewed practical review emphasizing transparent effect definitions, confidence intervals, and context-aware interpretation."
+        }
+      ],
+      "reviewNote": "Removed visible-to-the-naked-eye labels and made magnitude conditional on construct, uncertainty, context, and decision consequences.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "learner-purpose-differentiation"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-1c6c42c0298ca5f4",
+      "expectedTitle": "DSM-5 Anxiety vs OCD vs Trauma",
+      "supersedesArtifact": "eppp_memory_aid_review_wave_08.json",
+      "title": "Anxiety, OCD & Trauma-Related Differentials: DSM-5-TR Cue",
+      "domainId": 5,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Chapter placement is a retrieval cue, not a causal theory:** Anxiety disorders include conditions organized around excessive fear, anxiety, and related avoidance, such as GAD, panic disorder, agoraphobia, and specific or social phobia. OCD belongs with obsessive-compulsive and related disorders, which also include hoarding and body-focused or appearance-focused conditions. PTSD and acute stress disorder belong with trauma- and stressor-related disorders and require qualifying exposure. Separation into chapters does not mean the groups never overlap or share anxiety, learning, or repetitive behavior. Diagnose from the full syndrome, duration, impairment, exclusions, development, and context rather than the chapter label.",
+      "references": [
+        "https://www.nimh.nih.gov/health/topics/anxiety-disorders",
+        "https://www.nimh.nih.gov/health/publications/obsessive-compulsive-disorder-when-unwanted-thoughts-or-repetitive-behaviors-take-over",
+        "https://www.ptsd.va.gov/professional/treat/essentials/dsm5_ptsd.asp"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Anxiety Disorders",
+          "organization": "National Institute of Mental Health, National Institutes of Health",
+          "url": "https://www.nimh.nih.gov/health/topics/anxiety-disorders",
+          "whyReputable": "This federal topic page identifies current anxiety-disorder groupings and distinguishes persistent clinically significant anxiety from occasional fear or worry without collapsing OCD or PTSD into that group."
+        },
+        {
+          "title": "Obsessive-Compulsive Disorder: When Unwanted Thoughts or Repetitive Behaviors Take Over",
+          "organization": "National Institute of Mental Health, National Institutes of Health",
+          "url": "https://www.nimh.nih.gov/health/publications/obsessive-compulsive-disorder-when-unwanted-thoughts-or-repetitive-behaviors-take-over",
+          "whyReputable": "This federal condition-specific publication distinguishes obsessions and compulsions, ordinary habits, distress and impairment, evaluation, common overlap, and evidence-supported treatment."
+        },
+        {
+          "title": "PTSD and DSM-5",
+          "organization": "National Center for PTSD, U.S. Department of Veterans Affairs",
+          "url": "https://www.ptsd.va.gov/professional/treat/essentials/dsm5_ptsd.asp",
+          "whyReputable": "This federal specialty center provides a criterion-organized summary of qualifying exposure, symptom clusters, duration, impairment, exclusions, and DSM-5-TR continuity without requiring copied manual text."
+        }
+      ],
+      "reviewNote": "Rewrote \"Anxiety, OCD & Trauma: DSM-5-TR Chapter Map\" for careful criterion or assessment recognition with directly aligned sources; this study aid cannot establish a diagnosis or replace the current manual, instrument documentation, or qualified evaluation.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "title-currentness"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-28fd96d344b9008e",
+      "expectedTitle": "DSM-5 Schizophrenia Criteria",
+      "supersedesArtifact": "eppp_memory_aid_review_wave_03.json",
+      "title": "Schizophrenia Criteria: DSM-5-TR Cue",
+      "domainId": 5,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**DSM-5-TR retrieval cue: symptoms + function + course + exclusions, never one symptom or a dopamine story.** The active-phase cluster requires at least two of delusions, hallucinations, disorganized speech, grossly disorganized or catatonic behavior, and negative symptoms for a significant portion of one month, with at least one of the first three. Continuous disturbance lasts at least six months and includes the active phase; functioning is markedly below the prior level in major areas. Evaluate mood episodes, substances, medications, neurological or medical causes, developmental history, and cultural context. Hallucinations and unusual beliefs occur in multiple conditions, and schizophrenia is not dissociative identity disorder. Use the current DSM-5-TR for exact wording, coding, and exceptions.",
+      "references": [
+        "https://www.psychiatry.org/File%20Library/Psychiatrists/Practice/DSM/APA_DSM-5-Schizophrenia.pdf",
+        "https://www.nimh.nih.gov/health/publications/schizophrenia"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Schizophrenia: DSM-5 Changes",
+          "organization": "American Psychiatric Association",
+          "url": "https://www.psychiatry.org/File%20Library/Psychiatrists/Practice/DSM/APA_DSM-5-Schizophrenia.pdf",
+          "whyReputable": "This official American Psychiatric Association DSM resource directly addresses the diagnostic framework and changes behind the aid’s DSM retrieval cue."
+        },
+        {
+          "title": "Schizophrenia",
+          "organization": "National Institute of Mental Health, National Institutes of Health",
+          "url": "https://www.nimh.nih.gov/health/publications/schizophrenia",
+          "whyReputable": "This current federal clinical-information resource directly supports symptom categories, functional impact, differential caution, and the distinction from dissociative identity disorder."
+        }
+      ],
+      "reviewNote": "Added functional, course, exclusion, developmental, and cultural gates and rejected single-symptom diagnosis.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "source-directness",
+        "title-currentness"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-2d80e59718d3de5d",
+      "expectedTitle": "Glial Cells",
+      "supersedesArtifact": "eppp_memory_aid_review_wave_01.json",
+      "title": "Glial Cells",
+      "domainId": 1,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Glia support, regulate, defend, and myelinate—do not reduce them to passive “glue.”** Astrocytes help regulate the extracellular environment, metabolism, synapses, and blood–brain-barrier functions. Oligodendrocytes form CNS myelin and can support segments on multiple axons; Schwann cells myelinate PNS segments and support repair. Microglia are resident immune-surveillance and response cells. Ependymal cells line ventricles and participate in cerebrospinal-fluid physiology. Cell counts and roles vary by region; avoid the outdated “glia outnumber neurons 10:1 everywhere” shortcut.",
+      "references": [
+        "https://www.ncbi.nlm.nih.gov/books/NBK10869/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Neuroscience, 2nd edition: “Glial Cells”",
+          "organization": "NCBI Bookshelf, U.S. National Library of Medicine",
+          "url": "https://www.ncbi.nlm.nih.gov/books/NBK10869/",
+          "whyReputable": "A scholarly neuroscience textbook hosted by the U.S. National Library of Medicine."
+        }
+      ],
+      "reviewNote": "Removed passive-glue and universal 10:1 claims.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "learner-content-unicode-restoration",
+        "source-metadata-unicode-restoration"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-32ef54e1330c4314",
+      "expectedTitle": "Type I vs. Type II Errors",
+      "supersedesArtifact": "eppp_memory_aid_review_wave_01.json",
+      "title": "Type I vs. Type II Errors",
+      "domainId": 7,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Type I:** reject a true null. Chosen α controls the long-run Type I rate under the model and plan; p < .05 is not a 5% probability that the null is true. **Type II:** fail to reject a false null for a specified alternative; probability β. **Power = 1 − β** for a specified alternative, design, variability, and analysis. Fail to reject is not prove no effect. Multiplicity, optional stopping, assumption violations, and selective reporting can make nominal rates misleading. Balance errors by consequences; neither is always worse.",
+      "references": [
+        "https://www.amstat.org/asa/files/pdfs/p-valuestatement.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The ASA Statement on p-Values: Context, Process, and Purpose",
+          "organization": "American Statistical Association",
+          "url": "https://www.amstat.org/asa/files/pdfs/p-valuestatement.pdf",
+          "whyReputable": "An expert consensus statement correcting common hypothesis-testing errors."
+        }
+      ],
+      "reviewNote": "Corrected conditional probabilities and added power and multiplicity boundaries.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "learner-content-unicode-restoration"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-4827bf719ada6db6",
+      "expectedTitle": "Test Security & Release",
+      "supersedesArtifact": "eppp_memory_aid_review_wave_01.json",
+      "title": "Test Security & Release",
+      "domainId": 8,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Distinguish test data from test materials, then identify authority and risk.** Test data include scores, client responses, and examination notes. Under APA Standard 9.04, psychologists generally provide data pursuant to a client/patient release, with a narrow option to refrain for likely substantial harm or substantial misuse/misrepresentation; absent release, provide only as required by law or court order. Test materials include manuals, instruments, protocols, and questions/stimuli; Standard 9.11 calls for reasonable security efforts consistent with law and contract. Avoid blanket never-release rules.",
+      "references": [
+        "https://www.apa.org/ethics/code"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Ethical Principles of Psychologists and Code of Conduct",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/ethics/code",
+          "whyReputable": "APA’s official primary text for the General Principles and enforceable Ethical Standards."
+        }
+      ],
+      "reviewNote": "Corrected blanket unqualified-recipient and never-release rules.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "source-metadata-unicode-restoration"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-482b603596c65a36",
+      "expectedTitle": "DSM-5 Personality Clusters",
+      "supersedesArtifact": "eppp_memory_aid_review_wave_08.json",
+      "title": "Personality Disorder Clusters: DSM-5-TR Cue",
+      "domainId": 5,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Cluster map, not a diagnosis:** Cluster A groups paranoid, schizoid, and schizotypal patterns as odd or eccentric; Cluster B groups antisocial, borderline, histrionic, and narcissistic patterns as dramatic, emotional, or erratic; Cluster C groups avoidant, dependent, and obsessive-compulsive personality patterns as anxious or fearful. The labels are descriptive organizers with limited demonstrated clinical utility. Diagnosis requires a pervasive, inflexible pattern, impairment or distress, developmental and cultural context, differential diagnosis, and evidence beyond a memorable adjective.",
+      "references": [
+        "https://www.merckmanuals.com/professional/psychiatric-disorders/personality-disorders/overview-of-personality-disorders"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Overview of Personality Disorders",
+          "organization": "Merck Manual Professional Edition",
+          "url": "https://www.merckmanuals.com/professional/psychiatric-disorders/personality-disorders/overview-of-personality-disorders",
+          "whyReputable": "This clinician-reviewed disorder-specific reference identifies all 10 personality disorder categories, their three descriptive clusters, common overlap, and the limited clinical utility of cluster grouping."
+        }
+      ],
+      "reviewNote": "Rewrote \"Personality-Disorder Clusters: DSM-5-TR Map\" for careful criterion or assessment recognition with directly aligned sources; this study aid cannot establish a diagnosis or replace the current manual, instrument documentation, or qualified evaluation.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "title-currentness"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-52975d7ab9dc4cfb",
+      "expectedTitle": "Evidence-Based Treatment Pairings",
+      "supersedesArtifact": "eppp_memory_aid_review_wave_03.json",
+      "title": "Evidence-Based Treatment Pairings",
+      "domainId": 6,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Evidence-based practice is not a one-disorder/one-brand lookup table.** Integrate the best available research with clinical expertise and the person's characteristics, culture, preferences, goals, access needs, comorbidity, risk, setting, and prior response. Exam pairings can identify well-supported options: exposure-based methods for many anxiety presentations, ERP for OCD, behavioral activation or structured psychotherapies for depression, and trauma-focused psychotherapies for PTSD. Medication, combined care, family or systems work, and level of care may also be indicated. \"Most effective,\" \"gold standard,\" and \"CBT works for everything\" require a defined population, comparator, outcome, time point, harms, and evidence source. Shared decision-making, competence, monitoring, and revising a nonbeneficial plan remain essential.",
+      "references": [
+        "https://www.apa.org/practice/guidelines/evidence-based-statement.html",
+        "https://www.nice.org.uk/guidance/cg31/chapter/Recommendations",
+        "https://www.nice.org.uk/guidance/ng222/chapter/Recommendations",
+        "https://www.apa.org/ptsd-guideline"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Policy Statement on Evidence-Based Practice in Psychology",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/practice/guidelines/evidence-based-statement.html",
+          "whyReputable": "APA’s official policy defines evidence-based practice as integration of research, expertise, and patient characteristics, culture, and preferences."
+        },
+        {
+          "title": "Obsessive-Compulsive Disorder and Body Dysmorphic Disorder: Recommendations",
+          "organization": "National Institute for Health and Care Excellence",
+          "url": "https://www.nice.org.uk/guidance/cg31/chapter/Recommendations",
+          "whyReputable": "This evidence-based clinical guideline directly supports ERP and CBT options for OCD while distinguishing intensity, age, impairment, and preference."
+        },
+        {
+          "title": "Depression in Adults: Treatment and Management",
+          "organization": "National Institute for Health and Care Excellence",
+          "url": "https://www.nice.org.uk/guidance/ng222/chapter/Recommendations",
+          "whyReputable": "This current evidence-based guideline directly addresses behavioral activation, CBT, other psychological treatments, medication, shared decisions, and monitoring for depression."
+        },
+        {
+          "title": "Clinical Practice Guideline for the Treatment of PTSD in Adults",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/ptsd-guideline",
+          "whyReputable": "APA’s evidence-based PTSD guideline directly supports the aid’s trauma-focused psychotherapy example and its population-specific framing."
+        }
+      ],
+      "reviewNote": "Replaced a branded treatment lookup list with evidence integration, shared decisions, defined claims, and monitoring.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "source-directness"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-53a52aa301b81106",
+      "expectedTitle": "Action Potential Steps",
+      "supersedesArtifact": "eppp_memory_aid_review_wave_01.json",
+      "title": "Action Potential Steps",
+      "domainId": 1,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Threshold → rising phase → falling phase → afterhyperpolarization → recovery.** At threshold, voltage-gated sodium conductance rises; sodium-channel inactivation and delayed potassium conductance then drive repolarization. Continued potassium conductance can briefly make the membrane more negative than rest. The absolute refractory period reflects unavailable sodium channels; during the relative refractory period another spike needs stronger input. Myelin permits saltatory propagation between excitable nodes. Exact voltages and timing vary—memorize the mechanism, not one universal number.",
+      "references": [
+        "https://openstax.org/books/biology-2e/pages/35-2-how-neurons-communicate"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Biology 2e, Section 35.2: How Neurons Communicate",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/biology-2e/pages/35-2-how-neurons-communicate",
+          "whyReputable": "An expert-authored, peer-reviewed open textbook from nonprofit Rice University."
+        }
+      ],
+      "reviewNote": "Corrected phase names, refractory mechanisms, and universal voltage claims.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "learner-content-unicode-restoration"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-59487db95f2ff3ea",
+      "expectedTitle": "Intellectual Disability Criteria",
+      "supersedesArtifact": "eppp_memory_aid_review_wave_04.json",
+      "title": "Intellectual Disability: Assessment Principles",
+      "domainId": 5,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Intellectual disability requires converging evidence about intellectual functioning, adaptive behavior, and developmental onset; an IQ cutoff alone is insufficient.** Intellectual functioning concerns reasoning, learning, and problem solving assessed with appropriately normed measures and clinical judgment. Adaptive behavior concerns conceptual, social, and practical functioning in the person's actual cultural and community context. Limitations originate during the developmental period. Interpret any score with measurement error, language, communication access, health, education, opportunity, and test fairness in view. Severity and support decisions should not be inferred from a single total score. Strengths can coexist with limitations, and functioning can improve with individualized supports. The purpose of assessment is to answer a defined question and plan supports, not reduce a person to a number, predict a fixed life outcome, or presume competence or incapacity globally.",
+      "references": [
+        "https://aaidd.org/intellectual-disability/definition",
+        "https://www.aaidd.org/intellectual-disability/faqs-on-intellectual-disability"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Defining Criteria for Intellectual Disability",
+          "organization": "American Association on Intellectual and Developmental Disabilities",
+          "url": "https://aaidd.org/intellectual-disability/definition",
+          "whyReputable": "AAIDD is a leading interdisciplinary standards organization for intellectual disability and provides the current multidimensional definition and assumptions."
+        },
+        {
+          "title": "Frequently Asked Questions on Intellectual Disability",
+          "organization": "American Association on Intellectual and Developmental Disabilities",
+          "url": "https://www.aaidd.org/intellectual-disability/faqs-on-intellectual-disability",
+          "whyReputable": "AAIDD's professional explanatory resource clarifies the roles of adaptive functioning, developmental onset, context, measurement, strengths, and individualized supports."
+        }
+      ],
+      "reviewNote": "Removed cutoff-driven and deterministic outcome language and made adaptive functioning, context, uncertainty, strengths, and supports explicit.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "learner-purpose-differentiation"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-59b232effad0d762",
+      "expectedTitle": "Cognitive Dissonance",
+      "supersedesArtifact": "eppp_memory_aid_review_wave_01.json",
+      "title": "Cognitive Dissonance",
+      "domainId": 3,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Cognitive dissonance is aversive inconsistency among relevant cognitions, commitments, or behavior.** People may reduce it by changing behavior or attitude, adding consonant reasons, trivializing, or reframing responsibility and importance. In Festinger and Carlsmith’s classic study, participants paid $1 later rated a dull task more favorably than those paid $20, consistent with insufficient external justification under those conditions. This is not proof that every mismatch must cause attitude change; choice, commitment, consequences, culture, and available justification matter.",
+      "references": [
+        "https://doi.org/10.1037/h0041593"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Cognitive consequences of forced compliance",
+          "organization": "Leon Festinger and James M. Carlsmith, Journal of Abnormal and Social Psychology",
+          "url": "https://doi.org/10.1037/h0041593",
+          "whyReputable": "The landmark peer-reviewed primary experiment behind the insufficient-justification example."
+        }
+      ],
+      "reviewNote": "Preserved the primary study while removing inevitability.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "learner-content-unicode-restoration"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-5b8768222163c497",
+      "expectedTitle": "Schedules of Reinforcement",
+      "supersedesArtifact": "eppp_memory_aid_review_wave_07.json",
+      "title": "Reinforcement Schedules: Application & Extinction Nuance",
+      "domainId": 2,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Decode a schedule with two questions: WHAT advances it, and HOW predictable is the requirement?** **Ratio** schedules advance with responses; **interval** schedules make reinforcement available after time, usually for the first qualifying response after the interval. **Fixed** means a constant requirement and **variable** means requirements vary around a programmed value. Thus FR can produce a postreinforcement pause followed by responding, VR often supports relatively steady responding, FI can produce accelerating or \"scalloped\" responding, and VI often supports steadier moderate responding under classic laboratory arrangements. These are characteristic patterns, not rankings that every organism, task, or parameter must show. Reinforcer quality, deprivation or satiation, schedule value, instructions, response effort, prior learning, and concurrent alternatives change performance. A weekly paycheck is not automatically FI because salary usually is not delivered contingent on the first response after seven days; identify the actual response-reinforcer contingency. Intermittent reinforcement can produce more responding during extinction than continuous reinforcement in many preparations, but \"VR is always most resistant\" confuses different definitions and comparison arrangements. Resistance may be measured relative to baseline rate, time, responses, or omitted reinforcers, and those measures can disagree. FVFV is a classification cue, not a universal rate or persistence formula and not an intervention plan.",
+      "references": [
+        "https://www.bfskinner.org/wp-content/uploads/2015/05/Schedules_of_Reinforcement_PDF.pdf",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC2649832/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Schedules of Reinforcement",
+          "organization": "B. F. Skinner Foundation",
+          "url": "https://www.bfskinner.org/wp-content/uploads/2015/05/Schedules_of_Reinforcement_PDF.pdf",
+          "whyReputable": "This authorized digital edition of Ferster and Skinner's foundational experimental monograph documents the definitions, parameters, and diverse performance patterns produced by fixed and variable ratio and interval schedules."
+        },
+        {
+          "title": "Applied Implications of Reinforcement History Effects",
+          "organization": "Journal of Applied Behavior Analysis; PubMed Central",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC2649832/",
+          "whyReputable": "This peer-reviewed review explains how schedule history, instructions, reinforcer parameters, and measurement choices influence responding and extinction, preventing textbook response-pattern generalizations from becoming universal laws."
+        }
+      ],
+      "reviewNote": "Preserved FVFV classification while correcting the weekly-paycheck example, converting rate rankings to characteristic laboratory patterns, and bounding the partial-reinforcement extinction claim by parameters and measurement.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "learner-purpose-differentiation"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-65cce325295440e1",
+      "expectedTitle": "Record Keeping & Retention",
+      "supersedesArtifact": "eppp_learning_review_overrides.json",
+      "title": "Record Retention & Legal Demands",
+      "domainId": 8,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Record keeping supports continuity, accountability, billing, and legal/ethical compliance.** Include clinically necessary identifying information, consent and role clarification, assessment or treatment rationale, services and progress, risk decisions, consultations, billing, and disposition as applicable. ⏰ **Retention is jurisdiction- and setting-specific.** APA record-keeping guidance has offered general time frames, but statutes, regulations, payer rules, contracts, institutional policy, litigation holds, and rules for minors can require different periods. Verify current applicable requirements rather than memorizing one universal number. 🔒 Protect confidentiality, access, integrity, secure disposal, and continuity if the psychologist becomes unavailable. A subpoena requires timely lawful response and privilege analysis; it does not always authorize immediate disclosure.",
+      "references": [
+        "https://doi.org/10.1037/0003-066X.62.9.993",
+        "https://www.apa.org/ethics/code"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Record Keeping Guidelines",
+          "organization": "American Psychological Association",
+          "url": "https://doi.org/10.1037/0003-066X.62.9.993",
+          "whyReputable": "A peer-reviewed APA professional guideline on record content, confidentiality, retention, and legal context."
+        },
+        {
+          "title": "Ethical Principles of Psychologists and Code of Conduct",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/ethics/code",
+          "whyReputable": "APA’s official primary ethics text supplies current professional boundaries for records, confidentiality, disclosures, and legal demands."
+        }
+      ],
+      "reviewNote": "Removed universal retention periods and distinguished guidance from jurisdictional, institutional, payer, and litigation requirements.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "stable-id-provenance",
+        "source-url-metadata-alignment",
+        "learner-purpose-differentiation"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-6d25e9aece50a964",
+      "expectedTitle": "Short-Term vs Working Memory",
+      "supersedesArtifact": "eppp_memory_aid_review_wave_01.json",
+      "title": "Short-Term vs Working Memory",
+      "domainId": 2,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Short-term memory emphasizes brief retention; working memory emphasizes temporary maintenance plus controlled use.** In Baddeley’s model, the phonological loop supports speech-based information, the visuospatial sketchpad supports visual/spatial information, the central executive coordinates attention, and the limited-capacity episodic buffer integrates information across systems and long-term memory. “7 ± 2” came from particular span tasks and is not a universal working-memory capacity. Different models define working memory differently; name the model and task instead of treating one architecture as settled fact.",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/11058819/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The episodic buffer: a new component of working memory?",
+          "organization": "Alan Baddeley, Trends in Cognitive Sciences",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/11058819/",
+          "whyReputable": "A peer-reviewed article by the originator of the influential multicomponent model."
+        }
+      ],
+      "reviewNote": "Removed universal 7 ± 2 and passive-versus-active claims; bounded the model.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "learner-content-unicode-restoration",
+        "review-note-unicode-restoration"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-75406919861722df",
+      "expectedTitle": "Intellectual Disability",
+      "supersedesArtifact": "eppp_learning_review_overrides.json",
+      "title": "Intellectual Disability: DSM-5-TR Criteria Cue",
+      "domainId": 5,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**DSM-5-TR intellectual disability requires all three:** 1. Deficits in intellectual functions confirmed by clinical assessment and appropriately administered testing. 2. Deficits in adaptive functioning that limit independence and social responsibility across conceptual, social, or practical domains. 3. Onset during the developmental period. Severity is based primarily on adaptive functioning and support needs, not a fixed IQ band or assumed school grade. Test scores include measurement error and must be interpreted with language, culture, education, sensory/motor status, and opportunity. Avoid outdated labels and deterministic claims about work or independent living.",
+      "references": [
+        "https://www.aaidd.org/intellectual-disability/faqs-on-intellectual-disability"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Frequently Asked Questions on Intellectual Disability",
+          "organization": "American Association on Intellectual and Developmental Disabilities (AAIDD)",
+          "url": "https://www.aaidd.org/intellectual-disability/faqs-on-intellectual-disability",
+          "whyReputable": "A leading interdisciplinary organization that publishes definitions and standards for intellectual disability and supports."
+        }
+      ],
+      "reviewNote": "Removed obsolete IQ severity bands and assumed school/work outcomes; emphasized adaptive functioning, context, measurement error, and supports.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "stable-id-provenance",
+        "learner-purpose-differentiation"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-77466b97050b1532",
+      "expectedTitle": "Record Keeping & Documentation",
+      "supersedesArtifact": "eppp_memory_aid_review_wave_06.json",
+      "title": "Clinical Documentation: SOAPIER, Access & Retention",
+      "domainId": 8,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**SOAPIER can organize a note; it is not an APA-mandated universal format.** **S**ubjective report, **O**bjective observations or data, **A**ssessment, **P**lan, **I**ntervention, **E**valuation, and **R**evision can help a clinician connect services to clinical reasoning, but required content depends on setting, service, law, payer, employer, and professional standards. Document enough to support continuity, consent, assessment, interventions, response, risk and safety actions, consultation or coordination, and changes in plan as applicable, while protecting privacy and avoiding unsupported labels. The often-memorized \"7 years after last service, or 3 years after a minor reaches majority\" came from APA's 2007 Record Keeping Guidelines, was expressly subordinate to superseding requirements, and was archived by APA in 2019; it is not a current universal retention law. Check current jurisdiction, board, contract, payer, institutional policy, litigation hold, and federal requirements. Likewise, \"the provider owns the record but the client may access it\" is too broad. Under HIPAA, individuals generally may access protected health information in a covered entity's designated record set, including ordinary SOAP or clinical notes, subject to defined limits; separately maintained psychotherapy notes are treated differently. Access, amendment, custody, and ownership rules can differ, so verify the governing authority rather than using the mnemonic as legal advice.",
+      "references": [
+        "https://www.apa.org/practice/guidelines/record-keeping",
+        "https://www.hhs.gov/hipaa/for-professionals/faq/2042/what-personal-health-information-do-individuals/index.html"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Record Keeping Guidelines",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/practice/guidelines/record-keeping",
+          "whyReputable": "APA's official archived page supplies the actual source and qualifications for the commonly taught retention periods, states that superseding requirements control, and records the guideline's 2019 archival status."
+        },
+        {
+          "title": "What personal health information do individuals have a right under HIPAA to access?",
+          "organization": "Office for Civil Rights, U.S. Department of Health and Human Services",
+          "url": "https://www.hhs.gov/hipaa/for-professionals/faq/2042/what-personal-health-information-do-individuals/index.html",
+          "whyReputable": "This current federal HIPAA guidance defines access to designated record sets, expressly includes ordinary SOAP or clinical notes, and distinguishes separately maintained psychotherapy notes and other limited exceptions."
+        }
+      ],
+      "reviewNote": "Kept SOAPIER as an optional organization cue, identified the archived and conditional origin of the retention rule, and replaced ownership/access absolutes with current HIPAA and jurisdictional boundaries.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "learner-purpose-differentiation"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-89105cc23ac46bea",
+      "expectedTitle": "Reliability vs. Validity",
+      "supersedesArtifact": "eppp_memory_aid_review_wave_01.json",
+      "title": "Reliability vs. Validity",
+      "domainId": 5,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Reliability/precision asks how consistent or precise scores are; validity asks whether evidence and theory support an intended score interpretation and use.** Internal consistency, interrater agreement, stability, and conditional precision answer different questions. Validity belongs to a proposed use in a population and context—not “the test” in the abstract. Imprecision limits defensible interpretation, but the dartboard slogan “validity is accuracy” is incomplete: modern validity requires a broader evidence argument and plausible alternatives.",
+      "references": [
+        "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Standards for Educational and Psychological Testing (2014)",
+          "organization": "AERA, APA, and NCME",
+          "url": "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf",
+          "whyReputable": "The joint professional consensus framework for validity, precision, fairness, and test use."
+        }
+      ],
+      "reviewNote": "Replaced the accuracy-only dartboard rule with the unified validity framework.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "learner-content-unicode-restoration"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-8a12ab83499601e5",
+      "expectedTitle": "Effect Size Interpretation",
+      "supersedesArtifact": "eppp_memory_aid_review_wave_06.json",
+      "title": "Effect-Size Interpretation in Context",
+      "domainId": 7,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Estimate -> Uncertainty -> Context -> Consequence.** Cohen's familiar conventions—d around .20/.50/.80 and r around .10/.30/.50—are historical rough reference points, not universal qualitative labels or conclusions about practical importance. A standardized mean difference depends on the comparison and standardizer; r gives direction and strength of a linear association but does not establish causation; and eta-squared, partial eta-squared, and generalized eta-squared answer different variance questions and should not be mixed. Squaring r is the proportion of variance accounted for only in the relevant simple linear setting, not a universal measure of importance. Interpret an effect against the raw outcome scale, measurement reliability, baseline risk, costs and benefits, duration, comparator, prior evidence in the field, study design, and the smallest effect that would matter. A small effect can be consequential when repeated or applied across a population, and a large standardized effect can be trivial, biased, or imprecise. Report the estimate with a confidence interval or other uncertainty information, specify the effect-size definition, and compare with domain-relevant effects. Statistical significance, effect magnitude, precision, and practical or clinical importance are separate judgments.",
+      "references": [
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC3840331/",
+        "https://doi.org/10.1177/2515245919847202"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Calculating and reporting effect sizes to facilitate cumulative science: a practical primer for t-tests and ANOVAs",
+          "organization": "Frontiers in Psychology; PubMed Central, U.S. National Library of Medicine",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3840331/",
+          "whyReputable": "This peer-reviewed open methodological primer distinguishes effect-size definitions and recommends interpreting estimates against related literature and practical consequences instead of rigid Cohen benchmarks."
+        },
+        {
+          "title": "Evaluating Effect Size in Psychological Research: Sense and Nonsense",
+          "organization": "Advances in Methods and Practices in Psychological Science, Association for Psychological Science",
+          "url": "https://doi.org/10.1177/2515245919847202",
+          "whyReputable": "This peer-reviewed methods article directly examines arbitrary benchmark labels, misleading use of squared correlations, cumulative consequences, domain context, and more informative approaches to effect-size interpretation."
+        }
+      ],
+      "reviewNote": "Preserved Cohen conventions as historical cues while removing qualitative certainty, separating effect-size families, and requiring uncertainty, domain context, and practical consequences.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "learner-purpose-differentiation"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-8b2eea8339d6ce5b",
+      "expectedTitle": "Reinforcement Schedules",
+      "supersedesArtifact": "eppp_memory_aid_review_wave_02.json",
+      "title": "Reinforcement Schedules: Four Basic Patterns",
+      "domainId": 2,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Four intermittent schedules: fixed/variable x ratio/interval.** **FR:** reinforce after a set response count; often high responding with a post-reinforcement pause. **VR:** reinforce after varying response counts around a programmed distribution; often high, steady responding. **FI:** reinforce the first qualifying response after a set time; classic laboratory performance can show a post-reinforcement pause and accelerating \"scallop.\" **VI:** reinforce the first qualifying response after varying time intervals; often steadier, moderate responding. These are typical patterns, not guarantees: magnitude, deprivation, alternatives, instructions, history, and schedule details matter. Interval schedules still require a response after the interval.",
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/6-3-operant-conditioning"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e, Section 6.3: Operant Conditioning",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/6-3-operant-conditioning",
+          "whyReputable": "An expert-authored and peer-reviewed psychology textbook that defines contingencies and schedule patterns."
+        }
+      ],
+      "reviewNote": "Corrected interval delivery, removed universal highest/most-resistant claims, and bounded laboratory patterns.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "learner-purpose-differentiation"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-93e9d82228226719",
+      "expectedTitle": "Limits of Confidentiality",
+      "supersedesArtifact": "eppp_learning_review_overrides.json",
+      "title": "Limits of Confidentiality",
+      "domainId": 8,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**\"CHIP\" can cue categories to CHECK — it is not a universal disclosure rule:** 👶 **C**hild or dependent-person protection — reporting duties depend on current jurisdictional definitions and thresholds ⚠️ **H**arm to self — emergencies may permit or require protective action; use competent risk assessment 🎯 **I**dentifiable-threat concerns — duties to protect or warn vary substantially by jurisdiction 📋 **P**roceedings and legal demands — a subpoena is not automatically a court order or permission to disclose Use the minimum necessary information where applicable, consult current law/policy, document reasoning, and explain foreseeable confidentiality limits during informed consent.",
+      "references": [
+        "https://www.apa.org/ethics/code"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Ethical Principles of Psychologists and Code of Conduct",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/ethics/code",
+          "whyReputable": "APA’s official primary ethics text, including confidentiality standards and legally created limits."
+        }
+      ],
+      "reviewNote": "Rewritten to distinguish consent, mandated/permitted disclosure, jurisdictional duties, minimum-necessary reasoning, subpoenas, and court orders.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "source-metadata-unicode-restoration",
+        "stable-id-provenance",
+        "source-url-metadata-alignment"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-9455736a7497a5a4",
+      "expectedTitle": "DSM-5 Major Depression",
+      "supersedesArtifact": "eppp_memory_aid_review_wave_03.json",
+      "title": "Major Depressive Episode: DSM-5-TR Criteria Cue",
+      "domainId": 5,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**SIGECAPS is only a symptom-retrieval cue; diagnosis requires threshold, change, impairment, exclusions, and context.** A major depressive episode involves at least five symptoms during the same two-week period, representing a change from prior functioning, with depressed mood or diminished interest or pleasure among them. Symptoms include sleep, appetite or weight, psychomotor, energy, guilt or worthlessness, concentration or decision-making, and death or suicidal-thinking changes, but exact frequency and developmental wording matter. Establish clinically significant distress or impairment and assess bipolar history, substances, medications, medical conditions, psychosis, grief, culture, and safety. Bereavement does not automatically exclude an episode, and sadness alone does not establish one. Use current DSM-5-TR criteria rather than the mnemonic for diagnosis.",
+      "references": [
+        "https://www.ncbi.nlm.nih.gov/books/NBK498652/table/depress-diab.T.dsm5__major_depressive_ep/",
+        "https://www.nimh.nih.gov/health/publications/depression"
+      ],
+      "sourceDetails": [
+        {
+          "title": "DSM-5 Major Depressive Episode",
+          "organization": "Endotext, hosted by NCBI Bookshelf",
+          "url": "https://www.ncbi.nlm.nih.gov/books/NBK498652/table/depress-diab.T.dsm5__major_depressive_ep/",
+          "whyReputable": "A medically reviewed NCBI-hosted criteria table specifying the symptom threshold, two-week period, change, and impairment requirements."
+        },
+        {
+          "title": "Depression",
+          "organization": "National Institute of Mental Health, National Institutes of Health",
+          "url": "https://www.nimh.nih.gov/health/publications/depression",
+          "whyReputable": "An official federal resource addressing symptom variation, medical mimics, treatment, functional impact, and help-seeking."
+        }
+      ],
+      "reviewNote": "Kept the symptom cue but added change, impairment, differential diagnosis, bipolar, grief, culture, and safety requirements.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "title-currentness"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-975f2d9055198688",
+      "expectedTitle": "CBT Core Concepts",
+      "supersedesArtifact": "eppp_memory_aid_review_wave_01.json",
+      "title": "CBT Core Concepts",
+      "domainId": 6,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**CBT uses a collaborative, testable formulation linking situations, interpretations, emotion/physiology, and behavior.** Methods can include behavioral activation, exposure or experiments, skills practice, monitoring, problem solving, and examining the usefulness and evidence for appraisals. The aim is not forced positive thinking; it is more accurate, flexible responding and goal-linked behavior change. Protocols differ by problem and population, and technique should follow assessment, risk, culture, accessibility, preferences, and evidence.",
+      "references": [
+        "https://www.apa.org/ptsd-guideline/patients-and-families/cognitive-behavioral"
+      ],
+      "sourceDetails": [
+        {
+          "title": "What Is Cognitive Behavioral Therapy?",
+          "organization": "American Psychological Association, Division 12",
+          "url": "https://www.apa.org/ptsd-guideline/patients-and-families/cognitive-behavioral",
+          "whyReputable": "This APA-hosted Society of Clinical Psychology resource directly describes CBT’s collaborative formulation, linked cognitive-emotional-behavioral processes, and adaptable strategies."
+        }
+      ],
+      "reviewNote": "Removed positive-thinking and one-way-causation shortcuts.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "source-directness"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-9992bd978c9152fa",
+      "expectedTitle": "Autism Spectrum Disorder",
+      "supersedesArtifact": "eppp_learning_review_overrides.json",
+      "title": "Autism Spectrum Disorder",
+      "domainId": 5,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Autism spectrum disorder — two core DSM-5-TR domains:** 1. Persistent differences or deficits in social communication and social interaction across contexts. 2. Restricted or repetitive behavior, interests, or activities, including sensory features (at least two types). Features begin in the early developmental period, cause clinically significant impairment, and are not better explained by intellectual disability alone. Specify language, intellectual, medical/genetic, catatonia, and support-level features as appropriate. Population surveillance estimates change by year, methods, location, age, sex, race/ethnicity, and access to identification. Avoid memorizing one prevalence figure as timeless or treating support levels as fixed descriptions of a person's worth or potential.",
+      "references": [
+        "https://www.cdc.gov/autism/about/index.html",
+        "https://www.cdc.gov/autism/data-research/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "About Autism Spectrum Disorder",
+          "organization": "Centers for Disease Control and Prevention",
+          "url": "https://www.cdc.gov/autism/about/index.html",
+          "whyReputable": "The U.S. federal public-health authority maintains current developmental-surveillance definitions and context."
+        },
+        {
+          "title": "Autism Data and Research",
+          "organization": "Centers for Disease Control and Prevention",
+          "url": "https://www.cdc.gov/autism/data-research/",
+          "whyReputable": "The CDC’s current surveillance hub documents that prevalence estimates depend on study year, population, location, and identification methods."
+        }
+      ],
+      "reviewNote": "Removed stale prevalence and deterministic support-level language; retained current surveillance context and diagnostic-domain distinctions.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "stable-id-provenance",
+        "source-url-metadata-alignment"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-9b6b5983a642694a",
+      "expectedTitle": "Erikson's 8 Stages",
+      "supersedesArtifact": "eppp_memory_aid_review_wave_01.json",
+      "title": "Erikson's 8 Stages",
+      "domainId": 4,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Erikson’s historical sequence:** trust–mistrust; autonomy–shame/doubt; initiative–guilt; industry–inferiority; identity–role confusion; intimacy–isolation; generativity–stagnation; integrity–despair. The order is useful, but age bands are approximate teaching conventions—not diagnostic deadlines. Erikson proposed that each period makes a tension salient; themes can recur and later development can revise their resolution. Use the model to organize questions, not infer pathology from age or assume one culturally universal life course.",
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/9-2-lifespan-theories"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e, Section 9.2: Lifespan Theories",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/9-2-lifespan-theories",
+          "whyReputable": "An expert-reviewed text that presents historical stage theories with developmental context."
+        }
+      ],
+      "reviewNote": "Retained the sequence while removing rigid ages and universal-path claims.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "learner-content-unicode-restoration"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-9e82a078f0f1652a",
+      "expectedTitle": "Negative Reinforcement vs. Punishment",
+      "supersedesArtifact": "eppp_memory_aid_review_wave_01.json",
+      "title": "Negative Reinforcement vs. Punishment",
+      "domainId": 2,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Classify a consequence with two questions:** Was a stimulus added (+) or removed (−)? Did the future probability of behavior increase (reinforcement) or decrease (punishment)? Positive reinforcement adds and increases; negative reinforcement removes/avoids and increases; positive punishment adds and decreases; negative punishment removes and decreases. Positive/negative do not mean good/bad, and the label depends on observed behavior change—not intention. Escape and avoidance are common negative-reinforcement arrangements; response cost is one form of negative punishment.",
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/6-3-operant-conditioning"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e, Section 6.3: Operant Conditioning",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/6-3-operant-conditioning",
+          "whyReputable": "An expert-authored, peer-reviewed open textbook from nonprofit Rice University."
+        }
+      ],
+      "reviewNote": "Made classification functional and corrected the time-out/response-cost equivalence.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "learner-content-unicode-restoration"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-a54eb3d18d8152b2",
+      "expectedTitle": "ADHD — DSM-5 Presentations",
+      "supersedesArtifact": "eppp_learning_review_overrides.json",
+      "title": "ADHD Presentations: DSM-5-TR Cue",
+      "domainId": 5,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**ADHD presentations:** predominantly inattentive, predominantly hyperactive/impulsive, or combined. Diagnosis requires a persistent developmentally inappropriate symptom pattern, several symptoms before age 12, presence in two or more settings, impairment, and consideration of alternative explanations. Thresholds differ for older adolescents/adults. Treatment is individualized and can include behavioral parent/classroom interventions, organizational and skills supports, environmental accommodations, stimulant or nonstimulant medication, and coordinated care. Medication does not “paradoxically calm every hyperactive child,” and no single combination is automatically best for every person.",
+      "references": [
+        "https://www.nimh.nih.gov/health/publications/attention-deficit-hyperactivity-disorder-what-you-need-to-know"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Attention-Deficit/Hyperactivity Disorder: What You Need to Know",
+          "organization": "National Institute of Mental Health (NIMH), National Institutes of Health",
+          "url": "https://www.nimh.nih.gov/health/publications/attention-deficit-hyperactivity-disorder-what-you-need-to-know",
+          "whyReputable": "The U.S. federal agency leading mental-health research provides this current evidence overview."
+        }
+      ],
+      "reviewNote": "Removed paradoxical-calming and universally-best-treatment claims; added differential assessment and individualized multimodal care.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "stable-id-provenance",
+        "title-currentness"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-a9466a34b18904da",
+      "expectedTitle": "Attachment Types",
+      "supersedesArtifact": "eppp_memory_aid_review_wave_02.json",
+      "title": "Infant Attachment: Strange Situation Classifications",
+      "domainId": 4,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Strange Situation reunion classifications describe an infant-caregiver relationship under a standardized procedure, not a fixed child personality.** **Secure:** seeks/accepts contact or comfort and returns to exploration. **Avoidant:** minimizes overt proximity/contact at reunion. **Resistant:** seeks contact yet resists or remains difficult to soothe. **Disorganized:** contradictory, apprehensive, freezing, disoriented, or otherwise lacking a coherent strategy. Code the full procedure with trained methods. A pattern does not by itself prove caregiver rejection, maltreatment, future disorder, or behavior in every relationship; culture, stress, context, and measurement conditions matter.",
+      "references": [
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC2724160/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Infant-parent attachment: Definition, types, antecedents, measurement and outcome",
+          "organization": "Paediatrics & Child Health / PubMed Central",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC2724160/",
+          "whyReputable": "A peer-reviewed clinical review that describes Strange Situation classifications as observed relationship patterns."
+        }
+      ],
+      "reviewNote": "Removed caregiver-blaming analogies and reframed categories as relationship-specific observations.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "learner-purpose-differentiation"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-b3e0e08491d9100d",
+      "expectedTitle": "Sensitivity, Specificity, PPV, NPV",
+      "supersedesArtifact": "eppp_memory_aid_review_wave_01.json",
+      "title": "Sensitivity, Specificity, PPV, NPV",
+      "domainId": 5,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Read the 2×2 table:** Sensitivity = TP/(TP+FN), among people with the condition who tests positive. Specificity = TN/(TN+FP), among people without it who tests negative. PPV = TP/(TP+FP), among positive results who has the condition. NPV = TN/(TN+FN), among negative results who does not. Sensitivity and specificity can vary with threshold, spectrum, setting, and verification. Predictive values depend strongly on prevalence: the same test can have much lower PPV in a low-prevalence population.",
+      "references": [
+        "https://archive.cdc.gov/www_cdc_gov/csels/dsepd/ss1978/lesson3/section2.html"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Principles of Epidemiology in Public Health Practice, Third Edition: Lesson 3",
+          "organization": "Centers for Disease Control and Prevention (CDC)",
+          "url": "https://archive.cdc.gov/www_cdc_gov/csels/dsepd/ss1978/lesson3/section2.html",
+          "whyReputable": "The U.S. federal public-health authority’s training text for diagnostic-test measures."
+        }
+      ],
+      "reviewNote": "Added exact denominators and context/base-rate boundaries.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "learner-content-unicode-restoration",
+        "source-metadata-unicode-restoration"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-b77f88b5b4c35b7a",
+      "expectedTitle": "Motivational Interviewing",
+      "supersedesArtifact": "eppp_memory_aid_review_wave_01.json",
+      "title": "Motivational Interviewing",
+      "domainId": 6,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**MI spirit: partnership, acceptance, compassion, and evocation. Processes: engaging → focusing → evoking → planning.** OARS—open questions, affirmations, reflections, summaries—supports conversation, but MI is not a bag of techniques. The practitioner listens for and strengthens the person’s own language for change while respecting autonomy; sustain talk is explored rather than argued away. Planning follows sufficient readiness and shared focus. MI is collaborative and directional, not persuasion by stealth or a guarantee of change.",
+      "references": [
+        "https://www.motivationalinterviewing.org/sites/default/files/elfinder_uploads/ColleenMarshall/Glossary%20of%20MI%20Terms.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Glossary of Motivational Interviewing Terms",
+          "organization": "Motivational Interviewing Network of Trainers (MINT)",
+          "url": "https://www.motivationalinterviewing.org/sites/default/files/elfinder_uploads/ColleenMarshall/Glossary%20of%20MI%20Terms.pdf",
+          "whyReputable": "Terminology from the international professional network devoted to fidelity-consistent MI."
+        }
+      ],
+      "reviewNote": "Aligned the cue with current MI spirit and processes.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "learner-content-unicode-restoration"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-bb7f154d8734f48e",
+      "expectedTitle": "APA Ethical Standards vs Principles",
+      "supersedesArtifact": "eppp_memory_aid_review_wave_01.json",
+      "title": "APA Ethical Standards vs Principles",
+      "domainId": 8,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**APA Code:** General Principles A–E are aspirational ideals; Ethical Standards contain potentially enforceable rules. A: Beneficence and Nonmaleficence; B: Fidelity and Responsibility; C: Integrity; D: Justice; E: Respect for People’s Rights and Dignity. Principles still guide reasoning when rules leave judgment. APA ethics findings, licensing-board actions, civil liability, employment discipline, and criminal law are different processes; an alleged Standard violation does not automatically mean loss of license. Identify the authority, current provision, jurisdiction, and facts.",
+      "references": [
+        "https://www.apa.org/ethics/code"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Ethical Principles of Psychologists and Code of Conduct",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/ethics/code",
+          "whyReputable": "APA’s official primary text for the General Principles and enforceable Ethical Standards."
+        }
+      ],
+      "reviewNote": "Corrected automatic-sanction language and distinguished governing authorities.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "learner-content-unicode-restoration",
+        "source-metadata-unicode-restoration"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-c03593684f409ca7",
+      "expectedTitle": "Substance Use Disorder — DSM-5",
+      "supersedesArtifact": "eppp_memory_aid_review_wave_08.json",
+      "title": "Substance Use Disorder: DSM-5-TR Criteria Cue",
+      "domainId": 5,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Substance-specific application:** DSM-5-TR uses one SUD continuum rather than separate abuse and dependence diagnoses, but applies it to a specified substance class and 12-month pattern. The four recognition domains are impaired control, social impairment, risky use, and pharmacologic adaptation; current severity follows the number of criteria met. Craving was added and the former recurrent legal-problems item was removed. Do not equate physiologic dependence, prescribed exposure, intoxication, withdrawal, or any use with SUD. Tolerance and withdrawal rules vary by substance, some criteria may not apply, remission and controlled-environment specifiers have exact definitions, and co-occurring pain, psychiatric symptoms, safety, and social context require direct assessment.",
+      "references": [
+        "https://www.ncbi.nlm.nih.gov/books/NBK565474/table/table-3/?report=objectonly"
+      ],
+      "sourceDetails": [
+        {
+          "title": "DSM-5-TR Criteria for Diagnosing and Classifying Substance Use Disorders",
+          "organization": "Johns Hopkins University clinical guideline via NCBI Bookshelf",
+          "url": "https://www.ncbi.nlm.nih.gov/books/NBK565474/table/table-3/?report=objectonly",
+          "whyReputable": "This current clinical guideline table organizes the 11 criteria into impaired control, social impairment, risky use, and pharmacologic domains and states current severity thresholds and exceptions."
+        }
+      ],
+      "reviewNote": "Rewrote \"Substance Use Disorder: DSM-5-TR Framework\" for careful criterion or assessment recognition with directly aligned sources; this study aid cannot establish a diagnosis or replace the current manual, instrument documentation, or qualified evaluation.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "title-currentness"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-c4ee337cb0ae9dc8",
+      "expectedTitle": "TBI & Neurological Conditions",
+      "supersedesArtifact": "eppp_memory_aid_review_wave_06.json",
+      "title": "TBI & Neurological Conditions",
+      "domainId": 1,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Use three separate maps: INJURY, SEIZURE CLASS, and COGNITIVE SYNDROME.** **TBI:** A concussion is a mild traumatic brain injury, and loss of consciousness is not required. Acute severity classifications may combine Glasgow Coma Scale scores with loss or alteration of consciousness, post-traumatic amnesia, imaging, timing, and clinical context; a mnemonic or one score is not a diagnosis or prognosis. Symptoms can emerge later, and red flags require prompt medical evaluation. **Seizures:** The 2025 ILAE classification uses four main classes—focal, generalized, unknown whether focal or generalized, and unclassified—then adds classifiers and descriptors supported by the observed chronology and available evidence. Consciousness replaces awareness as a classifier, and observable versus nonobservable manifestations replace the older motor versus nonmotor split. “Grand mal,” “petit mal,” and “simple/complex partial” are legacy terms, and one seizure is not automatically epilepsy. Treatment depends on seizure type, cause, comorbidity, and the person; do not attach one medication to a category by rote. **Dementia:** Alzheimer disease, vascular contributions, Lewy body disease, frontotemporal disorders, and mixed pathologies can produce overlapping and variable presentations. A pattern may guide a differential diagnosis, but no single symptom proves an etiology. Depression, delirium, medications, metabolic conditions, and other disorders can impair cognition, so avoid the imprecise label “pseudodementia” and assess potentially reversible contributors.",
+      "references": [
+        "https://www.cdc.gov/traumatic-brain-injury/",
+        "https://www.ilae.org/files/dmfile/updated-classification-of-epileptic-seizures-2025.pdf",
+        "https://www.nia.nih.gov/health/alzheimers-and-dementia/what-dementia-symptoms-types-and-diagnosis"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Traumatic Brain Injury & Concussion",
+          "organization": "Centers for Disease Control and Prevention",
+          "url": "https://www.cdc.gov/traumatic-brain-injury/",
+          "whyReputable": "The CDC is the U.S. public-health authority for traumatic brain injury education and surveillance; its current materials distinguish concussion from simplistic loss-of-consciousness rules and emphasize symptom monitoring and urgent warning signs."
+        },
+        {
+          "title": "Updated Classification of Epileptic Seizures (2025)",
+          "organization": "International League Against Epilepsy",
+          "url": "https://www.ilae.org/files/dmfile/updated-classification-of-epileptic-seizures-2025.pdf",
+          "whyReputable": "The ILAE Executive Committee-approved 2025 position paper is the current primary professional classification and supersedes the 2017 seizure terminology used by the prior aid."
+        },
+        {
+          "title": "What Is Dementia? Symptoms, Types, and Diagnosis",
+          "organization": "National Institute on Aging, National Institutes of Health",
+          "url": "https://www.nia.nih.gov/health/alzheimers-and-dementia/what-dementia-symptoms-types-and-diagnosis",
+          "whyReputable": "This expert-reviewed NIH resource describes multiple and mixed dementia etiologies, overlapping presentations, and medical or emotional conditions that can resemble dementia and require differential assessment."
+        }
+      ],
+      "reviewNote": "Separated three distinct neurological classification problems, updated seizure language, removed deterministic disease signatures, and replaced pseudodementia shorthand with differential-assessment guidance.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "accuracy-and-currency"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-cafad3c2f0114ed7",
+      "expectedTitle": "Standard Error of Measurement",
+      "supersedesArtifact": "eppp_memory_aid_review_wave_01.json",
+      "title": "Standard Error of Measurement",
+      "domainId": 7,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Classical-test-theory SEM** is a score-unit estimate of measurement error, often approximated as SD × √(1 − reliability) for the relevant distribution and reliability estimate. Higher reliability generally yields smaller SEM with other terms fixed. A score interval needs an appropriate multiplier and assumptions; “±1 SEM guarantees a 68% true-score range” is too strong. Precision can vary across scores, forms, groups, and purposes. Comparing scores requires the standard error of the difference and a decision rule—not simply a difference greater than one SEM.",
+      "references": [
+        "https://ncme.org/resources-publications/professional-learning/glossary"
+      ],
+      "sourceDetails": [
+        {
+          "title": "NCME Glossary of Important Assessment and Measurement Terms",
+          "organization": "National Council on Measurement in Education",
+          "url": "https://ncme.org/resources-publications/professional-learning/glossary",
+          "whyReputable": "Field-standard definitions from a leading professional measurement organization."
+        }
+      ],
+      "reviewNote": "Corrected confidence-interval and score-comparison shortcuts.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "learner-content-unicode-restoration"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-cf7fd0ed8fcd3826",
+      "expectedTitle": "Prenatal Development & Teratogens",
+      "supersedesArtifact": "eppp_memory_aid_review_wave_07.json",
+      "title": "Prenatal Critical Periods & Teratogen Timing",
+      "domainId": 4,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Remember TIME x DOSE x AGENT x SUSCEPTIBILITY, not a ranked danger list.** The germinal or preimplantation period, embryonic organogenesis, and fetal growth and functional maturation are useful broad phases, but exact boundaries differ depending on whether age is counted from fertilization or the last menstrual period. Early exposure is sometimes taught with an \"all-or-none\" rule: extensive cell loss may cause pregnancy loss while surviving cells may compensate. Treat that as a rule of thumb, not a guarantee of miscarriage or no effect. During organogenesis, many structures have exposure-specific windows of vulnerability, so structural malformation risk is often emphasized. Fetal development remains vulnerable to growth and functional effects, especially in the nervous system; \"less vulnerable\" never means safe. Developmental risk depends on the agent, route, timing, dose and duration, maternal and fetal biology, coexposures, and health context. Alcohol exposure can cause fetal alcohol spectrum disorders, and CDC states there is no known safe amount or time for alcohol use during pregnancy; that public-health guidance does not mean every exposure produces the same outcome. Tobacco, infections, medications, substances, metals, and environmental exposures have different evidence and risk patterns, so \"alcohol is number one\" is not a scientific comparison. Do not stop a prescribed medication after seeing a mnemonic: weigh maternal and fetal risks with qualified prenatal and prescribing professionals using exposure-specific evidence.",
+      "references": [
+        "https://www.ncbi.nlm.nih.gov/books/NBK582659/",
+        "https://www.cdc.gov/alcohol-pregnancy/about/index.html"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Critical Periods of Development",
+          "organization": "MotherToBaby; NCBI Bookshelf, U.S. National Library of Medicine",
+          "url": "https://www.ncbi.nlm.nih.gov/books/NBK582659/",
+          "whyReputable": "This evidence-based teratology fact sheet explains pregnancy dating, critical periods, the qualified all-or-none concept, and how dose, frequency, route, and timing affect developmental risk."
+        },
+        {
+          "title": "About Alcohol Use During Pregnancy",
+          "organization": "Centers for Disease Control and Prevention",
+          "url": "https://www.cdc.gov/alcohol-pregnancy/about/index.html",
+          "whyReputable": "This current federal public-health source states the evidence-based no-known-safe-amount and no-safe-time guidance while also noting that prenatal alcohol exposure does not affect every pregnancy identically."
+        }
+      ],
+      "reviewNote": "Replaced deterministic periods and a sensational ranked teratogen list with exposure-specific timing, dose, agent, susceptibility, pregnancy-dating, medication-safety, and probabilistic-outcome boundaries.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "learner-purpose-differentiation"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-d011989a01fbace5",
+      "expectedTitle": "Telehealth Ethics & Practice",
+      "supersedesArtifact": "eppp_learning_review_overrides.json",
+      "title": "Telehealth Ethics & Practice",
+      "domainId": 8,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Telepsychology requires clinical, technical, legal, and emergency competence.** 💻 Assess suitability, accessibility, technology limits, and alternatives for the individual client. 🔒 Use a documented privacy/security risk process. HIPAA does not “certify” products; covered providers may need appropriate safeguards and business-associate agreements. 📍 Authority to practice depends on where participants are located and current jurisdictional rules. PSYPACT may help eligible psychologists but is not universal permission. 🆘 Confirm location as clinically appropriate, plan for emergencies and disconnection, and know relevant local resources. 📋 Consent should address remote-service risks, privacy, records, fees, third parties, backup communication, and limits of the technology. Platform choice alone does not make telepsychology ethical or legally compliant.",
+      "references": [
+        "https://doi.org/10.1037/a0035001"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Guidelines for the Practice of Telepsychology",
+          "organization": "American Psychological Association",
+          "url": "https://doi.org/10.1037/a0035001",
+          "whyReputable": "A peer-reviewed APA professional guideline on competence, consent, privacy, security, jurisdiction, and emergencies."
+        }
+      ],
+      "reviewNote": "Removed product-compliance shorthand and universal licensure claims; added risk assessment, authority-to-practice, emergency, and consent context.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "stable-id-provenance"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-d0be7b76c2ced3a3",
+      "expectedTitle": "Attribution Theory",
+      "supersedesArtifact": "eppp_memory_aid_review_wave_01.json",
+      "title": "Attribution Theory",
+      "domainId": 3,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Kelley cue: consensus, consistency, distinctiveness—evidence, not a deterministic table.** Consensus asks whether others respond similarly; consistency asks whether this person responds similarly across occasions; distinctiveness asks whether this person responds differently to other targets. Patterns support person, entity, circumstance, or mixed hypotheses, but missing cues limit inference. Correspondence bias concerns over-weighting dispositions in some contexts. Do not pair it with a universal actor–observer rule: a meta-analysis found essentially no overall asymmetry, with moderator and valence effects.",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/17073526/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The actor-observer asymmetry in attribution: a (surprising) meta-analysis",
+          "organization": "Bertram F. Malle, Psychological Bulletin",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/17073526/",
+          "whyReputable": "A peer-reviewed meta-analysis of 173 studies that directly tests a widely taught shortcut."
+        }
+      ],
+      "reviewNote": "Removed the universal actor-observer claim and deterministic covariation verdict.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "learner-content-unicode-restoration"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-d224f260cac7462f",
+      "expectedTitle": "Vygotsky's ZPD",
+      "supersedesArtifact": "eppp_memory_aid_review_wave_01.json",
+      "title": "Vygotsky's ZPD",
+      "domainId": 4,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**ZPD: what a learner cannot yet do independently but can accomplish with appropriate guidance or collaboration.** Cue: can do independently; can do with well-matched assistance (ZPD); cannot yet do even with current assistance. Scaffolding is a later instructional metaphor for contingent support that changes as competence grows; it is related to, but not identical with, Vygotsky’s original construct. Effective support responds to the learner and fades or changes when no longer needed. Avoid “all learning happens only here.”",
+      "references": [
+        "https://openstax.org/books/lifespan-development/pages/5-3-cognition-in-early-childhood"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Lifespan Development, Section 5.3: Cognition in Early Childhood",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/lifespan-development/pages/5-3-cognition-in-early-childhood",
+          "whyReputable": "An expert-authored, peer-reviewed lifespan-development text from nonprofit Rice University."
+        }
+      ],
+      "reviewNote": "Distinguished ZPD from scaffolding and removed an exclusive-learning claim.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "learner-content-unicode-restoration"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-de048afe0e382d04",
+      "expectedTitle": "Tarasoff & Duty to Protect",
+      "supersedesArtifact": "eppp_memory_aid_review_wave_03.json",
+      "title": "Duty to Protect: Current-Law Decision Framework",
+      "domainId": 8,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Tarasoff is the historical California anchor; the controlling duty is current jurisdiction-specific law and policy.** California Civil Code section 43.92 addresses a patient-communicated serious threat of physical violence against a reasonably identifiable victim and describes reasonable efforts to communicate with the victim and law enforcement. Other jurisdictions may impose, permit, or not specify warning or protective action, define covered professionals and triggering information differently, and recognize case law as well as statutes. Do not require the words \"credible\" or \"imminent\" unless the governing authority does. Clinically assess the threat and context, consult promptly without unnecessary disclosure, follow emergency and organizational procedures, take legally authorized protective steps, and document facts, authority, consultation, reasoning, actions, and follow-up.",
+      "references": [
+        "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=CIV&sectionNum=43.92",
+        "https://doi.org/10.1176/appi.focus.17402"
+      ],
+      "sourceDetails": [
+        {
+          "title": "California Civil Code section 43.92",
+          "organization": "California Legislative Information",
+          "url": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=CIV&sectionNum=43.92",
+          "whyReputable": "The official current statutory text for California's psychotherapist duty-to-protect liability rule and specified protective efforts."
+        },
+        {
+          "title": "The Tarasoff Rule: The Implications of Interstate Variation and Gaps in Professional Training",
+          "organization": "FOCUS, American Psychiatric Association Publishing",
+          "url": "https://doi.org/10.1176/appi.focus.17402",
+          "whyReputable": "A peer-reviewed law-and-psychiatry review documenting mandatory, permissive, common-law, and unspecified interstate approaches."
+        }
+      ],
+      "reviewNote": "Removed a universal trigger and checklist, quoted California's actual rule, and centered current jurisdiction-specific authority.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "learner-purpose-differentiation"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-ecaf8cdc679550e9",
+      "expectedTitle": "Tarasoff Ruling — Complete",
+      "supersedesArtifact": "eppp_memory_aid_review_wave_07.json",
+      "title": "Tarasoff: California Case & Historical Rule",
+      "domainId": 8,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**TARASOFF is a California case anchor; current jurisdiction controls.** In the 1976 California decision, the court held that when a therapist determines, or under professional standards should determine, that a patient presents a serious danger of violence to another, the therapist must use reasonable care to protect the foreseeable victim. The court described warning the victim or likely intermediaries, notifying police, and other reasonably necessary steps as possibilities whose adequacy depends on the circumstances. It did not create one national formula requiring direct warning whenever a client mentions harm. \"Tarasoff I equals warn; Tarasoff II equals protect\" is useful history but not a current multistate decision rule. States differ in whether a duty is mandatory, permissive, or not specially codified; covered professionals, triggering language, identifiable-victim requirements, immunity, permitted actions, documentation, and confidentiality rules also differ and can change. Threats involving self-harm, abuse reporting, weapons, forensic roles, schools, or property may invoke different authorities. Ethical confidentiality standards permit disclosure when mandated or permitted by law for a valid purpose, limited to what is necessary; they do not independently settle local duty-to-protect law. When risk emerges, conduct and document a competent individualized assessment, take proportionate safety steps, consult current law and qualified supervisors or counsel when feasible, and disclose only as authorized or required. Do not delay urgent protection while searching for a mnemonic, and do not promise that any single action automatically discharges a legal duty.",
+      "references": [
+        "https://law.justia.com/cases/california/supreme-court/3d/17/425.html",
+        "https://www.apa.org/ethics/code"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Tarasoff v. Regents of University of California, 17 Cal. 3d 425 (1976)",
+          "organization": "Supreme Court of California decision reproduced by Justia",
+          "url": "https://law.justia.com/cases/california/supreme-court/3d/17/425.html",
+          "whyReputable": "This full judicial opinion is the primary case text for the California duty of reasonable care to protect and the court's circumstance-dependent examples of warning, police notification, or other protective steps."
+        },
+        {
+          "title": "Ethical Principles of Psychologists and Code of Conduct",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/ethics/code",
+          "whyReputable": "APA's official ethics code distinguishes confidentiality duties from disclosures mandated or permitted by law and requires limiting disclosure to the purpose, while leaving jurisdiction-specific legal duties to governing authority."
+        }
+      ],
+      "reviewNote": "Preserved Tarasoff as the California historical anchor while removing a fixed national trigger/exception list and adding jurisdiction, role, proportional response, minimum disclosure, documentation, and urgent-safety boundaries.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "learner-purpose-differentiation"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-f544e474db9589e8",
+      "expectedTitle": "Teratogens & Prenatal Development",
+      "supersedesArtifact": "eppp_memory_aid_review_wave_03.json",
+      "title": "Teratogens: Exposure Risk Factors",
+      "domainId": 4,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Prenatal risk depends on exposure, dose, timing, route, susceptibility, co-exposures, and the outcome measured; do not memorize a mixed \"FATAL CATS\" list.** A teratogen is an exposure capable of disrupting prenatal development under particular conditions. Alcohol has no known safe amount or time during pregnancy and can affect development throughout pregnancy. Some medications, infections, nicotine products, illicit substances, toxic metals, radiation levels, fever, and poorly controlled health conditions can increase specific risks, but they are not interchangeable. Maternal age is a risk factor, not a teratogen; ordinary stress and medically indicated diagnostic imaging should not be equated with known high-risk exposures. Do not advise abruptly stopping prescribed medication: current individualized medical and prenatal guidance is required.",
+      "references": [
+        "https://www.cdc.gov/alcohol-pregnancy/about/index.html",
+        "https://www.cdc.gov/birth-defects/prevention/index.html"
+      ],
+      "sourceDetails": [
+        {
+          "title": "About Alcohol Use During Pregnancy",
+          "organization": "Centers for Disease Control and Prevention",
+          "url": "https://www.cdc.gov/alcohol-pregnancy/about/index.html",
+          "whyReputable": "Current official U.S. public-health guidance on timing, uncertainty, and documented developmental risks of prenatal alcohol exposure."
+        },
+        {
+          "title": "Preventing Birth Defects",
+          "organization": "Centers for Disease Control and Prevention",
+          "url": "https://www.cdc.gov/birth-defects/prevention/index.html",
+          "whyReputable": "Current federal guidance distinguishing modifiable exposures, infections, medications, health conditions, and preventive care."
+        }
+      ],
+      "reviewNote": "Separated teratogens from risk factors, removed stigmatizing labels, and added dose, timing, susceptibility, and medication-safety boundaries.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "stable-id-correction-overlay",
+      "correctionTypes": [
+        "learner-purpose-differentiation"
+      ],
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    }
+  ]
+}

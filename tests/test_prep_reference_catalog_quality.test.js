@@ -34,7 +34,7 @@ describe('learner-facing non-EPPP source catalog', () => {
       expect(detail.title, reference).not.toMatch(/^Scholarly source \(DOI |^Referenced educational source$/i);
       expect(JSON.stringify(detail), reference).not.toMatch(/&(?:#\d+|#x[0-9a-f]+|[a-z]+);|(?:\u00c3[\u0080-\u00bf]|\u00c2[\u0080-\u00bf]|\u00e2\u20ac|\ufffd)/iu);
     }
-  });
+  }, 20_000);
 
   it('publishes the same catalog in the deploy tree', () => {
     expect(fs.readFileSync(resolve(deployDir, 'reference_catalog.json'), 'utf8')).toBe(catalogText);

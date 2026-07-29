@@ -1,0 +1,290 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "eppp-diagram-review-wave-06",
+  "reviewDate": "2026-07-28",
+  "status": "assisted-editorial-source-review-complete-expert-pending",
+  "standard": {
+    "meaning": "This wave records an assisted editorial, accessibility, and source-alignment pass for six inline instructional diagram placements.",
+    "releaseBoundary": "Independent review by a qualified subject-matter expert and production validation remain pending."
+  },
+  "summary": {
+    "reviewedDiagramPlacements": 6,
+    "correctedDiagramPlacements": 6,
+    "sourceReviewedDiagramPlacements": 6,
+    "distinctNamedSources": 12,
+    "independentExpertValidated": 0,
+    "status": "pass"
+  },
+  "projectedCatalogCounts": {
+    "sourceReviewedDiagramPlacementsBefore": 34,
+    "sourceReviewedDiagramPlacementsAfter": 40,
+    "reviewRequiredDiagramPlacementsBefore": 24,
+    "reviewRequiredDiagramPlacementsAfter": 18
+  },
+  "items": [
+    {
+      "sequence": 1,
+      "placementId": "diagram-placement-ch-2-section-02",
+      "chapterId": "ch-2",
+      "sectionIndex": 2,
+      "expectedHeading": "CHC Theory: The Map of Human Intelligence",
+      "sourceFile": "js/textbook_ch5_2.js",
+      "title": "CHC Is a Hierarchy, Not a One-to-One Test Map",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-06",
+      "reviewDate": "2026-07-28",
+      "correctionSummary": "Made the hierarchy explicitly illustrative and evolving, added manual-and-validity boundaries, retained selected broad and narrow examples, and ensured every visible label is at least 12 units.",
+      "reviewNote": "Diagram wording, chapter explanation, labels, and placement were reviewed for source alignment, factual clarity, accessibility, and learner interpretation. Made the hierarchy explicitly illustrative and evolving, added manual-and-validity boundaries, retained selected broad and narrow examples, and ensured every visible label is at least 12 units. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC7433699/",
+        "https://pubmed.ncbi.nlm.nih.gov/30463669/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The Wiring of Intelligence",
+          "organization": "Molecular Psychiatry; PubMed Central, U.S. National Library of Medicine",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7433699/",
+          "whyReputable": "This peer-reviewed review describes Carroll’s three-stratum hierarchy and the CHC broad-ability stratum while emphasizing that intelligence models concern correlated performance and distributed systems rather than isolated task modules."
+        },
+        {
+          "title": "Meta-analysis of the relationship between academic achievement and broad abilities of the Cattell-Horn-Carroll theory",
+          "organization": "Journal of School Psychology; PubMed, U.S. National Library of Medicine",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/30463669/",
+          "whyReputable": "This peer-reviewed meta-analysis directly evaluates general, broad, and narrow CHC interpretations and documents that relations vary across abilities, outcomes, and ages, supporting a cautious rather than one-to-one score map."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "frameworkContext": "current-source-and-model-context-editorial-pass"
+      },
+      "independentExpertStatus": "pending-independent-qualified-expert-review",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 2,
+      "placementId": "diagram-placement-ch-14-section-06",
+      "chapterId": "ch-14",
+      "sectionIndex": 6,
+      "expectedHeading": "Behavioral Techniques: Exposure Therapies",
+      "sourceFile": "js/textbook_ch14.js",
+      "title": "Exposure Tests Predictions and Builds Retrievable Learning",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-06",
+      "reviewDate": "2026-07-28",
+      "correctionSummary": "Added a learner-facing title and full alternative, distinguished objective safety from feared prediction, made consent and protocol fit visible, and removed anxiety reduction as a mandatory within-session endpoint.",
+      "reviewNote": "Diagram wording, chapter explanation, labels, and placement were reviewed for source alignment, factual clarity, accessibility, and learner interpretation. Added a learner-facing title and full alternative, distinguished objective safety from feared prediction, made consent and protocol fit visible, and removed anxiety reduction as a mandatory within-session endpoint. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC4114726/",
+        "https://www.ptsd.va.gov/understand_tx/prolonged_exposure.asp"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Maximizing Exposure Therapy: An Inhibitory Learning Approach",
+          "organization": "Behaviour Research and Therapy; PubMed Central, U.S. National Library of Medicine",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4114726/",
+          "whyReputable": "This peer-reviewed clinical review explains expectancy violation, safety-signal reduction, variability, retrieval cues, and multiple contexts, and distinguishes inhibitory learning from a requirement for within-session fear reduction."
+        },
+        {
+          "title": "Prolonged Exposure (PE) for PTSD",
+          "organization": "National Center for PTSD, U.S. Department of Veterans Affairs",
+          "url": "https://www.ptsd.va.gov/understand_tx/prolonged_exposure.asp",
+          "whyReputable": "The VA National Center for PTSD is a federal specialty authority. Its patient-facing treatment summary describes gradual approach to trauma memories and objectively safe situations without presenting exposure as forced or universally identical."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "frameworkContext": "current-source-and-model-context-editorial-pass"
+      },
+      "independentExpertStatus": "pending-independent-qualified-expert-review",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 3,
+      "placementId": "diagram-placement-ch-22-section-04",
+      "chapterId": "ch-22",
+      "sectionIndex": 4,
+      "expectedHeading": "Dementia Types",
+      "sourceFile": "js/textbook_ch22.js",
+      "title": "Cognitive-Change Triage: Urgency Before Etiologic Labels",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-06",
+      "reviewDate": "2026-07-28",
+      "correctionSummary": "Added a learner-facing title and complete alternative, raised all labels to at least 12 units, emphasized urgency before etiologic labels, and made overlap and delirium superimposed on dementia explicit.",
+      "reviewNote": "Diagram wording, chapter explanation, labels, and placement were reviewed for source alignment, factual clarity, accessibility, and learner interpretation. Added a learner-facing title and complete alternative, raised all labels to at least 12 units, emphasized urgency before etiologic labels, and made overlap and delirium superimposed on dementia explicit. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://www.nia.nih.gov/health/health-care-professionals-information/assessing-cognitive-impairment-older-patients",
+        "https://www.nice.org.uk/guidance/cg103/chapter/Recommendations"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Assessing Cognitive Impairment in Older Patients",
+          "organization": "National Institute on Aging, National Institutes of Health",
+          "url": "https://www.nia.nih.gov/health/health-care-professionals-information/assessing-cognitive-impairment-older-patients",
+          "whyReputable": "This federal clinical resource describes multiple possible causes of cognitive change, the need to assess behavior and function, limits of brief screening, and the need for fuller evaluation rather than diagnosis from one pattern."
+        },
+        {
+          "title": "Delirium: prevention, diagnosis and management in hospital and long-term care — Recommendations",
+          "organization": "National Institute for Health and Care Excellence",
+          "url": "https://www.nice.org.uk/guidance/cg103/chapter/Recommendations",
+          "whyReputable": "NICE publishes evidence-based clinical guidance. The guideline identifies recent hours-to-days changes or fluctuation in cognition, perception, physical function, or social behavior as reasons for delirium assessment."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "frameworkContext": "current-source-and-model-context-editorial-pass"
+      },
+      "independentExpertStatus": "pending-independent-qualified-expert-review",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 4,
+      "placementId": "diagram-placement-ch-28-section-04",
+      "chapterId": "ch-28",
+      "sectionIndex": 4,
+      "expectedHeading": "Bilingualism & Language Diversity",
+      "sourceFile": "js/textbook_ch28.js",
+      "title": "Multilingual Assessment Requires Language-Specific Validity Evidence",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-06",
+      "reviewDate": "2026-07-28",
+      "correctionSummary": "Added a learner-facing title and full alternative, raised labels from 11 to at least 12 units, distinguished language support from psychometric equivalence, and made score-reporting and diagnosis boundaries visible.",
+      "reviewNote": "Diagram wording, chapter explanation, labels, and placement were reviewed for source alignment, factual clarity, accessibility, and learner interpretation. Added a learner-facing title and full alternative, raised labels from 11 to at least 12 units, distinguished language support from psychometric equivalence, and made score-reporting and diagnosis boundaries visible. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://www.asha.org/practice-portal/professional-issues/multilingual-service-delivery/",
+        "https://www.asha.org/Practice-Portal/Professional-Issues/Collaborating-With-Interpreters/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Multilingual Service Delivery in Audiology and Speech-Language Pathology",
+          "organization": "American Speech-Language-Hearing Association Practice Portal",
+          "url": "https://www.asha.org/practice-portal/professional-issues/multilingual-service-delivery/",
+          "whyReputable": "ASHA’s expert-reviewed Practice Portal explains language-history collection, culturally relevant functional assessment, norm-sample limits, cross-language evidence, and why no formal test is completely free of cultural bias."
+        },
+        {
+          "title": "Collaborating With Interpreters, Transliterators, and Translators",
+          "organization": "American Speech-Language-Hearing Association Practice Portal",
+          "url": "https://www.asha.org/Practice-Portal/Professional-Issues/Collaborating-With-Interpreters/",
+          "whyReputable": "This expert-reviewed professional portal describes clinician responsibility and the briefing-interaction-debriefing collaboration needed when language-matched assessment is unavailable, rather than treating interpretation as mechanical translation."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "frameworkContext": "current-source-and-model-context-editorial-pass"
+      },
+      "independentExpertStatus": "pending-independent-qualified-expert-review",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 5,
+      "placementId": "diagram-placement-ch-34-section-03",
+      "chapterId": "ch-34",
+      "sectionIndex": 3,
+      "expectedHeading": "Acculturation as Person–Context Process",
+      "sourceFile": "js/textbook_ch34.js",
+      "title": "Cultural Formulation Starts With the Person, Then Maps Context",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-06",
+      "reviewDate": "2026-07-28",
+      "correctionSummary": "Centered the person’s own account before ecological context, named power and constraint, clarified that group evidence only guides questions, and bounded the Cultural Formulation Interview as an inquiry aid rather than a diagnostic test.",
+      "reviewNote": "Diagram wording, chapter explanation, labels, and placement were reviewed for source alignment, factual clarity, accessibility, and learner interpretation. Centered the person’s own account before ecological context, named power and constraint, clarified that group evidence only guides questions, and bounded the Cultural Formulation Interview as an inquiry aid rather than a diagnostic test. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://www.apa.org/about/policy/multicultural-guidelines.pdf",
+        "https://www.psychiatry.org/getmedia/5cc5329d-3bd4-4c6a-bae1-dfd0d6496f44/APA-DSM5TR-CulturalFormulationInterview.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Multicultural Guidelines: An Ecological Approach to Context, Identity, and Intersectionality",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/about/policy/multicultural-guidelines.pdf",
+          "whyReputable": "APA’s official guidelines frame identity and experience ecologically and intersectionally, supporting collaborative inquiry into individual, relational, community, institutional, and historical context instead of group-based assumptions."
+        },
+        {
+          "title": "Cultural Formulation Interview",
+          "organization": "American Psychiatric Association, DSM-5-TR educational resources",
+          "url": "https://www.psychiatry.org/getmedia/5cc5329d-3bd4-4c6a-bae1-dfd0d6496f44/APA-DSM5TR-CulturalFormulationInterview.pdf",
+          "whyReputable": "The American Psychiatric Association publishes this official interview. Its prompts elicit the person’s definition and meaning of the problem, context, supports, stressors, identity, coping, and expectations for care."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "frameworkContext": "current-source-and-model-context-editorial-pass"
+      },
+      "independentExpertStatus": "pending-independent-qualified-expert-review",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 6,
+      "placementId": "diagram-placement-ch-36-section-02",
+      "chapterId": "ch-36",
+      "sectionIndex": 2,
+      "expectedHeading": "Attachment Theory & the Strange Situation",
+      "sourceFile": "js/textbook_ch36.js",
+      "title": "Strange Situation Classification Has Strict Inference Boundaries",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-06",
+      "reviewDate": "2026-07-28",
+      "correctionSummary": "Made trained coding thresholds and procedure specificity visible, separated classification from diagnosis and forensic inference, and explicitly blocked maltreatment, trait, and destiny overclaims.",
+      "reviewNote": "Diagram wording, chapter explanation, labels, and placement were reviewed for source alignment, factual clarity, accessibility, and learner interpretation. Made trained coding thresholds and procedure specificity visible, separated classification from diagnosis and forensic inference, and explicitly blocked maltreatment, trait, and destiny overclaims. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC5600694/",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC3670111/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Disorganized attachment in infancy: a review of the phenomenon and its implications for clinicians and policy-makers",
+          "organization": "Attachment & Human Development; PubMed Central, U.S. National Library of Medicine",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5600694/",
+          "whyReputable": "This peer-reviewed consensus review directly addresses common misuses: Strange Situation classifications are not definitive individual or forensic assessments, do not prove maltreatment, do not equal diagnosis, and are not fixed traits."
+        },
+        {
+          "title": "Practitioner Review: Clinical applications of attachment theory and research for infants and young children",
+          "organization": "Journal of Child Psychology and Psychiatry; PubMed Central, U.S. National Library of Medicine",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3670111/",
+          "whyReputable": "This peer-reviewed practitioner review describes trained Strange Situation classification, relationship-specific behavioral patterns, developmental qualifications, and clinically appropriate integration with broader assessment."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "frameworkContext": "current-source-and-model-context-editorial-pass"
+      },
+      "independentExpertStatus": "pending-independent-qualified-expert-review",
+      "productionStatus": "not-production-validated"
+    }
+  ]
+}

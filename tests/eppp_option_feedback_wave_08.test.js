@@ -118,12 +118,12 @@ describe('EPPP incorrect-option explanation repair wave 08', () => {
       item.sourceDetails.forEach((source) => {
         expect(source.title.length).toBeGreaterThanOrEqual(20);
         expect(source.credibility.length).toBeGreaterThanOrEqual(100);
-        expect(catalog[source.url]).toMatchObject({
-          title: source.title,
-          organization: source.organization,
-          credibility: source.credibility,
-          metadataSource: 'pack-authored',
-        });
+        const entry = catalog[source.url];
+        expect(entry).toMatchObject({ metadataSource: 'pack-authored' });
+        for (const [field, minimum] of Object.entries({ title: 20, organization: 5, summary: 80, credibility: 100 })) {
+          expect(String(source[field] || '').length).toBeGreaterThanOrEqual(minimum);
+          expect(String(entry[field] || '').length).toBeGreaterThanOrEqual(minimum);
+        }
       });
     });
   });

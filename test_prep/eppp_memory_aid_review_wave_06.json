@@ -1,0 +1,495 @@
+{
+  "schemaVersion": 1,
+  "waveId": "eppp-memory-aid-review-wave-06",
+  "generatedAt": "2026-07-28T16:00:00.000Z",
+  "status": "source-reviewed-editorial-pass-independent-expert-review-pending",
+  "summary": {
+    "items": 16,
+    "domains": 8,
+    "itemsPerDomain": 2
+  },
+  "safeguards": [
+    "Legacy text remains preserved; reviewed replacements are applied by stable legacy ID through the ordered native catalog builder.",
+    "Wave 06 follows Wave 05, contains exactly two unique-title aids per domain, and cannot overlap a prior numbered memory-aid review wave.",
+    "Clinical, assessment, statistical, ethical, and legal mnemonics remain retrieval aids rather than diagnostic, treatment, psychometric, or jurisdiction-specific decision rules.",
+    "Source review and editorial review do not constitute independent qualified expert, clinical, legal, or psychometric validation."
+  ],
+  "items": [
+    {
+      "legacyId": "memory-aid-168fe4e72e3f17e6",
+      "title": "HPA Axis in Stress",
+      "domainId": 1,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**H-P-A is a signal-and-feedback chain: CRH -> ACTH -> cortisol.** In a stress response, hypothalamic paraventricular neurons release corticotropin-releasing hormone (CRH), the anterior pituitary releases adrenocorticotropic hormone (ACTH), and the adrenal cortex releases cortisol. Cortisol helps coordinate energy, cardiovascular, immune, and other adaptive responses and then participates in negative feedback at several levels. The fire-alarm analogy is useful only if the alarm also has feedback, changing sensitivity, and inputs from many brain and body systems. Repeated or chronic stress does not produce one uniform pattern or a literal system failure: findings can include elevated, blunted, shifted, or otherwise dysregulated activity depending on timing, stressor features, health, development, and the measure used. Long-term stress exposure is associated with increased risk across metabolic, immune, cardiovascular, mood, and neural outcomes, but it does not guarantee immune suppression or hippocampal damage in an individual. Do not infer a person's cortisol pattern, diagnosis, or tissue injury from a stress report alone.",
+      "references": [
+        "https://www.ncbi.nlm.nih.gov/books/NBK278995/",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC4867107/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Stress: Endocrine Physiology and Pathophysiology",
+          "organization": "Endotext, NCBI Bookshelf, U.S. National Library of Medicine",
+          "url": "https://www.ncbi.nlm.nih.gov/books/NBK278995/",
+          "whyReputable": "This continuously updated, expert-authored endocrinology chapter hosted by the U.S. National Library of Medicine describes CRH, ACTH, cortisol, multi-level feedback, and the broader regulation of the human stress response."
+        },
+        {
+          "title": "Regulation of the hypothalamic-pituitary-adrenocortical stress response",
+          "organization": "Comprehensive Physiology; PubMed Central, U.S. National Library of Medicine",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4867107/",
+          "whyReputable": "This peer-reviewed integrative physiology review explains the neural and endocrine regulation of the HPA axis and documents that chronic-stress adaptations vary with stressor chronicity, intensity, frequency, and modality."
+        }
+      ],
+      "reviewNote": "Preserved the H-P-A retrieval chain while replacing a stuck-alarm and burnout story with feedback regulation, heterogeneous chronic-stress patterns, and non-deterministic health-risk language.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-review"
+    },
+    {
+      "legacyId": "memory-aid-c4ee337cb0ae9dc8",
+      "title": "TBI & Neurological Conditions",
+      "domainId": 1,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Use three separate maps: INJURY, SEIZURE ONSET, and COGNITIVE SYNDROME.** **TBI:** A concussion is a mild traumatic brain injury, and loss of consciousness is not required. Acute severity classifications may combine Glasgow Coma Scale scores with loss or alteration of consciousness, post-traumatic amnesia, imaging, timing, and clinical context; a mnemonic or one score is not a diagnosis or prognosis. Symptoms can emerge later, and red flags require prompt medical evaluation. **Seizures:** Current ILAE language first classifies onset as focal, generalized, or unknown, then adds features such as awareness and motor or nonmotor onset when supported. \"Grand mal,\" \"petit mal,\" and \"simple/complex partial\" are legacy terms, and one seizure is not automatically epilepsy. Treatment depends on seizure type, cause, comorbidity, and the person; do not attach one medication to a category by rote. **Dementia:** Alzheimer disease, vascular contributions, Lewy body disease, frontotemporal disorders, and mixed pathologies can produce overlapping and variable presentations. A pattern may guide a differential diagnosis, but no single symptom proves an etiology. Depression, delirium, medications, metabolic conditions, and other disorders can impair cognition, so avoid the imprecise label \"pseudodementia\" and assess potentially reversible contributors.",
+      "references": [
+        "https://www.cdc.gov/traumatic-brain-injury/",
+        "https://www.ilae.org/guidelines/definition-and-classification/operational-classification-2017",
+        "https://www.nia.nih.gov/health/alzheimers-and-dementia/what-dementia-symptoms-types-and-diagnosis"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Traumatic Brain Injury & Concussion",
+          "organization": "Centers for Disease Control and Prevention",
+          "url": "https://www.cdc.gov/traumatic-brain-injury/",
+          "whyReputable": "The CDC is the U.S. public-health authority for traumatic brain injury education and surveillance; its current materials distinguish concussion from simplistic loss-of-consciousness rules and emphasize symptom monitoring and urgent warning signs."
+        },
+        {
+          "title": "Operational Classification of Seizure Types (2017)",
+          "organization": "International League Against Epilepsy",
+          "url": "https://www.ilae.org/guidelines/definition-and-classification/operational-classification-2017",
+          "whyReputable": "This is the ILAE Commission's official operational classification and is the primary professional source for current focal, generalized, and unknown-onset terminology and the retirement of older seizure labels."
+        },
+        {
+          "title": "What Is Dementia? Symptoms, Types, and Diagnosis",
+          "organization": "National Institute on Aging, National Institutes of Health",
+          "url": "https://www.nia.nih.gov/health/alzheimers-and-dementia/what-dementia-symptoms-types-and-diagnosis",
+          "whyReputable": "This expert-reviewed NIH resource describes multiple and mixed dementia etiologies, overlapping presentations, and medical or emotional conditions that can resemble dementia and require differential assessment."
+        }
+      ],
+      "reviewNote": "Separated three distinct neurological classification problems, updated seizure language, removed deterministic disease signatures, and replaced pseudodementia shorthand with differential-assessment guidance.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-review"
+    },
+    {
+      "legacyId": "memory-aid-78b915258534fee0",
+      "title": "Piaget's Stages",
+      "domainId": 2,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**\"Sharks Prefer Cute Fish\" retrieves Piaget's proposed order, not a developmental stopwatch.** **S**ensorimotor (roughly birth-2): action and perception organize knowledge; object permanence develops across the period. **P**reoperational (roughly 2-7): symbolic representation and pretend play expand, while performance on classic perspective-taking and conservation tasks is often limited. **C**oncrete operational (roughly 7-12): conservation, reversibility, classification, and logical operations are more reliable for concrete problems. **F**ormal operational (roughly 12+): hypothetico-deductive and abstract reasoning become possible within the theory. Keep three boundaries attached to the mnemonic: ages are approximate, task performance can vary within the same child, and schooling, culture, familiarity, language, and task demands affect what is observed. Later research documents substantial variability, especially for formal-operational performance; reaching an age does not guarantee a uniform reasoning style. Use the stages to recognize Piaget's historical theory and signature tasks, not to diagnose delay, estimate intelligence, prescribe instruction, or conclude that a person lacks a capacity from one failed task.",
+      "references": [
+        "https://dictionary.apa.org/piagetian-theory",
+        "https://pubmed.ncbi.nlm.nih.gov/35704171/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Piagetian theory",
+          "organization": "APA Dictionary of Psychology, American Psychological Association",
+          "url": "https://dictionary.apa.org/piagetian-theory",
+          "whyReputable": "APA's professional dictionary provides a concise authoritative account of the four proposed stages, their approximate ages and characteristic tasks, and Piaget's own allowance for cultural and historical variation in onset."
+        },
+        {
+          "title": "Stages in Theory and Experiment: Fuzzy-Structuralism and Piagetian Stages",
+          "organization": "Integrative Psychological and Behavioral Science; PubMed, U.S. National Library of Medicine",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/35704171/",
+          "whyReputable": "This peer-reviewed historical and conceptual review directly examines the empirical variability crisis in Piagetian stage research and distinguishes theoretical stage structure from variable observed performance."
+        }
+      ],
+      "reviewNote": "Retained the four-stage mnemonic and approximate age bands while adding within-person, task, cultural, and educational variability and prohibiting diagnostic use.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-review"
+    },
+    {
+      "legacyId": "memory-aid-c7500759906c0d3a",
+      "title": "Motivation: Intrinsic vs Extrinsic",
+      "domainId": 2,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**ACR supports autonomous motivation: Autonomy, Competence, Relatedness.** Intrinsic motivation means engaging because the activity itself is interesting or satisfying. Extrinsic motivation means behavior is oriented toward a separable outcome, but it is not one undifferentiated opposite of intrinsic motivation: self-determination theory distinguishes more controlled and more internalized forms of extrinsic regulation. The drawing-for-money example is therefore a conditional finding, not a law that rewards make children stop. Meta-analytic results indicate that expected tangible rewards can undermine later free-choice behavior or self-reported interest for already interesting activities under some conditions, especially when rewards feel controlling; effects differ by reward type, contingency, age, outcome, and context. Positive competence-relevant feedback can support intrinsic motivation, and useful rewards can provide information, acknowledge competence, or support engagement with activities that were not initially interesting. For an exam item, ask: Was the activity initially interesting? Was the reward expected, tangible, controlling, performance-contingent, or informational? Do not infer that payment, praise, grades, or reinforcement inevitably destroys enjoyment.",
+      "references": [
+        "https://doi.org/10.1037/0033-2909.125.6.627",
+        "https://doi.org/10.1037/0003-066X.55.1.68"
+      ],
+      "sourceDetails": [
+        {
+          "title": "A meta-analytic review of experiments examining the effects of extrinsic rewards on intrinsic motivation",
+          "organization": "Psychological Bulletin, American Psychological Association",
+          "url": "https://doi.org/10.1037/0033-2909.125.6.627",
+          "whyReputable": "This peer-reviewed meta-analysis synthesizes 128 reward experiments and is the primary quantitative source for differences by reward type, expectancy, contingency, age group, and intrinsic-motivation outcome."
+        },
+        {
+          "title": "Self-determination theory and the facilitation of intrinsic motivation, social development, and well-being",
+          "organization": "American Psychologist, American Psychological Association",
+          "url": "https://doi.org/10.1037/0003-066X.55.1.68",
+          "whyReputable": "This foundational peer-reviewed overview by Ryan and Deci defines intrinsic and differentiated extrinsic motivation and explains the theorized roles of autonomy, competence, and relatedness without reducing reward effects to a universal rule."
+        }
+      ],
+      "reviewNote": "Preserved the ACR cue but replaced a guaranteed reward-backfire story with the intrinsic/extrinsic regulation distinction and the moderators documented in reward research.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-review"
+    },
+    {
+      "legacyId": "memory-aid-f293a976f53d77c4",
+      "title": "Multicultural Counseling Competencies",
+      "domainId": 3,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**A-K-S is the historical cue; add CONTEXT, POWER, and HUMILITY.** The classic multicultural counseling framework organized competence around **A**wareness of one's assumptions and biases, **K**nowledge of the client's worldview and relevant systems, and **S**kills for culturally responsive assessment and intervention. Contemporary APA guidance broadens that retrieval frame: identities are intersectional and situated within ecological, historical, economic, political, and power contexts; people within a named group vary; and the psychologist's own social location affects the encounter. Emic (culture- and context-specific) and etic (cross-context) perspectives are complementary questions, not mutually exclusive answer choices. Cultural humility means continuing self-reflection, openness to correction, and attention to power rather than claiming mastery of a culture. Ask the person how identity, language, community, discrimination, resources, and explanatory models matter; do not infer beliefs from race, ethnicity, nationality, gender, disability, religion, or another label. Adapt methods when supported, evaluate validity for the intended population, use interpreters or consultation appropriately, and document uncertainty. \"Choose the culturally sensitive answer\" is not a decision rule; collaborative, evidence-informed, context-responsive reasoning is.",
+      "references": [
+        "https://doi.org/10.1002/j.1556-6676.1992.tb01642.x",
+        "https://www.apa.org/about/policy/multicultural-guidelines.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Multicultural Counseling Competencies and Standards: A Call to the Profession",
+          "organization": "Journal of Counseling & Development, American Counseling Association",
+          "url": "https://doi.org/10.1002/j.1556-6676.1992.tb01642.x",
+          "whyReputable": "This peer-reviewed foundational article is the primary source for the awareness, knowledge, and skills framework and supports teaching it as a historical professional model rather than a complete modern decision rule."
+        },
+        {
+          "title": "Multicultural Guidelines: An Ecological Approach to Context, Identity, and Intersectionality",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/about/policy/multicultural-guidelines.pdf",
+          "whyReputable": "APA's official professional guidelines update multicultural practice toward ecological context, intersectionality, power, identity fluidity, within-group variation, and psychologist self-examination across research, education, assessment, and care."
+        }
+      ],
+      "reviewNote": "Kept the classic awareness-knowledge-skills retrieval structure while updating it with ecological, intersectional, power-aware, and culturally humble practice boundaries.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-review"
+    },
+    {
+      "legacyId": "memory-aid-ce766db93fa89261",
+      "title": "Competency to Stand Trial",
+      "domainId": 3,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**DUSKY asks about present functional ability: CONSULT + UNDERSTAND.** The federal constitutional minimum asks whether the defendant has sufficient present ability to consult with counsel with a reasonable degree of rational understanding and has a rational as well as factual understanding of the proceedings. Competency to stand trial concerns current adjudicative functioning; criminal responsibility or an insanity defense concerns mental state at the time of the alleged offense. A diagnosis, psychosis, intellectual disability, poor legal knowledge, medication status, or unusual behavior alone neither proves nor rules out incompetence. Structured instruments such as the MacCAT-CA can organize observations, but they do not replace jurisdiction-specific law, case facts, collateral information, response-style assessment, and the court's ultimate legal determination. If a defendant is found incompetent, procedure, services, restoration standards, and permissible interventions depend on governing law and individualized findings; restoration is not synonymous with medication. **Jackson v. Indiana** bars indefinite commitment solely because a person is incompetent and requires a reasonable period tied to the probability of attaining competency, followed by ordinary civil process or release when restoration is not foreseeable. Do not promise automatic dismissal or civil commitment. Verify the controlling jurisdiction and forensic role.",
+      "references": [
+        "https://www.govinfo.gov/app/details/USREPORTS-362/USREPORTS-362-402",
+        "https://www.govinfo.gov/app/details/USREPORTS-406/USREPORTS-406-715"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Dusky v. United States, 362 U.S. 402 (1960)",
+          "organization": "United States Reports, U.S. Government Publishing Office",
+          "url": "https://www.govinfo.gov/app/details/USREPORTS-362/USREPORTS-362-402",
+          "whyReputable": "This official United States Reports record is the primary Supreme Court source for the federal constitutional formulation requiring sufficient present ability to consult with counsel and rational and factual understanding."
+        },
+        {
+          "title": "Jackson v. Indiana, 406 U.S. 715 (1972)",
+          "organization": "United States Reports, U.S. Government Publishing Office",
+          "url": "https://www.govinfo.gov/app/details/USREPORTS-406/USREPORTS-406-715",
+          "whyReputable": "This official Supreme Court decision is the primary authority limiting indefinite commitment based solely on incompetence and describing the required relationship between confinement duration and foreseeable restoration."
+        }
+      ],
+      "reviewNote": "Anchored the cue to the actual Dusky language, separated clinical data from the legal determination, and removed universal claims about medication, restoration, dismissal, and civil commitment.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-review"
+    },
+    {
+      "legacyId": "memory-aid-de9d8582021d4d6f",
+      "title": "Gender Identity Development",
+      "domainId": 4,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Keep four concepts separate: assigned sex characteristics, gender identity, gender expression, and sexual orientation.** Gender identity is a person's internal sense of gender; gender expression is how gender may be communicated through appearance, behavior, voice, or other means; sexual orientation concerns patterns of romantic, emotional, or sexual attraction and is not inferred from identity or expression. Sex characteristics include multiple biological dimensions, so avoid treating chromosomes, hormones, gonads, and anatomy as one always-binary variable. Children develop and communicate gender-related concepts in diverse ways and on varied timelines. The classic identity-stability-constancy sequence is a historical cognitive-developmental model, not a test that every child completes at ages 2-3, 4-5, and 6-7, and clothing, toys, interests, or one statement do not establish identity or pathology. Gender diversity itself is not a mental disorder. Distress can arise from incongruence, stigma, rejection, dysphoria, or other concerns and must be assessed in the person's developmental, family, cultural, safety, and social context. Use the person's current language, allow exploration without steering toward a predetermined identity, distinguish support from diagnosis, and avoid assuming that identity fixes orientation, treatment need, or a single developmental outcome.",
+      "references": [
+        "https://www.apa.org/topics/lgbt/transgender",
+        "https://dictionary.apa.org/gender-identity"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Understanding transgender people, gender identity and gender expression",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/topics/lgbt/transgender",
+          "whyReputable": "This current APA public and professional resource distinguishes gender identity, gender expression, assigned sex, and sexual orientation and emphasizes variation, evolving language, and the harms of stereotyping gender-diverse people."
+        },
+        {
+          "title": "Gender identity",
+          "organization": "APA Dictionary of Psychology, American Psychological Association",
+          "url": "https://dictionary.apa.org/gender-identity",
+          "whyReputable": "APA's professional dictionary supplies a current definition that includes binary and nonbinary identities and recognizes the influence of societal structures, cultural expectations, and interpersonal experience on development."
+        }
+      ],
+      "reviewNote": "Replaced binary biology shorthand and rigid age milestones with separated constructs, developmental variability, nonpathologizing language, and person-specific assessment boundaries.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-review"
+    },
+    {
+      "legacyId": "memory-aid-a359edc005601290",
+      "title": "Adult Attachment Styles",
+      "domainId": 4,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Map adult romantic attachment on two dimensions before naming four prototypes: ANXIETY x AVOIDANCE.** Low anxiety/low avoidance is the secure prototype; high anxiety/low avoidance is preoccupied; low anxiety/high avoidance is dismissing; and high anxiety/high avoidance is fearful. Hazan and Shaver's original adult-romantic extension used secure, avoidant, and anxious/ambivalent descriptions; Bartholomew and Horowitz later proposed four prototypes using models of self and others. Modern self-report research often represents anxiety and avoidance continuously, so category boundaries are teaching conveniences rather than natural diagnostic cutoffs. A person is not simply an \"attachment type\": scores can differ by relationship, measure, context, and time, and a prototype does not determine self-esteem, behavior, compatibility, or prognosis. Adult romantic self-reports are also not interchangeable with infant Strange Situation classifications or the Adult Attachment Interview, and continuity from one childhood observation to adult romance is probabilistic rather than one-to-one. Drop fixed prevalence percentages and pejorative personality labels. Use the framework to generate questions about closeness, support seeking, rejection concerns, and distancing while assessing the actual relationship and person.",
+      "references": [
+        "https://doi.org/10.1037/0022-3514.52.3.511",
+        "https://doi.org/10.1037/0022-3514.61.2.226",
+        "https://doi.org/10.1037/0022-3514.78.2.350"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Romantic love conceptualized as an attachment process",
+          "organization": "Journal of Personality and Social Psychology, American Psychological Association",
+          "url": "https://doi.org/10.1037/0022-3514.52.3.511",
+          "whyReputable": "This seminal peer-reviewed study is the primary source for translating attachment concepts into adult romantic-relationship hypotheses and also identifies measurement problems and the need for further tests of continuity."
+        },
+        {
+          "title": "Attachment styles among young adults: A test of a four-category model",
+          "organization": "Journal of Personality and Social Psychology, American Psychological Association",
+          "url": "https://doi.org/10.1037/0022-3514.61.2.226",
+          "whyReputable": "This peer-reviewed primary article introduced and tested the four adult prototypes organized by positive and negative models of self and others, making it the direct source for the four-category teaching map."
+        },
+        {
+          "title": "An item response theory analysis of self-report measures of adult attachment",
+          "organization": "Journal of Personality and Social Psychology, American Psychological Association",
+          "url": "https://doi.org/10.1037/0022-3514.78.2.350",
+          "whyReputable": "This peer-reviewed psychometric analysis documents limitations of categorical scoring and supports cautious dimensional interpretation of adult attachment self-reports rather than fixed personality typing."
+        }
+      ],
+      "reviewNote": "Converted stereotype-heavy fixed categories and sample-specific percentages into a two-dimensional prototype map with measurement, relationship, time, and developmental-continuity caveats.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-review"
+    },
+    {
+      "legacyId": "memory-aid-8295b75dba628e08",
+      "title": "MMPI-2 Validity Scales",
+      "domainId": 5,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**L-F-K-S is a label cue, never a lie detector.** **L** is the Lie scale, **F** is Infrequency, **K** is Correction, and **S** is Superlative Self-Presentation. The full MMPI-2 response-validity review also includes omitted items and indicators such as VRIN, TRIN, FB, FP, and FBS; the relevant set and interpretation differ across MMPI-2, MMPI-2-RF, MMPI-A forms, and MMPI-3. An elevation is evidence about a response pattern, not a motive or diagnosis. Unusual responding can reflect inconsistent or fixed responding, reading or language difficulty, misunderstanding, severe genuine symptoms, unusual life experience, cultural context, overreporting, underreporting, or deliberate feigning. Therefore, high F does not by itself mean \"faking bad,\" a cry for help, random responding, or genuine psychopathology, and high L or K does not by itself prove deception. Interpret the ordered validity profile before substantive scales, using the correct manual, norms, setting, referral question, administration conditions, collateral data, and qualified professional judgment. Do not memorize \"F up, L down\" as a verdict and do not mix cut scores or interpretive rules across test versions.",
+      "references": [
+        "https://www.upress.umn.edu/test-division/mmpi-2/",
+        "https://pubmed.ncbi.nlm.nih.gov/34991350/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Minnesota Multiphasic Personality Inventory-2 (MMPI-2)",
+          "organization": "University of Minnesota Press Test Division",
+          "url": "https://www.upress.umn.edu/test-division/mmpi-2/",
+          "whyReputable": "The University of Minnesota Press is the MMPI-2 publisher; its official instrument page identifies the current MMPI-2 validity indicators, publication history, intended uses, age range, and distinct scale families."
+        },
+        {
+          "title": "Comparing the Ability of MMPI-2 and MMPI-2-RF Validity Scales to Detect Feigning: A Meta-Analysis",
+          "organization": "Assessment; PubMed, U.S. National Library of Medicine",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/34991350/",
+          "whyReputable": "This recent peer-reviewed meta-analysis evaluates feigning detection across MMPI-2 and MMPI-2-RF validity scales and supports version-specific, evidence-based interpretation rather than a single-scale motive judgment."
+        }
+      ],
+      "reviewNote": "Preserved the scale-name mnemonic while removing one-elevation faking and pathology verdicts and adding full-profile, version, norm, context, and alternative-explanation safeguards.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-review"
+    },
+    {
+      "legacyId": "memory-aid-3b68cbcc671b7a26",
+      "title": "Culture-Bound Syndromes",
+      "domainId": 5,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Replace \"culture-bound box\" with three CULTURAL CONCEPTS OF DISTRESS: syndrome, idiom, and explanation.** A cultural syndrome is a locally recognized cluster of experiences; an idiom is a shared way of expressing distress; and an explanation or perceived cause gives meaning to suffering. DSM-5 and DSM-5-TR moved beyond a simple list of \"culture-bound syndromes\" because culture shapes every clinical encounter, concepts travel across communities, and there is no one-to-one mapping from a cultural concept to a DSM diagnosis. Ataque de nervios, taijin kyofusho, dhat, khyal attacks, and susto are examples for study, not profiles to assign from a person's ethnicity or nationality. Presentation, meaning, prevalence, and help seeking vary within and across communities, and a person's own account can differ from a glossary description. The Cultural Formulation Interview asks how the person defines the problem, understands causes and context, obtains support, encounters barriers, and prefers to receive help; it also examines the clinician-patient relationship. Do not call one concept the \"opposite\" of a Western disorder, exoticize it, or diagnose it by matching surface symptoms. Ask, contextualize, assess impairment and differential explanations, and document uncertainty.",
+      "references": [
+        "https://www.psychiatry.org/File%20Library/Psychiatrists/Practice/DSM/APA_DSM_Cultural-Concepts-in-DSM-5.pdf",
+        "https://www.psychiatry.org/File%20Library/Psychiatrists/Practice/DSM/DSM-5-TR/APA-DSM5TR-CulturalFormulationInterview.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Cultural Concepts in DSM-5",
+          "organization": "American Psychiatric Association",
+          "url": "https://www.psychiatry.org/File%20Library/Psychiatrists/Practice/DSM/APA_DSM_Cultural-Concepts-in-DSM-5.pdf",
+          "whyReputable": "This official American Psychiatric Association resource explains the shift from a bounded-syndrome list toward cultural concepts of distress and a person-centered cultural formulation across diagnostic presentations."
+        },
+        {
+          "title": "Cultural Formulation Interview (CFI)",
+          "organization": "American Psychiatric Association, DSM-5-TR",
+          "url": "https://www.psychiatry.org/File%20Library/Psychiatrists/Practice/DSM/DSM-5-TR/APA-DSM5TR-CulturalFormulationInterview.pdf",
+          "whyReputable": "This is the official DSM-5-TR Cultural Formulation Interview, providing structured person-centered questions about problem meaning, perceived causes, supports, barriers, preferences, and the clinical relationship."
+        }
+      ],
+      "reviewNote": "Updated the title's legacy concept in the content, removed national stereotypes and one-to-one diagnostic comparisons, and centered the current cultural-concepts and CFI framework.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-review"
+    },
+    {
+      "legacyId": "memory-aid-1814264164727316",
+      "title": "EMDR — Eye Movement Desensitization",
+      "domainId": 6,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**EMDR uses eight protocol phases: History, Preparation, Assessment, Desensitization, Installation, Body scan, Closure, Re-evaluation.** The sequence is a retrieval map, not a do-it-yourself script. EMDR is a trauma-focused psychotherapy with evidence and guideline support for PTSD when delivered with a validated manual by a trained clinician with appropriate supervision. During processing, a person attends to a target memory while receiving alternating bilateral stimulation, commonly eye movements but sometimes taps or tones; preparation, distress-management skills, monitoring, closure, and reevaluation are integral rather than optional extras. The Adaptive Information Processing account is EMDR's theoretical model, not a proven fact that eye movements mimic REM sleep. Current evidence supports the treatment package for PTSD, while the mechanism of action and the incremental role of bilateral stimulation remain debated and under study. Recommendation strength, timing, session number, and fit vary across guidelines, populations, trauma histories, comorbidities, accessibility needs, patient preferences, and response. Do not generalize \"effective for PTSD\" to every trauma-exposed person, every disorder, or every delivery format, and do not conclude either that eye movements are uniquely curative or that they are known to be unnecessary.",
+      "references": [
+        "https://www.ptsd.va.gov/professional/treat/txessentials/emdr_pro.asp",
+        "https://www.nice.org.uk/guidance/ng116/chapter/recommendations"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Eye Movement Desensitization and Reprocessing for PTSD",
+          "organization": "National Center for PTSD, U.S. Department of Veterans Affairs",
+          "url": "https://www.ptsd.va.gov/professional/treat/txessentials/emdr_pro.asp",
+          "whyReputable": "This current federal clinician resource reviews EMDR protocol phases, randomized evidence, guideline ratings, military and comorbidity limits, and the ongoing controversy about mechanism and bilateral stimulation."
+        },
+        {
+          "title": "Post-traumatic stress disorder: recommendations",
+          "organization": "National Institute for Health and Care Excellence",
+          "url": "https://www.nice.org.uk/guidance/ng116/chapter/recommendations",
+          "whyReputable": "NICE's evidence-based clinical guideline specifies when EMDR should be considered or offered for PTSD and requires a validated manual, trained supervised practitioners, phased delivery, and individualized duration."
+        }
+      ],
+      "reviewNote": "Retained the eight-phase retrieval aid while separating treatment-package evidence from an unproven REM mechanism and adding scope, training, monitoring, accessibility, and individual-fit boundaries.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-review"
+    },
+    {
+      "legacyId": "memory-aid-d47ad8a266aaee94",
+      "title": "Common Factors in Therapy",
+      "domainId": 6,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Common does not mean identical: remember ALLIANCE = Bond + Goals + Tasks.** Psychotherapy approaches can share relationship, expectancy, empathy, rationale, collaboration, and other contextual processes, and meta-analytic evidence consistently links a stronger working alliance with better outcomes. That association is moderate on average, heterogeneous, and not a simple percentage of causation: improvement can strengthen alliance, patient and therapist factors affect both, and measurement timing matters. The \"Dodo bird verdict\" is a debated summary of some comparisons among bona fide therapies, not proof that all treatments, techniques, therapists, or doses work equally well for every problem. Delete the 40/30/15/15 pie chart; those slices combine unlike sources of variance and cannot be assigned to an individual case. Specific methods, treatment fidelity and competence, safety needs, diagnosis or problem characteristics, culture, accessibility, patient preference, and therapist effects can all matter alongside common factors. Evidence-based practice integrates the best available research with clinical expertise in the context of the person's characteristics, culture, and preferences. Build and repair alliance, but do not use alliance as a substitute for indicated assessment, an evidence-supported method, outcome monitoring, or referral when competence or response is insufficient.",
+      "references": [
+        "https://doi.org/10.1002/wps.20238",
+        "https://doi.org/10.1037/a0022186",
+        "https://www.apa.org/practice/guidelines/evidence-based-statement.html"
+      ],
+      "sourceDetails": [
+        {
+          "title": "How important are the common factors in psychotherapy? An update",
+          "organization": "World Psychiatry, World Psychiatric Association",
+          "url": "https://doi.org/10.1002/wps.20238",
+          "whyReputable": "This peer-reviewed synthesis reviews meta-analytic evidence for alliance, empathy, expectations, cultural adaptation, therapist differences, treatment differences, specific ingredients, adherence, and competence."
+        },
+        {
+          "title": "Alliance in individual psychotherapy",
+          "organization": "Psychotherapy, American Psychological Association",
+          "url": "https://doi.org/10.1037/a0022186",
+          "whyReputable": "This large peer-reviewed meta-analysis estimates a moderate alliance-outcome association across 190 samples and reports substantial heterogeneity, supporting importance without a deterministic or causal pie-chart interpretation."
+        },
+        {
+          "title": "Policy Statement on Evidence-Based Practice in Psychology",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/practice/guidelines/evidence-based-statement.html",
+          "whyReputable": "APA's official policy defines evidence-based practice as integration of best research with clinical expertise in the context of patient characteristics, culture, and preferences rather than allegiance to one factor or technique."
+        }
+      ],
+      "reviewNote": "Removed the unsupported outcome pie chart and universal equivalence claim while preserving alliance and evidence-based-practice cues with association, heterogeneity, specificity, and competence boundaries.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-review"
+    },
+    {
+      "legacyId": "memory-aid-060272889c689796",
+      "title": "Parametric Test Assumptions",
+      "domainId": 7,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Check DESIGN -> MODEL -> RESIDUALS -> REMEDY; do not apply \"fail normality, choose ranks.\"** For classical independent-samples t tests and ANOVA, independence comes from the sampling or assignment structure and cannot be repaired by a later normality test. The normal model concerns the errors or within-group distributions used for inference, not a requirement that the pooled raw scores form a perfect bell curve. Constant variance is required by pooled-variance versions, while Welch procedures are designed for unequal variances. \"Interval/ratio data\" is a rough classroom cue; the defensible analysis depends on what the outcome represents, the estimand, sample size, design, distribution, outliers, and model. When assumptions look doubtful, inspect plots and residuals, identify the severity and source of the problem, and choose a remedy that still answers the question: a better-specified model, transformation, Welch or robust method, resampling/permutation approach, or a rank-based procedure may be appropriate. Mann-Whitney, Wilcoxon, Kruskal-Wallis, Spearman, and chi-square are not interchangeable assumption-free backups and may test a different hypothesis. Always report the selected model, checks, effect estimate, uncertainty, and limitations rather than treating one preliminary p value as a gatekeeper.",
+      "references": [
+        "https://www.itl.nist.gov/div898/handbook/pri/section2/pri245.htm",
+        "https://www.itl.nist.gov/div898/handbook/eda/section3/eda353.htm",
+        "https://doi.org/10.5334/irsp.82"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Check of assumptions",
+          "organization": "NIST/SEMATECH e-Handbook of Statistical Methods, National Institute of Standards and Technology",
+          "url": "https://www.itl.nist.gov/div898/handbook/pri/section2/pri245.htm",
+          "whyReputable": "NIST's official statistical handbook explains model checking in terms of residual normality, independence, constant variance, graphical diagnostics, and the relationship between assumptions and the data-generating process."
+        },
+        {
+          "title": "Two-Sample t-Test for Equal Means",
+          "organization": "NIST/SEMATECH e-Handbook of Statistical Methods, National Institute of Standards and Technology",
+          "url": "https://www.itl.nist.gov/div898/handbook/eda/section3/eda353.htm",
+          "whyReputable": "This federal statistical reference distinguishes equal-variance and unequal-variance two-sample t statistics and directly supports selecting a procedure based on the model rather than automatically abandoning parametric inference."
+        },
+        {
+          "title": "Why psychologists should by default use Welch's t-test instead of Student's t-test",
+          "organization": "International Review of Social Psychology",
+          "url": "https://doi.org/10.5334/irsp.82",
+          "whyReputable": "This peer-reviewed methodological article evaluates variance and sample-size conditions and supports Welch inference as a principled alternative to the pooled Student test rather than a rote nonparametric switch."
+        }
+      ],
+      "reviewNote": "Replaced the NIHR checklist and automatic nonparametric substitutions with design-first, residual-based, estimand-aware model checking and multiple defensible remedies.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-review"
+    },
+    {
+      "legacyId": "memory-aid-8a12ab83499601e5",
+      "title": "Effect Size Interpretation",
+      "domainId": 7,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Estimate -> Uncertainty -> Context -> Consequence.** Cohen's familiar conventions—d around .20/.50/.80 and r around .10/.30/.50—are historical rough reference points, not universal qualitative labels or conclusions about practical importance. A standardized mean difference depends on the comparison and standardizer; r gives direction and strength of a linear association but does not establish causation; and eta-squared, partial eta-squared, and generalized eta-squared answer different variance questions and should not be mixed. Squaring r is the proportion of variance accounted for only in the relevant simple linear setting, not a universal measure of importance. Interpret an effect against the raw outcome scale, measurement reliability, baseline risk, costs and benefits, duration, comparator, prior evidence in the field, study design, and the smallest effect that would matter. A small effect can be consequential when repeated or applied across a population, and a large standardized effect can be trivial, biased, or imprecise. Report the estimate with a confidence interval or other uncertainty information, specify the effect-size definition, and compare with domain-relevant effects. Statistical significance, effect magnitude, precision, and practical or clinical importance are separate judgments.",
+      "references": [
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC3840331/",
+        "https://doi.org/10.1177/2515245919847202"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Calculating and reporting effect sizes to facilitate cumulative science: a practical primer for t-tests and ANOVAs",
+          "organization": "Frontiers in Psychology; PubMed Central, U.S. National Library of Medicine",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3840331/",
+          "whyReputable": "This peer-reviewed open methodological primer distinguishes effect-size definitions and recommends interpreting estimates against related literature and practical consequences instead of rigid Cohen benchmarks."
+        },
+        {
+          "title": "Evaluating Effect Size in Psychological Research: Sense and Nonsense",
+          "organization": "Advances in Methods and Practices in Psychological Science, Association for Psychological Science",
+          "url": "https://doi.org/10.1177/2515245919847202",
+          "whyReputable": "This peer-reviewed methods article directly examines arbitrary benchmark labels, misleading use of squared correlations, cumulative consequences, domain context, and more informative approaches to effect-size interpretation."
+        }
+      ],
+      "reviewNote": "Preserved Cohen conventions as historical cues while removing qualitative certainty, separating effect-size families, and requiring uncertainty, domain context, and practical consequences.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-review"
+    },
+    {
+      "legacyId": "memory-aid-77466b97050b1532",
+      "title": "Record Keeping & Documentation",
+      "domainId": 8,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**SOAPIER can organize a note; it is not an APA-mandated universal format.** **S**ubjective report, **O**bjective observations or data, **A**ssessment, **P**lan, **I**ntervention, **E**valuation, and **R**evision can help a clinician connect services to clinical reasoning, but required content depends on setting, service, law, payer, employer, and professional standards. Document enough to support continuity, consent, assessment, interventions, response, risk and safety actions, consultation or coordination, and changes in plan as applicable, while protecting privacy and avoiding unsupported labels. The often-memorized \"7 years after last service, or 3 years after a minor reaches majority\" came from APA's 2007 Record Keeping Guidelines, was expressly subordinate to superseding requirements, and was archived by APA in 2019; it is not a current universal retention law. Check current jurisdiction, board, contract, payer, institutional policy, litigation hold, and federal requirements. Likewise, \"the provider owns the record but the client may access it\" is too broad. Under HIPAA, individuals generally may access protected health information in a covered entity's designated record set, including ordinary SOAP or clinical notes, subject to defined limits; separately maintained psychotherapy notes are treated differently. Access, amendment, custody, and ownership rules can differ, so verify the governing authority rather than using the mnemonic as legal advice.",
+      "references": [
+        "https://www.apa.org/practice/guidelines/record-keeping",
+        "https://www.hhs.gov/hipaa/for-professionals/faq/2042/what-personal-health-information-do-individuals/index.html"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Record Keeping Guidelines",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/practice/guidelines/record-keeping",
+          "whyReputable": "APA's official archived page supplies the actual source and qualifications for the commonly taught retention periods, states that superseding requirements control, and records the guideline's 2019 archival status."
+        },
+        {
+          "title": "What personal health information do individuals have a right under HIPAA to access?",
+          "organization": "Office for Civil Rights, U.S. Department of Health and Human Services",
+          "url": "https://www.hhs.gov/hipaa/for-professionals/faq/2042/what-personal-health-information-do-individuals/index.html",
+          "whyReputable": "This current federal HIPAA guidance defines access to designated record sets, expressly includes ordinary SOAP or clinical notes, and distinguishes separately maintained psychotherapy notes and other limited exceptions."
+        }
+      ],
+      "reviewNote": "Kept SOAPIER as an optional organization cue, identified the archived and conditional origin of the retention rule, and replaced ownership/access absolutes with current HIPAA and jurisdictional boundaries.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-review"
+    },
+    {
+      "legacyId": "memory-aid-3172661f20208f78",
+      "title": "Privilege & Exceptions",
+      "domainId": 8,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**JAFFEE is a federal privilege anchor, not a universal exception list.** In **Jaffee v. Redmond**, the U.S. Supreme Court recognized under federal evidence law a privilege protecting confidential communications made in diagnosis or treatment with licensed psychiatrists, psychologists, and social workers; the Court rejected case-by-case balancing of need against confidentiality. Privilege is an evidentiary protection in legal proceedings, confidentiality is a broader ethical and legal duty governing information, and HIPAA is a federal privacy rule—related concepts, not synonyms. Who holds or may waive privilege, which professionals and communications qualify, and what exceptions apply depend on the forum, jurisdiction, claim, role, and governing statute or case law. Jaffee did not create a nationwide checklist saying that custody, court-ordered evaluation, malpractice, mental-condition claims, or danger automatically defeats privilege, and Tarasoff duties do not automatically \"override privilege\" everywhere. A subpoena is also not the same as client authorization or a judge's order. When a demand arrives, preserve the material, avoid voluntary disclosure, clarify the legal demand and client position, assert applicable protections, seek qualified legal consultation when needed, and disclose only when authorized or required and only to the permitted extent. In forensic or mandated roles, explain foreseeable limits at the outset and verify current local law.",
+      "references": [
+        "https://www.supremecourt.gov/opinions/boundvolumes/518bv.pdf",
+        "https://www.apa.org/ethics/code"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Jaffee v. Redmond, 518 U.S. 1 (1996), Opinion of the Court",
+          "organization": "Supreme Court of the United States",
+          "url": "https://www.supremecourt.gov/opinions/boundvolumes/518bv.pdf",
+          "whyReputable": "The official bound United States Reports volume is the primary source for the Supreme Court's recognition and stated scope of the federal psychotherapist-patient privilege and rejection of ad hoc balancing."
+        },
+        {
+          "title": "Ethical Principles of Psychologists and Code of Conduct",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/ethics/code",
+          "whyReputable": "APA's official ethics code is authoritative for psychologists' ethical confidentiality duties, permitted disclosures, informed-consent limits, records, and role clarification, while remaining distinct from jurisdiction-specific privilege law."
+        }
+      ],
+      "reviewNote": "Reframed Jaffee accurately, separated privilege from confidentiality and HIPAA, removed a false universal exception list, and added a cautious jurisdiction-aware response to subpoenas and court demands.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-review"
+    }
+  ]
+}

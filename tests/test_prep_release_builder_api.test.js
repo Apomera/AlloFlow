@@ -23,8 +23,28 @@ describe('Test Prep Hub release-builder API parity', () => {
       'exportProgress: testPrepExportProgress',
       'importProgress: testPrepImportProgress',
       'normalizeReviewItems: normalizeTestPrepReviewItems',
+      'choicesSpeechText: testPrepChoicesSpeechText',
+      'handsFreeHelpText: testPrepHandsFreeHelpText',
+      'handsFreeStatusText: testPrepHandsFreeStatusText',
+      'preAnswerClarificationPolicy: testPrepPreAnswerClarificationPolicy',
+      'filterPreAnswerClarificationResponse: testPrepFilterPreAnswerClarificationResponse',
     ];
 
     for (const entry of requiredExports) expect(builder, entry).toContain(entry);
+  });
+
+  it('keeps hands-free helper exports in the legacy builder as well as the release builder', () => {
+    const legacyBuilder = fs.readFileSync(resolve(root, '_build_test_prep_hub_module.js'), 'utf8');
+    for (const entry of [
+      'questionSpeechText: testPrepQuestionSpeechText',
+      'feedbackSpeechText: testPrepFeedbackSpeechText',
+      'choicesSpeechText: testPrepChoicesSpeechText',
+      'handsFreeHelpText: testPrepHandsFreeHelpText',
+      'handsFreeStatusText: testPrepHandsFreeStatusText',
+      'parseHandsFreeCommand: testPrepParseHandsFreeCommand',
+      'preAnswerClarificationPolicy: testPrepPreAnswerClarificationPolicy',
+      'filterPreAnswerClarificationResponse: testPrepFilterPreAnswerClarificationResponse',
+      'buildClarificationPrompt: testPrepBuildClarificationPrompt',
+    ]) expect(legacyBuilder, entry).toContain(entry);
   });
 });

@@ -24,6 +24,21 @@ const context = vm.createContext({
 windowObject.window = windowObject;
 windowObject.document = documentStub;
 
+function writeFileWithRetry(filePath, contents) {
+  let lastError;
+  for (let attempt = 0; attempt < 40; attempt += 1) {
+    try {
+      fs.writeFileSync(filePath, contents, 'utf8');
+      return;
+    } catch (error) {
+      lastError = error;
+      if (!['EBUSY', 'EPERM', 'EACCES', 'UNKNOWN'].includes(error.code)) throw error;
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 100);
+    }
+  }
+  throw lastError;
+}
+
 function run(relativePath) {
   const target = path.join(legacyRoot, relativePath);
   if (!fs.existsSync(target)) throw new Error('Missing learning-library asset: ' + relativePath);
@@ -81,7 +96,40 @@ const reviewedSourceCorrections = {
 };
 const flashcardWavePattern = /^eppp_flashcard_review_wave_\d+\.json$/i;
 const memoryAidWavePattern = /^eppp_memory_aid_review_wave_\d+\.json$/i;
+const memoryAidCorrectionWavePattern = /^eppp_memory_aid_correction_wave_\d+\.json$/i;
 const knowledgeCheckWavePattern = /^eppp_knowledge_check_review_wave_\d+\.json$/i;
+function orderedMemoryAidWaveFiles(directory) {
+  const files = fs.readdirSync(directory)
+    .filter((entry) => memoryAidWavePattern.test(entry))
+    .map((filename) => {
+      const match = filename.match(/_(\d+)\.json$/i);
+      return { filename, waveNumber: Number(match && match[1]) };
+    })
+    .sort((left, right) => left.waveNumber - right.waveNumber || left.filename.localeCompare(right.filename));
+  for (let index = 0; index < files.length; index += 1) {
+    const expectedWaveNumber = index + 1;
+    if (files[index].waveNumber !== expectedWaveNumber) {
+      throw new Error(`Memory-aid review waves must be contiguous from Wave 01; expected Wave ${String(expectedWaveNumber).padStart(2, '0')} before ${files[index].filename}.`);
+    }
+  }
+  return files.map((entry) => entry.filename);
+}
+function orderedMemoryAidCorrectionWaveFiles(directory) {
+  const files = fs.readdirSync(directory)
+    .filter((entry) => memoryAidCorrectionWavePattern.test(entry))
+    .map((filename) => {
+      const match = filename.match(/_(\d+)\.json$/i);
+      return { filename, waveNumber: Number(match && match[1]) };
+    })
+    .sort((left, right) => left.waveNumber - right.waveNumber || left.filename.localeCompare(right.filename));
+  for (let index = 0; index < files.length; index += 1) {
+    const expectedWaveNumber = index + 1;
+    if (files[index].waveNumber !== expectedWaveNumber) {
+      throw new Error(`Memory-aid correction waves must be contiguous from Wave 01; expected Wave ${String(expectedWaveNumber).padStart(2, '0')} before ${files[index].filename}.`);
+    }
+  }
+  return files.map((entry) => entry.filename);
+}
 const flashcardWaveRecords = new Map();
 for (const filename of fs.readdirSync(path.join(root, 'test_prep')).filter((entry) => flashcardWavePattern.test(entry)).sort()) {
   const wave = JSON.parse(fs.readFileSync(path.join(root, 'test_prep', filename), 'utf8'));
@@ -93,7 +141,7 @@ for (const filename of fs.readdirSync(path.join(root, 'test_prep')).filter((entr
   }
 }
 const memoryAidWaveRecords = new Map();
-for (const filename of fs.readdirSync(path.join(root, 'test_prep')).filter((entry) => memoryAidWavePattern.test(entry)).sort()) {
+for (const filename of orderedMemoryAidWaveFiles(path.join(root, 'test_prep'))) {
   const wave = JSON.parse(fs.readFileSync(path.join(root, 'test_prep', filename), 'utf8'));
   for (const item of (Array.isArray(wave.items) ? wave.items : [])) {
     const legacyId = String(item && item.legacyId || '');
@@ -101,6 +149,50 @@ for (const filename of fs.readdirSync(path.join(root, 'test_prep')).filter((entr
     if (!legacyId || !title) throw new Error(`Memory-aid review wave ${filename} has an item without a legacyId or title.`);
     if (memoryAidWaveRecords.has(legacyId)) throw new Error(`Memory aid ${legacyId} appears in more than one review wave.`);
     memoryAidWaveRecords.set(legacyId, { ...item, reviewArtifact: filename });
+  }
+}
+const knownMemoryAidById = new Map(memoryAids.map((aid) => [
+  stableId('memory-aid', [aid.domainId, aid.title, aid.type, aid.content]),
+  aid,
+]));
+const memoryAidCorrectionRecords = new Map();
+for (const filename of orderedMemoryAidCorrectionWaveFiles(path.join(root, 'test_prep'))) {
+  const wave = JSON.parse(fs.readFileSync(path.join(root, 'test_prep', filename), 'utf8'));
+  for (const item of (Array.isArray(wave.items) ? wave.items : [])) {
+    const legacyId = String(item && item.legacyId || '');
+    const expectedTitle = cleanText(item && item.expectedTitle);
+    const supersedesArtifact = cleanText(item && item.supersedesArtifact);
+    const aid = knownMemoryAidById.get(legacyId);
+    if (!legacyId || !expectedTitle || !supersedesArtifact) {
+      throw new Error(`Memory-aid correction wave ${filename} has an item without a legacyId, expectedTitle, or supersedesArtifact.`);
+    }
+    if (!aid) throw new Error(`Memory-aid correction wave ${filename} targets unknown legacyId ${legacyId}.`);
+    if (cleanText(aid.title) !== expectedTitle) {
+      throw new Error(`Memory-aid correction ${legacyId} expected title "${expectedTitle}" but found "${cleanText(aid.title)}".`);
+    }
+    if (memoryAidCorrectionRecords.has(legacyId)) {
+      throw new Error(`Memory aid ${legacyId} appears in more than one correction wave.`);
+    }
+    const numberedReview = memoryAidWaveRecords.get(legacyId);
+    const manualReview = reviewOverrides.memoryAids && reviewOverrides.memoryAids[String(aid.title || '')] || {};
+    const actualSupersededArtifact = numberedReview
+      ? numberedReview.reviewArtifact
+      : (manualReview.reviewStatus === 'source-reviewed-editorial-pass' ? 'eppp_learning_review_overrides.json' : '');
+    if (!actualSupersededArtifact || actualSupersededArtifact !== supersedesArtifact) {
+      throw new Error(`Memory-aid correction ${legacyId} expected to supersede ${supersedesArtifact} but the reviewed base is ${actualSupersededArtifact || 'missing'}.`);
+    }
+    if (item.reviewStatus !== 'source-reviewed-editorial-pass') {
+      throw new Error(`Memory-aid correction ${legacyId} must preserve source-reviewed-editorial-pass status.`);
+    }
+    if (item.independentExpertStatus !== 'not-started' || item.productionStatus !== 'not-production-validated') {
+      throw new Error(`Memory-aid correction ${legacyId} must preserve explicit expert-pending and production-pending gates.`);
+    }
+    const references = Array.isArray(item.references) ? item.references : [];
+    const sourceUrls = Array.isArray(item.sourceDetails) ? item.sourceDetails.map((source) => source && source.url) : [];
+    if (!references.length || JSON.stringify(references) !== JSON.stringify(sourceUrls)) {
+      throw new Error(`Memory-aid correction ${legacyId} must have exactly aligned references and sourceDetails URLs.`);
+    }
+    memoryAidCorrectionRecords.set(legacyId, { ...item, reviewArtifact: filename });
   }
 }
 const knowledgeCheckWaveRecords = new Map();
@@ -135,6 +227,13 @@ const knowledgeCheckRecords = [];
 const discoveredKnowledgeCheckIds = new Set();
 const chapterRecords = chapters.map((chapter, chapterIndex) => {
   const override = reviewOverrides.chapters && reviewOverrides.chapters[String(chapter.id || '')] || {};
+  const chapterReviewStatus = override.reviewStatus || 'review-required';
+  const chapterIsSourceReviewed = chapterReviewStatus === 'source-reviewed-editorial-pass';
+  const chapterReviewReferences = Array.isArray(override.references) ? override.references.map(cleanText).filter(Boolean) : [];
+  const chapterReviewChecks = Object.fromEntries(reviewChecks.map((check) => [check, override.checks && override.checks[check] || (check === 'accessibility' ? 'shared-renderer-pass-content-review-pending' : 'pending')]));
+  if (chapterIsSourceReviewed && (!chapterReviewReferences.length || reviewChecks.some((check) => !override.checks || !override.checks[check]))) {
+    throw new Error('Source-reviewed chapter ' + (chapter.id || chapterIndex + 1) + ' lacks complete chapter-level provenance.');
+  }
   const releasedKnowledgeChecks = [];
   const sections = (Array.isArray(chapter.sections) ? chapter.sections : []).map((section, sectionIndex) => {
     const chapterId = String(chapter.id || 'chapter-' + (chapterIndex + 1));
@@ -211,7 +310,13 @@ const chapterRecords = chapters.map((chapter, chapterIndex) => {
       knowledgeCheckId,
       knowledgeCheckReviewStatus,
       hasExpandableCase: !!(section && section.expandableCase),
-      reviewStatus: 'review-required',
+      reviewStatus: chapterReviewStatus,
+      reviewScope: chapterIsSourceReviewed ? 'containing-chapter' : 'section-review-pending',
+      reviewArtifact: chapterIsSourceReviewed ? 'eppp_learning_review_overrides.json' : '',
+      reviewEvidenceChapterId: chapterIsSourceReviewed ? chapterId : null,
+      reviewReferences: [...chapterReviewReferences],
+      reviewNote: cleanText(override.reviewNote),
+      checks: { ...chapterReviewChecks },
     };
   });
   return {
@@ -227,10 +332,10 @@ const chapterRecords = chapters.map((chapter, chapterIndex) => {
     referenceCount: Array.isArray(chapter.references) ? chapter.references.length : 0,
     hasAiReflectiveCoda: !!chapter.aiCoda,
     legacySource: chapterSourceById.get(String(chapter.id || '')) || '',
-    reviewStatus: override.reviewStatus || 'review-required',
+    reviewStatus: chapterReviewStatus,
     reviewNote: cleanText(override.reviewNote),
-    reviewReferences: Array.isArray(override.references) ? override.references.map(cleanText).filter(Boolean) : [],
-    checks: Object.fromEntries(reviewChecks.map((check) => [check, override.checks && override.checks[check] || (check === 'accessibility' ? 'shared-renderer-pass-content-review-pending' : 'pending')])),
+    reviewReferences: chapterReviewReferences,
+    checks: chapterReviewChecks,
     knowledgeChecks: releasedKnowledgeChecks,
     sections,
   };
@@ -308,13 +413,16 @@ for (const domain of domains) {
 const aidRecords = memoryAids.map((aid) => {
   const legacyId = stableId('memory-aid', [aid.domainId, aid.title, aid.type, aid.content]);
   const waveOverride = memoryAidWaveRecords.get(legacyId) || {};
+  const correctionOverride = memoryAidCorrectionRecords.get(legacyId) || {};
   const manualOverride = reviewOverrides.memoryAids && reviewOverrides.memoryAids[String(aid.title || '')] || {};
-  const override = { ...waveOverride, ...manualOverride };
+  // Numbered review waves are later, claim-level adjudications and therefore
+  // supersede older title-keyed manual placeholders such as source-pending.
+  const override = { ...manualOverride, ...waveOverride, ...correctionOverride };
   return ({
   id: legacyId,
   domainId: Number(aid.domainId),
   domain: domainByNumber.get(Number(aid.domainId)) || 'Unassigned',
-  title: cleanText(aid.title) || 'Untitled memory aid',
+  title: cleanText(override.title || aid.title) || 'Untitled memory aid',
   type: cleanText(aid.type) || 'unspecified',
   content: cleanText(override.content || aid.content),
   tags: (Array.isArray(aid.tags) ? aid.tags : []).map(cleanText).filter(Boolean),
@@ -327,7 +435,11 @@ const aidRecords = memoryAids.map((aid) => {
     whyReputable: cleanText(source && source.whyReputable),
   })).filter((source) => source.title && source.url && source.whyReputable) : [],
   reviewNote: String(override.reviewNote || ''),
-  reviewArtifact: cleanText(waveOverride.reviewArtifact),
+  reviewArtifact: cleanText(correctionOverride.reviewArtifact || waveOverride.reviewArtifact || (manualOverride.reviewStatus === 'source-reviewed-editorial-pass' ? 'eppp_learning_review_overrides.json' : '')),
+  correctionArtifact: cleanText(correctionOverride.reviewArtifact),
+  supersedesArtifact: cleanText(correctionOverride.supersedesArtifact),
+  independentExpertStatus: cleanText(correctionOverride.independentExpertStatus) || (override.reviewStatus === 'source-reviewed-editorial-pass' ? 'not-started' : ''),
+  productionStatus: cleanText(correctionOverride.productionStatus) || (override.reviewStatus === 'source-reviewed-editorial-pass' ? 'not-production-validated' : ''),
   checks: {
     accuracyAndCurrency: override.reviewStatus ? 'editorial-pass' : 'pending',
     oversimplification: override.reviewStatus ? 'editorial-pass' : 'pending',
@@ -336,6 +448,27 @@ const aidRecords = memoryAids.map((aid) => {
   },
   });
 });
+const unmatchedMemoryAidCorrections = [...memoryAidCorrectionRecords.keys()].filter((legacyId) => !aidRecords.some((item) => item.id === legacyId));
+if (unmatchedMemoryAidCorrections.length) {
+  throw new Error(`Memory-aid corrections were not projected: ${unmatchedMemoryAidCorrections.join(', ')}`);
+}
+const correctedBlankArtifacts = aidRecords.filter((item) => memoryAidCorrectionRecords.has(item.id) && !item.reviewArtifact);
+if (correctedBlankArtifacts.length) {
+  throw new Error(`Corrected memory aids lack reviewArtifact: ${correctedBlankArtifacts.map((item) => item.id).join(', ')}`);
+}
+const releasedMemoryAidMetadataDefects = aidRecords.filter((item) => {
+  if (item.reviewStatus !== 'source-reviewed-editorial-pass') return false;
+  const references = Array.isArray(item.references) ? item.references : [];
+  const sourceUrls = Array.isArray(item.sourceDetails) ? item.sourceDetails.map((source) => source && source.url) : [];
+  return !item.reviewArtifact
+    || !references.length
+    || JSON.stringify(references) !== JSON.stringify(sourceUrls)
+    || item.independentExpertStatus !== 'not-started'
+    || item.productionStatus !== 'not-production-validated';
+});
+if (releasedMemoryAidMetadataDefects.length) {
+  throw new Error(`Released memory aids lack complete artifact, source, or pending-gate metadata: ${releasedMemoryAidMetadataDefects.map((item) => item.id).join(', ')}`);
+}
 
 const diagramRecords = diagramCatalog.templates;
 const diagramPlacementRecords = diagramCatalog.placements;
@@ -346,8 +479,9 @@ const catalog = {
   libraryId: 'eppp-learning-library',
   reviewStandard: {
     checks: reviewChecks,
-    meaning: 'Content remains review-required until claim-level source, accuracy, instructional, accessibility, bias/context, and qualified expert gates are complete.',
+    meaning: 'Review status records completed source and editorial gates separately from the independent expert-review and production-validation gates, which remain explicitly pending.',
     accessibilityBaseline: 'The shared renderer provides keyboard controls, persistent section progress, diagram text alternatives, learner motion controls, and reduced-motion support.',
+    sectionProvenance: 'A section marked source-reviewed-editorial-pass inherits the containing chapter review and names that parent scope; knowledge-check and diagram reviews remain independent.',
     diagramCatalog: 'Shared templates and concrete learner-visible placements are cataloged separately. Inline diagrams exist only as placements; unused templates remain visible in the template registry but are not counted as placements.',
   },
   summary: {
@@ -360,6 +494,8 @@ const catalog = {
     memoryAids: aidRecords.length,
     qaPassedChapters: chapterRecords.filter((chapter) => chapter.reviewStatus === 'qa-passed').length,
     sourceReviewedChapters: chapterRecords.filter((chapter) => chapter.reviewStatus === 'source-reviewed-editorial-pass').length,
+    sourceReviewedSections: chapterRecords.flatMap((chapter) => chapter.sections).filter((section) => section.reviewStatus === 'source-reviewed-editorial-pass').length,
+    reviewRequiredSections: chapterRecords.flatMap((chapter) => chapter.sections).filter((section) => section.reviewStatus === 'review-required').length,
     qaPassedFlashcards: flashcards.filter((card) => card.reviewStatus === 'qa-passed').length,
     sourceReviewedFlashcards: flashcards.filter((card) => card.reviewStatus === 'source-reviewed-editorial-pass').length,
     retainedReviewedFlashcards: flashcards.filter((card) => card.reviewStatus === 'source-reviewed-editorial-pass' && card.contentDisposition !== 'retire-redundant').length,
@@ -382,27 +518,45 @@ const catalog = {
   memoryAids: aidRecords,
 };
 
+const sourceEditorialQueuesComplete =
+  catalog.summary.reviewRequiredSections === 0
+  && catalog.summary.sourceReviewedDiagramPlacements === catalog.summary.diagramPlacements
+  && catalog.summary.sourceReviewedFlashcards === catalog.summary.flashcards
+  && catalog.summary.sourceReviewedMemoryAids === catalog.summary.memoryAids
+  && catalog.summary.editorialReviewedSourcePendingMemoryAids === 0
+  && catalog.summary.reviewRequiredKnowledgeChecks === 0;
+
 const report = {
   schemaVersion: 1,
   generatedAt: catalog.generatedAt,
   libraryId: catalog.libraryId,
   standard: catalog.reviewStandard,
   summary: catalog.summary,
-  status: 'review-in-progress',
+  status: sourceEditorialQueuesComplete
+    ? 'first-pass-complete-expert-pending'
+    : 'review-in-progress',
   findings: [
     'Legacy content is preserved but is not automatically approved for native publication.',
+    `${catalog.summary.sourceReviewedSections} of ${catalog.summary.sections} section records inherit source/editorial review from their explicitly reviewed parent chapters; this does not claim independent section-level expert validation.`,
     `Shared renderer accessibility controls are implemented. ${catalog.summary.sourceReviewedDiagramPlacements} of ${catalog.summary.diagramPlacements} learner-visible placements have source-review records; ${catalog.summary.diagramPlacements - catalog.summary.sourceReviewedDiagramPlacements} placements still need concept and label review.`,
     `${catalog.summary.diagramPlacements} learner-visible diagram placements are cataloged: ${catalog.summary.sharedTemplateDiagramPlacements} use shared templates and ${catalog.summary.inlineDiagramPlacements} are inline chapter diagrams. ${catalog.summary.unusedDiagramTemplates} shared templates are currently unused.`,
     `${catalog.summary.sourceReviewedFlashcards} of ${catalog.summary.flashcards} flashcards have source-review records; ${catalog.summary.flashcards - catalog.summary.sourceReviewedFlashcards} remain in first-pass review, and independent qualified expert validation is still pending.`,
     `${catalog.summary.retiredRedundantFlashcards} source-reviewed duplicate flashcards are explicitly retired from future learner release rather than counted as distinct study targets.`,
+    `${catalog.summary.sourceReviewedMemoryAids} of ${catalog.summary.memoryAids} memory aids have source-review records and are released; ${catalog.summary.memoryAids - catalog.summary.sourceReviewedMemoryAids} remain in the editorial/source-review queue, and independent qualified expert validation is still pending.`,
     `${catalog.summary.sourceReviewedKnowledgeChecks} of ${catalog.summary.knowledgeChecks} knowledge checks have source-review records and are released to their chapter payloads; ${catalog.summary.reviewRequiredKnowledgeChecks} remain gated for review.`,
   ],
 };
 
-for (const outputRoot of [path.join(root, 'test_prep'), deployRoot]) {
-  fs.mkdirSync(outputRoot, { recursive: true });
-  fs.writeFileSync(path.join(outputRoot, 'eppp_learning_library.json'), JSON.stringify(catalog, null, 2) + '\n');
-  fs.writeFileSync(path.join(outputRoot, 'eppp_learning_library_qa.json'), JSON.stringify(report, null, 2) + '\n');
+const catalogJson = JSON.stringify(catalog, null, 2) + '\n';
+const reportJson = JSON.stringify(report, null, 2) + '\n';
+if (process.env.EPPP_LIBRARY_VALIDATE_ONLY === '1') {
+  console.log(`EPPP learning library validation-only: ${catalog.summary.sourceReviewedMemoryAids}/${catalog.summary.memoryAids} memory aids pass projection guards; no catalog files written.`);
+} else {
+  for (const outputRoot of [path.join(root, 'test_prep'), deployRoot]) {
+    fs.mkdirSync(outputRoot, { recursive: true });
+    writeFileWithRetry(path.join(outputRoot, 'eppp_learning_library.json'), catalogJson);
+    writeFileWithRetry(path.join(outputRoot, 'eppp_learning_library_qa.json'), reportJson);
+  }
 }
 
 console.log(`EPPP learning library: ${catalog.summary.chapters} chapters, ${catalog.summary.sections} sections, ${catalog.summary.diagrams} diagrams, ${catalog.summary.flashcards} flashcards, ${catalog.summary.memoryAids} memory aids cataloged.`);

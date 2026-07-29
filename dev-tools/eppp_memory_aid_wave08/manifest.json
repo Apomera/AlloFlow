@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "waveId": "eppp-memory-aid-review-wave-08",
+  "domains": {
+    "1": { "status": "complete", "expectedItems": 13, "module": "domain_01.json" },
+    "2": { "status": "complete", "expectedItems": 21, "module": "domain_02.json" },
+    "3": { "status": "complete", "expectedItems": 15, "module": "domain_03.json" },
+    "4": { "status": "complete", "expectedItems": 16, "module": "domain_04.json" },
+    "5": { "status": "complete", "expectedItems": 25, "module": "domain_05.json" },
+    "6": { "status": "complete", "expectedItems": 27, "module": "domain_06.json" },
+    "7": { "status": "complete", "expectedItems": 19, "module": "domain_07.json" },
+    "8": { "status": "complete", "expectedItems": 13, "module": "domain_08.json" }
+  }
+}

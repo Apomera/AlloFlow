@@ -1,0 +1,212 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "eppp-native-quality-wave-21",
+  "reviewedAt": "2026-07-28",
+  "reportType": "source-checked-native-item-repair",
+  "scope": "Deep-rewrite the next 10 selected items in the adjudication-aware distractor action docket while preserving answer positions and full option-level teaching feedback.",
+  "challengeCriteria": [
+    "replace definition completion with application or analysis where difficulty warrants",
+    "use adjacent, instructionally plausible distractors without stacked absolute cues",
+    "avoid keyed lexical echoes that allow answer selection without construct knowledge",
+    "separate intentionally related coverage by decision, context, or cognitive demand",
+    "verify the key and rationale against an item-specific authoritative or peer-reviewed source",
+    "provide four substantive, option-specific explanations and preserve answer positions"
+  ],
+  "summary": {
+    "totalItems": 1500,
+    "rewrittenItems": 10,
+    "domainsCovered": 7,
+    "appliedOrAnalysisItems": 10,
+    "keyPositionsPreserved": 10,
+    "optionSpecificExplanations": 40,
+    "selectedItemsWithWarningsAfter": 0,
+    "selectedWarningIdsAfter": [],
+    "warningCountsBefore": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 60,
+      "asymmetricExtremeDistractorCandidates": 120,
+      "advancedDirectRecallCandidates": 7,
+      "semanticConceptDuplicatePairs": 91,
+      "semanticConceptDuplicateClusters": 50,
+      "editorialAnchorsWithActiveWarnings": 2,
+      "editorialAnchorsWithNoCurrentWarning": 8,
+      "priorityDocketItems": 20
+    },
+    "warningCountsAfter": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 57,
+      "asymmetricExtremeDistractorCandidates": 120,
+      "advancedDirectRecallCandidates": 7,
+      "semanticConceptDuplicatePairs": 85,
+      "semanticConceptDuplicateClusters": 49,
+      "editorialAnchorsWithActiveWarnings": 2,
+      "editorialAnchorsWithNoCurrentWarning": 8,
+      "priorityDocketItems": 20
+    },
+    "warningCountContext": {
+      "before": "Post-wave-20 isolated diagnostic snapshot used to select five live lexical-leakage candidates and one representative from each of five live semantic duplicate clusters.",
+      "after": "Wave 21 is authored and tested through an isolated replay; canonical and deployed banks, catalogs, diagnostics, and audits are intentionally not rebuilt in this change.",
+      "interpretation": "The tranche protects all frozen campaign ceilings while converting ten more items to source-checked application or analysis with balanced, protected answer positions."
+    },
+    "status": "pass"
+  },
+  "items": [
+    {
+      "id": "eppp-b007-cognitive-1",
+      "domainId": "cognitive-affective",
+      "difficulty": "foundation",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "cognitive-affective-apply-peak-end-weighting-to-retrospective-evaluation",
+      "sourceCheck": "The original peer-reviewed experiments support disproportionate weighting of peak and concluding affect plus duration neglect in retrospective evaluation; the revision states this as a conditional prediction rather than a deterministic law.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b007-intervention-2",
+      "domainId": "intervention",
+      "difficulty": "foundation",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "intervention-interpret-an-aggregate-psychotherapy-dose-effect-curve",
+      "sourceCheck": "The original Howard and colleagues study models the cumulative percentage of patients improved across session counts, supporting an aggregate exposure-benefit interpretation and the explicit warning against individual guarantees.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b010-biological-1",
+      "domainId": "biological",
+      "difficulty": "foundation",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "biological-discriminate-sensitization-from-habituation-and-conditioning",
+      "sourceCheck": "The NCBI neuroscience source distinguishes enhanced responsiveness after strong stimulation from habituation and associative conditioning, matching the vignette while avoiding an unsupported claim that a receptor was permanently altered.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b019-assessment-1",
+      "domainId": "assessment",
+      "difficulty": "foundation",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "assessment-diagnose-construct-underrepresentation-despite-high-reliability",
+      "sourceCheck": "The joint professional Standards frame validity around intended score interpretations and identify inadequate sampling of important construct facets as construct underrepresentation; reliability cannot compensate for missing content.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b027-intervention-1",
+      "domainId": "intervention",
+      "difficulty": "foundation",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "intervention-repair-a-task-specific-working-alliance-strain",
+      "sourceCheck": "Bordin's foundational model separates shared goals, agreed tasks, and bond. The revision applies that distinction to a task-specific rupture and avoids claiming that either therapist authority or rapport alone resolves it.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-lifespan-022",
+      "domainId": "lifespan",
+      "difficulty": "foundation",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "lifespan-classify-assimilation-in-an-applied-schema-example",
+      "sourceCheck": "The reviewed developmental source explicitly contrasts assimilation through an existing schema with accommodation through schema change. The vignette operationalizes that contrast instead of asking for a definition completion.",
+      "diagnosticsBefore": [
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-intervention-045",
+      "domainId": "intervention",
+      "difficulty": "intermediate",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "intervention-analyze-the-relational-and-directional-elements-of-motivational-interviewing",
+      "sourceCheck": "The SAMHSA practice chapter describes motivational interviewing as both person centered and intentionally directional through attention to change language, supporting the combined stance rather than a one-school label.",
+      "diagnosticsBefore": [
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b022-assessment-4",
+      "domainId": "assessment",
+      "difficulty": "foundation",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "assessment-apply-wisc-v-age-eligibility-with-contextual-selection-limits",
+      "sourceCheck": "The official publisher specification confirms 6:0 through 16:11. The revision adds the essential professional boundary that chronological eligibility does not replace contextual test-selection and interpretation judgment.",
+      "diagnosticsBefore": [
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-professional-023",
+      "domainId": "professional",
+      "difficulty": "intermediate",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "professional-apply-the-standard-of-care-breach-comparison",
+      "sourceCheck": "The Cornell legal reference supports the reasonably prudent, similarly situated professional comparison and separates breach from causation and injury. The revision also avoids presenting a poor outcome as proof of negligence.",
+      "diagnosticsBefore": [
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-social-cultural-043",
+      "domainId": "social-cultural",
+      "difficulty": "intermediate",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "social-cultural-apply-realistic-conflict-theory-to-changing-interdependence",
+      "sourceCheck": "The reviewed social-psychology source ties limited-resource competition to intergroup hostility and superordinate goals to cooperation. The applied sequence distinguishes that mechanism from exposure, personality, and conformity accounts.",
+      "diagnosticsBefore": [
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    }
+  ],
+  "limitations": [
+    "Editorial/source review is not psychometric calibration, item-response analysis, or independent licensed-psychologist validation."
+  ]
+}

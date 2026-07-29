@@ -1,0 +1,212 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "eppp-native-quality-wave-19",
+  "reviewedAt": "2026-07-28",
+  "reportType": "source-checked-native-item-repair",
+  "scope": "Deep-rewrite the next 10 selected items in the adjudication-aware distractor action docket while preserving answer positions and full option-level teaching feedback.",
+  "challengeCriteria": [
+    "replace definition completion with application or analysis where difficulty warrants",
+    "use adjacent, instructionally plausible distractors without stacked absolute cues",
+    "avoid keyed lexical echoes that allow answer selection without construct knowledge",
+    "separate intentionally related coverage by decision, context, or cognitive demand",
+    "verify the key and rationale against an item-specific authoritative or peer-reviewed source",
+    "provide four substantive, option-specific explanations and preserve answer positions"
+  ],
+  "summary": {
+    "totalItems": 1500,
+    "rewrittenItems": 10,
+    "domainsCovered": 3,
+    "appliedOrAnalysisItems": 10,
+    "keyPositionsPreserved": 10,
+    "optionSpecificExplanations": 40,
+    "selectedItemsWithWarningsAfter": 0,
+    "selectedWarningIdsAfter": [],
+    "warningCountsBefore": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 65,
+      "asymmetricExtremeDistractorCandidates": 120,
+      "advancedDirectRecallCandidates": 7,
+      "semanticConceptDuplicatePairs": 114,
+      "semanticConceptDuplicateClusters": 58,
+      "editorialAnchorsWithActiveWarnings": 2,
+      "editorialAnchorsWithNoCurrentWarning": 8,
+      "priorityDocketItems": 20
+    },
+    "warningCountsAfter": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 57,
+      "asymmetricExtremeDistractorCandidates": 120,
+      "advancedDirectRecallCandidates": 7,
+      "semanticConceptDuplicatePairs": 85,
+      "semanticConceptDuplicateClusters": 49,
+      "editorialAnchorsWithActiveWarnings": 2,
+      "editorialAnchorsWithNoCurrentWarning": 8,
+      "priorityDocketItems": 20
+    },
+    "warningCountContext": {
+      "before": "Isolated post-wave-18 diagnostic snapshot used to identify the highest-degree exact and near-duplicate concept clusters.",
+      "after": "Global diagnostics immediately after wave 19 and before the downstream distractor- and feedback-halving campaign replays.",
+      "interpretation": "The ten selected rewrites cover nineteen pre-wave duplicate edges across Wernicke, ERP, concurrent-validity, and T-score clusters; final global totals remain governed by the canonical post-campaign audit."
+    },
+    "status": "pass"
+  },
+  "items": [
+    {
+      "id": "eppp-v2-biological-003",
+      "domainId": "biological",
+      "difficulty": "intermediate",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "biological-prioritize-emergent-treatment-for-suspected-wernicke-encephalopathy",
+      "sourceCheck": "The NCBI chapter identifies Wernicke encephalopathy as a clinical emergency, states that negative or pending imaging should not delay treatment, and recommends prompt parenteral thiamine with safe sequencing around glucose.",
+      "diagnosticsBefore": [
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v3-biological-017",
+      "domainId": "biological",
+      "difficulty": "intermediate",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "biological-distinguish-korsakoff-amnesia-from-delirium-and-language-disorders",
+      "sourceCheck": "The NCBI chapter distinguishes acute Wernicke encephalopathy from Korsakoff syndrome and describes prominent anterograde and retrograde memory disturbance, preserved immediate memory, and spontaneous or provoked confabulation.",
+      "diagnosticsBefore": [
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-biological-005",
+      "domainId": "biological",
+      "difficulty": "intermediate",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "biological-recognize-nonalcohol-risk-pathways-to-wernicke-encephalopathy",
+      "sourceCheck": "The NCBI chapter explicitly lists bariatric surgery and prolonged vomiting among nonalcohol risk states, notes that the full classic triad is often absent, and advises a low threshold for prompt parenteral treatment.",
+      "diagnosticsBefore": [
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-intervention-072",
+      "domainId": "intervention",
+      "difficulty": "foundation",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "intervention-evaluate-exposure-learning-when-distress-remains-elevated",
+      "sourceCheck": "The peer-reviewed inhibitory-learning review cautions against defining exposure success by within-session habituation, while the NIMH description confirms that contact with triggers is paired with resisting the associated ritual.",
+      "diagnosticsBefore": [
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v3-intervention-070",
+      "domainId": "intervention",
+      "difficulty": "foundation",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "intervention-identify-reassurance-as-a-response-prevention-target",
+      "sourceCheck": "The official NIMH description defines the procedure as confronting obsession triggers while resisting the associated compulsive response. The revision applies that definition to reassurance as a functionally equivalent relief-seeking ritual.",
+      "diagnosticsBefore": [
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v3-intervention-027",
+      "domainId": "intervention",
+      "difficulty": "foundation",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "intervention-analyze-negative-reinforcement-in-a-compulsion-cycle",
+      "sourceCheck": "The NIMH resource describes planned exposure to obsession triggers together with resisting compulsive relief responses. The revised item applies that procedure to the negative-reinforcement cycle that maintains washing.",
+      "diagnosticsBefore": [
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v3-assessment-061",
+      "domainId": "assessment",
+      "difficulty": "foundation",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "assessment-limit-concurrent-criterion-evidence-to-the-supported-time-frame",
+      "sourceCheck": "The joint Standards require validity evidence to support the specific intended score interpretation and use. A contemporaneous external relation does not by itself support a temporally prospective claim about later relapse.",
+      "diagnosticsBefore": [
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v3-assessment-002",
+      "domainId": "assessment",
+      "difficulty": "intermediate",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "assessment-evaluate-shared-method-effects-in-external-validity-evidence",
+      "sourceCheck": "The joint Standards frame relations with external variables as validity evidence whose interpretation depends on the relevance and quality of those variables. The revision tests shared-method limits instead of repeating a timing definition.",
+      "diagnosticsBefore": [
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b007-assessment-1",
+      "domainId": "assessment",
+      "difficulty": "foundation",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "assessment-separate-standardized-location-from-construct-specific-meaning",
+      "sourceCheck": "The joint Standards emphasize that a score must be interpreted for its intended construct, reference group, precision, and use. The revision separates a common transformed location from an unsupported assumption of common clinical meaning.",
+      "diagnosticsBefore": [
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b012-assessment-1",
+      "domainId": "assessment",
+      "difficulty": "foundation",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "assessment-interpret-confidence-intervals-as-score-uncertainty",
+      "sourceCheck": "The joint Standards address measurement precision, errors of measurement, and appropriate reporting of uncertainty. The revision applies those principles to correcting an exact-true-score interpretation of an obtained standard score.",
+      "diagnosticsBefore": [
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    }
+  ],
+  "limitations": [
+    "Editorial/source review is not psychometric calibration, item-response analysis, or independent licensed-psychologist validation."
+  ]
+}

@@ -1,0 +1,212 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "eppp-native-quality-wave-18",
+  "reviewedAt": "2026-07-28",
+  "reportType": "source-checked-native-item-repair",
+  "scope": "Deep-rewrite the next 10 selected items in the adjudication-aware distractor action docket while preserving answer positions and full option-level teaching feedback.",
+  "challengeCriteria": [
+    "replace definition completion with application or analysis where difficulty warrants",
+    "use adjacent, instructionally plausible distractors without stacked absolute cues",
+    "avoid keyed lexical echoes that allow answer selection without construct knowledge",
+    "separate intentionally related coverage by decision, context, or cognitive demand",
+    "verify the key and rationale against an item-specific authoritative or peer-reviewed source",
+    "provide four substantive, option-specific explanations and preserve answer positions"
+  ],
+  "summary": {
+    "totalItems": 1500,
+    "rewrittenItems": 10,
+    "domainsCovered": 5,
+    "appliedOrAnalysisItems": 10,
+    "keyPositionsPreserved": 10,
+    "optionSpecificExplanations": 40,
+    "selectedItemsWithWarningsAfter": 0,
+    "selectedWarningIdsAfter": [],
+    "warningCountsBefore": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 65,
+      "asymmetricExtremeDistractorCandidates": 130,
+      "advancedDirectRecallCandidates": 7,
+      "semanticConceptDuplicatePairs": 114,
+      "semanticConceptDuplicateClusters": 58,
+      "editorialAnchorsWithActiveWarnings": 2,
+      "editorialAnchorsWithNoCurrentWarning": 8,
+      "priorityDocketItems": 20
+    },
+    "warningCountsAfter": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 57,
+      "asymmetricExtremeDistractorCandidates": 120,
+      "advancedDirectRecallCandidates": 7,
+      "semanticConceptDuplicatePairs": 85,
+      "semanticConceptDuplicateClusters": 49,
+      "editorialAnchorsWithActiveWarnings": 2,
+      "editorialAnchorsWithNoCurrentWarning": 8,
+      "priorityDocketItems": 20
+    },
+    "warningCountContext": {
+      "before": "Current canonical diagnostic snapshot used to select the highest-ranked ten action-docket items for wave 18.",
+      "after": "Global diagnostics immediately after wave 18 and before the downstream distractor- and feedback-halving campaign replays.",
+      "interpretation": "The selected tranche is expected to reduce the asymmetric extreme-distractor count by ten; final global totals remain governed by the canonical post-campaign audit."
+    },
+    "status": "pass"
+  },
+  "items": [
+    {
+      "id": "eppp-b009-biological-1",
+      "domainId": "biological",
+      "difficulty": "foundation",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "biological-apply-central-cholinergic-functions-to-attention-and-memory",
+      "sourceCheck": "The review describes converging evidence that central muscarinic and nicotinic acetylcholine systems contribute to attentional modulation and memory encoding. The revised item applies that evidence to a selective cognitive pattern and avoids implying that acetylcholine serves a single function.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b009-social-2",
+      "domainId": "social-cultural",
+      "difficulty": "foundation",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "social-analyze-message-and-source-memory-in-the-sleeper-effect",
+      "sourceCheck": "The meta-analysis defines the sleeper effect as a conditional delayed increase in persuasion after a message is paired with a discounting cue and identifies processing conditions that moderate it. The revised item therefore tests the temporal evidence rather than treating the effect as automatic.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b010-social-1",
+      "domainId": "social-cultural",
+      "difficulty": "foundation",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "social-interpret-affective-identifiability-in-charitable-decisions",
+      "sourceCheck": "The field experiments directly compare generosity toward identifiable and statistical victims and show that affective identifiability can increase giving. The revised item also incorporates the authors’ finding that deliberation may dampen identified-victim giving rather than increase statistical-victim giving.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b012-biological-1",
+      "domainId": "biological",
+      "difficulty": "foundation",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "biological-interpret-protracted-prefrontal-development-and-executive-change",
+      "sourceCheck": "The review synthesizes imaging evidence that prefrontal regions show prolonged structural and functional development alongside continued cognitive change. The revised inference stays at the network and developmental level and does not claim a universal age of maturity or a single causal mechanism.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b012-biological-2",
+      "domainId": "biological",
+      "difficulty": "foundation",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "biological-integrate-anterior-insula-interoception-and-subjective-feeling",
+      "sourceCheck": "The review proposes that anterior insular re-representation of interoceptive activity contributes to awareness and subjective feeling across diverse contexts. The revised item tests convergence of bodily detection and feeling changes while avoiding a claim that the insula acts in isolation.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b012-cognitive-1",
+      "domainId": "cognitive-affective",
+      "difficulty": "foundation",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "cognitive-interpret-encoding-comparisons-that-demonstrate-self-reference",
+      "sourceCheck": "The original experiments compared structural, phonemic, semantic, and self-referential adjective judgments and found the strongest incidental recall after self-reference. The revised item retains those comparison conditions so success requires discriminating personal encoding from semantic depth and familiarity.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b012-intervention-1",
+      "domainId": "intervention",
+      "difficulty": "foundation",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "intervention-infer-escape-function-and-select-function-matched-treatment",
+      "sourceCheck": "The NCBI overview describes functional analysis of antecedents and consequences before behavior modification, and the applied pattern identifies task removal as the candidate maintaining consequence. The item also requires a function-matched alternative response rather than stopping at label recall.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b014-intervention-1",
+      "domainId": "intervention",
+      "difficulty": "foundation",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "intervention-differentiate-aversive-counterconditioning-from-extinction-and-desensitization",
+      "sourceCheck": "OpenStax distinguishes aversive conditioning from exposure and describes pairing an unwanted behavior or cue with an unpleasant stimulus. The revised vignette tests that mechanism and explicitly avoids turning a mechanism question into a blanket claim about clinical effectiveness or ethics.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b016-lifespan-1",
+      "domainId": "lifespan",
+      "difficulty": "foundation",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "lifespan-classify-conventional-moral-reasoning-from-justification",
+      "sourceCheck": "The OpenStax chapter places interpersonal approval and authority or social-order maintenance in stages three and four of Kohlberg’s conventional level. The revised vignette combines those clues while contrasting them with preconventional consequences and postconventional principles.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b017-lifespan-1",
+      "domainId": "lifespan",
+      "difficulty": "foundation",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "lifespan-distinguish-accommodation-from-initial-assimilation-in-a-novel-case",
+      "sourceCheck": "The NCBI overview explicitly distinguishes assimilation as fitting information into a prior schema from accommodation as revising that schema in response to novelty. The vignette contains both phases and asks learners to identify the final structural change.",
+      "diagnosticsBefore": [
+        "asymmetric-extreme-distractors"
+      ],
+      "diagnosticsAfter": []
+    }
+  ],
+  "limitations": [
+    "Editorial/source review is not psychometric calibration, item-response analysis, or independent licensed-psychologist validation."
+  ]
+}

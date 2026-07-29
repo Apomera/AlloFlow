@@ -47,7 +47,7 @@ describe('EPPP diagram template and placement catalog', () => {
       sharedTemplateDiagramPlacements: 16,
       inlineDiagramPlacements: 42,
       sourceReviewedDiagramTemplates: 15,
-      sourceReviewedDiagramPlacements: 22,
+      sourceReviewedDiagramPlacements: 58,
     });
     expect(catalog.diagrams).toHaveLength(25);
     expect(catalog.diagramPlacements).toHaveLength(58);
@@ -75,10 +75,26 @@ describe('EPPP diagram template and placement catalog', () => {
       'diagram-placement-ch-10-section-03',
       'diagram-placement-ch-18-section-02',
     ]);
+    const wave04PlacementIds = new Set([
+      'diagram-placement-ch-11-section-05',
+      'diagram-placement-ch-5-section-07',
+      'diagram-placement-ch-14-section-02',
+      'diagram-placement-ch-17-section-02',
+      'diagram-placement-ch-13-section-05',
+      'diagram-placement-ch-19-section-02',
+    ]);
+    const wave05PlacementIds = new Set([
+      'diagram-placement-ch-48-section-01',
+      'diagram-placement-ch-7-section-03',
+      'diagram-placement-ch-16-section-02',
+      'diagram-placement-ch-20-section-04',
+      'diagram-placement-ch-21-section-02',
+      'diagram-placement-ch-15-section-02',
+    ]);
 
     expect(placedSections).toHaveLength(58);
-    expect(catalog.diagramPlacements.filter((placement) => placement.reviewStatus === 'source-reviewed-editorial-pass')).toHaveLength(22);
-    expect(catalog.diagramPlacements.filter((placement) => placement.reviewStatus === 'review-required')).toHaveLength(36);
+    expect(catalog.diagramPlacements.filter((placement) => placement.reviewStatus === 'source-reviewed-editorial-pass')).toHaveLength(58);
+    expect(catalog.diagramPlacements.filter((placement) => placement.reviewStatus === 'review-required')).toHaveLength(0);
     expect(placedSections.every((section) => placementById.has(section.diagramPlacementId))).toBe(true);
     for (const placement of catalog.diagramPlacements) {
       expect(placement.id).toMatch(/^diagram-placement-ch-\d+-section-\d{2}$/);
@@ -127,6 +143,57 @@ describe('EPPP diagram template and placement catalog', () => {
         expect(placement.references).toEqual(placement.sourceDetails.map((source) => source.url));
         expect(placement.sourceDetails.length).toBeGreaterThan(0);
         expect(placement.sourceDetails.every((source) => source.title && source.organization && source.url && source.whyReputable)).toBe(true);
+      } else if (wave04PlacementIds.has(placement.id)) {
+        expect(placement).toMatchObject({
+          origin: 'inline',
+          templateKey: null,
+          reviewStatus: 'source-reviewed-editorial-pass',
+          reviewArtifact: 'eppp_diagram_review_wave_04.json',
+          reviewWave: 'eppp-diagram-review-wave-04',
+          reviewDate: '2026-07-28',
+          checks: {
+            conceptAccuracy: 'assisted-editorial-pass-expert-pending',
+            labelQuality: 'editorial-pass-minimum-12',
+            sourceSupport: 'topically-aligned-reputable-source',
+            expertReview: 'pending-independent-review',
+          },
+        });
+        expect(placement.references).toEqual(placement.sourceDetails.map((source) => source.url));
+        expect(placement.sourceDetails.length).toBeGreaterThan(0);
+        expect(placement.sourceDetails.every((source) => source.title && source.organization && source.url && source.whyReputable)).toBe(true);
+      } else if (wave05PlacementIds.has(placement.id)) {
+        expect(placement).toMatchObject({
+          origin: 'inline',
+          templateKey: null,
+          reviewStatus: 'source-reviewed-editorial-pass',
+          reviewArtifact: 'eppp_diagram_review_wave_05.json',
+          reviewWave: 'eppp-diagram-review-wave-05',
+          reviewDate: '2026-07-28',
+          checks: {
+            conceptAccuracy: 'assisted-editorial-pass-expert-pending',
+            labelQuality: 'editorial-pass-minimum-12',
+            sourceSupport: 'topically-aligned-reputable-source',
+            expertReview: 'pending-independent-review',
+          },
+        });
+        expect(placement.references).toEqual(placement.sourceDetails.map((source) => source.url));
+        expect(placement.sourceDetails.length).toBeGreaterThan(0);
+        expect(placement.sourceDetails.every((source) => source.title && source.organization && source.url && source.whyReputable)).toBe(true);
+      } else if (placement.reviewStatus === 'source-reviewed-editorial-pass') {
+        expect(placement).toMatchObject({
+          origin: 'inline',
+          templateKey: null,
+          reviewArtifact: expect.stringMatching(/^eppp_diagram_review_wave_\d+\.json$/),
+          reviewWave: expect.stringMatching(/^eppp-diagram-review-wave-\d+$/),
+          checks: {
+            conceptAccuracy: 'assisted-editorial-pass-expert-pending',
+            labelQuality: 'editorial-pass-minimum-12',
+            sourceSupport: 'topically-aligned-reputable-source',
+            expertReview: 'pending-independent-review',
+          },
+        });
+        expect(placement.references).toEqual(placement.sourceDetails.map((source) => source.url));
+        expect(placement.sourceDetails.length).toBeGreaterThan(0);
       } else {
         expect(placement).toMatchObject({
           origin: 'inline',

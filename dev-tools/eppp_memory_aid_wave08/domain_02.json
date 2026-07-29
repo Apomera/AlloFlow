@@ -1,0 +1,525 @@
+{
+  "schemaVersion": 1,
+  "domainId": 2,
+  "status": "complete-source-reviewed-editorial-pass",
+  "items": [
+    {
+      "legacyId": "memory-aid-a1e18632c095ece7",
+      "title": "Cognitive Biases",
+      "content": "**Bias distinctions:** Availability concerns ease of retrieval; representativeness concerns similarity to a prototype; anchoring concerns insufficient adjustment; framing concerns presentation-dependent choice; confirmation bias concerns preferential search or interpretation. Dunning-Kruger findings concern calibration under particular tasks and measures, not a rule that every low performer is overconfident. One judgment does not diagnose a bias or ability.",
+      "references": [
+        "https://openstax.org/books/introduction-philosophy/pages/2-2-overcoming-cognitive-biases-and-engaging-in-critical-reflection",
+        "https://doi.org/10.1126/science.185.4157.1124",
+        "https://pubmed.ncbi.nlm.nih.gov/7455683/",
+        "https://pubmed.ncbi.nlm.nih.gov/10626367/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Overcoming Cognitive Biases and Engaging in Critical Reflection",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/introduction-philosophy/pages/2-2-overcoming-cognitive-biases-and-engaging-in-critical-reflection",
+          "whyReputable": "This openly licensed university chapter directly distinguishes availability, anchoring, and confirmation biases and emphasizes reflective checks on judgment."
+        },
+        {
+          "title": "Judgment under Uncertainty: Heuristics and Biases",
+          "organization": "Science, American Association for the Advancement of Science",
+          "url": "https://doi.org/10.1126/science.185.4157.1124",
+          "whyReputable": "This foundational peer-reviewed article directly develops availability, representativeness, and anchoring as distinct judgment heuristics and documents their conditional errors."
+        },
+        {
+          "title": "The Framing of Decisions and the Psychology of Choice",
+          "organization": "Science via PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/7455683/",
+          "whyReputable": "This indexed primary article directly demonstrates that equivalent choices can change with how outcomes are framed, supporting the framing distinction in the aid."
+        },
+        {
+          "title": "Unskilled and Unaware of It",
+          "organization": "Journal of Personality and Social Psychology via PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/10626367/",
+          "whyReputable": "This indexed primary study is the source of the Dunning-Kruger calibration finding and supports a conditional performance/self-assessment interpretation rather than a universal stereotype."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Cognitive Biases\" as a directly sourced retrieval aid, correcting deterministic or outdated claims and stating the construct-specific limit on inference.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-cc8866807d4bf8bb",
+      "title": "Defense Mechanisms",
+      "content": "**Psychodynamic defense cue:** Repression, denial, projection, displacement, reaction formation, intellectualization, and sublimation are hypotheses about how affect or conflict may be managed. Proposed maturity groupings are dimensional theoretical formulations, not a fixed diagnostic ladder. The same observable behavior can serve different functions, so context, alternatives, development, culture, and the person's experience must guide interpretation.",
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/11-2-freud-and-the-psychodynamic-perspective"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Freud and the Psychodynamic Perspective",
+          "organization": "OpenStax Psychology 2e, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/11-2-freud-and-the-psychodynamic-perspective",
+          "whyReputable": "This openly licensed university section directly defines common psychodynamic defense mechanisms and presents them as theoretical ways of managing conflict rather than diagnostic facts."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Defense Mechanisms\" as a directly sourced retrieval aid, correcting deterministic or outdated claims and stating the construct-specific limit on inference.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-9b76f2f20bd786f1",
+      "title": "Bandura's Social Learning",
+      "content": "**Observational-learning sequence:** Attention, retention, behavioral production, and motivation help organize whether modeled behavior is acquired and expressed. Observing a model can teach a response without immediate imitation, and reinforcement often affects performance rather than being necessary for acquisition. Self-efficacy draws on mastery, vicarious experience, social persuasion, and physiological or affective information; no source is universally strongest.",
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/6-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e: Learning",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/6-introduction",
+          "whyReputable": "This openly licensed university chapter directly reviews classical conditioning, observational learning, reinforcement, extinction, generalization, and discrimination."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Bandura's Social Learning\" as a directly sourced retrieval aid, correcting deterministic or outdated claims and stating the construct-specific limit on inference.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-b3ba39b4891aa7b7",
+      "title": "Sternberg's & Gardner's Intelligence",
+      "content": "**Theory comparison:** Sternberg's triarchic account emphasizes analytical, creative, and practical adaptation; Gardner proposed multiple relatively distinct intelligences. These frameworks broaden questions beyond conventional test content, but categories are theoretical and their measurement evidence differs. They do not show that standard cognitive tests measure nothing important or that every talent is an independent intelligence. Use current test manuals for score interpretation.",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/17739108/",
+        "https://www.hachettebookgroup.com/titles/howard-gardner/frames-of-mind/9781541608528/",
+        "https://doi.org/10.1016/j.intell.2006.04.001"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Human Intelligence: The Model Is the Message",
+          "organization": "Science via PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/17739108/",
+          "whyReputable": "This indexed primary article by Sternberg directly presents and evaluates the triarchic account spanning internal processes, external adaptation, and experience."
+        },
+        {
+          "title": "Frames of Mind: The Theory of Multiple Intelligences",
+          "organization": "Basic Books, Hachette Book Group",
+          "url": "https://www.hachettebookgroup.com/titles/howard-gardner/frames-of-mind/9781541608528/",
+          "whyReputable": "This primary scholarly book by Gardner directly presents the multiple-intelligences framework rather than relying on a generic intelligence definition."
+        },
+        {
+          "title": "g and the Measurement of Multiple Intelligences",
+          "organization": "Intelligence, Elsevier",
+          "url": "https://doi.org/10.1016/j.intell.2006.04.001",
+          "whyReputable": "This peer-reviewed empirical study directly evaluates the independence and general-factor loading of tests designed around Gardner-style intelligences."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Sternberg's & Gardner's Intelligence\" as a directly sourced retrieval aid, correcting deterministic or outdated claims and stating the construct-specific limit on inference. Multiple direct sources were added because the aid compares distinct theoretical and empirical frameworks.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-4faf3886e7b3904b",
+      "title": "Language Development Theories",
+      "content": "**Competing language accounts:** Behaviorist, nativist, statistical-learning, social-interaction, usage-based, and connectionist approaches emphasize different learning inputs and mechanisms. Children's productive errors and novel-word performance show generalization beyond exact imitation, but do not uniquely prove a language-acquisition device or rule out learning. Sensitive periods, input, interaction, cognition, and neurodevelopment all require evidence-bounded consideration.",
+      "references": [
+        "https://doi.org/10.1126/science.274.5294.1926",
+        "https://pubmed.ncbi.nlm.nih.gov/10949305/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Statistical Learning by 8-Month-Old Infants",
+          "organization": "Science, American Association for the Advancement of Science",
+          "url": "https://doi.org/10.1126/science.274.5294.1926",
+          "whyReputable": "This peer-reviewed primary experiment directly demonstrates infant sensitivity to transitional probabilities, supporting the statistical-learning claim in the comparison."
+        },
+        {
+          "title": "Early Language Acquisition: Cracking the Speech Code",
+          "organization": "Nature Reviews Neuroscience via PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/10949305/",
+          "whyReputable": "This peer-reviewed review directly integrates speech learning, social input, neurodevelopment, and sensitive-period evidence across early language acquisition."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Language Development Theories\" as a directly sourced retrieval aid, correcting deterministic or outdated claims and stating the construct-specific limit on inference. Multiple direct sources were added because the aid compares distinct theoretical and empirical frameworks.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-3728ca54405dc508",
+      "title": "Signal Detection Theory",
+      "content": "**Signal-detection cue:** Sensitivity, commonly summarized by d-prime under model assumptions, separates distributions; response criterion reflects willingness to say \"signal present.\" Hits, misses, false alarms, and correct rejections jointly determine interpretation. Payoffs, prevalence, instructions, fatigue, and expectations can shift criterion without changing sensitivity. The framework does not make every response a conscious decision or remove distributional assumptions.",
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/5-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e: Sensation and Perception",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/5-introduction",
+          "whyReputable": "This openly licensed university chapter directly covers psychophysics, signal detection, Gestalt organization, depth cues, and attention-related perception limits."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Signal Detection Theory\" as a directly sourced retrieval aid, correcting deterministic or outdated claims and stating the construct-specific limit on inference.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-b31d03c92f506893",
+      "title": "Weber's & Fechner's Laws",
+      "content": "**Psychophysics cue:** Weber's fraction describes approximately proportional just-noticeable differences over limited stimulus ranges; Fechner's logarithmic relation follows from additional assumptions about accumulating equal subjective steps. Neither is exact across every modality, intensity, or person. Method, adaptation, baseline level, and modern power-law alternatives matter, so use them as historical quantitative models rather than universal sensory laws.",
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/5-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e: Sensation and Perception",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/5-introduction",
+          "whyReputable": "This openly licensed university chapter directly covers psychophysics, signal detection, Gestalt organization, depth cues, and attention-related perception limits."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Weber's & Fechner's Laws\" as a directly sourced retrieval aid, correcting deterministic or outdated claims and stating the construct-specific limit on inference.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-9d23c1e8240bf09a",
+      "title": "Levels of Processing",
+      "content": "**Encoding-depth cue:** Semantic or elaborative processing often supports later retention better than shallow structural processing under comparable conditions. \"Depth\" describes operations at encoding, not a literal place or fixed store, and memory also depends on retrieval cues, transfer-appropriate processing, organization, distinctiveness, prior knowledge, attention, and test format. One task cannot establish an enduring learning style.",
+      "references": [
+        "https://doi.org/10.1016/S0022-5371(72)80001-X"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Levels of Processing: A Framework for Memory Research",
+          "organization": "Journal of Verbal Learning and Verbal Behavior, Elsevier",
+          "url": "https://doi.org/10.1016/S0022-5371(72)80001-X",
+          "whyReputable": "This foundational peer-reviewed article introduces the levels-of-processing framework and its emphasis on encoding operations rather than literal memory-store depth."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Levels of Processing\" as a directly sourced retrieval aid, correcting deterministic or outdated claims and stating the construct-specific limit on inference.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-790aa03b1ba329b2",
+      "title": "Classical Conditioning Key Terms",
+      "content": "**Conditioning terms:** An unconditioned stimulus elicits an unconditioned response without the target training; pairing can make a conditioned stimulus predict that outcome and evoke a conditioned response. Acquisition, extinction, spontaneous recovery, generalization, and discrimination describe measured patterns, not erasure or conscious choice. Timing, contingency, context, prior learning, and biological preparedness qualify simple pairing rules.",
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/6-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e: Learning",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/6-introduction",
+          "whyReputable": "This openly licensed university chapter directly reviews classical conditioning, observational learning, reinforcement, extinction, generalization, and discrimination."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Classical Conditioning Key Terms\" as a directly sourced retrieval aid, correcting deterministic or outdated claims and stating the construct-specific limit on inference.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-7900c0ed4a5fe32c",
+      "title": "Stress & Coping Models",
+      "content": "**Appraisal-and-coping cue:** Transactional models distinguish appraisal of demands and resources from coping efforts. Problem-focused and emotion-focused strategies are not inherently good or bad; fit depends on controllability, timing, goals, culture, safety, and consequences. Avoidance may reduce distress briefly yet maintain some problems, while acceptance can be adaptive without implying resignation. Stress responses are not uniform or purely cognitive.",
+      "references": [
+        "https://www.apa.org/topics/stress"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Stress and Coping Resources",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/topics/stress",
+          "whyReputable": "This APA resource summarizes stress appraisal, coping, health effects, and evidence-based supports without treating one coping style as universally adaptive."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Stress & Coping Models\" as a directly sourced retrieval aid, correcting deterministic or outdated claims and stating the construct-specific limit on inference.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-a445969234d54482",
+      "title": "Gestalt Principles of Perception",
+      "content": "**Perceptual-organization cue:** Proximity, similarity, continuity, closure, common fate, and figure-ground relations describe tendencies in how elements are grouped. They are perceptual principles, not Gestalt-therapy techniques, and no single principle uniquely determines an observer's experience. Stimulus arrangement, attention, task, learning, and context can change which organization dominates.",
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/5-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e: Sensation and Perception",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/5-introduction",
+          "whyReputable": "This openly licensed university chapter directly covers psychophysics, signal detection, Gestalt organization, depth cues, and attention-related perception limits."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Gestalt Principles of Perception\" as a directly sourced retrieval aid, correcting deterministic or outdated claims and stating the construct-specific limit on inference.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-4a534dba75ea7940",
+      "title": "Depth Perception Cues",
+      "content": "**Depth-cue map:** Binocular disparity and convergence depend on information from both eyes; motion parallax, occlusion, relative size, texture gradient, height, and linear perspective can operate monocularly. \"Pictorial\" cues are learned or ecological information, not guaranteed illusions. Cue weighting depends on distance, reliability, development, visual status, context, and conflicts among cues.",
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/5-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e: Sensation and Perception",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/5-introduction",
+          "whyReputable": "This openly licensed university chapter directly covers psychophysics, signal detection, Gestalt organization, depth cues, and attention-related perception limits."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Depth Perception Cues\" as a directly sourced retrieval aid, correcting deterministic or outdated claims and stating the construct-specific limit on inference.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-b7c0968652232909",
+      "title": "Attention Models",
+      "content": "**Attention-model comparison:** Early-selection, attenuation, late-selection, capacity, and feature-integration accounts explain different task findings. Shadowing, attentional capture, dual-task interference, and visual search constrain theories but do not establish one permanently open or closed filter. Personally salient information may capture attention for some people and conditions; task load, expectations, timing, and individual differences matter.",
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/5-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e: Sensation and Perception",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/5-introduction",
+          "whyReputable": "This openly licensed university chapter directly covers psychophysics, signal detection, Gestalt organization, depth cues, and attention-related perception limits."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Attention Models\" as a directly sourced retrieval aid, correcting deterministic or outdated claims and stating the construct-specific limit on inference.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-2f85711266f57e65",
+      "title": "Problem-Solving Barriers",
+      "content": "**Problem-solving cue:** Functional fixedness limits alternative object uses; mental set carries a previously successful strategy forward; anchoring biases adjustment; heuristics trade completeness for efficiency. Algorithms are defined procedures, but only guarantee a solution when correctly specified, feasible, and applied to a problem in their scope. Expertise can help or constrain depending on representation; one failure does not diagnose \"expertise blindness.\"",
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/7-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e: Thinking and Intelligence",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/7-introduction",
+          "whyReputable": "This openly licensed university chapter directly reviews judgment, problem solving, language, intelligence theories, heuristics, and common reasoning barriers."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Problem-Solving Barriers\" as a directly sourced retrieval aid, correcting deterministic or outdated claims and stating the construct-specific limit on inference.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-f8e922ad84688db0",
+      "title": "Piaget's Conservation Tasks",
+      "content": "**Conservation cue:** Classic tasks test whether children judge quantity as unchanged despite transformations in appearance, with success varying across number, length, mass, liquid, and volume tasks. Performance reflects conceptual understanding plus language, attention, inhibition, familiarity, and task design. A single error does not prove absence of all conservation knowledge or assign a fixed global stage.",
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/9-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e: Lifespan Development",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/9-introduction",
+          "whyReputable": "This openly licensed university chapter reviews Piagetian tasks and developmental change while emphasizing that task demands and later evidence qualify rigid stage inferences."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Piaget's Conservation Tasks\" as a directly sourced retrieval aid, correcting deterministic or outdated claims and stating the construct-specific limit on inference.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-fc842169c7871ad3",
+      "title": "Signal Detection Theory",
+      "content": "**Sensitivity versus criterion:** Signal detection theory models overlapping noise and signal-plus-noise distributions. Sensitivity indexes separation under assumptions; criterion reflects the response threshold shaped by base rate, payoff, instruction, and expectation. A higher hit rate alone cannot establish better sensitivity because false alarms matter. Measures and optimal thresholds depend on the specified model and consequences.",
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/5-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e: Sensation and Perception",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/5-introduction",
+          "whyReputable": "This openly licensed university chapter directly covers psychophysics, signal detection, Gestalt organization, depth cues, and attention-related perception limits."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Signal Detection Theory\" as a directly sourced retrieval aid, correcting deterministic or outdated claims and stating the construct-specific limit on inference.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-a14dd06a6f71bd4a",
+      "title": "Bandura's Observational Learning",
+      "content": "**Modeling cue:** Observational learning involves attending to a model, retaining information, being able to produce the response, and having conditions that motivate performance. Acquisition can occur without direct reinforcement, while observed consequences can alter whether behavior is expressed. Bobo-doll findings demonstrate modeled aggression under particular laboratory conditions, not inevitable imitation or a complete account of real-world aggression.",
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/6-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e: Learning",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/6-introduction",
+          "whyReputable": "This openly licensed university chapter directly reviews classical conditioning, observational learning, reinforcement, extinction, generalization, and discrimination."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Bandura's Observational Learning\" as a directly sourced retrieval aid, correcting deterministic or outdated claims and stating the construct-specific limit on inference.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-bc7b8f8be04013c4",
+      "title": "Classical Conditioning Phenomena",
+      "content": "**Conditioning phenomena:** Extinction is new learning that reduces responding when the conditioned cue no longer predicts the outcome; it does not necessarily erase acquisition. Spontaneous recovery, renewal, and reinstatement show context and time effects. Generalization spreads responding to similar cues; discrimination differentiates them. Blocking, overshadowing, and latent inhibition show that contingency, attention, and prior learning matter beyond simple pairing.",
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/6-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e: Learning",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/6-introduction",
+          "whyReputable": "This openly licensed university chapter directly reviews classical conditioning, observational learning, reinforcement, extinction, generalization, and discrimination."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Classical Conditioning Phenomena\" as a directly sourced retrieval aid, correcting deterministic or outdated claims and stating the construct-specific limit on inference.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-81811279cfc9aeeb",
+      "title": "Memory Systems Taxonomy",
+      "content": "**Memory-system cue:** Working memory supports temporary maintenance and manipulation; episodic and semantic memory are commonly grouped as explicit or declarative; skills, priming, and conditioning are commonly grouped as implicit or nondeclarative. These systems interact and depend on task and measurement. Short-term is not identical to working memory, and one brain lesion or test score does not cleanly isolate a single store.",
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/8-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e: Memory",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/8-introduction",
+          "whyReputable": "This openly licensed university chapter directly describes encoding, storage, retrieval, levels of processing, and explicit and implicit memory systems."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Memory Systems Taxonomy\" as a directly sourced retrieval aid, correcting deterministic or outdated claims and stating the construct-specific limit on inference.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-e4650bc30c89e5b7",
+      "title": "Theories of Emotion",
+      "content": "**Emotion-theory comparison:** James-Lange emphasizes perception of bodily change; Cannon-Bard historically emphasized parallel central and bodily responses; two-factor theory combines arousal with situational interpretation; appraisal accounts emphasize evaluations. These are organizing contrasts, not complete current neural sequences. Emotion can involve appraisal, action tendencies, bodily signals, learning, culture, and context, and no vignette proves one mechanism exclusively.",
+      "references": [
+        "https://openstax.org/books/psychology-2e/pages/10-4-emotion"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e: Emotion",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/10-4-emotion",
+          "whyReputable": "This university textbook section directly compares major emotion theories and avoids presenting their historical neural details as current complete mechanisms."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Theories of Emotion\" as a directly sourced retrieval aid, correcting deterministic or outdated claims and stating the construct-specific limit on inference.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-5081c24a4375de71",
+      "title": "Intelligence Theories",
+      "content": "**Intelligence-framework cue:** Spearman proposed general and specific factors; Cattell-Horn distinguished broad abilities including fluid and crystallized knowledge; CHC organizes hierarchical broad and narrow abilities; Sternberg and Gardner proposed broader functional accounts. \"Culture-free,\" fixed age decline, and independent-intelligence claims are too absolute. Theory, test construction, validity evidence, opportunity, language, education, and uncertainty must be separated.",
+      "references": [
+        "https://doi.org/10.1017/CBO9780511571312",
+        "https://doi.org/10.1016/j.intell.2008.08.004",
+        "https://pubmed.ncbi.nlm.nih.gov/17739108/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Human Cognitive Abilities: A Survey of Factor-Analytic Studies",
+          "organization": "Cambridge University Press",
+          "url": "https://doi.org/10.1017/CBO9780511571312",
+          "whyReputable": "Carroll's foundational scholarly synthesis directly supports hierarchical general, broad, and narrow cognitive-ability distinctions used in contemporary models."
+        },
+        {
+          "title": "CHC Theory and the Human Cognitive Abilities Project",
+          "organization": "Intelligence, Elsevier",
+          "url": "https://doi.org/10.1016/j.intell.2008.08.004",
+          "whyReputable": "This peer-reviewed article directly presents the Cattell-Horn-Carroll synthesis and Human Cognitive Abilities Project rather than using a generic dictionary definition."
+        },
+        {
+          "title": "Human Intelligence: The Model Is the Message",
+          "organization": "Science via PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/17739108/",
+          "whyReputable": "This indexed primary article directly supports the triarchic-theory component while allowing it to be distinguished from psychometric CHC claims."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Intelligence Theories\" as a directly sourced retrieval aid, correcting deterministic or outdated claims and stating the construct-specific limit on inference. Multiple direct sources were added because the aid compares distinct theoretical and empirical frameworks.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    }
+  ]
+}

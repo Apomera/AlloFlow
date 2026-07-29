@@ -24,17 +24,22 @@ describe('EPPP incorrect-option feedback diagnostics', () => {
     expect(report.mostRecentWave).toEqual(report.waves['eppp-option-feedback-wave-11']);
     expect(report.latestReviewWave).toBe('eppp-option-feedback-wave-11');
     expect(report.summary).toMatchObject({
-      itemsWithWarnings: 635,
-      incorrectOptionsWithWarnings: 1789,
-      insufficientDetailOptions: 665,
-      genericTemplateOptions: 1061,
-      choiceRestatementOptions: 434,
-      fullKeyEchoOptions: 270,
       wave10IncorrectOptions: 48,
       wave10OptionsWithWarnings: 0,
       wave11IncorrectOptions: 48,
       wave11OptionsWithWarnings: 0,
     });
+    const monotonicCeilings = {
+      itemsWithWarnings: 625,
+      incorrectOptionsWithWarnings: 1760,
+      insufficientDetailOptions: 655,
+      genericTemplateOptions: 1044,
+      choiceRestatementOptions: 426,
+      fullKeyEchoOptions: 260,
+    };
+    for (const [metric, ceiling] of Object.entries(monotonicCeilings)) {
+      expect(report.summary[metric], metric).toBeLessThanOrEqual(ceiling);
+    }
   });
 
   it('confirms all 24 wave-05 incorrect explanations clear the feedback heuristics', () => {

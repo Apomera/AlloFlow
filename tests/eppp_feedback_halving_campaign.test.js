@@ -34,7 +34,16 @@ describe('EPPP feedback-halving campaign', () => {
     expect(cohort.entries.filter((entry) => entry.family === 'triple-ceg')).toHaveLength(286);
     expect(cohort.entries.filter((entry) => entry.family === 'triple-insufficient')).toHaveLength(134);
     expect(cohort.ids.some((id) => excludedIds.has(id))).toBe(false);
-    expect(cohort.fingerprints).toEqual(campaignData.POST_DEEP_EXPECTED_FINGERPRINTS);
+    expect(cohort.fingerprints).toMatchObject({
+      selection: campaignData.POST_DEEP_EXPECTED_FINGERPRINTS.selection,
+      composition: campaignData.POST_DEEP_EXPECTED_FINGERPRINTS.composition,
+    });
+    const publishedAudit = JSON.parse(fs.readFileSync(
+      path.join(root, 'test_prep', 'eppp_feedback_halving_campaign_audit.json'),
+      'utf8',
+    ));
+    expect(cohort.fingerprints).toEqual(publishedAudit.fingerprints);
+    expect(cohort.fingerprints.protectedContent).toMatch(/^[a-f0-9]{64}$/);
     expect(cohort.entries.map((entry) => ({
       id: entry.id,
       family: entry.family,
@@ -62,7 +71,8 @@ describe('EPPP feedback-halving campaign', () => {
     target.prompt = `${target.prompt} `;
     const rematerialized = campaignData.buildCampaignData(changed, diagnostics, campaignData.POST_DEEP_BASELINE_COHORT);
     expect(rematerialized.fingerprints.selection).toBe(campaignData.POST_DEEP_EXPECTED_FINGERPRINTS.selection);
-    expect(rematerialized.fingerprints.protectedContent).not.toBe(campaignData.POST_DEEP_EXPECTED_FINGERPRINTS.protectedContent);
+    const current = campaignData.buildCampaignData(bank, diagnostics, campaignData.POST_DEEP_BASELINE_COHORT);
+    expect(rematerialized.fingerprints.protectedContent).not.toBe(current.fingerprints.protectedContent);
 
     target.answerIndex = (target.answerIndex + 1) % 4;
     expect(() => campaignData.buildCampaignData(

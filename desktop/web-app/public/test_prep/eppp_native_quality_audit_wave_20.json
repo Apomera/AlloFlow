@@ -1,0 +1,212 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "eppp-native-quality-wave-20",
+  "reviewedAt": "2026-07-28",
+  "reportType": "source-checked-native-item-repair",
+  "scope": "Deep-rewrite the next 10 selected items in the adjudication-aware distractor action docket while preserving answer positions and full option-level teaching feedback.",
+  "challengeCriteria": [
+    "replace definition completion with application or analysis where difficulty warrants",
+    "use adjacent, instructionally plausible distractors without stacked absolute cues",
+    "avoid keyed lexical echoes that allow answer selection without construct knowledge",
+    "separate intentionally related coverage by decision, context, or cognitive demand",
+    "verify the key and rationale against an item-specific authoritative or peer-reviewed source",
+    "provide four substantive, option-specific explanations and preserve answer positions"
+  ],
+  "summary": {
+    "totalItems": 1500,
+    "rewrittenItems": 10,
+    "domainsCovered": 6,
+    "appliedOrAnalysisItems": 10,
+    "keyPositionsPreserved": 10,
+    "optionSpecificExplanations": 40,
+    "selectedItemsWithWarningsAfter": 0,
+    "selectedWarningIdsAfter": [],
+    "warningCountsBefore": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 65,
+      "asymmetricExtremeDistractorCandidates": 120,
+      "advancedDirectRecallCandidates": 7,
+      "semanticConceptDuplicatePairs": 95,
+      "semanticConceptDuplicateClusters": 54,
+      "editorialAnchorsWithActiveWarnings": 2,
+      "editorialAnchorsWithNoCurrentWarning": 8,
+      "priorityDocketItems": 20
+    },
+    "warningCountsAfter": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 57,
+      "asymmetricExtremeDistractorCandidates": 120,
+      "advancedDirectRecallCandidates": 7,
+      "semanticConceptDuplicatePairs": 85,
+      "semanticConceptDuplicateClusters": 49,
+      "editorialAnchorsWithActiveWarnings": 2,
+      "editorialAnchorsWithNoCurrentWarning": 8,
+      "priorityDocketItems": 20
+    },
+    "warningCountContext": {
+      "before": "Current post-wave-19 and post-campaign live diagnostic snapshot used to select five lexical-leakage candidates and one representative from each of five two-item duplicate clusters.",
+      "after": "Wave 20 is authored and tested through an isolated replay; canonical and deployed banks, catalogs, diagnostics, and audits are intentionally not rebuilt in this change.",
+      "interpretation": "The tranche protects the near-ceiling lexical and duplicate-cluster metrics while converting ten items to source-checked application or analysis with their original answer positions preserved."
+    },
+    "status": "pass"
+  },
+  "items": [
+    {
+      "id": "eppp-v3-professional-062",
+      "domainId": "professional",
+      "difficulty": "intermediate",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "professional-distinguish-aspirational-principles-from-enforceable-ethics-standards",
+      "sourceCheck": "The official APA Ethics Code distinguishes the aspirational Preamble and General Principles from the enforceable Ethical Standards and explains that the principles may still guide ethical reasoning and interpretation.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-social-cultural-002",
+      "domainId": "social-cultural",
+      "difficulty": "intermediate",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "social-cultural-interpret-a-stereotype-threat-framing-manipulation",
+      "sourceCheck": "The Steele and Aronson experiments varied whether a difficult verbal test was presented as diagnostic of ability and evaluated the resulting performance of stereotype-vulnerable participants, matching the decision tested in the revision.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-biological-050",
+      "domainId": "biological",
+      "difficulty": "foundation",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "biological-predict-the-functional-effect-of-oligodendrocyte-disruption",
+      "sourceCheck": "The NCBI neuroscience chapter distinguishes astrocytes, oligodendrocytes, microglia, and Schwann cells and identifies oligodendrocytes as the cells that form central myelin, supporting the predicted conduction consequence.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-cognitive-affective-046",
+      "domainId": "cognitive-affective",
+      "difficulty": "intermediate",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "cognitive-affective-differentiate-primary-threat-from-secondary-coping-appraisal",
+      "sourceCheck": "OpenStax describes primary appraisal as judging harm, threat, or challenge and secondary appraisal as judging available coping options and their effectiveness, directly supporting the matched-event contrast in the revision.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-research-034",
+      "domainId": "research",
+      "difficulty": "intermediate",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "research-select-and-interpret-a-resistant-location-summary",
+      "sourceCheck": "The NIST measures-of-location section defines the median by ordered position and states that it is generally preferable to the mean for data with extreme tail values, while still treating unusual observations as information to investigate.",
+      "diagnosticsBefore": [
+        "unique-key/stem-lexical-leakage"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-b015-social-1",
+      "domainId": "social-cultural",
+      "difficulty": "foundation",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "social-cultural-apply-insufficient-justification-to-incentive-size",
+      "sourceCheck": "The original Festinger and Carlsmith forced-compliance study compared small and large incentives for describing a dull task favorably and measured subsequent private task evaluations, providing the primary evidence for this incentive contrast.",
+      "diagnosticsBefore": [
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v3-biological-019",
+      "domainId": "biological",
+      "difficulty": "intermediate",
+      "answerIndex": 0,
+      "expectedAnswerIndex": 0,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "biological-select-eeg-for-millisecond-neural-timing",
+      "sourceCheck": "The peer-reviewed neuroimaging review reports submillisecond temporal resolution for EEG and contrasts that strength with the slower hemodynamic timing and stronger spatial localization of fMRI, directly matching the study-design choice.",
+      "diagnosticsBefore": [
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v3-cognitive-affective-013",
+      "domainId": "cognitive-affective",
+      "difficulty": "intermediate",
+      "answerIndex": 2,
+      "expectedAnswerIndex": 2,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "cognitive-affective-distinguish-parallel-cannon-bard-processing-from-sequential-emotion-theories",
+      "sourceCheck": "OpenStax explicitly contrasts Cannon-Bard parallel emotional experience and physiological arousal with James-Lange sequencing and Schachter-Singer contextual labeling, correcting the original stem's conflation of labeling with Cannon-Bard.",
+      "diagnosticsBefore": [
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v2-assessment-045",
+      "domainId": "assessment",
+      "difficulty": "intermediate",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "assessment-integrate-convergent-discriminant-and-internal-structure-evidence",
+      "sourceCheck": "The joint testing Standards treat validity as evidence for an intended score interpretation and identify internal structure and relations with other variables as relevant evidence, including theoretically convergent and discriminant patterns.",
+      "diagnosticsBefore": [
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    },
+    {
+      "id": "eppp-v3-research-003",
+      "domainId": "research",
+      "difficulty": "intermediate",
+      "answerIndex": 3,
+      "expectedAnswerIndex": 3,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "application",
+      "learningObjectiveId": "research-interpret-alpha-as-a-long-run-type-one-error-rate",
+      "sourceCheck": "The NIST handbook defines a .05 significance level as inadvertently rejecting a true null hypothesis 5% of the time in the long run and separately identifies beta as the probability associated with Type II error.",
+      "diagnosticsBefore": [
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    }
+  ],
+  "limitations": [
+    "Editorial/source review is not psychometric calibration, item-response analysis, or independent licensed-psychologist validation."
+  ]
+}

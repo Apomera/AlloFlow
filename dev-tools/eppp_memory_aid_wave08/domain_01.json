@@ -1,0 +1,300 @@
+{
+  "schemaVersion": 1,
+  "domainId": 1,
+  "status": "complete-source-reviewed-editorial-pass",
+  "items": [
+    {
+      "legacyId": "memory-aid-e28ae2f31191f4cc",
+      "title": "Sympathetic vs. Parasympathetic",
+      "content": "**Autonomic divisions:** Sympathetic pathways often mobilize cardiovascular and metabolic resources; parasympathetic pathways often support restoration, digestion, and energy conservation. The gas-versus-brake analogy is limited: both divisions can be active together, effects are organ-specific, and digestion is modulated rather than simply stopped. Use the cue for broad pathway recognition, not diagnosis or treatment.",
+      "references": [
+        "https://www.ncbi.nlm.nih.gov/books/NBK538516/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Autonomic Nervous System",
+          "organization": "StatPearls via NCBI Bookshelf, National Library of Medicine",
+          "url": "https://www.ncbi.nlm.nih.gov/books/NBK538516/",
+          "whyReputable": "This clinically reviewed NCBI Bookshelf chapter describes sympathetic and parasympathetic anatomy and organ-specific autonomic effects without reducing them to an absolute on/off switch."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Sympathetic vs. Parasympathetic\" as a directly sourced retrieval aid, correcting deterministic or outdated claims and stating the construct-specific limit on inference.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-439c1e6ad1c43d21",
+      "title": "Sleep Stages",
+      "content": "**N1, N2, N3, REM:** N1 is light transitional sleep; N2 includes sleep spindles and K-complexes; N3 contains high-amplitude slow waves; REM commonly combines rapid eye movements, low skeletal-muscle tone, and wake-like mixed-frequency EEG. Cycles and proportions vary by age, health, medication, person, and night; dreaming and memory processing are not exclusive to REM.",
+      "references": [
+        "https://www.nhlbi.nih.gov/health/sleep/stages-of-sleep"
+      ],
+      "sourceDetails": [
+        {
+          "title": "How Sleep Works: Sleep Phases and Stages",
+          "organization": "National Heart, Lung, and Blood Institute, National Institutes of Health",
+          "url": "https://www.nhlbi.nih.gov/health/sleep/stages-of-sleep",
+          "whyReputable": "This federal sleep resource defines current N1, N2, N3, and REM staging and explains normal cycling and variation across the night and lifespan."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Sleep Stages\" as a directly sourced retrieval aid, correcting deterministic or outdated claims and stating the construct-specific limit on inference.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-bd505ef53aca4126",
+      "title": "Psychotropic Drug Classes",
+      "content": "**Medication-class cue:** Antidepressants, antipsychotics, mood-stabilizing agents, anxiolytics, and stimulants are broad families with overlapping indications and agent-specific risks. A class name does not select a drug or predict response. Current labeling, interactions, age, pregnancy, health conditions, prior response, preference, monitoring, and qualified prescribing govern individual decisions.",
+      "references": [
+        "https://www.nimh.nih.gov/health/topics/mental-health-medications"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Mental Health Medications",
+          "organization": "National Institute of Mental Health, National Institutes of Health",
+          "url": "https://www.nimh.nih.gov/health/topics/mental-health-medications",
+          "whyReputable": "This current federal overview describes major psychotropic classes, overlapping indications, variable response, adverse effects, and the need for qualified prescribing and monitoring."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Psychotropic Drug Classes\" as a directly sourced retrieval aid, correcting deterministic or outdated claims and stating the construct-specific limit on inference.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-b3a772bd778ae61d",
+      "title": "Brain Imaging Techniques",
+      "content": "**Structure versus function:** CT uses x-rays and is useful for rapid structural assessment; MRI uses magnetic fields and radiofrequency signals for detailed structure; fMRI infers activity from blood-oxygen changes; PET uses radiotracers to estimate molecular or metabolic processes; EEG records scalp electrical potentials with high temporal resolution. Each method has distinct resolution, artifacts, contraindications, and inferential limits.",
+      "references": [
+        "https://www.ncbi.nlm.nih.gov/books/NBK621611/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Reference Guide on Neuroscience",
+          "organization": "Reference Manual on Scientific Evidence via NCBI Bookshelf, National Library of Medicine",
+          "url": "https://www.ncbi.nlm.nih.gov/books/NBK621611/",
+          "whyReputable": "This current NCBI Bookshelf reference directly compares CT, MRI, fMRI, PET, EEG, and related neuroscience methods, including their signals, spatial and temporal tradeoffs, and inferential limits."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Brain Imaging Techniques\" as a directly sourced retrieval aid, correcting deterministic or outdated claims and stating the construct-specific limit on inference.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-59966ac8efcf85bb",
+      "title": "Endocrine System & Hormones",
+      "content": "**Endocrine cue:** The hypothalamus and pituitary coordinate many hormonal axes; thyroid hormones influence metabolism; adrenal cortex and medulla have different outputs; pancreatic hormones regulate glucose; gonadal hormones have reproductive and broader effects. Symptoms are nonspecific, feedback loops matter, and \"master gland\" or \"bonding hormone\" labels oversimplify distributed regulation. Medical testing is required for endocrine conclusions.",
+      "references": [
+        "https://medlineplus.gov/endocrinediseases.html"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Endocrine Diseases",
+          "organization": "MedlinePlus, U.S. National Library of Medicine",
+          "url": "https://medlineplus.gov/endocrinediseases.html",
+          "whyReputable": "This federal medical resource explains endocrine glands and hormones and emphasizes that excess, deficiency, and target-organ response require medical evaluation rather than symptom-only inference."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Endocrine System & Hormones\" as a directly sourced retrieval aid, correcting deterministic or outdated claims and stating the construct-specific limit on inference.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-eb54d90f5b9ae27a",
+      "title": "Neuron Structure",
+      "content": "**Canonical neuron flow:** Dendrites and soma commonly receive and integrate inputs; axons propagate action potentials toward terminals; chemical synapses often release neurotransmitter onto receptors. This is not an always-one-way law: neurons receive inputs at multiple sites, electrical synapses may be bidirectional, and modulatory and retrograde signals occur. More dendrites do not translate mechanically into \"more learning.\"",
+      "references": [
+        "https://www.ninds.nih.gov/health-information/public-education/brain-basics/brain-basics-know-your-brain"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Brain Basics: Know Your Brain",
+          "organization": "National Institute of Neurological Disorders and Stroke, National Institutes of Health",
+          "url": "https://www.ninds.nih.gov/health-information/public-education/brain-basics/brain-basics-know-your-brain",
+          "whyReputable": "This federal neuroscience overview provides anatomically grounded descriptions of neurons, hemispheres, lobes, and distributed brain functions suitable for bounded study cues."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Neuron Structure\" as a directly sourced retrieval aid, correcting deterministic or outdated claims and stating the construct-specific limit on inference.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-b766cfab8ed0698c",
+      "title": "Selye's General Adaptation Syndrome",
+      "content": "**GAS as historical model:** Alarm, resistance, and exhaustion describe Selye's broad account of prolonged physiological adaptation to demand. Real stress responses are dynamic and shaped by appraisal, controllability, duration, health, context, and resources; people do not inevitably pass through three discrete stages. \"Exhaustion\" is not a diagnosis, and the model does not by itself identify a stressor or intervention.",
+      "references": [
+        "https://www.ncbi.nlm.nih.gov/books/NBK541120/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Physiology, Stress Reaction",
+          "organization": "StatPearls via NCBI Bookshelf, National Library of Medicine",
+          "url": "https://www.ncbi.nlm.nih.gov/books/NBK541120/",
+          "whyReputable": "This clinically reviewed NCBI Bookshelf chapter describes acute and chronic stress physiology, allostatic processes, and individual variation beyond a rigid three-stage destiny."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Selye's General Adaptation Syndrome\" as a directly sourced retrieval aid, correcting deterministic or outdated claims and stating the construct-specific limit on inference.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-40c0a030c7b41c9f",
+      "title": "Consciousness & Altered States",
+      "content": "**State cue:** Wakefulness, NREM sleep, REM sleep, sedation, and other altered states differ across behavioral responsiveness and multiple neural measures. Consciousness is not captured by one EEG rhythm, and hypnosis, meditation, substances, illness, and sleep are not interchangeable mechanisms. Separate subjective report, task performance, physiology, dose, context, and clinical status before drawing conclusions.",
+      "references": [
+        "https://www.nhlbi.nih.gov/health/sleep/stages-of-sleep",
+        "https://openstax.org/books/psychology-2e/pages/4-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "How Sleep Works: Sleep Phases and Stages",
+          "organization": "National Heart, Lung, and Blood Institute, National Institutes of Health",
+          "url": "https://www.nhlbi.nih.gov/health/sleep/stages-of-sleep",
+          "whyReputable": "This federal sleep resource defines current N1, N2, N3, and REM staging and explains normal cycling and variation across the night and lifespan."
+        },
+        {
+          "title": "Psychology 2e: States of Consciousness",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/4-introduction",
+          "whyReputable": "This openly licensed university chapter directly distinguishes wakefulness, sleep, psychoactive-substance effects, hypnosis, meditation, and other altered states of consciousness."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Consciousness & Altered States\" as a directly sourced retrieval aid, correcting deterministic or outdated claims and stating the construct-specific limit on inference.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-0441cd111d38302e",
+      "title": "Brain Lobes & Functions",
+      "content": "**Lobe map with limits:** Frontal regions contribute to motor control and executive functions; parietal regions to somatosensory and spatial processing; temporal regions to auditory, memory, and language networks; occipital regions to vision. Functions arise from distributed networks, vary within lobes, and can reorganize. A symptom or personality style cannot be localized from this mnemonic alone.",
+      "references": [
+        "https://www.ninds.nih.gov/health-information/public-education/brain-basics/brain-basics-know-your-brain"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Brain Basics: Know Your Brain",
+          "organization": "National Institute of Neurological Disorders and Stroke, National Institutes of Health",
+          "url": "https://www.ninds.nih.gov/health-information/public-education/brain-basics/brain-basics-know-your-brain",
+          "whyReputable": "This federal neuroscience overview provides anatomically grounded descriptions of neurons, hemispheres, lobes, and distributed brain functions suitable for bounded study cues."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Brain Lobes & Functions\" as a directly sourced retrieval aid, correcting deterministic or outdated claims and stating the construct-specific limit on inference.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-b802f25a23159167",
+      "title": "Aphasia Types",
+      "content": "**Aphasia profiles:** Nonfluent and fluent labels describe patterns across speech production, comprehension, repetition, naming, reading, and writing. Broca- and Wernicke-type prototypes are useful contrasts, but individual lesions and profiles vary and do not map perfectly to one cortical spot. Aphasia is a language disorder, not loss of intelligence; assessment must examine the person's actual modalities and causes.",
+      "references": [
+        "https://www.nidcd.nih.gov/health/aphasia"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Aphasia",
+          "organization": "National Institute on Deafness and Other Communication Disorders, National Institutes of Health",
+          "url": "https://www.nidcd.nih.gov/health/aphasia",
+          "whyReputable": "This federal communication-disorders resource explains aphasia as an acquired language disorder, its variable profiles, causes, assessment, and treatment."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Aphasia Types\" as a directly sourced retrieval aid, correcting deterministic or outdated claims and stating the construct-specific limit on inference.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-2f59f9cb6037bc6b",
+      "title": "Sleep Stages",
+      "content": "**Stage-recognition cue:** N1 marks transition into sleep; N2 is identified by spindles and K-complexes; N3 by slow-wave activity; REM by characteristic eye movements, low muscle tone, and mixed-frequency EEG. \"Deep equals delta\" can aid recall, but fixed 90-minute cycles and universal percentages are not rules. Age, timing, disorders, substances, and scoring methods alter architecture.",
+      "references": [
+        "https://www.nhlbi.nih.gov/health/sleep/stages-of-sleep"
+      ],
+      "sourceDetails": [
+        {
+          "title": "How Sleep Works: Sleep Phases and Stages",
+          "organization": "National Heart, Lung, and Blood Institute, National Institutes of Health",
+          "url": "https://www.nhlbi.nih.gov/health/sleep/stages-of-sleep",
+          "whyReputable": "This federal sleep resource defines current N1, N2, N3, and REM staging and explains normal cycling and variation across the night and lifespan."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Sleep Stages\" as a directly sourced retrieval aid, correcting deterministic or outdated claims and stating the construct-specific limit on inference.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-3439c67fc0eb1c87",
+      "title": "Split-Brain Research",
+      "content": "**Hemispheric specialization:** In carefully tested people whose corpus callosum had been surgically sectioned, information restricted to one visual field could reveal differences in language report and visuospatial response. These findings concern task-specific lateralization and interhemispheric transfer. They do not support \"logical left-brained\" versus \"creative right-brained\" personality types or imply independent minds in ordinary brains.",
+      "references": [
+        "https://www.nobelprize.org/prizes/medicine/1981/summary/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The Nobel Prize in Physiology or Medicine 1981",
+          "organization": "Nobel Prize Outreach",
+          "url": "https://www.nobelprize.org/prizes/medicine/1981/summary/",
+          "whyReputable": "This official Nobel summary identifies Sperry's primary hemispheric-specialization work while supporting bounded conclusions rather than a simplistic left-brain/right-brain personality theory."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Split-Brain Research\" as a directly sourced retrieval aid, correcting deterministic or outdated claims and stating the construct-specific limit on inference.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-05b64702c627f700",
+      "title": "Endocrine System & Hormones",
+      "content": "**Hormone-axis cue:** Hypothalamic signals regulate pituitary outputs that influence thyroid, adrenal, gonadal, growth, lactation, and water-balance systems. Cortisol, oxytocin, melatonin, and catecholamines have context-, receptor-, and timing-dependent effects; none is simply a \"stress,\" \"bonding,\" or \"sleep\" chemical. Psychological symptoms may warrant medical consideration, but no symptom list establishes endocrine disease.",
+      "references": [
+        "https://medlineplus.gov/endocrinediseases.html"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Endocrine Diseases",
+          "organization": "MedlinePlus, U.S. National Library of Medicine",
+          "url": "https://medlineplus.gov/endocrinediseases.html",
+          "whyReputable": "This federal medical resource explains endocrine glands and hormones and emphasizes that excess, deficiency, and target-organ response require medical evaluation rather than symptom-only inference."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Endocrine System & Hormones\" as a directly sourced retrieval aid, correcting deterministic or outdated claims and stating the construct-specific limit on inference.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    }
+  ]
+}

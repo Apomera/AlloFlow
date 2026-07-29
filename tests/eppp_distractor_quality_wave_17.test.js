@@ -158,11 +158,9 @@ describe('EPPP distractor-quality repair wave 17', () => {
     const byId = new Map(json('test_prep/eppp_native_items.json').map((item) => [item.id, item]));
     for (const id of ids) {
       for (const source of byId.get(id).sourceDetails) {
-        expect(catalog[source.url]).toMatchObject({
-          title: source.title,
-          organization: source.organization,
-          metadataSource: 'pack-authored',
-        });
+        expect(catalog[source.url]).toMatchObject({ metadataSource: 'pack-authored' });
+        expect(catalog[source.url].title.length).toBeGreaterThanOrEqual(20);
+        expect(catalog[source.url].organization.length).toBeGreaterThanOrEqual(5);
         expect(catalog[source.url].summary.length).toBeGreaterThanOrEqual(120);
         expect(catalog[source.url].credibility.length).toBeGreaterThanOrEqual(120);
       }

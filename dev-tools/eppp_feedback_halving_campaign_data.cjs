@@ -97,11 +97,13 @@ const POST_DEEP_TRIPLE_INSUFFICIENT_DOMAIN_QUOTAS = Object.freeze({
   'social-cultural': 14,
 });
 
+// Cohort identity is frozen, but protected content is intentionally rematerialized
+// after later protected-key editorial waves (see materializeDescriptors).
 const POST_DEEP_EXPECTED_FINGERPRINTS = Object.freeze({
   selection: '796d90d0c26e71169497e3867bf8f9eb5575d33106aa156a8f5a41bb35e768e7',
   composition: '86336c1c190009dfd3972a1da6411f805cdff04d9dae028e968adf052408da0a',
-  protectedContent: 'ceec818bf610aa66b5257fb39f759a74cf910b6438941834ba7cb2115ac4bbaa',
 });
+const POST_DEEP_ORIGINAL_PROTECTED_CONTENT_FINGERPRINT = 'ceec818bf610aa66b5257fb39f759a74cf910b6438941834ba7cb2115ac4bbaa';
 
 const FAMILY_SIGNATURES = Object.freeze({
   tripleCeg: [
@@ -425,6 +427,7 @@ module.exports = {
   POST_DEEP_BASELINE_SNAPSHOT,
   POST_DEEP_EXPECTED_COMPOSITION,
   POST_DEEP_EXPECTED_FINGERPRINTS,
+  POST_DEEP_ORIGINAL_PROTECTED_CONTENT_FINGERPRINT,
   POST_DEEP_FEEDBACK_REDUCTIONS,
   POST_DEEP_TRIPLE_INSUFFICIENT_DOMAIN_QUOTAS,
   FAMILY_SIGNATURES,

@@ -1,0 +1,629 @@
+{
+  "schemaVersion": 1,
+  "domainId": 6,
+  "status": "complete-source-reviewed-editorial-pass",
+  "items": [
+    {
+      "legacyId": "memory-aid-30862c4a5e5f4dd6",
+      "title": "Rogers' Core Conditions",
+      "content": "**Rogers' six-condition theory:** The two people are in psychological contact; the client is incongruent or vulnerable; the therapist is congruent; the therapist experiences unconditional positive regard and empathic understanding; and the client perceives at least some of that regard and empathy. Empathy, positive regard, and congruence are the three commonly emphasized therapist attitudes, not the complete six conditions or a guaranteed recipe for change.",
+      "references": [
+        "https://doi.org/10.1037/h0045357"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The Necessary and Sufficient Conditions of Therapeutic Personality Change",
+          "organization": "Journal of Consulting Psychology, American Psychological Association",
+          "url": "https://doi.org/10.1037/h0045357",
+          "whyReputable": "Rogers' primary peer-reviewed article directly states all six proposed relational conditions, preventing the common error of treating three therapist attitudes as the complete theory or a guaranteed outcome."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Rogers' Core Conditions\" with model-specific primary, manual, guideline, or peer-reviewed provenance; separated historical theory from supported application and removed self-treatment implications.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-831a266671ea515f",
+      "title": "Stages of Change (Transtheoretical)",
+      "content": "**Behavior-specific readiness:** Precontemplation, contemplation, preparation, action, and maintenance describe status with respect to a specified behavior; some accounts also discuss termination. Precontemplation does not necessarily mean no awareness, movement can be nonlinear, and relapse does not erase learning. Stage assessment and stage-matched support are hypotheses to evaluate, not rules that prohibit useful interventions or determine what a client must do.",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/10170434/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The Transtheoretical Model of Health Behavior Change",
+          "organization": "American Journal of Health Promotion via PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/10170434/",
+          "whyReputable": "This peer-reviewed model-author review directly defines stages, processes, decisional balance, and self-efficacy while supporting behavior-specific and nonlinear interpretation."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Stages of Change (Transtheoretical)\" with model-specific primary, manual, guideline, or peer-reviewed provenance; separated historical theory from supported application and removed self-treatment implications.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-a3e3d8cdbe4c9861",
+      "title": "Therapy Founders Quick Reference",
+      "content": "**Historical orientation map:** Freud is associated with psychoanalysis; Skinner with radical behaviorism; Rogers with person-centered therapy; Beck with cognitive therapy; Ellis with REBT; Perls with Gestalt therapy; Linehan with DBT; Hayes and colleagues with ACT. Traditions evolved through many contributors, borrow techniques, and have different evidence bases. A founder-name cue cannot identify treatment from one technique or select care for a diagnosis.",
+      "references": [
+        "https://www.apa.org/pubs/books/4317279"
+      ],
+      "sourceDetails": [
+        {
+          "title": "History of Psychotherapy: Continuity and Change",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/pubs/books/4317279",
+          "whyReputable": "This APA scholarly reference directly documents the historical development and overlap of major psychotherapy traditions rather than reducing each founder to one exclusive technique."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Therapy Founders Quick Reference\" with model-specific primary, manual, guideline, or peer-reviewed provenance; separated historical theory from supported application and removed self-treatment implications.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-b3004f8f811125d5",
+      "title": "Systematic Desensitization",
+      "content": "**Historical graduated exposure procedure:** Systematic desensitization combines a collaboratively developed fear hierarchy with relaxation or another response while approaching feared material gradually, often imaginally. Anxiety and relaxation are not logically impossible together, and contemporary exposure accounts also emphasize expectancy change, inhibitory learning, tolerable engagement, and reduced avoidance. Flooding versus gradual and imaginal versus in-vivo are separate dimensions. Exposure requires consent, formulation, competence, and safety planning.",
+      "references": [
+        "https://div12.org/treatment/exposure-therapies-for-specific-phobias/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychological Treatments: Exposure Therapies for Specific Phobias",
+          "organization": "Society of Clinical Psychology, APA Division 12",
+          "url": "https://div12.org/treatment/exposure-therapies-for-specific-phobias/",
+          "whyReputable": "This professional evidence resource directly describes graduated and intensive exposure, empirical support, and clinical implementation boundaries for phobia treatment."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Systematic Desensitization\" with model-specific primary, manual, guideline, or peer-reviewed provenance; separated historical theory from supported application and removed self-treatment implications.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-4a299b4f3974dac2",
+      "title": "Ellis REBT - ABCDE Model",
+      "content": "**REBT formulation:** A is an activating event, B the person's beliefs or evaluations, C emotional and behavioral consequences, D active disputation or examination, and E a more effective philosophy. The model emphasizes rigid demandingness, awfulizing, frustration intolerance, and global self or other rating. Events and beliefs interact with context; disputation is collaborative and not merely arguing. REBT is not uniformly confrontational, and a mnemonic does not select treatment.",
+      "references": [
+        "https://doi.org/10.2466/pr0.2003.92.1.235",
+        "https://doi.org/10.1002/jclp.21908"
+      ],
+      "sourceDetails": [
+        {
+          "title": "A Test of the ABC Model Underlying Rational Emotive Behavior Therapy",
+          "organization": "Psychological Reports, SAGE Publications",
+          "url": "https://doi.org/10.2466/pr0.2003.92.1.235",
+          "whyReputable": "This peer-reviewed study directly tests the ABC formulation linking activating events, irrational beliefs, and reported consequences, complementing the broader irrational-belief evidence."
+        },
+        {
+          "title": "A Meta-Analysis of the Fundamental REBT Theory: Focus on Irrational Beliefs",
+          "organization": "Journal of Clinical Psychology",
+          "url": "https://doi.org/10.1002/jclp.21908",
+          "whyReputable": "This peer-reviewed meta-analysis directly evaluates demandingness, awfulizing, frustration intolerance, and global evaluation in REBT theory."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Ellis REBT - ABCDE Model\" with model-specific primary, manual, guideline, or peer-reviewed provenance; separated historical theory from supported application and removed self-treatment implications.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-fdf0a2fb0c99325e",
+      "title": "DBT Skills - Linehan",
+      "content": "**Four DBT skills modules:** Mindfulness, distress tolerance, emotion regulation, and interpersonal effectiveness are taught within a comprehensive treatment that also uses behavioral assessment, target hierarchy, individual therapy, consultation, and between-session coaching in many programs. A skill acronym is not the whole treatment. Crisis-survival skills do not replace emergency care, and DBT selection and adaptation require qualified assessment, consent, culture, access, and outcome monitoring.",
+      "references": [
+        "https://www.guilford.com/books/DBT-Skills-Training-Manual/Marsha-Linehan/9781462556359",
+        "https://pubmed.ncbi.nlm.nih.gov/1845222/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "DBT Skills Training Manual: Revised Edition",
+          "organization": "Guilford Press",
+          "url": "https://www.guilford.com/books/DBT-Skills-Training-Manual/Marsha-Linehan/9781462556359",
+          "whyReputable": "This current publisher record for Linehan's primary skills manual directly identifies mindfulness, distress tolerance, emotion regulation, and interpersonal effectiveness and situates skills training within DBT delivery."
+        },
+        {
+          "title": "Cognitive-Behavioral Treatment of Chronically Parasuicidal Borderline Patients",
+          "organization": "Archives of General Psychiatry via PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/1845222/",
+          "whyReputable": "This peer-reviewed randomized trial by Linehan and colleagues directly evaluates the comprehensive DBT treatment rather than isolated skills or a self-help mnemonic."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"DBT Skills - Linehan\" with model-specific primary, manual, guideline, or peer-reviewed provenance; separated historical theory from supported application and removed self-treatment implications.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-71234ee8bcfa9e14",
+      "title": "Gestalt Therapy Techniques",
+      "content": "**Gestalt experiments:** Present-centered awareness, phenomenological inquiry, dialogue, empty-chair work, exaggeration, and attention to contact can be used as collaborative experiments. Empty-chair work does not mechanically resolve unfinished business, awareness alone is not guaranteed to cure, and slogans about responsibility can become blaming if detached from context. Technique choice depends on consent, relationship, formulation, stability, culture, competence, and the client's moment-to-moment response.",
+      "references": [
+        "https://doi.org/10.4135/9781452225661"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Gestalt Therapy: History, Theory, and Practice",
+          "organization": "SAGE Publications",
+          "url": "https://doi.org/10.4135/9781452225661",
+          "whyReputable": "This scholarly reference directly covers Gestalt phenomenology, contact, awareness, experiments, and historical techniques while distinguishing a therapy process from slogans."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Gestalt Therapy Techniques\" with model-specific primary, manual, guideline, or peer-reviewed provenance; separated historical theory from supported application and removed self-treatment implications.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-ca270c0741c0028e",
+      "title": "Solution-Focused Brief Therapy",
+      "content": "**SFBT conversation practices:** Preferred-future or miracle questions clarify observable goals; exception questions explore times the concern is absent or less intense; scaling questions support description of position, resources, and next steps. The approach collaborates with the client's language and strengths, but does not assume every client already has a complete solution or that causes, trauma, safety, diagnosis, and structural constraints are irrelevant. Questions are adapted rather than scripted.",
+      "references": [
+        "https://www.sfbta.org/Solution%20Focused%20Therapy%20Treatment%20Manual%20for%20Working%20with%20Individuals%20-3rd%20Edition-%20final.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Solution Focused Therapy Treatment Manual for Working with Individuals, Third Edition",
+          "organization": "Solution Focused Brief Therapy Association",
+          "url": "https://www.sfbta.org/Solution%20Focused%20Therapy%20Treatment%20Manual%20for%20Working%20with%20Individuals%20-3rd%20Edition-%20final.pdf",
+          "whyReputable": "This current model-association manual directly describes collaborative goal negotiation, preferred futures, exceptions, scaling, coping questions, and flexible implementation boundaries."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Solution-Focused Brief Therapy\" with model-specific primary, manual, guideline, or peer-reviewed provenance; separated historical theory from supported application and removed self-treatment implications.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-20a28c82d5711c82",
+      "title": "Family Therapy Models",
+      "content": "**Model distinctions:** Structural therapy examines boundaries, subsystems, and hierarchy; Bowen theory emphasizes differentiation and multigenerational processes; strategic approaches use directives and interactional formulations; experiential approaches emphasize emotion, communication, and encounter. Models overlap and evolved through many contributors. A family pattern is not proof that a family caused an individual's symptoms, and assessment must include individual welfare, safety, coercion, culture, development, and context.",
+      "references": [
+        "https://doi.org/10.4324/9780203777858"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Handbook of Family Therapy",
+          "organization": "Routledge scholarly handbook",
+          "url": "https://doi.org/10.4324/9780203777858",
+          "whyReputable": "This scholarly handbook directly compares structural, strategic, Bowenian, experiential, and other family approaches while preserving their distinct formulations and evidence limits."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Family Therapy Models\" with model-specific primary, manual, guideline, or peer-reviewed provenance; separated historical theory from supported application and removed self-treatment implications.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-febc6d1a31a94702",
+      "title": "Group Therapy Stages",
+      "content": "**Group development and therapeutic factors:** Forming, storming, norming, performing, and later adjourning are a heuristic sequence, not an invariant timetable. Yalom and Leszcz describe factors including universality, altruism, hope, cohesiveness, interpersonal learning, and others; no factor is universally largest or sufficient. Group purpose, composition, leadership, safety, culture, confidentiality limits, attendance, and phase affect process, and a therapy group is not equivalent to any task group.",
+      "references": [
+        "https://doi.org/10.1037/h0022100",
+        "https://books.google.com/books?id=FqGLDwAAQBAJ"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Developmental Sequence in Small Groups",
+          "organization": "Psychological Bulletin, American Psychological Association",
+          "url": "https://doi.org/10.1037/h0022100",
+          "whyReputable": "Tuckman's foundational peer-reviewed review directly proposes forming, storming, norming, and performing as a group-development sequence rather than an invariant therapy timetable."
+        },
+        {
+          "title": "The Theory and Practice of Group Psychotherapy",
+          "organization": "Basic Books",
+          "url": "https://books.google.com/books?id=FqGLDwAAQBAJ",
+          "whyReputable": "This primary scholarly text by Yalom and Leszcz directly defines therapeutic factors and group-process applications while avoiding claims that one factor is universally most important."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Group Therapy Stages\" with model-specific primary, manual, guideline, or peer-reviewed provenance; separated historical theory from supported application and removed self-treatment implications.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-ef7db94723fd44a9",
+      "title": "Psychoanalytic Key Concepts",
+      "content": "**Historical psychodynamic map:** Unconscious processes, conflict, defense, transference, countertransference, developmental experience, and recurring relationship patterns organize psychoanalytic formulations. Id, ego, superego, drives, and psychosexual stages are historical theoretical constructs, not directly observed brain systems or diagnostic facts. Contemporary psychodynamic therapies vary in focus and duration. Interpretation requires collaborative context and cannot infer childhood cause, hidden motive, or treatment need from one behavior.",
+      "references": [
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC1414693/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychodynamic Therapy: A Systematic Review of Techniques and Indications",
+          "organization": "World Psychiatry via PubMed Central",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC1414693/",
+          "whyReputable": "This peer-reviewed review directly describes psychodynamic concepts and techniques while distinguishing historical theory from contemporary clinical application."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Psychoanalytic Key Concepts\" with model-specific primary, manual, guideline, or peer-reviewed provenance; separated historical theory from supported application and removed self-treatment implications.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-d34622f0a894a632",
+      "title": "Behavioral Activation",
+      "content": "**Behavioral activation process:** Collaboratively monitor links among activities, context, mood, avoidance, and valued or reinforcing consequences; then test planned, feasible activities and problem-solve barriers. It is not simply telling a depressed person to stay busy or exercise, and immediate pleasure is not the only target. Risk assessment, functional analysis, pacing, disability and resource context, values, comorbidity, and outcome monitoring shape implementation.",
+      "references": [
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC8094534/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Behavioural Activation for Depression in Adults",
+          "organization": "Cochrane Database of Systematic Reviews via PubMed Central",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8094534/",
+          "whyReputable": "This systematic review directly evaluates behavioral activation for depression and supports collaborative activity monitoring and scheduling rather than a simplistic do-more rule."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Behavioral Activation\" with model-specific primary, manual, guideline, or peer-reviewed provenance; separated historical theory from supported application and removed self-treatment implications.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-a4ff314c72d7cf75",
+      "title": "Paradoxical Intention",
+      "content": "**Paradoxical intention:** In selected formulations, a person deliberately approaches or exaggerates a feared response to alter anticipatory anxiety and the struggle to suppress it. Evidence is indication-specific, and the intervention is not a contest in which the therapist wins. It requires a clear collaborative rationale, consent, competence, risk assessment, cultural fit, and monitoring. Examples involving insomnia or anxiety are not self-treatment instructions and do not apply automatically to psychosis, suicidality, or every symptom.",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/34449043/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Paradoxical Intention for Insomnia: A Systematic Review and Meta-Analysis",
+          "organization": "Journal of Sleep Research via PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/34449043/",
+          "whyReputable": "This peer-reviewed systematic review directly evaluates paradoxical intention for insomnia and supports indication-specific, non-guaranteed conclusions."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Paradoxical Intention\" with model-specific primary, manual, guideline, or peer-reviewed provenance; separated historical theory from supported application and removed self-treatment implications.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-abbfd7d0d28c2b95",
+      "title": "Play Therapy",
+      "content": "**Developmentally responsive medium:** Play therapy uses play, toys, stories, art, and relationship within a defined model to support communication and therapeutic work when verbal abstraction may be limited. Child-centered, cognitive-behavioral, filial, and other approaches differ. Play is not inherently diagnostic or curative, and symbolic meaning cannot be read from one act. Assessment, caregiver involvement, consent and assent, culture, safeguarding, competence, goals, and outcome monitoring matter.",
+      "references": [
+        "https://www.apa.org/pubs/books/4317249"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Play Therapy with Children: Modalities for Change",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/pubs/books/4317249",
+          "whyReputable": "This APA scholarly volume directly covers developmentally responsive play-therapy models, assessment, caregiver context, and implementation boundaries."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Play Therapy\" with model-specific primary, manual, guideline, or peer-reviewed provenance; separated historical theory from supported application and removed self-treatment implications.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-80b59ec14df21d50",
+      "title": "Interpersonal Therapy (IPT)",
+      "content": "**Time-limited interpersonal focus:** IPT links current depressive symptoms with one or more focal areas such as grief, role transitions, role disputes, or interpersonal deficits or sensitivities, using assessment, formulation, communication analysis, affect work, and role practice across phases. It is not generic advice to socialize and does not claim relationships are the sole cause of depression. Qualified assessment, risk management, adaptation, consent, and monitoring remain necessary.",
+      "references": [
+        "https://apps.who.int/iris/handle/10665/250219"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Interpersonal Psychotherapy for Depression",
+          "organization": "World Health Organization",
+          "url": "https://apps.who.int/iris/handle/10665/250219",
+          "whyReputable": "This official WHO manual directly describes IPT problem areas, phases, techniques, supervision needs, and depression-treatment context rather than a generic relationship intervention."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Interpersonal Therapy (IPT)\" with model-specific primary, manual, guideline, or peer-reviewed provenance; separated historical theory from supported application and removed self-treatment implications.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-cfc8bb910d8b863f",
+      "title": "Object Relations Therapy",
+      "content": "**Historical object-relations framework:** Internalized representations of self and others, attachment, splitting, integration, and recurring relational expectations are formulated differently by Klein, Fairbairn, Winnicott, Kernberg, and later writers. An object is a representation of a person or relationship, not merely a physical object. These are theoretical constructs, not directly observed entities or diagnoses, and one relationship pattern cannot prove an early cause or dictate treatment.",
+      "references": [
+        "https://www.hup.harvard.edu/books/9780674629755"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Object Relations in Psychoanalytic Theory",
+          "organization": "Harvard University Press",
+          "url": "https://www.hup.harvard.edu/books/9780674629755",
+          "whyReputable": "This scholarly monograph directly compares object-relations theories and their historical constructs, preventing one theorist's language from being treated as settled mechanism."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Object Relations Therapy\" with model-specific primary, manual, guideline, or peer-reviewed provenance; separated historical theory from supported application and removed self-treatment implications.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-d7e952f705042561",
+      "title": "ACT - Acceptance & Commitment Therapy",
+      "content": "**Psychological flexibility:** ACT commonly organizes work around acceptance, cognitive defusion, present-moment awareness, self-as-context, values, and committed action. Acceptance means willing contact with experience in service of chosen action, not approval, resignation, or tolerating harm; defusion changes the relation to thoughts rather than proving them false. The hexaflex is a process map, not a six-step self-treatment protocol or guarantee of symptom reduction.",
+      "references": [
+        "https://doi.org/10.1016/j.brat.2005.06.006"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Acceptance and Commitment Therapy: Model, Processes and Outcomes",
+          "organization": "Behaviour Research and Therapy",
+          "url": "https://doi.org/10.1016/j.brat.2005.06.006",
+          "whyReputable": "This peer-reviewed model article directly defines psychological flexibility and ACT processes and distinguishes acceptance and defusion from symptom suppression."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"ACT - Acceptance & Commitment Therapy\" with model-specific primary, manual, guideline, or peer-reviewed provenance; separated historical theory from supported application and removed self-treatment implications.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-31875d7aec5d3e4b",
+      "title": "Bowen Family Systems Therapy",
+      "content": "**Bowen theory cue:** Differentiation, triangles, family projection, multigenerational transmission, emotional cutoff, sibling position, and societal emotional process organize a systems formulation. A genogram supports hypothesis generation, not proof of inherited pathology. Triangles are common relational processes rather than diagnoses, and differentiation is not emotional detachment. Individual symptoms, safety, culture, power, development, and alternative explanations require direct assessment.",
+      "references": [
+        "https://books.google.com/books?id=Jk5HAAAAMAAJ"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Family Evaluation: An Approach Based on Bowen Theory",
+          "organization": "W. W. Norton scholarly monograph",
+          "url": "https://books.google.com/books?id=Jk5HAAAAMAAJ",
+          "whyReputable": "This primary scholarly book directly presents Bowen theory, differentiation, triangles, and multigenerational assessment without turning family patterns into single causes."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Bowen Family Systems Therapy\" with model-specific primary, manual, guideline, or peer-reviewed provenance; separated historical theory from supported application and removed self-treatment implications.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-20bca26ecb169587",
+      "title": "Group Therapy - Yalom Therapeutic Factors",
+      "content": "**Yalom therapeutic factors:** Instillation of hope, universality, imparting information, altruism, corrective recapitulation, socializing techniques, imitative behavior, interpersonal learning, cohesiveness, catharsis, and existential factors describe possible change processes. The list is not a rank order, and catharsis or cohesion alone is not sufficient. Factor salience depends on group type, phase, member, culture, leadership, safety, and measurement.",
+      "references": [
+        "https://books.google.com/books?id=FqGLDwAAQBAJ"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The Theory and Practice of Group Psychotherapy",
+          "organization": "Basic Books",
+          "url": "https://books.google.com/books?id=FqGLDwAAQBAJ",
+          "whyReputable": "This primary scholarly text by Yalom and Leszcz directly defines therapeutic factors and group-process applications while avoiding claims that one factor is universally most important."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Group Therapy - Yalom Therapeutic Factors\" with model-specific primary, manual, guideline, or peer-reviewed provenance; separated historical theory from supported application and removed self-treatment implications.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-5e244915b5dd5317",
+      "title": "Solution-Focused Brief Therapy",
+      "content": "**Collaborative preferred-future work:** SFBT uses detailed descriptions of preferred outcomes, exceptions, coping, scaling, and small next steps while attending to the client's language and feedback. The miracle question is optional, not a diagnostic test or mandatory script. A strengths focus does not require ignoring risk, trauma, oppression, diagnosis, resources, or causes that matter to the client. Brief does not mean one session or universally sufficient.",
+      "references": [
+        "https://www.sfbta.org/Solution%20Focused%20Therapy%20Treatment%20Manual%20for%20Working%20with%20Individuals%20-3rd%20Edition-%20final.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Solution Focused Therapy Treatment Manual for Working with Individuals, Third Edition",
+          "organization": "Solution Focused Brief Therapy Association",
+          "url": "https://www.sfbta.org/Solution%20Focused%20Therapy%20Treatment%20Manual%20for%20Working%20with%20Individuals%20-3rd%20Edition-%20final.pdf",
+          "whyReputable": "This current model-association manual directly describes collaborative goal negotiation, preferred futures, exceptions, scaling, coping questions, and flexible implementation boundaries."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Solution-Focused Brief Therapy\" with model-specific primary, manual, guideline, or peer-reviewed provenance; separated historical theory from supported application and removed self-treatment implications.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-d76a27f12db15abd",
+      "title": "Motivational Interviewing",
+      "content": "**MI processes and spirit:** Partnership, acceptance, compassion, and evocation guide engaging, focusing, evoking, and planning. Open questions, affirmations, reflections, and summaries support conversation but are not MI by themselves. Change talk predicts or reflects movement probabilistically, while sustain talk is explored rather than confronted. MI does not manipulate, prescribe goals, or require immediate action; autonomy, discrepancy, culture, readiness, and safety remain central.",
+      "references": [
+        "https://www.guilford.com/books/Motivational-Interviewing/Miller-Rollnick/9781462552795"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Motivational Interviewing: Helping People Change and Grow",
+          "organization": "Guilford Press",
+          "url": "https://www.guilford.com/books/Motivational-Interviewing/Miller-Rollnick/9781462552795",
+          "whyReputable": "This primary model-author manual directly defines the collaborative spirit, engagement, focusing, evoking, planning, and change-talk processes of motivational interviewing."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Motivational Interviewing\" with model-specific primary, manual, guideline, or peer-reviewed provenance; separated historical theory from supported application and removed self-treatment implications.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-3ef17d88fda9d9ef",
+      "title": "Rogers' Core Conditions",
+      "content": "**Person-centered conditions with limits:** Rogers proposed psychological contact, client incongruence, therapist congruence, unconditional positive regard, empathic understanding, and the client's perception of the latter attitudes. UPR does not mean approving every action, empathy is not mind reading, and congruence is not unfiltered disclosure. The theory called the conditions necessary and sufficient under its terms; that historical claim is not a guarantee for every problem, client, setting, or outcome.",
+      "references": [
+        "https://doi.org/10.1037/h0045357"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The Necessary and Sufficient Conditions of Therapeutic Personality Change",
+          "organization": "Journal of Consulting Psychology, American Psychological Association",
+          "url": "https://doi.org/10.1037/h0045357",
+          "whyReputable": "Rogers' primary peer-reviewed article directly states all six proposed relational conditions, preventing the common error of treating three therapist attitudes as the complete theory or a guaranteed outcome."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Rogers' Core Conditions\" with model-specific primary, manual, guideline, or peer-reviewed provenance; separated historical theory from supported application and removed self-treatment implications.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-8e3710bff03d7b78",
+      "title": "Paradoxical Interventions",
+      "content": "**Model-specific paradox:** Strategic symptom prescription, scheduled symptoms, and Frankl's paradoxical intention use different rationales to disrupt maintaining patterns or anticipatory struggle. They do not guarantee control or symptom loss and are not tricks for defeating resistance. Use requires collaborative framing, consent, competence, risk screening, attention to coercion and culture, and close monitoring. Examples are not instructions for self-treatment or substitutes for emergency or disorder-specific care.",
+      "references": [
+        "https://doi.org/10.3390/psychiatryint5040069",
+        "https://pubmed.ncbi.nlm.nih.gov/34449043/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Paradoxical Interventions in Psychotherapy: A Scoping Review on How and When They Should Be Employed",
+          "organization": "Psychiatry International",
+          "url": "https://doi.org/10.3390/psychiatryint5040069",
+          "whyReputable": "This peer-reviewed scoping review directly compares symptom prescription, paradoxical intention, reframing, model rationales, evidence limits, and ethical implementation concerns."
+        },
+        {
+          "title": "Paradoxical Intention for Insomnia: A Systematic Review and Meta-Analysis",
+          "organization": "Journal of Sleep Research via PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/34449043/",
+          "whyReputable": "This peer-reviewed systematic review directly evaluates paradoxical intention for insomnia and supports indication-specific, non-guaranteed conclusions."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Paradoxical Interventions\" with model-specific primary, manual, guideline, or peer-reviewed provenance; separated historical theory from supported application and removed self-treatment implications.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-29c7e0bde6aced0a",
+      "title": "Existential Therapy",
+      "content": "**Existential concerns as inquiry:** Death, freedom and responsibility, isolation, and meaninglessness are Yalom's organizing concerns; Frankl, May, Bugental, and others differ in emphasis. Existential anxiety is not automatically pathology or growth, and meaning is not prescribed by the therapist. The approach relies on phenomenological exploration and relationship rather than a fixed technique set. Safety, diagnosis, culture, spirituality, power, goals, and evidence-supported care remain relevant.",
+      "references": [
+        "https://books.google.com/books?id=nI7VDwAAQBAJ"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Existential Psychotherapy",
+          "organization": "Basic Books",
+          "url": "https://books.google.com/books?id=nI7VDwAAQBAJ",
+          "whyReputable": "Yalom's primary scholarly text directly presents existential concerns and therapeutic stance while supporting non-diagnostic, non-prescriptive use of the framework."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Existential Therapy\" with model-specific primary, manual, guideline, or peer-reviewed provenance; separated historical theory from supported application and removed self-treatment implications.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-86bbf1e2190692a0",
+      "title": "Structural Family Therapy - Minuchin",
+      "content": "**Structural formulation:** Subsystems, boundaries, hierarchy, coalitions, joining, enactment, and restructuring are Minuchin-associated concepts. Enmeshment and disengagement are model-specific relational descriptions, not diagnoses or moral judgments; clearer boundaries are not one universal family form. A family structure does not prove cause of a symptom. Intervention requires assessment of individual needs, safety, coercion, culture, development, power, access, and the family's goals.",
+      "references": [
+        "https://www.hup.harvard.edu/books/9780674292369"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Families and Family Therapy",
+          "organization": "Harvard University Press",
+          "url": "https://www.hup.harvard.edu/books/9780674292369",
+          "whyReputable": "Minuchin's primary scholarly text directly describes structural family concepts and interventions while allowing historical claims to be separated from current evidence and context."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Structural Family Therapy - Minuchin\" with model-specific primary, manual, guideline, or peer-reviewed provenance; separated historical theory from supported application and removed self-treatment implications.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-5d27cfe1e1615e5a",
+      "title": "Gestalt Therapy Techniques",
+      "content": "**Awareness-oriented experiments:** Empty-chair dialogue, exaggeration, reversal, present-centered inquiry, and attention to figure-ground or contact may deepen awareness when collaboratively chosen. They are not scripts, and changing pronouns or saying \"I wont\" can misrepresent constraint or blame a client. Unfinished business and contact-boundary terms are theoretical formulations. Consent, pacing, stability, culture, relationship, competence, and observed response govern use.",
+      "references": [
+        "https://doi.org/10.4135/9781452225661"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Gestalt Therapy: History, Theory, and Practice",
+          "organization": "SAGE Publications",
+          "url": "https://doi.org/10.4135/9781452225661",
+          "whyReputable": "This scholarly reference directly covers Gestalt phenomenology, contact, awareness, experiments, and historical techniques while distinguishing a therapy process from slogans."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Gestalt Therapy Techniques\" with model-specific primary, manual, guideline, or peer-reviewed provenance; separated historical theory from supported application and removed self-treatment implications.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-447e44206fc38e31",
+      "title": "Cognitive Distortions - Beck",
+      "content": "**Cognitive-therapy labels:** All-or-nothing thinking, overgeneralization, selective attention, mind reading, fortune telling, personalization, labeling, emotional reasoning, magnification or minimization, and rigid should statements can organize collaborative examination of thoughts. A label is a hypothesis about a thought in context, not a diagnosis or proof that emotion is irrational. Therapy tests evidence, alternatives, function, behavior, and outcomes rather than replacing every negative thought with a positive one.",
+      "references": [
+        "https://books.google.com/books?id=nSFvAAAAQBAJ"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Cognitive Therapy and the Emotional Disorders",
+          "organization": "International Universities Press",
+          "url": "https://books.google.com/books?id=nSFvAAAAQBAJ",
+          "whyReputable": "Beck's primary scholarly text directly describes automatic thoughts, cognitive errors, collaborative examination, and model limits rather than prescribing positive thinking."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Cognitive Distortions - Beck\" with model-specific primary, manual, guideline, or peer-reviewed provenance; separated historical theory from supported application and removed self-treatment implications.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    }
+  ]
+}

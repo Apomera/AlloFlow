@@ -4,6 +4,21 @@
 const fs = require('fs');
 const path = require('path');
 
+function writeFileWithRetry(filePath, contents) {
+  let lastError;
+  for (let attempt = 0; attempt < 40; attempt += 1) {
+    try {
+      fs.writeFileSync(filePath, contents, 'utf8');
+      return;
+    } catch (error) {
+      lastError = error;
+      if (!['EBUSY', 'EPERM', 'EACCES', 'UNKNOWN'].includes(error.code)) throw error;
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 100);
+    }
+  }
+  throw lastError;
+}
+
 const root = path.resolve(__dirname, '..');
 const runtimeRoot = path.join(root, 'test_prep', 'eppp_legacy');
 const deployRoot = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_legacy');
@@ -102,8 +117,8 @@ ${report.requiredGates.map((gate, index) => `${index + 1}. ${gate}`).join('\n')}
 `;
 
 for (const outputRoot of [runtimeRoot, deployRoot]) {
-  fs.writeFileSync(path.join(outputRoot, 'review_ledger.json'), JSON.stringify(report, null, 2) + '\n', 'utf8');
-  fs.writeFileSync(path.join(outputRoot, 'review_ledger.md'), markdown, 'utf8');
+  writeFileWithRetry(path.join(outputRoot, 'review_ledger.json'), JSON.stringify(report, null, 2) + '\n');
+  writeFileWithRetry(path.join(outputRoot, 'review_ledger.md'), markdown);
 }
 
 console.log('EPPP review ledger: ' + migratedCount + '/' + items.length + ' legacy items migrated to native QA; ' + (items.length - migratedCount) + ' remain quarantined.');

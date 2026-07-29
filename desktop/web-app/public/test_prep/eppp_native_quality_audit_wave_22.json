@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "eppp-native-quality-wave-22",
+  "reviewedAt": "2026-07-28",
+  "reportType": "source-checked-native-item-repair",
+  "scope": "Deep-rewrite the next 1 selected items in the adjudication-aware distractor action docket while preserving answer positions and full option-level teaching feedback.",
+  "challengeCriteria": [
+    "replace definition completion with application or analysis where difficulty warrants",
+    "use adjacent, instructionally plausible distractors without stacked absolute cues",
+    "avoid keyed lexical echoes that allow answer selection without construct knowledge",
+    "separate intentionally related coverage by decision, context, or cognitive demand",
+    "verify the key and rationale against an item-specific authoritative or peer-reviewed source",
+    "provide four substantive, option-specific explanations and preserve answer positions"
+  ],
+  "summary": {
+    "totalItems": 1500,
+    "rewrittenItems": 1,
+    "domainsCovered": 1,
+    "appliedOrAnalysisItems": 1,
+    "keyPositionsPreserved": 1,
+    "optionSpecificExplanations": 4,
+    "selectedItemsWithWarningsAfter": 0,
+    "selectedWarningIdsAfter": [],
+    "warningCountsBefore": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 55,
+      "asymmetricExtremeDistractorCandidates": 120,
+      "advancedDirectRecallCandidates": 7,
+      "semanticConceptDuplicatePairs": 83,
+      "semanticConceptDuplicateClusters": 47,
+      "editorialAnchorsWithActiveWarnings": 2,
+      "editorialAnchorsWithNoCurrentWarning": 8,
+      "priorityDocketItems": 20
+    },
+    "warningCountsAfter": {
+      "totalItems": 1500,
+      "warningOnly": true,
+      "forbiddenAggregateChoices": 0,
+      "uniqueKeyStemLexicalLeakageCandidates": 57,
+      "asymmetricExtremeDistractorCandidates": 120,
+      "advancedDirectRecallCandidates": 7,
+      "semanticConceptDuplicatePairs": 85,
+      "semanticConceptDuplicateClusters": 49,
+      "editorialAnchorsWithActiveWarnings": 2,
+      "editorialAnchorsWithNoCurrentWarning": 8,
+      "priorityDocketItems": 20
+    },
+    "warningCountContext": {
+      "before": "Current post-wave-21 and post-campaign diagnostic snapshot containing the final deep-campaign selected-warning pair.",
+      "after": "Wave 22 is authored and tested through an isolated replay; canonical and deployed banks, catalogs, diagnostics, and audits are intentionally not rebuilt in this change.",
+      "interpretation": "The single-item tranche separates an ethics competence item from its duplicate partner by testing a current-purpose decision under APA Ethics Code Standard 9.08, with the protected B key retained."
+    },
+    "status": "pass"
+  },
+  "items": [
+    {
+      "id": "eppp-b004-professional-1",
+      "domainId": "professional",
+      "difficulty": "foundation",
+      "answerIndex": 1,
+      "expectedAnswerIndex": 1,
+      "keyPositionPreserved": true,
+      "cognitiveProcess": "analysis",
+      "learningObjectiveId": "professional-apply-standard-9-08-to-outdated-results-for-a-new-purpose",
+      "sourceCheck": "The official APA Ethics Code states the two Standard 9.08 restrictions: decisions and recommendations may not rest on results outdated for the current purpose or on measures that are obsolete and not useful for that purpose. The revision applies the first restriction without turning test age into an automatic expiration rule.",
+      "diagnosticsBefore": [
+        "semantic-concept-duplicate-candidate"
+      ],
+      "diagnosticsAfter": []
+    }
+  ],
+  "limitations": [
+    "Editorial/source review is not psychometric calibration, item-response analysis, or independent licensed-psychologist validation."
+  ]
+}

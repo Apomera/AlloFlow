@@ -1,6 +1,6 @@
 {
   "schemaVersion": 5,
-  "generatedAt": "2026-07-26T06:54:35.782Z",
+  "generatedAt": "2026-07-28T21:24:36.265Z",
   "packId": "eppp-part-one",
   "packVersion": "3.1.0",
   "standard": {
@@ -7549,7 +7549,7 @@
       ],
       "findings": [],
       "references": [
-        "https://www.pearsonassessments.com/content/dam/school/global/clinical/us/assets/featured-topics/assessment-primer-whitepaper.pdf"
+        "https://www.testingstandards.net/uploads/7/6/6/4/76643089/9780935302356.pdf"
       ]
     },
     {
@@ -9352,7 +9352,7 @@
       ],
       "findings": [],
       "references": [
-        "https://doi.org/10.1037/0033-2909.130.1.143"
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC3100161/"
       ]
     },
     {
@@ -10034,7 +10034,7 @@
       ],
       "findings": [],
       "references": [
-        "https://doi.org/10.1126/science.1067020"
+        "https://www.ncbi.nlm.nih.gov/books/NBK217810/"
       ]
     },
     {
@@ -12515,7 +12515,7 @@
       ],
       "findings": [],
       "references": [
-        "https://www.pearsonassessments.com/content/dam/school/global/clinical/us/assets/MMPI-2-RF/mmpi-2-rf-pcir-annotated-report.pdf"
+        "https://www.testingstandards.net/uploads/7/6/6/4/76643089/9780935302356.pdf"
       ]
     },
     {
@@ -14628,7 +14628,7 @@
       ],
       "findings": [],
       "references": [
-        "https://doi.org/10.1016/0005-7967(91)90025-Y"
+        "https://openstax.org/books/psychology/pages/16-2-types-of-treatment"
       ]
     },
     {
@@ -15248,7 +15248,7 @@
       ],
       "findings": [],
       "references": [
-        "https://doi.org/10.1037/h0041593"
+        "https://pubmed.ncbi.nlm.nih.gov/13640824/"
       ]
     },
     {
@@ -16364,7 +16364,7 @@
       ],
       "findings": [],
       "references": [
-        "https://www.ncbi.nlm.nih.gov/books/NBK595470/"
+        "https://openstax.org/books/fundamentals-nursing/pages/38-2-specific-developmental-theories"
       ]
     },
     {
@@ -19403,7 +19403,7 @@
       ],
       "findings": [],
       "references": [
-        "https://pmc.ncbi.nlm.nih.gov/articles/PMC4803101/"
+        "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf"
       ]
     },
     {
@@ -31247,7 +31247,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/3-4-the-brain-and-spinal-cord"
+        "https://www.ncbi.nlm.nih.gov/books/NBK470344/"
       ]
     },
     {
@@ -31371,7 +31371,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/3-4-the-brain-and-spinal-cord"
+        "https://www.ncbi.nlm.nih.gov/books/NBK470344/"
       ]
     },
     {
@@ -34163,7 +34163,7 @@
       ],
       "findings": [],
       "references": [
-        "https://doi.org/10.1038/457675a"
+        "https://www.ncbi.nlm.nih.gov/books/NBK10869/"
       ]
     },
     {
@@ -37016,7 +37016,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/10-introduction"
+        "https://openstax.org/books/psychology-2e/pages/14-1-what-is-stress"
       ]
     },
     {
@@ -38318,7 +38318,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/12-5-prejudice-and-discrimination"
+        "https://pubmed.ncbi.nlm.nih.gov/7473032/"
       ]
     },
     {
@@ -40860,7 +40860,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/12-5-prejudice-and-discrimination"
+        "https://psychclassics.yorku.ca/Sherif/chap8.htm"
       ]
     },
     {
@@ -42659,7 +42659,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/9-3-stages-of-development"
+        "https://openstax.org/books/lifespan-development/pages/3-4-cognition-and-memory-in-infants-and-toddlers"
       ]
     },
     {
@@ -52335,7 +52335,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/16-3-treatment-modalities"
+        "https://www.ncbi.nlm.nih.gov/books/NBK571068/"
       ]
     },
     {
@@ -54009,7 +54009,8 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/16-2-types-of-treatment"
+        "https://doi.org/10.1016/j.brat.2014.04.006",
+        "https://www.nimh.nih.gov/news/science-updates/2024/my-life-with-ocd"
       ]
     },
     {
@@ -57172,7 +57173,7 @@
       ],
       "findings": [],
       "references": [
-        "https://www.apa.org/ethics/code"
+        "https://www.law.cornell.edu/wex/standard_of_care"
       ]
     },
     {
@@ -60769,7 +60770,7 @@
       ],
       "findings": [],
       "references": [
-        "https://www.itl.nist.gov/div898/handbook/glossary.htm"
+        "https://www.itl.nist.gov/div898/handbook/eda/section3/eda351.htm"
       ]
     },
     {
@@ -63125,7 +63126,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/3-4-the-brain-and-spinal-cord"
+        "https://www.ncbi.nlm.nih.gov/books/NBK470344/"
       ]
     },
     {
@@ -63249,7 +63250,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/3-4-the-brain-and-spinal-cord"
+        "https://pubmed.ncbi.nlm.nih.gov/19607991/"
       ]
     },
     {
@@ -65978,7 +65979,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/10-introduction"
+        "https://openstax.org/books/psychology-2e/pages/10-4-emotion"
       ]
     },
     {
@@ -76457,7 +76458,7 @@
       ],
       "findings": [],
       "references": [
-        "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf"
+        "https://www.testingstandards.net/uploads/7/6/6/4/76643089/9780935302356.pdf"
       ]
     },
     {
@@ -80119,7 +80120,7 @@
       ],
       "findings": [],
       "references": [
-        "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf"
+        "https://www.testingstandards.net/uploads/7/6/6/4/76643089/9780935302356.pdf"
       ]
     },
     {
@@ -82972,7 +82973,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/16-introduction"
+        "https://www.nimh.nih.gov/news/science-updates/2024/my-life-with-ocd"
       ]
     },
     {
@@ -85639,7 +85640,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/16-introduction"
+        "https://www.nimh.nih.gov/news/science-updates/2024/my-life-with-ocd"
       ]
     },
     {
@@ -86136,7 +86137,7 @@
       ],
       "findings": [],
       "references": [
-        "https://openstax.org/books/psychology-2e/pages/2-introduction"
+        "https://www.itl.nist.gov/div898/handbook/eda/section3/eda35.htm"
       ]
     },
     {

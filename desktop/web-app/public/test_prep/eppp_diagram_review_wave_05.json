@@ -1,0 +1,269 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "eppp-diagram-review-wave-05",
+  "reviewDate": "2026-07-28",
+  "status": "assisted-editorial-source-review-complete-expert-pending",
+  "standard": {
+    "meaning": "This wave records an assisted editorial, accessibility, and source-alignment pass for six inline instructional diagram placements.",
+    "releaseBoundary": "Independent review by a qualified subject-matter expert and production validation remain pending."
+  },
+  "summary": {
+    "reviewedDiagramPlacements": 6,
+    "correctedDiagramPlacements": 6,
+    "sourceReviewedDiagramPlacements": 6,
+    "distinctNamedSources": 9,
+    "independentExpertValidated": 0,
+    "status": "pass"
+  },
+  "projectedCatalogCounts": {
+    "sourceReviewedDiagramPlacementsBefore": 28,
+    "sourceReviewedDiagramPlacementsAfter": 34,
+    "reviewRequiredDiagramPlacementsBefore": 30,
+    "reviewRequiredDiagramPlacementsAfter": 24
+  },
+  "items": [
+    {
+      "sequence": 1,
+      "placementId": "diagram-placement-ch-48-section-01",
+      "chapterId": "ch-48",
+      "sectionIndex": 1,
+      "expectedHeading": "The Normal Distribution & Standard Scores",
+      "sourceFile": "js/textbook_ch48.js",
+      "title": "Normal-Model Areas and Common Standard-Score Transforms",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-05",
+      "reviewDate": "2026-07-28",
+      "correctionSummary": "Added complete SVG naming semantics, a full alternative, exact normal-model area labels, and an explicit boundary between distributional assumptions and linear score transformations.",
+      "reviewNote": "Diagram wording, labels, and placement were reviewed for source alignment, factual clarity, accessibility, and learner interpretation. Added complete SVG naming semantics, a full alternative, exact normal-model area labels, and an explicit boundary between distributional assumptions and linear score transformations. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://www.itl.nist.gov/div898/handbook/pmc/section5/pmc51.htm"
+      ],
+      "sourceDetails": [
+        {
+          "title": "What do we mean by Normal data?",
+          "organization": "National Institute of Standards and Technology",
+          "url": "https://www.itl.nist.gov/div898/handbook/pmc/section5/pmc51.htm",
+          "whyReputable": "NIST’s Engineering Statistics Handbook gives the normal density, identifies mean and standard deviation as its parameters, defines the standard-normal transformation, and reports the 68.27, 95.45, and 99.73 percent areas."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "frameworkContext": "current-source-and-model-context-editorial-pass"
+      },
+      "independentExpertStatus": "pending-independent-qualified-expert-review",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 2,
+      "placementId": "diagram-placement-ch-7-section-03",
+      "chapterId": "ch-7",
+      "sectionIndex": 3,
+      "expectedHeading": "The Five General Principles",
+      "sourceFile": "js/textbook_ch7.js",
+      "title": "APA General Principles Are Aspirational, Not Enforceable Rules",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-05",
+      "reviewDate": "2026-07-28",
+      "correctionSummary": "Added a learner-facing title and full alternative, raised every label to at least 12 units, preserved the five official names, and made the aspirational-versus-enforceable distinction prominent.",
+      "reviewNote": "Diagram wording, labels, and placement were reviewed for source alignment, factual clarity, accessibility, and learner interpretation. Added a learner-facing title and full alternative, raised every label to at least 12 units, preserved the five official names, and made the aspirational-versus-enforceable distinction prominent. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://www.apa.org/ethics/code"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Ethical Principles of Psychologists and Code of Conduct",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/ethics/code",
+          "whyReputable": "APA publishes and maintains the governing code. Its current Ethics Office page identifies the 2002 code, amended in 2010 and 2017, while the code distinguishes five aspirational General Principles from enforceable Ethical Standards."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "frameworkContext": "current-source-and-model-context-editorial-pass"
+      },
+      "independentExpertStatus": "pending-independent-qualified-expert-review",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 3,
+      "placementId": "diagram-placement-ch-16-section-02",
+      "chapterId": "ch-16",
+      "sectionIndex": 2,
+      "expectedHeading": "Evidence-Based Practice in Psychology (EBPP)",
+      "sourceFile": "js/textbook_ch16.js",
+      "title": "EBPP Integrates Evidence, Expertise, and Patient Context",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-05",
+      "reviewDate": "2026-07-28",
+      "correctionSummary": "Replaced the small-label stool shorthand with a fully named integration loop, raised labels to at least 12 units, and represented collaborative choice and outcome monitoring explicitly.",
+      "reviewNote": "Diagram wording, labels, and placement were reviewed for source alignment, factual clarity, accessibility, and learner interpretation. Replaced the small-label stool shorthand with a fully named integration loop, raised labels to at least 12 units, and represented collaborative choice and outcome monitoring explicitly. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://www.apa.org/practice/guidelines/evidence-based-statement.html"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Policy Statement on Evidence-Based Practice in Psychology",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/practice/guidelines/evidence-based-statement.html",
+          "whyReputable": "APA’s official policy defines evidence-based practice in psychology as integrating best available research with clinical expertise in the context of patient characteristics, culture, and preferences, and emphasizes collaboration and ongoing monitoring."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "frameworkContext": "current-source-and-model-context-editorial-pass"
+      },
+      "independentExpertStatus": "pending-independent-qualified-expert-review",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 4,
+      "placementId": "diagram-placement-ch-20-section-04",
+      "chapterId": "ch-20",
+      "sectionIndex": 4,
+      "expectedHeading": "Language Areas: Broca’s and Wernicke’s",
+      "sourceFile": "js/textbook_ch20.js",
+      "title": "Classic Language Labels Sit Within Distributed Networks",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-05",
+      "reviewDate": "2026-07-28",
+      "correctionSummary": "Replaced one-to-one production and comprehension labels with historically anchored, anatomically qualified cards and a visible distributed-network model while retaining classic aphasia exam cues.",
+      "reviewNote": "Diagram wording, labels, and placement were reviewed for source alignment, factual clarity, accessibility, and learner interpretation. Replaced one-to-one production and comprehension labels with historically anchored, anatomically qualified cards and a visible distributed-network model while retaining classic aphasia exam cues. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/27584714/",
+        "https://pubmed.ncbi.nlm.nih.gov/38609551/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Broca and Wernicke are dead, or moving past the classic model of language neurobiology",
+          "organization": "Brain and Language; PubMed, U.S. National Library of Medicine",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/27584714/",
+          "whyReputable": "This peer-reviewed review evaluates the historical language model and explains why contemporary language neurobiology requires more precise anatomy, distributed cortical regions, subcortical contributions, and multiple white-matter pathways."
+        },
+        {
+          "title": "The language network as a natural kind within the broader landscape of the human brain",
+          "organization": "Nature Reviews Neuroscience; PubMed, U.S. National Library of Medicine",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/38609551/",
+          "whyReputable": "This recent peer-reviewed review characterizes a strongly interconnected, predominantly left-hemisphere frontal-temporal language network and supports teaching network-level organization rather than isolated one-function centers."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "frameworkContext": "current-source-and-model-context-editorial-pass"
+      },
+      "independentExpertStatus": "pending-independent-qualified-expert-review",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 5,
+      "placementId": "diagram-placement-ch-21-section-02",
+      "chapterId": "ch-21",
+      "sectionIndex": 2,
+      "expectedHeading": "Major Neurotransmitters",
+      "sourceFile": "js/textbook_ch21.js",
+      "title": "Dopamine Pathways Show Associations, Not One-Chemical Diagnoses",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-05",
+      "reviewDate": "2026-07-28",
+      "correctionSummary": "Added a full alternative and learner title, raised every label to at least 12 units, replaced deterministic pathway claims with associations, and distinguished D2 antagonism from partial agonism and other drug-specific properties.",
+      "reviewNote": "Diagram wording, labels, and placement were reviewed for source alignment, factual clarity, accessibility, and learner interpretation. Added a full alternative and learner title, raised every label to at least 12 units, replaced deterministic pathway claims with associations, and distinguished D2 antagonism from partial agonism and other drug-specific properties. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC4711768/",
+        "https://pubmed.ncbi.nlm.nih.gov/36983018/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Dopamine receptor signaling and current and future antipsychotic drugs",
+          "organization": "Handbook of Experimental Pharmacology; PubMed Central, U.S. National Library of Medicine",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4711768/",
+          "whyReputable": "This peer-reviewed pharmacology review explains dopamine pathways, D1- and D2-family signaling, antipsychotic mechanisms, motor effects, Parkinson disease associations, and the important distinction between antagonism and functionally selective partial agonism."
+        },
+        {
+          "title": "Canonical and Non-Canonical Antipsychotics’ Dopamine-Related Mechanisms",
+          "organization": "International Journal of Molecular Sciences; PubMed, U.S. National Library of Medicine",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/36983018/",
+          "whyReputable": "This peer-reviewed systematic review summarizes contemporary dopamine-receptor mechanisms across antipsychotic agents while documenting variation in affinity, partial agonism, receptor profiles, treatment response, and adverse effects."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "frameworkContext": "current-source-and-model-context-editorial-pass"
+      },
+      "independentExpertStatus": "pending-independent-qualified-expert-review",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 6,
+      "placementId": "diagram-placement-ch-15-section-02",
+      "chapterId": "ch-15",
+      "sectionIndex": 2,
+      "expectedHeading": "Structural Family Therapy (Minuchin)",
+      "sourceFile": "js/textbook_ch15.js",
+      "title": "Structural Family Therapy Examines Boundaries in Context",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-05",
+      "reviewDate": "2026-07-28",
+      "correctionSummary": "Added a full alternative and learner title, raised every label to at least 12 units, reframed the continuum as contextual theory labels, and made subsystem, development, culture, safety, caregiving, and perspective boundaries visible.",
+      "reviewNote": "Diagram wording, labels, and placement were reviewed for source alignment, factual clarity, accessibility, and learner interpretation. Added a full alternative and learner title, raised every label to at least 12 units, reframed the continuum as contextual theory labels, and made subsystem, development, culture, safety, caregiving, and perspective boundaries visible. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://dictionary.apa.org/structural-family-therapy",
+        "https://books.google.com/books/about/Families_and_Family_Therapy.html?id=3lRdLKNTEYcC"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Structural family therapy",
+          "organization": "American Psychological Association Dictionary of Psychology",
+          "url": "https://dictionary.apa.org/structural-family-therapy",
+          "whyReputable": "The APA Dictionary supplies a concise professional definition of structural family therapy that names subsystems, boundaries, hierarchies, coalitions, and enactment without reducing the model to a single boundary continuum."
+        },
+        {
+          "title": "Families and Family Therapy",
+          "organization": "Harvard University Press; Google Books bibliographic record",
+          "url": "https://books.google.com/books/about/Families_and_Family_Therapy.html?id=3lRdLKNTEYcC",
+          "whyReputable": "This is the bibliographic record for Salvador Minuchin’s foundational 1974 exposition. It documents the model’s attention to family organization, subsystem boundaries, adaptation, mapping, and restructuring."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "frameworkContext": "current-source-and-model-context-editorial-pass"
+      },
+      "independentExpertStatus": "pending-independent-qualified-expert-review",
+      "productionStatus": "not-production-validated"
+    }
+  ]
+}

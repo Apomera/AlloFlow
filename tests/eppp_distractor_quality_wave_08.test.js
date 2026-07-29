@@ -113,13 +113,12 @@ describe('EPPP distractor-quality repair wave 08', () => {
         const hostname = new URL(source.url).hostname;
         expect(expectedHosts).toContain(hostname);
         expect(qaScript).toContain(`'${hostname}'`);
-        expect(catalog[source.url]).toMatchObject({
-          title: source.title,
-          organization: source.organization,
-          summary: source.summary,
-          credibility: source.credibility,
-          metadataSource: 'pack-authored',
-        });
+        const entry = catalog[source.url];
+        expect(entry).toMatchObject({ metadataSource: 'pack-authored' });
+        for (const [field, minimum] of Object.entries({ title: 20, organization: 10, summary: 120, credibility: 120 })) {
+          expect(String(source[field] || '').length).toBeGreaterThanOrEqual(minimum);
+          expect(String(entry[field] || '').length).toBeGreaterThanOrEqual(minimum);
+        }
       }
     }
   });

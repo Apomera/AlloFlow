@@ -11,7 +11,7 @@ describe('EPPP native learning-library catalog', () => {
   const reviewOverrides = read('test_prep/eppp_learning_review_overrides.json');
 
   it('catalogs the complete preserved learning library with stable unique IDs', () => {
-    expect(catalog.summary).toMatchObject({ chapters: 49, sections: 278, diagrams: 25, diagramPlacements: 58, knowledgeChecks: 109, flashcards: 415, memoryAids: 255 });
+    expect(catalog.summary).toMatchObject({ chapters: 49, sections: 278, sourceReviewedSections: 278, reviewRequiredSections: 0, diagrams: 25, diagramPlacements: 58, sourceReviewedDiagramPlacements: 58, knowledgeChecks: 109, flashcards: 415, memoryAids: 255 });
     expect(new Set(catalog.chapters.map((item) => item.id)).size).toBe(49);
     expect(catalog.knowledgeChecks).toHaveLength(109);
     expect(new Set(catalog.knowledgeChecks.map((item) => item.id)).size).toBe(109);
@@ -32,7 +32,21 @@ describe('EPPP native learning-library catalog', () => {
     });
     expect(reviewOverrides.chapters['ch-1'].references).toHaveLength(7);
     expect(psychometrics.sections.filter((section) => section.hasKnowledgeCheck)).toHaveLength(2);
-    expect(catalog.chapters.flatMap((chapter) => chapter.sections)).toHaveLength(278);
+    const sections = catalog.chapters.flatMap((chapter) => chapter.sections);
+    expect(sections).toHaveLength(278);
+    expect(sections.every((section) => section.reviewStatus === 'source-reviewed-editorial-pass'
+      && section.reviewScope === 'containing-chapter'
+      && section.reviewArtifact === 'eppp_learning_review_overrides.json'
+      && section.reviewReferences.length >= 3
+      && section.reviewNote
+      && Object.values(section.checks).every(Boolean))).toBe(true);
+    expect(catalog.chapters.every((chapter) => chapter.sections.every(
+      (section) => section.reviewEvidenceChapterId === chapter.id
+        && JSON.stringify(section.reviewReferences) === JSON.stringify(chapter.reviewReferences),
+    ))).toBe(true);
+    expect(catalog.reviewStandard.sectionProvenance).toContain('knowledge-check and diagram reviews remain independent');
+    expect(qa.findings.some((finding) => finding.includes('does not claim independent section-level expert validation'))).toBe(true);
+    expect(catalog.diagramPlacements.filter((placement) => placement.reviewStatus === 'review-required')).toHaveLength(0);
     expect(catalog.flashcards.every((card) => card.front && card.back && ['review-required', 'source-reviewed-editorial-pass'].includes(card.reviewStatus))).toBe(true);
     expect(catalog.flashcards.filter((card) => card.reviewStatus === 'source-reviewed-editorial-pass')).toHaveLength(415);
     expect(catalog.flashcards.filter((card) => card.reviewStatus === 'review-required')).toHaveLength(0);
@@ -54,28 +68,29 @@ describe('EPPP native learning-library catalog', () => {
       && card.checks.accuracyAndCurrency === 'assisted-review-pass-expert-pending'
       && card.checks.biasAndContext === 'assisted-review-pass-expert-pending')).toBe(true);
     expect(catalog.memoryAids.every((aid) => aid.title && aid.content && ['review-required', 'source-reviewed-editorial-pass', 'editorial-reviewed-source-pending'].includes(aid.reviewStatus))).toBe(true);
-    expect(catalog.memoryAids.filter((aid) => aid.reviewStatus === 'source-reviewed-editorial-pass')).toHaveLength(56);
-    expect(catalog.memoryAids.filter((aid) => aid.reviewStatus === 'editorial-reviewed-source-pending')).toHaveLength(2);
-    expect(catalog.memoryAids.filter((aid) => aid.reviewStatus === 'review-required')).toHaveLength(197);
+    expect(catalog.memoryAids.filter((aid) => aid.reviewStatus === 'source-reviewed-editorial-pass')).toHaveLength(255);
+    expect(catalog.memoryAids.filter((aid) => aid.reviewStatus === 'editorial-reviewed-source-pending')).toHaveLength(0);
+    expect(catalog.memoryAids.filter((aid) => aid.reviewStatus === 'review-required')).toHaveLength(0);
+    expect(catalog.memoryAids.every((aid) => typeof aid.reviewArtifact === 'string' && aid.reviewArtifact.length > 0)).toBe(true);
     expect(catalog.summary).toMatchObject({
       releasedFlashcards: 335,
-      releasedMemoryAids: 56,
+      releasedMemoryAids: 255,
       qaPassedKnowledgeChecks: 0,
-      sourceReviewedKnowledgeChecks: 48,
-      releasedKnowledgeChecks: 48,
-      reviewRequiredKnowledgeChecks: 61,
+      sourceReviewedKnowledgeChecks: 109,
+      releasedKnowledgeChecks: 109,
+      reviewRequiredKnowledgeChecks: 0,
     });
-    expect(catalog.knowledgeChecks.filter((item) => item.reviewStatus === 'source-reviewed-editorial-pass')).toHaveLength(48);
-    expect(catalog.knowledgeChecks.filter((item) => item.reviewStatus === 'review-required')).toHaveLength(61);
-    expect(catalog.chapters.flatMap((chapter) => chapter.knowledgeChecks)).toHaveLength(48);
+    expect(catalog.knowledgeChecks.filter((item) => item.reviewStatus === 'source-reviewed-editorial-pass')).toHaveLength(109);
+    expect(catalog.knowledgeChecks.filter((item) => item.reviewStatus === 'review-required')).toHaveLength(0);
+    expect(catalog.chapters.flatMap((chapter) => chapter.knowledgeChecks)).toHaveLength(109);
     expect(catalog.memoryAids.filter((aid) => aid.reviewStatus === 'source-reviewed-editorial-pass').every((aid) => aid.sourceDetails.length > 0 && aid.sourceDetails.every((source) => source.title && source.url && source.whyReputable))).toBe(true);
     expect(catalog.diagrams.every((diagram) => diagram.hasSvg && diagram.description)).toBe(true);
-    expect(catalog.diagramPlacements.find((placement) => placement.id === 'diagram-placement-ch-48-section-01')).toMatchObject({
-      description: 'The Normal Distribution: Mean (μ) and Standard Deviations (σ)',
-    });
+    expect(catalog.diagramPlacements.find(
+      (placement) => placement.id === 'diagram-placement-ch-48-section-01',
+    ).description).toContain('The area percentages require a normal model');
     expect(readText('test_prep/eppp_legacy/js/textbook_ch48.js')).not.toMatch(/Î¼|Ïƒ/);
-    expect(qa.status).toBe('review-in-progress');
-    expect(qa.summary).toMatchObject({ qaPassedChapters: 0, sourceReviewedChapters: 49, qaPassedFlashcards: 0, qaPassedMemoryAids: 0 });
+    expect(qa.status).toBe('first-pass-complete-expert-pending');
+    expect(qa.summary).toMatchObject({ qaPassedChapters: 0, sourceReviewedChapters: 49, sourceReviewedSections: 278, reviewRequiredSections: 0, sourceReviewedDiagramPlacements: 58, qaPassedFlashcards: 0, qaPassedMemoryAids: 0 });
   });
 
   it('keeps Chapter 1 psychometric claims qualified and interaction metadata intact', () => {
@@ -278,7 +293,7 @@ describe('EPPP native learning-library catalog', () => {
     expect(chapters[39]).toMatchObject({ reviewStatus: 'source-reviewed-editorial-pass', sectionCount: 4, diagramCount: 1, knowledgeCheckCount: 3, referenceCount: 10, checks: { 'expert-review': 'pending-independent-aging-neuropsychology-and-bereavement-review' } });
     expect(texts[35]).toContain('Apgar alone does <strong>not</strong> diagnose asphyxia');
     expect(texts[35]).toContain('surveillance tools, not diagnostic or screening instruments');
-    expect(texts[36]).toContain('not proof of abuse');
+    expect(texts[36]).toContain('Not proof of abuse');
     expect(texts[36]).toContain('no absolute age-2 cutoff');
     expect(texts[37]).toContain('Performance is evidence');
     expect(texts[37]).toContain('the task is not diagnostic or autism-specific');

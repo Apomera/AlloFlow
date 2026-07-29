@@ -1,0 +1,320 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "knowledge-check-wave-05",
+  "reviewDate": "2026-07-28",
+  "scope": "Fifth source-review wave for learner-visible chapter knowledge checks, with one additional check from each official EPPP content domain and targeted safeguards for legal competence, supervision models, readiness to change, pharmacokinetic arithmetic, classic studies, racial-identity theory, deprivation research, and epidemiologic denominators.",
+  "summary": {
+    "items": 8,
+    "domains": 8,
+    "itemsPerDomain": 1,
+    "sourceReviewedEditorialPass": 8,
+    "independentExpertReviewPending": 8,
+    "productionValidationPending": 8,
+    "domainCounts": {
+      "Assessment & Diagnosis": 1,
+      "Biological Bases of Behavior": 1,
+      "Cognitive-Affective Bases of Behavior": 1,
+      "Ethical, Legal & Professional Issues": 1,
+      "Growth & Lifespan Development": 1,
+      "Research Methods & Statistics": 1,
+      "Social & Cultural Bases of Behavior": 1,
+      "Treatment, Intervention & Prevention": 1
+    }
+  },
+  "releasePolicy": "Only source-reviewed-editorial-pass records are emitted in chapter.knowledgeChecks for learner rendering. Preserved unreviewed records remain in the top-level inventory with review-required status.",
+  "safeguards": [
+    "Stable legacy IDs remain anchored to preserved pre-revision prompts and choices.",
+    "Reviewed choice order may be permuted while stable IDs remain anchored to legacy content.",
+    "Legal standards, developmental models, and research findings are not converted into diagnoses or universal person-level conclusions.",
+    "Numerical answers state their denominator and model assumptions.",
+    "Source review does not constitute independent expert validation or production validation."
+  ],
+  "items": [
+    {
+      "legacyId": "knowledge-check-9a082181ed2ac88c",
+      "chapterId": "ch-6",
+      "sectionId": "ch-6-section-2",
+      "domainId": 1,
+      "domain": "Assessment & Diagnosis",
+      "prompt": "Which statement most accurately describes the Dusky competence-to-stand-trial standard and the limit of that standard?",
+      "choices": [
+        "It concerns the defendant's sufficient present ability to consult with counsel with a reasonable degree of rational understanding and a rational as well as factual understanding of the proceedings; the court applies the legal standard under governing law",
+        "It asks whether the defendant knew right from wrong when the alleged offense occurred, making it the same inquiry as criminal responsibility",
+        "It is satisfied whenever no severe mental disorder is diagnosed, because diagnosis determines legal competence",
+        "It requires perfect recall of the alleged offense and the ability to conduct a defense without assistance from counsel"
+      ],
+      "answerIndex": 0,
+      "rationale": "Dusky frames competence as a present functional legal capacity: sufficient present ability to consult with counsel with a reasonable degree of rational understanding, plus a rational and factual understanding of the proceedings. It is not the retrospective criminal-responsibility or insanity inquiry, does not require perfect memory, and is not decided solely by the presence or absence of a diagnosis. Clinical assessment can inform the question, but the court makes the legal determination under the applicable jurisdiction's procedures. Competence to stand trial also should not be assumed to answer every other legal-capacity question.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.govinfo.gov/content/pkg/USREPORTS-362/pdf/USREPORTS-362-402.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Dusky v. United States, 362 U.S. 402 (1960)",
+          "organization": "Supreme Court of the United States, United States Reports via U.S. Government Publishing Office",
+          "url": "https://www.govinfo.gov/content/pkg/USREPORTS-362/pdf/USREPORTS-362-402.pdf",
+          "whyReputable": "This official U.S. Reports reproduction is the primary Supreme Court opinion that states the present-ability and rational-and-factual-understanding standard."
+        }
+      ],
+      "reviewNote": "Distinguished present trial competence from criminal responsibility, diagnosis, memory perfection, self-representation, and other legal capacities.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-05",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-827953b02399d522",
+      "chapterId": "ch-8",
+      "sectionId": "ch-8-section-5",
+      "domainId": 2,
+      "domain": "Ethical, Legal & Professional Issues",
+      "prompt": "Within the Integrated Developmental Model of supervision, a supervisee is eager to learn but anxious, highly dependent on the supervisor, and focused mainly on personal performance. Which classification and qualification are most accurate?",
+      "choices": [
+        "Level 2, because variable autonomy and a shifting focus toward the client define every highly motivated beginner",
+        "Level 1 in the relevant practice domain; the pattern guides developmentally responsive supervision rather than serving as a global diagnosis or fixed rank",
+        "Level 3, because strong motivation by itself establishes stable autonomy and integrated client awareness",
+        "Level 3i, because dependency on a supervisor is the defining feature of an independently practicing professional"
+      ],
+      "answerIndex": 1,
+      "rationale": "In the IDM, Level 1 is characterized by substantial self-focus, relatively high and partly extrinsic motivation often accompanied by anxiety, and considerable dependence on supervisory structure. Level 2 brings more other-awareness and fluctuation between dependence and autonomy, while Level 3 reflects more stable intrinsic motivation, conditional autonomy, and integrated self-other awareness. Development is domain-specific: the same supervisee can function differently across assessment, intervention, ethics, or other activities. The model supports tailored supervision and reassessment; it is not a diagnosis, licensure decision, or immutable label.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.apa.org/pubs/videos/4310948.html"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The Integrative Developmental Model of Supervision",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/pubs/videos/4310948.html",
+          "whyReputable": "This official APA description by an IDM author explains the model's three structures, domain-specific levels, and changing supervisory needs across development."
+        }
+      ],
+      "reviewNote": "Kept the Level 1 key while adding domain specificity, reassessment, supervision implications, and a clear boundary against diagnosis or fixed ranking.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-05",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-f7c496001793e118",
+      "chapterId": "ch-19",
+      "sectionId": "ch-19-section-2",
+      "domainId": 3,
+      "domain": "Treatment, Intervention & Prevention",
+      "prompt": "A court-mandated client attends an intake but disputes that weekend drinking is a problem and is not considering changing that behavior. In the Transtheoretical Model, which formulation is best?",
+      "choices": [
+        "Contemplation, because attending any appointment establishes that the client is weighing a personal behavior change",
+        "Preparation, because the court's referral supplies an action plan even when the client has formed no intention to change",
+        "Precontemplation for this target behavior at this time, while readiness, risk, and goals should be assessed collaboratively rather than treated as a fixed trait",
+        "Action, because physically arriving at treatment is equivalent to actively modifying the drinking pattern"
+      ],
+      "answerIndex": 2,
+      "rationale": "For the specific drinking behavior described, the client is not currently considering change, which maps most closely to precontemplation in the Transtheoretical Model. External pressure, attendance, or compliance with a court order does not by itself establish contemplation, preparation, or action toward that target behavior. Stage classifications are behavior- and time-specific approximations, not personality diagnoses, and stage boundaries and predictive utility have been debated. A clinically responsible response still assesses substance use, impairment, safety, legal context, strengths, and the client's perspective, using collaborative engagement rather than assuming denial proves low character or prescribing confrontation automatically.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://ncbi.nlm.nih.gov/books/NBK556005/",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC10712342/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Stages of Change Theory",
+          "organization": "StatPearls, NCBI Bookshelf, U.S. National Library of Medicine",
+          "url": "https://ncbi.nlm.nih.gov/books/NBK556005/",
+          "whyReputable": "This clinically oriented review defines the Transtheoretical Model's stages and emphasizes that stage can differ across target behaviors."
+        },
+        {
+          "title": "Comparative Analysis of Alternate Measures of Readiness to Quit Smoking: Stages of Change and the Contemplation Ladder",
+          "organization": "Peer-reviewed article hosted by PubMed Central",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10712342/",
+          "whyReputable": "This peer-reviewed analysis documents measurement questions and critiques of discrete readiness-stage cutoffs, supporting a qualified rather than reified use of the model."
+        }
+      ],
+      "reviewNote": "Retained the target-specific precontemplation answer while separating court attendance from personal intention and adding measurement and engagement safeguards.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-05",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-0e9d304bdba8fa51",
+      "chapterId": "ch-49",
+      "sectionId": "ch-49-section-2",
+      "domainId": 4,
+      "domain": "Biological Bases of Behavior",
+      "prompt": "In an idealized first-order elimination model, a measured drug concentration starts at 100%, no additional dose is given, and the half-life is 8 hours. Approximately what fraction remains after 32 hours?",
+      "choices": [
+        "Fifty percent, because elapsed clock time does not matter once the first half-life has passed",
+        "Twenty-five percent, because 32 hours contains two 8-hour half-lives",
+        "Twelve and one-half percent, because the concentration is divided by two only three times",
+        "Six and one-quarter percent, because 32 hours contains four half-lives and the concentration is halved four times"
+      ],
+      "answerIndex": 3,
+      "rationale": "Thirty-two hours divided by an 8-hour half-life equals four half-lives. Repeated proportional halving gives 100% to 50%, 25%, 12.5%, and then 6.25%. This is a mathematical result under the prompt's idealized first-order, constant-half-life, no-redosing assumptions. It does not establish that a medication is clinically inactive, safe to combine with another substance, fully eliminated, or suitable for a specific washout period. Real pharmacokinetics can vary with absorption, active metabolites, distribution, dose-dependent saturation, organ function, interactions, and the particular quantity measured.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ncbi.nlm.nih.gov/books/NBK554498/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Elimination Half-Life of Drugs",
+          "organization": "StatPearls, NCBI Bookshelf, U.S. National Library of Medicine",
+          "url": "https://www.ncbi.nlm.nih.gov/books/NBK554498/",
+          "whyReputable": "This clinically reviewed NCBI Bookshelf chapter explains first-order proportional elimination, half-life calculations, and the conditions that limit their application."
+        }
+      ],
+      "reviewNote": "Made the four-step calculation explicit and fenced the arithmetic away from unsupported clinical-effect, safety, washout, and complete-elimination conclusions.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-05",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-468bbb5c828e5de2",
+      "chapterId": "ch-26",
+      "sectionId": "ch-26-section-4",
+      "domainId": 5,
+      "domain": "Cognitive-Affective Bases of Behavior",
+      "prompt": "In Festinger and Carlsmith's classic induced-compliance study, which group later reported greater task enjoyment, and what is the appropriately bounded theoretical interpretation?",
+      "choices": [
+        "The $1 group; under the study conditions, limited external justification was interpreted as creating pressure to reduce inconsistency through attitude change",
+        "The $20 group; larger payment created a stronger conditioned preference for the repetitive task",
+        "The groups reported identical enjoyment, showing that payment magnitude did not relate to later ratings",
+        "The $1 group; receiving less money universally causes people to value any activity more, regardless of choice, commitment, or context"
+      ],
+      "answerIndex": 0,
+      "rationale": "In the classic study, participants paid $1 to tell another person that a boring task was enjoyable later rated the task more favorably than those paid $20. Festinger and Carlsmith interpreted the smaller payment as insufficient external justification for the counterattitudinal statement, making attitude change one way to reduce dissonance. The finding does not establish a universal inverse relation between reward and enjoyment. Perceived choice, commitment, measurement, demand characteristics, cultural and historical context, and competing self-perception or incentive accounts matter when interpreting or generalizing the induced-compliance result.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/13640824/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Cognitive Consequences of Forced Compliance",
+          "organization": "Journal of Abnormal Psychology, indexed by the U.S. National Library of Medicine",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/13640824/",
+          "whyReputable": "This PubMed record identifies Festinger and Carlsmith's original 1959 peer-reviewed experiment and DOI, providing the primary source for the $1-versus-$20 result."
+        }
+      ],
+      "reviewNote": "Preserved the classic $1 finding but made the induced-compliance interpretation conditional and rejected a universal less-reward-means-more-liking rule.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-05",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-93566d0f6bb7cdeb",
+      "chapterId": "ch-34",
+      "sectionId": "ch-34-section-4",
+      "domainId": 6,
+      "domain": "Social & Cultural Bases of Behavior",
+      "prompt": "Which statement most accurately describes the development and responsible use of Cross's nigrescence theory?",
+      "choices": [
+        "It remains a fixed sequence of four stages that every Black person must complete in the same order",
+        "It evolved from an early developmental sequence toward a multidimensional attitudinal model and can organize inquiry without diagnosing identity or replacing a person's own meanings and context",
+        "A pre-encounter attitude establishes low self-esteem, internalized racism, and the need for a prescribed intervention",
+        "Experiencing discrimination proves that a person occupies the encounter stage and predicts the next identity position"
+      ],
+      "answerIndex": 1,
+      "rationale": "Historical review describes Cross's work as evolving from the 1971 developmental-stage formulation through later revisions into a multidimensional attitudinal account that also informed racial-identity measurement. The constructs can support theory, research, and careful inquiry about identity meanings, but they are not diagnoses, universal sequences, or scripts for what every Black person should experience. A single attitude, event, or discrimination experience does not establish self-esteem, stage membership, clinical impairment, or a deterministic trajectory. Interpretation should center the person's self-definition while considering history, setting, intersectionality, power, and the limits of any measurement tool.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/37384495/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Nigrescence Theory From 1971 to 2021: The Critical Contributions of William E. Cross, Jr.",
+          "organization": "American Psychologist, indexed by the U.S. National Library of Medicine",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/37384495/",
+          "whyReputable": "This recent peer-reviewed historical review directly documents the model's evolution from a stage formulation to a multidimensional attitudinal account."
+        }
+      ],
+      "reviewNote": "Reframed the theory as an evolving multidimensional account and added nondiagnostic, nonsequential, person-centered, and contextual safeguards.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-05",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-1a4afbf8d679a80c",
+      "chapterId": "ch-36",
+      "sectionId": "ch-36-section-3",
+      "domainId": 7,
+      "domain": "Growth & Lifespan Development",
+      "prompt": "What is the most defensible interpretation of findings from the English and Romanian Adoptees research program on severe early institutional deprivation?",
+      "choices": [
+        "Failure to form a selective attachment by age two makes later attachment and developmental improvement impossible",
+        "Institutional history alone establishes an attachment disorder and identifies deprivation as the sole cause of every later difficulty",
+        "Longer exposure to profound early deprivation was associated with greater average risk for some outcomes, while outcomes were heterogeneous and substantial catch-up or resilience remained possible",
+        "Adoption after infancy cannot improve physical growth, cognitive functioning, or social development"
+      ],
+      "answerIndex": 2,
+      "rationale": "The ERA studies found marked early impairment and average duration-related risk for several later outcomes following unusually severe institutional deprivation, alongside substantial catch-up and wide heterogeneity after adoption into more supportive homes. The findings therefore support neither an absolute age-two cutoff nor the claim that later care cannot matter. Exposure was not randomly assigned, age at adoption and duration of deprivation are closely related, and the historical institutions involved multiple adverse conditions. Institutional history alone does not diagnose an attachment disorder or prove a single mechanism for an individual child's presentation.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/14700466/",
+        "https://pubmed.ncbi.nlm.nih.gov/9599775/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Are There Biological Programming Effects for Psychological Development? Findings From a Study of Romanian Adoptees",
+          "organization": "Developmental Psychology, indexed by the U.S. National Library of Medicine",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/14700466/",
+          "whyReputable": "This peer-reviewed ERA report directly emphasizes both exposure-related patterns and heterogeneous, non-deterministic developmental outcomes."
+        },
+        {
+          "title": "Developmental Catch-Up, and Deficit, Following Adoption After Severe Global Early Privation",
+          "organization": "Journal of Child Psychology and Psychiatry, indexed by the U.S. National Library of Medicine",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/9599775/",
+          "whyReputable": "This peer-reviewed longitudinal ERA study documents severe entry deficits together with substantial post-adoption developmental catch-up."
+        }
+      ],
+      "reviewNote": "Preserved duration-related average risk while adding catch-up, heterogeneity, nonrandom exposure, bundled adversity, and nondiagnostic safeguards.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-05",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-07714fbf6edbe086",
+      "chapterId": "ch-43",
+      "sectionId": "ch-43-section-4",
+      "domainId": 8,
+      "domain": "Research Methods & Statistics",
+      "prompt": "In a community of 10,000 people, 500 currently meet the case definition for depression and 200 new cases were identified during the past year. What point prevalence is directly supported at the stated current time?",
+      "choices": [
+        "Two percent, because only the 200 newly identified cases belong in a prevalence numerator",
+        "Seven percent, because current and newly identified cases can always be added without checking timing or recovery",
+        "Forty percent, because the 200 new cases should be divided by the 500 current cases",
+        "Five percent, because point prevalence is the 500 current cases divided by the 10,000-person population"
+      ],
+      "answerIndex": 3,
+      "rationale": "Point prevalence is the proportion of the population who are cases at the specified point in time, so the directly supported calculation is 500 divided by 10,000, or 5%. The 200 new cases concern incidence over the prior year, but a cumulative-incidence denominator should exclude people not initially at risk, and an incidence rate requires person-time. The prompt does not state how many of the 200 remain among the 500 current cases, how many prior cases recovered, or the initial at-risk population. Adding 500 and 200 would therefore risk double counting and would not yield the stated point prevalence.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://archive.cdc.gov/www_cdc_gov/csels/dsepd/ss1978/lesson3/section2.html"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Principles of Epidemiology in Public Health Practice, Lesson 3: Measures of Risk, Section 2",
+          "organization": "Centers for Disease Control and Prevention",
+          "url": "https://archive.cdc.gov/www_cdc_gov/csels/dsepd/ss1978/lesson3/section2.html",
+          "whyReputable": "This official CDC epidemiology training text defines point and period prevalence, distinguishes incidence, and specifies the relevant case numerators and population denominators."
+        }
+      ],
+      "reviewNote": "Specified point prevalence, prevented double counting, and separated current cases from cumulative-incidence and person-time denominators.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-05",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    }
+  ]
+}

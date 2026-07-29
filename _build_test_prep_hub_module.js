@@ -36,10 +36,14 @@ const TMP = path.join(ROOT, '_tmp_test_prep_hub_entry.jsx');
 const COMPILED = TMP + '.compiled.js';
 const QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_eppp_native_pack.cjs');
 const INVENTORY_SCRIPT = path.join(ROOT, 'dev-tools', 'inventory_eppp_learning_content.cjs');
-const LEARNING_LIBRARY_SCRIPT = path.join(ROOT, 'dev-tools', 'build_eppp_learning_library.cjs');
+const LEARNING_LIBRARY_SCRIPT = path.join(ROOT, 'dev-tools', 'build_eppp_learning_library_with_reviews.cjs');
 const DIAGRAM_QUALITY_WAVE_01_SCRIPT = path.join(ROOT, 'dev-tools', 'repair_eppp_diagram_quality_wave_01.cjs');
 const DIAGRAM_QUALITY_WAVE_02_SCRIPT = path.join(ROOT, 'dev-tools', 'repair_eppp_diagram_quality_wave_02.cjs');
 const DIAGRAM_QUALITY_WAVE_03_SCRIPT = path.join(ROOT, 'dev-tools', 'repair_eppp_diagram_quality_wave_03.cjs');
+const DIAGRAM_QUALITY_WAVE_04_SCRIPT = path.join(ROOT, 'dev-tools', 'repair_eppp_diagram_quality_wave_04.cjs');
+const DIAGRAM_QUALITY_WAVE_05_SCRIPT = path.join(ROOT, 'dev-tools', 'repair_eppp_diagram_quality_wave_05.cjs');
+const DIAGRAM_QUALITY_WAVE_06_SCRIPT = path.join(ROOT, 'dev-tools', 'repair_eppp_diagram_quality_wave_06.cjs');
+const DIAGRAM_QUALITY_WAVE_07_SCRIPT = path.join(ROOT, 'dev-tools', 'repair_eppp_diagram_quality_wave_07.cjs');
 const REVIEW_LEDGER_SCRIPT = path.join(ROOT, 'dev-tools', 'build_eppp_review_ledger.cjs');
 const NEXT_REVIEW_DOCKET_SCRIPT = path.join(ROOT, 'dev-tools', 'build_eppp_next_review_docket.cjs');
 const CURATION_500_SCRIPT = path.join(ROOT, 'dev-tools', 'build_eppp_500_curation_manifest.cjs');
@@ -359,6 +363,16 @@ ${compiled}
     buildReviewSet: testPrepBuildReviewSet,
     buildTargetedSet: testPrepBuildTargetedSet,
     buildCustomQuiz: testPrepBuildCustomQuiz,
+    buildSimulationSet: testPrepBuildSimulationSet,
+    questionSpeechText: testPrepQuestionSpeechText,
+    feedbackSpeechText: testPrepFeedbackSpeechText,
+    choicesSpeechText: testPrepChoicesSpeechText,
+    handsFreeHelpText: testPrepHandsFreeHelpText,
+    handsFreeStatusText: testPrepHandsFreeStatusText,
+    parseHandsFreeCommand: testPrepParseHandsFreeCommand,
+    preAnswerClarificationPolicy: testPrepPreAnswerClarificationPolicy,
+    filterPreAnswerClarificationResponse: testPrepFilterPreAnswerClarificationResponse,
+    buildClarificationPrompt: testPrepBuildClarificationPrompt,
     searchPack: testPrepSearchPack,
     normalizeFlashcardSchedule: normalizeTestPrepFlashcardSchedule,
     rateFlashcard: testPrepRateFlashcard,
@@ -387,6 +401,10 @@ if (!skipEpppRefresh) {
   execSync(`node "${DIAGRAM_QUALITY_WAVE_01_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
   execSync(`node "${DIAGRAM_QUALITY_WAVE_02_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
   execSync(`node "${DIAGRAM_QUALITY_WAVE_03_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+  execSync(`node "${DIAGRAM_QUALITY_WAVE_04_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+  execSync(`node "${DIAGRAM_QUALITY_WAVE_05_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+  execSync(`node "${DIAGRAM_QUALITY_WAVE_06_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+  execSync(`node "${DIAGRAM_QUALITY_WAVE_07_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
   execSync(`node "${LEARNING_LIBRARY_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
   execSync(`node "${INVENTORY_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
   execSync(`node "${REVIEW_LEDGER_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });

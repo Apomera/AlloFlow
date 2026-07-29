@@ -3,10 +3,25 @@ import fs from 'node:fs';
 import { resolve } from 'node:path';
 
 const read = (path) => JSON.parse(fs.readFileSync(resolve(process.cwd(), path), 'utf8'));
+const correctionArtifact = 'eppp_memory_aid_correction_wave_01.json';
 
 describe('EPPP memory-aid review wave 02', () => {
   const wave = read('test_prep/eppp_memory_aid_review_wave_02.json');
   const catalog = read('test_prep/eppp_learning_library.json');
+  const corrections = read('test_prep/' + correctionArtifact);
+  const correctionById = new Map(corrections.items.map((item) => [item.legacyId, item]));
+  const catalogById = new Map(catalog.memoryAids.map((aid) => [aid.id, aid]));
+
+  const expectCatalogRepresentation = (item) => {
+    const aid = catalogById.get(item.legacyId);
+    expect(aid, item.legacyId).toBeTruthy();
+    if (aid.reviewArtifact !== 'eppp_memory_aid_review_wave_02.json') {
+      expect(aid.reviewArtifact, item.legacyId).toBe(correctionArtifact);
+      expect(correctionById.get(item.legacyId)?.supersedesArtifact, item.legacyId)
+        .toBe('eppp_memory_aid_review_wave_02.json');
+    }
+    return aid;
+  };
 
   it('contains exactly two stable-ID reviews per EPPP domain', () => {
     expect(wave.summary).toEqual({ items: 16, domains: 8, itemsPerDomain: 2 });
@@ -21,8 +36,7 @@ describe('EPPP memory-aid review wave 02', () => {
   });
 
   it('applies every reviewed replacement once without promoting title duplicates', () => {
-    const applied = catalog.memoryAids.filter((aid) => aid.reviewArtifact === 'eppp_memory_aid_review_wave_02.json');
-    expect(applied).toHaveLength(16);
+    const applied = wave.items.map(expectCatalogRepresentation);
     expect(new Set(applied.map((aid) => aid.id))).toEqual(new Set(wave.items.map((item) => item.legacyId)));
     expect(applied.every((aid) => aid.reviewStatus === 'source-reviewed-editorial-pass' && aid.sourceDetails.length > 0)).toBe(true);
   });

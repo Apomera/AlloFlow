@@ -1,6 +1,6 @@
 # EPPP next-500 editorial review docket
 
-Generated: 2026-07-14T21:16:09.507Z
+Generated: 2026-07-28T21:37:26.860Z
 
 **Status: editorial docket only — not released learner content.**
 

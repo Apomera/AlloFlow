@@ -1,0 +1,290 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "eppp-diagram-review-wave-04",
+  "reviewDate": "2026-07-28",
+  "status": "assisted-editorial-source-review-complete-expert-pending",
+  "standard": {
+    "meaning": "This wave records an assisted editorial, accessibility, and source-alignment pass for six inline instructional diagram placements.",
+    "releaseBoundary": "Independent review by a qualified subject-matter expert and production validation remain pending."
+  },
+  "summary": {
+    "reviewedDiagramPlacements": 6,
+    "correctedDiagramPlacements": 6,
+    "sourceReviewedDiagramPlacements": 6,
+    "distinctNamedSources": 12,
+    "independentExpertValidated": 0,
+    "status": "pass"
+  },
+  "projectedCatalogCounts": {
+    "sourceReviewedDiagramPlacementsBefore": 22,
+    "sourceReviewedDiagramPlacementsAfter": 28,
+    "reviewRequiredDiagramPlacementsBefore": 36,
+    "reviewRequiredDiagramPlacementsAfter": 30
+  },
+  "items": [
+    {
+      "sequence": 1,
+      "placementId": "diagram-placement-ch-11-section-05",
+      "chapterId": "ch-11",
+      "sectionIndex": 5,
+      "expectedHeading": "Integrated Care and Interprofessional Practice",
+      "sourceFile": "js/textbook_ch11.js",
+      "title": "Integrated Behavioral Health Varies by Teamwork and Shared Systems",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-04",
+      "reviewDate": "2026-07-28",
+      "correctionSummary": "Added a learner-facing title and full alternative, namespaced all SVG identifiers, raised every label to at least 12 units, and framed the three positions as illustrative features rather than a universal linear maturity scale.",
+      "reviewNote": "Diagram wording, labels, and placement were corrected for accuracy, nuance, source alignment, accessibility, and learner interpretation. Added a learner-facing title and full alternative, namespaced all SVG identifiers, raised every label to at least 12 units, and framed the three positions as illustrative features rather than a universal linear maturity scale. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://integrationacademy.ahrq.gov/about/integrated-behavioral-health",
+        "https://integrationacademy.ahrq.gov/sites/default/files/2020-06/Lexicon.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "What is Integrated Behavioral Health?",
+          "organization": "Academy for Integrating Behavioral Health and Primary Care, Agency for Healthcare Research and Quality",
+          "url": "https://integrationacademy.ahrq.gov/about/integrated-behavioral-health",
+          "whyReputable": "AHRQ is the U.S. federal agency for healthcare quality research. Its Integration Academy defines integrated behavioral health as medical and behavioral clinicians working together with patients and families, and describes teamwork, coordination, procedures, and information systems as substantive features."
+        },
+        {
+          "title": "Lexicon for Behavioral Health and Primary Care Integration: Concepts and Definitions Developed by Expert Consensus",
+          "organization": "Agency for Healthcare Research and Quality Integration Academy",
+          "url": "https://integrationacademy.ahrq.gov/sites/default/files/2020-06/Lexicon.pdf",
+          "whyReputable": "This AHRQ-hosted expert-consensus lexicon supplies practical concepts and definitions for behavioral-health and primary-care integration. It supports describing integration by functions and shared systems while avoiding the claim that every program follows one universal linear taxonomy."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "frameworkContext": "historical-and-model-context-editorial-pass"
+      },
+      "independentExpertStatus": "pending-independent-qualified-expert-review",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 2,
+      "placementId": "diagram-placement-ch-5-section-07",
+      "chapterId": "ch-5",
+      "sectionIndex": 7,
+      "expectedHeading": "Differential Diagnosis",
+      "sourceFile": "js/textbook_ch5.js",
+      "title": "Differential Diagnosis Uses Parallel, Revisable Hypotheses",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-04",
+      "reviewDate": "2026-07-28",
+      "correctionSummary": "Replaced the short hierarchy label with a full alternative, namespaced the SVG title and description, and preserved the parallel, iterative map with explicit attention to urgency, validity, context, uncertainty, and possible co-occurrence.",
+      "reviewNote": "Diagram wording, labels, and placement were corrected for accuracy, nuance, source alignment, accessibility, and learner interpretation. Replaced the short hierarchy label with a full alternative, namespaced the SVG title and description, and preserved the parallel, iterative map with explicit attention to urgency, validity, context, uncertainty, and possible co-occurrence. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://www.psychiatry.org/patients-families/what-is-the-dsm",
+        "https://www.who.int/publications/i/item/9789240077263",
+        "https://doi.org/10.1080/13854046.2021.1896036"
+      ],
+      "sourceDetails": [
+        {
+          "title": "What is the DSM?",
+          "organization": "American Psychiatric Association",
+          "url": "https://www.psychiatry.org/patients-families/what-is-the-dsm",
+          "whyReputable": "The American Psychiatric Association publishes the DSM and describes it as a classification whose criteria clinicians evaluate when making diagnoses. This primary organizational source supports criterion-based diagnosis without treating one symptom or one data source as sufficient."
+        },
+        {
+          "title": "Clinical descriptions and diagnostic requirements for ICD-11 mental, behavioural and neurodevelopmental disorders",
+          "organization": "World Health Organization",
+          "url": "https://www.who.int/publications/i/item/9789240077263",
+          "whyReputable": "The World Health Organization publishes the ICD-11 clinical descriptions and diagnostic requirements for worldwide clinical use. It provides an authoritative diagnostic framework and explicitly supports attention to differential diagnosis, boundaries, context, and clinical judgment."
+        },
+        {
+          "title": "American Academy of Clinical Neuropsychology 2021 Consensus Statement on Validity Assessment",
+          "organization": "American Academy of Clinical Neuropsychology; The Clinical Neuropsychologist",
+          "url": "https://doi.org/10.1080/13854046.2021.1896036",
+          "whyReputable": "This peer-reviewed professional consensus statement distinguishes performance and symptom validity evidence from diagnostic attribution, recommends multiple validity methods, and explains how validity findings constrain interpretation rather than proving a motive or diagnosis by themselves."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "frameworkContext": "historical-and-model-context-editorial-pass"
+      },
+      "independentExpertStatus": "pending-independent-qualified-expert-review",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 3,
+      "placementId": "diagram-placement-ch-14-section-02",
+      "chapterId": "ch-14",
+      "sectionIndex": 2,
+      "expectedHeading": "Beck’s Cognitive Therapy",
+      "sourceFile": "js/textbook_ch14.js",
+      "title": "Beck-Informed Formulation Links Situations, Appraisals, and Responses",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-04",
+      "reviewDate": "2026-07-28",
+      "correctionSummary": "Added the missing accessible SVG name and full alternative, raised all labels to at least 12 units, replaced “distorted” as an automatic default with neutral appraisal language, and represented reciprocal cognitive, emotional, physiological, and behavioral influences.",
+      "reviewNote": "Diagram wording, labels, and placement were corrected for accuracy, nuance, source alignment, accessibility, and learner interpretation. Added the missing accessible SVG name and full alternative, raised all labels to at least 12 units, replaced “distorted” as an automatic default with neutral appraisal language, and represented reciprocal cognitive, emotional, physiological, and behavioral influences. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://beckinstitute.org/about/understanding-cbt/",
+        "https://pubmed.ncbi.nlm.nih.gov/24387236/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Understanding CBT",
+          "organization": "Beck Institute for Cognitive Behavior Therapy",
+          "url": "https://beckinstitute.org/about/understanding-cbt/",
+          "whyReputable": "Beck Institute is a specialist nonprofit founded by cognitive-therapy developer Aaron T. Beck. Its clinician-facing material describes individualized cognitive formulation, collaborative treatment planning, and interactions among thoughts, emotions, physiology, and behavior."
+        },
+        {
+          "title": "Advances in cognitive theory and therapy: the generic cognitive model",
+          "organization": "Annual Review of Clinical Psychology; PubMed, U.S. National Library of Medicine",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/24387236/",
+          "whyReputable": "This peer-reviewed review by Aaron T. Beck and Emily A. P. Haigh presents the generic cognitive model and situates cognition within a broader formulation of psychopathology. PubMed supplies traceable author, journal, and publication metadata."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "frameworkContext": "historical-and-model-context-editorial-pass"
+      },
+      "independentExpertStatus": "pending-independent-qualified-expert-review",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 4,
+      "placementId": "diagram-placement-ch-17-section-02",
+      "chapterId": "ch-17",
+      "sectionIndex": 2,
+      "expectedHeading": "Caplan’s Prevention Model",
+      "sourceFile": "js/textbook_ch17.js",
+      "title": "Caplan’s Historical Primary, Secondary, and Tertiary Framework",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-04",
+      "reviewDate": "2026-07-28",
+      "correctionSummary": "Expanded the text alternative, raised every label to at least 12 units, replaced dated shorthand examples with the framework’s actual timing and goals, and distinguished Caplan’s historical course categories from later population-risk categories.",
+      "reviewNote": "Diagram wording, labels, and placement were corrected for accuracy, nuance, source alignment, accessibility, and learner interpretation. Expanded the text alternative, raised every label to at least 12 units, replaced dated shorthand examples with the framework’s actual timing and goals, and distinguished Caplan’s historical course categories from later population-risk categories. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://books.google.com/books/about/Principles_Prevent_Psychatry.html?id=YVtrAAAAMAAJ",
+        "https://doi.org/10.17226/12480"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Principles of Preventive Psychiatry",
+          "organization": "Basic Books; bibliographic record hosted by Google Books",
+          "url": "https://books.google.com/books/about/Principles_Prevent_Psychatry.html?id=YVtrAAAAMAAJ",
+          "whyReputable": "This is the bibliographic record for Gerald Caplan’s 1964 primary exposition of preventive psychiatry, including separate treatments of primary, secondary, and tertiary prevention. It is authoritative for the historical framework but not evidence that the categories guarantee program effects."
+        },
+        {
+          "title": "Preventing Mental, Emotional, and Behavioral Disorders Among Young People: Progress and Possibilities",
+          "organization": "National Research Council and Institute of Medicine; National Academies Press",
+          "url": "https://doi.org/10.17226/12480",
+          "whyReputable": "This consensus report from the National Academies reviews prevention science and explains how contemporary universal, selective, and indicated categories differ from the older primary, secondary, and tertiary terminology. It provides authoritative context for labeling Caplan’s model as historical."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "frameworkContext": "historical-and-model-context-editorial-pass"
+      },
+      "independentExpertStatus": "pending-independent-qualified-expert-review",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 5,
+      "placementId": "diagram-placement-ch-13-section-05",
+      "chapterId": "ch-13",
+      "sectionIndex": 5,
+      "expectedHeading": "Person-Centered Therapy (Rogers)",
+      "sourceFile": "js/textbook_ch13.js",
+      "title": "Rogers’s Six Proposed Relational Conditions",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-04",
+      "reviewDate": "2026-07-28",
+      "correctionSummary": "Added a learner-facing title and full six-condition alternative while preserving the already accessible diagram and its explicit boundary between Rogers’s historical proposition and a guaranteed treatment effect.",
+      "reviewNote": "Diagram wording, labels, and placement were corrected for accuracy, nuance, source alignment, accessibility, and learner interpretation. Added a learner-facing title and full six-condition alternative while preserving the already accessible diagram and its explicit boundary between Rogers’s historical proposition and a guaranteed treatment effect. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://doi.org/10.1037/h0045357"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The necessary and sufficient conditions of therapeutic personality change",
+          "organization": "Journal of Consulting Psychology, American Psychological Association",
+          "url": "https://doi.org/10.1037/h0045357",
+          "whyReputable": "Rogers’s 1957 peer-reviewed article is the primary source for the six proposed relational conditions. It directly names psychological contact, client incongruence, therapist congruence, unconditional positive regard, empathic understanding, and minimally achieved communication to the client."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "frameworkContext": "historical-and-model-context-editorial-pass"
+      },
+      "independentExpertStatus": "pending-independent-qualified-expert-review",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "sequence": 6,
+      "placementId": "diagram-placement-ch-19-section-02",
+      "chapterId": "ch-19",
+      "sectionIndex": 2,
+      "expectedHeading": "The Transtheoretical Model (Prochaska & DiClemente)",
+      "sourceFile": "js/textbook_ch19.js",
+      "title": "TTM Stages Describe a Behavior-Specific, Revisable Snapshot",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewWave": "eppp-diagram-review-wave-04",
+      "reviewDate": "2026-07-28",
+      "correctionSummary": "Expanded the alternative, raised every label to at least 12 units, replaced judgmental shorthand with behavior-specific descriptions, and kept visible return paths so the stages cannot be read as a fixed trait or deterministic staircase.",
+      "reviewNote": "Diagram wording, labels, and placement were corrected for accuracy, nuance, source alignment, accessibility, and learner interpretation. Expanded the alternative, raised every label to at least 12 units, replaced judgmental shorthand with behavior-specific descriptions, and kept visible return paths so the stages cannot be read as a fixed trait or deterministic staircase. Independent qualified expert validation remains pending.",
+      "references": [
+        "https://doi.org/10.1037/0022-006X.51.3.390",
+        "https://pubmed.ncbi.nlm.nih.gov/10170434/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Stages and processes of self-change of smoking: Toward an integrative model of change",
+          "organization": "Journal of Consulting and Clinical Psychology, American Psychological Association",
+          "url": "https://doi.org/10.1037/0022-006X.51.3.390",
+          "whyReputable": "This peer-reviewed article by Prochaska and DiClemente is a foundational primary report for the stages and processes of change. Its smoking-specific research context supports teaching the model while avoiding a claim that a stage label is a universal trait or deterministic sequence."
+        },
+        {
+          "title": "The transtheoretical model of health behavior change",
+          "organization": "American Journal of Health Promotion; PubMed, U.S. National Library of Medicine",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/10170434/",
+          "whyReputable": "This peer-reviewed overview by Prochaska and Velicer defines the model’s stages, processes, decisional balance, self-efficacy, and behavior-change scope. PubMed supplies stable authorship and publication metadata for checking the model-specific terminology."
+        }
+      ],
+      "checks": {
+        "textAlternative": "editorial-pass",
+        "reducedMotion": "static-content-pass",
+        "keyboardDependency": "no-keyboard-dependency",
+        "conceptAccuracy": "assisted-editorial-pass-expert-pending",
+        "labelQuality": "editorial-pass-minimum-12",
+        "sourceSupport": "topically-aligned-reputable-source",
+        "expertReview": "pending-independent-review",
+        "frameworkContext": "historical-and-model-context-editorial-pass"
+      },
+      "independentExpertStatus": "pending-independent-qualified-expert-review",
+      "productionStatus": "not-production-validated"
+    }
+  ]
+}

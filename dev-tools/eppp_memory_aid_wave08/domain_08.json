@@ -1,0 +1,349 @@
+{
+  "schemaVersion": 1,
+  "domainId": 8,
+  "status": "complete-source-reviewed-editorial-pass",
+  "items": [
+    {
+      "legacyId": "memory-aid-35a90c557cf45376",
+      "title": "APA Ethics Principles (General)",
+      "content": "**Aspirational principles:** Beneficence and Nonmaleficence, Fidelity and Responsibility, Integrity, Justice, and Respect for Peoples Rights and Dignity orient ethical conduct. They are not enforceable rules by themselves and do not map to the mnemonic order as a priority hierarchy. Ethical Standards, law, regulation, role, setting, and other authorities determine specific duties; conflicts require reasoned resolution rather than choosing whichever principle feels strongest.",
+      "references": [
+        "https://www.apa.org/ethics/code"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Ethical Principles of Psychologists and Code of Conduct",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/ethics/code",
+          "whyReputable": "This is the official APA ethics code and distinguishes aspirational General Principles from enforceable Ethical Standards, subject to its stated scope."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"APA Ethics Principles (General)\" with method- or role-specific provenance, corrected overstatement, and stated the applicable inferential, ethical, or legal boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-c731560d08584f0c",
+      "title": "Informed Consent Elements",
+      "content": "**Consent is a process:** Explain the nature and anticipated course, fees, third-party involvement, confidentiality limits, foreseeable risks, benefits, alternatives, participation choice, and opportunity for questions as applicable. Capacity, voluntariness, language, accessibility, development, culture, documentation, and changing circumstances matter. Consent is not a signed-form event, does not waive professional duties, and has role-specific variations for research, assessment, treatment, supervision, recording, and mandated services.",
+      "references": [
+        "https://www.apa.org/ethics/code"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Ethical Principles of Psychologists and Code of Conduct",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/ethics/code",
+          "whyReputable": "This is the official APA ethics code and distinguishes aspirational General Principles from enforceable Ethical Standards, subject to its stated scope."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Informed Consent Elements\" with method- or role-specific provenance, corrected overstatement, and stated the applicable inferential, ethical, or legal boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-221c8e94619ab7ee",
+      "title": "Supervision Models",
+      "content": "**Models organize attention, not automatic interventions:** Developmental models consider changing trainee needs; discrimination models distinguish teacher, counselor, and consultant roles across skill domains; competency-based supervision makes outcomes and evaluation explicit. Supervisors remain responsible for competence, role clarity, informed consent, feedback, diversity, documentation, client welfare, and gatekeeping. A stage label cannot replace direct observation or justify support or autonomy without evidence.",
+      "references": [
+        "https://www.apa.org/about/policy/guidelines-supervision.pdf",
+        "https://doi.org/10.1002/9781118846360.ch28",
+        "https://doi.org/10.1002/j.1556-6978.1979.tb00906.x",
+        "https://www.apa.org/pubs/books/clinical-supervision-second-edition"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Guidelines for Clinical Supervision in Health Service Psychology",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/about/policy/guidelines-supervision.pdf",
+          "whyReputable": "These official APA guidelines directly address supervisor competence, informed consent, evaluation, feedback, diversity, documentation, and gatekeeping while remaining aspirational guidelines."
+        },
+        {
+          "title": "The Integrative Developmental Model of Supervision",
+          "organization": "The Wiley International Handbook of Clinical Supervision",
+          "url": "https://doi.org/10.1002/9781118846360.ch28",
+          "whyReputable": "This scholarly handbook chapter directly presents a developmental supervision model and the evidence-based limits of assigning support or autonomy by developmental level."
+        },
+        {
+          "title": "Supervisor Training: A Discrimination Model",
+          "organization": "Counselor Education and Supervision",
+          "url": "https://doi.org/10.1002/j.1556-6978.1979.tb00906.x",
+          "whyReputable": "This peer-reviewed primary article directly presents the teacher, counselor, and consultant roles and the supervisory focus choices in the discrimination model."
+        },
+        {
+          "title": "Clinical Supervision: A Competency-Based Approach, Second Edition",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/pubs/books/clinical-supervision-second-edition",
+          "whyReputable": "This current APA professional text directly describes competency-based supervision, explicit evaluation, multicultural practice, and supervisor competence."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Supervision Models\" with method- or role-specific provenance, corrected overstatement, and stated the applicable inferential, ethical, or legal boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-0dc90dfb8e38936f",
+      "title": "Competence Boundaries",
+      "content": "**Competence is task and context specific:** Education, training, supervised experience, consultation, study, and appropriate experience support competence; new populations, technologies, languages, disabilities, emergencies, and legal roles may require additional preparation. An urgent service need can alter what limited assistance is permissible, not erase limits. Self-confidence, licensure title, or one course does not establish competence. Monitor outcomes and impairment, document reasoning, and arrange referral or consultation when indicated.",
+      "references": [
+        "https://www.apa.org/ethics/code"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Ethical Principles of Psychologists and Code of Conduct",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/ethics/code",
+          "whyReputable": "This is the official APA ethics code and distinguishes aspirational General Principles from enforceable Ethical Standards, subject to its stated scope."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Competence Boundaries\" with method- or role-specific provenance, corrected overstatement, and stated the applicable inferential, ethical, or legal boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-592dfbb464796b05",
+      "title": "Fees, Bartering & Pro Bono",
+      "content": "**Financial arrangements require advance clarity:** Discuss fees, billing, collection limits, third-party payment, missed appointments, and foreseeable changes during consent. Barter is not categorically forbidden, but requires attention to exploitation, coercion, clinical implications, culture, value, boundaries, and applicable law. Pro bono service is encouraged as a contribution, not a fixed quota in the Ethics Code. Nonpayment does not automatically authorize abandonment, disclosure, or withholding emergency care.",
+      "references": [
+        "https://www.apa.org/ethics/code"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Ethical Principles of Psychologists and Code of Conduct",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/ethics/code",
+          "whyReputable": "This is the official APA ethics code and distinguishes aspirational General Principles from enforceable Ethical Standards, subject to its stated scope."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Fees, Bartering & Pro Bono\" with method- or role-specific provenance, corrected overstatement, and stated the applicable inferential, ethical, or legal boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-70ada1d94600e802",
+      "title": "Forensic Psychology Ethics",
+      "content": "**Forensic roles require explicit boundaries:** Clarify the retaining party, legal question, intended users, confidentiality or privilege limits, voluntariness, methods, and limits of conclusions. Strive for impartiality and base opinions on sufficient information, distinguishing facts, data, assumptions, and inference. Treating and evaluative roles can conflict; legal demands do not erase competence, privacy, record, or fairness duties. Specialty guidelines are aspirational and controlling law varies by jurisdiction.",
+      "references": [
+        "https://www.apa.org/practice/guidelines/forensic-psychology"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Specialty Guidelines for Forensic Psychology",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/practice/guidelines/forensic-psychology",
+          "whyReputable": "These official specialty guidelines directly address role clarity, impartiality, competence, records, informed consent or notification, and legal-context boundaries in forensic work."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Forensic Psychology Ethics\" with method- or role-specific provenance, corrected overstatement, and stated the applicable inferential, ethical, or legal boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-b8348015d8327db3",
+      "title": "Child Custody Evaluation",
+      "content": "**Child-focused forensic evaluation:** Define the court-authorized question and role, obtain information from multiple relevant sources, use methods appropriate to the family and legal context, and explain limitations. Custody evaluators do not decide the ultimate legal issue merely from a test score, attachment label, or brief observation. Avoid incompatible therapeutic roles, address access and culture, protect records appropriately, and follow current court orders and jurisdictional law.",
+      "references": [
+        "https://www.apa.org/about/policy/child-custody-evaluations.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Guidelines for Child Custody Evaluations in Family Law Proceedings",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/about/policy/child-custody-evaluations.pdf",
+          "whyReputable": "These official APA guidelines directly address child-focused scope, multiple data sources, impartiality, role boundaries, and limits of inference in custody evaluations."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Child Custody Evaluation\" with method- or role-specific provenance, corrected overstatement, and stated the applicable inferential, ethical, or legal boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-feb2ef3fa5e5e048",
+      "title": "Multicultural Ethics & Guidelines",
+      "content": "**Context and intersectionality:** Culturally responsive practice examines identities, language, power, discrimination, community, migration, socioeconomic conditions, disability, and the psychologists own assumptions. Group knowledge can guide questions but cannot substitute for individual assessment or become a stereotype. Use accessible communication, qualified interpreters when needed, relevant norms and methods, collaboration, and consultation. APA multicultural guidelines are aspirational; enforceable duties arise through applicable standards and law.",
+      "references": [
+        "https://www.apa.org/about/policy/multicultural-guidelines.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Multicultural Guidelines: An Ecological Approach to Context, Identity, and Intersectionality",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/about/policy/multicultural-guidelines.pdf",
+          "whyReputable": "These official APA guidelines directly address identity, intersectionality, context, power, bias, and culturally responsive professional practice without stereotyping groups."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Multicultural Ethics & Guidelines\" with method- or role-specific provenance, corrected overstatement, and stated the applicable inferential, ethical, or legal boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-e74b953010af6ebd",
+      "title": "HIPAA Essentials for Psychologists",
+      "content": "**HIPAA scope matters:** The Privacy Rule applies to covered entities and protected health information; the Security Rule addresses electronic PHI; business-associate duties and breach rules may apply. HIPAA does not \"certify\" products and is not the only confidentiality authority. State law, ethics, contracts, payer rules, and special federal protections may be more protective. Use role-based safeguards, minimum-necessary principles where applicable, risk analysis, access controls, and current HHS guidance.",
+      "references": [
+        "https://www.hhs.gov/hipaa/for-professionals/index.html"
+      ],
+      "sourceDetails": [
+        {
+          "title": "HIPAA for Professionals",
+          "organization": "U.S. Department of Health and Human Services",
+          "url": "https://www.hhs.gov/hipaa/for-professionals/index.html",
+          "whyReputable": "This official federal resource directly provides current Privacy, Security, and Breach Notification Rule guidance and distinguishes HIPAA from broader confidentiality duties."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"HIPAA Essentials for Psychologists\" with method- or role-specific provenance, corrected overstatement, and stated the applicable inferential, ethical, or legal boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-bbb9d9d6f991a7fc",
+      "title": "Rural & Small Community Ethics",
+      "content": "**Overlapping relationships require analysis, not automatic avoidance:** In small communities, alternatives, privacy, emergency access, and social contact may be limited. Before proceeding, consider necessity, role conflict, exploitation, objectivity, confidentiality, foreseeable harm, community context, consultation, and alternatives; discuss boundaries and document reasoning. A multiple relationship is not automatically unethical, but scarcity does not make every overlap acceptable or waive competence, consent, records, or termination duties.",
+      "references": [
+        "https://www.psychologyboard.gov.au/Standards-and-Guidelines/FAQ/Code-of-conduct",
+        "https://www.apa.org/ethics/code"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Code of Conduct FAQ: Multiple Relationships and Professional Boundaries",
+          "organization": "Psychology Board of Australia",
+          "url": "https://www.psychologyboard.gov.au/Standards-and-Guidelines/FAQ/Code-of-conduct",
+          "whyReputable": "This current regulator guidance directly addresses overlapping relationships in rural and other closely connected communities, including ethical decision making, necessity, consultation, and boundaries."
+        },
+        {
+          "title": "Ethical Principles of Psychologists and Code of Conduct",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/ethics/code",
+          "whyReputable": "This is the official APA ethics code and distinguishes aspirational General Principles from enforceable Ethical Standards, subject to its stated scope."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Rural & Small Community Ethics\" with method- or role-specific provenance, corrected overstatement, and stated the applicable inferential, ethical, or legal boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-5e9790d4643d0295",
+      "title": "Malpractice Elements",
+      "content": "**Civil-liability cue, not a universal formula:** A professional-negligence claim commonly examines duty, breach of the applicable standard, causation, and legally cognizable harm, but terminology, burdens, limitations periods, immunities, and expert-evidence rules vary by jurisdiction. An adverse outcome or ethics complaint alone does not prove malpractice, and an ethics violation is not automatically dispositive law. Competence, consent, records, consultation, communication, insurance, and current legal advice support risk management.",
+      "references": [
+        "https://www.apaservices.org/practice/business/legal/professional/liability"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Professional Liability",
+          "organization": "American Psychological Association Services",
+          "url": "https://www.apaservices.org/practice/business/legal/professional/liability",
+          "whyReputable": "This APA practice resource directly addresses professional-liability risk, documentation, competence, consent, consultation, and the distinction between risk management and legal conclusions."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Malpractice Elements\" with method- or role-specific provenance, corrected overstatement, and stated the applicable inferential, ethical, or legal boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-2a34f3a1c1f0090b",
+      "title": "Informed Consent Elements",
+      "content": "**Role-specific informed consent:** Provide information a reasonable person needs for the service, including purpose, procedures, anticipated course, risks, benefits, alternatives, fees, third parties, confidentiality limits, and how questions or withdrawal are handled where applicable. Adapt communication for language, disability, development, and capacity; document the process and revisit material changes. Mandated or court-involved services require notification of limits even when participation is not fully voluntary.",
+      "references": [
+        "https://www.apa.org/ethics/code"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Ethical Principles of Psychologists and Code of Conduct",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/ethics/code",
+          "whyReputable": "This is the official APA ethics code and distinguishes aspirational General Principles from enforceable Ethical Standards, subject to its stated scope."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Informed Consent Elements\" with method- or role-specific provenance, corrected overstatement, and stated the applicable inferential, ethical, or legal boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "memory-aid-918e1bfb5f9c81b2",
+      "title": "Supervision Models",
+      "content": "**Supervision must remain observable and evaluative:** Developmental, competency-based, discrimination, and reflective models emphasize different aspects of learning, but none replaces explicit goals, direct or recorded observation when appropriate, timely feedback, evaluation criteria, due process, cultural responsiveness, documentation, and client protection. Clarify who is responsible, what information may be shared, and how emergencies and impairment are handled. Match autonomy to demonstrated competence rather than time alone.",
+      "references": [
+        "https://www.apa.org/about/policy/guidelines-supervision.pdf",
+        "https://doi.org/10.1002/9781118846360.ch28",
+        "https://doi.org/10.1002/j.1556-6978.1979.tb00906.x",
+        "https://www.apa.org/pubs/books/clinical-supervision-second-edition",
+        "https://doi.org/10.1002/j.1556-6978.1998.tb00554.x"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Guidelines for Clinical Supervision in Health Service Psychology",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/about/policy/guidelines-supervision.pdf",
+          "whyReputable": "These official APA guidelines directly address supervisor competence, informed consent, evaluation, feedback, diversity, documentation, and gatekeeping while remaining aspirational guidelines."
+        },
+        {
+          "title": "The Integrative Developmental Model of Supervision",
+          "organization": "The Wiley International Handbook of Clinical Supervision",
+          "url": "https://doi.org/10.1002/9781118846360.ch28",
+          "whyReputable": "This scholarly handbook chapter directly presents a developmental supervision model and the evidence-based limits of assigning support or autonomy by developmental level."
+        },
+        {
+          "title": "Supervisor Training: A Discrimination Model",
+          "organization": "Counselor Education and Supervision",
+          "url": "https://doi.org/10.1002/j.1556-6978.1979.tb00906.x",
+          "whyReputable": "This peer-reviewed primary article directly presents the teacher, counselor, and consultant roles and the supervisory focus choices in the discrimination model."
+        },
+        {
+          "title": "Clinical Supervision: A Competency-Based Approach, Second Edition",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/pubs/books/clinical-supervision-second-edition",
+          "whyReputable": "This current APA professional text directly describes competency-based supervision, explicit evaluation, multicultural practice, and supervisor competence."
+        },
+        {
+          "title": "Counseling Supervision: A Reflective Model",
+          "organization": "Counselor Education and Supervision",
+          "url": "https://doi.org/10.1002/j.1556-6978.1998.tb00554.x",
+          "whyReputable": "This peer-reviewed primary article directly presents a reflective supervision model integrating reflective learning with trainee and supervisory-relationship development."
+        }
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Rewrote \"Supervision Models\" with method- or role-specific provenance, corrected overstatement, and stated the applicable inferential, ethical, or legal boundary.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-correction",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    }
+  ]
+}

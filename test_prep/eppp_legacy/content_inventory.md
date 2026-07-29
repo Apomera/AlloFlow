@@ -1,6 +1,6 @@
 # Pass the EPPP learning-content inventory
 
-Generated: 2026-07-26T06:45:01.840Z
+Generated: 2026-07-28T21:37:58.021Z
 
 ## Inventory
 
@@ -76,10 +76,11 @@ Recommended release gates: 100-question foundation, 300-question alpha, 1,000-qu
 | Content | Count | Status | Next gate |
 | --- | ---: | --- | --- |
 | legacy questions | 2933 | active-full-review | re-author or correct, source QA, item-writing QA, accessibility, independent expert validation |
-| textbook chapters | 49 | review-in-progress | 0 chapters still need claim-level source audit and editorial review; all chapters still require independent expert review |
-| interactive diagrams | 58 | review-in-progress | remaining placements need concept accuracy, label, text-alternative, source-support, bias/context, and independent expert review |
+| textbook chapters | 49 | first-pass-complete-expert-pending | 0 chapters still need claim-level source audit and editorial review; all chapters still require independent expert review |
+| textbook sections | 278 | parent-chapter-review-complete-expert-pending | Parent-chapter source/editorial review coverage is recorded separately from independent section-level expert validation. |
+| interactive diagrams | 58 | first-pass-complete-expert-pending | remaining placements need concept accuracy, label, text-alternative, source-support, bias/context, and independent expert review |
 | flashcards | 415 | first-pass-complete-expert-pending | independent qualified expert validation and release decisions for retained cards; retired duplicate cards remain excluded |
-| memory aids | 255 | review-in-progress | remaining aids need oversimplification, outdated-guidance, bias, and source review |
+| memory aids | 255 | first-pass-complete-expert-pending | independent qualified expert validation and production validation |
 | term definitions | 1583 | legacy-preserved-review-not-started | definition/source/version audit and cross-link review |
 
 ## Learner modes

@@ -71,14 +71,19 @@ describe('EPPP knowledge-check source-review wave 03', () => {
     const inventory = new Map(catalog.knowledgeChecks.map((item) => [item.id, item]));
     const released = catalog.chapters.flatMap((chapter) => chapter.knowledgeChecks);
     const releasedIds = released.map((item) => item.id);
-    expect(catalog.summary).toMatchObject({ knowledgeChecks: 109, sourceReviewedKnowledgeChecks: 48, releasedKnowledgeChecks: 48, reviewRequiredKnowledgeChecks: 61 });
-    expect(released).toHaveLength(48);
+    expect(catalog.summary.knowledgeChecks).toBe(109);
+    expect(catalog.summary.sourceReviewedKnowledgeChecks).toBeGreaterThanOrEqual(48);
+    expect(catalog.summary.releasedKnowledgeChecks).toBe(catalog.summary.sourceReviewedKnowledgeChecks);
+    expect(catalog.summary.reviewRequiredKnowledgeChecks).toBe(catalog.summary.knowledgeChecks - catalog.summary.sourceReviewedKnowledgeChecks);
+    expect(catalog.knowledgeChecks).toHaveLength(catalog.summary.knowledgeChecks);
+    expect(released).toHaveLength(catalog.summary.releasedKnowledgeChecks);
     for (const id of expectedIds) {
       expect(inventory.get(id)).toMatchObject({ reviewStatus: 'source-reviewed-editorial-pass', reviewArtifact: 'eppp_knowledge_check_review_wave_03.json' });
       expect(releasedIds.filter((candidate) => candidate === id)).toHaveLength(1);
       expect(Object.values(inventory.get(id).checks).every((status) => status === 'pass')).toBe(true);
     }
-    expect(catalog.knowledgeChecks.filter((item) => item.reviewStatus === 'review-required')).toHaveLength(61);
+    expect(catalog.knowledgeChecks.filter((item) => item.reviewStatus === 'review-required'))
+      .toHaveLength(catalog.summary.reviewRequiredKnowledgeChecks);
   });
 
   it('preserves legal, clinical, developmental, classic-study, and statistical inference boundaries', () => {

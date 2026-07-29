@@ -8,12 +8,12 @@ Generated: 2026-07-22
 | --- | ---: |
 | Questions scanned | 1500 |
 | Incorrect options scanned | 4500 |
-| Questions with one or more warnings | 635 |
-| Incorrect options with one or more warnings | 1789 |
-| Insufficient-detail warnings | 665 |
-| Generic-template warnings | 1061 |
-| Choice-restatement warnings | 434 |
-| Full-key-echo warnings | 270 |
+| Questions with one or more warnings | 617 |
+| Incorrect options with one or more warnings | 1740 |
+| Insufficient-detail warnings | 644 |
+| Generic-template warnings | 1035 |
+| Choice-restatement warnings | 421 |
+| Full-key-echo warnings | 260 |
 | Wave-05 incorrect options with warnings | 0 of 24 |
 | Wave-06 incorrect options with warnings | 0 of 24 |
 | Wave-07 incorrect options with warnings | 0 of 48 |
@@ -28,9 +28,7 @@ The reviewed waves (eppp-native-quality-wave-05, eppp-native-quality-wave-06, ep
 
 | Item | Domain | Incorrect options affected | Warning types | Score |
 | --- | --- | ---: | --- | ---: |
-| eppp-b012-assessment-1 | assessment | 3 | generic-template, full-key-echo, choice-restatement | 17 |
 | eppp-b013-research-1 | research | 3 | generic-template, choice-restatement, full-key-echo | 17 |
-| eppp-v3-assessment-002 | assessment | 3 | generic-template, choice-restatement, full-key-echo | 17 |
 | eppp-v3-assessment-005 | assessment | 3 | generic-template, choice-restatement, full-key-echo | 17 |
 | eppp-v3-assessment-010 | assessment | 3 | generic-template, full-key-echo, choice-restatement | 17 |
 | eppp-v3-assessment-012 | assessment | 3 | generic-template, full-key-echo, choice-restatement | 17 |
@@ -78,6 +76,8 @@ The reviewed waves (eppp-native-quality-wave-05, eppp-native-quality-wave-06, ep
 | eppp-v3-research-033 | research | 3 | generic-template, full-key-echo, choice-restatement | 16 |
 | eppp-v3-research-035 | research | 3 | generic-template, full-key-echo, choice-restatement | 16 |
 | eppp-b005-social-1 | social-cultural | 3 | generic-template, full-key-echo | 15 |
+| eppp-b008-social-2 | social-cultural | 3 | generic-template, full-key-echo | 15 |
+| eppp-b023-lifespan-1 | lifespan | 3 | choice-restatement, full-key-echo, generic-template | 15 |
 
 ## Interpretation
 

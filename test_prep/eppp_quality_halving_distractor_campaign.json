@@ -39,28 +39,28 @@
     "sourceRecordsHydrated": 128,
     "correctedReferenceUrls": 0,
     "metricsBefore": {
-      "uniqueKeyStemLexicalLeakageCandidates": 67,
-      "asymmetricExtremeDistractorCandidates": 130,
+      "uniqueKeyStemLexicalLeakageCandidates": 57,
+      "asymmetricExtremeDistractorCandidates": 120,
       "advancedDirectRecallCandidates": 7,
-      "semanticConceptDuplicatePairs": 116,
-      "semanticConceptDuplicateClusters": 60
+      "semanticConceptDuplicatePairs": 85,
+      "semanticConceptDuplicateClusters": 49
     },
     "metricsAfter": {
-      "uniqueKeyStemLexicalLeakageCandidates": 65,
-      "asymmetricExtremeDistractorCandidates": 130,
+      "uniqueKeyStemLexicalLeakageCandidates": 55,
+      "asymmetricExtremeDistractorCandidates": 120,
       "advancedDirectRecallCandidates": 7,
-      "semanticConceptDuplicatePairs": 114,
-      "semanticConceptDuplicateClusters": 58
+      "semanticConceptDuplicatePairs": 82,
+      "semanticConceptDuplicateClusters": 46
     },
     "ceilingStatus": {
       "uniqueKeyStemLexicalLeakageCandidates": {
-        "value": 65,
+        "value": 55,
         "ceiling": 70,
         "met": true,
         "bufferedTarget": 65
       },
       "asymmetricExtremeDistractorCandidates": {
-        "value": 130,
+        "value": 120,
         "ceiling": 147,
         "met": true,
         "bufferedTarget": 140
@@ -72,13 +72,13 @@
         "bufferedTarget": 7
       },
       "semanticConceptDuplicatePairs": {
-        "value": 114,
+        "value": 82,
         "ceiling": 120,
         "met": true,
         "bufferedTarget": 110
       },
       "semanticConceptDuplicateClusters": {
-        "value": 58,
+        "value": 46,
         "ceiling": 60,
         "met": true,
         "bufferedTarget": 55
@@ -118,19 +118,17 @@
     "lexical": [],
     "extreme": [],
     "recall": [],
-    "duplicatePairs": [
-      "eppp-b004-professional-1 / eppp-v3-professional-003"
-    ]
+    "duplicatePairs": []
   },
   "monotonicity": {
     "uniqueKeyStemLexicalLeakageCandidates": {
-      "before": 67,
-      "after": 65,
+      "before": 57,
+      "after": 55,
       "reduction": 2
     },
     "asymmetricExtremeDistractorCandidates": {
-      "before": 130,
-      "after": 130,
+      "before": 120,
+      "after": 120,
       "reduction": 0
     },
     "advancedDirectRecallCandidates": {
@@ -139,14 +137,14 @@
       "reduction": 0
     },
     "semanticConceptDuplicatePairs": {
-      "before": 116,
-      "after": 114,
-      "reduction": 2
+      "before": 85,
+      "after": 82,
+      "reduction": 3
     },
     "semanticConceptDuplicateClusters": {
-      "before": 60,
-      "after": 58,
-      "reduction": 2
+      "before": 49,
+      "after": 46,
+      "reduction": 3
     }
   },
   "sourceCorrections": [],

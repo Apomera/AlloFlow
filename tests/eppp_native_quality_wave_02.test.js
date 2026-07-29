@@ -9,6 +9,7 @@ const json = (relativePath) => JSON.parse(read(relativePath));
 const paddedChoiceText = 'Under the conditions in the question, the best response is ';
 const wordCount = (value) => String(value).trim().split(/\s+/).filter(Boolean).length;
 const supersedingReviewWaveById = new Map([
+  ['eppp-v3-assessment-061', 'eppp-native-quality-wave-19'],
   ['eppp-v3-intervention-060', 'eppp-native-quality-wave-16'],
   ['eppp-v3-professional-030', 'eppp-native-quality-wave-06'],
   ['eppp-v3-assessment-062', 'eppp-native-quality-wave-07'],
