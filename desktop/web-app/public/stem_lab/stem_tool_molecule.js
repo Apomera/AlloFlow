@@ -271,7 +271,7 @@ window.StemLab = window.StemLab || {
                   type: 'button',
                   'aria-label': props.startLabel,
                   onClick: function() { dismissHandlerRef.current(); },
-                  className: 'min-h-11 rounded-lg bg-emerald-700 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-emerald-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 active:scale-[0.97]'
+                  className: 'min-h-11 rounded-lg bg-emerald-700 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-2 active:scale-[0.97]'
                 }, '✓ ' + props.startLabel)
           )
         )
@@ -2025,7 +2025,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
                       React.createElement("span", { className: "text-lg font-black text-slate-700 tracking-tight" }, "\u00D7" + count),
 
-                      React.createElement("button", { "aria-label": __alloT('stem.molecule.remove_element', "Remove Element"), onClick: () => removeElement(sym), className: "transition-colors ml-1 w-8 h-8 rounded-full bg-red-100 text-red-700 text-sm font-bold hover:bg-red-200 flex items-center justify-center active:scale-[0.97]" }, "\u2212")
+                      React.createElement("button", { "aria-label": __alloT('stem.molecule.remove_element', "Remove Element"), onClick: () => removeElement(sym), className: "transition-colors ml-1 w-8 h-8 rounded-full bg-red-100 text-red-800 text-sm font-bold hover:bg-red-200 flex items-center justify-center active:scale-[0.97]" }, "\u2212")
 
                     );
 
@@ -3632,7 +3632,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                         React.createElement("p", { className: "text-xs text-indigo-700 leading-relaxed" }, aiAnswer),
                         React.createElement("button", { "aria-label": __alloT('stem.molecule.read_aloud', "Read Aloud"),
                           onClick: () => speakText(aiAnswer),
-                          className: "transition-colors mt-1 px-2 py-0.5 rounded text-[11px] font-bold bg-indigo-100 text-indigo-600 hover:bg-indigo-200 active:scale-[0.97]"
+                          className: "transition-colors mt-1 px-2 py-0.5 rounded text-[11px] font-bold bg-indigo-100 text-indigo-700 hover:bg-indigo-200 active:scale-[0.97]"
                         }, __alloT('stem.molecule.read_aloud_2', "🔊 Read Aloud"))
                       )
                     )
@@ -4678,7 +4678,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   var revealed = st.revealed;
                   var correct = opt.id === c.correct;
                   var bg = revealed
-                    ? (correct ? 'bg-green-600 text-white border-green-700' : (picked ? 'bg-red-100 text-red-800 border-red-300 line-through' : 'bg-white text-slate-500 border-slate-200'))
+                    ? (correct ? 'bg-green-700 text-white border-green-800' : (picked ? 'bg-red-100 text-red-800 border-red-300 line-through' : 'bg-white text-slate-500 border-slate-200'))
                     : (picked ? 'bg-indigo-200 text-indigo-900 border-indigo-400' : 'transition-colors bg-white text-slate-600 border-slate-200 hover:bg-indigo-50 active:scale-[0.97]');
                   return React.createElement('button', {
                     key: opt.id,
@@ -4908,7 +4908,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                   var revealed = st.revealed;
                   var correct = opt.id === kase.correct;
                   var bg = revealed
-                    ? (correct ? 'bg-green-600 text-white border-green-700' : (picked ? 'bg-red-100 text-red-800 border-red-300 line-through' : 'bg-white text-slate-500 border-slate-200'))
+                    ? (correct ? 'bg-green-700 text-white border-green-800' : (picked ? 'bg-red-100 text-red-800 border-red-300 line-through' : 'bg-white text-slate-500 border-slate-200'))
                     : (picked ? 'bg-indigo-200 text-indigo-900 border-indigo-400' : 'transition-colors bg-white text-slate-600 border-slate-200 hover:bg-indigo-50 active:scale-[0.97]');
                   return React.createElement('button', {
                     key: opt.id,

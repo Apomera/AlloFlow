@@ -6718,7 +6718,7 @@ window.StemLab = window.StemLab || {
                     return h('p', { key: i, className: 'text-[11px] rounded-lg bg-red-50 border border-red-100 text-red-700 p-2' }, '\u26A0\uFE0F ' + issue);
                   })
                 ) : h('p', { className: 'text-[11px] rounded-lg bg-emerald-50 border border-emerald-100 text-emerald-700 p-2 font-bold' }, '\u2705 This load is balanced. Detergent, room to move, and fabric mix look reasonable.'),
-                h('button', { disabled: laundryIssues.length > 0 || laundrySelectedItems.length === 0, onClick: function() { checkBadge('laundryPro'); awardXP(10, 'Laundry load ready'); }, className: 'mt-2 px-3 py-2 rounded-xl text-xs font-bold ' + (laundryIssues.length > 0 || laundrySelectedItems.length === 0 ? 'bg-slate-100 text-slate-400 cursor-not-allowed' : 'bg-teal-700 text-white hover:bg-teal-800') }, 'Mark load ready')
+                h('button', { disabled: laundryIssues.length > 0 || laundrySelectedItems.length === 0, onClick: function() { checkBadge('laundryPro'); awardXP(10, 'Laundry load ready'); }, className: 'mt-2 px-3 py-2 rounded-xl text-xs font-bold ' + (laundryIssues.length > 0 || laundrySelectedItems.length === 0 ? 'bg-slate-100 text-slate-600 cursor-not-allowed' : 'bg-teal-700 text-white hover:bg-teal-800') }, 'Mark load ready')
               )
             )
           ),

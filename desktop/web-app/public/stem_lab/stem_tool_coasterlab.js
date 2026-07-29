@@ -31,9 +31,10 @@
   var CLAB_CSS = ".clab-root{\n    --bg:#0f151c; --panel:#161f29; --panel2:#1c2836; --card:#19242f;\n    --line:#26364a; --line2:#31465e;\n    --ink:#e8eef4; --ink2:#9fb0c1; --ink3:#66788a;\n    --accent:#f2a63c; --accent-dim:#8a5f22;\n    --ke:#3f8fd2; --pe:#c05fa0; --heat:#c47c2f;\n    --good:#59c98d; --warn:#f2c14e; --bad:#e5484d;\n    --mono:\"Cascadia Code\",Consolas,\"SF Mono\",ui-monospace,Menlo,monospace;\n    --sans:\"Segoe UI\",system-ui,-apple-system,\"Helvetica Neue\",sans-serif;\n  }.clab-root *{box-sizing:border-box}.clab-root [hidden]{display:none !important}.clab-root #clab-app{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--bg);\n       color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.45}.clab-root /* ---------- top bar ---------- */\n  #clab-top{display:flex;align-items:center;justify-content:space-between;gap:12px;\n       padding:0 14px;height:52px;flex:none;background:var(--panel);\n       border-bottom:1px solid var(--line)}.clab-root .brand{display:flex;align-items:baseline;gap:10px;white-space:nowrap}.clab-root .brand .name{font-weight:700;letter-spacing:.14em;font-size:15px}.clab-root .brand .name em{color:var(--accent);font-style:normal}.clab-root .brand .sub{color:var(--ink3);font-size:11px;letter-spacing:.08em;text-transform:uppercase}.clab-root .controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.clab-root button{font-family:var(--sans);font-size:13px;color:var(--ink);\n         background:var(--panel2);border:1px solid var(--line2);border-radius:6px;\n         padding:6px 12px;cursor:pointer}.clab-root button:hover{border-color:var(--accent-dim)}.clab-root button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}.clab-root button.primary{background:var(--accent);border-color:var(--accent);color:#22160a;font-weight:700}.clab-root button.primary:hover{filter:brightness(1.08)}.clab-root button.ghost{background:transparent;border-color:var(--line);color:var(--ink2)}.clab-root button:disabled{opacity:.45;cursor:default}.clab-root button.danger{color:var(--bad);border-color:var(--bad)}.clab-root .clab-sel{font-family:var(--sans);font-size:12.5px;color:var(--ink);\n         background:var(--panel2);border:1px solid var(--line2);border-radius:6px;\n         padding:5px 8px;cursor:pointer}.clab-root .clab-sel:hover{border-color:var(--accent-dim)}.clab-root .clab-sel:focus-visible{outline:2px solid var(--accent);outline-offset:1px}.clab-root /* ---------- main split ---------- */\n  #clab-main{display:flex;flex:1;min-height:0}.clab-root #clab-side{width:346px;flex:none;display:flex;flex-direction:column;background:var(--panel);\n        border-right:1px solid var(--line);min-height:0}.clab-root #clab-tabs{display:flex;flex:none;border-bottom:1px solid var(--line)}.clab-root #clab-tabs button{flex:1;border:0;border-radius:0;background:transparent;color:var(--ink3);\n               padding:10px 0;font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;\n               border-bottom:2px solid transparent}.clab-root #clab-tabs button.on{color:var(--accent);border-bottom-color:var(--accent)}.clab-root #clab-side section{overflow-y:auto;padding:14px;flex:1;min-height:0}.clab-root .eyebrow{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);\n           margin:0 0 6px;font-weight:600}.clab-root .card{background:var(--card);border:1px solid var(--line);border-radius:8px;\n        padding:12px;margin-bottom:12px}.clab-root .card h3{margin:0 0 6px;font-size:13px;font-weight:600}.clab-root .hint{color:var(--ink2);font-size:12.5px;margin:0 0 10px}.clab-root .hint b{color:var(--ink)}.clab-root kbd{font-family:var(--mono);font-size:11px;background:var(--panel2);\n      border:1px solid var(--line2);border-radius:4px;padding:0 5px}.clab-root .row{display:flex;gap:8px;align-items:center;margin:8px 0}.clab-root .row label{flex:none;width:64px;color:var(--ink2);font-size:12px}.clab-root .row input[type=range]{flex:1;accent-color:var(--accent)}.clab-root .row .val{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:12px;\n            width:64px;text-align:right;color:var(--ink)}.clab-root .btnrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.clab-root .coords{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:11.5px;color:var(--ink3)}.clab-root /* ---------- certification ---------- */\n  .marker-legend{display:flex;gap:10px;flex-wrap:wrap;margin:4px 0 10px}.clab-root .marker-legend span{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--ink2)}.clab-root .dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex:none}.clab-root .prob .given{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:12px;\n               color:var(--ink2);background:var(--panel2);border-radius:6px;padding:7px 9px;margin:8px 0}.clab-root .prob .ask{font-size:13px;margin:6px 0}.clab-root .ansrow{display:flex;gap:8px;align-items:center;margin-top:8px}.clab-root .ansrow input[type=number]{font-family:var(--mono);font-variant-numeric:tabular-nums;\n      width:110px;background:var(--panel2);color:var(--ink);border:1px solid var(--line2);\n      border-radius:6px;padding:6px 8px;font-size:13px}.clab-root .ansrow input:focus-visible{outline:2px solid var(--accent);outline-offset:1px}.clab-root .ansrow .unit{color:var(--ink3);font-size:12px;width:40px}.clab-root .verdict{font-size:12px;font-weight:600;margin-left:auto}.clab-root .verdict.ok{color:var(--good)}.clab-root .verdict.no{color:var(--bad)}.clab-root details.work{margin-top:8px}.clab-root details.work summary{cursor:pointer;color:var(--ink3);font-size:12px}.clab-root details.work div{font-family:var(--mono);font-size:11.5px;color:var(--ink2);\n                   padding:6px 0 0;line-height:1.7}.clab-root table.cert{width:100%;border-collapse:collapse;font-family:var(--mono);\n             font-variant-numeric:tabular-nums;font-size:11.5px;margin-top:8px}.clab-root table.cert th{color:var(--ink3);font-weight:600;text-align:right;padding:4px 6px;\n                border-bottom:1px solid var(--line);font-size:10.5px;letter-spacing:.06em}.clab-root table.cert td{text-align:right;padding:4px 6px;border-bottom:1px solid var(--line);color:var(--ink)}.clab-root table.cert th:first-child,.clab-root table.cert td:first-child{text-align:left}.clab-root .certbanner{border-radius:8px;padding:12px;margin-top:12px;font-weight:600;font-size:14px;\n              border:1px solid var(--line2);background:var(--panel2)}.clab-root .certbanner.pass{border-color:var(--good);color:var(--good)}.clab-root .certbanner.fail{border-color:var(--bad);color:var(--bad)}.clab-root /* ---------- report ---------- */\n  .stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}.clab-root .stat{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:9px 11px}.clab-root .stat .k{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}.clab-root .stat .v{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:17px;margin-top:2px}.clab-root .stat .v small{font-size:11px;color:var(--ink3)}.clab-root .rating{margin:10px 0}.clab-root .rating .lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--ink2);margin-bottom:4px}.clab-root .rating .lbl .num{font-family:var(--mono);font-variant-numeric:tabular-nums;color:var(--ink)}.clab-root .rbar{height:8px;background:var(--panel2);border-radius:4px;overflow:hidden}.clab-root .rbar i{display:block;height:100%;border-radius:4px}.clab-root .modebtn.on{border-color:var(--accent);color:var(--accent)}.clab-root .choice button{display:block;width:100%;text-align:left;margin-top:6px}.clab-root .choice button.on{border-color:var(--accent);color:var(--accent);background:rgba(242,166,60,.08)}.clab-root .exline{font-size:12.5px;margin:6px 0;color:var(--ink2)}.clab-root .exline b.ok{color:var(--good)}.clab-root .exline b.no{color:var(--bad)}.clab-root .mission{display:flex;gap:10px;align-items:flex-start;background:var(--card);\n           border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-bottom:8px}.clab-root .mission .mi{font-size:19px;flex:none;width:26px;text-align:center;filter:grayscale(1);opacity:.55}.clab-root .mission.done .mi{filter:none;opacity:1}.clab-root .mission .mt{font-size:13px;font-weight:600}.clab-root .mission.done .mt{color:var(--good)}.clab-root .mission .md{font-size:12px;color:var(--ink2)}.clab-root .mission .stamp{margin-left:auto;flex:none;font-size:11px;color:var(--good);font-weight:700}.clab-root #clab-gball{width:64px;height:64px;display:block;margin-top:4px;border-radius:6px}.clab-root .chart{width:100%;height:74px;display:block;margin:2px 0 6px}.clab-root .chlabel{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-top:6px}.clab-root .chnote{font-family:var(--mono);font-size:10px;color:var(--ink3);margin:2px 0 0}.clab-root .viol{display:flex;flex-direction:column;gap:6px;margin-top:10px}.clab-root .viol span{font-size:12px;color:var(--bad);background:rgba(229,72,77,.08);\n             border:1px solid rgba(229,72,77,.35);border-radius:6px;padding:5px 9px}.clab-root .viol span.okline{color:var(--good);background:rgba(89,201,141,.07);border-color:rgba(89,201,141,.3)}.clab-root /* ---------- viewport & HUD ---------- */\n  #clab-viewport{flex:1;position:relative;min-width:0;min-height:0;background:#121a24}.clab-root #clab-gl{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}.clab-root #clab-hud{position:absolute;left:12px;bottom:12px;display:flex;gap:14px;align-items:flex-end;\n       background:rgba(15,21,28,.82);border:1px solid var(--line);border-radius:10px;\n       padding:10px 14px;pointer-events:none;backdrop-filter:blur(3px)}.clab-root .hudcol{display:flex;flex-direction:column;gap:2px}.clab-root .hudk{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);font-weight:600}.clab-root .hudv{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:21px;line-height:1.1}.clab-root .hudv small{font-size:10.5px;color:var(--ink3)}.clab-root .gmeter{width:120px}.clab-root .gtrack{position:relative;height:9px;background:var(--panel2);border-radius:5px;margin-top:5px;overflow:hidden}.clab-root .gtrack .zone{position:absolute;top:0;bottom:0;background:rgba(229,72,77,.28)}.clab-root .gtrack .zero{position:absolute;top:-1px;bottom:-1px;width:1px;background:var(--ink3)}.clab-root .gtrack .fill{position:absolute;top:1px;bottom:1px;background:var(--accent);border-radius:4px}.clab-root .gval{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:12px;margin-top:3px}.clab-root .gval.hot{color:var(--bad)}.clab-root .ebar{display:flex;width:170px;height:12px;border-radius:6px;overflow:hidden;\n        background:var(--panel2);margin-top:5px}.clab-root .ebar i{display:block;height:100%}.clab-root .ebar i+i{border-left:2px solid var(--bg)}.clab-root .elegend{display:flex;gap:8px;margin-top:4px;font-size:9.5px;letter-spacing:.1em;color:var(--ink3)}.clab-root .elegend b{font-weight:600}.clab-root .elegend .ke{color:var(--ke)}.clab-root .elegend .pe{color:var(--pe)}.clab-root .elegend .heat{color:var(--heat)}.clab-root #clab-xrayLegend{position:absolute;top:12px;right:12px;background:rgba(15,21,28,.85);\n              border:1px solid var(--line);border-radius:8px;padding:8px 12px;width:190px;\n              pointer-events:none;backdrop-filter:blur(3px)}.clab-root .xbar{height:10px;border-radius:5px;margin-top:6px;\n        background:linear-gradient(90deg,#c05fa0 0%,#3f8fd2 18%,#4a5865 28%,#f2a63c 57%,#e5484d 100%)}.clab-root .xlabels{display:flex;justify-content:space-between;font-family:var(--mono);\n           font-size:9.5px;color:var(--ink3);margin-top:3px}.clab-root .photo img{width:100%;border-radius:6px;display:block}.clab-root .photo a{color:var(--accent);font-size:12px}.clab-root #clab-guide{position:absolute;inset:24px;max-width:820px;margin:0 auto;overflow-y:auto;\n         background:rgba(15,21,28,.96);border:1px solid var(--line2);border-radius:14px;\n         padding:16px 18px;backdrop-filter:blur(5px);z-index:8}.clab-root .gd-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.clab-root .gd-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.clab-root .gd-grid .card{margin:0}.clab-root .gd-grid h3{margin:0 0 6px;font-size:13px}@media (max-width:900px){.clab-root .gd-grid{grid-template-columns:1fr} }.clab-root .swatch{width:26px;height:26px;border-radius:50%;border:2px solid var(--line2);\n          padding:0;cursor:pointer}.clab-root .swatch.on{border-color:var(--ink);outline:2px solid var(--accent)}.clab-root #clab-rideQ{position:absolute;left:50%;bottom:132px;transform:translateX(-50%);\n         width:min(470px,92%);background:rgba(15,21,28,.95);border:1px solid var(--line2);\n         border-radius:12px;padding:14px 16px;backdrop-filter:blur(4px)}.clab-root .rq-top{display:flex;justify-content:space-between;align-items:baseline}.clab-root .rq-pts{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:12px;color:var(--accent)}.clab-root #clab-rqTimer{display:block;height:4px;background:var(--panel2);border-radius:2px;margin:8px 0 10px;overflow:hidden}.clab-root #clab-rqTimerFill{display:block;height:100%;background:var(--accent);width:100%}.clab-root #clab-rqText{margin:0 0 10px;font-size:14px}.clab-root #clab-rqText b{color:var(--accent)}.clab-root .clab-viz{height:74px;margin:0 0 10px;display:none}.clab-root .clab-viz svg{display:block;height:100%;width:100%}.clab-root .clab-viz.on{display:block}.clab-root .clab-viz .clab-ans{transform-box:fill-box;transform-origin:center}.clab-root .clab-viz .clab-ans.reveal{fill:var(--good) !important;filter:drop-shadow(0 0 5px rgba(89,201,141,.75));animation:clabAnsPop .62s cubic-bezier(.2,.8,.2,1)}@keyframes clabAnsPop{0%{transform:scaleX(.06) scale(.72)}58%{transform:scaleX(1) scale(1.42)}100%{transform:scaleX(1) scale(1)}}.clab-root .clab-spark{position:absolute;width:var(--sz,7px);height:var(--sz,7px);border-radius:50%;pointer-events:none;opacity:0;animation:clabSpark .8s ease-out var(--delay,0ms) forwards}.clab-root .clab-spark.diamond{border-radius:1px;clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%)}.clab-root .clab-spark.streak{width:calc(var(--sz,7px) * 1.8);height:3px;border-radius:3px}@keyframes clabSpark{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.25)}}@media (prefers-reduced-motion:reduce){.clab-root .clab-viz .clab-ans.reveal{animation:none}.clab-root .clab-spark{display:none}}.clab-root #clab-rideQ{max-height:calc(100% - 156px);overflow-y:auto;overscroll-behavior:contain;z-index:6}@media (max-width:760px),(max-height:620px){.clab-root #clab-rideQ{top:8px;bottom:auto;max-height:calc(100% - 16px)}}.clab-root .clab-build-start{border-color:rgba(242,166,60,.5);background:linear-gradient(145deg,rgba(242,166,60,.12),rgba(63,143,210,.08)),var(--card);box-shadow:inset 3px 0 0 var(--accent)}.clab-root .clab-build-start h3{font-size:16px}.clab-root .clab-build-steps{display:grid;gap:5px;margin:10px 0 12px;padding:0;list-style:none;counter-reset:build}.clab-root .clab-build-steps li{display:flex;align-items:center;gap:8px;color:var(--ink2);font-size:12px}.clab-root .clab-build-steps li:before{counter-increment:build;content:counter(build);display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--accent);color:#22160a;font:700 11px var(--mono)}.clab-root .clab-node-prompt{border-style:dashed}.clab-root .clab-build-coach{position:absolute;top:56px;left:50%;transform:translateX(-50%);z-index:4;display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid rgba(242,166,60,.6);border-radius:999px;background:rgba(15,21,28,.88);box-shadow:0 8px 24px rgba(0,0,0,.25);pointer-events:none}.clab-root .clab-build-coach small{display:block;color:var(--ink2);font-size:10px}.clab-root .clab-node-beacon{width:11px;height:11px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 5px rgba(242,166,60,.14);animation:clabBeacon 1.8s ease-in-out infinite}@keyframes clabBeacon{50%{box-shadow:0 0 0 10px rgba(242,166,60,0)}}.clab-root #clab-viewport.ride-question-open:after{content:\"\";position:absolute;inset:0;z-index:5;background:radial-gradient(circle at 50% 55%,rgba(15,21,28,.18),rgba(15,21,28,.62));pointer-events:none}.clab-root #clab-rideQ:not([hidden]){animation:clabCardIn .28s ease-out}.clab-root #clab-rideQ.is-correct{border-color:rgba(89,201,141,.85);box-shadow:0 0 0 1px rgba(89,201,141,.18),0 16px 44px rgba(0,0,0,.38),0 0 28px rgba(89,201,141,.12)}.clab-root #clab-rideQ.is-wrong{border-color:rgba(229,72,77,.8);box-shadow:0 0 0 1px rgba(229,72,77,.14),0 16px 44px rgba(0,0,0,.38)}@keyframes clabCardIn{0%{opacity:0;transform:translateX(-50%) translateY(10px) scale(.98)}100%{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}}.clab-root .rq-scorebox{position:relative;display:flex;align-items:center;gap:7px}.clab-root .rq-streak{padding:2px 7px;border-radius:999px;background:rgba(242,166,60,.14);border:1px solid rgba(242,166,60,.34);color:var(--accent);font:700 10px var(--mono)}.clab-root .rq-delta{position:absolute;right:0;top:16px;color:var(--good);font:800 13px var(--mono);opacity:0}.clab-root .rq-delta.on{animation:clabScoreGain .75s ease-out}@keyframes clabScoreGain{0%{opacity:0;transform:translateY(4px) scale(.8)}25%{opacity:1}100%{opacity:0;transform:translateY(-18px) scale(1.12)}}.clab-root #clab-rqTimerFill{transition:width .1s linear,background .2s}.clab-root #clab-rqTimer.urgent #clab-rqTimerFill{background:#e98436}.clab-root #clab-rqTimer.critical #clab-rqTimerFill{background:var(--bad);animation:clabTimerPulse .55s ease-in-out infinite alternate}.clab-root #clab-rqTimer.done #clab-rqTimerFill{background:var(--good)}@keyframes clabTimerPulse{to{filter:brightness(1.5)}}.clab-root .choice button{position:relative;min-height:40px;padding-left:42px;transition:border-color .18s,background .18s,color .18s,transform .18s}.clab-root .choice button:before{content:attr(data-key);position:absolute;left:10px;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:22px;height:22px;border-radius:6px;background:var(--panel);border:1px solid var(--line2);color:var(--ink2);font:700 10px var(--mono)}.clab-root .choice button.picked{border-color:var(--accent)}.clab-root .choice button.correct{border-color:var(--good);color:var(--good);background:rgba(89,201,141,.11)}.clab-root .choice button.correct:before{content:\"✓\";border-color:var(--good);color:var(--good)}.clab-root .choice button.wrong{border-color:var(--bad);color:#ffb4b6;background:rgba(229,72,77,.1)}.clab-root .choice button.wrong:before{content:\"×\";border-color:var(--bad);color:var(--bad)}.clab-root .choice button:disabled{opacity:1}.clab-root #clab-rqTimer.failed #clab-rqTimerFill{background:var(--bad)}.clab-root #clab-rqNumRow.correct input{border-color:var(--good);box-shadow:0 0 0 2px rgba(89,201,141,.12)}.clab-root #clab-rqNumRow.wrong input{border-color:var(--bad);box-shadow:0 0 0 2px rgba(229,72,77,.1)}.clab-root #clab-rqFeed:not(:empty){padding:8px 10px;border-radius:7px;background:rgba(255,255,255,.035);border-left:3px solid var(--line2)}.clab-root #clab-rideQ.is-correct #clab-rqFeed{border-left-color:var(--good);background:rgba(89,201,141,.07)}.clab-root #clab-rideQ.is-wrong #clab-rqFeed{border-left-color:var(--bad);background:rgba(229,72,77,.06)}.clab-root .clab-viz.on{padding:4px 8px;border:1px solid rgba(49,70,94,.72);border-radius:8px;background:linear-gradient(180deg,rgba(63,143,210,.055),rgba(89,201,141,.025))}.clab-root .ride-result-grid{display:grid;grid-template-columns:96px 1fr;gap:14px;align-items:center;margin:10px 0}.clab-root .ride-accuracy{--pct:0;display:grid;place-items:center;width:90px;height:90px;border-radius:50%;background:conic-gradient(var(--good) calc(var(--pct) * 1%),var(--panel2) 0);position:relative}.clab-root .ride-accuracy:before{content:\"\";position:absolute;inset:8px;border-radius:50%;background:var(--panel)}.clab-root .ride-accuracy span{position:relative;text-align:center;font:800 20px var(--mono)}.clab-root .ride-accuracy small{display:block;color:var(--ink3);font:600 9px var(--sans);text-transform:uppercase;letter-spacing:.08em}.clab-root .ride-checkpoints{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}.clab-root .ride-checkpoints i{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;font-style:normal;font-size:11px;background:var(--panel2);border:1px solid var(--line2)}.clab-root .ride-checkpoints i.ok{color:var(--good);border-color:rgba(89,201,141,.5);background:rgba(89,201,141,.08)}.clab-root .ride-checkpoints i.no{color:var(--bad);border-color:rgba(229,72,77,.45);background:rgba(229,72,77,.07)}@media (prefers-reduced-motion:reduce){.clab-root .clab-node-beacon,.clab-root #clab-rideQ:not([hidden]),.clab-root .rq-delta.on,.clab-root #clab-rqTimer.critical #clab-rqTimerFill{animation:none}}@media (max-width:760px){.clab-root .clab-build-coach{top:48px;max-width:90%}.clab-root .ride-result-grid{grid-template-columns:1fr}.clab-root .ride-accuracy{margin:auto}}.clab-root #clab-rideEnd{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);\n           width:min(400px,92%);background:rgba(15,21,28,.96);border:1px solid var(--line2);\n           border-radius:12px;padding:16px 18px;backdrop-filter:blur(4px)}.clab-root #clab-rideEnd .big{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:26px;color:var(--accent)}.clab-root #clab-rideEnd .exline{margin:4px 0}.clab-root #clab-banner{position:absolute;top:14px;left:50%;transform:translateX(-50%);\n          background:rgba(22,31,41,.94);border:1px solid var(--line2);border-radius:8px;\n          padding:9px 18px;font-size:13.5px;pointer-events:none;max-width:70%;text-align:center}.clab-root #clab-banner.pass{border-color:var(--good);color:var(--good)}.clab-root #clab-banner.fail{border-color:var(--bad);color:var(--bad)}.clab-root #clab-err{position:absolute;inset:auto 12px 12px 12px;background:#2a1214;border:1px solid var(--bad);\n       color:#ffb4b6;border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:12px;z-index:9}@media (prefers-reduced-motion:reduce){.clab-root *{scroll-behavior:auto} }@media (max-width:760px){.clab-root #clab-main{flex-direction:column}.clab-root #clab-side{width:100%;max-height:46%;border-right:0;border-bottom:1px solid var(--line)}\n  }.clab-root .clab-start-note,.clab-root .clab-element-note,.clab-root .clab-safety-note{margin:8px 0 0;color:var(--ink3);font-size:11px}.clab-root .clab-element-card{border-color:rgba(63,143,210,.38)}.clab-root .clab-element-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.clab-root .clab-element-btn{display:flex;flex-direction:column;align-items:flex-start;gap:1px;min-height:48px;padding:7px 9px;text-align:left}.clab-root .clab-element-btn b{font-size:12px}.clab-root .clab-element-btn small{color:var(--ink3);font-size:10px}.clab-root .clab-element-wide{grid-column:1/-1}.clab-root .clab-safety-card{border-color:rgba(242,193,78,.34)}.clab-root .clab-safety-summary{display:flex;align-items:center;gap:8px;font-weight:700;font-size:12.5px}.clab-root .clab-safety-summary:before{content:\"!\";display:grid;place-items:center;width:23px;height:23px;border-radius:50%;background:rgba(242,193,78,.14);border:1px solid rgba(242,193,78,.45);color:var(--warn);font:800 12px var(--mono)}.clab-root .clab-safety-summary.safe{color:var(--good)}.clab-root .clab-safety-summary.safe:before{content:\"✓\";background:rgba(89,201,141,.12);border-color:rgba(89,201,141,.42);color:var(--good)}.clab-root .clab-safety-list{display:grid;gap:7px;margin-top:9px}.clab-root .clab-safety-item{display:grid;grid-template-columns:22px 1fr auto;gap:7px;align-items:start;padding:8px;border:1px solid rgba(242,193,78,.28);border-radius:7px;background:rgba(242,193,78,.055)}.clab-root .clab-safety-item.bad{border-color:rgba(229,72,77,.34);background:rgba(229,72,77,.055)}.clab-root .clab-safety-num{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--warn);color:#241b08;font:800 10px var(--mono)}.clab-root .clab-safety-item.bad .clab-safety-num{background:var(--bad);color:white}.clab-root .clab-safety-copy b{display:block;font-size:11.5px}.clab-root .clab-safety-copy small{display:block;color:var(--ink2);font-size:10.5px;line-height:1.35;margin-top:2px}.clab-root .clab-safety-jump{padding:4px 7px;font-size:10px;white-space:nowrap}@media (max-width:760px){.clab-root .clab-element-btn{min-height:44px}}\n";
   var CLAB_HTML = "<div id=\"clab-app\">\n  <header id=\"clab-top\">\n    <div class=\"brand\">\n      <span class=\"name\">COASTER<em>LAB</em></span>\n      <span class=\"sub\">ride design &amp; physics lab</span>\n    </div>\n    <div class=\"controls\">\n      <button id=\"clab-btnRun\" class=\"primary\">▶ Test run</button>\n      <button id=\"clab-btnRide\" class=\"primary\" title=\"Ride onboard — the train pauses at checkpoints with quick problems you choose\">🧠 Ride &amp; Solve</button>\n      <select id=\"clab-rideTopic\" class=\"clab-sel\" title=\"What kind of checkpoint questions to ask during Ride &amp; Solve\" aria-label=\"Ride and Solve question topic\">\n        <option value=\"physics\">🎢 Physics</option>\n        <option value=\"addition\">➕ Addition</option>\n        <option value=\"subtraction\">➖ Subtraction</option>\n        <option value=\"multiplication\">✖️ Multiplication</option>\n        <option value=\"division\">➗ Division</option>\n        <option value=\"arithmetic\">🔢 Mixed math</option>\n        <option value=\"mix\">🎲 Physics + math</option>\n        <option value=\"ai\">🤖 Any topic (AI)</option>\n      </select>\n      <select id=\"clab-rideGrade\" class=\"clab-sel\" title=\"Grade level the questions are tuned to\" aria-label=\"Question grade level\">\n        <option value=\"auto\">🎚 Grade: auto</option>\n        <option value=\"k2\">Grades K–2</option>\n        <option value=\"g35\">Grades 3–5</option>\n        <option value=\"g68\">Grades 6–8</option>\n        <option value=\"g912\">Grades 9–12</option>\n      </select>\n      <input id=\"clab-rideAiSubject\" class=\"clab-sel\" type=\"text\" maxlength=\"60\" placeholder=\"Type a topic for the AI…\" aria-label=\"AI question topic\" hidden style=\"width:168px\">\n      <button id=\"clab-btnCam\" title=\"Cycle camera: orbit, onboard, chase\">Camera: Orbit</button>\n      <select id=\"clab-seatSel\" class=\"clab-sel\" title=\"Which row of the train you ride in — rows do not feel the same ride\" aria-label=\"Row you ride in\">\n        <option value=\"0\">🚃 Front row</option>\n        <option value=\"2\">🚃 Middle row</option>\n        <option value=\"4\">🚃 Back row</option>\n      </select>\n      <button id=\"clab-btnView\" title=\"Color the track spine by predicted seat g\">View: Track</button>\n      <button id=\"clab-btnFric\" title=\"Toggle rolling friction and air drag\">Friction: Realistic</button>\n      <button id=\"clab-btnSound\" title=\"Wind, chain and launch sounds (synthesized)\">🔇 Sound</button>\n      <button id=\"clab-btnFx\" title=\"Lite mode disables shadows and trees for slower devices\">FX: Full</button>\n      <button id=\"clab-btnVR\" hidden title=\"Ride in a VR headset — intense! Short sessions recommended\">🥽 VR ride</button>\n      <button id=\"clab-btnResetDesign\" class=\"ghost\" title=\"Restore the starter layout\">Reset design</button>\n      <button id=\"clab-btnGuide\" class=\"ghost\" title=\"Quick guide (H)\" aria-controls=\"clab-guide\" aria-expanded=\"false\">❓</button>\n    </div>\n  </header>\n\n  <div id=\"clab-main\">\n    <aside id=\"clab-side\">\n      <nav id=\"clab-tabs\" role=\"tablist\" aria-label=\"Coaster Lab panels\">\n        <button id=\"clab-tab-build-btn\" role=\"tab\" aria-controls=\"clab-tab-build\" aria-selected=\"true\" tabindex=\"0\" data-tab=\"build\" class=\"on\">Build</button>\n        <button id=\"clab-tab-cert-btn\" role=\"tab\" aria-controls=\"clab-tab-cert\" aria-selected=\"false\" tabindex=\"-1\" data-tab=\"cert\">Certify</button>\n        <button id=\"clab-tab-report-btn\" role=\"tab\" aria-controls=\"clab-tab-report\" aria-selected=\"false\" tabindex=\"-1\" data-tab=\"report\">Report</button>\n        <button id=\"clab-tab-missions-btn\" role=\"tab\" aria-controls=\"clab-tab-missions\" aria-selected=\"false\" tabindex=\"-1\" data-tab=\"missions\">Missions</button>\n      </nav>\n\n      <section id=\"clab-tab-build\" role=\"tabpanel\" aria-labelledby=\"clab-tab-build-btn\" tabindex=\"0\">\n        <div class=\"card clab-build-start\" id=\"clab-buildStart\">\n          <p class=\"eyebrow\">Your coaster · fully editable</p>\n          <h3>Shape the track yourself</h3>\n          <p class=\"hint\">The coaster in the 3-D view is your design—not a fixed demo.\n            Move its glowing nodes, change their height and banking, or add and remove track sections.</p>\n          <ol class=\"clab-build-steps\">\n            <li><b>Choose</b> a glowing track node</li>\n            <li><b>Shape</b> it with drag or sliders</li>\n            <li><b>Test</b> your design and revise</li>\n          </ol>\n          <button id=\"clab-btnStartSimple\">Start simple</button>\n          <button class=\"primary clab-edit-track\">✦ Edit a track node</button>\n        </div>\n\n        <p class=\"hint clab-build-hint\">Drag a <b>track node</b> across the ground.\n          Hold <kbd>Shift</kbd> while dragging to change <b>height</b>.\n          Drag empty space to orbit · scroll to zoom · <kbd>Ctrl+Z</kbd>/<kbd>Y</kbd> undo/redo.</p>\n\n        <div class=\"card\" id=\"clab-ptCard\" hidden>\n          <p class=\"eyebrow\">Selected node <span id=\"clab-ptIdx\"></span></p>\n          <div class=\"coords\" id=\"clab-ptCoords\"></div>\n          <div class=\"btnrow\" aria-label=\"Track node selection\">\n            <button id=\"clab-btnPrevPt\" type=\"button\" title=\"Select the previous track node\">&larr; Previous node</button>\n            <button id=\"clab-btnNextPt\" type=\"button\" title=\"Select the next track node\">Next node &rarr;</button>\n          </div>\n          <p class=\"hint\" id=\"clab-coordinateHelp\" style=\"margin:8px 0 4px\">Use arrow keys on any slider, or choose a nudge size and move across the ground plane.</p>\n          <div class=\"row\"><label for=\"clab-slX\">X</label>\n            <input type=\"range\" id=\"clab-slX\" min=\"-260\" max=\"260\" step=\"0.5\" aria-label=\"X position in meters\" aria-describedby=\"clab-coordinateHelp\">\n            <span class=\"val\" id=\"clab-slXV\"></span></div>\n          <div class=\"row\"><label for=\"clab-slZ\">Z</label>\n            <input type=\"range\" id=\"clab-slZ\" min=\"-260\" max=\"260\" step=\"0.5\" aria-label=\"Z position in meters\" aria-describedby=\"clab-coordinateHelp\">\n            <span class=\"val\" id=\"clab-slZV\"></span></div>\n          <div class=\"row\"><label for=\"clab-nodeStep\">Nudge</label>\n            <select id=\"clab-nodeStep\" class=\"clab-sel\" aria-label=\"Ground movement nudge distance\">\n              <option value=\"0.5\">0.5 m - fine</option><option value=\"2\" selected>2 m - normal</option><option value=\"5\">5 m - coarse</option>\n            </select>\n          </div>\n          <div class=\"btnrow\" aria-label=\"Move selected node across the ground\">\n            <button id=\"clab-btnXMinus\" type=\"button\" aria-label=\"Move selected node in the negative X direction\">X &minus;</button>\n            <button id=\"clab-btnXPlus\" type=\"button\" aria-label=\"Move selected node in the positive X direction\">X +</button>\n            <button id=\"clab-btnZMinus\" type=\"button\" aria-label=\"Move selected node in the negative Z direction\">Z &minus;</button>\n            <button id=\"clab-btnZPlus\" type=\"button\" aria-label=\"Move selected node in the positive Z direction\">Z +</button>\n          </div>\n          <div class=\"row\"><label for=\"clab-slHeight\">Height</label>\n            <input type=\"range\" id=\"clab-slHeight\" min=\"0.5\" max=\"45\" step=\"0.1\">\n            <span class=\"val\" id=\"clab-slHeightV\"></span></div>\n          <div class=\"row\"><label for=\"clab-slBank\">Bank</label>\n            <input type=\"range\" id=\"clab-slBank\" min=\"-180\" max=\"180\" step=\"1\">\n            <span class=\"val\" id=\"clab-slBankV\"></span></div>\n          <div class=\"btnrow\">\n            <button id=\"clab-btnAddPt\">＋ Add node after</button>\n            <button id=\"clab-btnDelPt\" class=\"ghost\">Delete</button>\n            <button id=\"clab-btnFlagPt\" class=\"ghost\" title=\"Certification problems use this turn\">⚑ Certify this turn</button>\n          </div>\n        </div>\n\n        <div class=\"card clab-node-prompt\" id=\"clab-noSel\">\n          <p class=\"eyebrow\">Build mode</p>\n          <h3>Choose a glowing track node</h3>\n          <p class=\"hint\">Every glowing sphere is editable. Select one to move it, change\n            height and banking, insert another node, or remove a section.</p>\n          <button class=\"primary clab-edit-track\">Select a node for me</button>\n        </div>\n\n        <div class=\"card clab-element-card\" id=\"clab-elementPalette\">\n          <p class=\"eyebrow\">Add track elements</p>\n          <h3>Build with pieces</h3>\n          <p class=\"hint\">Select a node, then insert an editable shape into the segment after it.</p>\n          <div class=\"clab-element-grid\">\n            <button class=\"clab-element-btn\" data-element=\"hill\" disabled><b>Hill</b><small>airtime crest</small></button>\n            <button class=\"clab-element-btn\" data-element=\"drop\" disabled><b>Drop</b><small>crest + plunge</small></button>\n            <button class=\"clab-element-btn\" data-element=\"turn-left\" disabled><b>Left turn</b><small>banked curve</small></button>\n            <button class=\"clab-element-btn\" data-element=\"turn-right\" disabled><b>Right turn</b><small>banked curve</small></button>\n            <button class=\"clab-element-btn clab-element-wide\" data-element=\"loop\" disabled><b>Vertical loop</b><small>ten-node editable loop</small></button>\n          </div>\n          <p class=\"clab-element-note\" id=\"clab-elementNote\">Choose a glowing node to unlock these pieces.</p>\n        </div>\n\n        <div class=\"card clab-safety-card\" id=\"clab-safetyCoach\">\n          <p class=\"eyebrow\">Design preflight coach</p>\n          <div id=\"clab-safetySummary\" class=\"clab-safety-summary\" role=\"status\" aria-live=\"polite\"></div>\n          <div id=\"clab-safetyList\" class=\"clab-safety-list\"></div>\n          <p class=\"clab-safety-note\">Educational geometry + ideal-dynamics preview—not structural approval. Numbered markers show where to revise.</p>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Surprise me</p>\n          <h3>Generate a coaster</h3>\n          <p class=\"hint\" style=\"margin:0 0 8px\">Builds a brand-new circuit: ground plan, lift, hills sized to the energy budget, and turns banked from the physics. No inversions — add those yourself with the loop piece. Every node is still yours to reshape.</p>\n          <div class=\"row\"><label for=\"clab-randomStyle\">Style</label>\n            <select id=\"clab-randomStyle\" class=\"clab-sel\" style=\"flex:1\" aria-label=\"Random coaster style\">\n              <option value=\"auto\">🎲 Any style</option>\n              <option value=\"family\">🌄 Family</option>\n              <option value=\"classic\">🎢 Classic</option>\n              <option value=\"thrill\">😱 Thrill</option>\n              <option value=\"launch\">⚡ Launched</option>\n            </select>\n          </div>\n          <div class=\"row\"><label for=\"clab-randomSeed\">Number</label>\n            <input type=\"number\" id=\"clab-randomSeed\" min=\"1\" max=\"999999\" step=\"1\" placeholder=\"any\" style=\"flex:1;min-width:0\" aria-describedby=\"clab-randomNote\">\n          </div>\n          <div class=\"btnrow\" style=\"margin-top:4px\">\n            <button id=\"clab-btnRandom\" class=\"primary\">🎲 Generate</button>\n          </div>\n          <p class=\"hint\" id=\"clab-randomNote\" style=\"margin:8px 0 0\">Leave the number blank for a surprise. Type the same number to rebuild the same coaster, so a whole class can ride one design.</p>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Optional starting layouts</p>\n          <p class=\"hint\" style=\"margin:0\">Templates only change your starting shape. Every node stays editable.</p>\n          <div class=\"btnrow\" style=\"margin-top:8px\">\n            <button class=\"tpl\" data-tpl=\"looper\">🎢 Classic Looper</button>\n            <button class=\"tpl\" data-tpl=\"accelerator\">⚡ Accelerator</button>\n            <button class=\"tpl\" data-tpl=\"family\">🌄 Family Camelback</button>\n            <button class=\"tpl\" data-tpl=\"twister\">🐭 Wild Mouse</button>\n            <button class=\"tpl\" data-tpl=\"barrel\">🌀 Barrel Roll</button>\n            <button class=\"tpl\" data-tpl=\"oval\">◻ Starter Oval</button>\n          </div>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Train colors</p>\n          <div class=\"btnrow\" id=\"clab-trainColors\" style=\"margin-top:4px\">\n            <button class=\"swatch\" data-c=\"#f2a63c\" style=\"background:#f2a63c\" aria-label=\"amber train\"></button>\n            <button class=\"swatch\" data-c=\"#e5484d\" style=\"background:#e5484d\" aria-label=\"red train\"></button>\n            <button class=\"swatch\" data-c=\"#3fb5b0\" style=\"background:#3fb5b0\" aria-label=\"teal train\"></button>\n            <button class=\"swatch\" data-c=\"#b07ce8\" style=\"background:#b07ce8\" aria-label=\"violet train\"></button>\n            <button class=\"swatch\" data-c=\"#8bc34a\" style=\"background:#8bc34a\" aria-label=\"lime train\"></button>\n          </div>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Share your design</p>\n          <div class=\"btnrow\" style=\"margin-top:2px\">\n            <button id=\"clab-btnExport\">⬆ Export</button>\n            <button id=\"clab-btnImport\">⬇ Import</button>\n          </div>\n          <p class=\"hint\" style=\"margin:8px 0 0\">Export copies your design as text —\n            paste it to a classmate or teacher; Import loads one back in.</p>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Your train</p>\n          <div class=\"row\"><label for=\"clab-trainLen\">Cars</label>\n            <select id=\"clab-trainLen\" class=\"clab-sel\" style=\"flex:1\" aria-label=\"Number of cars on the train\" aria-describedby=\"clab-trainLenNote\">\n              <option value=\"3\">3 cars · short</option>\n              <option value=\"4\">4 cars</option>\n              <option value=\"5\">5 cars · standard</option>\n              <option value=\"6\">6 cars</option>\n              <option value=\"7\">7 cars</option>\n              <option value=\"8\">8 cars · long</option>\n            </select>\n          </div>\n          <p class=\"hint\" id=\"clab-trainLenNote\" style=\"margin:8px 0 0\"></p>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Propulsion</p>\n          <div class=\"btnrow\" style=\"margin-top:2px\">\n            <button id=\"clab-btnChain\" class=\"modebtn on\">⛓ Chain lift</button>\n            <button id=\"clab-btnLaunch\" class=\"modebtn\">⚡ LSM launch</button>\n          </div>\n          <div class=\"row\" id=\"clab-launchRow\" hidden>\n            <label for=\"clab-slLaunch\">Thrust</label>\n            <input type=\"range\" id=\"clab-slLaunch\" min=\"5\" max=\"14\" step=\"0.5\">\n            <span class=\"val\" id=\"clab-slLaunchV\"></span>\n          </div>\n          <p class=\"hint\" id=\"clab-propNote\" style=\"margin:8px 0 0\"></p>\n        </div>\n\n        <div class=\"card\">\n          <p class=\"eyebrow\">Design brief</p>\n          <p class=\"hint\" style=\"margin:0\">The chain lift releases the train at the first\n            crest at <b>3.5 m/s</b>. After that, gravity is in charge: every hill, loop\n            and turn has to be paid for out of the energy bank you see in the HUD.\n            Stall on a hill and the train rolls back. Pull more than <b>+6 g</b>,\n            less than <b>−1.5 g</b>, or over <b>±1.3 g sideways</b> and the safety\n            report flags your ride.</p>\n        </div>\n      </section>\n\n      <section id=\"clab-tab-cert\" role=\"tabpanel\" aria-labelledby=\"clab-tab-cert-btn\" tabindex=\"0\" hidden>\n        <div class=\"btnrow\" style=\"margin-bottom:10px\">\n          <button id=\"clab-btnExplore\" class=\"modebtn\">🔍 Explore</button>\n          <button id=\"clab-btnEngineer\" class=\"modebtn on\">📐 Engineer</button>\n        </div>\n        <p class=\"hint\" id=\"clab-certIntro\">To pass this educational simulation, file predictions\n          for the flagged checkpoints — then run the inspection and see if the track agrees\n          with your math. Inspection runs are made under <b>ideal conditions</b>\n          (friction off), so conservation of energy holds exactly.</p>\n        <div class=\"marker-legend\" id=\"clab-markerLegend\"></div>\n        <div id=\"clab-problems\"></div>\n        <div class=\"btnrow\" id=\"clab-engineerBtns\">\n          <button id=\"clab-btnCheck\">Check predictions</button>\n          <button id=\"clab-btnCert\" class=\"primary\">🎢 Run inspection</button>\n        </div>\n        <div id=\"clab-certResult\"></div>\n        <div class=\"card\" id=\"clab-aiCard\" hidden>\n          <p class=\"eyebrow\">Stuck? Ask the inspector</p>\n          <p class=\"hint\" style=\"margin:0 0 8px\">Get a nudge in the right direction —\n            the inspector never hands you the answer.</p>\n          <div class=\"btnrow\">\n            <button id=\"clab-btnAiHint\">🤖 Hint, please</button>\n          </div>\n          <p class=\"exline\" id=\"clab-aiHintOut\" style=\"min-height:0\"></p>\n        </div>\n      </section>\n\n      <section id=\"clab-tab-report\" role=\"tabpanel\" aria-labelledby=\"clab-tab-report-btn\" tabindex=\"0\" hidden>\n        <div id=\"clab-reportBody\">\n          <p class=\"hint\">No completed runs yet. Press <b>▶ Test run</b> and the\n            telemetry report will land here.</p>\n        </div>\n      </section>\n\n      <section id=\"clab-tab-missions\" role=\"tabpanel\" aria-labelledby=\"clab-tab-missions-btn\" tabindex=\"0\" hidden>\n        <p class=\"hint\">Engineering challenges, graded automatically from real telemetry.\n          Finish a run — or an inspection — and any mission you satisfied is stamped.</p>\n        <p class=\"eyebrow\" id=\"clab-missionProgress\"></p>\n        <div id=\"clab-missionList\"></div>\n        <div class=\"btnrow\" style=\"margin-top:4px\">\n          <button id=\"clab-btnSummary\">📋 Copy student summary</button>\n          <button id=\"clab-btnRideCard\" class=\"primary\">🎫 Save ride card</button>\n        </div>\n        <p class=\"hint\" style=\"margin:8px 0 0\">The summary copies as plain text for an email, doc, or LMS.\n          The <b>ride card</b> saves a picture of your coaster — your on-ride photo, its\n          vitals, and the restraint your own forces earned — to hand in.</p>\n      </section>\n    </aside>\n\n    <div id=\"clab-viewport\">\n      <canvas id=\"clab-gl\" role=\"img\" aria-label=\"Interactive 3-D coaster track visualization. Use the Build panel controls to select and edit track nodes.\"></canvas>\n      <div id=\"clab-buildCoach\" class=\"clab-build-coach\" aria-hidden=\"true\">\n        <span class=\"clab-node-beacon\"></span>\n        <span><b>Build your own track</b><small>Glowing spheres are editable nodes</small></span>\n      </div>\n\n      <div id=\"clab-hud\">\n        <div class=\"hudcol\">\n          <span class=\"hudk\">Speed</span>\n          <span class=\"hudv\" id=\"clab-hudSpeed\">0.0 <small>m/s</small></span>\n          <span class=\"gval\" id=\"clab-hudKmh\">0 km/h</span>\n        </div>\n        <div class=\"hudcol\">\n          <span class=\"hudk\">Height</span>\n          <span class=\"hudv\" id=\"clab-hudH\">0.0 <small>m</small></span>\n        </div>\n        <div class=\"hudcol gmeter\">\n          <span class=\"hudk\" id=\"clab-gvLabel\">Seat g (vertical)</span>\n          <div class=\"gtrack\" id=\"clab-gvTrack\">\n            <span class=\"zone\" style=\"left:0;width:5.6%\"></span>\n            <span class=\"zone\" style=\"right:0;width:11.1%\"></span>\n            <span class=\"zero\" style=\"left:22.2%\"></span>\n            <span class=\"fill\" id=\"clab-gvFill\"></span>\n          </div>\n          <span class=\"gval\" id=\"clab-gvVal\">+1.00 g</span>\n        </div>\n        <div class=\"hudcol gmeter\">\n          <span class=\"hudk\">Side g (lateral)</span>\n          <div class=\"gtrack\" id=\"clab-glTrack\">\n            <span class=\"zone\" style=\"left:0;width:17%\"></span>\n            <span class=\"zone\" style=\"right:0;width:17%\"></span>\n            <span class=\"zero\" style=\"left:50%\"></span>\n            <span class=\"fill\" id=\"clab-glFill\"></span>\n          </div>\n          <span class=\"gval\" id=\"clab-glVal\">+0.00 g</span>\n        </div>\n        <div class=\"hudcol\">\n          <span class=\"hudk\">G-map</span>\n          <canvas id=\"clab-gball\"></canvas>\n        </div>\n        <div class=\"hudcol\">\n          <span class=\"hudk\">Energy budget</span>\n          <div class=\"ebar\">\n            <i id=\"clab-eKE\" style=\"background:var(--ke);width:33%\"></i>\n            <i id=\"clab-ePE\" style=\"background:var(--pe);width:33%\"></i>\n            <i id=\"clab-eHeat\" style=\"background:var(--heat);width:0%\"></i>\n          </div>\n          <div class=\"elegend\"><b class=\"ke\">KINETIC</b><b class=\"pe\">POTENTIAL</b><b class=\"heat\">HEAT</b></div>\n        </div>\n      </div>\n\n      <div id=\"clab-banner\" role=\"status\" aria-live=\"polite\" aria-atomic=\"true\" hidden></div>\n\n      <div id=\"clab-rideQ\" role=\"dialog\" aria-modal=\"false\" aria-labelledby=\"clab-rqText\" hidden>\n        <div class=\"rq-top\">\n          <span class=\"eyebrow\" id=\"clab-rqTag\" style=\"margin:0\">Checkpoint</span>\n          <span class=\"rq-scorebox\"><span class=\"rq-pts\" id=\"clab-rqScore\">0 pts</span><span class=\"rq-streak\" id=\"clab-rqStreak\" hidden></span><span class=\"rq-delta\" id=\"clab-rqDelta\" aria-hidden=\"true\"></span></span>\n        </div>\n        <span id=\"clab-rqTimer\" role=\"progressbar\" aria-label=\"Time remaining\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"100\"><i id=\"clab-rqTimerFill\"></i></span>\n        <p id=\"clab-rqText\"></p>\n        <div id=\"clab-rqViz\" class=\"clab-viz\" aria-hidden=\"true\"></div>\n        <div id=\"clab-rqChoices\" class=\"choice\"></div>\n        <div class=\"ansrow\" id=\"clab-rqNumRow\">\n          <input type=\"number\" id=\"clab-rqNum\" step=\"0.1\" inputmode=\"decimal\" aria-label=\"your answer\">\n          <span class=\"unit\" id=\"clab-rqUnit\"></span>\n          <button id=\"clab-rqGo\" class=\"primary\">Answer</button>\n        </div>\n        <p id=\"clab-rqFeed\" class=\"exline\" role=\"status\" aria-live=\"polite\" aria-atomic=\"true\" style=\"min-height:18px;margin:8px 0 0\"></p>\n      </div>\n\n      <div id=\"clab-rideEnd\" role=\"dialog\" aria-modal=\"false\" aria-labelledby=\"clab-rideEndTitle\" hidden>\n        <p class=\"eyebrow\" id=\"clab-rideEndTitle\">Ride complete</p>\n        <div id=\"clab-rideEndBody\"></div>\n        <div class=\"btnrow\" style=\"margin-top:12px\">\n          <button id=\"clab-btnRideAgain\" class=\"primary\">🎢 Ride again</button>\n          <button id=\"clab-btnRideClose\" class=\"ghost\">Done</button>\n        </div>\n      </div>\n      <div id=\"clab-xrayLegend\" hidden>\n        <span class=\"hudk\">Predicted seat g</span>\n        <div class=\"xbar\"></div>\n        <div class=\"xlabels\"><span>−1</span><span>0</span><span>+1</span><span>+3</span><span>+6</span></div>\n      </div>\n      <div id=\"clab-guide\" role=\"dialog\" aria-modal=\"false\" aria-labelledby=\"clab-guide-title\" tabindex=\"-1\" hidden>\n        <div class=\"gd-head\">\n          <span class=\"eyebrow\" id=\"clab-guide-title\" style=\"margin:0\">Coaster Lab · quick guide</span>\n          <button id=\"clab-btnGuideClose\" class=\"ghost\">✕ close</button>\n        </div>\n        <div class=\"gd-grid\">\n          <div class=\"card\"><h3>🔧 Build</h3><p class=\"hint\" style=\"margin:0\">\n            The visible coaster is editable: choose a glowing node, drag it to reshape the track · <kbd>Shift</kbd>-drag for height · sliders set\n            height &amp; banking · insert editable hills, drops, turns, and loops ·\n            follow numbered safety markers · flag a turn ⚑ for certification ·\n            🎲 <b>Generate a coaster</b> builds a whole new circuit from a number ·\n            <kbd>Ctrl+Z</kbd>/<kbd>Y</kbd> undo/redo · templates &amp; Export/Import\n            to share designs · chain lift or ⚡ LSM launch.</p></div>\n          <div class=\"card\"><h3>🎢 Run &amp; ride</h3><p class=\"hint\" style=\"margin:0\">\n            <kbd>Space</kbd> test run · <kbd>R</kbd> Ride &amp; Solve (checkpoint\n            questions — pick the <b>topic</b> &amp; <b>grade</b> in the top bar: physics,\n            addition, subtraction, multiplication, division, mixed math,\n            🎲 physics <i>and</i> math alternating, or 🤖 <b>any topic</b> the AI\n            writes from a subject you type — every checkpoint asks a different one) ·\n            <kbd>C</kbd> camera: orbit → onboard → chase, and pick the <b>row</b>\n            you ride in — front, middle and back do not feel the same ride ·\n            <kbd>X</kbd> g-heat X-ray · <kbd>P</kbd> save a snapshot ·\n            🔊 sound &amp; 🥽 VR where supported.</p></div>\n          <div class=\"card\"><h3>📐 Certify</h3><p class=\"hint\" style=\"margin:0\">\n            Explore = quick predictions, Engineer = real numbers. File predictions\n            for the marked checkpoints, then run the inspection — under ideal\n            (frictionless) conditions your math must match the measurements.\n            Explore also asks the two that transfer off the screen: which\n            <b>restraint</b> your ride will need, and which <b>row</b> gets pulled\n            hardest out of its seat.</p></div>\n          <div class=\"card\"><h3>📊 Learn from it</h3><p class=\"hint\" style=\"margin:0\">\n            HUD: energy bar (kinetic/potential/heat) &amp; G-MAP (side × seat g) ·\n            Report: <b>rider safety</b> (which restraint your forces demand, how hard\n            it has to pull, and why rides post a height), telemetry traces, on-ride\n            photo, park economics, ⬇ CSV for graphing · run with friction on\n            <i>and</i> off to see the loss · Missions tab tracks challenges.</p></div>\n        </div>\n      </div>\n      <div id=\"clab-err\" hidden></div>\n    </div>\n  </div>\n</div>";
   CLAB_CSS += `
-  .clab-root[data-visual-theme="daylight"]{--accent:#61d39a;--accent-dim:#2d7c5a;--line:#385063;--line2:#4d6b80}
-  .clab-root[data-visual-theme="neon"]{--accent:#55e8ff;--accent-dim:#277d91;--ke:#55e8ff;--pe:#ff62c7;--heat:#ff9d4d}
-  .clab-root[data-visual-theme="blueprint"]{--accent:#8bd7ff;--accent-dim:#397ba0;--line:#315d83;--line2:#477da8;--ke:#8bd7ff;--pe:#d2a8ff}
+  .clab-root{--rail-guide:#f2a63c;--bank-suggest:#f2c14e;--ink3:#8fa4b8;--focus:#fff}
+  .clab-root[data-visual-theme="daylight"]{--accent:#61d39a;--accent-dim:#2d7c5a;--line:#385063;--line2:#4d6b80;--rail-guide:#f0a235;--bank-suggest:#b76524}
+  .clab-root[data-visual-theme="neon"]{--accent:#55e8ff;--accent-dim:#277d91;--ke:#55e8ff;--pe:#ff62c7;--heat:#ff9d4d;--rail-guide:#55e8ff;--bank-suggest:#ff62c7}
+  .clab-root[data-visual-theme="blueprint"]{--accent:#8bd7ff;--accent-dim:#397ba0;--line:#315d83;--line2:#477da8;--ke:#8bd7ff;--pe:#d2a8ff;--rail-guide:#eaf7ff;--bank-suggest:#d2a8ff}
   .clab-root #clab-top{position:relative;z-index:9;box-shadow:0 8px 30px rgba(0,0,0,.22)}
   .clab-root #clab-top{height:auto;min-height:52px;padding-block:7px}.clab-root #clab-top .controls{justify-content:flex-end}
   @media (max-width:1180px){.clab-root #clab-top .brand .sub{display:none}}
@@ -67,31 +68,68 @@
   .clab-root .clab-insights li{padding:7px 9px;border-left:3px solid var(--accent);background:color-mix(in srgb,var(--accent) 6%,var(--panel2));color:var(--ink2);font-size:12px}
   .clab-root .clab-node-lens{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px 12px;margin:9px 0 3px;padding:8px 0;border-block:1px solid var(--line)}
   .clab-root .clab-node-lens span{display:flex;justify-content:space-between;gap:7px;color:var(--ink3);font-size:10px;text-transform:uppercase;letter-spacing:.07em}
+  .clab-root .clab-node-lens span.wide{grid-column:1/-1}
+  .clab-root .clab-node-lens span.clab-bank-key{justify-content:flex-start;gap:7px;text-transform:none;letter-spacing:0}
+  .clab-root .clab-bank-key i{display:block;width:18px;height:2px;flex:none;background:var(--rail-guide)}
+  .clab-root .clab-bank-key i.suggested{height:0;border-top:2px dashed var(--bank-suggest);background:none}
+  .clab-root .clab-bank-key i.suggested{margin-left:5px}
   .clab-root .clab-node-lens b{color:var(--ink);font:600 11px var(--mono);letter-spacing:0;text-transform:none}
   .clab-root .clab-replay{display:grid;grid-template-columns:auto 1fr;gap:7px 9px;align-items:center;margin:8px 0 10px}
   .clab-root .clab-replay input{width:100%;accent-color:var(--accent)}
   .clab-root .clab-replay label{color:var(--ink3);font-size:10px;letter-spacing:.08em;text-transform:uppercase}
   .clab-root .clab-replay output{color:var(--ink2);font:11px var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+  .clab-root .chart[data-scrubbable="true"]{cursor:crosshair;touch-action:none}
+  .clab-root #clab-lapHud{position:absolute;top:12px;left:50%;z-index:3;width:min(440px,calc(100% - 32px));transform:translateX(-50%);padding:8px 11px;border:1px solid rgba(116,145,171,.34);border-radius:9px;background:rgba(10,16,23,.82);box-shadow:0 10px 30px rgba(0,0,0,.25);backdrop-filter:blur(8px);pointer-events:none}
+  .clab-root .clab-lap-head{display:flex;justify-content:space-between;gap:12px;color:var(--ink2);font-size:10px;letter-spacing:.1em;text-transform:uppercase}
+  .clab-root .clab-lap-head b{color:var(--accent);font:600 11px var(--mono);letter-spacing:.04em}
+  .clab-root .clab-lap-rail{position:relative;height:6px;margin-top:7px;border-radius:4px;background:var(--panel2)}
+  .clab-root .clab-lap-rail>i{display:block;width:0;height:100%;border-radius:inherit;background:var(--accent);box-shadow:0 0 10px color-mix(in srgb,var(--accent) 42%,transparent)}
+  .clab-root .clab-lap-ticks b{position:absolute;top:-3px;width:2px;height:12px;background:var(--ink2);transform:translateX(-1px)}
+  .clab-root .clab-lap-ticks b:after{content:attr(data-label);position:absolute;top:11px;left:50%;transform:translateX(-50%);white-space:nowrap;color:var(--ink3);font:9px var(--mono);letter-spacing:0;text-transform:none}
+  @media (max-width:900px){.clab-root #clab-lapHud{top:92px}.clab-root .clab-lap-ticks b:after{display:none}}
   .clab-root #clab-btnComfort[aria-pressed="true"]{border-color:var(--good);color:var(--good)}
   .clab-root .sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
   @media (max-width:1120px){.clab-root .clab-minimap{display:none}.clab-root #clab-hud{gap:10px}.clab-root #clab-hud .hudcol{padding-left:8px}}
   @media (max-width:820px){.clab-root #clab-hud{right:8px;left:8px;bottom:8px;overflow-x:auto}.clab-root #clab-vectorLegend{top:8px;left:8px}.clab-root #clab-visualTheme,.clab-root #clab-trackViz{max-width:98px}}
   @media (prefers-reduced-motion:reduce){.clab-root .hudv{text-shadow:none}.clab-root .clab-challenge-meter i{transition:none}}
+  .clab-root :where(button,select,input,a,summary):focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+  .clab-root :where(button,select,input,a,summary){scroll-margin-block:12px}
+  .clab-root button,.clab-root .clab-sel{min-block-size:32px}
+  @media (forced-colors:active){
+    .clab-root :where(button,select,input,a,summary):focus-visible{outline-color:Highlight}
+    .clab-root .clab-bank-key i{background:CanvasText}
+    .clab-root .clab-bank-key i.suggested{border-color:CanvasText}
+    .clab-root .gval.hot{font-weight:700}
+  }
   `;
   var fxControl = '<button id="clab-btnFx" title="Lite mode disables shadows and trees for slower devices">FX: Full</button>';
   CLAB_HTML = CLAB_HTML.replace(fxControl, fxControl + '\n      <select id="clab-visualTheme" class="clab-sel" aria-label="Environment theme" title="Change the coaster environment"><option value="dusk">Dusk park</option><option value="daylight">Daylight</option><option value="neon">Neon night</option><option value="blueprint">Blueprint</option></select>\n      <select id="clab-trackViz" class="clab-sel" aria-label="Track analysis overlay" title="Color the track by a predicted physics measure"><option value="track">Track colors</option><option value="speed">Speed heatmap</option><option value="vertical">Vertical g heatmap</option><option value="lateral">Lateral g heatmap</option><option value="curvature">Curvature heatmap</option></select>\n      <button id="clab-btnVectors" aria-pressed="false" title="Show velocity, seat-force, and gravity arrows on the lead car">Vectors: Off</button>\n      <button id="clab-btnComfort" aria-pressed="false" title="Reduce camera movement, pulses, and decorative animation">Motion: Standard</button>');
   var safetyCard = '<div class="card clab-safety-card" id="clab-safetyCoach">';
   CLAB_HTML = CLAB_HTML.replace(safetyCard, '<div class="card clab-workbench-card" id="clab-workbench"><p class="eyebrow">Designer workbench</p><div class="clab-history-row"><button id="clab-btnUndo" type="button">Undo</button><button id="clab-btnRedo" type="button">Redo</button></div><label class="hint" for="clab-designChallenge" style="display:block;margin-bottom:5px">Guided design challenge</label><select id="clab-designChallenge" class="clab-sel" style="width:100%"><option value="hill20">Build a smooth 20 m hill</option><option value="airtime3">Create 3 seconds of airtime</option><option value="gentle4">Finish below 4.0 vertical g</option></select><div class="clab-challenge-meter" aria-hidden="true" style="margin-top:9px"><i id="clab-challengeFill"></i></div><span id="clab-challengeStatus" role="status" aria-live="polite">Choose a challenge to begin.</span><button id="clab-btnChallengeRun" class="primary" type="button" style="margin-top:9px">Test this challenge</button></div>\n\n        ' + safetyCard);
   var pointCoords = '<div class="coords" id="clab-ptCoords"></div>';
-  CLAB_HTML = CLAB_HTML.replace(pointCoords, pointCoords + '\n          <div class="clab-node-lens" id="clab-nodeLens" aria-label="Predicted physics at this track node"><span>Section <b id="clab-nodeSection">?</b></span><span>Speed <b id="clab-nodeSpeed">?</b></span><span>Vertical <b id="clab-nodeGV">?</b></span><span>Suggested bank <b id="clab-nodeBank">?</b></span></div>');
+  CLAB_HTML = CLAB_HTML.replace(pointCoords, pointCoords + '\n          <div class="clab-node-lens" id="clab-nodeLens" role="group" aria-label="No track node selected"><span>Section <b id="clab-nodeSection">?</b></span><span>Speed <b id="clab-nodeSpeed">?</b></span><span>Vertical <b id="clab-nodeGV">?</b></span><span>Suggested bank <b id="clab-nodeBank">?</b></span><span class="wide">Bank match <b id="clab-nodeBankDelta">?</b></span><span class="wide clab-bank-key" aria-label="3-D banking guide: solid is the actual rail and dashed is the suggested bank"><i aria-hidden="true"></i>Actual rail<i class="suggested" aria-hidden="true"></i>Suggested</span></div>');
   var energyHud = '<div class="hudcol">\n          <span class="hudk">Energy budget</span>';
   CLAB_HTML = CLAB_HTML.replace(energyHud, '<div class="hudcol clab-ride-state">\n          <span class="hudk">Ride state</span>\n          <span class="clab-state-pill" id="clab-hudState">READY</span>\n          <span class="gval" id="clab-hudPeak">Peak +1.00 g</span>\n        </div>\n        <div class="hudcol clab-minimap">\n          <span class="hudk">Track map</span>\n          <canvas id="clab-minimap" width="224" height="128" role="img" aria-label="Top-down map of the track and train position"></canvas>\n        </div>\n        ' + energyHud);
+  CLAB_HTML = CLAB_HTML.replace('<canvas id="clab-gball"></canvas>', '<canvas id="clab-gball" role="img" aria-label="G-force map: lateral 0.00 g, vertical 1.00 g"></canvas>');
+  CLAB_HTML = CLAB_HTML.replace('<div class="ebar">', '<div class="ebar" id="clab-energyBar" role="img" aria-label="Energy budget: 33 percent kinetic, 33 percent potential, 0 percent heat">');
+  CLAB_HTML = CLAB_HTML.replace('id="clab-btnGuide"', 'id="clab-btnGuide" aria-label="Open Coaster Lab quick guide; keyboard shortcut H"');
+  CLAB_HTML = CLAB_HTML.replace('id="clab-btnFx" title=', 'id="clab-btnFx" aria-pressed="false" title=');
+  CLAB_HTML = CLAB_HTML.replace('id="clab-btnFric" title=', 'id="clab-btnFric" aria-pressed="true" title=');
+  CLAB_HTML = CLAB_HTML.replace('id="clab-btnSound" title=', 'id="clab-btnSound" aria-pressed="false" title=');
+  CLAB_HTML = CLAB_HTML.replace('id="clab-btnChain" class="modebtn on"', 'id="clab-btnChain" class="modebtn on" aria-pressed="true"').replace('id="clab-btnLaunch" class="modebtn"', 'id="clab-btnLaunch" class="modebtn" aria-pressed="false"');
   var xrayLegend = '<div id="clab-xrayLegend" hidden>';
   CLAB_HTML = CLAB_HTML.replace(xrayLegend, '<div id="clab-dispatch" role="status" aria-live="polite" aria-atomic="true" hidden><small>Dispatch</small><b id="clab-dispatchValue">3</b></div>\n      <div id="clab-telemetryAnnouncer" class="sr-only" aria-live="polite" aria-atomic="true"></div>\n      <div id="clab-vectorLegend" hidden><span class="hudk">Live physics vectors</span><span class="vkey"><i style="background:#55b7ff;color:#55b7ff"></i>Velocity</span><span class="vkey"><i style="background:#f2a63c;color:#f2a63c"></i>Seat force</span><span class="vkey"><i style="background:#d38bff;color:#d38bff"></i>Gravity</span></div>\n      ' + xrayLegend);
+  var dispatchHud = '<div id="clab-dispatch" role="status" aria-live="polite" aria-atomic="true" hidden>';
+  CLAB_HTML = CLAB_HTML.replace(dispatchHud, '<div id="clab-lapHud" role="group" aria-label="Ride progress" hidden><div class="clab-lap-head"><b id="clab-lapSection">Station</b><span id="clab-lapPct">0%</span></div><div id="clab-lapRail" class="clab-lap-rail" role="progressbar" aria-label="Distance around the coaster circuit" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="clab-lapFill"></i><span id="clab-lapTicks" class="clab-lap-ticks" aria-hidden="true"></span></div><span id="clab-lapAnnouncer" class="sr-only" aria-live="polite" aria-atomic="true"></span></div>\n      ' + dispatchHud);
+  CLAB_HTML = CLAB_HTML.replace('Cycle camera: orbit, onboard, chase', 'Cycle camera: orbit, onboard, chase, scenic');
+  CLAB_HTML = CLAB_HTML.replace('camera: orbit ? onboard ? chase, and pick', 'camera: orbit ? onboard ? chase ? scenic, and pick');
+  CLAB_HTML = CLAB_HTML.replace('Interactive 3-D coaster track visualization. Use the Build panel controls to select and edit track nodes.', 'Interactive 3-D coaster track visualization. Direction arrows point around the circuit and illuminated rings mark major ride sections. Section portals remain visible during runs and carry distinct crown shapes for lift, launch, drop, inversion, turn, valley, and brake landmarks. The next portal grows as the train approaches and settles after passage. A tapered hoop trail and arrow identify the train position and direction in orbit and scenic views. The lead car carries a raised forward arrow and casts a tapered beam across the track in darker environments. Visible couplers show how the cars articulate through curves, and the rear lamp brightens on the brake run. High-contrast wheel markers rotate with each car?s traveled distance and remain still in reduced-motion mode. Theme-aware side light strips outline every car and brighten with speed. Numbered row plates identify front, middle, and back positions directly on the 3-D train. The active row gains a diamond marker and enlarged number plate, so selection is not conveyed by color alone. A side catwalk marks the lift hill, while center fins and paired lamps mark the brake run. Brake fins rise and paired lamps brighten when the train enters the brake run. Moving chain dogs climb the lift beside the train in chain mode. Launch mode uses paired stator banks with a repeating three-phase energy pattern. Platform edge lights sweep toward the exit during dispatch, while loading gates open before departure. The station pairs a three-aspect signal with an overhead word-and-number dispatch board. Use the Build panel controls to select and edit track nodes.');
 
   function bootCoasterLab(rootEl, THREE, bridge){
 'use strict';
 function __clabGet(id){ return rootEl.querySelector('#' + id); }
+rootEl.setAttribute('aria-keyshortcuts', 'Space R C X P H');
+if(!rootEl.getAttribute('aria-label')) rootEl.setAttribute('aria-label', 'Coaster Lab interactive workspace');
 /* @clab-cleanup-start */
 let __clabDead = false;
 const __clabResources = {
@@ -192,28 +230,28 @@ const VISUAL_THEMES = {
     hemiSky: 0x35506e, hemiGround: 0x191f16, hemi: 0.9,
     sun: 0xffb877, sunPower: 1.35, fill: 0x46658a, fillPower: 0.28,
     zen: 0x051024, mid: 0x111b2b, horizon: 0x5c3426, sunGlow: 0xff8a38, stars: 0.45,
-    ground: 0xd9e2cc, rail: 0xf2a63c, railGlow: 0x3a2408, spine: 0x31424f, support: 0x3a4a58
+    ground: 0xd9e2cc, rail: 0xf2a63c, bankSuggest: 0xf2c14e, railGlow: 0x3a2408, spine: 0x31424f, support: 0x3a4a58
   },
   daylight: {
     fog: 0xb7d6e2, fogNear: 300, fogFar: 980, exposure: 1.02,
     hemiSky: 0xcbe9ff, hemiGround: 0x55764d, hemi: 1.12,
     sun: 0xfff0c7, sunPower: 1.55, fill: 0x8bb9d4, fillPower: 0.34,
     zen: 0x2f84c8, mid: 0x78bce0, horizon: 0xf2d6a2, sunGlow: 0xffe0a0, stars: 0,
-    ground: 0xe3eccd, rail: 0xf0a235, railGlow: 0x251300, spine: 0x425666, support: 0x536777
+    ground: 0xe3eccd, rail: 0xf0a235, bankSuggest: 0xb76524, railGlow: 0x251300, spine: 0x425666, support: 0x536777
   },
   neon: {
     fog: 0x050713, fogNear: 190, fogFar: 690, exposure: 1.25,
     hemiSky: 0x16255c, hemiGround: 0x10081e, hemi: 0.72,
     sun: 0xff4fbf, sunPower: 0.9, fill: 0x28d8ff, fillPower: 0.55,
     zen: 0x02030d, mid: 0x0b1230, horizon: 0x32104c, sunGlow: 0xff3ca6, stars: 0.85,
-    ground: 0x223044, rail: 0x55e8ff, railGlow: 0x0b6575, spine: 0x3a2454, support: 0x283a5c
+    ground: 0x223044, rail: 0x55e8ff, bankSuggest: 0xff62c7, railGlow: 0x0b6575, spine: 0x3a2454, support: 0x283a5c
   },
   blueprint: {
     fog: 0x071b30, fogNear: 230, fogFar: 760, exposure: 1.08,
     hemiSky: 0x285f91, hemiGround: 0x06111f, hemi: 0.78,
     sun: 0x9bdcff, sunPower: 0.85, fill: 0x4b9cd3, fillPower: 0.42,
     zen: 0x041326, mid: 0x092542, horizon: 0x12466a, sunGlow: 0x8bd7ff, stars: 0.18,
-    ground: 0x244866, rail: 0xeaf7ff, railGlow: 0x2b799f, spine: 0x3979a3, support: 0x315f7e
+    ground: 0x244866, rail: 0xeaf7ff, bankSuggest: 0xd2a8ff, railGlow: 0x2b799f, spine: 0x3979a3, support: 0x315f7e
   }
 };
 let visualTheme = (() => {
@@ -844,6 +882,10 @@ const MAT = {
   carHead: new THREE.MeshStandardMaterial({ color: COL.accent, metalness: 0.3, roughness: 0.45 }),
   seat:    new THREE.MeshStandardMaterial({ color: 0x1c2836, metalness: 0.1, roughness: 0.9 }),
   chain:   new THREE.MeshStandardMaterial({ color: 0x5a6672, metalness: 0.7, roughness: 0.45 }),
+  chainDog: new THREE.MeshStandardMaterial({ color: 0xf2a63c, emissive: 0x4a2805, emissiveIntensity: 0.42, metalness: 0.65, roughness: 0.38 }),
+  catwalk: new THREE.MeshStandardMaterial({ color: 0x61717d, metalness: 0.52, roughness: 0.58 }),
+  brakeFin: new THREE.MeshStandardMaterial({ color: 0x8b98a2, metalness: 0.75, roughness: 0.34 }),
+  brakeLight: new THREE.MeshBasicMaterial({ color: 0xe5484d, transparent: true, opacity: 0.58, toneMapped: false }),
   railDim: new THREE.MeshStandardMaterial({ color: 0x39434e, metalness: 0.3, roughness: 0.6 }),
   xray:    new THREE.MeshBasicMaterial({ vertexColors: true }),
   trunk:   new THREE.MeshStandardMaterial({ color: 0x2a1e14, roughness: 1 }),
@@ -852,12 +894,23 @@ const MAT = {
   handleSel:  new THREE.MeshStandardMaterial({ color: COL.accent, emissive: 0x6b4207, metalness: 0.1, roughness: 0.4 }),
   handleFlag: new THREE.MeshStandardMaterial({ color: COL.pe, emissive: 0x4a1c3c, metalness: 0.1, roughness: 0.4 }),
   launchFin: new THREE.MeshBasicMaterial({ color: 0x58a6e8 }),
-  runningLight: new THREE.MeshBasicMaterial({ color: 0xffc873, toneMapped: false })
+  launchPhaseA: new THREE.MeshStandardMaterial({ color: 0x58a6e8, emissive: 0x58a6e8, emissiveIntensity: 0.62, metalness: 0.45, roughness: 0.36 }),
+  launchPhaseB: new THREE.MeshStandardMaterial({ color: 0x7a78e8, emissive: 0x7a78e8, emissiveIntensity: 0.62, metalness: 0.45, roughness: 0.36 }),
+  launchPhaseC: new THREE.MeshStandardMaterial({ color: 0x49c2c0, emissive: 0x49c2c0, emissiveIntensity: 0.62, metalness: 0.45, roughness: 0.36 }),
+  runningLight: new THREE.MeshBasicMaterial({ color: 0xffc873, toneMapped: false }),
+  courseArrow: new THREE.MeshBasicMaterial({ color: 0xffc873, transparent: true, opacity: 0.72, toneMapped: false })
 };
+const launchPhaseMeshes = [];
+const liftChainDogs = [];
+let brakeFinRig = null, brakeLightMesh = null, brakeFinLift = 0, brakeLightIdleHex = 0xe5484d;
+const brakeRigMatrix = new THREE.Matrix4(), brakeRigPos = new THREE.Vector3();
+const liftDogMatrix = new THREE.Matrix4(), liftDogPos = new THREE.Vector3(), liftDogTan = new THREE.Vector3();
+const liftDogUp = new THREE.Vector3(), liftDogSide = new THREE.Vector3();
 
 /* station: platform + canopy + lit sign (repositioned on rebuild) */
 const stationEdgeMat = new THREE.MeshBasicMaterial({ color: 0xffc873, transparent: true, opacity: 0.82, toneMapped: false });
 const stationAccentMat = new THREE.MeshStandardMaterial({ color: 0xf2a63c, emissive: 0x4a2805, emissiveIntensity: 0.8, metalness: 0.35, roughness: 0.42 });
+const sectionBeaconMat = new THREE.MeshBasicMaterial({ color: 0xf2a63c, transparent: true, opacity: 0.34, side: THREE.DoubleSide, toneMapped: false });
 const stationSignalMats = {
   red: new THREE.MeshStandardMaterial({ color: 0x401010, emissive: 0xff3030, emissiveIntensity: 0.12, roughness: 0.35 }),
   amber: new THREE.MeshStandardMaterial({ color: 0x402d08, emissive: 0xffb62e, emissiveIntensity: 0.12, roughness: 0.35 }),
@@ -865,7 +918,25 @@ const stationSignalMats = {
 };
 const stationFlags = [];
 const stationGates = [];
+const stationEdgePucks = [];
 let stationLamp = null;
+let stationBoardCtx = null, stationBoardTex = null;
+let stationBoardState = '', stationBoardAccent = 0xf2a63c;
+function paintStationBoard(state, accentHex = stationBoardAccent){
+  if(!stationBoardCtx || (state === stationBoardState && accentHex === stationBoardAccent)) return;
+  stationBoardState = state; stationBoardAccent = accentHex;
+  const g = stationBoardCtx;
+  const accent = '#' + accentHex.toString(16).padStart(6, '0');
+  const statusHex = state === 'GO' || state === 'CLEAR' ? '#57e3a0'
+    : state === 'HOLD' || state === '3' ? '#ff686d' : '#ffc35a';
+  g.clearRect(0, 0, 512, 128);
+  g.fillStyle = '#081018'; g.fillRect(0, 0, 512, 128);
+  g.strokeStyle = accent; g.lineWidth = 6; g.strokeRect(7, 7, 498, 114);
+  g.font = '600 22px Segoe UI, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillStyle = '#d7e5ef'; g.fillText('DISPATCH', 256, 28);
+  g.font = '700 62px Consolas, monospace'; g.fillStyle = statusHex; g.fillText(state, 256, 79);
+  stationBoardTex.needsUpdate = true;
+}
 const station = new THREE.Group();
 {
   const matPlat = new THREE.MeshStandardMaterial({ color: 0x22303e, metalness: 0.15, roughness: 0.85 });
@@ -875,11 +946,13 @@ const station = new THREE.Group();
   station.add(plat);
   /* illuminated platform edges and a compact entrance arch */
   const edgeGeo = new THREE.BoxGeometry(11.8, 0.055, 0.09);
+  const puckGeo = new THREE.BoxGeometry(0.34, 0.08, 0.14);
   for(const dz of [-1.68, 1.68]){
     const edge = new THREE.Mesh(edgeGeo, stationEdgeMat); edge.position.set(0, 0.58, dz); station.add(edge);
     for(let i = -5; i <= 5; i++){
-      const puck = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.08, 0.14), stationEdgeMat);
+      const puck = new THREE.Mesh(puckGeo, stationEdgeMat);
       puck.position.set(i, 0.64, dz); station.add(puck);
+      stationEdgePucks.push({ mesh: puck, step: i + 5 });
     }
   }
   /* platform gates open with dispatch, reinforcing the station state */
@@ -932,6 +1005,19 @@ const station = new THREE.Group();
     lens.position.set(0, y, -0.31); signalMast.add(lens);
   });
   signalMast.position.set(4.8, 0, -2.0); station.add(signalMast);
+  /* in-world status board repeats dispatch with words and numerals, not color alone */
+  const boardHousing = new THREE.Mesh(new THREE.BoxGeometry(0.18, 1.35, 4.5), matPost);
+  boardHousing.position.set(4.52, 3.65, 0); station.add(boardHousing);
+  const boardCanvas = document.createElement('canvas'); boardCanvas.width = 512; boardCanvas.height = 128;
+  stationBoardCtx = boardCanvas.getContext('2d');
+  stationBoardTex = new THREE.CanvasTexture(boardCanvas); stationBoardTex.encoding = THREE.sRGBEncoding;
+  const boardFace = new THREE.Mesh(
+    new THREE.PlaneGeometry(4.1, 1.0),
+    new THREE.MeshBasicMaterial({ map: stationBoardTex, side: THREE.DoubleSide, toneMapped: false })
+  );
+  boardFace.position.set(4.41, 3.65, 0); boardFace.rotation.y = -Math.PI / 2;
+  station.add(boardFace);
+  paintStationBoard('HOLD');
   const cv = document.createElement('canvas'); cv.width = 512; cv.height = 96;
   const g = cv.getContext('2d');
   g.fillStyle = '#141b23'; g.fillRect(0, 0, 512, 96);
@@ -1016,24 +1102,122 @@ const trackGroup = new THREE.Group();
 const supportGroup = new THREE.Group();
 const markerGroup = new THREE.Group();
 const sectionGroup = new THREE.Group();
+const sectionLandmarkGroup = new THREE.Group();
+const sectionLandmarks = [];
+const sectionLandmarkScaleMatrix = new THREE.Matrix4();
 const safetyGroup = new THREE.Group();
 const handleGroup = new THREE.Group();
 const previewGroup = new THREE.Group();
-scene.add(trackGroup, supportGroup, markerGroup, sectionGroup, safetyGroup, handleGroup, previewGroup);
+scene.add(trackGroup, supportGroup, markerGroup, sectionLandmarkGroup, sectionGroup, safetyGroup, handleGroup, previewGroup);
+/* selected-node spatial guide: ground projection, height line, and focus rings */
+const selectionGuide = new THREE.Group();
+const selectionGuideMat = new THREE.MeshBasicMaterial({ color: COL.accent, transparent: true, opacity: 0.82, side: THREE.DoubleSide, depthTest: false, toneMapped: false });
+const selectionGuideLineMat = new THREE.LineBasicMaterial({ color: COL.accent, transparent: true, opacity: 0.55, depthTest: false, toneMapped: false });
+const selectionGroundRing = new THREE.Mesh(new THREE.RingGeometry(1.25, 1.55, 40), selectionGuideMat);
+selectionGroundRing.rotation.x = -Math.PI / 2;
+selectionGroundRing.position.y = 0.04;
+const selectionTopRing = new THREE.Mesh(new THREE.RingGeometry(1.05, 1.32, 40), selectionGuideMat);
+selectionTopRing.rotation.x = -Math.PI / 2;
+const selectionGuideLine = new THREE.Line(
+  new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0)]),
+  selectionGuideLineMat
+);
+selectionGuideLine.position.y = 0.04;
+selectionGuide.add(selectionGroundRing, selectionTopRing, selectionGuideLine);
+selectionGuide.visible = false;
+/* the bank frame sits in the track cross-section, so its tilt is the rail bank */
+const selectionBankFrame = new THREE.Group();
+const selectionBankMat = new THREE.MeshBasicMaterial({ color: COL.accent, transparent: true, opacity: 0.14, side: THREE.DoubleSide, depthTest: false, toneMapped: false });
+const selectionBankLineMat = new THREE.LineBasicMaterial({ color: COL.accent, transparent: true, opacity: 0.78, depthTest: false, toneMapped: false });
+const selectionBankPlane = new THREE.Mesh(new THREE.PlaneGeometry(5.4, 1.7), selectionBankMat);
+const selectionBankBorder = new THREE.LineLoop(
+  new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(-2.7, -0.85, 0), new THREE.Vector3(2.7, -0.85, 0),
+    new THREE.Vector3(2.7, 0.85, 0), new THREE.Vector3(-2.7, 0.85, 0)
+  ]),
+  selectionBankLineMat
+);
+const selectionBankNormal = new THREE.Line(
+  new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 2.2, 0)]),
+  selectionBankLineMat
+);
+const selectionSuggestedBankMat = new THREE.MeshBasicMaterial({ color: 0xf2c14e, transparent: true, opacity: 0.055, side: THREE.DoubleSide, depthTest: false, toneMapped: false });
+const selectionSuggestedBankLineMat = new THREE.LineDashedMaterial({ color: 0xf2c14e, transparent: true, opacity: 0.9, dashSize: 0.3, gapSize: 0.17, depthTest: false, toneMapped: false });
+const selectionSuggestedBankGuide = new THREE.Group();
+const selectionSuggestedBankPlane = new THREE.Mesh(selectionBankPlane.geometry, selectionSuggestedBankMat);
+selectionSuggestedBankPlane.position.z = -0.03;
+const selectionSuggestedBankBorder = new THREE.LineLoop(selectionBankBorder.geometry, selectionSuggestedBankLineMat);
+selectionSuggestedBankBorder.position.z = -0.03;
+selectionSuggestedBankBorder.computeLineDistances();
+selectionSuggestedBankGuide.add(selectionSuggestedBankPlane, selectionSuggestedBankBorder);
+selectionSuggestedBankGuide.scale.setScalar(1.02);
+selectionBankFrame.add(selectionBankPlane, selectionBankBorder, selectionBankNormal, selectionSuggestedBankGuide);
+selectionBankFrame.visible = false;
+selectionBankFrame.renderOrder = 8;
+const selectionBankBasis = new THREE.Matrix4();
+scene.add(selectionGuide, selectionBankFrame);
+
 
 /* train: shaped cars, wheels, headlights on the lead car, brake light aft */
 const trainGroup = new THREE.Group();
 const cars = [];
-const trainWheels = [], restraintBars = [], harnessRigs = [], riderCars = [], allRiders = [], tailLights = [];
+const trainWheels = [], restraintBars = [], harnessRigs = [], riderCars = [], allRiders = [], tailLights = [], couplers = [];
+const trainWheelMarkers = [];
+const trainSideLights = [];
+const trainRowPlates = [];
+const trainRowMarkers = [];
+let trainLeadArrow = null;
+const trainTrimMat = new THREE.MeshStandardMaterial({ color: COL.accent, emissive: 0x3a2408, emissiveIntensity: 0.55, metalness: 0.4, roughness: 0.42 });
+const trainWheelHubMat = new THREE.MeshStandardMaterial({ color: COL.accent, emissive: 0x3a2408, emissiveIntensity: 0.72, metalness: 0.55, roughness: 0.38 });
+const trainSideLightMat = new THREE.MeshBasicMaterial({ color: 0xffc873, transparent: true, opacity: 0.34, toneMapped: false });
+const trainRowMarkerMat = new THREE.LineBasicMaterial({ color: 0xffc873, transparent: true, opacity: 0.95 });
+const trainLeadArrowMat = new THREE.MeshStandardMaterial({ color: COL.accent, emissive: 0x3a2408, emissiveIntensity: 0.72, metalness: 0.42, roughness: 0.38 });
+const trainLeadArrowLineMat = new THREE.LineBasicMaterial({ color: 0xffe4b0, transparent: true, opacity: 0.9 });
+const trainTailMat = new THREE.MeshBasicMaterial({ color: 0xff5a4d, toneMapped: false });
+const headlightBeamMat = new THREE.MeshBasicMaterial({ color: 0xffd9a0, transparent: true, opacity: 0.11, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false });
+let trainHeadlight = null, headlightBeam = null;
+function paintTrainRowPlate(plate, accentHex, themeName){
+  const bg = themeName === 'daylight' ? '#e7f0f2' : themeName === 'blueprint' ? '#0a3150' : themeName === 'neon' ? '#160d2c' : '#081018';
+  const fg = themeName === 'daylight' ? '#173042' : themeName === 'blueprint' ? '#eaf7ff' : '#f1f6fa';
+  const accent = '#' + accentHex.toString(16).padStart(6, '0');
+  const g = plate.ctx;
+  g.clearRect(0, 0, 256, 96);
+  g.fillStyle = bg; g.fillRect(0, 0, 256, 96);
+  g.strokeStyle = accent; g.lineWidth = 7; g.strokeRect(5, 5, 246, 86);
+  g.fillStyle = fg; g.font = '700 42px Consolas, monospace';
+  g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.fillText('ROW ' + plate.row, 128, 50);
+  plate.texture.needsUpdate = true;
+}
+function paintTrainRowPlates(accentHex, themeName){
+  for(const plate of trainRowPlates) paintTrainRowPlate(plate, accentHex, themeName);
+}
 /* A classroom rides this thing, so the crowd looks like one. */
 const RIDER_SKIN = [0xf0c8a0, 0x9c6b45, 0x5d3a24, 0xe8b48c, 0x7a4b2e, 0xc98f63];
 const RIDER_SHIRT = [0x3f8fd2, 0xe5484d, 0x59c98d, 0xc05fa0, 0xf2c14e, 0x8b6ce8];
 let riderSeed = 0;
 {
   const wheelGeo = new THREE.CylinderGeometry(0.16, 0.16, 0.12, 10).rotateZ(Math.PI / 2);
+  const wheelHubGeo = new THREE.CylinderGeometry(0.07, 0.07, 0.15, 10).rotateZ(Math.PI / 2);
+  const wheelMarkerGeo = new THREE.BoxGeometry(0.025, 0.24, 0.035);
   const wheelMat = new THREE.MeshStandardMaterial({ color: 0x161d26, metalness: 0.4, roughness: 0.6 });
   const glowHead = new THREE.MeshBasicMaterial({ color: 0xffe4b0 });
-  const glowTail = new THREE.MeshBasicMaterial({ color: 0xff5a4d });
+  const bogieGeo = new THREE.BoxGeometry(0.14, 0.14, 1.55);
+  const trimGeo = new THREE.BoxGeometry(0.06, 0.08, 1.72);
+  const sideLightGeo = new THREE.BoxGeometry(0.025, 0.045, 1.45);
+  const couplerGeo = new THREE.BoxGeometry(0.12, 0.12, 0.72);
+  const rowPlateGeo = new THREE.PlaneGeometry(0.72, 0.28);
+  const rowMarkerGeo = new THREE.EdgesGeometry(new THREE.OctahedronGeometry(0.28, 0));
+  const leadArrowShape = new THREE.Shape();
+  leadArrowShape.moveTo(0, 0.58); leadArrowShape.lineTo(0.44, 0.04);
+  leadArrowShape.lineTo(0.18, 0.04); leadArrowShape.lineTo(0.18, -0.5);
+  leadArrowShape.lineTo(-0.18, -0.5); leadArrowShape.lineTo(-0.18, 0.04);
+  leadArrowShape.lineTo(-0.44, 0.04); leadArrowShape.closePath();
+  const leadArrowGeo = new THREE.ExtrudeGeometry(leadArrowShape, { depth: 0.08, bevelEnabled: true, bevelSize: 0.025, bevelThickness: 0.025, bevelSegments: 1 });
+  leadArrowGeo.center();
+  const leadArrowEdgeGeo = new THREE.EdgesGeometry(leadArrowGeo);
+
+  const couplerMat = new THREE.MeshStandardMaterial({ color: 0x334452, metalness: 0.62, roughness: 0.4 });
   const restraintMat = new THREE.MeshStandardMaterial({ color: 0x25384a, metalness: 0.48, roughness: 0.46 });
   const restraintGeo = new THREE.BoxGeometry(1.15, 0.09, 0.09);
   for(let c = 0; c < DESIGN_BOUNDS.carsMax; c++){
@@ -1046,7 +1230,33 @@ let riderSeed = 0;
     const back = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.44, 0.22), MAT.seat);
     back.position.set(0, 0.82, -0.72);
     car.add(body, seat, back);
+    /* colored side rails make every car read as part of the chosen train */
+    for(const dx of [-0.72, 0.72]){
+      const trim = new THREE.Mesh(trimGeo, trainTrimMat);
+      trim.position.set(dx, 0.46, 0); car.add(trim);
+      const sideLight = new THREE.Mesh(sideLightGeo, trainSideLightMat);
+      sideLight.position.set(dx > 0 ? 0.755 : -0.755, 0.36, 0.04);
+      car.add(sideLight); trainSideLights.push(sideLight);
+      const bogie = new THREE.Mesh(bogieGeo, couplerMat);
+      bogie.position.set(dx > 0 ? 0.61 : -0.61, 0.05, 0);
+      bogie.castShadow = true;
+      car.add(bogie);
+    }
     const restraint = new THREE.Mesh(restraintGeo, restraintMat);
+    const plateCanvas = document.createElement('canvas'); plateCanvas.width = 256; plateCanvas.height = 96;
+    const plateTexture = new THREE.CanvasTexture(plateCanvas); plateTexture.encoding = THREE.sRGBEncoding;
+    const plateMaterial = new THREE.MeshBasicMaterial({ map: plateTexture, side: THREE.DoubleSide, toneMapped: false });
+    const plateEntry = { ctx: plateCanvas.getContext('2d'), texture: plateTexture, row: c + 1, meshes: [] };
+    for(const dx of [-0.706, 0.706]){
+      const plate = new THREE.Mesh(rowPlateGeo, plateMaterial);
+      plate.position.set(dx, 0.66, 0.28); plate.rotation.y = dx > 0 ? Math.PI / 2 : -Math.PI / 2;
+      car.add(plate); plateEntry.meshes.push(plate);
+    }
+    trainRowPlates.push(plateEntry);
+    paintTrainRowPlate(plateEntry, VISUAL_THEMES[visualTheme].rail, visualTheme);
+    const rowMarker = new THREE.LineSegments(rowMarkerGeo, trainRowMarkerMat);
+    rowMarker.position.set(0, 1.72, 0.12); rowMarker.scale.set(1, 1.45, 1); rowMarker.visible = false;
+    car.add(rowMarker); trainRowMarkers.push(rowMarker);
     restraint.position.set(0, 0.95, -0.18);
     restraint.rotation.x = -0.22;
     car.add(restraint);
@@ -1057,6 +1267,15 @@ let riderSeed = 0;
       nose.rotation.x = -0.42;
       nose.castShadow = true;
       car.add(nose);
+      const arrowGroup = new THREE.Group();
+      const arrowBody = new THREE.Mesh(leadArrowGeo, trainLeadArrowMat);
+      const arrowEdge = new THREE.LineSegments(leadArrowEdgeGeo, trainLeadArrowLineMat);
+      arrowBody.rotation.x = arrowEdge.rotation.x = Math.PI / 2;
+      arrowBody.castShadow = true;
+      arrowGroup.position.set(0, 0.83, 0.72);
+      arrowGroup.add(arrowBody, arrowEdge);
+      car.add(arrowGroup);
+      trainLeadArrow = arrowGroup;
       for(const dx of [-0.42, 0.42]){
         const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.075, 8, 8), glowHead);
         lamp.position.set(dx, 0.38, 1.18);
@@ -1065,9 +1284,17 @@ let riderSeed = 0;
       const head = new THREE.PointLight(0xffd9a0, 1.1, 42, 2);
       head.position.set(0, 0.5, 1.6);
       car.add(head);
+      trainHeadlight = head;
+      const beam = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.04, 2.4, 15, 18, 1, true).rotateX(-Math.PI / 2),
+        headlightBeamMat
+      );
+      beam.position.set(0, 0.42, 8.9); beam.renderOrder = 1;
+      car.add(beam);
+      headlightBeam = beam;
     }
     // every car carries a tail light; only the last one in service shows it
-    const tail = new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 8), glowTail);
+    const tail = new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 8), trainTailMat);
     tail.position.set(0, 0.42, -1.05);
     car.add(tail);
     tailLights.push(tail);
@@ -1123,11 +1350,22 @@ let riderSeed = 0;
     for(const dz of [-0.68, 0.68]) for(const dx of [-0.62, 0.62]){
       const w = new THREE.Mesh(wheelGeo, wheelMat);
       w.position.set(dx, 0.05, dz);
+      const hub = new THREE.Mesh(wheelHubGeo, trainWheelHubMat);
+      const marker = new THREE.Mesh(wheelMarkerGeo, trainWheelHubMat);
+      marker.position.x = dx > 0 ? 0.076 : -0.076;
+      w.add(hub, marker); trainWheelMarkers.push(marker);
       trainWheels.push(w);
       car.add(w);
     }
     trainGroup.add(car);
     cars.push(car);
+    if(c < DESIGN_BOUNDS.carsMax - 1){
+      const coupler = new THREE.Mesh(couplerGeo, couplerMat);
+      coupler.matrixAutoUpdate = false;
+      coupler.castShadow = true;
+      trainGroup.add(coupler);
+      couplers.push(coupler);
+    }
   }
 }
 scene.add(trainGroup);
@@ -1159,6 +1397,25 @@ const speedStreakSeed = Array.from({ length: SPEED_STREAK_COUNT }, (_, i) => ({
 }));
 const streakPos = new THREE.Vector3(), streakTan = new THREE.Vector3(), streakUp = new THREE.Vector3(), streakSide = new THREE.Vector3();
 const streakHead = new THREE.Vector3(), streakTail = new THREE.Vector3();
+
+/* camera-scale progress tracer: tapered hoops plus an arrow, not color alone */
+const progressTracerGroup = new THREE.Group();
+const progressTracerMats = [], progressTracerRings = [];
+for(let i = 0; i < 5; i++){
+  const mat = new THREE.MeshBasicMaterial({
+    color: 0xffc873, transparent: true, opacity: 0.78 - i * 0.13,
+    depthWrite: false, toneMapped: false
+  });
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(1.5 - i * 0.09, 0.055, 6, 28), mat);
+  ring.matrixAutoUpdate = false;
+  progressTracerMats.push(mat); progressTracerRings.push(ring); progressTracerGroup.add(ring);
+}
+const progressArrowMat = new THREE.MeshBasicMaterial({ color: 0xffc873, transparent: true, opacity: 0.9, depthWrite: false, toneMapped: false });
+const progressArrow = new THREE.Mesh(new THREE.ConeGeometry(0.2, 0.62, 3).rotateX(Math.PI / 2), progressArrowMat);
+progressArrow.matrixAutoUpdate = false; progressTracerGroup.add(progressArrow);
+progressTracerGroup.visible = false; scene.add(progressTracerGroup);
+const tracerPos = new THREE.Vector3(), tracerTan = new THREE.Vector3(), tracerUp = new THREE.Vector3(), tracerSide = new THREE.Vector3();
+const progressTracerMatrix = new THREE.Matrix4();
 
 /* ---------------- track geometry & frames ---------------- */
 let track = null;      // sampled track data
@@ -1333,6 +1590,9 @@ function disposeGroup(g){
 function rebuildTrackMeshes(){
   disposeGroup(trackGroup);
   disposeGroup(supportGroup);
+  liftChainDogs.length = 0;
+  launchPhaseMeshes.length = 0;
+  brakeFinRig = null; brakeLightMesh = null; brakeFinLift = 0;
   const t = track;
 
   /* offset curves for rails & spine */
@@ -1366,7 +1626,45 @@ function rebuildTrackMeshes(){
     }
     if(CP.length > 3){
       const c = new THREE.CatmullRomCurve3(CP, false, 'catmullrom', 0.5);
+      const dogGeo = new THREE.BoxGeometry(0.26, 0.16, 0.5);
+      for(let k = 0; k < 14; k++){
+        const dog = new THREE.Mesh(dogGeo, MAT.chainDog);
+        dog.matrixAutoUpdate = false; dog.visible = false;
+        trackGroup.add(dog); liftChainDogs.push(dog);
+      }
       trackGroup.add(new THREE.Mesh(new THREE.TubeGeometry(c, CP.length * 2, 0.07, 5, false), MAT.chain));
+    }
+    const catwalkIdx = [], railPts = [];
+    for(let i = 8; i < M; i += 8){
+      if(t.s[i] >= t.sCrest - 1) break;
+      catwalkIdx.push(i);
+      railPts.push(tmp.copy(t.pos[i]).addScaledVector(t.side[i], 1.61).addScaledVector(t.up[i], 0.9).clone());
+    }
+    if(catwalkIdx.length){
+      const deck = new THREE.InstancedMesh(
+        new THREE.BoxGeometry(0.72, 0.08, 0.55), MAT.catwalk, catwalkIdx.length);
+      const posts = new THREE.InstancedMesh(
+        new THREE.BoxGeometry(0.07, 0.9, 0.07), MAT.catwalk, Math.ceil(catwalkIdx.length / 2));
+      let postUsed = 0;
+      catwalkIdx.forEach((i, k) => {
+        m4.makeBasis(t.side[i], t.up[i], t.T[i])
+          .setPosition(tmp.copy(t.pos[i]).addScaledVector(t.side[i], 1.3).addScaledVector(t.up[i], 0.02));
+        deck.setMatrixAt(k, m4);
+        if(k % 2 === 0){
+          m4.makeBasis(t.side[i], t.up[i], t.T[i])
+            .setPosition(tmp.copy(t.pos[i]).addScaledVector(t.side[i], 1.61).addScaledVector(t.up[i], 0.47));
+          posts.setMatrixAt(postUsed++, m4);
+        }
+      });
+      deck.instanceMatrix.needsUpdate = true; posts.count = postUsed; posts.instanceMatrix.needsUpdate = true;
+      deck.castShadow = deck.receiveShadow = posts.castShadow = posts.receiveShadow = true;
+      trackGroup.add(deck, posts);
+      if(railPts.length > 3){
+        const railCurve = new THREE.CatmullRomCurve3(railPts, false, 'catmullrom', 0.5);
+        const handrail = new THREE.Mesh(
+          new THREE.TubeGeometry(railCurve, railPts.length * 2, 0.055, 6, false), MAT.catwalk);
+        handrail.castShadow = true; trackGroup.add(handrail);
+      }
     }
   }
   if(t.sCrest != null && design.propulsion.mode === 'launch'){
@@ -1390,9 +1688,70 @@ function rebuildTrackMeshes(){
       });
       fin.instanceMatrix.needsUpdate = true;
       trackGroup.add(fin);
+      const phaseBuckets = [[], [], []];
+      fins.forEach((idx, k) => phaseBuckets[k % 3].push(idx));
+      const phaseMats = [MAT.launchPhaseA, MAT.launchPhaseB, MAT.launchPhaseC];
+      phaseBuckets.forEach((bucket, phase) => {
+        if(!bucket.length) return;
+        const mesh = new THREE.InstancedMesh(
+          new THREE.BoxGeometry(0.16, 0.42, 0.78),
+          phaseMats[phase],
+          bucket.length * 2
+        );
+        let used = 0;
+        bucket.forEach(i => {
+          for(const sideSign of [-1, 1]){
+            m4.makeBasis(t.side[i], t.up[i], t.T[i])
+              .setPosition(tmp.copy(t.pos[i]).addScaledVector(t.side[i], sideSign * 0.58)
+                .addScaledVector(t.up[i], 0.18));
+            mesh.setMatrixAt(used++, m4);
+          }
+        });
+        mesh.count = used; mesh.instanceMatrix.needsUpdate = true;
+        mesh.userData.phase = phase;
+        trackGroup.add(mesh); launchPhaseMeshes.push(mesh);
+      });
     }
   }
 
+  /* brake fins and paired approach lamps make the deceleration zone explicit */
+  const brakeStartS = Math.max(0, t.L - brakeLen());
+  const brakeIdx = [];
+  for(let i = 0; i < M; i += 6){
+    if(t.s[i] >= brakeStartS && t.s[i] <= t.L - 3) brakeIdx.push(i);
+  }
+  if(brakeIdx.length){
+    const brakeFins = new THREE.InstancedMesh(
+      new THREE.BoxGeometry(0.26, 0.32, 0.62),
+      MAT.brakeFin,
+      brakeIdx.length
+    );
+    brakeIdx.forEach((i, k) => {
+      m4.makeBasis(t.side[i], t.up[i], t.T[i])
+        .setPosition(tmp.copy(t.pos[i]).addScaledVector(t.up[i], 0.08));
+      brakeFins.setMatrixAt(k, m4);
+    });
+    brakeFins.instanceMatrix.needsUpdate = true;
+    brakeFins.castShadow = true;
+    trackGroup.add(brakeFins);
+    brakeFinRig = { mesh: brakeFins, indices: brakeIdx.slice() };
+    const lightCount = Math.ceil(brakeIdx.length / 4) * 2;
+    const brakeLights = new THREE.InstancedMesh(
+      new THREE.SphereGeometry(0.11, 7, 6), MAT.brakeLight, lightCount);
+    let lightUsed = 0;
+    brakeIdx.forEach((i, k) => {
+      if(k % 4 !== 0) return;
+      for(const sign of [-1, 1]){
+        m4.identity().setPosition(tmp.copy(t.pos[i])
+          .addScaledVector(t.side[i], sign * 1.24).addScaledVector(t.up[i], 0.12));
+        brakeLights.setMatrixAt(lightUsed++, m4);
+      }
+    });
+    brakeLights.count = lightUsed;
+    brakeLights.instanceMatrix.needsUpdate = true;
+    trackGroup.add(brakeLights);
+    brakeLightMesh = brakeLights;
+  }
   /* ties */
   const tieEvery = 8, tieCount = Math.floor(M / tieEvery);
   const ties = new THREE.InstancedMesh(new THREE.BoxGeometry(2.1, 0.09, 0.42), MAT.tie, tieCount);
@@ -1410,8 +1769,12 @@ function rebuildTrackMeshes(){
   const sup = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.13, 0.2, 1, 8), MAT.support, maxSup);
   const foot = new THREE.InstancedMesh(new THREE.BoxGeometry(1.15, 0.22, 1.15), MAT.footing, maxSup);
   const cap = new THREE.InstancedMesh(new THREE.BoxGeometry(2.45, 0.16, 0.24), MAT.cap, maxSup);
-  let used = 0;
+  const brace = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.06, 0.07, 1, 6), MAT.support, maxSup * 2);
+  let used = 0, braceUsed = 0;
   const sc = new THREE.Vector3(), pp = new THREE.Vector3();
+  const braceStart = new THREE.Vector3(), braceEnd = new THREE.Vector3(), braceMid = new THREE.Vector3();
+  const braceDir = new THREE.Vector3(), braceQuat = new THREE.Quaternion();
+  const supportYAxis = new THREE.Vector3(0, 1, 0);
   for(let i = 0; i < M; i += supEvery){
     const attachY = t.pos[i].y - 0.5;
     if(t.up[i].y < 0.35 || attachY < 0.9) continue;
@@ -1424,6 +1787,19 @@ function rebuildTrackMeshes(){
     m4.makeBasis(t.side[i], t.up[i], t.T[i])
       .setPosition(tmp.copy(t.pos[i]).addScaledVector(t.up[i], -0.46));
     cap.setMatrixAt(supportIdx, m4);
+    if(attachY > 4){
+      braceEnd.set(t.pos[i].x, attachY, t.pos[i].z);
+      for(const sign of [-1, 1]){
+        braceStart.copy(t.pos[i]).addScaledVector(t.side[i], sign * 0.95);
+        braceStart.y = 0.18;
+        braceDir.subVectors(braceEnd, braceStart);
+        const braceLen = braceDir.length();
+        braceMid.addVectors(braceStart, braceEnd).multiplyScalar(0.5);
+        braceQuat.setFromUnitVectors(supportYAxis, braceDir.normalize());
+        m4.compose(braceMid, braceQuat, sc.set(1, braceLen, 1));
+        brace.setMatrixAt(braceUsed++, m4);
+      }
+    }
   }
   for(const mesh of [sup, foot, cap]){
     mesh.count = used;
@@ -1433,6 +1809,11 @@ function rebuildTrackMeshes(){
   }
 
   /* running lights under the spine — the dusk payoff */
+  brace.count = braceUsed;
+  brace.instanceMatrix.needsUpdate = true;
+  brace.castShadow = brace.receiveShadow = true;
+  supportGroup.add(brace);
+
   const liteEvery = 24, liteCount = Math.ceil(M / liteEvery);
   const lites = new THREE.InstancedMesh(new THREE.SphereGeometry(0.09, 6, 6), MAT.runningLight, liteCount);
   let ln = 0;
@@ -1447,6 +1828,21 @@ function rebuildTrackMeshes(){
   lites.instanceMatrix.needsUpdate = true;
   trackGroup.add(lites);
 
+  /* repeated arrowheads reveal the course direction from any orbit angle */
+  const arrowEvery = 40, arrowCount = Math.ceil(M / arrowEvery);
+  const courseArrows = new THREE.InstancedMesh(
+    new THREE.ConeGeometry(0.18, 0.58, 3).rotateX(Math.PI / 2),
+    MAT.courseArrow,
+    arrowCount
+  );
+  let arrowUsed = 0;
+  for(let i = arrowEvery; i < M; i += arrowEvery){
+    if(t.s[i] < 8 || t.s[i] > t.L - 8) continue;
+    m4.makeBasis(t.side[i], t.up[i], t.T[i])
+      .setPosition(tmp.copy(t.pos[i]).addScaledVector(t.up[i], -0.58));
+    courseArrows.setMatrixAt(arrowUsed++, m4);
+  }
+  courseArrows.count = arrowUsed; courseArrows.instanceMatrix.needsUpdate = true; trackGroup.add(courseArrows);
   /* station beside sample 0, aligned with the track heading */
   station.position.copy(t.pos[0]).addScaledVector(t.side[0], 2.6);
   station.position.y = Math.max(t.pos[0].y - 0.9, 0.55);
@@ -1591,6 +1987,16 @@ function refreshHandles(){
     h.material = i === selIdx ? MAT.handleSel : (i === design.certTurnIdx ? MAT.handleFlag : MAT.handle);
     h.scale.setScalar(i === selIdx ? 1.45 : (i === design.certTurnIdx ? 1.18 : 1));
   });
+  const selected = selIdx >= 0 && selIdx < design.points.length ? design.points[selIdx] : null;
+  selectionGuide.userData.ready = !!selected;
+  if(!selected) selectionBankFrame.userData.ready = false;
+  if(selected){
+    selectionGuide.position.set(selected.x, 0, selected.z);
+    selectionTopRing.position.y = selected.y;
+    selectionGuideLine.scale.y = Math.max(0.01, selected.y - 0.04);
+  }
+  selectionGuide.visible = !!selected && !sim.running && camMode === 'orbit';
+  selectionBankFrame.visible = selectionGuide.visible && !!selectionBankFrame.userData.ready;
 }
 
 /* ---------------- markers (A/B/C/D) ---------------- */
@@ -1642,6 +2048,8 @@ function makeSectionSprite(label){
 }
 function renderSectionLabels(){
   disposeGroup(sectionGroup);
+  disposeGroup(sectionLandmarkGroup);
+  sectionLandmarks.length = 0;
   if(!track || !analysis || fxLite) return;
   const feature = analysis.C ? ['Inversion', analysis.C.s] : analysis.D ? ['Banked turn', analysis.D.s] : ['Valley', analysis.B.s];
   const defs = [
@@ -1653,12 +2061,103 @@ function renderSectionLabels(){
   for(const [label, arc] of defs){
     trackAt(arc);
     const idx = TMP.i;
+    const landmarkMeshes = [];
+    const beacon = new THREE.Mesh(new THREE.TorusGeometry(2.25, 0.055, 6, 36), sectionBeaconMat);
+    beacon.matrixAutoUpdate = false;
+    beacon.matrix.makeBasis(track.side[idx], track.up[idx], track.T[idx]).setPosition(
+      track.pos[idx].clone().addScaledVector(track.up[idx], 0.55)
+    );
+    beacon.renderOrder = 2;
+    sectionLandmarkGroup.add(beacon);
+    landmarkMeshes.push({ mesh: beacon, base: beacon.matrix.clone() });
+    const addGlyph = (geometry, sideOffset = 0, upOffset = 3.15, rotationZ = 0) => {
+      const glyph = new THREE.Mesh(geometry, sectionBeaconMat);
+      const basis = new THREE.Matrix4().makeBasis(track.side[idx], track.up[idx], track.T[idx]);
+      if(rotationZ) basis.multiply(new THREE.Matrix4().makeRotationZ(rotationZ));
+      glyph.matrixAutoUpdate = false;
+      glyph.matrix.copy(basis).setPosition(track.pos[idx].clone()
+        .addScaledVector(track.side[idx], sideOffset).addScaledVector(track.up[idx], upOffset));
+      glyph.renderOrder = 3; sectionLandmarkGroup.add(glyph);
+      landmarkMeshes.push({ mesh: glyph, base: glyph.matrix.clone() });
+    };
+    if(label === 'Launch'){
+      for(const offset of [-0.55, 0, 0.55]) addGlyph(new THREE.BoxGeometry(0.24, 0.82, 0.18), offset);
+    } else if(label === 'Lift hill'){
+      addGlyph(new THREE.ConeGeometry(0.48, 0.86, 3));
+    } else if(label === 'First drop'){
+      addGlyph(new THREE.ConeGeometry(0.48, 0.86, 3), 0, 3.15, Math.PI);
+    } else if(label === 'Inversion'){
+      addGlyph(new THREE.OctahedronGeometry(0.53, 0));
+    } else if(label === 'Banked turn'){
+      addGlyph(new THREE.BoxGeometry(1.22, 0.2, 0.18), 0, 3.15, Math.PI / 4);
+    } else if(label === 'Valley'){
+      addGlyph(new THREE.TorusGeometry(0.5, 0.1, 5, 18, Math.PI));
+    } else {
+      addGlyph(new THREE.BoxGeometry(0.2, 0.82, 0.18), -0.3);
+      addGlyph(new THREE.BoxGeometry(0.2, 0.82, 0.18), 0.3);
+    }
+    sectionLandmarks.push({ arc, parts: landmarkMeshes });
     const sp = makeSectionSprite(label);
     sp.position.copy(track.pos[idx]).add(new THREE.Vector3(0, 4.8, 0));
     sectionGroup.add(sp);
   }
 }
 
+
+function lapMilestones(){
+  if(!track || !analysis) return [];
+  const feature = analysis.C ? ['Inversion', analysis.C.s] : analysis.D ? ['Banked turn', analysis.D.s] : ['Valley', analysis.B.s];
+  return [
+    [design.propulsion.mode === 'launch' ? 'Launch' : 'Lift', track.sCrest * 0.5],
+    ['Drop', (analysis.A.s + analysis.B.s) * 0.5],
+    feature,
+    ['Brakes', track.L - brakeLen() * 0.5]
+  ];
+}
+function rideSectionAt(S){
+  if(!track || !analysis) return 'Station';
+  let s = S % track.L; if(s < 0) s += track.L;
+  if(s < 4) return 'Station';
+  if(s >= track.L - brakeLen()) return 'Brake run';
+  if(s < Math.max(4, track.sCrest - 3)) return design.propulsion.mode === 'launch' ? 'Launch' : 'Lift hill';
+  if(Math.abs(s - analysis.A.s) < 6) return 'Crest';
+  if(s < analysis.B.s) return 'First drop';
+  const close = marker => marker && Math.min(Math.abs(s - marker.s), track.L - Math.abs(s - marker.s)) < Math.max(7, track.L * 0.035);
+  if(close(analysis.C)) return 'Inversion';
+  if(close(analysis.D)) return 'Banked turn';
+  trackAt(s);
+  if(Math.abs(track.kSide[TMP.i]) > 0.025) return 'Turn';
+  if(track.Ty[TMP.i] > 0.15) return 'Climb';
+  if(track.Ty[TMP.i] < -0.15) return 'Drop';
+  return 'Course';
+}
+function syncLapMilestones(){
+  const ticks = __clabGet('clab-lapTicks');
+  if(!ticks || !track || !analysis) return;
+  ticks.innerHTML = lapMilestones().map(([label, s]) =>
+    `<b style="left:${Math.max(0, Math.min(100, s / track.L * 100))}%" data-label="${label}"></b>`).join('');
+}
+let lastLapSection = '';
+function updateLapHUD(){
+  const box = __clabGet('clab-lapHud'), rail = __clabGet('clab-lapRail');
+  if(!box || !rail || !track) return;
+  const reportVisible = !!(telemetryReplay.tele && !__clabGet('clab-tab-report').hidden);
+  const active = sim.running || reportVisible;
+  box.hidden = !active;
+  if(!active) return;
+  let s = sim.S % track.L; if(s < 0) s += track.L;
+  const pct = Math.max(0, Math.min(100, s / track.L * 100));
+  const section = rideSectionAt(s);
+  __clabGet('clab-lapSection').textContent = section;
+  __clabGet('clab-lapPct').textContent = fmt(pct, 0) + '%';
+  __clabGet('clab-lapFill').style.width = pct + '%';
+  rail.setAttribute('aria-valuenow', String(Math.round(pct)));
+  rail.setAttribute('aria-valuetext', `${section}, ${Math.round(pct)} percent around the circuit`);
+  if(section !== lastLapSection){
+    lastLapSection = section;
+    if(sim.running) __clabGet('clab-lapAnnouncer').textContent = `${section}. ${Math.round(pct)} percent around the circuit.`;
+  }
+}
 
 /* @clab-geometry-preflight-start — pure sampled-geometry checks */
 function geometryPreflightSamples(pos, s, L, nodes = [], options = {}){
@@ -2735,11 +3234,58 @@ function applyTelemetryFrame(index){
   const scrub = __clabGet('clab-replayScrub');
   if(scrub){
     scrub.value = String(idx);
-    scrub.setAttribute('aria-valuetext', `${fmt(point.s, 0)} meters, ${fmt(point.v * 3.6, 0)} kilometers per hour`);
+    scrub.setAttribute('aria-valuetext', `${fmt(point.s, 0)} meters, ${fmt(point.v * 3.6, 0)} kilometers per hour, ${(point.g >= 0 ? 'plus ' : 'minus ')}${fmt(Math.abs(point.g), 2)} vertical g, ${(point.gl >= 0 ? 'plus ' : 'minus ')}${fmt(Math.abs(point.gl), 2)} lateral g`);
   }
   const out = __clabGet('clab-replayReadout');
   if(out) out.textContent = `${fmt(point.s, 0)} m ? ${fmt(point.v * 3.6, 0)} km/h ? ${(point.g >= 0 ? '+' : '')}${fmt(point.g, 2)} g ? side ${(point.gl >= 0 ? '+' : '')}${fmt(point.gl, 2)} g`;
   if(__clabGet('chV')) drawTraces(tele);
+}
+function telemetryIndexAtDistance(pts, targetS){
+  let lo = 0, hi = pts.length - 1;
+  while(lo < hi){
+    const mid = Math.floor((lo + hi) / 2);
+    if(pts[mid].s < targetS) lo = mid + 1; else hi = mid;
+  }
+  if(lo > 0 && Math.abs(pts[lo - 1].s - targetS) <= Math.abs(pts[lo].s - targetS)) return lo - 1;
+  return lo;
+}
+function bindTelemetryCharts(tele){
+  for(const id of ['chV', 'chG', 'chL']){
+    const cv = __clabGet(id);
+    if(!cv) continue;
+    cv.dataset.scrubbable = 'true';
+    let dragging = false, dragStartIndex = telemetryReplay.index;
+    const inspect = event => {
+      const rect = cv.getBoundingClientRect();
+      if(rect.width <= 0) return;
+      const ratio = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+      const targetS = ratio * tele.trace[tele.trace.length - 1].s;
+      stopTelemetryReplay();
+      applyTelemetryFrame(telemetryIndexAtDistance(tele.trace, targetS));
+    };
+    cv.addEventListener('pointerdown', event => {
+      dragStartIndex = telemetryReplay.index;
+      dragging = true;
+      if(cv.setPointerCapture) cv.setPointerCapture(event.pointerId);
+      inspect(event);
+      event.preventDefault();
+    });
+    cv.addEventListener('pointermove', event => {
+      if(!dragging) return;
+      inspect(event);
+      event.preventDefault();
+    });
+    const finish = event => {
+      dragging = false;
+      if(cv.releasePointerCapture && cv.hasPointerCapture && cv.hasPointerCapture(event.pointerId)) cv.releasePointerCapture(event.pointerId);
+    };
+    cv.addEventListener('pointerup', finish);
+    cv.addEventListener('pointercancel', event => {
+      const restoreIndex = dragStartIndex;
+      finish(event);
+      applyTelemetryFrame(restoreIndex);
+    });
+  }
 }
 function bindTelemetryReplay(tele){
   telemetryReplay.tele = tele;
@@ -2751,7 +3297,7 @@ function bindTelemetryReplay(tele){
   scrub.value = String(telemetryReplay.index);
   const point = tele.trace[telemetryReplay.index];
   out.textContent = `${fmt(point.s, 0)} m ? ${fmt(point.v * 3.6, 0)} km/h ? ${(point.g >= 0 ? '+' : '')}${fmt(point.g, 2)} g ? side ${(point.gl >= 0 ? '+' : '')}${fmt(point.gl, 2)} g`;
-  scrub.setAttribute('aria-valuetext', `${fmt(point.s, 0)} meters, ${fmt(point.v * 3.6, 0)} kilometers per hour`);
+  scrub.setAttribute('aria-valuetext', `${fmt(point.s, 0)} meters, ${fmt(point.v * 3.6, 0)} kilometers per hour, ${(point.g >= 0 ? 'plus ' : 'minus ')}${fmt(Math.abs(point.g), 2)} vertical g, ${(point.gl >= 0 ? 'plus ' : 'minus ')}${fmt(Math.abs(point.gl), 2)} lateral g`);
   btn.textContent = 'Replay ride';
   scrub.addEventListener('input', () => {
     stopTelemetryReplay();
@@ -2768,6 +3314,7 @@ function bindTelemetryReplay(tele){
     telemetryReplay.lastStep = performance.now();
     btn.textContent = 'Pause replay';
   });
+  bindTelemetryCharts(tele);
 }
 function updateTelemetryReplay(now){
   if(!telemetryReplay.playing || sim.running || !telemetryReplay.tele) return;
@@ -2851,6 +3398,7 @@ function renderReport(tele){
       '<div class="chlabel">Side g</div><canvas id="chL" class="chart" role="img" aria-label="Lateral seat force over the full coaster circuit in g"></canvas>' +
       '<p class="chnote">A crest · B valley · C loop apex · D cert turn · red = beyond limits</p></div>';
     tele.ghostTrace = ghost ? ghost.trace : null;
+    html = html.replace('red = beyond limits', 'hatched = beyond limits');
   }
   html += '<div class="viol">';
   if(tele.violations.length === 0){
@@ -2949,6 +3497,23 @@ function missionEvent(ev, ctx){
 }
 
 /* run-trace strip charts: one measure per chart, shared distance axis */
+function telemetryEvents(tele){
+  const pts = tele.trace || [];
+  if(!pts.length) return { speed: [], vertical: [], lateral: [] };
+  const extreme = score => pts.reduce((best, point) => score(point) > score(best) ? point : best, pts[0]);
+  const peakSpeed = extreme(point => point.v);
+  const maxG = extreme(point => point.g);
+  const minG = extreme(point => -point.g);
+  const sideG = extreme(point => Math.abs(point.gl));
+  return {
+    speed: [{ s: peakSpeed.s, value: peakSpeed.v, label: `${fmt(peakSpeed.v, 1)} m/s` }],
+    vertical: [
+      { s: maxG.s, value: maxG.g, label: `${maxG.g >= 0 ? '+' : ''}${fmt(maxG.g, 1)} g` },
+      { s: minG.s, value: minG.g, label: `${minG.g >= 0 ? '+' : ''}${fmt(minG.g, 1)} g` }
+    ],
+    lateral: [{ s: sideG.s, value: sideG.gl, label: `${sideG.gl >= 0 ? '+' : ''}${fmt(sideG.gl, 1)} g` }]
+  };
+}
 function drawChart(cv, pts, key, yMin, yMax, color, opts){
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   const w = cv.clientWidth || 300, hh = cv.clientHeight || 72;
@@ -2957,10 +3522,23 @@ function drawChart(cv, pts, key, yMin, yMax, color, opts){
   const sMax = Math.max(pts[pts.length - 1].s, 1);
   const X = s => 2 + (w - 4) * s / sMax;
   const Y = v => hh - 4 - (hh - 16) * (v - yMin) / (yMax - yMin);
+  const theme = getComputedStyle(rootEl);
+  const eventInk = theme.getPropertyValue('--ink').trim() || '#e8eef4';
+  const eventAccent = theme.getPropertyValue('--accent').trim() || color;
+  const axisInk = theme.getPropertyValue('--ink3').trim() || '#8fa4b8';
   for(const [b0, b1] of (opts.bands || [])){
     const y0 = Y(Math.min(b1, yMax)), y1 = Y(Math.max(b0, yMin));
+    const bandH = Math.max(1, y1 - y0);
     g.fillStyle = 'rgba(229,72,77,0.13)';
-    g.fillRect(2, y0, w - 4, Math.max(1, y1 - y0));
+    g.fillRect(2, y0, w - 4, bandH);
+    g.save();
+    g.beginPath(); g.rect(2, y0, w - 4, bandH); g.clip();
+    g.strokeStyle = theme.getPropertyValue('--bad').trim() || '#e5484d';
+    g.globalAlpha = 0.38; g.lineWidth = 1;
+    g.beginPath();
+    for(let x = -bandH; x < w + bandH; x += 8){ g.moveTo(x, y1); g.lineTo(x + bandH, y0); }
+    g.stroke();
+    g.restore();
   }
   for(const [val, dashed] of (opts.lines || [])){
     if(val < yMin || val > yMax) continue;
@@ -2996,35 +3574,78 @@ function drawChart(cv, pts, key, yMin, yMax, color, opts){
     if(i) g.lineTo(x, y); else g.moveTo(x, y);
   });
   g.stroke();
+  for(const event of (opts.events || [])){
+    if(Number.isFinite(opts.cursorS) && Math.abs(event.s - opts.cursorS) < sMax * 0.012) continue;
+    const px = X(event.s), py = Y(Math.max(yMin, Math.min(yMax, event.value)));
+    g.font = '600 9px Consolas, monospace';
+    const labelW = g.measureText(event.label).width;
+    const lx = Math.max(labelW / 2 + 4, Math.min(w - labelW / 2 - 4, px));
+    const placeAbove = event.value <= (yMin + yMax) / 2;
+    const ly = Math.max(10, Math.min(hh - 4, py + (placeAbove ? -7 : 12)));
+    g.strokeStyle = eventAccent;
+    g.fillStyle = eventAccent;
+    g.lineWidth = 1;
+    g.beginPath(); g.moveTo(px, py); g.lineTo(lx, ly + (placeAbove ? 2 : -7)); g.stroke();
+    g.beginPath(); g.arc(px, py, 2.7, 0, Math.PI * 2); g.fill();
+    g.fillStyle = eventInk;
+    g.textAlign = 'center';
+    g.fillText(event.label, lx, ly);
+  }
   if(Number.isFinite(opts.cursorS)){
     const x = X(opts.cursorS);
-    g.strokeStyle = getComputedStyle(rootEl).getPropertyValue('--ink').trim() || '#e8eef4';
+    g.strokeStyle = eventInk;
     g.lineWidth = 1.5;
     g.beginPath(); g.moveTo(x, 11); g.lineTo(x, hh - 4); g.stroke();
-    g.fillStyle = g.strokeStyle; g.beginPath(); g.arc(x, 11, 3, 0, Math.PI * 2); g.fill();
+    if(Number.isFinite(opts.cursorValue)){
+      const y = Y(Math.max(yMin, Math.min(yMax, opts.cursorValue)));
+      g.fillStyle = color;
+      g.beginPath(); g.arc(x, y, 4, 0, Math.PI * 2); g.fill();
+      g.strokeStyle = eventInk;
+      g.lineWidth = 1;
+      g.stroke();
+      if(opts.cursorLabel){
+        g.font = '600 9px Consolas, monospace';
+        const placeLeft = x > w * 0.72;
+        const tx = x + (placeLeft ? -7 : 7);
+        const ty = Math.max(10, Math.min(hh - 5, y - 6));
+        g.fillStyle = eventInk;
+        g.textAlign = placeLeft ? 'right' : 'left';
+        g.fillText(opts.cursorLabel, tx, ty);
+      }
+    } else {
+      g.fillStyle = eventInk;
+      g.beginPath(); g.arc(x, 11, 3, 0, Math.PI * 2); g.fill();
+    }
   }
-  g.fillStyle = '#66788a'; g.font = '9px Consolas, monospace'; g.textAlign = 'left';
   g.fillText(String(yMax), 4, Y(yMax) + 9);
   g.fillText(String(yMin), 4, Y(yMin) - 2);
+  g.fillStyle = axisInk;
+  g.font = '600 9px Consolas, monospace';
+  g.textAlign = 'left';
 }
 function drawTraces(tele){
   const cvV = __clabGet('chV'), cvG = __clabGet('chG'), cvL = __clabGet('chL');
   if(!cvV || !cvG || !cvL) return;
   const vTop = Math.ceil(Math.max(5, ...tele.trace.map(p => p.v)) + 2);
-  const cursorS = telemetryReplay.tele === tele && tele.trace[telemetryReplay.index] ? tele.trace[telemetryReplay.index].s : null;
-  drawChart(cvV, tele.trace, 'v', 0, vTop, '#3f8fd2', { marks: tele.markSs, ghost: tele.ghostTrace, cursorS });
+  const cursorPoint = telemetryReplay.tele === tele ? tele.trace[telemetryReplay.index] : null;
+  const cursorS = cursorPoint ? cursorPoint.s : null;
+  const events = telemetryEvents(tele);
+  const peakSpeed = events.speed[0], peakG = events.vertical[0], minG = events.vertical[1], sideG = events.lateral[0];
+  cvV.setAttribute('aria-label', `Speed over the full coaster circuit. Peak ${peakSpeed.label} at ${fmt(peakSpeed.s, 0)} meters. Click or drag to inspect; keyboard users can use the ride-position slider.`);
+  cvG.setAttribute('aria-label', `Vertical seat force over the circuit. Maximum ${peakG.label}; minimum ${minG.label}. Click or drag to inspect; keyboard users can use the ride-position slider.`);
+  cvL.setAttribute('aria-label', `Lateral seat force over the circuit. Largest side force ${sideG.label}. Click or drag to inspect; keyboard users can use the ride-position slider.`);
+  drawChart(cvV, tele.trace, 'v', 0, vTop, '#3f8fd2', { marks: tele.markSs, ghost: tele.ghostTrace, cursorS, cursorValue: cursorPoint ? cursorPoint.v : null, cursorLabel: cursorPoint ? fmt(cursorPoint.v, 1) + ' m/s' : '', events: events.speed });
   drawChart(cvG, tele.trace, 'g', -2.5, 7.5, '#f2a63c', {
     bands: [[LIM.gvMax, 7.5], [-2.5, LIM.gvMin]],
     lines: [[1, true], [0, false]],
-    marks: tele.markSs, cursorS
+    marks: tele.markSs, cursorS, cursorValue: cursorPoint ? cursorPoint.g : null, cursorLabel: cursorPoint ? `${cursorPoint.g >= 0 ? '+' : ''}${fmt(cursorPoint.g, 2)} g` : '', events: events.vertical
   });
   drawChart(cvL, tele.trace, 'gl', -2, 2, '#23a884', {
     bands: [[LIM.glat, 2], [-2, -LIM.glat]],
     lines: [[0, false]],
-    marks: tele.markSs, cursorS
+    marks: tele.markSs, cursorS, cursorValue: cursorPoint ? cursorPoint.gl : null, cursorLabel: cursorPoint ? `${cursorPoint.gl >= 0 ? '+' : ''}${fmt(cursorPoint.gl, 2)} g` : '', events: events.lateral
   });
 }
-
 /* ---------------- HUD ---------------- */
 const hud = {
   speed: __clabGet('clab-hudSpeed'), kmh: __clabGet('clab-hudKmh'),
@@ -3033,7 +3654,8 @@ const hud = {
   gvFill: __clabGet('clab-gvFill'), gvVal: __clabGet('clab-gvVal'),
   gvLabel: __clabGet('clab-gvLabel'),
   glFill: __clabGet('clab-glFill'), glVal: __clabGet('clab-glVal'),
-  eKE: __clabGet('clab-eKE'), ePE: __clabGet('clab-ePE'), eHeat: __clabGet('clab-eHeat')
+  eKE: __clabGet('clab-eKE'), ePE: __clabGet('clab-ePE'), eHeat: __clabGet('clab-eHeat'),
+  eBar: __clabGet('clab-energyBar')
 };
 /* g-map: rider-frame acceleration plotted live (side g × seat g) */
 const gball = __clabGet('clab-gball');
@@ -3204,11 +3826,14 @@ function updateHUD(){
   if(hud.gvLabel) hud.gvLabel.textContent = seat === 0 ? 'Seat g (vertical)' : 'Seat g · ' + seatLabel(seat, TRAIN_CARS);
   meter(hud.gvFill, gV, -2, 7, 2 / 9);
   meter(hud.glFill, gLat, -2, 2, 0.5);
-  hud.gvVal.textContent = (gV >= 0 ? '+' : '') + fmt(gV, 2) + ' g';
-  hud.gvVal.className = 'gval' + (gV > LIM.gvMax || gV < LIM.gvMin ? ' hot' : '');
-  hud.glVal.textContent = (gLat >= 0 ? '+' : '') + fmt(gLat, 2) + ' g';
-  hud.glVal.className = 'gval' + (Math.abs(gLat) > LIM.glat ? ' hot' : '');
+  const gvHot = gV > LIM.gvMax || gV < LIM.gvMin;
+  const glHot = Math.abs(gLat) > LIM.glat;
+  hud.gvVal.textContent = (gV >= 0 ? '+' : '') + fmt(gV, 2) + ' g' + (gvHot ? ' LIMIT' : '');
+  hud.gvVal.className = 'gval' + (gvHot ? ' hot' : '');
+  hud.glVal.textContent = (gLat >= 0 ? '+' : '') + fmt(gLat, 2) + ' g' + (glHot ? ' LIMIT' : '');
+  hud.glVal.className = 'gval' + (glHot ? ' hot' : '');
   drawGBall(gLat, gV);
+  gball.setAttribute('aria-label', `G-force map: lateral ${gLat >= 0 ? '+' : ''}${fmt(gLat, 2)} g, vertical ${gV >= 0 ? '+' : ''}${fmt(gV, 2)} g${overLimit ? '. Limit exceeded' : ''}`);
 
   /* energy budget vs release at the crest (per unit mass) */
   if(track.sCrest != null && analysis && analysis.B){
@@ -3217,11 +3842,14 @@ function updateHUD(){
     const ke = 0.5 * sim.v * sim.v, pe = G0 * Math.max(0, yRef - yMin);
     const heat = Math.min(sim.tele ? sim.tele.heat : 0, Math.max(0, eTot - ke - pe));
     const sum = Math.max(ke + pe + heat, 1e-6), w = x => (100 * x / Math.max(eTot, sum));
-    hud.eKE.style.width = w(ke) + '%';
-    hud.ePE.style.width = w(pe) + '%';
-    hud.eHeat.style.width = w(heat) + '%';
+    const kePct = w(ke), pePct = w(pe), heatPct = w(heat);
+    hud.eKE.style.width = kePct + '%';
+    hud.ePE.style.width = pePct + '%';
+    hud.eHeat.style.width = heatPct + '%';
+    if(hud.eBar) hud.eBar.setAttribute('aria-label', `Energy budget: ${fmt(kePct, 0)} percent kinetic, ${fmt(pePct, 0)} percent potential, ${fmt(heatPct, 0)} percent heat`);
   }
   drawMiniMap();
+  updateLapHUD();
 }
 
 /* ---------------- banner ---------------- */
@@ -3246,6 +3874,8 @@ function banner(msg, cls = '', ms = 2500){
 
 /* ---------------- cameras & pointer input ---------------- */
 let camMode = 'orbit';
+const CAMERA_MODES = ['orbit', 'onboard', 'chase', 'scenic'];
+const CAMERA_LABELS = { orbit: 'Orbit', onboard: 'Onboard', chase: 'Chase', scenic: 'Scenic' };
 const orbit = { theta: -0.95, phi: 0.42, radius: 175, target: new THREE.Vector3(60, 8, 28) };
 function applyOrbit(){
   const { theta, phi, radius, target } = orbit;
@@ -3380,6 +4010,7 @@ function fullRebuild(){
   analysis = analyze();
   renderMarkers();
   renderSectionLabels();
+  syncLapMilestones();
   renderSafetyCoach();
   renderProblems();
   updateOrbitTarget();
@@ -3476,19 +4107,40 @@ function nodePhysics(idx){
   else if(track.Ty[best] < -0.18) section = 'Drop';
   const v2 = idealV2(best);
   const bank = Math.min(80, Math.atan(Math.abs(v2 * track.kH[best]) / G0) * 180 / Math.PI);
-  return { section, speed: Math.sqrt(v2), gv: idealGV(best), bank };
+  const actualSignedBank = Number(p.bank) || 0;
+  const actualBank = Math.abs(actualSignedBank);
+  const turnSign = Math.sign(track.kH[best]) || Math.sign(actualSignedBank) || 1;
+  const suggestedSignedBank = bank * turnSign;
+  return { section, speed: Math.sqrt(v2), gv: idealGV(best), bank, actualBank, actualSignedBank, suggestedSignedBank, bankDelta: actualBank - bank, sample: best };
 }
 function syncNodeLens(idx){
   const d = nodePhysics(idx);
   const put = (id, value) => { const el = __clabGet(id); if(el) el.textContent = value; };
+  const lens = __clabGet('clab-nodeLens');
   if(!d){
-    for(const id of ['clab-nodeSection', 'clab-nodeSpeed', 'clab-nodeGV', 'clab-nodeBank']) put(id, '?');
+    if(lens) lens.setAttribute('aria-label', 'No track node selected');
+    for(const id of ['clab-nodeSection', 'clab-nodeSpeed', 'clab-nodeGV', 'clab-nodeBank', 'clab-nodeBankDelta']) put(id, '?');
+    selectionBankFrame.userData.ready = false;
+    selectionBankFrame.visible = false;
     return;
   }
   put('clab-nodeSection', d.section);
   put('clab-nodeSpeed', fmt(d.speed, 1) + ' m/s');
   put('clab-nodeGV', (d.gv >= 0 ? '+' : '') + fmt(d.gv, 2) + ' g');
-  put('clab-nodeBank', fmt(d.bank, 0) + '?');
+  put('clab-nodeBank', fmt(d.bank, 0) + '\u00b0');
+  const bankGap = Math.abs(d.bankDelta);
+  const bankMatch = bankGap < 2 ? 'Matched' : `${fmt(bankGap, 0)}\u00b0 ${d.bankDelta < 0 ? 'under' : 'over'}`;
+  put('clab-nodeBankDelta', bankMatch);
+  if(lens) lens.setAttribute('aria-label', `${d.section} node. Predicted speed ${fmt(d.speed, 1)} meters per second; vertical force ${d.gv >= 0 ? '+' : ''}${fmt(d.gv, 2)} g; actual bank ${fmt(d.actualBank, 0)} degrees; suggested bank ${fmt(d.bank, 0)} degrees; ${bankMatch}. Solid guide is the actual rail; dashed guide is the suggested bank.`);
+  const side = track.side[d.sample], up = track.up[d.sample], tangent = track.T[d.sample];
+  if(side && up && tangent){
+    selectionBankBasis.makeBasis(side, up, tangent);
+    selectionBankFrame.position.copy(track.pos[d.sample]);
+    selectionBankFrame.quaternion.setFromRotationMatrix(selectionBankBasis);
+    selectionSuggestedBankGuide.rotation.z = THREE.MathUtils.degToRad(d.suggestedSignedBank - d.actualSignedBank);
+    selectionBankFrame.userData.ready = true;
+    selectionBankFrame.visible = !sim.running && camMode === 'orbit';
+  }
 }
 function selectPoint(idx){
   selIdx = idx;
@@ -3733,8 +4385,11 @@ if(startSimpleBtn) startSimpleBtn.addEventListener('click', () => {
 const slLaunch = __clabGet('clab-slLaunch');
 function syncPropUI(){
   const prop = design.propulsion;
-  __clabGet('clab-btnChain').classList.toggle('on', prop.mode === 'chain');
-  __clabGet('clab-btnLaunch').classList.toggle('on', prop.mode === 'launch');
+  const chainBtn = __clabGet('clab-btnChain'), launchBtn = __clabGet('clab-btnLaunch');
+  chainBtn.classList.toggle('on', prop.mode === 'chain');
+  launchBtn.classList.toggle('on', prop.mode === 'launch');
+  chainBtn.setAttribute('aria-pressed', String(prop.mode === 'chain'));
+  launchBtn.setAttribute('aria-pressed', String(prop.mode === 'launch'));
   __clabGet('clab-launchRow').hidden = prop.mode !== 'launch';
   slLaunch.value = prop.accel;
   __clabGet('clab-slLaunchV').textContent = fmt(prop.accel) + ' m/s²';
@@ -3854,6 +4509,7 @@ __clabGet('clab-btnSound').addEventListener('click', e => {
   }
   if(audio.ctx && audio.ctx.state === 'suspended') audio.ctx.resume();
   e.target.textContent = audio.enabled ? '🔊 Sound' : '🔇 Sound';
+  e.target.setAttribute('aria-pressed', String(audio.enabled));
 });
 
 /* ---------------- top-bar UI ---------------- */
@@ -3890,8 +4546,9 @@ __clabGet('clab-btnRun').addEventListener('click', () => {
   });
 })();
 __clabGet('clab-btnCam').addEventListener('click', e => {
-  camMode = camMode === 'orbit' ? 'onboard' : (camMode === 'onboard' ? 'chase' : 'orbit');
-  e.target.textContent = 'Camera: ' + { orbit: 'Orbit', onboard: 'Onboard', chase: 'Chase' }[camMode];
+  const next = (CAMERA_MODES.indexOf(camMode) + 1) % CAMERA_MODES.length;
+  camMode = CAMERA_MODES[next];
+  e.target.textContent = 'Camera: ' + CAMERA_LABELS[camMode];
 });
 __clabGet('clab-btnView').addEventListener('click', e => {
   const modes = ['track', 'speed', 'vertical', 'lateral', 'curvature'];
@@ -3903,6 +4560,7 @@ __clabGet('clab-btnView').addEventListener('click', e => {
 __clabGet('clab-btnFric').addEventListener('click', e => {
   friction = !friction;
   e.target.textContent = 'Friction: ' + (friction ? 'Realistic' : 'Off (ideal)');
+  e.target.setAttribute('aria-pressed', String(friction));
 });
 /* ---------------- share: export / import a design ---------------- */
 function exportDesign(){
@@ -4004,11 +4662,38 @@ function applyVisualTheme(name, announce = true){
   MAT.rail.color.setHex(cfg.rail); MAT.rail.emissive.setHex(cfg.railGlow);
   MAT.spine.color.setHex(cfg.spine); MAT.support.color.setHex(cfg.support);
   MAT.railDim.color.setHex(name === 'blueprint' ? 0x386b8c : 0x39434e);
+  const chainHex = name === 'blueprint' ? 0x8bd7ff : name === 'neon' ? 0x55e8ff : name === 'daylight' ? 0x657681 : 0x7b8994;
+  MAT.chain.color.setHex(chainHex); MAT.chainDog.color.setHex(cfg.rail); MAT.chainDog.emissive.setHex(cfg.railGlow);
+  MAT.catwalk.color.setHex(name === 'daylight' ? 0x73817f : name === 'blueprint' ? 0x5f9bbf : 0x61717d);
+  MAT.brakeFin.color.setHex(name === 'neon' ? 0xb5c7d6 : name === 'blueprint' ? 0x8bd7ff : 0x8b98a2);
+  brakeLightIdleHex = name === 'blueprint' ? 0xffb05a : 0xe5484d;
+  MAT.brakeLight.color.setHex(brakeLightIdleHex);
+  MAT.courseArrow.color.setHex(name === 'neon' ? 0xff62c7 : name === 'blueprint' ? 0x8bd7ff : cfg.rail);
+  const launchPhasePalette = name === 'neon' ? [0x55e8ff, 0xff62c7, 0x9b7bff]
+    : name === 'blueprint' ? [0x8bd7ff, 0xc0e9ff, 0x5fb9e8]
+    : name === 'daylight' ? [0x277bb8, 0x5b64c7, 0x327f95]
+    : [0x58a6e8, 0x7a78e8, 0x49c2c0];
+  MAT.launchFin.color.setHex(launchPhasePalette[0]);
+  [MAT.launchPhaseA, MAT.launchPhaseB, MAT.launchPhaseC].forEach((mat, i) => {
+    mat.color.setHex(launchPhasePalette[i]); mat.emissive.setHex(launchPhasePalette[i]);
+  });
+  sectionBeaconMat.color.setHex(cfg.rail);
+  sectionBeaconMat.opacity = name === 'daylight' ? 0.44 : name === 'neon' ? 0.5 : 0.34;
   MAT.runningLight.color.setHex(name === 'neon' ? 0xff62c7 : name === 'blueprint' ? 0x8bd7ff : 0xffc873);
   MAT.footing.color.setHex(name === 'daylight' ? 0x606b69 : name === 'blueprint' ? 0x24445d : 0x202a31);
   MAT.cap.color.setHex(cfg.support).offsetHSL(0, 0, 0.08);
   stationEdgeMat.color.setHex(cfg.rail); stationAccentMat.color.setHex(cfg.rail); stationAccentMat.emissive.setHex(cfg.railGlow);
+  trainWheelHubMat.color.setHex(cfg.rail); trainWheelHubMat.emissive.setHex(cfg.railGlow);
   if(stationLamp){ stationLamp.color.setHex(cfg.sunGlow); stationLamp.intensity = name === 'daylight' ? 0.45 : 1.0; }
+  trainSideLightMat.color.setHex(name === 'neon' ? 0xff62c7 : name === 'blueprint' ? 0x8bd7ff : cfg.rail);
+  trainLeadArrowMat.color.setHex(cfg.rail); trainLeadArrowMat.emissive.setHex(cfg.railGlow);
+  trainLeadArrowLineMat.color.setHex(cfg.sunGlow);
+  headlightBeamMat.color.setHex(cfg.sunGlow);
+  headlightBeamMat.opacity = name === 'neon' ? 0.14 : name === 'dusk' ? 0.11 : name === 'blueprint' ? 0.07 : 0.025;
+  paintTrainRowPlates(cfg.rail, name);
+  if(trainHeadlight){ trainHeadlight.color.setHex(cfg.sunGlow); trainHeadlight.intensity = name === 'daylight' ? 0.35 : 1.1; }
+  trainRowMarkerMat.color.setHex(cfg.rail);
+  paintStationBoard(stationBoardState || 'HOLD', cfg.rail);
   atmosphereMat.color.setHex(name === 'daylight' ? 0x66808a : name === 'neon' ? 0x110b2c : name === 'blueprint' ? 0x17486a : 0x101827);
   atmosphereMat.opacity = name === 'daylight' ? 0.36 : 0.62;
   atmosphereMat.wireframe = name === 'blueprint'; atmosphereMat.needsUpdate = true;
@@ -4017,6 +4702,14 @@ function applyVisualTheme(name, announce = true){
   cloudMat.opacity = name === 'daylight' ? 0.3 : 0.18; birdMat.color.setHex(name === 'blueprint' ? 0x8bd7ff : 0xb9cedd);
   for(const flag of stationFlags){ flag.material.color.setHex(cfg.rail); flag.material.emissive.setHex(cfg.railGlow); }
   speedStreakMat.color.setHex(name === 'neon' ? 0x55e8ff : cfg.rail);
+  progressTracerMats.forEach(mat => mat.color.setHex(cfg.rail));
+  progressArrowMat.color.setHex(cfg.rail);
+  selectionGuideMat.color.setHex(cfg.rail);
+  selectionGuideLineMat.color.setHex(cfg.rail);
+  selectionBankMat.color.setHex(cfg.rail);
+  selectionBankLineMat.color.setHex(cfg.rail);
+  selectionSuggestedBankMat.color.setHex(cfg.bankSuggest);
+  selectionSuggestedBankLineMat.color.setHex(cfg.bankSuggest);
   atmosphereGroup.visible = !fxLite;
   if(themeSelect) themeSelect.value = name;
   try{ localStorage.setItem('coaster_lab_theme', name); }catch(_e){}
@@ -4056,10 +4749,13 @@ function applyFx(){
   terrainGrid.visible = !fxLite && visualTheme === 'blueprint';
   atmosphereGroup.visible = !fxLite;
   if(fxLite) speedStreaks.visible = false;
+  if(headlightBeam) headlightBeam.visible = !fxLite;
+  if(trainHeadlight) trainHeadlight.visible = !fxLite;
   if(track && analysis) renderSectionLabels();
   renderer.setPixelRatio(fxLite ? 1 : Math.min(window.devicePixelRatio || 1, 2));
   scene.traverse(o => { if(o.material) o.material.needsUpdate = true; });
   __clabGet('clab-btnFx').textContent = fxLite ? 'FX: Lite' : 'FX: Full';
+  __clabGet('clab-btnFx').setAttribute('aria-pressed', String(fxLite));
 }
 __clabGet('clab-btnFx').addEventListener('click', () => {
   fxLite = !fxLite;
@@ -4377,6 +5073,8 @@ function snapshotView(){
 const TRAIN_KEY = 'coaster_lab_train';
 function applyTrainColor(hex){
   MAT.carHead.color.set(hex);
+  trainTrimMat.color.set(hex);
+  trainTrimMat.emissive.set(hex).multiplyScalar(0.18);
   for(const b of rootEl.querySelectorAll('#clab-trainColors .swatch')){
     b.classList.toggle('on', b.dataset.c === hex);
   }
@@ -4406,6 +5104,7 @@ rootEl.addEventListener('keydown', e => {
   const k = e.key.toLowerCase();
   if(k === 'escape' && !guideEl.hidden){ e.preventDefault(); toggleGuide(false); return; }
   if(isGlobalShortcutTarget(e.target)) return;
+  if(e.target !== rootEl) return;
   if(k === ' '){ e.preventDefault(); __clabGet('clab-btnRun').click(); }
   else if(k === 'r'){ startRide(); }
   else if(k === 'c'){ __clabGet('clab-btnCam').click(); }
@@ -5368,7 +6067,7 @@ function cleanupRide(showEnd){
   ride.active = false;
   camMode = ride.prevCam;
   __clabGet('clab-btnCam').textContent =
-    'Camera: ' + { orbit: 'Orbit', onboard: 'Onboard', chase: 'Chase' }[camMode];
+    'Camera: ' + CAMERA_LABELS[camMode];
   if(showEnd){
     const avgT = ride.times.length ? ride.times.reduce((p, c) => p + c, 0) / ride.times.length : 0;
     let best = 0;
@@ -5617,7 +6316,7 @@ function updateFx(dt){
 }
 
 /* ---------------- render loop ---------------- */
-const _p = new THREE.Vector3(), _t = new THREE.Vector3(), _u = new THREE.Vector3();
+const _p = new THREE.Vector3(), _t = new THREE.Vector3(), _u = new THREE.Vector3(), scenicAim = new THREE.Vector3();
 const _m = new THREE.Matrix4(), _side = new THREE.Vector3(), _chase = new THREE.Vector3(), cameraShakeSide = new THREE.Vector3();
 
 function placeTrain(){
@@ -5629,6 +6328,14 @@ function placeTrain(){
       _p.x + _u.x * 0.55, _p.y + _u.y * 0.55, _p.z + _u.z * 0.55);
     cars[c].matrixAutoUpdate = false;
     cars[c].matrix.copy(_m);
+  }
+  for(let c = 0; c < TRAIN_CARS - 1; c++){
+    frameAt(sim.S - (c + 0.5) * CAR_GAP, _p, _t, _u);
+    _side.crossVectors(_u, _t).normalize();
+    _m.makeBasis(_side, _u, _t).setPosition(
+      _p.x + _u.x * 0.62, _p.y + _u.y * 0.62, _p.z + _u.z * 0.62);
+    couplers[c].matrix.copy(_m);
+    couplers[c].matrixWorldNeedsUpdate = true;
   }
 }
 function updatePhysicsVectors(){
@@ -5649,9 +6356,39 @@ function updatePhysicsVectors(){
   vectorGravity.setDirection(vectorGravityDir);
   vectorGravity.setLength(6, 1.4, 0.75);
 }
+function updateLiftVisuals(){
+  const active = design.propulsion.mode === 'chain' && track && track.sCrest != null && !fxLite;
+  for(const dog of liftChainDogs) dog.visible = active;
+  if(!active || !liftChainDogs.length) return;
+  const liftSpan = Math.max(4, track.sCrest - 2);
+  const spacing = liftSpan / liftChainDogs.length;
+  const ridingLift = sim.running && sim.S < track.sCrest;
+  const offset = ridingLift && !reducedMotion() ? ((sim.S % spacing) + spacing) % spacing : 0;
+  liftChainDogs.forEach((dog, k) => {
+    const arc = 1 + (k * spacing + offset) % liftSpan;
+    frameAt(arc, liftDogPos, liftDogTan, liftDogUp);
+    liftDogSide.crossVectors(liftDogUp, liftDogTan).normalize();
+    liftDogMatrix.makeBasis(liftDogSide, liftDogUp, liftDogTan)
+      .setPosition(liftDogPos.addScaledVector(liftDogUp, 0.18));
+    dog.matrix.copy(liftDogMatrix); dog.matrixWorldNeedsUpdate = true;
+  });
+  MAT.chainDog.emissiveIntensity = ridingLift ? 1.05 : 0.42;
+}
+function updateLaunchVisuals(now){
+  const launchActive = design.propulsion.mode === 'launch';
+  const staticState = reducedMotion() || fxLite || !launchActive || !sim.running;
+  for(const mesh of launchPhaseMeshes){
+    const phase = mesh.userData.phase || 0;
+    const intensity = staticState ? 0.62 : 0.42 + (Math.sin(now * 0.012 - phase * Math.PI * 2 / 3) + 1) * 0.74;
+    mesh.material.emissiveIntensity = intensity;
+  }
+}
 function updateStationVisuals(now){
   const phase = sim.running ? sim.t : -1;
   const active = phase < 0 ? 'red' : phase < 0.65 ? 'red' : phase < 1.3 ? 'amber' : 'green';
+  const boardState = phase < 0 ? 'HOLD' : phase < 0.55 ? '3'
+    : phase < 1.1 ? '2' : phase < 1.65 ? '1' : phase < 2.25 ? 'GO' : 'CLEAR';
+  paintStationBoard(boardState);
   for(const key of ['red', 'amber', 'green']){
     stationSignalMats[key].emissiveIntensity = key === active ? 1.8 : 0.1;
   }
@@ -5660,6 +6397,11 @@ function updateStationVisuals(now){
   for(const gate of stationGates){
     const target = gateOpen ? gate.sign * Math.PI * 0.48 : 0;
     gate.pivot.rotation.y += (target - gate.pivot.rotation.y) * gateBlend;
+  }
+  const departureSweep = sim.running && phase >= 0.55 && phase < 2.25 && !reducedMotion();
+  for(const puck of stationEdgePucks){
+    const wave = departureSweep ? Math.max(0, Math.cos(now * 0.014 - puck.step * 0.72)) : 0;
+    puck.mesh.scale.set(1 + wave * 0.35, 1 + wave * 0.85, 1);
   }
   const motionPulse = reducedMotion() ? 0 : Math.sin(now * 0.004) * 0.13;
   stationEdgeMat.opacity = (sim.running ? 0.78 : 0.62) + motionPulse;
@@ -5682,9 +6424,34 @@ function updateDispatchOverlay(){
   dispatchValue.textContent = value;
 }
 function updateTrainPresentation(){
-  const wheelSpin = sim.S * 3.4;
-  for(const wheel of trainWheels) wheel.rotation.x = wheelSpin;
+  const animateWheels = !reducedMotion();
+  trainWheels.forEach((wheel, i) => {
+    const carArc = sim.S - Math.floor(i / 4) * CAR_GAP;
+    wheel.rotation.x = animateWheels ? carArc / 0.16 : 0;
+  });
+  for(const marker of trainWheelMarkers) marker.visible = !fxLite;
   const restraintTarget = sim.running ? 0.28 : -0.58;
+  const sideLightBoost = sim.running ? Math.min(1, Math.abs(sim.v) / 30) : 0;
+  trainSideLightMat.opacity = 0.34 + sideLightBoost * 0.58;
+  trainLeadArrowMat.emissiveIntensity = 0.72 + sideLightBoost * 0.48;
+  trainLeadArrowLineMat.opacity = 0.82 + sideLightBoost * 0.18;
+  if(trainLeadArrow) trainLeadArrow.visible = true;
+  for(const strip of trainSideLights){
+    strip.visible = !fxLite;
+    strip.scale.z = reducedMotion() ? 1 : 1 + sideLightBoost * 0.08;
+  }
+  const selectedRow = Math.min(activeSeat(), TRAIN_CARS - 1);
+  const rowBlend = reducedMotion() ? 1 : 0.18;
+  trainRowPlates.forEach((plate, i) => {
+    const selected = i === selectedRow;
+    const target = selected ? 1.18 : 1;
+    for(const mesh of plate.meshes){
+      mesh.visible = !fxLite || selected;
+      mesh.scale.x += (target - mesh.scale.x) * rowBlend;
+      mesh.scale.y += (target - mesh.scale.y) * rowBlend;
+    }
+  });
+  trainRowMarkers.forEach((marker, i) => { marker.visible = i === selectedRow && i < TRAIN_CARS; });
   const blend = reducedMotion() ? 1 : 0.12;
   for(const restraint of restraintBars){
     restraint.rotation.x += (restraintTarget - restraint.rotation.x) * blend;
@@ -5693,9 +6460,44 @@ function updateTrainPresentation(){
     harness.rotation.x += ((sim.running ? 0.1 : -0.5) - harness.rotation.x) * blend;
   }
   updateRiders();
+  const braking = !!(track && sim.S > track.L - brakeLen() && Math.abs(sim.v) > 3.05);
+  trainTailMat.color.setHex(braking ? 0xfff1d6 : 0xff5a4d);
+  const tailScale = braking ? 1.7 : 1;
+  for(const tail of tailLights) tail.scale.setScalar(tailScale);
 }
 /* Show the restraint the ride's own measured forces demand: a lap bar until the
    design earns a harness. The Report explains why; the train just shows it. */
+function updateHeadlightVisuals(){
+  if(!headlightBeam || !trainHeadlight) return;
+  const enabled = !fxLite;
+  headlightBeam.visible = enabled;
+  trainHeadlight.visible = enabled;
+  if(!enabled) return;
+  const baseOpacity = visualTheme === 'neon' ? 0.14 : visualTheme === 'dusk' ? 0.11
+    : visualTheme === 'blueprint' ? 0.07 : 0.025;
+  const speedBoost = sim.running ? Math.min(0.055, Math.abs(sim.v) * 0.0018) : 0;
+  headlightBeamMat.opacity = baseOpacity + speedBoost;
+  const baseLight = visualTheme === 'daylight' ? 0.35 : visualTheme === 'blueprint' ? 0.65 : 1.1;
+  trainHeadlight.intensity = baseLight + (sim.running ? Math.min(0.65, Math.abs(sim.v) * 0.018) : 0);
+}
+function updateBrakeVisuals(){
+  if(!track || !brakeFinRig) return;
+  const brakeStart = Math.max(0, track.L - brakeLen());
+  let s = sim.S % track.L; if(s < 0) s += track.L;
+  const approaching = sim.running && s >= Math.max(0, brakeStart - 16) && s < brakeStart;
+  const braking = sim.running && s >= brakeStart && s <= track.L - 1 && Math.abs(sim.v) > 3.05;
+  const targetLift = braking ? 0.22 : 0;
+  brakeFinLift += (targetLift - brakeFinLift) * (reducedMotion() ? 1 : 0.18);
+  brakeFinRig.indices.forEach((i, k) => {
+    brakeRigMatrix.makeBasis(track.side[i], track.up[i], track.T[i]).setPosition(
+      brakeRigPos.copy(track.pos[i]).addScaledVector(track.up[i], 0.08 + brakeFinLift));
+    brakeFinRig.mesh.setMatrixAt(k, brakeRigMatrix);
+  });
+  brakeFinRig.mesh.instanceMatrix.needsUpdate = true;
+  MAT.brakeLight.color.setHex(braking ? 0xfff1d6 : approaching ? 0xffb05a : brakeLightIdleHex);
+  MAT.brakeLight.opacity = braking ? 1 : approaching ? 0.82 : 0.58;
+  if(brakeLightMesh) brakeLightMesh.visible = true;
+}
 /* Put the design's train on the track: show that many cars, move the tail light
    to the new last car, and rebuild the row picker so "back row" means the row
    that is actually at the back. Cheap, but only redone when the length changes. */
@@ -5707,6 +6509,7 @@ function syncTrainLength(){
   lastSyncedCars = TRAIN_CARS;
   for(let c = 0; c < cars.length; c++) cars[c].visible = c < TRAIN_CARS;
   for(let c = 0; c < tailLights.length; c++) tailLights[c].visible = c === TRAIN_CARS - 1;
+  for(let c = 0; c < couplers.length; c++) couplers[c].visible = c < TRAIN_CARS - 1;
   rideSeat = Math.min(rideSeat, TRAIN_CARS - 1);
   const sel = __clabGet('clab-seatSel');
   if(sel){
@@ -5790,6 +6593,44 @@ function updateSpeedStreaks(){
   speedStreakGeo.attributes.position.needsUpdate = true;
   speedStreakMat.opacity = Math.min(0.72, 0.18 + (v - 9) * 0.025);
 }
+function updateProgressTracer(){
+  const enabled = sim.running && (camMode === 'orbit' || camMode === 'scenic') && !fxLite && !xrOn;
+  progressTracerGroup.visible = enabled;
+  if(!enabled) return;
+  const visibleCount = reducedMotion() ? 1 : progressTracerRings.length;
+  for(let i = 0; i < progressTracerRings.length; i++){
+    const ring = progressTracerRings[i];
+    ring.visible = i < visibleCount;
+    if(!ring.visible) continue;
+    frameAt(sim.S - i * 2.1, tracerPos, tracerTan, tracerUp);
+    tracerSide.crossVectors(tracerUp, tracerTan).normalize();
+    progressTracerMatrix.makeBasis(tracerSide, tracerUp, tracerTan).setPosition(
+      tracerPos.x - tracerUp.x * 0.55, tracerPos.y - tracerUp.y * 0.55, tracerPos.z - tracerUp.z * 0.55);
+    ring.matrix.copy(progressTracerMatrix);
+    ring.material.opacity = 0.78 - i * 0.13;
+  }
+  frameAt(sim.S + 2.8, tracerPos, tracerTan, tracerUp);
+  tracerSide.crossVectors(tracerUp, tracerTan).normalize();
+  progressTracerMatrix.makeBasis(tracerSide, tracerUp, tracerTan).setPosition(
+    tracerPos.x - tracerUp.x * 0.62, tracerPos.y - tracerUp.y * 0.62, tracerPos.z - tracerUp.z * 0.62);
+  progressArrow.matrix.copy(progressTracerMatrix);
+}
+function updateSectionLandmarks(){
+  if(!track || !sectionLandmarks.length) return;
+  let current = sim.S % track.L; if(current < 0) current += track.L;
+  for(const landmark of sectionLandmarks){
+    const ahead = (landmark.arc - current + track.L) % track.L;
+    const behind = track.L - ahead;
+    const proximity = sim.running
+      ? Math.max(ahead < 18 ? 1 - ahead / 18 : 0, behind < 3 ? 1 - behind / 3 : 0) : 0;
+    const scale = 1 + proximity * 0.22;
+    sectionLandmarkScaleMatrix.makeScale(scale, scale, scale);
+    for(const part of landmark.parts){
+      part.mesh.matrix.copy(part.base).multiply(sectionLandmarkScaleMatrix);
+      part.mesh.matrixWorldNeedsUpdate = true;
+    }
+  }
+}
 function updateParkAtmosphere(dt){
   if(fxLite || reducedMotion()) return;
   const step = Math.min(dt, 0.05);
@@ -5823,12 +6664,24 @@ function placeCamera(){
     camera.position.lerp(_chase, 0.09);
     camera.up.set(0, 1, 0);
     camera.lookAt(_p.x, _p.y + 1, _p.z);
+  } else if(camMode === 'scenic'){
+    frameAt(sim.S + 5, _p, _t, _u);
+    _side.crossVectors(_u, _t).normalize();
+    let scenicS = sim.S % track.L; if(scenicS < 0) scenicS += track.L;
+    const shot = Math.floor(scenicS / track.L * 8);
+    const sideSign = shot % 2 ? 1 : -1;
+    const distance = 18 + Math.min(10, Math.abs(sim.v) * 0.25);
+    _chase.copy(_p).addScaledVector(_side, sideSign * distance).addScaledVector(_u, 9).addScaledVector(_t, -5);
+    camera.position.lerp(_chase, reducedMotion() ? 1 : 0.055);
+    camera.up.set(0, 1, 0);
+    scenicAim.copy(_p).addScaledVector(_u, 1.2);
+    camera.lookAt(scenicAim);
   } else {
     applyOrbit();
   }
   /* speed widens the onboard field of view — cheap, honest sense of pace */
   const wantFov = camMode === 'onboard' ? 66 + Math.min(12, Math.abs(sim.v) * 0.3)
-                : camMode === 'chase' ? 62 : 55;
+                : camMode === 'chase' ? 62 : camMode === 'scenic' ? 58 : 55;
   if(Math.abs(camera.fov - wantFov) > 0.05){
     camera.fov += (wantFov - camera.fov) * 0.08;
     camera.updateProjectionMatrix();
@@ -5926,15 +6779,27 @@ function animate(){
   }
   sectionGroup.visible = !fxLite && !sim.running && camMode === 'orbit';
   handleGroup.visible = !sim.running && camMode === 'orbit';
+  sectionLandmarkGroup.visible = !fxLite;
+  selectionGuide.visible = handleGroup.visible && !!selectionGuide.userData.ready;
+  selectionBankFrame.visible = selectionGuide.visible && !!selectionBankFrame.userData.ready;
   placeTrain();
   updateTrainPresentation();
   updateStationVisuals(now);
   updateDispatchOverlay();
   updateSpeedStreaks();
   updateParkAtmosphere(dt);
+  updateHeadlightVisuals();
+  updateBrakeVisuals();
+  updateLiftVisuals();
+  updateLaunchVisuals(now);
+  updateProgressTracer();
+  updateSectionLandmarks();
   if(handleGroup.visible && selIdx >= 0 && handleGroup.children[selIdx]){
     const pulse = reducedMotion() ? 1.45 : 1.45 + Math.sin(now * 0.0045) * 0.12;
     handleGroup.children[selIdx].scale.setScalar(pulse);
+    const guidePulse = reducedMotion() ? 1 : 1 + Math.sin(now * 0.0032) * 0.09;
+    selectionGroundRing.scale.setScalar(guidePulse);
+    selectionTopRing.scale.setScalar(2 - guidePulse);
   }
 
   if(sim.wantPhoto){ const k = sim.wantPhoto; sim.wantPhoto = null; capturePhoto(sim.tele, k); }

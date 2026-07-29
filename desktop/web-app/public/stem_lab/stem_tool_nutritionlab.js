@@ -17361,7 +17361,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                   'aria-selected': sel ? 'true' : 'false',
                   onClick: function() { setTab(t.id); announce(t.label); },
                   className: 'px-4 py-2 rounded-xl border-2 font-bold text-sm transition focus:outline-none focus:ring-2 ring-emerald-500/40 ' +
-                    (sel ? 'bg-amber-600 text-white border-amber-700 shadow' : 'bg-white text-slate-800 border-slate-300 hover:border-amber-500')
+                    (sel ? 'bg-amber-700 text-white border-amber-800 shadow' : 'bg-white text-slate-800 border-slate-300 hover:border-amber-500')
                 }, t.label);
               })
             ),
@@ -17794,7 +17794,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 onClick: prev,
                 'aria-disabled': stageIdx === 0 ? 'true' : 'false',
                 className: 'px-4 py-2 rounded-xl font-bold text-sm transition focus:outline-none focus:ring-4 ring-emerald-500/40 ' +
-                  (stageIdx === 0 ? 'bg-slate-200 text-slate-700 cursor-not-allowed' : 'bg-emerald-600 text-white hover:bg-emerald-700')
+                  (stageIdx === 0 ? 'bg-slate-200 text-slate-700 cursor-not-allowed' : 'bg-emerald-700 text-white hover:bg-emerald-800')
               }, __alloT('stem.nutritionlab.previous_stage', '← Previous stage')),
               h('div', { className: 'text-xs font-mono text-slate-700' },
                 'Stage ' + (stageIdx + 1) + ' / ' + DIGESTION_STAGES.length),
@@ -17802,7 +17802,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 onClick: next,
                 'aria-disabled': stageIdx === DIGESTION_STAGES.length - 1 ? 'true' : 'false',
                 className: 'px-4 py-2 rounded-xl font-bold text-sm transition focus:outline-none focus:ring-4 ring-emerald-500/40 ' +
-                  (stageIdx === DIGESTION_STAGES.length - 1 ? 'bg-slate-200 text-slate-700 cursor-not-allowed' : 'bg-emerald-600 text-white hover:bg-emerald-700')
+                  (stageIdx === DIGESTION_STAGES.length - 1 ? 'bg-slate-200 text-slate-700 cursor-not-allowed' : 'bg-emerald-700 text-white hover:bg-emerald-800')
               }, __alloT('stem.nutritionlab.next_stage', 'Next stage →'))
             ),
             h(TeacherNotes, {
@@ -19355,7 +19355,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               },
               disabled: pickedCount < 4,
               className: 'w-full px-5 py-3 rounded-xl font-bold focus:outline-none focus:ring-2 ring-emerald-400 ' +
-                (pickedCount >= 4 ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-slate-200 text-slate-600 cursor-not-allowed')
+                (pickedCount >= 4 ? 'bg-emerald-700 text-white hover:bg-emerald-800' : 'bg-slate-200 text-slate-600 cursor-not-allowed')
             }, pickedCount >= 4 ? '📊 See my day' : 'Pick ' + (4 - pickedCount) + ' more meal' + (4 - pickedCount === 1 ? '' : 's'))
           )
         );

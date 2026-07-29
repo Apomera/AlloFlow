@@ -26,7 +26,72 @@
     if (document.getElementById('allo-geometryworld-ui-css')) return;
     var uiStyle = document.createElement('style');
     uiStyle.id = 'allo-geometryworld-ui-css';
-    uiStyle.textContent = '.gw-focusable:focus-visible{outline:3px solid #f8fafc!important;outline-offset:2px!important;box-shadow:0 0 0 5px rgba(124,58,237,0.65)!important;}';
+    uiStyle.textContent = [
+      '.gw-root{--gw-glass:rgba(15,23,42,0.78);--gw-line:rgba(148,163,184,0.18);}',
+      '.gw-toolbar{position:relative;z-index:40;box-shadow:0 10px 32px rgba(2,6,23,0.2);}',
+      '.gw-brand-mark{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,rgba(124,58,237,0.36),rgba(34,211,238,0.2));border:1px solid rgba(167,139,250,0.35);box-shadow:inset 0 1px 0 rgba(255,255,255,0.12);}',
+      '.gw-title{letter-spacing:-0.015em;text-shadow:0 1px 12px rgba(124,58,237,0.2);}',
+      '.gw-lesson-title{min-width:0;max-width:420px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}',
+      '.gw-stat-chip{display:inline-flex!important;align-items:center;min-height:26px;padding:3px 9px!important;border:1px solid var(--gw-line);border-radius:999px!important;background:rgba(30,41,59,0.72)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,0.05);}',
+      '.gw-toolbar>button,.gw-toolbar>select{min-height:30px;border-radius:8px!important;border-color:rgba(148,163,184,0.2)!important;}',
+      '.gw-badge-strip{display:inline-flex;align-items:center;min-height:28px;padding:3px 8px!important;border:1px solid rgba(251,191,36,0.18);border-radius:999px!important;background:rgba(69,26,3,0.28)!important;}',
+      '.gw-shape-tray,.gw-hotbar,.gw-action-bar{background:linear-gradient(160deg,rgba(15,23,42,0.88),rgba(2,6,23,0.82))!important;border:1px solid rgba(148,163,184,0.18)!important;box-shadow:0 12px 30px rgba(2,6,23,0.38),inset 0 1px 0 rgba(255,255,255,0.05);backdrop-filter:blur(12px) saturate(120%)!important;}',
+      '.gw-hotbar{gap:4px!important;padding:6px!important;}',
+      '.gw-hotbar-item{transition:transform 150ms ease,filter 150ms ease,box-shadow 150ms ease!important;}',
+      '.gw-hotbar-item:hover{filter:brightness(1.12);transform:translateY(-2px);}',
+      '.gw-hotbar-item[data-active="true"]{transform:translateY(-4px) scale(1.06);box-shadow:0 10px 22px rgba(76,29,149,0.5),0 0 0 1px rgba(196,181,253,0.28)!important;}',
+      '.gw-action-bar{bottom:98px!important;justify-content:center;}',
+      '.gw-dialog:not(.gw-dialog--intro){box-sizing:border-box;max-width:calc(100% - 20px)!important;max-height:calc(100% - 20px)!important;border-radius:16px!important;background:linear-gradient(155deg,rgba(15,23,42,0.97),rgba(30,27,75,0.94))!important;scrollbar-color:#64748b rgba(15,23,42,0.45);scrollbar-width:thin;}',
+      '.gw-dialog input,.gw-dialog select,.gw-dialog textarea{border-radius:8px!important;border-color:rgba(148,163,184,0.34)!important;background-color:rgba(2,6,23,0.62)!important;}',
+      '.gw-dialog-close{display:inline-flex!important;align-items:center;justify-content:center;min-width:30px;min-height:30px;border:1px solid rgba(148,163,184,0.2)!important;border-radius:8px!important;background:rgba(15,23,42,0.56)!important;color:#cbd5e1!important;}',
+      '.gw-intro-card{padding:28px;border:1px solid rgba(167,139,250,0.28);border-radius:24px;background:linear-gradient(155deg,rgba(30,27,75,0.72),rgba(15,23,42,0.82));box-shadow:0 30px 90px rgba(2,6,23,0.55),inset 0 1px 0 rgba(255,255,255,0.07);backdrop-filter:blur(18px) saturate(120%);}',
+      '.gw-primary-cta{min-height:48px;border:1px solid rgba(196,181,253,0.28)!important;box-shadow:0 12px 30px rgba(76,29,149,0.42),inset 0 1px 0 rgba(255,255,255,0.16)!important;}',
+      '.gw-text-action{min-height:30px;padding:5px 10px!important;border-radius:8px!important;}',
+      '.gw-prediction-bar{order:20;flex:1 1 460px;max-width:none!important;padding:7px 9px!important;border-radius:10px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,0.05);}',
+      '.gw-prediction-bar input,.gw-prediction-bar select{min-height:28px;}',
+      '.gw-measure-card{position:absolute!important;top:calc(100% + 8px);right:10px;z-index:45;width:min(430px,calc(100vw - 32px));max-height:min(620px,calc(100vh - 150px));overflow:auto;padding:12px!important;border:1px solid rgba(103,232,249,0.28);border-radius:14px!important;background:linear-gradient(160deg,rgba(8,47,73,0.97),rgba(15,23,42,0.98))!important;box-shadow:0 24px 70px rgba(2,6,23,0.62),0 0 0 1px rgba(103,232,249,0.06);}',
+      '.gw-measure-heading{position:sticky;top:-12px;z-index:2;margin:-12px -12px 8px;padding:10px 12px;background:linear-gradient(180deg,rgba(8,47,73,0.99),rgba(8,47,73,0.94));border-bottom:1px solid rgba(103,232,249,0.2);}',
+      '.gw-measure-close{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border:1px solid rgba(148,163,184,0.26);border-radius:8px;background:rgba(15,23,42,0.6);color:#cbd5e1;font-size:18px;cursor:pointer;}',
+      '@keyframes gw-float-in{from{opacity:0;transform:translate(-50%,8px) scale(0.98);}to{opacity:1;transform:translate(-50%,0) scale(1);}}',
+      '.gw-achievement-toast{top:calc(100% + 10px)!important;z-index:60!important;min-width:min(320px,calc(100vw - 24px));animation:gw-float-in 220ms ease-out!important;}',
+      '.gw-return-dock{width:min(440px,calc(100vw - 24px));filter:drop-shadow(0 16px 28px rgba(2,6,23,0.42));}',
+      '.gw-return-status{max-width:100%!important;border-color:rgba(167,139,250,0.34)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,0.06);}',
+      '.gw-return-button{min-height:44px;border:1px solid rgba(196,181,253,0.34)!important;box-shadow:0 10px 28px rgba(91,33,182,0.42),inset 0 1px 0 rgba(255,255,255,0.18)!important;}',
+      '.gw-tutorial-shell{width:min(380px,calc(100vw - 24px));max-width:none!important;}',
+      '.gw-tutorial-card{border:1px solid rgba(167,139,250,0.42)!important;background:linear-gradient(160deg,rgba(30,27,75,0.95),rgba(15,23,42,0.96))!important;box-shadow:0 22px 60px rgba(2,6,23,0.52),0 0 0 1px rgba(255,255,255,0.05)!important;}',
+      '.gw-target-hint{padding:3px 7px;border:1px solid rgba(251,191,36,0.34);border-radius:999px;background:rgba(15,23,42,0.82);backdrop-filter:blur(6px);box-shadow:0 5px 14px rgba(2,6,23,0.35);}',
+      '.gw-viewport{margin:8px 10px 10px;border:1px solid rgba(148,163,184,0.2);border-radius:16px;box-shadow:0 18px 54px rgba(2,6,23,0.38),inset 0 1px 0 rgba(255,255,255,0.06);isolation:isolate;}',
+      '.gw-viewport-control{position:absolute!important;top:10px!important;z-index:100!important;display:inline-flex!important;min-width:36px;min-height:36px;align-items:center!important;justify-content:center!important;gap:6px!important;border:1px solid rgba(196,181,253,.38)!important;border-radius:10px!important;background:linear-gradient(155deg,rgba(30,27,75,.9),rgba(15,23,42,.9))!important;color:#e9d5ff!important;box-shadow:0 10px 28px rgba(2,6,23,.45),inset 0 1px 0 rgba(255,255,255,.08)!important;backdrop-filter:blur(10px) saturate(120%)!important}.gw-viewport-control--fullscreen{right:10px!important}.gw-viewport-control--vr{left:10px!important;border-color:rgba(129,140,248,.48)!important;background:linear-gradient(135deg,rgba(79,70,229,.94),rgba(91,33,182,.92))!important;color:#fff!important}',
+      '.gw-action-feedback{border-color:rgba(167,139,250,.38)!important;border-radius:12px!important;background:linear-gradient(155deg,rgba(30,27,75,.94),rgba(15,23,42,.94))!important;box-shadow:0 14px 38px rgba(2,6,23,.48),inset 0 1px 0 rgba(255,255,255,.06)!important}.gw-crosshair{filter:drop-shadow(0 2px 3px rgba(2,6,23,.7));transition:transform 150ms ease,filter 150ms ease!important}.gw-crosshair[data-target="npc"],.gw-crosshair[data-target="npc_question"]{transform:translate(-50%,-50%) scale(1.12)!important}.gw-crosshair[data-target="npc_question"]{filter:drop-shadow(0 0 6px rgba(251,191,36,.65))}.gw-crosshair[data-target="block"]{filter:drop-shadow(0 0 4px rgba(255,255,255,.35))}',
+      '@media(max-width:520px){.gw-viewport-control{top:8px!important;min-width:34px;min-height:34px}.gw-viewport-control--fullscreen{right:8px!important}.gw-viewport-control--vr{left:8px!important}.gw-action-feedback{bottom:142px!important;max-width:calc(100vw - 150px)!important}}@media(prefers-reduced-motion:reduce){.gw-crosshair{transition:none!important}.gw-crosshair[data-target]{transform:translate(-50%,-50%)!important}}',
+      '.gw-minimap{position:absolute!important;right:10px!important;bottom:150px!important;z-index:24!important;border:1px solid rgba(167,139,250,.32)!important;border-radius:12px!important;box-shadow:0 14px 34px rgba(2,6,23,.48),0 0 0 3px rgba(15,23,42,.36);opacity:.92;transition:opacity 150ms ease,transform 150ms ease}.gw-minimap:hover{opacity:1;transform:translateY(-2px)}',
+      '.gw-collab-roster{position:absolute;top:50px;left:10px;z-index:24;display:flex;max-width:210px;flex-direction:column;gap:5px;padding:9px;border:1px solid rgba(52,211,153,.23);border-radius:12px;background:linear-gradient(155deg,rgba(6,78,59,.76),rgba(15,23,42,.88));box-shadow:0 14px 34px rgba(2,6,23,.38);backdrop-filter:blur(10px)}.gw-collab-title{margin-bottom:2px;color:#6ee7b7;font-size:10px;font-weight:800;letter-spacing:.04em}.gw-collab-player{display:flex;min-height:24px;align-items:center;gap:6px;padding:3px 7px;border:1px solid rgba(148,163,184,.18);border-radius:8px;background:rgba(15,23,42,.62);color:#cbd5e1;font-size:11px}.gw-collab-player[data-self="true"]{border-color:rgba(52,211,153,.5);background:rgba(5,150,105,.22);color:#6ee7b7}.gw-collab-dot{width:8px;height:8px;flex:0 0 auto;border-radius:50%;box-shadow:0 0 0 2px rgba(255,255,255,.12)}',
+      '.gw-transform-panel{position:absolute;top:52px;right:10px;z-index:30;box-sizing:border-box;width:min(260px,calc(100% - 20px));padding:12px;border:1px solid rgba(167,139,250,.34);border-radius:14px;background:linear-gradient(155deg,rgba(30,27,75,.94),rgba(15,23,42,.95));box-shadow:0 18px 48px rgba(2,6,23,.5),inset 0 1px 0 rgba(255,255,255,.06);color:#e2e8f0;backdrop-filter:blur(12px)}.gw-transform-heading{margin:0 0 8px;color:#c4b5fd;font-size:12px;font-weight:800;letter-spacing:-.01em}.gw-transform-state{margin-bottom:10px;padding:7px;border-radius:8px;text-align:center;font-size:11px;font-weight:850}.gw-transform-control{margin-bottom:8px}.gw-transform-control label{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;color:#cbd5e1;font-size:10px;font-weight:700}.gw-transform-control input{width:100%;accent-color:#8b5cf6}.gw-transform-actions{display:flex;gap:6px;margin-top:10px}.gw-transform-action{min-height:32px;padding:4px 9px;border:1px solid rgba(148,163,184,.28);border-radius:8px;background:rgba(15,23,42,.64);color:#dbeafe;font-size:10px;font-weight:700;cursor:pointer}@media(max-width:520px){.gw-minimap{right:8px!important;bottom:146px!important;width:84px;height:84px}.gw-collab-roster{left:8px;max-width:118px;padding:7px}.gw-collab-player{overflow:hidden;padding:3px 5px;white-space:nowrap;text-overflow:ellipsis}.gw-collab-player span:last-child{display:none}.gw-transform-panel{right:8px;width:min(214px,calc(100% - 134px));max-height:calc(100% - 166px);overflow:auto}}@media(prefers-reduced-motion:reduce){.gw-minimap{transition:none!important}.gw-minimap:hover{transform:none}}',
+      '.gw-collab-roster{top:auto;bottom:150px}',
+      '.gw-objective-panel{position:absolute;top:50px;left:10px;z-index:24;box-sizing:border-box;width:min(240px,calc(100% - 20px));max-height:calc(100% - 210px);overflow:auto;padding:12px;border:1px solid rgba(167,139,250,.26);border-radius:14px;background:linear-gradient(155deg,rgba(30,27,75,.88),rgba(15,23,42,.93));box-shadow:0 18px 48px rgba(2,6,23,.46),inset 0 1px 0 rgba(255,255,255,.06);backdrop-filter:blur(12px);scrollbar-width:thin;scrollbar-color:#64748b rgba(15,23,42,.45)}.gw-objective-header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}.gw-objective-title{color:#c4b5fd;font-size:11px;font-weight:850;letter-spacing:.02em}.gw-objective-count{padding:2px 7px;border:1px solid rgba(167,139,250,.24);border-radius:999px;background:rgba(124,58,237,.15);color:#ddd6fe;font-size:9px;font-weight:800}.gw-objective-progress{height:5px;margin-bottom:10px;overflow:hidden;border:1px solid rgba(148,163,184,.12);border-radius:999px;background:rgba(2,6,23,.55)}.gw-objective-progress-fill{height:100%;border-radius:inherit;box-shadow:0 0 12px rgba(167,139,250,.42);transition:width .5s ease}.gw-objective-list{display:flex;flex-direction:column;gap:5px}.gw-objective-item{box-sizing:border-box;display:flex;width:100%;min-height:34px;align-items:flex-start;gap:7px;padding:7px 8px;border:1px solid rgba(148,163,184,.16);border-radius:9px;background:rgba(15,23,42,.5);color:#dbeafe;text-align:left;font:inherit;cursor:pointer}.gw-objective-item:hover:not(:disabled){border-color:rgba(167,139,250,.42);background:rgba(76,29,149,.28)}.gw-objective-item[data-complete="true"]{border-color:rgba(52,211,153,.2);background:rgba(5,150,105,.1);color:#86efac;cursor:default;opacity:.74}.gw-objective-marker{flex:0 0 auto;margin-top:1px;font-size:11px}.gw-objective-copy{font-size:10px;line-height:1.45}.gw-reset-button{width:100%;min-height:34px;margin-top:10px;border:1px solid rgba(148,163,184,.22);border-radius:9px;background:rgba(15,23,42,.58);color:#cbd5e1;font-size:10px;font-weight:700;cursor:pointer}@media(max-width:520px){.gw-objective-panel{left:8px;width:118px;max-height:calc(100% - 206px);padding:7px}.gw-objective-header{align-items:flex-start;flex-direction:column;gap:3px}.gw-objective-item{padding:6px}.gw-objective-copy{font-size:9px}.gw-collab-roster{bottom:146px}}@media(prefers-reduced-motion:reduce){.gw-objective-progress-fill{transition:none!important}}',
+      '.gw-history-panel{position:absolute!important;left:230px!important;bottom:150px!important;z-index:23!important;box-sizing:border-box;width:280px!important;max-width:calc(100% - 470px)!important;max-height:44%;overflow:auto;padding:10px!important;border:1px solid rgba(103,232,249,.22)!important;border-radius:13px!important;background:linear-gradient(155deg,rgba(8,47,73,.88),rgba(15,23,42,.93))!important;box-shadow:0 16px 42px rgba(2,6,23,.46),inset 0 1px 0 rgba(255,255,255,.05)!important;backdrop-filter:blur(11px);scrollbar-width:thin}.gw-history-title{margin-bottom:7px;color:#a5f3fc;font-size:9px;font-weight:850;letter-spacing:.08em}.gw-history-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:7px;min-height:25px;padding:4px 6px;border-radius:7px;color:#94a3b8;font-size:9px}.gw-history-row[data-current="true"]{background:rgba(8,145,178,.14);color:#e2e8f0;font-weight:700}.gw-history-row[data-incomplete="true"]{color:#fecaca}.gw-history-comparison,.gw-retrieval-card{margin-top:8px;padding:8px;border-top:1px solid rgba(103,232,249,.24);border-radius:0 0 8px 8px;background:rgba(2,6,23,.18)}.gw-retrieval-title{margin-bottom:3px;color:#67e8f9;font-size:8px;font-weight:850;letter-spacing:.08em}.gw-retrieval-controls{display:flex;align-items:center;gap:6px;margin-top:6px}.gw-retrieval-input{box-sizing:border-box;width:76px!important;min-height:30px;padding:4px 6px!important;border:1px solid rgba(103,232,249,.34)!important;border-radius:7px!important;background:rgba(2,6,23,.66)!important;color:#fff!important}.gw-retrieval-button{min-height:30px;padding:4px 10px!important;border:1px solid rgba(103,232,249,.22)!important;border-radius:7px!important;background:#0e7490!important;color:#fff!important;font-size:9px!important;font-weight:800!important}',
+      '.gw-inventory-panel{position:absolute!important;top:52px!important;right:280px!important;z-index:23!important;box-sizing:border-box;width:166px;padding:10px!important;border:1px solid rgba(251,191,36,.22)!important;border-radius:13px!important;background:linear-gradient(155deg,rgba(69,26,3,.78),rgba(15,23,42,.92))!important;box-shadow:0 16px 42px rgba(2,6,23,.42),inset 0 1px 0 rgba(255,255,255,.05)!important;backdrop-filter:blur(11px)}.gw-inventory-title{margin-bottom:6px;color:#fde68a;font-size:9px;font-weight:850;letter-spacing:.08em}.gw-inventory-volume{margin-bottom:7px;padding:6px;border:1px solid rgba(251,191,36,.16);border-radius:8px;background:rgba(120,53,15,.18);color:#fbbf24;font-size:13px;font-weight:850;text-align:center}.gw-inventory-row{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:23px;padding:3px 5px;border-radius:6px;color:#dbeafe;font-size:9px}.gw-inventory-row:nth-child(even){background:rgba(15,23,42,.34)}.gw-inventory-count{color:#d8b4fe;font-family:monospace;font-weight:800}@media(max-width:720px){.gw-history-panel{left:8px!important;bottom:238px!important;width:calc(50% - 12px)!important;max-width:none!important;max-height:34vh}.gw-inventory-panel{top:auto!important;right:8px!important;bottom:238px!important;width:calc(50% - 12px)}.gw-history-row{grid-template-columns:minmax(0,1fr) auto}.gw-history-row span:nth-child(3){grid-column:1/-1}}@media(max-width:420px){.gw-history-panel,.gw-inventory-panel{padding:7px!important}.gw-history-title,.gw-inventory-title{letter-spacing:.04em}.gw-inventory-row{padding-left:2px;padding-right:2px}}',
+      '.gw-environment-tint{position:absolute;inset:0;z-index:5;pointer-events:none;transition:background .3s ease}.gw-environment-tint--water{background:linear-gradient(180deg,rgba(14,116,144,.12),rgba(30,64,175,.24))}.gw-environment-tint--lava{background:radial-gradient(circle at 50% 70%,rgba(251,146,60,.34),rgba(220,38,38,.18) 52%,rgba(69,10,10,.3))}.gw-environment-warning{position:absolute;left:50%;bottom:50%;display:flex;align-items:center;gap:8px;transform:translate(-50%,50%);max-width:calc(100% - 32px);padding:10px 14px;border:1px solid rgba(253,186,116,.62);border-radius:12px;background:rgba(67,20,7,.9);box-shadow:0 12px 32px rgba(69,10,10,.46),inset 0 1px 0 rgba(255,255,255,.08);color:#ffedd5;font-size:13px;font-weight:850;line-height:1.3;text-align:center;text-shadow:0 2px 8px rgba(0,0,0,.75);backdrop-filter:blur(8px)}@media(prefers-reduced-motion:reduce){.gw-environment-tint{transition:none!important}}',
+      '.gw-toolbar{display:grid!important;grid-template-columns:minmax(0,1fr) auto;align-items:center!important;column-gap:14px!important;row-gap:8px!important}.gw-brand-lockup{display:flex;min-width:0;align-items:center;gap:10px}.gw-brand-copy{min-width:0}.gw-title{margin:0;color:#f8fafc;font-size:15px;font-weight:850;line-height:1.15}.gw-lesson-title{display:block;margin-top:2px!important;color:var(--allo-stem-text-soft,#94a3b8);font-size:10px!important;line-height:1.3}.gw-status-cluster{display:flex;min-width:0;align-items:center;justify-content:flex-end;gap:6px}.gw-prediction-bar{grid-column:1/-1;display:grid!important;grid-template-columns:auto 62px auto auto minmax(116px,150px) minmax(150px,1fr);align-items:center;gap:6px!important;width:100%;box-sizing:border-box}.gw-prediction-bar>[data-geometry-prediction-scaffold]{grid-column:1/-1}.gw-badge-strip{max-width:190px;overflow:hidden}.gw-badge-strip [role="listitem"]{display:inline-flex;align-items:center;justify-content:center;min-width:20px;min-height:20px}@media(max-width:720px){.gw-toolbar{grid-template-columns:minmax(0,1fr)!important}.gw-status-cluster{grid-row:2;width:100%;justify-content:flex-start;overflow-x:auto;padding-bottom:2px;scrollbar-width:thin}.gw-prediction-bar{grid-row:3;display:flex!important;width:100%;flex-wrap:wrap!important}.gw-lesson-title{max-width:none!important;padding-left:0!important;margin-top:2px!important}.gw-badge-strip{flex:0 0 auto}}@media(max-width:420px){.gw-brand-mark{width:29px;height:29px}.gw-title{font-size:14px}.gw-stat-chip{min-height:24px;padding:2px 7px!important}.gw-prediction-bar{padding:7px!important}.gw-prediction-bar input[aria-label="Brief reason for prediction"]{flex:1 1 150px;width:auto!important}}',
+      '.gw-tutorial-shell{bottom:150px!important;box-sizing:border-box;max-height:calc(100% - 170px);overflow:auto;scrollbar-width:thin}.gw-tutorial-card{padding:16px 18px!important;text-align:left!important}.gw-tutorial-kicker{margin-bottom:4px;color:#c4b5fd;font-size:9px;font-weight:850;letter-spacing:.12em;text-transform:uppercase}.gw-tutorial-title{margin:0;color:#f8fafc;font-size:16px;font-weight:850;letter-spacing:-.01em;line-height:1.25}.gw-tutorial-instruction{margin:7px 0 12px;color:#cbd5e1;font-size:12px;font-weight:600;line-height:1.5}.gw-tutorial-progress{display:flex;align-items:center;gap:6px;margin-bottom:12px}.gw-tutorial-track{display:flex;flex:1;gap:5px}.gw-tutorial-dot{height:4px;flex:1;border-radius:999px;background:rgba(100,116,139,.38);transition:background 180ms ease,box-shadow 180ms ease}.gw-tutorial-dot[data-complete="true"]{background:#22c55e}.gw-tutorial-dot[data-current="true"]{background:#a78bfa;box-shadow:0 0 10px rgba(167,139,250,.55)}.gw-tutorial-count{color:#a8b3c7;font-size:9px;font-weight:750;white-space:nowrap}.gw-tutorial-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px}.gw-tutorial-skip,.gw-tutorial-next{min-height:38px;padding:7px 13px!important;border-radius:9px!important;font-size:11px!important;font-weight:750!important;cursor:pointer}.gw-tutorial-skip{border:1px solid rgba(148,163,184,.28)!important;background:rgba(15,23,42,.54)!important;color:#cbd5e1!important}.gw-tutorial-next{border:1px solid rgba(196,181,253,.28)!important;background:linear-gradient(135deg,#7c3aed,#6d28d9)!important;color:#fff!important;box-shadow:0 8px 20px rgba(76,29,149,.32)}@media(max-width:520px){.gw-tutorial-shell{bottom:150px!important;width:calc(100vw - 16px)!important;max-height:calc(100% - 166px)}.gw-tutorial-card{padding:14px!important}.gw-tutorial-actions{align-items:stretch}.gw-tutorial-skip,.gw-tutorial-next{min-height:44px;flex:1}}@media(prefers-reduced-motion:reduce){.gw-tutorial-dot{transition:none!important}}',
+      '.gw-intro-card{box-sizing:border-box;width:min(520px,calc(100% - 24px))!important;max-width:none!important;max-height:calc(100% - 24px);overflow:auto;text-align:left!important;scrollbar-width:thin}.gw-intro-heading{display:grid;grid-template-columns:52px minmax(0,1fr);align-items:center;gap:14px;margin-bottom:16px}.gw-intro-icon{display:flex;width:52px;height:52px;align-items:center;justify-content:center;border:1px solid rgba(167,139,250,.28);border-radius:16px;background:linear-gradient(145deg,rgba(124,58,237,.26),rgba(34,211,238,.1));font-size:28px}.gw-intro-title{margin:0;color:#f8fafc;font-size:22px;font-weight:850;letter-spacing:-.02em;line-height:1.18}.gw-intro-description{margin:5px 0 0;color:#a8b3c7;font-size:12px;line-height:1.55}.gw-intro-objectives{margin-bottom:12px;padding:12px 14px;border:1px solid rgba(167,139,250,.24);border-radius:12px;background:rgba(124,58,237,.09)}.gw-intro-section-title{margin:0 0 7px;color:#c4b5fd;font-size:10px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}.gw-intro-objectives ol{display:grid;gap:5px;margin:0;padding-left:20px;color:#dbeafe}.gw-intro-objectives li{padding-left:2px;font-size:11px;line-height:1.45}.gw-intro-objectives li::marker{color:#a78bfa;font-weight:800}.gw-intro-formula{margin-bottom:12px;padding:10px 12px;border:1px solid rgba(251,191,36,.22);border-radius:10px;background:rgba(120,53,15,.16);color:#fde68a;font-family:monospace;font-size:12px;font-weight:750;text-align:center}.gw-intro-meta{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:18px}.gw-intro-meta span{padding:4px 8px;border:1px solid rgba(148,163,184,.18);border-radius:999px;background:rgba(15,23,42,.46);color:#a8b3c7;font-size:10px;font-weight:700}.gw-intro-actions{display:flex;align-items:stretch;gap:8px}.gw-intro-start,.gw-intro-secondary{min-height:46px;flex:1;border-radius:11px!important;font-size:12px!important;font-weight:800!important;cursor:pointer}.gw-intro-secondary{border:1px solid rgba(148,163,184,.28)!important;background:rgba(15,23,42,.58)!important;color:#cbd5e1!important}@media(max-width:520px){.gw-intro-heading{grid-template-columns:42px minmax(0,1fr);gap:10px}.gw-intro-icon{width:42px;height:42px;border-radius:13px;font-size:23px}.gw-intro-title{font-size:18px}.gw-intro-actions{flex-direction:column}.gw-intro-start,.gw-intro-secondary{width:100%;min-height:48px}}',
+      '.gw-reflection-dialog{box-sizing:border-box;width:min(430px,calc(100% - 24px))!important;max-width:none!important;padding:22px!important;text-align:left!important}.gw-reflection-heading{display:grid;grid-template-columns:42px minmax(0,1fr);align-items:center;gap:11px;margin-bottom:13px}.gw-reflection-icon{display:flex;width:42px;height:42px;align-items:center;justify-content:center;border:1px solid rgba(167,139,250,.26);border-radius:13px;background:rgba(124,58,237,.14);font-size:22px}.gw-reflection-title{margin:0;color:#f8fafc;font-size:17px;font-weight:850;line-height:1.2}.gw-reflection-description{margin:3px 0 0;color:#a8b3c7;font-size:11px;line-height:1.45}.gw-reflection-prompt{margin-bottom:10px;padding:9px 10px;border:1px solid rgba(34,211,238,.24);border-radius:9px;background:rgba(14,116,144,.14);color:#cffafe;font-size:11px;line-height:1.5}.gw-reflection-label{display:block;margin-bottom:5px;color:#ddd6fe;font-size:10px;font-weight:800}.gw-reflection-textarea{box-sizing:border-box;width:100%!important;min-height:92px;padding:9px!important;border:1px solid rgba(148,163,184,.34)!important;border-radius:9px!important;background:rgba(2,6,23,.66)!important;color:#f8fafc!important;font:12px/1.5 inherit!important;resize:vertical}.gw-reflection-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:5px;color:#94a3b8;font-size:9px}.gw-reflection-readiness[data-ready="true"]{color:#86efac;font-weight:750}.gw-reflection-actions{display:flex;align-items:stretch;justify-content:flex-end;gap:8px;margin-top:14px}.gw-reflection-save,.gw-reflection-skip{min-height:42px;padding:8px 14px!important;border-radius:9px!important;font-size:11px!important;font-weight:800!important}.gw-reflection-save{border:1px solid rgba(196,181,253,.28)!important;background:linear-gradient(135deg,#7c3aed,#6d28d9)!important;color:#fff!important}.gw-reflection-save:disabled{cursor:not-allowed;filter:saturate(.55);opacity:.55}.gw-reflection-skip{border:1px solid rgba(148,163,184,.28)!important;background:rgba(15,23,42,.52)!important;color:#cbd5e1!important}@media(max-width:520px){.gw-reflection-dialog{padding:16px!important}.gw-reflection-actions{flex-direction:column}.gw-reflection-save,.gw-reflection-skip{width:100%;min-height:48px}}',
+      '.gw-completion-dialog{box-sizing:border-box;width:min(460px,calc(100% - 24px))!important;max-width:none!important;max-height:calc(100% - 24px)!important;overflow:auto;padding:24px!important;border-color:rgba(251,191,36,.46)!important;background:linear-gradient(155deg,rgba(69,26,3,.9),rgba(15,23,42,.97))!important;text-align:center!important;scrollbar-width:thin}.gw-completion-icon{display:flex;width:68px;height:68px;align-items:center;justify-content:center;margin:0 auto 12px;border:1px solid rgba(251,191,36,.32);border-radius:21px;background:linear-gradient(145deg,rgba(245,158,11,.24),rgba(124,58,237,.12));box-shadow:0 14px 34px rgba(2,6,23,.3);font-size:35px}.gw-completion-title{margin:0;color:#fde68a;font-size:22px;font-weight:900;letter-spacing:-.02em;line-height:1.15}.gw-completion-description{margin:6px 0 13px;color:#cbd5e1;font-size:12px;line-height:1.5}.gw-completion-metrics{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:16px}.gw-completion-metric{padding:5px 9px;border:1px solid rgba(251,191,36,.18);border-radius:999px;background:rgba(120,53,15,.18);color:#fde68a;font-size:10px;font-weight:750}.gw-completion-actions{display:flex;align-items:stretch;justify-content:center;gap:8px;flex-wrap:wrap}.gw-completion-next,.gw-completion-replay{min-height:44px;padding:9px 16px!important;border-radius:10px!important;font-size:11px!important;font-weight:800!important;cursor:pointer}.gw-completion-next{border:1px solid rgba(196,181,253,.28)!important;background:linear-gradient(135deg,#7c3aed,#4f46e5)!important;color:#fff!important;box-shadow:0 8px 20px rgba(76,29,149,.32)}.gw-completion-replay{border:1px solid rgba(148,163,184,.28)!important;background:rgba(15,23,42,.56)!important;color:#cbd5e1!important}.gw-completion-journey{flex-basis:100%;margin-top:8px;padding-top:14px;border-top:1px solid rgba(251,191,36,.18)}.gw-journey-icon{font-size:28px}.gw-journey-title{margin:5px 0;color:#fde68a;font-size:16px;font-weight:850}.gw-journey-description{margin:0 0 10px;color:#a8b3c7;font-size:11px;line-height:1.5}.gw-journey-stats{display:grid;grid-template-columns:1fr 1fr;gap:7px}.gw-journey-stat{padding:8px;border:1px solid rgba(148,163,184,.16);border-radius:9px;background:rgba(15,23,42,.42);color:#cbd5e1;font-size:9px}.gw-journey-value{display:block;margin-bottom:2px;color:#f8fafc;font-size:18px;font-weight:850}.gw-journey-quote{margin:10px 0 0;color:#c4b5fd;font-size:10px;font-style:italic;line-height:1.45}@media(max-width:520px){.gw-completion-dialog{padding:18px!important}.gw-completion-icon{width:56px;height:56px;border-radius:18px;font-size:29px}.gw-completion-actions{flex-direction:column}.gw-completion-next,.gw-completion-replay{width:100%;min-height:48px}.gw-journey-stats{gap:5px}}',
+      '@keyframes gw-state-drift{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-6px) rotate(2deg)}}@keyframes gw-loading-sweep{0%{transform:translateX(-130%)}100%{transform:translateX(310%)}}',
+      '.gw-state-screen{position:relative;box-sizing:border-box;display:flex;flex:1;min-height:0;align-items:center;justify-content:center;overflow:auto;padding:clamp(18px,4vw,48px);color:var(--allo-stem-text,#e2e8f0);background:radial-gradient(circle at 50% 14%,rgba(124,58,237,.24),transparent 34%),linear-gradient(160deg,var(--allo-stem-canvas,#0f172a),#171433 60%,#090b18)}.gw-state-screen--inline{margin:8px 10px 10px;border:1px solid rgba(148,163,184,.18);border-radius:16px}.gw-state-card{box-sizing:border-box;width:min(520px,100%);padding:clamp(24px,5vw,38px);text-align:center;border:1px solid rgba(167,139,250,.28);border-radius:24px;background:linear-gradient(155deg,rgba(30,27,75,.78),rgba(15,23,42,.9));box-shadow:0 30px 90px rgba(2,6,23,.56),inset 0 1px 0 rgba(255,255,255,.08);backdrop-filter:blur(18px) saturate(125%)}.gw-state-kicker{margin-bottom:9px;color:#c4b5fd;font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase}.gw-state-icon{display:inline-flex;align-items:center;justify-content:center;width:76px;height:76px;margin-bottom:18px;border:1px solid rgba(167,139,250,.3);border-radius:24px;background:linear-gradient(145deg,rgba(124,58,237,.3),rgba(34,211,238,.12));box-shadow:0 16px 40px rgba(2,6,23,.34);font-size:38px;animation:gw-state-drift 3.4s ease-in-out infinite}.gw-state-icon--error{background:linear-gradient(145deg,rgba(244,63,94,.2),rgba(124,58,237,.2));border-color:rgba(251,113,133,.32)}.gw-state-title{margin:0;color:var(--allo-stem-text,#f8fafc);font-size:clamp(21px,4vw,28px);font-weight:850;letter-spacing:-.025em;line-height:1.15}.gw-state-copy{max-width:430px;margin:12px auto 0;color:var(--allo-stem-text-soft,#a8b3c7);font-size:13px;line-height:1.65}.gw-state-note{margin-top:14px;padding:10px 12px;border:1px solid rgba(103,232,249,.16);border-radius:12px;background:rgba(8,47,73,.2);color:#cbd5e1;font-size:11px;line-height:1.55}.gw-state-actions{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;margin-top:22px}.gw-state-primary,.gw-state-secondary{min-height:44px;padding:9px 18px;border-radius:11px;font-size:13px;font-weight:750;cursor:pointer}.gw-state-primary{border:1px solid rgba(196,181,253,.34);background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff}.gw-state-secondary{border:1px solid rgba(148,163,184,.3);background:rgba(15,23,42,.62);color:#dbeafe}',
+      '.gw-loading-mark{display:flex;justify-content:center;gap:8px;margin-bottom:18px;animation:gw-state-drift 3.4s ease-in-out infinite}.gw-loading-mark span{font-size:30px;filter:drop-shadow(0 8px 12px rgba(2,6,23,.35))}.gw-loading-track{height:6px;margin:22px auto 0;overflow:hidden;border:1px solid rgba(167,139,250,.15);border-radius:999px;background:rgba(2,6,23,.55)}.gw-loading-sweep{width:38%;height:100%;border-radius:inherit;background:linear-gradient(90deg,#7c3aed,#a78bfa,#22d3ee);box-shadow:0 0 18px rgba(167,139,250,.7);animation:gw-loading-sweep 1.45s cubic-bezier(.4,0,.2,1) infinite}.gw-state-tip{margin-top:18px;padding-top:16px;border-top:1px solid rgba(148,163,184,.14);color:#a8b3c7;font-size:11px;line-height:1.55}.gw-recovery-details{margin-top:18px;padding:10px 12px;text-align:left;border:1px solid rgba(148,163,184,.18);border-radius:12px;background:rgba(2,6,23,.34);color:#a8b3c7;font-size:11px}.gw-recovery-details summary{cursor:pointer;text-align:center;font-weight:700;color:#cbd5e1}.gw-recovery-details code{display:block;max-height:120px;margin-top:10px;padding:10px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;border-radius:8px;background:rgba(2,6,23,.7);color:#fecdd3}',
+      '@media(max-width:520px){.gw-state-screen{align-items:flex-start;padding:12px}.gw-state-screen--inline{margin:6px}.gw-state-card{padding:24px 18px;border-radius:18px}.gw-state-actions{align-items:stretch;flex-direction:column}.gw-state-actions button{width:100%}.gw-state-icon{width:64px;height:64px;border-radius:20px;font-size:32px}}@media(prefers-reduced-motion:reduce){.gw-state-icon,.gw-loading-mark,.gw-loading-sweep{animation:none!important}.gw-loading-sweep{width:64%;transform:none}}',
+      '.gw-root [role="dialog"]{box-shadow:0 24px 70px rgba(2,6,23,0.58),0 0 0 1px rgba(255,255,255,0.05)!important;backdrop-filter:blur(18px) saturate(120%)!important;}',
+      '.gw-root [role="dialog"]{z-index:80!important;}',
+      '.gw-root button{transition:transform 150ms ease,filter 150ms ease,box-shadow 150ms ease;}',
+      '.gw-root button:hover:not(:disabled){filter:brightness(1.08);}',
+      '.gw-root button:active:not(:disabled){transform:translateY(1px);}',
+      '.gw-root button:focus-visible,.gw-root input:focus-visible,.gw-root select:focus-visible,.gw-root textarea:focus-visible,.gw-root a[href]:focus-visible,.gw-root [tabindex]:focus-visible,.gw-focusable:focus-visible{outline:3px solid #f8fafc!important;outline-offset:2px!important;box-shadow:0 0 0 5px rgba(124,58,237,0.65)!important;}',
+      '.gw-viewport:fullscreen{margin:0;border:0;border-radius:0;}',
+      '@media(max-width:720px){.gw-toolbar{padding:8px 10px!important;gap:7px!important;}.gw-toolbar>select{max-width:150px;}.gw-lesson-title{order:3;flex-basis:100%;max-width:none;padding-left:42px;margin-top:-6px;}.gw-prediction-bar{flex-basis:100%;}.gw-measure-card{top:calc(100% + 6px);right:6px;width:calc(100vw - 12px);max-height:calc(100vh - 170px);}.gw-return-dock{bottom:12px!important;}.gw-tutorial-shell{bottom:112px!important;}.gw-action-bar{left:8px!important;right:8px!important;bottom:94px!important;}.gw-hotbar{max-width:calc(100vw - 12px)!important;flex-wrap:nowrap!important;overflow-x:auto;}.gw-viewport{margin:6px;border-radius:12px;}}',
+      '@media(max-width:520px){.gw-intro-card{padding:20px 16px;max-height:calc(100vh - 24px);overflow:auto;border-radius:18px;}.gw-primary-cta{width:100%;padding-left:20px!important;padding-right:20px!important;}}',
+      '@media(prefers-reduced-motion:reduce){.gw-root button{transition:none!important;}.gw-achievement-toast{animation:none!important;}.gw-root *{scroll-behavior:auto!important;}}'
+    ].join('');
     document.head.appendChild(uiStyle);
   })();
 
@@ -2257,9 +2322,36 @@
       // The ref is guarded on the NODE rather than being identity-stable. React
       // re-invokes an inline ref on every commit, so an unguarded one would drag
       // focus back to the panel each time the student typed a character into it.
+      function trapDialogTabKey(ev) {
+        if (!ev || ev.key !== 'Tab') return;
+        var dialog = ev.currentTarget;
+        if (!dialog) return;
+        var candidates = dialog.querySelectorAll(
+          'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'
+        );
+        var focusable = Array.prototype.filter.call(candidates, function(node) {
+          return node.getAttribute('aria-hidden') !== 'true' && node.tabIndex >= 0;
+        });
+        if (focusable.length === 0) {
+          ev.preventDefault();
+          dialog.focus();
+          return;
+        }
+        var first = focusable[0];
+        var last = focusable[focusable.length - 1];
+        if (ev.shiftKey && (document.activeElement === first || document.activeElement === dialog)) {
+          ev.preventDefault();
+          last.focus();
+        } else if (!ev.shiftKey && document.activeElement === last) {
+          ev.preventDefault();
+          first.focus();
+        }
+      }
+
       function gwDialogRef(node) {
         if (node && !node._gwDialogFocused) {
           node._gwDialogFocused = true;
+          node.addEventListener('keydown', trapDialogTabKey);
           try { node.focus({ preventScroll: true }); } catch (e) { try { node.focus(); } catch (e2) {} }
         }
       }
@@ -2715,7 +2807,8 @@
         cnv.style.display = 'block';
         container.appendChild(cnv);
         engine.renderer = new THREE.WebGLRenderer({ canvas: cnv, antialias: true, powerPreference: 'high-performance' });
-        engine.renderer.setSize(container.clientWidth, container.clientHeight);
+        // CSS already owns the canvas size; avoid writing pixels back into layout.
+        engine.renderer.setSize(container.clientWidth, container.clientHeight, false);
         engine.renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2));
         engine.renderer.shadowMap.enabled = true;
         engine.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -3576,6 +3669,11 @@
         var _docH = engine._docHandlers = {};
         var _cvH = engine._canvasHandlers = {};
         var _winH = engine._winHandlers = {};
+        canvas.addEventListener('webglcontextlost', _cvH.webglcontextlost = function(ev) {
+          ev.preventDefault();
+          stopAnimationAfterError(new Error('WebGL context lost. The browser may have reset the graphics device or reclaimed GPU memory.'));
+        });
+
         // Releasing the keys on blur. Held keys never emit a keyup once the window
         // loses focus (alt-tab, switching apps), so movement latched on: the student
         // came back to a player walking into a wall by itself. Arrow-key look would
@@ -3585,6 +3683,22 @@
           engine.lookState = { left: false, right: false, up: false, down: false };
           engine._jumpLock = false;
         });
+        document.addEventListener('visibilitychange', _docH.visibilitychange = function() {
+          if (engine.renderer && engine.renderer.xr && engine.renderer.xr.isPresenting) return;
+          if (document.hidden) {
+            engine._pausedByVisibility = true;
+            if (engine._rafId) cancelAnimationFrame(engine._rafId);
+            engine._rafId = null;
+            engine.moveState = { forward: false, backward: false, left: false, right: false, sprint: false };
+            engine.lookState = { left: false, right: false, up: false, down: false };
+            engine._jumpLock = false;
+          } else if (engine._pausedByVisibility && !engine._destroyed && !engine._runtimeFailed) {
+            engine._pausedByVisibility = false;
+            if (engine.clock) engine.clock.getDelta();
+            animate();
+          }
+        });
+        engine._pausedByVisibility = !!document.hidden;
         canvas.addEventListener('click', _cvH.click = function() { if (!engine.isLocked) canvas.requestPointerLock(); });
         document.addEventListener('pointerlockchange', _docH.pointerlockchange = function() {
           engine.isLocked = !!document.pointerLockElement;
@@ -4452,10 +4566,28 @@
         engine._headBobPhase = 0;
         engine._headBobBase = 0; // will be set to groundY when on ground
 
+        function stopAnimationAfterError(error) {
+          if (!engine || engine._destroyed || engine._runtimeFailed) return;
+          engine._runtimeFailed = true;
+          if (engine._rafId) { cancelAnimationFrame(engine._rafId); engine._rafId = null; }
+          var detail = String(error && (error.stack || error.message) || error || 'Unknown animation error').slice(0, 1200);
+          console.error('[GeometryWorld] Animation stopped to protect page responsiveness:', error);
+          window[engineKey + '_failure'] = { kind: 'runtime', message: detail };
+          window[engineKey + '_failed'] = true;
+          setWebglError(true);
+        }
+
         // Animation loop
         function animate() {
           if (engine && engine._destroyed) return; // teardown ran — stop rescheduling (the closure engine keeps scene/camera, so the guard below won't catch it)
-          engine._rafId = requestAnimationFrame(animate);
+          if (engine && engine._runtimeFailed) return;
+          if (engine && engine._pausedByVisibility) return;
+          // Catch future frame failures and cancel the successor they schedule so one
+          // broken effect cannot create an endless exception loop in the host browser.
+          engine._rafId = requestAnimationFrame(function() {
+            try { animate(); }
+            catch (error) { stopAnimationAfterError(error); }
+          });
           // Guard: if Three.js isn't on window (CDN failure, teardown), skip frame entirely
           if (!window.THREE || !engine || !engine.scene || !engine.camera) return;
           // Capture Three.js before any frame work. Later `var THREE` assignments in
@@ -5104,8 +5236,9 @@
         animate();
 
         // Handle resize
-        var ro = new ResizeObserver(function() {
-          if (!container.isConnected) { ro.disconnect(); return; }
+        function applyViewportResize() {
+          engine._resizeRafId = null;
+          if (!container.isConnected || engine._destroyed) return;
           var cw = container.clientWidth, ch = container.clientHeight;
           if (!cw || !ch) return;
           // Only act on a REAL size change. renderer.setSize writes explicit pixel
@@ -5119,15 +5252,30 @@
           engine._lastViewport = { w: cw, h: ch };
           engine.camera.aspect = cw / ch;
           engine.camera.updateProjectionMatrix();
-          engine.renderer.setSize(cw, ch);
+          engine.renderer.setSize(cw, ch, false);
           if (engine.composer) { try { engine.composer.setSize(cw, ch); } catch (e) {} }
-        });
-        ro.observe(container);
+        }
+        function scheduleViewportResize() {
+          if (!container.isConnected || engine._destroyed || engine._resizeRafId) return;
+          engine._resizeRafId = requestAnimationFrame(applyViewportResize);
+        }
+
+        var ro = null;
+        if (typeof ResizeObserver === 'function') {
+          ro = new ResizeObserver(function() {
+            if (!container.isConnected) { ro.disconnect(); return; }
+            scheduleViewportResize();
+          });
+          ro.observe(container);
         // Track it so destroyEngine can disconnect. The self-disconnect above only
         // runs if the observer FIRES after the container detaches, which may never
         // happen — and a live observer pins the whole engine closure, so navigating
         // away and back accumulated one per visit.
         engine._resizeObserver = ro;
+        } else {
+          // Older embedded browsers can still keep the camera and backing buffer in sync.
+          window.addEventListener('resize', _winH.resize = scheduleViewportResize);
+        }
 
         // ── Session Analytics (research data collection) ──
         engine.sessionLog = [];
@@ -5528,7 +5676,9 @@
         // Auto-load default lesson
         engine.loadLesson(SAMPLE_LESSONS.volumeExplorer);
         } catch(e) {
-          console.error('[GeometryWorld] WebGL init failed:', e.message);
+          var initDetail = String(e && (e.stack || e.message) || e || 'Unknown initialization error').slice(0, 1200);
+          console.error('[GeometryWorld] WebGL init failed:', e);
+          window[engineKey + '_failure'] = { kind: 'initialization', message: initDetail };
           window[engineKey + '_failed'] = true;
           setWebglError(true);
         }
@@ -5578,6 +5728,7 @@
           if (engine._gridHelper) { engine.scene.remove(engine._gridHelper); engine._gridHelper.geometry.dispose(); engine._gridHelper.material.dispose(); }
           if (engine._badgeDismissTimer) clearTimeout(engine._badgeDismissTimer);
           if (engine._resizeObserver) { try { engine._resizeObserver.disconnect(); } catch (e) {} engine._resizeObserver = null; }
+          if (engine._resizeRafId) { cancelAnimationFrame(engine._resizeRafId); engine._resizeRafId = null; }
           // Collab peer avatars are built inside the animate loop, so teardown never
           // saw them — each body/head Mesh (plus its material) outlived the engine.
           if (engine._peerAvatars) {
@@ -5652,21 +5803,32 @@
       // Mobile detection — friendly message for touch devices
       var isMobile = /Android|iPhone|iPad|iPod|webOS/i.test(navigator.userAgent) || (window.innerWidth < 768 && 'ontouchstart' in window);
       if (isMobile && !d._mobileDismissed) {
-        return el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', flexDirection: 'column', gap: '16px', color: 'var(--allo-stem-text-soft, #94a3b8)', background: 'linear-gradient(180deg, var(--allo-stem-canvas, #0f172a) 0%, #1e1b3a 100%)', padding: '24px', textAlign: 'center' } },
-          el('div', { style: { fontSize: '48px' } }, '\uD83D\uDCF1'),
-          el('div', { style: { fontSize: '18px', fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)' } }, 'Desktop Recommended'),
-          el('div', { style: { fontSize: '13px', color: 'var(--allo-stem-text-soft, #94a3b8)', maxWidth: '320px', lineHeight: 1.6 } },
-            'Geometry World uses a 3D engine with mouse + keyboard controls (WASD, pointer lock). For the best experience, open this on a laptop or desktop computer.'),
-          el('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', maxWidth: '280px', lineHeight: 1.5 } },
-            'Touch controls are available! Swipe the right side to look, use the left joystick to move, and tap the action buttons to build, break, measure, and talk to NPCs.'),
-          el('button', {
-            onClick: function() { upd('_mobileDismissed', true); },
-            style: { background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '10px', padding: '10px 24px', fontSize: '14px', fontWeight: 700, cursor: 'pointer', marginTop: '8px' }
-          }, 'Try Anyway \u2192'),
-          el('button', {
-            onClick: function() { upd('_mobileDismissed', true); },
-            style: { background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '11px', cursor: 'pointer', marginTop: '4px' }
-          }, 'I\u2019m on a tablet with keyboard')
+        return el('section', {
+          className: 'gw-root gw-state-screen',
+          role: 'region',
+          'aria-labelledby': 'gw-mobile-title'
+        },
+          el('div', { className: 'gw-state-card' },
+            el('div', { className: 'gw-state-icon', 'aria-hidden': 'true' }, '\uD83D\uDCF1'),
+            el('div', { className: 'gw-state-kicker' }, 'Device note'),
+            el('h2', { id: 'gw-mobile-title', className: 'gw-state-title' }, 'Desktop Recommended'),
+            el('p', { className: 'gw-state-copy' },
+              'Geometry World uses a 3D engine with mouse and keyboard controls. For the smoothest experience, open it on a laptop or desktop computer.'),
+            el('div', { className: 'gw-state-note' },
+              'Touch controls are available: swipe the right side to look, use the left joystick to move, and tap the action buttons to build, break, measure, and talk.'),
+            el('div', { className: 'gw-state-actions' },
+              el('button', {
+                type: 'button',
+                className: 'gw-primary-cta gw-state-primary gw-focusable',
+                onClick: function() { upd('_mobileDismissed', true); }
+              }, 'Continue with touch controls \u2192'),
+              el('button', {
+                type: 'button',
+                className: 'gw-state-secondary gw-focusable',
+                onClick: function() { upd('_mobileDismissed', true); }
+              }, 'Continue with a keyboard')
+            )
+          )
         );
       }
 
@@ -5682,21 +5844,19 @@
           '\uD83D\uDCA1 Tip: Try the Geometry Garden lesson for a relaxing exploration experience!'
         ];
         var tipIdx = Math.floor(Date.now() / 4000) % loadingTips.length;
-        return el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', flexDirection: 'column', gap: '16px', color: 'var(--allo-stem-text-soft, #94a3b8)', background: 'linear-gradient(180deg, var(--allo-stem-canvas, #0f172a) 0%, #1e1b3a 100%)' } },
-          // Animated blocks
-          el('div', { style: { display: 'flex', gap: '8px', marginBottom: '8px' } },
-            ['\uD83E\uDDF1', '\uD83D\uDC8E', '\uD83C\uDFC6', '\uD83E\uDDF1'].map(function(em, ei) {
-              return el('span', { key: ei, style: { fontSize: '32px', animation: 'pulse 1.5s infinite', animationDelay: (ei * 0.2) + 's', opacity: 0.3 + (ei * 0.2) } }, em);
-            })
-          ),
-          el('div', { style: { fontSize: '18px', fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', letterSpacing: '0.5px' } }, '\uD83C\uDF0D Geometry World'),
-          el('div', { style: { fontSize: '13px', color: '#7c3aed', fontWeight: 600 } }, 'Loading 3D engine...'),
-          // Progress bar animation
-          el('div', { style: { width: '200px', height: '4px', background: 'rgba(100,116,139,0.2)', borderRadius: '4px', overflow: 'hidden' } },
-            el('div', { style: { width: '60%', height: '100%', background: 'linear-gradient(90deg, #7c3aed, #a78bfa)', borderRadius: '4px', animation: 'pulse 1.5s infinite' } })
-          ),
-          // Rotating tip
-          el('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', maxWidth: '300px', textAlign: 'center', marginTop: '8px', lineHeight: 1.5 } }, loadingTips[tipIdx])
+        return el('section', { className: 'gw-root gw-state-screen', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'aria-busy': 'true' },
+          el('div', { className: 'gw-state-card' },
+            el('div', { className: 'gw-loading-mark', 'aria-hidden': 'true' },
+              ['\uD83E\uDDF1', '\uD83D\uDC8E', '\uD83C\uDFC6'].map(function(em, ei) { return el('span', { key: ei }, em); })
+            ),
+            el('div', { className: 'gw-state-kicker' }, 'Building your world'),
+            el('h2', { className: 'gw-state-title' }, '\uD83C\uDF0D Geometry World'),
+            el('p', { className: 'gw-state-copy' }, 'Loading the 3D engine and preparing interactive geometry...'),
+            el('div', { className: 'gw-loading-track', role: 'progressbar', 'aria-label': 'Loading 3D engine' },
+              el('div', { className: 'gw-loading-sweep', 'aria-hidden': 'true' })
+            ),
+            el('div', { className: 'gw-state-tip' }, loadingTips[tipIdx])
+          )
         );
       }
 
@@ -5740,7 +5900,7 @@
 
       // ── Multi-pass AI generation handler ──
       // ── Load a lesson by key (used from intro screen, dropdown, Next Lesson) ──
-      function loadLessonByKey(lessonKey, _attempt) {
+      function loadLessonByKey(lessonKey, _attempt, skipTutorial) {
         var eng = window[engineKey];
         // The engine is created ~100ms after the container mounts, so an eager click on
         // "Start Lesson" can land before it exists. Previously that dismissed the intro
@@ -5752,7 +5912,7 @@
           if (_attempt && !document.getElementById('geoworld-fs-wrap')) return;
           var attempt = _attempt || 0;
           if (attempt < 20) { // ~2s of retries
-            setTimeout(function() { loadLessonByKey(lessonKey, attempt + 1); }, 100);
+            setTimeout(function() { loadLessonByKey(lessonKey, attempt + 1, skipTutorial); }, 100);
             return;
           }
         }
@@ -5763,7 +5923,9 @@
           var found = myL.filter(function(l) { return l._id === lessonKey; })[0];
           if (found && eng) { eng.loadLesson(found); upd({ lastGeneratedLesson: found, lessonEditorJson: JSON.stringify(found, null, 2) }); }
         }
-        upd({ showLessonIntro: false, showReflection: false, measureHistory: [] });
+        var lessonState = { showLessonIntro: false, showReflection: false, measureHistory: [] };
+        if (skipTutorial) { lessonState.tutorialStep = 4; lessonState.tutorialDismissed = true; }
+        upd(lessonState);
       }
 
       var generateWorld = function() {
@@ -5930,6 +6092,69 @@
       };
 
       var engine = window[engineKey];
+      function runMobileButtonAction(actionKey, action, ev) {
+        if (!engine || typeof action !== 'function') return;
+        if (ev && ev.type === 'touchstart') {
+          ev.stopPropagation();
+          engine._lastTouchAction = { key: actionKey, at: Date.now() };
+          action();
+          return;
+        }
+        var lastTouch = engine._lastTouchAction;
+        if (lastTouch && lastTouch.key === actionKey && Date.now() - lastTouch.at < 700) return;
+        action();
+      }
+
+      function beginMobileJump() {
+        if (!engine.flyMode && engine.onGround && !engine._jumpLock) {
+          engine.velocity.y = 6;
+          sfxJump();
+          engine._jumpLock = true;
+        } else if (engine.flyMode) {
+          engine.moveState.flyUp = true;
+        }
+      }
+
+      function activateMobileJump() {
+        beginMobileJump();
+        setTimeout(function() {
+          if (!engine) return;
+          engine.moveState.flyUp = false;
+          engine._jumpLock = false;
+        }, 150);
+      }
+
+      function talkToNearbyNpc() {
+        var minD = 5, nearest = -1;
+        engine.npcs.forEach(function(n, i) {
+          var dist = engine.camera.position.distanceTo(n.body.position);
+          if (dist < minD) { minD = dist; nearest = i; }
+        });
+        if (nearest >= 0) {
+          upd({ showNpcDialog: true, dialogNpcIdx: nearest, npcTypewriterPos: 0, npcTypewriterNpc: nearest });
+          sfxNpcChime();
+        } else if (addToast) {
+          addToast('No NPC nearby - walk closer!', 'info');
+        }
+      }
+
+      function placeMobileBlock() {
+        if (engine.interactAtCrosshair) engine.interactAtCrosshair('place');
+      }
+
+      function breakMobileBlock() {
+        if (engine.interactAtCrosshair) engine.interactAtCrosshair('break');
+      }
+
+      function measureMobileStructure() {
+        if (engine.performMeasurement) engine.performMeasurement('touch');
+      }
+
+      function undoMobileBlockAction() {
+        if (engine.undo) engine.undo();
+        if (addToast) addToast('\u21A9\uFE0F Undo', 'info');
+      }
+
       // AI-generated lessons are keyed 'ai_<timestamp>' (saved to My Lessons) or the
       // transient 'ai_generated'. Neither is a SAMPLE_LESSONS key, so this used to be a
       // bare `SAMPLE_LESSONS[activeLesson] || SAMPLE_LESSONS.volumeExplorer` and every
@@ -6000,6 +6225,7 @@
         OPEN_MODALS.forEach(function(m) { if (m.flag) patch[m.key] = false; });
         if (Object.keys(patch).length > 0) {
           upd(patch);
+          focusWorldSurface();
           if (addToast) addToast('🎮 Returned to game — ' + Object.keys(patch).length + ' overlay(s) closed', 'info');
           try { sfxJump(); } catch(e) {}
         }
@@ -6019,33 +6245,55 @@
       // and out of date: it predates B/X (build without a mouse), the arrow-key look
       // and L (speak where characters are), and it implied the tool was mouse-only to
       // exactly the students who most needed to hear otherwise.
-      return el('div', { role: 'region', 'aria-label': __alloT('stem.geometryworld.tool_name', 'Geometry World'), style: { display: 'flex', flexDirection: 'column', height: '100%', position: 'relative', background: 'var(--allo-stem-canvas, #000)' } },
+      var engineFailure = window[engineKey + '_failure'] || null;
+      var runtimeFailure = !!(engineFailure && engineFailure.kind === 'runtime');
+      function copyEngineFailureDetails() {
+        if (!engineFailure || !engineFailure.message) return;
+        var report = 'Geometry World ' + (engineFailure.kind || 'unknown') + ' failure\n' + new Date().toISOString() + '\n' + (navigator.userAgent || 'Unknown browser') + '\n\n' + engineFailure.message;
+        if (!navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
+          if (addToast) addToast('Clipboard access is unavailable. Expand Technical details to select the error manually.', 'info');
+          return;
+        }
+        navigator.clipboard.writeText(report)
+          .then(function() { if (addToast) addToast('Geometry World error details copied.', 'success'); })
+          .catch(function() { if (addToast) addToast('Could not copy automatically. Select the technical details manually.', 'error'); });
+      }
+
+      return el('div', { role: 'region', className: 'gw-root', 'aria-label': __alloT('stem.geometryworld.tool_name', 'Geometry World'), style: { display: 'flex', flexDirection: 'column', height: '100%', position: 'relative', background: 'var(--allo-stem-canvas, #000)' } },
         // Top bar — glass style
-        el('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 12px', background: 'var(--allo-stem-deeper, rgba(15,23,42,0.85))', backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(100,116,139,0.15)', flexShrink: 0, flexWrap: 'wrap' } },
-          el('span', { style: { fontSize: '18px' } }, '\uD83E\uDDF1'),
-          el('span', { style: { fontWeight: 800, color: '#fff', fontSize: '14px' } }, 'Geometry World'),
-          el('span', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginRight: 'auto' } }, currentLesson.title || ''),
+        el('header', { className: 'gw-toolbar', 'aria-label': 'Geometry World lesson controls', style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'linear-gradient(180deg, rgba(15,23,42,0.94), rgba(15,23,42,0.82))', backdropFilter: 'blur(14px) saturate(120%)', borderBottom: '1px solid rgba(148,163,184,0.16)', flexShrink: 0, flexWrap: 'wrap' } },
+          el('div', { className: 'gw-brand-lockup' },
+            el('span', { className: 'gw-brand-mark', 'aria-hidden': 'true', style: { fontSize: '18px' } }, '\uD83E\uDDF1'),
+            el('div', { className: 'gw-brand-copy' },
+              el('h2', { id: 'gw-title', className: 'gw-title' }, 'Geometry World'),
+              el('span', { className: 'gw-lesson-title' }, currentLesson.title || 'Choose a lesson to begin')
+            )
+          ),
+          el('div', { className: 'gw-status-cluster', 'aria-label': 'Lesson status' },
           // Score
           // Block counter
-          engine && el('span', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', background: 'var(--allo-stem-panel, #1e293b)', padding: '2px 8px', borderRadius: '6px' } },
+          engine && el('span', { className: 'gw-stat-chip', style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)' } },
             '\uD83E\uDDF1 ' + (engine.blocksPlaced || 0) + ' placed'
           ),
           // Score with completion indicator
-          el('span', { style: { fontSize: '12px', color: score >= totalQ && totalQ > 0 ? '#fbbf24' : '#4ade80', fontWeight: 700, transition: 'transform 0.2s ease', display: 'inline-block', transform: d._scorePulse && Date.now() - d._scorePulse < 500 ? 'scale(1.3)' : 'scale(1)' } },
+          el('span', { className: 'gw-stat-chip', role: 'status', 'aria-live': 'polite', 'aria-label': 'Lesson progress: ' + score + ' of ' + totalQ + ' questions complete', style: { fontSize: '12px', color: score >= totalQ && totalQ > 0 ? '#fbbf24' : '#4ade80', fontWeight: 700, transition: 'transform 0.2s ease', transform: d._scorePulse && Date.now() - d._scorePulse < 500 ? 'scale(1.3)' : 'scale(1)' } },
             (score >= totalQ && totalQ > 0 ? '\uD83C\uDFC6 ' : '\u2B50 ') + score + '/' + totalQ
           ),
           // Achievement badges earned
-          Object.keys(earnedBadges).length > 0 && el('div', {
+          Object.keys(earnedBadges).length > 0 && el('div', { className: 'gw-badge-strip',
+            role: 'list', 'aria-label': Object.keys(earnedBadges).length + ' achievement badges earned',
             style: { display: 'flex', gap: '2px', alignItems: 'center', fontSize: '14px', background: 'var(--allo-stem-panel, #1e293b)', padding: '2px 6px', borderRadius: '6px', cursor: 'default' },
             title: Object.keys(earnedBadges).length + ' badges earned: ' + ACHIEVEMENTS.filter(function(a) { return earnedBadges[a.id]; }).map(function(a) { return a.name; }).join(', ')
           },
             ACHIEVEMENTS.filter(function(a) { return earnedBadges[a.id]; }).map(function(a) {
-              return el('span', { key: a.id, title: a.name + ': ' + a.desc, style: { opacity: 1 } }, a.icon);
+              return el('span', { key: a.id, role: 'listitem', 'aria-label': a.name + ': ' + a.desc, title: a.name + ': ' + a.desc, style: { opacity: 1 } }, a.icon);
             })
+          ),
           ),
           // Badge notification popup
           lastBadgeNotification && el('div', {
-            style: { position: 'absolute', top: '44px', left: '50%', transform: 'translateX(-50%)', zIndex: 25,
+            role: 'status', 'aria-live': 'polite', className: 'gw-achievement-toast',
+            style: { position: 'absolute', top: 'calc(100% + 10px)', left: '50%', transform: 'translateX(-50%)', zIndex: 60,
               background: 'linear-gradient(135deg, #4c1d95, #7c3aed)', border: '2px solid #a78bfa',
               borderRadius: '12px', padding: '10px 20px', display: 'flex', alignItems: 'center', gap: '10px',
               boxShadow: '0 4px 20px rgba(124,58,237,0.4)', animation: 'fadeIn 0.3s ease-out' }
@@ -6058,7 +6306,7 @@
             )
           ),
           // Measure result
-          el('div', { role: 'group', 'aria-label': 'Predict and explain volume before measuring', 'data-geometry-prediction-cycle': 'predict-explain', style: { display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', maxWidth: '470px', background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '3px 6px' } },
+          el('div', { role: 'group', className: 'gw-prediction-bar', 'aria-label': 'Predict and explain volume before measuring', 'data-geometry-prediction-cycle': 'predict-explain', style: { display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap', maxWidth: '470px', background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '3px 6px' } },
             el('label', { htmlFor: 'gw-volume-prediction', style: { color: '#fde68a', fontSize: '10px', fontWeight: 700, whiteSpace: 'nowrap' } }, 'Predict V'),
             el('input', {
               id: 'gw-volume-prediction',
@@ -6095,8 +6343,11 @@
               el('span', null, predictionScaffold.cue)
             )
           ),
-          measureResult && el('div', { role: 'status', 'aria-live': 'polite', style: { display: 'flex', flexDirection: 'column', gap: '1px', fontSize: '11px', color: '#67e8f9', background: '#0c4a6e', padding: '4px 10px', borderRadius: '6px', lineHeight: 1.3 } },
-            el('div', { style: { fontWeight: 700 } }, '\uD83D\uDCCF ' + (measureResult.isComplete === false ? 'Large structure - incomplete measurement' : measureResult.isSolidPrism ? 'Solid rectangular prism' : 'Composite structure')),
+          measureResult && el('div', { role: 'region', className: 'gw-measure-card', 'aria-label': 'Measurement inspector', style: { display: 'flex', flexDirection: 'column', gap: '1px', fontSize: '11px', color: '#67e8f9', background: '#0c4a6e', padding: '4px 10px', borderRadius: '6px', lineHeight: 1.3 } },
+            el('div', { className: 'gw-measure-heading', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' } },
+              el('div', { role: 'status', 'aria-live': 'polite', style: { fontWeight: 800, color: '#cffafe' } }, '\uD83D\uDCCF ' + (measureResult.isComplete === false ? 'Large structure - incomplete measurement' : measureResult.isSolidPrism ? 'Solid rectangular prism' : 'Composite structure')),
+              el('button', { type: 'button', className: 'gw-measure-close', 'aria-label': 'Close measurement inspector', title: 'Close measurement inspector', onClick: function() { upd('measureResult', null); } }, '\u00D7')
+            ),
             measureResult.isComplete === false && el('div', { role: 'alert', 'data-geometry-measurement-incomplete': 'true',
               style: { margin: '2px 0', padding: '4px 6px', borderRadius: '4px', background: '#7f1d1d', color: '#fecaca', fontWeight: 700 } },
               'Measurement limit reached. At least ' + measureResult.count + ' connected blocks were found; volume, dimensions, and surface area below are partial and not exact.'),
@@ -6389,6 +6640,9 @@
           ),
           // Auto day/night cycle toggle
           el('button', {
+            type: 'button', className: 'gw-focusable',
+            'aria-label': d.autoCycle ? 'Stop automatic day and night cycle' : 'Start automatic day and night cycle',
+            'aria-pressed': d.autoCycle ? 'true' : 'false',
             onClick: function() { upd('autoCycle', !(d.autoCycle || false)); },
             title: d.autoCycle ? 'Stop auto day/night cycle' : 'Start auto day/night cycle (changes every 60s)',
             style: { background: d.autoCycle ? '#f59e0b' : '#1e293b', border: '1px solid ' + (d.autoCycle ? '#fbbf24' : '#334155'), borderRadius: '6px', padding: '3px 6px', color: d.autoCycle ? '#000' : '#f59e0b', fontSize: '10px', cursor: 'pointer', fontWeight: 700 }
@@ -6929,11 +7183,11 @@
         // ── FLOATING "BACK TO GAME" BUTTON — appears when any modal/overlay is open ──
         // Lets students instantly dismiss all overlays and return to the 3D world.
         // Positioned bottom-center so it doesn't collide with any modal, high z-index so always visible.
-        openModals.length > 0 && el('div', {
+        openModals.length > 0 && el('div', { className: 'gw-return-dock',
           style: { position: 'absolute', bottom: '20px', left: '50%', transform: 'translateX(-50%)', zIndex: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', pointerEvents: 'none' }
         },
           // Status pill: list of open overlays
-          el('div', {
+          el('div', { className: 'gw-return-status',
             style: { pointerEvents: 'auto', padding: '4px 10px', borderRadius: '14px', background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(6px)', border: '1px solid rgba(124,58,237,0.3)', color: '#c4b5fd', fontSize: '10px', fontWeight: 600, maxWidth: '420px', textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
             title: openModals.length + ' overlay' + (openModals.length === 1 ? '' : 's') + ' open: ' + openModals.map(function(m) { return m.emoji + ' ' + m.label; }).join(', ')
           },
@@ -6941,7 +7195,7 @@
               (openModals.length + ' overlays open: ' + openModals.map(function(m) { return m.emoji; }).join(' '))
           ),
           // Main "Back to Game" button (prominent)
-          el('button', {
+          el('button', { type: 'button', className: 'gw-return-button',
             onClick: closeAllModals,
             'aria-label': __alloT('stem.geometryworld.close_all_open_overlays_and_return_to_', 'Close all open overlays and return to the game view'),
             title: __alloT('stem.geometryworld.close_all_overlays_return_to_the_3d_ga', 'Close all overlays & return to the 3D game (or press Shift+Esc)'),
@@ -6960,7 +7214,7 @@
         ),
 
         // Help overlay
-        showHelp && el('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Controls and help', tabIndex: -1, ref: gwDialogRef, style: { position: 'absolute', top: '48px', right: '8px', zIndex: 20, background: 'rgba(15,23,42,0.95)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '10px', padding: '12px', fontSize: '11px', color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, maxWidth: '240px' } },
+        showHelp && el('div', { role: 'dialog', className: 'gw-dialog gw-dialog--compact', 'aria-modal': 'true', 'aria-label': 'Controls and help', tabIndex: -1, ref: gwDialogRef, style: { position: 'absolute', top: '48px', right: '8px', zIndex: 20, background: 'rgba(15,23,42,0.95)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '10px', padding: '12px', fontSize: '11px', color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, maxWidth: '240px' } },
           el('div', { style: { fontWeight: 700, color: '#a78bfa', marginBottom: '6px', fontSize: '12px' } }, '\uD83C\uDFAE Controls'),
           el('div', { style: { display: 'grid', gridTemplateColumns: '70px 1fr', gap: '2px 8px', marginBottom: '10px' } },
             el('span', { style: { color: '#7c3aed', fontWeight: 600 } }, 'WASD'), 'Move around',
@@ -7051,10 +7305,10 @@
           )
         ),
         // ── My Lessons Library Panel ──
-        showMyLessons && el('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'My lessons', tabIndex: -1, ref: gwDialogRef, style: { position: 'absolute', top: '48px', right: '8px', zIndex: 22, background: 'rgba(15,23,42,0.95)', border: '1px solid #7c3aed', borderRadius: '10px', padding: '12px', fontSize: '11px', color: 'var(--allo-stem-text, #cbd5e1)', maxWidth: '280px', maxHeight: '320px', overflowY: 'auto' } },
+        showMyLessons && el('div', { role: 'dialog', className: 'gw-dialog gw-dialog--compact', 'aria-modal': 'true', 'aria-label': 'My lessons', tabIndex: -1, ref: gwDialogRef, style: { position: 'absolute', top: '48px', right: '8px', zIndex: 22, background: 'rgba(15,23,42,0.95)', border: '1px solid #7c3aed', borderRadius: '10px', padding: '12px', fontSize: '11px', color: 'var(--allo-stem-text, #cbd5e1)', maxWidth: '280px', maxHeight: '320px', overflowY: 'auto' } },
           el('div', { style: { fontWeight: 800, color: '#a78bfa', fontSize: '12px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between' } },
             '\uD83D\uDCDA My Lessons (' + getMyLessons().length + ')',
-            el('button', { 'aria-label': __alloT('stem.geometryworld.close_my_lessons', 'Close My Lessons'), onClick: function() { upd('showMyLessons', false); }, style: { background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '14px', cursor: 'pointer' } }, '\u00d7')
+            el('button', { type: 'button', className: 'gw-dialog-close', 'aria-label': __alloT('stem.geometryworld.close_my_lessons', 'Close My Lessons'), onClick: function() { upd('showMyLessons', false); }, style: { background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '14px', cursor: 'pointer' } }, '\u00d7')
           ),
           getMyLessons().length === 0 && el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '10px', padding: '12px 0', textAlign: 'center' } }, 'No saved lessons yet. Generate one with AI!'),
           getMyLessons().map(function(lesson, li) {
@@ -7065,6 +7319,7 @@
                   (lesson.npcs || []).length + ' NPCs \u2022 ' + (lesson.structures || []).length + ' structures' + (lesson._savedAt ? ' \u2022 ' + new Date(lesson._savedAt).toLocaleDateString() : ''))
               ),
               el('button', {
+                type: 'button', className: 'gw-focusable', 'aria-label': 'Load saved lesson: ' + (lesson.title || 'Untitled lesson'),
                 onClick: function() {
                   var eng = window[engineKey];
                   // activeLesson gets the saved lesson's own _id, not the generic
@@ -7076,6 +7331,7 @@
                 style: { background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '4px', padding: '3px 8px', fontSize: '10px', cursor: 'pointer', fontWeight: 700, flexShrink: 0 }
               }, '\u25B6'),
               el('button', {
+                type: 'button', className: 'gw-focusable', 'aria-label': 'Delete saved lesson: ' + (lesson.title || 'Untitled lesson'),
                 onClick: function() { deleteMyLesson(lesson._id); upd('showMyLessons', true); /* force re-render */ },
                 title: __alloT('stem.geometryworld.delete_this_saved_lesson', 'Delete this saved lesson'),
                 style: { background: 'none', border: 'none', color: '#ef4444', fontSize: '12px', cursor: 'pointer', flexShrink: 0, padding: '2px' }
@@ -7084,10 +7340,10 @@
           })
         ),
         // ── JSON Lesson Editor Panel ──
-        showLessonEditor && lastGeneratedLesson && el('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Lesson editor', tabIndex: -1, ref: gwDialogRef, style: { position: 'absolute', top: '48px', left: '50%', transform: 'translateX(-50%)', zIndex: 26, background: 'rgba(15,23,42,0.97)', border: '2px solid #f59e0b', borderRadius: '12px', padding: '14px', width: '400px', maxHeight: '400px', fontSize: '11px' } },
+        showLessonEditor && lastGeneratedLesson && el('div', { role: 'dialog', className: 'gw-dialog gw-dialog--compact', 'aria-modal': 'true', 'aria-label': 'Lesson editor', tabIndex: -1, ref: gwDialogRef, style: { position: 'absolute', top: '48px', left: '50%', transform: 'translateX(-50%)', zIndex: 26, background: 'rgba(15,23,42,0.97)', border: '2px solid #f59e0b', borderRadius: '12px', padding: '14px', width: '400px', maxHeight: '400px', fontSize: '11px' } },
           el('div', { style: { fontWeight: 800, color: '#f59e0b', fontSize: '13px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
             '\u270F\uFE0F Lesson JSON Editor',
-            el('button', { 'aria-label': __alloT('stem.geometryworld.close_editor', 'Close editor'), onClick: function() { upd('showLessonEditor', false); }, style: { background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '14px', cursor: 'pointer' } }, '\u00d7')
+            el('button', { type: 'button', className: 'gw-dialog-close', 'aria-label': __alloT('stem.geometryworld.close_editor', 'Close editor'), onClick: function() { upd('showLessonEditor', false); }, style: { background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '14px', cursor: 'pointer' } }, '\u00d7')
           ),
           el('p', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '9px', margin: '0 0 6px', lineHeight: 1.3 } }, 'Edit the lesson JSON directly. Change NPC dialogue, add questions, move structures. Click Apply to reload.'),
           el('textarea', {
@@ -7139,10 +7395,10 @@
           )
         ),
         // ── Creator Mode Panel ──
-        creatorMode && el('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Creator mode', tabIndex: -1, ref: gwDialogRef, style: { position: 'absolute', top: '48px', left: '50%', transform: 'translateX(-50%)', zIndex: 25, background: 'rgba(15,23,42,0.95)', border: '2px solid #7c3aed', borderRadius: '12px', padding: '14px', width: '320px', fontSize: '11px' } },
+        creatorMode && el('div', { role: 'dialog', className: 'gw-dialog gw-dialog--compact', 'aria-modal': 'true', 'aria-label': 'Creator mode', tabIndex: -1, ref: gwDialogRef, style: { position: 'absolute', top: '48px', left: '50%', transform: 'translateX(-50%)', zIndex: 25, background: 'rgba(15,23,42,0.95)', border: '2px solid #7c3aed', borderRadius: '12px', padding: '14px', width: '320px', fontSize: '11px' } },
           el('div', { style: { fontWeight: 800, color: '#a78bfa', fontSize: '13px', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
             '\uD83C\uDFA8 Lesson Creator',
-            el('button', { 'aria-label': __alloT('stem.geometryworld.close_creator_panel', 'Close creator panel'), onClick: function() { upd('creatorMode', false); }, style: { background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '14px', cursor: 'pointer' } }, '\u00d7')
+            el('button', { type: 'button', className: 'gw-dialog-close', 'aria-label': __alloT('stem.geometryworld.close_creator_panel', 'Close creator panel'), onClick: function() { upd('creatorMode', false); }, style: { background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '14px', cursor: 'pointer' } }, '\u00d7')
           ),
           el('p', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '10px', margin: '0 0 8px', lineHeight: 1.4 } }, 'Build structures with blocks (right-click), then add an NPC teacher below. Save your world to share with classmates!'),
           // NPC Creator form
@@ -7196,18 +7452,20 @@
           )
         ),
         // Objectives panel (left side) — glass style with progress bar
-        el('div', { style: { position: 'absolute', top: '48px', left: '8px', zIndex: 20, background: 'rgba(15,23,42,0.88)', backdropFilter: 'blur(8px)', border: '1px solid rgba(100,116,139,0.2)', borderRadius: '12px', padding: '10px 12px', maxWidth: '210px', fontSize: '11px', boxShadow: '0 4px 16px rgba(0,0,0,0.2)' } },
-          el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' } },
-            el('div', { style: { fontWeight: 700, color: '#a78bfa', fontSize: '11px' } }, '\uD83D\uDCCB Objectives'),
-            totalQ > 0 && el('div', { style: { fontSize: '9px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600 } }, score + '/' + totalQ)
+        el('section', { className: 'gw-objective-panel', role: 'region', 'aria-labelledby': 'gw-objective-title' },
+          el('div', { className: 'gw-objective-header' },
+            el('h2', { id: 'gw-objective-title', className: 'gw-objective-title' }, '\uD83D\uDCCB Objectives'),
+            totalQ > 0 && el('div', { className: 'gw-objective-count' }, score + '/' + totalQ)
           ),
-          // Progress bar
-          totalQ > 0 && el('div', { style: { width: '100%', height: '3px', background: 'rgba(100,116,139,0.2)', borderRadius: '2px', marginBottom: '8px', overflow: 'hidden' } },
-            el('div', { style: { width: (totalQ > 0 ? Math.round((score / totalQ) * 100) : 0) + '%', height: '100%', background: score >= totalQ ? 'linear-gradient(90deg, #fbbf24, #f59e0b)' : 'linear-gradient(90deg, #7c3aed, #a78bfa)', borderRadius: '2px', transition: 'width 0.5s ease' } })
+          // Semantic progress bar: question completion is determinate.
+          totalQ > 0 && el('div', { className: 'gw-objective-progress', role: 'progressbar', 'aria-label': 'Lesson question progress', 'aria-valuemin': 0, 'aria-valuemax': totalQ, 'aria-valuenow': Math.min(score, totalQ), 'aria-valuetext': score + ' of ' + totalQ + ' questions completed' },
+            el('div', { className: 'gw-objective-progress-fill', style: { width: Math.min(100, Math.round((score / totalQ) * 100)) + '%', background: score >= totalQ ? 'linear-gradient(90deg, #fbbf24, #f59e0b)' : 'linear-gradient(90deg, #7c3aed, #a78bfa)' }, 'aria-hidden': 'true' })
           ),
-          currentLesson.objectives && currentLesson.objectives.map(function(obj, i) {
+          currentLesson.objectives && el('div', { className: 'gw-objective-list' },
+            currentLesson.objectives.map(function(obj, i) {
             var isDone = i < score;
-            return el('div', { key: 'obj-' + i + '-' + (obj && obj.text ? String(obj.text).slice(0, 24) : String(obj).slice(0, 24)),
+            var objectiveText = obj && obj.text ? obj.text : obj;
+            return el(isDone ? 'div' : 'button', { key: 'obj-' + i + '-' + String(objectiveText).slice(0, 24),
               onClick: function() {
                 if (isDone) return;
                 // Navigate camera toward the NPC that corresponds to this objective
@@ -7226,25 +7484,32 @@
                   sfxNpcChime();
                 }
               },
-              style: { display: 'flex', gap: '6px', alignItems: 'flex-start', marginBottom: '4px', color: isDone ? '#4ade80' : '#cbd5e1', opacity: isDone ? 0.6 : 1, transition: 'all 0.3s ease', cursor: isDone ? 'default' : 'pointer' },
-              title: isDone ? 'Completed!' : 'Click to navigate to this NPC'
+              type: isDone ? undefined : 'button',
+              className: 'gw-objective-item gw-focusable',
+              'data-complete': isDone ? 'true' : 'false',
+              'aria-label': isDone ? undefined : 'Navigate to objective: ' + objectiveText,
+              title: isDone ? 'Completed' : 'Navigate to this objective'
             },
-              el('span', { style: { fontSize: '10px', flexShrink: 0, marginTop: '1px' } }, isDone ? '\u2705' : '\u25CB'),
-              el('span', { style: { textDecoration: isDone ? 'line-through' : 'none', fontSize: '10px', lineHeight: 1.4 } }, obj)
+              el('span', { className: 'gw-objective-marker', 'aria-hidden': 'true' }, isDone ? '\u2705' : '\u25CB'),
+              el('span', { className: 'gw-objective-copy', style: { textDecoration: isDone ? 'line-through' : 'none' } }, objectiveText)
             );
-          }),
+          })),
           // Reset button
           el('button', {
+            type: 'button',
+            className: 'gw-reset-button gw-focusable',
+            'aria-label': 'Reset lesson progress and reload the world',
             onClick: function() {
               var eng = window[engineKey];
               if (eng) eng.loadLesson(currentLesson);
               upd({ score: 0, answeredNpcs: {}, measureResult: null, volumePrediction: '', predictionResult: null, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '' });
             },
-            style: { marginTop: '8px', background: 'rgba(30,41,59,0.6)', border: '1px solid rgba(100,116,139,0.2)', borderRadius: '6px', padding: '4px 10px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '10px', cursor: 'pointer', width: '100%', fontFamily: 'inherit', transition: 'all 0.15s' }
+            title: 'Reset lesson progress and reload the world'
           }, '\u21BB Reset World')
         ),
         // ── Minimap — top-down view showing player + NPC positions ──
         engine && el('canvas', {
+          className: 'gw-minimap',
           'aria-hidden': 'true',
           ref: function(canvasNode) {
             if (!canvasNode || !engine) return;
@@ -7338,10 +7603,10 @@
             ctx.strokeRect(0, 0, w, h);
           },
           width: 100, height: 100,
-          style: { position: 'absolute', bottom: '100px', right: '8px', zIndex: 20, borderRadius: '8px', border: '1px solid rgba(100,116,139,0.3)', overflow: 'hidden' }
+          style: { overflow: 'hidden' }
         }),
         // Shape selector (above block toolbar) — matching glass style
-        el('div', { style: { position: 'absolute', bottom: '54px', left: '50%', transform: 'translateX(-50%)', zIndex: 20, display: 'flex', gap: '3px', background: 'rgba(0,0,0,0.65)', borderRadius: '10px', padding: '3px 5px', alignItems: 'center', backdropFilter: 'blur(6px)', border: '1px solid rgba(255,255,255,0.06)' } },
+        el('div', { className: 'gw-shape-tray', style: { position: 'absolute', bottom: '54px', left: '50%', transform: 'translateX(-50%)', zIndex: 20, display: 'flex', gap: '3px', background: 'rgba(0,0,0,0.65)', borderRadius: '10px', padding: '3px 5px', alignItems: 'center', backdropFilter: 'blur(6px)', border: '1px solid rgba(255,255,255,0.06)' } },
           el('span', { style: { fontSize: '9px', color: 'var(--allo-stem-text-soft, #94a3b8)', padding: '0 4px', fontWeight: 600 } }, 'Shape'),
           // Rotation badge (only when non-cube shape selected)
           selectedShape > 0 && el('span', {
@@ -7373,12 +7638,13 @@
           })
         ),
         // Block toolbar (bottom overlay) — with key hints and glow
-        el('div', { style: { position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', zIndex: 20, display: 'flex', gap: '3px', background: 'rgba(0,0,0,0.75)', borderRadius: '12px', padding: '5px', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.06)', flexWrap: 'wrap', justifyContent: 'center', maxWidth: '95vw' } },
+        el('div', { className: 'gw-hotbar', style: { position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)', zIndex: 20, display: 'flex', gap: '3px', background: 'rgba(0,0,0,0.75)', borderRadius: '12px', padding: '5px', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.06)', flexWrap: 'wrap', justifyContent: 'center', maxWidth: '95vw' } },
           BLOCK_TYPES.map(function(bt, i) {
             var isActive = i === selectedBlock;
             return el('div', {
               key: bt.id,
-              className: 'gw-focusable',
+              className: 'gw-focusable gw-hotbar-item',
+              'data-active': isActive ? 'true' : 'false',
               role: 'button',
               tabIndex: 0,
               'aria-label': 'Select ' + bt.name + ' block, key ' + (i + 1) + (isActive ? ', currently selected' : ''),
@@ -7457,7 +7723,7 @@
         // ── Unified action bar (mode toggles, undo/redo, world actions) ──
         // All pills live in one wrapping flex row so they align regardless of which are
         // visible, and wrap gracefully on narrow viewports instead of colliding.
-        engine && el('div', {
+        engine && el('div', { className: 'gw-action-bar',
           style: { position: 'absolute', bottom: '10px', left: '130px', right: '120px', zIndex: 20, display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center' }
         },
           // Fly mode toggle (always visible)
@@ -7532,50 +7798,39 @@
           el('div', { style: { position: 'absolute', bottom: '80px', right: '12px', display: 'flex', flexDirection: 'column', gap: '8px', pointerEvents: 'auto' } },
             // Jump button
             el('button', {
-              className: 'gw-focusable', 'aria-label': 'Jump', title: 'Jump',
-              onTouchStart: function(ev) { ev.stopPropagation(); if (!engine.flyMode && engine.onGround && !engine._jumpLock) { engine.velocity.y = 6; sfxJump(); engine._jumpLock = true; } else if (engine.flyMode) { engine.moveState.flyUp = true; } },
+              type: 'button', className: 'gw-focusable', 'aria-label': 'Jump', title: 'Jump',
+              onTouchStart: function(ev) { runMobileButtonAction('jump', beginMobileJump, ev); },
               onTouchEnd: function() { engine.moveState.flyUp = false; engine._jumpLock = false; },
+              onClick: function() { runMobileButtonAction('jump', activateMobileJump); },
               style: { width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(99,102,241,0.4)', border: '2px solid rgba(99,102,241,0.6)', color: '#fff', fontSize: '18px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
             }, '\u2B06\uFE0F'),
             // Place block button
             el('button', {
-              className: 'gw-focusable', 'aria-label': 'Place block', title: 'Place block',
-              onTouchStart: function(ev) {
-                ev.stopPropagation();
-                // Was a second copy of the build path that quietly diverged: no XP
-                // milestones, no first-block celebration, no tutorial-step advance.
-                if (engine.interactAtCrosshair) engine.interactAtCrosshair('place');
-              },
+              type: 'button', className: 'gw-focusable', 'aria-label': 'Place block', title: 'Place block',
+              onTouchStart: function(ev) { runMobileButtonAction('place', placeMobileBlock, ev); },
+              onClick: function() { runMobileButtonAction('place', placeMobileBlock); },
               style: { width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(34,197,94,0.4)', border: '2px solid rgba(34,197,94,0.6)', color: '#fff', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
             }, '\uD83E\uDDF1'),
             // Break block button
             el('button', {
-              className: 'gw-focusable', 'aria-label': 'Break block', title: 'Break block',
-              onTouchStart: function(ev) {
-                ev.stopPropagation();
-                // Third copy of the break path; it skipped checkBreakFrustration(),
-                // the SEL growth-mindset nudge, so mobile students never saw it.
-                if (engine.interactAtCrosshair) engine.interactAtCrosshair('break');
-              },
+              type: 'button', className: 'gw-focusable', 'aria-label': 'Break block', title: 'Break block',
+              onTouchStart: function(ev) { runMobileButtonAction('break', breakMobileBlock, ev); },
+              onClick: function() { runMobileButtonAction('break', breakMobileBlock); },
               style: { width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(239,68,68,0.4)', border: '2px solid rgba(239,68,68,0.6)', color: '#fff', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
             }, '\u26CF\uFE0F'),
             // Measure button
             el('button', {
-              className: 'gw-focusable', 'aria-label': 'Measure structure', title: 'Measure structure',
-              onTouchStart: function(ev) {
-                ev.stopPropagation();
-                // Was a second measurement implementation that had lost the
-                // dimension lines, the selection glow, the first-measurement XP
-                // and the tutorial advance.
-                if (engine.performMeasurement) engine.performMeasurement('touch');
-              },
+              type: 'button', className: 'gw-focusable', 'aria-label': 'Measure structure', title: 'Measure structure',
+              onTouchStart: function(ev) { runMobileButtonAction('measure', measureMobileStructure, ev); },
+              onClick: function() { runMobileButtonAction('measure', measureMobileStructure); },
               style: { width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(251,191,36,0.4)', border: '2px solid rgba(251,191,36,0.6)', color: '#fff', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
             }, '\uD83D\uDCCF'),
             // Talk to NPC button
             el('button', {
-              className: 'gw-focusable', 'aria-label': 'Talk to nearby character', title: 'Talk to nearby character',
+              type: 'button', className: 'gw-focusable', 'aria-label': 'Talk to nearby character', title: 'Talk to nearby character',
               onTouchStart: function(ev) {
                 ev.stopPropagation();
+                engine._lastTouchAction = { key: 'talk', at: Date.now() };
                 var minD = 5, nearest = -1;
                 engine.npcs.forEach(function(n, i) {
                   var dist = engine.camera.position.distanceTo(n.body.position);
@@ -7584,12 +7839,14 @@
                 if (nearest >= 0) { upd({ showNpcDialog: true, dialogNpcIdx: nearest, npcTypewriterPos: 0, npcTypewriterNpc: nearest }); sfxNpcChime(); }
                 else if (addToast) addToast('No NPC nearby — walk closer!', 'info');
               },
+              onClick: function() { runMobileButtonAction('talk', talkToNearbyNpc); },
               style: { width: '52px', height: '52px', borderRadius: '50%', background: 'rgba(124,58,237,0.4)', border: '2px solid rgba(124,58,237,0.6)', color: '#fff', fontSize: '16px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
             }, '\uD83D\uDDE3\uFE0F'),
             // Undo button
             engine._undoStack && engine._undoStack.length > 0 && el('button', {
-              className: 'gw-focusable', 'aria-label': 'Undo last block action', title: 'Undo last block action',
-              onTouchStart: function(ev) { ev.stopPropagation(); if (engine.undo) engine.undo(); if (addToast) addToast('\u21A9\uFE0F Undo', 'info'); },
+              type: 'button', className: 'gw-focusable', 'aria-label': 'Undo last block action', title: 'Undo last block action',
+              onTouchStart: function(ev) { runMobileButtonAction('undo', undoMobileBlockAction, ev); },
+              onClick: function() { runMobileButtonAction('undo', undoMobileBlockAction); },
               style: { width: '44px', height: '44px', borderRadius: '50%', background: 'rgba(251,191,36,0.3)', border: '2px solid rgba(251,191,36,0.5)', color: '#fff', fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
             }, '\u21A9')
           ),
@@ -7598,19 +7855,13 @@
           el('div', { style: { position: 'absolute', bottom: '65px', right: '12px', fontSize: '9px', color: 'rgba(255,255,255,0.3)', textAlign: 'center', width: '52px', pointerEvents: 'none' } }, 'ACTIONS')
         ),
         // ── Water submersion blue tint ──
-        engine && engine._inWater && el('div', {
-          style: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 5, pointerEvents: 'none',
-            background: 'rgba(33,150,243,0.15)', transition: 'background 0.3s ease' }
-        }),
+        engine && engine._inWater && el('div', { className: 'gw-environment-tint gw-environment-tint--water', 'aria-hidden': 'true' }),
         // Lava submersion red tint + warning
-        engine && engine._inLava && el('div', {
-          style: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 5, pointerEvents: 'none',
-            background: 'rgba(255,87,34,0.25)', transition: 'background 0.3s ease' }
-        },
-          el('div', { style: { position: 'absolute', bottom: '50%', left: '50%', transform: 'translate(-50%,50%)', fontSize: '14px', fontWeight: 800, color: '#ff5722', textShadow: '0 2px 8px rgba(0,0,0,0.8)' } }, '\uD83D\uDD25 In Lava! Move away!')
+        engine && engine._inLava && el('div', { className: 'gw-environment-tint gw-environment-tint--lava' },
+          el('div', { className: 'gw-environment-warning', role: 'alert', 'aria-live': 'assertive', 'aria-atomic': 'true' }, '\uD83D\uDD25 In lava \u2014 move to safety')
         ),
         // ── Action feedback toast (center-bottom, fades in/out) ──
-        actionFeedback && el('div', {
+        actionFeedback && el('div', { className: 'gw-action-feedback', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
           style: { position: 'absolute', bottom: '135px', left: '50%', transform: 'translateX(-50%)', zIndex: 30, pointerEvents: 'none',
             background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(6px)', border: '1px solid rgba(124,58,237,0.3)', borderRadius: '10px',
             padding: '7px 14px', fontSize: '12px', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 600, whiteSpace: 'normal',
@@ -7624,39 +7875,35 @@
             padding: '2px 8px', fontSize: '9px', color: '#fbbf24', fontWeight: 600 }
         }, '\u21BB ' + (blockRotation * 90) + '\u00b0 (R)'),
         // ── Measurement history panel (bottom-left, above position HUD) ──
-        measureHistory.length > 0 && el('div', {
-          style: { position: 'absolute', bottom: isMobile ? '196px' : '80px', left: '8px', zIndex: 19,
-            background: 'rgba(15,23,42,0.8)', backdropFilter: 'blur(6px)', border: '1px solid rgba(100,116,139,0.2)', borderRadius: '8px',
-            padding: '7px 9px', fontSize: '9px', color: 'var(--allo-stem-text-soft, #94a3b8)', width: isMobile ? '168px' : '220px',
-            maxWidth: isMobile ? 'calc(100vw - 84px)' : 'min(220px, calc(100vw - 24px))', maxHeight: isMobile ? '42vh' : '50vh', overflowY: 'auto', boxShadow: '0 8px 24px rgba(2,6,23,0.3)' }
-        },
-          el('div', { style: { fontWeight: 700, fontSize: '8px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '3px', letterSpacing: '0.5px' } }, '\uD83D\uDCCF MEASUREMENTS - ' + completedMeasurements.length + '/' + measureHistory.length + ' complete'),
+        measureHistory.length > 0 && el('section', { className: 'gw-history-panel', role: 'region', 'aria-label': 'Measurement history' },
+          el('div', { className: 'gw-history-title' }, '\uD83D\uDCCF MEASUREMENTS \u00b7 ' + completedMeasurements.length + '/' + measureHistory.length + ' COMPLETE'),
           measureHistory.slice(-5).reverse().map(function(mh, mi) {
-            return el('div', { key: mi, style: { display: 'flex', justifyContent: 'space-between', gap: '4px', color: mi === 0 ? '#e2e8f0' : '#94a3b8', fontWeight: mi === 0 ? 600 : 400 } },
+            return el('div', { key: mi, className: 'gw-history-row', 'data-current': mi === 0 ? 'true' : 'false', 'data-incomplete': mh.isComplete === false ? 'true' : 'false' },
               el('span', null, mh.isComplete === false ? 'Incomplete scan' : mh.L + '\u00d7' + mh.W + '\u00d7' + mh.H),
               el('span', { style: { color: mh.isComplete === false ? '#fca5a5' : mi === 0 ? '#fbbf24' : '#94a3b8' } }, mh.isComplete === false ? '\u2265' + mh.blocks : '=' + mh.vol),
               mh.prediction != null && el('span', { title: 'Predicted ' + formatVolume(mh.prediction) + '; ' + mh.percentError + '% off', style: { color: mh.percentError <= 10 ? '#86efac' : '#cbd5e1', fontSize: '8px' } }, 'P:' + formatVolume(mh.prediction) + ' (' + mh.percentError + '%)')
             );
           }),
-          measurementComparison && el('div', { role: 'status', 'data-geometry-measurement-comparison': 'true', style: { marginTop: '5px', paddingTop: '5px', borderTop: '1px solid rgba(167,139,250,0.35)', lineHeight: 1.35 } },
+          measurementComparison && el('div', { className: 'gw-history-comparison', role: 'status', 'data-geometry-measurement-comparison': 'true' },
             el('div', { style: { color: '#c4b5fd', fontWeight: 800, fontSize: '8px', letterSpacing: '0.4px' } }, 'COMPARE LATEST TWO COMPLETE'),
             el('div', { style: { color: '#e2e8f0' } }, 'Volume: ' + formatVolume(measurementComparison.previousVolume) + ' \u2192 ' + formatVolume(measurementComparison.latestVolume) + (measurementComparison.sameVolume ? ' (same)' : ' (change ' + formatVolume(Math.abs(measurementComparison.volumeDifference)) + ')')),
             measurementComparison.surfaceAreaDifference !== null && el('div', { style: { color: '#86efac' } }, 'Surface area: ' + measurementComparison.previousSurfaceArea + ' \u2192 ' + measurementComparison.latestSurfaceArea + ' square units'),
             measurementComparison.moreSurfaceEfficient && el('div', { style: { color: '#fde68a', fontWeight: 700 } }, (measurementComparison.moreSurfaceEfficient === 'latest' ? 'Latest' : 'Previous') + ' shape uses ' + Math.abs(measurementComparison.surfaceAreaDifference) + ' fewer square units for the same volume.'),
             measurementComparison.surfaceAreaDifference === null && el('div', { style: { color: '#94a3b8' } }, 'Surface comparison unavailable for partial blocks.')
           ),
-          activeRetrievalCheckpoint && el('div', { 'data-geometry-retrieval-checkpoint': activeRetrievalCheckpoint.concept, style: { marginTop: '6px', paddingTop: '6px', borderTop: '1px solid rgba(34,211,238,0.35)', lineHeight: 1.35 } },
-            el('div', { style: { color: '#67e8f9', fontWeight: 800, fontSize: '8px', letterSpacing: '0.4px', marginBottom: '2px' } }, 'RETRIEVAL CHECK'),
+          activeRetrievalCheckpoint && el('div', { className: 'gw-retrieval-card', 'data-geometry-retrieval-checkpoint': activeRetrievalCheckpoint.concept },
+            el('div', { className: 'gw-retrieval-title' }, 'RETRIEVAL CHECK'),
             el('div', { style: { color: '#e2e8f0', fontSize: '9px', marginBottom: '4px' } }, activeRetrievalCheckpoint.prompt),
-            el('div', { style: { display: 'flex', gap: '4px', alignItems: 'center' } },
+            el('div', { className: 'gw-retrieval-controls' },
               el('input', {
                 type: 'text', inputMode: 'decimal', value: retrievalAnswer, disabled: !!(retrievalResult && retrievalResult.checkpointId === activeRetrievalCheckpoint.id && retrievalResult.correct),
+                className: 'gw-retrieval-input gw-focusable',
                 onChange: function(ev) { upd({ retrievalAnswer: ev.target.value, retrievalResult: null }); },
                 placeholder: 'answer', 'aria-label': 'Retrieval checkpoint answer',
-                style: { width: '62px', background: '#0f172a', border: '1px solid #64748b', borderRadius: '4px', padding: '3px 4px', color: '#fff', fontSize: '9px' }
+                autoComplete: 'off'
               }),
               el('button', {
-                type: 'button', className: 'gw-focusable',
+                type: 'button', className: 'gw-focusable gw-retrieval-button',
                 disabled: !!(retrievalResult && retrievalResult.checkpointId === activeRetrievalCheckpoint.id && retrievalResult.correct),
                 onClick: function() {
                   var nextAttempt = retrievalAttemptCount + 1;
@@ -7672,17 +7919,15 @@
                   }
                   announceToSR(result.feedback);
                 },
-                style: { background: '#0e7490', border: 'none', borderRadius: '4px', padding: '3px 7px', color: '#fff', fontSize: '9px', fontWeight: 700, cursor: retrievalResult && retrievalResult.correct ? 'default' : 'pointer', opacity: retrievalResult && retrievalResult.correct ? 0.65 : 1 }
+                'aria-label': 'Check retrieval answer'
               }, 'Check')
             ),
             retrievalResult && retrievalResult.checkpointId === activeRetrievalCheckpoint.id && el('div', { role: 'status', 'data-geometry-retrieval-result': retrievalResult.correct ? 'correct' : 'retry', style: { marginTop: '3px', color: retrievalResult.correct ? '#86efac' : '#fde68a', fontSize: '9px', fontWeight: 700 } }, retrievalResult.feedback)
           )
         ),
         // ── Block inventory widget (top-right, shows counts per type) ──
-        engine && (engine.blocksPlaced || 0) > 0 && el('div', {
-          style: { position: 'absolute', top: '48px', right: '8px', zIndex: 19, background: 'rgba(15,23,42,0.8)', backdropFilter: 'blur(6px)', border: '1px solid rgba(100,116,139,0.2)', borderRadius: '10px', padding: '8px 10px', fontSize: '10px', maxWidth: '160px' }
-        },
-          el('div', { style: { fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '9px', marginBottom: '4px', letterSpacing: '0.5px' } }, 'BLOCKS PLACED'),
+        engine && (engine.blocksPlaced || 0) > 0 && el('section', { className: 'gw-inventory-panel', role: 'region', 'aria-label': 'Block inventory' },
+          el('div', { className: 'gw-inventory-title' }, 'BLOCKS PLACED'),
           // Real-time total volume counter
           (function() {
             var totalVol = 0;
@@ -7691,7 +7936,7 @@
               var bm = engine.blocks[bks[vi]];
               if (bm && bm.userData && bm.userData.volume) totalVol += bm.userData.volume;
             }
-            return el('div', { style: { fontWeight: 800, color: '#fbbf24', fontSize: '12px', marginBottom: '4px', textAlign: 'center' } },
+            return el('div', { className: 'gw-inventory-volume' },
               '\uD83D\uDCE6 ' + (totalVol === Math.floor(totalVol) ? totalVol : totalVol.toFixed(2)) + ' cu'
             );
           })(),
@@ -7709,47 +7954,53 @@
             if (typeKeys.length === 0) return el('div', { style: { color: 'var(--allo-stem-text-soft, #475569)', fontSize: '9px' } }, 'None yet');
             return typeKeys.slice(0, 6).map(function(tk) {
               var bt = BLOCK_TYPES.find(function(b) { return b.id === tk; });
-              return el('div', { key: tk, style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1px 0', color: 'var(--allo-stem-text, #cbd5e1)' } },
+              return el('div', { key: tk, className: 'gw-inventory-row' },
                 el('span', null, (bt ? bt.emoji + ' ' : '') + tk),
-                el('span', { style: { fontWeight: 700, color: '#a78bfa', fontFamily: 'monospace' } }, counts[tk])
+                el('span', { className: 'gw-inventory-count' }, counts[tk])
               );
             });
           })()
         ),
         // ── Tutorial overlay (first-time users) ──
-        !tutorialDismissed && tutorialStep < 4 && worldActive && el('div', {
-          role: 'region', 'aria-label': 'Tutorial overlay: Step ' + (tutorialStep + 1) + ' of 4', 'aria-live': 'polite',
+        !tutorialDismissed && tutorialStep < 4 && worldActive && el('div', { className: 'gw-tutorial-shell',
+          role: 'region', 'aria-labelledby': 'gw-tutorial-title', 'aria-describedby': 'gw-tutorial-instruction', 'aria-live': 'polite', 'aria-atomic': 'true',
           style: { position: 'absolute', bottom: '140px', left: '50%', transform: 'translateX(-50%)', zIndex: 30, pointerEvents: 'none', textAlign: 'center', maxWidth: '340px' }
         },
-          el('div', { style: { background: 'rgba(15,23,42,0.92)', backdropFilter: 'blur(8px)', border: '2px solid rgba(124,58,237,0.5)', borderRadius: '14px', padding: '14px 20px', boxShadow: '0 8px 32px rgba(124,58,237,0.25)', pointerEvents: 'auto' } },
-            el('div', { 'aria-hidden': 'true', style: { fontSize: '10px', color: '#a78bfa', fontWeight: 700, marginBottom: '4px', letterSpacing: '0.5px' } }, 'TUTORIAL \u2014 Step ' + (tutorialStep + 1) + ' of 4'),
-            el('div', { role: 'status', style: { fontSize: '14px', color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 700, marginBottom: '8px', lineHeight: 1.4 } },
+          el('div', { className: 'gw-tutorial-card', style: { background: 'rgba(15,23,42,0.92)', backdropFilter: 'blur(12px) saturate(120%)', border: '2px solid rgba(124,58,237,0.5)', borderRadius: '16px', padding: '16px 20px', boxShadow: '0 8px 32px rgba(124,58,237,0.25)', pointerEvents: 'auto' } },
+            el('div', { className: 'gw-tutorial-kicker' }, 'Quick tour'),
+            el('h3', { id: 'gw-tutorial-title', className: 'gw-tutorial-title' },
+              ['Explore the world', 'Meet a guide', 'Measure a structure', 'Build a block'][tutorialStep]
+            ),
+            el('div', { id: 'gw-tutorial-instruction', className: 'gw-tutorial-instruction' },
               tutorialStep === 0 ? (isMobile ? '\uD83D\uDC46 Swipe right side to look. Drag left side to move.' : '\uD83D\uDDB1\uFE0F Click the 3D world to look around. Use WASD to move.') :
               tutorialStep === 1 ? (isMobile ? '\uD83D\uDC64 Walk near a purple character and tap the \uD83D\uDDE3\uFE0F button.' : '\uD83D\uDC64 Walk up to a purple character and press E to talk.') :
               tutorialStep === 2 ? (isMobile ? '\uD83D\uDCCF Point at the blue blocks and tap the \uD83D\uDCCF button.' : '\uD83D\uDCCF Point at the blue blocks and press M to measure.') :
               (isMobile ? '\uD83E\uDDF1 Point at a block and tap the \uD83E\uDDF1 button to place!' : '\uD83E\uDDF1 Right-click on any block face to place a new block!')
             ),
-            // Progress dots
-            el('div', { style: { display: 'flex', gap: '5px', justifyContent: 'center', marginBottom: '8px' } },
-              [0,1,2,3].map(function(si) {
-                return el('div', { key: si, style: { width: 8, height: 8, borderRadius: '50%', background: si < tutorialStep ? '#22c55e' : si === tutorialStep ? '#a78bfa' : 'rgba(100,116,139,0.4)', transition: 'all 0.3s' } });
-              })
+            // Semantic step progress
+            el('div', { className: 'gw-tutorial-progress', role: 'progressbar', 'aria-label': 'Tutorial progress', 'aria-valuemin': 1, 'aria-valuemax': 4, 'aria-valuenow': tutorialStep + 1 },
+              el('div', { className: 'gw-tutorial-track', 'aria-hidden': 'true' },
+                [0,1,2,3].map(function(si) {
+                  return el('span', { key: si, className: 'gw-tutorial-dot', 'data-complete': si < tutorialStep ? 'true' : 'false', 'data-current': si === tutorialStep ? 'true' : 'false' });
+                })
+              ),
+              el('span', { className: 'gw-tutorial-count', 'aria-hidden': 'true' }, (tutorialStep + 1) + ' / 4')
             ),
-            el('div', { style: { display: 'flex', gap: '6px', justifyContent: 'center', pointerEvents: 'auto' } },
-              el('button', {
+            el('div', { className: 'gw-tutorial-actions', style: { pointerEvents: 'auto' } },
+              el('button', { type: 'button', className: 'gw-tutorial-skip gw-focusable',
                 'aria-label': __alloT('stem.geometryworld.skip_tutorial_and_proceed_to_lesson', 'Skip tutorial and proceed to lesson'),
                 onClick: function() { upd({ tutorialStep: 4, tutorialDismissed: true }); },
                 style: { background: 'rgba(100,116,139,0.2)', border: '1px solid rgba(100,116,139,0.3)', borderRadius: '8px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '10px', padding: '4px 12px', cursor: 'pointer' }
-              }, 'Skip all'),
-              el('button', {
-                'aria-label': __alloT('stem.geometryworld.next_tutorial_step', 'Next tutorial step'),
+              }, 'Skip tutorial'),
+              el('button', { type: 'button', className: 'gw-tutorial-next gw-focusable',
+                'aria-label': tutorialStep === 3 ? 'Finish tutorial and start exploring' : __alloT('stem.geometryworld.next_tutorial_step', 'Next tutorial step'),
                 onClick: function() {
                   var nextStep = tutorialStep + 1;
                   if (nextStep >= 4) { upd({ tutorialStep: 4, tutorialDismissed: true }); }
                   else { upd('tutorialStep', nextStep); }
                 },
                 style: { background: '#7c3aed', border: 'none', borderRadius: '8px', color: '#fff', fontSize: '10px', padding: '4px 14px', cursor: 'pointer', fontWeight: 700 }
-              }, 'Next \u2192')
+              }, tutorialStep === 3 ? 'Start exploring' : 'Next \u2192')
             )
           )
         ),
@@ -7759,151 +8010,161 @@
           var chColor = ct === 'npc_question' ? '#fbbf24' : ct === 'npc' ? '#a78bfa' : ct === 'block' ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.5)';
           var chGlow = ct === 'npc_question' ? '0 0 6px #fbbf24' : ct === 'npc' ? '0 0 4px #a78bfa' : '0 0 2px rgba(0,0,0,0.5)';
           var chSize = ct === 'npc_question' ? '5px' : ct === 'npc' ? '4px' : '3px';
-          return el('div', { style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 10, pointerEvents: 'none', width: '22px', height: '22px', transition: 'all 0.15s ease' } },
+          return el('div', { className: 'gw-crosshair', 'data-target': ct, 'aria-hidden': 'true', style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 10, pointerEvents: 'none', width: '22px', height: '22px', transition: 'all 0.15s ease' } },
             el('div', { style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: chSize, height: chSize, borderRadius: '50%', background: chColor, boxShadow: chGlow, transition: 'all 0.15s ease' } }),
             el('div', { style: { position: 'absolute', top: '50%', left: '0', transform: 'translateY(-50%)', width: '6px', height: '1px', background: chColor, transition: 'background 0.15s' } }),
             el('div', { style: { position: 'absolute', top: '50%', right: '0', transform: 'translateY(-50%)', width: '6px', height: '1px', background: chColor, transition: 'background 0.15s' } }),
             el('div', { style: { position: 'absolute', top: '0', left: '50%', transform: 'translateX(-50%)', width: '1px', height: '6px', background: chColor, transition: 'background 0.15s' } }),
             el('div', { style: { position: 'absolute', bottom: '0', left: '50%', transform: 'translateX(-50%)', width: '1px', height: '6px', background: chColor, transition: 'background 0.15s' } }),
             // Target label hint
-            ct === 'npc_question' && el('div', { style: { position: 'absolute', top: '14px', left: '50%', transform: 'translateX(-50%)', fontSize: '8px', color: '#fbbf24', fontWeight: 700, whiteSpace: 'nowrap', textShadow: '0 1px 3px rgba(0,0,0,0.8)' } }, 'Press E')
+            ct === 'npc_question' && el('div', { className: 'gw-target-hint', style: { position: 'absolute', top: '14px', left: '50%', transform: 'translateX(-50%)', fontSize: '8px', color: '#fbbf24', fontWeight: 700, whiteSpace: 'nowrap', textShadow: '0 1px 3px rgba(0,0,0,0.8)' } }, isMobile ? 'Tap Talk' : 'Press E')
           );
         })(),
         // ── Lesson Intro Screen ──
         showLessonIntro && el('div', {
-          role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Lesson introduction', tabIndex: -1, ref: gwDialogRef,
+          role: 'dialog', className: 'gw-dialog gw-dialog--intro', 'aria-modal': 'true', 'aria-label': 'Lesson introduction', 'aria-labelledby': 'gw-intro-title', 'aria-describedby': 'gw-intro-description', tabIndex: -1, ref: gwDialogRef,
           style: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 40,
             background: 'linear-gradient(180deg, rgba(15,23,42,0.97) 0%, rgba(30,27,58,0.97) 100%)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'auto' }
         },
-          el('div', { style: { maxWidth: '420px', width: '90%', textAlign: 'center' } },
-            el('div', { style: { fontSize: '48px', marginBottom: '12px' } }, '\uD83E\uDDF1'),
-            el('div', { style: { fontSize: '22px', fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: '6px' } }, currentLesson.title || 'Geometry World'),
-            el('div', { style: { fontSize: '13px', color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.6, marginBottom: '16px' } }, currentLesson.description || ''),
+          el('div', { className: 'gw-intro-card', style: { maxWidth: '420px', width: '90%', textAlign: 'center' } },
+            el('div', { className: 'gw-intro-heading' },
+              el('div', { className: 'gw-intro-icon', 'aria-hidden': 'true' }, '\uD83E\uDDF1'),
+              el('div', null,
+                el('h2', { id: 'gw-intro-title', className: 'gw-intro-title' }, currentLesson.title || 'Geometry World'),
+                el('p', { id: 'gw-intro-description', className: 'gw-intro-description' }, currentLesson.description || 'Explore geometric measurement in an interactive 3D world.')
+              )
+            ),
             // Objectives preview
-            currentLesson.objectives && el('div', { style: { textAlign: 'left', background: 'rgba(124,58,237,0.1)', border: '1px solid rgba(124,58,237,0.25)', borderRadius: '12px', padding: '12px 16px', marginBottom: '16px' } },
-              el('div', { style: { fontWeight: 700, color: '#a78bfa', fontSize: '11px', marginBottom: '6px' } }, '\uD83C\uDFAF Objectives'),
-              currentLesson.objectives.map(function(obj, i) {
-                return el('div', { key: 'objlist-' + i + '-' + String(obj).slice(0, 24), style: { display: 'flex', gap: '6px', alignItems: 'flex-start', marginBottom: '3px', fontSize: '11px', color: 'var(--allo-stem-text, #cbd5e1)' } },
-                  el('span', { style: { color: '#7c3aed' } }, (i + 1) + '.'),
-                  el('span', null, obj)
-                );
-              })
+            currentLesson.objectives && el('section', { className: 'gw-intro-objectives', 'aria-labelledby': 'gw-intro-objectives-title' },
+              el('h3', { id: 'gw-intro-objectives-title', className: 'gw-intro-section-title' }, '\uD83C\uDFAF Objectives'),
+              el('ol', null,
+                currentLesson.objectives.map(function(obj, i) {
+                  return el('li', { key: 'objlist-' + i + '-' + String(obj).slice(0, 24) }, obj);
+                })
+              )
             ),
             // Key formulas
-            el('div', { style: { background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: '10px', padding: '10px', marginBottom: '20px', fontSize: '12px', color: '#fbbf24', fontWeight: 600 } },
-              '\uD83D\uDCDD V = L \u00d7 W \u00d7 H \u2022 Area = L \u00d7 W'
+            el('div', { className: 'gw-intro-formula', role: 'note', 'aria-label': 'Key formulas' },
+              'V = L \u00d7 W \u00d7 H \u2022 Area = L \u00d7 W'
             ),
             // NPC count
-            el('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '16px' } },
-              (currentLesson.npcs || []).length + ' NPCs \u2022 ' +
-              (currentLesson.npcs || []).filter(function(n) { return n.question; }).length + ' questions \u2022 ' +
-              (currentLesson.structures || []).length + ' structures'
+            el('div', { className: 'gw-intro-meta', 'aria-label': 'Lesson overview' },
+              el('span', null, (currentLesson.npcs || []).length + ' guides'),
+              el('span', null, (currentLesson.npcs || []).filter(function(n) { return n.question; }).length + ' questions'),
+              el('span', null, (currentLesson.structures || []).length + ' structures')
             ),
-            // Start button
-            el('button', {
-              onClick: function() { loadLessonByKey(activeLesson); },
-              style: { background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', color: '#fff', border: 'none', borderRadius: '12px',
-                padding: '14px 40px', fontSize: '16px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 6px 20px rgba(124,58,237,0.4)', letterSpacing: '0.5px' }
-            }, '\u25B6\uFE0F Start Lesson'),
-            // Skip intro for returning students
-            el('button', {
-              onClick: function() { loadLessonByKey(activeLesson); },
-              style: { display: 'block', margin: '10px auto 0', background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '10px', cursor: 'pointer' }
-            }, 'or press Enter to jump in')
+            // Start paths for new and returning students
+            el('div', { className: 'gw-intro-actions' },
+              el('button', { type: 'button', className: 'gw-primary-cta gw-intro-start gw-focusable',
+                onClick: function() { loadLessonByKey(activeLesson); },
+                style: { background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', color: '#fff', border: 'none', borderRadius: '12px',
+                  padding: '14px 20px', fontSize: '14px', fontWeight: 800, cursor: 'pointer', boxShadow: '0 6px 20px rgba(124,58,237,0.4)' }
+              }, '\u25B6\uFE0F Start Lesson'),
+              el('button', { type: 'button', className: 'gw-intro-secondary gw-focusable',
+                'aria-label': 'Start lesson without the guided tutorial',
+                onClick: function() { loadLessonByKey(activeLesson, 0, true); },
+                title: 'For returning students'
+              }, 'Skip guided tour')
+            )
           )
         ),
         // ── Student Reflection Prompt (before Next Lesson) ──
         showReflection && score >= totalQ && totalQ > 0 && el('div', {
-          role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Quick reflection', tabIndex: -1, ref: gwDialogRef,
+          role: 'dialog', className: 'gw-dialog gw-dialog--compact gw-reflection-dialog', 'aria-modal': 'true', 'aria-label': 'Quick reflection', 'aria-labelledby': 'gw-reflection-title', 'aria-describedby': 'gw-reflection-description gw-reflection-prompt', tabIndex: -1, ref: gwDialogRef,
           style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 36, pointerEvents: 'auto',
             background: 'rgba(15,23,42,0.95)', backdropFilter: 'blur(12px)', border: '2px solid rgba(124,58,237,0.4)', borderRadius: '18px',
             padding: '24px 28px', maxWidth: '360px', textAlign: 'center', boxShadow: '0 8px 32px rgba(124,58,237,0.2)' }
         },
-          el('div', { style: { fontSize: '28px', marginBottom: '8px' } }, '\uD83E\uDD14'),
-          el('div', { style: { fontSize: '16px', fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: '4px' } }, 'Quick Reflection'),
-          el('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '12px' } }, 'Take a moment to think about what you learned:'),
-          latestCompleteMeasurement && el('div', { 'data-geometry-reflection-evidence': 'true', style: { marginBottom: '10px', padding: '8px 10px', textAlign: 'left', borderRadius: '8px', background: 'rgba(14,116,144,0.18)', border: '1px solid rgba(34,211,238,0.3)', color: '#cffafe', fontSize: '11px', lineHeight: 1.45 } },
-            reflectionEvidencePrompt
+          el('div', { className: 'gw-reflection-heading' },
+            el('div', { className: 'gw-reflection-icon', 'aria-hidden': 'true' }, '\uD83E\uDD14'),
+            el('div', null,
+              el('h2', { id: 'gw-reflection-title', className: 'gw-reflection-title' }, 'Quick reflection'),
+              el('p', { id: 'gw-reflection-description', className: 'gw-reflection-description' }, 'Connect your strategy to evidence from the world.')
+            )
           ),
+          el('div', { id: 'gw-reflection-prompt', className: 'gw-reflection-prompt', 'data-geometry-reflection-evidence': latestCompleteMeasurement ? 'true' : 'general' },
+            latestCompleteMeasurement ? reflectionEvidencePrompt : 'What strategy helped you understand volume or surface area today?'
+          ),
+          el('label', { htmlFor: 'gw-reflection-text', className: 'gw-reflection-label' }, 'Your reflection'),
           el('textarea', {
-            value: reflectionText,
+            id: 'gw-reflection-text', className: 'gw-reflection-textarea gw-focusable', value: reflectionText,
+            maxLength: 600, 'aria-describedby': 'gw-reflection-prompt gw-reflection-count',
             onChange: function(ev) { upd('reflectionText', ev.target.value); },
-            placeholder: reflectionEvidencePrompt,
-            style: { width: '100%', height: '70px', background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '8px', padding: '8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '12px', fontFamily: 'inherit', resize: 'vertical', lineHeight: 1.5 }
+            placeholder: 'Describe what you noticed, tried, or would change next time.'
           }),
-          el('div', { style: { display: 'flex', gap: '8px', marginTop: '12px', justifyContent: 'center' } },
+          el('div', { className: 'gw-reflection-footer' },
+            el('span', { className: 'gw-reflection-readiness', 'data-ready': reflectionText.trim() ? 'true' : 'false' }, reflectionText.trim() ? 'Ready to save' : 'Optional response'),
+            el('span', { id: 'gw-reflection-count' }, reflectionText.length + ' / 600 characters')
+          ),
+          el('div', { className: 'gw-reflection-actions' },
             // Primary action — saves if there's text, otherwise behaves like a quick confirm
             el('button', {
+              type: 'button', className: 'gw-reflection-save gw-focusable', disabled: !reflectionText.trim(),
               onClick: function() {
                 upd('showReflection', false);
                 var eng = window[engineKey];
-                if (eng && eng.logEvent && reflectionText.trim()) eng.logEvent('reflection', { text: reflectionText, lesson: currentLesson.title, measuredVolume: latestCompleteMeasurement ? latestCompleteMeasurement.occupiedVolume : null, prediction: predictionResult ? predictionResult.prediction : null, revisedPrediction: predictionRevisionResult ? predictionRevisionResult.prediction : null, strategy: predictionResult ? predictionResult.strategy : '', misconception: predictionResult ? predictionResult.diagnosisCode : '' });
+                if (eng && eng.logEvent) eng.logEvent('reflection', { text: reflectionText.trim(), lesson: currentLesson.title, measuredVolume: latestCompleteMeasurement ? latestCompleteMeasurement.occupiedVolume : null, prediction: predictionResult ? predictionResult.prediction : null, revisedPrediction: predictionRevisionResult ? predictionRevisionResult.prediction : null, strategy: predictionResult ? predictionResult.strategy : '', misconception: predictionResult ? predictionResult.diagnosisCode : '' });
               },
-              style: { background: reflectionText.trim() ? '#7c3aed' : 'rgba(124,58,237,0.5)', color: '#fff', border: 'none', borderRadius: '10px', padding: '8px 20px', fontSize: '12px', fontWeight: 700, cursor: 'pointer', transition: 'background 0.2s' }
-            }, reflectionText.trim() ? '\u2705 Save & Continue' : 'Continue without writing'),
+            }, '\u2705 Save & Continue'),
             // Secondary "later" — dismisses without firing the save event
-            el('button', {
+            el('button', { type: 'button', className: 'gw-reflection-skip gw-focusable', 'aria-label': 'Continue without saving a reflection',
               onClick: function() { upd('showReflection', false); },
-              style: { background: 'rgba(100,116,139,0.2)', border: '1px solid rgba(100,116,139,0.3)', borderRadius: '10px', padding: '8px 16px', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '11px', cursor: 'pointer' }
-            }, 'Maybe later')
+            }, 'Continue without reflection')
           )
         ),
         // ── Lesson Completion overlay with Next Lesson ──
         score >= totalQ && totalQ > 0 && !showNpcDialog && !showReflection && el('div', {
+          role: 'dialog', className: 'gw-dialog gw-dialog--compact gw-completion-dialog', 'aria-modal': 'true', 'aria-label': 'Lesson complete', 'aria-labelledby': 'gw-completion-title', 'aria-describedby': 'gw-completion-description', tabIndex: -1, ref: gwDialogRef,
           style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 35, pointerEvents: 'auto', textAlign: 'center',
             background: 'rgba(15,23,42,0.92)', backdropFilter: 'blur(12px)', border: '2px solid rgba(251,191,36,0.5)', borderRadius: '20px',
             padding: '24px 32px', maxWidth: '380px', boxShadow: '0 12px 40px rgba(251,191,36,0.2)' }
         },
-          el('div', { style: { fontSize: '48px', marginBottom: '8px' } }, '\uD83C\uDFC6'),
-          el('div', { style: { fontSize: '20px', fontWeight: 800, color: '#fbbf24', marginBottom: '4px' } }, 'Lesson Complete!'),
-          el('div', { style: { fontSize: '13px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '12px', lineHeight: 1.5 } },
-            currentLesson.title + ' \u2014 ' + score + '/' + totalQ + ' questions answered'),
-          el('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '16px' } },
-            (engine ? (engine.blocksPlaced || 0) : 0) + ' blocks placed \u2022 ' +
-            completedMeasurements.length + ' complete measurements taken'),
+          el('div', { className: 'gw-completion-icon', 'aria-hidden': 'true' }, '\uD83C\uDFC6'),
+          el('h2', { id: 'gw-completion-title', className: 'gw-completion-title' }, 'Lesson complete!'),
+          el('p', { id: 'gw-completion-description', className: 'gw-completion-description' }, currentLesson.title + ' \u2014 ' + score + ' of ' + totalQ + ' questions answered.'),
+          el('div', { className: 'gw-completion-metrics', role: 'list', 'aria-label': 'Lesson activity summary' },
+            el('span', { className: 'gw-completion-metric', role: 'listitem' }, (engine ? (engine.blocksPlaced || 0) : 0) + ' blocks placed'),
+            el('span', { className: 'gw-completion-metric', role: 'listitem' }, completedMeasurements.length + ' complete measurements')
+          ),
           // Next Lesson button
           (function() {
             var curIdx = LESSON_ORDER.indexOf(activeLesson);
             var nextKey = curIdx >= 0 && curIdx < LESSON_ORDER.length - 1 ? LESSON_ORDER[curIdx + 1] : null;
             var nextLesson = nextKey ? SAMPLE_LESSONS[nextKey] : null;
-            return el('div', { style: { display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' } },
-              nextLesson && el('button', {
+            return el('div', { className: 'gw-completion-actions' },
+              nextLesson && el('button', { type: 'button', className: 'gw-completion-next gw-focusable', 'aria-label': 'Continue to next lesson: ' + (nextLesson.title || 'Next lesson'),
                 onClick: function() {
-                  upd({ activeLesson: nextKey, measureHistory: [] });
+                  upd({ activeLesson: nextKey, measureHistory: [], reflectionText: '' });
                   var eng = window[engineKey]; if (eng) eng.loadLesson(nextLesson);
                 },
-                style: { background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', color: '#fff', border: 'none', borderRadius: '10px',
-                  padding: '10px 24px', fontSize: '13px', fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(124,58,237,0.3)' }
               }, '\u27A1\uFE0F Next: ' + (nextLesson.title || '').split(' \u2014')[0]),
-              el('button', {
+              el('button', { type: 'button', className: 'gw-completion-replay gw-focusable', 'aria-label': 'Replay current lesson',
                 onClick: function() {
                   var eng = window[engineKey]; if (eng) eng.loadLesson(currentLesson);
-                  upd('measureHistory', []);
+                  upd({ measureHistory: [], reflectionText: '' });
                 },
-                style: { background: 'rgba(100,116,139,0.2)', border: '1px solid rgba(100,116,139,0.3)', borderRadius: '10px',
-                  padding: '10px 20px', fontSize: '12px', color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', fontWeight: 600 }
               }, '\uD83D\uDD04 Replay'),
-              !nextLesson && el('div', { style: { textAlign: 'center', marginTop: '8px' } },
-                el('div', { style: { fontSize: '32px', marginBottom: '4px' } }, '\uD83C\uDFC6\u2B50\uD83C\uDF1F'),
-                el('div', { style: { fontSize: '16px', fontWeight: 800, color: '#fbbf24', marginBottom: '8px' } }, 'All Lessons Complete!'),
-                el('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.6, marginBottom: '8px' } },
-                  'You\u2019ve mastered all ' + LESSON_ORDER.length + ' geometry lessons! Here\u2019s your journey:'),
-                el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '6px', fontSize: '10px', color: 'var(--allo-stem-text, #cbd5e1)' } },
-                  el('div', { style: { background: 'rgba(124,58,237,0.15)', borderRadius: '8px', padding: '6px', textAlign: 'center' } },
-                    el('div', { style: { fontSize: '18px', fontWeight: 800, color: '#a78bfa' } }, String(Object.keys(earnedBadges).length)),
-                    'badges earned'),
-                  el('div', { style: { background: 'rgba(251,191,36,0.15)', borderRadius: '8px', padding: '6px', textAlign: 'center' } },
-                    el('div', { style: { fontSize: '18px', fontWeight: 800, color: '#fbbf24' } }, String(engine ? engine.blocksPlaced || 0 : 0)),
-                    'blocks placed'),
-                  el('div', { style: { background: 'rgba(34,197,94,0.15)', borderRadius: '8px', padding: '6px', textAlign: 'center' } },
-                    el('div', { style: { fontSize: '18px', fontWeight: 800, color: '#22c55e' } }, String(completedMeasurements.length)),
-                    'complete measurements'),
-                  el('div', { style: { background: 'rgba(59,130,246,0.15)', borderRadius: '8px', padding: '6px', textAlign: 'center' } },
-                    el('div', { style: { fontSize: '18px', fontWeight: 800, color: '#3b82f6' } }, String(score)),
-                    'questions answered')
+              !nextLesson && el('section', { className: 'gw-completion-journey', 'aria-labelledby': 'gw-journey-title' },
+                el('div', { className: 'gw-journey-icon', 'aria-hidden': 'true' }, '\uD83C\uDFC6\u2B50\uD83C\uDF1F'),
+                el('h3', { id: 'gw-journey-title', className: 'gw-journey-title' }, 'All lessons complete!'),
+                el('p', { className: 'gw-journey-description' },
+                  'You\u2019ve completed all ' + LESSON_ORDER.length + ' geometry lessons. Here\u2019s your journey:'),
+                el('div', { className: 'gw-journey-stats', role: 'list', 'aria-label': 'Course achievement summary' },
+                  el('div', { className: 'gw-journey-stat', role: 'listitem', 'data-metric': 'badges' },
+                    el('span', { className: 'gw-journey-value' }, String(Object.keys(earnedBadges).length)),
+                    el('span', null, 'badges earned')),
+                  el('div', { className: 'gw-journey-stat', role: 'listitem', 'data-metric': 'blocks' },
+                    el('span', { className: 'gw-journey-value' }, String(engine ? engine.blocksPlaced || 0 : 0)),
+                    el('span', null, 'blocks placed')),
+                  el('div', { className: 'gw-journey-stat', role: 'listitem', 'data-metric': 'measurements' },
+                    el('span', { className: 'gw-journey-value' }, String(completedMeasurements.length)),
+                    el('span', null, 'complete measurements')),
+                  el('div', { className: 'gw-journey-stat', role: 'listitem', 'data-metric': 'questions' },
+                    el('span', { className: 'gw-journey-value' }, String(score)),
+                    el('span', null, 'questions answered'))
                 ),
-                el('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: '8px', fontStyle: 'italic' } },
+                el('blockquote', { className: 'gw-journey-quote' },
                   '\u201CEvery block you placed made your brain stronger.\u201D')
               )
             );
@@ -7964,19 +8225,11 @@
               // reach the choices. Naming it a dialog and moving focus into it makes
               // the reader announce it and puts the choices one Tab away.
               role: 'dialog',
+              className: 'gw-dialog gw-dialog--npc',
               'aria-modal': 'true',
               'aria-label': data.name + (data.question ? ' — question' : ''),
               tabIndex: -1,
-              // Guarded on the NODE, not an identity-stable callback: React re-invokes
-              // an inline ref on every re-render, and re-focusing on each one would
-              // yank focus back off whichever choice the student had tabbed to. The
-              // flag lives on the element, so it only fires for a genuinely new node.
-              ref: function(node) {
-                if (node && !node._gwDialogFocused) {
-                  node._gwDialogFocused = true;
-                  try { node.focus({ preventScroll: true }); } catch (e) { try { node.focus(); } catch (e2) {} }
-                }
-              },
+              ref: gwDialogRef,
               style: {
               position: 'absolute',
               // On mobile the dialog sits a bit higher so it doesn't overlap the touch-action buttons
@@ -8004,7 +8257,7 @@
                 el('div', { style: { fontSize: '13px', fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)' } }, data.name),
                 data.question && !isAnswered && el('div', { style: { fontSize: '9px', color: npcHexColor, fontWeight: 600, letterSpacing: '0.3px' } }, 'HAS A QUESTION')
               ),
-              el('button', { 'aria-label': __alloT('stem.geometryworld.close_npc_dialog', 'Close NPC dialog'), onClick: function() { upd({ showNpcDialog: false }); focusWorldSurface(); }, style: { background: 'rgba(100,116,139,0.15)', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '14px', cursor: 'pointer', borderRadius: '6px', width: '26px', height: '26px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 } }, '\u00d7')
+              el('button', { type: 'button', className: 'gw-dialog-close', 'aria-label': __alloT('stem.geometryworld.close_npc_dialog', 'Close NPC dialog'), onClick: function() { upd({ showNpcDialog: false }); focusWorldSurface(); }, style: { background: 'rgba(100,116,139,0.15)', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '14px', cursor: 'pointer', borderRadius: '6px', width: '26px', height: '26px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 } }, '\u00d7')
             ),
             // Body content
             el('div', { style: { padding: '12px 16px' } },
@@ -8275,7 +8528,7 @@
         })(),
         // ── Growth Mindset Nudge Overlay (SEL + Academic Integration) ──
         showGrowthNudge && el('div', {
-          role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Encouragement', tabIndex: -1, ref: gwDialogRef,
+          role: 'dialog', className: 'gw-dialog gw-dialog--compact', 'aria-modal': 'true', 'aria-label': 'Encouragement', tabIndex: -1, ref: gwDialogRef,
           style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 35,
             background: 'linear-gradient(135deg, rgba(15,23,42,0.97), rgba(30,41,59,0.97))',
             border: '2px solid #a78bfa', borderRadius: '18px', padding: '24px 28px', maxWidth: '380px', width: '85%',
@@ -8315,7 +8568,7 @@
         ),
         // ── Peer Worlds Browser Overlay ──
         showPeerWorlds && el('div', {
-          role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Class world library', tabIndex: -1, ref: gwDialogRef,
+          role: 'dialog', className: 'gw-dialog gw-dialog--compact', 'aria-modal': 'true', 'aria-label': 'Class world library', tabIndex: -1, ref: gwDialogRef,
           style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 36,
             background: 'rgba(15,23,42,0.97)', border: '2px solid #a78bfa', borderRadius: '16px',
             padding: '20px', maxWidth: '520px', width: '90%', maxHeight: '70%', overflowY: 'auto' }
@@ -8324,7 +8577,7 @@
             el('div', { style: { fontSize: '15px', fontWeight: 800, color: '#c4b5fd' } }, '\uD83D\uDCDA Class World Library'),
             el('div', { style: { display: 'flex', gap: '6px' } },
               el('button', { onClick: loadPeerWorlds, style: { background: 'none', border: 'none', color: '#7c3aed', fontSize: '12px', cursor: 'pointer', fontWeight: 600 } }, '\u21BB Refresh'),
-              el('button', { 'aria-label': __alloT('stem.geometryworld.close_class_worlds_browser', 'Close class worlds browser'), onClick: function() { upd('showPeerWorlds', false); }, style: { background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '18px', cursor: 'pointer' } }, '\u00d7')
+              el('button', { type: 'button', className: 'gw-dialog-close', 'aria-label': __alloT('stem.geometryworld.close_class_worlds_browser', 'Close class worlds browser'), onClick: function() { upd('showPeerWorlds', false); }, style: { background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '18px', cursor: 'pointer' } }, '\u00d7')
             )
           ),
           peerWorldsList.length === 0
@@ -8370,13 +8623,13 @@
         ),
         // ── Teacher Command Center Overlay ──
         showTeacherView && el('div', {
-          role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Teacher view', tabIndex: -1, ref: gwDialogRef,
+          role: 'dialog', className: 'gw-dialog gw-dialog--compact', 'aria-modal': 'true', 'aria-label': 'Teacher view', tabIndex: -1, ref: gwDialogRef,
           style: { position: 'absolute', top: '48px', right: '8px', zIndex: 22, background: 'rgba(15,23,42,0.97)',
             border: '2px solid #f87171', borderRadius: '14px', padding: '16px', width: '340px', maxHeight: '70%', overflowY: 'auto' }
         },
           el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' } },
             el('div', { style: { fontWeight: 800, color: '#f87171', fontSize: '14px' } }, '\uD83D\uDCCA Teacher Dashboard'),
-            el('button', { 'aria-label': __alloT('stem.geometryworld.close_teacher_dashboard', 'Close teacher dashboard'), onClick: toggleTeacherView, style: { background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '16px', cursor: 'pointer' } }, '\u00d7')
+            el('button', { type: 'button', className: 'gw-dialog-close', 'aria-label': __alloT('stem.geometryworld.close_teacher_dashboard', 'Close teacher dashboard'), onClick: toggleTeacherView, style: { background: 'none', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '16px', cursor: 'pointer' } }, '\u00d7')
           ),
           // Live session info
           el('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: '10px', padding: '6px 8px', background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: '6px' } },
@@ -8434,49 +8687,57 @@
         ),
         // ── Collaborative Player Indicators ──
         collabMode && Object.keys(collabPlayers).length > 0 && el('div', {
-          style: { position: 'absolute', top: '48px', left: '8px', zIndex: 20, display: 'flex', flexDirection: 'column', gap: '4px' }
+          className: 'gw-collab-roster',
+          role: 'region',
+          'aria-label': 'Builders online'
         },
-          el('div', { style: { fontSize: '10px', fontWeight: 700, color: '#34d399', marginBottom: '2px' } }, '\uD83D\uDC65 Builders Online'),
+          el('div', { className: 'gw-collab-title' }, '\uD83D\uDC65 Builders Online'),
           Object.keys(collabPlayers).map(function(key) {
             var p = collabPlayers[key];
             var isMe = p.name === playerName;
             return el('div', {
               key: key,
-              style: { display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', padding: '3px 8px',
-                background: isMe ? 'rgba(5,150,105,0.3)' : 'rgba(15,23,42,0.8)',
-                borderRadius: '6px', border: '1px solid ' + (isMe ? '#34d399' : '#334155') }
+              className: 'gw-collab-player',
+              'data-self': isMe ? 'true' : 'false'
             },
-              el('div', { style: { width: '8px', height: '8px', borderRadius: '50%', background: p.color || '#34d399' } }),
-              el('span', { style: { color: isMe ? '#34d399' : '#cbd5e1', fontWeight: isMe ? 700 : 400 } }, p.name + (isMe ? ' (you)' : '')),
-              p.position && el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '9px' } },
+              el('span', { className: 'gw-collab-dot', 'aria-hidden': 'true', style: { background: p.color || '#34d399' } }),
+              el('span', { style: { fontWeight: isMe ? 700 : 500 } }, p.name + (isMe ? ' (you)' : '')),
+              p.position && el('span', { style: { color: '#a8b3c7', fontSize: '9px' } },
                 '(' + Math.round(p.position[0]) + ', ' + Math.round(p.position[2]) + ')')
             );
           })
         ),
         // 3D Canvas container (or fallback if WebGL unavailable)
         (webglError || window[engineKey + '_failed'])
-          ? el('div', { style: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, var(--allo-stem-panel, #1e293b), var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '32px' } },
-              el('div', { style: { textAlign: 'center', maxWidth: '400px' } },
-                el('div', { style: { fontSize: '48px', marginBottom: '12px' } }, '\uD83C\uDFAE'),
-                el('div', { style: { color: 'var(--allo-stem-text, #f1f5f9)', fontSize: '16px', fontWeight: 700, marginBottom: '8px' } }, 'WebGL Not Available'),
-                el('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '12px', lineHeight: '1.6', marginBottom: '16px' } },
-                  'Geometry World requires WebGL for 3D rendering. This environment may not support it. Try opening AlloFlow directly in Chrome, Firefox, or Edge instead of within an embedded frame.'
+          ? el('section', { role: 'alert', 'aria-live': 'assertive', className: 'gw-state-screen gw-state-screen--inline' },
+              el('div', { className: 'gw-state-card' },
+                el('div', { className: 'gw-state-icon gw-state-icon--error', 'aria-hidden': 'true' }, '\uD83C\uDFAE'),
+                el('div', { className: 'gw-state-kicker' }, runtimeFailure ? 'Recovery mode' : '3D setup'),
+                el('h2', { className: 'gw-state-title' }, runtimeFailure ? '3D View Paused' : '3D View Could Not Start'),
+                el('p', { className: 'gw-state-copy' },
+                  runtimeFailure
+                    ? 'Geometry World stopped the 3D animation to keep this tab responsive. Your work is safe, and you can retry below.'
+                    : 'Geometry World could not initialize 3D rendering. Try opening AlloFlow directly in Chrome, Firefox, or Edge instead of within an embedded frame.'
                 ),
-                el('button', {
-                  onClick: function() {
-                    window[engineKey + '_failed'] = false;
-                    setWebglError(false);
-                  },
-                  style: {
-                    padding: '8px 16px',
-                    background: '#7c3aed',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontWeight: 600
-                  }
-                }, 'Retry 3D Mode')
+                engineFailure && engineFailure.message && el('details', { className: 'gw-recovery-details' },
+                  el('summary', null, 'Technical details'),
+                  el('code', null, engineFailure.message),
+                  el('div', { className: 'gw-state-actions' },
+                    el('button', { type: 'button', className: 'gw-state-secondary gw-focusable', onClick: copyEngineFailureDetails }, 'Copy error details')
+                  )
+                ),
+                el('div', { className: 'gw-state-actions' },
+                  el('button', {
+                    type: 'button',
+                    className: 'gw-primary-cta gw-state-primary gw-focusable',
+                    onClick: function() {
+                      if (window[engineKey]) destroyEngine();
+                      window[engineKey + '_failed'] = false;
+                      delete window[engineKey + '_failure'];
+                      setWebglError(false);
+                    }
+                  }, 'Retry 3D Mode')
+                )
               )
             )
           : el('div', {
@@ -8502,7 +8763,8 @@
               // refuses to shrink below its content — so the canvas could push this
               // container taller than its flex allotment instead of being bounded by
               // it, which is what let the resize feedback loop run away.
-              style: { flex: 1, position: 'relative', minHeight: 0, minWidth: 0, overflow: 'hidden' }
+              className: 'gw-viewport',
+              style: { flex: 1, position: 'relative', minHeight: 0, minWidth: 0, overflow: 'hidden', background: 'linear-gradient(180deg,#0f172a,#020617)' }
             },
               // Keyboard contract, announced on focus. Previously the only hint was
               // "Click to enter" in the label — mouse-only guidance on a surface
@@ -8517,6 +8779,8 @@
               // and the canvas coexist as siblings. zIndex keeps the button
               // above the WebGL surface.
               el('button', {
+                type: 'button',
+                className: 'gw-viewport-control gw-viewport-control--fullscreen gw-focusable',
                 'aria-label': __alloT('stem.geometryworld.toggle_fullscreen_for_the_3d_world', 'Toggle fullscreen for the 3D world'),
                 title: __alloT('stem.geometryworld.fullscreen', 'Fullscreen'),
                 onClick: function(ev) {
@@ -8537,6 +8801,8 @@
                 }
               }, '⛶'),
               xrSupported && el('button', {
+                type: 'button',
+                className: 'gw-viewport-control gw-viewport-control--vr gw-focusable',
                 'aria-label': __alloT('vr.enter_title', 'Enter VR (needs a headset)'),
                 title: __alloT('vr.enter_title', 'Enter VR (needs a headset)'),
                 onClick: function(ev) { ev.stopPropagation(); var eng = window[engineKey]; if (eng && eng.vr && eng.vr.enterVR) eng.vr.enterVR(); },
@@ -8566,24 +8832,28 @@
                 skewed:     { label: __alloT('stem.geometryworld.skewed_shape_deformed', '🟠 Skewed (shape deformed)'), color: '#fbbf24', bg: 'rgba(251,191,36,0.12)', border: 'rgba(251,191,36,0.4)' },
                 degenerate: { label: __alloT('stem.geometryworld.degenerate_volume_0', '💀 Degenerate (volume → 0)'), color: '#f87171', bg: 'rgba(248,113,113,0.12)', border: 'rgba(248,113,113,0.4)' }
               }[state];
-              return el('div', { style: { position: 'absolute', top: 12, right: 12, zIndex: 30, background: '#0f172a', border: '1px solid #a78bfa', borderRadius: 8, padding: 10, color: '#e2e8f0', maxWidth: 280 } },
+              return el('div', { className: 'gw-transform-panel', role: 'region', 'aria-label': 'Transform discovery' },
                 el('h3', { style: { fontSize: 12, fontWeight: 800, color: '#a78bfa', margin: '0 0 4px 0' } }, '📐 Transform discovery'),
-                el('div', { style: { padding: 6, borderRadius: 4, textAlign: 'center', background: sm.bg, border: '1px solid ' + sm.border, marginBottom: 6 } },
-                  el('div', { style: { fontSize: 11, fontWeight: 900, color: sm.color } }, sm.label)
+                el('div', { className: 'gw-transform-state', role: 'status', 'aria-live': 'polite', style: { color: sm.color, background: sm.bg, border: '1px solid ' + sm.border } },
+                  sm.label
                 ),
                 ['rot', 'scale', 'shear'].map(function(k) {
                   var conf = { rot: { l: 'Rot°', mn: 0, mx: 360, st: 5 }, scale: { l: 'Scale', mn: 0.1, mx: 2, st: 0.1 }, shear: { l: 'Shear', mn: -45, mx: 45, st: 5 } }[k];
-                  return el('div', { key: k, style: { marginBottom: 4 } },
+                  return el('div', { key: k, className: 'gw-transform-control' },
                     el('label', { htmlFor: 'tr-' + k, style: { fontSize: 10, fontWeight: 'bold' } }, conf.l + ': ', el('span', { style: { fontFamily: 'monospace', color: '#a78bfa' } }, iq[k])),
                     el('input', { id: 'tr-' + k, type: 'range', min: conf.mn, max: conf.mx, step: conf.st, value: iq[k],
                       onChange: function(e) { var p = {}; p[k] = parseFloat(e.target.value); setIQ(p); },
                       style: { width: '100%' }, 'aria-valuetext': (k === 'scale' ? (iq[k] + 'x scale') : (iq[k] + '°')), 'aria-label': conf.l }));
                 }),
-                el('div', { style: { display: 'flex', gap: 4, marginTop: 6 } },
+                el('div', { className: 'gw-transform-actions' },
+                  /* Replaced below with labeled, keyboard-native actions.
                   el('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ r: iq.rot, s: iq.scale, sh: iq.shear, st: state }]).slice(-8) }); }, style: { padding: '2px 6px', background: '#1e293b', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 10, cursor: 'pointer' } }, '📋'),
                   el('button', { onClick: function() { setIQ({ rot: 0, scale: 1, shear: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '2px 6px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 10, cursor: 'pointer' } }, '↺')
+                  */
+                  el('button', { type: 'button', className: 'gw-transform-action gw-focusable', 'aria-label': 'Add current transform to observation log', title: 'Add to observation log', onClick: function() { setIQ({ log: (iq.log || []).concat([{ r: iq.rot, s: iq.scale, sh: iq.shear, st: state }]).slice(-8) }); } }, '\uD83D\uDCCB Add to log'),
+                  el('button', { type: 'button', className: 'gw-transform-action gw-focusable', 'aria-label': 'Reset transform discovery', title: 'Reset transform', onClick: function() { setIQ({ rot: 0, scale: 1, shear: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); } }, '\u21BA Reset')
                 ),
-                el('div', { style: { fontSize: 9, fontStyle: 'italic', color: '#94a3b8', marginTop: 4 } }, 'Design: discrete 4-state transform marker; no reveal.')
+                el('div', { style: { marginTop: 8, color: '#a8b3c7', fontSize: 9, lineHeight: 1.45 } }, 'Adjust one property at a time and observe what changes.')
               );
             })()
       );

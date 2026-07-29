@@ -708,7 +708,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('a11yAuditor'))
               h('h4', { className: 'text-xs font-bold text-emerald-700' }, t('stem.a11yauditor.accessible_version', '\u2728 Accessible Version')),
               h('pre', { className: 'text-xs text-slate-700 whitespace-pre-wrap font-sans leading-relaxed' }, socialRewrite),
               h('button', { 'aria-label': t('stem.a11yauditor.copy_rewrite', 'Copy rewrite'), onClick: function() { navigator.clipboard.writeText(socialRewrite); if (addToast) addToast('Copied!', 'success'); },
-                className: 'px-3 py-1.5 bg-emerald-100 text-emerald-700 rounded-lg text-[11px] font-bold hover:bg-emerald-200'
+                className: 'px-3 py-1.5 bg-emerald-100 text-emerald-800 rounded-lg text-[11px] font-bold hover:bg-emerald-200'
               }, t('stem.a11yauditor.copy_to_clipboard', '\uD83D\uDCCB Copy to Clipboard'))
             ),
             h('p', { className: 'text-[11px] text-slate-600' }, t('stem.a11yauditor.checks_alt_text_captions_camelcase_has', 'Checks: alt text, captions, CamelCase hashtags, emoji placement, readability, contrast, and text-in-images.'))

@@ -324,7 +324,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       var textMuted = isDark ? 'text-slate-400' : 'text-slate-500'; // was 'text-slate-200' on both branches → ~1.6:1 on the light surface, failed WCAG AA
       var accent = 'text-sky-500';
       var accentBg = isDark ? 'bg-sky-900/40' : 'bg-sky-50';
-      var btnPrimary = 'bg-sky-600 hover:bg-sky-700 text-white';
+      var btnPrimary = 'bg-sky-700 hover:bg-sky-800 text-white';
       var btnSecondary = isDark ? 'bg-slate-700 hover:bg-slate-600 text-slate-200' : 'bg-slate-200 hover:bg-slate-300 text-slate-700';
 
       // ── Reduced motion ──
@@ -1020,7 +1020,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 // V-formation toggle
                 h('div', { className: 'flex items-center gap-2' },
                   h('button', {
-                    className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all ' + (ebVForm ? 'bg-green-500 text-white' : (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200 text-slate-200')),
+                    className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all ' + (ebVForm ? 'bg-green-700 text-white' : (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200 text-slate-700')),
                     'aria-pressed': ebVForm ? 'true' : 'false',
                     'aria-label': 'V-formation: ' + (ebVForm ? 'on, saving 35% energy' : 'off'),
                     onClick: function() { upd('ebVFormation', !ebVForm); }
@@ -1530,7 +1530,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   role: 'radio',
                   'aria-checked': active ? 'true' : 'false',
                   'aria-label': 'Wind from ' + cd.label + (active ? ', selected' : ''),
-                  className: 'w-10 h-10 rounded-full text-[11px] font-bold transition-all ' + (active ? 'bg-sky-500 text-white ring-2 ring-sky-300' : (isDark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-200 text-slate-700 hover:bg-slate-300')),
+                  className: 'w-10 h-10 rounded-full text-[11px] font-bold transition-all ' + (active ? 'bg-sky-700 text-white ring-2 ring-sky-300' : (isDark ? 'bg-slate-700 text-slate-300 hover:bg-slate-600' : 'bg-slate-200 text-slate-700 hover:bg-slate-300')),
                   tabIndex: active ? 0 : -1,
                   onClick: function() { upd('windDir', cd.angle); }
                 }, cd.label);
@@ -3349,7 +3349,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
             id: 'migration-tab-' + tb.id,
             type: 'button',
             role: 'tab',
-            className: 'migration-route-tab ' + (active ? 'bg-sky-500 text-white' : (isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')),
+            className: 'migration-route-tab ' + (active ? 'bg-sky-700 text-white' : (isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')),
             'aria-selected': active ? 'true' : 'false',
             'aria-controls': 'migration-active-panel',
             'aria-label': tb.label,

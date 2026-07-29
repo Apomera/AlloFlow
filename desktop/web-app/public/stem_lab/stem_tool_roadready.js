@@ -1363,7 +1363,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   var CONTINUOUS_SCENARIO_PROFILES = {
     residential: { biome: 'residential', intersectionEvery: 3, signalType: 'stop', roadHalfWidth: 3.5, lanesPerDirection: 1, pedestrianCount: 2 },
     suburban: { biome: 'suburban', intersectionEvery: 3, signalType: 'light', roadHalfWidth: 6.5, lanesPerDirection: 2, pedestrianCount: 2 },
-    highway: { biome: 'suburban', intersectionEvery: 0, signalType: null, roadHalfWidth: 8.0, shoulderWidth: 2.4, lanesPerDirection: 2, medianWidth: 1.0, pedestrianCount: 0, highway: true, flatElevation: true, noLandmarks: true },
+    highway: { biome: 'suburban', intersectionEvery: 0, signalType: null, roadHalfWidth: 8.0, shoulderWidth: 2.4, lanesPerDirection: 2, medianWidth: 1.0, physicalMedianBarrier: true, pedestrianCount: 0, highway: true, flatElevation: true, noLandmarks: true },
     rural: { biome: 'rural', intersectionEvery: 6, signalType: 'stop', roadHalfWidth: 3.5, pedestrianCount: 0 },
     night: { biome: 'suburban', intersectionEvery: 3, signalType: 'light', roadHalfWidth: 4.5, pedestrianCount: 2 },
     fog: { biome: 'rural', intersectionEvery: 6, signalType: 'stop', roadHalfWidth: 3.5, pedestrianCount: 0 },
@@ -1724,6 +1724,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       lateral: lateral,
       from: null,
       to: null
+    };
+  }
+
+  function schoolBusServiceStopAllowed(profileOrChunk) {
+    var source = profileOrChunk || {};
+    // A limited-access highway is not a lawful passenger loading zone. A bus
+    // may travel there, but it must not randomly stop in a live lane.
+    return !(source.highway || source.isHighway);
+  }
+
+  function schoolBusApproachDistanceWorld(speedMps, weather) {
+    var speedMph = Math.abs(Number(speedMps) || 0) * MS_TO_MPH;
+    var stoppingFeet = stoppingDistance(speedMph, weather || 'clear', 1.5).total_ft;
+    // Include a modest recognition/positioning buffer beyond the modeled stop.
+    return Math.max(15, stoppingFeet / FT_PER_M + 4);
+  }
+
+  function schoolBusStopRequirement(world, profileOrChunk, observer, bus) {
+    if (!observer || !bus) {
+      return { required: false, sameCorridor: false, sameDirection: false,
+        separatedByBarrier: false, ahead: Infinity, lateral: Infinity };
+    }
+    var source = profileOrChunk || (world && world.profile) || {};
+    var from = trafficRoadCoordinates(world, observer);
+    var to = trafficRoadCoordinates(world, bus);
+    var sameCorridor = !!(from && to && from.corridorKey === to.corridorKey);
+    var sameDirection;
+    var ahead;
+    var lateral;
+    if (from && to) {
+      sameDirection = sameCorridor && from.direction === to.direction;
+      ahead = sameCorridor ? (to.station - from.station) * from.direction : Infinity;
+      lateral = sameCorridor ? to.lateral - from.lateral : Infinity;
+    } else {
+      var observerHeading = Number(observer.heading) || 0;
+      var busHeading = Number(bus.heading) || 0;
+      var dx = (Number(bus.x) || 0) - (Number(observer.x) || 0);
+      var dy = (Number(bus.y) || 0) - (Number(observer.y) || 0);
+      ahead = dx * Math.cos(observerHeading) + dy * Math.sin(observerHeading);
+      lateral = -dx * Math.sin(observerHeading) + dy * Math.cos(observerHeading);
+      sameDirection = Math.cos(busHeading - observerHeading) > 0.5;
+      sameCorridor = Math.abs(lateral) <= roadLayoutFor(source).pavedHalfWidth * 2;
+    }
+    var separatedByBarrier = sameCorridor && !sameDirection &&
+      !!source.physicalMedianBarrier;
+    return {
+      required: sameCorridor && !separatedByBarrier,
+      sameCorridor: sameCorridor,
+      sameDirection: !!sameDirection,
+      separatedByBarrier: separatedByBarrier,
+      ahead: ahead,
+      lateral: lateral,
+      from: from,
+      to: to
     };
   }
 
@@ -2680,6 +2734,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     chunk.roadHalfWidth = profile ? profile.roadHalfWidth : (biome === 'commercial' || biome === 'suburban' ? 4.5 : 3.5);
     chunk.lanesPerDirection = profile && profile.lanesPerDirection ? profile.lanesPerDirection : 1;
     chunk.medianWidth = profile && profile.medianWidth ? profile.medianWidth : 0;
+    chunk.physicalMedianBarrier = !!(profile && profile.physicalMedianBarrier);
     chunk.shoulderWidth = profile && profile.shoulderWidth ? profile.shoulderWidth : 0.6;
     chunk.oneWay = !!(profile && profile.oneWay);
     chunk.oneWayDirection = profile && Number(profile.oneWayDirection) < 0 ? -1 : 1;
@@ -8879,7 +8934,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // below). Cycle: 22–40s rolling, then 10s stopped (real stops average 10–20s; we
             // shaved that for game pacing while keeping it long enough to practice a real stop).
             // Deterministic stagger per-bus via traffic index.
-            if (t.type === 'schoolbus' && !t.crossStreet) {
+            var busServiceStopAllowed = schoolBusServiceStopAllowed(
+              getContinuousScenarioProfile(scn.id) || {});
+            if (t.type === 'schoolbus' && !t.crossStreet && busServiceStopAllowed) {
               if (t._busCycleTimer === undefined) {
                 // Stagger by index so all buses don't stop at the same moment
                 t._busCycleTimer = 22 + (idx * 7) % 18;
@@ -8899,6 +8956,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 }
               }
               // While stop arm is active, override speed → 0 and set hard slowFor later.
+            } else if (t.type === 'schoolbus' && !busServiceStopAllowed) {
+              // Never carry an old stop cycle into a limited-access highway.
+              t._stopArmActive = false;
+              t._busCycleTimer = undefined;
+              t._busCompArmed = false;
+              t._busCompLogged = null;
             }
             // ── Direction-aware forward-vector helper ──
             // Cars travel along either Y (heading = ±π/2) or X (heading = 0 or π).
@@ -9417,37 +9480,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // If THIS vehicle is a school bus with active stop-arm, it must be stopped.
             if (t.type === 'schoolbus' && t._stopArmActive) slowFor = 2;
             // ── Yield to school buses with red flashers (stop-arm extended) ──
-            // Federal + state law: both directions stop on undivided roads; same-direction
-            // only on divided highways. We treat Free Explore / scenarios as undivided
-            // (single physical road surface). The bus marks itself with _stopArmActive.
+            // Use the shared legal road-frame model. This catches opposite outer
+            // lanes on wide undivided roads and exempts traffic across a physical
+            // median barrier. Only vehicles still approaching the bus should stop.
             traffic.forEach(function(other4, j4) {
-              if (j4 === idx) return;
-              if (other4.type !== 'schoolbus') return;
-              if (!other4._stopArmActive) return;
-              // Bus is stopped with flashers — all traffic within ~15 cells must stop.
-              // Lateral check: same road. Curve-safe — compare spline-perpendicular
-              // distances. The previous raw |bus.x − t.x| < 10 false-negated on bent
-              // roads where spline shift alone could exceed 10 between two same-road cars.
-              var busSameRoad = true;
-              if (!t.crossStreet && !other4.crossStreet) {
-                var bSp = infiniteWorldRef.current && infiniteWorldRef.current.spline;
-                if (bSp) {
-                  var bSpCx_t = bSp.centerAt(t.y);
-                  var bSpCx_b = bSp.centerAt(other4.y);
-                  var bSpTh_t = bSp.headingAt(t.y);
-                  var bSpTh_b = bSp.headingAt(other4.y);
-                  var tPerpForBus = (t.x - bSpCx_t) * Math.cos(bSpTh_t);
-                  var bPerpForBus = (other4.x - bSpCx_b) * Math.cos(bSpTh_b);
-                  busSameRoad = Math.abs(tPerpForBus - bPerpForBus) < 6; // road width + shoulder
-                } else {
-                  busSameRoad = Math.abs(other4.x - t.x) < 10;
-                }
-              } else {
-                busSameRoad = Math.abs(other4.x - t.x) < 10;
-              }
-              if (!busSameRoad) return;
-              var busRel = aheadOf(other4.x, other4.y);
-              if (Math.abs(busRel.ahead) < 15) {
+              if (j4 === idx || other4.type !== 'schoolbus' ||
+                  !other4._stopArmActive) return;
+              var busRequirement = schoolBusStopRequirement(
+                infiniteWorldRef.current,
+                getContinuousScenarioProfile(scn.id) || {}, t, other4);
+              if (!busRequirement.required || busRequirement.ahead <= 0) return;
+              var busPlanDistance = schoolBusApproachDistanceWorld(
+                t.speed, scn.weather);
+              if (busRequirement.ahead < busPlanDistance) {
                 slowFor = Math.max(slowFor, 2);
               }
             });
@@ -10794,20 +10839,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           for (var bi = 0; bi < traffic.length; bi++) {
             var bus = traffic[bi];
             if (bus.type !== 'schoolbus') continue;
-            if (!bus._stopArmActive) continue;
-            // How close is the player to this bus? Euclidean distance is fine here since
-            // the bus is stationary during stop-arm.
-            var dx = bus.x - car.x;
-            var dy = bus.y - car.y;
-            var dist = Math.hypot(dx, dy);
-            // Only engage the compliance check when player is within 12 cells of the bus
-            // AND the bus is approximately ahead of the player (within ~60° cone).
-            if (dist > 12) { bus._busCompArmed = false; continue; }
-            var forwardDot = Math.cos(car.heading) * dx + Math.sin(car.heading) * dy;
-            if (forwardDot < -2) continue; // bus is behind us
-            if (!bus._busCompArmed && !bus._busCompLogged) {
+            if (!bus._stopArmActive) {
+              bus._playerBusPreviousAhead = null;
+              continue;
+            }
+            var busRequirement = schoolBusStopRequirement(
+              infiniteWorldRef.current,
+              getContinuousScenarioProfile(currentScenario.id) || {}, car, bus);
+            if (!busRequirement.required) {
+              bus._busCompArmed = false;
+              bus._playerBusPreviousAhead = null;
+              continue;
+            }
+            var busAhead = busRequirement.ahead;
+            var busApproachDistance = schoolBusApproachDistanceWorld(
+              car.speed, currentScenario.weather);
+            if (busAhead > busApproachDistance || busAhead < -4) {
+              bus._busCompArmed = false;
+              bus._playerBusPreviousAhead = busAhead;
+              continue;
+            }
+            if (!bus._busCompArmed && !bus._busCompLogged && busAhead > 0) {
               bus._busCompArmed = true;
-              eventToastRef.current = { msg: '🚌 SCHOOL BUS with red flashers — STOP. Both directions must stop on an undivided road.', until: timeRef.current + 5 };
+              var busDirectionText = busRequirement.sameDirection
+                ? 'Traffic behind the bus must stop.'
+                : 'Both directions must stop on this undivided road.';
+              eventToastRef.current = { msg: '🚌 SCHOOL BUS with red flashers — STOP. ' +
+                busDirectionText, until: timeRef.current + 5 };
             }
             // ── Child runs from the bus ──
             // 50% chance per arming: a child sprite crosses the road from the bus side ~3s after arming.
@@ -10854,8 +10912,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 }
               }
             }
-            // Success: player at near-stop within 8 cells of the bus
-            if (bus._busCompArmed && !bus._busCompLogged && dist < 8 && Math.abs(car.speed) <= 0.15) {
+            // Success: stop before reaching the bus, close enough to represent
+            // a deliberate legal stop rather than an unrelated distant pause.
+            if (bus._busCompArmed && !bus._busCompLogged &&
+                busAhead >= 2 && busAhead <= 12 && Math.abs(car.speed) <= 0.15) {
               bus._busCompLogged = timeRef.current;
               statsRef.current.safetyScore = Math.min(100, statsRef.current.safetyScore + 6);
               if (!statsRef.current.busStopCompliance) statsRef.current.busStopCompliance = 0;
@@ -10863,8 +10923,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               addToast('✓ Stopped for school bus with red flashers. +6');
               eventToastRef.current = { msg: '✓ Maine law: stop for a school bus with red flashers on an undivided road.', until: timeRef.current + 4 };
             }
-            // Failure: player passed within 4 cells at > 5 mph
-            else if (bus._busCompArmed && !bus._busCompLogged && dist < 4 && Math.abs(car.speed) > 2.3) {
+            // Failure: crossing the bus's road station while still moving.
+            // This works across every lane of an undivided road, unlike a small
+            // Euclidean radius that missed far-side opposite-direction traffic.
+            var crossedStoppedBus = bus._playerBusPreviousAhead != null &&
+              bus._playerBusPreviousAhead > 0 && busAhead <= 0;
+            if (bus._busCompArmed && !bus._busCompLogged &&
+                crossedStoppedBus && Math.abs(car.speed) > 2.3) {
               bus._busCompLogged = timeRef.current;
               statsRef.current.safetyScore -= 25;
               statsRef.current.majorViolations = (statsRef.current.majorViolations || 0) + 1;
@@ -10872,6 +10937,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               eventToastRef.current = { msg: '🚨 Passing a stopped school bus with red flashers violates Maine §2308. First offense: Class E crime with a $250 minimum fine.', until: timeRef.current + 6 };
               speak('You passed a stopped school bus. That violates Maine law.');
             }
+            bus._playerBusPreviousAhead = busAhead;
           }
         };
 
@@ -32930,6 +32996,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       trafficRoadCoordinates: trafficRoadCoordinates,
       trafficRelativeRoadPosition: trafficRelativeRoadPosition,
       followingVehicleRoadState: followingVehicleRoadState,
+      schoolBusServiceStopAllowed: schoolBusServiceStopAllowed,
+      schoolBusApproachDistanceWorld: schoolBusApproachDistanceWorld,
+      schoolBusStopRequirement: schoolBusStopRequirement,
       recycleBranchVehicleToMain: recycleBranchVehicleToMain,
       intersectionLaneTurnPermissions: intersectionLaneTurnPermissions,
       trafficSignalMovementIndication: trafficSignalMovementIndication,

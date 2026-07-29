@@ -2022,7 +2022,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             sceneIdx === 4 ? h('button', {
               'aria-label': t('stem.echolocation.add_object_to_custom_scene', 'Add object to custom scene'),
               onClick: function() { addCustomObject(); },
-              className: 'transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-500'
+              className: 'transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-800'
             }, t('stem.echolocation.add_object', '+ Add Object')) : null
           ),
           renderSonarFocus(speciesData, isFrugivore, getActiveScene().name),
@@ -2036,7 +2036,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             h('button', {
               'aria-label': t('stem.echolocation.emit_sonar_pulse', 'Emit sonar pulse'),
               onClick: function() { emitSonarPulse(); },
-              className: 'echo-control-chip transition-colors px-3 py-1 rounded-full font-bold bg-indigo-600 text-white hover:bg-indigo-500'
+              className: 'echo-control-chip transition-colors px-3 py-1 rounded-full font-bold bg-indigo-600 text-white hover:bg-indigo-700'
             }, t('stem.echolocation.emit_pulse', '\uD83E\uDD87 Emit Pulse'))
           ),
           h('div', { className: 'echo-canvas-toolbar', 'data-echolocation-canvas-toolbar': 'true' },
@@ -3070,7 +3070,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                   try { beep(Math.min(waveFreq, 18000), 0.5, waveAmp * 0.3); } catch(e) {}
                 }
               },
-              className: 'transition-colors mt-2 px-4 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-500'
+              className: 'transition-colors mt-2 px-4 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700'
             }, '\uD83D\uDD0A Play Tone (' + waveFreq + ' Hz)') : h('div', { className: 'mt-2 text-[11px] italic ' + (isDark ? 'text-slate-200' : 'text-slate-200') },
               waveFreq < 20 ? '\uD83D\uDC33 This frequency is infrasonic \u2014 too low for human hearing (below 20 Hz)' :
               '\uD83E\uDD87 This frequency is ultrasonic \u2014 above human hearing! Bats can hear this, but we cannot.'),
@@ -3123,7 +3123,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 h('button', {
                   'aria-label': t('stem.echolocation.emit_pulse_to_calculate_round_trip_tim', 'Emit pulse to calculate round trip time'),
                   onClick: function() { updMulti({ distPulseActive: true, distPulseProgress: 0 }); },
-                  className: 'transition-colors px-4 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-500'
+                  className: 'transition-colors px-4 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700'
                 }, t('stem.echolocation.emit_pulse_2', '\uD83D\uDD0A Emit Pulse')))
             ),
             // Calculation display
@@ -3669,7 +3669,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                   try { beep(audible, 0.4, 0.2); } catch(e) {}
                 }
               },
-              className: 'transition-colors mt-2 px-4 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-500'
+              className: 'transition-colors mt-2 px-4 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700'
             }, t('stem.echolocation.hear_it_scaled_to_audible', '\uD83D\uDD0A Hear It (scaled to audible)'))
           ),
 
@@ -3689,7 +3689,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                 var dir = dirs[Math.floor(Math.random() * dirs.length)];
                 updMulti({ dopplerQuizActive: true, dopplerQuizDir: dir, dopplerQuizAnswer: null, dopplerQuizFeedback: '' });
               },
-              className: 'transition-colors px-4 py-2 rounded-lg text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-500'
+              className: 'transition-colors px-4 py-2 rounded-lg text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-800'
             }, t('stem.echolocation.new_challenge', '\uD83E\uDD87 New Challenge')) : h('div', { className: 'space-y-3' },
               h('p', { className: 'text-xs ' + (isDark ? 'text-slate-300' : 'text-slate-600') },
                 t('stem.echolocation.a_moth_is_moving_based_on_the_wave_pat', 'A moth is moving. Based on the wave pattern, which direction is it going?')),
@@ -3725,8 +3725,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                     },
                     className: 'px-4 py-2 rounded-lg text-xs font-bold transition-all ' +
                       (showResult
-                        ? (isCorrect ? 'bg-emerald-700 text-white ring-2 ring-emerald-400' : isAnswer ? 'bg-red-600 text-white' : (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200 text-slate-200'))
-                        : 'bg-indigo-600 text-white hover:bg-indigo-500')
+                        ? (isCorrect ? 'bg-emerald-700 text-white ring-2 ring-emerald-400' : isAnswer ? 'bg-red-600 text-white' : (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-200 text-slate-700'))
+                        : 'bg-indigo-600 text-white hover:bg-indigo-700')
                   }, dir === 'toward' ? '\u2B05\uFE0F Toward' : dir === 'away' ? '\u27A1\uFE0F Away' : '\u2195\uFE0F Sideways');
                 })
               ),
@@ -3739,7 +3739,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                   var dir = dirs[Math.floor(Math.random() * dirs.length)];
                   updMulti({ dopplerQuizDir: dir, dopplerQuizAnswer: null, dopplerQuizFeedback: '' });
                 },
-                className: 'transition-colors px-4 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-500'
+                className: 'transition-colors px-4 py-2 rounded-lg text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700'
               }, t('stem.echolocation.next_challenge', 'Next Challenge \u2192')) : null
             )
           ),
@@ -4554,7 +4554,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                     className: 'flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all ' +
                       (isActive
                         ? 'text-white shadow-md'
-                        : (isDark ? 'bg-slate-700/50 text-slate-200 hover:bg-slate-600' : 'bg-slate-200 text-slate-200 hover:bg-slate-300')),
+                        : (isDark ? 'bg-slate-700/50 text-slate-200 hover:bg-slate-600' : 'bg-slate-200 text-slate-700 hover:bg-slate-300')),
                     style: isActive ? { background: animal.color } : {}
                   }, h('span', { 'aria-hidden': 'true' }, animal.emoji), ' ', animal.name);
                 })
@@ -4649,7 +4649,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                           try { beep(animal.beepFreq, animal.beepDur, 0.2); } catch(e) {}
                         }
                       },
-                      className: 'transition-colors px-3 py-1.5 rounded-lg text-[11px] font-bold bg-indigo-600 text-white hover:bg-indigo-500'
+                      className: 'transition-colors px-3 py-1.5 rounded-lg text-[11px] font-bold bg-indigo-600 text-white hover:bg-indigo-700'
                     }, t('stem.echolocation.play', '\uD83D\uDD0A Play'))
                   ),
                   h('p', { className: 'text-[11px] ' + (isDark ? 'text-slate-200' : 'text-slate-600') }, __alloT('stem.echolocation.' + (animal.id) + '_desc', animal.desc)),
@@ -4868,7 +4868,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
                     updMulti({ soundmapResult: 'Error generating soundscape: ' + err.message, soundmapLoading: false });
                   });
                 },
-                className: 'px-4 py-2 rounded-lg text-xs font-bold ' + (soundmapLoading ? 'bg-slate-500 text-slate-300 cursor-wait' : 'transition-colors bg-indigo-600 text-white hover:bg-indigo-500')
+                className: 'px-4 py-2 rounded-lg text-xs font-bold ' + (soundmapLoading ? 'bg-slate-700 text-slate-200 cursor-wait' : 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700')
               }, soundmapLoading ? '\u23F3 Generating...' : '\uD83E\uDD16 Generate Soundscape'),
               soundmapResult ? h('div', { className: 'mt-3 p-3 rounded-lg whitespace-pre-wrap text-[11px] leading-relaxed ' + (isDark ? 'bg-slate-700/50 text-slate-200' : 'bg-slate-50 text-slate-700') },
                 soundmapResult) : null

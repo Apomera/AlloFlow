@@ -654,7 +654,7 @@ window.StemLab = window.StemLab || {
               t('stem.semiconductor.fermi_level', 'Fermi Level')
             ),
             btn('\uD83E\uDD16 AI Explain', function() { askAI('band gap of ' + mat.name + ' semiconductor'); }),
-            btn('\uD83D\uDD0A Read', function() { speakText(mat.name + ' has a band gap of ' + Eg.toFixed(2) + ' electron volts. ' + (isConductor ? 'It is a conductor.' : isInsulator ? 'It is an insulator.' : 'It is a semiconductor.')); }, 'transition-colors bg-slate-600 text-slate-200 hover:bg-slate-500')
+            btn('\uD83D\uDD0A Read', function() { speakText(mat.name + ' has a band gap of ' + Eg.toFixed(2) + ' electron volts. ' + (isConductor ? 'It is a conductor.' : isInsulator ? 'It is an insulator.' : 'It is a semiconductor.')); }, 'transition-colors bg-slate-600 text-slate-200 hover:bg-slate-700')
           ),
           // Stats bar
           h('div', { className: 'flex gap-2 mt-2 flex-wrap' },
@@ -832,7 +832,7 @@ window.StemLab = window.StemLab || {
           )),
           h('div', { className: 'flex gap-2 mt-2' },
             btn('\uD83E\uDD16 AI Explain', function() { askAI(d.dopant === 'none' ? 'intrinsic semiconductor crystal lattice' : dopant.type + '-type doping with ' + dopant.name); }, 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700'),
-            btn('\uD83D\uDD0A Read', function() { speakText(d.dopant === 'none' ? 'Intrinsic silicon with 4 valence electrons in covalent bonds.' : dopant.type + '-type doping with ' + dopant.name + '. Majority carriers are ' + (dopant.type === 'n' ? 'electrons' : 'holes') + '.'); }, 'transition-colors bg-slate-600 text-slate-200 hover:bg-slate-500')
+            btn('\uD83D\uDD0A Read', function() { speakText(d.dopant === 'none' ? 'Intrinsic silicon with 4 valence electrons in covalent bonds.' : dopant.type + '-type doping with ' + dopant.name + '. Majority carriers are ' + (dopant.type === 'n' ? 'electrons' : 'holes') + '.'); }, 'transition-colors bg-slate-600 text-slate-200 hover:bg-slate-700')
           ),
           aiBox()
         );
@@ -1299,7 +1299,7 @@ window.StemLab = window.StemLab || {
           )),
           h('div', { className: 'flex gap-2 mt-2' },
             btn('\uD83E\uDD16 AI Explain', function() { askAI(showCMOS ? 'CMOS inverter operation' : type + ' transistor'); }, 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700'),
-            btn('\uD83D\uDD0A Read', function() { speakText(showCMOS ? 'CMOS inverter. Input ' + Vg.toFixed(1) + ' volts. Output is ' + (cmosOut ? 'HIGH' : 'LOW') + '.' : type + ' transistor. Gate voltage ' + Vg.toFixed(1) + ' volts. Transistor is ' + (isOn ? 'ON' : 'OFF') + '.'); }, 'transition-colors bg-slate-600 text-slate-200 hover:bg-slate-500')
+            btn('\uD83D\uDD0A Read', function() { speakText(showCMOS ? 'CMOS inverter. Input ' + Vg.toFixed(1) + ' volts. Output is ' + (cmosOut ? 'HIGH' : 'LOW') + '.' : type + ' transistor. Gate voltage ' + Vg.toFixed(1) + ' volts. Transistor is ' + (isOn ? 'ON' : 'OFF') + '.'); }, 'transition-colors bg-slate-600 text-slate-200 hover:bg-slate-700')
           ),
           aiBox()
         );
@@ -1476,7 +1476,7 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { className: 'flex gap-2 mt-2' },
             btn('\uD83E\uDD16 AI Explain', function() { askAI(gateType + ' logic gate CMOS implementation with transistors'); }, 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700'),
-            btn('\uD83D\uDD0A Read', function() { speakText(gateType + ' gate. Input A is ' + (inA ? '1' : '0') + (gate.inputs === 2 ? ', input B is ' + (inB ? '1' : '0') : '') + '. Output Q is ' + (output ? '1' : '0') + '.'); }, 'transition-colors bg-slate-600 text-slate-200 hover:bg-slate-500')
+            btn('\uD83D\uDD0A Read', function() { speakText(gateType + ' gate. Input A is ' + (inA ? '1' : '0') + (gate.inputs === 2 ? ', input B is ' + (inB ? '1' : '0') : '') + '. Output Q is ' + (output ? '1' : '0') + '.'); }, 'transition-colors bg-slate-600 text-slate-200 hover:bg-slate-700')
           ),
           aiBox()
         );
@@ -1960,7 +1960,7 @@ window.StemLab = window.StemLab || {
                 addToast('\uD83C\uDFC6 Fabrication Complete!', 'success');
               }
               if (announceToSR) announceToSR('Advanced to stage ' + (stage + 2));
-            }, 'transition-colors bg-cyan-600 text-white hover:bg-cyan-700')
+            }, 'transition-colors bg-cyan-700 text-white hover:bg-cyan-800')
           ),
           // Stage info card
           h('div', { className: 'mt-3 p-3 rounded-xl border', style: { borderColor: currentStage.color + '60', backgroundColor: currentStage.color + '10' } },
@@ -1978,7 +1978,7 @@ window.StemLab = window.StemLab || {
           ),
           h('div', { className: 'flex gap-2 mt-2' },
             btn('\uD83E\uDD16 AI Explain', function() { askAI(currentStage.name + ' step in semiconductor wafer fabrication'); }, 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700'),
-            btn('\uD83D\uDD0A Read', function() { speakText('Stage ' + (stage + 1) + ': ' + currentStage.name + '. ' + currentStage.desc); }, 'transition-colors bg-slate-600 text-slate-200 hover:bg-slate-500')
+            btn('\uD83D\uDD0A Read', function() { speakText('Stage ' + (stage + 1) + ': ' + currentStage.name + '. ' + currentStage.desc); }, 'transition-colors bg-slate-600 text-slate-200 hover:bg-slate-700')
           ),
           aiBox()
         );
@@ -2143,7 +2143,7 @@ window.StemLab = window.StemLab || {
           )),
           h('div', { className: 'flex gap-2 mt-2' },
             btn('\uD83E\uDD16 AI Explain', function() { askAI(mixMode ? 'RGB LED color mixing additive colors' : mat.name + ' LED physics and emission wavelength'); }, 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700'),
-            btn('\uD83D\uDD0A Read', function() { speakText(mixMode ? 'RGB color mixer. Red ' + (d.ledMixR || 0) + ', Green ' + (d.ledMixG || 0) + ', Blue ' + (d.ledMixB || 0) + '.' : mat.name + '. Wavelength ' + mat.wavelength + ' nanometers. Band gap ' + mat.bandGap + ' electron volts.'); }, 'transition-colors bg-slate-600 text-slate-200 hover:bg-slate-500')
+            btn('\uD83D\uDD0A Read', function() { speakText(mixMode ? 'RGB color mixer. Red ' + (d.ledMixR || 0) + ', Green ' + (d.ledMixG || 0) + ', Blue ' + (d.ledMixB || 0) + '.' : mat.name + '. Wavelength ' + mat.wavelength + ' nanometers. Band gap ' + mat.bandGap + ' electron volts.'); }, 'transition-colors bg-slate-600 text-slate-200 hover:bg-slate-700')
           ),
           aiBox()
         );
@@ -2708,7 +2708,7 @@ window.StemLab = window.StemLab || {
           )),
           h('div', { className: 'flex gap-2 mt-2' },
             btn('\uD83E\uDD16 AI Explain', function() { askAI('quantum well confinement in ' + qmat.name + ' with width ' + wellWidth + ' nm'); }, 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700'),
-            btn('\uD83D\uDD0A Read', function() { speakText('Quantum well in ' + qmat.name + '. Width ' + wellWidth + ' nanometers, depth ' + wellDepth + ' electron volts. ' + levels.length + ' energy levels.'); }, 'transition-colors bg-slate-600 text-slate-200 hover:bg-slate-500')
+            btn('\uD83D\uDD0A Read', function() { speakText('Quantum well in ' + qmat.name + '. Width ' + wellWidth + ' nanometers, depth ' + wellDepth + ' electron volts. ' + levels.length + ' energy levels.'); }, 'transition-colors bg-slate-600 text-slate-200 hover:bg-slate-700')
           ),
           aiBox()
         );
@@ -2961,7 +2961,7 @@ window.StemLab = window.StemLab || {
             }, bitVal ? 'transition-colors bg-emerald-700 text-white hover:bg-emerald-700' : 'transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600'),
             btn(writeEn ? '\uD83D\uDD13 Write ON' : '\uD83D\uDD12 Write OFF', function() {
               upd('memWriteEnable', !writeEn);
-            }, writeEn ? 'transition-colors bg-amber-600 text-white hover:bg-amber-700' : 'transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600'),
+            }, writeEn ? 'transition-colors bg-amber-700 text-white hover:bg-amber-800' : 'transition-colors bg-slate-700 text-slate-300 hover:bg-slate-600'),
             pill(showArray ? '\uD83D\uDD0D Cell' : '\uD83D\uDCCA Array', true, function() { upd('memShowArray', !showArray); })
           ),
           // Stats
@@ -2980,7 +2980,7 @@ window.StemLab = window.StemLab || {
           )),
           h('div', { className: 'flex gap-2 mt-2' },
             btn('\uD83E\uDD16 AI Explain', function() { askAI(mt.name + ' memory cell architecture and operation'); }, 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700'),
-            btn('\uD83D\uDD0A Read', function() { speakText(mt.name + '. Uses ' + mt.transistors + ' transistor' + (mt.transistors > 1 ? 's' : '') + ' per bit. Speed: ' + mt.speed + '. ' + (mt.volatile ? 'Volatile, needs power to keep data.' : 'Non-volatile, keeps data without power.')); }, 'transition-colors bg-slate-600 text-slate-200 hover:bg-slate-500')
+            btn('\uD83D\uDD0A Read', function() { speakText(mt.name + '. Uses ' + mt.transistors + ' transistor' + (mt.transistors > 1 ? 's' : '') + ' per bit. Speed: ' + mt.speed + '. ' + (mt.volatile ? 'Volatile, needs power to keep data.' : 'Non-volatile, keeps data without power.')); }, 'transition-colors bg-slate-600 text-slate-200 hover:bg-slate-700')
           ),
           aiBox()
         );
@@ -3174,7 +3174,7 @@ window.StemLab = window.StemLab || {
           )),
           h('div', { className: 'flex gap-2 mt-2' },
             btn('\uD83E\uDD16 AI Explain', function() { askAI(amp.name + ' amplifier gain and frequency response'); }, 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700'),
-            btn('\uD83D\uDD0A Read', function() { speakText(amp.name + '. Voltage gain is ' + amp.gain + ', or ' + gainDB.toFixed(1) + ' decibels. Input impedance: ' + amp.inputZ + '. ' + (inverts ? 'This amplifier inverts the signal.' : 'This amplifier does not invert.')); }, 'transition-colors bg-slate-600 text-slate-200 hover:bg-slate-500')
+            btn('\uD83D\uDD0A Read', function() { speakText(amp.name + '. Voltage gain is ' + amp.gain + ', or ' + gainDB.toFixed(1) + ' decibels. Input impedance: ' + amp.inputZ + '. ' + (inverts ? 'This amplifier inverts the signal.' : 'This amplifier does not invert.')); }, 'transition-colors bg-slate-600 text-slate-200 hover:bg-slate-700')
           ),
           aiBox()
         );
@@ -3331,7 +3331,7 @@ window.StemLab = window.StemLab || {
                 setStemLabTab('explore');
                 updMulti({ subtool: current.topic, challengeActive: false, challengeFeedback: null, challengeAnswer: null, challengeShowHint: false, aiExplain: null });
                 if (announceToSR) announceToSR('Opened ' + getSubtoolLabel(current.topic) + ' simulator');
-              }, 'transition-colors bg-cyan-700 text-white hover:bg-cyan-600')
+              }, 'transition-colors bg-cyan-700 text-white hover:bg-cyan-800')
             )
           )
         );
@@ -3589,7 +3589,7 @@ window.StemLab = window.StemLab || {
           }),
           h('div', { className: 'flex gap-2 mt-3' },
             btn('\uD83E\uDD16 AI: Explain all for my level', function() { askAI('comprehensive semiconductor overview for ' + gradeBand + ' student'); }, 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700'),
-            btn('\uD83D\uDD0A Read intro', function() { speakText('Semiconductors are materials whose electrical conductivity is between conductors and insulators. Silicon is the most important semiconductor. We control it with doping, temperature, and voltage.'); }, 'transition-colors bg-slate-600 text-slate-200 hover:bg-slate-500')
+            btn('\uD83D\uDD0A Read intro', function() { speakText('Semiconductors are materials whose electrical conductivity is between conductors and insulators. Silicon is the most important semiconductor. We control it with doping, temperature, and voltage.'); }, 'transition-colors bg-slate-600 text-slate-200 hover:bg-slate-700')
           ),
           aiBox()
         );

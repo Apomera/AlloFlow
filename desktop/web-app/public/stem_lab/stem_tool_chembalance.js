@@ -18850,7 +18850,7 @@
               h('button', {
                 onClick: function() { setCategory(null); upd('_everPicked', false); },
                 'aria-label': __alloT('stem.chembalance.return_to_chemistry_hub', 'Return to Chemistry Lab hub'),
-                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (atHub ? 'bg-lime-600 text-white' : 'transition-colors bg-slate-100 text-lime-700 hover:bg-lime-50 border border-lime-300')
+                className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + (atHub ? 'bg-lime-700 text-white' : 'transition-colors bg-slate-100 text-lime-700 hover:bg-lime-50 border border-lime-300')
               }, __alloT('stem.chembalance.hub', '🏠 Hub')),
               activeCat && !atHub && h('span', { className: 'text-xs text-slate-400' }, '/'),
               activeCat && !atHub && h('span', { className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-50 text-lime-700 border border-lime-200' }, activeCat.icon + ' ' + activeCat.label),
@@ -19046,13 +19046,13 @@
             // Tier filter
             h('div', { className: 'flex gap-2 mb-3' },
               ['all', 'beginner', 'intermediate', 'advanced'].map(function(tier) {
-                return h('button', { key: tier, onClick: function() { upd('tierFilter', tier); var first = tier === 'all' ? ALL_PRESETS[0] : null; if (!first) { for (var ti = 0; ti < ALL_PRESETS.length; ti++) { if (ALL_PRESETS[ti].tier === tier) { first = ALL_PRESETS[ti]; break; } } } if (first) switchPreset(first.name); }, className: 'px-3 py-1 rounded-full text-xs font-bold transition-all ' + (tierFilter === tier ? 'bg-lime-600 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, tier === 'all' ? '\uD83D\uDCCA All' : tierLabels[tier] || tier);
+                return h('button', { key: tier, onClick: function() { upd('tierFilter', tier); var first = tier === 'all' ? ALL_PRESETS[0] : null; if (!first) { for (var ti = 0; ti < ALL_PRESETS.length; ti++) { if (ALL_PRESETS[ti].tier === tier) { first = ALL_PRESETS[ti]; break; } } } if (first) switchPreset(first.name); }, className: 'px-3 py-1 rounded-full text-xs font-bold transition-all ' + (tierFilter === tier ? 'bg-lime-700 text-white shadow-md' : 'bg-slate-100 text-slate-600 hover:bg-slate-200') }, tier === 'all' ? '\uD83D\uDCCA All' : tierLabels[tier] || tier);
               })
             ),
             // Equation chips
             h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
               filtered.map(function(p) {
-                return h('button', { 'aria-label': __alloT('stem.chembalance.switch_preset', 'Switch Preset'), key: p.name, onClick: function() { switchPreset(p.name); }, className: 'px-3 py-1 rounded-lg text-xs font-bold transition-all ' + (d.equation === p.name ? 'bg-lime-600 text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-lime-50 border border-slate-400') }, p.name);
+                return h('button', { 'aria-label': __alloT('stem.chembalance.switch_preset', 'Switch Preset'), key: p.name, onClick: function() { switchPreset(p.name); }, className: 'px-3 py-1 rounded-lg text-xs font-bold transition-all ' + (d.equation === p.name ? 'bg-lime-700 text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-lime-50 border border-slate-400') }, p.name);
               })
             ),
             // Balance Scale SVG
@@ -19088,7 +19088,7 @@
                 coeffs.map(function(c, i) {
                   return h('div', { key: i, className: 'flex flex-col items-center gap-1' },
                     h('span', { className: 'text-[11px] font-bold text-slate-600 mb-0.5' }, i < leftCompounds.length ? leftCompounds[i] : rightCompounds[i - leftCompounds.length]),
-                    h('button', { 'aria-label': 'Add', onClick: function() { chemSound('click'); var nc = coeffs.slice(); nc[i] = Math.min(12, nc[i] + 1); updMulti({ coefficients: nc, feedback: null }); }, className: 'w-9 h-9 bg-lime-100 rounded-lg font-bold text-lime-700 hover:bg-lime-200 transition-colors text-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-700 focus-visible:ring-offset-1' }, '+'),
+                    h('button', { 'aria-label': 'Add', onClick: function() { chemSound('click'); var nc = coeffs.slice(); nc[i] = Math.min(12, nc[i] + 1); updMulti({ coefficients: nc, feedback: null }); }, className: 'w-9 h-9 bg-lime-100 rounded-lg font-bold text-lime-800 hover:bg-lime-200 transition-colors text-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-700 focus-visible:ring-offset-1' }, '+'),
                     h('span', { className: 'text-2xl font-black text-slate-700 w-9 text-center' }, c),
                     h('button', { 'aria-label': __alloT('stem.chembalance.subtract', 'Subtract'), onClick: function() { chemSound('click'); var nc = coeffs.slice(); nc[i] = Math.max(1, nc[i] - 1); updMulti({ coefficients: nc, feedback: null }); }, className: 'w-9 h-9 bg-red-50 rounded-lg font-bold text-red-700 hover:bg-red-100 transition-colors text-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-1' }, '\u2212')
                   );
@@ -19118,7 +19118,7 @@
               ),
               // Action buttons
               h('div', { className: 'flex justify-center gap-2 mb-3 flex-wrap' },
-                h('button', { onClick: checkBalance, className: 'px-5 py-2 bg-lime-600 text-white font-bold rounded-lg hover:bg-lime-700 transition-colors shadow-sm text-sm' }, __alloT('stem.chembalance.check', '\u2696\uFE0F Check')),
+                h('button', { onClick: checkBalance, className: 'px-5 py-2 bg-lime-700 text-white font-bold rounded-lg hover:bg-lime-700 transition-colors shadow-sm text-sm' }, __alloT('stem.chembalance.check', '\u2696\uFE0F Check')),
                 h('button', { 'aria-label': __alloT('stem.chembalance.hints', 'Hints'), onClick: function() { upd('showHints', !showHints); }, className: 'px-3 py-2 rounded-lg font-bold text-xs transition-colors ' + (showHints ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600 hover:bg-blue-50') }, __alloT('stem.chembalance.hints_2', '\uD83D\uDCA1 Hints')),
                 h('button', { 'aria-label': __alloT('stem.chembalance.reset', 'Reset'), onClick: function() { var arr = []; for (var ri = 0; ri < numSlots; ri++) arr.push(1); updMulti({ coefficients: arr, feedback: null }); }, className: 'transition-colors px-3 py-2 bg-slate-100 text-slate-600 rounded-lg font-bold text-xs hover:bg-slate-200' }, __alloT('stem.chembalance.reset_2', '\uD83D\uDD04 Reset')),
                 h('button', { 'aria-label': __alloT('stem.chembalance.random', 'Random'), onClick: function() { var pick = filtered[Math.floor(Math.random() * filtered.length)]; switchPreset(pick.name); addToast('\uD83C\uDFB2 ' + pick.name, 'info'); }, className: 'transition-colors px-3 py-2 bg-purple-100 text-purple-700 rounded-lg font-bold text-xs hover:bg-purple-200 border border-purple-600' }, __alloT('stem.chembalance.random_2', '\uD83C\uDFB2 Random'))
@@ -19157,7 +19157,7 @@
                   updMulti({ timerActive: true, timerPaused: false, timerStart: Date.now(), timerElapsedMs: 0, coefficients: arr, feedback: null });
                   if (announceToSR) announceToSR('Speed challenge started. There is no time limit, and you can pause at any time.');
                 },
-                className: 'transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-100 text-amber-700 border border-amber-600 hover:bg-amber-200'
+                className: 'transition-colors px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-100 text-amber-800 border border-amber-700 hover:bg-amber-200'
               }, __alloT('stem.chembalance.start_speed_challenge', '\u23F1 Start speed challenge')),
               d.timerActive && h('button', {
                 type: 'button',
@@ -19594,13 +19594,13 @@
                       if (announceToSR) announceToSR('Chemistry challenge complete.');
                     }
                   },
-                  className: 'mt-2 px-4 py-2 text-xs font-bold text-white bg-lime-600 rounded-lg hover:bg-lime-700'
+                  className: 'mt-2 px-4 py-2 text-xs font-bold text-white bg-lime-700 rounded-lg hover:bg-lime-800'
                 }, chalIdx + 1 < chalQuestions.length ? __alloT('stem.chembalance.next_question', 'Next question') : __alloT('stem.chembalance.finish_challenge', 'Finish challenge'))
               )
             ) : h('div', { className: 'text-center bg-lime-50 rounded-xl border border-lime-200 p-4' },
               h('p', { className: 'text-2xl mb-1' }, '\uD83C\uDFC6'),
               h('p', { className: 'text-sm font-bold text-lime-700' }, 'Challenge Complete! ' + chalScore + '/' + chalQuestions.length),
-              h('button', { 'aria-label': __alloT('stem.chembalance.retry', 'Retry'), onClick: function() { updMulti({ _chalIdx: 0, _chalScore: 0, _chalStreak: 0, _chalFeedback: null }); }, className: 'transition-colors mt-2 px-4 py-1.5 text-xs font-bold text-white bg-lime-500 rounded-lg hover:bg-lime-600' }, __alloT('stem.chembalance.retry_2', '\u21BA Retry'))
+              h('button', { 'aria-label': __alloT('stem.chembalance.retry', 'Retry'), onClick: function() { updMulti({ _chalIdx: 0, _chalScore: 0, _chalStreak: 0, _chalFeedback: null }); }, className: 'transition-colors mt-2 px-4 py-1.5 text-xs font-bold text-white bg-lime-700 rounded-lg hover:bg-lime-800' }, __alloT('stem.chembalance.retry_2', '\u21BA Retry'))
             )
           ),
 
@@ -19706,7 +19706,7 @@
                       h('p', { className: 'text-[11px] font-bold text-lime-600 uppercase tracking-wider mb-1' }, band.toUpperCase() + ' Level'),
                       h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, content)
                     ),
-                    idx === 0 && h('button', { onClick: function() { upd('subtool', 'reactions'); }, className: 'transition-colors mt-2 px-3 py-1 text-[11px] font-bold text-lime-600 bg-lime-50 border border-lime-600 rounded-lg hover:bg-lime-100' }, __alloT('stem.chembalance.explore_reaction_types', '\u2192 Explore Reaction Types')),
+                    idx === 0 && h('button', { onClick: function() { upd('subtool', 'reactions'); }, className: 'transition-colors mt-2 px-3 py-1 text-[11px] font-bold text-lime-800 bg-lime-50 border border-lime-800 rounded-lg hover:bg-lime-100' }, __alloT('stem.chembalance.explore_reaction_types', '\u2192 Explore Reaction Types')),
                     idx === 2 && h('button', { onClick: function() { upd('subtool', 'molecular'); }, className: 'transition-colors mt-2 px-3 py-1 text-[11px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-600 rounded-lg hover:bg-indigo-100' }, __alloT('stem.chembalance.view_molecular_models', '\u2192 View Molecular Models')),
                     idx === 3 && h('button', { onClick: function() { upd('subtool', 'stoich'); }, className: 'transition-colors mt-2 px-3 py-1 text-[11px] font-bold text-teal-800 bg-teal-50 border border-teal-600 rounded-lg hover:bg-teal-100' }, __alloT('stem.chembalance.try_stoichiometry_calculator', '\u2192 Try Stoichiometry Calculator')),
                     callTTS && h('button', { 'aria-label': __alloT('stem.chembalance.read_aloud', 'Read Aloud'), onClick: function() { callTTS(content); }, className: 'transition-colors mt-2 ml-2 px-3 py-1 text-[11px] font-bold text-slate-600 bg-slate-50 border border-slate-400 rounded-lg hover:bg-slate-100' }, __alloT('stem.chembalance.read_aloud_2', '\uD83D\uDD0A Read Aloud'))
@@ -19728,7 +19728,7 @@
               h('div', { className: 'flex flex-wrap gap-1 mb-3 max-h-48 overflow-y-auto p-2 bg-slate-50 rounded-lg border' },
                 allElements.slice(0, 60).map(function(e, i) {
                   var sel = elIdx === i;
-                  return h('button', { key: e.z, onClick: function() { upd('_elementIdx', i); }, className: 'px-2 py-1 text-[10px] rounded font-bold ' + (sel ? 'bg-emerald-600 text-white' : 'bg-white text-slate-700 border border-slate-300'), title: e.name }, e.z + '. ' + e.sym);
+                  return h('button', { key: e.z, onClick: function() { upd('_elementIdx', i); }, className: 'px-2 py-1 text-[10px] rounded font-bold ' + (sel ? 'bg-emerald-700 text-white' : 'bg-white text-slate-700 border border-slate-300'), title: e.name }, e.z + '. ' + e.sym);
                 })
               ),
               elem && h('div', { className: 'bg-emerald-50 border-2 border-emerald-300 rounded-xl p-4' },
@@ -19822,7 +19822,7 @@
               h('div', { className: 'flex flex-wrap gap-1 mb-3' },
                 INDUSTRIAL_CHEM.processes.map(function(pr, i) {
                   var sel = iIdx === i;
-                  return h('button', { key: i, onClick: function() { upd('_industrialIdx', i); }, className: 'px-2 py-1 text-[10px] rounded font-bold ' + (sel ? 'bg-orange-600 text-white' : 'transition-colors bg-white text-slate-700 border border-slate-300 hover:bg-orange-50') }, pr.name.split(' ')[0]);
+                  return h('button', { key: i, onClick: function() { upd('_industrialIdx', i); }, className: 'px-2 py-1 text-[10px] rounded font-bold ' + (sel ? 'bg-orange-700 text-white' : 'transition-colors bg-white text-slate-700 border border-slate-300 hover:bg-orange-50') }, pr.name.split(' ')[0]);
                 })
               ),
               h('div', { className: 'bg-orange-50 border-2 border-orange-300 rounded-xl p-4 space-y-2' },
@@ -20891,7 +20891,7 @@
 
           // ── Footer ──
           h('div', { className: 'flex gap-2 mt-4 pt-3 border-t border-slate-200' },
-            h('button', { onClick: function() { setStemLabTool('titrationLab'); announceToSR('Opening Titration Lab'); }, className: 'transition-colors px-3 py-1.5 text-xs font-bold text-lime-600 bg-lime-50 border border-lime-600 rounded-full hover:bg-lime-100' }, __alloT('stem.chembalance.titration_lab', '\u2697\uFE0F Titration Lab \u2192')),
+            h('button', { onClick: function() { setStemLabTool('titrationLab'); announceToSR('Opening Titration Lab'); }, className: 'transition-colors px-3 py-1.5 text-xs font-bold text-lime-800 bg-lime-50 border border-lime-800 rounded-full hover:bg-lime-100' }, __alloT('stem.chembalance.titration_lab', '\u2697\uFE0F Titration Lab \u2192')),
             h('button', { 'aria-label': __alloT('stem.chembalance.snapshot', 'Snapshot'), onClick: takeSnapshot, className: 'ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all' }, __alloT('stem.chembalance.snapshot_2', '\uD83D\uDCF8 Snapshot'))
           ),
           // \u2550\u2550\u2550 PERIODIC TABLE BLOCKS \u2550\u2550\u2550

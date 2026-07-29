@@ -434,7 +434,7 @@ window.StemLab = window.StemLab || {
                     (isInHL ? 'bg-orange-100 text-orange-800 border border-orange-300' : 'bg-amber-50 text-amber-700 border border-amber-100'),
                   style: { minWidth: 48, height: ((cols <= 6 ? Math.min(cols * 52, 340) : cols <= 9 ? cols * 38 : cols * 32) - (cols - 1) * 4) / cols }
                 },
-                  h('span', { className: 'text-[10px] text-amber-500 leading-none' }, ri === 0 ? cols : stepLabel),
+                  h('span', { className: 'text-[10px] text-amber-800 leading-none' }, ri === 0 ? cols : stepLabel),
                   h('span', { className: 'text-base leading-tight' }, runningTotal)
                 );
               })
@@ -447,7 +447,7 @@ window.StemLab = window.StemLab || {
                 return h('div', {
                   key: 'rl-' + ri,
                   className: 'rounded flex items-center justify-center text-xs font-bold ' +
-                    (isInHL ? 'bg-amber-200 text-amber-900' : 'bg-amber-50 text-amber-500'),
+                    (isInHL ? 'bg-amber-200 text-amber-900' : 'bg-amber-50 text-amber-700'),
                   style: { width: 18, height: ((cols <= 6 ? Math.min(cols * 52, 340) : cols <= 9 ? cols * 38 : cols * 32) - (cols - 1) * 4) / cols }
                 }, ri + 1);
               })
@@ -468,7 +468,7 @@ window.StemLab = window.StemLab || {
                   return h('div', {
                     key: 'cl-' + ci,
                     className: 'text-center text-[11px] font-bold py-0.5 rounded ' +
-                      (isInHL ? 'bg-amber-200 text-amber-900' : 'text-amber-500')
+                      (isInHL ? 'bg-amber-200 text-amber-900' : 'text-amber-700')
                   }, ci + 1);
                 })
               ),
@@ -820,7 +820,7 @@ window.StemLab = window.StemLab || {
             ['What is an area model?', 'How does distributive property work?', 'How to multiply 2-digit numbers?'].map(function(q) {
               return h('button', { 'aria-label': t('stem.areamodel.ask_question', 'Ask question'),
                 key: q, onClick: function() { upd({ aiQuestion: q }); },
-                className: 'px-2 py-1 text-[11px] font-bold bg-sky-100 text-sky-700 rounded-full hover:bg-sky-200 transition-all'
+                className: 'px-2 py-1 text-[11px] font-bold bg-sky-100 text-sky-800 rounded-full hover:bg-sky-200 transition-all'
               }, q);
             })
           ),
@@ -883,7 +883,7 @@ window.StemLab = window.StemLab || {
             return h('button', { key: m.id,
               onClick: function() { sfxClick(); upd({ viewMode: m.id }); },
               className: 'flex-1 py-2 px-3 rounded-lg text-sm font-bold transition-all ' +
-                (viewMode === m.id ? 'bg-white text-amber-800 shadow-sm' : 'text-amber-500 hover:text-amber-700')
+                (viewMode === m.id ? 'bg-white text-amber-800 shadow-sm' : 'text-amber-700 hover:text-amber-800')
             }, m.icon + ' ' + m.label);
           })
         ),

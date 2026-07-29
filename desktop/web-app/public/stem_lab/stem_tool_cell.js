@@ -20827,7 +20827,7 @@ var d = labToolData.cell || {};
 
                         ? "bg-green-50 border-green-300 text-green-800 font-bold"
 
-                        : "bg-slate-50 border-slate-200 text-slate-400 opacity-60"),
+                        : "bg-slate-50 border-slate-400 text-slate-600"),
 
                     style: isActive ? { borderColor: org.color } : {}
 
@@ -21367,7 +21367,7 @@ var d = labToolData.cell || {};
 
             React.createElement("div", { className: "flex gap-3 mt-3 items-center" },
 
-              React.createElement("button", { "aria-label": "Toggle badges panel", "aria-expanded": !!d._cellShowBadges, onClick: function () { upd('_cellShowBadges', !d._cellShowBadges); }, className: "px-3 py-2 text-xs font-bold rounded-full " + (d._cellShowBadges ? "bg-amber-700 text-white" : "transition-colors bg-amber-100 text-amber-700 hover:bg-amber-200 active:scale-[0.97]") }, "\uD83C\uDFC5 Badges " + ext.badges.length + "/" + Object.keys(cellBadges).length),
+              React.createElement("button", { "aria-label": "Toggle badges panel", "aria-expanded": !!d._cellShowBadges, onClick: function () { upd('_cellShowBadges', !d._cellShowBadges); }, className: "px-3 py-2 text-xs font-bold rounded-full " + (d._cellShowBadges ? "bg-amber-700 text-white" : "transition-colors bg-amber-100 text-amber-800 hover:bg-amber-200 active:scale-[0.97]") }, "\uD83C\uDFC5 Badges " + ext.badges.length + "/" + Object.keys(cellBadges).length),
               React.createElement("button", { "aria-label": "AI Tutor", "aria-expanded": !!d._cellShowAI, onClick: function () { upd('_cellShowAI', !d._cellShowAI); }, className: "px-3 py-2 text-xs font-bold rounded-full " + (d._cellShowAI ? "bg-blue-700 text-white" : "transition-colors bg-blue-100 text-blue-700 hover:bg-blue-200 active:scale-[0.97]") }, "\uD83E\uDD16 AI Tutor"),
 
               React.createElement("button", { "aria-label": "Snapshot", onClick: function () { setToolSnapshots(function (prev) { return prev.concat([{ id: 'ce-' + Date.now(), tool: 'cell', label: 'Cell Simulator' + (d.selectedOrganism ? ': ' + d.selectedOrganism : ''), data: Object.assign({}, d), timestamp: Date.now() }]); }); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 Snapshot")
@@ -21480,7 +21480,7 @@ var d = labToolData.cell || {};
                     h('span', { className: 'text-[10.5px] font-bold text-slate-400 uppercase tracking-wide' }, __alloT('stem.cell.found_in', 'Found in') + ':'),
                     ['animal', 'plant', 'bacterium'].map(function (tp) {
                       var has = selOrg.types.indexOf(tp) >= 0;
-                      return h('span', { key: tp, className: 'text-[10.5px] font-bold px-1.5 py-0.5 rounded-full ' + (has ? 'bg-green-100 text-green-800' : 'bg-slate-100 text-slate-400 line-through') }, tp);
+                      return h('span', { key: tp, className: 'text-[10.5px] font-bold px-1.5 py-0.5 rounded-full ' + (has ? 'bg-green-100 text-green-800' : 'bg-slate-100 text-slate-600 line-through') }, tp);
                     })),
                   selOrg.bust ? h('div', { className: 'mt-1.5 p-2 rounded-lg text-[12px] leading-snug', style: { background: 'rgba(251,191,36,0.12)', border: '1px solid rgba(251,191,36,0.4)', color: '#92400e' } }, '⚠ ', h('strong', null, 'Myth-bust: '), selOrg.bust) : null
                 ) : h('div', { className: 'mt-3 p-3 rounded-xl border border-dashed border-slate-300 text-[12.5px] text-slate-500 text-center' }, __alloT('stem.cell.tap_organelle', 'Tap an organelle in the cell (or a button above) to see what it does — and which cells have it.'))
@@ -22324,7 +22324,7 @@ var d = labToolData.cell || {};
                 React.createElement('div', { className: 'flex flex-wrap gap-1', role: 'group', 'aria-label': 'Filter organisms by group' },
                   kingdoms.map(function(k) {
                     var sel = filterK === k;
-                    return React.createElement('button', { type: 'button', key: k, 'aria-pressed': sel ? 'true' : 'false', onClick: function() { upd('_encyclopediaFilter', k); upd('_encyclopediaIdx', 0); }, className: 'px-2 py-1 rounded text-xs font-bold transition-all ' + (sel ? 'bg-green-600 text-white shadow-sm' : 'transition-colors bg-slate-100 text-slate-700 hover:bg-green-100 active:scale-[0.97]') }, k);
+                    return React.createElement('button', { type: 'button', key: k, 'aria-pressed': sel ? 'true' : 'false', onClick: function() { upd('_encyclopediaFilter', k); upd('_encyclopediaIdx', 0); }, className: 'px-2 py-1 rounded text-xs font-bold transition-all ' + (sel ? 'bg-green-700 text-white shadow-sm' : 'transition-colors bg-slate-100 text-slate-700 hover:bg-green-100 active:scale-[0.97]') }, k);
                   })
                 ),
                 React.createElement('div', { className: 'flex flex-wrap gap-1 max-h-32 overflow-y-auto p-2 bg-slate-50 rounded border border-slate-200', role: 'group', 'aria-label': 'Choose an organism' },

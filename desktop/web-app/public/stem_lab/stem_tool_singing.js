@@ -2694,7 +2694,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         var btnSecondary = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors focus:outline-none focus:ring-2 ' +
           (isDark ? 'transition-colors bg-slate-700 hover:bg-slate-600 text-slate-200 focus:ring-slate-500 active:scale-[0.97]' : 'transition-colors bg-slate-100 hover:bg-slate-200 text-slate-700 focus:ring-slate-400 active:scale-[0.97]');
         var btnDanger = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors focus:outline-none focus:ring-2 ' +
-          (isDark ? 'transition-colors bg-red-700 hover:bg-red-600 text-white focus:ring-red-400 active:scale-[0.97]' : 'transition-colors bg-red-100 hover:bg-red-200 text-red-700 focus:ring-red-400 active:scale-[0.97]');
+          (isDark ? 'transition-colors bg-red-700 hover:bg-red-600 text-white focus:ring-red-400 active:scale-[0.97]' : 'transition-colors bg-red-100 hover:bg-red-200 text-red-800 focus:ring-red-400 active:scale-[0.97]');
 
         // ════════════════════════════════════════
         // Mic toggle button (shared across tabs)
@@ -2716,7 +2716,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
               isRecording ? 'Stop Mic' : 'Start Mic'),
             isRecording && h('div', {
               className: 'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold ' +
-                (isDark ? 'bg-red-900/50 text-red-300' : 'bg-red-50 text-red-600'),
+                (isDark ? 'bg-red-900/50 text-red-300' : 'bg-red-50 text-red-700'),
               role: 'status',
               'aria-live': 'polite'
             }, h('span', { className: 'inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse' }), t('stem.singing.listening', 'Listening')),
@@ -3281,7 +3281,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                     h('button', {
                       className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ' +
                         (intervalDirection === 'up'
-                          ? (isDark ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white')
+                          ? (isDark ? 'bg-blue-600 text-white' : 'bg-blue-700 text-white')
                           : (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-100 text-slate-600')),
                       'aria-label': t('stem.singing.set_interval_direction_to_up', 'Set interval direction to up'),
                       onClick: function() { setIntervalDirection('up'); }
@@ -3289,7 +3289,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
                     h('button', {
                       className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ' +
                         (intervalDirection === 'down'
-                          ? (isDark ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white')
+                          ? (isDark ? 'bg-blue-600 text-white' : 'bg-blue-700 text-white')
                           : (isDark ? 'bg-slate-700 text-slate-200' : 'bg-slate-100 text-slate-600')),
                       'aria-label': t('stem.singing.set_interval_direction_to_down', 'Set interval direction to down'),
                       onClick: function() { setIntervalDirection('down'); }
@@ -4459,7 +4459,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
             // Recording indicator
             isRecording && h('div', {
               className: 'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold ' +
-                (isDark ? 'bg-red-900/50 text-red-300' : 'bg-red-50 text-red-600'),
+                (isDark ? 'bg-red-900/50 text-red-300' : 'bg-red-50 text-red-700'),
               role: 'status',
               'aria-live': 'polite'
             }, h('span', { className: 'inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse' }), t('stem.singing.listening_2', 'Listening'))),

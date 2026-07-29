@@ -1518,7 +1518,7 @@ const d = labToolData.artStudio || {};
 
               React.createElement("button", { onClick: function () { setStemLabTool('archStudio'); }, className: "ml-auto px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-amber-100 to-orange-100 text-amber-800 border border-amber-600 hover:from-amber-200 hover:to-orange-200 transition-all shadow-sm", title: __alloT('stem.artstudio.launch_3d_architecture_studio', "Launch 3D Architecture Studio") }, __alloT('stem.artstudio.3d_builder', "\uD83C\uDFD7\uFE0F 3D Builder \u2192")),
 
-              React.createElement("button", { onClick: function () { upd('showTour', !d.showTour); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.showTour ? "bg-pink-600 text-white" : "transition-colors bg-pink-50 text-pink-600 border border-pink-600 hover:bg-pink-100") + " transition-all shadow-sm", "aria-label": __alloT('stem.artstudio.toggle_studio_tour', "Toggle studio tour") }, d.showTour ? "\u2716 Close Tour" : "\uD83C\uDFA8 Tour")
+              React.createElement("button", { onClick: function () { upd('showTour', !d.showTour); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.showTour ? "bg-pink-600 text-white" : "transition-colors bg-pink-50 text-pink-700 border border-pink-700 hover:bg-pink-100") + " transition-all shadow-sm", "aria-label": __alloT('stem.artstudio.toggle_studio_tour', "Toggle studio tour") }, d.showTour ? "\u2716 Close Tour" : "\uD83C\uDFA8 Tour")
 
             ),
 
@@ -5169,7 +5169,7 @@ const d = labToolData.artStudio || {};
 
                           }
 
-                        }, className: "transition-colors px-2 py-1 rounded text-[11px] font-bold bg-rose-100 text-rose-700 hover:bg-rose-200 disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.add_stop_2', "+ Add Stop"))
+                        }, className: "transition-colors px-2 py-1 rounded text-[11px] font-bold bg-rose-100 text-rose-800 hover:bg-rose-200 disabled:bg-slate-100 disabled:text-slate-500 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-rose-500 focus-visible:ring-offset-2" }, __alloT('stem.artstudio.add_stop_2', "+ Add Stop"))
 
                       ),
 
@@ -7712,7 +7712,7 @@ const d = labToolData.artStudio || {};
 
                       },
 
-                      className: "flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all " + (d.stereoAnimPlaying ? 'bg-amber-700 text-white hover:bg-amber-600' : 'bg-gradient-to-r from-green-700 to-emerald-700 text-white hover:from-green-800 hover:to-emerald-800 shadow-md')
+                      className: "flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all " + (d.stereoAnimPlaying ? 'bg-amber-700 text-white hover:bg-amber-800' : 'bg-gradient-to-r from-green-700 to-emerald-700 text-white hover:from-green-800 hover:to-emerald-800 shadow-md')
 
                     }, d.stereoAnimPlaying ? '\u23F8 Pause' : '\u25B6 Play'),
 

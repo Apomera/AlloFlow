@@ -344,6 +344,258 @@
 
   var EXAMPLE_TIME_DATA = parseTimeCSV(EXAMPLE_TIME_CSV);
 
+  var REMOTE_LAND_COVER = {
+    F: { label: 'Forest', trueColor: '#28543d', falseColor: '#e11d48', bands: { green: 0.12, red: 0.08, nir: 0.62, swir: 0.20 } },
+    W: { label: 'Water', trueColor: '#245c83', falseColor: '#10243f', bands: { green: 0.06, red: 0.04, nir: 0.02, swir: 0.01 } },
+    T: { label: 'Wetland', trueColor: '#587347', falseColor: '#fb7185', bands: { green: 0.18, red: 0.10, nir: 0.38, swir: 0.16 } },
+    G: { label: 'Grass or low vegetation', trueColor: '#8fa45c', falseColor: '#f43f5e', bands: { green: 0.19, red: 0.12, nir: 0.48, swir: 0.25 } },
+    D: { label: 'Developed', trueColor: '#8b817b', falseColor: '#67e8f9', bands: { green: 0.24, red: 0.22, nir: 0.25, swir: 0.34 } },
+    B: { label: 'Bare soil', trueColor: '#a57955', falseColor: '#f5d0a9', bands: { green: 0.30, red: 0.27, nir: 0.32, swir: 0.38 } },
+    C: { label: 'Cloud', trueColor: '#f8fafc', falseColor: '#f8fafc', bands: { green: 0.86, red: 0.84, nir: 0.82, swir: 0.72 } }
+  };
+
+  function adjustedRemoteBands(code, index, period) {
+    var base = REMOTE_LAND_COVER[code].bands;
+    var variation = ((index % 5) - 2) * 0.006 + (period === 'after' ? ((index % 3) - 1) * 0.004 : 0);
+    var result = {};
+    Object.keys(base).forEach(function (band) {
+      result[band] = Math.max(0.001, Math.min(0.999, Number((base[band] + variation).toFixed(3))));
+    });
+    return result;
+  }
+
+  function createRemoteScene() {
+    var beforeCodes = [
+      'F', 'F', 'F', 'F', 'W', 'W',
+      'F', 'F', 'F', 'F', 'W', 'W',
+      'F', 'F', 'T', 'T', 'W', 'W',
+      'F', 'F', 'T', 'T', 'G', 'G',
+      'F', 'F', 'F', 'G', 'G', 'B',
+      'F', 'F', 'G', 'G', 'D', 'D'
+    ];
+    var afterCodes = [
+      'F', 'F', 'F', 'D', 'W', 'W',
+      'F', 'F', 'D', 'D', 'W', 'W',
+      'F', 'D', 'D', 'T', 'W', 'W',
+      'F', 'F', 'T', 'G', 'G', 'G',
+      'F', 'F', 'G', 'G', 'D', 'D',
+      'F', 'G', 'G', 'D', 'D', 'D'
+    ];
+    var cloudAfter = { 5: true };
+    var cells = beforeCodes.map(function (beforeCode, index) {
+      var row = Math.floor(index / 6), column = index % 6;
+      var afterCode = afterCodes[index];
+      var cloudy = !!cloudAfter[index];
+      return {
+        id: String.fromCharCode(65 + row) + (column + 1),
+        row: row, column: column,
+        beforeCode: beforeCode,
+        afterCode: afterCode,
+        beforeClass: REMOTE_LAND_COVER[beforeCode].label,
+        afterClass: cloudy ? 'Cloud obscured' : REMOTE_LAND_COVER[afterCode].label,
+        beforeBands: adjustedRemoteBands(beforeCode, index, 'before'),
+        afterBands: cloudy ? adjustedRemoteBands('C', index, 'after') : adjustedRemoteBands(afterCode, index, 'after'),
+        quality: cloudy ? 'cloud' : 'clear'
+      };
+    });
+    return {
+      id: 'maine-forest-edge',
+      title: 'Maine Forest Edge learning scene',
+      location: 'Illustrative inland Maine landscape',
+      beforeDate: '2016-08-15',
+      afterDate: '2024-08-22',
+      width: 6,
+      height: 6,
+      resolutionMeters: 30,
+      source: 'Illustrative Landsat-style multispectral reflectance values created for GIS Studio instruction; not observed satellite measurements.',
+      cells: cells
+    };
+  }
+
+  var REMOTE_SCENE = createRemoteScene();
+
+  function normalizedDifference(first, second) {
+    first = Number(first); second = Number(second);
+    if (!Number.isFinite(first) || !Number.isFinite(second) || Math.abs(first + second) < 1e-12) return null;
+    return (first - second) / (first + second);
+  }
+
+  function calculateSpectralIndex(bands, indexName) {
+    bands = bands || {};
+    var key = String(indexName || 'ndvi').toLowerCase();
+    if (key === 'ndwi') return normalizedDifference(bands.green, bands.nir);
+    if (key === 'ndbi') return normalizedDifference(bands.swir, bands.nir);
+    return normalizedDifference(bands.nir, bands.red);
+  }
+
+  function remoteIndexName(indexName) {
+    return String(indexName || '').toLowerCase() === 'ndwi' ? 'NDWI — water and moisture' :
+      String(indexName || '').toLowerCase() === 'ndbi' ? 'NDBI — built-up surfaces' :
+        'NDVI — vegetation greenness';
+  }
+
+  function remoteIndexFormula(indexName) {
+    return String(indexName || '').toLowerCase() === 'ndwi' ? '(Green − NIR) ÷ (Green + NIR)' :
+      String(indexName || '').toLowerCase() === 'ndbi' ? '(SWIR − NIR) ÷ (SWIR + NIR)' :
+        '(NIR − Red) ÷ (NIR + Red)';
+  }
+
+  function classifySpectralPixel(bands) {
+    var ndvi = calculateSpectralIndex(bands, 'ndvi');
+    var ndwi = calculateSpectralIndex(bands, 'ndwi');
+    var ndbi = calculateSpectralIndex(bands, 'ndbi');
+    if (ndwi != null && ndwi > 0.25 && Number(bands.nir) < 0.15) return { label: 'Likely water', evidence: 'High NDWI and low near-infrared reflectance' };
+    if (ndvi != null && ndvi >= 0.55) return { label: 'Dense vegetation', evidence: 'High NDVI' };
+    if (ndbi != null && ndbi > 0.08 && ndvi < 0.25) return { label: 'Built-up or bare surface', evidence: 'Positive NDBI with low NDVI' };
+    if (ndvi != null && ndvi >= 0.25) return { label: 'Sparse or mixed vegetation', evidence: 'Moderate NDVI' };
+    if (ndwi != null && ndwi > 0) return { label: 'Moist or wet surface', evidence: 'Positive NDWI' };
+    return { label: 'Low vegetation or other surface', evidence: 'No strong index threshold matched' };
+  }
+
+  function normalizeRemoteSensingState(value) {
+    value = value || {};
+    var modes = ['trueColor', 'falseColor', 'ndvi', 'ndwi', 'ndbi'];
+    var indices = ['ndvi', 'ndwi', 'ndbi'];
+    var selected = String(value.selectedPixel || REMOTE_SCENE.cells[0].id);
+    if (!REMOTE_SCENE.cells.some(function (cell) { return cell.id === selected; })) selected = REMOTE_SCENE.cells[0].id;
+    var checks = value.qualityChecks && typeof value.qualityChecks === 'object' ? value.qualityChecks : {};
+    var swipe = Number(value.swipe);
+    if (!Number.isFinite(swipe)) swipe = 50;
+    return {
+      viewMode: modes.indexOf(value.viewMode) >= 0 ? value.viewMode : 'trueColor',
+      analysisIndex: indices.indexOf(value.analysisIndex) >= 0 ? value.analysisIndex : 'ndvi',
+      swipe: Math.max(0, Math.min(100, swipe)),
+      selectedPixel: selected,
+      cloudMask: value.cloudMask !== false,
+      evidence: String(value.evidence || '').slice(0, 3000),
+      qualityChecks: {
+        dates: !!checks.dates,
+        clouds: !!checks.clouds,
+        scale: !!checks.scale,
+        causation: !!checks.causation
+      }
+    };
+  }
+
+  function remoteIndexValue(cell, period, indexName, maskCloud) {
+    if (!cell) return null;
+    if (period === 'after' && cell.quality === 'cloud' && maskCloud !== false) return null;
+    return calculateSpectralIndex(period === 'after' ? cell.afterBands : cell.beforeBands, indexName);
+  }
+
+  function remoteIndexColor(value, indexName) {
+    if (!Number.isFinite(Number(value))) return '#475569';
+    var numeric = Number(value);
+    if (String(indexName).toLowerCase() === 'ndbi') {
+      return numeric < -0.2 ? '#1d4ed8' : numeric < 0 ? '#67e8f9' : numeric < 0.15 ? '#fde68a' : '#c2410c';
+    }
+    if (String(indexName).toLowerCase() === 'ndwi') {
+      return numeric < -0.2 ? '#a16207' : numeric < 0 ? '#84cc16' : numeric < 0.25 ? '#38bdf8' : '#1d4ed8';
+    }
+    return numeric < 0 ? '#334155' : numeric < 0.2 ? '#a16207' : numeric < 0.4 ? '#84cc16' : numeric < 0.6 ? '#16a34a' : '#065f46';
+  }
+
+  function remotePixelColor(cell, period, viewMode, maskCloud) {
+    if (period === 'after' && cell.quality === 'cloud') {
+      return maskCloud === false
+        ? 'repeating-linear-gradient(135deg,#f8fafc 0,#f8fafc 7px,#cbd5e1 7px,#cbd5e1 14px)'
+        : 'repeating-linear-gradient(135deg,#334155 0,#334155 7px,#64748b 7px,#64748b 14px)';
+    }
+    var code = period === 'after' ? cell.afterCode : cell.beforeCode;
+    if (viewMode === 'trueColor') return REMOTE_LAND_COVER[code].trueColor;
+    if (viewMode === 'falseColor') return REMOTE_LAND_COVER[code].falseColor;
+    return remoteIndexColor(remoteIndexValue(cell, period, viewMode, maskCloud), viewMode);
+  }
+
+  function summarizeRemoteChange(scene, indexName, pixelSizeMeters) {
+    scene = scene || REMOTE_SCENE;
+    var pixelSize = Math.max(1, Number(pixelSizeMeters) || scene.resolutionMeters || 30);
+    var valid = scene.cells.filter(function (cell) { return cell.quality !== 'cloud'; });
+    var changed = valid.filter(function (cell) { return cell.beforeCode !== cell.afterCode; });
+    var forestLoss = valid.filter(function (cell) { return cell.beforeCode === 'F' && cell.afterCode !== 'F'; });
+    var developedGain = valid.filter(function (cell) { return cell.beforeCode !== 'D' && cell.afterCode === 'D'; });
+    var values = valid.map(function (cell) {
+      var before = remoteIndexValue(cell, 'before', indexName, true);
+      var after = remoteIndexValue(cell, 'after', indexName, true);
+      return { before: before, after: after, change: before == null || after == null ? null : after - before };
+    }).filter(function (item) { return item.change != null; });
+    function mean(key) {
+      return values.length ? values.reduce(function (sum, item) { return sum + item[key]; }, 0) / values.length : null;
+    }
+    return {
+      total: scene.cells.length,
+      valid: valid.length,
+      masked: scene.cells.length - valid.length,
+      changed: changed.length,
+      changedAreaHa: changed.length * pixelSize * pixelSize / 10000,
+      forestLoss: forestLoss.length,
+      developedGain: developedGain.length,
+      meanBefore: mean('before'),
+      meanAfter: mean('after'),
+      meanChange: mean('change')
+    };
+  }
+
+  function buildRemoteSensingReport(model) {
+    model = model || {};
+    var scene = model.scene || REMOTE_SCENE;
+    var state = normalizeRemoteSensingState(model.state);
+    var summary = summarizeRemoteChange(scene, state.analysisIndex, scene.resolutionMeters);
+    function number(value) { return value == null || !Number.isFinite(Number(value)) ? 'Masked' : Number(value).toFixed(3); }
+    function grid(period) {
+      return '<div class="raster" role="img" aria-label="' + escapeHTML(
+        (period === 'before' ? 'Before' : 'After') + ' illustrative raster with ' + scene.cells.length +
+        ' pixels. Exact classes and index values are in the table.'
+      ) + '">' + scene.cells.map(function (cell) {
+        return '<span style="background:' + remotePixelColor(cell, period, state.viewMode, state.cloudMask) + '" aria-hidden="true"></span>';
+      }).join('') + '</div>';
+    }
+    var tableRows = scene.cells.map(function (cell) {
+      var before = remoteIndexValue(cell, 'before', state.analysisIndex, true);
+      var after = remoteIndexValue(cell, 'after', state.analysisIndex, true);
+      var change = before == null || after == null ? null : after - before;
+      return '<tr><th scope="row">' + cell.id + '</th><td>' + escapeHTML(cell.beforeClass) + '</td><td>' +
+        escapeHTML(cell.afterClass) + '</td><td>' + number(before) + '</td><td>' + number(after) + '</td><td>' +
+        number(change) + '</td><td>' + (cell.quality === 'cloud' ? 'Cloud masked' : 'Clear') + '</td></tr>';
+    }).join('');
+    return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+      '<title>Remote Sensing Evidence Report</title><style>' +
+      'body{margin:0;background:#eef4f3;color:#172033;font:16px/1.55 system-ui,sans-serif}main{max-width:980px;margin:auto;padding:30px}' +
+      'header,section{background:#fff;border:1px solid #b7c8c6;border-radius:14px;padding:20px;margin-bottom:16px}header{border-top:8px solid #0f766e}' +
+      'h1{margin:.15rem 0}h2{color:#0f5f5a}.pair{display:grid;grid-template-columns:repeat(2,minmax(220px,1fr));gap:18px}' +
+      '.raster{display:grid;grid-template-columns:repeat(6,1fr);aspect-ratio:1/1;border:2px solid #334155}.raster span{border:1px solid rgba(255,255,255,.22)}' +
+      '.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}.stat{background:#ecfeff;border-radius:10px;padding:12px}' +
+      'table{border-collapse:collapse;width:100%;font-size:.88rem}caption{text-align:left;font-weight:800;padding:.5rem 0}' +
+      'th,td{border:1px solid #9aa8b5;padding:7px;text-align:left}.table-wrap{overflow-x:auto}.callout{border-left:5px solid #d97706;background:#fff7ed}' +
+      '.actions button{padding:10px 14px}@media(max-width:650px){main{padding:12px}.pair{grid-template-columns:1fr}}' +
+      '@media print{body{background:#fff}.actions{display:none}main{padding:0}header,section{break-inside:avoid-page}}' +
+      '</style></head><body><main><header><p>GIS STUDIO REMOTE SENSING LAB</p><h1>' + escapeHTML(scene.title) +
+      '</h1><p>' + escapeHTML(scene.location) + '. Before: ' + escapeHTML(scene.beforeDate) + '; after: ' +
+      escapeHTML(scene.afterDate) + '. ' + scene.resolutionMeters + ' m pixels.</p><p><strong>Instructional-data notice:</strong> ' +
+      escapeHTML(scene.source) + '</p></header><div class="actions"><button type="button" onclick="window.print()">Print or save as PDF</button></div>' +
+      '<section><h2>Matched-scene comparison</h2><div class="pair"><div><h3>Before</h3>' + grid('before') +
+      '</div><div><h3>After</h3>' + grid('after') + '</div></div></section><section><h2>Change summary</h2>' +
+      '<div class="stats"><div class="stat"><strong>' + summary.changed + '</strong><br>changed pixels</div><div class="stat"><strong>' +
+      summary.changedAreaHa.toFixed(2) + ' ha</strong><br>mapped change area</div><div class="stat"><strong>' +
+      summary.forestLoss + '</strong><br>forest-loss pixels</div><div class="stat"><strong>' + summary.developedGain +
+      '</strong><br>developed-gain pixels</div><div class="stat"><strong>' + number(summary.meanChange) +
+      '</strong><br>mean ' + escapeHTML(state.analysisIndex.toUpperCase()) + ' change</div><div class="stat"><strong>' +
+      summary.masked + '</strong><br>cloud-masked pixels</div></div><p><strong>Index:</strong> ' +
+      escapeHTML(remoteIndexName(state.analysisIndex)) + '. Formula: ' + escapeHTML(remoteIndexFormula(state.analysisIndex)) +
+      '.</p></section><section class="callout"><h2>Evidence-based interpretation</h2><p>' +
+      escapeHTML(state.evidence || 'No interpretation has been recorded yet.') +
+      '</p><p>Observed spectral or land-cover change does not establish its cause. Field evidence, metadata, and additional dates are needed.</p></section>' +
+      '<section><h2>Accessible pixel table</h2><div class="table-wrap"><table><caption>Before-and-after land cover and ' +
+      escapeHTML(state.analysisIndex.toUpperCase()) + ' values</caption><thead><tr><th scope="col">Pixel</th><th scope="col">Before class</th>' +
+      '<th scope="col">After class</th><th scope="col">Before index</th><th scope="col">After index</th><th scope="col">Change</th>' +
+      '<th scope="col">Quality</th></tr></thead><tbody>' + tableRows + '</tbody></table></div></section>' +
+      '<section><h2>Method and limitations</h2><ul><li>Dates are from the same season to reduce phenology differences.</li>' +
+      '<li>One after-date pixel is cloud obscured and excluded from statistics.</li><li>Each 30 m pixel represents 900 m², or 0.09 ha.</li>' +
+      '<li>Index thresholds are instructional heuristics, not a validated classification model.</li><li>Mixed pixels can contain several land-cover types.</li></ul></section>' +
+      '</main></body></html>';
+  }
+
+
   function normalizeJoinKey(value) {
     return String(value == null ? '' : value).trim().toLowerCase()
       .replace(/&/g, ' and ')
@@ -741,6 +993,18 @@
       var parsedGeo = parseGeoJSON(JSON.stringify(data.geoData));
       if (parsedGeo.data.features.length > 500) throw new Error('Project contains too many GeoJSON features.');
     }
+    var rawComposer = project.work && project.work.composer;
+    if (rawComposer) {
+      if (rawComposer.annotations && (!Array.isArray(rawComposer.annotations) || rawComposer.annotations.length > 20)) {
+        throw new Error('Project composer contains too many annotations.');
+      }
+      (rawComposer.annotations || []).forEach(function (annotation) {
+        if (!annotation || !String(annotation.label || '').trim() || !Number.isFinite(Number(annotation.lat)) || Number(annotation.lat) < -90 || Number(annotation.lat) > 90 ||
+          !Number.isFinite(Number(annotation.lon)) || Number(annotation.lon) < -180 || Number(annotation.lon) > 180) {
+          throw new Error('Project composer contains an invalid annotation.');
+        }
+      });
+    }
     var timeRows = data.timeDataset && Array.isArray(data.timeDataset.rows) ? data.timeDataset.rows : [];
     if (timeRows.length > 3000) throw new Error('Project contains more than 3,000 time-series records.');
     timeRows.forEach(function (row) {
@@ -792,6 +1056,204 @@
         lon: Math.round(Number(row.lon) * factor) / factor
       });
     });
+  }
+
+  function normalizeMapComposition(value) {
+    value = value || {};
+    var rawAnnotations = Array.isArray(value.annotations) ? value.annotations : [];
+    var annotations = rawAnnotations.slice(0, 20).map(function (annotation, index) {
+      return {
+        id: String(annotation && annotation.id || 'annotation-' + (index + 1)).slice(0, 80),
+        label: String(annotation && annotation.label || '').slice(0, 160),
+        lat: Number(annotation && annotation.lat),
+        lon: Number(annotation && annotation.lon)
+      };
+    }).filter(function (annotation) {
+      return annotation.label.trim() && Number.isFinite(annotation.lat) && annotation.lat >= -90 && annotation.lat <= 90 &&
+        Number.isFinite(annotation.lon) && annotation.lon >= -180 && annotation.lon <= 180;
+    });
+    return {
+      title: String(value.title == null ? 'Maine spatial evidence map' : value.title).slice(0, 200),
+      subtitle: String(value.subtitle == null ? 'GIS Studio classroom investigation' : value.subtitle).slice(0, 300),
+      author: String(value.author || '').slice(0, 160),
+      claim: String(value.claim || '').slice(0, 2000),
+      altText: String(value.altText || '').slice(0, 2000),
+      unit: String(value.unit || '').slice(0, 100),
+      legendTitle: String(value.legendTitle || 'Mapped value').slice(0, 160),
+      showLegend: value.showLegend !== false,
+      annotations: annotations
+    };
+  }
+
+  function suggestMapAltText(model) {
+    model = model || {};
+    var composition = normalizeMapComposition(model);
+    var rows = (model.rows || []).filter(function (row) {
+      return Number.isFinite(Number(row.lat)) && Number.isFinite(Number(row.lon)) && Number.isFinite(Number(row.value));
+    });
+    var title = composition.title.trim() || 'Untitled map';
+    if (!rows.length) {
+      return 'Schematic map titled "' + title + '" with no numeric point records currently visible. ' +
+        composition.annotations.length + ' annotation' + (composition.annotations.length === 1 ? '' : 's') +
+        ' are listed below the map.';
+    }
+    var sorted = rows.slice().sort(function (a, b) { return Number(b.value) - Number(a.value); });
+    var low = sorted[sorted.length - 1], high = sorted[0];
+    return 'Schematic map titled "' + title + '" showing ' + rows.length + ' locations for ' +
+      String(model.metricLabel || composition.legendTitle || 'the mapped value') + '. ' +
+      String(high.name || 'The highest location') + ' has the highest value, ' + high.value + ', while ' +
+      String(low.name || 'the lowest location') + ' has the lowest value, ' + low.value + '. ' +
+      composition.annotations.length + ' numbered annotation' + (composition.annotations.length === 1 ? '' : 's') +
+      ' highlight evidence. Exact coordinates and values are provided in the table.';
+  }
+
+  function auditMapComposition(model) {
+    model = model || {};
+    var composition = normalizeMapComposition(model);
+    var issues = [], passes = [];
+    function issue(severity, id, message) { issues.push({ severity: severity, id: id, message: message }); }
+    if (composition.title.trim().length < 4) issue('error', 'title', 'Add a specific map title.');
+    else passes.push('Specific title included');
+    if (composition.altText.trim().length < 40) issue('error', 'alt-text', 'Add a meaningful map description of at least 40 characters.');
+    else passes.push('Map description included');
+    if (composition.claim.trim().length < 20) issue('warning', 'claim', 'Add an evidence-based claim or takeaway.');
+    else passes.push('Evidence claim included');
+    if (!composition.showLegend) issue('warning', 'legend', 'Show a legend unless every symbol is explained directly.');
+    else passes.push('Legend displayed');
+    if (!String(model.unit || composition.unit || '').trim()) issue('warning', 'unit', 'Name the unit or state that the value is an index.');
+    else passes.push('Unit identified');
+    if (!String(model.source || '').trim()) issue('warning', 'source', 'Add a data source in the project provenance manifest.');
+    else passes.push('Data source identified');
+    if (!(model.rows || []).length) issue('warning', 'data', 'No point records are available for the composed map.');
+    else passes.push('Map has a synchronized data-table twin');
+    passes.push('Symbols use outlines and labels in addition to color');
+    var errors = issues.filter(function (item) { return item.severity === 'error'; }).length;
+    var warnings = issues.length - errors;
+    return {
+      issues: issues,
+      passes: passes,
+      errors: errors,
+      warnings: warnings,
+      score: Math.max(0, 100 - errors * 25 - warnings * 10)
+    };
+  }
+
+  function niceScaleKilometers(maximum) {
+    var candidates = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000];
+    var chosen = candidates[0];
+    candidates.forEach(function (candidate) { if (candidate <= maximum) chosen = candidate; });
+    return chosen;
+  }
+
+  function buildMapComposerReport(model) {
+    model = model || {};
+    var composition = normalizeMapComposition(model);
+    var rows = (model.rows || []).filter(function (row) {
+      return Number.isFinite(Number(row.lat)) && Number.isFinite(Number(row.lon));
+    }).slice(0, 250);
+    var provenance = normalizeProvenance(model.provenance);
+    var numeric = rows.map(function (row) { return Number(row.value); }).filter(Number.isFinite);
+    var min = numeric.length ? Math.min.apply(Math, numeric) : 0;
+    var max = numeric.length ? Math.max.apply(Math, numeric) : 1;
+    var mapPoints = rows.map(function (row) { return { lat: Number(row.lat), lon: Number(row.lon) }; })
+      .concat(composition.annotations.map(function (annotation) { return { lat: annotation.lat, lon: annotation.lon }; }));
+    var width = 800, height = 500, projection = schematicProjection(mapPoints, width, height, 52);
+    var mapMarkup = '<div class="empty-map" role="img" aria-label="' + escapeHTML(composition.altText || suggestMapAltText(model)) +
+      '">No mappable coordinates are available.</div>';
+    if (projection) {
+      var grid = graticuleLines(projection.bounds);
+      var svg = [];
+      grid.lats.forEach(function (lat) {
+        var a = projection.project(projection.bounds.minLon, lat), b = projection.project(projection.bounds.maxLon, lat);
+        svg.push('<line x1="' + a.x.toFixed(1) + '" y1="' + a.y.toFixed(1) + '" x2="' + b.x.toFixed(1) + '" y2="' + b.y.toFixed(1) + '" class="grid"/>');
+      });
+      grid.lons.forEach(function (lon) {
+        var a = projection.project(lon, projection.bounds.minLat), b = projection.project(lon, projection.bounds.maxLat);
+        svg.push('<line x1="' + a.x.toFixed(1) + '" y1="' + a.y.toFixed(1) + '" x2="' + b.x.toFixed(1) + '" y2="' + b.y.toFixed(1) + '" class="grid"/>');
+      });
+      rows.forEach(function (row, index) {
+        var point = projection.project(row.lon, row.lat);
+        var fill = Number.isFinite(Number(row.value)) ? color(Number(row.value), min, max) : '#475569';
+        svg.push('<circle cx="' + point.x.toFixed(1) + '" cy="' + point.y.toFixed(1) + '" r="9" fill="' + fill +
+          '" stroke="#fff" stroke-width="3" aria-hidden="true"/>');
+        svg.push('<text x="' + point.x.toFixed(1) + '" y="' + (point.y - 13).toFixed(1) +
+          '" text-anchor="middle" class="point-label" aria-hidden="true">' + (index + 1) + '</text>');
+      });
+      composition.annotations.forEach(function (annotation, index) {
+        var point = projection.project(annotation.lon, annotation.lat);
+        svg.push('<circle cx="' + point.x.toFixed(1) + '" cy="' + point.y.toFixed(1) +
+          '" r="15" class="annotation" aria-hidden="true"/>');
+        svg.push('<text x="' + point.x.toFixed(1) + '" y="' + (point.y + 5).toFixed(1) +
+          '" text-anchor="middle" class="annotation-label" aria-hidden="true">A' + (index + 1) + '</text>');
+      });
+      var middleLat = (projection.bounds.minLat + projection.bounds.maxLat) / 2;
+      var spanKm = haversineKm({ lat: middleLat, lon: projection.bounds.minLon }, { lat: middleLat, lon: projection.bounds.maxLon });
+      var scaleKm = niceScaleKilometers(Math.max(1, spanKm / 4));
+      var spanStart = projection.project(projection.bounds.minLon, middleLat);
+      var spanEnd = projection.project(projection.bounds.maxLon, middleLat);
+      var scalePixels = Math.min(220, Math.max(35, Math.abs(spanEnd.x - spanStart.x) * scaleKm / Math.max(1, spanKm)));
+      svg.push('<line x1="60" y1="458" x2="' + (60 + scalePixels).toFixed(1) + '" y2="458" class="scale" aria-hidden="true"/>');
+      svg.push('<text x="60" y="448" class="scale-text" aria-hidden="true">approx. ' + scaleKm + ' km</text>');
+      svg.push('<text x="760" y="34" class="north" aria-hidden="true">N &#8593;</text>');
+      mapMarkup = '<figure><svg viewBox="0 0 800 500" role="img" aria-label="' +
+        escapeHTML(composition.altText || suggestMapAltText(model)) + '">' + svg.join('') +
+        '</svg><figcaption>Schematic coordinate map. Use the numbered key and data table for exact values; this is not a navigation map.</figcaption></figure>';
+    }
+    var legend = '';
+    if (composition.showLegend) {
+      legend = '<section class="legend" aria-label="Map legend"><h2>' + escapeHTML(composition.legendTitle || model.metricLabel || 'Mapped value') +
+        '</h2><div><span class="swatch low"></span>Lower values <span class="swatch middle"></span>Middle values ' +
+        '<span class="swatch high"></span>Higher values</div><p>Unit: ' +
+        escapeHTML(model.unit || composition.unit || 'Not specified') + '. Classification: ' +
+        escapeHTML(model.classification || 'continuous five-step scale') + '.</p></section>';
+    }
+    var annotationSection = composition.annotations.length ? '<section><h2>Annotation key</h2><ol>' +
+      composition.annotations.map(function (annotation, index) {
+        return '<li><strong>A' + (index + 1) + ':</strong> ' + escapeHTML(annotation.label) + ' (' +
+          Number(annotation.lat).toFixed(4) + ', ' + Number(annotation.lon).toFixed(4) + ')</li>';
+      }).join('') + '</ol></section>' : '';
+    var tableRows = rows.map(function (row, index) {
+      return '<tr><td>' + (index + 1) + '</td><th scope="row">' + escapeHTML(row.name || 'Unnamed location') +
+        '</th><td>' + Number(row.lat).toFixed(4) + '</td><td>' + Number(row.lon).toFixed(4) + '</td><td>' +
+        escapeHTML(row.value == null ? 'No data' : row.value) + '</td><td>' +
+        escapeHTML(model.unit || composition.unit || 'Not specified') + '</td></tr>';
+    }).join('');
+    var audit = auditMapComposition(Object.assign({}, model, composition));
+    return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+      '<title>' + escapeHTML(composition.title || 'GIS Studio Map') + '</title><style>' +
+      'body{margin:0;background:#eef4f3;color:#172033;font:16px/1.55 system-ui,sans-serif}main{max-width:980px;margin:auto;padding:30px}' +
+      'header,.map-card,section{background:#fff;border:1px solid #b7c8c6;border-radius:14px;padding:20px;margin-bottom:16px}' +
+      'header{border-top:8px solid #0f766e}h1{margin:.15rem 0;font-size:2rem}h2{color:#0f5f5a;font-size:1.15rem}' +
+      '.subtitle,.meta,figcaption{color:#52636f}.claim{border-left:5px solid #d97706;background:#fff7ed;padding:14px}' +
+      'figure{margin:0}svg{width:100%;height:auto;background:#071827;border-radius:10px}.grid{stroke:#64748b;stroke-width:1;stroke-dasharray:4 4;opacity:.55}' +
+      '.point-label,.scale-text{fill:#e2e8f0;font-size:12px;font-weight:800}.annotation{fill:#fde047;stroke:#111827;stroke-width:3}' +
+      '.annotation-label{fill:#111827;font-size:11px;font-weight:900}.north{fill:#fff;font-size:18px;font-weight:900}.scale{stroke:#fff;stroke-width:5}' +
+      '.legend div{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.swatch{display:inline-block;width:26px;height:16px;border:2px solid #334155;border-radius:3px}' +
+      '.low{background:#0e7490}.middle{background:#65a30d}.high{background:#be123c}table{border-collapse:collapse;width:100%;font-size:.9rem}' +
+      'caption{text-align:left;font-weight:800;padding:.5rem 0}th,td{border:1px solid #9aa8b5;padding:7px;text-align:left}.table-wrap{overflow-x:auto}' +
+      'dl{display:grid;grid-template-columns:minmax(130px,200px) 1fr;gap:7px}dt{font-weight:800}dd{margin:0}.actions button{padding:10px 14px}' +
+      '.empty-map{min-height:260px;display:grid;place-items:center;background:#071827;color:#e2e8f0;padding:20px}.check{color:#405366}' +
+      '@media(max-width:650px){main{padding:12px}dl{grid-template-columns:1fr}dd{margin-bottom:8px}}' +
+      '@media print{body{background:#fff}.actions{display:none}main{padding:0}.map-card,section,header{break-inside:avoid-page}}' +
+      '</style></head><body><main><header><p>GIS STUDIO ACCESSIBLE MAP PACKAGE</p><h1>' +
+      escapeHTML(composition.title || 'Untitled map') + '</h1><p class="subtitle">' + escapeHTML(composition.subtitle) +
+      '</p><p class="meta">' + (composition.author ? 'Prepared by ' + escapeHTML(composition.author) + '. ' : '') +
+      'Generated ' + escapeHTML(model.generated || '') + '.</p></header><div class="actions"><button type="button" onclick="window.print()">Print or save as PDF</button></div>' +
+      '<section class="map-card"><h2>Map</h2>' + mapMarkup + '</section>' + legend +
+      '<section class="claim"><h2>Evidence-based takeaway</h2><p>' +
+      escapeHTML(composition.claim || 'No claim has been added yet.') + '</p><p><strong>Pattern summary:</strong> ' +
+      escapeHTML(model.analysis || 'Use the data table to describe the visible pattern.') + '</p></section>' +
+      annotationSection + '<section><h2>Accessible data-table twin</h2><div class="table-wrap"><table><caption>Mapped data table</caption>' +
+      '<thead><tr><th scope="col">Map key</th><th scope="col">Location</th><th scope="col">Latitude</th><th scope="col">Longitude</th><th scope="col">Value</th><th scope="col">Unit</th></tr></thead><tbody>' +
+      tableRows + '</tbody></table></div></section><section><h2>Sources, method, and limitations</h2><dl>' +
+      '<dt>Dataset</dt><dd>' + escapeHTML(provenance.datasetTitle || composition.title) + '</dd><dt>Source</dt><dd>' +
+      escapeHTML(provenance.source || 'Not specified') + '</dd><dt>Collected</dt><dd>' + escapeHTML(provenance.collected || 'Not specified') +
+      '</dd><dt>Method</dt><dd>' + escapeHTML(provenance.method || 'Not specified') + '</dd><dt>License</dt><dd>' +
+      escapeHTML(provenance.license || 'Not specified') + '</dd><dt>Limitations</dt><dd>' +
+      escapeHTML(provenance.limitations || 'Not specified') + '</dd></dl></section>' +
+      '<section class="check"><h2>Cartography review at export</h2><p>Score: ' + audit.score + '/100; ' + audit.errors +
+      ' errors and ' + audit.warnings + ' warnings. The map includes a synchronized table, outlined symbols, a north arrow, an approximate scale, and explicit provenance fields.</p></section>' +
+      '</main></body></html>';
   }
 
   function buildEvidenceReport(model) {
@@ -931,10 +1393,10 @@
   window.StemLab.registerTool('gisStudio', {
     icon: '\uD83D\uDDFA\uFE0F',
     label: 'GIS Studio',
-    desc: 'Build, compare, animate, save, reopen, and privacy-review accessible GIS projects and evidence reports.',
+    desc: 'Build, compare, compose, and export accessible GIS and remote-sensing investigations.',
     color: 'teal',
     category: 'geo',
-    aliases: ['GIS', 'mapping', 'spatial data', 'GIS project file', 'autosave', 'data provenance', 'coordinate privacy', 'time series map', 'change over time', 'Maine inquiry', 'guided mission', 'spatial analysis', 'map comparison', 'evidence report', 'buffer', 'choropleth', 'coordinates', 'map projections'],
+    aliases: ['GIS', 'mapping', 'spatial data', 'GIS project file', 'map composer', 'accessible map export', 'cartography coach', 'map annotations', 'remote sensing', 'satellite change detection', 'NDVI', 'NDWI', 'NDBI', 'multispectral imagery', 'autosave', 'data provenance', 'coordinate privacy', 'time series map', 'change over time', 'Maine inquiry', 'guided mission', 'spatial analysis', 'map comparison', 'evidence report', 'buffer', 'choropleth', 'coordinates', 'map projections'],
     testing: {
       parseCSV: parseCSV, parseGeoJSON: parseGeoJSON, parseTableCSV: parseTableCSV,
       joinTableToGeoJSON: joinTableToGeoJSON, calculateBreaks: calculateBreaks, classColor: classColor,
@@ -943,8 +1405,13 @@
       selectWithinRadius: selectWithinRadius, nearestRecord: nearestRecord, featureMeasurements: featureMeasurements,
       buildEvidenceReport: buildEvidenceReport, missionCompletion: missionCompletion, missions: GIS_MISSIONS,
       parseTimeCSV: parseTimeCSV, timelineSnapshot: timelineSnapshot, calculateTemporalChange: calculateTemporalChange,
+      calculateSpectralIndex: calculateSpectralIndex, classifySpectralPixel: classifySpectralPixel,
+      normalizeRemoteSensingState: normalizeRemoteSensingState, summarizeRemoteChange: summarizeRemoteChange,
+      buildRemoteSensingReport: buildRemoteSensingReport, remoteScene: REMOTE_SCENE,
       createGISProject: createGISProject, validateGISProject: validateGISProject,
       assessCoordinatePrivacy: assessCoordinatePrivacy, roundPointCoordinates: roundPointCoordinates,
+      normalizeMapComposition: normalizeMapComposition, suggestMapAltText: suggestMapAltText,
+      auditMapComposition: auditMapComposition, buildMapComposerReport: buildMapComposerReport,
       schematicProjection: schematicProjection, graticuleStep: graticuleStep,
       graticuleLines: graticuleLines, featureOuterRings: featureOuterRings
     },
@@ -957,6 +1424,8 @@
       { id: 'maine_mission', label: 'Complete a Maine GIS mission', icon: '\uD83E\uDDED', check: function (d) { return !!d.gisMissionCompleted; }, progress: function (d) { return d.gisMissionCompleted ? 'Completed' : d.gisMissionStarted ? 'In progress' : 'Not yet'; } },
       { id: 'time_change', label: 'Analyze change over time', icon: '\u23F3', check: function (d) { return !!d.gisTimelineAnalyzed; }, progress: function (d) { return d.gisTimelineExported ? 'Exported' : d.gisTimelineAnalyzed ? 'Analyzed' : 'Not yet'; } },
       { id: 'project_portability', label: 'Save a privacy-reviewed GIS project', icon: '\uD83D\uDCBE', check: function (d) { return !!d.gisProjectSaved; }, progress: function (d) { return d.gisProjectSaved ? 'Saved' : d.gisProjectLoaded ? 'Opened' : 'Not yet'; } },
+      { id: 'map_composer', label: 'Compose and export an accessible evidence map', icon: '\uD83D\uDDBC\uFE0F', check: function (d) { return !!d.gisMapComposed; }, progress: function (d) { return d.gisMapComposed ? 'Exported' : 'Not yet'; } },
+      { id: 'remote_sensing', label: 'Analyze a remote-sensing change scene', icon: '\uD83D\uDEF0\uFE0F', check: function (d) { return !!d.gisRemoteSensingCompleted; }, progress: function (d) { return d.gisRemoteSensingCompleted ? 'Evidence exported' : d.gisRemoteSensingStarted ? 'In progress' : 'Not yet'; } },
       { id: 'projection_lab', label: 'Compare map projections', icon: '\uD83C\uDF10', check: function (d) { return !!d.gisProjectionCompared; }, progress: function (d) { return d.gisProjectionCompared ? 'Compared' : 'Not yet'; } }
     ],
     render: function (ctx) {
@@ -1033,6 +1502,10 @@
         var s60 = React.useState(null), recoveryDraft = s60[0], setRecoveryDraft = s60[1];
         var s61 = React.useState(''), projectError = s61[0], setProjectError = s61[1];
         var s62 = React.useState(false), autosaveReady = s62[0], setAutosaveReady = s62[1];
+        var s63 = React.useState(normalizeMapComposition(initial.gisComposer || {})), composer = s63[0], setComposer = s63[1];
+        var s64 = React.useState({ label: '', lat: '', lon: '' }), annotationDraft = s64[0], setAnnotationDraft = s64[1];
+        var s65 = React.useState('Composer ready. Complete the cartography review before sharing.'), composerStatus = s65[0], setComposerStatus = s65[1];
+        var s66 = React.useState(normalizeRemoteSensingState(initial.gisRemoteSensing || {})), remoteSensing = s66[0], setRemoteSensing = s66[1];
         var mapNode = React.useRef(null);
         var mapViewState = React.useRef(null);
         var compareLeftNode = React.useRef(null);
@@ -1110,8 +1583,34 @@
           geoFeatures.length ? geoFeatures.length + ' GeoJSON features classified by ' + geoMetric : 'No GeoJSON layer loaded',
           'Choropleth classification: ' + classification,
           selectedRecords.length ? selectedRecords.length + ' point records selected by ' + analysisSelectionSource : 'No active point selection',
-          'Timeline comparison: ' + effectiveBaseline + ' to ' + effectiveFocusYear
+          'Timeline comparison: ' + effectiveBaseline + ' to ' + effectiveFocusYear,
+          composer.annotations.length ? composer.annotations.length + ' map annotations composed' : 'No map annotations added',
+          remoteSensing.evidence ? 'Remote-sensing evidence interpretation recorded' : 'Remote-sensing learning scene not yet interpreted'
         ];
+        var composerRows = records.map(function (record) {
+          return { name: record.name, lat: record.lat, lon: record.lon, value: valueOf(record, metric, imported) };
+        });
+        var composerModel = Object.assign({}, composer, {
+          rows: composerRows,
+          metricLabel: metricLabel,
+          unit: composer.unit || String(unit || '').trim(),
+          source: provenance.source,
+          provenance: provenance,
+          classification: geoFeatures.length ? classification + ' choropleth plus point scale' : 'continuous five-step point scale',
+          generated: new Date().toLocaleString(),
+          analysis: summary,
+          basemap: basemap === 'none' ? 'No basemap — offline schematic' : basemap === 'satellite' ? 'Esri World Imagery' : 'OpenStreetMap'
+        });
+        var composerAudit = auditMapComposition(composerModel);
+        var remoteScene = REMOTE_SCENE;
+        var remoteSummary = summarizeRemoteChange(remoteScene, remoteSensing.analysisIndex, remoteScene.resolutionMeters);
+        var remoteSelectedCell = remoteScene.cells.filter(function (cell) { return cell.id === remoteSensing.selectedPixel; })[0] || remoteScene.cells[0];
+        var remoteBeforeIndex = remoteIndexValue(remoteSelectedCell, 'before', remoteSensing.analysisIndex, true);
+        var remoteAfterIndex = remoteIndexValue(remoteSelectedCell, 'after', remoteSensing.analysisIndex, remoteSensing.cloudMask);
+        var remoteBeforeClass = classifySpectralPixel(remoteSelectedCell.beforeBands);
+        var remoteAfterClass = remoteSelectedCell.quality === 'cloud'
+          ? { label: remoteSensing.cloudMask ? 'Masked cloud' : 'Cloud-contaminated signal', evidence: remoteSensing.cloudMask ? 'No surface classification is made through cloud cover' : 'Raw reflectance is dominated by cloud, not surface cover' }
+          : classifySpectralPixel(remoteSelectedCell.afterBands);
 
         function formatDistance(km) {
           return analysisUnit === 'imperial' ? (km * 0.621371).toFixed(2) + ' mi' : km.toFixed(2) + ' km';
@@ -1203,7 +1702,7 @@
             }
           }, 900);
           return function () { window.clearTimeout(timer); };
-        }, [autosaveReady, tab, source, importedRows, metric, layers, basemap, geoData, geoMetric, classification, classCount, customBreaks, analysisMode, analysisPoints, bufferRadiusKm, analysisSelection, analysisSelectionSource, compareLeft, compareRight, compareLeftBasemap, compareRightBasemap, comparisonObservation, missionProgress, missionResponses, activeMissionId, timeDataset, timeBaseline, timeFocusYear, timeObservation, projectTitle, provenance, projection, latitude]);
+        }, [autosaveReady, tab, source, importedRows, metric, layers, basemap, geoData, geoMetric, classification, classCount, customBreaks, analysisMode, analysisPoints, bufferRadiusKm, analysisSelection, analysisSelectionSource, compareLeft, compareRight, compareLeftBasemap, compareRightBasemap, comparisonObservation, missionProgress, missionResponses, activeMissionId, timeDataset, timeBaseline, timeFocusYear, timeObservation, projectTitle, provenance, projection, latitude, composer, remoteSensing]);
 
         React.useEffect(function () {
           if (tab !== 'map' || !mapNode.current) return undefined;
@@ -1760,7 +2259,9 @@
         // labelled a schematic everywhere it appears — it preserves relative position
         // but is not a projected navigation map, exactly as the printed report says
         // of its own coordinate plot.
-        function schematicMap() {
+        function schematicMap(options) {
+          options = options || {};
+          var annotationRows = Array.isArray(options.annotations) ? options.annotations : [];
           var SW = 640, SH = 390;
           var polyRings = [];
           if (layers.polygons) {
@@ -1774,6 +2275,7 @@
           var allPoints = [];
           polyRings.forEach(function (item) { allPoints = allPoints.concat(item.ring); });
           pointRows.forEach(function (record) { allPoints.push({ lat: record.lat, lon: record.lon }); });
+          annotationRows.forEach(function (annotation) { allPoints.push({ lat: annotation.lat, lon: annotation.lon }); });
           var proj = schematicProjection(allPoints, SW, SH);
           if (!proj) {
             return h('div', {
@@ -1815,14 +2317,19 @@
               fill: color(value, min, max), stroke: '#ffffff', strokeWidth: 2, fillOpacity: 0.85
             }));
           });
+          annotationRows.forEach(function (annotation, index) {
+            var p = proj.project(annotation.lon, annotation.lat);
+            kids.push(h('circle', { key: 'annotation-' + index, cx: p.x, cy: p.y, r: 13, fill: '#fde047', stroke: '#111827', strokeWidth: 3 }));
+            kids.push(h('text', { key: 'annotation-label-' + index, x: p.x, y: p.y + 4, textAnchor: 'middle', fill: '#111827', fontSize: 10, fontWeight: 900 }, 'A' + (index + 1)));
+          });
           // North arrow + the honesty label, both decorative; the aria-label below
           // carries the same facts, and the table twin carries the numbers.
           kids.push(h('text', { key: 'north', x: SW - 14, y: 20, textAnchor: 'end', fill: '#cbd5e1', fontSize: 12, fontWeight: 800 }, 'N ↑'));
           kids.push(h('text', { key: 'schem', x: 8, y: 16, fill: '#7dd3fc', fontSize: 10, fontWeight: 700 }, 'Schematic — not a projected navigation map'));
-          var summary = pointRows.length + ' points and ' + polyRings.length + ' boundaries drawn from latitude ' +
+          var summary = options.altText || (pointRows.length + ' points and ' + polyRings.length + ' boundaries drawn from latitude ' +
             proj.bounds.minLat.toFixed(2) + ' to ' + proj.bounds.maxLat.toFixed(2) + ' and longitude ' +
             proj.bounds.minLon.toFixed(2) + ' to ' + proj.bounds.maxLon.toFixed(2) +
-            '. Schematic view drawn on this device with no map-tile requests. Exact values are in the data table below.';
+            '. Schematic view drawn on this device with no map-tile requests. Exact values are in the data table below.');
           return h('svg', {
             viewBox: '0 0 ' + SW + ' ' + SH, width: '100%', role: 'img', 'aria-label': summary,
             style: { display: 'block', height: SH, borderRadius: 14, border: '1px solid #28516a', background: '#071827' }
@@ -2088,7 +2595,9 @@
             work: {
               comparisonObservation: comparisonObservation, imageryNote: imageryNote,
               activeMissionId: activeMissionId, missionProgress: missionProgress, missionResponses: missionResponses,
-              timeObservation: timeObservation, transformations: projectTransformations
+              timeObservation: timeObservation, transformations: projectTransformations,
+              composer: composer,
+              remoteSensing: remoteSensing
             }
           }, new Date().toISOString());
         }
@@ -2147,7 +2656,9 @@
           setMissionProgress(work.missionProgress && typeof work.missionProgress === 'object' ? work.missionProgress : {});
           setMissionResponses(work.missionResponses && typeof work.missionResponses === 'object' ? work.missionResponses : {});
           setTimeObservation(String(work.timeObservation || ''));
-          var allowedTabs = ['project', 'missions', 'timeline', 'map', 'compare', 'import', 'projection'];
+          setComposer(normalizeMapComposition(work.composer || {}));
+          setRemoteSensing(normalizeRemoteSensingState(work.remoteSensing || {}));
+          var allowedTabs = ['project', 'composer', 'remote', 'missions', 'timeline', 'map', 'compare', 'import', 'projection'];
           setTab(allowedTabs.indexOf(settings.tab) >= 0 ? settings.tab : 'project');
           setTimePlaying(false);
           setProjectError('');
@@ -2445,6 +2956,159 @@
           announce('Print-ready GIS evidence report opened.');
         }
 
+
+
+        function updateRemoteSensing(field, value) {
+          var next = Object.assign({}, remoteSensing);
+          next[field] = value;
+          next = normalizeRemoteSensingState(next);
+          setRemoteSensing(next);
+          persist('gisRemoteSensing', next);
+          persist('gisRemoteSensingStarted', true);
+        }
+
+        function toggleRemoteQualityCheck(field) {
+          var checks = Object.assign({}, remoteSensing.qualityChecks);
+          checks[field] = !checks[field];
+          updateRemoteSensing('qualityChecks', checks);
+        }
+
+        function sonifyRemoteChange() {
+          var Ctx = window.AudioContext || window.webkitAudioContext;
+          if (!Ctx) { announce('Audio is unavailable. Use the accessible pixel table.'); return; }
+          var context;
+          try { context = new Ctx(); } catch (ignore) { return; }
+          var changes = remoteScene.cells.map(function (cell) {
+            var before = remoteIndexValue(cell, 'before', remoteSensing.analysisIndex, true);
+            var after = remoteIndexValue(cell, 'after', remoteSensing.analysisIndex, true);
+            return before == null || after == null ? null : after - before;
+          }).filter(function (value) { return value != null; });
+          changes.forEach(function (change, index) {
+            var oscillator = context.createOscillator(), gain = context.createGain();
+            var start = context.currentTime + index * 0.065;
+            oscillator.type = change < 0 ? 'sawtooth' : 'sine';
+            oscillator.frequency.value = 260 + Math.max(0, Math.min(1, (change + 0.8) / 1.6)) * 620;
+            gain.gain.setValueAtTime(0.035, start);
+            gain.gain.exponentialRampToValueAtTime(0.001, start + 0.05);
+            oscillator.connect(gain); gain.connect(context.destination);
+            oscillator.start(start); oscillator.stop(start + 0.055);
+          });
+          announce('Playing clear pixels in row order. Lower rough tones indicate decreases; higher smooth tones indicate increases.');
+        }
+
+        function downloadRemoteSensingReport() {
+          var html = buildRemoteSensingReport({ scene: remoteScene, state: remoteSensing });
+          var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+          var url = URL.createObjectURL(blob);
+          var link = document.createElement('a');
+          link.href = url;
+          link.download = 'gis-studio-remote-sensing-evidence.html';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+          persist('gisRemoteSensingCompleted', true);
+          announce('Accessible remote-sensing evidence report downloaded.');
+        }
+
+        function printRemoteSensingReport() {
+          var reportWindow = window.open('', '_blank');
+          if (!reportWindow) {
+            announce('The print window was blocked. Download the accessible remote-sensing report instead.');
+            return;
+          }
+          reportWindow.opener = null;
+          reportWindow.document.open();
+          reportWindow.document.write(buildRemoteSensingReport({ scene: remoteScene, state: remoteSensing }));
+          reportWindow.document.close();
+          reportWindow.focus();
+          window.setTimeout(function () { reportWindow.print(); }, 250);
+          persist('gisRemoteSensingCompleted', true);
+          announce('Print-ready remote-sensing report opened.');
+        }
+
+        function updateComposer(field, value) {
+          var next = Object.assign({}, composer);
+          next[field] = value;
+          next = normalizeMapComposition(next);
+          setComposer(next);
+          persist('gisComposer', next);
+        }
+
+        function updateAnnotationDraft(field, value) {
+          var next = Object.assign({}, annotationDraft);
+          next[field] = value;
+          setAnnotationDraft(next);
+        }
+
+        function addComposerAnnotation() {
+          var lat = Number(annotationDraft.lat), lon = Number(annotationDraft.lon);
+          if (!String(annotationDraft.label || '').trim() || !Number.isFinite(lat) || !Number.isFinite(lon) ||
+            lat < -90 || lat > 90 || lon < -180 || lon > 180) {
+            setComposerStatus('Add an annotation label and valid latitude and longitude.');
+            announce('Annotation needs a label and valid coordinates.');
+            return;
+          }
+          if (composer.annotations.length >= 20) {
+            setComposerStatus('A map can contain up to 20 annotations.');
+            return;
+          }
+          var annotations = composer.annotations.concat([{
+            id: 'annotation-' + Date.now(),
+            label: String(annotationDraft.label).trim(),
+            lat: lat,
+            lon: lon
+          }]);
+          updateComposer('annotations', annotations);
+          setAnnotationDraft({ label: '', lat: '', lon: '' });
+          setComposerStatus('Annotation A' + annotations.length + ' added to the map.');
+          announce('Map annotation added.');
+        }
+
+        function removeComposerAnnotation(index) {
+          updateComposer('annotations', composer.annotations.filter(function (_, itemIndex) { return itemIndex !== index; }));
+          setComposerStatus('Annotation removed.');
+        }
+
+        function generateComposerDescription() {
+          updateComposer('altText', suggestMapAltText(composerModel));
+          setComposerStatus('A draft map description was generated. Review it for context and accuracy.');
+          announce('Draft map description generated.');
+        }
+
+        function downloadComposerPackage() {
+          var html = buildMapComposerReport(composerModel);
+          var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+          var url = URL.createObjectURL(blob);
+          var link = document.createElement('a');
+          var safeName = String(composer.title || 'gis-map-package').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'gis-map-package';
+          link.href = url;
+          link.download = safeName + '-accessible-map.html';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+          persist('gisMapComposed', true);
+          setComposerStatus('Accessible map package downloaded with its table, annotations, provenance, and cartography review.');
+          announce('Accessible map package downloaded.');
+        }
+
+        function printComposerPackage() {
+          var reportWindow = window.open('', '_blank');
+          if (!reportWindow) {
+            setComposerStatus('The print window was blocked. Download the accessible map package instead.');
+            return;
+          }
+          reportWindow.opener = null;
+          reportWindow.document.open();
+          reportWindow.document.write(buildMapComposerReport(composerModel));
+          reportWindow.document.close();
+          reportWindow.focus();
+          window.setTimeout(function () { reportWindow.print(); }, 250);
+          persist('gisMapComposed', true);
+          announce('Print-ready accessible map package opened.');
+        }
+
         function comparisonTable(series, side) {
           var stats = seriesStats(series);
           return h('section', { 'aria-labelledby': 'gis-compare-' + side + '-table-heading', style: Object.assign({}, panel, { overflow: 'hidden' }) },
@@ -2510,12 +3174,319 @@
               comparisonTable(leftSeries, 'left'), comparisonTable(rightSeries, 'right')));
         }
 
+
+
+        function remoteSensingView() {
+          var selectedBefore = remoteSelectedCell.beforeBands;
+          var selectedAfter = remoteSelectedCell.afterBands;
+          var indexKey = remoteSensing.analysisIndex.toUpperCase();
+          var validChange = remoteBeforeIndex == null || remoteAfterIndex == null ? null : remoteAfterIndex - remoteBeforeIndex;
+          var checkedCount = Object.keys(remoteSensing.qualityChecks).filter(function (key) { return remoteSensing.qualityChecks[key]; }).length;
+          var displayLabels = {
+            trueColor: 'True color',
+            falseColor: 'Color infrared',
+            ndvi: 'NDVI',
+            ndwi: 'NDWI',
+            ndbi: 'NDBI'
+          };
+          function raster(period) {
+            return h('div', {
+              'aria-hidden': 'true',
+              style: { display: 'grid', gridTemplateColumns: 'repeat(6,1fr)', width: '100%', height: '100%' }
+            }, remoteScene.cells.map(function (cell) {
+              return h('span', {
+                key: period + '-' + cell.id,
+                style: {
+                  background: remotePixelColor(cell, period, remoteSensing.viewMode, remoteSensing.cloudMask),
+                  border: '1px solid rgba(255,255,255,.22)',
+                  boxSizing: 'border-box'
+                }
+              });
+            }));
+          }
+          function indexNumber(value) {
+            return value == null || !Number.isFinite(Number(value)) ? 'Masked' : Number(value).toFixed(3);
+          }
+          var legendItems = remoteSensing.viewMode === 'trueColor'
+            ? [['Forest', '#28543d'], ['Water', '#245c83'], ['Wetland', '#587347'], ['Developed', '#8b817b'], ['Bare soil', '#a57955']]
+            : remoteSensing.viewMode === 'falseColor'
+              ? [['Healthy vegetation', '#e11d48'], ['Water', '#10243f'], ['Developed', '#67e8f9'], ['Bare soil', '#f5d0a9']]
+              : [['Low or negative', remoteIndexColor(-0.3, remoteSensing.viewMode)], ['Near zero', remoteIndexColor(0, remoteSensing.viewMode)], ['Moderate', remoteIndexColor(0.3, remoteSensing.viewMode)], ['High', remoteIndexColor(0.7, remoteSensing.viewMode)]];
+          return h('div', { style: { display: 'grid', gap: 14 } },
+            h('section', { 'aria-labelledby': 'gis-remote-heading', style: panel },
+              h('p', { style: { margin: 0, color: '#fde68a', fontSize: 10, fontWeight: 900, letterSpacing: '.09em' } }, 'OBSERVE • MEASURE • VERIFY'),
+              h('h2', { id: 'gis-remote-heading', style: { margin: '4px 0 6px', color: '#f0fdfa', fontSize: 20 } }, 'Remote Sensing Lab'),
+              h('p', { style: { margin: 0, color: '#b7d2df', fontSize: 12, lineHeight: 1.55 } },
+                'Compare matched-season multispectral scenes, inspect spectral signatures, mask clouds, calculate change area, and separate observations from causal explanations.'),
+              h('aside', { style: { marginTop: 10, padding: 10, borderLeft: '4px solid #38bdf8', borderRadius: 8, background: '#082f49', color: '#bae6fd', fontSize: 11, lineHeight: 1.5 } },
+                h('strong', null, 'Instructional-data notice: '), remoteScene.source)),
+            h('section', { 'aria-labelledby': 'gis-remote-controls-heading', style: panel },
+              h('h2', { id: 'gis-remote-controls-heading', style: { margin: '0 0 10px', color: '#f0fdfa', fontSize: 16 } }, 'Imagery and index controls'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 10 } },
+                h('label', { style: { display: 'grid', gap: 5, fontSize: 12, fontWeight: 700 } }, 'Display',
+                  h('select', { value: remoteSensing.viewMode, onChange: function (event) { updateRemoteSensing('viewMode', event.target.value); }, style: control },
+                    h('option', { value: 'trueColor' }, 'True color'),
+                    h('option', { value: 'falseColor' }, 'Color infrared'),
+                    h('option', { value: 'ndvi' }, 'NDVI vegetation index'),
+                    h('option', { value: 'ndwi' }, 'NDWI water index'),
+                    h('option', { value: 'ndbi' }, 'NDBI built-up index'))),
+                h('label', { style: { display: 'grid', gap: 5, fontSize: 12, fontWeight: 700 } }, 'Analysis index',
+                  h('select', { value: remoteSensing.analysisIndex, onChange: function (event) { updateRemoteSensing('analysisIndex', event.target.value); }, style: control },
+                    h('option', { value: 'ndvi' }, 'NDVI — vegetation'),
+                    h('option', { value: 'ndwi' }, 'NDWI — water and moisture'),
+                    h('option', { value: 'ndbi' }, 'NDBI — built-up surfaces'))),
+                h('label', { style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, fontWeight: 700, paddingTop: 20 } },
+                  h('input', { type: 'checkbox', checked: remoteSensing.cloudMask, onChange: function (event) { updateRemoteSensing('cloudMask', event.target.checked); } }),
+                  'Mask cloud-obscured pixels')),
+              h('label', { style: { display: 'grid', gap: 6, marginTop: 12, fontSize: 12, fontWeight: 700 } },
+                'Swipe position: ' + remoteSensing.swipe + '%',
+                h('input', {
+                  type: 'range', min: 0, max: 100, step: 1, value: remoteSensing.swipe,
+                  onChange: function (event) { updateRemoteSensing('swipe', Number(event.target.value)); },
+                  'aria-label': 'Before and after imagery swipe position', 'aria-valuetext': remoteSensing.swipe + ' percent'
+                })),
+              h('p', { style: { margin: '9px 0 0', color: '#a7c7d8', fontSize: 10 } },
+                remoteIndexName(remoteSensing.analysisIndex) + ': ' + remoteIndexFormula(remoteSensing.analysisIndex) + '. Reflectance values range from 0 to 1.')),
+            h('section', { 'aria-labelledby': 'gis-remote-swipe-heading', style: panel },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'end', gap: 10, flexWrap: 'wrap' } },
+                h('div', null,
+                  h('h2', { id: 'gis-remote-swipe-heading', style: { margin: '0 0 3px', color: '#f0fdfa', fontSize: 16 } }, 'Before-and-after swipe comparison'),
+                  h('p', { style: { margin: 0, color: '#a7c7d8', fontSize: 10 } }, remoteScene.beforeDate + ' on the left; ' + remoteScene.afterDate + ' on the right. Same season, 30 m pixels.')),
+                h('button', { type: 'button', onClick: sonifyRemoteChange, style: Object.assign({}, primary, { background: '#083344', border: '1px solid #22d3ee' }) }, '♫ Sonify index change')),
+              h('div', {
+                role: 'group',
+                'aria-label': 'Illustrative before-and-after remote sensing raster. Select a pixel for exact values.',
+                style: { position: 'relative', width: 'min(100%,620px)', aspectRatio: '1 / 1', margin: '12px auto 0', border: '2px solid #64748b', borderRadius: 10, overflow: 'hidden', background: '#071827' }
+              },
+                raster('before'),
+                h('div', { style: { position: 'absolute', inset: 0, clipPath: 'inset(0 0 0 ' + remoteSensing.swipe + '%)' } }, raster('after')),
+                h('div', { 'aria-hidden': 'true', style: { position: 'absolute', top: 0, bottom: 0, left: 'calc(' + remoteSensing.swipe + '% - 2px)', width: 4, background: '#fde047', boxShadow: '0 0 0 1px #111827', pointerEvents: 'none' } }),
+                h('span', { 'aria-hidden': 'true', style: { position: 'absolute', top: 8, left: 8, padding: '4px 7px', borderRadius: 6, background: 'rgba(7,24,39,.85)', color: '#fff', fontSize: 10, fontWeight: 900 } }, 'BEFORE'),
+                h('span', { 'aria-hidden': 'true', style: { position: 'absolute', top: 8, right: 8, padding: '4px 7px', borderRadius: 6, background: 'rgba(7,24,39,.85)', color: '#fff', fontSize: 10, fontWeight: 900 } }, 'AFTER'),
+                h('div', { style: { position: 'absolute', inset: 0, display: 'grid', gridTemplateColumns: 'repeat(6,1fr)' } },
+                  remoteScene.cells.map(function (cell) {
+                    var beforeValue = remoteIndexValue(cell, 'before', remoteSensing.analysisIndex, true);
+                    var afterValue = remoteIndexValue(cell, 'after', remoteSensing.analysisIndex, true);
+                    var change = beforeValue == null || afterValue == null ? 'masked by cloud' : 'change ' + (afterValue - beforeValue).toFixed(3);
+                    var selected = cell.id === remoteSensing.selectedPixel;
+                    return h('button', {
+                      key: cell.id,
+                      type: 'button',
+                      'data-remote-pixel': cell.id,
+                      onClick: function () { updateRemoteSensing('selectedPixel', cell.id); },
+                      'aria-pressed': selected,
+                      'aria-label': 'Pixel ' + cell.id + '. Before ' + cell.beforeClass + '. After ' + cell.afterClass + '. ' + indexKey + ' ' + change + '.',
+                      style: { minWidth: 0, minHeight: 0, padding: 2, border: selected ? '3px solid #fde047' : '1px solid transparent', background: 'transparent', color: '#fff', fontSize: 9, fontWeight: 900, textShadow: '0 1px 2px #000', cursor: 'pointer' }
+                    }, cell.id);
+                  }))),
+              h('div', { role: 'list', 'aria-label': displayLabels[remoteSensing.viewMode] + ' legend', style: { display: 'flex', justifyContent: 'center', gap: 10, flexWrap: 'wrap', marginTop: 10, color: '#dbeafe', fontSize: 10 } },
+                legendItems.map(function (item) {
+                  return h('span', { key: item[0], role: 'listitem', style: { display: 'inline-flex', alignItems: 'center', gap: 5 } },
+                    h('span', { 'aria-hidden': 'true', style: { width: 20, height: 12, display: 'inline-block', borderRadius: 2, border: '1px solid #fff', background: item[1] } }),
+                    item[0]);
+                })),
+              h('p', { role: 'status', style: { margin: '10px 0 0', color: '#cfe8f3', fontSize: 11, lineHeight: 1.5 } },
+                'Selected pixel ' + remoteSelectedCell.id + '. Before: ' + remoteSelectedCell.beforeClass + '; after: ' + remoteSelectedCell.afterClass +
+                '. ' + indexKey + ' before ' + indexNumber(remoteBeforeIndex) + ', after ' + indexNumber(remoteAfterIndex) +
+                (validChange == null ? '.' : ', change ' + validChange.toFixed(3) + '.'))),
+            h('section', { 'aria-labelledby': 'gis-remote-summary-heading', style: panel },
+              h('h2', { id: 'gis-remote-summary-heading', style: { margin: '0 0 9px', color: '#f0fdfa', fontSize: 16 } }, 'Change measurement'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(135px,1fr))', gap: 8 } },
+                [
+                  [remoteSummary.changed, 'changed pixels'],
+                  [remoteSummary.changedAreaHa.toFixed(2) + ' ha', 'mapped change area'],
+                  [remoteSummary.forestLoss, 'forest-loss pixels'],
+                  [remoteSummary.developedGain, 'developed-gain pixels'],
+                  [indexNumber(remoteSummary.meanChange), 'mean ' + indexKey + ' change'],
+                  [remoteSummary.masked, 'cloud-masked pixels']
+                ].map(function (item) {
+                  return h('div', { key: item[1], style: { padding: 10, borderRadius: 9, background: '#071827' } },
+                    h('strong', { style: { display: 'block', color: '#fde047', fontSize: 19 } }, item[0]),
+                    h('span', { style: { color: '#a7c7d8', fontSize: 10 } }, item[1]));
+                })),
+              h('p', { style: { margin: '10px 0 0', color: '#a7c7d8', fontSize: 10 } },
+                'Area model: ' + remoteScene.resolutionMeters + ' m × ' + remoteScene.resolutionMeters + ' m = 900 m² = 0.09 ha per pixel. Only clear pixels are compared.')),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))', gap: 14 } },
+              h('section', { 'aria-labelledby': 'gis-remote-inspector-heading', style: panel },
+                h('h2', { id: 'gis-remote-inspector-heading', style: { margin: '0 0 8px', color: '#f0fdfa', fontSize: 16 } }, 'Pixel spectral inspector'),
+                h('label', { style: { display: 'grid', gap: 5, marginBottom: 10, color: '#dbeafe', fontSize: 11, fontWeight: 700 } }, 'Selected pixel',
+                  h('select', { value: remoteSensing.selectedPixel, onChange: function (event) { updateRemoteSensing('selectedPixel', event.target.value); }, style: control },
+                    remoteScene.cells.map(function (cell) { return h('option', { key: cell.id, value: cell.id }, cell.id + ' — ' + cell.beforeClass + ' to ' + cell.afterClass); }))),
+                h('div', { style: { overflowX: 'auto' } },
+                  h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11 } },
+                    h('caption', { style: { textAlign: 'left', color: '#67e8f9', fontWeight: 800, paddingBottom: 6 } }, 'Reflectance proportions for pixel ' + remoteSelectedCell.id),
+                    h('thead', null, h('tr', null, ['Band', 'Before', 'After', 'Common interpretation'].map(function (heading) {
+                      return h('th', { key: heading, scope: 'col', style: { textAlign: 'left', padding: 6, borderBottom: '1px solid #3f6b82', color: '#67e8f9' } }, heading);
+                    }))),
+                    h('tbody', null, [
+                      ['Green', 'green', 'Vegetation and water contrast'],
+                      ['Red', 'red', 'Chlorophyll absorption'],
+                      ['Near infrared', 'nir', 'Leaf structure and vegetation'],
+                      ['Shortwave infrared', 'swir', 'Moisture and built surfaces']
+                    ].map(function (band) {
+                      return h('tr', { key: band[1] },
+                        h('th', { scope: 'row', style: { textAlign: 'left', padding: 6, borderBottom: '1px solid #1e4154' } }, band[0]),
+                        h('td', { style: { padding: 6, borderBottom: '1px solid #1e4154' } }, selectedBefore[band[1]].toFixed(3)),
+                        h('td', { style: { padding: 6, borderBottom: '1px solid #1e4154' } }, remoteSelectedCell.quality === 'cloud' && remoteSensing.cloudMask ? 'Masked' : selectedAfter[band[1]].toFixed(3)),
+                        h('td', { style: { padding: 6, borderBottom: '1px solid #1e4154', color: '#a7c7d8' } }, band[2]));
+                    })))),
+                h('div', { style: { marginTop: 10, display: 'grid', gap: 7, fontSize: 11 } },
+                  h('p', { style: { margin: 0 } }, h('strong', { style: { color: '#86efac' } }, 'Before estimate: '), remoteBeforeClass.label + ' — ' + remoteBeforeClass.evidence + '.'),
+                  h('p', { style: { margin: 0 } }, h('strong', { style: { color: '#fde68a' } }, 'After estimate: '), remoteAfterClass.label + ' — ' + remoteAfterClass.evidence + '.'),
+                  h('p', { style: { margin: 0, color: '#a7c7d8' } }, 'Threshold classifications are clues, not ground truth. Mixed pixels and atmospheric effects can change the signature.'))),
+              h('section', { 'aria-labelledby': 'gis-remote-quality-heading', style: panel },
+                h('h2', { id: 'gis-remote-quality-heading', style: { margin: '0 0 6px', color: '#f0fdfa', fontSize: 16 } }, 'Interpretation quality check'),
+                h('p', { role: 'status', style: { margin: '0 0 9px', color: checkedCount === 4 ? '#86efac' : '#fde68a', fontSize: 11 } },
+                  checkedCount + ' of 4 checks confirmed.'),
+                [
+                  ['dates', 'The dates are from comparable seasons.'],
+                  ['clouds', 'Clouds and missing pixels are masked or disclosed.'],
+                  ['scale', 'The 30 m pixel size fits the claim and area calculation.'],
+                  ['causation', 'The interpretation distinguishes observed change from its possible causes.']
+                ].map(function (item) {
+                  return h('label', { key: item[0], style: { display: 'flex', gap: 8, alignItems: 'start', marginBottom: 8, color: '#dbeafe', fontSize: 11, lineHeight: 1.45 } },
+                    h('input', { type: 'checkbox', checked: remoteSensing.qualityChecks[item[0]], onChange: function () { toggleRemoteQualityCheck(item[0]); } }),
+                    item[1]);
+                }),
+                h('aside', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: '#2b2617', color: '#fde68a', fontSize: 10, lineHeight: 1.5 } },
+                  h('strong', null, 'A change map answers “where and how much?” '), 'It does not by itself answer “why?” Use field observations, additional dates, metadata, and local knowledge before naming a cause.'))),
+            h('section', { 'aria-labelledby': 'gis-remote-table-heading', style: Object.assign({}, panel, { overflow: 'hidden' }) },
+              h('h2', { id: 'gis-remote-table-heading', style: { margin: '0 0 5px', color: '#f0fdfa', fontSize: 16 } }, 'Accessible raster-table twin'),
+              h('p', { style: { margin: '0 0 9px', color: '#a7c7d8', fontSize: 10 } }, 'Every visual pixel has an equivalent row. Cloud-obscured values are excluded from change statistics.'),
+              h('div', { style: { overflowX: 'auto', maxHeight: 380, overflowY: 'auto' } },
+                h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 10 } },
+                  h('caption', { style: { position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' } }, 'Remote sensing before-and-after pixel values'),
+                  h('thead', null, h('tr', null, ['Pixel', 'Before class', 'After class', 'Before ' + indexKey, 'After ' + indexKey, 'Change', 'Quality'].map(function (heading) {
+                    return h('th', { key: heading, scope: 'col', style: { textAlign: 'left', padding: 7, color: '#67e8f9', borderBottom: '1px solid #3f6b82', position: 'sticky', top: 0, background: '#102536' } }, heading);
+                  }))),
+                  h('tbody', null, remoteScene.cells.map(function (cell) {
+                    var before = remoteIndexValue(cell, 'before', remoteSensing.analysisIndex, true);
+                    var after = remoteIndexValue(cell, 'after', remoteSensing.analysisIndex, true);
+                    var change = before == null || after == null ? null : after - before;
+                    var selected = cell.id === remoteSensing.selectedPixel;
+                    return h('tr', { key: cell.id, style: { background: selected ? '#183b4d' : 'transparent' } },
+                      h('th', { scope: 'row', style: { textAlign: 'left', padding: 7, borderBottom: '1px solid #1e4154', color: selected ? '#fde047' : '#fff' } }, cell.id),
+                      h('td', { style: { padding: 7, borderBottom: '1px solid #1e4154' } }, cell.beforeClass),
+                      h('td', { style: { padding: 7, borderBottom: '1px solid #1e4154' } }, cell.afterClass),
+                      h('td', { style: { padding: 7, borderBottom: '1px solid #1e4154' } }, indexNumber(before)),
+                      h('td', { style: { padding: 7, borderBottom: '1px solid #1e4154' } }, indexNumber(after)),
+                      h('td', { style: { padding: 7, borderBottom: '1px solid #1e4154', fontWeight: 800 } }, indexNumber(change)),
+                      h('td', { style: { padding: 7, borderBottom: '1px solid #1e4154', color: cell.quality === 'cloud' ? '#fde68a' : '#86efac' } }, cell.quality === 'cloud' ? 'Cloud masked' : 'Clear'));
+                  }))))),
+            h('section', { 'aria-labelledby': 'gis-remote-evidence-heading', style: panel },
+              h('h2', { id: 'gis-remote-evidence-heading', style: { margin: '0 0 6px', color: '#f0fdfa', fontSize: 16 } }, 'Maine change investigation'),
+              h('p', { style: { margin: '0 0 9px', color: '#cfe8f3', fontSize: 11, lineHeight: 1.5 } },
+                'Prompt: What changed between the two matched-season scenes? Cite at least two pixels or summary measures, explain what the selected index contributes, and name one limitation.'),
+              h('label', { style: { display: 'grid', gap: 5, fontSize: 12, fontWeight: 700 } }, 'Evidence-based interpretation',
+                h('textarea', {
+                  value: remoteSensing.evidence, rows: 5, maxLength: 3000,
+                  onChange: function (event) { updateRemoteSensing('evidence', event.target.value); },
+                  placeholder: 'I observe... The change table shows... The index suggests... This does not prove... One limitation is...',
+                  style: Object.assign({}, control, { resize: 'vertical' })
+                })),
+              h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 } },
+                h('button', { type: 'button', onClick: downloadRemoteSensingReport, style: primary }, 'Download remote-sensing evidence report'),
+                h('button', { type: 'button', onClick: printRemoteSensingReport, style: Object.assign({}, primary, { background: '#155e75' }) }, 'Print or save as PDF'),
+                h('button', { type: 'button', onClick: function () { setBasemap('satellite'); persist('gisBasemap', 'satellite'); setTab('map'); persist('gisTab', 'map'); }, style: Object.assign({}, control, { cursor: 'pointer' }) }, 'Open live satellite basemap for context')),
+              h('p', { style: { margin: '9px 0 0', color: '#a7c7d8', fontSize: 10 } },
+                'The live basemap is contextual imagery from Esri and does not provide the dated band values used in this illustrative learning scene.')));
+        }
+
+        function composerView() {
+          var readyToShare = composerAudit.errors === 0;
+          return h('div', { style: { display: 'grid', gap: 14 } },
+            h('section', { 'aria-labelledby': 'gis-composer-heading', style: panel },
+              h('p', { style: { margin: 0, color: '#fde68a', fontSize: 10, fontWeight: 900, letterSpacing: '.09em' } }, 'DESIGN • EXPLAIN • SHARE'),
+              h('h2', { id: 'gis-composer-heading', style: { margin: '4px 0 6px', color: '#f0fdfa', fontSize: 20 } }, 'Accessible Map Composer'),
+              h('p', { style: { margin: 0, color: '#b7d2df', fontSize: 12, lineHeight: 1.55 } },
+                'Turn the current point layer into a classroom-ready evidence map. The export keeps the visual map, description, annotations, data table, method, source, and limitations together in one HTML file.')),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(280px,1fr))', gap: 14, alignItems: 'start' } },
+              h('section', { 'aria-labelledby': 'gis-composer-controls-heading', style: panel },
+                h('h3', { id: 'gis-composer-controls-heading', style: { margin: '0 0 10px', color: '#67e8f9', fontSize: 15 } }, 'Map text and legend'),
+                [
+                  ['title', 'Map title', 200],
+                  ['subtitle', 'Subtitle or investigation question', 300],
+                  ['author', 'Author or class', 160],
+                  ['legendTitle', 'Legend title', 160],
+                  ['unit', 'Unit or index name', 100]
+                ].map(function (field) {
+                  return h('label', { key: field[0], style: { display: 'grid', gap: 5, marginBottom: 9, fontSize: 12, fontWeight: 700 } }, field[1],
+                    h('input', { type: 'text', value: composer[field[0]], maxLength: field[2], onChange: function (event) { updateComposer(field[0], event.target.value); }, style: control }));
+                }),
+                h('label', { style: { display: 'grid', gap: 5, marginBottom: 9, fontSize: 12, fontWeight: 700 } }, 'Evidence-based takeaway',
+                  h('textarea', { value: composer.claim, maxLength: 2000, rows: 4, onChange: function (event) { updateComposer('claim', event.target.value); }, placeholder: 'State a claim, cite the mapped pattern, and name a limitation.', style: Object.assign({}, control, { resize: 'vertical' }) })),
+                h('label', { style: { display: 'grid', gap: 5, marginBottom: 8, fontSize: 12, fontWeight: 700 } }, 'Map description for screen readers',
+                  h('textarea', { value: composer.altText, maxLength: 2000, rows: 5, onChange: function (event) { updateComposer('altText', event.target.value); }, placeholder: 'Describe the spatial pattern, highest and lowest values, and notable annotations.', style: Object.assign({}, control, { resize: 'vertical' }) })),
+                h('button', { type: 'button', onClick: generateComposerDescription, style: Object.assign({}, control, { cursor: 'pointer', marginBottom: 10 }) }, 'Draft description from data'),
+                h('label', { style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, fontWeight: 700 } },
+                  h('input', { type: 'checkbox', checked: composer.showLegend, onChange: function (event) { updateComposer('showLegend', event.target.checked); } }),
+                  'Show the legend in the composed map')),
+              h('section', { 'aria-labelledby': 'gis-composer-preview-heading', style: Object.assign({}, panel, { background: '#f8fafc', color: '#172033' }) },
+                h('p', { style: { margin: 0, color: '#0f766e', fontSize: 10, fontWeight: 900, letterSpacing: '.09em' } }, 'LIVE ACCESSIBLE PREVIEW'),
+                h('h2', { id: 'gis-composer-preview-heading', style: { margin: '4px 0 2px', color: '#0f3d3a', fontSize: 24 } }, composer.title || 'Untitled map'),
+                composer.subtitle && h('p', { style: { margin: '0 0 9px', color: '#52636f', fontSize: 13 } }, composer.subtitle),
+                schematicMap({ annotations: composer.annotations, altText: composer.altText || suggestMapAltText(composerModel) }),
+                composer.showLegend && h('div', { role: 'group', 'aria-label': 'Map legend', style: { marginTop: 10, padding: 10, border: '1px solid #cbd5e1', borderRadius: 8, background: '#fff' } },
+                  h('strong', { style: { display: 'block', color: '#0f5f5a', fontSize: 12 } }, composer.legendTitle || metricLabel),
+                  h('p', { style: { margin: '4px 0 0', fontSize: 11 } }, 'Low teal → middle green → high rose. Unit: ' + (composerModel.unit || 'not specified') + '.')),
+                composer.claim && h('div', { style: { marginTop: 10, borderLeft: '4px solid #d97706', background: '#fff7ed', padding: 10, fontSize: 12, lineHeight: 1.5 } },
+                  h('strong', null, 'Takeaway: '), composer.claim),
+                h('p', { style: { margin: '9px 0 0', color: '#52636f', fontSize: 10 } },
+                  'Source: ' + (provenance.source || 'not specified') + '. ' + composerRows.length + ' synchronized table records.'),
+                composer.annotations.length > 0 && h('ol', { 'aria-label': 'Map annotation key', style: { margin: '10px 0 0', paddingLeft: 22, fontSize: 11 } },
+                  composer.annotations.map(function (annotation, index) {
+                    return h('li', { key: annotation.id }, 'A' + (index + 1) + ': ' + annotation.label);
+                  })))),
+            h('section', { 'aria-labelledby': 'gis-annotation-heading', style: panel },
+              h('h2', { id: 'gis-annotation-heading', style: { margin: '0 0 6px', color: '#f0fdfa', fontSize: 16 } }, 'Evidence annotations'),
+              h('p', { style: { margin: '0 0 10px', color: '#a7c7d8', fontSize: 11 } }, 'Add up to 20 numbered callouts. Coordinates are included in the export and should not identify private locations.'),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: 8, alignItems: 'end' } },
+                h('label', { style: { display: 'grid', gap: 4, fontSize: 11, fontWeight: 700 } }, 'Callout text',
+                  h('input', { type: 'text', value: annotationDraft.label, maxLength: 160, onChange: function (event) { updateAnnotationDraft('label', event.target.value); }, style: control })),
+                h('label', { style: { display: 'grid', gap: 4, fontSize: 11, fontWeight: 700 } }, 'Latitude',
+                  h('input', { type: 'number', min: -90, max: 90, step: 'any', value: annotationDraft.lat, onChange: function (event) { updateAnnotationDraft('lat', event.target.value); }, style: control })),
+                h('label', { style: { display: 'grid', gap: 4, fontSize: 11, fontWeight: 700 } }, 'Longitude',
+                  h('input', { type: 'number', min: -180, max: 180, step: 'any', value: annotationDraft.lon, onChange: function (event) { updateAnnotationDraft('lon', event.target.value); }, style: control })),
+                h('button', { type: 'button', onClick: addComposerAnnotation, style: primary }, 'Add callout')),
+              composer.annotations.length > 0 && h('ul', { style: { margin: '12px 0 0', padding: 0, listStyle: 'none', display: 'grid', gap: 6 } },
+                composer.annotations.map(function (annotation, index) {
+                  return h('li', { key: annotation.id, style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', padding: 8, borderRadius: 8, background: '#071827', fontSize: 11 } },
+                    h('span', null, h('strong', { style: { color: '#fde047' } }, 'A' + (index + 1) + ' '), annotation.label + ' (' + annotation.lat.toFixed(4) + ', ' + annotation.lon.toFixed(4) + ')'),
+                    h('button', { type: 'button', onClick: function () { removeComposerAnnotation(index); }, 'aria-label': 'Remove annotation A' + (index + 1), style: Object.assign({}, control, { cursor: 'pointer', padding: '5px 8px' }) }, 'Remove'));
+                }))),
+            h('section', { 'aria-labelledby': 'gis-cartography-coach-heading', style: panel },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'start', flexWrap: 'wrap' } },
+                h('div', null,
+                  h('p', { style: { margin: 0, color: '#fde68a', fontSize: 10, fontWeight: 900, letterSpacing: '.08em' } }, 'CARTOGRAPHY COACH'),
+                  h('h2', { id: 'gis-cartography-coach-heading', style: { margin: '4px 0', color: '#f0fdfa', fontSize: 16 } }, 'Share-readiness review')),
+                h('strong', { style: { color: readyToShare ? '#86efac' : '#fca5a5', fontSize: 20 } }, composerAudit.score + '/100')),
+              h('p', { role: 'status', style: { margin: '7px 0 10px', color: readyToShare ? '#86efac' : '#fde68a', fontSize: 12 } },
+                composerAudit.errors + ' required fix' + (composerAudit.errors === 1 ? '' : 'es') + ' and ' + composerAudit.warnings + ' recommendation' + (composerAudit.warnings === 1 ? '' : 's') + '.'),
+              composerAudit.issues.length ? h('ul', { style: { margin: 0, paddingLeft: 20, color: '#dbeafe', fontSize: 11, lineHeight: 1.7 } },
+                composerAudit.issues.map(function (item) {
+                  return h('li', { key: item.id }, h('strong', { style: { color: item.severity === 'error' ? '#fca5a5' : '#fde68a' } }, item.severity === 'error' ? 'Required: ' : 'Consider: '), item.message);
+                })) : h('p', { style: { color: '#86efac', fontWeight: 800 } }, 'All composer checks pass.'),
+              h('details', { style: { marginTop: 10, fontSize: 11, color: '#cfe8f3' } },
+                h('summary', { style: { cursor: 'pointer', fontWeight: 800 } }, composerAudit.passes.length + ' safeguards already included'),
+                h('ul', { style: { lineHeight: 1.7 } }, composerAudit.passes.map(function (item) { return h('li', { key: item }, item); })))),
+            h('section', { 'aria-labelledby': 'gis-composer-export-heading', style: panel },
+              h('h2', { id: 'gis-composer-export-heading', style: { margin: '0 0 6px', color: '#f0fdfa', fontSize: 16 } }, 'Export the accessible evidence package'),
+              h('p', { style: { margin: '0 0 10px', color: '#b7d2df', fontSize: 11, lineHeight: 1.5 } },
+                'The self-contained HTML package includes the schematic map, screen-reader description, legend, callout key, complete point-data table, provenance, method, limitations, and print styles.'),
+              h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+                h('button', { type: 'button', onClick: downloadComposerPackage, style: primary }, 'Download accessible map package'),
+                h('button', { type: 'button', onClick: printComposerPackage, style: Object.assign({}, primary, { background: '#155e75' }) }, 'Print or save as PDF'),
+                h('button', { type: 'button', onClick: function () { setTab('project'); persist('gisTab', 'project'); }, style: Object.assign({}, control, { cursor: 'pointer' }) }, 'Review project provenance')),
+              h('p', { role: 'status', style: { margin: '10px 0 0', color: '#a7c7d8', fontSize: 11 } }, composerStatus)));
+        }
+
         function projectView() {
           var inventory = [
             importedRows.length + ' imported point records',
             geoFeatures.length + ' GeoJSON features',
             timeDataset.rows.length + ' time-series records across ' + timeDataset.years.length + ' years',
-            Object.keys(missionProgress).length + ' missions with saved progress'
+            Object.keys(missionProgress).length + ' missions with saved progress',
+            remoteSensing.evidence ? 'Remote-sensing interpretation and quality checklist saved' : 'Remote-sensing lab ready for investigation'
           ];
           var provenanceFields = [
             ['datasetTitle', 'Dataset title', 'Example: Maine broadband access study'],
@@ -2763,7 +3734,7 @@
               'Mercator for local direction, equirectangular for simple coordinate grids, and equal-area for choropleth comparisons.'));
         }
 
-        var tabs = [['project', 'Project'], ['missions', 'Maine missions'], ['timeline', 'Change over time'], ['map', 'Map + layers'], ['compare', 'Compare + export'], ['import', 'Import data'], ['projection', 'Projection lab']];
+        var tabs = [['project', 'Project'], ['composer', 'Map Composer'], ['remote', 'Remote Sensing'], ['missions', 'Maine missions'], ['timeline', 'Change over time'], ['map', 'Map + layers'], ['compare', 'Compare + export'], ['import', 'Import data'], ['projection', 'Projection lab']];
         return h('div', { 'data-gis-studio': 'true', style: { minHeight: '100%', background: 'linear-gradient(155deg,#06131f,#0b2531 52%,#102332)', color: '#e2e8f0', padding: 16, boxSizing: 'border-box', fontFamily: 'Inter,system-ui,sans-serif' } },
           h('header', { style: { maxWidth: 1180, margin: '0 auto 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 12, flexWrap: 'wrap' } },
             h('div', null,
@@ -2775,9 +3746,9 @@
                 var active = tab === item[0];
                 return h('button', { key: item[0], type: 'button', onClick: function () { go(item[0]); }, 'aria-current': active ? 'page' : undefined, style: { padding: '9px 12px', borderRadius: 9, border: '1px solid ' + (active ? '#5eead4' : '#36586b'), background: active ? '#0f766e' : '#102536', color: '#fff', fontWeight: 800, cursor: 'pointer' } }, item[1]);
               }))),
-          h('main', { style: { maxWidth: 1180, margin: '0 auto' } }, tab === 'project' ? projectView() : tab === 'missions' ? missionView() : tab === 'timeline' ? timelineView() : tab === 'map' ? mapView() : tab === 'compare' ? comparisonView() : tab === 'import' ? importView() : projectionView()),
+          h('main', { style: { maxWidth: 1180, margin: '0 auto' } }, tab === 'project' ? projectView() : tab === 'composer' ? composerView() : tab === 'remote' ? remoteSensingView() : tab === 'missions' ? missionView() : tab === 'timeline' ? timelineView() : tab === 'map' ? mapView() : tab === 'compare' ? comparisonView() : tab === 'import' ? importView() : projectionView()),
           h('footer', { style: { maxWidth: 1180, margin: '14px auto 0', color: '#8ba7b7', fontSize: 10, lineHeight: 1.5 } },
-            'Learning data: density values are rounded approximations; the access index, practice polygons, and coastal guide are illustrative. Basemaps \u00A9 OpenStreetMap, Esri, and contributors. Official ecoregions \u00A9 Maine Natural Areas Program. Verify claims with authoritative data before making decisions.'));
+            'Learning data: density values are rounded approximations; the access index, practice polygons, coastal guide, and remote-sensing raster are illustrative. Basemaps \u00A9 OpenStreetMap, Esri, and contributors. Official ecoregions \u00A9 Maine Natural Areas Program. Verify claims with authoritative data before making decisions.'));
       }
 
       return h(Studio);

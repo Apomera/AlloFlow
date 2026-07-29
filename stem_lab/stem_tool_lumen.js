@@ -2604,7 +2604,7 @@
           var ceilBtn = function (lvl, label) {
             return h('button', {
               key: 'c' + lvl, 'aria-pressed': ceiling === lvl ? 'true' : 'false',
-              className: (ceiling === lvl ? 'bg-amber-600 text-white border-amber-600' : 'bg-white text-slate-700 border-slate-300') + ' px-2 py-1 text-xs rounded border',
+              className: (ceiling === lvl ? 'bg-amber-700 text-white border-amber-700' : 'bg-white text-slate-700 border-slate-300') + ' px-2 py-1 text-xs rounded border',
               onClick: function () { upd('ceiling', lvl); upd('aiError', ''); announce('AI ceiling set to ' + label + '.'); }
             }, label);
           };
@@ -3128,7 +3128,7 @@
                             onChange: function (ev) { var next = (bw.cells || []).slice(); next[idx] = Object.assign({}, c, { sourceExcerpt: ev.target.value }); setBench({ cells: next }); } }))),
                       h('div', { className: 'mt-1 flex items-center gap-2' },
                         c.verified ? h('button', { className: 'px-2 py-0.5 text-[10.5px] rounded border border-slate-300 hover:bg-slate-50', onClick: function () { var next = (bw.cells || []).slice(); next[idx] = Object.assign({}, c, { verified: false, reviewedOn: null, signoffHash: null }); setBench({ cells: next }); announce('Cell unverified — edits re-enabled.'); } }, __alloT('stem.lumen.unverify_edit', 'Unverify (edit)')) :
-                          h('button', { disabled: !canVerify, className: 'px-2 py-0.5 text-[10.5px] rounded border ' + (canVerify ? 'border-emerald-700 bg-emerald-50 text-emerald-800 hover:bg-emerald-100' : 'border-slate-300 bg-slate-50 text-slate-400 cursor-not-allowed'),
+                          h('button', { disabled: !canVerify, className: 'px-2 py-0.5 text-[10.5px] rounded border ' + (canVerify ? 'border-emerald-700 bg-emerald-50 text-emerald-800 hover:bg-emerald-100' : 'border-slate-400 bg-slate-50 text-slate-600 cursor-not-allowed'),
                             onClick: function () {
                               // No Date in this layer — the caller provides reviewedOn as the YYYY-MM-DD of the host. The browser is allowed to use Date here (the render path is not a workflow script).
                               var iso;
@@ -3447,7 +3447,7 @@
               kids.push(h('div', { key: 'aigate', className: 'mt-3 text-xs italic text-slate-500' }, gate.reason));
             } else {
               kids.push(h('div', { key: 'aibar', className: 'mt-3 flex items-center gap-2 flex-wrap' },
-                h('button', { className: 'px-3 py-1 text-sm rounded bg-violet-600 text-white hover:bg-violet-500', onClick: fireAI },
+                h('button', { className: 'px-3 py-1 text-sm rounded bg-violet-600 text-white hover:bg-violet-700', onClick: fireAI },
                   d.aiLoading ? __alloT('stem.lumen.thinking', 'Thinking…') : (levelIndex(ceiling) >= 3 ? __alloT('stem.lumen.generate_ai_reading', 'Generate AI reading (hypotheses)') : __alloT('stem.lumen.generate_ai_reword', 'Generate AI re-word'))),
                 h('span', { className: 'text-[10px] text-slate-500' }, encode(levelIndex(ceiling) >= 3 ? 'L3' : 'L2').label + ' · ' + AI_CAVEAT)));
               if (d.aiError) kids.push(h('div', { key: 'aierr', className: 'mt-1 text-xs italic text-slate-500' }, d.aiError));

@@ -901,7 +901,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               : h('p', { className: 'text-sm text-purple-700 whitespace-pre-wrap leading-relaxed' }, tutorResponse),
             !tutorLoading && h('button', { 'aria-label': t('stem.unitconvert.ask_again', 'Ask Again'),
               onClick: askTutor,
-              className: 'mt-2 text-[11px] font-bold px-3 py-1 rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 border border-purple-600 transition-all active:scale-[0.97]'
+              className: 'mt-2 text-[11px] font-bold px-3 py-1 rounded-full bg-purple-100 text-purple-700 hover:bg-purple-200 border border-purple-700 transition-all active:scale-[0.97]'
             }, t('stem.unitconvert.ask_again_2', '\uD83D\uDD04 Ask Again'))
           ),
 
@@ -1408,10 +1408,10 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                       onKeyDown: function(e) { if (e.key === 'Enter') { e.preventDefault(); gradeQuizAnswer(e.currentTarget.value); } }
                     }),
                     h('span', { className: 'text-xs text-slate-600 shrink-0' }, d.quiz.unit),
-                    h('button', { type: 'button', onClick: function() { gradeQuizAnswer(d.quizDraft); }, className: 'px-3 py-2 rounded-lg bg-cyan-700 text-white text-xs font-black hover:bg-cyan-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-1' }, 'Check answer'),
+                    h('button', { type: 'button', onClick: function() { gradeQuizAnswer(d.quizDraft); }, className: 'px-3 py-2 rounded-lg bg-cyan-700 text-white text-xs font-black hover:bg-cyan-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-1' }, 'Check answer'),
                     h('button', { type: 'button', 'aria-label': t('stem.unitconvert.ask_tutor_2', 'Ask Tutor'),
                       onClick: askTutor,
-                      className: 'px-2 py-2 bg-purple-100 text-purple-600 font-bold rounded-lg hover:bg-purple-200 transition-all text-sm active:scale-[0.97]',
+                      className: 'px-2 py-2 bg-purple-100 text-purple-700 font-bold rounded-lg hover:bg-purple-200 transition-all text-sm active:scale-[0.97]',
                       title: t('stem.unitconvert.get_a_hint_from_ai', 'Get a hint from AI')
                     }, '\uD83E\uDDE0'),
                     d.quizDraftError && h('p', { role: 'alert', className: 'w-full text-xs font-bold text-red-700 mt-1' }, d.quizDraftError)
@@ -1435,7 +1435,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                       }, t('stem.unitconvert.next_question_2', '\uD83D\uDD04 Next Question')),
                       !d.quiz.correct && h('button', { 'aria-label': t('stem.unitconvert.explain', 'Explain'),
                         onClick: askTutor,
-                        className: 'px-4 py-2 bg-purple-100 text-purple-600 rounded-lg text-xs font-bold hover:bg-purple-200 transition-all active:scale-[0.97]'
+                        className: 'px-4 py-2 bg-purple-100 text-purple-700 rounded-lg text-xs font-bold hover:bg-purple-200 transition-all active:scale-[0.97]'
                       }, t('stem.unitconvert.explain_2', '\uD83E\uDDE0 Explain'))
                     )
                   )
@@ -1458,7 +1458,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 disabled: !!d.loadingWP,
                 onClick: generateWordProblem,
                 'aria-label': wordProblem ? t('stem.unitconvert.new_problem', 'New Problem') : t('stem.unitconvert.generate_problem', 'Generate practice problem'),
-                className: 'shrink-0 px-4 py-2 rounded-lg text-xs font-bold transition-all ' + (d.loadingWP ? 'bg-slate-200 text-slate-600 cursor-not-allowed' : 'bg-cyan-700 text-white hover:bg-cyan-600 active:scale-[0.97]')
+                className: 'shrink-0 px-4 py-2 rounded-lg text-xs font-bold transition-all ' + (d.loadingWP ? 'bg-slate-200 text-slate-600 cursor-not-allowed' : 'bg-cyan-700 text-white hover:bg-cyan-800 active:scale-[0.97]')
               }, d.loadingWP
                 ? t('stem.unitconvert.generating_problem', '⏳ Generating...')
                 : wordProblem
@@ -1541,7 +1541,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('button', {
                     type: 'button',
                     onClick: gradeWordProblemAttempt,
-                    className: 'rounded-lg bg-cyan-700 px-4 py-2 text-xs font-black text-white hover:bg-cyan-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-1'
+                    className: 'rounded-lg bg-cyan-700 px-4 py-2 text-xs font-black text-white hover:bg-cyan-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-1'
                   }, t('stem.unitconvert.check_attempt', 'Check attempt'))
                 )
               ),

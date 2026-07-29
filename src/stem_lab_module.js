@@ -301,25 +301,25 @@
 
       // ── Color Map (explicit classes for Tailwind JIT compatibility) ──
       var _toolColorMap = {
-        emerald: { bg: 'bg-emerald-50', border: 'border-emerald-200', hoverBorder: 'hover:border-emerald-400', title: 'text-emerald-800', desc: 'text-emerald-600/70' },
-        blue: { bg: 'bg-blue-50', border: 'border-blue-200', hoverBorder: 'hover:border-blue-400', title: 'text-blue-800', desc: 'text-blue-600/70' },
-        amber: { bg: 'bg-amber-50', border: 'border-amber-200', hoverBorder: 'hover:border-amber-400', title: 'text-amber-800', desc: 'text-amber-600/70' },
-        rose: { bg: 'bg-rose-50', border: 'border-rose-200', hoverBorder: 'hover:border-rose-400', title: 'text-rose-800', desc: 'text-rose-600/70' },
-        orange: { bg: 'bg-orange-50', border: 'border-orange-200', hoverBorder: 'hover:border-orange-400', title: 'text-orange-800', desc: 'text-orange-600/70' },
-        cyan: { bg: 'bg-cyan-50', border: 'border-cyan-200', hoverBorder: 'hover:border-cyan-400', title: 'text-cyan-800', desc: 'text-cyan-600/70' },
-        purple: { bg: 'bg-purple-50', border: 'border-purple-200', hoverBorder: 'hover:border-purple-400', title: 'text-purple-800', desc: 'text-purple-600/70' },
-        sky: { bg: 'bg-sky-50', border: 'border-sky-200', hoverBorder: 'hover:border-sky-400', title: 'text-sky-800', desc: 'text-sky-600/70' },
-        pink: { bg: 'bg-pink-50', border: 'border-pink-200', hoverBorder: 'hover:border-pink-400', title: 'text-pink-800', desc: 'text-pink-600/70' },
-        indigo: { bg: 'bg-indigo-50', border: 'border-indigo-200', hoverBorder: 'hover:border-indigo-400', title: 'text-indigo-800', desc: 'text-indigo-600/70' },
-        fuchsia: { bg: 'bg-fuchsia-50', border: 'border-fuchsia-200', hoverBorder: 'hover:border-fuchsia-400', title: 'text-fuchsia-800', desc: 'text-fuchsia-600/70' },
-        red: { bg: 'bg-red-50', border: 'border-red-200', hoverBorder: 'hover:border-red-400', title: 'text-red-800', desc: 'text-red-600/70' },
-        green: { bg: 'bg-green-50', border: 'border-green-200', hoverBorder: 'hover:border-green-400', title: 'text-green-800', desc: 'text-green-600/70' },
-        violet: { bg: 'bg-violet-50', border: 'border-violet-200', hoverBorder: 'hover:border-violet-400', title: 'text-violet-800', desc: 'text-violet-600/70' },
-        teal: { bg: 'bg-teal-50', border: 'border-teal-200', hoverBorder: 'hover:border-teal-400', title: 'text-teal-800', desc: 'text-teal-600/70' },
-        lime: { bg: 'bg-lime-50', border: 'border-lime-200', hoverBorder: 'hover:border-lime-400', title: 'text-lime-800', desc: 'text-lime-600/70' },
-        yellow: { bg: 'bg-yellow-50', border: 'border-yellow-200', hoverBorder: 'hover:border-yellow-400', title: 'text-yellow-800', desc: 'text-yellow-600/70' },
-        stone: { bg: 'bg-stone-50', border: 'border-stone-200', hoverBorder: 'hover:border-stone-400', title: 'text-stone-800', desc: 'text-stone-600/70' },
-        slate: { bg: 'bg-slate-50', border: 'border-slate-200', hoverBorder: 'hover:border-slate-400', title: 'text-slate-800', desc: 'text-slate-600/70' }
+        emerald: { bg: 'bg-emerald-50', border: 'border-emerald-200', hoverBorder: 'hover:border-emerald-400', title: 'text-emerald-800', desc: 'text-emerald-700' },
+        blue: { bg: 'bg-blue-50', border: 'border-blue-200', hoverBorder: 'hover:border-blue-400', title: 'text-blue-800', desc: 'text-blue-600' },
+        amber: { bg: 'bg-amber-50', border: 'border-amber-200', hoverBorder: 'hover:border-amber-400', title: 'text-amber-800', desc: 'text-amber-700' },
+        rose: { bg: 'bg-rose-50', border: 'border-rose-200', hoverBorder: 'hover:border-rose-400', title: 'text-rose-800', desc: 'text-rose-700' },
+        orange: { bg: 'bg-orange-50', border: 'border-orange-200', hoverBorder: 'hover:border-orange-400', title: 'text-orange-800', desc: 'text-orange-700' },
+        cyan: { bg: 'bg-cyan-50', border: 'border-cyan-200', hoverBorder: 'hover:border-cyan-400', title: 'text-cyan-800', desc: 'text-cyan-700' },
+        purple: { bg: 'bg-purple-50', border: 'border-purple-200', hoverBorder: 'hover:border-purple-400', title: 'text-purple-800', desc: 'text-purple-600' },
+        sky: { bg: 'bg-sky-50', border: 'border-sky-200', hoverBorder: 'hover:border-sky-400', title: 'text-sky-800', desc: 'text-sky-700' },
+        pink: { bg: 'bg-pink-50', border: 'border-pink-200', hoverBorder: 'hover:border-pink-400', title: 'text-pink-800', desc: 'text-pink-700' },
+        indigo: { bg: 'bg-indigo-50', border: 'border-indigo-200', hoverBorder: 'hover:border-indigo-400', title: 'text-indigo-800', desc: 'text-indigo-600' },
+        fuchsia: { bg: 'bg-fuchsia-50', border: 'border-fuchsia-200', hoverBorder: 'hover:border-fuchsia-400', title: 'text-fuchsia-800', desc: 'text-fuchsia-700' },
+        red: { bg: 'bg-red-50', border: 'border-red-200', hoverBorder: 'hover:border-red-400', title: 'text-red-800', desc: 'text-red-700' },
+        green: { bg: 'bg-green-50', border: 'border-green-200', hoverBorder: 'hover:border-green-400', title: 'text-green-800', desc: 'text-green-700' },
+        violet: { bg: 'bg-violet-50', border: 'border-violet-200', hoverBorder: 'hover:border-violet-400', title: 'text-violet-800', desc: 'text-violet-600' },
+        teal: { bg: 'bg-teal-50', border: 'border-teal-200', hoverBorder: 'hover:border-teal-400', title: 'text-teal-800', desc: 'text-teal-700' },
+        lime: { bg: 'bg-lime-50', border: 'border-lime-200', hoverBorder: 'hover:border-lime-400', title: 'text-lime-800', desc: 'text-lime-700' },
+        yellow: { bg: 'bg-yellow-50', border: 'border-yellow-200', hoverBorder: 'hover:border-yellow-400', title: 'text-yellow-800', desc: 'text-yellow-700' },
+        stone: { bg: 'bg-stone-50', border: 'border-stone-200', hoverBorder: 'hover:border-stone-400', title: 'text-stone-800', desc: 'text-stone-600' },
+        slate: { bg: 'bg-slate-50', border: 'border-slate-200', hoverBorder: 'hover:border-slate-400', title: 'text-slate-800', desc: 'text-slate-600' }
       };
 
 
@@ -51496,7 +51496,7 @@
             return React.createElement('div', { style: { padding: 40, textAlign: 'center', color: '#ef4444' } },
               React.createElement('p', { style: { fontSize: 32, marginBottom: 12 } }, '⚠️'),
               React.createElement('p', { style: { fontWeight: 700, marginBottom: 8 } }, 'Error loading ' + stemLabTool),
-              React.createElement('p', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 16 } }, e.message || 'Unknown error'),
+              React.createElement('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #64748b)', marginBottom: 16 } }, e.message || 'Unknown error'),
               React.createElement('button', {
                 onClick: function() { setStemLabTool(null); },
                 style: { padding: '8px 20px', borderRadius: 8, background: '#3b82f6', color: '#fff', fontWeight: 700, border: 'none', cursor: 'pointer' }

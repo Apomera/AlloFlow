@@ -577,6 +577,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
     };
   }
 
+  function summarizeDecisionReasoning(reason, choice, event) {
+    var clean = (reason || '').trim().slice(0, 220);
+    var lower = clean.toLowerCase();
+    var concepts = (event && event.stemConcepts) || [];
+    var mentionsConcept = concepts.some(function(c) { return lower.indexOf(String(c).toLowerCase()) >= 0; });
+    var mentionsTradeoff = /because|therefore|if|risk|trade|cost|evidence|data|resource|oxygen|o2|hull|power|fuel|morale|science/.test(lower);
+    var hasReasoning = clean.length >= 20;
+    var tag = !hasReasoning ? 'not written' : (mentionsConcept && mentionsTradeoff ? 'evidence + tradeoff' : mentionsConcept ? 'science-linked' : mentionsTradeoff ? 'tradeoff-linked' : 'claim only');
+    return {
+      text: clean,
+      hasReasoning: hasReasoning,
+      tag: tag,
+      mentionsConcept: mentionsConcept,
+      mentionsTradeoff: mentionsTradeoff,
+      feedback: !hasReasoning ? 'Try writing why this choice fits the evidence before deciding.' : tag === 'evidence + tradeoff' ? 'Strong reasoning: you connected science evidence to mission tradeoffs.' : tag === 'science-linked' ? 'Good science link. Add the resource tradeoff next time.' : tag === 'tradeoff-linked' ? 'Good systems tradeoff. Add the science evidence next time.' : 'You made a claim. Strengthen it with evidence or a resource tradeoff.'
+    };
+  }
+
   window.StemLab.spaceExplorerPure = {
     buildMissionDossier: buildMissionDossier,
     buildLocalMissionEvent: buildLocalMissionEvent,
@@ -587,6 +605,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
     buildMissionForecast: buildMissionForecast,
     buildMissionObjectives: buildMissionObjectives,
     evaluateMissionObjectives: evaluateMissionObjectives,
+    summarizeDecisionReasoning: summarizeDecisionReasoning,
     normalizeAllocation: normalizeAllocation,
     applyTurnDrain: applyTurnDrain
   };
@@ -900,6 +919,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
       var minigameResult = d.minigameResult || null;
       var missionDossier = d.missionDossier || (destination ? buildMissionDossier(destination, resources, crew, unlockedTech) : null);
       var missionEvidence = d.missionEvidence || [];
+      var currentDecisionReason = d.currentDecisionReason || '';
       // Read like its siblings. The turn resolver writes protocolLog back but
       // never had a local to read it from — see the note where it is written.
       var protocolLog = d.protocolLog || [];
@@ -941,6 +961,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           missionIntent: '',
           missionReflection: '',
           protocolLog: [],
+          currentDecisionReason: '',
           activeEvent: null,
           eventOutcome: null,
           decisionLog: [],
@@ -978,7 +999,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
 
         if (!callGemini) {
           var localEvent = buildLocalMissionEvent(destination, drainedRes, turn, maxTurns, decisionLog, missionProtocol, missionDossier);
-          updAll({ activeEvent: localEvent, missionPhase: 'event', isGenerating: false, minigamePending: null, minigameResult: null });
+          updAll({ activeEvent: localEvent, missionPhase: 'event', isGenerating: false, minigamePending: null, minigameResult: null, currentDecisionReason: '' });
           log(localEvent.emoji + ' ' + localEvent.title + ' (local mission deck)');
           announceToSR('Local mission event: ' + localEvent.title + '. ' + localEvent.description);
           return;
@@ -1064,7 +1085,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
               if (chemDest && Math.random() < 0.3) {
                 minigame = pickSpectraCompound(destination, destination.difficulty || 1);
               }
-              updAll({ activeEvent: event, missionPhase: 'event', isGenerating: false, minigamePending: minigame, minigameResult: null });
+              updAll({ activeEvent: event, missionPhase: 'event', isGenerating: false, minigamePending: minigame, minigameResult: null, currentDecisionReason: '' });
               log(event.emoji + ' ' + event.title);
               announceToSR('Mission event: ' + event.title + '. ' + event.description + (minigame ? ' Spectral analysis required before choosing a response.' : ''));
             } else {
@@ -1159,16 +1180,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           newRes.science = Math.max(0, Math.min(RESOURCES.science.max, newRes.science + sciBonus));
         }
         // Log decision
+        var reasoningSummary = summarizeDecisionReasoning(currentDecisionReason, choice, event);
         var newDecLog = decisionLog.slice();
         var newEvidence = missionEvidence.slice();
-        newEvidence.push({ turn: turn + 1, title: event.title, category: event.category || 'mission', quality: choice.quality, concept: (event.stemConcepts || [])[0] || 'mission science', note: choice.scienceReward || choice.outcome || 'Evidence recorded from crew decision.' });
+        newEvidence.push({ turn: turn + 1, title: event.title, category: event.category || 'mission', quality: choice.quality, concept: (event.stemConcepts || [])[0] || 'mission science', note: (choice.scienceReward || choice.outcome || 'Evidence recorded from crew decision.') + (reasoningSummary.hasReasoning ? ' Reasoning: ' + reasoningSummary.text : '') });
         if (newEvidence.length > 12) newEvidence = newEvidence.slice(-12);
         var optimalLabel = '';
         for (var i = 0; i < event.choices.length; i++) { if (event.choices[i].quality === 'optimal') { optimalLabel = event.choices[i].label; break; } }
         newDecLog.push({
           title: event.title, chosen: choice.label, quality: choice.quality,
           optimal: optimalLabel, scienceReward: choice.scienceReward,
-          category: event.category || null
+          category: event.category || null,
+          reasoning: reasoningSummary.text,
+          reasoningSummary: reasoningSummary
         });
         var newTurn = turn + 1;
         // newProtocolLog and protocolResult were referenced below but never
@@ -1193,6 +1217,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           _consultLine: null,
           minigamePending: null,
           minigameResult: null,
+          currentDecisionReason: '',
           turn: newTurn,
           missionPhase: 'outcome'
         });
@@ -1417,7 +1442,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                     if (addToast) addToast('\u26A1 ' + tech.name + ' unlocked!', 'success');
                     addXP(15);
                   },
-                  className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold ' + (canBuy ? 'bg-cyan-600 text-white hover:bg-cyan-700' : 'bg-slate-700 text-slate-400 cursor-not-allowed')
+                  className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold ' + (canBuy ? 'bg-cyan-700 text-white hover:bg-cyan-800' : 'bg-slate-700 text-slate-300 cursor-not-allowed')
                 }, tech.cost + ' \uD83D\uDD2C')
               );
             })
@@ -2058,6 +2083,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                 h('span', null, d._consultLine.line)
               )
             ),
+            h('div', { 'data-spaceexplorer-reasoning': 'true', className: 'mb-3 rounded-lg border border-sky-600/30 bg-sky-950/20 p-2.5' },
+              h('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-1' },
+                h('div', { className: 'text-[10px] font-black uppercase tracking-wide text-sky-200' }, '\u270D\uFE0F Commander reasoning'),
+                h('span', { className: 'text-[10px] font-bold ' + ((currentDecisionReason || '').trim().length >= 20 ? 'text-green-300' : 'text-slate-400') }, (currentDecisionReason || '').length + '/220')
+              ),
+              h('p', { className: 'text-[11px] text-slate-300 leading-snug mb-1.5' }, 'Optional: explain the evidence or tradeoff before choosing. Your debrief will preserve this reasoning.'),
+              h('textarea', {
+                value: currentDecisionReason,
+                onChange: function(e) { upd('currentDecisionReason', (e.target.value || '').slice(0, 220)); },
+                rows: 2, maxLength: 220,
+                placeholder: 'Because the spectrum/evidence suggests..., I will trade ... to protect ...',
+                'aria-label': 'Commander reasoning before choosing a response',
+                className: 'w-full rounded-md bg-slate-950/70 border border-sky-600/30 p-2 text-xs text-white placeholder:text-slate-500 focus:ring-2 focus:ring-sky-400 focus:outline-none'
+              })
+            ),
             h('div', { className: 'space-y-2', role: 'group', 'aria-label': t('stem.spaceexplorer.choose_your_response_press_1_2_or_3_to', 'Choose your response. Press 1, 2, or 3 to select.') },
               // Merge the public choices with the hiddenOption if it's been
               // unlocked via a matching specialist consult. Hidden option
@@ -2266,6 +2306,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
                   }, (dec.quality || 'unknown').toUpperCase())
                 ),
                 h('p', { className: 'text-[11px] text-slate-300' }, 'You: "' + dec.chosen + '"'),
+                dec.reasoning && h('div', { 'data-spaceexplorer-reasoning-review': 'true', className: 'mt-1 rounded-md bg-sky-500/10 border border-sky-500/20 p-2' },
+                  h('p', { className: 'text-[11px] text-sky-100 leading-snug' }, 'Reasoning: ' + dec.reasoning),
+                  dec.reasoningSummary && h('p', { className: 'text-[10px] text-slate-300 mt-0.5' }, dec.reasoningSummary.tag + ' — ' + dec.reasoningSummary.feedback)
+                ),
                 dec.quality !== 'optimal' && dec.optimal && h('p', { className: 'text-[11px] text-indigo-300 mt-1' }, '\uD83D\uDCA1 Better: "' + dec.optimal + '"')
               );
             }),
@@ -2334,7 +2378,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceExplorer'
           // Action buttons
           h('div', { className: 'flex gap-2' },
             h('button', {
-              onClick: function() { updAll({ missionPhase: 'select', destination: null, resources: null, turn: 0, missionLog: [], activeEvent: null, eventOutcome: null, decisionLog: [], missionResult: null, missionIntent: '', missionReflection: '', missionEvidence: [], protocolLog: [] }); },
+              onClick: function() { updAll({ missionPhase: 'select', destination: null, resources: null, turn: 0, missionLog: [], activeEvent: null, eventOutcome: null, decisionLog: [], missionResult: null, missionIntent: '', missionReflection: '', missionEvidence: [], protocolLog: [], currentDecisionReason: '' }); },
               ref: function(el) { if (el) setTimeout(function() { el.focus(); }, 200); },
               className: 'flex-1 py-3 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-md focus:ring-2 focus:ring-purple-400 focus:outline-none'
             }, t('stem.spaceexplorer.new_mission', '\uD83C\uDF0C New Mission')),

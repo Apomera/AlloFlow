@@ -1930,7 +1930,7 @@ var d = (labToolData.probability) || {};
 
                 ),
 
-                customOutcomes.length < 8 && React.createElement("button", { "aria-label": t('stem.probability.add_event', "+ Add Event"), onClick: function () { var co = (d.customOutcomes || customOutcomes).concat([{ label: String.fromCharCode(65 + customOutcomes.length), numerator: 1, denominator: 20, prob: 0.05, count: 1, color: ['#3b82f6', '#ef4444', '#22c55e', '#eab308', '#8b5cf6', '#f97316', '#06b6d4', '#ec4899'][customOutcomes.length % 8] }]); setProbabilityOutcomes(co); }, className: "mt-2 px-3 py-1.5 bg-amber-100 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-200 transition-colors" }, t('stem.probability.add_event_2', "+ Add Event")),
+                customOutcomes.length < 8 && React.createElement("button", { "aria-label": t('stem.probability.add_event', "+ Add Event"), onClick: function () { var co = (d.customOutcomes || customOutcomes).concat([{ label: String.fromCharCode(65 + customOutcomes.length), numerator: 1, denominator: 20, prob: 0.05, count: 1, color: ['#3b82f6', '#ef4444', '#22c55e', '#eab308', '#8b5cf6', '#f97316', '#06b6d4', '#ec4899'][customOutcomes.length % 8] }]); setProbabilityOutcomes(co); }, className: "mt-2 px-3 py-1.5 bg-amber-100 text-amber-800 rounded-lg text-xs font-bold hover:bg-amber-200 transition-colors" }, t('stem.probability.add_event_2', "+ Add Event")),
 
                 React.createElement("p", { className: "text-[11px] mt-1.5 " + (customModel.valid ? 'text-emerald-500' : 'text-red-500') }, "Total: " + (customModel.total * 100).toFixed(1) + "%" + (customModel.valid ? ' - ready' : ' - must equal exactly 100%'))
 
@@ -1956,11 +1956,11 @@ var d = (labToolData.probability) || {};
 
                       React.createElement("input", { type: "text", value: o.label, placeholder: "Color " + (i + 1), 'aria-label': 'Name for marble color ' + (i + 1), onChange: function (e) { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { label: e.target.value }); setProbabilityOutcomes(co); }, className: "w-20 px-2 py-1 rounded-lg border border-amber-600 text-sm font-bold flex-shrink-0" }),
 
-                      React.createElement("button", { "aria-label": "Decrease marble count for " + (o.label || 'color ' + (i + 1)), onClick: function () { if (count <= 1) return; var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { count: count - 1 }); setProbabilityOutcomes(co); }, className: "w-7 h-7 rounded-full bg-red-100 text-red-700 font-bold text-sm hover:bg-red-200 transition-colors flex-shrink-0 flex items-center justify-center" }, "\u2212"),
+                      React.createElement("button", { "aria-label": "Decrease marble count for " + (o.label || 'color ' + (i + 1)), onClick: function () { if (count <= 1) return; var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { count: count - 1 }); setProbabilityOutcomes(co); }, className: "w-7 h-7 rounded-full bg-red-100 text-red-800 font-bold text-sm hover:bg-red-200 transition-colors flex-shrink-0 flex items-center justify-center" }, "\u2212"),
 
                       React.createElement("span", { className: "w-8 text-center text-sm font-black text-slate-700" }, count),
 
-                      React.createElement("button", { "aria-label": "Increase marble count for " + (o.label || 'color ' + (i + 1)), onClick: function () { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { count: count + 1 }); setProbabilityOutcomes(co); }, className: "w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 font-bold text-sm hover:bg-emerald-200 transition-colors flex-shrink-0 flex items-center justify-center" }, "+"),
+                      React.createElement("button", { "aria-label": "Increase marble count for " + (o.label || 'color ' + (i + 1)), onClick: function () { var co = (d.customOutcomes || customOutcomes).slice(); co[i] = Object.assign({}, co[i], { count: count + 1 }); setProbabilityOutcomes(co); }, className: "w-7 h-7 rounded-full bg-emerald-100 text-emerald-800 font-bold text-sm hover:bg-emerald-200 transition-colors flex-shrink-0 flex items-center justify-center" }, "+"),
 
                       React.createElement("span", { className: "ml-1 text-[11px] font-mono text-amber-600" }, count + '/' + customOutcomes.reduce(function (s, c) { return s + (c.count || 1); }, 0) + ' = ' + (o.prob * 100).toFixed(1) + '%'),
 
@@ -1990,7 +1990,7 @@ var d = (labToolData.probability) || {};
 
                 ),
 
-                customOutcomes.length < 8 && React.createElement("button", { "aria-label": t('stem.probability.add_color_3', "+ Add Color"), onClick: function () { var co = (d.customOutcomes || customOutcomes).concat([{ label: String.fromCharCode(65 + customOutcomes.length), numerator: 1, denominator: 20, prob: 0, count: 1, color: ['#3b82f6', '#ef4444', '#22c55e', '#eab308', '#8b5cf6', '#f97316', '#06b6d4', '#ec4899'][customOutcomes.length % 8] }]); setProbabilityOutcomes(co); }, className: "mt-2 px-3 py-1.5 bg-amber-100 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-200 transition-colors" }, t('stem.probability.add_color_4', "+ Add Color"))
+                customOutcomes.length < 8 && React.createElement("button", { "aria-label": t('stem.probability.add_color_3', "+ Add Color"), onClick: function () { var co = (d.customOutcomes || customOutcomes).concat([{ label: String.fromCharCode(65 + customOutcomes.length), numerator: 1, denominator: 20, prob: 0, count: 1, color: ['#3b82f6', '#ef4444', '#22c55e', '#eab308', '#8b5cf6', '#f97316', '#06b6d4', '#ec4899'][customOutcomes.length % 8] }]); setProbabilityOutcomes(co); }, className: "mt-2 px-3 py-1.5 bg-amber-100 text-amber-800 rounded-lg text-xs font-bold hover:bg-amber-200 transition-colors" }, t('stem.probability.add_color_4', "+ Add Color"))
 
               ),
 
@@ -2028,7 +2028,7 @@ var d = (labToolData.probability) || {};
 
                 ),
 
-                customOutcomes.length < 8 && React.createElement("button", { "aria-label": t('stem.probability.add_outcome', "+ Add Outcome"), onClick: function () { var newOuts = (d.customOutcomes || customOutcomes).concat([{ label: String.fromCharCode(65 + customOutcomes.length), prob: 0, count: 1, numerator: 0, denominator: 20, color: ['#3b82f6', '#ef4444', '#22c55e', '#eab308', '#8b5cf6', '#f97316', '#06b6d4', '#ec4899'][customOutcomes.length % 8] }]); var prob = 1 / newOuts.length; newOuts = newOuts.map(function (o) { return Object.assign({}, o, { prob: prob }); }); setProbabilityOutcomes(newOuts); }, className: "mt-2 px-3 py-1.5 bg-amber-100 text-amber-700 rounded-lg text-xs font-bold hover:bg-amber-200 transition-colors" }, t('stem.probability.add_outcome_2', "+ Add Outcome")),
+                customOutcomes.length < 8 && React.createElement("button", { "aria-label": t('stem.probability.add_outcome', "+ Add Outcome"), onClick: function () { var newOuts = (d.customOutcomes || customOutcomes).concat([{ label: String.fromCharCode(65 + customOutcomes.length), prob: 0, count: 1, numerator: 0, denominator: 20, color: ['#3b82f6', '#ef4444', '#22c55e', '#eab308', '#8b5cf6', '#f97316', '#06b6d4', '#ec4899'][customOutcomes.length % 8] }]); var prob = 1 / newOuts.length; newOuts = newOuts.map(function (o) { return Object.assign({}, o, { prob: prob }); }); setProbabilityOutcomes(newOuts); }, className: "mt-2 px-3 py-1.5 bg-amber-100 text-amber-800 rounded-lg text-xs font-bold hover:bg-amber-200 transition-colors" }, t('stem.probability.add_outcome_2', "+ Add Outcome")),
 
                 React.createElement("p", { className: "text-[11px] text-amber-500 mt-1" }, "\uD83D\uDCA1 Total: " + Math.round(customOutcomes.reduce(function (s, o) { return s + o.prob; }, 0) * 100) + "% (should be 100%)")
 

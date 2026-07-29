@@ -1692,7 +1692,7 @@
                     announceToSR(want ? 'Switched to the 3D block view.' : 'Switched to the 2D cross-section.');
                   }
                 },
-                className: 'flex-1 px-2 py-1.5 text-[11px] rounded transition-colors focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (active ? 'bg-orange-600 text-white font-bold' : (isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-orange-50 text-orange-800 hover:bg-orange-100'))
+                className: 'flex-1 px-2 py-1.5 text-[11px] rounded transition-colors focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (active ? 'bg-orange-700 text-white font-bold' : (isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-orange-50 text-orange-800 hover:bg-orange-100'))
               }, o[1]);
             })
           ),
@@ -1734,7 +1734,7 @@
                   announceToSR(next ? 'Depth scale shown.' : 'Depth scale hidden.');
                 }
               },
-              className: 'w-full mt-1 px-2 py-1 text-[10px] rounded border focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (view3d.showScale !== false ? 'border-orange-400 bg-orange-600 text-white font-bold' : (isDark ? 'border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700' : 'border-orange-300 bg-orange-50 text-orange-800 hover:bg-orange-100'))
+              className: 'w-full mt-1 px-2 py-1 text-[10px] rounded border focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (view3d.showScale !== false ? 'border-orange-400 bg-orange-700 text-white font-bold' : (isDark ? 'border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700' : 'border-orange-300 bg-orange-50 text-orange-800 hover:bg-orange-100'))
             }, 'Depth scale (70 / 300 / 700 km)'),
             h('button', {
               type: 'button',
@@ -1786,7 +1786,7 @@
               update({ running: nextRunning });
               if (typeof announceToSR === 'function') announceToSR(nextRunning ? 'Simulation playing' : 'Simulation paused');
             },
-            className: 'px-2 py-1.5 text-xs font-bold rounded focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (s.running ? 'bg-amber-500 text-slate-900' : 'bg-emerald-500 text-white')
+            className: 'px-2 py-1.5 text-xs font-bold rounded focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (s.running ? 'bg-amber-500 text-slate-900' : 'bg-emerald-700 text-white')
           }, s.running ? '⏸ Pause' : '▶ Play'),
           h('button', {
             onClick: function() {
@@ -6174,7 +6174,7 @@ var d = labToolData.plateTectonics || {};
                   React.createElement('button', {
                     onClick: function() { upd({ showConvection: !showConvection }); },
                     'aria-pressed': showConvection,
-                    className: 'px-3 py-2 rounded-xl text-xs font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (showConvection ? 'bg-orange-600 text-white' : (isDark ? 'bg-slate-900 text-orange-300 border border-slate-700' : 'bg-white text-orange-700 border border-orange-200'))
+                    className: 'px-3 py-2 rounded-xl text-xs font-bold focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (showConvection ? 'bg-orange-700 text-white' : (isDark ? 'bg-slate-900 text-orange-300 border border-slate-700' : 'bg-white text-orange-700 border border-orange-200'))
                   }, showConvection ? 'Hide currents' : 'Show currents'),
                   React.createElement('button', {
                     onClick: function() {
@@ -7574,7 +7574,7 @@ var d = labToolData.plateTectonics || {};
 
                   onClick: function() { upd({ showLabels: !showLabels }); },
 
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (showLabels ? "bg-red-600 text-white" : (isDark ? "bg-slate-900 text-red-400 border border-slate-700 hover:bg-slate-800" : "bg-white text-red-600 border border-red-200 hover:bg-red-50"))
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (showLabels ? "bg-red-600 text-white" : (isDark ? "bg-slate-900 text-red-400 border border-slate-700 hover:bg-slate-800" : "bg-white text-red-700 border border-red-200 hover:bg-red-50"))
 
                 }, __alloT('stem.platetectonics.labels_2', "\uD83C\uDFF7 Labels")),
 
@@ -7582,7 +7582,7 @@ var d = labToolData.plateTectonics || {};
 
                   onClick: function() { upd({ showConvection: !showConvection }); },
 
-                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (showConvection ? "bg-red-600 text-white" : (isDark ? "bg-slate-900 text-red-400 border border-slate-700 hover:bg-slate-800" : "bg-white text-red-600 border border-red-200 hover:bg-red-50"))
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none " + (showConvection ? "bg-red-600 text-white" : (isDark ? "bg-slate-900 text-red-400 border border-slate-700 hover:bg-slate-800" : "bg-white text-red-700 border border-red-200 hover:bg-red-50"))
 
                 }, __alloT('stem.platetectonics.currents_2', "\uD83C\uDF00 Currents")),
 
@@ -8477,7 +8477,7 @@ var d = labToolData.plateTectonics || {};
 
                         key: oi,
 
-                        className: "p-3 rounded-xl text-sm font-bold border-2 transition-all text-left " + (isCorrect ? "border-emerald-400 bg-emerald-50 text-emerald-700" : wasSelected ? "border-red-400 bg-red-50 text-red-600" : "border-slate-200 bg-white text-slate-600")
+                        className: "p-3 rounded-xl text-sm font-bold border-2 transition-all text-left " + (isCorrect ? "border-emerald-400 bg-emerald-50 text-emerald-700" : wasSelected ? "border-red-400 bg-red-50 text-red-700" : "border-slate-200 bg-white text-slate-600")
 
                       }, (isCorrect ? "✅ " : wasSelected ? "❌ " : "") + String.fromCharCode(65 + oi) + ". " + opt);
 
@@ -8517,7 +8517,7 @@ var d = labToolData.plateTectonics || {};
                               setTimeout(checkChallenges, 50);
                             }
                           },
-                          className: "px-2 py-0.5 rounded bg-orange-100 hover:bg-orange-200 text-orange-700 text-[10px] font-bold transition-all"
+                          className: "px-2 py-0.5 rounded bg-orange-100 hover:bg-orange-200 text-orange-800 text-[10px] font-bold transition-all"
                         }, __alloT('stem.platetectonics.study_term_5_rp', "Study Term (+5 RP)"))
                       ),
                       lookedUp && React.createElement("div", { className: "text-xs text-slate-600 mt-1" },

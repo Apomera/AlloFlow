@@ -1461,8 +1461,8 @@ var d = labToolData || {};
                             : geoStreak >= 10 ? '\uD83D\uDD25\uD83D\uDD25'
                             : '\uD83D\uDD25';
                   var cls = tier === 'gold' ? 'bg-gradient-to-r from-amber-300 to-yellow-500 text-amber-900 ring-2 ring-amber-200'
-                          : tier === 'red' ? 'bg-red-500 text-white'
-                          : tier === 'orange' ? 'bg-orange-400 text-orange-900'
+                          : tier === 'red' ? 'bg-red-600 text-white'
+                          : tier === 'orange' ? 'bg-orange-400 text-orange-950'
                           : 'bg-amber-300 text-amber-900';
                   return React.createElement('span', { className: 'text-xs rounded-full px-2 py-0.5 font-bold animate-pulse ' + cls, title: 'Current streak: ' + geoStreak + ' in a row' }, icons + ' ' + geoStreak + 'x');
                 })(),
@@ -1736,7 +1736,7 @@ var d = labToolData || {};
 
                     disabled: !!geoFeedback,
 
-                    className: 'px-4 py-2 bg-teal-700 text-white rounded-lg text-sm font-bold hover:bg-teal-600 disabled:bg-slate-300 disabled:cursor-not-allowed'
+                    className: 'px-4 py-2 bg-teal-700 text-white rounded-lg text-sm font-bold hover:bg-teal-800 disabled:bg-slate-300 disabled:cursor-not-allowed'
 
                   }, __alloT('stem.geo.check', 'Check'))
 
@@ -1775,7 +1775,7 @@ var d = labToolData || {};
                         className: 'px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ' +
                                    (isCorrect ? 'bg-green-100 border-green-400 text-green-800' :
                                     isWrongClicked ? 'bg-red-100 border-red-400 text-red-800' :
-                                    answered ? 'bg-slate-50 border-slate-200 text-slate-400' :
+                                    answered ? 'bg-slate-50 border-slate-400 text-slate-600' :
                                     'bg-slate-100 hover:bg-teal-100 text-slate-700 border-slate-200 hover:border-teal-600')
                       }, cap);
                     })
@@ -1950,7 +1950,7 @@ var d = labToolData || {};
                       upd('geoLandmarkQuizFb', null);
                     },
                     className: 'px-3 py-1 rounded-full text-xs font-bold transition-colors ' +
-                               (isActive ? 'bg-teal-600 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
+                               (isActive ? 'bg-teal-700 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')
                   }, m === 'browse' ? '\uD83D\uDCD6 Browse' : '\uD83C\uDFAF Quiz Me');
                 })
               ),
@@ -2098,7 +2098,7 @@ var d = labToolData || {};
                         : isPicked
                           ? 'bg-red-100 border-red-500 text-red-800'
                           : revealed
-                            ? 'bg-slate-50 border-slate-200 text-slate-300'
+                            ? 'bg-slate-50 border-slate-400 text-slate-700'
                             : 'bg-white border-slate-300 text-slate-700 hover:bg-teal-50 hover:border-teal-400';
                       return React.createElement('button', {
                         key: name,
@@ -2119,7 +2119,7 @@ var d = labToolData || {};
                         upd('geoLandmarkIdx', geoLandmarkIdx + 1);
                         if (typeof awardStemXP === 'function' && geoLandmarkIdx % 5 === 4) awardStemXP('geoQuiz', 5, 'Explored 5 landmarks');
                       },
-                      className: 'px-3 py-1 bg-teal-700 rounded text-xs font-bold text-white hover:bg-teal-600'
+                      className: 'px-3 py-1 bg-teal-700 rounded text-xs font-bold text-white hover:bg-teal-800'
                     }, __alloT('stem.geo.next', 'Next \u25B6'))
                   )
 
@@ -3511,7 +3511,7 @@ var d = labToolData || {};
               cs.type==='predict'&&React.createElement('div',null, React.createElement('p',{className:'text-[11px] font-bold text-amber-500 uppercase mb-1'},'🤔 Make a Prediction'), React.createElement('p',{className:'text-sm font-semibold text-slate-700 mb-2'},cs.q), React.createElement('input',{type:'text','aria-label':'Mission prediction',placeholder:cs.ph,value:data[cs.field]||'',onChange:e=>gpUpd('mission',{...gpMission,data:{...data,[cs.field]:e.target.value}}),className:'w-full px-3 py-2 border-2 border-amber-300 rounded-lg text-sm mb-2 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-300 font-semibold'}), React.createElement('button',{disabled:!(data[cs.field]||'').trim(),onClick:()=>advanceMission(step+1),className:'px-4 py-1.5 bg-amber-700 text-white font-bold rounded-lg text-xs hover:bg-amber-600 transition-all disabled:opacity-40'},'Commit Prediction →')),
               cs.type==='check'&&React.createElement('div',null, React.createElement('p',{className:'text-[11px] font-bold text-blue-500 uppercase mb-1'},'🔬 Investigate'), React.createElement('p',{className:'text-sm text-slate-700 mb-2'},cs.text), React.createElement('button',{onClick:()=>advanceMission(step+1),className:'px-4 py-1.5 bg-blue-700 text-white font-bold rounded-lg text-xs hover:bg-blue-600 transition-all'},'I verified it →')),
               cs.type==='reflect'&&React.createElement('div',null, React.createElement('p',{className:'text-[11px] font-bold text-purple-500 uppercase mb-1'},'💭 Reflect'), React.createElement('p',{className:'text-sm font-semibold text-slate-700 mb-2'},cs.q), React.createElement('div',{className:'flex flex-col gap-1.5'}, cs.opts.map(opt=>React.createElement('button',{key:opt,onClick:()=>{ gpUpd('mission',{...gpMission,data:{...data,[cs.field]:opt}}); setTimeout(()=>{ advanceMission(step+1); if(opt===cs.correct&&typeof awardStemXP==='function') awardStemXP('geometryProver',5,'discovery'); },500); },className:`px-3 py-2 text-sm font-semibold rounded-lg border-2 text-left transition-all ${data[cs.field]===opt?'bg-purple-700 text-white border-purple-500':'bg-white text-slate-700 border-purple-200 hover:border-purple-400'}`},opt)))),
-              cs.type==='conclude'&&React.createElement('div',null, React.createElement('p',{className:'text-[11px] font-bold text-emerald-500 uppercase mb-1'},'🎯 Big Idea'), React.createElement('div',{className:'bg-emerald-50 rounded-xl p-3 border border-emerald-200 mb-2'}, React.createElement('p',{className:'text-sm text-emerald-800'},mission.bigIdea)), React.createElement('button',{onClick:()=>{ advanceMission(step+1); if(typeof awardStemXP==='function') awardStemXP('geometryProver',20,mission.id+' complete'); addToast('🎉 Discovery complete! +20 XP','success'); setExploreScore(prev=>({correct:prev.correct+1,total:prev.total+1})); },className:'w-full py-2 bg-emerald-700 text-white font-bold rounded-lg text-sm hover:bg-emerald-600 transition-all'},'✅ Got it! Complete Mission'))
+              cs.type==='conclude'&&React.createElement('div',null, React.createElement('p',{className:'text-[11px] font-bold text-emerald-500 uppercase mb-1'},'🎯 Big Idea'), React.createElement('div',{className:'bg-emerald-50 rounded-xl p-3 border border-emerald-200 mb-2'}, React.createElement('p',{className:'text-sm text-emerald-800'},mission.bigIdea)), React.createElement('button',{onClick:()=>{ advanceMission(step+1); if(typeof awardStemXP==='function') awardStemXP('geometryProver',20,mission.id+' complete'); addToast('🎉 Discovery complete! +20 XP','success'); setExploreScore(prev=>({correct:prev.correct+1,total:prev.total+1})); },className:'w-full py-2 bg-emerald-700 text-white font-bold rounded-lg text-sm hover:bg-emerald-800 transition-all'},'✅ Got it! Complete Mission'))
             )
           );
         };

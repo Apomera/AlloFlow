@@ -782,7 +782,7 @@ window.StemLab = window.StemLab || {
             ['What is slope?', 'How to find distance?', 'What is a midpoint?', 'What are quadrants?'].map(function(q) {
               return h('button', { 'aria-label': t('stem.coordgrid.ask_question', 'Ask question'),
                 key: q, onClick: function() { updCG({ aiQuestion: q }); },
-                className: 'px-2 py-1 text-[11px] font-bold bg-sky-100 text-sky-700 rounded-full hover:bg-sky-200 transition-all'
+                className: 'px-2 py-1 text-[11px] font-bold bg-sky-100 text-sky-800 rounded-full hover:bg-sky-200 transition-all'
               }, q);
             })
           ),
@@ -2057,9 +2057,9 @@ window.StemLab = window.StemLab || {
             )
           ),
           h('div', { className: 'flex gap-2 items-center' },
-            !(gridFeedback && gridFeedback.hinted) && h('button', { 'aria-label': t('stem.coordgrid.hint', 'Hint'), onClick: function() { setGridFeedback(function(prev) { return Object.assign({}, prev, { hinted: true, riseAnswer: String(gridChallenge.slopeData.rise), runAnswer: String(gridChallenge.slopeData.run) }); }); }, className: 'px-3 py-1.5 bg-amber-100 text-amber-700 font-bold rounded-lg text-[11px] hover:bg-amber-200 transition-all border border-amber-600' }, t('stem.coordgrid.hint_2', '\uD83D\uDCA1 Hint')),
+            !(gridFeedback && gridFeedback.hinted) && h('button', { 'aria-label': t('stem.coordgrid.hint', 'Hint'), onClick: function() { setGridFeedback(function(prev) { return Object.assign({}, prev, { hinted: true, riseAnswer: String(gridChallenge.slopeData.rise), runAnswer: String(gridChallenge.slopeData.run) }); }); }, className: 'px-3 py-1.5 bg-amber-100 text-amber-800 font-bold rounded-lg text-[11px] hover:bg-amber-200 transition-all border border-amber-600' }, t('stem.coordgrid.hint_2', '\uD83D\uDCA1 Hint')),
             (gridFeedback && gridFeedback.hinted) && h('span', { className: 'text-[11px] text-amber-500 italic' }, t('stem.coordgrid.hint_used', '\uD83D\uDCA1 Hint used')),
-            h('button', { 'aria-label': t('stem.coordgrid.check_2', 'Check'), onClick: checkGrid, className: 'ml-auto px-4 py-1.5 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-600' }, t('stem.coordgrid.check_3', '\u2714 Check'))
+            h('button', { 'aria-label': t('stem.coordgrid.check_2', 'Check'), onClick: checkGrid, className: 'ml-auto px-4 py-1.5 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-800' }, t('stem.coordgrid.check_3', '\u2714 Check'))
           ),
           gridFeedback && gridFeedback.msg && h('p', { className: 'text-sm font-bold mt-2 ' + (gridFeedback.correct ? 'text-green-600' : 'text-red-600') }, gridFeedback.msg)
         ),
@@ -2091,7 +2091,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex gap-2 items-center' },
             h('span', { className: 'text-xs text-cyan-600' }, 'Quadrant: ', h('span', { className: 'font-bold' }, getQuadrant(gridChallenge.target.x, gridChallenge.target.y))),
             h('span', { className: 'text-xs text-cyan-600 ml-2' }, 'Points: ', h('span', { className: 'font-bold' }, gridPoints.length)),
-            h('button', { 'aria-label': t('stem.coordgrid.check_6', 'Check'), onClick: checkGrid, className: 'ml-auto px-4 py-1.5 bg-cyan-700 text-white font-bold rounded-lg text-sm hover:bg-cyan-600' }, t('stem.coordgrid.check_7', '\u2714 Check'))
+            h('button', { 'aria-label': t('stem.coordgrid.check_6', 'Check'), onClick: checkGrid, className: 'ml-auto px-4 py-1.5 bg-cyan-700 text-white font-bold rounded-lg text-sm hover:bg-cyan-800' }, t('stem.coordgrid.check_7', '\u2714 Check'))
           ),
           gridFeedback && gridFeedback.msg && h('p', { className: 'text-sm font-bold mt-2 ' + (gridFeedback.correct ? 'text-green-600' : 'text-red-600') }, gridFeedback.msg)
         ),
@@ -2114,7 +2114,7 @@ window.StemLab = window.StemLab || {
               );
             })
           ),
-          h('button', { 'aria-label': t('stem.coordgrid.clear_lines', 'Clear Lines'), onClick: function() { setGridFeedback(function(prev) { return Object.assign({}, prev, { lines: [], connectFirst: null }); }); }, className: 'mt-2 px-3 py-1 text-[11px] font-bold bg-indigo-100 text-indigo-600 rounded hover:bg-indigo-200' }, t('stem.coordgrid.clear_lines_2', '\uD83D\uDDD1 Clear Lines'))
+          h('button', { 'aria-label': t('stem.coordgrid.clear_lines', 'Clear Lines'), onClick: function() { setGridFeedback(function(prev) { return Object.assign({}, prev, { lines: [], connectFirst: null }); }); }, className: 'mt-2 px-3 py-1 text-[11px] font-bold bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200' }, t('stem.coordgrid.clear_lines_2', '\uD83D\uDDD1 Clear Lines'))
         ),
 
         // Function plotting panel

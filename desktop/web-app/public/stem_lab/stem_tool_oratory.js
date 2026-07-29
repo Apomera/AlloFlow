@@ -2818,11 +2818,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
         var headingClass = isDark ? 'text-white font-bold' : 'text-slate-900 font-bold';
         var subTextClass = isDark ? 'text-slate-200 text-xs' : 'text-slate-600 text-xs';
         var btnPrimary = 'px-4 py-2 rounded-lg font-bold text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ' +
-          (isDark ? 'transition-colors bg-violet-600 hover:bg-violet-500 text-white focus:ring-violet-400 active:scale-[0.97]' : 'transition-colors bg-violet-600 hover:bg-violet-700 text-white focus:ring-violet-500 active:scale-[0.97]');
+          (isDark ? 'transition-colors bg-violet-600 hover:bg-violet-700 text-white focus:ring-violet-400 active:scale-[0.97]' : 'transition-colors bg-violet-600 hover:bg-violet-700 text-white focus:ring-violet-500 active:scale-[0.97]');
         var btnSecondary = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors focus:outline-none focus:ring-2 ' +
           (isDark ? 'transition-colors bg-slate-700 hover:bg-slate-600 text-slate-200 focus:ring-slate-500 active:scale-[0.97]' : 'transition-colors bg-slate-100 hover:bg-slate-200 text-slate-700 focus:ring-slate-400 active:scale-[0.97]');
         var btnDanger = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors focus:outline-none focus:ring-2 ' +
-          (isDark ? 'transition-colors bg-red-700 hover:bg-red-600 text-white focus:ring-red-400 active:scale-[0.97]' : 'transition-colors bg-red-100 hover:bg-red-200 text-red-700 focus:ring-red-400 active:scale-[0.97]');
+          (isDark ? 'transition-colors bg-red-700 hover:bg-red-600 text-white focus:ring-red-400 active:scale-[0.97]' : 'transition-colors bg-red-100 hover:bg-red-200 text-red-800 focus:ring-red-400 active:scale-[0.97]');
 
         // ═══════════════════════════════════════
         // Render: Tab 1 — Prosody Visualizer
@@ -2875,8 +2875,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                 h('div', { className: 'flex items-center gap-3' },
                   h('button', {
                     className: isRecording
-                      ? 'px-6 py-3 rounded-full font-bold text-base transition-all focus:outline-none focus:ring-4 bg-red-500 hover:bg-red-600 text-white focus:ring-red-300 animate-pulse active:scale-[0.97]'
-                      : 'px-6 py-3 rounded-full font-bold text-base transition-all focus:outline-none focus:ring-4 ' + (isDark ? 'transition-colors bg-violet-600 hover:bg-violet-500 text-white focus:ring-violet-400 active:scale-[0.97]' : 'transition-colors bg-violet-600 hover:bg-violet-700 text-white focus:ring-violet-500 active:scale-[0.97]'),
+                      ? 'px-6 py-3 rounded-full font-bold text-base transition-all focus:outline-none focus:ring-4 bg-red-600 hover:bg-red-700 text-white focus:ring-red-300 animate-pulse active:scale-[0.97]'
+                      : 'px-6 py-3 rounded-full font-bold text-base transition-all focus:outline-none focus:ring-4 ' + (isDark ? 'transition-colors bg-violet-600 hover:bg-violet-700 text-white focus:ring-violet-400 active:scale-[0.97]' : 'transition-colors bg-violet-600 hover:bg-violet-700 text-white focus:ring-violet-500 active:scale-[0.97]'),
                     onClick: isRecording ? stopRecording : startRecording,
                     'aria-label': isRecording ? 'Stop recording. Click to stop microphone.' : 'Start recording. Click to activate microphone and begin speech visualization.',
                     'aria-pressed': isRecording ? 'true' : 'false'
@@ -3143,7 +3143,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
                         // Play/Pause button
                         h('button', {
                           className: 'w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ' +
-                            (isDark ? 'transition-colors bg-violet-600 text-white hover:bg-violet-500 active:scale-[0.97]' : 'transition-colors bg-violet-600 text-white hover:bg-violet-700 active:scale-[0.97]'),
+                            (isDark ? 'transition-colors bg-violet-600 text-white hover:bg-violet-700 active:scale-[0.97]' : 'transition-colors bg-violet-600 text-white hover:bg-violet-700 active:scale-[0.97]'),
                           onClick: function() {
                             if (isPlaying) pausePlayback();
                             else if (isPausing) resumePlayback();
@@ -3663,8 +3663,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             h('div', { className: 'flex items-center gap-3' },
               h('button', {
                 className: isRecording
-                  ? 'transition-colors px-4 py-2 rounded-full font-bold text-sm bg-red-500 hover:bg-red-600 text-white focus:outline-none focus:ring-2 focus:ring-red-300 animate-pulse active:scale-[0.97]'
-                  : 'px-4 py-2 rounded-full font-bold text-sm ' + (isDark ? 'transition-colors bg-violet-600 hover:bg-violet-500 text-white active:scale-[0.97]' : 'transition-colors bg-violet-600 hover:bg-violet-700 text-white active:scale-[0.97]') + ' focus:outline-none focus:ring-2 focus:ring-violet-400',
+                  ? 'transition-colors px-4 py-2 rounded-full font-bold text-sm bg-red-600 hover:bg-red-700 text-white focus:outline-none focus:ring-2 focus:ring-red-300 animate-pulse active:scale-[0.97]'
+                  : 'px-4 py-2 rounded-full font-bold text-sm ' + (isDark ? 'transition-colors bg-violet-600 hover:bg-violet-700 text-white active:scale-[0.97]' : 'transition-colors bg-violet-600 hover:bg-violet-700 text-white active:scale-[0.97]') + ' focus:outline-none focus:ring-2 focus:ring-violet-400',
                 onClick: isRecording ? stopRecording : startRecording,
                 'aria-label': isRecording ? 'Stop microphone' : 'Start microphone'
               }, isRecording ? '\uD83D\uDD34 Stop' : '\uD83C\uDFA4 Start'),
@@ -3953,7 +3953,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             // Recording indicator
             isRecording && h('div', {
               className: 'flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold ' +
-                (isDark ? 'bg-red-900/50 text-red-300' : 'bg-red-50 text-red-600'),
+                (isDark ? 'bg-red-900/50 text-red-300' : 'bg-red-50 text-red-700'),
               role: 'status',
               'aria-live': 'polite'
             }, h('span', { className: 'inline-block w-2 h-2 rounded-full bg-red-500 animate-pulse' }), t('stem.oratory.recording', 'Recording'))),

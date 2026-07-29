@@ -1574,7 +1574,7 @@ window.StemLab = window.StemLab || {
                     h('div', { className: 'flex items-center gap-2' },
                       h('span', { className: 'text-sm font-black ' + (isComplete ? 'text-green-800' : 'text-amber-900') }, ch.title),
                       h('span', { className: 'text-[11px] font-bold px-1.5 py-0.5 rounded ' +
-                        (ch.difficulty === 1 ? 'bg-green-200 text-green-700' : ch.difficulty === 2 ? 'bg-amber-200 text-amber-700' : 'bg-red-200 text-red-700')
+                        (ch.difficulty === 1 ? 'bg-green-200 text-green-800' : ch.difficulty === 2 ? 'bg-amber-200 text-amber-800' : 'bg-red-200 text-red-800')
                       }, ch.difficulty === 1 ? 'Beginner' : ch.difficulty === 2 ? 'Intermediate' : 'Advanced'),
                       isComplete && h('span', { className: 'text-xs font-bold text-green-800 bg-green-200 px-1.5 py-0.5 rounded' }, '\u2713 +' + ch.xp + ' XP')
                     ),
@@ -1590,7 +1590,7 @@ window.StemLab = window.StemLab || {
                       className: 'flex items-center gap-2 text-xs ' + (r.passed ? 'text-green-700' : 'text-slate-500')
                     },
                       h('span', { className: 'w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-bold ' +
-                        (r.passed ? 'bg-green-200 text-green-700' : 'bg-gray-200 text-gray-500')
+                        (r.passed ? 'bg-green-200 text-green-800' : 'bg-gray-200 text-gray-700')
                       }, r.passed ? '\u2713' : (ri + 1)),
                       h('span', { className: r.passed ? 'line-through' : '' }, r.text)
                     );

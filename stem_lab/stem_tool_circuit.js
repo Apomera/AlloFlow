@@ -2259,7 +2259,7 @@ window.StemLab = window.StemLab || {
                 h('button', { 'aria-label': aiLoading ? __alloT('stem.circuit.aria_ai_thinking', 'AI is thinking') : __alloT('stem.circuit.aria_ask_ai_tutor', 'Ask the AI tutor'), 'aria-busy': aiLoading,
                   onClick: askAI,
                   disabled: aiLoading,
-                  className: 'px-4 py-2 text-xs font-bold rounded-lg transition-all ' + (aiLoading ? 'bg-slate-800 text-slate-600' : 'transition-colors bg-blue-600 text-white hover:bg-blue-700 shadow-md shadow-blue-600/10 active:scale-[0.97]')
+                  className: 'px-4 py-2 text-xs font-bold rounded-lg transition-all ' + (aiLoading ? 'bg-slate-800 text-slate-300' : 'transition-colors bg-blue-600 text-white hover:bg-blue-700 shadow-md shadow-blue-600/10 active:scale-[0.97]')
                 }, aiLoading ? __alloT('stem.circuit.thinking_ellipsis', 'Thinking...') : __alloT('stem.circuit.ask_btn', 'Ask'))
               ),
               aiLoading && h('div', { className: 'mt-2 text-xs text-blue-400 animate-pulse motion-reduce:animate-none' }, __alloT('stem.circuit.ai_is_thinking', 'AI is thinking...')),
@@ -3114,7 +3114,7 @@ window.StemLab = window.StemLab || {
                   var revealed = stg.revealed;
                   var correct = scenario.answerIndex === oi;
                   var bg = revealed
-                    ? (correct ? 'bg-green-600 text-white border-green-700' : (picked ? 'bg-red-100 text-red-800 border-red-300 line-through' : 'bg-white text-slate-500 border-slate-200'))
+                    ? (correct ? 'bg-green-700 text-white border-green-800' : (picked ? 'bg-red-100 text-red-800 border-red-300 line-through' : 'bg-white text-slate-500 border-slate-200'))
                     : (picked ? 'bg-amber-200 text-amber-900 border-amber-400' : 'transition-colors bg-white text-slate-600 border-slate-200 hover:bg-amber-50 active:scale-[0.97]');
                   return h('button', {
                     key: oi,

@@ -1792,7 +1792,7 @@ window.StemLab = window.StemLab || {
                   return h('button', { 'aria-label': t('stem.numberline.ask_question', 'Ask question'),
                     key: q,
                     onClick: function() { upd({ aiQuestion: q }); },
-                    className: 'px-2 py-1 text-[11px] font-bold bg-sky-100 text-sky-700 rounded-full hover:bg-sky-200 transition-all'
+                    className: 'px-2 py-1 text-[11px] font-bold bg-sky-100 text-sky-800 rounded-full hover:bg-sky-200 transition-all'
                   }, q);
                 })
               ),

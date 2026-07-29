@@ -2876,7 +2876,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                         React.createElement("div", { className: "text-[11px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, rung.name),
                         React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-600') }, rung.dist + " \u2022 " + rung.light)
                       ),
-                      React.createElement("span", { className: "text-[11px] px-1.5 py-0.5 rounded-full " + (isDark ? 'bg-emerald-900 text-emerald-300' : 'bg-emerald-100 text-emerald-600') }, rung.method)
+                      React.createElement("span", { className: "text-[11px] px-1.5 py-0.5 rounded-full " + (isDark ? 'bg-emerald-900 text-emerald-300' : 'bg-emerald-100 text-emerald-700') }, rung.method)
                     )
                   );
                 })
@@ -2995,7 +2995,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                   'What is the CMB?',
                   'Will the universe end?'
                 ].map(function(q, qi) {
-                  return React.createElement("button", { "aria-label": "Ask cosmos tutor: " + q, key: qi, onClick: function() { askCosmosTutor(q); }, className: "text-[11px] px-2 py-0.5 rounded-full bg-violet-100 text-violet-600 hover:bg-violet-200 transition-colors" }, q);
+                  return React.createElement("button", { "aria-label": "Ask cosmos tutor: " + q, key: qi, onClick: function() { askCosmosTutor(q); }, className: "text-[11px] px-2 py-0.5 rounded-full bg-violet-100 text-violet-700 hover:bg-violet-200 transition-colors" }, q);
                 })
               ),
               d.aiAnswer && React.createElement("div", { className: "bg-white rounded-lg p-2 text-xs text-slate-700 border border-violet-100 relative" },
@@ -3116,7 +3116,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                       if (answered) {
                         if (isCorrect) btnClass += (isDark ? 'bg-green-900 border-green-500 text-green-300' : 'bg-green-100 border-green-400 text-green-700');
                         else if (wasSelected) btnClass += (isDark ? 'bg-red-900 border-red-500 text-red-300' : 'bg-red-100 border-red-400 text-red-700');
-                        else btnClass += (isDark ? 'bg-slate-700 border-slate-600 text-slate-200' : 'bg-slate-100 border-slate-200 text-slate-200');
+                        else btnClass += (isDark ? 'bg-slate-700 border-slate-600 text-slate-200' : 'bg-slate-100 border-slate-400 text-slate-700');
                       } else {
                         btnClass += (isDark ? 'transition-colors bg-slate-700 border-slate-600 text-slate-200 hover:border-pink-400' : 'transition-colors bg-white border-pink-200 text-slate-700 hover:border-pink-400');
                       }
@@ -3614,7 +3614,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                           React.createElement("span", { className: "text-[11px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, ep2.name),
                           React.createElement("span", { className: "text-[11px] ml-1.5 " + (isDark ? 'text-slate-200' : 'text-slate-600') }, ep2.example)
                         ),
-                        React.createElement("span", { className: "text-[11px] px-1.5 py-0.5 rounded-full font-bold " + (ep2.habitable === 'Best candidate' ? (isDark ? 'bg-green-900 text-green-300' : 'bg-green-100 text-green-600') : ep2.habitable === 'Possible' ? (isDark ? 'bg-yellow-900 text-yellow-300' : 'bg-yellow-100 text-yellow-600') : (isDark ? 'bg-slate-600 text-slate-200' : 'bg-slate-100 text-slate-200')) }, typeof ep2.habitable === 'string' ? ep2.habitable : (ep2.habitable ? 'Habitable' : 'Not habitable'))
+                        React.createElement("span", { className: "text-[11px] px-1.5 py-0.5 rounded-full font-bold " + (ep2.habitable === 'Best candidate' ? (isDark ? 'bg-green-900 text-green-300' : 'bg-green-100 text-green-700') : ep2.habitable === 'Possible' ? (isDark ? 'bg-yellow-900 text-yellow-300' : 'bg-yellow-100 text-yellow-800') : (isDark ? 'bg-slate-600 text-slate-200' : 'bg-slate-100 text-slate-700')) }, typeof ep2.habitable === 'string' ? ep2.habitable : (ep2.habitable ? 'Habitable' : 'Not habitable'))
                       ),
                       React.createElement("div", { className: "grid grid-cols-3 gap-1 mb-1.5" },
                         React.createElement("div", { className: "text-[11px] text-center " + (isDark ? 'text-slate-200' : 'text-slate-600') },
@@ -4214,7 +4214,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                       React.createElement("div", { className: "flex items-center gap-2 mb-1" },
                         React.createElement("span", { className: "text-lg" }, cc.icon),
                         React.createElement("span", { className: "text-[11px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, cc.name),
-                        React.createElement("span", { className: "ml-auto text-[11px] px-1.5 py-0.5 rounded-full font-bold " + (isDark ? 'bg-red-900 text-red-300' : 'bg-red-100 text-red-600') }, cc.energy)
+                        React.createElement("span", { className: "ml-auto text-[11px] px-1.5 py-0.5 rounded-full font-bold " + (isDark ? 'bg-red-900 text-red-300' : 'bg-red-100 text-red-700') }, cc.energy)
                       ),
                       React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-600') + " mb-1" }, cc.desc),
                       React.createElement("div", { className: "flex items-center gap-2 text-[11px]" },
@@ -4466,7 +4466,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                       React.createElement("div", { className: "flex items-center gap-2" },
                         React.createElement("span", { className: "text-lg" }, fi.icon),
                         React.createElement("span", { className: "text-[11px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, fi.name),
-                        React.createElement("span", { className: "ml-auto text-[11px] px-1.5 py-0.5 rounded-full " + (isDark ? 'bg-sky-900 text-sky-300' : 'bg-sky-100 text-sky-600') }, fi.mission)
+                        React.createElement("span", { className: "ml-auto text-[11px] px-1.5 py-0.5 rounded-full " + (isDark ? 'bg-sky-900 text-sky-300' : 'bg-sky-100 text-sky-700') }, fi.mission)
                       ),
                       isActive && React.createElement("div", { className: "mt-2 space-y-1" },
                         React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-300' : 'text-slate-600') }, fi.desc),
@@ -4534,7 +4534,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
                         React.createElement("span", { className: "text-lg" }, cs.icon),
                         React.createElement("div", { className: "flex-1" },
                           React.createElement("span", { className: "text-[11px] font-bold " + (isDark ? 'text-white' : 'text-slate-800') }, cs.name),
-                          React.createElement("span", { className: "ml-1.5 text-[11px] px-1.5 py-0.5 rounded-full " + (isDark ? 'bg-teal-900 text-teal-300' : 'bg-teal-100 text-teal-600') }, cs.field)
+                          React.createElement("span", { className: "ml-1.5 text-[11px] px-1.5 py-0.5 rounded-full " + (isDark ? 'bg-teal-900 text-teal-300' : 'bg-teal-100 text-teal-700') }, cs.field)
                         )
                       ),
                       React.createElement("div", { className: "text-[11px] " + (isDark ? 'text-slate-200' : 'text-slate-600') + " mb-1" }, cs.desc),

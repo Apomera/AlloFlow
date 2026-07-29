@@ -2030,7 +2030,7 @@ window.StemLab = window.StemLab || {
                   updMulti({ particleRunning: true, particleRuns: runs });
                   if (runs >= 3) checkBadge('particlePro');
                 },
-                className: 'px-3 py-1 text-[11px] font-bold rounded-lg ' + (particleRunning ? 'bg-red-100 text-red-600' : 'bg-emerald-100 text-emerald-600')
+                className: 'px-3 py-1 text-[11px] font-bold rounded-lg ' + (particleRunning ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700')
               }, particleRunning ? '\u23F9 Stop' : '\u25B6 Start')
             ),
             h('canvas', { role: 'img', tabIndex: 0, 'aria-label': __alloT('stem.epidemic.epidemic_visualization', 'Epidemic visualization'),
@@ -3766,7 +3766,7 @@ window.StemLab = window.StemLab || {
               h('p', { className: 'text-xs text-slate-600 leading-relaxed' }, content),
               h('div', { className: 'flex gap-2 pt-2 border-t border-slate-100' },
                 h('button', { 'aria-label': __alloT('stem.epidemic.try_it', 'Try It'), onClick: function() { markLearnRead(topic.title); updMulti({ tab: topic.tryIt }); announceToSR('Switched to ' + topic.tryIt); }, className: 'px-3 py-1.5 text-[11px] font-bold bg-violet-50 text-violet-600 rounded-lg hover:bg-violet-100 transition-all' }, __alloT('stem.epidemic.try_it_2', '\uD83D\uDD2C Try It')),
-                callTTS && h('button', { 'aria-label': __alloT('stem.epidemic.read_aloud_3', 'Read Aloud'), onClick: function() { markLearnRead(topic.title); callTTS(content); }, className: 'px-3 py-1.5 text-[11px] font-bold bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-all' }, __alloT('stem.epidemic.read_aloud_4', '\uD83D\uDD0A Read Aloud'))
+                callTTS && h('button', { 'aria-label': __alloT('stem.epidemic.read_aloud_3', 'Read Aloud'), onClick: function() { markLearnRead(topic.title); callTTS(content); }, className: 'px-3 py-1.5 text-[11px] font-bold bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-all' }, __alloT('stem.epidemic.read_aloud_4', '\uD83D\uDD0A Read Aloud'))
               )
             );
           })

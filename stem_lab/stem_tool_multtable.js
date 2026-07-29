@@ -1141,7 +1141,7 @@ window.StemLab = window.StemLab || {
             : h('p', { className: 'text-sm text-purple-700 whitespace-pre-wrap leading-relaxed' }, _ext.aiResponse),
           !_ext.aiLoading && h('button', { 'aria-label': t('stem.multtable.ask_again', 'Ask Again'),
             onClick: askAI,
-            className: 'mt-2 text-[11px] font-bold px-3 py-1 rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 border border-purple-600 transition-all'
+            className: 'mt-2 text-[11px] font-bold px-3 py-1 rounded-full bg-purple-100 text-purple-700 hover:bg-purple-200 border border-purple-700 transition-all'
           }, t('stem.multtable.ask_again_2', '\uD83D\uDD04 Ask Again'))
         ),
 
@@ -1175,7 +1175,7 @@ window.StemLab = window.StemLab || {
                     : dm.id === 'medium' ? 'bg-blue-700 text-white shadow-sm'
                     : dm.id === 'hard' ? 'bg-red-700 text-white shadow-sm'
                     : dm.id === 'tricky' ? 'bg-fuchsia-700 text-white shadow-sm'
-                    : 'bg-purple-500 text-white shadow-sm'
+                    : 'bg-purple-600 text-white shadow-sm'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-400')
             }, dm.label + ' (' + dm.range + ')');
           })
@@ -1288,7 +1288,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'px-4 pb-4' },
               h('button', { 'aria-label': t('stem.multtable.try_again', 'Try Again'),
                 onClick: function() { _mtUpd({ score: 0, total: 0, timeLeft: 120, missed: [], streak: 0 }); },
-                className: 'px-4 py-1.5 bg-emerald-700 text-white font-bold rounded-lg text-xs hover:bg-emerald-600 transition-all'
+                className: 'px-4 py-1.5 bg-emerald-700 text-white font-bold rounded-lg text-xs hover:bg-emerald-800 transition-all'
               }, t('stem.multtable.try_again_2', '\uD83D\uDD04 Try again'))
             )
           );
@@ -1501,7 +1501,7 @@ window.StemLab = window.StemLab || {
             }, t('stem.multtable.check_2', '\u2714 Check')),
             // AI hint button during challenge
             h('button', { onClick: askAI,
-              className: 'px-3 py-2 bg-purple-100 text-purple-600 font-bold rounded-lg hover:bg-purple-200 transition-all text-sm',
+              className: 'px-3 py-2 bg-purple-100 text-purple-700 font-bold rounded-lg hover:bg-purple-200 transition-all text-sm',
               title: t('stem.multtable.get_a_hint_from_ai', 'Get a hint from AI')
             }, '\uD83E\uDDE0')
           ),
@@ -1536,7 +1536,7 @@ window.StemLab = window.StemLab || {
                 nextProblem();
                 setTimeout(function() { var _inp = document.getElementById('multtable-input'); if (_inp) _inp.focus(); }, 50);
               },
-              className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-pink-100 text-pink-700 hover:bg-pink-200 border border-pink-600 transition-all'
+              className: 'text-[11px] font-bold px-2 py-0.5 rounded-full bg-pink-100 text-pink-800 hover:bg-pink-200 border border-pink-700 transition-all'
             }, t('stem.multtable.skip_next_2', 'Skip \u2192 Next'))
           )
         ),

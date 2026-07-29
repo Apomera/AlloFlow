@@ -266,7 +266,7 @@
         React.createElement("button", {
           type: "button",
           onClick: function() { setRetry(function(value) { return value + 1; }); },
-          className: "min-h-11 rounded-lg bg-indigo-600 px-4 py-2 font-bold text-white hover:bg-indigo-500"
+          className: "min-h-11 rounded-lg bg-indigo-600 px-4 py-2 font-bold text-white hover:bg-indigo-700"
         }, uiText.retry || "Try again")
       )
     );
@@ -2438,7 +2438,7 @@
               ['forward', 'backward', 'right', 'left', 'circle', 'color', 'playNote', 'random'].map(function (ct) {
                 return React.createElement("button", { "aria-label": t('stem.coding.add_child_block', "Add Child Block"),
                   key: ct, onClick: function () { addChildBlock(parentIdx, ct, isElse); },
-                  className: "px-2 py-0.5 rounded text-[11px] bg-slate-600 text-slate-300 hover:bg-slate-500 transition-colors"
+                  className: "px-2 py-0.5 rounded text-[11px] bg-slate-600 text-slate-300 hover:bg-slate-700 transition-colors"
                 }, ct === 'forward' ? '+🐢' : ct === 'backward' ? '+🔙' : ct === 'right' ? '+↩️' : ct === 'left' ? '+↪️' : ct === 'circle' ? '+⭕' : ct === 'playNote' ? '+🎵' : ct === 'random' ? '+🎲' : '+🎨');
               })
             );
@@ -3010,7 +3010,7 @@
                       React.createElement("button", { type: "button", "aria-label": "Run robot program", onClick: handleRobotRun,
                         disabled: robotBlocks.length === 0 || robotRunning || robotChallengeIdx < 0,
                         className: "coding-robot-run-btn min-h-11 px-3 py-2 rounded text-[11px] font-bold transition-all " +
-                          (robotBlocks.length > 0 && !robotRunning && robotChallengeIdx >= 0 ? "bg-emerald-700 text-white hover:bg-emerald-600" : "bg-slate-700 text-slate-300 cursor-not-allowed")
+                          (robotBlocks.length > 0 && !robotRunning && robotChallengeIdx >= 0 ? "bg-emerald-700 text-white hover:bg-emerald-800" : "bg-slate-700 text-slate-300 cursor-not-allowed")
                       }, robotRunning ? "\u23F3 Running..." : "\u25B6 Run"),
                       robotRunning && React.createElement("button", { type: "button", "aria-label": "Stop robot program playback", onClick: stopRun,
                         className: "min-h-11 px-3 py-2 rounded text-[11px] font-bold bg-red-600 text-white hover:bg-red-700 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"

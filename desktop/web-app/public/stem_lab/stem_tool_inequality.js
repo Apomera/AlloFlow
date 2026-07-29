@@ -663,7 +663,7 @@ window.StemLab = window.StemLab || {
             : h('p', { className: 'text-sm text-purple-700 whitespace-pre-wrap leading-relaxed' }, aiResponse),
           !aiLoading && h('button', { 'aria-label': __alloT('stem.inequality.ask_again', 'Ask Again'),
             onClick: askAI,
-            className: 'mt-2 text-[11px] font-bold px-3 py-1 rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 border border-purple-600 transition-all'
+            className: 'mt-2 text-[11px] font-bold px-3 py-1 rounded-full bg-purple-100 text-purple-700 hover:bg-purple-200 border border-purple-700 transition-all'
           }, '\uD83D\uDD04 ' + __alloT('stem.inequality.ask_again', 'Ask Again'))
         ),
 
@@ -726,7 +726,7 @@ window.StemLab = window.StemLab || {
           PRESETS.map(function(ex) {
             return h('button', { key: ex.label,
               onClick: function() { upd('expr', ex.expr); },
-              className: 'px-2 py-1 text-[11px] font-bold bg-fuchsia-50 text-fuchsia-600 rounded border border-fuchsia-600 hover:bg-fuchsia-100 transition-all'
+              className: 'px-2 py-1 text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 rounded border border-fuchsia-700 hover:bg-fuchsia-100 transition-all'
             }, ex.label);
           })
         ),
@@ -861,7 +861,7 @@ window.StemLab = window.StemLab || {
           h('span', { className: 'text-[11px] text-slate-600 font-mono' }, '[' + range.min + ', ' + range.max + ']'),
           h('button', { onClick: function() { zoomRange(0.67); }, className: 'px-2 py-0.5 text-[11px] font-bold bg-slate-100 text-slate-600 rounded hover:bg-slate-200 transition-all', title: __alloT('stem.inequality.zoom_in', 'Zoom in') }, '+ ' + __alloT('stem.inequality.zoom', 'Zoom')),
           h('button', { 'aria-label': '+5', onClick: function() { shiftRange(5); }, className: 'px-2 py-0.5 text-[11px] font-bold bg-slate-100 text-slate-600 rounded hover:bg-slate-200 transition-all', title: __alloT('stem.inequality.shift_range_right', 'Shift range right') }, '+5 \u25B6'),
-          h('button', { 'aria-label': __alloT('stem.inequality.reset_range', 'Reset range'), onClick: function() { upd('range', { min: -10, max: 10 }); }, className: 'px-2 py-0.5 text-[11px] font-bold bg-fuchsia-50 text-fuchsia-500 rounded hover:bg-fuchsia-100 transition-all', title: __alloT('stem.inequality.reset_range', 'Reset range') }, '\u21BA')
+          h('button', { 'aria-label': __alloT('stem.inequality.reset_range', 'Reset range'), onClick: function() { upd('range', { min: -10, max: 10 }); }, className: 'px-2 py-0.5 text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 rounded hover:bg-fuchsia-100 transition-all', title: __alloT('stem.inequality.reset_range', 'Reset range') }, '\u21BA')
         ),
 
         // === H7b'' inquiry widget: inequality test ===
@@ -1042,7 +1042,7 @@ window.StemLab = window.StemLab || {
               d.quiz.streak > 2 && d.quiz.correct && h('span', { className: 'ml-2 text-xs text-amber-600' }, '\uD83D\uDD25 ' + d.quiz.streak + __alloT('stem.inequality.in_a_row_suffix', ' in a row!')),
               !d.quiz.correct && h('button', { 'aria-label': __alloT('stem.inequality.explain', 'Explain'),
                 onClick: askAI,
-                className: 'ml-2 text-xs font-bold px-2 py-0.5 rounded bg-purple-100 text-purple-600 hover:bg-purple-200'
+                className: 'ml-2 text-xs font-bold px-2 py-0.5 rounded bg-purple-100 text-purple-700 hover:bg-purple-200'
               }, '\uD83E\uDDE0 ' + __alloT('stem.inequality.explain', 'Explain'))),
             !d.quiz.correct && d.quiz.fb && h('p', { className: 'text-xs leading-relaxed text-red-800 mt-1' }, d.quiz.fb))
         ),
@@ -1106,7 +1106,7 @@ window.StemLab = window.StemLab || {
             }),
             solverRevealIdx < solverSteps.length && h('button', { 'aria-label': __alloT('stem.inequality.aria_reveal_next_step', 'Reveal next solver step'),
               onClick: function() { upd('solverRevealIdx', solverRevealIdx + 1); },
-              className: 'px-3 py-1 text-[11px] font-bold bg-teal-100 text-teal-700 rounded hover:bg-teal-200 transition-all mt-1'
+              className: 'px-3 py-1 text-[11px] font-bold bg-teal-100 text-teal-800 rounded hover:bg-teal-200 transition-all mt-1'
             }, '\u25B6 ' + __alloT('stem.inequality.next_step', 'Next Step') + ' (' + solverRevealIdx + '/' + (solverSteps.length - 1) + ')')
           )
         ),

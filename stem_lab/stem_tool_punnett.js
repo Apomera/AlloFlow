@@ -3623,7 +3623,7 @@ window.StemLab = window.StemLab || {
                       // "Try it" links
                       idx === 0 && h('button', { 'aria-label': 'Try DNAProtein',
                         onClick: function() { upd('subtool', 'dna2protein'); },
-                        className: 'mt-2 px-3 py-1 text-[11px] font-bold text-fuchsia-600 bg-fuchsia-50 border border-fuchsia-600 rounded-lg hover:bg-fuchsia-100'
+                        className: 'mt-2 px-3 py-1 text-[11px] font-bold text-fuchsia-700 bg-fuchsia-50 border border-fuchsia-700 rounded-lg hover:bg-fuchsia-100'
                       }, '\u2192 Try DNA\u2192Protein'),
                       idx === 1 && h('button', { 'aria-label': 'Try Punnett Cross',
                         onClick: function() { upd('subtool', 'cross'); },
@@ -3742,7 +3742,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex gap-2 mt-4 pt-3 border-t border-slate-200' },
               h('button', {
                 onClick: function() { setStemLabTool('dnaLab'); announceToSR('Opening DNA Lab'); },
-                className: 'px-3 py-1.5 text-xs font-bold text-fuchsia-600 bg-fuchsia-50 border border-fuchsia-600 rounded-full hover:bg-fuchsia-100 transition-all',
+                className: 'px-3 py-1.5 text-xs font-bold text-fuchsia-700 bg-fuchsia-50 border border-fuchsia-700 rounded-full hover:bg-fuchsia-100 transition-all',
                 
               }, '\uD83E\uDDEC DNA Lab \u2192'),
               h('button', { 'aria-label': 'Snapshot',

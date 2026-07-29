@@ -2346,7 +2346,7 @@
                       })
                     ),
                     h('div', { className: 'flex gap-2 mt-3' },
-                      h('button', { 'aria-label': 'Explore', onClick: function() { updMulti({ selected: linkedMat.name, decomposed: false, tab: 'explore' }); }, className: 'flex-1 py-2 bg-amber-700 text-white font-bold text-xs rounded-lg hover:bg-amber-600 transition-all active:scale-[0.97]' }, '\u2697\uFE0F Explore'),
+                      h('button', { 'aria-label': 'Explore', onClick: function() { updMulti({ selected: linkedMat.name, decomposed: false, tab: 'explore' }); }, className: 'flex-1 py-2 bg-amber-700 text-white font-bold text-xs rounded-lg hover:bg-amber-800 transition-all active:scale-[0.97]' }, '\u2697\uFE0F Explore'),
                       h('button', { 'aria-label': 'Visualize', onClick: function() { updMulti({ selected: linkedMat.name, decomposed: false, tab: 'visualize' }); }, className: 'flex-1 py-2 bg-indigo-600 text-white font-bold text-xs rounded-lg hover:bg-indigo-700 transition-all active:scale-[0.97]' }, '\uD83C\uDFA8 Visualize'),
                       h('button', { 'aria-label': 'Speak Text', onClick: function() { speakText(selObj.name + ' contains ' + linkedMat.name + '. ' + linkedMat.desc); }, className: 'px-3 py-2 bg-slate-100 text-slate-600 font-bold text-xs rounded-lg hover:bg-slate-200 transition-all active:scale-[0.97]' }, '\uD83D\uDD0A')
                     )
@@ -2416,7 +2416,7 @@
                     else if (!isA && !isB) { updMulti({ reactantA: m.name, reactantB: null, activeReaction: null }); }
                   },
                   className: 'px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all ' +
-                    (isA ? 'bg-indigo-500 text-white' : isB ? 'bg-rose-700 text-white' : 'transition-colors bg-slate-50 text-slate-600 border border-slate-400 hover:border-amber-600')
+                    (isA ? 'bg-indigo-600 text-white' : isB ? 'bg-rose-700 text-white' : 'transition-colors bg-slate-50 text-slate-600 border border-slate-400 hover:border-amber-600')
                 }, m.emoji + ' ' + m.name);
               })
             ),
@@ -2481,7 +2481,7 @@
                     }, '\uD83D\uDD0A Listen'),
                     h('button', { 'aria-label': 'Try Another Combo',
                       onClick: function() { updMulti({ reactantA: null, reactantB: null, activeReaction: null }); },
-                      className: 'transition-colors flex-1 py-2 bg-amber-700 text-white font-bold text-xs rounded-lg hover:bg-amber-600 active:scale-[0.97]'
+                      className: 'transition-colors flex-1 py-2 bg-amber-700 text-white font-bold text-xs rounded-lg hover:bg-amber-800 active:scale-[0.97]'
                     }, '\uD83D\uDD04 Try Another Combo')
                   )
                 ) : null
@@ -2900,7 +2900,7 @@
               /* Inline wrong-option explanations and vocabulary study cards */
               quizQ.answered && h('div', { className: 'mt-3 mb-3 space-y-2 animate-in fade-in' },
                 h('div', {
-                  className: 'p-3 rounded-lg text-sm ' + (quizQ.chosen === quizQ.answer ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-600 border border-red-200')
+                  className: 'p-3 rounded-lg text-sm ' + (quizQ.chosen === quizQ.answer ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200')
                 },
                   h('p', { className: 'font-black text-xs' }, quizQ.chosen === quizQ.answer ? '✅ Correct answer!' : '❌ Incorrect answer'),
                   h('p', { className: 'text-xs mt-1 leading-relaxed text-slate-700 font-medium' },

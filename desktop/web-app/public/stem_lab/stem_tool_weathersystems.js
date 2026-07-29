@@ -857,6 +857,38 @@ function immersiveFeatureConnections(mode, featureId, band) {
   }).filter(Boolean);
 }
 
+function immersiveFeatureComparison(mode, anchorId, focusId, band) {
+  var key = mode === 'geographic' ? 'geographic' : 'conceptual';
+  var features = immersiveFeatureGlossary(key, band);
+  var anchor = features.filter(function (item) { return item.id === anchorId; })[0] || null;
+  var focus = features.filter(function (item) { return item.id === focusId; })[0] || null;
+  if (!anchor || !focus || anchor.id === focus.id) return null;
+  var forward = immersiveFeatureConnections(key, anchor.id, band).filter(function (item) { return item.id === focus.id; })[0] || null;
+  var reverse = immersiveFeatureConnections(key, focus.id, band).filter(function (item) { return item.id === anchor.id; })[0] || null;
+  var relationship = forward || reverse;
+  var early = band === 'K-2' || band === '3-5';
+  var direct = !!relationship;
+  var relationshipSummary = direct
+    ? anchor.label + ' and ' + focus.label + ': ' + relationship.relation
+    : anchor.label + ' and ' + focus.label + ' are both parts of the weather system, but this guide does not claim a single direct cause between them.';
+  var categorySummary = anchor.category === focus.category
+    ? 'Both features are in the ' + anchor.category.toLowerCase() + ' category, but they represent different parts of the visualization.'
+    : anchor.label + ' represents ' + anchor.category.toLowerCase() + ', while ' + focus.label + ' represents ' + focus.category.toLowerCase() + '.';
+  var comparisonQuestion = early
+    ? (direct ? 'What changes in one feature when the other feature changes?' : 'What is one way these features are alike and one way they are different?')
+    : (direct ? 'Which current evidence values support this relationship, and which parts remain an inference?' : 'Compare their evidence sources, encodings, and limitations before proposing a connection.');
+  return {
+    mode: key,
+    anchor: anchor,
+    focus: focus,
+    direct: direct,
+    relationshipDirection: forward ? 'anchor-to-focus' : reverse ? 'focus-to-anchor' : 'none',
+    relationshipSummary: relationshipSummary,
+    categorySummary: categorySummary,
+    comparisonQuestion: comparisonQuestion
+  };
+}
+
 function immersiveFeatureEvidence(featureId, options) {
   var values = options || {};
   var weather = values.weather || {};
@@ -1822,6 +1854,7 @@ var GEOGRAPHY_PROFILES = {
     immersiveFeatureGlossary: immersiveFeatureGlossary,
     immersiveFeatureById: immersiveFeatureById,
     immersiveFeatureConnections: immersiveFeatureConnections,
+    immersiveFeatureComparison: immersiveFeatureComparison,
     immersiveFeatureEvidence: immersiveFeatureEvidence,
     immersivePickableFeatureId: immersivePickableFeatureId,
     immersiveSceneDescription: immersiveSceneDescription,
@@ -3114,7 +3147,7 @@ var GEOGRAPHY_PROFILES = {
       function openLiveForecastCheckpoint(checkpoint) {
         var timeline = Array.isArray(d.liveWeatherTimeline) ? d.liveWeatherTimeline : [];
         var index = timeline.findIndex(function (point) { return String(point.time || point.validAt || '') === String(checkpoint && checkpoint.validAt || ''); });
-        var patch = { tab: 'immersive', immersiveDataSource: 'live', immersiveSceneMode: 'geographic', liveWeatherTimelinePlaying: false };
+        var patch = { tab: 'immersive', immersiveDataSource: 'live', immersiveSceneMode: 'geographic', liveWeatherTimelinePlaying: false, immersiveComparisonFeature: '', immersiveComparisonStatus: 'Comparison cleared after changing scene mode.', immersiveInspectorPanel: 'explain' };
         if (index >= 0) patch.liveWeatherTimelineIndex = index;
         update(patch);
         if (announce) announce(index >= 0 ? 'Opened the checkpoint weather hour in geographic 3D.' : 'Opened geographic 3D. Refresh live weather to bring the checkpoint hour into the timeline.');
@@ -3260,6 +3293,31 @@ function openImmersiveTourStep(stepId) {
           else update({ immersiveCameraPreset: feature.camera });
         }
         if (announce) announce(feature.label + '. ' + feature.definition + ' Look for: ' + feature.lookFor + ' Why it matters: ' + feature.why);
+      }
+
+      function pinImmersiveComparison(featureId) {
+        var mode = geographicViewState(d).mode;
+        var feature = immersiveFeatureById(mode, featureId, band);
+        update({ immersiveComparisonFeature: feature.id, immersiveComparisonStatus: feature.label + ' pinned as comparison anchor A.', immersiveInspectorPanel: 'compare' });
+        if (mode === 'conceptual') applyImmersiveFocus(d.immersiveFocus || feature.focus || 'system');
+        var runtime = immersiveRuntimeRef.current;
+        if (runtime && runtime.setComparisonVisual) runtime.setComparisonVisual(feature.id);
+        if (announce) announce(feature.label + ' pinned as comparison anchor A. Select another feature to compare.');
+      }
+
+      function clearImmersiveComparison() {
+        update({ immersiveComparisonFeature: '', immersiveComparisonStatus: 'Comparison cleared.', immersiveInspectorPanel: 'explain' });
+        if (geographicViewState(d).mode === 'conceptual') applyImmersiveFocus(d.immersiveFocus || 'system');
+        var runtime = immersiveRuntimeRef.current;
+        if (runtime && runtime.setComparisonVisual) runtime.setComparisonVisual('');
+        if (announce) announce('Feature comparison cleared.');
+      }
+
+      function setImmersiveInspectorPanel(panelId) {
+        var validPanels = ['explain', 'evidence', 'compare', 'connections'];
+        var nextPanel = validPanels.indexOf(panelId) !== -1 ? panelId : 'explain';
+        update({ immersiveInspectorPanel: nextPanel });
+        if (announce) announce('Immersive inspector view changed to ' + nextPanel + '.');
       }
 
       function previewImmersiveFeature(featureId, inputMethod) {
@@ -3805,8 +3863,10 @@ var geographyGroup = new THREE.Group();
         var hoverFrame = 0;
         var selectionHelper = null;
         var hoverHelper = null;
+        var comparisonHelper = null;
         var selectedVisualFeatureId = '';
         var hoveredVisualFeatureId = '';
+        var comparisonVisualFeatureId = '';
         var publishedHoverFeatureId = '';
 
         function clearFeatureSelectionVisual() {
@@ -3821,6 +3881,7 @@ var geographyGroup = new THREE.Group();
           clearFeatureSelectionVisual();
           selectedVisualFeatureId = featureId || '';
           if (hoveredVisualFeatureId === selectedVisualFeatureId) clearFeatureHoverVisual();
+          renderComparisonVisual();
           var root = featureRootById[featureId];
           if (!root || root.visible === false || featureId === 'terrainBase') return;
           selectionHelper = new THREE.BoxHelper(root, 0xfef08a);
@@ -3832,6 +3893,36 @@ var geographyGroup = new THREE.Group();
             selectionHelper.material.depthTest = false;
           }
           scene.add(selectionHelper);
+        }
+
+        function clearFeatureComparisonVisual() {
+          if (!comparisonHelper) return;
+          scene.remove(comparisonHelper);
+          if (comparisonHelper.geometry && comparisonHelper.geometry.dispose) comparisonHelper.geometry.dispose();
+          if (comparisonHelper.material && comparisonHelper.material.dispose) comparisonHelper.material.dispose();
+          comparisonHelper = null;
+        }
+
+        function renderComparisonVisual() {
+          clearFeatureComparisonVisual();
+          var root = featureRootById[comparisonVisualFeatureId];
+          if (!root || comparisonVisualFeatureId === 'terrainBase' || comparisonVisualFeatureId === selectedVisualFeatureId) return;
+          root.visible = true;
+          comparisonHelper = new THREE.BoxHelper(root, 0xe879f9);
+          comparisonHelper.name = 'Comparison anchor weather feature';
+          comparisonHelper.renderOrder = 998;
+          if (comparisonHelper.material) {
+            comparisonHelper.material.transparent = true;
+            comparisonHelper.material.opacity = 0.86;
+            comparisonHelper.material.depthTest = false;
+          }
+          scene.add(comparisonHelper);
+        }
+
+        function setComparisonVisual(featureId) {
+          comparisonVisualFeatureId = featureId || '';
+          if (hoveredVisualFeatureId === comparisonVisualFeatureId) clearFeatureHoverVisual();
+          renderComparisonVisual();
         }
 
         function clearFeatureHoverVisual() {
@@ -3847,7 +3938,7 @@ var geographyGroup = new THREE.Group();
           clearFeatureHoverVisual();
           hoveredVisualFeatureId = featureId || '';
           var root = featureRootById[featureId];
-          if (!root || root.visible === false || featureId === 'terrainBase' || featureId === selectedVisualFeatureId) return;
+          if (!root || root.visible === false || featureId === 'terrainBase' || featureId === selectedVisualFeatureId || featureId === comparisonVisualFeatureId) return;
           hoverHelper = new THREE.BoxHelper(root, 0x67e8f9);
           hoverHelper.name = 'Hovered weather feature';
           hoverHelper.renderOrder = 999;
@@ -3939,11 +4030,13 @@ var geographyGroup = new THREE.Group();
         canvas.addEventListener('pointerleave', handleScenePointerLeave);
         immersiveRuntimeRef.current.selectFeatureVisual = selectFeatureVisual;
         immersiveRuntimeRef.current.setFeatureHoverVisual = setFeatureHoverVisual;
+        immersiveRuntimeRef.current.setComparisonVisual = setComparisonVisual;
         // Only draw the selection box for a feature the learner actually chose. This used to
         // fall back to 'airMasses', so every scene opened with a depth-test-disabled yellow
         // wireframe around the largest object in it — the loudest thing on screen, and a
         // highlight of a selection nobody made.
         selectFeatureVisual(d.immersiveExplainerFeature || '');
+        setComparisonVisual(d.immersiveComparisonFeature || '');
         if (d.immersiveHoverFeature) update({ immersiveHoverFeature: '', immersiveHoverInput: '' });
 
         var clock = new THREE.Clock();
@@ -3975,6 +4068,7 @@ var geographyGroup = new THREE.Group();
           if (controls) controls.update();
           if (selectionHelper) selectionHelper.update();
           if (hoverHelper) hoverHelper.update();
+          if (comparisonHelper) comparisonHelper.update();
           renderer.render(scene, camera);
         });
         function resizeImmersiveScene() {
@@ -3996,6 +4090,7 @@ var geographyGroup = new THREE.Group();
           canvas.removeEventListener('pointerleave', handleScenePointerLeave);
           if (hoverFrame) window.cancelAnimationFrame(hoverFrame);
           clearFeatureHoverVisual();
+          clearFeatureComparisonVisual();
           clearFeatureSelectionVisual();
           canvas.style.cursor = '';
           canvas.removeAttribute('data-weather-hover-feature');
@@ -4565,7 +4660,7 @@ var geographyGroup = new THREE.Group();
                   h('div', { className: 'h-full rounded-full bg-gradient-to-r from-indigo-400 via-fuchsia-400 to-amber-300 transition-all motion-reduce:transition-none', style: { width: progress + '%' } })
                 )
               ),
-              nextBadge && h('button', { type: 'button', onClick: function () { update({ tab: nextBadge.tab }); }, className: 'min-h-11 rounded-lg bg-indigo-600 px-3 py-2 text-xs font-black text-white shadow-sm hover:bg-indigo-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300' }, nextBadge.action + ' \u2192'),
+              nextBadge && h('button', { type: 'button', onClick: function () { update({ tab: nextBadge.tab }); }, className: 'min-h-11 rounded-lg bg-indigo-600 px-3 py-2 text-xs font-black text-white shadow-sm hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300' }, nextBadge.action + ' \u2192'),
               h('button', { type: 'button', onClick: function () { update({ badgeBoardOpen: !open }); }, 'aria-expanded': open, 'aria-controls': 'meteorologist-badge-grid', className: buttonClass + ' text-xs' }, open ? 'Hide badges' : 'Show badges')
             ),
             open && h('div', { id: 'meteorologist-badge-grid', className: 'mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5', role: 'list', 'aria-label': 'Meteorologist achievement badges' }, badges.map(function (badge) {
@@ -5909,7 +6004,7 @@ var geographyGroup = new THREE.Group();
               h('span', { className: 'mr-1 text-xs font-black uppercase tracking-wide ' + storyEyebrow }, 'Jump to chapter'),
               chapters.map(function (hour) {
                 var active = state.simHour === hour;
-                return h('button', { key: hour, type: 'button', onClick: function () { update({ simHour: hour, playing: false, timeAdvanced: hour > 0 }); if (announce) announce('Atmosphere storyline moved to model hour ' + hour + '.'); }, 'aria-pressed': active, className: 'min-h-11 rounded-full border px-3 py-1.5 text-xs font-black transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 ' + (active ? 'border-cyan-500 bg-cyan-500 text-white' : (dark ? 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10' : 'border-slate-200 bg-white text-slate-700 hover:bg-cyan-50')) }, 'T +' + hour);
+                return h('button', { key: hour, type: 'button', onClick: function () { update({ simHour: hour, playing: false, timeAdvanced: hour > 0 }); if (announce) announce('Atmosphere storyline moved to model hour ' + hour + '.'); }, 'aria-pressed': active, className: 'min-h-11 rounded-full border px-3 py-1.5 text-xs font-black transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 ' + (active ? 'border-cyan-800 bg-cyan-700 text-white' : (dark ? 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10' : 'border-slate-200 bg-white text-slate-700 hover:bg-cyan-50')) }, 'T +' + hour);
               })
             ),
             h('div', { className: 'relative mt-4 grid gap-3 md:grid-cols-3', 'aria-live': 'polite' }, cards.map(function (card) {
@@ -6031,7 +6126,7 @@ var geographyGroup = new THREE.Group();
               layers.map(function (layer) {
                 return h('label', { key: layer.id, className: 'flex cursor-pointer items-center justify-between gap-3 rounded-lg px-2 py-2 transition-colors motion-reduce:transition-none ' + (dark ? 'hover:bg-slate-800' : 'hover:bg-sky-50') },
                   h('span', { className: 'flex items-center gap-2' },
-                    h('span', { className: 'flex h-6 w-6 items-center justify-center rounded-md ' + (layer.value ? (dark ? 'bg-sky-950 text-sky-300' : 'bg-sky-100 text-sky-700') : (dark ? 'bg-slate-800 text-slate-500' : 'bg-slate-100 text-slate-400')), 'aria-hidden': true }, layer.icon),
+                    h('span', { className: 'flex h-6 w-6 items-center justify-center rounded-md ' + (layer.value ? (dark ? 'bg-sky-950 text-sky-300' : 'bg-sky-100 text-sky-700') : (dark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600')), 'aria-hidden': true }, layer.icon),
                     h('span', null, h('span', { className: 'block text-xs font-black' }, layer.label), h('span', { className: 'block text-[11px] ' + mutedClass }, layer.detail))
                   ),
                   h('input', { type: 'checkbox', checked: layer.value, onChange: function (event) { var patch = {}; patch[layer.id] = event.target.checked; update(patch); }, className: 'h-6 w-6 ' + layer.accent, 'aria-label': layer.label })
@@ -6589,7 +6684,7 @@ var geographyGroup = new THREE.Group();
               h('p', { className: 'mt-1 text-xs leading-relaxed ' + (dark ? 'text-slate-100' : 'text-slate-800') }, terrainEvidence.investigationNote)
             ),
             h('p', { className: 'mt-2 text-[11px] ' + mutedClass }, 'Transect: ' + terrainEvidence.upwindDirection + ' upwind to ' + terrainEvidence.downwindDirection + ' downwind. Use with moisture, stability, and pressure evidence; terrain alone is not a forecast.'),
-            h('button', { type: 'button', onClick: function () { update({ tab: 'immersive', immersiveSceneMode: 'geographic' }); if (announce) announce('Geographic 3D terrain evidence reopened.'); }, className: buttonClass + ' mt-3' }, 'Review terrain evidence')
+            h('button', { type: 'button', onClick: function () { update({ tab: 'immersive', immersiveSceneMode: 'geographic', immersiveComparisonFeature: '', immersiveComparisonStatus: 'Comparison cleared after changing scene mode.', immersiveInspectorPanel: 'explain' }); if (announce) announce('Geographic 3D terrain evidence reopened.'); }, className: buttonClass + ' mt-3' }, 'Review terrain evidence')
           );
         }
         function cerComposerPanel() {
@@ -7266,7 +7361,7 @@ var geographyGroup = new THREE.Group();
                   type: 'button',
                   onClick: submitReflection,
                   disabled: !complete,
-                  className: 'min-h-11 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-black text-white shadow-sm transition-colors hover:bg-emerald-600 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 disabled:cursor-not-allowed disabled:opacity-50'
+                  className: 'min-h-11 rounded-lg bg-emerald-700 px-4 py-2 text-sm font-black text-white shadow-sm transition-colors hover:bg-emerald-800 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 disabled:cursor-not-allowed disabled:opacity-50'
                 }, submitted ? '\u2713 Exit ticket saved' : 'Save exit ticket')
               )
             )
@@ -7312,7 +7407,7 @@ var geographyGroup = new THREE.Group();
               h('p', { className: 'text-xs font-black uppercase tracking-wide text-cyan-300' }, 'Choose your audience'),
               h('div', { className: 'mt-2 grid grid-cols-3 gap-2' }, audiences.map(function (item) {
                 var selected = item.id === audienceId;
-                return h('button', { key: item.id, type: 'button', onClick: function () { update({ broadcastAudience: item.id }); }, 'aria-pressed': selected, className: 'min-h-16 rounded-xl border px-2 py-3 text-center text-xs font-black transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 ' + (selected ? 'border-cyan-500 bg-cyan-500 text-white' : (dark ? 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10' : 'border-slate-200 bg-white text-slate-700 hover:bg-cyan-50')) },
+                return h('button', { key: item.id, type: 'button', onClick: function () { update({ broadcastAudience: item.id }); }, 'aria-pressed': selected, className: 'min-h-16 rounded-xl border px-2 py-3 text-center text-xs font-black transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 ' + (selected ? 'border-cyan-800 bg-cyan-700 text-white' : (dark ? 'border-white/10 bg-white/5 text-slate-200 hover:bg-white/10' : 'border-slate-200 bg-white text-slate-700 hover:bg-cyan-50')) },
                   h('span', { className: 'mb-1 block text-xl', 'aria-hidden': true }, item.icon), item.label
                 );
               })),
@@ -7421,7 +7516,7 @@ var geographyGroup = new THREE.Group();
                 }),
                 h('span', { id: 'weather-reasoning-count', className: 'mt-1 block text-right text-[11px] font-bold ' + (reasoningLength >= reasoningTarget ? emeraldAccentClass : mutedClass) }, reasoningLength + ' / ' + reasoningTarget + ' minimum characters')
               ),
-              h('button', { type: 'button', onClick: issueForecast, className: 'mt-4 min-h-11 w-full rounded-lg bg-sky-700 px-4 py-3 text-sm font-black text-white shadow-sm transition-colors motion-reduce:transition-none hover:bg-sky-600 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 focus-visible:outline-none' }, '\uD83D\uDCE1 Verify forecast')
+              h('button', { type: 'button', onClick: issueForecast, className: 'mt-4 min-h-11 w-full rounded-lg bg-sky-700 px-4 py-3 text-sm font-black text-white shadow-sm transition-colors motion-reduce:transition-none hover:bg-sky-800 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 focus-visible:outline-none' }, '\uD83D\uDCE1 Verify forecast')
             )
           ),
           h('aside', { className: 'space-y-4' },
@@ -7618,7 +7713,7 @@ var geographyGroup = new THREE.Group();
                   })
                 )
               ),
-              h('button', { type: 'button', onClick: performExperiment, className: 'min-h-11 w-full rounded-lg bg-cyan-700 px-4 py-3 text-sm font-black text-white hover:bg-cyan-600 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 focus-visible:outline-none' }, '\uD83E\uDDEA Run controlled test')
+              h('button', { type: 'button', onClick: performExperiment, className: 'min-h-11 w-full rounded-lg bg-cyan-700 px-4 py-3 text-sm font-black text-white hover:bg-cyan-800 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300 focus-visible:outline-none' }, '\uD83E\uDDEA Run controlled test')
             ),
             h('section', { className: panelClass + ' p-4', 'aria-live': 'polite', 'data-weather-experiment-result': !!result },
               !result && h('div', { className: 'flex min-h-[300px] items-center justify-center text-center' },
@@ -7707,11 +7802,12 @@ var geographyGroup = new THREE.Group();
         var immersiveGlossary = immersiveFeatureGlossary(immersiveGlossaryMode, band);
         var immersiveGlossaryQuery = String(d.immersiveGlossaryQuery || '').trim().toLowerCase();
         var filteredImmersiveGlossary = immersiveGlossary.filter(function (item) { return !immersiveGlossaryQuery || [item.label, item.category, item.definition, item.lookFor, item.why].join(' ').toLowerCase().indexOf(immersiveGlossaryQuery) !== -1; });
-        var selectedGlossaryFeature = filteredImmersiveGlossary.filter(function (item) { return item.id === d.immersiveExplainerFeature; })[0] || filteredImmersiveGlossary[0] || immersiveGlossary.filter(function (item) { return item.id === d.immersiveExplainerFeature; })[0] || immersiveGlossary[0];
+        var explicitlySelectedGlossaryFeature = immersiveGlossary.filter(function (item) { return item.id === d.immersiveExplainerFeature; })[0] || null;
+        var selectedGlossaryFeature = explicitlySelectedGlossaryFeature || filteredImmersiveGlossary[0] || immersiveGlossary[0];
         var hoveredGlossaryFeature = !geographicMode && d.immersiveHoverFeature ? immersiveGlossary.filter(function (item) { return item.id === d.immersiveHoverFeature; })[0] || null : null;
         var connectedGlossaryFeatures = selectedGlossaryFeature ? immersiveFeatureConnections(immersiveGlossaryMode, selectedGlossaryFeature.id, band) : [];
         var selectedStationDefinition = STATIONS.filter(function (stationItem) { return stationItem.id === selectedStation; })[0] || STATIONS[0];
-        var selectedFeatureEvidence = selectedGlossaryFeature ? immersiveFeatureEvidence(selectedGlossaryFeature.id, {
+        var featureEvidenceOptions = {
           mode: immersiveGlossaryMode,
           band: band,
           weather: useLive ? live : model,
@@ -7731,7 +7827,15 @@ var geographyGroup = new THREE.Group();
           regionalSampleCount: d.geographicWeatherField && d.geographicWeatherField.sampleCount,
           validAt: d.geographicWeatherField && d.geographicWeatherField.validAt,
           buildingsVisible: d.geographicBuildings === true && d.geographicBuildingsAvailable !== false
-        }) : null;
+        };
+        var selectedFeatureEvidence = selectedGlossaryFeature ? immersiveFeatureEvidence(selectedGlossaryFeature.id, featureEvidenceOptions) : null;
+        var comparisonAnchorFeature = d.immersiveComparisonFeature ? immersiveGlossary.filter(function (item) { return item.id === d.immersiveComparisonFeature; })[0] || null : null;
+        var featureComparison = comparisonAnchorFeature && selectedGlossaryFeature ? immersiveFeatureComparison(immersiveGlossaryMode, comparisonAnchorFeature.id, selectedGlossaryFeature.id, band) : null;
+        var comparisonAnchorEvidence = comparisonAnchorFeature ? immersiveFeatureEvidence(comparisonAnchorFeature.id, featureEvidenceOptions) : null;
+        var immersiveComparisonStatus = d.immersiveComparisonStatus || 'Pin a feature, then inspect another to compare them.';
+        var requestedImmersiveInspectorPanel = String(d.immersiveInspectorPanel || '');
+        var immersiveInspectorPanel = ['explain', 'evidence', 'compare', 'connections'].indexOf(requestedImmersiveInspectorPanel) !== -1 ? requestedImmersiveInspectorPanel : (comparisonAnchorFeature ? 'compare' : 'explain');
+        var immersiveInspectorPanelLabels = { explain: 'Explain', evidence: 'Evidence', compare: 'Compare', connections: 'Connections' };
         var immersiveObjectSelectionStatus = d.immersiveObjectSelectionStatus || 'Select a feature in the 3D scene or use the scene object explorer.';
         var evidenceKindLabels = { observation: 'Observed', forecast: 'Forecast', model: 'Model', map: 'Map', encoding: 'Encoding' };
         var evidenceKindClasses = { observation: 'border-emerald-300/30 bg-emerald-300/10 text-emerald-100', forecast: 'border-violet-300/30 bg-violet-300/10 text-violet-100', model: 'border-sky-300/30 bg-sky-300/10 text-sky-100', map: 'border-amber-300/30 bg-amber-300/10 text-amber-100', encoding: 'border-cyan-300/30 bg-cyan-300/10 text-cyan-100' };
@@ -7826,6 +7930,14 @@ var geographyGroup = new THREE.Group();
               h('div', { className: 'relative min-h-[500px] overflow-hidden rounded-2xl border border-white/10 bg-slate-950 shadow-[inset_0_0_0_1px_rgba(125,211,252,0.08)] md:min-h-[600px] xl:min-h-[680px]' },
                 h('canvas', { ref: immersiveCanvasRef, hidden: geographicMode, className: 'block h-[min(78vh,780px)] min-h-[500px] w-full md:min-h-[600px] xl:min-h-[680px]', 'data-weather-immersive-canvas': true, role: 'img', 'aria-describedby': !geographicMode ? 'weather-conceptual-3d-instructions' : undefined, 'aria-label': 'Interactive three-dimensional weather scene for ' + sceneLabel + '. ' + sceneCondition + '. Click or tap a scene object to explain it. Drag to orbit; scroll or pinch to zoom.' }),
                 !geographicMode && h('div', { className: 'pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b from-cyan-950/10 via-transparent to-slate-950/50', 'data-weather-conceptual-vignette': true, 'aria-hidden': true }),
+                !geographicMode && comparisonAnchorFeature && h('div', { className: 'pointer-events-none absolute left-3 top-20 z-30 max-w-[280px] rounded-xl border border-fuchsia-300/45 bg-slate-950/92 px-3 py-2.5 text-left shadow-2xl backdrop-blur-md', 'data-weather-comparison-legend': comparisonAnchorFeature.id, role: 'status', 'aria-label': '3D feature comparison. Anchor A: ' + comparisonAnchorFeature.label + '. Inspecting B: ' + selectedGlossaryFeature.label + '.' },
+                  h('p', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-fuchsia-200' }, '3D feature comparison'),
+                  h('div', { className: 'mt-1.5 space-y-1.5 text-[10px] font-bold' },
+                    h('div', { className: 'flex items-center gap-2 text-fuchsia-100' }, h('span', { className: 'h-2.5 w-2.5 rounded-sm border border-white bg-fuchsia-400', 'aria-hidden': true }), h('span', null, 'Anchor A: ' + comparisonAnchorFeature.label)),
+                    h('div', { className: 'flex items-center gap-2 text-amber-100' }, h('span', { className: 'h-2.5 w-2.5 rounded-sm border border-white bg-amber-300', 'aria-hidden': true }), h('span', null, 'Inspecting B: ' + selectedGlossaryFeature.label))
+                  ),
+                  comparisonAnchorFeature.id === selectedGlossaryFeature.id && h('p', { className: 'mt-1.5 text-[10px] text-slate-300' }, 'Select another scene feature to complete the comparison.')
+                ),
                 !geographicMode && hoveredGlossaryFeature && h('div', { className: 'pointer-events-none absolute right-3 top-20 z-30 max-w-[260px] rounded-xl border border-cyan-200/50 bg-slate-950/92 px-3 py-2.5 text-left shadow-2xl backdrop-blur-md', 'data-weather-hover-inspector': hoveredGlossaryFeature.id, role: 'status', 'aria-live': 'polite' },
                   h('p', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-cyan-300' }, d.immersiveHoverInput === 'keyboard' ? 'Keyboard preview' : 'Under pointer'),
                   h('div', { className: 'mt-1 flex items-center gap-2' },
@@ -7933,7 +8045,7 @@ var geographyGroup = new THREE.Group();
                 geographicMode && (d.geographicMapLoading || (!d.geographicMapReady && !d.geographicMapError)) && h('div', { className: 'absolute inset-0 z-10 flex items-center justify-center bg-slate-950/90 text-center', role: 'status', 'aria-live': 'polite' }, h('div', { className: 'max-w-sm p-6' }, h('div', { className: 'mx-auto h-10 w-10 animate-spin rounded-full border-4 border-emerald-300/20 border-t-emerald-300', 'aria-hidden': true }), h('p', { className: 'mt-4 text-sm font-black' }, 'Loading open geographic layers...'), h('p', { className: 'mt-1 text-xs text-slate-400' }, 'OpenFreeMap, OpenStreetMap labels, and 3D terrain load only in this opt-in mode.'))),
                 geographicMode && d.geographicMapError && h('div', { className: 'absolute inset-0 z-10 flex items-center justify-center bg-slate-950/95 p-6 text-center', role: 'alert' }, h('div', { className: 'max-w-md' }, h('p', { className: 'text-base font-black' }, 'Geographic view unavailable'), h('p', { className: 'mt-2 text-sm text-slate-300' }, d.geographicMapError), h('div', { className: 'mt-4 flex flex-wrap items-center justify-center gap-2' },
                   h('button', { type: 'button', onClick: function () { update({ geographicMapError: '', geographicMapAttempt: (d.geographicMapAttempt || 0) + 1 }); }, className: 'min-h-11 rounded-lg bg-emerald-300 px-4 py-2 text-sm font-black text-emerald-950' }, 'Retry loading'),
-                  h('button', { type: 'button', onClick: function () { update({ immersiveSceneMode: 'conceptual', geographicMapError: '', immersiveGlossaryQuery: '', immersiveExplainerFeature: 'airMasses' }); }, className: 'min-h-11 rounded-lg bg-cyan-300 px-4 py-2 text-sm font-black text-cyan-950' }, 'Use conceptual 3D instead')))),
+                  h('button', { type: 'button', onClick: function () { update({ immersiveSceneMode: 'conceptual', geographicMapError: '', immersiveGlossaryQuery: '', immersiveExplainerFeature: 'airMasses', immersiveComparisonFeature: '', immersiveComparisonStatus: 'Comparison cleared after changing scene mode.', immersiveInspectorPanel: 'explain' }); }, className: 'min-h-11 rounded-lg bg-cyan-300 px-4 py-2 text-sm font-black text-cyan-950' }, 'Use conceptual 3D instead')))),
                 !geographicMode && h('div', { className: 'pointer-events-none absolute bottom-3 left-3 right-3 z-10 flex flex-wrap items-end justify-between gap-2' },
                   h('div', { className: 'rounded-xl bg-slate-950/75 px-3 py-2 backdrop-blur-sm' }, h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-cyan-300' }, useLive ? timelineSelectionLabel + ' scene' : 'Teaching model scene'), h('p', { className: 'text-xs font-black' }, sceneLabel)),
                   h('div', { id: 'weather-conceptual-3d-instructions', className: 'rounded-xl bg-slate-950/75 px-3 py-2 text-right text-[11px] text-slate-300 backdrop-blur-sm', 'data-weather-object-picking-hint': true }, 'Click or tap an object to explain | Drag to orbit | Scroll or pinch to zoom'),
@@ -8001,8 +8113,8 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/78 px-4
                 h('section', { className: 'rounded-xl border border-emerald-300/25 bg-emerald-950/20 p-4', 'data-weather-scene-mode': true },
                   h('p', { className: 'text-[11px] font-black uppercase tracking-wide text-emerald-300' }, 'Immersive scene mode'),
                   h('div', { className: 'mt-2 grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Immersive scene mode' },
-                    h('button', { type: 'button', onClick: function () { update({ immersiveSceneMode: 'conceptual', geographicMapError: '', immersiveGlossaryQuery: '', immersiveExplainerFeature: 'airMasses' }); }, 'aria-pressed': !geographicMode, className: 'flex min-h-12 items-center justify-center gap-2 rounded-lg border px-3 py-2 text-xs font-black ' + (!geographicMode ? 'border-cyan-300 bg-cyan-300 text-cyan-950 shadow-lg' : 'border-white/10 bg-white/5 text-white') }, h('span', { className: 'text-base', 'aria-hidden': true }, '\u25C8'), h('span', null, 'Conceptual 3D')),
-                    h('button', { type: 'button', disabled: !geographic.available, onClick: function () { update({ immersiveSceneMode: 'geographic', immersiveDataSource: 'live', geographicMapError: '', immersiveGlossaryQuery: '', immersiveExplainerFeature: 'observationSite' }); }, 'aria-pressed': geographicMode, 'aria-describedby': 'weather-geographic-mode-help', className: 'flex min-h-12 items-center justify-center gap-2 rounded-lg border px-3 py-2 text-xs font-black disabled:cursor-not-allowed disabled:opacity-40 ' + (geographicMode ? 'border-emerald-300 bg-emerald-300 text-emerald-950 shadow-lg' : 'border-white/10 bg-white/5 text-white') }, h('span', { className: 'text-base', 'aria-hidden': true }, '\u231E'), h('span', null, 'Geographic terrain'))
+                    h('button', { type: 'button', onClick: function () { update({ immersiveSceneMode: 'conceptual', geographicMapError: '', immersiveGlossaryQuery: '', immersiveExplainerFeature: 'airMasses', immersiveComparisonFeature: '', immersiveComparisonStatus: 'Comparison cleared after changing scene mode.', immersiveInspectorPanel: 'explain' }); }, 'aria-pressed': !geographicMode, className: 'flex min-h-12 items-center justify-center gap-2 rounded-lg border px-3 py-2 text-xs font-black ' + (!geographicMode ? 'border-cyan-300 bg-cyan-300 text-cyan-950 shadow-lg' : 'border-white/10 bg-white/5 text-white') }, h('span', { className: 'text-base', 'aria-hidden': true }, '\u25C8'), h('span', null, 'Conceptual 3D')),
+                    h('button', { type: 'button', disabled: !geographic.available, onClick: function () { update({ immersiveSceneMode: 'geographic', immersiveDataSource: 'live', geographicMapError: '', immersiveGlossaryQuery: '', immersiveExplainerFeature: 'observationSite', immersiveComparisonFeature: '', immersiveComparisonStatus: 'Comparison cleared after changing scene mode.', immersiveInspectorPanel: 'explain' }); }, 'aria-pressed': geographicMode, 'aria-describedby': 'weather-geographic-mode-help', className: 'flex min-h-12 items-center justify-center gap-2 rounded-lg border px-3 py-2 text-xs font-black disabled:cursor-not-allowed disabled:opacity-40 ' + (geographicMode ? 'border-emerald-300 bg-emerald-300 text-emerald-950 shadow-lg' : 'border-white/10 bg-white/5 text-white') }, h('span', { className: 'text-base', 'aria-hidden': true }, '\u231E'), h('span', null, 'Geographic terrain'))
                   ),
                   h('p', { id: 'weather-geographic-mode-help', className: 'mt-2 text-[11px] leading-relaxed text-slate-300' }, geographic.available ? 'Opt-in live map centered on ' + geographic.label + '. Switching modes contacts the approved map and terrain providers.' : 'Load a live location below to enable the open geographic map. Nothing loads automatically.')
                 ),
@@ -8042,15 +8154,43 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/78 px-4
                         }),
                         !filteredImmersiveGlossary.length && h('p', { className: 'col-span-2 rounded-lg border border-dashed border-white/15 p-3 text-center text-[11px] text-slate-300', role: 'status' }, 'No glossary terms match this search.')
                       ),
+                      selectedGlossaryFeature && h('div', { className: 'mt-3 rounded-xl border border-white/10 bg-slate-950/55 p-2.5 shadow-lg', 'data-weather-inspector-view-controls': true, 'data-weather-inspector-active': immersiveInspectorPanel },
+                        h('div', { className: 'flex flex-wrap items-center justify-between gap-2 px-1' },
+                          h('p', { className: 'text-[10px] font-black uppercase tracking-[0.15em] text-slate-300' }, 'Inspector view'),
+                          h('p', { className: 'text-[10px] font-bold text-cyan-200', role: 'status', 'aria-live': 'polite' }, 'Showing ' + immersiveInspectorPanelLabels[immersiveInspectorPanel])
+                        ),
+                        h('div', { className: 'mt-2 grid grid-cols-2 gap-1.5 sm:grid-cols-4', role: 'group', 'aria-label': 'Immersive feature inspector views' },
+                          [
+                            { id: 'explain', label: 'Explain', icon: '?', badge: 'Core' },
+                            { id: 'evidence', label: 'Evidence', icon: '\u25C9', badge: selectedFeatureEvidence ? String(selectedFeatureEvidence.metrics.length) : '0' },
+                            { id: 'compare', label: 'Compare', icon: '\u21C4', badge: comparisonAnchorFeature ? 'A+B' : 'Pin' },
+                            { id: 'connections', label: 'Connections', icon: '\u25C7', badge: String(connectedGlossaryFeatures.length) }
+                          ].map(function (panel) {
+                            var active = immersiveInspectorPanel === panel.id;
+                            return h('button', {
+                              key: panel.id,
+                              type: 'button',
+                              onClick: function () { setImmersiveInspectorPanel(panel.id); },
+                              'aria-pressed': active,
+                              'aria-controls': 'weather-inspector-' + panel.id,
+                              'data-weather-inspector-view': panel.id,
+                              className: 'flex min-h-11 items-center justify-between gap-1.5 rounded-lg border px-2 py-2 text-left transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-200 ' + (active ? 'border-cyan-300 bg-cyan-300 text-cyan-950 shadow-lg' : 'border-white/10 bg-white/5 text-slate-100 hover:border-white/25 hover:bg-white/10')
+                            },
+                              h('span', { className: 'flex min-w-0 items-center gap-1.5' }, h('span', { className: 'text-sm', 'aria-hidden': true }, panel.icon), h('span', { className: 'truncate text-[10px] font-black' }, panel.label)),
+                              h('span', { className: 'rounded-full border border-current/20 px-1.5 py-0.5 text-[8px] font-black opacity-80', 'aria-hidden': true }, panel.badge)
+                            );
+                          })
+                        )
+                      ),
                       selectedGlossaryFeature && h('article', { id: 'weather-immersive-feature-definition', className: 'mt-3 rounded-xl border border-cyan-300/20 bg-slate-950/60 p-3', 'data-weather-feature-definition': selectedGlossaryFeature.id, 'aria-live': 'polite' },
                         h('div', { className: 'flex items-start justify-between gap-3' }, h('div', null, h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-cyan-300' }, selectedGlossaryFeature.category), h('h5', { className: 'mt-0.5 text-sm font-black text-white' }, selectedGlossaryFeature.label)), h('span', { className: 'text-xl text-cyan-200', 'aria-hidden': true }, selectedGlossaryFeature.icon)),
                         h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-200' }, selectedGlossaryFeature.definition),
-                        h('dl', { className: 'mt-3 space-y-2 text-[11px]' },
+                        h('dl', { id: 'weather-inspector-explain', hidden: immersiveInspectorPanel !== 'explain', className: 'mt-3 space-y-2 text-[11px]', 'data-weather-inspector-panel': 'explain', 'aria-label': 'Feature explanation' },
                           h('div', { className: 'border-l-2 border-sky-300/60 pl-2' }, h('dt', { className: 'font-black text-sky-200' }, 'Look for'), h('dd', { className: 'mt-0.5 leading-relaxed text-slate-300' }, selectedGlossaryFeature.lookFor)),
                           h('div', { className: 'border-l-2 border-violet-300/60 pl-2' }, h('dt', { className: 'font-black text-violet-200' }, 'Why it matters'), h('dd', { className: 'mt-0.5 leading-relaxed text-slate-300' }, selectedGlossaryFeature.why)),
                           h('div', { className: 'border-l-2 border-amber-300/60 pl-2' }, h('dt', { className: 'font-black text-amber-200' }, 'Evidence question'), h('dd', { className: 'mt-0.5 font-bold leading-relaxed text-slate-200' }, selectedGlossaryFeature.question))
                         ),
-                        selectedFeatureEvidence && h('section', { className: 'mt-3 overflow-hidden rounded-xl border border-violet-300/25 bg-gradient-to-br from-violet-950/35 to-slate-950/45', 'data-weather-feature-evidence': selectedGlossaryFeature.id, 'aria-labelledby': 'weather-feature-evidence-title' },
+                        selectedFeatureEvidence && h('section', { id: 'weather-inspector-evidence', hidden: immersiveInspectorPanel !== 'evidence', className: 'mt-3 overflow-hidden rounded-xl border border-violet-300/25 bg-gradient-to-br from-violet-950/35 to-slate-950/45', 'data-weather-inspector-panel': 'evidence', 'data-weather-feature-evidence': selectedGlossaryFeature.id, 'aria-labelledby': 'weather-feature-evidence-title' },
                           h('div', { className: 'flex flex-wrap items-start justify-between gap-2 border-b border-white/10 px-3 py-2.5' },
                             h('div', null, h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-violet-200' }, 'Evidence snapshot'), h('h6', { id: 'weather-feature-evidence-title', className: 'mt-0.5 text-xs font-black text-white' }, 'What supports this view right now?')),
                             h('span', { className: 'rounded-full border border-violet-300/30 bg-violet-300/10 px-2 py-1 text-[10px] font-black text-violet-100', 'data-weather-feature-evidence-source': selectedFeatureEvidence.sourceKind }, selectedFeatureEvidence.sourceBadge)
@@ -8071,15 +8211,73 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/78 px-4
                             h('div', { className: 'border-l-2 border-amber-300/60 pl-2', 'data-weather-evidence-limitation': true }, h('p', { className: 'font-black text-amber-200' }, 'What this cannot prove'), h('p', { className: 'mt-0.5 text-slate-300' }, selectedFeatureEvidence.limitation))
                           )
                         ),
-                        connectedGlossaryFeatures.length > 0 && h('section', { className: 'mt-3 border-t border-white/10 pt-3', 'data-weather-feature-connections': selectedGlossaryFeature.id, 'aria-labelledby': 'weather-feature-connections-title' },
+                        h('section', { id: 'weather-inspector-compare', hidden: immersiveInspectorPanel !== 'compare', className: 'mt-3 overflow-hidden rounded-xl border border-fuchsia-300/25 bg-gradient-to-br from-fuchsia-950/30 via-slate-950/45 to-amber-950/20', 'data-weather-inspector-panel': 'compare', 'data-weather-feature-compare-workspace': true, 'aria-labelledby': 'weather-feature-compare-title' },
+                          h('div', { className: 'flex flex-wrap items-start justify-between gap-2 border-b border-white/10 px-3 py-2.5' },
+                            h('div', null, h('p', { className: 'text-[10px] font-black uppercase tracking-wide text-fuchsia-200' }, 'Compare in 3D'), h('h6', { id: 'weather-feature-compare-title', className: 'mt-0.5 text-xs font-black text-white' }, 'Feature comparison workspace')),
+                            comparisonAnchorFeature && h('span', { className: 'rounded-full border border-fuchsia-300/30 bg-fuchsia-300/10 px-2 py-1 text-[10px] font-black text-fuchsia-100' }, 'Anchor A set')
+                          ),
+                          !comparisonAnchorFeature && h('div', { className: 'p-3' },
+                            h('p', { className: 'text-[10px] leading-relaxed text-slate-300' }, 'Pin the current feature as anchor A. Then select another object or glossary term to inspect as B.'),
+                            h('button', { type: 'button', onClick: function () { pinImmersiveComparison(selectedGlossaryFeature.id); }, className: 'mt-2 min-h-11 w-full rounded-lg border border-fuchsia-300/40 bg-fuchsia-300/15 px-3 py-2 text-xs font-black text-fuchsia-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fuchsia-200' }, 'Pin ' + selectedGlossaryFeature.label + ' as anchor A')
+                          ),
+                          comparisonAnchorFeature && comparisonAnchorFeature.id === selectedGlossaryFeature.id && h('div', { className: 'p-3', 'data-weather-comparison-pending': comparisonAnchorFeature.id },
+                            h('p', { className: 'text-[10px] font-black text-fuchsia-100' }, comparisonAnchorFeature.label + ' is pinned as anchor A.'),
+                            h('p', { className: 'mt-1 text-[10px] leading-relaxed text-slate-300' }, 'Select another feature in the 3D scene or object explorer. It will become inspecting feature B.'),
+                            h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+                              h('button', { type: 'button', onClick: clearImmersiveComparison, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-3 py-2 text-[11px] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Clear comparison')
+                            )
+                          ),
+                          featureComparison && comparisonAnchorEvidence && selectedFeatureEvidence && h('div', { className: 'p-3', 'data-weather-feature-comparison': comparisonAnchorFeature.id + ':' + selectedGlossaryFeature.id },
+                            h('div', { className: 'rounded-lg border px-3 py-2 ' + (featureComparison.direct ? 'border-emerald-300/25 bg-emerald-300/10' : 'border-slate-300/15 bg-white/5'), 'data-weather-comparison-relationship': featureComparison.relationshipDirection },
+                              h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                                h('p', { className: 'text-[10px] font-black uppercase tracking-wide ' + (featureComparison.direct ? 'text-emerald-200' : 'text-slate-300') }, featureComparison.direct ? 'Direct relationship in this guide' : 'Compare before connecting'),
+                                h('span', { className: 'rounded-full border border-white/10 bg-slate-950/35 px-2 py-0.5 text-[9px] font-black text-slate-200' }, featureComparison.direct ? 'RELATED' : 'NO DIRECT CLAIM')
+                              ),
+                              h('p', { className: 'mt-1 text-[10px] leading-relaxed text-slate-200' }, featureComparison.relationshipSummary),
+                              h('p', { className: 'mt-1 text-[10px] leading-relaxed text-slate-400' }, featureComparison.categorySummary)
+                            ),
+                            h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-2' },
+                              [
+                                { role: 'Anchor A', feature: comparisonAnchorFeature, evidence: comparisonAnchorEvidence, tone: 'fuchsia' },
+                                { role: 'Inspecting B', feature: selectedGlossaryFeature, evidence: selectedFeatureEvidence, tone: 'amber' }
+                              ].map(function (side) {
+                                var isAnchor = side.role === 'Anchor A';
+                                return h('article', { key: side.role, className: 'rounded-xl border p-3 ' + (isAnchor ? 'border-fuchsia-300/30 bg-fuchsia-300/5' : 'border-amber-300/30 bg-amber-300/5'), 'data-weather-comparison-side': isAnchor ? 'anchor' : 'focus' },
+                                  h('p', { className: 'text-[9px] font-black uppercase tracking-wide ' + (isAnchor ? 'text-fuchsia-200' : 'text-amber-200') }, side.role),
+                                  h('div', { className: 'mt-1 flex items-center gap-2' }, h('span', { className: 'text-base', 'aria-hidden': true }, side.feature.icon), h('h6', { className: 'text-xs font-black text-white' }, side.feature.label)),
+                                  h('p', { className: 'mt-1 text-[10px] leading-relaxed text-slate-300' }, side.feature.definition),
+                                  h('p', { className: 'mt-2 text-[9px] font-black uppercase tracking-wide text-slate-400' }, side.evidence.sourceBadge),
+                                  h('dl', { className: 'mt-1 space-y-1.5' }, side.evidence.metrics.slice(0, 2).map(function (metric) {
+                                    return h('div', { key: metric.label, className: 'flex items-baseline justify-between gap-2 rounded-md bg-slate-950/35 px-2 py-1.5' }, h('dt', { className: 'text-[9px] text-slate-400' }, metric.label), h('dd', { className: 'text-right text-[10px] font-black text-white' }, metric.value));
+                                  })),
+                                  h('p', { className: 'mt-2 text-[10px] leading-relaxed text-emerald-100' }, side.evidence.interpretation),
+                                  h('p', { className: 'mt-1 text-[10px] leading-relaxed text-amber-100' }, 'Limit: ' + side.evidence.limitation)
+                                );
+                              })
+                            ),
+                            h('div', { className: 'mt-3 rounded-lg border border-sky-300/20 bg-sky-300/10 px-3 py-2', 'data-weather-comparison-question': true },
+                              h('p', { className: 'text-[9px] font-black uppercase tracking-wide text-sky-200' }, 'Compare and explain'),
+                              h('p', { className: 'mt-1 text-[10px] font-bold leading-relaxed text-slate-200' }, featureComparison.comparisonQuestion)
+                            ),
+                            h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
+                              h('button', { type: 'button', onClick: function () { pinImmersiveComparison(selectedGlossaryFeature.id); }, className: 'min-h-11 rounded-lg border border-fuchsia-300/35 bg-fuchsia-300/10 px-2 py-2 text-[10px] font-black text-fuchsia-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fuchsia-200' }, 'Make B the new anchor'),
+                              h('button', { type: 'button', onClick: clearImmersiveComparison, className: 'min-h-11 rounded-lg border border-white/15 bg-white/5 px-2 py-2 text-[10px] font-black text-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' }, 'Clear comparison')
+                            )
+                          ),
+                          h('p', { className: 'sr-only', role: 'status', 'aria-live': 'polite', 'data-weather-comparison-status': true }, immersiveComparisonStatus)
+                        ),
+                        h('section', { id: 'weather-inspector-connections', hidden: immersiveInspectorPanel !== 'connections', className: 'mt-3 border-t border-white/10 pt-3', 'data-weather-inspector-panel': 'connections', 'data-weather-feature-connections': selectedGlossaryFeature.id, 'aria-labelledby': 'weather-feature-connections-title' },
                           h('p', { id: 'weather-feature-connections-title', className: 'text-[10px] font-black uppercase tracking-wide text-emerald-200' }, 'Connected processes'),
                           h('p', { className: 'mt-1 text-[10px] leading-relaxed text-slate-400' }, 'Follow a relationship to inspect how weather-system parts work together.'),
-                          h('div', { className: 'mt-2 space-y-2' }, connectedGlossaryFeatures.map(function (connection) {
-                            return h('button', { key: connection.id, type: 'button', onClick: function () { explainImmersiveFeature(connection.id); }, onFocus: function () { previewImmersiveFeature(connection.id, 'keyboard'); }, onBlur: function () { previewImmersiveFeature('', ''); }, onMouseEnter: function () { previewImmersiveFeature(connection.id, 'pointer'); }, onMouseLeave: function () { previewImmersiveFeature('', ''); }, className: 'flex min-h-12 w-full items-start gap-2 rounded-lg border border-emerald-300/20 bg-emerald-300/5 px-3 py-2 text-left hover:border-emerald-300/45 hover:bg-emerald-300/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200', 'aria-label': 'Explore ' + connection.label + '. ' + connection.relation },
-                              h('span', { className: 'mt-0.5 text-sm text-emerald-200', 'aria-hidden': true }, connection.icon),
-                              h('span', { className: 'min-w-0' }, h('span', { className: 'block text-[11px] font-black text-emerald-100' }, connection.label), h('span', { className: 'mt-0.5 block text-[10px] leading-relaxed text-slate-400' }, connection.relation))
-                            );
-                          }))
+                          h('div', { className: 'mt-2 space-y-2' },
+                            connectedGlossaryFeatures.map(function (connection) {
+                              return h('button', { key: connection.id, type: 'button', onClick: function () { explainImmersiveFeature(connection.id); }, onFocus: function () { previewImmersiveFeature(connection.id, 'keyboard'); }, onBlur: function () { previewImmersiveFeature('', ''); }, onMouseEnter: function () { previewImmersiveFeature(connection.id, 'pointer'); }, onMouseLeave: function () { previewImmersiveFeature('', ''); }, className: 'flex min-h-12 w-full items-start gap-2 rounded-lg border border-emerald-300/20 bg-emerald-300/5 px-3 py-2 text-left hover:border-emerald-300/45 hover:bg-emerald-300/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-200', 'aria-label': 'Explore ' + connection.label + '. ' + connection.relation },
+                                h('span', { className: 'mt-0.5 text-sm text-emerald-200', 'aria-hidden': true }, connection.icon),
+                                h('span', { className: 'min-w-0' }, h('span', { className: 'block text-[11px] font-black text-emerald-100' }, connection.label), h('span', { className: 'mt-0.5 block text-[10px] leading-relaxed text-slate-400' }, connection.relation))
+                              );
+                            }),
+                            !connectedGlossaryFeatures.length && h('p', { className: 'rounded-lg border border-dashed border-white/15 px-3 py-3 text-[10px] leading-relaxed text-slate-300', role: 'status' }, 'No curated process connection is listed for this feature yet. Compare it with another feature to investigate possible relationships without assuming causation.')
+                          )
                         ),
                         h('button', { type: 'button', disabled: geographicMode && !d.geographicMapReady, onClick: function () { explainImmersiveFeature(selectedGlossaryFeature.id); }, className: 'mt-3 min-h-11 w-full rounded-lg bg-cyan-300 px-3 py-2 text-xs font-black text-cyan-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white disabled:opacity-50' }, geographicMode ? 'Focus map and evidence layers' : 'Focus 3D camera and layers')
                       ),
@@ -8768,7 +8966,7 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/78 px-4
                 type: 'button',
                 onClick: copyMission,
                 'aria-label': 'Copy classroom mission brief to clipboard',
-                className: 'min-h-11 rounded-lg bg-sky-700 px-4 py-2 text-sm font-black text-white shadow-sm transition-colors hover:bg-sky-600 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300'
+                className: 'min-h-11 rounded-lg bg-sky-700 px-4 py-2 text-sm font-black text-white shadow-sm transition-colors hover:bg-sky-800 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300'
               }, '\uD83D\uDCCB Copy mission brief')
             ),
             h('div', { className: 'p-4' },
@@ -8876,7 +9074,7 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/78 px-4
                     type: 'button',
                     onClick: copyStudentDirections,
                     'aria-label': 'Copy student mission directions to clipboard',
-                    className: 'min-h-11 rounded-lg bg-cyan-700 px-4 py-2 text-sm font-black text-white shadow-sm transition-colors hover:bg-cyan-600 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300'
+                    className: 'min-h-11 rounded-lg bg-cyan-700 px-4 py-2 text-sm font-black text-white shadow-sm transition-colors hover:bg-cyan-800 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300'
                   }, '\uD83D\uDCCB Copy student directions')
                 ),
                 h('details', null,
@@ -9135,7 +9333,7 @@ h('div', { className: 'rounded-xl border border-cyan-300/30 bg-slate-950/78 px-4
                   type: 'button',
                   onClick: copyHandoff,
                   'aria-label': 'Copy Teacher Handoff Brief to clipboard',
-                  className: 'min-h-11 rounded-lg bg-teal-700 px-4 py-2 text-sm font-black text-white shadow-sm transition-colors hover:bg-teal-600 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300'
+                  className: 'min-h-11 rounded-lg bg-teal-700 px-4 py-2 text-sm font-black text-white shadow-sm transition-colors hover:bg-teal-800 motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-yellow-300'
                 }, '\uD83D\uDCCB Copy handoff brief')
               ),
               h('pre', {

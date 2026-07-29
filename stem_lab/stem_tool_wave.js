@@ -2293,7 +2293,7 @@ const d = labToolData.wave;
                     return React.createElement('button', {
                       key: et,
                       onClick: function() { upd('reflectionEnd', et); },
-                      className: 'px-2.5 py-1 text-[11px] font-bold transition ' + (active ? (et === 'fixed' ? 'bg-red-600 text-white' : 'bg-emerald-600 text-white') : 'transition-colors bg-white text-slate-600 hover:bg-amber-100 active:scale-[0.97]'),
+                      className: 'px-2.5 py-1 text-[11px] font-bold transition ' + (active ? (et === 'fixed' ? 'bg-red-600 text-white' : 'bg-emerald-700 text-white') : 'transition-colors bg-white text-slate-600 hover:bg-amber-100 active:scale-[0.97]'),
                       'aria-pressed': active,
                       'aria-label': et === 'fixed' ? __alloT('stem.wave.aria_fixed_end', 'Fixed end (string tied down — phase inverts on reflection)') : __alloT('stem.wave.aria_free_end', 'Free end (string free to move — phase preserved on reflection)')
                     }, et === 'fixed' ? '🔒 ' + __alloT('stem.wave.btn_fixed', 'Fixed') : '🪁 ' + __alloT('stem.wave.btn_free', 'Free'));

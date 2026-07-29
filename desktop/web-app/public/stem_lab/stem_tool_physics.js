@@ -2251,7 +2251,7 @@ const d = labToolData.physics;
                   className: "px-2.5 py-1.5 text-xs font-bold transition-all border-l border-slate-300 " +
                     ((d.simSpeed != null ? d.simSpeed : 1.0) === 0
                       ? 'bg-white text-indigo-700 hover:bg-indigo-50'
-                      : 'bg-slate-100 text-slate-400 cursor-not-allowed')
+                      : 'bg-slate-100 text-slate-600 cursor-not-allowed')
                 }, "⏭ " + __alloT('stem.physics.step', 'Step'))
               ),
 
@@ -2300,7 +2300,7 @@ const d = labToolData.physics;
 
                 return React.createElement("button", { key: p.label, onClick: function () { upd('gravity', p.gravity); },
 
-                  className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.gravity === p.gravity ? 'bg-sky-600 text-white' : 'bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100')
+                  className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.gravity === p.gravity ? 'bg-sky-700 text-white' : 'bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100')
 
                 }, p.label);
 
@@ -2681,7 +2681,7 @@ const d = labToolData.physics;
                       }, "\u27A1 " + __alloT('stem.physics.next_round', 'Next Round')),
                       React.createElement("button", { "aria-label": __alloT('stem.physics.retry', 'Retry'),
                         onClick: function() { startTargetRound(d.targetRound || 1); },
-                        className: "px-3 py-1 bg-amber-700 text-white text-[11px] font-bold rounded-lg hover:bg-amber-600 transition-all"
+                        className: "px-3 py-1 bg-amber-700 text-white text-[11px] font-bold rounded-lg hover:bg-amber-800 transition-all"
                       }, "\u{1F504} " + __alloT('stem.physics.retry', 'Retry')),
                       React.createElement("button", { "aria-label": __alloT('stem.physics.end', 'End'),
                         onClick: function() { upd('targetMode', false); upd('targetList', null); upd('targetConstraint', null); upd('targetFeedback', null); upd('targetShowScaffold', false); },
@@ -2953,7 +2953,7 @@ const d = labToolData.physics;
 
                       className: "px-3 py-2 rounded-lg text-xs font-bold border-2 transition-all " +
 
-                        (correct ? 'bg-emerald-100 border-emerald-400 text-emerald-700' : wrong ? 'bg-red-100 border-red-400 text-red-600' : d.quizPicked !== null ? 'bg-slate-50 border-slate-200 text-slate-600' : 'bg-white border-amber-200 text-slate-700 hover:border-amber-400')
+                        (correct ? 'bg-emerald-100 border-emerald-400 text-emerald-700' : wrong ? 'bg-red-100 border-red-400 text-red-700' : d.quizPicked !== null ? 'bg-slate-50 border-slate-200 text-slate-600' : 'bg-white border-amber-200 text-slate-700 hover:border-amber-400')
 
                     }, opt.toFixed(1) + " m");
 

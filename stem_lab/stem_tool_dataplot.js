@@ -1466,7 +1466,7 @@ window.StemLab = window.StemLab || {
           callGemini && h('div', { className: 'bg-pink-50 rounded-xl p-4 border border-pink-200' },
             h('div', { className: 'flex items-center gap-2 mb-2' },
               h('span', { className: 'text-xs font-bold text-pink-600 uppercase' }, t('stem.dataplot.ai_data_analyst', '\uD83E\uDD16 AI Data Analyst')),
-              h('button', { onClick: askAI, disabled: aiLoading || n < 2, className: 'ml-auto px-3 py-1 text-[11px] font-bold rounded-full transition-all ' + (aiLoading ? 'bg-pink-200 text-pink-400 cursor-wait' : 'bg-pink-700 text-white hover:bg-pink-600') },
+              h('button', { onClick: askAI, disabled: aiLoading || n < 2, className: 'ml-auto px-3 py-1 text-[11px] font-bold rounded-full transition-all ' + (aiLoading ? 'bg-pink-200 text-pink-800 cursor-wait' : 'bg-pink-700 text-white hover:bg-pink-600') },
                 aiLoading ? '\u23F3 Analyzing...' : '\u2728 Analyze Data')
             ),
             aiInsight

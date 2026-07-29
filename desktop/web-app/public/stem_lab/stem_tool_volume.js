@@ -3021,7 +3021,7 @@ window.StemLab = window.StemLab || {
             : h('p', { className: 'text-sm text-purple-700 whitespace-pre-wrap leading-relaxed' }, aiResponse),
           !aiLoading && h('button', { 'aria-label': __alloT('stem.volume.ask_again', 'Ask Again'),
             onClick: askAI,
-            className: 'mt-2 text-[11px] font-bold px-3 py-1 rounded-full bg-purple-100 text-purple-600 hover:bg-purple-200 border border-purple-600 transition-all'
+            className: 'mt-2 text-[11px] font-bold px-3 py-1 rounded-full bg-purple-100 text-purple-700 hover:bg-purple-200 border border-purple-700 transition-all'
           }, __alloT('stem.volume.ask_again_2', '\uD83D\uDD04 Ask Again'))
         ),
 
@@ -3140,7 +3140,7 @@ window.StemLab = window.StemLab || {
                   },
                   disabled: !wpAnswer,
                   'aria-label': __alloT('stem.volume.check_answer', 'Check answer'),
-                  className: 'px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-600 disabled:opacity-40 transition-all'
+                  className: 'px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-800 disabled:opacity-40 transition-all'
                 }, __alloT('stem.volume.check', 'Check'))
               ),
               wpFeedback && h('p', { className: 'text-sm font-bold mt-2 ' + (wpFeedback.correct ? 'text-green-700' : 'text-red-600'), 'aria-live': 'polite' }, wpFeedback.msg),
@@ -3294,7 +3294,7 @@ window.StemLab = window.StemLab || {
                 onClick: doUndo,
                 disabled: !undoStack.length,
                 title: 'Undo (U) - ' + undoStack.length + ' step' + (undoStack.length === 1 ? '' : 's') + ' available',
-                className: 'px-3 py-1.5 text-xs font-bold bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 disabled:opacity-40 border border-amber-300'
+                className: 'px-3 py-1.5 text-xs font-bold bg-amber-100 text-amber-800 rounded-lg hover:bg-amber-200 disabled:opacity-40 border border-amber-300'
               }, '\u21B6 Undo (' + undoStack.length + ')'),
               h('button', { 'aria-label': __alloT('stem.volume.clear_all', 'Clear All'),
                 onClick: function() { pushUndo(); upd({ positions: [], builderChallenge: null, builderFeedback: null }); announceToSR('Cleared all cubes'); },
@@ -3353,7 +3353,7 @@ window.StemLab = window.StemLab || {
                   upd({ rotation: { x: preset.rotation.x, y: preset.rotation.y }, scale: preset.scale });
                   announceToSR(preset.label + ' camera view selected.');
                 },
-                className: 'min-h-8 rounded-lg border px-2.5 py-1 text-[11px] font-bold transition-colors ' + (active ? 'border-indigo-300 bg-indigo-500 text-white' : 'border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700')
+                className: 'min-h-8 rounded-lg border px-2.5 py-1 text-[11px] font-bold transition-colors ' + (active ? 'border-indigo-700 bg-indigo-600 text-white' : 'border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700')
               }, preset.label);
             }),
             h('button', {
@@ -3366,7 +3366,7 @@ window.StemLab = window.StemLab || {
                   ? __alloT('stem.volume.gl_off', 'Switched to block view.')
                   : __alloT('stem.volume.gl_on', 'Switched to solid 3D view.'));
               },
-              className: 'min-h-8 rounded-lg border px-2.5 py-1 text-[11px] font-bold transition-colors ' + (glMode ? 'border-sky-300 bg-sky-600 text-white' : 'border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700')
+              className: 'min-h-8 rounded-lg border px-2.5 py-1 text-[11px] font-bold transition-colors ' + (glMode ? 'border-sky-800 bg-sky-700 text-white' : 'border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700')
             }, glMode ? __alloT('stem.volume.view_solid', 'Solid 3D') : __alloT('stem.volume.view_blocks', 'Blocks')),
             // Only offered where it teaches: on a prism the smooth solid and
             // the cube stack are the same object.
@@ -3381,7 +3381,7 @@ window.StemLab = window.StemLab || {
                   ? __alloT('stem.volume.analytic_off', 'Smooth formula shape hidden.')
                   : __alloT('stem.volume.analytic_on', 'Smooth formula shape shown over the cubes.'));
               },
-              className: 'min-h-8 rounded-lg border px-2.5 py-1 text-[11px] font-bold transition-colors ' + (showAnalytic ? 'border-cyan-300 bg-cyan-600 text-white' : 'border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700')
+              className: 'min-h-8 rounded-lg border px-2.5 py-1 text-[11px] font-bold transition-colors ' + (showAnalytic ? 'border-cyan-800 bg-cyan-700 text-white' : 'border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700')
             }, __alloT('stem.volume.formula_shape', 'Formula shape')),
             h('button', {
               type: 'button',
@@ -3900,7 +3900,7 @@ window.StemLab = window.StemLab || {
               className: 'px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm disabled:opacity-40'
             }, __alloT('stem.volume.check_3', 'Check')),
             h('button', { onClick: askAI,
-              className: 'px-3 py-2 bg-purple-100 text-purple-600 font-bold rounded-lg hover:bg-purple-200 transition-all text-sm',
+              className: 'px-3 py-2 bg-purple-100 text-purple-700 font-bold rounded-lg hover:bg-purple-200 transition-all text-sm',
               title: __alloT('stem.volume.get_a_hint_from_ai', 'Get a hint from AI')
             }, '\uD83E\uDDE0')
           ),
@@ -3920,7 +3920,7 @@ window.StemLab = window.StemLab || {
             h('span', { className: 'text-xs text-indigo-600' }, __alloT('stem.volume.cubes_placed', 'Cubes placed: '), h('span', { className: 'font-bold' }, posSet.size)),
             h('button', { 'aria-label': __alloT('stem.volume.hint', 'Hint'),
               onClick: askAI,
-              className: 'px-3 py-1.5 bg-purple-100 text-purple-600 font-bold rounded-lg hover:bg-purple-200 transition-all text-xs',
+              className: 'px-3 py-1.5 bg-purple-100 text-purple-700 font-bold rounded-lg hover:bg-purple-200 transition-all text-xs',
               title: __alloT('stem.volume.get_a_hint_from_ai_2', 'Get a hint from AI')
             }, __alloT('stem.volume.hint_2', '\uD83E\uDDE0 Hint')),
             h('button', { 'aria-label': __alloT('stem.volume.check_4', 'Check'), onClick: checkChallenge, className: 'ml-auto px-4 py-1.5 bg-indigo-600 text-white font-bold rounded-lg text-sm hover:bg-indigo-700' }, __alloT('stem.volume.check_5', '\u2714 Check'))

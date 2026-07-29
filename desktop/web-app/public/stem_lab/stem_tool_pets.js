@@ -254,15 +254,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
   var ZOONOSES = [
     { id: 'rabies', icon: '🦠', name: 'Rabies', from: 'mammals (esp bats, raccoons, skunks, foxes)',
       severity: 'ALWAYS FATAL once symptoms appear',
-      protect: 'Vaccinate dogs + cats. Avoid wildlife. ANY bat indoors = call doctor + animal control. PEP (post-exposure prophylaxis) within hours of suspected exposure.',
+      protect: 'Vaccinate dogs + cats. Avoid wildlife. ANY bat indoors = call doctor + animal control. Wash any bite or scratch with soap and running water for a full 15 minutes first — that alone measurably lowers risk. Then start PEP (post-exposure prophylaxis) as soon as you can. Sooner is better, but there is NO cutoff after which it stops being worth doing: seek care even if days have already passed.',
       cite: 'CDC + Maine CDC' },
     { id: 'lyme', icon: '🕷️', name: 'Lyme disease + anaplasmosis', from: 'deer ticks (Ixodes scapularis)',
-      severity: 'Maine has the highest US incidence rate. Dogs + humans both vulnerable.',
+      severity: 'Maine is consistently among the top few states for reported incidence, trading the lead year to year with Vermont and New Hampshire. Dogs + humans both vulnerable.',
       protect: 'Year-round tick prevention for dogs (oral or topical). Daily tick checks. Lyme vaccine for high-exposure dogs. Don\'t stop checking in winter — adult ticks active any day above ~40°F.',
       cite: 'Maine CDC + AVMA' },
     { id: 'toxo', icon: '🤰', name: 'Toxoplasmosis', from: 'cats (oocysts in feces)',
-      severity: 'Concern for pregnancy + immunocompromise. Most cat-owning humans have already been exposed and developed immunity.',
-      protect: 'Pregnant people: someone else cleans litter box, OR wear gloves + clean daily (oocysts take 24+ hr to become infective). Cook meat thoroughly. Wash veggies. Indoor cats fed only commercial food are very low risk.',
+      severity: 'Concern for pregnancy + immunocompromise. Do NOT assume you are already immune: only about 1 in 10 people in the US carry antibodies, so most cat owners here are still susceptible. (Seroprevalence IS high in parts of Europe and South America, which is where the "everyone has had it already" claim comes from. It does not transfer to the US.) And most US infections trace to undercooked meat and unwashed produce, not to a cat.',
+      protect: 'Pregnant people: someone else cleans litter box, OR wear gloves + clean daily (oocysts take 24+ hr to become infective). Cook meat thoroughly. Wash veggies. Indoor cats fed only commercial food are very low risk — a cat sheds oocysts for only a week or two after its own first infection, which it gets by hunting or eating raw meat, and essentially never again after that.',
       cite: 'CDC + ACOG' },
     { id: 'salmonella', icon: '🐢', name: 'Salmonella', from: 'reptiles (universal shedding), raw food, baby chicks',
       severity: 'GI illness; serious in young children, elderly, pregnant, immunocompromised',
@@ -564,7 +564,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     'Service dog (ADA): individually task-trained for a disability; full public access; only 2 questions allowed (1) is it a service animal because of a disability (2) what task. ESA: comfort by presence; FHA only; no public access. Therapy: visit-based, no automatic access.',
     'Toxic to dogs: chocolate (theobromine), grapes/raisins, xylitol, onions/garlic, macadamia. Toxic to cats: lilies (any part), onions/garlic. Toxic to birds: avocado, Teflon fumes.',
     'ASPCA Animal Poison Control: (888) 426-4435 ($95 24/7). Pet Poison Helpline: (855) 764-7661.',
-    'Maine: Lyme + anaplasmosis density highest in US. Year-round tick prevention is standard veterinary care. ARLGP, Bangor Humane, Avian Haven are major Maine resources.',
+    'Maine: among the top few US states for Lyme + anaplasmosis incidence, trading the lead year to year with Vermont and New Hampshire — do not assert a flat national #1. Year-round tick prevention is standard veterinary care. ARLGP, Bangor Humane, Avian Haven are major Maine resources.',
     'Operant theory (covered in BehaviorLab): positive reinforcement is primary modality; AVSAB + AVMA oppose dominance-based / punishment-based training.',
     'NEVER recommend specific medications, dosages, or procedures — refer to a veterinarian.',
     'NEVER suggest rehoming a pet without first ruling out medical + manageable behavioral causes.'
@@ -995,6 +995,522 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
   var CARE_SIM_TIRED_BELOW = 25;       // below this, routine care is half as effective
 
   // ─────────────────────────────────────────────────────────
+  // SECTION 7b: SENSORY PERSPECTIVE ("Through Their Eyes")
+  //
+  // A walkable first-person room rendered from a dog's, a cat's, or a
+  // human's viewpoint. The lab already TELLS students that dogs are
+  // dichromats who trade colour for low-light and motion sensitivity
+  // (see the Dogs module); this lets them stand in it.
+  //
+  // Every number below is sourced. Where the render is an ILLUSTRATION
+  // rather than a calibrated optical model — the acuity blur and the
+  // flat-screen field of view especially — the UI says so out loud
+  // rather than implying the screen is what the animal experiences.
+  // ─────────────────────────────────────────────────────────
+  var SENSORY_SPECIES = [
+    {
+      id: 'human', name: 'Human', icon: '🧍', accent: '#38bdf8',
+      eyeHeight: 1.60,          // average adult standing eye height
+      renderFov: 72,            // vertical FOV actually rendered
+      totalFieldDeg: 190,       // full horizontal field, both eyes
+      binocularDeg: 120,        // overlap where depth perception works
+      acuity: '20/20', blurPx: 0,
+      dichromat: false,
+      lowLightFactor: 1,        // baseline
+      flickerHz: 60,
+      note: 'Three cone types (trichromat). Best daylight detail of the three, worst night vision.',
+      cite: 'Baseline for comparison'
+    },
+    {
+      id: 'dog', name: 'Dog', icon: '🐕', accent: '#fbbf24',
+      eyeHeight: 0.62,          // medium breed (Lab/Border-Collie class), standing
+      renderFov: 96,
+      totalFieldDeg: 240,       // breed-dependent; long-muzzled breeds widest
+      binocularDeg: 65,
+      acuity: '20/75', blurPx: 2.4,
+      dichromat: true,
+      lowLightFactor: 5,        // tapetum lucidum + rod-rich retina
+      flickerHz: 75,
+      note: 'Dichromat — blue and yellow, no functional red/green discrimination. Wider field, sharper motion detection, far better low light, much softer detail.',
+      cite: 'Miller & Murphy 1995 (acuity) · Neitz, Geist & Jacobs 1989 (dichromacy)'
+    },
+    {
+      id: 'cat', name: 'Cat', icon: '🐈', accent: '#c084fc',
+      eyeHeight: 0.28,          // standing, at the shoulder-to-eye line
+      renderFov: 92,
+      totalFieldDeg: 200,
+      binocularDeg: 100,        // more overlap than a dog — an ambush predator's trade
+      acuity: '20/100', blurPx: 2.9,
+      dichromat: true,
+      lowLightFactor: 6,        // needs roughly 1/6 the light a human does
+      flickerHz: 70,
+      note: 'Dichromat and even softer detail than a dog, but the best low-light vision of the three and strong binocular overlap for judging a pounce.',
+      cite: 'Blake et al. 1974 (acuity) · Guenther & Zrenner 1993 (cone types)'
+    }
+  ];
+
+  function _petsSensorySpecies(id) {
+    for (var i = 0; i < SENSORY_SPECIES.length; i++) {
+      if (SENSORY_SPECIES[i].id === id) return SENSORY_SPECIES[i];
+    }
+    return SENSORY_SPECIES[0];
+  }
+
+  // Deuteranope projection (Viénot, Brettel & Mollon 1999), applied in
+  // LINEAR light. Dog and cat cone peaks (~429 nm / ~555 nm) sit close to
+  // human deuteranopia, so this is the standard stand-in — an approximation
+  // of a different species' colour space, not a measurement of it.
+  function _petsDichromat(r, g, b) {
+    function toLin(c) { return Math.pow(Math.max(0, Math.min(1, c)), 2.2); }
+    function toSrgb(c) { return Math.pow(Math.max(0, Math.min(1, c)), 1 / 2.2); }
+    var lr = toLin(r), lg = toLin(g), lb = toLin(b);
+    return {
+      r: toSrgb(0.625 * lr + 0.375 * lg + 0.000 * lb),
+      g: toSrgb(0.700 * lr + 0.300 * lg + 0.000 * lb),
+      b: toSrgb(0.000 * lr + 0.300 * lg + 0.700 * lb)
+    };
+  }
+
+  // Where a dog can smell something the eye can't show. Positions are in
+  // room coordinates and match the props built in _petsBuildSensoryScene.
+  var SENSORY_SCENTS = [
+    { x: 2.1, z: -1.4, color: 0xff8a3d, label: 'Food bowl — fresh', rise: 1.0, count: 26 },
+    { x: -1.6, z: 1.9, color: 0x7dd3fc, label: 'Where the cat slept', rise: 0.5, count: 18 },
+    { x: 0.4, z: 0.6, color: 0xfde047, label: 'Ball — handled minutes ago', rise: 0.6, count: 14 },
+    { x: -2.4, z: -2.2, color: 0xa3e635, label: 'Doorway — everyone who came in', rise: 1.2, count: 22 },
+    { x: 1.2, z: 2.4, color: 0xf472b6, label: 'Couch — the family\'s spot', rise: 0.8, count: 16 }
+  ];
+
+  // Room half-extents in metres. Movement is clamped to these, so they also
+  // bound where a student can stand.
+  var SENSORY_ROOM = { halfX: 3.4, halfZ: 3.4, height: 2.6 };
+
+  // Furniture footprints, so a student cannot walk inside the couch. This is
+  // not polish: at a human's 1.6 m eye line you look over the furniture and
+  // never notice, but a cat's eye line is 0.28 m, so standing in the couch
+  // fills half the screen with an unlit black mass. The bug only exists in
+  // the views the whole feature is FOR.
+  var SENSORY_BLOCKERS = [
+    { x0: 0.05, x1: 2.35, z0: 2.10, z1: 3.10 },   // couch
+    { x0: -0.10, x1: 1.30, z0: 1.10, z1: 1.90 },  // coffee table
+    { x0: -3.05, x1: -2.35, z0: 2.15, z1: 2.85 }, // houseplant
+    { x0: -2.20, x1: -1.60, z0: -1.50, z1: -0.90 }, // person
+    { x0: 1.85, x1: 2.85, z0: -1.65, z1: -1.15 }  // bowls
+  ];
+
+  // Soft round sprite for the scent motes, drawn at runtime so there is still
+  // no asset to fetch. Untextured THREE.Points render as hard SQUARES, which
+  // read as rendering glitches rather than as drifting smell.
+  function _petsScentTexture(THREE) {
+    var c = document.createElement('canvas');
+    c.width = 64; c.height = 64;
+    var g = c.getContext('2d');
+    var grad = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+    grad.addColorStop(0, 'rgba(255,255,255,1)');
+    grad.addColorStop(0.35, 'rgba(255,255,255,0.55)');
+    grad.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = grad;
+    g.fillRect(0, 0, 64, 64);
+    var tex = new THREE.CanvasTexture(c);
+    tex.needsUpdate = true;
+    return tex;
+  }
+
+  // Builds the living room from primitives — no external assets, so nothing
+  // to fail behind a school content filter. Every mesh records its authored
+  // colour in `baseHex` so switching species can re-derive the dichromat
+  // version from the ORIGINAL rather than compounding the transform.
+  function _petsBuildSensoryScene(THREE, scene) {
+    var tinted = [];   // meshes whose colour changes with species
+    var lights = [];   // {light, baseIntensity}
+    var disposables = [];
+
+    function mat(hex, opts) {
+      var m = new THREE.MeshLambertMaterial(Object.assign({ color: hex }, opts || {}));
+      disposables.push(m);
+      return m;
+    }
+    function add(geo, material, x, y, z, rx, ry) {
+      disposables.push(geo);
+      var mesh = new THREE.Mesh(geo, material);
+      mesh.position.set(x, y, z);
+      if (rx) mesh.rotation.x = rx;
+      if (ry) mesh.rotation.y = ry;
+      scene.add(mesh);
+      return mesh;
+    }
+    function prop(geo, hex, x, y, z, rx, ry) {
+      var m = mat(hex);
+      var mesh = add(geo, m, x, y, z, rx, ry);
+      tinted.push({ material: m, baseHex: hex });
+      return mesh;
+    }
+
+    var R = SENSORY_ROOM;
+
+    // Shell — floor, ceiling, four walls (BackSide so we see them from inside)
+    prop(new THREE.PlaneGeometry(R.halfX * 2, R.halfZ * 2), 0x9a7b52, 0, 0, 0, -Math.PI / 2);
+    prop(new THREE.PlaneGeometry(R.halfX * 2, R.halfZ * 2), 0xf3ece2, 0, R.height, 0, Math.PI / 2);
+    var wallHex = 0xe8dcc8;
+    prop(new THREE.PlaneGeometry(R.halfX * 2, R.height), wallHex, 0, R.height / 2, -R.halfZ);
+    prop(new THREE.PlaneGeometry(R.halfX * 2, R.height), wallHex, 0, R.height / 2, R.halfZ, 0, Math.PI);
+    prop(new THREE.PlaneGeometry(R.halfZ * 2, R.height), wallHex, -R.halfX, R.height / 2, 0, 0, Math.PI / 2);
+    prop(new THREE.PlaneGeometry(R.halfZ * 2, R.height), wallHex, R.halfX, R.height / 2, 0, 0, -Math.PI / 2);
+
+    // Rug — the cat's spot. Deliberately a warm red so the dichromat view
+    // visibly flattens it against the wood floor.
+    prop(new THREE.PlaneGeometry(3.0, 2.2), 0xb4453a, -1.0, 0.01, 1.6, -Math.PI / 2);
+
+    // Couch: seat, back, two arms
+    prop(new THREE.BoxGeometry(2.2, 0.42, 0.9), 0x4f7a6a, 1.2, 0.34, 2.6);
+    prop(new THREE.BoxGeometry(2.2, 0.6, 0.22), 0x456e5f, 1.2, 0.72, 3.0);
+    prop(new THREE.BoxGeometry(0.22, 0.5, 0.9), 0x456e5f, 0.15, 0.5, 2.6);
+    prop(new THREE.BoxGeometry(0.22, 0.5, 0.9), 0x456e5f, 2.25, 0.5, 2.6);
+
+    // Coffee table
+    prop(new THREE.BoxGeometry(1.3, 0.08, 0.7), 0x6b4a2f, 0.6, 0.44, 1.5);
+    [[0.05, 1.2], [1.15, 1.2], [0.05, 1.8], [1.15, 1.8]].forEach(function (p) {
+      prop(new THREE.BoxGeometry(0.07, 0.42, 0.07), 0x553a24, p[0], 0.21, p[1]);
+    });
+
+    // Bowls — food (the strongest scent source) and water
+    prop(new THREE.CylinderGeometry(0.20, 0.16, 0.11, 20), 0xcfd4da, 2.1, 0.055, -1.4);
+    prop(new THREE.CylinderGeometry(0.17, 0.14, 0.10, 20), 0x8b5e34, 2.1, 0.085, -1.4);
+    prop(new THREE.CylinderGeometry(0.18, 0.15, 0.10, 20), 0xcfd4da, 2.6, 0.05, -1.4);
+    prop(new THREE.CylinderGeometry(0.15, 0.13, 0.08, 20), 0x4aa3d8, 2.6, 0.075, -1.4);
+
+    // THE demo object: a red ball. Vivid to a human, muddy-yellow to a dog
+    // or cat — the single clearest illustration of dichromacy in the room.
+    prop(new THREE.SphereGeometry(0.11, 20, 14), 0xd92b2b, 0.4, 0.11, 0.6);
+    // ...and a blue one, which stays vivid in every view (dogs see blue well).
+    prop(new THREE.SphereGeometry(0.11, 20, 14), 0x2563eb, 0.05, 0.11, 0.15);
+
+    // Houseplant
+    prop(new THREE.CylinderGeometry(0.17, 0.13, 0.28, 16), 0xa9613c, -2.7, 0.14, 2.5);
+    prop(new THREE.SphereGeometry(0.34, 14, 10), 0x3f8a44, -2.7, 0.55, 2.5);
+
+    // A standing person — the scale reference. From a cat's eye line this
+    // reads as a tower, which is the point.
+    prop(new THREE.CylinderGeometry(0.16, 0.20, 0.95, 14), 0x37506e, -1.9, 0.48, -1.2);
+    prop(new THREE.CylinderGeometry(0.13, 0.13, 0.55, 14), 0x9c6b4a, -1.9, 1.22, -1.2);
+    prop(new THREE.SphereGeometry(0.135, 16, 12), 0xd8a887, -1.9, 1.62, -1.2);
+
+    // Window on the far wall + the daylight it implies
+    prop(new THREE.PlaneGeometry(1.5, 1.0), 0xdff1ff, 0, 1.5, -R.halfZ + 0.02);
+    prop(new THREE.BoxGeometry(1.62, 0.06, 0.05), 0xf6f1e7, 0, 2.02, -R.halfZ + 0.04);
+    prop(new THREE.BoxGeometry(1.62, 0.06, 0.05), 0xf6f1e7, 0, 0.98, -R.halfZ + 0.04);
+
+    // Doorway to the yard — grass visible through it. A red ball on green
+    // grass is the classic "why can't he find it?" demonstration.
+    prop(new THREE.PlaneGeometry(1.1, 2.1), 0x6f4d31, -2.4, 1.05, -R.halfZ + 0.02);
+    prop(new THREE.PlaneGeometry(1.0, 1.9), 0x5d9e4a, -2.4, 0.95, -R.halfZ + 0.05);
+    prop(new THREE.SphereGeometry(0.09, 16, 12), 0xd92b2b, -2.4, 0.35, -R.halfZ + 0.09);
+
+    // Scattered toys
+    prop(new THREE.BoxGeometry(0.16, 0.08, 0.16), 0xe0762d, 1.9, 0.04, 1.1);
+    prop(new THREE.CylinderGeometry(0.05, 0.05, 0.30, 12), 0x8e5bd0, -0.8, 0.05, -0.4, Math.PI / 2);
+
+    // ── Lighting ──
+    // Kept deliberately low. An earlier pass ran ambient at 0.55 with a 0.85
+    // key and the pale walls blew out to flat cream, which destroys exactly
+    // the hue information the dichromat comparison depends on.
+    var ambient = new THREE.AmbientLight(0xffffff, 0.42);
+    scene.add(ambient); lights.push({ light: ambient, base: 0.42 });
+    var sun = new THREE.DirectionalLight(0xfff2d8, 0.62);
+    sun.position.set(0.4, 3.0, -3.2);
+    scene.add(sun); lights.push({ light: sun, base: 0.62 });
+    var lamp = new THREE.PointLight(0xffd9a0, 0.34, 9);
+    lamp.position.set(1.6, 2.1, 1.8);
+    scene.add(lamp); lights.push({ light: lamp, base: 0.34 });
+
+    // ── Scent field (dog view only) ──
+    // Additive drifting motes rising from each source. Kept as one Points
+    // cloud per source so a source can carry its own colour and rise rate.
+    var scentGroup = new THREE.Group();
+    scentGroup.visible = false;
+    scene.add(scentGroup);
+    var scentClouds = [];
+    var scentTex = _petsScentTexture(THREE);
+    disposables.push(scentTex);
+    SENSORY_SCENTS.forEach(function (src) {
+      var positions = new Float32Array(src.count * 3);
+      var seeds = [];
+      for (var i = 0; i < src.count; i++) {
+        var a = (i / src.count) * Math.PI * 2;
+        var rad = 0.10 + (i % 5) * 0.055;
+        positions[i * 3] = src.x + Math.cos(a) * rad;
+        positions[i * 3 + 1] = (i / src.count) * src.rise;
+        positions[i * 3 + 2] = src.z + Math.sin(a) * rad;
+        seeds.push({ a: a, rad: rad, phase: (i / src.count) });
+      }
+      var geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      var pmat = new THREE.PointsMaterial({
+        color: src.color, size: 0.20, transparent: true, opacity: 0.5,
+        map: scentTex, blending: THREE.AdditiveBlending,
+        depthWrite: false, sizeAttenuation: true
+      });
+      disposables.push(geo, pmat);
+      var pts = new THREE.Points(geo, pmat);
+      scentGroup.add(pts);
+      scentClouds.push({ points: pts, src: src, seeds: seeds, geo: geo });
+    });
+
+    return {
+      tinted: tinted,
+      lights: lights,
+      scentGroup: scentGroup,
+      scentClouds: scentClouds,
+      dispose: function () {
+        disposables.forEach(function (o) { if (o && o.dispose) { try { o.dispose(); } catch (e) {} } });
+      }
+    };
+  }
+
+  // Hook-free viewer factory. Owns the renderer, the RAF loop and all DOM
+  // listeners; React only ever holds the returned handle in a stable ref and
+  // calls methods on it. Nothing here touches component state, so a re-render
+  // cannot re-initialise the canvas (the inline-callback-ref stutter that bit
+  // the DNA and Ecosystem tools).
+  function _petsMakeSensoryViewer() {
+    var S = null;              // live state; null when detached
+    var speciesId = 'human';
+    var dusk = false;
+    var onStatus = null;
+    var status = 'idle';
+    // The tool's reduced-motion CSS freezes keyframes and transitions, which
+    // does nothing whatsoever to a WebGL RAF loop. Without this, a student
+    // who asked the OS for less motion still gets a continuously drifting
+    // first-person scene. When reduced, the scene renders only when the
+    // student actually changes something.
+    var reduced = false;
+
+    function setStatus(next) {
+      if (status === next) return;
+      status = next;
+      if (onStatus) { try { onStatus(next); } catch (e) {} }
+    }
+
+    // Marks the scene as needing one more frame. In reduced-motion mode this
+    // is the only thing that causes a render.
+    function invalidate() { if (S) S.dirty = true; }
+
+    function applySpecies() {
+      if (!S) return;
+      var sp = _petsSensorySpecies(speciesId);
+      // Colour: re-derive from the authored hex every time.
+      S.built.tinted.forEach(function (t) {
+        var hex = t.baseHex;
+        var r = ((hex >> 16) & 255) / 255, g = ((hex >> 8) & 255) / 255, b = (hex & 255) / 255;
+        if (sp.dichromat) { var c = _petsDichromat(r, g, b); r = c.r; g = c.g; b = c.b; }
+        t.material.color.setRGB(r, g, b);
+      });
+      // Light: at dusk a human is nearly blind while the animals still read
+      // the room — that contrast IS the lesson, so the gain is species-scaled.
+      var gain = dusk ? Math.min(0.62, 0.10 * sp.lowLightFactor) : 1;
+      S.built.lights.forEach(function (l) { l.light.intensity = l.base * gain; });
+      S.camera.fov = sp.renderFov;
+      S.camera.position.y = sp.eyeHeight;
+      S.camera.updateProjectionMatrix();
+      // Acuity + exposure are screen-space, so they ride on a CSS filter —
+      // r128 core ships no post-processing passes.
+      var filters = [];
+      if (sp.blurPx > 0) filters.push('blur(' + sp.blurPx.toFixed(2) + 'px)');
+      // At dusk the animals see a USABLE room, not a daylit one. An earlier
+      // tuning left the cat's dusk view nearly identical to its noon view,
+      // which quietly claimed a tapetum turns night into day. It does not:
+      // needing 1/6 the light still leaves a cat well short when dusk is far
+      // more than 6x dimmer than noon. Heavy desaturation is the honest part —
+      // low light is rod-dominated, and rods carry almost no colour.
+      if (dusk && sp.lowLightFactor > 1) filters.push('brightness(1.06) saturate(0.42)');
+      if (dusk && sp.lowLightFactor === 1) filters.push('brightness(0.62)');
+      S.renderer.domElement.style.filter = filters.length ? filters.join(' ') : 'none';
+      S.built.scentGroup.visible = (speciesId === 'dog');
+      S.dirty = true;
+    }
+
+    function resize() {
+      if (!S || !S.node) return;
+      var w = S.node.clientWidth || 480;
+      var h = S.node.clientHeight || 360;
+      S.renderer.setSize(w, h, false);
+      S.camera.aspect = w / Math.max(1, h);
+      S.camera.updateProjectionMatrix();
+      S.dirty = true;
+    }
+
+    var api = {
+      status: function () { return status; },
+      onStatus: function (fn) { onStatus = fn; },
+
+      attach: function (THREE, node) {
+        if (S || !node) return;
+        var renderer;
+        try {
+          renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+        } catch (e) {
+          setStatus('failed');
+          return;                       // no WebGL — the 2D panels carry the lesson
+        }
+        var w = node.clientWidth || 480;
+        var h = node.clientHeight || 360;
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        renderer.setSize(w, h, false);
+        renderer.domElement.style.cssText =
+          'display:block;width:100%;height:100%;border-radius:10px;touch-action:pan-y;';
+        renderer.domElement.setAttribute('aria-hidden', 'true');
+        node.appendChild(renderer.domElement);
+
+        var scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x1a1410);
+        var camera = new THREE.PerspectiveCamera(72, w / Math.max(1, h), 0.05, 60);
+        camera.position.set(-1.2, 1.6, 2.35);
+
+        // Open looking ACROSS the room toward the window and the doorway, from
+        // the back wall, tilted slightly down. The first frame has to contain
+        // the things the lesson is about — the two balls, the bowls, the
+        // person — or a student arrives staring at blank plaster. A human's
+        // eye line is 1.6 m up, so without the tilt the floor props sit just
+        // below the bottom of frame.
+        S = {
+          THREE: THREE, node: node, renderer: renderer, scene: scene, camera: camera,
+          built: _petsBuildSensoryScene(THREE, scene),
+          yaw: 0, pitch: -0.15, x: -1.2, z: 2.35,
+          keys: {}, drag: null, raf: 0, t0: 0, listeners: [], dirty: true
+        };
+
+        function on(target, type, fn, opts) {
+          target.addEventListener(type, fn, opts || false);
+          S.listeners.push({ target: target, type: type, fn: fn });
+        }
+        on(window, 'resize', resize);
+        // Pointer look. pan-y above keeps vertical page scroll working.
+        on(renderer.domElement, 'pointerdown', function (e) {
+          S.drag = { x: e.clientX, y: e.clientY };
+          if (renderer.domElement.setPointerCapture) {
+            try { renderer.domElement.setPointerCapture(e.pointerId); } catch (err) {}
+          }
+        });
+        on(renderer.domElement, 'pointermove', function (e) {
+          if (!S || !S.drag) return;
+          api.look((e.clientX - S.drag.x) * 0.4, (e.clientY - S.drag.y) * 0.3);
+          S.drag = { x: e.clientX, y: e.clientY };
+          S.dirty = true;
+        });
+        on(renderer.domElement, 'pointerup', function () { if (S) S.drag = null; });
+        on(renderer.domElement, 'pointercancel', function () { if (S) S.drag = null; });
+
+        applySpecies();
+        setStatus('ready');
+
+        var clock = 0;
+        function frame(ts) {
+          if (!S) return;
+          S.raf = window.requestAnimationFrame(frame);
+          var dt = S.t0 ? Math.min(0.05, (ts - S.t0) / 1000) : 0.016;
+          S.t0 = ts;
+          clock += dt;
+
+          // Keyboard walk — held keys integrate per frame.
+          var fwd = (S.keys.w ? 1 : 0) - (S.keys.s ? 1 : 0);
+          var strafe = (S.keys.d ? 1 : 0) - (S.keys.a ? 1 : 0);
+          var turn = (S.keys.right ? 1 : 0) - (S.keys.left ? 1 : 0);
+          if (turn) { api.look(turn * 90 * dt, 0); S.dirty = true; }
+          if (fwd || strafe) { api.move(fwd * dt * 1.7, strafe * dt * 1.7); S.dirty = true; }
+
+          // With motion reduced, the room holds perfectly still until the
+          // student moves it. Walking still works — it just does not drift on
+          // its own. Bail BEFORE the scent animation and the render.
+          if (reduced && !S.dirty) return;
+          S.dirty = false;
+
+          // Scent motes rise and recycle. Dog view only, so skip the work
+          // entirely otherwise. Frozen (but still visible, at a stable
+          // position) when motion is reduced — the information is the WHERE,
+          // not the drifting.
+          if (S.built.scentGroup.visible && !reduced) {
+            S.built.scentClouds.forEach(function (cl) {
+              var pos = cl.geo.attributes.position;
+              for (var i = 0; i < cl.seeds.length; i++) {
+                var sd = cl.seeds[i];
+                var life = (clock * 0.22 + sd.phase) % 1;
+                var sway = Math.sin(clock * 0.9 + sd.a * 3) * 0.05;
+                pos.array[i * 3] = cl.src.x + Math.cos(sd.a + clock * 0.2) * (sd.rad + life * 0.18) + sway;
+                pos.array[i * 3 + 1] = 0.05 + life * cl.src.rise;
+                pos.array[i * 3 + 2] = cl.src.z + Math.sin(sd.a + clock * 0.2) * (sd.rad + life * 0.18);
+              }
+              pos.needsUpdate = true;
+              cl.points.material.opacity = 0.26 + 0.16 * Math.sin(clock * 1.3 + cl.src.rise);
+            });
+          }
+
+          S.camera.position.set(S.x, S.camera.position.y, S.z);
+          S.camera.rotation.set(0, 0, 0);
+          S.camera.rotateY(S.yaw);
+          S.camera.rotateX(S.pitch);
+          S.renderer.render(S.scene, S.camera);
+        }
+        S.raf = window.requestAnimationFrame(frame);
+      },
+
+      // Movement is clamped inside the room so a student can't walk out
+      // into the void and lose the scene.
+      move: function (forward, strafe) {
+        if (!S) return;
+        var sin = Math.sin(S.yaw), cos = Math.cos(S.yaw);
+        var nx = S.x - (forward * sin) + (strafe * cos);
+        var nz = S.z - (forward * cos) - (strafe * sin);
+        var pad = 0.35;
+        nx = Math.max(-SENSORY_ROOM.halfX + pad, Math.min(SENSORY_ROOM.halfX - pad, nx));
+        nz = Math.max(-SENSORY_ROOM.halfZ + pad, Math.min(SENSORY_ROOM.halfZ - pad, nz));
+        // Resolve each axis separately so hitting a couch slides along it
+        // instead of sticking fast — walking into furniture and stopping dead
+        // reads as a broken control, not as a wall.
+        function blocked(px, pz) {
+          for (var i = 0; i < SENSORY_BLOCKERS.length; i++) {
+            var b = SENSORY_BLOCKERS[i];
+            if (px > b.x0 - 0.22 && px < b.x1 + 0.22 && pz > b.z0 - 0.22 && pz < b.z1 + 0.22) return true;
+          }
+          return false;
+        }
+        if (!blocked(nx, S.z)) S.x = nx;
+        if (!blocked(S.x, nz)) S.z = nz;
+      },
+
+      look: function (dYawDeg, dPitchDeg) {
+        if (!S) return;
+        S.yaw -= dYawDeg * Math.PI / 180;
+        S.pitch = Math.max(-Math.PI / 2.6, Math.min(Math.PI / 2.6,
+          S.pitch - (dPitchDeg || 0) * Math.PI / 180));
+      },
+
+      setKey: function (name, down) { if (S) S.keys[name] = !!down; },
+
+      setSpecies: function (id) { speciesId = id; applySpecies(); },
+      setDusk: function (on) { dusk = !!on; applySpecies(); },
+      setReducedMotion: function (on) { reduced = !!on; invalidate(); },
+      isReducedMotion: function () { return reduced; },
+      resize: resize,
+
+      detach: function () {
+        if (!S) return;
+        if (S.raf) window.cancelAnimationFrame(S.raf);
+        S.listeners.forEach(function (l) {
+          try { l.target.removeEventListener(l.type, l.fn); } catch (e) {}
+        });
+        try { S.built.dispose(); } catch (e) {}
+        try { S.renderer.dispose(); } catch (e) {}
+        if (S.renderer.domElement && S.renderer.domElement.parentNode) {
+          S.renderer.domElement.parentNode.removeChild(S.renderer.domElement);
+        }
+        S = null;
+        setStatus('idle');
+      }
+    };
+    return api;
+  }
+
+  // ─────────────────────────────────────────────────────────
   // SECTION 8: TOOL REGISTRATION + RENDER (helpers + view router)
   // Render functions added in subsequent edits.
   // ─────────────────────────────────────────────────────────
@@ -1060,7 +1576,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       pets_explorer: 5, pets_pro: 10, pets_welfare_aware: 8,
       pets_decoder_5: 8, pets_decoder_15: 12, pets_decoder_all: 20,
       pets_body_lang: 10, pets_quiz_pass: 10, pets_quiz_ace: 15,
-      pets_trainer: 12, pets_caregiver: 15, pets_ai_designer: 5
+      pets_trainer: 12, pets_caregiver: 15, pets_ai_designer: 5,
+      pets_sensory: 12
     };
 
     // ── Hydration + Canvas-survival persistence ──
@@ -1096,6 +1613,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     var decoderCeleb = _decoderCelebState[0];
     var setDecoderCeleb = _decoderCelebState[1];
 
+    // ── Sensory-perspective 3D. Hooks live HERE, at the top of the render
+    // function and outside every conditional, because renderSensory() is
+    // reached through the view switch — a hook inside that branch would
+    // change hook order the moment a student navigated away.
+    var _sensoryViewerRef = React.useRef(null);
+    var _sensoryMountRef = React.useRef(null);
+    var _sensoryStatusState = React.useState('idle');
+    var sensoryStatus = _sensoryStatusState[0];
+    var setSensoryStatus = _sensoryStatusState[1];
+
     var view = d.view || 'menu';
     var modulesVisited = d.modulesVisited || {};
     var badges = d.badges || {};
@@ -1130,9 +1657,112 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       window.addEventListener('alloflow-petslab-restored', onRestore);
       return function () { window.removeEventListener('alloflow-petslab-restored', onRestore); };
     }, []);
+
+    // ── Sensory-perspective lifecycle ──
+    var sensorySpecies = d.sensorySpecies || 'human';
+    var sensoryDusk = !!d.sensoryDusk;
+    var sensoryActive = !!d.sensoryActive;
+    var sensoryThreeReady = !!d._threeLoaded;
+
+    // Mount / tear down the viewer. Keyed on what can invalidate the canvas;
+    // the cleanup runs on navigation away, so leaving the view stops the RAF
+    // loop and frees the WebGL context rather than leaving it spinning.
+    React.useEffect(function () {
+      if (view !== 'sensory' || !sensoryActive || !sensoryThreeReady) return undefined;
+      var node = _sensoryMountRef.current;
+      var THREE = (typeof window !== 'undefined') ? window.THREE : null;
+      if (!node || !THREE) return undefined;
+      var viewer = _petsMakeSensoryViewer();
+      _sensoryViewerRef.current = viewer;
+      viewer.onStatus(function (s) { setSensoryStatus(s); });
+      viewer.attach(THREE, node);
+      viewer.setSpecies(d.sensorySpecies || 'human');
+      viewer.setDusk(!!d.sensoryDusk);
+      viewer.setReducedMotion(d.sensoryReduceMotion != null
+        ? !!d.sensoryReduceMotion
+        : petsPrefersReducedMotion());
+      return function () {
+        try { viewer.detach(); } catch (e) {}
+        if (_sensoryViewerRef.current === viewer) _sensoryViewerRef.current = null;
+      };
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [view, sensoryActive, sensoryThreeReady]);
+
+    // Reduced motion. The OS preference is the DEFAULT, not the verdict — the
+    // student can still turn the drift back on, and someone who needs it but
+    // never found the OS setting can turn it off here. Matches the host's own
+    // detection, which also honours an app-level `.reduce-motion` class.
+    function petsPrefersReducedMotion() {
+      try {
+        if (typeof document !== 'undefined' && document.querySelector('.reduce-motion')) return true;
+        return !!(typeof window !== 'undefined' && window.matchMedia &&
+          window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+      } catch (e) { return false; }
+    }
+    var sensoryReduceMotion = d.sensoryReduceMotion != null
+      ? !!d.sensoryReduceMotion
+      : petsPrefersReducedMotion();
+
+    // Push species / lighting / motion changes to the live scene without
+    // remounting it.
+    React.useEffect(function () {
+      var viewer = _sensoryViewerRef.current;
+      if (!viewer) return;
+      viewer.setSpecies(sensorySpecies);
+      viewer.setDusk(sensoryDusk);
+      viewer.setReducedMotion(sensoryReduceMotion);
+    }, [sensorySpecies, sensoryDusk, sensoryReduceMotion]);
+
+    // Keyboard walk. Bound to the window only while the sim is on screen, and
+    // only for the movement keys, so it never swallows Tab or a screen-reader
+    // shortcut. Arrow keys are preventDefault-ed to stop the page scrolling
+    // under the student while they turn.
+    React.useEffect(function () {
+      if (view !== 'sensory' || !sensoryActive) return undefined;
+      var MAP = {
+        KeyW: 'w', ArrowUp: 'w', KeyS: 's', ArrowDown: 's',
+        KeyA: 'a', KeyD: 'd', ArrowLeft: 'left', ArrowRight: 'right'
+      };
+      function key(e, down) {
+        var name = MAP[e.code];
+        if (!name) return;
+        var viewer = _sensoryViewerRef.current;
+        if (!viewer) return;
+        if (e.code.indexOf('Arrow') === 0) e.preventDefault();
+        viewer.setKey(name, down);
+      }
+      function kd(e) { key(e, true); }
+      function ku(e) { key(e, false); }
+      window.addEventListener('keydown', kd);
+      window.addEventListener('keyup', ku);
+      return function () {
+        window.removeEventListener('keydown', kd);
+        window.removeEventListener('keyup', ku);
+      };
+    }, [view, sensoryActive]);
+
     // Pet Picker state
     var pickHousing = d.pickHousing || 'house';
     var pickKids = d.pickKids != null ? d.pickKids : false;
+    // Youngest child's age BAND, not a yes/no. The picker's own scoring asks
+    // whether a child is under 5 (CDC: no reptiles) and under 8 (House Rabbit
+    // Society), but the old boolean pinned every household with children to a
+    // hardcoded age of 6 — so the under-5 reptile rule could never fire and a
+    // family with a toddler was shown a gecko with no caution at all. A single
+    // checkbox cannot answer a question the scoring asks in two thresholds.
+    var pickKidAge = d.pickKidAge || (pickKids ? '5to9' : 'none');
+    var PICK_KID_BANDS = [
+      { id: 'none', label: 'No children at home', age: 99 },
+      { id: 'under5', label: 'Youngest is under 5', age: 3 },
+      { id: '5to9', label: 'Youngest is 5–9', age: 7 },
+      { id: '10plus', label: 'Youngest is 10 or older', age: 12 }
+    ];
+    function pickKidBand(id) {
+      for (var i = 0; i < PICK_KID_BANDS.length; i++) {
+        if (PICK_KID_BANDS[i].id === id) return PICK_KID_BANDS[i];
+      }
+      return PICK_KID_BANDS[0];
+    }
     var pickAllergies = d.pickAllergies != null ? d.pickAllergies : false;
     var pickHoursHome = d.pickHoursHome != null ? d.pickHoursHome : 8;
     var pickBudget = d.pickBudget || 'medium';
@@ -1247,6 +1877,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       { id: 'service',      icon: '♿', label: 'Service & Support Animals', desc: 'Service dog vs ESA vs therapy: legal + scientific distinctions.' },
       { id: 'welfare',      icon: '🛡️', label: 'Welfare & Ethics',     desc: 'Spay/neuter, adoption vs breeding, declawing, outdoor cats. Sourced inline.' },
       { id: 'careSim',      icon: '📅', label: 'Pet-Care Week (sim)',  desc: 'Live a week with a dog/cat/rabbit. Decisions affect 4 welfare meters.' },
+      { id: 'sensory',      icon: '👁️', label: 'Through Their Eyes (3D)', desc: 'Walk a room as a human, dog, or cat. Colour, acuity, eye height, night vision, and a dog\'s scent world.' },
       { id: 'picker',       icon: '🏠', label: 'Pet Picker',           desc: 'Match species/breed-class to your housing + lifestyle.' },
       { id: 'bodyLang',     icon: '👀', label: 'Body Language Decoder', desc: 'Read dogs, cats, rabbits, birds. Stress + appeasement signals.' },
       { id: 'decoderMastery', icon: '🏅', label: 'Decoder Mastery',   desc: 'Your personal log of every body-language signal you have decoded across species.' },
@@ -1699,7 +2330,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
             'CDC: ',
             h('strong', { style: { color: T.accentHi } }, 'all reptiles + amphibians shed Salmonella'),
-            ' regardless of how clean they appear. Wash hands every time. CDC actively recommends ',
+            ' regardless of how clean they appear. Shedding is intermittent, so a lab test that comes back negative does NOT clear the animal — it only means it was not shedding that day. Treat every reptile as positive, every time. Wash hands after every handling. CDC actively recommends ',
             h('strong', { style: { color: T.warm } }, 'no reptiles in households with children under 5'),
             ' or immunocompromised members. Don\'t let reptiles roam in food-prep areas. Don\'t kiss your turtle.')),
         h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, marginBottom: 14 } },
@@ -2324,21 +2955,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                 h('th', { scope: 'col', style: { padding: '6px 8px', textAlign: 'left', color: T.accentHi } }, 'From'),
                 h('th', { scope: 'col', style: { padding: '6px 8px', textAlign: 'left', color: T.accentHi } }, 'Where'))),
             h('tbody', null,
-              [['Dog', '15,000–40,000 yr ago', 'Pleistocene wolf', 'East Eurasia'],
+              [['Dog', '15,000–40,000 yr ago', 'Pleistocene wolf', 'Eurasia — region disputed *'],
                ['Cat', '~9,500 yr ago', 'Felis silvestris (African wildcat)', 'Fertile Crescent'],
                ['Goat', '~10,000 yr ago', 'Bezoar ibex', 'Zagros Mountains'],
                ['Sheep', '~10,000 yr ago', 'Mouflon', 'Anatolia'],
                ['Pig', '~9,000 yr ago', 'Wild boar', 'Multiple sites'],
-               ['Horse', '~5,500 yr ago', 'Eurasian wild horse', 'Pontic-Caspian steppe'],
+               ['Horse', '~4,200 yr ago *', 'Eurasian wild horse', 'Western Eurasian steppe'],
                ['Chicken', '~8,000 yr ago', 'Red junglefowl', 'SE Asia'],
-               ['Rabbit', '~1,500 yr ago', 'European wild rabbit', 'French monasteries'],
+               ['Rabbit', 'gradual — no single date *', 'European wild rabbit', 'Iberia + SW France'],
                ['Guinea pig', '~7,000 yr ago', 'Cavia tschudii', 'Andes mountains'],
                ['Hamster (Syrian)', '~1930 (essentially modern)', 'Wild Mesocricetus auratus', 'Aleppo, Syria']].map(function(row, i) {
                 return h('tr', { key: i, style: { background: i % 2 === 0 ? T.cardAlt : T.card, borderBottom: '1px solid ' + T.border } },
                   row.map(function(cell, j) {
                     return h('td', { key: j, style: { padding: '6px 8px', color: j === 0 ? T.text : T.muted, fontWeight: j === 0 ? 700 : 400 } }, cell);
                   }));
-              })))),
+              }))),
+          h('p', { style: { margin: '10px 0 0', fontSize: 11, color: T.dim, lineHeight: 1.6 } },
+            h('strong', { style: { color: T.muted } }, '* These are moving targets, and that is the interesting part. '),
+            'Ancient-DNA work keeps revising this table, so treat any single date as provisional. Three worth knowing about: ',
+            h('strong', { style: { color: T.muted } }, 'dogs'),
+            ' — everyone agrees the ancestor is an extinct Pleistocene wolf lineage, but the region is genuinely unsettled (East Asia, Europe, and Central Asia have all been argued, and a dual origin is on the table). ',
+            h('strong', { style: { color: T.muted } }, 'Horses'),
+            ' — the 5,500-year-old Botai horses used to be called the first domestic horses, until ancient DNA showed they are ancestors of Przewalski\'s horse and left essentially no modern descendants; today\'s domestic lineage spread from the western Eurasian steppe roughly 4,200 years ago (Librado et al. 2021). ',
+            h('strong', { style: { color: T.muted } }, 'Rabbits'),
+            ' — the famous story that monks domesticated rabbits in 600 AD after a papal ruling traces to a misreading of the sources, not evidence; rabbit domestication was gradual with no founding moment (Irving-Pease et al. 2018, memorably titled "Rabbits and the Specious Origins of Domestication"). A confidently-repeated date is not the same as a well-supported one.')),
         h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
           h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '🦴 Inbreeding consequences (the cost of "purebred")'),
           h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.6 } },
@@ -2370,18 +3010,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           // Generate gametes from a 2-locus genotype like 'BbEe'
           function gametes(geno) {
             // geno is 4 chars: B/b at index 0-1, E/e at index 2-3 (e.g. 'BbEe', 'BBEe', 'bbee')
-            var b1 = geno[0], b2 = geno[1], e1 = geno[2], e2 = geno[3];
-            // 4 unique gametes (with duplicates if homozygous): [B,E] [B,e] [b,E] [b,e]
-            var bs = (b1 === b2) ? [b1] : [b1, b2];
-            var es = (e1 === e2) ? [e1] : [e1, e2];
+            // Take BOTH alleles at each locus and cross them. That is always
+            // exactly 4 gametes with the right multiplicities, which is what
+            // makes all 16 grid cells equally likely.
+            //
+            // Do NOT "simplify" this by collapsing a homozygous locus to a
+            // single allele and padding the list back up to 4. Padding repeats
+            // one gamete and silently reweights the whole grid: that bug made
+            // BbEE x BbEE read 7 black : 9 chocolate instead of the correct
+            // 12 : 4, and Bbee x bbEe read 1:3:12 instead of 4:4:8. It was
+            // invisible on the BbEe x BbEe default, which is heterozygous at
+            // both loci and therefore never hit the padding branch.
+            var bs = [geno[0], geno[1]];
+            var es = [geno[2], geno[3]];
             var out = [];
             bs.forEach(function(bb) {
               es.forEach(function(ee) {
                 out.push(bb + ee);
               });
             });
-            // Pad to 4 by repetition (so the Punnett grid is consistent 4×4)
-            while (out.length < 4) out.push(out[out.length - 1]);
             return out;
           }
           // Phenotype from offspring (4-char genotype string like 'BBEe' or unsorted)
@@ -2517,9 +3164,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                 if (counts.Black === 16) return h('div', null,
                   h('strong', { style: { color: T.text } }, 'All black: '),
                   'No recessive alleles to surface. The puppies are all black, but their carrier status varies depending on parents\' genotypes.');
+                // Show the reduced ratio too: 4:4:8 is what the grid counts,
+                // but 1:1:2 is what a textbook prints and what a student is
+                // being asked to recognise.
+                function gcd2(a, b) { while (b) { var t = b; b = a % b; a = t; } return a; }
+                var g = 0;
+                [counts.Black, counts.Chocolate, counts.Yellow].forEach(function(n) {
+                  if (n) g = gcd2(g, n);
+                });
+                var reduced = (g > 1)
+                  ? (counts.Black / g) + ':' + (counts.Chocolate / g) + ':' + (counts.Yellow / g)
+                  : '';
                 return h('div', null,
                   h('strong', { style: { color: T.text } }, 'Phenotype ratio: '),
-                  counts.Black + ' black : ' + counts.Chocolate + ' chocolate : ' + counts.Yellow + ' yellow. Try a different cross — especially Bbee × bbEe — to see how recessive alleles surface.'
+                  counts.Black + ' black : ' + counts.Chocolate + ' chocolate : ' + counts.Yellow + ' yellow, out of 16',
+                  reduced ? ' — which simplifies to ' + reduced : '',
+                  '. Try a different cross — especially Bbee × bbEe — to see how recessive alleles surface.'
                 );
               })()
             ),
@@ -2587,9 +3247,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             h('p', { style: { margin: '0 0 6px' } },
               h('strong', { style: { color: T.accentHi } }, 'Tasks include: '),
               'guiding (blind), alerting (deaf), medical alert (blood-glucose drop, oncoming seizure), retrieval, mobility brace, deep-pressure therapy (interrupting psychiatric episodes), reminder-to-take-meds, room searching for PTSD.'),
-            h('p', { style: { margin: 0 } },
+            h('p', { style: { margin: '0 0 6px' } },
               h('strong', { style: { color: T.warm } }, 'No federal certification or registration exists. '),
-              'The "Amazon vest + ID card" market is a scam — those products mean nothing legally. ADI + IGDF accredit training programs, but a self-trained service dog is equally legal under the ADA.'))),
+              'The "Amazon vest + ID card" market is a scam — those products mean nothing legally. ADI + IGDF accredit training programs, but a self-trained service dog is equally legal under the ADA.'),
+            // The other half of the rule. Without it this card reads as "a
+            // business can never say no", which is wrong, and which leaves
+            // school staff with no lawful answer when an animal is genuinely
+            // disruptive. It also protects legitimate handlers: this provision
+            // is what separates a trained working dog from a pet in a vest.
+            h('p', { style: { margin: 0 } },
+              h('strong', { style: { color: T.accentHi } }, 'What a business or school CAN do: '),
+              'the two-question limit is not a blanket yes. A service animal may lawfully be asked to leave if it is ',
+              h('strong', { style: { color: T.text } }, 'out of control and the handler does not take effective action'),
+              ', or if it is ',
+              h('strong', { style: { color: T.text } }, 'not housebroken'),
+              ' (28 CFR §36.302(c)(2)). The handler must still be served without the animal. The animal must also be harnessed, leashed, or tethered unless that would interfere with its work or the disability prevents it, in which case the handler must maintain control by voice or signal. Allergies and fear of dogs are NOT valid grounds for exclusion.'))),
         h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
           h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, '💚 Emotional Support Animal (ESA — FHA only)'),
           h('div', { style: { fontSize: 13, color: T.muted, lineHeight: 1.6 } },
@@ -2618,7 +3290,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               'No automatic public access. Visits are by invitation of the facility. Pet Partners + Therapy Dogs International + Alliance of Therapy Dogs are the major credentialing bodies (temperament test + handler training + insurance).'),
             h('p', { style: { margin: 0 } },
               h('strong', { style: { color: T.text } }, 'Reading-to-dogs programs '),
-              'in libraries + schools improve struggling readers\' fluency by reducing the social-pressure cost of reading aloud (Schmidt 2019). Available at many Maine libraries.'))),
+              'in libraries and schools are popular, and children reliably report enjoying them and feeling less self-conscious reading aloud. Whether they measurably improve reading fluency is ',
+              h('strong', { style: { color: T.text } }, 'not settled'),
+              ' — systematic reviews find the studies small, often uncontrolled, and mixed in result (Hall, Gee & Mills 2016, PLOS ONE). Treat these as a motivation and anxiety support, not as a substitute for an evidence-based reading intervention. Available at many Maine libraries.'))),
         h('div', { style: { padding: 14, borderRadius: 10, background: T.cardAlt, border: '1px dashed ' + T.border, marginBottom: 14 } },
           h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 6 } }, 'Service-animal etiquette (handlers + bystanders)'),
           h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.65 } },
@@ -2731,10 +3405,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           },
           note: 'Need flight-time outside cage daily. Lifespan 15–25 yr. Toxic to Teflon + scented candles.' }
       ];
+      var kidBand = pickKidBand(pickKidAge);
       var inputs = {
         housing: pickHousing,
-        kids: pickKids,
-        kidAge: pickKids ? 6 : 99,
+        kids: kidBand.id !== 'none',
+        kidAge: kidBand.age,
         allergies: pickAllergies,
         hours: pickHoursHome,
         budget: pickBudget,
@@ -2778,8 +3453,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             radio('housing', 'house', pickHousing, 'House with yard', function(v) { upd('pickHousing', v); }),
             radio('housing', 'rural', pickHousing, 'Rural / acreage', function(v) { upd('pickHousing', v); })),
           h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginTop: 12, marginBottom: 6 } }, '👨‍👩‍👧 Family'),
+          h('div', { role: 'radiogroup', 'aria-label': 'Youngest child at home' },
+            PICK_KID_BANDS.map(function (b) {
+              return radio('kidage', b.id, pickKidAge, b.label, function (v) {
+                upd('pickKidAge', v);
+                upd('pickKids', v !== 'none');   // keep the legacy flag in step
+              });
+            })),
+          h('div', { style: { fontSize: 11, color: T.dim, marginTop: 4, marginBottom: 4, lineHeight: 1.5 } },
+            'Age matters, not just presence: the CDC advises against reptiles in homes with children under 5, and the House Rabbit Society advises against rabbits with young children.'),
           h('div', null,
-            checkbox('kids', pickKids, 'Kids under 10 in household', function(v) { upd('pickKids', v); }),
             checkbox('allergies', pickAllergies, 'Allergies in household', function(v) { upd('pickAllergies', v); })),
           h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginTop: 12, marginBottom: 6 } },
             '⏰ Hours pet would be alone per day: ',
@@ -3190,7 +3873,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           notes: 'Cage + food + toys (replaced often) + avian vet. NEEDS daily out-of-cage time.' }
       };
       var p = profiles[costSpecies] || profiles['cat-indoor'];
-      var lifetimeCost = p.firstYear + (p.annual * (costYears - 1));
+      // The slider runs to 30 years but a guinea pig pair lives ~6, so a
+      // student can ask for a span covering several successive animals. The
+      // panel used to call that "Lifetime cost" regardless, which is the wrong
+      // word for five consecutive pairs — and it charged the first-year setup
+      // only once, when in reality each new animal brings its own.
+      var costAnimals = Math.max(1, Math.ceil(costYears / (p.lifespan || costYears)));
+      var multiGen = costAnimals > 1;
+      var lifetimeCost = multiGen
+        ? (costAnimals * p.firstYear) + (p.annual * Math.max(0, costYears - costAnimals))
+        : p.firstYear + (p.annual * (costYears - 1));
       var lifetimeHours = p.timeDaily * 365 * costYears;
       var dollarsPerYear = lifetimeCost / costYears;
 
@@ -3244,7 +3936,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               h('div', { style: { fontSize: 11, color: T.dim } }, 'Emergency fund'),
               h('div', { style: { fontSize: 22, fontWeight: 800, color: T.danger, fontFamily: 'monospace' } }, '$' + p.emergencyFund.toLocaleString())),
             h('div', null,
-              h('div', { style: { fontSize: 11, color: T.dim } }, 'Lifetime cost'),
+              h('div', { style: { fontSize: 11, color: T.dim } }, multiGen ? 'Cost over ' + costYears + ' yr' : 'Lifetime cost'),
               h('div', { style: { fontSize: 22, fontWeight: 800, color: T.accent, fontFamily: 'monospace' } }, '$' + lifetimeCost.toLocaleString())),
             h('div', null,
               h('div', { style: { fontSize: 11, color: T.dim } }, '$ per year'),
@@ -3252,9 +3944,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             h('div', null,
               h('div', { style: { fontSize: 11, color: T.dim } }, 'Total time'),
               h('div', { style: { fontSize: 22, fontWeight: 800, color: T.text, fontFamily: 'monospace' } }, Math.round(lifetimeHours).toLocaleString() + ' hr'))),
+          // Naming what a multi-lifespan span actually is. The money is the
+          // smaller half of it: a short-lived pet over a long horizon means
+          // repeated loss, which the Lifespan module treats as the real
+          // planning question rather than a footnote.
+          multiGen && h('div', {
+            style: { marginTop: 10, padding: '10px 12px', borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.accent }
+          },
+            h('div', { style: { fontSize: 12, fontWeight: 800, color: T.accentHi, marginBottom: 4 } },
+              // multiGen guarantees costAnimals >= 2, so this is always plural.
+              '↻ ' + costYears + ' years is about ' + costAnimals + ' successive animals'),
+            h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.6 } },
+              p.name + ' lives roughly ' + p.lifespan + ' years, so planning ' + costYears +
+              ' years means starting over about ' + costAnimals + ' times. The figure above counts ' +
+              costAnimals + ' first-year setups, not one. It also means ' + (costAnimals - 1) +
+              ' more ' + (costAnimals - 1 === 1 ? 'goodbye' : 'goodbyes') +
+              ' than a single long-lived animal would ask of you — often a child\'s first experience of losing someone. ' +
+              'If you want one animal for the whole span, compare against a species whose lifespan already covers it.')
+          ),
           // Lifetime-cost composition — setup vs ongoing vs the emergency reserve people forget.
           (function() {
-            var setup = p.firstYear, ongoing = p.annual * Math.max(0, costYears - 1), reserve = p.emergencyFund;
+            // Must track the headline figure above: with successive animals
+            // the setup slice is paid once per animal, not once overall.
+            var setup = p.firstYear * costAnimals;
+            var ongoing = p.annual * Math.max(0, costYears - costAnimals);
+            var reserve = p.emergencyFund;
             var total = setup + ongoing + reserve || 1;
             var segs = [
               { label: 'First-year setup', v: setup, color: T.warm || '#f59e0b' },
@@ -3330,6 +4044,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     // CAREER PATHWAYS
     // ─────────────────────────────────────────
     function renderCareers() {
+      // Only these two are distinct BLS occupations with a published national
+      // median. The other six — behaviorist, trainer, wildlife rehabber,
+      // shelter director, lab-animal specialist, marine mammal trainer — are
+      // either folded into broader BLS categories or not surveyed at all, so
+      // their figures come from professional bodies and job-board aggregates.
+      // "Salaries from BLS where available" was true but hid which was which,
+      // and a range sourced from a job board reads identically to a national
+      // survey median when they sit in the same font.
+      var CAREER_BLS_SOURCED = { vet: true, vetTech: true };
+      function srcChip(isBls) {
+        return h('span', {
+          style: {
+            fontSize: 9, padding: '1px 6px', borderRadius: '999rem', marginLeft: 6,
+            border: '1px solid ' + (isBls ? T.ok : T.border),
+            color: isBls ? T.ok : T.dim, whiteSpace: 'nowrap'
+          },
+          title: isBls
+            ? 'National median from the BLS Occupational Employment and Wage Statistics survey.'
+            : 'Not a separate BLS occupation — figure is an estimate from professional bodies and job listings, and is weaker evidence than a BLS median.'
+        }, isBls ? 'BLS median' : 'estimate');
+      }
       function tagPill(text) {
         return h('span', { key: text,
           style: { fontSize: 10, padding: '2px 8px', borderRadius: '999rem', background: T.bg, color: T.text, border: '1px solid ' + T.border, marginRight: 4, marginBottom: 4, display: 'inline-block' } }, text);
@@ -3338,7 +4073,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         backBar('🧰 Career Pathways'),
         h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
           h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.6 } },
-            'Animal careers span every level of training: high-school cert programs, 2-year community college, apprenticeships, 4-year degrees, graduate research. Salaries from BLS OEWS 2024 medians where available; growth from BLS 2022–2032 outlook. Maine pipelines highlighted.')),
+            'Animal careers span every level of training: high-school cert programs, 2-year community college, apprenticeships, 4-year degrees, graduate research. Maine pipelines highlighted.'),
+          h('p', { style: { margin: '8px 0 0', color: T.dim, fontSize: 11, lineHeight: 1.6 } },
+            h('strong', { style: { color: T.warm } }, 'How to read these numbers. '),
+            'Two of these are real BLS occupations with a published national median (marked ',
+            h('span', { style: { color: T.ok } }, 'BLS median'),
+            '); the rest are not separately surveyed, so those figures are ',
+            h('span', { style: { color: T.dim } }, 'estimates'),
+            ' from professional bodies and job listings and should carry less weight. All are ',
+            h('strong', { style: { color: T.text } }, 'national'),
+            ' — rural Maine pay commonly runs below a national median, and cost of living with it, so compare local postings before deciding anything. Wage data also goes stale: these are BLS OEWS 2024 medians and the 2022–2032 outlook, so check the current BLS Occupational Outlook Handbook rather than trusting a figure on this page.')),
         h('div', { role: 'list',
           style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 12 } },
           CAREER_PATHS.map(function(c) {
@@ -3350,7 +4094,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               h('div', { style: { display: 'flex', flexWrap: 'wrap', marginBottom: 8 } },
                 c.tags.map(function(t) { return tagPill(t); })),
               h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 4 } },
-                h('strong', { style: { color: T.accent } }, '💵 Salary: '), c.salary),
+                h('strong', { style: { color: T.accent } }, '💵 Salary: '), c.salary,
+                srcChip(!!CAREER_BLS_SOURCED[c.id])),
               h('div', { style: { fontSize: 11, color: T.dim, marginBottom: 4 } },
                 h('strong', { style: { color: T.warm } }, '📈 Outlook: '), c.growth),
               h('div', { style: { fontSize: 11, color: T.muted, marginBottom: 4, lineHeight: 1.55 } },
@@ -3952,24 +4697,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         petsAnnounce('Scenario loaded.');
       }
 
+      // Words that appear in almost any fluent English sentence. The old check
+      // counted them, and a flat "2 keyword hits = satisfied" bar meant common
+      // words alone could tick a criterion. Measured against all 30 rubric
+      // lines: content-free filler prose scored 3 checkmarks, and a good
+      // answer to ONE scenario scored a checkmark on 4 of the 5 OTHER
+      // scenarios it had nothing to do with. Both are now 0.
+      var RUBRIC_STOPWORDS = {
+        that: 1, this: 1, with: 1, they: 1, them: 1, their: 1, from: 1, have: 1,
+        been: 1, were: 1, what: 1, when: 1, then: 1, than: 1, into: 1, only: 1,
+        also: 1, some: 1, more: 1, most: 1, much: 1, many: 1, will: 1, would: 1,
+        should: 1, could: 1, does: 1, done: 1, your: 1, yours: 1, about: 1,
+        which: 1, while: 1, where: 1, there: 1, here: 1, just: 1, even: 1,
+        like: 1, well: 1, good: 1, best: 1, thing: 1, things: 1, other: 1,
+        being: 1, both: 1, each: 1, over: 1, because: 1, before: 1, after: 1,
+        still: 1, very: 1, sometimes: 1, possible: 1, actually: 1, really: 1
+      };
+
+      // Offline fallback. This is word matching, not comprehension, so it is
+      // built to under-claim rather than over-claim: stop words stripped, the
+      // bar scales with how many content words the criterion actually has,
+      // and the result is three-state so a partial hit never renders as a
+      // checkmark. It also shows its own hit counts, which makes the
+      // crudeness legible instead of merely asserted.
+      function localRubricCheck() {
+        var resp = ' ' + String(aiResponse).toLowerCase().replace(/[^a-z0-9]+/g, ' ') + ' ';
+        var checks = scenario.rubric.map(function(r) {
+          var seen = {};
+          (r.toLowerCase().match(/[a-z][a-z\-]{3,}/g) || []).forEach(function(w) {
+            if (!RUBRIC_STOPWORDS[w]) seen[w] = 1;
+          });
+          var keys = Object.keys(seen);
+          var hits = keys.filter(function(k) {
+            // Match at a word start on a 6-char stem so vaccination/vaccinated
+            // count as the same idea, while "have" cannot match "behave".
+            return resp.indexOf(' ' + k.slice(0, 6)) !== -1;
+          }).length;
+          var need = Math.max(2, Math.ceil(keys.length / 3));
+          return { hits: hits, need: need, total: keys.length, msg: r };
+        });
+        var lines = checks.map(function(c) {
+          var tag = c.hits >= c.need ? '[likely covered]' : (c.hits > 0 ? '[partly covered]' : '[not covered]');
+          return tag + ' (' + c.hits + ' of ' + c.total + ' key words) — ' + c.msg;
+        });
+        var summary = 'OFFLINE RUBRIC CHECK — this is word matching, not understanding.\n\n' +
+          'It looks for each rubric line\'s key words in what you wrote. It cannot tell whether your reasoning is sound, ' +
+          'and it cannot tell a correct answer from an incorrect one that happens to use the same vocabulary. ' +
+          '"Likely covered" means you used related words — NOT that you got it right.\n\n' +
+          lines.join('\n\n') +
+          '\n\nUse this to find criteria you did not address at all. For judgement on the ones you did address, ask a teacher — or try again when AI is available.';
+        updMulti({ aiCritique: { text: summary, source: 'local' }, aiLoadingCritique: false });
+        // Earned for doing the work, not for having a network. Awarding this
+        // only on the AI path made the badge unreachable in an offline
+        // classroom, with no way for the student to find out why.
+        awardBadge('pets_ai_designer', 'AI Practice (wrote and checked a response)');
+        petsAnnounce('Offline rubric check ready.');
+      }
+
       function getCritique() {
         if (!scenario || !aiResponse.trim()) return;
-        if (!callGemini) {
-          var resp = aiResponse.toLowerCase();
-          var checks = scenario.rubric.map(function(r) {
-            var lc = r.toLowerCase();
-            var keywords = lc.match(/[a-z][a-z\-]{3,}/g) || [];
-            var hits = 0;
-            keywords.forEach(function(k) { if (resp.indexOf(k) !== -1) hits++; });
-            return { ok: hits >= 2, msg: r };
-          });
-          var summary = 'Local rubric check (no AI available):\n\n' + checks.map(function(c) {
-            return (c.ok ? '✓ ' : '○ ') + c.msg;
-          }).join('\n') + '\n\nThe checks above flag whether your response touched on each rubric criterion. They are crude — a real AI critique would do much better.';
-          upd('aiCritique', { text: summary, source: 'local' });
-          petsAnnounce('Local check ready.');
-          return;
-        }
+        if (!callGemini) { localRubricCheck(); return; }
         upd('aiLoadingCritique', true);
         petsAnnounce('Getting critique...');
         var prompt = 'You are a veterinary + animal-welfare educator reviewing a student\'s response to a real-world pet-care scenario.\n\n' +
@@ -3996,8 +4783,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           })
           .catch(function(e) {
             console.warn('[Pets] AI critique failed; falling back.', e);
-            upd('aiLoadingCritique', false);
-            addToast('AI unavailable — try the local check.');
+            // Actually fall back. This used to toast "try the local check"
+            // while offering no such control: when callGemini EXISTS the only
+            // button reads "Get AI critique", so the advice pointed at a
+            // button that is not on the screen and the student dead-ended.
+            addToast('AI unavailable — ran the offline check instead.');
+            localRubricCheck();
           });
       }
 
@@ -4058,7 +4849,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.accentHi } }, '🎓 Critique'),
           h('div', { style: { whiteSpace: 'pre-wrap', fontSize: 13, lineHeight: 1.6 } }, aiCritique.text),
           h('div', { style: { marginTop: 10, fontSize: 10, opacity: 0.75, fontStyle: 'italic' } },
-            aiCritique.source === 'ai' ? 'Critique from AI; constrained against this lab\'s ground-truth.' : 'Local rubric check (AI unavailable).')),
+            aiCritique.source === 'ai' ? 'Critique from AI; constrained against this lab\'s ground-truth.' : 'Offline word-match check — it did not read your reasoning, only your vocabulary.')),
         footer());
     }
 
@@ -5338,6 +6129,246 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       );
     }
 
+    // ── SENSORY PERSPECTIVE VIEW ─────────────────────────────
+    // "Through Their Eyes": stand in a living room as a human, a dog, or a
+    // cat. Everything the 3D canvas shows is ALSO stated in text below it,
+    // because a simulation a student can't see is not a lesson — the panel
+    // is the primary content and the canvas is the illustration.
+    function renderSensory() {
+      var sp = _petsSensorySpecies(sensorySpecies);
+      var threeErr = !!d._threeError;
+      var threeLoading = !!d._threeLoading;
+
+      // The badge is for COMPARING, not for arriving. Seeing one viewpoint
+      // teaches nothing on its own — the lesson is the difference between
+      // them, so the award tracks how many of the three have been stood in.
+      var sensorySeen = d.sensorySeen || {};
+      function markSeen(id) {
+        if (sensorySeen[id]) return;
+        upd('sensorySeen', function (cur) {
+          var next = Object.assign({}, cur || {});
+          next[id] = true;
+          return next;
+        });
+        var seenCount = Object.keys(sensorySeen).length + 1;
+        if (seenCount >= SENSORY_SPECIES.length) {
+          awardBadge('pets_sensory', 'Saw It Their Way (all three viewpoints)');
+        }
+      }
+      function pickSpecies(id) {
+        upd('sensorySpecies', id);
+        markSeen(id);
+        var s = _petsSensorySpecies(id);
+        petsAnnounce('Now seeing as a ' + s.name + '. Eye height ' + s.eyeHeight.toFixed(2) +
+          ' metres. Visual acuity ' + s.acuity + '. ' + s.note);
+      }
+      function toggleDusk() {
+        var next = !sensoryDusk;
+        upd('sensoryDusk', next);
+        petsAnnounce(next
+          ? 'Dusk. A human now sees very little; the dog and cat still read the room.'
+          : 'Daylight restored.');
+      }
+      function loadEngine() {
+        updMulti({ _threeLoading: true, _threeError: false });
+        if (!window.StemLab || !window.StemLab.ensureThree) {
+          updMulti({ _threeLoading: false, _threeError: true });
+          return;
+        }
+        window.StemLab.ensureThree({ orbit: false }).then(function () {
+          updMulti({ _threeLoading: false, _threeLoaded: true });
+          petsAnnounce('3D engine ready.');
+        }).catch(function () {
+          updMulti({ _threeLoading: false, _threeError: true });
+          petsAnnounce('The 3D engine could not load. The written comparison below still works.');
+        });
+      }
+
+      // Movement pad — the same actions the keyboard exposes, for touch and
+      // for anyone who navigates by pointer only.
+      function padBtn(label, aria, onDown) {
+        return h('button', {
+          key: aria, 'data-pets-focusable': true, 'aria-label': aria,
+          onPointerDown: function () { onDown(true); },
+          onPointerUp: function () { onDown(false); },
+          onPointerLeave: function () { onDown(false); },
+          onKeyDown: function (e) { if (e.key === 'Enter' || e.key === ' ') onDown(true); },
+          onKeyUp: function () { onDown(false); },
+          style: {
+            width: 44, height: 40, borderRadius: 8, border: '1px solid ' + T.border,
+            background: T.card, color: T.text, fontSize: 15, fontWeight: 800, cursor: 'pointer'
+          }
+        }, label);
+      }
+      function key(name) {
+        return function (down) {
+          var v = _sensoryViewerRef.current;
+          if (v) v.setKey(name, down);
+        };
+      }
+
+      var seenCount = Object.keys(sensorySeen).length;
+      var speciesBar = h('div', { style: { marginBottom: 10 } },
+        h('div', { role: 'radiogroup', 'aria-label': 'Whose eyes to see through',
+          style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+          SENSORY_SPECIES.map(function (s) {
+            var on = s.id === sensorySpecies;
+            var seen = !!sensorySeen[s.id];
+            return h('button', {
+              key: s.id, role: 'radio', 'aria-checked': on ? 'true' : 'false',
+              'data-pets-focusable': true,
+              'aria-label': s.name + (seen ? ' (already compared)' : ' (not yet seen)'),
+              onClick: function () { pickSpecies(s.id); },
+              style: btn({
+                padding: '8px 14px', fontSize: 13, fontWeight: 800,
+                background: on ? 'rgba(245,158,11,0.16)' : T.card,
+                border: '2px solid ' + (on ? s.accent : T.border),
+                color: on ? s.accent : T.text
+              })
+            }, (seen ? '✓ ' : '') + s.icon + ' ' + s.name);
+          })
+        ),
+        h('div', { style: { fontSize: 11, color: T.dim, marginTop: 6 } },
+          seenCount >= SENSORY_SPECIES.length
+            ? 'All three viewpoints compared. The differences between them are the lesson.'
+            : 'Viewpoints compared: ' + seenCount + ' / ' + SENSORY_SPECIES.length + ' — the comparison is where the science is.')
+      );
+
+      // The written equivalent of the canvas. Always rendered.
+      var factRows = [
+        { l: 'Eye height', v: sp.eyeHeight.toFixed(2) + ' m',
+          why: 'Where the world is seen FROM. A cat meets the room at ankle height.' },
+        { l: 'Visual acuity', v: sp.acuity,
+          why: 'How much fine detail resolves. 20/75 means the dog must stand at 20 ft to see what a human sees at 75.' },
+        { l: 'Total field of view', v: sp.totalFieldDeg + '°',
+          why: 'How much of the world is visible at once without turning the head.' },
+        { l: 'Binocular overlap', v: sp.binocularDeg + '°',
+          why: 'The band where both eyes see the same thing — where depth judgement is sharpest.' },
+        { l: 'Colour vision', v: sp.dichromat ? 'Dichromat (blue / yellow)' : 'Trichromat (full colour)',
+          why: sp.dichromat
+            ? 'No functional red/green channel. A red ball on green grass is a grey-yellow lump on a grey-yellow field.'
+            : 'Three cone types, so reds and greens separate clearly.' },
+        { l: 'Low-light ability', v: sp.lowLightFactor === 1 ? 'Baseline' : 'Needs ~1/' + sp.lowLightFactor + ' the light',
+          why: sp.lowLightFactor === 1
+            ? 'No tapetum lucidum — human night vision is the weakest of the three.'
+            : 'A reflective tapetum lucidum gives the retina a second pass at the same photons.' },
+        { l: 'Flicker fusion', v: sp.flickerHz + ' Hz',
+          why: 'Above this rate, flashes blend into steady light. It is why some screens look like flickering strobes to a dog.' }
+      ];
+
+      return h('div', { style: { padding: 20, maxWidth: 980, margin: '0 auto', color: T.text } },
+        backBar('👁️ Through Their Eyes'),
+
+        h('div', { style: { padding: 14, borderRadius: 12, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 14 } },
+          h('p', { style: { margin: '0 0 6px', fontSize: 13, color: T.muted, lineHeight: 1.65 } },
+            'The Dogs and Cats modules tell you these animals are dichromats who trade colour for low-light and motion sensitivity. This lets you stand in a room and look through their eyes instead.'),
+          h('p', { style: { margin: 0, fontSize: 11, color: T.dim, lineHeight: 1.55, fontStyle: 'italic' } },
+            'Honest about its limits: the softening is an ILLUSTRATION of an acuity ratio, not a calibrated optical model, and a 240° field cannot be drawn undistorted on a flat screen — the canvas renders a wide-but-normal view and the real figure is given below. Nobody knows what another species\' colour experience feels like from the inside; this is the standard dichromat approximation applied to a human display.')
+        ),
+
+        speciesBar,
+
+        // ── 3D surface: loader → canvas → graceful failure ──
+        !sensoryThreeReady ? h('div', { style: { padding: 20, borderRadius: 12, background: T.card, border: '1px dashed ' + T.border, textAlign: 'center', marginBottom: 14 } },
+          threeErr
+            ? h('div', null,
+                h('div', { style: { fontSize: 13, color: T.warm, marginBottom: 8 } },
+                  '⚠ The 3D engine could not load — school networks often block CDNs. Everything below still works.'),
+                h('button', { 'data-pets-focusable': true, onClick: loadEngine, style: btn({ padding: '8px 16px', fontSize: 13 }) }, '↻ Try again'))
+            : h('div', null,
+                h('div', { style: { fontSize: 13, color: T.muted, marginBottom: 10, lineHeight: 1.6 } },
+                  'The walk-around view needs the 3D engine (about 600 KB, loaded only if you ask for it).'),
+                h('button', {
+                  'data-pets-focusable': true, onClick: loadEngine, disabled: threeLoading,
+                  style: btnPrimary({ padding: '12px 24px', fontSize: 14, opacity: threeLoading ? 0.6 : 1 })
+                }, threeLoading ? '⏳ Loading 3D engine…' : '▶ Load the 3D room'))
+        ) : !sensoryActive ? h('div', { style: { padding: 20, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, textAlign: 'center', marginBottom: 14 } },
+          h('button', {
+            'data-pets-focusable': true,
+            onClick: function () {
+              upd('sensoryActive', true);
+              markSeen(sensorySpecies);   // the viewpoint you arrive in counts
+              petsAnnounce('Entering the room as a ' + sp.name + '. Use arrow keys or W A S D to walk, and drag the view to look around.');
+            },
+            style: btnPrimary({ padding: '12px 26px', fontSize: 14 })
+          }, '🚪 Step into the room')
+        ) : h('div', { style: { marginBottom: 12 } },
+          h('div', {
+            ref: _sensoryMountRef,
+            style: {
+              width: '100%', height: 380, borderRadius: 10, overflow: 'hidden',
+              background: '#1a1410', border: '1px solid ' + T.border, position: 'relative'
+            }
+          }),
+          sensoryStatus === 'failed' && h('div', { style: { fontSize: 12, color: T.warm, marginTop: 8 } },
+            '⚠ This device could not open a WebGL canvas. The comparison below still carries the lesson.'),
+          // Controls
+          h('div', { style: { display: 'flex', gap: 14, alignItems: 'center', flexWrap: 'wrap', marginTop: 10 } },
+            h('div', { style: { display: 'flex', gap: 6 } },
+              padBtn('↑', 'Walk forward', key('w')),
+              padBtn('↓', 'Walk backward', key('s')),
+              padBtn('←', 'Turn left', key('left')),
+              padBtn('→', 'Turn right', key('right'))
+            ),
+            h('button', { 'data-pets-focusable': true, onClick: toggleDusk,
+              'aria-pressed': sensoryDusk ? 'true' : 'false',
+              style: btn({ padding: '8px 14px', fontSize: 13 }) },
+              sensoryDusk ? '🌙 Dusk — on' : '☀️ Daylight'),
+            h('button', { 'data-pets-focusable': true,
+              'aria-pressed': sensoryReduceMotion ? 'true' : 'false',
+              onClick: function () {
+                var next = !sensoryReduceMotion;
+                upd('sensoryReduceMotion', next);
+                petsAnnounce(next
+                  ? 'Motion reduced. The room now holds still until you move it.'
+                  : 'Motion restored. Scent drifts on its own again.');
+              },
+              style: btn({ padding: '8px 14px', fontSize: 13 }) },
+              sensoryReduceMotion ? '🧊 Motion reduced' : '🌀 Motion on'),
+            h('button', { 'data-pets-focusable': true,
+              onClick: function () { upd('sensoryActive', false); petsAnnounce('Left the room.'); },
+              style: btn({ padding: '8px 14px', fontSize: 13 }) }, '⏹ Leave the room'),
+            h('span', { style: { fontSize: 11, color: T.dim } },
+              'Arrow keys or W A S D to move · drag the view to look around')
+          ),
+          sensorySpecies === 'dog' && h('div', { style: { marginTop: 10, padding: '10px 12px', borderRadius: 10, background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.45)' } },
+            h('div', { style: { fontSize: 12, fontWeight: 800, color: '#fbbf24', marginBottom: 4 } }, '👃 Scent layer on'),
+            h('div', { style: { fontSize: 12, color: T.muted, lineHeight: 1.6 } },
+              'The drifting motes are the part of the room a camera can never show. With roughly 300 million olfactory receptors to a human\'s 5 million, a dog reads the rug as a record of who crossed it and how long ago. Sources here: ',
+              SENSORY_SCENTS.map(function (s) { return s.label; }).join(' · '), '.')
+          )
+        ),
+
+        // ── The written comparison. Primary content, not a caption. ──
+        h('div', { style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 12 } },
+          h('h3', { style: { margin: '0 0 4px', fontSize: 15, color: sp.accent } }, sp.icon + ' Seeing as a ' + sp.name),
+          h('p', { style: { margin: '0 0 10px', fontSize: 13, color: T.muted, lineHeight: 1.6 } }, sp.note),
+          h('div', { role: 'table', 'aria-label': sp.name + ' sensory measurements' },
+            factRows.map(function (r, i) {
+              return h('div', { key: i, role: 'row',
+                style: { display: 'grid', gridTemplateColumns: 'minmax(120px,1fr) minmax(90px,auto) minmax(180px,2fr)', gap: 10, padding: '8px 0', borderTop: i ? '1px solid ' + T.border : 'none', alignItems: 'baseline' } },
+                h('div', { role: 'cell', style: { fontSize: 12, fontWeight: 700, color: T.text } }, r.l),
+                h('div', { role: 'cell', style: { fontSize: 13, fontWeight: 800, color: sp.accent, fontFamily: 'monospace' } }, r.v),
+                h('div', { role: 'cell', style: { fontSize: 11, color: T.dim, lineHeight: 1.5 } }, r.why)
+              );
+            })
+          ),
+          h('div', { style: { marginTop: 10, fontSize: 11, color: T.dim, fontStyle: 'italic' } }, 'Sources: ' + sp.cite)
+        ),
+
+        h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, borderLeft: '4px solid ' + T.accentHi, marginBottom: 12 } },
+          h('div', { style: { fontSize: 11, fontWeight: 800, color: T.accentHi, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' } }, 'Try this'),
+          h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 12, color: T.muted, lineHeight: 1.7 } },
+            h('li', null, 'Find the red ball as a human, then switch to the dog. It does not vanish — it stops standing out. That is why fetch toys are sold in blue and yellow.'),
+            h('li', null, 'Compare the red ball on the grass through the doorway across all three.'),
+            h('li', null, 'Turn on dusk and switch between human and cat. The cat is not seeing a brighter room; it is spending colour and detail to buy light.'),
+            h('li', null, 'Stand at cat height next to the person. Consider what reaching down over the top of them looks like from there.')
+          )
+        ),
+        footer()
+      );
+    }
+
     // First-correct decoder-mastery celebration overlay. Renders on top
     // of any view if the celebration state is set; auto-clears after 3.2s.
     function decoderCelebOverlay() {
@@ -5516,6 +6547,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       case 'service':      viewBody = renderService(); break;
       case 'welfare':      viewBody = renderWelfare(); break;
       case 'careSim':      viewBody = renderCareSim(); break;
+      case 'sensory':      viewBody = renderSensory(); break;
       case 'picker':       viewBody = renderPicker(); break;
       case 'bodyLang':     viewBody = renderBodyLang(); break;
       case 'cost':         viewBody = renderCost(); break;

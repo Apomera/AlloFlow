@@ -693,7 +693,7 @@
                       return h('button', {
                         key: a.id,
                         onClick: function() { upd('leavAcid', a.id); playBeep('click'); },
-                        className: 'rounded-xl border-2 p-2 text-center text-xs font-bold transition-all ' + (active ? 'bg-amber-500 text-white border-amber-600 shadow' : 'bg-amber-50 border-amber-600 hover:border-amber-400 text-amber-900'),
+                        className: 'rounded-xl border-2 p-2 text-center text-xs font-bold transition-all ' + (active ? 'bg-amber-700 text-white border-amber-800 shadow' : 'bg-amber-50 border-amber-600 hover:border-amber-400 text-amber-900'),
                         'aria-pressed': active,
                         'aria-label': a.name
                       },
@@ -712,7 +712,7 @@
                       return h('button', {
                         key: b.id,
                         onClick: function() { upd('leavBase', b.id); playBeep('click'); },
-                        className: 'rounded-xl border-2 p-3 text-center text-xs font-bold transition-all ' + (active ? 'bg-orange-500 text-white border-orange-600 shadow' : 'bg-orange-50 border-orange-600 hover:border-orange-400 text-orange-900'),
+                        className: 'rounded-xl border-2 p-3 text-center text-xs font-bold transition-all ' + (active ? 'bg-orange-700 text-white border-orange-800 shadow' : 'bg-orange-50 border-orange-600 hover:border-orange-400 text-orange-900'),
                         'aria-pressed': active,
                         'aria-label': b.name
                       },
@@ -861,7 +861,7 @@
                   return h('button', {
                     key: g.id,
                     onClick: function() { upd('emulGoal', g.id); playBeep('click'); },
-                    className: 'px-3 py-2 rounded-full text-xs font-bold transition-all ' + (active ? 'bg-yellow-500 text-white shadow' : 'bg-yellow-50 text-yellow-800 hover:bg-yellow-100 border border-yellow-600')
+                    className: 'px-3 py-2 rounded-full text-xs font-bold transition-all ' + (active ? 'bg-yellow-800 text-white shadow' : 'bg-yellow-50 text-yellow-800 hover:bg-yellow-100 border border-yellow-600')
                   }, g.label);
                 })
               )
@@ -918,7 +918,7 @@
                       }
                     })
                   ),
-                  h('div', { className: 'absolute bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-black ' + (stable ? 'bg-emerald-500 text-white' : broken ? 'bg-red-500 text-white' : 'bg-white text-slate-700 border') },
+                  h('div', { className: 'absolute bottom-2 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-xs font-black ' + (stable ? 'bg-emerald-700 text-white' : broken ? 'bg-red-600 text-white' : 'bg-white text-slate-700 border') },
                     stable ? tr('baking.emulsion.stable', 'Stable') : broken ? tr('baking.emulsion.broken', 'Broken') : tr('baking.emulsion.mixing', 'Mixing\u2026')
                   )
                 ),
@@ -1004,7 +1004,7 @@
                   return h('button', {
                     key: r.id,
                     onClick: function() { upd('scaleRecipe', r.id); playBeep('click'); },
-                    className: 'px-3 py-2 rounded-full text-xs font-bold transition-all ' + (active ? 'bg-orange-500 text-white shadow' : 'bg-orange-50 text-orange-800 hover:bg-orange-100 border border-orange-600')
+                    className: 'px-3 py-2 rounded-full text-xs font-bold transition-all ' + (active ? 'bg-orange-700 text-white shadow' : 'bg-orange-50 text-orange-800 hover:bg-orange-100 border border-orange-600')
                   }, r.label);
                 })
               )
@@ -1072,7 +1072,7 @@
                       return h('button', {
                         key: u,
                         onClick: function() { upd('scaleUnit', u); },
-                        className: 'flex-1 px-2 py-1.5 rounded-full text-xs font-bold ' + (active ? 'bg-orange-500 text-white' : 'bg-orange-50 text-orange-700 hover:bg-orange-100')
+                        className: 'flex-1 px-2 py-1.5 rounded-full text-xs font-bold ' + (active ? 'bg-orange-700 text-white' : 'bg-orange-50 text-orange-700 hover:bg-orange-100')
                       }, u);
                     })
                   ),
@@ -1327,7 +1327,7 @@
                     h('div', { className: 'flex-grow' },
                       h('div', { className: 'flex items-center gap-2 flex-wrap' },
                         h('strong', { className: passed ? 'text-rose-900' : 'text-slate-500' }, e.label),
-                        h('span', { className: 'text-[10px] font-bold px-1.5 py-0.5 rounded-full ' + (passed ? 'bg-rose-500 text-white' : 'bg-slate-200 text-slate-600') }, formatTemp(e.temp))
+                        h('span', { className: 'text-[10px] font-bold px-1.5 py-0.5 rounded-full ' + (passed ? 'bg-rose-600 text-white' : 'bg-slate-200 text-slate-600') }, formatTemp(e.temp))
                       ),
                       h('div', { className: 'text-xs text-slate-600 mt-0.5' }, e.body)
                     )
@@ -1497,9 +1497,9 @@
                 },
                   h('div', { className: 'flex items-start gap-2' },
                     h('div', { className: 'mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center text-xs font-black shrink-0 ' +
-                      (showAsRight ? 'bg-emerald-500 border-emerald-600 text-white' :
-                       showAsWrong ? 'bg-red-500 border-red-600 text-white' :
-                       isSelected ? 'bg-pink-500 border-pink-600 text-white' : 'border-slate-300 text-slate-400') },
+                      (showAsRight ? 'bg-emerald-700 border-emerald-800 text-white' :
+                       showAsWrong ? 'bg-red-600 border-red-700 text-white' :
+                       isSelected ? 'bg-pink-700 border-pink-800 text-white' : 'border-slate-300 text-slate-400') },
                       showAsRight ? '\u2713' : showAsWrong ? '\u2717' : isSelected ? '\u2022' : ''
                     ),
                     h('div', { className: 'flex-grow' },
@@ -1670,7 +1670,7 @@
                       return h('button', {
                         key: fp.id,
                         onClick: function() { upd('glutenProtein', fp.protein); },
-                        className: 'px-2 py-0.5 rounded-full text-[10px] font-bold transition-colors ' + (active ? 'bg-teal-500 text-white' : 'bg-teal-50 text-teal-700 hover:bg-teal-100')
+                        className: 'px-2 py-0.5 rounded-full text-[10px] font-bold transition-colors ' + (active ? 'bg-teal-700 text-white' : 'bg-teal-50 text-teal-700 hover:bg-teal-100')
                       }, fp.label);
                     })
                   )
@@ -1930,7 +1930,7 @@
                   return h('button', {
                     key: f.id,
                     onClick: function() { upd('brownFood', f.id); playBeep('click'); },
-                    className: 'rounded-xl border-2 p-2 text-center text-xs font-bold transition-all ' + (active ? 'bg-orange-500 text-white border-orange-600 shadow' : 'bg-orange-50 border-orange-600 hover:border-orange-400 text-orange-900'),
+                    className: 'rounded-xl border-2 p-2 text-center text-xs font-bold transition-all ' + (active ? 'bg-orange-700 text-white border-orange-800 shadow' : 'bg-orange-50 border-orange-600 hover:border-orange-400 text-orange-900'),
                     'aria-pressed': active,
                     'aria-label': f.label
                   },
@@ -1991,7 +1991,7 @@
                       return h('button', {
                         key: String(opt.id),
                         onClick: function() { upd('brownDry', opt.id); playBeep('click'); },
-                        className: 'flex-1 px-2 py-1.5 rounded-full text-xs font-bold transition-colors ' + (active ? 'bg-sky-500 text-white' : 'bg-sky-50 text-sky-700 hover:bg-sky-100'),
+                        className: 'flex-1 px-2 py-1.5 rounded-full text-xs font-bold transition-colors ' + (active ? 'bg-sky-700 text-white' : 'bg-sky-50 text-sky-700 hover:bg-sky-100'),
                         'aria-pressed': active
                       }, opt.label);
                     })

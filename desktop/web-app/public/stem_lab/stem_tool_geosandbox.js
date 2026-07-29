@@ -4139,7 +4139,7 @@ window.StemLab = window.StemLab || {
                   disabled: !enabled || !!pendingPredict,
                   'aria-label': label,
                   className: 'w-full px-3 py-2 rounded-lg text-xs font-bold transition-all ' +
-                    (enabled && !pendingPredict ? 'bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white hover:from-fuchsia-700 hover:to-purple-700 shadow-md' : 'bg-slate-700 text-slate-500 cursor-not-allowed')
+                    (enabled && !pendingPredict ? 'bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white hover:from-fuchsia-700 hover:to-purple-700 shadow-md' : 'bg-slate-700 text-slate-300 cursor-not-allowed')
                 }, (predictMode ? '🔮 ' : '⤴ ') + label);
               })(),
               // Construction object list
@@ -4216,14 +4216,14 @@ window.StemLab = window.StemLab || {
                   disabled: !history.length,
                   'aria-label': t('stem.geosandbox.undo_last_stretch', 'Undo last stretch'),
                   className: 'flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold transition-all ' +
-                    (history.length ? 'bg-amber-700 text-white hover:bg-amber-800' : 'bg-slate-700 text-slate-500 cursor-not-allowed')
+                    (history.length ? 'bg-amber-700 text-white hover:bg-amber-800' : 'bg-slate-700 text-slate-300 cursor-not-allowed')
                 }, '↶ Undo (' + history.length + ')'),
                 h('button', {
                   onClick: clearConstruction,
                   disabled: !construction.objects.length,
                   'aria-label': t('stem.geosandbox.clear_all_construction_objects', 'Clear all construction objects'),
                   className: 'flex-1 px-2 py-1.5 rounded-lg text-[11px] font-bold transition-all ' +
-                    (construction.objects.length ? 'bg-rose-700 text-white hover:bg-rose-800' : 'bg-slate-700 text-slate-500 cursor-not-allowed')
+                    (construction.objects.length ? 'bg-rose-700 text-white hover:bg-rose-800' : 'bg-slate-700 text-slate-300 cursor-not-allowed')
                 }, t('stem.geosandbox.clear_all', '× Clear all'))
               )
             ),
@@ -4721,7 +4721,7 @@ window.StemLab = window.StemLab || {
                   },
                   disabled: !construction.objects.length,
                   className: 'flex-1 px-2 py-1 rounded text-[11px] font-bold ' +
-                    (construction.objects.length ? 'bg-blue-700 text-white hover:bg-blue-800' : 'bg-slate-700 text-slate-500 cursor-not-allowed')
+                    (construction.objects.length ? 'bg-blue-700 text-white hover:bg-blue-800' : 'bg-slate-700 text-slate-300 cursor-not-allowed')
                 }, t('stem.geosandbox.save', '💾 Save')),
                 h('button', {
                   onClick: function() { upd('showSaved', !showSaved); },

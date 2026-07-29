@@ -2872,6 +2872,10 @@ var d = (labToolData.companionPlanting) || {};
           var cgLastCareAction = cg.lastCareAction || null;
           var cgDayPrediction = cg.dayPrediction || null;
           var cgPredictionResult = cg.predictionResult || null;
+          var cgShowAdvanceReview = cg.showAdvanceReview === true;
+          var cgOpenDayBriefing = function() {
+            if (cgPhase === 'grow') cgUpd({ showAdvanceReview: true });
+          };
           var cgPlantFilter = cg.plantFilter || 'all';
           var cgPlantSearch = cg.plantSearch || '';
           var cgRelationshipLens = cg.relationshipLens !== false;
@@ -2885,6 +2889,32 @@ var d = (labToolData.companionPlanting) || {};
           var cgPlantingDockFilter = cg.plantingDockFilter || 'all';
           var cgLastPlacement = cg.lastPlacement || null;
           var cgSkipNextPlantXPPlot = typeof cg.skipNextPlantXPPlot === 'number' ? cg.skipNextPlantXPPlot : null;
+          var cgPlantingPrediction = cg.plantingPrediction || null;
+          var cgPlantingClaim = cg.plantingClaim || null;
+          var cgInquiryReasoning = cg.inquiryReasoning || null;
+          var cgShowLearningCompass = cg.showLearningCompass !== false;
+          var cgShowFacilitatorGuide = cg.showFacilitatorGuide === true;
+          var cgFocusMode = cg.focusMode === true;
+          var cgWorkspaceStage = ['design', 'observe', 'explain', 'transfer'].indexOf(cg.workspaceStage) !== -1 ? cg.workspaceStage : null;
+          var cgKeyboardPlot = typeof cg.keyboardPlot === 'number' && cg.keyboardPlot >= 0 && cg.keyboardPlot < 16 ? Math.floor(cg.keyboardPlot) : 0;
+          var cgReadableMode = cg.readableMode !== false;
+          var cgContrastMode = cg.contrastMode === true;
+          var cgReducedMotion = cg.reducedMotion === true;
+          var cgInquiryObservations = Array.isArray(cg.inquiryObservations) ? cg.inquiryObservations : [];
+          var cgComparisonRequest = cg.comparisonRequest || null;
+          var cgInquiryConfidence = cg.inquiryConfidence || null;
+          var cgInquiryNextStep = cg.inquiryNextStep || null;
+          var cgInquiryHistory = Array.isArray(cg.inquiryHistory) ? cg.inquiryHistory : [];
+          var cgRivalTestPlan = cg.rivalTestPlan || null;
+          var cgShowInquiryNotebook = cg.showInquiryNotebook === true;
+          var cgShowEvidencePortfolio = cg.showEvidencePortfolio === true;
+          var cgEvidencePortfolioStatus = cg.evidencePortfolioStatus || '';
+          var cgInquiryAudience = cg.inquiryAudience || 'science';
+          var cgFieldContext = cg.fieldContext || 'raised-bed';
+          var cgFieldPriority = cg.fieldPriority || 'balanced';
+          var cgFieldChecklist = cg.fieldChecklist || {};
+          var cgCrewRole = cg.crewRole || 'designer';
+          var cgCrewNotes = cg.crewNotes || {};
 
           // NPK consumption rates per plant (per growth day)
           var PLANT_NPK = {
@@ -2939,6 +2969,36 @@ var d = (labToolData.companionPlanting) || {};
           }
 
           // ── CG helper: get companion bonus for a cell ──
+          function cgChooseWorkspaceStage(stageId, useCompactView) {
+            if (['design', 'observe', 'explain', 'transfer'].indexOf(stageId) === -1) return;
+            cgUpd({ workspaceStage: stageId, focusMode: useCompactView !== false });
+          }
+
+          function cgFocusGardenPlot(plotIndex) {
+            var safeIndex = Math.max(0, Math.min(15, plotIndex));
+            cgUpd({ keyboardPlot: safeIndex });
+            if (typeof document !== 'undefined') setTimeout(function() {
+              var plotControl = document.getElementById('community-plot-control-' + safeIndex);
+              if (plotControl && typeof plotControl.focus === 'function') plotControl.focus();
+            }, 0);
+          }
+
+          function cgHandleGardenPlotKeyDown(event, plotIndex) {
+            var key = event && event.key;
+            var nextIndex = plotIndex;
+            var rowStart = Math.floor(plotIndex / 4) * 4;
+            var hasBoundaryModifier = !!(event && (event.ctrlKey || event.metaKey));
+            if (key === 'ArrowLeft') nextIndex = plotIndex % 4 > 0 ? plotIndex - 1 : plotIndex;
+            else if (key === 'ArrowRight') nextIndex = plotIndex % 4 < 3 ? plotIndex + 1 : plotIndex;
+            else if (key === 'ArrowUp') nextIndex = plotIndex >= 4 ? plotIndex - 4 : plotIndex;
+            else if (key === 'ArrowDown') nextIndex = plotIndex < 12 ? plotIndex + 4 : plotIndex;
+            else if (key === 'Home') nextIndex = hasBoundaryModifier ? 0 : rowStart;
+            else if (key === 'End') nextIndex = hasBoundaryModifier ? 15 : rowStart + 3;
+            else return;
+            event.preventDefault();
+            cgFocusGardenPlot(nextIndex);
+          }
+
           function cgLogActivity(icon, title, detail) {
             var nextLog = cgEventLog.concat([{ icon: icon, title: title, detail: detail, day: cgDay, ts: Date.now() }]).slice(-12);
             cgUpd({ eventLog: nextLog });
@@ -3040,6 +3100,104 @@ var d = (labToolData.companionPlanting) || {};
               if (relationship) links.push({ index: neighborIndex, direction: direction, plantId: neighbor.plantId, relationship: relationship });
             });
             return links;
+          }
+
+          var CG_PLANTING_INQUIRY_OPTIONS = [
+            { id: 'growth', icon: '\uD83C\uDF31', label: 'Faster growth', question: 'Will this plant gain growth after the next simulated day?' },
+            { id: 'health', icon: '\u2764\uFE0F', label: 'Stronger health', question: 'Will this plant maintain or improve its health?' },
+            { id: 'pests', icon: '\uD83D\uDC1E', label: 'Pest resistance', question: 'Will pest pressure stay level or decrease in this plot?' },
+            { id: 'soil', icon: 'N', label: 'Soil nitrogen', question: 'Will garden nitrogen stay level or increase?' }
+          ];
+
+          function cgInquiryPredictionMeta(predictionId) {
+            for (var inquiryIndex = 0; inquiryIndex < CG_PLANTING_INQUIRY_OPTIONS.length; inquiryIndex++) {
+              if (CG_PLANTING_INQUIRY_OPTIONS[inquiryIndex].id === predictionId) return CG_PLANTING_INQUIRY_OPTIONS[inquiryIndex];
+            }
+            return CG_PLANTING_INQUIRY_OPTIONS[0];
+          }
+
+          function cgHypotheticalPlacementEvidence(grid, idx, plantId) {
+            var plant = CG_PLANTS[plantId];
+            if (!plant || typeof idx !== 'number') return { neighbors: [], links: [], allyBonus: 0, conflicts: 0, pathway: 'support', mechanism: 'Observe how the new plant responds to the same garden conditions.' };
+            var row = Math.floor(idx / 4);
+            var col = idx % 4;
+            var neighbors = [];
+            var links = [];
+            for (var dr = -1; dr <= 1; dr++) {
+              for (var dc = -1; dc <= 1; dc++) {
+                if ((!dr && !dc) || row + dr < 0 || row + dr > 3 || col + dc < 0 || col + dc > 3) continue;
+                var neighborIndex = (row + dr) * 4 + col + dc;
+                var neighborCell = grid[neighborIndex];
+                if (!neighborCell || !neighborCell.plantId || !CG_PLANTS[neighborCell.plantId]) continue;
+                neighbors.push({ index: neighborIndex, plantId: neighborCell.plantId });
+                var relationship = getCompanionRelationship(plantId, neighborCell.plantId);
+                if (relationship) links.push({ index: neighborIndex, plantId: neighborCell.plantId, relationship: relationship, pathway: cgRelationshipPathway(relationship) });
+              }
+            }
+            links.sort(function(left, right) { return right.relationship.bonus - left.relationship.bonus; });
+            var helpfulLinks = links.filter(function(link) { return link.relationship.bonus > 0; });
+            var conflictLinks = links.filter(function(link) { return link.relationship.bonus < 0; });
+            var allyBonus = helpfulLinks.reduce(function(sum, link) { return sum + link.relationship.bonus; }, 0);
+            var primaryLink = helpfulLinks[0] || conflictLinks[0] || null;
+            var pathway = primaryLink ? primaryLink.pathway : plant.nEffect > 0 ? 'nitrogen' : plant.pollinator ? 'pollination' : 'support';
+            var mechanism = primaryLink ? primaryLink.relationship.desc
+              : plant.nEffect > 0 ? plant.label + ' can add nitrogen through its modeled soil role.'
+              : plant.pollinator ? plant.label + ' adds flower or habitat resources for beneficial visitors.'
+              : 'No modeled pair is active yet, so seasonal conditions and care provide the comparison.';
+            return { neighbors: neighbors, links: links, helpfulLinks: helpfulLinks, conflictLinks: conflictLinks, allyBonus: allyBonus, conflicts: conflictLinks.length, pathway: pathway, mechanism: mechanism };
+          }
+
+          function cgInferPlantingPrediction(plant, placementEvidence) {
+            if (plant.nEffect > 0) return 'soil';
+            if (placementEvidence && placementEvidence.helpfulLinks && placementEvidence.helpfulLinks.some(function(link) { return link.pathway === 'pest'; })) return 'pests';
+            if (placementEvidence && placementEvidence.conflicts > 0) return 'health';
+            return 'growth';
+          }
+
+          function cgInquiryMetricValues(predictionId, plotChange, report) {
+            if (!report) return null;
+            var beforeValue = 0;
+            var afterValue = 0;
+            if (predictionId === 'soil') {
+              if (!report.before || !report.after) return null;
+              beforeValue = report.before.nitrogen;
+              afterValue = report.after.nitrogen;
+            } else {
+              if (!plotChange) return null;
+              if (predictionId === 'health') {
+                beforeValue = plotChange.beforeHealth;
+                afterValue = plotChange.afterHealth;
+              } else if (predictionId === 'pests') {
+                beforeValue = plotChange.beforePests;
+                afterValue = plotChange.afterPests;
+              } else {
+                beforeValue = plotChange.beforeGrowth;
+                afterValue = plotChange.afterGrowth;
+              }
+            }
+            return { before: beforeValue, after: afterValue, delta: Math.round((afterValue - beforeValue) * 10) / 10 };
+          }
+
+          function cgFindInquiryComparison(claim, report) {
+            if (!claim || !report || !report.plotChanges || claim.predictionId === 'soil') return null;
+            if (typeof claim.comparisonPlot === 'number' && report.day <= (claim.comparisonPlantedDay || claim.plantedDay)) return null;
+            var targetChange = report.plotChanges.filter(function(change) { return change.index === claim.plot; })[0] || null;
+            if (!targetChange) return null;
+            var candidates = report.plotChanges.filter(function(change) {
+              if (change.index === claim.plot || change.plantId !== claim.plantId) return false;
+              return typeof claim.comparisonPlot !== 'number' || change.index === claim.comparisonPlot;
+            });
+            if (!candidates.length) return null;
+            var targetMetric = cgInquiryMetricValues(claim.predictionId, targetChange, report);
+            candidates.sort(function(left, right) {
+              var leftMetric = cgInquiryMetricValues(claim.predictionId, left, report);
+              var rightMetric = cgInquiryMetricValues(claim.predictionId, right, report);
+              var leftScore = Math.abs(leftMetric.before - targetMetric.before) + Math.abs(left.beforeHealth - targetChange.beforeHealth) / 10 + Math.abs(left.beforePests - targetChange.beforePests) / 10;
+              var rightScore = Math.abs(rightMetric.before - targetMetric.before) + Math.abs(right.beforeHealth - targetChange.beforeHealth) / 10 + Math.abs(right.beforePests - targetChange.beforePests) / 10;
+              return leftScore - rightScore;
+            });
+            var comparisonChange = candidates[0];
+            return { plot: comparisonChange.index, change: comparisonChange, metric: cgInquiryMetricValues(claim.predictionId, comparisonChange, report) };
           }
           // ── CG: advance one day ──
           // ── Beneficial Events (positive ecosystem feedback) ──
@@ -3300,6 +3458,32 @@ var d = (labToolData.companionPlanting) || {};
             var predictionChecks = { growth: lastDayReport.growthDelta >= 0.8, moisture: lastDayReport.moistureDelta <= -1, pests: lastDayReport.pestDelta > 0, harvest: lastDayReport.readyDelta > 0 };
             var observedOutcome = lastDayReport.readyDelta > 0 ? 'A new crop became ready to harvest.' : lastDayReport.healthDelta < 0 ? 'Average plant health declined.' : lastDayReport.pestDelta > 0 ? 'Pest pressure increased.' : lastDayReport.moistureDelta <= -1 ? 'Soil moisture decreased.' : 'The strongest signal was steady crop growth.';
             var predictionResult = cgDayPrediction ? { id: cgDayPrediction.id, label: cgDayPrediction.label, matched: !!predictionChecks[cgDayPrediction.id], observed: observedOutcome, day: newDay } : null;
+            var nextInquiryObservations = cgInquiryObservations;
+            if (cgPlantingClaim && newDay > cgPlantingClaim.plantedDay) {
+              var observationTargetChange = reportPlotChanges.filter(function(change) { return change.index === cgPlantingClaim.plot; })[0] || null;
+              var observationTargetMetric = cgInquiryMetricValues(cgPlantingClaim.predictionId, observationTargetChange, lastDayReport);
+              if (observationTargetMetric) {
+                var observationComparison = cgFindInquiryComparison(cgPlantingClaim, lastDayReport);
+                var observation = {
+                  claimPlot: cgPlantingClaim.plot,
+                  plantId: cgPlantingClaim.plantId,
+                  predictionId: cgPlantingClaim.predictionId,
+                  day: newDay,
+                  before: observationTargetMetric.before,
+                  after: observationTargetMetric.after,
+                  delta: observationTargetMetric.delta,
+                  comparisonPlot: observationComparison ? observationComparison.plot : null,
+                  comparisonBefore: observationComparison ? observationComparison.metric.before : null,
+                  comparisonAfter: observationComparison ? observationComparison.metric.after : null,
+                  comparisonDelta: observationComparison ? observationComparison.metric.delta : null,
+                  careStable: !cgLastCareAction,
+                  eventFree: !newEvent
+                };
+                nextInquiryObservations = cgInquiryObservations.filter(function(entry) {
+                  return entry.claimPlot === cgPlantingClaim.plot && entry.plantId === cgPlantingClaim.plantId && entry.predictionId === cgPlantingClaim.predictionId;
+                }).concat([observation]).slice(-8);
+              }
+            }
             var dayFeedback = newEvent ? { icon: newEvent.emoji, title: newEvent.label, detail: newEvent.desc, tone: newEvent.isGood ? 'success' : 'warning' } : { icon: '\uD83D\uDCC5', title: 'Day ' + (newDay % 30 + 1) + ' complete', detail: 'Moisture is ' + Math.round(Math.min(100, Math.max(0, newMoisture + extraMoisture))) + '%. ' + (readyAfterDay ? readyAfterDay + ' crop' + (readyAfterDay !== 1 ? 's are' : ' is') + ' ready to harvest.' : 'Growth advanced across the garden.'), tone: readyAfterDay ? 'celebrate' : 'info' };
 
             cgUpd({
@@ -3318,8 +3502,10 @@ var d = (labToolData.companionPlanting) || {};
               advisorCooldown: Math.max(0, cgAdvisorCooldown - 1),
               lastDayReport: lastDayReport,
               predictionResult: predictionResult,
+              inquiryObservations: nextInquiryObservations,
               dayPrediction: null,
               lastCareAction: null,
+              showAdvanceReview: false,
               showDayReplay: true,
               lastFeedback: dayFeedback
             });
@@ -3334,6 +3520,10 @@ var d = (labToolData.companionPlanting) || {};
             if (!chosenPlantId || cgPhase !== 'plan' || !cgGrid[idx] || cgGrid[idx].plantId) return false;
             var plant = CG_PLANTS[chosenPlantId];
             if (!plant) return false;
+            var placementEvidence = cgHypotheticalPlacementEvidence(cgGrid, idx, chosenPlantId);
+            var plantingPredictionId = cgPlantingPrediction || cgInferPlantingPrediction(plant, placementEvidence);
+            var plantingPredictionMeta = cgInquiryPredictionMeta(plantingPredictionId);
+            var comparisonPlacement = !!(cgComparisonRequest && cgPlantingClaim && cgComparisonRequest.claimPlot === cgPlantingClaim.plot && cgComparisonRequest.plantId === chosenPlantId && idx !== cgPlantingClaim.plot);
             // Economics: deduct seed cost from budget
             var seedCost = plant.cost ? plant.cost * 0.10 : 0.50; // cost field is points; convert to dollars
             if (cgBudget < seedCost) {
@@ -3350,9 +3540,21 @@ var d = (labToolData.companionPlanting) || {};
               plantingTarget: null,
               relationshipLens: true,
               relationshipFocus: idx,
-              lastPlacement: { plot: idx, plantId: chosenPlantId, seedCost: seedCost },
+              lastPlacement: { plot: idx, plantId: chosenPlantId, seedCost: seedCost, comparison: comparisonPlacement },
               skipNextPlantXPPlot: null,
-              lastFeedback: { icon: '\uD83C\uDF31', title: 'Plot planted', detail: plant.label + ' added to plot ' + (idx + 1) + '. The Relationship Lens now shows how the new crop fits its neighborhood.', tone: 'success' }
+              plantingPrediction: null,
+              comparisonRequest: null,
+              inquiryReasoning: null,
+              inquiryConfidence: null,
+              inquiryNextStep: null,
+              inquiryObservations: [],
+              fieldChecklist: {},
+              plantingClaim: comparisonPlacement
+                ? Object.assign({}, cgPlantingClaim, { comparisonPlot: idx, comparisonPlantedDay: cgDay, comparisonNeighborIds: placementEvidence.neighbors.map(function(neighbor) { return neighbor.plantId; }) })
+                : { plot: idx, plantId: chosenPlantId, plantedDay: cgDay, predictionId: plantingPredictionId, predictionLabel: plantingPredictionMeta.label, neighborIds: placementEvidence.neighbors.map(function(neighbor) { return neighbor.plantId; }), allyBonus: placementEvidence.allyBonus, conflicts: placementEvidence.conflicts, pathway: placementEvidence.pathway, mechanism: placementEvidence.mechanism },
+              lastFeedback: comparisonPlacement
+                ? { icon: '\u2696\uFE0F', title: 'Comparison plot planted', detail: plant.label + ' added to Plot ' + (idx + 1) + '. Advance a day to compare it with Plot ' + (cgPlantingClaim.plot + 1) + ' under the same garden conditions.', tone: 'success' }
+                : { icon: '\uD83C\uDF31', title: 'Plot planted', detail: plant.label + ' added to plot ' + (idx + 1) + '. The Relationship Lens now shows how the new crop fits its neighborhood.', tone: 'success' }
             };
             if (options && options.clearSelection) plantPatch.selectedPlant = null;
             cgUpd(plantPatch);
@@ -3360,7 +3562,7 @@ var d = (labToolData.companionPlanting) || {};
             // Visible success feedback (UDL: confirm the action across modalities)
             var plantEmoji = plant.emoji || '\uD83C\uDF31';
             var plantName = plant.label || plant.name || chosenPlantId;
-            cgLogActivity(plantEmoji, 'Planted ' + plantName, 'Plot ' + (idx + 1) + ' started.');
+            cgLogActivity(comparisonPlacement ? '\u2696\uFE0F' : plantEmoji, comparisonPlacement ? 'Added comparison ' + plantName : 'Planted ' + plantName, 'Plot ' + (idx + 1) + (comparisonPlacement ? ' became the matched comparison.' : ' started.'));
             if (addToast) addToast(plantEmoji + ' Planted ' + plantName + '! \u2212$' + seedCost.toFixed(2) + ' \u00B7 +5 XP', 'success');
             if (stemBeep) { try { stemBeep(523, 0.1, 0.1); } catch (e) {} }
             return true;
@@ -3381,7 +3583,11 @@ var d = (labToolData.companionPlanting) || {};
             if (cgPhase !== 'plan') return;
             var newGrid = cgGrid.slice();
             newGrid[idx] = { plantId: null, growthDay: 0, health: 100, watered: false, pests: 0 };
-            cgUpd({ grid: newGrid, plantingTarget: idx, selectedPlant: null, relationshipFocus: null, lastFeedback: { icon: '\u21A9\uFE0F', title: 'Plot cleared', detail: 'Plot ' + (idx + 1) + ' is open and selected. Choose its replacement from the in-garden Planting Dock.', tone: 'info' } });
+            var removalTouchedInquiry = !!(cgPlantingClaim && (cgPlantingClaim.plot === idx || cgPlantingClaim.comparisonPlot === idx));
+            var claimAfterRemoval = cgPlantingClaim && cgPlantingClaim.plot === idx ? null
+              : cgPlantingClaim && cgPlantingClaim.comparisonPlot === idx ? Object.assign({}, cgPlantingClaim, { comparisonPlot: null, comparisonPlantedDay: null, comparisonNeighborIds: [] })
+              : cgPlantingClaim;
+            cgUpd({ grid: newGrid, plantingTarget: idx, selectedPlant: null, relationshipFocus: null, plantingPrediction: null, comparisonRequest: null, inquiryReasoning: removalTouchedInquiry ? null : cgInquiryReasoning, inquiryConfidence: removalTouchedInquiry ? null : cgInquiryConfidence, inquiryNextStep: removalTouchedInquiry ? null : cgInquiryNextStep, inquiryObservations: removalTouchedInquiry ? [] : cgInquiryObservations, fieldChecklist: {}, plantingClaim: claimAfterRemoval, lastFeedback: { icon: '\u21A9\uFE0F', title: 'Plot cleared', detail: 'Plot ' + (idx + 1) + ' is open and selected. Choose its replacement from the in-garden Planting Dock.', tone: 'info' } });
           }
 
           function cgUndoLastPlacement() {
@@ -3396,6 +3602,10 @@ var d = (labToolData.companionPlanting) || {};
             var refund = typeof cgLastPlacement.seedCost === 'number' ? cgLastPlacement.seedCost : undoPlant && undoPlant.cost ? undoPlant.cost * 0.10 : 0.50;
             var undoGrid = cgGrid.slice();
             undoGrid[undoIndex] = { plantId: null, growthDay: 0, health: 100, watered: false, pests: 0 };
+            var undoTouchedInquiry = !!(cgPlantingClaim && (cgPlantingClaim.plot === undoIndex || cgPlantingClaim.comparisonPlot === undoIndex));
+            var undoClaim = cgPlantingClaim && cgPlantingClaim.plot === undoIndex ? null
+              : cgPlantingClaim && cgPlantingClaim.comparisonPlot === undoIndex ? Object.assign({}, cgPlantingClaim, { comparisonPlot: null, comparisonPlantedDay: null, comparisonNeighborIds: [] })
+              : cgPlantingClaim;
             cgUpd({
               grid: undoGrid,
               budget: Math.round((cgBudget + refund) * 100) / 100,
@@ -3404,6 +3614,14 @@ var d = (labToolData.companionPlanting) || {};
               selectedPlant: null,
               relationshipFocus: null,
               lastPlacement: null,
+              plantingPrediction: null,
+              comparisonRequest: null,
+              plantingClaim: undoClaim,
+              inquiryReasoning: undoTouchedInquiry ? null : cgInquiryReasoning,
+              inquiryConfidence: undoTouchedInquiry ? null : cgInquiryConfidence,
+              inquiryNextStep: undoTouchedInquiry ? null : cgInquiryNextStep,
+              inquiryObservations: undoTouchedInquiry ? [] : cgInquiryObservations,
+              fieldChecklist: {},
               skipNextPlantXPPlot: undoIndex,
               lastFeedback: { icon: '\u21A9\uFE0F', title: 'Placement undone', detail: (undoPlant ? undoPlant.label : 'Plant') + ' was removed from Plot ' + (undoIndex + 1) + ' and $' + refund.toFixed(2) + ' returned. The plot remains selected.', tone: 'success' }
             });
@@ -3413,7 +3631,7 @@ var d = (labToolData.companionPlanting) || {};
           function cgRepeatLastCrop() {
             if (!cgLastPlacement || !CG_PLANTS[cgLastPlacement.plantId] || cgPhase !== 'plan') return;
             var repeatPlant = CG_PLANTS[cgLastPlacement.plantId];
-            cgUpd({ selectedPlant: cgLastPlacement.plantId, plantingTarget: null, lastFeedback: { icon: repeatPlant.emoji, title: repeatPlant.label + ' selected again', detail: 'Choose another open plot. The garden will preview the crop before planting.', tone: 'info' } });
+            cgUpd({ selectedPlant: cgLastPlacement.plantId, plantingTarget: null, plantingPrediction: null, lastFeedback: { icon: repeatPlant.emoji, title: repeatPlant.label + ' selected again', detail: 'Choose another open plot. The garden will preview the crop before planting.', tone: 'info' } });
           }
 
           // Trigger a visual action-burst on the garden canvas.
@@ -4565,7 +4783,9 @@ var d = (labToolData.companionPlanting) || {};
                 : plant.pollinator ? 'Habitat helper'
                 : plant.needsPoll && !nearbyPollinators ? 'Needs flowers'
                 : 'Open fit';
-              return { key: key, plant: plant, seedCost: plant.cost ? plant.cost * 0.10 : 0.50, allyBonus: allyBonus, allyCount: allyCount, conflictCount: conflictCount, reasons: reasons, score: score, fitLabel: fitLabel };
+              var primaryCandidateReason = reasons.filter(function(reason) { return reason.relationship.bonus > 0; }).sort(function(left, right) { return right.relationship.bonus - left.relationship.bonus; })[0] || reasons[0] || null;
+              var candidatePathway = primaryCandidateReason ? cgRelationshipPathway(primaryCandidateReason.relationship) : plant.nEffect > 0 ? 'nitrogen' : plant.pollinator ? 'pollination' : 'support';
+              return { key: key, plant: plant, seedCost: plant.cost ? plant.cost * 0.10 : 0.50, allyBonus: allyBonus, allyCount: allyCount, conflictCount: conflictCount, reasons: reasons, score: score, fitLabel: fitLabel, pathway: candidatePathway, mechanism: primaryCandidateReason ? primaryCandidateReason.relationship.desc : plant.nEffect > 0 ? 'Adds nitrogen through its modeled soil role.' : plant.pollinator ? 'Adds habitat resources for beneficial visitors.' : 'Creates a comparison under the same garden conditions.' };
             }).sort(function(left, right) {
               if (left.conflictCount !== right.conflictCount) return left.conflictCount - right.conflictCount;
               if (left.score !== right.score) return right.score - left.score;
@@ -4586,6 +4806,10 @@ var d = (labToolData.companionPlanting) || {};
               var lastPlacedPlant = cgLastPlacement && CG_PLANTS[cgLastPlacement.plantId];
               var lastPlacementCell = cgLastPlacement && typeof cgLastPlacement.plot === 'number' ? cgGrid[cgLastPlacement.plot] : null;
               var canUndoLastPlacement = !!(lastPlacedPlant && lastPlacementCell && lastPlacementCell.plantId === cgLastPlacement.plantId && (lastPlacementCell.growthDay || 0) === 0);
+              var inferredDockPrediction = bestPlantingCandidate ? cgInferPlantingPrediction(bestPlantingCandidate.plant, { helpfulLinks: bestPlantingCandidate.reasons.map(function(reason) { return { pathway: cgRelationshipPathway(reason.relationship) }; }), conflicts: bestPlantingCandidate.conflictCount }) : 'growth';
+              var dockPredictionMeta = cgInquiryPredictionMeta(cgPlantingPrediction || inferredDockPrediction);
+              var dockPathwayMeta = bestPlantingCandidate ? cgRelationshipPathwayMeta(bestPlantingCandidate.pathway) : cgRelationshipPathwayMeta('support');
+              var comparisonModeActive = !!(cgComparisonRequest && cgPlantingClaim && cgComparisonRequest.claimPlot === cgPlantingClaim.plot && cgComparisonRequest.plantId === cgPlantingClaim.plantId);
               return h('section', { className: 'relative z-40 mb-2 overflow-hidden rounded-xl border border-emerald-300 bg-white/95 shadow-lg backdrop-blur-sm', 'data-community-planting-dock': true, 'data-planting-dock-surface': surface, 'aria-labelledby': titleId },
                 h('div', { className: 'flex flex-wrap items-start justify-between gap-2 border-b border-emerald-100 bg-gradient-to-r from-emerald-950 via-emerald-900 to-teal-900 px-3 py-2.5 text-white' },
                   h('div', null, h('div', { className: 'text-[9px] font-black uppercase tracking-[0.16em] text-lime-200' }, 'Plant inside the garden'), h('h4', { id: titleId, className: 'text-sm font-black text-white' }, activePlantingTarget !== null ? 'Plot ' + (activePlantingTarget + 1) + ': choose its crop' : selectedDockPlant ? selectedDockPlant.label + ' is ready to place' : 'Planting Dock'), h('p', { className: 'mt-0.5 text-[9px] text-emerald-100' }, activePlantingTarget !== null ? 'Suggestions are ranked using the plants in the eight neighboring plots.' : selectedDockPlant ? 'Choose any open plot in this garden view.' : 'Choose an open plot first, or select a crop from the Seed Shelf.')),
@@ -4597,10 +4821,15 @@ var d = (labToolData.companionPlanting) || {};
                     h('span', { className: 'rounded-full px-2 py-1 ' + (cgLastPlacement ? 'bg-teal-200 text-teal-950' : 'bg-white/10 text-white/60') }, '3 Observe')
                   )
                 ),
+                comparisonModeActive && h('div', { className: 'flex flex-wrap items-center gap-2 border-b border-violet-100 bg-violet-50 px-3 py-2.5', 'data-comparison-planting-mode': true, role: 'status', 'aria-live': 'polite' },
+                  h('span', { className: 'flex h-9 w-9 items-center justify-center rounded-xl bg-violet-700 text-lg text-white', 'aria-hidden': true }, '\u2696\uFE0F'),
+                  h('div', { className: 'min-w-[190px] flex-1' }, h('div', { className: 'text-[8px] font-black uppercase tracking-wide text-violet-700' }, 'Fair-test setup'), h('div', { className: 'text-[10px] font-black text-slate-900' }, 'Place ' + inquiryClaimPlant.label + ' in a second plot'), h('p', { className: 'mt-0.5 text-[9px] leading-relaxed text-slate-600' }, 'Same crop, different neighborhood. This creates a matched comparison for Plot ' + (cgPlantingClaim.plot + 1) + '.')),
+                  h('button', { onClick: function() { cgUpd({ comparisonRequest: null, selectedPlant: null, plantingTarget: null }); }, className: 'min-h-[34px] rounded-lg border border-violet-200 bg-white px-2.5 py-1 text-[9px] font-black text-violet-800 hover:bg-violet-100' }, 'Cancel comparison')
+                ),
                 activePlantingTarget === null && h('div', { className: 'flex flex-wrap items-center gap-3 p-3', role: 'status', 'aria-live': 'polite' },
                   selectedDockPlant ? h('span', { className: 'flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 text-2xl ring-1 ring-emerald-200', 'aria-hidden': true }, selectedDockPlant.emoji) : h('span', { className: 'flex h-11 w-11 items-center justify-center rounded-xl border-2 border-dashed border-emerald-300 bg-emerald-50 text-xl text-emerald-600', 'aria-hidden': true }, '＋'),
                   h('div', { className: 'min-w-[180px] flex-1' }, h('div', { className: 'text-[11px] font-black text-slate-900' }, selectedDockPlant ? 'Now choose an open plot' : 'Choose an open plot to begin'), h('div', { className: 'mt-0.5 text-[9px] leading-relaxed text-slate-600' }, selectedDockPlant ? 'Open plots preview ' + selectedDockPlant.label + ' before placement. The crop stays selected for efficient repeat planting.' : 'Both the isometric garden and the true 4×4 map support plot-first planting. Nothing is planted until you choose a crop.')),
-                  selectedDockPlant && h('button', { onClick: function() { cgUpd({ selectedPlant: null }); }, className: 'min-h-[36px] rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[9px] font-black text-slate-700 hover:bg-slate-50' }, 'Cancel crop'),
+                  selectedDockPlant && h('button', { onClick: function() { cgUpd({ selectedPlant: null, comparisonRequest: null }); }, className: 'min-h-[36px] rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[9px] font-black text-slate-700 hover:bg-slate-50' }, comparisonModeActive ? 'Cancel comparison' : 'Cancel crop'),
                   !selectedDockPlant && lastPlacedPlant && h('div', { className: 'flex flex-wrap items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-[9px] text-emerald-900', 'data-planting-last-placement': true },
                     h('span', { className: 'min-w-[190px] flex-1' }, h('span', { className: 'font-black' }, 'Latest: '), lastPlacedPlant.emoji + ' ' + lastPlacedPlant.label + ' planted in Plot ' + (cgLastPlacement.plot + 1) + '. Relationship Lens focused automatically.'),
                     h('button', { onClick: cgRepeatLastCrop, className: 'min-h-[34px] rounded-lg bg-emerald-700 px-2.5 py-1 text-[9px] font-black text-white hover:bg-emerald-800', 'data-repeat-last-crop': true }, 'Plant another'),
@@ -4620,6 +4849,17 @@ var d = (labToolData.companionPlanting) || {};
                     h('span', { className: 'flex h-9 w-9 items-center justify-center rounded-xl bg-white text-xl shadow-sm', 'aria-hidden': true }, bestPlantingCandidate.plant.emoji),
                     h('div', { className: 'min-w-[180px] flex-1' }, h('div', { className: 'text-[8px] font-black uppercase tracking-wide text-emerald-700' }, 'Recommended first'), h('div', { className: 'text-[10px] font-black text-slate-900' }, bestPlantingCandidate.plant.label + ' · ' + bestPlantingCandidate.fitLabel), h('p', { className: 'mt-0.5 text-[9px] leading-relaxed text-slate-600' }, bestPlantingReason)),
                     h('span', { className: 'rounded-full bg-white px-2 py-1 text-[8px] font-black text-emerald-800 shadow-sm' }, 'Conflict-free · $' + bestPlantingCandidate.seedCost.toFixed(2))
+                  ),
+                  bestPlantingCandidate && h('div', { className: 'mt-2 grid grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr] items-stretch gap-1 rounded-xl border border-sky-200 bg-sky-50 p-2', 'data-planting-cause-effect': true, 'aria-label': 'Predicted cause and effect chain' },
+                    [{ label: 'Plant', value: bestPlantingCandidate.plant.emoji + ' ' + bestPlantingCandidate.plant.label }, { label: 'Pathway', value: dockPathwayMeta.icon + ' ' + dockPathwayMeta.shortLabel }, { label: 'Question', value: dockPredictionMeta.icon + ' ' + dockPredictionMeta.label }, { label: 'Evidence', value: '\uD83D\uDCCA Next day report' }].map(function(node, nodeIndex) { return [h('div', { key: node.label, className: 'rounded-lg border border-white bg-white p-1.5 text-center shadow-sm' }, h('div', { className: 'text-[7px] font-black uppercase tracking-wide text-slate-400' }, node.label), h('div', { className: 'mt-0.5 text-[8px] font-black leading-tight text-slate-800' }, node.value)), nodeIndex < 3 && h('span', { key: node.label + '-arrow', className: 'self-center text-sky-500', 'aria-hidden': true }, '\u2192')]; }).reduce(function(nodes, pair) { return nodes.concat(pair.filter(Boolean)); }, [])
+                  ),
+                  h('section', { className: 'mt-2 rounded-xl border border-violet-200 bg-violet-50/80 p-2.5', 'data-planting-prediction': true, 'aria-labelledby': 'planting-prediction-title-' + surface },
+                    h('div', { className: 'flex flex-wrap items-start justify-between gap-2' }, h('div', null, h('div', { className: 'text-[8px] font-black uppercase tracking-wide text-violet-600' }, 'Optional prediction'), h('h5', { id: 'planting-prediction-title-' + surface, className: 'text-[10px] font-black text-slate-900' }, 'What should this placement improve after one day?')), h('span', { className: 'rounded-full bg-white px-2 py-1 text-[8px] font-black text-violet-700' }, cgPlantingPrediction ? 'Your question selected' : 'A question will be inferred')),
+                    h('div', { className: 'mt-2 grid grid-cols-2 gap-1.5 sm:grid-cols-4', role: 'group', 'aria-label': 'Choose a planting prediction' }, CG_PLANTING_INQUIRY_OPTIONS.map(function(option) {
+                      var selectedPrediction = cgPlantingPrediction === option.id;
+                      return h('button', { key: option.id, onClick: function() { cgUpd({ plantingPrediction: selectedPrediction ? null : option.id }); }, 'aria-pressed': selectedPrediction, className: 'min-h-[42px] rounded-lg border px-2 py-1.5 text-left text-[9px] font-black transition-all ' + (selectedPrediction ? 'border-violet-700 bg-violet-700 text-white shadow-sm' : 'border-violet-100 bg-white text-slate-700 hover:border-violet-400') }, h('span', { className: 'mr-1', 'aria-hidden': true }, option.icon), option.label);
+                    })),
+                    h('p', { className: 'mt-1.5 text-[8px] leading-relaxed text-violet-700' }, dockPredictionMeta.question)
                   ),
                   h('div', { className: 'mt-2 flex gap-2 overflow-x-auto pb-2', role: 'group', 'aria-label': 'Plants available for selected plot' }, plantingDockCandidates.map(function(candidate) {
                     var unaffordable = cgBudget < candidate.seedCost;
@@ -4668,13 +4908,23 @@ var d = (labToolData.companionPlanting) || {};
               { id: 'pests', icon: '\uD83D\uDC1B', label: 'Pests will increase' },
               { id: 'harvest', icon: '\uD83C\uDF3E', label: 'A crop will become ready' }
             ];
-            var forecastAdvice = cgMoisture < 35 ? { icon: '\uD83D\uDCA7', text: 'Water before advancing to prevent drought stress.', action: 'Water now', onClick: cgWater } : cgNitrogen < 25 ? { icon: 'N', text: 'Add compost before heavy feeders lose momentum.', action: 'Add compost', onClick: cgCompost } : cgPestPop > 18 ? { icon: '\uD83D\uDC1B', text: 'Reduce pests before they damage the next day of growth.', action: 'Weed now', onClick: cgWeed } : { icon: '\u2705', text: 'Conditions are stable. Advance and observe the result.', action: 'Advance day', onClick: cgAdvanceDay };
+            var dayBriefingDecision = cgLastCareAction || { id: 'observe', icon: '\uD83D\uDC41\uFE0F', label: 'Observe without another care action', effect: 'Season, moisture, soil, neighbors, and pests will shape the next result.' };
+            var dayBriefingEvidenceByPrediction = {
+              growth: 'Watch average growth and the plot-by-plot growth replay.',
+              moisture: 'Watch soil moisture before and after the day changes.',
+              pests: 'Watch garden pest pressure and each planted plot.',
+              harvest: 'Watch the ready-to-harvest count and crop growth stages.'
+            };
+            var dayBriefingEvidence = cgDayPrediction ? dayBriefingEvidenceByPrediction[cgDayPrediction.id] : 'Watch growth, health, moisture, pests, and harvest readiness for the strongest change.';
+            var dayBriefingFromLabel = 'Day ' + (cgDay % 30 + 1);
+            var dayBriefingToLabel = 'Day ' + ((cgDay + 1) % 30 + 1);
+            var forecastAdvice = cgMoisture < 35 ? { icon: '\uD83D\uDCA7', text: 'Water before advancing to prevent drought stress.', action: 'Water now', onClick: cgWater } : cgNitrogen < 25 ? { icon: 'N', text: 'Add compost before heavy feeders lose momentum.', action: 'Add compost', onClick: cgCompost } : cgPestPop > 18 ? { icon: '\uD83D\uDC1B', text: 'Reduce pests before they damage the next day of growth.', action: 'Weed now', onClick: cgWeed } : { icon: '\u2705', text: 'Conditions are stable. Review the decision, then observe the result.', action: 'Review day', onClick: cgOpenDayBriefing };
             var seasonGoals = [
               { id: 'diversity', icon: '\uD83C\uDF3F', label: 'Grow 4 plant families', value: Math.min(4, seasonFamilyCount), target: 4, tip: 'Diversity makes the ecosystem more resilient.', action: 'Add diversity', onClick: function() { cgUpd({ phase: 'plan', plantFilter: 'all' }); } },
               { id: 'companions', icon: '\uD83E\uDD1D', label: 'Build 3 helpful links', value: Math.min(3, stats.activeBonuses), target: 3, tip: 'Neighboring allies improve growth and pest resistance.', action: 'Edit neighbors', onClick: function() { cgUpd({ phase: 'plan', selectedPlant: null }); } },
               { id: 'habitat', icon: '\uD83D\uDC1D', label: 'Create pollinator habitat', value: pulsePollinators > 0 ? 1 : 0, target: 1, tip: 'Flowers support pollinators and fruiting crops.', action: 'Find helpers', onClick: function() { cgUpd({ phase: 'plan', plantFilter: 'helpers' }); } },
               { id: 'soil', icon: '\uD83E\uDDEA', label: 'Balance soil conditions', value: cgNitrogen >= 30 && cgMoisture >= 30 && cgMoisture <= 85 ? 1 : 0, target: 1, tip: 'Healthy moisture and nitrogen keep crops growing.', action: cgMoisture < 30 ? 'Water' : 'Add compost', onClick: cgMoisture < 30 ? cgWater : cgCompost },
-              { id: 'harvest', icon: '\uD83C\uDF3E', label: 'Complete a harvest', value: cgTotalHarvested > 0 ? 1 : 0, target: 1, tip: 'Bring one crop through the full growth cycle.', action: readyCells ? 'Harvest now' : 'Keep growing', onClick: readyCells ? cgHarvest : cgAdvanceDay }
+              { id: 'harvest', icon: '\uD83C\uDF3E', label: 'Complete a harvest', value: cgTotalHarvested > 0 ? 1 : 0, target: 1, tip: 'Bring one crop through the full growth cycle.', action: readyCells ? 'Harvest now' : 'Keep growing', onClick: readyCells ? cgHarvest : cgOpenDayBriefing }
             ];
             var seasonGoalProgress = Math.round(seasonGoals.reduce(function(sum, goal) { return sum + Math.min(1, goal.value / goal.target); }, 0) / seasonGoals.length * 100);
             var planReadinessItems = [
@@ -4702,6 +4952,903 @@ var d = (labToolData.companionPlanting) || {};
               { id: 'pests', icon: '\uD83D\uDC1B', label: 'Pest pressure', before: cgLastDayReport.before.pests, after: cgLastDayReport.after.pests, suffix: '', favorable: cgLastDayReport.after.pests <= cgLastDayReport.before.pests },
               { id: 'ready', icon: '\uD83C\uDF3E', label: 'Harvest ready', before: cgLastDayReport.before.ready, after: cgLastDayReport.after.ready, suffix: '', favorable: cgLastDayReport.after.ready >= cgLastDayReport.before.ready }
             ] : [];
+            var inquiryClaimPlant = cgPlantingClaim && CG_PLANTS[cgPlantingClaim.plantId];
+            var inquiryPredictionMeta = cgPlantingClaim ? cgInquiryPredictionMeta(cgPlantingClaim.predictionId) : null;
+            var inquiryPlotChange = cgPlantingClaim && cgLastDayReport && cgLastDayReport.plotChanges ? cgLastDayReport.plotChanges.filter(function(change) { return change.index === cgPlantingClaim.plot; })[0] || null : null;
+            var inquiryEvidenceReady = !!(cgPlantingClaim && cgLastDayReport && cgLastDayReport.day > cgPlantingClaim.plantedDay && (inquiryPlotChange || cgPlantingClaim.predictionId === 'soil'));
+            var inquiryBefore = 0;
+            var inquiryAfter = 0;
+            var inquirySuffix = '';
+            if (inquiryEvidenceReady && cgPlantingClaim.predictionId === 'soil') {
+              inquiryBefore = cgLastDayReport.before.nitrogen; inquiryAfter = cgLastDayReport.after.nitrogen; inquirySuffix = '% nitrogen';
+            } else if (inquiryEvidenceReady && inquiryPlotChange && cgPlantingClaim.predictionId === 'health') {
+              inquiryBefore = inquiryPlotChange.beforeHealth; inquiryAfter = inquiryPlotChange.afterHealth; inquirySuffix = '% health';
+            } else if (inquiryEvidenceReady && inquiryPlotChange && cgPlantingClaim.predictionId === 'pests') {
+              inquiryBefore = inquiryPlotChange.beforePests; inquiryAfter = inquiryPlotChange.afterPests; inquirySuffix = ' pest pressure';
+            } else if (inquiryEvidenceReady && inquiryPlotChange) {
+              inquiryBefore = inquiryPlotChange.beforeGrowth; inquiryAfter = inquiryPlotChange.afterGrowth; inquirySuffix = '% grown';
+            }
+            var inquirySupported = inquiryEvidenceReady ? (cgPlantingClaim.predictionId === 'pests' ? inquiryAfter <= inquiryBefore : inquiryAfter >= inquiryBefore) : false;
+            var inquiryEvidenceStatement = inquiryEvidenceReady
+              ? (cgPlantingClaim.predictionId === 'pests' ? 'Plot ' + (cgPlantingClaim.plot + 1) + ' pest pressure changed from ' + inquiryBefore + ' to ' + inquiryAfter + '.' : (cgPlantingClaim.predictionId === 'soil' ? 'Garden nitrogen' : 'Plot ' + (cgPlantingClaim.plot + 1) + ' ' + inquiryPredictionMeta.label.toLowerCase()) + ' changed from ' + inquiryBefore + inquirySuffix + ' to ' + inquiryAfter + inquirySuffix + '.')
+              : 'No post-placement day report exists yet. Start or advance the growing season to collect comparable evidence.';
+            var inquiryReasoningOptions = [
+              { id: 'mechanism', icon: '\uD83D\uDD17', label: 'The ecological pathway could explain the pattern.', text: 'The modeled pathway changes access to nutrients, habitat, protection, or space, which can influence the measured outcome.' },
+              { id: 'conditions', icon: '\uD83C\uDF26\uFE0F', label: 'Garden conditions may be the stronger cause.', text: 'Moisture, season, soil chemistry, pests, and care actions changed at the same time, so placement is not the only possible cause.' },
+              { id: 'more_data', icon: '\uD83D\uDCCA', label: 'One day is not enough evidence.', text: 'Repeated observations help separate a lasting pattern from ordinary day-to-day variation.' },
+              { id: 'revise', icon: '\u270F\uFE0F', label: 'I would revise and compare the layout.', text: 'Changing one neighbor while holding care conditions steady creates a clearer comparison test.' }
+            ];
+            var selectedInquiryReasoning = inquiryReasoningOptions.filter(function(reasoning) { return reasoning.id === cgInquiryReasoning; })[0] || null;
+            var inquiryProgress = !cgPlantingClaim ? 0 : !inquiryEvidenceReady ? 50 : !selectedInquiryReasoning ? 75 : 100;
+            var learningStages = [
+              { id: 'design', icon: '\uD83E\uDEB4', label: 'Design', detail: 'Use roles and relationships', complete: plantedCells >= 4 && stats.activeBonuses > 0 },
+              { id: 'predict', icon: '\uD83C\uDFAF', label: 'Predict', detail: 'Name a measurable outcome', complete: !!cgPlantingClaim },
+              { id: 'test', icon: '\u23F1\uFE0F', label: 'Test', detail: 'Compare before and after', complete: inquiryEvidenceReady || !!cgLastDayReport },
+              { id: 'explain', icon: '\uD83D\uDCA1', label: 'Explain', detail: 'Connect evidence to mechanism', complete: !!selectedInquiryReasoning }
+            ];
+            var inquiryComparison = cgPlantingClaim && cgLastDayReport ? cgFindInquiryComparison(cgPlantingClaim, cgLastDayReport) : null;
+            var inquiryComparisonPending = !!(cgPlantingClaim && typeof cgPlantingClaim.comparisonPlot === 'number' && (!cgLastDayReport || cgLastDayReport.day <= (cgPlantingClaim.comparisonPlantedDay || cgPlantingClaim.plantedDay)));
+            var inquiryTargetMetric = inquiryEvidenceReady ? cgInquiryMetricValues(cgPlantingClaim.predictionId, inquiryPlotChange, cgLastDayReport) : null;
+            var inquiryComparisonMetric = inquiryComparison ? inquiryComparison.metric : null;
+            var inquiryPerformanceDifference = inquiryTargetMetric && inquiryComparisonMetric
+              ? Math.round((cgPlantingClaim.predictionId === 'pests' ? inquiryComparisonMetric.delta - inquiryTargetMetric.delta : inquiryTargetMetric.delta - inquiryComparisonMetric.delta) * 10) / 10
+              : null;
+            var inquiryObservationsForClaim = cgPlantingClaim ? cgInquiryObservations.filter(function(entry) {
+              return entry.claimPlot === cgPlantingClaim.plot && entry.plantId === cgPlantingClaim.plantId && entry.predictionId === cgPlantingClaim.predictionId;
+            }) : [];
+            var inquiryFairTestChecks = [
+              { id: 'same-plot', icon: '\uD83D\uDCCD', label: 'Same plot measured', detail: inquiryEvidenceReady ? 'Before and after captured' : 'Advance a day to capture', complete: inquiryEvidenceReady },
+              { id: 'comparison', icon: '\u2696\uFE0F', label: cgPlantingClaim && cgPlantingClaim.predictionId === 'soil' ? 'Garden baseline' : 'Matched comparison', detail: cgPlantingClaim && cgPlantingClaim.predictionId === 'soil' ? 'Nitrogen is garden-wide' : inquiryComparison ? 'Same crop in Plot ' + (inquiryComparison.plot + 1) : inquiryComparisonPending ? 'Ready for next day' : 'Add the same crop elsewhere', complete: cgPlantingClaim && cgPlantingClaim.predictionId === 'soil' ? inquiryEvidenceReady : !!inquiryComparison },
+              { id: 'care', icon: '\uD83E\uDDEA', label: 'No extra care action', detail: cgLastDayReport && cgLastDayReport.decision && cgLastDayReport.decision.id === 'observe' ? 'Conditions stayed clearer' : 'Care may affect the result', complete: !!(inquiryEvidenceReady && cgLastDayReport && cgLastDayReport.decision && cgLastDayReport.decision.id === 'observe') },
+              { id: 'event', icon: '\uD83C\uDF24\uFE0F', label: 'No random event', detail: cgLastDayReport && cgLastDayReport.eventLabel ? cgLastDayReport.eventLabel + ' also acted' : inquiryEvidenceReady ? 'No event confound' : 'Waiting for evidence', complete: !!(inquiryEvidenceReady && cgLastDayReport && !cgLastDayReport.eventLabel) },
+              { id: 'repeat', icon: '\uD83D\uDCC8', label: 'Repeated pattern', detail: inquiryObservationsForClaim.length + ' observation' + (inquiryObservationsForClaim.length === 1 ? '' : 's'), complete: inquiryObservationsForClaim.length >= 2 }
+            ];
+            var inquiryEvidenceQualityScore = Math.round(inquiryFairTestChecks.filter(function(check) { return check.complete; }).length / inquiryFairTestChecks.length * 100);
+            var inquiryEvidenceQualityLabel = inquiryEvidenceQualityScore >= 80 ? 'Strong comparison' : inquiryEvidenceQualityScore >= 40 ? 'Developing evidence' : 'Preliminary evidence';
+            var inquiryConfidenceOptions = [
+              { id: 'low', icon: '\uD83C\uDF31', label: 'Tentative', detail: 'Useful first evidence, with important limits.' },
+              { id: 'medium', icon: '\uD83C\uDF3F', label: 'Moderate', detail: 'A pattern is visible, but more trials would help.' },
+              { id: 'high', icon: '\uD83C\uDF33', label: 'Strong', detail: 'Comparison and repetition support this conclusion.' }
+            ];
+            var inquiryNextStepOptions = [
+              { id: 'repeat', icon: '\uD83D\uDD01', label: 'Repeat the test', detail: 'Collect another day under similar conditions.' },
+              { id: 'one-factor', icon: '\uD83E\uDDEA', label: 'Change one factor', detail: 'Adjust one neighbor while holding care steady.' },
+              { id: 'revise', icon: '\u270F\uFE0F', label: 'Revise the layout', detail: 'Use the evidence to redesign this neighborhood.' },
+              { id: 'real-garden', icon: '\uD83E\uDEB4', label: 'Test outdoors', detail: 'Try a small real-garden comparison and record context.' }
+            ];
+            var selectedInquiryConfidence = inquiryConfidenceOptions.filter(function(option) { return option.id === cgInquiryConfidence; })[0] || null;
+            var selectedInquiryNextStep = inquiryNextStepOptions.filter(function(option) { return option.id === cgInquiryNextStep; })[0] || null;
+            var inquiryRecommendedConfidence = inquiryEvidenceQualityScore >= 80 ? 'high' : inquiryEvidenceQualityScore >= 40 ? 'medium' : 'low';
+            var inquiryOutcomePhrase = cgPlantingClaim ? ({ growth: 'faster growth', health: 'stronger health', pests: 'lower pest pressure', soil: 'more available nitrogen' }[cgPlantingClaim.predictionId] || inquiryPredictionMeta.label.toLowerCase()) : '';
+            var inquiryConclusionText = cgPlantingClaim
+              ? 'The evidence ' + (inquirySupported ? 'supports' : 'does not yet support') + ' the prediction that planting ' + inquiryClaimPlant.label + ' in Plot ' + (cgPlantingClaim.plot + 1) + ' would lead to ' + inquiryOutcomePhrase + '. ' + (selectedInquiryReasoning ? selectedInquiryReasoning.text : 'Choose a reasoning frame to explain the pattern and its limits.')
+              : '';
+            var inquiryRecordKey = cgPlantingClaim ? cgPlantingClaim.plantId + '-' + cgPlantingClaim.plot + '-' + cgPlantingClaim.plantedDay : null;
+            var existingInquiryRecord = inquiryRecordKey ? cgInquiryHistory.filter(function(record) { return record.key === inquiryRecordKey; })[0] || null : null;
+            var inquirySynthesisReady = !!(inquiryEvidenceReady && selectedInquiryReasoning && selectedInquiryConfidence && selectedInquiryNextStep);
+            var inquiryBuilderSteps = [
+              { id: 'evidence', label: 'Evidence', complete: inquiryEvidenceReady },
+              { id: 'reasoning', label: 'Reasoning', complete: !!selectedInquiryReasoning },
+              { id: 'confidence', label: 'Confidence', complete: !!selectedInquiryConfidence },
+              { id: 'next', label: 'Next test', complete: !!selectedInquiryNextStep }
+            ];
+            var inquiryBuilderCompleteCount = inquiryBuilderSteps.filter(function(step) { return step.complete; }).length;
+            var inquiryNotebookAverageQuality = cgInquiryHistory.length ? Math.round(cgInquiryHistory.reduce(function(sum, record) { return sum + (record.quality || 0); }, 0) / cgInquiryHistory.length) : 0;
+            var inquiryNotebookEntries = (cgShowInquiryNotebook ? cgInquiryHistory.slice() : cgInquiryHistory.slice(-2)).reverse();
+            var inquiryTrialPair = cgInquiryHistory.slice(-2);
+            var inquiryTrialComparisonReady = inquiryTrialPair.length === 2;
+            var inquiryEarlierTrial = inquiryTrialComparisonReady ? inquiryTrialPair[0] : null;
+            var inquiryLatestTrial = inquiryTrialComparisonReady ? inquiryTrialPair[1] : null;
+            var inquiryTrialSamePlant = inquiryTrialComparisonReady && inquiryEarlierTrial.plantId === inquiryLatestTrial.plantId;
+            var inquiryTrialSameQuestion = inquiryTrialComparisonReady && inquiryEarlierTrial.predictionId === inquiryLatestTrial.predictionId;
+            var inquiryTrialSameSeason = inquiryTrialComparisonReady && inquiryEarlierTrial.season === inquiryLatestTrial.season;
+            var inquiryTrialBothCompared = inquiryTrialComparisonReady && inquiryEarlierTrial.comparisonPlot !== null && inquiryEarlierTrial.comparisonPlot !== undefined && inquiryLatestTrial.comparisonPlot !== null && inquiryLatestTrial.comparisonPlot !== undefined;
+            var inquiryTrialPattern = !inquiryTrialComparisonReady ? 'building'
+              : !inquiryTrialSamePlant || !inquiryTrialSameQuestion ? 'different-design'
+              : inquiryEarlierTrial.supported !== inquiryLatestTrial.supported ? 'changed'
+              : inquiryLatestTrial.supported ? 'repeat-supported'
+              : 'repeat-revise';
+            var inquiryTrialPatternLabel = {
+              building: 'Save another investigation',
+              'different-design': 'Different designs or questions',
+              changed: 'The outcome changed',
+              'repeat-supported': 'A supported pattern repeated',
+              'repeat-revise': 'Both trials call for revision'
+            }[inquiryTrialPattern];
+            var inquiryTrialPrompt = inquiryTrialPattern === 'different-design'
+              ? 'Which design difference makes a direct causal comparison unfair?'
+              : inquiryTrialPattern === 'changed'
+                ? 'Which change in season, placement, care, comparison, or repetition could explain the different result?'
+                : inquiryTrialPattern === 'repeat-supported'
+                  ? 'What matched comparison or additional repetition would make this pattern more trustworthy?'
+                  : 'Which single factor should change before the next trial?';
+            var inquiryTrialQualityDelta = inquiryTrialComparisonReady ? (inquiryLatestTrial.quality || 0) - (inquiryEarlierTrial.quality || 0) : 0;
+            var inquiryTrialObservationDelta = inquiryTrialComparisonReady ? (inquiryLatestTrial.observations || 0) - (inquiryEarlierTrial.observations || 0) : 0;
+            var inquiryLatestTargetAvailable = !!(inquiryLatestTrial && typeof inquiryLatestTrial.plot === 'number' && cgGrid[inquiryLatestTrial.plot] && cgGrid[inquiryLatestTrial.plot].plantId === inquiryLatestTrial.plantId);
+            var inquiryLatestComparisonAvailable = !!(inquiryLatestTrial && typeof inquiryLatestTrial.comparisonPlot === 'number' && cgGrid[inquiryLatestTrial.comparisonPlot] && cgGrid[inquiryLatestTrial.comparisonPlot].plantId === inquiryLatestTrial.plantId);
+            var inquiryRepeatTrialActive = !!(inquiryLatestTrial && cgPlantingClaim && cgPlantingClaim.plot === inquiryLatestTrial.plot && cgPlantingClaim.plantId === inquiryLatestTrial.plantId && cgPlantingClaim.predictionId === inquiryLatestTrial.predictionId && cgPlantingClaim.plantedDay === cgDay);
+            var inquiryNextTrialAction = inquiryLatestTrial && inquiryLatestTrial.nextStep === 'real-garden'
+              ? 'real-garden'
+              : inquiryLatestTrial && inquiryLatestTrial.nextStep === 'repeat' && inquiryLatestTargetAvailable
+                ? 'repeat'
+                : 'redesign';
+            var inquiryNextTrialHref = inquiryNextTrialAction === 'real-garden' ? '#community-field-guide' : inquiryNextTrialAction === 'repeat' ? '#community-care-controls' : '#community-garden-map';
+            var inquiryNextTrialActionLabel = inquiryNextTrialAction === 'real-garden'
+              ? 'Open planting-day field guide'
+              : inquiryNextTrialAction === 'repeat'
+                ? 'Start a matched repeat'
+                : inquiryLatestTrial && inquiryLatestTrial.nextStep === 'one-factor'
+                  ? 'Open one-factor redesign'
+                  : 'Open revision mode';
+            var inquiryNextTrialKeep = inquiryLatestTrial && inquiryLatestTrial.nextStep === 'repeat'
+              ? 'Keep the same crop, question, and current garden conditions.'
+              : inquiryLatestTrial && inquiryLatestTrial.nextStep === 'real-garden'
+                ? 'Keep the tested relationship and the outcome you measured.'
+                : 'Keep the crop and measured question visible while redesigning.';
+            var inquiryNextTrialChange = inquiryLatestTrial && inquiryLatestTrial.nextStep === 'repeat'
+              ? 'Change only the trial time: establish a new baseline, then observe another day.'
+              : inquiryLatestTrial && inquiryLatestTrial.nextStep === 'one-factor'
+                ? 'Change one neighbor or placement factor; leave every other plot untouched.'
+                : inquiryLatestTrial && inquiryLatestTrial.nextStep === 'real-garden'
+                  ? 'Move to a small outdoor comparison and record the real site conditions.'
+                  : 'Revise the neighborhood deliberately; no plot will be removed automatically.';
+            var inquiryNextTrialMeasure = inquiryLatestTrial
+              ? (inquiryLatestTrial.predictionLabel || inquiryLatestTrial.predictionId || 'The same outcome') + (inquiryLatestComparisonAvailable ? ' in the target and matched comparison plots.' : ' with a visible baseline and repeated observation.')
+              : 'Choose one outcome and record a baseline before changing the garden.';
+            var inquiryRivalPlanActive = !!(cgRivalTestPlan && inquiryLatestTrial && ((cgRivalTestPlan.recordId !== null && cgRivalTestPlan.recordId !== undefined && cgRivalTestPlan.recordId === inquiryLatestTrial.id) || (cgRivalTestPlan.recordKey && cgRivalTestPlan.recordKey === inquiryLatestTrial.key)));
+            var inquiryNextTrialPlanLabel = inquiryLatestTrial ? (inquiryLatestTrial.nextStepLabel || 'Next test planned') : 'Next test planned';
+            if (inquiryRivalPlanActive) {
+              inquiryNextTrialAction = cgRivalTestPlan.action || 'redesign';
+              inquiryNextTrialHref = inquiryNextTrialAction === 'repeat' ? '#community-care-controls' : '#community-garden-map';
+              inquiryNextTrialActionLabel = cgRivalTestPlan.actionLabel || (inquiryNextTrialAction === 'repeat' ? 'Start controlled repeat' : 'Open test setup');
+              inquiryNextTrialKeep = cgRivalTestPlan.keep;
+              inquiryNextTrialChange = cgRivalTestPlan.change;
+              inquiryNextTrialMeasure = cgRivalTestPlan.measure;
+              inquiryNextTrialPlanLabel = 'Rival test planned: ' + cgRivalTestPlan.label;
+            }
+            var inquiryProtocolClaimMatches = !!(inquiryRivalPlanActive && cgPlantingClaim && inquiryLatestTrial && cgPlantingClaim.plantId === inquiryLatestTrial.plantId && cgPlantingClaim.predictionId === inquiryLatestTrial.predictionId);
+            var inquiryProtocolBaselineReady = !!(inquiryProtocolClaimMatches && cgPlantingClaim.plantedDay === cgDay);
+            var inquiryProtocolComparisonReady = !!(inquiryProtocolClaimMatches && typeof cgPlantingClaim.comparisonPlot === 'number' && cgGrid[cgPlantingClaim.comparisonPlot] && cgGrid[cgPlantingClaim.comparisonPlot].plantId === inquiryLatestTrial.plantId);
+            var inquiryProtocolSetupReady = !inquiryRivalPlanActive ? false
+              : cgRivalTestPlan.rivalId === 'comparison' ? inquiryProtocolComparisonReady
+              : cgRivalTestPlan.rivalId === 'context' ? (['Spring', 'Summer', 'Autumn', 'Winter'][cgSeason] !== inquiryLatestTrial.season)
+              : inquiryProtocolBaselineReady;
+            var inquiryProtocolChecks = inquiryRivalPlanActive ? [
+              { id: 'question', label: 'Question locked', detail: inquiryLatestTrial.predictionLabel || inquiryLatestTrial.predictionId || 'Saved outcome', complete: true },
+              { id: 'target', label: 'Target crop present', detail: inquiryLatestTargetAvailable ? (inquiryLatestTrial.plantLabel || inquiryLatestTrial.plantId || 'Crop') + ' remains in Plot ' + (inquiryLatestTrial.plot + 1) : 'Restore the recorded target crop', complete: inquiryLatestTargetAvailable },
+              { id: 'setup', label: 'Distinguishing setup', detail: cgRivalTestPlan.rivalId === 'comparison' ? (inquiryProtocolComparisonReady ? 'Same-crop comparison is linked' : 'Choose an open plot for the same crop') : cgRivalTestPlan.rivalId === 'context' ? (inquiryProtocolSetupReady ? 'Context changed and recorded' : 'New season or context still needed') : inquiryProtocolSetupReady ? 'One-factor setup is active' : 'Start the planned redesign or repeat', complete: inquiryProtocolSetupReady },
+              { id: 'baseline', label: 'Fresh baseline', detail: inquiryProtocolBaselineReady ? 'Measurement starts on Day ' + cgDay : 'Launch the plan before observing', complete: inquiryProtocolBaselineReady }
+            ] : [];
+            var inquiryProtocolCompleteCount = inquiryProtocolChecks.filter(function(check) { return check.complete; }).length;
+            var inquiryProtocolProgress = inquiryProtocolChecks.length ? Math.round(inquiryProtocolCompleteCount / inquiryProtocolChecks.length * 100) : 0;
+            var inquiryProtocolDirection = !inquiryLatestTargetAvailable
+              ? 'Restore or choose the recorded target crop before rebuilding the comparison.'
+              : !inquiryProtocolSetupReady && cgRivalTestPlan && cgRivalTestPlan.rivalId === 'comparison'
+                ? 'Choose an open plot for ' + (inquiryLatestTrial.plantLabel || inquiryLatestTrial.plantId || 'the same crop') + '. A different neighborhood creates the comparison.'
+                : !inquiryProtocolSetupReady
+                  ? 'Complete the one planned change while keeping every other condition visible.'
+                  : !inquiryProtocolBaselineReady
+                    ? 'Return to the launchpad to establish a fresh measurement baseline.'
+                    : 'Setup is ready. Review the next day without adding an unplanned care action.';
+            var inquiryProtocolHref = inquiryProtocolSetupReady && inquiryProtocolBaselineReady ? '#community-care-controls' : '#community-garden-map';
+            var inquiryProtocolActionLabel = inquiryProtocolSetupReady && inquiryProtocolBaselineReady ? 'Review the next day' : 'Continue setup on the map';
+            function cgSignedTrialValue(value, suffix) {
+              var rounded = Math.round((value || 0) * 10) / 10;
+              return (rounded > 0 ? '+' : '') + rounded + (suffix || '');
+            }
+            var inquiryTrialChecks = inquiryTrialComparisonReady ? [
+              { id: 'crop', label: 'Same crop', complete: inquiryTrialSamePlant, detail: inquiryTrialSamePlant ? (inquiryLatestTrial.plantLabel || inquiryLatestTrial.plantId || 'Same crop') : 'Crop changed' },
+              { id: 'question', label: 'Same question', complete: inquiryTrialSameQuestion, detail: inquiryTrialSameQuestion ? (inquiryLatestTrial.predictionLabel || 'Same predicted outcome') : 'Prediction changed' },
+              { id: 'season', label: 'Same season', complete: inquiryTrialSameSeason, detail: inquiryTrialSameSeason ? (inquiryLatestTrial.season || 'Same season') : (inquiryEarlierTrial.season || 'Earlier') + ' \u2192 ' + (inquiryLatestTrial.season || 'Latest') },
+              { id: 'comparison', label: 'Matched comparisons', complete: inquiryTrialBothCompared, detail: inquiryTrialBothCompared ? 'Both trials include comparison plots' : 'One or both trials lack a comparison plot' }
+            ] : [];
+            var inquiryPatternReference = cgInquiryHistory.length ? cgInquiryHistory[cgInquiryHistory.length - 1] : null;
+            var inquiryPatternTrials = inquiryPatternReference ? cgInquiryHistory.filter(function(record) {
+              return record.plantId === inquiryPatternReference.plantId && record.predictionId === inquiryPatternReference.predictionId;
+            }) : [];
+            var inquiryPatternSupportedCount = inquiryPatternTrials.filter(function(record) { return !!record.supported; }).length;
+            var inquiryPatternReviseCount = inquiryPatternTrials.length - inquiryPatternSupportedCount;
+            var inquiryPatternConsistency = inquiryPatternTrials.length ? Math.round(Math.max(inquiryPatternSupportedCount, inquiryPatternReviseCount) / inquiryPatternTrials.length * 100) : 0;
+            var inquiryPatternComparedCount = inquiryPatternTrials.filter(function(record) { return typeof record.comparisonPlot === 'number'; }).length;
+            var inquiryPatternAverageQuality = inquiryPatternTrials.length ? Math.round(inquiryPatternTrials.reduce(function(sum, record) { return sum + (record.quality || 0); }, 0) / inquiryPatternTrials.length) : 0;
+            var inquiryPatternSeasons = inquiryPatternTrials.reduce(function(seasons, record) {
+              var season = record.season || 'Unknown season';
+              if (seasons.indexOf(season) === -1) seasons.push(season);
+              return seasons;
+            }, []);
+            var inquiryPatternStatus = inquiryPatternTrials.length < 3
+              ? 'emerging'
+              : inquiryPatternConsistency === 100
+                ? 'consistent'
+                : inquiryPatternConsistency >= 67
+                  ? 'mostly-consistent'
+                  : 'mixed';
+            var inquiryPatternStatusLabel = {
+              emerging: 'Early pattern',
+              consistent: 'Outcome repeated every time',
+              'mostly-consistent': 'Outcome repeated most times',
+              mixed: 'Mixed outcomes'
+            }[inquiryPatternStatus];
+            var inquiryPatternDominantOutcome = inquiryPatternSupportedCount >= inquiryPatternReviseCount ? 'supported' : 'revise';
+            var inquiryPatternReading = inquiryPatternTrials.length
+              ? inquiryPatternSupportedCount + ' of ' + inquiryPatternTrials.length + ' matching trials supported the saved prediction. The most common outcome was "' + (inquiryPatternDominantOutcome === 'supported' ? 'supported' : 'revise') + '," with ' + inquiryPatternConsistency + '% outcome consistency.'
+              : '';
+            var inquiryPatternNextTarget = inquiryPatternComparedCount < inquiryPatternTrials.length
+              ? 'Add a matched comparison to the next trial so every outcome has a clearer reference.'
+              : inquiryPatternTrials.length < 3
+                ? 'Run at least one more matching trial before describing a stable pattern.'
+                : inquiryPatternStatus === 'mixed'
+                  ? 'Repeat under steadier season, care, and placement conditions to investigate why outcomes differ.'
+                  : inquiryPatternSeasons.length < 2
+                    ? 'Test the same question in another season to learn whether the pattern transfers.'
+                    : 'Keep the comparison structure and test one clearly named design change.';
+            var inquiryClaimComparisonTarget = Math.ceil(inquiryPatternTrials.length * 0.75);
+            var inquiryClaimLevel = inquiryPatternTrials.length >= 3 && inquiryPatternConsistency >= 67 && inquiryPatternComparedCount >= inquiryClaimComparisonTarget ? 3 : inquiryPatternTrials.length >= 2 ? 2 : 1;
+            var inquiryClaimLevelLabel = {
+              1: 'Recorded observation',
+              2: 'Simulation association',
+              3: 'Repeated simulation pattern'
+            }[inquiryClaimLevel];
+            var inquiryClaimLadder = [
+              { level: 1, icon: '\uD83D\uDC41\uFE0F', label: 'Observation', statement: 'Describe one measured result.', requirement: 'At least one saved trial', achieved: inquiryPatternTrials.length >= 1 },
+              { level: 2, icon: '\uD83D\uDD17', label: 'Association', statement: 'Describe outcomes that occur together.', requirement: 'At least two matching trials', achieved: inquiryPatternTrials.length >= 2 },
+              { level: 3, icon: '\uD83D\uDCC8', label: 'Repeated pattern', statement: 'Describe a pattern that repeated in the simulation.', requirement: '3+ trials, 67% consistency, comparisons in most trials', achieved: inquiryClaimLevel >= 3 },
+              { level: 4, icon: '\uD83E\uDDEA', label: 'Causal claim', statement: 'State that one factor produced the outcome.', requirement: 'Not established by this simulation history alone', achieved: false, boundary: true }
+            ];
+            var inquiryClaimSafeSentence = inquiryPatternReference
+              ? 'Across ' + inquiryPatternTrials.length + ' matching simulation trial' + (inquiryPatternTrials.length === 1 ? '' : 's') + ' of ' + (inquiryPatternReference.plantLabel || inquiryPatternReference.plantId || 'this crop') + ', ' + inquiryPatternSupportedCount + ' supported the "' + (inquiryPatternReference.predictionLabel || inquiryPatternReference.predictionId || 'saved') + '" prediction. ' + (inquiryClaimLevel >= 3 ? 'This repeated simulation pattern is consistent with the proposed companion relationship under the modeled conditions.' : 'These outcomes show an association worth testing again under controlled conditions.') + ' It does not prove that the companion relationship caused the result.'
+              : '';
+            var inquiryClaimNextRung = inquiryClaimLevel === 1
+              ? 'Save a second matching trial to compare outcomes.'
+              : inquiryClaimLevel === 2
+                ? inquiryPatternTrials.length < 3
+                  ? 'Run at least one more matching trial.'
+                  : inquiryPatternConsistency < 67
+                    ? 'Investigate the mixed outcomes under steadier care, season, and placement conditions.'
+                    : 'Add matched comparisons until most trials have a clear reference.'
+                : 'To investigate causation, test a controlled real-garden comparison, document context, and seek independent replication.';
+            var inquiryClaimSafeVerbs = ['observed', 'was associated with', 'the pattern repeated', 'is consistent with'];
+            var inquiryClaimUnsafeVerbs = ['proves', 'guarantees', 'always', 'caused'];
+            var inquiryPatternOutcomeSwitches = inquiryPatternTrials.reduce(function(count, record, index) {
+              return count + (index > 0 && !!record.supported !== !!inquiryPatternTrials[index - 1].supported ? 1 : 0);
+            }, 0);
+            var inquiryPatternQualityValues = inquiryPatternTrials.map(function(record) { return record.quality || 0; });
+            var inquiryPatternQualityRange = inquiryPatternQualityValues.length ? Math.max.apply(null, inquiryPatternQualityValues) - Math.min.apply(null, inquiryPatternQualityValues) : 0;
+            var inquiryPatternComparisonCoverage = inquiryPatternTrials.length ? Math.round(inquiryPatternComparedCount / inquiryPatternTrials.length * 100) : 0;
+            var inquiryPatternSupportRate = inquiryPatternTrials.length ? Math.round(inquiryPatternSupportedCount / inquiryPatternTrials.length * 100) : 0;
+            var inquiryPatternSeasonCounts = inquiryPatternTrials.reduce(function(counts, record) {
+              var season = record.season || 'Unknown season';
+              counts[season] = (counts[season] || 0) + 1;
+              return counts;
+            }, {});
+            var inquiryPatternLargestSeasonGroup = Object.keys(inquiryPatternSeasonCounts).reduce(function(largest, season) { return Math.max(largest, inquiryPatternSeasonCounts[season]); }, 0);
+            var inquiryPatternSeasonConcentration = inquiryPatternTrials.length ? Math.round(inquiryPatternLargestSeasonGroup / inquiryPatternTrials.length * 100) : 0;
+            var inquiryRivalExplanations = [
+              {
+                id: 'relationship',
+                icon: '\uD83E\uDD1D',
+                label: 'Companion relationship',
+                status: inquiryPatternSupportRate >= 67 ? 'candidate' : 'uncertain',
+                statusLabel: inquiryPatternSupportRate >= 67 ? 'Candidate explanation' : 'Uncertain signal',
+                metricLabel: 'Prediction support rate',
+                metricValue: inquiryPatternSupportRate,
+                metricText: inquiryPatternSupportedCount + ' of ' + inquiryPatternTrials.length + ' trials supported',
+                evidence: 'The predicted outcome appeared in ' + inquiryPatternSupportRate + '% of matching trials.',
+                test: 'Keep season and care steady, then change only the neighboring arrangement around the same crop.'
+              },
+              {
+                id: 'context',
+                icon: '\uD83C\uDF26\uFE0F',
+                label: 'Season or context',
+                status: inquiryPatternSeasons.length > 1 ? 'plausible' : 'steadier',
+                statusLabel: inquiryPatternSeasons.length > 1 ? 'Plausible rival' : 'Partly controlled',
+                metricLabel: 'Same-season concentration',
+                metricValue: inquiryPatternSeasonConcentration,
+                metricText: inquiryPatternSeasons.length + ' season' + (inquiryPatternSeasons.length === 1 ? '' : 's') + ' represented',
+                evidence: inquiryPatternSeasons.length > 1 ? 'Trials span ' + inquiryPatternSeasons.join(', ') + ', so growing context changed with the evidence.' : 'All matching records came from ' + (inquiryPatternSeasons[0] || 'one season') + ', reducing one source of variation.',
+                test: 'Repeat the same layout and care plan in another season, then compare whether the pattern transfers.'
+              },
+              {
+                id: 'comparison',
+                icon: '\u2696\uFE0F',
+                label: 'Comparison gap',
+                status: inquiryPatternComparisonCoverage < 100 ? 'plausible' : 'steadier',
+                statusLabel: inquiryPatternComparisonCoverage < 100 ? 'Plausible rival' : 'Better controlled',
+                metricLabel: 'Matched-comparison coverage',
+                metricValue: inquiryPatternComparisonCoverage,
+                metricText: inquiryPatternComparedCount + ' of ' + inquiryPatternTrials.length + ' trials matched',
+                evidence: inquiryPatternComparisonCoverage < 100 ? (inquiryPatternTrials.length - inquiryPatternComparedCount) + ' matching trial' + (inquiryPatternTrials.length - inquiryPatternComparedCount === 1 ? ' lacks' : 's lack') + ' a same-crop comparison plot.' : 'Every matching trial includes a same-crop comparison plot.',
+                test: 'Give every target trial a same-crop comparison plot under the same simulated day and care conditions.'
+              },
+              {
+                id: 'variability',
+                icon: '\uD83C\uDFB2',
+                label: 'Unexplained variability',
+                status: inquiryPatternConsistency < 100 ? 'plausible' : 'steadier',
+                statusLabel: inquiryPatternConsistency < 100 ? 'Plausible rival' : 'Lower signal',
+                metricLabel: 'Outcome consistency',
+                metricValue: inquiryPatternConsistency,
+                metricText: inquiryPatternOutcomeSwitches + ' outcome switch' + (inquiryPatternOutcomeSwitches === 1 ? '' : 'es'),
+                evidence: inquiryPatternOutcomeSwitches + ' outcome switch' + (inquiryPatternOutcomeSwitches === 1 ? '' : 'es') + ' occurred, while evidence quality spans ' + inquiryPatternQualityRange + ' points.',
+                test: 'Repeat the same design several times with stable care and record events that could shift the result.'
+              }
+            ];
+            var inquiryRivalPriorityId = inquiryPatternComparisonCoverage < 100 ? 'comparison' : inquiryPatternConsistency < 100 ? 'variability' : inquiryPatternSeasons.length > 1 ? 'context' : 'relationship';
+            var inquiryRivalPriority = inquiryRivalExplanations.filter(function(explanation) { return explanation.id === inquiryRivalPriorityId; })[0] || inquiryRivalExplanations[0];
+            var inquiryRivalFalsification = inquiryRivalPriorityId === 'comparison'
+              ? 'If the target and comparison plots change by the same amount, would the companion explanation still be convincing?'
+              : inquiryRivalPriorityId === 'variability'
+                ? 'If a careful repeat produces the opposite outcome again, how should the claim change?'
+                : inquiryRivalPriorityId === 'context'
+                  ? 'If the pattern disappears in another season, which part of the explanation needs revision?'
+                  : 'If changing only the neighboring arrangement does not change the outcome, what alternative should move ahead?';
+            var inquiryAudienceOptions = [
+              { id: 'science', icon: '\uD83E\uDDEA', label: 'Science class', purpose: 'Formal claim, evidence, reasoning, and uncertainty.' },
+              { id: 'garden', icon: '\uD83E\uDDD1\u200D\uD83C\uDF3E', label: 'Garden team', purpose: 'Plain-language finding and practical next action.' },
+              { id: 'community', icon: '\uD83C\uDFE1', label: 'Community update', purpose: 'Accessible result, limitation, and shared value.' }
+            ];
+            var selectedInquiryAudience = inquiryAudienceOptions.filter(function(option) { return option.id === cgInquiryAudience; })[0] || inquiryAudienceOptions[0];
+            var confidenceRanks = { low: 0, medium: 1, high: 2 };
+            var inquiryCalibrationStatus = !selectedInquiryConfidence ? 'not-set'
+              : confidenceRanks[selectedInquiryConfidence.id] > confidenceRanks[inquiryRecommendedConfidence] ? 'overstated'
+              : confidenceRanks[selectedInquiryConfidence.id] < confidenceRanks[inquiryRecommendedConfidence] ? 'understated'
+              : 'aligned';
+            var inquiryCalibrationMessage = inquiryCalibrationStatus === 'overstated'
+              ? 'Your confidence is stronger than the current evidence-quality checks. Consider a more cautious statement or improve the comparison.'
+              : inquiryCalibrationStatus === 'understated'
+                ? 'Your evidence may support a stronger statement than the confidence level suggests. Recheck the completed fair-test signals.'
+                : inquiryCalibrationStatus === 'aligned'
+                  ? 'Your confidence level is well matched to the current evidence quality.'
+                  : 'Choose a confidence level to compare it with the evidence-quality recommendation.';
+            var inquiryCommunicationText = '';
+            if (cgPlantingClaim && selectedInquiryAudience.id === 'science') {
+              inquiryCommunicationText = inquiryConclusionText + ' Exact evidence: ' + inquiryEvidenceStatement + ' Confidence: ' + (selectedInquiryConfidence ? selectedInquiryConfidence.label.toLowerCase() : 'not yet calibrated') + '. Next investigation: ' + (selectedInquiryNextStep ? selectedInquiryNextStep.label.toLowerCase() + '.' : 'not yet selected.');
+            } else if (cgPlantingClaim && selectedInquiryAudience.id === 'garden') {
+              inquiryCommunicationText = 'Garden team finding: ' + inquiryClaimPlant.label + ' in Plot ' + (cgPlantingClaim.plot + 1) + (inquirySupported ? ' showed the predicted pattern.' : ' did not yet show a clear predicted pattern.') + ' ' + inquiryEvidenceStatement + ' Our next practical move is to ' + (selectedInquiryNextStep ? selectedInquiryNextStep.label.toLowerCase() : 'collect another careful observation') + '.';
+            } else if (cgPlantingClaim) {
+              inquiryCommunicationText = 'Community update: in this garden simulation, ' + inquiryClaimPlant.label + ' provided ' + (inquirySupported ? 'evidence consistent with ' : 'mixed evidence about ') + inquiryOutcomePhrase + '. ' + inquiryEvidenceStatement + ' This suggests a possibility rather than proving the same result for every real garden. Next, we plan to ' + (selectedInquiryNextStep ? selectedInquiryNextStep.label.toLowerCase() : 'strengthen the comparison') + '.';
+            }
+            var inquiryCommunicationChecks = [
+              { id: 'claim', icon: '\uD83C\uDFAF', label: 'Finding named', complete: !!cgPlantingClaim },
+              { id: 'evidence', icon: '\uD83D\uDCCA', label: 'Exact evidence included', complete: inquiryEvidenceReady },
+              { id: 'limits', icon: '\u26A0\uFE0F', label: 'Limits acknowledged', complete: !!(selectedInquiryReasoning && selectedInquiryConfidence) },
+              { id: 'action', icon: '\u27A1\uFE0F', label: 'Next action stated', complete: !!selectedInquiryNextStep }
+            ];
+            var inquiryCommunicationScore = inquiryCommunicationChecks.filter(function(check) { return check.complete; }).length;
+            var fieldContextOptions = [
+              { id: 'raised-bed', icon: '\uD83E\uDDF1', label: 'Raised bed', guidance: 'Confirm mature spacing and keep the center reachable without stepping on soil.' },
+              { id: 'container', icon: '\uD83E\uDEB4', label: 'Containers', guidance: 'Check drainage, root depth, and mature size before assigning one simulation plot to a pot.' },
+              { id: 'school-plot', icon: '\uD83C\uDFEB', label: 'School plot', guidance: 'Plan accessible paths, shared roles, durable labels, and a care schedule for days away.' }
+            ];
+            var fieldPriorityOptions = [
+              { id: 'balanced', icon: '\u2696\uFE0F', label: 'Balanced garden', filter: 'all', detail: 'Food, habitat, and soil support' },
+              { id: 'food', icon: '\uD83E\uDD55', label: 'Food harvest', filter: 'food', detail: 'Prioritize edible crop diversity' },
+              { id: 'habitat', icon: '\uD83D\uDC1D', label: 'Wildlife habitat', filter: 'helpers', detail: 'Prioritize flowers and shelter' },
+              { id: 'soil', icon: '\uD83E\uDEB1', label: 'Soil renewal', filter: 'regen', detail: 'Prioritize fertility and cover' }
+            ];
+            var selectedFieldContext = fieldContextOptions.filter(function(option) { return option.id === cgFieldContext; })[0] || fieldContextOptions[0];
+            var selectedFieldPriority = fieldPriorityOptions.filter(function(option) { return option.id === cgFieldPriority; })[0] || fieldPriorityOptions[0];
+            var fieldCropMap = {};
+            var fieldFamilyMap = {};
+            var fieldCropCount = 0;
+            cgGrid.forEach(function(cell) {
+              var fieldPlant = cell.plantId && CG_PLANTS[cell.plantId];
+              if (!fieldPlant || fieldPlant.isStructure) return;
+              fieldCropCount++;
+              fieldFamilyMap[fieldPlant.family || cell.plantId] = true;
+              if (!fieldCropMap[cell.plantId]) fieldCropMap[cell.plantId] = { id: cell.plantId, plant: fieldPlant, count: 0 };
+              fieldCropMap[cell.plantId].count++;
+            });
+            var fieldCropGroups = Object.keys(fieldCropMap).map(function(plantId) {
+              var group = fieldCropMap[plantId];
+              group.role = group.plant.nEffect > 0 ? 'Soil builder' : group.plant.pollinator ? 'Habitat helper' : group.plant.needsPoll ? 'Fruiting crop' : 'Food or support crop';
+              return group;
+            }).sort(function(left, right) { return right.count - left.count || left.plant.label.localeCompare(right.plant.label); });
+            var fieldRelationshipSeen = {};
+            var fieldHelpfulRelationships = [];
+            cgGrid.forEach(function(cell, index) {
+              if (!cell.plantId) return;
+              getCellBonus(cgGrid, index).pairs.filter(function(pair) { return pair.bonus > 0; }).forEach(function(pair) {
+                var relationshipKey = [pair.a, pair.b].sort().join('-') + '-' + pair.desc;
+                if (fieldRelationshipSeen[relationshipKey]) return;
+                fieldRelationshipSeen[relationshipKey] = true;
+                fieldHelpfulRelationships.push(pair);
+              });
+            });
+            fieldHelpfulRelationships.sort(function(left, right) { return right.bonus - left.bonus; });
+            var fieldNeedsSupport = fieldCropGroups.some(function(group) { return ['beans', 'peas', 'cucumber', 'tomato'].indexOf(group.id) !== -1; });
+            var fieldMaterials = [
+              { id: 'plants', icon: '\uD83C\uDF31', label: fieldCropCount + ' plant position' + (fieldCropCount === 1 ? '' : 's'), detail: fieldCropGroups.length + ' crop type' + (fieldCropGroups.length === 1 ? '' : 's') + ' from the simulation' },
+              { id: 'labels', icon: '\uD83C\uDFF7\uFE0F', label: Math.max(fieldCropCount, 1) + ' weather-safe labels', detail: 'Include crop, variety, and planting date' },
+              { id: 'support', icon: fieldNeedsSupport ? '\uD83E\uDE9C' : '\uD83E\uDEA8', label: fieldNeedsSupport ? 'Trellis or stakes' : 'Mulch or path markers', detail: fieldNeedsSupport ? 'Install supports before roots spread' : 'Protect soil and clarify access routes' },
+              { id: 'care', icon: cgNitrogen < 30 ? '\u267B\uFE0F' : '\uD83D\uDCA7', label: cgNitrogen < 30 ? 'Finished compost' : 'Watering tools', detail: cgNitrogen < 30 ? 'Verify soil need before adding amendments' : 'Water gently after planting and record the baseline' }
+            ];
+            var fieldReadinessChecks = [
+              { id: 'layout', label: 'Usable layout', complete: fieldCropCount >= 4, detail: fieldCropCount + ' crop position' + (fieldCropCount === 1 ? '' : 's') },
+              { id: 'relationships', label: 'Helpful links', complete: fieldHelpfulRelationships.length >= 2, detail: fieldHelpfulRelationships.length + ' modeled relationship' + (fieldHelpfulRelationships.length === 1 ? '' : 's') },
+              { id: 'conflicts', label: 'Conflict review', complete: harmfulPairCount === 0, detail: harmfulPairCount ? harmfulPairCount + ' pair' + (harmfulPairCount === 1 ? '' : 's') + ' to review' : 'No active harmful pairs' },
+              { id: 'diversity', label: 'Crop diversity', complete: Object.keys(fieldFamilyMap).length >= 3, detail: Object.keys(fieldFamilyMap).length + ' plant families' }
+            ];
+            var fieldReadinessScore = Math.round(fieldReadinessChecks.filter(function(check) { return check.complete; }).length / fieldReadinessChecks.length * 100);
+            var fieldSequence = [
+              { id: 'observe', number: 1, title: 'Observe the real site', detail: selectedFieldContext.guidance },
+              { id: 'mark', number: 2, title: 'Mark the 4\u00D74 positions', detail: 'Use labels or string to transfer relative neighbors before digging.' },
+              { id: 'structure', number: 3, title: 'Place structure first', detail: fieldNeedsSupport ? 'Install supports, then plant tall or climbing crops before low spreaders.' : 'Plant taller crops first, then add low crops and habitat helpers.' },
+              { id: 'baseline', number: 4, title: 'Water, label, and record', detail: 'Photograph the starting layout and record moisture, date, and visible plant health.' }
+            ];
+            var fieldChecklistComplete = fieldSequence.filter(function(step) { return !!cgFieldChecklist[step.id]; }).length;
+            var firstOpenFieldPlot = cgGrid.findIndex(function(cell) { return !cell.plantId; });
+            var gardenJourneyStages = [
+              { id: 'design', number: 1, icon: '\uD83E\uDEB4', label: 'Plan & plant', detail: 'Build a testable garden neighborhood', complete: fieldCropCount >= 4, href: '#community-garden-map', action: fieldCropCount >= 4 ? 'Review the live garden map' : 'Plant at least four crop positions' },
+              { id: 'observe', number: 2, icon: '\uD83D\uDC40', label: 'Observe', detail: 'Collect a before-and-after day report', complete: !!cgLastDayReport, href: cgLastDayReport ? '#community-day-report' : '#community-garden-map', action: cgLastDayReport ? 'Review the latest day report' : 'Start growing and advance one day' },
+              { id: 'explain', number: 3, icon: '\uD83D\uDCA1', label: 'Explain', detail: 'Connect claim, evidence, and reasoning', complete: !!existingInquiryRecord, href: cgPlantingClaim ? '#community-evidence-trail' : '#community-learning-compass', action: existingInquiryRecord ? 'Review the saved conclusion' : cgPlantingClaim ? 'Explain with evidence' : 'Make a planting prediction' },
+              { id: 'transfer', number: 4, icon: '\uD83E\uDDED', label: 'Transfer', detail: 'Prepare the design for planting day', complete: fieldChecklistComplete === fieldSequence.length && fieldSequence.length > 0, href: plantedCells > 0 ? '#community-field-guide' : '#community-garden-map', action: fieldChecklistComplete === fieldSequence.length ? 'Review the field plan' : 'Finish the planting-day checklist' }
+            ];
+            var gardenJourneyCompleteCount = gardenJourneyStages.filter(function(stage) { return stage.complete; }).length;
+            var gardenJourneyProgress = Math.round(gardenJourneyCompleteCount / gardenJourneyStages.length * 100);
+            var gardenJourneySuggested = gardenJourneyStages.filter(function(stage) { return !stage.complete; })[0] || gardenJourneyStages[gardenJourneyStages.length - 1];
+            var gardenJourneySelected = cgWorkspaceStage ? gardenJourneyStages.filter(function(stage) { return stage.id === cgWorkspaceStage; })[0] : null;
+            var gardenJourneyCurrent = gardenJourneySelected || gardenJourneySuggested;
+            var gardenJourneyCurrentIndex = gardenJourneyStages.findIndex(function(stage) { return stage.id === gardenJourneyCurrent.id; });
+            var gardenJourneyPrevious = gardenJourneyCurrentIndex > 0 ? gardenJourneyStages[gardenJourneyCurrentIndex - 1] : null;
+            var gardenJourneyNext = gardenJourneyCurrentIndex < gardenJourneyStages.length - 1 ? gardenJourneyStages[gardenJourneyCurrentIndex + 1] : null;
+            var gardenJourneyFinished = gardenJourneyCompleteCount === gardenJourneyStages.length;
+            var gardenJourneyUsingSuggested = gardenJourneyCurrent.id === gardenJourneySuggested.id;
+            var focusGuideByStage = {
+              design: {
+                title: 'Shape one testable garden neighborhood',
+                description: 'See the tools needed to choose plants, place neighbors, and record a measurable planting claim.',
+                tools: [
+                  { href: '#community-garden-map', icon: '\uD83E\uDEB4', label: 'Garden map', detail: 'Place or inspect crops in their real 4\u00D74 neighborhood.' },
+                  { href: cgPhase === 'plan' ? '#community-seed-shelf' : '#community-garden-map', icon: '\uD83C\uDF31', label: cgPhase === 'plan' ? 'Seed Shelf' : 'Edit garden layout', detail: cgPhase === 'plan' ? 'Choose crops by role, family, and garden need.' : 'Return to the live map before changing the design.' },
+                  { href: '#community-learning-compass', icon: '\uD83E\uDDED', label: 'Learning compass', detail: 'Name the pathway and make a testable prediction.' }
+                ]
+              },
+              observe: {
+                title: 'Act, advance, and notice one strong change',
+                description: 'Keep the forecast, care controls, live map, and before-and-after evidence close together.',
+                tools: [
+                  { href: cgPhase === 'grow' ? '#community-care-controls' : '#community-plan-readiness', icon: '\uD83E\uDDE4', label: cgPhase === 'grow' ? 'Care controls' : 'Start observing', detail: cgPhase === 'grow' ? 'Choose a care action and review the next day.' : 'Start the growing season when the design is ready.' },
+                  { href: '#community-garden-map', icon: '\uD83D\uDC40', label: 'Live garden map', detail: 'Inspect growth, health, moisture, and pest signals.' },
+                  { href: cgLastDayReport ? '#community-day-report' : '#community-prediction', icon: '\uD83D\uDCCA', label: cgLastDayReport ? 'Latest day report' : 'Prediction', detail: cgLastDayReport ? 'Compare exact before-and-after values.' : 'Choose what evidence you expect to change.' }
+                ]
+              },
+              explain: {
+                title: 'Build a careful claim from visible evidence',
+                description: 'Center the claim, exact values, reasoning pathway, confidence, and limits of the simulation.',
+                tools: [
+                  { href: cgPlantingClaim ? '#community-evidence-trail' : '#community-learning-compass', icon: '\uD83D\uDD17', label: cgPlantingClaim ? 'Evidence trail' : 'Create a claim', detail: cgPlantingClaim ? 'Connect the prediction to measured change.' : 'Record the planting relationship you are testing.' },
+                  { href: cgLastDayReport ? '#community-day-report' : '#community-garden-map', icon: '\uD83D\uDCCF', label: cgLastDayReport ? 'Latest day report' : 'Collect evidence', detail: cgLastDayReport ? 'Quote an exact value and inspect competing causes.' : 'Advance one day to collect before-and-after evidence.' },
+                  { href: '#community-learning-compass', icon: '\uD83D\uDCA1', label: 'Learning compass', detail: 'Use a CER frame without overstating the result.' }
+                ]
+              },
+              transfer: {
+                title: 'Turn the simulation into a field hypothesis',
+                description: 'Prepare materials, planting order, access, and real-world checks without treating the model as a guarantee.',
+                tools: [
+                  { href: plantedCells > 0 ? '#community-field-guide' : '#community-garden-map', icon: '\uD83E\uDDED', label: 'Planting-day field guide', detail: 'Adapt the layout to a raised bed, container, or school plot.' },
+                  { href: cgInquiryHistory.length > 0 ? '#community-inquiry-notebook' : (cgPlantingClaim ? '#community-evidence-trail' : '#community-learning-compass'), icon: '\uD83D\uDCD3', label: cgInquiryHistory.length > 0 ? 'Science notebook' : 'Investigation record', detail: 'Carry forward the claim, evidence, limits, and next test.' },
+                  { href: '#community-garden-map', icon: '\uD83D\uDCD0', label: 'Simulation layout', detail: 'Preserve relative neighbors while checking mature spacing.' }
+                ]
+              }
+            };
+            var focusGuide = focusGuideByStage[gardenJourneyCurrent.id];
+            var gardenCrewRoles = [
+              { id: 'designer', icon: '\uD83E\uDDE9', label: 'Garden Designer', focus: 'Patterns & placement', tint: '#e0e7ff', ink: '#3730a3', prompts: { design: 'Propose one placement and explain how its neighbors could share space or resources.', observe: 'Compare the planned neighborhood with the plot that changed most.', explain: 'Trace the planned cause \u2192 pathway \u2192 outcome using the garden map.', transfer: 'Adapt the 4\u00D74 pattern to the selected real-garden context.' } },
+              { id: 'observer', icon: '\uD83D\uDD0E', label: 'Field Observer', focus: 'Noticing & measuring', tint: '#dbeafe', ink: '#075985', prompts: { design: 'Record a starting condition the team will need for a fair comparison.', observe: 'Find the clearest before-and-after change and report the exact number.', explain: 'Separate what the simulation showed from what the team is inferring.', transfer: 'Choose what the real crew should photograph or measure first.' } },
+              { id: 'evidence', icon: '\uD83D\uDCCA', label: 'Evidence Keeper', focus: 'Fair tests & claims', tint: '#fae8ff', ink: '#86198f', prompts: { design: 'Name what evidence would support or challenge this planting prediction.', observe: 'Check whether the comparison stayed fair and flag any competing cause.', explain: 'Use one exact value, calibrate confidence, and name one limitation.', transfer: 'Turn the finding into a field hypothesis\u2014not a promise.' } },
+              { id: 'steward', icon: '\uD83E\uDD1D', label: 'Garden Steward', focus: 'Care & community', tint: '#dcfce7', ink: '#166534', prompts: { design: 'Check access, crop diversity, water needs, and who the design serves.', observe: 'Recommend one care action from the moisture, health, or pest evidence.', explain: 'Connect the evidence to a responsible next action for the garden.', transfer: 'Confirm materials, planting order, access, and the shared care schedule.' } }
+            ];
+            var selectedCrewRoleIndex = gardenCrewRoles.findIndex(function(role) { return role.id === cgCrewRole; });
+            if (selectedCrewRoleIndex < 0) selectedCrewRoleIndex = 0;
+            var selectedCrewRole = gardenCrewRoles[selectedCrewRoleIndex];
+            var nextCrewRole = gardenCrewRoles[(selectedCrewRoleIndex + 1) % gardenCrewRoles.length];
+            var crewStagePrompt = selectedCrewRole.prompts[gardenJourneyCurrent.id];
+            var crewEvidenceCue = {
+              design: 'Point to one plot and name the neighbor relationship the team is testing.',
+              observe: 'Bring one before-and-after value from the latest day report.',
+              explain: 'State whether the evidence supports the prediction and identify one limit.',
+              transfer: 'Name one simulation assumption the real garden team must verify.'
+            }[gardenJourneyCurrent.id];
+            var crewSentenceStarter = {
+              design: 'Our team predicts ___ because these neighboring plants ___.',
+              observe: 'We noticed ___ changed from ___ to ___ after one simulated day.',
+              explain: 'The evidence ___ our prediction because ___; however, ___.',
+              transfer: 'We will test this outdoors by ___ while checking ___.'
+            }[gardenJourneyCurrent.id];
+            var crewStageContributions = gardenCrewRoles.map(function(role) {
+              var noteKey = gardenJourneyCurrent.id + ':' + role.id;
+              var note = typeof cgCrewNotes[noteKey] === 'string' ? cgCrewNotes[noteKey] : '';
+              return { role: role, key: noteKey, note: note, complete: !!note.trim() };
+            });
+            var selectedCrewContribution = crewStageContributions[selectedCrewRoleIndex];
+            var crewContributionCount = crewStageContributions.filter(function(contribution) { return contribution.complete; }).length;
+            var crewBoardComplete = crewContributionCount === gardenCrewRoles.length;
+            var facilitatorGuidanceByStage = {
+              design: {
+                time: '8\u201312 minutes',
+                prompt: 'Which neighboring pair are you testing, and what mechanism do you expect?',
+                lookFor: 'Learners point to a plot, name its neighbor, and predict one measurable change.',
+                misconception: '\u201CPlants are companions whenever they are close together.\u201D',
+                nudge: 'Ask which modeled pathway\u2014nitrogen, shelter, space, pollination, or pest support\u2014connects the pair.',
+                checkpoint: fieldCropCount >= 4 && !!cgPlantingClaim,
+                checkpointLabel: 'A four-plot design and testable planting claim are recorded.',
+                udl: [
+                  { id: 'representation', icon: '\uD83D\uDC41\uFE0F', label: 'Representation', move: 'Pair plant portraits with the true 4\u00D74 neighbor map.' },
+                  { id: 'expression', icon: '\uD83D\uDCAC', label: 'Action & expression', move: 'Let learners point, speak, sketch, or type the prediction.' },
+                  { id: 'engagement', icon: '\uD83C\uDFAF', label: 'Engagement', move: 'Let the crew choose a food, habitat, or soil priority.' }
+                ]
+              },
+              observe: {
+                time: '6\u201310 minutes',
+                prompt: 'What changed in the same plot, and which exact before-and-after value proves it?',
+                lookFor: 'Learners name the plot, metric, starting value, ending value, and direction of change.',
+                misconception: '\u201CAny change after planting was caused by the companion pair.\u201D',
+                nudge: 'Ask what care action, event, or changing condition could be another cause.',
+                checkpoint: !!cgLastDayReport,
+                checkpointLabel: 'A day report with before-and-after evidence is available.',
+                udl: [
+                  { id: 'representation', icon: '\uD83D\uDC41\uFE0F', label: 'Representation', move: 'Show plot replay and exact values at the same time.' },
+                  { id: 'expression', icon: '\uD83D\uDCAC', label: 'Action & expression', move: 'Read, highlight, or narrate one measured change.' },
+                  { id: 'engagement', icon: '\uD83C\uDFAF', label: 'Engagement', move: 'Invite the Observer and Evidence Keeper to compare notices.' }
+                ]
+              },
+              explain: {
+                time: '10\u201315 minutes',
+                prompt: 'What claim can you make, which evidence supports it, and what limitation remains?',
+                lookFor: 'Learners connect one exact value to a mechanism, calibrate confidence, and avoid overclaiming.',
+                misconception: '\u201COne supported simulation day proves the relationship will always work.\u201D',
+                nudge: 'Ask how repetition, a comparison plot, climate, spacing, or care could change confidence.',
+                checkpoint: !!(inquiryEvidenceReady && cgInquiryReasoning),
+                checkpointLabel: 'Evidence and a reasoning frame are ready for a CER explanation.',
+                udl: [
+                  { id: 'representation', icon: '\uD83D\uDC41\uFE0F', label: 'Representation', move: 'Keep the causal chain beside the evidence trail.' },
+                  { id: 'expression', icon: '\uD83D\uDCAC', label: 'Action & expression', move: 'Offer oral rehearsal and the scientific sentence frame before saving.' },
+                  { id: 'engagement', icon: '\uD83C\uDFAF', label: 'Engagement', move: 'Compare two explanations, then let learners calibrate confidence.' }
+                ]
+              },
+              transfer: {
+                time: '8\u201312 minutes',
+                prompt: 'Which part of this design can transfer outdoors, and what must the real garden team verify first?',
+                lookFor: 'Learners treat the simulation as a hypothesis and name spacing, season, access, materials, or care checks.',
+                misconception: '\u201CThe 4\u00D74 simulation layout can be copied outdoors without adaptation.\u201D',
+                nudge: 'Ask what changes when plot dimensions, sunlight, climate, cultivar, and people are real.',
+                checkpoint: fieldChecklistComplete >= 3,
+                checkpointLabel: 'At least three planting-day preparation steps are checked.',
+                udl: [
+                  { id: 'representation', icon: '\uD83D\uDC41\uFE0F', label: 'Representation', move: 'Place the simulation layout beside the field checklist.' },
+                  { id: 'expression', icon: '\uD83D\uDCAC', label: 'Action & expression', move: 'Sketch, list, or verbally sequence the planting-day plan.' },
+                  { id: 'engagement', icon: '\uD83C\uDFAF', label: 'Engagement', move: 'Choose a real context and community priority that matters.' }
+                ]
+              }
+            };
+            var facilitatorGuidance = facilitatorGuidanceByStage[gardenJourneyCurrent.id];
+
+            function cgLaunchSavedNextTrial(record, requestedAction) {
+              if (!record) return;
+              var targetPlot = typeof record.plot === 'number' ? record.plot : null;
+              var targetCell = targetPlot !== null ? cgGrid[targetPlot] : null;
+              var targetReady = !!(targetCell && targetCell.plantId === record.plantId);
+              var launchAction = requestedAction || (record.nextStep === 'real-garden' ? 'real-garden' : record.nextStep === 'repeat' ? 'repeat' : 'redesign');
+              if (launchAction === 'real-garden') {
+                cgUpd({ lastFeedback: { icon: '\uD83E\uDEB4', title: 'Field test ready to plan', detail: 'Use the planting-day guide to adapt the saved relationship to real spacing, sunlight, soil, access, and care.', tone: 'info' } });
+                return;
+              }
+              if (launchAction === 'repeat' && targetReady) {
+                var repeatPlacement = cgHypotheticalPlacementEvidence(cgGrid, targetPlot, record.plantId);
+                var repeatComparisonPlot = typeof record.comparisonPlot === 'number' && cgGrid[record.comparisonPlot] && cgGrid[record.comparisonPlot].plantId === record.plantId ? record.comparisonPlot : null;
+                cgUpd({
+                  phase: 'grow',
+                  plantingClaim: {
+                    plot: targetPlot,
+                    plantId: record.plantId,
+                    plantedDay: cgDay,
+                    predictionId: record.predictionId || 'growth',
+                    predictionLabel: record.predictionLabel || cgInquiryPredictionMeta(record.predictionId || 'growth').label,
+                    neighborIds: repeatPlacement.neighbors.map(function(neighbor) { return neighbor.plantId; }),
+                    allyBonus: repeatPlacement.allyBonus,
+                    conflicts: repeatPlacement.conflicts,
+                    pathway: repeatPlacement.pathway,
+                    mechanism: repeatPlacement.mechanism,
+                    comparisonPlot: repeatComparisonPlot,
+                    comparisonPlantedDay: repeatComparisonPlot !== null ? cgDay : null,
+                    comparisonNeighborIds: repeatComparisonPlot !== null ? cgHypotheticalPlacementEvidence(cgGrid, repeatComparisonPlot, record.plantId).neighbors.map(function(neighbor) { return neighbor.plantId; }) : []
+                  },
+                  inquiryReasoning: null,
+                  inquiryConfidence: null,
+                  inquiryNextStep: null,
+                  inquiryObservations: [],
+                  rivalTestPlan: null,
+                  plantingPrediction: null,
+                  plantingTarget: null,
+                  selectedPlant: null,
+                  comparisonRequest: null,
+                  lastCareAction: null,
+                  showAdvanceReview: true,
+                  relationshipLens: true,
+                  relationshipFocus: targetPlot,
+                  gardenOverlay: record.predictionId === 'pests' ? 'pests' : record.predictionId === 'health' ? 'health' : record.predictionId === 'soil' ? 'nitrogen' : 'growth',
+                  lastFeedback: { icon: '\uD83D\uDD01', title: 'Matched repeat ready', detail: 'A new baseline starts now for Plot ' + (targetPlot + 1) + (repeatComparisonPlot !== null ? ' and comparison Plot ' + (repeatComparisonPlot + 1) : '') + '. Review the next day, keep care steady, then compare the new evidence.', tone: 'success' }
+                });
+                if (addToast) addToast('\uD83D\uDD01 Repeat trial ready: review and run the next day', 'success');
+                return;
+              }
+              if (inquiryRivalPlanActive && cgRivalTestPlan.rivalId === 'comparison' && targetReady) {
+                var comparisonSetupEvidence = cgHypotheticalPlacementEvidence(cgGrid, targetPlot, record.plantId);
+                cgUpd({
+                  phase: 'plan',
+                  plantingClaim: {
+                    plot: targetPlot,
+                    plantId: record.plantId,
+                    plantedDay: cgDay,
+                    predictionId: record.predictionId || 'growth',
+                    predictionLabel: record.predictionLabel || cgInquiryPredictionMeta(record.predictionId || 'growth').label,
+                    neighborIds: comparisonSetupEvidence.neighbors.map(function(neighbor) { return neighbor.plantId; }),
+                    allyBonus: comparisonSetupEvidence.allyBonus,
+                    conflicts: comparisonSetupEvidence.conflicts,
+                    pathway: comparisonSetupEvidence.pathway,
+                    mechanism: comparisonSetupEvidence.mechanism
+                  },
+                  comparisonRequest: { claimPlot: targetPlot, plantId: record.plantId },
+                  selectedPlant: record.plantId,
+                  plantingTarget: null,
+                  plantingPrediction: record.predictionId || 'growth',
+                  inquiryReasoning: null,
+                  inquiryConfidence: null,
+                  inquiryNextStep: null,
+                  inquiryObservations: [],
+                  showAdvanceReview: false,
+                  relationshipLens: true,
+                  relationshipFocus: targetPlot,
+                  lastFeedback: { icon: '\u2696\uFE0F', title: 'Matched-comparison setup ready', detail: 'The saved target in Plot ' + (targetPlot + 1) + ' is the baseline. Choose any open plot for the same crop; nothing has been planted yet.', tone: 'success' }
+                });
+                if (addToast) addToast('\u2696\uFE0F Choose an open plot for the matched comparison', 'success');
+                return;
+              }
+              cgUpd({
+                phase: 'plan',
+                selectedPlant: null,
+                plantingTarget: null,
+                plantingPrediction: record.predictionId || null,
+                comparisonRequest: null,
+                relationshipLens: true,
+                relationshipFocus: targetReady ? targetPlot : null,
+                inquiryReasoning: null,
+                inquiryConfidence: null,
+                inquiryNextStep: null,
+                lastFeedback: {
+                  icon: record.nextStep === 'one-factor' ? '\uD83E\uDDEA' : '\u270F\uFE0F',
+                  title: record.nextStep === 'one-factor' ? 'One-factor redesign ready' : 'Revision mode ready',
+                  detail: targetReady
+                    ? 'Plot ' + (targetPlot + 1) + ' is focused. Inspect its neighborhood and change only what your plan names; nothing was removed automatically.'
+                    : 'The saved crop is no longer in its recorded plot. Choose a current plot or open space before rebuilding the test.',
+                  tone: 'info'
+                }
+              });
+            }
+
+            function cgPlanRivalTest(explanation) {
+              if (!explanation || !inquiryLatestTrial) return;
+              var planByRival = {
+                relationship: {
+                  action: 'redesign',
+                  actionLabel: 'Open one-factor neighbor setup',
+                  keep: 'Keep the crop, prediction, season, and care conditions aligned.',
+                  change: 'Change only the neighboring arrangement around the target crop.',
+                  measure: 'Measure the same saved outcome in the redesigned target and comparison plots.'
+                },
+                context: {
+                  action: 'redesign',
+                  actionLabel: 'Open context-control setup',
+                  keep: 'Keep the crop, layout, prediction, and care plan as similar as possible.',
+                  change: 'Change the season or site context deliberately and record that difference.',
+                  measure: 'Measure whether the saved outcome transfers under the new context.'
+                },
+                comparison: {
+                  action: 'redesign',
+                  actionLabel: 'Open matched-comparison setup',
+                  keep: 'Keep the crop, prediction, simulated day, and care conditions aligned.',
+                  change: 'Add or restore a same-crop comparison plot in a different neighborhood.',
+                  measure: 'Compare the target and matched plot on the same outcome after one day.'
+                },
+                variability: {
+                  action: inquiryLatestTargetAvailable ? 'repeat' : 'redesign',
+                  actionLabel: inquiryLatestTargetAvailable ? 'Start controlled repeat' : 'Open repeat setup',
+                  keep: 'Keep the current crop, layout, prediction, and care conditions steady.',
+                  change: 'Change only the trial time by establishing a fresh baseline.',
+                  measure: 'Repeat the same outcome measure and record events that could shift it.'
+                }
+              };
+              var plan = planByRival[explanation.id] || planByRival.relationship;
+              cgUpd({
+                rivalTestPlan: {
+                  recordId: inquiryLatestTrial.id !== undefined ? inquiryLatestTrial.id : null,
+                  recordKey: inquiryLatestTrial.key || null,
+                  rivalId: explanation.id,
+                  label: explanation.label,
+                  test: explanation.test,
+                  action: plan.action,
+                  actionLabel: plan.actionLabel,
+                  keep: plan.keep,
+                  change: plan.change,
+                  measure: plan.measure
+                },
+                lastFeedback: { icon: '\uD83D\uDCCB', title: explanation.label + ' test pre-registered', detail: 'The Next Trial Launchpad now shows what to keep, change, and measure for this rival explanation.', tone: 'success' }
+              });
+              if (addToast) addToast('\uD83D\uDCCB Rival test added to the launchpad', 'success');
+            }
+
+            function cgSaveInquiryConclusion() {
+              if (!inquirySynthesisReady || !cgPlantingClaim) return;
+              var notebookRecord = {
+                key: inquiryRecordKey,
+                id: existingInquiryRecord ? existingInquiryRecord.id : Date.now(),
+                plantId: cgPlantingClaim.plantId,
+                plantLabel: inquiryClaimPlant.label,
+                plantEmoji: inquiryClaimPlant.emoji,
+                plot: cgPlantingClaim.plot,
+                comparisonPlot: inquiryComparison ? inquiryComparison.plot : cgPlantingClaim.comparisonPlot,
+                predictionId: cgPlantingClaim.predictionId,
+                predictionLabel: inquiryPredictionMeta.label,
+                supported: inquirySupported,
+                conclusion: inquiryConclusionText,
+                evidence: inquiryEvidenceStatement,
+                reasoningId: selectedInquiryReasoning.id,
+                confidence: selectedInquiryConfidence.id,
+                confidenceLabel: selectedInquiryConfidence.label,
+                nextStep: selectedInquiryNextStep.id,
+                nextStepLabel: selectedInquiryNextStep.label,
+                nextStepDetail: selectedInquiryNextStep.detail,
+                audience: selectedInquiryAudience.id,
+                audienceLabel: selectedInquiryAudience.label,
+                communication: inquiryCommunicationText,
+                communicationScore: inquiryCommunicationScore,
+                quality: inquiryEvidenceQualityScore,
+                observations: inquiryObservationsForClaim.length,
+                targetDelta: inquiryTargetMetric ? inquiryTargetMetric.delta : null,
+                comparisonDelta: inquiryComparisonMetric ? inquiryComparisonMetric.delta : null,
+                day: cgDay,
+                year: cgYear,
+                season: ['Spring', 'Summer', 'Autumn', 'Winter'][cgSeason]
+              };
+              var nextInquiryHistory = cgInquiryHistory.slice();
+              var existingIndex = nextInquiryHistory.findIndex(function(record) { return record.key === inquiryRecordKey; });
+              if (existingIndex >= 0) nextInquiryHistory[existingIndex] = notebookRecord;
+              else nextInquiryHistory = nextInquiryHistory.concat([notebookRecord]).slice(-8);
+              cgUpd({ inquiryHistory: nextInquiryHistory, lastFeedback: { icon: '\uD83D\uDCD3', title: existingIndex >= 0 ? 'Notebook conclusion updated' : 'Investigation saved', detail: inquiryClaimPlant.label + ' evidence is saved with confidence, limitations, and a next test.', tone: 'success' } });
+              if (awardStemXP && existingIndex < 0) awardStemXP('companion_garden_inquiry', 10, 'Saved evidence-based conclusion');
+              if (addToast) addToast('\uD83D\uDCD3 Garden science conclusion saved' + (existingIndex < 0 ? ' \u00B7 +10 XP' : ''), 'success');
+            }
+            var cgPortfolioLatestRecord = cgInquiryHistory.length ? cgInquiryHistory[cgInquiryHistory.length - 1] : null;
+            var cgPortfolioSeasonName = ['Spring', 'Summer', 'Autumn', 'Winter'][cgSeason];
+            var cgPortfolioLayoutRows = [0, 1, 2, 3].map(function(rowIndex) {
+              return cgGrid.slice(rowIndex * 4, rowIndex * 4 + 4).map(function(cell, columnIndex) {
+                var plant = cell.plantId && CG_PLANTS[cell.plantId];
+                return 'Plot ' + (rowIndex * 4 + columnIndex + 1) + ': ' + (plant ? plant.label : 'Open');
+              }).join(' | ');
+            });
+            var cgPortfolioObservationText = cgLastDayReport
+              ? 'Day ' + cgLastDayReport.day + ' report: growth ' + cgSignedTrialValue(cgLastDayReport.growthDelta, '') + ', health ' + cgSignedTrialValue(cgLastDayReport.healthDelta, '') + ', moisture ' + cgSignedTrialValue(cgLastDayReport.moistureDelta, ' points') + ', nitrogen ' + cgSignedTrialValue(cgLastDayReport.nitrogenDelta, ' points') + ', pest pressure ' + cgSignedTrialValue(cgLastDayReport.pestDelta, '') + '.'
+              : 'No before-and-after day report has been collected yet.';
+            var cgPortfolioClaimText = cgPortfolioLatestRecord && cgPortfolioLatestRecord.conclusion
+              ? cgPortfolioLatestRecord.conclusion
+              : inquiryConclusionText || 'A saved evidence-based conclusion has not been added yet.';
+            var cgPortfolioEvidenceText = cgPortfolioLatestRecord && cgPortfolioLatestRecord.evidence
+              ? cgPortfolioLatestRecord.evidence
+              : inquiryEvidenceReady ? inquiryEvidenceStatement : 'Advance a day and compare the target with a baseline or matched plot.';
+            var cgPortfolioNextTestText = inquiryRivalPlanActive
+              ? cgRivalTestPlan.label + ': ' + cgRivalTestPlan.test
+              : cgPortfolioLatestRecord
+                ? (cgPortfolioLatestRecord.nextStepLabel || 'Next investigation') + (cgPortfolioLatestRecord.nextStepDetail ? ' - ' + cgPortfolioLatestRecord.nextStepDetail : '')
+                : 'Save a conclusion to carry a next test into the portfolio.';
+            var cgPortfolioTransferText = selectedFieldContext.label + ' context; ' + selectedFieldPriority.label.toLowerCase() + ' priority; ' + fieldChecklistComplete + ' of ' + fieldSequence.length + ' planting-day steps checked.';
+            var cgPortfolioReadinessItems = [
+              { id: 'design', label: 'Garden design', complete: plantedCells > 0, detail: plantedCells + ' of 16 plots active' },
+              { id: 'observe', label: 'Measured observation', complete: !!cgLastDayReport, detail: cgLastDayReport ? 'Day ' + cgLastDayReport.day + ' report captured' : 'Day report still needed' },
+              { id: 'explain', label: 'Saved conclusion', complete: !!cgPortfolioLatestRecord, detail: cgPortfolioLatestRecord ? 'Claim, evidence, and next test saved' : 'Save a notebook conclusion' },
+              { id: 'pattern', label: 'Repeated pattern', complete: inquiryPatternTrials.length >= 2, detail: inquiryPatternTrials.length + ' matching trial' + (inquiryPatternTrials.length === 1 ? '' : 's') },
+              { id: 'transfer', label: 'Field plan', complete: fieldChecklistComplete === fieldSequence.length, detail: fieldChecklistComplete + ' of ' + fieldSequence.length + ' steps checked' }
+            ];
+            var cgPortfolioReadyCount = cgPortfolioReadinessItems.filter(function(item) { return item.complete; }).length;
+            var cgPortfolioReadiness = Math.round(cgPortfolioReadyCount / cgPortfolioReadinessItems.length * 100);
+            var cgEvidencePortfolioText = [
+              'COMPANION PLANTING INVESTIGATION PORTFOLIO',
+              '',
+              'SIMULATION CONTEXT',
+              cgPortfolioSeasonName + ', Year ' + cgYear + ', simulation day ' + cgDay + '. ' + plantedCells + ' of 16 plots are active.',
+              'Community impact: ' + communityImpact + '%. Transfer readiness: ' + fieldReadinessScore + '%.',
+              '',
+              'GARDEN DESIGN',
+              cgPortfolioLayoutRows.join('\n'),
+              'Crop mix: ' + (fieldCropGroups.length ? fieldCropGroups.map(function(group) { return group.count + ' ' + group.plant.label; }).join(', ') : 'No crops planted.'),
+              'Helpful modeled relationships: ' + fieldHelpfulRelationships.length + '. Conflicts to review: ' + harmfulPairCount + '.',
+              '',
+              'OBSERVATION',
+              cgPortfolioObservationText,
+              '',
+              'CLAIM',
+              cgPortfolioClaimText,
+              '',
+              'EVIDENCE',
+              cgPortfolioEvidenceText,
+              '',
+              'CLAIM STRENGTH',
+              inquiryPatternTrials.length ? 'Level ' + inquiryClaimLevel + ': ' + inquiryClaimLevelLabel + '. ' + inquiryClaimSafeSentence : 'No repeated-trial claim level is available yet.',
+              '',
+              'RIVAL EXPLANATION TO CHECK',
+              inquiryPatternTrials.length >= 2 ? inquiryRivalPriority.label + ': ' + inquiryRivalPriority.evidence : 'Save at least two matching trials to compare rival explanations.',
+              '',
+              'NEXT TEST',
+              cgPortfolioNextTestText,
+              '',
+              'REAL-GARDEN TRANSFER',
+              cgPortfolioTransferText,
+              'Before planting outside, verify mature spacing, local timing, sun, soil, allergies, and garden rules.',
+              '',
+              'MODEL BOUNDARY',
+              'This simulation supports planning and hypothesis-building. It does not prove causation or guarantee a real-garden outcome.'
+            ].join('\n');
+            function cgSetEvidencePortfolioStatus(status, message) {
+              cgUpd({ evidencePortfolioStatus: status, showEvidencePortfolio: true });
+              if (typeof announceToSR === 'function') announceToSR(message);
+            }
+            function cgCopyEvidencePortfolio() {
+              if (typeof navigator === 'undefined' || !navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
+                cgSetEvidencePortfolioStatus('manual', 'Clipboard access is unavailable. The portfolio text is open for manual copying.');
+                return;
+              }
+              var portfolioCopyPromise;
+              try { portfolioCopyPromise = navigator.clipboard.writeText(cgEvidencePortfolioText); }
+              catch (portfolioCopyError) {
+                cgSetEvidencePortfolioStatus('manual', 'Automatic copying failed. The portfolio text is open for manual copying.');
+                if (addToast) addToast('Copy unavailable - select the portfolio text instead.', 'warning');
+                return;
+              }
+              Promise.resolve(portfolioCopyPromise).then(function() {
+                cgSetEvidencePortfolioStatus('copied', 'Evidence portfolio copied to the clipboard.');
+                if (addToast) addToast('\uD83D\uDCCB Evidence portfolio copied', 'success');
+              }).catch(function() {
+                cgSetEvidencePortfolioStatus('manual', 'Automatic copying failed. The portfolio text is open for manual copying.');
+                if (addToast) addToast('Copy unavailable - select the portfolio text instead.', 'warning');
+              });
+            }
+            function cgEscapePortfolioHtml(value) {
+              return String(value === null || value === undefined ? '' : value)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+            }
+            function cgPrintEvidencePortfolio() {
+              if (typeof window === 'undefined' || typeof window.open !== 'function') {
+                cgSetEvidencePortfolioStatus('print-unavailable', 'Print view is unavailable in this environment.');
+                return;
+              }
+              var printWindow = window.open('', '_blank');
+              if (!printWindow) {
+                cgSetEvidencePortfolioStatus('print-unavailable', 'The browser blocked the print view. Allow pop-ups, then try again.');
+                if (addToast) addToast('Print view was blocked by the browser.', 'warning');
+                return;
+              }
+              try { printWindow.opener = null; } catch (portfolioOpenerError) {}
+              var printCells = cgGrid.map(function(cell, index) {
+                var plant = cell.plantId && CG_PLANTS[cell.plantId];
+                return '<div class="plot"><span>Plot ' + (index + 1) + '</span><strong>' + cgEscapePortfolioHtml(plant ? plant.emoji + ' ' + plant.label : 'Open') + '</strong></div>';
+              }).join('');
+              var reportSections = [
+                ['Observation', cgPortfolioObservationText],
+                ['Claim', cgPortfolioClaimText],
+                ['Evidence', cgPortfolioEvidenceText],
+                ['Claim strength', inquiryPatternTrials.length ? 'Level ' + inquiryClaimLevel + ': ' + inquiryClaimLevelLabel + '. ' + inquiryClaimSafeSentence : 'Repeated-trial claim level not yet available.'],
+                ['Rival explanation to check', inquiryPatternTrials.length >= 2 ? inquiryRivalPriority.label + ': ' + inquiryRivalPriority.evidence : 'Save two matching trials to compare alternatives.'],
+                ['Next test', cgPortfolioNextTestText],
+                ['Real-garden transfer', cgPortfolioTransferText]
+              ].map(function(section) { return '<section><h2>' + cgEscapePortfolioHtml(section[0]) + '</h2><p>' + cgEscapePortfolioHtml(section[1]) + '</p></section>'; }).join('');
+              var reportHtml = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Companion Planting Investigation Portfolio</title><style>body{font-family:Arial,sans-serif;color:#172033;margin:32px;line-height:1.45}header{border-bottom:4px solid #047857;padding-bottom:16px;margin-bottom:20px}.meta{color:#475569}.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:16px 0 24px}.plot{min-height:72px;border:2px solid #a7f3d0;border-radius:10px;padding:8px;background:#f0fdf4}.plot span{display:block;font-size:11px;font-weight:700;color:#475569}.plot strong{display:block;margin-top:8px}section{break-inside:avoid;border-top:1px solid #cbd5e1;padding:12px 0}h1{font-size:26px;margin:0}h2{font-size:16px;margin:0 0 5px}p{margin:0}.boundary{margin-top:20px;padding:12px;border:2px solid #f59e0b;background:#fffbeb}.actions{margin-bottom:20px}.actions button{min-height:44px;padding:8px 14px;border:0;border-radius:8px;background:#065f46;color:white;font-weight:700}@media(max-width:600px){body{margin:16px}.grid{grid-template-columns:repeat(2,1fr)}}@media print{body{margin:0}.actions{display:none}}</style></head><body><div class="actions"><button type="button" onclick="window.print()">Print or save as PDF</button></div><header><h1>Companion Planting Investigation Portfolio</h1><p class="meta">' + cgEscapePortfolioHtml(cgPortfolioSeasonName + ', Year ' + cgYear + ', simulation day ' + cgDay + ' | ' + cgPortfolioReadyCount + ' of ' + cgPortfolioReadinessItems.length + ' portfolio parts ready') + '</p></header><h2>Garden design</h2><div class="grid" role="img" aria-label="Four by four garden layout">' + printCells + '</div>' + reportSections + '<p class="boundary"><strong>Model boundary:</strong> This simulation supports planning and hypothesis-building. It does not prove causation or guarantee a real-garden outcome.</p></body></html>';
+              printWindow.document.open();
+              printWindow.document.write(reportHtml);
+              printWindow.document.close();
+              printWindow.focus();
+              cgSetEvidencePortfolioStatus('print-opened', 'Printable evidence portfolio opened in a new window.');
+            }
             var communityVoices = [
               { id: 'kitchen', icon: '\uD83E\uDDD1\u200D\uD83C\uDF73', name: 'Maya, garden cook', role: 'Food for neighbors', complete: communityFoodCrops >= 4 || cgTotalHarvested >= 4, progress: Math.min(4, Math.max(communityFoodCrops, cgTotalHarvested)), target: 4, message: communityFoodCrops >= 4 || cgTotalHarvested >= 4 ? 'This mix could become a colorful community meal. The garden is feeding more than one kind of need.' : 'Could we grow four food crops for a shared garden meal?', action: 'Find food crops', onClick: function() { cgUpd({ phase: 'plan', plantFilter: 'food', lastFeedback: { icon: '\uD83E\uDDD1\u200D\uD83C\uDF73', title: 'Maya opened the seed shelf', detail: 'Food crops are filtered. Choose a crop, then place it in an empty plot.', tone: 'info' } }); } },
               { id: 'habitat', icon: '\uD83E\uDDD1\u200D\uD83C\uDF3E', name: 'Dev, habitat steward', role: 'Shelter for wildlife', complete: pulsePollinators >= 2 || cgObservedVisitors.length >= 2, progress: Math.min(2, Math.max(pulsePollinators, cgObservedVisitors.length)), target: 2, message: pulsePollinators >= 2 || cgObservedVisitors.length >= 2 ? 'The flowers and field notes show that this patch is becoming habitat, not just a crop bed.' : 'Can we create two habitat signals for pollinators and other visitors?', action: cgObservedVisitors.length ? 'View visitors' : 'Find helpers', onClick: function() { cgUpd({ phase: 'plan', plantFilter: 'helpers', showWildlifeGuide: true, lastFeedback: { icon: '\uD83D\uDC1D', title: 'Dev marked habitat choices', detail: 'Add flowers or herbs, then watch the living ecosystem panel for new visitors.', tone: 'info' } }); } },
@@ -4736,7 +5883,14 @@ var d = (labToolData.companionPlanting) || {};
               return h('div', { className: 'space-y-3' }, renderMicroscope());
             }
 
-            return h('div', { className: 'space-y-3' },
+            return h('div', { className: 'space-y-3', 'data-community-a11y-scope': true, 'data-community-focus-mode': cgFocusMode, 'data-community-focus-stage': gardenJourneyCurrent.id, 'data-community-readable-mode': cgReadableMode, 'data-community-contrast-mode': cgContrastMode, 'data-community-reduced-motion': cgReducedMotion },
+              h('style', { 'data-community-wcag-style': true }, '[data-community-a11y-scope] button{min-height:44px}[data-community-a11y-scope] :where(button,a[href],input,textarea,select,[tabindex="0"]):focus-visible{outline:3px solid #fbbf24!important;outline-offset:3px!important;box-shadow:0 0 0 2px #0f172a}[data-community-a11y-scope] :where(button,a[href],input,textarea,select,[tabindex="0"]){scroll-margin-block:1rem}@media (forced-colors:active){[data-community-a11y-scope] :where(button,a[href],input,textarea,select,[tabindex="0"]):focus-visible{outline:3px solid CanvasText!important;box-shadow:none}}@media (prefers-reduced-motion:reduce){[data-community-a11y-scope] *,[data-community-a11y-scope] *::before,[data-community-a11y-scope] *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}[data-community-contrast-mode="true"]>:where(section,nav){outline:2px solid #0f172a!important;outline-offset:1px}[data-community-contrast-mode="true"] :where(button,a[href],input,textarea,select){border-width:2px!important}[data-community-contrast-mode="true"] [class~="text-slate-400"]{color:#475569!important}[data-community-contrast-mode="true"] [class~="text-slate-500"]{color:#334155!important}[data-community-contrast-mode="true"] [class*="text-white/"]{color:#fff!important}[data-community-contrast-mode="true"] [class*="border-white/"]{border-color:#fff!important}[data-community-reduced-motion="true"] *,[data-community-reduced-motion="true"] *::before,[data-community-reduced-motion="true"] *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}[data-community-reduced-motion="true"] [class*="hover:-translate"],[data-community-reduced-motion="true"] [class*="hover:scale"]{transform:none!important}[data-community-readable-mode="true"] [class~="text-[8px]"],[data-community-readable-mode="true"] [class~="text-[9px]"]{font-size:.75rem!important;line-height:1rem!important}[data-community-readable-mode="true"] [class~="text-[10px]"]{font-size:.8125rem!important;line-height:1.125rem!important}[data-community-readable-mode="true"] [class~="text-[11px]"]{font-size:.875rem!important;line-height:1.25rem!important}[data-community-focus-mode="true"][data-community-focus-stage="design"] [data-focus-stages]:not([data-focus-stages~="design"]){display:none!important}[data-community-focus-mode="true"][data-community-focus-stage="observe"] [data-focus-stages]:not([data-focus-stages~="observe"]){display:none!important}[data-community-focus-mode="true"][data-community-focus-stage="explain"] [data-focus-stages]:not([data-focus-stages~="explain"]){display:none!important}[data-community-focus-mode="true"][data-community-focus-stage="transfer"] [data-focus-stages]:not([data-focus-stages~="transfer"]){display:none!important}'),
+              h('nav', { className: 'relative z-[10000]', 'data-community-skip-links': true, 'aria-label': 'Community Garden shortcuts' },
+                h('a', { href: gardenJourneyCurrent.href, className: 'sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:flex min-h-[44px] items-center rounded-lg bg-slate-950 px-4 py-2 text-sm font-black text-white outline-none focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-amber-300' }, 'Skip to next garden task'),
+                h('a', { href: '#community-crew-huddle', className: 'sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:flex min-h-[44px] items-center rounded-lg bg-slate-950 px-4 py-2 text-sm font-black text-white outline-none focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-amber-300' }, 'Skip to crew huddle'),
+                h('a', { href: '#community-garden-map', className: 'sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:flex min-h-[44px] items-center rounded-lg bg-slate-950 px-4 py-2 text-sm font-black text-white outline-none focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-amber-300' }, 'Skip to accessible garden map'),
+                plantedCells > 0 && (!cgFocusMode || gardenJourneyCurrent.id === 'transfer') && h('a', { href: '#community-field-guide', className: 'sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:flex min-h-[44px] items-center rounded-lg bg-slate-950 px-4 py-2 text-sm font-black text-white outline-none focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-amber-300' }, 'Skip to planting-day field guide')
+              ),
               // ── SEL Reflection Modal ──
               cgActiveReflection && CG_SEL_REFLECTIONS[cgActiveReflection] && (function() {
                 var ref = CG_SEL_REFLECTIONS[cgActiveReflection];
@@ -4780,7 +5934,206 @@ var d = (labToolData.companionPlanting) || {};
                 )
               ),
 
-              cgLastDayReport && h('section', { className: 'overflow-hidden rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-950 via-slate-900 to-violet-950 text-white shadow-lg', 'data-community-day-report': true, 'aria-labelledby': 'community-day-report-title' },
+              h('nav', { id: 'community-journey-nav', tabIndex: -1, className: 'scroll-mt-4 overflow-visible rounded-2xl border border-indigo-200 bg-gradient-to-br from-white via-indigo-50 to-emerald-50 shadow-sm focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-indigo-600', 'data-community-journey-nav': true, 'aria-label': 'Garden learning journey' },
+                h('div', { className: 'sticky top-2 z-[90] flex flex-wrap items-center justify-between gap-3 rounded-t-2xl border-b border-indigo-200 bg-white/95 p-3 shadow-md backdrop-blur-sm sm:p-4', 'data-current-task-dock': gardenJourneyCurrent.id, 'data-workspace-view': cgFocusMode ? 'compact' : 'all', role: 'region', 'aria-label': 'Current garden task' },
+                  h('div', { className: 'min-w-[220px] flex-1' },
+                    h('div', { className: 'flex flex-wrap items-center gap-2 text-[10px] font-black uppercase tracking-[0.17em] text-indigo-700' }, h('span', null, 'Current task'), h('span', { className: 'rounded-full bg-indigo-100 px-2 py-1 text-indigo-800', 'data-current-task-stage': gardenJourneyCurrent.id }, 'Stage ' + gardenJourneyCurrent.number), h('span', { className: 'sr-only', 'data-journey-recommended': gardenJourneySuggested.id }, 'Next: ' + gardenJourneySuggested.label)),
+                    h('h3', { className: 'mt-1 text-sm font-black text-slate-900' }, gardenJourneyCurrent.label),
+                    h('p', { className: 'mt-0.5 text-[10px] leading-relaxed text-slate-600' }, gardenJourneyCurrent.action + '. ' + (cgFocusMode ? 'Only this stage\'s core tools are shown.' : 'All workspace sections are available.'))
+                  ),
+                  h('div', { className: 'min-w-[180px] flex-1 sm:max-w-[260px]' },
+                    h('div', { className: 'flex items-center justify-between text-[10px] font-black uppercase tracking-wide text-slate-500' }, h('span', null, 'Journey progress'), h('span', { className: 'text-indigo-700' }, gardenJourneyCompleteCount + '/4')),
+                    h('div', { className: 'mt-1.5 h-2 overflow-hidden rounded-full bg-indigo-100', role: 'progressbar', 'aria-label': 'Garden learning journey progress', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': gardenJourneyProgress }, h('div', { className: 'h-full rounded-full bg-gradient-to-r from-indigo-600 via-violet-500 to-emerald-500 transition-all', style: { width: gardenJourneyProgress + '%' } }))
+                  ),
+                  h('div', { className: 'flex flex-wrap items-center gap-2', role: 'group', 'aria-label': 'Current task navigation', 'data-current-task-controls': true },
+                    gardenJourneyPrevious && h('a', { href: gardenJourneyPrevious.href, onClick: function() { cgChooseWorkspaceStage(gardenJourneyPrevious.id, true); }, className: 'inline-flex min-h-[44px] items-center rounded-lg border border-indigo-200 bg-white px-3 py-2 text-[10px] font-black text-indigo-900 hover:bg-indigo-50', 'data-workspace-previous': gardenJourneyPrevious.id, 'aria-label': 'Previous stage: ' + gardenJourneyPrevious.label }, '\u2190 Previous'),
+                    h('a', { href: gardenJourneyCurrent.href, onClick: function() { cgChooseWorkspaceStage(gardenJourneyCurrent.id, cgFocusMode); }, className: 'inline-flex min-h-[44px] items-center rounded-lg bg-indigo-700 px-3 py-2 text-[10px] font-black text-white hover:bg-indigo-800 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-amber-400', 'data-journey-resume': gardenJourneyCurrent.id }, 'Open task'),
+                    gardenJourneyNext && h('a', { href: gardenJourneyNext.href, onClick: function() { cgChooseWorkspaceStage(gardenJourneyNext.id, true); }, className: 'inline-flex min-h-[44px] items-center rounded-lg border border-indigo-200 bg-white px-3 py-2 text-[10px] font-black text-indigo-900 hover:bg-indigo-50', 'data-workspace-next': gardenJourneyNext.id, 'aria-label': 'Next stage: ' + gardenJourneyNext.label }, 'Next \u2192'),
+                    h('button', { onClick: function() { cgUpd({ focusMode: !cgFocusMode }); }, 'aria-pressed': cgFocusMode, className: 'min-h-[44px] rounded-lg px-3 py-2 text-[10px] font-black ' + (cgFocusMode ? 'bg-emerald-700 text-white hover:bg-emerald-800' : 'border border-slate-300 bg-white text-slate-800 hover:bg-slate-50'), 'data-workspace-compact-toggle': true }, cgFocusMode ? 'Compact workspace: On' : 'Compact workspace: Off'),
+                    !gardenJourneyUsingSuggested && h('a', { href: gardenJourneySuggested.href, onClick: function() { cgChooseWorkspaceStage(gardenJourneySuggested.id, true); }, className: 'inline-flex min-h-[44px] items-center rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-[10px] font-black text-amber-950 hover:bg-amber-100', 'data-workspace-return-suggested': gardenJourneySuggested.id }, 'Go to recommended')
+                  )
+                ),
+                h('div', { className: 'overflow-x-auto p-3', role: 'region', 'aria-label': 'Scrollable garden journey stages' },
+                  h('ol', { className: 'grid min-w-[680px] grid-cols-4 gap-2 sm:min-w-0' }, gardenJourneyStages.map(function(stage, index) {
+                    var current = stage.id === gardenJourneyCurrent.id;
+                    return h('li', { key: stage.id },
+                      h('a', { href: stage.href, onClick: function() { cgChooseWorkspaceStage(stage.id, true); }, className: 'group relative block min-h-[84px] rounded-xl border p-3 transition-all focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 ' + (current ? 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200 hover:bg-indigo-100' : stage.complete ? 'border-emerald-300 bg-emerald-50 hover:border-emerald-500' : 'border-slate-200 bg-white hover:border-indigo-300'), 'data-journey-stage': stage.id, 'data-workspace-stage-select': stage.id, 'data-journey-stage-status': current ? (cgWorkspaceStage ? 'selected' : 'current') : stage.complete ? 'complete' : 'upcoming', 'aria-current': current ? 'step' : undefined },
+                        h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'flex h-8 w-8 items-center justify-center rounded-full text-sm ' + (current ? 'bg-indigo-700 text-white' : stage.complete ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-500'), 'aria-hidden': true }, current ? stage.icon : stage.complete ? '\u2713' : stage.icon), h('span', { className: 'text-[10px] font-black uppercase tracking-wide ' + (current ? 'text-indigo-700' : stage.complete ? 'text-emerald-700' : 'text-slate-400') }, current ? (cgWorkspaceStage ? 'Selected' : 'Do next') : stage.complete ? 'Complete' : 'Upcoming')),
+                        h('div', { className: 'mt-2 text-[10px] font-black text-slate-900' }, stage.number + '. ' + stage.label),
+                        current || !stage.complete ? h('div', { className: 'mt-0.5 text-[10px] leading-relaxed text-slate-600' }, stage.detail) : h('div', { className: 'mt-0.5 text-[10px] font-bold text-emerald-700', 'data-completed-stage-summary': stage.id }, 'Completed - choose to revisit'),
+                        index < gardenJourneyStages.length - 1 && h('span', { className: 'absolute -right-2 top-1/2 z-10 hidden -translate-y-1/2 rounded-full bg-white px-1 text-indigo-300 shadow-sm sm:block', 'aria-hidden': true }, '\u2192')
+                      )
+                    );
+                  }))
+                ),
+                h('div', { className: 'flex flex-wrap items-center gap-2 border-t border-indigo-100 bg-white/70 px-3 py-2.5', 'data-journey-quick-jumps': true },
+                  h('span', { className: 'text-[10px] font-black uppercase tracking-wide text-slate-500' }, 'Quick jump:'),
+                  h('a', { href: '#community-garden-map', className: 'inline-flex min-h-[44px] items-center rounded-full border border-emerald-300 bg-white px-3 py-2 text-[10px] font-black text-emerald-900 hover:bg-emerald-50 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-indigo-600' }, '\uD83E\uDEB4 Garden map'),
+                  cgPlantingClaim && (!cgFocusMode || gardenJourneyCurrent.id === 'explain') && h('a', { href: '#community-evidence-trail', className: 'inline-flex min-h-[44px] items-center rounded-full border border-fuchsia-300 bg-white px-3 py-2 text-[10px] font-black text-fuchsia-900 hover:bg-fuchsia-50 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-indigo-600' }, '\uD83D\uDCCA Evidence trail'),
+                  cgInquiryHistory.length > 0 && (!cgFocusMode || gardenJourneyCurrent.id === 'explain' || gardenJourneyCurrent.id === 'transfer') && h('a', { href: '#community-inquiry-notebook', className: 'inline-flex min-h-[44px] items-center rounded-full border border-amber-300 bg-white px-3 py-2 text-[10px] font-black text-amber-950 hover:bg-amber-50 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-indigo-600' }, '\uD83D\uDCD3 Science notebook'),
+                  (plantedCells > 0 || cgInquiryHistory.length > 0) && (!cgFocusMode || gardenJourneyCurrent.id === 'explain' || gardenJourneyCurrent.id === 'transfer') && h('a', { href: '#community-evidence-portfolio', className: 'inline-flex min-h-[44px] items-center rounded-full border border-violet-300 bg-white px-3 py-2 text-[10px] font-black text-violet-900 hover:bg-violet-50 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-indigo-600' }, '\uD83D\uDCC1 Evidence portfolio'),
+                  plantedCells > 0 && (!cgFocusMode || gardenJourneyCurrent.id === 'transfer') && h('a', { href: '#community-field-guide', className: 'inline-flex min-h-[44px] items-center rounded-full border border-teal-300 bg-white px-3 py-2 text-[10px] font-black text-teal-900 hover:bg-teal-50 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-indigo-600' }, '\uD83E\uDDED Field guide')
+                )
+              ),
+
+              h('section', { id: 'community-focus-guide', className: 'overflow-hidden rounded-2xl border border-sky-200 bg-gradient-to-br from-sky-950 via-indigo-950 to-slate-950 text-white shadow-lg', 'data-community-focus-guide': true, 'aria-labelledby': 'community-focus-guide-title' },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-3 p-3 sm:p-4' },
+                  h('div', { className: 'flex items-start gap-3' },
+                    h('span', { className: 'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-sky-200 text-xl text-sky-950 shadow-sm', 'aria-hidden': true }, '\uD83C\uDFAF'),
+                    h('div', null,
+                      h('div', { className: 'text-xs font-black uppercase tracking-[0.14em] text-sky-200' }, 'Stage ' + gardenJourneyCurrent.number + ' \u00B7 Focus Mode'),
+                      h('h3', { id: 'community-focus-guide-title', className: 'text-base font-black text-white' }, focusGuide.title),
+                      h('p', { className: 'mt-1 max-w-3xl text-xs leading-relaxed text-sky-100' }, cgFocusMode ? focusGuide.description : 'Reduce the long garden workspace to the panels that matter most for ' + gardenJourneyCurrent.label.toLowerCase() + '.')
+                    )
+                  ),
+                  h('div', { className: 'flex flex-wrap items-center gap-2', role: 'group', 'aria-label': 'Community Garden display controls', 'data-community-display-controls': true },
+                    h('button', { onClick: function() { cgUpd({ readableMode: !cgReadableMode }); }, 'aria-pressed': cgReadableMode, 'aria-label': cgReadableMode ? 'Turn readable text scale off' : 'Turn readable text scale on', className: 'min-h-[44px] rounded-xl border px-3 py-2 text-xs font-black shadow-sm ' + (cgReadableMode ? 'border-amber-200 bg-amber-200 text-amber-950 hover:bg-amber-100' : 'border-white/20 bg-white/10 text-white hover:bg-white/20'), 'data-community-readable-toggle': true }, cgReadableMode ? 'Readable text: On' : 'Readable text: Off'),
+                    h('button', { onClick: function() { cgUpd({ contrastMode: !cgContrastMode }); }, 'aria-pressed': cgContrastMode, 'aria-label': cgContrastMode ? 'Turn contrast boost off' : 'Turn contrast boost on', className: 'min-h-[44px] rounded-xl border px-3 py-2 text-xs font-black shadow-sm ' + (cgContrastMode ? 'border-lime-200 bg-lime-200 text-lime-950 hover:bg-lime-100' : 'border-white/20 bg-white/10 text-white hover:bg-white/20'), 'data-community-contrast-toggle': true }, cgContrastMode ? 'Contrast: On' : 'Contrast: Off'),
+                    h('button', { onClick: function() { cgUpd({ reducedMotion: !cgReducedMotion }); }, 'aria-pressed': cgReducedMotion, 'aria-label': cgReducedMotion ? 'Use full interface motion' : 'Reduce interface motion', className: 'min-h-[44px] rounded-xl border px-3 py-2 text-xs font-black shadow-sm ' + (cgReducedMotion ? 'border-violet-200 bg-violet-200 text-violet-950 hover:bg-violet-100' : 'border-white/20 bg-white/10 text-white hover:bg-white/20'), 'data-community-motion-toggle': true }, cgReducedMotion ? 'Motion: Reduced' : 'Motion: Full'),
+                    h('button', { onClick: function() { cgUpd({ focusMode: !cgFocusMode }); }, 'aria-pressed': cgFocusMode, 'aria-expanded': cgFocusMode, 'aria-controls': 'community-focus-guide-body', className: 'min-h-[44px] rounded-xl px-4 py-2 text-sm font-black shadow-sm ' + (cgFocusMode ? 'border border-white/20 bg-white/10 text-white hover:bg-white/20' : 'bg-sky-200 text-sky-950 hover:bg-sky-100'), 'data-community-focus-toggle': true }, cgFocusMode ? 'Show all tools' : 'Focus on this stage')
+                  )
+                ),
+                cgFocusMode && h('div', { id: 'community-focus-guide-body', className: 'border-t border-white/10 p-3 sm:p-4', 'data-community-focus-guide-body': gardenJourneyCurrent.id },
+                  h('div', { className: 'grid gap-2 md:grid-cols-3', 'aria-label': gardenJourneyCurrent.label + ' focus tools' }, focusGuide.tools.map(function(tool, toolIndex) {
+                    return h('a', { key: tool.href + '-' + toolIndex, href: tool.href, className: 'group flex min-h-[96px] items-start gap-3 rounded-xl border border-white/10 bg-white/5 p-3 hover:border-sky-200/50 hover:bg-white/10 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-amber-300', 'data-focus-tool': toolIndex + 1 }, h('span', { className: 'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-lg text-slate-950', 'aria-hidden': true }, tool.icon), h('span', { className: 'min-w-0' }, h('span', { className: 'block text-sm font-black text-white' }, tool.label), h('span', { className: 'mt-1 block text-xs leading-relaxed text-sky-100' }, tool.detail), h('span', { className: 'mt-2 block text-xs font-black text-sky-200 group-hover:text-white' }, 'Open tool \u2192')));
+                  })),
+                  h('div', { className: 'mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-sky-200/20 bg-sky-200/10 p-3', role: 'status', 'aria-live': 'polite', 'aria-atomic': true, 'data-focus-mode-status': gardenJourneyCurrent.id },
+                    h('p', { className: 'min-w-0 flex-1 text-xs leading-relaxed text-sky-100' }, h('strong', { className: 'text-white' }, 'Focused view is on. '), 'Stage-mismatched learning panels are hidden, but their data is preserved. The coach, journey, collaboration tools, and learning compass stay visible.'),
+                    h('button', { onClick: function() { cgUpd({ focusMode: false }); }, className: 'min-h-[44px] rounded-lg bg-white px-3 py-2 text-xs font-black text-sky-950 hover:bg-sky-50' }, 'Restore every panel')
+                  )
+                )
+              ),
+
+              h('section', { id: 'community-facilitator-lens', tabIndex: -1, className: 'scroll-mt-4 overflow-hidden rounded-2xl border border-cyan-200 bg-gradient-to-br from-slate-950 via-cyan-950 to-teal-950 text-white shadow-lg focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-cyan-300', 'data-community-facilitator-lens': true, 'aria-labelledby': 'community-facilitator-title' },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-3 p-3 sm:p-4' },
+                  h('div', { className: 'flex items-start gap-3' },
+                    h('span', { className: 'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-cyan-200 text-xl text-cyan-950 shadow-sm', 'aria-hidden': true }, '\uD83E\uDDD1\u200D\uD83C\uDFEB'),
+                    h('div', null,
+                      h('div', { className: 'text-xs font-black uppercase tracking-[0.14em] text-cyan-200' }, 'Facilitator Lens'),
+                      h('h3', { id: 'community-facilitator-title', className: 'text-sm font-black text-white' }, 'Teach the investigation without leaving the simulation'),
+                      h('p', { className: 'mt-1 max-w-2xl text-xs leading-relaxed text-cyan-100' }, 'Stage-aware timing, prompts, look-fors, misconceptions, and UDL moves for a quick learning huddle.')
+                    )
+                  ),
+                  h('div', { className: 'flex flex-wrap items-center gap-2' },
+                    h('span', { className: 'rounded-full border border-cyan-200/30 bg-cyan-200/10 px-3 py-2 text-xs font-black text-cyan-100', 'data-facilitator-stage': gardenJourneyCurrent.id }, 'Stage ' + gardenJourneyCurrent.number + ' \u00B7 ' + gardenJourneyCurrent.label),
+                    h('button', { onClick: function() { cgUpd({ showFacilitatorGuide: !cgShowFacilitatorGuide }); }, 'aria-expanded': cgShowFacilitatorGuide, 'aria-controls': 'community-facilitator-guide-body', className: 'rounded-lg border border-white/20 bg-white px-3 py-2 text-xs font-black text-cyan-950 hover:bg-cyan-50', 'data-facilitator-toggle': true }, cgShowFacilitatorGuide ? 'Hide guide' : 'Show stage guide')
+                  )
+                ),
+                cgShowFacilitatorGuide && h('div', { id: 'community-facilitator-guide-body', className: 'border-t border-white/10 p-3 sm:p-4', 'data-facilitator-guide-body': gardenJourneyCurrent.id },
+                  h('div', { className: 'grid gap-2 md:grid-cols-2 xl:grid-cols-4' },
+                    h('article', { className: 'rounded-xl border border-cyan-200/20 bg-white/10 p-3', 'data-facilitator-timebox': true }, h('div', { className: 'text-xs font-black uppercase tracking-wide text-cyan-200' }, '\u23F1 Suggested time'), h('div', { className: 'mt-1 text-base font-black text-white' }, facilitatorGuidance.time), h('p', { className: 'mt-1 text-xs leading-relaxed text-cyan-100' }, 'Pause when the checkpoint is visible; extend only if the evidence discussion needs it.')),
+                    h('article', { className: 'rounded-xl border border-amber-200/30 bg-amber-200/10 p-3', 'data-facilitator-prompt': true }, h('div', { className: 'text-xs font-black uppercase tracking-wide text-amber-200' }, 'Ask learners'), h('p', { className: 'mt-1 text-sm font-bold leading-relaxed text-white' }, '\u201C' + facilitatorGuidance.prompt + '\u201D')),
+                    h('article', { className: 'rounded-xl border border-emerald-200/30 bg-emerald-200/10 p-3', 'data-facilitator-look-for': true }, h('div', { className: 'text-xs font-black uppercase tracking-wide text-emerald-200' }, 'Strong response looks like'), h('p', { className: 'mt-1 text-xs leading-relaxed text-white' }, facilitatorGuidance.lookFor)),
+                    h('article', { className: 'rounded-xl border border-rose-200/30 bg-rose-200/10 p-3', 'data-facilitator-misconception': true }, h('div', { className: 'text-xs font-black uppercase tracking-wide text-rose-200' }, 'If learners say'), h('p', { className: 'mt-1 text-xs font-bold leading-relaxed text-white' }, facilitatorGuidance.misconception), h('p', { className: 'mt-1.5 border-t border-rose-200/20 pt-1.5 text-xs leading-relaxed text-rose-100' }, facilitatorGuidance.nudge))
+                  ),
+                  h('div', { className: 'mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_300px]' },
+                    h('div', { className: 'rounded-xl border border-white/10 bg-black/15 p-3', 'data-facilitator-udl': true },
+                      h('div', { className: 'text-xs font-black uppercase tracking-[0.14em] text-cyan-200' }, 'UDL moves for this stage'),
+                      h('div', { className: 'mt-2 grid gap-2 sm:grid-cols-3' }, facilitatorGuidance.udl.map(function(move) {
+                        return h('article', { key: move.id, className: 'rounded-lg border border-white/10 bg-white/5 p-2.5', 'data-facilitator-udl-move': move.id }, h('div', { className: 'flex items-center gap-2' }, h('span', { className: 'text-base', 'aria-hidden': true }, move.icon), h('div', { className: 'text-xs font-black text-white' }, move.label)), h('p', { className: 'mt-1 text-xs leading-relaxed text-cyan-100' }, move.move));
+                      }))
+                    ),
+                    h('aside', { className: 'flex flex-col justify-between rounded-xl border p-3 ' + (facilitatorGuidance.checkpoint ? 'border-emerald-300 bg-emerald-300/15' : 'border-cyan-200/20 bg-white/5'), 'data-facilitator-checkpoint': facilitatorGuidance.checkpoint ? 'ready' : 'gathering', role: 'status', 'aria-live': 'polite', 'aria-atomic': true },
+                      h('div', null, h('div', { className: 'text-xs font-black uppercase tracking-wide ' + (facilitatorGuidance.checkpoint ? 'text-emerald-200' : 'text-cyan-200') }, facilitatorGuidance.checkpoint ? '\u2713 Checkpoint visible' : 'Checkpoint to gather'), h('p', { className: 'mt-1 text-xs leading-relaxed text-white' }, facilitatorGuidance.checkpointLabel)),
+                      h('a', { href: gardenJourneyCurrent.href, className: 'mt-3 inline-flex min-h-[44px] items-center justify-center rounded-lg px-3 py-2 text-xs font-black ' + (facilitatorGuidance.checkpoint ? 'bg-emerald-200 text-emerald-950 hover:bg-emerald-100' : 'bg-cyan-200 text-cyan-950 hover:bg-cyan-100'), 'data-facilitator-open-stage': gardenJourneyCurrent.id }, facilitatorGuidance.checkpoint ? 'Review student evidence' : 'Open ' + gardenJourneyCurrent.label)
+                    )
+                  )
+                )
+              ),
+
+              h('section', { id: 'community-crew-huddle', tabIndex: -1, className: 'scroll-mt-4 overflow-hidden rounded-2xl border border-violet-200 bg-gradient-to-br from-violet-950 via-indigo-950 to-slate-950 text-white shadow-lg focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-violet-400', 'data-community-crew-huddle': true, 'aria-labelledby': 'community-crew-huddle-title' },
+                h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b border-white/10 p-3 sm:p-4' },
+                  h('div', { className: 'flex items-start gap-3' },
+                    h('div', { className: 'flex -space-x-1.5', 'aria-hidden': true }, gardenCrewRoles.map(function(role) { return h('span', { key: role.id, className: 'flex h-9 w-9 items-center justify-center rounded-full border-2 border-violet-950 bg-white text-base shadow-sm' }, role.icon); })),
+                    h('div', null,
+                      h('div', { className: 'text-[10px] font-black uppercase tracking-[0.17em] text-violet-200' }, 'Garden Crew Huddle'),
+                      h('h3', { id: 'community-crew-huddle-title', className: 'text-sm font-black text-white' }, 'Four roles, one shared investigation'),
+                      h('p', { className: 'mt-0.5 max-w-2xl text-[10px] leading-relaxed text-violet-100' }, 'Choose how you will contribute. Each role gets a different mission while the whole crew follows the same evidence.')
+                    )
+                  ),
+                  h('div', { className: 'flex flex-wrap items-center gap-2' },
+                    h('div', { className: 'rounded-full border border-violet-300/30 bg-violet-300/15 px-3 py-1.5 text-[10px] font-black text-violet-100', 'data-crew-journey-stage': gardenJourneyCurrent.id }, 'Stage ' + gardenJourneyCurrent.number + ' \u00B7 ' + gardenJourneyCurrent.label),
+                    h('div', { className: 'rounded-full border px-3 py-1.5 text-[10px] font-black ' + (crewBoardComplete ? 'border-emerald-300/40 bg-emerald-300/20 text-emerald-100' : 'border-white/15 bg-white/10 text-white'), 'data-crew-board-count': crewContributionCount, role: 'status', 'aria-live': 'polite', 'aria-atomic': true }, crewBoardComplete ? '\u2713 Huddle ready' : crewContributionCount + '/4 voices pinned')
+                  )
+                ),
+                h('div', { className: 'grid gap-3 p-3 lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)]' },
+                  h('div', null,
+                    h('div', { className: 'mb-2 flex items-center justify-between gap-2' }, h('div', { className: 'text-[9px] font-black uppercase tracking-wide text-violet-200' }, 'Choose your crew role'), h('div', { className: 'text-[9px] text-violet-200/80' }, 'Roles can rotate after each stage')),
+                    h('div', { className: 'grid grid-cols-2 gap-2', role: 'group', 'aria-label': 'Choose a garden crew role' }, gardenCrewRoles.map(function(role) {
+                      var selected = role.id === selectedCrewRole.id;
+                      var contribution = crewStageContributions.filter(function(item) { return item.role.id === role.id; })[0];
+                      return h('button', { key: role.id, onClick: function() { cgUpd({ crewRole: role.id, lastFeedback: { icon: role.icon, title: role.label + ' selected', detail: 'Your huddle mission now emphasizes ' + role.focus.toLowerCase() + '.', tone: 'info' } }); }, 'data-crew-role': role.id, 'data-crew-role-contributed': contribution.complete, 'aria-pressed': selected, className: 'min-h-[96px] rounded-xl border p-3 text-left transition-all focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-amber-300 ' + (selected ? 'border-white bg-white text-slate-950 ring-2 ring-violet-300' : contribution.complete ? 'border-emerald-300/60 bg-emerald-300/10 text-white hover:bg-emerald-300/15' : 'border-white/10 bg-white/5 text-white hover:border-violet-300/50 hover:bg-white/10') },
+                        h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'flex h-9 w-9 items-center justify-center rounded-xl text-lg', style: { background: role.tint, color: role.ink }, 'aria-hidden': true }, role.icon), h('span', { className: 'rounded-full px-2 py-1 text-[9px] font-black ' + (selected ? 'bg-violet-100 text-violet-800' : contribution.complete ? 'bg-emerald-400/20 text-emerald-100' : 'bg-white/10 text-violet-100') }, contribution.complete ? '\u2713 PINNED' : selected ? 'YOUR ROLE' : 'CHOOSE')),
+                        h('div', { className: 'mt-2 text-[10px] font-black' }, role.label),
+                        h('div', { className: 'mt-0.5 text-[9px] opacity-70' }, role.focus)
+                      );
+                    })),
+                    h('div', { className: 'mt-3 grid grid-cols-3 gap-1.5', 'data-crew-huddle-protocol': true, 'aria-label': 'Garden crew discussion protocol' },
+                      [{ number: 1, label: 'Notice', detail: 'Share one pattern' }, { number: 2, label: 'Connect', detail: 'Use evidence' }, { number: 3, label: 'Hand off', detail: 'Name the next move' }].map(function(move) {
+                        return h('div', { key: move.number, className: 'rounded-lg border border-white/10 bg-black/15 p-2 text-center' }, h('div', { className: 'mx-auto flex h-5 w-5 items-center justify-center rounded-full bg-violet-200 text-[9px] font-black text-violet-950' }, move.number), h('div', { className: 'mt-1 text-[10px] font-black text-white' }, move.label), h('div', { className: 'text-[9px] text-violet-200' }, move.detail));
+                      })
+                    )
+                  ),
+                  h('article', { className: 'flex flex-col rounded-2xl border border-white/15 bg-white text-slate-900 shadow-xl', 'data-crew-role-mission': selectedCrewRole.id },
+                    h('div', { className: 'flex items-center gap-3 border-b border-slate-100 p-3' },
+                      h('span', { className: 'flex h-11 w-11 items-center justify-center rounded-xl text-xl', style: { background: selectedCrewRole.tint, color: selectedCrewRole.ink }, 'aria-hidden': true }, selectedCrewRole.icon),
+                      h('div', { className: 'min-w-0' }, h('div', { className: 'text-[9px] font-black uppercase tracking-wide text-violet-700' }, 'Your contribution \u00B7 ' + gardenJourneyCurrent.label), h('h4', { className: 'text-xs font-black text-slate-950' }, selectedCrewRole.label + ' mission'))
+                    ),
+                    h('div', { className: 'flex-1 space-y-2 p-3' },
+                      h('p', { className: 'text-[11px] font-bold leading-relaxed text-slate-800' }, crewStagePrompt),
+                      h('div', { className: 'rounded-xl border border-amber-200 bg-amber-50 p-2.5' }, h('div', { className: 'text-[9px] font-black uppercase tracking-wide text-amber-800' }, 'Bring to the huddle'), h('p', { className: 'mt-0.5 text-[10px] leading-relaxed text-amber-950' }, crewEvidenceCue)),
+                      h('div', { className: 'rounded-xl border border-violet-100 bg-violet-50 p-2.5', 'data-crew-sentence-starter': gardenJourneyCurrent.id }, h('div', { className: 'text-[9px] font-black uppercase tracking-wide text-violet-700' }, 'Say it like a scientist'), h('p', { className: 'mt-0.5 text-[10px] italic leading-relaxed text-violet-950' }, '\u201C' + crewSentenceStarter + '\u201D')),
+                      h('label', { className: 'block rounded-xl border border-slate-200 bg-slate-50 p-2.5', 'data-crew-contribution-editor': selectedCrewRole.id },
+                        h('span', { className: 'flex items-center justify-between gap-2 text-[9px] font-black uppercase tracking-wide text-slate-600' }, h('span', null, 'Pin your contribution'), h('span', { className: selectedCrewContribution.complete ? 'text-emerald-700' : 'text-slate-400' }, selectedCrewContribution.complete ? '\u2713 On team board' : 'Optional')),
+                        h('textarea', { value: selectedCrewContribution.note, onChange: function(ev) { var nextCrewNotes = Object.assign({}, cgCrewNotes); nextCrewNotes[selectedCrewContribution.key] = ev.target.value.slice(0, 180); cgUpd({ crewNotes: nextCrewNotes }); }, maxLength: 180, rows: 3, placeholder: crewSentenceStarter, 'aria-label': selectedCrewRole.label + ' contribution for ' + gardenJourneyCurrent.label, 'aria-describedby': 'crew-contribution-help-' + gardenJourneyCurrent.id + '-' + selectedCrewRole.id, className: 'mt-2 w-full resize-none rounded-lg border border-slate-500 bg-white p-2 text-[10px] leading-relaxed text-slate-900 outline-none focus-visible:border-violet-700 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-violet-600' }),
+                        h('span', { id: 'crew-contribution-help-' + gardenJourneyCurrent.id + '-' + selectedCrewRole.id, className: 'mt-1 flex items-center justify-between gap-2 text-[9px] text-slate-600' }, h('span', null, 'Saved to this stage\u2019s board as you type. Maximum 180 characters.'), h('span', { 'aria-hidden': true }, selectedCrewContribution.note.length + '/180'))
+                      )
+                    ),
+                    h('div', { className: 'flex flex-wrap items-center gap-2 border-t border-slate-100 p-3' },
+                      h('a', { href: gardenJourneyCurrent.href, className: 'inline-flex min-h-[44px] flex-1 items-center justify-center rounded-lg bg-violet-700 px-3 py-2 text-center text-[10px] font-black text-white hover:bg-violet-800 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-violet-700', 'data-crew-open-stage': gardenJourneyCurrent.id }, 'Open ' + gardenJourneyCurrent.label),
+                      h('button', { onClick: function() { cgUpd({ crewRole: nextCrewRole.id, lastFeedback: { icon: '\uD83D\uDD04', title: 'Crew role rotated', detail: nextCrewRole.label + ' now leads the huddle.', tone: 'success' } }); }, className: 'min-h-[44px] rounded-lg border border-slate-400 bg-white px-3 py-2 text-[10px] font-black text-slate-800 hover:bg-slate-50 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-violet-700', 'data-crew-role-rotate': nextCrewRole.id }, 'Rotate role')
+                    )
+                  )
+                ),
+                h('div', { className: 'border-t border-white/10 bg-black/15 p-3 sm:p-4', 'data-crew-evidence-board': gardenJourneyCurrent.id, 'aria-labelledby': 'community-crew-board-title' },
+                  h('div', { className: 'flex flex-wrap items-center justify-between gap-3' },
+                    h('div', null, h('div', { className: 'text-[9px] font-black uppercase tracking-[0.15em] text-violet-200' }, 'Shared evidence board'), h('h4', { id: 'community-crew-board-title', className: 'text-xs font-black text-white' }, crewBoardComplete ? 'The crew is ready to hand off' : 'Build a four-voice stage record'), h('p', { className: 'mt-0.5 text-[10px] text-violet-100' }, 'Notes stay with ' + gardenJourneyCurrent.label + ' so the next role can see the team\u2019s reasoning.')),
+                    h('div', { className: 'min-w-[160px]' }, h('div', { className: 'flex items-center justify-between text-[9px] font-black uppercase tracking-wide text-violet-100' }, h('span', null, 'Contributions'), h('span', null, crewContributionCount + '/4')), h('div', { className: 'mt-1.5 h-2 overflow-hidden rounded-full bg-white/10', role: 'progressbar', 'aria-label': gardenJourneyCurrent.label + ' crew contributions', 'aria-valuemin': 0, 'aria-valuemax': 4, 'aria-valuenow': crewContributionCount }, h('div', { className: 'h-full rounded-full bg-gradient-to-r from-violet-300 to-emerald-300 transition-all', style: { width: Math.round(crewContributionCount / 4 * 100) + '%' } })))
+                  ),
+                  h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-4' }, crewStageContributions.map(function(contribution) {
+                    return h('article', { key: contribution.role.id, className: 'rounded-xl border p-2.5 ' + (contribution.complete ? 'border-emerald-300/40 bg-emerald-300/10' : 'border-white/10 bg-white/5'), 'data-crew-board-role': contribution.role.id, 'data-crew-board-status': contribution.complete ? 'pinned' : 'waiting' },
+                      h('div', { className: 'flex items-center gap-2' }, h('span', { className: 'flex h-7 w-7 items-center justify-center rounded-lg text-sm', style: { background: contribution.role.tint, color: contribution.role.ink }, 'aria-hidden': true }, contribution.role.icon), h('div', { className: 'min-w-0 flex-1' }, h('div', { className: 'truncate text-[10px] font-black text-white' }, contribution.role.label), h('div', { className: 'text-[9px] font-bold uppercase tracking-wide ' + (contribution.complete ? 'text-emerald-200' : 'text-violet-300') }, contribution.complete ? 'Contribution pinned' : 'Waiting for voice'))),
+                      h('p', { className: 'mt-2 min-h-[42px] text-[10px] leading-relaxed ' + (contribution.complete ? 'text-white' : 'italic text-violet-200/70') }, contribution.complete ? contribution.note : 'Choose this role to add its perspective.')
+                    );
+                  }))
+                )
+              ),
+
+              h('section', { id: 'community-learning-compass', tabIndex: -1, className: 'scroll-mt-4 overflow-hidden focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-sky-600 rounded-2xl border border-sky-200 bg-gradient-to-br from-white via-sky-50 to-violet-50 shadow-sm', 'data-community-learning-compass': true, 'aria-labelledby': 'community-learning-compass-title' },
+                h('div', { className: 'flex flex-wrap items-center justify-between gap-3 p-3 sm:p-4' },
+                  h('div', { className: 'flex items-start gap-3' }, h('span', { className: 'flex h-10 w-10 items-center justify-center rounded-xl bg-sky-700 text-xl text-white shadow-sm', 'aria-hidden': true }, '\uD83E\uDDED'), h('div', null, h('div', { className: 'text-[9px] font-black uppercase tracking-[0.16em] text-sky-700' }, 'Learning compass'), h('h3', { id: 'community-learning-compass-title', className: 'text-sm font-black text-slate-900' }, 'Design, test, and explain a garden relationship'), h('p', { className: 'mt-0.5 text-[10px] text-slate-600' }, 'I can use simulation evidence to explain why a planting choice may help, conflict, or need revision.'))),
+                  h('button', { onClick: function() { cgUpd({ showLearningCompass: !cgShowLearningCompass }); }, 'aria-expanded': cgShowLearningCompass, className: 'min-h-[44px] rounded-lg border border-sky-300 bg-white px-3 py-2 text-[9px] font-black text-sky-900 hover:bg-sky-50 focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-sky-600' }, cgShowLearningCompass ? 'Hide learning supports' : 'Show learning supports')
+                ),
+                h('div', { className: 'grid grid-cols-2 gap-2 border-t border-sky-100 bg-white/70 p-3 sm:grid-cols-4', 'data-learning-cycle': true },
+                  learningStages.map(function(stage, index) { return h('div', { key: stage.id, className: 'relative rounded-xl border p-2.5 ' + (stage.complete ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-white'), 'data-learning-stage': stage.id, 'data-learning-stage-status': stage.complete ? 'complete' : 'next' },
+                    h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'text-base', 'aria-hidden': true }, stage.icon), h('span', { className: 'rounded-full px-1.5 py-0.5 text-[8px] font-black ' + (stage.complete ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-500') }, stage.complete ? '\u2713 DONE' : (index + 1))),
+                    h('div', { className: 'mt-1 text-[10px] font-black text-slate-900' }, stage.label),
+                    h('div', { className: 'mt-0.5 text-[9px] leading-snug text-slate-500' }, stage.detail)
+                  ); })
+                ),
+                cgShowLearningCompass && h('div', { className: 'grid gap-3 border-t border-sky-100 p-3 md:grid-cols-[1.1fr_0.9fr]' },
+                  h('div', { className: 'rounded-xl border border-violet-100 bg-white p-3' }, h('div', { className: 'text-[9px] font-black uppercase tracking-wide text-violet-700' }, 'Success looks like'), h('ul', { className: 'mt-2 space-y-1.5 text-[10px] leading-relaxed text-slate-700' }, ['I identify a plant role or companion pathway.', 'I make a prediction that can be measured.', 'I quote before-and-after evidence from the same plot.', 'I explain limits and revise when evidence is mixed.'].map(function(item) { return h('li', { key: item, className: 'flex gap-2' }, h('span', { className: 'text-emerald-600', 'aria-hidden': true }, '\u2713'), h('span', null, item)); }))),
+                  h('div', { className: 'rounded-xl border border-sky-100 bg-white p-3' }, h('div', { className: 'text-[9px] font-black uppercase tracking-wide text-sky-700' }, 'Vocabulary in action'), h('div', { className: 'mt-2 grid grid-cols-2 gap-1.5' }, [
+                    { term: 'Companion', meaning: 'A modeled helpful neighbor relationship.' },
+                    { term: 'Mechanism', meaning: 'How one factor could cause a change.' },
+                    { term: 'Evidence', meaning: 'A measured observation used to test a claim.' },
+                    { term: 'Revision', meaning: 'A change based on new evidence.' }
+                  ].map(function(word) { return h('details', { key: word.term, className: 'rounded-lg border border-sky-100 bg-sky-50 p-2' }, h('summary', { className: 'cursor-pointer text-[9px] font-black text-sky-900' }, word.term), h('p', { className: 'mt-1 text-[9px] leading-relaxed text-slate-600' }, word.meaning)); }))),
+                  h('p', { className: 'rounded-lg border border-amber-200 bg-amber-50 p-2 text-[9px] leading-relaxed text-amber-900 md:col-span-2' }, h('strong', null, 'Evidence reminder: '), 'A simulation result can support an explanation, but it does not prove that the same outcome will occur in every real garden. Climate, cultivar, spacing, and care still matter.')
+                )
+              ),
+
+              cgLastDayReport && h('section', { id: 'community-day-report', tabIndex: -1, className: 'scroll-mt-4 overflow-hidden focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-indigo-400 rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-950 via-slate-900 to-violet-950 text-white shadow-lg', 'data-community-day-report': true, 'data-focus-stages': 'observe explain', 'aria-labelledby': 'community-day-report-title' },
                 h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b border-white/10 p-3' },
                   h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-indigo-200' }, 'Cause and effect'), h('h3', { id: 'community-day-report-title', className: 'text-sm font-black text-white' }, 'Day ' + ((cgLastDayReport.day - 1) % 30 + 1) + ' garden report'), h('p', { className: 'mt-0.5 text-[11px] text-indigo-100' }, cgLastDayReport.season + ' conditions' + (cgLastDayReport.eventLabel ? ' - ' + cgLastDayReport.eventLabel : '') + ' shaped today.')),
                   cgLastDayReport.readyDelta > 0 && h('span', { className: 'rounded-full bg-yellow-300 px-3 py-1.5 text-[10px] font-black text-yellow-950', role: 'status' }, cgLastDayReport.readyDelta + ' new harvest' + (cgLastDayReport.readyDelta !== 1 ? 's' : '') + ' ready')
@@ -4804,7 +6157,7 @@ var d = (labToolData.companionPlanting) || {};
                   }))
                 ),
                 cgLastDayReport.plotChanges && cgLastDayReport.plotChanges.length > 0 && h('div', { className: 'px-3 pb-3' },
-                  h('button', { onClick: function() { cgUpd({ showDayReplay: !cgShowDayReplay }); }, 'aria-expanded': cgShowDayReplay, 'aria-controls': 'community-day-replay-grid', className: 'flex min-h-[40px] w-full items-center justify-between gap-3 rounded-xl border border-violet-300/25 bg-violet-300/10 px-3 py-2 text-left hover:bg-violet-300/15', 'data-community-day-replay-toggle': true },
+                  h('button', { onClick: function() { cgUpd({ showDayReplay: !cgShowDayReplay }); }, 'aria-expanded': cgShowDayReplay, 'aria-controls': 'community-day-replay-grid', className: 'flex min-h-[44px] w-full items-center justify-between gap-3 rounded-xl border border-violet-300/25 bg-violet-300/10 px-3 py-2 text-left hover:bg-violet-300/15', 'data-community-day-replay-toggle': true },
                     h('span', null, h('span', { className: 'block text-[10px] font-black text-white' }, '\u23EF\uFE0F Plot-by-plot Day Change replay'), h('span', { className: 'mt-0.5 block text-[9px] text-indigo-200' }, 'Compare the same 4\u00D74 positions before and after the simulation.')),
                     h('span', { className: 'shrink-0 rounded-full bg-white/10 px-2 py-1 text-[9px] font-black text-indigo-100' }, cgShowDayReplay ? 'Hide replay' : 'Show replay')
                   ),
@@ -4838,20 +6191,659 @@ var d = (labToolData.companionPlanting) || {};
                 )
               ),
 
-              plantedCells > 0 && h('section', { className: 'overflow-hidden rounded-2xl border border-orange-200 bg-gradient-to-br from-orange-50 via-white to-amber-50 shadow-sm', 'data-community-neighbors': true, 'aria-labelledby': 'community-neighbors-title' },
+              cgPlantingClaim && inquiryClaimPlant && h('section', { id: 'community-evidence-trail', tabIndex: -1, className: 'scroll-mt-4 overflow-hidden focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-fuchsia-400 rounded-2xl border border-fuchsia-200 bg-gradient-to-br from-fuchsia-950 via-violet-950 to-slate-950 text-white shadow-lg', 'data-community-evidence-trail': true, 'data-focus-stages': 'explain', 'aria-labelledby': 'community-evidence-trail-title' },
+                h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b border-white/10 p-4' },
+                  h('div', null, h('div', { className: 'text-[9px] font-black uppercase tracking-[0.17em] text-fuchsia-200' }, 'Garden inquiry'), h('h3', { id: 'community-evidence-trail-title', className: 'text-base font-black text-white' }, 'Prediction \u2192 Evidence \u2192 Explanation'), h('p', { className: 'mt-1 text-[10px] text-fuchsia-100' }, 'Follow one planting decision through the same plot instead of relying on a general impression.')),
+                  h('div', { className: 'min-w-[150px] rounded-xl bg-white/10 p-2 text-center ring-1 ring-white/10' }, h('div', { className: 'text-xl font-black text-fuchsia-100' }, inquiryProgress + '%'), h('div', { className: 'text-[8px] font-black uppercase tracking-wide text-white/55' }, 'Inquiry complete'), h('div', { className: 'mt-1 h-1.5 overflow-hidden rounded-full bg-black/30', role: 'progressbar', 'aria-label': 'Garden inquiry progress', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': inquiryProgress }, h('div', { className: 'h-full rounded-full bg-gradient-to-r from-fuchsia-400 to-lime-300', style: { width: inquiryProgress + '%' } })))
+                ),
+                h('div', { className: 'grid gap-2 border-b border-white/10 bg-black/10 p-3 sm:grid-cols-4', 'data-inquiry-steps': true },
+                  [
+                    { id: 'claim', icon: '\uD83C\uDFAF', label: 'Prediction', value: inquiryPredictionMeta.label, done: true },
+                    { id: 'test', icon: inquiryClaimPlant.emoji, label: 'Test', value: inquiryClaimPlant.label + ' in Plot ' + (cgPlantingClaim.plot + 1), done: true },
+                    { id: 'evidence', icon: '\uD83D\uDCCA', label: 'Evidence', value: inquiryEvidenceReady ? 'Day ' + cgLastDayReport.day + ' captured' : 'Waiting for a day report', done: inquiryEvidenceReady },
+                    { id: 'reasoning', icon: '\uD83D\uDCA1', label: 'Explanation', value: selectedInquiryReasoning ? 'Reasoning selected' : 'Choose a reasoning frame', done: !!selectedInquiryReasoning }
+                  ].map(function(step) { return h('div', { key: step.id, className: 'rounded-xl border p-2.5 ' + (step.done ? 'border-lime-300/30 bg-lime-300/10' : 'border-white/10 bg-white/5'), 'data-inquiry-step': step.id },
+                    h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'text-base', 'aria-hidden': true }, step.icon), h('span', { className: 'rounded-full px-1.5 py-0.5 text-[8px] font-black ' + (step.done ? 'bg-lime-300 text-lime-950' : 'bg-white/10 text-white/50') }, step.done ? '\u2713' : 'NEXT')),
+                    h('div', { className: 'mt-1 text-[9px] font-black uppercase tracking-wide text-fuchsia-200' }, step.label),
+                    h('div', { className: 'mt-0.5 text-[10px] font-black leading-snug text-white' }, step.value)
+                  ); })
+                ),
+                h('div', { className: 'grid gap-3 p-3 lg:grid-cols-[0.9fr_1.1fr]' },
+                  h('div', { className: 'space-y-3' },
+                    h('div', { className: 'rounded-xl border border-white/10 bg-white/10 p-3', 'data-inquiry-claim': cgPlantingClaim.predictionId },
+                      h('div', { className: 'text-[8px] font-black uppercase tracking-wide text-fuchsia-200' }, 'Claim to test'),
+                      h('p', { className: 'mt-1 text-[11px] font-black leading-relaxed text-white' }, 'I predict that planting ' + inquiryClaimPlant.label + ' in Plot ' + (cgPlantingClaim.plot + 1) + ' will support ' + inquiryPredictionMeta.label.toLowerCase() + '.'),
+                      h('div', { className: 'mt-2 rounded-lg border border-white/10 bg-black/15 p-2' }, h('div', { className: 'text-[8px] font-black uppercase text-white/50' }, 'Proposed mechanism'), h('p', { className: 'mt-0.5 text-[9px] leading-relaxed text-fuchsia-100' }, cgPlantingClaim.mechanism), h('div', { className: 'mt-1 text-[8px] font-black text-lime-200' }, (cgPlantingClaim.allyBonus > 0 ? '+' + cgPlantingClaim.allyBonus + '% modeled ally fit' : 'No positive pair bonus') + (cgPlantingClaim.conflicts ? ' \u2022 ' + cgPlantingClaim.conflicts + ' conflict' + (cgPlantingClaim.conflicts === 1 ? '' : 's') : ' \u2022 conflict-free')))
+                    ),
+                    h('div', { className: 'rounded-xl border p-3 ' + (!inquiryEvidenceReady ? 'border-amber-300/30 bg-amber-300/10' : inquirySupported ? 'border-emerald-300/30 bg-emerald-300/10' : 'border-sky-300/30 bg-sky-300/10'), 'data-inquiry-evidence-status': !inquiryEvidenceReady ? 'waiting' : inquirySupported ? 'supported' : 'mixed', role: 'status', 'aria-live': 'polite' },
+                      h('div', { className: 'flex items-center justify-between gap-2' }, h('div', { className: 'text-[8px] font-black uppercase tracking-wide ' + (!inquiryEvidenceReady ? 'text-amber-200' : inquirySupported ? 'text-emerald-200' : 'text-sky-200') }, !inquiryEvidenceReady ? 'Evidence needed' : inquirySupported ? 'Prediction supported so far' : 'Evidence is mixed so far'), inquiryEvidenceReady && h('span', { className: 'rounded-full bg-white/10 px-2 py-1 text-[8px] font-black text-white' }, inquiryBefore + ' \u2192 ' + inquiryAfter)),
+                      h('p', { className: 'mt-1 text-[10px] leading-relaxed text-white' }, inquiryEvidenceStatement),
+                      !inquiryEvidenceReady && h('button', { onClick: cgPhase === 'plan' ? cgStartGrowing : cgAdvanceDay, className: 'mt-2 min-h-[38px] rounded-lg bg-amber-300 px-3 py-1.5 text-[9px] font-black text-amber-950 hover:bg-amber-200' }, cgPhase === 'plan' ? 'Start the growing season' : 'Advance one day')
+                    )
+                  ),
+                  h('div', { className: 'rounded-xl border border-white/10 bg-white/10 p-3' },
+                    h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', null, h('div', { className: 'text-[8px] font-black uppercase tracking-wide text-fuchsia-200' }, 'Reasoning scaffold'), h('h4', { className: 'text-[11px] font-black text-white' }, 'What is the most careful explanation?')), h('span', { className: 'rounded-full bg-white/10 px-2 py-1 text-[8px] font-black text-white/70' }, 'Choose one; revision is scientific thinking')),
+                    h('div', { className: 'mt-2 grid gap-2 sm:grid-cols-2', role: 'group', 'aria-label': 'Choose an evidence reasoning frame' }, inquiryReasoningOptions.map(function(reasoning) {
+                      var selectedReasoning = cgInquiryReasoning === reasoning.id;
+                      return h('button', { key: reasoning.id, onClick: function() { cgUpd({ inquiryReasoning: selectedReasoning ? null : reasoning.id }); }, 'aria-pressed': selectedReasoning, disabled: !inquiryEvidenceReady, className: 'min-h-[70px] rounded-xl border p-2.5 text-left transition-all disabled:cursor-not-allowed disabled:opacity-40 ' + (selectedReasoning ? 'border-lime-300 bg-lime-300 text-lime-950 shadow-sm' : 'border-white/10 bg-black/15 text-white hover:border-fuchsia-300/50 hover:bg-white/10') },
+                        h('div', { className: 'text-base', 'aria-hidden': true }, reasoning.icon),
+                        h('div', { className: 'mt-1 text-[9px] font-black leading-snug' }, reasoning.label)
+                      );
+                    })),
+                    selectedInquiryReasoning && h('div', { className: 'mt-3 rounded-xl border border-lime-300/30 bg-lime-300/10 p-3', 'data-inquiry-cer': true },
+                      h('div', { className: 'text-[8px] font-black uppercase tracking-wide text-lime-200' }, 'Claim \u2022 Evidence \u2022 Reasoning'),
+                      h('p', { className: 'mt-1 text-[9px] leading-relaxed text-white' }, h('strong', { className: 'text-lime-200' }, 'Claim: '), 'I predicted ' + inquiryPredictionMeta.label.toLowerCase() + '. ', h('strong', { className: 'text-lime-200' }, 'Evidence: '), inquiryEvidenceStatement + ' ', h('strong', { className: 'text-lime-200' }, 'Reasoning: '), selectedInquiryReasoning.text)
+                    ),
+                    h('div', { className: 'mt-3 flex flex-wrap gap-2' },
+                      h('button', { onClick: function() { cgUpd({ relationshipLens: true, relationshipFocus: cgPlantingClaim.plot, gardenOverlay: cgPlantingClaim.predictionId === 'pests' ? 'pests' : cgPlantingClaim.predictionId === 'health' ? 'health' : cgPlantingClaim.predictionId === 'soil' ? 'nitrogen' : 'growth' }); }, className: 'min-h-[38px] rounded-lg bg-fuchsia-200 px-3 py-1.5 text-[9px] font-black text-fuchsia-950 hover:bg-fuchsia-100' }, 'Show this evidence on the map'),
+                      h('button', { onClick: function() { cgUpd({ phase: 'plan', plantingTarget: null, selectedPlant: null, relationshipLens: true, relationshipFocus: cgPlantingClaim.plot, lastFeedback: { icon: '\u270F\uFE0F', title: 'Revision mode', detail: 'Plot ' + (cgPlantingClaim.plot + 1) + ' is focused. Compare its neighbors, then clear or redesign only if the evidence supports a change.', tone: 'info' } }); }, className: 'min-h-[38px] rounded-lg border border-white/15 bg-white/10 px-3 py-1.5 text-[9px] font-black text-white hover:bg-white/20' }, 'Revise the design')
+                    )
+                  )
+                ),
+                h('section', { className: 'border-t border-white/10 bg-black/10 p-3', 'data-inquiry-fair-test': true, 'aria-labelledby': 'inquiry-fair-test-title' },
+                  h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
+                    h('div', null, h('div', { className: 'text-[8px] font-black uppercase tracking-[0.15em] text-cyan-200' }, 'Fair-test lens'), h('h4', { id: 'inquiry-fair-test-title', className: 'text-[12px] font-black text-white' }, 'How trustworthy is this evidence?'), h('p', { className: 'mt-0.5 text-[9px] text-fuchsia-100' }, 'Strength comes from comparison, stable conditions, and repeated observations.')),
+                    h('div', { className: 'min-w-[150px] rounded-xl border border-white/10 bg-white/10 p-2 text-center', 'data-evidence-quality': inquiryEvidenceQualityScore },
+                      h('div', { className: 'text-lg font-black text-cyan-100' }, inquiryEvidenceQualityScore + '%'),
+                      h('div', { className: 'text-[8px] font-black uppercase tracking-wide text-white/60' }, inquiryEvidenceQualityLabel),
+                      h('div', { className: 'mt-1 h-1.5 overflow-hidden rounded-full bg-black/30', role: 'progressbar', 'aria-label': 'Inquiry evidence quality', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': inquiryEvidenceQualityScore }, h('div', { className: 'h-full rounded-full bg-gradient-to-r from-cyan-400 to-lime-300', style: { width: inquiryEvidenceQualityScore + '%' } }))
+                    )
+                  ),
+                  h('div', { className: 'mt-3 grid grid-cols-2 gap-2 md:grid-cols-5', 'data-fair-test-checks': true }, inquiryFairTestChecks.map(function(check) { return h('div', { key: check.id, className: 'rounded-xl border p-2 ' + (check.complete ? 'border-lime-300/30 bg-lime-300/10' : 'border-white/10 bg-white/5'), 'data-fair-test-check': check.id, 'data-check-status': check.complete ? 'complete' : 'improve' },
+                    h('div', { className: 'flex items-center justify-between gap-1' }, h('span', { className: 'text-base', 'aria-hidden': true }, check.icon), h('span', { className: 'rounded-full px-1.5 py-0.5 text-[7px] font-black ' + (check.complete ? 'bg-lime-300 text-lime-950' : 'bg-white/10 text-white/60') }, check.complete ? '\u2713' : 'IMPROVE')),
+                    h('div', { className: 'mt-1 text-[9px] font-black text-white' }, check.label),
+                    h('div', { className: 'mt-0.5 text-[8px] leading-snug text-fuchsia-100' }, check.detail)
+                  ); })),
+                  cgPlantingClaim.predictionId !== 'soil' && inquiryComparison && inquiryTargetMetric && inquiryComparisonMetric && h('div', { className: 'mt-3 overflow-hidden rounded-xl border border-cyan-300/25 bg-cyan-300/10', 'data-inquiry-comparison': true },
+                    h('div', { className: 'flex flex-wrap items-center justify-between gap-2 border-b border-white/10 px-3 py-2' }, h('div', null, h('div', { className: 'text-[8px] font-black uppercase tracking-wide text-cyan-200' }, 'Matched comparison'), h('div', { className: 'text-[10px] font-black text-white' }, 'Same crop \u2022 same day \u2022 different neighborhood')), h('span', { className: 'rounded-full bg-cyan-200 px-2 py-1 text-[8px] font-black text-cyan-950' }, (inquiryPerformanceDifference > 0 ? '+' : '') + inquiryPerformanceDifference + ' point difference')),
+                    h('div', { className: 'grid gap-2 p-3 sm:grid-cols-[1fr_auto_1fr]' },
+                      h('div', { className: 'rounded-lg bg-white/10 p-2 text-center' }, h('div', { className: 'text-[8px] font-black uppercase text-fuchsia-200' }, 'Plot ' + (cgPlantingClaim.plot + 1) + ' \u2022 test'), h('div', { className: 'mt-1 text-lg font-black text-white' }, (inquiryTargetMetric.delta > 0 ? '+' : '') + inquiryTargetMetric.delta), h('div', { className: 'text-[8px] text-white/60' }, inquiryTargetMetric.before + ' \u2192 ' + inquiryTargetMetric.after)),
+                      h('div', { className: 'flex items-center justify-center text-cyan-200', 'aria-hidden': true }, 'vs'),
+                      h('div', { className: 'rounded-lg bg-white/10 p-2 text-center' }, h('div', { className: 'text-[8px] font-black uppercase text-fuchsia-200' }, 'Plot ' + (inquiryComparison.plot + 1) + ' \u2022 comparison'), h('div', { className: 'mt-1 text-lg font-black text-white' }, (inquiryComparisonMetric.delta > 0 ? '+' : '') + inquiryComparisonMetric.delta), h('div', { className: 'text-[8px] text-white/60' }, inquiryComparisonMetric.before + ' \u2192 ' + inquiryComparisonMetric.after))
+                    ),
+                    h('p', { className: 'px-3 pb-3 text-[9px] leading-relaxed text-cyan-100' }, inquiryPerformanceDifference > 0 ? 'The test plot changed more favorably than the matched comparison. This strengthens the relationship claim, but repetition is still needed.' : inquiryPerformanceDifference < 0 ? 'The comparison changed more favorably. Revise the relationship claim or inspect other conditions before concluding.' : 'Both plots changed equally. The current evidence does not separate the neighborhood effect from general garden conditions.')
+                  ),
+                  cgPlantingClaim.predictionId !== 'soil' && !inquiryComparison && h('div', { className: 'mt-3 flex flex-wrap items-center gap-3 rounded-xl border border-amber-300/30 bg-amber-300/10 p-3', 'data-inquiry-comparison-setup': inquiryComparisonPending ? 'pending' : 'needed' },
+                    h('span', { className: 'text-xl', 'aria-hidden': true }, inquiryComparisonPending ? '\u23F3' : '\u2696\uFE0F'),
+                    h('div', { className: 'min-w-[190px] flex-1' }, h('div', { className: 'text-[9px] font-black text-white' }, inquiryComparisonPending ? 'Comparison Plot ' + (cgPlantingClaim.comparisonPlot + 1) + ' is ready' : 'Add a fair comparison'), h('p', { className: 'mt-0.5 text-[9px] leading-relaxed text-amber-100' }, inquiryComparisonPending ? 'Advance one day so both plots experience the same simulated conditions.' : 'Plant the same crop in a different plot, then compare how the two neighborhoods respond.')),
+                    inquiryComparisonPending
+                      ? h('button', { onClick: cgPhase === 'plan' ? cgStartGrowing : cgAdvanceDay, className: 'min-h-[38px] rounded-lg bg-amber-300 px-3 py-1.5 text-[9px] font-black text-amber-950 hover:bg-amber-200' }, cgPhase === 'plan' ? 'Start the growing season' : 'Advance one day')
+                      : h('button', { onClick: function() { cgUpd({ phase: 'plan', selectedPlant: cgPlantingClaim.plantId, plantingTarget: null, plantingDockFilter: 'all', comparisonRequest: { claimPlot: cgPlantingClaim.plot, plantId: cgPlantingClaim.plantId }, relationshipLens: true, relationshipFocus: cgPlantingClaim.plot, lastFeedback: { icon: '\u2696\uFE0F', title: 'Comparison crop selected', detail: 'Choose any open plot for the same crop. A different neighborhood creates the clearest comparison.', tone: 'info' } }); }, className: 'min-h-[38px] rounded-lg bg-amber-300 px-3 py-1.5 text-[9px] font-black text-amber-950 hover:bg-amber-200', 'data-add-comparison-plot': true }, 'Plant a comparison crop')
+                  ),
+                  cgPlantingClaim.predictionId === 'soil' && h('div', { className: 'mt-3 rounded-xl border border-sky-300/25 bg-sky-300/10 p-3 text-[9px] leading-relaxed text-sky-100', 'data-inquiry-garden-baseline': true }, h('strong', { className: 'text-white' }, 'Garden-wide measure: '), 'Nitrogen is shared across all plots, so a second plot is not an independent control. Repeat the observation across days or compare a redesigned garden in a later season.'),
+                  inquiryObservationsForClaim.length > 0 && h('div', { className: 'mt-3 rounded-xl border border-white/10 bg-white/5 p-3', 'data-inquiry-observation-trend': true },
+                    h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', null, h('div', { className: 'text-[8px] font-black uppercase tracking-wide text-fuchsia-200' }, 'Evidence notebook'), h('div', { className: 'text-[10px] font-black text-white' }, inquiryObservationsForClaim.length + ' observation' + (inquiryObservationsForClaim.length === 1 ? '' : 's') + ' for this claim')), h('span', { className: 'rounded-full bg-white/10 px-2 py-1 text-[8px] font-black text-white/70' }, inquiryObservationsForClaim.length >= 2 ? 'Repeated pattern visible' : 'Collect one more day')),
+                    h('div', { className: 'mt-3 flex min-h-[92px] items-end gap-2 overflow-x-auto pb-1', 'aria-label': 'Inquiry observation trend by day' }, inquiryObservationsForClaim.map(function(observation) {
+                      var observationFavorable = observation.predictionId === 'pests' ? observation.delta <= 0 : observation.delta >= 0;
+                      var observationHeight = Math.max(22, Math.min(88, 24 + Math.abs(observation.delta) * 8));
+                      return h('div', { key: observation.day, className: 'flex min-w-[72px] flex-1 flex-col items-center justify-end', 'data-inquiry-observation-day': observation.day },
+                        h('div', { className: 'text-[8px] font-black ' + (observationFavorable ? 'text-lime-200' : 'text-amber-200') }, (observation.delta > 0 ? '+' : '') + observation.delta),
+                        h('div', { className: 'mt-1 w-full max-w-[54px] rounded-t-md ' + (observationFavorable ? 'bg-gradient-to-t from-emerald-500 to-lime-300' : 'bg-gradient-to-t from-amber-600 to-amber-300'), style: { height: observationHeight + 'px' } }),
+                        h('div', { className: 'mt-1 text-[8px] font-black text-white/60' }, 'Day ' + observation.day)
+                      );
+                    }))
+                  )
+                ),
+                h('section', { className: 'border-t border-white/10 bg-gradient-to-r from-violet-950/80 to-fuchsia-950/80 p-3', 'data-inquiry-conclusion-builder': true, 'aria-labelledby': 'inquiry-conclusion-builder-title' },
+                  h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
+                    h('div', null, h('div', { className: 'text-[8px] font-black uppercase tracking-[0.16em] text-lime-200' }, 'Synthesize your investigation'), h('h4', { id: 'inquiry-conclusion-builder-title', className: 'text-[12px] font-black text-white' }, 'Build an evidence-based conclusion'), h('p', { className: 'mt-0.5 text-[9px] text-fuchsia-100' }, 'Name what the evidence suggests, how certain you are, and what you would test next.')),
+                    h('div', { className: 'min-w-[150px] rounded-xl border border-white/10 bg-white/10 p-2', 'data-inquiry-builder-progress': inquiryBuilderCompleteCount + '-of-4' },
+                      h('div', { className: 'flex items-center justify-between text-[8px] font-black uppercase tracking-wide text-white/60' }, h('span', null, 'Synthesis progress'), h('span', { className: 'text-lime-200' }, inquiryBuilderCompleteCount + '/4')),
+                      h('div', { className: 'mt-1.5 grid grid-cols-4 gap-1' }, inquiryBuilderSteps.map(function(step) { return h('span', { key: step.id, className: 'h-1.5 rounded-full ' + (step.complete ? 'bg-lime-300' : 'bg-white/15'), title: step.label + (step.complete ? ' complete' : ' incomplete') }); }))
+                    )
+                  ),
+                  h('div', { className: 'mt-3 rounded-xl border border-lime-300/25 bg-lime-300/10 p-3', 'data-inquiry-conclusion-preview': true, role: 'status', 'aria-live': 'polite' },
+                    h('div', { className: 'text-[8px] font-black uppercase tracking-wide text-lime-200' }, 'Live conclusion preview'),
+                    h('p', { className: 'mt-1 text-[10px] font-semibold leading-relaxed text-white' }, inquiryConclusionText),
+                    h('div', { className: 'mt-2 flex flex-wrap gap-1.5 text-[8px] font-black' },
+                      h('span', { className: 'rounded-full bg-white/10 px-2 py-1 text-white/75' }, inquiryEvidenceQualityScore + '% evidence quality'),
+                      selectedInquiryConfidence && h('span', { className: 'rounded-full bg-cyan-200 px-2 py-1 text-cyan-950' }, selectedInquiryConfidence.icon + ' ' + selectedInquiryConfidence.label + ' confidence'),
+                      selectedInquiryNextStep && h('span', { className: 'rounded-full bg-fuchsia-200 px-2 py-1 text-fuchsia-950' }, selectedInquiryNextStep.icon + ' Next: ' + selectedInquiryNextStep.label)
+                    )
+                  ),
+                  h('div', { className: 'mt-3 grid gap-3 lg:grid-cols-2' },
+                    h('div', { className: 'rounded-xl border border-white/10 bg-white/5 p-3' },
+                      h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', null, h('div', { className: 'text-[8px] font-black uppercase tracking-wide text-cyan-200' }, 'Confidence calibration'), h('h5', { className: 'text-[10px] font-black text-white' }, 'How strongly should you state the conclusion?')), h('span', { className: 'rounded-full bg-white/10 px-2 py-1 text-[8px] font-black text-white/70' }, 'Recommended: ' + inquiryConfidenceOptions.filter(function(option) { return option.id === inquiryRecommendedConfidence; })[0].label)),
+                      h('div', { className: 'mt-2 grid grid-cols-3 gap-1.5', role: 'group', 'aria-label': 'Choose conclusion confidence' }, inquiryConfidenceOptions.map(function(option) {
+                        var selected = cgInquiryConfidence === option.id;
+                        return h('button', { key: option.id, onClick: function() { cgUpd({ inquiryConfidence: selected ? null : option.id }); }, 'aria-pressed': selected, 'data-inquiry-confidence': option.id, className: 'min-h-[68px] rounded-xl border p-2 text-left transition-all ' + (selected ? 'border-cyan-200 bg-cyan-200 text-cyan-950' : 'border-white/10 bg-black/15 text-white hover:border-cyan-300/50') },
+                          h('div', { className: 'flex items-center justify-between gap-1' }, h('span', { className: 'text-base', 'aria-hidden': true }, option.icon), option.id === inquiryRecommendedConfidence && h('span', { className: 'rounded-full bg-white/70 px-1.5 py-0.5 text-[7px] font-black text-cyan-900' }, 'FIT')),
+                          h('div', { className: 'mt-1 text-[9px] font-black' }, option.label),
+                          h('div', { className: 'mt-0.5 text-[8px] leading-snug opacity-80' }, option.detail)
+                        );
+                      }))
+                    ),
+                    h('div', { className: 'rounded-xl border border-white/10 bg-white/5 p-3' },
+                      h('div', { className: 'text-[8px] font-black uppercase tracking-wide text-fuchsia-200' }, 'Next investigation'),
+                      h('h5', { className: 'text-[10px] font-black text-white' }, 'What would make your explanation stronger?'),
+                      h('div', { className: 'mt-2 grid grid-cols-2 gap-1.5', role: 'group', 'aria-label': 'Choose the next investigation step' }, inquiryNextStepOptions.map(function(option) {
+                        var selected = cgInquiryNextStep === option.id;
+                        return h('button', { key: option.id, onClick: function() { cgUpd({ inquiryNextStep: selected ? null : option.id }); }, 'aria-pressed': selected, 'data-inquiry-next-step': option.id, className: 'min-h-[68px] rounded-xl border p-2 text-left transition-all ' + (selected ? 'border-fuchsia-200 bg-fuchsia-200 text-fuchsia-950' : 'border-white/10 bg-black/15 text-white hover:border-fuchsia-300/50') },
+                          h('div', { className: 'text-base', 'aria-hidden': true }, option.icon),
+                          h('div', { className: 'mt-1 text-[9px] font-black' }, option.label),
+                          h('div', { className: 'mt-0.5 text-[8px] leading-snug opacity-80' }, option.detail)
+                        );
+                      }))
+                    )
+                  ),
+                  h('section', { className: 'mt-3 overflow-hidden rounded-xl border border-white/10 bg-white/5', 'data-inquiry-communication-studio': true, 'aria-labelledby': 'inquiry-communication-studio-title' },
+                    h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b border-white/10 p-3' },
+                      h('div', null, h('div', { className: 'text-[8px] font-black uppercase tracking-[0.16em] text-amber-200' }, 'Multiple ways to show learning'), h('h5', { id: 'inquiry-communication-studio-title', className: 'text-[11px] font-black text-white' }, 'Scientific Communication Studio'), h('p', { className: 'mt-0.5 text-[8px] text-fuchsia-100' }, 'Keep the evidence accurate while changing language, emphasis, and action for the audience.')),
+                      h('span', { className: 'rounded-full px-2 py-1 text-[8px] font-black ' + (inquiryCommunicationScore === 4 ? 'bg-lime-300 text-lime-950' : 'bg-white/10 text-white/70'), 'data-communication-score': inquiryCommunicationScore + '-of-4' }, inquiryCommunicationScore + '/4 communication checks')
+                    ),
+                    h('div', { className: 'grid grid-cols-3 gap-1.5 p-3', role: 'group', 'aria-label': 'Choose an audience for the investigation explanation' }, inquiryAudienceOptions.map(function(option) {
+                      var selected = selectedInquiryAudience.id === option.id;
+                      return h('button', { key: option.id, onClick: function() { cgUpd({ inquiryAudience: option.id }); }, 'aria-pressed': selected, 'data-inquiry-audience': option.id, className: 'min-h-[76px] rounded-xl border p-2 text-left transition-all ' + (selected ? 'border-amber-200 bg-amber-200 text-amber-950 shadow-sm' : 'border-white/10 bg-black/15 text-white hover:border-amber-300/50') },
+                        h('div', { className: 'text-lg', 'aria-hidden': true }, option.icon),
+                        h('div', { className: 'mt-1 text-[9px] font-black' }, option.label),
+                        h('div', { className: 'mt-0.5 text-[8px] leading-snug opacity-80' }, option.purpose)
+                      );
+                    })),
+                    h('div', { className: 'grid gap-3 border-t border-white/10 p-3 lg:grid-cols-[1.2fr_0.8fr]' },
+                      h('article', { className: 'rounded-xl border border-amber-200/25 bg-amber-200/10 p-3', 'data-audience-ready-explanation': selectedInquiryAudience.id, role: 'status', 'aria-live': 'polite' },
+                        h('div', { className: 'flex items-center gap-2' }, h('span', { className: 'flex h-9 w-9 items-center justify-center rounded-xl bg-amber-200 text-lg text-amber-950', 'aria-hidden': true }, selectedInquiryAudience.icon), h('div', null, h('div', { className: 'text-[8px] font-black uppercase tracking-wide text-amber-200' }, 'Prepared for'), h('div', { className: 'text-[10px] font-black text-white' }, selectedInquiryAudience.label))),
+                        h('p', { className: 'mt-2 text-[10px] leading-relaxed text-white' }, inquiryCommunicationText)
+                      ),
+                      h('div', { className: 'rounded-xl border border-white/10 bg-black/15 p-3' },
+                        h('div', { className: 'text-[8px] font-black uppercase tracking-wide text-fuchsia-200' }, 'Communication self-check'),
+                        h('div', { className: 'mt-2 grid grid-cols-2 gap-1.5' }, inquiryCommunicationChecks.map(function(check) { return h('div', { key: check.id, className: 'rounded-lg border p-2 ' + (check.complete ? 'border-lime-300/25 bg-lime-300/10' : 'border-white/10 bg-white/5'), 'data-communication-check': check.id, 'data-check-status': check.complete ? 'complete' : 'improve' },
+                          h('div', { className: 'flex items-center justify-between gap-1' }, h('span', { 'aria-hidden': true }, check.icon), h('span', { className: 'text-[7px] font-black ' + (check.complete ? 'text-lime-200' : 'text-white/40') }, check.complete ? '\u2713' : 'ADD')),
+                          h('div', { className: 'mt-1 text-[8px] font-black leading-snug text-white' }, check.label)
+                        ); }))
+                      )
+                    ),
+                    h('div', { className: 'flex items-start gap-2 border-t border-white/10 px-3 py-2.5 ' + (inquiryCalibrationStatus === 'aligned' ? 'bg-emerald-300/10' : inquiryCalibrationStatus === 'not-set' ? 'bg-white/5' : 'bg-amber-300/10'), 'data-inquiry-calibration': inquiryCalibrationStatus },
+                      h('span', { className: 'text-base', 'aria-hidden': true }, inquiryCalibrationStatus === 'aligned' ? '\uD83C\uDFAF' : inquiryCalibrationStatus === 'not-set' ? '\uD83E\uDDED' : '\u2696\uFE0F'),
+                      h('div', null, h('div', { className: 'text-[8px] font-black uppercase tracking-wide ' + (inquiryCalibrationStatus === 'aligned' ? 'text-emerald-200' : inquiryCalibrationStatus === 'not-set' ? 'text-white/60' : 'text-amber-200') }, inquiryCalibrationStatus === 'aligned' ? 'Confidence is calibrated' : inquiryCalibrationStatus === 'overstated' ? 'Use more caution' : inquiryCalibrationStatus === 'understated' ? 'Evidence may support more confidence' : 'Confidence check pending'), h('p', { className: 'mt-0.5 text-[8px] leading-relaxed text-white/80' }, inquiryCalibrationMessage))
+                    )
+                  ),
+                  h('div', { className: 'mt-3 flex flex-wrap items-center gap-3 rounded-xl border border-white/10 bg-black/15 p-3' },
+                    h('div', { className: 'min-w-[200px] flex-1' }, h('div', { className: 'text-[9px] font-black text-white' }, inquirySynthesisReady ? (existingInquiryRecord ? 'Ready to update this investigation' : 'Ready to save this investigation') : 'Complete the highlighted synthesis choices'), h('p', { className: 'mt-0.5 text-[8px] leading-relaxed text-fuchsia-100' }, inquirySynthesisReady ? 'Your notebook will preserve the claim, evidence quality, conclusion, confidence, and next test.' : 'Evidence, reasoning, confidence, and a next step are all required.')),
+                    h('button', { onClick: cgSaveInquiryConclusion, disabled: !inquirySynthesisReady, className: 'min-h-[40px] rounded-lg bg-lime-300 px-4 py-2 text-[9px] font-black text-lime-950 hover:bg-lime-200 disabled:cursor-not-allowed disabled:opacity-40', 'data-save-inquiry-conclusion': true, 'data-conclusion-readiness': inquirySynthesisReady ? 'ready' : 'incomplete' }, existingInquiryRecord ? 'Update notebook entry' : 'Save conclusion to notebook')
+                  )
+                ),
+                h('p', { className: 'border-t border-white/10 bg-black/10 px-4 py-2 text-[8px] leading-relaxed text-fuchsia-100' }, 'Interpretation guardrail: a supported prediction is not proof of a single cause. Stronger investigations repeat the test, compare layouts, and hold care conditions as steady as possible.')
+              ),
+
+              inquiryTrialComparisonReady && h('section', { id: 'community-trial-comparison', tabIndex: -1, className: 'scroll-mt-4 overflow-hidden rounded-2xl border border-cyan-200 bg-gradient-to-br from-slate-950 via-cyan-950 to-indigo-950 text-white shadow-lg focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-cyan-300', 'data-community-trial-comparison': true, 'data-focus-stages': 'explain transfer', 'aria-labelledby': 'community-trial-comparison-title' },
+                h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b border-white/10 p-4' },
+                  h('div', { className: 'flex items-start gap-3' },
+                    h('span', { className: 'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-cyan-200 text-xl text-cyan-950', 'aria-hidden': true }, '\u2696\uFE0F'),
+                    h('div', null, h('div', { className: 'text-xs font-black uppercase tracking-[0.14em] text-cyan-200' }, 'Repeat, compare, revise'), h('h3', { id: 'community-trial-comparison-title', className: 'text-base font-black text-white' }, 'Trial Comparison Studio'), h('p', { className: 'mt-1 max-w-3xl text-xs leading-relaxed text-cyan-100' }, 'Compare the latest two saved investigations before treating one simulation result as a general pattern.'))
+                  ),
+                  h('div', { className: 'rounded-xl border px-3 py-2 text-center ' + (inquiryTrialPattern === 'repeat-supported' ? 'border-emerald-300/40 bg-emerald-300/15' : inquiryTrialPattern === 'changed' ? 'border-amber-300/40 bg-amber-300/15' : 'border-cyan-200/30 bg-white/10'), role: 'status', 'aria-live': 'polite', 'aria-atomic': true, 'data-trial-comparison-pattern': inquiryTrialPattern }, h('div', { className: 'text-xs font-black uppercase tracking-wide text-cyan-100' }, 'Latest pattern'), h('div', { className: 'mt-1 text-sm font-black text-white' }, inquiryTrialPatternLabel))
+                ),
+                h('div', { className: 'grid gap-3 p-3 lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] sm:p-4', 'data-trial-comparison-cards': true },
+                  inquiryTrialPair.map(function(record, trialIndex) {
+                    var recordPlant = CG_PLANTS[record.plantId];
+                    var trialPosition = trialIndex === 0 ? 'earlier' : 'latest';
+                    var trialConfidenceLabel = record.confidenceLabel || ({ low: 'Cautious', medium: 'Moderate', high: 'Strong' }[record.confidence] || 'Not recorded');
+                    return h('article', { key: record.id || record.key || trialIndex, className: 'overflow-hidden rounded-xl border border-white/10 bg-white/10', 'data-trial-card': trialPosition },
+                      h('div', { className: 'flex items-start gap-3 border-b border-white/10 p-3' },
+                        h('span', { className: 'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-xl text-slate-950', 'aria-hidden': true }, record.plantEmoji || (recordPlant && recordPlant.emoji) || '\uD83C\uDF31'),
+                        h('div', { className: 'min-w-0 flex-1' }, h('div', { className: 'text-xs font-black uppercase tracking-wide text-cyan-200' }, trialIndex === 0 ? 'Earlier trial' : 'Latest trial'), h('div', { className: 'mt-1 text-sm font-black text-white' }, (record.plantLabel || (recordPlant && recordPlant.label) || 'Plant') + ' \u00B7 Plot ' + ((record.plot || 0) + 1)), h('div', { className: 'mt-1 text-xs text-cyan-100' }, (record.season || 'Garden season') + ' \u00B7 Year ' + (record.year || 1) + ' \u00B7 Day ' + (record.day || 0))),
+                        h('span', { className: 'rounded-full px-2 py-1 text-xs font-black ' + (record.supported ? 'bg-emerald-200 text-emerald-950' : 'bg-amber-200 text-amber-950'), 'data-trial-outcome': record.supported ? 'supported' : 'revise' }, record.supported ? 'Supported' : 'Revise')
+                      ),
+                      h('div', { className: 'p-3' },
+                        h('div', { className: 'text-xs font-black uppercase tracking-wide text-cyan-200' }, 'Question tested'),
+                        h('p', { className: 'mt-1 text-sm font-black leading-relaxed text-white' }, record.predictionLabel || record.predictionId || 'Prediction not recorded'),
+                        h('div', { className: 'mt-3 rounded-lg border border-white/10 bg-black/15 p-2.5' }, h('div', { className: 'text-xs font-black uppercase tracking-wide text-cyan-200' }, 'Evidence'), h('p', { className: 'mt-1 text-xs leading-relaxed text-cyan-50' }, record.evidence || record.conclusion || 'Evidence statement not recorded.')),
+                        h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
+                          h('div', { className: 'rounded-lg border border-white/10 bg-white/5 p-2', 'data-trial-quality': record.quality || 0 }, h('div', { className: 'text-xs font-black text-cyan-100' }, 'Evidence quality'), h('div', { className: 'mt-1 text-lg font-black text-white' }, (record.quality || 0) + '%'), h('div', { className: 'mt-1 h-1.5 overflow-hidden rounded-full bg-black/30', role: 'progressbar', 'aria-label': (trialIndex === 0 ? 'Earlier' : 'Latest') + ' trial evidence quality', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': record.quality || 0 }, h('div', { className: 'h-full rounded-full bg-cyan-300', style: { width: Math.max(0, Math.min(100, record.quality || 0)) + '%' } }))),
+                          h('div', { className: 'rounded-lg border border-white/10 bg-white/5 p-2' }, h('div', { className: 'text-xs font-black text-cyan-100' }, 'Evidence set'), h('div', { className: 'mt-1 text-sm font-black text-white' }, (record.observations || 0) + ' observation' + ((record.observations || 0) === 1 ? '' : 's')), h('div', { className: 'mt-1 text-xs text-cyan-100' }, trialConfidenceLabel + ' confidence'))
+                        ),
+                        (typeof record.targetDelta === 'number' || typeof record.comparisonDelta === 'number') && h('div', { className: 'mt-2 flex flex-wrap gap-2', 'data-trial-deltas': true },
+                          typeof record.targetDelta === 'number' && h('span', { className: 'rounded-full bg-white/10 px-2 py-1 text-xs font-black text-white' }, 'Target ' + cgSignedTrialValue(record.targetDelta)),
+                          typeof record.comparisonDelta === 'number' && h('span', { className: 'rounded-full bg-white/10 px-2 py-1 text-xs font-black text-white' }, 'Comparison ' + cgSignedTrialValue(record.comparisonDelta))
+                        )
+                      )
+                    );
+                  }).reduce(function(cards, card, cardIndex) {
+                    if (cardIndex === 1) cards.push(h('div', { key: 'versus', className: 'flex items-center justify-center', 'aria-hidden': true }, h('span', { className: 'flex h-10 w-10 items-center justify-center rounded-full border border-cyan-200/30 bg-cyan-200/10 text-xs font-black text-cyan-100' }, 'VS')));
+                    cards.push(card);
+                    return cards;
+                  }, [])
+                ),
+                h('div', { className: 'grid gap-3 border-t border-white/10 p-3 lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)] sm:p-4' },
+                  h('div', null,
+                    h('div', { className: 'text-xs font-black uppercase tracking-[0.14em] text-cyan-200' }, 'Fair-comparison check'),
+                    h('div', { className: 'mt-2 grid gap-2 sm:grid-cols-2', 'data-trial-comparison-checks': true }, inquiryTrialChecks.map(function(check) {
+                      return h('div', { key: check.id, className: 'rounded-xl border p-3 ' + (check.complete ? 'border-emerald-300/30 bg-emerald-300/10' : 'border-amber-300/30 bg-amber-300/10'), 'data-trial-check': check.id, 'data-check-status': check.complete ? 'matched' : 'changed' }, h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'text-sm font-black text-white' }, check.label), h('span', { className: 'rounded-full px-2 py-1 text-xs font-black ' + (check.complete ? 'bg-emerald-200 text-emerald-950' : 'bg-amber-200 text-amber-950') }, check.complete ? 'Matched' : 'Changed')), h('p', { className: 'mt-1 text-xs leading-relaxed text-cyan-100' }, check.detail));
+                    }))
+                  ),
+                  h('aside', { className: 'rounded-xl border border-violet-300/25 bg-violet-300/10 p-3', 'data-trial-comparison-synthesis': true },
+                    h('div', { className: 'text-xs font-black uppercase tracking-wide text-violet-200' }, 'What the pair suggests'),
+                    h('div', { className: 'mt-1 text-base font-black text-white' }, inquiryTrialPatternLabel),
+                    h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
+                      h('div', { className: 'rounded-lg bg-black/15 p-2' }, h('div', { className: 'text-xs text-violet-100' }, 'Evidence quality'), h('div', { className: 'mt-1 text-sm font-black text-white' }, cgSignedTrialValue(inquiryTrialQualityDelta, ' points'))),
+                      h('div', { className: 'rounded-lg bg-black/15 p-2' }, h('div', { className: 'text-xs text-violet-100' }, 'Observations'), h('div', { className: 'mt-1 text-sm font-black text-white' }, cgSignedTrialValue(inquiryTrialObservationDelta)))
+                    ),
+                    h('div', { className: 'mt-3 rounded-lg border border-violet-200/20 bg-black/15 p-2.5' }, h('div', { className: 'text-xs font-black text-violet-100' }, 'Ask before generalizing'), h('p', { className: 'mt-1 text-xs leading-relaxed text-white' }, inquiryTrialPrompt)),
+                    h('div', { className: 'mt-3 rounded-lg border border-cyan-200/20 bg-cyan-200/10 p-2.5', 'data-trial-next-step': inquiryLatestTrial.nextStep || 'not-recorded' }, h('div', { className: 'text-xs font-black text-cyan-100' }, 'Latest planned next test'), h('div', { className: 'mt-1 text-sm font-black text-white' }, inquiryLatestTrial.nextStepLabel || 'Choose a next test'), inquiryLatestTrial.nextStepDetail && h('p', { className: 'mt-1 text-xs leading-relaxed text-cyan-100' }, inquiryLatestTrial.nextStepDetail))
+                  )
+                ),
+                h('section', { className: 'border-t border-white/10 bg-gradient-to-r from-emerald-950/70 via-slate-950/40 to-cyan-950/70 p-3 sm:p-4', 'data-trial-next-launchpad': inquiryNextTrialAction, 'aria-labelledby': 'trial-next-launchpad-title' },
+                  h('div', { className: 'flex flex-wrap items-start justify-between gap-3' },
+                    h('div', { className: 'max-w-3xl' },
+                      h('div', { className: 'text-xs font-black uppercase tracking-[0.14em] text-lime-200' }, 'Plan \u2192 simulation'),
+                      h('h4', { id: 'trial-next-launchpad-title', className: 'mt-1 text-base font-black text-white' }, 'Next Trial Launchpad'),
+                      h('p', { className: 'mt-1 text-xs leading-relaxed text-cyan-100' }, 'Turn the latest saved next step into a visible test plan before changing the garden.')
+                    ),
+                    h('span', { className: 'rounded-full border border-white/10 bg-white/10 px-3 py-1.5 text-xs font-black text-white', 'data-trial-launchpad-status': inquiryRepeatTrialActive ? 'active' : inquiryRivalPlanActive ? 'rival-planned' : 'planned', role: 'status', 'aria-live': 'polite', 'aria-atomic': true }, inquiryRepeatTrialActive ? 'Repeat baseline ready' : inquiryNextTrialPlanLabel)
+                  ),
+                  inquiryRivalPlanActive && h('div', { className: 'mt-3 flex flex-wrap items-start gap-3 rounded-xl border border-orange-300/30 bg-orange-300/10 p-3', 'data-rival-plan-active': cgRivalTestPlan.rivalId },
+                    h('span', { className: 'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-200 text-lg text-orange-950', 'aria-hidden': true }, '\uD83D\uDCCB'),
+                    h('div', { className: 'min-w-[220px] flex-1' },
+                      h('div', { className: 'text-xs font-black uppercase tracking-wide text-orange-200' }, 'Pre-registered rival test'),
+                      h('div', { className: 'mt-1 text-sm font-black text-white' }, cgRivalTestPlan.label),
+                      h('p', { className: 'mt-1 text-xs leading-relaxed text-orange-100' }, cgRivalTestPlan.test)
+                    ),
+                    h('button', { onClick: function() { cgUpd({ rivalTestPlan: null, lastFeedback: { icon: '\u21A9\uFE0F', title: 'Rival test plan cleared', detail: 'The launchpad has returned to the next step saved in the investigation notebook.', tone: 'info' } }); }, className: 'min-h-[44px] rounded-lg border border-orange-200/30 bg-white/10 px-3 py-2 text-xs font-black text-white hover:bg-white/20', 'aria-label': 'Clear pre-registered ' + cgRivalTestPlan.label + ' test plan', 'data-clear-rival-plan': true }, 'Use saved plan instead')
+                  ),
+                  h('div', { className: 'mt-3 grid gap-2 md:grid-cols-3', 'data-trial-plan-cards': true },
+                    [
+                      { id: 'keep', number: '1', icon: '\uD83D\uDCCC', label: 'Keep steady', text: inquiryNextTrialKeep },
+                      { id: 'change', number: '2', icon: '\uD83E\uDDEA', label: 'Change deliberately', text: inquiryNextTrialChange },
+                      { id: 'measure', number: '3', icon: '\uD83D\uDCCF', label: 'Measure again', text: inquiryNextTrialMeasure }
+                    ].map(function(step) {
+                      return h('article', { key: step.id, className: 'rounded-xl border border-white/10 bg-white/10 p-3', 'data-trial-plan-step': step.id },
+                        h('div', { className: 'flex items-center gap-2' }, h('span', { className: 'flex h-8 w-8 items-center justify-center rounded-lg bg-white text-sm font-black text-emerald-950', 'aria-hidden': true }, step.number), h('span', { className: 'text-lg', 'aria-hidden': true }, step.icon), h('h5', { className: 'text-sm font-black text-white' }, step.label)),
+                        h('p', { className: 'mt-2 text-xs leading-relaxed text-cyan-100' }, step.text)
+                      );
+                    })
+                  ),
+                  h('div', { className: 'mt-3 flex flex-wrap items-center gap-3 rounded-xl border border-lime-300/25 bg-lime-300/10 p-3', 'data-trial-launch-action': inquiryNextTrialAction },
+                    h('div', { className: 'min-w-[220px] flex-1' },
+                      h('div', { className: 'text-xs font-black text-white' }, inquiryRepeatTrialActive ? 'A fresh baseline is active' : 'Ready when the plan is clear'),
+                      h('p', { className: 'mt-1 text-xs leading-relaxed text-cyan-100' }, inquiryRepeatTrialActive ? 'Advance one day without an extra care action, inspect the report, then save the new conclusion as another trial.' : inquiryRivalPlanActive ? 'This action uses the pre-registered rival test while preserving the garden until you make an explicit change.' : inquiryNextTrialAction === 'repeat' ? 'The current target crop is still available. Starting creates a fresh claim and clears old synthesis choices, but does not alter the garden.' : inquiryNextTrialAction === 'real-garden' ? 'The simulation stays unchanged while you adapt the evidence to a real site.' : 'The recorded plot is focused for review. You decide whether and what to change.')
+                    ),
+                    inquiryRepeatTrialActive
+                      ? h('a', { href: '#community-care-controls', className: 'inline-flex min-h-[44px] items-center justify-center rounded-xl bg-lime-300 px-4 py-2 text-sm font-black text-lime-950 shadow-sm hover:bg-lime-200', 'data-review-repeat-trial': true }, 'Review the next day')
+                      : h('a', { href: inquiryNextTrialHref, onClick: function() { cgLaunchSavedNextTrial(inquiryLatestTrial, inquiryNextTrialAction); }, className: 'inline-flex min-h-[44px] items-center justify-center rounded-xl bg-lime-300 px-4 py-2 text-sm font-black text-lime-950 shadow-sm hover:bg-lime-200', 'data-launch-saved-trial': inquiryNextTrialAction }, inquiryNextTrialActionLabel)
+                  ),
+                  inquiryLatestTrial.nextStep === 'repeat' && !inquiryLatestTargetAvailable && h('p', { className: 'mt-2 rounded-lg border border-amber-300/30 bg-amber-300/10 p-2 text-xs leading-relaxed text-amber-100', role: 'note', 'data-trial-target-unavailable': true }, 'The recorded target crop has moved or been removed, so the launchpad opens planning mode instead of inventing a baseline.')
+                ),
+                h('p', { className: 'border-t border-white/10 bg-black/15 px-4 py-3 text-xs leading-relaxed text-cyan-100', 'data-trial-comparison-caution': true }, 'Two trials strengthen comparison and revision, but they do not prove that one companion relationship caused every change. Keep care, context, and comparison plots visible.')
+              ),
+
+              inquiryPatternTrials.length >= 2 && h('section', { id: 'community-evidence-timeline', tabIndex: -1, className: 'scroll-mt-4 overflow-hidden rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50 via-white to-cyan-50 shadow-sm focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-indigo-600', 'data-community-evidence-timeline': inquiryPatternTrials.length, 'data-focus-stages': 'explain transfer', 'aria-labelledby': 'community-evidence-timeline-title' },
+                h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b border-indigo-100 bg-gradient-to-r from-indigo-950 via-violet-950 to-slate-950 p-4 text-white' },
+                  h('div', { className: 'flex items-start gap-3' },
+                    h('span', { className: 'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-200 text-xl text-indigo-950', 'aria-hidden': true }, '\uD83D\uDCC8'),
+                    h('div', null,
+                      h('div', { className: 'text-xs font-black uppercase tracking-[0.14em] text-indigo-200' }, 'Evidence across time'),
+                      h('h3', { id: 'community-evidence-timeline-title', className: 'text-base font-black text-white' }, 'Evidence Pattern Timeline'),
+                      h('p', { className: 'mt-1 max-w-3xl text-xs leading-relaxed text-indigo-100' }, 'Follow every saved ' + (inquiryPatternReference.plantLabel || inquiryPatternReference.plantId || 'plant') + ' trial that asked "' + (inquiryPatternReference.predictionLabel || inquiryPatternReference.predictionId || 'the same question') + '."')
+                    )
+                  ),
+                  h('div', { className: 'rounded-xl border border-white/10 bg-white/10 px-3 py-2 text-center', role: 'status', 'aria-live': 'polite', 'aria-atomic': true, 'data-evidence-pattern-status': inquiryPatternStatus },
+                    h('div', { className: 'text-xs font-black uppercase tracking-wide text-indigo-200' }, inquiryPatternTrials.length + ' matching trials'),
+                    h('div', { className: 'mt-1 text-sm font-black text-white' }, inquiryPatternStatusLabel)
+                  )
+                ),
+                h('div', { className: 'grid grid-cols-2 gap-2 border-b border-indigo-100 bg-white/70 p-3 md:grid-cols-4', 'data-evidence-pattern-summary': true },
+                  [
+                    { id: 'repetitions', value: inquiryPatternTrials.length, label: 'Matching trials', detail: 'Same crop + question' },
+                    { id: 'consistency', value: inquiryPatternConsistency + '%', label: 'Outcome consistency', detail: Math.max(inquiryPatternSupportedCount, inquiryPatternReviseCount) + ' shared the most common result' },
+                    { id: 'comparisons', value: inquiryPatternComparedCount + '/' + inquiryPatternTrials.length, label: 'Matched comparisons', detail: inquiryPatternComparedCount === inquiryPatternTrials.length ? 'Every trial has a reference' : 'A comparison is still missing' },
+                    { id: 'seasons', value: inquiryPatternSeasons.length, label: 'Seasons represented', detail: inquiryPatternSeasons.join(', ') }
+                  ].map(function(metric) {
+                    return h('div', { key: metric.id, className: 'rounded-xl border border-indigo-100 bg-white p-3 text-center shadow-sm', 'data-evidence-pattern-metric': metric.id },
+                      h('div', { className: 'text-xl font-black text-indigo-900' }, metric.value),
+                      h('div', { className: 'mt-0.5 text-xs font-black text-slate-800' }, metric.label),
+                      h('div', { className: 'mt-1 text-xs leading-relaxed text-slate-600' }, metric.detail)
+                    );
+                  })
+                ),
+                h('div', { className: 'p-3 sm:p-4' },
+                  h('div', { className: 'grid gap-3 md:grid-cols-2 xl:grid-cols-4', role: 'list', 'aria-label': 'Chronological matching investigation trials', 'data-evidence-timeline-list': inquiryPatternTrials.length },
+                    inquiryPatternTrials.map(function(record, patternIndex) {
+                      var previousRecord = patternIndex > 0 ? inquiryPatternTrials[patternIndex - 1] : null;
+                      var patternChanges = [];
+                      if (previousRecord) {
+                        if ((record.season || '') !== (previousRecord.season || '')) patternChanges.push('Season changed');
+                        if (record.plot !== previousRecord.plot) patternChanges.push('Target plot changed');
+                        if ((typeof record.comparisonPlot === 'number') !== (typeof previousRecord.comparisonPlot === 'number')) patternChanges.push('Comparison setup changed');
+                        var qualityChange = (record.quality || 0) - (previousRecord.quality || 0);
+                        if (qualityChange) patternChanges.push('Quality ' + cgSignedTrialValue(qualityChange, ' points'));
+                      }
+                      return h('article', { key: record.id || record.key || patternIndex, className: 'relative flex min-w-0 flex-col overflow-hidden rounded-xl border bg-white shadow-sm ' + (record.supported ? 'border-emerald-200' : 'border-amber-300'), role: 'listitem', 'data-evidence-timeline-trial': patternIndex + 1, 'data-timeline-outcome': record.supported ? 'supported' : 'revise' },
+                        h('div', { className: 'flex items-center justify-between gap-2 border-b p-3 ' + (record.supported ? 'border-emerald-100 bg-emerald-50' : 'border-amber-200 bg-amber-50') },
+                          h('div', { className: 'flex items-center gap-2' }, h('span', { className: 'flex h-8 w-8 items-center justify-center rounded-full text-xs font-black text-white ' + (record.supported ? 'bg-emerald-700' : 'bg-amber-700'), 'aria-hidden': true }, patternIndex + 1), h('div', null, h('div', { className: 'text-xs font-black uppercase tracking-wide text-slate-500' }, 'Trial ' + (patternIndex + 1)), h('div', { className: 'text-sm font-black text-slate-900' }, 'Plot ' + ((record.plot || 0) + 1)))),
+                          h('span', { className: 'rounded-full px-2 py-1 text-xs font-black ' + (record.supported ? 'bg-emerald-700 text-white' : 'bg-amber-200 text-amber-950') }, record.supported ? '\u2713 Supported' : '\u21BB Revise')
+                        ),
+                        h('div', { className: 'flex-1 p-3' },
+                          h('div', { className: 'text-xs text-slate-600' }, (record.season || 'Garden season') + ' \u00B7 Year ' + (record.year || 1) + ' \u00B7 Day ' + (record.day || 0)),
+                          h('div', { className: 'mt-3 flex items-end justify-between gap-2' }, h('div', null, h('div', { className: 'text-xs font-black uppercase tracking-wide text-slate-500' }, 'Evidence quality'), h('div', { className: 'text-lg font-black text-indigo-900' }, (record.quality || 0) + '%')), h('div', { className: 'text-right text-xs text-slate-600' }, (record.observations || 0) + ' observation' + ((record.observations || 0) === 1 ? '' : 's'))),
+                          h('div', { className: 'mt-2 h-2 overflow-hidden rounded-full bg-slate-200', role: 'progressbar', 'aria-label': 'Trial ' + (patternIndex + 1) + ' evidence quality', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': record.quality || 0 }, h('div', { className: 'h-full rounded-full ' + (record.supported ? 'bg-emerald-600' : 'bg-amber-600'), style: { width: Math.max(0, Math.min(100, record.quality || 0)) + '%' } })),
+                          h('div', { className: 'mt-3 flex flex-wrap gap-1.5' },
+                            h('span', { className: 'rounded-full bg-indigo-100 px-2 py-1 text-xs font-black text-indigo-800' }, typeof record.comparisonPlot === 'number' ? '\u2696 Comparison Plot ' + (record.comparisonPlot + 1) : '\u25CB No matched comparison'),
+                            h('span', { className: 'rounded-full bg-slate-100 px-2 py-1 text-xs font-black text-slate-700' }, record.confidenceLabel || ({ low: 'Tentative', medium: 'Moderate', high: 'Strong' }[record.confidence] || 'Confidence not recorded'))
+                          ),
+                          h('div', { className: 'mt-3 rounded-lg border border-slate-200 bg-slate-50 p-2', 'data-timeline-change-summary': patternIndex === 0 ? 'baseline' : patternChanges.length ? 'changed' : 'steady' },
+                            h('div', { className: 'text-xs font-black text-slate-800' }, patternIndex === 0 ? 'Baseline trial' : patternChanges.length ? 'Changed since prior trial' : 'Tracked conditions stayed steady'),
+                            h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-600' }, patternIndex === 0 ? 'Later trials are compared with this first matching record.' : patternChanges.length ? patternChanges.join(' \u00B7 ') : 'Same season, target plot, comparison status, and evidence quality.')
+                          )
+                        )
+                      );
+                    })
+                  )
+                ),
+                h('div', { className: 'grid gap-3 border-t border-indigo-100 bg-gradient-to-r from-indigo-50 to-cyan-50 p-3 lg:grid-cols-2 sm:p-4' },
+                  h('article', { className: 'rounded-xl border border-indigo-200 bg-white p-3', 'data-evidence-pattern-reading': inquiryPatternDominantOutcome },
+                    h('div', { className: 'text-xs font-black uppercase tracking-wide text-indigo-700' }, 'Pattern reading'),
+                    h('div', { className: 'mt-1 text-base font-black text-slate-900' }, inquiryPatternStatusLabel),
+                    h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-700' }, inquiryPatternReading),
+                    h('div', { className: 'mt-3 h-2 overflow-hidden rounded-full bg-slate-200', role: 'progressbar', 'aria-label': 'Outcome consistency across matching trials', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': inquiryPatternConsistency }, h('div', { className: 'h-full rounded-full bg-indigo-700', style: { width: inquiryPatternConsistency + '%' } }))
+                  ),
+                  h('article', { className: 'rounded-xl border border-cyan-200 bg-white p-3', 'data-evidence-next-target': true },
+                    h('div', { className: 'text-xs font-black uppercase tracking-wide text-cyan-800' }, 'Best next evidence target'),
+                    h('p', { className: 'mt-1 text-sm font-black leading-relaxed text-slate-900' }, inquiryPatternNextTarget),
+                    h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-600' }, inquiryPatternAverageQuality + '% average evidence quality across ' + inquiryPatternTrials.length + ' matching trials.')
+                  )
+                ),
+                h('p', { className: 'border-t border-indigo-100 bg-white px-4 py-3 text-xs leading-relaxed text-slate-600', 'data-evidence-timeline-caution': true }, 'Timeline guardrail: consistency describes how often saved outcomes agree. It does not prove that a companion relationship caused the result; changing care, season, placement, events, and simulation assumptions still matter.')
+              ),
+
+              inquiryPatternTrials.length >= 2 && h('section', { id: 'community-claim-ladder', tabIndex: -1, className: 'scroll-mt-4 overflow-hidden rounded-2xl border border-fuchsia-200 bg-gradient-to-br from-fuchsia-50 via-white to-amber-50 shadow-sm focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-fuchsia-600', 'data-community-claim-ladder': inquiryClaimLevel, 'data-focus-stages': 'explain transfer', 'aria-labelledby': 'community-claim-ladder-title' },
+                h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b border-white/10 bg-gradient-to-r from-fuchsia-950 via-violet-950 to-slate-950 p-4 text-white' },
+                  h('div', { className: 'flex items-start gap-3' },
+                    h('span', { className: 'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-fuchsia-200 text-xl text-fuchsia-950', 'aria-hidden': true }, '\uD83E\uDE9C'),
+                    h('div', null,
+                      h('div', { className: 'text-xs font-black uppercase tracking-[0.14em] text-fuchsia-200' }, 'Evidence \u2192 language'),
+                      h('h3', { id: 'community-claim-ladder-title', className: 'text-base font-black text-white' }, 'Claim Strength Ladder'),
+                      h('p', { className: 'mt-1 max-w-3xl text-xs leading-relaxed text-fuchsia-100' }, 'Match the strength of your words to the strength and limits of the saved evidence.')
+                    )
+                  ),
+                  h('div', { className: 'rounded-xl border border-white/10 bg-white/10 px-3 py-2 text-center', role: 'status', 'aria-live': 'polite', 'aria-atomic': true, 'data-claim-level': inquiryClaimLevel },
+                    h('div', { className: 'text-xs font-black uppercase tracking-wide text-fuchsia-200' }, 'Current evidence statement'),
+                    h('div', { className: 'mt-1 text-sm font-black text-white' }, 'Level ' + inquiryClaimLevel + ': ' + inquiryClaimLevelLabel)
+                  )
+                ),
+                h('ol', { className: 'grid gap-3 p-3 md:grid-cols-2 xl:grid-cols-4 sm:p-4', 'aria-label': 'Four levels of scientific claim strength', 'data-claim-ladder-rungs': true },
+                  inquiryClaimLadder.map(function(rung) {
+                    var rungStatus = rung.boundary ? 'boundary' : rung.level < inquiryClaimLevel ? 'reached' : rung.level === inquiryClaimLevel ? 'current' : 'next';
+                    return h('li', { key: rung.level, className: 'relative overflow-hidden rounded-xl border p-3 ' + (rungStatus === 'current' ? 'border-fuchsia-500 bg-fuchsia-50 shadow-md ring-2 ring-fuchsia-100' : rungStatus === 'reached' ? 'border-emerald-200 bg-emerald-50' : rungStatus === 'boundary' ? 'border-rose-300 bg-rose-50' : 'border-slate-200 bg-white'), 'data-claim-rung': rung.level, 'data-rung-status': rungStatus, 'aria-current': rungStatus === 'current' ? 'step' : undefined },
+                      h('div', { className: 'flex items-center justify-between gap-2' },
+                        h('span', { className: 'flex h-9 w-9 items-center justify-center rounded-xl text-sm font-black ' + (rungStatus === 'current' ? 'bg-fuchsia-700 text-white' : rungStatus === 'reached' ? 'bg-emerald-700 text-white' : rungStatus === 'boundary' ? 'bg-rose-700 text-white' : 'bg-slate-200 text-slate-700'), 'aria-hidden': true }, rung.level),
+                        h('span', { className: 'text-xl', 'aria-hidden': true }, rung.icon),
+                        h('span', { className: 'rounded-full px-2 py-1 text-xs font-black ' + (rungStatus === 'current' ? 'bg-fuchsia-200 text-fuchsia-950' : rungStatus === 'reached' ? 'bg-emerald-200 text-emerald-950' : rungStatus === 'boundary' ? 'bg-rose-200 text-rose-950' : 'bg-slate-100 text-slate-600') }, rungStatus === 'current' ? 'Current' : rungStatus === 'reached' ? '\u2713 Reached' : rungStatus === 'boundary' ? 'Not established' : 'Next')
+                      ),
+                      h('h4', { className: 'mt-3 text-sm font-black text-slate-900' }, rung.label),
+                      h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-700' }, rung.statement),
+                      h('div', { className: 'mt-3 rounded-lg border border-black/5 bg-white/70 p-2 text-xs leading-relaxed text-slate-600' }, h('span', { className: 'font-black text-slate-800' }, 'Evidence rule: '), rung.requirement)
+                    );
+                  })
+                ),
+                h('div', { className: 'grid gap-3 border-t border-fuchsia-100 bg-white/70 p-3 lg:grid-cols-[minmax(0,1.2fr)_minmax(300px,0.8fr)] sm:p-4' },
+                  h('article', { className: 'rounded-xl border border-emerald-200 bg-emerald-50 p-3', 'data-claim-safe-sentence': inquiryClaimLevel },
+                    h('div', { className: 'text-xs font-black uppercase tracking-wide text-emerald-800' }, 'Evidence-safe sentence'),
+                    h('p', { className: 'mt-2 text-sm font-semibold leading-relaxed text-slate-900' }, inquiryClaimSafeSentence),
+                    h('div', { className: 'mt-3 rounded-lg border border-emerald-200 bg-white p-2.5', 'data-claim-next-rung': inquiryClaimLevel + 1 },
+                      h('div', { className: 'text-xs font-black text-emerald-900' }, inquiryClaimLevel >= 3 ? 'What stronger evidence would require' : 'What unlocks the next rung'),
+                      h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-700' }, inquiryClaimNextRung)
+                    )
+                  ),
+                  h('aside', { className: 'rounded-xl border border-fuchsia-200 bg-fuchsia-50 p-3', 'data-claim-language-safety': true, 'aria-labelledby': 'claim-language-safety-title' },
+                    h('div', { className: 'text-xs font-black uppercase tracking-wide text-fuchsia-800' }, 'Language calibration'),
+                    h('h4', { id: 'claim-language-safety-title', className: 'mt-1 text-sm font-black text-slate-900' }, 'Choose verbs that fit the evidence'),
+                    h('div', { className: 'mt-3' },
+                      h('div', { className: 'text-xs font-black text-emerald-800' }, '\u2713 Use now'),
+                      h('div', { className: 'mt-1.5 flex flex-wrap gap-1.5' }, inquiryClaimSafeVerbs.map(function(verb) { return h('span', { key: verb, className: 'rounded-full bg-emerald-100 px-2 py-1 text-xs font-black text-emerald-900', 'data-claim-safe-verb': verb }, verb); }))
+                    ),
+                    h('div', { className: 'mt-3' },
+                      h('div', { className: 'text-xs font-black text-rose-800' }, '\u26A0 Avoid for this evidence'),
+                      h('div', { className: 'mt-1.5 flex flex-wrap gap-1.5' }, inquiryClaimUnsafeVerbs.map(function(verb) { return h('span', { key: verb, className: 'rounded-full bg-rose-100 px-2 py-1 text-xs font-black text-rose-900', 'data-claim-unsafe-verb': verb }, verb); }))
+                    )
+                  )
+                ),
+                h('p', { className: 'border-t border-fuchsia-100 bg-white px-4 py-3 text-xs leading-relaxed text-slate-600', 'data-claim-ladder-caution': true }, 'Claim boundary: the simulation can support observations, associations, and repeated modeled patterns. A causal claim needs controls, real-world context, repeated measurements, and evidence that rules out plausible alternatives.')
+              ),
+
+              inquiryPatternTrials.length >= 2 && h('section', { id: 'community-rival-explanations', tabIndex: -1, className: 'scroll-mt-4 overflow-hidden rounded-2xl border border-orange-200 bg-gradient-to-br from-orange-50 via-white to-rose-50 shadow-sm focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-orange-600', 'data-community-rival-explanations': inquiryRivalPriorityId, 'data-focus-stages': 'explain transfer', 'aria-labelledby': 'community-rival-explanations-title' },
+                h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b border-white/10 bg-gradient-to-r from-orange-950 via-rose-950 to-slate-950 p-4 text-white' },
+                  h('div', { className: 'flex items-start gap-3' },
+                    h('span', { className: 'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-200 text-xl text-orange-950', 'aria-hidden': true }, '\uD83D\uDD0D'),
+                    h('div', null,
+                      h('div', { className: 'text-xs font-black uppercase tracking-[0.14em] text-orange-200' }, 'Challenge the first explanation'),
+                      h('h3', { id: 'community-rival-explanations-title', className: 'text-base font-black text-white' }, 'Rival Explanations Lab'),
+                      h('p', { className: 'mt-1 max-w-3xl text-xs leading-relaxed text-orange-100' }, 'Ask what else could explain the repeated outcome, then design evidence that separates the possibilities.')
+                    )
+                  ),
+                  h('div', { className: 'rounded-xl border border-white/10 bg-white/10 px-3 py-2 text-center', role: 'status', 'aria-live': 'polite', 'aria-atomic': true, 'data-rival-priority': inquiryRivalPriorityId },
+                    h('div', { className: 'text-xs font-black uppercase tracking-wide text-orange-200' }, 'Check first'),
+                    h('div', { className: 'mt-1 text-sm font-black text-white' }, inquiryRivalPriority.icon + ' ' + inquiryRivalPriority.label)
+                  )
+                ),
+                h('div', { className: 'grid gap-3 p-3 md:grid-cols-2 xl:grid-cols-4 sm:p-4', role: 'list', 'aria-label': 'Competing explanations and evidence checks', 'data-rival-explanation-list': true },
+                  inquiryRivalExplanations.map(function(explanation) {
+                    var isPriority = explanation.id === inquiryRivalPriorityId;
+                    return h('article', { key: explanation.id, className: 'flex flex-col overflow-hidden rounded-xl border bg-white ' + (isPriority ? 'border-orange-400 shadow-md ring-2 ring-orange-100' : explanation.status === 'plausible' ? 'border-amber-300' : explanation.status === 'candidate' ? 'border-emerald-300' : 'border-slate-200'), role: 'listitem', 'data-rival-explanation': explanation.id, 'data-rival-status': explanation.status, 'data-rival-priority-card': isPriority ? 'true' : undefined },
+                      h('div', { className: 'flex items-start justify-between gap-2 border-b border-slate-100 p-3' },
+                        h('div', { className: 'flex items-center gap-2' }, h('span', { className: 'flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-lg', 'aria-hidden': true }, explanation.icon), h('h4', { className: 'text-sm font-black text-slate-900' }, explanation.label)),
+                        h('span', { className: 'rounded-full px-2 py-1 text-xs font-black ' + (explanation.status === 'plausible' ? 'bg-amber-200 text-amber-950' : explanation.status === 'candidate' ? 'bg-emerald-200 text-emerald-950' : 'bg-slate-100 text-slate-700') }, explanation.statusLabel)
+                      ),
+                      h('div', { className: 'flex-1 p-3' },
+                        h('div', { className: 'flex items-end justify-between gap-2' }, h('div', null, h('div', { className: 'text-xs font-black uppercase tracking-wide text-slate-500' }, explanation.metricLabel), h('div', { className: 'mt-0.5 text-lg font-black text-slate-900' }, explanation.metricValue + '%')), h('div', { className: 'max-w-[120px] text-right text-xs leading-relaxed text-slate-600' }, explanation.metricText)),
+                        h('div', { className: 'mt-2 h-2 overflow-hidden rounded-full bg-slate-200', role: 'progressbar', 'aria-label': explanation.metricLabel + ' for ' + explanation.label, 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': explanation.metricValue }, h('div', { className: 'h-full rounded-full ' + (isPriority ? 'bg-orange-600' : explanation.status === 'candidate' ? 'bg-emerald-600' : 'bg-slate-500'), style: { width: explanation.metricValue + '%' } })),
+                        h('div', { className: 'mt-3 rounded-lg border border-slate-200 bg-slate-50 p-2', 'data-rival-evidence': explanation.id }, h('div', { className: 'text-xs font-black text-slate-800' }, 'Why consider it?'), h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-600' }, explanation.evidence)),
+                        h('div', { className: 'mt-2 rounded-lg border border-cyan-100 bg-cyan-50 p-2', 'data-rival-distinguishing-test': explanation.id }, h('div', { className: 'text-xs font-black text-cyan-900' }, 'Test that separates it'), h('p', { className: 'mt-1 text-xs leading-relaxed text-slate-700' }, explanation.test))
+                      )
+                    );
+                  })
+                ),
+                h('div', { className: 'grid gap-3 border-t border-orange-100 bg-white/70 p-3 lg:grid-cols-[minmax(0,1.15fr)_minmax(280px,0.85fr)] sm:p-4' },
+                  h('article', { className: 'rounded-xl border border-orange-300 bg-orange-50 p-3', 'data-rival-next-test': inquiryRivalPriorityId },
+                    h('div', { className: 'text-xs font-black uppercase tracking-wide text-orange-800' }, 'Strongest alternative to check next'),
+                    h('div', { className: 'mt-1 text-base font-black text-slate-900' }, inquiryRivalPriority.icon + ' ' + inquiryRivalPriority.label),
+                    h('p', { className: 'mt-2 text-sm font-semibold leading-relaxed text-slate-800' }, inquiryRivalPriority.test),
+                    h('a', { href: '#community-trial-comparison', onClick: function() { cgPlanRivalTest(inquiryRivalPriority); }, className: 'mt-3 inline-flex min-h-[44px] items-center justify-center rounded-xl bg-orange-700 px-4 py-2 text-sm font-black text-white shadow-sm hover:bg-orange-800', 'data-plan-rival-test': inquiryRivalPriorityId }, 'Plan this test in the launchpad')
+                  ),
+                  h('aside', { className: 'rounded-xl border border-rose-200 bg-rose-50 p-3', 'data-rival-falsification-prompt': true, 'aria-labelledby': 'rival-falsification-title' },
+                    h('div', { className: 'text-xs font-black uppercase tracking-wide text-rose-800' }, 'Change-your-mind check'),
+                    h('h4', { id: 'rival-falsification-title', className: 'mt-1 text-sm font-black text-slate-900' }, 'What result would weaken the first explanation?'),
+                    h('p', { className: 'mt-2 text-sm font-semibold leading-relaxed text-slate-800' }, inquiryRivalFalsification),
+                    h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-600' }, 'A useful scientific explanation names evidence that could count against it, not only evidence that agrees.')
+                  )
+                ),
+                h('p', { className: 'border-t border-orange-100 bg-white px-4 py-3 text-xs leading-relaxed text-slate-600', 'data-rival-explanations-caution': true }, 'A rival explanation does not mean the companion relationship is false. It identifies another plausible reason for the pattern so the next investigation can separate them.')
+              ),
+
+              cgInquiryHistory.length > 0 && h('section', { id: 'community-inquiry-notebook', tabIndex: -1, className: 'scroll-mt-4 overflow-hidden focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-amber-600 rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 via-white to-emerald-50 shadow-sm', 'data-community-inquiry-notebook': true, 'data-focus-stages': 'explain transfer', 'aria-labelledby': 'community-inquiry-notebook-title' },
+                h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b border-amber-100 p-3 sm:p-4' },
+                  h('div', null, h('div', { className: 'text-[9px] font-black uppercase tracking-[0.16em] text-amber-700' }, 'Persistent learning record'), h('h3', { id: 'community-inquiry-notebook-title', className: 'text-sm font-black text-slate-900' }, 'Garden Science Notebook'), h('p', { className: 'mt-0.5 text-[10px] text-slate-600' }, 'Saved investigations remain here when you redesign the plots, so evidence can accumulate across trials.')),
+                  h('button', { onClick: function() { cgUpd({ showInquiryNotebook: !cgShowInquiryNotebook }); }, 'aria-expanded': cgShowInquiryNotebook, className: 'min-h-[38px] rounded-lg border border-amber-200 bg-white px-3 py-1.5 text-[9px] font-black text-amber-900 hover:bg-amber-50' }, cgShowInquiryNotebook ? 'Show latest two' : 'Show all ' + cgInquiryHistory.length)
+                ),
+                h('div', { className: 'grid grid-cols-3 gap-2 border-b border-amber-100 bg-white/70 p-3' },
+                  h('div', { className: 'rounded-xl border border-amber-100 bg-white p-2 text-center' }, h('div', { className: 'text-lg font-black text-amber-900' }, cgInquiryHistory.length), h('div', { className: 'text-[8px] font-black uppercase text-slate-500' }, 'Saved trials')),
+                  h('div', { className: 'rounded-xl border border-emerald-100 bg-white p-2 text-center', 'data-notebook-average-quality': inquiryNotebookAverageQuality }, h('div', { className: 'text-lg font-black text-emerald-800' }, inquiryNotebookAverageQuality + '%'), h('div', { className: 'text-[8px] font-black uppercase text-slate-500' }, 'Avg. evidence')),
+                  h('div', { className: 'rounded-xl border border-sky-100 bg-white p-2 text-center' }, h('div', { className: 'text-lg font-black text-sky-800' }, cgInquiryHistory.filter(function(record) { return record.confidence === 'high'; }).length), h('div', { className: 'text-[8px] font-black uppercase text-slate-500' }, 'Strong confidence'))
+                ),
+                h('div', { className: 'grid gap-3 p-3 md:grid-cols-2 xl:grid-cols-3', 'data-inquiry-notebook-entries': inquiryNotebookEntries.length }, inquiryNotebookEntries.map(function(record) {
+                  var recordPlant = CG_PLANTS[record.plantId];
+                  var recordConfidence = inquiryConfidenceOptions.filter(function(option) { return option.id === record.confidence; })[0] || inquiryConfidenceOptions[0];
+                  var recordAudience = inquiryAudienceOptions.filter(function(option) { return option.id === record.audience; })[0] || inquiryAudienceOptions[0];
+                  return h('article', { key: record.id || record.key, className: 'flex flex-col overflow-hidden rounded-xl border border-amber-200 bg-white shadow-sm', 'data-inquiry-notebook-entry': record.key },
+                    h('div', { className: 'flex items-start gap-2 border-b border-amber-100 bg-gradient-to-r from-amber-50 to-emerald-50 p-3' },
+                      h('span', { className: 'flex h-10 w-10 items-center justify-center rounded-xl bg-white text-xl shadow-sm', 'aria-hidden': true }, record.plantEmoji || (recordPlant && recordPlant.emoji) || '\uD83C\uDF31'),
+                      h('div', { className: 'min-w-0 flex-1' }, h('div', { className: 'text-[8px] font-black uppercase tracking-wide text-amber-700' }, 'Year ' + (record.year || 1) + ' \u2022 ' + (record.season || 'Garden season') + ' \u2022 Day ' + record.day), h('div', { className: 'mt-0.5 text-[11px] font-black text-slate-900' }, (record.plantLabel || (recordPlant && recordPlant.label) || 'Plant') + ' \u2022 Plot ' + (record.plot + 1)), h('div', { className: 'mt-0.5 text-[9px] text-slate-500' }, record.predictionLabel)),
+                      h('span', { className: 'rounded-full px-2 py-1 text-[8px] font-black ' + (record.supported ? 'bg-emerald-600 text-white' : 'bg-amber-200 text-amber-950') }, record.supported ? 'Supported' : 'Revise')
+                    ),
+                    h('div', { className: 'flex-1 p-3' },
+                      h('p', { className: 'text-[10px] font-semibold leading-relaxed text-slate-700' }, record.conclusion),
+                      h('div', { className: 'mt-2 flex flex-wrap gap-1.5' },
+                        h('span', { className: 'rounded-full bg-emerald-100 px-2 py-1 text-[8px] font-black text-emerald-800' }, (record.quality || 0) + '% evidence'),
+                        h('span', { className: 'rounded-full bg-sky-100 px-2 py-1 text-[8px] font-black text-sky-800' }, recordConfidence.icon + ' ' + (record.confidenceLabel || recordConfidence.label)),
+                        h('span', { className: 'rounded-full bg-violet-100 px-2 py-1 text-[8px] font-black text-violet-800' }, (record.observations || 0) + ' observation' + (record.observations === 1 ? '' : 's')),
+                        h('span', { className: 'rounded-full bg-amber-100 px-2 py-1 text-[8px] font-black text-amber-900', 'data-notebook-audience': recordAudience.id }, recordAudience.icon + ' ' + (record.audienceLabel || recordAudience.label))
+                      ),
+                      h('div', { className: 'mt-3 rounded-lg border border-violet-100 bg-violet-50 p-2', 'data-notebook-next-step': record.nextStep }, h('div', { className: 'text-[8px] font-black uppercase text-violet-700' }, 'Next investigation'), h('div', { className: 'mt-0.5 text-[9px] font-black text-slate-800' }, record.nextStepLabel), record.nextStepDetail && h('p', { className: 'mt-0.5 text-[8px] leading-relaxed text-slate-600' }, record.nextStepDetail)),
+                      record.communication && h('details', { className: 'mt-2 rounded-lg border border-amber-100 bg-amber-50 p-2', 'data-notebook-communication': recordAudience.id }, h('summary', { className: 'cursor-pointer text-[8px] font-black uppercase text-amber-800' }, 'Audience-ready explanation'), h('p', { className: 'mt-1 text-[9px] leading-relaxed text-slate-700' }, record.communication))
+                    )
+                  );
+                }))
+              ),
+
+              (plantedCells > 0 || cgInquiryHistory.length > 0) && h('section', { id: 'community-evidence-portfolio', tabIndex: -1, className: 'scroll-mt-4 overflow-hidden rounded-2xl border border-violet-200 bg-gradient-to-br from-violet-50 via-white to-emerald-50 shadow-lg focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-violet-600', 'data-community-evidence-portfolio': cgPortfolioReadiness, 'data-focus-stages': 'explain transfer', 'aria-labelledby': 'community-evidence-portfolio-title' },
+                h('div', { className: 'flex flex-wrap items-start justify-between gap-3 bg-gradient-to-r from-violet-950 via-indigo-950 to-emerald-950 p-4 text-white' },
+                  h('div', { className: 'flex max-w-3xl items-start gap-3' },
+                    h('span', { className: 'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-violet-200 text-xl text-violet-950', 'aria-hidden': true }, '\uD83D\uDCC1'),
+                    h('div', null,
+                      h('div', { className: 'text-xs font-black uppercase tracking-[0.14em] text-violet-200' }, 'Learning artifact'),
+                      h('h3', { id: 'community-evidence-portfolio-title', className: 'text-base font-black text-white' }, 'Student Evidence Portfolio'),
+                      h('p', { className: 'mt-1 text-xs leading-relaxed text-violet-100' }, 'Carry the garden design, measured observations, careful claim, rival explanation, and next test into one accessible investigation record.')
+                    )
+                  ),
+                  h('div', { className: 'min-w-[168px] rounded-xl border border-white/10 bg-white/10 p-2.5 text-center', 'data-portfolio-readiness': cgPortfolioReadiness },
+                    h('div', { className: 'text-xl font-black text-lime-200' }, cgPortfolioReadiness + '%'),
+                    h('div', { className: 'text-xs font-black uppercase tracking-wide text-white/70' }, cgPortfolioReadyCount + ' of ' + cgPortfolioReadinessItems.length + ' parts ready'),
+                    h('div', { className: 'mt-2 h-2 overflow-hidden rounded-full bg-black/30', role: 'progressbar', 'aria-label': 'Evidence portfolio completeness', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': cgPortfolioReadiness }, h('div', { className: 'h-full rounded-full bg-gradient-to-r from-violet-300 to-lime-300', style: { width: cgPortfolioReadiness + '%' } }))
+                  )
+                ),
+                h('div', { className: 'grid gap-3 p-3 lg:grid-cols-[minmax(0,1.15fr)_minmax(250px,0.85fr)] sm:p-4' },
+                  h('article', { className: 'rounded-xl border border-violet-100 bg-white p-3 shadow-sm', 'data-portfolio-garden-design': true },
+                    h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+                      h('div', null, h('div', { className: 'text-xs font-black uppercase tracking-wide text-violet-700' }, 'Design snapshot'), h('h4', { className: 'text-sm font-black text-slate-900' }, cgPortfolioSeasonName + ' garden - Day ' + cgDay)),
+                      h('span', { className: 'rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-black text-emerald-900' }, plantedCells + '/16 active')
+                    ),
+                    h('div', { className: 'mt-3 grid grid-cols-4 gap-1.5', role: 'list', 'aria-label': 'Portfolio four by four garden design', 'data-portfolio-garden-grid': true }, cgGrid.map(function(cell, plotIndex) {
+                      var portfolioPlant = cell.plantId && CG_PLANTS[cell.plantId];
+                      return h('div', { key: plotIndex, className: 'flex min-h-[70px] min-w-0 flex-col items-center justify-center rounded-lg border p-1.5 text-center ' + (portfolioPlant ? 'border-emerald-200 bg-emerald-50' : 'border-dashed border-slate-300 bg-slate-50'), role: 'listitem', 'data-portfolio-plot': plotIndex + 1, 'data-portfolio-plant': cell.plantId || 'open', 'aria-label': 'Plot ' + (plotIndex + 1) + ': ' + (portfolioPlant ? portfolioPlant.label : 'Open') },
+                        h('span', { className: 'text-lg', 'aria-hidden': true }, portfolioPlant ? portfolioPlant.emoji : '\u00B7'),
+                        h('span', { className: 'mt-0.5 text-xs font-black text-slate-800' }, portfolioPlant ? portfolioPlant.label : 'Open'),
+                        h('span', { className: 'text-[10px] font-bold text-slate-500' }, 'Plot ' + (plotIndex + 1))
+                      );
+                    })),
+                    h('div', { className: 'mt-3 grid grid-cols-3 gap-2 text-center' },
+                      h('div', { className: 'rounded-lg bg-violet-50 p-2', 'data-portfolio-design-metric': 'crops' }, h('div', { className: 'text-base font-black text-violet-900' }, fieldCropGroups.length), h('div', { className: 'text-xs font-bold text-slate-600' }, 'Crop types')),
+                      h('div', { className: 'rounded-lg bg-emerald-50 p-2', 'data-portfolio-design-metric': 'relationships' }, h('div', { className: 'text-base font-black text-emerald-900' }, fieldHelpfulRelationships.length), h('div', { className: 'text-xs font-bold text-slate-600' }, 'Helpful links')),
+                      h('div', { className: 'rounded-lg bg-amber-50 p-2', 'data-portfolio-design-metric': 'conflicts' }, h('div', { className: 'text-base font-black text-amber-900' }, harmfulPairCount), h('div', { className: 'text-xs font-bold text-slate-600' }, 'Conflicts'))
+                    )
+                  ),
+                  h('article', { className: 'rounded-xl border border-violet-100 bg-white p-3 shadow-sm', 'data-portfolio-checklist': true },
+                    h('div', { className: 'text-xs font-black uppercase tracking-wide text-violet-700' }, 'Artifact checklist'),
+                    h('h4', { className: 'text-sm font-black text-slate-900' }, cgPortfolioReadiness === 100 ? 'Ready to share and revisit' : 'Build the record as you investigate'),
+                    h('div', { className: 'mt-3 space-y-2', role: 'list', 'aria-label': 'Evidence portfolio parts' }, cgPortfolioReadinessItems.map(function(item) {
+                      return h('div', { key: item.id, className: 'flex min-h-[52px] items-center gap-2 rounded-lg border p-2 ' + (item.complete ? 'border-emerald-200 bg-emerald-50' : 'border-slate-200 bg-slate-50'), role: 'listitem', 'data-portfolio-part': item.id, 'data-part-status': item.complete ? 'ready' : 'building' },
+                        h('span', { className: 'flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-black ' + (item.complete ? 'bg-emerald-700 text-white' : 'bg-slate-200 text-slate-700'), 'aria-hidden': true }, item.complete ? '\u2713' : '\u2022'),
+                        h('span', { className: 'min-w-0 flex-1' }, h('span', { className: 'block text-xs font-black text-slate-900' }, item.label), h('span', { className: 'block text-xs leading-relaxed text-slate-600' }, item.detail))
+                      );
+                    }))
+                  )
+                ),
+                cgShowEvidencePortfolio && h('div', { id: 'community-evidence-portfolio-preview', className: 'border-t border-violet-100 bg-white/80 p-3 sm:p-4', 'data-portfolio-preview': true, role: 'region', 'aria-labelledby': 'community-evidence-portfolio-preview-title' },
+                  h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', null, h('div', { className: 'text-xs font-black uppercase tracking-wide text-violet-700' }, 'Portfolio preview'), h('h4', { id: 'community-evidence-portfolio-preview-title', className: 'text-sm font-black text-slate-900' }, 'The investigation story in one place')), h('span', { className: 'rounded-full bg-violet-100 px-2.5 py-1 text-xs font-black text-violet-900' }, 'Plain text + print-ready')),
+                  h('div', { className: 'mt-3 grid gap-3 lg:grid-cols-2' },
+                    h('article', { className: 'rounded-xl border border-sky-200 bg-sky-50 p-3', 'data-portfolio-section': 'observation' }, h('div', { className: 'text-xs font-black uppercase text-sky-800' }, 'Observation'), h('p', { className: 'mt-1 text-sm leading-relaxed text-slate-800' }, cgPortfolioObservationText), cgPortfolioLatestRecord && h('div', { className: 'mt-2 inline-flex rounded-full bg-white px-2 py-1 text-xs font-black text-sky-900' }, (cgPortfolioLatestRecord.quality || 0) + '% evidence quality')),
+                    h('article', { className: 'rounded-xl border border-emerald-200 bg-emerald-50 p-3', 'data-portfolio-section': 'claim' }, h('div', { className: 'text-xs font-black uppercase text-emerald-800' }, 'Claim + evidence'), h('p', { className: 'mt-1 text-sm font-semibold leading-relaxed text-slate-900' }, cgPortfolioClaimText), h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-700' }, cgPortfolioEvidenceText)),
+                    h('article', { className: 'rounded-xl border border-orange-200 bg-orange-50 p-3', 'data-portfolio-section': 'next-test' }, h('div', { className: 'text-xs font-black uppercase text-orange-800' }, 'Rival check + next test'), h('p', { className: 'mt-1 text-sm font-semibold leading-relaxed text-slate-900' }, inquiryPatternTrials.length >= 2 ? inquiryRivalPriority.label : 'More matching trials needed'), h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-700' }, cgPortfolioNextTestText)),
+                    h('article', { className: 'rounded-xl border border-teal-200 bg-teal-50 p-3', 'data-portfolio-section': 'transfer' }, h('div', { className: 'text-xs font-black uppercase text-teal-800' }, 'Real-garden transfer'), h('p', { className: 'mt-1 text-sm font-semibold leading-relaxed text-slate-900' }, cgPortfolioTransferText), h('p', { className: 'mt-2 text-xs leading-relaxed text-slate-700' }, 'Verify spacing, local timing, sunlight, soil, allergies, and garden rules before planting.'))
+                  ),
+                  h('label', { className: 'mt-3 block text-xs font-black text-slate-800', htmlFor: 'community-evidence-portfolio-text' }, 'Accessible portfolio text'),
+                  h('p', { id: 'community-evidence-portfolio-text-help', className: 'mt-1 text-xs leading-relaxed text-slate-600' }, 'Select this text manually if clipboard access is unavailable.'),
+                  h('textarea', { id: 'community-evidence-portfolio-text', value: cgEvidencePortfolioText, readOnly: true, rows: 16, onFocus: function(event) { if (event.target && event.target.select) event.target.select(); }, 'aria-describedby': 'community-evidence-portfolio-text-help', className: 'mt-2 w-full rounded-xl border border-slate-300 bg-white p-3 font-mono text-xs leading-relaxed text-slate-900 focus:border-violet-600 focus:ring-2 focus:ring-violet-200', 'data-portfolio-text': true })
+                ),
+                h('div', { className: 'flex flex-wrap items-center gap-2 border-t border-violet-100 bg-violet-50/70 p-3 sm:px-4', role: 'group', 'aria-label': 'Evidence portfolio actions', 'data-portfolio-actions': true },
+                  h('button', { onClick: function() { cgUpd({ showEvidencePortfolio: !cgShowEvidencePortfolio, evidencePortfolioStatus: '' }); }, 'aria-expanded': cgShowEvidencePortfolio, 'aria-controls': 'community-evidence-portfolio-preview', className: 'min-h-[44px] rounded-xl border border-violet-300 bg-white px-3 py-2 text-xs font-black text-violet-900 hover:bg-violet-100', 'data-portfolio-action': 'preview' }, cgShowEvidencePortfolio ? 'Close portfolio preview' : 'Preview full portfolio'),
+                  h('button', { onClick: cgCopyEvidencePortfolio, className: 'min-h-[44px] rounded-xl bg-violet-700 px-3 py-2 text-xs font-black text-white shadow-sm hover:bg-violet-800', 'data-portfolio-action': 'copy' }, '\uD83D\uDCCB Copy accessible text'),
+                  h('button', { onClick: cgPrintEvidencePortfolio, className: 'min-h-[44px] rounded-xl bg-emerald-700 px-3 py-2 text-xs font-black text-white shadow-sm hover:bg-emerald-800', 'data-portfolio-action': 'print', 'aria-label': 'Open print-ready evidence portfolio' }, '\uD83D\uDDA8 Print or save as PDF'),
+                  cgEvidencePortfolioStatus && h('p', { className: 'min-w-[220px] flex-1 text-xs font-bold text-slate-700', role: 'status', 'aria-live': 'polite', 'aria-atomic': true, 'data-portfolio-status': cgEvidencePortfolioStatus }, ({ copied: 'Portfolio copied. Review it before sharing.', manual: 'Portfolio text is open for manual copying.', 'print-opened': 'Print-ready portfolio opened in a new window.', 'print-unavailable': 'Print view is unavailable or blocked.' }[cgEvidencePortfolioStatus] || 'Portfolio action updated.'))
+                ),
+                h('p', { className: 'border-t border-amber-200 bg-amber-50 px-4 py-3 text-xs leading-relaxed text-amber-950', role: 'note', 'data-portfolio-model-boundary': true }, h('strong', null, 'Model boundary: '), 'The portfolio records what happened in this simulation. It does not prove causation or guarantee that a real garden will respond the same way.')
+              ),
+              plantedCells > 0 && h('section', { id: 'community-field-guide', tabIndex: -1, className: 'scroll-mt-4 overflow-hidden focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-teal-300 rounded-2xl border border-teal-200 bg-gradient-to-br from-teal-950 via-emerald-950 to-slate-950 text-white shadow-lg', 'data-community-field-guide': true, 'data-focus-stages': 'transfer', 'aria-labelledby': 'community-field-guide-title' },
+                h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b border-white/10 p-4' },
+                  h('div', null, h('div', { className: 'text-[9px] font-black uppercase tracking-[0.17em] text-lime-200' }, 'Simulation \u2192 planting day'), h('h3', { id: 'community-field-guide-title', className: 'text-base font-black text-white' }, 'Take This Garden Outside'), h('p', { className: 'mt-1 max-w-2xl text-[10px] leading-relaxed text-teal-100' }, 'Translate the live 4\u00D74 design into a field plan while checking spacing, site conditions, and care decisions the simulation cannot know.')),
+                  h('div', { className: 'min-w-[160px] rounded-xl border border-white/10 bg-white/10 p-2 text-center', 'data-field-readiness': fieldReadinessScore },
+                    h('div', { className: 'text-xl font-black text-lime-200' }, fieldReadinessScore + '%'),
+                    h('div', { className: 'text-[8px] font-black uppercase tracking-wide text-white/60' }, 'Transfer readiness'),
+                    h('div', { className: 'mt-1 h-1.5 overflow-hidden rounded-full bg-black/30', role: 'progressbar', 'aria-label': 'Real garden transfer readiness', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': fieldReadinessScore }, h('div', { className: 'h-full rounded-full bg-gradient-to-r from-teal-300 to-lime-300', style: { width: fieldReadinessScore + '%' } }))
+                  )
+                ),
+                h('div', { className: 'grid gap-3 border-b border-white/10 p-3 lg:grid-cols-2' },
+                  h('div', { className: 'rounded-xl border border-white/10 bg-white/5 p-3' },
+                    h('div', { className: 'text-[8px] font-black uppercase tracking-wide text-teal-200' }, 'Where will this design go?'),
+                    h('div', { className: 'mt-2 grid grid-cols-3 gap-1.5', role: 'group', 'aria-label': 'Choose a real garden context' }, fieldContextOptions.map(function(option) {
+                      var selected = selectedFieldContext.id === option.id;
+                      return h('button', { key: option.id, onClick: function() { cgUpd({ fieldContext: option.id, fieldChecklist: {} }); }, 'aria-pressed': selected, 'data-field-context': option.id, className: 'min-h-[72px] rounded-xl border p-2 text-left transition-all ' + (selected ? 'border-teal-200 bg-teal-200 text-teal-950' : 'border-white/10 bg-black/15 text-white hover:border-teal-300/50') }, h('div', { className: 'text-lg', 'aria-hidden': true }, option.icon), h('div', { className: 'mt-1 text-[9px] font-black' }, option.label));
+                    })),
+                    h('p', { className: 'mt-2 rounded-lg border border-teal-300/20 bg-teal-300/10 p-2 text-[9px] leading-relaxed text-teal-100' }, selectedFieldContext.guidance)
+                  ),
+                  h('div', { className: 'rounded-xl border border-white/10 bg-white/5 p-3' },
+                    h('div', { className: 'text-[8px] font-black uppercase tracking-wide text-lime-200' }, 'What matters most?'),
+                    h('div', { className: 'mt-2 grid grid-cols-2 gap-1.5', role: 'group', 'aria-label': 'Choose a field plan priority' }, fieldPriorityOptions.map(function(option) {
+                      var selected = selectedFieldPriority.id === option.id;
+                      return h('button', { key: option.id, onClick: function() { cgUpd({ fieldPriority: option.id }); }, 'aria-pressed': selected, 'data-field-priority': option.id, className: 'min-h-[58px] rounded-xl border p-2 text-left transition-all ' + (selected ? 'border-lime-200 bg-lime-200 text-lime-950' : 'border-white/10 bg-black/15 text-white hover:border-lime-300/50') }, h('span', { className: 'mr-1', 'aria-hidden': true }, option.icon), h('span', { className: 'text-[9px] font-black' }, option.label), h('span', { className: 'mt-0.5 block text-[8px] leading-snug opacity-75' }, option.detail));
+                    }))
+                  )
+                ),
+                h('div', { className: 'grid gap-3 p-3 xl:grid-cols-[1.1fr_0.9fr]' },
+                  h('div', { className: 'space-y-3' },
+                    h('div', { className: 'rounded-xl border border-white/10 bg-white/5 p-3' },
+                      h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', null, h('div', { className: 'text-[8px] font-black uppercase tracking-wide text-teal-200' }, 'Live plot recipe'), h('h4', { className: 'text-[11px] font-black text-white' }, fieldCropCount + ' crop position' + (fieldCropCount === 1 ? '' : 's') + ' \u2022 ' + fieldCropGroups.length + ' crop types')), h('span', { className: 'rounded-full bg-white/10 px-2 py-1 text-[8px] font-black text-white/70' }, 'From the current 4\u00D74 map')),
+                      h('div', { className: 'mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3', 'data-field-crop-list': fieldCropGroups.length }, fieldCropGroups.map(function(group) { return h('div', { key: group.id, className: 'rounded-xl border border-white/10 bg-black/15 p-2', 'data-field-crop': group.id },
+                        h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'text-lg', 'aria-hidden': true }, group.plant.emoji), h('span', { className: 'rounded-full bg-teal-200 px-1.5 py-0.5 text-[8px] font-black text-teal-950' }, '\u00D7' + group.count)),
+                        h('div', { className: 'mt-1 text-[9px] font-black text-white' }, group.plant.label),
+                        h('div', { className: 'mt-0.5 text-[8px] text-teal-100' }, group.role)
+                      ); }))
+                    ),
+                    h('div', { className: 'rounded-xl border border-white/10 bg-white/5 p-3' },
+                      h('div', { className: 'text-[8px] font-black uppercase tracking-wide text-lime-200' }, 'Relationships to preserve'),
+                      fieldHelpfulRelationships.length
+                        ? h('div', { className: 'mt-2 grid gap-2 sm:grid-cols-2' }, fieldHelpfulRelationships.slice(0, 4).map(function(relationship) {
+                            var firstPlant = CG_PLANTS[relationship.a];
+                            var secondPlant = CG_PLANTS[relationship.b];
+                            return h('div', { key: relationship.a + '-' + relationship.b + '-' + relationship.desc, className: 'rounded-lg border border-lime-300/20 bg-lime-300/10 p-2', 'data-field-relationship': relationship.a + '-' + relationship.b }, h('div', { className: 'text-[9px] font-black text-white' }, (firstPlant ? firstPlant.emoji + ' ' + firstPlant.label : relationship.a) + ' + ' + (secondPlant ? secondPlant.emoji + ' ' + secondPlant.label : relationship.b)), h('p', { className: 'mt-0.5 text-[8px] leading-relaxed text-lime-100' }, relationship.desc));
+                          }))
+                        : h('p', { className: 'mt-2 rounded-lg border border-amber-300/20 bg-amber-300/10 p-2 text-[9px] text-amber-100' }, 'No modeled helpful neighbor pair is active yet. Use the Relationship Lens before transferring the layout.')
+                    )
+                  ),
+                  h('div', { className: 'space-y-3' },
+                    h('div', { className: 'rounded-xl border border-white/10 bg-white/5 p-3' },
+                      h('div', { className: 'text-[8px] font-black uppercase tracking-wide text-cyan-200' }, 'Readiness signals'),
+                      h('div', { className: 'mt-2 grid grid-cols-2 gap-1.5' }, fieldReadinessChecks.map(function(check) { return h('div', { key: check.id, className: 'rounded-lg border p-2 ' + (check.complete ? 'border-emerald-300/25 bg-emerald-300/10' : 'border-amber-300/25 bg-amber-300/10'), 'data-field-readiness-check': check.id, 'data-check-status': check.complete ? 'ready' : 'review' }, h('div', { className: 'flex items-center justify-between gap-1' }, h('span', { className: 'text-[8px] font-black text-white' }, check.label), h('span', { className: 'text-[8px] font-black ' + (check.complete ? 'text-emerald-200' : 'text-amber-200') }, check.complete ? '\u2713' : 'REVIEW')), h('div', { className: 'mt-0.5 text-[8px] text-white/60' }, check.detail)); }))
+                    ),
+                    h('div', { className: 'rounded-xl border border-white/10 bg-white/5 p-3' },
+                      h('div', { className: 'text-[8px] font-black uppercase tracking-wide text-amber-200' }, 'Bring on planting day'),
+                      h('div', { className: 'mt-2 grid grid-cols-2 gap-1.5' }, fieldMaterials.map(function(material) { return h('div', { key: material.id, className: 'rounded-lg border border-white/10 bg-black/15 p-2', 'data-field-material': material.id }, h('div', { className: 'text-[9px] font-black text-white' }, h('span', { className: 'mr-1', 'aria-hidden': true }, material.icon), material.label), h('div', { className: 'mt-0.5 text-[8px] leading-snug text-white/60' }, material.detail)); }))
+                    )
+                  )
+                ),
+                h('div', { className: 'border-t border-white/10 bg-black/10 p-3', 'data-field-planting-sequence': true },
+                  h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', null, h('div', { className: 'text-[8px] font-black uppercase tracking-wide text-teal-200' }, 'Planting-day sequence'), h('h4', { className: 'text-[11px] font-black text-white' }, fieldChecklistComplete + '/4 steps checked')), fieldChecklistComplete > 0 && h('button', { onClick: function() { cgUpd({ fieldChecklist: {} }); }, className: 'min-h-[34px] rounded-lg border border-white/10 bg-white/10 px-2.5 py-1 text-[8px] font-black text-white hover:bg-white/20' }, 'Reset checklist')),
+                  h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-4' }, fieldSequence.map(function(step) {
+                    var complete = !!cgFieldChecklist[step.id];
+                    return h('button', { key: step.id, onClick: function() { var nextChecklist = Object.assign({}, cgFieldChecklist); nextChecklist[step.id] = !complete; cgUpd({ fieldChecklist: nextChecklist }); }, 'aria-pressed': complete, 'data-field-step': step.id, className: 'min-h-[116px] rounded-xl border p-3 text-left transition-all ' + (complete ? 'border-lime-300 bg-lime-300 text-lime-950' : 'border-white/10 bg-white/5 text-white hover:border-teal-300/50') },
+                      h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'flex h-7 w-7 items-center justify-center rounded-full text-[10px] font-black ' + (complete ? 'bg-lime-950 text-lime-200' : 'bg-teal-200 text-teal-950') }, complete ? '\u2713' : step.number), h('span', { className: 'text-[8px] font-black uppercase opacity-60' }, complete ? 'Checked' : 'Tap when done')),
+                      h('div', { className: 'mt-2 text-[10px] font-black' }, step.title),
+                      h('div', { className: 'mt-1 text-[8px] leading-relaxed opacity-80' }, step.detail)
+                    );
+                  }))
+                ),
+                h('div', { className: 'flex flex-wrap items-center gap-3 border-t border-white/10 bg-amber-300/10 p-3', 'data-field-transfer-caution': true },
+                  h('span', { className: 'text-xl', 'aria-hidden': true }, '\uD83E\uDDED'),
+                  h('div', { className: 'min-w-[210px] flex-1' }, h('div', { className: 'text-[9px] font-black text-amber-100' }, 'Treat the simulation as a planning hypothesis'), h('p', { className: 'mt-0.5 text-[8px] leading-relaxed text-amber-100/80' }, 'Before planting, verify mature spacing, local season timing, sun exposure, soil tests, allergies, and school or community-garden rules. Companion relationships vary with cultivar and care.')),
+                  h('div', { className: 'flex flex-wrap gap-2' },
+                    h('button', { onClick: function() { cgUpd({ phase: 'plan', plantFilter: selectedFieldPriority.filter, lastFeedback: { icon: selectedFieldPriority.icon, title: selectedFieldPriority.label + ' priority active', detail: 'The Seed Shelf now matches this field-plan priority. Refine the 4\u00D74 design before planting outside.', tone: 'info' } }); }, className: 'min-h-[38px] rounded-lg bg-teal-200 px-3 py-1.5 text-[9px] font-black text-teal-950 hover:bg-teal-100' }, 'Tune simulation for this priority'),
+                    firstOpenFieldPlot >= 0 && h('button', { onClick: function() { cgUpd({ phase: 'plan', plantingTarget: firstOpenFieldPlot, selectedPlant: null, relationshipFocus: null, lastFeedback: { icon: '\uD83E\uDEB4', title: 'Next open plot focused', detail: 'Plot ' + (firstOpenFieldPlot + 1) + ' is selected. Choose a crop from the in-garden Planting Dock.', tone: 'info' } }); }, className: 'min-h-[38px] rounded-lg border border-white/15 bg-white/10 px-3 py-1.5 text-[9px] font-black text-white hover:bg-white/20' }, 'Refine next open plot')
+                  )
+                )
+              ),
+
+              plantedCells > 0 && h('section', { className: 'overflow-hidden rounded-2xl border border-orange-200 bg-gradient-to-br from-orange-50 via-white to-amber-50 shadow-sm', 'data-community-neighbors': true, 'data-focus-stages': 'design explain', 'aria-labelledby': 'community-neighbors-title' },
                 h('div', { className: 'flex flex-wrap items-center justify-between gap-3 border-b border-orange-100 p-3' },
                   h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.15em] text-orange-700' }, 'Community voices'), h('h3', { id: 'community-neighbors-title', className: 'text-sm font-black text-slate-900' }, communityImpact >= 80 ? 'The garden is becoming a neighborhood asset' : 'Neighbors are rooting for this garden'), h('p', { className: 'mt-0.5 text-[11px] text-slate-600' }, 'Garden choices create food, habitat, and healthier soil. Hear what the community notices next.')),
-                  h('div', { className: 'min-w-[132px] rounded-xl border border-orange-200 bg-white p-2 text-center shadow-sm' }, h('div', { className: 'text-[9px] font-black uppercase text-orange-700' }, 'Community impact'), h('div', { className: 'text-xl font-black text-orange-900' }, communityImpact + '%'), h('div', { className: 'mt-1 h-1.5 overflow-hidden rounded-full bg-orange-100', role: 'progressbar', 'aria-label': 'Community garden impact', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': communityImpact }, h('div', { className: 'h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-400 transition-all', style: { width: communityImpact + '%' } })))
+                  h('div', { className: 'min-w-[132px] rounded-xl border border-orange-200 bg-white p-2 text-center shadow-sm' }, h('div', { className: 'text-[9px] font-black uppercase text-orange-700' }, 'Community impact'), h('div', { className: 'text-xl font-black text-orange-900' }, communityImpact + '%'), h('div', { className: 'mt-1 h-1.5 overflow-hidden rounded-full bg-orange-100', role: 'progressbar', 'aria-label': 'Community garden impact', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': communityImpact }, h('div', { className: 'h-full rounded-full bg-gradient-to-r from-orange-600 to-amber-700 transition-all', style: { width: communityImpact + '%' } })))
                 ),
                 h('div', { className: 'grid gap-3 p-3 md:grid-cols-2 xl:grid-cols-3' }, communityVoices.map(function(voice) { return h('article', { key: voice.id, className: 'flex flex-col rounded-xl border p-3 ' + (voice.complete ? 'border-emerald-300 bg-emerald-50' : 'border-orange-100 bg-white') },
                   h('div', { className: 'flex items-center gap-2' }, h('span', { className: 'flex h-9 w-9 items-center justify-center rounded-full bg-white text-lg shadow-sm', 'aria-hidden': true }, voice.icon), h('div', { className: 'min-w-0 flex-1' }, h('div', { className: 'text-xs font-black text-slate-900' }, voice.name), h('div', { className: 'text-[9px] font-bold uppercase tracking-wide text-slate-500' }, voice.role)), h('span', { className: 'rounded-full px-2 py-1 text-[9px] font-black ' + (voice.complete ? 'bg-emerald-600 text-white' : 'bg-orange-100 text-orange-800') }, voice.complete ? 'Request met' : voice.progress + '/' + voice.target)),
                   h('p', { className: 'mt-2 flex-1 text-[11px] leading-relaxed text-slate-700' }, '\u201C' + voice.message + '\u201D'),
-                  h('div', { className: 'mt-2 h-1.5 overflow-hidden rounded-full bg-slate-100', role: 'progressbar', 'aria-label': voice.name + ' request progress', 'aria-valuemin': 0, 'aria-valuemax': voice.target, 'aria-valuenow': voice.progress }, h('div', { className: 'h-full rounded-full ' + (voice.complete ? 'bg-emerald-500' : 'bg-orange-400'), style: { width: Math.round(voice.progress / voice.target * 100) + '%' } })),
+                  h('div', { className: 'mt-2 h-1.5 overflow-hidden rounded-full bg-slate-100', role: 'progressbar', 'aria-label': voice.name + ' request progress', 'aria-valuemin': 0, 'aria-valuemax': voice.target, 'aria-valuenow': voice.progress }, h('div', { className: 'h-full rounded-full ' + (voice.complete ? 'bg-emerald-600' : 'bg-orange-600'), style: { width: Math.round(voice.progress / voice.target * 100) + '%' } })),
                   !voice.complete && h('button', { onClick: voice.onClick, className: 'mt-2 self-start rounded-lg bg-orange-100 px-2.5 py-1.5 text-[10px] font-black text-orange-900 hover:bg-orange-200' }, voice.action)
                 ); }))
               ),
 
-              cgPhase === 'grow' && h('section', { className: 'rounded-2xl border border-cyan-200 bg-gradient-to-r from-cyan-50 via-white to-sky-50 p-3 shadow-sm sm:p-4', 'data-community-forecast': true, 'aria-labelledby': 'community-forecast-title' },
+              cgPhase === 'grow' && h('section', { className: 'rounded-2xl border border-cyan-200 bg-gradient-to-r from-cyan-50 via-white to-sky-50 p-3 shadow-sm sm:p-4', 'data-community-forecast': true, 'data-focus-stages': 'observe', 'aria-labelledby': 'community-forecast-title' },
                 h('div', { className: 'grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto]' },
                   h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.15em] text-cyan-700' }, 'Decision preview'), h('h3', { id: 'community-forecast-title', className: 'text-sm font-black text-slate-900' }, 'Tomorrow in the Garden'), h('div', { className: 'mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3' },
                     [{ label: 'Moisture', value: forecastMoisture + '%', sub: '-' + forecastMoistureLoss.toFixed(1) + '% expected' }, { label: 'Growth', value: forecastGrowth, sub: ['Spring','Summer','Autumn','Winter'][cgSeason] + ' conditions' }, { label: 'Pest risk', value: forecastPestRisk, sub: cgBeneficialPop >= 10 ? 'Beneficial insects active' : 'Watch crop health' }].map(function(item) { return h('div', { key: item.label, className: 'rounded-xl border border-white bg-white p-2 shadow-sm' }, h('div', { className: 'text-[10px] font-black uppercase text-slate-500' }, item.label), h('div', { className: 'mt-0.5 text-[11px] font-black text-slate-800' }, item.value), h('div', { className: 'mt-0.5 text-[10px] leading-snug text-slate-500' }, item.sub)); })
@@ -4864,18 +6856,18 @@ var d = (labToolData.companionPlanting) || {};
                 )
               ),
 
-              plantedCells > 0 && h('section', { className: 'rounded-2xl border border-emerald-200 bg-gradient-to-br from-white to-emerald-50 p-3 shadow-sm sm:p-4', 'data-community-season-goals': true, 'aria-labelledby': 'season-goals-title' },
+              plantedCells > 0 && h('section', { className: 'rounded-2xl border border-emerald-200 bg-gradient-to-br from-white to-emerald-50 p-3 shadow-sm sm:p-4', 'data-community-season-goals': true, 'data-focus-stages': 'observe', 'aria-labelledby': 'season-goals-title' },
                 h('div', { className: 'flex flex-wrap items-center justify-between gap-3' }, h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.15em] text-emerald-600' }, 'Season challenge'), h('h3', { id: 'season-goals-title', className: 'text-sm font-black text-slate-900' }, seasonGoalProgress === 100 ? 'Season ecosystem goals complete!' : 'Build a thriving garden'), h('p', { className: 'mt-0.5 text-[11px] text-slate-600' }, 'Complete all five goals through thoughtful garden design and care.')), h('div', { className: 'text-right' }, h('div', { className: 'text-xl font-black text-emerald-700' }, seasonGoalProgress + '%'), h('div', { className: 'text-[9px] font-bold text-slate-500' }, seasonGoals.filter(function(goal) { return goal.value >= goal.target; }).length + '/5 complete'))),
                 h('div', { className: 'mt-3 h-2 overflow-hidden rounded-full bg-emerald-100', role: 'progressbar', 'aria-label': 'Season ecosystem goals progress', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': seasonGoalProgress }, h('div', { className: 'h-full rounded-full bg-gradient-to-r from-emerald-500 to-lime-400 transition-all', style: { width: seasonGoalProgress + '%' } })),
                 h('div', { className: 'mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5' }, seasonGoals.map(function(goal) { var complete = goal.value >= goal.target; return h('div', { key: goal.id, className: 'rounded-xl border p-2 ' + (complete ? 'border-emerald-300 bg-emerald-50' : 'border-slate-200 bg-white') }, h('div', { className: 'flex items-center justify-between gap-1' }, h('span', { className: 'text-lg', 'aria-hidden': true }, goal.icon), h('span', { className: 'rounded-full px-1.5 py-0.5 text-[9px] font-black ' + (complete ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600') }, complete ? 'Done' : goal.value + '/' + goal.target)), h('div', { className: 'mt-1 text-[11px] font-black leading-snug text-slate-800' }, goal.label), h('div', { className: 'mt-1 text-[10px] leading-relaxed text-slate-600' }, goal.tip), !complete && h('button', { onClick: goal.onClick, className: 'mt-2 min-h-[36px] rounded-lg bg-emerald-100 px-2.5 py-1.5 text-[10px] font-black text-emerald-800 hover:bg-emerald-200' }, goal.action)); }))
               ),
 
-              cgEventLog.length > 0 && h('section', { className: 'rounded-2xl border border-violet-200 bg-gradient-to-r from-violet-50 to-white p-3', 'data-community-activity-log': true, 'aria-labelledby': 'community-activity-title' },
+              cgEventLog.length > 0 && h('section', { className: 'rounded-2xl border border-violet-200 bg-gradient-to-r from-violet-50 to-white p-3', 'data-community-activity-log': true, 'data-focus-stages': 'observe', 'aria-labelledby': 'community-activity-title' },
                 h('div', { className: 'flex items-center justify-between gap-2' }, h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.15em] text-violet-600' }, 'Garden story'), h('h3', { id: 'community-activity-title', className: 'text-sm font-black text-slate-900' }, 'Recent activity')), h('button', { onClick: function() { cgUpd({ showActivityLog: !cg.showActivityLog }); }, 'aria-expanded': !!cg.showActivityLog, className: 'rounded-lg border border-violet-200 bg-white px-2 py-1 text-[10px] font-black text-violet-700' }, cg.showActivityLog ? 'Show less' : 'View timeline')),
                 h('div', { className: 'mt-3 grid gap-2 ' + (cg.showActivityLog ? 'sm:grid-cols-2' : 'sm:grid-cols-3') }, cgEventLog.slice().reverse().slice(0, cg.showActivityLog ? 8 : 3).map(function(entry, entryIndex) { return h('div', { key: (entry.ts || entryIndex) + '-' + entryIndex, className: 'flex items-start gap-2 rounded-xl border border-white bg-white p-2 shadow-sm' }, h('span', { className: 'flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-violet-50 text-sm', 'aria-hidden': true }, entry.icon || '\uD83C\uDF31'), h('div', { className: 'min-w-0 flex-1' }, h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'truncate text-[11px] font-black text-slate-800' }, entry.title || 'Garden update'), h('span', { className: 'shrink-0 text-[9px] font-bold text-violet-500' }, 'Day ' + ((entry.day || 0) % 30 + 1))), h('div', { className: 'mt-0.5 text-[9px] leading-relaxed text-slate-500' }, entry.detail || 'The garden changed.'))); }))
               ),
 
-              plantedCells > 0 && h('section', { className: 'rounded-2xl border border-slate-200 bg-white p-3 shadow-sm', 'data-community-garden-pulse': true, 'aria-labelledby': 'garden-pulse-title' },
+              plantedCells > 0 && h('section', { className: 'rounded-2xl border border-slate-200 bg-white p-3 shadow-sm', 'data-community-garden-pulse': true, 'data-focus-stages': 'observe', 'aria-labelledby': 'garden-pulse-title' },
                 h('div', { className: 'mb-2 flex items-center justify-between gap-2' }, h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.15em] text-slate-500' }, 'Live feedback'), h('h3', { id: 'garden-pulse-title', className: 'text-sm font-black text-slate-900' }, 'Garden Pulse')), h('span', { className: 'rounded-full px-2 py-1 text-[10px] font-black ' + (gardenPulse.some(function(item) { return item.level === 0; }) ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700') }, gardenPulse.some(function(item) { return item.level === 0; }) ? 'Action needed' : 'On track')),
                 gardenPulse.length ? h('div', { className: 'grid gap-2 sm:grid-cols-2' }, gardenPulse.slice(0, 4).map(function(item) {
                   var palette = { red: 'border-red-200 bg-red-50 text-red-800', blue: 'border-blue-200 bg-blue-50 text-blue-800', amber: 'border-amber-200 bg-amber-50 text-amber-800', purple: 'border-purple-200 bg-purple-50 text-purple-800', yellow: 'border-yellow-200 bg-yellow-50 text-yellow-900', green: 'border-emerald-200 bg-emerald-50 text-emerald-800' };
@@ -4903,7 +6895,7 @@ var d = (labToolData.companionPlanting) || {};
               })(),
 
               // ── Status bar ──
-              h('section', { className: 'overflow-hidden rounded-2xl bg-gradient-to-r text-white shadow-lg ' + seasonMeta.accent, 'data-community-season-deck': true, 'aria-labelledby': 'community-season-deck-title' },
+              h('section', { className: 'overflow-hidden rounded-2xl bg-gradient-to-r text-white shadow-lg ' + seasonMeta.accent, 'data-community-season-deck': true, 'data-focus-stages': 'observe', 'aria-labelledby': 'community-season-deck-title' },
                 h('div', { className: 'flex flex-wrap items-center justify-between gap-3 border-b border-white/10 p-4' },
                   h('div', { className: 'flex items-center gap-3' }, h('span', { className: 'flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 text-2xl ring-1 ring-white/15', 'aria-hidden': true }, seasonMeta.icon), h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.18em] text-white/70' }, 'Garden conditions'), h('h3', { id: 'community-season-deck-title', className: 'text-base font-black' }, seasonMeta.name + ' - Day ' + seasonDay), h('div', { className: 'text-[10px] text-white/70' }, 'Year ' + cgYear + ' \u2022 ' + (cgPhase === 'plan' ? 'Planning season' : 'Growing season')))),
                   h('span', { className: 'rounded-full bg-white/10 px-3 py-1.5 text-[10px] font-black ring-1 ring-white/15' }, plantedCells + '/16 plots active')
@@ -4919,7 +6911,7 @@ var d = (labToolData.companionPlanting) || {};
               ),
 
               // ── Seasonal Tip ──
-              plantedCells > 0 && h('section', { className: 'overflow-hidden rounded-2xl border border-teal-200 bg-gradient-to-br from-teal-950 via-emerald-950 to-slate-950 text-white shadow-lg', 'data-community-succession-calendar': true, 'aria-labelledby': 'community-succession-title' },
+              plantedCells > 0 && h('section', { className: 'overflow-hidden rounded-2xl border border-teal-200 bg-gradient-to-br from-teal-950 via-emerald-950 to-slate-950 text-white shadow-lg', 'data-community-succession-calendar': true, 'data-focus-stages': 'transfer', 'aria-labelledby': 'community-succession-title' },
                 h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b border-white/10 p-4' },
                   h('div', null,
                     h('div', { className: 'text-[10px] font-black uppercase tracking-[0.17em] text-teal-200' }, 'Seasonal succession'),
@@ -5065,7 +7057,7 @@ var d = (labToolData.companionPlanting) || {};
               })(),
 
               // ── Plant picker (plan phase) ──
-              cgPhase === 'plan' && plantedCells === 0 && h('section', { className: 'rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50 via-white to-emerald-50 p-4', 'data-community-starter-plans': true, 'aria-labelledby': 'starter-plans-title' },
+              cgPhase === 'plan' && plantedCells === 0 && h('section', { className: 'rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50 via-white to-emerald-50 p-4', 'data-community-starter-plans': true, 'data-focus-stages': 'design', 'aria-labelledby': 'starter-plans-title' },
                 h('div', { className: 'mb-3 flex flex-wrap items-end justify-between gap-2' }, h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-indigo-600' }, 'Quick start'), h('h3', { id: 'starter-plans-title', className: 'mt-1 text-base font-black text-slate-900' }, 'Choose a garden story'), h('p', { className: 'mt-1 text-xs text-slate-600' }, 'Start with a purposeful layout, then inspect, revise, and make it your own.')), h('span', { className: 'rounded-full bg-white px-2 py-1 text-[10px] font-bold text-slate-600 shadow-sm' }, 'Optional')),
                 h('div', { className: 'grid gap-2 sm:grid-cols-2 lg:grid-cols-4' }, starterPlans.map(function(plan) {
                   return h('button', { key: plan.id, onClick: function() { cgApplyStarterPlan(plan); }, className: 'group rounded-xl border border-white bg-white p-3 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-indigo-300 hover:shadow-md' },
@@ -5077,14 +7069,14 @@ var d = (labToolData.companionPlanting) || {};
                 }))
               ),
 
-              cgPhase === 'plan' && h('section', { className: 'overflow-hidden rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-lime-50 shadow-sm', 'data-community-seed-shelf': true, 'aria-labelledby': 'community-seed-shelf-title' },
-                h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b border-emerald-100 p-3 sm:p-4' }, h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-emerald-700' }, 'Planning palette'), h('h3', { id: 'community-seed-shelf-title', className: 'text-base font-black text-slate-900' }, 'Seed Shelf'), h('p', { className: 'mt-0.5 text-[11px] text-slate-600' }, 'Choose a crop first, or choose an open plot and use the in-garden Planting Dock.')), h('span', { className: 'rounded-full bg-white px-2.5 py-1 text-[10px] font-black text-emerald-800 shadow-sm' }, filteredPlantKeys.length + ' choice' + (filteredPlantKeys.length === 1 ? '' : 's'))),
+              cgPhase === 'plan' && h('section', { className: 'overflow-hidden rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-lime-50 shadow-sm', 'data-community-seed-shelf': true, 'data-focus-stages': 'design', 'aria-labelledby': 'community-seed-shelf-title' },
+                h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b border-emerald-100 p-3 sm:p-4' }, h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-emerald-700' }, 'Planning palette'), h('h3', { id: 'community-seed-shelf-title', className: 'text-base font-black text-slate-900' }, 'Seed Shelf'), h('p', { className: 'mt-0.5 text-[11px] text-slate-600' }, 'Choose a crop first, or choose an open plot and use the in-garden Planting Dock.')), h('span', { id: 'community-seed-results-status', className: 'rounded-full bg-white px-2.5 py-1 text-[10px] font-black text-emerald-900 shadow-sm', role: 'status', 'aria-live': 'polite', 'aria-atomic': true }, filteredPlantKeys.length + ' choice' + (filteredPlantKeys.length === 1 ? '' : 's'))),
                 h('div', { className: 'grid gap-3 p-3 sm:p-4 lg:grid-cols-[minmax(0,1fr)_280px]' },
-                  h('div', { className: 'flex gap-1.5 overflow-x-auto pb-1', role: 'group', 'aria-label': 'Filter plant catalog' }, filterOptions.map(function(filter) { var active = cgPlantFilter === filter.id; return h('button', { key: filter.id, onClick: function() { cgUpd({ plantFilter: filter.id }); }, 'aria-pressed': active, className: 'min-h-[40px] whitespace-nowrap rounded-full border px-3 py-1.5 text-[11px] font-bold transition-all ' + (active ? 'border-emerald-700 bg-emerald-700 text-white shadow-sm' : 'border-emerald-200 bg-white text-emerald-800 hover:border-emerald-400 hover:bg-emerald-50') }, h('span', { 'aria-hidden': true }, filter.icon + ' '), filter.label); })),
-                  h('label', { className: 'relative block' }, h('span', { className: 'sr-only' }, 'Search plant catalog'), h('span', { className: 'pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm', 'aria-hidden': true }, '\uD83D\uDD0E'), h('input', { type: 'search', value: cgPlantSearch, onChange: function(event) { cgUpd({ plantSearch: event.target.value }); }, placeholder: 'Search plants, families, or traits', 'aria-label': 'Search plant catalog', className: 'min-h-[44px] w-full rounded-xl border border-emerald-600 bg-white py-2 pl-9 pr-3 text-xs text-slate-800 outline-none transition-all placeholder:text-slate-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100' }))
+                  h('div', { className: 'flex gap-1.5 overflow-x-auto pb-1', role: 'group', 'aria-label': 'Filter plant catalog' }, filterOptions.map(function(filter) { var active = cgPlantFilter === filter.id; return h('button', { key: filter.id, onClick: function() { cgUpd({ plantFilter: filter.id }); }, 'aria-pressed': active, 'aria-controls': 'community-seed-results', className: 'min-h-[40px] whitespace-nowrap rounded-full border px-3 py-1.5 text-[11px] font-bold transition-all ' + (active ? 'border-emerald-700 bg-emerald-700 text-white shadow-sm' : 'border-emerald-200 bg-white text-emerald-800 hover:border-emerald-400 hover:bg-emerald-50') }, h('span', { 'aria-hidden': true }, filter.icon + ' '), filter.label); })),
+                  h('label', { className: 'relative block' }, h('span', { className: 'sr-only' }, 'Search plant catalog'), h('span', { id: 'community-seed-search-help', className: 'sr-only' }, 'Search results update automatically and the number of choices is announced.'), h('span', { className: 'pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm', 'aria-hidden': true }, '\uD83D\uDD0E'), h('input', { type: 'search', value: cgPlantSearch, onChange: function(event) { cgUpd({ plantSearch: event.target.value }); }, placeholder: 'Search plants, families, or traits', 'aria-label': 'Search plant catalog', 'aria-describedby': 'community-seed-search-help community-seed-results-status', 'aria-controls': 'community-seed-results', className: 'min-h-[44px] w-full rounded-xl border border-emerald-600 bg-white py-2 pl-9 pr-3 text-xs text-slate-800 outline-none transition-all placeholder:text-slate-500 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100' }))
                 ),
                 cgSelectedPlant && CG_PLANTS[cgSelectedPlant] && h('div', { className: 'mx-3 mb-3 flex flex-wrap items-center gap-3 rounded-xl border border-emerald-300 bg-emerald-700 p-3 text-white shadow-md sm:mx-4 sm:mb-4', role: 'status', 'aria-live': 'polite', 'data-community-selected-plant': true }, h('span', { className: 'flex h-11 w-11 items-center justify-center rounded-xl bg-white/15 text-2xl', 'aria-hidden': true }, CG_PLANTS[cgSelectedPlant].emoji), h('div', { className: 'min-w-0 flex-1' }, h('div', { className: 'text-[9px] font-black uppercase tracking-wide text-emerald-100' }, 'Ready to place'), h('div', { className: 'text-sm font-black' }, CG_PLANTS[cgSelectedPlant].label), h('div', { className: 'text-[10px] text-emerald-100' }, 'Choose any open plot in either garden view. Open plots preview this crop before placement.')), h('button', { onClick: function() { cgUpd({ selectedPlant: null }); }, className: 'rounded-lg bg-white/10 px-2.5 py-1.5 text-[10px] font-black text-white ring-1 ring-white/20 hover:bg-white/20', 'aria-label': 'Cancel selected plant' }, 'Cancel')),
-                h('div', { className: 'grid grid-cols-2 gap-2 px-3 pb-3 sm:grid-cols-3 sm:px-4 sm:pb-4 lg:grid-cols-4 xl:grid-cols-6' },
+                h('div', { id: 'community-seed-results', className: 'grid grid-cols-2 gap-2 px-3 pb-3 sm:grid-cols-3 sm:px-4 sm:pb-4 lg:grid-cols-4 xl:grid-cols-6', 'aria-label': 'Plant catalog results' },
                   filteredPlantKeys.map(function(key) {
                     var p = CG_PLANTS[key];
                     var selected = cgSelectedPlant === key;
@@ -5098,7 +7090,7 @@ var d = (labToolData.companionPlanting) || {};
                       className: 'group flex min-h-[68px] items-center gap-2 rounded-xl border p-2.5 text-left transition-all ' + (selected ? 'border-emerald-700 bg-emerald-700 text-white shadow-md ring-2 ring-emerald-300' : 'border-emerald-100 bg-white text-slate-700 shadow-sm hover:-translate-y-0.5 hover:border-emerald-400 hover:shadow-md')
                     }, h('span', { className: 'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border text-xl', style: selected ? { background: 'rgba(255,255,255,0.14)', borderColor: 'rgba(255,255,255,0.24)' } : { background: miniProfile.color + '12', borderColor: miniProfile.color + '35' }, 'aria-hidden': 'true' }, p.emoji), h('span', { className: 'min-w-0' }, h('span', { className: 'block truncate text-[11px] font-black' }, p.label), h('span', { className: 'mt-0.5 block truncate text-[9px] ' + (selected ? 'text-emerald-100' : 'text-slate-500') }, miniProfile.harvestPart + ' · ' + p.days + ' days')));
                   })),
-                filteredPlantKeys.length === 0 && h('div', { className: 'mx-3 mb-3 rounded-xl border border-dashed border-emerald-300 bg-white p-6 text-center sm:mx-4 sm:mb-4', role: 'status' }, h('div', { className: 'text-2xl', 'aria-hidden': true }, '\uD83C\uDF31'), h('div', { className: 'mt-2 text-sm font-black text-slate-800' }, 'No plants match this search'), h('div', { className: 'mt-1 text-[11px] text-slate-500' }, 'Try a different word or choose another category.'), h('button', { onClick: function() { cgUpd({ plantSearch: '', plantFilter: 'all' }); }, className: 'mt-3 rounded-lg bg-emerald-100 px-3 py-2 text-[10px] font-black text-emerald-800 hover:bg-emerald-200' }, 'Show all plants')),
+                filteredPlantKeys.length === 0 && h('div', { className: 'mx-3 mb-3 rounded-xl border border-dashed border-emerald-300 bg-white p-6 text-center sm:mx-4 sm:mb-4', role: 'status', 'aria-live': 'polite', 'aria-atomic': true }, h('div', { className: 'text-2xl', 'aria-hidden': true }, '\uD83C\uDF31'), h('div', { className: 'mt-2 text-sm font-black text-slate-800' }, 'No plants match this search'), h('div', { className: 'mt-1 text-[11px] text-slate-500' }, 'Try a different word or choose another category.'), h('button', { onClick: function() { cgUpd({ plantSearch: '', plantFilter: 'all' }); }, className: 'mt-3 rounded-lg bg-emerald-100 px-3 py-2 text-[10px] font-black text-emerald-800 hover:bg-emerald-200' }, 'Show all plants')),
                 // Selected plant field guide
                 cgSelectedPlant && CG_PLANTS[cgSelectedPlant] && (function() {
                   var sp = CG_PLANTS[cgSelectedPlant];
@@ -5220,7 +7212,7 @@ var d = (labToolData.companionPlanting) || {};
               })(),
 
               // ── Harvest Table: collected food, value, and recent batches ──
-              plantedCells > 0 && h('section', { className: 'overflow-hidden rounded-2xl border border-amber-300 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 shadow-md', 'data-community-harvest-table': true, 'aria-labelledby': 'community-harvest-table-title' },
+              plantedCells > 0 && h('section', { className: 'overflow-hidden rounded-2xl border border-amber-300 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 shadow-md', 'data-community-harvest-table': true, 'data-focus-stages': 'observe transfer', 'aria-labelledby': 'community-harvest-table-title' },
                 h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b border-amber-200/70 bg-gradient-to-r from-amber-950 via-orange-900 to-rose-900 p-4 text-white' },
                   h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.17em] text-yellow-200' }, 'Food + value'), h('h3', { id: 'community-harvest-table-title', className: 'text-base font-black' }, 'Harvest Table'), h('p', { className: 'mt-1 max-w-2xl text-[11px] leading-relaxed text-amber-100' }, readyCells ? readyCells + ' mature crop' + (readyCells === 1 ? ' is' : 's are') + ' ready to move from the garden into the basket.' : cgTotalHarvested ? 'Collected crops remain visible as batches, connecting garden care to yield and value.' : 'Grow a crop to maturity, then collect it here as food, points, and market value.')),
                   h('div', { className: 'grid grid-cols-3 gap-2' }, [
@@ -5299,10 +7291,9 @@ var d = (labToolData.companionPlanting) || {};
                 renderPlantingDock('simulation'),
                 h('canvas', {
                 key: 'cg-canvas-' + (cgMaximized ? 'max' : 'norm'),
-                role: 'application',
-                'aria-label': __alloT('stem.companionplanting.isometric_community_garden_view_click_', 'Isometric community garden view. Click plots to plant or inspect.'),
+                role: 'img',
+                'aria-label': __alloT('stem.companionplanting.isometric_community_garden_view_click_', 'Visual isometric overview of the community garden. Use the accessible Garden plot navigator below to plant or inspect with a keyboard.'),
                 'aria-describedby': 'community-plot-help',
-                tabIndex: 0,
                 style: { width: '100%', height: cgMaximized ? '100%' : '540px', borderRadius: cgMaximized ? '8px' : '12px', display: 'block', cursor: cgPhase === 'plan' && cgSelectedPlant ? 'crosshair' : 'pointer', background: '#1a2810', flex: cgMaximized ? '1' : 'unset' },
                 onMouseMove: function(e) {
                   var rect = e.currentTarget.getBoundingClientRect();
@@ -7194,7 +9185,7 @@ var d = (labToolData.companionPlanting) || {};
               ),
 
               // ── Companion interactions preview ──
-              plantedCells > 0 && h('section', { className: 'overflow-hidden rounded-2xl border border-sky-200 bg-gradient-to-r from-sky-50 via-white to-emerald-50 p-3', 'data-community-visitors': true, 'aria-labelledby': 'garden-visitors-title' },
+              plantedCells > 0 && h('section', { className: 'overflow-hidden rounded-2xl border border-sky-200 bg-gradient-to-r from-sky-50 via-white to-emerald-50 p-3', 'data-community-visitors': true, 'data-focus-stages': 'observe transfer', 'aria-labelledby': 'garden-visitors-title' },
                 h('div', { className: 'flex flex-wrap items-center gap-3' },
                   h('div', { className: 'mr-auto' }, h('div', { className: 'flex items-center gap-2' }, h('span', { className: 'text-[10px] font-black uppercase tracking-[0.15em] text-sky-600' }, 'Living ecosystem'), h('span', { className: 'rounded-full bg-sky-100 px-2 py-0.5 text-[9px] font-black text-sky-700' }, cgObservedVisitors.length + '/5 observed')), h('h3', { id: 'garden-visitors-title', className: 'text-sm font-black text-slate-900' }, gardenVisitors.length ? 'Wildlife has discovered your garden' : 'Invite wildlife into the garden'), h('p', { className: 'mt-0.5 text-[11px] text-slate-600' }, gardenVisitors.length ? 'Record each visitor once to build field notes and earn discovery XP.' : 'Add flowers, sunflowers, compost, or a bee hotel to unlock ecosystem visitors.')),
                   gardenVisitors.slice(0, 5).map(function(visitor) { var recorded = cgObservedVisitors.indexOf(visitor.id) !== -1; return h('div', { key: visitor.name, className: 'flex items-center gap-2 rounded-xl border bg-white px-3 py-2 shadow-sm ' + (recorded ? 'border-emerald-300' : 'border-white'), title: visitor.reason }, h('span', { className: 'text-xl', 'aria-hidden': true }, visitor.icon), h('div', null, h('div', { className: 'text-[11px] font-black text-slate-800' }, visitor.name), h('div', { className: 'text-[9px] text-slate-500' }, visitor.reason)), h('button', { onClick: function() { cgRecordVisitor(visitor); }, disabled: recorded, className: 'ml-1 rounded-full px-2 py-1 text-[9px] font-black ' + (recorded ? 'bg-emerald-100 text-emerald-700' : 'bg-sky-600 text-white hover:bg-sky-700'), 'aria-label': (recorded ? 'Recorded ' : 'Record observation of ') + visitor.name }, recorded ? 'Recorded' : 'Observe +8 XP')); }),
@@ -7207,7 +9198,7 @@ var d = (labToolData.companionPlanting) || {};
                 }))
               ),
 
-              h('section', { className: 'rounded-2xl border border-slate-200 bg-gradient-to-r from-slate-50 via-white to-emerald-50 p-3 shadow-sm', 'data-community-visual-key': true, 'aria-labelledby': 'community-visual-key-title' },
+              h('section', { className: 'rounded-2xl border border-slate-200 bg-gradient-to-r from-slate-50 via-white to-emerald-50 p-3 shadow-sm', 'data-community-visual-key': true, 'data-focus-stages': 'design observe transfer', 'aria-labelledby': 'community-visual-key-title' },
                 h('div', { className: 'flex flex-wrap items-center justify-between gap-2' }, h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.15em] text-slate-500' }, 'Visual guide'), h('h3', { id: 'community-visual-key-title', className: 'text-sm font-black text-slate-900' }, 'How to read the garden map')), h('span', { className: 'rounded-full bg-white px-2 py-1 text-[9px] font-bold text-slate-600 shadow-sm' }, 'Color + label for every status')),
                 h('div', { className: 'mt-3 grid grid-cols-2 gap-2 lg:grid-cols-4' }, [
                   { label: 'Ready to harvest', detail: 'Mature and healthy', dot: 'bg-yellow-400', card: 'border-yellow-200 bg-yellow-50' },
@@ -7217,7 +9208,7 @@ var d = (labToolData.companionPlanting) || {};
                 ].map(function(item) { return h('div', { key: item.label, className: 'flex items-center gap-2 rounded-xl border p-2 ' + item.card }, h('span', { className: 'h-3 w-3 shrink-0 rounded-full ring-2 ring-white ' + item.dot, 'aria-hidden': true }), h('div', null, h('div', { className: 'text-[10px] font-black text-slate-800' }, item.label), h('div', { className: 'text-[9px] text-slate-500' }, item.detail))); }))
               ),
 
-              plantedCells > 0 && h('section', { className: 'overflow-hidden rounded-2xl border border-emerald-800 bg-emerald-950 text-white shadow-lg', 'data-community-garden-layers': true, 'aria-labelledby': 'community-garden-layers-title' },
+              plantedCells > 0 && h('section', { className: 'overflow-hidden rounded-2xl border border-emerald-800 bg-emerald-950 text-white shadow-lg', 'data-community-garden-layers': true, 'data-focus-stages': 'design observe transfer', 'aria-labelledby': 'community-garden-layers-title' },
                 h('div', { className: 'grid gap-3 border-b border-white/10 bg-gradient-to-r from-emerald-950 via-teal-950 to-slate-950 p-4 md:grid-cols-[minmax(0,1fr)_auto]' },
                   h('div', null,
                     h('div', { className: 'text-[10px] font-black uppercase tracking-[0.18em] text-lime-300' }, 'Space-sharing profile'),
@@ -7279,7 +9270,38 @@ var d = (labToolData.companionPlanting) || {};
                 )
               ),
 
-              h('section', { className: 'rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4', 'data-community-plot-navigator': true, 'aria-labelledby': 'community-plots-title' },
+              inquiryRivalPlanActive && h('section', { id: 'community-experiment-protocol', tabIndex: -1, className: 'scroll-mt-4 overflow-hidden rounded-2xl border border-orange-300 bg-gradient-to-br from-slate-950 via-orange-950 to-rose-950 text-white shadow-lg focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-orange-300', 'data-community-experiment-protocol': cgRivalTestPlan.rivalId, 'data-focus-stages': 'design observe explain', 'aria-labelledby': 'community-experiment-protocol-title' },
+                h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b border-white/10 p-4' },
+                  h('div', { className: 'flex items-start gap-3' },
+                    h('span', { className: 'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-200 text-xl text-orange-950', 'aria-hidden': true }, '\uD83D\uDCCB'),
+                    h('div', null,
+                      h('div', { className: 'text-xs font-black uppercase tracking-[0.14em] text-orange-200' }, 'Protocol stays with the garden'),
+                      h('h3', { id: 'community-experiment-protocol-title', className: 'text-base font-black text-white' }, 'Experiment Protocol Dock'),
+                      h('p', { className: 'mt-1 max-w-3xl text-xs leading-relaxed text-orange-100' }, cgRivalTestPlan.label + ': ' + cgRivalTestPlan.test)
+                    )
+                  ),
+                  h('div', { className: 'min-w-[150px] rounded-xl border border-white/10 bg-white/10 p-2 text-center', 'data-protocol-progress': inquiryProtocolProgress },
+                    h('div', { className: 'text-xl font-black text-orange-200' }, inquiryProtocolProgress + '%'),
+                    h('div', { className: 'text-xs font-black uppercase tracking-wide text-white/60' }, inquiryProtocolCompleteCount + ' of 4 ready'),
+                    h('div', { className: 'mt-1 h-2 overflow-hidden rounded-full bg-black/30', role: 'progressbar', 'aria-label': 'Experiment protocol setup progress', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': inquiryProtocolProgress }, h('div', { className: 'h-full rounded-full bg-gradient-to-r from-orange-300 to-lime-300', style: { width: inquiryProtocolProgress + '%' } }))
+                  )
+                ),
+                h('div', { className: 'grid gap-2 p-3 sm:grid-cols-2 lg:grid-cols-4 sm:p-4', 'data-protocol-checks': true },
+                  inquiryProtocolChecks.map(function(check) {
+                    return h('div', { key: check.id, className: 'rounded-xl border p-3 ' + (check.complete ? 'border-emerald-300/30 bg-emerald-300/10' : 'border-amber-300/30 bg-amber-300/10'), 'data-protocol-check': check.id, 'data-check-status': check.complete ? 'ready' : 'review' },
+                      h('div', { className: 'flex items-center justify-between gap-2' }, h('span', { className: 'text-sm font-black text-white' }, check.label), h('span', { className: 'rounded-full px-2 py-1 text-xs font-black ' + (check.complete ? 'bg-emerald-200 text-emerald-950' : 'bg-amber-200 text-amber-950') }, check.complete ? '\u2713 Ready' : 'Review')),
+                      h('p', { className: 'mt-1 text-xs leading-relaxed text-orange-100' }, check.detail)
+                    );
+                  })
+                ),
+                h('div', { className: 'flex flex-wrap items-center gap-3 border-t border-white/10 bg-black/15 p-3 sm:px-4', 'data-protocol-next-direction': inquiryProtocolSetupReady && inquiryProtocolBaselineReady ? 'observe' : 'setup' },
+                  h('div', { className: 'min-w-[220px] flex-1' }, h('div', { className: 'text-xs font-black uppercase tracking-wide text-orange-200' }, 'Next visible move'), h('p', { className: 'mt-1 text-sm font-semibold leading-relaxed text-white' }, inquiryProtocolDirection)),
+                  h('a', { href: inquiryProtocolHref, className: 'inline-flex min-h-[44px] items-center justify-center rounded-xl bg-orange-200 px-4 py-2 text-sm font-black text-orange-950 shadow-sm hover:bg-orange-100', 'data-protocol-next-action': inquiryProtocolSetupReady && inquiryProtocolBaselineReady ? 'observe' : 'setup' }, inquiryProtocolActionLabel),
+                  h('a', { href: '#community-trial-comparison', className: 'inline-flex min-h-[44px] items-center justify-center rounded-xl border border-white/20 bg-white/10 px-3 py-2 text-xs font-black text-white hover:bg-white/20', 'data-protocol-review-plan': true }, 'Review full plan')
+                )
+              ),
+
+              h('section', { className: 'rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4', 'data-community-plot-navigator': true, 'data-focus-stages': 'design observe explain transfer', 'aria-labelledby': 'community-plots-title' },
                 h('div', { className: 'mb-3 flex flex-wrap items-start justify-between gap-2' },
                   h('div', null, h('h3', { id: 'community-plots-title', className: 'text-sm font-black text-slate-900' }, 'Garden plot navigator'), h('p', { id: 'community-plot-help', className: 'mt-0.5 text-[11px] text-slate-600' }, cgPhase === 'plan' ? (cgSelectedPlant ? 'Choose an empty plot to place the selected crop, or cancel it in the Planting Dock.' : 'Choose an empty plot to open its in-garden plant tray. Choose a planted plot to inspect it.') : cgRelationshipLens ? 'Relationship Lens is on. Choose a planted plot to investigate its eight neighboring spaces.' : 'Choose any planted plot to inspect its roots, chemistry, and health.')),
                   h('div', { className: 'flex flex-wrap items-center gap-2 text-[10px] font-bold' },
@@ -7287,7 +9309,7 @@ var d = (labToolData.companionPlanting) || {};
                     h('span', { className: 'rounded-full bg-yellow-100 px-2 py-1 text-yellow-800' }, readyCells + ' ready'),
                     h('button', { onClick: function() { cgUpd({ relationshipLens: !cgRelationshipLens, relationshipFocus: relationshipFocusIndex >= 0 ? relationshipFocusIndex : null }); }, 'aria-pressed': cgRelationshipLens, className: 'min-h-[36px] rounded-full border px-3 py-1 font-black transition-all ' + (cgRelationshipLens ? 'border-indigo-600 bg-indigo-600 text-white shadow-sm' : 'border-indigo-200 bg-indigo-50 text-indigo-700 hover:border-indigo-400') }, h('span', { 'aria-hidden': true }, '↗ '), cgRelationshipLens ? 'Relationship Lens on' : 'Show relationships'))
                 ),
-                h('div', { className: 'relative overflow-hidden rounded-2xl border border-sky-200 p-2.5 sm:p-3', style: { background: seasonMeta.canvas }, 'data-community-garden-canvas': true, 'data-garden-season-atmosphere': seasonMeta.name.toLowerCase() },
+                h('div', { id: 'community-garden-map', tabIndex: -1, className: 'scroll-mt-4 relative overflow-hidden focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-sky-700 rounded-2xl border border-sky-200 p-2.5 sm:p-3', style: { background: seasonMeta.canvas }, 'data-community-garden-canvas': true, 'data-garden-season-atmosphere': seasonMeta.name.toLowerCase() },
                   renderPlantingDock('map'),
                   h('div', { className: 'pointer-events-none absolute inset-0 overflow-hidden', 'aria-hidden': true },
                     seasonMeta.decor.map(function(icon, index) { return h('span', { key: index, className: 'absolute text-xl opacity-25 drop-shadow-sm ' + (index === 1 ? 'motion-safe:animate-bounce' : 'motion-safe:animate-pulse'), style: { left: (12 + index * 36) + '%', top: (8 + (index % 2) * 18) + 'px', animationDelay: (index * 240) + 'ms' } }, icon); }),
@@ -7324,6 +9346,11 @@ var d = (labToolData.companionPlanting) || {};
                       )
                     )
                   ),
+                  h('div', { id: 'community-plot-keyboard-help', className: 'mb-2 flex flex-wrap items-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-[10px] text-indigo-950', 'data-plot-keyboard-help': true },
+                    h('strong', { className: 'font-black' }, 'Keyboard map:'),
+                    h('span', null, 'Tab enters once. Use arrow keys to move by plot, Home or End for row edges, and Ctrl+Home or Ctrl+End for the first or last plot. Press Enter or Space to act.'),
+                    h('span', { className: 'rounded-full bg-white px-2 py-1 font-black text-indigo-800', role: 'status', 'aria-live': 'polite', 'aria-atomic': true, 'data-keyboard-plot-status': cgKeyboardPlot }, 'Focus position: Plot ' + (cgKeyboardPlot + 1) + ', row ' + (Math.floor(cgKeyboardPlot / 4) + 1) + ', column ' + (cgKeyboardPlot % 4 + 1))
+                  ),
                   h('p', { id: 'garden-map-mobile-help', className: 'mb-2 rounded-lg bg-sky-900/80 px-2.5 py-1.5 text-[9px] font-bold text-white sm:hidden' }, 'Swipe sideways to explore. The board stays four columns wide so visual neighbors match the simulation.'),
                   cgRelationshipLens && h('section', { className: 'mb-2 overflow-hidden rounded-xl border border-indigo-200 bg-white/90 shadow-sm', 'data-community-relationship-pathways': true, 'aria-labelledby': 'relationship-pathways-title' },
                     h('div', { className: 'flex flex-wrap items-center justify-between gap-2 border-b border-indigo-100 px-3 py-2' },
@@ -7350,8 +9377,8 @@ var d = (labToolData.companionPlanting) || {};
                     cgRelationshipFilter === 'all' ? h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'h-1 w-5 rounded-full bg-emerald-400', 'aria-hidden': true }), 'Helpful pathways') : h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'h-1 w-5 rounded-full ' + activeRelationshipPathway.lineClass, 'aria-hidden': true }), activeRelationshipPathway.label),
                     cgRelationshipFilter === 'all' && h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'h-1 w-5 rounded-full bg-rose-400', 'aria-hidden': true }), 'Conflict'),
                     h('span', { className: 'text-indigo-200' }, 'Color + labels identify the active pathway; lines connect side or diagonal neighbors')),
-                  h('div', { className: 'overflow-x-auto pb-2', role: 'region', tabIndex: 0, 'aria-label': 'Scrollable true four by four community garden map', 'aria-describedby': 'garden-map-mobile-help', 'data-mobile-spatial-map': true },
-                    h('div', { className: 'grid min-w-[700px] grid-cols-4 gap-2 sm:min-w-0', role: 'grid', 'aria-label': 'Sixteen community garden plots' },
+                  h('div', { className: 'overflow-x-auto pb-2', role: 'region', 'aria-label': 'Scrollable true four by four community garden map', 'aria-describedby': 'garden-map-mobile-help', 'data-mobile-spatial-map': true },
+                    h('div', { className: 'grid min-w-[700px] grid-cols-4 gap-2 sm:min-w-0', role: 'group', 'aria-label': 'Sixteen community garden plot controls' },
                       cgGrid.map(function(cell, idx) {
                         var plotPlant = cell.plantId && CG_PLANTS[cell.plantId];
                         var plotBonus = plotPlant ? getCellBonus(cgGrid, idx).total : 0;
@@ -7367,8 +9394,22 @@ var d = (labToolData.companionPlanting) || {};
                         var overlayReading = gardenOverlayReading(cell, idx, plotPlant, plotGrowth, plotBonus);
                         var plotStatus = !plotPlant ? (isPlantingTarget ? 'Selected plot' : canPlant ? 'Open plot' : 'Choose plot') : plotReady ? 'Ready' : plotActiveStructure ? 'Active' : plotNeedsCare ? 'Needs care' : plotBonus < 0 ? 'Conflict' : plotBonus > 0 ? 'Companion boost' : 'Growing';
                         var plotStatusClass = plotReady ? 'bg-yellow-300 text-yellow-950' : plotActiveStructure ? 'bg-teal-600 text-white' : plotNeedsCare || plotBonus < 0 ? 'bg-rose-100 text-rose-700' : plotBonus > 0 ? 'bg-emerald-600 text-white' : plotPlant ? 'bg-sky-100 text-sky-700' : 'bg-slate-100 text-slate-600';
-                        var interactionHint = canPlant ? ' Plant the selected crop here.' : canChooseTarget ? ' Choose this plot to open the in-garden plant tray.' : canInspect && cgRelationshipLens ? ' Select to explain this plot\'s relationship links.' : canInspect ? ' Select to inspect roots and chemistry.' : '';
-                        var plotLabel = 'Plot ' + (idx + 1) + '. ' + plotStatus + '. ' + (plotPlant ? plotPlant.label + ', ' + plotGrowth + ' percent grown, health ' + Math.round(cell.health) + ', pests ' + Math.round(cell.pests) + ', companion effect ' + (plotBonus > 0 ? 'plus ' : '') + plotBonus + ' percent.' + (overlayReading ? ' ' + activeGardenOverlay.label + ' overlay: ' + overlayReading.label + '.' : '') + interactionHint : canPlant ? 'Empty. Plant ' + CG_PLANTS[cgSelectedPlant].label : 'Empty. Choose this plot to open the in-garden plant tray.');
+                        var interactionHint = canPlant ? ' Plant the selected crop here.' : canChooseTarget ? ' Choose this plot to open the in-garden plant tray.' : canInspect && cgRelationshipLens ? ' Select to explain this plot\'s relationship links.' : canInspect ? ' Select to inspect roots and chemistry.' : ' No plot action is available in the current season.';
+                        var plotRow = Math.floor(idx / 4) + 1;
+                        var plotColumn = idx % 4 + 1;
+                        var plotNeighborIndices = [];
+                        for (var neighborRow = Math.max(0, plotRow - 2); neighborRow <= Math.min(3, plotRow); neighborRow++) {
+                          for (var neighborColumn = Math.max(0, plotColumn - 2); neighborColumn <= Math.min(3, plotColumn); neighborColumn++) {
+                            var neighborIndex = neighborRow * 4 + neighborColumn;
+                            if (neighborIndex !== idx) plotNeighborIndices.push(neighborIndex);
+                          }
+                        }
+                        var plotPlantedNeighborCount = plotNeighborIndices.filter(function(neighborIndex) { return !!(cgGrid[neighborIndex] && cgGrid[neighborIndex].plantId); }).length;
+                        var plotRelationshipPairs = plotPlant ? getCellBonus(cgGrid, idx).pairs : [];
+                        var plotHelpfulNeighborCount = plotRelationshipPairs.filter(function(pair) { return pair.bonus > 0; }).length;
+                        var plotConflictNeighborCount = plotRelationshipPairs.filter(function(pair) { return pair.bonus < 0; }).length;
+                        var plotNeighborSummary = plotPlantedNeighborCount + ' planted neighbor' + (plotPlantedNeighborCount === 1 ? '' : 's') + ', ' + plotHelpfulNeighborCount + ' helpful link' + (plotHelpfulNeighborCount === 1 ? '' : 's') + ', and ' + plotConflictNeighborCount + ' conflict' + (plotConflictNeighborCount === 1 ? '' : 's') + '.';
+                        var plotLabel = 'Plot ' + (idx + 1) + '. ' + plotStatus + '. ' + (plotPlant ? plotPlant.label + '. Row ' + plotRow + ', column ' + plotColumn + ', ' + plotGrowth + ' percent grown, health ' + Math.round(cell.health) + ', pests ' + Math.round(cell.pests) + ', companion effect ' + (plotBonus > 0 ? 'plus ' : '') + plotBonus + ' percent.' + (overlayReading ? ' ' + activeGardenOverlay.label + ' overlay: ' + overlayReading.label + '.' : '') : 'Row ' + plotRow + ', column ' + plotColumn + '. ' + (canPlant ? 'Empty. Plant ' + CG_PLANTS[cgSelectedPlant].label + '.' : canChooseTarget ? 'Empty. Choose this plot to open the in-garden plant tray.' : 'Empty.')) + ' Neighbors: ' + plotNeighborSummary + interactionHint;
                         var eastId = idx % 4 < 3 && cgGrid[idx + 1] ? cgGrid[idx + 1].plantId : null;
                         var southId = idx < 12 && cgGrid[idx + 4] ? cgGrid[idx + 4].plantId : null;
                         var southeastId = idx < 12 && idx % 4 < 3 && cgGrid[idx + 5] ? cgGrid[idx + 5].plantId : null;
@@ -7383,7 +9424,7 @@ var d = (labToolData.companionPlanting) || {};
                           edge.pathwayMeta = cgRelationshipPathwayMeta(edge.pathway);
                           return edge;
                         }).filter(function(edge) { return cgRelationshipFilter === 'all' || edge.pathway === cgRelationshipFilter; }) : [];
-                        return h('button', { key: idx, role: 'gridcell', disabled: !canChooseTarget && !canInspect, 'aria-label': plotLabel, onClick: function() { if (canPlant) { cgPlantCell(idx); } else if (canChooseTarget) { cgSelectPlantingTarget(idx); } else if (canInspect && cgRelationshipLens) { cgUpd({ plantingTarget: null, relationshipFocus: idx }); } else if (canInspect) { cgUpd({ plantingTarget: null, microscopeCell: idx, microscopeLayer: 'roots' }); } }, className: 'relative min-h-[170px] rounded-xl border p-2 text-left transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500 sm:min-h-[164px] ' + (plotReady ? 'border-yellow-400 bg-yellow-50 ring-1 ring-yellow-200 hover:-translate-y-0.5' : plotActiveStructure ? 'border-teal-300 bg-teal-50 hover:border-teal-400' : plotNeedsCare || plotBonus < 0 ? 'border-rose-300 bg-rose-50 hover:border-rose-400' : plotPlant && plotBonus > 0 ? 'border-emerald-300 bg-emerald-50 hover:border-emerald-400' : plotPlant ? 'border-sky-200 bg-sky-50 hover:border-sky-400' : canChooseTarget ? 'border-dashed border-emerald-400 bg-white hover:-translate-y-0.5 hover:bg-emerald-50' : 'border-dashed border-slate-200 bg-slate-50 text-slate-400') + (isPlantingTarget ? ' z-20 ring-4 ring-lime-300 ring-offset-2' : '') + (isRelationshipFocus ? ' z-20 ring-2 ring-indigo-500 ring-offset-2' : '') },
+                        return h('button', { key: idx, id: 'community-plot-control-' + idx, tabIndex: cgKeyboardPlot === idx ? 0 : -1, 'aria-label': plotLabel, 'aria-describedby': 'community-plot-keyboard-help', 'aria-disabled': !canChooseTarget && !canInspect ? true : undefined, 'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight Home End Control+Home Control+End', onFocus: function() { if (cgKeyboardPlot !== idx) cgUpd({ keyboardPlot: idx }); }, onKeyDown: function(event) { cgHandleGardenPlotKeyDown(event, idx); }, onClick: function() { if (canPlant) { cgPlantCell(idx); } else if (canChooseTarget) { cgSelectPlantingTarget(idx); } else if (canInspect && cgRelationshipLens) { cgUpd({ plantingTarget: null, relationshipFocus: idx }); } else if (canInspect) { cgUpd({ plantingTarget: null, microscopeCell: idx, microscopeLayer: 'roots' }); } }, 'data-roving-plot': idx, 'data-plot-tab-stop': cgKeyboardPlot === idx ? 'true' : 'false', 'data-plot-row': plotRow, 'data-plot-column': plotColumn, className: 'relative min-h-[170px] rounded-xl border p-2 text-left transition-all focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-emerald-700 sm:min-h-[164px] ' + (plotReady ? 'border-yellow-400 bg-yellow-50 ring-1 ring-yellow-200 hover:-translate-y-0.5' : plotActiveStructure ? 'border-teal-300 bg-teal-50 hover:border-teal-400' : plotNeedsCare || plotBonus < 0 ? 'border-rose-300 bg-rose-50 hover:border-rose-400' : plotPlant && plotBonus > 0 ? 'border-emerald-300 bg-emerald-50 hover:border-emerald-400' : plotPlant ? 'border-sky-200 bg-sky-50 hover:border-sky-400' : canChooseTarget ? 'border-dashed border-emerald-400 bg-white hover:-translate-y-0.5 hover:bg-emerald-50' : 'border-dashed border-slate-200 bg-slate-50 text-slate-400') + (isPlantingTarget ? ' z-20 ring-4 ring-lime-300 ring-offset-2' : '') + (isRelationshipFocus ? ' z-20 ring-2 ring-indigo-500 ring-offset-2' : '') },
                           cgRelationshipLens && edgeLinks.map(function(edge) { return h('span', { key: edge.id, className: 'pointer-events-none absolute z-30 rounded-full shadow-sm ' + edge.className + ' ' + (cgRelationshipFilter === 'all' ? (edge.relationship.bonus > 0 ? 'bg-emerald-500' : 'bg-rose-500') : edge.pathwayMeta.lineClass), 'aria-hidden': true, 'data-relationship-edge': edge.id, 'data-relationship-kind': edge.relationship.bonus > 0 ? 'helpful' : 'conflict', 'data-relationship-pathway': edge.pathway }); }),
                           h('div', { className: 'flex items-start justify-between gap-1' },
                             h('span', { className: 'text-[9px] font-black uppercase tracking-wide text-slate-500' }, 'Plot ' + (idx + 1)),
@@ -7397,7 +9438,7 @@ var d = (labToolData.companionPlanting) || {};
                           h('div', { className: 'mt-1.5 flex items-center justify-between gap-1' },
                             h('div', { className: 'min-w-0 truncate text-[11px] font-black ' + (plotPlant ? 'text-slate-800' : 'text-slate-500') }, plotPlant ? plotPlant.emoji + ' ' + plotPlant.label : canPlant ? 'Plant ' + CG_PLANTS[cgSelectedPlant].label : isPlantingTarget ? 'Choose crop above' : 'Choose this plot'),
                             plotPlant && h('span', { className: 'text-[9px] font-bold text-slate-500' }, plotGrowth + '%')),
-                          plotPlant && h('div', { className: 'mt-1 h-1.5 overflow-hidden rounded-full bg-white shadow-inner', role: 'progressbar', 'aria-label': plotPlant.label + ' growth', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': plotGrowth }, h('div', { className: 'h-full rounded-full transition-all ' + (plotReady ? 'bg-yellow-500' : plotNeedsCare ? 'bg-rose-500' : 'bg-emerald-500'), style: { width: plotGrowth + '%' } })),
+                          plotPlant && h('div', { className: 'mt-1 h-1.5 overflow-hidden rounded-full bg-white shadow-inner', role: 'progressbar', 'aria-label': plotPlant.label + ' growth', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': plotGrowth }, h('div', { className: 'h-full rounded-full transition-all ' + (plotReady ? 'bg-yellow-700' : plotNeedsCare ? 'bg-rose-500' : 'bg-emerald-700'), style: { width: plotGrowth + '%' } })),
                           plotPlant && h('div', { className: 'mt-1 flex items-center justify-between text-[8px] font-bold' },
                             h('span', { className: plotNeedsCare ? 'text-rose-700' : 'text-slate-600' }, '♥ ' + Math.round(cell.health) + '% health'),
                             h('span', { className: plotBonus > 0 ? 'text-emerald-700' : plotBonus < 0 ? 'text-rose-700' : 'text-slate-500' }, plotBonus > 0 ? '✦ +' + plotBonus + ' ally' : plotBonus < 0 ? '⚠ ' + plotBonus + ' conflict' : 'No pair effect')),
@@ -7551,7 +9592,7 @@ var d = (labToolData.companionPlanting) || {};
               })(),
 
               // ── Action buttons ──
-              cgPhase === 'plan' && h('section', { className: 'overflow-hidden rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-950 via-emerald-900 to-teal-900 text-white shadow-lg', 'data-community-actions': true, 'data-community-plan-readiness': true, 'aria-labelledby': 'community-plan-readiness-title' },
+              cgPhase === 'plan' && h('section', { id: 'community-plan-readiness', className: 'scroll-mt-4 overflow-hidden rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-950 via-emerald-900 to-teal-900 text-white shadow-lg', 'data-community-actions': true, 'data-community-plan-readiness': true, 'data-focus-stages': 'design', 'aria-labelledby': 'community-plan-readiness-title' },
                 h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b border-white/10 p-4' }, h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-lime-200' }, 'Before the season'), h('h3', { id: 'community-plan-readiness-title', className: 'text-base font-black' }, 'Garden Blueprint Check'), h('p', { className: 'mt-0.5 text-[11px] text-emerald-100' }, 'Use these signals as guidance, not requirements.')), h('div', { className: 'text-right' }, h('div', { className: 'text-2xl font-black text-lime-200' }, planReadinessProgress + '%'), h('div', { className: 'text-[9px] font-bold uppercase tracking-wide text-emerald-100' }, planReadinessProgress >= 100 ? 'Ready to thrive' : plantedCells ? 'Ready to improve' : 'Start planting'))),
                 h('div', { className: 'px-4 pt-3' }, h('div', { className: 'h-2 overflow-hidden rounded-full bg-black/25', role: 'progressbar', 'aria-label': 'Garden blueprint readiness', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': planReadinessProgress }, h('div', { className: 'h-full rounded-full bg-gradient-to-r from-lime-300 to-emerald-300 transition-all', style: { width: planReadinessProgress + '%' } }))),
                 h('div', { className: 'grid grid-cols-2 gap-2 p-4 lg:grid-cols-4' }, planReadinessItems.map(function(item) { var complete = item.value >= item.target; return h('div', { key: item.id, className: 'rounded-xl border p-3 ' + (complete ? 'border-lime-300/30 bg-lime-300/10' : 'border-white/10 bg-white/10') }, h('div', { className: 'flex items-start justify-between gap-2' }, h('span', { className: 'text-lg', 'aria-hidden': true }, item.icon), h('span', { className: 'rounded-full px-2 py-0.5 text-[9px] font-black ' + (complete ? 'bg-lime-300 text-emerald-950' : 'bg-white/10 text-white') }, complete ? 'Done' : item.display)), h('div', { className: 'mt-1 text-[11px] font-black' }, item.label), h('div', { className: 'mt-0.5 text-[9px] leading-snug text-emerald-100' }, item.note)); })),
@@ -7560,25 +9601,44 @@ var d = (labToolData.companionPlanting) || {};
                   h('div', { className: 'flex flex-wrap items-center gap-2' },
                     h('button', { onClick: cgStartGrowing, disabled: plantedCells === 0, className: 'min-h-[44px] rounded-xl px-4 py-2 text-sm font-black transition-all ' + (plantedCells ? 'bg-lime-300 text-emerald-950 shadow-sm hover:-translate-y-0.5 hover:bg-lime-200' : 'cursor-not-allowed bg-white/10 text-white/40') }, plantedCells ? 'Start Growing - ' + plantedCells + ' plots' : 'Plant a crop to begin'),
                     !cg.confirmClear && h('button', { onClick: function() { cgUpd({ confirmClear: true }); }, disabled: plantedCells === 0, className: 'min-h-[44px] rounded-xl bg-white/10 px-3 py-2 text-[11px] font-black text-white ring-1 ring-white/15 hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-40' }, 'Clear garden'),
-                    cg.confirmClear && h('div', { className: 'flex flex-wrap items-center gap-2 rounded-xl border border-rose-300/30 bg-rose-400/15 p-2' }, h('span', { className: 'px-1 text-[10px] font-bold text-rose-100' }, 'Remove all plots?'), h('button', { onClick: function() { cgUpd({ grid: cgGrid.map(function() { return { plantId: null, growthDay: 0, health: 100, watered: false, pests: 0 }; }), day: 0, score: 0, totalHarvested: 0, phase: 'plan', selectedPlant: null, plantingTarget: null, lastPlacement: null, relationshipFocus: null, activeChallenge: null, confirmClear: false, lastFeedback: { icon: '\u21BA', title: 'Garden cleared', detail: 'All 16 plots are ready for a new plan.', tone: 'info' } }); }, className: 'rounded-lg bg-rose-500 px-2.5 py-1.5 text-[10px] font-black text-white' }, 'Yes, clear'), h('button', { onClick: function() { cgUpd({ confirmClear: false }); }, className: 'rounded-lg bg-white px-2.5 py-1.5 text-[10px] font-black text-slate-700' }, 'Cancel'))
+                    cg.confirmClear && h('div', { className: 'flex flex-wrap items-center gap-2 rounded-xl border border-rose-300/30 bg-rose-400/15 p-2' }, h('span', { className: 'px-1 text-[10px] font-bold text-rose-100' }, 'Remove all plots?'), h('button', { onClick: function() { cgUpd({ grid: cgGrid.map(function() { return { plantId: null, growthDay: 0, health: 100, watered: false, pests: 0 }; }), day: 0, score: 0, totalHarvested: 0, phase: 'plan', selectedPlant: null, plantingTarget: null, plantingPrediction: null, comparisonRequest: null, plantingClaim: null, inquiryReasoning: null, inquiryConfidence: null, inquiryNextStep: null, inquiryObservations: [], fieldChecklist: {}, lastPlacement: null, relationshipFocus: null, activeChallenge: null, confirmClear: false, lastFeedback: { icon: '\u21BA', title: 'Garden cleared', detail: 'All 16 plots are ready for a new plan.', tone: 'info' } }); }, className: 'rounded-lg bg-rose-500 px-2.5 py-1.5 text-[10px] font-black text-white' }, 'Yes, clear'), h('button', { onClick: function() { cgUpd({ confirmClear: false }); }, className: 'rounded-lg bg-white px-2.5 py-1.5 text-[10px] font-black text-slate-700' }, 'Cancel'))
                   )
                 )
               ),
 
-              cgPhase === 'grow' && h('section', { className: 'overflow-hidden rounded-2xl border border-sky-200 bg-gradient-to-br from-sky-50 via-white to-emerald-50 shadow-md', 'data-community-actions': true, 'aria-labelledby': 'community-care-title' },
+              cgPhase === 'grow' && h('section', { id: 'community-care-controls', className: 'scroll-mt-4 overflow-hidden rounded-2xl border border-sky-200 bg-gradient-to-br from-sky-50 via-white to-emerald-50 shadow-md', 'data-community-actions': true, 'data-focus-stages': 'observe', 'aria-labelledby': 'community-care-title' },
                 h('div', { className: 'flex flex-wrap items-center justify-between gap-2 border-b border-sky-100 p-3 sm:p-4' }, h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.15em] text-sky-700' }, 'Care control deck'), h('h3', { id: 'community-care-title', className: 'text-sm font-black text-slate-900' }, "Choose the garden's next move"), h('div', { className: 'mt-0.5 text-[11px] text-slate-600' }, 'Act once, then compare the forecast with the day report.')), h('span', { className: 'rounded-full px-2.5 py-1.5 text-[10px] font-black ' + (readyCells ? 'bg-yellow-300 text-yellow-950' : gardenPulse.some(function(item) { return item.level === 0; }) ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700') }, readyCells ? readyCells + ' ready to harvest' : gardenPulse.some(function(item) { return item.level === 0; }) ? 'Care needed' : 'Garden stable')),
                 h('div', { className: 'grid grid-cols-2 gap-2 p-3 sm:grid-cols-3 lg:grid-cols-6 sm:p-4' },
-                  h('button', { onClick: cgAdvanceDay, className: 'flex min-h-[68px] flex-col items-start justify-center rounded-xl bg-sky-700 px-3 py-2 text-left text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-sky-800 hover:shadow-md' }, h('span', { className: 'text-lg', 'aria-hidden': true }, '\u23ED\uFE0F'), h('span', { className: 'text-xs font-black' }, 'Next Day'), h('span', { className: 'text-[9px] text-sky-100' }, 'Simulate change')),
+                  h('button', { onClick: cgOpenDayBriefing, 'aria-expanded': cgShowAdvanceReview, 'aria-controls': 'community-day-briefing', className: 'flex min-h-[68px] flex-col items-start justify-center rounded-xl bg-sky-700 px-3 py-2 text-left text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-sky-800 hover:shadow-md', 'data-community-open-day-briefing': true }, h('span', { className: 'text-lg', 'aria-hidden': true }, '\u23ED\uFE0F'), h('span', { className: 'text-xs font-black' }, 'Review Next Day'), h('span', { className: 'text-xs text-sky-100' }, 'Simulate change safely')),
                   h('button', { onClick: cgWater, disabled: cgMoisture >= 90, title: cgMoisture >= 90 ? 'Soil is already saturated' : 'Increase moisture by 25 percent', className: 'flex min-h-[68px] flex-col items-start justify-center rounded-xl border px-3 py-2 text-left transition-all ' + (cgMoisture >= 90 ? 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400' : cgMoisture < 30 ? 'border-blue-600 bg-blue-600 text-white ring-2 ring-blue-200' : 'border-blue-200 bg-blue-50 text-blue-800 hover:-translate-y-0.5 hover:border-blue-400') }, h('span', { className: 'text-lg', 'aria-hidden': true }, '\uD83D\uDCA7'), h('span', { className: 'text-xs font-black' }, 'Water'), h('span', { className: 'text-[9px] opacity-75' }, Math.round(cgMoisture) + '% moisture')),
                   h('button', { onClick: cgWeed, className: 'flex min-h-[68px] flex-col items-start justify-center rounded-xl border border-green-200 bg-green-50 px-3 py-2 text-left text-green-800 transition-all hover:-translate-y-0.5 hover:border-green-400' }, h('span', { className: 'text-lg', 'aria-hidden': true }, '\uD83E\uDDF9'), h('span', { className: 'text-xs font-black' }, 'Weed'), h('span', { className: 'text-[9px] opacity-75' }, Math.round(cgPestPop) + ' pest pressure')),
                   h('button', { onClick: cgCompost, className: 'flex min-h-[68px] flex-col items-start justify-center rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-left text-amber-800 transition-all hover:-translate-y-0.5 hover:border-amber-400' }, h('span', { className: 'text-lg', 'aria-hidden': true }, '\u267B\uFE0F'), h('span', { className: 'text-xs font-black' }, 'Compost'), h('span', { className: 'text-[9px] opacity-75' }, Math.round(cgNitrogen) + '% nitrogen')),
                   h('button', { onClick: cgHarvest, disabled: readyCells === 0, 'aria-label': readyCells ? 'Harvest ' + readyCells + ' ready crops' : 'No crops ready to harvest', className: 'flex min-h-[68px] flex-col items-start justify-center rounded-xl border px-3 py-2 text-left transition-all ' + (readyCells ? 'border-yellow-400 bg-yellow-300 text-yellow-950 ring-2 ring-yellow-100 hover:-translate-y-0.5 hover:bg-yellow-200' : 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400') }, h('span', { className: 'text-lg', 'aria-hidden': true }, '\uD83C\uDF3E'), h('span', { className: 'text-xs font-black' }, readyCells ? 'Harvest ' + readyCells : 'Harvest'), h('span', { className: 'text-[9px] opacity-75' }, readyCells ? 'Collect crops' : 'Nothing ready')),
-                  h('button', { onClick: function() { cgUpd({ phase: 'plan', lastFeedback: { icon: '\u270F', title: 'Planning mode', detail: 'Select a crop to add it, or clear a planted plot before redesigning.', tone: 'info' } }); }, className: 'flex min-h-[68px] flex-col items-start justify-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-left text-slate-700 transition-all hover:-translate-y-0.5 hover:border-slate-400' }, h('span', { className: 'text-lg', 'aria-hidden': true }, '\u270F\uFE0F'), h('span', { className: 'text-xs font-black' }, 'Edit Garden'), h('span', { className: 'text-[9px] opacity-75' }, 'Move or add plants'))
+                  h('button', { onClick: function() { cgUpd({ phase: 'plan', showAdvanceReview: false, lastFeedback: { icon: '\u270F', title: 'Planning mode', detail: 'Select a crop to add it, or clear a planted plot before redesigning.', tone: 'info' } }); }, className: 'flex min-h-[68px] flex-col items-start justify-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-left text-slate-700 transition-all hover:-translate-y-0.5 hover:border-slate-400' }, h('span', { className: 'text-lg', 'aria-hidden': true }, '\u270F\uFE0F'), h('span', { className: 'text-xs font-black' }, 'Edit Garden'), h('span', { className: 'text-xs opacity-75' }, 'Move or add plants'))
+                ),
+                cgShowAdvanceReview && h('div', { id: 'community-day-briefing', tabIndex: -1, role: 'region', 'aria-labelledby': 'community-day-briefing-title', className: 'mx-3 mb-3 overflow-hidden rounded-2xl border border-sky-300 bg-slate-950 text-white shadow-lg focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2 focus-visible:outline-sky-400 sm:mx-4 sm:mb-4', 'data-community-day-briefing': true },
+                  h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b border-white/10 bg-gradient-to-r from-sky-950 to-cyan-950 p-4' },
+                    h('div', { className: 'flex items-start gap-3' }, h('span', { className: 'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-sky-200 text-xl text-sky-950', 'aria-hidden': true }, '\uD83D\uDD0E'), h('div', null, h('div', { className: 'text-xs font-black uppercase tracking-[0.14em] text-sky-200' }, 'Day Change Briefing'), h('h4', { id: 'community-day-briefing-title', className: 'text-base font-black text-white' }, 'Review the decision before the simulation changes'), h('p', { className: 'mt-1 text-xs leading-relaxed text-sky-100' }, dayBriefingFromLabel + ' \u2192 ' + dayBriefingToLabel + ' \u00B7 Confirm what you did, what you expect, and what evidence to watch.'))),
+                    h('button', { onClick: function() { cgUpd({ showAdvanceReview: false }); }, className: 'min-h-[44px] rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-xs font-black text-white hover:bg-white/20', 'aria-label': 'Close Day Change Briefing' }, 'Close')
+                  ),
+                  h('div', { className: 'grid gap-2 p-3 md:grid-cols-3 sm:p-4' },
+                    h('article', { className: 'rounded-xl border border-emerald-300/25 bg-emerald-300/10 p-3', 'data-day-briefing-step': 'decision' }, h('div', { className: 'flex items-center gap-2' }, h('span', { className: 'flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-200 text-base text-emerald-950', 'aria-hidden': true }, dayBriefingDecision.icon), h('div', null, h('div', { className: 'text-xs font-black uppercase tracking-wide text-emerald-200' }, '1 \u00B7 Decision'), h('div', { className: 'text-sm font-black text-white' }, dayBriefingDecision.label))), h('p', { className: 'mt-2 text-xs leading-relaxed text-emerald-100' }, dayBriefingDecision.effect)),
+                    h('article', { className: 'rounded-xl border border-violet-300/25 bg-violet-300/10 p-3', 'data-day-briefing-step': 'prediction' }, h('div', { className: 'text-xs font-black uppercase tracking-wide text-violet-200' }, '2 \u00B7 Prediction'), h('div', { className: 'mt-1 text-sm font-black text-white' }, cgDayPrediction ? cgDayPrediction.label : 'No prediction selected yet'), h('p', { className: 'mt-2 text-xs leading-relaxed text-violet-100' }, cgDayPrediction ? 'This prediction will be checked against the next day report.' : 'A prediction is recommended, not required. You can still observe openly.')),
+                    h('article', { className: 'rounded-xl border border-amber-300/25 bg-amber-300/10 p-3', 'data-day-briefing-step': 'evidence' }, h('div', { className: 'text-xs font-black uppercase tracking-wide text-amber-200' }, '3 \u00B7 Evidence to watch'), h('div', { className: 'mt-1 text-sm font-black text-white' }, cgDayPrediction ? 'Test the prediction' : 'Notice the strongest signal'), h('p', { className: 'mt-2 text-xs leading-relaxed text-amber-100' }, dayBriefingEvidence))
+                  ),
+                  h('div', { className: 'flex flex-wrap items-center justify-between gap-3 border-t border-white/10 bg-black/20 p-3 sm:p-4' },
+                    h('div', { className: 'min-w-0 flex-1', role: 'status', 'aria-live': 'polite', 'aria-atomic': true, 'data-day-briefing-readiness': cgDayPrediction ? 'ready' : 'recommended' }, h('div', { className: 'text-xs font-black text-white' }, cgDayPrediction ? '\u2713 Ready to compare prediction and evidence' : 'Ready for an open observation'), h('p', { className: 'mt-1 text-xs leading-relaxed text-sky-100' }, 'The simulation will apply seasonal conditions, soil, moisture, plant neighbors, pests, and your selected care action.')),
+                    h('div', { className: 'flex flex-wrap items-center gap-2' },
+                      !cgDayPrediction && h('a', { href: '#community-prediction', className: 'inline-flex min-h-[44px] items-center justify-center rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-xs font-black text-white hover:bg-white/20', 'data-day-briefing-add-prediction': true }, 'Choose a prediction'),
+                      h('button', { onClick: function() { cgUpd({ showAdvanceReview: false }); }, className: 'min-h-[44px] rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-xs font-black text-white hover:bg-white/20' }, 'Back to care'),
+                      h('button', { onClick: cgAdvanceDay, className: 'min-h-[44px] rounded-lg bg-sky-200 px-4 py-2 text-sm font-black text-sky-950 shadow-sm hover:bg-sky-100', 'aria-label': 'Run ' + dayBriefingToLabel + ' simulation', 'data-community-run-day': true }, 'Run ' + dayBriefingToLabel)
+                    )
+                  )
                 )
               ),
 
               // ── Soil Chemistry + Economics + Pest HUD ──
-              h('section', { className: 'grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-emerald-50 p-3 shadow-sm lg:grid-cols-2 sm:p-4', 'data-community-stewardship-dashboard': true, 'aria-labelledby': 'community-stewardship-title' },
+              h('section', { className: 'grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-emerald-50 p-3 shadow-sm lg:grid-cols-2 sm:p-4', 'data-community-stewardship-dashboard': true, 'data-focus-stages': 'observe', 'aria-labelledby': 'community-stewardship-title' },
                 h('div', { className: 'flex flex-wrap items-start justify-between gap-2 lg:col-span-2' }, h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-slate-500' }, 'Whole-garden systems'), h('h3', { id: 'community-stewardship-title', className: 'text-base font-black text-slate-900' }, 'Stewardship Dashboard'), h('p', { className: 'mt-0.5 text-[11px] text-slate-600' }, 'Balance soil, spending, and living pest control as one connected system.')), h('span', { className: 'rounded-full bg-white px-2.5 py-1 text-[10px] font-black text-slate-600 shadow-sm' }, 'Live conditions')),
                 // Soil Chemistry Panel
                 h('div', { className: 'rounded-xl border border-amber-200 bg-gradient-to-br from-amber-50 to-yellow-50 p-3 shadow-sm' },
@@ -7604,8 +9664,8 @@ var d = (labToolData.companionPlanting) || {};
                   ),
                   // Soil actions
                   h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
-                    h('button', { onClick: cgAddLime, title: __alloT('stem.companionplanting.add_lime_to_raise_ph_0_50', 'Add lime to raise pH (+$0.50)'), className: 'min-h-[40px] rounded-lg bg-amber-100 px-2 py-2 text-[10px] font-black text-amber-800 transition-colors hover:bg-amber-200' }, __alloT('stem.companionplanting.lime', '\u2B06 Lime')),
-                    h('button', { onClick: cgAddSulfur, title: __alloT('stem.companionplanting.add_sulfur_to_lower_ph_0_50', 'Add sulfur to lower pH (+$0.50)'), className: 'min-h-[40px] rounded-lg bg-yellow-100 px-2 py-2 text-[10px] font-black text-yellow-800 transition-colors hover:bg-yellow-200' }, __alloT('stem.companionplanting.sulfur', '\u2B07 Sulfur'))
+                    h('button', { onClick: cgAddLime, title: __alloT('stem.companionplanting.add_lime_to_raise_ph_0_50', 'Add lime to raise pH (+$0.50)'), 'aria-label': __alloT('stem.companionplanting.add_lime_to_raise_ph_0_50', 'Add lime to raise pH (+$0.50)'), className: 'min-h-[40px] rounded-lg bg-amber-100 px-2 py-2 text-[10px] font-black text-amber-800 transition-colors hover:bg-amber-200' }, __alloT('stem.companionplanting.lime', '\u2B06 Lime')),
+                    h('button', { onClick: cgAddSulfur, title: __alloT('stem.companionplanting.add_sulfur_to_lower_ph_0_50', 'Add sulfur to lower pH (+$0.50)'), 'aria-label': __alloT('stem.companionplanting.add_sulfur_to_lower_ph_0_50', 'Add sulfur to lower pH (+$0.50)'), className: 'min-h-[40px] rounded-lg bg-yellow-100 px-2 py-2 text-[10px] font-black text-yellow-800 transition-colors hover:bg-yellow-200' }, __alloT('stem.companionplanting.sulfur', '\u2B07 Sulfur'))
                   )
                 ),
                 // Economics + Pest Panel
@@ -7630,14 +9690,14 @@ var d = (labToolData.companionPlanting) || {};
                     ),
                     h('div', { className: 'mt-2 grid grid-cols-2 gap-2' },
                       h('div', { className: 'h-2 overflow-hidden rounded-full bg-white shadow-inner', role: 'progressbar', 'aria-label': 'Pest pressure level', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.min(100, Math.round(cgPestPop)) }, h('div', { className: 'h-full rounded-full bg-red-500 transition-all', style: { width: Math.min(100, cgPestPop) + '%' } })),
-                      h('div', { className: 'h-2 overflow-hidden rounded-full bg-white shadow-inner', role: 'progressbar', 'aria-label': 'Beneficial insect level', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.min(100, Math.round(cgBeneficialPop)) }, h('div', { className: 'h-full rounded-full bg-emerald-500 transition-all', style: { width: Math.min(100, cgBeneficialPop) + '%' } }))
+                      h('div', { className: 'h-2 overflow-hidden rounded-full bg-white shadow-inner', role: 'progressbar', 'aria-label': 'Beneficial insect level', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.min(100, Math.round(cgBeneficialPop)) }, h('div', { className: 'h-full rounded-full bg-emerald-700 transition-all', style: { width: Math.min(100, cgBeneficialPop) + '%' } }))
                     ),
                     // IPM action buttons
                     h('div', { className: 'mt-3 grid grid-cols-2 gap-2' },
-                      h('button', { onClick: function() { cgIPMAction('ladybugs'); }, title: __alloT('stem.companionplanting.release_ladybugs_1_50', 'Release ladybugs ($1.50)'), className: 'min-h-[40px] rounded-lg bg-red-100 px-2 py-2 text-[10px] font-black text-red-700 transition-colors hover:bg-red-200' }, __alloT('stem.companionplanting.ladybugs', '\uD83D\uDC1E Ladybugs')),
-                      h('button', { onClick: function() { cgIPMAction('neem'); }, title: __alloT('stem.companionplanting.neem_spray_1_00', 'Neem spray ($1.00)'), className: 'min-h-[40px] rounded-lg bg-orange-100 px-2 py-2 text-[10px] font-black text-orange-700 transition-colors hover:bg-orange-200' }, __alloT('stem.companionplanting.neem', '\uD83C\uDF3F Neem')),
-                      h('button', { onClick: function() { cgIPMAction('handpick'); }, title: __alloT('stem.companionplanting.hand_pick_pests_free', 'Hand-pick pests (free)'), className: 'min-h-[40px] rounded-lg bg-yellow-100 px-2 py-2 text-[10px] font-black text-yellow-700 transition-colors hover:bg-yellow-200' }, __alloT('stem.companionplanting.pick', '\u270B Pick')),
-                      h('button', { onClick: function() { cgIPMAction('rowcovers'); }, title: __alloT('stem.companionplanting.row_covers_2_00', 'Row covers ($2.00)'), className: 'min-h-[40px] rounded-lg bg-blue-100 px-2 py-2 text-[10px] font-black text-blue-700 transition-colors hover:bg-blue-200' }, __alloT('stem.companionplanting.covers', '\uD83E\uDDF5 Covers'))
+                      h('button', { onClick: function() { cgIPMAction('ladybugs'); }, title: __alloT('stem.companionplanting.release_ladybugs_1_50', 'Release ladybugs ($1.50)'), 'aria-label': __alloT('stem.companionplanting.release_ladybugs_1_50', 'Release ladybugs ($1.50)'), className: 'min-h-[40px] rounded-lg bg-red-100 px-2 py-2 text-[10px] font-black text-red-700 transition-colors hover:bg-red-200' }, __alloT('stem.companionplanting.ladybugs', '\uD83D\uDC1E Ladybugs')),
+                      h('button', { onClick: function() { cgIPMAction('neem'); }, title: __alloT('stem.companionplanting.neem_spray_1_00', 'Neem spray ($1.00)'), 'aria-label': __alloT('stem.companionplanting.neem_spray_1_00', 'Neem spray ($1.00)'), className: 'min-h-[40px] rounded-lg bg-orange-100 px-2 py-2 text-[10px] font-black text-orange-700 transition-colors hover:bg-orange-200' }, __alloT('stem.companionplanting.neem', '\uD83C\uDF3F Neem')),
+                      h('button', { onClick: function() { cgIPMAction('handpick'); }, title: __alloT('stem.companionplanting.hand_pick_pests_free', 'Hand-pick pests (free)'), 'aria-label': __alloT('stem.companionplanting.hand_pick_pests_free', 'Hand-pick pests (free)'), className: 'min-h-[40px] rounded-lg bg-yellow-100 px-2 py-2 text-[10px] font-black text-yellow-700 transition-colors hover:bg-yellow-200' }, __alloT('stem.companionplanting.pick', '\u270B Pick')),
+                      h('button', { onClick: function() { cgIPMAction('rowcovers'); }, title: __alloT('stem.companionplanting.row_covers_2_00', 'Row covers ($2.00)'), 'aria-label': __alloT('stem.companionplanting.row_covers_2_00', 'Row covers ($2.00)'), className: 'min-h-[40px] rounded-lg bg-blue-100 px-2 py-2 text-[10px] font-black text-blue-700 transition-colors hover:bg-blue-200' }, __alloT('stem.companionplanting.covers', '\uD83E\uDDF5 Covers'))
                     )
                   )
                 )
@@ -7655,16 +9715,16 @@ var d = (labToolData.companionPlanting) || {};
               ),
 
               // ── Advisor Response ──
-              cgAdvisorResponse && h('div', { className: 'bg-emerald-50 rounded-xl border border-emerald-200 p-3' },
+              cgAdvisorResponse && h('div', { className: 'bg-emerald-50 rounded-xl border border-emerald-200 p-3', role: 'status', 'aria-live': 'polite', 'aria-atomic': true, 'data-community-advisor-response': true },
                 h('div', { className: 'flex items-center gap-2 mb-1' },
                   h('span', { className: 'text-[11px] font-bold text-emerald-700' }, __alloT('stem.companionplanting.garden_advisor', '\uD83E\uDDD1\u200D\uD83C\uDF3E Garden Advisor')),
-                  h('button', { onClick: function() { cgUpd({ advisorResponse: null }); }, className: 'transition-colors ml-auto text-[11px] text-slate-200 hover:text-slate-600' }, '\u2715')
+                  h('button', { onClick: function() { cgUpd({ advisorResponse: null }); }, className: 'transition-colors ml-auto flex h-11 w-11 items-center justify-center rounded-lg text-[11px] text-slate-600 hover:bg-white hover:text-slate-900', 'aria-label': 'Dismiss garden advisor response' }, '\u2715')
                 ),
                 h('p', { className: 'text-[11px] text-slate-600 leading-relaxed whitespace-pre-line' }, cgAdvisorResponse)
               ),
 
               // ── Achievements ──
-              h('section', { className: 'overflow-hidden rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 via-white to-orange-50 shadow-sm', 'data-community-garden-passport': true, 'aria-labelledby': 'community-passport-title' },
+              h('section', { className: 'overflow-hidden rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 via-white to-orange-50 shadow-sm', 'data-community-garden-passport': true, 'data-focus-stages': 'explore', 'aria-labelledby': 'community-passport-title' },
                 h('div', { className: 'flex flex-wrap items-start justify-between gap-3 border-b border-amber-100 p-3 sm:p-4' },
                   h('div', null, h('div', { className: 'text-[10px] font-black uppercase tracking-[0.16em] text-amber-700' }, 'Long-term progress'), h('h3', { id: 'community-passport-title', className: 'text-base font-black text-slate-900' }, 'Garden Passport'), h('p', { className: 'mt-0.5 text-[11px] text-slate-600' }, 'Collect stamps by growing, observing, and caring across seasons.')),
                   h('div', { className: 'flex items-center gap-2' }, h('div', { className: 'rounded-xl bg-white px-3 py-2 text-center shadow-sm' }, h('div', { className: 'text-lg font-black text-amber-800' }, earnedAchievementCount + '/' + CG_ACHIEVEMENTS.length), h('div', { className: 'text-[9px] font-bold uppercase text-slate-500' }, 'stamps earned')), h('button', { onClick: function() { cgUpd({ showAllAchievements: !cg.showAllAchievements }); }, 'aria-expanded': !!cg.showAllAchievements, className: 'min-h-[40px] rounded-xl border border-amber-200 bg-white px-3 py-2 text-[10px] font-black text-amber-800 shadow-sm hover:bg-amber-50' }, cg.showAllAchievements ? 'Show fewer' : 'Show all ' + CG_ACHIEVEMENTS.length))
@@ -7680,7 +9740,7 @@ var d = (labToolData.companionPlanting) || {};
               ),
 
               // ── Garden Journal (SEL reflections) ──
-              cgJournal && cgJournal.length > 0 && h('div', { className: 'bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl border border-violet-200 p-3' },
+              cgJournal && cgJournal.length > 0 && h('div', { className: 'bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl border border-violet-200 p-3', 'data-community-garden-journal': true, 'data-focus-stages': 'explore' },
                 h('h3', { className: 'text-xs font-bold text-violet-800 mb-2' }, '📝 Garden Journal (' + cgJournal.length + ' reflection' + (cgJournal.length !== 1 ? 's' : '') + ')'),
                 h('div', { className: 'space-y-2 max-h-40 overflow-y-auto' },
                   cgJournal.slice().reverse().map(function(entry, i) {

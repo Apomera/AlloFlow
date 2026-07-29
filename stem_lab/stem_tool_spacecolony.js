@@ -3035,7 +3035,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     }
                   },
                   disabled: !selectedTile || tileImprovements[selectedTile.x + ',' + selectedTile.y] || resources.materials < 8,
-                  className: 'py-2 rounded-xl text-[11px] font-bold ' + (selectedTile && !tileImprovements[selectedTile.x + ',' + selectedTile.y] && resources.materials >= 8 ? 'bg-orange-700 text-orange-200' : 'bg-slate-700 text-slate-200')
+                  className: 'py-2 rounded-xl text-[11px] font-bold ' + (selectedTile && !tileImprovements[selectedTile.x + ',' + selectedTile.y] && resources.materials >= 8 ? 'bg-orange-700 text-orange-100' : 'bg-slate-700 text-slate-200')
                 }, t('stem.spacecolony.outpost_8', '\uD83C\uDFD5\uFE0F Outpost (-8\uD83E\uDEA8)'))
               ),
               // Terraforming Progress
@@ -3608,7 +3608,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                             if (typeof addXP === 'function') addXP(5, 'Talked to ' + st.name);
                           }).catch(function () { upd('settlerChatLoading', false); });
                         },
-                        className: 'transition-colors mt-1 col-span-2 px-2 py-0.5 rounded bg-indigo-800 text-indigo-300 text-[11px] hover:bg-indigo-700 active:scale-[0.97]'
+                        className: 'transition-colors mt-1 col-span-2 px-2 py-0.5 rounded bg-indigo-800 text-indigo-300 text-[11px] hover:bg-indigo-900 active:scale-[0.97]'
                       }, t('stem.spacecolony.talk', '\uD83D\uDCAC Talk'))
                     )
                   );
@@ -3705,7 +3705,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                           upd('colonyCharterProposal', proposal);
                           if (addToast) addToast('📜 Bounded amendment ready for public review', 'success');
                         }).catch(function () { upd('charterForgeBusy', false); if (addToast) addToast('The Charter Lab could not translate this proposal.', 'error'); });
-                      }, className: 'rounded-lg px-3 py-2 text-[11px] font-black ' + (aiHintsEnabled && callGemini && !d.charterForgeBusy && (d.colonyCharterClaim || '').trim().length >= 15 && (d.colonyCharterReasoning || '').trim().length >= 30 ? 'bg-cyan-700 text-white hover:bg-cyan-600' : 'bg-slate-800 text-slate-600') }, d.charterForgeBusy ? 'Translating into bounded JSON...' : '✨ Translate proposal')
+                      }, className: 'rounded-lg px-3 py-2 text-[11px] font-black ' + (aiHintsEnabled && callGemini && !d.charterForgeBusy && (d.colonyCharterClaim || '').trim().length >= 15 && (d.colonyCharterReasoning || '').trim().length >= 30 ? 'bg-cyan-700 text-white hover:bg-cyan-600' : 'bg-slate-800 text-slate-300') }, d.charterForgeBusy ? 'Translating into bounded JSON...' : '✨ Translate proposal')
                     ),
                     React.createElement('p', { className: 'mt-2 text-[11px] text-slate-300' }, 'Translation unlocks after 15 characters of proposal and 30 characters of your own reasoning. The no-AI compact uses the identical evaluator.')
                   ),
@@ -3764,7 +3764,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                             var charterJournal = scienceJournal.slice(); charterJournal.push({ turn: turn, source: 'Charter Lab: ' + approved.name, fact: studentReasoning + ' Public response: ' + studentResponse + ' Testable civic rule: ' + charterTriggerLabels[approved.rule.trigger] + '; +' + approved.rule.benefitAmount + ' ' + approved.rule.benefitResource + ', -' + approved.rule.costAmount + ' ' + approved.rule.costResource + ', ' + (approved.rule.socialDelta > 0 ? '+' : '') + approved.rule.socialDelta + ' ' + approved.rule.socialAxis + '.' }); upd('scienceJournal', charterJournal);
                             if (addToast) addToast('📜 ' + approved.name + ' enacted for ' + approved.rule.duration + ' sols', 'success');
                             if (typeof addXP === 'function') addXP(25, 'Kepler Colony: Justified civic amendment');
-                          }, className: 'rounded-lg px-3 py-2 text-[11px] font-black ' + (resources.science >= charterProposal.enactCostScience && (d.colonyCharterClaim || '').trim().length >= 15 && (d.colonyCharterReasoning || '').trim().length >= 30 && charterResponseReady ? 'bg-emerald-700 text-white hover:bg-emerald-600' : 'bg-slate-800 text-slate-600') }, charterResponseReady ? 'Enact trial rule' : 'Answer council first')
+                          }, className: 'rounded-lg px-3 py-2 text-[11px] font-black ' + (resources.science >= charterProposal.enactCostScience && (d.colonyCharterClaim || '').trim().length >= 15 && (d.colonyCharterReasoning || '').trim().length >= 30 && charterResponseReady ? 'bg-emerald-700 text-white hover:bg-emerald-600' : 'bg-slate-800 text-slate-300') }, charterResponseReady ? 'Enact trial rule' : 'Answer council first')
                         )
                       )
                     );
@@ -3838,7 +3838,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                             upd('colonyCharterReviewId', null); upd('colonyCharterConclusion', '');
                             if (addToast) addToast('📜 Civic conclusion added to the Evidence Board', 'success');
                             if (typeof addXP === 'function') addXP(20, 'Kepler Colony: Evaluated civic trial');
-                          }, className: 'rounded-lg px-3 py-2 text-[11px] font-black ' + ((d.colonyCharterConclusion || '').trim().length >= 35 ? 'bg-emerald-700 text-white hover:bg-emerald-600' : 'bg-slate-800 text-slate-600') }, 'Publish civic finding')
+                          }, className: 'rounded-lg px-3 py-2 text-[11px] font-black ' + ((d.colonyCharterConclusion || '').trim().length >= 35 ? 'bg-emerald-700 text-white hover:bg-emerald-600' : 'bg-slate-800 text-slate-300') }, 'Publish civic finding')
                         )
                       )
                     );
@@ -4038,7 +4038,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                             if (d.colonyTTS) colonySpeak(mentorResult, gs4.specialty === 'biology' || gs4.name === 'Mae Jemison' || gs4.name === 'Rachel Carson' || gs4.name === 'Rosalind Franklin' || gs4.name === 'Ada Lovelace' ? 'female' : 'narrator');
                           }).catch(function () { upd('mentorChatLoading', null); });
                         },
-                        className: 'transition-colors mt-1 w-full py-1 rounded-lg bg-yellow-800 text-yellow-200 text-[11px] font-bold hover:bg-yellow-700 active:scale-[0.97]'
+                        className: 'transition-colors mt-1 w-full py-1 rounded-lg bg-yellow-800 text-yellow-200 text-[11px] font-bold hover:bg-yellow-900 active:scale-[0.97]'
                       }, d.mentorChatLoading === gs4.name ? '\u23F3...' : '\uD83D\uDCAC Consult')
                     );
                   })
@@ -4102,7 +4102,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                         var hypothesisLog = gameLog.slice(); hypothesisLog.push('\uD83D\uDCCB Working model: ' + hypothesis.title); upd('colonyLog', hypothesisLog);
                         if (addToast) addToast((wasUnchosen ? 'Working model adopted: ' : 'Working model revised: ') + hypothesis.title, 'info');
                         if (wasUnchosen && typeof addXP === 'function') addXP(20, 'Kepler Colony: Evidence-based model');
-                      }, className: 'w-full rounded-lg px-2 py-1.5 text-[11px] font-bold transition-colors ' + (isWorking ? 'bg-emerald-900/50 text-emerald-300' : canChoose ? 'bg-orange-800 text-orange-100 hover:bg-orange-700' : 'bg-slate-800 text-slate-600') },
+                      }, className: 'w-full rounded-lg px-2 py-1.5 text-[11px] font-bold transition-colors ' + (isWorking ? 'bg-emerald-900/50 text-emerald-300' : canChoose ? 'bg-orange-800 text-orange-100 hover:bg-orange-700' : 'bg-slate-800 text-slate-300') },
                         isWorking ? '\u2713 Current working model' : fieldEvidence.length < 2 ? 'Need 2 observations' : 'Adopt working model'
                       )
                     );
@@ -4199,7 +4199,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                           upd('colonyForgeParentArtifactId', artifact.id);
                           if (artifact.site) upd('colonyForgeSite', artifact.site);
                           if (addToast) addToast('🧬 Revision loaded. Remix or regenerate before founding iteration ' + ((artifact.iteration || 1) + 1) + '.', 'info');
-                        }, className: 'rounded-lg px-2.5 py-1.5 text-[11px] font-bold ' + (artifact.reviewedTurn && activeArtifacts.length < 3 ? 'bg-fuchsia-800 text-white hover:bg-fuchsia-700' : 'bg-slate-800 text-slate-600') }, artifact.reviewedTurn ? 'Revise blueprint' : 'Review before revising')
+                        }, className: 'rounded-lg px-2.5 py-1.5 text-[11px] font-bold ' + (artifact.reviewedTurn && activeArtifacts.length < 3 ? 'bg-fuchsia-800 text-white hover:bg-fuchsia-700' : 'bg-slate-800 text-slate-300') }, artifact.reviewedTurn ? 'Revise blueprint' : 'Review before revising')
                       )
                     );
                   })),
@@ -4232,7 +4232,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                           upd('colonyArtifactReviewId', null); upd('colonyArtifactConclusion', '');
                           if (addToast) addToast('📊 Trial conclusion added to the Evidence Board', 'success');
                           if (typeof addXP === 'function') addXP(20, 'Kepler Colony: Evaluated field trial');
-                        }, className: 'rounded-lg px-3 py-2 text-[11px] font-black ' + ((d.colonyArtifactConclusion || '').trim().length >= 30 ? 'bg-emerald-700 text-white hover:bg-emerald-600' : 'bg-slate-800 text-slate-600') }, 'Publish finding')
+                        }, className: 'rounded-lg px-3 py-2 text-[11px] font-black ' + ((d.colonyArtifactConclusion || '').trim().length >= 30 ? 'bg-emerald-700 text-white hover:bg-emerald-600' : 'bg-slate-800 text-slate-300') }, 'Publish finding')
                       )
                     )
                   )
@@ -4258,7 +4258,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                           upd('colonyArtifactProposal', proposal);
                           if (addToast) addToast('\uD83D\uDDFF Artifact proposal ready for review', 'success');
                         }).catch(function () { upd('artifactForgeBusy', false); if (addToast) addToast('The Forge could not generate a proposal.', 'error'); });
-                      }, className: 'rounded-lg px-3 py-2 text-[11px] font-black ' + (aiHintsEnabled && callGemini && !d.artifactForgeBusy && (d.colonyForgeBrief || '').trim().length >= 12 && (d.colonyForgeReasoning || '').trim().length >= 25 ? 'bg-fuchsia-700 text-white hover:bg-fuchsia-600' : 'bg-slate-800 text-slate-600') }, d.artifactForgeBusy ? 'Generating bounded JSON...' : '\u2728 Generate proposal')
+                      }, className: 'rounded-lg px-3 py-2 text-[11px] font-black ' + (aiHintsEnabled && callGemini && !d.artifactForgeBusy && (d.colonyForgeBrief || '').trim().length >= 12 && (d.colonyForgeReasoning || '').trim().length >= 25 ? 'bg-fuchsia-700 text-white hover:bg-fuchsia-600' : 'bg-slate-800 text-slate-300') }, d.artifactForgeBusy ? 'Generating bounded JSON...' : '\u2728 Generate proposal')
                     ),
                     !aiHintsEnabled && React.createElement('p', { className: 'mt-2 text-[11px] text-amber-300' }, 'AI generation is off. The prototype still uses the identical validated recipe and rule contract.'),
                     React.createElement('p', { className: 'mt-2 text-[11px] text-slate-300' }, 'Generation unlocks after 12 characters of design detail and 25 characters of your own strategic reasoning.')
@@ -4323,7 +4323,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                             var forgeJournal = scienceJournal.slice(); forgeJournal.push({ turn: turn, source: 'Founder Forge: ' + approved.name, fact: playerReasoning + ' Founded at ' + foundedSite.name + ' (' + foundedSite.type + '). Testable rule: ' + approved.rule.title + '.' }); upd('scienceJournal', forgeJournal);
                             if (addToast) addToast('🗿 ' + approved.name + ' founded at ' + foundedSite.name + ' for ' + approved.rule.duration + ' sols', 'success');
                             if (typeof addXP === 'function') addXP(25, 'Kepler Colony: Justified artifact');
-                          }, className: 'rounded-lg px-3 py-2 text-[11px] font-black ' + (forgeSite && resources.materials >= artifactProposal.foundCost.materials && resources.science >= artifactProposal.foundCost.science && (d.colonyForgeReasoning || '').trim().length >= 25 ? 'bg-emerald-700 text-white hover:bg-emerald-600' : 'bg-slate-800 text-slate-600') }, 'Found this module')
+                          }, className: 'rounded-lg px-3 py-2 text-[11px] font-black ' + (forgeSite && resources.materials >= artifactProposal.foundCost.materials && resources.science >= artifactProposal.foundCost.science && (d.colonyForgeReasoning || '').trim().length >= 25 ? 'bg-emerald-700 text-white hover:bg-emerald-600' : 'bg-slate-800 text-slate-300') }, 'Found this module')
                         )
                       )
                     );

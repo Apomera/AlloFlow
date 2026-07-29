@@ -3421,10 +3421,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                     className: 'text-left px-3 py-2.5 rounded-lg border-2 text-sm font-medium transition focus:outline-none focus:ring-2 focus:ring-violet-400 '
                       + (resolved
                         ? (isCorrect ? 'border-emerald-400 bg-emerald-50 text-emerald-900'
-                          : (isSelected ? 'border-red-400 bg-red-50 text-red-900' : 'border-slate-200 bg-slate-50 text-slate-400'))
+                          : (isSelected ? 'border-red-400 bg-red-50 text-red-900' : 'border-slate-400 bg-slate-50 text-slate-600'))
                         : 'transition-colors border-slate-300 bg-white hover:border-violet-500 hover:bg-violet-50')
                   },
-                    h('span', { className: 'inline-block w-6 h-6 mr-2 rounded-full text-[11px] font-bold text-center leading-6 ' + (resolved && isCorrect ? 'bg-emerald-500 text-white' : resolved && isSelected ? 'bg-red-500 text-white' : 'bg-slate-200 text-slate-600') }, String.fromCharCode(65 + i)),
+                    h('span', { className: 'inline-block w-6 h-6 mr-2 rounded-full text-[11px] font-bold text-center leading-6 ' + (resolved && isCorrect ? 'bg-emerald-700 text-white' : resolved && isSelected ? 'bg-red-600 text-white' : 'bg-slate-200 text-slate-600') }, String.fromCharCode(65 + i)),
                     opt
                   );
                 })
@@ -3905,8 +3905,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                         + (maxed
                           ? 'bg-emerald-100 text-emerald-700 cursor-default'
                           : canAfford
-                            ? 'transition-colors bg-amber-500 hover:bg-amber-600 text-white'
-                            : 'bg-slate-100 text-slate-400 cursor-not-allowed'),
+                            ? 'transition-colors bg-amber-700 hover:bg-amber-800 text-white'
+                            : 'bg-slate-100 text-slate-600 cursor-not-allowed'),
                       'aria-label': maxed ? s.name + ' is maxed' : 'Upgrade ' + s.name + ' for ' + cost + ' essence'
                     }, maxed ? 'Maxed' : ('\u2B50 ' + cost))
                   );

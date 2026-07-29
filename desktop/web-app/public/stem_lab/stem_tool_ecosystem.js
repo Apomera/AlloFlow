@@ -728,7 +728,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           }, '\u2190 ' + props.backLabel),
           h('button', {
             type: 'button',
-            className: 'min-h-11 flex-1 rounded-xl bg-emerald-700 py-2 text-xs font-bold text-white shadow-md transition-colors hover:bg-emerald-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 active:scale-[0.97]',
+            className: 'min-h-11 flex-1 rounded-xl bg-emerald-700 py-2 text-xs font-bold text-white shadow-md transition-colors hover:bg-emerald-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 active:scale-[0.97]',
             onClick: props.step < 4 ? props.onNext : props.onDismiss
           }, props.step < 4 ? props.nextLabel + ' \u2192' : '\u2714 ' + props.startLabel)
         )
@@ -3378,8 +3378,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           h('div', { className: 'flex items-center gap-3 bg-slate-100 dark:bg-slate-800 rounded-lg px-3 py-2' },
             h('button', { className: 'px-3 py-1 text-xs font-bold rounded-lg transition-all ' +
                 (simPaused
-                  ? 'transition-colors bg-emerald-700 text-white hover:bg-emerald-600 active:scale-[0.97]'
-                  : 'transition-colors bg-slate-300 dark:bg-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-400 active:scale-[0.97]'),
+                  ? 'transition-colors bg-emerald-700 text-white hover:bg-emerald-800 active:scale-[0.97]'
+                  : 'transition-colors bg-slate-300 dark:bg-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-[0.97]'),
               onClick: function() {
                 var newPaused = !simPaused;
                 playSound('pause');
@@ -3966,8 +3966,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           h('div', { className: 'flex items-center gap-3 bg-slate-100 dark:bg-slate-800 rounded-lg px-3 py-2' },
             h('button', { className: 'px-3 py-1 text-xs font-bold rounded-lg transition-all ' +
                 (simPaused
-                  ? 'transition-colors bg-teal-700 text-white hover:bg-teal-600 active:scale-[0.97]'
-                  : 'transition-colors bg-slate-300 dark:bg-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-400 active:scale-[0.97]'),
+                  ? 'transition-colors bg-teal-700 text-white hover:bg-teal-800 active:scale-[0.97]'
+                  : 'transition-colors bg-slate-300 dark:bg-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-[0.97]'),
               onClick: function() {
                 var newPaused = !simPaused;
                 playSound('pause');
@@ -5161,7 +5161,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                           setTimeout(function() { checkEcoChallenges(); }, 50);
                         }
                       },
-                      className: 'px-2 py-0.5 rounded bg-orange-100 hover:bg-orange-200 text-orange-700 text-[10px] font-bold transition-all active:scale-[0.97]'
+                      className: 'px-2 py-0.5 rounded bg-orange-100 hover:bg-orange-200 text-orange-800 text-[10px] font-bold transition-all active:scale-[0.97]'
                     }, __alloT('stem.ecosystem.study_term', 'Study Term (+5 RP)'))
                   ),
                   lookedUp && h('div', { className: 'text-xs text-slate-600 mt-1 font-normal' }, ECO_VOCAB[currentQ.concept])
@@ -5169,7 +5169,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               })(),
 
               h('button', { 'aria-label': __alloT('stem.ecosystem.next_question', 'Next Question'),
-                className: 'w-full py-2 rounded-lg text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-600 transition-all active:scale-[0.97]',
+                className: 'w-full py-2 rounded-lg text-xs font-bold bg-emerald-700 text-white hover:bg-emerald-800 transition-all active:scale-[0.97]',
                 onClick: nextQuiz
               }, __alloT('stem.ecosystem.next_question', 'Next Question') + ' ➔')
             )

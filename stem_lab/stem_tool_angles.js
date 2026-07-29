@@ -902,7 +902,7 @@ window.StemLab = window.StemLab || {
           anglePins.length > 0 && h('div', { className: 'flex gap-1.5 flex-wrap items-center' },
             h('span', { className: 'text-[11px] text-slate-600 font-bold' }, 'Pins:'),
             anglePins.map(function(pin, i) {
-              return h('button', { 'aria-label': t('stem.angles.complementary', 'Complementary'), key: i, onClick: function() { removePin(i); }, className: 'px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-700 border border-amber-600 hover:bg-red-100 hover:text-red-600 hover:border-red-600 transition-all', title: t('stem.angles.click_to_remove', 'Click to remove') },
+              return h('button', { 'aria-label': t('stem.angles.complementary', 'Complementary'), key: i, onClick: function() { removePin(i); }, className: 'px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-700 border border-amber-600 hover:bg-red-100 hover:text-red-700 hover:border-red-700 transition-all', title: t('stem.angles.click_to_remove', 'Click to remove') },
                 pin.deg + '\u00B0 \u2715'
               );
             })
@@ -944,7 +944,7 @@ window.StemLab = window.StemLab || {
           callGemini && h('div', { className: 'bg-pink-50 rounded-xl p-3 border border-pink-200' },
             h('div', { className: 'flex items-center gap-2 mb-1.5' },
               h('span', { className: 'text-[11px] font-bold text-pink-600 uppercase' }, t('stem.angles.ai_angle_tutor', '\uD83E\uDD16 AI Angle Tutor')),
-              h('button', { 'aria-label': t('stem.angles.click_to_get_personalized_angle_tips', 'Click to get personalized angle tips!'), onClick: askAITutor, disabled: aiLoading, className: 'ml-auto px-3 py-1 text-[11px] font-bold rounded-full transition-all ' + (aiLoading ? 'bg-pink-200 text-pink-400 cursor-wait' : 'bg-pink-700 text-white hover:bg-pink-600 cursor-pointer') },
+              h('button', { 'aria-label': t('stem.angles.click_to_get_personalized_angle_tips', 'Click to get personalized angle tips!'), onClick: askAITutor, disabled: aiLoading, className: 'ml-auto px-3 py-1 text-[11px] font-bold rounded-full transition-all ' + (aiLoading ? 'bg-pink-200 text-pink-800 cursor-wait' : 'bg-pink-700 text-white hover:bg-pink-600 cursor-pointer') },
                 aiLoading ? '\u23F3 Thinking...' : '\u2728 Ask for Tips')
             ),
             aiAdvice
@@ -1030,7 +1030,7 @@ window.StemLab = window.StemLab || {
                 className: 'flex-1 px-3 py-2 border-2 border-amber-600 rounded-lg text-sm font-bold text-amber-800 focus:border-amber-500'
               }),
               h('span', { className: 'text-sm text-amber-600' }, '\u00B0'),
-              h('button', { 'aria-label': t('stem.angles.check', 'Check'), onClick: checkEstimate, className: 'px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-600 transition-all' }, t('stem.angles.check_2', '\u2714 Check'))
+              h('button', { 'aria-label': t('stem.angles.check', 'Check'), onClick: checkEstimate, className: 'px-4 py-2 bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-800 transition-all' }, t('stem.angles.check_2', '\u2714 Check'))
             ),
             estimateResult && h('div', { className: 'mt-2 p-2 rounded-lg text-sm font-bold ' + (estimateResult.ok ? 'bg-green-100 text-green-700 border border-green-300' : 'bg-red-100 text-red-700 border border-red-300') },
               estimateResult.ok

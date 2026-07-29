@@ -31,6 +31,283 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+  // === Aquarium ecosystem core (pure functions; shared by simulation, UI, and tests) ===
+  var AquariumEcosystemCore = (function() {
+    function clamp(value, minimum, maximum) {
+      var numeric = Number(value);
+      if (!isFinite(numeric)) numeric = minimum;
+      return Math.max(minimum, Math.min(maximum, numeric));
+    }
+
+    function appendBounded(history, item, limit) {
+      var safeHistory = Array.isArray(history) ? history : [];
+      var safeLimit = Math.max(1, Math.floor(Number(limit) || 48));
+      return safeHistory.concat([item]).slice(-safeLimit);
+    }
+
+    // Freshwater oxygen-solubility approximation from 0-30 C, with a conservative
+    // salinity correction. This is a teaching model, not a substitute for a probe.
+    function estimateOxygenSaturationMgL(tempF, salinityPpt) {
+      var tempC = clamp((Number(tempF) - 32) * 5 / 9, 0, 30);
+      var freshwater = 14.652 - 0.41022 * tempC + 0.007991 * tempC * tempC - 0.000077774 * tempC * tempC * tempC;
+      var salinityFactor = 1 - clamp(salinityPpt, 0, 35) * 0.006;
+      return Math.round(clamp(freshwater * salinityFactor, 4, 14.6) * 100) / 100;
+    }
+
+    function calculateVitality(input) {
+      input = input || {};
+      var chemistry = input.chemistry || {};
+      var species = input.species || {};
+      var oxygen = clamp(chemistry.dissolvedO2, 0, 20);
+      var ammonia = clamp(chemistry.ammonia, 0, 20);
+      var nitrite = clamp(chemistry.nitrite, 0, 20);
+      var nitrate = clamp(chemistry.nitrate, 0, 500);
+      var temperature = clamp(chemistry.temp, 30, 110);
+      var pH = clamp(chemistry.pH, 0, 14);
+      var oxygenVitality = oxygen >= 6 ? 100 : oxygen >= 4 ? 65 + (oxygen - 4) * 17.5 : oxygen >= 2 ? 25 + (oxygen - 2) * 20 : oxygen * 12.5;
+      var nitrogenVitality = Math.max(0, 100 - Math.min(100, ammonia * 60 + nitrite * 80 + Math.max(0, nitrate - 40) * 0.8));
+      var temperatureVitality = species.tempRange
+        ? (temperature >= species.tempRange[0] && temperature <= species.tempRange[1] ? 100 : Math.max(0, 100 - Math.min(Math.abs(temperature - species.tempRange[0]), Math.abs(temperature - species.tempRange[1])) * 20))
+        : 80;
+      var pHVitality = species.pHRange
+        ? (pH >= species.pHRange[0] && pH <= species.pHRange[1] ? 100 : Math.max(0, 100 - Math.min(Math.abs(pH - species.pHRange[0]), Math.abs(pH - species.pHRange[1])) * 50))
+        : 80;
+      var loadPct = clamp(input.loadPct, 0, 300);
+      var plantBiomass = clamp(input.plantBiomass, 0, 1000);
+      var hunger = clamp(input.hunger, 0, 100);
+      var stress = clamp(input.stress, 0, 100);
+      var illnessSeverity = clamp(input.illnessSeverity, 0, 3);
+      var spaceVitality = Math.max(20, 100 - Math.max(0, loadPct - 60) * 1.5);
+      var shelterVitality = plantBiomass > 6 ? 100 : plantBiomass > 3 ? 80 : plantBiomass > 0 ? 58 : 35;
+      var factors = [
+        { id: 'oxygen', label: 'O\u2082', score: Math.round(oxygenVitality), detail: oxygen.toFixed(1) + ' mg/L dissolved oxygen' },
+        { id: 'nitrogen', label: 'Water', score: Math.round(nitrogenVitality), detail: 'NH\u2083 ' + ammonia.toFixed(2) + ', NO\u2082 ' + nitrite.toFixed(2) },
+        { id: 'temperature', label: 'Temp', score: Math.round(temperatureVitality), detail: temperature.toFixed(1) + '\u00B0F; species range ' + (species.tempRange ? species.tempRange[0] + '\u2013' + species.tempRange[1] : 'unknown') },
+        { id: 'ph', label: 'pH', score: Math.round(pHVitality), detail: pH.toFixed(1) + '; species range ' + (species.pHRange ? species.pHRange[0] + '\u2013' + species.pHRange[1] : 'unknown') },
+        { id: 'space', label: 'Space', score: Math.round(spaceVitality), detail: Math.round(loadPct) + '% bioload capacity' },
+        { id: 'shelter', label: 'Shelter', score: Math.round(shelterVitality), detail: plantBiomass.toFixed(1) + ' plant biomass' },
+        { id: 'nutrition', label: 'Nutrition', score: Math.round(Math.max(0, 100 - hunger)), detail: hunger.toFixed(0) + '% hunger' },
+        { id: 'stress', label: 'Calm', score: Math.round(Math.max(0, 100 - stress)), detail: stress.toFixed(0) + '% stress' },
+        { id: 'illness', label: 'Health', score: Math.round(Math.max(0, 100 - illnessSeverity * 32)), detail: illnessSeverity > 0 ? 'illness severity ' + illnessSeverity : 'no detected illness' }
+      ];
+      var score = Math.round(
+        oxygenVitality * 0.15 + nitrogenVitality * 0.15 + temperatureVitality * 0.10 + pHVitality * 0.08 +
+        spaceVitality * 0.07 + shelterVitality * 0.05 + Math.max(0, 100 - hunger) * 0.15 +
+        Math.max(0, 100 - stress) * 0.12 + Math.max(0, 100 - illnessSeverity * 32) * 0.13
+      );
+      factors.sort(function(a, b) { return a.score - b.score; });
+      return { score: clamp(score, 0, 100), limiting: factors[0], factors: factors };
+    }
+
+    function classifyOrganismPlantRelationship(species) {
+      species = species || {};
+      var habitat = String(species.habitat || '').toLowerCase();
+      var diet = String(species.diet || '').toLowerCase();
+      var plantShelterDependent = /plant|vegetat|submerged root|mangrove|seagrass|kelp|reed|marsh|floodplain/.test(habitat);
+      var directPlantEater = /aquatic plant|vegetation|seagrass|kelp|leafy green|plant matter|tender leaf|leaves/.test(diet);
+      var algaeGrazer = typeof species.grazeRate === 'number' || /algae|biofilm|micrograzer/.test(diet);
+      var detritusRecycler = /detritivore|detritus|decaying plant|organic particle/.test(diet);
+      var load = clamp(species.load, 0, 50);
+      var herbivoryRate = directPlantEater ? Math.max(0.002, load * 0.006) : 0;
+      var roles = [];
+      if (plantShelterDependent) roles.push('uses plant cover');
+      if (directPlantEater) roles.push('may browse plants');
+      if (algaeGrazer) roles.push('grazes algae/biofilm');
+      if (detritusRecycler) roles.push('recycles detritus');
+      if (!roles.length) roles.push('indirect water-quality link');
+      return {
+        plantShelterDependent: plantShelterDependent,
+        directPlantEater: directPlantEater,
+        algaeGrazer: algaeGrazer,
+        detritusRecycler: detritusRecycler,
+        herbivoryRate: herbivoryRate,
+        roles: roles,
+        summary: roles.join(' \u2022 ')
+      };
+    }
+
+    function compareInterventionFactors(before, after) {
+      before = before || {};
+      after = after || {};
+      function listSignature(value) {
+        return (Array.isArray(value) ? value : []).map(String).sort().join('\u001f');
+      }
+      var changes = [];
+      if (listSignature(before.plants) !== listSignature(after.plants)) changes.push({ id: 'plants', label: 'plant community' });
+      if (listSignature(before.organisms) !== listSignature(after.organisms)) changes.push({ id: 'organisms', label: 'organism community' });
+      var beforeEquipment = before.equipment || {};
+      var afterEquipment = after.equipment || {};
+      var equipmentKeys = {};
+      Object.keys(beforeEquipment).concat(Object.keys(afterEquipment)).forEach(function(key) { equipmentKeys[key] = true; });
+      Object.keys(equipmentKeys).sort().forEach(function(key) {
+        if (Number(beforeEquipment[key] || 0) !== Number(afterEquipment[key] || 0)) changes.push({ id: 'equipment:' + key, label: key + ' level' });
+      });
+      if ((before.lightsOn !== false) !== (after.lightsOn !== false)) changes.push({ id: 'lights', label: 'light state' });
+      return {
+        changes: changes,
+        count: changes.length,
+        interventionDetected: changes.length > 0,
+        controlled: changes.length === 1,
+        confounded: changes.length > 1,
+        summary: changes.length ? changes.map(function(change) { return change.label; }).join(', ') : 'no intervention detected'
+      };
+    }
+
+    function classifyDeltaDirection(value, deadband) {
+      var numeric = Number(value);
+      var threshold = Math.max(0, Number(deadband) || 0);
+      if (!isFinite(numeric) || Math.abs(numeric) <= threshold) return 'stable';
+      return numeric > 0 ? 'rise' : 'fall';
+    }
+
+    function evaluateDirectionPredictions(predictions, deltas) {
+      predictions = predictions || {};
+      deltas = deltas || {};
+      var definitions = [
+        { id: 'oxygen', label: 'O\u2082', deadband: 0.05 },
+        { id: 'nitrate', label: 'NO\u2083', deadband: 0.1 },
+        { id: 'vitality', label: 'Vitality', deadband: 1 }
+      ];
+      var matched = 0;
+      var total = 0;
+      var results = definitions.map(function(definition) {
+        var predicted = ['rise', 'stable', 'fall'].indexOf(predictions[definition.id]) !== -1 ? predictions[definition.id] : null;
+        var observed = classifyDeltaDirection(deltas[definition.id], definition.deadband);
+        var isMatch = predicted !== null && predicted === observed;
+        if (predicted !== null) {
+          total++;
+          if (isMatch) matched++;
+        }
+        return {
+          id: definition.id,
+          label: definition.label,
+          predicted: predicted,
+          observed: observed,
+          delta: Number(deltas[definition.id]) || 0,
+          matches: isMatch
+        };
+      });
+      return {
+        results: results,
+        matched: matched,
+        total: total,
+        score: total ? Math.round(matched / total * 100) : null,
+        complete: total === definitions.length
+      };
+    }
+    function buildMatterBudget(snapshot) {
+      snapshot = snapshot || {};
+      var fish = snapshot.fish || {};
+      var plants = snapshot.plants || {};
+      var bacteria = snapshot.bacteria || {};
+      var atmosphere = snapshot.atmosphere || {};
+      var equipment = snapshot.equipment || {};
+      var stock = snapshot.photosyntheticStock || {};
+      var chemistryDelta = snapshot.chemistryDelta || {};
+      function amount(value) {
+        var numeric = Number(value);
+        return isFinite(numeric) ? Math.max(0, numeric) : 0;
+      }
+      function round3(value) {
+        return Math.round(Number(value || 0) * 1000) / 1000;
+      }
+      function entry(label, value) {
+        return { label: label, value: round3(amount(value)) };
+      }
+      function makeBudget(id, label, unit, sources, sinks, observed) {
+        sources = sources.filter(function(item) { return item.value > 0; });
+        sinks = sinks.filter(function(item) { return item.value > 0; });
+        var sourceTotal = round3(sources.reduce(function(sum, item) { return sum + item.value; }, 0));
+        var sinkTotal = round3(sinks.reduce(function(sum, item) { return sum + item.value; }, 0));
+        var modeledNet = round3(sourceTotal - sinkTotal);
+        var observedNet = round3(Number(observed) || 0);
+        return {
+          id: id,
+          label: label,
+          unit: unit,
+          sources: sources,
+          sinks: sinks,
+          sourceTotal: sourceTotal,
+          sinkTotal: sinkTotal,
+          modeledNet: modeledNet,
+          observedNet: observedNet,
+          residual: round3(observedNet - modeledNet),
+          direction: classifyDeltaDirection(observedNet, id === 'nitrate' ? 0.1 : id === 'ammonia' ? 0.01 : 0.05)
+        };
+      }
+      var oxygenAtmosphere = Number(atmosphere.oxygenExchange) || 0;
+      var oxygen = makeBudget('oxygen', 'Dissolved O\u2082', 'mg/L/tick', [
+        entry('aquatic plants', plants.oxygenProduced),
+        entry('photosynthetic colonies', stock.oxygenProduced),
+        entry('aeration equipment', equipment.oxygenAdded),
+        entry('atmosphere entering water', Math.max(0, oxygenAtmosphere))
+      ], [
+        entry('organism respiration', fish.oxygenConsumed),
+        entry('plant night respiration', plants.nightOxygenConsumed),
+        entry('colony night respiration', stock.oxygenConsumed),
+        entry('atmosphere leaving water', Math.max(0, -oxygenAtmosphere))
+      ], chemistryDelta.dissolvedO2);
+      var carbon = makeBudget('co2', 'Dissolved CO\u2082', 'mg/L/tick', [
+        entry('organism respiration', fish.co2Released),
+        entry('plant night respiration', plants.nightCO2Released),
+        entry('colony night respiration', stock.co2Released)
+      ], [
+        entry('aquatic plant uptake', plants.co2Consumed),
+        entry('photosynthetic colony uptake', stock.co2Consumed),
+        entry('aeration removal', equipment.co2Removed),
+        entry('atmospheric off-gassing', atmosphere.co2Offgas)
+      ], chemistryDelta.co2);
+      var nitrate = makeBudget('nitrate', 'Nitrate NO\u2083', 'ppm/tick', [
+        entry('nitrite oxidation', bacteria.nitriteToNitrate)
+      ], [
+        entry('plant uptake', plants.nitrateConsumed)
+      ], chemistryDelta.nitrate);
+      var ammoniaSources = [
+        entry('organism waste', fish.ammoniaProduced),
+        entry('plant decomposition', plants.decompositionAmmonia)
+      ];
+      var ammoniaObserved = Number(chemistryDelta.ammonia) || 0;
+      var ammoniaSourceTotal = ammoniaSources.reduce(function(sum, item) { return sum + item.value; }, 0);
+      var inferredAmmoniaProcessing = Math.max(0, ammoniaSourceTotal - ammoniaObserved);
+      var ammonia = makeBudget('ammonia', 'Ammonia NH\u2083', 'ppm/tick', ammoniaSources, [
+        entry('filter + microbial processing (inferred)', inferredAmmoniaProcessing)
+      ], ammoniaObserved);
+      return [oxygen, carbon, ammonia, nitrate];
+    }
+    function createVitalityState(previous, instantaneous, tick) {
+      var prior = previous && typeof previous.score === 'number' ? previous : null;
+      var smoothed = prior ? Math.round(prior.score * 0.65 + instantaneous.score * 0.35) : instantaneous.score;
+      var change = prior ? smoothed - prior.score : 0;
+      var lowTicks = smoothed < 25 ? (prior ? prior.lowTicks || 0 : 0) + 1 : smoothed > 55 ? 0 : Math.max(0, (prior ? prior.lowTicks || 0 : 0) - 1);
+      var trend = change >= 2 ? 'recovering' : change <= -2 ? 'declining' : 'stable';
+      return {
+        score: clamp(smoothed, 0, 100),
+        instantaneous: instantaneous.score,
+        limitingId: instantaneous.limiting.id,
+        limitingLabel: instantaneous.limiting.label,
+        limitingScore: instantaneous.limiting.score,
+        lowTicks: lowTicks,
+        trend: trend,
+        change: change,
+        tick: tick
+      };
+    }
+
+    return {
+      clamp: clamp,
+      appendBounded: appendBounded,
+      estimateOxygenSaturationMgL: estimateOxygenSaturationMgL,
+      calculateVitality: calculateVitality,
+      classifyOrganismPlantRelationship: classifyOrganismPlantRelationship,
+      compareInterventionFactors: compareInterventionFactors,
+      classifyDeltaDirection: classifyDeltaDirection,
+      evaluateDirectionPredictions: evaluateDirectionPredictions,
+      buildMatterBudget: buildMatterBudget,
+      createVitalityState: createVitalityState
+    };
+  })();
+  window.AquariumEcosystemCore = AquariumEcosystemCore;
+  // === End aquarium ecosystem core ===
   // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -10909,6 +11186,10 @@ var d = (labToolData && labToolData._aquarium) || {};
               '.aqua-fish:hover { transform: scale(1.3) !important; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3)) !important; }',
 
               '@keyframes aquaBodySway { 0%, 100% { transform: scaleY(1) scaleX(1); } 30% { transform: scaleY(0.97) scaleX(1.02); } 70% { transform: scaleY(1.02) scaleX(0.98); } }',
+              '.aquarium-exchange-network { min-width: 610px; }',
+              '.aquarium-budget-flow { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: stretch; gap: 0.25rem; }',
+              '.aquarium-budget-arrow { display: flex; align-items: center; color: #67e8f9; font-size: 0.875rem; font-weight: 900; }',
+              '@media (max-width: 640px) { .aquarium-exchange-network { min-width: 0; } .aquarium-exchange-row { grid-template-columns: 1fr !important; } .aquarium-exchange-arrow { min-height: 34px; } .aquarium-budget-flow { grid-template-columns: 1fr; } .aquarium-budget-arrow { min-height: 1.25rem; justify-content: center; transform: rotate(90deg); } }',
 
               '.aqua-fish-svg svg { width: 100%; height: 100%; overflow: visible; }',
 
@@ -13972,7 +14253,8 @@ var d = (labToolData && labToolData._aquarium) || {};
             { id: 'feed', title: '4. Feed With Evidence', concept: 'Food reduces hunger, but leftovers decompose and add ammonia.', objective: 'Feed the display tank once when fish are hungry.', why: 'Overfeeding is one of the fastest ways to destabilize aquarium chemistry.', observe: 'Compare hunger and ammonia immediately before and after feeding.', predict: 'Predict how one feeding will change hunger and ammonia.', explain: 'Use the before-and-after values to explain the tradeoff created by feeding.' },
             { id: 'water', title: '5. Restore Water Quality', concept: 'A water change dilutes dissolved pollutants instead of hiding them.', objective: 'Perform one recommended water change.', why: 'Regular partial changes control nitrate and provide a safety response to ammonia or nitrite.', observe: 'Use the preview, then compare the recorded before-and-after chemistry.', predict: 'Predict how the selected percentage will change each nitrogen compound.', explain: 'Use dilution evidence to explain whether the change was large enough.' },
             { id: 'equipment', title: '6. Maintain Life Support', concept: 'Filters, heaters, lights, and aeration affect chemistry only while they are maintained.', objective: 'Upgrade, service, or repair one life-support system.', why: 'Degraded equipment loses output and critically neglected equipment can fail.', observe: 'Compare rated output, condition, actual output, and service cost.', predict: 'Predict which water parameter will respond first if this system loses output.', explain: 'Use equipment condition and chemistry evidence to justify the maintenance decision.' },
-            { id: 'stabilize', title: '7. Demonstrate Stability', concept: 'A healthy aquarium is a pattern maintained over time, not one perfect reading.', objective: 'Keep ammonia, nitrite, nitrate, and pH safe for five consecutive ticks.', why: 'Trends reveal whether the ecosystem can recover from feeding, growth, and equipment wear.', observe: 'Use the chemistry trend and event log to explain why the tank stayed stable.', predict: 'Predict the pattern a genuinely stable chemistry trend should show.', explain: 'Make a final claim about tank stability, cite multiple readings, and connect them to a cause.' }
+            { id: 'exchange', title: '7. Trace an Ecosystem Exchange', concept: 'Matter moves through a loop: organisms, microbes, plants, algae, atmosphere, and water continuously affect one another.', objective: 'Mark a baseline, make one ecosystem change, and observe at least six aquarium-hour ticks.', why: 'A before-and-after comparison separates a plausible cause from a single coincidental reading.', observe: 'Use the exchange history lanes to identify when oxygen, nitrate, or vitality changed.', predict: 'Predict the direction of oxygen, nitrate, and vitality after your intervention.', explain: 'Name the changed component, trace its pathway through the exchange network, and cite the baseline difference.' },
+            { id: 'stabilize', title: '8. Demonstrate Stability', concept: 'A healthy aquarium is a pattern maintained over time, not one perfect reading.', objective: 'Keep ammonia, nitrite, nitrate, and pH safe for five consecutive ticks.', why: 'Trends reveal whether the ecosystem can recover from feeding, growth, and equipment wear.', observe: 'Use the chemistry trend, vitality history, and event log to explain why the tank stayed stable.', predict: 'Predict the pattern a genuinely stable chemistry trend should show.', explain: 'Make a final claim about tank stability, cite multiple readings, and connect them to a cause.' }
           ];
 
           // ── Current state ──
@@ -14194,6 +14476,22 @@ var d = (labToolData && labToolData._aquarium) || {};
             if (stepId === 'feed') return { complete: !!feedingLog, label: feedingLog ? 'Feeding impact recorded.' : 'Feed the display tank once.' };
             if (stepId === 'water') return { complete: maintenanceLog.length > 0, label: maintenanceLog.length > 0 ? maintenanceLog.length + ' water change record' + (maintenanceLog.length === 1 ? '' : 's') + ' available.' : 'Perform a recommended water change.' };
             if (stepId === 'equipment') return { complete: d.tutorialEquipmentMaintained === true, label: d.tutorialEquipmentMaintained === true ? 'Life-support maintenance recorded.' : 'Upgrade, service, or repair one system.' };
+            if (stepId === 'exchange') {
+              var baselineAge = d.ecosystemBaseline && typeof d.ecosystemBaseline.tick === 'number' ? simTick - d.ecosystemBaseline.tick : 0;
+              var currentInterventionFactors = { plants: d.tankPlants || [], organisms: d.tankFish || [], equipment: d.equipment || {}, lightsOn: d.lightsOn !== false };
+              var currentInterventionSignature = JSON.stringify(currentInterventionFactors);
+              var tutorialInterventionComparison = d.ecosystemBaseline && d.ecosystemBaseline.factors
+                ? AquariumEcosystemCore.compareInterventionFactors(d.ecosystemBaseline.factors, currentInterventionFactors)
+                : null;
+              var interventionDetected = tutorialInterventionComparison
+                ? tutorialInterventionComparison.interventionDetected
+                : !!d.ecosystemBaseline && !!d.ecosystemBaseline.signature && d.ecosystemBaseline.signature !== currentInterventionSignature;
+              var controlledIntervention = tutorialInterventionComparison ? tutorialInterventionComparison.controlled : interventionDetected;
+              return {
+                complete: controlledIntervention && baselineAge >= 6,
+                label: !d.ecosystemBaseline ? 'Mark a baseline in the exchange panel.' : !interventionDetected ? 'Change one plant, organism, equipment level, or light state.' : tutorialInterventionComparison && tutorialInterventionComparison.confounded ? tutorialInterventionComparison.count + ' variables changed (' + tutorialInterventionComparison.summary + '). Replace the baseline and change only one.' : baselineAge >= 6 ? baselineAge + ' controlled post-intervention hours observed.' : (6 - baselineAge) + ' more controlled post-intervention hours needed.'
+              };
+            }
             if (stepId === 'stabilize') return { complete: perfectWaterTicks >= 5, label: perfectWaterTicks >= 5 ? perfectWaterTicks + ' consecutive safe ticks.' : Math.max(0, 5 - perfectWaterTicks) + ' more consecutive safe ticks needed.' };
             return { complete: false, label: 'Complete the lesson objective.' };
           }
@@ -14243,7 +14541,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               return;
             }
             var snapshotHour = (simHour < 10 ? '0' : '') + simHour + ':00';
-            var snapshot = [
+            var snapshotParts = [
               'Day ' + simDay + ' ' + snapshotHour + ' (tick ' + simTick + ')',
               'pH ' + waterChem.pH.toFixed(2),
               'NH3 ' + waterChem.ammonia.toFixed(2) + ' ppm',
@@ -14252,7 +14550,28 @@ var d = (labToolData && labToolData._aquarium) || {};
               'O2 ' + waterChem.dissolvedO2.toFixed(1) + ' mg/L',
               tankFish.length + ' organisms',
               equipmentFaultCount + ' equipment faults'
-            ].join(' | ');
+            ];
+            if (currentTutorialLesson.id === 'exchange' && d.ecosystemBaseline && d.ecosystemBaseline.chemistry) {
+              var noteVitalityHistory = Array.isArray(d.vitalityHistory) ? d.vitalityHistory : [];
+              var noteLatestVitality = noteVitalityHistory.length ? noteVitalityHistory[noteVitalityHistory.length - 1].average : 100;
+              var noteDeltas = {
+                oxygen: waterChem.dissolvedO2 - d.ecosystemBaseline.chemistry.dissolvedO2,
+                nitrate: waterChem.nitrate - d.ecosystemBaseline.chemistry.nitrate,
+                vitality: noteLatestVitality - d.ecosystemBaseline.vitalityAverage
+              };
+              snapshotParts.push('Since baseline: O2 ' + (noteDeltas.oxygen >= 0 ? '+' : '') + noteDeltas.oxygen.toFixed(2));
+              snapshotParts.push('NO3 ' + (noteDeltas.nitrate >= 0 ? '+' : '') + noteDeltas.nitrate.toFixed(1));
+              snapshotParts.push('vitality ' + (noteDeltas.vitality >= 0 ? '+' : '') + Math.round(noteDeltas.vitality));
+              if (d.ecosystemBaseline.factors) {
+                var noteCurrentFactors = { plants: d.tankPlants || [], organisms: d.tankFish || [], equipment: d.equipment || {}, lightsOn: d.lightsOn !== false };
+                var noteInterventionComparison = AquariumEcosystemCore.compareInterventionFactors(d.ecosystemBaseline.factors, noteCurrentFactors);
+                snapshotParts.push(noteInterventionComparison.controlled ? 'Design: controlled (' + noteInterventionComparison.summary + ')' : noteInterventionComparison.confounded ? 'Design: confounded (' + noteInterventionComparison.summary + ')' : 'Design: no intervention yet');
+              }
+              var noteBaselineAge = typeof d.ecosystemBaseline.tick === 'number' ? simTick - d.ecosystemBaseline.tick : 0;
+              var notePredictionEvaluation = AquariumEcosystemCore.evaluateDirectionPredictions(d.ecosystemBaseline.prediction || {}, noteDeltas);
+              if (noteBaselineAge >= 6 && notePredictionEvaluation.total) snapshotParts.push('Prediction check: ' + notePredictionEvaluation.matched + '/' + notePredictionEvaluation.total + ' directions matched');
+            }
+            var snapshot = snapshotParts.join(' | ');
             var combinedObservation = (currentTutorialNote.observation.trim() ? currentTutorialNote.observation.trim() + '\n' : '') + snapshot;
             updateTutorialNote('observation', combinedObservation);
             if (addToast) addToast('\uD83D\uDCCB Aquarium evidence snapshot saved to this lesson.', 'success');
@@ -14275,7 +14594,19 @@ var d = (labToolData && labToolData._aquarium) || {};
           var ecosystemExchangeView = ['live', 'day', 'night', 'net'].indexOf(d.ecosystemExchangeView) !== -1 ? d.ecosystemExchangeView : 'live';
           var ecosystemFocusType = ['all', 'fish', 'plant', 'bacteria', 'algae', 'water'].indexOf(d.ecosystemFocusType) !== -1 ? d.ecosystemFocusType : 'all';
           var ecosystemFocusId = typeof d.ecosystemFocusId === 'string' ? d.ecosystemFocusId : null;
+          var ecosystemVitalityFilter = ['all', 'attention', 'critical'].indexOf(d.ecosystemVitalityFilter) !== -1 ? d.ecosystemVitalityFilter : 'all';
           var lastEcosystemExchange = d.lastEcosystemExchange && typeof d.lastEcosystemExchange === 'object' ? d.lastEcosystemExchange : null;
+          var ecosystemExchangeHistory = Array.isArray(d.ecosystemExchangeHistory) ? d.ecosystemExchangeHistory.slice(-48) : [];
+          var vitalityHistory = Array.isArray(d.vitalityHistory) ? d.vitalityHistory.slice(-48) : [];
+          var fishVitality = d.fishVitality && typeof d.fishVitality === 'object' ? d.fishVitality : {};
+          var ecosystemBaseline = d.ecosystemBaseline && typeof d.ecosystemBaseline === 'object' ? d.ecosystemBaseline : null;
+          var savedEcosystemPrediction = d.ecosystemPrediction && typeof d.ecosystemPrediction === 'object' ? d.ecosystemPrediction : {};
+          var ecosystemPrediction = {
+            oxygen: ['rise', 'stable', 'fall'].indexOf(savedEcosystemPrediction.oxygen) !== -1 ? savedEcosystemPrediction.oxygen : null,
+            nitrate: ['rise', 'stable', 'fall'].indexOf(savedEcosystemPrediction.nitrate) !== -1 ? savedEcosystemPrediction.nitrate : null,
+            vitality: ['rise', 'stable', 'fall'].indexOf(savedEcosystemPrediction.vitality) !== -1 ? savedEcosystemPrediction.vitality : null
+          };
+          var ecosystemInterventionNote = typeof d.ecosystemInterventionNote === 'string' ? d.ecosystemInterventionNote.slice(0, 240) : '';
 
           var selectedPlantLearningAnswer = selectedPlant ? plantLearningAnswers[selectedPlant.id] : null;
           var currentLightLevel = Math.max(0, Math.min(EQUIPMENT_CATALOG.light.levels.length - 1, Number(equipment.light) || 0));
@@ -14299,6 +14630,8 @@ var d = (labToolData && labToolData._aquarium) || {};
           } : null;
           var selectedPlantCareAlerts = [];
           if (selectedPlant) {
+            var selectedPlantBrowsingPressure = lastEcosystemExchange && lastEcosystemExchange.plants && lastEcosystemExchange.plants.herbivoryByPlant ? lastEcosystemExchange.plants.herbivoryByPlant[selectedPlant.id] || 0 : 0;
+            if (selectedPlantBrowsingPressure > 0) selectedPlantCareAlerts.push({ severity: 'warning', text: 'Plant-browsing organisms removed ' + selectedPlantBrowsingPressure.toFixed(3) + ' biomass last tick. Compare this loss with the plant\'s regrowth rate.' });
             if (selectedPlantHealth <= 40) selectedPlantCareAlerts.push({ severity: 'danger', text: 'Health is critical. Compare new and old leaves, then correct the underlying condition before adding fertilizer blindly.' });
             else if (selectedPlantHealth <= 70) selectedPlantCareAlerts.push({ severity: 'warning', text: 'Health is stressed. Use the diagnosis guide and current readings to isolate the limiting factor.' });
             if (selectedPlant.light === 'high' && currentLightLevel === 0) selectedPlantCareAlerts.push({ severity: 'danger', text: 'This high-light plant is relying on room light; growth and recovery will be severely limited.' });
@@ -15411,7 +15744,8 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               selectedTank: tankId,
               selectedPlantId: null,
-              ecosystemExchangeView: 'live', ecosystemFocusType: 'all', ecosystemFocusId: null, lastEcosystemExchange: null,
+              ecosystemExchangeView: 'live', ecosystemFocusType: 'all', ecosystemFocusId: null, ecosystemVitalityFilter: 'all', lastEcosystemExchange: null,
+              ecosystemExchangeHistory: [], vitalityHistory: [], fishVitality: {}, ecosystemBaseline: null, ecosystemPrediction: { oxygen: null, nitrate: null, vitality: null }, ecosystemInterventionNote: '',
 
               fishBirthTicks: {}, fishCareLog: {},
               fishInstanceIds: [], nextFishInstanceId: 1, fishIdentityVersion: 3,
@@ -16153,6 +16487,9 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               var _waterChem = aq.waterChem;
               var _chemHistory = aq.chemHistory || [];
+              var _ecosystemExchangeHistory = Array.isArray(aq.ecosystemExchangeHistory) ? aq.ecosystemExchangeHistory : [];
+              var _vitalityHistory = Array.isArray(aq.vitalityHistory) ? aq.vitalityHistory : [];
+              var _fishVitality = aq.fishVitality && typeof aq.fishVitality === 'object' ? aq.fishVitality : {};
               var _equipment = Object.assign({ filter: 0, heater: 0, light: 0, airPump: 0 }, aq.equipment || {});
               var _equipmentCondition = {};
               var _equipmentOutput = {};
@@ -16180,6 +16517,11 @@ var d = (labToolData && labToolData._aquarium) || {};
               var _lightEquipment = getTickEquipmentDefinition('light');
               var _airPumpEquipment = getTickEquipmentDefinition('airPump');
               var _equipmentTank = TANK_TYPES.find(function (candidate) { return candidate.id === _selectedTank; });
+              // Biological rates are expressed as concentration change relative to a 20-gallon
+              // reference tank. Larger volumes buffer the same organism or plant exchange.
+              var volumeGallons = _equipmentTank && _equipmentTank.size ? _equipmentTank.size : 20;
+              var volumeScale = Math.max(0.2, Math.min(2, 20 / volumeGallons));
+              var oxygenSaturationTarget = AquariumEcosystemCore.estimateOxygenSaturationMgL(_waterChem.temp, _waterChem.salinity);
 
               // ── Plant state ──
 
@@ -16214,7 +16556,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               }, 0);
 
-              var ammoniaGen = bioload * 0.02;
+              var ammoniaGen = bioload * 0.02 * volumeScale;
 
               var newAmm = Math.max(0, _waterChem.ammonia + ammoniaGen - _waterChem.ammonia * (0.05 + _filterEquipment.ammoniaReduction * _equipmentOutput.filter));
 
@@ -16230,16 +16572,18 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               // Each unit of bioload consumes ~0.05 mg/L O2 and produces ~0.04 mg/L CO2 per tick
 
-              var fishO2Consume = bioload * 0.05;
+              var fishO2Consume = bioload * 0.05 * volumeScale;
 
-              var fishCO2Produce = bioload * 0.04;
+              var fishCO2Produce = bioload * 0.04 * volumeScale;
 
               var deltaO2 = -fishO2Consume;
 
               var deltaCO2 = fishCO2Produce;
 
-              deltaO2 += _airPumpEquipment.o2Boost * _equipmentOutput.airPump;
-              deltaCO2 -= _airPumpEquipment.o2Boost * _equipmentOutput.airPump * 0.15;
+              var airPumpOxygenAdded = _airPumpEquipment.o2Boost * _equipmentOutput.airPump;
+              var airPumpCO2Removed = airPumpOxygenAdded * 0.15;
+              deltaO2 += airPumpOxygenAdded;
+              deltaCO2 -= airPumpCO2Removed;
               // ── Plant photosynthesis & respiration ──
 
               // Day cycle: if lights are on AND it's daytime (6-20), plants photosynthesize
@@ -16302,21 +16646,21 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   var photoRate = healthFactor * biomassFactor * lightEff;
 
-                  var plantO2Flow = pDef.o2 * photoRate;
-                  var plantCO2Flow = pDef.co2Need * photoRate;
+                  var plantO2Flow = pDef.o2 * photoRate * volumeScale;
+                  var plantCO2Flow = pDef.co2Need * photoRate * volumeScale;
                   deltaO2 += plantO2Flow;
                   deltaCO2 -= plantCO2Flow;
                   plantO2Produced += plantO2Flow;
                   plantCO2Consumed += plantCO2Flow;
 
-                  plantNitrateAbsorb += pDef.nitrateAbsorb * photoRate;
+                  plantNitrateAbsorb += pDef.nitrateAbsorb * photoRate * volumeScale;
 
                 } else {
 
                   // Night respiration: plants consume a small amount of O2 and release CO2
 
-                  var plantNightO2Flow = pDef.o2 * 0.15 * biomassFactor;
-                  var plantNightCO2Flow = pDef.co2Need * 0.1 * biomassFactor;
+                  var plantNightO2Flow = pDef.o2 * 0.15 * biomassFactor * volumeScale;
+                  var plantNightCO2Flow = pDef.co2Need * 0.1 * biomassFactor * volumeScale;
                   deltaO2 -= plantNightO2Flow;
                   deltaCO2 += plantNightCO2Flow;
                   plantNightO2Consumed += plantNightO2Flow;
@@ -16382,9 +16726,9 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               newNitrate = Math.max(0, newNitrate - plantNitrateAbsorb);
 
-              // Atmospheric O2 exchange (surface equilibration toward ~7 mg/L)
-
-              var surfaceExchange = (_dissolvedO2 < 7 ? 0.15 : -0.05);
+              // Atmospheric exchange moves the tank toward temperature- and salinity-aware
+              // saturation. It is intentionally gradual so aeration and biology remain visible.
+              var surfaceExchange = Math.max(-0.2, Math.min(0.2, (oxygenSaturationTarget - _dissolvedO2) * 0.04));
 
               deltaO2 += surfaceExchange;
 
@@ -16394,7 +16738,8 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               // CO2 atmospheric off-gassing (tendency toward ~3 mg/L)
 
-              if (newCO2 > 3) newCO2 -= Math.min(0.1, (newCO2 - 3) * 0.05);
+              var co2Offgas = newCO2 > 3 ? Math.min(0.1, (newCO2 - 3) * 0.05) : 0;
+              newCO2 -= co2Offgas;
 
               var pHdrift = (Math.random() - 0.5) * 0.05;
 
@@ -16539,6 +16884,36 @@ var d = (labToolData && labToolData._aquarium) || {};
                 newHunger[fishKey] = Math.min(100, cur + 2);
 
               });
+              // Species-specific plant browsing transfers living plant biomass into animal
+              // nutrition. Only diets that explicitly include aquatic vegetation participate;
+              // algae/biofilm grazers remain modeled in the separate algae pathway below.
+              var plantHerbivoryConsumed = 0;
+              var plantBrowsingOrganisms = 0;
+              var plantHerbivoryByPlant = {};
+              if (_tankPlants.length > 0) {
+                _tankFish.forEach(function (speciesId, browsingIndex) {
+                  var browsingFishId = _fishInstanceIds[browsingIndex];
+                  if (_quarantinedFish[browsingFishId]) return;
+                  var browsingSpecies = (SPECIES_BY_TANK[_selectedTank] || []).find(function (candidate) { return candidate.id === speciesId; });
+                  var plantRelationship = AquariumEcosystemCore.classifyOrganismPlantRelationship(browsingSpecies);
+                  if (!plantRelationship.directPlantEater || plantRelationship.herbivoryRate <= 0) return;
+                  var browsablePlantId = _tankPlants.slice().sort(function (firstId, secondId) {
+                    return (_plantBiomass[secondId] || 0) - (_plantBiomass[firstId] || 0);
+                  })[0];
+                  var availableBiomass = _plantBiomass[browsablePlantId] || 0;
+                  if (availableBiomass <= 0) return;
+                  var hungerFactor = 0.5 + (newHunger[browsingFishId] || 0) / 100;
+                  var browsedBiomass = Math.min(availableBiomass, plantRelationship.herbivoryRate * hungerFactor);
+                  if (browsedBiomass <= 0) return;
+                  _plantBiomass[browsablePlantId] = Math.max(0, availableBiomass - browsedBiomass);
+                  newHunger[browsingFishId] = Math.max(0, (newHunger[browsingFishId] || 0) - browsedBiomass * 30);
+                  plantHerbivoryConsumed += browsedBiomass;
+                  plantHerbivoryByPlant[browsablePlantId] = (plantHerbivoryByPlant[browsablePlantId] || 0) + browsedBiomass;
+                  plantBrowsingOrganisms++;
+                  plantChanged = true;
+                });
+              }
+
               var foodWebHungerRelief = 0;
               var foodWebSupport = _tankFish.reduce(function (sum, speciesId, stockIndex) {
                 if (_quarantinedFish[_fishInstanceIds[stockIndex]]) return sum;
@@ -16709,8 +17084,18 @@ var d = (labToolData && labToolData._aquarium) || {};
                     });
                     if (symbiosisPartnerPresent) environmentStressDelta -= 2;
                   }
-                  if (habitatPlantBiomass > 6) environmentStressDelta -= 2;
-                  else if (habitatPlantBiomass > 3) environmentStressDelta -= 1;
+                  var environmentPlantRelationship = AquariumEcosystemCore.classifyOrganismPlantRelationship(environmentSpecies);
+                  if (environmentPlantRelationship.plantShelterDependent) {
+                    if (habitatPlantBiomass > 6) environmentStressDelta -= 3;
+                    else if (habitatPlantBiomass > 3) environmentStressDelta -= 2;
+                    else if (habitatPlantBiomass > 0) environmentStressDelta -= 1;
+                    else {
+                      environmentStressDelta += 2;
+                      environmentStressReasons.push('missing preferred plant cover');
+                    }
+                  } else if (habitatPlantBiomass > 6) {
+                    environmentStressDelta -= 1;
+                  }
                   if (environmentStressReasons.length === 0) environmentStressDelta -= 1;
                   var previousEnvironmentStress = newStress[fishKey] || 0;
                   newStress[fishKey] = Math.max(0, Math.min(100, previousEnvironmentStress + environmentStressDelta));
@@ -16856,6 +17241,43 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               }
 
+              // Persistent vitality converts a momentary score into a health trajectory. The
+              // smoothed state can recover after conditions improve, while prolonged critical
+              // vitality carries a small mortality risk with an explicit causal explanation.
+              var nextFishVitality = {};
+              var vitalityLoadPct = maxLoad > 0 ? currentLoad / maxLoad * 100 : 0;
+              _tankFish.forEach(function (speciesId, vitalityIndex) {
+                if (fishToRemove.indexOf(vitalityIndex) !== -1) return;
+                var vitalityFishId = _fishInstanceIds[vitalityIndex];
+                var vitalitySpecies = species.find(function (candidate) { return candidate.id === speciesId; }) || {};
+                var vitalityCalculation = AquariumEcosystemCore.calculateVitality({
+                  chemistry: newChem,
+                  species: vitalitySpecies,
+                  loadPct: vitalityLoadPct,
+                  plantBiomass: habitatPlantBiomass,
+                  hunger: newHunger[vitalityFishId] !== undefined ? newHunger[vitalityFishId] : 50,
+                  stress: newStress[vitalityFishId] || 0,
+                  illnessSeverity: newSickness[vitalityFishId] ? newSickness[vitalityFishId].severity : 0
+                });
+                var previousVitality = _fishVitality[vitalityFishId];
+                var vitalityState = AquariumEcosystemCore.createVitalityState(previousVitality, vitalityCalculation, newTick);
+                nextFishVitality[vitalityFishId] = vitalityState;
+                var vitalityName = newFishNames[vitalityFishId] || vitalitySpecies.name || 'An organism';
+                if (previousVitality && previousVitality.score >= 55 && vitalityState.score < 55) {
+                  newFishCareLog[vitalityFishId] = (newFishCareLog[vitalityFishId] || []).concat([{ tick: newTick, day: newDay, hour: newHour, msg: 'Vitality declining; limiting factor: ' + vitalityState.limitingLabel }]).slice(-8);
+                } else if (previousVitality && previousVitality.score < 55 && vitalityState.score >= 55) {
+                  newFishCareLog[vitalityFishId] = (newFishCareLog[vitalityFishId] || []).concat([{ tick: newTick, day: newDay, hour: newHour, msg: 'Vitality recovering after conditions improved' }]).slice(-8);
+                }
+                if (vitalityState.lowTicks === 6) {
+                  newLog.push({ tick: newTick, msg: '\u26A0\uFE0F ' + vitalityName + ' has remained at critical vitality for 6 hours. Limiting factor: ' + vitalityState.limitingLabel + '.' });
+                }
+                if (!_quarantinedFish[vitalityFishId] && vitalityState.lowTicks >= 12 && Math.random() < 0.06) {
+                  fishToRemove.push(vitalityIndex);
+                  delete nextFishVitality[vitalityFishId];
+                  newLog.push({ tick: newTick, msg: '\u2620\uFE0F ' + vitalityName + ' died after prolonged critical vitality. Primary limiting factor: ' + vitalityState.limitingLabel + '.' });
+                }
+              });
+
               // Apply fish removals
 
               var finalTankFish = _tankFish;
@@ -16875,6 +17297,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                   delete newFishBirthTicks[removedKey];
                   delete newFishCareLog[removedKey];
                   delete newStress[removedKey];
+                  delete nextFishVitality[removedKey];
                   delete _quarantinedFish[removedKey];
                   if (newSickness[removedKey]) { delete newSickness[removedKey]; sickChanged = true; }
                   finalTankFish.splice(ri, 1);
@@ -17225,6 +17648,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                   newFishNames[fryInstanceId] = (frySpecies ? frySpecies.name : 'Fish') + ' Fry ' + (fryIndex + 1);
                   newFishBirthTicks[fryInstanceId] = newTick;
                   newFishCareLog[fryInstanceId] = [{ tick: newTick, day: newDay, hour: newHour, msg: 'Born in this tank' }];
+                  nextFishVitality[fryInstanceId] = { score: 80, instantaneous: 80, limitingId: 'age', limitingLabel: 'Newborn adjustment', limitingScore: 80, lowTicks: 0, trend: 'stable', change: 0, tick: newTick };
 
                 });
 
@@ -17233,6 +17657,24 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               var finalFishHealth = {};
               finalTankFish.forEach(function (speciesId) { finalFishHealth[speciesId] = (finalFishHealth[speciesId] || 0) + 1; });
+              var vitalityScores = finalFishInstanceIds.map(function (fishId) { return nextFishVitality[fishId] ? nextFishVitality[fishId].score : 80; });
+              var vitalityAverage = vitalityScores.length ? Math.round(vitalityScores.reduce(function (sum, score) { return sum + score; }, 0) / vitalityScores.length) : 100;
+              var vitalityMinimum = vitalityScores.length ? Math.min.apply(null, vitalityScores) : 100;
+              var vitalityPerFish = {};
+              finalFishInstanceIds.forEach(function (fishId) {
+                if (nextFishVitality[fishId]) vitalityPerFish[fishId] = {
+                  score: nextFishVitality[fishId].score,
+                  trend: nextFishVitality[fishId].trend,
+                  limitingLabel: nextFishVitality[fishId].limitingLabel
+                };
+              });
+              var vitalitySnapshot = {
+                tick: newTick, day: newDay, hour: newHour,
+                average: vitalityAverage,
+                minimum: vitalityMinimum,
+                criticalCount: vitalityScores.filter(function (score) { return score < 25; }).length,
+                perFish: vitalityPerFish
+              };
 
               var exchangeShelterBonus = _totalPlantBiomass > 6 ? 0.25 : _totalPlantBiomass > 3 ? 0.15 : 0;
               var exchangeReasons = [];
@@ -17242,6 +17684,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               if (nitrateBact > 0) exchangeReasons.push('\uD83E\uDDA0 Nitrifying bacteria converted nitrogen waste toward nitrate at ' + nitrateBact.toFixed(3) + ' this tick.');
               if (plantSuppression > 0) exchangeReasons.push('\uD83C\uDF3F Plant biomass suppressed modeled algae growth by ' + Math.round(plantSuppression * 100) + '%.');
               if (algaeGrazed > 0) exchangeReasons.push('\uD83D\uDC1F Grazing organisms consumed ' + algaeGrazed.toFixed(3) + ' modeled algae biomass.');
+              if (plantHerbivoryConsumed > 0) exchangeReasons.push('\uD83C\uDF3F ' + plantBrowsingOrganisms + ' plant-browsing organism' + (plantBrowsingOrganisms === 1 ? '' : 's') + ' consumed ' + plantHerbivoryConsumed.toFixed(3) + ' living plant biomass and gained nutrition.');
               if (stockDayO2Produced > 0) exchangeReasons.push('\uD83E\uDEB8 Photosynthetic animal colonies produced ' + stockDayO2Produced.toFixed(3) + ' O\u2082 and used ' + stockDayCO2Consumed.toFixed(3) + ' CO\u2082 in the light.');
               if (stockNightO2Consumed > 0) exchangeReasons.push('\uD83C\uDF19 Photosynthetic animal colonies respired at night, using ' + stockNightO2Consumed.toFixed(3) + ' O\u2082.');
               if (foodWebHungerRelief > 0) exchangeReasons.push('\uD83E\uDDA0 Copepod colonies supplied ' + foodWebHungerRelief.toFixed(1) + ' modeled nutrition through the food web.');
@@ -17280,7 +17723,13 @@ var d = (labToolData && labToolData._aquarium) || {};
                   nightCO2Released: Math.round(plantNightCO2Released * 1000) / 1000,
                   algaeSuppression: Math.round(plantSuppression * 1000) / 1000,
                   shelterBonus: exchangeShelterBonus,
-                  decompositionAmmonia: Math.round(decompositionAmmonia * 100) / 100
+                  decompositionAmmonia: Math.round(decompositionAmmonia * 100) / 100,
+                  herbivoryConsumed: Math.round(plantHerbivoryConsumed * 1000) / 1000,
+                  browsingOrganisms: plantBrowsingOrganisms,
+                  herbivoryByPlant: Object.keys(plantHerbivoryByPlant).reduce(function (roundedPlantBrowsing, plantId) {
+                    roundedPlantBrowsing[plantId] = Math.round(plantHerbivoryByPlant[plantId] * 1000) / 1000;
+                    return roundedPlantBrowsing;
+                  }, {})
                 },
                 algae: {
                   level: Math.round(newAlgae * 10) / 10,
@@ -17295,8 +17744,39 @@ var d = (labToolData && labToolData._aquarium) || {};
                   ammoniaToNitrite: Math.round(nitriteBact * 1000) / 1000,
                   nitriteToNitrate: Math.round(nitrateBact * 1000) / 1000
                 },
-                atmosphere: {
-                  oxygenExchange: Math.round(surfaceExchange * 1000) / 1000
+                photosyntheticStock: {
+                  oxygenProduced: Math.round(stockDayO2Produced * 1000) / 1000,
+                  co2Consumed: Math.round(stockDayCO2Consumed * 1000) / 1000,
+                  oxygenConsumed: Math.round(stockNightO2Consumed * 1000) / 1000,
+                  co2Released: Math.round(stockNightCO2Released * 1000) / 1000
+                },
+                equipment: {
+                  oxygenAdded: Math.round(airPumpOxygenAdded * 1000) / 1000,
+                  co2Removed: Math.round(airPumpCO2Removed * 1000) / 1000
+                },                atmosphere: {
+                  oxygenExchange: Math.round(surfaceExchange * 1000) / 1000,
+                  oxygenSaturationTarget: oxygenSaturationTarget,
+                  co2Offgas: Math.round(co2Offgas * 1000) / 1000
+                },
+                chemistry: {
+                  ammonia: newChem.ammonia,
+                  nitrite: newChem.nitrite,
+                  nitrate: newChem.nitrate,
+                  dissolvedO2: newChem.dissolvedO2,
+                  co2: newChem.co2,
+                  pH: Math.round(newChem.pH * 100) / 100,
+                  temp: Math.round(newChem.temp * 10) / 10
+                },
+                vitality: {
+                  average: vitalityAverage,
+                  minimum: vitalityMinimum,
+                  criticalCount: vitalitySnapshot.criticalCount
+                },
+                model: {
+                  volumeGallons: volumeGallons,
+                  volumeScale: Math.round(volumeScale * 100) / 100,
+                  rateBasis: '20-gallon reference concentration model',
+                  uncertainty: 'Teaching estimate; compare trends, not clinical predictions.'
                 },
                 chemistryDelta: {
                   ammonia: Math.round((newChem.ammonia - _waterChem.ammonia) * 100) / 100,
@@ -17320,8 +17800,12 @@ var d = (labToolData && labToolData._aquarium) || {};
                 fishNames: newFishNames,
 
                 fishHealth: finalFishHealth,
+                fishVitality: nextFishVitality,
+                vitalityHistory: AquariumEcosystemCore.appendBounded(_vitalityHistory, vitalitySnapshot, 48),
                 fishBirthTicks: newFishBirthTicks,
                 expandedCareFish: finalFishInstanceIds.indexOf(aq.expandedCareFish) !== -1 ? aq.expandedCareFish : null,
+                ecosystemFocusType: aq.ecosystemFocusType === 'fish' && finalFishInstanceIds.indexOf(aq.ecosystemFocusId) === -1 ? 'all' : (aq.ecosystemFocusType || 'all'),
+                ecosystemFocusId: aq.ecosystemFocusType === 'fish' && finalFishInstanceIds.indexOf(aq.ecosystemFocusId) === -1 ? null : (aq.ecosystemFocusId || null),
                 fishCareLog: newFishCareLog,
                 algaeLevel: Math.round(newAlgae * 10) / 10, fishStress: newStress,
 
@@ -17329,6 +17813,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                 equipmentCondition: _nextEquipmentCondition,
                 equipmentFaults: _equipmentFaults,
                 lastEcosystemExchange: ecosystemExchangeSnapshot,
+                ecosystemExchangeHistory: AquariumEcosystemCore.appendBounded(_ecosystemExchangeHistory, ecosystemExchangeSnapshot, 48),
               };
 
               if (sickChanged) tickUpdate.fishSickness = newSickness;
@@ -18453,6 +18938,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
+              var ecosystemVolumeScale = Math.max(0.2, Math.min(2, 20 / (tank.size || 20)));
               var ecosystemPlantTotals = {
                 biomass: 0,
                 dayOxygen: 0,
@@ -18475,11 +18961,11 @@ var d = (labToolData && labToolData._aquarium) || {};
                 if (plantDefinition.light === 'high' && algaeLevel > 50) currentPlantLightEfficiency *= 0.6;
                 var currentPlantPhotoRate = currentPlantHealthFactor * currentPlantBiomassFactor * currentPlantLightEfficiency;
                 ecosystemPlantTotals.biomass += currentPlantBiomass;
-                ecosystemPlantTotals.dayOxygen += plantDefinition.o2 * currentPlantPhotoRate;
-                ecosystemPlantTotals.dayCO2 += plantDefinition.co2Need * currentPlantPhotoRate;
-                ecosystemPlantTotals.dayNitrate += plantDefinition.nitrateAbsorb * currentPlantPhotoRate;
-                ecosystemPlantTotals.nightOxygen += plantDefinition.o2 * 0.15 * currentPlantBiomassFactor;
-                ecosystemPlantTotals.nightCO2 += plantDefinition.co2Need * 0.1 * currentPlantBiomassFactor;
+                ecosystemPlantTotals.dayOxygen += plantDefinition.o2 * currentPlantPhotoRate * ecosystemVolumeScale;
+                ecosystemPlantTotals.dayCO2 += plantDefinition.co2Need * currentPlantPhotoRate * ecosystemVolumeScale;
+                ecosystemPlantTotals.dayNitrate += plantDefinition.nitrateAbsorb * currentPlantPhotoRate * ecosystemVolumeScale;
+                ecosystemPlantTotals.nightOxygen += plantDefinition.o2 * 0.15 * currentPlantBiomassFactor * ecosystemVolumeScale;
+                ecosystemPlantTotals.nightCO2 += plantDefinition.co2Need * 0.1 * currentPlantBiomassFactor * ecosystemVolumeScale;
               });
 
               var ecosystemFocusedFishLoad = tankFish.reduce(function (sum, speciesId, fishIndex) {
@@ -18488,9 +18974,9 @@ var d = (labToolData && labToolData._aquarium) || {};
                 var fishSpeciesDefinition = species.find(function (candidate) { return candidate.id === speciesId; });
                 return sum + (fishSpeciesDefinition ? fishSpeciesDefinition.load : 0);
               }, 0);
-              var ecosystemFishOxygen = ecosystemFocusedFishLoad * 0.05;
-              var ecosystemFishCO2 = ecosystemFocusedFishLoad * 0.04;
-              var ecosystemFishAmmonia = ecosystemFocusedFishLoad * 0.02;
+              var ecosystemFishOxygen = ecosystemFocusedFishLoad * 0.05 * ecosystemVolumeScale;
+              var ecosystemFishCO2 = ecosystemFocusedFishLoad * 0.04 * ecosystemVolumeScale;
+              var ecosystemFishAmmonia = ecosystemFocusedFishLoad * 0.02 * ecosystemVolumeScale;
               var ecosystemViewData = {
                 plantOxygen: 0,
                 plantCO2: 0,
@@ -18540,7 +19026,91 @@ var d = (labToolData && labToolData._aquarium) || {};
                 var grazerSpecies = species.find(function (candidate) { return candidate.id === speciesId; });
                 return count + (grazerSpecies && grazerSpecies.diet && /herbivore|algae|biofilm|vegetation|detritivore/i.test(grazerSpecies.diet) ? 1 : 0);
               }, 0);
+              var ecosystemOrganismPlantRelationships = tankFish.map(function (speciesId, relationshipIndex) {
+                var relationshipSpecies = species.find(function (candidate) { return candidate.id === speciesId; }) || {};
+                var relationship = AquariumEcosystemCore.classifyOrganismPlantRelationship(relationshipSpecies);
+                return {
+                  instanceId: fishInstanceIds[relationshipIndex],
+                  name: fishNames[fishInstanceIds[relationshipIndex]] || relationshipSpecies.name || 'Organism',
+                  type: relationshipSpecies.organismType || 'Fish',
+                  relationship: relationship
+                };
+              });
+              var ecosystemPlantRelationshipCounts = ecosystemOrganismPlantRelationships.reduce(function (counts, item) {
+                if (item.relationship.plantShelterDependent) counts.shelter++;
+                if (item.relationship.directPlantEater) counts.browsers++;
+                if (item.relationship.algaeGrazer) counts.grazers++;
+                if (item.relationship.detritusRecycler) counts.recyclers++;
+                return counts;
+              }, { shelter: 0, browsers: 0, grazers: 0, recyclers: 0 });
               var ecosystemAlgaeGrazed = lastEcosystemExchange && lastEcosystemExchange.algae ? lastEcosystemExchange.algae.grazed || 0 : 0;
+              var ecosystemPlantHerbivory = lastEcosystemExchange && lastEcosystemExchange.plants ? lastEcosystemExchange.plants.herbivoryConsumed || 0 : 0;
+              var ecosystemPlantHerbivoryByPlant = lastEcosystemExchange && lastEcosystemExchange.plants && lastEcosystemExchange.plants.herbivoryByPlant ? lastEcosystemExchange.plants.herbivoryByPlant : {};
+              var vitalityMapLoadPct = maxLoad > 0 ? currentLoad / maxLoad * 100 : 0;
+              var ecosystemVitalityItems = [];
+              tankFish.forEach(function(speciesId, vitalityMapIndex) {
+                var vitalityMapFishId = fishInstanceIds[vitalityMapIndex];
+                var vitalityMapSpecies = species.find(function(candidate) { return candidate.id === speciesId; }) || {};
+                var vitalityMapInstant = AquariumEcosystemCore.calculateVitality({
+                  chemistry: waterChem,
+                  species: vitalityMapSpecies,
+                  loadPct: vitalityMapLoadPct,
+                  plantBiomass: ecosystemAllPlantBiomass,
+                  hunger: hungerLevels[vitalityMapFishId] !== undefined ? hungerLevels[vitalityMapFishId] : 50,
+                  stress: fishStress[vitalityMapFishId] || 0,
+                  illnessSeverity: fishSickness[vitalityMapFishId] ? fishSickness[vitalityMapFishId].severity : 0
+                });
+                var vitalityMapPersistent = fishVitality[vitalityMapFishId] || null;
+                var vitalityMapScore = Math.round(vitalityMapPersistent ? vitalityMapPersistent.score : vitalityMapInstant.score);
+                var vitalityMapStatus = vitalityMapScore >= 80 ? 'thriving' : vitalityMapScore >= 55 ? 'watch' : 'critical';
+                ecosystemVitalityItems.push({
+                  key: 'fish:' + vitalityMapFishId,
+                  id: vitalityMapFishId,
+                  kind: 'fish',
+                  label: fishNames[vitalityMapFishId] || vitalityMapSpecies.name || 'Organism',
+                  type: (quarantinedFish[vitalityMapFishId] ? 'Hospital \u2022 ' : '') + (vitalityMapSpecies.organismType || 'Fish'),
+                  icon: vitalityMapSpecies.icon || '\uD83D\uDC1F',
+                  score: vitalityMapScore,
+                  status: vitalityMapStatus,
+                  limiting: vitalityMapPersistent && vitalityMapPersistent.limitingLabel ? vitalityMapPersistent.limitingLabel : vitalityMapInstant.limiting.label,
+                  trend: vitalityMapPersistent ? vitalityMapPersistent.trend : 'stable'
+                });
+              });
+              tankPlants.forEach(function(plantId, vitalityPlantIndex) {
+                var vitalityMapPlant = plantCatalog.find(function(candidate) { return candidate.id === plantId; });
+                if (!vitalityMapPlant) return;
+                var vitalityPlantScore = Math.round(plantHealth[plantId] !== undefined ? plantHealth[plantId] : 80);
+                var vitalityPlantBrowsing = ecosystemPlantHerbivoryByPlant[plantId] || 0;
+                var vitalityPlantLimiting = vitalityPlantBrowsing > 0 ? 'Browsing pressure'
+                  : equipmentFaults.light ? 'Light offline'
+                  : vitalityMapPlant.light === 'high' && currentLightLevel === 0 ? 'Light'
+                  : waterChem.nitrate < 2 ? 'Nitrogen'
+                  : vitalityMapPlant.co2Need >= 0.6 && waterChem.co2 < 2 ? 'Carbon'
+                  : algaeLevel > 50 ? 'Algae shading'
+                  : vitalityPlantScore < 55 ? 'Plant health' : 'Balanced resources';
+                ecosystemVitalityItems.push({
+                  key: 'plant:' + plantId + ':' + vitalityPlantIndex,
+                  id: plantId,
+                  kind: 'plant',
+                  label: vitalityMapPlant.name || 'Aquatic plant',
+                  type: 'Plant \u2022 ' + (vitalityMapPlant.light || 'medium') + ' light',
+                  icon: vitalityMapPlant.icon || '\uD83C\uDF3F',
+                  score: vitalityPlantScore,
+                  status: vitalityPlantScore >= 80 ? 'thriving' : vitalityPlantScore >= 55 ? 'watch' : 'critical',
+                  limiting: vitalityPlantLimiting,
+                  trend: vitalityPlantBrowsing > 0 ? 'browsed' : vitalityPlantScore < 55 ? 'declining' : 'stable'
+                });
+              });
+              var ecosystemVitalityCounts = ecosystemVitalityItems.reduce(function(counts, item) {
+                counts[item.status]++;
+                return counts;
+              }, { thriving: 0, watch: 0, critical: 0 });
+              var ecosystemWeakestVitalityItem = ecosystemVitalityItems.length ? ecosystemVitalityItems.slice().sort(function(a, b) { return a.score - b.score; })[0] : null;
+              var filteredEcosystemVitalityItems = ecosystemVitalityItems.filter(function(item) {
+                if (ecosystemVitalityFilter === 'critical') return item.status === 'critical';
+                if (ecosystemVitalityFilter === 'attention') return item.status !== 'thriving';
+                return true;
+              });
               var ecosystemShelterBonus = ecosystemAllPlantBiomass > 6 ? 25 : ecosystemAllPlantBiomass > 3 ? 15 : 0;
               var ecosystemAlgaeSuppression = Math.round(Math.min(0.8, ecosystemAllPlantBiomass * 0.08) * 100);
               var withoutPlantsNextOxygen = Math.max(0, waterChem.dissolvedO2 - Math.max(0, ecosystemViewData.plantOxygen - ecosystemViewData.plantOxygenUse));
@@ -18561,6 +19131,130 @@ var d = (labToolData && labToolData._aquarium) || {};
               var ecosystemCausalReasons = lastEcosystemExchange && Array.isArray(lastEcosystemExchange.reasons)
                 ? lastEcosystemExchange.reasons
                 : ['Run one aquarium-hour tick to capture exact causal exchange evidence.'];
+              var ecosystemMatterBudgets = lastEcosystemExchange ? AquariumEcosystemCore.buildMatterBudget(lastEcosystemExchange) : [];
+              var ecosystemHistoryPoints = ecosystemExchangeHistory.filter(function (historyPoint) {
+                return historyPoint && historyPoint.chemistry && historyPoint.vitality;
+              }).slice(-24);
+              var ecosystemBaselinePointIndex = ecosystemBaseline && typeof ecosystemBaseline.tick === 'number'
+                ? ecosystemHistoryPoints.findIndex(function(point) { return point.tick === ecosystemBaseline.tick; })
+                : -1;
+              var ecosystemBaselineX = ecosystemBaselinePointIndex >= 0 && ecosystemHistoryPoints.length > 1
+                ? 118 + ecosystemBaselinePointIndex / (ecosystemHistoryPoints.length - 1) * 504
+                : null;
+              var ecosystemHistoryLanes = [
+                { id: 'oxygen', label: 'Dissolved O\u2082', unit: 'mg/L', color: '#22d3ee', getValue: function (point) { return point.chemistry.dissolvedO2; } },
+                { id: 'nitrate', label: 'Nitrate NO\u2083', unit: 'ppm', color: '#fbbf24', getValue: function (point) { return point.chemistry.nitrate; } },
+                { id: 'vitality', label: 'Mean vitality', unit: '/100', color: '#34d399', getValue: function (point) { return point.vitality.average; } }
+              ].map(function (lane, laneIndex) {
+                var values = ecosystemHistoryPoints.map(lane.getValue).map(Number);
+                var minimum = values.length ? Math.min.apply(null, values) : 0;
+                var maximum = values.length ? Math.max.apply(null, values) : 1;
+                if (maximum === minimum) { maximum += 1; minimum -= 1; }
+                var top = 10 + laneIndex * 46;
+                var points = values.map(function (value, valueIndex) {
+                  var x = values.length <= 1 ? 370 : 118 + valueIndex / (values.length - 1) * 504;
+                  var y = top + 30 - (value - minimum) / (maximum - minimum) * 24;
+                  return x.toFixed(1) + ',' + y.toFixed(1);
+                }).join(' ');
+                return Object.assign({}, lane, { values: values, minimum: minimum, maximum: maximum, top: top, points: points, latest: values.length ? values[values.length - 1] : null });
+              });
+              var latestVitalityAverage = ecosystemHistoryPoints.length ? ecosystemHistoryPoints[ecosystemHistoryPoints.length - 1].vitality.average : 100;
+              var ecosystemCurrentFactors = { plants: tankPlants.slice(), organisms: tankFish.slice(), equipment: Object.assign({}, equipment), lightsOn: lightsOn };
+              var baselineAge = ecosystemBaseline && typeof ecosystemBaseline.tick === 'number' ? simTick - ecosystemBaseline.tick : 0;
+              var baselineDeltas = ecosystemBaseline && ecosystemBaseline.chemistry ? {
+                oxygen: waterChem.dissolvedO2 - ecosystemBaseline.chemistry.dissolvedO2,
+                nitrate: waterChem.nitrate - ecosystemBaseline.chemistry.nitrate,
+                vitality: latestVitalityAverage - ecosystemBaseline.vitalityAverage,
+                plants: tankPlants.length - ecosystemBaseline.plantCount,
+                organisms: tankFish.length - ecosystemBaseline.organismCount
+              } : null;
+              var ecosystemInterventionComparison = ecosystemBaseline && ecosystemBaseline.factors
+                ? AquariumEcosystemCore.compareInterventionFactors(ecosystemBaseline.factors, ecosystemCurrentFactors)
+                : ecosystemBaseline ? {
+                    changes: [], count: ecosystemBaseline.signature === JSON.stringify(ecosystemCurrentFactors) ? 0 : 1,
+                    interventionDetected: ecosystemBaseline.signature !== JSON.stringify(ecosystemCurrentFactors),
+                    controlled: ecosystemBaseline.signature !== JSON.stringify(ecosystemCurrentFactors), confounded: false,
+                    summary: ecosystemBaseline.signature !== JSON.stringify(ecosystemCurrentFactors) ? 'legacy recorded intervention' : 'no intervention detected'
+                  } : null;
+              var ecosystemPredictionEvaluation = baselineDeltas && ecosystemBaseline
+                ? AquariumEcosystemCore.evaluateDirectionPredictions(ecosystemBaseline.prediction || {}, baselineDeltas)
+                : null;
+              var ecosystemPredictionReady = ['oxygen', 'nitrate', 'vitality'].every(function(metric) { return ['rise', 'stable', 'fall'].indexOf(ecosystemPrediction[metric]) !== -1; });
+              var ecosystemInvestigationStage = !ecosystemBaseline ? 0
+                : ecosystemInterventionComparison && ecosystemInterventionComparison.confounded ? 1
+                : !ecosystemInterventionComparison || !ecosystemInterventionComparison.interventionDetected ? 1
+                : baselineAge < 6 ? 2 : 3;
+              var ecosystemInvestigationProgress = Math.round(ecosystemInvestigationStage / 3 * 100);
+              function updateEcosystemPrediction(metric, direction) {
+                if (ecosystemBaseline || ['oxygen', 'nitrate', 'vitality'].indexOf(metric) === -1 || ['rise', 'stable', 'fall'].indexOf(direction) === -1) return;
+                var nextPrediction = Object.assign({}, ecosystemPrediction);
+                nextPrediction[metric] = direction;
+                upd('ecosystemPrediction', nextPrediction);
+              }
+              function markEcosystemBaseline() {
+                if (!ecosystemPredictionReady) {
+                  if (addToast) addToast('Predict rise, no meaningful change, or fall for all three measures before marking the baseline.', 'info');
+                  return;
+                }
+                upd('ecosystemBaseline', {
+                  tick: simTick, day: simDay, hour: simHour,
+                  chemistry: { dissolvedO2: waterChem.dissolvedO2, nitrate: waterChem.nitrate, ammonia: waterChem.ammonia, nitrite: waterChem.nitrite },
+                  vitalityAverage: latestVitalityAverage,
+                  plantCount: tankPlants.length,
+                  organismCount: tankFish.length,
+                  factors: ecosystemCurrentFactors,
+                  prediction: Object.assign({}, ecosystemPrediction),
+                  plannedIntervention: ecosystemInterventionNote.trim(),
+                  signature: JSON.stringify(ecosystemCurrentFactors)
+                });
+                if (addToast) addToast('Predictions locked and baseline marked. Change exactly one variable, then observe six aquarium hours.', 'success');
+              }
+              function downloadEcosystemEvidence(format) {
+                var safeFormat = format === 'json' ? 'json' : 'csv';
+                var fileBody = '';
+                if (safeFormat === 'json') {
+                  fileBody = JSON.stringify({
+                    exportedAt: new Date().toISOString(),
+                    tank: { id: selectedTank, name: tank.name, gallons: tank.size, day: simDay, hour: simHour },
+                    baseline: ecosystemBaseline,
+                    investigation: {
+                      plannedIntervention: ecosystemBaseline ? ecosystemBaseline.plannedIntervention || '' : ecosystemInterventionNote,
+                      prediction: ecosystemBaseline ? ecosystemBaseline.prediction || {} : ecosystemPrediction,
+                      elapsedHours: baselineAge,
+                      interventionComparison: ecosystemInterventionComparison,
+                      predictionEvaluation: ecosystemPredictionEvaluation
+                    },
+                    exchanges: ecosystemExchangeHistory,
+                    vitality: vitalityHistory,
+                    tutorialNotebook: tutorialNotebook,
+                    events: eventLog
+                  }, null, 2);
+                } else {
+                  var csvHeader = ['tick','day','hour','phase','oxygen_mg_l','co2_mg_l','ammonia_ppm','nitrite_ppm','nitrate_ppm','mean_vitality','minimum_vitality','plant_biomass','plant_o2_produced','plant_nitrate_used','plant_herbivory','organism_o2_used','organism_ammonia_produced','oxygen_delta','co2_delta','ammonia_delta','nitrate_delta','surface_oxygen_exchange','co2_offgas','aeration_oxygen_added','stock_oxygen_produced','stock_oxygen_consumed'];
+                  var csvRows = ecosystemExchangeHistory.map(function (point) {
+                    var chemistry = point.chemistry || {};
+                    var pointVitality = point.vitality || {};
+                    var pointPlants = point.plants || {};
+                    var pointFish = point.fish || {};
+                    var pointDelta = point.chemistryDelta || {};
+                    var pointAtmosphere = point.atmosphere || {};
+                    var pointEquipment = point.equipment || {};
+                    var pointStock = point.photosyntheticStock || {};
+                    return [point.tick,point.day,point.hour,point.phase || '',chemistry.dissolvedO2,chemistry.co2,chemistry.ammonia,chemistry.nitrite,chemistry.nitrate,pointVitality.average,pointVitality.minimum,pointPlants.biomass,pointPlants.oxygenProduced,pointPlants.nitrateConsumed,pointPlants.herbivoryConsumed || 0,pointFish.oxygenConsumed,pointFish.ammoniaProduced,pointDelta.dissolvedO2,pointDelta.co2,pointDelta.ammonia,pointDelta.nitrate,pointAtmosphere.oxygenExchange,pointAtmosphere.co2Offgas,pointEquipment.oxygenAdded,pointStock.oxygenProduced,pointStock.oxygenConsumed].join(',');
+                  });
+                  fileBody = [csvHeader.join(',')].concat(csvRows).join('\n');
+                }
+                var evidenceBlob = new Blob([fileBody], { type: safeFormat === 'json' ? 'application/json' : 'text/csv' });
+                var evidenceUrl = URL.createObjectURL(evidenceBlob);
+                var evidenceLink = document.createElement('a');
+                evidenceLink.href = evidenceUrl;
+                evidenceLink.download = 'aquarium-evidence-day-' + simDay + '.' + safeFormat;
+                document.body.appendChild(evidenceLink);
+                evidenceLink.click();
+                document.body.removeChild(evidenceLink);
+                setTimeout(function () { URL.revokeObjectURL(evidenceUrl); }, 0);
+                if (addToast) addToast('Aquarium evidence exported as ' + safeFormat.toUpperCase() + '.', 'success');
+              }
               return React.createElement("div", { className: "space-y-3" },
 
                 // ── Pre-game brief: nitrogen cycle + goals ──
@@ -18951,8 +19645,8 @@ var d = (labToolData && labToolData._aquarium) || {};
                     role: "group",
                     'aria-label': "Closed-loop aquarium diagram. Fish use oxygen and release carbon dioxide and ammonia. Bacteria convert ammonia and nitrite into nitrate. Plants use nitrate and carbon dioxide, produce oxygen by day, compete with algae, and provide shelter. Grazing organisms consume algae."
                   },
-                    React.createElement("div", { className: "space-y-2", style: { minWidth: '610px' } },
-                      React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1.15fr 1fr 1.15fr 1fr', alignItems: 'stretch', gap: '6px' } },
+                    React.createElement("div", { className: "aquarium-exchange-network space-y-2" },
+                      React.createElement("div", { className: "aquarium-exchange-row", style: { display: 'grid', gridTemplateColumns: '1fr 1.15fr 1fr 1.15fr 1fr', alignItems: 'stretch', gap: '6px' } },
                         React.createElement("button", {
                           type: "button",
                           onClick: function () { updMulti({ ecosystemFocusType: 'fish', ecosystemFocusId: null }); },
@@ -18995,7 +19689,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                         )
                       ),
 
-                      React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1.15fr 1fr 1.15fr 1fr', alignItems: 'stretch', gap: '6px' } },
+                      React.createElement("div", { className: "aquarium-exchange-row", style: { display: 'grid', gridTemplateColumns: '1fr 1.15fr 1fr 1.15fr 1fr', alignItems: 'stretch', gap: '6px' } },
                         React.createElement("div", { className: "rounded-lg border border-emerald-400/25 bg-emerald-500/10 p-1.5 text-center" },
                           React.createElement("div", { className: "text-[9px] font-black text-emerald-200" }, "O\u2082 + SHELTER"),
                           React.createElement("div", { className: "text-[8px] text-emerald-100" }, "+" + ecosystemViewData.plantOxygen.toFixed(3) + " O\u2082 \u2022 +" + ecosystemShelterBonus + "% fry")
@@ -19018,7 +19712,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                         )
                       ),
 
-                      React.createElement("div", { style: { display: 'grid', gridTemplateColumns: '1fr 1.15fr 1fr 1.15fr 1fr', alignItems: 'stretch', gap: '6px' } },
+                      React.createElement("div", { className: "aquarium-exchange-row", style: { display: 'grid', gridTemplateColumns: '1fr 1.15fr 1fr 1.15fr 1fr', alignItems: 'stretch', gap: '6px' } },
                         React.createElement("div", { className: "rounded-lg border border-lime-400/25 bg-lime-500/10 p-1.5 text-center" },
                           React.createElement("div", { className: "text-[9px] font-black text-lime-200" }, "PLANT COMPETITION"),
                           React.createElement("div", { className: "text-[8px] text-lime-100" }, "-" + ecosystemAlgaeSuppression + "% algae growth")
@@ -19050,21 +19744,76 @@ var d = (labToolData && labToolData._aquarium) || {};
                     "\uD83D\uDD0E Rates are traced through ", React.createElement("strong", null, ecosystemFocusLabel), ". Other nodes remain visible so its dependencies are not taken out of context."
                   ),
 
-                  React.createElement("div", { className: "mt-3 grid gap-2 sm:grid-cols-3" },
-                    React.createElement("div", { className: "rounded-lg border border-cyan-300/20 bg-white/5 p-2" },
-                      React.createElement("div", { className: "text-[8px] font-black uppercase text-cyan-300" }, "Oxygen balance"),
-                      React.createElement("div", { className: "mt-0.5 text-sm font-black " + (ecosystemViewData.plantOxygen - ecosystemViewData.plantOxygenUse - ecosystemViewData.fishOxygen >= 0 ? "text-emerald-300" : "text-rose-300") }, (ecosystemViewData.plantOxygen - ecosystemViewData.plantOxygenUse - ecosystemViewData.fishOxygen >= 0 ? "+" : "") + (ecosystemViewData.plantOxygen - ecosystemViewData.plantOxygenUse - ecosystemViewData.fishOxygen).toFixed(3)),
-                      React.createElement("div", { className: "text-[8px] text-slate-300" }, "plant output - respiration")
-                    ),
-                    React.createElement("div", { className: "rounded-lg border border-amber-300/20 bg-white/5 p-2" },
-                      React.createElement("div", { className: "text-[8px] font-black uppercase text-amber-300" }, "Nitrogen exchange"),
-                      React.createElement("div", { className: "mt-0.5 text-sm font-black text-amber-100" }, "+" + ecosystemViewData.fishAmmonia.toFixed(3) + " / -" + ecosystemViewData.plantNitrate.toFixed(3)),
-                      React.createElement("div", { className: "text-[8px] text-slate-300" }, "fish ammonia / plant nitrate")
-                    ),
-                    React.createElement("div", { className: "rounded-lg border border-emerald-300/20 bg-white/5 p-2" },
-                      React.createElement("div", { className: "text-[8px] font-black uppercase text-emerald-300" }, "Habitat service"),
-                      React.createElement("div", { className: "mt-0.5 text-sm font-black text-emerald-100" }, "+" + ecosystemShelterBonus + "% fry survival"),
-                      React.createElement("div", { className: "text-[8px] text-slate-300" }, ecosystemAlgaeSuppression + "% algae suppression")
+                  React.createElement("details", { className: "mt-3 rounded-xl border border-cyan-300/25 bg-black/20 p-2.5", open: true },
+                    React.createElement("summary", { className: "cursor-pointer text-[10px] font-black text-cyan-100" }, "\u2696 Matter budget ledger — last aquarium-hour tick"),
+                    React.createElement("p", { className: "mt-1 text-[8px] leading-relaxed text-slate-300" }, "Each pool follows the same equation: sources − sinks = modeled net. The observed change comes from the stored chemistry reading after rounding and safety bounds."),
+                    ecosystemMatterBudgets.length === 0
+                      ? React.createElement("div", { className: "mt-2 rounded-lg border border-dashed border-white/20 p-3 text-center text-[9px] text-slate-300" }, "Run one aquarium-hour tick to audit oxygen, carbon, and nitrogen flows.")
+                      : React.createElement("div", { className: "mt-2 grid gap-2 lg:grid-cols-2", role: "list", 'aria-label': "Matter source and sink budgets for the last aquarium-hour tick" },
+                        ecosystemMatterBudgets.map(function(budget) {
+                          var observedPrefix = budget.observedNet > 0 ? '+' : '';
+                          var modeledPrefix = budget.modeledNet > 0 ? '+' : '';
+                          var directionSymbol = budget.direction === 'rise' ? '\u2191' : budget.direction === 'fall' ? '\u2193' : '\u2248';
+                          var budgetVisualMaximum = Math.max(0.001, budget.sourceTotal, budget.sinkTotal);
+                          var sourceBarWidth = budget.sourceTotal > 0 ? Math.max(2, Math.round(budget.sourceTotal / budgetVisualMaximum * 100)) : 0;
+                          var sinkBarWidth = budget.sinkTotal > 0 ? Math.max(2, Math.round(budget.sinkTotal / budgetVisualMaximum * 100)) : 0;
+                          return React.createElement("article", {
+                            key: budget.id, role: "listitem",
+                            'aria-label': budget.label + ": sources " + budget.sourceTotal.toFixed(3) + ", sinks " + budget.sinkTotal.toFixed(3) + ", observed change " + observedPrefix + budget.observedNet.toFixed(3) + " " + budget.unit,
+                            className: "rounded-lg border border-white/15 bg-white/5 p-2"
+                          },
+                            React.createElement("div", { className: "flex items-start justify-between gap-2" },
+                              React.createElement("div", null,
+                                React.createElement("h5", { className: "text-[9px] font-black text-white" }, budget.label),
+                                React.createElement("div", { className: "text-[7px] text-slate-400" }, budget.unit)
+                              ),
+                              React.createElement("div", { className: "text-right" },
+                                React.createElement("div", { className: "text-[11px] font-black " + (budget.direction === 'rise' ? "text-cyan-300" : budget.direction === 'fall' ? "text-fuchsia-300" : "text-slate-300") }, directionSymbol + " " + observedPrefix + budget.observedNet.toFixed(3)),
+                                React.createElement("div", { className: "text-[7px] text-slate-400" }, "observed pool change")
+                              )
+                            ),
+                            React.createElement("div", { className: "mt-2", role: "img", 'aria-label': budget.label + " magnitude comparison: sources " + budget.sourceTotal.toFixed(3) + ", sinks " + budget.sinkTotal.toFixed(3) },
+                              React.createElement("div", { className: "grid grid-cols-2 gap-px overflow-hidden rounded-full bg-slate-700 p-px" },
+                                React.createElement("div", { className: "flex h-2 justify-end overflow-hidden rounded-l-full bg-slate-900/70" },
+                                  React.createElement("span", { className: "h-full rounded-l-full bg-gradient-to-l from-emerald-300 to-emerald-600", style: { width: sourceBarWidth + '%' } })
+                                ),
+                                React.createElement("div", { className: "flex h-2 justify-start overflow-hidden rounded-r-full bg-slate-900/70" },
+                                  React.createElement("span", { className: "h-full rounded-r-full bg-gradient-to-r from-rose-300 to-rose-600", style: { width: sinkBarWidth + '%' } })
+                                )
+                              ),
+                              React.createElement("div", { className: "mt-0.5 grid grid-cols-2 text-[7px] font-bold" },
+                                React.createElement("span", { className: "text-right text-emerald-200 pr-1" }, "sources"),
+                                React.createElement("span", { className: "text-rose-200 pl-1" }, "sinks")
+                              )
+                            ),
+                            React.createElement("div", { className: "aquarium-budget-flow mt-2" },
+                              React.createElement("div", { className: "rounded-md border border-emerald-300/20 bg-emerald-400/10 p-1.5" },
+                                React.createElement("div", { className: "text-[7px] font-black uppercase text-emerald-200" }, "Sources +" + budget.sourceTotal.toFixed(3)),
+                                budget.sources.length
+                                  ? React.createElement("ul", { className: "mt-1 space-y-0.5" }, budget.sources.map(function(sourceItem) {
+                                      return React.createElement("li", { key: sourceItem.label, className: "flex justify-between gap-1 text-[7px] text-emerald-50" }, React.createElement("span", null, sourceItem.label), React.createElement("span", { className: "font-mono" }, sourceItem.value.toFixed(3)));
+                                    }))
+                                  : React.createElement("div", { className: "mt-1 text-[7px] text-emerald-100/60" }, "No measured source")
+                              ),
+                              React.createElement("div", { className: "aquarium-budget-arrow", 'aria-hidden': "true" }, "\u2192"),
+                              React.createElement("div", { className: "rounded-md border border-rose-300/20 bg-rose-400/10 p-1.5" },
+                                React.createElement("div", { className: "text-[7px] font-black uppercase text-rose-200" }, "Sinks −" + budget.sinkTotal.toFixed(3)),
+                                budget.sinks.length
+                                  ? React.createElement("ul", { className: "mt-1 space-y-0.5" }, budget.sinks.map(function(sinkItem) {
+                                      return React.createElement("li", { key: sinkItem.label, className: "flex justify-between gap-1 text-[7px] text-rose-50" }, React.createElement("span", null, sinkItem.label), React.createElement("span", { className: "font-mono" }, sinkItem.value.toFixed(3)));
+                                    }))
+                                  : React.createElement("div", { className: "mt-1 text-[7px] text-rose-100/60" }, "No measured sink")
+                              )
+                            ),
+                            React.createElement("div", { className: "mt-1.5 rounded bg-black/25 px-1.5 py-1 font-mono text-[7px] text-slate-200" }, budget.sourceTotal.toFixed(3) + " − " + budget.sinkTotal.toFixed(3) + " = " + modeledPrefix + budget.modeledNet.toFixed(3) + " modeled"),
+                            Math.abs(budget.residual) > 0.011 && React.createElement("div", { className: "mt-1 text-[7px] leading-relaxed text-amber-200" }, "Observed-model residual " + (budget.residual > 0 ? "+" : "") + budget.residual.toFixed(3) + ". Check rounding, concentration bounds, or unmodeled boundary exchange.")
+                          );
+                        })
+                      ),
+                    React.createElement("div", { className: "mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[7px] text-slate-400" },
+                      React.createElement("span", null, "Habitat service: +" + ecosystemShelterBonus + "% fry survival"),
+                      React.createElement("span", null, "Competition: " + ecosystemAlgaeSuppression + "% algae suppression"),
+                      React.createElement("span", null, "Rates are teaching estimates; trends matter more than false precision.")
                     )
                   ),
 
@@ -19099,6 +19848,269 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 // ── Plant Management Panel ──
 
+                React.createElement("section", { className: "rounded-2xl border border-fuchsia-300/30 bg-gradient-to-br from-slate-950 via-fuchsia-950/80 to-indigo-950 p-3 text-white shadow-lg", 'aria-labelledby': "aquarium-vitality-map-title" },
+                  React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" },
+                    React.createElement("div", null,
+                      React.createElement("h4", { id: "aquarium-vitality-map-title", className: "text-xs font-black text-fuchsia-100" }, "\uD83D\uDC93 Living System Vitality Map"),
+                      React.createElement("p", { className: "mt-0.5 text-[9px] leading-relaxed text-fuchsia-200" }, "Compare organism vitality and plant health in one place. Select a living component to trace or inspect it.")
+                    ),
+                    React.createElement("div", { className: "flex flex-wrap gap-1", role: "group", 'aria-label': "Filter living system vitality" },
+                      [
+                        { id: 'all', label: "All " + ecosystemVitalityItems.length },
+                        { id: 'attention', label: "Attention " + (ecosystemVitalityCounts.watch + ecosystemVitalityCounts.critical) },
+                        { id: 'critical', label: "Critical " + ecosystemVitalityCounts.critical }
+                      ].map(function(filterOption) {
+                        var vitalityFilterActive = ecosystemVitalityFilter === filterOption.id;
+                        return React.createElement("button", { key: filterOption.id, type: "button", onClick: function() { upd('ecosystemVitalityFilter', filterOption.id); }, 'aria-pressed': vitalityFilterActive, className: "rounded-full border px-2 py-1 text-[8px] font-black " + (vitalityFilterActive ? "border-fuchsia-200 bg-fuchsia-300 text-fuchsia-950" : "border-white/20 bg-white/5 text-fuchsia-100 hover:bg-white/10") }, filterOption.label);
+                      })
+                    )
+                  ),
+                  React.createElement("div", { className: "mt-2 grid grid-cols-3 gap-1", role: "list", 'aria-label': "Living system vitality totals" },
+                    [
+                      { label: 'Thriving', value: ecosystemVitalityCounts.thriving, color: 'text-emerald-200', bg: 'bg-emerald-400/10 border-emerald-300/20' },
+                      { label: 'Monitor', value: ecosystemVitalityCounts.watch, color: 'text-amber-200', bg: 'bg-amber-400/10 border-amber-300/20' },
+                      { label: 'Critical', value: ecosystemVitalityCounts.critical, color: 'text-rose-200', bg: 'bg-rose-400/10 border-rose-300/20' }
+                    ].map(function(summaryItem) {
+                      return React.createElement("div", { key: summaryItem.label, role: "listitem", className: "rounded-lg border p-1.5 text-center " + summaryItem.bg },
+                        React.createElement("div", { className: "text-base font-black " + summaryItem.color }, summaryItem.value),
+                        React.createElement("div", { className: "text-[7px] font-bold uppercase tracking-wide text-slate-300" }, summaryItem.label)
+                      );
+                    })
+                  ),
+                  ecosystemWeakestVitalityItem && React.createElement("div", { className: "mt-2 flex flex-wrap items-center justify-between gap-1 rounded-lg border border-white/15 bg-black/20 px-2 py-1.5 text-[8px]" },
+                    React.createElement("span", { className: "text-slate-300" }, "Lowest current score"),
+                    React.createElement("strong", { className: ecosystemWeakestVitalityItem.status === 'critical' ? "text-rose-200" : ecosystemWeakestVitalityItem.status === 'watch' ? "text-amber-200" : "text-emerald-200" }, ecosystemWeakestVitalityItem.label + " " + ecosystemWeakestVitalityItem.score + "/100 \u2022 " + ecosystemWeakestVitalityItem.limiting)
+                  ),
+                  filteredEcosystemVitalityItems.length
+                    ? React.createElement("div", { className: "mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3", role: "group", 'aria-label': "Filtered organism vitality and plant health" },
+                      filteredEcosystemVitalityItems.map(function(vitalityItem) {
+                        var vitalityPalette = vitalityItem.status === 'thriving'
+                          ? { ring: '#34d399', border: 'border-emerald-300/25', badge: 'bg-emerald-400/15 text-emerald-100', label: 'Thriving' }
+                          : vitalityItem.status === 'watch'
+                            ? { ring: '#fbbf24', border: 'border-amber-300/25', badge: 'bg-amber-400/15 text-amber-100', label: 'Monitor' }
+                            : { ring: '#fb7185', border: 'border-rose-300/30', badge: 'bg-rose-400/15 text-rose-100', label: 'Critical' };
+                        var vitalityItemSelected = ecosystemFocusType === vitalityItem.kind && ecosystemFocusId === vitalityItem.id;
+                        var vitalityTrendSymbol = vitalityItem.trend === 'recovering' ? '\u2191' : vitalityItem.trend === 'declining' ? '\u2193' : vitalityItem.trend === 'browsed' ? '\u2736' : '\u2192';
+                        return React.createElement("button", {
+                          key: vitalityItem.key, type: "button",
+                          onClick: function() {
+                            if (vitalityItem.kind === 'plant') {
+                              selectPlant(vitalityItem.id);
+                              setTimeout(function() { var profile = document.getElementById('aquarium-selected-plant-profile'); if (profile && profile.scrollIntoView) profile.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 0);
+                            } else {
+                              updMulti({ ecosystemFocusType: 'fish', ecosystemFocusId: vitalityItem.id });
+                            }
+                          },
+                          'aria-label': vitalityItem.label + ", " + vitalityItem.type + ", score " + vitalityItem.score + " out of 100, status " + vitalityPalette.label + ", limiting factor " + vitalityItem.limiting + ", trend " + vitalityItem.trend,
+                          'aria-pressed': vitalityItemSelected,
+                          className: "group rounded-xl border bg-white/5 p-2 text-left transition-all hover:-translate-y-0.5 hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-fuchsia-300 " + vitalityPalette.border + (vitalityItemSelected ? " ring-2 ring-fuchsia-300/60 bg-fuchsia-300/10" : "")
+                        },
+                          React.createElement("div", { className: "flex items-center gap-2" },
+                            React.createElement("span", { className: "relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full p-[4px]", style: { background: "conic-gradient(" + vitalityPalette.ring + " " + Math.max(0, Math.min(100, vitalityItem.score)) * 3.6 + "deg, rgba(71,85,105,0.55) 0deg)" }, 'aria-hidden': "true" },
+                              React.createElement("span", { className: "flex h-full w-full items-center justify-center rounded-full bg-slate-950 text-lg" }, vitalityItem.icon),
+                              React.createElement("span", { className: "absolute -bottom-1 rounded-full border border-white/15 bg-slate-950 px-1 text-[7px] font-black text-white" }, vitalityItem.score)
+                            ),
+                            React.createElement("span", { className: "min-w-0 flex-1" },
+                              React.createElement("span", { className: "flex items-start justify-between gap-1" },
+                                React.createElement("strong", { className: "truncate text-[9px] text-white" }, vitalityItem.label),
+                                React.createElement("span", { className: "shrink-0 rounded-full px-1.5 py-0.5 text-[7px] font-black " + vitalityPalette.badge }, vitalityPalette.label)
+                              ),
+                              React.createElement("span", { className: "mt-0.5 block truncate text-[7px] text-slate-400" }, vitalityItem.type),
+                              React.createElement("span", { className: "mt-1 block truncate text-[8px] text-fuchsia-100", title: vitalityItem.limiting }, "Limiting: " + vitalityItem.limiting),
+                              React.createElement("span", { className: "mt-0.5 block text-[7px] font-bold text-slate-300" }, vitalityTrendSymbol + " " + vitalityItem.trend + (vitalityItem.kind === 'plant' ? " \u2022 inspect plant" : " \u2022 trace exchanges"))
+                            )
+                          )
+                        );
+                      })
+                    )
+                    : React.createElement("div", { className: "mt-2 rounded-lg border border-dashed border-fuchsia-300/30 p-3 text-center text-[9px] text-fuchsia-100" },
+                      ecosystemVitalityItems.length === 0 ? "Add organisms or plants to begin the vitality map." : "No living components match this filter.",
+                      ecosystemVitalityItems.length > 0 && React.createElement("button", { type: "button", onClick: function() { upd('ecosystemVitalityFilter', 'all'); }, className: "ml-1 underline decoration-fuchsia-300 underline-offset-2" }, "Show all")
+                    ),
+                  React.createElement("p", { className: "mt-2 text-[7px] leading-relaxed text-slate-400" }, "Ring length represents the 0–100 score; labels preserve meaning without relying on color. Organism scores combine chemistry, space, shelter, nutrition, stress, and illness. Plant rings show simulated specimen health.")
+                ),
+                // Persistent 24-hour exchange history + intervention comparison
+                React.createElement("section", { className: "rounded-2xl border border-cyan-300/30 bg-gradient-to-br from-slate-950 via-cyan-950 to-slate-900 p-3 text-white", 'aria-labelledby': "aquarium-exchange-history-title" },
+                  React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" },
+                    React.createElement("div", null,
+                      React.createElement("h4", { id: "aquarium-exchange-history-title", className: "text-xs font-black text-cyan-100" }, __alloT('stem.aquarium.exchange_history_title', "\uD83D\uDCC8 Ecosystem exchange history")),
+                      React.createElement("p", { className: "mt-0.5 text-[9px] text-cyan-200" }, __alloT('stem.aquarium.exchange_history_desc', "Aligned 24-hour lanes reveal whether chemistry and organism vitality move together."))
+                    ),
+                    React.createElement("div", { className: "flex flex-wrap gap-1", role: "group", 'aria-label': "Ecosystem comparison baseline controls" },
+                      React.createElement("button", { type: "button", onClick: markEcosystemBaseline, disabled: !ecosystemPredictionReady, title: ecosystemPredictionReady ? "Lock predictions and record this baseline" : "Choose a direction for all three predictions first", className: "rounded-md border border-cyan-300 bg-cyan-400 px-2 py-1 text-[9px] font-black text-slate-950 disabled:cursor-not-allowed disabled:opacity-40" }, ecosystemBaseline ? __alloT('stem.aquarium.replace_baseline', "Replace baseline") : __alloT('stem.aquarium.mark_baseline', "Mark baseline")),
+                      ecosystemBaseline && React.createElement("button", { type: "button", onClick: function () { upd('ecosystemBaseline', null); }, className: "rounded-md border border-white/25 bg-white/5 px-2 py-1 text-[9px] font-bold text-cyan-100" }, __alloT('stem.aquarium.clear_baseline', "Clear")),
+                      React.createElement("button", { type: "button", onClick: function () { downloadEcosystemEvidence('csv'); }, disabled: ecosystemExchangeHistory.length === 0, className: "rounded-md border border-white/25 bg-white/5 px-2 py-1 text-[9px] font-bold text-cyan-100 disabled:cursor-not-allowed disabled:opacity-40" }, __alloT('stem.aquarium.export_csv', "Export CSV")),
+                      React.createElement("button", { type: "button", onClick: function () { downloadEcosystemEvidence('json'); }, className: "rounded-md border border-white/25 bg-white/5 px-2 py-1 text-[9px] font-bold text-cyan-100" }, __alloT('stem.aquarium.export_json', "Export JSON"))
+                    )
+                  ),
+                  React.createElement("div", { className: "mt-3 rounded-xl border border-cyan-300/20 bg-gradient-to-r from-cyan-950/80 via-indigo-950/80 to-emerald-950/80 p-2.5", 'aria-label': "Controlled investigation progress" },
+                    React.createElement("div", { className: "flex items-center justify-between gap-2" },
+                      React.createElement("strong", { className: "text-[9px] text-cyan-100" }, "Investigation path"),
+                      React.createElement("span", { className: "text-[8px] font-bold text-cyan-200" }, "Stage " + (ecosystemInvestigationStage + 1) + " of 4")
+                    ),
+                    React.createElement("div", { className: "mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-800", role: "progressbar", 'aria-label': "Controlled investigation progress", 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': ecosystemInvestigationProgress },
+                      React.createElement("div", { className: "h-full rounded-full bg-gradient-to-r from-cyan-400 via-indigo-400 to-emerald-400 transition-all", style: { width: ecosystemInvestigationProgress + '%' } })
+                    ),
+                    React.createElement("ol", { className: "mt-2 grid grid-cols-2 gap-1.5 sm:grid-cols-4", role: "list" },
+                      [
+                        { label: "1 Predict", detail: ecosystemPredictionReady ? "Directions selected" : "Choose 3 directions" },
+                        { label: "2 Change one", detail: !ecosystemBaseline ? "Mark baseline first" : ecosystemInterventionComparison && ecosystemInterventionComparison.confounded ? "Multiple factors changed" : ecosystemInterventionComparison && ecosystemInterventionComparison.controlled ? ecosystemInterventionComparison.summary : "Waiting for one change" },
+                        { label: "3 Observe", detail: ecosystemBaseline && ecosystemInterventionComparison && ecosystemInterventionComparison.controlled ? Math.min(6, Math.max(0, baselineAge)) + "/6 aquarium hours" : "Hold other factors" },
+                        { label: "4 Explain", detail: baselineAge >= 6 && ecosystemPredictionEvaluation && ecosystemPredictionEvaluation.total ? ecosystemPredictionEvaluation.matched + "/" + ecosystemPredictionEvaluation.total + " matched" : "Use ledger evidence" }
+                      ].map(function(stageItem, stageIndex) {
+                        var stageComplete = stageIndex < ecosystemInvestigationStage;
+                        var stageActive = stageIndex === ecosystemInvestigationStage;
+                        return React.createElement("li", { key: stageItem.label, 'aria-current': stageActive ? "step" : undefined, className: "relative rounded-lg border p-2 " + (stageActive ? "border-cyan-300 bg-cyan-300/15 shadow-[0_0_16px_rgba(34,211,238,0.12)]" : stageComplete ? "border-emerald-300/30 bg-emerald-400/10" : "border-white/10 bg-black/15") },
+                          React.createElement("div", { className: "flex items-center gap-1" },
+                            React.createElement("span", { className: "flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[8px] font-black " + (stageActive ? "bg-cyan-300 text-slate-950" : stageComplete ? "bg-emerald-400 text-emerald-950" : "bg-slate-700 text-slate-300"), 'aria-hidden': "true" }, stageComplete ? "\u2713" : String(stageIndex + 1)),
+                            React.createElement("strong", { className: "text-[8px] " + (stageActive ? "text-cyan-100" : stageComplete ? "text-emerald-100" : "text-slate-300") }, stageItem.label.replace(/^\d\s/, ''))
+                          ),
+                          React.createElement("div", { className: "mt-1 truncate text-[7px] " + (stageActive ? "text-cyan-200" : "text-slate-400"), title: stageItem.detail }, stageItem.detail)
+                        );
+                      })
+                    )
+                  ),                  React.createElement("div", { className: "mt-3 rounded-xl border border-indigo-300/30 bg-indigo-500/10 p-2.5" },
+                    React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" },
+                      React.createElement("div", null,
+                        React.createElement("h5", { className: "text-[10px] font-black text-indigo-100" }, "1. Preregister your prediction"),
+                        React.createElement("p", { className: "mt-0.5 text-[8px] leading-relaxed text-indigo-200" }, ecosystemBaseline ? "Predictions are locked to the marked baseline. Clear the baseline to design a new investigation." : "Choose the expected direction before collecting evidence. ‘Stable’ means change stays inside the model’s measurement deadband.")
+                      ),
+                      React.createElement("span", { role: "status", className: "rounded-full border px-2 py-0.5 text-[8px] font-black " + (ecosystemPredictionReady ? "border-emerald-300/40 bg-emerald-400/15 text-emerald-100" : "border-amber-300/40 bg-amber-400/15 text-amber-100") }, ecosystemPredictionReady ? "3/3 predictions ready" : "Prediction required")
+                    ),
+                    React.createElement("label", { htmlFor: "aquarium-intervention-plan", className: "mt-2 block text-[8px] font-black uppercase tracking-wide text-indigo-200" }, "Planned one-variable change (optional label)"),
+                    React.createElement("input", {
+                      id: "aquarium-intervention-plan", type: "text", maxLength: 240, value: ecosystemBaseline ? ecosystemBaseline.plannedIntervention || '' : ecosystemInterventionNote,
+                      disabled: !!ecosystemBaseline,
+                      onChange: function(event) { upd('ecosystemInterventionNote', String(event.target.value || '').slice(0, 240)); },
+                      placeholder: "Example: add one anubias plant",
+                      className: "mt-1 w-full rounded-md border border-indigo-300/30 bg-slate-950/60 px-2 py-1.5 text-[9px] text-white placeholder:text-slate-500 disabled:opacity-70"
+                    }),
+                    React.createElement("div", { className: "mt-2 grid grid-cols-1 gap-1.5 sm:grid-cols-3" },
+                      [
+                        { id: 'oxygen', label: "Dissolved O\u2082" },
+                        { id: 'nitrate', label: "Nitrate NO\u2083" },
+                        { id: 'vitality', label: "Mean vitality" }
+                      ].map(function(metric) {
+                        return React.createElement("div", { key: metric.id, className: "rounded-lg border border-white/10 bg-black/20 p-1.5" },
+                          React.createElement("div", { className: "text-[8px] font-black text-indigo-100" }, metric.label),
+                          React.createElement("div", { className: "mt-1 grid grid-cols-3 gap-1", role: "group", 'aria-label': metric.label + " predicted direction" },
+                            [
+                              { id: 'fall', label: "\u2193 Fall" },
+                              { id: 'stable', label: "\u2248 Stable" },
+                              { id: 'rise', label: "\u2191 Rise" }
+                            ].map(function(directionOption) {
+                              var selectedDirection = ecosystemPrediction[metric.id] === directionOption.id;
+                              return React.createElement("button", {
+                                key: directionOption.id, type: "button", disabled: !!ecosystemBaseline,
+                                onClick: function() { updateEcosystemPrediction(metric.id, directionOption.id); },
+                                'aria-pressed': selectedDirection,
+                                className: "rounded border px-1 py-1 text-[8px] font-bold disabled:cursor-not-allowed " + (selectedDirection ? "border-indigo-200 bg-indigo-300 text-indigo-950" : "border-white/15 bg-white/5 text-indigo-100 hover:bg-white/10")
+                              }, directionOption.label);
+                            })
+                          )
+                        );
+                      })
+                    )
+                  ),
+                  ecosystemHistoryPoints.length > 1
+                    ? React.createElement("svg", { viewBox: "0 0 640 142", className: "mt-3 w-full", role: "img", 'aria-label': "Last " + ecosystemHistoryPoints.length + " aquarium hours. " + ecosystemHistoryLanes.map(function (lane) { return lane.label + " " + lane.latest.toFixed(lane.id === 'vitality' ? 0 : 1) + " " + lane.unit; }).join('; ') },
+                      React.createElement("title", null, "Aquarium oxygen, nitrate, and vitality history"),
+                      React.createElement("desc", null, "Three aligned time lanes ending at the current aquarium hour. Each lane uses its own labeled scale." + (ecosystemBaselineX !== null ? " A vertical baseline marker identifies the preregistered comparison point." : "")),
+                      ecosystemHistoryLanes.map(function (lane) {
+                        var finalPoint = lane.points.split(' ').slice(-1)[0].split(',');
+                        return React.createElement("g", { key: lane.id },
+                          React.createElement("text", { x: "4", y: lane.top + 12, fill: "#e2e8f0", fontSize: "10", fontWeight: "700" }, lane.label),
+                          React.createElement("text", { x: "4", y: lane.top + 27, fill: lane.color, fontSize: "10", fontWeight: "700" }, lane.latest.toFixed(lane.id === 'vitality' ? 0 : 1) + " " + lane.unit),
+                          React.createElement("line", { x1: "118", y1: lane.top + 30, x2: "622", y2: lane.top + 30, stroke: "#475569", strokeWidth: "0.8" }),
+                          React.createElement("line", { x1: "118", y1: lane.top + 6, x2: "622", y2: lane.top + 6, stroke: "#334155", strokeWidth: "0.6", strokeDasharray: "3 3" }),
+                          React.createElement("polyline", { points: lane.points, fill: "none", stroke: lane.color, strokeWidth: "2.2", vectorEffect: "non-scaling-stroke" }),
+                          React.createElement("circle", { cx: finalPoint[0], cy: finalPoint[1], r: "3", fill: lane.color }),
+                          React.createElement("text", { x: "628", y: lane.top + 12, fill: "#94a3b8", fontSize: "8", textAnchor: "end" }, "max " + lane.maximum.toFixed(lane.id === 'vitality' ? 0 : 1)),
+                          React.createElement("text", { x: "628", y: lane.top + 29, fill: "#94a3b8", fontSize: "8", textAnchor: "end" }, "min " + lane.minimum.toFixed(lane.id === 'vitality' ? 0 : 1))
+                        );
+                      }),
+                      ecosystemBaselineX !== null && React.createElement("g", { 'aria-hidden': "true" },
+                        React.createElement("line", { x1: ecosystemBaselineX, y1: "12", x2: ecosystemBaselineX, y2: "132", stroke: "#f0abfc", strokeWidth: "1.5", strokeDasharray: "4 3", vectorEffect: "non-scaling-stroke" }),
+                        React.createElement("circle", { cx: ecosystemBaselineX, cy: "12", r: "3", fill: "#f0abfc" }),
+                        React.createElement("text", { x: ecosystemBaselineX, y: "8", fill: "#f5d0fe", fontSize: "7", fontWeight: "800", textAnchor: "middle" }, "BASELINE")
+                      ),
+                      React.createElement("text", { x: "118", y: "140", fill: "#94a3b8", fontSize: "8" }, "\u2190 " + ecosystemHistoryPoints.length + " hours ago"),
+                      React.createElement("text", { x: "622", y: "140", fill: "#94a3b8", fontSize: "8", textAnchor: "end" }, "now \u2192")
+                    )
+                    : React.createElement("div", { className: "mt-3 rounded-lg border border-dashed border-cyan-300/30 p-3 text-center text-[10px] text-cyan-100" }, __alloT('stem.aquarium.run_two_ticks_for_history', "Run two aquarium-hour ticks to begin the exchange history.")),
+                  ecosystemBaseline && baselineDeltas && React.createElement("div", { className: "mt-3" },
+                    React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-1 text-[9px] text-cyan-100" },
+                      React.createElement("strong", null, __alloT('stem.aquarium.change_from_baseline', "Change from baseline")),
+                      React.createElement("span", null, baselineAge + " aquarium hours \u2022 plants " + (baselineDeltas.plants >= 0 ? "+" : "") + baselineDeltas.plants + " \u2022 organisms " + (baselineDeltas.organisms >= 0 ? "+" : "") + baselineDeltas.organisms)
+                    ),
+                    React.createElement("div", { className: "mt-1 grid grid-cols-1 gap-1 sm:grid-cols-3", role: "list", 'aria-label': "Changes since the marked ecosystem baseline" },
+                      [
+                        { label: "O\u2082", value: baselineDeltas.oxygen, unit: " mg/L", digits: 2 },
+                        { label: "NO\u2083", value: baselineDeltas.nitrate, unit: " ppm", digits: 1 },
+                        { label: "Vitality", value: baselineDeltas.vitality, unit: " points", digits: 0 }
+                      ].map(function (comparison) {
+                        var direction = comparison.value > 0 ? '+' : '';
+                        return React.createElement("div", { key: comparison.label, role: "listitem", className: "rounded-lg border border-white/15 bg-white/5 p-2" },
+                          React.createElement("div", { className: "text-[8px] font-black uppercase text-cyan-300" }, comparison.label),
+                          React.createElement("div", { className: "text-sm font-black text-white" }, direction + comparison.value.toFixed(comparison.digits) + comparison.unit)
+                        );
+                      })
+                    )
+                  ),
+                  ecosystemBaseline && ecosystemInterventionComparison && React.createElement("div", {
+                    className: "mt-3 rounded-xl border p-2.5 " + (ecosystemInterventionComparison.confounded ? "border-rose-300/40 bg-rose-400/10" : ecosystemInterventionComparison.controlled ? "border-emerald-300/40 bg-emerald-400/10" : "border-amber-300/40 bg-amber-400/10"),
+                    role: "status", 'aria-live': "polite"
+                  },
+                    React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" },
+                      React.createElement("strong", { className: "text-[10px] " + (ecosystemInterventionComparison.confounded ? "text-rose-100" : ecosystemInterventionComparison.controlled ? "text-emerald-100" : "text-amber-100") },
+                        ecosystemInterventionComparison.confounded ? "\u26A0 Confounded investigation" : ecosystemInterventionComparison.controlled ? "\u2713 One-variable intervention" : "2. Make exactly one change"
+                      ),
+                      React.createElement("span", { className: "text-[8px] text-slate-200" }, baselineAge + " aquarium hours since baseline")
+                    ),
+                    React.createElement("p", { className: "mt-1 text-[9px] leading-relaxed text-slate-100" },
+                      ecosystemInterventionComparison.confounded
+                        ? ecosystemInterventionComparison.count + " factors changed: " + ecosystemInterventionComparison.summary + ". The effects cannot be isolated; replace the baseline and change only one factor."
+                        : ecosystemInterventionComparison.controlled
+                          ? "Changed factor: " + ecosystemInterventionComparison.summary + ". Keep all other planned factors unchanged until the six-hour observation is complete."
+                          : "No planned factor has changed yet. Add or remove one plant or organism, change one equipment level, or toggle the light."
+                    ),
+                    ecosystemBaseline.plannedIntervention && React.createElement("p", { className: "mt-1 text-[8px] text-slate-300" }, "Preregistered plan: " + ecosystemBaseline.plannedIntervention),
+                    ecosystemInterventionComparison.controlled && ecosystemPredictionEvaluation && React.createElement("div", { className: "mt-2 rounded-lg border border-white/10 bg-black/20 p-2" },
+                      React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-1" },
+                        React.createElement("h5", { className: "text-[9px] font-black text-cyan-100" }, "3. Prediction check"),
+                        React.createElement("span", { className: "text-[8px] font-bold " + (baselineAge >= 6 ? "text-emerald-200" : "text-amber-200") }, baselineAge >= 6 ? (ecosystemPredictionEvaluation.total ? ecosystemPredictionEvaluation.matched + "/" + ecosystemPredictionEvaluation.total + " directions matched" : "Legacy baseline: no predictions") : Math.max(0, 6 - baselineAge) + " observation hours remaining")
+                      ),
+                      React.createElement("div", { className: "mt-1.5 grid grid-cols-1 gap-1 sm:grid-cols-3", role: "list", 'aria-label': "Predicted and observed ecosystem directions" },
+                        ecosystemPredictionEvaluation.results.map(function(result) {
+                          var directionLabels = { rise: '\u2191 rise', stable: '\u2248 stable', fall: '\u2193 fall' };
+                          var resultReady = baselineAge >= 6;
+                          return React.createElement("div", { key: result.id, role: "listitem", className: "rounded-md border border-white/10 bg-white/5 p-1.5" },
+                            React.createElement("div", { className: "flex items-center justify-between gap-1" },
+                              React.createElement("strong", { className: "text-[8px] text-cyan-200" }, result.label),
+                              resultReady && result.predicted && React.createElement("span", { 'aria-label': result.matches ? "Prediction matched" : "Prediction did not match", className: "text-[10px] " + (result.matches ? "text-emerald-300" : "text-amber-300") }, result.matches ? '\u2713' : '\u21BB')
+                            ),
+                            React.createElement("div", { className: "mt-0.5 text-[8px] text-slate-200" }, "Predicted: " + (directionLabels[result.predicted] || 'not recorded')),
+                            React.createElement("div", { className: "text-[8px] text-slate-200" }, resultReady ? "Observed: " + directionLabels[result.observed] : "Observed: collecting evidence"),
+                            resultReady && React.createElement("div", { className: "font-mono text-[8px] text-slate-400" }, "\u0394 " + (result.delta > 0 ? "+" : "") + result.delta.toFixed(result.id === 'vitality' ? 0 : result.id === 'nitrate' ? 1 : 2))
+                          );
+                        })
+                      ),
+                      baselineAge >= 6 && React.createElement("p", { className: "mt-1.5 text-[8px] leading-relaxed text-slate-300" }, "A mismatch is useful evidence, not failure. Use the exchange network and event log to identify an overlooked pathway or model limitation.")
+                    )
+                  ),
+                  React.createElement("details", { className: "mt-3 rounded-lg border border-emerald-300/25 bg-emerald-400/10 p-2" },
+                    React.createElement("summary", { className: "cursor-pointer text-[10px] font-black text-emerald-100" }, __alloT('stem.aquarium.guided_exchange_investigation', "\uD83E\uDDEA Guided investigation: make one change")),
+                    React.createElement("ol", { className: "mt-2 list-decimal space-y-1 pl-4 text-[9px] leading-relaxed text-emerald-50" },
+                      React.createElement("li", null, __alloT('stem.aquarium.exchange_investigation_predict', "Predict how oxygen, nitrate, and vitality will respond.")),
+                      React.createElement("li", null, __alloT('stem.aquarium.exchange_investigation_mark', "Mark the baseline, then change one variable: add a plant, adjust light, change stocking, or service equipment.")),
+                      React.createElement("li", null, __alloT('stem.aquarium.exchange_investigation_observe', "Observe at least six aquarium hours without making another change.")),
+                      React.createElement("li", null, __alloT('stem.aquarium.exchange_investigation_explain', "Explain the result by tracing the changed component through the exchange network and citing the baseline difference."))
+                    )
+                  ),
+                  lastEcosystemExchange && lastEcosystemExchange.model && React.createElement("p", { className: "mt-2 text-[8px] leading-relaxed text-slate-400" },
+                    "Model basis: " + lastEcosystemExchange.model.volumeGallons + " gal, concentration scale \u00D7" + lastEcosystemExchange.model.volumeScale.toFixed(2) + ". Oxygen saturation target " + lastEcosystemExchange.atmosphere.oxygenSaturationTarget.toFixed(2) + " mg/L. " + lastEcosystemExchange.model.uncertainty
+                  )
+                ),
                 React.createElement("div", { className: "bg-gradient-to-br from-emerald-50 via-green-50 to-lime-50 rounded-2xl p-4 border border-emerald-200/60 shadow-sm" },
 
                   React.createElement("div", { className: "flex items-center justify-between mb-2" },
@@ -19115,6 +20127,54 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   // Current plants list
 
+                  React.createElement("details", { className: "mb-3 rounded-xl border border-emerald-200 bg-white/75 p-2", open: ecosystemOrganismPlantRelationships.length > 0 },
+                    React.createElement("summary", { className: "cursor-pointer text-[11px] font-black text-emerald-800" },
+                      __alloT('stem.aquarium.organism_plant_relationships', "\uD83D\uDD17 Organism \u2194 plant relationships") + " (" + ecosystemOrganismPlantRelationships.length + ")"
+                    ),
+                    ecosystemOrganismPlantRelationships.length === 0
+                      ? React.createElement("p", { className: "mt-2 text-[10px] text-slate-600" }, __alloT('stem.aquarium.stock_organisms_to_map_plant_relationships', "Stock organisms to map shelter, browsing, grazing, and recycling relationships."))
+                      : React.createElement("div", { className: "mt-2 space-y-2" },
+                        React.createElement("div", { className: "grid grid-cols-2 gap-1 sm:grid-cols-4", role: "list", 'aria-label': "Organism plant relationship totals" },
+                          [
+                            { label: "Plant-cover users", value: ecosystemPlantRelationshipCounts.shelter },
+                            { label: "Plant browsers", value: ecosystemPlantRelationshipCounts.browsers },
+                            { label: "Algae grazers", value: ecosystemPlantRelationshipCounts.grazers },
+                            { label: "Detritus recyclers", value: ecosystemPlantRelationshipCounts.recyclers }
+                          ].map(function (metric) {
+                            return React.createElement("div", { key: metric.label, role: "listitem", className: "rounded-lg border border-emerald-100 bg-white p-1.5 text-center" },
+                              React.createElement("div", { className: "text-sm font-black text-emerald-800" }, metric.value),
+                              React.createElement("div", { className: "text-[8px] font-bold text-slate-600" }, metric.label)
+                            );
+                          })
+                        ),
+                        React.createElement("div", { className: "max-h-48 space-y-1 overflow-y-auto", role: "list", 'aria-label': "Individual organism relationships with aquarium plants" },
+                          ecosystemOrganismPlantRelationships.map(function (item) {
+                            var relationshipEffect = item.relationship.directPlantEater
+                              ? "Browsing pressure " + item.relationship.herbivoryRate.toFixed(3) + " biomass/hour when hungry"
+                              : item.relationship.plantShelterDependent
+                                ? "Plant cover can lower this organism's environmental stress"
+                                : "Connected indirectly through shared water chemistry";
+                            return React.createElement("button", {
+                              key: item.instanceId,
+                              type: "button",
+                              onClick: function () { updMulti({ ecosystemFocusType: 'fish', ecosystemFocusId: item.instanceId }); },
+                              className: "w-full rounded-lg border border-emerald-100 bg-white p-2 text-left hover:border-emerald-400 focus:ring-2 focus:ring-emerald-500",
+                              'aria-label': item.name + ". " + item.relationship.summary + ". " + relationshipEffect
+                            },
+                              React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-1" },
+                                React.createElement("strong", { className: "text-[10px] text-emerald-900" }, item.name),
+                                React.createElement("span", { className: "text-[8px] text-slate-500" }, item.type)
+                              ),
+                              React.createElement("div", { className: "mt-0.5 text-[9px] font-bold text-emerald-700" }, item.relationship.summary),
+                              React.createElement("div", { className: "mt-0.5 text-[8px] leading-relaxed text-slate-600" }, relationshipEffect)
+                            );
+                          })
+                        ),
+                        React.createElement("div", { className: "rounded-lg border border-amber-200 bg-amber-50 p-2 text-[9px] text-amber-900", role: "status" },
+                          "Last tick: organisms browsed " + ecosystemPlantHerbivory.toFixed(3) + " plant biomass and grazed " + ecosystemAlgaeGrazed.toFixed(3) + " algae biomass. These are different food-web pathways."
+                        )
+                      )
+                  ),
                   tankPlants.length === 0
 
                     ? React.createElement("div", { className: "text-center py-4 text-sm text-emerald-400 italic" },
@@ -19168,7 +20228,8 @@ var d = (labToolData && labToolData._aquarium) || {};
                                   React.createElement("div", { style: { width: Math.max(0, Math.min(100, hp)) + '%', transition: 'width 0.5s' }, className: "h-full rounded-full " + hpColor })
                                 ),
                                 React.createElement("span", { className: "font-mono text-[11px] " + hpTextColor }, hp.toFixed(0) + '%'),
-                                React.createElement("span", { className: "text-[11px] text-slate-500" }, '\uD83C\uDF3F' + bm.toFixed(1))
+                                React.createElement("span", { className: "text-[11px] text-slate-500" }, '\uD83C\uDF3F' + bm.toFixed(1)),
+                                (ecosystemPlantHerbivoryByPlant[pid] || 0) > 0 && React.createElement("span", { className: "rounded bg-amber-100 px-1 text-[8px] font-black text-amber-800", title: "Biomass eaten by plant-browsing organisms last tick" }, "Browsed -" + ecosystemPlantHerbivoryByPlant[pid].toFixed(3))
                               )
                             )
                           ),
@@ -19236,6 +20297,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   // Selected plant field guide and live specimen analysis
                   selectedPlant && selectedPlantProfile && React.createElement("section", {
+                    id: "aquarium-selected-plant-profile",
                     className: "mt-3 rounded-xl border border-emerald-200 bg-white/95 p-3 shadow-sm",
                     role: "region",
                     'aria-labelledby': "aquarium-plant-profile-title",
@@ -20800,37 +21862,32 @@ var d = (labToolData && labToolData._aquarium) || {};
                         var hungerTextColor = hunger >= 80 ? 'text-red-600' : hunger >= 50 ? 'text-amber-600' : 'text-green-600';
 
                         var illnessSeverity = fishSickness[fishKey] ? fishSickness[fishKey].severity : 0;
-                        var oxygenVitality = waterChem.dissolvedO2 >= 6 ? 100 : waterChem.dissolvedO2 >= 4 ? 65 + (waterChem.dissolvedO2 - 4) * 17.5 : waterChem.dissolvedO2 >= 2 ? 25 + (waterChem.dissolvedO2 - 2) * 20 : Math.max(0, waterChem.dissolvedO2 * 12.5);
-                        var nitrogenVitality = Math.max(0, 100 - Math.min(100, waterChem.ammonia * 60 + waterChem.nitrite * 80 + Math.max(0, waterChem.nitrate - 40) * 0.8));
-                        var temperatureVitality = sp && sp.tempRange
-                          ? (waterChem.temp >= sp.tempRange[0] && waterChem.temp <= sp.tempRange[1] ? 100 : Math.max(0, 100 - Math.min(Math.abs(waterChem.temp - sp.tempRange[0]), Math.abs(waterChem.temp - sp.tempRange[1])) * 20))
-                          : 80;
-                        var pHVitality = sp && sp.pHRange
-                          ? (waterChem.pH >= sp.pHRange[0] && waterChem.pH <= sp.pHRange[1] ? 100 : Math.max(0, 100 - Math.min(Math.abs(waterChem.pH - sp.pHRange[0]), Math.abs(waterChem.pH - sp.pHRange[1])) * 50))
-                          : 80;
-                        var spaceVitality = Math.max(20, 100 - Math.max(0, loadPct - 60) * 1.5);
-                        var shelterVitality = ecosystemAllPlantBiomass > 6 ? 100 : ecosystemAllPlantBiomass > 3 ? 80 : ecosystemAllPlantBiomass > 0 ? 58 : 35;
-                        var nutritionVitality = Math.max(0, 100 - hunger);
-                        var calmVitality = Math.max(0, 100 - stress);
-                        var illnessVitality = Math.max(0, 100 - illnessSeverity * 32);
-                        var vitalityFactors = [
-                          { id: 'oxygen', label: 'O\u2082', score: Math.round(oxygenVitality), detail: waterChem.dissolvedO2.toFixed(1) + ' mg/L dissolved oxygen' },
-                          { id: 'nitrogen', label: 'Water', score: Math.round(nitrogenVitality), detail: 'NH\u2083 ' + waterChem.ammonia.toFixed(2) + ', NO\u2082 ' + waterChem.nitrite.toFixed(2) },
-                          { id: 'temperature', label: 'Temp', score: Math.round(temperatureVitality), detail: waterChem.temp.toFixed(1) + '\u00B0F; species range ' + (sp && sp.tempRange ? sp.tempRange[0] + '\u2013' + sp.tempRange[1] : 'unknown') },
-                          { id: 'ph', label: 'pH', score: Math.round(pHVitality), detail: waterChem.pH.toFixed(1) + '; species range ' + (sp && sp.pHRange ? sp.pHRange[0] + '\u2013' + sp.pHRange[1] : 'unknown') },
-                          { id: 'space', label: 'Space', score: Math.round(spaceVitality), detail: loadPct + '% bioload capacity' },
-                          { id: 'shelter', label: 'Shelter', score: Math.round(shelterVitality), detail: ecosystemAllPlantBiomass.toFixed(1) + ' plant biomass' },
-                          { id: 'nutrition', label: 'Nutrition', score: Math.round(nutritionVitality), detail: hunger.toFixed(0) + '% hunger' },
-                          { id: 'stress', label: 'Calm', score: Math.round(calmVitality), detail: stress.toFixed(0) + '% stress' },
-                          { id: 'illness', label: 'Health', score: Math.round(illnessVitality), detail: illnessSeverity > 0 ? 'illness severity ' + illnessSeverity : 'no detected illness' }
-                        ];
-                        var careScore = Math.max(0, Math.min(100, Math.round(
-                          oxygenVitality * 0.15 + nitrogenVitality * 0.15 + temperatureVitality * 0.10 + pHVitality * 0.08 +
-                          spaceVitality * 0.07 + shelterVitality * 0.05 + nutritionVitality * 0.15 + calmVitality * 0.12 + illnessVitality * 0.13
-                        )));
-                        var limitingVitalityFactor = vitalityFactors.slice().sort(function (a, b) { return a.score - b.score; })[0];
-                        var careScoreColor = careScore >= 80 ? 'text-green-700' : careScore >= 55 ? 'text-amber-700' : 'text-red-700';
-                        var historyExpanded = expandedCareFish === fishKey;
+                        var vitalityCalculation = AquariumEcosystemCore.calculateVitality({
+                          chemistry: waterChem,
+                          species: sp || {},
+                          loadPct: loadPct,
+                          plantBiomass: ecosystemAllPlantBiomass,
+                          hunger: hunger,
+                          stress: stress,
+                          illnessSeverity: illnessSeverity
+                        });
+                        var vitalityFactors = vitalityCalculation.factors;
+                        var persistentVitality = fishVitality[fishKey] || null;
+                        var careScore = persistentVitality ? persistentVitality.score : vitalityCalculation.score;
+                        var limitingVitalityFactor = vitalityCalculation.limiting;
+                        var vitalityTrend = persistentVitality ? persistentVitality.trend : 'stable';
+                        var vitalityTrendLabel = vitalityTrend === 'recovering' ? '\u2191 recovering' : vitalityTrend === 'declining' ? '\u2193 declining' : '\u2192 stable';
+                        var fishVitalitySeries = vitalityHistory.map(function (historyPoint) {
+                          return historyPoint && historyPoint.perFish && historyPoint.perFish[fishKey]
+                            ? { tick: historyPoint.tick, score: historyPoint.perFish[fishKey].score }
+                            : null;
+                        }).filter(Boolean);
+                        var fishVitalityPolyline = fishVitalitySeries.map(function (historyPoint, historyIndex) {
+                          var x = fishVitalitySeries.length <= 1 ? 50 : 2 + historyIndex / (fishVitalitySeries.length - 1) * 96;
+                          var y = 26 - Math.max(0, Math.min(100, historyPoint.score)) / 100 * 22;
+                          return x.toFixed(1) + ',' + y.toFixed(1);
+                        }).join(' ');
+                        var careScoreColor = careScore >= 80 ? 'text-green-700' : careScore >= 55 ? 'text-amber-700' : 'text-red-700';                        var historyExpanded = expandedCareFish === fishKey;
                         var historyId = 'aquarium-care-history-' + fishKey;
                         var isQuarantined = !!quarantinedFish[fishKey];
                         var quarantineHours = isQuarantined ? Math.max(0, simTick - quarantinedFish[fishKey].sinceTick) : 0;
@@ -20865,13 +21922,25 @@ var d = (labToolData && labToolData._aquarium) || {};
                             }),
                             React.createElement("div", { className: "mb-1 flex items-center gap-1 text-[10px] text-slate-600", 'aria-label': displayName + " vitality " + careScore + " out of 100. Limiting factor: " + limitingVitalityFactor.label + " " + limitingVitalityFactor.score + ". Age " + ageLabel + (isQuarantined ? ", in hospital tank for " + quarantineHours + " hours" : "") + (lastCare ? ". Latest care: " + lastCare.msg : "") },
                               React.createElement("span", { className: "font-bold whitespace-nowrap " + careScoreColor, title: "Vitality combines oxygen, nitrogen toxins, temperature, pH, space, shelter, nutrition, stress, and illness" }, "Vitality " + careScore + "/100"),
+                              React.createElement("span", { className: "whitespace-nowrap font-bold", title: persistentVitality && persistentVitality.lowTicks ? persistentVitality.lowTicks + " consecutive critical hours" : "Smoothed multi-hour vitality trend" }, "\u2022 " + vitalityTrendLabel),
                               React.createElement("span", { className: "whitespace-nowrap" }, "\u2022 Age " + ageLabel),
                               lastCare && React.createElement("span", { className: "truncate", title: lastCare.msg }, "\u2022 " + lastCare.msg)
                             ),
                             React.createElement("div", { className: "flex items-center gap-1" },
                             React.createElement("details", { className: "mb-1 rounded border border-indigo-100 bg-indigo-50/60 px-1.5 py-1" },
                               React.createElement("summary", { className: "cursor-pointer text-[9px] font-bold text-indigo-800" }, "Why vitality? Limiting: " + limitingVitalityFactor.label + " " + limitingVitalityFactor.score),
-                              React.createElement("div", { className: "mt-1 grid grid-cols-3 gap-1", role: "list", 'aria-label': displayName + " vitality factors" }, vitalityFactors.map(function (factor) {
+                              fishVitalitySeries.length > 1 && React.createElement("div", { className: "mt-1 rounded bg-white p-1" },
+                                React.createElement("div", { className: "flex items-center justify-between text-[8px] font-bold text-slate-600" },
+                                  React.createElement("span", null, "Vitality trajectory"),
+                                  React.createElement("span", null, fishVitalitySeries.length + "h \u2022 " + vitalityTrendLabel)
+                                ),
+                                React.createElement("svg", { viewBox: "0 0 100 28", className: "mt-0.5 h-8 w-full", role: "img", 'aria-label': displayName + " vitality over " + fishVitalitySeries.length + " hours, ending at " + careScore + " out of 100" },
+                                  React.createElement("title", null, displayName + " vitality history"),
+                                  React.createElement("line", { x1: "2", y1: "15", x2: "98", y2: "15", stroke: "#cbd5e1", strokeWidth: "0.7", strokeDasharray: "2 2" }),
+                                  React.createElement("polyline", { points: fishVitalityPolyline, fill: "none", stroke: careScore >= 55 ? "#059669" : "#e11d48", strokeWidth: "2", vectorEffect: "non-scaling-stroke" })
+                                )
+                              ),
+                              React.createElement("div", { className: "mt-1 grid grid-cols-2 gap-1 sm:grid-cols-3", role: "list", 'aria-label': displayName + " vitality factors" }, vitalityFactors.map(function (factor) {
                                 var factorColor = factor.score >= 80 ? 'bg-emerald-500' : factor.score >= 55 ? 'bg-amber-500' : 'bg-rose-500';
                                 return React.createElement("div", { key: factor.id, role: "listitem", className: "rounded bg-white p-1", title: factor.detail },
                                   React.createElement("div", { className: "flex justify-between gap-1 text-[8px]" },

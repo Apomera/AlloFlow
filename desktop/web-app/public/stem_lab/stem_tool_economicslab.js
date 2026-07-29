@@ -2072,7 +2072,7 @@ var d = labToolData || {};
 
                           isAnswered && isSelected && !isCorrect ? 'border-red-400 bg-red-50 text-red-800' :
 
-                            isAnswered ? 'border-slate-200 bg-white text-slate-400 opacity-70' :
+                            isAnswered ? 'border-slate-400 bg-white text-slate-600' :
 
                               'border-rose-100 bg-white hover:border-rose-400 text-slate-700')
 
@@ -2224,7 +2224,7 @@ var d = labToolData || {};
 
                   disabled: d.advisorLoading || !(d.advisorInput || '').trim(),
 
-                  className: 'px-4 py-2 rounded-xl text-xs font-bold ' + (d.advisorLoading ? 'bg-slate-300 text-slate-600' : 'bg-sky-500 text-white')
+                  className: 'px-4 py-2 rounded-xl text-xs font-bold ' + (d.advisorLoading ? 'bg-slate-300 text-slate-600' : 'bg-sky-700 text-white')
 
                 }, d.advisorLoading ? '\u23F3' : '\uD83D\uDCAC Ask')
 
@@ -2251,7 +2251,7 @@ var d = labToolData || {};
 
                     onClick: function () { upd('advisorInput', q); },
 
-                    className: 'text-[11px] px-2 py-1 rounded-full bg-sky-100 text-sky-700 hover:bg-sky-200'
+                    className: 'text-[11px] px-2 py-1 rounded-full bg-sky-100 text-sky-800 hover:bg-sky-200'
 
                   }, q);
 
@@ -2689,7 +2689,7 @@ var d = labToolData || {};
                     return React.createElement('button', { key: cat,
                       onClick: function() { upd('econConceptFilter', cat); },
                       className: 'px-2 py-0.5 rounded-full text-[11px] font-bold transition-all ' +
-                        ((d.econConceptFilter || 'all') === cat ? 'bg-indigo-500 text-white' : 'bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-100')
+                        ((d.econConceptFilter || 'all') === cat ? 'bg-indigo-600 text-white' : 'bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-100')
                     }, cat.charAt(0).toUpperCase() + cat.slice(1));
                   })
                 ),

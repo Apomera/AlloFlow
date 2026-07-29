@@ -5131,6 +5131,528 @@ window.StemLab = window.StemLab || {
     }
     return profile;
   }
+  function skeletalAnatomyProfileFor(dn) {
+    var clade = String((dn && dn.clade) || '');
+    var group = String((dn && dn.group) || '');
+    var speciesId = String((dn && dn.id) || '');
+    var isBasalTyrannosauroid = /^(yutyrannus|dilong|guanlong|proceratosaurus|sinotyrannus|eotyrannus)$/i.test(speciesId);
+    var isTheropod = group === 'theropod';
+    var isSauropod = group === 'sauropod';
+    var isEarlyApneumaticSaurischian = /early Sauropodomorph|Plateosaur|Massospondyl|Herrerasaur/i.test(clade);
+    var supportsInvasivePneumaticity = (isTheropod || isSauropod) && !isEarlyApneumaticSaurischian;
+    var profile = {
+      label: 'General dinosaur skeletal proxy',
+      locomotion: isTheropod ? 'Bipedal: body mass is carried primarily by the hind limbs.' : (isSauropod ? 'Obligate quadruped with graviportal, column-like limbs.' : 'Posture follows the closest represented clade and may be bipedal or quadrupedal.'),
+      skull: 'Fenestrated skull proxy with orbit, antorbital/nasal region, temporal opening, and a separate lower jaw.',
+      dentition: isSauropod ? 'Small teeth are set near the front of the jaws; tooth shape varies among sauropod clades.' : (isTheropod ? 'Visible marginal teeth are shown unless the clade evolved a toothless beak.' : 'A beak and/or recessed cheek teeth are summarized without exposing every tooth.'),
+      axial: isSauropod ? 'Long cervical series, dorsal ribs, sacrum, and tail chevrons.' : 'Segmented neck, trunk, sacrum, tail, ribs, and chevrons are shown as clade-informed proxies.',
+      vertebralArchitecture: isSauropod ? 'Elongate cervical centra, load-braced dorsal arches, sacral contacts, and tapering caudals are differentiated by region.' : 'Oriented centra carry neural arches, neural spines, restrained articular-facet proxies, and region-specific transverse processes.',
+      vertebralEvidence: 'Centrum proportions and preserved processes constrain the axial column; intervertebral cartilage, ligament thickness, and the exact neutral pose remain inferred.',
+      extremities: isSauropod ? 'Five metacarpals form a compact weight-bearing manus; the hind foot carries the main visible unguals.' : (isTheropod ? 'Three principal weight-bearing toes and clade-specific hand reduction are shown.' : 'Digit number and weight-bearing role follow the represented ornithischian clade.'),
+      toothed: isTheropod || isSauropod,
+      gastralia: isTheropod,
+      scleroticRing: /Dromaeosaur|Troodont|Oviraptor|Caenagnath|Ornithomim|Avialae|Paraves|Scansoriopteryg/i.test(clade),
+      showCranialModules: group !== 'other',
+      palatalBrace: group !== 'other',
+      postorbitalBarScale: /Avialae/i.test(clade) ? 0.58 : 1,
+      hyoidScale: /Ankylosaur|Nodosaur|Hadrosaur/i.test(clade) ? 1.35 : 0.78,
+      hyoidMode: /Ankylosaur|Nodosaur|Hadrosaur/i.test(clade) ? 'elaborated herbivorous hyoid proxy' : 'simple paired ceratobranchial proxy',
+      cranialKinesis: /Avialae/i.test(clade) ? 'braced early-avialan palate; modern powered bill kinesis is not reconstructed' : 'braced, largely akinetic skull frame',
+      cranialMechanics: isSauropod ? 'A lightweight skull and small quadrate-articular joint emphasize cropping with limited oral processing.' : (isTheropod ? 'The quadrate transfers load from the skull to the articular while the postorbital and palatal braces resist feeding loads.' : 'The quadrate-articular hinge and cheek frame are tuned to the represented herbivorous clade.'),
+      cranialEvidence: 'Major openings and load-bearing bars follow clade-level osteology; palate and hyoid positions are simplified because these elements are frequently incomplete, displaced, or unpreserved.',
+      craniocervicalDetail: group !== 'other',
+      occipitalCondyleScale: isSauropod ? 0.82 : 1,
+      axisSpineScale: isSauropod ? 0.82 : (/Ceratops|Hadrosaur|Ankylosaur|Nodosaur/i.test(clade) ? 1.16 : 1),
+      craniocervicalArchitecture: 'A single occipital condyle meets a ring-like atlas assembled from paired neural arches and a ventral intercentrum; the axis carries an odontoid proxy and a taller neural spine.',
+      craniocervicalEvidence: 'The bony joint surfaces and atlas-axis elements constrain the head-neck connection. Cartilage thickness, ligament paths, fusion state, and maximum head excursion remain specimen- and maturity-dependent.',
+      coronoidScale: /Ceratops|Hadrosaur|Lambeosaur/i.test(clade) ? 1.42 : (/Oviraptor|Caenagnath|Ankylosaur|Nodosaur/i.test(clade) ? 1.24 : (isSauropod ? 0.68 : 1)),
+      retroarticularScale: /Oviraptor|Caenagnath/i.test(clade) ? 1.35 : (/Ceratops|Hadrosaur|Lambeosaur|Ankylosaur|Nodosaur/i.test(clade) ? 1.16 : (isSauropod ? 0.72 : 1)),
+      mandibularLeverArchitecture: /Ceratops|Hadrosaur|Lambeosaur/i.test(clade) ? 'A tall coronoid process increases the jaw-adductor moment arm, while the articular and retroarticular process define the posterior lever around the quadrate hinge.' : (isSauropod ? 'A low coronoid process and short retroarticular lever suit a lightweight cropping jaw without implying powerful oral processing.' : 'The coronoid process, surangular, articular, and retroarticular process form a clade-scaled mandibular lever around the quadrate hinge.'),
+      mandibularLeverEvidence: 'Coronoid height, the articular glenoid, and retroarticular length are osteological constraints on lever geometry; muscle mass, fiber orientation, bite force, and soft joint tissues are inferred.',
+      manualDigits: isTheropod ? 3 : 5,
+      pedalDigits: isTheropod ? 3 : 4,
+      manualUnguals: isTheropod ? 3 : 0,
+      pedalUnguals: 3,
+      weightBearingForelimbs: isSauropod,
+      columnarManus: isSauropod,
+      hallux: isTheropod,
+      cervicalRibCount: isSauropod ? 8 : (isTheropod ? 4 : 2),
+      axialPneumaticity: supportsInvasivePneumaticity,
+      showRespiratoryProxy: group !== 'other',
+      respiratoryMode: supportsInvasivePneumaticity ? 'air-sac proxy' : 'dorsal lung proxy',
+      respiratoryLungScale: isSauropod ? 0.92 : 1,
+      cervicalAirSacs: supportsInvasivePneumaticity,
+      thoracicAirSacs: supportsInvasivePneumaticity,
+      abdominalAirSacs: supportsInvasivePneumaticity,
+      pneumaticCervicals: supportsInvasivePneumaticity ? (isSauropod ? 8 : 5) : 0,
+      pneumaticDorsals: supportsInvasivePneumaticity ? (isSauropod ? 6 : 3) : 0,
+      respiratoryEvidence: supportsInvasivePneumaticity ? 'Postcranial skeletal pneumaticity supports air-filled diverticula, but does not preserve an exact soft-tissue compartment map.' : 'No invasive postcranial pneumaticity is generalized for this profile.',
+      respiratory: supportsInvasivePneumaticity ? 'Paired dorsal lungs and pale cervical, clavicular, thoracic, and abdominal air-sac proxies illustrate a plausible flow-through system; their exact number, boundaries, and connections remain inferred.' : 'Paired dorsal lung volumes are shown from living-archosaur comparison; their precise extinct anatomy and ventilation pattern are not directly preserved.',
+      sternalPlates: group !== 'other',
+      sternalRibCount: isSauropod ? 5 : 3,
+      ribHeadDetail: group !== 'other',
+      ribArchitecture: 'Double-headed dorsal ribs separate the capitulum and tuberculum, then curve through a tapered costal shaft toward the ventral thorax.',
+      ribEvidence: 'Preserved proximal rib heads constrain vertebral articulation and shaft curvature; distal cartilage, exact rib spacing, and resting thoracic volume remain inferred.',
+      uncinateProcesses: /Oviraptor|Caenagnath|Dromaeosaur|Avialae/i.test(clade),
+      uncinateCount: /Oviraptor|Caenagnath|Dromaeosaur|Avialae/i.test(clade) ? 4 : 0,
+      uncinateEvidence: /Oviraptor|Caenagnath|Dromaeosaur|Avialae/i.test(clade) ? 'Flattened uncinate-process proxies are restricted to maniraptoran profiles with direct or close-clade osteological support; attachment and count vary among specimens.' : 'No ossified uncinate processes are generalized for this profile; unpreserved cartilaginous processes cannot be ruled out.',
+      gastralBasketMode: 'not reconstructed',
+      antorbitalFenestra: isTheropod || isSauropod || /early Ornithisch|Heterodontosaur/i.test(clade),
+      mandibularFenestra: isTheropod || isSauropod,
+      toothProfile: isSauropod ? 'spoon' : (isTheropod ? 'ziphodont' : 'recessed'),
+      pubisMode: group === 'ornithischian' ? 'posterior' : 'anterior',
+      prepubicProcess: group === 'ornithischian',
+      pubisScale: 1,
+      sacralCount: 5,
+      sacralDetail: group !== 'other',
+      sacralArchitecture: 'Compact sacral centra carry neural arches and broad paired sacral ribs that expand laterally into load-bearing contacts against the ilia.',
+      sacralEvidence: 'Sacral-rib morphology and iliac attachment facets identify the load path; co-ossification sequence, cartilage thickness, and element boundaries vary with taxon and maturity.',
+      proximalCaudalProcessCount: isSauropod ? 8 : 6,
+      caudalArchitecture: 'Large proximal caudal ribs and neural spines diminish gradually toward a transition region rather than disappearing at one identical vertebra in every dinosaur.',
+      chevronCount: isSauropod ? 9 : 7,
+      chevronArchitecture: 'Each rendered chevron uses paired proximal rami around a haemal canal that merge into a tapering ventral haemal spine.',
+      chevronEvidence: 'Articular facets and preserved haemal arches constrain proximal attachment and broad form; exact spacing, distal outline, and the last chevron-bearing vertebra vary among taxa.',
+      pelvis: group === 'ornithischian' ? 'Opisthopubic pelvis: the pubic shaft turns backward and an anterior prepubic process projects toward the chest.' : 'Saurischian-type pelvis: the pubis projects forward and down, separate from the posterior ischium.',
+      forelimbRobustness: isSauropod ? 1.18 : 1,
+      hindlimbRobustness: isSauropod ? 1.24 : 1,
+      armScale: 1,
+      handScale: 1,
+      distalLegScale: 1,
+      longBoneDetail: group !== 'other',
+      longBoneBow: isSauropod ? 0.003 : (isTheropod ? 0.014 : 0.010),
+      deltopectoralCrestScale: /Alvarezsaur|Therizinosaur|Ceratops|Hadrosaur|Iguanodont/i.test(clade) ? 1.24 : (isSauropod ? 1.16 : 1),
+      cnemialCrestScale: /Tyrannosaur|Ornithomim|Dromaeosaur|Troodont/i.test(clade) ? 1.24 : (isTheropod ? 1.12 : 1),
+      companionBoneScale: isSauropod ? 0.46 : (isTheropod ? 0.36 : 0.40),
+      limbOsteology: isSauropod ? 'Straight, tapered long bones with expanded ends form columnar load paths; radius and ulna plus tibia and fibula remain distinct.' : 'Tapered long-bone shafts, expanded articular ends, and separate paired forearm and shank bones replace uniform rod proxies.',
+      limbEvidence: 'Shaft proportions and major processes follow the represented clade; exact curvature, torsion, and joint cartilage are not recoverable from a generic reconstruction.',
+      girdleDetail: group !== 'other',
+      scapularBladeScale: isSauropod ? 1.22 : (/Avialae|Dromaeosaur|Troodont/i.test(clade) ? 0.82 : 1),
+      coracoidPlateScale: /Avialae/i.test(clade) ? 0.62 : (isSauropod ? 1.18 : 1),
+      supracetabularShelfScale: /Hadrosaur|Iguanodont|Ceratops|Ankylosaur|Nodosaur/i.test(clade) ? 1.28 : 1,
+      compactManus: /Hadrosaur|Ceratops|Ankylosaur|Nodosaur|Stegosaur/i.test(clade),
+      hoofedDigits: /Hadrosaur|Ceratops|Ankylosaur|Nodosaur|Stegosaur/i.test(clade),
+      manualPhalanxFormula: isTheropod ? [2, 3, 4] : [2, 3, 4, 3, 2],
+      pedalPhalanxFormula: isTheropod ? [3, 4, 5] : (isSauropod ? [2, 3, 3, 2, 1] : [3, 4, 5, 4, 3]),
+      girdleOsteology: isSauropod ? 'Expanded scapular blades, broad coracoids, sacral contacts, and reinforced acetabular rims distribute load into a graviportal trunk.' : 'Blade-like scapulae and ilia frame distinct shoulder and hip sockets; the pubis and ischium remain separate directional struts.',
+      distalLimbMode: isSauropod ? 'Semicircular metacarpal column with a shortened, phalangeally reduced manus and a broader claw-bearing pes.' : (isTheropod ? 'Digitigrade metatarsus with unequal articulated phalanges and narrow terminal unguals.' : 'Clade-scaled weight-bearing or grasping digits with unequal phalangeal chains.'),
+      distalLimbEvidence: 'Digit counts are clade constrained, while exact phalangeal formulae, cartilage, interdigital tissue, and resting spread require specimen-level evidence.',
+      columnarLimbs: isSauropod,
+      stanceWidth: /Titanosaur/i.test(clade) ? 1.28 : 1,
+      arctometatarsus: /Tyrannosaur|Ornithomim|Troodont|Alvarezsaur/i.test(clade),
+      tailBracing: /Dromaeosaur/i.test(clade),
+      jawMuscleScale: 1,
+      neckMuscleScale: isSauropod ? 1.18 : 1,
+      chestMuscleScale: isSauropod ? 1.14 : 1,
+      thighMuscleScale: isTheropod ? 1.10 : 1,
+      calfMuscleScale: 1,
+      tailBaseMuscleScale: isTheropod ? 1.12 : 1,
+      buccalTissue: /Ceratops|Hadrosaur|Tyrannosaur/i.test(clade),
+      keratinBeak: /Ornithomim|Oviraptor|Caenagnath|Ceratops|Hadrosaur|Iguanodont|Ankylosaur|Nodosaur|Stegosaur|Therizinosaur/i.test(clade),
+      hornSheath: /Ceratops/i.test(clade),
+      softTissue: 'Muscle paths follow osteological attachment regions and living-archosaur comparisons; exact thickness remains inferred.',
+      integumentMode: 'scaled',
+      filamentCoverage: 0,
+      wingFeathers: false,
+      tailFan: false,
+      tailFrond: false,
+      hindWingFeathers: false,
+      dorsalBristles: false,
+      featureScales: group !== 'other',
+      integumentEvidence: 'conservative clade proxy',
+      integument: 'Regional non-overlapping scales are reconstructed conservatively; scale size and arrangement vary across the body and are rarely preserved.',
+      locomotor: isSauropod ? 'Straight, graviportal limb columns resist bending loads; the hind limb remains the principal propulsive column.' : (isTheropod ? 'Hind-limb-driven biped with a flexed hip and knee and an elevated, digitigrade foot.' : 'Limb loading and joint flexion follow the represented ornithischian locomotor pattern.'),
+      caveat: 'Clade-informed procedural reconstruction; it is not a specimen scan or an exact bone count. Missing elements use close-relative and biomechanical inference.'
+    };
+    if (/Ornithomim/i.test(clade)) {
+      profile.label = 'Toothless ornithomimid runner';
+      profile.calfMuscleScale = 1.12;
+      profile.softTissue = 'Long distal legs receive slender muscle bellies kept proximal to the joints; a keratinous rhamphotheca covers the toothless jaw margins.';
+      profile.distalLegScale = 1.26;
+      profile.hindlimbRobustness = 0.74;
+      profile.locomotor = 'Cursorial hind limb with proportionally lengthened tibia and metatarsus plus an arctometatarsal foot.';
+      profile.toothed = false;
+      profile.dentition = 'The jaws end in a toothless keratinous beak; no marginal tooth row is reconstructed.';
+      profile.extremities = 'Three-fingered hands and long, three-toed cursorial hind limbs are emphasized.';
+    } else if (/Oviraptor|Caenagnath/i.test(clade)) {
+      profile.label = 'Toothless oviraptorosaur';
+      profile.toothed = false;
+      profile.dentition = 'A deep, toothless beak replaces the exposed tooth row.';
+      profile.extremities = 'Three manual digits and a birdlike, three-toed weight-bearing foot are shown.';
+    } else if (/Tyrannosaur/i.test(clade)) {
+      profile.label = isBasalTyrannosauroid ? 'Basal tyrannosauroid three-fingered forelimb' : 'Tyrannosaurid two-fingered forelimb';
+      profile.jawMuscleScale = isBasalTyrannosauroid ? 1.10 : 1.38;
+      profile.thighMuscleScale = isBasalTyrannosauroid ? 1.04 : 1.18;
+      profile.calfMuscleScale = isBasalTyrannosauroid ? 1.02 : 1.08;
+      profile.tailBaseMuscleScale = isBasalTyrannosauroid ? 1.10 : 1.28;
+      profile.softTissue = isBasalTyrannosauroid ? 'A lighter jaw, thigh, and tail-base envelope accompanies the longer forelimb of an early tyrannosauroid; exact muscle thickness is inferred.' : 'Expanded temporal jaw muscles and a powerful caudofemoral tail-base retractor follow large attachment regions; cheek-side tissues are shown but their exact composition is unresolved.';
+      profile.toothProfile = isBasalTyrannosauroid ? 'ziphodont' : 'incrassate';
+      profile.armScale = isBasalTyrannosauroid ? 0.86 : 0.52;
+      profile.handScale = isBasalTyrannosauroid ? 0.94 : 0.70;
+      profile.hindlimbRobustness = isBasalTyrannosauroid ? 1.02 : 1.22;
+      profile.arctometatarsus = !isBasalTyrannosauroid;
+      profile.locomotor = isBasalTyrannosauroid ? 'Longer three-fingered forelimbs and a generalized three-toed foot precede the shortened arms and derived arctometatarsus of giant tyrannosaurids.' : 'Robust hind limbs and an arctometatarsal foot support powerful terrestrial locomotion; the forelimb is strongly shortened.';
+      profile.manualDigits = isBasalTyrannosauroid ? 3 : 2;
+      profile.extremities = isBasalTyrannosauroid ? 'Three functional manual digits accompany a generalized three-toed hind limb.' : 'Two functional manual digits accompany a robust, three-toed hind limb.';
+    } else if (/Alvarezsaur/i.test(clade)) {
+      profile.label = 'Alvarezsaurid reduced forelimb';
+      profile.pubisMode = 'posterior';
+      profile.pelvis = 'Retroverted maniraptoran pelvis with the pubis directed posteroventrally.';
+      profile.armScale = 0.48;
+      profile.handScale = 1.10;
+      profile.forelimbRobustness = 1.38;
+      profile.distalLegScale = 1.18;
+      profile.locomotor = 'Long distal hind-limb segments accompany a short, powerfully built forelimb dominated by one functional manual digit.';
+      profile.manualDigits = 1;
+      profile.manualUnguals = 1;
+      profile.extremities = 'The short forelimb terminates in one dominant functional digit; the hind foot remains three-toed.';
+    } else if (/Abelisaur/i.test(clade)) {
+      profile.label = 'Abelisaurid vestigial forelimb';
+      profile.thighMuscleScale = 1.16;
+      profile.tailBaseMuscleScale = 1.42;
+      profile.softTissue = 'A deep neck and enlarged caudofemoral tail-base envelope reflect abelisaurid attachment anatomy; the rendered muscle volume remains comparative, not specimen-measured.';
+      profile.armScale = 0.34;
+      profile.handScale = 0.52;
+      profile.forelimbRobustness = 0.72;
+      profile.locomotor = 'Obligate biped with extremely shortened, anatomically unusual forelimbs that are not reconstructed as grasping organs.';
+      profile.manualDigits = 4;
+      profile.manualUnguals = 0;
+      profile.manualPhalanxFormula = [2, 3, 3, 2];
+      profile.extremities = 'Four extremely reduced manual rays are shown without generalized grasping claws.';
+    } else if (/Dromaeosaur|Troodont/i.test(clade)) {
+      profile.label = 'Paravian grasping hand and raised second toe';
+      profile.pubisMode = /Troodont/i.test(clade) ? 'posterior' : 'vertical';
+      profile.distalLegScale = /Troodont/i.test(clade) ? 1.18 : 1.08;
+      profile.hindlimbRobustness = 0.86;
+      profile.locomotor = /Troodont/i.test(clade) ? 'Slender cursorial hind limb with a sub-arctometatarsal to arctometatarsal foot.' : 'Digitigrade predatory hind limb with an elevated second-toe ungual and a distally braced balancing tail.';
+      profile.pelvis = /Troodont/i.test(clade) ? 'Posteroventrally directed troodontid pubis; paravian pelvic orientation varies among taxa.' : 'Near-vertical dromaeosaurid pubis proxy; orientation varies and strong retroversion is not generalized to the whole clade.';
+      profile.extremities = 'Three grasping manual digits and an enlarged, elevated second-toe ungual are emphasized.';
+    } else if (/Therizinosaur/i.test(clade)) {
+      profile.label = 'Therizinosaur long-clawed manus';
+      profile.toothProfile = 'leaf';
+      profile.armScale = 1.10;
+      profile.handScale = 1.12;
+      profile.hindlimbRobustness = 1.14;
+      profile.locomotor = 'Broad-bodied biped with robust hind limbs and long forelimbs carrying greatly elongated manual unguals.';
+      profile.pubisMode = 'posterior';
+      profile.pelvis = 'Incipiently opisthopubic therizinosaur pelvis with a posteroventrally directed pubis.';
+      profile.extremities = 'Three greatly elongated manual unguals are shown with a broad, weight-bearing hind foot.';
+    }
+    if (/Spinosaur/i.test(clade)) profile.toothProfile = 'conical';
+    if (/Diplodoc|Rebbachisaur/i.test(clade)) profile.toothProfile = 'pencil';
+    if (isSauropod) {
+      profile.jawMuscleScale = /Diplodoc|Rebbachisaur/i.test(clade) ? 0.78 : (/Camarasaur/i.test(clade) ? 1.12 : 0.94);
+      profile.softTissue = 'Long epaxial and hypaxial neck envelopes follow the cervical series; jaw-adductor volume varies by skull architecture and is especially conservative in narrow diplodocoid skulls.';
+      profile.manualDigits = 5;
+      profile.pedalDigits = 5;
+      profile.manualUnguals = /Titanosaur/i.test(clade) ? 0 : 1;
+      profile.pedalUnguals = 3;
+      if (/Brachiosaur/i.test(clade)) {
+        profile.forelimbRobustness = 1.16;
+        profile.locomotor = 'Proportionally long forelimbs elevate the shoulder while all four limbs remain straight, graviportal support columns.';
+      } else if (/Diplodoc/i.test(clade)) {
+        profile.forelimbRobustness = 1.04;
+        profile.locomotor = 'Lower shoulders and columnar limbs support an elongated trunk; propulsion remains dominated by the hind limbs.';
+      }
+      if (/Titanosaur/i.test(clade)) {
+        profile.extremities = 'Five metacarpals form a compact column; derived titanosaur hands are shown without external manual claws.';
+        profile.locomotor = 'Wide-gauge but still columnar stance, produced by broadened pectoral and pelvic girdles rather than sprawling joints.';
+      }
+    }
+    if (/Ceratops/i.test(clade)) {
+      profile.label = 'Ceratopsian weight-bearing quadruped';
+      profile.jawMuscleScale = 1.20;
+      profile.neckMuscleScale = 1.22;
+      profile.chestMuscleScale = 1.14;
+      profile.softTissue = 'Strong jaw-side and neck envelopes bridge the deep skull, frill, and shoulder; a keratinous beak and horn sheaths extend beyond their bony cores.';
+      profile.forelimbRobustness = 1.16;
+      profile.hindlimbRobustness = 1.12;
+      profile.locomotor = 'Semi-columnar, weight-bearing forelimbs and robust hind limbs support a large obligate quadruped.';
+      profile.sacralCount = 7;
+      profile.locomotion = 'Obligate quadruped with robust forelimbs and a broad, weight-bearing stance.';
+      profile.weightBearingForelimbs = true;
+      profile.manualDigits = 5;
+      profile.pedalDigits = 4;
+      profile.manualUnguals = 0;
+      profile.pedalUnguals = 0;
+      profile.pedalPhalanxFormula = [2, 3, 4, 5];
+      profile.distalLimbMode = 'Broad five-ray forefoot and four-ray hind foot with short articulated chains and flattened weight-bearing terminals.';
+      profile.dentition = 'A keratinous beak crops plants; the dental battery is recessed inside the cheeks.';
+      profile.extremities = 'Five-digit forefeet and four-digit hind feet support an obligate quadruped.';
+    } else if (/Hadrosaur/i.test(clade)) {
+      profile.label = 'Facultatively quadrupedal hadrosaur';
+      profile.jawMuscleScale = 1.16;
+      profile.softTissue = 'Jaw-adductor and cheek-side tissues enclose the recessed dental batteries, while the bill is reconstructed as a keratinous covering over the rostral bones.';
+      profile.forelimbRobustness = 0.86;
+      profile.locomotor = 'Facultative biped/quadruped with compact weight-bearing hands and hind limbs remaining dominant in propulsion.';
+      profile.sacralCount = 7;
+      profile.locomotion = 'Facultative quadruped: the animal could move on two or four limbs, with compact weight-bearing hands.';
+      profile.weightBearingForelimbs = true;
+      profile.manualDigits = 4;
+      profile.pedalDigits = 3;
+      profile.manualUnguals = 0;
+      profile.manualPhalanxFormula = [2, 3, 3, 2];
+      profile.compactManus = true;
+      profile.dentition = 'The bill crops vegetation while dense dental batteries grind it farther back in the jaws.';
+      profile.extremities = 'Bundled weight-bearing fingers form a compact forefoot; the hind foot has three main toes.';
+    } else if (/Iguanodont/i.test(clade)) {
+      profile.label = 'Facultatively quadrupedal iguanodontian';
+      profile.locomotion = 'Facultative quadruped: robust hind limbs combine with hands capable of weight support.';
+      profile.weightBearingForelimbs = true;
+      profile.manualDigits = 5;
+      profile.pedalDigits = 3;
+      profile.manualUnguals = 1;
+      profile.extremities = 'A five-digit hand includes a thumb spike and weight-bearing central digits; the hind foot has three main toes.';
+    } else if (/Ankylosaur|Nodosaur/i.test(clade)) {
+      profile.label = 'Low, obligately quadrupedal armored dinosaur';
+      profile.forelimbRobustness = 1.18;
+      profile.hindlimbRobustness = 1.20;
+      profile.locomotor = 'Short, robust weight-bearing limbs support a low center of mass beneath the armored trunk.';
+      profile.sacralCount = 7;
+      profile.pubisScale = 0.38;
+      profile.pelvis = 'Broad synsacral pelvis with an expanded ilium and strongly reduced pubis; exact closure varies among ankylosaurs.';
+      profile.locomotion = 'Obligate quadruped with a low center of mass and robust, weight-bearing limbs.';
+      profile.weightBearingForelimbs = true;
+      profile.manualDigits = 5;
+      profile.pedalDigits = 4;
+      profile.manualUnguals = 0;
+      profile.pedalUnguals = 0;
+    } else if (/Stegosaur/i.test(clade)) {
+      profile.label = 'Stegosaurian obligate quadruped';
+      profile.forelimbRobustness = 1.02;
+      profile.hindlimbRobustness = 1.16;
+      profile.locomotor = 'Shorter forelimbs and taller, more powerful hind limbs create the characteristic sloping trunk.';
+      profile.sacralCount = 5;
+      profile.locomotion = 'Obligate quadruped with shorter forelimbs, longer hind limbs, and a sloping trunk.';
+      profile.weightBearingForelimbs = true;
+      profile.manualDigits = 5;
+      profile.pedalDigits = 3;
+      profile.manualUnguals = 0;
+      profile.pedalUnguals = 0;
+    } else if (group === 'ornithischian') {
+      profile.label = /Heterodontosaur/i.test(clade) ? 'Small bipedal heterodontosaurid' : 'Bipedal ornithischian proxy';
+      profile.weightBearingForelimbs = false;
+      profile.manualDigits = 5;
+      profile.pedalDigits = 3;
+      profile.manualUnguals = /Heterodontosaur/i.test(clade) ? 3 : 0;
+      profile.gastralia = /Heterodontosaur/i.test(clade);
+      profile.locomotion = 'Bipedal reconstruction: the forelimbs are not used as weight-bearing legs in this view.';
+    }
+    if (/early Sauropodomorph|Plateosaur|Massospondyl/i.test(clade)) {
+      profile.longBoneBow = 0.020;
+      profile.deltopectoralCrestScale = 1.18;
+      profile.limbOsteology = 'Moderately curved femoral and humeral shafts retain the less columnar early-sauropodomorph condition; paired lower-limb bones and expanded joint ends remain visible.';
+      profile.limbEvidence = 'Plateosaur-grade long bones vary biologically and are also vulnerable to crushing, bending, and torsional fossil distortion; only restrained curvature is reconstructed.';
+      profile.gastralia = true;
+      profile.sacralCount = 3;
+      profile.weightBearingForelimbs = false;
+      profile.manualDigits = 5;
+      profile.pedalDigits = 5;
+      profile.manualUnguals = 2;
+      profile.pedalPhalanxFormula = [2, 3, 4, 5, 1];
+      profile.distalLimbMode = 'Grasping five-ray manus and broad five-ray pes; the first four pedal rays retain the fuller basal sauropodomorph sequence while digit V is rendered conservatively.';
+      profile.distalLimbEvidence = 'The first four pedal rays follow complete articulated basal sauropodomorph feet; digit V and exact cartilage spacing remain conservative because completeness varies among specimens.';
+      profile.locomotion = 'Primarily bipedal early sauropodomorph proxy with grasping hands; posture varied among taxa.';
+    }
+    if (/Avialae/i.test(clade)) {
+      profile.cranialMechanics = 'The cheek and palate remain braced in this early-avialan proxy; the powered prokinetic bill mechanism of crown birds is not projected backward onto stem birds.';
+      profile.cranialEvidence = 'Early avialans retain a dinosaur-like temporal and palatal framework. Reduction of cheek bars is shown, but modern neognath-style cranial kinesis is withheld.';
+    } else if (/Hadrosaur/i.test(clade)) {
+      profile.cranialKinesis = 'specialized herbivorous jaw stroke; exact intracranial motion remains debated';
+      profile.cranialMechanics = 'A robust quadrate-articular hinge, deep cheek frame, and recessed dental battery support repeated complex occlusion without treating the teeth as one fused block.';
+      profile.cranialEvidence = 'Dental wear and battery histology support sophisticated processing, but competing hadrosaur jaw-motion models remain under study.';
+    } else if (/Ceratops/i.test(clade)) {
+      profile.cranialKinesis = 'reinforced, largely akinetic slicing skull';
+      profile.cranialMechanics = 'A deep dentary, tall coronoid region, and robust quadrate-articular hinge transmit force to the shearing dental battery behind the cropping beak.';
+    } else if (/Ankylosaur|Nodosaur/i.test(clade)) {
+      profile.cranialKinesis = 'broad, braced herbivorous skull';
+      profile.cranialMechanics = 'The broad cheek frame is paired with an elaborated hyoid proxy supported in derived armored dinosaurs; tongue shape itself is not reconstructed.';
+      profile.cranialEvidence = 'Exceptional ankylosaur fossils support greater hyoid elaboration than the simple condition generalized for most non-avian dinosaurs.';
+    } else if (isTheropod) {
+      profile.cranialKinesis = 'braced, predominantly akinetic non-avian theropod skull';
+      profile.cranialMechanics = 'The quadrate-articular joint forms the primary jaw hinge. Jugal, postorbital, quadratojugal, and palatal braces distribute bite loads around the orbit and temporal openings.';
+      profile.cranialEvidence = 'Most non-avian theropod quadrates were not freely streptostylic; a synovial upper contact alone does not establish bird-like cranial kinesis.';
+    }
+    var directFeatherEvidence = /^(archaeopteryx|microraptor|anchiornis|caudipteryx|sinornithosaurus|changyuraptor|jianianhualong|yutyrannus|dilong|sinosauropteryx|beipiaosaurus|ornithomimus|shuvuuia)$/i.test(speciesId) || /preserved (?:with )?(?:filament|feather)|feather impressions|quill knobs confirm/i.test(String((dn && dn.howKnow) || '') + ' ' + String((dn && dn.facts) || ''));
+    var isPennaraptoran = /Dromaeosaur|Troodont|Oviraptor|Caenagnath|Avialae|Scansoriopteryg/i.test(clade);
+    if (isPennaraptoran) {
+      profile.integumentMode = 'pennaceous';
+      profile.filamentCoverage = 0.88;
+      profile.wingFeathers = true;
+      profile.tailFan = /Oviraptor|Caenagnath|Scansoriopteryg/i.test(clade);
+      profile.tailFrond = /Dromaeosaur|Troodont|Avialae/i.test(clade);
+      profile.hindWingFeathers = /^(microraptor|anchiornis|changyuraptor)$/i.test(speciesId);
+      profile.featureScales = false;
+      profile.integumentEvidence = directFeatherEvidence ? 'direct feather preservation or quill-knob evidence' : 'close-relative phylogenetic inference';
+      profile.integument = 'A filamentous body coat carries flattened pennaceous arm feathers' + (profile.hindWingFeathers ? ', long hind-limb feathers' : '') + (profile.tailFan ? ', and a distal display fan' : (profile.tailFrond ? ', and a feathered tail frond' : '')) + '. Feather length and density remain simplified.';
+    } else if (/Therizinosaur|Ornithomim|Alvarezsaur/i.test(clade)) {
+      profile.integumentMode = 'filamentous';
+      profile.filamentCoverage = /Therizinosaur/i.test(clade) ? 0.78 : 0.66;
+      profile.wingFeathers = /Ornithomim/i.test(clade);
+      profile.featureScales = false;
+      profile.integumentEvidence = directFeatherEvidence ? 'direct filament or feather preservation' : 'close-relative phylogenetic inference';
+      profile.integument = /Therizinosaur/i.test(clade) ? 'A shaggy filamentous coat is inferred from feather-preserving relatives; broad display filaments are regionally emphasized.' : 'A filamentous trunk coat is paired with longer arm plumage where supported by the clade; distal feet remain comparatively sparse.';
+    } else if (/^(yutyrannus|dilong|sinosauropteryx|beipiaosaurus)$/i.test(speciesId)) {
+      profile.integumentMode = 'filamentous';
+      profile.filamentCoverage = /yutyrannus/i.test(speciesId) ? 0.92 : 0.74;
+      profile.featureScales = false;
+      profile.integumentEvidence = 'direct filament preservation';
+      profile.integument = /yutyrannus/i.test(speciesId) ? 'Long simple filaments form an extensive shaggy coat documented around the neck, torso, pelvis, and tail.' : 'Simple filamentous covering follows preserved body regions; gaps are not automatically treated as naked skin.';
+    } else if (/^(kulindadromeus|tianyulong)$/i.test(speciesId)) {
+      profile.integumentMode = 'mixed';
+      profile.filamentCoverage = 0.58;
+      profile.dorsalBristles = true;
+      profile.integumentEvidence = 'direct filament and scale preservation';
+      profile.integument = 'Filament-like appendages are combined with regional scales, preserving a mosaic rather than an all-feather or all-scale body.';
+    } else if (/^psittacosaurus$/i.test(speciesId)) {
+      profile.integumentMode = 'scaled-bristled';
+      profile.dorsalBristles = true;
+      profile.featureScales = true;
+      profile.integumentEvidence = 'exceptional direct skin and bristle preservation';
+      profile.integument = 'Regional polygonal and feature scales cover the body, with a localized row of long bristles restricted to the dorsal tail.';
+    } else if (/Tyrannosaur/i.test(clade)) {
+      profile.integumentEvidence = 'direct scale impressions in large derived tyrannosaurids';
+      profile.integument = 'Large derived tyrannosaurids are shown with scale-dominated skin; this does not erase the filamentous condition preserved in earlier tyrannosauroids.';
+    } else if (isSauropod) {
+      profile.integumentEvidence = 'direct sauropod skin impressions';
+      profile.integument = 'Non-overlapping polygonal basement scales and regional feature scales are used; no filamentous sauropod integument is currently known.';
+    } else if (/Ceratops/i.test(clade)) {
+      profile.integumentEvidence = 'direct ceratopsian skin impressions and clade comparison';
+      profile.integument = 'Scale fields are regionally differentiated, with larger feature scales embedded among smaller polygonal basement scales.';
+    }
+    if (supportsInvasivePneumaticity) {
+      profile.axial += ' Lateral pneumatic fossae and foramina mark the bony evidence for air-filled diverticula rather than emptying the whole vertebra.';
+      if (/^aerosteon$/i.test(speciesId)) {
+        profile.respiratoryMode = 'extensive intrathoracic air-sac proxy';
+        profile.pneumaticDorsals = 6;
+        profile.respiratoryEvidence = 'Exceptional vertebral, furcular, and pelvic pneumaticity in Aerosteon supports extensive cervical and intrathoracic air sacs; the precise avian-style partitioning remains inferential.';
+      } else if (isSauropod) {
+        profile.respiratoryEvidence = 'Presacral vertebral fossae, foramina, and internal chambers support extensive air-filled diverticula; pneumatic spaces lightened the neck while load-bearing cortex and laminae remained.';
+      } else {
+        profile.respiratoryEvidence = 'Vertebral fossae, foramina, and internal chambers are osteological correlates of air-filled diverticula; their distribution varies among theropod lineages.';
+      }
+    } else if (isEarlyApneumaticSaurischian) {
+      profile.respiratoryMode = 'non-invasive lung proxy';
+      profile.respiratoryEvidence = 'Early sauropodomorph and herrerasaurid vertebrae lack unambiguous invasive postcranial skeletal pneumaticity. This does not prove that every soft air sac was absent.';
+      profile.respiratory = 'Only paired dorsal lung volumes are shown. An invasive cervical or abdominal diverticular system is withheld because the represented early saurischian grade lacks unambiguous bony evidence.';
+    } else if (group === 'ornithischian') {
+      profile.respiratoryEvidence = 'Widespread invasive postcranial skeletal pneumaticity is not generalized for ornithischians; a specimen-specific air-sac arrangement is therefore not rendered.';
+    }
+    if (group === 'other') {
+      profile.label = 'Comparative outgroup - not a dinosaur';
+      profile.gastralia = false;
+      profile.scleroticRing = false;
+      profile.showCranialModules = false;
+      profile.longBoneDetail = false;
+      profile.girdleDetail = false;
+      profile.longBoneBow = 0;
+      profile.deltopectoralCrestScale = 0;
+      profile.cnemialCrestScale = 0;
+      profile.companionBoneScale = 0;
+      profile.limbOsteology = 'Outgroup long-bone anatomy is intentionally omitted by the shared dinosaur rig.';
+      profile.limbEvidence = 'not resolved by the shared dinosaur rig';
+      profile.vertebralArchitecture = 'Outgroup axial anatomy is intentionally omitted by the shared dinosaur rig.';
+      profile.vertebralEvidence = 'not resolved by the shared dinosaur rig';
+      profile.sacralDetail = false;
+      profile.sacralArchitecture = 'Outgroup sacral anatomy is intentionally omitted by the shared dinosaur rig.';
+      profile.sacralEvidence = 'not resolved by the shared dinosaur rig';
+      profile.proximalCaudalProcessCount = 0;
+      profile.caudalArchitecture = 'Outgroup caudal anatomy is intentionally omitted by the shared dinosaur rig.';
+      profile.chevronCount = 0;
+      profile.chevronArchitecture = 'not resolved by the shared dinosaur rig';
+      profile.chevronEvidence = 'not resolved by the shared dinosaur rig';
+      profile.ribHeadDetail = false;
+      profile.ribArchitecture = 'Outgroup thoracic anatomy is intentionally omitted by the shared dinosaur rig.';
+      profile.ribEvidence = 'not resolved by the shared dinosaur rig';
+      profile.uncinateProcesses = false;
+      profile.uncinateCount = 0;
+      profile.uncinateEvidence = 'not resolved by the shared dinosaur rig';
+      profile.gastralBasketMode = 'not reconstructed';
+      profile.girdleOsteology = 'Outgroup shoulder and pelvic architecture are intentionally omitted by the shared dinosaur rig.';
+      profile.distalLimbMode = 'not resolved by the shared dinosaur rig';
+      profile.distalLimbEvidence = 'not resolved by the shared dinosaur rig';
+      profile.palatalBrace = false;
+      profile.postorbitalBarScale = 0;
+      profile.hyoidScale = 0;
+      profile.hyoidMode = 'not resolved';
+      profile.cranialKinesis = 'not resolved';
+      profile.cranialMechanics = 'Outgroup skull mechanics are intentionally omitted by the shared dinosaur rig.';
+      profile.cranialEvidence = 'not resolved by the shared dinosaur rig';
+      profile.craniocervicalDetail = false;
+      profile.occipitalCondyleScale = 0;
+      profile.axisSpineScale = 0;
+      profile.craniocervicalArchitecture = 'Outgroup craniocervical anatomy is intentionally omitted by the shared dinosaur rig.';
+      profile.craniocervicalEvidence = 'not resolved by the shared dinosaur rig';
+      profile.coronoidScale = 0;
+      profile.retroarticularScale = 0;
+      profile.mandibularLeverArchitecture = 'Outgroup mandibular lever anatomy is intentionally omitted by the shared dinosaur rig.';
+      profile.mandibularLeverEvidence = 'not resolved by the shared dinosaur rig';
+      profile.sternalPlates = false;
+      profile.sternalRibCount = 0;
+      profile.pubisMode = 'vertical';
+      profile.prepubicProcess = false;
+      profile.sacralCount = 3;
+      profile.pelvis = 'Non-dinosaur comparison pelvis; the shared rig does not resolve this outgroup anatomy.';
+      profile.toothed = !/Pterosaur/i.test(clade);
+      profile.skull = 'This entry belongs to a non-dinosaur comparison group; its skull openings and jaw construction should not be read as a dinosaur reconstruction.';
+      profile.extremities = /Pterosaur/i.test(clade) ? 'Pterosaur wings require an elongated fourth finger, a membrane, and specialized shoulder mechanics not resolved by this dinosaur rig.' : (/Mosasaur/i.test(clade) ? 'Mosasaur limbs were hydrofoil-like paddles and are not resolved by this terrestrial dinosaur rig.' : 'Synapsid limb and girdle geometry differs from dinosaur anatomy and is shown only as a broad scale proxy.');
+      profile.locomotion = /Pterosaur/i.test(clade) ? 'Powered-flight outgroup; the dinosaur locomotor rig is only a scale placeholder.' : (/Mosasaur/i.test(clade) ? 'Fully aquatic outgroup; the terrestrial stance is not an anatomical reconstruction.' : 'Terrestrial synapsid outgroup with a non-dinosaur limb posture.');
+      profile.columnarLimbs = false;
+      profile.arctometatarsus = false;
+      profile.tailBracing = false;
+      profile.buccalTissue = false;
+      profile.keratinBeak = /Pterosaur/i.test(clade);
+      profile.hornSheath = false;
+      profile.softTissue = 'Outgroup soft tissues are not resolved by this shared dinosaur rig; visible volumes are scale placeholders only.';
+      profile.integumentMode = 'outgroup';
+      profile.filamentCoverage = 0;
+      profile.wingFeathers = false;
+      profile.tailFan = false;
+      profile.tailFrond = false;
+      profile.hindWingFeathers = false;
+      profile.dorsalBristles = false;
+      profile.featureScales = false;
+      profile.integumentEvidence = 'not resolved by the shared dinosaur rig';
+      profile.integument = 'Outgroup skin, membrane, hair, or pycnofibre anatomy is outside this dinosaur integument renderer.';
+      profile.showRespiratoryProxy = false;
+      profile.respiratoryMode = 'not resolved';
+      profile.cervicalAirSacs = false;
+      profile.thoracicAirSacs = false;
+      profile.abdominalAirSacs = false;
+      profile.pneumaticCervicals = 0;
+      profile.pneumaticDorsals = 0;
+      profile.axialPneumaticity = false;
+      profile.respiratoryEvidence = 'not resolved by the shared dinosaur rig';
+      profile.respiratory = 'Outgroup respiratory anatomy is intentionally omitted because the shared dinosaur rig cannot represent pterosaur, mosasaur, or synapsid systems accurately.';
+      profile.locomotor = 'Outgroup locomotion is not resolved by the shared dinosaur rig.';
+      profile.caveat = 'Comparative outgroup warning: this animal is not a dinosaur. The current shared rig communicates scale and broad landmarks only; do not use it as a specimen-level skeletal reconstruction.';
+    }
+    if (profile.arctometatarsus) profile.extremities += ' The three central metatarsals are rendered as a load-sharing bundle with the middle element pinched proximally.';
+    if (profile.tailBracing) profile.axial += ' Overlapping prezygapophyseal and elongate haemal-arch proxies form a distal caudotheca that limits bending without making the tail completely rigid.';
+    profile.skull += profile.antorbitalFenestra ? ' A distinct antorbital fenestra is rendered between the orbit and external naris.' : ' A separate antorbital opening is not generalized for this profile.';
+    if (profile.sternalPlates) profile.axial += ' Paired sternal plates and segmented sternal-rib proxies connect the shoulder region to the ventral thorax.';
+    if (profile.toothed) {
+      if (profile.toothProfile === 'incrassate') profile.dentition += ' The visible crowns are deep and thickened rather than uniformly blade-thin.';
+      else if (profile.toothProfile === 'conical') profile.dentition += ' The visible crowns are slender and conical, without a generalized blade profile.';
+      else if (profile.toothProfile === 'pencil') profile.dentition += ' The visible crowns are narrow and pencil-like and concentrated toward the front of the jaws.';
+      else if (profile.toothProfile === 'spoon') profile.dentition += ' The visible crowns are broader and spoon-like rather than theropod blades.';
+      else if (profile.toothProfile === 'ziphodont') profile.dentition += ' The visible crowns are laterally compressed cutting teeth; fine serrations are described but not individually meshed.';
+      else if (profile.toothProfile === 'leaf') profile.dentition += ' The small crowns are leaf-shaped rather than predatory ziphodont blades.';
+    }
+    profile.gastralBasketMode = profile.gastralia ? 'paired, imbricated gastral basket with separate medial and lateral segments' : 'not reconstructed';
+    profile.axial += profile.gastralia ? ' Paired, overlapping ventral gastralia are shown because they are supported for this profile.' : ' Gastralia are omitted rather than generalized beyond supported clades.';
+    if (profile.sacralDetail) profile.axial += ' Expanded sacral ribs transfer trunk load into broad iliac contacts, while proximal caudal ribs and haemal arches taper along the tail.';
+    if (profile.uncinateProcesses) profile.axial += ' Flattened uncinate-process proxies overlap adjacent anterior dorsal ribs only in supported maniraptoran profiles.';
+    profile.caveat += ' Muscle scars constrain origins and insertions more securely than muscle thickness; skin depth, keratin extent, lips or cheek tissues, and coloration remain interpretive.';
+    profile.caveat += ' Preserved integument is patchy: absence at an unpreserved body region is not proof of naked skin, and close-relative feather coverage is labeled as inference.';
+    profile.caveat += ' Air sacs are soft-tissue proxies: pneumatic bone can support the presence and regional reach of diverticula, but not a specimen-exact organ outline, airflow direction, or cavity air fraction.';
+    profile.caveat += ' Cranial bars mark homologous load paths, not exact sutural boundaries; palate, hyoid, cartilage thickness, and permitted joint motion require specimen-specific preservation or comparative inference.';
+    profile.caveat += ' Long-bone curvature is conservative because burial can flatten, bend, or twist fossils; rendered joint surfaces omit unknown cartilage thickness and are not a pose-range claim.';
+    profile.caveat += ' Shoulder and pelvic blades show functional architecture rather than specimen-exact margins; distal formulas are clade proxies and do not imply preserved cartilage, webbing, pads, or a single fixed resting pose.';
+    profile.caveat += ' Vertebral centra and processes are regionalized, but zygapophyseal facets are orientation proxies rather than claims about exact joint clearance or habitual spinal flexibility.';
+    profile.caveat += ' Rib heads and shafts show functional architecture, not specimen-exact costovertebral clearance; distal cartilage, sternal mobility, and thoracic excursion are not preserved as fixed bony shapes.';
+    profile.caveat += ' Sacral contacts and haemal arches show load paths and regional change, not a specimen-exact fusion state, chevron formula, or fixed tail-transition vertebra.';
+    return profile;
+  }
   function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function continentOf(region) { var i = region.indexOf(' ('); return i === -1 ? region : region.slice(0, i); }
@@ -5151,6 +5673,116 @@ window.StemLab = window.StemLab || {
   // The tool renderer runs again for every lab-state update. Keep the WebGL
   // component type stable so unrelated controls do not unmount the canvas and
   // create a fresh renderer/animation loop on every click.
+  function reconstructionHypothesesFor(dn, skeletalProfile, requestedMode) {
+    var speciesId = String((dn && dn.id) || '');
+    var group = String((dn && dn.group) || '');
+    var clade = String((dn && dn.clade) || '');
+    var evidenceText = String((skeletalProfile && skeletalProfile.integumentEvidence) || '').toLowerCase();
+    var directFeatherEvidence = /direct|preserv|quill-knob|quill knob|exceptional/.test(evidenceText) && /feather|filament|bristle/.test(evidenceText);
+    var directScaleEvidence = /direct|preserv|impression|exceptional/.test(evidenceText) && /scale|skin/.test(evidenceText);
+    var pennaraptoran = /Dromaeosaur|Troodont|Oviraptor|Caenagnath|Avialae|Scansoriopteryg/i.test(clade);
+    var avianEligible = group === 'theropod' || /^(kulindadromeus|tianyulong|psittacosaurus)$/i.test(speciesId) || /Heterodontosaur/i.test(clade);
+    var evidenceMode = {
+      id: 'evidence',
+      label: 'Evidence-led reconstruction',
+      shortLabel: 'Evidence-led',
+      status: 'Recommended',
+      available: true,
+      description: 'Uses direct integument where preserved, then restrained close-relative inference. The skeleton, joints, and measurements remain unchanged.',
+      warning: 'Unpreserved body regions remain uncertain; direct evidence from one patch does not automatically describe the whole animal.',
+      featureScales: !!skeletalProfile.featureScales,
+      filamentCoverage: Number(skeletalProfile.filamentCoverage) || 0,
+      wingFeathers: !!skeletalProfile.wingFeathers,
+      tailFan: !!skeletalProfile.tailFan,
+      tailFrond: !!skeletalProfile.tailFrond,
+      hindWingFeathers: !!skeletalProfile.hindWingFeathers,
+      dorsalBristles: !!skeletalProfile.dorsalBristles,
+      integumentMode: skeletalProfile.integumentMode,
+      bodyHeightScale: 1,
+      bodyDepthScale: 1,
+      headSoftTissueScale: 1,
+      neckSoftTissueScale: 1,
+      tailSoftTissueScale: 1,
+      paletteMode: 'natural'
+    };
+    var conservativeMode = {
+      id: 'conservative',
+      label: 'Conservative minimum',
+      shortLabel: 'Conservative',
+      status: directFeatherEvidence || directScaleEvidence ? 'Minimum supported' : 'Low inference',
+      available: true,
+      description: 'Minimizes unpreserved surface structures while retaining directly supported scales, filaments, feathers, or bristles.',
+      warning: directFeatherEvidence ? 'Direct feather or filament evidence is retained; this is not a featherless option for this animal.' : 'A smooth region means unknown covering, not proof of naked skin.',
+      featureScales: directScaleEvidence && !!skeletalProfile.featureScales,
+      filamentCoverage: directFeatherEvidence ? Math.max(0.34, (Number(skeletalProfile.filamentCoverage) || 0) * 0.68) : 0,
+      wingFeathers: directFeatherEvidence && !!skeletalProfile.wingFeathers,
+      tailFan: directFeatherEvidence && !!skeletalProfile.tailFan,
+      tailFrond: directFeatherEvidence && !!skeletalProfile.tailFrond,
+      hindWingFeathers: directFeatherEvidence && !!skeletalProfile.hindWingFeathers,
+      dorsalBristles: directFeatherEvidence && !!skeletalProfile.dorsalBristles,
+      integumentMode: directFeatherEvidence ? 'minimum preserved covering' : (directScaleEvidence ? 'minimum preserved scales' : 'unspecified surface'),
+      bodyHeightScale: 0.98,
+      bodyDepthScale: 0.98,
+      headSoftTissueScale: 0.97,
+      neckSoftTissueScale: 0.97,
+      tailSoftTissueScale: 0.97,
+      paletteMode: 'neutral'
+    };
+    var classicConflict = directFeatherEvidence ? 'This featherless treatment conflicts with direct integument evidence for this animal and is included only to compare reconstruction history.' : 'This style repeats older shrink-wrapped, uniformly reptilian conventions that are not a neutral scientific default.';
+    var classicMode = {
+      id: 'classic',
+      label: 'Historical classic',
+      shortLabel: 'Classic',
+      status: directFeatherEvidence ? 'Contradicted historical model' : 'Historical comparison',
+      available: true,
+      description: 'Applies a uniformly scaled, leaner twentieth-century paleoart treatment while preserving the same modern skeletal rig.',
+      warning: classicConflict,
+      featureScales: true,
+      filamentCoverage: 0,
+      wingFeathers: false,
+      tailFan: false,
+      tailFrond: false,
+      hindWingFeathers: false,
+      dorsalBristles: false,
+      integumentMode: 'historical uniform scales',
+      bodyHeightScale: 0.91,
+      bodyDepthScale: 0.89,
+      headSoftTissueScale: 0.90,
+      neckSoftTissueScale: 0.88,
+      tailSoftTissueScale: 0.90,
+      paletteMode: 'classic'
+    };
+    var avianMode = {
+      id: 'avian',
+      label: 'Avian-informed hypothesis',
+      shortLabel: 'Avian-informed',
+      status: avianEligible ? (directFeatherEvidence ? 'Evidence-compatible' : 'Phylogenetic hypothesis') : 'Not supported for this clade',
+      available: avianEligible,
+      description: avianEligible ? 'Explores a fuller soft-tissue envelope and regionally increased filament coverage without inventing flight feathers outside supported lineages.' : 'Current evidence does not justify an avian-style reskin for this clade.',
+      warning: directScaleEvidence && !directFeatherEvidence ? 'Preserved scales remain relevant; this mode represents a possible regional mosaic, not a fully feathered claim.' : 'Increased coverage is comparative inference wherever direct skin is absent.',
+      featureScales: directScaleEvidence && !!skeletalProfile.featureScales,
+      filamentCoverage: avianEligible ? Math.max(Number(skeletalProfile.filamentCoverage) || 0, group === 'theropod' ? 0.70 : 0.46) : 0,
+      wingFeathers: !!skeletalProfile.wingFeathers || pennaraptoran,
+      tailFan: !!skeletalProfile.tailFan,
+      tailFrond: !!skeletalProfile.tailFrond || pennaraptoran,
+      hindWingFeathers: !!skeletalProfile.hindWingFeathers,
+      dorsalBristles: !!skeletalProfile.dorsalBristles,
+      integumentMode: avianEligible ? (pennaraptoran ? 'avian-informed pennaceous covering' : 'avian-informed filament mosaic') : 'unavailable',
+      bodyHeightScale: 1.05,
+      bodyDepthScale: 1.07,
+      headSoftTissueScale: 1.04,
+      neckSoftTissueScale: 1.07,
+      tailSoftTissueScale: 1.04,
+      paletteMode: 'avian'
+    };
+    var options = [evidenceMode, conservativeMode, classicMode, avianMode];
+    var requested = String(requestedMode || 'evidence');
+    var active = evidenceMode;
+    for (var i = 0; i < options.length; i++) {
+      if (options[i].id === requested && options[i].available) { active = options[i]; break; }
+    }
+    return { active: active, options: options, directFeatherEvidence: directFeatherEvidence, directScaleEvidence: directScaleEvidence, avianEligible: avianEligible };
+  }
   var DinoFieldStation3DStable = null;
 
   window.StemLab.registerTool('dinoLab', {
@@ -5670,6 +6302,9 @@ window.StemLab = window.StemLab || {
         var bodyOpacityRef = React.useRef(28);
         var bodyOpacityState = React.useState(28), bodyOpacity = bodyOpacityState[0], setBodyOpacity = bodyOpacityState[1];
         var reconstructionProfile = reconstructionProfileFor(props.species);
+        var skeletalProfile = skeletalAnatomyProfileFor(props.species);
+        var hypothesisSet = reconstructionHypothesesFor(props.species, skeletalProfile, props.reconstructionMode);
+        var surfaceHypothesis = hypothesisSet.active;
         var yawRef = React.useRef({ speciesId: props.species.id, value: -0.35, pitch: 0.18, zoom: 1 });
         var autoRotateRef = React.useRef(props.autoRotate);
         var readySpeciesRef = React.useRef(null);
@@ -5732,6 +6367,9 @@ window.StemLab = window.StemLab || {
               insectivore: { skin: '#6d655f', dark: '#3d3638', accent: '#978274' }
             };
             var fieldPalette = naturalDietPalette[dn.diet] || { skin: props.dietColor || '#667066', dark: '#343b36', accent: '#8f9b87' };
+            if (surfaceHypothesis.paletteMode === 'classic') fieldPalette = { skin: '#69704b', dark: '#343922', accent: '#8d8454' };
+            else if (surfaceHypothesis.paletteMode === 'avian') fieldPalette = { skin: '#6b625b', dark: '#342f35', accent: '#9f7968' };
+            else if (surfaceHypothesis.paletteMode === 'neutral') fieldPalette = { skin: '#77766f', dark: '#41413d', accent: '#98968d' };
             var bodyColor = fieldPalette.skin;
             var reducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
             var yaw = yawRef.current.value;
@@ -5993,20 +6631,34 @@ window.StemLab = window.StemLab || {
               skinContext.fillStyle = '#d8d0bc';
               skinContext.fillRect(0, 0, 512, 256);
               var skinRng = mulberry32(String(dn.id || '').split('').reduce(function (seed, char) { return ((seed * 37) + char.charCodeAt(0)) >>> 0; }, 97));
-              for (var scaleDot = 0; scaleDot < 1300; scaleDot++) {
+              var surfaceMarkCount = surfaceHypothesis.featureScales ? 1300 : (surfaceHypothesis.filamentCoverage > 0 ? 360 : 900);
+              for (var scaleDot = 0; scaleDot < surfaceMarkCount; scaleDot++) {
                 var scaleShade = Math.floor(60 + skinRng() * 80);
                 skinContext.fillStyle = 'rgba(' + scaleShade + ',' + Math.floor(scaleShade * 0.94) + ',' + Math.floor(scaleShade * 0.78) + ',' + (0.035 + skinRng() * 0.075) + ')';
                 skinContext.beginPath();
                 skinContext.ellipse(skinRng() * 512, skinRng() * 256, 0.7 + skinRng() * 2.2, 0.4 + skinRng() * 1.1, skinRng() * Math.PI, 0, Math.PI * 2);
                 skinContext.fill();
               }
-              skinContext.strokeStyle = 'rgba(40,36,28,0.15)';
-              skinContext.lineWidth = 12;
-              for (var skinBand = -1; skinBand < 7; skinBand++) {
-                skinContext.beginPath();
-                skinContext.moveTo(skinBand * 96, -10);
-                skinContext.bezierCurveTo(skinBand * 96 + 45, 72, skinBand * 96 - 28, 166, skinBand * 96 + 54, 272);
-                skinContext.stroke();
+              if (surfaceHypothesis.featureScales) {
+                skinContext.strokeStyle = 'rgba(40,36,28,0.15)';
+                skinContext.lineWidth = 12;
+                for (var skinBand = -1; skinBand < 7; skinBand++) {
+                  skinContext.beginPath();
+                  skinContext.moveTo(skinBand * 96, -10);
+                  skinContext.bezierCurveTo(skinBand * 96 + 45, 72, skinBand * 96 - 28, 166, skinBand * 96 + 54, 272);
+                  skinContext.stroke();
+                }
+              } else if (surfaceHypothesis.filamentCoverage > 0) {
+                skinContext.strokeStyle = 'rgba(48,42,34,0.18)';
+                skinContext.lineWidth = 1.4;
+                for (var filamentStroke = 0; filamentStroke < 220; filamentStroke++) {
+                  var filamentX = skinRng() * 512;
+                  var filamentY = skinRng() * 256;
+                  skinContext.beginPath();
+                  skinContext.moveTo(filamentX, filamentY);
+                  skinContext.quadraticCurveTo(filamentX + 3 + skinRng() * 8, filamentY - 3 - skinRng() * 7, filamentX + 6 + skinRng() * 11, filamentY - 1 + skinRng() * 5);
+                  skinContext.stroke();
+                }
               }
               skinTexture = new THREE.CanvasTexture(skinCanvas);
               skinTexture.wrapS = THREE.RepeatWrapping;
@@ -6018,6 +6670,10 @@ window.StemLab = window.StemLab || {
             }
             var boneMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0xe9dfc7, emissive: 0x171b1a, emissiveIntensity: 0.18, roughness: 0.72, metalness: 0 }) : new THREE.MeshPhongMaterial({ color: 0xe9dfc7, emissive: 0x171b1a, shininess: 18 });
             var jointMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0xc9b990, roughness: 0.76, metalness: 0 }) : new THREE.MeshPhongMaterial({ color: 0xc9b990, shininess: 12 });
+            var costalJointMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0x9fb8aa, transparent: true, opacity: 0.72, roughness: 0.84, metalness: 0 }) : new THREE.MeshPhongMaterial({ color: 0x9fb8aa, transparent: true, opacity: 0.72, shininess: 8 });
+            var cranialAccentMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0xd8c39a, roughness: 0.72, metalness: 0 }) : new THREE.MeshPhongMaterial({ color: 0xd8c39a, shininess: 14 });
+            var jawJointMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0xb99d73, roughness: 0.66, metalness: 0 }) : new THREE.MeshPhongMaterial({ color: 0xb99d73, shininess: 18 });
+            var hyoidMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0xc4b5d9, roughness: 0.80, metalness: 0 }) : new THREE.MeshPhongMaterial({ color: 0xc4b5d9, shininess: 10 });
             var anatomyCalloutMat = new THREE.MeshBasicMaterial({ color: 0xf8fafc, transparent: true, opacity: 0.62, depthWrite: false });
             var bodyMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: new THREE.Color(bodyColor), map: skinTexture, transparent: true, opacity: inferenceOpacity, roughness: 0.82, metalness: 0, side: THREE.DoubleSide, depthWrite: false }) : new THREE.MeshPhongMaterial({ color: new THREE.Color(bodyColor), map: skinTexture, transparent: true, opacity: inferenceOpacity, shininess: 10, side: THREE.DoubleSide, depthWrite: false });
             var headMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: new THREE.Color(bodyColor), map: skinTexture, transparent: true, opacity: Math.min(0.87, inferenceOpacity + 0.12), roughness: 0.76, metalness: 0, depthWrite: false }) : new THREE.MeshPhongMaterial({ color: new THREE.Color(bodyColor), map: skinTexture, transparent: true, opacity: Math.min(0.87, inferenceOpacity + 0.12), shininess: 14, depthWrite: false });
@@ -6028,7 +6684,15 @@ window.StemLab = window.StemLab || {
             var mouthMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0x241a17, roughness: 0.94 }) : new THREE.MeshPhongMaterial({ color: 0x241a17, shininess: 2 });
             var skeletonCavityMat = new THREE.MeshBasicMaterial({ color: 0x211f1a, transparent: true, opacity: 0.90, depthWrite: false });
             var toothMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0xfff5d6, roughness: 0.48, metalness: 0 }) : new THREE.MeshPhongMaterial({ color: 0xfff5d6, shininess: 24 });
-            activeMaterialSet = { body: bodyMat, head: headMat, wire: bodyWireMat, accent: anatomyAccentMat };
+            var muscleMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0x8f3f32, transparent: true, opacity: Math.min(0.52, 0.14 + inferenceOpacity * 0.62), roughness: 0.92, metalness: 0, depthWrite: false }) : new THREE.MeshPhongMaterial({ color: 0x8f3f32, transparent: true, opacity: Math.min(0.52, 0.14 + inferenceOpacity * 0.62), shininess: 4, depthWrite: false });
+            var lungMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0x70465c, transparent: true, opacity: Math.min(0.48, 0.16 + inferenceOpacity * 0.50), roughness: 0.86, metalness: 0, side: THREE.DoubleSide, depthWrite: false }) : new THREE.MeshPhongMaterial({ color: 0x70465c, transparent: true, opacity: Math.min(0.48, 0.16 + inferenceOpacity * 0.50), shininess: 5, side: THREE.DoubleSide, depthWrite: false });
+            var airSacMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0xbdeff2, transparent: true, opacity: Math.min(0.34, 0.09 + inferenceOpacity * 0.34), roughness: 0.58, metalness: 0, side: THREE.DoubleSide, depthWrite: false }) : new THREE.MeshPhongMaterial({ color: 0xbdeff2, transparent: true, opacity: Math.min(0.34, 0.09 + inferenceOpacity * 0.34), shininess: 18, side: THREE.DoubleSide, depthWrite: false });
+            var pneumaticMarkerMat = new THREE.MeshBasicMaterial({ color: 0x67e8f9, transparent: true, opacity: 0.72, side: THREE.DoubleSide, depthWrite: false });
+            var keratinMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: 0x4b3525, transparent: true, opacity: Math.min(0.94, 0.58 + inferenceOpacity * 0.48), roughness: 0.90, metalness: 0 }) : new THREE.MeshPhongMaterial({ color: 0x4b3525, transparent: true, opacity: Math.min(0.94, 0.58 + inferenceOpacity * 0.48), shininess: 5 });
+            var filamentMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: new THREE.Color(fieldPalette.dark), transparent: true, opacity: Math.min(0.90, 0.44 + inferenceOpacity * 0.58), roughness: 0.96, metalness: 0, side: THREE.DoubleSide }) : new THREE.MeshPhongMaterial({ color: new THREE.Color(fieldPalette.dark), transparent: true, opacity: Math.min(0.90, 0.44 + inferenceOpacity * 0.58), shininess: 2, side: THREE.DoubleSide });
+            var featherVaneMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: new THREE.Color(fieldPalette.accent), transparent: true, opacity: Math.min(0.92, 0.48 + inferenceOpacity * 0.60), roughness: 0.92, metalness: 0, side: THREE.DoubleSide }) : new THREE.MeshPhongMaterial({ color: new THREE.Color(fieldPalette.accent), transparent: true, opacity: Math.min(0.92, 0.48 + inferenceOpacity * 0.60), shininess: 3, side: THREE.DoubleSide });
+            var scaleReliefMat = THREE.MeshStandardMaterial ? new THREE.MeshStandardMaterial({ color: new THREE.Color(fieldPalette.dark), transparent: true, opacity: Math.min(0.72, 0.18 + inferenceOpacity * 0.62), roughness: 0.98, metalness: 0 }) : new THREE.MeshPhongMaterial({ color: new THREE.Color(fieldPalette.dark), transparent: true, opacity: Math.min(0.72, 0.18 + inferenceOpacity * 0.62), shininess: 1 });
+            activeMaterialSet = { body: bodyMat, head: headMat, wire: bodyWireMat, accent: anatomyAccentMat, muscle: muscleMat, lung: lungMat, airSac: airSacMat, keratin: keratinMat, filament: filamentMat, feather: featherVaneMat, scaleRelief: scaleReliefMat };
             visualMaterialsRef.current = activeMaterialSet;
             var markerMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8 });
             var loggedMarkerMat = new THREE.MeshBasicMaterial({ color: 0x22c55e });
@@ -6072,6 +6736,89 @@ window.StemLab = window.StemLab || {
               model.add(mesh);
               return mesh;
             }
+            function addTaperedBoneSegment(a, b, startRadius, endRadius, mat) {
+              if (!props.showSkeleton) return null;
+              var dir = new THREE.Vector3().subVectors(b, a);
+              var dist = dir.length();
+              if (!dist) return null;
+              var mesh = new THREE.Mesh(new THREE.CylinderGeometry(endRadius, startRadius, dist, 12), mat || boneMat);
+              mesh.position.copy(a).add(b).multiplyScalar(0.5);
+              mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
+              mesh.castShadow = true;
+              model.add(mesh);
+              return mesh;
+            }
+            function addCurvedBone(points, startRadius, endRadius, mat) {
+              if (!props.showSkeleton || !points || points.length < 2) return null;
+              var segmentTotal = points.length - 1;
+              for (var curvedIndex = 0; curvedIndex < segmentTotal; curvedIndex++) {
+                var radiusT0 = curvedIndex / segmentTotal;
+                var radiusT1 = (curvedIndex + 1) / segmentTotal;
+                var radius0 = startRadius + (endRadius - startRadius) * radiusT0;
+                var radius1 = startRadius + (endRadius - startRadius) * radiusT1;
+                addTaperedBoneSegment(points[curvedIndex], points[curvedIndex + 1], radius0, radius1, mat || boneMat);
+              }
+              return points[Math.floor(points.length / 2)];
+            }
+            function addLongBone(a, b, radius, bowAmount, bowSide, proximalScale, distalScale) {
+              if (!props.showSkeleton) return null;
+              if (!skeletalProfile.longBoneDetail) return addBone(a, b, radius);
+              var shaftDirection = new THREE.Vector3().subVectors(b, a);
+              var shaftLength = shaftDirection.length();
+              if (!shaftLength) return null;
+              var bowAxis = vec(-shaftDirection.y, shaftDirection.x, 0);
+              if (bowAxis.lengthSq() < 0.000001) bowAxis.set(1, 0, 0);
+              bowAxis.normalize().multiplyScalar(shaftLength * (bowAmount || 0) * (bowSide || 1));
+              var shaftMid = new THREE.Vector3().copy(a).lerp(b, 0.50).add(bowAxis);
+              var proximalRadius = radius * (proximalScale || 1.30);
+              var midshaftRadius = radius * 0.76;
+              var distalRadius = radius * (distalScale || 1.18);
+              addTaperedBoneSegment(a, shaftMid, proximalRadius, midshaftRadius, boneMat);
+              addTaperedBoneSegment(shaftMid, b, midshaftRadius, distalRadius, boneMat);
+              return shaftMid;
+            }
+            function addLimbJoint(p, axis, radius, hingeScale) {
+              if (!props.showSkeleton) return null;
+              var jointAxis = axis.clone();
+              if (!jointAxis.lengthSq()) jointAxis.set(0, 1, 0);
+              var mesh = new THREE.Mesh(new THREE.SphereGeometry(1, 20, 14), jointMat);
+              mesh.position.copy(p);
+              mesh.scale.set(radius * (hingeScale || 1.18), radius * 0.76, radius * 1.06);
+              mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), jointAxis.normalize());
+              mesh.castShadow = true;
+              model.add(mesh);
+              return mesh;
+            }
+            function addLimbCrest(base, tip, radius) {
+              if (!skeletalProfile.longBoneDetail) return null;
+              return addSkeletonCone(base, tip, radius, boneMat);
+            }
+            function addGirdleBlade(a, b, width, thickness, mat) {
+              if (!props.showSkeleton || !skeletalProfile.girdleDetail) return null;
+              var bladeAxis = new THREE.Vector3().subVectors(b, a);
+              var bladeLength = bladeAxis.length();
+              if (!bladeLength) return null;
+              var blade = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 10), mat || boneMat);
+              blade.position.copy(a).add(b).multiplyScalar(0.5);
+              blade.scale.set(width, bladeLength * 0.50, thickness);
+              blade.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), bladeAxis.normalize());
+              blade.castShadow = true;
+              model.add(blade);
+              return blade;
+            }
+            function addCranialBone(a, b, radius, mat) {
+              if (!props.showSkeleton || !skeletalProfile.showCranialModules) return null;
+              var dir = new THREE.Vector3().subVectors(b, a);
+              var dist = dir.length();
+              if (!dist) return null;
+              var mesh = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, dist, 9), mat || cranialAccentMat);
+              mesh.position.copy(a).add(b).multiplyScalar(0.5);
+              mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
+              mesh.castShadow = true;
+              mesh.renderOrder = 12;
+              model.add(mesh);
+              return mesh;
+            }
             function addJoint(p, radius) {
               if (!props.showSkeleton) return null;
               var mesh = new THREE.Mesh(new THREE.SphereGeometry(radius, 14, 10), jointMat);
@@ -6101,17 +6848,49 @@ window.StemLab = window.StemLab || {
               model.add(mesh);
               return mesh;
             }
-            function addVertebralChain(start, end, count, startRadius, endRadius, processScale) {
+            function addVertebralChain(start, end, count, startRadius, endRadius, processScale, region) {
               if (!props.showSkeleton) return;
+              var chainAxis = new THREE.Vector3().subVectors(end, start);
+              if (!chainAxis.lengthSq()) return;
+              chainAxis.normalize();
               var previous = start.clone();
               for (var vertebraIndex = 0; vertebraIndex <= count; vertebraIndex++) {
                 var vertebraT = vertebraIndex / count;
                 var point = new THREE.Vector3().copy(start).lerp(end, vertebraT);
                 var radius = startRadius + (endRadius - startRadius) * vertebraT;
-                if (vertebraIndex > 0) addBone(previous, point, Math.max(0.006, radius * 0.48));
-                addJoint(point, radius);
-                if (vertebraIndex > 0 && vertebraIndex < count && vertebraIndex % 2 === 0) {
-                  addBone(point, point.clone().add(vec(0, radius * (processScale || 1.5), 0)), Math.max(0.004, radius * 0.22));
+                if (vertebraIndex > 0) addTaperedBoneSegment(previous, point, Math.max(0.006, radius * 0.44), Math.max(0.005, radius * 0.38), boneMat);
+                var centrumLengthScale = region === 'cervical' ? 1.34 : (region === 'caudal' ? 1.08 : 1.16);
+                var centrum = addSkeletonEllipsoid(point, vec(radius * centrumLengthScale, radius * 0.72, radius * 0.82), boneMat);
+                if (centrum) centrum.quaternion.setFromUnitVectors(new THREE.Vector3(1, 0, 0), chainAxis);
+                if (vertebraIndex > 0 && vertebraIndex < count) {
+                  var archHeight = radius * (region === 'caudal' ? 0.58 : 0.82);
+                  var archCenter = point.clone().add(vec(0, archHeight, 0));
+                  addBone(point.clone().add(vec(0, radius * 0.10, -radius * 0.34)), archCenter.clone().add(vec(0, 0, -radius * 0.22)), Math.max(0.0035, radius * 0.13));
+                  addBone(point.clone().add(vec(0, radius * 0.10, radius * 0.34)), archCenter.clone().add(vec(0, 0, radius * 0.22)), Math.max(0.0035, radius * 0.13));
+                  var spineHeight = radius * (processScale || 1.5) * (region === 'caudal' ? 0.72 : 1);
+                  var spineTip = archCenter.clone().add(vec(0, spineHeight, 0));
+                  if (region === 'caudal') spineTip.add(chainAxis.clone().multiplyScalar(radius * 0.30));
+                  addTaperedBoneSegment(archCenter, spineTip, Math.max(0.004, radius * 0.20), Math.max(0.003, radius * 0.09), boneMat);
+                  if (region === 'dorsal' && vertebraIndex % 2 === 0) {
+                    [-1, 1].forEach(function (processSide) {
+                      addTaperedBoneSegment(archCenter, archCenter.clone().add(vec(0, -radius * 0.08, processSide * radius * 1.38)), Math.max(0.004, radius * 0.16), Math.max(0.003, radius * 0.08), boneMat);
+                    });
+                  } else if (region === 'caudal' && vertebraIndex <= skeletalProfile.proximalCaudalProcessCount) {
+                    var caudalProcessFade = 1 - (vertebraIndex - 1) / Math.max(1, skeletalProfile.proximalCaudalProcessCount);
+                    [-1, 1].forEach(function (caudalSide) {
+                      var caudalProcessBase = point.clone().add(vec(0, radius * 0.24, caudalSide * radius * 0.22));
+                      var caudalProcessTip = caudalProcessBase.clone().add(vec(0, -radius * 0.06, caudalSide * radius * (0.72 + caudalProcessFade * 0.92))).add(chainAxis.clone().multiplyScalar(radius * 0.16));
+                      addTaperedBoneSegment(caudalProcessBase, caudalProcessTip, Math.max(0.0035, radius * 0.16), Math.max(0.0025, radius * 0.065), boneMat);
+                    });
+                  }
+                  if (vertebraIndex % 2 === 1) {
+                    [-1, 1].forEach(function (facetSide) {
+                      var facetBase = archCenter.clone().add(vec(0, radius * 0.05, facetSide * radius * 0.24));
+                      var facetTip = facetBase.clone().add(chainAxis.clone().multiplyScalar(radius * 0.68)).add(vec(0, radius * 0.12, facetSide * radius * 0.10));
+                      addTaperedBoneSegment(facetBase, facetTip, Math.max(0.003, radius * 0.11), Math.max(0.0025, radius * 0.07), boneMat);
+                      addSkeletonEllipsoid(facetTip, vec(Math.max(0.005, radius * 0.16), Math.max(0.0035, radius * 0.09), Math.max(0.004, radius * 0.12)), jointMat);
+                    });
+                  }
                 }
                 previous = point;
               }
@@ -6125,16 +6904,39 @@ window.StemLab = window.StemLab || {
               model.add(mesh);
               return mesh;
             }
-            function addSoftTissueCylinder(a, b, startRadius, endRadius) {
+            function addRespiratoryVolume(pos, scale, mat, order) {
+              if (!props.showBody || !skeletalProfile.showRespiratoryProxy) return null;
+              var mesh = new THREE.Mesh(new THREE.SphereGeometry(1, 28, 18), mat);
+              mesh.position.copy(pos);
+              mesh.scale.copy(scale);
+              mesh.renderOrder = order || 8;
+              model.add(mesh);
+              return mesh;
+            }
+            function addSoftTissueCylinder(a, b, startRadius, endRadius, mat) {
               if (!props.showBody) return null;
               var dir = new THREE.Vector3().subVectors(b, a);
               var dist = dir.length();
               if (!dist) return null;
-              var mesh = new THREE.Mesh(new THREE.CylinderGeometry(endRadius, startRadius, dist, 22), bodyMat);
+              var mesh = new THREE.Mesh(new THREE.CylinderGeometry(endRadius, startRadius, dist, 22), mat || bodyMat);
               mesh.position.copy(a).add(b).multiplyScalar(0.5);
               mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
               mesh.castShadow = true;
               mesh.renderOrder = 6;
+              model.add(mesh);
+              return mesh;
+            }
+            function addMuscleBelly(a, b, radius, depthScale) {
+              if (!props.showBody) return null;
+              var dir = new THREE.Vector3().subVectors(b, a);
+              var dist = dir.length();
+              if (!dist) return null;
+              var mesh = new THREE.Mesh(new THREE.SphereGeometry(1, 28, 18), muscleMat);
+              mesh.position.copy(a).add(b).multiplyScalar(0.5);
+              mesh.scale.set(dist * 0.54, radius, radius * (depthScale || 0.82));
+              mesh.quaternion.setFromUnitVectors(new THREE.Vector3(1, 0, 0), dir.normalize());
+              mesh.castShadow = true;
+              mesh.renderOrder = 7;
               model.add(mesh);
               return mesh;
             }
@@ -6170,6 +6972,51 @@ window.StemLab = window.StemLab || {
               mesh.castShadow = true;
               model.add(mesh);
               return mesh;
+            }
+            function addKeratinCone(base, tip, radius) {
+              if (!props.showBody) return null;
+              var dir = new THREE.Vector3().subVectors(tip, base);
+              var dist = dir.length();
+              if (!dist) return null;
+              var mesh = new THREE.Mesh(new THREE.ConeGeometry(radius, dist, 12), keratinMat);
+              mesh.position.copy(base).add(tip).multiplyScalar(0.5);
+              mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
+              mesh.castShadow = true;
+              mesh.renderOrder = 10;
+              model.add(mesh);
+              return mesh;
+            }
+            function addIntegumentFilament(base, tip, radius) {
+              if (!props.showBody) return null;
+              var dir = new THREE.Vector3().subVectors(tip, base);
+              var dist = dir.length();
+              if (!dist) return null;
+              var mesh = new THREE.Mesh(new THREE.ConeGeometry(radius, dist, 7), filamentMat);
+              mesh.position.copy(base).add(tip).multiplyScalar(0.5);
+              mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
+              mesh.castShadow = true;
+              mesh.renderOrder = 11;
+              model.add(mesh);
+              return mesh;
+            }
+            function addFeatherVane(base, tip, width) {
+              if (!props.showBody) return null;
+              var dir = new THREE.Vector3().subVectors(tip, base);
+              var dist = dir.length();
+              if (!dist) return null;
+              var vane = new THREE.Mesh(new THREE.ConeGeometry(width, dist, 12), featherVaneMat);
+              vane.position.copy(base).add(tip).multiplyScalar(0.5);
+              vane.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.normalize());
+              vane.scale.z = 0.14;
+              vane.castShadow = true;
+              vane.renderOrder = 12;
+              model.add(vane);
+              var shaft = new THREE.Mesh(new THREE.CylinderGeometry(Math.max(0.002, width * 0.055), Math.max(0.002, width * 0.055), dist, 6), filamentMat);
+              shaft.position.copy(vane.position);
+              shaft.quaternion.copy(vane.quaternion);
+              shaft.renderOrder = 13;
+              model.add(shaft);
+              return vane;
             }
             function addModelCylinder(a, b, radius, mat, order) {
               var dir = new THREE.Vector3().subVectors(b, a);
@@ -6315,21 +7162,153 @@ window.StemLab = window.StemLab || {
             addSceneCylinder(compassNorth, vec(compassNorth.x + compassRadius * 0.30, compassNorth.y, compassNorth.z + compassRadius * 0.42), Math.max(0.012, ht * 0.0035), surveyRopeMat);
 
             var cladeName = String(dn.clade || '');
-            var bodyShell = addEllipsoid(bodyCenter, vec(bodyLen, bodyHeight, bodyDepth), bodyMat);
-            var headShell = addEllipsoid(head, vec(Math.max(0.18, len * (isSauropod ? 0.035 : 0.055)) * reconstructionProfile.head, Math.max(0.12, ht * 0.055) * reconstructionProfile.head, Math.max(0.10, ht * 0.050) * reconstructionProfile.head), headMat);
+            var surfaceBodyHeight = bodyHeight * surfaceHypothesis.bodyHeightScale;
+            var surfaceBodyDepth = bodyDepth * surfaceHypothesis.bodyDepthScale;
+            var bodyShell = addEllipsoid(bodyCenter, vec(bodyLen, surfaceBodyHeight, surfaceBodyDepth), bodyMat);
+            var headShell = addEllipsoid(head, vec(Math.max(0.18, len * (isSauropod ? 0.035 : 0.055)) * reconstructionProfile.head * surfaceHypothesis.headSoftTissueScale, Math.max(0.12, ht * 0.055) * reconstructionProfile.head * surfaceHypothesis.headSoftTissueScale, Math.max(0.10, ht * 0.050) * reconstructionProfile.head * surfaceHypothesis.headSoftTissueScale), headMat);
             addBodyContour(bodyShell);
             addBodyContour(headShell);
             if (props.showBody) {
-              var neckShell = addSoftTissueCylinder(shoulder, head, Math.max(0.11, bodyHeight * 0.42), Math.max(0.08, ht * 0.038));
+              var neckShell = addSoftTissueCylinder(shoulder, head, Math.max(0.11, surfaceBodyHeight * 0.42) * surfaceHypothesis.neckSoftTissueScale, Math.max(0.08, ht * 0.038) * surfaceHypothesis.neckSoftTissueScale);
               addBodyContour(neckShell);
-              var muzzleShell = addSoftTissueCylinder(head, snout, Math.max(0.08, ht * 0.042) * reconstructionProfile.head, Math.max(0.055, ht * 0.030) * reconstructionProfile.head);
+              var muzzleShell = addSoftTissueCylinder(head, snout, Math.max(0.08, ht * 0.042) * reconstructionProfile.head * surfaceHypothesis.headSoftTissueScale, Math.max(0.055, ht * 0.030) * reconstructionProfile.head * surfaceHypothesis.headSoftTissueScale);
               addBodyContour(muzzleShell);
-              var tailMesh = new THREE.Mesh(new THREE.CylinderGeometry(Math.max(0.04, ht * 0.025), Math.max(0.16, ht * 0.060), hip.distanceTo(tail), 22), bodyMat);
+              var tailMesh = new THREE.Mesh(new THREE.CylinderGeometry(Math.max(0.04, ht * 0.025) * surfaceHypothesis.tailSoftTissueScale, Math.max(0.16, ht * 0.060) * surfaceHypothesis.tailSoftTissueScale, hip.distanceTo(tail), 22), bodyMat);
               tailMesh.position.copy(hip).add(tail).multiplyScalar(0.5);
               tailMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3().subVectors(tail, hip).normalize());
               tailMesh.castShadow = true;
               model.add(tailMesh);
               addBodyContour(tailMesh);
+
+              // Respiratory tissues are deliberately separated from the osteological evidence markers below.
+              if (skeletalProfile.showRespiratoryProxy) {
+                var respiratoryScale = skeletalProfile.respiratoryLungScale || 1;
+                var lungCenter = new THREE.Vector3().copy(bodyCenter).lerp(shoulder, 0.18).add(vec(0, bodyHeight * 0.16, 0));
+                [-1, 1].forEach(function (lungSide) {
+                  addRespiratoryVolume(lungCenter.clone().add(vec(0, 0, lungSide * bodyDepth * 0.27)), vec(bodyLen * 0.34 * respiratoryScale, bodyHeight * 0.36, bodyDepth * 0.24), lungMat, 8);
+                });
+                if (skeletalProfile.cervicalAirSacs) {
+                  for (var cervicalSacIndex = 1; cervicalSacIndex <= 5; cervicalSacIndex++) {
+                    var cervicalSacT = cervicalSacIndex / 7;
+                    var cervicalSacCenter = new THREE.Vector3().copy(shoulder).lerp(head, cervicalSacT).add(vec(0, -Math.max(0.015, ht * 0.006), 0));
+                    [-1, 1].forEach(function (cervicalSacSide) {
+                      addRespiratoryVolume(cervicalSacCenter.clone().add(vec(0, 0, cervicalSacSide * Math.max(0.030, bodyDepth * 0.16))), vec(Math.max(0.035, ht * 0.014), Math.max(0.025, ht * 0.010), Math.max(0.022, bodyDepth * 0.10)), airSacMat, 9);
+                    });
+                  }
+                  addRespiratoryVolume(shoulder.clone().add(vec(-bodyLen * 0.05, -bodyHeight * 0.08, 0)), vec(bodyLen * 0.15, bodyHeight * 0.22, bodyDepth * 0.36), airSacMat, 9);
+                }
+                if (skeletalProfile.thoracicAirSacs) {
+                  [-1, 1].forEach(function (thoracicSide) {
+                    addRespiratoryVolume(bodyCenter.clone().lerp(shoulder, 0.36).add(vec(0, -bodyHeight * 0.20, thoracicSide * bodyDepth * 0.31)), vec(bodyLen * 0.22, bodyHeight * 0.23, bodyDepth * 0.20), airSacMat, 9);
+                  });
+                }
+                if (skeletalProfile.abdominalAirSacs) {
+                  [-1, 1].forEach(function (abdominalSide) {
+                    addRespiratoryVolume(bodyCenter.clone().lerp(hip, 0.56).add(vec(0, -bodyHeight * 0.34, abdominalSide * bodyDepth * 0.28)), vec(bodyLen * 0.27, bodyHeight * 0.27, bodyDepth * 0.22), airSacMat, 9);
+                  });
+                }
+              }
+
+              // Evidence-constrained muscle envelopes: attachment paths are stronger evidence than rendered thickness.
+              var jawMuscleRadius = Math.max(0.026, ht * 0.015) * skeletalProfile.jawMuscleScale * reconstructionProfile.head;
+              var cranialSideDepth = Math.max(0.082, ht * 0.044) * reconstructionProfile.head;
+              [-1, 1].forEach(function (muscleSide) {
+                var temporalOrigin = head.clone().add(vec(Math.max(0.006, len * 0.002), Math.max(0.025, ht * 0.018), muscleSide * cranialSideDepth * 0.82));
+                var jawInsertion = head.clone().add(vec(-Math.max(0.012, len * 0.004), -Math.max(0.048, ht * 0.030), muscleSide * cranialSideDepth * 0.88));
+                addMuscleBelly(temporalOrigin, jawInsertion, jawMuscleRadius, 0.68);
+                if (skeletalProfile.buccalTissue) {
+                  var buccalStart = new THREE.Vector3().copy(head).lerp(snout, 0.22).add(vec(0, -Math.max(0.020, ht * 0.012), muscleSide * cranialSideDepth * 0.94));
+                  var buccalEnd = new THREE.Vector3().copy(head).lerp(snout, 0.82).add(vec(0, -Math.max(0.025, ht * 0.015), muscleSide * cranialSideDepth * 0.92));
+                  addMuscleBelly(buccalStart, buccalEnd, jawMuscleRadius * 0.42, 0.46);
+                }
+                var neckOrigin = shoulder.clone().add(vec(Math.max(0.010, len * 0.006), bodyHeight * 0.16, muscleSide * bodyDepth * 0.34));
+                var neckInsertion = head.clone().add(vec(Math.max(0.010, len * 0.004), Math.max(0.018, ht * 0.012), muscleSide * cranialSideDepth * 0.44));
+                addMuscleBelly(neckOrigin, neckInsertion, Math.max(0.045, bodyHeight * 0.20) * skeletalProfile.neckMuscleScale, 0.72);
+                var pectoralOrigin = shoulder.clone().add(vec(-len * 0.010, -bodyHeight * 0.12, muscleSide * bodyDepth * 0.42));
+                var pectoralInsertion = bodyCenter.clone().lerp(shoulder, 0.72).add(vec(0, -bodyHeight * 0.34, muscleSide * bodyDepth * 0.34));
+                addMuscleBelly(pectoralOrigin, pectoralInsertion, Math.max(0.045, bodyHeight * 0.20) * skeletalProfile.chestMuscleScale, 0.78);
+                var caudofemoralOrigin = new THREE.Vector3().copy(hip).lerp(tail, 0.34).add(vec(0, -bodyHeight * 0.18, muscleSide * bodyDepth * 0.24));
+                var caudofemoralInsertion = hip.clone().add(vec(-len * 0.012, -bodyHeight * 0.34, muscleSide * bodyDepth * 0.38));
+                addMuscleBelly(caudofemoralOrigin, caudofemoralInsertion, Math.max(0.050, bodyHeight * 0.22) * skeletalProfile.tailBaseMuscleScale, 0.74);
+              });
+              if (skeletalProfile.keratinBeak) {
+                var beakBase = new THREE.Vector3().copy(head).lerp(snout, 0.70);
+                var beakTip = snout.clone().add(vec(-Math.max(0.06, len * 0.016), -Math.max(0.006, ht * 0.003), 0));
+                var keratinBeak = addKeratinCone(beakBase, beakTip, Math.max(0.050, ht * 0.022) * reconstructionProfile.head);
+                if (keratinBeak) keratinBeak.scale.z = 1.34;
+              }
+
+              var integumentSeed = String(dn.id || '').split('').reduce(function (seed, char) { return ((seed * 43) + char.charCodeAt(0)) >>> 0; }, 211);
+              var integumentRng = mulberry32(integumentSeed);
+              if (surfaceHypothesis.featureScales) {
+                [-1, 1].forEach(function (scaleSide) {
+                  for (var featureScaleIndex = 0; featureScaleIndex < 11; featureScaleIndex++) {
+                    var featureScaleT = (featureScaleIndex + 0.7) / 11.8;
+                    var featureScalePos = new THREE.Vector3().copy(shoulder).lerp(hip, featureScaleT);
+                    featureScalePos.y = bodyCenter.y + surfaceBodyHeight * (-0.18 + (featureScaleIndex % 3) * 0.19);
+                    featureScalePos.z = scaleSide * surfaceBodyDepth * (0.83 + (featureScaleIndex % 2) * 0.06);
+                    var featureScaleSize = Math.max(0.018, ht * (0.006 + integumentRng() * 0.004));
+                    addEllipsoid(featureScalePos, vec(featureScaleSize * 1.18, featureScaleSize, featureScaleSize * 0.22), scaleReliefMat);
+                  }
+                });
+              }
+              if (surfaceHypothesis.filamentCoverage > 0) {
+                var filamentCount = Math.round(18 + surfaceHypothesis.filamentCoverage * 36);
+                for (var coatIndex = 0; coatIndex < filamentCount; coatIndex++) {
+                  var coatT = (coatIndex + integumentRng() * 0.72) / filamentCount;
+                  var coatAngle = -1.24 + integumentRng() * 2.48;
+                  var coatBase = new THREE.Vector3().copy(shoulder).lerp(hip, coatT);
+                  coatBase.y = bodyCenter.y + Math.cos(coatAngle) * surfaceBodyHeight * 0.78;
+                  coatBase.z = Math.sin(coatAngle) * surfaceBodyDepth * 0.87;
+                  var coatNormal = vec(0, Math.cos(coatAngle), Math.sin(coatAngle)).normalize();
+                  var coatLength = Math.max(0.035, ht * 0.014) * (0.72 + integumentRng() * 0.82) * (0.72 + surfaceHypothesis.filamentCoverage * 0.44);
+                  var coatTip = coatBase.clone().add(coatNormal.multiplyScalar(coatLength)).add(vec(Math.max(0.006, len * 0.0035), 0, 0));
+                  addIntegumentFilament(coatBase, coatTip, Math.max(0.004, ht * 0.0017));
+                }
+                for (var neckFilamentIndex = 0; neckFilamentIndex < 13; neckFilamentIndex++) {
+                  var neckFilamentT = (neckFilamentIndex + 0.45) / 13.5;
+                  var neckBase = new THREE.Vector3().copy(shoulder).lerp(head, neckFilamentT);
+                  var neckSide = neckFilamentIndex % 2 ? 1 : -1;
+                  neckBase.add(vec(0, Math.max(0.025, surfaceBodyHeight * 0.17), neckSide * surfaceBodyDepth * 0.19));
+                  var neckTip = neckBase.clone().add(vec(Math.max(0.008, len * 0.003), Math.max(0.040, ht * 0.019) * (0.75 + integumentRng() * 0.55), neckSide * Math.max(0.012, surfaceBodyDepth * 0.08)));
+                  addIntegumentFilament(neckBase, neckTip, Math.max(0.004, ht * 0.0016));
+                }
+                for (var tailFilamentIndex = 0; tailFilamentIndex < 17; tailFilamentIndex++) {
+                  var tailFilamentT = 0.08 + tailFilamentIndex / 20;
+                  var tailCoatBase = new THREE.Vector3().copy(hip).lerp(tail, tailFilamentT);
+                  var tailCoatSide = tailFilamentIndex % 2 ? 1 : -1;
+                  tailCoatBase.add(vec(0, Math.max(0.016, surfaceBodyHeight * (0.14 - tailFilamentT * 0.07)), tailCoatSide * surfaceBodyDepth * (0.20 - tailFilamentT * 0.10)));
+                  var tailCoatTip = tailCoatBase.clone().add(vec(Math.max(0.008, len * 0.003), Math.max(0.028, ht * 0.014) * (0.72 + integumentRng() * 0.46), tailCoatSide * Math.max(0.008, surfaceBodyDepth * 0.05)));
+                  addIntegumentFilament(tailCoatBase, tailCoatTip, Math.max(0.0035, ht * 0.0014));
+                }
+              }
+              if (surfaceHypothesis.dorsalBristles) {
+                var bristleLengthScale = /^psittacosaurus$/i.test(String(dn.id || '')) ? 1.34 : 0.88;
+                for (var bristleIndex = 0; bristleIndex < 12; bristleIndex++) {
+                  var bristleT = 0.16 + bristleIndex * 0.052;
+                  var bristleBase = new THREE.Vector3().copy(hip).lerp(tail, bristleT).add(vec(0, Math.max(0.025, surfaceBodyHeight * (0.22 - bristleT * 0.08)), 0));
+                  var bristleTip = bristleBase.clone().add(vec(Math.max(0.010, len * 0.004), Math.max(0.07, ht * 0.055) * bristleLengthScale * (0.80 + bristleIndex * 0.018), 0));
+                  addIntegumentFilament(bristleBase, bristleTip, Math.max(0.004, ht * 0.0018));
+                }
+              }
+              if (surfaceHypothesis.tailFan) {
+                var tailFanBase = new THREE.Vector3().copy(hip).lerp(tail, 0.86);
+                for (var tailFanIndex = 0; tailFanIndex < 9; tailFanIndex++) {
+                  var fanOffset = tailFanIndex - 4;
+                  var tailFanRoot = tailFanBase.clone().add(vec(fanOffset * Math.max(0.006, len * 0.0013), 0, 0));
+                  var tailFanTip = tailFanRoot.clone().add(vec(Math.max(0.18, len * 0.050) * (0.90 + (4 - Math.abs(fanOffset)) * 0.025), fanOffset * Math.max(0.020, ht * 0.010), fanOffset * Math.max(0.030, surfaceBodyDepth * 0.18)));
+                  addFeatherVane(tailFanRoot, tailFanTip, Math.max(0.020, ht * 0.010));
+                }
+              } else if (surfaceHypothesis.tailFrond) {
+                for (var tailFrondIndex = 0; tailFrondIndex < 8; tailFrondIndex++) {
+                  var tailFrondT = 0.26 + tailFrondIndex * 0.085;
+                  [-1, 1].forEach(function (frondSide) {
+                    var tailFrondBase = new THREE.Vector3().copy(hip).lerp(tail, tailFrondT);
+                    var tailFrondTip = tailFrondBase.clone().add(vec(Math.max(0.025, len * 0.010), Math.max(0.018, ht * 0.008), frondSide * Math.max(0.10, surfaceBodyDepth * (0.50 - tailFrondT * 0.16))));
+                    addFeatherVane(tailFrondBase, tailFrondTip, Math.max(0.014, ht * 0.0065));
+                  });
+                }
+              }
 
               var faceScale = reconstructionProfile.head;
               [-1, 1].forEach(function (faceSide) {
@@ -6359,7 +7338,7 @@ window.StemLab = window.StemLab || {
                 addEllipsoid(frillCenter, vec(Math.max(0.06, len * 0.014), Math.max(0.22, ht * 0.15), Math.max(0.20, bodyDepth * 0.92)), anatomyAccentMat);
                 [-1, 1].forEach(function (side) {
                   var hornBase = head.clone().add(vec(-len * 0.018, ht * 0.040, side * bodyDepth * 0.30));
-                  addAccentCone(hornBase, hornBase.clone().add(vec(-Math.max(0.28, len * 0.055), Math.max(0.12, ht * 0.055), side * bodyDepth * 0.10)), Math.max(0.035, ht * 0.014));
+                  addKeratinCone(hornBase, hornBase.clone().add(vec(-Math.max(0.32, len * 0.061), Math.max(0.14, ht * 0.061), side * bodyDepth * 0.11)), Math.max(0.040, ht * 0.016));
                 });
               } else if (/Stegosaur/i.test(cladeName)) {
                 for (var plateIndex = 0; plateIndex < 7; plateIndex++) {
@@ -6394,19 +7373,10 @@ window.StemLab = window.StemLab || {
                 [-1, 1].forEach(function (side) {
                   for (var clawIndex = -1; clawIndex <= 1; clawIndex++) {
                     var clawBase = shoulder.clone().add(vec(-len * 0.040, -ht * 0.12, side * (bodyDepth * 0.46 + clawIndex * bodyDepth * 0.12)));
-                    addAccentCone(clawBase, clawBase.clone().add(vec(-Math.max(0.34, len * 0.095), -Math.max(0.06, ht * 0.025), side * clawIndex * bodyDepth * 0.08)), Math.max(0.018, ht * 0.006));
+                    addKeratinCone(clawBase, clawBase.clone().add(vec(-Math.max(0.34, len * 0.095), -Math.max(0.06, ht * 0.025), side * clawIndex * bodyDepth * 0.08)), Math.max(0.021, ht * 0.007));
                   }
                 });
-              } else if (/Dromaeosaur|Troodont/i.test(cladeName)) {
-                [-1, 1].forEach(function (side) {
-                  for (var featherIndex = 0; featherIndex < 5; featherIndex++) {
-                    var featherT = 0.28 + featherIndex * 0.11;
-                    var featherBase = new THREE.Vector3().copy(hip).lerp(tail, featherT);
-                    var featherTip = featherBase.clone().add(vec(-len * 0.018, Math.max(0.08, ht * 0.035), side * Math.max(0.18, bodyDepth * (0.58 + featherIndex * 0.07))));
-                    var feather = addAccentCone(featherBase, featherTip, Math.max(0.012, ht * 0.0045));
-                    if (feather) feather.scale.x = 0.58;
-                  }
-                });
+
               } else if (/Tyrannosaur/i.test(cladeName)) {
                 var tyrantSnout = new THREE.Vector3().copy(head).lerp(snout, 0.60);
                 addEllipsoid(tyrantSnout, vec(Math.max(0.16, len * 0.040), Math.max(0.10, ht * 0.040), Math.max(0.10, bodyDepth * 0.52)), anatomyAccentMat);
@@ -6422,8 +7392,7 @@ window.StemLab = window.StemLab || {
                 var oviraptorCrestBase = head.clone().add(vec(len * 0.006, ht * 0.038, 0));
                 var oviraptorCrest = addAccentCone(oviraptorCrestBase, oviraptorCrestBase.clone().add(vec(len * 0.018, Math.max(0.18, ht * 0.13), 0)), Math.max(0.07, ht * 0.030));
                 if (oviraptorCrest) oviraptorCrest.scale.z = 0.46;
-                var beak = addAccentCone(snout, snout.clone().add(vec(-Math.max(0.16, len * 0.040), 0, 0)), Math.max(0.055, ht * 0.022));
-                if (beak) beak.scale.z = 1.28;
+
               } else if (/Iguanodont/i.test(cladeName)) {
                 [-1, 1].forEach(function (side) {
                   var thumbBase = vec(shoulder.x - len * 0.035, Math.max(0.12, shoulder.y * 0.25), side * bodyDepth * 0.52);
@@ -6433,22 +7402,61 @@ window.StemLab = window.StemLab || {
             }
 
             if (props.showSkeleton) {
-              addVertebralChain(shoulder, hip, isSauropod ? 10 : 9, Math.max(0.050, ht * 0.017), Math.max(0.055, ht * 0.019), 1.55);
-              addVertebralChain(hip, tail, isSauropod ? 18 : 14, Math.max(0.050, ht * 0.017), Math.max(0.014, ht * 0.0045), 1.20);
-              addVertebralChain(shoulder, head, isSauropod ? 12 : 7, Math.max(0.044, ht * 0.015), Math.max(0.032, ht * 0.010), isSauropod ? 1.25 : 1.45);
-
+              addVertebralChain(shoulder, hip, isSauropod ? 10 : 9, Math.max(0.050, ht * 0.017), Math.max(0.055, ht * 0.019), 1.55, 'dorsal');
+              addVertebralChain(hip, tail, isSauropod ? 18 : 14, Math.max(0.050, ht * 0.017), Math.max(0.014, ht * 0.0045), 1.20, 'caudal');
               var skullLength = Math.max(0.20, len * (isSauropod ? 0.040 : 0.066)) * reconstructionProfile.head;
               var skullHeight = Math.max(0.13, ht * (isTheropod ? 0.068 : 0.058)) * reconstructionProfile.head;
               var skullDepth = Math.max(0.12, ht * 0.058) * reconstructionProfile.head;
+              var neckAxis = new THREE.Vector3().subVectors(shoulder, head).normalize();
+              var axisCenter = skeletalProfile.craniocervicalDetail ? head.clone().add(neckAxis.clone().multiplyScalar(skullLength * 0.84)) : head.clone();
+              addVertebralChain(shoulder, axisCenter, isSauropod ? 12 : 7, Math.max(0.044, ht * 0.015), Math.max(0.032, ht * 0.010), isSauropod ? 1.25 : 1.45, 'cervical');
+
               addSkeletonEllipsoid(head, vec(skullLength * 0.68, skullHeight, skullDepth), boneMat);
               var rostrumCenter = new THREE.Vector3().copy(head).lerp(snout, 0.62);
               addSkeletonEllipsoid(rostrumCenter, vec(Math.max(0.09, skullLength * 0.62), skullHeight * (isTheropod ? 0.58 : 0.48), skullDepth * 0.72), boneMat);
               addBone(head.clone().add(vec(0, skullHeight * 0.42, 0)), snout.clone().add(vec(0, skullHeight * 0.18, 0)), Math.max(0.012, ht * 0.0045));
+
+              if (skeletalProfile.craniocervicalDetail) {
+                // Head-neck transition: braincase, single condyle, atlas ring, and odontoid-bearing axis.
+                var craniocervicalRadius = Math.max(0.008, ht * 0.0030);
+                var braincaseCenter = head.clone().add(neckAxis.clone().multiplyScalar(skullLength * 0.25));
+                var occipitalCenter = head.clone().add(neckAxis.clone().multiplyScalar(skullLength * 0.43));
+                var occipitalCondyleCenter = head.clone().add(neckAxis.clone().multiplyScalar(skullLength * 0.53));
+                var atlasCenter = head.clone().add(neckAxis.clone().multiplyScalar(skullLength * 0.65));
+                addSkeletonEllipsoid(braincaseCenter, vec(skullLength * 0.30, skullHeight * 0.54, skullDepth * 0.60), cranialAccentMat);
+                [-1, 1].forEach(function (occipitalSide) {
+                  var paroccipitalBase = occipitalCenter.clone().add(vec(0, skullHeight * 0.10, occipitalSide * skullDepth * 0.20));
+                  var paroccipitalTip = occipitalCenter.clone().add(vec(0, -skullHeight * 0.10, occipitalSide * skullDepth * 0.72));
+                  addCranialBone(paroccipitalBase, paroccipitalTip, craniocervicalRadius * 1.18);
+                  var atlasRoot = atlasCenter.clone().add(vec(0, -skullHeight * 0.17, occipitalSide * skullDepth * 0.30));
+                  var atlasShoulder = atlasCenter.clone().add(vec(0, skullHeight * 0.08, occipitalSide * skullDepth * 0.43));
+                  var atlasRoof = atlasCenter.clone().add(vec(0, skullHeight * 0.25, occipitalSide * skullDepth * 0.18));
+                  addCranialBone(atlasRoot, atlasShoulder, craniocervicalRadius * 0.90, boneMat);
+                  addCranialBone(atlasShoulder, atlasRoof, craniocervicalRadius * 0.82, boneMat);
+                });
+                var occipitalCondyle = addSkeletonEllipsoid(occipitalCondyleCenter, vec(skullLength * 0.105 * skeletalProfile.occipitalCondyleScale, skullHeight * 0.15, skullDepth * 0.18), jawJointMat);
+                if (occipitalCondyle) occipitalCondyle.renderOrder = 14;
+                addSkeletonEllipsoid(atlasCenter.clone().add(vec(0, -skullHeight * 0.19, 0)), vec(skullLength * 0.10, skullHeight * 0.10, skullDepth * 0.34), jointMat);
+                addCranialBone(atlasCenter.clone().add(vec(0, skullHeight * 0.25, -skullDepth * 0.18)), atlasCenter.clone().add(vec(0, skullHeight * 0.25, skullDepth * 0.18)), craniocervicalRadius * 0.74, boneMat);
+                addSkeletonEllipsoid(axisCenter, vec(skullLength * 0.18, skullHeight * 0.18, skullDepth * 0.39), boneMat);
+                [-1, 1].forEach(function (axisSide) {
+                  var axisArchRoot = axisCenter.clone().add(vec(0, skullHeight * 0.08, axisSide * skullDepth * 0.28));
+                  var axisArchTop = axisCenter.clone().add(vec(0, skullHeight * 0.30, axisSide * skullDepth * 0.16));
+                  addCranialBone(axisArchRoot, axisArchTop, craniocervicalRadius * 1.02, boneMat);
+                });
+                var axisSpineBase = axisCenter.clone().add(vec(0, skullHeight * 0.27, 0));
+                var axisSpineTip = axisCenter.clone().add(neckAxis.clone().multiplyScalar(skullLength * 0.06)).add(vec(0, skullHeight * 0.52 * skeletalProfile.axisSpineScale, 0));
+                addSkeletonCone(axisSpineBase, axisSpineTip, craniocervicalRadius * 1.72, boneMat);
+                var odontoidBase = axisCenter.clone().add(vec(0, skullHeight * 0.02, 0));
+                var odontoidTip = atlasCenter.clone().lerp(occipitalCondyleCenter, 0.36).add(vec(0, skullHeight * 0.015, 0));
+                addCranialBone(odontoidBase, odontoidTip, craniocervicalRadius * 1.05, jointMat);
+              }
+
               [-1, 1].forEach(function (skullSide) {
                 var sideZ = skullSide * skullDepth * 0.78;
                 var orbit = addSkeletonEllipsoid(head.clone().add(vec(-skullLength * 0.12, skullHeight * 0.10, sideZ)), vec(skullLength * 0.25, skullHeight * 0.44, Math.max(0.012, skullDepth * 0.18)), skeletonCavityMat);
                 if (orbit) orbit.renderOrder = 13;
-                if (isTheropod) {
+                if (skeletalProfile.scleroticRing) {
                   var scleroticRing = new THREE.Mesh(new THREE.TorusGeometry(skullHeight * 0.27, Math.max(0.006, ht * 0.0022), 8, 28), boneMat);
                   scleroticRing.position.copy(orbit.position);
                   scleroticRing.rotation.y = Math.PI / 2;
@@ -6460,16 +7468,81 @@ window.StemLab = window.StemLab || {
                 if (temporalOpening) temporalOpening.renderOrder = 13;
                 var nasalOpening = addSkeletonEllipsoid(rostrumCenter.clone().lerp(snout, 0.45).add(vec(0, skullHeight * 0.12, skullSide * skullDepth * 0.55)), vec(skullLength * 0.12, skullHeight * 0.16, Math.max(0.008, skullDepth * 0.10)), skeletonCavityMat);
                 if (nasalOpening) nasalOpening.renderOrder = 13;
+                if (skeletalProfile.antorbitalFenestra) {
+                  var antorbitalFenestra = addSkeletonEllipsoid(new THREE.Vector3().copy(head).lerp(rostrumCenter, 0.62).add(vec(0, -skullHeight * 0.02, skullSide * skullDepth * 0.64)), vec(skullLength * 0.19, skullHeight * (/Spinosaur/i.test(cladeName) ? 0.20 : 0.30), Math.max(0.009, skullDepth * 0.12)), skeletonCavityMat);
+                  if (antorbitalFenestra) antorbitalFenestra.renderOrder = 13;
+                }
+
+                // Modular cranial frame: homologous load paths remain visible around the fenestrae.
+                var cranialBarRadius = Math.max(0.007, ht * 0.0027);
                 var jawHinge = head.clone().add(vec(skullLength * 0.34, -skullHeight * 0.52, skullSide * skullDepth * 0.52));
                 var jawTip = snout.clone().add(vec(0, -skullHeight * 0.42, skullSide * skullDepth * 0.38));
-                addBone(jawHinge, jawTip, Math.max(0.018, ht * 0.0065));
-                addJoint(jawHinge, Math.max(0.025, ht * 0.0085));
-                if (isTheropod || dn.diet === 'carnivore' || dn.diet === 'piscivore') {
-                  for (var toothIndex = 1; toothIndex <= 7; toothIndex++) {
-                    var toothT = toothIndex / 8;
+                var premaxillaUpper = snout.clone().add(vec(skullLength * 0.04, skullHeight * 0.18, skullSide * skullDepth * 0.38));
+                var premaxillaLower = snout.clone().add(vec(skullLength * 0.02, -skullHeight * 0.24, skullSide * skullDepth * 0.42));
+                var maxillaFront = new THREE.Vector3().copy(snout).lerp(rostrumCenter, 0.38).add(vec(0, -skullHeight * 0.24, skullSide * skullDepth * 0.54));
+                var maxillaRear = new THREE.Vector3().copy(rostrumCenter).lerp(head, 0.46).add(vec(0, -skullHeight * 0.22, skullSide * skullDepth * 0.68));
+                var jugalRear = head.clone().add(vec(skullLength * 0.18, -skullHeight * 0.25, skullSide * skullDepth * 0.72));
+                var postorbitalTop = head.clone().add(vec(skullLength * 0.02, skullHeight * 0.48, skullSide * skullDepth * 0.74));
+                var quadrateTop = head.clone().add(vec(skullLength * 0.37, skullHeight * 0.30, skullSide * skullDepth * 0.58));
+                addCranialBone(premaxillaUpper, premaxillaLower, cranialBarRadius * 1.15);
+                addCranialBone(premaxillaUpper, rostrumCenter.clone().add(vec(0, skullHeight * 0.34, skullSide * skullDepth * 0.54)), cranialBarRadius);
+                addCranialBone(premaxillaLower, maxillaFront, cranialBarRadius * 1.32);
+                addCranialBone(maxillaFront, maxillaRear, cranialBarRadius * 1.42);
+                addCranialBone(maxillaRear, jugalRear, cranialBarRadius * 1.18);
+                addCranialBone(jugalRear, postorbitalTop, cranialBarRadius * skeletalProfile.postorbitalBarScale);
+                addCranialBone(postorbitalTop, quadrateTop, cranialBarRadius * 1.06);
+                addCranialBone(quadrateTop, jawHinge, cranialBarRadius * 1.58);
+                addCranialBone(jugalRear, jawHinge, cranialBarRadius * 1.20);
+
+                if (skeletalProfile.palatalBrace) {
+                  var palatineFront = new THREE.Vector3().copy(snout).lerp(rostrumCenter, 0.62).add(vec(0, -skullHeight * 0.28, skullSide * skullDepth * 0.20));
+                  var pterygoidMid = new THREE.Vector3().copy(rostrumCenter).lerp(head, 0.58).add(vec(0, -skullHeight * 0.34, skullSide * skullDepth * 0.22));
+                  var pterygoidRear = new THREE.Vector3().copy(quadrateTop).lerp(jawHinge, 0.46).add(vec(0, 0, -skullSide * skullDepth * 0.24));
+                  addCranialBone(palatineFront, pterygoidMid, cranialBarRadius * 0.88);
+                  addCranialBone(pterygoidMid, pterygoidRear, cranialBarRadius * 0.96);
+                  addCranialBone(pterygoidMid, maxillaRear, cranialBarRadius * 0.72);
+                }
+
+                var mandibularMid = new THREE.Vector3().copy(jawHinge).lerp(jawTip, 0.54).add(vec(0, -skullHeight * 0.02, 0));
+                var surangularMid = new THREE.Vector3().copy(mandibularMid).lerp(jawHinge, 0.46).add(vec(0, skullHeight * 0.10, 0));
+                addCranialBone(jawTip, mandibularMid, cranialBarRadius * 1.62);
+                addCranialBone(mandibularMid, jawHinge, cranialBarRadius * 1.72);
+                addCranialBone(mandibularMid, surangularMid, cranialBarRadius * 1.05);
+                addCranialBone(surangularMid, jawHinge, cranialBarRadius * 1.34);
+                if (skeletalProfile.showCranialModules) {
+                  var coronoidBase = new THREE.Vector3().copy(mandibularMid).lerp(jawHinge, 0.58).add(vec(0, skullHeight * 0.06, 0));
+                  var coronoidTip = coronoidBase.clone().add(vec(skullLength * 0.035, skullHeight * 0.27 * skeletalProfile.coronoidScale, 0));
+                  addSkeletonCone(coronoidBase, coronoidTip, cranialBarRadius * 2.12, cranialAccentMat);
+                  addCranialBone(surangularMid, coronoidTip, cranialBarRadius * 0.94, cranialAccentMat);
+                  var retroarticularTip = jawHinge.clone().add(neckAxis.clone().multiplyScalar(skullLength * 0.24 * skeletalProfile.retroarticularScale)).add(vec(0, -skullHeight * 0.045, 0));
+                  addCranialBone(jawHinge, retroarticularTip, cranialBarRadius * 1.34, cranialAccentMat);
+                  addSkeletonEllipsoid(retroarticularTip, vec(cranialBarRadius * 1.55, cranialBarRadius * 1.18, cranialBarRadius * 1.62), cranialAccentMat);
+                }
+                var quadrateCondyle = addSkeletonEllipsoid(jawHinge, vec(cranialBarRadius * 2.8, cranialBarRadius * 2.0, cranialBarRadius * 3.1), jawJointMat);
+                if (quadrateCondyle) quadrateCondyle.renderOrder = 14;
+
+                var hyoidBack = new THREE.Vector3().copy(jawHinge).lerp(jawTip, 0.25).add(vec(0, -skullHeight * 0.16, -skullSide * skullDepth * 0.24));
+                var hyoidFront = new THREE.Vector3().copy(jawHinge).lerp(jawTip, 0.70).add(vec(0, -skullHeight * 0.13, -skullSide * skullDepth * 0.28));
+                addCranialBone(hyoidBack, hyoidFront, cranialBarRadius * 0.52 * skeletalProfile.hyoidScale, hyoidMat);
+                if (skullSide > 0 && skeletalProfile.hyoidScale > 1) {
+                  addCranialBone(hyoidFront.clone().add(vec(0, 0, -skullDepth * 0.16)), hyoidFront.clone().add(vec(0, 0, skullDepth * 0.16)), cranialBarRadius * 0.46 * skeletalProfile.hyoidScale, hyoidMat);
+                }
+                if (skeletalProfile.mandibularFenestra) {
+                  var mandibularFenestra = addSkeletonEllipsoid(new THREE.Vector3().copy(jawHinge).lerp(jawTip, 0.43), vec(skullLength * 0.13, skullHeight * 0.13, Math.max(0.007, skullDepth * 0.08)), skeletonCavityMat);
+                  if (mandibularFenestra) mandibularFenestra.renderOrder = 13;
+                }
+                if (skeletalProfile.toothed) {
+                  var toothCount = skeletalProfile.toothProfile === 'conical' ? 9 : (/pencil|spoon/.test(skeletalProfile.toothProfile) ? 5 : 7);
+                  var toothStart = isSauropod ? 0.48 : 0.04;
+                  for (var toothIndex = 1; toothIndex <= toothCount; toothIndex++) {
+                    var toothT = toothStart + (toothIndex / (toothCount + 1)) * (1 - toothStart);
                     var toothBase = new THREE.Vector3().copy(head).lerp(snout, toothT).add(vec(0, -skullHeight * 0.34, skullSide * skullDepth * 0.48));
-                    var toothLength = Math.max(0.025, ht * 0.010) * (0.72 + Math.sin(toothT * Math.PI) * 0.38);
-                    addSkeletonCone(toothBase, toothBase.clone().add(vec(-toothLength * 0.18, -toothLength, 0)), Math.max(0.006, toothLength * 0.22), toothMat);
+                    var toothScale = skeletalProfile.toothProfile === 'incrassate' ? 1.18 : (/pencil|spoon|leaf/.test(skeletalProfile.toothProfile) ? 0.72 : 1);
+                    var toothLength = Math.max(0.025, ht * 0.010) * toothScale * (0.72 + Math.sin(toothT * Math.PI) * 0.38);
+                    var toothCurve = skeletalProfile.toothProfile === 'conical' ? -0.03 : (skeletalProfile.toothProfile === 'incrassate' ? -0.08 : -0.18);
+                    var toothRadiusScale = skeletalProfile.toothProfile === 'incrassate' ? 0.34 : (skeletalProfile.toothProfile === 'spoon' ? 0.30 : (skeletalProfile.toothProfile === 'pencil' ? 0.14 : 0.22));
+                    var toothMesh = addSkeletonCone(toothBase, toothBase.clone().add(vec(toothLength * toothCurve, -toothLength, 0)), Math.max(0.005, toothLength * toothRadiusScale), toothMat);
+                    if (toothMesh) toothMesh.scale.z = skeletalProfile.toothProfile === 'spoon' ? 1.28 : (skeletalProfile.toothProfile === 'conical' ? 0.92 : (skeletalProfile.toothProfile === 'incrassate' ? 0.78 : 0.48));
                   }
                 }
               });
@@ -6549,27 +7622,58 @@ window.StemLab = window.StemLab || {
               }
 
               var ribCount = isSauropod ? 10 : 9;
+              var ribDistalAnchors = [];
+              var uncinateCaudalSign = hip.x >= shoulder.x ? 1 : -1;
               for (var ribIndex = 0; ribIndex < ribCount; ribIndex++) {
                 var ribT = (ribIndex + 1) / (ribCount + 1);
                 var ribSpine = new THREE.Vector3().copy(shoulder).lerp(hip, ribT);
                 var ribFullness = 0.72 + Math.sin(ribT * Math.PI) * 0.30;
+                ribDistalAnchors[ribIndex] = [null, null];
                 [-1, 1].forEach(function (ribSide) {
-                  var ribUpper = ribSpine.clone().add(vec(0, -bodyHeight * 0.10, ribSide * bodyDepth * 0.58 * ribFullness));
-                  var ribLower = ribSpine.clone().add(vec(0, -bodyHeight * 0.68, ribSide * bodyDepth * 0.76 * ribFullness));
-                  var ribVentral = ribSpine.clone().add(vec(0, -bodyHeight * 0.92, ribSide * bodyDepth * 0.24));
                   var ribBoneRadius = Math.max(0.007, ht * 0.0032);
-                  addBone(ribSpine, ribUpper, ribBoneRadius);
-                  addBone(ribUpper, ribLower, ribBoneRadius * 0.88);
-                  addBone(ribLower, ribVentral, ribBoneRadius * 0.72);
+                  var capitulumFacet = ribSpine.clone().add(vec(0, -bodyHeight * 0.025, ribSide * Math.max(0.018, bodyDepth * 0.070)));
+                  var tuberculumFacet = ribSpine.clone().add(vec(0, bodyHeight * 0.070, ribSide * Math.max(0.040, bodyDepth * 0.205)));
+                  var ribNeck = ribSpine.clone().add(vec(0, -bodyHeight * 0.025, ribSide * bodyDepth * 0.34 * ribFullness));
+                  var ribUpper = ribSpine.clone().add(vec(0, -bodyHeight * 0.13, ribSide * bodyDepth * 0.60 * ribFullness));
+                  var ribLateral = ribSpine.clone().add(vec(0, -bodyHeight * 0.47, ribSide * bodyDepth * 0.78 * ribFullness));
+                  var ribLower = ribSpine.clone().add(vec(0, -bodyHeight * 0.74, ribSide * bodyDepth * 0.65 * ribFullness));
+                  var ribVentral = ribSpine.clone().add(vec(0, -bodyHeight * 0.92, ribSide * bodyDepth * 0.24));
+                  if (skeletalProfile.ribHeadDetail) {
+                    addTaperedBoneSegment(capitulumFacet, ribNeck, ribBoneRadius * 1.20, ribBoneRadius, boneMat);
+                    addTaperedBoneSegment(tuberculumFacet, ribNeck, ribBoneRadius * 1.05, ribBoneRadius, boneMat);
+                    addSkeletonEllipsoid(capitulumFacet, vec(ribBoneRadius * 1.65, ribBoneRadius * 1.32, ribBoneRadius * 1.45), jointMat);
+                    addSkeletonEllipsoid(tuberculumFacet, vec(ribBoneRadius * 1.45, ribBoneRadius * 1.18, ribBoneRadius * 1.52), jointMat);
+                  } else {
+                    addBone(ribSpine, ribNeck, ribBoneRadius);
+                  }
+                  addCurvedBone([ribNeck, ribUpper, ribLateral, ribLower, ribVentral], ribBoneRadius, ribBoneRadius * 0.55, boneMat);
+                  ribDistalAnchors[ribIndex][ribSide > 0 ? 1 : 0] = ribVentral.clone();
+                  if (skeletalProfile.uncinateProcesses && ribIndex >= 1 && ribIndex < 1 + skeletalProfile.uncinateCount) {
+                    var uncinateBase = new THREE.Vector3().copy(ribUpper).lerp(ribLateral, 0.54);
+                    var uncinateTip = uncinateBase.clone().add(vec(uncinateCaudalSign * Math.max(0.11, bodyLen * 0.12), bodyHeight * 0.12, -ribSide * Math.max(0.010, bodyDepth * 0.035)));
+                    addGirdleBlade(uncinateBase, uncinateTip, Math.max(0.018, ht * 0.0065), Math.max(0.005, ht * 0.0018), boneMat);
+                  }
                 });
               }
-              for (var gastralIndex = 1; gastralIndex <= 4; gastralIndex++) {
-                var gastralT = gastralIndex / 5;
-                var gastralCenter = new THREE.Vector3().copy(shoulder).lerp(hip, gastralT).add(vec(0, -bodyHeight * 0.92, 0));
-                addBone(gastralCenter.clone().add(vec(0, 0, -bodyDepth * 0.34)), gastralCenter.clone().add(vec(0, 0, bodyDepth * 0.34)), Math.max(0.006, ht * 0.0025));
+              if (skeletalProfile.gastralia) {
+                for (var gastralIndex = 1; gastralIndex <= 5; gastralIndex++) {
+                  var gastralT = gastralIndex / 6;
+                  var gastralCenter = new THREE.Vector3().copy(shoulder).lerp(hip, gastralT).add(vec(0, -bodyHeight * (0.90 + gastralT * 0.025), 0));
+                  var gastralSweep = bodyDepth * (0.34 + Math.sin(gastralT * Math.PI) * 0.10);
+                  var gastralRadius = Math.max(0.005, ht * 0.0023);
+                  var leftGastralOuter = gastralCenter.clone().add(vec(len * 0.010, 0, -gastralSweep));
+                  var leftGastralBend = gastralCenter.clone().add(vec(-len * 0.008, -Math.max(0.004, ht * 0.0015), -gastralSweep * 0.46));
+                  var leftGastralMedial = gastralCenter.clone().add(vec(len * 0.006, 0, Math.max(0.009, bodyDepth * 0.032)));
+                  var rightGastralOuter = gastralCenter.clone().add(vec(len * 0.010, 0, gastralSweep));
+                  var rightGastralBend = gastralCenter.clone().add(vec(-len * 0.008, -Math.max(0.004, ht * 0.0015), gastralSweep * 0.46));
+                  var rightGastralMedial = gastralCenter.clone().add(vec(-len * 0.006, -Math.max(0.003, ht * 0.0010), -Math.max(0.009, bodyDepth * 0.032)));
+                  addCurvedBone([leftGastralOuter, leftGastralBend, leftGastralMedial], gastralRadius * 0.72, gastralRadius, boneMat);
+                  addCurvedBone([rightGastralOuter, rightGastralBend, rightGastralMedial], gastralRadius * 0.72, gastralRadius, boneMat);
+                  addSkeletonEllipsoid(gastralCenter, vec(gastralRadius * 1.55, gastralRadius * 0.68, gastralRadius * 1.80), costalJointMat);
+                }
               }
 
-              var cervicalRibCount = isSauropod ? 8 : 4;
+              var cervicalRibCount = skeletalProfile.cervicalRibCount;
               for (var cervicalRibIndex = 1; cervicalRibIndex <= cervicalRibCount; cervicalRibIndex++) {
                 var cervicalRibT = cervicalRibIndex / (cervicalRibCount + 1);
                 var cervicalRibBase = new THREE.Vector3().copy(shoulder).lerp(head, cervicalRibT);
@@ -6579,30 +7683,135 @@ window.StemLab = window.StemLab || {
                   addBone(cervicalRibBase, cervicalRibTip, Math.max(0.005, ht * 0.0020));
                 });
               }
-              for (var chevronIndex = 1; chevronIndex <= 7; chevronIndex++) {
-                var chevronT = chevronIndex / 9;
-                var chevronBase = new THREE.Vector3().copy(hip).lerp(tail, chevronT);
-                var chevronLength = Math.max(0.055, bodyHeight * 0.30 * (1 - chevronT * 0.72));
-                addBone(chevronBase, chevronBase.clone().add(vec(len * 0.005, -chevronLength, 0)), Math.max(0.005, ht * 0.0022));
+              if (skeletalProfile.axialPneumaticity) {
+                for (var pneumaticIndex = 1; pneumaticIndex <= skeletalProfile.pneumaticCervicals; pneumaticIndex++) {
+                  var pneumaticT = pneumaticIndex / (skeletalProfile.pneumaticCervicals + 1);
+                  var pneumaticCenter = new THREE.Vector3().copy(shoulder).lerp(head, pneumaticT);
+                  [-1, 1].forEach(function (pneumaticSide) {
+                    var pneumaticSideOffset = pneumaticSide * Math.max(0.020, ht * 0.008);
+                    var pneumaticFossa = addSkeletonEllipsoid(pneumaticCenter.clone().add(vec(0, 0, pneumaticSideOffset)), vec(Math.max(0.025, ht * 0.010), Math.max(0.016, ht * 0.006), Math.max(0.008, ht * 0.003)), skeletonCavityMat);
+                    if (pneumaticFossa) pneumaticFossa.renderOrder = 13;
+                    var pneumaticRim = new THREE.Mesh(new THREE.TorusGeometry(Math.max(0.016, ht * 0.0065), Math.max(0.0025, ht * 0.0010), 6, 20), pneumaticMarkerMat);
+                    pneumaticRim.position.copy(pneumaticCenter).add(vec(0, 0, pneumaticSideOffset * 1.18));
+                    pneumaticRim.rotation.y = Math.PI / 2;
+                    pneumaticRim.renderOrder = 14;
+                    model.add(pneumaticRim);
+                  });
+                }
+                for (var dorsalPneumaticIndex = 1; dorsalPneumaticIndex <= skeletalProfile.pneumaticDorsals; dorsalPneumaticIndex++) {
+                  var dorsalPneumaticT = dorsalPneumaticIndex / (skeletalProfile.pneumaticDorsals + 1);
+                  var dorsalPneumaticCenter = new THREE.Vector3().copy(shoulder).lerp(hip, dorsalPneumaticT);
+                  [-1, 1].forEach(function (dorsalPneumaticSide) {
+                    var dorsalSideOffset = dorsalPneumaticSide * Math.max(0.024, ht * 0.0095);
+                    var dorsalFossa = addSkeletonEllipsoid(dorsalPneumaticCenter.clone().add(vec(0, 0, dorsalSideOffset)), vec(Math.max(0.028, ht * 0.011), Math.max(0.017, ht * 0.0065), Math.max(0.008, ht * 0.003)), skeletonCavityMat);
+                    if (dorsalFossa) dorsalFossa.renderOrder = 13;
+                    var dorsalRim = new THREE.Mesh(new THREE.TorusGeometry(Math.max(0.017, ht * 0.007), Math.max(0.0025, ht * 0.0010), 6, 20), pneumaticMarkerMat);
+                    dorsalRim.position.copy(dorsalPneumaticCenter).add(vec(0, 0, dorsalSideOffset * 1.18));
+                    dorsalRim.rotation.y = Math.PI / 2;
+                    dorsalRim.renderOrder = 14;
+                    model.add(dorsalRim);
+                  });
+                }
               }
-              var sacrumHalf = Math.max(0.10, bodyDepth * 0.54);
-              for (var sacralIndex = 0; sacralIndex < 5; sacralIndex++) {
-                var sacralX = hip.x + (sacralIndex - 2) * Math.max(0.035, len * 0.012);
-                var sacralCenter = vec(sacralX, hip.y, 0);
-                addSkeletonEllipsoid(sacralCenter, vec(Math.max(0.045, ht * 0.016), Math.max(0.035, ht * 0.013), Math.max(0.040, ht * 0.014)), boneMat);
-                addBone(sacralCenter, sacralCenter.clone().add(vec(0, 0, sacrumHalf)), Math.max(0.012, ht * 0.0045));
-                addBone(sacralCenter, sacralCenter.clone().add(vec(0, 0, -sacrumHalf)), Math.max(0.012, ht * 0.0045));
+              for (var chevronIndex = 1; chevronIndex <= skeletalProfile.chevronCount; chevronIndex++) {
+                var chevronT = chevronIndex / (skeletalProfile.chevronCount + 2);
+                var chevronBase = new THREE.Vector3().copy(hip).lerp(tail, chevronT);
+                var chevronLength = Math.max(0.055, bodyHeight * 0.32 * (1 - chevronT * 0.72));
+                var chevronRadius = Math.max(0.004, ht * 0.0020) * (1 - chevronT * 0.28);
+                var chevronRootSpread = Math.max(0.012, ht * 0.0050) * (1 - chevronT * 0.52);
+                var chevronLeftRoot = chevronBase.clone().add(vec(0, -chevronLength * 0.05, -chevronRootSpread));
+                var chevronRightRoot = chevronBase.clone().add(vec(0, -chevronLength * 0.05, chevronRootSpread));
+                var chevronJunction = chevronBase.clone().add(vec(len * 0.002, -chevronLength * 0.30, 0));
+                var chevronTip = chevronBase.clone().add(vec(len * 0.006, -chevronLength, 0));
+                addTaperedBoneSegment(chevronLeftRoot, chevronJunction, chevronRadius * 1.10, chevronRadius, boneMat);
+                addTaperedBoneSegment(chevronRightRoot, chevronJunction, chevronRadius * 1.10, chevronRadius, boneMat);
+                addTaperedBoneSegment(chevronJunction, chevronTip, chevronRadius, chevronRadius * 0.52, boneMat);
+                addSkeletonEllipsoid(chevronLeftRoot, vec(chevronRadius * 1.48, chevronRadius * 0.78, chevronRadius * 1.18), jointMat);
+                addSkeletonEllipsoid(chevronRightRoot, vec(chevronRadius * 1.48, chevronRadius * 0.78, chevronRadius * 1.18), jointMat);
+              }
+              if (skeletalProfile.tailBracing) {
+                [-1, 1].forEach(function (braceSide) {
+                  [-1, 1].forEach(function (braceLevel) {
+                    for (var tailBraceIndex = 0; tailBraceIndex < 6; tailBraceIndex++) {
+                      var braceStartT = 0.12 + tailBraceIndex * 0.105;
+                      var braceEndT = Math.min(0.94, braceStartT + 0.31);
+                      var braceStart = new THREE.Vector3().copy(hip).lerp(tail, braceStartT).add(vec(0, braceLevel * Math.max(0.012, ht * 0.0045), braceSide * Math.max(0.018, bodyDepth * 0.075)));
+                      var braceEnd = new THREE.Vector3().copy(hip).lerp(tail, braceEndT).add(vec(0, braceLevel * Math.max(0.008, ht * 0.0030), braceSide * Math.max(0.012, bodyDepth * 0.050)));
+                      addBone(braceStart, braceEnd, Math.max(0.0035, ht * 0.0014));
+                    }
+                  });
+                });
+              }
+              if (skeletalProfile.sacralDetail) {
+                var sacrumHalf = Math.max(0.12, bodyDepth * 0.66);
+                var sacralSpacing = Math.max(0.030, len * 0.010);
+                var previousSacralCenter = null;
+                for (var sacralIndex = 0; sacralIndex < skeletalProfile.sacralCount; sacralIndex++) {
+                  var sacralT = skeletalProfile.sacralCount > 1 ? sacralIndex / (skeletalProfile.sacralCount - 1) : 0.5;
+                  var sacralX = hip.x + (sacralIndex - (skeletalProfile.sacralCount - 1) * 0.5) * sacralSpacing;
+                  var sacralCenter = vec(sacralX, hip.y, 0);
+                  var sacralCentrum = addSkeletonEllipsoid(sacralCenter, vec(Math.max(0.050, ht * 0.018), Math.max(0.036, ht * 0.013), Math.max(0.042, ht * 0.015)), boneMat);
+                  if (sacralCentrum) sacralCentrum.rotation.z = (0.5 - sacralT) * 0.06;
+                  if (previousSacralCenter) addTaperedBoneSegment(previousSacralCenter, sacralCenter, Math.max(0.015, ht * 0.0055), Math.max(0.015, ht * 0.0055), jointMat);
+                  var sacralArchCenter = sacralCenter.clone().add(vec(0, Math.max(0.040, ht * 0.014), 0));
+                  addBone(sacralCenter.clone().add(vec(0, 0, -Math.max(0.020, ht * 0.007))), sacralArchCenter.clone().add(vec(0, 0, -Math.max(0.014, ht * 0.005))), Math.max(0.005, ht * 0.0019));
+                  addBone(sacralCenter.clone().add(vec(0, 0, Math.max(0.020, ht * 0.007))), sacralArchCenter.clone().add(vec(0, 0, Math.max(0.014, ht * 0.005))), Math.max(0.005, ht * 0.0019));
+                  var sacralSpineTip = sacralArchCenter.clone().add(vec((0.5 - sacralT) * sacralSpacing * 0.22, Math.max(0.070, ht * 0.026), 0));
+                  addTaperedBoneSegment(sacralArchCenter, sacralSpineTip, Math.max(0.010, ht * 0.0037), Math.max(0.005, ht * 0.0019), boneMat);
+                  [-1, 1].forEach(function (sacralSide) {
+                    var sacralRibRoot = sacralCenter.clone().add(vec(0, Math.max(0.010, ht * 0.0038), sacralSide * Math.max(0.020, bodyDepth * 0.10)));
+                    var sacralRibShoulder = sacralCenter.clone().add(vec((sacralT - 0.5) * sacralSpacing * 0.20, Math.max(0.025, bodyHeight * 0.075), sacralSide * sacrumHalf * 0.58));
+                    var sacralIliacContact = sacralCenter.clone().add(vec((sacralT - 0.5) * sacralSpacing * 0.32, Math.max(0.020, bodyHeight * 0.060), sacralSide * sacrumHalf));
+                    addTaperedBoneSegment(sacralRibRoot, sacralRibShoulder, Math.max(0.014, ht * 0.0052), Math.max(0.020, ht * 0.0074), boneMat);
+                    addGirdleBlade(sacralRibShoulder, sacralIliacContact, Math.max(0.030, bodyHeight * 0.095), Math.max(0.014, bodyDepth * 0.045), boneMat);
+                    addSkeletonEllipsoid(sacralIliacContact, vec(Math.max(0.026, ht * 0.0095), Math.max(0.018, ht * 0.0065), Math.max(0.012, bodyDepth * 0.040)), jointMat);
+                  });
+                  previousSacralCenter = sacralCenter;
+                }
               }
 
               var shoulderHalf = Math.max(0.13, bodyDepth * 0.66);
               [-1, 1].forEach(function (girdleSide) {
                 var shoulderSocket = shoulder.clone().add(vec(0, 0, girdleSide * shoulderHalf));
-                var scapulaTip = shoulder.clone().add(vec(len * 0.095, bodyHeight * 0.58, girdleSide * shoulderHalf * 0.72));
-                var coracoidTip = shoulder.clone().add(vec(-len * 0.025, -bodyHeight * 0.62, girdleSide * shoulderHalf * 0.84));
-                addBone(shoulderSocket, scapulaTip, Math.max(0.024, ht * 0.0085));
-                addBone(shoulderSocket, coracoidTip, Math.max(0.021, ht * 0.0075));
-                addSkeletonEllipsoid(shoulderSocket, vec(Math.max(0.055, ht * 0.020), Math.max(0.070, ht * 0.025), Math.max(0.032, ht * 0.012)), boneMat);
+                var scapulaMid = shoulder.clone().add(vec(len * 0.046, bodyHeight * 0.30, girdleSide * shoulderHalf * 0.80));
+                var scapulaTip = shoulder.clone().add(vec(len * 0.115, bodyHeight * 0.56, girdleSide * shoulderHalf * 0.68));
+                var scapularWidth = Math.max(0.050, bodyHeight * 0.15) * skeletalProfile.scapularBladeScale;
+                addTaperedBoneSegment(shoulderSocket, scapulaMid, Math.max(0.034, ht * 0.012), Math.max(0.025, ht * 0.009), boneMat);
+                addGirdleBlade(scapulaMid, scapulaTip, scapularWidth, Math.max(0.018, bodyDepth * 0.055), boneMat);
+                var coracoidCenter = shoulder.clone().add(vec(-len * 0.008, -bodyHeight * 0.31, girdleSide * shoulderHalf * 0.90));
+                var coracoidTip = shoulder.clone().add(vec(-len * 0.025, -bodyHeight * 0.61, girdleSide * shoulderHalf * 0.82));
+                addGirdleBlade(shoulderSocket, coracoidTip, Math.max(0.052, bodyHeight * 0.14) * skeletalProfile.coracoidPlateScale, Math.max(0.020, bodyDepth * 0.065), boneMat);
+                addTaperedBoneSegment(shoulderSocket, coracoidCenter, Math.max(0.030, ht * 0.011), Math.max(0.020, ht * 0.007), boneMat);
+                var glenoidRim = new THREE.Mesh(new THREE.TorusGeometry(Math.max(0.042, ht * 0.015), Math.max(0.006, ht * 0.0023), 7, 22), boneMat);
+                glenoidRim.position.copy(shoulderSocket).add(vec(0, -Math.max(0.008, ht * 0.003), girdleSide * Math.max(0.026, bodyDepth * 0.075)));
+                glenoidRim.scale.set(1.10, 0.90, 1);
+                glenoidRim.castShadow = true;
+                model.add(glenoidRim);
+                var glenoidCavity = addSkeletonEllipsoid(glenoidRim.position.clone().add(vec(0, 0, girdleSide * Math.max(0.004, ht * 0.0015))), vec(Math.max(0.033, ht * 0.012), Math.max(0.025, ht * 0.009), Math.max(0.008, ht * 0.003)), skeletonCavityMat);
+                if (glenoidCavity) glenoidCavity.renderOrder = 13;
+                var coracoidForamen = addSkeletonEllipsoid(coracoidCenter.clone().add(vec(0, 0, girdleSide * Math.max(0.024, bodyDepth * 0.070))), vec(Math.max(0.014, ht * 0.005), Math.max(0.020, ht * 0.007), Math.max(0.006, ht * 0.0022)), skeletonCavityMat);
+                if (coracoidForamen) coracoidForamen.renderOrder = 13;
               });
+              if (skeletalProfile.sternalPlates) {
+                [-1, 1].forEach(function (sternalSide) {
+                  var sternalPlate = addSkeletonEllipsoid(shoulder.clone().add(vec(-len * 0.010, -bodyHeight * 0.58, sternalSide * shoulderHalf * 0.32)), vec(Math.max(0.080, len * 0.020), Math.max(0.018, ht * 0.007), Math.max(0.045, bodyDepth * 0.18)), boneMat);
+                  if (sternalPlate) sternalPlate.rotation.x = sternalSide * 0.10;
+                });
+              }
+              if (skeletalProfile.sternalPlates) {
+                for (var sternalRibIndex = 0; sternalRibIndex < skeletalProfile.sternalRibCount; sternalRibIndex++) {
+                  var sternalCostalIndex = Math.min(ribCount - 1, sternalRibIndex + 1);
+                  [-1, 1].forEach(function (sternalRibSide) {
+                    var sternalSideIndex = sternalRibSide > 0 ? 1 : 0;
+                    var sternalCostalAnchor = ribDistalAnchors[sternalCostalIndex] && ribDistalAnchors[sternalCostalIndex][sternalSideIndex];
+                    if (!sternalCostalAnchor) return;
+                    var sternalRibAnchor = shoulder.clone().add(vec(len * (0.005 + sternalRibIndex * 0.014), -bodyHeight * 0.60, sternalRibSide * shoulderHalf * 0.30));
+                    var sternalRibBend = new THREE.Vector3().copy(sternalCostalAnchor).lerp(sternalRibAnchor, 0.52).add(vec(len * 0.004, -bodyHeight * 0.025, -sternalRibSide * bodyDepth * 0.035));
+                    addSkeletonEllipsoid(sternalCostalAnchor, vec(Math.max(0.010, ht * 0.0038), Math.max(0.008, ht * 0.0030), Math.max(0.009, ht * 0.0034)), costalJointMat);
+                    addCurvedBone([sternalCostalAnchor, sternalRibBend, sternalRibAnchor], Math.max(0.005, ht * 0.0022), Math.max(0.004, ht * 0.0017), boneMat);
+                  });
+                }
+              }
               if (isTheropod) {
                 var furculaCenter = shoulder.clone().add(vec(-len * 0.028, -bodyHeight * 0.34, 0));
                 addBone(shoulder.clone().add(vec(-len * 0.008, -bodyHeight * 0.05, -shoulderHalf * 0.62)), furculaCenter, Math.max(0.010, ht * 0.0038));
@@ -6613,16 +7822,40 @@ window.StemLab = window.StemLab || {
               var pelvisHalf = Math.max(0.16, bodyDepth * 0.76);
               var pelvisLeft = vec(hip.x, hip.y, -pelvisHalf);
               var pelvisRight = vec(hip.x, hip.y, pelvisHalf);
-              addBone(pelvisLeft, pelvisRight, Math.max(0.040, ht * 0.014));
+              addTaperedBoneSegment(pelvisLeft, pelvisRight, Math.max(0.042, ht * 0.015), Math.max(0.042, ht * 0.015), boneMat);
               [-1, 1].forEach(function (pelvisSide) {
                 var hipSocket = hip.clone().add(vec(0, 0, pelvisSide * pelvisHalf));
-                var iliumTip = hip.clone().add(vec(len * 0.105, bodyHeight * 0.22, pelvisSide * pelvisHalf * 0.88));
-                var pubisTip = hip.clone().add(vec(-len * 0.035, -Math.max(0.18, hip.y * 0.44), pelvisSide * pelvisHalf * 0.62));
-                var ischiumTip = hip.clone().add(vec(len * 0.115, -Math.max(0.16, hip.y * 0.34), pelvisSide * pelvisHalf * 0.58));
-                addSkeletonEllipsoid(hipSocket, vec(Math.max(0.075, ht * 0.028), Math.max(0.060, ht * 0.022), Math.max(0.045, ht * 0.017)), boneMat);
-                addBone(hipSocket, iliumTip, Math.max(0.030, ht * 0.0105));
-                addBone(hipSocket, pubisTip, Math.max(0.023, ht * 0.0080));
-                addBone(hipSocket, ischiumTip, Math.max(0.022, ht * 0.0075));
+                var iliumCrown = hip.clone().add(vec(0, bodyHeight * 0.24, pelvisSide * pelvisHalf * 0.90));
+                var iliumAnterior = hip.clone().add(vec(-len * 0.112, bodyHeight * 0.18, pelvisSide * pelvisHalf * 0.86));
+                var iliumPosterior = hip.clone().add(vec(len * 0.124, bodyHeight * 0.22, pelvisSide * pelvisHalf * 0.86));
+                var iliacBladeWidth = Math.max(0.055, bodyHeight * 0.17);
+                addGirdleBlade(iliumAnterior, iliumCrown, iliacBladeWidth, Math.max(0.020, bodyDepth * 0.060), boneMat);
+                addGirdleBlade(iliumCrown, iliumPosterior, iliacBladeWidth * 0.92, Math.max(0.021, bodyDepth * 0.064), boneMat);
+                var pubisOffsetX = skeletalProfile.pubisMode === 'posterior' ? len * 0.105 : (skeletalProfile.pubisMode === 'vertical' ? len * 0.012 : -len * 0.050);
+                var pubisTip = hip.clone().add(vec(pubisOffsetX * skeletalProfile.pubisScale, -Math.max(0.18, hip.y * 0.44) * skeletalProfile.pubisScale, pelvisSide * pelvisHalf * 0.62));
+                var ischiumTip = hip.clone().add(vec(len * 0.120, -Math.max(0.16, hip.y * 0.34), pelvisSide * pelvisHalf * 0.58));
+                var pubicPeduncle = hipSocket.clone().add(vec(-len * 0.014, -bodyHeight * 0.13, -pelvisSide * pelvisHalf * 0.07));
+                var ischialPeduncle = hipSocket.clone().add(vec(len * 0.018, -bodyHeight * 0.12, -pelvisSide * pelvisHalf * 0.06));
+                addGirdleBlade(hipSocket, pubicPeduncle, Math.max(0.034, ht * 0.012), Math.max(0.020, bodyDepth * 0.060), boneMat);
+                addGirdleBlade(hipSocket, ischialPeduncle, Math.max(0.036, ht * 0.013), Math.max(0.020, bodyDepth * 0.060), boneMat);
+                addTaperedBoneSegment(pubicPeduncle, pubisTip, Math.max(0.022, ht * 0.0080) * skeletalProfile.pubisScale, Math.max(0.012, ht * 0.0048) * skeletalProfile.pubisScale, boneMat);
+                addTaperedBoneSegment(ischialPeduncle, ischiumTip, Math.max(0.026, ht * 0.0090), Math.max(0.015, ht * 0.0055), boneMat);
+                var acetabularRim = new THREE.Mesh(new THREE.TorusGeometry(Math.max(0.050, ht * 0.018), Math.max(0.007, ht * 0.0027), 8, 24), boneMat);
+                acetabularRim.position.copy(hipSocket).add(vec(0, 0, pelvisSide * Math.max(0.030, bodyDepth * 0.085)));
+                acetabularRim.scale.set(1.16, 0.94, 1);
+                acetabularRim.castShadow = true;
+                model.add(acetabularRim);
+                var acetabularOpening = addSkeletonEllipsoid(acetabularRim.position.clone().add(vec(0, 0, pelvisSide * Math.max(0.004, ht * 0.0016))), vec(Math.max(0.041, ht * 0.015), Math.max(0.033, ht * 0.012), Math.max(0.010, ht * 0.004)), skeletonCavityMat);
+                if (acetabularOpening) acetabularOpening.renderOrder = 13;
+                var shelfStart = hipSocket.clone().add(vec(-len * 0.038, bodyHeight * 0.12, pelvisSide * Math.max(0.020, bodyDepth * 0.070)));
+                var shelfEnd = hipSocket.clone().add(vec(len * 0.046, bodyHeight * 0.13, pelvisSide * Math.max(0.026, bodyDepth * 0.090) * skeletalProfile.supracetabularShelfScale));
+                addGirdleBlade(shelfStart, shelfEnd, Math.max(0.024, ht * 0.009) * skeletalProfile.supracetabularShelfScale, Math.max(0.012, bodyDepth * 0.040), boneMat);
+                var obturatorProcess = new THREE.Vector3().copy(ischialPeduncle).lerp(ischiumTip, 0.38);
+                addTaperedBoneSegment(obturatorProcess, obturatorProcess.clone().add(vec(-len * 0.022, -bodyHeight * 0.045, pelvisSide * Math.max(0.010, bodyDepth * 0.035))), Math.max(0.011, ht * 0.0042), Math.max(0.006, ht * 0.0024), boneMat);
+                if (skeletalProfile.prepubicProcess) {
+                  var prepubicTip = hip.clone().add(vec(-len * 0.138, -bodyHeight * 0.08, pelvisSide * pelvisHalf * 0.72));
+                  addGirdleBlade(pubicPeduncle, prepubicTip, Math.max(0.026, ht * 0.0095), Math.max(0.014, bodyDepth * 0.045), boneMat);
+                }
               });
 
               function addAnatomyCallout(label, anchor, offset) {
@@ -6640,84 +7873,202 @@ window.StemLab = window.StemLab || {
 
             function addDigitFan(root, front, sideSign) {
               if (!props.showSkeleton) return;
-              var robustFoot = /Sauropod|Ceratops|Ankylosaur|Hadrosaur/i.test(cladeName);
-              var digitCount = front ? (/Sauropod|Ceratops|Ankylosaur/i.test(cladeName) ? 5 : 4) : (robustFoot ? 4 : 3);
+              var digitCount = front ? skeletalProfile.manualDigits : skeletalProfile.pedalDigits;
+              var ungualCount = front ? skeletalProfile.manualUnguals : skeletalProfile.pedalUnguals;
+              var phalangealFormula = front ? skeletalProfile.manualPhalanxFormula : skeletalProfile.pedalPhalanxFormula;
               var baseLength = Math.max(0.10, len * (front ? 0.018 : 0.026)) * (isSauropod ? 0.76 : 1);
+              if (front && skeletalProfile.columnarManus) {
+                var manusRadius = Math.max(0.045, bodyDepth * 0.16);
+                var carpalBlock = addSkeletonEllipsoid(root.clone().add(vec(0, Math.max(0.030, ht * 0.012), 0)), vec(manusRadius * 0.72, Math.max(0.025, ht * 0.010), manusRadius * 1.08), boneMat);
+                if (carpalBlock) carpalBlock.rotation.y = sideSign * 0.10;
+                for (var metacarpalIndex = 0; metacarpalIndex < digitCount; metacarpalIndex++) {
+                  var manusAngle = -Math.PI * 0.62 + (Math.PI * 1.24 * metacarpalIndex / Math.max(1, digitCount - 1));
+                  var manusOffsetX = Math.cos(manusAngle) * manusRadius * 0.34;
+                  var manusOffsetZ = Math.sin(manusAngle) * manusRadius;
+                  var metacarpalTop = root.clone().add(vec(manusOffsetX + baseLength * 0.10, Math.max(0.060, ht * 0.024), manusOffsetZ * 0.84));
+                  var metacarpalBase = root.clone().add(vec(manusOffsetX - baseLength * 0.16, 0.010, manusOffsetZ * 1.04));
+                  addTaperedBoneSegment(metacarpalTop, metacarpalBase, Math.max(0.014, ht * 0.0052), Math.max(0.010, ht * 0.0038), boneMat);
+                  addLimbJoint(metacarpalBase, new THREE.Vector3().subVectors(metacarpalBase, metacarpalTop), Math.max(0.013, ht * 0.0048), 1.10);
+                  if (metacarpalIndex < ungualCount) {
+                    var manusClawTip = metacarpalBase.clone().add(vec(-baseLength * 0.34, -Math.max(0.010, ht * 0.004), sideSign * manusOffsetZ * 0.05));
+                    addSkeletonCone(metacarpalBase, manusClawTip, Math.max(0.006, ht * 0.0024), toothMat);
+                    if (props.showBody) addKeratinCone(metacarpalBase, manusClawTip.clone().add(vec(-baseLength * 0.05, 0, 0)), Math.max(0.008, ht * 0.0031));
+                  }
+                }
+                return;
+              }
+              var compactSpread = front && skeletalProfile.compactManus ? 0.56 : 1;
               for (var digitIndex = 0; digitIndex < digitCount; digitIndex++) {
                 var digitOffset = digitIndex - (digitCount - 1) * 0.5;
-                var digitSpread = digitOffset * Math.max(0.045, bodyDepth * (front ? 0.14 : 0.19));
-                var digitLength = baseLength * (1 - Math.abs(digitOffset) * 0.10);
-                var sickleDigit = !front && /Dromaeosaur|Troodont/i.test(cladeName) && digitIndex === 1;
-                var knuckle = root.clone().add(vec(-digitLength * 0.44, sickleDigit ? Math.max(0.05, ht * 0.020) : 0.012, digitSpread * 0.58));
+                var digitSpread = digitOffset * Math.max(0.045, bodyDepth * (front ? 0.14 : 0.19)) * compactSpread;
+                var digitLength = baseLength * (1 - Math.abs(digitOffset) * 0.10) * (front && skeletalProfile.compactManus ? 0.86 : 1);
+                var sickleDigit = !front && /Dromaeosaur|Troodont/i.test(cladeName) && digitIndex === 0;
+                var metapodialEnd = root.clone().add(vec(-digitLength * 0.30, sickleDigit ? Math.max(0.040, ht * 0.016) : 0.014, digitSpread * 0.46));
+                addTaperedBoneSegment(root.clone().add(vec(0, Math.max(0.012, ht * 0.004), digitSpread * 0.10)), metapodialEnd, Math.max(0.010, ht * 0.0038), Math.max(0.008, ht * 0.0030), boneMat);
+                addLimbJoint(metapodialEnd, new THREE.Vector3().subVectors(metapodialEnd, root), Math.max(0.010, ht * 0.0038), 1.12);
                 var digitTip = root.clone().add(vec(-digitLength, sickleDigit ? Math.max(0.11, ht * 0.050) : 0.004, digitSpread));
-                addBone(root, knuckle, Math.max(0.008, ht * 0.0032));
-                addBone(knuckle, digitTip, Math.max(0.006, ht * 0.0025));
-                addJoint(knuckle, Math.max(0.010, ht * 0.0040));
+                var visibleUngual = digitIndex < ungualCount;
+                var formulaCount = phalangealFormula && phalangealFormula[digitIndex] ? phalangealFormula[digitIndex] : (visibleUngual ? 3 : 2);
+                var nonUngualCount = Math.max(0, Math.min(4, formulaCount - 1));
+                var previousPhalanx = metapodialEnd;
+                for (var phalanxIndex = 0; phalanxIndex < nonUngualCount; phalanxIndex++) {
+                  var phalanxT = (phalanxIndex + 1) / nonUngualCount;
+                  var phalanxEnd = new THREE.Vector3().copy(metapodialEnd).lerp(digitTip, phalanxT);
+                  phalanxEnd.y += Math.sin(Math.PI * phalanxT) * (sickleDigit ? Math.max(0.030, ht * 0.013) : Math.max(0.004, ht * 0.0016));
+                  var phalanxRadius = Math.max(0.005, ht * (0.0026 - phalanxIndex * 0.00025));
+                  addTaperedBoneSegment(previousPhalanx, phalanxEnd, phalanxRadius * 1.24, phalanxRadius, boneMat);
+                  if (phalanxIndex < nonUngualCount - 1) addLimbJoint(phalanxEnd, new THREE.Vector3().subVectors(phalanxEnd, previousPhalanx), phalanxRadius * 1.34, 1.18);
+                  previousPhalanx = phalanxEnd;
+                }
                 var clawTip = digitTip.clone().add(vec(-digitLength * (sickleDigit ? 0.30 : 0.18), sickleDigit ? -Math.max(0.10, ht * 0.045) : -Math.max(0.015, ht * 0.006), sideSign * digitSpread * 0.05));
-                var visibleUngual = isTheropod || (!front && digitIndex < 3) || (/Ceratops|Hadrosaur/i.test(cladeName) && digitIndex < 2);
-                if (visibleUngual) addSkeletonCone(digitTip, clawTip, Math.max(0.005, ht * 0.0022), toothMat);
-                else addSkeletonEllipsoid(digitTip, vec(Math.max(0.014, digitLength * 0.16), Math.max(0.009, ht * 0.0035), Math.max(0.010, bodyDepth * 0.035)), boneMat);
+                if (visibleUngual) {
+                  addSkeletonCone(digitTip, clawTip, Math.max(0.005, ht * 0.0022), toothMat);
+                  if (props.showBody) {
+                    var sheathTip = new THREE.Vector3().copy(digitTip).lerp(clawTip, 1.12);
+                    addKeratinCone(digitTip, sheathTip, Math.max(0.007, ht * 0.0030));
+                  }
+                } else {
+                  var terminalScale = skeletalProfile.hoofedDigits ? vec(Math.max(0.020, digitLength * 0.22), Math.max(0.007, ht * 0.0028), Math.max(0.018, bodyDepth * 0.055)) : vec(Math.max(0.014, digitLength * 0.16), Math.max(0.009, ht * 0.0035), Math.max(0.010, bodyDepth * 0.035));
+                  addSkeletonEllipsoid(digitTip, terminalScale, boneMat);
+                }
               }
-              if (!front && isTheropod) {
+              if (!front && skeletalProfile.hallux) {
                 var halluxBase = root.clone().add(vec(baseLength * 0.10, Math.max(0.025, ht * 0.010), 0));
                 var halluxTip = root.clone().add(vec(baseLength * 0.40, Math.max(0.015, ht * 0.006), sideSign * Math.max(0.025, bodyDepth * 0.08)));
-                addBone(halluxBase, halluxTip, Math.max(0.006, ht * 0.0024));
+                addTaperedBoneSegment(halluxBase, halluxTip, Math.max(0.007, ht * 0.0027), Math.max(0.005, ht * 0.0020), boneMat);
+                addLimbJoint(halluxBase, new THREE.Vector3().subVectors(halluxTip, halluxBase), Math.max(0.009, ht * 0.0034), 1.08);
               }
-            }
-            function addLeg(x, z, front) {
+            }            function addLeg(x, z, front) {
               var top = front ? shoulder : hip;
               var sideSign = z >= 0 ? 1 : -1;
+              var limbRobustness = front ? skeletalProfile.forelimbRobustness : skeletalProfile.hindlimbRobustness;
+              var columnFactor = skeletalProfile.columnarLimbs ? 0.34 : 1;
+              var distalScale = front ? 1 : skeletalProfile.distalLegScale;
               var topPoint = vec(x, top.y, z);
-              var knee = vec(x + (front ? -len * 0.012 : len * 0.030), Math.max(0.20, top.y * (front ? 0.52 : 0.55)), z + sideSign * Math.max(0.015, bodyDepth * 0.06));
-              var ankle = vec(x + (front ? -len * 0.026 : len * 0.060), Math.max(0.10, top.y * 0.16), z + sideSign * Math.max(0.045, bodyDepth * 0.12));
-              var foot = vec(x + (front ? -len * 0.050 : len * 0.082), 0.055, z + sideSign * Math.max(0.08, bodyDepth * 0.20));
-              var upperRadius = Math.max(0.034, ht * (front ? 0.011 : 0.013));
-              var lowerRadius = Math.max(0.028, ht * (front ? 0.009 : 0.011));
-              addBone(topPoint, knee, upperRadius);
-              addBone(knee, ankle, lowerRadius);
+              var knee = vec(x + (front ? -len * 0.012 : len * 0.030) * columnFactor, Math.max(0.20, top.y * (front ? 0.52 : (0.55 + (distalScale - 1) * 0.10))), z + sideSign * Math.max(0.015, bodyDepth * 0.06) * columnFactor);
+              var ankle = vec(x + (front ? -len * 0.026 : len * 0.060 * distalScale) * columnFactor, Math.max(0.10, top.y * 0.16 * distalScale), z + sideSign * Math.max(0.045, bodyDepth * 0.12) * columnFactor);
+              var foot = vec(x + (front ? -len * 0.050 : len * 0.082 * distalScale) * columnFactor, 0.055, z + sideSign * Math.max(0.08, bodyDepth * 0.20) * columnFactor);
+              var upperRadius = Math.max(0.034, ht * (front ? 0.011 : 0.013)) * limbRobustness;
+              var lowerRadius = Math.max(0.028, ht * (front ? 0.009 : 0.011)) * limbRobustness;
+              var upperBoneBow = front ? Math.min(0.008, skeletalProfile.longBoneBow) : skeletalProfile.longBoneBow;
+              addLongBone(topPoint, knee, upperRadius, upperBoneBow, front ? -sideSign : sideSign, front ? 1.42 : 1.30, front ? 1.22 : 1.34);
+              addLongBone(knee, ankle, lowerRadius, skeletalProfile.columnarLimbs ? 0.002 : upperBoneBow * 0.42, -sideSign, 1.34, 1.18);
               var pairedOffset = sideSign * Math.max(0.018, bodyDepth * 0.075);
-              addBone(knee.clone().add(vec(0, 0, pairedOffset)), ankle.clone().add(vec(0, 0, pairedOffset)), Math.max(0.009, lowerRadius * 0.42));
-              addBone(ankle, foot, Math.max(0.016, ht * 0.0065));
-              addJoint(topPoint, Math.max(0.046, ht * 0.016));
-              addJoint(knee, Math.max(0.050, ht * 0.017));
-              addJoint(ankle, Math.max(0.034, ht * 0.012));
+              var companionProximal = knee.clone().add(vec(front ? -lowerRadius * 0.22 : lowerRadius * 0.18, lowerRadius * 0.16, pairedOffset * 0.54));
+              var companionDistal = ankle.clone().add(vec(0, 0, pairedOffset * 0.82));
+              addLongBone(companionProximal, companionDistal, Math.max(0.008, lowerRadius * skeletalProfile.companionBoneScale), skeletalProfile.columnarLimbs ? 0.001 : 0.006, sideSign, 1.28, 1.10);
+              if (front) {
+                var deltopectoralBase = new THREE.Vector3().copy(topPoint).lerp(knee, 0.24);
+                var deltopectoralTip = deltopectoralBase.clone().add(vec(-Math.max(0.018, upperRadius * 1.20) * skeletalProfile.deltopectoralCrestScale, upperRadius * 0.18, sideSign * upperRadius * 0.64));
+                addLimbCrest(deltopectoralBase, deltopectoralTip, upperRadius * 0.46);
+              } else {
+                var femoralTrochanterBase = new THREE.Vector3().copy(topPoint).lerp(knee, 0.14);
+                addLimbCrest(femoralTrochanterBase, femoralTrochanterBase.clone().add(vec(upperRadius * 0.54, upperRadius * 0.24, sideSign * upperRadius * 0.96)), upperRadius * 0.40);
+                var cnemialBase = new THREE.Vector3().copy(knee).lerp(ankle, 0.10);
+                var cnemialTip = cnemialBase.clone().add(vec(-Math.max(0.020, lowerRadius * 1.45) * skeletalProfile.cnemialCrestScale, lowerRadius * 0.28, sideSign * lowerRadius * 0.48));
+                addLimbCrest(cnemialBase, cnemialTip, lowerRadius * 0.42);
+              }
+              if (!front && skeletalProfile.arctometatarsus) {
+                for (var metatarsalIndex = 0; metatarsalIndex < 3; metatarsalIndex++) {
+                  var metatarsalOffset = (metatarsalIndex - 1) * Math.max(0.018, bodyDepth * 0.075);
+                  var proximalT = metatarsalIndex === 1 ? 0.20 : 0.03;
+                  var metatarsalTop = ankle.clone().lerp(foot, proximalT).add(vec(0, 0, metatarsalOffset * 0.36));
+                  var metatarsalBase = foot.clone().add(vec(0, 0, metatarsalOffset));
+                  addBone(metatarsalTop, metatarsalBase, Math.max(0.007, ht * (metatarsalIndex === 1 ? 0.0025 : 0.0032)) * limbRobustness);
+                }
+              } else {
+                addBone(ankle, foot, Math.max(0.016, ht * 0.0065) * limbRobustness);
+              }
+              addLimbJoint(topPoint, new THREE.Vector3().subVectors(knee, topPoint), Math.max(0.046, ht * 0.016) * limbRobustness, front ? 1.18 : 1.05);
+              addLimbJoint(knee, new THREE.Vector3().subVectors(ankle, knee), Math.max(0.050, ht * 0.017) * limbRobustness, 1.34);
+              addLimbJoint(ankle, new THREE.Vector3().subVectors(foot, ankle), Math.max(0.034, ht * 0.012) * limbRobustness, 1.20);
               addDigitFan(foot, front, sideSign);
+              if (props.showBody && !front && surfaceHypothesis.hindWingFeathers) {
+                for (var hindFeatherIndex = 0; hindFeatherIndex < 6; hindFeatherIndex++) {
+                  var hindFeatherT = 0.12 + hindFeatherIndex * 0.13;
+                  var hindFeatherRoot = new THREE.Vector3().copy(knee).lerp(ankle, hindFeatherT);
+                  var hindFeatherTip = hindFeatherRoot.clone().add(vec(Math.max(0.06, len * (0.022 + hindFeatherIndex * 0.0015)), -Math.max(0.025, ht * 0.012), sideSign * Math.max(0.08, bodyDepth * (0.34 + hindFeatherIndex * 0.035))));
+                  addFeatherVane(hindFeatherRoot, hindFeatherTip, Math.max(0.012, ht * 0.006));
+                }
+              }
               if (props.showBody) {
-                addBodyContour(addSoftTissueCylinder(topPoint, knee, Math.max(0.065, ht * 0.032), Math.max(0.048, ht * 0.024)));
-                addBodyContour(addSoftTissueCylinder(knee, ankle, Math.max(0.048, ht * 0.024), Math.max(0.032, ht * 0.015)));
-                addBodyContour(addSoftTissueCylinder(ankle, foot, Math.max(0.032, ht * 0.015), Math.max(0.025, ht * 0.011)));
-                addBodyContour(addEllipsoid(foot, vec(Math.max(0.12, len * 0.018), Math.max(0.035, ht * 0.016), Math.max(0.04, ht * 0.018)), headMat));
+                var upperMuscleScale = front ? skeletalProfile.chestMuscleScale * 0.68 : skeletalProfile.thighMuscleScale;
+                var lowerMuscleScale = front ? skeletalProfile.chestMuscleScale * 0.54 : skeletalProfile.calfMuscleScale;
+                addMuscleBelly(topPoint, knee, Math.max(0.055, ht * (front ? 0.025 : 0.038)) * limbRobustness * upperMuscleScale, front ? 0.76 : 0.88);
+                addMuscleBelly(knee, ankle, Math.max(0.040, ht * (front ? 0.018 : 0.026)) * limbRobustness * lowerMuscleScale, 0.72);
+              }
+              if (props.showBody) {
+                addBodyContour(addSoftTissueCylinder(topPoint, knee, Math.max(0.065, ht * 0.032) * limbRobustness, Math.max(0.048, ht * 0.024) * limbRobustness));
+                addBodyContour(addSoftTissueCylinder(knee, ankle, Math.max(0.048, ht * 0.024) * limbRobustness, Math.max(0.032, ht * 0.015) * limbRobustness));
+                addBodyContour(addSoftTissueCylinder(ankle, foot, Math.max(0.032, ht * 0.015) * limbRobustness, Math.max(0.025, ht * 0.011) * limbRobustness));
+                addBodyContour(addEllipsoid(foot, vec(Math.max(0.12, len * 0.018) * distalScale, Math.max(0.035, ht * 0.016), Math.max(0.04, ht * 0.018) * limbRobustness), headMat));
               }
             }
-            var stance = Math.max(0.18, bodyDepth * 0.55);
+            var stance = Math.max(0.18, bodyDepth * 0.55) * skeletalProfile.stanceWidth;
             addLeg(hip.x, stance, false);
             addLeg(hip.x, -stance, false);
-            if (!isTheropod || isSauropod) {
+            if (skeletalProfile.weightBearingForelimbs) {
               addLeg(shoulder.x, stance, true);
               addLeg(shoulder.x, -stance, true);
             } else {
               [-1, 1].forEach(function (armSide) {
+                var armScale = skeletalProfile.armScale;
+                var armRobustness = skeletalProfile.forelimbRobustness;
                 var armStart = vec(shoulder.x, shoulder.y * 0.93, armSide * stance * 0.42);
-                var elbow = vec(shoulder.x - len * 0.030, shoulder.y * 0.68, armSide * stance * 0.58);
-                var wrist = vec(shoulder.x - len * 0.060, shoulder.y * 0.51, armSide * stance * 0.61);
-                addBone(armStart, elbow, Math.max(0.018, ht * 0.0065));
-                addBone(elbow, wrist, Math.max(0.014, ht * 0.0050));
-                addBone(elbow.clone().add(vec(0, 0, armSide * Math.max(0.012, bodyDepth * 0.045))), wrist.clone().add(vec(0, 0, armSide * Math.max(0.012, bodyDepth * 0.045))), Math.max(0.007, ht * 0.0026));
-                addJoint(elbow, Math.max(0.025, ht * 0.009));
-                addJoint(wrist, Math.max(0.018, ht * 0.0065));
-                var handDigits = /Tyrannosaur/i.test(cladeName) ? 2 : 3;
-                var handLength = Math.max(0.07, len * (/Therizinosaur/i.test(cladeName) ? 0.060 : 0.018));
+                var elbow = armStart.clone().add(vec(-len * 0.030 * armScale, -Math.max(0.075, shoulder.y * 0.25) * armScale, armSide * stance * 0.14 * armScale));
+                var wrist = elbow.clone().add(vec(-len * 0.030 * armScale, -Math.max(0.060, shoulder.y * 0.17) * armScale, armSide * stance * 0.03 * armScale));
+                var humerusRadius = Math.max(0.018, ht * 0.0065) * armRobustness;
+                var forearmRadius = Math.max(0.014, ht * 0.0050) * armRobustness;
+                addLongBone(armStart, elbow, humerusRadius, Math.min(0.012, skeletalProfile.longBoneBow), -armSide, 1.38, 1.22);
+                addLongBone(elbow, wrist, forearmRadius, 0.006, armSide, 1.30, 1.12);
+                var freeArmPairedOffset = armSide * Math.max(0.012, bodyDepth * 0.045);
+                var freeUlnaStart = elbow.clone().add(vec(-forearmRadius * 0.18, forearmRadius * 0.20, freeArmPairedOffset * 0.56));
+                var freeUlnaEnd = wrist.clone().add(vec(0, 0, freeArmPairedOffset));
+                addLongBone(freeUlnaStart, freeUlnaEnd, Math.max(0.006, forearmRadius * skeletalProfile.companionBoneScale), 0.005, -armSide, 1.34, 1.10);
+                var freeDeltoBase = new THREE.Vector3().copy(armStart).lerp(elbow, 0.24);
+                addLimbCrest(freeDeltoBase, freeDeltoBase.clone().add(vec(-humerusRadius * 1.18 * skeletalProfile.deltopectoralCrestScale, humerusRadius * 0.18, armSide * humerusRadius * 0.58)), humerusRadius * 0.44);
+                addLimbJoint(elbow, new THREE.Vector3().subVectors(wrist, elbow), Math.max(0.025, ht * 0.009) * armRobustness, 1.30);
+                addLimbJoint(wrist, new THREE.Vector3().subVectors(wrist, elbow), Math.max(0.018, ht * 0.0065) * armRobustness, 1.12);
+                var handDigits = skeletalProfile.manualDigits;
+                var handLength = Math.max(0.07, len * (/Therizinosaur/i.test(cladeName) ? 0.060 : 0.018)) * skeletalProfile.handScale;
                 for (var handDigitIndex = 0; handDigitIndex < handDigits; handDigitIndex++) {
                   var handSpread = (handDigitIndex - (handDigits - 1) * 0.5) * Math.max(0.025, bodyDepth * 0.10);
-                  var fingerMid = wrist.clone().add(vec(-handLength * 0.52, -handLength * 0.08, handSpread));
+                  var manualFormulaCount = skeletalProfile.manualPhalanxFormula && skeletalProfile.manualPhalanxFormula[handDigitIndex] ? skeletalProfile.manualPhalanxFormula[handDigitIndex] : 3;
+                  var manualUngualVisible = handDigitIndex < skeletalProfile.manualUnguals;
+                  var manualNonUngualCount = Math.max(0, Math.min(4, manualFormulaCount - 1));
+                  var metacarpalEnd = wrist.clone().add(vec(-handLength * 0.28, -handLength * 0.035, handSpread * 0.42));
                   var fingerTip = wrist.clone().add(vec(-handLength, -handLength * 0.14, handSpread * 1.22));
-                  addBone(wrist, fingerMid, Math.max(0.006, ht * 0.0025));
-                  addBone(fingerMid, fingerTip, Math.max(0.005, ht * 0.0020));
-                  addSkeletonCone(fingerTip, fingerTip.clone().add(vec(-handLength * 0.20, -handLength * 0.06, 0)), Math.max(0.004, ht * 0.0018), toothMat);
+                  addTaperedBoneSegment(wrist, metacarpalEnd, Math.max(0.008, ht * 0.0031), Math.max(0.006, ht * 0.0024), boneMat);
+                  addLimbJoint(metacarpalEnd, new THREE.Vector3().subVectors(metacarpalEnd, wrist), Math.max(0.008, ht * 0.0030), 1.12);
+                  var previousManualPhalanx = metacarpalEnd;
+                  for (var manualPhalanxIndex = 0; manualPhalanxIndex < manualNonUngualCount; manualPhalanxIndex++) {
+                    var manualPhalanxT = (manualPhalanxIndex + 1) / manualNonUngualCount;
+                    var manualPhalanxEnd = new THREE.Vector3().copy(metacarpalEnd).lerp(fingerTip, manualPhalanxT);
+                    manualPhalanxEnd.y -= Math.sin(Math.PI * manualPhalanxT) * handLength * 0.035;
+                    var manualPhalanxRadius = Math.max(0.0045, ht * (0.0023 - manualPhalanxIndex * 0.00018));
+                    addTaperedBoneSegment(previousManualPhalanx, manualPhalanxEnd, manualPhalanxRadius * 1.22, manualPhalanxRadius, boneMat);
+                    if (manualPhalanxIndex < manualNonUngualCount - 1) addLimbJoint(manualPhalanxEnd, new THREE.Vector3().subVectors(manualPhalanxEnd, previousManualPhalanx), manualPhalanxRadius * 1.30, 1.16);
+                    previousManualPhalanx = manualPhalanxEnd;
+                  }
+                  if (manualUngualVisible) {
+                    var manualUngualScale = /Therizinosaur/i.test(cladeName) ? 0.58 : (/Alvarezsaur/i.test(cladeName) ? 0.38 : 0.20);
+                    var handClawTip = fingerTip.clone().add(vec(-handLength * manualUngualScale, -handLength * (manualUngualScale * 0.30), 0));
+                    addSkeletonCone(fingerTip, handClawTip, Math.max(0.004, ht * 0.0018), toothMat);
+                    if (props.showBody) addKeratinCone(fingerTip, new THREE.Vector3().copy(fingerTip).lerp(handClawTip, 1.14), Math.max(0.006, ht * 0.0025));
+                  }
+                  else addSkeletonEllipsoid(fingerTip, vec(Math.max(0.010, handLength * 0.10), Math.max(0.007, ht * 0.0028), Math.max(0.008, bodyDepth * 0.028)), boneMat);
+                }
+                if (props.showBody && surfaceHypothesis.wingFeathers) {
+                  for (var wingFeatherIndex = 0; wingFeatherIndex < 7; wingFeatherIndex++) {
+                    var wingFeatherT = 0.10 + wingFeatherIndex * 0.13;
+                    var wingFeatherRoot = new THREE.Vector3().copy(elbow).lerp(wrist, wingFeatherT);
+                    var wingFeatherTip = wingFeatherRoot.clone().add(vec(Math.max(0.08, len * (0.026 + wingFeatherIndex * 0.0026)), -Math.max(0.04, ht * (0.016 + wingFeatherIndex * 0.0018)), armSide * Math.max(0.06, bodyDepth * (0.30 + wingFeatherIndex * 0.035))));
+                    addFeatherVane(wingFeatherRoot, wingFeatherTip, Math.max(0.014, ht * 0.007));
+                  }
                 }
                 if (props.showBody) {
-                  addBodyContour(addSoftTissueCylinder(armStart, elbow, Math.max(0.025, ht * 0.010), Math.max(0.020, ht * 0.008)));
-                  addBodyContour(addSoftTissueCylinder(elbow, wrist, Math.max(0.020, ht * 0.008), Math.max(0.014, ht * 0.0055)));
+                  addBodyContour(addSoftTissueCylinder(armStart, elbow, Math.max(0.025, ht * 0.010) * armRobustness, Math.max(0.020, ht * 0.008) * armRobustness));
+                  addBodyContour(addSoftTissueCylinder(elbow, wrist, Math.max(0.020, ht * 0.008) * armRobustness, Math.max(0.014, ht * 0.0055) * armRobustness));
                 }
               });
             }
@@ -7088,7 +8439,7 @@ window.StemLab = window.StemLab || {
             if (visualMaterialsRef.current === activeMaterialSet) visualMaterialsRef.current = null;
 
           };
-        }, [props.species.id, props.showSkeleton, props.showBody, props.showHuman, props.showEvidence, props.dietColor, props.scanTarget, props.loggedAnchorKey, props.assemblyPlacedKey, props.assemblyFocus, props.assemblyUnlocked, props.claimEvidenceFocus, props.claimEvidenceAnchor]);
+        }, [props.species.id, props.reconstructionMode, props.showSkeleton, props.showBody, props.showHuman, props.showEvidence, props.dietColor, props.scanTarget, props.loggedAnchorKey, props.assemblyPlacedKey, props.assemblyFocus, props.assemblyUnlocked, props.claimEvidenceFocus, props.claimEvidenceAnchor]);
 
         React.useEffect(function () {
           return function () {
@@ -7135,6 +8486,13 @@ window.StemLab = window.StemLab || {
             materials.head.opacity = Math.min(0.87, alpha + 0.12);
             materials.wire.opacity = Math.max(0.10, alpha * 0.64);
             materials.accent.opacity = Math.min(0.90, alpha + 0.40);
+            materials.muscle.opacity = Math.min(0.52, 0.14 + alpha * 0.62);
+            materials.lung.opacity = Math.min(0.48, 0.16 + alpha * 0.50);
+            materials.airSac.opacity = Math.min(0.34, 0.09 + alpha * 0.34);
+            materials.keratin.opacity = Math.min(0.94, 0.58 + alpha * 0.48);
+            materials.filament.opacity = Math.min(0.90, 0.44 + alpha * 0.58);
+            materials.feather.opacity = Math.min(0.92, 0.48 + alpha * 0.60);
+            materials.scaleRelief.opacity = Math.min(0.72, 0.18 + alpha * 0.62);
           }
           if (statusRef.current) statusRef.current.textContent = 'Body inference opacity ' + nextOpacity + ' percent. Skeleton and evidence remain unchanged.';
         }
@@ -7145,7 +8503,7 @@ window.StemLab = window.StemLab || {
         var statusId = 'dino3d-status-' + props.species.id;
         var srOnlyStyle = { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0, 0, 0, 0)', whiteSpace: 'nowrap', border: 0 };
         var layerSummary = [props.showSkeleton ? 'skeleton proxy' : null, props.showBody ? 'body outline' : null, props.showHuman ? 'human scale' : null, props.showEvidence ? 'evidence markers' : null].filter(Boolean).join(', ') || 'no visual layers enabled';
-        var viewerSummary = props.species.common + ' 3D model summary. Visible layers: ' + layerSummary + '. Reconstruction profile: ' + reconstructionProfile.label + ' with ' + reconstructionProfile.coverage + ' fossil coverage. Current scan focus: ' + (props.scanLabel || 'none') + '. Logged anchors: ' + (props.loggedCount == null ? 'not tracked' : (props.loggedCount + ' of ' + (props.scanTotal || 3))) + '. Evidence path: ' + (props.pathLoggedCount == null ? 'not tracked' : (props.pathLoggedCount + ' of ' + (props.pathTotal || 2))) + '. Assembly progress: ' + (props.assemblyPlacedCount == null ? 'not tracked' : (props.assemblyPlacedCount + ' of ' + (props.assemblyTotal || 6))) + '.' + (props.claimEvidenceLabel ? ' Claim evidence highlighted: ' + props.claimEvidenceLabel + '.' : '') + (props.claimEvidenceTrailLabel ? ' Evidence trail: ' + props.claimEvidenceTrailLabel.replace(' -> ', ' to ') + ' anchor.' : '') + ' Keyboard controls: Left and Right Arrow or A and D rotate; Up and Down Arrow raise or lower the camera; Page Up and Page Down zoom; Home resets the view.';
+        var viewerSummary = props.species.common + ' 3D model summary. Visible layers: ' + layerSummary + '. Reconstruction profile: ' + reconstructionProfile.label + ' with ' + reconstructionProfile.coverage + ' fossil coverage. Active surface hypothesis: ' + surfaceHypothesis.label + ', status ' + surfaceHypothesis.status + '. ' + surfaceHypothesis.warning + ' Limb osteology: ' + skeletalProfile.limbOsteology + '; evidence basis: ' + skeletalProfile.limbEvidence + '. Girdle architecture: ' + skeletalProfile.girdleOsteology + '. Vertebral architecture: ' + skeletalProfile.vertebralArchitecture + '; evidence basis: ' + skeletalProfile.vertebralEvidence + '. Thoracic cage: ' + skeletalProfile.ribArchitecture + '; evidence basis: ' + skeletalProfile.ribEvidence + '. Gastral basket: ' + skeletalProfile.gastralBasketMode + '. Uncinate evidence: ' + skeletalProfile.uncinateEvidence + '. Sacral load path: ' + skeletalProfile.sacralCount + '-element series; ' + skeletalProfile.sacralArchitecture + '; evidence basis: ' + skeletalProfile.sacralEvidence + '. Caudal transition: ' + skeletalProfile.caudalArchitecture + '. Haemal arches: ' + skeletalProfile.chevronArchitecture + '; evidence basis: ' + skeletalProfile.chevronEvidence + '. Distal limbs: ' + skeletalProfile.distalLimbMode + '; evidence basis: ' + skeletalProfile.distalLimbEvidence + '. Cranial mechanics: ' + skeletalProfile.cranialKinesis + '; evidence basis: ' + skeletalProfile.cranialEvidence + '. Head-neck junction: ' + skeletalProfile.craniocervicalArchitecture + '; evidence basis: ' + skeletalProfile.craniocervicalEvidence + '. Mandibular lever: ' + skeletalProfile.mandibularLeverArchitecture + '; evidence basis: ' + skeletalProfile.mandibularLeverEvidence + '. Integument mode: ' + surfaceHypothesis.integumentMode + '; evidence basis: ' + skeletalProfile.integumentEvidence + '. Respiratory reconstruction: ' + skeletalProfile.respiratoryMode + '; evidence basis: ' + skeletalProfile.respiratoryEvidence + '. Current scan focus: ' + (props.scanLabel || 'none') + '. Logged anchors: ' + (props.loggedCount == null ? 'not tracked' : (props.loggedCount + ' of ' + (props.scanTotal || 3))) + '. Evidence path: ' + (props.pathLoggedCount == null ? 'not tracked' : (props.pathLoggedCount + ' of ' + (props.pathTotal || 2))) + '. Assembly progress: ' + (props.assemblyPlacedCount == null ? 'not tracked' : (props.assemblyPlacedCount + ' of ' + (props.assemblyTotal || 6))) + '.' + (props.claimEvidenceLabel ? ' Claim evidence highlighted: ' + props.claimEvidenceLabel + '.' : '') + (props.claimEvidenceTrailLabel ? ' Evidence trail: ' + props.claimEvidenceTrailLabel.replace(' -> ', ' to ') + ' anchor.' : '') + ' Keyboard controls: Left and Right Arrow or A and D rotate; Up and Down Arrow raise or lower the camera; Page Up and Page Down zoom; Home resets the view.';
 
         return el('div', { className: 'dinolab-3d-shell' },
           el('div', { className: 'dinolab-3d-viewer', style: { position: 'relative', minHeight: 420, borderRadius: 14, overflow: 'hidden', border: '1px solid rgba(148,163,184,0.26)', background: '#0f172a' } },
@@ -7155,6 +8513,12 @@ window.StemLab = window.StemLab || {
             readoutChip('Length ' + fmtLength(props.species.lengthM), 'rgba(56,189,248,0.55)'),
             readoutChip('Height ' + fmtLength(props.species.heightM), 'rgba(250,204,21,0.55)'),
             readoutChip('Profile ' + reconstructionProfile.label, 'rgba(94,234,212,0.62)'),
+            readoutChip('Hypothesis ' + surfaceHypothesis.shortLabel, surfaceHypothesis.id === 'classic' ? 'rgba(245,158,11,0.72)' : 'rgba(20,184,166,0.72)'),
+            readoutChip('Integument ' + cap(surfaceHypothesis.integumentMode), 'rgba(111,117,100,0.72)'),
+            readoutChip('Respiration ' + cap(skeletalProfile.respiratoryMode), 'rgba(103,232,249,0.72)'),
+            readoutChip('Thorax ' + (skeletalProfile.ribHeadDetail ? 'double-headed ribs' : 'not resolved'), 'rgba(159,184,170,0.72)'),
+            readoutChip('Head-neck ' + (skeletalProfile.craniocervicalDetail ? 'atlas-axis' : 'not resolved'), 'rgba(185,157,115,0.72)'),
+            readoutChip('Sacrum ' + (skeletalProfile.sacralDetail ? skeletalProfile.sacralCount + ' elements' : 'not resolved'), 'rgba(201,185,144,0.72)'),
             props.scanLabel ? readoutChip('Focus ' + props.scanLabel, 'rgba(245,158,11,0.65)') : null,
             props.loggedCount != null ? readoutChip('Logged ' + props.loggedCount + '/' + (props.scanTotal || 3), 'rgba(34,197,94,0.65)') : null,
             props.pathLoggedCount != null ? readoutChip('Path ' + props.pathLoggedCount + '/' + (props.pathTotal || 2), 'rgba(20,184,166,0.65)') : null,
@@ -7185,6 +8549,10 @@ window.StemLab = window.StemLab || {
         var fieldId = d.field3dSelected || selected || 'tyrannosaurus';
         var dn = byId(fieldId) || byId('tyrannosaurus') || DINOS[0];
         var reconstructionProfile = reconstructionProfileFor(dn);
+        var skeletalProfile = skeletalAnatomyProfileFor(dn);
+        var requestedReconstructionMode = d.field3dReconstructionMode || 'evidence';
+        var hypothesisSet = reconstructionHypothesesFor(dn, skeletalProfile, requestedReconstructionMode);
+        var activeHypothesis = hypothesisSet.active;
         var showSkeleton = d.field3dShowSkeleton !== false;
         var showBody = d.field3dShowBody !== false;
         var showHuman = d.field3dShowHuman !== false;
@@ -7308,6 +8676,36 @@ window.StemLab = window.StemLab || {
             el('span', null, el('span', { style: { display: 'block', fontSize: 12.5, fontWeight: 800, color: T.text } }, label), el('span', { style: { display: 'block', fontSize: 11.5, color: T.soft, lineHeight: 1.45 } }, detail))
           );
         }
+        function setReconstructionMode(mode) {
+          var nextSet = reconstructionHypothesesFor(dn, skeletalProfile, mode);
+          if (!nextSet.active || nextSet.active.id !== mode) {
+            announceToSR('That reconstruction hypothesis is not supported for ' + dn.common + '. Evidence-led reconstruction remains active.');
+            return;
+          }
+          upd({ field3dReconstructionMode: mode, field3dShowBody: true });
+          announceToSR('3D reconstruction hypothesis: ' + nextSet.active.label + '. ' + nextSet.active.status + '.');
+        }
+        var hypothesisStrip = el('div', { role: 'group', 'aria-label': 'Reconstruction hypothesis', style: { margin: '0 0 8px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(142px, 1fr))', gap: 7 } }, hypothesisSet.options.map(function (hypothesis) {
+          var active = activeHypothesis.id === hypothesis.id;
+          var statusColor = hypothesis.id === 'classic' ? '#f59e0b' : (hypothesis.available ? '#5eead4' : '#64748b');
+          return el('button', {
+            key: hypothesis.id,
+            type: 'button',
+            disabled: !hypothesis.available,
+            onClick: function () { setReconstructionMode(hypothesis.id); },
+            'aria-pressed': active ? 'true' : 'false',
+            'aria-label': hypothesis.label + ', ' + hypothesis.status + '. ' + hypothesis.description,
+            style: { minHeight: 64, textAlign: 'left', borderRadius: 9, border: '1px solid ' + (active ? statusColor : T.border), background: active ? (hypothesis.id === 'classic' ? 'rgba(245,158,11,0.16)' : 'rgba(20,184,166,0.16)') : T.deeper, color: T.text, padding: '8px 10px', cursor: hypothesis.available ? 'pointer' : 'not-allowed', opacity: hypothesis.available ? 1 : 0.58, boxShadow: active ? '0 0 0 2px rgba(20,184,166,0.14)' : 'none' }
+          },
+            el('span', { style: { display: 'block', fontSize: 12.5, fontWeight: 900, marginBottom: 3 } }, hypothesis.shortLabel),
+            el('span', { style: { display: 'block', fontSize: 10.8, color: statusColor, lineHeight: 1.25, fontWeight: 800 } }, hypothesis.status)
+          );
+        }));
+        var hypothesisNote = el('div', { role: 'note', style: { margin: '0 0 10px', padding: '9px 10px', borderRadius: 9, border: '1px solid ' + (activeHypothesis.id === 'classic' ? 'rgba(245,158,11,0.42)' : 'rgba(20,184,166,0.30)'), background: activeHypothesis.id === 'classic' ? 'rgba(245,158,11,0.08)' : 'rgba(20,184,166,0.07)', color: T.soft, fontSize: 11.5, lineHeight: 1.45 } },
+          el('strong', { style: { color: T.text } }, activeHypothesis.label + ': '), activeHypothesis.description + ' ',
+          el('span', { style: { color: activeHypothesis.id === 'classic' ? '#fbbf24' : T.soft } }, activeHypothesis.warning),
+          el('span', { style: { display: 'block', marginTop: 4, fontWeight: 800, color: '#cbd5e1' } }, 'Invariant across modes: skeleton, articulation, pose, measurements, evidence anchors, and scientific anatomy profile.')
+        );
         var viewPresets = [
           { id: 'full', label: 'Full model', detail: 'All layers', skeleton: true, body: true, human: true, evidence: true },
           { id: 'anchors', label: 'Fossil anchors', detail: 'Bones + markers', skeleton: true, body: false, human: false, evidence: true },
@@ -7581,10 +8979,71 @@ window.StemLab = window.StemLab || {
           upd({ field3dChallengeIdx: challengeIdx + 1, field3dChallengePicked: null });
           announceToSR('Next reconstruction challenge');
         }
+        var anatomyProfilePanel = panel([
+          el('div', { key: 'h', style: { fontSize: 13, fontWeight: 900, marginBottom: 2 } }, 'Scientific anatomy profile'),
+          el('div', { key: 'label', style: { fontSize: 12.5, color: '#5eead4', fontWeight: 900, marginBottom: 8 } }, skeletalProfile.label),
+          el('div', { key: 'locomotion', style: { fontSize: 11.7, color: T.text, lineHeight: 1.48, marginBottom: 6 } }, el('strong', null, 'Posture: '), skeletalProfile.locomotion),
+          el('div', { key: 'skull', style: { fontSize: 11.7, color: T.text, lineHeight: 1.48, marginBottom: 5 } }, el('strong', null, 'Skull: '), skeletalProfile.skull),
+          el('div', { key: 'cranial-mechanics', style: { fontSize: 11.7, color: T.text, lineHeight: 1.48, marginBottom: 4 } }, el('strong', null, 'Cranial mechanics: '), skeletalProfile.cranialMechanics, ' Mode: ', skeletalProfile.cranialKinesis, '.'),
+          el('div', { key: 'cranial-evidence', style: { fontSize: 11.2, color: T.soft, lineHeight: 1.42, marginBottom: 5 } }, el('strong', null, 'Cranial evidence: '), skeletalProfile.cranialEvidence, ' Hyoid: ', skeletalProfile.hyoidMode, '.'),
+          el('div', { key: 'craniocervical-architecture', style: { fontSize: 11.7, color: T.text, lineHeight: 1.48, marginBottom: 4 } }, el('strong', null, 'Head-neck junction: '), skeletalProfile.craniocervicalArchitecture),
+          el('div', { key: 'craniocervical-evidence', style: { fontSize: 11.2, color: T.soft, lineHeight: 1.42, marginBottom: 5 } }, el('strong', null, 'Head-neck evidence: '), skeletalProfile.craniocervicalEvidence),
+          el('div', { key: 'mandibular-lever', style: { fontSize: 11.7, color: T.text, lineHeight: 1.48, marginBottom: 4 } }, el('strong', null, 'Mandibular lever: '), skeletalProfile.mandibularLeverArchitecture),
+          el('div', { key: 'mandibular-lever-evidence', style: { fontSize: 11.2, color: T.soft, lineHeight: 1.42, marginBottom: 7 } }, el('strong', null, 'Jaw-lever evidence: '), skeletalProfile.mandibularLeverEvidence),
+          el('div', { key: 'dentition', style: { fontSize: 11.7, color: T.text, lineHeight: 1.48, marginBottom: 6 } }, el('strong', null, 'Feeding structures: '), skeletalProfile.dentition),
+          el('div', { key: 'axial', style: { fontSize: 11.7, color: T.text, lineHeight: 1.48, marginBottom: 4 } }, el('strong', null, 'Axial skeleton: '), skeletalProfile.axial),
+          el('div', { key: 'vertebral-architecture', style: { fontSize: 11.7, color: T.text, lineHeight: 1.48, marginBottom: 4 } }, el('strong', null, 'Vertebral architecture: '), skeletalProfile.vertebralArchitecture),
+          el('div', { key: 'vertebral-evidence', style: { fontSize: 11.2, color: T.soft, lineHeight: 1.42, marginBottom: 7 } }, el('strong', null, 'Vertebral evidence: '), skeletalProfile.vertebralEvidence),
+          el('div', { key: 'rib-architecture', style: { fontSize: 11.7, color: T.text, lineHeight: 1.48, marginBottom: 4 } }, el('strong', null, 'Thoracic cage: '), skeletalProfile.ribArchitecture),
+          el('div', { key: 'rib-evidence', style: { fontSize: 11.2, color: T.soft, lineHeight: 1.42, marginBottom: 4 } }, el('strong', null, 'Thoracic evidence: '), skeletalProfile.ribEvidence),
+          el('div', { key: 'gastral-basket', style: { fontSize: 11.7, color: T.text, lineHeight: 1.48, marginBottom: 4 } }, el('strong', null, 'Gastral basket: '), skeletalProfile.gastralBasketMode, '.'),
+          el('div', { key: 'uncinate-evidence', style: { fontSize: 11.2, color: T.soft, lineHeight: 1.42, marginBottom: 7 } }, el('strong', null, 'Uncinate processes: '), skeletalProfile.uncinateEvidence),
+          el('div', { key: 'sacral-architecture', style: { fontSize: 11.7, color: T.text, lineHeight: 1.48, marginBottom: 4 } }, el('strong', null, 'Sacral load path: '), skeletalProfile.sacralCount, '-element series. ', skeletalProfile.sacralArchitecture),
+          el('div', { key: 'sacral-evidence', style: { fontSize: 11.2, color: T.soft, lineHeight: 1.42, marginBottom: 4 } }, el('strong', null, 'Sacral evidence: '), skeletalProfile.sacralEvidence),
+          el('div', { key: 'caudal-architecture', style: { fontSize: 11.7, color: T.text, lineHeight: 1.48, marginBottom: 4 } }, el('strong', null, 'Caudal transition: '), skeletalProfile.caudalArchitecture),
+          el('div', { key: 'chevron-architecture', style: { fontSize: 11.7, color: T.text, lineHeight: 1.48, marginBottom: 4 } }, el('strong', null, 'Haemal arches: '), skeletalProfile.chevronArchitecture),
+          el('div', { key: 'chevron-evidence', style: { fontSize: 11.2, color: T.soft, lineHeight: 1.42, marginBottom: 7 } }, el('strong', null, 'Haemal-arch evidence: '), skeletalProfile.chevronEvidence),
+          el('div', { key: 'pelvis', style: { fontSize: 11.7, color: T.text, lineHeight: 1.48, marginBottom: 6 } }, el('strong', null, 'Pelvic architecture: '), skeletalProfile.pelvis),
+          el('div', { key: 'locomotor', style: { fontSize: 11.7, color: T.text, lineHeight: 1.48, marginBottom: 5 } }, el('strong', null, 'Locomotor mechanics: '), skeletalProfile.locomotor),
+          el('div', { key: 'limb-osteology', style: { fontSize: 11.7, color: T.text, lineHeight: 1.48, marginBottom: 4 } }, el('strong', null, 'Limb osteology: '), skeletalProfile.limbOsteology),
+          el('div', { key: 'limb-evidence', style: { fontSize: 11.2, color: T.soft, lineHeight: 1.42, marginBottom: 7 } }, el('strong', null, 'Limb evidence: '), skeletalProfile.limbEvidence),
+          el('div', { key: 'girdle-osteology', style: { fontSize: 11.7, color: T.text, lineHeight: 1.48, marginBottom: 5 } }, el('strong', null, 'Girdle architecture: '), skeletalProfile.girdleOsteology),
+          el('div', { key: 'distal-limb-mode', style: { fontSize: 11.7, color: T.text, lineHeight: 1.48, marginBottom: 4 } }, el('strong', null, 'Hands and feet mode: '), skeletalProfile.distalLimbMode),
+          el('div', { key: 'distal-limb-evidence', style: { fontSize: 11.2, color: T.soft, lineHeight: 1.42, marginBottom: 7 } }, el('strong', null, 'Hands and feet evidence: '), skeletalProfile.distalLimbEvidence),
+          el('div', { key: 'soft-tissue', style: { fontSize: 11.7, color: T.text, lineHeight: 1.48, marginBottom: 6 } }, el('strong', null, 'Soft-tissue inference: '), skeletalProfile.softTissue),
+          el('div', { key: 'respiratory', style: { fontSize: 11.7, color: T.text, lineHeight: 1.48, marginBottom: 4 } }, el('strong', null, 'Respiratory reconstruction: '), skeletalProfile.respiratory),
+          el('div', { key: 'respiratory-evidence', style: { fontSize: 11.2, color: T.soft, lineHeight: 1.42, marginBottom: 7 } }, el('strong', null, 'Respiratory evidence: '), skeletalProfile.respiratoryEvidence),
+          el('div', { key: 'integument', style: { fontSize: 11.7, color: T.text, lineHeight: 1.48, marginBottom: 4 } }, el('strong', null, 'Integument: '), skeletalProfile.integument),
+          el('div', { key: 'integument-evidence', style: { fontSize: 11.2, color: T.soft, lineHeight: 1.42, marginBottom: 7 } }, el('strong', null, 'Integument evidence: '), skeletalProfile.integumentEvidence),
+          el('div', { key: 'extremities', style: { fontSize: 11.7, color: T.text, lineHeight: 1.48, marginBottom: 8 } }, el('strong', null, 'Hands and feet: '), skeletalProfile.extremities),
+          el('div', { key: 'caveat', role: 'note', style: { padding: '7px 8px', borderRadius: 8, border: '1px solid rgba(245,158,11,0.34)', background: 'rgba(245,158,11,0.08)', color: T.soft, fontSize: 11.3, lineHeight: 1.45 } }, skeletalProfile.caveat)
+        ], { marginBottom: 12, background: 'rgba(20,184,166,0.06)', border: '1px solid rgba(20,184,166,0.24)' });
         var visualKeyPanel = panel([
           el('div', { key: 'h', style: { fontSize: 13, fontWeight: 900, marginBottom: 5 } }, 'Visual key'),
-          keyItem('#f8fafc', 'Skeleton proxy', 'White rods, vertebrae, rib loops, pelvis, and joints show the inferred bone layout. Skull, spine, pelvis, and tail callouts keep the main landmarks easy to follow.'),
-          keyItem(dColor(dn.diet), 'Body inference', 'Translucent color and a thin contour mesh show estimated soft-tissue volume around the visible skeleton.'),
+          keyItem(activeHypothesis.id === 'classic' ? '#f59e0b' : '#14b8a6', 'Active reconstruction hypothesis', activeHypothesis.label + ' — ' + activeHypothesis.status + '. Surface changes never alter the shared evidence-constrained skeleton.'),
+          keyItem('#f8fafc', 'Skeleton proxy', 'White vertebrae, curved rib shafts, pelvis, digits, and minor struts establish the inferred bone layout and major landmarks.'),
+          keyItem('#e3d7bd', 'Vertebral architecture', 'Oriented centra, paired neural arches, tapered neural spines, dorsal transverse processes, and restrained zygapophyseal-facet proxies replace bead-like spinal chains.'),
+          keyItem('#9fb8aa', 'Thoracic articulations', 'Paired capitulum and tuberculum heads meet the centrum and transverse-process region before a curved, tapered shaft descends toward differentiated sternal connections. Green-gray junctions mark inferred costal cartilage or overlap.'),
+          keyItem('#ead9b7', 'Gastralia and uncinate processes', 'Supported gastral baskets use paired sigmoidal segments that overlap near the midline. Flattened uncinate processes overlap adjacent ribs only for supported maniraptoran profiles.'),
+          keyItem('#c9b990', 'Sacral load path', 'Compact sacral centra and neural arches carry broad paired sacral ribs into expanded iliac contact pads. Warm intercentral contacts communicate continuity without claiming a universal fusion state.'),
+          keyItem('#e3d7bd', 'Caudal ribs and haemal arches', 'Proximal caudal ribs and posterodorsal neural spines diminish toward the transition region. V-shaped chevron rami surround a haemal canal before joining a tapered ventral spine.'),
+          keyItem('#e9dfc7', 'Long-bone morphology', 'Major limb shafts taper toward the middle, broaden at their ends, and use restrained clade-scaled curvature. Separate radius/ulna and tibia/fibula elements replace single lower-limb rods.'),
+          keyItem('#c9b990', 'Articular surfaces', 'Warm hinge-shaped ends distinguish hip, elbow or knee, wrist or ankle articulations from the shaft. Cartilage thickness and permitted motion remain unresolved.'),
+          keyItem('#efe4c9', 'Girdle blades and sockets', 'Expanded scapular and iliac blades frame rimmed glenoid and acetabular sockets. Coracoid plates, pelvic peduncles, a supracetabular shelf, and an obturator process replace the former rod-only girdles.'),
+          keyItem('#ead9b7', 'Articulated hands and feet', 'Separate metapodials lead into unequal clade-scaled phalangeal chains. Compact weight-bearing hands, the sauropod metacarpal arc, hoof-like terminals, hallux, and raised paravian digit II are applied only where supported.'),
+          keyItem('#d8c39a', 'Cranial load frame', 'Warm bone bars separate the premaxillary/maxillary margin, jugal-postorbital cheek frame, quadratojugal, quadrate, segmented mandible, and palatal braces. They show homologous load paths rather than exact sutures.'),
+          keyItem('#b99d73', 'Occiput and atlas-axis', 'A single occipital condyle meets paired atlas arches and a ventral intercentrum. The axis adds a centrum, neural arch, tall spine, and odontoid proxy; cartilage, ligaments, and range of motion remain unresolved.'),
+          keyItem('#d8c39a', 'Mandibular levers', 'Clade-scaled coronoid and retroarticular processes expose the jaw-adductor input and posterior lever around the articular glenoid without pretending to calculate specimen-level bite force.'),
+          keyItem('#b99d73', 'Quadrate-articular joint', 'A darker condyle marks the primary reptile-style jaw hinge. It is not animated as a freely swinging bird-like quadrate unless fossil mechanics support that interpretation.'),
+          keyItem('#c4b5d9', 'Hyoid proxy', 'Paired lavender rods mark conservative tongue-support bones; elaboration is increased only for supported derived herbivorous ornithischians, while soft tongue shape is omitted.'),
+          keyItem(dColor(dn.diet), 'Body inference', 'Translucent color and a thin contour mesh show estimated soft-tissue volume around the visible skeleton; muscle and keratin overlays refine the inference.'),
+          keyItem('#8f3f32', 'Muscle inference', 'Muted red-brown volumes mark inferred jaw, neck, chest, thigh, calf, and caudofemoral paths. Attachment regions are better constrained than their thickness.'),
+          keyItem('#70465c', 'Dorsal lung proxy', 'Paired plum volumes show a conservative dorsal respiratory position derived from living-archosaur comparison; organ boundaries are not fossil outlines.'),
+          keyItem('#bdeff2', 'Air-sac proxy', 'Pale volumes show a plausible cervical, clavicular, thoracic, and abdominal distribution only in supported saurischian profiles. Exact compartments and airflow remain inferred.'),
+          keyItem('#67e8f9', 'Pneumatic bone evidence', 'Cyan-rimmed dark openings mark vertebral fossae or foramina: bony correlates of diverticula, not a claim that every visible cavity was entirely air.'),
+          keyItem('#4b3525', 'Keratin sheath', 'Dark rough surfaces distinguish beaks, claw sheaths, and supported horn sheaths from the lighter bony cores beneath them.'),
+          keyItem('#6f7564', 'Filament and feather tract', 'Tapered filaments form localized coats or bristle rows; flattened vanes mark supported arm, hind-limb, tail-frond, or tail-fan plumage.'),
+          keyItem('#343b36', 'Regional feature scales', 'Raised flank scales sit within a finer procedural basement pattern instead of covering every taxon with one uniform reptile texture.'),
           keyItem(dColor(dn.diet), 'Species anatomy cues', 'Simplified horns, brow bosses, beaks, plates, sails, armor, crests, domes, claws, thumb spikes, or feather fans appear for supported clades. They are diagram cues, not specimen scans.'),
           keyItem('#38bdf8', 'Evidence marker', 'Blue points mark fossil anchor locations.'),
           keyItem('#14b8a6', 'Evidence path', 'Cyan links connect anchors; green links show a completed evidence chain.'),
@@ -7642,8 +9101,10 @@ window.StemLab = window.StemLab || {
                 el('button', { onClick: function () { upd({ tab: 'explore', selected: dn.id }); }, style: { padding: '9px 12px', borderRadius: 9, border: '1px solid ' + T.border, background: 'transparent', color: T.text, fontSize: 12.5, fontWeight: 800, cursor: 'pointer' } }, 'Open species file'),
                 el('button', { onClick: function () { upd('field3dAutoRotate', !autoRotate); announceToSR(autoRotate ? '3D auto spin paused' : '3D auto spin resumed'); }, 'aria-pressed': autoRotate ? 'true' : 'false', style: { padding: '9px 12px', borderRadius: 9, border: '1px solid ' + (autoRotate ? '#14b8a6' : T.border), background: autoRotate ? 'rgba(20,184,166,0.15)' : 'transparent', color: T.text, fontSize: 12.5, fontWeight: 800, cursor: 'pointer' } }, autoRotate ? 'Pause spin' : 'Auto spin')
               ),
+              hypothesisStrip,
+              hypothesisNote,
               presetStrip,
-              el(DinoFieldStation3DStable, { species: dn, showSkeleton: showSkeleton, showBody: showBody, showHuman: showHuman, showEvidence: showEvidence, autoRotate: autoRotate, scanTarget: scanTarget.id, scanLabel: scanTarget.label, loggedAnchors: scanLogged, loggedAnchorKey: scanLoggedKey, loggedCount: scanLoggedCount, scanTotal: scanTargets.length, pathLoggedCount: scanPathCount, pathTotal: scanPathLinks.length, assemblyPlaced: assemblyPlaced, assemblyPlacedKey: assemblyPlacedKey, assemblyPlacedCount: assemblyPlacedCount, assemblyTotal: assemblyPieces.length, assemblyFocus: assemblyFocus.id, assemblyUnlocked: assemblyUnlocked, claimEvidenceFocus: claimEvidencePiece ? claimEvidencePiece.id : null, claimEvidenceLabel: claimEvidencePiece ? claimEvidencePiece.label : null, claimEvidenceAnchor: claimEvidenceAnchor ? claimEvidenceAnchor.id : null, claimEvidenceAnchorLabel: claimEvidenceAnchor ? claimEvidenceAnchor.label : null, claimEvidenceTrailLabel: claimEvidenceTrailLabel, dietColor: dColor(dn.diet) }),
+              el(DinoFieldStation3DStable, { species: dn, reconstructionMode: activeHypothesis.id, showSkeleton: showSkeleton, showBody: showBody, showHuman: showHuman, showEvidence: showEvidence, autoRotate: autoRotate, scanTarget: scanTarget.id, scanLabel: scanTarget.label, loggedAnchors: scanLogged, loggedAnchorKey: scanLoggedKey, loggedCount: scanLoggedCount, scanTotal: scanTargets.length, pathLoggedCount: scanPathCount, pathTotal: scanPathLinks.length, assemblyPlaced: assemblyPlaced, assemblyPlacedKey: assemblyPlacedKey, assemblyPlacedCount: assemblyPlacedCount, assemblyTotal: assemblyPieces.length, assemblyFocus: assemblyFocus.id, assemblyUnlocked: assemblyUnlocked, claimEvidenceFocus: claimEvidencePiece ? claimEvidencePiece.id : null, claimEvidenceLabel: claimEvidencePiece ? claimEvidencePiece.label : null, claimEvidenceAnchor: claimEvidenceAnchor ? claimEvidenceAnchor.id : null, claimEvidenceAnchorLabel: claimEvidenceAnchor ? claimEvidenceAnchor.label : null, claimEvidenceTrailLabel: claimEvidenceTrailLabel, dietColor: dColor(dn.diet) }),
               el('div', { style: { marginTop: 10, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 } }, taskCards)
             ),
             el('div', { key: 'side' },
@@ -7651,6 +9112,11 @@ window.StemLab = window.StemLab || {
                 el('div', { key: 'h', style: { fontSize: 16, fontWeight: 900, marginBottom: 2 } }, dn.common),
                 el('div', { key: 's', style: { fontSize: 12, color: T.soft, fontStyle: 'italic', marginBottom: 8 } }, dn.name),
                 el('div', { key: 'b', style: { marginBottom: 8 } }, badge(periodName(dn.period) + ' · ' + fmtMya(dn), pColor(dn.period)), badge((DIET_ICON[dn.diet] || '') + ' ' + cap(dn.diet), dColor(dn.diet)), badge(GROUP_LABEL[dn.group] || cap(dn.group), '#38bdf8')),
+                el('div', { key: 'hypothesis', role: 'note', style: { marginBottom: 9, padding: 9, borderRadius: 8, background: activeHypothesis.id === 'classic' ? 'rgba(245,158,11,0.09)' : 'rgba(20,184,166,0.09)', border: '1px solid ' + (activeHypothesis.id === 'classic' ? 'rgba(245,158,11,0.34)' : 'rgba(20,184,166,0.30)') } },
+                  el('div', { style: { fontSize: 11.5, fontWeight: 900, color: activeHypothesis.id === 'classic' ? '#fbbf24' : '#5eead4', marginBottom: 3 } }, 'Surface hypothesis | ' + activeHypothesis.status),
+                  el('div', { style: { fontSize: 12.5, fontWeight: 800, marginBottom: 3 } }, activeHypothesis.label),
+                  el('div', { style: { fontSize: 11.5, color: T.soft, lineHeight: 1.45 } }, activeHypothesis.warning)
+                ),
                 el('div', { key: 'profile', style: { marginBottom: 9, padding: 9, borderRadius: 8, background: 'rgba(20,184,166,0.09)', border: '1px solid rgba(20,184,166,0.30)' } },
                   el('div', { style: { fontSize: 11.5, fontWeight: 900, color: '#5eead4', marginBottom: 3 } }, 'Reconstruction profile | ' + cap(reconstructionProfile.coverage) + ' coverage'),
                   el('div', { style: { fontSize: 12.5, fontWeight: 800, marginBottom: 3 } }, reconstructionProfile.label),
@@ -7661,12 +9127,13 @@ window.StemLab = window.StemLab || {
               scanCoachPanel,
               assemblyPanel,
               claimBuilderPanel,
+              anatomyProfilePanel,
               challengePanel,
               visualKeyPanel,
               panel([
                 el('div', { key: 'h', style: { fontSize: 13, fontWeight: 900, marginBottom: 4 } }, 'Reconstruction layers'),
-                checkRow('field3dShowSkeleton', showSkeleton, 'Skeleton proxy', 'Shows the inferred bone layout from skull, spine, limbs, tail, and posture.'),
-                checkRow('field3dShowBody', showBody, 'Body outline', 'Adds soft-tissue volume. This is the most interpretive layer.'),
+                checkRow('field3dShowSkeleton', showSkeleton, 'Skeleton proxy', 'Shows modular cranial bars, the single occipital condyle, atlas-axis complex, clade-scaled coronoid and retroarticular jaw levers, regionalized centra and neural arches, double-headed curved dorsal ribs, differentiated sternal connections, supported gastral baskets or uncinate processes, expanded sacral ribs and iliac contacts, tapered proximal caudal ribs, true haemal arches, blade-like girdles, rimmed sockets, tapered paired limb bones, articulated phalangeal chains, and tail.'),
+                checkRow('field3dShowBody', showBody, 'Body outline + tissue inference', 'Adds skin volume, muscle envelopes, respiratory proxies, and keratin coverings. Thickness, organ boundaries, and external silhouette remain interpretive.'),
                 checkRow('field3dShowHuman', showHuman, 'Human scale', 'Keeps size estimates concrete by comparing to a 1.7 m person.'),
                 checkRow('field3dShowEvidence', showEvidence, 'Evidence markers', 'Marks skull, shoulder, and hip as anchor points for reconstruction.')
               ])
@@ -8001,7 +9468,7 @@ window.StemLab = window.StemLab || {
         content = el('div', { style: { padding: 20, color: T.text } },
           el('div', { key: 'h', style: { fontSize: 15, fontWeight: 800, marginBottom: 6 } }, '⚠️ This section could not open'),
           el('div', { key: 'b', style: { fontSize: 13, color: T.soft, lineHeight: 1.55, marginBottom: 14, maxWidth: 520 } }, 'The "' + tab + '" view ran into an error, but the rest of Dino Lab still works — pick another section from the tabs above. If Dino Lab keeps opening to this message, reset the saved view to clear it.'),
-          el('button', { key: 'r', onClick: function () { upd({ tab: 'explore', selected: null, field3dSelected: null, field3dChallengeIdx: 0, field3dChallengePicked: null, field3dChallengeScore: 0, field3dChallengeDone: 0, field3dAutoRotate: true, field3dScanTargetIdx: 0, field3dScanLogged: {}, field3dScanSpecies: null, field3dAssemblyPlaced: {}, field3dAssemblySpecies: null, field3dAssemblyFocusIdx: 0, field3dClaimFocus: 'scale', field3dClaimBone: null, field3dClaimBoneSpecies: null, compareA: null, compareB: null, query: '', filterPeriod: 'all', filterDiet: 'all', filterContinent: 'all', sortBy: 'name', quizIdx: 0, quizPicked: null, quizAnswered: false, sortIdx: 0, sortAnswered: false, sortPicked: null, ecoOpen: null, extOpen: null }); }, style: { fontSize: 13, fontWeight: 700, padding: '9px 16px', borderRadius: 9, border: 'none', background: '#15803d', color: '#fff', cursor: 'pointer' } }, '↺ Reset Dino Lab view')
+          el('button', { key: 'r', onClick: function () { upd({ tab: 'explore', selected: null, field3dSelected: null, field3dReconstructionMode: 'evidence', field3dChallengeIdx: 0, field3dChallengePicked: null, field3dChallengeScore: 0, field3dChallengeDone: 0, field3dAutoRotate: true, field3dScanTargetIdx: 0, field3dScanLogged: {}, field3dScanSpecies: null, field3dAssemblyPlaced: {}, field3dAssemblySpecies: null, field3dAssemblyFocusIdx: 0, field3dClaimFocus: 'scale', field3dClaimBone: null, field3dClaimBoneSpecies: null, compareA: null, compareB: null, query: '', filterPeriod: 'all', filterDiet: 'all', filterContinent: 'all', sortBy: 'name', quizIdx: 0, quizPicked: null, quizAnswered: false, sortIdx: 0, sortAnswered: false, sortPicked: null, ecoOpen: null, extOpen: null }); }, style: { fontSize: 13, fontWeight: 700, padding: '9px 16px', borderRadius: 9, border: 'none', background: '#15803d', color: '#fff', cursor: 'pointer' } }, '↺ Reset Dino Lab view')
         );
       }
 

@@ -5571,7 +5571,7 @@ dataRef.current = d;
                       React.createElement("button", {
                         onClick: startFn,
                         "aria-label": __alloT('stem.behaviorlab.start_function_sleuth', "Start Function Sleuth"),
-                        className: "transition-colors px-4 py-2 rounded-lg bg-blue-600 text-white font-bold text-[11px] hover:bg-blue-500 focus:outline-none focus:ring-2 ring-blue-300 active:scale-[0.97]"
+                        className: "transition-colors px-4 py-2 rounded-lg bg-blue-600 text-white font-bold text-[11px] hover:bg-blue-700 focus:outline-none focus:ring-2 ring-blue-300 active:scale-[0.97]"
                       }, __alloT('stem.behaviorlab.start_the_game_2', "🔍 Start the game"))
                     )
                   );
@@ -5641,12 +5641,12 @@ dataRef.current = d;
                           ),
                           React.createElement("button", {
                             onClick: function() { upd('blFnIdx', -1); upd('blFnShown', []); upd('blFnScore', 0); upd('blFnRounds', 0); upd('blFnStreak', 0); },
-                            className: "transition-colors mt-2 px-3 py-1.5 rounded-lg bg-blue-600 text-white font-bold text-[11px] hover:bg-blue-500 active:scale-[0.97]"
+                            className: "transition-colors mt-2 px-3 py-1.5 rounded-lg bg-blue-600 text-white font-bold text-[11px] hover:bg-blue-700 active:scale-[0.97]"
                           }, __alloT('stem.behaviorlab.restart', '🔄 Restart'))
                         )
                       : React.createElement("button", {
                           onClick: startFn,
-                          className: "transition-colors px-4 py-1.5 rounded-lg bg-blue-600 text-white font-bold text-[11px] hover:bg-blue-500 focus:outline-none focus:ring-2 ring-blue-300 active:scale-[0.97]"
+                          className: "transition-colors px-4 py-1.5 rounded-lg bg-blue-600 text-white font-bold text-[11px] hover:bg-blue-700 focus:outline-none focus:ring-2 ring-blue-300 active:scale-[0.97]"
                         }, __alloT('stem.behaviorlab.next_vignette', '➡️ Next vignette'))
                   )
                 );
@@ -5864,7 +5864,7 @@ dataRef.current = d;
                     },
                       React.createElement("div", {
                         className: "w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold border-2 transition-all " +
-                          (isCurrent ? 'bg-red-500 border-red-400 text-white scale-110' : isComplete ? 'bg-emerald-600 border-emerald-500 text-white' : 'bg-slate-800 border-slate-600 text-slate-200')
+                          (isCurrent ? 'bg-red-600 border-red-500 text-white scale-110' : isComplete ? 'bg-emerald-700 border-emerald-600 text-white' : 'bg-slate-800 border-slate-600 text-slate-200')
                       }, isComplete ? '\u2713' : (si + 1)),
                       React.createElement("div", { className: "text-[11px] mt-0.5 " + (isCurrent ? 'text-red-400 font-bold' : 'text-slate-200') }, step)
                     );
@@ -5915,7 +5915,7 @@ dataRef.current = d;
                             upd('blBipStep', blBipStep + 1);
                             if (addToast) addToast('\u2705 Step ' + (blBipStep + 1) + ' complete!', 'success');
                           },
-                          className: "px-3 py-1 rounded-lg text-[11px] font-bold bg-red-600 text-white hover:bg-red-500 focus:ring-2 focus:ring-red-200 focus:outline-none transition-all active:scale-[0.97]"
+                          className: "px-3 py-1 rounded-lg text-[11px] font-bold bg-red-600 text-white hover:bg-red-700 focus:ring-2 focus:ring-red-200 focus:outline-none transition-all active:scale-[0.97]"
                         }, __alloT('stem.behaviorlab.next_2', 'Next \u2192'))
                       )
                     );

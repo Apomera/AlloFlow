@@ -209,11 +209,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
   var AIRCRAFT = [
     { id: 'cessna172', name: 'Cessna 172 Skyhawk', icon: '🛩️', desc: 'The most popular training aircraft in the world. Forgiving, stable, perfect for learning.', category: 'Trainer',
       wingArea: 174, weight: 2550, maxThrust: 400, cl0: 0.3, clPerAoa: 0.1, cd0: 0.028, cdK: 0.042,
-      maxSpeed: 163, ceiling: 14000, fuelBurn: 8, range: 640, /* kts (Vne). Data was a mixed-unit mess: 302 here was km/h, fighters were mph, while physics read it as kts */
+      maxSpeed: 163, ceiling: 14000, fuelBurn: 8, range: 640, vfe: 85, flapDetents: [0, 10, 20, 30], /* kts (Vne). Data was a mixed-unit mess: 302 here was km/h, fighters were mph, while physics read it as kts */
       lesson: 'The Cessna 172 has a high wing design, which makes it inherently stable. High wings create a pendulum effect — the weight hangs below, naturally resisting bank.' },
     { id: 'boeing737', name: 'Boeing 737-800', icon: '✈️', desc: 'The workhorse of commercial aviation. Fast but needs longer runways and careful speed management.', category: 'Airliner',
       wingArea: 1341, weight: 144500, maxThrust: 54000, cl0: 0.35, clPerAoa: 0.11, cd0: 0.022, cdK: 0.038,
-      maxSpeed: 460, ceiling: 41000, fuelBurn: 850, range: 3115, /* kts TAS */
+      maxSpeed: 460, ceiling: 41000, fuelBurn: 850, range: 3115, vfe: 200, flapDetents: [0, 10, 20, 30], /* kts TAS */
       lesson: 'The 737 uses swept wings (25° sweep angle) to reduce drag at high speeds. Swept wings delay the formation of shock waves near Mach 1 — this is called the critical Mach number.' },
     { id: 'glider', name: 'ASK 21 Glider', icon: '🪂', desc: 'No engine! Pure energy management — trade altitude for speed. The ultimate physics lesson.', category: 'Glider',
       wingArea: 182, weight: 1100, maxThrust: 0, cl0: 0.45, clPerAoa: 0.12, cd0: 0.012, cdK: 0.035,
@@ -273,6 +273,110 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     { name: 'ARCTIC OCEAN', lat: 80, lon: 0, minAlt: 25000, water: true },
     { name: 'MEDITERRANEAN SEA', lat: 35, lon: 18, minAlt: 10000, water: true },
   ];
+
+  // Shared geographic world model. This is intentionally a smooth,
+  // deterministic simulation rather than a claim of survey-grade climate
+  // data: latitude, elevation, continental rain shadows, and broad humid /
+  // arid centers combine into coherent biomes with soft transitions. Both
+  // the WebGL and Canvas renderers consume this exact model.
+  function worldNoise(lat, lon) {
+    var n = Math.sin(lat * 127.1 + lon * 311.7) * 43758.5453;
+    return n - Math.floor(n);
+  }
+
+  function worldClimateInfluence(lat, lon, centers) {
+    var total = 0;
+    for (var i = 0; i < centers.length; i++) {
+      var c = centers[i];
+      var dLon = Math.abs(lon - c[1]);
+      dLon = Math.min(dLon, 360 - dLon);
+      var dLatN = (lat - c[0]) / c[3];
+      var dLonN = dLon / c[4];
+      total += c[2] * Math.exp(-(dLatN * dLatN + dLonN * dLonN));
+    }
+    return total;
+  }
+
+  function getWorldEnvironment(lat, lon, elevationFt, water) {
+    lat = Math.max(-90, Math.min(90, Number(lat) || 0));
+    lon = ((Number(lon) || 0) + 540) % 360 - 180;
+    elevationFt = Math.max(0, Number(elevationFt) || 0);
+    var absLat = Math.abs(lat);
+    var snowLineFt = Math.max(1800, Math.min(15500, 15500 - absLat * 175));
+    var temperature = Math.max(0, Math.min(1, 1.04 - absLat / 82 - elevationFt / 26000));
+    var subtropicalDry = Math.exp(-Math.pow((absLat - 27) / 10, 2));
+    var moisture = 0.53 + Math.exp(-Math.pow(absLat / 22, 2)) * 0.12 - subtropicalDry * 0.12;
+    moisture += (worldNoise(lat * 0.72 + 13, lon * 0.72 - 7) - 0.5) * 0.16;
+    moisture += worldClimateInfluence(lat, lon, [
+      [-4, -63, 0.32, 15, 22], [0, 23, 0.28, 14, 20], [7, 106, 0.28, 18, 27],
+      [47, -123, 0.20, 11, 12], [51, 8, 0.13, 16, 24], [-42, 172, 0.18, 10, 10]
+    ]);
+    moisture -= worldClimateInfluence(lat, lon, [
+      [24, 18, 0.42, 12, 30], [24, 48, 0.34, 11, 17], [-25, 134, 0.38, 16, 27],
+      [-23, -69, 0.34, 12, 9], [36, -114, 0.24, 12, 16], [42, 103, 0.26, 12, 22],
+      [-24, 22, 0.25, 12, 17]
+    ]);
+    moisture = Math.max(0, Math.min(1, moisture));
+
+    var env;
+    if (water) {
+      env = absLat > 66
+        ? { id: 'polar_ocean', label: 'Polar Ocean', color: [28, 102, 142], haze: [176, 214, 226], treeDensity: 0, fieldDensity: 0, visibilityFactor: 0.88 }
+        : { id: 'ocean', label: 'Open Ocean', color: [12, 82, 158], haze: [130, 190, 214], treeDensity: 0, fieldDensity: 0, visibilityFactor: 0.94 };
+    } else if (elevationFt >= snowLineFt) {
+      env = { id: 'alpine', label: 'Alpine Ice', color: [211, 220, 224], haze: [196, 216, 225], treeDensity: 0.02, fieldDensity: 0, visibilityFactor: 0.96 };
+    } else if (absLat >= 76) {
+      env = { id: 'polar', label: 'Polar Ice', color: [218, 229, 228], haze: [202, 224, 231], treeDensity: 0, fieldDensity: 0, visibilityFactor: 0.92 };
+    } else if (absLat >= 63) {
+      env = { id: 'tundra', label: 'Tundra', color: [104, 125, 99], haze: [165, 186, 184], treeDensity: 0.08, fieldDensity: 0, visibilityFactor: 0.88 };
+    } else if (absLat >= 50 && moisture >= 0.46) {
+      env = { id: 'boreal', label: 'Boreal Forest', color: [43, 91, 67], haze: [133, 166, 169], treeDensity: 0.82, fieldDensity: 0.08, visibilityFactor: 0.82 };
+    } else if (absLat < 25 && moisture >= 0.60) {
+      env = { id: 'tropical_rainforest', label: 'Tropical Rainforest', color: [32, 111, 59], haze: [119, 177, 161], treeDensity: 0.96, fieldDensity: 0.04, visibilityFactor: 0.74 };
+    } else if (moisture < 0.30 && temperature > 0.26) {
+      env = { id: 'desert', label: 'Desert', color: [185, 145, 83], haze: [211, 180, 132], treeDensity: 0.015, fieldDensity: 0.01, visibilityFactor: 0.78 };
+    } else if (moisture < 0.44) {
+      env = { id: 'grassland', label: 'Dry Grassland', color: [132, 137, 71], haze: [177, 180, 143], treeDensity: 0.16, fieldDensity: 0.32, visibilityFactor: 0.90 };
+    } else if (moisture >= 0.58) {
+      env = { id: 'temperate_forest', label: 'Temperate Forest', color: [49, 113, 63], haze: [135, 177, 165], treeDensity: 0.76, fieldDensity: 0.18, visibilityFactor: 0.84 };
+    } else {
+      env = { id: 'temperate', label: 'Temperate Lowlands', color: [78, 132, 70], haze: [151, 184, 166], treeDensity: 0.38, fieldDensity: 0.55, visibilityFactor: 0.91 };
+    }
+    // A subtle continuous climate tint softens categorical biome borders.
+    // The biome retains its visual identity while adjacent cells transition
+    // through shared moisture/temperature tones instead of forming stripes.
+    if (!water && env.id !== 'alpine' && env.id !== 'polar') {
+      var climateColor = [
+        154 - moisture * 72 + (1 - temperature) * 12,
+        112 + moisture * 48 - (1 - temperature) * 8,
+        62 + moisture * 34 + (1 - temperature) * 18
+      ];
+      env.color = env.color.map(function(channel, ci) {
+        return Math.round(Math.max(0, Math.min(255, channel * 0.72 + climateColor[ci] * 0.28)));
+      });
+    }
+    env.moisture = moisture;
+    env.temperature = temperature;
+    env.snowLineFt = snowLineFt;
+    return env;
+  }
+
+  // ── AIRCRAFT CONFIGURATION AERODYNAMICS ────────────────────────────────
+  // Deterministic flap model shared by physics, PFD, and tests. Full flaps
+  // increase maximum lift by 45% and nearly triple profile drag: the aircraft
+  // can approach slower, but cannot accelerate or glide as efficiently.
+  function getFlapAerodynamics(flapDeg) {
+    var degrees = Math.max(0, Math.min(30, Number(flapDeg) || 0));
+    var ratio = degrees / 30;
+    var liftMultiplier = 1 + ratio * 0.45;
+    return {
+      degrees: degrees,
+      ratio: ratio,
+      liftMultiplier: liftMultiplier,
+      dragMultiplier: 1 + ratio * 1.8,
+      stallSpeedFactor: 1 / Math.sqrt(liftMultiplier)
+    };
+  }
 
   // ── FLIGHT PHYSICS ENGINE ──
   var Physics = {
@@ -491,13 +595,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       var aoa = pitch - (vsi / Math.max(speed, 1)) * (180 / Math.PI) * 0.5;
       var lift = this.liftForce(speed, alt, aoa);
       var drag = this.dragForce(speed, alt, aoa);
+      var flapAero = getFlapAerodynamics(controls.flaps);
+      lift *= flapAero.liftMultiplier;
+      drag *= flapAero.dragMultiplier;
 
       // Stall check. A parked plane at speed=0 trivially satisfies speed < stallSpeed,
       // so without this onGround guard the sim fires STALL warnings the instant you
       // load into Sky School — banner, horn, voice alert, and an adaptive hint that
       // tells you to push S (pitch-down) when you actually need Shift (throttle-up).
       // Stall is a flight phenomenon; suppress it while wheels are on the runway.
-      var stalling = !state.onGround && this.isStalling(speed, alt);
+      var configuredStallSpeed = this.stallSpeed(alt) * flapAero.stallSpeedFactor;
+      var stalling = !state.onGround && speed < configuredStallSpeed * 1.1;
       if (stalling) { lift *= 0.4; drag *= 1.5; } // dramatic lift loss in stall
 
       // Acceleration along flight path
@@ -538,7 +646,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       if (alt <= fieldElev) {
         alt = fieldElev;
         vsi = Math.max(0, vsi);
-        var rollingMu = 0.025;
+        // Paved rolling resistance plus pilot-commanded wheel braking.
+        // Full braking adds ~0.28g, a realistic dry-runway training value.
+        var brakeInput = Math.max(0, Math.min(1, Number(controls.brake) || 0));
+        var rollingMu = 0.025 + brakeInput * 0.28;
         speed = Math.max(0, speed - rollingMu * this.G * dt);
       }
 
@@ -658,6 +769,72 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
     var wN = -(windKts || 0) * Math.cos(wf), wE = -(windKts || 0) * Math.sin(wf);
     var jE = jetTailKts || 0;
     return Math.sqrt((vN + wN) * (vN + wN) + (vE + wE + jE) * (vE + wE + jE));
+  }
+
+  // ── UNIFIED FLIGHT TELEMETRY ──────────────────────────────────────────
+  // One source of truth for the PFD, approach monitor, and tests. The physics
+  // state stores true airspeed (TAS); a real airspeed indicator shows IAS,
+  // which falls with density at altitude. Keeping IAS/TAS/GS distinct makes
+  // the weather, atmosphere, navigation, and stall lessons agree on-screen.
+  function computeFlightTelemetry(state, controls, weather, jetTailKts, stallTasKts, approachDistanceNm, approachCourseErrorDeg) {
+    state = state || {};
+    controls = controls || {};
+    weather = weather || {};
+    var altitudeFt = Number(state.altitude) || 0;
+    var tasKts = Math.max(0, (Number(state.speed) || 0) * 0.5924838);
+    var densityRatio = Math.pow(Math.max(0, 1 - 0.0000068756 * altitudeFt), 4.2561);
+    var indicatedFactor = Math.sqrt(Math.max(0, densityRatio));
+    var iasKts = tasKts * indicatedFactor;
+    var stallIasKts = Math.max(0, Number(stallTasKts) || 0) * indicatedFactor;
+    var headingDeg = ((Number(state.heading) || 0) % 360 + 360) % 360;
+    var windKts = state.onGround ? 0 : Math.max(0, Number(weather.wind) || 0);
+    var windFromDeg = Number(weather.windDir) || 0;
+    var windRelRad = (windFromDeg - headingDeg) * Math.PI / 180;
+    var headwindKts = windKts * Math.cos(windRelRad);
+    var crosswindKts = windKts * Math.sin(windRelRad);
+    var gsKts = composeGroundSpeedKts(headingDeg, tasKts, windKts, windFromDeg, state.onGround ? 0 : (Number(jetTailKts) || 0));
+    var fpm = (Number(state.vsi) || 0) * 60;
+    var bankDeg = Number(controls.bank) || 0;
+    var pitchDeg = Number(controls.pitch) || 0;
+    var bankCos = Math.cos(Math.min(80, Math.abs(bankDeg)) * Math.PI / 180);
+    var loadFactor = state.onGround ? 1 : 1 / Math.max(0.17, bankCos);
+    var flightPathAngleDeg = Math.atan2(Number(state.vsi) || 0, Math.max(1, Number(state.speed) || 0)) * 180 / Math.PI;
+    var fieldElev = Number(state.fieldElev) || 0;
+    var aglFt = Math.max(0, altitudeFt - fieldElev);
+    var appDist = Number(approachDistanceNm);
+    var appCourseError = Number(approachCourseErrorDeg);
+    // A real final requires geometry and intent: near the field, descending,
+    // and pointed generally toward it. This prevents departure climbs and
+    // low-level airport overflights from receiving false approach callouts.
+    var approachActive = !state.onGround && Number.isFinite(appDist) && appDist > 0.15 && appDist <= 5
+      && Number.isFinite(appCourseError) && Math.abs(appCourseError) <= 45
+      && fpm < -50 && aglFt > 30 && aglFt <= 2500;
+    var glideAngleDeg = approachActive ? Math.atan2(aglFt, appDist * 6076.12) * 180 / Math.PI : null;
+    var speedRatio = stallIasKts > 1 ? iasKts / stallIasKts : null;
+    var approachChecks = {
+      speed: !approachActive || speedRatio == null || (speedRatio >= 1.15 && speedRatio <= 1.55),
+      sink: !approachActive || (fpm <= -100 && fpm >= -1000),
+      bank: !approachActive || Math.abs(bankDeg) <= 20,
+      glide: !approachActive || (glideAngleDeg >= 2 && glideAngleDeg <= 4.2)
+    };
+    var approachReasons = [];
+    if (approachActive) {
+      if (!approachChecks.speed) approachReasons.push(speedRatio != null && speedRatio < 1.15 ? 'SLOW' : 'FAST');
+      if (!approachChecks.sink) approachReasons.push(fpm > -100 ? 'DESCEND' : 'SINK');
+      if (!approachChecks.bank) approachReasons.push('BANK');
+      if (!approachChecks.glide) approachReasons.push(glideAngleDeg < 2 ? 'GLIDE LOW' : 'GLIDE HIGH');
+    }
+    return {
+      iasKts: iasKts, tasKts: tasKts, gsKts: gsKts,
+      stallIasKts: stallIasKts, fpm: fpm,
+      headwindKts: headwindKts, crosswindKts: crosswindKts,
+      loadFactor: loadFactor, flightPathAngleDeg: flightPathAngleDeg,
+      aglFt: aglFt, pitchDeg: pitchDeg,
+      approachActive: approachActive,
+      approachStable: approachActive && approachReasons.length === 0,
+      approachChecks: approachChecks, approachReasons: approachReasons,
+      glideAngleDeg: glideAngleDeg, speedRatio: speedRatio
+    };
   }
 
   // ── REAL CITIES ──
@@ -9602,6 +9779,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       });
       var controlsRef = useRef({ throttle: 0, pitch: 0, bank: 0 });
       var hudRef = useRef({});
+      var worldStatusRef = useRef(null);
       // Per-frame gradient cache (Chromebook alloc sweep): the sky, ground,
       // dashboard, and vignette gradients were re-created ~60×/s with stable
       // (or quantized-stable) parameters. CanvasGradient objects survive the
@@ -9659,6 +9837,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       var [threeLoaded, setThreeLoaded] = useState(false);
       var [pausedUi, setPausedUi] = useState(false);
       var [fullscreenActive, setFullscreenActive] = useState(false);
+      var [flightConfigUi, setFlightConfigUi] = useState({ flaps: 0, brake: false });
+      var brakeLatchedRef = useRef(false);
       var webglCanvasRef = useRef(null);
       var threeSceneRef = useRef(null);
       var threeCameraRef = useRef(null);
@@ -10515,19 +10695,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
             positionAttr.setZ(index, h);
 
-            var r = 0.2, g = 0.6, b = 0.3;
+            var worldEnv = getWorldEnvironment(vlat, vlon, h, water);
+            // Near-shore bathymetry: shallow water catches more green/cyan,
+            // giving coastlines a readable shelf instead of an abrupt blue cut.
             if (water) {
-              r = 0.05; g = 0.25; b = 0.65;
-              waterIdx.push({ i: index, x: px, y: py, r: r, g: g, b: b });
-            } else if (h < 50) {
-              r = 0.76; g = 0.70; b = 0.50;
-            } else if (h < 1500) {
-              r = 0.22; g = 0.58; b = 0.26;
-            } else if (h < 3800) {
-              r = 0.45; g = 0.35; b = 0.25;
-            } else {
-              r = 0.90; g = 0.90; b = 0.92;
+              var shoreNear = !isWaterMask(vlat + 0.22, vlon) || !isWaterMask(vlat - 0.22, vlon) ||
+                              !isWaterMask(vlat, vlon + 0.22) || !isWaterMask(vlat, vlon - 0.22);
+              if (shoreNear) {
+                worldEnv.color = worldEnv.color.map(function(channel, ci) {
+                  var shelf = [42, 139, 169][ci];
+                  return Math.round(channel * 0.55 + shelf * 0.45);
+                });
+              }
             }
+            var reliefShade = water ? 1 : (0.90 + terrainHash(vlat * 18, vlon * 18) * 0.16);
+            var r = Math.min(1, worldEnv.color[0] / 255 * reliefShade);
+            var g = Math.min(1, worldEnv.color[1] / 255 * reliefShade);
+            var b = Math.min(1, worldEnv.color[2] / 255 * reliefShade);
+            if (water) waterIdx.push({ i: index, x: px, y: py, r: r, g: g, b: b });
 
             colorAttr.setXYZ(index, r, g, b);
           }
@@ -10930,6 +11115,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           Math.max(0, 1 - Math.abs(solarHr - 6) / 1.6),
           Math.max(0, 1 - Math.abs(solarHr - 18) / 1.6));
         if (goldenP3 > 0.03) skyColor.lerp(new THREE.Color(0.95, 0.5, 0.22), goldenP3 * 0.5);
+        var frameWorldEnv = getWorldEnvironment(state.lat, state.lon, groundBelowAircraft(state.lat, state.lon), isWater(state.lat, state.lon));
+        hudRef.current.worldEnvironment = frameWorldEnv;
+        // Humid forests bloom blue-green at the horizon; deserts carry a
+        // restrained warm dust veil. Night remains dark and navigable.
+        if (brightness > 0.18) {
+          var biomeHaze = new THREE.Color(frameWorldEnv.haze[0] / 255, frameWorldEnv.haze[1] / 255, frameWorldEnv.haze[2] / 255);
+          skyColor.lerp(biomeHaze, 0.05 + (1 - frameWorldEnv.visibilityFactor) * 0.16);
+        }
         if (resources.skyMesh) resources.skyMesh.material.color.copy(skyColor);
 
         if (resources.ambientLight) {
@@ -10967,6 +11160,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             // finally FELT in the world (it was previously 2D/HUD-only).
             var _wv = (weatherRef && weatherRef.current && typeof weatherRef.current.visibility === 'number') ? weatherRef.current.visibility : 1;
             _visF *= Math.max(0.25, _wv);
+            _visF *= frameWorldEnv.visibilityFactor;
             // Cap well inside the terrain mesh's ±120,000 edge so terrain
             // fully melts into the sky color BEFORE it ends — otherwise the
             // mesh's serrated far edge and half-fogged steep far faces
@@ -11347,7 +11541,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         // 2026-05-10 scroll fix narrowed capture to it, which silently killed
         // throttle-down (Ctrl/-), view (V), info (I), forces (F), help (?/),
         // autopilot (B), and quiz answers (1-4) because keysRef never saw them.
-        var FLIGHT_KEYS = { 'arrowup': 1, 'arrowdown': 1, 'arrowleft': 1, 'arrowright': 1, 'w': 1, 'a': 1, 's': 1, 'd': 1, ' ': 1, 'spacebar': 1, 'q': 1, 'e': 1, 'shift': 1, 'control': 1, '-': 1, '=': 1, 'v': 1, 'i': 1, 'f': 1, 'b': 1, '?': 1, '/': 1, '1': 1, '2': 1, '3': 1, '4': 1, 'escape': 1 };
+        var FLIGHT_KEYS = { 'arrowup': 1, 'arrowdown': 1, 'arrowleft': 1, 'arrowright': 1, 'w': 1, 'a': 1, 's': 1, 'd': 1, ' ': 1, 'spacebar': 1, 'q': 1, 'e': 1, 'shift': 1, 'control': 1, '-': 1, '=': 1, 'v': 1, 'i': 1, 'f': 1, 'b': 1, 'x': 1, '[': 1, ']': 1, '?': 1, '/': 1, '1': 1, '2': 1, '3': 1, '4': 1, 'escape': 1 };
         // Edge-triggered keys are consumed (set false) by the RAF loop, not by
         // keyup: a quick tap can go down AND up between two frames — at 30 fps
         // half of instant taps got erased before the loop ever saw them, so
@@ -11355,7 +11549,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         // it doubles as a HELD yaw pedal in helicopter/drone mode and must
         // release on keyup. Digits 1-4 are discarded by a per-frame sweep in
         // the loop so an unconsumed latch can't ghost-answer a later quiz.
-        var EDGE_KEYS = { ' ': 1, 'spacebar': 1, 'v': 1, 'i': 1, 'f': 1, 'b': 1, '?': 1, '/': 1, '1': 1, '2': 1, '3': 1, '4': 1, 'escape': 1 };
+        var EDGE_KEYS = { ' ': 1, 'spacebar': 1, 'v': 1, 'i': 1, 'f': 1, 'b': 1, '[': 1, ']': 1, '?': 1, '/': 1, '1': 1, '2': 1, '3': 1, '4': 1, 'escape': 1 };
         var onKey = function(e) {
           // Let students type in chat/search fields without flying the plane
           var tgt = e.target;
@@ -11845,6 +12039,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         if (isWater(state.lat, state.lon)) return;
         if (dayNight2 && dayNight2.isNight) return; // night handled by city lights elsewhere
 
+        var localGroundElev = groundBelowAircraft(state.lat, state.lon);
+        var localWorldEnv = getWorldEnvironment(state.lat, state.lon, localGroundElev, false);
         var fade = Math.max(0, 1 - aglAlt / 6000); // 1 on ground, 0 at 6000 ft
         var hdgRad = state.heading * Math.PI / 180;
         var cosHdg = Math.cos(hdgRad);
@@ -11875,7 +12071,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         // 0.012° grid (~0.7 nm). Adds gentle agricultural texture to the
         // otherwise-uniform terrain wash so rural land reads as patchwork
         // farmland rather than blank green.
-        if (aglAlt < 4500) {
+        if (aglAlt < 4500 && localWorldEnv.fieldDensity > 0.08) {
           var FSTEP = 0.012;
           var flatC = Math.round(state.lat / FSTEP) * FSTEP;
           var flonC = Math.round(state.lon / FSTEP) * FSTEP;
@@ -11884,17 +12080,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               var fLat = flatC + fi * FSTEP;
               var fLon = flonC + fj * FSTEP;
               var fSeed = terrainHash(fLat * 91, fLon * 53);
-              if (fSeed < 0.35) continue; // sparse — only some cells are visibly tinted
+              if (fSeed < Math.max(0.30, 0.68 - localWorldEnv.fieldDensity * 0.55)) continue;
               // Project the field's four corners to draw an actual quad
               var pTL = projectLatLon(fLat, fLon);
               var pTR = projectLatLon(fLat, fLon + FSTEP);
               var pBL = projectLatLon(fLat + FSTEP, fLon);
               var pBR = projectLatLon(fLat + FSTEP, fLon + FSTEP);
               if (!pTL || !pTR || !pBL || !pBR) continue;
-              var fG = fSeed > 0.7 ? 'rgba(112,138,72,'  // ripe wheat / hay
-                     : fSeed > 0.55 ? 'rgba(70,108,50,'   // pasture
-                     : fSeed > 0.45 ? 'rgba(132,118,78,'  // tilled / fallow
-                                    : 'rgba(86,128,68,';  // grass
+              var dryFields = localWorldEnv.id === 'grassland';
+              var fG = fSeed > 0.7 ? (dryFields ? 'rgba(166,142,76,' : 'rgba(112,138,72,')
+                     : fSeed > 0.55 ? (dryFields ? 'rgba(128,126,67,' : 'rgba(70,108,50,')
+                     : fSeed > 0.45 ? 'rgba(132,118,78,'
+                                    : (dryFields ? 'rgba(142,132,72,' : 'rgba(86,128,68,');
               gfx.fillStyle = fG + (0.30 * fade * (0.5 + (pTL.t + pBL.t) * 0.25)) + ')';
               gfx.beginPath();
               gfx.moveTo(pTL.x, pTL.y);
@@ -12156,17 +12353,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         // ── Sparse trees scattered across the rural landscape. Cheap
         // dot-cluster between towns, deterministic per-cell so they don't
         // shimmer. Skip cells that already have a town (visual clutter).
-        if (aglAlt < 3500) {
+        if (aglAlt < 3500 && localWorldEnv.treeDensity > 0.04) {
           var TREE_STEP = 0.008;
           var tlatC = Math.round(state.lat / TREE_STEP) * TREE_STEP;
           var tlonC = Math.round(state.lon / TREE_STEP) * TREE_STEP;
-          var treeColor = 'rgba(35,80,40,';
+          var treeColor = localWorldEnv.id === 'boreal' ? 'rgba(24,67,51,'
+                        : localWorldEnv.id === 'tropical_rainforest' ? 'rgba(24,98,47,'
+                        : localWorldEnv.id === 'grassland' ? 'rgba(74,92,43,'
+                        : 'rgba(35,80,40,';
           for (var ti = -6; ti <= 6; ti++) {
             for (var tj = -6; tj <= 6; tj++) {
               var tLat = tlatC + ti * TREE_STEP;
               var tLon = tlonC + tj * TREE_STEP;
               var tSeed = terrainHash(tLat * 211, tLon * 137);
-              if (tSeed < 0.55) continue;          // 45% of cells get a tree
+              if (tSeed < Math.max(0.38, 0.88 - localWorldEnv.treeDensity * 0.55)) continue;
               var pt = projectLatLon(tLat, tLon);
               if (!pt) continue;
               var tSize = Math.max(0.8, 1.2 + pt.t * 1.8);
@@ -12479,7 +12679,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         // Different from the scattered single trees earlier — these are
         // identifiable WOODED AREAS, drawn as a tight cluster of dots that
         // reads as a forest stand against the field patchwork.
-        if (aglAlt < 3000) {
+        if (aglAlt < 3000 && localWorldEnv.treeDensity > 0.28) {
           var FOREST_STEP = 0.022;
           var folatC = Math.round(state.lat / FOREST_STEP) * FOREST_STEP;
           var folonC = Math.round(state.lon / FOREST_STEP) * FOREST_STEP;
@@ -12488,14 +12688,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               var foLat = folatC + foi * FOREST_STEP;
               var foLon = folonC + foj * FOREST_STEP;
               var foSeed = terrainHash(foLat * 79, foLon * 167);
-              if (foSeed < 0.78) continue; // ~22% of cells are forest blocks
+              if (foSeed < Math.max(0.54, 0.95 - localWorldEnv.treeDensity * 0.38)) continue;
               var pf = projectLatLon(foLat, foLon);
               if (!pf) continue;
               // Forest base wash (darker green) — slightly larger ellipse
               // behind the canopy dots so the patch reads even at distance.
               var foRx = Math.max(8, 28 * pf.t * (0.7 + foSeed * 0.5));
               var foRy = foRx * 0.55;
-              gfx.fillStyle = 'rgba(28,68,38,' + (0.45 * fade * (0.5 + pf.t * 0.5)) + ')';
+              var forestBase = localWorldEnv.id === 'boreal' ? 'rgba(20,57,47,'
+                             : localWorldEnv.id === 'tropical_rainforest' ? 'rgba(18,78,39,'
+                             : 'rgba(28,68,38,';
+              gfx.fillStyle = forestBase + (0.45 * fade * (0.5 + pf.t * 0.5)) + ')';
               gfx.beginPath();
               gfx.ellipse(pf.x, pf.y, foRx, foRy, 0, 0, Math.PI * 2);
               gfx.fill();
@@ -12508,9 +12711,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 var cdy = pf.y + Math.sin(cdAng) * cdRad * 0.55;
                 var cdSize = Math.max(1, 1.6 + pf.t * 1.4);
                 var cdHue = terrainHash(cd, foSeed * 13);
-                gfx.fillStyle = cdHue > 0.6
-                  ? 'rgba(45,95,55,' + (0.7 * fade) + ')'  // brighter deciduous
-                  : 'rgba(25,72,40,' + (0.7 * fade) + ')';  // darker conifer
+                gfx.fillStyle = localWorldEnv.id === 'boreal'
+                  ? (cdHue > 0.6 ? 'rgba(38,82,67,' : 'rgba(18,60,49,') + (0.7 * fade) + ')'
+                  : localWorldEnv.id === 'tropical_rainforest'
+                    ? (cdHue > 0.6 ? 'rgba(42,118,55,' : 'rgba(20,88,42,') + (0.7 * fade) + ')'
+                    : (cdHue > 0.6 ? 'rgba(45,95,55,' : 'rgba(25,72,40,') + (0.7 * fade) + ')';
                 gfx.beginPath();
                 gfx.arc(cdx, cdy, cdSize, 0, Math.PI * 2);
                 gfx.fill();
@@ -13516,17 +13721,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var elevBump = Math.min(25, elev / alt * 45);
           var rowH = (H - horizonY) / rows + 2;
 
-          // Check adjacent cells for coastline detection
-          var adjWater = isWater(scanLat + 0.5, scanLon) || isWater(scanLat - 0.5, scanLon) || isWater(scanLat, scanLon + 0.5) || isWater(scanLat, scanLon - 0.5);
-          var isCoast = water !== adjWater;
+          // Check adjacent cells for coastline detection. Compare every
+          // neighbor with the center; the old OR collapsed most water-side
+          // coastlines to "not coast" and made lighthouses one-sided.
+          var neighborWater = [isWater(scanLat + 0.5, scanLon), isWater(scanLat - 0.5, scanLon), isWater(scanLat, scanLon + 0.5), isWater(scanLat, scanLon - 0.5)];
+          var isCoast = neighborWater.some(function(nw) { return nw !== water; });
+          var rowWorldEnv = getWorldEnvironment(scanLat, scanLon, elev, water);
 
           if (water) {
             // Deep vs shallow water
             var wavePhase = Math.sin(time * 1.8 + r * 0.7) * 2;
             var wavePhase2 = Math.sin(time * 2.3 + r * 0.4 + 1.5) * 1.5;
-            var depthBlue = Math.round(120 + depth * 60);
-            var depthGreen = Math.round(60 + depth * 40 + wavePhase + wavePhase2);
-            gfx.fillStyle = 'rgb(' + Math.round(15 + depth * 25) + ',' + depthGreen + ',' + depthBlue + ')';
+            var waterTone = rowWorldEnv.color.slice();
+            if (isCoast) {
+              waterTone[0] = waterTone[0] * 0.55 + 42 * 0.45;
+              waterTone[1] = waterTone[1] * 0.55 + 139 * 0.45;
+              waterTone[2] = waterTone[2] * 0.55 + 169 * 0.45;
+            }
+            var depthBlue = Math.round(Math.min(220, waterTone[2] + depth * 42));
+            var depthGreen = Math.round(Math.min(180, waterTone[1] + depth * 30 + wavePhase + wavePhase2));
+            gfx.fillStyle = 'rgb(' + Math.round(Math.min(70, waterTone[0] + depth * 18)) + ',' + depthGreen + ',' + depthBlue + ')';
             gfx.fillRect(0, y, W, rowH);
 
             // Wave highlights
@@ -13779,36 +13993,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               }
             }
           } else {
-            var green = Math.max(40, Math.min(180, 100 - elev / 60 + depth * 40));
-            var brown = elev > 3000 ? Math.min(200, 80 + elev / 40) : 30;
-            var snow = elev > 8000 ? Math.min(255, (elev - 8000) / 20) : 0;
-
-            // Desert detection (low latitude, low elevation inland)
-            var isDesert = Math.abs(scanLat) < 30 && Math.abs(scanLat) > 15 && elev < 2000 && terrainHash(scanLat * 3, scanLon * 3) > 0.55;
-            // Tundra detection (high latitude)
-            var isTundra = Math.abs(scanLat) > 60 && elev < 3000;
-
-            if (snow > 50) {
-              gfx.fillStyle = 'rgb(' + Math.round(200 + snow * 0.2) + ',' + Math.round(200 + snow * 0.2) + ',' + Math.round(215 + snow * 0.1) + ')';
-            } else if (isDesert) {
-              var sand = 160 + depth * 30 + terrainHash(scanLat * 5, scanLon * 5) * 20;
-              gfx.fillStyle = 'rgb(' + Math.round(sand) + ',' + Math.round(sand * 0.85) + ',' + Math.round(sand * 0.55) + ')';
-            } else if (isTundra) {
-              var tGreen = 80 + depth * 20;
-              gfx.fillStyle = 'rgb(' + Math.round(tGreen * 0.7) + ',' + Math.round(tGreen) + ',' + Math.round(tGreen * 0.6) + ')';
-            } else if (elev > 3000) {
-              gfx.fillStyle = 'rgb(' + Math.round(brown) + ',' + Math.round(green * 0.6) + ',' + Math.round(30) + ')';
-            } else {
-              gfx.fillStyle = 'rgb(' + Math.round(30 + depth * 20) + ',' + Math.round(green) + ',' + Math.round(20 + depth * 10) + ')';
-            }
+            var biomeColor = rowWorldEnv.color;
+            var textureNoise = terrainHash(scanLat * 5, scanLon * 5) - 0.5;
+            var depthLight = 0.82 + depth * 0.22 + textureNoise * 0.10;
+            var reliefWarmth = (rowWorldEnv.id === 'alpine' || rowWorldEnv.id === 'polar') ? 0 : Math.min(28, elev / 260);
+            var landR = Math.max(0, Math.min(255, biomeColor[0] * depthLight + reliefWarmth));
+            var landG = Math.max(0, Math.min(255, biomeColor[1] * depthLight - reliefWarmth * 0.35));
+            var landB = Math.max(0, Math.min(255, biomeColor[2] * depthLight - reliefWarmth * 0.45));
+            gfx.fillStyle = 'rgb(' + Math.round(landR) + ',' + Math.round(landG) + ',' + Math.round(landB) + ')';
             gfx.fillRect(0, y - elevBump, W, rowH);
 
             // Terrain texture: forest patches (low elev, temperate)
             // Forest density varies by biome — boreal forests at higher lat, deciduous mid-lat
             var forestDensity = terrainHash(Math.floor(scanLat * 4), Math.floor(scanLon * 4));
-            var isBoreal = Math.abs(scanLat) > 45 && Math.abs(scanLat) < 65;
-            var isTropical = Math.abs(scanLat) < 23 && elev < 2000 && !isDesert;
-            var isDensedForest = (forestDensity > 0.55 && elev < 2500 && !isDesert && !isTundra);
+            var isBoreal = rowWorldEnv.id === 'boreal';
+            var isTropical = rowWorldEnv.id === 'tropical_rainforest';
+            var isDensedForest = rowWorldEnv.treeDensity > 0.45 && forestDensity > (0.88 - rowWorldEnv.treeDensity * 0.5) && elev < rowWorldEnv.snowLineFt;
 
             if (isDensedForest && depth > 0.15 && alt < 12000) {
               // Base forest color wash (darker green)
@@ -13836,7 +14036,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                   gfx.fill();
                 }
               }
-            } else if (elev < 2000 && !isDesert && !isTundra && depth > 0.3 && alt < 10000) {
+            } else if (rowWorldEnv.treeDensity > 0.12 && elev < rowWorldEnv.snowLineFt && depth > 0.3 && alt < 10000) {
               // Scattered light forest patches
               gfx.fillStyle = 'rgba(20,80,20,' + (0.1 * depth) + ')';
               for (var tr2 = 0; tr2 < 4; tr2++) {
@@ -13847,9 +14047,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             }
 
             // Farmland grid pattern (flat, low-elevation, temperate, not forest)
-            var isFarmland = !isDensedForest && !isDesert && !isTundra && elev < 1500 && Math.abs(scanLat) < 55 &&
-                             terrainHash(Math.floor(scanLat * 3) + 1, Math.floor(scanLon * 3) + 1) > 0.45 &&
-                             terrainHash(Math.floor(scanLat * 3) + 1, Math.floor(scanLon * 3) + 1) < 0.7;
+            var fieldNoise = terrainHash(Math.floor(scanLat * 3) + 1, Math.floor(scanLon * 3) + 1);
+            var isFarmland = !isDensedForest && rowWorldEnv.fieldDensity > 0.1 && elev < 1800 &&
+                             fieldNoise > (0.72 - rowWorldEnv.fieldDensity * 0.5) && fieldNoise < 0.82;
             if (isFarmland && depth > 0.3 && alt < 8000) {
               var farmSeed = Math.floor(scanLat * 8) * 17 + Math.floor(scanLon * 8);
               var farmStartX = terrainHash(farmSeed, 1) * W * 0.3;
@@ -14009,7 +14209,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             }
 
             // Dams/reservoirs (blocky barrier across a river valley)
-            if (elev > 800 && elev < 5000 && depth > 0.35 && alt < 7000 && !isDesert &&
+            if (elev > 800 && elev < 5000 && depth > 0.35 && alt < 7000 && rowWorldEnv.id !== 'desert' &&
                 terrainHash(Math.floor(scanLat * 8) + 11, Math.floor(scanLon * 8) + 13) > 0.93) {
               var dmX = terrainHash(scanLat * 19, scanLon * 19) * W * 0.6 + W * 0.2;
               var dmW = 18 + depth * 14;
@@ -14057,7 +14257,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
             // Small rural villages/hamlets (away from cities, sparse cluster of ~5-8 buildings + church)
             var villageSeed = Math.floor(scanLat * 7) * 23 + Math.floor(scanLon * 7);
-            var isVillage = !isDesert && !isTundra && elev < 3500 && depth > 0.3 && alt < 7000 &&
+            var isVillage = rowWorldEnv.id !== 'desert' && rowWorldEnv.id !== 'tundra' && rowWorldEnv.id !== 'polar' && elev < 3500 && depth > 0.3 && alt < 7000 &&
                            terrainHash(villageSeed, 3) > 0.86;
             if (isVillage) {
               var vX = terrainHash(villageSeed, 4) * W * 0.7 + W * 0.15;
@@ -14151,7 +14351,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             }
 
             // Arctic wildlife (caribou / polar bears at high latitude)
-            if (isTundra && depth > 0.35 && alt < 4000 && terrainHash(Math.floor(scanLat * 10), Math.floor(scanLon * 10) + 13) > 0.8) {
+            if ((rowWorldEnv.id === 'tundra' || rowWorldEnv.id === 'polar') && depth > 0.35 && alt < 4000 && terrainHash(Math.floor(scanLat * 10), Math.floor(scanLon * 10) + 13) > 0.8) {
               var arcHerdSize = 5 + Math.floor(terrainHash(scanLat * 7, scanLon * 7) * 8);
               var arcX = terrainHash(scanLat * 13, scanLon * 13) * W * 0.7 + W * 0.15;
               for (var arc = 0; arc < arcHerdSize; arc++) {
@@ -14194,7 +14394,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             }
 
             // Solar farm (sun belt, farmland-adjacent)
-            if (!isDensedForest && !isTundra && elev < 2000 && depth > 0.45 && alt < 5000 &&
+            if (!isDensedForest && rowWorldEnv.id !== 'tundra' && rowWorldEnv.id !== 'polar' && elev < 2000 && depth > 0.45 && alt < 5000 &&
                 Math.abs(scanLat) < 45 &&
                 terrainHash(Math.floor(scanLat * 11), Math.floor(scanLon * 11) + 3) > 0.88) {
               var sfX = terrainHash(scanLat * 31, scanLon * 31) * W * 0.7;
@@ -14218,7 +14418,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             }
 
             // Small inland lakes/ponds (random low-lying pockets)
-            if (!isDesert && elev < 2500 && depth > 0.25 && alt < 12000 &&
+            if (rowWorldEnv.id !== 'desert' && elev < 2500 && depth > 0.25 && alt < 12000 &&
                 terrainHash(Math.floor(scanLat * 12) + 7, Math.floor(scanLon * 12) + 3) > 0.82) {
               var lakeX = terrainHash(scanLat * 17, scanLon * 17) * W;
               var lakeW = 15 + terrainHash(r + 3, scanLat * 5) * 35;
@@ -14234,7 +14434,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             }
 
             // River simulation (procedural)
-            if (elev < 1500 && !isDesert && depth > 0.2 && alt < 15000) {
+            if (elev < 1500 && rowWorldEnv.id !== 'desert' && depth > 0.2 && alt < 15000) {
               var riverSeed = Math.floor(scanLat * 5) + Math.floor(scanLon * 5) * 100;
               if (terrainHash(riverSeed, 0) > 0.7) {
                 gfx.strokeStyle = 'rgba(60,130,200,' + (0.15 + depth * 0.1) + ')';
@@ -14675,7 +14875,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           }
 
           // Mountain peak markers (visible at altitude)
-          if (!water && elev > 6000 && snow > 20 && depth > 0.2 && alt > 3000 && alt < 25000) {
+          if (!water && elev > 6000 && rowWorldEnv.id === 'alpine' && depth > 0.2 && alt > 3000 && alt < 25000) {
             gfx.fillStyle = 'rgba(255,255,255,0.7)';
             gfx.font = 'bold 7px system-ui'; gfx.textAlign = 'center';
             var peakX = terrainHash(scanLat * 7, scanLon * 7) * W;
@@ -16655,12 +16855,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
       var applyWeather = function(ctrl, state, dt) {
         var wx = weatherRef.current;
-        // Wind effect on ground speed / heading
-        if (wx.wind > 0) {
-          var windRad = wx.windDir * Math.PI / 180;
-          var crosswind = wx.wind * Math.sin((state.heading - wx.windDir) * Math.PI / 180) * 0.001;
-          ctrl.bank += crosswind * dt * 10; // wind pushes the plane
-        }
+        // Steady wind translates the aircraft's ground track later in the
+        // loop; it does not roll the airframe. The former hidden bank input
+        // taught the wrong physics (a steady crosswind causes drift/crab,
+        // while gust gradients and turbulence create roll disturbances).
         // Turbulence — coherent gusts, not white noise. The old
         // (random-0.5)*turb*2*dt averaged to ±0.02°/frame of self-cancelling
         // jitter: even STORM turbulence was imperceptible (a punchlist item).
@@ -16833,13 +17031,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         // Two-stop vertical gradient (brighter near the viewer, darker at the horizon)
         // + deterministic grass tufts so the field doesn't read as a flat slab.
         var groundTop = horizonY;
-        // Cached per (px-rounded horizon, height, day/night) — the damped
+        var airportGroundElev = groundBelowAircraft(state.lat, state.lon);
+        var airportWorldEnv = getWorldEnvironment(state.lat, state.lon, airportGroundElev, false);
+        var airportBase = airportWorldEnv.color;
+        var airportNear = airportBase.map(function(c) { return Math.round(Math.min(255, c * 1.16)); });
+        var airportFar = airportBase.map(function(c) { return Math.round(Math.max(0, c * 0.72)); });
+        // Cached per (px-rounded horizon, height, day/night, biome) — the damped
         // horizon is stable most frames, so this is a near-100% hit rate.
-        var groundGrad = cachedGrad('gnd|' + Math.round(groundTop) + '|' + H + '|' + (dayNight.isNight ? 1 : 0), function() {
+        var groundGrad = cachedGrad('gnd|' + Math.round(groundTop) + '|' + H + '|' + (dayNight.isNight ? 1 : 0) + '|' + airportWorldEnv.id, function() {
           var gg2 = gfx.createLinearGradient(0, groundTop, 0, H);
-          var grassTint = dayNight.isNight ? ['#1f3024', '#16241a'] : ['#3f6e3a', '#4a8a45'];
-          gg2.addColorStop(0, grassTint[0]);
-          gg2.addColorStop(1, grassTint[1]);
+          var farRgb = dayNight.isNight ? airportFar.map(function(c) { return Math.round(c * 0.32); }) : airportFar;
+          var nearRgb = dayNight.isNight ? airportNear.map(function(c) { return Math.round(c * 0.28); }) : airportNear;
+          gg2.addColorStop(0, 'rgb(' + farRgb.join(',') + ')');
+          gg2.addColorStop(1, 'rgb(' + nearRgb.join(',') + ')');
           return gg2;
         });
         gfx.fillStyle = groundGrad;
@@ -16848,10 +17052,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         // player and engine running, they bend radially outward from the prop
         // wash. Far tufts are drawn as dots; close tufts get a short bent
         // stroke showing the direction of the wind the prop is generating.
-        var tufts = 120;
+        var tufts = Math.round(30 + 110 * Math.max(airportWorldEnv.treeDensity, airportWorldEnv.fieldDensity));
         var tuftSeed = Math.floor(state.lat * 50) * 17 + Math.floor(state.lon * 50);
         var tuftThrottle = (controlsRef.current && controlsRef.current.throttle) || 0;
-        var tuftColor = dayNight.isNight ? 'rgba(140,160,140,0.14)' : 'rgba(180,220,160,0.28)';
+        var tuftColor = dayNight.isNight ? 'rgba(140,160,140,0.14)'
+                      : airportWorldEnv.id === 'desert' ? 'rgba(214,188,126,0.24)'
+                      : airportWorldEnv.id === 'tundra' ? 'rgba(184,198,174,0.24)'
+                      : 'rgba(180,220,160,0.28)';
         for (var tf = 0; tf < tufts; tf++) {
           var tSeed = (tuftSeed + tf * 91) % 1000;
           var tFrac = tf / tufts; // 0 near horizon, 1 near player
@@ -16885,8 +17092,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         // Fills the gap between horizon hills and airport buildings, gives
         // peripheral vision something to register against.
         var treeY = horizonY + 2;
-        var treeBaseH = 10;
-        gfx.fillStyle = dayNight.isNight ? 'rgba(18,36,28,0.9)' : 'rgba(34,74,48,0.85)';
+        var treeBaseH = 4 + 10 * airportWorldEnv.treeDensity;
+        if (airportWorldEnv.treeDensity > 0.12) {
+        gfx.fillStyle = dayNight.isNight ? 'rgba(18,36,28,0.9)'
+                      : airportWorldEnv.id === 'boreal' ? 'rgba(24,62,50,0.88)'
+                      : airportWorldEnv.id === 'tropical_rainforest' ? 'rgba(20,84,42,0.88)'
+                      : 'rgba(34,74,48,0.85)';
         gfx.beginPath();
         gfx.moveTo(0, treeY + treeBaseH);
         for (var tX = 0; tX < W; tX += 4) {
@@ -16900,6 +17111,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
         gfx.lineTo(W, treeY + treeBaseH);
         gfx.closePath();
         gfx.fill();
+        }
 
         // ── Asphalt ramp — only where buildings/vehicles actually sit, not the
         // whole lower screen. Keeps grass visible beside the runway.
@@ -17713,6 +17925,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       // ── Aircraft Selection State ──
       var selectedAircraft = d.aircraft || 'cessna172';
       var currentAC = AIRCRAFT.find(function(a) { return a.id === selectedAircraft; }) || AIRCRAFT[0];
+
+      var changeFlapDetent = function(direction) {
+        if (!currentAC.flapDetents || currentAC.flapDetents.length === 0) return;
+        var current = Number(controlsRef.current.flaps) || 0;
+        var idx = currentAC.flapDetents.indexOf(current);
+        if (idx < 0) idx = 0;
+        var nextIdx = Math.max(0, Math.min(currentAC.flapDetents.length - 1, idx + direction));
+        var next = currentAC.flapDetents[nextIdx];
+        controlsRef.current.flaps = next;
+        setFlightConfigUi(function(prev) { return { flaps: next, brake: prev.brake }; });
+        if (next !== current && typeof skyAnnounce === 'function') skyAnnounce('Flaps ' + next + ' degrees');
+      };
+
+      var toggleWheelBrake = function() {
+        if (currentAC.isHelicopter || currentAC.isDrone) return;
+        brakeLatchedRef.current = !brakeLatchedRef.current;
+        controlsRef.current.brake = brakeLatchedRef.current ? 1 : 0;
+        setFlightConfigUi(function(prev) { return { flaps: prev.flaps, brake: brakeLatchedRef.current }; });
+        if (typeof skyAnnounce === 'function') skyAnnounce(brakeLatchedRef.current ? 'Wheel brakes set' : 'Wheel brakes released');
+      };
 
       // Apply aircraft stats to physics engine
       useEffect(function() {
@@ -18804,7 +19036,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           aoa: 0, stalling: false, onGround: true,
           forces: { lift: 0, drag: 0, thrust: 0, weight: 2550 }
         };
-        controlsRef.current = { throttle: 0, pitch: 0, bank: 0 };
+        controlsRef.current = { throttle: 0, pitch: 0, bank: 0, flaps: 0, brake: 0 };
+        brakeLatchedRef.current = false;
+        setFlightConfigUi({ flaps: 0, brake: false });
         timeRef.current = 0;
         flyingRef.current = true;
         Physics.SPRINT_MODE = false; // normal flights respect the Vne cap
@@ -19011,6 +19245,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             if (typeof skyAnnounce === 'function') skyAnnounce('Engine started');
           }
           if (!flightRef.current.onGround) flightRef.current._ignitionTime = 0;
+          // Aircraft configuration controls. Brackets move one flap detent;
+          // X is a hold-to-brake key, while the DOM button latches brakes for
+          // touch and switch users.
+          if (keys['[']) { keys['['] = false; changeFlapDetent(-1); }
+          if (keys[']']) { keys[']'] = false; changeFlapDetent(1); }
+          ctrl.brake = (!heliMode && !droneMode && (keys['x'] || brakeLatchedRef.current)) ? 1 : 0;
           // Toggle force diagram
           if (keys['f']) { upd('showForces', !showForces); keys['f'] = false; }
           if (keys['?'] || keys['/']) { upd('showHelp', !d.showHelp); keys['?'] = false; keys['/'] = false; skyAnnounce(d.showHelp ? 'Help closed' : 'Help screen opened'); }
@@ -19308,13 +19548,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var duskProx = Math.max(0, 1 - Math.abs(solarHrEarly - 18) / 2);
           var goldenProx = Math.max(dawnProx, duskProx);
           var goldenSide = dawnProx > duskProx ? 'east' : 'west'; // east = left, west = right
+          var canvasWorldEnv = getWorldEnvironment(
+            state.lat, state.lon, groundBelowAircraft(state.lat, state.lon), isWater(state.lat, state.lon));
+          hudRef.current.worldEnvironment = canvasWorldEnv;
 
           // Sky gradient — biased warmer at the horizon during golden hour.
           // Cached on quantized params (1/40 steps ≈ <2 RGB units per bucket:
           // invisible), rebuilt only when altitude band / golden proximity /
           // canvas height actually change.
           var altFactor = Math.min(1, state.altitude / 40000);
-          var skyGrad = cachedGrad('sky|' + H + '|' + Math.round(altFactor * 40) + '|' + Math.round(goldenProx * 40), function() {
+          var hazeKey = canvasWorldEnv.haze.map(function(c) { return Math.round(c / 12); }).join('-');
+          var skyGrad = cachedGrad('sky|' + H + '|' + Math.round(altFactor * 40) + '|' + Math.round(goldenProx * 40) + '|' + hazeKey, function() {
             var sg = gfx.createLinearGradient(0, 0, 0, H * 0.6);
             var topR = 10 + altFactor * 5;
             var topG = 10 + altFactor * 20 + goldenProx * 10;
@@ -19322,6 +19566,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
             var botR = 80 - altFactor * 40 + goldenProx * 120;
             var botG = 140 - altFactor * 40 + goldenProx * 30;
             var botB = 220 - altFactor * 20 - goldenProx * 80;
+            var regionalHazeMix = (0.10 + (1 - canvasWorldEnv.visibilityFactor) * 0.34) * Math.max(0.15, dayNight.brightness || 0);
+            botR = botR * (1 - regionalHazeMix) + canvasWorldEnv.haze[0] * regionalHazeMix;
+            botG = botG * (1 - regionalHazeMix) + canvasWorldEnv.haze[1] * regionalHazeMix;
+            botB = botB * (1 - regionalHazeMix) + canvasWorldEnv.haze[2] * regionalHazeMix;
             sg.addColorStop(0, 'rgb(' + Math.round(topR) + ',' + Math.round(topG) + ',' + Math.round(topB) + ')');
             sg.addColorStop(1, 'rgb(' + Math.round(botR) + ',' + Math.round(botG) + ',' + Math.round(botB) + ')');
             return sg;
@@ -19362,6 +19610,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               ghGrad.addColorStop(1, 'rgba(120,70,130,0)');
               gfx.fillStyle = ghGrad;
               gfx.fillRect(0, Math.max(0, horizonY - ghR * 0.6), W, horizonY + ghR * 0.3);
+            }
+
+            // Regional horizon aerosol layer: humid forests carry a cool,
+            // milky horizon while deserts show a restrained warm dust veil.
+            // It shares the same biome haze/visibility model as WebGL fog.
+            if ((dayNight.brightness || 0) > 0.12) {
+              var hazeRgb = canvasWorldEnv.haze.join(',');
+              var hazeStrength = 0.08 + (1 - canvasWorldEnv.visibilityFactor) * 0.38;
+              var horizonHaze = gfx.createLinearGradient(0, Math.max(0, horizonY - 90), 0, horizonY + 18);
+              horizonHaze.addColorStop(0, 'rgba(' + hazeRgb + ',0)');
+              horizonHaze.addColorStop(0.72, 'rgba(' + hazeRgb + ',' + (hazeStrength * 0.55) + ')');
+              horizonHaze.addColorStop(1, 'rgba(' + hazeRgb + ',' + hazeStrength + ')');
+              gfx.fillStyle = horizonHaze;
+              gfx.fillRect(0, Math.max(0, horizonY - 90), W, 110);
             }
 
             // Procedural terrain (replaces flat gradient)
@@ -20254,9 +20516,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           }
 
           // ── HUD Instruments (Glass Cockpit PFD Layout) ──
-          var kts = state.speed * 0.5924838; // ft/s to knots
-          var fpm = state.vsi * 60;
-          var stallKts = Physics.stallSpeed(state.altitude) * 0.5924838;
+          // Physics integrates TAS. The PFD correctly displays IAS and keeps
+          // TAS/GS as separate navigation values, especially important aloft.
+          var flapModel = getFlapAerodynamics(ctrl.flaps);
+          var stallTasKts = Physics.stallSpeed(state.altitude) * 0.5924838 * flapModel.stallSpeedFactor;
+          var appBearing = nearWp ? bearing(state.lat, state.lon, nearWp.lat, nearWp.lon) : null;
+          var appCourseError = appBearing == null ? null : ((appBearing - state.heading + 540) % 360) - 180;
+          var telemetry = computeFlightTelemetry(state, ctrl, weatherRef.current, hudRef.current.jetKts || 0, stallTasKts, nearDist, appCourseError);
+          hudRef.current.telemetry = telemetry;
+          var liveWorldEnv = getWorldEnvironment(state.lat, state.lon, groundBelowAircraft(state.lat, state.lon), isWater(state.lat, state.lon));
+          hudRef.current.worldEnvironment = liveWorldEnv;
+          if (worldStatusRef.current && worldStatusRef.current.getAttribute('data-world-biome') !== liveWorldEnv.id) {
+            worldStatusRef.current.setAttribute('data-world-biome', liveWorldEnv.id);
+            worldStatusRef.current.textContent = 'WORLD · ' + liveWorldEnv.label.toUpperCase();
+          }
+          var flapOverspeedNow = !!(ctrl.flaps > 0 && currentAC.vfe && telemetry.iasKts > currentAC.vfe);
+          if (flapOverspeedNow && !flightRef.current._flapOverspeedAnnounced) {
+            flightRef.current._flapOverspeedAnnounced = true;
+            if (typeof skyAnnounce === 'function') skyAnnounce('Flaps overspeed. Reduce airspeed or retract flaps.');
+          }
+          if (!flapOverspeedNow) flightRef.current._flapOverspeedAnnounced = false;
+          var kts = telemetry.iasKts;
+          var fpm = telemetry.fpm;
+          var stallKts = telemetry.stallIasKts;
 
           // Artificial Horizon (center)
           drawHorizon(gfx, W / 2, H - 85, 58, ctrl.pitch, ctrl.bank);
@@ -20313,6 +20595,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
 
           // Speed Tape (left side)
           drawSpeedTape(gfx, 30, H - 160, 50, 150, kts, stallKts);
+
+          // Configuration cue beside the primary airspeed tape. VFE is an
+          // immediate red warning because extended flaps can be structurally
+          // damaged above their certified speed.
+          if (currentAC.flapDetents && currentAC.flapDetents.length) {
+            var flapDegHud = Math.round(ctrl.flaps || 0);
+            var flapOverspeed = flapDegHud > 0 && currentAC.vfe && telemetry.iasKts > currentAC.vfe;
+            var flapTxt = flapOverspeed ? 'FLAPS OVERSPEED' : 'FLAPS ' + flapDegHud + '°';
+            gfx.font = 'bold 9px monospace';
+            var flapW = gfx.measureText(flapTxt).width + 14;
+            gfx.fillStyle = flapOverspeed ? 'rgba(127,29,29,0.94)' : flapDegHud > 0 ? 'rgba(120,53,15,0.88)' : 'rgba(2,6,23,0.72)';
+            gfx.beginPath(); gfx.roundRect(30, H - 179, flapW, 17, 4); gfx.fill();
+            gfx.strokeStyle = flapOverspeed ? '#ef4444' : flapDegHud > 0 ? '#fbbf24' : '#64748b';
+            gfx.beginPath(); gfx.roundRect(30, H - 179, flapW, 17, 4); gfx.stroke();
+            gfx.fillStyle = flapOverspeed ? '#fecaca' : flapDegHud > 0 ? '#fde68a' : '#cbd5e1';
+            gfx.textAlign = 'center'; gfx.textBaseline = 'middle';
+            gfx.fillText(flapTxt, 30 + flapW / 2, H - 170.5);
+            gfx.textBaseline = 'alphabetic';
+          }
 
           // Altitude Tape (right of center)
           drawAltTape(gfx, W / 2 + 80, H - 160, 55, 150, state.altitude);
@@ -20432,13 +20733,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           var localHour = Math.round(dayNight.solarHour) % 24;
           var ampm = localHour >= 12 ? 'PM' : 'AM';
           var hr12 = localHour % 12 || 12;
-          // Ground speed only earns HUD space when wind/jet actually move it
-          // away from TAS — permanent GS≈SPD would just be clutter. The gap
-          // is the meteorology lesson: same airspeed, different map speed.
-          var hudWx = weatherRef.current || {};
-          var hudGs = composeGroundSpeedKts(state.heading, kts, state.onGround ? 0 : (hudWx.wind || 0), hudWx.windDir || 0, state.onGround ? 0 : (hudRef.current.jetKts || 0));
-          var hudGsTxt = Math.abs(hudGs - kts) > 8 ? '  |  GS ' + Math.round(hudGs) + ' kts' : '';
-          gfx.fillText('HDG ' + String(Math.round(state.heading)).padStart(3, '0') + '°  |  ALT ' + Math.round(state.altitude).toLocaleString() + ' ft  |  SPD ' + Math.round(kts) + ' kts' + hudGsTxt + '  |  VS ' + (fpm >= 0 ? '+' : '') + Math.round(fpm) + ' fpm  |  ' + (dayNight.isNight ? '🌙' : dayNight.isDusk ? '🌅' : '☀️') + ' ' + hr12 + ampm + ' local', 10, 21);
+          // Responsive status line: IAS is the primary flight value; TAS and
+          // GS are navigation values. On narrow decks retain only essentials.
+          var tasGap = Math.abs(telemetry.tasKts - telemetry.iasKts);
+          var gsGap = Math.abs(telemetry.gsKts - telemetry.tasKts);
+          var airDataWide = tasGap > 4 ? '  |  TAS ' + Math.round(telemetry.tasKts) : '';
+          var groundDataWide = gsGap > 4 ? '  |  GS ' + Math.round(telemetry.gsKts) : '';
+          var statusLine = W < 720
+            ? 'IAS ' + Math.round(telemetry.iasKts) + '  ALT ' + Math.round(state.altitude).toLocaleString() + '  VS ' + (fpm >= 0 ? '+' : '') + Math.round(fpm)
+            : 'HDG ' + String(Math.round(state.heading)).padStart(3, '0') + '°  |  ALT ' + Math.round(state.altitude).toLocaleString() + ' ft  |  IAS ' + Math.round(telemetry.iasKts) + airDataWide + groundDataWide + ' kt  |  VS ' + (fpm >= 0 ? '+' : '') + Math.round(fpm) + ' fpm  |  ' + (dayNight.isNight ? '🌙' : dayNight.isDusk ? '🌅' : '☀️') + ' ' + hr12 + ampm + ' local';
+          gfx.fillText(statusLine, 10, 21);
+
+          // Approach stability monitor — a compact real-world stabilized-
+          // approach gate. It appears only on final and names the correction
+          // required instead of adding another permanent instrument cluster.
+          if (telemetry.approachActive) {
+            var appStable = telemetry.approachStable;
+            var appText = appStable
+              ? 'APP STABLE  •  ' + telemetry.glideAngleDeg.toFixed(1) + '°  •  ' + Math.abs(Math.round(fpm)) + ' FPM'
+              : 'APP CHECK  •  ' + telemetry.approachReasons.slice(0, 3).join('  •  ');
+            gfx.font = 'bold 10px monospace';
+            var appW = Math.min(W - 24, Math.max(184, gfx.measureText(appText).width + 24));
+            var appX = (W - appW) / 2;
+            var appY = 64;
+            gfx.fillStyle = appStable ? 'rgba(6,78,59,0.9)' : 'rgba(120,53,15,0.92)';
+            gfx.beginPath(); gfx.roundRect(appX, appY, appW, 23, 6); gfx.fill();
+            gfx.strokeStyle = appStable ? '#4ade80' : '#fbbf24'; gfx.lineWidth = 1.2;
+            gfx.beginPath(); gfx.roundRect(appX, appY, appW, 23, 6); gfx.stroke();
+            gfx.fillStyle = appStable ? '#bbf7d0' : '#fef3c7'; gfx.textAlign = 'center'; gfx.textBaseline = 'middle';
+            gfx.fillText(appText, W / 2, appY + 11.5);
+            gfx.textBaseline = 'alphabetic';
+          }
 
           // Autopilot status (green bar when engaged)
           var ap2 = d.autopilot || {};
@@ -21179,6 +21504,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
                 ['W / ↑', 'Pitch up (climb)'], ['S / ↓', 'Pitch down (descend)'],
                 ['A / ←', 'Bank left (turn left)'], ['D / →', 'Bank right (turn right)'],
                 ['Shift / =', 'Increase throttle'], ['Ctrl / -', 'Decrease throttle'],
+                ['[ / ]', 'Retract / extend flaps one detent'], ['X', 'Hold wheel brakes on the ground'],
               ]},
               { title: __alloT('stem.flightsim.learning_tools', '📚 LEARNING TOOLS'), items: [
                 ['F', 'Toggle force diagram (lift/drag/thrust/weight arrows)'],
@@ -22220,6 +22546,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           return { minHeight: '27px', padding: '5px 10px', borderRadius: '999px', background: 'rgba(2,6,23,0.7)', color: color, border: '1px solid ' + color + '44', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.03)', fontSize: '10px', fontWeight: 850, letterSpacing: '0.02em', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center' };
         };
         var activeWeather = (WEATHER_TYPES.find(function(t) { return t.id === (weatherRef.current.type || 'clear'); }) || WEATHER_TYPES[0]);
+        var activeWorldEnv = hudRef.current.worldEnvironment || getWorldEnvironment(flightRef.current.lat, flightRef.current.lon, 0, false);
         return h('div', { id: 'skyschool-flight-container', 'data-flightsim-flight-deck': 'true', 'data-flight-state': pausedUi ? 'paused' : 'active', style: { position: 'relative', width: '100%', height: '100%', minHeight: '500px', maxHeight: 'calc(100vh - 80px)', borderRadius: '14px', overflow: 'hidden', background: 'radial-gradient(circle at 50% 28%, #172554 0%, #071426 48%, #020617 100%)', display: 'flex', flexDirection: 'column', border: '1px solid rgba(125,211,252,0.3)', boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.05), inset 0 -80px 100px rgba(2,6,23,0.32), 0 24px 60px rgba(2,6,23,0.42)' } },
           h('style', null, '#skyschool-flight-container .skyschool-command-rail button{transition:transform .14s ease,filter .14s ease}#skyschool-flight-container .skyschool-command-rail button:hover{transform:translateX(2px);filter:brightness(1.1)}#skyschool-flight-container .skyschool-command-rail button:focus-visible{outline:3px solid #f8fafc;outline-offset:2px}@media(max-width:820px){#skyschool-flight-container{min-height:620px!important;border-radius:10px!important}.skyschool-command-rail{top:8px!important;left:8px!important;right:8px!important;max-width:none!important;flex-direction:row!important;flex-wrap:wrap!important}.skyschool-command-rail .skyschool-rail-label{width:100%}.skyschool-command-rail button{flex:1 1 110px;justify-content:center}.skyschool-status-rail{top:auto!important;left:8px!important;right:8px!important;bottom:8px!important;flex-direction:row!important;justify-content:space-between!important;align-items:center!important}.skyschool-tutorial-card{top:auto!important;left:8px!important;right:8px!important;bottom:58px!important;transform:none!important;max-width:none!important;max-height:42vh!important;overflow:auto!important}}'),
           threeLoaded && h('canvas', {
@@ -22229,7 +22556,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           h('canvas', {
             ref: canvasRef,
             role: 'application',
-            'aria-label': __alloT('stem.flightsim.flight_simulator_cockpit_view_w_s_pitc', 'Flight simulator cockpit view. W/S pitch, A/D bank, Shift/Ctrl throttle, Q quiz, F forces, Space pause, I info.'),
+            'aria-label': __alloT('stem.flightsim.flight_simulator_cockpit_view_w_s_pitc', 'Flight simulator cockpit view. W/S pitch, A/D bank, Shift/Ctrl throttle, brackets control flaps, X wheel brakes, Q quiz, F forces, Space pause, I info.'),
             'aria-roledescription': 'Flight simulator',
             tabIndex: 0,
             style: { position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 2, display: 'block', outline: 'none', background: threeLoaded ? 'transparent' : '#000' },
@@ -22238,7 +22565,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
           h('div', { className: 'skyschool-status-rail', role: 'status', 'aria-label': 'Flight visual status', style: { position: 'absolute', top: '40px', right: '10px', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '5px', padding: '8px 10px', borderRadius: '12px', background: 'linear-gradient(145deg, rgba(2,6,23,0.78), rgba(15,23,42,0.64))', border: '1px solid rgba(125,211,252,0.2)', boxShadow: '0 12px 30px rgba(2,6,23,0.38)', backdropFilter: 'blur(14px)', pointerEvents: 'none' } },
             h('div', { style: { fontSize: '10px', fontWeight: 900, color: '#e0f2fe', letterSpacing: '0.04em', textTransform: 'uppercase' } }, threeLoaded ? '● RENDER · 3D TERRAIN' : '● RENDER · CANVAS'),
             h('div', { style: { fontSize: '10px', fontWeight: 800, color: d.thirdPerson ? '#c4b5fd' : '#67e8f9' } }, d.thirdPerson ? 'VIEW · CHASE CAMERA' : 'VIEW · COCKPIT'),
-            h('div', { style: { fontSize: '10px', fontWeight: 800, color: '#fbbf24' } }, 'WEATHER · ' + activeWeather.label)
+            h('div', { ref: worldStatusRef, 'data-world-environment': 'true', 'data-world-biome': activeWorldEnv.id, style: { fontSize: '10px', fontWeight: 850, color: '#a7f3d0' } }, 'WORLD · ' + activeWorldEnv.label.toUpperCase()),
+            h('div', { style: { fontSize: '10px', fontWeight: 800, color: '#fbbf24' } }, 'WEATHER · ' + activeWeather.label),
+            !currentAC.isHelicopter && !currentAC.isDrone && h('div', { 'data-flight-configuration': 'true', style: { fontSize: '10px', fontWeight: 850, color: flightConfigUi.brake ? '#fca5a5' : flightConfigUi.flaps > 0 ? '#fde68a' : '#86efac' } },
+              'CONFIG · ' + (currentAC.flapDetents ? 'FLAPS ' + flightConfigUi.flaps + '°' : 'CLEAN') + ' · BRK ' + (flightConfigUi.brake ? 'SET' : 'OFF'))
           ),
           // Overlay controls
           h('nav', { className: 'skyschool-command-rail', 'data-flightsim-command-rail': 'true', 'aria-label': 'Flight deck controls', style: { position: 'absolute', top: '40px', left: '10px', display: 'flex', flexDirection: 'column', gap: '5px', zIndex: 10, maxWidth: '210px', padding: '8px', borderRadius: '12px', background: 'linear-gradient(145deg, rgba(2,6,23,0.82), rgba(15,23,42,0.68))', border: '1px solid rgba(125,211,252,0.22)', boxShadow: '0 14px 34px rgba(2,6,23,0.42)', backdropFilter: 'blur(14px)' } },
@@ -22298,6 +22628,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
               'aria-label': d.showForces ? 'Hide force vectors' : 'Show force vectors',
               style: flightGlassButton(!!d.showForces, '#22d3ee')
             }, d.showForces ? '⚡ Forces ON' : '⚡ Forces'),
+            currentAC.flapDetents && h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '5px' } },
+              h('button', { onClick: function() { changeFlapDetent(-1); }, disabled: flightConfigUi.flaps <= 0, 'aria-label': 'Retract flaps one detent', style: flightGlassButton(flightConfigUi.flaps > 0, '#fbbf24') }, 'FLAPS −'),
+              h('button', { onClick: function() { changeFlapDetent(1); }, disabled: flightConfigUi.flaps >= currentAC.flapDetents[currentAC.flapDetents.length - 1], 'aria-label': 'Extend flaps one detent', style: flightGlassButton(flightConfigUi.flaps > 0, '#fbbf24') }, 'FLAPS +')
+            ),
+            !currentAC.isHelicopter && !currentAC.isDrone && h('button', { onClick: toggleWheelBrake, 'aria-label': flightConfigUi.brake ? 'Release wheel brakes' : 'Set wheel brakes', 'aria-pressed': flightConfigUi.brake, style: flightGlassButton(flightConfigUi.brake, '#ef4444') }, flightConfigUi.brake ? '🛑 Brakes SET' : '◉ Wheel Brakes'),
             h('button', { onClick: function() {
               var types = WEATHER_TYPES;
               var wx = weatherRef.current;
@@ -23430,6 +23765,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('flightSim'))) 
       bearing: bearing,
       jetStreamTailwindKts: jetStreamTailwindKts,
       composeGroundSpeedKts: composeGroundSpeedKts,
+      getFlapAerodynamics: getFlapAerodynamics,
+      getWorldEnvironment: getWorldEnvironment,
+      computeFlightTelemetry: computeFlightTelemetry,
       pushTrackPoint: pushTrackPoint,
       REAL_CITIES: REAL_CITIES,
       nearestRealCities: nearestRealCities,
