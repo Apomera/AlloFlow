@@ -50,7 +50,8 @@ Never tell a user a document is compliant because axe was quiet.
 | `transcribe_media` | yes | Audio/video → transcript (speech, visual, dual, synthesis) |
 | `translate_accessible_html` | yes | Translate, structure preserved, images protected |
 
-Nine of these need no key at all. When a user has no key, say what still works rather than stopping.
+Ten of these need no key at all (every row marked **no** above, plus the three
+`remediation_job_*` tools). When a user has no key, say what still works rather than stopping.
 
 ## Order of operations
 
