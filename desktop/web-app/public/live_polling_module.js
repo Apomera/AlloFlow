@@ -55,6 +55,8 @@
   };
   const CONNECTION_TIMEOUT_MS = 10000;
   const SIGNALING_TTL_MS = 60 * 60 * 1000;
+  const CUSTOM_RESPONSE_ID_MAX_LENGTH = 120;
+  const CUSTOM_RESPONSE_PAYLOAD_MAX_CHARS = 16000;
 
   const getFb = () => {
     const fb = (typeof window !== 'undefined') && window.__alloFirebase;
@@ -492,6 +494,9 @@
       this.sessionCode = config.sessionCode;
       this.onGuestConnected = config.onGuestConnected || (() => {});
       this.onResponse = config.onResponse || (() => {});
+      // Dedicated transports can opt into tightly scoped ids while the
+      // standard polling path remains gated to the active poll.
+      this.acceptResponse = typeof config.acceptResponse === 'function' ? config.acceptResponse : null;
       this.onResponseStatus = config.onResponseStatus || (() => {});
       this.onPeerVote = config.onPeerVote || (() => {});
       this.onGuestLeft = config.onGuestLeft || (() => {});
@@ -517,6 +522,30 @@
 
     _isUidInActiveAudience(uid) {
       return !this.activeAudienceUids || this.activeAudienceUids.has(uid);
+    }
+
+    _acceptsResponse(uid, codename, payload) {
+      if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return false;
+      if (this._allowedUids && !this._allowedUids.has(uid)) return false;
+      if (!this._isUidInActiveAudience(uid)) return false;
+      if (this.activePoll && payload.pollId === this.activePoll.id) return true;
+      if (!this.acceptResponse) return false;
+      const pollId = payload.pollId;
+      const validPollId = (typeof pollId === 'string'
+        && pollId.length > 0
+        && pollId.length <= CUSTOM_RESPONSE_ID_MAX_LENGTH)
+        || (Number.isInteger(pollId) && pollId >= 0 && pollId <= 9999);
+      if (!validPollId) return false;
+      try {
+        if (JSON.stringify(payload).length > CUSTOM_RESPONSE_PAYLOAD_MAX_CHARS) return false;
+      } catch (err) {
+        return false;
+      }
+      try {
+        return this.acceptResponse(uid, payload, codename) === true;
+      } catch (err) {
+        return false;
+      }
     }
 
     _isUidInPeerShowcaseAudience(uid) {
@@ -601,9 +630,7 @@
           try {
             const parsed = JSON.parse(msg.data);
             if (parsed && parsed.type === 'response' && parsed.payload) {
-              if (this.activePoll && parsed.payload.pollId === this.activePoll.id && this._isUidInActiveAudience(uid)) {
-                this.onResponse(uid, codename, parsed.payload);
-              }
+              if (this._acceptsResponse(uid, codename, parsed.payload)) this.onResponse(uid, codename, parsed.payload);
             } else if (parsed && parsed.type === 'responseStatus' && parsed.payload) {
               if (this.activePoll && parsed.payload.pollId === this.activePoll.id && this._isUidInActiveAudience(uid)) {
                 const status = parsed.payload.status === 'submitted' || parsed.payload.status === 'editing'

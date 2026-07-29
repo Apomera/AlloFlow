@@ -1587,9 +1587,9 @@ function AssessmentItemAnalysisPanel(p) {
       className: 'rounded-lg px-3 py-2 text-center bg-' + rateColor + '-50 text-' + rateColor + '-900 border border-' + rateColor + '-200'
     }, /*#__PURE__*/React.createElement("div", {
       className: "text-lg font-black"
-    }, item.correctRate == null ? '—' : item.correctRate + '%'), /*#__PURE__*/React.createElement("div", {
+    }, item.unscored ? 'Unscored' : item.correctRate == null ? '—' : item.correctRate + '%'), /*#__PURE__*/React.createElement("div", {
       className: "text-[9px] uppercase font-bold"
-    }, "correct"))), /*#__PURE__*/React.createElement("div", {
+    }, item.unscored ? 'distribution' : 'correct'))), /*#__PURE__*/React.createElement("div", {
       className: "flex gap-2 flex-wrap mt-3 text-[11px]"
     }, /*#__PURE__*/React.createElement("span", {
       className: "rounded-full bg-slate-100 text-slate-700 px-2 py-1 font-bold"
@@ -1607,11 +1607,11 @@ function AssessmentItemAnalysisPanel(p) {
         key: option.optionIdx,
         className: "grid grid-cols-[1.5rem_1fr_auto] items-center gap-2 text-xs"
       }, /*#__PURE__*/React.createElement("span", {
-        className: 'font-black ' + (option.correct ? 'text-emerald-700' : 'text-slate-600')
+        className: 'font-black ' + (!item.unscored && option.correct ? 'text-emerald-700' : 'text-slate-600')
       }, String.fromCharCode(65 + option.optionIdx)), /*#__PURE__*/React.createElement("div", {
         className: "h-2 rounded-full bg-slate-100 overflow-hidden"
       }, /*#__PURE__*/React.createElement("div", {
-        className: option.correct ? 'h-full bg-emerald-500' : 'h-full bg-cyan-500',
+        className: !item.unscored && option.correct ? 'h-full bg-emerald-500' : item.unscored ? 'h-full bg-purple-500' : 'h-full bg-cyan-500',
         style: {
           width: width + '%'
         }
@@ -1625,7 +1625,7 @@ function AssessmentItemAnalysisPanel(p) {
         key: idx,
         className: "text-xs rounded bg-amber-50 border border-amber-200 text-amber-900 px-2 py-1"
       }, '⚑ ' + flag);
-    })), item.smallSample && /*#__PURE__*/React.createElement("p", {
+    })), item.smallSample && !item.unscored && /*#__PURE__*/React.createElement("p", {
       className: "text-[10px] text-slate-500 mt-2"
     }, "Early signal only—no quality flag is assigned until 5 learners respond."));
   })));
@@ -2034,11 +2034,11 @@ function LiveResultsDashboard(p) {
   // Share an anonymous per-question aggregate to every connected student
   // over the P2P quiz channel (shell hook; nothing stored, no names).
   var canShareResults = typeof window !== 'undefined' && typeof window.__alloQuizShareResults === 'function' && variant === 'liveHeatmap' && Array.isArray(data.bars) && data.bars.some(function (b) {
-    return b.total > 0;
+    return b.total > 0 && !b.unscored;
   });
   var shareResultsToClass = function () {
     var items = data.bars.filter(function (b) {
-      return b.total > 0;
+      return b.total > 0 && !b.unscored;
     }).map(function (b) {
       return {
         label: 'Q' + (b.questionIdx + 1) + ' — ' + String(b.questionText || '').slice(0, 70),
@@ -2120,8 +2120,8 @@ function LiveResultsDashboard(p) {
       });
       var lines = [header.map(csvEscape).join(',')];
       data.studentRows.forEach(function (row) {
-        var pct = row.totalAnswered > 0 ? Math.round(row.totalCorrect / row.totalAnswered * 100) : 0;
-        var line = [row.displayName, row.attemptStatus || 'not-started', row.totalAnswered, row.totalCorrect, row.totalIdk, pct + '%'];
+        var pct = row.totalEvaluated > 0 ? Math.round(row.totalCorrect / row.totalEvaluated * 100) : null;
+        var line = [row.displayName, row.attemptStatus || 'not-started', row.totalAnswered, row.totalCorrect, row.totalIdk, pct == null ? 'Unscored' : pct + '%'];
         for (var i = 0; i < questions.length; i++) {
           var cell = row.byQuestion[i];
           if (!cell) {
@@ -2217,7 +2217,7 @@ function LiveResultsDashboard(p) {
       scope: "col",
       className: "text-center px-2 py-1.5 font-bold text-slate-700"
     }, "IDK"))), /*#__PURE__*/React.createElement("tbody", null, data.studentRows.map(function (row) {
-      var pct = row.totalAnswered > 0 ? Math.round(row.totalCorrect / row.totalAnswered * 100) : 0;
+      var pct = row.totalEvaluated > 0 ? Math.round(row.totalCorrect / row.totalEvaluated * 100) : null;
       var isExpanded = !!expandedRows[row.uid];
       var canExpand = row.totalAnswered > 0;
       var summaryRow = /*#__PURE__*/React.createElement("tr", {
@@ -2252,9 +2252,11 @@ function LiveResultsDashboard(p) {
         className: "text-xs font-mono text-slate-600"
       }, row.totalAnswered + ' / ' + data.totalQuestions)), /*#__PURE__*/React.createElement("td", {
         className: "text-center px-2 py-1.5"
-      }, row.totalAnswered > 0 ? /*#__PURE__*/React.createElement("span", {
+      }, row.totalEvaluated > 0 ? /*#__PURE__*/React.createElement("span", {
         className: 'text-xs font-bold px-2 py-0.5 rounded ' + (pct >= 80 ? 'bg-emerald-100 text-emerald-800' : pct >= 50 ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800')
-      }, row.totalCorrect + ' (' + pct + '%)') : /*#__PURE__*/React.createElement("span", {
+      }, row.totalCorrect + ' (' + pct + '%)') : row.totalUnscored > 0 ? /*#__PURE__*/React.createElement("span", {
+        className: "text-xs font-bold px-2 py-0.5 rounded bg-purple-100 text-purple-900"
+      }, "Unscored") : /*#__PURE__*/React.createElement("span", {
         className: "text-xs text-slate-600"
       }, "—")), /*#__PURE__*/React.createElement("td", {
         className: "text-center px-2 py-1.5"
@@ -2307,7 +2309,7 @@ function LiveResultsDashboard(p) {
           "aria-hidden": "true"
         }, "🖊 "), "Teacher"), cell && confidenceChip(cell.confidence, cell.status)), cell && cell.aiFeedback && /*#__PURE__*/React.createElement("p", {
           className: "text-[11px] italic text-indigo-900 bg-indigo-50/60 border border-indigo-100 rounded px-2 py-1 mt-1"
-        }, "\"", cell.aiFeedback, "\""), cell && p.activeSessionCode && /*#__PURE__*/React.createElement("div", {
+        }, "\"", cell.aiFeedback, "\""), cell && !cell.unscored && p.activeSessionCode && /*#__PURE__*/React.createElement("div", {
           className: "mt-1 flex items-center gap-1 flex-wrap",
           "data-help-key": "quiz_teacher_override_row"
         }, /*#__PURE__*/React.createElement("span", {
@@ -2362,9 +2364,9 @@ function LiveResultsDashboard(p) {
     body = /*#__PURE__*/React.createElement("div", {
       className: "space-y-2"
     }, data.conceptCards.map(function (card) {
-      var color = card.totalAnswered === 0 ? 'slate' : card.percentCorrect >= 80 ? 'emerald' : card.percentCorrect >= 50 ? 'amber' : 'rose';
-      var urgency = card.totalAnswered === 0 ? 'no responses' : card.percentCorrect < 50 ? '⚠ Needs pre-teaching' : card.percentCorrect < 80 ? 'Review with class' : 'Class is ready';
-      var showExplainBtn = card.totalAnswered > 0 && card.percentCorrect < 80 && typeof p.callGemini === 'function';
+      var color = card.totalAnswered === 0 ? 'slate' : card.unscored ? 'purple' : card.percentCorrect >= 80 ? 'emerald' : card.percentCorrect >= 50 ? 'amber' : 'rose';
+      var urgency = card.totalAnswered === 0 ? 'no responses' : card.unscored ? 'Unscored poll' : card.percentCorrect < 50 ? '⚠ Needs pre-teaching' : card.percentCorrect < 80 ? 'Review with class' : 'Class is ready';
+      var showExplainBtn = !card.unscored && card.totalAnswered > 0 && card.percentCorrect < 80 && typeof p.callGemini === 'function';
       return /*#__PURE__*/React.createElement("div", {
         key: card.questionIdx,
         className: 'p-3 rounded-lg border bg-' + color + '-50 border-' + color + '-200'
@@ -2374,11 +2376,11 @@ function LiveResultsDashboard(p) {
         className: 'text-xs font-bold uppercase tracking-wider text-' + color + '-800'
       }, urgency), card.totalAnswered > 0 && /*#__PURE__*/React.createElement("span", {
         className: 'text-xs font-bold px-2 py-0.5 rounded bg-' + color + '-200 text-' + color + '-900'
-      }, card.percentCorrect + '% correct')), /*#__PURE__*/React.createElement("p", {
+      }, card.unscored ? card.totalAnswered + ' responses' : card.percentCorrect + '% correct')), /*#__PURE__*/React.createElement("p", {
         className: "text-sm text-slate-800 mb-2"
       }, card.conceptText), /*#__PURE__*/React.createElement("div", {
         className: 'flex items-center gap-3 text-xs text-' + color + '-900'
-      }, /*#__PURE__*/React.createElement("span", null, card.correctCount + ' ✓'), /*#__PURE__*/React.createElement("span", null, card.incorrectCount + ' ✗'), card.idkCount > 0 && /*#__PURE__*/React.createElement("span", {
+      }, !card.unscored && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", null, card.correctCount + ' ✓'), /*#__PURE__*/React.createElement("span", null, card.incorrectCount + ' ✗')), card.unscored && /*#__PURE__*/React.createElement("span", null, "Distribution only — no right answer"), card.idkCount > 0 && /*#__PURE__*/React.createElement("span", {
         className: "text-sky-700"
       }, card.idkCount + ' 🤔'), /*#__PURE__*/React.createElement("span", {
         className: "text-slate-600"
@@ -2480,7 +2482,7 @@ function LiveResultsDashboard(p) {
     body = /*#__PURE__*/React.createElement("div", {
       className: "space-y-2"
     }, data.bars.map(function (bar) {
-      var color = bar.total === 0 ? 'slate' : bar.percentCorrect >= 80 ? 'emerald' : bar.percentCorrect >= 50 ? 'amber' : 'rose';
+      var color = bar.total === 0 ? 'slate' : bar.unscored ? 'purple' : bar.percentCorrect >= 80 ? 'emerald' : bar.percentCorrect >= 50 ? 'amber' : 'rose';
       var pctCorrect = bar.total > 0 ? bar.correct / bar.total * 100 : 0;
       var pctIncorrect = bar.total > 0 ? bar.incorrect / bar.total * 100 : 0;
       var pctIdk = bar.total > 0 ? bar.idk / bar.total * 100 : 0;
@@ -2512,7 +2514,7 @@ function LiveResultsDashboard(p) {
         className: "text-xs text-slate-700 flex-1 min-w-0"
       }, bar.questionIdx + 1 + '. ' + qLabel), bar.total > 0 && /*#__PURE__*/React.createElement("span", {
         className: 'flex-shrink-0 text-xs font-bold px-2 py-0.5 rounded bg-' + color + '-100 text-' + color + '-800'
-      }, bar.percentCorrect + '%')), bar.total > 0 ? /*#__PURE__*/React.createElement("div", {
+      }, bar.unscored ? 'Unscored' : bar.percentCorrect + '%')), bar.total > 0 ? /*#__PURE__*/React.createElement("div", {
         className: "flex h-3 rounded overflow-hidden border border-slate-200"
       }, pctCorrect > 0 && /*#__PURE__*/React.createElement("div", {
         style: {
@@ -2535,14 +2537,16 @@ function LiveResultsDashboard(p) {
       }), pctSubmitted > 0 && /*#__PURE__*/React.createElement("div", {
         style: {
           width: pctSubmitted + '%',
-          backgroundColor: '#94a3b8'
+          backgroundColor: bar.unscored ? '#8b5cf6' : '#94a3b8'
         },
-        title: bar.submitted + ' submitted (ungraded)'
+        title: bar.unscored ? bar.submitted + ' poll responses' : bar.submitted + ' submitted (ungraded)'
       })) : /*#__PURE__*/React.createElement("div", {
         className: "h-3 rounded bg-slate-100 border border-slate-200"
       }), /*#__PURE__*/React.createElement("div", {
         className: "flex items-center gap-3 mt-1 text-[10px] text-slate-600"
-      }, /*#__PURE__*/React.createElement("span", null, bar.correct + ' ✓'), /*#__PURE__*/React.createElement("span", null, bar.incorrect + ' ✗'), bar.idk > 0 && /*#__PURE__*/React.createElement("span", {
+      }, !bar.unscored && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", null, bar.correct + ' ✓'), /*#__PURE__*/React.createElement("span", null, bar.incorrect + ' ✗')), bar.unscored && /*#__PURE__*/React.createElement("span", {
+        className: "text-purple-800 font-bold"
+      }, "Distribution only"), bar.idk > 0 && /*#__PURE__*/React.createElement("span", {
         className: "text-sky-700"
       }, bar.idk + ' 🤔'), bar.submitted > 0 && /*#__PURE__*/React.createElement("span", {
         className: "text-slate-600"

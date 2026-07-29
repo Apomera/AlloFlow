@@ -73,6 +73,544 @@ var Upload = _lazyIcon('Upload');
 var UserCircle2 = _lazyIcon('UserCircle2');
 var X = _lazyIcon('X');
 var XCircle = _lazyIcon('XCircle');
+const LIVE_QUIZ_ADVANCED_TYPES = new Set(['multi-select', 'fill-blank', 'short-answer', 'self-explanation', 'numeric-response', 'sequence-sense', 'relation-mismatch', 'answer-evidence']);
+const LIVE_QUIZ_UNSCORED_TYPES = new Set(['likert', 'opinion-mcq']);
+const LIVE_QUIZ_TEXT_LIMIT = 4000;
+function normalizeLiveQuizItemType(question) {
+  const raw = String(question?.itemType || question?.type || 'mcq').trim().toLowerCase().replace(/_/g, '-');
+  if (raw === 'multiple-choice' || raw === 'multiple-choice-question' || raw === 'single-select') return 'mcq';
+  return raw || 'mcq';
+}
+function boundedLiveQuizText(value, limit = LIVE_QUIZ_TEXT_LIMIT) {
+  return String(value == null ? '' : value).slice(0, Math.max(1, limit));
+}
+function boundedLiveQuizStrings(value, limit = 30) {
+  if (!Array.isArray(value)) return [];
+  return value.slice(0, limit).map(item => boundedLiveQuizText(item, 500)).filter(Boolean);
+}
+function resolveLiveQuizCorrectOptionIndex(question, options) {
+  if (!question || !Array.isArray(options) || options.length === 0) return -1;
+  const answer = question.correctAnswer;
+  if (Number.isInteger(answer) && answer >= 0 && answer < options.length) return answer;
+  if (typeof answer !== 'string') return -1;
+  const trimmed = answer.trim();
+  if (/^[A-Za-z]$/.test(trimmed)) {
+    const letterIndex = trimmed.toUpperCase().charCodeAt(0) - 65;
+    if (letterIndex >= 0 && letterIndex < options.length) return letterIndex;
+  }
+  if (/^\d+$/.test(trimmed)) {
+    const numericIndex = Number(trimmed);
+    if (numericIndex >= 0 && numericIndex < options.length) return numericIndex;
+  }
+  const target = trimmed.toLowerCase();
+  return options.findIndex(option => String(option).trim().toLowerCase() === target);
+}
+function getLiveQuizSubmittedAnswer(response) {
+  if (!response || typeof response !== 'object' || Array.isArray(response)) return null;
+  if (response.answer && typeof response.answer === 'object' && !Array.isArray(response.answer)) return response.answer;
+  return response;
+}
+function normalizeStudentLiveScoringPolicy(policy) {
+  const source = policy && typeof policy === 'object' && !Array.isArray(policy) ? policy : {};
+  const nested = source.liveScoring && typeof source.liveScoring === 'object' && !Array.isArray(source.liveScoring) ? source.liveScoring : {};
+  const liveMode = typeof policy === 'string' ? policy : source.liveMode || source.mode || nested.mode;
+  return {
+    accuracy: source.accuracy === false ? false : true,
+    confidence: source.confidence === true || nested.confidence === true || String(liveMode || '').trim().toLowerCase() === 'confidence',
+    partialCredit: source.partialCredit === false ? false : true
+  };
+}
+function getLiveQuizResponseOptionIndex(question, response, options) {
+  if (Number.isInteger(response) && response >= 0 && response < options.length) return response;
+  const answer = getLiveQuizSubmittedAnswer(response);
+  if (!answer || typeof answer !== 'object' || Array.isArray(answer)) return null;
+  const candidate = [answer.optionIdx, answer.optionIndex, answer.selectedIndex].find(value => Number.isInteger(value));
+  if (Number.isInteger(candidate) && candidate >= 0 && candidate < options.length) return candidate;
+  if (typeof answer.optionText === 'string') {
+    const target = answer.optionText.trim().toLowerCase();
+    const match = options.findIndex(option => String(option).trim().toLowerCase() === target);
+    return match >= 0 ? match : null;
+  }
+  return null;
+}
+function attachLiveQuizConfidence(response, question, questionIndex, confidence) {
+  if (!['knew', 'guessed', 'no-idea'].includes(confidence)) return null;
+  const itemType = normalizeLiveQuizItemType(question);
+  const existingEnvelope = response && typeof response === 'object' && !Array.isArray(response) && Object.prototype.hasOwnProperty.call(response, 'answer') ? response : null;
+  const answer = existingEnvelope ? existingEnvelope.answer : Number.isInteger(response) ? {
+    optionIdx: response,
+    optionText: boundedLiveQuizStrings(question?.options)[response] || ''
+  } : response;
+  return {
+    ...(existingEnvelope || {}),
+    questionIdx: questionIndex,
+    itemType,
+    conceptLabel: boundedLiveQuizText(existingEnvelope?.conceptLabel || question?.conceptLabel, 240),
+    answer,
+    confidence,
+    timestamp: Date.now()
+  };
+}
+const LiveAdvancedQuizResponse = React.memo(({
+  question,
+  questionType,
+  questionIndex,
+  questionKey,
+  phase,
+  hasAnswered,
+  onSubmit
+}) => {
+  const [draft, setDraft] = useState({
+    text: '',
+    unit: '',
+    selectedIndices: [],
+    answerIdx: null,
+    evidenceIdx: null,
+    sequenceStep: 1,
+    verifyAnswer: null,
+    clickedIdx: null,
+    principleAnswer: null,
+    relationStep: 1,
+    clickedPairIdx: null,
+    partnerAnswer: ''
+  });
+  useEffect(() => {
+    setDraft({
+      text: '',
+      unit: '',
+      selectedIndices: [],
+      answerIdx: null,
+      evidenceIdx: null,
+      sequenceStep: 1,
+      verifyAnswer: null,
+      clickedIdx: null,
+      principleAnswer: null,
+      relationStep: 1,
+      clickedPairIdx: null,
+      partnerAnswer: ''
+    });
+  }, [questionKey]);
+  const patchDraft = patch => setDraft(previous => ({
+    ...previous,
+    ...patch
+  }));
+  const isDisabled = hasAnswered || phase !== 'answering';
+  const sendAnswer = answer => {
+    if (isDisabled || !answer || typeof answer !== 'object' || Array.isArray(answer)) return;
+    onSubmit({
+      questionIdx: questionIndex,
+      itemType: questionType,
+      conceptLabel: boundedLiveQuizText(question?.conceptLabel, 240),
+      answer,
+      timestamp: Date.now()
+    });
+  };
+  const sharedButtonClass = 'min-h-11 rounded-xl border px-4 py-3 text-left text-sm font-bold transition-colors motion-reduce:transition-none disabled:cursor-not-allowed disabled:opacity-60';
+  const submitButtonClass = 'min-h-11 rounded-xl bg-indigo-500 px-5 py-3 text-sm font-black text-white shadow-lg hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-50';
+  if (questionType === 'fill-blank' || questionType === 'short-answer' || questionType === 'self-explanation') {
+    const isFillBlank = questionType === 'fill-blank';
+    const maxLength = isFillBlank ? 500 : questionType === 'self-explanation' ? 6000 : LIVE_QUIZ_TEXT_LIMIT;
+    const submitText = () => {
+      const text = boundedLiveQuizText(draft.text, maxLength).trim();
+      if (!text) return;
+      let status = 'submitted';
+      if (isFillBlank) {
+        const targets = [question?.expectedFill || ''].concat(Array.isArray(question?.acceptableAlternatives) ? question.acceptableAlternatives : []).map(target => boundedLiveQuizText(target, 500).trim().toLowerCase()).filter(Boolean);
+        if (targets.length > 0) status = targets.includes(text.toLowerCase()) ? 'correct' : 'incorrect';
+      }
+      sendAnswer({
+        text,
+        status
+      });
+    };
+    return /*#__PURE__*/React.createElement("div", {
+      className: "mt-8 w-full max-w-3xl rounded-3xl border border-white/20 bg-white/10 p-5 text-left shadow-xl",
+      "data-live-response-type": questionType
+    }, /*#__PURE__*/React.createElement("label", {
+      htmlFor: "live-quiz-written-response",
+      className: "mb-2 block text-sm font-bold text-white"
+    }, isFillBlank ? 'Type the missing word or phrase' : questionType === 'self-explanation' ? 'Explain your thinking' : 'Write your response'), isFillBlank ? /*#__PURE__*/React.createElement("input", {
+      id: "live-quiz-written-response",
+      type: "text",
+      value: draft.text,
+      maxLength: maxLength,
+      disabled: isDisabled,
+      onChange: event => patchDraft({
+        text: event.target.value
+      }),
+      onKeyDown: event => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          submitText();
+        }
+      },
+      className: "min-h-12 w-full rounded-xl border-2 border-white/30 bg-white px-4 py-3 text-base text-slate-900"
+    }) : /*#__PURE__*/React.createElement("textarea", {
+      id: "live-quiz-written-response",
+      value: draft.text,
+      maxLength: maxLength,
+      rows: questionType === 'self-explanation' ? 6 : 4,
+      disabled: isDisabled,
+      onChange: event => patchDraft({
+        text: event.target.value
+      }),
+      className: "w-full resize-y rounded-xl border-2 border-white/30 bg-white px-4 py-3 text-base text-slate-900"
+    }), /*#__PURE__*/React.createElement("div", {
+      className: "mt-3 flex justify-end"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: submitText,
+      disabled: isDisabled || !draft.text.trim(),
+      className: submitButtonClass
+    }, "Submit response")));
+  }
+  if (questionType === 'numeric-response') {
+    const submitNumeric = () => {
+      const rawText = boundedLiveQuizText(draft.text, 120).trim();
+      const numericValue = Number(rawText);
+      if (!rawText || !Number.isFinite(numericValue)) return;
+      const unit = boundedLiveQuizText(draft.unit, 80).trim();
+      const expected = Number(question?.correctValue);
+      const tolerance = Math.max(0, Number(question?.tolerance) || 0);
+      const canGradeValue = question?.correctValue !== null && question?.correctValue !== undefined && question?.correctValue !== '' && Number.isFinite(expected);
+      const valueCorrect = canGradeValue ? Math.abs(numericValue - expected) <= tolerance + 1e-9 : null;
+      const acceptedUnits = [question?.unit || ''].concat(Array.isArray(question?.acceptableUnits) ? question.acceptableUnits : []).map(value => boundedLiveQuizText(value, 80).trim().toLowerCase().replace(/\./g, '').replace(/\s+/g, ' ')).filter(Boolean);
+      const normalizedUnit = unit.toLowerCase().replace(/\./g, '').replace(/\s+/g, ' ');
+      const unitCorrect = acceptedUnits.length === 0 ? true : acceptedUnits.includes(normalizedUnit);
+      let score = null;
+      let status = 'submitted';
+      if (canGradeValue) {
+        score = valueCorrect && unitCorrect ? 100 : valueCorrect || unitCorrect && acceptedUnits.length > 0 ? 50 : 0;
+        status = score === 100 ? 'correct' : score > 0 ? 'partially-correct' : 'incorrect';
+      }
+      sendAnswer({
+        text: rawText + (unit ? ' ' + unit : ''),
+        numericValue,
+        unit,
+        valueCorrect,
+        unitCorrect,
+        status,
+        score
+      });
+    };
+    return /*#__PURE__*/React.createElement("div", {
+      className: "mt-8 w-full max-w-3xl rounded-3xl border border-white/20 bg-white/10 p-5 text-left shadow-xl",
+      "data-live-response-type": questionType
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]"
+    }, /*#__PURE__*/React.createElement("label", {
+      className: "block text-sm font-bold text-white"
+    }, "Numeric answer", /*#__PURE__*/React.createElement("input", {
+      type: "number",
+      step: "any",
+      inputMode: "decimal",
+      value: draft.text,
+      disabled: isDisabled,
+      onChange: event => patchDraft({
+        text: event.target.value
+      }),
+      onKeyDown: event => {
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          submitNumeric();
+        }
+      },
+      className: "mt-2 min-h-12 w-full rounded-xl border-2 border-white/30 bg-white px-4 py-3 text-base text-slate-900"
+    })), /*#__PURE__*/React.createElement("label", {
+      className: "block text-sm font-bold text-white"
+    }, "Unit", question?.unit ? ` (${boundedLiveQuizText(question.unit, 80)})` : ' (optional)', /*#__PURE__*/React.createElement("input", {
+      type: "text",
+      value: draft.unit,
+      maxLength: "80",
+      disabled: isDisabled,
+      onChange: event => patchDraft({
+        unit: event.target.value
+      }),
+      className: "mt-2 min-h-12 w-full rounded-xl border-2 border-white/30 bg-white px-4 py-3 text-base text-slate-900"
+    }))), /*#__PURE__*/React.createElement("div", {
+      className: "mt-3 flex justify-end"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: submitNumeric,
+      disabled: isDisabled || !draft.text || !Number.isFinite(Number(draft.text)),
+      className: submitButtonClass
+    }, "Submit numeric answer")));
+  }
+  if (questionType === 'multi-select') {
+    const options = boundedLiveQuizStrings(question?.options);
+    const selected = draft.selectedIndices.filter(index => Number.isInteger(index) && index >= 0 && index < options.length).slice(0, options.length);
+    const toggle = index => {
+      if (isDisabled) return;
+      patchDraft({
+        selectedIndices: selected.includes(index) ? selected.filter(value => value !== index) : selected.concat(index).sort((a, b) => a - b)
+      });
+    };
+    const submitMultiSelect = () => {
+      if (selected.length === 0) return;
+      const correctTexts = boundedLiveQuizStrings(question?.correctAnswers);
+      const correctIndices = options.map((option, index) => correctTexts.includes(option) ? index : -1).filter(index => index >= 0);
+      let score = null;
+      let status = 'submitted';
+      if (correctIndices.length > 0) {
+        const selectedCorrect = selected.filter(index => correctIndices.includes(index)).length;
+        const selectedWrong = selected.length - selectedCorrect;
+        score = Math.round(100 * Math.max(0, selectedCorrect - selectedWrong) / Math.max(1, correctIndices.length));
+        status = selectedWrong === 0 && selectedCorrect === correctIndices.length ? 'correct' : score > 0 ? 'partially-correct' : 'incorrect';
+      }
+      sendAnswer({
+        selectedIndices: selected,
+        selectedTexts: selected.map(index => options[index]),
+        status,
+        score
+      });
+    };
+    return /*#__PURE__*/React.createElement("div", {
+      className: "mt-8 w-full max-w-4xl px-4",
+      "data-live-response-type": questionType
+    }, /*#__PURE__*/React.createElement("div", {
+      role: "group",
+      "aria-label": "Select every answer that applies",
+      className: "grid grid-cols-1 gap-3 sm:grid-cols-2"
+    }, options.map((option, index) => {
+      const active = selected.includes(index);
+      return /*#__PURE__*/React.createElement("button", {
+        key: index,
+        type: "button",
+        "aria-pressed": active,
+        disabled: isDisabled,
+        onClick: () => toggle(index),
+        className: `${sharedButtonClass} ${active ? 'border-yellow-300 bg-yellow-300 text-indigo-950 ring-4 ring-yellow-200/30' : 'border-white/30 bg-white text-slate-900 hover:border-indigo-300'}`
+      }, /*#__PURE__*/React.createElement("span", {
+        "aria-hidden": "true",
+        className: "mr-2"
+      }, active ? '✓' : '□'), option);
+    })), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: submitMultiSelect,
+      disabled: isDisabled || selected.length === 0,
+      className: `${submitButtonClass} mt-4`
+    }, "Submit selections"));
+  }
+  if (questionType === 'answer-evidence') {
+    const answerOptions = boundedLiveQuizStrings(question?.answerOptions);
+    const evidenceOptions = boundedLiveQuizStrings(question?.evidenceOptions);
+    const submitAnswerEvidence = () => {
+      if (!Number.isInteger(draft.answerIdx) || !Number.isInteger(draft.evidenceIdx)) return;
+      const answerText = answerOptions[draft.answerIdx];
+      const evidenceText = evidenceOptions[draft.evidenceIdx];
+      if (answerText === undefined || evidenceText === undefined) return;
+      const hasAnswerKey = typeof question?.correctAnswer === 'string' && question.correctAnswer.trim();
+      const hasEvidenceKey = typeof question?.correctEvidence === 'string' && question.correctEvidence.trim();
+      const answerCorrect = hasAnswerKey ? answerText === question.correctAnswer : null;
+      const evidenceCorrect = hasEvidenceKey ? evidenceText === question.correctEvidence : null;
+      let score = null;
+      let status = 'submitted';
+      if (hasAnswerKey && hasEvidenceKey) {
+        score = (answerCorrect ? 1 : 0) + (evidenceCorrect ? 1 : 0);
+        status = score === 2 ? 'correct' : score > 0 ? 'partially-correct' : 'incorrect';
+      }
+      sendAnswer({
+        answerIdx: draft.answerIdx,
+        answerText,
+        evidenceIdx: draft.evidenceIdx,
+        evidenceText,
+        answerCorrect,
+        evidenceCorrect,
+        score,
+        status
+      });
+    };
+    const renderChoiceGrid = (items, selectedIndex, field) => /*#__PURE__*/React.createElement("div", {
+      className: "grid grid-cols-1 gap-2 sm:grid-cols-2"
+    }, items.map((option, index) => /*#__PURE__*/React.createElement("button", {
+      key: index,
+      type: "button",
+      "aria-pressed": selectedIndex === index,
+      disabled: isDisabled,
+      onClick: () => patchDraft({
+        [field]: index
+      }),
+      className: `${sharedButtonClass} ${selectedIndex === index ? 'border-yellow-300 bg-yellow-300 text-indigo-950' : 'border-white/30 bg-white text-slate-900'}`
+    }, String.fromCharCode(65 + index), ". ", option)));
+    return /*#__PURE__*/React.createElement("div", {
+      className: "mt-8 w-full max-w-4xl space-y-5 rounded-3xl border border-white/20 bg-white/10 p-5 text-left shadow-xl",
+      "data-live-response-type": questionType
+    }, /*#__PURE__*/React.createElement("fieldset", null, /*#__PURE__*/React.createElement("legend", {
+      className: "mb-2 text-sm font-black text-white"
+    }, "Part 1 — Choose the best answer"), renderChoiceGrid(answerOptions, draft.answerIdx, 'answerIdx')), /*#__PURE__*/React.createElement("fieldset", null, /*#__PURE__*/React.createElement("legend", {
+      className: "mb-2 text-sm font-black text-white"
+    }, "Part 2 — ", boundedLiveQuizText(question?.evidencePrompt || 'Choose the best supporting evidence.', 500)), renderChoiceGrid(evidenceOptions, draft.evidenceIdx, 'evidenceIdx')), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: submitAnswerEvidence,
+      disabled: isDisabled || !Number.isInteger(draft.answerIdx) || !Number.isInteger(draft.evidenceIdx),
+      className: submitButtonClass
+    }, "Submit answer and evidence"));
+  }
+  if (questionType === 'sequence-sense') {
+    const items = boundedLiveQuizStrings(question?.items);
+    const candidateOrder = Array.isArray(question?.presentedOrder) ? question.presentedOrder.slice(0, items.length) : [];
+    const isPermutation = candidateOrder.length === items.length && candidateOrder.every(value => Number.isInteger(value) && value >= 0 && value < items.length) && new Set(candidateOrder).size === items.length;
+    const presentedOrder = isPermutation ? candidateOrder : items.map((_, index) => index);
+    const displayedItems = presentedOrder.map(index => items[index]);
+    const wrongIndex = Number.isInteger(question?.intentionallyWrongIndex) && question.intentionallyWrongIndex >= 0 && question.intentionallyWrongIndex < displayedItems.length ? question.intentionallyWrongIndex : null;
+    const principleOptions = boundedLiveQuizStrings(question?.principleOptions, 12);
+    const principles = principleOptions.length >= 2 ? principleOptions : ['chronological', 'cause-effect', 'process', 'size', 'hierarchy'];
+    const chooseVerification = answer => patchDraft({
+      verifyAnswer: answer,
+      sequenceStep: answer === 'no' ? 2 : 3
+    });
+    const chooseMisplaced = index => patchDraft({
+      clickedIdx: index,
+      sequenceStep: 3
+    });
+    const submitPrinciple = principleAnswer => {
+      const actualOrderIsCorrect = wrongIndex === null;
+      const step1Correct = draft.verifyAnswer === 'yes' ? actualOrderIsCorrect : !actualOrderIsCorrect;
+      const step2Correct = draft.verifyAnswer === 'yes' ? step1Correct : draft.clickedIdx === wrongIndex;
+      const expectedPrinciple = boundedLiveQuizText(question?.orderingPrinciple || '', 200);
+      const step3Correct = expectedPrinciple ? principleAnswer === expectedPrinciple : null;
+      const gradableSteps = expectedPrinciple ? 3 : 2;
+      const rawScore = (step1Correct ? 1 : 0) + (step2Correct ? 1 : 0) + (step3Correct ? 1 : 0);
+      const status = rawScore === gradableSteps ? 'correct' : rawScore > 0 ? 'partially-correct' : 'incorrect';
+      patchDraft({
+        principleAnswer
+      });
+      sendAnswer({
+        verifyAnswer: draft.verifyAnswer,
+        clickedIdx: draft.clickedIdx,
+        principleAnswer,
+        score: rawScore,
+        status
+      });
+    };
+    return /*#__PURE__*/React.createElement("div", {
+      className: "mt-8 w-full max-w-4xl rounded-3xl border border-white/20 bg-white/10 p-5 text-left shadow-xl",
+      "data-live-response-type": questionType
+    }, /*#__PURE__*/React.createElement("ol", {
+      className: "space-y-2"
+    }, displayedItems.map((item, index) => /*#__PURE__*/React.createElement("li", {
+      key: index
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      disabled: isDisabled || draft.sequenceStep !== 2,
+      "aria-pressed": draft.clickedIdx === index,
+      onClick: () => chooseMisplaced(index),
+      className: `${sharedButtonClass} w-full ${draft.clickedIdx === index ? 'border-yellow-300 bg-yellow-300 text-indigo-950' : 'border-white/30 bg-white text-slate-900'}`
+    }, index + 1, ". ", item)))), draft.sequenceStep === 1 && /*#__PURE__*/React.createElement("fieldset", {
+      className: "mt-4"
+    }, /*#__PURE__*/React.createElement("legend", {
+      className: "mb-2 text-sm font-black text-white"
+    }, "Is this order correct?"), /*#__PURE__*/React.createElement("div", {
+      className: "flex flex-wrap gap-2"
+    }, /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      disabled: isDisabled,
+      onClick: () => chooseVerification('yes'),
+      className: submitButtonClass
+    }, "Yes, it is correct"), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      disabled: isDisabled,
+      onClick: () => chooseVerification('no'),
+      className: submitButtonClass
+    }, "No, something is misplaced"))), draft.sequenceStep === 2 && /*#__PURE__*/React.createElement("p", {
+      className: "mt-4 text-sm font-bold text-white"
+    }, "Select the misplaced item above."), draft.sequenceStep === 3 && /*#__PURE__*/React.createElement("fieldset", {
+      className: "mt-4"
+    }, /*#__PURE__*/React.createElement("legend", {
+      className: "mb-2 text-sm font-black text-white"
+    }, "What is the ordering principle?"), /*#__PURE__*/React.createElement("div", {
+      className: "grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3"
+    }, principles.map(principle => /*#__PURE__*/React.createElement("button", {
+      key: principle,
+      type: "button",
+      disabled: isDisabled,
+      onClick: () => submitPrinciple(principle),
+      className: `${sharedButtonClass} border-white/30 bg-white text-slate-900`
+    }, principle)))));
+  }
+  if (questionType === 'relation-mismatch') {
+    const pairs = (Array.isArray(question?.pairs) ? question.pairs : []).slice(0, 30).map(pair => ({
+      left: boundedLiveQuizText(pair?.left, 500),
+      right: boundedLiveQuizText(pair?.right, 500)
+    })).filter(pair => pair.left && pair.right);
+    const wrongPairIndex = Number.isInteger(question?.wrongPairIndex) && question.wrongPairIndex >= 0 && question.wrongPairIndex < pairs.length ? question.wrongPairIndex : null;
+    const correctPartner = boundedLiveQuizText(question?.correctPartnerForWrong, 500);
+    const candidates = boundedLiveQuizStrings(question?.candidatePartners);
+    const choosePair = index => patchDraft({
+      clickedPairIdx: index,
+      relationStep: 2
+    });
+    const submitPartner = partnerValue => {
+      const partnerAnswer = boundedLiveQuizText(partnerValue, 500).trim();
+      if (!partnerAnswer || !Number.isInteger(draft.clickedPairIdx)) return;
+      const step1Correct = wrongPairIndex === null ? null : draft.clickedPairIdx === wrongPairIndex;
+      const step2Correct = correctPartner ? partnerAnswer === correctPartner : null;
+      let score = null;
+      let status = 'submitted';
+      if (step1Correct !== null && step2Correct !== null) {
+        score = (step1Correct ? 1 : 0) + (step2Correct ? 1 : 0);
+        status = score === 2 ? 'correct' : score > 0 ? 'partially-correct' : 'incorrect';
+      }
+      patchDraft({
+        partnerAnswer
+      });
+      sendAnswer({
+        clickedPairIdx: draft.clickedPairIdx,
+        partnerAnswer,
+        score,
+        status
+      });
+    };
+    return /*#__PURE__*/React.createElement("div", {
+      className: "mt-8 w-full max-w-4xl rounded-3xl border border-white/20 bg-white/10 p-5 text-left shadow-xl",
+      "data-live-response-type": questionType
+    }, /*#__PURE__*/React.createElement("div", {
+      role: "group",
+      "aria-label": "Find the mismatched pair",
+      className: "space-y-2"
+    }, pairs.map((pair, index) => /*#__PURE__*/React.createElement("button", {
+      key: index,
+      type: "button",
+      "aria-pressed": draft.clickedPairIdx === index,
+      disabled: isDisabled || draft.relationStep !== 1,
+      onClick: () => choosePair(index),
+      className: `${sharedButtonClass} grid w-full grid-cols-2 gap-4 ${draft.clickedPairIdx === index ? 'border-yellow-300 bg-yellow-300 text-indigo-950' : 'border-white/30 bg-white text-slate-900'}`
+    }, /*#__PURE__*/React.createElement("span", null, pair.left), /*#__PURE__*/React.createElement("span", null, "↔ ", pair.right)))), draft.relationStep === 1 && /*#__PURE__*/React.createElement("p", {
+      className: "mt-4 text-sm font-bold text-white"
+    }, "Choose the pair that does not belong."), draft.relationStep === 2 && /*#__PURE__*/React.createElement("div", {
+      className: "mt-4"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "mb-2 text-sm font-black text-white"
+    }, "What should the selected item be paired with?"), candidates.length >= 2 ? /*#__PURE__*/React.createElement("div", {
+      className: "grid grid-cols-1 gap-2 sm:grid-cols-2"
+    }, candidates.map(candidate => /*#__PURE__*/React.createElement("button", {
+      key: candidate,
+      type: "button",
+      disabled: isDisabled,
+      onClick: () => submitPartner(candidate),
+      className: `${sharedButtonClass} border-white/30 bg-white text-slate-900`
+    }, candidate))) : /*#__PURE__*/React.createElement("div", {
+      className: "flex flex-col gap-2 sm:flex-row"
+    }, /*#__PURE__*/React.createElement("label", {
+      className: "flex-1 text-sm font-bold text-white"
+    }, "Replacement partner", /*#__PURE__*/React.createElement("input", {
+      type: "text",
+      value: draft.partnerAnswer,
+      maxLength: "500",
+      disabled: isDisabled,
+      onChange: event => patchDraft({
+        partnerAnswer: event.target.value
+      }),
+      className: "mt-2 min-h-12 w-full rounded-xl border-2 border-white/30 bg-white px-4 py-3 text-base text-slate-900"
+    })), /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      disabled: isDisabled || !draft.partnerAnswer.trim(),
+      onClick: () => submitPartner(draft.partnerAnswer),
+      className: `${submitButtonClass} self-end`
+    }, "Submit replacement"))));
+  }
+  return null;
+});
 const StudentQuizOverlay = React.memo(({
   sessionData,
   generatedContent,
@@ -91,9 +629,19 @@ const StudentQuizOverlay = React.memo(({
     phase,
     teams = {},
     bossStats,
-    responses
+    responses,
+    scoringPolicy
   } = quizState;
   const currentQuestion = generatedContent?.data?.questions?.[currentQuestionIndex];
+  const questionType = normalizeLiveQuizItemType(currentQuestion);
+  const liveOptions = boundedLiveQuizStrings(currentQuestion?.options);
+  const isAdvancedLiveQuestion = LIVE_QUIZ_ADVANCED_TYPES.has(questionType);
+  const isUnscoredLiveQuestion = LIVE_QUIZ_UNSCORED_TYPES.has(questionType);
+  const liveScoringPolicy = normalizeStudentLiveScoringPolicy(scoringPolicy || generatedContent?.data?.scoringPolicy);
+  const confidenceEnabled = liveScoringPolicy.confidence && !isUnscoredLiveQuestion;
+  const presentationActivityId = String(quizState.activityId || 'quiz:' + activeSessionCode).slice(0, 120);
+  const receiptQuestionIndex = Number.isInteger(currentQuestionIndex) ? Math.min(9999, Math.max(0, currentQuestionIndex)) : 0;
+  const responseAttemptKey = presentationActivityId + ':' + receiptQuestionIndex + ':' + String(user?.uid || '');
   const teamColor = user ? teams?.[user.uid] : null;
   const studentGroupId = sessionData?.roster?.[user?.uid]?.groupId;
   const studentGroup = studentGroupId ? sessionData.groups?.[studentGroupId] : null;
@@ -101,8 +649,11 @@ const StudentQuizOverlay = React.memo(({
   const showTranslated = groupLanguage && groupLanguage !== 'English';
   const [hasAnswered, setHasAnswered] = useState(false);
   const [selectedOptionIndex, setSelectedOptionIndex] = useState(null);
+  const [submittedResponse, setSubmittedResponse] = useState(null);
+  const [selectedConfidence, setSelectedConfidence] = useState(null);
   const [submitError, setSubmitError] = useState('');
   const [isLocallyDismissed, setIsLocallyDismissed] = useState(false);
+  const localAnswerKeyRef = useRef('');
   const quizRef = useRef(null);
   useFocusTrap(quizRef, isQuizOpen && !isLocallyDismissed, () => setIsLocallyDismissed(true));
   useEffect(() => {
@@ -111,21 +662,30 @@ const StudentQuizOverlay = React.memo(({
   useEffect(() => {
     setSubmitError('');
     if (user && responses && responses[user.uid] !== undefined) {
+      const savedResponse = responses[user.uid];
+      localAnswerKeyRef.current = responseAttemptKey;
       setHasAnswered(true);
-      setSelectedOptionIndex(responses[user.uid]);
-    } else {
-      if (!user || !responses || responses[user.uid] === undefined) {
-        setHasAnswered(false);
-        setSelectedOptionIndex(null);
-      }
+      setSelectedOptionIndex(getLiveQuizResponseOptionIndex(currentQuestion, savedResponse, liveOptions));
+      setSubmittedResponse(savedResponse);
+      setSelectedConfidence(['knew', 'guessed', 'no-idea'].includes(savedResponse?.confidence) ? savedResponse.confidence : null);
+    } else if (localAnswerKeyRef.current !== responseAttemptKey) {
+      setHasAnswered(false);
+      setSelectedOptionIndex(null);
+      setSubmittedResponse(null);
+      setSelectedConfidence(null);
     }
-  }, [currentQuestionIndex, responses, user]);
+  }, [responseAttemptKey, responses, user, liveOptions.length, currentQuestion]);
   useEffect(() => {
     if (isQuizOpen && mode === 'team-showdown' && user && activeSessionCode) {
       const currentTeam = teams?.[user.uid];
       if (!currentTeam) {
         const teamOptions = ['Red', 'Blue', 'Green', 'Yellow'];
-        const assignedColor = teamOptions[Math.floor(Math.random() * teamOptions.length)];
+        const groupedTeamIds = Object.keys(sessionData?.groups || {}).filter(groupId => sessionData.groups?.[groupId] && typeof sessionData.groups[groupId] === 'object').sort();
+        const existingGroupIndex = studentGroupId ? groupedTeamIds.indexOf(studentGroupId) : -1;
+        // Reuse the live roster's grouping when one exists. The quiz wire
+        // format and scoreboard stay on the established four team colors;
+        // sessions with more than four groups intentionally share a color.
+        const assignedColor = existingGroupIndex >= 0 ? teamOptions[existingGroupIndex % teamOptions.length] : teamOptions[Math.floor(Math.random() * teamOptions.length)];
         const joinTeam = async () => {
           try {
             const effectiveAppId = targetAppId || appId;
@@ -140,28 +700,64 @@ const StudentQuizOverlay = React.memo(({
         joinTeam();
       }
     }
-  }, [isQuizOpen, mode, user, teams, activeSessionCode, targetAppId]);
-  const submitQuizResponse = async optionIndex => {
+  }, [isQuizOpen, mode, user, teams, activeSessionCode, targetAppId, studentGroupId, sessionData?.groups]);
+  const transmitQuizResponse = async responseValue => {
+    // FERPA-first transport: the answer rides the existing P2P quiz channel
+    // when available. The cloud fallback remains a content-free receipt.
+    const p2pSend = typeof window !== 'undefined' && window.__alloQuizChannelSend;
+    let sentViaP2P = false;
+    if (typeof p2pSend === 'function') {
+      try {
+        sentViaP2P = Boolean(p2pSend('boss:' + currentQuestionIndex, responseValue));
+      } catch (p2pError) {
+        warnLog("P2P quiz response failed; recording receipt:", p2pError);
+      }
+    }
+    if (sentViaP2P) return;
+    const effectiveAppId = targetAppId || appId;
+    const sessionRef = doc(db, 'artifacts', effectiveAppId, 'public', 'data', 'sessions', activeSessionCode);
+    await updateDoc(sessionRef, {
+      [`quizState.responseReceipts.${user.uid}`]: {
+        activityId: presentationActivityId,
+        questionIndex: receiptQuestionIndex,
+        submittedAt: Date.now(),
+        flow: 'presentation'
+      }
+    });
+  };
+  const submitQuizResponse = async (responseValue, selectedMarker = responseValue) => {
     if (hasAnswered || !user || !activeSessionCode) return;
     setSubmitError('');
+    localAnswerKeyRef.current = responseAttemptKey;
     setHasAnswered(true);
-    setSelectedOptionIndex(optionIndex);
+    setSelectedOptionIndex(Number.isInteger(selectedMarker) && selectedMarker >= 0 && selectedMarker < liveOptions.length ? selectedMarker : null);
+    setSubmittedResponse(responseValue);
     try {
-      // FERPA-first transport: boss answers ride the P2P quiz channel when
-      // it's up (shell hook; answer lands only on the teacher device).
-      // Firestore quizState.responses stays strictly as the fallback.
-      const p2pSend = typeof window !== 'undefined' && window.__alloQuizChannelSend;
-      if (typeof p2pSend === 'function' && p2pSend('boss:' + currentQuestionIndex, optionIndex)) return;
-      const effectiveAppId = targetAppId || appId;
-      const sessionRef = doc(db, 'artifacts', effectiveAppId, 'public', 'data', 'sessions', activeSessionCode);
-      await updateDoc(sessionRef, {
-        [`quizState.responses.${user.uid}`]: optionIndex
-      });
+      await transmitQuizResponse(responseValue);
     } catch (e) {
       warnLog("Error submitting quiz response:", e);
+      localAnswerKeyRef.current = '';
       setHasAnswered(false);
       setSelectedOptionIndex(null);
+      setSubmittedResponse(null);
+      setSelectedConfidence(null);
       setSubmitError(t('errors.quiz_submit_failed') || 'Your answer could not be submitted. Please try again.');
+    }
+  };
+  const submitQuizConfidence = async confidence => {
+    if (!confidenceEnabled || !hasAnswered || submittedResponse == null || !user || !activeSessionCode || phase !== 'answering') return;
+    const nextResponse = attachLiveQuizConfidence(submittedResponse, currentQuestion, receiptQuestionIndex, confidence);
+    if (!nextResponse) return;
+    const previousConfidence = selectedConfidence;
+    setSubmitError('');
+    setSelectedConfidence(confidence);
+    setSubmittedResponse(nextResponse);
+    try {
+      await transmitQuizResponse(nextResponse);
+    } catch (e) {
+      warnLog("Error updating quiz confidence:", e);
+      setSelectedConfidence(previousConfidence);
+      setSubmitError(t('errors.quiz_submit_failed') || 'Your confidence update could not be sent. Please try again.');
     }
   };
   const getModeStyles = () => {
@@ -217,8 +813,10 @@ const StudentQuizOverlay = React.memo(({
     }
   };
   const isRevealed = phase === 'revealed';
-  const correctAnswerIndex = currentQuestion?.options?.findIndex(opt => opt === currentQuestion.correctAnswer);
-  const isCorrect = isRevealed && selectedOptionIndex === correctAnswerIndex;
+  const correctAnswerIndex = isUnscoredLiveQuestion ? -1 : resolveLiveQuizCorrectOptionIndex(currentQuestion, liveOptions);
+  const isCorrect = isRevealed && hasAnswered && correctAnswerIndex >= 0 && selectedOptionIndex === correctAnswerIndex;
+  const submittedAdvancedAnswer = getLiveQuizSubmittedAnswer(submittedResponse);
+  const advancedStatus = submittedAdvancedAnswer && typeof submittedAdvancedAnswer.status === 'string' ? submittedAdvancedAnswer.status : hasAnswered ? 'submitted' : 'no-response';
   return /*#__PURE__*/React.createElement("div", {
     ref: quizRef,
     className: `fixed inset-0 z-[1000] ${styles.bg} flex flex-col animate-in slide-in-from-bottom duration-500 text-white font-sans motion-reduce:animate-none motion-reduce:transition-none`,
@@ -340,8 +938,18 @@ const StudentQuizOverlay = React.memo(({
   }, t('quiz.boss.counter_attack_msg', {
     damage: bossStats.lastClassDamage
   })))), /*#__PURE__*/React.createElement("div", {
-    className: "bg-white/10 backdrop-blur-md p-8 rounded-3xl border border-white/10 shadow-2xl max-w-3xl w-full"
-  }, /*#__PURE__*/React.createElement("h3", {
+    className: "bg-white/10 backdrop-blur-md p-5 md:p-8 rounded-3xl border border-white/10 shadow-2xl max-w-3xl w-full"
+  }, currentQuestion?.imageUrl && /*#__PURE__*/React.createElement("img", {
+    src: currentQuestion.imageUrl,
+    alt: String(currentQuestion.imageAlt || currentQuestion.question || t('quiz.question_image') || 'Question image'),
+    loading: "eager",
+    decoding: "async",
+    onError: event => {
+      event.currentTarget.hidden = true;
+    },
+    "data-live-quiz-question-image": "true",
+    className: "mb-5 max-h-64 w-full rounded-2xl border border-white/20 bg-white object-contain shadow-lg"
+  }), /*#__PURE__*/React.createElement("h3", {
     id: "student-quiz-question",
     "aria-live": "polite",
     "aria-atomic": "true",
@@ -349,16 +957,24 @@ const StudentQuizOverlay = React.memo(({
     "data-help-key": "quiz_student_question"
   }, currentQuestion ? currentQuestion.question : t('quiz.loading_question')), currentQuestion && showTranslated && currentQuestion.question_en && /*#__PURE__*/React.createElement("p", {
     className: "mt-3 text-base md:text-lg text-white/70 italic"
-  }, currentQuestion.question_en)), currentQuestion?.itemType === 'likert' ? /*#__PURE__*/React.createElement("div", {
+  }, currentQuestion.question_en)), isAdvancedLiveQuestion ? /*#__PURE__*/React.createElement(LiveAdvancedQuizResponse, {
+    question: currentQuestion,
+    questionType: questionType,
+    questionIndex: receiptQuestionIndex,
+    questionKey: responseAttemptKey,
+    phase: phase,
+    hasAnswered: hasAnswered,
+    onSubmit: submitQuizResponse
+  }) : questionType === 'likert' ? /*#__PURE__*/React.createElement("div", {
     className: "w-full max-w-3xl mt-8 px-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex justify-between text-xs md:text-sm font-bold text-white/80 mb-2 uppercase tracking-wider"
   }, /*#__PURE__*/React.createElement("span", null, currentQuestion.scale?.lowLabel || t('quiz.likert_strongly_disagree') || 'Strongly disagree'), /*#__PURE__*/React.createElement("span", null, currentQuestion.scale?.highLabel || t('quiz.likert_strongly_agree') || 'Strongly agree')), /*#__PURE__*/React.createElement("div", {
     className: "grid gap-2",
     style: {
-      gridTemplateColumns: `repeat(${Math.max(3, Math.min(7, currentQuestion.scale?.steps || currentQuestion.options?.length || 5))}, minmax(0, 1fr))`
+      gridTemplateColumns: `repeat(${Math.max(3, Math.min(7, Number(currentQuestion?.scale?.steps) || liveOptions.length || 5))}, minmax(0, 1fr))`
     }
-  }, (currentQuestion.options || []).map((tickLabel, idx) => {
+  }, liveOptions.map((tickLabel, idx) => {
     const isSelected = selectedOptionIndex === idx;
     const isDisabled = hasAnswered || phase !== 'answering';
     let btnClass = 'bg-white text-slate-800 border-slate-200 hover:border-purple-300 hover:bg-purple-50';
@@ -368,20 +984,29 @@ const StudentQuizOverlay = React.memo(({
       "data-help-key": "quiz_student_likert_tick",
       onClick: () => submitQuizResponse(idx),
       disabled: isDisabled,
-      "aria-label": `${tickLabel} of ${currentQuestion.options.length}`,
+      "aria-label": `${tickLabel} of ${liveOptions.length}`,
       className: `relative p-4 md:p-6 rounded-2xl font-black text-2xl md:text-3xl transition-all transform duration-200 shadow-xl border-b-4 active:border-b-0 active:translate-y-1 ${btnClass}`
     }, tickLabel);
   })), /*#__PURE__*/React.createElement("p", {
     className: "mt-4 text-center text-[11px] md:text-xs text-white/60 italic"
   }, t('quiz.no_right_answer') || 'There are no right or wrong answers here.')) : /*#__PURE__*/React.createElement("div", {
     className: "w-full max-w-4xl grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8 px-4"
-  }, currentQuestion?.options?.map((option, idx) => {
+  }, liveOptions.map((option, idx) => {
     const isSelected = selectedOptionIndex === idx;
     const letter = String.fromCharCode(65 + idx);
+    const optionImageUrl = Array.isArray(currentQuestion?.optionImageUrls) ? currentQuestion.optionImageUrls[idx] : null;
     const isDisabled = hasAnswered || phase !== 'answering';
     let btnClass = 'bg-white text-slate-800 border-slate-200 hover:border-indigo-300 hover:bg-indigo-50';
     let letterClass = 'bg-indigo-100 text-indigo-600 border-indigo-200 group-hover:bg-white group-hover:border-indigo-300';
-    if (isRevealed) {
+    if (isRevealed && isUnscoredLiveQuestion) {
+      if (isSelected) {
+        btnClass = 'bg-purple-500 text-white border-purple-700 scale-[1.02] ring-4 ring-purple-300/40 z-10';
+        letterClass = 'bg-white text-purple-700 border-white';
+      } else {
+        btnClass = 'bg-slate-800 text-slate-300 border-slate-900 opacity-60';
+        letterClass = 'bg-slate-700 text-slate-300 border-slate-600';
+      }
+    } else if (isRevealed) {
       if (idx === correctAnswerIndex) {
         btnClass = 'bg-green-700 text-white border-green-800 ring-4 ring-green-700/30 z-10 scale-[1.02] shadow-xl';
         letterClass = 'bg-white text-green-600 border-white';
@@ -404,11 +1029,24 @@ const StudentQuizOverlay = React.memo(({
       "data-help-key": "quiz_student_answer_option",
       onClick: () => submitQuizResponse(idx),
       disabled: isDisabled,
+      "aria-label": String(option) + (showTranslated && currentQuestion?.options_en?.[idx] ? '. ' + currentQuestion.options_en[idx] : ''),
+      "aria-pressed": isSelected,
       className: `
                                 relative group overflow-hidden p-6 rounded-2xl font-bold text-lg md:text-xl transition-all transform duration-300 shadow-xl border-b-4 active:border-b-0 active:translate-y-1
                                 ${btnClass}
                             `
-    }, /*#__PURE__*/React.createElement("div", {
+    }, optionImageUrl && /*#__PURE__*/React.createElement("img", {
+      src: optionImageUrl,
+      alt: "",
+      "aria-hidden": "true",
+      loading: "eager",
+      decoding: "async",
+      onError: event => {
+        event.currentTarget.hidden = true;
+      },
+      "data-live-quiz-option-image": idx,
+      className: "relative z-10 mb-4 h-28 w-full rounded-xl border border-slate-200 bg-white object-contain md:h-36"
+    }), /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-4 relative z-10"
     }, /*#__PURE__*/React.createElement("div", {
       className: `
@@ -424,16 +1062,31 @@ const StudentQuizOverlay = React.memo(({
     }, /*#__PURE__*/React.createElement(CheckCircle2, {
       size: 24,
       className: "fill-white"
-    })), isRevealed && idx === correctAnswerIndex && /*#__PURE__*/React.createElement("div", {
+    })), isRevealed && !isUnscoredLiveQuestion && idx === correctAnswerIndex && /*#__PURE__*/React.createElement("div", {
       className: "absolute top-2 right-2 text-white animate-in zoom-in duration-300"
     }, /*#__PURE__*/React.createElement(CheckCircle2, {
       size: 24
-    })), isRevealed && isSelected && idx !== correctAnswerIndex && /*#__PURE__*/React.createElement("div", {
+    })), isRevealed && !isUnscoredLiveQuestion && isSelected && idx !== correctAnswerIndex && /*#__PURE__*/React.createElement("div", {
       className: "absolute top-2 right-2 text-white animate-in zoom-in duration-300"
     }, /*#__PURE__*/React.createElement(XCircle, {
       size: 24
     })));
-  })), /*#__PURE__*/React.createElement("div", {
+  })), phase === 'answering' && hasAnswered && confidenceEnabled && /*#__PURE__*/React.createElement("fieldset", {
+    className: "mt-6 w-full max-w-2xl rounded-2xl border border-cyan-300/50 bg-cyan-950/60 px-5 py-4 text-left shadow-xl",
+    "data-live-confidence-policy": "true"
+  }, /*#__PURE__*/React.createElement("legend", {
+    className: "px-2 text-sm font-black text-white"
+  }, "How sure were you?"), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-1 gap-2 sm:grid-cols-3"
+  }, [['knew', 'I knew this'], ['guessed', 'I made an informed guess'], ['no-idea', 'I was not sure']].map(([value, label]) => /*#__PURE__*/React.createElement("button", {
+    key: value,
+    type: "button",
+    "aria-pressed": selectedConfidence === value,
+    onClick: () => submitQuizConfidence(value),
+    className: `min-h-11 rounded-xl border px-3 py-2 text-sm font-bold transition-colors motion-reduce:transition-none ${selectedConfidence === value ? 'border-cyan-200 bg-cyan-300 text-slate-950' : 'border-white/30 bg-white text-slate-900 hover:border-cyan-300'}`
+  }, label))), /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 text-[11px] text-cyan-100"
+  }, "This helps your teacher spot secure knowledge and misconceptions. It never changes correctness or points.")), /*#__PURE__*/React.createElement("div", {
     className: "mt-8 min-h-16 flex items-center justify-center w-full mb-8"
   }, phase === 'answering' && (hasAnswered ? /*#__PURE__*/React.createElement("div", {
     role: "status",
@@ -449,7 +1102,7 @@ const StudentQuizOverlay = React.memo(({
     className: "relative inline-flex rounded-full h-3 w-3 bg-green-500"
   })), t('quiz.status.answer_sent')) : /*#__PURE__*/React.createElement("div", {
     className: "text-white/50 font-mono text-xs uppercase tracking-widest animate-pulse motion-reduce:animate-none"
-  }, t('quiz.status.choose_option'))), phase === 'revealed' && currentQuestion?.itemType === 'likert' && /*#__PURE__*/React.createElement("div", {
+  }, isAdvancedLiveQuestion ? 'Complete and submit your response' : t('quiz.status.choose_option'))), phase === 'revealed' && isUnscoredLiveQuestion && /*#__PURE__*/React.createElement("div", {
     role: "status",
     "aria-live": "polite",
     "aria-atomic": "true",
@@ -458,7 +1111,14 @@ const StudentQuizOverlay = React.memo(({
     className: "w-full px-8 py-6 rounded-3xl font-bold text-lg shadow-xl flex items-center justify-center gap-4 border-2 border-purple-300 bg-purple-50 text-purple-900"
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
-  }, "🗣️"), /*#__PURE__*/React.createElement("span", null, t('quiz.poll_completed') || 'Thanks for sharing your take.'))), phase === 'revealed' && currentQuestion?.itemType !== 'likert' && /*#__PURE__*/React.createElement("div", {
+  }, "🗣️"), /*#__PURE__*/React.createElement("span", null, hasAnswered ? t('quiz.poll_completed') || 'Thanks for sharing your take.' : 'This opinion prompt has closed.'))), phase === 'revealed' && isAdvancedLiveQuestion && /*#__PURE__*/React.createElement("div", {
+    role: "status",
+    "aria-live": "polite",
+    "aria-atomic": "true",
+    className: "flex w-full max-w-2xl items-center justify-center px-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: `w-full rounded-3xl border-2 px-8 py-6 text-center text-lg font-bold shadow-xl ${advancedStatus === 'correct' ? 'border-green-300 bg-green-50 text-green-900' : advancedStatus === 'partially-correct' ? 'border-amber-300 bg-amber-50 text-amber-950' : advancedStatus === 'incorrect' ? 'border-red-300 bg-red-50 text-red-900' : 'border-indigo-300 bg-indigo-50 text-indigo-950'}`
+  }, advancedStatus === 'correct' ? 'Correct response.' : advancedStatus === 'partially-correct' ? 'Partially correct response.' : advancedStatus === 'incorrect' ? 'This response needs another look.' : advancedStatus === 'no-response' ? 'No response was submitted.' : 'Response submitted for review.')), phase === 'revealed' && !isUnscoredLiveQuestion && !isAdvancedLiveQuestion && /*#__PURE__*/React.createElement("div", {
     role: "status",
     "aria-live": "polite",
     "aria-atomic": "true",
@@ -469,9 +1129,11 @@ const StudentQuizOverlay = React.memo(({
                             ${isCorrect ? 'bg-green-700 border-green-500 text-white ring-4 ring-green-700/30' : 'bg-red-500 border-red-300 text-white ring-4 ring-red-500/30'}
                         `
   }, isCorrect ? /*#__PURE__*/React.createElement(CheckCircle2, {
+    "aria-hidden": "true",
     size: 40,
     className: "fill-white text-green-500"
   }) : /*#__PURE__*/React.createElement(XCircle, {
+    "aria-hidden": "true",
     size: 40,
     className: "fill-white text-red-500"
   }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
@@ -480,9 +1142,7 @@ const StudentQuizOverlay = React.memo(({
     damage: 10
   }) : t('quiz.status.result_miss', {
     hp: 5
-  }) : mode === 'team-showdown' ? isCorrect ? teamColor ? t('quiz.status.result_score', {
-    points: 100
-  }) : t('quiz.status.result_score_generic') : t('quiz.status.result_no_points') : isCorrect ? t('quiz.status.result_correct') : t('quiz.status.result_incorrect'))), currentQuestion.factCheck && /*#__PURE__*/React.createElement("div", {
+  }) : mode === 'team-showdown' ? isCorrect ? t('quiz.status.result_correct') : t('quiz.status.result_incorrect') : isCorrect ? t('quiz.status.result_correct') : t('quiz.status.result_incorrect'))), currentQuestion.factCheck && /*#__PURE__*/React.createElement("div", {
     className: "bg-white/95 backdrop-blur-xl text-slate-800 p-6 rounded-3xl border border-white/20 shadow-2xl w-full text-left relative overflow-hidden z-20"
   }, /*#__PURE__*/React.createElement("div", {
     className: "absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"

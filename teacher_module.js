@@ -1352,7 +1352,7 @@ const EscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, 
 const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, activeSessionCode, appId: appId2, onGenerateImage, onRefineImage, onCreateGroup, onAssignStudent, onSetGroupResource, isPushingResource = {}, onSetGroupLanguage, onSetGroupProfile, onDeleteGroup, onUpdateQuestionRoutingRules, history = [] }) => {
   const { t } = useContext(LanguageContext);
   const { quizState, roster } = sessionData;
-  const { currentQuestionIndex, phase, responses, mode, bossStats, teamScores } = quizState;
+  const { currentQuestionIndex, phase, responses, responseReceipts, mode, bossStats, teamScores, scoringPolicy } = quizState;
   const question = generatedContent?.data.questions[currentQuestionIndex];
   const [showLocalStats, setShowLocalStats] = useState(false);
   const [bossDifficulty, setBossDifficulty] = useState("normal");
@@ -1466,34 +1466,102 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
   };
   const hideableResources = (Array.isArray(history) ? history : []).filter((item) => item && item.id && item.type && !["udl-advice", "brainstorm", "alignment-report"].includes(item.type));
   const totalStudents = roster ? Object.keys(roster).length : 0;
-  const answeredCount = responses ? Object.keys(responses).length : 0;
+  const scoredResponseUids = Object.keys(responses || {});
+  const validReceiptUids = Object.entries(responseReceipts && typeof responseReceipts === "object" ? responseReceipts : {}).slice(0, 250).reduce((uids, [uid, rawReceipt]) => {
+    const receipt = rawReceipt && typeof rawReceipt === "object" && !Array.isArray(rawReceipt) ? rawReceipt : null;
+    const keys = receipt ? Object.keys(receipt) : [];
+    const fixedShape = !!receipt && keys.length === 4 && keys.every((key) => ["activityId", "questionIndex", "submittedAt", "flow"].includes(key));
+    const valid = fixedShape && (!roster || Object.prototype.hasOwnProperty.call(roster, uid)) && receipt.activityId === quizState.activityId && receipt.questionIndex === currentQuestionIndex && typeof receipt.submittedAt === "number" && Number.isFinite(receipt.submittedAt) && receipt.submittedAt > 0 && receipt.flow === "presentation";
+    if (valid && !uids.includes(uid)) uids.push(uid);
+    return uids;
+  }, []);
+  const answeredUidSet = new Set(scoredResponseUids.concat(validReceiptUids));
+  const scoredAnsweredCount = scoredResponseUids.length;
+  const answeredCount = answeredUidSet.size;
+  const unscoredReceiptCount = validReceiptUids.filter((uid) => !Object.prototype.hasOwnProperty.call(responses || {}, uid)).length;
   const percentage = totalStudents > 0 ? Math.round(answeredCount / totalStudents * 100) : 0;
-  const detailedStats = question.options.map((opt, idx) => {
+  const quizLiveAggregators = typeof window !== "undefined" && window.AlloModules ? window.AlloModules.QuizLiveAggregators : null;
+  const rawLiveScoringPolicy = scoringPolicy || generatedContent?.data?.scoringPolicy || {};
+  const liveScoringPolicy = quizLiveAggregators && typeof quizLiveAggregators.normalizeLiveScoringPolicy === "function" ? quizLiveAggregators.normalizeLiveScoringPolicy(rawLiveScoringPolicy) : {
+    accuracy: rawLiveScoringPolicy?.accuracy !== false,
+    confidence: rawLiveScoringPolicy?.confidence === true || String(rawLiveScoringPolicy?.liveMode || "").toLowerCase() === "confidence",
+    partialCredit: rawLiveScoringPolicy?.partialCredit !== false
+  };
+  const fallbackDetailedStats = (question && Array.isArray(question.options) ? question.options : []).map((opt, idx) => {
     const count = Object.values(responses || {}).filter((r) => r === idx).length;
-    const percent = answeredCount > 0 ? Math.round(count / answeredCount * 100) : 0;
+    const percent = scoredAnsweredCount > 0 ? Math.round(count / scoredAnsweredCount * 100) : 0;
     return {
       label: String.fromCharCode(65 + idx),
       value: count,
       percent,
       text: opt,
+      imageUrl: Array.isArray(question.optionImageUrls) ? question.optionImageUrls[idx] : null,
       isCorrect: opt === question.correctAnswer
     };
   });
-  const renderAnalytics = () => /* @__PURE__ */ React.createElement("div", { className: "flex flex-col h-full w-full animate-in motion-reduce:animate-none fade-in duration-300" }, /* @__PURE__ */ React.createElement("div", { className: "w-full h-48 mb-6 shrink-0" }, /* @__PURE__ */ React.createElement(SimpleBarChart, { data: detailedStats, color: "indigo" })), /* @__PURE__ */ React.createElement("div", { className: "flex-grow overflow-y-auto pr-1 custom-scrollbar space-y-2" }, detailedStats.map((stat, i) => /* @__PURE__ */ React.createElement(
+  const liveQuestionSummary = quizLiveAggregators && typeof quizLiveAggregators.aggregatePresentationResponses === "function" ? quizLiveAggregators.aggregatePresentationResponses(question || {}, responses || {}, liveScoringPolicy) : {
+    itemType: String(question?.itemType || question?.type || "mcq"),
+    kind: "options",
+    rows: fallbackDetailedStats,
+    respondentCount: scoredAnsweredCount,
+    evaluableResponseCount: scoredAnsweredCount,
+    unscored: question?.itemType === "likert" || question?.itemType === "opinion-mcq",
+    gameScorable: Array.isArray(question?.options) && question.options.length > 0 && question.correctAnswer != null,
+    scoringPolicy: liveScoringPolicy,
+    confidenceReportedCount: 0,
+    confidenceMissingCount: 0,
+    confidenceAwaitingReviewCount: 0,
+    confidenceBuckets: { calibrated: 0, fragile: 0, confidentWrong: 0, uncertain: 0 },
+    note: ""
+  };
+  const detailedStats = Array.isArray(liveQuestionSummary.rows) ? liveQuestionSummary.rows : [];
+  const liveConfidenceBuckets = liveQuestionSummary.confidenceBuckets || { calibrated: 0, fragile: 0, confidentWrong: 0, uncertain: 0 };
+  const liveConfidenceTiles = [
+    { key: "calibrated", label: "Correct + knew it", tone: "border-emerald-200 bg-emerald-50 text-emerald-900" },
+    { key: "fragile", label: "Correct + unsure", tone: "border-sky-200 bg-sky-50 text-sky-900" },
+    { key: "confidentWrong", label: "Confident misconception", tone: "border-rose-200 bg-rose-50 text-rose-900" },
+    { key: "uncertain", label: "Incorrect + unsure", tone: "border-amber-200 bg-amber-50 text-amber-900" }
+  ];
+  const liveAnswerGuide = quizLiveAggregators && typeof quizLiveAggregators.describePresentationCorrectAnswer === "function" ? quizLiveAggregators.describePresentationCorrectAnswer(question || {}) : !liveQuestionSummary.unscored && question?.correctAnswer != null ? String(question.correctAnswer) : "";
+  const renderAnalytics = () => /* @__PURE__ */ React.createElement("div", { className: "flex flex-col h-full w-full animate-in motion-reduce:animate-none fade-in duration-300" }, liveQuestionSummary.note && /* @__PURE__ */ React.createElement("div", { role: "status", className: `mb-4 rounded-lg border px-3 py-2 text-xs font-bold ${liveQuestionSummary.unscored ? "border-purple-200 bg-purple-50 text-purple-900" : "border-amber-200 bg-amber-50 text-amber-900"}` }, liveQuestionSummary.note), liveScoringPolicy.confidence && !liveQuestionSummary.unscored && /* @__PURE__ */ React.createElement(
+    "section",
+    {
+      className: "mb-4 rounded-xl border border-indigo-200 bg-indigo-50/70 p-3",
+      "data-live-confidence-summary": "true",
+      "aria-label": "Confidence check summary"
+    },
+    /* @__PURE__ */ React.createElement("div", { className: "mb-2 flex items-center justify-between gap-3" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-black uppercase tracking-wider text-indigo-900" }, "Confidence check"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-semibold text-indigo-700" }, "Diagnostic only \u2014 never changes points")),
+    /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, liveConfidenceTiles.map((tile) => /* @__PURE__ */ React.createElement("div", { key: tile.key, className: `rounded-lg border px-2 py-1.5 ${tile.tone}` }, /* @__PURE__ */ React.createElement("div", { className: "text-lg font-black" }, liveConfidenceBuckets[tile.key] || 0), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold" }, tile.label)))),
+    (liveQuestionSummary.confidenceMissingCount > 0 || liveQuestionSummary.confidenceAwaitingReviewCount > 0) && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[11px] font-medium text-indigo-800" }, liveQuestionSummary.confidenceMissingCount || 0, " without confidence \xB7 ", liveQuestionSummary.confidenceAwaitingReviewCount || 0, " awaiting teacher review")
+  ), detailedStats.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "w-full h-48 mb-6 shrink-0" }, /* @__PURE__ */ React.createElement(SimpleBarChart, { data: detailedStats, color: "indigo" })) : /* @__PURE__ */ React.createElement("div", { role: "status", className: "w-full min-h-24 mb-6 rounded-lg border border-dashed border-slate-300 bg-white flex items-center justify-center px-4 text-center text-xs text-slate-600" }, "Responses are present, but this item has no safe aggregate categories to display."), /* @__PURE__ */ React.createElement("div", { className: "flex-grow overflow-y-auto pr-1 custom-scrollbar space-y-2" }, detailedStats.map((stat, i) => /* @__PURE__ */ React.createElement(
     "div",
     {
       key: i,
-      className: `flex items-center justify-between p-3 rounded-lg border text-xs transition-all motion-reduce:transition-none ${phase === "revealed" && stat.isCorrect ? "bg-green-50 border-green-200 ring-1 ring-green-300" : "bg-white border-slate-100 hover:border-indigo-200"}`
+      className: `flex items-center justify-between p-3 rounded-lg border text-xs transition-all motion-reduce:transition-none ${phase === "revealed" && !liveQuestionSummary.unscored && stat.isCorrect ? "bg-green-50 border-green-200 ring-1 ring-green-300" : "bg-white border-slate-100 hover:border-indigo-200"}`
     },
-    /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 overflow-hidden mr-4" }, /* @__PURE__ */ React.createElement("span", { className: `font-black w-6 h-6 flex items-center justify-center rounded shrink-0 ${phase === "revealed" && stat.isCorrect ? "bg-green-200 text-green-800" : "bg-indigo-100 text-indigo-700"}` }, stat.label), /* @__PURE__ */ React.createElement("span", { className: `truncate font-medium ${phase === "revealed" && stat.isCorrect ? "text-green-900" : "text-slate-600"}`, title: stat.text }, stat.text)),
+    /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 overflow-hidden mr-4" }, /* @__PURE__ */ React.createElement("span", { className: `font-black w-6 h-6 flex items-center justify-center rounded shrink-0 ${phase === "revealed" && !liveQuestionSummary.unscored && stat.isCorrect ? "bg-green-200 text-green-800" : "bg-indigo-100 text-indigo-700"}` }, stat.label), stat.imageUrl && /* @__PURE__ */ React.createElement(
+      "img",
+      {
+        src: stat.imageUrl,
+        alt: "",
+        "aria-hidden": "true",
+        loading: "eager",
+        decoding: "async",
+        onError: (event) => {
+          event.currentTarget.hidden = true;
+        },
+        "data-live-quiz-presenter-option-image": i,
+        className: "h-12 w-16 shrink-0 rounded border border-slate-200 bg-white object-contain"
+      }
+    ), /* @__PURE__ */ React.createElement("span", { className: `truncate font-medium ${phase === "revealed" && !liveQuestionSummary.unscored && stat.isCorrect ? "text-green-900" : "text-slate-600"}`, title: stat.text }, stat.text)),
     /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3 shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden hidden sm:block" }, /* @__PURE__ */ React.createElement(
       "div",
       {
-        className: `h-full ${phase === "revealed" && stat.isCorrect ? "bg-green-500" : "bg-indigo-500"}`,
+        className: `h-full ${phase === "revealed" && !liveQuestionSummary.unscored && stat.isCorrect ? "bg-green-500" : "bg-indigo-500"}`,
         style: { width: `${stat.percent}%` }
       }
     )), /* @__PURE__ */ React.createElement("div", { className: "text-right min-w-[50px]" }, /* @__PURE__ */ React.createElement("div", { className: "font-black text-slate-800 text-sm" }, stat.value), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 font-mono" }, stat.percent, "%")))
-  ))), /* @__PURE__ */ React.createElement("div", { className: "mt-4 pt-3 border-t border-slate-100 flex justify-between items-center text-xs" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-600 uppercase tracking-wider" }, t("quiz.total_responses")), /* @__PURE__ */ React.createElement("span", { className: "font-mono font-black text-lg text-indigo-600 bg-indigo-50 px-3 py-0.5 rounded-full border border-indigo-100" }, answeredCount)));
+  ))), /* @__PURE__ */ React.createElement("div", { className: "mt-4 pt-3 border-t border-slate-100 flex justify-between items-center gap-3 text-xs" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-600 uppercase tracking-wider" }, t("quiz.total_responses"), unscoredReceiptCount > 0 && /* @__PURE__ */ React.createElement("span", { className: "block mt-1 normal-case tracking-normal font-medium text-amber-700" }, unscoredReceiptCount, " submitted, unscored (peer connection unavailable)")), /* @__PURE__ */ React.createElement("span", { className: "font-mono font-black text-lg text-indigo-600 bg-indigo-50 px-3 py-0.5 rounded-full border border-indigo-100" }, liveQuestionSummary.respondentCount)));
   const generateBossAsset = async () => {
     if (bossStats?.image || bossStats?.isGenerating) return;
     try {
@@ -1550,7 +1618,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
   const handleStartQuestion = async () => {
     const sessionRef = doc(db, "artifacts", appId2, "public", "data", "sessions", activeSessionCode);
     try {
-      await updateDoc(sessionRef, { "quizState.phase": "answering", "quizState.responses": {}, "quizState.currentQuestionIndex": currentQuestionIndex, "quizState.bossStats.lastDamage": 0 });
+      await updateDoc(sessionRef, { "quizState.phase": "answering", "quizState.responses": {}, "quizState.responseReceipts": {}, "quizState.currentQuestionIndex": currentQuestionIndex, "quizState.bossStats.lastDamage": 0 });
     } catch (e) {
       warnLog("Firestore sync failed:", e);
     }
@@ -1561,26 +1629,43 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
       let updatePayload = {
         "quizState.phase": "revealed"
       };
-      const isCorrect = (responseIndex) => {
-        if (responseIndex === void 0 || responseIndex === null) return false;
-        return question.options[responseIndex] === question.correctAnswer;
+      const gradeLiveResponse = (responseValue) => {
+        if (quizLiveAggregators && typeof quizLiveAggregators.gradePresentationResponse === "function") {
+          return quizLiveAggregators.gradePresentationResponse(responseValue, question || {}, liveScoringPolicy);
+        }
+        const responseIndex = Number.isInteger(responseValue) ? responseValue : -1;
+        const correct = responseIndex >= 0 && Array.isArray(question?.options) && question.options[responseIndex] === question.correctAnswer;
+        return {
+          status: correct ? "correct" : "incorrect",
+          isCorrect: correct,
+          evaluable: responseIndex >= 0,
+          unscored: false,
+          scoreFraction: correct ? 1 : 0
+        };
       };
-      if (mode === "boss-battle") {
-        let correctCount = 0;
-        Object.values(responses || {}).forEach((val) => {
-          if (isCorrect(val)) correctCount++;
-        });
-        const totalResponses = Object.keys(responses || {}).length;
-        const wrongCount = totalResponses - correctCount;
+      const accuracyWeightForGrade = (grade) => {
+        if (quizLiveAggregators && typeof quizLiveAggregators.presentationAccuracyWeight === "function") {
+          return quizLiveAggregators.presentationAccuracyWeight(grade, null, liveScoringPolicy);
+        }
+        if (!grade || grade.evaluable !== true || grade.unscored === true) return null;
+        return typeof grade.scoreFraction === "number" ? Math.max(0, Math.min(1, grade.scoreFraction)) : grade.isCorrect === true ? 1 : 0;
+      };
+      if (mode === "boss-battle" && liveQuestionSummary.gameScorable) {
+        const evaluatedResponses = Object.values(responses || {}).map(gradeLiveResponse).filter((grade) => grade.evaluable);
+        const correctCount = evaluatedResponses.filter((grade) => grade.isCorrect === true).length;
+        const totalResponses = evaluatedResponses.length;
+        const earnedCredit = evaluatedResponses.reduce((sum, grade) => sum + (accuracyWeightForGrade(grade) || 0), 0);
+        const eligibleCount = Math.max(totalStudents, totalResponses, 1);
+        const wrongCredit = Math.max(0, eligibleCount - earnedCredit);
         const bossMaxHP = bossStats?.maxHP || 1e3;
         const quizLength = Math.max(1, generatedContent?.data?.questions?.length || 10);
         const perQuestionBudget = bossMaxHP / quizLength;
-        const answerAccuracy = totalResponses > 0 ? correctCount / totalResponses : 0;
+        const answerAccuracy = earnedCredit / eligibleCount;
         const damage = Math.round(answerAccuracy * perQuestionBudget * 1.2);
-        const currentHP = bossStats?.currentHP || 1e3;
+        const currentHP = bossStats?.currentHP ?? bossMaxHP;
         const newHP = Math.max(0, currentHP - damage);
         const difficultyMultiplier = bossStats?.difficulty === "easy" ? 0.5 : bossStats?.difficulty === "hard" ? 1.5 : 1;
-        const baseClassDamage = totalResponses > 0 ? Math.ceil(wrongCount / totalResponses * 25) : 0;
+        const baseClassDamage = Math.ceil(wrongCredit / eligibleCount * 25);
         const classDamage = Math.round(baseClassDamage * difficultyMultiplier);
         const currentClassHP = bossStats?.classHP ?? 100;
         const newClassHP = Math.max(0, currentClassHP - classDamage);
@@ -1594,7 +1679,9 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
           classDamage,
           correctCount,
           totalResponses,
-          accuracy: totalResponses > 0 ? Math.round(correctCount / totalResponses * 100) : 0
+          earnedCredit,
+          eligibleCount,
+          accuracy: Math.round(answerAccuracy * 100)
         };
         const existingLog = bossStats?.battleLog || [];
         updatePayload["quizState.bossStats.battleLog"] = [...existingLog, battleLogEntry];
@@ -1602,6 +1689,8 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
         if (newHP <= 0) {
           updatePayload["quizState.phase"] = "boss-defeated";
         } else if (newClassHP <= 0) {
+          updatePayload["quizState.phase"] = "class-defeated";
+        } else if (isLastQuestion && totalResponses === 0) {
           updatePayload["quizState.phase"] = "class-defeated";
         } else if (isLastQuestion) {
           const bossPct = newHP / bossMaxHP;
@@ -1611,30 +1700,36 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
         if (damage > 0 && bossStats?.image) {
           triggerBossVisualUpdate(bossStats.image, newHP <= 0 ? "defeated" : "hurt");
         }
-      } else if (mode === "team-showdown") {
+      } else if (mode === "team-showdown" && liveQuestionSummary.gameScorable) {
         const currentScores = sessionData.quizState.teamScores || {};
         const teamStats = {};
-        Object.entries(responses || {}).forEach(([uid, ansIdx]) => {
+        Object.entries(responses || {}).forEach(([uid, responseValue]) => {
+          const grade = gradeLiveResponse(responseValue);
+          if (!grade.evaluable) return;
           const teamColor = sessionData.quizState.teams?.[uid];
           if (teamColor) {
-            if (!teamStats[teamColor]) teamStats[teamColor] = { total: 0, correct: 0 };
+            if (!teamStats[teamColor]) teamStats[teamColor] = { total: 0, correct: 0, earned: 0 };
             teamStats[teamColor].total++;
-            if (isCorrect(ansIdx)) teamStats[teamColor].correct++;
+            teamStats[teamColor].earned += accuracyWeightForGrade(grade) || 0;
+            if (grade.isCorrect === true) teamStats[teamColor].correct++;
           }
         });
         const teamMemberCounts = {};
         Object.values(sessionData.quizState.teams || {}).forEach((color) => {
           if (color) teamMemberCounts[color] = (teamMemberCounts[color] || 0) + 1;
         });
-        Object.entries(teamStats).forEach(([team, stats]) => {
+        Object.keys(Object.assign({}, teamMemberCounts, teamStats)).forEach((team) => {
+          const stats = teamStats[team] || { total: 0, correct: 0, earned: 0 };
           const denominator = Math.max(stats.total, teamMemberCounts[team] || 0, 1);
-          const percentage2 = stats.correct / denominator;
+          const percentage2 = stats.earned / denominator;
           const pointsEarned = Math.round(percentage2 * 1e3);
           const oldScore = currentScores[team] || 0;
           updatePayload[`quizState.teamScores.${team}`] = oldScore + pointsEarned;
           updatePayload[`quizState.lastRoundStats.${team}`] = {
             points: pointsEarned,
-            percent: Math.round(percentage2 * 100)
+            percent: Math.round(percentage2 * 100),
+            earnedCredit: stats.earned,
+            responded: stats.total
           };
         });
       }
@@ -1656,6 +1751,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
         "quizState.currentQuestionIndex": nextIdx,
         "quizState.phase": "idle",
         "quizState.responses": {},
+        "quizState.responseReceipts": {},
         "quizState.bossStats.lastDamage": 0
       });
     } catch (e) {
@@ -1671,6 +1767,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
         "quizState.currentQuestionIndex": prevIdx,
         "quizState.phase": "idle",
         "quizState.responses": {},
+        "quizState.responseReceipts": {},
         "quizState.bossStats.lastDamage": 0
       });
     } catch (e) {
@@ -1704,7 +1801,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
   const handleModeChange = async (e) => {
     const newMode = e.target.value;
     const sessionRef = doc(db, "artifacts", appId2, "public", "data", "sessions", activeSessionCode);
-    const updates = { "quizState.mode": newMode };
+    const updates = { "quizState.mode": newMode, "quizState.responses": {}, "quizState.responseReceipts": {} };
     if (newMode === "boss-battle") {
       const qCount = generatedContent?.data.questions.length;
       const sCount = Math.max(1, totalStudents);
@@ -1735,6 +1832,24 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
       warnLog("Firestore sync failed:", e2);
     }
   };
+  const handleScoringPolicyChange = async (e) => {
+    if (phase === "answering" || answeredCount > 0) return;
+    const nextPolicy = {
+      accuracy: true,
+      confidence: e.target.value === "confidence",
+      partialCredit: liveScoringPolicy.partialCredit !== false
+    };
+    const sessionRef = doc(db, "artifacts", appId2, "public", "data", "sessions", activeSessionCode);
+    try {
+      await updateDoc(sessionRef, {
+        "quizState.scoringPolicy": nextPolicy,
+        "quizState.responses": {},
+        "quizState.responseReceipts": {}
+      });
+    } catch (error) {
+      warnLog("Live response policy sync failed:", error);
+    }
+  };
   const [newGroupName, setNewGroupName] = useState("");
   const groups = sessionData.groups || {};
   const handleCreateGroup = async () => {
@@ -1761,6 +1876,19 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     /* @__PURE__ */ React.createElement("option", { value: "live-pulse" }, "\u{1F4CA} ", t("quiz.modes.live_pulse")),
     /* @__PURE__ */ React.createElement("option", { value: "boss-battle" }, "\u2694\uFE0F ", t("quiz.modes.boss_battle")),
     /* @__PURE__ */ React.createElement("option", { value: "team-showdown" }, "\u{1F3C6} ", t("quiz.modes.team_showdown"))
+  ), /* @__PURE__ */ React.createElement(
+    "select",
+    {
+      "aria-label": "Live response policy",
+      "data-help-key": "quiz_live_scoring_policy_select",
+      value: liveScoringPolicy.confidence ? "confidence" : "accuracy",
+      onChange: handleScoringPolicyChange,
+      disabled: phase === "answering" || answeredCount > 0,
+      className: "bg-indigo-800 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-indigo-600 focus:outline-none focus:ring-2 focus:ring-teal-400 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60",
+      title: phase === "answering" || answeredCount > 0 ? "Choose a response policy before students answer." : "Choose what students report with each answer."
+    },
+    /* @__PURE__ */ React.createElement("option", { value: "accuracy" }, "Accuracy"),
+    /* @__PURE__ */ React.createElement("option", { value: "confidence" }, "Accuracy + confidence check")
   ), mode === "boss-battle" && /* @__PURE__ */ React.createElement(
     "select",
     {
@@ -1790,7 +1918,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     current: answeredCount,
     total: totalStudents,
     percent: percentage
-  })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleEndQuiz, className: "text-xs bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-full font-bold transition-colors motion-reduce:transition-none focus:outline-none focus:ring-2 focus:ring-white" }, t("quiz.end_quiz")))), /* @__PURE__ */ React.createElement("div", { className: "w-full h-1.5 bg-slate-100 relative" }, /* @__PURE__ */ React.createElement("div", { className: "bg-teal-500 h-full transition-all motion-reduce:transition-none duration-500 ease-out", style: { width: `${percentage}%` } })), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-b border-slate-200 p-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col md:flex-row gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-600 uppercase mb-2" }, t("groups.title")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-3" }, /* @__PURE__ */ React.createElement(
+  })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleEndQuiz, className: "text-xs bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-full font-bold transition-colors motion-reduce:transition-none focus:outline-none focus:ring-2 focus:ring-white" }, t("quiz.end_quiz")))), /* @__PURE__ */ React.createElement("div", { className: "w-full h-1.5 bg-slate-100 relative" }, /* @__PURE__ */ React.createElement("div", { className: "bg-teal-500 h-full transition-all motion-reduce:transition-none duration-500 ease-out", style: { width: `${percentage}%` } })), /* @__PURE__ */ React.createElement("div", { className: "border-b border-indigo-100 bg-indigo-50 px-4 py-2 text-xs font-semibold text-indigo-900", "data-live-scoring-policy-note": "true" }, liveScoringPolicy.confidence ? "Accuracy scoring plus a confidence check. Confidence never changes points; it is diagnostic only." : "Accuracy uses correctness and configured partial credit only. Response speed never changes points.", liveQuestionSummary.unscored && /* @__PURE__ */ React.createElement("span", { className: "ml-1 font-black text-purple-800" }, "This prompt remains distribution-only.")), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-b border-slate-200 p-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col md:flex-row gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-600 uppercase mb-2" }, t("groups.title")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-3" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.new_group_name"),
@@ -1913,7 +2041,43 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
   })), (!roster || Object.keys(roster).length === 0) && /* @__PURE__ */ React.createElement("div", { className: "text-center text-slate-600 italic py-4" }, t("groups.waiting_students")))))), /* @__PURE__ */ React.createElement("div", { className: "p-6 grid grid-cols-1 lg:grid-cols-2 gap-8" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col justify-between h-full" }, /* @__PURE__ */ React.createElement("div", { className: "mb-6" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-slate-600 uppercase tracking-widest block mb-2" }, t("quiz.question_progress", {
     current: currentQuestionIndex + 1,
     total: generatedContent?.data.questions.length
-  })), /* @__PURE__ */ React.createElement("h2", { className: "text-2xl font-bold text-slate-800 leading-tight" }, question.question)), /* @__PURE__ */ React.createElement("div", { className: "mb-4 bg-amber-50 border border-amber-200 rounded-lg p-2" }, /* @__PURE__ */ React.createElement(
+  })), question.imageUrl && /* @__PURE__ */ React.createElement(
+    "img",
+    {
+      src: question.imageUrl,
+      alt: String(question.imageAlt || question.question || t("quiz.question_image") || "Question image"),
+      loading: "eager",
+      decoding: "async",
+      onError: (event) => {
+        event.currentTarget.hidden = true;
+      },
+      "data-live-quiz-presenter-question-image": "true",
+      className: "mb-4 max-h-56 w-full rounded-xl border border-slate-200 bg-slate-50 object-contain shadow-sm"
+    }
+  ), /* @__PURE__ */ React.createElement("h2", { className: "text-2xl font-bold text-slate-800 leading-tight" }, question?.question || question?.contextSentence || "Live response item"), mode !== "live-pulse" && !liveQuestionSummary.gameScorable && /* @__PURE__ */ React.createElement("div", { role: "status", className: "mt-3 rounded-lg border border-purple-200 bg-purple-50 px-3 py-2 text-xs font-bold text-purple-900" }, liveQuestionSummary.unscored ? "Unscored poll \u2014 Boss Battle and Team Showdown scoring pause for this round." : "Teacher-review item \u2014 game scoring pauses until an evaluative item."), Array.isArray(question.optionImageUrls) && question.optionImageUrls.some(Boolean) && /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      className: "mt-4 grid grid-cols-2 gap-2",
+      "data-live-quiz-presenter-option-grid": "true",
+      role: "group",
+      "aria-label": t("quiz.answer_options") || "Answer options"
+    },
+    (question.options || []).map((option, optionIndex) => /* @__PURE__ */ React.createElement("div", { key: optionIndex, className: "rounded-lg border border-slate-200 bg-slate-50 p-2" }, question.optionImageUrls[optionIndex] && /* @__PURE__ */ React.createElement(
+      "img",
+      {
+        src: question.optionImageUrls[optionIndex],
+        alt: "",
+        "aria-hidden": "true",
+        loading: "eager",
+        decoding: "async",
+        onError: (event) => {
+          event.currentTarget.hidden = true;
+        },
+        "data-live-quiz-presenter-option-image": optionIndex,
+        className: "mb-1 h-20 w-full rounded bg-white object-contain"
+      }
+    ), /* @__PURE__ */ React.createElement("p", { className: "text-xs font-semibold text-slate-700" }, /* @__PURE__ */ React.createElement("span", { className: "mr-1 font-black text-indigo-700" }, String.fromCharCode(65 + optionIndex), "."), option)))
+  )), /* @__PURE__ */ React.createElement("div", { className: "mb-4 bg-amber-50 border border-amber-200 rounded-lg p-2" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -2093,7 +2257,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     t("common.next"),
     " ",
     /* @__PURE__ */ React.createElement(ArrowDown, { className: "-rotate-90", size: 16 })
-  )))), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-xl border border-slate-400 p-6 flex flex-col items-center justify-center min-h-[300px] relative" }, showLocalStats || mode === "live-pulse" ? answeredCount > 0 ? renderAnalytics() : /* @__PURE__ */ React.createElement("div", { className: "text-slate-600 italic flex flex-col items-center gap-2 h-full justify-center" }, /* @__PURE__ */ React.createElement(Layout, { size: 48, className: "opacity-20" }), /* @__PURE__ */ React.createElement("span", { className: "text-sm font-medium" }, t("quiz.waiting_responses"))) : /* @__PURE__ */ React.createElement(React.Fragment, null, mode === "boss-battle" && bossStats ? /* @__PURE__ */ React.createElement("div", { className: "w-full h-full flex flex-col items-center justify-center animate-in motion-reduce:animate-none fade-in zoom-in duration-300 relative" }, phase === "boss-defeated" && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-green-900/95 to-emerald-800/95 backdrop-blur-lg rounded-xl animate-in motion-reduce:animate-none zoom-in duration-500" }, /* @__PURE__ */ React.createElement(ConfettiEffect, { isActive: true }), /* @__PURE__ */ React.createElement("div", { className: "text-center p-8" }, /* @__PURE__ */ React.createElement("div", { className: "text-7xl mb-4 animate-bounce motion-reduce:animate-none" }, "\u{1F389}"), /* @__PURE__ */ React.createElement("h2", { className: "text-4xl font-black text-white mb-2 drop-shadow-lg" }, t("quiz.boss.victory_msg")), /* @__PURE__ */ React.createElement("p", { className: "text-lg text-green-200" }, bossStats?.name || "Boss", " has been defeated!"), renderBattleDebrief())), phase === "class-defeated" && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-red-900/95 to-rose-800/95 backdrop-blur-lg rounded-xl animate-in motion-reduce:animate-none zoom-in duration-500" }, /* @__PURE__ */ React.createElement("div", { className: "text-center p-8" }, /* @__PURE__ */ React.createElement("div", { className: "text-7xl mb-4" }, "\u{1F480}"), /* @__PURE__ */ React.createElement("h2", { className: "text-4xl font-black text-white mb-2 drop-shadow-lg" }, t("quiz.boss.class_defeat_msg")), /* @__PURE__ */ React.createElement("p", { className: "text-lg text-red-200" }, t("teacher.boss.class_fallen") || "The class has fallen..."), renderBattleDebrief())), /* @__PURE__ */ React.createElement("div", { className: `relative mb-6 ${phase === "revealed" && bossStats.lastDamage > 0 ? "animate-shake motion-reduce:animate-none" : ""}` }, bossStats.image ? /* @__PURE__ */ React.createElement(
+  )))), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-xl border border-slate-400 p-6 flex flex-col items-center justify-center min-h-[300px] relative" }, showLocalStats || mode === "live-pulse" ? scoredAnsweredCount > 0 ? renderAnalytics() : unscoredReceiptCount > 0 ? /* @__PURE__ */ React.createElement("div", { role: "status", className: "text-amber-800 flex flex-col items-center gap-2 h-full justify-center text-center max-w-sm" }, /* @__PURE__ */ React.createElement(Layout, { size: 48, className: "opacity-20" }), /* @__PURE__ */ React.createElement("span", { className: "text-sm font-bold" }, unscoredReceiptCount, " submitted, unscored"), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-amber-700" }, "Their peer connection was unavailable, so AlloFlow recorded participation without storing answer content.")) : /* @__PURE__ */ React.createElement("div", { className: "text-slate-600 italic flex flex-col items-center gap-2 h-full justify-center" }, /* @__PURE__ */ React.createElement(Layout, { size: 48, className: "opacity-20" }), /* @__PURE__ */ React.createElement("span", { className: "text-sm font-medium" }, t("quiz.waiting_responses"))) : /* @__PURE__ */ React.createElement(React.Fragment, null, mode === "boss-battle" && bossStats ? /* @__PURE__ */ React.createElement("div", { className: "w-full h-full flex flex-col items-center justify-center animate-in motion-reduce:animate-none fade-in zoom-in duration-300 relative" }, phase === "boss-defeated" && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-green-900/95 to-emerald-800/95 backdrop-blur-lg rounded-xl animate-in motion-reduce:animate-none zoom-in duration-500" }, /* @__PURE__ */ React.createElement(ConfettiEffect, { isActive: true }), /* @__PURE__ */ React.createElement("div", { className: "text-center p-8" }, /* @__PURE__ */ React.createElement("div", { className: "text-7xl mb-4 animate-bounce motion-reduce:animate-none" }, "\u{1F389}"), /* @__PURE__ */ React.createElement("h2", { className: "text-4xl font-black text-white mb-2 drop-shadow-lg" }, t("quiz.boss.victory_msg")), /* @__PURE__ */ React.createElement("p", { className: "text-lg text-green-200" }, bossStats?.name || "Boss", " has been defeated!"), renderBattleDebrief())), phase === "class-defeated" && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-red-900/95 to-rose-800/95 backdrop-blur-lg rounded-xl animate-in motion-reduce:animate-none zoom-in duration-500" }, /* @__PURE__ */ React.createElement("div", { className: "text-center p-8" }, /* @__PURE__ */ React.createElement("div", { className: "text-7xl mb-4" }, "\u{1F480}"), /* @__PURE__ */ React.createElement("h2", { className: "text-4xl font-black text-white mb-2 drop-shadow-lg" }, t("quiz.boss.class_defeat_msg")), /* @__PURE__ */ React.createElement("p", { className: "text-lg text-red-200" }, t("teacher.boss.class_fallen") || "The class has fallen..."), renderBattleDebrief())), /* @__PURE__ */ React.createElement("div", { className: `relative mb-6 ${phase === "revealed" && bossStats.lastDamage > 0 ? "animate-shake motion-reduce:animate-none" : ""}` }, bossStats.image ? /* @__PURE__ */ React.createElement(
     "img",
     {
       loading: "lazy",
@@ -2131,7 +2295,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
         style: { height: `${height}%` }
       }
     ), /* @__PURE__ */ React.createElement("span", { className: "mt-2 text-xs font-bold uppercase text-slate-600" }, t(`quiz.teams.${team.toLowerCase()}`)), phase === "revealed" && sessionData.quizState.lastRoundStats?.[team]?.points > 0 && /* @__PURE__ */ React.createElement("div", { className: "absolute -top-8 left-1/2 -translate-x-1/2 bg-yellow-300 text-indigo-900 text-xs font-black px-2 py-1 rounded shadow-sm animate-bounce motion-reduce:animate-none whitespace-nowrap z-10" }, "+", sessionData.quizState.lastRoundStats[team].points));
-  })), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 font-bold uppercase tracking-wider" }, t("quiz.team_leaderboard"))) : null), phase === "revealed" && /* @__PURE__ */ React.createElement("div", { className: "mt-6 w-full bg-green-100 border border-green-200 text-green-800 p-4 rounded-xl text-center animate-in motion-reduce:animate-none slide-in-from-bottom-2 shadow-sm z-10" }, /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] font-black uppercase tracking-widest text-green-600 mb-1" }, t("quiz.correct_answer_label")), /* @__PURE__ */ React.createElement("span", { className: "text-lg font-bold" }, question.correctAnswer)))));
+  })), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 font-bold uppercase tracking-wider" }, t("quiz.team_leaderboard"))) : null), phase === "revealed" && !liveQuestionSummary.unscored && liveAnswerGuide && /* @__PURE__ */ React.createElement("div", { className: "mt-6 w-full bg-green-100 border border-green-200 text-green-800 p-4 rounded-xl text-center animate-in motion-reduce:animate-none slide-in-from-bottom-2 shadow-sm z-10" }, /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] font-black uppercase tracking-widest text-green-600 mb-1" }, t("quiz.correct_answer_label")), /* @__PURE__ */ React.createElement("span", { className: "text-lg font-bold" }, liveAnswerGuide)))));
 });
 const calculateAnalyticsMetrics = (dashboardData) => {
   if (!dashboardData || !Array.isArray(dashboardData) || dashboardData.length === 0) {

@@ -508,6 +508,10 @@ function projectSessionForParticipant(data, uid) {
   copy.participantCount = copy.roster && typeof copy.roster === 'object' ? Object.keys(copy.roster).length : 0;
   copy.roster = ownMap(copy.roster, uid);
   if (copy.quizState && typeof copy.quizState === 'object') {
+    copy.quizState.responseReceipts = ownMap(copy.quizState.responseReceipts, uid);
+    // Legacy sessions may still contain raw Firestore/mailbox fallbacks.
+    // Participants can read only their own legacy entry; writes are denied
+    // below so new clients cannot add answer content to the shared document.
     copy.quizState.allResponses = ownMap(copy.quizState.allResponses, uid);
     copy.quizState.responses = ownMap(copy.quizState.responses, uid);
     copy.quizState.teams = ownMap(copy.quizState.teams, uid);
@@ -630,18 +634,39 @@ function validParticipantRosterField(field, value, uid) {
   if (field === 'wsProbeResult') return validWsProbeResultValue(value);
   return false;
 }
+function validQuizResponseReceipt(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  var allowed = { activityId: 1, questionIndex: 1, submittedAt: 1, flow: 1 };
+  var keys = Object.keys(value);
+  if (keys.length !== 4) return false;
+  for (var i = 0; i < keys.length; i++) if (!allowed[keys[i]]) return false;
+  if (!(typeof value.activityId === 'string'
+      && value.activityId.length >= 1
+      && value.activityId.length <= 120)) return false;
+  if (!(typeof value.questionIndex === 'number'
+      && isFinite(value.questionIndex)
+      && Math.floor(value.questionIndex) === value.questionIndex
+      && value.questionIndex >= 0
+      && value.questionIndex <= 9999)) return false;
+  if (!(typeof value.submittedAt === 'number'
+      && isFinite(value.submittedAt)
+      && value.submittedAt > 0)) return false;
+  return value.flow === 'assessment' || value.flow === 'presentation';
+}
+function validQuizTeam(value) {
+  return value === 'Red' || value === 'Blue' || value === 'Green' || value === 'Yellow';
+}
 function participantCanPatchSession(updates, uid) {
   var keys = Object.keys(updates);
   var rosterRoot = 'roster.' + uid;
+  var receiptRoot = 'quizState.responseReceipts.' + uid;
+  var teamRoot = 'quizState.teams.' + uid;
   var rosterFields = {
     uid: 1, name: 1, joinedAt: 1, status: 1, xp: 1,
     signal: 1, signalAt: 1, viewingResourceId: 1, viewingAt: 1,
     wsProgress: 1, wsProbeResult: 1, lastSeen: 1
   };
   var roots = [
-    'quizState.allResponses.' + uid,
-    'quizState.responses.' + uid,
-    'quizState.teams.' + uid,
     'bridgeReactions.' + uid,
     'democracy.votes.' + uid,
     'escapeRoomState.teams.' + uid,
@@ -664,6 +689,20 @@ function participantCanPatchSession(updates, uid) {
       }
       continue;
     }
+    if (key === receiptRoot) {
+      if (!validQuizResponseReceipt(updates[key])) return false;
+      continue;
+    }
+    // Require one atomic fixed-shape receipt. Nested receipt patches cannot be
+    // validated in isolation and raw answer fallbacks are intentionally absent
+    // from the allowlist.
+    if (pathStarts(key, receiptRoot)) return false;
+    if (key === teamRoot) {
+      if (!validQuizTeam(updates[key])) return false;
+      continue;
+    }
+    // Team claims are one atomic enum leaf; maps and nested patches are denied.
+    if (pathStarts(key, teamRoot)) return false;
     var allowed = false;
     for (var j = 0; j < roots.length; j++) if (pathStarts(key, roots[j])) { allowed = true; break; }
     if (!allowed) return false;

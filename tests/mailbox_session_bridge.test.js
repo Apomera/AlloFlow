@@ -186,6 +186,10 @@ describe('Code.gs v7 role-aware session document store (real source)', () => {
                 [two.uid]: { name: 'Two', signal: 'stuck' },
             },
             quizState: {
+                responseReceipts: {
+                    [one.uid]: { activityId: 'quiz-1', questionIndex: 0, submittedAt: 100, flow: 'assessment' },
+                    [two.uid]: { activityId: 'quiz-1', questionIndex: 0, submittedAt: 101, flow: 'assessment' },
+                },
                 allResponses: { [one.uid]: { 0: 'A' }, [two.uid]: { 0: 'B' } },
                 responses: { [one.uid]: 1, [two.uid]: 2 },
                 teams: { [one.uid]: 'red', [two.uid]: 'blue' },
@@ -196,11 +200,75 @@ describe('Code.gs v7 role-aware session document store (real source)', () => {
         const view = sb.call({ a: 'dget', ...one, c: sb.code, ps: [{ p: 's' }] }).docs[0].d;
         expect(Object.keys(view.roster)).toEqual([one.uid]);
         expect(view.participantCount).toBe(2);
+        expect(Object.keys(view.quizState.responseReceipts)).toEqual([one.uid]);
         expect(Object.keys(view.quizState.allResponses)).toEqual([one.uid]);
+        expect(Object.keys(view.quizState.responses)).toEqual([one.uid]);
+        expect(Object.keys(view.quizState.teams)).toEqual([one.uid]);
         expect(Object.keys(view.bridgeReactions)).toEqual([one.uid]);
         expect(Object.keys(view.democracy.votes)).toEqual([one.uid]);
         expect(sb.call({ a: 'dpatch', ...one, c: sb.code, p: 's', u: {
             ['roster.' + one.uid + '.name']: 'Updated',
+        } }).ok).toBe(true);
+        const receipt = {
+            activityId: 'visual-quiz-2',
+            questionIndex: 3,
+            submittedAt: 200,
+            flow: 'presentation',
+        };
+        const receiptWrite = sb.call({ a: 'dpatch', ...one, c: sb.code, p: 's', u: {
+            ['quizState.responseReceipts.' + one.uid]: receipt,
+        } });
+        expect(receiptWrite.ok).toBe(true);
+        expect(receiptWrite.d.quizState.responseReceipts).toEqual({ [one.uid]: receipt });
+        const teamWrite = sb.call({ a: 'dpatch', ...one, c: sb.code, p: 's', u: {
+            ['quizState.teams.' + one.uid]: 'Green',
+        } });
+        expect(teamWrite.ok).toBe(true);
+        expect(teamWrite.d.quizState.teams).toEqual({ [one.uid]: 'Green' });
+        expect(sb.call({ a: 'dpatch', ...one, c: sb.code, p: 's', u: {
+            ['quizState.teams.' + two.uid]: 'Red',
+        } }).e).toBe('denied');
+        expect(sb.call({ a: 'dpatch', ...one, c: sb.code, p: 's', u: {
+            ['quizState.teams.' + one.uid]: 'green',
+        } }).e).toBe('denied');
+        expect(sb.call({ a: 'dpatch', ...one, c: sb.code, p: 's', u: {
+            ['quizState.teams.' + one.uid]: { color: 'Green' },
+        } }).e).toBe('denied');
+        expect(sb.call({ a: 'dpatch', ...one, c: sb.code, p: 's', u: {
+            ['quizState.teams.' + one.uid + '.color']: 'Green',
+        } }).e).toBe('denied');
+        expect(sb.call({ a: 'dpatch', ...one, c: sb.code, p: 's', u: {
+            'quizState.teams': { [one.uid]: 'Green' },
+        } }).e).toBe('denied');
+        expect(sb.call({ a: 'dpatch', ...one, c: sb.code, p: 's', u: {
+            ['quizState.responseReceipts.' + two.uid]: receipt,
+        } }).e).toBe('denied');
+        expect(sb.call({ a: 'dpatch', ...one, c: sb.code, p: 's', u: {
+            ['quizState.responseReceipts.' + one.uid]: { ...receipt, answer: 'A' },
+        } }).e).toBe('denied');
+        expect(sb.call({ a: 'dpatch', ...one, c: sb.code, p: 's', u: {
+            ['quizState.responseReceipts.' + one.uid]: { ...receipt, questionIndex: 1.5 },
+        } }).e).toBe('denied');
+        expect(sb.call({ a: 'dpatch', ...one, c: sb.code, p: 's', u: {
+            ['quizState.responseReceipts.' + one.uid]: { ...receipt, submittedAt: 0 },
+        } }).e).toBe('denied');
+        expect(sb.call({ a: 'dpatch', ...one, c: sb.code, p: 's', u: {
+            ['quizState.responseReceipts.' + one.uid]: { ...receipt, flow: 'boss' },
+        } }).e).toBe('denied');
+        expect(sb.call({ a: 'dpatch', ...one, c: sb.code, p: 's', u: {
+            ['quizState.responseReceipts.' + one.uid + '.submittedAt']: 201,
+        } }).e).toBe('denied');
+        expect(sb.call({ a: 'dpatch', ...one, c: sb.code, p: 's', u: {
+            ['quizState.allResponses.' + one.uid + '.0']: 'A',
+        } }).e).toBe('denied');
+        expect(sb.call({ a: 'dpatch', ...one, c: sb.code, p: 's', u: {
+            ['quizState.responses.' + one.uid]: 1,
+        } }).e).toBe('denied');
+        expect(sb.teacherCall({ a: 'dpatch', c: sb.code, p: 's', u: {
+            'quizState.responseReceipts': {},
+            'quizState.allResponses': {},
+            'quizState.responses': {},
+            'quizState.teams': {},
         } }).ok).toBe(true);
         expect(sb.call({ a: 'dpatch', ...one, c: sb.code, p: 's', u: {
             ['roster.' + two.uid + '.name']: 'Forged',

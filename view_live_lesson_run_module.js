@@ -356,6 +356,7 @@ function buildLiveQuizActivitySnapshot(input) {
   const audienceUids = Object.keys(roster).map((uid) => boundedLiveActivityText(uid, 128)).filter(Boolean).slice(0, 250);
   const allResponses = quizState.allResponses && typeof quizState.allResponses === "object" ? quizState.allResponses : {};
   const currentResponses = quizState.responses && typeof quizState.responses === "object" ? quizState.responses : {};
+  const responseReceipts = quizState.responseReceipts && typeof quizState.responseReceipts === "object" ? quizState.responseReceipts : {};
   const currentQuestionIndex = Number.isInteger(quizState.currentQuestionIndex) && quizState.currentQuestionIndex >= 0 ? quizState.currentQuestionIndex : 0;
   const questionCount = boundedLiveActivityCount(
     quizState.questionCount || source.questionCount,
@@ -369,8 +370,14 @@ function buildLiveQuizActivitySnapshot(input) {
     const records = Object.values(bucket);
     const completion = records.some((record) => record && typeof record === "object" && record.itemType === "assessment-complete") || questionCount > 0 && bucket[questionCount] && bucket[questionCount].itemType === "assessment-complete";
     const hasCurrentAnswer = Object.prototype.hasOwnProperty.call(currentResponses, uid) || Object.prototype.hasOwnProperty.call(bucket, String(currentQuestionIndex));
-    const hasAnyWork = records.some((record) => record !== null && record !== void 0) || hasCurrentAnswer;
-    participantStatus[uid] = completion || questionIsLive && hasCurrentAnswer ? "submitted" : hasAnyWork ? "working" : "waiting";
+    const receipt = responseReceipts[uid] && typeof responseReceipts[uid] === "object" ? responseReceipts[uid] : null;
+    const receiptKeys = receipt ? Object.keys(receipt) : [];
+    const validReceipt = !!receipt && receiptKeys.length === 4 && receiptKeys.every((key) => ["activityId", "questionIndex", "submittedAt", "flow"].includes(key)) && boundedLiveActivityText(receipt.activityId, 120) === activityId && Number.isInteger(receipt.questionIndex) && receipt.questionIndex >= 0 && receipt.questionIndex <= 9999 && Number.isFinite(Number(receipt.submittedAt)) && Number(receipt.submittedAt) > 0 && (receipt.flow === "assessment" || receipt.flow === "presentation");
+    const receiptCompletesAssessment = validReceipt && receipt.flow === "assessment" && questionCount > 0 && receipt.questionIndex === questionCount;
+    const hasCurrentReceipt = validReceipt && receipt.questionIndex === currentQuestionIndex;
+    const hasAnyReceiptWork = validReceipt && receipt.flow === "assessment" && (questionCount === 0 || receipt.questionIndex <= questionCount);
+    const hasAnyWork = records.some((record) => record !== null && record !== void 0) || hasCurrentAnswer || hasAnyReceiptWork;
+    participantStatus[uid] = completion || receiptCompletesAssessment || questionIsLive && (hasCurrentAnswer || hasCurrentReceipt) ? "submitted" : hasAnyWork ? "working" : "waiting";
   });
   const phase = !isActive ? "closed" : rawPhase === "answering" ? "collecting" : rawPhase === "revealed" || rawPhase === "boss-defeated" || rawPhase === "class-defeated" ? "revealed" : "paused";
   const now = boundedLiveActivityCount(source.now || Date.now(), Number.MAX_SAFE_INTEGER);

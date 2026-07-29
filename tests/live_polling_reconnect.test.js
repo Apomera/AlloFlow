@@ -196,6 +196,73 @@ describe('reconnect-safe transport', () => {
     }
   });
 
+  it('admits only bounded custom response ids while preserving the active-poll gate', async () => {
+    const fb = makeFakeFirebase();
+    window.__alloFirebase = fb;
+    const onResponse = vi.fn();
+    const acceptResponse = vi.fn((uid, payload, codename) => (
+      uid === 'stu-custom'
+      && codename === 'Stu'
+      && payload.pollId === 'boss:2'
+    ));
+    const host = LP.createHost({
+      sessionCode: 'CUSTOMRESP',
+      allowedUids: ['stu-custom'],
+      acceptResponse,
+      onResponse,
+    });
+    await host.start();
+    const ref = fb.doc(
+      fb.db,
+      'artifacts',
+      'test-app',
+      'public',
+      'data',
+      'signaling',
+      'CUSTOMRESP',
+      'peers',
+      'stu-custom',
+    );
+    await fb.setDoc(ref, {
+      offer: { type: 'offer', sdp: 'sdp-custom' },
+      codename: 'Stu',
+    });
+    await tick();
+    const peer = host.peers.get('stu-custom');
+    const hostDc = new FakeDataChannel();
+    peer.pc.ondatachannel({ channel: hostDc });
+    host.activePoll = { id: '__progress__' };
+
+    const deliver = (payload) => hostDc.onmessage({
+      data: JSON.stringify({ type: 'response', payload }),
+    });
+    deliver({ pollId: 'boss:2', response: { answer: 'bounded' } });
+    deliver({ pollId: 'boss:3', response: { answer: 'wrong question' } });
+    const validatorCallsBeforeBounds = acceptResponse.mock.calls.length;
+    deliver({ pollId: 'x'.repeat(121), response: 'oversized id' });
+    deliver({ pollId: 'boss:2', response: { text: 'x'.repeat(16000) } });
+
+    expect(acceptResponse).toHaveBeenCalledWith(
+      'stu-custom',
+      expect.objectContaining({ pollId: 'boss:2' }),
+      'Stu',
+    );
+    expect(acceptResponse).toHaveBeenCalledWith(
+      'stu-custom',
+      expect.objectContaining({ pollId: 'boss:3' }),
+      'Stu',
+    );
+    expect(acceptResponse.mock.calls.length).toBe(validatorCallsBeforeBounds);
+    expect(onResponse.mock.calls.map((call) => call[2].pollId)).toEqual(['boss:2']);
+
+    // The standard active-poll path remains admitted without consulting the
+    // optional callback, preserving existing Live Polling behavior.
+    deliver({ pollId: '__progress__', response: 1 });
+    expect(acceptResponse.mock.calls.length).toBe(validatorCallsBeforeBounds);
+    expect(onResponse.mock.calls.map((call) => call[2].pollId)).toEqual(['boss:2', '__progress__']);
+    host.stop();
+  });
+
   it('honors a custom signalingPath so parallel stars (e.g. quiz) can coexist', async () => {
     const fb = makeFakeFirebase();
     window.__alloFirebase = fb;

@@ -1729,6 +1729,8 @@ function QuizPanel(props) {
   const [presetName, setPresetName] = React.useState('');
   const [presetStatus, setPresetStatus] = React.useState('');
   const [scoringPolicy, setScoringPolicy] = React.useState({
+    accuracy: true,
+    confidence: false,
     partialCredit: true,
     writtenResponseMode: 'ai-provisional'
   });
@@ -1794,7 +1796,7 @@ function QuizPanel(props) {
     setQuizMcqCount(clampCount(defaultMix.mcq || 0, 20));
     setQuizReflectionCount(clampCount(defaultReflectionCount, 2));
     setQuizItemTypeMix && setQuizItemTypeMix(null);
-    setScoringPolicy({ partialCredit: true, writtenResponseMode: 'ai-provisional' });
+    setScoringPolicy({ accuracy: true, confidence: false, partialCredit: true, writtenResponseMode: 'ai-provisional' });
     setPresetStatus('');
   };
   const assessedTotal = visibleTypes.reduce((sum, item) => sum + clampCount(effectiveMix[item.key] || 0, item.key === 'mcq' ? 20 : 5), 0);
@@ -1808,6 +1810,8 @@ function QuizPanel(props) {
   const isCustomized = !!quizItemTypeMix
     || clampCount(quizMcqCount, 20) !== clampCount(defaultMix.mcq || 0, 20)
     || reflectionTotal !== defaultReflectionCount
+    || scoringPolicy.accuracy === false
+    || scoringPolicy.confidence === true
     || scoringPolicy.partialCredit !== true
     || scoringPolicy.writtenResponseMode !== 'ai-provisional';
 
@@ -1846,7 +1850,7 @@ function QuizPanel(props) {
     setQuizItemTypeMix && setQuizItemTypeMix(mix);
     setQuizReflectionCount(clampCount(preset.reflectionCount || 0, 2));
     if (preset.dokLevel !== undefined) setDokLevel(preset.dokLevel);
-    setScoringPolicy(Object.assign({ partialCredit: true, writtenResponseMode: 'ai-provisional' }, preset.scoringPolicy || {}));
+    setScoringPolicy(Object.assign({ accuracy: true, confidence: false, partialCredit: true, writtenResponseMode: 'ai-provisional' }, preset.scoringPolicy || {}));
     if (preset.mcqVisualMode) setMcqVisualMode(preset.mcqVisualMode);
     if (preset.imageStyle !== undefined) setImageStyle(preset.imageStyle);
     setPresetStatus('Loaded “' + preset.name + '”.');
@@ -1980,6 +1984,22 @@ function QuizPanel(props) {
               <input type="checkbox" checked={scoringPolicy.partialCredit} onChange={(event) => setScoringPolicy(Object.assign({}, scoringPolicy, { partialCredit: event.target.checked }))} className="mt-0.5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-400" />
               <span><strong>Allow partial credit</strong><span className="block text-[10px] text-slate-600">Applies to multi-select, multi-step diagnostics, answer + evidence, and numeric value/unit checks.</span></span>
             </label>
+            <div>
+              <label htmlFor="quiz-live-response-policy" className="block text-xs font-semibold text-slate-700 mb-1">Live session response policy</label>
+              <select
+                id="quiz-live-response-policy"
+                value={scoringPolicy.confidence ? 'confidence' : 'accuracy'}
+                onChange={(event) => setScoringPolicy(Object.assign({}, scoringPolicy, {
+                  accuracy: true,
+                  confidence: event.target.value === 'confidence',
+                }))}
+                className="w-full text-xs border-slate-300 rounded-md p-2 bg-white"
+              >
+                <option value="accuracy">Accuracy — correctness, never speed</option>
+                <option value="confidence">Confidence check — accuracy + learner certainty</option>
+              </select>
+              <p className="text-[10px] text-slate-600 mt-1">{scoringPolicy.confidence ? 'Learners report how sure they were after answering. Confidence never changes correctness or points.' : 'Uses the answer key and configured partial credit. Response speed never changes points.'}</p>
+            </div>
             <div>
               <label htmlFor="quiz-written-scoring" className="block text-xs font-semibold text-slate-700 mb-1">Written-response feedback</label>
               <select id="quiz-written-scoring" value={scoringPolicy.writtenResponseMode} onChange={(event) => setScoringPolicy(Object.assign({}, scoringPolicy, { writtenResponseMode: event.target.value }))} className="w-full text-xs border-slate-300 rounded-md p-2 bg-white">

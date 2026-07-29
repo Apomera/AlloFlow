@@ -183,6 +183,40 @@ describe('bounded live activity snapshot contract', () => {
     expect(JSON.stringify(snapshot)).not.toContain('answer');
   });
 
+  it('counts only current fixed-shape receipts and never exposes answer content', () => {
+    const snapshot = api.buildLiveQuizActivitySnapshot({
+      sessionCode: 'AB123',
+      now: 5000,
+      roster: { u1: {}, u2: {}, u3: {}, u4: {}, u5: {} },
+      quizState: {
+        isActive: true,
+        activityId: 'quiz-attempt-receipts',
+        startedAt: 1000,
+        phase: 'answering',
+        currentQuestionIndex: 1,
+        questionCount: 2,
+        responseReceipts: {
+          u1: { activityId: 'quiz-attempt-receipts', questionIndex: 1, submittedAt: 4000, flow: 'presentation' },
+          u2: { activityId: 'quiz-attempt-receipts', questionIndex: 0, submittedAt: 4000, flow: 'presentation' },
+          u3: { activityId: 'old-attempt', questionIndex: 1, submittedAt: 4000, flow: 'presentation' },
+          u4: { activityId: 'quiz-attempt-receipts', questionIndex: 2, submittedAt: 4000, flow: 'assessment' },
+          u5: { activityId: 'quiz-attempt-receipts', questionIndex: 1, submittedAt: 4000, flow: 'presentation', answer: 'private answer' },
+        },
+      },
+    });
+
+    expect(snapshot.participantStatus).toEqual({
+      u1: 'submitted',
+      u2: 'waiting',
+      u3: 'waiting',
+      u4: 'submitted',
+      u5: 'waiting',
+    });
+    expect(snapshot.counts.submitted).toBe(2);
+    expect(JSON.stringify(snapshot)).not.toContain('private answer');
+    expect(JSON.stringify(snapshot)).not.toContain('responseReceipts');
+  });
+
   it('does not create a phantom quiz for the canonical inactive placeholder', () => {
     expect(api.buildLiveQuizActivitySnapshot({
       sessionCode: 'AB123',

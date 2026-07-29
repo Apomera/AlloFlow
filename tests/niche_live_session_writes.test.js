@@ -36,15 +36,15 @@ describe('firestore.rules cover the niche student writes', () => {
     expect(rules).toContain("hasOnly(['teamProgress', 'teams'])");
   });
 
-  it('lets boss-mode students answer and auto-join teams (per-uid)', () => {
-    // StudentQuizOverlay (ui_modals) writes quizState.responses.{uid} and
-    // quizState.teams.{uid} — the original quizOnlySelf allowed only
-    // allResponses and would have blocked class-vs-boss entirely.
-    expect(rules).toContain("hasOnly(['allResponses', 'responses', 'teams'])");
-    expect(rules).toContain("quizNestedOnlySelf('responses')");
+  it('lets boss-mode students publish only their receipt and auto-join teams (per-uid)', () => {
+    // Answer content remains P2P. The session fallback contains only the
+    // student's bounded submission receipt plus their own team assignment.
+    expect(rules).toContain("affectedKeys().hasOnly(['responseReceipts', 'teams'])");
+    expect(rules).toContain('quizReceiptOnlySelf()');
     expect(rules).toContain("quizNestedOnlySelf('teams')");
     const uiModals = readFileSync(resolve(process.cwd(), 'ui_modals_source.jsx'), 'utf8');
-    expect(uiModals).toContain('quizState.responses.${user.uid}');
+    expect(uiModals).toContain('quizState.responseReceipts.${user.uid}');
+    expect(uiModals).not.toContain('quizState.responses.${user.uid}');
     expect(uiModals).toContain('quizState.teams.${user.uid}');
   });
 });

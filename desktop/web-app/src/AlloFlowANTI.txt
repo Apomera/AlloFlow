@@ -1796,6 +1796,10 @@ function projectSessionForParticipant(data, uid) {
   copy.participantCount = copy.roster && typeof copy.roster === 'object' ? Object.keys(copy.roster).length : 0;
   copy.roster = ownMap(copy.roster, uid);
   if (copy.quizState && typeof copy.quizState === 'object') {
+    copy.quizState.responseReceipts = ownMap(copy.quizState.responseReceipts, uid);
+    // Legacy sessions may still contain raw Firestore/mailbox fallbacks.
+    // Participants can read only their own legacy entry; writes are denied
+    // below so new clients cannot add answer content to the shared document.
     copy.quizState.allResponses = ownMap(copy.quizState.allResponses, uid);
     copy.quizState.responses = ownMap(copy.quizState.responses, uid);
     copy.quizState.teams = ownMap(copy.quizState.teams, uid);
@@ -1918,18 +1922,39 @@ function validParticipantRosterField(field, value, uid) {
   if (field === 'wsProbeResult') return validWsProbeResultValue(value);
   return false;
 }
+function validQuizResponseReceipt(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  var allowed = { activityId: 1, questionIndex: 1, submittedAt: 1, flow: 1 };
+  var keys = Object.keys(value);
+  if (keys.length !== 4) return false;
+  for (var i = 0; i < keys.length; i++) if (!allowed[keys[i]]) return false;
+  if (!(typeof value.activityId === 'string'
+      && value.activityId.length >= 1
+      && value.activityId.length <= 120)) return false;
+  if (!(typeof value.questionIndex === 'number'
+      && isFinite(value.questionIndex)
+      && Math.floor(value.questionIndex) === value.questionIndex
+      && value.questionIndex >= 0
+      && value.questionIndex <= 9999)) return false;
+  if (!(typeof value.submittedAt === 'number'
+      && isFinite(value.submittedAt)
+      && value.submittedAt > 0)) return false;
+  return value.flow === 'assessment' || value.flow === 'presentation';
+}
+function validQuizTeam(value) {
+  return value === 'Red' || value === 'Blue' || value === 'Green' || value === 'Yellow';
+}
 function participantCanPatchSession(updates, uid) {
   var keys = Object.keys(updates);
   var rosterRoot = 'roster.' + uid;
+  var receiptRoot = 'quizState.responseReceipts.' + uid;
+  var teamRoot = 'quizState.teams.' + uid;
   var rosterFields = {
     uid: 1, name: 1, joinedAt: 1, status: 1, xp: 1,
     signal: 1, signalAt: 1, viewingResourceId: 1, viewingAt: 1,
     wsProgress: 1, wsProbeResult: 1, lastSeen: 1
   };
   var roots = [
-    'quizState.allResponses.' + uid,
-    'quizState.responses.' + uid,
-    'quizState.teams.' + uid,
     'bridgeReactions.' + uid,
     'democracy.votes.' + uid,
     'escapeRoomState.teams.' + uid,
@@ -1952,6 +1977,20 @@ function participantCanPatchSession(updates, uid) {
       }
       continue;
     }
+    if (key === receiptRoot) {
+      if (!validQuizResponseReceipt(updates[key])) return false;
+      continue;
+    }
+    // Require one atomic fixed-shape receipt. Nested receipt patches cannot be
+    // validated in isolation and raw answer fallbacks are intentionally absent
+    // from the allowlist.
+    if (pathStarts(key, receiptRoot)) return false;
+    if (key === teamRoot) {
+      if (!validQuizTeam(updates[key])) return false;
+      continue;
+    }
+    // Team claims are one atomic enum leaf; maps and nested patches are denied.
+    if (pathStarts(key, teamRoot)) return false;
     var allowed = false;
     for (var j = 0; j < roots.length; j++) if (pathStarts(key, roots[j])) { allowed = true; break; }
     if (!allowed) return false;
@@ -6361,6 +6400,35 @@ const countWords = (text) => {
   return clean.trim().split(/\s+/).filter(w => w.length > 0).length;
 };
 const normalizeRosterSessionCodename = (value) => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+const getValidCurrentQuizResponseReceiptUids = (quizState, expectedFlow = null) => {
+    const state = quizState && typeof quizState === 'object' ? quizState : {};
+    const activityId = String(state.activityId || '').trim();
+    const questionIndex = state.currentQuestionIndex;
+    const receipts = state.responseReceipts && typeof state.responseReceipts === 'object' && !Array.isArray(state.responseReceipts)
+        ? state.responseReceipts
+        : {};
+    if (!activityId || activityId.length > 120 || !Number.isInteger(questionIndex) || questionIndex < 0 || questionIndex > 9999) return [];
+    return Object.entries(receipts).slice(0, 250).reduce((uids, [rawUid, rawReceipt]) => {
+        const uid = String(rawUid || '').trim();
+        const receipt = rawReceipt && typeof rawReceipt === 'object' && !Array.isArray(rawReceipt) ? rawReceipt : null;
+        const keys = receipt ? Object.keys(receipt) : [];
+        const fixedShape = !!receipt
+            && keys.length === 4
+            && keys.every(key => ['activityId', 'questionIndex', 'submittedAt', 'flow'].includes(key));
+        const valid = fixedShape
+            && uid.length > 0
+            && uid.length <= 128
+            && receipt.activityId === activityId
+            && receipt.questionIndex === questionIndex
+            && typeof receipt.submittedAt === 'number'
+            && Number.isFinite(receipt.submittedAt)
+            && receipt.submittedAt > 0
+            && (receipt.flow === 'assessment' || receipt.flow === 'presentation')
+            && (!expectedFlow || receipt.flow === expectedFlow);
+        if (valid && !uids.includes(uid)) uids.push(uid);
+        return uids;
+    }, []);
+};
 const summarizeRosterLiveActivities = (activitySnapshots, liveRoster, rosterByNormalizedName) => {
     const allowedKinds = new Set(['rating', 'multiple_choice', 'free_text', 'word_cloud', 'feedback_response', 'pictionary', 'sketch_response', 'quiz']);
     const allowedPhases = new Set(['collecting', 'paused', 'review', 'revealed', 'closed']);
@@ -12971,8 +13039,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // collection (same hardened transport as Live Polling, Pictionary-style
   // coexistence). Students also stream their device-local concept-mastery
   // snapshot over it (reserved pollId '__mastery__'). Firestore
-  // quizState.allResponses remains ONLY as a fallback when the channel
-  // isn't up; teacher consumers read the merged view below.
+  // If the channel is unavailable, responseReceipts carries only fixed-shape
+  // submission status; answer content stays local and remains unscored.
   const quizHostRef = useRef(null);
   const quizGuestRef = useRef(null);
   const [quizJoinNonce, setQuizJoinNonce] = useState(0);
@@ -12982,7 +13050,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [liveMasteryByUid, setLiveMasteryByUid] = useState({});   // { uid: { attempts } } — session-scoped, memory only
   // Class-vs-boss answers received over the quiz channel for the CURRENT
   // question: { qIdx: string, byUid: { uid: optionIndex } }. Merged into
-  // quizState.responses for teacher consumers; Firestore remains fallback.
+  // the teacher's in-memory response view; Firestore stores receipts only.
   const [liveBossResponses, setLiveBossResponses] = useState(null);
   // Anonymous class results the teacher shared over the quiz channel
   // (students render these in a lightweight overlay; nothing stored).
@@ -12993,6 +13061,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const quizProgressSentRef = useRef('');
   const conceptMasteryLocalRef = useRef(null);
   useEffect(() => { conceptMasteryLocalRef.current = conceptMasteryLocal; }, [conceptMasteryLocal]);
+  const quizResponseGateRef = useRef({ currentQuestionIndex: 0, questionCount: 0 });
+  quizResponseGateRef.current = {
+      currentQuestionIndex: Number(sessionData?.quizState?.currentQuestionIndex) || 0,
+      questionCount: Math.max(0, Number(sessionData?.quizState?.questionCount)
+          || generatedContent?.data?.questions?.length || 0),
+  };
   const quizActivityIdRef = useRef('');
   const quizClosedActivitySnapshotRef = useRef('');
   // A newly launched quiz attempt must not inherit P2P answers or progress from
@@ -13021,6 +13095,19 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       const host = new LP.PollingHost({
           sessionCode: activeSessionCode,
           signalingPath: 'quiz-signaling',
+          acceptResponse: (_uid, payload) => {
+              if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return false;
+              const pollId = payload.pollId;
+              if (pollId === '__mastery__') return true;
+              const gate = quizResponseGateRef.current || {};
+              if (typeof pollId === 'string' && pollId === 'boss:' + gate.currentQuestionIndex) return true;
+              const questionIndex = Number.isInteger(pollId)
+                  ? pollId
+                  : typeof pollId === 'string' && /^\d{1,4}$/.test(pollId) ? Number(pollId) : -1;
+              return Number.isInteger(questionIndex)
+                  && questionIndex >= 0
+                  && questionIndex < Math.min(10000, gate.questionCount);
+          },
           onResponse: (uid, codename, payload) => {
               if (!payload) return;
               if (payload.pollId === '__mastery__') {
@@ -13112,7 +13199,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       if (!isTeacherMode || !host || !sessionData || !sessionData.quizState || !sessionData.quizState.isActive) return;
       const qs = (quizMergedSessionData && quizMergedSessionData.quizState) || {};
       if (qs.phase !== 'answering') return;
-      const answered = Object.keys(qs.responses || {}).length;
+      const answeredUids = new Set(Object.keys(qs.responses || {}));
+      getValidCurrentQuizResponseReceiptUids(qs, 'presentation').forEach(uid => answeredUids.add(uid));
+      const answered = answeredUids.size;
       const total = Object.keys((sessionData.roster) || {}).length;
       const key = String(qs.currentQuestionIndex) + ':' + answered + '/' + total;
       if (quizProgressSentRef.current === key) return;
@@ -17801,7 +17890,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       aiPolicy: { studentAi: studentAiPolicyForShare },
       roster: {},
       democracy: { isActive: false, phase: 'idle', votingContext: 'custom', activeOptions: [], votes: {}, suggestions: {} },
-      quizState: { isActive: false, mode: 'live-pulse', currentQuestionIndex: 0, phase: 'idle', responses: {}, bossStats: { maxHP: 1000, currentHP: 1000, classHP: 100, name: "The Knowledge Keeper", lastDamage: 0 }, teams: {} },
+      quizState: { isActive: false, mode: 'live-pulse', currentQuestionIndex: 0, phase: 'idle', responses: {}, responseReceipts: {}, scoringPolicy: { accuracy: true, confidence: false, partialCredit: true }, bossStats: { maxHP: 1000, currentHP: 1000, classHP: 100, name: "The Knowledge Keeper", lastDamage: 0 }, teams: {} },
   });
   useEffect(() => {
       window.__alloMailboxLive = () => setMbPanelOpen(true);
@@ -21566,16 +21655,32 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           if (!uidEntry) return null;
           const allQuestions = (generatedContent && generatedContent.data && Array.isArray(generatedContent.data.questions)) ? generatedContent.data.questions : [];
           const values = [];
+          const liveAggregators = window.AlloModules && window.AlloModules.QuizLiveAggregators;
           for (let i = 0; i < when.acrossQuestions.length; i++) {
               const targetIdx = when.acrossQuestions[i];
               const entry = uidEntry[targetIdx];
               if (!entry || typeof entry.answer === 'undefined' || entry.answer === null) return null; // partial set — wait
+              const targetQuestion = allQuestions[targetIdx];
+              if (liveAggregators && typeof liveAggregators.extractLikertNumericValue === 'function') {
+                  const sharedValue = liveAggregators.extractLikertNumericValue(targetQuestion, entry);
+                  if (sharedValue == null) return null;
+                  values.push(sharedValue);
+                  continue;
+              }
+
               // Likert items store the 0-based option index but the rule
               // semantics are numeric ticks (1..N). Convert via the target
               // question's options[] (synthesized to ['1','2',...,'N'] for
               // Likert items by handleQuizChange), parseFloat to a number.
               let raw = entry.answer;
               const tq = allQuestions[targetIdx];
+              const tqType = String(tq?.itemType || tq?.type || '').trim().toLowerCase();
+              if (tqType !== 'likert') return null;
+              if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+                  if (Number.isInteger(raw.optionIdx)) raw = raw.optionIdx;
+                  else if (raw.value != null) raw = raw.value;
+              }
+
               if (tq && Array.isArray(tq.options) && typeof raw === 'number' && tq.options[raw] !== undefined) {
                   const parsed = parseFloat(tq.options[raw]);
                   raw = isNaN(parsed) ? raw : parsed;
@@ -21611,12 +21716,27 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
           if (!uidEntry) return false;
           const allQuestions = (generatedContent && generatedContent.data && Array.isArray(generatedContent.data.questions)) ? generatedContent.data.questions : [];
           let usable = 0, matched = 0;
+          const liveAggregators = window.AlloModules && window.AlloModules.QuizLiveAggregators;
+          const sharedConfidenceClassifier = liveAggregators && liveAggregators.classifyPresentationConfidence;
           for (let i = 0; i < when.acrossQuestions.length; i++) {
               const tIdx = when.acrossQuestions[i];
               const entry = uidEntry[tIdx];
               const tq = allQuestions[tIdx];
-              if (!entry || entry.answer == null || !entry.confidence || !tq || tq.correctAnswer == null) continue;
+              if (!entry || entry.answer == null || !entry.confidence || !tq) continue;
+              if (typeof sharedConfidenceClassifier === 'function') {
+                  const classification = sharedConfidenceClassifier(
+                      entry,
+                      tq,
+                      generatedContent?.data?.scoringPolicy
+                  );
+                  if (!classification || classification === 'awaiting-review') continue;
+                  usable++;
+                  if (classification === when.confidencePattern) matched++;
+                  continue;
+              }
+
               let answerText = entry.answer;
+              if (tq.correctAnswer == null) continue;
               if (typeof answerText === 'number' && Array.isArray(tq.options) && tq.options[answerText] !== undefined) answerText = tq.options[answerText];
               if (typeof answerText === 'object') continue; // match/sequence payloads — not gradable here
               const correct = String(answerText).trim().toLowerCase() === String(tq.correctAnswer).trim().toLowerCase();
@@ -26958,40 +27078,59 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   // Payload shape: { answer, itemType, timestamp } — answer is type-specific.
   const handleSubmitLiveAnswer = async (payload) => {
       if (!activeSessionCode || !user || !user.uid) return;
-      if (!payload || typeof payload.questionIdx !== 'number') return;
+      if (!payload || !Number.isInteger(payload.questionIdx) || payload.questionIdx < 0 || payload.questionIdx > 9999) return;
       const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
       // Phase B (poll subtype): add likert + opinion-mcq to the structured
       // wire-format allowlist. likert is a numeric rating (1-5 by default,
       // configurable). opinion-mcq is an MCQ without a correctAnswer (no
       // grading). Both are routable via question.routingRules.
-      const STRUCTURED_ITEM_TYPES = new Set(['mcq', 'multiple-choice', 'true-false', 'tf', 'match', 'sequence', 'numeric', 'order', 'likert', 'opinion-mcq', 'assessment-complete']);
-      const isStructured = STRUCTURED_ITEM_TYPES.has(String(payload.itemType || 'mcq').toLowerCase());
+      const STRUCTURED_ITEM_TYPES = new Set([
+          'mcq', 'multiple-choice', 'true-false', 'tf',
+          'multi-select', 'fill-blank', 'short-answer', 'self-explanation',
+          'sequence-sense', 'relation-mismatch', 'answer-evidence', 'numeric-response',
+          'match', 'sequence', 'numeric', 'order',
+          'likert', 'opinion-mcq', 'assessment-complete'
+      ]);
+      const normalizedItemType = String(payload.itemType || 'mcq').trim().toLowerCase().slice(0, 40);
+      const isStructured = STRUCTURED_ITEM_TYPES.has(normalizedItemType);
       const responsePayload = {
-          itemType: payload.itemType || 'mcq',
-          timestamp: payload.timestamp || Date.now(),
-          conceptLabel: payload.conceptLabel || '',
+          itemType: normalizedItemType,
+          timestamp: typeof payload.timestamp === 'number' && Number.isFinite(payload.timestamp) ? payload.timestamp : Date.now(),
+          conceptLabel: String(payload.conceptLabel || '').slice(0, 240),
           submitted: true,
       };
       if (isStructured) {
           responsePayload.answer = payload.answer;
       }
-      // FERPA-first transport: prefer the peer-to-peer quiz channel (answer
-      // lands only on the teacher's device, nothing stored). Firestore
-      // quizState.allResponses remains strictly as the fallback for students
-      // whose WebRTC connection isn't up (blocked UDP, mid-reconnect) —
-      // teacher consumers read the merged view either way.
+      if (payload.confidence === 'knew' || payload.confidence === 'guessed' || payload.confidence === 'no-idea') {
+          responsePayload.confidence = payload.confidence;
+      }
+      // FERPA-first transport: prefer the peer-to-peer quiz channel so answer
+      // content lands only on the teacher's device. If that channel is
+      // unavailable, the shared document receives only a fixed-shape
+      // submission receipt; answer content stays local and unscored.
       let sentViaChannel = false;
       try {
           const g = quizGuestRef.current;
           if (g) sentViaChannel = g.sendResponse(payload.questionIdx, responsePayload);
       } catch (e) { sentViaChannel = false; }
       if (!sentViaChannel) {
-          try {
-            await updateDoc(sessionRef, {
-                [`quizState.allResponses.${user.uid}.${payload.questionIdx}`]: responsePayload
-            });
-          } catch (error) {
-               warnLog("Error submitting live answer:", error);
+          const activityId = String(sessionData?.quizState?.activityId || '').trim().slice(0, 120);
+          if (!activityId) {
+              warnLog('Live answer was kept local because no active quiz receipt id was available.');
+          } else {
+              try {
+                await updateDoc(sessionRef, {
+                    [`quizState.responseReceipts.${user.uid}`]: {
+                        activityId,
+                        questionIndex: payload.questionIdx,
+                        submittedAt: Date.now(),
+                        flow: 'assessment',
+                    }
+                });
+              } catch (error) {
+                   warnLog('Error recording live answer receipt:', error);
+              }
           }
       }
       // Plan T v3 (FERPA refit 2026-07-01): cross-session concept mastery is
@@ -27144,6 +27283,15 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       const questionCount = generatedContent && generatedContent.data && Array.isArray(generatedContent.data.questions)
           ? generatedContent.data.questions.length
           : 0;
+      const authoredScoringPolicy = generatedContent?.data?.scoringPolicy
+          && typeof generatedContent.data.scoringPolicy === 'object'
+          ? generatedContent.data.scoringPolicy
+          : {};
+      const liveScoringPolicy = {
+          accuracy: authoredScoringPolicy.accuracy !== false,
+          confidence: authoredScoringPolicy.confidence === true,
+          partialCredit: authoredScoringPolicy.partialCredit !== false,
+      };
       // Every launch is a clean attempt. Previously the fallback answers and
       // last question index survived an End → Launch cycle, which made a new
       // quiz appear partially answered before students had responded.
@@ -27154,6 +27302,8 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
               "quizState.currentQuestionIndex": 0,
               "quizState.responses": {},
               "quizState.allResponses": {},
+              "quizState.responseReceipts": {},
+              "quizState.scoringPolicy": liveScoringPolicy,
               "quizState.activityId": `quiz:${activeSessionCode}:${startedAt.toString(36)}`,
               "quizState.startedAt": startedAt,
               "quizState.endedAt": 0,

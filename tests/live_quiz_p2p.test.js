@@ -1,6 +1,7 @@
-// FERPA masterstroke pins (2026-07-01): live-quiz answers ride a dedicated
-// peer-to-peer WebRTC star ('quiz-signaling'; Firestore quizState.allResponses
-// strictly a fallback), and cross-session concept mastery is DEVICE-LOCAL —
+// Privacy/data-minimization pins: live-quiz answers ride a dedicated
+// peer-to-peer WebRTC star ('quiz-signaling'). When that channel is unavailable,
+// Firestore receives only fixed-shape submission metadata, never an answer.
+// Cross-session concept mastery remains DEVICE-LOCAL and
 // the cloud conceptMastery/{uid} write is gone. Mastery reaches the teacher
 // only through user-controlled channels: live P2P snapshots on the quiz
 // channel and the student's saved project file, which the teacher's retention
@@ -20,7 +21,7 @@ const misc = readFileSync(resolve(process.cwd(), 'misc_handlers_source.jsx'), 'u
 const viewQuiz = readFileSync(resolve(process.cwd(), 'view_quiz_source.jsx'), 'utf8');
 const polling = readFileSync(resolve(process.cwd(), 'live_polling_module.js'), 'utf8');
 
-describe('quiz answers: peer-to-peer first, Firestore strictly fallback', () => {
+describe('quiz answers: peer-to-peer first, content-free receipt fallback', () => {
   it('transport supports parallel stars via signalingPath', () => {
     expect(polling).toContain("this.signalingPath = config.signalingPath || 'signaling';");
     expect(polling).toContain('signalingCollectionRef(this.sessionCode, this.signalingPath)');
@@ -33,16 +34,23 @@ describe('quiz answers: peer-to-peer first, Firestore strictly fallback', () => 
     expect(anti).toContain('quizGuestRef');
   });
 
-  it('handleSubmitLiveAnswer sends via the channel and only falls back to Firestore', () => {
+  it('handleSubmitLiveAnswer sends via P2P first and falls back only to a fixed-shape receipt', () => {
     const idx = anti.indexOf('const handleSubmitLiveAnswer');
     expect(idx).toBeGreaterThan(-1);
-    const block = anti.slice(idx, idx + 4200);
+    const block = anti.slice(idx, idx + 4800);
     expect(block).toContain('sentViaChannel = g.sendResponse(payload.questionIdx, responsePayload)');
     expect(block).toContain('if (!sentViaChannel) {');
-    // The Firestore write must be INSIDE the fallback guard.
     const guardIdx = block.indexOf('if (!sentViaChannel) {');
-    const writeIdx = block.indexOf('quizState.allResponses.${user.uid}');
+    const writeIdx = block.indexOf('quizState.responseReceipts.${user.uid}');
     expect(writeIdx).toBeGreaterThan(guardIdx);
+    const fallback = block.slice(guardIdx, block.indexOf('// Plan T v3', guardIdx));
+    expect(fallback).toContain('activityId,');
+    expect(fallback).toContain('questionIndex: payload.questionIdx');
+    expect(fallback).toContain('submittedAt: Date.now()');
+    expect(fallback).toContain("flow: 'assessment'");
+    expect(fallback).not.toContain('responsePayload');
+    expect(fallback).not.toContain('payload.answer');
+    expect(block).not.toContain('quizState.allResponses.${user.uid}');
   });
 
   it('teacher consumers read the merged view (dashboard mount + routing rules)', () => {
@@ -73,18 +81,26 @@ describe('concept mastery: device-local, never cloud-synced', () => {
 });
 
 describe('class-vs-boss: P2P-first answers + anonymous results sharing (2026-07-02)', () => {
-  it('StudentQuizOverlay sends boss answers via the shell channel hook, Firestore fallback', () => {
-    const uiModals = readFileSync(resolve(process.cwd(), 'ui_modals_source.jsx'), 'utf8');
-    expect(uiModals).toContain("window.__alloQuizChannelSend");
-    expect(uiModals).toContain("p2pSend('boss:' + currentQuestionIndex, optionIndex)");
-    // Fallback write must remain AFTER the channel attempt.
-    const chIdx = uiModals.indexOf("p2pSend('boss:'");
-    const fsIdx = uiModals.indexOf('quizState.responses.${user.uid}');
-    expect(chIdx).toBeGreaterThan(-1);
-    expect(fsIdx).toBeGreaterThan(chIdx);
-    // Compiled module carries the same change (hand-mirrored; build.js compiles at deploy).
-    const uiModalsCompiled = readFileSync(resolve(process.cwd(), 'ui_modals_module.js'), 'utf8');
-    expect(uiModalsCompiled).toContain("p2pSend('boss:' + currentQuestionIndex, optionIndex)");
+  it('StudentQuizOverlay sends answers P2P first and falls back to a content-free receipt', () => {
+    for (const file of ['ui_modals_source.jsx', 'ui_modals_module.js', 'desktop/web-app/public/ui_modals_module.js']) {
+      const source = readFileSync(resolve(process.cwd(), file), 'utf8');
+      expect(source).toContain('window.__alloQuizChannelSend');
+      expect(source).toContain("p2pSend('boss:' + currentQuestionIndex, responseValue)");
+      const channelIndex = source.indexOf("p2pSend('boss:'");
+      const receiptIndex = source.indexOf('quizState.responseReceipts.${user.uid}');
+      expect(channelIndex).toBeGreaterThan(-1);
+      expect(receiptIndex).toBeGreaterThan(channelIndex);
+
+      const fallbackStart = source.indexOf('await updateDoc(sessionRef, {', channelIndex);
+      const fallbackEnd = source.indexOf('} catch (e)', fallbackStart);
+      const fallback = source.slice(fallbackStart, fallbackEnd);
+      expect(fallback).toContain('activityId: presentationActivityId');
+      expect(fallback).toContain('questionIndex: receiptQuestionIndex');
+      expect(fallback).toContain('submittedAt: Date.now()');
+      expect(fallback).toContain("flow: 'presentation'");
+      expect(fallback).not.toContain('optionIndex');
+      expect(source).not.toContain('quizState.responses.${user.uid}');
+    }
   });
 
   it('shell banks boss channel answers per question and merges into quizState.responses', () => {
@@ -94,12 +110,64 @@ describe('class-vs-boss: P2P-first answers + anonymous results sharing (2026-07-
     expect(anti).toContain('window.__alloQuizChannelSend = (pollId, response)');
   });
 
+  it('counts receipt-only participation without feeding receipts into answer scoring', () => {
+    const teacher = readFileSync(resolve(process.cwd(), 'teacher_source.jsx'), 'utf8');
+    expect(teacher).toContain('const validReceiptUids = Object.entries(responseReceipts');
+    expect(teacher).toContain('const answeredUidSet = new Set(scoredResponseUids.concat(validReceiptUids))');
+    expect(teacher).toContain('const unscoredReceiptCount = validReceiptUids.filter');
+    expect(teacher).toContain('const count = Object.values(responses || {}).filter(r => r === idx).length');
+    expect(teacher).toContain('Object.values(responses || {}).map(gradeLiveResponse).filter(grade => grade.evaluable)');
+    expect(teacher).not.toContain('validReceiptUids.map(gradeLiveResponse)');
+    expect(teacher).toContain('submitted, unscored (peer connection unavailable)');
+    expect(anti).toContain("getValidCurrentQuizResponseReceiptUids(qs, 'presentation')");
+    expect(anti).toContain('const answeredUids = new Set(Object.keys(qs.responses || {}))');
+  });
+
+  it('clears receipt-only submissions at attempt, question, navigation, and mode boundaries', () => {
+    const teacher = readFileSync(resolve(process.cwd(), 'teacher_source.jsx'), 'utf8');
+    expect(anti).toContain('"quizState.responseReceipts": {}');
+    expect(teacher).toContain('"quizState.phase": "answering", "quizState.responses": {}, "quizState.responseReceipts": {}');
+    expect(teacher.split('"quizState.responseReceipts": {}').length - 1).toBeGreaterThanOrEqual(4);
+    expect(teacher).toContain('const updates = { "quizState.mode": newMode, "quizState.responses": {}, "quizState.responseReceipts": {} }');
+  });
+
   it('teacher can share anonymous per-question results; students render them', () => {
     expect(anti).toContain('window.__alloQuizShareResults = (summary)');
     expect(anti).toContain("host.broadcastPollResults('quiz-results', summary)");
     expect(anti).toContain('setQuizSharedResults(summary || null)');
     expect(viewQuiz).toContain('window.__alloQuizShareResults');
     expect(viewQuiz).toContain('shareResultsToClass');
+  });
+});
+
+describe('visual live quiz and Team Showdown reuse', () => {
+  it('keeps question and option visuals aligned across source, built, and desktop student overlays', () => {
+    for (const file of ['ui_modals_source.jsx', 'ui_modals_module.js', 'desktop/web-app/public/ui_modals_module.js']) {
+      const source = readFileSync(resolve(process.cwd(), file), 'utf8');
+      expect(source).toContain('data-live-quiz-question-image');
+      expect(source).toContain('data-live-quiz-option-image');
+      expect(source).toContain('optionImageUrls');
+      expect(source).toContain('imageAlt');
+    }
+  });
+
+  it('shows the same existing quiz visuals on the live presenter device', () => {
+    for (const file of ['teacher_source.jsx', 'teacher_module.js', 'desktop/web-app/public/teacher_module.js']) {
+      const source = readFileSync(resolve(process.cwd(), file), 'utf8');
+      expect(source).toContain('data-live-quiz-presenter-question-image');
+      expect(source).toContain('data-live-quiz-presenter-option-grid');
+      expect(source).toContain('data-live-quiz-presenter-option-image');
+      expect(source).toContain('question.optionImageUrls');
+    }
+  });
+
+  it('maps existing roster groups into the established four-color team wire format', () => {
+    const source = readFileSync(resolve(process.cwd(), 'ui_modals_source.jsx'), 'utf8');
+    expect(source).toContain('const groupedTeamIds = Object.keys(sessionData?.groups || {})');
+    expect(source).toContain('groupedTeamIds.indexOf(studentGroupId)');
+    expect(source).toContain('teamOptions[existingGroupIndex % teamOptions.length]');
+    expect(source).toContain('quizState.teams.');
+    expect(source).not.toContain("t('quiz.status.result_score', { points: 100 })");
   });
 });
 

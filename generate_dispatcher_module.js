@@ -2728,6 +2728,8 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             ? configOverride.scoringPolicy
             : {};
         const _scoringPolicy = {
+            accuracy: _requestedScoringPolicy.accuracy !== false,
+            confidence: _requestedScoringPolicy.confidence === true,
             partialCredit: _requestedScoringPolicy.partialCredit !== false,
             writtenResponseMode: _requestedScoringPolicy.writtenResponseMode === 'teacher-review'
                 ? 'teacher-review'

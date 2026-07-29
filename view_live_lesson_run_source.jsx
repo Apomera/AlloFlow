@@ -472,6 +472,9 @@ function buildLiveQuizActivitySnapshot(input) {
   const currentResponses = quizState.responses && typeof quizState.responses === 'object'
     ? quizState.responses
     : {};
+  const responseReceipts = quizState.responseReceipts && typeof quizState.responseReceipts === 'object'
+    ? quizState.responseReceipts
+    : {};
   const currentQuestionIndex = Number.isInteger(quizState.currentQuestionIndex)
     && quizState.currentQuestionIndex >= 0
     ? quizState.currentQuestionIndex
@@ -501,10 +504,34 @@ function buildLiveQuizActivitySnapshot(input) {
     );
     const hasCurrentAnswer = Object.prototype.hasOwnProperty.call(currentResponses, uid)
       || Object.prototype.hasOwnProperty.call(bucket, String(currentQuestionIndex));
+    const receipt = responseReceipts[uid] && typeof responseReceipts[uid] === 'object'
+      ? responseReceipts[uid]
+      : null;
+    const receiptKeys = receipt ? Object.keys(receipt) : [];
+    const validReceipt = !!receipt
+      && receiptKeys.length === 4
+      && receiptKeys.every(key => ['activityId', 'questionIndex', 'submittedAt', 'flow'].includes(key))
+      && boundedLiveActivityText(receipt.activityId, 120) === activityId
+      && Number.isInteger(receipt.questionIndex)
+      && receipt.questionIndex >= 0
+      && receipt.questionIndex <= 9999
+      && Number.isFinite(Number(receipt.submittedAt))
+      && Number(receipt.submittedAt) > 0
+      && (receipt.flow === 'assessment' || receipt.flow === 'presentation');
+    const receiptCompletesAssessment = validReceipt
+      && receipt.flow === 'assessment'
+      && questionCount > 0
+      && receipt.questionIndex === questionCount;
+    const hasCurrentReceipt = validReceipt && receipt.questionIndex === currentQuestionIndex;
+    const hasAnyReceiptWork = validReceipt && receipt.flow === 'assessment'
+      && (questionCount === 0 || receipt.questionIndex <= questionCount);
     const hasAnyWork = records.some(record => record !== null && record !== undefined)
-      || hasCurrentAnswer;
+      || hasCurrentAnswer
+      || hasAnyReceiptWork;
 
-    participantStatus[uid] = completion || (questionIsLive && hasCurrentAnswer)
+    participantStatus[uid] = completion
+      || receiptCompletesAssessment
+      || (questionIsLive && (hasCurrentAnswer || hasCurrentReceipt))
       ? 'submitted'
       : hasAnyWork
         ? 'working'

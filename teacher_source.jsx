@@ -1609,7 +1609,7 @@ const EscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, 
 const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, activeSessionCode, appId, onGenerateImage, onRefineImage, onCreateGroup, onAssignStudent, onSetGroupResource, isPushingResource = {}, onSetGroupLanguage, onSetGroupProfile, onDeleteGroup, onUpdateQuestionRoutingRules, history = [] }) => {
     const { t } = useContext(LanguageContext);
     const { quizState, roster } = sessionData;
-    const { currentQuestionIndex, phase, responses, mode, bossStats, teamScores } = quizState;
+    const { currentQuestionIndex, phase, responses, responseReceipts, mode, bossStats, teamScores, scoringPolicy } = quizState;
     const question = generatedContent?.data.questions[currentQuestionIndex];
     const [showLocalStats, setShowLocalStats] = useState(false);
     const [bossDifficulty, setBossDifficulty] = useState('normal');
@@ -1783,48 +1783,163 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     const hideableResources = (Array.isArray(history) ? history : [])
       .filter(item => item && item.id && item.type && !['udl-advice', 'brainstorm', 'alignment-report'].includes(item.type));
     const totalStudents = roster ? Object.keys(roster).length : 0;
-    const answeredCount = responses ? Object.keys(responses).length : 0;
+    const scoredResponseUids = Object.keys(responses || {});
+    const validReceiptUids = Object.entries(responseReceipts && typeof responseReceipts === 'object' ? responseReceipts : {})
+      .slice(0, 250)
+      .reduce((uids, [uid, rawReceipt]) => {
+        const receipt = rawReceipt && typeof rawReceipt === 'object' && !Array.isArray(rawReceipt) ? rawReceipt : null;
+        const keys = receipt ? Object.keys(receipt) : [];
+        const fixedShape = !!receipt
+          && keys.length === 4
+          && keys.every(key => ['activityId', 'questionIndex', 'submittedAt', 'flow'].includes(key));
+        const valid = fixedShape
+          && (!roster || Object.prototype.hasOwnProperty.call(roster, uid))
+          && receipt.activityId === quizState.activityId
+          && receipt.questionIndex === currentQuestionIndex
+          && typeof receipt.submittedAt === 'number'
+          && Number.isFinite(receipt.submittedAt)
+          && receipt.submittedAt > 0
+          && receipt.flow === 'presentation';
+        if (valid && !uids.includes(uid)) uids.push(uid);
+        return uids;
+      }, []);
+    const answeredUidSet = new Set(scoredResponseUids.concat(validReceiptUids));
+    const scoredAnsweredCount = scoredResponseUids.length;
+    const answeredCount = answeredUidSet.size;
+    const unscoredReceiptCount = validReceiptUids.filter(uid => !Object.prototype.hasOwnProperty.call(responses || {}, uid)).length;
     const percentage = totalStudents > 0 ? Math.round((answeredCount / totalStudents) * 100) : 0;
-    const detailedStats = question.options.map((opt, idx) => {
+    const quizLiveAggregators = (typeof window !== 'undefined' && window.AlloModules)
+      ? window.AlloModules.QuizLiveAggregators : null;
+    const rawLiveScoringPolicy = scoringPolicy || generatedContent?.data?.scoringPolicy || {};
+    const liveScoringPolicy = quizLiveAggregators && typeof quizLiveAggregators.normalizeLiveScoringPolicy === 'function'
+      ? quizLiveAggregators.normalizeLiveScoringPolicy(rawLiveScoringPolicy)
+      : {
+          accuracy: rawLiveScoringPolicy?.accuracy !== false,
+          confidence: rawLiveScoringPolicy?.confidence === true
+            || String(rawLiveScoringPolicy?.liveMode || '').toLowerCase() === 'confidence',
+          partialCredit: rawLiveScoringPolicy?.partialCredit !== false
+        };
+    // Compatibility fallback for a slow CDN/module load. It intentionally
+    // stays option-only; the shared aggregator owns all generalized formats.
+    const fallbackDetailedStats = (question && Array.isArray(question.options) ? question.options : []).map((opt, idx) => {
         const count = Object.values(responses || {}).filter(r => r === idx).length;
-        const percent = answeredCount > 0 ? Math.round((count / answeredCount) * 100) : 0;
+        const percent = scoredAnsweredCount > 0 ? Math.round((count / scoredAnsweredCount) * 100) : 0;
         return {
             label: String.fromCharCode(65 + idx),
             value: count,
             percent: percent,
             text: opt,
+            imageUrl: Array.isArray(question.optionImageUrls) ? question.optionImageUrls[idx] : null,
             isCorrect: opt === question.correctAnswer
         };
     });
+    const liveQuestionSummary = quizLiveAggregators && typeof quizLiveAggregators.aggregatePresentationResponses === 'function'
+      ? quizLiveAggregators.aggregatePresentationResponses(question || {}, responses || {}, liveScoringPolicy)
+      : {
+          itemType: String(question?.itemType || question?.type || 'mcq'),
+          kind: 'options',
+          rows: fallbackDetailedStats,
+          respondentCount: scoredAnsweredCount,
+          evaluableResponseCount: scoredAnsweredCount,
+          unscored: question?.itemType === 'likert' || question?.itemType === 'opinion-mcq',
+          gameScorable: Array.isArray(question?.options) && question.options.length > 0 && question.correctAnswer != null,
+          scoringPolicy: liveScoringPolicy,
+          confidenceReportedCount: 0,
+          confidenceMissingCount: 0,
+          confidenceAwaitingReviewCount: 0,
+          confidenceBuckets: { calibrated: 0, fragile: 0, confidentWrong: 0, uncertain: 0 },
+          note: ''
+        };
+    const detailedStats = Array.isArray(liveQuestionSummary.rows) ? liveQuestionSummary.rows : [];
+    const liveConfidenceBuckets = liveQuestionSummary.confidenceBuckets
+      || { calibrated: 0, fragile: 0, confidentWrong: 0, uncertain: 0 };
+    const liveConfidenceTiles = [
+      { key: 'calibrated', label: 'Correct + knew it', tone: 'border-emerald-200 bg-emerald-50 text-emerald-900' },
+      { key: 'fragile', label: 'Correct + unsure', tone: 'border-sky-200 bg-sky-50 text-sky-900' },
+      { key: 'confidentWrong', label: 'Confident misconception', tone: 'border-rose-200 bg-rose-50 text-rose-900' },
+      { key: 'uncertain', label: 'Incorrect + unsure', tone: 'border-amber-200 bg-amber-50 text-amber-900' }
+    ];
+    const liveAnswerGuide = quizLiveAggregators
+      && typeof quizLiveAggregators.describePresentationCorrectAnswer === 'function'
+      ? quizLiveAggregators.describePresentationCorrectAnswer(question || {})
+      : (!liveQuestionSummary.unscored && question?.correctAnswer != null ? String(question.correctAnswer) : '');
     const renderAnalytics = () => (
         <div className="flex flex-col h-full w-full animate-in motion-reduce:animate-none fade-in duration-300">
-            <div className="w-full h-48 mb-6 shrink-0">
-                <SimpleBarChart data={detailedStats} color="indigo" />
-            </div>
+            {liveQuestionSummary.note && (
+              <div role="status" className={`mb-4 rounded-lg border px-3 py-2 text-xs font-bold ${liveQuestionSummary.unscored ? 'border-purple-200 bg-purple-50 text-purple-900' : 'border-amber-200 bg-amber-50 text-amber-900'}`}>
+                {liveQuestionSummary.note}
+              </div>
+            )}
+            {liveScoringPolicy.confidence && !liveQuestionSummary.unscored && (
+              <section
+                className="mb-4 rounded-xl border border-indigo-200 bg-indigo-50/70 p-3"
+                data-live-confidence-summary="true"
+                aria-label="Confidence check summary"
+              >
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <span className="text-[11px] font-black uppercase tracking-wider text-indigo-900">Confidence check</span>
+                  <span className="text-[11px] font-semibold text-indigo-700">Diagnostic only — never changes points</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {liveConfidenceTiles.map((tile) => (
+                    <div key={tile.key} className={`rounded-lg border px-2 py-1.5 ${tile.tone}`}>
+                      <div className="text-lg font-black">{liveConfidenceBuckets[tile.key] || 0}</div>
+                      <div className="text-[10px] font-bold">{tile.label}</div>
+                    </div>
+                  ))}
+                </div>
+                {(liveQuestionSummary.confidenceMissingCount > 0 || liveQuestionSummary.confidenceAwaitingReviewCount > 0) && (
+                  <p className="mt-2 text-[11px] font-medium text-indigo-800">
+                    {liveQuestionSummary.confidenceMissingCount || 0} without confidence · {liveQuestionSummary.confidenceAwaitingReviewCount || 0} awaiting teacher review
+                  </p>
+                )}
+              </section>
+            )}
+            {detailedStats.length > 0 ? (
+              <div className="w-full h-48 mb-6 shrink-0">
+                  <SimpleBarChart data={detailedStats} color="indigo" />
+              </div>
+            ) : (
+              <div role="status" className="w-full min-h-24 mb-6 rounded-lg border border-dashed border-slate-300 bg-white flex items-center justify-center px-4 text-center text-xs text-slate-600">
+                Responses are present, but this item has no safe aggregate categories to display.
+              </div>
+            )}
             <div className="flex-grow overflow-y-auto pr-1 custom-scrollbar space-y-2">
                 {detailedStats.map((stat, i) => (
                     <div
                         key={i}
                         className={`flex items-center justify-between p-3 rounded-lg border text-xs transition-all motion-reduce:transition-none ${
-                            phase === 'revealed' && stat.isCorrect
+                            phase === 'revealed' && !liveQuestionSummary.unscored && stat.isCorrect
                             ? 'bg-green-50 border-green-200 ring-1 ring-green-300'
                             : 'bg-white border-slate-100 hover:border-indigo-200'
                         }`}
                     >
                         <div className="flex items-center gap-3 overflow-hidden mr-4">
                             <span className={`font-black w-6 h-6 flex items-center justify-center rounded shrink-0 ${
-                                phase === 'revealed' && stat.isCorrect ? 'bg-green-200 text-green-800' : 'bg-indigo-100 text-indigo-700'
+                                phase === 'revealed' && !liveQuestionSummary.unscored && stat.isCorrect ? 'bg-green-200 text-green-800' : 'bg-indigo-100 text-indigo-700'
                             }`}>
                                 {stat.label}
                             </span>
-                            <span className={`truncate font-medium ${phase === 'revealed' && stat.isCorrect ? 'text-green-900' : 'text-slate-600'}`} title={stat.text}>
+                            {stat.imageUrl && (
+                                <img
+                                    src={stat.imageUrl}
+                                    alt=""
+                                    aria-hidden="true"
+                                    loading="eager"
+                                    decoding="async"
+                                    onError={(event) => { event.currentTarget.hidden = true; }}
+                                    data-live-quiz-presenter-option-image={i}
+                                    className="h-12 w-16 shrink-0 rounded border border-slate-200 bg-white object-contain"
+                                />
+                            )}
+                            <span className={`truncate font-medium ${phase === 'revealed' && !liveQuestionSummary.unscored && stat.isCorrect ? 'text-green-900' : 'text-slate-600'}`} title={stat.text}>
                                 {stat.text}
                             </span>
                         </div>
                         <div className="flex items-center gap-3 shrink-0">
                             <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden hidden sm:block">
                                 <div
-                                    className={`h-full ${phase === 'revealed' && stat.isCorrect ? 'bg-green-500' : 'bg-indigo-500'}`}
+                                    className={`h-full ${phase === 'revealed' && !liveQuestionSummary.unscored && stat.isCorrect ? 'bg-green-500' : 'bg-indigo-500'}`}
                                     style={{ width: `${stat.percent}%` }}
                                 ></div>
                             </div>
@@ -1836,10 +1951,17 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                     </div>
                 ))}
             </div>
-            <div className="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center text-xs">
-                <span className="font-bold text-slate-600 uppercase tracking-wider">{t('quiz.total_responses')}</span>
+            <div className="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center gap-3 text-xs">
+                <span className="font-bold text-slate-600 uppercase tracking-wider">
+                    {t('quiz.total_responses')}
+                    {unscoredReceiptCount > 0 && (
+                      <span className="block mt-1 normal-case tracking-normal font-medium text-amber-700">
+                        {unscoredReceiptCount} submitted, unscored (peer connection unavailable)
+                      </span>
+                    )}
+                </span>
                 <span className="font-mono font-black text-lg text-indigo-600 bg-indigo-50 px-3 py-0.5 rounded-full border border-indigo-100">
-                    {answeredCount}
+                    {liveQuestionSummary.respondentCount}
                 </span>
             </div>
         </div>
@@ -1895,7 +2017,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     };
     const handleStartQuestion = async () => {
         const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
-        try { await updateDoc(sessionRef, { "quizState.phase": "answering", "quizState.responses": {}, "quizState.currentQuestionIndex": currentQuestionIndex, "quizState.bossStats.lastDamage": 0 }); } catch(e) { warnLog('Firestore sync failed:', e); }
+        try { await updateDoc(sessionRef, { "quizState.phase": "answering", "quizState.responses": {}, "quizState.responseReceipts": {}, "quizState.currentQuestionIndex": currentQuestionIndex, "quizState.bossStats.lastDamage": 0 }); } catch(e) { warnLog('Firestore sync failed:', e); }
     };
     const handleRevealResults = async () => {
         try {
@@ -1903,17 +2025,37 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
             let updatePayload = {
                 "quizState.phase": "revealed",
             };
-            const isCorrect = (responseIndex) => {
-                if (responseIndex === undefined || responseIndex === null) return false;
-                return question.options[responseIndex] === question.correctAnswer;
+            const gradeLiveResponse = (responseValue) => {
+                if (quizLiveAggregators && typeof quizLiveAggregators.gradePresentationResponse === 'function') {
+                    return quizLiveAggregators.gradePresentationResponse(responseValue, question || {}, liveScoringPolicy);
+                }
+                const responseIndex = Number.isInteger(responseValue) ? responseValue : -1;
+                const correct = responseIndex >= 0 && Array.isArray(question?.options)
+                  && question.options[responseIndex] === question.correctAnswer;
+                return {
+                    status: correct ? 'correct' : 'incorrect',
+                    isCorrect: correct,
+                    evaluable: responseIndex >= 0,
+                    unscored: false,
+                    scoreFraction: correct ? 1 : 0
+                };
             };
-            if (mode === 'boss-battle') {
-                let correctCount = 0;
-                Object.values(responses || {}).forEach(val => {
-                    if (isCorrect(val)) correctCount++;
-                });
-                const totalResponses = Object.keys(responses || {}).length;
-                const wrongCount = totalResponses - correctCount;
+            const accuracyWeightForGrade = (grade) => {
+                if (quizLiveAggregators && typeof quizLiveAggregators.presentationAccuracyWeight === 'function') {
+                    return quizLiveAggregators.presentationAccuracyWeight(grade, null, liveScoringPolicy);
+                }
+                if (!grade || grade.evaluable !== true || grade.unscored === true) return null;
+                return typeof grade.scoreFraction === 'number'
+                    ? Math.max(0, Math.min(1, grade.scoreFraction))
+                    : (grade.isCorrect === true ? 1 : 0);
+            };
+            if (mode === 'boss-battle' && liveQuestionSummary.gameScorable) {
+                const evaluatedResponses = Object.values(responses || {}).map(gradeLiveResponse).filter(grade => grade.evaluable);
+                const correctCount = evaluatedResponses.filter(grade => grade.isCorrect === true).length;
+                const totalResponses = evaluatedResponses.length;
+                const earnedCredit = evaluatedResponses.reduce((sum, grade) => sum + (accuracyWeightForGrade(grade) || 0), 0);
+                const eligibleCount = Math.max(totalStudents, totalResponses, 1);
+                const wrongCredit = Math.max(0, eligibleCount - earnedCredit);
                 // ── Class-size-fair boss damage (2026-07-16) ────────────────────
                 // Was `correctCount * 10` against a fixed 1000 maxHP: a class of 8
                 // answering PERFECTLY dealt 80/question (needs 13 flawless questions
@@ -1925,14 +2067,12 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                 const bossMaxHP = bossStats?.maxHP || 1000;
                 const quizLength = Math.max(1, generatedContent?.data?.questions?.length || 10);
                 const perQuestionBudget = bossMaxHP / quizLength;
-                const answerAccuracy = totalResponses > 0 ? (correctCount / totalResponses) : 0;
+                const answerAccuracy = earnedCredit / eligibleCount;
                 const damage = Math.round(answerAccuracy * perQuestionBudget * 1.2);
-                const currentHP = bossStats?.currentHP || 1000;
+                const currentHP = bossStats?.currentHP ?? bossMaxHP;
                 const newHP = Math.max(0, currentHP - damage);
                 const difficultyMultiplier = bossStats?.difficulty === 'easy' ? 0.5 : bossStats?.difficulty === 'hard' ? 1.5 : 1.0;
-                const baseClassDamage = totalResponses > 0
-                    ? Math.ceil((wrongCount / totalResponses) * 25)
-                    : 0;
+                const baseClassDamage = Math.ceil((wrongCredit / eligibleCount) * 25);
                 const classDamage = Math.round(baseClassDamage * difficultyMultiplier);
                 const currentClassHP = bossStats?.classHP ?? 100;
                 const newClassHP = Math.max(0, currentClassHP - classDamage);
@@ -1946,7 +2086,9 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                     classDamage,
                     correctCount,
                     totalResponses,
-                    accuracy: totalResponses > 0 ? Math.round((correctCount / totalResponses) * 100) : 0
+                    earnedCredit,
+                    eligibleCount,
+                    accuracy: Math.round(answerAccuracy * 100)
                 };
                 const existingLog = bossStats?.battleLog || [];
                 updatePayload["quizState.bossStats.battleLog"] = [...existingLog, battleLogEntry];
@@ -1957,6 +2099,8 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                     // falling — count it as the heroic win.
                     updatePayload["quizState.phase"] = "boss-defeated";
                 } else if (newClassHP <= 0) {
+                    updatePayload["quizState.phase"] = "class-defeated";
+                } else if (isLastQuestion && totalResponses === 0) {
                     updatePayload["quizState.phase"] = "class-defeated";
                 } else if (isLastQuestion) {
                     // ── Last-question resolution (2026-07-16) ──────────────────
@@ -1973,15 +2117,18 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                     triggerBossVisualUpdate(bossStats.image, newHP <= 0 ? 'defeated' : 'hurt');
                 }
             }
-            else if (mode === 'team-showdown') {
+            else if (mode === 'team-showdown' && liveQuestionSummary.gameScorable) {
                 const currentScores = sessionData.quizState.teamScores || {};
                 const teamStats = {};
-                Object.entries(responses || {}).forEach(([uid, ansIdx]) => {
+                Object.entries(responses || {}).forEach(([uid, responseValue]) => {
+                    const grade = gradeLiveResponse(responseValue);
+                    if (!grade.evaluable) return;
                     const teamColor = sessionData.quizState.teams?.[uid];
                     if (teamColor) {
-                        if (!teamStats[teamColor]) teamStats[teamColor] = { total: 0, correct: 0 };
+                        if (!teamStats[teamColor]) teamStats[teamColor] = { total: 0, correct: 0, earned: 0 };
                         teamStats[teamColor].total++;
-                        if (isCorrect(ansIdx)) teamStats[teamColor].correct++;
+                        teamStats[teamColor].earned += accuracyWeightForGrade(grade) || 0;
+                        if (grade.isCorrect === true) teamStats[teamColor].correct++;
                     }
                 });
                 // ── Team fairness (2026-07-16): score against TEAM SIZE, not just
@@ -1994,15 +2141,18 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                 Object.values(sessionData.quizState.teams || {}).forEach((color) => {
                     if (color) teamMemberCounts[color] = (teamMemberCounts[color] || 0) + 1;
                 });
-                Object.entries(teamStats).forEach(([team, stats]) => {
+                Object.keys(Object.assign({}, teamMemberCounts, teamStats)).forEach((team) => {
+                    const stats = teamStats[team] || { total: 0, correct: 0, earned: 0 };
                     const denominator = Math.max(stats.total, teamMemberCounts[team] || 0, 1);
-                    const percentage = stats.correct / denominator;
+                    const percentage = stats.earned / denominator;
                     const pointsEarned = Math.round(percentage * 1000);
                     const oldScore = currentScores[team] || 0;
                     updatePayload[`quizState.teamScores.${team}`] = oldScore + pointsEarned;
                     updatePayload[`quizState.lastRoundStats.${team}`] = {
                         points: pointsEarned,
-                        percent: Math.round(percentage * 100)
+                        percent: Math.round(percentage * 100),
+                        earnedCredit: stats.earned,
+                        responded: stats.total
                     };
                 });
             }
@@ -2018,6 +2168,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                 "quizState.currentQuestionIndex": nextIdx,
                 "quizState.phase": "idle",
                 "quizState.responses": {},
+                "quizState.responseReceipts": {},
                 "quizState.bossStats.lastDamage": 0
             });
         } catch (e) { warnLog("Unhandled error in handleNextQuestion:", e); }
@@ -2031,6 +2182,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                 "quizState.currentQuestionIndex": prevIdx,
                 "quizState.phase": "idle",
                 "quizState.responses": {},
+                "quizState.responseReceipts": {},
                 "quizState.bossStats.lastDamage": 0
             });
         } catch (e) { warnLog("Unhandled error in handlePrevQuestion:", e); }
@@ -2083,7 +2235,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     const handleModeChange = async (e) => {
         const newMode = e.target.value;
         const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
-        const updates = { "quizState.mode": newMode };
+        const updates = { "quizState.mode": newMode, "quizState.responses": {}, "quizState.responseReceipts": {} };
         if (newMode === 'boss-battle') {
             const qCount = generatedContent?.data.questions.length;
             const sCount = Math.max(1, totalStudents);
@@ -2109,6 +2261,22 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
             }
         }
         try { await updateDoc(sessionRef, updates); } catch(e) { warnLog('Firestore sync failed:', e); }
+    };
+    const handleScoringPolicyChange = async (e) => {
+        if (phase === 'answering' || answeredCount > 0) return;
+        const nextPolicy = {
+            accuracy: true,
+            confidence: e.target.value === 'confidence',
+            partialCredit: liveScoringPolicy.partialCredit !== false
+        };
+        const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+        try {
+            await updateDoc(sessionRef, {
+                "quizState.scoringPolicy": nextPolicy,
+                "quizState.responses": {},
+                "quizState.responseReceipts": {}
+            });
+        } catch (error) { warnLog('Live response policy sync failed:', error); }
     };
     const [newGroupName, setNewGroupName] = useState("");
     const groups = sessionData.groups || {};
@@ -2137,6 +2305,18 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                          <option value="live-pulse">📊 {t('quiz.modes.live_pulse')}</option>
                          <option value="boss-battle">⚔️ {t('quiz.modes.boss_battle')}</option>
                          <option value="team-showdown">🏆 {t('quiz.modes.team_showdown')}</option>
+                     </select>
+                     <select
+                        aria-label="Live response policy"
+                        data-help-key="quiz_live_scoring_policy_select"
+                        value={liveScoringPolicy.confidence ? 'confidence' : 'accuracy'}
+                        onChange={handleScoringPolicyChange}
+                        disabled={phase === 'answering' || answeredCount > 0}
+                        className="bg-indigo-800 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-indigo-600 focus:outline-none focus:ring-2 focus:ring-teal-400 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+                        title={phase === 'answering' || answeredCount > 0 ? 'Choose a response policy before students answer.' : 'Choose what students report with each answer.'}
+                     >
+                        <option value="accuracy">Accuracy</option>
+                        <option value="confidence">Accuracy + confidence check</option>
                      </select>
                      {mode === 'boss-battle' && (
                          <select aria-label={t('common.selection')}
@@ -2180,6 +2360,14 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
             </div>
             <div className="w-full h-1.5 bg-slate-100 relative">
                 <div className="bg-teal-500 h-full transition-all motion-reduce:transition-none duration-500 ease-out" style={{ width: `${percentage}%` }}></div>
+            </div>
+            <div className="border-b border-indigo-100 bg-indigo-50 px-4 py-2 text-xs font-semibold text-indigo-900" data-live-scoring-policy-note="true">
+                {liveScoringPolicy.confidence
+                  ? 'Accuracy scoring plus a confidence check. Confidence never changes points; it is diagnostic only.'
+                  : 'Accuracy uses correctness and configured partial credit only. Response speed never changes points.'}
+                {liveQuestionSummary.unscored && (
+                  <span className="ml-1 font-black text-purple-800">This prompt remains distribution-only.</span>
+                )}
             </div>
             <div className="bg-slate-50 border-b border-slate-200 p-4">
                 <div className="flex flex-col md:flex-row gap-4">
@@ -2372,7 +2560,54 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                                  total: generatedContent?.data.questions.length
                              })}
                          </span>
-                         <h2 className="text-2xl font-bold text-slate-800 leading-tight">{question.question}</h2>
+                         {question.imageUrl && (
+                             <img
+                                 src={question.imageUrl}
+                                 alt={String(question.imageAlt || question.question || t('quiz.question_image') || 'Question image')}
+                                 loading="eager"
+                                 decoding="async"
+                                 onError={(event) => { event.currentTarget.hidden = true; }}
+                                 data-live-quiz-presenter-question-image="true"
+                                 className="mb-4 max-h-56 w-full rounded-xl border border-slate-200 bg-slate-50 object-contain shadow-sm"
+                             />
+                         )}
+                         <h2 className="text-2xl font-bold text-slate-800 leading-tight">{question?.question || question?.contextSentence || 'Live response item'}</h2>
+                         {mode !== 'live-pulse' && !liveQuestionSummary.gameScorable && (
+                           <div role="status" className="mt-3 rounded-lg border border-purple-200 bg-purple-50 px-3 py-2 text-xs font-bold text-purple-900">
+                             {liveQuestionSummary.unscored
+                               ? 'Unscored poll — Boss Battle and Team Showdown scoring pause for this round.'
+                               : 'Teacher-review item — game scoring pauses until an evaluative item.'}
+                           </div>
+                         )}
+                         {Array.isArray(question.optionImageUrls) && question.optionImageUrls.some(Boolean) && (
+                             <div
+                                 className="mt-4 grid grid-cols-2 gap-2"
+                                 data-live-quiz-presenter-option-grid="true"
+                                 role="group"
+                                 aria-label={t('quiz.answer_options') || 'Answer options'}
+                             >
+                                 {(question.options || []).map((option, optionIndex) => (
+                                     <div key={optionIndex} className="rounded-lg border border-slate-200 bg-slate-50 p-2">
+                                         {question.optionImageUrls[optionIndex] && (
+                                             <img
+                                                 src={question.optionImageUrls[optionIndex]}
+                                                 alt=""
+                                                 aria-hidden="true"
+                                                 loading="eager"
+                                                 decoding="async"
+                                                 onError={(event) => { event.currentTarget.hidden = true; }}
+                                                 data-live-quiz-presenter-option-image={optionIndex}
+                                                 className="mb-1 h-20 w-full rounded bg-white object-contain"
+                                             />
+                                         )}
+                                         <p className="text-xs font-semibold text-slate-700">
+                                             <span className="mr-1 font-black text-indigo-700">{String.fromCharCode(65 + optionIndex)}.</span>
+                                             {option}
+                                         </p>
+                                     </div>
+                                 ))}
+                             </div>
+                         )}
                      </div>
                      <div className="mb-4 bg-amber-50 border border-amber-200 rounded-lg p-2">
                          <button type="button"
@@ -2604,7 +2839,13 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                 </div>
                 <div className="bg-slate-50 rounded-xl border border-slate-400 p-6 flex flex-col items-center justify-center min-h-[300px] relative">
                      {(showLocalStats || mode === 'live-pulse') ? (
-                         answeredCount > 0 ? renderAnalytics() : (
+                         scoredAnsweredCount > 0 ? renderAnalytics() : unscoredReceiptCount > 0 ? (
+                            <div role="status" className="text-amber-800 flex flex-col items-center gap-2 h-full justify-center text-center max-w-sm">
+                                <Layout size={48} className="opacity-20"/>
+                                <span className="text-sm font-bold">{unscoredReceiptCount} submitted, unscored</span>
+                                <span className="text-xs text-amber-700">Their peer connection was unavailable, so AlloFlow recorded participation without storing answer content.</span>
+                            </div>
+                         ) : (
                             <div className="text-slate-600 italic flex flex-col items-center gap-2 h-full justify-center">
                                 <Layout size={48} className="opacity-20"/>
                                 <span className="text-sm font-medium">{t('quiz.waiting_responses')}</span>
@@ -2724,10 +2965,10 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
                             ) : null}
                          </>
                      )}
-                     {phase === 'revealed' && (
+                     {phase === 'revealed' && !liveQuestionSummary.unscored && liveAnswerGuide && (
                          <div className="mt-6 w-full bg-green-100 border border-green-200 text-green-800 p-4 rounded-xl text-center animate-in motion-reduce:animate-none slide-in-from-bottom-2 shadow-sm z-10">
                              <span className="block text-[11px] font-black uppercase tracking-widest text-green-600 mb-1">{t('quiz.correct_answer_label')}</span>
-                             <span className="text-lg font-bold">{question.correctAnswer}</span>
+                             <span className="text-lg font-bold">{liveAnswerGuide}</span>
                          </div>
                      )}
                 </div>

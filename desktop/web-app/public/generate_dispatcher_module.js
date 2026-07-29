@@ -1439,31 +1439,8 @@ function normalizeStandardsDimension(rawReports, configuredStandards) {
 
 
 const handleGenerate = async (type, langOverride = null, keepLoading = false, textOverride = null, configOverride = {}, switchView = true, deps) => {
-  const { gradeLevel, outlineType, visualStyle, visualCustomStyle, visualLayoutMode, quizMcqCount, persistedLessonDNA, leveledTextCustomInstructions, quizCustomInstructions, glossaryCustomInstructions, frameCustomInstructions, adventureCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, lessonCustomAdditions, timelineTopic, sourceTopic, history, inputText, differentiationRange, leveledTextLanguage, selectedLanguages, studentInterests: _ambientStudentInterests, guidedMode, guidedStep, standardsInput, targetStandards, dokLevel, sourceLength, sourceTone, textFormat, useEmojis, fullPackTargetGroup, rosterKey, imageGenerationStyle, imageAspectRatio, enableEmojiInline, cellGameDifficulty, includeSourceCitations, includeBibliography, currentUiLanguage, sourceCustomInstructions, sourceVocabulary, sourceLevel, generatedContent, mathSubject, mathMode, mathInput, mathQuantity, isAutoConfigEnabled, resourceCount, isParentMode, isIndependentMode, isTeacherMode, frameType, fillInTheBlank, vocabularyType, enableFactionResources, factionResourceMode, isAdventureStoryMode, isSocialStoryMode, isImmersiveMode, adventureChanceMode, adventureConsistentCharacters, adventureFreeResponseEnabled, adventureLanguageMode, adventureInputMode, apiKey, setIsMapLocked, setIsProcessing, setGenerationStep, setInteractionMode, setDefinitionData, setSelectionMenu, setRevisionData, setIsReviewGame, setReviewGameState, setGuidedStep, setGeneratedContent, setActiveView, setHistory, setError, setShowKokoroOfferModal, alloBotRef, pdfFixResult, addToast, t, warnLog, debugLog, callGemini, cleanJson, safeJsonParse, callImagen, extractSourceTextForProcessing, formatLessonDNA, getDifferentiationGrades, getGroupDifferentiationContext, flyToElement, fisherYatesShuffle, sanitizeTruncatedCitations, normalizeCitationPlacement, fixCitationPlacement, generateBibliographyString, processGrounding, parseFlowChartData, verifyMathProblems, normalizeResourceLinks, detectClimaxArchetype, handleGenerateLessonPlan, handleGenerateMath, handleGenerateSource, autoConfigureSettings, applyDetailedAutoConfig, getAssetManifest, getLessonContext, buildLessonPlanPrompt, buildStudyGuidePrompt, buildParentGuidePrompt, GUIDED_STEPS, LENGTH_THRESHOLDS, TIMELINE_MODE_DEFINITIONS, audioRef, autoRemoveWords, bridgeSimType, bridgeStepCount, conceptImageMode, conceptItemCount, conceptSortImageStyle, creativeMode, faqCount, glossaryDefinitionLevel, glossaryImageStyle, glossaryTier2Count, glossaryTier3Count, includeCharts, includeEtymology, includeTimelineVisuals, isBotVisible, isMathGraphEnabled, keepCitations, leveledTextLength, noText, passAnalysisToQuiz, quizReflectionCount, selectedConcepts: _ambientSelectedConcepts, standardsPromptString: _ambientStandardsPromptString, timelineImageStyle, timelineItemCount, timelineMode, useLowQualityVisuals, setGameMode, setGlossarySearchTerm, setIsConceptMapReady, setIsEditingAnalysis, setIsEditingBrainstorm, setIsEditingFaq, setIsEditingGlossary, setIsEditingLeveledText, setIsEditingOutline, setIsEditingQuiz, setIsEditingScaffolds, setIsGeneratingPersona, setIsInteractiveVenn, setIsMatchingGame, setIsMemoryGame, setIsPlaying, setIsPresentationMode, setIsSideBySide, setIsStudentBingoGame, setIsVennPlaying, setPersonaState, setPresentationState, setProcessingProgress, setShowQuizAnswers, setStickers, calculateReadability, callGeminiImageEdit, checkAccuracyWithSearch, chunkText, countWords, executeVisualPlan, filterEducationalSources, formatMathQuestion, generateHelpfulHint, generateVisualPlan, getDefaultTitle, performDeepVerification, repairGeneratedText, resetPersonaInterviewState, validateSequenceStructure } = deps;
+  const { gradeLevel, outlineType, visualStyle, visualCustomStyle, visualLayoutMode, quizMcqCount, persistedLessonDNA, leveledTextCustomInstructions, quizCustomInstructions, glossaryCustomInstructions, frameCustomInstructions, adventureCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, lessonCustomAdditions, timelineTopic, sourceTopic, history, inputText, differentiationRange, leveledTextLanguage, selectedLanguages, studentInterests, guidedMode, guidedStep, standardsInput, targetStandards, dokLevel, sourceLength, sourceTone, textFormat, useEmojis, fullPackTargetGroup, rosterKey, imageGenerationStyle, imageAspectRatio, enableEmojiInline, cellGameDifficulty, includeSourceCitations, includeBibliography, currentUiLanguage, sourceCustomInstructions, sourceVocabulary, sourceLevel, generatedContent, mathSubject, mathMode, mathInput, mathQuantity, isAutoConfigEnabled, resourceCount, isParentMode, isIndependentMode, isTeacherMode, frameType, fillInTheBlank, vocabularyType, enableFactionResources, factionResourceMode, isAdventureStoryMode, isSocialStoryMode, isImmersiveMode, adventureChanceMode, adventureConsistentCharacters, adventureFreeResponseEnabled, adventureLanguageMode, adventureInputMode, apiKey, setIsMapLocked, setIsProcessing, setGenerationStep, setInteractionMode, setDefinitionData, setSelectionMenu, setRevisionData, setIsReviewGame, setReviewGameState, setGuidedStep, setGeneratedContent, setActiveView, setHistory, setError, setShowKokoroOfferModal, alloBotRef, pdfFixResult, addToast, t, warnLog, debugLog, callGemini, cleanJson, safeJsonParse, callImagen, extractSourceTextForProcessing, formatLessonDNA, getDifferentiationGrades, getGroupDifferentiationContext, flyToElement, fisherYatesShuffle, sanitizeTruncatedCitations, normalizeCitationPlacement, fixCitationPlacement, generateBibliographyString, processGrounding, parseFlowChartData, verifyMathProblems, normalizeResourceLinks, detectClimaxArchetype, handleGenerateLessonPlan, handleGenerateMath, handleGenerateSource, autoConfigureSettings, applyDetailedAutoConfig, getAssetManifest, getLessonContext, buildLessonPlanPrompt, buildStudyGuidePrompt, buildParentGuidePrompt, GUIDED_STEPS, LENGTH_THRESHOLDS, TIMELINE_MODE_DEFINITIONS, audioRef, autoRemoveWords, bridgeSimType, bridgeStepCount, conceptImageMode, conceptItemCount, conceptSortImageStyle, creativeMode, faqCount, glossaryDefinitionLevel, glossaryImageStyle, glossaryTier2Count, glossaryTier3Count, includeCharts, includeEtymology, includeTimelineVisuals, isBotVisible, isMathGraphEnabled, keepCitations, leveledTextLength, noText, passAnalysisToQuiz, quizReflectionCount, selectedConcepts, standardsPromptString, timelineImageStyle, timelineItemCount, timelineMode, useLowQualityVisuals, setGameMode, setGlossarySearchTerm, setIsConceptMapReady, setIsEditingAnalysis, setIsEditingBrainstorm, setIsEditingFaq, setIsEditingGlossary, setIsEditingLeveledText, setIsEditingOutline, setIsEditingQuiz, setIsEditingScaffolds, setIsGeneratingPersona, setIsInteractiveVenn, setIsMatchingGame, setIsMemoryGame, setIsPlaying, setIsPresentationMode, setIsSideBySide, setIsStudentBingoGame, setIsVennPlaying, setPersonaState, setPresentationState, setProcessingProgress, setShowQuizAnswers, setStickers, calculateReadability, callGeminiImageEdit, checkAccuracyWithSearch, chunkText, countWords, executeVisualPlan, filterEducationalSources, formatMathQuestion, generateHelpfulHint, generateVisualPlan, getDefaultTitle, performDeepVerification, repairGeneratedText, resetPersonaInterviewState, validateSequenceStructure } = deps;
   try { if (window._DEBUG_GEN_DISPATCHER) console.log("[GenDispatcher] handleGenerate fired:", type); } catch(_) {}
-    // ── DA CLINICAL ISOLATION ────────────────────────────────────────────
-    // Dynamic Assessment supports (visual organizers, sentence frames) route
-    // through this shared dispatcher and pass { isolatedContext: true }. A DA
-    // probe measures a student's MODIFIABILITY on one construct; if the
-    // generated support inherits the open lesson's topic, vocabulary,
-    // standards, differentiation or student interests, the support teaches
-    // outside content and the measure is confounded. That is a validity
-    // failure, not a cosmetic one.
-    //
-    // This flag was passed by the host and read by NOBODY (verified 2026-07-27:
-    // zero occurrences of isolatedContext in this file), so every DA support
-    // silently inherited the ambient lesson. The suppression happens HERE, at
-    // each value's single computation point, rather than at the ~20 prompt
-    // template sites — missing one template site is an invisible clinical
-    // defect, whereas a value that is empty at the source cannot leak.
-    //
-    // Strictly additive: when isolatedContext is falsy, every value below is
-    // exactly what it was before. Arrays stay arrays (call sites use .length
-    // and .join), strings stay strings.
-    const _isolatedContext = !!(configOverride && configOverride.isolatedContext);
-    const standardsPromptString = _isolatedContext ? '' : _ambientStandardsPromptString;
-    const selectedConcepts = _isolatedContext ? [] : _ambientSelectedConcepts;
-    const studentInterests = _isolatedContext ? [] : _ambientStudentInterests;
     const usesLocalTextBackend = (() => {
         try {
             const w = typeof window !== 'undefined' ? window : null;
@@ -1540,11 +1517,8 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         effectiveVisualStyle = visualStyle;
     }
     const effectiveQuizCount = configOverride.quizCount || quizMcqCount;
-    // Isolated generations carry NO golden thread — not even an explicitly
-    // passed configOverride.lessonDNA. dnaPromptBlock is injected into several
-    // prompts verbatim, so it must be empty rather than merely unused.
-    const lessonDNA = _isolatedContext ? null : (configOverride.lessonDNA || persistedLessonDNA || null);
-    const dnaPromptBlock = _isolatedContext ? '' : formatLessonDNA(lessonDNA);
+    const lessonDNA = configOverride.lessonDNA || persistedLessonDNA || null;
+    const dnaPromptBlock = formatLessonDNA(lessonDNA);
     const effCustomInstructions = (configOverride && configOverride.customInstructions)
         ? configOverride.customInstructions
         : (
@@ -1557,7 +1531,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             type === 'faq' ? faqCustomInstructions :
             type === 'outline' ? outlineCustomInstructions :
             type === 'image' ? visualCustomInstructions :
-            type === 'timeline' ? (_isolatedContext ? '' : (timelineTopic || sourceTopic)) :
+            type === 'timeline' ? (timelineTopic || sourceTopic) :
             ''
         );
     let textToProcess = textOverride;
@@ -1620,9 +1594,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
     setIsReviewGame(false);
     setReviewGameState({ claimed: new Set(), activeQuestion: null, showAnswer: false });
     const effectiveLanguage = langOverride || leveledTextLanguage;
-    // Roster/group differentiation describes THIS CLASS's lesson groupings —
-    // ambient context that must not steer a single student's DA support.
-    const differentiationContext = _isolatedContext ? '' : getGroupDifferentiationContext();
+    const differentiationContext = getGroupDifferentiationContext();
     const dialectInstruction = effectiveLanguage !== 'English' ? "STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese' vs 'European Portuguese'), explicitly use that region's vocabulary, spelling, and grammar conventions." : "";
     const languageDirective = (effectiveLanguage && effectiveLanguage !== 'English' && effectiveLanguage !== 'All Selected Languages')
         ? `LANGUAGE: Write ALL generated student-facing text in ${effectiveLanguage}. Keep JSON keys, machine-role id values, and code/math notation in English. ${dialectInstruction}`
@@ -2756,6 +2728,8 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             ? configOverride.scoringPolicy
             : {};
         const _scoringPolicy = {
+            accuracy: _requestedScoringPolicy.accuracy !== false,
+            confidence: _requestedScoringPolicy.confidence === true,
             partialCredit: _requestedScoringPolicy.partialCredit !== false,
             writtenResponseMode: _requestedScoringPolicy.writtenResponseMode === 'teacher-review'
                 ? 'teacher-review'

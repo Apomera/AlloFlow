@@ -11,8 +11,8 @@ rules_version = '2';
 //   - Everything requires Firebase (anonymous) auth.
 //   - Session docs: created/deleted/edited freely ONLY by the creating
 //     teacher (hostId == auth.uid). Other participants may write exactly
-//     three surfaces, each restricted to their own uid:
-//       roster.{uid}, quizState.allResponses.{uid}, bridgeReactions.{uid}.
+//     participant surfaces restricted to their own uid. Quiz fallbacks expose
+//     only fixed-shape responseReceipts metadata; raw answers remain host-only.
 //   - LIST on sessions is denied → codes can't be enumerated via queries.
 //   - WebRTC signaling docs: the guest owns their doc; the session host may
 //     merge only answer/iceFromHost and may delete post-connect.
@@ -52,16 +52,57 @@ service cloud.firestore {
                 .diff(request.resource.data.get('quizState', {}).get(field, {}))
                 .affectedKeys().hasOnly([request.auth.uid]);
         }
+        function validQuizResponseReceipt(receipt) {
+          return receipt is map
+            && receipt.keys().hasAll([
+              'activityId', 'questionIndex', 'submittedAt', 'flow'
+            ])
+            && receipt.keys().hasOnly([
+              'activityId', 'questionIndex', 'submittedAt', 'flow'
+            ])
+            && receipt.activityId is string
+            && receipt.activityId.size() >= 1
+            && receipt.activityId.size() <= 120
+            && receipt.questionIndex is int
+            && receipt.questionIndex >= 0
+            && receipt.questionIndex <= 9999
+            && receipt.submittedAt is number
+            && receipt.submittedAt > 0
+            && receipt.flow in ['assessment', 'presentation'];
+        }
+        function quizReceiptOnlySelf() {
+          return !('responseReceipts' in resource.data.get('quizState', {})
+                .diff(request.resource.data.get('quizState', {})).affectedKeys())
+            || (quizNestedOnlySelf('responseReceipts')
+              && validQuizResponseReceipt(
+                request.resource.data.get('quizState', {})
+                  .get('responseReceipts', {})
+                  .get(request.auth.uid, null)
+              ));
+        }
+        function validQuizTeam(team) {
+          return team is string
+            && team in ['Red', 'Blue', 'Green', 'Yellow'];
+        }
+        function quizTeamOnlySelf() {
+          return !('teams' in resource.data.get('quizState', {})
+                .diff(request.resource.data.get('quizState', {})).affectedKeys())
+            || (quizNestedOnlySelf('teams')
+              && validQuizTeam(
+                request.resource.data.get('quizState', {})
+                  .get('teams', {})
+                  .get(request.auth.uid, null)
+              ));
+        }
         function quizOnlySelf() {
-          // Students write three quizState surfaces, each keyed by their own
-          // uid: allResponses (live quiz), responses + teams (class-vs-boss
-          // one-question mode: answer option index + auto-assigned team color).
+          // Answers stay P2P. Students may publish only a bounded receipt that
+          // confirms submission without carrying an answer, plus their own
+          // class-vs-boss team slot. The host bypass above permits resets.
           return resource.data.get('quizState', {})
               .diff(request.resource.data.get('quizState', {}))
-              .affectedKeys().hasOnly(['allResponses', 'responses', 'teams'])
-            && quizNestedOnlySelf('allResponses')
-            && quizNestedOnlySelf('responses')
-            && quizNestedOnlySelf('teams');
+              .affectedKeys().hasOnly(['responseReceipts', 'teams'])
+            && quizReceiptOnlySelf()
+            && quizTeamOnlySelf();
         }
         function reactionsOnlySelf() {
           return resource.data.get('bridgeReactions', {})

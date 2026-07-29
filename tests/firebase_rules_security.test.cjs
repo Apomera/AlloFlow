@@ -14,6 +14,7 @@ const {
   getDoc,
   getDocs,
   setDoc,
+  updateDoc,
 } = require("../desktop/web-app/node_modules/firebase/firestore");
 
 const projectId = "demo-alloflow";
@@ -45,9 +46,69 @@ const assetPath = (id) => "artifacts/" + appId + "/public/data/session_assets/" 
       createdAt: new Date(),
       mode: "sync",
       roster: {},
+      quizState: {
+        responseReceipts: {},
+        allResponses: {},
+        responses: {},
+        teams: {},
+      },
     }));
     await assertSucceeds(getDoc(doc(guestDb, sessionPath("ABCDE"))));
     await assertFails(getDocs(collection(guestDb, "artifacts/" + appId + "/public/data/sessions")));
+
+    const sessionRef = doc(guestDb, sessionPath("ABCDE"));
+    await assertSucceeds(updateDoc(sessionRef, {
+      "quizState.teams.guest-user": "Red",
+    }));
+    await assertFails(updateDoc(sessionRef, {
+      "quizState.teams.stranger-user": "Blue",
+    }));
+    await assertFails(updateDoc(sessionRef, {
+      "quizState.teams.guest-user": "red",
+    }));
+    await assertFails(updateDoc(sessionRef, {
+      "quizState.teams.guest-user": { color: "Red" },
+    }));
+    await assertFails(updateDoc(sessionRef, {
+      "quizState.teams.guest-user.color": "Red",
+    }));
+
+    const validReceipt = {
+      activityId: "visual-quiz-1",
+      questionIndex: 0,
+      submittedAt: Date.now(),
+      flow: "assessment",
+    };
+    await assertSucceeds(updateDoc(sessionRef, {
+      "quizState.responseReceipts.guest-user": validReceipt,
+    }));
+    await assertFails(updateDoc(sessionRef, {
+      "quizState.responseReceipts.stranger-user": validReceipt,
+    }));
+    await assertFails(updateDoc(sessionRef, {
+      "quizState.responseReceipts.guest-user": { ...validReceipt, answer: "A" },
+    }));
+    await assertFails(updateDoc(sessionRef, {
+      "quizState.responseReceipts.guest-user": { ...validReceipt, questionIndex: 10000 },
+    }));
+    await assertFails(updateDoc(sessionRef, {
+      "quizState.responseReceipts.guest-user": { ...validReceipt, submittedAt: 0 },
+    }));
+    await assertFails(updateDoc(sessionRef, {
+      "quizState.responseReceipts.guest-user": { ...validReceipt, flow: "boss" },
+    }));
+    await assertFails(updateDoc(sessionRef, {
+      "quizState.allResponses.guest-user.0": "A",
+    }));
+    await assertFails(updateDoc(sessionRef, {
+      "quizState.responses.guest-user": 1,
+    }));
+    await assertSucceeds(updateDoc(doc(hostDb, sessionPath("ABCDE")), {
+      "quizState.responseReceipts": {},
+      "quizState.allResponses": {},
+      "quizState.responses": {},
+      "quizState.teams": {},
+    }));
 
     const now = Date.now();
     const orphan = {
@@ -82,7 +143,7 @@ const assetPath = (id) => "artifacts/" + appId + "/public/data/session_assets/" 
       { offer: "test-offer", codename: "Calm Otter", createdAt: new Date(), expiresAt: new Date(now + 60000) }
     ));
 
-    console.log("Firestore security behavior passed (owner, orphan, list, mastery, and quiz-signaling cases).");
+    console.log("Firestore security behavior passed (owner, receipts, team enums, orphan, list, mastery, and quiz-signaling cases).");
   } finally {
     await env.cleanup();
   }
