@@ -90,7 +90,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       '.anatomy-system-button{position:relative;overflow:hidden;text-align:left;padding-bottom:9px!important;}',
       '.anatomy-system-label{display:flex;align-items:center;justify-content:space-between;gap:6px;width:100%;}',
       '.anatomy-system-label>span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}',
-      '.anatomy-system-count{font-size:9px;font-weight:900;opacity:.78;white-space:nowrap;}',
+      // No opacity here. Fading text composites it against whatever happens to
+      // be behind it, so the same count read 4.35:1 on the white content card
+      // the dark theme puts tools on while passing elsewhere — a contrast bug
+      // that appears and disappears with the theme. An explicit muted colour
+      // gives the same visual hierarchy and the same ratio everywhere.
+      '.anatomy-system-count{font-size:9px;font-weight:900;color:#475569;white-space:nowrap;}',
       '.anatomy-system-meter{position:absolute;left:7px;right:7px;bottom:4px;height:2px;border-radius:999px;background:rgba(100,116,139,.18);overflow:hidden;}',
       '.anatomy-system-meter>span{display:block;height:100%;border-radius:inherit;background:var(--system-accent);transition:width .25s ease;}',
       '.anatomy-system-button[aria-pressed="true"] .anatomy-system-meter{background:rgba(255,255,255,.28);}',
@@ -2041,6 +2046,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         var complexity = [1, 2, 3].indexOf(rawComplexity) !== -1 ? rawComplexity : 3;
 
         // ── Layer Transparency System ──
+        // `accent` is a paint colour — it fills the layer chip and tints the
+        // figure. It was ALSO used as the background behind hard-coded white
+        // button text, which is the same field-doing-two-jobs bug that has
+        // turned up repeatedly in this codebase. The pale accents lost badly:
+        // skin #c4aa94 gave 2.2:1 and skeletal #94a3b8 gave 2.56:1, and nervous
+        // and lymphatic would have too whenever those layers were switched on.
+        // Pick the label colour from the accent instead of assuming white.
+        var anaReadableOn = function (bg) {
+          if (!/^#[0-9a-fA-F]{6}$/.test(bg)) return '#ffffff';
+          var lum = function (hex) {
+            var c = [1, 3, 5].map(function (i) {
+              var v = parseInt(hex.slice(i, i + 2), 16) / 255;
+              return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+            });
+            return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+          };
+          var ratio = function (a, b) {
+            var x = lum(a), y = lum(b);
+            return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+          };
+          return ratio('#ffffff', bg) >= ratio('#0f172a', bg) ? '#ffffff' : '#0f172a';
+        };
+
         var LAYER_DEFS = [
           { id: 'skin', icon: '\uD83E\uDDB4', name: t('stem.anatomy.skin', 'Skin'), color: '#f5e6d3', accent: '#c4aa94' },
           { id: 'skeletal', icon: '\uD83E\uDDB4', name: t('stem.anatomy.skeletal_2', 'Skeletal'), color: 'var(--allo-stem-text, #e2e8f0)', accent: '#94a3b8', systems: ['skeletal'] },
@@ -8021,8 +8049,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 onClick: function() { toggleLayer(ld.id); },
                 title: (isOn ? 'Hide ' : 'Show ') + ld.name + ' layer',
                 className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all border ' +
-                  (isOn ? 'text-white shadow-sm border-transparent' : 'transition-colors bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-100 active:scale-[0.97]'),
-                style: isOn ? { background: ld.accent, borderColor: ld.accent } : {}
+                  (isOn ? 'shadow-sm border-transparent' : 'transition-colors bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-100 active:scale-[0.97]'),
+                style: isOn ? { background: ld.accent, borderColor: ld.accent, color: anaReadableOn(ld.accent) } : {}
               }, ld.icon + ' ' + ld.name);
             }),
             h('button', { 'aria-label': t('stem.anatomy.reset', 'Reset'),
