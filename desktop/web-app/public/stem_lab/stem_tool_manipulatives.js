@@ -5013,7 +5013,11 @@ window.StemLab = window.StemLab || {
           if (state === 'intro') return 'bg-emerald-200 text-emerald-900';
           if (state === 'review') return 'bg-amber-200 text-amber-900';
           if (state === 'enrichment') return 'bg-purple-200 text-purple-900';
-          return 'bg-slate-100 text-slate-300';
+          // slate-300 on slate-100 is about 1.4:1. This branch renders the
+          // placeholder for a cell with no coverage, so the mark was invisible
+          // rather than merely muted; slate-600 keeps it clearly secondary to
+          // the coloured states while staying readable.
+          return 'bg-slate-100 text-slate-600';
         };
         var labelOf = {
           tenFrame: '🔟 Ten Frames', numberBonds: '🔗 Number Bonds',
