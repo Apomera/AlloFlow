@@ -6200,7 +6200,7 @@ const d = labToolData.rockCycle || {};
             },
             marble: {
               melting_cooling:    { product: 'Igneous rock (model outcome)', family: 'igneous', texture: 'crystalline', process: 'Melting, then crystallization', conditions: 'Above ~900 °C', time: 'Millions of years', change: 'In the standard rock cycle any rock can melt and re-crystallize as igneous rock, and that is the pathway shown here.', evidence: 'Granite, basalt or shale give cleaner examples of the melting pathway.', caveat: 'Marble is calcite, so like limestone it tends to release CO₂ (decarbonation) rather than melt cleanly at crustal depths. Carbonate magmas are real but rare and mantle-derived.', stages: ['Strong heating', 'Calcite becomes unstable', 'Melt or CO₂ release', 'Crystallization'] },
-              heat_pressure:      { product: 'Coarse Marble', family: 'metamorphic', texture: 'nonfoliated', process: 'Continued recrystallization', conditions: '500–700 °C', time: 'Millions of years', change: 'Marble is already calcite, so more heat does not create new minerals — it just lets existing crystals grow larger by consuming their neighbours. Calcite grains are blocky, so even under great pressure they cannot align into foliation.', evidence: 'Marble never develops banding no matter how high the grade — blocky minerals cannot line up.', stages: ['Reheating', 'Grain boundaries migrate', 'Small crystals absorbed', 'Coarse sugary texture'] },
+              heat_pressure:      { product: 'Coarse Marble', family: 'metamorphic', texture: 'coarsemosaic', process: 'Continued recrystallization', conditions: '500–700 °C', time: 'Millions of years', change: 'Marble is already calcite, so more heat does not create new minerals — it just lets existing crystals grow larger by consuming their neighbours. Calcite grains are blocky, so even under great pressure they cannot align into foliation.', evidence: 'Marble never develops banding no matter how high the grade — blocky minerals cannot line up.', stages: ['Reheating', 'Grain boundaries migrate', 'Small crystals absorbed', 'Coarse sugary texture'] },
               weathering_erosion: { product: 'Limestone (re-precipitated)', family: 'sedimentary', texture: 'bioclastic', process: 'Carbonate dissolution and re-precipitation', conditions: 'Rainwater with dissolved CO₂', time: '1,000s–millions of years', change: 'Like limestone, marble dissolves in weak carbonic acid rather than crumbling into grains. The dissolved calcium is carried off and re-precipitated as new carbonate rock.', evidence: 'This is why marble statues and headstones lose their detail in acidic rain.', stages: ['Acid rain contact', 'Calcite dissolves', 'Carried in solution', 'Re-precipitated as carbonate'] }
             },
             gneiss: {
@@ -6234,6 +6234,83 @@ const d = labToolData.rockCycle || {};
             metamorphic: { base: '#4c1d95', mid: '#6d28d9', detail: '#c4b5fd' }
           };
 
+          // Mix two hex colours. Literal hex in, literal hex out — for the same
+          // reason the palette above is literal: an SVG presentation attribute
+          // takes neither var() nor color-mix(), and would render black.
+          const rcBlend = function (a, b, t) {
+            var pa = parseInt(a.slice(1), 16), pb = parseInt(b.slice(1), 16);
+            var part = function (sh) {
+              var va = (pa >> sh) & 255, vb = (pb >> sh) & 255;
+              var v = Math.round(va + (vb - va) * t);
+              if (v < 0) v = 0; if (v > 255) v = 255;
+              return (v < 16 ? '0' : '') + v.toString(16);
+            };
+            return '#' + part(16) + part(8) + part(0);
+          };
+
+          // A TILING grain mosaic: cols × rows of jittered polygons whose radius
+          // comes from the cell half-diagonal, so neighbouring grains always
+          // overlap and every boundary is a shared edge rather than a gap. That
+          // is what "interlocking" means, and drawing separated grains instead
+          // was contradicting the captions that rest on it.
+          //
+          // Tones must stay inside the family hue: tiling in the pale `detail`
+          // colour would repaint the whole swatch and break the colour coding
+          // the three families depend on.
+          //
+          // Deterministic — index-driven, never Math.random — so a re-render at
+          // the same progress redraws exactly the same frame.
+          // Grains are quads over a JITTERED LATTICE, sharing their corners with
+          // their neighbours. That tiles exactly: every edge is a boundary
+          // between two grains and there is no space left between them, which is
+          // the claim these captions make.
+          //
+          // The first attempt scattered overlapping hexagons on a square grid
+          // instead. It looked interlocking, because the gaps showed the body
+          // colour and read as dark boundaries — but sampling the area found
+          // only 72-79% of the rock covered by a grain. Hexagons cannot tile a
+          // square lattice without overlap so heavy that late grains bury early
+          // ones. Sharing corners removes the problem rather than compensating
+          // for it, and needs no clipping to hide the shortfall.
+          //
+          // Lattice points on the outer border move only ALONG that border, so
+          // the rock's own outline stays exactly the rect its caller asked for.
+          const rcMosaic = function (cols, rows, tones, c, x, y, w, hgt) {
+            // A 22px family chip cannot show twelve grains; it just goes muddy.
+            if (Math.min(w, hgt) < 34) { cols = Math.max(2, Math.round(cols / 2)); rows = Math.max(2, Math.round(rows / 2)); }
+            var cw = w / cols, ch = hgt / rows;
+            // Deterministic jitter — index-driven, never Math.random — so a
+            // re-render at the same progress redraws exactly the same frame.
+            var wob = function (seed, span) { return (((seed * 2654435761) % 1000) / 1000 - 0.5) * span; };
+            var pt = [];
+            var row, col;
+            for (row = 0; row <= rows; row++) {
+              pt.push([]);
+              for (col = 0; col <= cols; col++) {
+                var seed = row * 73 + col * 149 + 7;
+                var edgeH = (row === 0 || row === rows);
+                var edgeV = (col === 0 || col === cols);
+                pt[row].push([
+                  x + col * cw + (edgeV ? 0 : wob(seed, cw * 0.5)),
+                  y + row * ch + (edgeH ? 0 : wob(seed + 31, ch * 0.5))
+                ]);
+              }
+            }
+            var out = [];
+            var n = 0;
+            for (row = 0; row < rows; row++) {
+              for (col = 0; col < cols; col++, n++) {
+                var q = [pt[row][col], pt[row][col + 1], pt[row + 1][col + 1], pt[row + 1][col]];
+                out.push(h('polygon', {
+                  key: 'mo' + n,
+                  points: q.map(function (p) { return p[0].toFixed(2) + ',' + p[1].toFixed(2); }).join(' '),
+                  fill: tones[(n + row) % tones.length], stroke: c.base, strokeWidth: 0.7, strokeLinejoin: 'round'
+                }));
+              }
+            }
+            return out;
+          };
+
           // Draws one rock specimen as a textured SVG swatch. Texture is the whole
           // point: a student should be able to SEE that quartzite is interlocking
           // and shale is layered, not just read the words.
@@ -6247,12 +6324,24 @@ const d = labToolData.rockCycle || {};
             var g = [];
             var i;
             if (texture === 'crystalline') {
-              // Interlocking coarse crystals.
-              var cry = [[0.12, 0.18, 0.26], [0.46, 0.12, 0.3], [0.75, 0.22, 0.22], [0.2, 0.6, 0.3], [0.55, 0.58, 0.26], [0.82, 0.66, 0.2]];
-              for (i = 0; i < cry.length; i++) {
-                var cx = x + cry[i][0] * w, cy = y + cry[i][1] * hgt, cs = cry[i][2] * Math.min(w, hgt);
-                g.push(h('polygon', { key: 'c' + i, points: [cx + ',' + (cy - cs / 2), (cx + cs / 2) + ',' + cy, cx + ',' + (cy + cs / 2), (cx - cs / 2) + ',' + cy].join(' '), fill: c.detail, opacity: 0.85, stroke: c.base, strokeWidth: 0.6 }));
-              }
+              // INTERLOCKING coarse crystals — grains that meet, with no matrix
+              // between them. That is the whole distinction the captions rest on
+              // ("coarse interlocking quartz, feldspar and mica crystals"), and
+              // the old drawing showed six identical diamonds floating in a flat
+              // field with wide gaps: not interlocking, and one mineral, not
+              // three. A student reading "interlocking" and seeing "floating"
+              // learns the opposite of the point.
+              //
+              // Grains are laid on a jittered grid at a radius large enough to
+              // guarantee overlap with their neighbours, so every boundary is a
+              // shared edge. Painted in order, later grains clip earlier ones —
+              // which is exactly how an interlocking mosaic reads. Three tones
+              // stand in for the three named minerals.
+              g.push.apply(g, rcMosaic(4, 3, [
+                rcBlend(c.mid, '#ffffff', 0.52),   // pale quartz
+                rcBlend(c.mid, '#ffffff', 0.22),   // feldspar
+                rcBlend(c.base, c.mid, 0.30)       // dark mica
+              ], c, x, y, w, hgt));
             } else if (texture === 'finegrained') {
               // Fine matrix plus gas vesicles.
               for (i = 0; i < 34; i++) {
@@ -6305,6 +6394,18 @@ const d = labToolData.rockCycle || {};
                 var fy = y + (i / 11) * hgt;
                 g.push(h('path', { key: 'p' + i, d: 'M' + x + ',' + fy + ' Q' + (x + w / 2) + ',' + (fy - 1.6) + ' ' + (x + w) + ',' + fy, fill: 'none', stroke: c.detail, strokeWidth: 1.1, opacity: 0.8 }));
               }
+            } else if (texture === 'coarsemosaic') {
+              // The same interlocking mosaic with fewer, larger grains.
+              // Marble + more heat produces "Coarse Marble" — the panel says
+              // "existing crystals grow larger by consuming their neighbours",
+              // and the product used to be drawn with grains exactly the size
+              // of the marble that went in. The one change described was the
+              // one thing the picture did not show.
+              g.push.apply(g, rcMosaic(3, 2, [
+                rcBlend(c.mid, '#ffffff', 0.48),
+                rcBlend(c.mid, '#ffffff', 0.24),
+                rcBlend(c.mid, '#ffffff', 0.36)
+              ], c, x, y, w, hgt));
             } else if (texture === 'banded') {
               // Segregated light/dark gneissic banding.
               for (i = 0; i < 5; i++) {
@@ -6316,10 +6417,18 @@ const d = labToolData.rockCycle || {};
               // handled above lands here and draws a marble-like mosaic with no
               // error, so a typo would look like a deliberate rock. A test
               // pins that every texture the data asks for is handled by name.
-              var mo = [[0.2, 0.25], [0.5, 0.2], [0.78, 0.3], [0.3, 0.58], [0.62, 0.62], [0.85, 0.7], [0.14, 0.78]];
-              for (i = 0; i < mo.length; i++) {
-                g.push(h('polygon', { key: 'm' + i, points: (function (px, py, r) { var pts = []; for (var k = 0; k < 6; k++) { var a = k * Math.PI / 3 + (i * 0.4); pts.push((px + Math.cos(a) * r) + ',' + (py + Math.sin(a) * r)); } return pts.join(' '); })(x + mo[i][0] * w, y + mo[i][1] * hgt, Math.min(w, hgt) * 0.13), fill: c.detail, opacity: 0.7, stroke: c.base, strokeWidth: 0.5 }));
-              }
+              //
+              // Quartzite is the clearest case of the drawing contradicting its
+              // own caption: the panel says grains "recrystallize and FUSE
+              // together, SEALING the pore space", and the tool then drew seven
+              // separated hexagons with the pore space making up most of the
+              // picture. Marble's "interlocking calcite mosaic" had the same
+              // problem. Both are equant mosaics, so both now tile.
+              g.push.apply(g, rcMosaic(5, 4, [
+                rcBlend(c.mid, '#ffffff', 0.44),
+                rcBlend(c.mid, '#ffffff', 0.20),
+                rcBlend(c.mid, '#ffffff', 0.32)
+              ], c, x, y, w, hgt));
             }
             kids.push(h('g', { key: 'tex', clipPath: 'url(#' + clipId + ')' }, g));
             return h('g', { key: key, opacity: opacity == null ? 1 : opacity }, kids);
@@ -7512,9 +7621,25 @@ const d = labToolData.rockCycle || {};
                   fx.push(h('rect', { key: 'pool', x: midX + 6, y: swY + swH - 12, width: midW - 12, height: 10, rx: 5, fill: '#dc2626', opacity: 0.15 + 0.5 * (prog / 100) }));
                 } else if (agentId === 'heat_pressure') {
                   // Opposing squeeze: arrows converge as progress rises.
+                  //
+                  // The two arrowheads used to point AWAY from each other —
+                  // outward, at the top and bottom edges. That is tension, the
+                  // opposite of what "Heat & Press" means, on the tool's central
+                  // animation for metamorphism. Their POSITIONS converged, which
+                  // is what the comment described and what made it look right at
+                  // a glance; only the heads were reversed.
+                  //
+                  // The raw path has its tip at the anchor and its shaft ABOVE,
+                  // so un-rotated it points down. Anchoring the top arrow at the
+                  // low end of its footprint and rotating the bottom one about
+                  // its own tip keeps both footprints exactly where they were and
+                  // turns both heads inward.
                   var sq = (prog / 100) * 14;
-                  fx.push(h('path', { key: 'arrTop', d: 'M' + (midX + midW / 2) + ',' + (swY - 4 + sq) + ' l-9,-9 h5 v-7 h8 v7 h5 z', fill: '#b45309', opacity: 0.85, transform: 'rotate(180 ' + (midX + midW / 2) + ' ' + (swY - 4 + sq) + ')' }));
-                  fx.push(h('path', { key: 'arrBot', d: 'M' + (midX + midW / 2) + ',' + (swY + swH + 4 - sq) + ' l-9,-9 h5 v-7 h8 v7 h5 z', fill: '#b45309', opacity: 0.85 }));
+                  var arrX = midX + midW / 2;
+                  var topTip = swY + 12 + sq;
+                  var botTip = swY + swH - 12 - sq;
+                  fx.push(h('path', { key: 'arrTop', d: 'M' + arrX + ',' + topTip + ' l-9,-9 h5 v-7 h8 v7 h5 z', fill: '#b45309', opacity: 0.85 }));
+                  fx.push(h('path', { key: 'arrBot', d: 'M' + arrX + ',' + botTip + ' l-9,-9 h5 v-7 h8 v7 h5 z', fill: '#b45309', opacity: 0.85, transform: 'rotate(180 ' + arrX + ' ' + botTip + ')' }));
                   for (i = 0; i < 5; i++) {
                     var wy = swY + 12 + i * ((swH - 24) / 4);
                     fx.push(h('path', { key: 'sq' + i, d: 'M' + (midX + 14) + ',' + wy + ' Q' + (midX + midW / 2) + ',' + (wy - 4 - (prog / 100) * 5) + ' ' + (midX + midW - 14) + ',' + wy, fill: 'none', stroke: '#f97316', strokeWidth: 1.6, opacity: 0.3 + 0.5 * (prog / 100) }));
@@ -7532,7 +7657,12 @@ const d = labToolData.rockCycle || {};
                   }
                   fx.push(h('rect', { key: 'bed', x: midX + 8, y: swY + swH - 4 - (prog / 100) * 9, width: midW - 16, height: 4 + (prog / 100) * 9, rx: 2, fill: '#b45309', opacity: 0.5 }));
                 } else {
-                  fx.push(h('text', { key: 'hint', x: midX + midW / 2, y: swY + swH / 2 + 4, textAnchor: 'middle', fontSize: '10', fill: '#cbd5e1' }, __alloT('stem.rocks.machine_pick_agent', 'Pick an agent of change')));
+                  // #cbd5e1 on the slate-50 panel is 1.42:1 — the machine's own
+                  // call to action was the palest thing on the screen, and it is
+                  // the one instruction a student needs before anything happens.
+                  // #475569 is 6.4:1 on the same panel and matches the family
+                  // captions above and below it.
+                  fx.push(h('text', { key: 'hint', x: midX + midW / 2, y: swY + swH / 2 + 4, textAnchor: 'middle', fontSize: '10', fontWeight: '600', fill: '#475569' }, __alloT('stem.rocks.machine_pick_agent', 'Pick an agent of change')));
                 }
 
                 return h('svg', {
@@ -7676,7 +7806,7 @@ const d = labToolData.rockCycle || {};
                 );
               };
 
-              return React.createElement("div", { className: "mt-4 border-t border-slate-200 pt-3" },
+              return React.createElement("div", { "data-rc-machine": true, className: "mt-4 border-t border-slate-200 pt-3" },
                 React.createElement("p", { className: "text-xs font-black text-orange-800 mb-1 flex items-center gap-1.5" },
                   React.createElement("span", { "aria-hidden": true }, "🔄"),
                   React.createElement("span", null, __alloT('stem.rocks.transformation_machine_title', "Rock Transformation Machine"))
