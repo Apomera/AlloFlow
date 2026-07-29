@@ -6405,6 +6405,7 @@ const d = labToolData.rockCycle || {};
               // one reliable place to stop an in-flight transformation run.
               rcStopTransformTimer();
               canvasEl.removeEventListener('click', onRockCycleClick);
+              canvasEl.removeEventListener('keydown', onRockCycleKey);
               if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onRockCycleVisibilityChange);
               canvasEl._rcCleanup = null;
               canvasEl._rcInit = false;
@@ -7147,6 +7148,35 @@ const d = labToolData.rockCycle || {};
 
 
 
+            // Selecting a family. Shared by pointer and keyboard so the two can
+            // never drift apart — the keyboard path was added later, and the only
+            // safe way to add it was to make the existing click path call this.
+            function rcSelectFamily(rock) {
+              if (!rock) return;
+              canvasEl.dataset.selectedRock = rock.id;
+
+              upd('selectedRock', rock.id);
+
+              // Track families explored (functional update — this listener's
+              // closure is bound once at canvas init, so `d` here is stale)
+              setLabToolData(function (prev) {
+                var rc = prev.rockCycle || {};
+                var v = Object.assign({}, rc.rcViewed);
+                v[rock.id] = true;
+                return Object.assign({}, prev, { rockCycle: Object.assign({}, rc, { rcViewed: v }) });
+              });
+              if (rcMotionReduced) draw();
+              // The canvas is role=application, so nothing about a selection is
+              // announced by the platform — a screen-reader user pressing 2 got
+              // silence. The detail panel that appears below is out of the
+              // reading position, so say what was selected here.
+              try {
+                if (typeof announceToSR === 'function') {
+                  announceToSR(rock.label + ' ' + __alloT('stem.rocks.selected_word', 'selected') + '. ' + rock.desc);
+                }
+              } catch (e) {}
+            }
+
             function onRockCycleClick(e) {
 
               var rect = canvasEl.getBoundingClientRect();
@@ -7161,28 +7191,35 @@ const d = labToolData.rockCycle || {};
 
                 var dist = Math.sqrt((mx - n.x) * (mx - n.x) + (my - n.y) * (my - n.y));
 
-                if (dist < 40) {
-
-                  canvasEl.dataset.selectedRock = rock.id;
-
-                  upd('selectedRock', rock.id);
-
-                  // Track families explored (functional update — this listener's
-                  // closure is bound once at canvas init, so `d` here is stale)
-                  setLabToolData(function (prev) {
-                    var rc = prev.rockCycle || {};
-                    var v = Object.assign({}, rc.rcViewed);
-                    v[rock.id] = true;
-                    return Object.assign({}, prev, { rockCycle: Object.assign({}, rc, { rcViewed: v }) });
-                  });
-                  if (rcMotionReduced) draw();
-
-                }
+                if (dist < 40) rcSelectFamily(rock);
 
               });
 
             }
             canvasEl.addEventListener('click', onRockCycleClick);
+
+            // ── Keyboard family selector (WCAG 2.1.1) ──
+            // The canvas was tabIndex=0 with a click listener and NO key handler:
+            // a keyboard user landed on a focus stop whose own label said "click
+            // to inspect" and then had nothing to press. Same keys as the sibling
+            // rocks landscape canvas, which has had this since its own audit.
+            function onRockCycleKey(e) {
+              if (e.altKey || e.ctrlKey || e.metaKey) return;
+              var id = null;
+              if (e.key === '1' || e.key === 'i' || e.key === 'I') id = 'igneous';
+              else if (e.key === '2' || e.key === 's' || e.key === 'S') id = 'sedimentary';
+              else if (e.key === '3' || e.key === 'm' || e.key === 'M') id = 'metamorphic';
+              if (!id) return;
+              e.preventDefault();
+              // Deliberately NOT StemLab.findById: ROCKS is right here in scope
+              // with three known ids, and reaching into the host for that would
+              // make the keyboard path go dead wherever findById is absent —
+              // silently, because the null result is swallowed by the guard.
+              for (var ri = 0; ri < ROCKS.length; ri++) {
+                if (ROCKS[ri].id === id) { rcSelectFamily(ROCKS[ri]); return; }
+              }
+            }
+            canvasEl.addEventListener('keydown', onRockCycleKey);
 
           };
 
@@ -7231,7 +7268,19 @@ const d = labToolData.rockCycle || {};
 
             React.createElement("div", { className: "relative rounded-xl overflow-hidden border-2 border-amber-400 shadow-lg mb-3", style: { height: "420px" } },
 
-              React.createElement("canvas", { ref: rockCycleCanvasRef, role: "img", tabIndex: 0, "aria-label": __alloT('stem.rocks.rock_sample_closeup_a', "Rock sample close-up") + (d.selectedRock ? " of " + d.selectedRock : "") + __alloT('stem.rocks.rock_sample_closeup_b', " — click to inspect."), "data-selected-rock": d.selectedRock || '', style: { width: "100%", height: "100%", display: "block", cursor: "pointer" } })
+              // The label here used to read "Rock sample close-up of igneous —
+              // click to inspect", copied from the sibling rocks tool's specimen
+              // canvas. This canvas draws nothing of the kind: it is an Earth
+              // cross-section with three family nodes and six pathway arrows over
+              // a magma chamber. A screen-reader user was told about a picture
+              // that is not on the screen, and told to click it. role=img also
+              // contradicted tabIndex=0 — an image is not a focus stop.
+              React.createElement("canvas", { ref: rockCycleCanvasRef, role: "application", tabIndex: 0,
+                "aria-label": __alloT('stem.rocks.rc_canvas_aria',
+                  "Rock cycle diagram: an Earth cross-section with a magma chamber below. Three rock family nodes — igneous at the top, metamorphic at lower left, sedimentary at lower right — are joined by six curved arrows, one per transformation pathway.")
+                  + " " + __alloT('stem.rocks.rc_canvas_keys', "Press 1 for igneous, 2 for sedimentary, 3 for metamorphic.")
+                  + (sel ? " " + __alloT('stem.rocks.rc_canvas_selected', "Currently selected:") + " " + sel.label + "." : ""),
+                "data-selected-rock": d.selectedRock || '', style: { width: "100%", height: "100%", display: "block", cursor: "pointer" } })
 
             ),
 
