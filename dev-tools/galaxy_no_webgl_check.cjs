@@ -139,16 +139,19 @@ ${REAL_MODE ? '<script>' + read('vendor/three-r128/three.min.js') + '<\/script>'
       };
     });
 
-    // Non-fatal: with real WebGL the scene animates, so Playwright can wait
-    // forever for the element to be "stable". A timeout here is itself a
-    // signal that the 3-D loop is running.
+    // With real WebGL the scene animates forever, and elementHandle.screenshot
+    // waits for the element to be "stable" — so it times out on a working
+    // galaxy and succeeds on a broken one. Clip a PAGE screenshot to the
+    // element's box instead; that has no stability wait.
+    const shotPath = path.join(OUT, (REAL_MODE ? 'galaxy-real-' : 'galaxy-nowebgl-') + shape + '.png');
     try {
-      await (await pg.$('#slot')).screenshot({
-        path: path.join(OUT, (REAL_MODE ? 'galaxy-real-' : 'galaxy-nowebgl-') + shape + '.png'),
-        animations: 'disabled', timeout: 8000,
+      const box = await (await pg.$('#slot')).boundingBox();
+      await pg.screenshot({
+        path: shotPath,
+        clip: { x: box.x, y: box.y, width: box.width, height: Math.min(box.height, 1800) },
       });
     } catch (shotError) {
-      console.log('   (screenshot skipped: ' + String(shotError.message).split('\n')[0] + ')');
+      console.log('   (screenshot failed: ' + String(shotError.message).split('\n')[0] + ')');
     }
     console.log(shape.padEnd(14) + (probe.fallback
       ? ('fallback=true  reason=' + probe.reason

@@ -541,7 +541,7 @@ if (!window._galaxyHasLoadedOnce) {
               change: __alloT('stem.galaxy.guide_visible_change', 'Starlight and sharp dust shadows return, making morphology easiest to classify.'),
               marks: [
                 { label: __alloT('stem.galaxy.mark_dust_lane', 'Dust lane'), detail: __alloT('stem.galaxy.mark_dust_lane_detail', 'absorbs visible starlight'), lx: 4, ly: 34, tx: 37, ty: 49, anchor: 'left' },
-                { label: __alloT('stem.galaxy.mark_blue_association', 'Young blue stars'), detail: __alloT('stem.galaxy.mark_blue_association_detail', 'trace recent star formation'), lx: 96, ly: 68, tx: 64, ty: 56, anchor: 'right' }
+                { label: __alloT('stem.galaxy.mark_blue_association', 'Young blue stars'), detail: __alloT('stem.galaxy.mark_blue_association_detail', 'trace recent star formation'), lx: 88, ly: 68, tx: 64, ty: 56, anchor: 'right' }
               ]
             },
             infrared: {
@@ -552,8 +552,8 @@ if (!window._galaxyHasLoadedOnce) {
               change: __alloT('stem.galaxy.guide_infrared_change', 'Dark lanes become translucent while warm nurseries and embedded stars brighten.'),
               marks: [
                 { label: __alloT('stem.galaxy.mark_embedded_protostars', 'Embedded protostars'), detail: __alloT('stem.galaxy.mark_embedded_protostars_detail', 'warm knots inside clouds'), lx: 4, ly: 34, tx: 39, ty: 49, anchor: 'left' },
-                { label: __alloT('stem.galaxy.mark_old_stellar_disk', 'Older stellar disk'), detail: __alloT('stem.galaxy.mark_old_stellar_disk_detail', 'warm stars fill the disk'), lx: 96, ly: 68, tx: 63, ty: 57, anchor: 'right' },
-                { label: __alloT('stem.galaxy.mark_thermal_dust', 'Thermal dust emission'), detail: __alloT('stem.galaxy.mark_thermal_dust_detail', 'absorbed starlight re-radiated as heat'), lx: 96, ly: 27, tx: 71, ty: 42, anchor: 'right' }
+                { label: __alloT('stem.galaxy.mark_old_stellar_disk', 'Older stellar disk'), detail: __alloT('stem.galaxy.mark_old_stellar_disk_detail', 'warm stars fill the disk'), lx: 88, ly: 68, tx: 63, ty: 57, anchor: 'right' },
+                { label: __alloT('stem.galaxy.mark_thermal_dust', 'Thermal dust emission'), detail: __alloT('stem.galaxy.mark_thermal_dust_detail', 'absorbed starlight re-radiated as heat'), lx: 88, ly: 27, tx: 71, ty: 42, anchor: 'right' }
               ]
             },
             radio: {
@@ -564,8 +564,8 @@ if (!window._galaxyHasLoadedOnce) {
               change: __alloT('stem.galaxy.guide_radio_change', 'Most starlight fades while extended gas lanes and remnant filaments strengthen.'),
               marks: [
                 { label: __alloT('stem.galaxy.mark_cold_hydrogen', 'Cold hydrogen'), detail: __alloT('stem.galaxy.mark_cold_hydrogen_detail', 'fuel for future stars'), lx: 4, ly: 34, tx: 39, ty: 50, anchor: 'left' },
-                { label: __alloT('stem.galaxy.mark_radio_remnants', 'Remnant shells'), detail: __alloT('stem.galaxy.mark_radio_remnants_detail', 'expanding magnetized debris'), lx: 96, ly: 68, tx: 65, ty: 55, anchor: 'right' },
-                { label: __alloT('stem.galaxy.mark_doppler_field', 'Doppler velocity field'), detail: __alloT('stem.galaxy.mark_doppler_field_detail', 'blue approaches; red recedes'), lx: 96, ly: 28, tx: 70, ty: 41, anchor: 'right' }
+                { label: __alloT('stem.galaxy.mark_radio_remnants', 'Remnant shells'), detail: __alloT('stem.galaxy.mark_radio_remnants_detail', 'expanding magnetized debris'), lx: 88, ly: 68, tx: 65, ty: 55, anchor: 'right' },
+                { label: __alloT('stem.galaxy.mark_doppler_field', 'Doppler velocity field'), detail: __alloT('stem.galaxy.mark_doppler_field_detail', 'blue approaches; red recedes'), lx: 88, ly: 28, tx: 70, ty: 41, anchor: 'right' }
               ]
             },
             xray: {
@@ -576,8 +576,8 @@ if (!window._galaxyHasLoadedOnce) {
               change: __alloT('stem.galaxy.guide_xray_change', 'The cool disk recedes while the energetic core and shocked remnant shells dominate.'),
               marks: [
                 { label: __alloT('stem.galaxy.mark_accreting_core', 'Energetic core'), detail: __alloT('stem.galaxy.mark_accreting_core_detail', 'hot infalling matter'), lx: 4, ly: 34, tx: 50, ty: 50, anchor: 'left' },
-                { label: __alloT('stem.galaxy.mark_xray_remnants', 'Hot remnants'), detail: __alloT('stem.galaxy.mark_xray_remnants_detail', 'shock-heated plasma'), lx: 96, ly: 68, tx: 66, ty: 56, anchor: 'right' },
-                { label: __alloT('stem.galaxy.mark_xray_binaries', 'Compact-object beacons'), detail: __alloT('stem.galaxy.mark_xray_binaries_detail', 'flickering accretion and pulsars'), lx: 96, ly: 27, tx: 70, ty: 42, anchor: 'right' }
+                { label: __alloT('stem.galaxy.mark_xray_remnants', 'Hot remnants'), detail: __alloT('stem.galaxy.mark_xray_remnants_detail', 'shock-heated plasma'), lx: 88, ly: 68, tx: 66, ty: 56, anchor: 'right' },
+                { label: __alloT('stem.galaxy.mark_xray_binaries', 'Compact-object beacons'), detail: __alloT('stem.galaxy.mark_xray_binaries_detail', 'flickering accretion and pulsars'), lx: 88, ly: 27, tx: 70, ty: 42, anchor: 'right' }
               ]
             },
             gravity: {
@@ -588,8 +588,8 @@ if (!window._galaxyHasLoadedOnce) {
               change: __alloT('stem.galaxy.guide_gravity_change', 'Luminous detail is suppressed and the much larger inferred mass halo becomes the central evidence.'),
               marks: [
                 { label: __alloT('stem.galaxy.mark_dark_halo', 'Dark-matter halo'), detail: __alloT('stem.galaxy.mark_dark_halo_detail', 'inferred from orbital speeds'), lx: 4, ly: 34, tx: 31, ty: 39, anchor: 'left' },
-                { label: __alloT('stem.galaxy.mark_fast_outer_stars', 'Fast outer stars'), detail: __alloT('stem.galaxy.mark_fast_outer_stars_detail', 'gravity exceeds visible mass'), lx: 96, ly: 68, tx: 72, ty: 58, anchor: 'right' },
-                { label: __alloT('stem.galaxy.mark_weak_lensing', 'Weak-lensing arclets'), detail: __alloT('stem.galaxy.mark_weak_lensing_detail', 'background light sheared by halo mass'), lx: 96, ly: 28, tx: 77, ty: 33, anchor: 'right' }
+                { label: __alloT('stem.galaxy.mark_fast_outer_stars', 'Fast outer stars'), detail: __alloT('stem.galaxy.mark_fast_outer_stars_detail', 'gravity exceeds visible mass'), lx: 88, ly: 68, tx: 72, ty: 58, anchor: 'right' },
+                { label: __alloT('stem.galaxy.mark_weak_lensing', 'Weak-lensing arclets'), detail: __alloT('stem.galaxy.mark_weak_lensing_detail', 'background light sheared by halo mass'), lx: 88, ly: 28, tx: 77, ty: 33, anchor: 'right' }
               ]
             }
           };
@@ -5782,7 +5782,20 @@ if (!window._galaxyHasLoadedOnce) {
                       React.createElement("circle", { cx: mark.tx, cy: mark.ty, r: 0.32, fill: activeObserve.accent, opacity: 0.95 })
                     ); })
                   ),
-                  activeObserveGuide.marks.map(function (mark) { return React.createElement("div", { key: "label-" + mark.label, className: "absolute max-w-[10.5rem] rounded-lg border bg-slate-950/80 px-2.5 py-2 text-white shadow-xl backdrop-blur-md", style: { left: mark.lx + '%', top: mark.ly + '%', transform: mark.anchor === 'right' ? 'translate(-100%, -50%)' : 'translate(0, -50%)', borderColor: activeObserve.accent + '88' } },
+                  // Right-anchored labels are positioned from the RIGHT edge,
+                  // not with left+translate(-100%). With `left: 96%` the box
+                  // only has 4% of the container to size itself in, and
+                  // shrink-to-fit runs BEFORE the transform moves it — so every
+                  // right-hand label rendered about 70px wide, one word per
+                  // line, at every viewport size. Anchoring from the right lets
+                  // it take its natural width up to max-w.
+                  //
+                  // pointer-events-none because these are annotations with
+                  // nothing to click, and 9 of the 14 sit over the control
+                  // column: they were swallowing clicks on "Hide simulation
+                  // labels", "Start cinematic tour" and "Toggle fullscreen" in
+                  // every observe mode.
+                  activeObserveGuide.marks.map(function (mark) { return React.createElement("div", { key: "label-" + mark.label, className: "absolute max-w-[10.5rem] rounded-lg border bg-slate-950/80 px-2.5 py-2 text-white shadow-xl backdrop-blur-md pointer-events-none", style: Object.assign({ top: mark.ly + '%', transform: 'translate(0, -50%)', borderColor: activeObserve.accent + '88' }, mark.anchor === 'right' ? { right: (100 - mark.lx) + '%' } : { left: mark.lx + '%' }) },
                     React.createElement("p", { className: "text-[11px] font-black leading-tight" }, activeObserve.icon + " " + mark.label),
                     React.createElement("p", { className: "mt-0.5 text-[11px] leading-tight text-slate-300" }, mark.detail)
                   ); })
