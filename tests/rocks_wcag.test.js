@@ -210,3 +210,54 @@ describe('WCAG 1.1.1 / 2.4.7 / 2.3.3 — alternatives, focus and motion', () => 
       .forEach((label) => expect(markup, label).toContain(label));
   });
 });
+
+describe('i18n — a missing key must not render as nothing', () => {
+  // Two different call shapes live in this tool and they fail differently:
+  //
+  //   __alloT('key', 'English')  — a wrapper; falls back to the English literal
+  //   t('key')                   — the host's t DIRECTLY, with no fallback
+  //
+  // The host's t returns undefined for a key it cannot resolve, and React
+  // renders undefined as nothing. So a bare t() whose key is absent is a
+  // silently blank rock label, mineral name or quiz option — no error, no
+  // warning off localhost, just a gap where a word should be. Every rock and
+  // mineral name in this tool goes through the bare form.
+  it('resolves every bare t() key in ui_strings.js', () => {
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    const ui = readFileSync('ui_strings.js', 'utf8');
+
+    const bare = new Set();
+    const re = /(^|[^A-Za-z_$.])t\(\s*'([^']+)'\s*\)/g;
+    let m;
+    while ((m = re.exec(src))) bare.add(m[2]);
+    // Guard against the extraction silently matching nothing.
+    expect(bare.size).toBeGreaterThan(40);
+
+    const resolves = (key) => {
+      const parts = key.split('.');
+      const leaf = parts[parts.length - 1];
+      const group = parts[parts.length - 2];
+      const gi = ui.indexOf('"' + group + '": {');
+      if (gi < 0) return false;
+      let depth = 0, i = ui.indexOf('{', gi), end = i;
+      for (; i < ui.length; i++) {
+        if (ui[i] === '{') depth++;
+        else if (ui[i] === '}') { depth--; if (depth === 0) { end = i; break; } }
+      }
+      const block = ui.slice(gi, end);
+      const safe = leaf.replace(/[.*+?^${}()|[\]\\]/g, (ch) => '\\' + ch);
+      return new RegExp('"' + safe + '"\\s*:').test(block);
+    };
+
+    const missing = [...bare].filter((k) => !resolves(k)).sort();
+    expect(missing, 'bare t() keys with no entry — these render as nothing').toEqual([]);
+  });
+
+  it('gives every __alloT call an English fallback', () => {
+    // The wrapper only saves you if a fallback was actually passed; a one-arg
+    // __alloT degrades to returning the key string itself.
+    const src = readFileSync(ROCKS_FILE, 'utf8');
+    const oneArg = [...src.matchAll(/__alloT\(\s*'([^']+)'\s*\)/g)].map((m) => m[1]);
+    expect(oneArg, '__alloT calls with no fallback').toEqual([]);
+  });
+});
