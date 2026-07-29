@@ -23124,7 +23124,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           },
           {
             icon: '📔', title: __alloT('stem.roadready.track_your_hours', 'Track Your Hours'),
-            body: __alloT('stem.roadready.every_drive_gets_logged_maine_requires', 'Every drive gets logged. Maine requires 70 supervised hours. Export your logbook as Markdown to share with a parent or instructor.'),
+            body: __alloT('stem.roadready.every_drive_gets_logged_maine_requires', 'Every simulator drive gets logged. Export the log as Markdown to share with a parent or instructor. Separately, Maine requires 70 hours of real supervised driving — simulator time does not count toward it.'),
             cta: __alloT('stem.roadready.next_4', 'Next →')
           },
           {
@@ -26214,7 +26214,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           h('div', { style: { background: 'linear-gradient(135deg, #78350f, var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a)))', borderRadius: '14px', padding: '20px', border: '1px solid #fbbf24', marginBottom: '14px', textAlign: 'center' } },
             h('div', { style: { fontSize: '42px' } }, '📔'),
             h('h2', { style: { fontSize: '22px', fontWeight: 900 } }, __alloT('stem.roadready.driving_logbook_2', 'Driving Logbook')),
-            h('div', { style: { fontSize: '12px', color: '#fde68a' } }, logbook.length + ' sessions · ' + totalHrs + ' hours total · Maine needs 70 hours supervised'),
+            // Simulator hours are counted and labelled as simulator hours. They used to
+            // be printed next to "Maine needs 70 hours supervised", which reads as a
+            // progress bar toward the statutory requirement. It is not one: Maine's 70
+            // hours are real behind-the-wheel time with a licensed adult, and no amount
+            // of simulator practice counts toward them.
+            h('div', { style: { fontSize: '12px', color: '#fde68a' } }, logbook.length + ' sessions · ' + totalHrs + ' hours in the simulator'),
+            h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: '2px' } },
+              'Maine separately requires 70 hours of real supervised driving (10 at night). Simulator time does not count toward that.'),
             // Print logbook for parent / instructor signature.
             logbook.length > 0 && window.SelHub && window.SelHub.printDoc && h('button', {
               'aria-label': __alloT('stem.roadready.print_logbook_for_parent_or_instructor', 'Print logbook for parent or instructor'),
@@ -26227,7 +26234,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 });
                 window.SelHub.printDoc({
                   title: __alloT('stem.roadready.roadready_practice_driving_log', 'RoadReady — Practice Driving Log'),
-                  subtitle: logbook.length + ' sessions · ' + totalHrs + ' hours · Maine GDL requires 70 supervised hours (10 of which at night) before the road test.',
+                  // This sheet goes out for a parent or instructor to SIGN, which makes it
+                  // the one surface where conflating simulator time with statutory hours
+                  // could actually mislead someone into certifying something untrue.
+                  subtitle: logbook.length + ' simulator sessions · ' + totalHrs + ' hours of simulator practice. This is NOT a record of supervised driving: Maine GDL requires 70 hours of real behind-the-wheel practice (10 at night), logged separately, before the road test.',
                   sections: [
                     { heading: __alloT('stem.roadready.sessions_newest_first', 'Sessions (newest first)'), items: lines },
                     { heading: __alloT('stem.roadready.parent_instructor_signature', 'Parent / instructor signature'), paragraphs: ['I confirm that I supervised the practice sessions listed above.', '', 'Signed: ____________________________      Date: ____________'] },
@@ -26244,7 +26254,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             h('div', { style: { height: '10px', background: 'var(--allo-stem-panel, var(--allo-stem-panel, #1e293b))', borderRadius: '5px', overflow: 'hidden' } },
               h('div', { style: { height: '100%', width: Math.min(100, totalSec / 3600 / 70 * 100) + '%', background: 'linear-gradient(90deg, #fbbf24, #f59e0b)' } })
             ),
-            h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '4px', textAlign: 'right' } }, totalHrs + ' / 70 hours (' + Math.round(totalSec / 3600 / 70 * 100) + '%)')
+            // Was "X / 70 hours (N%)" — a percentage-complete against a legal requirement
+            // that simulator time cannot satisfy.
+            h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '4px', textAlign: 'right' } }, totalHrs + ' hours logged in the simulator')
           ),
           logbook.length === 0 ? h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '40px', textAlign: 'center', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', fontSize: '12px' } },
             __alloT('stem.roadready.no_sessions_yet_complete_a_drive_to_st', '📝 No sessions yet. Complete a drive to start your logbook.')
@@ -28855,12 +28867,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           ) : null,
           // 70-hour progress
           birth ? h('div', { style: { background: 'var(--allo-stem-canvas, var(--allo-stem-canvas, #0f172a))', borderRadius: '12px', padding: '16px', border: '1px solid var(--allo-stem-border, var(--allo-stem-border, #334155))' } },
-            h('div', { style: { fontSize: '11px', color: '#10b981', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' } }, __alloT('stem.roadready.70_hour_supervised_driving_progress_fr', '📔 70-Hour Supervised Driving Progress (from your RoadReady logbook)')),
-            h('div', { style: { height: '10px', background: 'var(--allo-stem-panel, var(--allo-stem-panel, #1e293b))', borderRadius: '5px', overflow: 'hidden', marginBottom: '4px' } },
-              h('div', { style: { height: '100%', width: Math.min(100, totalHrs / 70 * 100) + '%', background: 'linear-gradient(90deg, #10b981, #059669)' } })
-            ),
-            h('div', { style: { fontSize: '11px', color: '#a7f3d0', textAlign: 'right' } }, totalHrs.toFixed(1) + ' / 70 hours (' + Math.round(totalHrs / 70 * 100) + '%)'),
-            h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '8px', fontStyle: 'italic' } }, __alloT('stem.roadready.note_the_70_hour_maine_requirement_is_', 'Note: the 70-hour Maine requirement is for real supervised driving. RoadReady simulator hours supplement but don\'t replace real road time.'))
+            // This was a green progress bar computing totalHrs/70 under the heading
+            // "70-Hour Supervised Driving Progress", with a footnote underneath admitting
+            // that simulator hours are not supervised driving. A progress bar is a far
+            // stronger claim than a footnote, so the UI was undoing its own disclaimer:
+            // it told a student they were N% of the way to a legal requirement that
+            // simulator time cannot advance at all. The bar is gone; the requirement is
+            // still taught, as a separate fact rather than as a score.
+            h('div', { style: { fontSize: '11px', color: '#10b981', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' } }, __alloT('stem.roadready.70_hour_supervised_driving_progress_fr', '📔 Simulator practice logged')),
+            h('div', { style: { fontSize: '20px', fontWeight: 800, color: '#a7f3d0' } }, totalHrs.toFixed(1) + ' hours'),
+            h('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '8px', lineHeight: 1.5 } }, __alloT('stem.roadready.note_the_70_hour_maine_requirement_is_', 'Maine separately requires 70 hours of real supervised driving, 10 of them at night, before the road test. Simulator hours do not count toward those 70 — that log is kept with a licensed adult in a real car.'))
           ) : null
         );
       }
@@ -31564,9 +31580,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 h('div', { style: { fontSize: '24px' } }, '🪪'),
                 h('div', { style: { color: roadTestPassed ? '#15803d' : '#94a3b8', fontWeight: 700 } }, roadTestPassed ? 'ROAD TEST PASSED' : 'road test pending')
               ),
-              h('div', { style: { textAlign: 'center', opacity: certTotalSec >= 70*3600 ? 1 : certHours > 10 ? 0.7 : 0.3 } },
+              // Was a "70+ HOURS" / "X of 70 hrs" seal, which put simulator time on a
+              // certificate — next to a parent signature line — in the units of Maine's
+              // statutory requirement. It now reads as what it counts.
+              h('div', { style: { textAlign: 'center', opacity: certHours > 10 ? 1 : 0.5 } },
                 h('div', { style: { fontSize: '24px' } }, '🕙'),
-                h('div', { style: { color: certTotalSec >= 70*3600 ? '#15803d' : '#94a3b8', fontWeight: 700 } }, certTotalSec >= 70*3600 ? '70+ HOURS' : certHours + ' of 70 hrs')
+                h('div', { style: { color: '#94a3b8', fontWeight: 700 } }, certHours + ' SIM HRS')
               )
             ),
             h('div', { style: { width: '60%', height: '1px', background: 'linear-gradient(90deg, transparent, #d4a843, transparent)', margin: '14px auto' } }),
@@ -31582,7 +31601,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               )
             ),
             h('div', { style: { fontSize: '10px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '18px' } }, 'Issued ' + certDate + ' · AlloFlow RoadReady · Portland, Maine'),
-            h('div', { style: { fontSize: '8px', color: 'var(--allo-stem-text-soft, var(--allo-stem-text-soft, #94a3b8))', marginTop: '4px', fontStyle: 'italic' } }, __alloT('stem.roadready.simulation_based_does_not_replace_stat', 'Simulation-based. Does not replace state-required driver\'s education or road test.'))
+            // Was 8px italic muted — the smallest text on a document whose whole visual
+            // language (double gold border, seals, letterspaced caps, a parent signature
+            // line, "Portland, Maine") says "official". A disclaimer that quiet does not
+            // do the job the rest of the layout makes necessary.
+            h('div', { style: { fontSize: '11px', color: '#7c2d12', background: 'rgba(251,191,36,0.18)', border: '1px solid #d4a843', borderRadius: '6px', padding: '8px 10px', marginTop: '14px', fontWeight: 700, lineHeight: 1.5 } },
+              __alloT('stem.roadready.simulation_based_does_not_replace_stat', 'Simulation-based practice record. This is not a state document and confers nothing: it does not replace driver\'s education, the BMV knowledge test, the road test, or the 70 hours of real supervised driving Maine requires.'))
           ),
           h('button', { onClick: function() {
             // Print the certificate. Build the print window via DOM appendChild

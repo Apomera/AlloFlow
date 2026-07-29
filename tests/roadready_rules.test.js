@@ -1583,7 +1583,12 @@ describe('RoadReady rules-of-road content', () => {
         'No passengers other than immediate family unless a qualifying licensed operator is beside you',
         'Zero handheld phone use',
         'Zero tolerance',
-        'totalHrs / 70',
+        // Pins that the GDL tracker still TEACHES the 70-hour rule, not that it computes
+        // a percentage against it. It used to assert 'totalHrs / 70', which was the
+        // progress bar that rendered simulator time as progress toward a statutory
+        // requirement simulator time cannot advance — i.e. the assertion was holding the
+        // bug in place.
+        '70 hours of real supervised driving',
       ]);
     }
   });
