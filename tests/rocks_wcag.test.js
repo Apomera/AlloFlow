@@ -209,6 +209,45 @@ describe('WCAG 1.1.1 / 2.4.7 / 2.3.3 — alternatives, focus and motion', () => 
     ['Rotate left', 'Rotate right', 'Tilt up', 'Tilt down', 'Zoom in', 'Zoom out', 'Reset view']
       .forEach((label) => expect(markup, label).toContain(label));
   });
+
+  // ── aria-label on a generic element is announced to nobody ──
+  // A div or span with no role maps to role=generic, which does not support an
+  // accessible name, so the attribute is silently dropped. It reads as done in
+  // the source and in the DOM. Same shape as a role=button with no key handler:
+  // present in the markup, dead in use. The rock cycle's mission-progress
+  // readout was labelled that way.
+  it('never puts an aria-label on an element that cannot carry a name', () => {
+    const NAMEABLE = new Set(['aside', 'section', 'nav', 'main', 'form', 'button', 'input',
+      'select', 'textarea', 'a', 'canvas', 'svg', 'img', 'table', 'ol', 'ul', 'li', 'dialog',
+      'progress', 'meter', 'output', 'iframe', 'fieldset', 'details', 'header', 'footer']);
+    const s = src();
+    const re = /React\.createElement\(\s*"([a-z]+)"\s*,\s*\{/g;
+    const bad = [];
+    let m;
+    while ((m = re.exec(s))) {
+      const tag = m[1];
+      // Walk to the matching close brace so nested objects do not end it early.
+      let i = re.lastIndex, depth = 1;
+      while (i < s.length && depth > 0) {
+        const c = s[i];
+        if (c === '{') depth++;
+        else if (c === '}') depth--;
+        i++;
+      }
+      const props = s.slice(re.lastIndex, i - 1);
+      if (!/["']aria-label["']\s*:/.test(props)) continue;
+      if (/(^|[^\w-])["']?role["']?\s*:/.test(props)) continue;
+      if (NAMEABLE.has(tag)) continue;
+      bad.push(`<${tag}> at line ${s.slice(0, m.index).split('\n').length}`);
+    }
+    expect(bad, `aria-label on generic element(s):\n  ${bad.join('\n  ')}`).toEqual([]);
+  });
+
+  it('that check actually inspects elements — guard against a dead regex', () => {
+    const s = src();
+    const labelled = [...s.matchAll(/React\.createElement\(\s*"[a-z]+"\s*,\s*\{[^}]*["']aria-label["']/g)];
+    expect(labelled.length, 'expected many aria-labelled elements to scan').toBeGreaterThan(10);
+  });
 });
 
 describe('i18n — a missing key must not render as nothing', () => {

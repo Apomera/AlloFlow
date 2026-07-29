@@ -127,6 +127,57 @@ describe('transformation process panel', () => {
     expect(markup).toContain('rcclip-selTo');
   });
 
+  // ── The intro sentence has to describe the layout that exists ──
+  // It used to say "the three on the left ... the three on the right". The grid
+  // is grid-cols-2 sm:grid-cols-3: at the wide breakpoint the loop is the TOP
+  // row and the branches the BOTTOM row, and at the narrow one they interleave
+  // across three rows. Left/right was wrong at every size — a sentence telling
+  // a student where to look, pointing the wrong way.
+  //
+  // Asserts on the RENDERED text, never on source, so the explanatory comment
+  // in the tool quoting the old wording cannot trip it (that self-trap has
+  // fired three times in this file's history).
+  function introText(node) {
+    const hits = findAll(node, (n) =>
+      n.type === 'p' && typeof n.props.children === 'string'
+      && /Every pathway is real/.test(n.props.children));
+    expect(hits, 'pathway intro sentence not found').toHaveLength(1);
+    return hits[0].props.children;
+  }
+
+  it('does not claim a left/right split the grid never produces', () => {
+    const intro = introText(tree({}).node);
+    expect(intro).not.toMatch(/on the left|on the right/i);
+  });
+
+  it('claims an ordering, and the buttons are in that order', () => {
+    const { node } = tree({});
+    const intro = introText(node);
+    // The sentence promises first-three / last-three.
+    expect(intro).toMatch(/first three/i);
+    expect(intro).toMatch(/last three/i);
+
+    const labels = processButtons(node).map((b) => b.props['aria-label']);
+    expect(labels).toHaveLength(6);
+    labels.slice(0, 3).forEach((l, i) =>
+      expect(l, `button ${i} should be a loop step`).not.toMatch(/direct branch/));
+    labels.slice(3).forEach((l, i) =>
+      expect(l, `button ${i + 3} should be a direct branch`).toMatch(/direct branch/));
+  });
+
+  it('points at a tag that is actually on screen', () => {
+    const { node, store } = tree({});
+    const intro = introText(node);
+    // The sentence tells the student to look for the words "direct branch";
+    // those words must really be rendered on the branch buttons.
+    expect(intro.toLowerCase()).toContain('direct branch');
+    const tags = findAll(node, (n) =>
+      n.type === 'p' && typeof n.props.children === 'string'
+      && n.props.children.toLowerCase() === 'direct branch');
+    expect(tags, 'expected a visible "direct branch" tag on each of the three branches').toHaveLength(3);
+    expect(store).toBeTruthy();
+  });
+
   it('marks the active pathway for assistive tech', () => {
     const live = tree({});
     const btns = processButtons(live.node);

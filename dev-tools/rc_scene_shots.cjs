@@ -17,6 +17,7 @@ const path = require('path');
 const ROOT = process.cwd();
 const OUT = process.argv[2] || '.';
 const CANVAS_MODE = process.argv.includes('--canvas');
+const FULL_MODE = process.argv.includes('--full');
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
 const react = read('desktop/web-app/node_modules/react/umd/react.production.min.js');
 const reactDom = read('desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js');
@@ -142,6 +143,49 @@ function stateFor(spec, agent, prog) {
     }
     await b.close();
     console.log('\nwrote ' + CANVAS_STATES.length + ' canvas shots to ' + OUT);
+    return;
+  }
+
+  // --full: the whole tool top to bottom. The machine and the canvas have had
+  // their own passes; this is for the surfaces around them — the mission
+  // header, the family detail panel, the six pathway buttons, the myths note
+  // and the quiz — which are easy to leave unexamined precisely because they
+  // are plain DOM and every test renders them without anyone looking.
+  if (FULL_MODE) {
+    const FULL_STATES = [
+      [{}, 'first load, nothing chosen'],
+      [{ selectedRock: 'sedimentary' }, 'family detail panel open'],
+      [{ selectedRock: 'metamorphic', selectedProcess: { from: 'igneous', to: 'metamorphic', label: 'Heat & Pressure', emoji: '⬇️', desc: 'Igneous rock can be buried deep and subjected to extreme conditions, directly transforming into metamorphic rock.' } }, 'a direct branch selected'],
+    ];
+    for (let i = 0; i < FULL_STATES.length; i++) {
+      const [st, caption] = FULL_STATES[i];
+      await pg.evaluate((s) => window.__mount(s), st);
+      await pg.waitForTimeout(900);
+      const label = 'full-' + String(i).padStart(2, '0');
+      await (await pg.$('#slot')).screenshot({ path: path.join(OUT, label + '.png') });
+      console.log(label.padEnd(42) + caption);
+    }
+    // And the quiz, which only exists after its button is pressed.
+    await pg.evaluate(() => window.__mount({}));
+    await pg.waitForTimeout(400);
+    const quizBtn = await pg.$('button[aria-label="Start rock cycle quiz"]');
+    if (quizBtn) {
+      await quizBtn.click();
+      await pg.waitForTimeout(400);
+      await (await pg.$('#slot')).screenshot({ path: path.join(OUT, 'full-03-quiz.png') });
+      console.log('full-03-quiz'.padEnd(42) + 'quiz open');
+      // Answer it, so the feedback + concept-focus panel is captured too.
+      const opt = await pg.$('button[aria-label^="Select answer: "]');
+      if (opt) {
+        await opt.click();
+        await pg.waitForTimeout(400);
+        await (await pg.$('#slot')).screenshot({ path: path.join(OUT, 'full-04-quiz-answered.png') });
+        console.log('full-04-quiz-answered'.padEnd(42) + 'quiz answered');
+      }
+    } else {
+      console.log('!! quiz button not found - shots incomplete');
+    }
+    await b.close();
     return;
   }
 

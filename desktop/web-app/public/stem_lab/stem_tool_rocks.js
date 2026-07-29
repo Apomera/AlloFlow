@@ -7371,7 +7371,12 @@ const d = labToolData.rockCycle || {};
                   React.createElement("div", { className: "text-[10px] font-black uppercase tracking-[0.15em] text-orange-700" }, __alloT('stem.rocks.earth_systems_mission', "Earth systems mission")),
                   React.createElement("h2", { id: "rockcycle-command-title", className: "mt-2 text-xl sm:text-2xl font-black text-slate-900" }, nextMission.icon + " " + nextMission.title),
                   React.createElement("p", { className: "mt-1 text-xs sm:text-sm text-slate-600 leading-relaxed" }, nextMission.detail),
-                  React.createElement("div", { className: "mt-4 grid grid-cols-3 gap-2", "aria-label": __alloT('stem.rocks.mission_progress_aria', "Rock cycle mission progress") },
+                  // role=group is load-bearing, not decoration: a plain div maps
+                  // to role=generic, which does not support an accessible name,
+                  // so this aria-label was in the DOM and announced to nobody.
+                  // Same shape as a role=button with no key handler — present in
+                  // the markup, dead in use.
+                  React.createElement("div", { className: "mt-4 grid grid-cols-3 gap-2", role: "group", "aria-label": __alloT('stem.rocks.mission_progress_aria', "Rock cycle mission progress") },
                     [[viewedFamilies + '/3', __alloT('stem.rocks.metric_families', 'Families')], [d.selectedProcess ? '1/1' : '0/1', __alloT('stem.rocks.metric_process', 'Process')], [transformsRun + '/3', __alloT('stem.rocks.metric_transforms', 'Transforms')]].map(function(metric) { return React.createElement("div", { key: metric[1], className: "rounded-xl border border-orange-100 bg-white/80 p-3 text-center" }, React.createElement("div", { className: "text-lg font-black text-slate-900" }, metric[0]), React.createElement("div", { className: "text-[10px] font-bold text-slate-600" }, metric[1])); })
                   )
                 ),
@@ -7492,8 +7497,15 @@ const d = labToolData.rockCycle || {};
               // path", "the cycle only goes one way" listed as a myth) and the
               // mission "Explain the branching cycle". The canvas already drew
               // all six; only the clickable list was truncated. All six now.
+              // The copy used to say "the three on the LEFT ... the three on the
+              // RIGHT". The grid is grid-cols-2 sm:grid-cols-3, so at the wide
+              // breakpoint the loop is the TOP row and the branches the BOTTOM
+              // row, and at the narrow one they interleave across three rows —
+              // left/right is wrong at every size. Ordering is the only claim
+              // that survives a reflow, and each branch already carries a
+              // visible "direct branch" tag to point at instead.
               React.createElement("p", { className: "text-[11px] text-slate-700 mb-2" },
-                __alloT('stem.rocks.processes_intro', "Every pathway is real. The three on the left are the familiar loop; the three on the right skip a step entirely.")),
+                __alloT('stem.rocks.processes_intro', "Every pathway is real. The first three are the familiar loop; the last three are marked direct branch and skip a step entirely.")),
 
               React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 gap-2" },
 
