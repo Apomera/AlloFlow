@@ -90,7 +90,8 @@ describe('reconnect-safe transport', () => {
   it('stop() broadcasts hostClosed to open channels, then tears peers down', () => {
     vi.useFakeTimers();
     try {
-      const host = LP.createHost({ sessionCode: 'RECON' });
+      const onGuestLeft = vi.fn();
+      const host = LP.createHost({ sessionCode: 'RECON', onGuestLeft });
       const sent = [];
       host.peers.set('u1', { pc: new FakePeerConnection(), dc: { readyState: 'open', send: (m) => sent.push(JSON.parse(m)) }, codename: 'Stu', signalingRef: null, sentIce: [] });
       host.activePoll = { id: 'poll-9' };
@@ -101,12 +102,13 @@ describe('reconnect-safe transport', () => {
       vi.advanceTimersByTime(300);
       expect(host.peers.size).toBe(0);
       expect(host.activePoll).toBeNull();
+      expect(onGuestLeft).not.toHaveBeenCalled();
     } finally {
       vi.useRealTimers();
     }
   });
 
-  it('syncs poll state on connect: active poll re-sent, otherwise id-less closePoll clears stale overlays', async () => {
+  it('syncs closed, active, and revealed poll state on reconnect', async () => {
     const fb = makeFakeFirebase();
     window.__alloFirebase = fb;
     const host = LP.createHost({ sessionCode: 'SYNCROOM' });
@@ -133,6 +135,17 @@ describe('reconnect-safe transport', () => {
     peer.pc.ondatachannel({ channel: hostDc2 });
     hostDc2.onopen();
     expect(received2.some((m) => m.type === 'poll' && m.payload.id === 'poll-1')).toBe(true);
+
+    // Once results are revealed, reconnect must restore the reveal instead of
+    // turning the completed question back into an answerable poll.
+    host.broadcastPollResults('poll-1', { totalResponses: 1, guestCount: 1 });
+    const received3 = [];
+    const hostDc3 = new FakeDataChannel();
+    hostDc3.peer = { onmessage: (m) => received3.push(JSON.parse(m.data)) };
+    peer.pc.ondatachannel({ channel: hostDc3 });
+    hostDc3.onopen();
+    expect(received3.some((m) => m.type === 'pollResults' && m.payload.pollId === 'poll-1')).toBe(true);
+    expect(received3.some((m) => m.type === 'poll')).toBe(false);
     host.stop();
   });
 
@@ -154,9 +167,69 @@ describe('reconnect-safe transport', () => {
     expect(secondPeer.offerSdp).toBe('sdp-B');
     expect(secondPeer).not.toBe(firstPeer);
     expect(firstPeer.pc.connectionState).toBe('closed');
+    // A delayed close event from the replaced connection must not delete the
+    // new peer record that now owns this uid.
+    firstPeer.pc.onconnectionstatechange();
+    expect(host.peers.get('stu-re')).toBe(secondPeer);
     // The stale-peer cleanup must NOT have deleted the fresh offer doc.
     expect(fb._docs.has('artifacts/test-app/public/data/signaling/REROOM/peers/stu-re')).toBe(true);
     host.stop();
+  });
+
+  it('prevents replaced peers from writing stale ICE or deleting a fresh re-offer', async () => {
+    const fb = makeFakeFirebase();
+    window.__alloFirebase = fb;
+    const host = LP.createHost({ sessionCode: 'SIGNALRACE' });
+    const docRef = fb.doc(
+      fb.db,
+      'artifacts',
+      'test-app',
+      'public',
+      'data',
+      'signaling',
+      'SIGNALRACE',
+      'peers',
+      'stu-race',
+    );
+    await host._acceptPeer('stu-race', {
+      offer: { type: 'offer', sdp: 'sdp-old' },
+      codename: 'Stu',
+    }, docRef);
+    const oldPeer = host.peers.get('stu-race');
+    const staleIceCallback = oldPeer.pc.onicecandidate;
+
+    vi.useFakeTimers();
+    try {
+      oldPeer.pc.connectionState = 'connected';
+      oldPeer.pc.onconnectionstatechange();
+
+      host._cleanupPeer('stu-race', oldPeer);
+      await fb.setDoc(docRef, {
+        offer: { type: 'offer', sdp: 'sdp-fresh' },
+        codename: 'Stu',
+      });
+      await host._acceptPeer('stu-race', {
+        offer: { type: 'offer', sdp: 'sdp-fresh' },
+        codename: 'Stu',
+      }, docRef);
+      const freshPeer = host.peers.get('stu-race');
+      expect(freshPeer).not.toBe(oldPeer);
+
+      staleIceCallback({
+        candidate: { toJSON: () => ({ candidate: 'stale-ice' }) },
+      });
+      vi.advanceTimersByTime(750);
+      await Promise.resolve();
+
+      expect(fb._docs.get(docRef._path)).toMatchObject({
+        offer: { type: 'offer', sdp: 'sdp-fresh' },
+      });
+      expect(fb._docs.get(docRef._path).iceFromHost).toBeUndefined();
+      expect(host.peers.get('stu-race')).toBe(freshPeer);
+    } finally {
+      vi.useRealTimers();
+      host.stop();
+    }
   });
 
   it('ignores offers from uids outside the roster gate; accepts after the gate updates', async () => {
@@ -176,6 +249,34 @@ describe('reconnect-safe transport', () => {
     await tick();
     expect(host.peers.has('stu-late')).toBe(true);
     host.stop();
+  });
+
+  it('immediately evicts revoked peers and prunes every active audience set', () => {
+    const onGuestLeft = vi.fn();
+    const host = LP.createHost({ sessionCode: 'REVOKE', onGuestLeft });
+    host.setAllowedUids(['stu-keep', 'stu-revoke']);
+    const sent = [];
+    const keptPc = new FakePeerConnection();
+    const revokedPc = new FakePeerConnection();
+    host.peers.set('stu-keep', { pc: keptPc, dc: { readyState: 'open', send: vi.fn() }, codename: 'Keep' });
+    host.peers.set('stu-revoke', {
+      pc: revokedPc,
+      dc: { readyState: 'open', send: (message) => sent.push(JSON.parse(message)) },
+      codename: 'Revoke',
+    });
+    host.activePoll = { id: 'poll-revoke' };
+    host.activeAudienceUids = new Set(['stu-keep', 'stu-revoke']);
+    host.peerShowcaseAudienceUids = new Set(['stu-keep', 'stu-revoke']);
+
+    host.setAllowedUids(['stu-keep']);
+
+    expect(host.peers.has('stu-keep')).toBe(true);
+    expect(host.peers.has('stu-revoke')).toBe(false);
+    expect(revokedPc.connectionState).toBe('closed');
+    expect(sent).toContainEqual({ type: 'hostClosed', payload: { pollId: 'poll-revoke' } });
+    expect(Array.from(host.activeAudienceUids)).toEqual(['stu-keep']);
+    expect(Array.from(host.peerShowcaseAudienceUids)).toEqual(['stu-keep']);
+    expect(onGuestLeft).toHaveBeenCalledTimes(1);
   });
 
   it('honors window.__alloRtcConfig for new peer connections (TURN override hook)', async () => {
@@ -285,6 +386,42 @@ describe('reconnect-safe transport', () => {
     expect(fb._docs.has('artifacts/test-app/public/data/quiz-signaling/QROOM/peers/g-q')).toBe(true);
     guest.leave();
     host.stop();
+  });
+
+  it('leave fences queued peer/data-channel callbacks from the retired guest', async () => {
+    const fb = makeFakeFirebase();
+    window.__alloFirebase = fb;
+    const onPoll = vi.fn();
+    const onDisconnected = vi.fn();
+    const onFailed = vi.fn();
+    const guest = LP.createGuest({
+      sessionCode: 'LEAVEROOM',
+      userUid: 'g-leave',
+      codename: 'Fox',
+      onPoll,
+      onDisconnected,
+      onFailed,
+    });
+    await guest.join();
+    const pc = guest.pc;
+    const dc = guest.dc;
+    const lateConnectionStateChange = pc.onconnectionstatechange;
+    const lateMessage = dc.onmessage;
+    const lateClose = dc.onclose;
+    guest._connected = true;
+
+    guest.leave();
+
+    expect(() => lateConnectionStateChange()).not.toThrow();
+    expect(() => lateMessage({
+      data: JSON.stringify({ type: 'poll', payload: { id: 'stale-poll', prompt: 'stale sentinel' } }),
+    })).not.toThrow();
+    expect(() => lateClose()).not.toThrow();
+    expect(onPoll).not.toHaveBeenCalled();
+    expect(onDisconnected).not.toHaveBeenCalled();
+    expect(onFailed).not.toHaveBeenCalled();
+    expect(guest.pc).toBeNull();
+    expect(guest.dc).toBeNull();
   });
 
   it('guest routes hostClosed to onHostClosed', async () => {

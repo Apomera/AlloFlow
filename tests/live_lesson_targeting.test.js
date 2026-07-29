@@ -126,6 +126,41 @@ describe('delivery acknowledgment summaries', () => {
   });
 });
 
+describe('acknowledged individual support overrides', () => {
+  it('returns only bounded overrides opened at or after their assignment', () => {
+    const roster = {
+      opened: {
+        resourceId: 'support-1',
+        resourceAt: 100,
+        viewingResourceId: 'support-1',
+        viewingAt: 101,
+      },
+      exact: {
+        resourceId: 'support-2',
+        resourceAt: 200,
+        viewingResourceId: 'support-2',
+        viewingAt: 200,
+      },
+      unopened: {
+        resourceId: 'support-3',
+        resourceAt: 300,
+        viewingResourceId: 'other',
+        viewingAt: 400,
+      },
+      staleReceipt: {
+        resourceId: 'support-4',
+        resourceAt: 500,
+        viewingResourceId: 'support-4',
+        viewingAt: 499,
+      },
+    };
+
+    expect(api.buildAcknowledgedLiveResourceOverrides(roster, 25)).toEqual(['opened', 'exact']);
+    expect(api.buildAcknowledgedLiveResourceOverrides(roster, 1)).toEqual(['opened']);
+    expect(api.buildAcknowledgedLiveResourceOverrides(roster, 0)).toEqual([]);
+  });
+});
+
 describe('selection is separate from delivery', () => {
   it('focuses the next step without class-pushing, then sends it through the existing group callback', () => {
     const onOpenResource = vi.fn();
@@ -176,6 +211,78 @@ describe('selection is separate from delivery', () => {
   });
 });
 
+describe('prepared checkpoint UI', () => {
+  const baseProps = {
+    history: [{ id: 'step-1', type: 'simplified', title: 'Read' }],
+    getStudentSafeResources: items => items,
+    currentItemId: 'step-1',
+    currentResourceId: 'step-1',
+    groups: { g1: { name: 'Readers' } },
+    roster: { s1: { name: 'Ana', groupId: 'g1' } },
+    getTitle: item => item.title,
+    getIcon: () => null,
+    presenterCuesByResourceId: {
+      'step-1': {
+        checkpoint: { kind: 'feedback_response', prompt: 'Explain.', criteria: 'Use evidence.' },
+      },
+    },
+    onChangePresenterCue: vi.fn(),
+    t: () => undefined,
+  };
+
+  it('keeps preparation contextual and hides live-only delivery controls before class', () => {
+    const nodes = walk(renderPanel({ ...baseProps, preparationOnly: true }));
+    expect(nodes.some(node => node.props && node.props['data-live-prepared-checkpoint'] === 'ready')).toBe(true);
+    expect(nodes.some(node => node.type === 'select' && node.props['aria-label'] === 'Choose who receives the selected lesson step')).toBe(false);
+    expect(nodes.some(node => node.props && node.props.role === 'status' && nodeText(node).includes('Saved for live session'))).toBe(true);
+  });
+
+  it('loads a prepared checkpoint for final review and carries the selected feedback audience', () => {
+    const onLaunchPreparedInteraction = vi.fn();
+    const props = { ...baseProps, onLaunchPreparedInteraction };
+    let nodes = walk(renderPanel(props));
+    const audienceSelect = nodes.find(node => node.type === 'select' && node.props['aria-label'] === 'Choose who receives the selected lesson step');
+    audienceSelect.props.onChange({ target: { value: 'group:g1' } });
+
+    nodes = walk(renderPanel(props));
+    const launchButton = nodes.find(node => node.type === 'button' && nodeText(node).includes('Review and launch'));
+    launchButton.props.onClick();
+
+    expect(onLaunchPreparedInteraction).toHaveBeenCalledWith(
+      expect.objectContaining({ kind: 'feedback_response', prompt: 'Explain.', criteria: 'Use evidence.' }),
+      props.history[0],
+      expect.objectContaining({ kind: 'group', id: 'g1' })
+    );
+  });
+
+  it('shows and blocks a stale Live Quiz checkpoint on a non-quiz resource', () => {
+    const onLaunchPreparedInteraction = vi.fn();
+    const props = {
+      ...baseProps,
+      presenterCuesByResourceId: {
+        'step-1': { checkpoint: { kind: 'live_quiz' } },
+      },
+      onLaunchPreparedInteraction,
+    };
+    const nodes = walk(renderPanel(props));
+    const checkpoint = nodes.find(node => node.props
+      && node.props['data-live-prepared-checkpoint'] === 'invalid');
+    const invalidOption = nodes.find(node => node.type === 'option'
+      && node.props.value === 'live_quiz');
+    const blockedLaunch = nodes.find(node => node.type === 'button'
+      && nodeText(node).includes('Choose a quiz resource to launch'));
+
+    expect(checkpoint).toBeTruthy();
+    expect(invalidOption).toBeTruthy();
+    expect(invalidOption.props.disabled).toBe(true);
+    expect(nodeText(invalidOption)).toContain('requires a quiz resource');
+    expect(blockedLaunch.props.disabled).toBe(true);
+
+    blockedLaunch.props.onClick();
+    expect(onLaunchPreparedInteraction).not.toHaveBeenCalled();
+  });
+});
+
 describe('shell integration reuses canonical handlers', () => {
   it('passes session groups/roster and maps sends to the existing id-only handlers', () => {
     expect(anti).toContain('groups: (sessionData && sessionData.groups) || {}');
@@ -183,7 +290,10 @@ describe('shell integration reuses canonical handlers', () => {
     expect(anti).toContain('onSendToGroup: (groupId, item) => handleSetGroupResource(groupId, item.id)');
     expect(anti).toContain('onSendToStudent: (uid, item) => handleSetStudentResource(uid, item.id)');
     expect(anti).toContain('onSendToStudents: (uids, item) => handleSetStudentsResource(uids, item.id)');
+    expect(anti).toContain('onReleaseStudentResources: handleReleaseStudentResources');
     expect(anti).toContain('const handleSetStudentsResource = async (uids, resourceId) =>');
+    expect(anti).toContain('const handleReleaseStudentResources = async (uids) =>');
+    expect(anti).toContain('entry.viewingResourceId !== entry.resourceId');
     expect(anti).toContain('.slice(0, 25)');
     expect(anti).toContain('await updateDoc(sessionRef, updates)');
   });

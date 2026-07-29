@@ -70,6 +70,41 @@ describe('evaluateRoutingRules', () => {
   });
 });
 
+describe('existing session-group reuse', () => {
+  it('merges canonical session groups with newly created groups without duplicates', () => {
+    const sessionGroups = Object.create(null);
+    sessionGroups.readers = { name: 'Readers' };
+    sessionGroups.explorers = { name: 'Explorers' };
+    sessionGroups.constructor = { name: 'blocked' };
+
+    expect(LP.mergeLivePollingGroups(sessionGroups, [
+      { id: 'explorers', name: 'Duplicate local name' },
+      { id: 'new-group', name: 'New group' },
+      { id: '__proto__', name: 'blocked' },
+    ])).toEqual([
+      { id: 'readers', name: 'Readers' },
+      { id: 'explorers', name: 'Explorers' },
+      { id: 'new-group', name: 'New group' },
+    ]);
+  });
+
+  it('keeps only rules that target a currently selectable canonical or newly created group', () => {
+    const groups = LP.mergeLivePollingGroups({
+      support: { name: 'Workshop' },
+      extension: { name: 'Extension Studio' },
+    }, []);
+    const rules = LP.selectLivePollingRoutingRules([
+      { id: 'support-rule', when: { predicate: 'lte', value: 2 }, then: { groupId: 'support' } },
+      { id: 'stale-rule', when: { predicate: 'gte', value: 4 }, then: { groupId: 'deleted-group' } },
+    ], groups);
+
+    expect(rules).toHaveLength(1);
+    expect(rules[0].then.groupId).toBe('support');
+    expect(LP.evaluateRoutingRules(rules, 2)).toBe('support');
+    expect(LP.evaluateRoutingRules(rules, 5)).toBeNull();
+  });
+});
+
 describe('isAbilityTieredName (equity guardrail)', () => {
   it('flags ability-tracking group names', () => {
     expect(LP.isAbilityTieredName('Struggling Readers')).toBe(true);

@@ -15,7 +15,7 @@ if (!fs.existsSync(SOURCE)) {
 }
 
 const source = fs.readFileSync(SOURCE, 'utf-8');
-const entry = `/* global React */\n\n${source}\n\nwindow.__liveLessonRunExports = { buildLiveLessonSteps, resolveLiveLessonIndex, adjacentLiveLessonIndex, buildLiveLessonAudiences, resolveLiveLessonAudience, summarizeLiveLessonDelivery, normalizeLivePresenterCue, sanitizeLivePresenterCuesByResourceId, upsertLivePresenterCue, sanitizeLiveActivitySnapshot, upsertLiveActivitySnapshot, selectLiveActivityPulse, buildLiveActivityTimeline, buildLiveAttentionQueue, liveAttentionReasonLabel, buildLiveQuizActivitySnapshot, liveActivityKindLabel, liveActivityPhaseLabel, LiveLessonRunPanel };\n`;
+const entry = `/* global React */\n\n${source}\n\nwindow.__liveLessonRunExports = { buildLiveLessonSteps, resolveLiveLessonIndex, adjacentLiveLessonIndex, buildLiveLessonAudiences, resolveLiveLessonAudience, summarizeLiveLessonDelivery, normalizeLivePreparedCheckpoint, buildLivePollPresetFromCheckpoint, buildLivePreparedInteractionDescriptor, normalizeLivePresenterCue, sanitizeLivePresenterCuesByResourceId, upsertLivePresenterCue, liveLessonReadinessStatusLabel, buildLiveLessonReadiness, sanitizeLiveActivitySnapshot, upsertLiveActivitySnapshot, selectLiveActivityPulse, buildLiveActivityTimeline, buildLiveAttentionQueue, buildLiveAttentionCohorts, liveAttentionReasonLabel, buildLiveQuizActivitySnapshot, liveActivityKindLabel, liveActivityPhaseLabel, LiveLessonRunPanel };\n`;
 fs.writeFileSync(TMP, entry, 'utf-8');
 console.log('Compiling view_live_lesson_run_source.jsx with esbuild...');
 
@@ -62,14 +62,21 @@ ${compiled}
     buildLiveLessonAudiences: buildLiveLessonAudiences,
     resolveLiveLessonAudience: resolveLiveLessonAudience,
     summarizeLiveLessonDelivery: summarizeLiveLessonDelivery,
+    normalizeLivePreparedCheckpoint: normalizeLivePreparedCheckpoint,
+    buildLivePollPresetFromCheckpoint: buildLivePollPresetFromCheckpoint,
+    buildLivePreparedInteractionDescriptor: buildLivePreparedInteractionDescriptor,
     normalizeLivePresenterCue: normalizeLivePresenterCue,
     sanitizeLivePresenterCuesByResourceId: sanitizeLivePresenterCuesByResourceId,
     upsertLivePresenterCue: upsertLivePresenterCue,
+    liveLessonReadinessStatusLabel: liveLessonReadinessStatusLabel,
+    buildLiveLessonReadiness: buildLiveLessonReadiness,
     sanitizeLiveActivitySnapshot: sanitizeLiveActivitySnapshot,
     upsertLiveActivitySnapshot: upsertLiveActivitySnapshot,
     selectLiveActivityPulse: selectLiveActivityPulse,
     buildLiveActivityTimeline: buildLiveActivityTimeline,
     buildLiveAttentionQueue: buildLiveAttentionQueue,
+    buildLiveAttentionCohorts: buildLiveAttentionCohorts,
+    buildAcknowledgedLiveResourceOverrides: buildAcknowledgedLiveResourceOverrides,
     liveAttentionReasonLabel: liveAttentionReasonLabel,
     buildLiveQuizActivitySnapshot: buildLiveQuizActivitySnapshot,
     liveActivityKindLabel: liveActivityKindLabel,

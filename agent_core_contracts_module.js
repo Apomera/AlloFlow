@@ -258,7 +258,11 @@
       var directive = typeof item === 'string'
         ? ((toolDirectives && toolDirectives[tool]) || '')
         : (item.directive || item.instructions || item.customInstructions || (toolDirectives && toolDirectives[tool]) || '');
-      items.push({ tool: String(tool), directive: String(directive || '') });
+      // Stable per-row identity. Preserved when the caller already has one
+      // (round-trips are idempotent), minted from the PRE-REORDER index
+      // otherwise so it travels with the item through the sort below.
+      var uiId = (item && typeof item === 'object' && (item.uiId || item.stepId)) || (String(tool) + '-' + i);
+      items.push({ tool: String(tool), directive: String(directive || ''), uiId: String(uiId) });
     }
     // Ordering invariant shared with phase_k/phase_o/ANTI: analysis first,
     // lesson-plan last.
@@ -405,7 +409,7 @@
     var b = isPlainObject(blueprint) ? blueprint : {};
     var plan = normalizePlanItems(b.plan, null);
     var legacy = {
-      resourcePlan: plan.map(function (r) { return { tool: r.tool, directive: r.directive }; }),
+      resourcePlan: plan.map(function (r) { return { tool: r.tool, directive: r.directive, uiId: r.uiId }; }),
       recommendedResources: plan.map(function (r) { return r.tool; }),
       toolDirectives: plan.reduce(function (acc, r) { if (!acc[r.tool]) acc[r.tool] = r.directive || ''; return acc; }, {}),
       lessonDNA: isPlainObject(b.lessonDNA) ? b.lessonDNA : {},

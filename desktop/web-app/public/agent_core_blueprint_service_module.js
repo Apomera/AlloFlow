@@ -558,7 +558,131 @@
   }
 
 
-  var API = { createBlueprintService: createBlueprintService, createCommandWorkflowService: createCommandWorkflowService, COMMAND_WORKFLOW_LIBRARY_KEY: COMMAND_WORKFLOW_LIBRARY_KEY };
+  // ── Lesson template library ───────────────────────────────────────────
+  //
+  // A template is NOT a second artifact type. It is a saved lesson blueprint
+  // with the CONTENT removed:
+  //   keep   resourcePlan (tools + directives) — the pattern
+  //          globalSettings (grade, tone)      — defaults, editable on apply
+  //   strip  lessonDNA (goldenThread / keyTerms / essentialQuestion)
+  //          and any source binding             — this lesson's content
+  //
+  // Templates are starting points. The primary path stays conversational: a
+  // teacher builds a plan with the agent, refines it, and saves THAT. Shipped
+  // templates are seeds, not the product.
+  //
+  // Why stripping matters: a template that silently carries the previous
+  // lesson's DNA produces a Civil War pack quietly talking about photosynthesis
+  // — the same shape of defect as the DA isolation leak, one severity down.
+  var LESSON_TEMPLATE_LIBRARY_KEY = 'alloflow_lesson_templates_v1';
+  var LESSON_TEMPLATE_VERSION = 1;
+
+  function _templateSafeString(value, max) {
+    return String(value == null ? '' : value).slice(0, max || 120);
+  }
+
+  // opts.directives: { [uiId]: 'keep' | 'blank' } — the save-time review.
+  // Anything unlisted defaults to 'keep', so the simple path needs no opts.
+  function toLessonTemplate(legacyConfig, opts) {
+    var cfg = (legacyConfig && typeof legacyConfig === 'object') ? legacyConfig : {};
+    var o = opts || {};
+    var policy = (o.directives && typeof o.directives === 'object') ? o.directives : {};
+    var rawPlan = Array.isArray(cfg.resourcePlan) ? cfg.resourcePlan : [];
+    var plan = rawPlan.map(function (row, i) {
+      var tool = row && (row.tool || row.type);
+      if (!tool) return null;
+      var uiId = (row && (row.uiId || row.stepId)) || (String(tool) + '-' + i);
+      var keep = policy[uiId] !== 'blank';
+      return {
+        tool: String(tool),
+        uiId: String(uiId),
+        directive: keep ? _templateSafeString(row && row.directive, 600) : ''
+      };
+    }).filter(Boolean);
+    var gs = (cfg.globalSettings && typeof cfg.globalSettings === 'object') ? cfg.globalSettings : {};
+    return {
+      v: LESSON_TEMPLATE_VERSION,
+      id: _templateSafeString(o.id || ('tpl-' + Math.random().toString(36).slice(2, 10)), 64),
+      name: _templateSafeString(o.name || 'Untitled template', 80),
+      note: _templateSafeString(o.note, 240),
+      createdAt: _templateSafeString(o.createdAt || '', 40),
+      resourcePlan: plan,
+      // Defaults only. Never lessonDNA, never source text.
+      globalSettings: { gradeLevel: _templateSafeString(gs.gradeLevel, 40), tone: _templateSafeString(gs.tone, 40) }
+    };
+  }
+
+  // Returns a legacy config ready to become activeBlueprint. Callers must also
+  // clear any existing run record: the new plan reuses uiIds, so a stale run
+  // would otherwise appear to describe it.
+  function applyLessonTemplate(template) {
+    var t = (template && typeof template === 'object') ? template : {};
+    var plan = Array.isArray(t.resourcePlan) ? t.resourcePlan : [];
+    var rows = plan.map(function (row, i) {
+      var tool = row && (row.tool || row.type);
+      if (!tool) return null;
+      return {
+        tool: String(tool),
+        uiId: String((row && (row.uiId || row.stepId)) || (String(tool) + '-' + i)),
+        directive: _templateSafeString(row && row.directive, 600)
+      };
+    }).filter(Boolean);
+    var gs = (t.globalSettings && typeof t.globalSettings === 'object') ? t.globalSettings : {};
+    var out = {
+      resourcePlan: rows,
+      recommendedResources: rows.map(function (r) { return r.tool; }),
+      toolDirectives: rows.reduce(function (acc, r) { if (!acc[r.tool]) acc[r.tool] = r.directive || ''; return acc; }, {}),
+      globalSettings: {}
+    };
+    if (gs.gradeLevel) out.globalSettings.gradeLevel = gs.gradeLevel;
+    if (gs.tone) out.globalSettings.tone = gs.tone;
+    // NOTE: no lessonDNA key at all. An empty object would still read as "this
+    // template has a golden thread", and downstream code checks presence.
+    return out;
+  }
+
+  function createLessonTemplateLibrary(storage) {
+    var store = storage || (function () { try { return window.localStorage; } catch (_) { return null; } })();
+    function readAll() {
+      if (!store) return [];
+      try {
+        var raw = store.getItem(LESSON_TEMPLATE_LIBRARY_KEY);
+        if (!raw) return [];
+        var env = JSON.parse(raw);
+        if (!env || env.v !== LESSON_TEMPLATE_VERSION || !Array.isArray(env.templates)) return [];
+        return env.templates;
+      } catch (_) { return []; }
+    }
+    function writeAll(list) {
+      if (!store) return false;
+      try {
+        store.setItem(LESSON_TEMPLATE_LIBRARY_KEY, JSON.stringify({
+          v: LESSON_TEMPLATE_VERSION, savedAt: new Date().toISOString(), templates: list.slice(0, 100)
+        }));
+        return true;
+      } catch (_) { return false; }
+    }
+    return {
+      list: function () { return readAll(); },
+      get: function (id) { return readAll().filter(function (t) { return t && t.id === id; })[0] || null; },
+      save: function (template) {
+        if (!template || !template.id) return null;
+        var list = readAll().filter(function (t) { return t && t.id !== template.id; });
+        list.unshift(template);
+        return writeAll(list) ? template : null;
+      },
+      remove: function (id) {
+        var before = readAll();
+        var after = before.filter(function (t) { return t && t.id !== id; });
+        if (after.length === before.length) return false;
+        return writeAll(after);
+      }
+    };
+  }
+
+  var API = { createBlueprintService: createBlueprintService, createCommandWorkflowService: createCommandWorkflowService, COMMAND_WORKFLOW_LIBRARY_KEY: COMMAND_WORKFLOW_LIBRARY_KEY,
+              toLessonTemplate: toLessonTemplate, applyLessonTemplate: applyLessonTemplate,
+              createLessonTemplateLibrary: createLessonTemplateLibrary, LESSON_TEMPLATE_LIBRARY_KEY: LESSON_TEMPLATE_LIBRARY_KEY };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   if (typeof window !== 'undefined') {

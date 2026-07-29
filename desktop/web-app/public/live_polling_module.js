@@ -19,6 +19,7 @@
 //     sessionCode: 'ABCD',
 //     onGuestConnected: (uid, codename) => ...,
 //     onResponse:       (uid, codename, payload) => ...,
+//     acceptResponse:   (uid, payload, codename) => false, // optional scoped ids
 //     onGuestLeft:      (uid) => ...,
 //   });
 //   await host.start();
@@ -121,6 +122,48 @@
     }
     return null;
   };
+  // Reuse the session's canonical groups in the routing composer, then append
+  // groups created in this panel until the session snapshot catches up. This
+  // prevents a second, parallel group model and deduplicates by bounded id.
+  const mergeLivePollingGroups = (sessionGroups, createdGroups) => {
+    const merged = [];
+    const seen = new Set();
+    const add = (rawId, rawName) => {
+      const id = String(rawId || '').trim().slice(0, 128);
+      if (!id || id === '__proto__' || id === 'prototype' || id === 'constructor' || seen.has(id)) return;
+      seen.add(id);
+      merged.push({ id: id, name: String(rawName || id).trim().slice(0, 120) || id });
+    };
+    const source = sessionGroups && typeof sessionGroups === 'object' && !Array.isArray(sessionGroups)
+      ? sessionGroups
+      : {};
+    Object.keys(source).slice(0, 100).forEach(function (id) {
+      const entry = source[id];
+      if (entry && typeof entry === 'object') add(id, entry.name);
+    });
+    (Array.isArray(createdGroups) ? createdGroups : []).slice(0, 100).forEach(function (entry) {
+      if (entry && typeof entry === 'object') add(entry.id, entry.name);
+    });
+    return merged.slice(0, 100);
+  };
+  const selectLivePollingRoutingRules = (rules, targetGroups) => {
+    const allowedGroupIds = new Set(
+      (Array.isArray(targetGroups) ? targetGroups : [])
+        .map(function (group) { return group && String(group.id || '').trim().slice(0, 128); })
+        .filter(Boolean)
+    );
+    return (Array.isArray(rules) ? rules : []).filter(function (rule) {
+      if (!rule || !rule.when || !rule.then) return false;
+      const groupId = String(rule.then.groupId || '').trim().slice(0, 128);
+      return !!groupId && allowedGroupIds.has(groupId);
+    }).map(function (rule) {
+      return Object.assign({}, rule, {
+        then: Object.assign({}, rule.then, {
+          groupId: String(rule.then.groupId || '').trim().slice(0, 128),
+        }),
+      });
+    });
+  };
   // Patterns we WARN on (don't block) to nudge teachers away from
   // ability-tiered group names. Choice-themed names (Pirate Crew,
   // Space Crew) pass through unflagged.
@@ -214,6 +257,67 @@
     out = out.replace(/\r\n?/g, '\n').trim();
     return out.length > maxLength ? out.slice(0, maxLength).trim() : out;
   };
+  const LIVE_POLLING_AUDIENCE_ID_MAX_LENGTH = 128;
+  const normalizeLivePollingAudienceSelection = (mode, targetId) => {
+    const modeWasProvided = mode != null;
+    const rawMode = mode == null ? '' : String(mode).trim().toLowerCase();
+    const boundedTargetId = normalizeBoundedText(targetId, LIVE_POLLING_AUDIENCE_ID_MAX_LENGTH).replace(/\s+/g, ' ');
+    // A completely absent audience is the legacy whole-class preset shape.
+    // An explicit blank mode or an id without a mode is malformed, however,
+    // and must not silently broaden into a class broadcast.
+    if (!rawMode) {
+      return modeWasProvided || boundedTargetId
+        ? { audienceMode: '', audienceId: boundedTargetId, valid: false }
+        : { audienceMode: 'class', audienceId: '', valid: true };
+    }
+    const audienceMode = rawMode === 'class' || rawMode === 'group' || rawMode === 'individual' ? rawMode : '';
+    const audienceId = audienceMode === 'class'
+      ? ''
+      : boundedTargetId;
+    return {
+      audienceMode: audienceMode,
+      audienceId: audienceId,
+      valid: !!audienceMode && (audienceMode === 'class' || !!audienceId),
+    };
+  };
+  const resolveLivePollingAudienceUids = (guestList, roster, mode, targetId, selectableGroups) => {
+    const selection = normalizeLivePollingAudienceSelection(mode, targetId);
+    if (!selection.valid) return [];
+    const guests = Array.isArray(guestList) ? guestList : [];
+    const rosterMap = roster && typeof roster === 'object' && !Array.isArray(roster) ? roster : {};
+    let allowedGroupIds = null;
+    if (Array.isArray(selectableGroups)) {
+      allowedGroupIds = new Set(selectableGroups.map(function (group) {
+        return normalizeBoundedText(group && typeof group === 'object' ? group.id : group, LIVE_POLLING_AUDIENCE_ID_MAX_LENGTH);
+      }).filter(Boolean));
+    }
+    if (selection.audienceMode === 'group' && allowedGroupIds && !allowedGroupIds.has(selection.audienceId)) return [];
+    const seen = new Set();
+    return guests.reduce(function (out, guest) {
+      const uid = guest && guest.uid != null ? String(guest.uid) : '';
+      if (!uid || seen.has(uid)) return out;
+      let included = selection.audienceMode === 'class';
+      if (selection.audienceMode === 'individual') {
+        included = uid === selection.audienceId;
+      } else if (selection.audienceMode === 'group') {
+        const rosterEntry = Object.prototype.hasOwnProperty.call(rosterMap, uid) ? rosterMap[uid] : null;
+        included = !!(rosterEntry && String(rosterEntry.groupId || '') === selection.audienceId);
+      }
+      if (included) {
+        seen.add(uid);
+        out.push(uid);
+      }
+      return out;
+    }, []);
+  };
+  const filterLivePollingResponsesToAudience = (responseList, audienceUids) => {
+    const allowed = new Set((Array.isArray(audienceUids) ? audienceUids : []).map(function (uid) {
+      return uid == null ? '' : String(uid);
+    }).filter(Boolean));
+    return (Array.isArray(responseList) ? responseList : []).filter(function (entry) {
+      return entry && allowed.has(String(entry.uid || ''));
+    });
+  };
   const normalizeFeedbackResponseText = (value) => normalizeBoundedText(value, FEEDBACK_RESPONSE_MAX_LENGTH);
   const normalizeFeedbackConfig = (poll) => {
     const raw = poll && poll.feedback && typeof poll.feedback === 'object' ? poll.feedback : {};
@@ -262,22 +366,9 @@
     else list.push(next);
     return list;
   };
-  const resolveFeedbackAudienceUids = (guestList, roster, mode, targetId) => {
-    const guests = Array.isArray(guestList) ? guestList : [];
-    const rosterMap = roster && typeof roster === 'object' ? roster : {};
-    const seen = new Set();
-    return guests.reduce((out, guest) => {
-      const uid = guest && guest.uid ? String(guest.uid) : '';
-      if (!uid || seen.has(uid)) return out;
-      const included = mode === 'individual'
-        ? uid === String(targetId || '')
-        : mode === 'group'
-          ? !!(targetId && rosterMap[uid] && rosterMap[uid].groupId === targetId)
-          : true;
-      if (included) { seen.add(uid); out.push(uid); }
-      return out;
-    }, []);
-  };
+  // Compatibility alias for existing Feedback Response callers. Audience
+  // selection now belongs to the shared poll composer for every poll type.
+  const resolveFeedbackAudienceUids = resolveLivePollingAudienceUids;
   const buildFeedbackPrompt = (input) => {
     const source = input && typeof input === 'object' ? input : {};
     const prompt = normalizeBoundedText(source.prompt, 1200);
@@ -431,6 +522,339 @@
     };
   };
 
+
+  // Session-wide moderated Q&A -------------------------------------------------
+  // Q&A uses the same RTC star as live polling but is intentionally independent
+  // of any one poll. Raw question text, author identity, and voter identity live
+  // only in the teacher's in-memory PollingHost. Guest packets contain approved
+  // anonymous questions plus the viewer's own held/dismissed questions.
+  const SESSION_QA_MAX_QUESTIONS = 150;
+  const SESSION_QA_MAX_PER_AUTHOR = 12;
+  const SESSION_QA_QUESTION_MAX_LENGTH = 500;
+  const SESSION_QA_CLIENT_ID_MAX_LENGTH = 80;
+  const SESSION_QA_ID_MAX_LENGTH = 120;
+  const normalizeSessionQaQuestionText = (value) => {
+    const text = normalizeBoundedText(value, SESSION_QA_QUESTION_MAX_LENGTH);
+    return text.replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+  };
+  const normalizeSessionQaId = (value, maxLength) => {
+    const id = String(value || '').trim().slice(0, maxLength || SESSION_QA_ID_MAX_LENGTH);
+    if (!id || id === '__proto__' || id === 'prototype' || id === 'constructor') return '';
+    return id;
+  };
+  const normalizeSessionQaStatus = (value) => (
+    value === 'approved' || value === 'dismissed' || value === 'archived' ? value : 'held'
+  );
+  const createSessionQaState = (input) => {
+    const source = input && typeof input === 'object' ? input : {};
+    return {
+      enabled: source.enabled === true,
+      submissionsLocked: source.submissionsLocked === true,
+      questions: Array.isArray(source.questions) ? source.questions.slice(0, SESSION_QA_MAX_QUESTIONS) : [],
+      upvotesByQuestion: source.upvotesByQuestion && typeof source.upvotesByQuestion === 'object'
+        ? Object.assign({}, source.upvotesByQuestion)
+        : {},
+      featuredQuestionId: normalizeSessionQaId(source.featuredQuestionId, SESSION_QA_ID_MAX_LENGTH) || null,
+      updatedAt: Number(source.updatedAt) || Date.now(),
+    };
+  };
+  const getSessionQaUpvoteCount = (upvotesByQuestion, questionId) => {
+    const byQuestion = upvotesByQuestion && typeof upvotesByQuestion === 'object' ? upvotesByQuestion : {};
+    const votes = byQuestion[questionId] && typeof byQuestion[questionId] === 'object'
+      ? byQuestion[questionId]
+      : {};
+    return Object.keys(votes).length;
+  };
+  const submitSessionQaQuestion = (state, submission, nowValue, idToken) => {
+    const current = state && typeof state === 'object' ? state : createSessionQaState();
+    if (current.enabled !== true || current.submissionsLocked === true) return current;
+    const source = submission && typeof submission === 'object' ? submission : {};
+    const ownerUid = normalizeSessionQaId(source.ownerUid, 128);
+    const codename = normalizeBoundedText(source.codename || 'Student', 64) || 'Student';
+    const text = normalizeSessionQaQuestionText(source.text);
+    const clientQuestionId = normalizeSessionQaId(source.clientQuestionId, SESSION_QA_CLIENT_ID_MAX_LENGTH);
+    const questions = Array.isArray(current.questions) ? current.questions : [];
+    if (!ownerUid || !text || questions.length >= SESSION_QA_MAX_QUESTIONS) return current;
+    if (clientQuestionId && questions.some((question) => (
+      question && question.ownerUid === ownerUid && question.clientQuestionId === clientQuestionId
+    ))) return current;
+    if (questions.filter((question) => question && question.ownerUid === ownerUid).length >= SESSION_QA_MAX_PER_AUTHOR) {
+      return current;
+    }
+    const now = Number(nowValue) || Date.now();
+    const token = String(idToken || Math.random().toString(36).slice(2, 10))
+      .replace(/[^a-z0-9]/gi, '')
+      .slice(0, 10) || 'question';
+    const baseId = ('qa-' + Math.max(0, Math.round(now)).toString(36) + '-' + token)
+      .slice(0, SESSION_QA_ID_MAX_LENGTH);
+    let questionId = baseId;
+    let suffix = 2;
+    while (questions.some((question) => question && question.questionId === questionId)) {
+      questionId = (baseId + '-' + suffix).slice(0, SESSION_QA_ID_MAX_LENGTH);
+      suffix += 1;
+    }
+    const question = {
+      questionId: questionId,
+      clientQuestionId: clientQuestionId,
+      ownerUid: ownerUid,
+      codename: codename,
+      text: text,
+      status: 'held',
+      archivedFrom: null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    return Object.assign({}, current, {
+      questions: questions.concat([question]),
+      updatedAt: now,
+    });
+  };
+  const moderateSessionQaQuestion = (state, questionIdValue, action, nowValue) => {
+    const current = state && typeof state === 'object' ? state : createSessionQaState();
+    const questionId = normalizeSessionQaId(questionIdValue, SESSION_QA_ID_MAX_LENGTH);
+    const questions = Array.isArray(current.questions) ? current.questions : [];
+    const index = questions.findIndex((question) => question && question.questionId === questionId);
+    if (index < 0) return current;
+    const existing = questions[index];
+    let nextStatus = normalizeSessionQaStatus(action);
+    let archivedFrom = existing.archivedFrom || null;
+    if (action === 'archive') {
+      nextStatus = 'archived';
+      archivedFrom = existing.status === 'archived'
+        ? (existing.archivedFrom || 'held')
+        : normalizeSessionQaStatus(existing.status);
+    } else if (action === 'restore') {
+      if (existing.status !== 'archived') return current;
+      nextStatus = existing.archivedFrom === 'approved' || existing.archivedFrom === 'dismissed'
+        ? existing.archivedFrom
+        : 'held';
+      archivedFrom = null;
+    } else if (action === 'hold') {
+      nextStatus = 'held';
+      archivedFrom = null;
+    } else if (action === 'approve') {
+      nextStatus = 'approved';
+      archivedFrom = null;
+    } else if (action === 'dismiss') {
+      nextStatus = 'dismissed';
+      archivedFrom = null;
+    } else {
+      return current;
+    }
+    if (existing.status === nextStatus && existing.archivedFrom === archivedFrom) return current;
+    const now = Number(nowValue) || Date.now();
+    const nextQuestions = questions.slice();
+    nextQuestions[index] = Object.assign({}, existing, {
+      status: nextStatus,
+      archivedFrom: archivedFrom,
+      updatedAt: now,
+    });
+    return Object.assign({}, current, {
+      questions: nextQuestions,
+      featuredQuestionId: nextStatus === 'approved' || current.featuredQuestionId !== questionId
+        ? current.featuredQuestionId
+        : null,
+      updatedAt: now,
+    });
+  };
+  const setSessionQaUpvote = (state, questionIdValue, voterUidValue, active, nowValue) => {
+    const current = state && typeof state === 'object' ? state : createSessionQaState();
+    if (current.enabled !== true) return current;
+    const questionId = normalizeSessionQaId(questionIdValue, SESSION_QA_ID_MAX_LENGTH);
+    const voterUid = normalizeSessionQaId(voterUidValue, 128);
+    const question = (Array.isArray(current.questions) ? current.questions : [])
+      .find((item) => item && item.questionId === questionId);
+    if (!question || question.status !== 'approved' || !voterUid || question.ownerUid === voterUid) return current;
+    const allVotes = current.upvotesByQuestion && typeof current.upvotesByQuestion === 'object'
+      ? current.upvotesByQuestion
+      : {};
+    const priorVotes = allVotes[questionId] && typeof allVotes[questionId] === 'object'
+      ? allVotes[questionId]
+      : {};
+    const alreadyActive = Object.prototype.hasOwnProperty.call(priorVotes, voterUid);
+    if ((active === true && alreadyActive) || (active !== true && !alreadyActive)) return current;
+    const nextVotes = Object.assign({}, priorVotes);
+    if (active === true) nextVotes[voterUid] = Number(nowValue) || Date.now();
+    else delete nextVotes[voterUid];
+    return Object.assign({}, current, {
+      upvotesByQuestion: Object.assign({}, allVotes, { [questionId]: nextVotes }),
+      updatedAt: Number(nowValue) || Date.now(),
+    });
+  };
+  const sortSessionQaQuestions = (questionList, mode, upvotesByQuestion) => {
+    const list = Array.isArray(questionList) ? questionList.slice() : [];
+    const score = (question) => Number(question && question.upvoteCount) || getSessionQaUpvoteCount(
+      upvotesByQuestion,
+      question && question.questionId
+    );
+    return list.sort((a, b) => {
+      if (mode === 'top') {
+        const voteDelta = score(b) - score(a);
+        if (voteDelta) return voteDelta;
+      }
+      const timeDelta = (Number(b && b.createdAt) || 0) - (Number(a && a.createdAt) || 0);
+      if (timeDelta) return timeDelta;
+      return String((a && a.questionId) || '').localeCompare(String((b && b.questionId) || ''));
+    });
+  };
+  const sanitizeFeaturedQaPacket = (question, upvotesByQuestion, featuredAt) => {
+    if (!question || typeof question !== 'object') return null;
+    if (question.status != null && question.status !== 'approved') return null;
+    const questionId = normalizeSessionQaId(question.questionId, SESSION_QA_ID_MAX_LENGTH);
+    const text = normalizeSessionQaQuestionText(question.text);
+    if (!questionId || !text) return null;
+    return {
+      questionId: questionId,
+      text: text,
+      upvoteCount: Math.max(0, clampInt(
+        question.upvoteCount != null
+          ? question.upvoteCount
+          : getSessionQaUpvoteCount(upvotesByQuestion, questionId),
+        0,
+        0,
+        SESSION_QA_MAX_QUESTIONS
+      )),
+      featuredAt: Number(featuredAt || question.featuredAt) || Date.now(),
+    };
+  };
+  const sanitizeSessionQaState = (state, viewerUidValue) => {
+    const current = state && typeof state === 'object' ? state : createSessionQaState();
+    const viewerUid = normalizeSessionQaId(viewerUidValue, 128);
+    const enabled = current.enabled === true;
+    const questions = enabled ? (Array.isArray(current.questions) ? current.questions : []).reduce((out, question) => {
+      if (out.length >= SESSION_QA_MAX_QUESTIONS || !question || typeof question !== 'object') return out;
+      const questionId = normalizeSessionQaId(question.questionId, SESSION_QA_ID_MAX_LENGTH);
+      const text = normalizeSessionQaQuestionText(question.text);
+      const status = normalizeSessionQaStatus(question.status);
+      const own = !!(viewerUid && question.ownerUid === viewerUid);
+      const isPublic = status === 'approved';
+      if (!questionId || !text || (!isPublic && !(own && (status === 'held' || status === 'dismissed')))) return out;
+      const votes = current.upvotesByQuestion && current.upvotesByQuestion[questionId];
+      out.push({
+        questionId: questionId,
+        text: text,
+        status: status,
+        createdAt: Number(question.createdAt) || 0,
+        updatedAt: Number(question.updatedAt) || 0,
+        upvoteCount: isPublic ? getSessionQaUpvoteCount(current.upvotesByQuestion, questionId) : 0,
+        upvotedByViewer: !!(isPublic && viewerUid && votes && Object.prototype.hasOwnProperty.call(votes, viewerUid)),
+        own: own,
+        featured: !!(isPublic && current.featuredQuestionId === questionId),
+      });
+      return out;
+    }, []) : [];
+    const featuredSource = enabled && current.featuredQuestionId
+      ? (Array.isArray(current.questions) ? current.questions : []).find((question) => (
+          question && question.questionId === current.featuredQuestionId && question.status === 'approved'
+        ))
+      : null;
+    return {
+      enabled: enabled,
+      submissionsLocked: enabled && current.submissionsLocked === true,
+      questions: questions,
+      featuredQuestion: featuredSource
+        ? sanitizeFeaturedQaPacket(featuredSource, current.upvotesByQuestion, current.updatedAt)
+        : null,
+      updatedAt: Number(current.updatedAt) || Date.now(),
+    };
+  };
+  const sanitizeSessionQaGuestPacket = (packet) => {
+    const source = packet && typeof packet === 'object' ? packet : {};
+    const enabled = source.enabled === true;
+    const questions = enabled ? (Array.isArray(source.questions) ? source.questions : []).reduce((out, question) => {
+      if (out.length >= SESSION_QA_MAX_QUESTIONS || !question || typeof question !== 'object') return out;
+      const questionId = normalizeSessionQaId(question.questionId, SESSION_QA_ID_MAX_LENGTH);
+      const text = normalizeSessionQaQuestionText(question.text);
+      const status = question.status === 'approved'
+        ? 'approved'
+        : question.status === 'dismissed'
+          ? 'dismissed'
+          : 'held';
+      const own = question.own === true;
+      if (!questionId || !text || (status !== 'approved' && !own)) return out;
+      out.push({
+        questionId: questionId,
+        text: text,
+        status: status,
+        createdAt: Number(question.createdAt) || 0,
+        updatedAt: Number(question.updatedAt) || 0,
+        upvoteCount: status === 'approved'
+          ? clampInt(question.upvoteCount, 0, 0, SESSION_QA_MAX_QUESTIONS)
+          : 0,
+        upvotedByViewer: status === 'approved' && question.upvotedByViewer === true,
+        own: own,
+        featured: status === 'approved' && question.featured === true,
+      });
+      return out;
+    }, []) : [];
+    return {
+      enabled: enabled,
+      submissionsLocked: enabled && source.submissionsLocked === true,
+      questions: questions,
+      featuredQuestion: enabled ? sanitizeFeaturedQaPacket(source.featuredQuestion) : null,
+      updatedAt: Number(source.updatedAt) || Date.now(),
+    };
+  };
+
+  const buildSessionQaActivitySnapshot = (state, guestList, sessionCode) => {
+    const current = state && typeof state === 'object' ? state : createSessionQaState();
+    const questions = current.enabled === true && Array.isArray(current.questions)
+      ? current.questions.filter(function (question) { return question && typeof question === 'object'; })
+      : [];
+    if (questions.length === 0) return null;
+
+    const audienceUids = [];
+    const participantStatus = {};
+    const seenAuthors = new Set();
+    questions.forEach(function (question) {
+      const uid = normalizeSessionQaId(question.ownerUid, 128);
+      if (!uid || seenAuthors.has(uid)) return;
+      seenAuthors.add(uid);
+      audienceUids.push(uid);
+      participantStatus[uid] = 'submitted';
+    });
+    if (audienceUids.length === 0) return null;
+
+    const connectedUids = new Set((Array.isArray(guestList) ? guestList : []).map(function (guest) {
+      return normalizeSessionQaId(guest && guest.uid, 128);
+    }).filter(Boolean));
+    const approved = questions.filter(function (question) { return question.status === 'approved'; }).length;
+    const hidden = questions.filter(function (question) {
+      return question.status === 'dismissed' || question.status === 'archived';
+    }).length;
+    const votesCast = questions.reduce(function (total, question) {
+      return total + getSessionQaUpvoteCount(current.upvotesByQuestion, question.questionId);
+    }, 0);
+    const now = Number(current.updatedAt) || Date.now();
+    const startedAt = questions.reduce(function (earliest, question) {
+      const createdAt = Number(question.createdAt) || 0;
+      return createdAt > 0 && (!earliest || createdAt < earliest) ? createdAt : earliest;
+    }, 0) || now;
+    const safeSessionCode = normalizeSessionQaId(sessionCode, 64) || 'session';
+
+    // This is the only Q&A data allowed into Activity Pulse: pseudonymous
+    // participation status and aggregate moderation/vote counts. Question text,
+    // codenames, question IDs, and voter maps remain in the host's memory.
+    return {
+      activityId: 'session-qa-' + safeSessionCode,
+      family: 'polling',
+      kind: 'session_qa',
+      phase: current.submissionsLocked === true ? 'paused' : 'collecting',
+      audienceUids: audienceUids,
+      participantStatus: participantStatus,
+      counts: {
+        connected: audienceUids.filter(function (uid) { return connectedUids.has(uid); }).length,
+        approved: approved,
+        hidden: hidden,
+        revealed: current.featuredQuestionId ? 1 : 0,
+        votesCast: votesCast,
+      },
+      startedAt: startedAt,
+      updatedAt: now,
+      endedAt: 0,
+    };
+  };
+
   const shouldApplyPollClose = (activePoll, payload) => {
     if (!activePoll) return true;
     const closeId = payload && payload.pollId;
@@ -494,40 +918,89 @@
       this.sessionCode = config.sessionCode;
       this.onGuestConnected = config.onGuestConnected || (() => {});
       this.onResponse = config.onResponse || (() => {});
-      // Dedicated transports can opt into tightly scoped ids while the
-      // standard polling path remains gated to the active poll.
-      this.acceptResponse = typeof config.acceptResponse === 'function' ? config.acceptResponse : null;
+      // Dedicated transports (for example quiz-signaling) can opt into a
+      // tightly scoped response-id validator without weakening the default
+      // active-poll gate. The callback receives only bounded payloads.
+      this.acceptResponse = typeof config.acceptResponse === 'function'
+        ? config.acceptResponse
+        : null;
       this.onResponseStatus = config.onResponseStatus || (() => {});
       this.onPeerVote = config.onPeerVote || (() => {});
+      this.onSessionQaStateChange = config.onSessionQaStateChange || (() => {});
+      this.onSessionQaQuestion = config.onSessionQaQuestion || (() => {});
+      this.onSessionQaUpvote = config.onSessionQaUpvote || (() => {});
       this.onGuestLeft = config.onGuestLeft || (() => {});
       this.peers = new Map();
       this.collectionUnsub = null;
       this.activePoll = null;
       this.activeAudienceUids = null;
+      this.activePollResults = null;
       this.activePeerShowcase = null;
       this.peerShowcaseAudienceUids = null;
+      this.sessionQaState = createSessionQaState({ enabled: config.enableSessionQa === true });
       this._stopped = false;
       // Roster gate: when set (Set of uids), offers from unknown uids are
       // ignored. Defense-in-depth against drive-by connections to a guessed
       // session code — NOT a security boundary on its own, since the roster
       // lives in a client-writable doc until Firestore rules land (see
       // docs/LIVE_SESSION_HARDENING_PROPOSAL.md). null = allow all (legacy).
-      this._allowedUids = config.allowedUids ? new Set(config.allowedUids) : null;
+      this._allowedUids = null;
+      this.setAllowedUids(config.allowedUids == null ? null : config.allowedUids);
       this.signalingPath = config.signalingPath || 'signaling';
     }
 
     setAllowedUids(uids) {
-      this._allowedUids = uids ? new Set(uids) : null;
+      if (uids == null) {
+        this._allowedUids = null;
+        return;
+      }
+      let values = [];
+      try { values = Array.from(uids); } catch (err) {}
+      this._allowedUids = new Set(values.map(function (uid) {
+        return uid == null ? '' : String(uid);
+      }).filter(Boolean));
+      const allowed = this._allowedUids;
+      if (this.activeAudienceUids) {
+        this.activeAudienceUids = new Set(Array.from(this.activeAudienceUids).filter(function (uid) {
+          return allowed.has(uid);
+        }));
+      }
+      if (this.peerShowcaseAudienceUids) {
+        this.peerShowcaseAudienceUids = new Set(Array.from(this.peerShowcaseAudienceUids).filter(function (uid) {
+          return allowed.has(uid);
+        }));
+      }
+      Array.from(this.peers.keys()).forEach((uid) => {
+        if (allowed.has(uid)) return;
+        const peer = this.peers.get(uid);
+        if (peer && peer.dc && peer.dc.readyState === 'open') {
+          try {
+            peer.dc.send(JSON.stringify({
+              type: 'hostClosed',
+              payload: { pollId: (this.activePoll && this.activePoll.id) || null },
+            }));
+          } catch (err) {}
+        }
+        this._cleanupPeer(uid);
+      });
+    }
+
+    _isUidAllowed(uid) {
+      return !this._allowedUids || this._allowedUids.has(uid);
     }
 
     _isUidInActiveAudience(uid) {
-      return !this.activeAudienceUids || this.activeAudienceUids.has(uid);
+      return this._isUidAllowed(uid) && (!this.activeAudienceUids || this.activeAudienceUids.has(uid));
+    }
+
+    _isUidInPeerShowcaseAudience(uid) {
+      return this._isUidAllowed(uid) && (!this.peerShowcaseAudienceUids || this.peerShowcaseAudienceUids.has(uid));
     }
 
     _acceptsResponse(uid, codename, payload) {
-      if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return false;
-      if (this._allowedUids && !this._allowedUids.has(uid)) return false;
-      if (!this._isUidInActiveAudience(uid)) return false;
+      if (!payload || typeof payload !== 'object' || Array.isArray(payload) || !this._isUidInActiveAudience(uid)) {
+        return false;
+      }
       if (this.activePoll && payload.pollId === this.activePoll.id) return true;
       if (!this.acceptResponse) return false;
       const pollId = payload.pollId;
@@ -548,10 +1021,6 @@
       }
     }
 
-    _isUidInPeerShowcaseAudience(uid) {
-      return !this.peerShowcaseAudienceUids || this.peerShowcaseAudienceUids.has(uid);
-    }
-
     async start() {
       const fb = getFb();
       if (!fb) throw new Error('LivePolling: Firebase not available');
@@ -563,7 +1032,7 @@
         snap.docChanges().forEach((change) => {
           if (change.type === 'removed') return;
           const uid = change.doc.id;
-          if (this._allowedUids && !this._allowedUids.has(uid)) return;
+          if (!this._isUidAllowed(uid)) return;
           const data = change.doc.data() || {};
           const existing = this.peers.get(uid);
           if (data.offer && !existing) {
@@ -587,14 +1056,17 @@
 
     async _acceptPeer(uid, offerData, signalingRef) {
       const fb = getFb();
-      if (!fb) return;
+      if (!fb || !this._isUidAllowed(uid)) return;
       const pc = new RTCPeerConnection(getRtcConfig());
       const codename = (typeof offerData.codename === 'string' && offerData.codename.slice(0, 64)) || 'Guest';
       const peerRecord = { pc, dc: null, signalingRef, codename, sentIce: [], offerSdp: (offerData.offer && offerData.offer.sdp) || null };
       this.peers.set(uid, peerRecord);
 
       pc.onicecandidate = (e) => {
-        if (!e.candidate) return;
+        if (
+          !e.candidate || this._stopped || !this._isUidAllowed(uid)
+          || this.peers.get(uid) !== peerRecord
+        ) return;
         peerRecord.sentIce.push(e.candidate.toJSON());
         fb.setDoc(signalingRef, { iceFromHost: peerRecord.sentIce }, { merge: true }).catch(() => {});
       };
@@ -603,13 +1075,21 @@
         const dc = e.channel;
         peerRecord.dc = dc;
         dc.onopen = () => {
+          if (this._stopped || !this._isUidAllowed(uid) || this.peers.get(uid) !== peerRecord) {
+            this._cleanupPeer(uid, peerRecord);
+            try { pc.close(); } catch (err) {}
+            return;
+          }
           this.onGuestConnected(uid, codename);
           // State sync on (re)connect. A reconnecting guest may hold a stale
           // poll overlay from before the drop; sending an id-less closePoll
           // clears it (shouldApplyPollClose treats a missing pollId as
           // "close whatever is showing").
           if (this.activePoll && this._isUidInActiveAudience(uid)) {
-            try { dc.send(JSON.stringify({ type: 'poll', payload: this.activePoll })); } catch (err) {}
+            try {
+              if (this.activePollResults && this.activePollResults.pollId === this.activePoll.id) dc.send(JSON.stringify({ type: 'pollResults', payload: this.activePollResults }));
+              else dc.send(JSON.stringify({ type: 'poll', payload: this.activePoll }));
+            } catch (err) {}
           } else {
             try { dc.send(JSON.stringify({ type: 'closePoll', payload: {} })); } catch (err) {}
           }
@@ -625,12 +1105,18 @@
               }
             } catch (err) {}
           }
+          // Q&A is session-wide, so reconnect sync is independent of the
+          // currently active poll or peer-showcase audience.
+          this._sendSessionQaStateToPeer(uid);
         };
         dc.onmessage = (msg) => {
           try {
+            if (this._stopped || !this._isUidAllowed(uid) || this.peers.get(uid) !== peerRecord) return;
             const parsed = JSON.parse(msg.data);
             if (parsed && parsed.type === 'response' && parsed.payload) {
-              if (this._acceptsResponse(uid, codename, parsed.payload)) this.onResponse(uid, codename, parsed.payload);
+              if (this._acceptsResponse(uid, codename, parsed.payload)) {
+                this.onResponse(uid, codename, parsed.payload);
+              }
             } else if (parsed && parsed.type === 'responseStatus' && parsed.payload) {
               if (this.activePoll && parsed.payload.pollId === this.activePoll.id && this._isUidInActiveAudience(uid)) {
                 const status = parsed.payload.status === 'submitted' || parsed.payload.status === 'editing'
@@ -648,28 +1134,41 @@
                 const vote = normalizePeerVote(parsed.payload, this.activePeerShowcase, uid);
                 if (vote) this.onPeerVote(uid, codename, vote);
               }
+            } else if (parsed && parsed.type === 'sessionQaQuestion' && parsed.payload) {
+              this._receiveSessionQaQuestion(uid, codename, parsed.payload);
+            } else if (parsed && parsed.type === 'sessionQaUpvote' && parsed.payload) {
+              this._receiveSessionQaUpvote(uid, parsed.payload);
             }
           } catch (err) {}
         };
-        dc.onclose = () => this._cleanupPeer(uid);
+        dc.onclose = () => this._cleanupPeer(uid, peerRecord);
       };
 
       pc.onconnectionstatechange = () => {
+        if (this.peers.get(uid) !== peerRecord) return;
         if (pc.connectionState === 'connected') {
-          setTimeout(() => fb.deleteDoc(signalingRef).catch(() => {}), 750);
+          setTimeout(() => {
+            if (
+              this._stopped || !this._isUidAllowed(uid)
+              || this.peers.get(uid) !== peerRecord
+            ) return;
+            fb.deleteDoc(signalingRef).catch(() => {});
+          }, 750);
         } else if (pc.connectionState === 'failed' || pc.connectionState === 'closed' || pc.connectionState === 'disconnected') {
-          this._cleanupPeer(uid);
+          this._cleanupPeer(uid, peerRecord);
         }
       };
 
       try {
         await pc.setRemoteDescription(new RTCSessionDescription(offerData.offer));
+        if (!this._isUidAllowed(uid) || this.peers.get(uid) !== peerRecord) { try { pc.close(); } catch (err) {} return; }
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
+        if (!this._isUidAllowed(uid) || this.peers.get(uid) !== peerRecord) { try { pc.close(); } catch (err) {} return; }
         await fb.setDoc(signalingRef, { answer: { type: answer.type, sdp: answer.sdp } }, { merge: true });
       } catch (err) {
         console.warn('[LivePolling host] accept peer failed:', err && err.message);
-        this._cleanupPeer(uid);
+        this._cleanupPeer(uid, peerRecord);
       }
     }
 
@@ -686,6 +1185,7 @@
       if (this.activePeerShowcase) this.closePeerShowcase(this.activePeerShowcase.roundId);
       this.activePoll = poll;
       this.activeAudienceUids = Array.isArray(audienceUids) ? new Set(audienceUids) : null;
+      this.activePollResults = null;
       const msg = JSON.stringify({ type: 'poll', payload: poll });
       const clear = JSON.stringify({ type: 'closePoll', payload: {} });
       this.peers.forEach((peer, uid) => {
@@ -708,12 +1208,14 @@
       if (this.activePoll && this.activePoll.id === idToClose) {
         this.activePoll = null;
         this.activeAudienceUids = null;
+        this.activePollResults = null;
       }
     }
 
     broadcastPollResults(pollId, summary) {
       if (!pollId || !summary) return;
       const safeSummary = Object.assign({}, summary, { pollId: pollId });
+      if (this.activePoll && this.activePoll.id === pollId) this.activePollResults = safeSummary;
       const msg = JSON.stringify({ type: 'pollResults', payload: safeSummary });
       this.peers.forEach((peer, uid) => {
         if (peer.dc && peer.dc.readyState === 'open' && this._isUidInActiveAudience(uid)) {
@@ -775,6 +1277,130 @@
       return true;
     }
 
+
+    _sendSessionQaStateToPeer(uid) {
+      const peer = this.peers.get(uid);
+      if (!peer || !peer.dc || peer.dc.readyState !== 'open') return false;
+      const packet = sanitizeSessionQaState(this.sessionQaState, uid);
+      try {
+        peer.dc.send(JSON.stringify({ type: 'sessionQaState', payload: packet }));
+        if (packet.featuredQuestion) {
+          peer.dc.send(JSON.stringify({ type: 'sessionQaFeatured', payload: packet.featuredQuestion }));
+        }
+        return true;
+      } catch (err) {
+        return false;
+      }
+    }
+
+    _broadcastSessionQaState() {
+      this.peers.forEach((peer, uid) => {
+        if (peer.dc && peer.dc.readyState === 'open') this._sendSessionQaStateToPeer(uid);
+      });
+    }
+
+    _broadcastSessionQaFeatured() {
+      const state = this.sessionQaState;
+      const question = state && state.featuredQuestionId
+        ? (state.questions || []).find((item) => item && item.questionId === state.featuredQuestionId)
+        : null;
+      const packet = question
+        ? sanitizeFeaturedQaPacket(question, state.upvotesByQuestion, state.updatedAt)
+        : null;
+      const message = JSON.stringify({ type: 'sessionQaFeatured', payload: packet || {} });
+      this.peers.forEach((peer) => {
+        if (peer.dc && peer.dc.readyState === 'open') {
+          try { peer.dc.send(message); } catch (err) {}
+        }
+      });
+      return packet;
+    }
+
+    _commitSessionQaState(nextState) {
+      if (!nextState || nextState === this.sessionQaState) return false;
+      this.sessionQaState = nextState;
+      this.onSessionQaStateChange(nextState);
+      this._broadcastSessionQaState();
+      return true;
+    }
+
+    setSessionQaEnabled(enabled) {
+      const value = enabled === true;
+      if (this.sessionQaState.enabled === value) return this.sessionQaState;
+      const next = Object.assign({}, this.sessionQaState, {
+        enabled: value,
+        updatedAt: Date.now(),
+      });
+      this._commitSessionQaState(next);
+      return next;
+    }
+
+    setSessionQaSubmissionsLocked(locked) {
+      if (!this.sessionQaState.enabled) return this.sessionQaState;
+      const value = locked === true;
+      if (this.sessionQaState.submissionsLocked === value) return this.sessionQaState;
+      const next = Object.assign({}, this.sessionQaState, {
+        submissionsLocked: value,
+        updatedAt: Date.now(),
+      });
+      this._commitSessionQaState(next);
+      return next;
+    }
+
+    setSessionQaQuestionStatus(questionId, action) {
+      const priorFeaturedId = this.sessionQaState.featuredQuestionId;
+      const next = moderateSessionQaQuestion(this.sessionQaState, questionId, action, Date.now());
+      const changed = this._commitSessionQaState(next);
+      if (changed && priorFeaturedId && !next.featuredQuestionId) this._broadcastSessionQaFeatured();
+      return next;
+    }
+
+    featureSessionQaQuestion(questionId) {
+      const normalizedId = normalizeSessionQaId(questionId, SESSION_QA_ID_MAX_LENGTH);
+      const question = normalizedId
+        ? (this.sessionQaState.questions || []).find((item) => (
+            item && item.questionId === normalizedId && item.status === 'approved'
+          ))
+        : null;
+      if (normalizedId && !question) return null;
+      if ((this.sessionQaState.featuredQuestionId || null) === (normalizedId || null)) {
+        return question
+          ? sanitizeFeaturedQaPacket(question, this.sessionQaState.upvotesByQuestion, this.sessionQaState.updatedAt)
+          : null;
+      }
+      const next = Object.assign({}, this.sessionQaState, {
+        featuredQuestionId: normalizedId || null,
+        updatedAt: Date.now(),
+      });
+      this._commitSessionQaState(next);
+      return this._broadcastSessionQaFeatured();
+    }
+
+    _receiveSessionQaQuestion(uid, codename, payload) {
+      const next = submitSessionQaQuestion(this.sessionQaState, {
+        ownerUid: uid,
+        codename: codename,
+        text: payload && payload.text,
+        clientQuestionId: payload && payload.clientQuestionId,
+      }, Date.now());
+      if (this._commitSessionQaState(next)) {
+        const added = next.questions[next.questions.length - 1];
+        this.onSessionQaQuestion(uid, codename, added);
+      } else {
+        // Return the authoritative lock/limit state to rejected or duplicate
+        // senders so their UI never relies on optimistic local state.
+        this._sendSessionQaStateToPeer(uid);
+      }
+    }
+
+    _receiveSessionQaUpvote(uid, payload) {
+      const questionId = normalizeSessionQaId(payload && payload.questionId, SESSION_QA_ID_MAX_LENGTH);
+      const active = !!(payload && payload.active === true);
+      const next = setSessionQaUpvote(this.sessionQaState, questionId, uid, active, Date.now());
+      if (this._commitSessionQaState(next)) this.onSessionQaUpvote(uid, questionId, active);
+      else this._sendSessionQaStateToPeer(uid);
+    }
+
     sendFeedback(uid, pollId, packet) {
       if (!uid || !pollId || !this.activePoll || this.activePoll.id !== pollId || !this._isUidInActiveAudience(uid)) return false;
       const peer = this.peers.get(uid);
@@ -788,9 +1414,10 @@
       }
     }
 
-    _cleanupPeer(uid) {
+    _cleanupPeer(uid, expectedPeer) {
       const peer = this.peers.get(uid);
-      if (!peer) return;
+      if (!peer || (expectedPeer && peer !== expectedPeer)) return;
+      this.peers.delete(uid);
       try { if (peer.pc) peer.pc.close(); } catch (err) {}
       // Deliberately do NOT delete the signaling doc here. A reconnecting
       // guest overwrites that same doc with a fresh offer; deleting it from a
@@ -799,8 +1426,7 @@
       // successful connect (both sides, ~750ms post-connect) and by the
       // guest's own leave(); a doc for a guest that never connected simply
       // waits for the guest's next overwrite.
-      this.peers.delete(uid);
-      this.onGuestLeft(uid);
+      if (!this._stopped) this.onGuestLeft(uid);
     }
 
     stop() {
@@ -824,8 +1450,10 @@
       });
       this.activePoll = null;
       this.activeAudienceUids = null;
+      this.activePollResults = null;
       this.activePeerShowcase = null;
       this.peerShowcaseAudienceUids = null;
+      this.sessionQaState = createSessionQaState();
       const teardown = () => {
         const uids = Array.from(this.peers.keys());
         uids.forEach((uid) => this._cleanupPeer(uid));
@@ -859,6 +1487,8 @@
       this.onPeerShowcase = config.onPeerShowcase || (() => {});
       this.onPeerVoteResults = config.onPeerVoteResults || (() => {});
       this.onPeerShowcaseClose = config.onPeerShowcaseClose || (() => {});
+      this.onSessionQaState = config.onSessionQaState || (() => {});
+      this.onSessionQaFeatured = config.onSessionQaFeatured || (() => {});
       this.onFeedback = config.onFeedback || (() => {});
       this.onConnected = config.onConnected || (() => {});
       this.onDisconnected = config.onDisconnected || (() => {});
@@ -881,25 +1511,33 @@
       this.signalingRef = signalingDocRef(this.sessionCode, this.userUid, this.signalingPath);
       if (!this.signalingRef) throw new Error('LivePolling: cannot resolve signaling doc');
 
-      this.pc = new RTCPeerConnection(getRtcConfig());
-      this.dc = this.pc.createDataChannel('polling', { ordered: true });
+      const signalingRef = this.signalingRef;
+      const pc = new RTCPeerConnection(getRtcConfig());
+      const dc = pc.createDataChannel('polling', { ordered: true });
+      this.pc = pc;
+      this.dc = dc;
 
-      this.pc.onicecandidate = (e) => {
-        if (!e.candidate) return;
+      pc.onicecandidate = (e) => {
+        if (this.pc !== pc || !e.candidate) return;
         this.sentIce.push(e.candidate.toJSON());
-        fb.setDoc(this.signalingRef, { iceFromGuest: this.sentIce }, { merge: true }).catch(() => {});
+        fb.setDoc(signalingRef, { iceFromGuest: this.sentIce }, { merge: true }).catch(() => {});
       };
 
-      this.dc.onopen = () => {
+      dc.onopen = () => {
+        if (this.pc !== pc || this.dc !== dc) return;
         this._connected = true;
         if (this._timeoutHandle) { clearTimeout(this._timeoutHandle); this._timeoutHandle = null; }
         this.onConnected();
       };
-      this.dc.onclose = () => {
-        if (this._connected) this.onDisconnected();
+      dc.onclose = () => {
+        if (this.pc !== pc || this.dc !== dc) return;
+        const wasConnected = this._connected;
+        this._connected = false;
+        if (wasConnected) this.onDisconnected();
       };
-      this.dc.onmessage = (msg) => {
+      dc.onmessage = (msg) => {
         try {
+          if (this.pc !== pc || this.dc !== dc) return;
           const parsed = JSON.parse(msg.data);
           if (parsed && parsed.type === 'poll') this.onPoll(parsed.payload);
           else if (parsed && parsed.type === 'closePoll') this.onPollClose(parsed.payload);
@@ -917,6 +1555,12 @@
           }
           else if (parsed && parsed.type === 'peerVoteResults') this.onPeerVoteResults(parsed.payload);
           else if (parsed && parsed.type === 'peerShowcaseClose') this.onPeerShowcaseClose(parsed.payload || {});
+          else if (parsed && parsed.type === 'sessionQaState') {
+            this.onSessionQaState(sanitizeSessionQaGuestPacket(parsed.payload));
+          }
+          else if (parsed && parsed.type === 'sessionQaFeatured') {
+            this.onSessionQaFeatured(sanitizeFeaturedQaPacket(parsed.payload));
+          }
           else if (parsed && parsed.type === 'feedback') {
             const packet = sanitizeFeedbackPacket(parsed.payload, parsed.payload && parsed.payload.pollId);
             if (packet) this.onFeedback(packet);
@@ -925,38 +1569,45 @@
         } catch (err) {}
       };
 
-      this.pc.onconnectionstatechange = () => {
-        if (this.pc.connectionState === 'connected') {
-          setTimeout(() => fb.deleteDoc(this.signalingRef).catch(() => {}), 750);
-        } else if (this.pc.connectionState === 'failed') {
+      pc.onconnectionstatechange = () => {
+        if (this.pc !== pc) return;
+        if (pc.connectionState === 'connected') {
+          setTimeout(() => {
+            if (this.pc === pc) fb.deleteDoc(signalingRef).catch(() => {});
+          }, 750);
+        } else if (pc.connectionState === 'failed') {
           this.onFailed();
         }
       };
 
       try {
-        const offer = await this.pc.createOffer();
-        await this.pc.setLocalDescription(offer);
-        await fb.setDoc(this.signalingRef, {
+        const offer = await pc.createOffer();
+        if (this.pc !== pc) return;
+        await pc.setLocalDescription(offer);
+        if (this.pc !== pc) return;
+        await fb.setDoc(signalingRef, {
           offer: { type: offer.type, sdp: offer.sdp },
           codename: this.codename,
           createdAt: Date.now(),
           expiresAt: Date.now() + SIGNALING_TTL_MS,
         });
       } catch (err) {
+        if (this.pc !== pc) return;
         console.warn('[LivePolling guest] setup failed:', err && err.message);
         this.onFailed();
         return;
       }
 
-      this.signalingUnsub = fb.onSnapshot(this.signalingRef, (snap) => {
+      this.signalingUnsub = fb.onSnapshot(signalingRef, (snap) => {
+        if (this.pc !== pc) return;
         const data = (snap && snap.data && snap.data()) || null;
         if (!data) return;
-        if (data.answer && this.pc.signalingState === 'have-local-offer') {
-          this.pc.setRemoteDescription(new RTCSessionDescription(data.answer)).catch(() => {});
+        if (data.answer && pc.signalingState === 'have-local-offer') {
+          pc.setRemoteDescription(new RTCSessionDescription(data.answer)).catch(() => {});
         }
         if (Array.isArray(data.iceFromHost)) {
           data.iceFromHost.forEach((c) => {
-            this.pc.addIceCandidate(new RTCIceCandidate(c)).catch(() => {});
+            pc.addIceCandidate(new RTCIceCandidate(c)).catch(() => {});
           });
         }
       }, (err) => {
@@ -964,7 +1615,7 @@
       });
 
       this._timeoutHandle = setTimeout(() => {
-        if (!this._connected) {
+        if (this.pc === pc && !this._connected) {
           console.warn('[LivePolling guest] connection timeout; routing to fallback');
           this.onFailed();
         }
@@ -1019,19 +1670,69 @@
       }
     }
 
+
+    sendSessionQaQuestion(text, clientQuestionId) {
+      if (!this.dc || this.dc.readyState !== 'open') return false;
+      const safeText = normalizeSessionQaQuestionText(text);
+      if (!safeText) return false;
+      const safeClientId = normalizeSessionQaId(clientQuestionId, SESSION_QA_CLIENT_ID_MAX_LENGTH)
+        || ('guest-' + Date.now().toString(36));
+      try {
+        this.dc.send(JSON.stringify({ type: 'sessionQaQuestion', payload: {
+          text: safeText,
+          clientQuestionId: safeClientId,
+        } }));
+        return true;
+      } catch (err) {
+        return false;
+      }
+    }
+
+    sendSessionQaUpvote(questionId, active) {
+      if (!this.dc || this.dc.readyState !== 'open') return false;
+      const safeQuestionId = normalizeSessionQaId(questionId, SESSION_QA_ID_MAX_LENGTH);
+      if (!safeQuestionId) return false;
+      try {
+        this.dc.send(JSON.stringify({ type: 'sessionQaUpvote', payload: {
+          questionId: safeQuestionId,
+          active: active === true,
+          timestamp: Date.now(),
+        } }));
+        return true;
+      } catch (err) {
+        return false;
+      }
+    }
+
     leave() {
       if (this._timeoutHandle) { clearTimeout(this._timeoutHandle); this._timeoutHandle = null; }
       if (this.signalingUnsub) {
         try { this.signalingUnsub(); } catch (err) {}
         this.signalingUnsub = null;
       }
-      if (this.signalingRef) {
-        const fb = getFb();
-        if (fb) fb.deleteDoc(this.signalingRef).catch(() => {});
-      }
-      try { if (this.pc) this.pc.close(); } catch (err) {}
+      const signalingRef = this.signalingRef;
+      const pc = this.pc;
+      const dc = this.dc;
       this.pc = null;
       this.dc = null;
+      this.signalingRef = null;
+      this._connected = false;
+      this.sentIce = [];
+      if (signalingRef) {
+        const fb = getFb();
+        if (fb) fb.deleteDoc(signalingRef).catch(() => {});
+      }
+      if (dc) {
+        dc.onopen = null;
+        dc.onclose = null;
+        dc.onmessage = null;
+        try { if (typeof dc.close === 'function') dc.close(); } catch (err) {}
+      }
+      if (pc) {
+        pc.onicecandidate = null;
+        pc.onconnectionstatechange = null;
+        try { pc.close(); } catch (err) {}
+      }
     }
   }
 
@@ -1300,6 +2001,111 @@
     );
   };
 
+
+  const SessionQaHostPanel = !R ? null : function SessionQaHostPanel(props) {
+    const state = props.state && typeof props.state === 'object'
+      ? props.state
+      : createSessionQaState({ enabled: true });
+    const questions = Array.isArray(state.questions) ? state.questions : [];
+    const rows = sortSessionQaQuestions(questions, props.sortMode, state.upvotesByQuestion);
+    const counts = questions.reduce(function (out, question) {
+      const status = normalizeSessionQaStatus(question && question.status);
+      out[status] = (out[status] || 0) + 1;
+      return out;
+    }, { held: 0, approved: 0, dismissed: 0, archived: 0 });
+    const featured = state.featuredQuestionId
+      ? questions.find(function (question) { return question && question.questionId === state.featuredQuestionId; })
+      : null;
+    return ce('section', {
+      'aria-label': tr('Moderated live Q&A'),
+      style: { background: '#f8fafc', border: '1px solid #bae6fd', borderRadius: 8, padding: '0.75rem', marginBottom: '0.75rem' }
+    },
+      ce('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, flexWrap: 'wrap' } },
+        ce('div', null,
+          ce('h3', { style: { margin: 0, color: '#075985', fontSize: '0.95rem' } }, tr('Live Q&A')),
+          ce('p', { style: { margin: '0.2rem 0 0', color: '#475569', fontSize: '0.72rem', lineHeight: 1.35 } }, tr('Questions stay on this teacher device until approved. Approved questions and vote totals are anonymous.'))
+        ),
+        ce('button', {
+          type: 'button',
+          onClick: function () { props.onSetLocked(!state.submissionsLocked); },
+          'aria-pressed': state.submissionsLocked,
+          style: { minHeight: 40, padding: '0.35rem 0.65rem', border: '1px solid ' + (state.submissionsLocked ? '#b91c1c' : '#0284c7'), borderRadius: 6, background: 'white', color: state.submissionsLocked ? '#b91c1c' : '#0369a1', fontWeight: 800, cursor: 'pointer' }
+        }, state.submissionsLocked ? tr('Open questions') : tr('Lock questions'))
+      ),
+      featured ? ce('div', { style: { marginTop: 8, padding: '0.5rem', borderRadius: 7, background: '#fef3c7', border: '1px solid #f59e0b' } },
+        ce('strong', { style: { display: 'block', color: '#92400e', fontSize: '0.68rem', textTransform: 'uppercase' } }, tr('Featured for students')),
+        ce('div', { style: { marginTop: 2, color: '#1e293b', fontSize: '0.8rem', overflowWrap: 'anywhere' } }, featured.text),
+        ce('button', {
+          type: 'button',
+          onClick: function () { props.onFeature(null); },
+          style: { marginTop: 5, minHeight: 36, padding: '0.25rem 0.5rem', border: '1px solid #d97706', borderRadius: 5, background: 'white', color: '#92400e', fontWeight: 800, cursor: 'pointer', fontSize: '0.7rem' }
+        }, tr('Unfeature'))
+      ) : null,
+      ce('div', { style: { marginTop: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
+        ce('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap', color: '#475569', fontSize: '0.7rem', fontWeight: 800 } },
+          ce('span', null, tr('Held:') + ' ' + counts.held),
+          ce('span', { style: { color: '#166534' } }, tr('Approved:') + ' ' + counts.approved),
+          ce('span', null, tr('Dismissed:') + ' ' + counts.dismissed),
+          ce('span', null, tr('Archived:') + ' ' + counts.archived)
+        ),
+        ce('div', { role: 'group', 'aria-label': tr('Sort teacher Q&A'), style: { display: 'flex', gap: 4 } },
+          ['latest', 'top'].map(function (mode) {
+            const selected = props.sortMode === mode;
+            return ce('button', {
+              key: mode,
+              type: 'button',
+              onClick: function () { props.onSortMode(mode); },
+              'aria-pressed': selected,
+              style: { minHeight: 36, padding: '0.25rem 0.5rem', border: '1px solid #7dd3fc', borderRadius: 5, background: selected ? '#e0f2fe' : 'white', color: '#075985', fontWeight: 800, cursor: 'pointer', fontSize: '0.7rem' }
+            }, mode === 'top' ? tr('Top voted') : tr('Latest'));
+          })
+        )
+      ),
+      rows.length ? ce('div', { role: 'list', 'aria-label': tr('Student questions for moderation'), style: { display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 260, overflowY: 'auto', marginTop: 8 } },
+        rows.map(function (question) {
+          const status = normalizeSessionQaStatus(question.status);
+          const voteCount = getSessionQaUpvoteCount(state.upvotesByQuestion, question.questionId);
+          const isFeatured = state.featuredQuestionId === question.questionId;
+          return ce('article', { key: question.questionId, role: 'listitem', style: { padding: '0.5rem', background: 'white', border: '1px solid #e2e8f0', borderRadius: 7 } },
+            ce('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8 } },
+              ce('div', { style: { minWidth: 0 } },
+                ce('strong', { style: { display: 'block', color: '#075985', fontSize: '0.7rem' } }, question.codename || tr('Student')),
+                ce('div', { style: { marginTop: 2, color: '#1e293b', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', fontSize: '0.8rem' } }, question.text)
+              ),
+              ce('span', { style: { color: '#475569', whiteSpace: 'nowrap', fontSize: '0.7rem', fontWeight: 800 } }, '▲ ' + voteCount)
+            ),
+            ce('div', { style: { display: 'flex', alignItems: 'center', gap: 5, flexWrap: 'wrap', marginTop: 6 } },
+              status === 'archived' ? ce('button', {
+                type: 'button',
+                onClick: function () { props.onModerate(question.questionId, 'restore'); },
+                style: { minHeight: 36, padding: '0.25rem 0.5rem', border: '1px solid #0284c7', borderRadius: 5, background: 'white', color: '#0369a1', fontWeight: 800, cursor: 'pointer', fontSize: '0.7rem' }
+              }, tr('Restore')) : ce('select', {
+                value: status === 'held' ? 'hold' : status === 'approved' ? 'approve' : 'dismiss',
+                onChange: function (event) { props.onModerate(question.questionId, event.target.value); },
+                'aria-label': tr('Moderation for') + ' ' + (question.codename || tr('student question')),
+                style: { minHeight: 36, padding: '0.25rem 0.4rem', border: '1px solid #cbd5e1', borderRadius: 5, background: status === 'approved' ? '#dcfce7' : status === 'dismissed' ? '#f1f5f9' : '#fff7ed', fontWeight: 800, fontSize: '0.7rem' }
+              },
+                ce('option', { value: 'hold' }, tr('Hold')),
+                ce('option', { value: 'approve' }, tr('Approve')),
+                ce('option', { value: 'dismiss' }, tr('Dismiss'))
+              ),
+              status !== 'archived' ? ce('button', {
+                type: 'button',
+                onClick: function () { props.onModerate(question.questionId, 'archive'); },
+                style: { minHeight: 36, padding: '0.25rem 0.5rem', border: '1px solid #94a3b8', borderRadius: 5, background: 'white', color: '#475569', fontWeight: 800, cursor: 'pointer', fontSize: '0.7rem' }
+              }, tr('Archive')) : null,
+              status === 'approved' ? ce('button', {
+                type: 'button',
+                onClick: function () { props.onFeature(isFeatured ? null : question.questionId); },
+                style: { minHeight: 36, padding: '0.25rem 0.5rem', border: '1px solid #d97706', borderRadius: 5, background: isFeatured ? '#fef3c7' : 'white', color: '#92400e', fontWeight: 800, cursor: 'pointer', fontSize: '0.7rem' }
+              }, isFeatured ? tr('Unfeature') : tr('Feature')) : null
+            )
+          );
+        })
+      ) : ce('p', { style: { margin: '0.65rem 0 0', padding: '0.55rem', borderRadius: 6, background: 'white', color: '#64748b', fontSize: '0.76rem' } }, tr('No questions yet. Students can ask once their direct connection is ready.'))
+    );
+  };
+
   const HostPanel = !R ? null : function HostPanel(props) {
     useLivePollingI18n();
     const sessionCode = props.sessionCode || '';
@@ -1317,7 +2123,24 @@
       ? props.onUsePeerShowcaseResponse
       : null;
     const onActivitySnapshot = typeof props.onActivitySnapshot === 'function' ? props.onActivitySnapshot : null;
+    // Off by default: the shell must explicitly opt this session into Q&A.
+    const sessionQaOptIn = props.enableSessionQa === true;
+    // Session-wide Q&A keeps the existing RTC host alive while its panel is
+    // closed. With Q&A off, lifecycle behavior remains tied to isOpen.
+    const hostTransportActive = !!(sessionCode && (isOpen || sessionQaOptIn));
+    let allowedUidValues = null;
+    if (props.allowedUids != null) {
+      let rawAllowedUids = [];
+      try { rawAllowedUids = Array.from(props.allowedUids); } catch (err) {}
+      allowedUidValues = Array.from(new Set(rawAllowedUids.map(function (uid) {
+        return uid == null ? '' : String(uid);
+      }).filter(Boolean)));
+    }
+    const allowedUidsSignature = allowedUidValues == null
+      ? 'legacy-allow-all'
+      : JSON.stringify(allowedUidValues.slice().sort());
     const hostRef = R.useRef(null);
+    const transportGenerationRef = R.useRef(0);
     const hostDialogRef = R.useRef(null);
     const hostCloseRef = R.useRef(null);
     const groupNameTriggerRef = R.useRef(null);
@@ -1336,7 +2159,20 @@
     const [lastSharedResultsAt, setLastSharedResultsAt] = R.useState(null);
     const [activePoll, setActivePoll] = R.useState(null);
     const [composerRules, setComposerRules] = R.useState([]);
-    const [groups, setGroups] = R.useState([]);
+    // Local additions only bridge the round-trip until the canonical session
+    // groups prop contains the newly written group. Canonical entries always
+    // win duplicate ids, so their selected id/name cannot be overwritten.
+    const [createdGroups, setCreatedGroups] = R.useState([]);
+    const routingGroups = mergeLivePollingGroups(sessionGroups, createdGroups);
+    R.useEffect(function () {
+      const source = props.sessionGroups && typeof props.sessionGroups === 'object' && !Array.isArray(props.sessionGroups) ? props.sessionGroups : {};
+      const acknowledged = new Set(Object.keys(source).filter(function (id) { return source[id] && typeof source[id] === 'object'; }));
+      if (!acknowledged.size) return;
+      setCreatedGroups(function (prev) {
+        const next = prev.filter(function (entry) { return entry && !acknowledged.has(entry.id); });
+        return next.length === prev.length ? prev : next;
+      });
+    }, [props.sessionGroups]);
     const [newGroupName, setNewGroupName] = R.useState('');
     const [showRoutingPanel, setShowRoutingPanel] = R.useState(false);
     // routingByPoll: { pollId: { uid: groupId } } — used both to suppress
@@ -1353,21 +2189,64 @@
     const [peerVoteCriterion, setPeerVoteCriterion] = R.useState('Which response best supports its thinking with clear evidence?');
     const [feedbackEnabled, setFeedbackEnabled] = R.useState(false);
     const [feedbackCriteria, setFeedbackCriteria] = R.useState('');
-    const [feedbackAudienceMode, setFeedbackAudienceMode] = R.useState('class');
-    const [feedbackAudienceId, setFeedbackAudienceId] = R.useState('');
+    const [audienceMode, setAudienceMode] = R.useState('class');
+    const [audienceId, setAudienceId] = R.useState('');
     const [activeParticipantUids, setActiveParticipantUids] = R.useState([]);
     const [responseStatusByPoll, setResponseStatusByPoll] = R.useState({});
     const [feedbackByPoll, setFeedbackByPoll] = R.useState({});
     const [feedbackBusyByPoll, setFeedbackBusyByPoll] = R.useState({});
     const [feedbackBulkBusy, setFeedbackBulkBusy] = R.useState(false);
     const [followUpResourceId, setFollowUpResourceId] = R.useState('');
+    const [sessionQaState, setSessionQaState] = R.useState(function () {
+      return createSessionQaState({ enabled: sessionQaOptIn });
+    });
+    const [sessionQaSortMode, setSessionQaSortMode] = R.useState('latest');
     // Refs keep onResponse's closure reading current state without
     // re-creating the host (which would tear down all peer connections).
     const activePollRef = R.useRef(null);
     const routingByPollRef = R.useRef({});
     const lastActivitySnapshotRef = R.useRef(null);
+    const activitySnapshotSessionRef = R.useRef(sessionCode);
+    const transportSessionRef = R.useRef(sessionCode);
+    const panelWasOpenRef = R.useRef(isOpen);
+    const panelSessionRef = R.useRef(sessionCode);
+    R.useEffect(function () {
+      const sessionChanged = transportSessionRef.current !== sessionCode;
+      transportSessionRef.current = sessionCode;
+      if (hostTransportActive && !sessionChanged) return;
+      activePollRef.current = null;
+      routingByPollRef.current = {};
+      setGuests([]); setActivePoll(null); setActiveParticipantUids([]);
+      setResponses({}); setRoutingByPoll({});
+      setWordCloudModerationByPoll({}); setFreeTextModerationByPoll({});
+      setPeerShowcaseRound(null); setPeerVotesByRound({});
+      setResponseStatusByPoll({}); setFeedbackByPoll({}); setFeedbackBusyByPoll({});
+      setFeedbackBulkBusy(false); setLastSharedResultsAt(null);
+      if (sessionChanged) {
+        setCreatedGroups([]);
+        setSessionQaState(createSessionQaState({ enabled: sessionQaOptIn }));
+        setSessionQaSortMode('latest');
+      }
+    }, [hostTransportActive, sessionCode]);
     R.useEffect(function () { activePollRef.current = activePoll; }, [activePoll]);
     R.useEffect(function () { routingByPollRef.current = routingByPoll; }, [routingByPoll]);
+    R.useEffect(function () {
+      const sessionChanged = panelSessionRef.current !== sessionCode;
+      const wasOpen = panelWasOpenRef.current;
+      panelSessionRef.current = sessionCode;
+      panelWasOpenRef.current = isOpen;
+      if (sessionChanged || !wasOpen || isOpen || !hostTransportActive) return;
+      const poll = activePollRef.current;
+      if (poll && hostRef.current) hostRef.current.closePoll(poll.id);
+      activePollRef.current = null;
+      routingByPollRef.current = {};
+      setActivePoll(null); setActiveParticipantUids([]);
+      setResponses({}); setRoutingByPoll({});
+      setWordCloudModerationByPoll({}); setFreeTextModerationByPoll({});
+      setPeerShowcaseRound(null); setPeerVotesByRound({});
+      setResponseStatusByPoll({}); setFeedbackByPoll({}); setFeedbackBusyByPoll({});
+      setFeedbackBulkBusy(false); setLastSharedResultsAt(null);
+    }, [isOpen, hostTransportActive, sessionCode]);
 
     // One-tap presets (e.g. the Live Session Center's Quick Check) seed the
     // composer when the panel opens; the teacher still reviews + broadcasts.
@@ -1385,21 +2264,52 @@
       if (initialPoll.afterSubmitMode) setAfterSubmitMode(initialPoll.afterSubmitMode);
       if (initialPoll.feedbackEnabled != null) setFeedbackEnabled(initialPoll.feedbackEnabled === true);
       if (typeof initialPoll.feedbackCriteria === 'string') setFeedbackCriteria(initialPoll.feedbackCriteria);
-      if (initialPoll.feedbackAudienceMode) setFeedbackAudienceMode(initialPoll.feedbackAudienceMode);
-      if (typeof initialPoll.feedbackAudienceId === 'string') setFeedbackAudienceId(initialPoll.feedbackAudienceId);
+      const hasAudienceMode = Object.prototype.hasOwnProperty.call(initialPoll, 'audienceMode');
+      const hasAudienceId = Object.prototype.hasOwnProperty.call(initialPoll, 'audienceId');
+      const hasLegacyMode = Object.prototype.hasOwnProperty.call(initialPoll, 'feedbackAudienceMode');
+      const hasLegacyId = Object.prototype.hasOwnProperty.call(initialPoll, 'feedbackAudienceId');
+      const useCurrentAudience = hasAudienceMode || hasAudienceId;
+      if (!(hasAudienceMode || hasAudienceId || hasLegacyMode || hasLegacyId)) {
+        setAudienceMode('class');
+        setAudienceId('');
+      } else {
+        const selectedMode = useCurrentAudience ? initialPoll.audienceMode : initialPoll.feedbackAudienceMode;
+        const selectedId = useCurrentAudience ? initialPoll.audienceId : initialPoll.feedbackAudienceId;
+        const selection = selectedMode == null || String(selectedMode).trim() === ''
+          ? {
+              audienceMode: '',
+              audienceId: normalizeBoundedText(selectedId, LIVE_POLLING_AUDIENCE_ID_MAX_LENGTH).replace(/\s+/g, ' '),
+              valid: false,
+            }
+          : normalizeLivePollingAudienceSelection(selectedMode, selectedId);
+        setAudienceMode(selection.audienceMode);
+        setAudienceId(selection.audienceId);
+      }
       if (typeof initialPoll.peerVoteCriterion === 'string') {
         setPeerVoteCriterion(normalizePeerVoteCriterion(initialPoll.peerVoteCriterion));
       }
     }, [isOpen, initialPoll]);
 
     R.useEffect(function () {
-      if (!isOpen || !sessionCode) return undefined;
+      if (!hostTransportActive || !sessionCode) return undefined;
+      const transportGeneration = transportGenerationRef.current + 1;
+      transportGenerationRef.current = transportGeneration;
+      const isCurrentTransport = function () {
+        return transportGenerationRef.current === transportGeneration;
+      };
       const host = new PollingHost({
         sessionCode: sessionCode,
+        enableSessionQa: sessionQaOptIn,
+        onSessionQaStateChange: function (nextState) {
+          if (!isCurrentTransport()) return;
+          setSessionQaState(nextState);
+        },
         onGuestConnected: function (uid, codename) {
+          if (!isCurrentTransport()) return;
           setGuests(function (prev) { return upsertLiveGuest(prev, uid, codename); });
         },
         onResponse: function (uid, codename, payload) {
+          if (!isCurrentTransport()) return;
           // Auto-route via teacher-authored rules. Reads latest activePoll
           // via ref so rule changes between broadcasts are honored. Writes
           // only the resulting groupId to Firestore (Tier-1 allowlisted);
@@ -1456,6 +2366,7 @@
           }
         },
         onResponseStatus: function (uid, codename, payload) {
+          if (!isCurrentTransport()) return;
           setResponseStatusByPoll(function (prev) {
             const next = Object.assign({}, prev);
             next[payload.pollId] = Object.assign({}, next[payload.pollId] || {}, { [uid]: payload.status });
@@ -1463,6 +2374,7 @@
           });
         },
         onPeerVote: function (uid, codename, vote) {
+          if (!isCurrentTransport()) return;
           setPeerVotesByRound(function (prev) {
             const next = Object.assign({}, prev);
             next[vote.roundId] = upsertPeerVote(next[vote.roundId], uid, vote);
@@ -1470,11 +2382,12 @@
           });
         },
         onGuestLeft: function (uid) {
+          if (!isCurrentTransport()) return;
           setGuests(function (prev) { return prev.filter(function (g) { return g.uid !== uid; }); });
         },
       });
       hostRef.current = host;
-      if (props.allowedUids) host.setAllowedUids(props.allowedUids);
+      host.setAllowedUids(allowedUidValues);
       host.start().catch(function (err) { console.warn('[LivePolling HostPanel] start failed', err); });
       // Tier-1 presence marker: student shells gate guest joins on an
       // actually-listening host (see GuestOverlay's hostActive prop) instead
@@ -1486,22 +2399,60 @@
         presenceWriter(presenceRef, { livePolling: { hostActive: true, hostOpenedAt: Date.now() } }).catch(function () {});
       }
       return function () {
+        if (transportGenerationRef.current === transportGeneration) {
+          transportGenerationRef.current += 1;
+        }
         if (presenceRef && typeof presenceWriter === 'function') {
           presenceWriter(presenceRef, { livePolling: { hostActive: false } }).catch(function () {});
         }
         host.stop();
-        hostRef.current = null;
+        if (hostRef.current === host) hostRef.current = null;
       };
-    }, [isOpen, sessionCode]);
+    }, [hostTransportActive, sessionCode]);
 
     // Keep the roster gate current as students join without recreating the
     // host (which would tear down every peer connection). undefined prop
     // (older shells) leaves the gate off — legacy allow-all.
     R.useEffect(function () {
-      if (hostRef.current && typeof hostRef.current.setAllowedUids === 'function' && props.allowedUids) {
-        hostRef.current.setAllowedUids(props.allowedUids);
+      if (!hostRef.current || typeof hostRef.current.setAllowedUids !== 'function') return;
+      hostRef.current.setAllowedUids(allowedUidValues);
+      if (allowedUidValues == null) return;
+      const allowed = new Set(allowedUidValues);
+      setGuests(function (prev) {
+        const next = prev.filter(function (g) { return g && allowed.has(String(g.uid)); });
+        return next.length === prev.length ? prev : next;
+      });
+      const retainedAudienceUids = activeParticipantUids.filter(function (uid) { return allowed.has(String(uid)); });
+      const audienceWasPruned = retainedAudienceUids.length !== activeParticipantUids.length;
+      setActiveParticipantUids(function (prev) {
+        const next = prev.filter(function (uid) { return allowed.has(String(uid)); });
+        return next.length === prev.length ? prev : next;
+      });
+      if (audienceWasPruned && peerShowcaseRound) {
+        if (hostRef.current && typeof hostRef.current.closePeerShowcase === 'function') {
+          hostRef.current.closePeerShowcase(peerShowcaseRound.roundId);
+        }
+        setPeerShowcaseRound(null);
       }
-    }, [props.allowedUids]);
+      if (audienceWasPruned && lastSharedResultsAt && activePoll && !isFeedbackPoll(activePoll) && hostRef.current) {
+        const eligibleResponses = uniqueResponsesForSummary(filterLivePollingResponsesToAudience(
+          responses[activePoll.id] || [],
+          retainedAudienceUids
+        ));
+        const summary = buildPollResultsSummary(activePoll, eligibleResponses, retainedAudienceUids.length, {
+          wordCloudModeration: wordCloudModerationByPoll[activePoll.id] || {}
+        });
+        hostRef.current.broadcastPollResults(activePoll.id, summary);
+      }
+    }, [allowedUidsSignature]);
+
+    R.useEffect(function () {
+      if (hostRef.current && typeof hostRef.current.setSessionQaEnabled === 'function') {
+        hostRef.current.setSessionQaEnabled(sessionQaOptIn);
+      } else if (!isOpen) {
+        setSessionQaState(createSessionQaState({ enabled: sessionQaOptIn }));
+      }
+    }, [sessionQaOptIn, isOpen]);
 
     const addRule = function () {
       const defaultPred = pollType === 'mcq' ? 'eq' : 'lte';
@@ -1512,7 +2463,7 @@
       setComposerRules(function (prev) { return prev.concat([{
         id: 'rule-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
         when: { predicate: defaultPred, value: defaultValue },
-        then: { groupId: (groups[0] && groups[0].id) || '' }
+        then: { groupId: (routingGroups[0] && routingGroups[0].id) || '' }
       }]); });
     };
     const removeRule = function (id) {
@@ -1527,7 +2478,7 @@
     };
     const commitGroup = function (name) {
       const id = 'g_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
-      setGroups(function (prev) { return prev.concat([{ id: id, name: name }]); });
+      setCreatedGroups(function (prev) { return prev.concat([{ id: id, name: name }]); });
       setNewGroupName('');
       // Mirror to session doc so other AlloFlow features (BridgeSendModal,
       // roster panel) can address this group. Tier-1: 'name' is allowlisted.
@@ -1557,9 +2508,7 @@
 
     const broadcast = function () {
       if (!hostRef.current || !pollPrompt.trim()) return;
-      const validRules = composerRules.filter(function (r) {
-        return r && r.when && r.then && r.then.groupId;
-      });
+      const validRules = selectLivePollingRoutingRules(composerRules, routingGroups);
       const startedAt = Date.now();
       const poll = {
         id: 'poll-' + startedAt,
@@ -1578,10 +2527,16 @@
           maxAttempts: 2,
         },
       };
-      const audienceUids = isFeedbackPoll(poll)
-        ? resolveFeedbackAudienceUids(guests, roster, feedbackAudienceMode, feedbackAudienceId)
-        : guests.map(function (guest) { return guest.uid; });
+      const audienceUids = resolveLivePollingAudienceUids(
+        guests,
+        roster,
+        audienceMode,
+        audienceId,
+        routingGroups
+      );
       if (audienceUids.length === 0) return;
+      activePollRef.current = poll;
+      routingByPollRef.current = Object.assign({}, routingByPollRef.current, { [poll.id]: {} });
       hostRef.current.broadcastPoll(poll, audienceUids);
       setActiveParticipantUids(audienceUids);
       setActivePoll(poll);
@@ -1599,20 +2554,26 @@
     const closePoll = function () {
       if (!hostRef.current || !activePoll) return;
       hostRef.current.closePoll(activePoll.id);
+      activePollRef.current = null;
+      routingByPollRef.current = {};
       setActivePoll(null);
       setPeerShowcaseRound(null);
       setActiveParticipantUids([]);
     };
     const shareResults = function () {
       if (!hostRef.current || !activePoll || isFeedbackPoll(activePoll)) return;
-      const summary = buildPollResultsSummary(activePoll, uniqueResponsesForSummary(responses[activePoll.id] || []), guests.length, {
+      const eligibleResponses = uniqueResponsesForSummary(filterLivePollingResponsesToAudience(
+        responses[activePoll.id] || [],
+        activeParticipantUids
+      ));
+      const summary = buildPollResultsSummary(activePoll, eligibleResponses, activeParticipantUids.length, {
         wordCloudModeration: wordCloudModerationByPoll[activePoll.id] || {}
       });
       hostRef.current.broadcastPollResults(activePoll.id, summary);
       setLastSharedResultsAt(Date.now());
     };
     const groupNameById = function (id) {
-      const g = groups.find(function (x) { return x.id === id; });
+      const g = routingGroups.find(function (x) { return x.id === id; });
       return g ? g.name : id;
     };
 
@@ -1621,24 +2582,42 @@
     // rule content. The LiveLessonRun sanitizer is the second allowlist boundary.
     R.useEffect(function () {
       if (!onActivitySnapshot) return;
-      if (!isOpen || !activePoll) {
+      const closePriorSnapshot = function () {
         const prior = lastActivitySnapshotRef.current;
-        if (prior && prior.phase !== 'closed' && prior.phase !== 'revealed') {
-          const closed = Object.assign({}, prior, {
-            phase: 'closed',
-            updatedAt: Date.now(),
-            endedAt: Date.now(),
-          });
-          lastActivitySnapshotRef.current = closed;
-          onActivitySnapshot(closed);
+        if (!prior || prior.phase === 'closed' || prior.phase === 'revealed') return;
+        const closed = Object.assign({}, prior, {
+          phase: 'closed',
+          updatedAt: Date.now(),
+          endedAt: Date.now(),
+        });
+        lastActivitySnapshotRef.current = closed;
+        onActivitySnapshot(closed);
+      };
+
+      const snapshotSessionChanged = activitySnapshotSessionRef.current !== sessionCode;
+      activitySnapshotSessionRef.current = sessionCode;
+      if (!hostTransportActive || snapshotSessionChanged || !activePoll) {
+        if (!hostTransportActive || snapshotSessionChanged) {
+          closePriorSnapshot();
+          return;
         }
+        const qaSnapshot = buildSessionQaActivitySnapshot(sessionQaState, guests, sessionCode);
+        if (qaSnapshot) {
+          const prior = lastActivitySnapshotRef.current;
+          if (prior && prior.activityId !== qaSnapshot.activityId) closePriorSnapshot();
+          lastActivitySnapshotRef.current = qaSnapshot;
+          onActivitySnapshot(qaSnapshot);
+          return;
+        }
+        closePriorSnapshot();
         return;
       }
 
-      const audienceUids = activeParticipantUids.length
-        ? activeParticipantUids.slice()
-        : guests.map(function (guest) { return guest.uid; });
-      const responseEntries = uniqueResponsesForSummary(responses[activePoll.id] || []);
+      const audienceUids = activeParticipantUids.slice();
+      const responseEntries = uniqueResponsesForSummary(filterLivePollingResponsesToAudience(
+        responses[activePoll.id] || [],
+        audienceUids
+      ));
       const feedbackConfig = normalizeFeedbackConfig(activePoll);
       const responseStatuses = responseStatusByPoll[activePoll.id] || {};
       const feedbackRecords = feedbackByPoll[activePoll.id] || {};
@@ -1663,7 +2642,8 @@
         out[item.status] = (out[item.status] || 0) + item.count;
         return out;
       }, { approved: 0, hidden: 0, pending: 0 });
-      const feedbackSent = Object.values(feedbackRecords).filter(function (record) {
+      const feedbackSent = audienceUids.filter(function (uid) {
+        const record = feedbackRecords[uid];
         return record && record.status === 'sent';
       }).length;
       const submitted = Object.values(participantStatus).filter(function (status) {
@@ -1716,23 +2696,27 @@
       };
       lastActivitySnapshotRef.current = snapshot;
       onActivitySnapshot(snapshot);
-    }, [isOpen, activePoll, activeParticipantUids, guests, responses, responseStatusByPoll, feedbackByPoll, wordCloudModerationByPoll, freeTextModerationByPoll, peerShowcaseRound, peerVotesByRound, lastSharedResultsAt, onActivitySnapshot]);
+    }, [hostTransportActive, sessionCode, activePoll, activeParticipantUids, guests, responses, responseStatusByPoll, feedbackByPoll, wordCloudModerationByPoll, freeTextModerationByPoll, peerShowcaseRound, peerVotesByRound, lastSharedResultsAt, sessionQaState, onActivitySnapshot]);
 
     useLivePollingDialogFocus(hostDialogRef, isOpen, onClose, hostCloseRef);
     useLivePollingDialogFocus(groupNameDialogRef, pendingGroupName !== null, cancelPendingGroupName, groupNameCancelRef);
 
     if (!isOpen) return null;
-    const activeResponses = (activePoll && responses[activePoll.id]) || [];
+    const activeParticipantUidSet = new Set(activeParticipantUids.map(function (uid) { return String(uid); }));
+    const activeResponses = filterLivePollingResponsesToAudience(
+      (activePoll && responses[activePoll.id]) || [],
+      activeParticipantUids
+    );
     const uniqueActiveResponses = uniqueResponsesForSummary(activeResponses);
     const activeFeedbackConfig = normalizeFeedbackConfig(activePoll);
-    const responseGoalBase = activeFeedbackConfig.enabled ? activeParticipantUids.length : guests.length;
+    const responseGoalBase = activeParticipantUids.length;
     const responseGoal = Math.max(responseGoalBase, uniqueActiveResponses.length, 1);
     const responsePercent = activePoll ? Math.min(100, Math.round((uniqueActiveResponses.length / responseGoal) * 100)) : 0;
     const activeWordCloudModeration = activePoll ? (wordCloudModerationByPoll[activePoll.id] || {}) : {};
     const wordCloudTermsForActive = activePoll && activePoll.type === 'wordcloud'
       ? buildWordCloudItems(uniqueActiveResponses, activeWordCloudModeration)
       : [];
-    const summaryForActive = activePoll ? buildPollResultsSummary(activePoll, uniqueActiveResponses, guests.length, {
+    const summaryForActive = activePoll ? buildPollResultsSummary(activePoll, uniqueActiveResponses, activeParticipantUids.length, {
       wordCloudModeration: activeWordCloudModeration
     }) : null;
     const canShareActiveResults = !!(!activeFeedbackConfig.enabled && summaryForActive && (
@@ -1818,7 +2802,7 @@
       if (!round) return;
       const opened = hostRef.current.openPeerShowcase(
         round,
-        activeParticipantUids.length ? activeParticipantUids : guests.map(function (guest) { return guest.uid; })
+        activeParticipantUids
       );
       if (!opened) return;
       setPeerVotesByRound(function (prev) {
@@ -1924,14 +2908,25 @@
       });
       if (sent) updateFeedbackRecord(uid, { status: 'sent', sentAt: Date.now(), attempt: attempt });
     };
-    const sessionGroupEntries = Object.keys(sessionGroups).map(function (id) {
-      return { id: id, name: (sessionGroups[id] && sessionGroups[id].name) || id };
-    });
-    const composerAudienceUids = pollType === 'freetext' && feedbackEnabled
-      ? resolveFeedbackAudienceUids(guests, roster, feedbackAudienceMode, feedbackAudienceId)
-      : guests.map(function (guest) { return guest.uid; });
+    const sessionGroupEntries = routingGroups;
+    const composerAudienceUids = resolveLivePollingAudienceUids(
+      guests,
+      roster,
+      audienceMode,
+      audienceId,
+      sessionGroupEntries
+    );
     const broadcastTargetCount = composerAudienceUids.length;
     const broadcastDisabled = !pollPrompt.trim() || broadcastTargetCount === 0;
+    const setSessionQaLocked = function (locked) {
+      if (hostRef.current) hostRef.current.setSessionQaSubmissionsLocked(locked);
+    };
+    const moderateSessionQa = function (questionId, action) {
+      if (hostRef.current) hostRef.current.setSessionQaQuestionStatus(questionId, action);
+    };
+    const featureSessionQa = function (questionId) {
+      if (hostRef.current) hostRef.current.featureSessionQaQuestion(questionId);
+    };
 
     return ce(R.Fragment, null,
       ce('div', {
@@ -1957,6 +2952,14 @@
           ce('strong', null, guests.length), ' ' + (guests.length === 1 ? tr('guest') : tr('guests')),
           guests.length > 0 ? ' (' + guests.map(function (g) { return g.codename; }).join(', ') + ')' : ''
         ),
+        sessionQaOptIn ? ce(SessionQaHostPanel, {
+          state: sessionQaState,
+          sortMode: sessionQaSortMode,
+          onSortMode: setSessionQaSortMode,
+          onSetLocked: setSessionQaLocked,
+          onModerate: moderateSessionQa,
+          onFeature: featureSessionQa,
+        }) : null,
         ce('div', { style: { background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, padding: '0.75rem', marginBottom: '0.75rem' } },
           ce('h3', { style: { margin: '0 0 0.5rem 0', fontSize: '0.95rem' } }, tr('Create poll')),
           ce('div', { style: { display: 'flex', gap: 8, marginBottom: 8, flexWrap: 'wrap' } },
@@ -1966,6 +2969,47 @@
                 style: { padding: '0.35rem 0.7rem', borderRadius: 6, border: '1px solid ' + (pollType === t ? '#1e3a8a' : '#cbd5e1'), background: pollType === t ? '#1e3a8a' : 'white', color: pollType === t ? 'white' : '#0f172a', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }
               }, t === 'rating' ? tr('Rating 1–5') : t === 'mcq' ? tr('Multiple choice') : t === 'wordcloud' ? tr('Word cloud') : tr('Free text'));
             })
+          ),
+          ce('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 7, marginBottom: 8, padding: '0.55rem', border: '1px solid #cbd5e1', borderRadius: 7, background: '#fff' } },
+            ce('label', { style: { color: '#475569', fontWeight: 700, fontSize: '0.72rem' } },
+              tr('Audience'),
+              ce('select', {
+                value: audienceMode,
+                onChange: function (event) { setAudienceMode(event.target.value); setAudienceId(''); },
+                'aria-label': tr('Poll audience'),
+                style: { display: 'block', marginTop: 3, width: '100%', padding: '0.4rem', border: '1px solid #cbd5e1', borderRadius: 6, background: 'white' }
+              },
+                audienceMode === '' ? ce('option', { value: '', disabled: true }, tr('Choose audience…')) : null,
+                ce('option', { value: 'class' }, tr('Whole class')),
+                ce('option', { value: 'group' }, tr('One group')),
+                ce('option', { value: 'individual' }, tr('One student'))
+              )
+            ),
+            audienceMode === 'group' ? ce('label', { style: { color: '#475569', fontWeight: 700, fontSize: '0.72rem' } },
+              tr('Group'),
+              ce('select', {
+                value: audienceId,
+                onChange: function (event) { setAudienceId(normalizeLivePollingAudienceSelection('group', event.target.value).audienceId); },
+                'aria-label': tr('Choose poll group'),
+                style: { display: 'block', marginTop: 3, width: '100%', padding: '0.4rem', border: '1px solid #cbd5e1', borderRadius: 6, background: 'white' }
+              },
+                ce('option', { value: '' }, tr('Choose group…')),
+                sessionGroupEntries.map(function (group) { return ce('option', { key: group.id, value: group.id }, group.name); })
+              )
+            ) : audienceMode === 'individual' ? ce('label', { style: { color: '#475569', fontWeight: 700, fontSize: '0.72rem' } },
+              tr('Student'),
+              ce('select', {
+                value: audienceId,
+                onChange: function (event) { setAudienceId(normalizeLivePollingAudienceSelection('individual', event.target.value).audienceId); },
+                'aria-label': tr('Choose poll student'),
+                style: { display: 'block', marginTop: 3, width: '100%', padding: '0.4rem', border: '1px solid #cbd5e1', borderRadius: 6, background: 'white' }
+              },
+                ce('option', { value: '' }, tr('Choose student…')),
+                guests.map(function (guest) { return ce('option', { key: guest.uid, value: guest.uid }, guest.codename); })
+              )
+            ) : ce('p', { style: { margin: '20px 0 0 0', color: audienceMode ? '#475569' : '#b91c1c', fontSize: '0.7rem', fontWeight: audienceMode ? 400 : 800 } },
+              audienceMode ? tr('All connected students') : tr('Choose a valid audience before broadcasting.')
+            )
           ),
           ce('input', { type: 'text', value: pollPrompt, onChange: function (e) { setPollPrompt(e.target.value); }, placeholder: tr('Poll prompt'), 'aria-label': tr('Poll prompt'), style: { width: '100%', padding: '0.5rem', border: '1px solid #cbd5e1', borderRadius: 6, marginBottom: 8, boxSizing: 'border-box' } }),
           pollType === 'wordcloud' ? ce('p', { style: { margin: '0 0 8px 0', padding: '0.45rem 0.55rem', borderRadius: 6, background: '#fff7ed', color: '#9a3412', fontSize: '0.75rem', lineHeight: 1.4 } }, tr('Student terms stay on this teacher device until you approve them. Only approved anonymous totals can be revealed.')) : null,
@@ -1978,29 +3022,6 @@
               ce('label', { style: { color: '#475569', fontWeight: 700, fontSize: '0.72rem' } },
                 tr('Teacher criteria'),
                 ce('textarea', { value: feedbackCriteria, maxLength: FEEDBACK_CRITERIA_MAX_LENGTH, onChange: function (event) { setFeedbackCriteria(event.target.value); }, 'aria-label': tr('Feedback criteria'), rows: 3, placeholder: tr('What should strong responses demonstrate?'), style: { display: 'block', marginTop: 3, width: '100%', boxSizing: 'border-box', padding: '0.45rem', border: '1px solid #cbd5e1', borderRadius: 6, fontFamily: 'inherit', fontSize: '0.78rem' } })
-              ),
-              ce('div', { style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: 7 } },
-                ce('label', { style: { color: '#475569', fontWeight: 700, fontSize: '0.72rem' } },
-                  tr('Audience'),
-                  ce('select', { value: feedbackAudienceMode, onChange: function (event) { setFeedbackAudienceMode(event.target.value); setFeedbackAudienceId(''); }, 'aria-label': tr('Feedback response audience'), style: { display: 'block', marginTop: 3, width: '100%', padding: '0.4rem', border: '1px solid #cbd5e1', borderRadius: 6, background: 'white' } },
-                    ce('option', { value: 'class' }, tr('Whole class')),
-                    ce('option', { value: 'group' }, tr('One group')),
-                    ce('option', { value: 'individual' }, tr('One student'))
-                  )
-                ),
-                feedbackAudienceMode === 'group' ? ce('label', { style: { color: '#475569', fontWeight: 700, fontSize: '0.72rem' } },
-                  tr('Group'),
-                  ce('select', { value: feedbackAudienceId, onChange: function (event) { setFeedbackAudienceId(event.target.value); }, 'aria-label': tr('Choose feedback group'), style: { display: 'block', marginTop: 3, width: '100%', padding: '0.4rem', border: '1px solid #cbd5e1', borderRadius: 6, background: 'white' } },
-                    ce('option', { value: '' }, tr('Choose group…')),
-                    sessionGroupEntries.map(function (group) { return ce('option', { key: group.id, value: group.id }, group.name); })
-                  )
-                ) : feedbackAudienceMode === 'individual' ? ce('label', { style: { color: '#475569', fontWeight: 700, fontSize: '0.72rem' } },
-                  tr('Student'),
-                  ce('select', { value: feedbackAudienceId, onChange: function (event) { setFeedbackAudienceId(event.target.value); }, 'aria-label': tr('Choose feedback student'), style: { display: 'block', marginTop: 3, width: '100%', padding: '0.4rem', border: '1px solid #cbd5e1', borderRadius: 6, background: 'white' } },
-                    ce('option', { value: '' }, tr('Choose student…')),
-                    guests.map(function (guest) { return ce('option', { key: guest.uid, value: guest.uid }, guest.codename); })
-                  )
-                ) : ce('p', { style: { margin: '20px 0 0 0', color: '#475569', fontSize: '0.7rem' } }, tr('All connected students'))
               ),
               ce('p', { style: { margin: 0, color: '#4f46e5', fontSize: '0.7rem', fontWeight: 700 } }, tr('Private drafting, teacher-reviewed feedback, and targeted follow-up resources.'))
             ) : null
@@ -2041,7 +3062,7 @@
               ce('input', { type: 'text', value: newGroupName, onChange: function (e) { setNewGroupName(e.target.value); }, placeholder: tr('New group name (e.g., Pirate Crew)'), 'aria-label': tr('New group name'), style: { flex: 1, padding: '0.35rem 0.5rem', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: '0.8rem' } }),
               ce('button', { ref: groupNameTriggerRef, type: 'button', onClick: addGroup, disabled: !newGroupName.trim(), style: { minHeight: 44, padding: '0.35rem 0.7rem', borderRadius: 4, border: '1px solid #059669', background: !newGroupName.trim() ? '#f1f5f9' : '#059669', color: !newGroupName.trim() ? '#94a3b8' : 'white', cursor: !newGroupName.trim() ? 'default' : 'pointer', fontWeight: 700, fontSize: '0.75rem' } }, tr('+ Add group'))
             ),
-            groups.length === 0 ? ce('p', { style: { fontSize: '0.75rem', color: '#475569', fontStyle: 'italic', margin: '0 0 0.5rem 0' } }, tr('Create at least one group above to start adding routing rules.')) : null,
+            routingGroups.length === 0 ? ce('p', { style: { fontSize: '0.75rem', color: '#475569', fontStyle: 'italic', margin: '0 0 0.5rem 0' } }, tr('Create at least one group above to start adding routing rules.')) : null,
             // Rules list
             composerRules.length > 0 ? ce('div', { style: { display: 'flex', flexDirection: 'column', gap: 6 } },
               composerRules.map(function (rule) {
@@ -2087,7 +3108,7 @@
                     style: { padding: '0.3rem', border: '1px solid #cbd5e1', borderRadius: 4, fontSize: '0.8rem' }
                   },
                     ce('option', { value: '' }, tr('— pick group —')),
-                    groups.map(function (g) { return ce('option', { key: g.id, value: g.id }, g.name); })
+                    routingGroups.map(function (g) { return ce('option', { key: g.id, value: g.id }, g.name); })
                   ),
                   ce('button', {
                     onClick: function () { removeRule(rule.id); },
@@ -2098,8 +3119,8 @@
               })
             ) : null,
             ce('button', {
-              onClick: addRule, disabled: groups.length === 0,
-              style: { marginTop: composerRules.length > 0 ? 6 : 0, padding: '0.35rem 0.7rem', borderRadius: 4, border: '1px dashed ' + (groups.length === 0 ? '#cbd5e1' : '#1e3a8a'), background: 'white', color: groups.length === 0 ? '#94a3b8' : '#1e3a8a', cursor: groups.length === 0 ? 'default' : 'pointer', fontWeight: 700, fontSize: '0.75rem' }
+              onClick: addRule, disabled: routingGroups.length === 0,
+              style: { marginTop: composerRules.length > 0 ? 6 : 0, padding: '0.35rem 0.7rem', borderRadius: 4, border: '1px dashed ' + (routingGroups.length === 0 ? '#cbd5e1' : '#1e3a8a'), background: 'white', color: routingGroups.length === 0 ? '#94a3b8' : '#1e3a8a', cursor: routingGroups.length === 0 ? 'default' : 'pointer', fontWeight: 700, fontSize: '0.75rem' }
             }, tr('+ Add rule'))
           ) : null,
           ce('button', { onClick: broadcast, disabled: broadcastDisabled, style: { padding: '0.5rem 1rem', borderRadius: 6, border: 'none', background: broadcastDisabled ? '#cbd5e1' : '#1e3a8a', color: 'white', cursor: broadcastDisabled ? 'default' : 'pointer', fontWeight: 700 } }, tr('Broadcast to') + ' ' + broadcastTargetCount + ' ' + (broadcastTargetCount === 1 ? tr('guest') : tr('guests')))
@@ -2195,6 +3216,7 @@
                 const counts = {};
                 const routedMap = routingByPoll[activePoll.id] || {};
                 Object.keys(routedMap).forEach(function (uid) {
+                  if (!activeParticipantUidSet.has(String(uid))) return;
                   const gid = routedMap[uid];
                   counts[gid] = (counts[gid] || 0) + 1;
                 });
@@ -2360,6 +3382,8 @@
     // shells that don't pass it) keeps the legacy always-on behavior.
     const hostActive = props.hostActive;
     const hostNonce = props.hostNonce || 0;
+    // Off by default: host and guest shells must explicitly opt into Q&A.
+    const sessionQaOptIn = props.enableSessionQa === true;
     const enabled = !!(sessionCode && userUid && props.enabled && hostActive !== false);
     const guestRef = R.useRef(null);
     const [activePoll, setActivePoll] = R.useState(null);
@@ -2370,6 +3394,11 @@
     const [peerVoteSelection, setPeerVoteSelection] = R.useState('');
     const [peerVoteSubmitted, setPeerVoteSubmitted] = R.useState(false);
     const [peerVoteResults, setPeerVoteResults] = R.useState(null);
+    const [sessionQaState, setSessionQaState] = R.useState(null);
+    const [sessionQaViewOpen, setSessionQaViewOpen] = R.useState(false);
+    const [sessionQaDraft, setSessionQaDraft] = R.useState('');
+    const [sessionQaSortMode, setSessionQaSortMode] = R.useState('latest');
+    const [sessionQaNotice, setSessionQaNotice] = R.useState(null);
     const [connectionState, setConnectionState] = R.useState('idle');
     const [submitNotice, setSubmitNotice] = R.useState(null);
     const [studentFeedback, setStudentFeedback] = R.useState(null);
@@ -2480,6 +3509,17 @@
           setPeerVoteSelection('');
           setPeerVoteSubmitted(false);
         },
+        onSessionQaState: function (packet) {
+          if (!sessionQaOptIn) return;
+          setSessionQaState(packet);
+          if (!packet || !packet.enabled) setSessionQaViewOpen(false);
+        },
+        onSessionQaFeatured: function (packet) {
+          if (!sessionQaOptIn) return;
+          setSessionQaState(function (current) {
+            return current ? Object.assign({}, current, { featuredQuestion: packet || null }) : current;
+          });
+        },
         onFeedback: function (packet) {
           setActivePoll(function (current) {
             if (current && current.id === packet.pollId && isFeedbackPoll(current)) {
@@ -2504,6 +3544,10 @@
           setPeerVoteSelection('');
           setPeerVoteSubmitted(false);
           setPeerVoteResults(null);
+          setSessionQaState(null);
+          setSessionQaViewOpen(false);
+          setSessionQaDraft('');
+          setSessionQaNotice(null);
           studentPollIdRef.current = null;
           statusSentRef.current = '';
           setSubmitNotice(null);
@@ -2525,7 +3569,7 @@
         guest.leave();
         guestRef.current = null;
       };
-    }, [enabled, sessionCode, userUid, codename, joinNonce, hostNonce]);
+    }, [enabled, sessionCode, userUid, codename, joinNonce, hostNonce, sessionQaOptIn]);
 
     R.useEffect(function () {
       if (!activePoll || !isFeedbackPoll(activePoll) || submitted) return;
@@ -2638,11 +3682,133 @@
       );
     };
 
+
+    const renderSessionQaLauncher = function () {
+      const approvedCount = sessionQaState && Array.isArray(sessionQaState.questions)
+        ? sessionQaState.questions.filter(function (question) { return question.status === 'approved'; }).length
+        : 0;
+      return ce('button', {
+        type: 'button',
+        onClick: function () { setSessionQaViewOpen(true); setSessionQaNotice(null); },
+        'aria-label': tr('Open live questions and answers'),
+        style: { position: 'fixed', right: '1rem', bottom: '1rem', zIndex: 9998, minHeight: 44, padding: '0.6rem 0.9rem', border: '1px solid #0284c7', borderRadius: 999, background: '#0369a1', color: 'white', boxShadow: '0 8px 24px rgba(15,23,42,0.25)', fontWeight: 900, cursor: 'pointer' }
+      }, tr('Ask / Q&A') + (approvedCount ? ' · ' + approvedCount : ''));
+    };
+
+    const renderSessionQaView = function () {
+      const packet = sessionQaState || { questions: [] };
+      const questions = sortSessionQaQuestions(packet.questions, sessionQaSortMode);
+      const normalizedDraft = normalizeSessionQaQuestionText(sessionQaDraft);
+      const canAsk = !!(
+        normalizedDraft
+        && !packet.submissionsLocked
+        && guestRef.current
+        && connectionState === 'connected'
+      );
+      const submitQuestion = function () {
+        if (!canAsk) return;
+        const clientQuestionId = 'qa-client-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
+        if (guestRef.current.sendSessionQaQuestion(normalizedDraft, clientQuestionId)) {
+          setSessionQaDraft('');
+          setSessionQaNotice(tr('Question sent for teacher review.'));
+        } else {
+          setSessionQaNotice(tr('Connection lost — reconnecting. Your question was not sent.'));
+        }
+      };
+      const setUpvote = function (question) {
+        if (!guestRef.current || connectionState !== 'connected' || question.own) return;
+        if (!guestRef.current.sendSessionQaUpvote(question.questionId, !question.upvotedByViewer)) {
+          setSessionQaNotice(tr('Reconnect to update your vote.'));
+        }
+      };
+      return ce('div', {
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-label': tr('Live questions and answers'),
+        style: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.55)', zIndex: 10002, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }
+      },
+        ce('div', { style: { background: 'white', maxWidth: 620, width: '100%', maxHeight: '88vh', overflowY: 'auto', borderRadius: 12, padding: '1.1rem', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' } },
+          ce('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 } },
+            ce('div', null,
+              ce('div', { style: { color: '#0369a1', fontSize: '0.7rem', fontWeight: 900, textTransform: 'uppercase' } }, tr('Anonymous class Q&A')),
+              ce('h2', { style: { margin: '0.15rem 0 0', color: '#0f172a', fontSize: '1.08rem' } }, tr('Ask and explore questions'))
+            ),
+            ce('button', {
+              type: 'button',
+              onClick: function () { setSessionQaViewOpen(false); setSessionQaNotice(null); },
+              style: { minWidth: 44, minHeight: 44, border: 'none', borderRadius: 6, background: '#f1f5f9', color: '#334155', fontWeight: 800, cursor: 'pointer' }
+            }, tr('Close'))
+          ),
+          packet.featuredQuestion ? ce('section', { 'aria-label': tr('Featured question'), style: { marginTop: 9, padding: '0.65rem', border: '1px solid #f59e0b', borderRadius: 8, background: '#fef3c7' } },
+            ce('strong', { style: { display: 'block', color: '#92400e', fontSize: '0.68rem', textTransform: 'uppercase' } }, tr('Teacher featured question')),
+            ce('div', { style: { marginTop: 3, color: '#1e293b', fontSize: '0.86rem', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' } }, packet.featuredQuestion.text),
+            ce('span', { style: { display: 'block', marginTop: 4, color: '#92400e', fontSize: '0.7rem', fontWeight: 800 } }, '▲ ' + packet.featuredQuestion.upvoteCount)
+          ) : null,
+          ce('section', { 'aria-label': tr('Ask a question'), style: { marginTop: 9, padding: '0.65rem', border: '1px solid #bae6fd', borderRadius: 8, background: '#f0f9ff' } },
+            ce('textarea', {
+              value: sessionQaDraft,
+              maxLength: SESSION_QA_QUESTION_MAX_LENGTH,
+              disabled: packet.submissionsLocked,
+              onChange: function (event) { setSessionQaDraft(event.target.value); setSessionQaNotice(null); },
+              'aria-label': tr('Your question'),
+              placeholder: packet.submissionsLocked ? tr('The teacher has paused new questions.') : tr('What would you like the class to explore?'),
+              rows: 3,
+              style: { width: '100%', boxSizing: 'border-box', padding: '0.6rem', border: '1px solid #7dd3fc', borderRadius: 6, background: packet.submissionsLocked ? '#f8fafc' : 'white', fontFamily: 'inherit', resize: 'vertical' }
+            }),
+            ce('button', {
+              type: 'button',
+              onClick: submitQuestion,
+              disabled: !canAsk,
+              style: { width: '100%', minHeight: 44, marginTop: 6, border: 'none', borderRadius: 6, background: canAsk ? '#0369a1' : '#cbd5e1', color: 'white', fontWeight: 900, cursor: canAsk ? 'pointer' : 'default' }
+            }, packet.submissionsLocked ? tr('Questions paused') : tr('Send for teacher review')),
+            ce('p', { style: { margin: '0.4rem 0 0', color: '#64748b', fontSize: '0.7rem', lineHeight: 1.35 } }, tr('Your question is private until the teacher approves it. Approved questions appear without names.')),
+            connectionState !== 'connected' ? ce('p', { role: 'status', style: { margin: '0.4rem 0 0', color: '#b45309', fontSize: '0.7rem', fontWeight: 800, lineHeight: 1.35 } }, tr('Direct connection unavailable - reconnecting. New questions remain in this browser until the connection returns; nothing is uploaded as a fallback.')) : null
+          ),
+          sessionQaNotice ? ce('p', { role: 'status', style: { margin: '0.55rem 0 0', color: '#075985', fontSize: '0.75rem', fontWeight: 800 } }, sessionQaNotice) : null,
+          ce('div', { style: { marginTop: 9, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap' } },
+            ce('strong', { style: { color: '#1e293b', fontSize: '0.82rem' } }, tr('Approved questions')),
+            ce('div', { role: 'group', 'aria-label': tr('Sort class Q&A'), style: { display: 'flex', gap: 4 } },
+              ['latest', 'top'].map(function (mode) {
+                const selected = sessionQaSortMode === mode;
+                return ce('button', {
+                  key: mode,
+                  type: 'button',
+                  onClick: function () { setSessionQaSortMode(mode); },
+                  'aria-pressed': selected,
+                  style: { minHeight: 36, padding: '0.25rem 0.5rem', border: '1px solid #7dd3fc', borderRadius: 5, background: selected ? '#e0f2fe' : 'white', color: '#075985', fontWeight: 800, cursor: 'pointer', fontSize: '0.7rem' }
+                }, mode === 'top' ? tr('Top voted') : tr('Latest'));
+              })
+            )
+          ),
+          questions.length ? ce('div', { role: 'list', 'aria-label': tr('Anonymous approved questions'), style: { display: 'flex', flexDirection: 'column', gap: 7, marginTop: 7 } },
+            questions.map(function (question) {
+              const approved = question.status === 'approved';
+              return ce('article', { key: question.questionId, role: 'listitem', style: { padding: '0.65rem', border: '1px solid ' + (question.featured ? '#f59e0b' : '#e2e8f0'), borderRadius: 8, background: question.featured ? '#fffbeb' : 'white' } },
+                ce('div', { style: { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', color: '#1e293b', fontSize: '0.84rem' } }, question.text),
+                approved ? ce('div', { style: { marginTop: 6, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 } },
+                  ce('span', { style: { color: '#64748b', fontSize: '0.68rem', fontWeight: 800 } }, question.own ? tr('Your approved question') : tr('Anonymous class question')),
+                  ce('button', {
+                    type: 'button',
+                    disabled: question.own || connectionState !== 'connected',
+                    onClick: function () { setUpvote(question); },
+                    'aria-pressed': question.upvotedByViewer,
+                    'aria-label': question.upvotedByViewer ? tr('Remove anonymous upvote') : tr('Upvote anonymous question'),
+                    style: { minHeight: 40, padding: '0.3rem 0.6rem', border: '1px solid #38bdf8', borderRadius: 999, background: question.upvotedByViewer ? '#e0f2fe' : 'white', color: question.own ? '#94a3b8' : '#075985', fontWeight: 900, cursor: question.own ? 'default' : 'pointer' }
+                  }, '▲ ' + question.upvoteCount)
+                ) : ce('div', { style: { marginTop: 5, color: question.status === 'dismissed' ? '#64748b' : '#b45309', fontSize: '0.7rem', fontWeight: 800 } }, question.status === 'dismissed' ? tr('Your question was dismissed.') : tr('Your question is held for teacher review.'))
+              );
+            })
+          ) : ce('p', { style: { margin: '0.65rem 0 0', padding: '0.6rem', borderRadius: 7, background: '#f8fafc', color: '#64748b', fontSize: '0.76rem' } }, tr('No approved questions yet.'))
+        )
+      );
+    };
+
     if (!enabled) return null;
     if (peerVoteResults) return renderPeerVoteResults(peerVoteResults);
     if (peerShowcase) return renderPeerShowcase(peerShowcase);
     if (sharedResults) return renderResultsSummary(sharedResults);
-    if (!activePoll) return null;
+    if (sessionQaViewOpen && sessionQaOptIn && sessionQaState && sessionQaState.enabled) return renderSessionQaView();
+    if (!activePoll) return sessionQaOptIn && sessionQaState && sessionQaState.enabled ? renderSessionQaLauncher() : null;
 
     const feedbackConfig = normalizeFeedbackConfig(activePoll);
     const ratingScale = activePoll.type === 'rating' ? normalizeRatingScale(activePoll) : null;
@@ -2744,6 +3910,11 @@
           ) :
           ce('textarea', { value: responseValue, maxLength: feedbackConfig.enabled ? FEEDBACK_RESPONSE_MAX_LENGTH : undefined, onChange: function (e) { setResponseValue(e.target.value); }, 'aria-label': tr('Your response'), placeholder: feedbackConfig.enabled && currentAttempt > 1 ? tr('Revise your response using the feedback') : tr('Type your response'), rows: 5, style: { width: '100%', padding: '0.6rem', border: '1px solid #cbd5e1', borderRadius: 6, fontFamily: 'inherit', boxSizing: 'border-box', margin: '0 0 1rem 0' } }),
         submitted ? null : ce('button', { onClick: submit, disabled: !canSubmit, style: { padding: '0.6rem 1.2rem', borderRadius: 6, border: 'none', background: canSubmit ? '#1e3a8a' : '#cbd5e1', color: 'white', cursor: canSubmit ? 'pointer' : 'default', fontWeight: 700, width: '100%' } }, feedbackConfig.enabled && currentAttempt > 1 ? tr('Submit revision') : tr('Submit response')),
+        sessionQaOptIn && sessionQaState && sessionQaState.enabled ? ce('button', {
+          type: 'button',
+          onClick: function () { setSessionQaViewOpen(true); setSessionQaNotice(null); },
+          style: { marginTop: 7, minHeight: 44, width: '100%', padding: '0.5rem', border: '1px solid #38bdf8', borderRadius: 6, background: 'white', color: '#075985', fontWeight: 900, cursor: 'pointer' }
+        }, tr('Ask / Q&A')) : null,
         submitNotice ? ce('p', { role: 'status', style: { fontSize: '0.75rem', color: '#b45309', marginTop: '0.75rem', marginBottom: 0 } }, submitNotice) : null,
         connectionState === 'failed' ? ce('p', { style: { fontSize: '0.75rem', color: '#b91c1c', marginTop: '0.75rem', marginBottom: 0 } }, tr('Direct connection failed. Submitting will export your response as a downloadable file for the teacher to import.')) :
           connectionState === 'reconnecting' ? ce('p', { style: { fontSize: '0.75rem', color: '#b45309', marginTop: '0.75rem', marginBottom: 0 } }, tr('Connection lost — reconnecting…')) :
@@ -2756,6 +3927,8 @@
     createGuest: (config) => new PollingGuest(config),
     exportResponseForFallback: exportResponseForFallback,
     evaluateRoutingRules: evaluateRoutingRules,
+    mergeLivePollingGroups: mergeLivePollingGroups,
+    selectLivePollingRoutingRules: selectLivePollingRoutingRules,
     matchesPredicate: matchesPredicate,
     isAbilityTieredName: isAbilityTieredName,
     buildRatingScale: buildRatingScale,
@@ -2763,12 +3936,17 @@
     buildPollResultsSummary: buildPollResultsSummary,
     normalizeWordCloudTerm: normalizeWordCloudTerm,
     buildWordCloudItems: buildWordCloudItems,
+    renderWordCloudItems: renderWordCloudItems,
     WORD_CLOUD_MAX_LENGTH: WORD_CLOUD_MAX_LENGTH,
     normalizeFeedbackConfig: normalizeFeedbackConfig,
     normalizeFeedbackResponseText: normalizeFeedbackResponseText,
     sanitizeFeedbackPacket: sanitizeFeedbackPacket,
     upsertFeedbackResponse: upsertFeedbackResponse,
+    normalizeLivePollingAudienceSelection: normalizeLivePollingAudienceSelection,
+    resolveLivePollingAudienceUids: resolveLivePollingAudienceUids,
+    filterLivePollingResponsesToAudience: filterLivePollingResponsesToAudience,
     resolveFeedbackAudienceUids: resolveFeedbackAudienceUids,
+    LIVE_POLLING_AUDIENCE_ID_MAX_LENGTH: LIVE_POLLING_AUDIENCE_ID_MAX_LENGTH,
     buildFeedbackPrompt: buildFeedbackPrompt,
     normalizePeerShowcaseText: normalizePeerShowcaseText,
     normalizePeerVoteCriterion: normalizePeerVoteCriterion,
@@ -2785,6 +3963,20 @@
     FEEDBACK_RESPONSE_MAX_LENGTH: FEEDBACK_RESPONSE_MAX_LENGTH,
     FEEDBACK_CRITERIA_MAX_LENGTH: FEEDBACK_CRITERIA_MAX_LENGTH,
     FEEDBACK_TEXT_MAX_LENGTH: FEEDBACK_TEXT_MAX_LENGTH,
+    createSessionQaState: createSessionQaState,
+    normalizeSessionQaQuestionText: normalizeSessionQaQuestionText,
+    submitSessionQaQuestion: submitSessionQaQuestion,
+    moderateSessionQaQuestion: moderateSessionQaQuestion,
+    setSessionQaUpvote: setSessionQaUpvote,
+    getSessionQaUpvoteCount: getSessionQaUpvoteCount,
+    sortSessionQaQuestions: sortSessionQaQuestions,
+    sanitizeSessionQaState: sanitizeSessionQaState,
+    sanitizeSessionQaGuestPacket: sanitizeSessionQaGuestPacket,
+    sanitizeFeaturedQaPacket: sanitizeFeaturedQaPacket,
+    buildSessionQaActivitySnapshot: buildSessionQaActivitySnapshot,
+    SESSION_QA_MAX_QUESTIONS: SESSION_QA_MAX_QUESTIONS,
+    SESSION_QA_MAX_PER_AUTHOR: SESSION_QA_MAX_PER_AUTHOR,
+    SESSION_QA_QUESTION_MAX_LENGTH: SESSION_QA_QUESTION_MAX_LENGTH,
     upsertLiveGuest: upsertLiveGuest,
     upsertPollResponse: upsertPollResponse,
     uniqueResponsesForSummary: uniqueResponsesForSummary,
@@ -2794,8 +3986,8 @@
     HostPanel: HostPanel,
     GuestOverlay: GuestOverlay,
     _meta: {
-      version: '1.9.0',
-      description: 'FERPA-by-design live polling via WebRTC peer-to-peer with rating, multiple choice, free text, teacher-reviewed feedback and revision, teacher-moderated word clouds, and moderated anonymous peer showcase voting; custom rating scales; teacher-selected post-submit behavior; anonymous aggregate result sharing; teacher-authored auto-routing rules; reconnect-safe transport (hostClosed terminal event, re-offer handling, state sync on reconnect, guest auto-rejoin); initialPoll composer presets (Live Session Center Quick Check, Word Cloud, and Feedback Response); a roster gate on incoming offers (allowedUids); and a window.__alloRtcConfig TURN override hook.',
+      version: '1.12.2',
+      description: 'FERPA-by-design live polling via WebRTC peer-to-peer with validated class, group, or individual audience targeting across rating, multiple choice, free text, Feedback Response, and Word Cloud; teacher-reviewed feedback and revision; teacher-moderated word clouds; moderated anonymous peer showcase voting; opt-in session-wide moderated Q&A; custom rating scales; teacher-selected post-submit behavior; anonymous aggregate result sharing; teacher-authored auto-routing rules that reuse existing session groups; reconnect-safe transport (hostClosed terminal event, re-offer handling, audience-correct state sync on reconnect, guest auto-rejoin); bounded initialPoll composer presets; a roster gate on incoming offers (allowedUids); and a window.__alloRtcConfig TURN override hook.',
     },
   };
 

@@ -106,6 +106,153 @@ const LIVE_PRESENTER_CUE_LIMITS = Object.freeze({
 const LIVE_PRESENTER_CUE_FIELDS = Object.freeze(Object.keys(LIVE_PRESENTER_CUE_LIMITS));
 const LIVE_PRESENTER_CUE_MAX_RESOURCES = 250;
 const LIVE_PRESENTER_CUE_RESERVED_IDS = new Set(['__proto__', 'prototype', 'constructor']);
+const LIVE_PREPARED_CHECKPOINT_KINDS = new Set([
+  'quick_check',
+  'word_cloud',
+  'open_response',
+  'feedback_response',
+  'sketch_response',
+  'live_quiz',
+]);
+const LIVE_POLL_CHECKPOINT_KINDS = new Set([
+  'quick_check',
+  'word_cloud',
+  'open_response',
+  'feedback_response',
+]);
+const LIVE_PREPARED_CHECKPOINT_LIMITS = Object.freeze({
+  prompt: 600,
+  criteria: 1000,
+  sketchPrompt: 500,
+  sketchCriteria: 400,
+});
+
+function normalizeLivePreparedCheckpoint(input) {
+  const source = input && typeof input === 'object' ? input : {};
+  const kind = LIVE_PREPARED_CHECKPOINT_KINDS.has(source.kind) ? source.kind : '';
+  const acceptsPrompt = !!kind && kind !== 'live_quiz';
+  const acceptsCriteria = kind === 'feedback_response' || kind === 'sketch_response';
+  return {
+    kind,
+    prompt: acceptsPrompt
+      ? String(source.prompt || '')
+        .replace(/\u0000/g, '')
+        .slice(0, kind === 'sketch_response'
+          ? LIVE_PREPARED_CHECKPOINT_LIMITS.sketchPrompt
+          : LIVE_PREPARED_CHECKPOINT_LIMITS.prompt)
+      : '',
+    criteria: acceptsCriteria
+      ? String(source.criteria || '')
+        .replace(/\u0000/g, '')
+        .slice(0, kind === 'sketch_response'
+          ? LIVE_PREPARED_CHECKPOINT_LIMITS.sketchCriteria
+          : LIVE_PREPARED_CHECKPOINT_LIMITS.criteria)
+      : '',
+  };
+}
+
+function buildLivePollPresetFromCheckpoint(input, resource, audience) {
+  const checkpoint = normalizeLivePreparedCheckpoint(input);
+  if (!LIVE_POLL_CHECKPOINT_KINDS.has(checkpoint.kind)) return null;
+  const audienceKind = audience && audience.kind;
+  const audienceMode = audienceKind === 'group'
+    ? 'group'
+    : audienceKind === 'student'
+      ? 'individual'
+      : 'class';
+  const audienceId = audienceMode === 'class'
+    ? ''
+    : String(audience && audience.id || '').trim().slice(0, 128);
+  const promptDefaults = {
+    quick_check: 'How is this landing for you right now?',
+    word_cloud: 'What word or short phrase best captures your thinking?',
+    open_response: 'What is your strongest response to this lesson step?',
+    feedback_response: 'Explain your thinking using evidence from the lesson.',
+  };
+  const prompt = checkpoint.prompt.trim() || promptDefaults[checkpoint.kind];
+  const preset = {
+    source: 'live-lesson-prepared-checkpoint',
+    sourceResourceId: String(resource && resource.id || '').trim().slice(0, 128),
+    prompt,
+    afterSubmitMode: checkpoint.kind === 'quick_check' ? 'dismiss' : 'wait',
+    audienceMode,
+    audienceId,
+  };
+  if (checkpoint.kind === 'quick_check') {
+    return {
+      ...preset,
+      type: 'rating',
+      ratingMin: 1,
+      ratingMax: 3,
+      ratingLabels: '1 = Confused\n2 = Okay\n3 = Ready',
+    };
+  }
+  if (checkpoint.kind === 'word_cloud') return { ...preset, type: 'wordcloud' };
+  if (checkpoint.kind === 'open_response') {
+    return {
+      ...preset,
+      type: 'freetext',
+      feedbackEnabled: false,
+      peerVoteCriterion: 'Which response best supports its thinking with clear evidence?',
+    };
+  }
+  return {
+    ...preset,
+    type: 'freetext',
+    feedbackEnabled: true,
+    feedbackCriteria: checkpoint.criteria.trim()
+      || 'Identify one accurate idea, explain it clearly, and support it with relevant evidence.',
+    feedbackAudienceMode: audienceMode,
+    feedbackAudienceId: audienceId,
+  };
+}
+
+function buildLivePreparedInteractionDescriptor(input, resource, audience) {
+  const checkpoint = normalizeLivePreparedCheckpoint(input);
+  if (!checkpoint.kind) return null;
+  const sourceResourceId = String(resource && resource.id || '').trim().slice(0, 128);
+
+  if (LIVE_POLL_CHECKPOINT_KINDS.has(checkpoint.kind)) {
+    const preset = buildLivePollPresetFromCheckpoint(checkpoint, resource, audience);
+    return preset ? {
+      owner: 'live-polling',
+      kind: checkpoint.kind,
+      sourceResourceId,
+      preset,
+    } : null;
+  }
+
+  if (checkpoint.kind === 'sketch_response') {
+    const audienceKind = audience && (audience.kind === 'group' || audience.kind === 'student')
+      ? audience.kind
+      : 'class';
+    return {
+      owner: 'concept-pictionary',
+      kind: 'sketch_response',
+      sourceResourceId,
+      mode: 'sketch',
+      prompt: checkpoint.prompt.trim()
+        || 'Draw a model that shows your understanding of this lesson step.',
+      criterion: checkpoint.criteria.trim(),
+      audience: {
+        kind: audienceKind,
+        id: audienceKind === 'class'
+          ? ''
+          : String(audience && audience.id || '').trim().slice(0, 128),
+      },
+    };
+  }
+
+  if (checkpoint.kind === 'live_quiz' && resource && resource.type === 'quiz') {
+    return {
+      owner: 'quiz',
+      kind: 'live_quiz',
+      sourceResourceId,
+    };
+  }
+
+  return null;
+}
 
 function normalizeLivePresenterCue(input) {
   const source = input && typeof input === 'object' ? input : {};
@@ -113,7 +260,14 @@ function normalizeLivePresenterCue(input) {
   LIVE_PRESENTER_CUE_FIELDS.forEach(field => {
     cue[field] = String(source[field] || '').replace(/\u0000/g, '').slice(0, LIVE_PRESENTER_CUE_LIMITS[field]);
   });
+  cue.checkpoint = normalizeLivePreparedCheckpoint(source.checkpoint);
   return cue;
+}
+
+function hasLivePresenterCueContent(cue) {
+  const normalized = normalizeLivePresenterCue(cue);
+  return LIVE_PRESENTER_CUE_FIELDS.some(field => normalized[field].trim())
+    || !!normalized.checkpoint.kind;
 }
 
 function sanitizeLivePresenterCuesByResourceId(input, allowedResourceIds = null) {
@@ -127,7 +281,7 @@ function sanitizeLivePresenterCuesByResourceId(input, allowedResourceIds = null)
     if (!resourceId || LIVE_PRESENTER_CUE_RESERVED_IDS.has(resourceId)) return;
     if (allowed && !allowed.has(resourceId)) return;
     const cue = normalizeLivePresenterCue(rawCue);
-    if (!LIVE_PRESENTER_CUE_FIELDS.some(field => cue[field].trim())) return;
+    if (!hasLivePresenterCueContent(cue)) return;
     result[resourceId] = cue;
   });
   return result;
@@ -145,10 +299,152 @@ function upsertLivePresenterCue(existing, resourceId, patch) {
   });
   const next = { ...current };
   delete next[safeResourceId];
-  if (LIVE_PRESENTER_CUE_FIELDS.some(field => cue[field].trim())) {
+  if (hasLivePresenterCueContent(cue)) {
     next[safeResourceId] = cue;
   }
   return sanitizeLivePresenterCuesByResourceId(next);
+}
+
+function liveLessonReadinessStatusLabel(status) {
+  return ({
+    ready: 'Ready',
+    review: 'Review',
+    needs_attention: 'Needs attention',
+    optional: 'Optional',
+  })[status] || 'Review';
+}
+
+/**
+ * Builds a teacher-only, content-free readiness summary from the lesson path
+ * and the existing local presenter-cue map. It intentionally accepts neither
+ * roster/activity data nor callbacks, and it never mutates either input.
+ */
+function buildLiveLessonReadiness(steps, presenterCuesByResourceId, historyItemCount = 0) {
+  const safeSteps = (Array.isArray(steps) ? steps : [])
+    .filter(item => item && item.id && item.type)
+    .slice(0, LIVE_PRESENTER_CUE_MAX_RESOURCES);
+  const cueMap = presenterCuesByResourceId && typeof presenterCuesByResourceId === 'object'
+    ? presenterCuesByResourceId
+    : {};
+  const parsedHistoryCount = Number(historyItemCount);
+  const sourceCount = Number.isFinite(parsedHistoryCount)
+    ? Math.max(safeSteps.length, Math.min(10000, Math.floor(parsedHistoryCount)))
+    : safeSteps.length;
+  const issues = [];
+  let preparedCount = 0;
+  let presenterCueCount = 0;
+
+  if (safeSteps.length === 0) {
+    issues.push({
+      code: 'no_student_safe_steps',
+      status: 'needs_attention',
+      stepIndex: -1,
+      label: 'Add at least one student-facing resource before class.',
+    });
+  }
+
+  safeSteps.forEach((step, stepIndex) => {
+    const rawCue = Object.prototype.hasOwnProperty.call(cueMap, step.id)
+      ? cueMap[step.id]
+      : null;
+    const cue = normalizeLivePresenterCue(rawCue);
+    if (LIVE_PRESENTER_CUE_FIELDS.some(field => cue[field].trim())) {
+      presenterCueCount += 1;
+    }
+    const checkpoint = cue.checkpoint;
+    if (!checkpoint.kind) return;
+    preparedCount += 1;
+
+    if (checkpoint.kind === 'live_quiz') {
+      if (step.type !== 'quiz') {
+        issues.push({
+          code: 'quiz_checkpoint_resource_mismatch',
+          status: 'needs_attention',
+          stepIndex,
+          label: `Step ${stepIndex + 1}: attach Live quiz only to a quiz resource.`,
+        });
+      } else if (!step.data || !Array.isArray(step.data.questions) || step.data.questions.length === 0) {
+        issues.push({
+          code: 'empty_live_quiz',
+          status: 'needs_attention',
+          stepIndex,
+          label: `Step ${stepIndex + 1}: add at least one question to the prepared quiz.`,
+        });
+      }
+      return;
+    }
+
+    if (!checkpoint.prompt.trim()) {
+      issues.push({
+        code: 'suggested_prompt',
+        status: 'review',
+        stepIndex,
+        label: `Step ${stepIndex + 1}: review the suggested interaction prompt.`,
+      });
+    }
+    if ((checkpoint.kind === 'feedback_response' || checkpoint.kind === 'sketch_response')
+      && !checkpoint.criteria.trim()) {
+      issues.push({
+        code: 'missing_success_criterion',
+        status: 'review',
+        stepIndex,
+        label: `Step ${stepIndex + 1}: add a success criterion so quality is clear.`,
+      });
+    }
+  });
+
+  const needsAttentionCount = issues.filter(issue => issue.status === 'needs_attention').length;
+  const reviewCount = issues.filter(issue => issue.status === 'review').length;
+  const status = needsAttentionCount > 0
+    ? 'needs_attention'
+    : reviewCount > 0
+      ? 'review'
+      : 'ready';
+  const filteredOutCount = Math.max(0, sourceCount - safeSteps.length);
+  const interactionStatus = needsAttentionCount > 0
+    ? 'needs_attention'
+    : reviewCount > 0
+      ? 'review'
+      : preparedCount > 0
+        ? 'ready'
+        : 'optional';
+
+  return {
+    status,
+    label: liveLessonReadinessStatusLabel(status),
+    stepCount: safeSteps.length,
+    sourceCount,
+    filteredOutCount,
+    preparedCount,
+    presenterCueCount,
+    needsAttentionCount,
+    reviewCount,
+    checks: [
+      {
+        id: 'student_safe_path',
+        status: safeSteps.length > 0 ? 'ready' : 'needs_attention',
+        label: 'Student-safe path',
+        detail: safeSteps.length > 0
+          ? `${safeSteps.length} student-facing step${safeSteps.length === 1 ? '' : 's'} included${filteredOutCount > 0 ? `; ${filteredOutCount} kept out by the shared safety filter` : ''}.`
+          : 'No student-facing steps passed the shared safety filter.',
+      },
+      {
+        id: 'prepared_interactions',
+        status: interactionStatus,
+        label: 'Prepared interactions',
+        detail: `${preparedCount} interaction${preparedCount === 1 ? '' : 's'} prepared${issues.length > 0 ? `; ${issues.length} item${issues.length === 1 ? '' : 's'} to check` : ''}.`,
+      },
+      {
+        id: 'presenter_cues',
+        status: presenterCueCount > 0 ? 'ready' : 'optional',
+        label: 'Private presenter cues',
+        detail: presenterCueCount > 0
+          ? `${presenterCueCount} of ${safeSteps.length} step${safeSteps.length === 1 ? '' : 's'} has teacher-only guidance.`
+          : 'Optional: add teacher-only wording, look-fors, or next moves.',
+      },
+    ],
+    issues: issues.slice(0, 20),
+  };
 }
 
 const LIVE_ACTIVITY_SNAPSHOT_SCHEMA_VERSION = 1;
@@ -161,6 +457,7 @@ const LIVE_ACTIVITY_KINDS = new Set([
   'feedback_response',
   'pictionary',
   'sketch_response',
+  'session_qa',
   'quiz',
 ]);
 const LIVE_ACTIVITY_PHASES = new Set(['collecting', 'paused', 'review', 'revealed', 'closed']);
@@ -175,6 +472,42 @@ function boundedLiveActivityCount(value, max = 10000) {
   const parsed = Number(value);
   if (!Number.isFinite(parsed)) return 0;
   return Math.max(0, Math.min(max, Math.floor(parsed)));
+}
+
+/**
+ * Finds individual resource overrides that the student has already opened.
+ *
+ * This intentionally uses only delivery metadata already present on the
+ * roster. Releasing these overrides lets later group/class pacing take effect
+ * again without copying response content into the facilitation layer.
+ */
+function buildAcknowledgedLiveResourceOverrides(roster, limit = 25) {
+  const safeLimit = Math.max(0, Math.min(25, Math.floor(Number(limit) || 0)));
+  if (safeLimit === 0) return [];
+  const seen = new Set();
+  const acknowledged = [];
+
+  Object.entries(roster && typeof roster === 'object' ? roster : {})
+    .slice(0, 250)
+    .forEach(([rawUid, rawEntry]) => {
+      if (acknowledged.length >= safeLimit) return;
+      const uid = boundedLiveActivityText(rawUid, 128);
+      const entry = rawEntry && typeof rawEntry === 'object' ? rawEntry : {};
+      const resourceId = boundedLiveActivityText(entry.resourceId, 128);
+      const viewingResourceId = boundedLiveActivityText(entry.viewingResourceId, 128);
+      const resourceAt = boundedLiveActivityCount(entry.resourceAt, Number.MAX_SAFE_INTEGER);
+      const viewingAt = boundedLiveActivityCount(entry.viewingAt, Number.MAX_SAFE_INTEGER);
+      if (!uid
+        || seen.has(uid)
+        || !resourceId
+        || resourceId !== viewingResourceId
+        || resourceAt <= 0
+        || viewingAt < resourceAt) return;
+      seen.add(uid);
+      acknowledged.push(uid);
+    });
+
+  return acknowledged;
 }
 
 function normalizeLiveActivityParticipantStatus(value) {
@@ -280,6 +613,25 @@ const LIVE_ATTENTION_SIGNAL_FRESH_MS = 10 * 60 * 1000;
 const LIVE_ATTENTION_WAIT_GRACE_MS = 45 * 1000;
 const LIVE_ATTENTION_WORKING_LONG_MS = 3 * 60 * 1000;
 const LIVE_ATTENTION_RESOURCE_GRACE_MS = 30 * 1000;
+const LIVE_ATTENTION_REASON_LABELS = Object.freeze({
+  signal_stuck: 'asked for help',
+  signal_repeat: 'needs that repeated',
+  signal_slow: 'needs more time',
+  presence_disconnected: 'connection may be lost',
+  presence_quiet: 'connection quiet',
+  activity_waiting: 'awaiting activity response',
+  activity_working_long: 'working for a while',
+  resource_unopened: 'assigned resource not opened',
+  resource_elsewhere: 'on a different resource',
+});
+const LIVE_ATTENTION_REASON_CODES = new Set(Object.keys(LIVE_ATTENTION_REASON_LABELS));
+const LIVE_ATTENTION_INSTRUCTIONAL_REASON_CODES = new Set([
+  'signal_stuck',
+  'signal_repeat',
+  'signal_slow',
+  'activity_waiting',
+  'activity_working_long',
+]);
 
 function buildLiveActivityTimeline(snapshots, limit = 8) {
   const byId = new Map();
@@ -413,18 +765,85 @@ function buildLiveAttentionQueue(input) {
     .slice(0, 12);
 }
 
+
+/**
+ * Groups already-reduced instructional attention metadata by the teacher's
+ * existing session groups. This remains a device-memory view: it intentionally
+ * returns no student labels, response content, prompts, feedback, or
+ * correctness data. Presence and delivery troubleshooting signals are omitted
+ * so a connection problem is never presented as an instructional group need.
+ */
+function buildLiveAttentionCohorts(queue, roster, groups, limit = 6) {
+  const safeRoster = roster && typeof roster === 'object' ? roster : {};
+  const safeGroups = groups && typeof groups === 'object' ? groups : {};
+  const seenUids = new Set();
+  const buckets = new Map();
+
+  (Array.isArray(queue) ? queue : []).slice(0, 25).forEach(rawItem => {
+    const item = rawItem && typeof rawItem === 'object' ? rawItem : {};
+    const uid = boundedLiveActivityText(item.uid, 128);
+    if (!uid || seenUids.has(uid)) return;
+    seenUids.add(uid);
+    const entry = safeRoster[uid] && typeof safeRoster[uid] === 'object' ? safeRoster[uid] : null;
+    const groupId = boundedLiveActivityText(entry && entry.groupId, 128);
+    if (!groupId
+      || !Object.prototype.hasOwnProperty.call(safeGroups, groupId)
+      || !safeGroups[groupId]
+      || typeof safeGroups[groupId] !== 'object') return;
+
+    const reasons = Array.from(new Set(
+      (Array.isArray(item.reasons) ? item.reasons : [])
+        .filter(code => LIVE_ATTENTION_INSTRUCTIONAL_REASON_CODES.has(code))
+    )).slice(0, 4);
+    if (reasons.length === 0) return;
+    const bucket = buckets.get(groupId) || {
+      groupId,
+      uids: [],
+      score: 0,
+      reasonCounts: {},
+    };
+    bucket.uids.push(uid);
+    bucket.score += boundedLiveActivityCount(item.score, 10000);
+    reasons.forEach(code => {
+      bucket.reasonCounts[code] = (bucket.reasonCounts[code] || 0) + 1;
+    });
+    buckets.set(groupId, bucket);
+  });
+
+  const memberCounts = {};
+  Object.values(safeRoster).slice(0, 250).forEach(rawEntry => {
+    const entry = rawEntry && typeof rawEntry === 'object' ? rawEntry : {};
+    const groupId = boundedLiveActivityText(entry.groupId, 128);
+    if (groupId && Object.prototype.hasOwnProperty.call(safeGroups, groupId)) {
+      memberCounts[groupId] = (memberCounts[groupId] || 0) + 1;
+    }
+  });
+  const safeLimit = Math.max(1, Math.min(12, boundedLiveActivityCount(limit, 12) || 6));
+
+  return Array.from(buckets.values())
+    .filter(bucket => bucket.uids.length >= 2)
+    .map(bucket => {
+      const memberCount = memberCounts[bucket.groupId] || bucket.uids.length;
+      const topReasonCodes = Object.entries(bucket.reasonCounts)
+        .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+        .map(([code]) => code)
+        .slice(0, 3);
+      return {
+        groupId: bucket.groupId,
+        uids: bucket.uids.slice(0, 25),
+        count: bucket.uids.length,
+        memberCount,
+        allMembersFlagged: memberCount > 0 && bucket.uids.length === memberCount,
+        topReasonCodes,
+        score: bucket.score,
+      };
+    })
+    .sort((a, b) => b.count - a.count || b.score - a.score || a.groupId.localeCompare(b.groupId))
+    .slice(0, safeLimit);
+}
+
 function liveAttentionReasonLabel(code) {
-  return ({
-    signal_stuck: 'asked for help',
-    signal_repeat: 'needs that repeated',
-    signal_slow: 'needs more time',
-    presence_disconnected: 'connection may be lost',
-    presence_quiet: 'connection quiet',
-    activity_waiting: 'awaiting activity response',
-    activity_working_long: 'working for a while',
-    resource_unopened: 'assigned resource not opened',
-    resource_elsewhere: 'on a different resource',
-  })[code] || 'needs attention';
+  return LIVE_ATTENTION_REASON_LABELS[code] || 'needs attention';
 }
 
 function formatLiveActivityDuration(durationMs) {
@@ -572,6 +991,7 @@ function liveActivityKindLabel(kind) {
     feedback_response: 'Feedback response',
     pictionary: 'Concept Pictionary',
     sketch_response: 'Sketch response',
+    session_qa: 'Live Q&A',
     quiz: 'Live quiz',
   })[kind] || 'Live activity';
 }
@@ -602,10 +1022,13 @@ function LiveLessonRunPanel(props) {
     onSendToGroup,
     onSendToStudent,
     onSendToStudents,
+    onReleaseStudentResources,
     activitySnapshots = [],
     onOpenActivity,
     presenterCuesByResourceId = {},
     onChangePresenterCue,
+    onLaunchPreparedInteraction,
+    preparationOnly = false,
     now = Date.now(),
     signalFreshMs = LIVE_ATTENTION_SIGNAL_FRESH_MS,
     t = key => key,
@@ -615,11 +1038,27 @@ function LiveLessonRunPanel(props) {
   const [audienceKey, setAudienceKey] = React.useState('class');
   const [attentionSelectedUids, setAttentionSelectedUids] = React.useState([]);
   const [attentionSending, setAttentionSending] = React.useState(false);
+  const [attentionSendingUid, setAttentionSendingUid] = React.useState(null);
   const [attentionSendStatus, setAttentionSendStatus] = React.useState('');
+  const [attentionReleasing, setAttentionReleasing] = React.useState(false);
+  const [attentionReleaseStatus, setAttentionReleaseStatus] = React.useState('');
   const steps = React.useMemo(
     () => buildLiveLessonSteps(history, getStudentSafeResources),
     [history, getStudentSafeResources]
   );
+  const liveRunReadiness = React.useMemo(
+    () => buildLiveLessonReadiness(
+      steps,
+      presenterCuesByResourceId,
+      (Array.isArray(history) ? history : []).filter(item => item && item.id && item.type).length
+    ),
+    [steps, presenterCuesByResourceId, history]
+  );
+  const liveRunReadinessTone = ({
+    ready: { border: '#86efac', background: '#f0fdf4', text: '#166534' },
+    review: { border: '#fcd34d', background: '#fffbeb', text: '#854d0e' },
+    needs_attention: { border: '#fca5a5', background: '#fef2f2', text: '#991b1b' },
+  })[liveRunReadiness.status];
   const audiences = React.useMemo(
     () => buildLiveLessonAudiences(groups, roster, {
       classLabel: t('live_lesson.whole_class') || 'Whole class',
@@ -651,6 +1090,35 @@ function LiveLessonRunPanel(props) {
     focusItem && presenterCuesByResourceId && presenterCuesByResourceId[focusItem.id]
   );
   const hasPresenterCue = LIVE_PRESENTER_CUE_FIELDS.some(field => presenterCue[field].trim());
+  const preparedCheckpoint = presenterCue.checkpoint;
+  const hasPreparedCheckpoint = !!preparedCheckpoint.kind;
+  const preparedCheckpointLaunchBlocked = preparedCheckpoint.kind === 'live_quiz'
+    && (!focusItem || focusItem.type !== 'quiz');
+  const nextItem = nextIndex >= 0 ? steps[nextIndex] : null;
+  const nextPresenterCue = normalizeLivePresenterCue(
+    nextItem && presenterCuesByResourceId && presenterCuesByResourceId[nextItem.id]
+  );
+  const nextHasPresenterCue = LIVE_PRESENTER_CUE_FIELDS.some(
+    field => nextPresenterCue[field].trim()
+  );
+  const nextCheckpointLabel = ({
+    quick_check: 'Quick check',
+    word_cloud: 'Word cloud',
+    open_response: 'Open response',
+    feedback_response: 'Feedback response',
+    sketch_response: 'Sketch Response',
+    live_quiz: 'Live quiz',
+  })[nextPresenterCue.checkpoint.kind] || '';
+  const nextItemTitle = nextItem
+    ? String(getTitle(nextItem) || nextItem.type || 'Next step').trim().slice(0, 96)
+    : '';
+  const preparedCheckpointPromptPlaceholder = ({
+    quick_check: 'How is this landing for you right now?',
+    word_cloud: 'What word or short phrase best captures your thinking?',
+    open_response: 'What is your strongest response to this lesson step?',
+    feedback_response: 'Explain your thinking using evidence from the lesson.',
+    sketch_response: 'Draw a model that shows your understanding of this lesson step.',
+  })[preparedCheckpoint.kind] || '';
   const updatePresenterCue = (field, value) => {
     if (!focusItem || typeof onChangePresenterCue !== 'function') return;
     onChangePresenterCue(focusItem.id, { [field]: value });
@@ -658,6 +1126,20 @@ function LiveLessonRunPanel(props) {
   const clearPresenterCue = () => {
     if (!focusItem || typeof onChangePresenterCue !== 'function') return;
     onChangePresenterCue(focusItem.id, { sayAsk: '', lookFor: '', nextMove: '' });
+  };
+  const updatePreparedCheckpoint = patch => {
+    if (!focusItem || typeof onChangePresenterCue !== 'function') return;
+    onChangePresenterCue(focusItem.id, {
+      checkpoint: normalizeLivePreparedCheckpoint({ ...preparedCheckpoint, ...(patch || {}) }),
+    });
+  };
+  const clearPreparedCheckpoint = () => updatePreparedCheckpoint({ kind: '', prompt: '', criteria: '' });
+  const launchPreparedCheckpoint = () => {
+    if (!focusItem
+      || !hasPreparedCheckpoint
+      || preparedCheckpointLaunchBlocked
+      || typeof onLaunchPreparedInteraction !== 'function') return;
+    onLaunchPreparedInteraction(preparedCheckpoint, focusItem, selectedAudience);
   };
 
   const activityPulse = selectLiveActivityPulse(activitySnapshots);
@@ -670,12 +1152,23 @@ function LiveLessonRunPanel(props) {
     now,
     signalFreshMs,
   }), [roster, groups, activitySnapshots, currentResourceId, sessionMode, now, signalFreshMs]);
+  const attentionCohorts = React.useMemo(
+    () => buildLiveAttentionCohorts(attentionQueue, roster, groups, 6),
+    [attentionQueue, roster, groups]
+  );
+  const attentionResourceTitle = focusItem
+    ? boundedLiveActivityText(getTitle(focusItem), 96) || 'Selected lesson step'
+    : '';
   const activityTimeline = React.useMemo(
     () => buildLiveActivityTimeline(activitySnapshots, 8),
     [activitySnapshots]
   );
   const attentionUidSet = new Set(attentionQueue.map(item => item.uid));
   const validAttentionSelectedUids = attentionSelectedUids.filter(uid => attentionUidSet.has(uid));
+  const acknowledgedResourceOverrideUids = React.useMemo(
+    () => buildAcknowledgedLiveResourceOverrides(roster, 25),
+    [roster]
+  );
 
   const toggleAttentionSelection = uid => {
     setAttentionSendStatus('');
@@ -684,8 +1177,26 @@ function LiveLessonRunPanel(props) {
       : current.concat([uid]).slice(0, 12));
   };
 
+  const toggleAttentionCohort = cohort => {
+    const cohortUids = Array.from(new Set(
+      (cohort && Array.isArray(cohort.uids) ? cohort.uids : [])
+        .filter(uid => attentionUidSet.has(uid))
+    )).slice(0, 12);
+    if (cohortUids.length === 0) return;
+    setAttentionSendStatus('');
+    setAttentionSelectedUids(current => {
+      const allSelected = cohortUids.every(uid => current.includes(uid));
+      if (allSelected) return current.filter(uid => !cohortUids.includes(uid));
+      return Array.from(new Set(current.concat(cohortUids))).slice(0, 12);
+    });
+  };
+
   const sendAttentionSelection = async () => {
-    if (!focusItem || validAttentionSelectedUids.length === 0 || attentionSending) return;
+    if (!focusItem
+      || validAttentionSelectedUids.length === 0
+      || attentionSending
+      || attentionReleasing
+      || attentionSendingUid) return;
     setAttentionSending(true);
     setAttentionSendStatus('');
     try {
@@ -707,6 +1218,54 @@ function LiveLessonRunPanel(props) {
       setAttentionSendStatus('Could not send that resource. Please try again.');
     } finally {
       setAttentionSending(false);
+    }
+  };
+
+  const sendAttentionStudent = async uid => {
+    if (!focusItem
+      || !uid
+      || attentionSending
+      || attentionReleasing
+      || attentionSendingUid
+      || typeof onSendToStudent !== 'function') return;
+    const entry = roster[uid] && typeof roster[uid] === 'object' ? roster[uid] : {};
+    const name = String(entry.name || 'Student');
+    setAttentionSendingUid(uid);
+    setAttentionSendStatus('');
+    try {
+      const result = await onSendToStudent(uid, focusItem);
+      const failed = result && Number.isFinite(Number(result.failed)) ? Number(result.failed) : 0;
+      setAttentionSendStatus(failed > 0
+        ? `Could not send ${attentionResourceTitle || 'that resource'} to ${name}. Please try again.`
+        : `Sent ${attentionResourceTitle || 'the selected resource'} to ${name}.`);
+    } catch (error) {
+      setAttentionSendStatus(`Could not send ${attentionResourceTitle || 'that resource'} to ${name}. Please try again.`);
+    } finally {
+      setAttentionSendingUid(null);
+    }
+  };
+
+  const releaseAcknowledgedResources = async () => {
+    if (acknowledgedResourceOverrideUids.length === 0
+      || attentionReleasing
+      || attentionSending
+      || attentionSendingUid
+      || typeof onReleaseStudentResources !== 'function') return;
+    setAttentionReleasing(true);
+    setAttentionReleaseStatus('');
+    try {
+      const result = await onReleaseStudentResources(acknowledgedResourceOverrideUids);
+      const released = result && Number.isFinite(Number(result.released))
+        ? Number(result.released)
+        : acknowledgedResourceOverrideUids.length;
+      const failed = result && Number.isFinite(Number(result.failed)) ? Number(result.failed) : 0;
+      setAttentionReleaseStatus(failed > 0
+        ? `${released} released; ${failed} could not be released.`
+        : `Released ${released} opened individual support${released === 1 ? '' : 's'}.`);
+    } catch (error) {
+      setAttentionReleaseStatus('Could not release opened supports. Please try again.');
+    } finally {
+      setAttentionReleasing(false);
     }
   };
 
@@ -762,7 +1321,7 @@ function LiveLessonRunPanel(props) {
 
   return (
     <section
-      aria-label={t('live_lesson.title') || 'Lesson path'}
+      aria-label={preparationOnly ? 'Prepare live run' : (t('live_lesson.title') || 'Lesson path')}
       style={{
         padding: '0.55rem',
         border: '1px solid #bfdbfe',
@@ -773,7 +1332,7 @@ function LiveLessonRunPanel(props) {
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         <span aria-hidden="true">▶</span>
         <strong style={{ color: '#1e3a8a', fontSize: '0.78rem' }}>
-          {t('live_lesson.title') || 'Lesson path'}
+          {preparationOnly ? 'Prepare live run' : (t('live_lesson.title') || 'Lesson path')}
         </strong>
         <span
           style={{
@@ -805,7 +1364,82 @@ function LiveLessonRunPanel(props) {
         </div>
       )}
 
-      {activityPulse && (
+      {preparationOnly && (
+        <details
+          data-live-run-readiness={liveRunReadiness.status}
+          data-live-run-readiness-privacy="resource-metadata-only"
+          open={liveRunReadiness.status !== 'ready'}
+          style={{
+            marginTop: 7,
+            padding: '0.42rem 0.48rem',
+            border: '1px solid ' + liveRunReadinessTone.border,
+            borderRadius: 8,
+            background: liveRunReadinessTone.background,
+          }}
+        >
+          <summary
+            aria-label={`Run readiness: ${liveRunReadiness.label}. ${liveRunReadiness.stepCount} steps and ${liveRunReadiness.preparedCount} prepared interactions.`}
+            style={{ color: liveRunReadinessTone.text, cursor: 'pointer', fontSize: '0.68rem', fontWeight: 900 }}
+          >
+            Run readiness: {liveRunReadiness.label}
+            {' - '}{liveRunReadiness.stepCount} step{liveRunReadiness.stepCount === 1 ? '' : 's'}
+            {' - '}{liveRunReadiness.preparedCount} interaction{liveRunReadiness.preparedCount === 1 ? '' : 's'}
+          </summary>
+          <div
+            role="status"
+            aria-live="polite"
+            style={{ marginTop: 4, color: liveRunReadinessTone.text, fontSize: '0.59rem', lineHeight: 1.35 }}
+          >
+            This local check uses resource metadata and private preparation cues only. It does not read or write student responses.
+          </div>
+          <ul
+            aria-label="Live run readiness checks"
+            style={{ display: 'grid', gap: 4, margin: '0.42rem 0 0', padding: 0, listStyle: 'none' }}
+          >
+            {liveRunReadiness.checks.map(check => (
+              <li
+                key={check.id}
+                data-live-run-readiness-check={check.status}
+                style={{ padding: '0.32rem 0.38rem', border: '1px solid rgba(100, 116, 139, 0.24)', borderRadius: 6, background: 'rgba(255, 255, 255, 0.72)', color: '#334155', fontSize: '0.59rem', lineHeight: 1.35 }}
+              >
+                <strong style={{ color: '#0f172a' }}>
+                  {liveLessonReadinessStatusLabel(check.status)}: {check.label}.
+                </strong>{' '}
+                {check.detail}
+              </li>
+            ))}
+          </ul>
+          {liveRunReadiness.issues.length > 0 && (
+            <div style={{ marginTop: 5 }}>
+              <strong style={{ color: liveRunReadinessTone.text, fontSize: '0.61rem' }}>
+                Before class
+              </strong>
+              <ul
+                aria-label="Readiness items to review"
+                style={{ display: 'grid', gap: 3, margin: '0.28rem 0 0', paddingLeft: '1.05rem', color: liveRunReadinessTone.text, fontSize: '0.59rem', lineHeight: 1.35 }}
+              >
+                {liveRunReadiness.issues.map((issue, issueIndex) => (
+                  <li key={issue.code + ':' + issue.stepIndex + ':' + issueIndex}>
+                    <strong>{liveLessonReadinessStatusLabel(issue.status)}:</strong>{' '}
+                    {issue.stepIndex >= 0 ? (
+                      <button
+                        type="button"
+                        onClick={() => selectAt(issue.stepIndex)}
+                        aria-label={'Review ' + issue.label}
+                        style={{ border: 0, background: 'transparent', color: 'inherit', padding: 0, textDecoration: 'underline', fontFamily: 'inherit', fontSize: 'inherit', fontWeight: 700, cursor: 'pointer' }}
+                      >
+                        {issue.label}
+                      </button>
+                    ) : issue.label}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </details>
+      )}
+
+      {!preparationOnly && activityPulse && (
         <div
           aria-label={t('live_lesson.activity_pulse') || 'Activity pulse'}
           style={{
@@ -888,7 +1522,7 @@ function LiveLessonRunPanel(props) {
         </div>
       )}
 
-      {Object.keys(roster).length > 0 && (
+      {!preparationOnly && Object.keys(roster).length > 0 && (
         <section
           aria-label={t('live_lesson.attention_queue') || 'Teacher attention queue'}
           style={{
@@ -932,11 +1566,90 @@ function LiveLessonRunPanel(props) {
                     : (t('common.select_all') || 'Select all')}
                 </button>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4, maxHeight: 190, overflowY: 'auto' }}>
+              {focusItem && (
+                <div
+                  data-live-attention-resource="selected"
+                  title={attentionResourceTitle}
+                  style={{
+                    display: 'flex',
+                    gap: 4,
+                    marginTop: 5,
+                    padding: '0.35rem 0.42rem',
+                    borderRadius: 7,
+                    background: '#fff7ed',
+                    color: '#78350f',
+                    fontSize: '0.61rem',
+                    lineHeight: 1.35,
+                  }}
+                >
+                  <strong style={{ flex: '0 0 auto' }}>
+                    {t('live_lesson.follow_up_resource') || 'Follow-up resource'}:
+                  </strong>
+                  <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {attentionResourceTitle}
+                  </span>
+                </div>
+              )}
+              {attentionCohorts.length > 0 && (
+                <details
+                  data-live-attention-cohorts="teacher-memory-only"
+                  style={{ marginTop: 5, padding: '0.32rem 0.38rem', border: '1px solid #fcd34d', borderRadius: 7, background: '#fefce8' }}
+                >
+                  <summary style={{ minHeight: 36, display: 'flex', alignItems: 'center', color: '#854d0e', cursor: 'pointer', fontSize: '0.62rem', fontWeight: 900 }}>
+                    {t('live_lesson.group_patterns') || 'Group patterns'} ({attentionCohorts.length})
+                  </summary>
+                  <p style={{ margin: '0 0 0.35rem', color: '#854d0e', fontSize: '0.57rem', lineHeight: 1.35 }}>
+                    {t('live_lesson.group_patterns_hint') || 'Shared instructional signals only. Selects flagged students; use Audience below for the whole group.'}
+                  </p>
+                  <div role="group" aria-label={t('live_lesson.group_patterns') || 'Group patterns'} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    {attentionCohorts.map(cohort => {
+                      const group = groups[cohort.groupId] || {};
+                      const groupName = String(group.name || (t('common.group') || 'Group'));
+                      const cohortSelected = cohort.uids.every(uid => validAttentionSelectedUids.includes(uid));
+                      const reason = liveAttentionReasonLabel(cohort.topReasonCodes[0]);
+                      return (
+                        <button
+                          key={cohort.groupId}
+                          type="button"
+                          aria-pressed={cohortSelected}
+                          aria-label={(cohortSelected ? 'Clear ' : 'Select ') + cohort.count + ' flagged students in ' + groupName + (attentionResourceTitle ? ' for ' + attentionResourceTitle : '')}
+                          onClick={() => toggleAttentionCohort(cohort)}
+                          style={{
+                            minHeight: 44,
+                            display: 'grid',
+                            gridTemplateColumns: 'minmax(0, 1fr) auto',
+                            alignItems: 'center',
+                            gap: 6,
+                            width: '100%',
+                            border: '1px solid ' + (cohortSelected ? '#d97706' : '#fcd34d'),
+                            borderRadius: 7,
+                            background: cohortSelected ? '#ffedd5' : 'white',
+                            color: '#78350f',
+                            padding: '0.32rem 0.42rem',
+                            textAlign: 'left',
+                            fontFamily: 'inherit',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <span style={{ minWidth: 0 }}>
+                            <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '0.62rem', fontWeight: 900 }}>{groupName}</span>
+                            <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '0.56rem' }}>{reason}</span>
+                          </span>
+                          <span style={{ fontSize: '0.58rem', fontWeight: 900, whiteSpace: 'nowrap' }}>
+                            {cohortSelected ? (t('common.selected') || 'Selected') : ('Select ' + cohort.count)} ? {cohort.count}/{cohort.memberCount}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </details>
+              )}
+              <div role="group" aria-label={t('live_lesson.students_needing_attention') || 'Students needing attention'} style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 4, maxHeight: 190, overflowY: 'auto' }}>
                 {attentionQueue.map(item => {
                   const entry = roster[item.uid] || {};
                   const name = String(entry.name || 'Student');
                   const selected = validAttentionSelectedUids.includes(item.uid);
+                  const sendingThisStudent = attentionSendingUid === item.uid;
                   return (
                     <div
                       key={item.uid}
@@ -956,7 +1669,8 @@ function LiveLessonRunPanel(props) {
                         type="checkbox"
                         checked={selected}
                         onChange={() => toggleAttentionSelection(item.uid)}
-                        aria-label={`Select ${name} for a resource send`}
+                        aria-label={'Select ' + name + (attentionResourceTitle ? ' for ' + attentionResourceTitle : ' for a resource send')}
+                        style={{ width: 18, height: 18 }}
                       />
                       <div style={{ minWidth: 0 }}>
                         <div style={{ fontWeight: 900, color: '#0f172a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -970,11 +1684,14 @@ function LiveLessonRunPanel(props) {
                       {focusItem && typeof onSendToStudent === 'function' && (
                         <button
                           type="button"
-                          onClick={() => onSendToStudent(item.uid, focusItem)}
-                          aria-label={`${t('live_lesson.send_selected_step_to') || 'Send selected step to'} ${name}`}
-                          style={{ border: '1px solid #f59e0b', borderRadius: 6, background: '#fff7ed', color: '#92400e', padding: '0.2rem 0.35rem', fontFamily: 'inherit', fontSize: '0.58rem', fontWeight: 900, cursor: 'pointer' }}
+                          disabled={attentionSending || attentionReleasing || !!attentionSendingUid}
+                          onClick={() => sendAttentionStudent(item.uid)}
+                          aria-label={'Send ' + (attentionResourceTitle || (t('live_lesson.selected_step') || 'selected step')) + ' to ' + name}
+                          style={{ minHeight: 36, border: '1px solid #f59e0b', borderRadius: 6, background: '#fff7ed', color: '#92400e', padding: '0.2rem 0.35rem', fontFamily: 'inherit', fontSize: '0.58rem', fontWeight: 900, cursor: attentionSending || attentionReleasing || attentionSendingUid ? 'not-allowed' : 'pointer', opacity: attentionSending || attentionReleasing || attentionSendingUid ? 0.65 : 1 }}
                         >
-                          {t('live_lesson.send_selected_step') || 'Send step'}
+                          {sendingThisStudent
+                            ? (t('common.sending') || 'Sending...')
+                            : (t('live_lesson.send_selected_step') || 'Send step')}
                         </button>
                       )}
                     </div>
@@ -983,21 +1700,21 @@ function LiveLessonRunPanel(props) {
               </div>
               <button
                 type="button"
-                disabled={!focusItem || validAttentionSelectedUids.length === 0 || attentionSending}
+                disabled={!focusItem || validAttentionSelectedUids.length === 0 || attentionSending || attentionReleasing || !!attentionSendingUid}
                 onClick={sendAttentionSelection}
-                aria-label={`Send selected lesson step to ${validAttentionSelectedUids.length} student${validAttentionSelectedUids.length === 1 ? '' : 's'}`}
+                aria-label={'Send ' + (attentionResourceTitle || 'selected lesson step') + ' to ' + validAttentionSelectedUids.length + ' selected student' + (validAttentionSelectedUids.length === 1 ? '' : 's')}
                 style={{
-                  ...(focusItem && validAttentionSelectedUids.length > 0 && !attentionSending ? buttonBase : disabledButton),
+                  ...(focusItem && validAttentionSelectedUids.length > 0 && !attentionSending && !attentionReleasing && !attentionSendingUid ? buttonBase : disabledButton),
                   width: '100%',
                   marginTop: 6,
                   borderColor: '#d97706',
-                  background: focusItem && validAttentionSelectedUids.length > 0 && !attentionSending ? '#d97706' : '#f8fafc',
-                  color: focusItem && validAttentionSelectedUids.length > 0 && !attentionSending ? 'white' : '#94a3b8',
+                  background: focusItem && validAttentionSelectedUids.length > 0 && !attentionSending && !attentionReleasing && !attentionSendingUid ? '#d97706' : '#f8fafc',
+                  color: focusItem && validAttentionSelectedUids.length > 0 && !attentionSending && !attentionReleasing && !attentionSendingUid ? 'white' : '#94a3b8',
                 }}
               >
                 {attentionSending
                   ? (t('common.sending') || 'Sending...')
-                  : `${t('live_lesson.send_selected_step') || 'Send step'} (${validAttentionSelectedUids.length})`}
+                  : (t('live_lesson.send_selected_resource') || 'Send selected resource') + ' (' + validAttentionSelectedUids.length + ')'}
               </button>
               {attentionSendStatus && (
                 <p role="status" aria-live="polite" style={{ margin: '0.35rem 0 0', color: '#78350f', fontSize: '0.61rem' }}>
@@ -1006,13 +1723,40 @@ function LiveLessonRunPanel(props) {
               )}
             </>
           )}
+          {acknowledgedResourceOverrideUids.length > 0
+            && typeof onReleaseStudentResources === 'function' && (
+            <div
+              data-live-resource-release="acknowledged-only"
+              style={{ marginTop: 6, paddingTop: 6, borderTop: '1px solid #d6d3d1' }}
+            >
+              <p style={{ margin: 0, color: '#57534e', fontSize: '0.59rem', lineHeight: 1.35 }}>
+                {acknowledgedResourceOverrideUids.length} {t('live_lesson.opened_supports_waiting') || 'opened individual support'}{acknowledgedResourceOverrideUids.length === 1 ? '' : 's'} {t('live_lesson.opened_supports_waiting_suffix') || 'can return to group or class pacing.'}
+              </p>
+              <button
+                type="button"
+                disabled={attentionReleasing || attentionSending || !!attentionSendingUid}
+                onClick={releaseAcknowledgedResources}
+                aria-label={'Release ' + acknowledgedResourceOverrideUids.length + ' opened individual support override' + (acknowledgedResourceOverrideUids.length === 1 ? '' : 's')}
+                style={{ ...buttonBase, width: '100%', minHeight: 34, marginTop: 4, borderColor: '#78716c', color: '#44403c', opacity: attentionReleasing || attentionSending || attentionSendingUid ? 0.65 : 1 }}
+              >
+                {attentionReleasing
+                  ? (t('common.releasing') || 'Releasing...')
+                  : (t('live_lesson.release_opened_supports') || 'Release opened supports') + ' (' + acknowledgedResourceOverrideUids.length + ')'}
+              </button>
+              {attentionReleaseStatus && (
+                <p role="status" aria-live="polite" style={{ margin: '0.3rem 0 0', color: '#57534e', fontSize: '0.59rem' }}>
+                  {attentionReleaseStatus}
+                </p>
+              )}
+            </div>
+          )}
           <p style={{ margin: '0.4rem 0 0', color: '#78716c', fontSize: '0.57rem', lineHeight: 1.3 }}>
             {t('live_lesson.attention_privacy') || 'Uses status metadata only; no response content is copied into this queue.'}
           </p>
         </section>
       )}
 
-      {activityTimeline.length > 0 && (
+      {!preparationOnly && activityTimeline.length > 0 && (
         <details
           aria-label={t('live_lesson.activity_timeline') || 'Activity timeline'}
           style={{ marginTop: 7, padding: '0.45rem 0.5rem', border: '1px solid #cbd5e1', borderRadius: 9, background: '#f8fafc' }}
@@ -1036,7 +1780,9 @@ function LiveLessonRunPanel(props) {
                   <span style={{ color: '#475569', fontWeight: 800, whiteSpace: 'nowrap' }}>
                     {liveActivityPhaseLabel(item.phase)}
                   </span>
-                  {typeof onOpenActivity === 'function' && item.phase !== 'closed' && (
+                  {typeof onOpenActivity === 'function'
+                    && item.phase !== 'closed'
+                    && item.phase !== 'revealed' && (
                     <button
                       type="button"
                       onClick={() => onOpenActivity(item)}
@@ -1099,6 +1845,59 @@ function LiveLessonRunPanel(props) {
             </div>
           </div>
 
+          {nextItem && (
+            <aside
+              data-live-conductor-preview={preparationOnly ? 'rehearsal' : 'live'}
+              data-live-conductor-content="metadata-only"
+              aria-label={`${preparationOnly ? 'Rehearsal' : 'Live run'} up next, step ${nextIndex + 1}: ${nextItemTitle}`}
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'minmax(0, 1fr) auto',
+                alignItems: 'center',
+                gap: 6,
+                marginTop: 6,
+                padding: '0.38rem 0.44rem',
+                border: '1px solid #bae6fd',
+                borderRadius: 8,
+                background: '#f0f9ff',
+              }}
+            >
+              <div style={{ minWidth: 0 }}>
+                <div style={{ color: '#075985', fontSize: '0.57rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  {t('live_lesson.up_next') || 'Up next'}
+                </div>
+                <div
+                  title={nextItemTitle}
+                  style={{ color: '#0f172a', fontSize: '0.66rem', fontWeight: 850, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                >
+                  {nextIndex + 1}. {nextItemTitle}
+                </div>
+                <div
+                  aria-label={t('live_lesson.next_step_preparation') || 'Next step preparation'}
+                  style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 3, color: '#0369a1', fontSize: '0.55rem', fontWeight: 800 }}
+                >
+                  {nextHasPresenterCue && (
+                    <span>{t('live_lesson.presenter_cue_ready') || 'Presenter cue ready'}</span>
+                  )}
+                  {nextCheckpointLabel && (
+                    <span>{nextCheckpointLabel} {t('common.ready') || 'ready'}</span>
+                  )}
+                  {!nextHasPresenterCue && !nextCheckpointLabel && (
+                    <span>{t('live_lesson.no_prepared_guidance') || 'No private cue or interaction prepared'}</span>
+                  )}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => selectAt(nextIndex)}
+                aria-label={(t('live_lesson.review_next_step') || 'Review next step') + ': ' + nextItemTitle}
+                style={{ ...buttonBase, minHeight: 32, padding: '0.25rem 0.42rem', borderColor: '#7dd3fc', color: '#075985', fontSize: '0.59rem' }}
+              >
+                {t('common.review') || 'Review'}
+              </button>
+            </aside>
+          )}
+
 
           <details
             data-live-presenter-cues="teacher-memory-only"
@@ -1115,7 +1914,7 @@ function LiveLessonRunPanel(props) {
               {hasPresenterCue ? ' · ' + (t('common.ready') || 'ready') : ''}
             </summary>
             <p style={{ margin: '0.35rem 0', color: '#6d28d9', fontSize: '0.59rem', lineHeight: 1.35 }}>
-              {t('live_lesson.presenter_cues_privacy') || 'Teacher-only in this live-session tab. These cues are not added to the resource or sent to students.'}
+              {t('live_lesson.presenter_cues_privacy') || 'Teacher-only on this browser. These cues are not added to the resource or sent to students.'}
             </p>
             {[
               ['sayAsk', t('live_lesson.presenter_say_ask') || 'Say / ask', t('live_lesson.presenter_say_ask_placeholder') || 'Opening question, explanation, or discussion prompt…'],
@@ -1151,7 +1950,7 @@ function LiveLessonRunPanel(props) {
             ))}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginTop: 5 }}>
               <span style={{ color: '#7c3aed', fontSize: '0.56rem' }}>
-                {t('live_lesson.presenter_cues_session_only') || 'Clears when this live session changes.'}
+                {t('live_lesson.presenter_cues_session_only') || 'Saved locally on this browser.'}
               </span>
               <button
                 type="button"
@@ -1170,6 +1969,133 @@ function LiveLessonRunPanel(props) {
                 {t('live_lesson.clear_cues') || 'Clear cues'}
               </button>
             </div>
+          </details>
+
+          <details
+            data-live-prepared-checkpoint={preparedCheckpointLaunchBlocked ? 'invalid' : (hasPreparedCheckpoint ? 'ready' : 'empty')}
+            style={{
+              marginTop: 6,
+              padding: '0.42rem 0.48rem',
+              border: '1px solid #67e8f9',
+              borderRadius: 8,
+              background: '#ecfeff',
+            }}
+          >
+            <summary style={{ color: '#155e75', cursor: 'pointer', fontSize: '0.68rem', fontWeight: 900 }}>
+              {t('live_lesson.prepared_checkpoint') || 'Prepared checkpoint'}
+              {preparedCheckpointLaunchBlocked
+                ? ' - ' + (t('common.needs_attention') || 'needs attention')
+                : hasPreparedCheckpoint ? ' - ' + (t('common.ready') || 'ready') : ''}
+            </summary>
+            <p style={{ margin: '0.35rem 0', color: '#0e7490', fontSize: '0.59rem', lineHeight: 1.35 }}>
+              {t('live_lesson.prepared_checkpoint_hint') || 'Attach an optional interaction to this step. It reuses the existing Live Polling, Sketch Response, or quiz owner and stays private until you launch it.'}
+            </p>
+            <label style={{ display: 'block', color: '#155e75', fontSize: '0.61rem', fontWeight: 800 }}>
+              {t('live_lesson.checkpoint_type') || 'Checkpoint type'}
+              <select
+                value={preparedCheckpoint.kind}
+                disabled={typeof onChangePresenterCue !== 'function'}
+                onChange={event => {
+                  const kind = event.target.value;
+                  updatePreparedCheckpoint(kind ? { kind } : { kind: '', prompt: '', criteria: '' });
+                }}
+                aria-label={(t('live_lesson.checkpoint_type') || 'Checkpoint type') + ' for ' + getTitle(focusItem)}
+                style={{ display: 'block', width: '100%', minHeight: 36, marginTop: 2, border: '1px solid #67e8f9', borderRadius: 6, background: 'white', color: '#0f172a', padding: '0.3rem', fontFamily: 'inherit', fontSize: '0.64rem' }}
+              >
+                <option value="">{t('live_lesson.no_checkpoint') || 'No checkpoint'}</option>
+                <option value="quick_check">{t('live_dock.quick_check') || 'Quick check'}</option>
+                <option value="word_cloud">{t('live_dock.word_cloud') || 'Word cloud'}</option>
+                <option value="open_response">{t('live_lesson.open_response_vote') || 'Open response / peer showcase'}</option>
+                <option value="feedback_response">{t('live_dock.feedback_response') || 'Feedback response + revision'}</option>
+                <option value="sketch_response">{t('live_dock.sketch_response') || 'Sketch Response'}</option>
+                {preparedCheckpointLaunchBlocked ? (
+                  <option value="live_quiz" disabled>
+                    {t('live_lesson.live_quiz_requires_quiz') || 'Live quiz - requires a quiz resource'}
+                  </option>
+                ) : focusItem && focusItem.type === 'quiz' ? (
+                  <option value="live_quiz">{t('quiz.launch_live_btn') || 'Live quiz'}</option>
+                ) : null}
+              </select>
+            </label>
+            {hasPreparedCheckpoint && (
+              <>
+                {preparedCheckpoint.kind !== 'live_quiz' && (
+                  <label style={{ display: 'block', marginTop: 5, color: '#155e75', fontSize: '0.61rem', fontWeight: 800 }}>
+                    {t('common.prompt') || 'Prompt'}
+                    <textarea
+                      value={preparedCheckpoint.prompt}
+                      maxLength={preparedCheckpoint.kind === 'sketch_response'
+                        ? LIVE_PREPARED_CHECKPOINT_LIMITS.sketchPrompt
+                        : LIVE_PREPARED_CHECKPOINT_LIMITS.prompt}
+                      rows={3}
+                      disabled={typeof onChangePresenterCue !== 'function'}
+                      onChange={event => updatePreparedCheckpoint({ prompt: event.target.value })}
+                      placeholder={preparedCheckpointPromptPlaceholder}
+                      aria-label={(t('common.prompt') || 'Prompt') + ' for prepared checkpoint on ' + getTitle(focusItem)}
+                      style={{ display: 'block', width: '100%', marginTop: 2, resize: 'vertical', border: '1px solid #67e8f9', borderRadius: 6, background: 'white', color: '#0f172a', padding: '0.35rem', fontFamily: 'inherit', fontSize: '0.64rem', lineHeight: 1.35 }}
+                    />
+                  </label>
+                )}
+                {(preparedCheckpoint.kind === 'feedback_response' || preparedCheckpoint.kind === 'sketch_response') && (
+                  <label style={{ display: 'block', marginTop: 5, color: '#155e75', fontSize: '0.61rem', fontWeight: 800 }}>
+                    {preparedCheckpoint.kind === 'sketch_response'
+                      ? (t('live_lesson.success_criterion') || 'Success criterion')
+                      : (t('live_lesson.feedback_criteria') || 'Feedback criteria')}
+                    <textarea
+                      value={preparedCheckpoint.criteria}
+                      maxLength={preparedCheckpoint.kind === 'sketch_response'
+                        ? LIVE_PREPARED_CHECKPOINT_LIMITS.sketchCriteria
+                        : LIVE_PREPARED_CHECKPOINT_LIMITS.criteria}
+                      rows={3}
+                      disabled={typeof onChangePresenterCue !== 'function'}
+                      onChange={event => updatePreparedCheckpoint({ criteria: event.target.value })}
+                      placeholder={preparedCheckpoint.kind === 'sketch_response'
+                        ? 'What should the sketch show clearly?'
+                        : 'What should the response demonstrate?'}
+                      aria-label={(preparedCheckpoint.kind === 'sketch_response'
+                        ? (t('live_lesson.success_criterion') || 'Success criterion')
+                        : (t('live_lesson.feedback_criteria') || 'Feedback criteria')) + ' for ' + getTitle(focusItem)}
+                      style={{ display: 'block', width: '100%', marginTop: 2, resize: 'vertical', border: '1px solid #67e8f9', borderRadius: 6, background: 'white', color: '#0f172a', padding: '0.35rem', fontFamily: 'inherit', fontSize: '0.64rem', lineHeight: 1.35 }}
+                    />
+                  </label>
+                )}
+                <p style={{ margin: '0.35rem 0 0', color: '#0e7490', fontSize: '0.56rem', lineHeight: 1.35 }}>
+                  {preparedCheckpoint.kind === 'feedback_response'
+                    ? (t('live_lesson.prepared_feedback_audience_hint') || 'In a live session, this can use the selected class, group, or student audience. Follow-up resources still use the existing targeted send controls.')
+                    : preparedCheckpoint.kind === 'sketch_response'
+                      ? (t('live_lesson.prepared_sketch_hint') || 'Opens the existing private Sketch Response composer with this prompt and criterion. The selected class, group, or student is preselected.')
+                      : preparedCheckpoint.kind === 'live_quiz'
+                        ? (t('live_lesson.prepared_quiz_hint') || 'Restores this quiz and launches its existing live runner. Questions are not copied into the prepared checkpoint.')
+                        : (t('live_lesson.prepared_class_hint') || 'Quick checks, word clouds, and open responses use the selected class, group, or student when launched. Activity Pulse can identify who needs a targeted follow-up resource.')}
+                </p>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginTop: 5 }}>
+                  <button
+                    type="button"
+                    onClick={clearPreparedCheckpoint}
+                    disabled={typeof onChangePresenterCue !== 'function'}
+                    style={{ border: 'none', background: 'transparent', color: '#0e7490', padding: 2, fontSize: '0.58rem', fontWeight: 900, cursor: 'pointer' }}
+                  >
+                    {t('live_lesson.remove_checkpoint') || 'Remove'}
+                  </button>
+                  {preparationOnly ? (
+                    <span role="status" style={{ color: '#155e75', fontSize: '0.58rem', fontWeight: 800 }}>
+                      {t('live_lesson.saved_for_session') || 'Saved for live session'}
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={launchPreparedCheckpoint}
+                      disabled={preparedCheckpointLaunchBlocked || typeof onLaunchPreparedInteraction !== 'function'}
+                      style={{ ...(preparedCheckpointLaunchBlocked ? disabledButton : buttonBase), minHeight: 32, borderColor: preparedCheckpointLaunchBlocked ? '#cbd5e1' : '#0891b2', background: preparedCheckpointLaunchBlocked ? '#f8fafc' : '#0891b2', color: preparedCheckpointLaunchBlocked ? '#64748b' : 'white', padding: '0.28rem 0.5rem', fontSize: '0.62rem' }}
+                    >
+                      {preparedCheckpointLaunchBlocked
+                        ? (t('live_lesson.choose_quiz_resource') || 'Choose a quiz resource to launch')
+                        : (t('live_lesson.review_launch_checkpoint') || 'Review and launch')}
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
           </details>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 5, marginTop: 6 }}>
             <button
@@ -1229,6 +2155,8 @@ function LiveLessonRunPanel(props) {
             </select>
           </label>
 
+          {!preparationOnly && (
+            <>
           <div
             style={{
               marginTop: 7,
@@ -1315,6 +2243,8 @@ function LiveLessonRunPanel(props) {
                 ? (t('live_lesson.teacher_paced_hint') || 'Teacher-paced: presenting follows this step on student screens.')
                 : (t('live_lesson.student_paced_hint') || 'Student-paced: opening changes your view while students keep navigation control.')}
           </p>
+            </>
+          )}
         </>
       )}
     </section>
