@@ -30,13 +30,14 @@ describe('Typing Practice decision and print-message accessibility', () => {
     expect(source).toContain('min-width:44px;min-height:44px');
   });
 
-  it('routes all seven decision steps through the accessible service', () => {
-    expect(source.match(/askTypingPracticeConfirmation\(/g)).toHaveLength(8);
+  it('routes all eight decision steps through the accessible service', () => {
+    expect(source.match(/askTypingPracticeConfirmation\(/g)).toHaveLength(9);
     for (const title of [
       'Remove custom drill',
       'Remove saved passage',
       'Discard this session?',
       'Apply imported profile?',
+      'Clear IEP goal?',
       'Restore full backup?',
       'Clear all typing practice data?',
       'Are you absolutely sure?',
