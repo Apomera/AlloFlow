@@ -95,27 +95,62 @@ window.__unmount = function () { ReactDOM.unmountComponentAtNode(document.getEle
     const pg = await b.newPage({ viewport: { width: 1100, height: 900 } });
     await pg.goto('file://' + page.replace(/\\/g, '/'));
     await pg.waitForTimeout(3200);
-    const row = { id, light: null, dark: null, note: '' };
+    const row = { id, light: [], dark: [], note: '' };
+    // REPEAT each theme. A single reading is not trustworthy: the Tailwind CDN
+    // compiles classes on demand, so a run can be audited before every rule
+    // exists. Measured on `calculus`, the light count came back 5, 9, 11 and 11
+    // on four runs of identical code while dark stayed at 6 — which is enough
+    // to invent a "DARK-SPECIFIC (+2)" finding out of nothing, and did.
+    const REPEATS = 3;
     for (const theme of ['default', 'dark']) {
-      const status = await pg.evaluate((t) => window.__mount(t), theme);
-      if (!status || /threw|mount|not-registered/.test(status)) { row.note = status; break; }
-      await pg.waitForTimeout(200);
-      const n = await pg.evaluate(async () => {
-        const r = await window.axe.run('#slot', { runOnly: { type: 'rule', values: ['color-contrast'] } });
-        return r.violations.reduce((a, v) => a + v.nodes.length, 0);
-      });
-      row[theme === 'dark' ? 'dark' : 'light'] = n;
-      await pg.evaluate(() => window.__unmount());
-      await pg.waitForTimeout(80);
+      for (let attempt = 0; attempt < REPEATS; attempt++) {
+        const status = await pg.evaluate((t) => window.__mount(t), theme);
+        if (!status || /threw|mount|not-registered/.test(status)) { row.note = status; break; }
+        await pg.waitForTimeout(220);
+        // A tool that catches its own error and renders an error card still
+        // "mounts". Measuring that card tells you nothing about the tool — and
+        // its own styling is usually where the contrast failures then come
+        // from. roadready did exactly this because the harness lacks ctx.update.
+        const broken = await pg.evaluate(() => {
+          const txt = (document.getElementById('slot').innerText || '').slice(0, 400);
+          return /is not a function|Cannot read propert|undefined is not|Error\b/i.test(txt);
+        });
+        if (broken) { row.note = 'renders an error card — not measurable here'; break; }
+        const n = await pg.evaluate(async () => {
+          const r = await window.axe.run('#slot', { runOnly: { type: 'rule', values: ['color-contrast'] } });
+          return r.violations.reduce((a, v) => a + v.nodes.length, 0);
+        });
+        row[theme === 'dark' ? 'dark' : 'light'].push(n);
+        await pg.evaluate(() => window.__unmount());
+        await pg.waitForTimeout(80);
+      }
+      if (row.note) break;
     }
     await pg.close();
     results.push(row);
-    const verdict = row.note ? row.note
-      : (row.dark > row.light ? 'DARK-SPECIFIC (+' + (row.dark - row.light) + ')'
-        : row.light > 0 ? 'pre-existing in BOTH themes' : 'clean');
-    console.log(id.padEnd(14) + 'light ' + String(row.light).padStart(3) + '   dark ' + String(row.dark).padStart(3) + '   ' + verdict);
+
+    const lo = (a) => Math.min.apply(null, a);
+    const hi = (a) => Math.max.apply(null, a);
+    let verdict;
+    if (row.note) {
+      verdict = row.note;
+    } else {
+      // Compare dark's WORST against light's BEST. Only call it dark-specific
+      // if dark loses even when light is given every benefit of the doubt.
+      const darkMin = lo(row.dark), lightMax = hi(row.light);
+      const unstable = (hi(row.light) - lo(row.light)) + (hi(row.dark) - lo(row.dark));
+      if (darkMin > lightMax) verdict = 'DARK-SPECIFIC (+' + (darkMin - lightMax) + ')';
+      else if (hi(row.light) > 0 || hi(row.dark) > 0) verdict = 'pre-existing in BOTH themes';
+      else verdict = 'clean';
+      if (unstable) verdict += '   [unstable spread ' + unstable + ']';
+    }
+    const fmt = (a) => (a.length ? (lo(a) === hi(a) ? String(lo(a)) : lo(a) + '-' + hi(a)) : '-');
+    console.log(id.padEnd(14) + 'light ' + fmt(row.light).padStart(6) + '   dark ' + fmt(row.dark).padStart(6) + '   ' + verdict);
   }
   await b.close();
-  const darkSpecific = results.filter((r) => r.dark !== null && r.light !== null && r.dark > r.light);
-  console.log('\ntools where DARK is worse than light: ' + (darkSpecific.length ? darkSpecific.map((r) => r.id).join(', ') : 'none'));
+  const darkSpecific = results.filter((r) => !r.note && r.dark.length && r.light.length
+    && Math.min.apply(null, r.dark) > Math.max.apply(null, r.light));
+  console.log('\ntools where DARK is worse than light on EVERY run: '
+    + (darkSpecific.length ? darkSpecific.map((r) => r.id).join(', ') : 'none'));
+  console.log('Anything not on that line is unproven — re-read the elements before acting on it.');
 })();
