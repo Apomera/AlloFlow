@@ -152,6 +152,118 @@ describe('Lingua Practice Listening Lab helpers', () => {
 });
 
 describe('Lingua Practice spaced review helpers', () => {
+  it('summarizes review-session ratings and reverses counts safely', () => {
+    let session = Lingua._emptyReviewSession();
+    session = Lingua._updateReviewSession(session, 'again', 1);
+    session = Lingua._updateReviewSession(session, 'hard', 1);
+    session = Lingua._updateReviewSession(session, 'know', 1);
+
+    expect(session).toEqual({ total: 3, again: 1, hard: 1, learning: 0, know: 1 });
+    expect(Lingua._updateReviewSession(session, 'hard', -1))
+      .toEqual({ total: 2, again: 1, hard: 0, learning: 0, know: 1 });
+    expect(Lingua._updateReviewSession(Lingua._emptyReviewSession(), 'hard', -1))
+      .toEqual({ total: 0, again: 0, hard: 0, learning: 0, know: 0 });
+    expect(Lingua._updateReviewSession({ again: -2, hard: '3' }, 'invalid', 1))
+      .toEqual({ total: 3, again: 0, hard: 3, learning: 0, know: 0 });
+  });
+
+  it('keeps set-aside cards out of the active review queue only', () => {
+    const words = [
+      { id: 'first', language: 'Spanish', tags: ['School'], nextReviewAt: 0 },
+      { id: 'second', language: 'Spanish', tags: ['Travel', 'School'], nextReviewAt: 5 },
+      { id: 'french', language: 'French', tags: ['School'], nextReviewAt: 0 },
+      { id: 'later', language: 'Spanish', tags: ['School'], nextReviewAt: 200 },
+    ];
+
+    expect(Lingua._reviewQueue(words, 'Spanish', 100, ['first', 'first', 'missing']).map((word) => word.id))
+      .toEqual(['second']);
+    expect(Lingua._reviewQueue(words, 'Spanish', 100, null).map((word) => word.id))
+      .toEqual(['first', 'second']);
+    expect(Lingua._reviewQueue(words, 'French', 100, ['first']).map((word) => word.id))
+      .toEqual(['french']);
+    expect(Lingua._dueWords(words, 'Spanish', 100, 'school').map((word) => word.id))
+      .toEqual(['first', 'second']);
+    expect(Lingua._reviewQueue(words, 'Spanish', 100, ['first'], 'SCHOOL').map((word) => word.id))
+      .toEqual(['second']);
+    expect(Lingua._reviewQueue(words, 'Spanish', 100, null, 'missing')).toEqual([]);
+    expect(Lingua._dueWords([{ id: 'bad', language: 'Spanish', nextReviewAt: 'later' }], 'Spanish', 100, 'all')).toEqual([]);
+    expect(Lingua._dueWords(words, 'Spanish', 'not-a-time', 'School')).toEqual([]);
+  });
+
+  it('forecasts review load in non-overlapping relative-time buckets', () => {
+    const now = 1_000;
+    const day = 24 * 60 * 60 * 1000;
+    const words = [
+      { id: 'due', language: 'Spanish', nextReviewAt: now },
+      { id: 'invalid', language: 'Spanish', nextReviewAt: 'not-a-time' },
+      { id: 'day-edge', language: 'Spanish', nextReviewAt: now + day },
+      { id: 'week-start', language: 'Spanish', nextReviewAt: now + day + 1 },
+      { id: 'week-edge', language: 'Spanish', nextReviewAt: now + 7 * day },
+      { id: 'later', language: 'Spanish', nextReviewAt: now + 7 * day + 1 },
+      { id: 'french', language: 'French', nextReviewAt: 0 },
+    ];
+
+    expect(Lingua._reviewForecast(words, 'Spanish', now)).toEqual({
+      total: 6,
+      dueNow: 2,
+      nextDay: 1,
+      nextWeek: 2,
+      later: 1,
+    });
+    expect(Lingua._reviewForecast(null, 'Spanish', now)).toEqual({
+      total: 0,
+      dueNow: 0,
+      nextDay: 0,
+      nextWeek: 0,
+      later: 0,
+    });
+  });
+
+  it('sanitizes, bounds, and migrates per-word review history', () => {
+    const raw = Array.from({ length: 20 }, (_, index) => ({
+      at: index + 1,
+      rating: ['again', 'hard', 'learning', 'know'][index % 4],
+      interval: index === 19 ? -50 : index * 100,
+      stage: index === 19 ? 99 : index % 6,
+      unsafe: 'drop me',
+    })).concat([{ at: 30, rating: 'invalid', interval: 1, stage: 1 }, null]);
+
+    const history = Lingua._normalizeReviewHistory(raw);
+    expect(history).toHaveLength(Lingua._maxWordReviewHistory);
+    expect(history[0]).toEqual({ at: 20, rating: 'know', interval: 0, stage: 5 });
+    expect(history.at(-1).at).toBe(9);
+    expect(history[0]).not.toHaveProperty('unsafe');
+    expect(Lingua._normalizeReviewHistory('invalid')).toEqual([]);
+
+    expect(Lingua._wordReviewHistory({
+      lastReviewedAt: 100,
+      lastRating: 'hard',
+      nextReviewAt: 600,
+      reviewStage: 3,
+    })).toEqual([{ at: 100, rating: 'hard', interval: 500, stage: 3 }]);
+    expect(Lingua._wordReviewHistory({ lastReviewedAt: 100, lastRating: 'invalid' })).toEqual([]);
+  });
+
+  it('resets one word review record without changing vocabulary or neighboring words', () => {
+    const first = {
+      id: 'Spanish::hola', language: 'Spanish', term: 'hola', meaning: 'hello', example: 'Hola.', custom: 'keep',
+      reviewStage: 4, nextReviewAt: 9000, reviews: 8, lapses: 2, lastReviewedAt: 5000, lastRating: 'know',
+      reviewHistory: [{ at: 5000, rating: 'know', interval: 4000, stage: 4 }],
+    };
+    const second = { id: 'Spanish::adios', language: 'Spanish', term: 'adios', meaning: 'goodbye', reviewStage: 2 };
+    const words = [first, second];
+    const reset = Lingua._resetSavedWordReview(words, first.id);
+
+    expect(reset).not.toBe(words);
+    expect(reset[0]).toMatchObject({
+      id: first.id, term: 'hola', meaning: 'hello', example: 'Hola.', custom: 'keep',
+      reviewStage: 0, nextReviewAt: 0, reviews: 0, lapses: 0, lastReviewedAt: 0, lastRating: '', reviewHistory: [],
+    });
+    expect(reset[1]).toBe(second);
+    expect(Lingua._resetSavedWordReview(words, 'missing')).toBe(words);
+    expect(Lingua._resetSavedWordReview(null, first.id)).toEqual([]);
+  });
+
   it('schedules ratings at increasing intervals', () => {
     const base = 1_000_000;
     const word = { id: 'Spanish::hola', reviewStage: 0, reviews: 0 };
@@ -172,6 +284,12 @@ describe('Lingua Practice spaced review helpers', () => {
     expect(known.reviewStage).toBe(3);
     expect(known.nextReviewAt).toBe(base + 7 * 24 * 60 * 60 * 1000);
     expect(known.reviews).toBe(1);
+    expect(known.reviewHistory[0]).toEqual({
+      at: base,
+      rating: 'know',
+      interval: 7 * 24 * 60 * 60 * 1000,
+      stage: 3,
+    });
     expect(lapse.reviewStage).toBe(2);
     expect(lapse.lapses).toBe(3);
     expect(lapse.nextReviewAt).toBe(base + 10 * 60 * 1000);
@@ -184,6 +302,37 @@ describe('Lingua Practice spaced review helpers', () => {
     expect(Lingua._reviewTimeParts(24 * 60 * 60 * 1000)).toEqual({ key: 'time_day', n: 1 });
   });
 
+  it('undoes exactly one review while preserving unrelated activity', () => {
+    const now = 10_000;
+    const original = { id: 'Spanish::hola', language: 'Spanish', term: 'hola', meaning: 'hello', reviewStage: 1, reviews: 2, lapses: 1, nextReviewAt: 0, lastReviewedAt: 500, lastRating: 'hard', reviewHistory: [{ at: 500, rating: 'hard', interval: 200, stage: 1 }] };
+    const progress = {
+      saved: [original],
+      languageStats: { Spanish: { practiceSets: 2, spokenAttempts: 0, listeningAttempts: 0, reviews: 4, chatTurns: 0, lastPracticedAt: 9000 } },
+      activityLog: [{ id: 'activity-9000-practiceSets', language: 'Spanish', kind: 'practiceSets', count: 1, at: 9000 }],
+    };
+    const applied = Lingua._applyReviewRating(progress, original.id, 'Spanish', 'know', now);
+    expect(applied.undo).toMatchObject({ wordId: original.id, language: 'Spanish', rating: 'know', at: now, previousLastPracticedAt: 9000 });
+    expect(applied.progress.saved[0]).toMatchObject({ reviewStage: 3, reviews: 3, lastRating: 'know', lastReviewedAt: now });
+    expect(applied.progress.saved[0].reviewHistory).toHaveLength(2);
+    expect(applied.progress.saved[0].reviewHistory[0]).toMatchObject({ at: now, rating: 'know', stage: 3 });
+    expect(applied.progress.languageStats.Spanish.reviews).toBe(5);
+    expect(applied.progress.activityLog.filter((item) => item.kind === 'reviews')).toHaveLength(1);
+
+    const withOtherActivity = Lingua._trackLanguageActivity(applied.progress, 'Spanish', { spokenAttempts: 1 }, now + 100);
+    const restored = Lingua._undoReviewRating(withOtherActivity, applied.undo);
+    expect(restored.saved[0]).toEqual(original);
+    expect(restored.languageStats.Spanish).toMatchObject({ reviews: 4, spokenAttempts: 1, lastPracticedAt: now + 100 });
+    expect(restored.activityLog.some((item) => item.kind === 'reviews')).toBe(false);
+    expect(restored.activityLog.some((item) => item.kind === 'spokenAttempts')).toBe(true);
+    expect(Lingua._undoReviewRating(restored, applied.undo)).toBe(restored);
+  });
+
+  it('ignores invalid review transitions safely', () => {
+    const progress = { saved: [] };
+    expect(Lingua._applyReviewRating(progress, 'missing', 'Spanish', 'know', 1)).toEqual({ progress, undo: null });
+    expect(Lingua._applyReviewRating({ saved: [{ id: 'x' }] }, 'x', 'Spanish', 'invalid', 1).undo).toBe(null);
+    expect(Lingua._undoReviewRating(progress, null)).toBe(progress);
+  });
   it('returns only due words for the selected target language', () => {
     const now = 10_000;
     const words = [
@@ -266,6 +415,46 @@ describe('Lingua Practice language progress helpers', () => {
       lastPracticedAt: base + 86400000,
     });
     expect(progress.languageStats.French).toBeUndefined();
+    expect(progress.activityLog).toHaveLength(4);
+    expect(progress.activityLog.every((item) => item.language === 'Spanish')).toBe(true);
+  });
+
+  it('builds a bounded seven-day activity history without mixing languages', () => {
+    const now = new Date(2026, 0, 8, 12).getTime();
+    let progress = Lingua._trackLanguageActivity({}, 'Spanish', { practiceSets: 2, spokenAttempts: 1 }, now - 2 * 86400000);
+    progress = Lingua._trackLanguageActivity(progress, 'Spanish', { reviews: 3 }, now);
+    progress = Lingua._trackLanguageActivity(progress, 'French', { chatTurns: 9 }, now);
+    progress = Lingua._trackLanguageActivity(progress, 'Spanish', { unexpected: 5, reviews: -2 }, now);
+
+    const history = Lingua._activityHistory(progress, 'Spanish', now, 7);
+    expect(history.days).toHaveLength(7);
+    expect(history.total).toBe(6);
+    expect(history.activeDays).toBe(2);
+    expect(history.byKind).toEqual({ practiceSets: 2, spokenAttempts: 1, reviews: 3 });
+    expect(history.recent.every((item) => item.language === 'Spanish')).toBe(true);
+
+    const normalized = Lingua._normalizeProgress({
+      activityLog: Array.from({ length: 405 }, (_, index) => ({ language: 'Spanish', kind: 'reviews', count: index ? 1 : -1, at: index + 1 })),
+    });
+    expect(normalized.activityLog).toHaveLength(Lingua._maxActivityEvents);
+    expect(normalized.activityLog[0].at).toBe(405);
+  });
+
+  it('adds, bounds, separates, and removes local learner reflections', () => {
+    let progress = Lingua._addReflection({}, 'Spanish', '  Speaking felt easier today.  ', 100);
+    progress = Lingua._addReflection(progress, 'French', 'Revisit greetings.', 200);
+    expect(progress.reflections).toEqual([
+      { id: 'reflection-200-1', language: 'French', text: 'Revisit greetings.', at: 200 },
+      { id: 'reflection-100-0', language: 'Spanish', text: 'Speaking felt easier today.', at: 100 },
+    ]);
+    progress = Lingua._removeReflection(progress, 'reflection-100-0');
+    expect(progress.reflections.map((item) => item.language)).toEqual(['French']);
+
+    const normalized = Lingua._normalizeProgress({
+      reflections: Array.from({ length: 105 }, (_, index) => ({ language: 'Spanish', text: 'note ' + index, at: index })),
+    });
+    expect(normalized.reflections).toHaveLength(Lingua._maxReflections);
+    expect(normalized.reflections[0].text).toBe('note 104');
   });
 
   it('builds an honest guided pathway and adapts its next action', () => {
@@ -519,24 +708,86 @@ describe('Lingua Practice UI localization', () => {
   });
 });
 
+describe('Lingua Practice saved-word organization', () => {
+  it('searches accent-insensitively, filters by language, and applies stable sort modes', () => {
+    const now = 1000;
+    const words = [
+      { id: 'Spanish::lapiz', language: 'Spanish', term: 'l\u00e1piz', meaning: 'pencil', example: 'Necesito un l\u00e1piz.', tags: ['Unit 2', 'School'], nextReviewAt: 5000, reviews: 1 },
+      { id: 'French::bonjour', language: 'French', term: 'bonjour', meaning: 'hello', example: 'Bonjour Marie.', tags: ['Travel'], nextReviewAt: 0, reviews: 8 },
+      { id: 'Spanish::agua', language: 'Spanish', term: 'agua', meaning: 'water', translation: 'I need water.', note: 'Hydration reminder', tags: ['Health', 'Difficult words'], nextReviewAt: 0, reviews: 3 },
+    ];
+
+    expect(Lingua._wordBankLanguages(words)).toEqual(['French', 'Spanish']);
+    expect(Lingua._wordBankTags(words)).toEqual(['Difficult words', 'Health', 'School', 'Travel', 'Unit 2']);
+    expect(Lingua._savedWordView(words, { query: 'lapiz', language: 'all', sort: 'term', now }).map((item) => item.term)).toEqual(['l\u00e1piz']);
+    expect(Lingua._savedWordView(words, { query: 'pencil', language: 'Spanish', sort: 'term', now }).map((item) => item.term)).toEqual(['l\u00e1piz']);
+    expect(Lingua._savedWordView(words, { query: 'hydration', language: 'all', sort: 'term', now }).map((item) => item.term)).toEqual(['agua']);
+    expect(Lingua._savedWordView(words, { query: 'school', language: 'all', sort: 'term', now }).map((item) => item.term)).toEqual(['l\u00e1piz']);
+    expect(Lingua._savedWordView(words, { tag: 'travel', sort: 'term', now }).map((item) => item.term)).toEqual(['bonjour']);
+    expect(Lingua._savedWordView(words, { language: 'French', now }).map((item) => item.term)).toEqual(['bonjour']);
+    expect(Lingua._savedWordView(words, { sort: 'due', now }).map((item) => item.term)).toEqual(['agua', 'bonjour', 'l\u00e1piz']);
+    expect(Lingua._savedWordView(words, { sort: 'review', now }).map((item) => item.term)).toEqual(['bonjour', 'agua', 'l\u00e1piz']);
+    expect(Lingua._savedWordView(words, { sort: 'language', now }).map((item) => item.term)).toEqual(['bonjour', 'agua', 'l\u00e1piz']);
+    expect(words.map((item) => item.term)).toEqual(['l\u00e1piz', 'bonjour', 'agua']);
+  });
+
+  it('handles malformed collections and unmatched searches safely', () => {
+    expect(Lingua._wordBankLanguages(null)).toEqual([]);
+    expect(Lingua._wordBankTags(null)).toEqual([]);
+    expect(Lingua._normalizeWordTags([' Unit 2 ', 'travel', 'TRAVEL', '', 'x'.repeat(40), 'sixth', 'seventh'])).toEqual(['Unit 2', 'travel', 'x'.repeat(Lingua._maxWordTagLength), 'sixth', 'seventh']);
+    expect(Lingua._normalizeWordTags(' school, priority , SCHOOL ')).toEqual(['school', 'priority']);
+    expect(Lingua._savedWordView(null, {})).toEqual([]);
+    expect(Lingua._savedWordView([{ language: 'Spanish', term: 'hola' }], { query: 'missing' })).toEqual([]);
+  });
+
+  it('adds bounded personal words and preserves review history while editing', () => {
+    const added = Lingua._upsertSavedWord([], {
+      language: ' spanish ', term: '  biblioteca  ', meaning: '  library  ', pronunciation: 'bee-blee-oh-TEH-kah', example: 'x'.repeat(300), note: '  ' + 'n'.repeat(520) + '  ', tags: ' School, Unit 2, school, ' + 'x'.repeat(40) + ', fourth, fifth, sixth',
+    });
+    expect(added).toMatchObject({ ok: true, created: true });
+    expect(added.word).toMatchObject({ id: 'Spanish::biblioteca', language: 'Spanish', term: 'biblioteca', meaning: 'library', reviewStage: 0, reviews: 0 });
+    expect(added.word.example).toHaveLength(260);
+    expect(added.word.note).toHaveLength(Lingua._maxWordNote);
+    expect(added.word.note).toBe('n'.repeat(Lingua._maxWordNote));
+    expect(added.word.tags).toEqual(['School', 'Unit 2', 'x'.repeat(Lingua._maxWordTagLength), 'fourth', 'fifth']);
+
+    const reviewed = [{ id: 'Spanish::hola', language: 'Spanish', term: 'hola', meaning: 'hello', note: 'Old reminder', tags: ['Greeting'], reviewStage: 4, reviews: 7, lapses: 2, nextReviewAt: 9000, lastReviewedAt: 8000, lastRating: 'know' }];
+    const edited = Lingua._upsertSavedWord(reviewed, { language: 'Spanish', term: 'buenas', meaning: 'hello', example: 'Buenas tardes.', note: 'Evening greeting', tags: 'Greeting, Evening' }, 'Spanish::hola');
+    expect(edited).toMatchObject({ ok: true, created: false });
+    expect(edited.items).toHaveLength(1);
+    expect(edited.word).toMatchObject({ id: 'Spanish::buenas', note: 'Evening greeting', tags: ['Greeting', 'Evening'], reviewStage: 4, reviews: 7, lapses: 2, nextReviewAt: 9000, lastReviewedAt: 8000, lastRating: 'know' });
+  });
+
+  it('rejects incomplete, duplicate, and over-limit personal words', () => {
+    expect(Lingua._upsertSavedWord([], { language: 'Spanish', term: '', meaning: 'hello' }).reason).toBe('required');
+    const duplicate = Lingua._upsertSavedWord([{ id: 'Spanish::hola', language: 'Spanish', term: 'hola', meaning: 'hello' }], { language: 'spanish', term: 'H\u00d3LA', meaning: 'hi' });
+    expect(duplicate.reason).toBe('duplicate');
+    const full = Array.from({ length: Lingua._maxSavedWords }, (_, index) => ({ id: 'Spanish::w' + index, language: 'Spanish', term: 'w' + index, meaning: 'm' }));
+    expect(Lingua._upsertSavedWord(full, { language: 'Spanish', term: 'extra', meaning: 'extra' }).reason).toBe('limit');
+  });
+});
 describe('Lingua Practice word-bank CSV export', () => {
   it('quotes fields, escapes quotes, and neutralizes leading formula characters', () => {
     const csv = Lingua._wordBankCsv([
-      { language: 'Spanish', term: 'hola', meaning: 'hello', pronunciation: 'OH-lah', example: 'Hola, "Ana".', examplePronunciation: '', translation: 'Hello, "Ana".' },
-      { language: 'French', term: '=2+2', meaning: 'injection attempt', pronunciation: '', example: '', examplePronunciation: '', translation: '' },
+      { language: 'Spanish', term: 'hola', meaning: 'hello', pronunciation: 'OH-lah', example: 'Hola, "Ana".', examplePronunciation: '', translation: 'Hello, "Ana".', note: 'Say "hello", warmly.', tags: ['Greeting', 'Unit 2'] },
+      { language: 'French', term: '=2+2', meaning: 'injection attempt', pronunciation: '', example: '', examplePronunciation: '', translation: '', note: '@private note', tags: ['=priority', 'School'] },
     ]);
     const lines = csv.split('\r\n');
-    expect(lines[0]).toBe('"Language","Term","Meaning","Pronunciation","Example","Example pronunciation","Translation"');
+    expect(lines[0]).toBe('"Language","Term","Meaning","Pronunciation","Example","Example pronunciation","Translation","Personal note","Tags"');
     expect(lines[1]).toContain('"Hola, ""Ana""."');
+    expect(lines[1]).toContain('"Say ""hello"", warmly."');
+    expect(lines[1]).toContain('"Greeting; Unit 2"');
     // Leading = is prefixed so spreadsheet apps treat the cell as text.
     expect(lines[2]).toContain('"\'=2+2"');
+    expect(lines[2]).toContain(`"'@private note"`);
+    expect(lines[2]).toContain(`"'=priority; School"`);
     expect(lines).toHaveLength(3);
   });
 
   it('handles missing fields and non-array input safely', () => {
     expect(Lingua._wordBankCsv(null).split('\r\n')).toHaveLength(1);
     const csv = Lingua._wordBankCsv([{ language: 'Spanish', term: 'hola' }]);
-    expect(csv.split('\r\n')[1]).toBe('"Spanish","hola","","","","",""');
+    expect(csv.split('\r\n')[1]).toBe('"Spanish","hola","","","","","","",""');
   });
 });
 
@@ -822,10 +1073,13 @@ describe('Lingua Practice backup validation', () => {
   it('round-trips bounded learner data without including source text or image caches', () => {
     const saved = Array.from({ length: 505 }, (_, index) => ({
       language: 'Spanish', term: 'word-' + index, meaning: 'meaning-' + index, reviewStage: index % 6, nextReviewAt: index,
+      reviewHistory: index === 0 ? [{ at: 40, rating: 'learning', interval: 86400000, stage: 1, unsafe: true }] : [],
+      note: index === 0 ? 'Remember this in context.' : '',
+      tags: index === 0 ? [' Unit 2 ', 'school', 'SCHOOL', 'x'.repeat(40), 'fourth', 'fifth', 'sixth'] : [],
     }));
     const backup = Lingua._createBackup(
       { known: 'English', target: 'Spanish', level: 'Intermediate', topic: 'Science reading' },
-      { saved, sessions: 4, languageStats: { Spanish: { practiceSets: 4, reviews: 3, unexpected: 'drop me' } } },
+      { saved, sessions: 4, languageStats: { Spanish: { practiceSets: 4, reviews: 3, unexpected: 'drop me' } }, activityLog: [{ id: 'activity-20-reviews-0', language: 'Spanish', kind: 'reviews', count: 2, at: 20 }], reflections: [{ id: 'reflection-21-0', language: 'Spanish', text: 'Revisit the new terms.', at: 21 }] },
       {},
       { Spanish: { messages: [{ role: 'you', target: 'Hola' }], at: 20 } },
       { audioSlow: true, pictureOnlyReview: true },
@@ -835,7 +1089,12 @@ describe('Lingua Practice backup validation', () => {
     expect(backup.product).toBe('AlloFlow Lingua Practice');
     expect(backup.version).toBe(2);
     expect(backup.progress.saved).toHaveLength(500);
+    expect(backup.progress.saved[0].reviewHistory).toEqual([{ at: 40, rating: 'learning', interval: 86400000, stage: 1 }]);
+    expect(backup.progress.saved[0].note).toBe('Remember this in context.');
+    expect(backup.progress.saved[0].tags).toEqual(['Unit 2', 'school', 'x'.repeat(Lingua._maxWordTagLength), 'fourth', 'fifth']);
     expect(backup.progress.languageStats.Spanish).toEqual({ practiceSets: 4, spokenAttempts: 0, listeningAttempts: 0, reviews: 3, chatTurns: 0, lastPracticedAt: 0 });
+    expect(backup.progress.activityLog).toEqual([{ id: 'activity-20-reviews-0', language: 'Spanish', kind: 'reviews', count: 2, at: 20 }]);
+    expect(backup.progress.reflections[0].text).toBe('Revisit the new terms.');
     expect(backup.preferences).toEqual({ audioSlow: true, pictureOnlyReview: true });
     expect(backup).not.toHaveProperty('sourceText');
     expect(backup).not.toHaveProperty('images');

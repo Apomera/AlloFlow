@@ -175,7 +175,70 @@ describe('Lingua Practice WCAG 2.2 AA', () => {
 
     await click('Saved words');
     await expectNoAxeViolations('empty saved words');
+
+    await click('Add a word');
+    const note = host.querySelector('#lingua-word-note');
+    const tags = host.querySelector('#lingua-word-tags');
+    expect(note.maxLength).toBe(500);
+    expect(tags.maxLength).toBe(200);
+    expect(tags.getAttribute('aria-describedby')).toBe('lingua-word-tags-help lingua-word-tags-count');
+    expect(host.querySelector('#lingua-word-tags-help').textContent).toContain('Separate tags with commas');
+    expect(note.getAttribute('aria-describedby')).toBe('lingua-word-note-help lingua-word-note-count');
+    expect(host.querySelector('#lingua-word-note-help').textContent).toContain('unless you download');
+    await expectNoAxeViolations('saved-word editor with personal note and tags');
+    await click('Cancel');
   }, 30000); // 13 sequential axe sweeps — heavy under parallel CPU load
+
+  it('has no axe violations in the upcoming-review forecast', async () => {
+    const now = Date.now();
+    const day = 24 * 60 * 60 * 1000;
+    localStorage.setItem('allo_lingua_progress_v1', JSON.stringify({ saved: [
+      { id: 'Spanish::due', language: 'Spanish', term: 'due', meaning: 'due', nextReviewAt: 0 },
+      { id: 'Spanish::day', language: 'Spanish', term: 'day', meaning: 'day', nextReviewAt: now + 12 * 60 * 60 * 1000 },
+      { id: 'Spanish::week', language: 'Spanish', term: 'week', meaning: 'week', nextReviewAt: now + 3 * day },
+      { id: 'Spanish::later', language: 'Spanish', term: 'later', meaning: 'later', nextReviewAt: now + 8 * day },
+      { id: 'French::bonjour', language: 'French', term: 'bonjour', meaning: 'hello', nextReviewAt: 0 },
+    ] }));
+    await mount();
+    await click('Progress');
+
+    const forecast = host.querySelector('[aria-labelledby="lingua-review-forecast-title"]');
+    expect(forecast).toBeTruthy();
+    expect(Array.from(forecast.querySelectorAll('dd')).map((node) => node.textContent))
+      .toEqual(['1', '1', '1', '1']);
+    expect(forecast.textContent).toContain('not a deadline');
+    await expectNoAxeViolations('upcoming review forecast');
+  });
+
+  it('has no axe violations in an expanded saved-word review history', async () => {
+    localStorage.setItem('allo_lingua_progress_v1', JSON.stringify({ saved: [{
+      id: 'Spanish::hola', language: 'Spanish', term: 'hola', meaning: 'hello', example: 'Hola.', nextReviewAt: 1000,
+      reviewHistory: [
+        { at: Date.UTC(2026, 0, 12), rating: 'know', interval: 259200000, stage: 2 },
+        { at: Date.UTC(2026, 0, 11), rating: 'again', interval: 600000, stage: 0 },
+      ],
+    }] }));
+    await mount();
+    await click('Saved words');
+    const details = host.querySelector('details');
+    const summary = details.querySelector('summary');
+    await act(async () => { summary.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(details.open).toBe(true);
+    expect(details.querySelector('ol').getAttribute('aria-label')).toBe('Recent review choices for hola');
+    expect(details.textContent).toContain('not a score');
+    await expectNoAxeViolations('expanded saved-word review history');
+
+    const reset = findButton('Reset review progress');
+    reset.focus();
+    await act(async () => { reset.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    const dialog = host.querySelector('[role="alertdialog"]');
+    expect(dialog).toBeTruthy();
+    expect(dialog.textContent).toContain('Overall activity records will not change');
+    await expectNoAxeViolations('reset word review confirmation');
+    const cancel = Array.from(dialog.querySelectorAll('button')).find((node) => node.textContent === 'Cancel');
+    await act(async () => { cancel.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(document.activeElement).toBe(reset);
+  });
 
   it('has no axe violations in the revealed spaced-review state', async () => {
     localStorage.setItem('allo_lingua_progress_v1', JSON.stringify({
@@ -189,6 +252,7 @@ describe('Lingua Practice WCAG 2.2 AA', () => {
         example: 'Hola, me llamo Ana.',
         translation: 'Hello, my name is Ana.',
         pronunciation: 'OH-lah',
+        tags: ['Greetings', 'Unit 1'],
         reviewStage: 0,
         nextReviewAt: 0,
         reviews: 0,
@@ -196,7 +260,23 @@ describe('Lingua Practice WCAG 2.2 AA', () => {
     }));
     await mount();
     await click('Review (1)');
-    await expectNoAxeViolations('review prompt');
+    const reviewRegion = host.querySelector('main > div[tabindex="-1"]');
+    const scope = host.querySelector('#lingua-review-tag');
+    expect(host.querySelector('label[for="lingua-review-tag"]')).toBeTruthy();
+    expect(scope.getAttribute('aria-describedby')).toBe('lingua-review-scope-help');
+    expect(Array.from(scope.options).map((option) => option.textContent)).toEqual(['All due words', 'Greetings', 'Unit 1']);
+    await expectNoAxeViolations('review prompt with tag focus');
+
+    await click('Skip for now');
+    expect(document.activeElement).toBe(reviewRegion);
+    expect(reviewRegion.textContent).toContain('Cards set aside');
+    expect(reviewRegion.textContent).toContain('review schedule did not change');
+    await expectNoAxeViolations('review card set aside');
+
+    await click('Review set-aside cards');
+    expect(document.activeElement).toBe(reviewRegion);
+    expect(reviewRegion.textContent).toContain('Returned 1 set-aside cards');
+    await expectNoAxeViolations('set-aside card returned');
     await click('Reveal answer');
     const revealedTerm = Array.from(host.querySelectorAll('[lang="es-ES"]')).find(
       (node) => node.textContent === 'hola',
@@ -209,10 +289,26 @@ describe('Lingua Practice WCAG 2.2 AA', () => {
     await expectNoAxeViolations('revealed review');
 
     await click('Know');
-    const reviewRegion = host.querySelector('main > div[tabindex="-1"]');
     expect(document.activeElement).toBe(reviewRegion);
     expect(reviewRegion.textContent).toContain('Review recorded as Know');
-    await expectNoAxeViolations('completed review');
+    expect(findButton('Undo last review')).toBeTruthy();
+    const sessionSummary = host.querySelector('[aria-labelledby="lingua-review-session-title"]');
+    expect(sessionSummary).toBeTruthy();
+    expect(sessionSummary.querySelector('#lingua-review-session-title').textContent).toBe('Review session complete');
+    expect(sessionSummary.textContent).toContain('not a score');
+    expect(Array.from(sessionSummary.querySelectorAll('dd')).map((node) => node.textContent))
+      .toEqual(['0', '0', '0', '1']);
+    await expectNoAxeViolations('completed review with undo');
+
+    await click('Undo last review');
+    const restoredTerm = Array.from(host.querySelectorAll('[lang="es-ES"]')).find(
+      (node) => node.textContent === 'hola',
+    );
+    expect(document.activeElement).toBe(restoredTerm);
+    expect(reviewRegion.textContent).toContain('Review undone');
+    expect(findButton('Undo last review')).toBeFalsy();
+    expect(host.querySelector('[aria-labelledby="lingua-review-session-title"]')).toBeFalsy();
+    await expectNoAxeViolations('restored review after undo');
   });
 
   it('moves focus to changed phrase and conversation prompts', async () => {
@@ -668,7 +764,7 @@ describe('Lingua Practice stale AI request protection', () => {
     expect(host.textContent).not.toContain(lesson.goal);
     expect(localStorage.getItem('allo_lingua_recent_v1')).toBe(null);
     await expectNoAxeViolations('stale setup-context lesson ignored');
-  });
+  }, 15000);
 
   it('ignores coaching feedback after the learner advances turns', async () => {
     const multiTurnLesson = {
@@ -881,6 +977,48 @@ describe('Lingua Practice destructive-action dialogs', () => {
     expect(nativeConfirm).not.toHaveBeenCalled();
   });
 
+  it('keeps populated word-bank controls and removal confirmation accessible', async () => {
+    localStorage.setItem('allo_lingua_progress_v1', JSON.stringify({ saved: [
+      { id: 'Spanish::hola', language: 'Spanish', term: 'hola', meaning: 'hello', example: 'Hola.', nextReviewAt: 0, reviews: 2 },
+      { id: 'French::bonjour', language: 'French', term: 'bonjour', meaning: 'hello', example: 'Bonjour.', nextReviewAt: 0, reviews: 1 },
+    ] }));
+    await mount();
+    await click('Saved words');
+
+    expect(host.querySelector('label[for="lingua-saved-search"]')).toBeTruthy();
+    expect(host.querySelector('label[for="lingua-saved-language"]')).toBeTruthy();
+    expect(host.querySelector('label[for="lingua-saved-tag"]')).toBeTruthy();
+    expect(host.querySelector('label[for="lingua-saved-sort"]')).toBeTruthy();
+    await expectNoAxeViolations('populated saved-word organizer');
+
+    const addWord = findButton('Add a word');
+    addWord.focus();
+    await act(async () => { addWord.dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); });
+    expect(document.activeElement.id).toBe('lingua-word-editor-title');
+    ['language', 'term', 'meaning', 'pronunciation', 'example', 'example-pronunciation', 'translation'].forEach((suffix) => {
+      expect(host.querySelector('label[for="lingua-word-' + suffix + '"]'), 'Missing word-editor label: ' + suffix).toBeTruthy();
+    });
+    await expectNoAxeViolations('personal saved-word editor');
+    await act(async () => { findButton('Cancel').dispatchEvent(new MouseEvent('click', { bubbles: true })); await new Promise((resolve) => setTimeout(resolve, 0)); });
+    expect(document.activeElement).toBe(addWord);
+
+    const opener = host.querySelector('button[aria-label="Remove saved word"]');
+    expect(opener).toBeTruthy();
+    opener.focus();
+    await act(async () => {
+      opener.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+    const confirmation = host.querySelector('[role="alertdialog"]');
+    expect(confirmation.querySelector('#lingua-confirm-title').textContent).toBe('Remove saved word');
+    expect(confirmation.querySelector('#lingua-confirm-message').textContent).toContain('review history');
+    expect(document.activeElement.textContent).toBe('Cancel');
+    await expectNoAxeViolations('saved-word removal confirmation');
+
+    act(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })));
+    expect(host.querySelector('[role="alertdialog"]')).toBeNull();
+    expect(document.activeElement).toBe(opener);
+  }, 30000);
   it('clears local Lingua data only after explicit alert-dialog confirmation', async () => {
     localStorage.setItem('allo_lingua_profile_v1', JSON.stringify({
       known: 'English',

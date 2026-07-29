@@ -161,6 +161,14 @@ describe('Lingua Practice render flow', () => {
     expect(host.textContent).toContain('1 learning');
     expect(host.textContent).toContain('1 well-practiced');
     expect(button('Review 1 due')).toBeTruthy();
+    const forecast = host.querySelector('[aria-labelledby="lingua-review-forecast-title"]');
+    expect(forecast).toBeTruthy();
+    expect(forecast.querySelector('#lingua-review-forecast-title').textContent).toBe('Upcoming review load');
+    expect(forecast.textContent).toContain('A planning view, not a deadline');
+    expect(Array.from(forecast.querySelectorAll('dt')).map((node) => node.textContent))
+      .toEqual(['Due now', 'Next 24 hours', 'Days 2-7', 'Later']);
+    expect(Array.from(forecast.querySelectorAll('dd')).map((node) => node.textContent))
+      .toEqual(['1', '1', '0', '0']);
     expect(host.textContent).toContain('Your learning path');
     expect(host.textContent).toContain('2 of 6 milestones complete');
     expect(host.textContent).toContain('Save useful words');
@@ -174,6 +182,46 @@ describe('Lingua Practice render flow', () => {
     const reviews = labels.find((node) => node.textContent === 'Reviews completed');
     expect(practiceSets.previousSibling.textContent).toBe('2');
     expect(reviews.previousSibling.textContent).toBe('4');
+  });
+  it('renders a seven-day journal and persists learner reflections with confirmation', async () => {
+    const now = Date.now();
+    localStorage.setItem('allo_lingua_progress_v1', JSON.stringify({
+      languageStats: { Spanish: { practiceSets: 2, reviews: 1, lastPracticedAt: now } },
+      activityLog: [
+        { id: 'activity-now-practice', language: 'Spanish', kind: 'practiceSets', count: 2, at: now },
+        { id: 'activity-yesterday-review', language: 'Spanish', kind: 'reviews', count: 1, at: now - 86400000 },
+        { id: 'activity-french', language: 'French', kind: 'chatTurns', count: 8, at: now },
+      ],
+      reflections: [{ id: 'reflection-existing', language: 'Spanish', text: 'Revisit question forms.', at: now - 1000 }],
+      saved: [],
+    }));
+
+    await mount(React.createElement(Lingua, { isOpen: true, onClose: () => {} }));
+    await act(async () => { button('Progress').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+
+    expect(host.textContent).toContain('Recent learning activity');
+    expect(host.textContent).toContain('3 activities in this window');
+    expect(host.textContent).toContain('Practice sets built: 2');
+    expect(host.textContent).not.toContain('Conversation turns: 8');
+    expect(host.textContent).toContain('Revisit question forms.');
+    const days = host.querySelectorAll('ol[aria-label="Last 7 days"] > li');
+    expect(days).toHaveLength(7);
+
+    const textarea = host.querySelector('#lingua-journal-reflection');
+    const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
+    await act(async () => { setter.call(textarea, 'Listening felt clearer today.'); textarea.dispatchEvent(new Event('input', { bubbles: true })); });
+    expect(button('Save reflection').disabled).toBe(false);
+    await act(async () => { button('Save reflection').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    let stored = JSON.parse(localStorage.getItem('allo_lingua_progress_v1'));
+    expect(stored.reflections[0].text).toBe('Listening felt clearer today.');
+
+    await act(async () => { button('Delete reflection').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    const dialog = host.querySelector('[role="alertdialog"]');
+    expect(dialog.textContent).toContain('This cannot be undone');
+    const confirm = Array.from(dialog.querySelectorAll('button')).find((item) => item.textContent.includes('Delete reflection'));
+    await act(async () => { confirm.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    stored = JSON.parse(localStorage.getItem('allo_lingua_progress_v1'));
+    expect(stored.reflections).toHaveLength(1);
   });
   it('reviews a due saved word and persists its next interval', async () => {
     localStorage.setItem('allo_lingua_progress_v1', JSON.stringify({
@@ -220,6 +268,14 @@ describe('Lingua Practice render flow', () => {
       button('Know').dispatchEvent(new MouseEvent('click', { bubbles: true }));
     });
     expect(host.textContent).toContain('You are caught up for now');
+    const sessionSummary = host.querySelector('[aria-labelledby="lingua-review-session-title"]');
+    expect(sessionSummary).toBeTruthy();
+    expect(sessionSummary.querySelector('#lingua-review-session-title').textContent).toBe('Review session complete');
+    expect(sessionSummary.textContent).toContain('1 reviewed');
+    expect(sessionSummary.textContent).toContain('0 due now');
+    expect(sessionSummary.textContent).toContain('This is an activity summary, not a score.');
+    expect(Array.from(sessionSummary.querySelectorAll('dd')).map((node) => node.textContent))
+      .toEqual(['0', '0', '0', '1']);
 
     const saved = JSON.parse(localStorage.getItem('allo_lingua_progress_v1')).saved[0];
     expect(saved.reviewStage).toBe(2);
@@ -227,6 +283,102 @@ describe('Lingua Practice render flow', () => {
     expect(saved.nextReviewAt).toBeGreaterThan(Date.now());
     const stored = JSON.parse(localStorage.getItem('allo_lingua_progress_v1'));
     expect(stored.languageStats.Spanish.reviews).toBe(1);
+    expect(stored.activityLog.filter((item) => item.kind === 'reviews')).toHaveLength(1);
+    expect(host.textContent).toContain('Recorded Know for "hola"');
+    expect(button('Undo last review')).toBeTruthy();
+
+    await act(async () => { button('Undo last review').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    const restored = JSON.parse(localStorage.getItem('allo_lingua_progress_v1'));
+    expect(restored.saved[0]).toMatchObject({ reviewStage: 0, reviews: 0, nextReviewAt: 0 });
+    expect(restored.languageStats.Spanish.reviews).toBe(0);
+    expect(restored.activityLog.some((item) => item.kind === 'reviews')).toBe(false);
+    expect(host.textContent).toContain('Review undone');
+    expect(host.textContent).toContain('Your answer: hola');
+    expect(button('Undo last review')).toBeFalsy();
+    expect(button('Know')).toBeTruthy();
+    expect(host.querySelector('[aria-labelledby="lingua-review-session-title"]')).toBeFalsy();
+
+    await act(async () => { button('Know').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(host.querySelector('[aria-labelledby="lingua-review-session-title"]')).toBeTruthy();
+    await act(async () => { button('Progress').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    await act(async () => { button('Review').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(host.querySelector('[aria-labelledby="lingua-review-session-title"]')).toBeFalsy();
+  });
+
+  it('sets due cards aside without changing progress and returns them on request', async () => {
+    localStorage.setItem('allo_lingua_progress_v1', JSON.stringify({ saved: [
+      { id: 'Spanish::hola', language: 'Spanish', term: 'hola', meaning: 'hello', example: 'Hola.', translation: 'Hello.', reviewStage: 0, nextReviewAt: 0, reviews: 0 },
+      { id: 'Spanish::adios', language: 'Spanish', term: 'adios', meaning: 'goodbye', example: 'Adios.', translation: 'Goodbye.', reviewStage: 0, nextReviewAt: 1, reviews: 0 },
+    ] }));
+    await mount(React.createElement(Lingua, { isOpen: true, onClose: () => {} }));
+    await act(async () => { button('Review (2)').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+
+    expect(host.textContent).toContain('hello');
+    expect(button('Skip for now').title).toContain('without changing its review schedule');
+    await act(async () => { button('Skip for now').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(host.textContent).toContain('goodbye');
+    expect(host.textContent).toContain('Skipped "hola" for this session');
+
+    await act(async () => { button('Skip for now').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(host.textContent).toContain('Cards set aside');
+    expect(host.textContent).toContain('2 due cards are set aside');
+    expect(button('Review set-aside cards')).toBeTruthy();
+    expect(host.textContent).not.toContain('You are caught up for now');
+
+    const stored = JSON.parse(localStorage.getItem('allo_lingua_progress_v1'));
+    expect(stored.saved.map((word) => ({ id: word.id, reviews: word.reviews, nextReviewAt: word.nextReviewAt })))
+      .toEqual([
+        { id: 'Spanish::hola', reviews: 0, nextReviewAt: 0 },
+        { id: 'Spanish::adios', reviews: 0, nextReviewAt: 1 },
+      ]);
+    expect(stored.languageStats?.Spanish?.reviews || 0).toBe(0);
+    expect((stored.activityLog || []).some((item) => item.kind === 'reviews')).toBe(false);
+
+    await act(async () => { button('Review set-aside cards').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(host.textContent).toContain('Returned 2 set-aside cards');
+    expect(host.textContent).toContain('hello');
+    expect(button('Skip for now')).toBeTruthy();
+  });
+
+  it('focuses review by tag without changing other schedules or the all-due navigation count', async () => {
+    localStorage.setItem('allo_lingua_progress_v1', JSON.stringify({ saved: [
+      { id: 'Spanish::hola', language: 'Spanish', term: 'hola', meaning: 'hello', tags: ['School'], nextReviewAt: 0, reviews: 0 },
+      { id: 'Spanish::adios', language: 'Spanish', term: 'adios', meaning: 'goodbye', tags: ['Travel'], nextReviewAt: 1, reviews: 0 },
+      { id: 'Spanish::libro', language: 'Spanish', term: 'libro', meaning: 'book', tags: ['School'], nextReviewAt: 2, reviews: 0 },
+    ] }));
+    await mount(React.createElement(Lingua, { isOpen: true, onClose: () => {} }));
+    await act(async () => { button('Review (3)').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+
+    const scope = host.querySelector('#lingua-review-tag');
+    expect(scope).toBeTruthy();
+    expect(scope.getAttribute('aria-describedby')).toBe('lingua-review-scope-help');
+    expect(Array.from(scope.options).map((option) => option.textContent)).toEqual(['All due words', 'School', 'Travel']);
+    expect(host.textContent).toContain('3 due now \u00b7 3 saved in Spanish');
+
+    await act(async () => { scope.value = 'School'; scope.dispatchEvent(new Event('change', { bubbles: true })); });
+    expect(host.textContent).toContain('Review focus changed to School');
+    expect(host.textContent).toContain('2 due now \u00b7 2 saved in Spanish with School');
+    expect(host.textContent).toContain('hello');
+    expect(button('Review (3)')).toBeTruthy();
+
+    await act(async () => { button('Reveal answer').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    await act(async () => { button('Know').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(host.textContent).toContain('book');
+    expect(button('Undo last review')).toBeTruthy();
+    expect(host.querySelector('[aria-labelledby="lingua-review-session-title"]')).toBeTruthy();
+
+    await act(async () => { scope.value = 'Travel'; scope.dispatchEvent(new Event('change', { bubbles: true })); });
+    expect(host.textContent).toContain('goodbye');
+    expect(button('Undo last review')).toBeFalsy();
+    expect(host.querySelector('[aria-labelledby="lingua-review-session-title"]')).toBeFalsy();
+    expect(host.textContent).toContain('1 due now \u00b7 1 saved in Spanish with Travel');
+
+    await act(async () => { scope.value = 'School'; scope.dispatchEvent(new Event('change', { bubbles: true })); });
+    expect(host.textContent).toContain('book');
+    expect(host.textContent).not.toContain('hello');
+    const stored = JSON.parse(localStorage.getItem('allo_lingua_progress_v1'));
+    expect(stored.saved.find((word) => word.id === 'Spanish::hola').reviews).toBe(1);
+    expect(stored.saved.find((word) => word.id === 'Spanish::adios').reviews).toBe(0);
   });
 
   it('reverses an established card to target-to-known recall and schedules Hard', async () => {
@@ -766,6 +918,184 @@ describe('Lingua Practice storage safety', () => {
 });
 
 describe('Lingua Practice word-bank download', () => {
+  it('shows bounded review history without presenting it as a score', async () => {
+    const now = Date.UTC(2026, 0, 12);
+    localStorage.setItem('allo_lingua_progress_v1', JSON.stringify({
+      languageStats: { Spanish: { reviews: 7, practiceSets: 2, lastPracticedAt: now } },
+      activityLog: [{ id: 'activity-review-history', language: 'Spanish', kind: 'reviews', count: 7, at: now }],
+      saved: [
+      {
+        id: 'Spanish::hola', language: 'Spanish', term: 'hola', meaning: 'hello', example: 'Hola.', note: 'Use this when greeting a neighbor.', tags: ['Greeting'], reviewStage: 2, reviews: 2, lapses: 1, lastReviewedAt: now, lastRating: 'know', nextReviewAt: now + 3 * 86400000,
+        reviewHistory: [
+          { at: now, rating: 'know', interval: 3 * 86400000, stage: 2 },
+          { at: now - 86400000, rating: 'again', interval: 600000, stage: 0 },
+        ],
+      },
+      { id: 'Spanish::adios', language: 'Spanish', term: 'adios', meaning: 'goodbye', nextReviewAt: 0 },
+    ] }));
+    await mount(React.createElement(Lingua, { isOpen: true, onClose: () => {} }));
+    await act(async () => { button('Saved words').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+
+    const details = host.querySelector('details');
+    const summary = details.querySelector('summary');
+    expect(summary.textContent).toBe('Review history (2)');
+    expect(details.open).toBe(false);
+    await act(async () => { summary.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(details.open).toBe(true);
+    expect(details.textContent).toContain('not a score');
+    expect(details.textContent).toContain('Know');
+    expect(details.textContent).toContain('Next in 3 days');
+    expect(details.textContent).toContain('Again');
+    expect(details.textContent).toContain('Next in 10 minutes');
+    expect(details.querySelector('ol').getAttribute('aria-label')).toBe('Recent review choices for hola');
+    expect(details.querySelectorAll('time')).toHaveLength(2);
+    expect(host.textContent).toContain('No recent review details are stored for this word.');
+
+    const reset = button('Reset review progress');
+    expect(reset.title).toContain('clears its schedule and per-word history');
+    reset.focus();
+    await act(async () => { reset.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    let dialog = host.querySelector('[role="alertdialog"]');
+    expect(dialog.textContent).toContain('The word stays saved and becomes due now');
+    expect(dialog.textContent).toContain('Overall activity records will not change');
+    const cancel = Array.from(dialog.querySelectorAll('button')).find((item) => item.textContent === 'Cancel');
+    expect(document.activeElement).toBe(cancel);
+    await act(async () => { cancel.dispatchEvent(new MouseEvent('click', { bubbles: true })); await new Promise((resolve) => setTimeout(resolve, 0)); });
+    expect(document.activeElement).toBe(reset);
+
+    await act(async () => { reset.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    dialog = host.querySelector('[role="alertdialog"]');
+    const confirm = Array.from(dialog.querySelectorAll('button')).find((item) => item.textContent === 'Reset review progress');
+    await act(async () => { confirm.dispatchEvent(new MouseEvent('click', { bubbles: true })); await new Promise((resolve) => setTimeout(resolve, 0)); });
+
+    const stored = JSON.parse(localStorage.getItem('allo_lingua_progress_v1'));
+    expect(stored.saved[0]).toMatchObject({
+      id: 'Spanish::hola', term: 'hola', meaning: 'hello', example: 'Hola.', note: 'Use this when greeting a neighbor.', tags: ['Greeting'],
+      reviewStage: 0, nextReviewAt: 0, reviews: 0, lapses: 0, lastReviewedAt: 0, lastRating: '', reviewHistory: [],
+    });
+    expect(stored.saved[1].term).toBe('adios');
+    expect(stored.languageStats.Spanish).toMatchObject({ reviews: 7, practiceSets: 2, lastPracticedAt: now });
+    expect(stored.activityLog).toEqual([{ id: 'activity-review-history', language: 'Spanish', kind: 'reviews', count: 7, at: now }]);
+    expect(button('Reset review progress')).toBeFalsy();
+    expect(host.textContent).toContain('No recent review details are stored for this word.');
+    expect(document.activeElement.textContent).toContain('Saved words');
+  });
+
+  it('adds and edits personal vocabulary with predictable focus behavior', async () => {
+    await mount(React.createElement(Lingua, { isOpen: true, onClose: () => {} }));
+    await act(async () => { button('Saved words').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    const add = button('Add a word');
+    add.focus();
+    await act(async () => { add.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(document.activeElement.id).toBe('lingua-word-editor-title');
+    expect(host.textContent).toContain('Add your own vocabulary or correct an entry');
+
+    const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+    const term = host.querySelector('#lingua-word-term');
+    const meaning = host.querySelector('#lingua-word-meaning');
+    const note = host.querySelector('#lingua-word-note');
+    const tags = host.querySelector('#lingua-word-tags');
+    const noteText = 'Remember the library sign.';
+    const tagText = 'School, Unit 2, school';
+    const textSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
+    expect(note.maxLength).toBe(500);
+    expect(tags.maxLength).toBe(200);
+    expect(tags.getAttribute('aria-describedby')).toBe('lingua-word-tags-help lingua-word-tags-count');
+    expect(note.getAttribute('aria-describedby')).toBe('lingua-word-note-help lingua-word-note-count');
+    await act(async () => {
+      setter.call(term, 'biblioteca'); term.dispatchEvent(new Event('input', { bubbles: true }));
+      setter.call(meaning, 'library'); meaning.dispatchEvent(new Event('input', { bubbles: true }));
+      setter.call(tags, tagText); tags.dispatchEvent(new Event('input', { bubbles: true }));
+      textSetter.call(note, noteText); note.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    expect(host.querySelector('#lingua-word-note-count').textContent).toBe(noteText.length + ' / 500 characters');
+    expect(host.querySelector('#lingua-word-tags-count').textContent).toBe('2 / 5 tags');
+    await act(async () => { button('Save word').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    let stored = JSON.parse(localStorage.getItem('allo_lingua_progress_v1'));
+    expect(stored.saved[0]).toMatchObject({ id: 'Spanish::biblioteca', term: 'biblioteca', meaning: 'library', note: noteText, tags: ['School', 'Unit 2'] });
+    expect(host.textContent).toContain('biblioteca');
+    expect(host.textContent).toContain('Personal note');
+    expect(host.textContent).toContain(noteText);
+    expect(host.querySelector('ul[aria-label="Tags for biblioteca"]')).toBeTruthy();
+    expect(host.textContent).toContain('Unit 2');
+
+    let edit = button('Edit');
+    edit.focus();
+    await act(async () => { edit.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(document.activeElement.id).toBe('lingua-word-editor-title');
+    await act(async () => { button('Cancel').dispatchEvent(new MouseEvent('click', { bubbles: true })); await new Promise((resolve) => setTimeout(resolve, 0)); });
+    expect(document.activeElement).toBe(edit);
+
+    await act(async () => { edit.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    const editedTerm = host.querySelector('#lingua-word-term');
+    await act(async () => { setter.call(editedTerm, 'libreria'); editedTerm.dispatchEvent(new Event('input', { bubbles: true })); });
+    await act(async () => { button('Save word').dispatchEvent(new MouseEvent('click', { bubbles: true })); await new Promise((resolve) => setTimeout(resolve, 0)); });
+    stored = JSON.parse(localStorage.getItem('allo_lingua_progress_v1'));
+    expect(stored.saved).toHaveLength(1);
+    expect(stored.saved[0]).toMatchObject({ id: 'Spanish::libreria', term: 'libreria', meaning: 'library', note: noteText, tags: ['School', 'Unit 2'], reviewStage: 0 });
+    expect(document.activeElement.textContent).toContain('Saved words');
+  });
+
+  it('searches, filters, sorts, clears, and safely removes saved words', async () => {
+    const now = Date.now();
+    localStorage.setItem('allo_lingua_progress_v1', JSON.stringify({ saved: [
+      { id: 'Spanish::lapiz', language: 'Spanish', term: 'l\u00e1piz', meaning: 'pencil', example: 'Necesito un l\u00e1piz.', tags: ['School'], nextReviewAt: now + 86400000, reviews: 1 },
+      { id: 'French::bonjour', language: 'French', term: 'bonjour', meaning: 'hello', example: 'Bonjour Marie.', tags: ['Travel'], nextReviewAt: 0, reviews: 8 },
+      { id: 'Spanish::agua', language: 'Spanish', term: 'agua', meaning: 'water', example: 'Necesito agua.', note: 'Hydration reminder', tags: ['Health', 'Priority'], nextReviewAt: 0, reviews: 3 },
+    ] }));
+    await mount(React.createElement(Lingua, { isOpen: true, onClose: () => {} }));
+    await act(async () => { button('Saved words').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+
+    expect(host.textContent).toContain('Showing 3 of 3 saved words');
+    const search = host.querySelector('#lingua-saved-search');
+    const inputSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;
+    await act(async () => { inputSetter.call(search, 'lapiz'); search.dispatchEvent(new Event('input', { bubbles: true })); });
+    expect(host.textContent).toContain('Showing 1 of 3 saved words');
+    expect(host.textContent).toContain('l\u00e1piz');
+    expect(host.textContent).not.toContain('Bonjour Marie.');
+
+    await act(async () => { button('Clear filters').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    await act(async () => { inputSetter.call(search, 'hydration'); search.dispatchEvent(new Event('input', { bubbles: true })); });
+    expect(host.textContent).toContain('Showing 1 of 3 saved words');
+    expect(host.textContent).toContain('agua');
+    expect(host.textContent).toContain('Hydration reminder');
+
+    await act(async () => { button('Clear filters').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    await act(async () => { inputSetter.call(search, 'school'); search.dispatchEvent(new Event('input', { bubbles: true })); });
+    expect(host.textContent).toContain('Showing 1 of 3 saved words');
+    expect(host.textContent).toContain('l\u00e1piz');
+
+    await act(async () => { button('Clear filters').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    const tag = host.querySelector('#lingua-saved-tag');
+    expect(Array.from(tag.options).map((option) => option.textContent)).toEqual(['All tags', 'Health', 'Priority', 'School', 'Travel']);
+    await act(async () => { tag.value = 'Travel'; tag.dispatchEvent(new Event('change', { bubbles: true })); });
+    expect(host.textContent).toContain('Showing 1 of 3 saved words');
+    expect(host.textContent).toContain('bonjour');
+
+    await act(async () => { button('Clear filters').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    const language = host.querySelector('#lingua-saved-language');
+    await act(async () => { language.value = 'French'; language.dispatchEvent(new Event('change', { bubbles: true })); });
+    expect(host.textContent).toContain('Showing 1 of 3 saved words');
+    expect(host.textContent).toContain('bonjour');
+
+    const remove = host.querySelector('button[aria-label="Remove saved word"]');
+    await act(async () => { remove.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(JSON.parse(localStorage.getItem('allo_lingua_progress_v1')).saved).toHaveLength(3);
+    const dialog = host.querySelector('[role="alertdialog"]');
+    expect(dialog.textContent).toContain('bonjour');
+    expect(dialog.textContent).toContain('review history');
+    const confirm = Array.from(dialog.querySelectorAll('button')).find((item) => item.textContent === 'Remove saved word');
+    await act(async () => { confirm.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(JSON.parse(localStorage.getItem('allo_lingua_progress_v1')).saved).toHaveLength(2);
+    expect(host.textContent).toContain('Showing 0 of 2 saved words');
+
+    await act(async () => { button('Clear filters').dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    const sort = host.querySelector('#lingua-saved-sort');
+    await act(async () => { sort.value = 'review'; sort.dispatchEvent(new Event('change', { bubbles: true })); });
+    const visibleTerms = Array.from(host.querySelectorAll('ul.space-y-2 strong')).map((item) => item.textContent);
+    expect(visibleTerms).toEqual(['agua', 'l\u00e1piz']);
+  });
+
   it('downloads the saved words as a local CSV file', async () => {
     localStorage.setItem('allo_lingua_progress_v1', JSON.stringify({
       sessions: 0,

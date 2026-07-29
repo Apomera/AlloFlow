@@ -10,7 +10,8 @@
   var useMemo = React.useMemo, useRef = React.useRef;
   var PROFILE_KEY = 'allo_lingua_profile_v1', PROGRESS_KEY = 'allo_lingua_progress_v1', RECENT_KEY = 'allo_lingua_recent_v1', SET_LIBRARY_KEY = 'allo_lingua_sets_v1', PLAN_KEY = 'allo_lingua_plans_v1', CHAT_KEY = 'allo_lingua_chat_v1', SLOW_KEY = 'allo_lingua_slow_v1', PIC_QUIZ_KEY = 'allo_lingua_picquiz_v1';
   var LINGUA_STORAGE_KEYS=[PROFILE_KEY,PROGRESS_KEY,RECENT_KEY,SET_LIBRARY_KEY,PLAN_KEY,CHAT_KEY,SLOW_KEY,PIC_QUIZ_KEY,'allo_lingua_ui_i18n_v1','allo_lingua_pack_i18n_v1'];
-  var MAX_SAVED_WORDS=500, MAX_PRACTICE_SETS=30, BACKUP_VERSION=2, BACKUP_PRODUCT='AlloFlow Lingua Practice', SET_EXPORT_PRODUCT='AlloFlow Lingua Practice Set';
+  var MAX_SAVED_WORDS=500, MAX_PRACTICE_SETS=30, MAX_ACTIVITY_EVENTS=400, MAX_REFLECTIONS=100, MAX_WORD_REVIEW_HISTORY=12, MAX_WORD_NOTE=500, MAX_WORD_TAGS=5, MAX_WORD_TAG_LENGTH=30, MAX_WORD_TAG_INPUT=200, BACKUP_VERSION=2, BACKUP_PRODUCT='AlloFlow Lingua Practice', SET_EXPORT_PRODUCT='AlloFlow Lingua Practice Set';
+  var ACTIVITY_KINDS=['practiceSets','spokenAttempts','listeningAttempts','reviews','chatTurns'];
   var SLOW_RATE = 0.65;
   // ── Self-contained UI localization ─────────────────────────────────────────
   // Lingua's own chrome is translated by the learner's KNOWN language (what they
@@ -58,6 +59,9 @@
       chat_fallback_starter:'AI chat is unavailable right now. Here is a starter line to practice aloud.',
       chat_fallback_none:'Live AI conversation is unavailable right now. Add an AI connection to chat, or practice with the Speak and Conversation tabs.',
       progress_intro:'This is an activity record, not a grade or proficiency score.',
+      journal_title:'Recent learning activity', journal_intro:'A local timeline of practice actions. It records what you did, not your ability.', journal_last_7:'Last 7 days', journal_total:'{n} activities in this window', journal_active_days:'{n} active days in this window', journal_day_aria:'{date}: {n} activities', journal_recent:'Recent activity', journal_empty:'No activity events recorded yet. New practice will appear here.',
+      journal_event_practiceSets:'Practice sets built: {n}', journal_event_spokenAttempts:'Speaking attempts: {n}', journal_event_listeningAttempts:'Listening attempts: {n}', journal_event_chatTurns:'Conversation turns: {n}', journal_event_reviews:'Reviews completed: {n}',
+      journal_reflection_title:'Learning reflections', journal_reflection_intro:'Optional notes about what felt easier or what you want to revisit. They stay on this device.', journal_reflection_label:'Add a reflection for {lang}', journal_reflection_placeholder:'What felt easier? What would you like to revisit?', journal_reflection_save:'Save reflection', journal_reflection_saved:'Reflection saved.', journal_reflection_deleted:'Reflection deleted.', journal_reflection_delete:'Delete reflection', journal_reflection_delete_confirm:'Delete this reflection? This cannot be undone.', journal_reflection_empty:'No reflections saved for {lang}.', journal_reflection_count:'{n} / 500 characters',
       path_title:'Your learning path', path_intro:'A suggested sequence based on activity saved on this device. You can choose any section at any time.', path_complete:'{done} of {total} milestones complete', path_done:'Completed', path_current:'Suggested next', path_goal_build:'Build your first practice set', path_goal_save:'Save 3 useful words', path_goal_speak:'Try speaking 3 times', path_goal_chat:'Complete 3 conversation turns', path_goal_review:'Complete 5 spaced reviews', path_progress:'{current} of {goal}', path_action_build:'Build a practice set', path_action_save:'Open vocabulary', path_action_speak:'Practice speaking', path_action_chat:'Start a conversation', path_action_review:'Review due words', path_action_wait:'View saved words', path_all_title:'Roadmap complete', path_all_sub:'Keep building new sets and revisiting language in different contexts.', path_action_continue:'Build another set',
       nav_listening:'Listening', metric_listening:'Listening attempts', path_goal_listen:'Complete 3 listening activities', path_action_listen:'Open Listening Lab',
       listening_eyebrow:'Listening comprehension', listening_title:'Listening Lab', listening_intro:'Listen first, then show what you understood. Hints are always available.',
@@ -79,8 +83,10 @@
       review_intro:'Recall the word before revealing it. Your response only controls when the word returns.',
       recall_meaning:'Recall the meaning in {lang}', review_direction:'{from} → {to}', review_picture:'Picture', type_recall:'Type your answer (optional)', type_recall_help:'Writing an answer first makes review more active. You still rate your own recall.', your_recall:'Your answer: {answer}', review_in:'Next in {time}', time_minutes:'{n} minutes', time_hours:'{n} hours', time_days:'{n} days', time_minute:'1 minute', time_hour:'1 hour', time_day:'1 day',
       recall_word:'Recall the {lang} word', caught_up_sub:'Reviewed words will return here when they are due.',
-      review_footer:'{due} due now · {saved} saved in {lang}',
+      review_footer:'{due} due now · {saved} saved in {lang}', review_scope_label:'Review focus', review_scope_all:'All due words', review_scope_help:'Choose a tag to focus this session. Changing focus clears the session summary, set-aside list, and undo action, but keeps recorded reviews.', review_scope_changed:'Review focus changed to {scope}.', review_footer_scoped:'{due} due now · {saved} saved in {lang} with {tag}',
       saved_intro:'Stored on this device for practice across sets.',
+      saved_tools:'Find and organize', saved_search_label:'Search saved words', saved_search_placeholder:'Search words, meanings, examples, notes, or tags', saved_filter_language:'Filter by language', saved_all_languages:'All languages', saved_sort_label:'Sort saved words', saved_sort_due:'Review due first', saved_sort_term:'Word A to Z', saved_sort_language:'Language', saved_sort_review:'Most reviewed', saved_results:'Showing {shown} of {total} saved words', saved_clear_filters:'Clear filters', saved_no_results:'No saved words match these filters', saved_no_results_help:'Try another search or clear the filters.', saved_remove_confirm:'Remove "{term}" from saved words? Its review history will also be removed.', saved_removed:'Saved word removed.',
+      saved_add_word:'Add a word', saved_edit_word:'Edit', saved_editor_add_title:'Add a saved word', saved_editor_edit_title:'Edit saved word', saved_editor_help:'Add your own vocabulary or correct an entry. Review history stays with edited words.', saved_field_language:'Language', saved_field_term:'Word or phrase', saved_field_meaning:'Meaning', saved_field_pronunciation:'Pronunciation guide (optional)', saved_field_example:'Example in the learning language (optional)', saved_field_example_pronunciation:'Example pronunciation (optional)', saved_field_translation:'Example translation (optional)', saved_editor_cancel:'Cancel', saved_editor_save:'Save word', saved_editor_required:'Language, word, and meaning are required.', saved_editor_duplicate:'That word is already saved for this language.', saved_editor_added:'Word added to your word bank.', saved_editor_updated:'Saved word updated.',
       no_saved_title:'No saved words yet', no_saved_sub:'Star a word in the Vocabulary tab to add it to your personal word bank.',
       listen_to:'Listen to {term}',
       audio_unavailable:'Audio playback is unavailable in this browser.',
@@ -96,7 +102,7 @@
       slow_on:'Audio will play slowly.', slow_off:'Audio will play at normal speed.',
       slow_title_on:'Playing audio slowly. Tap for normal speed.', slow_title_off:'Play audio slowly',
       answer_revealed:'Answer revealed.', review_recorded:'Review recorded as {rating}.', building_status:'Building practice set.',
-      review_recorded_next:'Review recorded as {rating}. Next review in {time}.',
+      review_recorded_next:'Review recorded as {rating}. Next review in {time}.', review_undo:'Undo last review', review_undo_summary:'Recorded {rating} for "{term}".', review_undo_help:'Only the most recent review in this session can be undone.', review_undone:'Review undone. The card and activity count were restored.', review_session_title:'This review session', review_session_complete:'Review session complete', review_session_progress:'{reviewed} reviewed · {remaining} due now', review_session_intro:'This summarizes actions, not performance.', review_session_complete_help:'You reviewed {n} cards. This is an activity summary, not a score.', review_skip:'Skip for now', review_skip_help:'Move this card aside without changing its review schedule.', review_skipped:'Skipped "{term}" for this session. Its review schedule did not change.', review_skipped_title:'Cards set aside', review_skipped_sub:'{n} due cards are set aside for this session. Return them whenever you are ready.', review_resume_skipped:'Review set-aside cards', review_resumed:'Returned {n} set-aside cards to this review session.', forecast_title:'Upcoming review load', forecast_intro:'A planning view, not a deadline. Counts update as you review.', forecast_due_now:'Due now', forecast_next_day:'Next 24 hours', forecast_next_week:'Days 2-7', forecast_later:'Later', saved_review_history:'Review history ({n})', saved_review_history_help:'Recent review choices stored for this word. They explain the current schedule and are not a score.', saved_review_history_empty:'No recent review details are stored for this word.', saved_review_history_for:'Recent review choices for {term}', saved_reset_review:'Reset review progress', saved_reset_review_help:'Keeps the word but clears its schedule and per-word history.', saved_reset_review_confirm:'Reset review progress for "{term}"? The word stays saved and becomes due now. Its per-word review history will be cleared. Overall activity records will not change.', saved_reset_review_done:'Review progress reset for "{term}".', saved_field_note:'Personal note (optional)', saved_note_placeholder:'Add a mnemonic, context, or reminder for yourself', saved_note_help:'Stays on this device unless you download a Lingua backup or CSV.', saved_note_count:'{n} / 500 characters', saved_note_title:'Personal note', saved_field_tags:'Tags (optional)', saved_tags_placeholder:'Unit 2, travel, difficult words', saved_tags_help:'Separate tags with commas. Tags stay on this device unless you download a backup or CSV.', saved_tags_count:'{n} / 5 tags', saved_filter_tag:'Filter by tag', saved_all_tags:'All tags', saved_tags_for:'Tags for {term}',
       sections:'Lingua Practice sections', transcript:'Conversation transcript', review_group:'Choose when to review this word again',
       coach_fallback_strength:'You completed the turn in the target language.',
       coach_fallback_tip:'Compare your word choice and order with the model, then try once more.',
@@ -165,6 +171,9 @@
       chat_fallback_starter:'El chat con IA no está disponible ahora. Aquí tienes una frase inicial para practicar en voz alta.',
       chat_fallback_none:'La conversación con IA no está disponible ahora. Agrega una conexión de IA para chatear, o practica con las pestañas Hablar y Conversación.',
       progress_intro:'Este es un registro de actividad, no una calificación ni un nivel de dominio.',
+      journal_title:'Actividad de aprendizaje reciente', journal_intro:'Una cronología local de acciones de práctica. Registra lo que hiciste, no tu capacidad.', journal_last_7:'Últimos 7 días', journal_total:'{n} actividades en este período', journal_active_days:'{n} días activos en este período', journal_day_aria:'{date}: {n} actividades', journal_recent:'Actividad reciente', journal_empty:'Aún no hay actividades registradas. La nueva práctica aparecerá aquí.',
+      journal_event_practiceSets:'Conjuntos creados: {n}', journal_event_spokenAttempts:'Intentos de expresión oral: {n}', journal_event_listeningAttempts:'Intentos de escucha: {n}', journal_event_chatTurns:'Turnos de conversación: {n}', journal_event_reviews:'Repasos completados: {n}',
+      journal_reflection_title:'Reflexiones de aprendizaje', journal_reflection_intro:'Notas opcionales sobre lo que resultó más fácil o lo que quieres repasar. Permanecen en este dispositivo.', journal_reflection_label:'Añade una reflexión para {lang}', journal_reflection_placeholder:'¿Qué resultó más fácil? ¿Qué quieres repasar?', journal_reflection_save:'Guardar reflexión', journal_reflection_saved:'Reflexión guardada.', journal_reflection_deleted:'Reflexión eliminada.', journal_reflection_delete:'Eliminar reflexión', journal_reflection_delete_confirm:'¿Eliminar esta reflexión? Esta acción no se puede deshacer.', journal_reflection_empty:'No hay reflexiones guardadas para {lang}.', journal_reflection_count:'{n} / 500 caracteres',
       path_title:'Tu ruta de aprendizaje', path_intro:'Una secuencia sugerida según la actividad guardada en este dispositivo. Puedes elegir cualquier sección en todo momento.', path_complete:'{done} de {total} hitos completados', path_done:'Completado', path_current:'Siguiente sugerido', path_goal_build:'Crea tu primer set de práctica', path_goal_save:'Guarda 3 palabras útiles', path_goal_speak:'Intenta hablar 3 veces', path_goal_chat:'Completa 3 turnos de conversación', path_goal_review:'Completa 5 repasos espaciados', path_progress:'{current} de {goal}', path_action_build:'Crear un set de práctica', path_action_save:'Abrir vocabulario', path_action_speak:'Practicar el habla', path_action_chat:'Iniciar una conversación', path_action_review:'Repasar palabras pendientes', path_action_wait:'Ver palabras guardadas', path_all_title:'Ruta completada', path_all_sub:'Sigue creando sets nuevos y retomando el idioma en distintos contextos.', path_action_continue:'Crear otro set',
       nav_listening:'Escucha', metric_listening:'Intentos de escucha', path_goal_listen:'Completa 3 actividades de escucha', path_action_listen:'Abrir el laboratorio de escucha',
       listening_eyebrow:'Comprensión auditiva', listening_title:'Laboratorio de escucha', listening_intro:'Escucha primero y luego muestra lo que entendiste. Las pistas siempre están disponibles.',
@@ -186,8 +195,10 @@
       review_intro:'Recuerda la palabra antes de revelarla. Tu respuesta solo controla cuándo vuelve la palabra.',
       recall_meaning:'Recuerda el significado en {lang}', review_direction:'{from} → {to}', review_picture:'Imagen', type_recall:'Escribe tu respuesta (opcional)', type_recall_help:'Escribir primero hace que el repaso sea más activo. Tú calificas tu propio recuerdo.', your_recall:'Tu respuesta: {answer}', review_in:'Siguiente en {time}', time_minutes:'{n} minutos', time_hours:'{n} horas', time_days:'{n} días', time_minute:'1 minuto', time_hour:'1 hora', time_day:'1 día',
       recall_word:'Recuerda la palabra en {lang}', caught_up_sub:'Las palabras repasadas volverán aquí cuando toque repasarlas.',
-      review_footer:'{due} pendientes ahora · {saved} guardadas en {lang}',
+      review_footer:'{due} pendientes ahora · {saved} guardadas en {lang}', review_scope_label:'Enfoque del repaso', review_scope_all:'Todas las palabras pendientes', review_scope_help:'Elige una etiqueta para enfocar esta sesión. Cambiar el enfoque borra el resumen, la lista de tarjetas apartadas y la opción de deshacer, pero conserva los repasos registrados.', review_scope_changed:'Enfoque del repaso cambiado a {scope}.', review_footer_scoped:'{due} pendientes ahora · {saved} guardadas en {lang} con {tag}',
       saved_intro:'Se guardan en este dispositivo para practicar entre sets.',
+      saved_tools:'Buscar y organizar', saved_search_label:'Buscar palabras guardadas', saved_search_placeholder:'Buscar palabras, significados, ejemplos, notas o etiquetas', saved_filter_language:'Filtrar por idioma', saved_all_languages:'Todos los idiomas', saved_sort_label:'Ordenar palabras guardadas', saved_sort_due:'Repaso pendiente primero', saved_sort_term:'Palabra de A a Z', saved_sort_language:'Idioma', saved_sort_review:'Más repasadas', saved_results:'Mostrando {shown} de {total} palabras guardadas', saved_clear_filters:'Borrar filtros', saved_no_results:'Ninguna palabra guardada coincide con estos filtros', saved_no_results_help:'Prueba otra búsqueda o borra los filtros.', saved_remove_confirm:'¿Quitar "{term}" de las palabras guardadas? También se eliminará su historial de repaso.', saved_removed:'Palabra guardada eliminada.',
+      saved_add_word:'Añadir palabra', saved_edit_word:'Editar', saved_editor_add_title:'Añadir palabra guardada', saved_editor_edit_title:'Editar palabra guardada', saved_editor_help:'Añade tu propio vocabulario o corrige una entrada. El historial de repaso se conserva al editar.', saved_field_language:'Idioma', saved_field_term:'Palabra o frase', saved_field_meaning:'Significado', saved_field_pronunciation:'Guía de pronunciación (opcional)', saved_field_example:'Ejemplo en el idioma que aprendes (opcional)', saved_field_example_pronunciation:'Pronunciación del ejemplo (opcional)', saved_field_translation:'Traducción del ejemplo (opcional)', saved_editor_cancel:'Cancelar', saved_editor_save:'Guardar palabra', saved_editor_required:'El idioma, la palabra y el significado son obligatorios.', saved_editor_duplicate:'Esa palabra ya está guardada para este idioma.', saved_editor_added:'Palabra añadida a tu banco.', saved_editor_updated:'Palabra guardada actualizada.',
       no_saved_title:'Aún no hay palabras guardadas', no_saved_sub:'Marca con una estrella una palabra en la pestaña Vocabulario para agregarla a tu banco personal.',
       listen_to:'Escuchar {term}',
       audio_unavailable:'La reproducción de audio no está disponible en este navegador.',
@@ -203,7 +214,7 @@
       slow_on:'El audio se reproducirá lentamente.', slow_off:'El audio se reproducirá a velocidad normal.',
       slow_title_on:'Audio en reproducción lenta. Toca para velocidad normal.', slow_title_off:'Reproducir el audio lentamente',
       answer_revealed:'Respuesta revelada.', review_recorded:'Repaso registrado como {rating}.', building_status:'Creando el set de práctica.',
-      review_recorded_next:'Repaso registrado como {rating}. Próximo repaso en {time}.',
+      review_recorded_next:'Repaso registrado como {rating}. Próximo repaso en {time}.', review_undo:'Deshacer el último repaso', review_undo_summary:'Se registró {rating} para "{term}".', review_undo_help:'Solo se puede deshacer el repaso más reciente de esta sesión.', review_undone:'Repaso deshecho. Se restauraron la tarjeta y el conteo de actividad.', review_session_title:'Esta sesión de repaso', review_session_complete:'Sesión de repaso completada', review_session_progress:'{reviewed} repasadas · {remaining} pendientes ahora', review_session_intro:'Esto resume acciones, no el rendimiento.', review_session_complete_help:'Repasaste {n} tarjetas. Es un resumen de actividad, no una puntuación.', review_skip:'Omitir por ahora', review_skip_help:'Aparta esta tarjeta sin cambiar su calendario de repaso.', review_skipped:'Se apartó "{term}" para esta sesión. Su calendario de repaso no cambió.', review_skipped_title:'Tarjetas apartadas', review_skipped_sub:'Hay {n} tarjetas pendientes apartadas en esta sesión. Retómalas cuando quieras.', review_resume_skipped:'Repasar tarjetas apartadas', review_resumed:'Se devolvieron {n} tarjetas apartadas a esta sesión de repaso.', forecast_title:'Próxima carga de repaso', forecast_intro:'Una vista para planificar, no una fecha límite. Los conteos se actualizan al repasar.', forecast_due_now:'Pendientes ahora', forecast_next_day:'Próximas 24 horas', forecast_next_week:'Días 2-7', forecast_later:'Más adelante', saved_review_history:'Historial de repasos ({n})', saved_review_history_help:'Decisiones de repaso recientes guardadas para esta palabra. Explican el calendario actual y no son una puntuación.', saved_review_history_empty:'No hay detalles recientes de repaso guardados para esta palabra.', saved_review_history_for:'Decisiones de repaso recientes para {term}', saved_reset_review:'Restablecer progreso de repaso', saved_reset_review_help:'Conserva la palabra, pero borra su calendario y su historial de repaso.', saved_reset_review_confirm:'¿Restablecer el progreso de repaso de "{term}"? La palabra seguirá guardada y quedará pendiente ahora. Se borrará su historial de repaso. Los registros generales de actividad no cambiarán.', saved_reset_review_done:'Se restableció el progreso de repaso de "{term}".', saved_field_note:'Nota personal (opcional)', saved_note_placeholder:'Añade una regla mnemotécnica, contexto o recordatorio', saved_note_help:'Permanece en este dispositivo salvo que descargues una copia de Lingua o un CSV.', saved_note_count:'{n} / 500 caracteres', saved_note_title:'Nota personal', saved_field_tags:'Etiquetas (opcional)', saved_tags_placeholder:'Unidad 2, viajes, palabras difíciles', saved_tags_help:'Separa las etiquetas con comas. Las etiquetas permanecen en este dispositivo salvo que descargues una copia de seguridad o un CSV.', saved_tags_count:'{n} / 5 etiquetas', saved_filter_tag:'Filtrar por etiqueta', saved_all_tags:'Todas las etiquetas', saved_tags_for:'Etiquetas de {term}',
       sections:'Secciones de Lingua Practice', transcript:'Transcripción de la conversación', review_group:'Elige cuándo repasar esta palabra de nuevo',
       coach_fallback_strength:'Completaste el turno en el idioma meta.',
       coach_fallback_tip:'Compara tu elección y orden de palabras con el modelo, y vuelve a intentarlo.',
@@ -272,6 +283,9 @@
       chat_fallback_starter:'Le chat IA n’est pas disponible pour le moment. Voici une phrase de départ à pratiquer à voix haute.',
       chat_fallback_none:'La conversation IA n’est pas disponible pour le moment. Ajoute une connexion IA pour discuter, ou pratique avec les onglets Parler et Conversation.',
       progress_intro:'Ceci est un relevé d’activité, pas une note ni un niveau de maîtrise.',
+      journal_title:'Activité d’apprentissage récente', journal_intro:'Une chronologie locale des actions de pratique. Elle indique ce que tu as fait, pas ton niveau.', journal_last_7:'7 derniers jours', journal_total:'{n} activités dans cette période', journal_active_days:'{n} jours actifs dans cette période', journal_day_aria:'{date} : {n} activités', journal_recent:'Activité récente', journal_empty:'Aucune activité enregistrée pour le moment. Les nouvelles pratiques apparaîtront ici.',
+      journal_event_practiceSets:'Séries créées : {n}', journal_event_spokenAttempts:'Essais oraux : {n}', journal_event_listeningAttempts:'Essais d’écoute : {n}', journal_event_chatTurns:'Tours de conversation : {n}', journal_event_reviews:'Révisions terminées : {n}',
+      journal_reflection_title:'Réflexions d’apprentissage', journal_reflection_intro:'Des notes facultatives sur ce qui semblait plus facile ou ce que tu souhaites revoir. Elles restent sur cet appareil.', journal_reflection_label:'Ajouter une réflexion pour {lang}', journal_reflection_placeholder:'Qu’est-ce qui semblait plus facile ? Que souhaites-tu revoir ?', journal_reflection_save:'Enregistrer la réflexion', journal_reflection_saved:'Réflexion enregistrée.', journal_reflection_deleted:'Réflexion supprimée.', journal_reflection_delete:'Supprimer la réflexion', journal_reflection_delete_confirm:'Supprimer cette réflexion ? Cette action est irréversible.', journal_reflection_empty:'Aucune réflexion enregistrée pour {lang}.', journal_reflection_count:'{n} / 500 caractères',
       path_title:'Ton parcours d’apprentissage', path_intro:'Une séquence suggérée selon l’activité enregistrée sur cet appareil. Tu peux choisir n’importe quelle section à tout moment.', path_complete:'{done} jalons sur {total} terminés', path_done:'Terminé', path_current:'Prochaine étape suggérée', path_goal_build:'Crée ta première séance de pratique', path_goal_save:'Enregistre 3 mots utiles', path_goal_speak:'Essaie de parler 3 fois', path_goal_chat:'Effectue 3 tours de conversation', path_goal_review:'Effectue 5 révisions espacées', path_progress:'{current} sur {goal}', path_action_build:'Créer une séance de pratique', path_action_save:'Ouvrir le vocabulaire', path_action_speak:'Pratiquer à l’oral', path_action_chat:'Commencer une conversation', path_action_review:'Réviser les mots à revoir', path_action_wait:'Voir les mots enregistrés', path_all_title:'Parcours terminé', path_all_sub:'Continue à créer des séances et à revoir la langue dans différents contextes.', path_action_continue:'Créer une autre séance',
       nav_listening:'Écoute', metric_listening:'Tentatives d’écoute', path_goal_listen:'Effectue 3 activités d’écoute', path_action_listen:'Ouvrir le labo d’écoute',
       listening_eyebrow:'Compréhension orale', listening_title:'Labo d’écoute', listening_intro:'Écoute d’abord, puis montre ce que tu as compris. Les indices sont toujours disponibles.',
@@ -293,8 +307,10 @@
       review_intro:'Rappelle-toi le mot avant de le révéler. Ta réponse contrôle seulement quand le mot revient.',
       recall_meaning:'Rappelle-toi le sens en {lang}', review_direction:'{from} → {to}', review_picture:'Image', type_recall:'Écris ta réponse (facultatif)', type_recall_help:'Écrire d’abord rend la révision plus active. Tu évalues toujours ton propre rappel.', your_recall:'Ta réponse : {answer}', review_in:'Prochaine révision dans {time}', time_minutes:'{n} minutes', time_hours:'{n} heures', time_days:'{n} jours', time_minute:'1 minute', time_hour:'1 heure', time_day:'1 jour',
       recall_word:'Rappelle-toi le mot en {lang}', caught_up_sub:'Les mots révisés reviendront ici quand ce sera le moment.',
-      review_footer:'{due} à revoir maintenant · {saved} enregistrés en {lang}',
+      review_footer:'{due} à revoir maintenant · {saved} enregistrés en {lang}', review_scope_label:'Filtre de révision', review_scope_all:'Tous les mots à revoir', review_scope_help:'Choisis une étiquette pour cibler cette session. Changer de filtre efface le résumé, la liste des cartes mises de côté et la commande d’annulation, mais conserve les révisions enregistrées.', review_scope_changed:'Filtre de révision changé pour {scope}.', review_footer_scoped:'{due} à revoir maintenant · {saved} enregistrés en {lang} avec {tag}',
       saved_intro:'Conservés sur cet appareil pour pratiquer d’une séance à l’autre.',
+      saved_tools:'Rechercher et organiser', saved_search_label:'Rechercher dans les mots enregistrés', saved_search_placeholder:'Rechercher des mots, sens, exemples, notes ou étiquettes', saved_filter_language:'Filtrer par langue', saved_all_languages:'Toutes les langues', saved_sort_label:'Trier les mots enregistrés', saved_sort_due:'Révisions à faire en premier', saved_sort_term:'Mot de A à Z', saved_sort_language:'Langue', saved_sort_review:'Les plus révisés', saved_results:'Affichage de {shown} mots sur {total}', saved_clear_filters:'Effacer les filtres', saved_no_results:'Aucun mot enregistré ne correspond à ces filtres', saved_no_results_help:'Essaie une autre recherche ou efface les filtres.', saved_remove_confirm:'Retirer "{term}" des mots enregistrés ? Son historique de révision sera aussi supprimé.', saved_removed:'Mot enregistré supprimé.',
+      saved_add_word:'Ajouter un mot', saved_edit_word:'Modifier', saved_editor_add_title:'Ajouter un mot enregistré', saved_editor_edit_title:'Modifier le mot enregistré', saved_editor_help:'Ajoute ton propre vocabulaire ou corrige une entrée. L’historique de révision est conservé.', saved_field_language:'Langue', saved_field_term:'Mot ou expression', saved_field_meaning:'Sens', saved_field_pronunciation:'Guide de prononciation (facultatif)', saved_field_example:'Exemple dans la langue apprise (facultatif)', saved_field_example_pronunciation:'Prononciation de l’exemple (facultatif)', saved_field_translation:'Traduction de l’exemple (facultatif)', saved_editor_cancel:'Annuler', saved_editor_save:'Enregistrer le mot', saved_editor_required:'La langue, le mot et le sens sont obligatoires.', saved_editor_duplicate:'Ce mot est déjà enregistré pour cette langue.', saved_editor_added:'Mot ajouté à ta banque.', saved_editor_updated:'Mot enregistré mis à jour.',
       no_saved_title:'Aucun mot enregistré pour l’instant', no_saved_sub:'Étoile un mot dans l’onglet Vocabulaire pour l’ajouter à ta banque personnelle.',
       listen_to:'Écouter {term}',
       audio_unavailable:'La lecture audio n’est pas disponible dans ce navigateur.',
@@ -310,7 +326,7 @@
       slow_on:'L’audio sera lu lentement.', slow_off:'L’audio sera lu à vitesse normale.',
       slow_title_on:'Lecture audio lente. Touche pour la vitesse normale.', slow_title_off:'Lire l’audio lentement',
       answer_revealed:'Réponse révélée.', review_recorded:'Révision enregistrée comme {rating}.', building_status:'Création de la séance de pratique.',
-      review_recorded_next:'Révision enregistrée comme {rating}. Prochaine révision dans {time}.',
+      review_recorded_next:'Révision enregistrée comme {rating}. Prochaine révision dans {time}.', review_undo:'Annuler la dernière révision', review_undo_summary:'{rating} enregistré pour "{term}".', review_undo_help:'Seule la révision la plus récente de cette session peut être annulée.', review_undone:'Révision annulée. La carte et le compteur d’activité ont été restaurés.', review_session_title:'Cette session de révision', review_session_complete:'Session de révision terminée', review_session_progress:'{reviewed} révisées · {remaining} à revoir maintenant', review_session_intro:'Ceci résume les actions, pas les performances.', review_session_complete_help:'Tu as révisé {n} cartes. C’est un résumé d’activité, pas un score.', review_skip:'Mettre de côté', review_skip_help:'Mets cette carte de côté sans modifier son calendrier de révision.', review_skipped:'« {term} » a été mise de côté pour cette session. Son calendrier de révision reste inchangé.', review_skipped_title:'Cartes mises de côté', review_skipped_sub:'{n} cartes à réviser sont mises de côté pour cette session. Reprends-les quand tu le souhaites.', review_resume_skipped:'Revoir les cartes mises de côté', review_resumed:'{n} cartes mises de côté ont été réintégrées à cette session.', forecast_title:'Révisions à venir', forecast_intro:'Une vue pour planifier, pas une échéance. Les nombres se mettent à jour au fil des révisions.', forecast_due_now:'À revoir maintenant', forecast_next_day:'Prochaines 24 heures', forecast_next_week:'Jours 2 à 7', forecast_later:'Plus tard', saved_review_history:'Historique des révisions ({n})', saved_review_history_help:'Choix de révision récents enregistrés pour ce mot. Ils expliquent le calendrier actuel et ne constituent pas un score.', saved_review_history_empty:'Aucun détail de révision récent n’est enregistré pour ce mot.', saved_review_history_for:'Choix de révision récents pour {term}', saved_reset_review:'Réinitialiser la progression', saved_reset_review_help:'Conserve le mot, mais efface son calendrier et son historique de révision.', saved_reset_review_confirm:'Réinitialiser la progression de révision de « {term} » ? Le mot restera enregistré et sera à revoir maintenant. Son historique de révision sera effacé. Les activités globales ne changeront pas.', saved_reset_review_done:'La progression de révision de « {term} » a été réinitialisée.', saved_field_note:'Note personnelle (facultative)', saved_note_placeholder:'Ajoute un moyen mnémotechnique, un contexte ou un rappel', saved_note_help:'Reste sur cet appareil, sauf si tu télécharges une sauvegarde Lingua ou un CSV.', saved_note_count:'{n} / 500 caractères', saved_note_title:'Note personnelle', saved_field_tags:'Étiquettes (facultatif)', saved_tags_placeholder:'Unité 2, voyage, mots difficiles', saved_tags_help:'Sépare les étiquettes par des virgules. Elles restent sur cet appareil sauf si tu télécharges une sauvegarde ou un fichier CSV.', saved_tags_count:'{n} / 5 étiquettes', saved_filter_tag:'Filtrer par étiquette', saved_all_tags:'Toutes les étiquettes', saved_tags_for:'Étiquettes pour {term}',
       sections:'Sections de Lingua Practice', transcript:'Transcription de la conversation', review_group:'Choisis quand revoir ce mot',
       coach_fallback_strength:'Tu as complété le tour dans la langue cible.',
       coach_fallback_tip:'Compare ton choix et l’ordre des mots avec le modèle, puis réessaie.',
@@ -379,6 +395,9 @@
       chat_fallback_starter:'O chat com IA está indisponível agora. Aqui está uma frase inicial para praticar em voz alta.',
       chat_fallback_none:'A conversa com IA está indisponível agora. Adicione uma conexão de IA para conversar, ou pratique nas abas Falar e Conversa.',
       progress_intro:'Este é um registro de atividade, não uma nota nem um nível de domínio.',
+      journal_title:'Atividade de aprendizagem recente', journal_intro:'Uma linha do tempo local de ações de prática. Ela registra o que você fez, não sua capacidade.', journal_last_7:'Últimos 7 dias', journal_total:'{n} atividades neste período', journal_active_days:'{n} dias ativos neste período', journal_day_aria:'{date}: {n} atividades', journal_recent:'Atividade recente', journal_empty:'Ainda não há atividades registradas. Novas práticas aparecerão aqui.',
+      journal_event_practiceSets:'Conjuntos criados: {n}', journal_event_spokenAttempts:'Tentativas de fala: {n}', journal_event_listeningAttempts:'Tentativas de escuta: {n}', journal_event_chatTurns:'Turnos de conversa: {n}', journal_event_reviews:'Revisões concluídas: {n}',
+      journal_reflection_title:'Reflexões de aprendizagem', journal_reflection_intro:'Notas opcionais sobre o que pareceu mais fácil ou o que você quer rever. Elas ficam neste dispositivo.', journal_reflection_label:'Adicione uma reflexão para {lang}', journal_reflection_placeholder:'O que pareceu mais fácil? O que você quer rever?', journal_reflection_save:'Salvar reflexão', journal_reflection_saved:'Reflexão salva.', journal_reflection_deleted:'Reflexão excluída.', journal_reflection_delete:'Excluir reflexão', journal_reflection_delete_confirm:'Excluir esta reflexão? Esta ação não pode ser desfeita.', journal_reflection_empty:'Nenhuma reflexão salva para {lang}.', journal_reflection_count:'{n} / 500 caracteres',
       path_title:'Seu caminho de aprendizagem', path_intro:'Uma sequência sugerida com base na atividade salva neste dispositivo. Você pode escolher qualquer seção a qualquer momento.', path_complete:'{done} de {total} marcos concluídos', path_done:'Concluído', path_current:'Próxima sugestão', path_goal_build:'Crie seu primeiro conjunto de prática', path_goal_save:'Salve 3 palavras úteis', path_goal_speak:'Tente falar 3 vezes', path_goal_chat:'Complete 3 turnos de conversa', path_goal_review:'Complete 5 revisões espaçadas', path_progress:'{current} de {goal}', path_action_build:'Criar um conjunto de prática', path_action_save:'Abrir vocabulário', path_action_speak:'Praticar a fala', path_action_chat:'Iniciar uma conversa', path_action_review:'Revisar palavras pendentes', path_action_wait:'Ver palavras salvas', path_all_title:'Caminho concluído', path_all_sub:'Continue criando conjuntos e retomando o idioma em contextos diferentes.', path_action_continue:'Criar outro conjunto',
       nav_listening:'Escuta', metric_listening:'Tentativas de escuta', path_goal_listen:'Conclua 3 atividades de escuta', path_action_listen:'Abrir o Laboratório de Escuta',
       listening_eyebrow:'Compreensão auditiva', listening_title:'Laboratório de Escuta', listening_intro:'Ouça primeiro e depois mostre o que entendeu. As dicas estão sempre disponíveis.',
@@ -400,8 +419,10 @@
       review_intro:'Lembre a palavra antes de revelar. Sua resposta só controla quando a palavra volta.',
       recall_meaning:'Lembre o significado em {lang}', review_direction:'{from} → {to}', review_picture:'Imagem', type_recall:'Digite sua resposta (opcional)', type_recall_help:'Escrever primeiro torna a revisão mais ativa. Você ainda avalia a própria lembrança.', your_recall:'Sua resposta: {answer}', review_in:'Próxima em {time}', time_minutes:'{n} minutos', time_hours:'{n} horas', time_days:'{n} dias', time_minute:'1 minuto', time_hour:'1 hora', time_day:'1 dia',
       recall_word:'Lembre a palavra em {lang}', caught_up_sub:'As palavras revisadas voltarão aqui quando chegar a hora.',
-      review_footer:'{due} pendentes agora · {saved} salvas em {lang}',
+      review_footer:'{due} pendentes agora · {saved} salvas em {lang}', review_scope_label:'Foco da revisão', review_scope_all:'Todas as palavras pendentes', review_scope_help:'Escolha uma etiqueta para focar esta sessão. Mudar o foco limpa o resumo, a lista de cartões separados e a opção de desfazer, mas mantém as revisões registradas.', review_scope_changed:'Foco da revisão alterado para {scope}.', review_footer_scoped:'{due} pendentes agora · {saved} salvas em {lang} com {tag}',
       saved_intro:'Salvas neste dispositivo para praticar entre conjuntos.',
+      saved_tools:'Buscar e organizar', saved_search_label:'Buscar palavras salvas', saved_search_placeholder:'Buscar palavras, significados, exemplos, notas ou etiquetas', saved_filter_language:'Filtrar por idioma', saved_all_languages:'Todos os idiomas', saved_sort_label:'Ordenar palavras salvas', saved_sort_due:'Revisão pendente primeiro', saved_sort_term:'Palavra de A a Z', saved_sort_language:'Idioma', saved_sort_review:'Mais revisadas', saved_results:'Mostrando {shown} de {total} palavras salvas', saved_clear_filters:'Limpar filtros', saved_no_results:'Nenhuma palavra salva corresponde a estes filtros', saved_no_results_help:'Tente outra busca ou limpe os filtros.', saved_remove_confirm:'Remover "{term}" das palavras salvas? O histórico de revisão também será removido.', saved_removed:'Palavra salva removida.',
+      saved_add_word:'Adicionar palavra', saved_edit_word:'Editar', saved_editor_add_title:'Adicionar palavra salva', saved_editor_edit_title:'Editar palavra salva', saved_editor_help:'Adicione seu próprio vocabulário ou corrija uma entrada. O histórico de revisão é preservado.', saved_field_language:'Idioma', saved_field_term:'Palavra ou frase', saved_field_meaning:'Significado', saved_field_pronunciation:'Guia de pronúncia (opcional)', saved_field_example:'Exemplo no idioma aprendido (opcional)', saved_field_example_pronunciation:'Pronúncia do exemplo (opcional)', saved_field_translation:'Tradução do exemplo (opcional)', saved_editor_cancel:'Cancelar', saved_editor_save:'Salvar palavra', saved_editor_required:'Idioma, palavra e significado são obrigatórios.', saved_editor_duplicate:'Essa palavra já está salva para este idioma.', saved_editor_added:'Palavra adicionada ao seu banco.', saved_editor_updated:'Palavra salva atualizada.',
       no_saved_title:'Nenhuma palavra salva ainda', no_saved_sub:'Marque uma palavra com estrela na aba Vocabulário para adicioná-la ao seu banco pessoal.',
       listen_to:'Ouvir {term}',
       audio_unavailable:'A reprodução de áudio não está disponível neste navegador.',
@@ -417,7 +438,7 @@
       slow_on:'O áudio será reproduzido lentamente.', slow_off:'O áudio será reproduzido em velocidade normal.',
       slow_title_on:'Áudio em reprodução lenta. Toque para velocidade normal.', slow_title_off:'Reproduzir o áudio lentamente',
       answer_revealed:'Resposta revelada.', review_recorded:'Revisão registrada como {rating}.', building_status:'Criando o conjunto de prática.',
-      review_recorded_next:'Revisão registrada como {rating}. Próxima revisão em {time}.',
+      review_recorded_next:'Revisão registrada como {rating}. Próxima revisão em {time}.', review_undo:'Desfazer a última revisão', review_undo_summary:'{rating} registrado para "{term}".', review_undo_help:'Somente a revisão mais recente desta sessão pode ser desfeita.', review_undone:'Revisão desfeita. O cartão e a contagem de atividade foram restaurados.', review_session_title:'Esta sessão de revisão', review_session_complete:'Sessão de revisão concluída', review_session_progress:'{reviewed} revisadas · {remaining} pendentes agora', review_session_intro:'Isto resume ações, não desempenho.', review_session_complete_help:'Você revisou {n} cartões. Este é um resumo de atividade, não uma pontuação.', review_skip:'Deixar para depois', review_skip_help:'Separe este cartão sem alterar o agendamento de revisão.', review_skipped:'"{term}" foi separado para esta sessão. O agendamento de revisão não mudou.', review_skipped_title:'Cartões separados', review_skipped_sub:'Há {n} cartões pendentes separados nesta sessão. Retome-os quando quiser.', review_resume_skipped:'Revisar cartões separados', review_resumed:'{n} cartões separados voltaram para esta sessão de revisão.', forecast_title:'Revisões próximas', forecast_intro:'Uma visão para planejamento, não um prazo. As contagens são atualizadas durante a revisão.', forecast_due_now:'Pendentes agora', forecast_next_day:'Próximas 24 horas', forecast_next_week:'Dias 2-7', forecast_later:'Mais tarde', saved_review_history:'Histórico de revisões ({n})', saved_review_history_help:'Escolhas recentes de revisão salvas para esta palavra. Elas explicam o agendamento atual e não são uma pontuação.', saved_review_history_empty:'Nenhum detalhe recente de revisão está salvo para esta palavra.', saved_review_history_for:'Escolhas recentes de revisão para {term}', saved_reset_review:'Redefinir progresso de revisão', saved_reset_review_help:'Mantém a palavra, mas limpa o agendamento e o histórico de revisão dela.', saved_reset_review_confirm:'Redefinir o progresso de revisão de "{term}"? A palavra continuará salva e ficará pendente agora. O histórico de revisão dela será apagado. Os registros gerais de atividade não mudarão.', saved_reset_review_done:'O progresso de revisão de "{term}" foi redefinido.', saved_field_note:'Nota pessoal (opcional)', saved_note_placeholder:'Adicione uma dica de memória, contexto ou lembrete', saved_note_help:'Permanece neste dispositivo, a menos que você baixe um backup do Lingua ou CSV.', saved_note_count:'{n} / 500 caracteres', saved_note_title:'Nota pessoal', saved_field_tags:'Etiquetas (opcional)', saved_tags_placeholder:'Unidade 2, viagem, palavras difíceis', saved_tags_help:'Separe as etiquetas com vírgulas. Elas ficam neste dispositivo, a menos que você baixe um backup ou CSV.', saved_tags_count:'{n} / 5 etiquetas', saved_filter_tag:'Filtrar por etiqueta', saved_all_tags:'Todas as etiquetas', saved_tags_for:'Etiquetas de {term}',
       sections:'Seções do Lingua Practice', transcript:'Transcrição da conversa', review_group:'Escolha quando revisar esta palavra de novo',
       coach_fallback_strength:'Você completou o turno no idioma alvo.',
       coach_fallback_tip:'Compare sua escolha e ordem das palavras com o modelo e tente mais uma vez.',
@@ -698,6 +719,30 @@
     var level=LEVELS.indexOf(input.level)>=0?input.level:'Beginner';
     return {known:known,target:target,level:level,dialect:cleanDialect(input.dialect),register:normalizeRegister(input.register),topic:String(input.topic||'Everyday introductions').slice(0,160)};
   }
+  function normalizeReviewHistory(value){
+    var valid=['again','hard','learning','know'],maxDate=8640000000000000,maxInterval=315360000000;
+    return (Array.isArray(value)?value:[]).filter(function(entry){
+      return entry&&typeof entry==='object'&&!Array.isArray(entry)&&valid.indexOf(entry.rating)>=0&&Number.isFinite(Number(entry.at))&&Number(entry.at)>=0;
+    }).map(function(entry){
+      var interval=Number(entry.interval),stage=Number(entry.stage);
+      return {at:Math.min(maxDate,Math.max(0,Number(entry.at))),rating:entry.rating,interval:Number.isFinite(interval)?Math.min(maxInterval,Math.max(0,interval)):0,stage:Number.isFinite(stage)?Math.max(0,Math.min(5,Math.floor(stage))):0};
+    }).sort(function(a,b){return b.at-a.at;}).slice(0,MAX_WORD_REVIEW_HISTORY);
+  }
+  function wordReviewHistory(item){
+    var source=item&&typeof item==='object'?item:{},history=normalizeReviewHistory(source.reviewHistory);
+    if(history.length)return history;
+    var rating=source.lastRating,at=Number(source.lastReviewedAt),next=Number(source.nextReviewAt),stage=Number(source.reviewStage);
+    if(['again','hard','learning','know'].indexOf(rating)<0||!Number.isFinite(at)||at<=0)return [];
+    return normalizeReviewHistory([{at:at,rating:rating,interval:Number.isFinite(next)?Math.max(0,next-at):0,stage:stage}]);
+  }
+  function normalizeWordTags(value) {
+    var source=Array.isArray(value)?value:String(value||'').split(','),seen=Object.create(null),out=[];
+    source.some(function(item){
+      var tag=String(item||'').trim().replace(/\s+/g,' ').slice(0,MAX_WORD_TAG_LENGTH),key=tag.toLocaleLowerCase();
+      if(!tag||seen[key])return false;seen[key]=true;out.push(tag);return out.length>=MAX_WORD_TAGS;
+    });
+    return out;
+  }
   function normalizeProgress(value) {
     var input=value&&typeof value==='object'&&!Array.isArray(value)?value:{};
     function count(value){var number=Number(value);return Number.isFinite(number)?Math.max(0,number):0;}
@@ -714,12 +759,15 @@
         example:String(item.example||'').slice(0,260),
         examplePronunciation:String(item.examplePronunciation||'').slice(0,260),
         translation:String(item.translation||'').slice(0,260),
+        note:String(item.note||'').slice(0,MAX_WORD_NOTE),
+        tags:normalizeWordTags(item.tags),
         reviewStage:Math.max(0,Math.min(5,Math.floor(count(item.reviewStage)))),
         nextReviewAt:count(item.nextReviewAt),
         reviews:Math.floor(count(item.reviews)),
         lapses:Math.floor(count(item.lapses)),
         lastReviewedAt:count(item.lastReviewedAt),
-        lastRating:['again','hard','learning','know'].indexOf(item.lastRating)>=0?item.lastRating:''
+        lastRating:['again','hard','learning','know'].indexOf(item.lastRating)>=0?item.lastRating:'',
+        reviewHistory:wordReviewHistory(item)
       });
     });
     var languageStats={};
@@ -728,11 +776,29 @@
       var clean=cleanLangName(name,'');var stats=rawStats[name];if(!clean||!stats||typeof stats!=='object'||Array.isArray(stats))return;
       languageStats[clean]={practiceSets:count(stats.practiceSets),spokenAttempts:count(stats.spokenAttempts),listeningAttempts:count(stats.listeningAttempts),reviews:count(stats.reviews),chatTurns:count(stats.chatTurns),lastPracticedAt:count(stats.lastPracticedAt)};
     });
+    var rawActivity=Array.isArray(input.activityLog)?input.activityLog:[];
+    var activityLog=rawActivity.filter(function(item){
+      return item&&typeof item==='object'&&!Array.isArray(item)&&cleanLangName(item.language,'')&&ACTIVITY_KINDS.indexOf(item.kind)>=0&&Number.isFinite(Number(item.count))&&Number(item.count)>0&&Number.isFinite(Number(item.at))&&Number(item.at)>=0;
+    }).map(function(item,index){
+      var at=Math.max(0,Number(item.at)||0),kind=item.kind,language=cleanLangName(item.language,'');
+      var id=typeof item.id==='string'&&/^[a-zA-Z0-9._:-]{1,140}$/.test(item.id)?item.id:'activity-'+at+'-'+kind+'-'+index;
+      return {id:id,language:language,kind:kind,count:Math.min(1000,Math.max(1,Math.floor(Number(item.count)||1))),at:at};
+    }).sort(function(a,b){return b.at-a.at;}).slice(0,MAX_ACTIVITY_EVENTS);
+    var rawReflections=Array.isArray(input.reflections)?input.reflections:[];
+    var reflections=rawReflections.filter(function(item){
+      return item&&typeof item==='object'&&!Array.isArray(item)&&cleanLangName(item.language,'')&&typeof item.text==='string'&&item.text.trim()&&Number.isFinite(Number(item.at))&&Number(item.at)>=0;
+    }).map(function(item,index){
+      var at=Math.max(0,Number(item.at)||0),language=cleanLangName(item.language,''),text=item.text.trim().slice(0,500);
+      var id=typeof item.id==='string'&&/^[a-zA-Z0-9._:-]{1,140}$/.test(item.id)?item.id:'reflection-'+at+'-'+index;
+      return {id:id,language:language,text:text,at:at};
+    }).sort(function(a,b){return b.at-a.at;}).slice(0,MAX_REFLECTIONS);
     return Object.assign({},input,{
       saved:saved,
       sessions:count(input.sessions),
       spokenAttempts:count(input.spokenAttempts),
-      languageStats:languageStats
+      languageStats:languageStats,
+      activityLog:activityLog,
+      reflections:reflections
     });
   }
   function normalize(text) {
@@ -831,32 +897,179 @@
     var base=Number(now==null?Date.now():now);
     var current=Math.max(0,Math.min(5,Math.floor(Number(item&&item.reviewStage||0))));
     var nextStage=rating==='again'?Math.max(0,current-2):rating==='hard'?current:rating==='know'?Math.min(5,current+2):Math.min(5,current+1);
-    var interval=reviewDelay(item,rating);
+    var interval=reviewDelay(item,rating),history=wordReviewHistory(item);
+    history.unshift({at:base,rating:rating,interval:interval,stage:nextStage});
     return Object.assign({},item,{
       reviewStage:nextStage,
       nextReviewAt:base+interval,
       lastReviewedAt:base,
       lastRating:rating,
       lapses:Number(item&&item.lapses||0)+(rating==='again'?1:0),
-      reviews:Number(item&&item.reviews||0)+1
+      reviews:Number(item&&item.reviews||0)+1,
+      reviewHistory:history.slice(0,MAX_WORD_REVIEW_HISTORY)
     });
   }
-  function dueWords(items, language, now) {
-    var at = Number(now == null ? Date.now() : now);
-    return (Array.isArray(items) ? items : []).filter(function (item) {
-      return item && (!language || item.language === language) && Number(item.nextReviewAt || 0) <= at;
-    }).sort(function (a,b) { return Number(a.nextReviewAt || 0) - Number(b.nextReviewAt || 0); });
+  function dueWords(items, language, now, tag) {
+    var at=Number(now==null?Date.now():now),scope=String(tag||'all');if(!Number.isFinite(at))return [];
+    return (Array.isArray(items)?items:[]).filter(function(item){
+      var scheduled=Number(item&&item.nextReviewAt||0);
+      if(!item||language&&item.language!==language||!Number.isFinite(scheduled)||scheduled>at)return false;
+      return scope==='all'||normalizeWordTags(item.tags).some(function(itemTag){return normalize(itemTag)===normalize(scope);});
+    }).sort(function(a,b){return Number(a.nextReviewAt||0)-Number(b.nextReviewAt||0);});
+  }
+  function reviewQueue(items,language,now,skippedIds,tag){
+    var skipped=Object.create(null);
+    (Array.isArray(skippedIds)?skippedIds:[]).forEach(function(id){var key=String(id||'');if(key)skipped[key]=true;});
+    return dueWords(items,language,now,tag).filter(function(item){return !skipped[String(item.id||'')];});
+  }
+  function reviewForecast(items,language,now){
+    var at=Number(now==null?Date.now():now);if(!Number.isFinite(at))at=Date.now();
+    var day=24*60*60*1000,nextDay=at+day,nextWeek=at+7*day,out={total:0,dueNow:0,nextDay:0,nextWeek:0,later:0};
+    (Array.isArray(items)?items:[]).forEach(function(item){
+      if(!item||language&&item.language!==language)return;
+      var scheduled=Number(item.nextReviewAt||0);out.total++;
+      if(!Number.isFinite(scheduled)||scheduled<=at)out.dueNow++;
+      else if(scheduled<=nextDay)out.nextDay++;
+      else if(scheduled<=nextWeek)out.nextWeek++;
+      else out.later++;
+    });
+    return out;
+  }
+  function upsertSavedWord(items,draft,originalId){
+    var list=Array.isArray(items)?items.slice():[],input=draft&&typeof draft==='object'?draft:{},original=String(originalId||'');
+    var language=cleanLangName(input.language,''),term=String(input.term||'').trim().slice(0,260),meaning=String(input.meaning||'').trim().slice(0,260);
+    if(!language||!term||!meaning)return {ok:false,reason:'required',items:list};
+    var preset=LANGUAGES.filter(function(item){return normalize(item.name)===normalize(language);})[0],knownLanguage=list.filter(function(item){return item&&normalize(item.language)===normalize(language);})[0];
+    if(preset)language=preset.name;else if(knownLanguage)language=knownLanguage.language;
+    var duplicate=list.some(function(item){return item&&item.id!==original&&normalize(item.language)===normalize(language)&&normalize(item.term)===normalize(term);});
+    if(duplicate)return {ok:false,reason:'duplicate',items:list};
+    var existing=list.filter(function(item){return item&&item.id===original;})[0]||null;
+    if(!existing&&list.length>=MAX_SAVED_WORDS)return {ok:false,reason:'limit',items:list};
+    var word=Object.assign({reviewStage:0,nextReviewAt:0,reviews:0,lapses:0,lastReviewedAt:0,lastRating:'',reviewHistory:[]},existing||{}, {
+      id:language+'::'+term,language:language,term:term,meaning:meaning,
+      pronunciation:String(input.pronunciation||'').trim().slice(0,260),example:String(input.example||'').trim().slice(0,260),examplePronunciation:String(input.examplePronunciation||'').trim().slice(0,260),translation:String(input.translation||'').trim().slice(0,260),note:String(input.note||'').trim().slice(0,MAX_WORD_NOTE),tags:normalizeWordTags(input.tags)
+    });
+    if(existing)list=list.map(function(item){return item.id===original?word:item;});else list.push(word);
+    return {ok:true,created:!existing,items:list,word:word};
+  }
+  function resetSavedWordReview(items,id){
+    var list=Array.isArray(items)?items:[],key=String(id||''),changed=false;
+    var next=list.map(function(item){
+      if(!item||item.id!==key)return item;changed=true;
+      return Object.assign({},item,{reviewStage:0,nextReviewAt:0,reviews:0,lapses:0,lastReviewedAt:0,lastRating:'',reviewHistory:[]});
+    });
+    return changed?next:list;
+  }
+  function wordBankLanguages(items){
+    var seen={};(Array.isArray(items)?items:[]).forEach(function(item){if(item&&typeof item.language==='string'&&item.language.trim())seen[item.language.trim()]=true;});
+    return Object.keys(seen).sort(function(a,b){return a.localeCompare(b);});
+  }
+  function wordBankTags(items){
+    var seen=Object.create(null),out=[];(Array.isArray(items)?items:[]).forEach(function(item){normalizeWordTags(item&&item.tags).forEach(function(tag){var key=tag.toLocaleLowerCase();if(!seen[key]){seen[key]=true;out.push(tag);}});});
+    return out.sort(function(a,b){return a.localeCompare(b,undefined,{sensitivity:'base'});});
+  }
+  function savedWordView(items,options){
+    var opts=options&&typeof options==='object'?options:{},query=normalize(opts.query||''),language=String(opts.language||'all'),tag=String(opts.tag||'all'),sort=String(opts.sort||'due'),now=Number(opts.now==null?Date.now():opts.now);
+    if(!Number.isFinite(now))now=Date.now();
+    var list=(Array.isArray(items)?items:[]).filter(function(item){
+      if(!item||typeof item!=='object')return false;
+      if(language!=='all'&&item.language!==language)return false;
+      var tags=normalizeWordTags(item.tags);
+      if(tag!=='all'&&!tags.some(function(itemTag){return normalize(itemTag)===normalize(tag);}))return false;
+      if(!query)return true;
+      return normalize([item.term,item.meaning,item.pronunciation,item.example,item.translation,item.note,tags.join(' ')].join(' ')).indexOf(query)>=0;
+    }).slice();
+    function termCompare(a,b){return String(a.term||'').localeCompare(String(b.term||''),undefined,{sensitivity:'base'});}
+    list.sort(function(a,b){
+      if(sort==='term')return termCompare(a,b);
+      if(sort==='language'){var languageOrder=String(a.language||'').localeCompare(String(b.language||''),undefined,{sensitivity:'base'});return languageOrder||termCompare(a,b);}
+      if(sort==='review'){var reviews=Number(b.reviews||0)-Number(a.reviews||0);return reviews||termCompare(a,b);}
+      var aDue=Number(a.nextReviewAt||0)<=now?0:1,bDue=Number(b.nextReviewAt||0)<=now?0:1;
+      if(aDue!==bDue)return aDue-bDue;
+      var schedule=Number(a.nextReviewAt||0)-Number(b.nextReviewAt||0);return schedule||termCompare(a,b);
+    });
+    return list;
   }
   function trackLanguageActivity(progress, language, increments, now) {
-    var next = Object.assign({},progress), all = Object.assign({},next.languageStats || {});
+    var next = Object.assign({},progress), all = Object.assign({},next.languageStats || {}), log=Array.isArray(next.activityLog)?next.activityLog.slice():[];
     var stats = Object.assign({practiceSets:0,spokenAttempts:0,listeningAttempts:0,reviews:0,chatTurns:0,lastPracticedAt:0},all[language] || {});
+    var at=Math.max(0,Number(now==null?Date.now():now)||0),recorded=false;
     Object.keys(increments || {}).forEach(function (key) {
-      stats[key] = Number(stats[key] || 0) + Number(increments[key] || 0);
+      var amount=Number(increments[key]||0);
+      if(ACTIVITY_KINDS.indexOf(key)<0||!Number.isFinite(amount)||amount<=0)return;
+      amount=Math.min(1000,Math.max(1,Math.floor(amount)));
+      stats[key] = Number(stats[key] || 0) + amount;
+      var baseId='activity-'+at+'-'+key,eventId=baseId,suffix=1;while(log.some(function(item){return item&&item.id===eventId;})){eventId=baseId+'-'+suffix;suffix++;}
+      log.unshift({id:eventId,language:cleanLangName(language,''),kind:key,count:amount,at:at});
+      recorded=true;
     });
-    stats.lastPracticedAt = Number(now == null ? Date.now() : now);
+    if(recorded)stats.lastPracticedAt = at;
     all[language] = stats;
     next.languageStats = all;
+    next.activityLog=log.sort(function(a,b){return Number(b.at||0)-Number(a.at||0);}).slice(0,MAX_ACTIVITY_EVENTS);
     return next;
+  }
+  function applyReviewRating(progress,wordId,language,rating,now){
+    var source=progress&&typeof progress==='object'?progress:{},valid=['again','hard','learning','know'];
+    var original=(Array.isArray(source.saved)?source.saved:[]).filter(function(item){return item&&item.id===wordId;})[0];
+    if(!original||valid.indexOf(rating)<0)return {progress:source,undo:null};
+    var at=Math.max(0,Number(now==null?Date.now():now)||0),stats=source.languageStats&&source.languageStats[language]||{};
+    var beforeIds={};(Array.isArray(source.activityLog)?source.activityLog:[]).forEach(function(item){if(item)beforeIds[item.id]=true;});
+    var scheduled=Object.assign({},source,{saved:source.saved.map(function(item){return item.id===wordId?scheduleReview(item,rating,at):item;})});
+    var updated=trackLanguageActivity(scheduled,language,{reviews:1},at),event=(updated.activityLog||[]).filter(function(item){return item&&item.kind==='reviews'&&item.at===at&&!beforeIds[item.id];})[0]||null;
+    return {progress:updated,undo:{wordId:wordId,language:language,rating:rating,at:at,previousWord:Object.assign({},original),previousLastPracticedAt:Number(stats.lastPracticedAt||0),activityEventId:event&&event.id||''}};
+  }
+  function undoReviewRating(progress,undo){
+    var source=progress&&typeof progress==='object'?progress:{},token=undo&&typeof undo==='object'?undo:null;
+    if(!token||!token.previousWord||!token.wordId||!token.activityEventId)return source;
+    var log=Array.isArray(source.activityLog)?source.activityLog:[],hasEvent=log.some(function(item){return item&&item.id===token.activityEventId;});if(!hasEvent)return source;
+    var next=Object.assign({},source),restored=false;
+    next.saved=(Array.isArray(source.saved)?source.saved:[]).map(function(item){if(item&&item.id===token.wordId&&Number(item.lastReviewedAt||0)===Number(token.at||0)){restored=true;return Object.assign({},token.previousWord);}return item;});
+    if(!restored)return source;
+    next.activityLog=(Array.isArray(source.activityLog)?source.activityLog:[]).filter(function(item){return !item||item.id!==token.activityEventId;});
+    var all=Object.assign({},source.languageStats||{}),stats=Object.assign({practiceSets:0,spokenAttempts:0,listeningAttempts:0,reviews:0,chatTurns:0,lastPracticedAt:0},all[token.language]||{});
+    stats.reviews=Math.max(0,Number(stats.reviews||0)-1);
+    if(Number(stats.lastPracticedAt||0)<=Number(token.at||0)){
+      var latest=next.activityLog.filter(function(item){return item&&item.language===token.language;}).reduce(function(value,item){return Math.max(value,Number(item.at||0));},Number(token.previousLastPracticedAt||0));stats.lastPracticedAt=latest;
+    }
+    all[token.language]=stats;next.languageStats=all;return next;
+  }
+  function emptyReviewSession(){return {total:0,again:0,hard:0,learning:0,know:0};}
+  function updateReviewSession(session,rating,delta){
+    var source=session&&typeof session==='object'?session:{},out=emptyReviewSession(),valid=['again','hard','learning','know'];
+    valid.forEach(function(key){out[key]=Math.max(0,Math.floor(Number(source[key])||0));});
+    if(valid.indexOf(rating)>=0){var change=Number(delta)<0?-1:1;out[rating]=Math.max(0,out[rating]+change);}
+    out.total=valid.reduce(function(sum,key){return sum+out[key];},0);return out;
+  }
+  function activityHistory(progress, language, now, days) {
+    var windowDays=Math.max(1,Math.min(31,Math.floor(Number(days)||7))),base=new Date(Number(now==null?Date.now():now));
+    if(!Number.isFinite(base.getTime()))base=new Date();
+    base.setHours(0,0,0,0);
+    var buckets=[],lookup={};
+    for(var offset=windowDays-1;offset>=0;offset--){
+      var date=new Date(base);date.setDate(base.getDate()-offset);
+      var key=date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');
+      var bucket={key:key,at:date.getTime(),count:0,events:[]};buckets.push(bucket);lookup[key]=bucket;
+    }
+    var start=buckets[0].at,end=new Date(base);end.setDate(base.getDate()+1);var endAt=end.getTime(),byKind={},recent=[];
+    (Array.isArray(progress&&progress.activityLog)?progress.activityLog:[]).forEach(function(item){
+      if(!item||item.language!==language||ACTIVITY_KINDS.indexOf(item.kind)<0)return;
+      var at=Number(item.at||0),count=Math.max(1,Math.floor(Number(item.count)||1));
+      if(at<start||at>=endAt)return;
+      var date=new Date(at),key=date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0'),bucket=lookup[key];
+      if(!bucket)return;
+      bucket.count+=count;bucket.events.push(item);byKind[item.kind]=(byKind[item.kind]||0)+count;recent.push(item);
+    });
+    recent.sort(function(a,b){return Number(b.at||0)-Number(a.at||0);});
+    return {days:buckets,total:buckets.reduce(function(sum,item){return sum+item.count;},0),activeDays:buckets.filter(function(item){return item.count>0;}).length,byKind:byKind,recent:recent.slice(0,10)};
+  }
+  function addReflection(progress,language,text,now){
+    var next=normalizeProgress(progress),clean=String(text||'').trim().slice(0,500),name=cleanLangName(language,'');if(!clean||!name)return next;
+    var at=Math.max(0,Number(now==null?Date.now():now)||0),items=next.reflections.slice();
+    items.unshift({id:'reflection-'+at+'-'+items.length,language:name,text:clean,at:at});next.reflections=items.slice(0,MAX_REFLECTIONS);return next;
+  }
+  function removeReflection(progress,id){
+    var next=normalizeProgress(progress),key=String(id||'');next.reflections=next.reflections.filter(function(item){return item.id!==key;});return next;
   }
   function languageSummary(progress, language, now) {
     progress = progress || {};
@@ -944,7 +1157,7 @@
   // blob download — nothing leaves the browser). Cells are quoted/escaped and
   // leading formula characters are neutralized so spreadsheet apps treat every
   // cell as text.
-  var CSV_HEADERS = ['Language','Term','Meaning','Pronunciation','Example','Example pronunciation','Translation'];
+  var CSV_HEADERS = ['Language','Term','Meaning','Pronunciation','Example','Example pronunciation','Translation','Personal note','Tags'];
   function csvCell(value) {
     var s = String(value == null ? '' : value);
     if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
@@ -952,7 +1165,7 @@
   }
   function wordBankCsv(items) {
     var rows = [CSV_HEADERS].concat((Array.isArray(items) ? items : []).map(function (w) {
-      return [w.language, w.term, w.meaning, w.pronunciation, w.example, w.examplePronunciation, w.translation];
+      return [w.language, w.term, w.meaning, w.pronunciation, w.example, w.examplePronunciation, w.translation, w.note, normalizeWordTags(w.tags).join('; ')];
     }));
     return rows.map(function (r) { return r.map(csvCell).join(','); }).join('\r\n');
   }
@@ -1525,6 +1738,14 @@
     var seis=useState(null), studioEditId=seis[0], setStudioEditId=seis[1];
     var sbs=useState(''), studioBusy=sbs[0], setStudioBusy=sbs[1];
     var dcs=useState(null), destructiveConfirm=dcs[0], setDestructiveConfirm=dcs[1];
+    var jrts=useState(''), journalReflectionText=jrts[0], setJournalReflectionText=jrts[1];
+    var jsts=useState(''), journalStatus=jsts[0], setJournalStatus=jsts[1];
+    var wqs=useState(''), wordQuery=wqs[0], setWordQuery=wqs[1];
+    var wls=useState('all'), wordLanguage=wls[0], setWordLanguage=wls[1];
+    var wts=useState('all'), wordTag=wts[0], setWordTag=wts[1];
+    var wss=useState('due'), wordSort=wss[0], setWordSort=wss[1];
+    var wes=useState(null), wordEditor=wes[0], setWordEditor=wes[1];
+    var wems=useState(''), wordEditorMessage=wems[0], setWordEditorMessage=wems[1];
     var ss=useState(initialIncoming ? String(initialIncoming.text).slice(0,5000) : ''), source=ss[0], setSource=ss[1];
     var initialSourceMeta=initialIncoming?Object.assign({},initialIncoming,{originalSelectionLabel:initialIncoming.selectionLabel||'',activeScope:'selection'}):null;
     var ims=useState(initialSourceMeta), sourceMeta=ims[0], setSourceMeta=ims[1];
@@ -1542,6 +1763,10 @@
     var fs=useState(null), feedback=fs[0], setFeedback=fs[1];
     var rvs=useState(false), reviewRevealed=rvs[0], setReviewRevealed=rvs[1];
     var rsts=useState(''), reviewStatus=rsts[0], setReviewStatus=rsts[1];
+    var rus=useState(null), lastReviewUndo=rus[0], setLastReviewUndo=rus[1];
+    var rsss=useState(emptyReviewSession), reviewSession=rsss[0], setReviewSession=rsss[1];
+    var rkis=useState([]), reviewSkippedIds=rkis[0], setReviewSkippedIds=rkis[1];
+    var rvts=useState('all'), reviewTag=rvts[0], setReviewTag=rvts[1];
     var rrcs=useState(''), reviewRecall=rrcs[0], setReviewRecall=rrcs[1];
     var labs=useState(0), labIndex=labs[0], setLabIndex=labs[1];
     var lmss=useState('choice'), labMode=lmss[0], setLabMode=lmss[1];
@@ -1564,7 +1789,7 @@
     var rims=useState(null), reviewImage=rims[0], setReviewImage=rims[1];
     var pqs=useState(function(){try{return localStorage.getItem(PIC_QUIZ_KEY)==='1';}catch(_){return false;}}), picQuiz=pqs[0], setPicQuiz=pqs[1];
     var svs=useState(0), speechVoiceTick=svs[0], setSpeechVoiceTick=svs[1];
-    var voiceRef=useRef(null), dialogRef=useRef(null), sectionHeadingRef=useRef(null), lastTabRef=useRef(null);
+    var voiceRef=useRef(null), dialogRef=useRef(null), sectionHeadingRef=useRef(null), lastTabRef=useRef(null), wordEditorHeadingRef=useRef(null), wordEditorOpenerRef=useRef(null);
     var confirmDialogRef=useRef(null), confirmCancelRef=useRef(null), confirmOpenerRef=useRef(null);
     var phraseRef=useRef(null), conversationPromptRef=useRef(null), labPromptRef=useRef(null), reviewRegionRef=useRef(null), reviewAnswerRef=useRef(null);
     var previousIndexRef=useRef(0), previousTurnRef=useRef(0), previousLabIndexRef=useRef(0), reviewFocusPendingRef=useRef(false), captureCompletedRef=useRef(false);
@@ -1616,12 +1841,23 @@
       setUiTranslating(false);
       if(typeof props.callGemini==='function')translateUI(langName);
     }
-    var due=dueWords(progress.saved||[],profile.target,Date.now()), reviewItem=due[0]||null;
+    var currentReviewWords=(progress.saved||[]).filter(function(item){return item&&item.language===profile.target;});
+    var reviewTags=wordBankTags(currentReviewWords),activeReviewTag=reviewTag==='all'||reviewTags.indexOf(reviewTag)>=0?reviewTag:'all';
+    var allDue=dueWords(currentReviewWords,profile.target,Date.now()),due=dueWords(currentReviewWords,profile.target,Date.now(),activeReviewTag),reviewItems=reviewQueue(currentReviewWords,profile.target,Date.now(),reviewSkippedIds,activeReviewTag),reviewItem=reviewItems[0]||null;
+    var scopedSavedCount=activeReviewTag==='all'?currentReviewWords.length:currentReviewWords.filter(function(item){return normalizeWordTags(item.tags).some(function(tag){return normalize(tag)===normalize(activeReviewTag);});}).length;
+    var skippedDueCount=Math.max(0,due.length-reviewItems.length);
     var reviewMode=reviewItem?(picQuiz&&reviewImage?'picture-to-target':reviewRecallDirection(reviewItem)):'known-to-target';
     var labItems=useMemo(function(){return listeningItems(lesson,progress.saved||[],profile.target);},[lesson,progress.saved,profile.target]);
     var labItem=labItems[labIndex]||labItems[0]||null;
     var labChoices=useMemo(function(){return listeningChoices(labItems,labIndex);},[labItems,labIndex]);
     var summary=languageSummary(progress,profile.target,Date.now());
+    var forecast=reviewForecast(progress.saved||[],profile.target,Date.now());
+    var journal=activityHistory(progress,profile.target,Date.now(),7);
+    var journalMax=Math.max.apply(Math,[1].concat(journal.days.map(function(item){return item.count;})));
+    var currentReflections=(progress.reflections||[]).filter(function(item){return item.language===profile.target;}).slice(0,10);
+    var savedLanguages=wordBankLanguages(progress.saved||[]);
+    var savedTags=wordBankTags(progress.saved||[]);
+    var visibleSavedWords=savedWordView(progress.saved||[],{query:wordQuery,language:wordLanguage,tag:wordTag,sort:wordSort,now:Date.now()});
     var currentPlan=learningPlanFor(learningPlans,profile.target);
     var path=learningPath(progress,profile.target,!!lesson,Date.now(),currentPlan);
     // Every language this device has practiced or saved words in, minus the
@@ -1633,6 +1869,7 @@
       var set={};
       (progress.saved||[]).forEach(function(w){if(w&&typeof w.language==='string'&&w.language)set[w.language]=true;});
       Object.keys((progress&&progress.languageStats)||{}).forEach(function(n){if(n)set[n]=true;});
+      (progress.reflections||[]).forEach(function(item){if(item&&item.language)set[item.language]=true;});
       delete set[profile.target];
       return Object.keys(set).sort();
     },[progress,profile.target]);
@@ -1722,7 +1959,9 @@
     useEffect(function(){
       if(tab==='chat'&&chatLogRef.current)chatLogRef.current.scrollTop=chatLogRef.current.scrollHeight;
     },[chatMessages,chatBusy,tab]);
-    useEffect(function(){closePlanEditor();},[profile.target]);
+    useEffect(function(){closePlanEditor();setJournalReflectionText('');setJournalStatus('');setLastReviewUndo(null);setReviewSession(emptyReviewSession());setReviewSkippedIds([]);setReviewTag('all');},[profile.target]);
+    useEffect(function(){if(tab!=='review'){setLastReviewUndo(null);setReviewSession(emptyReviewSession());setReviewSkippedIds([]);}},[tab]);
+    useEffect(function(){if(wordEditor&&wordEditorHeadingRef.current)wordEditorHeadingRef.current.focus();},[!!wordEditor,wordEditor&&wordEditor.originalId]);
     useEffect(function(){
       if(previousChatTargetRef.current===profile.target)return;
       previousChatTargetRef.current=profile.target;
@@ -1795,12 +2034,106 @@
     }
     function sectionTitle(text,className){return e('h3',{ref:sectionHeadingRef,tabIndex:-1,className:(className||'text-2xl font-bold')+' inline-block'+focusTargetClass},text);}
     function reviewIntervalText(item,rating){var parts=reviewTimeParts(reviewDelay(item,rating));return tr(parts.key,{n:parts.n});}
+    function reviewHistoryIntervalText(entry){var parts=reviewTimeParts(entry&&entry.interval);return tr(parts.key,{n:parts.n});}
     function reviewRatingLabel(rating){return tr(rating==='again'?'rate_again':rating==='hard'?'rate_hard':rating==='learning'?'rate_learning':'rate_know');}
     function playAtRate(text,rate){if(!speak(text,speech.code,speech.name,rate)){var message=tr('audio_unavailable');setSpeechStatus(message);notify(props,message);return false;}return true;}
     function play(text){return playAtRate(text,audioSlow?SLOW_RATE:1);}
     function toggleSlow(){setAudioSlow(function(old){var next=!old;try{localStorage.setItem(SLOW_KEY,next?'1':'0');}catch(_){}setSpeechStatus(next?tr('slow_on'):tr('slow_off'));return next;});}
     function persistData(key,value){var ok=write(key,value);if(!ok&&!storageWarnedRef.current){storageWarnedRef.current=true;notify(props,tr('storage_error'),'error');}return ok;}
     function progressWith(fn){setProgress(function(old){var next=fn(old);persistData(PROGRESS_KEY,next);return next;});}
+    function journalDate(at,options){try{return new Date(Number(at||0)).toLocaleDateString(chromeLang||undefined,options);}catch(_){return new Date(Number(at||0)).toLocaleDateString();}}
+    function journalEventLabel(item){return tr('journal_event_'+item.kind,{n:item.count});}
+    function saveJournalReflection(){
+      var text=journalReflectionText.trim();if(!text)return;
+      progressWith(function(old){return addReflection(old,profile.target,text,Date.now());});setJournalReflectionText('');setJournalStatus(tr('journal_reflection_saved'));notify(props,tr('journal_reflection_saved'),'success');
+    }
+    function requestDeleteJournalReflection(item,event){
+      if(!item)return;confirmOpenerRef.current=event&&event.currentTarget?event.currentTarget:document.activeElement;setDestructiveConfirm({kind:'delete-reflection',id:item.id});
+    }
+    function deleteJournalReflection(item){progressWith(function(old){return removeReflection(old,item.id);});setJournalStatus(tr('journal_reflection_deleted'));notify(props,tr('journal_reflection_deleted'),'success');}
+    function clearWordFilters(){setWordQuery('');setWordLanguage('all');setWordTag('all');setWordSort('due');}
+    function openWordEditor(item,event){
+      wordEditorOpenerRef.current=event&&event.currentTarget?event.currentTarget:document.activeElement;setWordEditorMessage('');
+      setWordEditor({originalId:item&&item.id?item.id:'',draft:{language:item&&item.language||profile.target,term:item&&item.term||'',meaning:item&&item.meaning||'',pronunciation:item&&item.pronunciation||'',example:item&&item.example||'',examplePronunciation:item&&item.examplePronunciation||'',translation:item&&item.translation||'',note:item&&item.note||'',tags:normalizeWordTags(item&&item.tags).join(', ')}});
+    }
+    function patchWordEditor(key,value){setWordEditor(function(old){if(!old)return old;var draft=Object.assign({},old.draft);draft[key]=String(value||'');return Object.assign({},old,{draft:draft});});setWordEditorMessage('');}
+    function closeWordEditor(){var opener=wordEditorOpenerRef.current;wordEditorOpenerRef.current=null;setWordEditor(null);setWordEditorMessage('');setTimeout(function(){var target=opener&&opener.isConnected?opener:sectionHeadingRef.current;if(target&&target.isConnected&&typeof target.focus==='function')target.focus();},0);}
+    function saveWordEditor(){
+      if(!wordEditor)return;var result=upsertSavedWord(progress.saved||[],wordEditor.draft,wordEditor.originalId);
+      if(!result.ok){var message=result.reason==='duplicate'?tr('saved_editor_duplicate'):result.reason==='limit'?tr('saved_limit',{n:MAX_SAVED_WORDS}):tr('saved_editor_required');setWordEditorMessage(message);notify(props,message,'error');return;}
+      progressWith(function(old){return Object.assign({},old,{saved:result.items});});
+      if(result.created){setWordQuery('');setWordLanguage(result.word.language);setWordTag('all');setWordSort('term');}
+      notify(props,tr(result.created?'saved_editor_added':'saved_editor_updated'),'success');closeWordEditor();
+    }
+    function renderWordEditor(){
+      if(!wordEditor)return null;var draft=wordEditor.draft;
+      return e('section',{className:'rounded-xl border border-emerald-200 bg-emerald-50/60 p-5 mb-5','aria-labelledby':'lingua-word-editor-title'},
+        e('h4',{id:'lingua-word-editor-title',ref:wordEditorHeadingRef,tabIndex:-1,className:'text-base font-bold text-slate-900'+focusTargetClass},tr(wordEditor.originalId?'saved_editor_edit_title':'saved_editor_add_title')),
+        e('p',{id:'lingua-word-editor-help',className:'text-xs text-slate-600 mt-1'},tr('saved_editor_help')),
+        e('form',{className:'mt-4',onSubmit:function(x){x.preventDefault();saveWordEditor();}},
+          e('div',{className:'grid grid-cols-1 sm:grid-cols-2 gap-3'},
+            e('label',{htmlFor:'lingua-word-language',className:'block text-xs font-bold text-slate-700'},tr('saved_field_language'),e('input',{id:'lingua-word-language',required:true,maxLength:80,list:'lingua-word-language-options',value:draft.language,onChange:function(x){patchWordEditor('language',x.target.value);},className:'block w-full h-10 mt-1 rounded-lg border border-slate-300 bg-white px-3 text-sm'+focusClass}),e('datalist',{id:'lingua-word-language-options'},LANGUAGES.map(function(item){return e('option',{key:item.name,value:item.name});}))),
+            e('label',{htmlFor:'lingua-word-term',className:'block text-xs font-bold text-slate-700'},tr('saved_field_term'),e('input',{id:'lingua-word-term',required:true,maxLength:260,dir:'auto',value:draft.term,onChange:function(x){patchWordEditor('term',x.target.value);},className:'block w-full h-10 mt-1 rounded-lg border border-slate-300 bg-white px-3 text-sm'+focusClass})),
+            e('label',{htmlFor:'lingua-word-meaning',className:'block text-xs font-bold text-slate-700'},tr('saved_field_meaning'),e('input',{id:'lingua-word-meaning',required:true,maxLength:260,dir:'auto',value:draft.meaning,onChange:function(x){patchWordEditor('meaning',x.target.value);},className:'block w-full h-10 mt-1 rounded-lg border border-slate-300 bg-white px-3 text-sm'+focusClass})),
+            e('label',{htmlFor:'lingua-word-pronunciation',className:'block text-xs font-bold text-slate-700'},tr('saved_field_pronunciation'),e('input',{id:'lingua-word-pronunciation',maxLength:260,dir:'ltr',value:draft.pronunciation,onChange:function(x){patchWordEditor('pronunciation',x.target.value);},className:'block w-full h-10 mt-1 rounded-lg border border-slate-300 bg-white px-3 text-sm'+focusClass})),
+            e('label',{htmlFor:'lingua-word-example',className:'sm:col-span-2 block text-xs font-bold text-slate-700'},tr('saved_field_example'),e('textarea',{id:'lingua-word-example',rows:2,maxLength:260,dir:'auto',value:draft.example,onChange:function(x){patchWordEditor('example',x.target.value);},className:'block w-full mt-1 rounded-lg border border-slate-300 bg-white p-3 text-sm resize-y'+focusClass})),
+            e('label',{htmlFor:'lingua-word-example-pronunciation',className:'block text-xs font-bold text-slate-700'},tr('saved_field_example_pronunciation'),e('input',{id:'lingua-word-example-pronunciation',maxLength:260,dir:'ltr',value:draft.examplePronunciation,onChange:function(x){patchWordEditor('examplePronunciation',x.target.value);},className:'block w-full h-10 mt-1 rounded-lg border border-slate-300 bg-white px-3 text-sm'+focusClass})),
+            e('label',{htmlFor:'lingua-word-translation',className:'block text-xs font-bold text-slate-700'},tr('saved_field_translation'),e('input',{id:'lingua-word-translation',maxLength:260,dir:'auto',value:draft.translation,onChange:function(x){patchWordEditor('translation',x.target.value);},className:'block w-full h-10 mt-1 rounded-lg border border-slate-300 bg-white px-3 text-sm'+focusClass})),
+            e('label',{htmlFor:'lingua-word-tags',className:'sm:col-span-2 block text-xs font-bold text-slate-700'},tr('saved_field_tags'),
+              e('input',{id:'lingua-word-tags',maxLength:MAX_WORD_TAG_INPUT,dir:'auto',value:draft.tags,onChange:function(x){patchWordEditor('tags',x.target.value);},placeholder:tr('saved_tags_placeholder'),'aria-describedby':'lingua-word-tags-help lingua-word-tags-count',className:'block w-full h-10 mt-1 rounded-lg border border-slate-300 bg-white px-3 text-sm'+focusClass}),
+              e('span',{id:'lingua-word-tags-help',className:'block text-xs font-normal text-slate-500 mt-1'},tr('saved_tags_help')),
+              e('span',{id:'lingua-word-tags-count',className:'block text-xs font-normal text-slate-500 mt-1'},tr('saved_tags_count',{n:normalizeWordTags(draft.tags).length}))
+            ),
+            e('label',{htmlFor:'lingua-word-note',className:'sm:col-span-2 block text-xs font-bold text-slate-700'},tr('saved_field_note'),
+              e('textarea',{id:'lingua-word-note',rows:3,maxLength:MAX_WORD_NOTE,dir:'auto',value:draft.note,onChange:function(x){patchWordEditor('note',x.target.value);},placeholder:tr('saved_note_placeholder'),'aria-describedby':'lingua-word-note-help lingua-word-note-count',className:'block w-full mt-1 rounded-lg border border-slate-300 bg-white p-3 text-sm resize-y'+focusClass}),
+              e('span',{id:'lingua-word-note-help',className:'block text-xs font-normal text-slate-500 mt-1'},tr('saved_note_help')),
+              e('span',{id:'lingua-word-note-count',className:'block text-xs font-normal text-slate-500 mt-1'},tr('saved_note_count',{n:draft.note.length}))
+            )
+          ),
+          wordEditorMessage?e('p',{id:'lingua-word-editor-error',role:'alert',className:'mt-3 text-sm font-semibold text-rose-800'},wordEditorMessage):null,
+          e('div',{className:'flex flex-wrap justify-end gap-2 mt-4'},e('button',{type:'button',onClick:closeWordEditor,className:'h-10 px-4 rounded-lg border border-slate-300 bg-white text-sm font-bold'+focusClass},tr('saved_editor_cancel')),e('button',{type:'submit',className:primaryClass},tr('saved_editor_save')))
+        )
+      );
+    }
+    function renderSavedWordCard(item){
+      var l=lang(item.language),history=wordReviewHistory(item),hasReviewProgress=history.length||Number(item.reviewStage||0)>0||Number(item.reviews||0)>0||Number(item.lapses||0)>0||Number(item.nextReviewAt||0)>0||Number(item.lastReviewedAt||0)>0;
+      return e('li',{key:item.id,className:'lingua-card py-4 px-4 flex flex-col sm:flex-row gap-3 sm:items-start'},
+        e('div',{className:'flex-1 min-w-0'},
+          e('div',{className:'flex items-center gap-2 flex-wrap'},e('strong',{className:'text-lg text-slate-900',dir:l.rtl?'rtl':'ltr',lang:l.code},item.term),e('span',{className:'text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-full px-2 py-0.5'},item.language)),
+          e(PronunciationGuide,{text:item.pronunciation}),
+          e('p',{className:'text-sm text-slate-600',dir:known.rtl?'rtl':'ltr',lang:known.code},item.meaning),
+          normalizeWordTags(item.tags).length?e('ul',{className:'flex flex-wrap gap-1.5 mt-2','aria-label':tr('saved_tags_for',{term:item.term})},normalizeWordTags(item.tags).map(function(tag){return e('li',{key:tag,className:'rounded-full border border-violet-200 bg-violet-50 px-2 py-0.5 text-xs font-semibold text-violet-800'},tag);})):null,
+          e('p',{className:'text-sm text-slate-700 mt-2 break-words',dir:l.rtl?'rtl':'ltr',lang:l.code},item.example),
+          item.note?e('aside',{className:'mt-3 rounded-lg border-l-4 border-sky-300 bg-sky-50 px-3 py-2'},e('p',{className:'text-xs font-bold text-sky-900'},tr('saved_note_title')),e('p',{className:'text-sm text-slate-700 whitespace-pre-wrap break-words mt-1',dir:'auto'},item.note)):null,
+          history.length?e('details',{className:'mt-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2'},
+            e('summary',{className:'cursor-pointer text-xs font-bold text-emerald-800'+focusClass},tr('saved_review_history',{n:history.length})),
+            e('p',{className:'text-xs text-slate-500 mt-2'},tr('saved_review_history_help')),
+            e('ol',{className:'mt-2 divide-y divide-slate-200','aria-label':tr('saved_review_history_for',{term:item.term})},history.map(function(entry,entryIndex){return e('li',{key:String(entry.at)+'-'+entry.rating+'-'+entryIndex,className:'py-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1'},
+              e('span',{className:'text-xs text-slate-700'},e('strong',{className:'text-slate-900'},reviewRatingLabel(entry.rating)),' · '+tr('review_in',{time:reviewHistoryIntervalText(entry)})),
+              e('time',{dateTime:new Date(entry.at).toISOString(),className:'text-xs text-slate-500'},journalDate(entry.at,{month:'short',day:'numeric',year:'numeric'}))
+            );}))
+          ):e('p',{className:'text-xs text-slate-500 mt-3'},tr('saved_review_history_empty'))
+        ),
+        e('div',{className:'flex shrink-0 items-center gap-2 flex-wrap'},
+          hasReviewProgress?e('button',{type:'button',title:tr('saved_reset_review_help'),onClick:function(event){requestResetSavedWordReview(item,event);},className:'min-h-9 px-3 rounded-lg border border-amber-300 text-xs font-bold text-amber-900'+focusClass},tr('saved_reset_review')):null,
+          e('button',{type:'button',onClick:function(event){openWordEditor(item,event);},className:'min-h-9 px-3 rounded-lg border border-slate-300 text-xs font-bold text-slate-700'+focusClass},tr('saved_edit_word')),
+          e(IconButton,{title:tr('listen_to',{term:item.term}),onClick:function(){play(item.term,l.code,l.name);}},'▶'),
+          e(IconButton,{title:tr('remove_saved'),onClick:function(event){requestRemoveSavedWord(item,event);}},'×')
+        )
+      );
+    }
+    function requestRemoveSavedWord(item,event){
+      if(!item)return;confirmOpenerRef.current=event&&event.currentTarget?event.currentTarget:document.activeElement;setDestructiveConfirm({kind:'delete-word',id:item.id,term:item.term});
+    }
+    function removeSavedWord(item){
+      progressWith(function(old){return Object.assign({},old,{saved:(old.saved||[]).filter(function(word){return word.id!==item.id;})});});notify(props,tr('saved_removed'),'success');
+    }
+    function requestResetSavedWordReview(item,event){
+      if(!item)return;confirmOpenerRef.current=event&&event.currentTarget?event.currentTarget:document.activeElement;setDestructiveConfirm({kind:'reset-word-review',id:item.id,term:item.term});
+    }
+    function resetSavedWordReviewProgress(item){
+      progressWith(function(old){return Object.assign({},old,{saved:resetSavedWordReview(old.saved||[],item.id)});});notify(props,tr('saved_reset_review_done',{term:item.term}),'success');
+    }
     function setsWith(fn){setSetLibrary(function(old){var next=normalizePracticeSets(fn(old));persistData(SET_LIBRARY_KEY,next);return next;});}
     function plansWith(fn){setLearningPlans(function(old){var next=normalizeLearningPlans(fn(old));persistData(PLAN_KEY,next);return next;});}
     function openPlanEditor(){setPlanDraft(JSON.parse(JSON.stringify(currentPlan)));setPlanEditing(true);}
@@ -1892,8 +2225,32 @@
       var pending=destructiveConfirm;
       if(!pending)return;
       if(pending.kind==='delete-set')deleteStudioSet(pending);
+      else if(pending.kind==='delete-reflection')deleteJournalReflection(pending);
+      else if(pending.kind==='delete-word')removeSavedWord(pending);
+      else if(pending.kind==='reset-word-review')resetSavedWordReviewProgress(pending);
       else if(pending.kind==='clear-data')clearLinguaData();
       setDestructiveConfirm(null);
+    }
+    function destructiveTitle(){
+      if(destructiveConfirm.kind==='delete-set')return tr('studio_delete');
+      if(destructiveConfirm.kind==='delete-reflection')return tr('journal_reflection_delete');
+      if(destructiveConfirm.kind==='delete-word')return tr('remove_saved');
+      if(destructiveConfirm.kind==='reset-word-review')return tr('saved_reset_review');
+      return tr('clear_data');
+    }
+    function destructiveMessage(){
+      if(destructiveConfirm.kind==='delete-set')return tr('studio_delete_confirm',{name:destructiveConfirm.name});
+      if(destructiveConfirm.kind==='delete-reflection')return tr('journal_reflection_delete_confirm');
+      if(destructiveConfirm.kind==='delete-word')return tr('saved_remove_confirm',{term:destructiveConfirm.term});
+      if(destructiveConfirm.kind==='reset-word-review')return tr('saved_reset_review_confirm',{term:destructiveConfirm.term});
+      return tr('clear_confirm');
+    }
+    function destructiveActionLabel(){
+      if(destructiveConfirm.kind==='delete-set')return tr('studio_delete');
+      if(destructiveConfirm.kind==='delete-reflection')return tr('journal_reflection_delete');
+      if(destructiveConfirm.kind==='delete-word')return tr('remove_saved');
+      if(destructiveConfirm.kind==='reset-word-review')return tr('saved_reset_review');
+      return tr('clear_data');
     }
     function exportStudioSet(entry){
       try{var data=createPracticeSetExport(entry,Date.now());if(!data)throw new Error('invalid');var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json;charset=utf-8'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='lingua-practice-set.json';document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(function(){try{URL.revokeObjectURL(a.href);}catch(_){}},1000);notify(props,tr('studio_export_done'),'success');}catch(_){notify(props,tr('export_failed'),'error');}
@@ -2055,11 +2412,31 @@
       setReviewRevealed(true);
     }
     function rateReview(rating){
-      if(!reviewItem)return;
+      if(!reviewItem)return;var at=Date.now(),result=applyReviewRating(progress,reviewItem.id,profile.target,rating,at);
+      if(!result.undo)return;
       reviewFocusPendingRef.current=true;
       setReviewStatus(tr('review_recorded_next',{rating:reviewRatingLabel(rating),time:reviewIntervalText(reviewItem,rating)}));
-      progressWith(function(old){return trackLanguageActivity(Object.assign({},old,{saved:(old.saved||[]).map(function(item){return item.id===reviewItem.id?scheduleReview(item,rating,Date.now()):item;})}),profile.target,{reviews:1},Date.now());});
+      setLastReviewUndo(Object.assign({},result.undo,{recall:reviewRecall}));setReviewSession(function(old){return updateReviewSession(old,rating,1);});progressWith(function(){return result.progress;});
       setReviewRecall('');setReviewRevealed(false);
+    }
+    function undoLastReview(){
+      if(!lastReviewUndo)return;var restored=undoReviewRating(progress,lastReviewUndo);reviewFocusPendingRef.current=true;
+      progressWith(function(){return restored;});setReviewSession(function(old){return updateReviewSession(old,lastReviewUndo.rating,-1);});setReviewRecall(lastReviewUndo.recall||'');setReviewRevealed(true);setReviewStatus(tr('review_undone'));setLastReviewUndo(null);notify(props,tr('review_undone'),'success');
+    }
+    function skipReview(){
+      if(!reviewItem)return;var term=reviewItem.term;
+      reviewFocusPendingRef.current=true;
+      setReviewSkippedIds(function(old){var list=Array.isArray(old)?old:[];return list.indexOf(reviewItem.id)>=0?list:list.concat([reviewItem.id]);});
+      setReviewRecall('');setReviewRevealed(false);setReviewStatus(tr('review_skipped',{term:term}));
+    }
+    function resumeSkippedReviews(){
+      if(!skippedDueCount)return;var count=skippedDueCount;
+      reviewFocusPendingRef.current=true;setReviewSkippedIds([]);setReviewRecall('');setReviewRevealed(false);setReviewStatus(tr('review_resumed',{n:count}));
+    }
+    function changeReviewTag(value){
+      var next=reviewTags.indexOf(String(value||''))>=0?String(value):'all';if(next===activeReviewTag)return;
+      setReviewTag(next);setLastReviewUndo(null);setReviewSession(emptyReviewSession());setReviewSkippedIds([]);setReviewRecall('');setReviewRevealed(false);
+      setReviewStatus(tr('review_scope_changed',{scope:next==='all'?tr('review_scope_all'):next}));
     }
     function listen(mode){
       if(voiceRef.current&&voiceRef.current.isActive()){captureCompletedRef.current=false;voiceRef.current.stop();setListening(false);setSpeechStatus(tr('speech_stopped'));return;}
@@ -2180,7 +2557,7 @@
     function clearLinguaData(){
       var ok=true;LINGUA_STORAGE_KEYS.forEach(function(key){try{localStorage.removeItem(key);}catch(_){ok=false;}});
       storageWarnedRef.current=false;invalidateLearningRequests();clearLessonForSettingsChange();
-      var defaults=normalizeProfile({});setProfile(defaults);setProgress(normalizeProgress({}));setRecentLessons({});setSetLibrary([]);setLearningPlans({});setPlanEditing(false);setPlanDraft(null);setCurrentSetId(null);closeStudioEditor();chatStoreRef.current={};setChatMessages([]);setChatInput('');setSource('');setSourceMeta(null);
+      var defaults=normalizeProfile({});setProfile(defaults);setProgress(normalizeProgress({}));setRecentLessons({});setSetLibrary([]);setLearningPlans({});setPlanEditing(false);setPlanDraft(null);setCurrentSetId(null);closeStudioEditor();clearWordFilters();setWordEditor(null);setWordEditorMessage('');chatStoreRef.current={};setChatMessages([]);setChatInput('');setSource('');setSourceMeta(null);
       aiI18nRef.current={};packI18nRef.current={};setUiTick(function(n){return n+1;});setAudioSlow(false);setPicQuiz(false);setVocabImages({});setSceneImage(null);setReviewImage(null);
       try{window.__alloLinguaImages={};}catch(_){}idbClearImages();
       if(ok)notify(props,tr('clear_done'),'success');else notify(props,tr('storage_error'),'error');
@@ -2277,7 +2654,7 @@
         onError:function(){chatCaptureRef.current=false;var message=tr('mic_error');setChatListening(false);setSpeechStatus(message);notify(props,message);}});
       chatVoiceRef.current=ctl;if(ctl.start()){setChatListening(true);setSpeechStatus(tr('listening_for',{lang:profile.target}));}else{chatCaptureRef.current=false;var failed=tr('speech_unavailable_reply');setSpeechStatus(failed);notify(props,failed);}
     }
-    var nav=[['setup',tr('nav_setup'),'Settings'],['studio',tr('nav_studio'),'Library'],['vocabulary',tr('nav_vocabulary'),'BookOpen'],['listening',tr('nav_listening'),'Headphones'],['speak',tr('nav_speak'),'Mic'],['conversation',tr('nav_conversation'),'MessageSquare'],['picture',tr('nav_picture'),'Image'],['chat',tr('nav_chat'),'Sparkles'],['progress',tr('nav_progress'),'BarChart3'],['review',tr('nav_review')+(due.length?' ('+due.length+')':''),'RefreshCw'],['saved',tr('nav_saved'),'Star']];
+    var nav=[['setup',tr('nav_setup'),'Settings'],['studio',tr('nav_studio'),'Library'],['vocabulary',tr('nav_vocabulary'),'BookOpen'],['listening',tr('nav_listening'),'Headphones'],['speak',tr('nav_speak'),'Mic'],['conversation',tr('nav_conversation'),'MessageSquare'],['picture',tr('nav_picture'),'Image'],['chat',tr('nav_chat'),'Sparkles'],['progress',tr('nav_progress'),'BarChart3'],['review',tr('nav_review')+(allDue.length?' ('+allDue.length+')':''),'RefreshCw'],['saved',tr('nav_saved'),'Star']];
     return e('div',{className:'fixed inset-0 z-[280] bg-slate-950/55 p-0 sm:p-4 flex items-center justify-center',style:{zIndex:280},
       onMouseDown:function(x){if(x.target===x.currentTarget&&props.onClose)props.onClose();}},
       e('div',{ref:dialogRef,tabIndex:-1,className:'allo-docsuite lingua-root bg-white w-full h-full sm:h-[92vh] sm:max-h-[900px] sm:max-w-6xl sm:rounded-xl shadow-2xl overflow-hidden flex flex-col focus:outline-none',role:'dialog','aria-modal':'true','aria-labelledby':'lingua-title','aria-hidden':destructiveConfirm?'true':undefined,inert:destructiveConfirm?'true':undefined,dir:chromeRtl?'rtl':undefined,lang:chromeLang},
@@ -2288,7 +2665,7 @@
           e('div',{className:'min-w-0 flex-1'},e('h2',{id:'lingua-title',className:'text-lg font-bold text-slate-900'},'Lingua Practice'),e('p',{className:'text-xs text-slate-600 truncate'},profile.target+' · '+levelLabel(profile.level))),
           e('button',{type:'button',onClick:toggleSlow,disabled:!speech.playback,'aria-pressed':audioSlow,title:!speech.playback?tr('audio_unavailable'):(audioSlow?tr('slow_title_on'):tr('slow_title_off')),'data-help-key':'lingua_slow_audio',
             className:'shrink-0 inline-flex items-center gap-1.5 h-8 px-3 rounded-full border text-xs font-bold transition-colors '+(audioSlow?'border-emerald-300 bg-emerald-50 text-emerald-800':'border-slate-300 bg-white text-slate-600 hover:border-emerald-300 hover:text-emerald-700')+focusClass},navIcon('Volume2'),tr('slow')),
-          e('span',{className:'hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-full px-3 py-1'},tr('due_saved',{due:due.length,saved:(progress.saved||[]).length})),
+          e('span',{className:'hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-full px-3 py-1'},tr('due_saved',{due:allDue.length,saved:(progress.saved||[]).length})),
           e(IconButton,{title:tr('close'),onClick:props.onClose},'×')
         ),
         e('div',{className:'flex-1 min-h-0 flex flex-col md:flex-row'},
@@ -2554,6 +2931,46 @@
                   e('p',{className:'text-xs font-semibold text-slate-500 mt-1'},metric[0])
                 );})
               ),
+              e('section',{className:'mt-7 rounded-xl border border-slate-200 bg-white p-5','aria-labelledby':'lingua-journal-title'},
+                e('h4',{id:'lingua-journal-title',className:'text-base font-bold text-slate-900'},tr('journal_title')),
+                e('p',{className:'text-xs text-slate-600 mt-1 max-w-2xl'},tr('journal_intro')),
+                e('div',{className:'flex flex-wrap gap-2 mt-4'},
+                  e('span',{className:'rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-xs font-bold text-emerald-800'},tr('journal_total',{n:journal.total})),
+                  e('span',{className:'rounded-full bg-slate-50 border border-slate-200 px-3 py-1 text-xs font-bold text-slate-700'},tr('journal_active_days',{n:journal.activeDays}))
+                ),
+                e('h5',{className:'text-sm font-bold text-slate-800 mt-5'},tr('journal_last_7')),
+                e('ol',{className:'grid grid-cols-7 gap-2 mt-3','aria-label':tr('journal_last_7')},journal.days.map(function(day){
+                  var fullDate=journalDate(day.at,{month:'short',day:'numeric'}),shortDate=journalDate(day.at,{weekday:'short'});
+                  return e('li',{key:day.key,'aria-label':tr('journal_day_aria',{date:fullDate,n:day.count}),className:'min-w-0 text-center'},
+                    e('div',{'aria-hidden':'true',className:'h-16 flex items-end justify-center rounded-md bg-slate-50 border border-slate-100 overflow-hidden'},e('span',{className:'block w-full bg-emerald-500',style:{height:(day.count?Math.max(8,Math.round(day.count/journalMax*64)):2)+'px'}})),
+                    e('time',{dateTime:day.key,'aria-hidden':'true',className:'block mt-1 text-[10px] font-semibold text-slate-500 truncate'},shortDate),
+                    e('span',{'aria-hidden':'true',className:'block text-xs font-bold text-slate-700'},String(day.count))
+                  );
+                })),
+                e('h5',{className:'text-sm font-bold text-slate-800 mt-5'},tr('journal_recent')),
+                journal.recent.length?e('ul',{className:'mt-2 divide-y divide-slate-100'},journal.recent.map(function(item){return e('li',{key:item.id,className:'flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 py-2'},
+                  e('span',{className:'text-sm text-slate-700'},journalEventLabel(item)),
+                  e('time',{dateTime:new Date(item.at).toISOString(),className:'text-xs text-slate-500'},journalDate(item.at,{month:'short',day:'numeric'}))
+                );})):e('p',{className:'text-sm text-slate-500 mt-2'},tr('journal_empty'))
+              ),
+              e('section',{className:'mt-5 rounded-xl border border-slate-200 bg-slate-50 p-5','aria-labelledby':'lingua-reflections-title'},
+                e('h4',{id:'lingua-reflections-title',className:'text-base font-bold text-slate-900'},tr('journal_reflection_title')),
+                e('p',{className:'text-xs text-slate-600 mt-1 max-w-2xl'},tr('journal_reflection_intro')),
+                e('label',{htmlFor:'lingua-journal-reflection',className:'block text-sm font-bold text-slate-800 mt-4'},tr('journal_reflection_label',{lang:profile.target})),
+                e('textarea',{id:'lingua-journal-reflection',value:journalReflectionText,maxLength:500,rows:3,onChange:function(x){setJournalReflectionText(x.target.value);setJournalStatus('');},placeholder:tr('journal_reflection_placeholder'),'aria-describedby':'lingua-journal-reflection-count',className:'w-full mt-2 rounded-lg border border-slate-300 bg-white p-3 text-sm resize-y'+focusClass}),
+                e('div',{className:'flex flex-wrap items-center justify-between gap-3 mt-2'},
+                  e('span',{id:'lingua-journal-reflection-count',className:'text-xs text-slate-500'},tr('journal_reflection_count',{n:journalReflectionText.length})),
+                  e('button',{type:'button',onClick:saveJournalReflection,disabled:!journalReflectionText.trim(),className:primaryClass},tr('journal_reflection_save'))
+                ),
+                e('p',{className:'sr-only',role:'status','aria-live':'polite'},journalStatus),
+                currentReflections.length?e('ul',{className:'mt-5 space-y-3'},currentReflections.map(function(item){return e('li',{key:item.id,className:'rounded-lg border border-slate-200 bg-white p-4'},
+                  e('p',{className:'text-sm text-slate-700 whitespace-pre-wrap'},item.text),
+                  e('div',{className:'flex items-center justify-between gap-3 mt-3'},
+                    e('time',{dateTime:new Date(item.at).toISOString(),className:'text-xs text-slate-500'},journalDate(item.at,{month:'short',day:'numeric',year:'numeric'})),
+                    e('button',{type:'button',onClick:function(x){requestDeleteJournalReflection(item,x);},className:'min-h-9 px-3 rounded-lg border border-rose-200 text-xs font-bold text-rose-800 hover:bg-rose-50'+focusClass},tr('journal_reflection_delete'))
+                  )
+                );})):e('p',{className:'text-sm text-slate-500 mt-5'},tr('journal_reflection_empty',{lang:profile.target}))
+              ),
               e('section',{className:'mt-7 rounded-xl border border-emerald-200 bg-emerald-50/60 p-5','aria-labelledby':'lingua-path-title'},
                 e('div',{className:'flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3'},
                   e('div',null,
@@ -2618,6 +3035,16 @@
                   e('span',null,tr('n_learning',{n:summary.learningCount})),
                   e('span',null,tr('n_established',{n:summary.establishedCount})),
                   e('span',null,tr('n_due_now',{n:summary.dueCount}))
+                ),
+                e('section',{className:'mt-5 rounded-xl border border-slate-200 bg-slate-50 p-4','aria-labelledby':'lingua-review-forecast-title'},
+                  e('h5',{id:'lingua-review-forecast-title',className:'text-sm font-bold text-slate-900'},tr('forecast_title')),
+                  e('p',{className:'text-xs text-slate-500 mt-1'},tr('forecast_intro')),
+                  e('dl',{className:'grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3'},[
+                    {key:'forecast_due_now',value:forecast.dueNow},
+                    {key:'forecast_next_day',value:forecast.nextDay},
+                    {key:'forecast_next_week',value:forecast.nextWeek},
+                    {key:'forecast_later',value:forecast.later}
+                  ].map(function(item){return e('div',{key:item.key,className:'rounded-lg border border-slate-200 bg-white px-3 py-2'},e('dt',{className:'text-[11px] font-semibold text-slate-500'},tr(item.key)),e('dd',{className:'text-xl font-bold text-emerald-800'},String(item.value)));}))
                 )
               ):e(EmptyState,{icon:'☆',title:tr('no_words_title',{lang:profile.target}),sub:tr('no_words_sub_progress')},
                 e('button',{type:'button',onClick:function(){setTab('setup');},className:primaryClass+' mt-5'},tr('build_set'))
@@ -2638,6 +3065,18 @@
               sectionTitle(tr('review_lang',{lang:profile.target})),
               e('p',{className:'text-sm text-slate-600 mt-2 mb-4'},tr('review_intro')),
               e('p',{className:'sr-only',role:'status','aria-live':'polite','aria-atomic':'true'},reviewStatus),
+              reviewTags.length?e('section',{className:'mb-4 rounded-xl border border-violet-200 bg-violet-50/60 p-4','aria-labelledby':'lingua-review-scope-title'},
+                e('label',{id:'lingua-review-scope-title',htmlFor:'lingua-review-tag',className:'block text-sm font-bold text-slate-900'},tr('review_scope_label')),
+                e('select',{id:'lingua-review-tag',value:activeReviewTag,onChange:function(x){changeReviewTag(x.target.value);},'aria-describedby':'lingua-review-scope-help',className:'block w-full sm:max-w-sm h-10 mt-2 rounded-lg border border-slate-300 bg-white px-3 text-sm'+focusClass},e('option',{value:'all'},tr('review_scope_all')),reviewTags.map(function(tag){return e('option',{key:tag,value:tag},tag);})),
+                e('p',{id:'lingua-review-scope-help',className:'text-xs text-slate-600 mt-2'},tr('review_scope_help'))
+              ):null,
+              lastReviewUndo?e('section',{className:'mt-4 mb-4 rounded-lg border border-sky-200 bg-sky-50 p-4 flex flex-col sm:flex-row sm:items-center gap-3','aria-label':tr('review_undo')},e('div',{className:'min-w-0 flex-1'},e('p',{className:'text-sm font-bold text-sky-950'},tr('review_undo_summary',{rating:reviewRatingLabel(lastReviewUndo.rating),term:lastReviewUndo.previousWord.term})),e('p',{className:'text-xs text-sky-800 mt-1'},tr('review_undo_help'))),e('button',{type:'button',onClick:undoLastReview,className:'min-h-11 px-4 rounded-lg border border-sky-400 bg-white text-sm font-bold text-sky-900'+focusClass},tr('review_undo'))):null,
+              reviewSession.total?e('section',{className:'mb-4 rounded-xl border border-emerald-200 bg-emerald-50/60 p-4','aria-labelledby':'lingua-review-session-title'},
+                e('h4',{id:'lingua-review-session-title',className:'text-sm font-bold text-slate-900'},tr(due.length?'review_session_title':'review_session_complete')),
+                e('p',{className:'text-xs font-semibold text-slate-600 mt-1'},tr('review_session_progress',{reviewed:reviewSession.total,remaining:due.length})),
+                e('p',{className:'text-xs text-slate-500 mt-1'},tr(due.length?'review_session_intro':'review_session_complete_help',{n:reviewSession.total})),
+                e('dl',{className:'grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3'},['again','hard','learning','know'].map(function(rating){return e('div',{key:rating,className:'rounded-lg border border-emerald-100 bg-white px-3 py-2'},e('dt',{className:'text-[11px] font-semibold text-slate-500'},reviewRatingLabel(rating)),e('dd',{className:'text-xl font-bold text-emerald-800'},String(reviewSession[rating])));}))
+              ):null,
               reviewItem&&reviewImage?e('div',{className:'mb-4'},
                 e('button',{type:'button',onClick:togglePicQuiz,'aria-pressed':picQuiz,title:tr('pic_quiz_help'),
                   className:'inline-flex items-center gap-1.5 h-8 px-3 rounded-full border text-xs font-bold transition-colors '+(picQuiz?'border-emerald-300 bg-emerald-50 text-emerald-800':'border-slate-300 bg-white text-slate-600 hover:border-emerald-300 hover:text-emerald-700')+focusClass},
@@ -2646,7 +3085,11 @@
               !(progress.saved||[]).some(function(item){return item.language===profile.target;})?
                 e(EmptyState,{icon:'☆',title:tr('no_words_title',{lang:profile.target}),sub:tr('no_words_sub_review')}):
               !reviewItem?
-                e(EmptyState,{icon:'✓',tone:'positive',title:tr('caught_up'),sub:tr('caught_up_sub')}):
+                skippedDueCount?
+                  e(EmptyState,{icon:'↷',title:tr('review_skipped_title'),sub:tr('review_skipped_sub',{n:skippedDueCount})},
+                    e('button',{type:'button',onClick:resumeSkippedReviews,className:primaryClass+' mt-5'},tr('review_resume_skipped'))
+                  ):
+                  e(EmptyState,{icon:'✓',tone:'positive',title:tr('caught_up'),sub:tr('caught_up_sub')}):
               e('section',{className:'lingua-panel px-6 py-10 text-center'},
                 e('p',{className:'text-xs font-bold uppercase text-slate-500'},tr(reviewMode==='target-to-known'?'recall_meaning':'recall_word',{lang:reviewMode==='target-to-known'?profile.known:profile.target})),
                 e('p',{className:'text-xs text-slate-500 mt-1'},tr('review_direction',{
@@ -2668,7 +3111,10 @@
                       dir:reviewMode==='target-to-known'?(known.rtl?'rtl':'ltr'):(target.rtl?'rtl':'ltr'),lang:reviewMode==='target-to-known'?known.code:target.code,className:selectClass}),
                     e('p',{id:'lingua-review-recall-help',className:'text-xs text-slate-500 mt-1'},tr('type_recall_help'))
                   ),
-                  e('button',{type:'button',onClick:revealReview,className:primaryClass+' mt-6'},tr('reveal_answer'))
+                  e('div',{className:'flex flex-wrap justify-center gap-2 mt-6'},
+                    e('button',{type:'button',onClick:revealReview,className:primaryClass},tr('reveal_answer')),
+                    e('button',{type:'button',onClick:skipReview,title:tr('review_skip_help'),className:'min-h-11 px-4 rounded-lg border border-slate-300 bg-white text-sm font-bold text-slate-700'+focusClass},tr('review_skip'))
+                  )
                 ):e(React.Fragment,null,
                   e('div',{className:'mt-7 pt-6 border-t border-slate-200'},
                     reviewMode==='target-to-known'?
@@ -2692,17 +3138,36 @@
                         e('span',{className:'block text-[11px] font-semibold opacity-80 mt-0.5'},tr('review_in',{time:reviewIntervalText(reviewItem,rating)}))
                       );
                     })
-                  )
+                  ),
+                  e('button',{type:'button',onClick:skipReview,title:tr('review_skip_help'),className:'min-h-11 mt-3 px-4 rounded-lg border border-slate-300 bg-white text-sm font-bold text-slate-700'+focusClass},tr('review_skip'))
                 )
               ),
-              e('p',{className:'text-xs text-slate-500 mt-5 text-center',role:'status','aria-live':'polite'},tr('review_footer',{due:due.length,saved:(progress.saved||[]).filter(function(item){return item.language===profile.target;}).length,lang:profile.target}))
+              e('p',{className:'text-xs text-slate-500 mt-5 text-center',role:'status','aria-live':'polite'},tr(activeReviewTag==='all'?'review_footer':'review_footer_scoped',{due:due.length,saved:scopedSavedCount,lang:profile.target,tag:activeReviewTag}))
             ),
-            tab==='saved'&&e('div',{className:'max-w-4xl mx-auto p-5 sm:p-8'},e('p',{className:'text-xs font-bold uppercase text-emerald-700 mb-2'},tr('word_bank')),sectionTitle(tr('saved_words')),
-              e('div',{className:'flex flex-wrap items-center justify-between gap-3 mt-2 mb-7'},
+            tab==='saved'&&e('div',{className:'max-w-4xl mx-auto p-5 sm:p-8'},
+              e('p',{className:'text-xs font-bold uppercase text-emerald-700 mb-2'},tr('word_bank')),sectionTitle(tr('saved_words')),
+              e('div',{className:'flex flex-wrap items-center justify-between gap-3 mt-2 mb-5'},
                 e('p',{className:'text-sm text-slate-600'},tr('saved_intro')),
-                (progress.saved||[]).length?e('button',{type:'button',onClick:exportWordBank,className:'h-9 px-3 shrink-0 rounded-lg border border-slate-300 text-xs font-bold text-slate-700 hover:border-emerald-600 hover:text-emerald-800'+focusClass},tr('export_csv')):null
+                e('div',{className:'flex flex-wrap gap-2'},e('button',{type:'button',onClick:function(x){openWordEditor(null,x);},className:'h-9 px-3 rounded-lg bg-emerald-700 text-white text-xs font-bold'+focusClass},tr('saved_add_word')),(progress.saved||[]).length?e('button',{type:'button',onClick:exportWordBank,className:'h-9 px-3 shrink-0 rounded-lg border border-slate-300 text-xs font-bold text-slate-700 hover:border-emerald-600 hover:text-emerald-800'+focusClass},tr('export_csv')):null)
               ),
-              !(progress.saved||[]).length?e(EmptyState,{icon:'☆',title:tr('no_saved_title'),sub:tr('no_saved_sub')}):e('div',{className:'space-y-2'},progress.saved.map(function(item){var l=lang(item.language);return e('div',{key:item.id,className:'lingua-card py-4 px-4 flex gap-3 items-center'},e('div',{className:'flex-1 min-w-0'},e('div',{className:'flex items-center gap-2 flex-wrap'},e('strong',{className:'text-lg text-slate-900',dir:l.rtl?'rtl':'ltr',lang:l.code},item.term),e('span',{className:'text-xs font-semibold text-emerald-800 bg-emerald-50 border border-emerald-100 rounded-full px-2 py-0.5'},item.language)),e(PronunciationGuide,{text:item.pronunciation}),e('p',{className:'text-sm text-slate-600',dir:known.rtl?'rtl':'ltr',lang:known.code},item.meaning),e('p',{className:'text-sm text-slate-700 mt-2 break-words',dir:l.rtl?'rtl':'ltr',lang:l.code},item.example)),e(IconButton,{title:tr('listen_to',{term:item.term}),onClick:function(){play(item.term,l.code,l.name);}},'▶'),e(IconButton,{title:tr('remove_saved'),onClick:function(){toggle(item);}},'×'));})),
+              renderWordEditor(),
+              !(progress.saved||[]).length?e(EmptyState,{icon:'\u2606',title:tr('no_saved_title'),sub:tr('no_saved_sub')}):e(React.Fragment,null,
+                e('section',{className:'rounded-xl border border-slate-200 bg-slate-50 p-4 mb-5','aria-labelledby':'lingua-saved-tools-title'},
+                  e('h4',{id:'lingua-saved-tools-title',className:'text-sm font-bold text-slate-900'},tr('saved_tools')),
+                  e('div',{className:'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-3'},
+                    e('label',{htmlFor:'lingua-saved-search',className:'block text-xs font-bold text-slate-700'},tr('saved_search_label'),e('input',{id:'lingua-saved-search',type:'search',value:wordQuery,onChange:function(x){setWordQuery(x.target.value.slice(0,160));},placeholder:tr('saved_search_placeholder'),dir:'auto',className:'block w-full h-10 mt-1 rounded-lg border border-slate-300 bg-white px-3 text-sm'+focusClass})),
+                    e('label',{htmlFor:'lingua-saved-language',className:'block text-xs font-bold text-slate-700'},tr('saved_filter_language'),e('select',{id:'lingua-saved-language',value:wordLanguage,onChange:function(x){setWordLanguage(x.target.value);},className:'block w-full h-10 mt-1 rounded-lg border border-slate-300 bg-white px-3 text-sm'+focusClass},e('option',{value:'all'},tr('saved_all_languages')),savedLanguages.map(function(name){return e('option',{key:name,value:name},name);}))),
+                    e('label',{htmlFor:'lingua-saved-tag',className:'block text-xs font-bold text-slate-700'},tr('saved_filter_tag'),e('select',{id:'lingua-saved-tag',value:wordTag,onChange:function(x){setWordTag(x.target.value);},className:'block w-full h-10 mt-1 rounded-lg border border-slate-300 bg-white px-3 text-sm'+focusClass},e('option',{value:'all'},tr('saved_all_tags')),savedTags.map(function(tag){return e('option',{key:tag,value:tag},tag);}))),
+                    e('label',{htmlFor:'lingua-saved-sort',className:'block text-xs font-bold text-slate-700'},tr('saved_sort_label'),e('select',{id:'lingua-saved-sort',value:wordSort,onChange:function(x){setWordSort(x.target.value);},className:'block w-full h-10 mt-1 rounded-lg border border-slate-300 bg-white px-3 text-sm'+focusClass},e('option',{value:'due'},tr('saved_sort_due')),e('option',{value:'term'},tr('saved_sort_term')),e('option',{value:'language'},tr('saved_sort_language')),e('option',{value:'review'},tr('saved_sort_review'))))
+                  ),
+                  e('div',{className:'flex flex-wrap items-center justify-between gap-3 mt-3'},
+                    e('p',{className:'text-xs font-semibold text-slate-600',role:'status','aria-live':'polite'},tr('saved_results',{shown:visibleSavedWords.length,total:(progress.saved||[]).length})),
+                    (wordQuery||wordLanguage!=='all'||wordTag!=='all'||wordSort!=='due')?e('button',{type:'button',onClick:clearWordFilters,className:'min-h-9 px-3 rounded-lg border border-slate-300 bg-white text-xs font-bold text-slate-700'+focusClass},tr('saved_clear_filters')):null
+                  )
+                ),
+                !visibleSavedWords.length?e(EmptyState,{icon:'\u2315',title:tr('saved_no_results'),sub:tr('saved_no_results_help')},e('button',{type:'button',onClick:clearWordFilters,className:primaryClass+' mt-5'},tr('saved_clear_filters'))):
+                e('ul',{className:'space-y-2'},visibleSavedWords.map(renderSavedWordCard))
+              ),
               e('section',{className:'mt-8 pt-6 border-t border-slate-200'},
                 e('h4',{className:'text-sm font-bold text-slate-900'},tr('data_controls')),e('p',{className:'text-xs text-slate-500 mt-1'},tr('backup_help')),
                 e('div',{className:'flex flex-wrap gap-2 mt-4'},
@@ -2718,11 +3183,11 @@
       ),
       destructiveConfirm?e('div',{className:'fixed inset-0 z-[300] bg-slate-950/70 p-4 flex items-center justify-center',onMouseDown:function(x){if(x.target===x.currentTarget)setDestructiveConfirm(null);}},
         e('div',{ref:confirmDialogRef,tabIndex:-1,role:'alertdialog','aria-modal':'true','aria-labelledby':'lingua-confirm-title','aria-describedby':'lingua-confirm-message',dir:chromeRtl?'rtl':undefined,lang:chromeLang,className:'allo-docsuite lingua-root w-full max-w-md rounded-xl border border-slate-300 bg-white p-6 shadow-2xl focus:outline-none'},
-          e('h3',{id:'lingua-confirm-title',className:'text-lg font-bold text-slate-900'},destructiveConfirm.kind==='delete-set'?tr('studio_delete'):tr('clear_data')),
-          e('p',{id:'lingua-confirm-message',className:'mt-3 text-sm text-slate-700'},destructiveConfirm.kind==='delete-set'?tr('studio_delete_confirm',{name:destructiveConfirm.name}):tr('clear_confirm')),
+          e('h3',{id:'lingua-confirm-title',className:'text-lg font-bold text-slate-900'},destructiveTitle()),
+          e('p',{id:'lingua-confirm-message',className:'mt-3 text-sm text-slate-700'},destructiveMessage()),
           e('div',{className:'mt-6 flex flex-wrap justify-end gap-3'},
             e('button',{ref:confirmCancelRef,type:'button',onClick:function(){setDestructiveConfirm(null);},className:'min-h-11 px-4 rounded-lg border border-slate-300 bg-white text-sm font-bold text-slate-800'+focusClass},tr('studio_cancel')),
-            e('button',{type:'button',onClick:confirmDestructiveAction,className:'min-h-11 px-4 rounded-lg border border-rose-700 bg-rose-700 text-sm font-bold text-white hover:bg-rose-800'+focusClass},destructiveConfirm.kind==='delete-set'?tr('studio_delete'):tr('clear_data'))
+            e('button',{type:'button',onClick:confirmDestructiveAction,className:'min-h-11 px-4 rounded-lg border border-rose-700 bg-rose-700 text-sm font-bold text-white hover:bg-rose-800'+focusClass},destructiveActionLabel())
           )
         )
       ):null
@@ -2746,10 +3211,16 @@
   LinguaPractice._sceneImagePrompt=sceneImagePrompt;
   LinguaPractice._pictureFeedbackPrompt=pictureFeedbackPrompt;
   LinguaPractice._scheduleReview=scheduleReview;
+  LinguaPractice._applyReviewRating=applyReviewRating;
+  LinguaPractice._emptyReviewSession=emptyReviewSession;
+  LinguaPractice._updateReviewSession=updateReviewSession;
+  LinguaPractice._undoReviewRating=undoReviewRating;
   LinguaPractice._reviewDelay=reviewDelay;
   LinguaPractice._reviewTimeParts=reviewTimeParts;
   LinguaPractice._reviewRecallDirection=reviewRecallDirection;
   LinguaPractice._dueWords=dueWords;
+  LinguaPractice._reviewQueue=reviewQueue;
+  LinguaPractice._reviewForecast=reviewForecast;
   LinguaPractice._parseLesson=parseLesson;
   LinguaPractice._parseCoachFeedback=parseCoachFeedback;
   LinguaPractice._similarity=similarity;
@@ -2767,6 +3238,17 @@
   LinguaPractice._normalizeUiI18n=normalizeUiI18n;
   LinguaPractice._normalizeProfile=normalizeProfile;
   LinguaPractice._normalizeProgress=normalizeProgress;
+  LinguaPractice._normalizeReviewHistory=normalizeReviewHistory;
+  LinguaPractice._wordReviewHistory=wordReviewHistory;
+  LinguaPractice._upsertSavedWord=upsertSavedWord;
+  LinguaPractice._wordBankLanguages=wordBankLanguages;
+  LinguaPractice._normalizeWordTags=normalizeWordTags;
+  LinguaPractice._wordBankTags=wordBankTags;
+  LinguaPractice._resetSavedWordReview=resetSavedWordReview;
+  LinguaPractice._savedWordView=savedWordView;
+  LinguaPractice._activityHistory=activityHistory;
+  LinguaPractice._addReflection=addReflection;
+  LinguaPractice._removeReflection=removeReflection;
   LinguaPractice._normalizeRecentLessons=normalizeRecentLessons;
   LinguaPractice._normalizePracticeSets=normalizePracticeSets;
   LinguaPractice._migrateRecentToPracticeSets=migrateRecentToPracticeSets;
@@ -2783,7 +3265,13 @@
   LinguaPractice._createBackup=createLinguaBackup;
   LinguaPractice._parseBackup=parseLinguaBackup;
   LinguaPractice._maxSavedWords=MAX_SAVED_WORDS;
+  LinguaPractice._maxWordReviewHistory=MAX_WORD_REVIEW_HISTORY;
+  LinguaPractice._maxWordNote=MAX_WORD_NOTE;
+  LinguaPractice._maxWordTags=MAX_WORD_TAGS;
+  LinguaPractice._maxWordTagLength=MAX_WORD_TAG_LENGTH;
   LinguaPractice._maxPracticeSets=MAX_PRACTICE_SETS;
+  LinguaPractice._maxActivityEvents=MAX_ACTIVITY_EVENTS;
+  LinguaPractice._maxReflections=MAX_REFLECTIONS;
   LinguaPractice._cleanLangName=cleanLangName;
   LinguaPractice._speechTarget=speechTarget;
   LinguaPractice._speechCapabilities=speechCapabilities;
