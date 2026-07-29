@@ -1,6 +1,11 @@
 use_default_settings: true
 
 server:
+  # Signs this instance's own session cookies and nothing else — not a credential
+  # to any account or external service, and this SearXNG is reachable only on the
+  # School Box's local network. Cannot be an env var: SearXNG resolves settings
+  # only from YAML, and this file is mounted read-only. For a per-install value,
+  # generate one (`openssl rand -hex 32`) and mount your own copy over this path.
   secret_key: "alloflow-schoolbox-local"
   limiter: false
 

@@ -29,6 +29,11 @@ services:
       pocketbase:
         condition: service_healthy
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "${FRONTEND_CPUS:-1.0}"
+          memory: ${FRONTEND_MEMORY:-512m}
 
   # ── Local Database (PocketBase) ────────────────────────────────
   pocketbase:
@@ -46,6 +51,11 @@ services:
       timeout: 5s
       start_period: 10s
       retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: "${POCKETBASE_CPUS:-2.0}"
+          memory: ${POCKETBASE_MEMORY:-1g}
 
   # ── LLM (Ollama) ──────────────────────────────────────────────
   ollama:
@@ -57,6 +67,9 @@ services:
       - ollama_data:/root/.ollama
     deploy:
       resources:
+        limits:
+          cpus: "${OLLAMA_CPUS:-8.0}"
+          memory: ${OLLAMA_MEMORY:-16g}
         reservations:
           devices:
             - driver: nvidia
@@ -80,6 +93,9 @@ services:
       - flux_models:/models
     deploy:
       resources:
+        limits:
+          cpus: "${FLUX_CPUS:-8.0}"
+          memory: ${FLUX_MEMORY:-24g}
         reservations:
           devices:
             - driver: nvidia
@@ -98,6 +114,11 @@ services:
     ports:
       - "${TTS_PORT:-5001}:5001"
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "${EDGE_TTS_CPUS:-2.0}"
+          memory: ${EDGE_TTS_MEMORY:-1g}
 
   # ── TTS (Piper — offline fallback) ────────────────────────────
   piper:
@@ -109,6 +130,11 @@ services:
       - piper_data:/data
     command: --voice en_US-amy-medium --data-dir /data --download-dir /data
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "${PIPER_CPUS:-2.0}"
+          memory: ${PIPER_MEMORY:-2g}
 
   # ── Web Search (SearXNG) ──────────────────────────────────────
   searxng:
@@ -122,6 +148,11 @@ services:
       - ./docker/searxng/settings.yml:/etc/searxng/settings.yml:ro
       - searxng_data:/etc/searxng
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "${SEARXNG_CPUS:-2.0}"
+          memory: ${SEARXNG_MEMORY:-1g}
 
 volumes:
   pocketbase_data:
