@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; form-action 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-src http://127.0.0.1:* http://localhost:* https:; frame-ancestors 'self' https://alloflow-cdn.pages.dev;">
+  <title>AlloSheet — Agentic Educator Spreadsheet</title>
+  <link rel="stylesheet" href="allo_sheet.css?v=4">
+</head>
+<body>
+  <a class="skip-link" href="#mainContent">Skip to workbook</a>
+  <header class="app-header">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">A</span>
+      <div>
+        <h1>AlloSheet</h1>
+        <p>Agentic educator spreadsheet</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <span id="bridgeBadge" class="badge warn" role="status">Connecting to AlloFlow…</span>
+      <button id="themeButton" type="button" class="quiet-button" aria-pressed="false">High contrast</button>
+    </div>
+  </header>
+
+  <div class="privacy-banner" role="note">
+    <strong>Student-data boundary:</strong>
+    workbook values stay local unless you explicitly select rows and confirm sending those values through your configured AlloFlow AI provider.
+  </div>
+
+  <div class="app-layout">
+    <main id="mainContent" tabindex="-1">
+      <section id="engineCard" class="connection-card" aria-labelledby="connectionTitle">
+        <div class="section-heading">
+          <div>
+            <h2 id="connectionTitle">Your local spreadsheet</h2>
+            <p id="connectionDescription">AlloFlow starts the open-source spreadsheet engine automatically and keeps workbook access inside the desktop app.</p>
+          </div>
+          <button id="checkServiceButton" type="button">Start or retry</button>
+        </div>
+        <div id="engineStatus" class="connection-status" role="status" aria-live="polite" aria-atomic="true">
+          <span id="serviceBadge" class="badge neutral">Preparing</span>
+          <span id="serviceDetail">Checking the local spreadsheet engine.</span>
+        </div>
+
+        <section id="canvasFallback" class="canvas-fallback" aria-labelledby="canvasFallbackTitle" hidden>
+          <h3 id="canvasFallbackTitle">Use a CSV in this browser</h3>
+          <p>Gemini Canvas cannot start desktop software. Import a CSV to use direct cell editing, the accessible table, local audit, and human-reviewed AI plans in this popup. Data stays in this window until you download it.</p>
+          <p><strong>Need .xlsx or full Grist?</strong> Open AlloFlow Desktop, or use a district-hosted AlloSheet service configured by your administrator.</p>
+          <div class="canvas-file-actions">
+            <label for="canvasCsvInput">
+              Import CSV
+              <input id="canvasCsvInput" type="file" accept=".csv,text/csv" aria-describedby="canvasFileStatus">
+            </label>
+            <button id="downloadCanvasCsvButton" type="button" class="quiet-button" disabled>Download reviewed CSV</button>
+          </div>
+          <p id="canvasFileStatus" class="field-hint" role="status" aria-live="polite">Choose a CSV up to 2 MB, 200 data rows, 40 columns, and 1,200 characters per cell. Files over a limit are rejected without changing the open data.</p>
+        </section>
+
+        <label id="tablePicker" class="table-picker">
+          Table
+          <select id="tableSelect" disabled>
+            <option value="">Start the spreadsheet first</option>
+          </select>
+          <span class="field-hint">AlloSheet reads at most 200 rows for its accessible mirror.</span>
+        </label>
+        <div id="workbookConnectionActions" class="button-row">
+          <button id="loadTablesButton" type="button" disabled>Load tables</button>
+          <button id="loadRecordsButton" type="button" disabled>Load accessible mirror</button>
+          <button id="showEditorButton" type="button" class="quiet-button" disabled>Show spreadsheet</button>
+          <button id="openEditorButton" type="button" class="quiet-button" disabled>Open in a separate window</button>
+        </div>
+
+        <details id="advancedConnection" class="advanced-connection">
+          <summary>Advanced server connection</summary>
+          <p>For administrator-managed or shared Grist servers only. Most educators can leave this closed.</p>
+          <div class="form-grid advanced-form-grid">
+            <label>
+              Workbook address
+              <input id="documentUrlInput" type="url" inputmode="url" autocomplete="off" aria-describedby="advancedConnectionDetail advancedConnectionError" placeholder="https://spreadsheets.example.edu/document">
+              <span class="field-hint">Used only to show or open the administrator-provided workbook.</span>
+            </label>
+            <label>
+              Document ID
+              <input id="documentIdInput" type="text" maxlength="180" autocomplete="off" aria-describedby="advancedConnectionDetail advancedConnectionError" placeholder="Administrator-provided document ID">
+              <span class="field-hint">Used by AlloFlow's allowlisted workbook adapter.</span>
+            </label>
+          </div>
+          <p id="advancedConnectionDetail" class="field-hint">Changing these fields overrides the managed local workbook for this window.</p>
+          <p id="advancedConnectionError" class="form-error" role="status" aria-live="polite" aria-atomic="true" hidden></p>
+        </details>
+      </section>
+
+      <nav class="view-tabs" role="tablist" aria-label="Workbook views">
+        <button id="editorTab" type="button" role="tab" aria-selected="true" aria-controls="editorView" tabindex="0">Spreadsheet editor <span class="tab-selected-cue" aria-hidden="true">Selected</span></button>
+        <button id="tableTab" type="button" role="tab" aria-selected="false" aria-controls="tableView" tabindex="-1">Accessible table mirror <span class="tab-selected-cue" aria-hidden="true">Selected</span></button>
+        <button id="auditTab" type="button" role="tab" aria-selected="false" aria-controls="auditView" tabindex="-1">Data audit <span class="tab-selected-cue" aria-hidden="true">Selected</span></button>
+      </nav>
+
+      <section id="editorView" class="work-view" role="tabpanel" aria-labelledby="editorTab">
+        <div id="editorEmpty" class="empty-state">
+          <h2 id="editorEmptyTitle">Preparing your spreadsheet</h2>
+          <p id="editorEmptyDetail">AlloFlow will start the local spreadsheet engine and show it here. No separate setup is normally required.</p>
+        </div>
+        <p id="gristFrameDescription" class="sr-only">Third-party visual spreadsheet editor. For a linear keyboard and screen-reader view, use the Accessible table mirror tab.</p>
+        <iframe id="gristFrame" title="Grist spreadsheet editor" aria-describedby="gristFrameDescription" referrerpolicy="no-referrer" sandbox="allow-same-origin allow-scripts allow-forms allow-downloads allow-modals allow-popups allow-popups-to-escape-sandbox" allow="clipboard-read; clipboard-write" hidden></iframe>
+      </section>
+
+      <section id="tableView" class="work-view" role="tabpanel" aria-labelledby="tableTab" hidden>
+        <div class="section-heading">
+          <div>
+            <h2>Accessible table mirror</h2>
+            <p id="tableSummary">Load a table to create a linear, screen-reader-friendly mirror.</p>
+          </div>
+          <button id="selectAllRowsButton" type="button" class="quiet-button" disabled>Select all loaded rows</button>
+        </div>
+        <div id="dataTableScroll" class="table-scroll" tabindex="0" role="region" aria-label="Scrollable workbook table. Use arrow keys to review every column.">
+          <table id="dataTable">
+            <caption id="dataCaption">No workbook data loaded.</caption>
+            <thead id="dataHead"></thead>
+            <tbody id="dataBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="auditView" class="work-view" role="tabpanel" aria-labelledby="auditTab" hidden>
+        <div class="section-heading">
+          <div>
+            <h2>Local data audit</h2>
+            <p>Runs entirely in this window. It checks loaded rows for blanks, repeated values, and surrounding whitespace.</p>
+          </div>
+          <button id="runAuditButton" type="button" disabled>Run local audit</button>
+        </div>
+        <div id="auditResults" class="empty-state" role="region" aria-live="polite" aria-labelledby="auditTab">
+          Load a table, then run the audit.
+        </div>
+      </section>
+    </main>
+
+    <aside class="agent-panel" aria-labelledby="agentTitle">
+      <div>
+        <p class="eyebrow">Human-reviewed agent</p>
+        <h2 id="agentTitle">AlloSheet assistant</h2>
+        <p>Ask for an explanation or a bounded change plan. Nothing is written until you review and apply it.</p>
+      </div>
+
+      <label>
+        What should AlloSheet help with?
+        <textarea id="agentInstruction" rows="5" maxlength="800" aria-describedby="agentError" placeholder="Example: Find inconsistent attendance labels and propose a consistent format."></textarea>
+      </label>
+
+      <fieldset aria-describedby="agentError">
+        <legend>Data shared with the configured AI provider</legend>
+        <label class="radio-row">
+          <input type="radio" name="agentScope" value="structure-only" checked>
+          <span><strong>Structure only</strong><small>Column names, types, row count, and blank counts. No cell values.</small></span>
+        </label>
+        <label class="radio-row">
+          <input type="radio" name="agentScope" value="selected-values">
+          <span><strong>Selected rows</strong><small>Only checked rows from the accessible table, up to 40.</small></span>
+        </label>
+      </fieldset>
+
+      <label id="valuesConsentLabel" class="consent-row" hidden>
+        <input id="valuesConsent" type="checkbox" aria-describedby="valuesConsentText agentError">
+        <span id="valuesConsentText">I reviewed the selected rows and approve sending those values through my configured AlloFlow AI provider for this request.</span>
+      </label>
+
+      <p id="agentError" class="form-error" role="status" aria-live="polite" aria-atomic="true" hidden></p>
+
+      <button id="askAgentButton" type="button" disabled>Generate reviewable plan</button>
+      <p id="agentConnectionHint" class="field-hint">Reconnect this window to AlloFlow to use the assistant.</p>
+
+      <section id="planSection" class="plan-section" aria-labelledby="planTitle" hidden>
+        <h3 id="planTitle" tabindex="-1">Proposed plan</h3>
+        <p id="planSummary"></p>
+        <p id="planExplanation"></p>
+        <ul id="planWarnings" class="warning-list"></ul>
+        <div class="table-scroll compact" tabindex="0" role="region" aria-label="Scrollable proposed changes table. Use arrow keys to review every column before applying changes.">
+          <table>
+            <caption>Proposed cell changes. Clear a checkbox to exclude that change.</caption>
+            <thead>
+              <tr>
+                <th scope="col">Use</th>
+                <th scope="col">Record</th>
+                <th scope="col">Field</th>
+                <th scope="col">Current</th>
+                <th scope="col">Proposed</th>
+              </tr>
+            </thead>
+            <tbody id="planBody"></tbody>
+          </table>
+        </div>
+        <div class="button-row">
+          <button id="applyPlanButton" type="button" disabled>Apply checked changes</button>
+          <button id="discardPlanButton" type="button" class="quiet-button">Discard plan</button>
+        </div>
+      </section>
+
+      <section class="undo-section" aria-labelledby="undoTitle">
+        <h3 id="undoTitle">Change safety</h3>
+        <p id="undoSummary">No AlloSheet changes have been applied in this session.</p>
+        <button id="undoButton" type="button" class="quiet-button" disabled>Undo last AlloSheet change</button>
+      </section>
+    </aside>
+  </div>
+
+  <div id="liveStatus" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <footer>
+    <span>AlloSheet educator layer by AlloFlow.</span>
+    <span>Spreadsheet foundation: <a href="https://github.com/gristlabs/grist-core" target="_blank" rel="noopener noreferrer">Grist Core</a>, Apache-2.0.</span>
+    <a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener">Third-party notices</a>
+  </footer>
+
+  <script src="allo_sheet_adapter.js?v=4"></script>
+  <script src="allo_sheet.js?v=4"></script>
+</body>
+</html>

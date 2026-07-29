@@ -1,0 +1,19 @@
+services:
+  grist:
+    # FOSS-only Grist Core image. Review and intentionally update this pin.
+    image: gristlabs/grist-oss:1.7.13
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8484:8484"
+    environment:
+      GRIST_SESSION_SECRET: "${GRIST_SESSION_SECRET:?Set GRIST_SESSION_SECRET in .env}"
+      GRIST_DEFAULT_EMAIL: "${GRIST_DEFAULT_EMAIL:-educator@alloflow.local}"
+      GRIST_SINGLE_ORG: "alloflow"
+      GRIST_SANDBOX_FLAVOR: "gvisor"
+      GRIST_TELEMETRY_LEVEL: "off"
+      GRIST_ALLOW_AUTOMATIC_VERSION_CHECKING: "false"
+    volumes:
+      - grist_data:/persist
+
+volumes:
+  grist_data:
