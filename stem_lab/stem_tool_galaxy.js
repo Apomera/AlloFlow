@@ -60,6 +60,169 @@ window.StemLab = window.StemLab || {
   })();
 
 
+  // ── Is WebGL actually available here? ──
+  // The tool used to infer this from a THREE.WebGLRenderer constructor throw,
+  // which cannot tell "this device has no WebGL" apart from "three.js never
+  // loaded" or "the scene builder threw". All three produced the same card
+  // telling the student their hardware was inadequate — false and unactionable
+  // for the other two. Probe it directly instead.
+  //
+  // Releases the probe context immediately: browsers cap the number of live
+  // WebGL contexts (~16), and leaking one to answer a yes/no question could
+  // itself be what makes the real scene fail.
+  var _galaxyWebglProbe = null;
+  function galaxyWebglStatus() {
+    if (_galaxyWebglProbe) return _galaxyWebglProbe;
+    var out = { supported: false, renderer: '' };
+    try {
+      var probe = document.createElement('canvas');
+      var gl = probe.getContext('webgl2') || probe.getContext('webgl') || probe.getContext('experimental-webgl');
+      if (gl) {
+        out.supported = true;
+        try {
+          var info = gl.getExtension('WEBGL_debug_renderer_info');
+          out.renderer = String((info && gl.getParameter(info.UNMASKED_RENDERER_WEBGL)) || gl.getParameter(gl.RENDERER) || '');
+        } catch (infoError) {}
+        try { var lose = gl.getExtension('WEBGL_lose_context'); if (lose) lose.loseContext(); } catch (loseError) {}
+      }
+    } catch (probeError) {}
+    _galaxyWebglProbe = out;
+    return out;
+  }
+
+  // ── 2-D fallback galaxy ──
+  // The 3-D view needs BOTH WebGL and a CDN-served three.js. When either is
+  // missing the tool replaced its whole viewport with a red error card, so a
+  // student on a locked-down laptop or a blocked network got no galaxy at all
+  // — even though every teaching claim the panels make (arms, bar, bulge,
+  // morphology) is perfectly drawable in Canvas2D, which every browser has.
+  //
+  // Driven by the SAME GALAXY_TYPES fields the 3-D scene uses (arms,
+  // barLength, windTightness), so the fallback cannot drift into showing a
+  // different shape from the one the tool is describing.
+  //
+  // Deterministic: a seeded LCG, never Math.random, so the same galaxy redraws
+  // identically across re-renders and a screenshot stays comparable.
+  function galaxyFallbackRng(seed) {
+    var s = (seed >>> 0) || 1;
+    return function () { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
+  }
+
+  function galaxyDrawFallback(cv, opts) {
+    if (!cv) return false;
+    var o = opts || {};
+    var w = cv.clientWidth || cv.offsetWidth || 0;
+    var hgt = cv.clientHeight || cv.offsetHeight || 0;
+    if (!w || !hgt) return false;
+    var g = null;
+    try { g = cv.getContext('2d'); } catch (ctxError) { return false; }
+    if (!g) return false;
+
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    cv.width = Math.round(w * dpr);
+    cv.height = Math.round(hgt * dpr);
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    var cx = w / 2, cy = hgt / 2;
+    var R = Math.min(w, hgt) * 0.42;
+    var arms = o.arms || 0;
+    var barLength = o.barLength || 0;
+    var wind = o.windTightness || 0;
+    var type = o.type || 'barredSpiral';
+    var rnd = galaxyFallbackRng(17 * 1 + (type.length * 7919) + arms * 104729);
+
+    // Deep space
+    var sky = g.createLinearGradient(0, 0, 0, hgt);
+    sky.addColorStop(0, '#070b18');
+    sky.addColorStop(1, '#02030a');
+    g.fillStyle = sky;
+    g.fillRect(0, 0, w, hgt);
+
+    // Distant field stars
+    var i;
+    for (i = 0; i < 260; i++) {
+      var fx = rnd() * w, fy = rnd() * hgt, fa = 0.18 + rnd() * 0.5;
+      g.fillStyle = 'rgba(226,232,240,' + fa.toFixed(3) + ')';
+      g.fillRect(fx, fy, rnd() > 0.92 ? 1.6 : 1, rnd() > 0.92 ? 1.6 : 1);
+    }
+
+    function star(px, py, radius, colour, alpha) {
+      g.beginPath();
+      g.arc(px, py, radius, 0, Math.PI * 2);
+      g.fillStyle = colour.replace('ALPHA', alpha.toFixed(3));
+      g.fill();
+    }
+
+    if (type === 'elliptical') {
+      // Smooth ellipsoid of OLD stars — no arms, no dust, which is the whole
+      // point of the class and what the panel beside it says.
+      for (i = 0; i < 2600; i++) {
+        var er = Math.pow(rnd(), 1.8) * R;
+        var ea = rnd() * Math.PI * 2;
+        var ex = cx + Math.cos(ea) * er * 1.25;
+        var ey = cy + Math.sin(ea) * er * 0.82;
+        star(ex, ey, 0.7 + rnd() * 0.7, 'rgba(255,214,170,ALPHA)', 0.35 + rnd() * 0.4);
+      }
+    } else if (type === 'irregular') {
+      // Clumpy, no symmetry, active star formation — bluer knots.
+      var clumps = 5;
+      for (var c = 0; c < clumps; c++) {
+        var ox = cx + (rnd() - 0.5) * R * 1.5;
+        var oy = cy + (rnd() - 0.5) * R * 1.1;
+        var spread = R * (0.18 + rnd() * 0.26);
+        for (i = 0; i < 520; i++) {
+          var ir = Math.pow(rnd(), 1.5) * spread;
+          var ia = rnd() * Math.PI * 2;
+          var young = rnd() > 0.55;
+          star(ox + Math.cos(ia) * ir, oy + Math.sin(ia) * ir, 0.7 + rnd() * 0.8,
+            young ? 'rgba(147,197,253,ALPHA)' : 'rgba(255,226,190,ALPHA)', 0.3 + rnd() * 0.45);
+        }
+      }
+    } else {
+      // Spiral. Arms are logarithmic; a bar, when the morphology has one,
+      // carries the inner stars and the arms start from its ends.
+      var barR = barLength * R * 2.2;
+      var perArm = 1500;
+      for (var a = 0; a < Math.max(1, arms); a++) {
+        var base = (a / Math.max(1, arms)) * Math.PI * 2;
+        for (i = 0; i < perArm; i++) {
+          var t = i / perArm;
+          var rr = barR + (R - barR) * Math.pow(t, 0.85);
+          var th = base + wind * Math.log(1 + t * 2.6);
+          // Perpendicular scatter, wider outward — arms are not wires.
+          var jitter = (rnd() - 0.5) * R * (0.05 + t * 0.13);
+          var jr = (rnd() - 0.5) * R * 0.03;
+          var sx = cx + Math.cos(th) * (rr + jr) - Math.sin(th) * jitter;
+          var sy = cy + Math.sin(th) * (rr + jr) * 0.55 + Math.cos(th) * jitter * 0.55;
+          var isYoung = rnd() > 0.42;
+          star(sx, sy, 0.6 + rnd() * 0.9,
+            isYoung ? 'rgba(165,205,255,ALPHA)' : 'rgba(255,231,196,ALPHA)',
+            0.28 + rnd() * 0.5);
+        }
+      }
+      if (barR > 2) {
+        // The bar itself.
+        for (i = 0; i < 1100; i++) {
+          var bt = (rnd() - 0.5) * 2;
+          var bx = cx + bt * barR;
+          var by = cy + (rnd() - 0.5) * R * 0.09 * (1 - Math.abs(bt) * 0.5);
+          star(bx, by, 0.7 + rnd() * 0.8, 'rgba(255,222,180,ALPHA)', 0.35 + rnd() * 0.45);
+        }
+      }
+    }
+
+    // Central bulge glow, last so it reads as light rather than a disc.
+    var bulge = g.createRadialGradient(cx, cy, 0, cx, cy, R * (type === 'elliptical' ? 0.85 : 0.42));
+    bulge.addColorStop(0, 'rgba(255,244,214,0.85)');
+    bulge.addColorStop(0.35, 'rgba(255,214,150,0.30)');
+    bulge.addColorStop(1, 'rgba(255,190,120,0)');
+    g.fillStyle = bulge;
+    g.fillRect(0, 0, w, hgt);
+
+    cv.setAttribute('data-fallback-drawn', type);
+    return true;
+  }
+
   // ═══ 🔬 galaxy (galaxy) ═══
   window.StemLab.registerTool('galaxy', {
     icon: "🌌",
@@ -838,7 +1001,12 @@ if (!window._galaxyHasLoadedOnce) {
             loadGalaxyPP: loadGalaxyPP,
             starCount: starCount,
             // Shows the "3-D mode unavailable / retry" card instead of a black canvas.
-            reportInitFailure: function () { setTimeout(function () { upd('webglError', true); setGalaxySceneReady(false); }, 0); },
+            // `reason` distinguishes the three ways this is reached: the 3-D
+            // library never loaded ('noThree'), the scene builder threw
+            // ('initFailed'), or WebGL itself is absent ('noWebgl'). They used
+            // to be indistinguishable, so a blocked CDN told the student their
+            // device could not do 3-D.
+            reportInitFailure: function (reason) { setTimeout(function () { patchGalaxy({ webglError: true, webglErrorReason: reason || 'initFailed' }); setGalaxySceneReady(false); }, 0); },
             reportSceneReady: function () { setTimeout(function () { setGalaxySceneReady(true); }, 0); }
           };
 
@@ -860,6 +1028,16 @@ if (!window._galaxyHasLoadedOnce) {
 
             galaxyCanvasActive.current = canvasEl;
             if (canvasEl._galaxyInit) return;
+
+            // Ask before spending. If this browser has no WebGL at all there is
+            // no point pulling a multi-megabyte 3-D library over what may be a
+            // school connection purely to watch the renderer throw — go
+            // straight to the flat view and say why.
+            if (!galaxyWebglStatus().supported) {
+              var noGlRuntime = galaxyRuntimeRef.current;
+              if (noGlRuntime && noGlRuntime.reportInitFailure) noGlRuntime.reportInitFailure('noWebgl');
+              return;
+            }
 
             canvasEl._galaxyInit = true;
             var initToken = (canvasEl._galaxyInitToken || 0) + 1;
@@ -894,7 +1072,7 @@ if (!window._galaxyHasLoadedOnce) {
                 } catch (initError) {
                   console.error('[Galaxy] Scene initialization failed:', initError);
                   canvasEl._galaxyInit = false;
-                  if (runtime.reportInitFailure) runtime.reportInitFailure();
+                  if (runtime.reportInitFailure) runtime.reportInitFailure('initFailed');
                 }
               });
             };
@@ -906,7 +1084,7 @@ if (!window._galaxyHasLoadedOnce) {
                   canvasEl._galaxyInit = false;
                   console.error('[Galaxy] Three.js failed to load');
                   var runtime = galaxyRuntimeRef.current;
-                  if (runtime && runtime.reportInitFailure) runtime.reportInitFailure();
+                  if (runtime && runtime.reportInitFailure) runtime.reportInitFailure('noThree');
                 }
               });
 
@@ -1283,7 +1461,10 @@ if (!window._galaxyHasLoadedOnce) {
             } catch (e) {
               console.error('[Galaxy] WebGLRenderer creation failed:', e);
               setTimeout(function() {
-                upd('webglError', true);
+                // Ask the browser directly rather than inferring: the
+                // constructor also throws for reasons that have nothing to do
+                // with whether this device can do 3-D at all.
+                patchGalaxy({ webglError: true, webglErrorReason: galaxyWebglStatus().supported ? 'contextFailed' : 'noWebgl' });
               }, 0);
               return;
             }
@@ -5334,20 +5515,68 @@ if (!window._galaxyHasLoadedOnce) {
                 React.createElement("span", { id: "galaxy-canvas-status", "data-galaxy-announcer": "true", className: "sr-only", role: "status", "aria-live": "polite", "aria-atomic": "true" }, selStar ? ("Focused on " + selStar.label) : selNeb ? ("Focused on " + selNeb.name) : __alloT('stem.galaxy.canvas_status_ready', 'Galaxy canvas ready for exploration.')),
 
                 d.webglError ?
-                  React.createElement("div", {
-                    className: "flex flex-col items-center justify-center p-6 text-center text-white",
-                    style: { height: "100%", background: "rgba(5, 5, 16, 0.85)" }
-                  },
-                    React.createElement("span", { style: { fontSize: "48px", marginBottom: "16px" } }, "⚠️"),
-                    React.createElement("h4", { className: "text-lg font-bold text-red-400 mb-2" }, __alloT('stem.galaxy.webgl_error_title', 'Galaxy Explorer 3D Mode Unresolved')),
-                    React.createElement("p", { className: "text-xs text-slate-300 max-w-sm mb-6" }, __alloT('stem.galaxy.webgl_error_desc', 'WebGL failed to initialize. Your browser or device might not support 3D hardware acceleration.')),
-                    React.createElement("button", {
-                      onClick: function () {
-                        upd("webglError", false);
+                  // ── 2-D fallback, not an error screen ──
+                  // This used to be a red "3D Mode Unresolved" card with nothing
+                  // behind it: on a device without WebGL, or a network that
+                  // blocks the three.js CDN, the student lost the galaxy
+                  // entirely and was told their hardware was at fault — which
+                  // is only one of the three ways this state is reached.
+                  //
+                  // The morphology is drawn in Canvas2D from the same
+                  // GALAXY_TYPES fields the 3-D scene uses, so the shape the
+                  // panels describe is still on screen and every other part of
+                  // the tool keeps working. The notice explains what is reduced
+                  // and, where we can tell, why.
+                  (function () {
+                    var reason = d.webglErrorReason || 'initFailed';
+                    var probe = galaxyWebglStatus();
+                    var why = reason === 'noThree'
+                      ? __alloT('stem.galaxy.fallback_why_cdn', 'The 3-D engine is loaded from the internet and could not be fetched — often a school network or offline device.')
+                      : reason === 'noWebgl'
+                        ? __alloT('stem.galaxy.fallback_why_nowebgl', 'This browser reports no WebGL support, which the 3-D view needs.')
+                        : reason === 'contextFailed'
+                          ? __alloT('stem.galaxy.fallback_why_context', 'WebGL exists here but a drawing surface could not be created — usually too many 3-D views open at once, or hardware acceleration switched off.')
+                          : __alloT('stem.galaxy.fallback_why_init', 'The 3-D scene could not finish building on this device.');
+                    return React.createElement("div", {
+                      className: "relative", style: { height: "100%", background: "#02030a" },
+                      "data-galaxy-fallback": reason
+                    },
+                      React.createElement("canvas", {
+                        "data-galaxy-fallback-canvas": "true",
+                        role: "img",
+                        "aria-label": __alloT('stem.galaxy.fallback_canvas_aria', 'Flat illustration of the selected galaxy shape, shown because the interactive 3-D view is unavailable.') + ' ' + (gType.desc || ''),
+                        style: { width: "100%", height: "100%", display: "block" },
+                        ref: function (el) {
+                          if (!el) return;
+                          // Redraw only when the shape actually changes: React
+                          // hands a callback ref null-then-element on every
+                          // commit, and re-running a few thousand draw calls per
+                          // keystroke would be its own bug.
+                          if (el.getAttribute('data-fallback-drawn') === galaxyType) return;
+                          galaxyDrawFallback(el, {
+                            type: galaxyType, arms: gType.arms,
+                            barLength: gType.barLength, windTightness: gType.windTightness
+                          });
+                          el.setAttribute('data-fallback-drawn', galaxyType);
+                        }
+                      }),
+                      React.createElement("div", {
+                        className: "absolute left-3 right-3 bottom-3 rounded-xl border border-slate-600 bg-slate-900/90 p-3 text-left",
+                        role: "status"
                       },
-                      className: "min-h-[44px] px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-md transition-colors"
-                    }, __alloT('stem.galaxy.retry_3d_mode', 'Retry 3D Mode'))
-                  ) :
+                        React.createElement("p", { className: "text-xs font-bold text-amber-200 mb-1" },
+                          "⚠️ " + __alloT('stem.galaxy.fallback_title', 'Showing a flat view — the interactive 3-D galaxy is unavailable')),
+                        React.createElement("p", { className: "text-[11px] text-slate-200 leading-relaxed mb-2" },
+                          why + ' ' + __alloT('stem.galaxy.fallback_still_works', 'Everything else on this page still works: filters, the object inspector, star life, and the quiz.')),
+                        React.createElement("button", {
+                          onClick: function () { patchGalaxy({ webglError: false, webglErrorReason: null }); },
+                          className: "min-h-[44px] px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-md transition-colors text-xs"
+                        }, __alloT('stem.galaxy.retry_3d_mode', 'Retry 3D Mode')),
+                        probe.renderer ? React.createElement("p", { className: "mt-2 text-[10px] text-slate-400" },
+                          __alloT('stem.galaxy.fallback_gpu_label', 'Graphics reported by this browser:') + ' ' + probe.renderer) : null
+                      )
+                    );
+                  })() :
                   React.createElement("canvas", {
 
                     "data-galaxy-canvas": "true", "data-auto-rotate": galaxyAutoRotate ? "true" : "false", "data-hud-hidden": galaxyHudHidden ? "true" : "false", "data-tour-active": galaxyTourActive ? "true" : "false", "data-quality": galaxyQuality, tabIndex: 0, role: "application", "aria-label": __alloT('stem.galaxy.aria_galaxy_canvas', 'Interactive galaxy simulation'), "aria-describedby": "galaxy-canvas-description galaxy-canvas-instructions galaxy-motion-note galaxy-canvas-status", "aria-keyshortcuts": "ArrowLeft ArrowRight ArrowUp ArrowDown + - [ ] PageUp PageDown Escape R", ref: galaxyCanvasElementRef, onKeyDown: function (e) {
