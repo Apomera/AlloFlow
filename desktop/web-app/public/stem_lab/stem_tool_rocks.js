@@ -7421,7 +7421,13 @@ const d = labToolData.rockCycle || {};
 
                 React.createElement("div", null,
 
-                  React.createElement("h4", { className: "text-lg font-black tracking-tight", style: { color: sel.ink } }, sel.label + " Rocks"),
+                  // `sel.label` is translated; " Rocks" was a bare English
+                  // suffix glued onto it, so a Spanish pack rendered "Ígneas
+                  // Rocks" and a language that puts the noun first could not fix
+                  // it at all. A placeholder lets the pack own the word order —
+                  // the same {token} convention the rest of ui_strings uses.
+                  React.createElement("h4", { className: "text-lg font-black tracking-tight", style: { color: sel.ink } },
+                    __alloT('stem.rocks.family_rocks_heading', '{family} Rocks').replace('{family}', sel.label)),
 
                   React.createElement("p", { className: "text-[11px] text-slate-600" }, sel.examples)
 
@@ -8038,8 +8044,17 @@ const d = labToolData.rockCycle || {};
                     }
                   ];
 
-                  var q = RC_QS[Math.floor(Math.random() * RC_QS.length)];
-                  upd('rcQuiz', { q: q.q, a: q.a, opts: q.opts, wrongFeedback: q.wrongFeedback, concept: q.concept, answered: false, score: (d.rcQuiz && d.rcQuiz.score) || 0 });
+                  // Draw from the questions NOT yet asked. A plain random pick
+                  // over ten questions repeats constantly — pressing "Next
+                  // Question" had a one-in-ten chance of serving the identical
+                  // question straight back, and a ten-press run showed about six
+                  // distinct ones. Refill once the bag is empty so the quiz
+                  // never runs out.
+                  var rcAsked = (d.rcQuiz && d.rcQuiz.asked) || [];
+                  var rcPool = RC_QS.filter(function (item) { return rcAsked.indexOf(item.q) === -1; });
+                  if (!rcPool.length) { rcAsked = []; rcPool = RC_QS; }
+                  var q = rcPool[Math.floor(Math.random() * rcPool.length)];
+                  upd('rcQuiz', { q: q.q, a: q.a, opts: q.opts, wrongFeedback: q.wrongFeedback, concept: q.concept, answered: false, score: (d.rcQuiz && d.rcQuiz.score) || 0, asked: rcAsked.concat([q.q]) });
                 }, className: "px-3 py-1.5 rounded-lg text-xs font-bold " + (d.rcQuiz ? 'bg-orange-100 text-orange-700' : 'bg-orange-700 text-white') + " transition-all"
               }, d.rcQuiz ? "🔄 " + __alloT('stem.rocks.next_question', "Next Question") : "🧠 " + __alloT('stem.rocks.quiz_mode', "Quiz Mode")),
 
