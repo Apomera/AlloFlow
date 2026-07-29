@@ -2953,6 +2953,27 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     const [furnishing, setFurnishing] = React.useState(null);            // {done, total} | null
     const [useMnemonics, setUseMnemonics] = React.useState(true);
     const genCancelRef = React.useRef(false);   // Stop button → halt an in-progress batch
+    // ── Concept Recall — the retrieval half of the loci loop ──
+    // Furnishing a space produces memory cues; without a game that USES them the
+    // imagery is decoration. This is the palace's Recall Walk for a concept space:
+    // node labels are covered, the generated art is the only cue, and you name each
+    // one. The palace's pure helpers do the work (buildRecallBank / buildLocusChoices
+    // / matchAnswer / scoreRecall) — they only need {loci:[{id,label}]}, so a concept
+    // space shapes itself into that and reuses them rather than growing a second,
+    // subtly-different scoring rule. Bank mode is the default per the palace's UDL
+    // decision; typed Expert mode is teacher-gated for the same reason it is there.
+    const [recall, setRecall] = React.useState(null);        // {order:[id], seed} | null
+    const [recallIdx, setRecallIdx] = React.useState(0);
+    const [recallAnswerMode, setRecallAnswerMode] = React.useState('bank');   // 'bank' | 'typed'
+    const [typedAnswer, setTypedAnswer] = React.useState('');
+    const [recallFeedback, setRecallFeedback] = React.useState(null);   // {kind, text} | null
+    const [recallScore, setRecallScore] = React.useState(null);
+    const [describeOpen, setDescribeOpen] = React.useState(false);
+    const recallResultsRef = React.useRef({});
+    const recallFinishedRef = React.useRef(false);   // guards a double finish (two pending advances)
+    const recallTimersRef = React.useRef([]);
+    const recallHeadingRef = React.useRef(null);     // focus target across question changes
+    React.useEffect(() => () => { recallTimersRef.current.forEach(clearTimeout); recallTimersRef.current = []; }, []);
     // ── Strand Challenge (the 3D-native sort game) ──
     // challenge = {graph, answerKey, targets, strands} from engine.buildStrandChallenge.
     // Placements arrive through the SAME edit pipeline students already use
@@ -3430,7 +3451,10 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
             const step = (i) => {
                 if (i >= targets.length || genCancelRef.current || !artAliveRef.current) { finishBatch(); return; }
                 const n = targets[i];
-                const subject = (mnemonics && mnemonics[n.id]) || n.label;
+                // Kept WITH the art: the same sentence is the generation cue now and
+                // the picture's text description in a Recall run later.
+                const mnem = (mnemonics && mnemonics[n.id]) || null;
+                const subject = mnem || n.label;
                 const after = () => {
                     if (!artAliveRef.current) return;
                     setFurnishing({ done: i + 1, total: targets.length });
@@ -3441,7 +3465,8 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                         .then((b64) => {
                             if (!artAliveRef.current) return;
                             const url = _asDataUrl(b64);
-                            if (url) place(n.id, { type: 'image', dataUrl: url }); else failures += 1;
+                            if (url) place(n.id, mnem ? { type: 'image', dataUrl: url, mnemonic: mnem } : { type: 'image', dataUrl: url });
+                            else failures += 1;
                         })
                         .catch(() => { failures += 1; })
                         .then(after);
@@ -3450,7 +3475,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                         .then((res) => {
                             if (!artAliveRef.current) return;
                             const recipe = P3D.parseRecipe(_gemText(res));
-                            if (recipe) { recipe.name = n.label; place(n.id, { type: 'sculpture', recipe }); }
+                            if (recipe) { recipe.name = n.label; place(n.id, mnem ? { type: 'sculpture', recipe, mnemonic: mnem } : { type: 'sculpture', recipe }); }
                             else failures += 1;
                         })
                         .catch(() => { failures += 1; })
@@ -3467,6 +3492,176 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                 .catch(() => { if (artAliveRef.current) run(null); });
         } else run(null);
     };
+
+    // ── Concept Recall handlers ──
+    // Only nodes that actually carry art can be asked about: the art IS the question.
+    const artedNodes = artNodes.filter((n) => (artRef.current || {})[n.id]);
+    const recallEligible = artedNodes.length >= 3;
+    const recallCurrentId = recall ? recall.order[recallIdx] : null;
+    const recallCurrent = recallCurrentId ? (artNodes.find((n) => n.id === recallCurrentId) || null) : null;
+    const recallCurrentArt = recallCurrentId ? (artRef.current || {})[recallCurrentId] : null;
+    // The mnemonic is the picture's description in words. It is exposed as the
+    // accessible equivalent of the cue rather than held back as a reward: a screen
+    // reader cannot see a WebGL sculpture, and without a description the game is not
+    // harder for that student, it is unplayable. Sighted students can open the same
+    // text — that is parity, not an advantage.
+    const recallDescription = (recallCurrentArt && recallCurrentArt.mnemonic) || null;
+    const _pseudoPalace = React.useMemo(
+        () => ({ loci: artedNodes.map((n) => ({ id: n.id, label: n.label })) }),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [artNodes, data?.conceptArt]
+    );
+    const recallChoices = React.useMemo(() => {
+        const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+        if (!MP || !MP.buildLocusChoices || !recall || !recallCurrentId) return [];
+        try { return MP.buildLocusChoices(_pseudoPalace, recallCurrentId, { seed: recall.seed }) || []; }
+        catch (e) { return []; }
+    }, [_pseudoPalace, recall, recallCurrentId]);
+
+    const _recallAnnounce = (order, idx) => (t('concept_space.recall_position') || 'Concept {n} of {total}. Its name is hidden — use the picture to name it.')
+        .replace('{n}', String(idx + 1)).replace('{total}', String(order.length));
+    const _spotlight = (order, idx) => {
+        const H = handleRef.current;
+        if (!H || !H.flagNodes) return;
+        try { H.flagNodes({ [order[idx]]: 'current' }, _recallAnnounce(order, idx)); } catch (e) {}
+    };
+    const startRecall = () => {
+        if (!recallEligible || challenge || furnishing) return;
+        const begin = () => {
+            const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+            if (!MP || !MP.buildRecallBank) {
+                if (addToast) addToast(t('concept_space.recall_unavailable') || 'The recall game could not load — try again.', 'error');
+                return;
+            }
+            const seed = (Date.now() % 100000) + 1;
+            let order;
+            try { order = (MP.buildRecallBank({ loci: artedNodes.map((n) => ({ id: n.id, label: n.label })) }, seed) || []).map((l) => l.id); }
+            catch (e) { order = artedNodes.map((n) => n.id); }
+            if (!order.length) return;
+            recallResultsRef.current = {};
+            recallFinishedRef.current = false;
+            setRecallIdx(0); setTypedAnswer(''); setRecallFeedback(null); setRecallScore(null); setDescribeOpen(false);
+            setRecall({ order, seed });
+            if (playSound) { try { playSound('start'); } catch (e) {} }
+        };
+        const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+        if (MP && MP.buildRecallBank) begin();
+        else _voPalaceEnsure().then(() => { if (artAliveRef.current) begin(); });
+    };
+    const exitRecall = () => {
+        recallTimersRef.current.forEach(clearTimeout); recallTimersRef.current = [];
+        recallFinishedRef.current = false;
+        setRecall(null); setRecallIdx(0); setTypedAnswer('');
+        setRecallFeedback(null); setDescribeOpen(false);
+        const H = handleRef.current;
+        try { if (H && H.uncoverAll) H.uncoverAll(); } catch (e) {}
+        try { if (H && H.flagNodes) H.flagNodes({}, ''); } catch (e) {}
+    };
+    const _finishRecall = (results, order) => {
+        if (recallFinishedRef.current) return;   // two pending advances must not both score
+        recallFinishedRef.current = true;
+        const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+        let score = null;
+        try { score = MP && MP.scoreRecall ? MP.scoreRecall(results) : null; } catch (e) { score = null; }
+        setRecallScore(score);
+        const H = handleRef.current;
+        try { if (H && H.uncoverAll) H.uncoverAll(); } catch (e) {}
+        try { if (H && H.flagNodes) H.flagNodes({}, ''); } catch (e) {}
+        if (!score) return;
+        if (score.points > 0 && typeof onScoreUpdate === 'function') { try { onScoreUpdate(score.points); } catch (e) {} }
+        if (typeof onGameComplete === 'function') {
+            try {
+                onGameComplete(score.perfect ? 'conceptRecall' : 'conceptRecallAttempt', {
+                    total: score.total, firstTry: score.firstTry, eventual: score.eventual,
+                    revealed: score.revealed, points: score.points, perfect: score.perfect,
+                    // Per-node detail so a teacher dashboard can see WHICH concepts did not stick.
+                    perNode: order.map((id) => ({ id, ...(results[id] || {}) })),
+                });
+            } catch (e) {}
+        }
+    };
+    const _advanceRecall = () => {
+        if (!recall) return;
+        const order = recall.order;
+        const next = recallIdx + 1;
+        if (next >= order.length) { _finishRecall(recallResultsRef.current, order); return; }
+        setRecallIdx(next); setTypedAnswer(''); setRecallFeedback(null); setDescribeOpen(false);
+    };
+    const _recordAndAdvance = (id, result) => {
+        recallResultsRef.current = { ...recallResultsRef.current, [id]: result };
+        const H = handleRef.current;
+        try { if (H && H.revealNode) H.revealNode(id); } catch (e) {}
+        const timer = setTimeout(() => {
+            recallTimersRef.current = recallTimersRef.current.filter((x) => x !== timer);
+            if (artAliveRef.current) _advanceRecall();
+        }, 900);
+        recallTimersRef.current.push(timer);
+    };
+    const submitRecallAnswer = (given) => {
+        const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+        if (!recall || !recallCurrent || !MP || recallFeedback) return;
+        const prev = recallResultsRef.current[recallCurrent.id] || { attempts: 0 };
+        const attempts = (prev.attempts || 0) + 1;
+        let ok = false;
+        try { ok = !!MP.matchAnswer(recallCurrent.label, given); } catch (e) { ok = false; }
+        if (ok) {
+            setRecallFeedback({ kind: 'correct', text: (t('concept_space.recall_correct') || 'Yes — {label}.').replace('{label}', recallCurrent.label) });
+            if (playSound) { try { playSound('correct'); } catch (e) {} }
+            _recordAndAdvance(recallCurrent.id, { correct: true, attempts });
+            return;
+        }
+        recallResultsRef.current = { ...recallResultsRef.current, [recallCurrent.id]: { correct: false, attempts } };
+        if (playSound) { try { playSound('incorrect'); } catch (e) {} }
+        if (attempts >= 3) {
+            // Third miss: show the answer, score it as revealed (no points), move on.
+            setRecallFeedback({ kind: 'revealed', text: (t('concept_space.recall_revealed') || 'This one was {label}.').replace('{label}', recallCurrent.label) });
+            _recordAndAdvance(recallCurrent.id, { correct: false, attempts, revealed: true });
+            return;
+        }
+        setRecallFeedback({ kind: 'retry', text: t('concept_space.recall_retry') || 'Not that one — look at the picture again.' });
+        const timer = setTimeout(() => {
+            recallTimersRef.current = recallTimersRef.current.filter((x) => x !== timer);
+            if (artAliveRef.current) { setRecallFeedback(null); setTypedAnswer(''); }
+        }, 1100);
+        recallTimersRef.current.push(timer);
+    };
+    const revealRecallAnswer = () => {
+        if (!recall || !recallCurrent || recallFeedback) return;
+        const prev = recallResultsRef.current[recallCurrent.id] || { attempts: 0 };
+        setRecallFeedback({ kind: 'revealed', text: (t('concept_space.recall_revealed') || 'This one was {label}.').replace('{label}', recallCurrent.label) });
+        _recordAndAdvance(recallCurrent.id, { correct: false, attempts: prev.attempts || 0, revealed: true });
+    };
+    // Cover the labels for the whole run, and put them back when it ends. Re-runs on
+    // `nonce`/`ready` so a scene rebuild mid-run does not hand the answers back.
+    React.useEffect(() => {
+        const H = handleRef.current;
+        if (!H || !recall) return undefined;
+        try { if (H.coverNodes) H.coverNodes(recall.order, '?'); } catch (e) {}
+        Object.keys(recallResultsRef.current).forEach((id) => {
+            try { if (H.revealNode) H.revealNode(id); } catch (e) {}   // already-answered stay revealed
+        });
+        return () => { try { if (H.uncoverAll) H.uncoverAll(); } catch (e) {} };
+    }, [recall, nonce, ready]);
+    // Spotlight the node in question — with every label covered there is otherwise
+    // no way to tell which '?' is being asked, and this carries the SR announcement.
+    React.useEffect(() => {
+        if (!recall || recallScore) return;
+        _spotlight(recall.order, recallIdx);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [recall, recallIdx, recallScore, nonce, ready]);
+    // A Strand Challenge and a Recall run cannot both own the scene.
+    React.useEffect(() => { if (challenge && recall) exitRecall(); // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [challenge]);
+    // Move focus to the panel heading when the run starts, when the question
+    // changes, and when the summary replaces the question. Each of those removes
+    // the control the user was on — the choice button they just pressed is
+    // unmounted — so without this focus falls to <body> and a keyboard or screen
+    // reader user is dropped at the top of the document mid-game (WCAG 2.4.3).
+    React.useEffect(() => {
+        if (!recall) return;
+        const el = recallHeadingRef.current;
+        if (el) { try { el.focus(); } catch (e) {} }
+    }, [recall, recallIdx, recallScore]);
 
     return (
         <div className="max-w-6xl mx-auto">
@@ -3513,8 +3708,59 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                 {t('concept_space.challenge_exit') || 'Exit challenge'}
                             </button>
                         </>
+                    ) : recall ? (
+                        <>
+                            <span className="text-xs font-bold text-sky-700 bg-sky-50 border border-sky-200 px-3 py-1.5 rounded-full tabular-nums">
+                                🧠 {(t('concept_space.recall_progress') || '{n} of {total}')
+                                    .replace('{n}', String(Math.min(recallIdx + 1, recall.order.length))).replace('{total}', String(recall.order.length))}
+                            </span>
+                            {!recallScore && (
+                                <div className="flex items-center gap-0.5 bg-slate-100 rounded-full p-0.5" role="group" aria-label={t('concept_space.recall_mode_label') || 'How to answer'}>
+                                    <button
+                                        onClick={() => { setRecallAnswerMode('bank'); setTypedAnswer(''); }}
+                                        aria-pressed={recallAnswerMode === 'bank' ? 'true' : 'false'}
+                                        className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors ${recallAnswerMode === 'bank' ? 'bg-sky-600 text-white' : 'text-slate-600 hover:bg-slate-200'}`}
+                                    >
+                                        {t('concept_space.recall_mode_bank') || 'Choose'}
+                                    </button>
+                                    {isTeacherMode && (
+                                        <button
+                                            onClick={() => setRecallAnswerMode('typed')}
+                                            aria-pressed={recallAnswerMode === 'typed' ? 'true' : 'false'}
+                                            title={t('concept_space.recall_mode_typed_tooltip') || 'Expert: type the name instead of choosing it'}
+                                            className={`px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors ${recallAnswerMode === 'typed' ? 'bg-sky-600 text-white' : 'text-slate-600 hover:bg-slate-200'}`}
+                                        >
+                                            {t('concept_space.recall_mode_typed') || 'Type'}
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+                            {recallScore && (
+                                <button
+                                    onClick={startRecall}
+                                    className="flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
+                                >
+                                    ↺ {t('concept_space.recall_again') || 'Go again'}
+                                </button>
+                            )}
+                            <button
+                                onClick={exitRecall}
+                                className="flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
+                            >
+                                {t('concept_space.recall_exit') || 'Exit recall'}
+                            </button>
+                        </>
                     ) : (
                         <>
+                            {hasContent && recallEligible && !failed && (
+                                <button
+                                    onClick={startRecall}
+                                    className="flex items-center gap-1 bg-gradient-to-r from-sky-500 to-cyan-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md hover:scale-105 transition-all"
+                                    title={t('concept_space.recall_tooltip') || 'Practice: every name is hidden — use the picture you made for each concept to name it'}
+                                >
+                                    🧠 {t('concept_space.recall_play') || 'Concept Recall'}
+                                </button>
+                            )}
                             {hasContent && challengeEligible && !failed && (
                                 <button
                                     onClick={() => startChallenge(false)}
@@ -3579,10 +3825,131 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                     )}
                 </div>
             </div>
+            {recall && !failed && (
+                <div className="mb-3 bg-sky-50 border border-sky-300 rounded-xl px-4 py-3 text-slate-800" role="group" aria-label={t('concept_space.recall_panel_aria') || 'Concept recall'}>
+                    {/* One heading for the whole panel, and the focus target the run
+                        moves through. Carries the position and the cue's description,
+                        so what a screen reader hears is the complete question — the
+                        spotlight in the canvas is a visual convenience, not the cue. */}
+                    <h3
+                        ref={recallHeadingRef}
+                        tabIndex={-1}
+                        className="text-sm font-extrabold text-sky-800 mb-1 rounded"
+                    >
+                        {recallScore
+                            ? '🧠 ' + (t('concept_space.recall_summary') || 'Named {first} of {total} first try.')
+                                .replace('{first}', String(recallScore.firstTry)).replace('{total}', String(recallScore.total))
+                            : (t('concept_space.recall_question') || 'Which concept is this?')}
+                        {!recallScore && (
+                            <span className="sr-only">
+                                {' '}
+                                {_recallAnnounce(recall.order, recallIdx)}
+                                {' '}
+                                {recallDescription
+                                    ? (t('concept_space.recall_cue_described') || 'The picture shows: {desc}').replace('{desc}', recallDescription)
+                                    : (t('concept_space.recall_cue_undescribed') || 'This concept is cued by a picture that has no text description.')}
+                            </span>
+                        )}
+                    </h3>
+                    {recallScore ? (
+                        <div role="status" aria-live="polite">
+                            <div className="text-xs text-slate-600">
+                                {(t('concept_space.recall_summary_detail') || '{eventual} took another go · {revealed} shown · {points} points')
+                                    .replace('{eventual}', String(recallScore.eventual))
+                                    .replace('{revealed}', String(recallScore.revealed))
+                                    .replace('{points}', String(recallScore.points))}
+                            </div>
+                            <p className="text-[11px] text-slate-500 italic mt-2">
+                                {t('concept_space.recall_framing') || 'Naming a concept from its picture is retrieval practice, which is what makes the images worth making. It is a study strategy, not a measure of ability.'}
+                            </p>
+                        </div>
+                    ) : (
+                        <>
+                            {/* Purely visual wayfinding: says which node to look at. The
+                                heading above already carries the position and the cue in
+                                words, so this would only be noise read aloud. */}
+                            <p className="text-[11px] text-slate-500 mb-2" aria-hidden="true">
+                                {(t('concept_space.recall_look') || 'Concept {n} of {total} — the glowing node is the one being asked about.')
+                                    .replace('{n}', String(recallIdx + 1)).replace('{total}', String(recall.order.length))}
+                            </p>
+                            {/* The cue is a WebGL picture; its description is the accessible
+                                equivalent, not a reward. Sighted students can open the same
+                                text — parity, not an advantage. */}
+                            {recallDescription && (
+                                <div className="mb-2">
+                                    <button
+                                        onClick={() => setDescribeOpen((o) => !o)}
+                                        aria-expanded={describeOpen ? 'true' : 'false'}
+                                        aria-controls="cg3d-recall-desc"
+                                        className="text-[11px] font-bold text-sky-700 underline hover:text-sky-900"
+                                    >
+                                        🔍 {describeOpen ? (t('concept_space.recall_hide_desc') || 'Hide the description') : (t('concept_space.recall_show_desc') || 'Describe the picture')}
+                                    </button>
+                                    {describeOpen && (
+                                        <p id="cg3d-recall-desc" className="text-xs text-slate-700 bg-white border border-sky-200 rounded-lg px-2.5 py-2 mt-1.5">{recallDescription}</p>
+                                    )}
+                                </div>
+                            )}
+                            {recallFeedback && (
+                                <div
+                                    role="status"
+                                    aria-live="polite"
+                                    aria-atomic="true"
+                                    className={`text-xs font-bold rounded-lg px-2.5 py-2 mb-2 ${recallFeedback.kind === 'correct' ? 'bg-emerald-100 text-emerald-800' : recallFeedback.kind === 'revealed' ? 'bg-amber-100 text-amber-900' : 'bg-rose-100 text-rose-800'}`}
+                                >
+                                    {recallFeedback.text}
+                                </div>
+                            )}
+                            {recallAnswerMode === 'typed' ? (
+                                <form
+                                    onSubmit={(e) => { e.preventDefault(); if (typedAnswer.trim()) submitRecallAnswer(typedAnswer); }}
+                                    className="flex items-center gap-2 flex-wrap"
+                                >
+                                    <input
+                                        value={typedAnswer}
+                                        onChange={(e) => setTypedAnswer(e.target.value)}
+                                        disabled={!!recallFeedback}
+                                        placeholder={t('concept_space.recall_type_placeholder') || 'Name this concept…'}
+                                        aria-label={t('concept_space.recall_type_placeholder') || 'Name this concept'}
+                                        className="flex-1 min-w-[180px] text-sm px-2.5 py-1.5 rounded-lg border border-sky-300 focus:ring-2 focus:ring-sky-400"
+                                    />
+                                    <button
+                                        type="submit"
+                                        disabled={!typedAnswer.trim() || !!recallFeedback}
+                                        className="px-3 py-1.5 rounded-full text-xs font-bold bg-sky-600 text-white hover:bg-sky-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {t('concept_space.recall_submit') || 'Check'}
+                                    </button>
+                                </form>
+                            ) : (
+                                <div className="flex items-center gap-1.5 flex-wrap" role="group" aria-label={t('concept_space.recall_choices_aria') || 'Possible names'}>
+                                    {recallChoices.map((c) => (
+                                        <button
+                                            key={c.id}
+                                            onClick={() => submitRecallAnswer(c.label)}
+                                            disabled={!!recallFeedback}
+                                            className="px-3 py-1.5 rounded-full text-xs font-bold bg-white text-sky-800 border border-sky-300 hover:bg-sky-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {c.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                            <button
+                                onClick={revealRecallAnswer}
+                                disabled={!!recallFeedback}
+                                className="text-[11px] text-slate-500 underline hover:text-slate-700 mt-2 disabled:opacity-50"
+                            >
+                                {t('concept_space.recall_reveal') || 'Show me this one'}
+                            </button>
+                        </>
+                    )}
+                </div>
+            )}
             {furnishOpen && hasContent && persist && isTeacherMode && !failed && (
                 <div className="mb-3 bg-white border border-fuchsia-300 rounded-xl px-4 py-3 text-slate-800" role="group" aria-label={t('concept_space.furnish_panel_aria') || 'Furnish every concept'}>
                     <div className="flex items-center gap-2 flex-wrap mb-2">
-                        <span className="text-xs font-extrabold text-fuchsia-700">🎨 {t('concept_space.furnish_heading') || 'Furnish every concept'}</span>
+                        <h3 className="text-xs font-extrabold text-fuchsia-700">🎨 {t('concept_space.furnish_heading') || 'Furnish every concept'}</h3>
                         <span className="text-[11px] text-slate-500 ml-auto">
                             {(t('concept_space.furnish_pending') || '{n} still need art').replace('{n}', String(furnishTargets.length))}
                         </span>
@@ -3636,6 +4003,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                 <span
                                     className="text-xs font-bold text-fuchsia-700 tabular-nums"
                                     role="progressbar"
+                                    aria-label={t('concept_space.furnish_progress_aria') || 'Furnishing progress'}
                                     aria-valuemin={0}
                                     aria-valuemax={furnishing.total}
                                     aria-valuenow={furnishing.done}
@@ -3666,6 +4034,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                         {!furnishing && artCount > 0 && (
                             <button
                                 onClick={handleClearAllArt}
+                                aria-describedby={clearArmed ? 'cg3d-clear-armed' : undefined}
                                 className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${clearArmed ? 'bg-rose-600 text-white border-rose-600' : 'bg-white text-rose-600 border-rose-300 hover:bg-rose-50'}`}
                                 title={t('concept_space.furnish_clear_tooltip') || 'Remove the generated art from every concept — the arrangement and the strand weights are kept'}
                             >
@@ -3673,6 +4042,14 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                                     ? (t('concept_space.furnish_clear_confirm') || 'Click again to remove all')
                                     : (t('concept_space.furnish_clear') || 'Remove all art ({n})').replace('{n}', String(artCount))}
                             </button>
+                        )}
+                        {/* The arm step only changes the button's own label, and a name
+                            change on the element you are already focused on is not
+                            reliably announced. Say it in a live region instead. */}
+                        {clearArmed && !furnishing && (
+                            <span id="cg3d-clear-armed" role="status" aria-live="assertive" className="text-[11px] font-bold text-rose-700">
+                                {(t('concept_space.furnish_clear_armed') || 'This removes the art from {n} concepts. Press the button again to confirm.').replace('{n}', String(artCount))}
+                            </span>
                         )}
                     </div>
                     <p className="text-[11px] text-slate-500 italic mt-2">
@@ -3779,7 +4156,9 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
                 ) : (
                     <div ref={hostRef} className="absolute inset-0" />
                 )}
-                {!challenge && persist && selectedNode && !failed && (
+                {/* suppressed during a Recall run — this panel shows the node's LABEL,
+                    which is the answer the run is hiding */}
+                {!challenge && !recall && persist && selectedNode && !failed && (
                     <div className="absolute left-3 bottom-3 z-10 w-72 max-w-[85%] max-h-[80%] overflow-auto rounded-xl bg-white/95 backdrop-blur border border-fuchsia-300 shadow-xl p-3 text-slate-800" role="group" aria-label={t('concept_space.art_panel_aria') || 'Concept art'}>
                         <div className="flex items-center justify-between mb-1.5">
                             <div className="text-xs font-extrabold text-fuchsia-700 truncate pr-2">🎨 {selectedNode.label}</div>
@@ -3944,7 +4323,11 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const [tourPace, setTourPace] = React.useState('standard');
     const [tourNarration, setTourNarration] = React.useState(false);
     const [tourAnnouncement, setTourAnnouncement] = React.useState('');
+    const [tourChapter, setTourChapter] = React.useState(null);
+    const [tourCompleted, setTourCompleted] = React.useState(false);
     const tourTimerRef = React.useRef(null);
+    const tourChapterTimerRef = React.useRef(null);
+    const tourLastRoomRef = React.useRef(null);
     const tourSpeechTextRef = React.useRef('');
     const tourOpenRef = React.useRef(false);
     const tourPlayingRef = React.useRef(false);
@@ -3996,6 +4379,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         recallTimersRef.current.forEach((id) => { try { clearTimeout(id); } catch (e) {} });
         recallTimersRef.current = [];
         if (tourTimerRef.current) { try { clearTimeout(tourTimerRef.current); } catch (e) {} tourTimerRef.current = null; }
+        if (tourChapterTimerRef.current) { try { clearTimeout(tourChapterTimerRef.current); } catch (e) {} tourChapterTimerRef.current = null; }
         const spoken = tourSpeechTextRef.current;
         const player = window.AlloSpeechPlayer;
         if (spoken && player?.getCurrentText?.() === spoken) { try { player.stop(); } catch (e) {} }
@@ -5152,11 +5536,26 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     const tourStopIndex = current && !current.entry ? progressStops.findIndex((locus) => locus.id === current.id) : -1;
     const tourLocus = tourStopIndex >= 0 ? progressStops[tourStopIndex] : null;
     const tourRoom = tourLocus ? progressPalace?.rooms?.[tourLocus.roomIdx] : null;
+    const tourRoomGroups = progressStops.reduce((groups, locus) => {
+        let group = groups.find((entry) => entry.roomIdx === locus.roomIdx);
+        if (!group) {
+            const room = progressPalace?.rooms?.[locus.roomIdx];
+            group = { roomIdx: locus.roomIdx, label: room?.label || (t('memory_palace.room') || 'Room'), color: room?.color || '#22d3ee', stops: [] };
+            groups.push(group);
+        }
+        group.stops.push(locus.id);
+        return groups;
+    }, []);
+    const tourRoomPosition = tourLocus ? tourRoomGroups.findIndex((group) => group.roomIdx === tourLocus.roomIdx) : -1;
 
     const clearTourTimer = () => {
         if (!tourTimerRef.current) return;
         try { clearTimeout(tourTimerRef.current); } catch (e) {}
         tourTimerRef.current = null;
+    };
+    const clearTourChapter = () => {
+        if (tourChapterTimerRef.current) { try { clearTimeout(tourChapterTimerRef.current); } catch (e) {} tourChapterTimerRef.current = null; }
+        setTourChapter(null);
     };
     const stopTourSpeech = () => {
         const spoken = tourSpeechTextRef.current;
@@ -5167,6 +5566,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     };
     const pauseCinematicTour = (reason = 'manual') => {
         clearTourTimer();
+        clearTourChapter();
         stopTourSpeech();
         tourPlayingRef.current = false;
         setTourPlaying(false);
@@ -5182,6 +5582,9 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         tourPlayingRef.current = true;
         setTourOpen(true);
         setTourPlaying(true);
+        setTourCompleted(false);
+        setTourChapter(null);
+        tourLastRoomRef.current = null;
         setNearbyEmpty(null); setQuickCreate(null); setCustomizeOpen(false);
         if (tourStopIndex < 0 || tourStopIndex === progressStops.length - 1) handleRef.current.goTo(1);
         setTourAnnouncement(tourStopIndex > 0 && tourStopIndex < progressStops.length - 1
@@ -5192,10 +5595,13 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         pauseCinematicTour('manual');
         tourOpenRef.current = false;
         setTourOpen(false);
+        setTourCompleted(false);
+        tourLastRoomRef.current = null;
     };
     const seekCinematicTour = (direction) => {
         if (!progressStops.length || !handleRef.current) return;
         pauseCinematicTour('manual');
+        setTourCompleted(false);
         const base = tourStopIndex >= 0 ? tourStopIndex : (direction > 0 ? -1 : 0);
         const target = Math.max(0, Math.min(progressStops.length - 1, base + direction));
         handleRef.current.goTo(target + 1);
@@ -5223,6 +5629,22 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         }
         const locus = progressStops[stopIndex];
         const room = progressPalace?.rooms?.[locus.roomIdx];
+        const roomPosition = tourRoomGroups.findIndex((group) => group.roomIdx === locus.roomIdx);
+        const roomGroup = roomPosition >= 0 ? tourRoomGroups[roomPosition] : null;
+        if (tourLastRoomRef.current !== locus.roomIdx) {
+            if (tourChapterTimerRef.current) { try { clearTimeout(tourChapterTimerRef.current); } catch (e) {} }
+            tourLastRoomRef.current = locus.roomIdx;
+            setTourChapter({
+                roomIdx: locus.roomIdx,
+                label: roomGroup?.label || room?.label || (t('memory_palace.room') || 'Room'),
+                color: roomGroup?.color || room?.color || '#22d3ee',
+                position: roomPosition + 1,
+                total: tourRoomGroups.length,
+                stopCount: roomGroup?.stops?.length || 1,
+            });
+            const chapterDuration = Math.min(2400, Math.max(1500, Math.round(tourConfig.dwell * 0.38)));
+            tourChapterTimerRef.current = setTimeout(() => { tourChapterTimerRef.current = null; setTourChapter(null); }, chapterDuration);
+        }
         try { handleRef.current.setTourPace?.(tourConfig.camera); } catch (e) {}
         setTourAnnouncement((t('memory_palace.tour_now_showing') || 'Tour stop {current} of {total}: {label}.')
             .replace('{current}', String(stopIndex + 1)).replace('{total}', String(progressStops.length)).replace('{label}', locus.label));
@@ -5249,6 +5671,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
             if (stopIndex >= progressStops.length - 1) {
                 tourPlayingRef.current = false;
                 setTourPlaying(false);
+                setTourCompleted(true);
                 setTourAnnouncement(t('memory_palace.tour_complete') || 'Cinematic tour complete. You reached the final locus.');
                 return;
             }
@@ -5800,6 +6223,22 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                         <span className="hidden text-[10px] text-slate-400 md:inline">{t('memory_palace.presentation_escape') || 'Esc also exits'}</span>
                     </div>
                 )}
+                {tourChapter && tourOpen && tourPlaying && !recall && (
+                    <div className="pointer-events-none absolute left-1/2 top-3 z-40 w-[calc(100%_-_1.5rem)] max-w-md -translate-x-1/2 overflow-hidden rounded-2xl border-2 bg-slate-950/95 text-center text-white shadow-2xl backdrop-blur-md"
+                        style={{ borderColor: tourChapter.color, boxShadow: `0 18px 50px ${tourChapter.color}33` }} aria-hidden="true">
+                        <div className="h-1.5" style={{ backgroundColor: tourChapter.color }} />
+                        <div className="px-5 py-3 sm:py-4">
+                            <div className="text-[10px] font-black uppercase tracking-[0.22em] text-slate-300">
+                                {(t('memory_palace.tour_room_of') || 'Room {current} of {total}')
+                                    .replace('{current}', String(tourChapter.position)).replace('{total}', String(tourChapter.total))}
+                            </div>
+                            <div className="mt-0.5 text-xl font-black tracking-tight text-white sm:text-2xl">{tourChapter.label}</div>
+                            <div className="mt-1 text-xs font-bold text-slate-300">
+                                {(t('memory_palace.tour_room_stops') || '{count} memory stops in this room').replace('{count}', String(tourChapter.stopCount))}
+                            </div>
+                        </div>
+                    </div>
+                )}
                 {tourOpen && !recall && hasContent && !failed && (
                     <aside data-palace-tour-control="true"
                         className="absolute bottom-20 left-3 z-30 max-h-[calc(100%_-_5.5rem)] w-[calc(100%_-_1.5rem)] max-w-sm overflow-y-auto rounded-2xl border border-cyan-300/80 bg-slate-950/95 text-white shadow-2xl backdrop-blur-md"
@@ -5815,7 +6254,10 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                                     {tourLocus?.label || (t('memory_palace.tour_ready') || 'Ready for the first locus')}
                                 </div>
                                 <div className="truncate text-xs font-semibold text-slate-300">
-                                    {tourRoom?.label || (t('memory_palace.tour_route_overview') || 'Route overview')}
+                                    {tourRoomPosition >= 0
+                                        ? (t('memory_palace.tour_room_short') || 'Room {current}/{total}: {label}')
+                                            .replace('{current}', String(tourRoomPosition + 1)).replace('{total}', String(tourRoomGroups.length)).replace('{label}', tourRoom?.label || '')
+                                        : (t('memory_palace.tour_route_overview') || 'Route overview')}
                                     {' · '}{Math.max(0, tourStopIndex + 1)}/{progressStops.length}
                                 </div>
                             </div>
@@ -5826,11 +6268,40 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
                             <div className="h-full rounded-r-full bg-gradient-to-r from-cyan-400 to-emerald-400 transition-[width] duration-500 motion-reduce:transition-none"
                                 style={{ width: (progressStops.length ? Math.max(0, ((tourStopIndex + 1) / progressStops.length) * 100) : 0) + '%' }} />
                         </div>
+                        {tourRoomGroups.length > 1 && (
+                            <div className="flex h-3 gap-1 bg-slate-900 px-3 pt-1.5" aria-hidden="true">
+                                {tourRoomGroups.map((group, index) => (
+                                    <span key={group.roomIdx} className={'h-1.5 rounded-full transition-opacity motion-reduce:transition-none ' + (index === tourRoomPosition ? 'opacity-100 ring-1 ring-white' : index < tourRoomPosition ? 'opacity-70' : 'opacity-30')}
+                                        style={{ backgroundColor: group.color, flexGrow: group.stops.length, flexBasis: 0 }} />
+                                ))}
+                            </div>
+                        )}
                         <div className="space-y-3 p-3">
+                            {tourLocus?.mnemonic && !tourCompleted && (
+                                <div className="rounded-xl border border-cyan-300/25 bg-white/10 px-3 py-2.5 text-xs leading-relaxed text-slate-100">
+                                    <span className="font-black text-cyan-200">{t('memory_palace.picture_this') || 'Picture this:'}</span>{' '}{tourLocus.mnemonic}
+                                </div>
+                            )}
+                            {tourCompleted && (
+                                <div className="rounded-xl border border-emerald-300/40 bg-gradient-to-br from-emerald-400/20 to-cyan-400/10 p-3 text-center">
+                                    <div className="text-2xl" aria-hidden="true">✓</div>
+                                    <div className="mt-0.5 text-sm font-black text-emerald-100">{t('memory_palace.tour_complete_title') || 'Route complete'}</div>
+                                    <p className="mt-1 text-xs leading-relaxed text-slate-200">
+                                        {(t('memory_palace.tour_complete_summary') || 'You visited {stops} loci across {rooms} rooms.')
+                                            .replace('{stops}', String(progressStops.length)).replace('{rooms}', String(tourRoomGroups.length))}
+                                    </p>
+                                    {recallEligible && (
+                                        <button type="button" onClick={() => { closeCinematicTour(); startRecall('self', false); }}
+                                            className="mt-2 min-h-11 rounded-xl border border-emerald-200/60 bg-emerald-300 px-3 py-2 text-xs font-black text-emerald-950 hover:bg-emerald-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+                                            ✨ {t('memory_palace.tour_try_recall') || 'Try a guided recall walk'}
+                                        </button>
+                                    )}
+                                </div>
+                            )}
                             <div className="flex gap-2">
                                 <button type="button" onClick={tourPlaying ? () => pauseCinematicTour('manual') : startCinematicTour}
-                                    className={'min-h-11 flex-1 rounded-xl px-4 py-2 text-xs font-black shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 ' + (tourPlaying ? 'bg-amber-400 text-slate-950 hover:bg-amber-300' : 'bg-cyan-500 text-slate-950 hover:bg-cyan-400')}>
-                                    {tourPlaying ? 'Ⅱ ' + (t('memory_palace.tour_pause') || 'Pause') : '▶ ' + (tourStopIndex >= 0 && tourStopIndex < progressStops.length - 1 ? (t('memory_palace.tour_resume') || 'Resume') : (t('memory_palace.tour_start') || 'Start tour'))}
+                                    className={'min-h-11 flex-1 rounded-xl px-4 py-2 text-xs font-black shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 ' + (tourPlaying ? 'bg-amber-400 text-slate-950 hover:bg-amber-300' : tourCompleted ? 'bg-emerald-400 text-emerald-950 hover:bg-emerald-300' : 'bg-cyan-500 text-slate-950 hover:bg-cyan-400')}>
+                                    {tourPlaying ? 'Ⅱ ' + (t('memory_palace.tour_pause') || 'Pause') : '▶ ' + (tourCompleted ? (t('memory_palace.tour_walk_again') || 'Walk again') : tourStopIndex >= 0 && tourStopIndex < progressStops.length - 1 ? (t('memory_palace.tour_resume') || 'Resume') : (t('memory_palace.tour_start') || 'Start tour'))}
                                 </button>
                                 <button type="button" onClick={() => seekCinematicTour(-1)} disabled={tourStopIndex <= 0}
                                     aria-label={t('memory_palace.tour_previous') || 'Previous tour stop'}

@@ -490,6 +490,8 @@ test('official tutorial checks readiness, records, quality-checks, and recovers 
   await expect(studio.locator('#demoPlanList')).toContainText('Text Adaptation');
   await expect(studio.locator('#demoOfficialTextBtn')).toHaveAttribute('aria-busy', 'false');
   await expect(demoPlanButton).toBeEnabled();
+  await expect(demoPlanButton).toHaveText('✨ Replace official plan with Gemini plan');
+  await expect(studio.locator('#startBtn')).toHaveText('▶ Record approved demo');
   await studio.locator('#demoTemplateSelect').selectOption({ index: 1 });
   await expect.poll(demoTemplateTransitionLocks).toEqual(allTemplateTransitionsUnlocked);
   const validationCountBeforeAtomicCancel = await page.evaluate(() => (window as any).bridgeLog.filter((type: string) => type === 'allostudio-demovalidate-request').length);
@@ -541,7 +543,7 @@ test('official tutorial checks readiness, records, quality-checks, and recovers 
   await expect(studio.locator('#demoPrivacyIndicator')).toContainText('not recording');
   await expect(studio.locator('#demoPlanResetBtn')).toBeHidden();
   await expect(studio.locator('#clipList')).toBeEmpty();
-  await studio.locator('#demoStartBtn').click();
+  await studio.locator('#startBtn').click();
   await expect.poll(() => page.evaluate(() => (window as any).lastRunSteps?.[0]?.script)).toBe('Teacher-approved source walkthrough.');
   await expect.poll(() => page.evaluate(() => (window as any).lastRunSteps?.[0]?.pauseAfter)).toBe(1);
 

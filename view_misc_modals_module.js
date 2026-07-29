@@ -52,6 +52,15 @@ function UDLGuideModal(props) {
     InteractiveBlueprintCard,
     activeBlueprint,
     addToast,
+    blueprintExecutionResult,
+    handleRebuildBlueprintStep,
+    lessonTemplates,
+    handleSaveLessonTemplate,
+    handleApplyLessonTemplate,
+    handleDeleteLessonTemplate,
+    handlePreviewBlueprintStep,
+    blueprintPreview,
+    closeBlueprintPreview,
     aiStandardQuery,
     aiStandardRegion,
     autoSendVoice,
@@ -222,6 +231,10 @@ function UDLGuideModal(props) {
     InteractiveBlueprintCard,
     {
       config: activeBlueprint,
+      run: blueprintExecutionResult,
+      onRebuildStep: handleRebuildBlueprintStep,
+      onSaveTemplate: handleSaveLessonTemplate,
+      onPreviewStep: handlePreviewBlueprintStep,
       onUpdate: handleBlueprintUIUpdate,
       onConfirm: handleExecuteBlueprint,
       onCancel: () => {
@@ -259,7 +272,72 @@ function UDLGuideModal(props) {
     },
     isSavingAdvice ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 10, className: "animate-spin" }) : /* @__PURE__ */ React.createElement(Save, { size: 10 }),
     isSavingAdvice ? t("chat_guide.save_actionable_loading") : t("chat_guide.save_actionable_btn")
-  ))), isChatProcessing && /* @__PURE__ */ React.createElement("div", { className: "flex items-start" }, /* @__PURE__ */ React.createElement("div", { className: `p-3 rounded-xl rounded-bl-none flex items-center gap-2 text-sm ${chatStyles.modelBubble}` }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin" }), " ", t("bot.mood_thinking")))), /* @__PURE__ */ React.createElement("div", { className: `p-3 border-t ${theme === "dark" ? "border-slate-700" : "border-slate-200"} ${chatStyles.inputArea}` }, /* @__PURE__ */ React.createElement(
+  ))), !activeBlueprint && Array.isArray(lessonTemplates) && lessonTemplates.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "w-full", "data-testid": "bp-template-picker" }, /* @__PURE__ */ React.createElement("p", { className: `text-[11px] mb-1 ${chatStyles.subText}` }, t("blueprint.template_picker_title") || "Start from one of your templates:"), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1" }, lessonTemplates.slice(0, 8).map((tpl) => /* @__PURE__ */ React.createElement("li", { key: tpl.id, className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "data-testid": "bp-template-apply",
+      onClick: () => handleApplyLessonTemplate(tpl.id),
+      className: `flex-grow text-left text-xs px-2 py-1.5 rounded border transition-colors ${chatStyles.secondaryButton}`
+    },
+    /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, tpl.name),
+    /* @__PURE__ */ React.createElement("span", { className: "opacity-70 ml-2" }, Array.isArray(tpl.resourcePlan) ? tpl.resourcePlan.length : 0, " ", t("blueprint.template_step_count") || "steps")
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "data-testid": "bp-template-delete",
+      onClick: () => handleDeleteLessonTemplate(tpl.id),
+      "aria-label": `${t("blueprint.template_delete") || "Delete template"}: ${tpl.name}`,
+      title: t("blueprint.template_delete") || "Delete template",
+      className: "text-xs px-2 py-1.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100"
+    },
+    "\xD7"
+  ))))), activeBlueprint && !(udlMessages || []).some((m) => m && m.type === "blueprint") && /* @__PURE__ */ React.createElement("div", { className: "w-full" }, /* @__PURE__ */ React.createElement("p", { className: `text-[11px] mb-1 ${chatStyles.subText}` }, t("blueprint.restored_notice") || "Your saved lesson plan:"), /* @__PURE__ */ React.createElement(
+    InteractiveBlueprintCard,
+    {
+      config: activeBlueprint,
+      run: blueprintExecutionResult,
+      onRebuildStep: handleRebuildBlueprintStep,
+      onSaveTemplate: handleSaveLessonTemplate,
+      onPreviewStep: handlePreviewBlueprintStep,
+      onUpdate: handleBlueprintUIUpdate,
+      onConfirm: handleExecuteBlueprint,
+      onCancel: () => setActiveBlueprint(null)
+    }
+  )), isChatProcessing && /* @__PURE__ */ React.createElement("div", { className: "flex items-start" }, /* @__PURE__ */ React.createElement("div", { className: `p-3 rounded-xl rounded-bl-none flex items-center gap-2 text-sm ${chatStyles.modelBubble}` }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin" }), " ", t("bot.mood_thinking")))), blueprintPreview && /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      className: `absolute inset-0 z-20 flex flex-col ${theme === "dark" ? "bg-slate-900" : "bg-white"}`,
+      role: "dialog",
+      "aria-modal": "true",
+      "aria-label": t("blueprint.preview_step") || "Preview this resource",
+      "data-testid": "bp-preview-overlay"
+    },
+    /* @__PURE__ */ React.createElement("div", { className: `p-3 flex items-center justify-between shrink-0 border-b ${theme === "dark" ? "border-slate-700" : "border-slate-200"}` }, /* @__PURE__ */ React.createElement("span", { className: `text-sm font-bold ${chatStyles.text}` }, blueprintPreview.itemTitle || blueprintPreview.title), /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "data-testid": "bp-preview-close",
+        onClick: closeBlueprintPreview,
+        "aria-label": t("common.close"),
+        className: "hover:bg-slate-500/20 p-1 rounded transition-colors"
+      },
+      /* @__PURE__ */ React.createElement(X, { size: 18 })
+    )),
+    /* @__PURE__ */ React.createElement("div", { className: "flex-1 overflow-auto p-4 custom-scrollbar" }, blueprintPreview.missing ? /* @__PURE__ */ React.createElement("p", { className: `text-sm ${chatStyles.subText}`, "data-testid": "bp-preview-missing" }, t("blueprint.preview_missing") || "That resource is no longer in this workspace. Rebuild the step to make it again.") : blueprintPreview.unsupported ? (
+      // generateResourceHTML has no branch for some types and returns
+      // '' — say so rather than showing an empty white box.
+      /* @__PURE__ */ React.createElement("p", { className: `text-sm ${chatStyles.subText}`, "data-testid": "bp-preview-unsupported" }, t("blueprint.preview_unsupported") || "This resource type opens in its own view rather than a preview.")
+    ) : /* @__PURE__ */ React.createElement(
+      "div",
+      {
+        className: "allo-preview-body text-sm",
+        "data-testid": "bp-preview-body",
+        dangerouslySetInnerHTML: { __html: blueprintPreview.html }
+      }
+    ))
+  ), /* @__PURE__ */ React.createElement("div", { className: `p-3 border-t ${theme === "dark" ? "border-slate-700" : "border-slate-200"} ${chatStyles.inputArea}` }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",

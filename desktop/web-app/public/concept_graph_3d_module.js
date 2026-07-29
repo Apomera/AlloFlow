@@ -646,6 +646,45 @@
     state.setNodeImage = renderNodeImage;
     state.setNodeObject = renderNodeSculpture;
     state.clearNodeArt = clearNodeArt;
+
+    // ── Recall mode — cover the labels so the ART is the only cue ──
+    // The Memory Palace's Recall Walk swaps each locus label for a '?' placard and
+    // lets the generated picture do the cueing; this is the same move for a concept
+    // space. Covering REBUILDS the sprite instead of hiding it, so the pill keeps
+    // its strand colour and every existing code path that repositions `m.label`
+    // per frame (tween, drag, distance-fade) needs no special case. The outgoing
+    // texture is disposed on every swap — a label restyle that leaks its
+    // CanvasTexture is a GPU leak this module has already been bitten by once.
+    function _swapLabel(m, text) {
+      if (!m || !m.label) return;
+      var old = m.label;
+      var sp = makeLabelSprite(THREE, text, m.node.color);
+      sp.position.copy(old.position);
+      if (old.material && sp.material) sp.material.opacity = old.material.opacity;
+      group.add(sp);
+      group.remove(old);
+      try { if (old.material) { if (old.material.map) old.material.map.dispose(); old.material.dispose(); } } catch (e) {}
+      m.label = sp;
+    }
+    function coverNodes(ids, coverText) {
+      var txt = coverText || '?';
+      (Array.isArray(ids) ? ids : []).forEach(function (id) {
+        var m = nodeById3d[id];
+        if (!m || m.covered) return;
+        m.covered = true;
+        _swapLabel(m, txt);
+      });
+    }
+    function revealNode(id) {
+      var m = nodeById3d[id];
+      if (!m || !m.covered) return;
+      m.covered = false;
+      _swapLabel(m, m.node.label);
+    }
+    function uncoverAll() { Object.keys(nodeById3d).forEach(revealNode); }
+    state.coverNodes = coverNodes;
+    state.revealNode = revealNode;
+    state.uncoverAll = uncoverAll;
     // Restore persisted art, then flush any calls the host made before GL mounted.
     (function applyInitialArt(map) {
       map = normalizeNodeArt(map);
@@ -1520,7 +1559,9 @@
     // aria-live region so screen-reader players hear the score too.
     state.flagNodes = function (statusById, announce) {
       statusById = statusById || {};
-      var TINT = { correct: '#22c55e', incorrect: '#ef4444', unplaced: '#eab308' };
+      // 'current' spotlights the node a Recall run is asking about — the labels are
+      // covered, so without it there is no way to tell which '?' is the question.
+      var TINT = { correct: '#22c55e', incorrect: '#ef4444', unplaced: '#eab308', current: '#38bdf8' };
       nodeMeshes.forEach(function (m) {
         var tint = TINT[statusById[m.node.id]];
         try {
@@ -1698,17 +1739,28 @@
     var maxUrl = isNum(opts.maxDataUrl) ? opts.maxDataUrl : 3500000;   // ~3.5 MB
     var MAX = isNum(opts.maxNodes) ? opts.maxNodes : 500;
     var ids = Object.keys(input), count = 0;
+    // The vivid image a batch furnish wrote for this node, kept alongside the art it
+    // produced. It is the same string twice over: the generation cue, and later the
+    // hint a Recall run surfaces after two misses (the palace shows a locus mnemonic
+    // the same way). Optional and length-capped — absent on hand-made art.
+    function _mnemonic(a) {
+      return (typeof a.mnemonic === 'string' && a.mnemonic.trim()) ? a.mnemonic.trim().slice(0, 240) : null;
+    }
     for (var i = 0; i < ids.length && count < MAX; i++) {
       var id = ids[i], a = input[id];
       if (!a || typeof a !== 'object') continue;
       if (a.type === 'image') {
         if (typeof a.dataUrl === 'string' && /^data:image\//i.test(a.dataUrl) && a.dataUrl.length <= maxUrl) {
           out[id] = { type: 'image', dataUrl: a.dataUrl }; count++;
+          if (_mnemonic(a)) out[id].mnemonic = _mnemonic(a);
         }
       } else if (a.type === 'sculpture') {
         var r = (P && P.normalizeRecipe) ? P.normalizeRecipe(a.recipe) : a.recipe;
         var ok = r && typeof r === 'object' && Array.isArray(r.parts) && r.parts.length;
-        if (ok) { out[id] = { type: 'sculpture', recipe: r }; count++; }
+        if (ok) {
+          out[id] = { type: 'sculpture', recipe: r }; count++;
+          if (_mnemonic(a)) out[id].mnemonic = _mnemonic(a);
+        }
       }
     }
     return out;
@@ -1766,12 +1818,17 @@
     var artApi = {
       setNodeImage: function (id, dataUrl) { _artCall(function () { state.setNodeImage(id, dataUrl); }); },
       setNodeObject: function (id, recipe) { _artCall(function () { state.setNodeObject(id, recipe); }); },
-      clearNodeArt: function (id) { _artCall(function () { state.clearNodeArt(id); }); }
+      clearNodeArt: function (id) { _artCall(function () { state.clearNodeArt(id); }); },
+      // Recall covers/reveals ride the same pre-mount buffer: a run can be armed
+      // before GL finishes loading, and a dropped cover would leak the answers.
+      coverNodes: function (ids, txt) { _artCall(function () { state.coverNodes(ids, txt); }); },
+      revealNode: function (id) { _artCall(function () { state.revealNode(id); }); },
+      uncoverAll: function () { _artCall(function () { state.uncoverAll(); }); }
     };
 
     if (!isWebGLAvailable()) {
       showFallback(t('cg3d.no_webgl') || 'This browser cannot show the 3D view. Showing the reading-order outline instead.');
-      return { destroy: destroy, update: function () {}, fellBack: true, flagNodes: flagNodes, setNodeImage: function () {}, setNodeObject: function () {}, clearNodeArt: function () {}, setConstellation: function () {}, snapshot: function () { return null; } };
+      return { destroy: destroy, update: function () {}, fellBack: true, flagNodes: flagNodes, setNodeImage: function () {}, setNodeObject: function () {}, clearNodeArt: function () {}, coverNodes: function () {}, revealNode: function () {}, uncoverAll: function () {}, setConstellation: function () {}, snapshot: function () { return null; } };
     }
 
     var holder = document.createElement('div');
@@ -1793,7 +1850,8 @@
       showFallback(t('cg3d.load_error') || 'The 3D library could not load. Showing the reading-order outline instead.');
     });
 
-    return { destroy: destroy, update: function () {}, fellBack: false, flagNodes: flagNodes, setNodeImage: artApi.setNodeImage, setNodeObject: artApi.setNodeObject, clearNodeArt: artApi.clearNodeArt, setConstellation: applyConstellation,
+    return { destroy: destroy, update: function () {}, fellBack: false, flagNodes: flagNodes, setNodeImage: artApi.setNodeImage, setNodeObject: artApi.setNodeObject, clearNodeArt: artApi.clearNodeArt,
+      coverNodes: artApi.coverNodes, revealNode: artApi.revealNode, uncoverAll: artApi.uncoverAll, setConstellation: applyConstellation,
       snapshot: function () { return state.snapshot ? state.snapshot() : null; } };
   }
 

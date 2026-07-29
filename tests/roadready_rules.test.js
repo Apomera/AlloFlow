@@ -1957,6 +1957,15 @@ describe('RoadReady road-local traffic invariants', () => {
     expect(src).toContain('var rearState = followingVehicleRoadState(');
     expect(src).not.toContain('var sameLaneAsNearest;');
     expect(src).not.toContain('stats._lastCloseFollow');
+    expect(src).toContain('function schoolBusServiceStopAllowed(profileOrChunk)');
+    expect(src).toContain('function schoolBusApproachDistanceWorld(speedMps, weather)');
+    expect(src).toContain('function schoolBusStopRequirement(world, profileOrChunk, observer, bus)');
+    expect(src).toContain('physicalMedianBarrier: true');
+    expect(src).toContain('var busRequirement = schoolBusStopRequirement(');
+    expect(src).toContain('var crossedStoppedBus = bus._playerBusPreviousAhead != null');
+    expect(src).toContain("} else if (t.type === 'schoolbus' && !busServiceStopAllowed) {");
+    expect(src).not.toContain("if (!bus._stopArmActive) continue;");
+    expect(src).not.toContain('dist < 4 && Math.abs(car.speed) > 2.3');
     expect(src).toContain('var roadRel = trafficRelativeRoadPosition(');
     expect(src).toContain('var pendingRel = trafficRelativeRoadPosition(');
     expect(src).not.toContain('var ah = (other2.y - t.y) * myDirSign');

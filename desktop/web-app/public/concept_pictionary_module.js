@@ -162,6 +162,7 @@ const buildSketchSubmissionSummary = (participantUids, strokesByUid, statuses, m
   });
 };
 const SKETCH_FEEDBACK_MAX_LENGTH = 800;
+const SKETCH_PROMPT_MAX_LENGTH = 500;
 const SKETCH_CRITERION_MAX_LENGTH = 400;
 const SKETCH_VOTE_MIN_CANDIDATES = 2;
 const SKETCH_VOTE_MAX_CANDIDATES = 6;
@@ -171,6 +172,13 @@ const DEFAULT_SKETCH_CRITERION = "Which sketch most clearly and accurately commu
 const normalizeSketchCriterion = (value) => {
   const text = String(value || "").replace(/\s+/g, " ").trim().slice(0, SKETCH_CRITERION_MAX_LENGTH);
   return text || DEFAULT_SKETCH_CRITERION;
+};
+const normalizePreparedSketchState = (input) => {
+  const sourceValue = input && typeof input === "object" ? input : {};
+  return {
+    prompt: String(sourceValue.prompt || "").replace(/\u0000/g, "").trim().slice(0, SKETCH_PROMPT_MAX_LENGTH),
+    criterion: normalizeSketchCriterion(sourceValue.criterion)
+  };
 };
 const normalizeSketchFeedback = (input) => {
   const sourceValue = input && typeof input === "object" ? input : {};
@@ -1618,6 +1626,13 @@ const PictionaryHostView = React.memo((props) => {
   const visionProviderLabel = String(props.visionProviderLabel || "configured AI provider").replace(/\s+/g, " ").trim().slice(0, SKETCH_VISION_PROVIDER_LABEL_MAX_LENGTH) || "configured AI provider";
   const sourceText = props.sourceText || "";
   const initialMode = normalizePictionaryActivityMode(props.initialMode);
+  const initialPreparedSketch = normalizePreparedSketchState({
+    prompt: props.initialPrompt,
+    criterion: props.initialCriterion
+  });
+  const hasInitialParticipantSelection = Array.isArray(props.initialParticipantUids);
+  const initialSketchParticipantUids = hasInitialParticipantSelection ? Array.from(new Set(props.initialParticipantUids.map((uid) => String(uid || "").trim().slice(0, 128)).filter((uid) => uid && Object.prototype.hasOwnProperty.call(roster, uid)))).slice(0, 250) : Object.keys(roster);
+  const preparedSeedKey = String(props.preparedSeedKey || "").slice(0, 128);
   const resources = Array.isArray(props.resources) ? props.resources : [];
   const groups = props.sessionData && props.sessionData.groups || {};
   const onSendToStudent = props.onSendToStudent || null;
@@ -1636,7 +1651,7 @@ const PictionaryHostView = React.memo((props) => {
   const [sketchModeration, setSketchModeration] = React.useState({});
   const [followUpResourceId, setFollowUpResourceId] = React.useState("");
   const [lastRevealedSketchUid, setLastRevealedSketchUid] = React.useState(null);
-  const [sketchCriterion, setSketchCriterion] = React.useState(DEFAULT_SKETCH_CRITERION);
+  const [sketchCriterion, setSketchCriterion] = React.useState(initialPreparedSketch.criterion);
   const [sketchAttemptsByUid, setSketchAttemptsByUid] = React.useState({});
   const [sketchFeedbackDraftsByUid, setSketchFeedbackDraftsByUid] = React.useState({});
   const [sketchFeedbackByUid, setSketchFeedbackByUid] = React.useState({});
@@ -1661,9 +1676,13 @@ const PictionaryHostView = React.memo((props) => {
     else next[uid] = true;
     return next;
   });
-  const [concept, setConcept] = React.useState("");
+  const [concept, setConcept] = React.useState(
+    initialMode === SKETCH_RESPONSE_ACTIVITY_MODE ? initialPreparedSketch.prompt : ""
+  );
   const [conceptIdeas, setConceptIdeas] = React.useState([]);
-  const [drawerUids, setDrawerUids] = React.useState([]);
+  const [drawerUids, setDrawerUids] = React.useState(
+    initialMode === SKETCH_RESPONSE_ACTIVITY_MODE ? initialSketchParticipantUids : []
+  );
   const [durationMs, setDurationMs] = React.useState(6e4);
   const [activeRoundMeta, setActiveRoundMeta] = React.useState(null);
   const [roundActive, setRoundActive] = React.useState(false);
@@ -1795,9 +1814,11 @@ const PictionaryHostView = React.memo((props) => {
     setActivityMode(initialMode);
     activityModeRef.current = initialMode;
     if (initialMode === SKETCH_RESPONSE_ACTIVITY_MODE) {
-      setDrawerUids(Object.keys(roster));
+      setConcept(initialPreparedSketch.prompt);
+      setSketchCriterion(initialPreparedSketch.criterion);
+      setDrawerUids(initialSketchParticipantUids);
     }
-  }, [isOpen, initialMode]);
+  }, [isOpen, initialMode, preparedSeedKey]);
   React.useEffect(() => {
     if (!isOpen) return;
     if (initialConceptIdeas && initialConceptIdeas.length > 0) {
@@ -2772,6 +2793,7 @@ const PictionaryGuestOverlay = React.memo((props) => {
     sanitizeSketchShowcaseStrokes: sanitizeSketchShowcaseStrokes,
     buildSketchSubmissionSummary: buildSketchSubmissionSummary,
     normalizeSketchCriterion: normalizeSketchCriterion,
+    normalizePreparedSketchState: normalizePreparedSketchState,
     normalizeSketchFeedback: normalizeSketchFeedback,
     sanitizeSketchVisionStrokes: sanitizeSketchVisionStrokes,
     buildSketchVisionFeedbackPrompt: buildSketchVisionFeedbackPrompt,

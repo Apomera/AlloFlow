@@ -82,13 +82,34 @@ describe('quiz modes as customizable presets', () => {
     expect(source).toContain('tolerance');
   });
 
-  it('reports structured deterministic scores to live dashboards', () => {
-    for (const type of ['multi-select', 'answer-evidence', 'numeric-response']) {
-      expect(aggregators.gradeResponseForItem({
-        itemType: type,
-        answer: { status: 'partially-correct', score: 50 },
-      }, { type })).toMatchObject({ status: 'partially-correct', score: 50 });
-    }
+  it('reports canonical structured scores to live dashboards', () => {
+    const cases = [
+      {
+        question: { type: 'multi-select', options: ['A', 'B', 'C'], correctAnswers: ['A', 'C'] },
+        response: { itemType: 'multi-select', answer: { selectedIndices: [0], status: 'correct', score: 100 } },
+        score: 50,
+      },
+      {
+        question: {
+          type: 'answer-evidence',
+          answerOptions: ['Right', 'Wrong'],
+          correctAnswer: 'Right',
+          evidenceOptions: ['Strong', 'Weak'],
+          correctEvidence: 'Strong',
+        },
+        response: { itemType: 'answer-evidence', answer: { answerIdx: 0, evidenceIdx: 1, status: 'correct', score: 2 } },
+        score: 1,
+      },
+      {
+        question: { type: 'numeric-response', correctValue: 10, tolerance: 0, unit: 'cm' },
+        response: { itemType: 'numeric-response', answer: { numericValue: 10, unit: 'm', status: 'correct', score: 100 } },
+        score: 50,
+      },
+    ];
+    cases.forEach(({ question, response, score }) => {
+      expect(aggregators.gradeResponseForItem(response, question))
+        .toMatchObject({ status: 'partially-correct', score });
+    });
   });
 
   it('treats explicit counts as authoritative and keeps local generation type-aware', () => {
@@ -151,6 +172,20 @@ describe('quiz modes as customizable presets', () => {
     expect(app).toContain('window.AlloFlowVoice');
     expect(app).toContain('dictationStatus={dictationStatus}');
     expect(app).toContain('target.isContentEditable');
+  });
+
+  it('honors the existing visual-MCQ toggle on local and remote AI backends', () => {
+    const source = dispatcherSource();
+    const visualConfigStart = source.indexOf('const _mcqVisualMode');
+    const localStart = source.indexOf('if (usesLocalTextBackend)', visualConfigStart);
+    const remoteStart = source.indexOf('} else {', localStart);
+    const localPrompt = source.slice(localStart, remoteStart);
+    expect(localPrompt).toContain('VISUAL MCQ (question stimulus)');
+    expect(localPrompt).toContain('"imagePrompt" field');
+    expect(localPrompt).toContain('VISUAL MCQ (option images)');
+    expect(localPrompt).toContain('"optionImagePrompts" array');
+    expect(source.split('VISUAL MCQ (question stimulus)').length - 1).toBeGreaterThanOrEqual(2);
+    expect(source.split('VISUAL MCQ (option images)').length - 1).toBeGreaterThanOrEqual(2);
   });
 
   it('renders every supported question type on the presentation board', () => {

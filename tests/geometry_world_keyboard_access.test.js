@@ -420,9 +420,48 @@ describe('Geometry World every overlay is a dialog', () => {
     expect(SOURCE).not.toMatch(/if \(ms\.show\w+\) \{ upd\('show\w+', false\); break; \}/);
   });
 
+  it('keeps forward and reverse Tab focus inside every modal dialog', () => {
+    const m = mountTool(cfg, { _introShownOnce: true, worldActive: true, showMyLessons: true });
+    const dlg = m.container.querySelector('[aria-label="My lessons"]');
+    const close = dlg.querySelector('button');
+
+    close.focus();
+    const forward = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+    close.dispatchEvent(forward);
+    expect(forward.defaultPrevented).toBe(true);
+    expect(document.activeElement).toBe(close);
+
+    dlg.focus();
+    const reverse = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true, cancelable: true });
+    dlg.dispatchEvent(reverse);
+    expect(reverse.defaultPrevented).toBe(true);
+    expect(document.activeElement).toBe(close);
+    m.unmount();
+  }, 20000);
+
+  it('returns focus to the world when Back to Game closes all overlays', () => {
+    const m = mountTool(cfg, { _introShownOnce: true, worldActive: true, showMyLessons: true });
+    const world = m.container.querySelector('#geoworld-fs-wrap');
+    const back = Array.from(
+      m.container.querySelectorAll('button')
+    ).find(function(button) { return button.textContent.indexOf('Back to Game') >= 0; });
+
+    expect(back).toBeTruthy();
+    React.act(function() { back.click(); });
+    expect(document.activeElement).toBe(world);
+    m.unmount();
+  }, 20000);
+
+  it('shows the high-contrast focus ring on every native control in the tool', () => {
+    expect(SOURCE).toContain("className: 'gw-root'");
+    expect(SOURCE).toContain('.gw-root button:focus-visible');
+    expect(SOURCE).toContain('.gw-root textarea:focus-visible');
+  });
+
   it('shares one guarded focus ref rather than repeating it per panel', () => {
     expect(SOURCE).toContain('function gwDialogRef(node) {');
     expect(SOURCE).toContain('if (node && !node._gwDialogFocused) {');
+    expect(SOURCE).toContain("node.addEventListener('keydown', trapDialogTabKey);");
     expect((SOURCE.match(/ref: gwDialogRef/g) || []).length).toBeGreaterThanOrEqual(9);
   });
 });
@@ -521,4 +560,249 @@ describe('Geometry World application mode is scoped to the 3D surface', () => {
     expect(desc.textContent).toMatch(/arrow keys/i);
     m.unmount();
   }, 20000);
+});
+
+describe('Geometry World mobile action WCAG parity', () => {
+  it('gives every touch action native button and keyboard activation semantics', () => {
+    [
+      ['Jump', 'jump', 'activateMobileJump'],
+      ['Place block', 'place', 'placeMobileBlock'],
+      ['Break block', 'break', 'breakMobileBlock'],
+      ['Measure structure', 'measure', 'measureMobileStructure'],
+      ['Talk to nearby character', 'talk', 'talkToNearbyNpc'],
+      ['Undo last block action', 'undo', 'undoMobileBlockAction'],
+    ].forEach(function(pair) {
+      expect(SOURCE).toContain("type: 'button', className: 'gw-focusable', 'aria-label': '" + pair[0]);
+      expect(SOURCE).toContain(`onClick: function() { runMobileButtonAction('${pair[1]}', ${pair[2]}); },`);
+    });
+    expect(SOURCE).toContain("engine._lastTouchAction = { key: actionKey, at: Date.now() };");
+    expect(SOURCE).toContain("Date.now() - lastTouch.at < 700");
+  });
+
+  it('gives icon-only controls explicit names and toggle state', () => {
+    expect(SOURCE).toContain("'aria-label': d.autoCycle ? 'Stop automatic day and night cycle'");
+    expect(SOURCE).toContain("'aria-pressed': d.autoCycle ? 'true' : 'false'");
+    expect(SOURCE).toContain("'aria-label': 'Load saved lesson: ' + (lesson.title || 'Untitled lesson')");
+    expect(SOURCE).toContain("'aria-label': 'Delete saved lesson: ' + (lesson.title || 'Untitled lesson')");
+  });
+});
+
+describe('Geometry World visual refinement contract', () => {
+  it('keeps the primary hierarchy classes on the toolbar, stats and viewport', () => {
+    expect(SOURCE).toContain("className: 'gw-toolbar'");
+    expect(SOURCE).toContain("className: 'gw-brand-mark'");
+    expect((SOURCE.match(/className: 'gw-stat-chip'/g) || []).length).toBeGreaterThanOrEqual(2);
+    expect(SOURCE).toContain("className: 'gw-viewport'");
+  });
+
+  it('includes responsive and reduced-motion presentation fallbacks', () => {
+    expect(SOURCE).toContain('@media(max-width:720px)');
+    expect(SOURCE).toContain('@media(prefers-reduced-motion:reduce)');
+  });
+
+  it('keeps measurement details in a dismissible floating inspector', () => {
+    expect(SOURCE).toContain("className: 'gw-prediction-bar'");
+    expect(SOURCE).toContain("className: 'gw-measure-card'");
+    expect(SOURCE).toContain("'aria-label': 'Measurement inspector'");
+    expect(SOURCE).toContain("'aria-label': 'Close measurement inspector'");
+    expect(SOURCE).toContain('.gw-measure-card{position:absolute!important;');
+  });
+
+  it('uses one responsive floating-HUD system for guidance and notifications', () => {
+    expect(SOURCE).toContain("className: 'gw-achievement-toast'");
+    expect(SOURCE).toContain("role: 'status', 'aria-live': 'polite', className: 'gw-achievement-toast'");
+    expect(SOURCE).toContain("className: 'gw-return-dock'");
+    expect(SOURCE).toContain("className: 'gw-tutorial-shell'");
+    expect(SOURCE).toContain("className: 'gw-target-hint'");
+    expect(SOURCE).toContain('@keyframes gw-float-in');
+    expect(SOURCE).toContain('.gw-achievement-toast{animation:none!important;}');
+  });
+
+  it('separates the bottom controls into responsive visual tiers', () => {
+    expect(SOURCE).toContain("className: 'gw-badge-strip'");
+    expect(SOURCE).toContain("className: 'gw-shape-tray'");
+    expect(SOURCE).toContain("className: 'gw-hotbar'");
+    expect(SOURCE).toContain("className: 'gw-focusable gw-hotbar-item'");
+    expect(SOURCE).toContain("className: 'gw-action-bar'");
+    expect(SOURCE).toContain('.gw-action-bar{bottom:98px!important;');
+    expect(SOURCE).toContain('flex-wrap:nowrap!important;overflow-x:auto;');
+  });
+
+  it('uses shared dialog framing while preserving the full-screen intro variant', () => {
+    expect((SOURCE.match(/className: 'gw-dialog gw-dialog--compact(?:'| )/g) || []).length).toBeGreaterThanOrEqual(8);
+    expect(SOURCE).toContain("className: 'gw-dialog gw-dialog--intro'");
+    expect(SOURCE).toContain("className: 'gw-intro-card'");
+    expect(SOURCE).toContain("className: 'gw-primary-cta gw-intro-start gw-focusable'");
+    expect((SOURCE.match(/className: 'gw-dialog-close'/g) || []).length).toBeGreaterThanOrEqual(6);
+    expect(SOURCE).toContain("className: 'gw-dialog gw-dialog--npc'");
+    expect(SOURCE).toMatch(/className: 'gw-dialog gw-dialog--npc'[\s\S]{0,300}ref: gwDialogRef/);
+    expect(SOURCE).toContain('@media(max-width:520px)');
+  });
+
+  it('uses one accessible state-card system for mobile, loading and 3D recovery', () => {
+    expect(SOURCE).toContain("className: 'gw-root gw-state-screen'");
+    expect(SOURCE).toContain("'aria-labelledby': 'gw-mobile-title'");
+    expect(SOURCE).toContain("role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'aria-busy': 'true'");
+    expect(SOURCE).toContain("className: 'gw-loading-track', role: 'progressbar', 'aria-label': 'Loading 3D engine'");
+    expect(SOURCE).not.toContain("width: '60%'");
+    expect(SOURCE).toContain("role: 'alert', 'aria-live': 'assertive', className: 'gw-state-screen gw-state-screen--inline'");
+    expect(SOURCE).toContain("className: 'gw-recovery-details'");
+    expect((SOURCE.match(/className: 'gw-state-card'/g) || []).length).toBeGreaterThanOrEqual(3);
+    expect((SOURCE.match(/className: 'gw-primary-cta gw-state-primary gw-focusable'/g) || []).length).toBeGreaterThanOrEqual(2);
+    expect(SOURCE).toContain("type: 'button', className: 'gw-state-secondary gw-focusable'");
+    expect(SOURCE).toContain('.gw-state-icon,.gw-loading-mark,.gw-loading-sweep{animation:none!important}');
+  });
+
+  it('keeps secondary HUD overlays distinct, responsive and keyboard-readable', () => {
+    expect(SOURCE).toContain("className: 'gw-minimap'");
+    expect(SOURCE).toContain('bottom:150px!important');
+    expect(SOURCE).toContain("className: 'gw-collab-roster'");
+    expect(SOURCE).toContain("role: 'region',\n          'aria-label': 'Builders online'");
+    expect(SOURCE).toContain("'data-self': isMe ? 'true' : 'false'");
+    expect(SOURCE).toContain("className: 'gw-transform-panel', role: 'region', 'aria-label': 'Transform discovery'");
+    expect(SOURCE).toContain("className: 'gw-transform-state', role: 'status', 'aria-live': 'polite'");
+    expect(SOURCE).toContain("'aria-label': 'Add current transform to observation log'");
+    expect(SOURCE).toContain("'aria-label': 'Reset transform discovery'");
+    expect(SOURCE).toContain('@media(prefers-reduced-motion:reduce){.gw-minimap{transition:none!important}');
+  });
+
+  it('presents lesson objectives as a semantic progress dashboard', () => {
+    expect(SOURCE).toContain("className: 'gw-objective-panel', role: 'region', 'aria-labelledby': 'gw-objective-title'");
+    expect(SOURCE).toContain("id: 'gw-objective-title', className: 'gw-objective-title'");
+    expect(SOURCE).toContain("className: 'gw-objective-progress', role: 'progressbar'");
+    expect(SOURCE).toContain("'aria-valuenow': Math.min(score, totalQ)");
+    expect(SOURCE).toContain("return el(isDone ? 'div' : 'button'");
+    expect(SOURCE).toContain("type: isDone ? undefined : 'button'");
+    expect(SOURCE).toContain("'aria-label': isDone ? undefined : 'Navigate to objective: ' + objectiveText");
+    expect(SOURCE).toContain("className: 'gw-reset-button gw-focusable'");
+    expect(SOURCE).toContain("'aria-label': 'Reset lesson progress and reload the world'");
+    expect(SOURCE).toContain('.gw-collab-roster{top:auto;bottom:150px}');
+  });
+
+  it('unifies viewport controls and exposes interaction feedback accessibly', () => {
+    expect(SOURCE).toContain("className: 'gw-action-feedback', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true'");
+    expect(SOURCE).toContain("className: 'gw-crosshair', 'data-target': ct, 'aria-hidden': 'true'");
+    expect(SOURCE).toContain("isMobile ? 'Tap Talk' : 'Press E'");
+    expect(SOURCE).toContain("className: 'gw-viewport-control gw-viewport-control--fullscreen gw-focusable'");
+    expect(SOURCE).toContain("className: 'gw-viewport-control gw-viewport-control--vr gw-focusable'");
+    expect((SOURCE.match(/className: 'gw-viewport-control/g) || []).length).toBe(2);
+    expect(SOURCE).toContain('.gw-crosshair[data-target="npc_question"]');
+    expect(SOURCE).toContain('.gw-viewport-control--fullscreen{right:10px!important}');
+    expect(SOURCE).toContain('.gw-viewport-control--vr{left:10px!important;border-color:');
+    expect(SOURCE).toContain('.gw-crosshair{transition:none!important}');
+  });
+
+  it('styles secondary data panels and environmental alerts as accessible HUD content', () => {
+    expect(SOURCE).toContain("className: 'gw-history-panel', role: 'region', 'aria-label': 'Measurement history'");
+    expect(SOURCE).toContain("className: 'gw-history-title'");
+    expect(SOURCE).toContain("'data-current': mi === 0 ? 'true' : 'false'");
+    expect(SOURCE).toContain("className: 'gw-retrieval-card'");
+    expect(SOURCE).toContain("className: 'gw-retrieval-input gw-focusable'");
+    expect(SOURCE).toContain("className: 'gw-focusable gw-retrieval-button'");
+    expect(SOURCE).toContain("className: 'gw-inventory-panel', role: 'region', 'aria-label': 'Block inventory'");
+    expect(SOURCE).toContain("className: 'gw-inventory-row'");
+    expect(SOURCE).toContain('bottom:238px!important');
+    expect(SOURCE).toContain("className: 'gw-environment-tint gw-environment-tint--water'");
+    expect(SOURCE).toContain("'aria-hidden': 'true'");
+    expect(SOURCE).toContain("className: 'gw-environment-tint gw-environment-tint--lava'");
+    expect(SOURCE).toContain("className: 'gw-environment-warning', role: 'alert', 'aria-live': 'assertive', 'aria-atomic': 'true'");
+    expect(SOURCE).toContain('.gw-environment-warning{position:absolute;');
+    expect(SOURCE).toContain('@media(prefers-reduced-motion:reduce){.gw-environment-tint{transition:none!important}');
+  });
+
+  it('organizes the toolbar into responsive branded, status and prediction zones', () => {
+    expect(SOURCE).toContain("className: 'gw-root', 'aria-label': __alloT('stem.geometryworld.tool_name', 'Geometry World')");
+    expect(SOURCE).toContain("el('header', { className: 'gw-toolbar', 'aria-label': 'Geometry World lesson controls'");
+    expect(SOURCE).toContain("className: 'gw-brand-lockup'");
+    expect(SOURCE).toContain("el('h2', { id: 'gw-title', className: 'gw-title' }");
+    expect(SOURCE).toContain("className: 'gw-status-cluster', 'aria-label': 'Lesson status'");
+    expect(SOURCE).toContain("role: 'status', 'aria-live': 'polite', 'aria-label': 'Lesson progress: '");
+    expect(SOURCE).toContain("role: 'list', 'aria-label': Object.keys(earnedBadges).length + ' achievement badges earned'");
+    expect(SOURCE).toContain("role: 'listitem', 'aria-label': a.name + ': ' + a.desc");
+    expect(SOURCE).toContain('.gw-toolbar{display:grid!important;grid-template-columns:minmax(0,1fr) auto;');
+    expect(SOURCE).toContain('.gw-prediction-bar{grid-column:1/-1;display:grid!important;');
+    expect(SOURCE).toContain('.gw-status-cluster{grid-row:2;width:100%;justify-content:flex-start;overflow-x:auto;');
+  });
+
+  it('presents onboarding as a named, responsive tutorial with semantic progress', () => {
+    expect(SOURCE).toContain("role: 'region', 'aria-labelledby': 'gw-tutorial-title', 'aria-describedby': 'gw-tutorial-instruction'");
+    expect(SOURCE).toContain("el('h3', { id: 'gw-tutorial-title', className: 'gw-tutorial-title' }");
+    expect(SOURCE).toContain("['Explore the world', 'Meet a guide', 'Measure a structure', 'Build a block'][tutorialStep]");
+    expect(SOURCE).toContain("id: 'gw-tutorial-instruction', className: 'gw-tutorial-instruction'");
+    expect(SOURCE).toContain("className: 'gw-tutorial-progress', role: 'progressbar', 'aria-label': 'Tutorial progress'");
+    expect(SOURCE).toContain("'aria-valuenow': tutorialStep + 1");
+    expect(SOURCE).toContain("className: 'gw-tutorial-dot', 'data-complete': si < tutorialStep ? 'true' : 'false'");
+    expect(SOURCE).toContain("className: 'gw-tutorial-actions'");
+    expect(SOURCE).toContain("className: 'gw-tutorial-skip gw-focusable'");
+    expect(SOURCE).toContain("className: 'gw-tutorial-next gw-focusable'");
+    expect(SOURCE).toContain("tutorialStep === 3 ? 'Finish tutorial and start exploring'");
+    expect(SOURCE).toContain("tutorialStep === 3 ? 'Start exploring' : 'Next \\u2192'");
+    expect(SOURCE).toContain('.gw-tutorial-shell{bottom:150px!important;');
+    expect(SOURCE).toContain('.gw-tutorial-skip,.gw-tutorial-next{min-height:44px;flex:1}');
+    expect(SOURCE).toContain('@media(prefers-reduced-motion:reduce){.gw-tutorial-dot{transition:none!important}');
+  });
+
+  it('frames the lesson introduction as structured content with distinct start paths', () => {
+    expect(SOURCE).toContain("'aria-labelledby': 'gw-intro-title', 'aria-describedby': 'gw-intro-description'");
+    expect(SOURCE).toContain("el('h2', { id: 'gw-intro-title', className: 'gw-intro-title' }");
+    expect(SOURCE).toContain("el('p', { id: 'gw-intro-description', className: 'gw-intro-description' }");
+    expect(SOURCE).toContain("el('section', { className: 'gw-intro-objectives', 'aria-labelledby': 'gw-intro-objectives-title'");
+    expect(SOURCE).toContain("el('ol', null");
+    expect(SOURCE).toContain("return el('li', { key: 'objlist-' + i");
+    expect(SOURCE).toContain("className: 'gw-intro-formula', role: 'note', 'aria-label': 'Key formulas'");
+    expect(SOURCE).toContain("className: 'gw-intro-meta', 'aria-label': 'Lesson overview'");
+    expect(SOURCE).toContain("className: 'gw-intro-actions'");
+    expect(SOURCE).toContain("className: 'gw-primary-cta gw-intro-start gw-focusable'");
+    expect(SOURCE).toContain("className: 'gw-intro-secondary gw-focusable'");
+    expect(SOURCE).toContain("'aria-label': 'Start lesson without the guided tutorial'");
+    expect(SOURCE).toContain('function loadLessonByKey(lessonKey, _attempt, skipTutorial)');
+    expect(SOURCE).toContain('loadLessonByKey(lessonKey, attempt + 1, skipTutorial)');
+    expect(SOURCE).toContain('if (skipTutorial) { lessonState.tutorialStep = 4; lessonState.tutorialDismissed = true; }');
+    expect(SOURCE).toContain('.gw-intro-card{box-sizing:border-box;width:min(520px,calc(100% - 24px))!important;');
+    expect(SOURCE).toContain('.gw-intro-actions{flex-direction:column}');
+  });
+
+  it('makes reflection evidence, writing readiness and optional continuation explicit', () => {
+    expect(SOURCE).toContain("className: 'gw-dialog gw-dialog--compact gw-reflection-dialog'");
+    expect(SOURCE).toContain("'aria-labelledby': 'gw-reflection-title', 'aria-describedby': 'gw-reflection-description gw-reflection-prompt'");
+    expect(SOURCE).toContain("el('h2', { id: 'gw-reflection-title', className: 'gw-reflection-title' }");
+    expect(SOURCE).toContain("id: 'gw-reflection-prompt', className: 'gw-reflection-prompt'");
+    expect(SOURCE).toContain("htmlFor: 'gw-reflection-text', className: 'gw-reflection-label'");
+    expect(SOURCE).toContain("id: 'gw-reflection-text', className: 'gw-reflection-textarea gw-focusable'");
+    expect(SOURCE).toContain("maxLength: 600, 'aria-describedby': 'gw-reflection-prompt gw-reflection-count'");
+    expect(SOURCE).toContain("className: 'gw-reflection-footer'");
+    expect(SOURCE).toContain("className: 'gw-reflection-readiness', 'data-ready': reflectionText.trim() ? 'true' : 'false'");
+    expect(SOURCE).toContain("id: 'gw-reflection-count'");
+    expect(SOURCE).toContain("className: 'gw-reflection-actions'");
+    expect(SOURCE).toContain("className: 'gw-reflection-save gw-focusable', disabled: !reflectionText.trim()");
+    expect(SOURCE).toContain("text: reflectionText.trim()");
+    expect(SOURCE).toContain("className: 'gw-reflection-skip gw-focusable'");
+    expect(SOURCE).toContain("'aria-label': 'Continue without saving a reflection'");
+    expect(SOURCE).toContain('.gw-reflection-dialog{box-sizing:border-box;width:min(430px,calc(100% - 24px))!important;');
+    expect(SOURCE).toContain('.gw-reflection-textarea{box-sizing:border-box;width:100%!important;min-height:92px;');
+    expect(SOURCE).toContain('.gw-reflection-save,.gw-reflection-skip{width:100%;min-height:48px}');
+  });
+
+  it('presents lesson completion as a focused results dialog with semantic metrics', () => {
+    expect(SOURCE).toContain("className: 'gw-dialog gw-dialog--compact gw-completion-dialog'");
+    expect(SOURCE).toContain("'aria-labelledby': 'gw-completion-title', 'aria-describedby': 'gw-completion-description'");
+    expect(SOURCE).toContain("el('h2', { id: 'gw-completion-title', className: 'gw-completion-title' }");
+    expect(SOURCE).toContain("el('p', { id: 'gw-completion-description', className: 'gw-completion-description' }");
+    expect(SOURCE).toContain("className: 'gw-completion-metrics', role: 'list', 'aria-label': 'Lesson activity summary'");
+    expect(SOURCE).toContain("className: 'gw-completion-metric', role: 'listitem'");
+    expect(SOURCE).toContain("className: 'gw-completion-actions'");
+    expect(SOURCE).toContain("type: 'button', className: 'gw-completion-next gw-focusable'");
+    expect(SOURCE).toContain("'aria-label': 'Continue to next lesson: '");
+    expect(SOURCE).toContain("type: 'button', className: 'gw-completion-replay gw-focusable'");
+    expect(SOURCE).toContain("'aria-label': 'Replay current lesson'");
+    expect(SOURCE).toContain("upd({ activeLesson: nextKey, measureHistory: [], reflectionText: '' })");
+    expect(SOURCE).toContain("upd({ measureHistory: [], reflectionText: '' })");
+    expect(SOURCE).toContain("el('section', { className: 'gw-completion-journey', 'aria-labelledby': 'gw-journey-title'");
+    expect(SOURCE).toContain("el('h3', { id: 'gw-journey-title', className: 'gw-journey-title' }");
+    expect(SOURCE).toContain("className: 'gw-journey-stats', role: 'list', 'aria-label': 'Course achievement summary'");
+    expect(SOURCE).toContain("className: 'gw-journey-stat', role: 'listitem', 'data-metric': 'badges'");
+    expect(SOURCE).toContain("el('blockquote', { className: 'gw-journey-quote' }");
+    expect(SOURCE).toContain('.gw-completion-dialog{box-sizing:border-box;width:min(460px,calc(100% - 24px))!important;');
+    expect(SOURCE).toContain('.gw-completion-next,.gw-completion-replay{width:100%;min-height:48px}');
+  });
 });

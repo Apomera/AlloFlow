@@ -204,6 +204,10 @@ const GoldenThreadPanel = ({
 };
 const InteractiveBlueprintCard = React.memo(({
   config,
+  run,
+  onRebuildStep,
+  onPreviewStep,
+  onSaveTemplate,
   onUpdate,
   onConfirm,
   onCancel
@@ -215,6 +219,11 @@ const InteractiveBlueprintCard = React.memo(({
   const [draggedItemIndex, setDraggedItemIndex] = useState(null);
   const [reorderStatus, setReorderStatus] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  // Save-as-template review state. `directivePolicy` is {uiId: 'blank'} for
+  // rows the teacher chose NOT to carry forward; anything absent means keep.
+  const [showTemplateSave, setShowTemplateSave] = useState(false);
+  const [templateName, setTemplateName] = useState('');
+  const [directivePolicy, setDirectivePolicy] = useState({});
   const getReadableToolLabel = id => String(id || '').split('-').map(part => part ? part.charAt(0).toUpperCase() + part.slice(1) : '').join(' ');
   const getPlanItems = cfg => {
     if (!cfg) return [];
@@ -235,9 +244,12 @@ const InteractiveBlueprintCard = React.memo(({
   }, [config]);
   const syncChanges = newItems => {
     setItems(newItems);
+    // Carry the row identity back into the config. Without this every teacher
+    // edit re-derived positional ids and broke the plan<->resource binding.
     const resourcePlan = newItems.map(i => ({
       tool: i.type,
-      directive: i.directive || ""
+      directive: i.directive || "",
+      uiId: i.id
     }));
     const toolDirectives = resourcePlan.reduce((acc, curr) => {
       if (!acc[curr.tool]) acc[curr.tool] = curr.directive || "";
@@ -505,6 +517,58 @@ const InteractiveBlueprintCard = React.memo(({
     // a bare reference would be a ReferenceError in this module,
     // and the host mirror may not have run yet on first paint.
     const _st = typeof window !== 'undefined' && typeof window._alloStationStyle === 'function' ? window._alloStationStyle(item.type) : null;
+    // Execution status for THIS row, keyed by the Stage 2 uiId —
+    // never by position, because normalizePlanItems reorders the
+    // plan (analysis first, lesson-plan last) and a positional
+    // lookup would label the wrong rows.
+    const _rowRun = run && run.rows && run.rows[item.id] || null;
+    const _status = _rowRun && _rowRun.status;
+    const _statusStyle = {
+      planned: {
+        label: t('blueprint.status_planned') || 'Planned',
+        cls: 'bg-slate-100 text-slate-600 border-slate-200'
+      },
+      running: {
+        label: t('blueprint.status_running') || 'Building...',
+        cls: 'bg-indigo-50 text-indigo-700 border-indigo-200'
+      },
+      landed: {
+        label: t('blueprint.status_landed') || 'Done',
+        cls: 'bg-emerald-50 text-emerald-700 border-emerald-200'
+      },
+      failed: {
+        label: t('blueprint.status_failed') || 'Failed',
+        cls: 'bg-red-50 text-red-700 border-red-200'
+      },
+      interrupted: {
+        label: t('blueprint.status_interrupted') || 'Interrupted',
+        cls: 'bg-amber-50 text-amber-800 border-amber-200'
+      }
+    }[_status] || null;
+    // Audit coverage. Only meaningful once an audit has actually
+    // run, so nothing is shown before that — a plan-wide "not
+    // audited" would be noise, not information.
+    //
+    // Coverage is by resourceId, not by row: a row regenerated
+    // after the audit gets a NEW resourceId and therefore drops
+    // out of the audited set on its own. That is the staleness
+    // signal, and it needs no extra bookkeeping.
+    const _auditIds = run && run.audit && Array.isArray(run.audit.resourceIds) ? run.audit.resourceIds : null;
+    const _isAuditRow = !!(run && run.audit && run.audit.rowUiId === item.id);
+    // A resource trimmed out of history by MAX_OFFLINE_ITEMS is
+    // gone. Claiming it is "Audited" would assert coverage of
+    // something that no longer exists — say it is missing instead.
+    const _missing = !!(_rowRun && _rowRun.resourceMissing);
+    const _auditBadge = _missing ? {
+      label: t('blueprint.resource_missing') || 'Resource gone',
+      cls: 'bg-slate-100 text-slate-700 border-slate-300'
+    } : !_auditIds || _isAuditRow || _status !== 'landed' ? null : _rowRun && _auditIds.indexOf(_rowRun.resourceId) !== -1 ? {
+      label: t('blueprint.audit_covered') || 'Audited',
+      cls: 'bg-teal-50 text-teal-700 border-teal-200'
+    } : {
+      label: t('blueprint.audit_stale') || 'Not in audit',
+      cls: 'bg-amber-50 text-amber-800 border-amber-200'
+    };
     return /*#__PURE__*/React.createElement("div", {
       key: item.id,
       className: "flex gap-3 items-start p-3 bg-slate-50 rounded-lg border border-slate-100 border-l-4",
@@ -527,11 +591,19 @@ const InteractiveBlueprintCard = React.memo(({
     }, _st.icon) : idx + 1), /*#__PURE__*/React.createElement("div", {
       className: "flex-grow"
     }, /*#__PURE__*/React.createElement("span", {
-      className: "text-xs font-bold px-2 py-0.5 rounded border uppercase tracking-wider inline-flex items-center gap-1 w-fit mb-1",
+      className: "text-xs font-bold px-2 py-0.5 rounded border uppercase tracking-wider inline-flex items-center gap-1 w-fit mb-1"
+      // WCAG 1.4.3: the station registry's `stroke` is a
+      // GRAPHICAL colour (designed for SVG station
+      // glyphs, where 3:1 suffices). Using it as label
+      // TEXT failed 4.5:1 on 27 of 29 tool families —
+      // brainstorm was 2.07:1. Colour identity stays in
+      // the fill, border and accent stripe; the text
+      // itself is slate-700, >=9.26:1 on every fill.
+      ,
       style: _st ? {
         backgroundColor: _st.fill,
         borderColor: _st.stroke,
-        color: _st.stroke
+        color: '#334155'
       } : {
         backgroundColor: '#eef2ff',
         borderColor: '#e0e7ff',
@@ -539,12 +611,107 @@ const InteractiveBlueprintCard = React.memo(({
       }
     }, /*#__PURE__*/React.createElement("span", {
       className: "opacity-70 font-normal"
-    }, idx + 1), getToolLabel(item.type)), /*#__PURE__*/React.createElement("p", {
+    }, idx + 1), getToolLabel(item.type)), _statusStyle && /*#__PURE__*/React.createElement("span", {
+      className: `ml-2 text-[10px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider ${_statusStyle.cls}`,
+      role: "status",
+      "aria-live": _status === 'running' ? 'polite' : 'off'
+    }, _statusStyle.label), _auditBadge && /*#__PURE__*/React.createElement("span", {
+      className: `ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider ${_auditBadge.cls}`,
+      "data-testid": "bp-audit-badge"
+    }, _auditBadge.label), typeof onPreviewStep === 'function' && _status === 'landed' && !_missing && /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-testid": "bp-preview-btn",
+      "data-help-key": "blueprint_preview_step_btn",
+      onClick: () => onPreviewStep(item.id),
+      title: t('blueprint.preview_step') || 'Preview this resource',
+      "aria-label": `${t('blueprint.preview_step') || 'Preview this resource'}: ${getToolLabel(item.type)}`,
+      className: "ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100 hover:border-slate-400 transition-colors"
+    }, t('blueprint.preview_step_short') || 'Preview'), typeof onRebuildStep === 'function' && _status && _status !== 'running' && /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-testid": "bp-rebuild-btn",
+      "data-help-key": "blueprint_rebuild_step_btn",
+      onClick: () => onRebuildStep(item.id),
+      title: t('blueprint.rebuild_step') || 'Rebuild just this step',
+      "aria-label": `${t('blueprint.rebuild_step') || 'Rebuild just this step'}: ${getToolLabel(item.type)}`,
+      className: "ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100 hover:border-slate-400 transition-colors"
+    }, t('blueprint.rebuild_step_short') || 'Rebuild'), /*#__PURE__*/React.createElement("p", {
       className: "text-sm text-slate-700 leading-relaxed italic"
     }, "\"", item.directive || "No specific instructions.", "\"")));
   }), items.length === 0 && /*#__PURE__*/React.createElement("p", {
     className: "text-center text-slate-600 text-sm italic py-4"
-  }, t('blueprint.empty_plan'))), /*#__PURE__*/React.createElement("div", {
+  }, t('blueprint.empty_plan'))), typeof onSaveTemplate === 'function' && items.length > 0 && !isEditing && /*#__PURE__*/React.createElement("div", {
+    className: "pt-3 border-t border-slate-100",
+    "data-testid": "bp-template-save"
+  }, !showTemplateSave ? /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-testid": "bp-template-save-open",
+    "data-help-key": "blueprint_save_template_btn",
+    onClick: () => {
+      setTemplateName('');
+      setDirectivePolicy({});
+      setShowTemplateSave(true);
+    },
+    className: "text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100 transition-colors"
+  }, t('blueprint.save_template') || 'Save as template') : /*#__PURE__*/React.createElement("div", {
+    className: "space-y-2"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "block text-[11px] font-bold uppercase tracking-wider text-slate-600",
+    htmlFor: "bp-template-name"
+  }, t('blueprint.template_name_label') || 'Template name'), /*#__PURE__*/React.createElement("input", {
+    id: "bp-template-name",
+    "data-testid": "bp-template-name",
+    type: "text",
+    value: templateName,
+    maxLength: 80,
+    onChange: e => setTemplateName(e.target.value),
+    placeholder: t('blueprint.template_name_placeholder') || 'e.g. Vocabulary-first informational text',
+    className: "w-full text-sm border border-slate-300 rounded p-1.5 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none"
+  }), /*#__PURE__*/React.createElement("p", {
+    className: "text-[11px] text-slate-600"
+  }, t('blueprint.template_directive_help') || 'Keep the instructions that would suit any topic. Clear the ones that describe THIS lesson.'), /*#__PURE__*/React.createElement("ul", {
+    className: "space-y-1 max-h-48 overflow-y-auto"
+  }, items.filter(it => (it.directive || '').trim()).map(it => {
+    const keep = directivePolicy[it.id] !== 'blank';
+    return /*#__PURE__*/React.createElement("li", {
+      key: it.id,
+      className: "flex items-start gap-2 text-xs"
+    }, /*#__PURE__*/React.createElement("input", {
+      type: "checkbox",
+      id: `bp-tpl-dir-${it.id}`,
+      "data-testid": "bp-template-directive",
+      checked: keep,
+      onChange: () => setDirectivePolicy(prev => Object.assign({}, prev, {
+        [it.id]: keep ? 'blank' : 'keep'
+      })),
+      className: "mt-0.5 rounded border-slate-400"
+    }), /*#__PURE__*/React.createElement("label", {
+      htmlFor: `bp-tpl-dir-${it.id}`,
+      className: "flex-grow cursor-pointer"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "font-bold"
+    }, getToolLabel(it.type)), /*#__PURE__*/React.createElement("span", {
+      className: keep ? 'text-slate-700' : 'text-slate-500 line-through'
+    }, " \u2014 \"", it.directive, "\"")));
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-2"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-testid": "bp-template-save-confirm",
+    disabled: !templateName.trim(),
+    onClick: () => {
+      onSaveTemplate({
+        name: templateName.trim(),
+        directives: directivePolicy
+      });
+      setShowTemplateSave(false);
+    },
+    className: "text-xs font-bold px-3 py-1.5 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+  }, t('blueprint.template_save_confirm') || 'Save template'), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-testid": "bp-template-save-cancel",
+    onClick: () => setShowTemplateSave(false),
+    className: "text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100 transition-colors"
+  }, t('common.cancel') || 'Cancel')))), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-3 pt-3 border-t border-slate-100"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",

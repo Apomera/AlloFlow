@@ -317,6 +317,32 @@ describe('Weather Systems science kernel', () => {
     expect(kernel.immersiveFeatureConnections('conceptual', 'unknown', '9-12')).toEqual([]);
   });
 
+  it('builds grade-responsive feature comparisons without inventing causal claims', () => {
+    const kernel = window.WeatherSystemsKernel;
+    const direct = kernel.immersiveFeatureComparison('conceptual', 'airMasses', 'frontBoundary', '9-12');
+    expect(direct).toEqual(expect.objectContaining({
+      direct: true,
+      relationshipDirection: 'anchor-to-focus'
+    }));
+    expect(direct.anchor.label).toBe('Air masses');
+    expect(direct.focus.label).toBe('Front boundary');
+    expect(direct.relationshipSummary).toContain('Contrasting air masses meet along the frontal transition zone');
+    expect(direct.categorySummary).toContain('Both features are in the atmosphere category');
+    expect(direct.comparisonQuestion).toContain('which parts remain an inference');
+
+    const early = kernel.immersiveFeatureComparison('conceptual', 'cloudLayer', 'precipitation', '3-5');
+    expect(early.direct).toBe(true);
+    expect(early.comparisonQuestion).toBe('What changes in one feature when the other feature changes?');
+
+    const indirect = kernel.immersiveFeatureComparison('conceptual', 'airMasses', 'precipitation', '9-12');
+    expect(indirect.direct).toBe(false);
+    expect(indirect.relationshipDirection).toBe('none');
+    expect(indirect.relationshipSummary).toContain('does not claim a single direct cause');
+    expect(indirect.comparisonQuestion).toContain('before proposing a connection');
+    expect(kernel.immersiveFeatureComparison('conceptual', 'airMasses', 'airMasses', '9-12')).toBeNull();
+    expect(kernel.immersiveFeatureComparison('conceptual', 'unknown', 'frontBoundary', '9-12')).toBeNull();
+  });
+
   it('separates contextual evidence, visual encoding, and scientific limitations', () => {
     const kernel = window.WeatherSystemsKernel;
     const cloud = kernel.immersiveFeatureEvidence('cloudLayer', {
@@ -700,6 +726,11 @@ it('renders the immersive guided investigation tour and evidence note', () => {
     expect(html).toContain('href="https://open-meteo.com/"');
     expect(html).toContain('Coordinates are rounded and stored only with this local lab state.');
     expect(html).toContain('aria-label="Immersive weather layer guide"');
+    expect(html).toContain('data-weather-inspector-view-controls');
+    expect(html).toContain('data-weather-inspector-active="explain"');
+    expect(html).toContain('aria-label="Immersive feature inspector views"');
+    expect(html).toContain('id="weather-inspector-explain"');
+    expect(html).toContain('data-weather-inspector-panel="explain"');
   });
 
 
@@ -709,7 +740,8 @@ it('renders the immersive guided investigation tour and evidence note', () => {
       weatherSystems: {
         tab: 'immersive', immersiveSceneMode: 'conceptual', immersiveGuideOpen: true,
         immersiveExplainerFeature: 'frontBoundary', immersiveFocus: 'front', immersiveCameraPreset: 'front',
-        immersiveHoverFeature: 'cloudLayer', immersiveHoverInput: 'keyboard'
+        immersiveHoverFeature: 'cloudLayer', immersiveHoverInput: 'keyboard',
+        immersiveComparisonFeature: 'airMasses', immersiveComparisonStatus: 'Air masses pinned as comparison anchor A.'
       }
     }, { gradeLevel: '10th Grade' });
     expect(html).toContain('data-weather-immersive-explainer');
@@ -736,6 +768,31 @@ it('renders the immersive guided investigation tour and evidence note', () => {
     expect(html).toContain('Evidence question');
     expect(html).toContain('data-weather-hover-inspector="cloudLayer"');
     expect(html).toContain('Keyboard preview');
+    expect(html).toContain('data-weather-comparison-legend="airMasses"');
+    expect(html).toContain('3D feature comparison. Anchor A: Air masses. Inspecting B: Front boundary.');
+    expect(html).toContain('data-weather-feature-compare-workspace');
+    expect(html).toContain('data-weather-inspector-view-controls');
+    expect(html).toContain('data-weather-inspector-active="compare"');
+    expect(html).toContain('aria-label="Immersive feature inspector views"');
+    expect(html).toContain('data-weather-inspector-view="explain"');
+    expect(html).toContain('data-weather-inspector-view="evidence"');
+    expect(html).toContain('data-weather-inspector-view="compare"');
+    expect(html).toContain('data-weather-inspector-view="connections"');
+    expect(html).toContain('id="weather-inspector-explain" hidden=""');
+    expect(html).toContain('id="weather-inspector-evidence" hidden=""');
+    expect(html).toContain('id="weather-inspector-compare"');
+    expect(html).toContain('id="weather-inspector-connections" hidden=""');
+    expect(html).toContain('data-weather-inspector-panel="compare"');
+    expect(html).toContain('Feature comparison workspace');
+    expect(html).toContain('data-weather-feature-comparison="airMasses:frontBoundary"');
+    expect(html).toContain('data-weather-comparison-relationship="anchor-to-focus"');
+    expect(html).toContain('Direct relationship in this guide');
+    expect(html).toContain('Anchor A: Air masses');
+    expect(html).toContain('Inspecting B: Front boundary');
+    expect(html).toContain('Contrasting air masses meet along the frontal transition zone.');
+    expect(html).toContain('Which current evidence values support this relationship, and which parts remain an inference?');
+    expect(html).toContain('Make B the new anchor');
+    expect(html).toContain('Clear comparison');
     expect(html).toContain('Press Enter to explain and focus.');
     expect(html).toContain('data-weather-feature-callout="frontBoundary"');
     expect(html).toContain('data-weather-feature-connections="frontBoundary"');
@@ -3006,6 +3063,29 @@ describe('Weather Systems geographic map loader resilience', () => {
     expect(source).toContain('if (hoverHelper) hoverHelper.update()');
     expect(source).toContain('immersiveRuntimeRef.current.setFeatureHoverVisual = setFeatureHoverVisual');
     expect(source).toContain('function immersiveFeatureConnections(mode, featureId, band)');
+    expect(source).toContain('function immersiveFeatureComparison(mode, anchorId, focusId, band)');
+    expect(source).toContain('function pinImmersiveComparison(featureId)');
+    expect(source).toContain('function clearImmersiveComparison()');
+    expect(source).toContain('function setImmersiveInspectorPanel(panelId)');
+    expect(source).toContain("immersiveInspectorPanel: 'compare'");
+    expect(source).toContain("immersiveInspectorPanel: 'explain'");
+    expect(source).toContain('data-weather-inspector-view-controls');
+    expect(source).toContain("'aria-label': 'Immersive feature inspector views'");
+    expect(source).toContain("'data-weather-inspector-panel': 'explain'");
+    expect(source).toContain("'data-weather-inspector-panel': 'evidence'");
+    expect(source).toContain("'data-weather-inspector-panel': 'compare'");
+    expect(source).toContain("'data-weather-inspector-panel': 'connections'");
+    expect(source).toContain('new THREE.BoxHelper(root, 0xe879f9)');
+    expect(source).toContain('function setComparisonVisual(featureId)');
+    expect(source).toContain('root.visible = true');
+    expect(source).toContain("if (mode === 'conceptual') applyImmersiveFocus(d.immersiveFocus || feature.focus || 'system')");
+    expect(source).toContain("if (geographicViewState(d).mode === 'conceptual') applyImmersiveFocus(d.immersiveFocus || 'system')");
+    expect(source).toContain('clearFeatureComparisonVisual()');
+    expect(source).toContain('if (comparisonHelper) comparisonHelper.update()');
+    expect(source).toContain('immersiveRuntimeRef.current.setComparisonVisual = setComparisonVisual');
+    expect(source).toContain('data-weather-comparison-legend');
+    expect(source).toContain('data-weather-feature-compare-workspace');
+    expect(source).toContain('data-weather-feature-comparison');
     expect(source).toContain('function immersiveFeatureEvidence(featureId, options)');
     expect(source).toContain('data-weather-feature-evidence');
     expect(source).toContain('data-weather-feature-evidence-source');

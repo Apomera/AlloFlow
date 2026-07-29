@@ -31,7 +31,7 @@ describe('live response policy authoring and launch', () => {
   });
 
   it('snapshots the authored policy into each fresh live attempt', () => {
-    expect(app).toContain("const authoredScoringPolicy = generatedContent?.data?.scoringPolicy");
+    expect(app).toContain("const authoredScoringPolicy = liveQuizResource?.data?.scoringPolicy");
     expect(app).toContain('accuracy: authoredScoringPolicy.accuracy !== false');
     expect(app).toContain('confidence: authoredScoringPolicy.confidence === true');
     expect(app).toContain('partialCredit: authoredScoringPolicy.partialCredit !== false');

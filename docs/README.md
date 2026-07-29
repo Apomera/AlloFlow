@@ -17,6 +17,7 @@ This directory contains both maintained guidance and dated review artifacts. Use
 - [Current limited-scope WCAG 2.2 audit](../a11y-audit/WCAG-2.2-current-audit.md)
 - [Manual accessibility test plan](accessibility-manual-test-plan.md)
 - [Release evidence template](release-evidence-template.md)
+- [Test Prep Hub broad AP expansion plan](test-prep-ap-expansion.md)
 
 ## Dated reviews and handoffs
 

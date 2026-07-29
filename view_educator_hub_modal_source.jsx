@@ -19,6 +19,59 @@ function _educatorBatchMemoryBudget() {
   return { perFileBytes: fileMb * 1024 * 1024, totalBytes: totalMb * 1024 * 1024 };
 }
 
+let _educatorAlloSheetBridgePromise = null;
+function _educatorAlloSheetBridgeUrl() {
+  const fallback = 'https://alloflow-cdn.pages.dev/allo_sheet/host_bridge.js?v=4';
+  try {
+    const loc = window.location || {};
+    const host = String(loc.hostname || '');
+    const pathname = String(loc.pathname || '');
+    const isLocal = /^(localhost|127\.0\.0\.1|\[::1\])$/i.test(host);
+    const isDesktopBundled = !!window._isDesktopBundledApp || (isLocal && pathname.indexOf('/app/') === 0);
+    const isAlloHosted = /(^|\.)alloflow/i.test(host)
+      || /(^|\.)web\.app$/i.test(host)
+      || /(^|\.)firebaseapp\.com$/i.test(host);
+    if (isDesktopBundled || isLocal || isAlloHosted) {
+      return new URL('allo_sheet/host_bridge.js?v=4', loc.href).toString();
+    }
+  } catch (_) {}
+  return fallback;
+}
+
+function _loadEducatorAlloSheetBridge() {
+  if (window.AlloSheetHostBridge && typeof window.AlloSheetHostBridge.open === 'function') {
+    return Promise.resolve(window.AlloSheetHostBridge);
+  }
+  if (_educatorAlloSheetBridgePromise) return _educatorAlloSheetBridgePromise;
+  _educatorAlloSheetBridgePromise = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = _educatorAlloSheetBridgeUrl();
+    script.async = true;
+    script.dataset.alloSheetBridge = 'true';
+    script.onload = () => {
+      if (window.AlloSheetHostBridge && typeof window.AlloSheetHostBridge.open === 'function') {
+        resolve(window.AlloSheetHostBridge);
+      } else {
+        reject(new Error('AlloSheet loaded without its host bridge.'));
+      }
+    };
+    script.onerror = () => reject(new Error('AlloSheet could not be loaded.'));
+    document.head.appendChild(script);
+  }).catch((error) => {
+    _educatorAlloSheetBridgePromise = null;
+    throw error;
+  });
+  return _educatorAlloSheetBridgePromise;
+}
+
+function _educatorAlloSheetTheme() {
+  const root = document.documentElement;
+  const body = document.body;
+  if ((root && root.classList.contains('theme-contrast')) || (body && body.classList.contains('theme-contrast'))) return 'contrast';
+  if ((root && root.classList.contains('theme-light')) || (body && body.classList.contains('theme-light'))) return 'light';
+  return 'dark';
+}
+
 function EducatorHubModal(props) {
   const {
     handleFileUpload, openExportPreview, pdfAuditResult, pdfFixLoading, pdfFixResult,
@@ -80,6 +133,9 @@ function EducatorHubModal(props) {
     _setPdfBatchIntakeProgressIfMounted(null);
     if (notify !== false) addToast('PDF batch preparation cancelled.', 'info');
   };
+  React.useEffect(function () {
+    _loadEducatorAlloSheetBridge().catch(() => {});
+  }, []);
   React.useEffect(function () {
     educatorHubMountedRef.current = true;
     return function () {
@@ -247,6 +303,19 @@ function EducatorHubModal(props) {
   };
   const _probeReportText = () => !platProbe ? '' : ('AlloFlow Platform Check — ' + platProbe.when + '\n' + (typeof navigator !== 'undefined' ? navigator.userAgent : '') + '\n\n' + platProbe.rows.map((r) => '[' + r.status.toUpperCase() + '] ' + r.name + ' — ' + r.detail).join('\n'));
 
+  const _openAlloSheet = () => {
+    const bridge = window.AlloSheetHostBridge;
+    if (!bridge || typeof bridge.open !== 'function') {
+      _loadEducatorAlloSheetBridge().catch((error) => {
+        addToast(error && error.message ? error.message : 'AlloSheet could not be loaded.', 'error');
+      });
+      addToast('AlloSheet is loading. Select it again in a moment.', 'info');
+      return;
+    }
+    const popup = bridge.open({ theme: _educatorAlloSheetTheme() });
+    if (popup) setShowEducatorHub(false);
+  };
+
   return (
         <div className="fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4" style={{ zIndex: 260 }} role="presentation" onClick={() => setShowEducatorHub(false)}>
           {/* allo-docsuite: portal modal rendered OUTSIDE the .allo-docsuite content wrapper,
@@ -313,6 +382,13 @@ function EducatorHubModal(props) {
                 <div>
                   <h3 className="font-bold text-indigo-800">{t('educator_hub.whiteboard_title') || 'Whiteboard'}</h3>
                   <p className="text-xs text-indigo-600 mt-1">{t('educator_hub.whiteboard_desc') || 'A freehand canvas (Excalidraw) to sketch ideas, build diagrams, and map thinking — with ready-made graphic organizers (Venn, T-chart, story map, KWL, concept web, number line) and one-click image export.'}</p>
+                </div>
+              </button>
+              <button type="button" data-help-key="educator_hub_allosheet_card" onClick={_openAlloSheet} className="flex items-start gap-3 p-4 bg-gradient-to-br from-emerald-50 to-cyan-50 border border-emerald-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">
+                <span className="text-3xl mt-1" aria-hidden="true">📊</span>
+                <div>
+                  <h3 className="font-bold text-emerald-800">{t('educator_hub.allosheet_title') || 'AlloSheet (Pilot)'}</h3>
+                  <p className="text-xs text-emerald-700 mt-1">{t('educator_hub.allosheet_desc') || 'Accessible, agent-assisted educator data workspace with review-before-apply changes, local audits, and an open-source Grist foundation.'}</p>
                 </div>
               </button>
               <button type="button" data-help-key="educator_hub_dynamic_assessment_card" onClick={() => { setShowEducatorHub(false); setIsDynamicAssessmentOpen(true); }} className="flex items-start gap-3 p-4 bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left">

@@ -653,6 +653,48 @@ function buildAlloCommands(ctx, opts = {}) {
     { id: 'edit_assignment_directions', icon: '\u{1F4CB}', roles: 'teacher', requiresCapabilities: ['assignmentDirectionsEditor'], label: t('cmd.edit_assignment_directions', 'Edit assignment directions'), aliases: ['edit directions', 'assignment directions editor', 'write directions', 'change assignment directions'], hint: t('cmd.edit_assignment_directions_hint', 'Open the directions and goals composer'), run: (c) => { c.editAssignmentDirections(); return t('cmd.edit_assignment_directions_done', 'Assignment directions editor opened.'); } },
     { id: 'open_assessment_builder', icon: '\u{1F9ED}', roles: 'teacher', requiresCapabilities: ['assessmentBuilder'], label: t('cmd.open_assessment_builder', 'Open Assessment Builder'), aliases: ['assessment builder', 'build assessment', 'make an assessment', 'assessment tools'], hint: t('cmd.open_assessment_builder_hint', 'Design an assessment and supporting activities'), run: (c) => { c.openAssessmentBuilder(); return t('cmd.open_assessment_builder_done', 'Assessment Builder opened.'); } },
     { id: 'open_udl_guide', icon: '\u267F', roles: 'teacher', requiresCapabilities: ['udlGuide'], label: t('cmd.open_udl_guide', 'Open the UDL Guide'), aliases: ['udl guide', 'universal design guide', 'udl help', 'accessibility guide'], hint: t('cmd.open_udl_guide_hint', 'Review UDL supports for the current lesson'), run: (c) => { c.openUdlGuide(); return t('cmd.open_udl_guide_done', 'UDL Guide opened.'); } },
+    // ── Lesson blueprint commands (2026-07-28) ──
+    // Each is gated on the capability the host exposes, so a command that
+    // cannot work never appears in the palette. Deliberately NO
+    // "save as template" command: saving runs a per-directive review (which
+    // instructions suit any topic vs. which describe THIS lesson), and a
+    // one-shot command would bypass it and quietly bake the current lesson's
+    // content into a reusable template. That is a decision to make while
+    // looking at the plan — the button on the card is the right surface.
+    { id: 'run_lesson_blueprint', icon: '\u{25B6}', roles: 'teacher', when: (c) => !!c.hasActiveBlueprint && !!c.runBlueprint,
+      label: t('cmd.run_lesson_blueprint', 'Generate the lesson plan'),
+      aliases: ['generate the plan', 'run the blueprint', 'build the lesson', 'generate the lesson pack', 'execute the plan', 'make the resources'],
+      hint: t('cmd.run_lesson_blueprint_hint', 'Generates every resource in the current plan'),
+      run: (c) => { c.runBlueprint(); return t('cmd.run_lesson_blueprint_done', 'Generating the plan now — you can watch each step on the card.'); } },
+    { id: 'rebuild_lesson_step', icon: '\u{1F501}', roles: 'teacher', when: (c) => !!c.hasActiveBlueprint && !!c.rebuildBlueprintStep,
+      label: t('cmd.rebuild_lesson_step', 'Rebuild one step of the plan'),
+      aliases: ['rebuild step', 'regenerate step', 'redo step', 'rebuild that resource', 'try that step again'],
+      hint: t('cmd.rebuild_lesson_step_hint', 'Regenerates a single resource — say which step number'),
+      run: (c, p) => {
+        const steps = typeof c.blueprintStepList === 'function' ? c.blueprintStepList() : [];
+        const asked = p && (p.step || p.position || p.index || p.number);
+        if (!asked) {
+          const listed = steps.slice(0, 8).map(s => `${s.position}. ${s.tool}`).join(', ');
+          return t('cmd.rebuild_lesson_step_which', 'Which step? ') + (listed || t('cmd.rebuild_lesson_step_none', 'the plan has no steps yet.'));
+        }
+        const hit = c.rebuildBlueprintStep(asked);
+        return hit === null
+          ? t('cmd.rebuild_lesson_step_missing', 'I could not find that step in the plan.')
+          : t('cmd.rebuild_lesson_step_done', 'Rebuilding step ') + asked + '.';
+      } },
+    { id: 'apply_lesson_template', icon: '\u{1F4D0}', roles: 'teacher', when: (c) => typeof c.applyLessonTemplateByName === 'function' && typeof c.lessonTemplateNames === 'function' && c.lessonTemplateNames().length > 0,
+      label: t('cmd.apply_lesson_template', 'Start from a saved template'),
+      aliases: ['use my template', 'start from template', 'apply template', 'load template', 'use a saved pattern'],
+      hint: t('cmd.apply_lesson_template_hint', 'Starts a new plan from one of your saved templates'),
+      run: (c, p) => {
+        const names = c.lessonTemplateNames();
+        const asked = p && (p.name || p.template || p.topic);
+        if (!asked) return t('cmd.apply_lesson_template_which', 'Which template? ') + names.map(n => n.name).slice(0, 8).join(', ');
+        const hit = c.applyLessonTemplateByName(asked);
+        return hit
+          ? t('cmd.apply_lesson_template_done', 'Started from ') + '"' + hit.name + '".'
+          : t('cmd.apply_lesson_template_missing', 'I could not find a template called ') + '"' + asked + '".';
+      } },
     { id: 'open_command_blueprints', icon: '\u{1F9E9}', roles: 'teacher', label: 'Saved Command Blueprints', aliases: ['command blueprints', 'saved command blueprints', 'saved workflows', 'workflow library', 'saved plans', 'command workflow library'], hint: 'Open, review, and rerun saved multi-step command workflows', run: (c) => { c.openCommandBlueprintLibrary(); return 'Saved Command Blueprints opened in AlloBot.'; } },
     { id: 'create_activity_rubric', icon: '\u{1F4D0}', roles: 'teacher', requiresCapabilities: ['activityRubricGenerator'], label: t('cmd.create_activity_rubric', 'Create a rubric for this activity'), aliases: ['create rubric', 'make a rubric', 'generate rubric', 'rubric for this activity'], hint: t('cmd.create_activity_rubric_hint', 'Generate observable, student-friendly success criteria'), run: (c) => { c.generateCurrentRubric(); return t('cmd.create_activity_rubric_working', 'Generating an activity rubric...'); }, pendingNarration: t('cmd.create_activity_rubric_working', 'Generating an activity rubric...'), runAsync: async (c) => { const ok = await c.generateCurrentRubric(); if (ok === false) throw new Error(t('cmd.create_activity_rubric_failed', 'The activity rubric could not be created.')); return t('cmd.create_activity_rubric_done', 'Activity rubric created.'); } },
     { id: 'share_assignment', icon: '\u{1F517}', roles: 'teacher', destructive: true, requiresCapabilities: ['assignmentSharing'], label: t('cmd.share_assignment', 'Share this assignment'), aliases: ['share assignment', 'publish assignment', 'make homework link', 'create student link', 'assign this'], hint: t('cmd.share_assignment_hint', 'Create a student-facing homework link after confirmation'), confirmMessage: (c) => { const count = Math.max(1, Number(c.shareResourceCount) || 1); const days = Math.max(1, Number(c.shareExpiryDays) || 1); const ai = c.shareStudentAiPolicy === 'student-byok' ? t('cmd.share_assignment_confirm_ai_byok', 'Students may connect their own AI provider.') : t('cmd.share_assignment_confirm_ai_off', 'Student AI will stay off.'); return t('cmd.share_assignment_confirm', 'Create a student link containing {count} resource(s), expiring in {days} day(s). {ai} Press Enter again to confirm.').replace('{count}', count).replace('{days}', days).replace('{ai}', ai); }, run: (c) => { c.shareAssignment(); return t('cmd.share_assignment_working', 'Creating the student assignment link...'); }, pendingNarration: t('cmd.share_assignment_working', 'Creating the student assignment link...'), runAsync: async (c) => { const url = await c.shareAssignment(); if (!url) throw new Error(t('cmd.share_assignment_failed', 'The student assignment link was not created.')); return t('cmd.share_assignment_done', 'Student assignment link created.'); } },

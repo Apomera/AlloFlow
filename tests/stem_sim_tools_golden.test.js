@@ -280,6 +280,10 @@ describe('Space Explorer mission dossier contract', () => {
     ]);
     expect(objectiveReport.completed).toBe(3);
     expect(objectiveReport.totalBonus).toBeGreaterThan(0);
+
+    const reasoning = pure.summarizeDecisionReasoning('Because oceanography evidence is uncertain, I will spend power to protect hull and improve data quality.', { quality: 'optimal' }, { stemConcepts: ['oceanography', 'ice mechanics'] });
+    expect(reasoning.hasReasoning).toBe(true);
+    expect(reasoning.tag).toMatch(/evidence|science|tradeoff/);
   });
 
   it('renders dossier, evidence tracker, and debrief review surfaces', () => {
@@ -310,6 +314,13 @@ describe('Space Explorer mission dossier contract', () => {
     expect(allocate).toContain('data-spaceexplorer-forecast');
     expect(allocate).toContain('Mission Forecast');
 
+    const eventHtml = renderTool('spaceExplorer', { spaceExplorer: Object.assign({}, base, {
+      missionPhase: 'event',
+      activeEvent: { title: 'Ice Fault', emoji: '⚠️', category: 'science', description: 'A crack exposes new ice data.', stemConcepts: ['oceanography'], choices: [{ label: 'Map it', icon: '🔬', quality: 'optimal', effects: { science: 10 }, scienceReward: 'Mapping evidence clarifies the ocean model.' }] }
+    }) });
+    expect(eventHtml).toContain('data-spaceexplorer-reasoning');
+    expect(eventHtml).toContain('Commander reasoning');
+
     const explore = renderTool('spaceExplorer', { spaceExplorer: Object.assign({}, base, {
       missionPhase: 'explore',
       missionEvidence: [{ turn: 1, title: 'Ice Fault', category: 'terrain', quality: 'optimal', concept: 'oceanography', note: 'Mapped oceanography clues under the ice.' }]
@@ -326,7 +337,7 @@ describe('Space Explorer mission dossier contract', () => {
       turn: 4,
       protocolLog: [{ turn: 1, protocol: 'Evidence-first protocol', effects: { science: 3, power: -1 }, note: 'Protocol applied.' }],
       objectiveBonusScience: 20,
-      decisionLog: [{ title: 'Ice Fault', chosen: 'Map it', quality: 'optimal', optimal: 'Map it', lesson: 'Evidence before action.' }],
+      decisionLog: [{ title: 'Ice Fault', chosen: 'Map it', quality: 'optimal', optimal: 'Map it', lesson: 'Evidence before action.', reasoning: 'Because oceanography evidence is uncertain, I will spend power to protect hull and improve data quality.', reasoningSummary: { tag: 'evidence + tradeoff', feedback: 'Strong reasoning.' } }],
       missionEvidence: [{ turn: 1, title: 'Ice Fault', category: 'terrain', quality: 'optimal', concept: 'oceanography', note: 'Mapped oceanography clues under the ice.' }]
     }) });
     expect(debrief).toContain('data-spaceexplorer-dossier-review');
@@ -336,5 +347,7 @@ describe('Space Explorer mission dossier contract', () => {
     expect(debrief).toContain('Protocol tested');
     expect(debrief).toContain('data-spaceexplorer-objectives-review');
     expect(debrief).toContain('MISSION OBJECTIVES');
+    expect(debrief).toContain('data-spaceexplorer-reasoning-review');
+    expect(debrief).toContain('Reasoning:');
   });
 });

@@ -262,6 +262,24 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
              const askStage = (text, stage, choices) => {
                  setUdlMessages(prev => [...prev, buildChoices(text, stage, choices || yesSkip())]);
              };
+             // Records what THIS guided session produced. The standards audit is
+             // post-hoc and otherwise GUESSES its own scope — by curriculumId,
+             // else a "latest analysis anchor" heuristic, else every eligible
+             // item in history with a warning. The anchor heuristic happens to
+             // work when analysis runs first, but the flow lets the teacher SKIP
+             // analysis, and then the audit silently pulls in whatever a previous
+             // lesson left behind. The full-pack executor already hands over an
+             // explicit list; this gives the step-by-step path the same footing.
+             // Ids live on guidedFlowState because each reply is a separate call.
+             const _genTracked = async (...args) => {
+                 const item = await handleGenerate(...args);
+                 const id = item && item.id;
+                 if (id) setGuidedFlowState(prev => ({
+                     ...prev,
+                     generatedIds: [...(((prev && prev.generatedIds) || []).filter(x => x && x !== id)), id]
+                 }));
+                 return item;
+             };
              if (intentResult.intent === 'STOP' || lowerInput === 'stop' || lowerInput === 'cancel' || lowerInput === 'exit') {
                  setGuidedFlowState({ currentStage: null, isFlowActive: false });
                  setIsAutoFillMode(false);
@@ -519,7 +537,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                  case 'analysis':
                      if (isAffirmative) {
                          sendBotMsg(t('chat_guide.flow.running_analysis'));
-                         const resultItem = await handleGenerate('analysis');
+                         const resultItem = await _genTracked('analysis');
                          if (isShowMeMode) performHighlight('tour-tool-analysis');
                          setUdlMessages(prev => [...prev, buildStepPackChoices("Analysis complete. How would you like to proceed with the rest of the lesson?\n\n1. **Step-by-Step:** We continue building resources one by one (Glossary next).\n2. **Full Pack:** I generate the complete resource pack instantly based on this analysis.", 'post_analysis_route')]);
                          setGuidedFlowState(prev => ({ ...prev, currentStage: 'post_analysis_route' }));
@@ -573,7 +591,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                          }
                          setGuidedFlowState(prev => ({ ...prev, pendingContext: null }));
                          setTimeout(async () => {
-                             const resultItem = await handleGenerate('glossary');
+                             const resultItem = await _genTracked('glossary');
                              if (isShowMeMode) performHighlight('ui-tool-glossary');
                              const context = getWorkflowContext();
                              context.LastResult = `Glossary generated with ${resultItem?.data?.length || 0} terms.`;
@@ -597,7 +615,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                              return;
                          }
                          sendBotMsg(t('chat_guide.flow.generating_glossary'));
-                         const resultItem = await handleGenerate('glossary');
+                         const resultItem = await _genTracked('glossary');
                          if (isShowMeMode) performHighlight('ui-tool-glossary');
                          const context = getWorkflowContext();
                          context.LastResult = `Glossary generated with ${resultItem?.data?.length || 0} terms.`;
@@ -630,7 +648,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                                  });
                                  sendBotMsg(t('chat_guide.flow.integrating_interest', { interest: potentialInterest }));
                                  setTimeout(async () => {
-                                     const resultItem = await handleGenerate('simplified');
+                                     const resultItem = await _genTracked('simplified');
                                      if (isShowMeMode) performHighlight('ui-tool-simplified');
                                      const context = getWorkflowContext();
                                      context.LastResult = `Text adapted for ${gradeLevel}.`;
@@ -645,7 +663,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                          }
                          sendBotMsg(t('chat_guide.flow.generating_text', { grade: gradeLevel }));
                          setGuidedFlowState(prev => ({ ...prev, pendingContext: null }));
-                         await handleGenerate('simplified');
+                         await _genTracked('simplified');
                          if (isShowMeMode) performHighlight('ui-tool-simplified');
                          const context = getWorkflowContext();
                          context.LastResult = `Text adapted for ${gradeLevel}.`;
@@ -665,7 +683,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                              return;
                          }
                          sendBotMsg(t('chat_guide.flow.adapting_text', { grade: gradeLevel }));
-                         await handleGenerate('simplified');
+                         await _genTracked('simplified');
                          if (isShowMeMode) performHighlight('ui-tool-simplified');
                          const context = getWorkflowContext();
                          context.LastResult = `Text adapted for ${gradeLevel}.`;
@@ -691,7 +709,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                          else if (lowerInput.includes('cause')) { setOutlineType('Cause and Effect'); typeMsg = "Cause & Effect"; }
                          else { setOutlineType('Structured Outline'); }
                          sendBotMsg(`Generating ${typeMsg}...`);
-                         await handleGenerate('outline');
+                         await _genTracked('outline');
                          if (isShowMeMode) performHighlight('tour-tool-outline');
                          const context = getWorkflowContext();
                          context.LastResult = `Visual Organizer (${outlineType}) created.`;
@@ -717,7 +735,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                              setFillInTheBlank(false);
                              sendBotMsg(t('chat_guide.flow.generating_visual'));
                          }
-                         await handleGenerate('image');
+                         await _genTracked('image');
                          if (isShowMeMode) performHighlight('tour-tool-visual');
                          const context = getWorkflowContext();
                          context.LastResult = `Visual generated. Type: ${fillInTheBlank ? "Worksheet" : "Diagram"}.`;
@@ -736,7 +754,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                  case 'faq':
                      if (isAffirmative) {
                          sendBotMsg("Generating FAQs to clarify misconceptions...");
-                         await handleGenerate('faq');
+                         await _genTracked('faq');
                          if (isShowMeMode) performHighlight('tour-tool-faq');
                          askStage("FAQs ready. Do you need **Writing Scaffolds**?", 'sentence-frames', scaffoldChoices());
                          flyToElement(getStageElementId('sentence-frames'));
@@ -755,7 +773,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                          else if (lowerInput.includes('discussion')) setFrameType('Discussion Prompts');
                          else setFrameType('Sentence Starters');
                          sendBotMsg("Building writing supports...");
-                         await handleGenerate('sentence-frames');
+                         await _genTracked('sentence-frames');
                          if (isShowMeMode) performHighlight('tour-tool-scaffolds');
                          askStage("Scaffolds created. Is there a sequence of events or steps for a **Timeline**?", 'timeline');
                          flyToElement(getStageElementId('timeline'));
@@ -771,7 +789,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                  case 'timeline':
                      if (isAffirmative) {
                          sendBotMsg("Extracting chronological sequence...");
-                         await handleGenerate('timeline');
+                         await _genTracked('timeline');
                          if (isShowMeMode) performHighlight('tour-tool-timeline');
                          askStage("Timeline built. Should we create a **Concept Sort** activity to categorize ideas?", 'concept-sort');
                          flyToElement(getStageElementId('concept-sort'));
@@ -787,7 +805,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                  case 'concept-sort':
                      if (isAffirmative) {
                          sendBotMsg("Creating categorization activity...");
-                         await handleGenerate('concept-sort');
+                         await _genTracked('concept-sort');
                          if (isShowMeMode) performHighlight('tour-tool-concept-sort');
                          askStage("Sorting activity ready. Shall we **Brainstorm** hands-on activity ideas next?", 'brainstorm');
                          flyToElement(getStageElementId('brainstorm'));
@@ -803,7 +821,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                  case 'brainstorm':
                      if (isAffirmative) {
                          sendBotMsg("Brainstorming engagement strategies...");
-                         await handleGenerate('brainstorm');
+                         await _genTracked('brainstorm');
                          if (isShowMeMode) performHighlight('tour-tool-brainstorm');
                          askStage("Ideas generated. Ready to create the **Exit Ticket** (Quiz)?", 'quiz');
                          flyToElement(getStageElementId('quiz'));
@@ -829,7 +847,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                          }
                          setGuidedFlowState(prev => ({ ...prev, pendingContext: null }));
                          setTimeout(async () => {
-                             await handleGenerate('quiz');
+                             await _genTracked('quiz');
                              if (isShowMeMode) performHighlight('ui-tool-quiz');
                              const context = getWorkflowContext();
                              context.LastResult = `Quiz generated with ${quizMcqCount} questions.`;
@@ -866,7 +884,13 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                  case 'alignment-report':
                      if (isAffirmative) {
                          sendBotMsg("Auditing content rigor against standards...");
-                         await handleGenerate('alignment-report');
+                         // Scope the audit to what THIS session generated. Falls
+                         // back to the dispatcher's own heuristic when the list is
+                         // empty (e.g. the flow was resumed mid-way).
+                         const _auditIds = Array.isArray(guidedFlowState.generatedIds)
+                             ? guidedFlowState.generatedIds.filter(Boolean) : [];
+                         await handleGenerate('alignment-report', null, false, null,
+                             _auditIds.length ? { artifactIds: _auditIds } : {}, true);
                          if (isShowMeMode) performHighlight('tour-tool-alignment');
                          askStage("Audit complete. Shall we synthesize everything into a **Lesson Plan**?", 'lesson-plan');
                          flyToElement(getStageElementId('lesson-plan'));

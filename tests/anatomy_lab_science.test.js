@@ -1443,3 +1443,148 @@ describe('Anatomy responsive label focus', () => {
     expect(source).toContain('className: atlasLabelClass(labelOptions, 10)');
   });
 });
+describe('Anatomy Clinical Lens', () => {
+  const clinicalCases = [
+    { id: 'heart', system: 'circulatory', view: 'anterior', clinicalId: 'aortic_stenosis', title: 'Aortic stenosis', visual: 'narrow aortic opening · higher LV load' },
+    { id: 'kidneys', system: 'organs', view: 'posterior', clinicalId: 'glomerular_barrier_injury', title: 'Glomerular barrier injury', visual: 'protein crosses an injured filter' },
+    { id: 'alveoli', system: 'respiratory', view: 'anterior', clinicalId: 'pulmonary_edema', title: 'Pulmonary edema', visual: 'fluid thickens the diffusion path' },
+    { id: 'patella', system: 'skeletal', view: 'anterior', clinicalId: 'acl_tear', title: 'ACL tear', visual: 'ACL discontinuity · less restraint' },
+    { id: 'biceps', system: 'muscular', view: 'anterior', clinicalId: 'myasthenia_gravis', title: 'Myasthenia gravis', visual: 'fewer functional ACh receptors' },
+    { id: 'liver', system: 'organs', view: 'anterior', clinicalId: 'hepatic_fibrosis', title: 'Hepatic fibrosis', visual: 'fibrotic bands distort sinusoidal flow' },
+    { id: 'sm_intestine', system: 'organs', view: 'anterior', clinicalId: 'villous_atrophy', title: 'Villous atrophy', visual: 'shortened villi · less surface area' },
+    { id: 'epidermis', system: 'integumentary', view: 'anterior', clinicalId: 'impaired_wound_healing', title: 'Impaired wound healing', visual: 'delayed closure · poor perfusion' }
+  ];
+
+  it('keeps normal anatomy as the default and exposes an accessible optional control', () => {
+    clinicalCases.forEach((diagram) => {
+      const html = renderAnatomy({
+        system: diagram.system, view: diagram.view, complexity: 3, selectedStructure: diagram.id,
+        _regionalAtlasOpen: diagram.id
+      });
+      expect(html).toContain(`data-anatomy-clinical-toggle="${diagram.id}"`);
+      expect(html).toContain(`aria-label="Show ${diagram.title} clinical overlay"`);
+      expect(html).not.toContain(`data-anatomy-clinical-panel="${diagram.clinicalId}"`);
+      expect(html).not.toContain(`data-anatomy-clinical-overlay="${diagram.clinicalId}"`);
+    });
+  });
+
+  it('changes every diagram and pairs the visible pathology with a functional consequence', () => {
+    clinicalCases.forEach((diagram) => {
+      const html = renderAnatomy({
+        system: diagram.system, view: diagram.view, complexity: 3, selectedStructure: diagram.id,
+        _regionalAtlasOpen: diagram.id, _regionalAtlasClinical: true
+      });
+      expect(html).toContain('class="anatomy-atlas is-clinical"');
+      expect(html).toContain(`data-anatomy-clinical="${diagram.clinicalId}"`);
+      expect(html).toContain(`aria-label="Hide ${diagram.title} clinical overlay"`);
+      expect(html).toContain(`data-anatomy-clinical-panel="${diagram.clinicalId}"`);
+      expect(html).toContain(`data-anatomy-clinical-overlay="${diagram.clinicalId}"`);
+      expect(html).toContain(diagram.visual);
+      expect(html).toContain('Functional consequence');
+      expect(html).toContain('Educational comparison only — not a diagnostic view.');
+    });
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    expect(source).toContain("upd('_regionalAtlasClinical', !regionalAtlasClinical)");
+  });
+});
+describe('Anatomy Connected Pathways', () => {
+  const pathwayCases = [
+    { id: 'heart', system: 'circulatory', view: 'anterior', target: 'alveoli', label: 'Heart to alveoli', button: 'Follow gas exchange' },
+    { id: 'kidneys', system: 'organs', view: 'posterior', target: 'heart', label: 'Kidneys to heart', button: 'Connect cardiac output' },
+    { id: 'alveoli', system: 'respiratory', view: 'anterior', target: 'heart', label: 'Alveoli to heart', button: 'Return to cardiac flow' },
+    { id: 'patella', system: 'skeletal', view: 'anterior', target: 'biceps', label: 'Knee to muscle', button: 'Trace muscle force' },
+    { id: 'biceps', system: 'muscular', view: 'anterior', target: 'patella', label: 'Muscle to knee', button: 'Apply force at a joint' },
+    { id: 'liver', system: 'organs', view: 'anterior', target: 'sm_intestine', label: 'Liver to intestinal villus', button: 'Trace nutrient absorption' },
+    { id: 'sm_intestine', system: 'organs', view: 'anterior', target: 'liver', label: 'Intestinal villus to liver', button: 'Continue to liver processing' },
+    { id: 'epidermis', system: 'integumentary', view: 'anterior', target: 'heart', label: 'Skin to heart', button: 'Trace repair perfusion' }
+  ];
+
+  it('gives every focused diagram a meaningful next-system handoff', () => {
+    pathwayCases.forEach((diagram) => {
+      const html = renderAnatomy({
+        system: diagram.system, view: diagram.view, complexity: 3, selectedStructure: diagram.id,
+        _regionalAtlasOpen: diagram.id
+      });
+      expect(html).toContain(`data-anatomy-pathway-from="${diagram.id}"`);
+      expect(html).toContain(`data-scale-continuation="${diagram.target}"`);
+      expect(html).toContain(`aria-label="Connected pathway: ${diagram.label}"`);
+      expect(html).toContain(diagram.button);
+    });
+  });
+
+  it('routes handoffs through the shared scale-bridge navigator with a selected target step', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    expect(source).toContain('function renderAtlasPathwayHandoff(atlasId)');
+    expect(source).toContain('openAnatomyScaleBridge(handoff.targetId, handoff.targetStep, handoff.announcement)');
+    expect(source).toContain('var ATLAS_PATHWAY_TONES = {');
+  });
+});
+describe('Anatomy Systems in Motion', () => {
+  it('offers the exercise scenario without crowding the default anatomy workspace', () => {
+    const html = renderAnatomy({ system: 'muscular', view: 'anterior', complexity: 3 });
+    expect(html).toContain('Systems in Motion');
+    expect(html).toContain('aria-controls="anatomy-systems-motion"');
+    expect(html).not.toContain('data-systems-motion="exercise-response"');
+  });
+
+  it('coordinates muscle, joint, cardiac, and alveolar diagrams in one accessible pathway', () => {
+    const html = renderAnatomy({
+      system: 'muscular', view: 'anterior', complexity: 3, selectedStructure: 'biceps',
+      _regionalAtlasOpen: 'biceps', _regionalAtlasStep: 3, _showSystemsMotion: true
+    });
+    expect(html).toContain('data-systems-motion="exercise-response"');
+    expect(html).toContain('aria-label="Exercise response pathway"');
+    expect(html).toContain('data-systems-motion-node="muscle-force"');
+    expect(html).toContain('data-systems-motion-node="joint-motion"');
+    expect(html).toContain('data-systems-motion-node="cardiac-delivery"');
+    expect(html).toContain('data-systems-motion-node="gas-exchange"');
+    expect(html).toContain('The matching deep-dive diagram is open below at the relevant mechanism step.');
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    const scenarioSource = source.slice(source.indexOf('var SYSTEMS_IN_MOTION_SCENARIOS'), source.indexOf('var ANATOMY_LENS_ITEMS'));
+    expect(scenarioSource).not.toContain("structureId: 'brain'");
+  });
+
+  it('shows explanatory checkpoint feedback and unlocks scenario progression', () => {
+    const html = renderAnatomy({
+      system: 'muscular', view: 'anterior', complexity: 3, selectedStructure: 'biceps',
+      _regionalAtlasOpen: 'biceps', _regionalAtlasStep: 3, _showSystemsMotion: true,
+      _systemsMotionStep: 0, _systemsMotionAnswer: 1, _systemsMotionCompleted: { 'muscle-force': true }
+    });
+    expect(html).toContain('data-systems-motion-answer="correct"');
+    expect(html).toContain('1/4 checkpoints solved');
+    expect(html).toContain('Correct — Cross-bridge cycling pulls actin past myosin');
+    expect(html).toContain('Next system');
+    expect(html).toContain('data-complete="true"');
+  });
+  it('selects the After a Meal scenario and exposes its four-stage nutrient route', () => {
+    const html = renderAnatomy({
+      system: 'organs', view: 'anterior', complexity: 3, selectedStructure: 'liver',
+      _regionalAtlasOpen: 'liver', _regionalAtlasStep: 1, _showSystemsMotion: true,
+      _systemsMotionScenario: 'meal', _systemsMotionStep: 2
+    });
+    expect(html).toContain('data-systems-motion="after-meal"');
+    expect(html).toContain('data-systems-motion-scenario="meal"');
+    expect(html).toContain('aria-label="After a meal nutrient pathway"');
+    expect(html).toContain('After a meal: absorption to delivery');
+    expect(html).toContain('data-systems-motion-node="meal-absorption"');
+    expect(html).toContain('data-systems-motion-node="meal-portal"');
+    expect(html).toContain('data-systems-motion-node="meal-processing"');
+    expect(html).toContain('data-systems-motion-node="meal-delivery"');
+    expect(html).toContain('Process the meal');
+  });
+
+  it('keeps checkpoint progress scoped to the selected scenario', () => {
+    const html = renderAnatomy({
+      system: 'organs', view: 'anterior', complexity: 3, selectedStructure: 'sm_intestine',
+      _regionalAtlasOpen: 'sm_intestine', _regionalAtlasStep: 1, _showSystemsMotion: true,
+      _systemsMotionScenario: 'meal', _systemsMotionStep: 0, _systemsMotionAnswer: 0,
+      _systemsMotionCompleted: { 'muscle-force': true, 'meal-absorption': true }
+    });
+    expect(html).toContain('data-systems-motion-choice="exercise"');
+    expect(html).toContain('data-systems-motion-choice="meal"');
+    expect(html).toContain('aria-pressed="true" data-systems-motion-choice="meal"');
+    expect(html).toContain('1/4 checkpoints solved');
+    expect(html).not.toContain('2/4 checkpoints solved');
+    expect(html).toContain('Water-soluble nutrients enter villus capillaries');
+  });
+});

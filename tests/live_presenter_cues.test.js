@@ -47,8 +47,18 @@ describe('private presenter cue contracts', () => {
     }, ['resourceA', 'resourceC']);
 
     expect(cues).toEqual({
-      resourceA: { sayAsk: 'Ask A', lookFor: '', nextMove: '' },
-      resourceC: { sayAsk: '', lookFor: '', nextMove: 'Move C' },
+      resourceA: {
+        sayAsk: 'Ask A',
+        lookFor: '',
+        nextMove: '',
+        checkpoint: { kind: '', prompt: '', criteria: '' },
+      },
+      resourceC: {
+        sayAsk: '',
+        lookFor: '',
+        nextMove: 'Move C',
+        checkpoint: { kind: '', prompt: '', criteria: '' },
+      },
     });
   });
 
@@ -59,6 +69,7 @@ describe('private presenter cue contracts', () => {
       sayAsk: 'What do you notice?',
       lookFor: 'Evidence, not guesses.',
       nextMove: '',
+      checkpoint: { kind: '', prompt: '', criteria: '' },
     });
 
     cues = moduleApi.upsertLivePresenterCue(cues, 'resourceA', {
@@ -87,15 +98,34 @@ describe('private presenter cue contracts', () => {
 describe('presenter cue ownership and privacy integration', () => {
   it('lives in the existing Live Lesson Run owner with an explicit teacher-only disclosure', () => {
     expect(source).toContain('data-live-presenter-cues="teacher-memory-only"');
-    expect(source).toContain('Teacher-only in this live-session tab');
+    expect(source).toContain('Teacher-only on this browser');
     expect(source).toContain('Say / ask');
     expect(source).toContain('Look / listen for');
     expect(source).toContain('Next move');
   });
 
-  it('is shell memory that resets with the active session and is passed to the existing panel', () => {
-    expect(anti).toContain('const [livePresenterCuesByResourceId, setLivePresenterCuesByResourceId] = useState({});');
-    expect(anti).toContain('setLivePresenterCuesByResourceId({});');
+  it('persists only after authoritative history loads and scopes storage to student-safe resources', () => {
+    const historyStateIndex = anti.indexOf('const [isHistoryLoaded, setIsHistoryLoaded] = useState(false);');
+    const recoveryStateIndex = anti.indexOf('const [canvasRecoveryDecisionMade, setCanvasRecoveryDecisionMade]', historyStateIndex);
+    const persistenceGuard = 'if (!isTeacherMode || isStudentLinkMode || !isHistoryLoaded || !canvasRecoveryDecisionMade) return;';
+    const persistenceGuardIndex = anti.indexOf(persistenceGuard, historyStateIndex);
+    const persistenceWriteIndex = anti.indexOf('safeSetItem(ALLO_LIVE_LESSON_PREP_KEY, serializedSafe);', historyStateIndex);
+
+    expect(historyStateIndex).toBeGreaterThan(-1);
+    expect(recoveryStateIndex).toBeGreaterThan(historyStateIndex);
+    expect(recoveryStateIndex).toBeLessThan(persistenceGuardIndex);
+    expect(persistenceGuardIndex).toBeGreaterThan(historyStateIndex);
+    expect(persistenceWriteIndex).toBeGreaterThan(persistenceGuardIndex);
+    expect(anti.slice(historyStateIndex, persistenceWriteIndex)).toContain('_alloStudentSafeResources(history)');
+    expect(anti.slice(historyStateIndex, persistenceWriteIndex)).toContain('allowedResourceIds');
+    expect(anti.slice(historyStateIndex, persistenceWriteIndex)).toContain(
+      'livePresenterCuesByResourceId,\n                  allowedResourceIds'
+    );
+    expect(anti.slice(historyStateIndex, persistenceWriteIndex)).toContain('serializedSafe !== serializedCurrent');
+    expect(anti.slice(historyStateIndex, persistenceWriteIndex)).toContain('setLivePresenterCuesByResourceId(safe)');
+    expect(anti).toContain(
+      '[isTeacherMode, isStudentLinkMode, isHistoryLoaded, canvasRecoveryDecisionMade, history, livePresenterCuesByResourceId]'
+    );
     expect(anti).toContain('presenterCuesByResourceId: livePresenterCuesByResourceId');
     expect(anti).toContain('onChangePresenterCue: updateLivePresenterCue');
   });

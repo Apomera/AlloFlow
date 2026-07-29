@@ -388,6 +388,14 @@ function makeDeps(caseState, currentTypeRef) {
     visualCustomInstructions: '',
     lessonCustomAdditions: '',
     timelineTopic: '',
+    // 2026-07-28 additions: universal image-style default + the four custom
+    // fields whose resolver cases were added the same day. Neutral here; the
+    // --capabilities probe poisons them per axis.
+    universalImageStyle: '',
+    conceptSortCustomInstructions: '',
+    dbqCustomInstructions: '',
+    noteTakingCustomInstructions: '',
+    anchorChartCustomInstructions: '',
     sourceTopic: 'Rights and evidence',
     history,
     inputText: SAMPLE_TEXT,
@@ -676,10 +684,12 @@ function summarizeShape(data) {
 // dispatcher branch hand-inlines them, so coverage is per-type and silent when
 // absent. Grepping a branch for a variable name is only a LOWER BOUND - it
 // proves a mention, not an effect. Two ways that misleads, both real here:
-//   - effCustomInstructions is interpolated by concept-sort, dbq and lesson-plan
-//     but the resolver at generate_dispatcher_source.jsx:1519-1533 has no case
-//     for them, so the value is structurally always ''. Grep says HIT, teacher
-//     gets nothing.
+//   - until 2026-07-28, effCustomInstructions was interpolated by concept-sort,
+//     dbq and lesson-plan while the resolver had no case for them, so the value
+//     was structurally always ''. Grep said HIT, the teacher got nothing. Those
+//     three now have cases; the CLASS is what this probe exists to catch, so the
+//     example is kept in the past tense rather than deleted. (No line number:
+//     it rots. Search for `const effCustomInstructions =`.)
 //   - note-taking and anchor-chart once stamped `language: effectiveLanguage`
 //     into lessonRef metadata no prompt ever read.
 //
@@ -693,6 +703,14 @@ const CUSTOM_FIELDS = [
   'frameCustomInstructions', 'adventureCustomInstructions', 'brainstormCustomInstructions',
   'faqCustomInstructions', 'outlineCustomInstructions', 'visualCustomInstructions',
   'lessonCustomAdditions', 'timelineTopic', 'sourceCustomInstructions',
+  // 2026-07-28: resolver cases added for these four the same day their UI
+  // fields were created.
+  'conceptSortCustomInstructions', 'dbqCustomInstructions',
+  'noteTakingCustomInstructions', 'anchorChartCustomInstructions',
+  // math has no separate custom-instruction field BY DESIGN — mathInput IS the
+  // teacher's instruction channel ("Topic or problem"). Without this the math
+  // row read a false ❌ for custom.
+  'mathInput',
 ];
 
 const CAPABILITY_AXES = [
@@ -700,6 +718,11 @@ const CAPABILITY_AXES = [
   // grade-like; 'Level 3: ZZ..' preserves the split(':') the quiz meta relies on.
   { key: 'grade', sentinel: 'ZZGRADEZZ', apply: (d) => { d.gradeLevel = '6th Grade ZZGRADEZZ'; } },
   { key: 'lang', sentinel: 'ZZLANGZZ', apply: (d) => { d.leveledTextLanguage = 'ZZLANGZZ'; } },
+  // Teacher-facing branches (analysis, alignment-report) localize to the app's
+  // UI language rather than the resource output language, so the `lang` axis
+  // cannot see them. Measuring it separately keeps "English-only by design"
+  // distinguishable from "ignores language entirely".
+  { key: 'uiLang', sentinel: 'ZZUILANGZZ', apply: (d) => { d.currentUiLanguage = 'ZZUILANGZZ'; } },
   // The dispatcher destructures standardsPromptString directly from deps
   // (generate_dispatcher_source.jsx:1439); standardsInput/targetStandards are
   // separate deps it also reads. makeDeps supplies the latter two but not the
@@ -720,8 +743,10 @@ async function capturePrompts(handleGenerate, matrixCase, mutate) {
     generatedContent: null, setError: '', activeView: '', processingProgress: null,
   };
   const deps = makeDeps(state, { type: matrixCase.type });
-  // Neutral baseline. The shipped default is dokLevel:'Mixed', which is not an
-  // absent setting - leaving it would make the dok axis unmeasurable.
+  // Neutral baseline. THIS FIXTURE (not the app) defaults dokLevel to 'Mixed' so
+  // the normal matrix run exercises the quiz DoK ladder; the app itself ships ''
+  // (AlloFlowANTI.txt, `const [dokLevel, setDokLevel] = useState('')`). 'Mixed'
+  // is not an absent setting, so leaving it would make the dok axis unmeasurable.
   deps.dokLevel = '';
   mutate(deps);
   handleGenerate.windowObj.__alloLocalProgressSink = () => {};
@@ -745,6 +770,7 @@ const PROBE_CAVEATS = [
   '`handleGenerateMath`, `handleGenerateLessonPlan` and `handleGenerateSource` are `noOp`, so any branch that delegates to them contributes no prompt.',
   '`getGroupDifferentiationContext` returns `\'\'`, so roster-group text never appears.',
   'Retry/repair prompts and image stage 2 are not exercised.',
+  '**note-taking** is measured on the `cornell-notes` template only (see its `CASES` entry). Its other five templates each build a different prompt — notably `q-and-a`, which does honour DoK as of 2026-07-28 but cannot show it here. Its row understates coverage.',
   'Canned model responses are fixed, so a branch whose prompt depends on an earlier response is measured against the canned one.',
 ];
 
@@ -760,9 +786,9 @@ function renderCoverageMarkdown(rows) {
   out.push('Each cell is measured by driving the real `handleGenerate` with a poison-pill value for');
   out.push('one setting and checking whether that exact string surfaced in a prompt sent to the model.');
   out.push('This is stronger than grepping a branch for a variable name, which only proves a mention:');
-  out.push('`concept-sort`, `dbq` and `lesson-plan` all interpolate `effCustomInstructions`, but the');
-  out.push('resolver at `generate_dispatcher_source.jsx:1519-1533` has no case for them, so the value is');
-  out.push('structurally always `\'\'`. Grep says covered; the teacher gets nothing.');
+  out.push('until 2026-07-28 `concept-sort`, `dbq` and `lesson-plan` all interpolated `effCustomInstructions`');
+  out.push('while the resolver had no case for them, so the value was structurally always `\'\'` — grep said');
+  out.push('covered, the teacher got nothing. Those three are fixed; the class is what this probe exists to catch.');
   out.push('');
   out.push('✅ reached the model  ❌ never appeared  ❔ undecidable (nondeterministic prompt)');
   out.push('');
@@ -786,10 +812,18 @@ function renderCoverageMarkdown(rows) {
     out.push('the offline no-egress path silently behaves differently from the cloud path.');
     out.push('');
     const cloudBy = Object.fromEntries(cloud.map((r) => [r.type, r.axes]));
-    const diffs = local.flatMap((r) => axes
+    // lesson-plan's cloud prompt is built by buildLessonPlanPrompt /
+    // buildStudyGuidePrompt / buildParentGuidePrompt, all stubbed to json({}) in
+    // this harness — so EVERY cloud axis reads absent for it. Listing those as
+    // divergence trains the reader to skim past the section that matters.
+    const STUBBED_CLOUD = new Set(['lesson-plan']);
+    const diffs = local.filter((r) => !STUBBED_CLOUD.has(r.type)).flatMap((r) => axes
       .filter((a) => cloudBy[r.type] && r.axes[a] !== cloudBy[r.type][a])
       .map((a) => '- `' + r.type + '` — **' + a + '**: cloud ' + mark(cloudBy[r.type][a]) + ' / local ' + mark(r.axes[a])));
     out.push(diffs.length ? diffs.join('\n') : '- none');
+    out.push('');
+    out.push('_Excluded as unmeasurable (cloud prompt builders are stubbed in this harness): '
+      + [...STUBBED_CLOUD].map((t) => '`' + t + '`').join(', ') + '._');
     out.push('');
   }
   out.push('## What this probe cannot see');

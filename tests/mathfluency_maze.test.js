@@ -68,10 +68,23 @@ describe('Fluency Maze setup UX', () => {
 });
 
 
+describe('Fluency Maze comfort controls', () => {
+  it('persists and exposes maze comfort controls', async () => {
+    await mount();
+    await click(host.querySelector('button[aria-controls="fluency-maze-custom-settings"]'));
+    const comfort = host.querySelector('.mf-maze-comfort-settings');
+    expect(comfort).toBeTruthy();
+    const reduced = Array.from(comfort.querySelectorAll('label')).find((label) => label.textContent.includes('Reduced motion')).querySelector('input');
+    await click(reduced);
+    expect(JSON.parse(localStorage.getItem('fluency_maze_prefs')).reducedMotion).toBe(true);
+    expect(comfort.querySelector('select[aria-label="Field of view"]')).toBeTruthy();
+  });
+});
+
 describe('Fluency Maze playing UX', () => {
   it('renders a clear quest path, compact HUD groups, distance cue, and labeled touch controls', async () => {
     localStorage.setItem('fluency_maze_tutorial_seen', '1');
-    localStorage.setItem('fluency_maze_prefs', JSON.stringify({ performance2D: true, mazeSize: 'small' }));
+    localStorage.setItem('fluency_maze_prefs', JSON.stringify({ performance2D: true, mazeSize: 'small', chaseMode: true }));
     await mount();
     const start = Array.from(host.querySelectorAll('button')).find((button) => button.textContent.includes('Light the Torches'));
     expect(start).toBeTruthy();
@@ -81,6 +94,11 @@ describe('Fluency Maze playing UX', () => {
     expect(hud).toBeTruthy();
     expect(hud.querySelector('.mf-maze-hud-stats')).toBeTruthy();
     expect(hud.querySelectorAll('.mf-maze-action-button')).toHaveLength(5);
+    const radar = hud.querySelector('.mf-maze-chase-radar');
+    expect(radar).toBeTruthy();
+    expect(radar.getAttribute('data-danger-level')).toBe('armed');
+    expect(radar.textContent).toContain('Chase armed');
+    expect(radar.querySelectorAll('.mf-maze-radar-pips i')).toHaveLength(4);
 
     const quest = host.querySelector('.mf-maze-quest');
     expect(quest).toBeTruthy();
@@ -100,5 +118,9 @@ describe('Fluency Maze playing UX', () => {
     expect(canvas.getAttribute('role')).toBe('application');
     expect(canvas.getAttribute('tabindex')).toBe('0');
     expect(canvas.getAttribute('aria-label')).toContain('find the golden key');
+    const legend = host.querySelector('.mf-maze-legend');
+    expect(legend).toBeTruthy();
+    expect(legend.textContent).toContain('Trail');
+    expect(legend.textContent).toContain('Monster when nearby');
   });
 });

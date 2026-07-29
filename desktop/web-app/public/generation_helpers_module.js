@@ -291,7 +291,7 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
 };
 
 const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
-  const { isProcessing, fullPackTargetGroup, rosterKey, gradeLevel, leveledTextLanguage, studentInterests, dokLevel, leveledTextCustomInstructions, selectedLanguages, targetStandards, useEmojis, textFormat, history, inputText, sourceTopic, standardsInput, resourceCount, isAutoConfigEnabled, quizCustomInstructions, adventureCustomInstructions, frameCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, timelineTopic, lessonCustomAdditions, conceptInput, setIsProcessing, setGenerationStep, setFullPackTargetGroup, setGradeLevel, setLeveledTextLanguage, setStudentInterests, setDokLevel, setLeveledTextCustomInstructions, setSelectedLanguages, setTargetStandards, setUseEmojis, setTextFormat, setPersistedLessonDNA, setError, addToast, t, warnLog, handleApplyRosterGroup, handleGenerate, autoConfigureSettings, applyDetailedAutoConfig, getGroupDifferentiationContext, getAssetManifest } = deps;
+  const { isProcessing, fullPackTargetGroup, rosterKey, gradeLevel, leveledTextLanguage, studentInterests, dokLevel, leveledTextCustomInstructions, selectedLanguages, targetStandards, useEmojis, textFormat, history, inputText, sourceTopic, standardsInput, resourceCount, isAutoConfigEnabled, quizCustomInstructions, adventureCustomInstructions, frameCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, timelineTopic, lessonCustomAdditions, conceptInput, glossaryCustomInstructions, personaCustomInstructions, conceptSortCustomInstructions, dbqCustomInstructions, noteTakingCustomInstructions, anchorChartCustomInstructions, setIsProcessing, setGenerationStep, setFullPackTargetGroup, setGradeLevel, setLeveledTextLanguage, setStudentInterests, setDokLevel, setLeveledTextCustomInstructions, setSelectedLanguages, setTargetStandards, setUseEmojis, setTextFormat, setPersistedLessonDNA, setError, addToast, t, warnLog, handleApplyRosterGroup, handleGenerate, autoConfigureSettings, applyDetailedAutoConfig, getGroupDifferentiationContext, getAssetManifest } = deps;
   try { if (window._DEBUG_GEN_HELPERS) console.log("[GenerationHelpers] handleGenerateFullPack fired"); } catch(_) {}
     if (isProcessing) return;
     const targetGroup = fullPackTargetGroup;
@@ -457,14 +457,28 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                 case 'image': userOverride = visualCustomInstructions; break;
                 case 'timeline': userOverride = timelineTopic; break;
                 case 'lesson-plan': userOverride = lessonCustomAdditions; break;
-                case 'concept-sort': userOverride = conceptInput; break;
+                // conceptInput is unsubmitted category text, NOT an instruction —
+                // prefer the real field and fall back, never concatenate.
+                case 'concept-sort': userOverride = conceptSortCustomInstructions || conceptInput; break;
+                // Added 2026-07-28: without these, a resource generated inside a
+                // Full Pack silently ignored the custom instructions that the
+                // same resource honours when generated from its own button.
+                case 'glossary': userOverride = glossaryCustomInstructions; break;
+                case 'persona': userOverride = personaCustomInstructions; break;
+                case 'dbq': userOverride = dbqCustomInstructions; break;
+                case 'note-taking': userOverride = noteTakingCustomInstructions; break;
+                case 'anchor-chart': userOverride = anchorChartCustomInstructions; break;
             }
             const combinedInstructions = `${directive} ${userOverride ? `(User Note: ${userOverride})` : ''}`.trim();
             const stepConfig = {
                 ...batchConfig,
                 lessonDNA: lessonDNA,
                 customInstructions: combinedInstructions,
-                historyOverride: currentSessionHistory
+                historyOverride: currentSessionHistory,
+                // A pack already generates many resources; letting the
+                // differentiation fan-out run inside it would multiply the whole
+                // batch by the number of grade levels.
+                skipDifferentiation: true
             };
             if (type === 'outline' && directive) {
                  const lower = directive.toLowerCase();

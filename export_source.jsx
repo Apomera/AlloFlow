@@ -392,14 +392,87 @@ const createExport = (deps) => {
     // accessible from AlloFlowContent's scope.
 
     // ─── handleExportResearchJSON ──────────────────────────────────────
+    // ── Provenance for export ────────────────────────────────────────────
+    // A REDACTED view of an artifact's `config` (the resolved settings the
+    // generating branch actually used). Two things are deliberately not carried
+    // out of the app:
+    //
+    //   - rosterGroupName / rosterGroupColor. The name is free text a teacher
+    //     types, and teachers name groups things like "Maria + Deshawn" or
+    //     "below benchmark" — a student identifier or an instructional-level
+    //     label. The opaque id preserves "these artifacts were one condition"
+    //     and leaks nothing.
+    //   - customInstructions prose. Unbounded teacher text that routinely names
+    //     an individual student. A researcher only needs "same instruction or
+    //     not?", which presence + length + an equality token answers.
+    //
+    // The digest is FNV-1a 32-bit: synchronous (every caller here is a sync
+    // template) and explicitly NOT a security control — it is an equality token,
+    // labelled with its algorithm so nobody mistakes it for a hash commitment.
+    const _fnv1a32 = (str) => {
+        let h = 0x811c9dc5;
+        for (let i = 0; i < str.length; i++) {
+            h ^= str.charCodeAt(i);
+            h = (h + ((h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24))) >>> 0;
+        }
+        return 'fnv1a32:' + h.toString(16).padStart(8, '0');
+    };
+
+    const _appBuild = () => {
+        try {
+            const m = Array.from(document.querySelectorAll('script[src]'))
+                .map((s) => /Apomera\/AlloFlow@([0-9a-f]+)/.exec(s.src))
+                .find(Boolean);
+            return m ? m[1] : 'unknown';
+        } catch (_) { return 'unknown'; }
+    };
+
+    const buildProvenanceRecord = (item) => {
+        const c = (item && item.config) || {};
+        const custom = typeof c.customInstructions === 'string' ? c.customInstructions.trim() : '';
+        return {
+            id: item && item.id,
+            type: item && item.type,
+            title: (item && (item.title || item.meta)) || '',
+            generatedAt: (item && item.timestamp) || null,
+            // Settings, as resolved by the branch that built this artifact.
+            grade: c.grade || '',
+            language: c.language || '',
+            standards: c.standards || '',
+            interests: Array.isArray(c.interests) ? c.interests : [],
+            dok: c.dok || '',
+            useEmojis: !!c.useEmojis,
+            imageStyle: c.imageStyle || '',
+            // 'local' vs 'cloud' is a real independent variable: several
+            // dispatcher branches ship twin prompts and those twins have drifted.
+            // The specific runtime/model is NOT recoverable — do not imply it is.
+            backend: c.backend || 'unknown',
+            // Makes an empty standards/interests value interpretable: under DA
+            // clinical isolation those are blanked deliberately, which is
+            // otherwise indistinguishable from a teacher who set nothing.
+            isolatedContext: !!c.isolatedContext,
+            customInstructionsPresent: !!custom,
+            customInstructionsLength: custom.length,
+            customInstructionsDigest: custom ? _fnv1a32(custom) : null,
+            rosterGroupId: c.rosterGroupId || null,
+        };
+    };
+
     const handleExportResearchJSON = () => {
         const {
             probeHistory, surveyResponses, fidelityLog, sessionCounter,
-            externalCBMScores, interventionLogs, addToast,
+            externalCBMScores, interventionLogs, addToast, history,
         } = liveRef.current;
+        const items = Array.isArray(history) ? history : [];
         const researchBundle = {
-            exportVersion: 1,
+            exportVersion: 2,
+            provenanceSchemaVersion: 1,
+            appBuild: _appBuild(),
             exportDate: new Date().toISOString(),
+            // The measurement half of a study was already here; the materials
+            // half was not. Without it a researcher has scores with no record of
+            // what the students actually read or how it was configured.
+            generatedResources: items.map(buildProvenanceRecord),
             probeHistory,
             surveyResponses,
             fidelityLog,

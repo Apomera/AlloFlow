@@ -48,7 +48,7 @@ const GlossaryTermSpan = ({ item, leveledTextLanguage, isDarkBg, isLineFocusMode
       },
       tabIndex: 0,
       "aria-describedby": tip ? tipIdRef.current : void 0,
-      className: `cursor-help border-b border-dotted rounded px-0.5 transition-colors inline-block ${isDarkBg ? darkStyle : lightStyle}`
+      className: `allo-glossary-term cursor-help border-b border-dotted rounded px-0.5 transition-colors inline-block ${isDarkBg ? darkStyle : lightStyle}`
     },
     children,
     tip && canPortal && ReactDOM.createPortal(

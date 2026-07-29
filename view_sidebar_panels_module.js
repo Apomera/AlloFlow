@@ -49,6 +49,395 @@ var Settings2 = _lazyIcon('Settings2');
 var Smile = _lazyIcon('Smile');
 var Sparkles = _lazyIcon('Sparkles');
 var X = _lazyIcon('X');
+const UNIVERSAL_SETTING_COVERAGE = {
+  measuredTypes: 19,
+  grade: ["simplified", "glossary", "outline", "quiz", "faq", "brainstorm", "sentence-frames", "timeline", "math", "gemini-bridge", "concept-sort", "dbq", "lesson-plan", "adventure", "persona", "note-taking", "anchor-chart"],
+  language: ["simplified", "glossary", "outline", "image", "quiz", "faq", "brainstorm", "sentence-frames", "timeline", "math", "gemini-bridge", "concept-sort", "dbq", "lesson-plan", "adventure", "persona", "note-taking", "anchor-chart"],
+  standards: ["simplified", "glossary", "outline", "quiz", "faq", "brainstorm", "sentence-frames", "timeline", "math", "concept-sort", "dbq", "lesson-plan", "adventure", "note-taking", "anchor-chart"],
+  interests: ["simplified", "glossary", "outline", "quiz", "faq", "brainstorm", "sentence-frames", "timeline", "math", "concept-sort", "lesson-plan", "adventure"],
+  dok: ["simplified", "quiz", "faq", "brainstorm", "sentence-frames", "math", "concept-sort", "dbq", "lesson-plan"],
+  emoji: ["simplified", "glossary", "outline", "image", "quiz", "faq", "sentence-frames", "timeline", "concept-sort"]
+};
+const UNIVERSAL_GRADE_CHOICES = [
+  "Kindergarten",
+  "1st Grade",
+  "2nd Grade",
+  "3rd Grade",
+  "4th Grade",
+  "5th Grade",
+  "6th Grade",
+  "7th Grade",
+  "8th Grade",
+  "9th Grade",
+  "10th Grade",
+  "11th Grade",
+  "12th Grade",
+  "College",
+  "Graduate Level"
+];
+const UNIVERSAL_DIFFERENTIABLE_TYPES = [
+  "simplified",
+  "glossary",
+  "quiz",
+  "faq",
+  "outline",
+  "sentence-frames",
+  "timeline",
+  "concept-sort",
+  "dbq",
+  "note-taking",
+  "anchor-chart"
+];
+function universalToolLabel(id, t) {
+  const catalog = typeof window !== "undefined" && window.AlloModules && window.AlloModules.ToolCatalog || null;
+  const entry = catalog && typeof catalog.getToolEntry === "function" ? catalog.getToolEntry(id) : null;
+  const key = entry && entry.sidebarKey;
+  return key && t(key) || id;
+}
+function universalDiffLevelCount(range, customGrades) {
+  if (range === "None") return 1;
+  if (range === "Custom") {
+    return (/* @__PURE__ */ new Set([...customGrades || []])).size + 1;
+  }
+  if (range === "1" || range === "2") return 3;
+  if (range === "Both") return 5;
+  return 1;
+}
+function UniversalApplicability({ settingKey, t }) {
+  const list = UNIVERSAL_SETTING_COVERAGE[settingKey] || [];
+  const total = UNIVERSAL_SETTING_COVERAGE.measuredTypes;
+  const catalog = typeof window !== "undefined" && window.AlloModules && window.AlloModules.ToolCatalog || null;
+  const label = (id) => {
+    const entry = catalog && typeof catalog.getToolEntry === "function" ? catalog.getToolEntry(id) : null;
+    const key = entry && entry.sidebarKey;
+    return key && t(key) || id;
+  };
+  return /* @__PURE__ */ React.createElement("details", { className: "mt-1" }, /* @__PURE__ */ React.createElement("summary", { className: "text-[10px] text-slate-500 cursor-pointer select-none hover:text-indigo-600 transition-colors motion-reduce:transition-none list-none flex items-center gap-1" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 9, className: "text-emerald-600 shrink-0" }), (t("universal.applies") || "Applies to {n} of {m} resource types").replace("{n}", String(list.length)).replace("{m}", String(total))), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 leading-snug mt-1 pl-3 border-l-2 border-slate-200" }, list.map(label).join(", ")));
+}
+function ResourceCustomInstructions({ value, onChange, t, helpKey, ariaFallback, placeholderKey, labelKey, optional = true, disabled = false, wrapperClass = "" }) {
+  const label = t(labelKey || "input.custom_instructions");
+  const hasValue = !!(value && String(value).trim());
+  const [isOpen, setIsOpen] = React.useState(hasValue);
+  const preview = hasValue ? String(value).trim().replace(/\s+/g, " ").slice(0, 48) : "";
+  return /* @__PURE__ */ React.createElement("div", { className: wrapperClass, "data-help-key": helpKey }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: () => setIsOpen(!isOpen),
+      "aria-expanded": isOpen,
+      disabled,
+      className: `w-full flex items-center justify-between gap-2 text-left text-xs font-medium rounded-md px-2 py-1.5 border transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed ${hasValue ? "border-indigo-200 bg-indigo-50/60 text-indigo-800" : "border-transparent text-slate-600 hover:bg-slate-50"}`
+    },
+    /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1.5 min-w-0" }, hasValue ? /* @__PURE__ */ React.createElement(CheckCircle2, { size: 12, className: "text-indigo-600 shrink-0" }) : /* @__PURE__ */ React.createElement(Plus, { size: 12, className: "text-slate-500 shrink-0" }), /* @__PURE__ */ React.createElement("span", { className: "truncate" }, hasValue ? `${label}: "${preview}${String(value).trim().length > 48 ? "\u2026" : ""}"` : label, !hasValue && optional && /* @__PURE__ */ React.createElement("span", { className: "text-slate-400 font-normal" }, " ", t("common.optional")))),
+    /* @__PURE__ */ React.createElement(ChevronDown, { size: 12, className: `shrink-0 transition-transform motion-reduce:transition-none ${isOpen ? "rotate-180" : ""}` })
+  ), isOpen && /* @__PURE__ */ React.createElement(
+    "textarea",
+    {
+      "aria-label": label || ariaFallback,
+      value,
+      onChange: (e) => onChange(e.target.value),
+      placeholder: t(placeholderKey),
+      disabled,
+      maxLength: 2e3,
+      className: "w-full mt-1 text-xs p-2 border border-slate-400 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 resize-none h-16 bg-white text-slate-800 placeholder:text-slate-500 disabled:opacity-50 disabled:cursor-not-allowed transition-shadow motion-reduce:transition-none duration-300"
+    }
+  ));
+}
+function UniversalSettingsPanel(props) {
+  const {
+    InfoTooltip,
+    addInterest,
+    addToast,
+    aiStandardQuery,
+    dokLevel,
+    gradeLevel,
+    handleAddStandard,
+    handleFindStandards,
+    handleInterestKeyDown,
+    handleRemoveStandard,
+    handleSetStandardModeToAi,
+    handleSetStandardModeToManual,
+    interestInput,
+    isFindingStandards,
+    leveledTextLanguage,
+    removeInterest,
+    selectedLanguages,
+    setAiStandardQuery,
+    setDokLevel,
+    setGradeLevel,
+    setInterestInput,
+    setLeveledTextLanguage,
+    setStandardInputValue,
+    setTargetStandards,
+    setUniversalImageStyle,
+    setUseEmojis,
+    standardInputValue,
+    standardMode,
+    studentInterests,
+    suggestedStandards,
+    t,
+    targetStandards,
+    universalImageStyle,
+    useEmojis,
+    isUniversalSettingsOpen,
+    setIsUniversalSettingsOpen,
+    differentiationRange,
+    setDifferentiationRange,
+    differentiationTypes,
+    setDifferentiationTypes,
+    differentiationCustomGrades,
+    setDifferentiationCustomGrades
+  } = props;
+  const isOpen = !!isUniversalSettingsOpen;
+  const setIsOpen = setIsUniversalSettingsOpen;
+  const summaryBits = [
+    gradeLevel,
+    leveledTextLanguage,
+    targetStandards.length > 0 ? targetStandards.length + " " + (t("universal.summary_standards") || "standards") : null,
+    studentInterests.length > 0 ? studentInterests.length + " " + (t("universal.summary_interests") || "interests") : null,
+    dokLevel ? dokLevel.split(":")[0] : null
+  ].filter(Boolean);
+  return /* @__PURE__ */ React.createElement("div", { id: "tour-universal-settings", "data-help-key": "tool_universal_settings", className: "rounded-3xl border-2 border-indigo-200 bg-white overflow-hidden shadow-sm mb-3" }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "aria-expanded": isOpen,
+      onClick: () => setIsOpen(!isOpen),
+      className: "w-full p-3 bg-indigo-50/60 flex justify-between items-center hover:bg-indigo-50 transition-colors motion-reduce:transition-none"
+    },
+    /* @__PURE__ */ React.createElement("div", { className: "text-left min-w-0" }, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-indigo-900 flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(Settings2, { size: 16, className: "shrink-0" }), " ", t("universal.title") || "Universal Settings"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-indigo-700/80 mt-0.5 truncate" }, isOpen ? t("universal.subtitle") || "Apply to every resource you generate" : summaryBits.join(" \xB7 "))),
+    /* @__PURE__ */ React.createElement(ChevronDown, { size: 16, className: `text-indigo-400 shrink-0 transition-transform motion-reduce:transition-none ${isOpen ? "rotate-180" : ""}` })
+  ), isOpen && /* @__PURE__ */ React.createElement("div", { className: "p-3 space-y-3 animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 lg:grid-cols-3 gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium" }, t("wizard.grade_level")), /* @__PURE__ */ React.createElement(
+    "select",
+    {
+      "aria-label": t("common.selection"),
+      "data-help-key": "simplified_grade_level",
+      value: gradeLevel,
+      onChange: (e) => setGradeLevel(e.target.value),
+      className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
+    },
+    /* @__PURE__ */ React.createElement("option", { value: "Kindergarten" }, t("grades.k")),
+    /* @__PURE__ */ React.createElement("option", { value: "1st Grade" }, t("grades.g1")),
+    /* @__PURE__ */ React.createElement("option", { value: "2nd Grade" }, t("grades.g2")),
+    /* @__PURE__ */ React.createElement("option", { value: "3rd Grade" }, t("grades.g3")),
+    /* @__PURE__ */ React.createElement("option", { value: "4th Grade" }, t("grades.g4")),
+    /* @__PURE__ */ React.createElement("option", { value: "5th Grade" }, t("grades.g5")),
+    /* @__PURE__ */ React.createElement("option", { value: "6th Grade" }, t("grades.g6")),
+    /* @__PURE__ */ React.createElement("option", { value: "7th Grade" }, t("grades.g7")),
+    /* @__PURE__ */ React.createElement("option", { value: "8th Grade" }, t("grades.g8")),
+    /* @__PURE__ */ React.createElement("option", { value: "9th Grade" }, t("grades.g9")),
+    /* @__PURE__ */ React.createElement("option", { value: "10th Grade" }, t("grades.g10")),
+    /* @__PURE__ */ React.createElement("option", { value: "11th Grade" }, t("grades.g11")),
+    /* @__PURE__ */ React.createElement("option", { value: "12th Grade" }, t("grades.g12")),
+    /* @__PURE__ */ React.createElement("option", { value: "College" }, t("grades.college")),
+    /* @__PURE__ */ React.createElement("option", { value: "Graduate Level" }, t("grades.grad"))
+  ), /* @__PURE__ */ React.createElement(UniversalApplicability, { settingKey: "grade", t })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium" }, t("wizard.output_language")), /* @__PURE__ */ React.createElement(
+    "select",
+    {
+      "aria-label": t("common.selection"),
+      "data-help-key": "simplified_language",
+      value: leveledTextLanguage,
+      onChange: (e) => setLeveledTextLanguage(e.target.value),
+      className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
+    },
+    /* @__PURE__ */ React.createElement("option", { value: "English" }, t("languages.english")),
+    selectedLanguages.map((lang) => /* @__PURE__ */ React.createElement("option", { key: lang, value: lang }, lang)),
+    selectedLanguages.length > 0 && /* @__PURE__ */ React.createElement("option", { value: "All Selected Languages" }, t("languages.all_selected"))
+  ), /* @__PURE__ */ React.createElement(UniversalApplicability, { settingKey: "language", t })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium flex items-center gap-1" }, t("quiz.dok_target"), /* @__PURE__ */ React.createElement(InfoTooltip, { text: "Depth of Knowledge: Level 1 (Recall) -> Level 4 (Extended Thinking/Synthesis)." })), /* @__PURE__ */ React.createElement(
+    "select",
+    {
+      "aria-label": t("common.selection"),
+      "data-help-key": "simplified_dok",
+      value: dokLevel,
+      onChange: (e) => setDokLevel(e.target.value),
+      className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
+    },
+    /* @__PURE__ */ React.createElement("option", { value: "" }, t("wizard.dok_levels.none")),
+    /* @__PURE__ */ React.createElement("option", { value: "Level 1: Recall & Reproduction" }, t("wizard.dok_levels.l1")),
+    /* @__PURE__ */ React.createElement("option", { value: "Level 2: Skill/Concept" }, t("wizard.dok_levels.l2")),
+    /* @__PURE__ */ React.createElement("option", { value: "Level 3: Strategic Thinking" }, t("wizard.dok_levels.l3")),
+    /* @__PURE__ */ React.createElement("option", { value: "Level 4: Extended Thinking" }, t("wizard.dok_levels.l4")),
+    /* @__PURE__ */ React.createElement("option", { value: "Mixed" }, t("wizard.dok_levels.mixed"))
+  ), /* @__PURE__ */ React.createElement(UniversalApplicability, { settingKey: "dok", t }))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-2 rounded-lg border border-slate-400", "data-help-key": "simplified_standards" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("span", { id: "simplified-standard-mode-label", className: "text-xs text-slate-600 font-bold flex items-center gap-1" }, /* @__PURE__ */ React.createElement(CheckCircle, { size: 12, className: "text-indigo-600" }), " Target Standard"), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-labelledby": "simplified-standard-mode-label", className: "flex bg-white rounded-md border border-slate-400 p-0.5 shadow-sm" }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "aria-pressed": standardMode === "ai",
+      onClick: handleSetStandardModeToAi,
+      className: `px-2 py-0.5 text-[11px] font-bold rounded transition-colors motion-reduce:transition-none ${standardMode === "ai" ? "bg-indigo-100 text-indigo-700" : "text-slate-600 hover:text-slate-600"}`
+    },
+    "AI Match"
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "aria-pressed": standardMode === "manual",
+      onClick: handleSetStandardModeToManual,
+      className: `px-2 py-0.5 text-[11px] font-bold rounded transition-colors motion-reduce:transition-none ${standardMode === "manual" ? "bg-indigo-100 text-indigo-700" : "text-slate-600 hover:text-slate-600"}`
+    },
+    "Manual"
+  ))), standardMode === "ai" ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2 animate-in motion-reduce:animate-none fade-in slide-in-from-top-1 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
+    "input",
+    {
+      "aria-label": t("common.enter_ai_standard_query"),
+      type: "text",
+      value: aiStandardQuery,
+      onChange: (e) => setAiStandardQuery(e.target.value),
+      onKeyDown: (e) => e.key === "Enter" && handleFindStandards(gradeLevel),
+      placeholder: `Describe skill (e.g. "identify main idea") for ${gradeLevel}...`,
+      className: "flex-grow text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300"
+    }
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "aria-label": t("common.refresh"),
+      onClick: () => handleFindStandards(gradeLevel),
+      disabled: !aiStandardQuery.trim() || isFindingStandards,
+      className: "bg-indigo-600 hover:bg-indigo-700 text-white p-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none",
+      title: t("common.find_relevant_standards")
+    },
+    isFindingStandards ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin motion-reduce:animate-none" }) : /* @__PURE__ */ React.createElement(Search, { size: 14 })
+  )), suggestedStandards.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "max-h-32 overflow-y-auto custom-scrollbar border border-slate-400 rounded bg-white divide-y divide-slate-100" }, suggestedStandards.map((std, idx) => /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      key: idx,
+      onClick: () => {
+        const val = `${std.code}: ${std.description}`;
+        if (targetStandards.length < 3 && !targetStandards.includes(val)) {
+          setTargetStandards((prev) => [...prev, val]);
+          addToast(`Added ${std.code} to list`, "success");
+        } else if (targetStandards.length >= 3) {
+          addToast(t("standards.toast_max_limit"), "error");
+        }
+      },
+      className: "w-full text-left p-2 hover:bg-indigo-50 transition-colors motion-reduce:transition-none group"
+    },
+    /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-indigo-700 bg-indigo-50 px-1 rounded border border-indigo-100" }, std.code), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 uppercase" }, std.framework)),
+    /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 leading-snug mt-1 line-clamp-2 group-hover:text-indigo-900" }, std.description)
+  ))), suggestedStandards.length === 0 && !isFindingStandards && aiStandardQuery && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 italic text-center p-1" }, t("standards.press_search_hint"))) : /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
+    "input",
+    {
+      "aria-label": t("common.enter_standard_input_value"),
+      type: "text",
+      value: standardInputValue,
+      onChange: (e) => setStandardInputValue(e.target.value),
+      onKeyDown: (e) => e.key === "Enter" && handleAddStandard(),
+      placeholder: t("standards.manual_placeholder"),
+      className: "flex-grow text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
+    }
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "aria-label": t("common.add"),
+      onClick: handleAddStandard,
+      disabled: !standardInputValue.trim() || targetStandards.length >= 3,
+      className: "bg-indigo-100 text-indigo-700 p-1.5 rounded-md hover:bg-indigo-200 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed",
+      title: t("standards.add_button")
+    },
+    /* @__PURE__ */ React.createElement(Plus, { size: 16 })
+  )), /* @__PURE__ */ React.createElement(UniversalApplicability, { settingKey: "standards", t })), targetStandards.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 mt-2 mb-2" }, targetStandards.map((std, idx) => /* @__PURE__ */ React.createElement("span", { key: idx, className: "inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold bg-indigo-100 text-indigo-700 border border-indigo-200 animate-in motion-reduce:animate-none slide-in-from-left-1 max-w-full" }, /* @__PURE__ */ React.createElement("span", { className: "truncate", title: std }, std), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "aria-label": t("common.close"),
+      onClick: () => handleRemoveStandard(idx),
+      className: "hover:text-indigo-900 ml-1 shrink-0",
+      title: t("common.remove_standard")
+    },
+    /* @__PURE__ */ React.createElement(X, { size: 10 })
+  )))), /* @__PURE__ */ React.createElement("div", { "data-help-key": "simplified_interests" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium flex items-center gap-1 mt-2" }, /* @__PURE__ */ React.createElement(Heart, { size: 12, className: "text-indigo-500" }), " ", t("input.interests_label"), " ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-normal" }, t("common.optional"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-2" }, /* @__PURE__ */ React.createElement(
+    "input",
+    {
+      "aria-label": t("common.enter_interest_input"),
+      type: "text",
+      value: interestInput,
+      onChange: (e) => setInterestInput(e.target.value),
+      onKeyDown: handleInterestKeyDown,
+      placeholder: t("common.interest_placeholder"),
+      className: "flex-grow text-sm px-2 py-1.5 border border-slate-400 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300"
+    }
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "aria-label": t("common.add"),
+      onClick: addInterest,
+      disabled: !interestInput.trim() || studentInterests.length >= 5,
+      className: "bg-indigo-100 text-indigo-700 p-1.5 rounded-md hover:bg-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none"
+    },
+    /* @__PURE__ */ React.createElement(Plus, { size: 16 })
+  )), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 min-h-[1.5rem]" }, studentInterests.map((interest, idx) => /* @__PURE__ */ React.createElement("span", { key: idx, className: "inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200" }, interest, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeInterest(interest), className: "hover:text-indigo-900", "aria-label": t("common.remove") }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), studentInterests.length === 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 italic" }, t("input.no_interests"))), /* @__PURE__ */ React.createElement(UniversalApplicability, { settingKey: "interests", t })), /* @__PURE__ */ React.createElement("div", { className: "mt-2", "data-help-key": "simplified_emojis" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
+    "input",
+    {
+      "aria-label": t("common.toggle_use_emojis"),
+      id: "useEmojis",
+      type: "checkbox",
+      checked: useEmojis,
+      onChange: (e) => setUseEmojis(e.target.checked),
+      className: "w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+    }
+  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "useEmojis", className: "text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Smile, { size: 12, className: "text-indigo-500" }), " ", t("simplified.use_emojis"))), /* @__PURE__ */ React.createElement(UniversalApplicability, { settingKey: "emoji", t })), /* @__PURE__ */ React.createElement("div", { className: "mt-3 pt-3 border-t border-slate-200", "data-help-key": "simplified_differentiation" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Layout, { size: 12, className: "text-indigo-500" }), " ", t("simplified.diff_label")), /* @__PURE__ */ React.createElement(
+    "select",
+    {
+      "aria-label": t("simplified.diff_label"),
+      value: differentiationRange,
+      onChange: (e) => setDifferentiationRange(e.target.value),
+      className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
+    },
+    /* @__PURE__ */ React.createElement("option", { value: "None" }, t("simplified.diff_options.none")),
+    /* @__PURE__ */ React.createElement("option", { value: "1" }, t("simplified.diff_options.one")),
+    /* @__PURE__ */ React.createElement("option", { value: "2" }, t("simplified.diff_options.two")),
+    /* @__PURE__ */ React.createElement("option", { value: "Both" }, t("simplified.diff_options.both")),
+    /* @__PURE__ */ React.createElement("option", { value: "Custom" }, t("universal.diff_custom") || "Custom \u2014 pick exact grades")
+  ), differentiationRange === "Custom" && /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mb-1" }, t("universal.diff_custom_hint") || "Pick any mix. Your target grade is always included."), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, UNIVERSAL_GRADE_CHOICES.map((g) => {
+    const on = g === gradeLevel || (differentiationCustomGrades || []).includes(g);
+    const locked = g === gradeLevel;
+    return /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key: g,
+        type: "button",
+        disabled: locked,
+        "aria-pressed": on,
+        title: locked ? t("universal.diff_target_locked") || "Target grade \u2014 always included" : g,
+        onClick: () => setDifferentiationCustomGrades(
+          on ? (differentiationCustomGrades || []).filter((x) => x !== g) : [...differentiationCustomGrades || [], g]
+        ),
+        className: `px-1.5 py-0.5 rounded text-[10px] font-bold border transition-colors motion-reduce:transition-none ${on ? "bg-indigo-100 text-indigo-800 border-indigo-300" : "bg-white text-slate-600 border-slate-300 hover:border-indigo-300"} ${locked ? "cursor-default opacity-80" : ""}`
+      },
+      g.replace(" Grade", "").replace("Kindergarten", "K")
+    );
+  }))), differentiationRange !== "None" && /* @__PURE__ */ React.createElement("div", { className: "mt-2" }, /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mb-1" }, t("universal.diff_types_hint") || "Generate a differentiated set for:"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, UNIVERSAL_DIFFERENTIABLE_TYPES.map((id) => {
+    const on = (differentiationTypes || []).includes(id);
+    return /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        key: id,
+        type: "button",
+        "aria-pressed": on,
+        onClick: () => setDifferentiationTypes(
+          on ? (differentiationTypes || []).filter((x) => x !== id) : [...differentiationTypes || [], id]
+        ),
+        className: `px-1.5 py-0.5 rounded text-[10px] font-bold border transition-colors motion-reduce:transition-none ${on ? "bg-emerald-100 text-emerald-800 border-emerald-300" : "bg-white text-slate-600 border-slate-300 hover:border-emerald-300"}`
+      },
+      universalToolLabel(id, t)
+    );
+  })), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-amber-700 mt-1" }, (t("universal.diff_cost") || "About {n} generations per run.").replace("{n}", String(Math.max(1, (differentiationTypes || []).length) * universalDiffLevelCount(differentiationRange, differentiationCustomGrades)))))), /* @__PURE__ */ React.createElement("div", { className: "mt-2", "data-help-key": "universal_image_style" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Palette, { size: 12, className: "text-indigo-500" }), " ", t("universal.image_style") || "Image Style (default)", " ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-normal" }, t("common.optional"))), /* @__PURE__ */ React.createElement(
+    "input",
+    {
+      "aria-label": t("universal.image_style") || "Default image style",
+      type: "text",
+      value: universalImageStyle,
+      onChange: (e) => setUniversalImageStyle(e.target.value),
+      placeholder: t("concept_sort.style_placeholder") || "e.g. cartoon, pixel art, watercolor",
+      maxLength: 120,
+      className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
+    }
+  ), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-500 mt-1" }, t("universal.image_style_hint") || "Used for Visuals, Glossary, Timeline and Concept Sort images unless a tool sets its own style.")))));
+}
 function AdventurePanel(props) {
   const {
     Cloud,
@@ -167,17 +556,18 @@ function AdventurePanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: "English" }, t("adventure.lang_options.english_only")),
     selectedLanguages.map((lang) => /* @__PURE__ */ React.createElement(React.Fragment, { key: lang }, /* @__PURE__ */ React.createElement("option", { value: lang }, t("adventure.lang_options.only_suffix", { lang })), /* @__PURE__ */ React.createElement("option", { value: `${lang} + English` }, t("adventure.lang_options.plus_english", { lang })))),
     selectedLanguages.length > 1 && /* @__PURE__ */ React.createElement("option", { value: "All + English" }, t("adventure.lang_options.all_plus_english", { langs: selectedLanguages.join(", ") }))
-  ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mt-1" }, t("adventure.language_help"))), /* @__PURE__ */ React.createElement("div", { "data-help-key": "adventure_custom_instructions" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium" }, t("input.custom_instructions"), " ", /* @__PURE__ */ React.createElement("span", { className: "text-purple-600 font-normal" }, t("common.optional"))), /* @__PURE__ */ React.createElement(
-    "textarea",
+  ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mt-1" }, t("adventure.language_help"))), /* @__PURE__ */ React.createElement(
+    ResourceCustomInstructions,
     {
-      "aria-label": t("input.custom_instructions") || "Custom instructions for adventure",
+      helpKey: "adventure_custom_instructions",
+      t,
+      ariaFallback: "Custom instructions for adventure",
       value: adventureCustomInstructions,
-      onChange: (e) => setAdventureCustomInstructions(e.target.value),
-      placeholder: t("common.adventure_instructions_placeholder"),
-      disabled: !isTeacherMode && (!adventurePermissions.allowCustomInstructions || adventurePermissions.lockAllSettings),
-      className: "w-full text-xs p-2 border border-slate-400 rounded-md focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 resize-none h-16 transition-shadow motion-reduce:transition-none duration-300"
+      onChange: setAdventureCustomInstructions,
+      placeholderKey: "common.adventure_instructions_placeholder",
+      disabled: !isTeacherMode && (!adventurePermissions.allowCustomInstructions || adventurePermissions.lockAllSettings)
     }
-  )), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 bg-purple-100/50 p-2 rounded border border-purple-200", "data-help-key": "adventure_free_response" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 bg-purple-100/50 p-2 rounded border border-purple-200", "data-help-key": "adventure_free_response" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.toggle_adventure_free_response_enabled"),
@@ -494,94 +884,24 @@ function AdventurePanel(props) {
 }
 function SimplifiedPanel(props) {
   const {
-    InfoTooltip,
-    addInterest,
-    addToast,
-    aiStandardQuery,
-    differentiationRange,
-    dokLevel,
     expandedTools,
-    gradeLevel,
-    handleAddStandard,
-    handleFindStandards,
     handleGenerate,
-    handleInterestKeyDown,
-    handleRemoveStandard,
-    handleSetStandardModeToAi,
-    handleSetStandardModeToManual,
     hasSourceOrAnalysis,
     includeCharts,
-    interestInput,
-    isFindingStandards,
     isProcessing,
     keepCitations,
     leveledTextCustomInstructions,
-    leveledTextLanguage,
     leveledTextLength,
-    removeInterest,
-    selectedLanguages,
-    setAiStandardQuery,
-    setDifferentiationRange,
-    setDokLevel,
-    setGradeLevel,
     setIncludeCharts,
-    setInterestInput,
     setKeepCitations,
     setLeveledTextCustomInstructions,
-    setLeveledTextLanguage,
     setLeveledTextLength,
-    setStandardInputValue,
-    setTargetStandards,
     setTextFormat,
-    setUseEmojis,
-    standardInputValue,
-    standardMode,
-    studentInterests,
-    suggestedStandards,
     t,
-    targetStandards,
-    textFormat,
-    useEmojis
+    textFormat
   } = props;
   if (!expandedTools || !expandedTools.includes("simplified")) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { id: "tour-level-settings", "data-help-key": "tour-simplified-settings", className: "p-3 border-b border-slate-100 space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 lg:grid-cols-3 gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium" }, t("wizard.grade_level")), /* @__PURE__ */ React.createElement(
-    "select",
-    {
-      "aria-label": t("common.selection"),
-      "data-help-key": "simplified_grade_level",
-      value: gradeLevel,
-      onChange: (e) => setGradeLevel(e.target.value),
-      className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
-    },
-    /* @__PURE__ */ React.createElement("option", { value: "Kindergarten" }, t("grades.k")),
-    /* @__PURE__ */ React.createElement("option", { value: "1st Grade" }, t("grades.g1")),
-    /* @__PURE__ */ React.createElement("option", { value: "2nd Grade" }, t("grades.g2")),
-    /* @__PURE__ */ React.createElement("option", { value: "3rd Grade" }, t("grades.g3")),
-    /* @__PURE__ */ React.createElement("option", { value: "4th Grade" }, t("grades.g4")),
-    /* @__PURE__ */ React.createElement("option", { value: "5th Grade" }, t("grades.g5")),
-    /* @__PURE__ */ React.createElement("option", { value: "6th Grade" }, t("grades.g6")),
-    /* @__PURE__ */ React.createElement("option", { value: "7th Grade" }, t("grades.g7")),
-    /* @__PURE__ */ React.createElement("option", { value: "8th Grade" }, t("grades.g8")),
-    /* @__PURE__ */ React.createElement("option", { value: "9th Grade" }, t("grades.g9")),
-    /* @__PURE__ */ React.createElement("option", { value: "10th Grade" }, t("grades.g10")),
-    /* @__PURE__ */ React.createElement("option", { value: "11th Grade" }, t("grades.g11")),
-    /* @__PURE__ */ React.createElement("option", { value: "12th Grade" }, t("grades.g12")),
-    /* @__PURE__ */ React.createElement("option", { value: "College" }, t("grades.college")),
-    /* @__PURE__ */ React.createElement("option", { value: "Graduate Level" }, t("grades.grad"))
-  )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium" }, t("simplified.diff_label")), /* @__PURE__ */ React.createElement(
-    "select",
-    {
-      "aria-label": t("common.selection"),
-      "data-help-key": "simplified_differentiation",
-      value: differentiationRange,
-      onChange: (e) => setDifferentiationRange(e.target.value),
-      className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
-    },
-    /* @__PURE__ */ React.createElement("option", { value: "None" }, t("simplified.diff_options.none")),
-    /* @__PURE__ */ React.createElement("option", { value: "1" }, t("simplified.diff_options.one")),
-    /* @__PURE__ */ React.createElement("option", { value: "2" }, t("simplified.diff_options.two")),
-    /* @__PURE__ */ React.createElement("option", { value: "Both" }, t("simplified.diff_options.both"))
-  )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium" }, t("wizard.output_format")), /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { id: "tour-level-settings", "data-help-key": "tour-simplified-settings", className: "p-3 border-b border-slate-100 space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 lg:grid-cols-3 gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium" }, t("wizard.output_format")), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection"),
@@ -613,163 +933,17 @@ function SimplifiedPanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: "Expand (125%)" }, t("simplified.length_options.expand")),
     /* @__PURE__ */ React.createElement("option", { value: "Extend (150%)" }, t("simplified.length_options.extend")),
     /* @__PURE__ */ React.createElement("option", { value: "Double (200%)" }, t("simplified.length_options.double"))
-  )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium" }, t("wizard.output_language")), /* @__PURE__ */ React.createElement(
-    "select",
+  ))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(
+    ResourceCustomInstructions,
     {
-      "aria-label": t("common.selection"),
-      "data-help-key": "simplified_language",
-      value: leveledTextLanguage,
-      onChange: (e) => setLeveledTextLanguage(e.target.value),
-      className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
-    },
-    /* @__PURE__ */ React.createElement("option", { value: "English" }, t("languages.english")),
-    selectedLanguages.map((lang) => /* @__PURE__ */ React.createElement("option", { key: lang, value: lang }, lang)),
-    selectedLanguages.length > 0 && /* @__PURE__ */ React.createElement("option", { value: "All Selected Languages" }, t("languages.all_selected"))
-  )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium flex items-center gap-1" }, t("quiz.dok_target"), /* @__PURE__ */ React.createElement(InfoTooltip, { text: "Depth of Knowledge: Level 1 (Recall) -> Level 4 (Extended Thinking/Synthesis)." })), /* @__PURE__ */ React.createElement(
-    "select",
-    {
-      "aria-label": t("common.selection"),
-      "data-help-key": "simplified_dok",
-      value: dokLevel,
-      onChange: (e) => setDokLevel(e.target.value),
-      className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
-    },
-    /* @__PURE__ */ React.createElement("option", { value: "" }, t("wizard.dok_levels.none")),
-    /* @__PURE__ */ React.createElement("option", { value: "Level 1: Recall & Reproduction" }, t("wizard.dok_levels.l1")),
-    /* @__PURE__ */ React.createElement("option", { value: "Level 2: Skill/Concept" }, t("wizard.dok_levels.l2")),
-    /* @__PURE__ */ React.createElement("option", { value: "Level 3: Strategic Thinking" }, t("wizard.dok_levels.l3")),
-    /* @__PURE__ */ React.createElement("option", { value: "Level 4: Extended Thinking" }, t("wizard.dok_levels.l4"))
-  ))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-2 rounded-lg border border-slate-400", "data-help-key": "simplified_standards" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("span", { id: "simplified-standard-mode-label", className: "text-xs text-slate-600 font-bold flex items-center gap-1" }, /* @__PURE__ */ React.createElement(CheckCircle, { size: 12, className: "text-indigo-600" }), " Target Standard"), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-labelledby": "simplified-standard-mode-label", className: "flex bg-white rounded-md border border-slate-400 p-0.5 shadow-sm" }, /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      "aria-pressed": standardMode === "ai",
-      onClick: handleSetStandardModeToAi,
-      className: `px-2 py-0.5 text-[11px] font-bold rounded transition-colors motion-reduce:transition-none ${standardMode === "ai" ? "bg-indigo-100 text-indigo-700" : "text-slate-600 hover:text-slate-600"}`
-    },
-    "AI Match"
-  ), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      "aria-pressed": standardMode === "manual",
-      onClick: handleSetStandardModeToManual,
-      className: `px-2 py-0.5 text-[11px] font-bold rounded transition-colors motion-reduce:transition-none ${standardMode === "manual" ? "bg-indigo-100 text-indigo-700" : "text-slate-600 hover:text-slate-600"}`
-    },
-    "Manual"
-  ))), standardMode === "ai" ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2 animate-in motion-reduce:animate-none fade-in slide-in-from-top-1 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      "aria-label": t("common.enter_ai_standard_query"),
-      type: "text",
-      value: aiStandardQuery,
-      onChange: (e) => setAiStandardQuery(e.target.value),
-      onKeyDown: (e) => e.key === "Enter" && handleFindStandards(gradeLevel),
-      placeholder: `Describe skill (e.g. "identify main idea") for ${gradeLevel}...`,
-      className: "flex-grow text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300"
-    }
-  ), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      "aria-label": t("common.refresh"),
-      onClick: () => handleFindStandards(gradeLevel),
-      disabled: !aiStandardQuery.trim() || isFindingStandards,
-      className: "bg-indigo-600 hover:bg-indigo-700 text-white p-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none",
-      title: t("common.find_relevant_standards")
-    },
-    isFindingStandards ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin motion-reduce:animate-none" }) : /* @__PURE__ */ React.createElement(Search, { size: 14 })
-  )), suggestedStandards.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "max-h-32 overflow-y-auto custom-scrollbar border border-slate-400 rounded bg-white divide-y divide-slate-100" }, suggestedStandards.map((std, idx) => /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      key: idx,
-      onClick: () => {
-        const val = `${std.code}: ${std.description}`;
-        if (targetStandards.length < 3 && !targetStandards.includes(val)) {
-          setTargetStandards((prev) => [...prev, val]);
-          addToast(`Added ${std.code} to list`, "success");
-        } else if (targetStandards.length >= 3) {
-          addToast(t("standards.toast_max_limit"), "error");
-        }
-      },
-      className: "w-full text-left p-2 hover:bg-indigo-50 transition-colors motion-reduce:transition-none group"
-    },
-    /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-indigo-700 bg-indigo-50 px-1 rounded border border-indigo-100" }, std.code), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 uppercase" }, std.framework)),
-    /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 leading-snug mt-1 line-clamp-2 group-hover:text-indigo-900" }, std.description)
-  ))), suggestedStandards.length === 0 && !isFindingStandards && aiStandardQuery && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 italic text-center p-1" }, t("standards.press_search_hint"))) : /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      "aria-label": t("common.enter_standard_input_value"),
-      type: "text",
-      value: standardInputValue,
-      onChange: (e) => setStandardInputValue(e.target.value),
-      onKeyDown: (e) => e.key === "Enter" && handleAddStandard(),
-      placeholder: t("standards.manual_placeholder"),
-      className: "flex-grow text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
-    }
-  ), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      "aria-label": t("common.add"),
-      onClick: handleAddStandard,
-      disabled: !standardInputValue.trim() || targetStandards.length >= 3,
-      className: "bg-indigo-100 text-indigo-700 p-1.5 rounded-md hover:bg-indigo-200 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed",
-      title: t("standards.add_button")
-    },
-    /* @__PURE__ */ React.createElement(Plus, { size: 16 })
-  ))), targetStandards.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 mt-2 mb-2" }, targetStandards.map((std, idx) => /* @__PURE__ */ React.createElement("span", { key: idx, className: "inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold bg-indigo-100 text-indigo-700 border border-indigo-200 animate-in motion-reduce:animate-none slide-in-from-left-1 max-w-full" }, /* @__PURE__ */ React.createElement("span", { className: "truncate", title: std }, std), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      "aria-label": t("common.close"),
-      onClick: () => handleRemoveStandard(idx),
-      className: "hover:text-indigo-900 ml-1 shrink-0",
-      title: t("common.remove_standard")
-    },
-    /* @__PURE__ */ React.createElement(X, { size: 10 })
-  )))), /* @__PURE__ */ React.createElement("div", { "data-help-key": "simplified_interests" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium flex items-center gap-1 mt-2" }, /* @__PURE__ */ React.createElement(Heart, { size: 12, className: "text-indigo-500" }), " ", t("input.interests_label"), " ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-normal" }, t("common.optional"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-2" }, /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      "aria-label": t("common.enter_interest_input"),
-      type: "text",
-      value: interestInput,
-      onChange: (e) => setInterestInput(e.target.value),
-      onKeyDown: handleInterestKeyDown,
-      placeholder: t("common.interest_placeholder"),
-      className: "flex-grow text-sm px-2 py-1.5 border border-slate-400 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300"
-    }
-  ), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      "aria-label": t("common.add"),
-      onClick: addInterest,
-      disabled: !interestInput.trim() || studentInterests.length >= 5,
-      className: "bg-indigo-100 text-indigo-700 p-1.5 rounded-md hover:bg-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none"
-    },
-    /* @__PURE__ */ React.createElement(Plus, { size: 16 })
-  )), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 min-h-[1.5rem]" }, studentInterests.map((interest, idx) => /* @__PURE__ */ React.createElement("span", { key: idx, className: "inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200" }, interest, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeInterest(interest), className: "hover:text-indigo-900", "aria-label": t("common.remove") }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), studentInterests.length === 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 italic" }, t("input.no_interests")))), /* @__PURE__ */ React.createElement("div", { className: "mt-3", "data-help-key": "simplified_custom_instructions" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium" }, t("input.custom_instructions"), " ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-normal" }, t("common.optional"))), /* @__PURE__ */ React.createElement(
-    "textarea",
-    {
-      "aria-label": t("input.custom_instructions") || "Custom instructions for simplified text",
+      helpKey: "simplified_custom_instructions",
+      t,
+      ariaFallback: "Custom instructions for simplified text",
       value: leveledTextCustomInstructions,
-      onChange: (e) => setLeveledTextCustomInstructions(e.target.value),
-      placeholder: t("common.custom_instructions_placeholder"),
-      className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 p-1.5 h-16 resize-none transition-shadow motion-reduce:transition-none duration-300"
+      onChange: setLeveledTextCustomInstructions,
+      placeholderKey: "common.custom_instructions_placeholder"
     }
-  )), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mt-2", "data-help-key": "simplified_emojis" }, /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      "aria-label": t("common.toggle_use_emojis"),
-      id: "useEmojis",
-      type: "checkbox",
-      checked: useEmojis,
-      onChange: (e) => setUseEmojis(e.target.checked),
-      className: "w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
-    }
-  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "useEmojis", className: "text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Smile, { size: 12, className: "text-indigo-500" }), " ", t("simplified.use_emojis"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mt-2", "data-help-key": "simplified_citations" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mt-2", "data-help-key": "simplified_citations" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.toggle_keep_citations"),
@@ -1028,16 +1202,28 @@ function DbqPanel(props) {
     addToast,
     callGemini,
     callGeminiVision,
+    dbqCustomInstructions,
     expandedTools,
     fetchAndCleanUrl,
     handleGenerate,
     hasSourceOrAnalysis,
     isProcessing,
+    setDbqCustomInstructions,
     setExpandedTools,
     t
   } = props;
   if (!expandedTools || !expandedTools.includes("dbq")) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 border-b border-slate-100 bg-rose-50 space-y-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, t("dbq.desc") || "Generate a complete Document-Based Question activity from your source text \u2014 with primary sources, HAPP framework, sourcing questions, corroboration analysis, synthesis essay prompt, and rubric."), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { id: "dbq-analysis-mode-label", className: "text-[11px] font-bold text-slate-600 uppercase mb-1" }, t("dbq.analysis_mode") || "Analysis Mode"), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-labelledby": "dbq-analysis-mode-label", className: "flex gap-1" }, [
+  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 border-b border-slate-100 bg-rose-50 space-y-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600" }, t("dbq.desc") || "Generate a complete Document-Based Question activity from your source text \u2014 with primary sources, HAPP framework, sourcing questions, corroboration analysis, synthesis essay prompt, and rubric."), /* @__PURE__ */ React.createElement(
+    ResourceCustomInstructions,
+    {
+      helpKey: "dbq_custom_instructions",
+      t,
+      ariaFallback: "Custom instructions for DBQ",
+      value: dbqCustomInstructions,
+      onChange: setDbqCustomInstructions,
+      placeholderKey: "common.custom_instructions_placeholder"
+    }
+  ), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { id: "dbq-analysis-mode-label", className: "text-[11px] font-bold text-slate-600 uppercase mb-1" }, t("dbq.analysis_mode") || "Analysis Mode"), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-labelledby": "dbq-analysis-mode-label", className: "flex gap-1" }, [
     ["standard", t("dbq.mode_standard_label") || "\u{1F4C4} Standard DBQ", t("dbq.mode_standard_desc") || "Extract documents from your source text"],
     ["perspectives", t("dbq.mode_perspectives_label") || "\u2694\uFE0F Competing Perspectives", t("dbq.mode_perspectives_desc") || "AI finds 2+ viewpoints that agree and disagree"],
     ["search", t("dbq.mode_search_label") || "\u{1F50D} Web-Enhanced", t("dbq.mode_search_desc") || "Find real primary sources from archives (LOC, NARA, etc.)"],
@@ -1562,16 +1748,18 @@ function GlossaryPanel(props) {
       onChange: (e) => setIncludeEtymology(e.target.checked),
       className: "rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4"
     }
-  ), "\u{1F4DC} ", t("glossary.settings.include_etymology") || "Include word roots / etymology"), includeEtymology && /* @__PURE__ */ React.createElement("p", { className: "mt-1 ml-6 text-[11px] text-slate-600 leading-snug" }, t("glossary.settings.etymology_always_all") || "Applied to every term \u2014 shows the actual root morphemes, word history, and related English words that share the root.")), /* @__PURE__ */ React.createElement("div", { className: "mb-3", "data-help-key": "glossary_custom_instructions" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium" }, t("input.custom_instructions"), " ", /* @__PURE__ */ React.createElement("span", { className: "text-violet-600 font-normal" }, t("common.optional"))), /* @__PURE__ */ React.createElement(
-    "textarea",
+  ), "\u{1F4DC} ", t("glossary.settings.include_etymology") || "Include word roots / etymology"), includeEtymology && /* @__PURE__ */ React.createElement("p", { className: "mt-1 ml-6 text-[11px] text-slate-600 leading-snug" }, t("glossary.settings.etymology_always_all") || "Applied to every term \u2014 shows the actual root morphemes, word history, and related English words that share the root.")), /* @__PURE__ */ React.createElement(
+    ResourceCustomInstructions,
     {
-      "aria-label": t("input.custom_instructions") || "Custom instructions for glossary",
+      helpKey: "glossary_custom_instructions",
+      t,
+      wrapperClass: "mb-3",
+      ariaFallback: "Custom instructions for glossary",
       value: glossaryCustomInstructions,
-      onChange: (e) => setGlossaryCustomInstructions(e.target.value),
-      placeholder: t("glossary.placeholder_instructions"),
-      className: "w-full text-xs p-2 border border-slate-400 rounded-md focus:ring-2 focus:ring-sky-200 resize-none h-16"
+      onChange: setGlossaryCustomInstructions,
+      placeholderKey: "glossary.placeholder_instructions"
     }
-  )), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, t("glossary.add_languages_label")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-3", "data-help-key": "glossary_language_input" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, t("glossary.add_languages_label")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-3", "data-help-key": "glossary_language_input" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       type: "text",
@@ -1592,17 +1780,7 @@ function GlossaryPanel(props) {
       "aria-label": t("common.add")
     },
     /* @__PURE__ */ React.createElement(Plus, { size: 16 })
-  )), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 min-h-[2rem]" }, selectedLanguages.map((lang) => /* @__PURE__ */ React.createElement("span", { key: lang, className: "inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-sky-50 text-sky-700 border border-sky-100" }, lang, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeLanguage(lang), className: "hover:text-sky-900", "aria-label": "Remove " + lang }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), selectedLanguages.length === 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 italic" }, t("glossary.no_languages"))), /* @__PURE__ */ React.createElement("div", { className: "mt-3 pt-2 border-t border-slate-100" }, /* @__PURE__ */ React.createElement("div", { className: "mb-3", "data-help-key": "glossary_image_style" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-medium text-slate-600 block mb-1" }, /* @__PURE__ */ React.createElement(Palette, { size: 12, className: "inline mr-1 text-purple-500" }), " ", t("glossary.image_style_label")), /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      "aria-label": t("common.glossary_style_placeholder"),
-      type: "text",
-      value: glossaryImageStyle,
-      onChange: (e) => setGlossaryImageStyle(e.target.value),
-      placeholder: t("glossary.style_placeholder"),
-      className: "w-full text-xs p-2 border border-slate-400 rounded-md focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30"
-    }
-  ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mt-1" }, t("glossary.image_style_hint"))), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs font-medium text-slate-600 cursor-pointer select-none", "data-help-key": "glossary_auto_remove" }, /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 min-h-[2rem]" }, selectedLanguages.map((lang) => /* @__PURE__ */ React.createElement("span", { key: lang, className: "inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-sky-50 text-sky-700 border border-sky-100" }, lang, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeLanguage(lang), className: "hover:text-sky-900", "aria-label": "Remove " + lang }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), selectedLanguages.length === 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 italic" }, t("glossary.no_languages"))), /* @__PURE__ */ React.createElement("div", { className: "mt-3 pt-2 border-t border-slate-100" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs font-medium text-slate-600 cursor-pointer select-none", "data-help-key": "glossary_auto_remove" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.toggle_auto_remove_words"),
@@ -1867,7 +2045,17 @@ function QuizPanel(props) {
       event.preventDefault();
       savePreset();
     }
-  }, maxLength: "50", placeholder: "e.g. Friday concept check", className: "flex-1 min-w-0 text-xs border-slate-300 rounded-md p-2 bg-white" }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: savePreset, disabled: assessedTotal <= 0, className: "px-3 text-xs font-bold rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40" }, "Save")), presetStatus && /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-[10px] text-slate-600" }, presetStatus))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium flex items-center gap-1" }, t("quiz.dok_target"), /* @__PURE__ */ React.createElement(InfoTooltip, { text: "Set cognitive complexity. Level 1 (Recall) through Level 4 (Extended Thinking)." })), /* @__PURE__ */ React.createElement("select", { "aria-label": t("common.selection"), "data-help-key": "quiz_dok", value: dokLevel, onChange: (event) => setDokLevel(event.target.value), className: "w-full text-sm border-slate-300 rounded-md p-1.5" }, /* @__PURE__ */ React.createElement("option", { value: "" }, t("wizard.dok_levels.none")), /* @__PURE__ */ React.createElement("option", { value: "Mixed" }, t("wizard.dok_levels.mixed")), /* @__PURE__ */ React.createElement("option", { value: "Level 1: Recall & Reproduction" }, t("wizard.dok_levels.l1")), /* @__PURE__ */ React.createElement("option", { value: "Level 2: Skill/Concept" }, t("wizard.dok_levels.l2")), /* @__PURE__ */ React.createElement("option", { value: "Level 3: Strategic Thinking" }, t("wizard.dok_levels.l3")), /* @__PURE__ */ React.createElement("option", { value: "Level 4: Extended Thinking" }, t("wizard.dok_levels.l4")))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-slate-700 mb-1" }, t("input.custom_instructions"), " ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-normal" }, t("common.optional"))), /* @__PURE__ */ React.createElement("textarea", { "aria-label": t("input.custom_instructions") || "Custom instructions for assessment", "data-help-key": "quiz_custom_instructions", value: quizCustomInstructions, onChange: (event) => setQuizCustomInstructions(event.target.value), placeholder: t("quiz.custom_placeholder"), className: "w-full text-xs p-2 border border-slate-400 rounded-md focus:ring-2 focus:ring-indigo-200 resize-none h-16" })), (generatedContent?.data?.analysis || history.some((item) => item && item.type === "analysis")) && /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-teal-700 flex items-center gap-1 pt-1 border-t border-teal-100" }, /* @__PURE__ */ React.createElement(CheckCircle, { size: 12 }), " ", t("quiz.context_active"))), /* @__PURE__ */ React.createElement("div", { className: "px-3 pt-2 pb-1 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-visuals-select", className: "text-[10px] font-bold uppercase tracking-wider text-slate-600 flex-shrink-0" }, t("quiz.visuals_label") || "Visuals:"), /* @__PURE__ */ React.createElement("select", { id: "quiz-visuals-select", value: mcqVisualMode, onChange: (event) => setMcqVisualMode(event.target.value), disabled: isProcessing, "data-help-key": "quiz_visual_mode_select", className: "flex-1 min-w-0 text-xs font-semibold px-2 py-1 rounded border border-slate-300 bg-white disabled:opacity-50", "aria-label": t("quiz.visuals_aria") || "MCQ visual mode" }, /* @__PURE__ */ React.createElement("option", { value: "none" }, t("quiz.visuals_none") || "\u2205 None (text only)"), /* @__PURE__ */ React.createElement("option", { value: "question" }, t("quiz.visuals_question") || "Question images"), /* @__PURE__ */ React.createElement("option", { value: "options" }, t("quiz.visuals_options") || "Option images"), /* @__PURE__ */ React.createElement("option", { value: "both" }, t("quiz.visuals_both") || "Question + option images"))), mcqVisualMode !== "none" && /* @__PURE__ */ React.createElement("div", { className: "px-3 pt-0 pb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-image-style-input", className: "text-[10px] font-bold uppercase tracking-wider text-slate-600 flex-shrink-0" }, t("quiz.style_label") || "Style:"), /* @__PURE__ */ React.createElement("input", { id: "quiz-image-style-input", type: "text", value: imageStyle, onChange: (event) => setImageStyle(event.target.value), disabled: isProcessing, maxLength: "120", placeholder: t("quiz.style_placeholder") || "e.g. flat vector or line drawing", className: "flex-1 min-w-0 text-xs px-2 py-1 rounded border border-slate-300 bg-white disabled:opacity-50", "aria-label": t("quiz.style_aria") || "Image style hint" })), /* @__PURE__ */ React.createElement(
+  }, maxLength: "50", placeholder: "e.g. Friday concept check", className: "flex-1 min-w-0 text-xs border-slate-300 rounded-md p-2 bg-white" }), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: savePreset, disabled: assessedTotal <= 0, className: "px-3 text-xs font-bold rounded bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40" }, "Save")), presetStatus && /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-[10px] text-slate-600" }, presetStatus))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(
+    ResourceCustomInstructions,
+    {
+      helpKey: "quiz_custom_instructions",
+      t,
+      ariaFallback: "Custom instructions for assessment",
+      value: quizCustomInstructions,
+      onChange: setQuizCustomInstructions,
+      placeholderKey: "quiz.custom_placeholder"
+    }
+  )), (generatedContent?.data?.analysis || history.some((item) => item && item.type === "analysis")) && /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-teal-700 flex items-center gap-1 pt-1 border-t border-teal-100" }, /* @__PURE__ */ React.createElement(CheckCircle, { size: 12 }), " ", t("quiz.context_active"))), /* @__PURE__ */ React.createElement("div", { className: "px-3 pt-2 pb-1 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "quiz-visuals-select", className: "text-[10px] font-bold uppercase tracking-wider text-slate-600 flex-shrink-0" }, t("quiz.visuals_label") || "Visuals:"), /* @__PURE__ */ React.createElement("select", { id: "quiz-visuals-select", value: mcqVisualMode, onChange: (event) => setMcqVisualMode(event.target.value), disabled: isProcessing, "data-help-key": "quiz_visual_mode_select", className: "flex-1 min-w-0 text-xs font-semibold px-2 py-1 rounded border border-slate-300 bg-white disabled:opacity-50", "aria-label": t("quiz.visuals_aria") || "MCQ visual mode" }, /* @__PURE__ */ React.createElement("option", { value: "none" }, t("quiz.visuals_none") || "\u2205 None (text only)"), /* @__PURE__ */ React.createElement("option", { value: "question" }, t("quiz.visuals_question") || "Question images"), /* @__PURE__ */ React.createElement("option", { value: "options" }, t("quiz.visuals_options") || "Option images"), /* @__PURE__ */ React.createElement("option", { value: "both" }, t("quiz.visuals_both") || "Question + option images"))), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -1971,17 +2159,7 @@ function TimelinePanel(props) {
       onChange: (e) => setIncludeTimelineVisuals(e.target.checked),
       className: "rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-4 w-4"
     }
-  ), "\u{1F3A8} ", t("timeline.settings.include_visuals") || "Include sequence visuals"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 italic mt-1 ml-6" }, t("timeline.settings.visuals_hint") || "Generates an AI icon for each item. Adds ~30-50 seconds.")), includeTimelineVisuals && /* @__PURE__ */ React.createElement("div", { "data-help-key": "timeline_image_style" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-slate-700 mb-1" }, /* @__PURE__ */ React.createElement(Palette, { size: 12, className: "inline mr-1 text-purple-500" }), " ", t("timeline.settings.image_style_label") || "Image style", " ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-normal" }, t("common.optional"))), /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      "aria-label": t("timeline.settings.image_style_label") || "Image style",
-      type: "text",
-      value: timelineImageStyle,
-      onChange: (e) => setTimelineImageStyle(e.target.value),
-      placeholder: t("timeline.settings.style_placeholder") || "e.g. cartoon, pixel art, watercolor",
-      className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 p-1.5"
-    }
-  ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 italic mt-1" }, t("timeline.settings.image_style_hint") || "Applied to all AI-generated sequence visuals."))), /* @__PURE__ */ React.createElement(
+  ), "\u{1F3A8} ", t("timeline.settings.include_visuals") || "Include sequence visuals"), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 italic mt-1 ml-6" }, t("timeline.settings.visuals_hint") || "Generates an AI icon for each item. Adds ~30-50 seconds."))), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -2002,10 +2180,12 @@ function ConceptSortPanel(props) {
     conceptImageMode,
     conceptInput,
     conceptItemCount,
+    conceptSortCustomInstructions,
     conceptSortImageStyle,
     expandedTools,
     handleConceptKeyDown,
     handleGenerate,
+    setConceptSortCustomInstructions,
     hasSourceOrAnalysis,
     isProcessing,
     removeConcept,
@@ -2068,17 +2248,17 @@ function ConceptSortPanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: "auto" }, t("concept_sort.card_visuals_auto") || "Auto (only on short items)"),
     /* @__PURE__ */ React.createElement("option", { value: "always" }, t("concept_sort.card_visuals_always") || "Always generate images"),
     /* @__PURE__ */ React.createElement("option", { value: "never" }, t("concept_sort.card_visuals_never") || "Never (text-only cards)")
-  )), conceptImageMode !== "never" && /* @__PURE__ */ React.createElement("div", { "data-help-key": "concept_sort_image_style" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium" }, /* @__PURE__ */ React.createElement(Palette, { size: 12, className: "inline mr-1 text-purple-500" }), " ", t("concept_sort.image_style_label") || "Image style", " ", /* @__PURE__ */ React.createElement("span", { className: "text-amber-600 font-normal" }, t("common.optional"))), /* @__PURE__ */ React.createElement(
-    "input",
+  )), /* @__PURE__ */ React.createElement(
+    ResourceCustomInstructions,
     {
-      "aria-label": t("concept_sort.image_style_label") || "Image style",
-      type: "text",
-      value: conceptSortImageStyle,
-      onChange: (e) => setConceptSortImageStyle(e.target.value),
-      placeholder: t("concept_sort.style_placeholder") || "e.g. cartoon, pixel art, watercolor",
-      className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 p-1"
+      helpKey: "concept_sort_custom_instructions",
+      t,
+      ariaFallback: "Custom instructions for concept sort",
+      value: conceptSortCustomInstructions,
+      onChange: setConceptSortCustomInstructions,
+      placeholderKey: "common.custom_instructions_placeholder"
     }
-  ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mt-1" }, t("concept_sort.image_style_hint") || "Applied to all AI-generated card visuals."))), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -2110,17 +2290,19 @@ function BrainstormPanel(props) {
     t
   } = props;
   if (!expandedTools || !expandedTools.includes("brainstorm")) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 border-b border-slate-100 bg-yellow-50/50 flex flex-col gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-slate-700 mb-1" }, t("brainstorm.instructions")), /* @__PURE__ */ React.createElement(
-    "textarea",
+  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 border-b border-slate-100 bg-yellow-50/50 flex flex-col gap-3" }, /* @__PURE__ */ React.createElement(
+    ResourceCustomInstructions,
     {
-      "aria-label": t("brainstorm.instructions") || "Brainstorm instructions",
-      "data-help-key": "brainstorm_custom_instructions",
+      helpKey: "brainstorm_custom_instructions",
+      t,
+      labelKey: "brainstorm.instructions",
+      optional: false,
+      ariaFallback: "Brainstorm instructions",
       value: brainstormCustomInstructions,
-      onChange: (e) => setBrainstormCustomInstructions(e.target.value),
-      placeholder: t("brainstorm.placeholder_input"),
-      className: "w-full text-xs p-2 border border-slate-400 rounded-md focus:ring-2 focus:ring-yellow-200 resize-none h-16 bg-white text-slate-800 placeholder:text-slate-500"
+      onChange: setBrainstormCustomInstructions,
+      placeholderKey: "brainstorm.placeholder_input"
     }
-  ))), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -2249,7 +2431,17 @@ function ImagePanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: "comparison" }, "\u{1F4CA} Comparison"),
     /* @__PURE__ */ React.createElement("option", { value: "sequence" }, "\u{1F522} Sequence / Steps"),
     /* @__PURE__ */ React.createElement("option", { value: "labeled-diagram" }, "\u{1F3F7}\uFE0F Labeled Diagram")
-  )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-slate-700 mb-1" }, t("input.custom_instructions"), " ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-normal" }, t("common.optional"))), /* @__PURE__ */ React.createElement("textarea", { "aria-label": t("input.custom_instructions") || "Custom instructions for visuals", "data-help-key": "visuals_custom_instructions", value: visualCustomInstructions, onChange: (e) => setVisualCustomInstructions(e.target.value), placeholder: t("visuals.placeholder_instructions"), className: "w-full text-xs p-2 border border-slate-400 rounded-md focus:ring-2 focus:ring-cyan-200 resize-none h-16" }))), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement(
+    ResourceCustomInstructions,
+    {
+      helpKey: "visuals_custom_instructions",
+      t,
+      ariaFallback: "Custom instructions for visuals",
+      value: visualCustomInstructions,
+      onChange: setVisualCustomInstructions,
+      placeholderKey: "visuals.placeholder_instructions"
+    }
+  ))), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -2284,16 +2476,17 @@ function PersonaPanel(props) {
     t
   } = props;
   if (!expandedTools || !expandedTools.includes("persona")) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 border-b border-slate-100 bg-indigo-50/50 flex flex-col gap-3" }, /* @__PURE__ */ React.createElement("div", { "data-help-key": "persona_custom_instructions" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-slate-700 mb-1" }, t("input.custom_instructions"), " ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-normal" }, t("common.optional"))), /* @__PURE__ */ React.createElement(
-    "textarea",
+  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 border-b border-slate-100 bg-indigo-50/50 flex flex-col gap-3" }, /* @__PURE__ */ React.createElement(
+    ResourceCustomInstructions,
     {
-      "aria-label": t("input.custom_instructions") || "Custom instructions for persona",
+      helpKey: "persona_custom_instructions",
+      t,
+      ariaFallback: "Custom instructions for persona",
       value: personaCustomInstructions,
-      onChange: (e) => setPersonaCustomInstructions(e.target.value),
-      placeholder: t("persona.custom_placeholder"),
-      className: "w-full text-xs p-2 border border-slate-400 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 resize-none h-16 transition-shadow motion-reduce:transition-none duration-300"
+      onChange: setPersonaCustomInstructions,
+      placeholderKey: "persona.custom_placeholder"
     }
-  )), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 bg-indigo-100/50 p-2 rounded border border-indigo-200", "data-help-key": "persona_free_response" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 bg-indigo-100/50 p-2 rounded border border-indigo-200", "data-help-key": "persona_free_response" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.toggle_is_persona_free_response"),
@@ -2369,17 +2562,19 @@ function OutlinePanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: "See-Think-Wonder" }, t("outline.see_think_wonder") || "See, Think, Wonder"),
     /* @__PURE__ */ React.createElement("option", { value: "3D Concept Space" }, t("outline.concept_space_3d") || "3D Concept Space (strands in depth)"),
     /* @__PURE__ */ React.createElement("option", { value: "Memory Palace" }, t("outline.memory_palace") || "Memory Palace (method of loci)")
-  )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-slate-700 mb-1" }, t("outline.instructions_label")), /* @__PURE__ */ React.createElement(
-    "textarea",
+  )), /* @__PURE__ */ React.createElement(
+    ResourceCustomInstructions,
     {
-      "aria-label": t("outline.instructions_label") || "Custom instructions for outline",
-      "data-help-key": "outline_custom_instructions",
+      helpKey: "outline_custom_instructions",
+      t,
+      labelKey: "outline.instructions_label",
+      optional: false,
+      ariaFallback: "Custom instructions for outline",
       value: outlineCustomInstructions,
-      onChange: (e) => setOutlineCustomInstructions(e.target.value),
-      placeholder: t("outline.placeholder_instructions"),
-      className: "w-full text-xs p-2 border border-slate-400 rounded-md focus:ring-2 focus:ring-cyan-200 resize-none h-16"
+      onChange: setOutlineCustomInstructions,
+      placeholderKey: "outline.placeholder_instructions"
     }
-  ))), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -2400,7 +2595,9 @@ function NoteTakingPanel(props) {
     handleGenerate,
     hasSourceOrAnalysis,
     isProcessing,
+    noteTakingCustomInstructions,
     noteTakingTemplateType,
+    setNoteTakingCustomInstructions,
     setNoteTakingTemplateType,
     t
   } = props;
@@ -2420,7 +2617,17 @@ function NoteTakingPanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: "double-entry" }, t("note_taking.double_entry") || "Double-Entry Journal (quote \u2194 response)"),
     /* @__PURE__ */ React.createElement("option", { value: "guided-notes" }, t("note_taking.guided_notes") || "Guided Notes (fill-in-the-blank)"),
     /* @__PURE__ */ React.createElement("option", { value: "q-and-a" }, t("note_taking.q_and_a") || "Q&A Study Notes (self-quiz)")
-  )), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 italic leading-snug" }, t("note_taking.help") || "Each template is scaffolded from today's source text but persists in your history so you can keep adding to it across lessons.")), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement(
+    ResourceCustomInstructions,
+    {
+      helpKey: "note_taking_custom_instructions",
+      t,
+      ariaFallback: "Custom instructions for notes",
+      value: noteTakingCustomInstructions,
+      onChange: setNoteTakingCustomInstructions,
+      placeholderKey: "common.custom_instructions_placeholder"
+    }
+  ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 italic leading-snug" }, t("note_taking.help") || "Each template is scaffolded from today's source text but persists in your history so you can keep adding to it across lessons.")), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -2437,11 +2644,13 @@ function NoteTakingPanel(props) {
 }
 function AnchorChartPanel(props) {
   const {
+    anchorChartCustomInstructions,
+    anchorChartType,
     expandedTools,
     handleGenerate,
     hasSourceOrAnalysis,
     isProcessing,
-    anchorChartType,
+    setAnchorChartCustomInstructions,
     setAnchorChartType,
     t
   } = props;
@@ -2467,7 +2676,17 @@ function AnchorChartPanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: "criteria-success" }, t("anchor_chart.criteria_success") || "Success Criteria (what strong work includes)"),
     /* @__PURE__ */ React.createElement("option", { value: "misconception" }, t("anchor_chart.misconception") || "Misconceptions (mix-ups + fixes)"),
     /* @__PURE__ */ React.createElement("option", { value: "question-guide" }, t("anchor_chart.question_guide") || "Question Guide (discussion / analysis prompts)")
-  )), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 italic leading-snug" }, t("anchor_chart.help") || "AI drafts a classroom-ready visual reference with hand-drawn icons. Edit the poster anytime, then print or download it.")), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement(
+    ResourceCustomInstructions,
+    {
+      helpKey: "anchor_chart_custom_instructions",
+      t,
+      ariaFallback: "Custom instructions for anchor chart",
+      value: anchorChartCustomInstructions,
+      onChange: setAnchorChartCustomInstructions,
+      placeholderKey: "common.custom_instructions_placeholder"
+    }
+  ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 italic leading-snug" }, t("anchor_chart.help") || "AI drafts a classroom-ready visual reference with hand-drawn icons. Edit the poster anytime, then print or download it.")), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -2508,17 +2727,17 @@ function FaqPanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: 5 }, t("faq.options.q5")),
     /* @__PURE__ */ React.createElement("option", { value: 8 }, t("faq.options.q8")),
     /* @__PURE__ */ React.createElement("option", { value: 10 }, t("faq.options.q10"))
-  )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-slate-700 mb-1" }, t("input.custom_instructions"), " ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-normal" }, t("common.optional"))), /* @__PURE__ */ React.createElement(
-    "textarea",
+  )), /* @__PURE__ */ React.createElement(
+    ResourceCustomInstructions,
     {
-      "aria-label": t("input.custom_instructions") || "Custom instructions for FAQ",
-      "data-help-key": "faq_custom_instructions",
+      helpKey: "faq_custom_instructions",
+      t,
+      ariaFallback: "Custom instructions for FAQ",
       value: faqCustomInstructions,
-      onChange: (e) => setFaqCustomInstructions(e.target.value),
-      placeholder: t("faq.placeholder_instructions"),
-      className: "w-full text-xs p-2 border border-slate-400 rounded-md focus:ring-2 focus:ring-indigo-200 resize-none h-16"
+      onChange: setFaqCustomInstructions,
+      placeholderKey: "faq.placeholder_instructions"
     }
-  ))), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -2557,17 +2776,18 @@ function SentenceFramesPanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: "Sentence Starters" }, t("scaffolds.starters")),
     /* @__PURE__ */ React.createElement("option", { value: "Paragraph Frame" }, t("scaffolds.frame")),
     /* @__PURE__ */ React.createElement("option", { value: "Discussion Prompts" }, t("scaffolds.prompts"))
-  )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-slate-700 mb-1" }, t("input.custom_instructions")), /* @__PURE__ */ React.createElement(
-    "textarea",
+  )), /* @__PURE__ */ React.createElement(
+    ResourceCustomInstructions,
     {
-      "aria-label": t("input.custom_instructions") || "Custom instructions for scaffolds",
-      "data-help-key": "scaffolds_custom_instructions",
+      helpKey: "scaffolds_custom_instructions",
+      t,
+      optional: false,
+      ariaFallback: "Custom instructions for scaffolds",
       value: frameCustomInstructions,
-      onChange: (e) => setFrameCustomInstructions(e.target.value),
-      placeholder: t("scaffolds.placeholder_instructions"),
-      className: "w-full text-xs p-2 border border-slate-400 rounded-md focus:ring-2 focus:ring-cyan-200 resize-none h-16"
+      onChange: setFrameCustomInstructions,
+      placeholderKey: "scaffolds.placeholder_instructions"
     }
-  ))), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -2593,17 +2813,18 @@ function LessonPlanPanel(props) {
     t
   } = props;
   if (!expandedTools || !expandedTools.includes("lesson-plan")) return null;
-  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 border-b border-slate-100 bg-indigo-50/50 flex flex-col gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-600 mb-1" }, t("lesson_plan.custom_additions"), " ", /* @__PURE__ */ React.createElement("span", { className: "text-indigo-600 font-normal" }, t("common.optional"))), /* @__PURE__ */ React.createElement(
-    "textarea",
+  return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 border-b border-slate-100 bg-indigo-50/50 flex flex-col gap-3" }, /* @__PURE__ */ React.createElement(
+    ResourceCustomInstructions,
     {
-      "aria-label": t("lesson_plan.custom_additions") || "Lesson plan custom additions",
-      "data-help-key": "lesson_plan_custom_additions",
+      helpKey: "lesson_plan_custom_additions",
+      t,
+      labelKey: "lesson_plan.custom_additions",
+      ariaFallback: "Lesson plan custom additions",
       value: lessonCustomAdditions,
-      onChange: (e) => setLessonCustomAdditions(e.target.value),
-      placeholder: t("lesson_plan.placeholder_additions"),
-      className: "w-full text-xs p-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 resize-none h-16 bg-white"
+      onChange: setLessonCustomAdditions,
+      placeholderKey: "lesson_plan.placeholder_additions"
     }
-  ))), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -2675,6 +2896,7 @@ function UiToolWordsoundsPanel(props) {
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.AdventurePanel = (typeof AdventurePanel !== 'undefined') ? AdventurePanel : null;
 window.AlloModules.SimplifiedPanel = (typeof SimplifiedPanel !== 'undefined') ? SimplifiedPanel : null;
+window.AlloModules.UniversalSettingsPanel = (typeof UniversalSettingsPanel !== 'undefined') ? UniversalSettingsPanel : null;
 window.AlloModules.MathPanel = (typeof MathPanel !== 'undefined') ? MathPanel : null;
 window.AlloModules.DbqPanel = (typeof DbqPanel !== 'undefined') ? DbqPanel : null;
 window.AlloModules.SourceInputPanel = (typeof SourceInputPanel !== 'undefined') ? SourceInputPanel : null;

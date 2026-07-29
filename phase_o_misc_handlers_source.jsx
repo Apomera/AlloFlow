@@ -58,6 +58,7 @@ const startClassSession = async (deps) => {
                 currentQuestionIndex: 0,
                 phase: 'idle',
                 responses: {},
+                responseReceipts: {},
                 bossStats: {
                     maxHP: 1000,
                     currentHP: 1000,
@@ -118,7 +119,7 @@ const startClassSession = async (deps) => {
                 roster: {},
                 groups: {},
                 democracy: { isActive: false, phase: 'idle', votingContext: 'custom', activeOptions: [], votes: {}, suggestions: {} },
-                quizState: { isActive: false, mode: 'live-pulse', currentQuestionIndex: 0, phase: 'idle', responses: {}, bossStats: { maxHP: 1000, currentHP: 1000, classHP: 100, name: "The Knowledge Keeper", lastDamage: 0 }, teams: {} }
+                quizState: { isActive: false, mode: 'live-pulse', currentQuestionIndex: 0, phase: 'idle', responses: {}, responseReceipts: {}, bossStats: { maxHP: 1000, currentHP: 1000, classHP: 100, name: "The Knowledge Keeper", lastDamage: 0 }, teams: {} }
             }));
             setActiveSessionCode(code);
             setShowSessionModal(true);
@@ -627,11 +628,14 @@ const getBlueprintResourcePlan = (blueprint) => {
     const rawPlan = Array.isArray(blueprint?.resourcePlan) && blueprint.resourcePlan.length > 0
         ? blueprint.resourcePlan
         : ((blueprint && blueprint.recommendedResources) || []);
-    return rawPlan.map(item => {
+    return rawPlan.map((item, idx) => {
         const type = typeof item === 'string' ? item : (item && (item.tool || item.type || item.id));
         if (!type) return null;
         return {
             type,
+            // Stable row identity minted by the contract layer. Falls back to
+            // the positional form only for plans built outside it.
+            uiId: (typeof item === 'object' && item && (item.uiId || item.stepId)) || (String(type) + '-' + idx),
             directive: typeof item === 'string'
                 ? (toolDirectives[type] || "")
                 : (item.directive || item.instructions || item.customInstructions || toolDirectives[type] || "")
@@ -640,21 +644,48 @@ const getBlueprintResourcePlan = (blueprint) => {
 };
 
 const executeOneBlueprint = async (blueprint, ctx) => {
-    const { handleGenerate, historyOverride, dna, initialSourceText, onResource, signal } = ctx || {};
+    // onStep is ADDITIVE and optional — onResource stays exactly as it was
+    // because Throughline's Generate-Unit driver consumes it.
+    const { handleGenerate, historyOverride, dna, initialSourceText, onResource, onStep, signal } = ctx || {};
+    const emitStep = (payload) => { if (typeof onStep === 'function') { try { onStep(payload); } catch (_) {} } };
     const finalResources = getBlueprintResourcePlan(blueprint);
     const lessonDNA = dna || { grade: "", topic: "", standard: "", concepts: [], keyTerms: [], visualContext: "", essentialQuestion: "" };
     let currentSourceText = initialSourceText || "";
     let currentBlueprintHistory = Array.isArray(historyOverride) ? [...historyOverride] : [];
     const items = [];
     const nulls = [];
+    const failedRows = [];
     for (let i = 0; i < finalResources.length; i++) {
         if (signal && signal.aborted) break;
+        // Read uiId on its OWN line: the destructure below is pinned
+        // byte-for-byte across three copies by blueprint_mode_guardrails.
         const { type, directive: aiDirective = "" } = finalResources[i];
-        const resultItem = await handleGenerate(type, null, i < finalResources.length - 1, currentSourceText, {
+        const stepUiId = finalResources[i] && finalResources[i].uiId;
+        emitStep({ uiId: stepUiId, tool: type, status: 'running', index: i });
+        const stepConfig = {
             customInstructions: aiDirective,
             historyOverride: currentBlueprintHistory,
             lessonDNA: lessonDNA
-        }, false);
+        };
+        // The standards audit is post-hoc: it audits whatever it can find. Left
+        // to itself, selectCurriculumArtifacts GUESSES its own scope — by
+        // curriculumId, else a "latest analysis anchor" heuristic, else every
+        // eligible item in history, and it emits a warning saying so. But a
+        // blueprint run knows EXACTLY what it produced. Hand it that list so the
+        // report scopes to this plan (selectionMode: 'explicit artifact IDs')
+        // instead of to whatever else happens to be in the workspace.
+        const auditScopeIds = (type === 'alignment-report')
+            ? items.map(function (it) { return it && it.id; }).filter(Boolean)
+            : null;
+        if (auditScopeIds && auditScopeIds.length) stepConfig.artifactIds = auditScopeIds;
+        const resultItem = await handleGenerate(type, null, i < finalResources.length - 1, currentSourceText, stepConfig, false);
+        emitStep({ uiId: stepUiId, tool: type, index: i,
+                   status: resultItem ? 'landed' : 'failed',
+                   resourceId: (resultItem && resultItem.id) || null,
+                   // Carried so the run record can answer "which rows does the
+                   // current audit actually cover?" — the basis for per-row
+                   // staleness once a row is later regenerated.
+                   auditScopeIds: (resultItem && auditScopeIds) ? auditScopeIds : undefined });
         if (resultItem) {
             items.push(resultItem);
             currentBlueprintHistory.push(resultItem);
@@ -679,13 +710,21 @@ const executeOneBlueprint = async (blueprint, ctx) => {
             }
             if (typeof onResource === 'function') { try { onResource(type, resultItem); } catch (_) {} }
         } else {
+            // nulls stays a flat tool-name list for the existing toast/callers;
+            // failedRows is the row-accurate record ("which image failed").
             nulls.push(type);
+            failedRows.push({ uiId: stepUiId, tool: type, index: i });
         }
         if (i < finalResources.length - 1) await new Promise(r => setTimeout(r, 1000));
     }
-    return { items: items, dnaOut: lessonDNA, nulls: nulls, finalSourceText: currentSourceText };
+    return { items: items, dnaOut: lessonDNA, nulls: nulls, failedRows: failedRows, finalSourceText: currentSourceText };
 };
 
+// Re-entrancy guard for handleExecuteBlueprint. Was implicit: the handler
+// nulled activeBlueprint before running, so a second click found nothing to
+// execute. The plan now survives execution (so the teacher can watch its rows),
+// which removes that accidental protection.
+let _blueprintRunInFlight = false;
 const handleExecuteBlueprint = async (deps) => {
   const { gradeLevel, leveledTextLanguage, currentUiLanguage, selectedLanguages, studentInterests, sourceTopic, inputText, history, generatedContent, apiKey, standardsInput, targetStandards, dokLevel, rosterKey, sessionData, user, appId, activeSessionAppId, activeSessionCode, studentNickname, sourceLength, sourceTone, textFormat, fullPackTargetGroup, isAutoConfigEnabled, resourceCount, creativeMode, noText, fillInTheBlank, imageGenerationStyle, imageAspectRatio, useLowQualityVisuals, autoRemoveWords, globalPoints, wizardData, isWizardOpen, standardsLookupRegion, standardsLookupGoal, pdfFixResult, showExportPreview, aiStandardQuery, aiStandardRegion, imageRefinementInput, activeBlueprint, ai, webSearchProvider, alloBotRef, pdfPreviewRef, exportPreviewRef, setError, setIsProcessing, setGenerationStep, setGeneratedContent, setHistory, setActiveView, setActiveSessionCode, setActiveSessionAppId, setStudentNickname, setIsWizardOpen, setShowSourceGen, setSourceTopic, setSourceCustomInstructions, setSourceLength, setSourceTone, setTextFormat, setSelectedLanguages, setGradeLevel, setStandardsInput, setTargetStandards, setDokLevel, setStudentInterests, setSuggestedStandards, setIsLookingUpStandards, setStandardsLookupGoal, setStandardsLookupRegion, setExpandedTools, setShowUDLGuide, setUdlMessages, setGuidedFlowState, setIsRefiningImage, setShowImageRefineModal, setIsExecutingBlueprint, setBlueprintExecutionResult, setShowExportPreview, setInputText, setIsTeacherMode, setIsParentMode, setIsIndependentMode, setActiveSidebarTab, setDoc, setSessionData, setShowSessionModal, setImageRefinementInput, setIsFindingStandards, setShowWizard, setSourceLevel, setSourceVocabulary, setIncludeSourceCitations, setLeveledTextLanguage, setActiveBlueprint, setPersistedLessonDNA, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callImagen, callGeminiImageEdit, cleanJson, safeJsonParse, sanitizeTruncatedCitations, normalizeResourceLinks, flyToElement, getDefaultTitle, storageDB, updateDoc, doc, db, playSound, playAdventureEventSound, generateSessionCode, stripUndefined, uploadSessionAssets, safeSetItem, handleGenerateSource, applyDetailedAutoConfig, handleGenerate, fileInputRef } = deps;
   try { if (window._DEBUG_PHASE_O) console.log("[PhaseO] handleExecuteBlueprint fired"); } catch(_) {}
@@ -709,7 +748,25 @@ const handleExecuteBlueprint = async (deps) => {
         visualContext: "",
         essentialQuestion: activeBlueprint.lessonDNA?.essentialQuestion || "",
     };
-    setActiveBlueprint(null);
+    // Re-entrancy: nulling activeBlueprint used to BE the guard (a second
+    // click found nothing to run). The plan now survives execution so the
+    // teacher can watch it, which removes that accidental protection — and the
+    // chat's execute path bypasses any disabled button. Guard explicitly.
+    // Module-scoped rather than deps.isProcessing: the VALUE isProcessing is not
+    // in this handler's deps (only setIsProcessing is), so reading it would be a
+    // ReferenceError. A module flag is also the more precise guard — this is
+    // about concurrent invocations of THIS handler, not global busy-ness.
+    if (_blueprintRunInFlight) { addToast(t('blueprint.already_running') || 'That plan is already generating.', 'info'); return; }
+    _blueprintRunInFlight = true;
+    // Seed one row per plan entry so the board shows the whole plan as
+    // 'planned' immediately, rather than materialising rows as they start.
+    const _runRows = {};
+    finalResources.forEach((r, i) => {
+        const key = (r && r.uiId) || (String(r && r.type) + '-' + i);
+        _runRows[key] = { uiId: key, tool: r && r.type, status: 'planned', index: i };
+    });
+    setIsExecutingBlueprint(true);
+    setBlueprintExecutionResult({ startedAt: null, rows: _runRows, done: false });
     // The chat panel used to be force-closed here, which threw away the
     // conversation the plan came out of — and, because the guided-flow stage
     // was never cleared, reopening it stranded every later message in the
@@ -732,17 +789,50 @@ const handleExecuteBlueprint = async (deps) => {
         if (existingAnalysis?.data?.originalText) {
             currentSourceText = existingAnalysis.data.originalText;
         }
-        const { dnaOut, nulls } = await executeOneBlueprint(activeBlueprint, {
+        const { dnaOut, nulls, failedRows } = await executeOneBlueprint(activeBlueprint, {
             handleGenerate,
             historyOverride: [...history],
             dna: lessonDNA,                       // mutated in place — faithful to the original loop
-            initialSourceText: currentSourceText
+            initialSourceText: currentSourceText,
+            onStep: (step) => {
+                if (!step || !step.uiId) return;
+                setBlueprintExecutionResult(prev => {
+                    const base = (prev && prev.rows) ? prev : { rows: _runRows, done: false };
+                    const next = Object.assign({}, base, {
+                        rows: Object.assign({}, base.rows, {
+                            [step.uiId]: Object.assign({}, base.rows[step.uiId], step)
+                        })
+                    });
+                    // Promote the audit's scope to the run record. A row is
+                    // covered by the current audit iff its resourceId is in
+                    // this list — so a row regenerated afterwards drops out of
+                    // it automatically, which is exactly per-row staleness.
+                    if (Array.isArray(step.auditScopeIds)) {
+                        next.audit = {
+                            resourceIds: step.auditScopeIds.slice(),
+                            reportId: step.resourceId || null,
+                            rowUiId: step.uiId,
+                        };
+                    }
+                    return next;
+                });
+            }
         });
         setPersistedLessonDNA(dnaOut);            // dnaOut === lessonDNA (same object)
         if (Array.isArray(nulls) && nulls.length > 0) {
-            const failedList = nulls.slice(0, 3).join(", ");
-            const extra = nulls.length > 3 ? ` and ${nulls.length - 3} more` : "";
-            const warnMsg = `Blueprint finished, but ${nulls.length} resource${nulls.length === 1 ? "" : "s"} did not generate: ${failedList}${extra}.`;
+            // Name the ROW, not just the tool. `nulls` is a flat list of tool
+            // names, so a plan with two image steps reported "image, image" and
+            // the teacher could not tell which one to rebuild. failedRows
+            // carries the plan position; fall back to nulls if it is absent
+            // (older callers of executeOneBlueprint).
+            const rowsFailed = Array.isArray(failedRows) && failedRows.length ? failedRows : null;
+            const describe = rowsFailed
+                ? rowsFailed.slice(0, 3).map(r => `${r.tool} (step ${r.index + 1})`)
+                : nulls.slice(0, 3);
+            const total = rowsFailed ? rowsFailed.length : nulls.length;
+            const failedList = describe.join(", ");
+            const extra = total > 3 ? ` and ${total - 3} more` : "";
+            const warnMsg = `Blueprint finished, but ${total} resource${total === 1 ? "" : "s"} did not generate: ${failedList}${extra}.`;
             addToast(warnMsg, "warning");
             setUdlMessages(prev => [...prev, { role: 'model', text: warnMsg }]);
         } else {
@@ -757,12 +847,81 @@ const handleExecuteBlueprint = async (deps) => {
         warnLog("Unhandled error:", e);
         addToast(t('blueprint.execution_error'), "error");
         setUdlMessages(prev => [...prev, { role: 'model', text: t('blueprint.execution_error') }]);
+        // An interrupted run must not leave rows frozen at 'running' forever —
+        // unbuildable and undismissable. Mark them interrupted so the board can
+        // offer a retry instead of a spinner that never resolves.
+        setBlueprintExecutionResult(prev => {
+            if (!prev || !prev.rows) return prev;
+            const rows = {};
+            Object.keys(prev.rows).forEach(k => {
+                const r = prev.rows[k];
+                rows[k] = (r && (r.status === 'running' || r.status === 'planned'))
+                    ? Object.assign({}, r, { status: 'interrupted' }) : r;
+            });
+            return Object.assign({}, prev, { rows: rows, done: true });
+        });
     } finally {
+        _blueprintRunInFlight = false;
         setIsProcessing(false);
+        setIsExecutingBlueprint(false);
+        setBlueprintExecutionResult(prev => prev ? Object.assign({}, prev, { done: true }) : prev);
     }
 };
 
 window.AlloModules = window.AlloModules || {};
+// Stage 5 — rebuild ONE plan row.
+//
+// Possible only because of the Stage 2 join key: the row is addressed by uiId,
+// so this cannot regenerate the wrong resource even on a reordered plan, and
+// two rows of the same tool stay distinguishable. Uses the same handleGenerate
+// call shape the executor uses, so a rebuilt row is indistinguishable from an
+// originally-generated one.
+//
+// The new resourceId is the staleness signal: audit coverage is tested by
+// resourceId, so a rebuilt row drops out of run.audit.resourceIds on its own
+// and its badge flips to "Not in audit". No invalidation bookkeeping.
+const handleRebuildBlueprintStep = async (deps, uiId) => {
+  const { activeBlueprint, blueprintExecutionResult, persistedLessonDNA, history,
+          setBlueprintExecutionResult, handleGenerate, addToast, t, warnLog } = deps;
+  if (!uiId) return null;
+  const plan = (activeBlueprint && Array.isArray(activeBlueprint.resourcePlan)) ? activeBlueprint.resourcePlan : [];
+  const row = plan.filter(function (r) { return r && (r.uiId || r.stepId) === uiId; })[0];
+  if (!row) { try { addToast(t('blueprint.rebuild_missing') || 'That step is no longer in the plan.', 'warning'); } catch (_) {} return null; }
+  // Same guard as a full run: a rebuild during an execution would interleave
+  // history writes with the executor's own loop.
+  if (_blueprintRunInFlight) {
+    try { addToast(t('blueprint.already_running') || 'That plan is already generating.', 'info'); } catch (_) {}
+    return null;
+  }
+  _blueprintRunInFlight = true;
+  const patch = (fields) => setBlueprintExecutionResult(function (prev) {
+    const base = (prev && prev.rows) ? prev : { rows: {}, done: true };
+    return Object.assign({}, base, {
+      rows: Object.assign({}, base.rows, {
+        [uiId]: Object.assign({}, base.rows[uiId], { uiId: uiId, tool: row.tool }, fields)
+      })
+    });
+  });
+  patch({ status: 'running' });
+  try {
+    const resultItem = await handleGenerate(row.tool, null, false, null, {
+      customInstructions: row.directive || '',
+      historyOverride: Array.isArray(history) ? history.slice() : [],
+      lessonDNA: persistedLessonDNA || null,
+    }, false);
+    patch({ status: resultItem ? 'landed' : 'failed',
+            resourceId: (resultItem && resultItem.id) || null,
+            rebuilt: true });
+    return resultItem || null;
+  } catch (e) {
+    warnLog && warnLog('[Blueprint] rebuild failed:', e && e.message ? e.message : e);
+    patch({ status: 'failed', resourceId: null, rebuilt: true });
+    return null;
+  } finally {
+    _blueprintRunInFlight = false;
+  }
+};
+
 window.AlloModules.PhaseOHandlers = {
   startClassSession,
   handleRefineImage,
@@ -770,5 +929,6 @@ window.AlloModules.PhaseOHandlers = {
   handleWizardComplete,
   handleWizardStandardLookup,
   handleExecuteBlueprint,
+  handleRebuildBlueprintStep,
   executeOneBlueprint,   // exposed for the Generate-Unit driver (runs it once per lesson)
 };

@@ -104,6 +104,33 @@ describe('bounded live activity snapshot contract', () => {
     expect(safe.participantStatus).not.toHaveProperty('outsider');
   });
 
+  it('accepts Q&A aggregate snapshots while stripping raw question fields', () => {
+    const safe = api.sanitizeLiveActivitySnapshot({
+      activityId: 'session-qa-ROOM',
+      family: 'polling',
+      kind: 'session_qa',
+      phase: 'paused',
+      audienceUids: ['u1', 'u2'],
+      participantStatus: { u1: 'submitted', u2: 'submitted' },
+      counts: { approved: 2, hidden: 1, revealed: 1, votesCast: 4 },
+      question: 'private question',
+      codename: 'Private Codename',
+      voterUids: ['private-voter'],
+      updatedAt: 500,
+    });
+
+    expect(safe).toMatchObject({
+      kind: 'session_qa',
+      phase: 'paused',
+      counts: { invited: 2, submitted: 2, approved: 2, hidden: 1, revealed: 1, votesCast: 4 },
+    });
+    expect(api.liveActivityKindLabel('session_qa')).toBe('Live Q&A');
+    const serialized = JSON.stringify(safe);
+    expect(serialized).not.toContain('private question');
+    expect(serialized).not.toContain('Private Codename');
+    expect(serialized).not.toContain('private-voter');
+  });
+
   it('rejects unknown activity families, kinds, and phases', () => {
     expect(api.sanitizeLiveActivitySnapshot({ activityId: 'x', family: 'chat', kind: 'quiz', phase: 'collecting' })).toBeNull();
     expect(api.sanitizeLiveActivitySnapshot({ activityId: 'x', family: 'quiz', kind: 'chat', phase: 'collecting' })).toBeNull();
@@ -289,6 +316,62 @@ describe('attention queue and activity timeline helpers', () => {
     expect(serialized).not.toContain('private answer');
   });
 
+  it('clusters only shared instructional signals without copying names or response content', () => {
+    const cohorts = api.buildLiveAttentionCohorts([{
+      uid: 'u2',
+      score: 76,
+      reasons: ['activity_waiting', 'presence_quiet'],
+      prompt: 'raw private prompt',
+    }, {
+      uid: 'u1',
+      score: 120,
+      reasons: ['signal_stuck'],
+      response: 'raw private answer',
+    }, {
+      uid: 'u3',
+      score: 94,
+      reasons: ['presence_disconnected'],
+    }, {
+      uid: 'u4',
+      score: 68,
+      reasons: ['activity_working_long'],
+    }, {
+      uid: 'u4',
+      score: 68,
+      reasons: ['activity_working_long'],
+    }], {
+      u1: { name: 'Private One', groupId: 'g1' },
+      u2: { name: 'Private Two', groupId: 'g1' },
+      u3: { name: 'Private Three', groupId: 'g1' },
+      u4: { name: 'Private Four', groupId: 'g2' },
+    }, {
+      g1: { name: 'Explorers' },
+      g2: { name: 'Builders' },
+    });
+
+    expect(cohorts).toEqual([{
+      groupId: 'g1',
+      uids: ['u2', 'u1'],
+      count: 2,
+      memberCount: 3,
+      allMembersFlagged: false,
+      topReasonCodes: ['activity_waiting', 'signal_stuck'],
+      score: 196,
+    }]);
+    const serialized = JSON.stringify(cohorts);
+    expect(serialized).not.toContain('Private One');
+    expect(serialized).not.toContain('raw private prompt');
+    expect(serialized).not.toContain('raw private answer');
+
+    const moduleSource = fs.readFileSync(path.join(ROOT, 'view_live_lesson_run_source.jsx'), 'utf8');
+    const helperStart = moduleSource.indexOf('function buildLiveAttentionCohorts');
+    const helperEnd = moduleSource.indexOf('function liveAttentionReasonLabel', helperStart);
+    const helperSource = moduleSource.slice(helperStart, helperEnd);
+    expect(helperSource).not.toContain('updateDoc');
+    expect(helperSource).not.toContain('localStorage');
+    expect(helperSource).not.toContain('recordLiveActivitySnapshot');
+  });
+
   it('does not turn normal class transitions or acknowledged one-time sends into delivery alerts', () => {
     const queue = api.buildLiveAttentionQueue({
       now: 600000,
@@ -375,9 +458,162 @@ describe('Activity Pulse presentation and resource action', () => {
     const pulse = nodes.find(node => node.props && node.props['aria-label'] === 'Activity pulse');
     expect(nodeText(pulse)).toContain('Feedback response');
     expect(nodeText(pulse)).toContain('1 of 2 submitted');
-    const send = nodes.find(node => node.type === 'button' && node.props['aria-label'] === 'Send selected step to Ana');
+    const send = nodes.find(node => node.type === 'button' && node.props['aria-label'] === 'Send Support resource to Ana');
     send.props.onClick();
     expect(onSendToStudent).toHaveBeenCalledWith('u1', { id: 'support', type: 'simplified', title: 'Support resource' });
+  });
+
+  it('guards a pending single-student send and announces the result', async () => {
+    let resolveSend;
+    const onSendToStudent = vi.fn(() => new Promise(resolve => {
+      resolveSend = resolve;
+    }));
+    const props = {
+      history: [{ id: 'support', type: 'simplified', title: 'Support resource' }],
+      getStudentSafeResources: items => items,
+      currentItemId: 'support',
+      currentResourceId: 'support',
+      roster: { u1: { name: 'Ana', signal: 'stuck', signalAt: 99000, lastSeen: 99000 } },
+      activitySnapshots: [],
+      getTitle: item => item.title,
+      getIcon: () => null,
+      onOpenResource: vi.fn(),
+      onSendToStudent,
+      now: 100000,
+      t: () => undefined,
+    };
+
+    let tree = api.LiveLessonRunPanel(props);
+    let nodes = walk(tree);
+    const send = nodes.find(node => node.type === 'button'
+      && node.props['aria-label'] === 'Send Support resource to Ana');
+    const pending = send.props.onClick();
+
+    hookCursor = 0;
+    tree = api.LiveLessonRunPanel(props);
+    nodes = walk(tree);
+    const guarded = nodes.find(node => node.type === 'button'
+      && node.props['aria-label'] === 'Send Support resource to Ana');
+    expect(guarded.props.disabled).toBe(true);
+    expect(nodeText(guarded)).toContain('Sending...');
+    await guarded.props.onClick();
+    expect(onSendToStudent).toHaveBeenCalledTimes(1);
+
+    resolveSend({ sent: 1, failed: 0 });
+    await pending;
+    hookCursor = 0;
+    tree = api.LiveLessonRunPanel(props);
+    const status = walk(tree).find(node => node.props
+      && node.props.role === 'status'
+      && nodeText(node).includes('Sent Support resource to Ana.'));
+    expect(status).toBeTruthy();
+  });
+
+  it('announces a failed single-student send instead of reporting success', async () => {
+    const onSendToStudent = vi.fn().mockResolvedValue({ sent: 0, failed: 1 });
+    const props = {
+      history: [{ id: 'support', type: 'simplified', title: 'Support resource' }],
+      getStudentSafeResources: items => items,
+      currentItemId: 'support',
+      currentResourceId: 'support',
+      roster: { u1: { name: 'Ana', signal: 'stuck', signalAt: 99000, lastSeen: 99000 } },
+      activitySnapshots: [],
+      getTitle: item => item.title,
+      getIcon: () => null,
+      onOpenResource: vi.fn(),
+      onSendToStudent,
+      now: 100000,
+      t: () => undefined,
+    };
+
+    let tree = api.LiveLessonRunPanel(props);
+    const send = walk(tree).find(node => node.type === 'button'
+      && node.props['aria-label'] === 'Send Support resource to Ana');
+    await send.props.onClick();
+
+    hookCursor = 0;
+    tree = api.LiveLessonRunPanel(props);
+    const status = walk(tree).find(node => node.props
+      && node.props.role === 'status'
+      && nodeText(node).includes('Could not send Support resource to Ana.'));
+    expect(status).toBeTruthy();
+  });
+
+  it('releases only acknowledged individual supports through the bounded callback', async () => {
+    const onReleaseStudentResources = vi.fn().mockResolvedValue({ released: 1, failed: 0 });
+    const props = {
+      history: [{ id: 'support', type: 'simplified', title: 'Support resource' }],
+      getStudentSafeResources: items => items,
+      currentItemId: 'support',
+      currentResourceId: 'support',
+      roster: {
+        u1: {
+          name: 'Ana',
+          resourceId: 'support',
+          resourceAt: 100,
+          viewingResourceId: 'support',
+          viewingAt: 101,
+        },
+        u2: {
+          name: 'Bo',
+          resourceId: 'support',
+          resourceAt: 200,
+          viewingResourceId: 'other',
+          viewingAt: 300,
+        },
+      },
+      activitySnapshots: [],
+      getTitle: item => item.title,
+      getIcon: () => null,
+      onOpenResource: vi.fn(),
+      onReleaseStudentResources,
+      now: 100000,
+      t: () => undefined,
+    };
+
+    let tree = api.LiveLessonRunPanel(props);
+    const release = walk(tree).find(node => node.type === 'button'
+      && node.props['aria-label'] === 'Release 1 opened individual support override');
+    expect(release).toBeTruthy();
+    await release.props.onClick();
+    expect(onReleaseStudentResources).toHaveBeenCalledWith(['u1']);
+
+    hookCursor = 0;
+    tree = api.LiveLessonRunPanel(props);
+    const status = walk(tree).find(node => node.props
+      && node.props.role === 'status'
+      && nodeText(node).includes('Released 1 opened individual support.'));
+    expect(status).toBeTruthy();
+  });
+
+  it('does not reopen a revealed snapshot through the current activity owner', () => {
+    const tree = api.LiveLessonRunPanel({
+      history: [{ id: 'support', type: 'simplified', title: 'Support resource' }],
+      getStudentSafeResources: items => items,
+      currentItemId: 'support',
+      currentResourceId: 'support',
+      roster: {},
+      activitySnapshots: [{
+        activityId: 'wordcloud-complete',
+        family: 'polling',
+        kind: 'word_cloud',
+        phase: 'revealed',
+        audienceUids: ['u1'],
+        participantStatus: { u1: 'submitted' },
+        startedAt: 1000,
+        updatedAt: 2000,
+        endedAt: 2000,
+      }],
+      getTitle: item => item.title,
+      getIcon: () => null,
+      onOpenResource: vi.fn(),
+      onOpenActivity: vi.fn(),
+      now: 3000,
+      t: () => undefined,
+    });
+    const openButtons = walk(tree).filter(node => node.type === 'button'
+      && node.props['aria-label'] === 'Open Word cloud dashboard');
+    expect(openButtons).toHaveLength(0);
   });
 });
 
@@ -402,14 +638,57 @@ describe('attention queue multi-student scaffold action', () => {
     };
     let tree = api.LiveLessonRunPanel(props);
     let nodes = walk(tree);
-    const checkbox = nodes.find(node => node.type === 'input' && node.props['aria-label'] === 'Select Ana for a resource send');
+    const checkbox = nodes.find(node => node.type === 'input' && node.props['aria-label'] === 'Select Ana for Support resource');
     checkbox.props.onChange();
     hookCursor = 0;
     tree = api.LiveLessonRunPanel(props);
     nodes = walk(tree);
-    const send = nodes.find(node => node.type === 'button' && node.props['aria-label'] === 'Send selected lesson step to 1 student');
+    const send = nodes.find(node => node.type === 'button' && node.props['aria-label'] === 'Send Support resource to 1 selected student');
     await send.props.onClick();
     expect(onSendToStudents).toHaveBeenCalledWith(['u1'], { id: 'support', type: 'simplified', title: 'Support resource' });
+  });
+
+  it('selects a same-group instructional pattern and sends only the flagged students', async () => {
+    const onSendToStudents = vi.fn().mockResolvedValue({ sent: 2, failed: 0 });
+    const onSendToGroup = vi.fn();
+    const props = {
+      history: [{ id: 'support', type: 'simplified', title: 'Support resource' }],
+      getStudentSafeResources: items => items,
+      currentItemId: 'support',
+      currentResourceId: 'support',
+      roster: {
+        u1: { name: 'Ana', groupId: 'g1', signal: 'stuck', signalAt: 99000, lastSeen: 99000 },
+        u2: { name: 'Bo', groupId: 'g1', signal: 'slow', signalAt: 99000, lastSeen: 99000 },
+        u3: { name: 'Cy', groupId: 'g1', lastSeen: 99000 },
+      },
+      groups: { g1: { name: 'Explorers' } },
+      activitySnapshots: [],
+      getTitle: item => item.title,
+      getIcon: () => null,
+      onOpenResource: vi.fn(),
+      onSendToGroup,
+      onSendToStudent: vi.fn(),
+      onSendToStudents,
+      now: 100000,
+      t: () => undefined,
+    };
+
+    let tree = api.LiveLessonRunPanel(props);
+    let nodes = walk(tree);
+    const cohort = nodes.find(node => node.type === 'button'
+      && node.props['aria-label'] === 'Select 2 flagged students in Explorers for Support resource');
+    expect(cohort).toBeTruthy();
+    cohort.props.onClick();
+
+    hookCursor = 0;
+    tree = api.LiveLessonRunPanel(props);
+    nodes = walk(tree);
+    const send = nodes.find(node => node.type === 'button'
+      && node.props['aria-label'] === 'Send Support resource to 2 selected students');
+    await send.props.onClick();
+
+    expect(onSendToStudents).toHaveBeenCalledWith(['u1', 'u2'], { id: 'support', type: 'simplified', title: 'Support resource' });
+    expect(onSendToGroup).not.toHaveBeenCalled();
   });
 });
 

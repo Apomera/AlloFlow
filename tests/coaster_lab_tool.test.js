@@ -1860,8 +1860,451 @@ describe('coaster lab — you can ride any row, and shape hills to win rows', ()
       expect(by[id].check({ tele: clean, seats: null })).toBe(false);
     }
   });
+
+  it.each(TOOL_PATHS)('%s: live ride progress names sections without flooding announcements', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    for (const marker of [
+      'id="clab-lapHud" role="group" aria-label="Ride progress"', 'id="clab-lapRail" class="clab-lap-rail" role="progressbar"',
+      'function lapMilestones(){', 'function rideSectionAt(S){', 'function syncLapMilestones(){', 'function updateLapHUD(){',
+      'id="clab-lapAnnouncer" class="sr-only" aria-live="polite"', 'rail.setAttribute(\'aria-valuetext\'',
+    ]) expect(src).toContain(marker);
+  });
+
+  it.each(TOOL_PATHS)('%s: Scenic camera composes alternating trackside views and honors steady motion', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    for (const marker of [
+      "const CAMERA_MODES = ['orbit', 'onboard', 'chase', 'scenic']", "scenic: 'Scenic'", "camMode === 'scenic'",
+      'const sideSign = shot % 2 ? 1 : -1;', 'camera.position.lerp(_chase, reducedMotion() ? 1 : 0.055);',
+      "camMode === 'scenic' ? 58", 'Cycle camera: orbit, onboard, chase, scenic',
+    ]) expect(src).toContain(marker);
+  });
+
+  it.each(TOOL_PATHS)('%s: selected nodes gain a theme-aware 3-D height and ground guide', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    for (const marker of [
+      'const selectionGuide = new THREE.Group()', 'new THREE.RingGeometry(1.25, 1.55, 40)',
+      'selectionGuideLine.scale.y = Math.max(0.01, selected.y - 0.04);',
+      'selectionGuide.visible = handleGroup.visible && !!selectionGuide.userData.ready;',
+      'selectionGroundRing.scale.setScalar(guidePulse);', 'selectionGuideMat.color.setHex(cfg.rail);',
+    ]) expect(src).toContain(marker);
+  });
+
+  it.each(TOOL_PATHS)('%s: telemetry charts label the important ride events directly', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    for (const marker of [
+      'function telemetryEvents(tele){', 'const peakSpeed = extreme(point => point.v);',
+      'const sideG = extreme(point => Math.abs(point.gl));', 'for(const event of (opts.events || [])){',
+      'g.fillText(event.label, lx, ly);', 'events: events.speed', 'events: events.vertical',
+      'Peak ${peakSpeed.label} at ${fmt(peakSpeed.s, 0)} meters.',
+    ]) expect(src).toContain(marker);
+  });
+
+  it.each(TOOL_PATHS)('%s: every telemetry chart can scrub the train while the range remains the keyboard control', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    for (const marker of [
+      'function telemetryIndexAtDistance(pts, targetS){', 'function bindTelemetryCharts(tele){',
+      "for(const id of ['chV', 'chG', 'chL'])", "cv.dataset.scrubbable = 'true';",
+      "cv.addEventListener('pointerdown'", "cv.addEventListener('pointermove'",
+      'applyTelemetryFrame(telemetryIndexAtDistance(tele.trace, targetS));',
+      'keyboard users can use the ride-position slider.',
+    ]) expect(src).toContain(marker);
+    expect(src).not.toContain('clab-replayScrub" tabindex=');
+  });
+
+  it.each(TOOL_PATHS)('%s: selected nodes show the rail bank plane and compare it with the physics suggestion', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    for (const marker of [
+      'id="clab-nodeBankDelta"', 'const selectionBankFrame = new THREE.Group()',
+      'new THREE.PlaneGeometry(5.4, 1.7)', 'selectionBankBasis.makeBasis(side, up, tangent);',
+      'bankDelta: actualBank - bank', "bankGap < 2 ? 'Matched'",
+      'selectionBankMat.color.setHex(cfg.rail);',
+      'selectionBankFrame.visible = selectionGuide.visible && !!selectionBankFrame.userData.ready;',
+    ]) expect(src).toContain(marker);
+  });
 });
 
+  it.each(TOOL_PATHS)('%s: the telemetry cursor marks and labels the exact value on every chart', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    for (const marker of [
+      'if(Number.isFinite(opts.cursorValue)){', 'g.beginPath(); g.arc(x, y, 4, 0, Math.PI * 2); g.fill();',
+      'g.fillText(opts.cursorLabel, tx, ty);', 'cursorValue: cursorPoint ? cursorPoint.v : null',
+      'cursorValue: cursorPoint ? cursorPoint.g : null', 'cursorValue: cursorPoint ? cursorPoint.gl : null',
+      'Math.abs(event.s - opts.cursorS) < sMax * 0.012',
+      "${fmt(Math.abs(point.g), 2)} vertical g", "${fmt(Math.abs(point.gl), 2)} lateral g",
+    ]) expect(src).toContain(marker);
+  });
+
+  it.each(TOOL_PATHS)('%s: the banking guide overlays a dashed physics recommendation on the solid rail plane', (p) => {
+    const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+    for (const marker of [
+      '--rail-guide:#f2a63c;--bank-suggest:#f2c14e',
+      '3-D banking guide: solid is the actual rail and dashed is the suggested bank',
+      'const selectionSuggestedBankGuide = new THREE.Group()', 'new THREE.LineDashedMaterial(',
+      'selectionSuggestedBankBorder.computeLineDistances();', 'bankSuggest:',
+      'const suggestedSignedBank = bank * turnSign;',
+      'selectionSuggestedBankGuide.rotation.z = THREE.MathUtils.degToRad(d.suggestedSignedBank - d.actualSignedBank);',
+      'selectionSuggestedBankLineMat.color.setHex(cfg.bankSuggest);',
+    ]) expect(src).toContain(marker);
+  });
+
+
+it.each(TOOL_PATHS)('%s: WCAG cues remain visible, non-color dependent, and programmatically exposed', (p) => {
+  const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+  for (const marker of [
+    '--ink3:#8fa4b8;--focus:#fff',
+    ':focus-visible{outline:3px solid var(--focus);outline-offset:2px}',
+    '@media (forced-colors:active)',
+    'id="clab-gball" role="img" aria-label="G-force map:',
+    'id="clab-energyBar" role="img" aria-label="Energy budget:',
+    "html = html.replace('red = beyond limits', 'hatched = beyond limits');",
+    'for(let x = -bandH; x < w + bandH; x += 8)',
+    "(gvHot ? ' LIMIT' : '')", "(glHot ? ' LIMIT' : '')",
+    'id="clab-nodeLens" role="group" aria-label="No track node selected"',
+    "lens.setAttribute('aria-label', `${d.section} node.",
+    "rootEl.setAttribute('aria-keyshortcuts', 'Space R C X P H')",
+    'if(e.target !== rootEl) return;',
+    "chainBtn.setAttribute('aria-pressed', String(prop.mode === 'chain'))",
+    "e.target.setAttribute('aria-pressed', String(audio.enabled))",
+    "e.target.setAttribute('aria-pressed', String(friction))",
+    "__clabGet('clab-btnFx').setAttribute('aria-pressed', String(fxLite))",
+    "cv.addEventListener('pointercancel', event => {",
+    'applyTelemetryFrame(restoreIndex);',
+  ]) expect(src).toContain(marker);
+});
+
+
+it.each(TOOL_PATHS)('%s: track depth, direction, and section landmarks remain theme-aware', (p) => {
+  const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+  for (const marker of [
+    'courseArrow: new THREE.MeshBasicMaterial',
+    'const sectionBeaconMat = new THREE.MeshBasicMaterial',
+    'new THREE.CylinderGeometry(0.06, 0.07, 1, 6)',
+    'if(attachY > 4){',
+    'braceQuat.setFromUnitVectors(supportYAxis, braceDir.normalize())',
+    'supportGroup.add(brace);',
+    'new THREE.ConeGeometry(0.18, 0.58, 3).rotateX(Math.PI / 2)',
+    'm4.makeBasis(t.side[i], t.up[i], t.T[i])',
+    'courseArrows.count = arrowUsed;',
+    'new THREE.TorusGeometry(2.25, 0.055, 6, 36)',
+    'beacon.matrix.makeBasis(track.side[idx], track.up[idx], track.T[idx])',
+    'MAT.courseArrow.color.setHex',
+    'sectionBeaconMat.color.setHex(cfg.rail);',
+    'Direction arrows point around the circuit and illuminated rings mark major ride sections.',
+  ]) expect(src).toContain(marker);
+});
+
+
+it.each(TOOL_PATHS)('%s: the train reads as an articulated, brake-responsive vehicle', (p) => {
+  const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+  for (const marker of [
+    'tailLights = [], couplers = []',
+    'const trainTrimMat = new THREE.MeshStandardMaterial',
+    'const trainTailMat = new THREE.MeshBasicMaterial',
+    'const bogieGeo = new THREE.BoxGeometry(0.14, 0.14, 1.55)',
+    'const couplerGeo = new THREE.BoxGeometry(0.12, 0.12, 0.72)',
+    'coupler.matrixAutoUpdate = false;',
+    'frameAt(sim.S - (c + 0.5) * CAR_GAP',
+    'couplers[c].matrix.copy(_m);',
+    'couplers[c].visible = c < TRAIN_CARS - 1',
+    'const braking = !!(track && sim.S > track.L - brakeLen()',
+    'trainTailMat.color.setHex(braking ? 0xfff1d6 : 0xff5a4d);',
+    'trainTrimMat.emissive.set(hex).multiplyScalar(0.18);',
+    'Visible couplers show how the cars articulate through curves',
+  ]) expect(src).toContain(marker);
+});
+
+it.each(TOOL_PATHS)('%s: lift and brake zones carry distinct functional track dressing', (p) => {
+  const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+  for (const marker of [
+    'catwalk: new THREE.MeshStandardMaterial',
+    'brakeFin: new THREE.MeshStandardMaterial',
+    'brakeLight: new THREE.MeshBasicMaterial',
+    'const catwalkIdx = [], railPts = [];',
+    'new THREE.BoxGeometry(0.72, 0.08, 0.55)',
+    'new THREE.BoxGeometry(0.07, 0.9, 0.07)',
+    'new THREE.TubeGeometry(railCurve, railPts.length * 2, 0.055, 6, false)',
+    'const brakeStartS = Math.max(0, t.L - brakeLen());',
+    'new THREE.BoxGeometry(0.26, 0.32, 0.62)',
+    'new THREE.SphereGeometry(0.11, 7, 6)',
+    'MAT.catwalk.color.setHex',
+    'MAT.brakeFin.color.setHex',
+    'MAT.brakeLight.color.setHex',
+    'A side catwalk marks the lift hill',
+  ]) expect(src).toContain(marker);
+});
+
+it.each(TOOL_PATHS)('%s: the station repeats dispatch state on an accessible in-world board', (p) => {
+  const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+  for (const marker of [
+    'let stationBoardCtx = null, stationBoardTex = null;',
+    'function paintStationBoard(state, accentHex = stationBoardAccent){',
+    "const statusHex = state === 'GO' || state === 'CLEAR'",
+    "g.fillText('DISPATCH', 256, 28);",
+    'g.fillText(state, 256, 79);',
+    'new THREE.BoxGeometry(0.18, 1.35, 4.5)',
+    'new THREE.PlaneGeometry(4.1, 1.0)',
+    'boardFace.rotation.y = -Math.PI / 2;',
+    "const boardState = phase < 0 ? 'HOLD'",
+    'paintStationBoard(boardState);',
+    "paintStationBoard(stationBoardState || 'HOLD', cfg.rail);",
+    'an overhead word-and-number dispatch board',
+  ]) expect(src).toContain(marker);
+});
+
+it.each(TOOL_PATHS)('%s: launch mode uses paired three-phase LSM stator banks', (p) => {
+  const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+  for (const marker of [
+    'launchPhaseA: new THREE.MeshStandardMaterial',
+    'launchPhaseB: new THREE.MeshStandardMaterial',
+    'launchPhaseC: new THREE.MeshStandardMaterial',
+    'const launchPhaseMeshes = [];',
+    'launchPhaseMeshes.length = 0;',
+    'const phaseBuckets = [[], [], []];',
+    'new THREE.BoxGeometry(0.16, 0.42, 0.78)',
+    'for(const sideSign of [-1, 1])',
+    '.addScaledVector(t.side[i], sideSign * 0.58)',
+    'mesh.userData.phase = phase;',
+    "const launchPhasePalette = name === 'neon'",
+    'function updateLaunchVisuals(now){',
+    "const launchActive = design.propulsion.mode === 'launch';",
+    'const staticState = reducedMotion() || fxLite || !launchActive || !sim.running;',
+    'updateLaunchVisuals(now);',
+    'Launch mode uses paired stator banks with a repeating three-phase energy pattern.',
+  ]) expect(src).toContain(marker);
+});
+
+it.each(TOOL_PATHS)('%s: section portals stay visible in motion and use shape-coded crowns', (p) => {
+  const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+  for (const marker of [
+    'const sectionLandmarkGroup = new THREE.Group();',
+    'markerGroup, sectionLandmarkGroup, sectionGroup',
+    'disposeGroup(sectionLandmarkGroup);',
+    'sectionLandmarkGroup.add(beacon);',
+    'const addGlyph = (geometry, sideOffset = 0, upOffset = 3.15, rotationZ = 0) => {',
+    "if(label === 'Launch'){",
+    'new THREE.BoxGeometry(0.24, 0.82, 0.18)',
+    "label === 'Lift hill'",
+    "label === 'First drop'",
+    'new THREE.OctahedronGeometry(0.53, 0)',
+    "label === 'Banked turn'",
+    'new THREE.TorusGeometry(0.5, 0.1, 5, 18, Math.PI)',
+    'sectionLandmarkGroup.visible = !fxLite;',
+    'Section portals remain visible during runs and carry distinct crown shapes',
+  ]) expect(src).toContain(marker);
+});
+
+it.each(TOOL_PATHS)('%s: orbit and scenic cameras gain a tapered train progress tracer', (p) => {
+  const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+  for (const marker of [
+    'const progressTracerGroup = new THREE.Group();',
+    'const progressTracerMats = [], progressTracerRings = [];',
+    'new THREE.TorusGeometry(1.5 - i * 0.09, 0.055, 6, 28)',
+    'new THREE.ConeGeometry(0.2, 0.62, 3).rotateX(Math.PI / 2)',
+    'function updateProgressTracer(){',
+    "camMode === 'orbit' || camMode === 'scenic'",
+    'const visibleCount = reducedMotion() ? 1 : progressTracerRings.length;',
+    'frameAt(sim.S - i * 2.1, tracerPos, tracerTan, tracerUp);',
+    'ring.material.opacity = 0.78 - i * 0.13;',
+    'frameAt(sim.S + 2.8, tracerPos, tracerTan, tracerUp);',
+    'progressArrow.matrix.copy(progressTracerMatrix);',
+    'progressTracerMats.forEach(mat => mat.color.setHex(cfg.rail));',
+    'updateProgressTracer();',
+    'A tapered hoop trail and arrow identify the train position and direction',
+  ]) expect(src).toContain(marker);
+  expect(src.indexOf('function updateProgressTracer(){'))
+    .toBeLessThan(src.indexOf('function updateParkAtmosphere(dt){'));
+  const parkBody = src.slice(src.indexOf('function updateParkAtmosphere(dt){'), src.indexOf('function placeCamera(){'));
+  expect(parkBody).toContain('if(fxLite || reducedMotion()) return;');
+});
+
+it.each(TOOL_PATHS)('%s: approaching section portals grow through proximity, not flashing', (p) => {
+  const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+  for (const marker of [
+    'const sectionLandmarks = [];',
+    'const sectionLandmarkScaleMatrix = new THREE.Matrix4();',
+    'sectionLandmarks.length = 0;',
+    'const landmarkMeshes = [];',
+    'landmarkMeshes.push({ mesh: beacon, base: beacon.matrix.clone() });',
+    'landmarkMeshes.push({ mesh: glyph, base: glyph.matrix.clone() });',
+    'sectionLandmarks.push({ arc, parts: landmarkMeshes });',
+    'function updateSectionLandmarks(){',
+    'let current = sim.S % track.L;',
+    'const ahead = (landmark.arc - current + track.L) % track.L;',
+    'const behind = track.L - ahead;',
+    'Math.max(ahead < 18 ? 1 - ahead / 18 : 0',
+    'part.mesh.matrix.copy(part.base).multiply(sectionLandmarkScaleMatrix);',
+    'updateSectionLandmarks();',
+    'The next portal grows as the train approaches and settles after passage.',
+  ]) expect(src).toContain(marker);
+  expect(src.indexOf('updateSectionLandmarks();'))
+    .toBeLessThan(src.indexOf('if(handleGroup.visible && selIdx'));
+});
+
+it.each(TOOL_PATHS)('%s: the lead car projects a theme-aware forward headlight beam', (p) => {
+  const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+  for (const marker of [
+    'const headlightBeamMat = new THREE.MeshBasicMaterial',
+    'let trainHeadlight = null, headlightBeam = null;',
+    'new THREE.CylinderGeometry(0.04, 2.4, 15, 18, 1, true).rotateX(-Math.PI / 2)',
+    'trainHeadlight = head;',
+    'headlightBeam = beam;',
+    'headlightBeamMat.color.setHex(cfg.sunGlow);',
+    "name === 'blueprint' ? 0.07 : 0.025",
+    'function updateHeadlightVisuals(){',
+    'const enabled = !fxLite;',
+    'const speedBoost = sim.running ? Math.min(0.055, Math.abs(sim.v) * 0.0018) : 0;',
+    'trainHeadlight.intensity = baseLight +',
+    'updateHeadlightVisuals();',
+    'The lead car carries a raised forward arrow and casts a tapered beam across the track in darker environments.',
+  ]) expect(src).toContain(marker);
+});
+
+it.each(TOOL_PATHS)('%s: brake hardware rises and lamps communicate approach and braking states', (p) => {
+  const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+  for (const marker of [
+    'brakeLight: new THREE.MeshBasicMaterial({ color: 0xe5484d, transparent: true, opacity: 0.58',
+    'let brakeFinRig = null, brakeLightMesh = null, brakeFinLift = 0',
+    'brakeFinRig = null; brakeLightMesh = null; brakeFinLift = 0;',
+    'brakeFinRig = { mesh: brakeFins, indices: brakeIdx.slice() };',
+    'brakeLightMesh = brakeLights;',
+    'brakeLightIdleHex = name ===',
+    'function updateBrakeVisuals(){',
+    'const approaching = sim.running && s >= Math.max(0, brakeStart - 16)',
+    'const braking = sim.running && s >= brakeStart',
+    'const targetLift = braking ? 0.22 : 0;',
+    '(reducedMotion() ? 1 : 0.18)',
+    '.addScaledVector(track.up[i], 0.08 + brakeFinLift)',
+    'brakeFinRig.mesh.instanceMatrix.needsUpdate = true;',
+    'MAT.brakeLight.opacity = braking ? 1 : approaching ? 0.82 : 0.58;',
+    'updateBrakeVisuals();',
+    'Brake fins rise and paired lamps brighten when the train enters the brake run.',
+  ]) expect(src).toContain(marker);
+});
+
+it.each(TOOL_PATHS)('%s: station guidance lights sweep to the exit and launch animation remains top-level', (p) => {
+  const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+  for (const marker of [
+    'const stationEdgePucks = [];',
+    'stationEdgePucks.push({ mesh: puck, step: i + 5 });',
+    'const departureSweep = sim.running && phase >= 0.55 && phase < 2.25 && !reducedMotion();',
+    'Math.cos(now * 0.014 - puck.step * 0.72)',
+    'puck.mesh.scale.set(1 + wave * 0.35, 1 + wave * 0.85, 1);',
+    'Platform edge lights sweep toward the exit during dispatch, while loading gates open before departure.',
+  ]) expect(src).toContain(marker);
+  const launchHelper = src.indexOf('function updateLaunchVisuals(now){');
+  const stationHelper = src.indexOf('function updateStationVisuals(now){');
+  expect(launchHelper).toBeGreaterThan(0);
+  expect(launchHelper).toBeLessThan(stationHelper);
+  const stationBody = src.slice(stationHelper, src.indexOf('const dispatchEl', stationHelper));
+  expect(stationBody).not.toContain('function updateLaunchVisuals(now){');
+});
+
+it.each(TOOL_PATHS)('%s: chain lift shows theme-aware moving dogs tied to train progress', (p) => {
+  const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+  for (const marker of [
+    'chainDog: new THREE.MeshStandardMaterial',
+    'const liftChainDogs = [];',
+    'liftChainDogs.length = 0;',
+    'const dogGeo = new THREE.BoxGeometry(0.26, 0.16, 0.5);',
+    'trackGroup.add(dog); liftChainDogs.push(dog);',
+    'MAT.chainDog.color.setHex(cfg.rail); MAT.chainDog.emissive.setHex(cfg.railGlow);',
+    'function updateLiftVisuals(){',
+    "design.propulsion.mode === 'chain'",
+    'ridingLift && !reducedMotion()',
+    'frameAt(arc, liftDogPos, liftDogTan, liftDogUp);',
+    'MAT.chainDog.emissiveIntensity = ridingLift ? 1.05 : 0.42;',
+    'updateLiftVisuals();',
+    'Moving chain dogs climb the lift beside the train in chain mode.',
+  ]) expect(src).toContain(marker);
+  expect(src.indexOf('function updateLiftVisuals(){'))
+    .toBeLessThan(src.indexOf('function updateLaunchVisuals(now){'));
+});
+
+it.each(TOOL_PATHS)('%s: train wheels show theme-aware physical rotation with reduced-motion restraint', (p) => {
+  const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+  for (const marker of [
+    'const trainWheelMarkers = [];',
+    'const trainWheelHubMat = new THREE.MeshStandardMaterial',
+    'const wheelHubGeo = new THREE.CylinderGeometry(0.07, 0.07, 0.15, 10)',
+    'const wheelMarkerGeo = new THREE.BoxGeometry(0.025, 0.24, 0.035);',
+    'w.add(hub, marker); trainWheelMarkers.push(marker);',
+    'trainWheelHubMat.color.setHex(cfg.rail); trainWheelHubMat.emissive.setHex(cfg.railGlow);',
+    'const animateWheels = !reducedMotion();',
+    'const carArc = sim.S - Math.floor(i / 4) * CAR_GAP;',
+    'wheel.rotation.x = animateWheels ? carArc / 0.16 : 0;',
+    'for(const marker of trainWheelMarkers) marker.visible = !fxLite;',
+    'High-contrast wheel markers rotate with each car?s traveled distance and remain still in reduced-motion mode.',
+  ]) expect(src).toContain(marker);
+});
+
+it.each(TOOL_PATHS)('%s: train side lighting improves silhouette with speed-aware restrained feedback', (p) => {
+  const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+  for (const marker of [
+    'const trainSideLights = [];',
+    'const trainSideLightMat = new THREE.MeshBasicMaterial',
+    'const sideLightGeo = new THREE.BoxGeometry(0.025, 0.045, 1.45);',
+    'car.add(sideLight); trainSideLights.push(sideLight);',
+    "trainSideLightMat.color.setHex(name === 'neon'",
+    'const sideLightBoost = sim.running ? Math.min(1, Math.abs(sim.v) / 30) : 0;',
+    'trainSideLightMat.opacity = 0.34 + sideLightBoost * 0.58;',
+    'strip.visible = !fxLite;',
+    'strip.scale.z = reducedMotion() ? 1 : 1 + sideLightBoost * 0.08;',
+    'Theme-aware side light strips outline every car and brighten with speed.',
+  ]) expect(src).toContain(marker);
+});
+
+it.each(TOOL_PATHS)('%s: train carries theme-aware numbered row plates for spatial row identification', (p) => {
+  const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+  for (const marker of [
+    'const trainRowPlates = [];',
+    'function paintTrainRowPlate(plate, accentHex, themeName){',
+    "g.fillText('ROW ' + plate.row, 128, 50);",
+    'const rowPlateGeo = new THREE.PlaneGeometry(0.72, 0.28);',
+    'const plateCanvas = document.createElement',
+    'const plateEntry = { ctx: plateCanvas.getContext',
+    'car.add(plate); plateEntry.meshes.push(plate);',
+    'paintTrainRowPlate(plateEntry, VISUAL_THEMES[visualTheme].rail, visualTheme);',
+    'paintTrainRowPlates(cfg.rail, name);',
+    'trainRowPlates.forEach((plate, i) => {',
+    'mesh.visible = !fxLite || selected;',
+    'Numbered row plates identify front, middle, and back positions directly on the 3-D train.',
+  ]) expect(src).toContain(marker);
+});
+
+it.each(TOOL_PATHS)('%s: selected ride row is linked to a non-color-only 3-D highlight', (p) => {
+  const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+  for (const marker of [
+    'const trainRowMarkers = [];',
+    'const trainRowMarkerMat = new THREE.LineBasicMaterial',
+    'new THREE.EdgesGeometry(new THREE.OctahedronGeometry(0.28, 0))',
+    'car.add(rowMarker); trainRowMarkers.push(rowMarker);',
+    'trainRowMarkerMat.color.setHex(cfg.rail);',
+    'const selectedRow = Math.min(activeSeat(), TRAIN_CARS - 1);',
+    'const rowBlend = reducedMotion() ? 1 : 0.18;',
+    'const target = selected ? 1.18 : 1;',
+    'mesh.visible = !fxLite || selected;',
+    'trainRowMarkers.forEach((marker, i) =>',
+    'The active row gains a diamond marker and enlarged number plate, so selection is not conveyed by color alone.',
+  ]) expect(src).toContain(marker);
+});
+
+it.each(TOOL_PATHS)('%s: lead car carries a theme-aware raised direction arrow', (p) => {
+  const src = readFileSync(resolve(process.cwd(), p), 'utf8');
+  for (const marker of [
+    'let trainLeadArrow = null;',
+    'const trainLeadArrowMat = new THREE.MeshStandardMaterial',
+    'const trainLeadArrowLineMat = new THREE.LineBasicMaterial',
+    'const leadArrowShape = new THREE.Shape();',
+    'const leadArrowGeo = new THREE.ExtrudeGeometry',
+    'const arrowEdge = new THREE.LineSegments(leadArrowEdgeGeo, trainLeadArrowLineMat);',
+    'arrowGroup.position.set(0, 0.83, 0.72);',
+    'trainLeadArrow = arrowGroup;',
+    'trainLeadArrowMat.color.setHex(cfg.rail); trainLeadArrowMat.emissive.setHex(cfg.railGlow);',
+    'trainLeadArrowMat.emissiveIntensity = 0.72 + sideLightBoost * 0.48;',
+    'if(trainLeadArrow) trainLeadArrow.visible = true;',
+    'The lead car carries a raised forward arrow and casts a tapered beam',
+  ]) expect(src).toContain(marker);
+});
 describe('coaster lab — wired into every load site', () => {
   it.each([
     'AlloFlowANTI.txt',

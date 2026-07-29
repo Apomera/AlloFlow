@@ -350,6 +350,63 @@ describe('physical road layouts', () => {
     });
   });
 
+  it('models school-bus stops across undivided lanes and honors physical medians', () => {
+    const heading = 0.42;
+    const spline = {
+      centerAt: (station) => 48 + Math.tan(heading) * station,
+      headingAt: () => heading,
+      heightAt: () => 0
+    };
+    const pointAt = (station, lateral) => ({
+      x: spline.centerAt(station) + lateral * Math.cos(heading),
+      y: station - lateral * Math.sin(heading)
+    });
+    const forward = Math.PI / 2 - heading;
+    const observer = { ...pointAt(10, -4.65), heading: forward };
+    const sameDirectionBus = { ...pointAt(30, -1.55), heading: forward };
+    const opposingBus = { ...pointAt(30, 4.65), heading: forward + Math.PI };
+    const undivided = { roadHalfWidth: 6.5, lanesPerDirection: 2 };
+    const world = { profile: undivided, spline };
+
+    expect(RR.schoolBusStopRequirement(
+      world, undivided, observer, sameDirectionBus
+    )).toMatchObject({
+      required: true, sameCorridor: true, sameDirection: true,
+      separatedByBarrier: false
+    });
+    const oppositeUndivided = RR.schoolBusStopRequirement(
+      world, undivided, observer, opposingBus
+    );
+    expect(oppositeUndivided).toMatchObject({
+      required: true, sameCorridor: true, sameDirection: false,
+      separatedByBarrier: false
+    });
+    expect(oppositeUndivided.ahead).toBeCloseTo(20, 3);
+
+    const divided = {
+      roadHalfWidth: 8, lanesPerDirection: 2, medianWidth: 1,
+      highway: true, physicalMedianBarrier: true
+    };
+    expect(RR.schoolBusStopRequirement(
+      world, divided, observer, opposingBus
+    )).toMatchObject({
+      required: false, sameCorridor: true, sameDirection: false,
+      separatedByBarrier: true
+    });
+    expect(RR.schoolBusServiceStopAllowed(undivided)).toBe(true);
+    expect(RR.schoolBusServiceStopAllowed(divided)).toBe(false);
+  });
+
+  it('warns for a stopped school bus early enough for speed and weather', () => {
+    const speed25 = 25 * RR.MPH_TO_MS;
+    const speed45 = 45 * RR.MPH_TO_MS;
+    const dry25 = RR.schoolBusApproachDistanceWorld(speed25, 'clear');
+    expect(dry25).toBeGreaterThanOrEqual(15);
+    expect(RR.schoolBusApproachDistanceWorld(speed45, 'clear')).toBeGreaterThan(dry25);
+    expect(RR.schoolBusApproachDistanceWorld(speed45, 'rain'))
+      .toBeGreaterThan(RR.schoolBusApproachDistanceWorld(speed45, 'clear'));
+  });
+
   it('reserves conflicting intersection paths while allowing separated opposing lanes', () => {
     const mainSouth = RR.intersectionMovementPath('main', 1, 'straight');
     const mainNorth = RR.intersectionMovementPath('main', -1, 'straight');

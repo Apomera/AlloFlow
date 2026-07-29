@@ -47,9 +47,44 @@
       '.allo-confetti-piece { position: absolute; top: 0; border-radius: 2px; animation-name: alloConfettiFall; animation-timing-function: cubic-bezier(.55,.05,.45,.99); animation-fill-mode: forwards; pointer-events: none; }',
       '@media (prefers-reduced-motion: reduce) { .allo-confetti-piece { display: none !important; } }',
       '.mf-maze-action-button { min-height: 32px; }',
-      '@media (max-width: 640px) { .mf-maze-hud { grid-template-columns: 1fr !important; } .mf-maze-hud-stats { justify-content: space-between; } .mf-maze-hud-actions { display: grid !important; grid-template-columns: repeat(5, minmax(44px, 1fr)); width: 100%; } .mf-maze-action-button { min-width: 44px; min-height: 44px; padding: 6px !important; font-size: 15px !important; } .mf-maze-action-label { display: none; } .mf-maze-quest { grid-template-columns: minmax(0,1fr) auto minmax(0,1fr) !important; } .mf-maze-distance { grid-column: 1 / -1; justify-self: stretch !important; text-align: center; } .mf-maze-move-button { min-width: 48px; } }',
-      '@media (max-width: 640px), (max-height: 700px) { .mf-active-probe { justify-content: flex-start !important; overflow-y: auto !important; padding: 10px !important; } .mf-probe-progress { margin-bottom: 12px !important; } .mf-problem-card { padding: 20px 14px !important; } .mf-problem-card > div:first-child { margin-bottom: 16px !important; } .mf-results-panel { padding: 14px !important; } .mf-results-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 8px !important; } .mf-config-grid { grid-template-columns: 1fr !important; } }',
+      '.mf-fluency-setup select { min-height: 40px; background-color: #fff; transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease; }',
+      '.mf-fluency-setup select:hover:not(:disabled) { border-color: #f59e0b !important; }',
+      '.mf-fluency-setup select:focus-visible { border-color: #d97706 !important; box-shadow: 0 0 0 3px rgba(245,158,11,0.2); outline: none; }',
+      '.mf-fluency-setup details > summary { list-style-position: outside; }',
+      '.mf-fluency-setup details > summary::marker { color: #d97706; }',
+      '.mf-equation-number { display: inline-block; min-width: 0.7em; }',
+      '.mf-equation-operator { display: inline-block; padding: 0 0.12em; }',
+      '.mf-problem-card input[type=number]::placeholder { color: #94a3b8; }',
+      '.mf-accuracy-ring { position: relative; isolation: isolate; }',
+      '.mf-accuracy-ring::after { content: ""; position: absolute; inset: 7px; border-radius: 50%; background: #fff; z-index: -1; }',
+      '.mf-metric-card { transition: transform 160ms ease, box-shadow 160ms ease; }',
+      '.mf-metric-card:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(15,23,42,0.1) !important; }',
+      '.mf-maze-hud-stat { display: inline-flex; align-items: center; gap: 7px; min-width: 70px; padding: 6px 9px; border: 1px solid rgba(255,255,255,0.16); border-radius: 10px; background: rgba(255,255,255,0.08); color: #fff; }',
+      '.mf-maze-hud-stat > span:first-child { font-size: 16px; line-height: 1; }',
+      '.mf-maze-hud-stat strong { display: block; color: #fff; font-size: 14px; line-height: 1; }',
+      '.mf-maze-hud-stat small { display: block; margin-top: 3px; color: #ddd6fe; font-size: 9px; font-weight: 800; letter-spacing: .08em; line-height: 1; text-transform: uppercase; }',
+      '.mf-maze-hud-stat[data-tone=success] { border-color: rgba(134,239,172,.38); background: rgba(22,163,74,.18); }',
+      '.mf-maze-hud-stat[data-tone=warning] { border-color: rgba(253,186,116,.38); background: rgba(194,65,12,.18); }',
+      '.mf-maze-hud-stat[data-tone=score] { border-color: rgba(253,230,138,.42); background: rgba(217,119,6,.16); }',
+      '.mf-maze-quest-step { min-height: 48px; padding: 5px 7px; border-radius: 10px; }',
+      '.mf-maze-quest-step[aria-current=step] { background: rgba(255,255,255,.72); box-shadow: 0 3px 12px rgba(76,29,149,.1); }',
+      '.mf-maze-quest-connector { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,.76); border: 1px solid currentColor; }',
+      '.mf-maze-action-button, .mf-maze-move-button, .mf-maze-gate-key { touch-action: manipulation; }',
+      '.mf-maze-action-button:hover:not(:disabled), .mf-maze-gate-key:hover:not(:disabled) { filter: brightness(1.14); transform: translateY(-1px); }',
+      '.mf-maze-action-button:focus-visible, .mf-maze-move-button:focus-visible, .mf-maze-gate-key:focus-visible { outline: 3px solid #fde68a; outline-offset: 2px; }',
+      '.mf-maze-minimap-shell::after { content: ""; position: absolute; inset: 4px; border: 1px solid rgba(255,255,255,.18); border-radius: 9px; pointer-events: none; z-index: 2; }',
+      '.mf-maze-gate { scrollbar-width: thin; scrollbar-color: #a78bfa #1e1b4b; }',
+      '.mf-maze-gate-key { transition: transform 120ms ease, filter 120ms ease, box-shadow 120ms ease; }',
+      '.mf-maze-comfort-toggle { min-height: 46px; padding: 8px 10px; border: 1px solid #e7d7c7; border-radius: 10px; background: rgba(255,255,255,.68); cursor: pointer; }',
+      '.mf-maze-comfort-toggle:has(input:checked) { border-color: #d97706; background: #fffbeb; box-shadow: 0 0 0 2px rgba(245,158,11,.12); }',
+      '.mf-maze-comfort-toggle input { width: 18px; height: 18px; accent-color: #b45309; flex: 0 0 auto; }',
+      '.mf-maze-view-control { min-height: 58px; padding: 9px 10px; border: 1px solid #e7d7c7; border-radius: 10px; background: rgba(255,255,255,.68); }',
+      '.mf-maze-chase-radar[data-danger-level=danger], .mf-maze-chase-radar[data-danger-level=caught] { box-shadow: 0 0 0 2px rgba(248,113,113,0.18), 0 0 12px rgba(239,68,68,0.32); }',
+      '@media (max-width: 640px) { .mf-maze-hud { grid-template-columns: 1fr !important; } .mf-maze-hud-stats { display: grid !important; grid-template-columns: repeat(2,minmax(0,1fr)); } .mf-maze-hud-stat { min-width: 0; } .mf-maze-hud-actions { display: grid !important; grid-template-columns: repeat(5, minmax(44px, 1fr)); width: 100%; } .mf-maze-action-button { min-width: 44px; min-height: 44px; padding: 6px !important; font-size: 15px !important; } .mf-maze-action-label { display: none; } .mf-maze-quest { grid-template-columns: minmax(0,1fr) auto minmax(0,1fr) !important; } .mf-maze-distance { grid-column: 1 / -1; justify-self: stretch !important; text-align: center; } .mf-maze-move-button { min-width: 52px; min-height: 52px !important; } .mf-maze-chase-radar { width: 100%; justify-content: center; } .mf-maze-legend { justify-content: flex-start !important; overflow-x: auto; flex-wrap: nowrap !important; } .mf-maze-comfort-grid, .mf-maze-view-grid { grid-template-columns: 1fr !important; } .mf-maze-gate { width: min(360px,calc(100vw - 20px)) !important; padding: 16px 14px 14px !important; } }',
+      '@media (max-width: 640px), (max-height: 700px) { .mf-active-probe { justify-content: flex-start !important; overflow-y: auto !important; padding: 10px !important; } .mf-probe-progress { margin-bottom: 12px !important; } .mf-problem-card { padding: 20px 14px !important; } .mf-problem-card > div:first-child { margin-bottom: 12px !important; } .mf-results-panel { padding: 14px !important; } .mf-results-metrics { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 8px !important; } .mf-config-grid { grid-template-columns: 1fr !important; } .mf-fluency-hero { align-items: flex-start !important; } .mf-fluency-hero-controls { width: 100%; justify-content: flex-end; } .mf-results-summary { align-items: flex-start !important; } .mf-accuracy-ring { width: 70px !important; height: 70px !important; flex-basis: 70px !important; } }',
       '@media (max-width: 360px) { .mf-results-metrics { grid-template-columns: 1fr !important; } .mf-problem-card { padding-left: 10px !important; padding-right: 10px !important; } }',
+      '.mf-reduce-motion *, .mf-reduce-motion *::before, .mf-reduce-motion *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }',
+      '.mf-high-contrast { background: #fff !important; color: #000 !important; } .mf-high-contrast .mf-problem-card, .mf-high-contrast button, .mf-high-contrast input { border-color: #000 !important; box-shadow: none !important; } .mf-high-contrast :focus-visible { outline: 4px solid #000 !important; outline-offset: 3px !important; } .mf-high-contrast .mf-maze-hud, .mf-high-contrast .mf-maze-quest, .mf-high-contrast .mf-maze-gate { background: #000 !important; color: #fff !important; border: 3px solid #fff !important; box-shadow: 0 0 0 2px #000 !important; } .mf-high-contrast .mf-maze-hud-stat, .mf-high-contrast .mf-maze-quest-step, .mf-high-contrast .mf-maze-quest-connector { background: #000 !important; border-color: #fff !important; color: #fff !important; } .mf-high-contrast .mf-maze-hud-stat small { color: #fff !important; } .mf-high-contrast .mf-maze-minimap-shell { border-color: #fff !important; box-shadow: 0 0 0 2px #000 !important; }',
       '@supports (height: 100dvh) { .mf-active-probe { min-height: 100dvh; } }',
     ].join('\n');
     document.head.appendChild(mfA11yStyle);
@@ -242,6 +277,133 @@
 
 
   var MF_FACT_MASTERY_KEY = 'allo_fluency_fact_mastery_v1';
+  var MF_ACCURACY_DRAFT_KEY = 'allo_fluency_accuracy_draft_v1';
+  var MF_ACCURACY_DRAFT_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+  var MF_SUPPORT_PREFS_KEY = 'allo_fluency_support_prefs_v1';
+
+  function loadFluencySupportPrefs() {
+    var defaults = { reducedMotion: false, highContrast: false, touchKeypad: false, adaptivePractice: true, readAloud: false, calmDisplay: false };
+    try {
+      if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) defaults.reducedMotion = true;
+      var saved = JSON.parse(localStorage.getItem(MF_SUPPORT_PREFS_KEY) || 'null');
+      return saved && typeof saved === 'object' && !Array.isArray(saved) ? Object.assign(defaults, saved) : defaults;
+    } catch (e) { return defaults; }
+  }
+
+  function saveFluencySupportPrefs(value) {
+    try { localStorage.setItem(MF_SUPPORT_PREFS_KEY, JSON.stringify(value)); } catch (e) {}
+  }
+
+  function formatProblemSpeech(problem) {
+    if (!problem || !Number.isFinite(Number(problem.a)) || !Number.isFinite(Number(problem.b))) return '';
+    var operationWords = { add: 'plus', sub: 'minus', mul: 'times', div: 'divided by' };
+    var operationWord = operationWords[problem.op];
+    if (!operationWord) return '';
+    return String(problem.a) + ' ' + operationWord + ' ' + String(problem.b) + '. What is the answer?';
+  }
+
+  function getAdaptivePracticeLevel(stats) {
+    stats = stats || {};
+    if ((stats.coachedOrMissed || 0) >= 2) return 'support';
+    if ((stats.firstTryStreak || 0) >= 3) return 'stretch';
+    return 'steady';
+  }
+
+  function buildStudentSessionReview(result) {
+    result = result || {};
+    var insights = Array.isArray(result.factInsights) ? result.factInsights : [];
+    var strengthened = insights.filter(function(item) { return item.attempts > 0 && item.correct === item.attempts; }).slice(0, 5).map(function(item) { return item.problem; });
+    var revisit = Array.isArray(result.focusFacts) ? result.focusFacts.slice(0, 5) : [];
+    var nextAction = revisit.length ? 'practice-missed' : (result.accuracy >= 90 ? 'smart-review' : 'run-again');
+    return {
+      strengthened: strengthened, revisit: revisit, nextAction: nextAction,
+      nextLabel: nextAction === 'practice-missed' ? 'Practice missed facts' : nextAction === 'smart-review' ? 'Start Smart Review' : 'Run this practice again'
+    };
+  }
+
+  function sanitizeAccuracyDraft(value, nowValue) {
+    if (!value || typeof value !== 'object' || Array.isArray(value) || value.version !== 1) return null;
+    var now = nowValue instanceof Date ? nowValue.getTime() : Number(nowValue);
+    if (!Number.isFinite(now)) now = Date.now();
+    var savedAt = Number(value.savedAt);
+    if (!Number.isFinite(savedAt) || savedAt > now + 5 * 60 * 1000 || now - savedAt > MF_ACCURACY_DRAFT_TTL_MS) return null;
+    var config = value.config;
+    if (!config || config.mode !== 'practice' || config.untimed !== true || Number(config.timeLimit) !== 0 || config.strategyCoach !== true) return null;
+    var allowedOps = { add: true, sub: true, mul: true, div: true };
+    if (!allowedOps[config.operation] && config.operation !== 'mixed') return null;
+    if (!Array.isArray(value.problems) || value.problems.length < 1 || value.problems.length > 200) return null;
+    var cleanProblems = [];
+    for (var i = 0; i < value.problems.length; i++) {
+      var problem = value.problems[i];
+      if (!problem || !allowedOps[problem.op]) return null;
+      var a = Number(problem.a), b = Number(problem.b), answer = Number(problem.answer);
+      if (!Number.isSafeInteger(a) || !Number.isSafeInteger(b) || !Number.isSafeInteger(answer)) return null;
+      var studentAnswer = problem.studentAnswer;
+      if (studentAnswer !== null && studentAnswer !== 'SKIP' && !Number.isSafeInteger(Number(studentAnswer))) return null;
+      if (studentAnswer !== null && studentAnswer !== 'SKIP') studentAnswer = Number(studentAnswer);
+      var attemptLog = [];
+      if (Array.isArray(problem.attemptLog)) {
+        if (problem.attemptLog.length > 20) return null;
+        for (var j = 0; j < problem.attemptLog.length; j++) {
+          var attempt = problem.attemptLog[j] || {};
+          var attemptAnswer = Number(attempt.studentAnswer), attemptMs = Number(attempt.responseMs);
+          if (!Number.isSafeInteger(attemptAnswer) || !Number.isFinite(attemptMs) || attemptMs < 0) return null;
+          attemptLog.push({ studentAnswer: attemptAnswer, correct: false, responseMs: Math.round(attemptMs) });
+        }
+      }
+      var responseMs = problem.responseMs == null ? null : Number(problem.responseMs);
+      if (responseMs !== null && (!Number.isFinite(responseMs) || responseMs < 0)) return null;
+      cleanProblems.push({
+        a: a, b: b, op: problem.op, symbol: typeof problem.symbol === 'string' && problem.symbol.length <= 4 ? problem.symbol : _practiceSymbol(problem.op), answer: answer,
+        studentAnswer: studentAnswer, correct: studentAnswer === null ? null : problem.correct === true,
+        firstTryCorrect: problem.firstTryCorrect === true, responseMs: responseMs === null ? null : Math.round(responseMs), attemptLog: attemptLog
+      });
+    }
+    var currentIndex = Number(value.currentIndex);
+    if (!Number.isInteger(currentIndex) || currentIndex < 0 || currentIndex >= cleanProblems.length) return null;
+    for (var completedIndex = 0; completedIndex < currentIndex; completedIndex++) {
+      if (cleanProblems[completedIndex].studentAnswer === null) return null;
+    }
+    if (cleanProblems[currentIndex].studentAnswer !== null) return null;
+    var elapsedMs = Number(value.elapsedMs);
+    if (!Number.isFinite(elapsedMs) || elapsedMs < 0 || elapsedMs > MF_ACCURACY_DRAFT_TTL_MS) return null;
+    var pauseStats = value.pauseStats || {};
+    var pauseCount = Math.max(0, Math.min(1000, Math.floor(Number(pauseStats.count) || 0)));
+    var pauseSeconds = Math.max(0, Math.min(MF_ACCURACY_DRAFT_TTL_MS / 1000, Number(pauseStats.seconds) || 0));
+    var rawGoal = config.goal;
+    var goalTarget = rawGoal ? Number(rawGoal.target) : NaN;
+    var goal = rawGoal && rawGoal.metric === 'accuracy' && Number.isFinite(goalTarget) && goalTarget > 0 && goalTarget <= 100
+      ? { id: String(rawGoal.id || 'accuracy-90').slice(0, 32), metric: 'accuracy', target: goalTarget, available: true, label: String(rawGoal.label || (goalTarget + '% accuracy')).slice(0, 64) }
+      : null;
+    return {
+      version: 1, savedAt: savedAt, currentIndex: currentIndex, elapsedMs: elapsedMs,
+      pauseStats: { count: pauseCount, seconds: pauseSeconds }, problems: cleanProblems,
+      config: {
+        mode: 'practice', form: null, grade: String(config.grade || 'Unknown').slice(0, 32),
+        operation: config.operation, difficulty: String(config.difficulty || 'focus').slice(0, 48), practiceSet: String(config.practiceSet || config.difficulty || 'focus').slice(0, 48),
+        timeLimit: 0, untimed: true, strategyCoach: true, problemCount: cleanProblems.length,
+        focusedPractice: config.focusedPractice === true, smartReview: config.smartReview === true,
+        adaptivePractice: config.adaptivePractice === true, touchKeypad: config.touchKeypad === true,
+        reducedMotion: config.reducedMotion === true, highContrast: config.highContrast === true,
+        readAloud: config.readAloud === true, calmDisplay: config.calmDisplay === true, goal: goal
+      }
+    };
+  }
+
+  function loadAccuracyDraft() {
+    try {
+      if (typeof localStorage === 'undefined') return null;
+      return sanitizeAccuracyDraft(JSON.parse(localStorage.getItem(MF_ACCURACY_DRAFT_KEY) || 'null'), new Date());
+    } catch (e) { return null; }
+  }
+
+  function saveAccuracyDraft(value) {
+    try { if (typeof localStorage !== 'undefined') localStorage.setItem(MF_ACCURACY_DRAFT_KEY, JSON.stringify(value)); } catch (e) {}
+  }
+
+  function clearAccuracyDraft() {
+    try { if (typeof localStorage !== 'undefined') localStorage.removeItem(MF_ACCURACY_DRAFT_KEY); } catch (e) {}
+  }
 
   function _practiceSymbol(op) {
     return op === 'add' ? '+' : op === 'sub' ? '\u2212' : op === 'mul' ? '\u00d7' : '\u00f7';
@@ -980,6 +1142,18 @@
     var _w = useState('all'), reportMode = _w[0], setReportMode = _w[1];
     var _x = useState('all'), reportOperation = _x[0], setReportOperation = _x[1];
     var _y = useState('accuracy-90'), sessionGoal = _y[0], setSessionGoal = _y[1];
+    var _endEarly = useState(false), confirmEndEarly = _endEarly[0], setConfirmEndEarly = _endEarly[1];
+    var _clearHistory = useState(false), confirmClearHistory = _clearHistory[0], setConfirmClearHistory = _clearHistory[1];
+    var _practicePause = useState(false), practicePaused = _practicePause[0], setPracticePaused = _practicePause[1];
+    var _accuracyDraft = useState(loadAccuracyDraft()), accuracyDraft = _accuracyDraft[0], setAccuracyDraft = _accuracyDraft[1];
+    var _supportPrefs = loadFluencySupportPrefs();
+    var _reducedMotion = useState(!!_supportPrefs.reducedMotion), reducedMotion = _reducedMotion[0], setReducedMotionState = _reducedMotion[1];
+    var _highContrast = useState(!!_supportPrefs.highContrast), highContrast = _highContrast[0], setHighContrastState = _highContrast[1];
+    var _touchKeypad = useState(!!_supportPrefs.touchKeypad), touchKeypad = _touchKeypad[0], setTouchKeypadState = _touchKeypad[1];
+    var _adaptivePractice = useState(_supportPrefs.adaptivePractice !== false), adaptivePractice = _adaptivePractice[0], setAdaptivePracticeState = _adaptivePractice[1];
+    var _readAloud = useState(!!_supportPrefs.readAloud), readAloud = _readAloud[0], setReadAloudState = _readAloud[1];
+    var _calmDisplay = useState(!!_supportPrefs.calmDisplay), calmDisplay = _calmDisplay[0], setCalmDisplayState = _calmDisplay[1];
+    var _adaptiveLevel = useState('steady'), adaptiveLevel = _adaptiveLevel[0], setAdaptiveLevel = _adaptiveLevel[1];
 
     useEffect(function () {
       if (timeLimit === 0 && (sessionGoal === 'personal-best' || sessionGoal === 'instructional-reference')) setSessionGoal('accuracy-90');
@@ -995,8 +1169,12 @@
     var finishedRef = useRef(false);
     var autoAdvanceTimerRef = useRef(null);
     var deadlineRef = useRef(0);
-    var runTimingRef = useRef({ startedAt: 0, pausedMs: 0 });
+    var runTimingRef = useRef({ startedAt: 0, pausedMs: 0, resumedMs: 0 });
     var visibilityPauseRef = useRef(null);
+    var manualPracticePauseRef = useRef(null);
+    var practicePauseStatsRef = useRef({ count: 0, seconds: 0 });
+    var adaptiveStatsRef = useRef({ firstTryStreak: 0, coachedOrMissed: 0, adjustments: 0, level: 'steady' });
+    var pauseResumeRef = useRef(null);
     var interruptionStatsRef = useRef({ count: 0, seconds: 0 });
     var warningPlayedRef = useRef(false);
     var itemStartedAtRef = useRef(0);
@@ -1011,6 +1189,41 @@
       return typeof performance !== 'undefined' && typeof performance.now === 'function'
         ? performance.now()
         : Date.now();
+    }
+
+    var speechAvailable = typeof window !== 'undefined' && window.speechSynthesis
+      && typeof window.speechSynthesis.cancel === 'function' && typeof window.speechSynthesis.speak === 'function'
+      && typeof window.SpeechSynthesisUtterance === 'function';
+
+    function cancelProblemSpeech() {
+      if (!speechAvailable) return;
+      try { window.speechSynthesis.cancel(); } catch (e) {}
+    }
+
+    function speakProblem(problem) {
+      if (!speechAvailable) return false;
+      var spokenText = formatProblemSpeech(problem);
+      if (!spokenText) return false;
+      try {
+        cancelProblemSpeech();
+        var utterance = new window.SpeechSynthesisUtterance(spokenText);
+        utterance.rate = 0.9;
+        utterance.pitch = 1;
+        window.speechSynthesis.speak(utterance);
+        return true;
+      } catch (e) { return false; }
+    }
+
+    function updateSupportPreference(key, value) {
+      var next = { reducedMotion: reducedMotion, highContrast: highContrast, touchKeypad: touchKeypad, adaptivePractice: adaptivePractice, readAloud: readAloud, calmDisplay: calmDisplay };
+      next[key] = value;
+      saveFluencySupportPrefs(next);
+      if (key === 'reducedMotion') setReducedMotionState(value);
+      if (key === 'highContrast') setHighContrastState(value);
+      if (key === 'touchKeypad') setTouchKeypadState(value);
+      if (key === 'adaptivePractice') setAdaptivePracticeState(value);
+      if (key === 'readAloud') setReadAloudState(value);
+      if (key === 'calmDisplay') setCalmDisplayState(value);
     }
 
     function buildComparisonKey(config) {
@@ -1044,11 +1257,40 @@
       storageDB.set('allo_fluency_history', history.slice(-100)).catch(function () { });
     }, [history]);
 
+    // Accuracy Focus is the only resumable session type. A checkpoint is
+    // written immediately after every problem-state change and every five
+    // seconds, while timed practice and benchmarks never create drafts.
+    useEffect(function () {
+      var config = runConfigRef.current;
+      if (!active || !config || !config.untimed || config.mode !== 'practice') return;
+      function checkpointAccuracyDraft() {
+        var index = currentIndexRef.current;
+        var snapshot = problemsRef.current;
+        if (!snapshot.length || index < 0 || index >= snapshot.length) return;
+        var effectiveNow = nowMs();
+        if (manualPracticePauseRef.current !== null) effectiveNow = Math.min(effectiveNow, manualPracticePauseRef.current);
+        if (visibilityPauseRef.current !== null) effectiveNow = Math.min(effectiveNow, visibilityPauseRef.current);
+        var elapsedMs = Math.max(0, (runTimingRef.current.resumedMs || 0) + effectiveNow - runTimingRef.current.startedAt - runTimingRef.current.pausedMs);
+        saveAccuracyDraft({
+          version: 1, savedAt: Date.now(), currentIndex: index, elapsedMs: elapsedMs,
+          pauseStats: practicePauseStatsRef.current,
+          config: config, problems: snapshot
+        });
+      }
+      checkpointAccuracyDraft();
+      var checkpointTimer = setInterval(checkpointAccuracyDraft, 5000);
+      return function () { clearInterval(checkpointTimer); };
+    }, [active, problems, currentIndex, practicePaused]);
+
     var finishProbe = useCallback(function (reason) {
       if (finishedRef.current) return;
       finishedRef.current = true;
       if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
       if (autoAdvanceTimerRef.current) { clearTimeout(autoAdvanceTimerRef.current); autoAdvanceTimerRef.current = null; }
+      cancelProblemSpeech();
+      setConfirmEndEarly(false);
+      clearAccuracyDraft();
+      setAccuracyDraft(null);
       setActive(false);
 
       var snapshot = problemsRef.current.slice();
@@ -1062,13 +1304,21 @@
         operation: operation, difficulty: difficulty, timeLimit: timeLimit, problemCount: snapshot.length
       };
       var finishTime = nowMs();
+      if (manualPracticePauseRef.current !== null) {
+        var pendingManualPauseMs = Math.max(0, finishTime - manualPracticePauseRef.current);
+        runTimingRef.current.pausedMs += pendingManualPauseMs;
+        itemPausedMsRef.current += pendingManualPauseMs;
+        practicePauseStatsRef.current.seconds += pendingManualPauseMs / 1000;
+        manualPracticePauseRef.current = null;
+        setPracticePaused(false);
+      }
       if (visibilityPauseRef.current !== null) {
         var pendingPauseMs = Math.max(0, finishTime - visibilityPauseRef.current);
         runTimingRef.current.pausedMs += pendingPauseMs;
         interruptionStatsRef.current.seconds += pendingPauseMs / 1000;
         visibilityPauseRef.current = null;
       }
-      var rawElapsedSeconds = Math.max(0, (finishTime - runTimingRef.current.startedAt - runTimingRef.current.pausedMs) / 1000);
+      var rawElapsedSeconds = Math.max(0, ((runTimingRef.current.resumedMs || 0) + finishTime - runTimingRef.current.startedAt - runTimingRef.current.pausedMs) / 1000);
       var isUntimed = !!config.untimed;
       var elapsedSeconds = isUntimed ? rawElapsedSeconds : Math.min(config.timeLimit, rawElapsedSeconds);
       var finishReason = reason || 'early';
@@ -1126,6 +1376,17 @@
         validForComparison: validForComparison,
         interruptionCount: interruptionStatsRef.current.count,
         interruptedSeconds: Math.round(interruptionStatsRef.current.seconds * 10) / 10,
+        practicePauseCount: practicePauseStatsRef.current.count,
+        practicePausedSeconds: Math.round(practicePauseStatsRef.current.seconds * 10) / 10,
+        resumedFromDraft: config.resumedFromDraft === true,
+        adaptivePractice: config.adaptivePractice === true,
+        adaptiveAdjustments: adaptiveStatsRef.current.adjustments,
+        adaptiveFinalLevel: adaptiveStatsRef.current.level || 'steady',
+        touchKeypad: config.touchKeypad === true,
+        reducedMotion: config.reducedMotion === true,
+        highContrast: config.highContrast === true,
+        readAloud: config.readAloud === true,
+        calmDisplay: config.calmDisplay === true,
         comparisonKey: comparisonKey,
         benchmark: reference,
         benchmarkResult: referenceResult,
@@ -1150,36 +1411,59 @@
       if (xp > 0) handleScoreUpdate(xp, tt('math_fluency.math_fluency', 'Math Fluency'), 'fluency-probe');
     }, [timeLimit, operation, difficulty, gradeLevel, onProbeComplete, handleScoreUpdate, storageDB]);
 
-    var beginProbe = useCallback(function (nextProblems, config) {
+    var beginProbe = useCallback(function (nextProblems, config, resumeDraft) {
+      var restoredDraft = config && config.untimed ? sanitizeAccuracyDraft(resumeDraft, new Date()) : null;
+      if (resumeDraft && !restoredDraft) {
+        clearAccuracyDraft();
+        setAccuracyDraft(null);
+        addToast(tt('math_fluency.saved_session_unavailable', 'That saved Accuracy Focus session is no longer available.'), 'warning');
+        return;
+      }
+      if (restoredDraft) {
+        nextProblems = restoredDraft.problems;
+        config = restoredDraft.config;
+      }
       if (!nextProblems || !nextProblems.length) {
         addToast(tt('math_fluency.no_problems_generated', 'No problems could be generated for these settings.'), 'warning');
         return;
       }
       config = Object.assign({}, config);
+      if (config.mode === 'benchmark') config.readAloud = false;
+      cancelProblemSpeech();
       config.comparisonKey = buildComparisonKey(config);
-      config.goal = buildSessionGoal(sessionGoal, history, config);
+      config.goal = restoredDraft && config.goal ? config.goal : buildSessionGoal(sessionGoal, history, config);
+      config.resumedFromDraft = !!restoredDraft;
       finishedRef.current = false;
       runConfigRef.current = config;
       var startTime = nowMs();
+      var resumeIndex = restoredDraft ? restoredDraft.currentIndex : 0;
       deadlineRef.current = config.untimed ? 0 : startTime + config.timeLimit * 1000;
-      runTimingRef.current = { startedAt: startTime, pausedMs: 0 };
+      runTimingRef.current = { startedAt: startTime, pausedMs: 0, resumedMs: restoredDraft ? restoredDraft.elapsedMs : 0 };
       itemStartedAtRef.current = startTime;
       itemPausedMsRef.current = 0;
       visibilityPauseRef.current = null;
+      manualPracticePauseRef.current = null;
+      practicePauseStatsRef.current = restoredDraft ? restoredDraft.pauseStats : { count: 0, seconds: 0 };
+      adaptiveStatsRef.current = { firstTryStreak: 0, coachedOrMissed: 0, adjustments: 0, level: 'steady' };
+      setAdaptiveLevel('steady');
       interruptionStatsRef.current = { count: 0, seconds: 0 };
       warningPlayedRef.current = false;
       setInterruptionCount(0);
+      clearAccuracyDraft();
+      setAccuracyDraft(null);
       problemsRef.current = nextProblems;
-      currentIndexRef.current = 0;
+      currentIndexRef.current = resumeIndex;
       timerValueRef.current = config.untimed ? 0 : config.timeLimit;
       setProblems(nextProblems);
-      setCurrentIndex(0);
+      setCurrentIndex(resumeIndex);
       setResults(null);
       setStudentInput('');
       setInputError('');
       setTimer(config.untimed ? 0 : config.timeLimit);
       setLastFeedback(null);
-      setCoachAttempts(0);
+      setCoachAttempts(restoredDraft && nextProblems[resumeIndex] && Array.isArray(nextProblems[resumeIndex].attemptLog) ? nextProblems[resumeIndex].attemptLog.length : 0);
+      setConfirmEndEarly(false);
+      setPracticePaused(false);
       setActive(true);
 
       if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
@@ -1193,7 +1477,7 @@
             clearInterval(timerRef.current);
             timerRef.current = null;
             setTimeout(function () { finishProbe('time'); }, 0);
-          } else if (next <= 10 && !warningPlayedRef.current && soundEnabled && config.mode !== 'benchmark') {
+          } else if (next <= 10 && !warningPlayedRef.current && soundEnabled && config.mode !== 'benchmark' && !config.calmDisplay) {
             warningPlayedRef.current = true;
             playTimeWarning();
           }
@@ -1218,18 +1502,39 @@
         config = {
           mode: 'benchmark', form: probeForm, grade: normalizedGrade,
           operation: bank.operation || 'mixed', difficulty: bank.difficulty || 'fixed-form',
-          timeLimit: Number(bank.timeLimit) || 120, problemCount: nextProblems.length
+          timeLimit: Number(bank.timeLimit) || 120, problemCount: nextProblems.length, adaptivePractice: false, touchKeypad: touchKeypad,
+          reducedMotion: reducedMotion, highContrast: highContrast, readAloud: false, calmDisplay: calmDisplay
         };
       } else {
         nextProblems = generatePracticeProblems(operation, difficulty, normalizedGrade || gradeLevel, problemCount);
         config = {
           mode: 'practice', form: null, grade: normalizedGrade || String(gradeLevel || 'Unknown'),
           operation: operation, difficulty: difficulty, practiceSet: difficulty,
-          timeLimit: timeLimit, untimed: timeLimit === 0, strategyCoach: timeLimit === 0, problemCount: nextProblems.length
+          timeLimit: timeLimit, untimed: timeLimit === 0, strategyCoach: timeLimit === 0, problemCount: nextProblems.length,
+          adaptivePractice: adaptivePractice, touchKeypad: touchKeypad,
+          reducedMotion: reducedMotion, highContrast: highContrast, readAloud: readAloud && speechAvailable, calmDisplay: calmDisplay
         };
       }
       beginProbe(nextProblems, config);
-    }, [timeLimit, operation, difficulty, problemCount, gradeLevel, probeMode, probeForm, beginProbe, addToast]);
+    }, [timeLimit, operation, difficulty, problemCount, gradeLevel, probeMode, probeForm, beginProbe, addToast, adaptivePractice, touchKeypad, reducedMotion, highContrast, readAloud, calmDisplay, speechAvailable]);
+
+    var resumeSavedAccuracyFocus = useCallback(function () {
+      var restored = sanitizeAccuracyDraft(accuracyDraft, new Date());
+      if (!restored) {
+        clearAccuracyDraft();
+        setAccuracyDraft(null);
+        addToast(tt('math_fluency.saved_session_unavailable', 'That saved Accuracy Focus session is no longer available.'), 'warning');
+        return;
+      }
+      beginProbe(restored.problems, restored.config, restored);
+      addToast(tt('math_fluency.saved_session_resumed', 'Accuracy Focus session resumed'), 'success');
+    }, [accuracyDraft, beginProbe, addToast]);
+
+    var discardSavedAccuracyFocus = useCallback(function () {
+      clearAccuracyDraft();
+      setAccuracyDraft(null);
+      addToast(tt('math_fluency.saved_session_discarded', 'Saved Accuracy Focus session discarded'), 'info');
+    }, [addToast]);
 
     function startFocusedPractice(facts) {
       setProbeMode('practice');
@@ -1241,7 +1546,9 @@
       beginProbe(nextProblems, {
         mode: 'practice', form: null, grade: normalizeGrade(gradeLevel) || String(gradeLevel || 'Unknown'),
         operation: opKeys.length === 1 ? opKeys[0] : 'mixed', difficulty: 'focus', practiceSet: 'focus',
-        timeLimit: timeLimit, untimed: timeLimit === 0, strategyCoach: timeLimit === 0, problemCount: nextProblems.length, focusedPractice: true
+        timeLimit: timeLimit, untimed: timeLimit === 0, strategyCoach: timeLimit === 0, problemCount: nextProblems.length, focusedPractice: true,
+        adaptivePractice: adaptivePractice, touchKeypad: touchKeypad, reducedMotion: reducedMotion, highContrast: highContrast,
+        readAloud: readAloud && speechAvailable, calmDisplay: calmDisplay
       });
     }
 
@@ -1259,7 +1566,8 @@
         mode: 'practice', form: null, grade: normalizeGrade(gradeLevel) || String(gradeLevel || 'Unknown'),
         operation: opKeys.length === 1 ? opKeys[0] : 'mixed', difficulty: 'smart-review', practiceSet: 'smart-review',
         timeLimit: timeLimit, untimed: timeLimit === 0, strategyCoach: timeLimit === 0,
-        problemCount: nextProblems.length, smartReview: true
+        problemCount: nextProblems.length, smartReview: true, adaptivePractice: adaptivePractice, touchKeypad: touchKeypad,
+        reducedMotion: reducedMotion, highContrast: highContrast, readAloud: readAloud && speechAvailable, calmDisplay: calmDisplay
       });
     }
 
@@ -1294,7 +1602,31 @@
       }
     }
 
+    var pauseAccuracyPractice = useCallback(function () {
+      var config = runConfigRef.current || {};
+      if (!active || !config.untimed || manualPracticePauseRef.current !== null) return;
+      manualPracticePauseRef.current = nowMs();
+      practicePauseStatsRef.current.count += 1;
+      if (autoAdvanceTimerRef.current) { clearTimeout(autoAdvanceTimerRef.current); autoAdvanceTimerRef.current = null; }
+      setPracticePaused(true);
+      _mfAnnounce(tt('math_fluency.accuracy_focus_paused', 'Accuracy Focus paused. Press P or choose Resume when you are ready.'));
+      setTimeout(function () { if (pauseResumeRef.current) pauseResumeRef.current.focus(); }, 0);
+    }, [active]);
+
+    var resumeAccuracyPractice = useCallback(function () {
+      if (manualPracticePauseRef.current === null) return;
+      var pausedMs = Math.max(0, nowMs() - manualPracticePauseRef.current);
+      runTimingRef.current.pausedMs += pausedMs;
+      itemPausedMsRef.current += pausedMs;
+      practicePauseStatsRef.current.seconds += pausedMs / 1000;
+      manualPracticePauseRef.current = null;
+      setPracticePaused(false);
+      _mfAnnounce(tt('math_fluency.accuracy_focus_resumed', 'Accuracy Focus resumed.'));
+      setTimeout(function () { if (inputRef.current) inputRef.current.focus(); }, 0);
+    }, []);
+
     var submitAnswer = useCallback(function (skip) {
+      if (manualPracticePauseRef.current !== null) return;
       var isSkip = skip === true;
       var parsed = isSkip ? { valid: true, value: null } : parseStudentAnswer(studentInput);
       if (!parsed.valid) {
@@ -1342,6 +1674,22 @@
         firstTryCorrect: isCorrect && (!problem.attemptLog || problem.attemptLog.length === 0),
         responseMs: Math.round(responseMs)
       });
+      if (!isFixedRun && configNow.adaptivePractice && !configNow.focusedPractice && !configNow.smartReview && idx + 1 < updated.length) {
+        var adaptiveStats = adaptiveStatsRef.current;
+        var firstTry = isCorrect && !isSkip && (!problem.attemptLog || problem.attemptLog.length === 0);
+        adaptiveStats.firstTryStreak = firstTry ? adaptiveStats.firstTryStreak + 1 : 0;
+        adaptiveStats.coachedOrMissed = firstTry ? Math.max(0, adaptiveStats.coachedOrMissed - 1) : adaptiveStats.coachedOrMissed + 1;
+        var nextAdaptiveLevel = getAdaptivePracticeLevel(adaptiveStats);
+        if (nextAdaptiveLevel !== adaptiveLevel) {
+          adaptiveStats.adjustments += 1;
+          adaptiveStats.level = nextAdaptiveLevel;
+          setAdaptiveLevel(nextAdaptiveLevel);
+          var adaptiveSet = nextAdaptiveLevel === 'stretch' ? 'extended' : nextAdaptiveLevel === 'support' ? 'recommended' : (configNow.practiceSet || configNow.difficulty);
+          var replacement = generatePracticeProblems(problem.op, adaptiveSet, configNow.grade, 1)[0];
+          if (replacement) updated[idx + 1] = replacement;
+          _mfAnnounce(nextAdaptiveLevel === 'stretch' ? tt('math_fluency.adaptive_stretch', 'Adaptive practice: ready for a stretch fact.') : nextAdaptiveLevel === 'support' ? tt('math_fluency.adaptive_support', 'Adaptive practice: returning to a support fact.') : tt('math_fluency.adaptive_steady', 'Adaptive practice: steady level.'));
+        }
+      }
       problemsRef.current = updated;
       setProblems(updated);
 
@@ -1363,13 +1711,13 @@
       setCurrentIndex(next);
       if (next >= updated.length) setTimeout(function () { finishProbe('complete'); }, 50);
       else setTimeout(function () { if (inputRef.current) inputRef.current.focus(); }, 50);
-    }, [studentInput, soundEnabled, finishProbe]);
+    }, [studentInput, soundEnabled, finishProbe, adaptiveLevel]);
 
     // Auto-advance on a strictly valid correct answer. Cleanup prevents a
     // stale timeout from submitting after the student edits the value.
     useEffect(function () {
       if (autoAdvanceTimerRef.current) { clearTimeout(autoAdvanceTimerRef.current); autoAdvanceTimerRef.current = null; }
-      if (!autoAdvance || !active || studentInput === '' || (runConfigRef.current && runConfigRef.current.mode === 'benchmark')) return;
+      if (!autoAdvance || !active || practicePaused || studentInput === '' || (runConfigRef.current && runConfigRef.current.mode === 'benchmark')) return;
       var currentProblem = problems[currentIndex];
       var parsed = parseStudentAnswer(studentInput);
       if (currentProblem && parsed.valid && parsed.value === currentProblem.answer) {
@@ -1378,16 +1726,43 @@
       return function () {
         if (autoAdvanceTimerRef.current) { clearTimeout(autoAdvanceTimerRef.current); autoAdvanceTimerRef.current = null; }
       };
-    }, [studentInput, autoAdvance, active, currentIndex, submitAnswer]);
+    }, [studentInput, autoAdvance, active, practicePaused, currentIndex, submitAnswer]);
 
-    // Escape ends the probe. Tab and Shift+Tab retain their standard meaning
-    // and cycle through the controls within the modal probe surface.
+    // Practice-only spoken facts follow the active problem. Cancellation on
+    // every transition prevents overlapping utterances; paused and fixed-form
+    // sessions stay silent so administration and response timing remain neutral.
+    useEffect(function () {
+      var config = runConfigRef.current;
+      if (!active || practicePaused || !config || config.mode === 'benchmark' || !config.readAloud) {
+        cancelProblemSpeech();
+        return;
+      }
+      var problem = problems[currentIndex];
+      if (!problem) return;
+      speakProblem(problem);
+      return cancelProblemSpeech;
+    }, [active, currentIndex, practicePaused]);
+
+    // Escape opens the end-session safeguard first (or cancels it when open).
+    // Tab and Shift+Tab retain their standard meaning and cycle through the
+    // controls within the modal probe surface.
     useEffect(function () {
       if (!active) return;
       function handleKey(e) {
+        if ((e.key === 'p' || e.key === 'P') && runConfigRef.current && runConfigRef.current.untimed && !confirmEndEarly) {
+          e.preventDefault();
+          if (manualPracticePauseRef.current !== null) resumeAccuracyPractice();
+          else pauseAccuracyPractice();
+          return;
+        }
         if (e.key === 'Escape') {
           e.preventDefault();
-          finishProbe('early');
+          if (confirmEndEarly) {
+            setConfirmEndEarly(false);
+            setTimeout(function () { if (inputRef.current) inputRef.current.focus(); }, 0);
+          } else {
+            setConfirmEndEarly(true);
+          }
           return;
         }
         if (e.key !== 'Tab' || !overlayRef.current) return;
@@ -1399,7 +1774,20 @@
       }
       window.addEventListener('keydown', handleKey);
       return function () { window.removeEventListener('keydown', handleKey); };
-    }, [active, finishProbe]);
+    }, [active, confirmEndEarly, pauseAccuracyPractice, resumeAccuracyPractice]);
+
+    // Browser reloads and tab/window closes can otherwise discard an active
+    // session before its attempted facts and incomplete status are saved.
+    useEffect(function () {
+      if (!active || typeof window === 'undefined') return;
+      function guardActiveSession(e) {
+        e.preventDefault();
+        e.returnValue = '';
+        return '';
+      }
+      window.addEventListener('beforeunload', guardActiveSession);
+      return function () { window.removeEventListener('beforeunload', guardActiveSession); };
+    }, [active]);
 
     // Pause elapsed time while the page is hidden. Fixed comparable forms are
     // also marked as interrupted so their scores cannot enter trend data.
@@ -1408,6 +1796,7 @@
       function handleVisibilityChange() {
         var currentTime = nowMs();
         if (document.hidden) {
+          if (manualPracticePauseRef.current !== null) return;
           if (visibilityPauseRef.current === null) {
             visibilityPauseRef.current = currentTime;
             if (runConfigRef.current && runConfigRef.current.mode === 'benchmark') {
@@ -1435,6 +1824,7 @@
       return function () {
         if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
         if (autoAdvanceTimerRef.current) { clearTimeout(autoAdvanceTimerRef.current); autoAdvanceTimerRef.current = null; }
+        cancelProblemSpeech();
       };
     }, []);
 
@@ -1452,12 +1842,22 @@
       var prob = problems[currentIndex];
       var isFixedRun = runConfigRef.current && runConfigRef.current.mode === 'benchmark';
       var isUntimedRun = !!(runConfigRef.current && runConfigRef.current.untimed);
+      var calmDisplayRun = !!(runConfigRef.current && runConfigRef.current.calmDisplay);
+      var readAloudRun = !!(runConfigRef.current && runConfigRef.current.readAloud && !isFixedRun && speechAvailable);
       var correctCount = problems.filter(function (p) { return p.correct; }).length;
       var activeTimeLimit = (runConfigRef.current && runConfigRef.current.timeLimit) || timeLimit;
       var timerPct = isUntimedRun
         ? Math.max(0, Math.min(100, (currentIndex / Math.max(1, problems.length)) * 100))
         : Math.max(0, Math.min(100, (timer / Math.max(1, activeTimeLimit)) * 100));
       var isLowTime = !isUntimedRun && timer <= 10;
+      var exactTimeLabel = tt('math_fluency.time_remaining', 'Time remaining: ') + timer + tt('math_fluency.seconds', ' seconds');
+      var calmTimeLabel = isLowTime ? tt('math_fluency.almost_done', 'Almost done') : tt('math_fluency.time_is_running', 'Time is running');
+      var operationPalette = {
+        add: { accent: '#2563eb', strong: '#1d4ed8', soft: '#eff6ff', border: '#93c5fd', label: tt('math_fluency.addition', 'Addition') },
+        sub: { accent: '#7c3aed', strong: '#6d28d9', soft: '#f5f3ff', border: '#c4b5fd', label: tt('math_fluency.subtraction', 'Subtraction') },
+        mul: { accent: '#0f766e', strong: '#115e59', soft: '#f0fdfa', border: '#99f6e4', label: tt('math_fluency.multiplication', 'Multiplication') },
+        div: { accent: '#d97706', strong: '#b45309', soft: '#fffbeb', border: '#fcd34d', label: tt('math_fluency.division', 'Division') }
+      }[prob.op] || { accent: '#475569', strong: '#334155', soft: '#f8fafc', border: '#cbd5e1', label: tt('math_fluency.mixed', 'Mixed') };
       var strategyHint = isUntimedRun && coachAttempts > 0 ? getStrategyHint(prob, coachAttempts) : null;
       // Live DCPM — digits-correct-per-minute, the gold-standard fluency
       // measure. We compute it from the same formula that finishProbe uses,
@@ -1469,32 +1869,42 @@
       var liveElapsed = activeTimeLimit - timer;
       var liveDcpm = liveElapsed > 0 ? Math.round(liveDigitsCorrect / Math.max(0.1, liveElapsed / 60)) : 0;
 
-      var feedbackBg = isFixedRun ? 'transparent' : (lastFeedback === 'correct' ? 'rgba(34,197,94,0.15)'
+      var feedbackBg = isFixedRun || calmDisplayRun ? 'transparent' : (lastFeedback === 'correct' ? 'rgba(34,197,94,0.15)'
         : lastFeedback === 'wrong' ? 'rgba(239,68,68,0.1)'
         : lastFeedback === 'skip' ? 'rgba(100,116,139,0.08)' : 'transparent');
 
       return h('div', {
         ref: overlayRef,
-        className: 'mf-active-probe fixed inset-0',
+        className: 'mf-active-probe fixed inset-0' + (reducedMotion ? ' mf-reduce-motion' : '') + (highContrast ? ' mf-high-contrast' : '') + (calmDisplayRun ? ' mf-calm-display' : ''),
+        'data-calm-display': calmDisplayRun ? 'true' : 'false',
         role: 'dialog',
         'aria-modal': 'true',
         'aria-label': tt('math_fluency.active_probe', 'Active math fluency probe'),
         style: {
           position: 'fixed', inset: 0, zIndex: 9999,
-          background: 'linear-gradient(135deg, #fffbeb 0%, #ffffff 50%, #fff7ed 100%)',
+          background: 'radial-gradient(circle at 12% 8%, ' + operationPalette.soft + ' 0, transparent 34%), radial-gradient(circle at 88% 92%, #fff7ed 0, transparent 32%), linear-gradient(145deg, #f8fafc 0%, #ffffff 50%, #fffaf0 100%)',
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           padding: '16px', transition: 'background 0.3s', backgroundColor: feedbackBg
         }
       },
         // Timer bar + live DCPM ticker
-        h('div', { className: 'mf-probe-progress', style: { width: '100%', maxWidth: '28rem', marginBottom: '2rem', flexShrink: 0 } },
+        h('div', { className: 'mf-probe-progress', style: { width: '100%', maxWidth: '28rem', marginBottom: '1.25rem', flexShrink: 0, padding: '11px 12px', borderRadius: '14px', border: '1px solid ' + operationPalette.border, background: 'rgba(255,255,255,0.9)', boxShadow: '0 10px 28px rgba(15,23,42,0.08)', backdropFilter: 'blur(8px)' } },
           h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', gap: '8px', flexWrap: 'wrap' } },
-            h('span', { style: { fontSize: '14px', fontWeight: 800, color: isUntimedRun ? '#6d28d9' : (isLowTime ? '#dc2626' : '#b45309'), animation: isLowTime ? 'pulse 1s infinite' : 'none' } },
-              isUntimedRun ? '\uD83C\uDFAF ' + tt('math_fluency.accuracy_focus', 'Accuracy Focus') : '\u23f1\ufe0f ' + Math.floor(timer / 60) + ':' + String(timer % 60).padStart(2, '0')),
+            h('span', {
+              'aria-label': isUntimedRun ? undefined : exactTimeLabel,
+              style: { fontSize: '14px', fontWeight: 800, color: isUntimedRun ? '#6d28d9' : (calmDisplayRun ? (isLowTime ? '#b45309' : '#6d28d9') : (isLowTime ? '#dc2626' : '#b45309')), animation: isLowTime && !reducedMotion && !calmDisplayRun ? 'pulse 1s infinite' : 'none' }
+            },
+              isUntimedRun ? '\uD83C\uDFAF ' + tt('math_fluency.accuracy_focus', 'Accuracy Focus') : (calmDisplayRun ? '\uD83C\uDF3F ' + calmTimeLabel : '\u23f1\ufe0f ' + Math.floor(timer / 60) + ':' + String(timer % 60).padStart(2, '0'))),
             // Live DCPM pill — updates every second as the timer ticks. Low
             // opacity until at least 10s have elapsed so the number isn't
             // noisy at the start of the probe when the sample is tiny.
-            !isFixedRun && !isUntimedRun ? h('span', {
+            isUntimedRun && !practicePaused ? h('button', {
+              type: 'button',
+              'aria-label': tt('math_fluency.pause_accuracy_focus', 'Pause Accuracy Focus'),
+              onClick: pauseAccuracyPractice,
+              style: { padding: '4px 9px', borderRadius: '999px', border: '1px solid #c4b5fd', background: '#f5f3ff', color: '#6d28d9', fontSize: '12px', fontWeight: 850, cursor: 'pointer' }
+            }, '⏸ ' + tt('math_fluency.pause', 'Pause')) : null,
+            !isFixedRun && !isUntimedRun && !calmDisplayRun ? h('span', {
               style: {
                 fontSize: '13px', fontWeight: 800,
                 padding: '3px 10px', borderRadius: '999px',
@@ -1506,8 +1916,9 @@
               },
               title: tt('math_fluency.live_dcpm_help', 'Digits-correct per minute, updating live.')
             }, '\uD83D\uDCC8 ' + liveDcpm + ' dcpm') : null,
+            !isFixedRun && !calmDisplayRun && runConfigRef.current && runConfigRef.current.adaptivePractice ? h('span', { className: 'mf-adaptive-level', role: 'status', style: { fontSize: '11px', fontWeight: 850, padding: '3px 8px', borderRadius: '999px', background: adaptiveLevel === 'stretch' ? '#dcfce7' : adaptiveLevel === 'support' ? '#fef3c7' : '#eff6ff', color: adaptiveLevel === 'stretch' ? '#166534' : adaptiveLevel === 'support' ? '#92400e' : '#1d4ed8' } }, tt('math_fluency.adaptive_label', 'Adaptive') + ': ' + adaptiveLevel) : null,
             h('span', { style: { fontSize: '14px', fontWeight: 800, color: '#475569' } },
-              isFixedRun
+              isFixedRun || calmDisplayRun
                 ? '#' + (currentIndex + 1) + ' / ' + problems.length
                 : '#' + (currentIndex + 1) + ' \u2022 \u2705 ' + correctCount)
           ),
@@ -1516,23 +1927,59 @@
               'aria-valuenow': Math.round(timerPct),
               'aria-label': isUntimedRun
                 ? tt('math_fluency.problem_progress', 'Problem progress: {current} of {total}', { current: currentIndex, total: problems.length })
-                : tt('math_fluency.time_remaining', 'Time remaining: ') + timer + tt('math_fluency.seconds', ' seconds'), style: {
+                : exactTimeLabel, style: {
               height: '100%', borderRadius: '9999px', transition: 'width 1s linear',
-              background: isUntimedRun ? 'linear-gradient(to right, #7c3aed, #a78bfa)' : (isLowTime ? 'linear-gradient(to right, #ef4444, #dc2626)' : 'linear-gradient(to right, #f59e0b, #f97316)'),
+              background: isUntimedRun || calmDisplayRun ? 'linear-gradient(to right, #7c3aed, #a78bfa)' : (isLowTime ? 'linear-gradient(to right, #ef4444, #dc2626)' : 'linear-gradient(to right, #f59e0b, #f97316)'),
               width: timerPct + '%'
             } })
           )
         ),
+        practicePaused ? h('div', {
+          className: 'mf-problem-card mf-practice-pause-card',
+          role: 'group',
+          'aria-labelledby': 'mf-practice-pause-title',
+          'aria-describedby': 'mf-practice-pause-description',
+          style: { background: 'linear-gradient(135deg,#f5f3ff,#fff)', borderRadius: '16px', boxShadow: '0 20px 60px rgba(91,33,182,0.14)', border: '2px solid #c4b5fd', padding: '2rem', width: '100%', maxWidth: '28rem', textAlign: 'center' }
+        },
+          h('div', { 'aria-hidden': 'true', style: { fontSize: '2.5rem', marginBottom: '8px' } }, '⏸'),
+          h('div', { id: 'mf-practice-pause-title', style: { color: '#5b21b6', fontWeight: 900, fontSize: '20px' } },
+            tt('math_fluency.accuracy_focus_paused_title', 'Accuracy Focus paused')),
+          h('p', { id: 'mf-practice-pause-description', style: { color: '#6b21a8', fontSize: '13px', lineHeight: 1.5, margin: '8px auto 16px', maxWidth: '22rem' } },
+            tt('math_fluency.pause_mastery_explanation', 'Take the time you need. Paused time will not affect response-time mastery.')),
+          h('button', {
+            ref: pauseResumeRef,
+            type: 'button',
+            'aria-label': tt('math_fluency.resume_accuracy_focus', 'Resume Accuracy Focus'),
+            onClick: resumeAccuracyPractice,
+            style: { padding: '11px 24px', borderRadius: '11px', border: 'none', background: 'linear-gradient(90deg,#7c3aed,#6d28d9)', color: '#fff', fontWeight: 900, fontSize: '15px', cursor: 'pointer', boxShadow: '0 5px 14px rgba(109,40,217,0.25)' }
+          }, '▶ ' + tt('math_fluency.resume', 'Resume')),
+          h('div', { style: { marginTop: '10px', color: '#7c3aed', fontSize: '11px', fontWeight: 700 } },
+            tt('math_fluency.pause_shortcut', 'Keyboard shortcut: P'))
+        ) :
         // Problem card
-        h('div', { className: 'mf-problem-card', role: 'group',
+        h('div', { className: 'mf-problem-card', role: 'group', 'data-operation': prob.op,
           'aria-label': tt('math_fluency.problem_of', 'Problem {current} of {total}', { current: currentIndex + 1, total: problems.length }),
           style: {
-            background: '#fff', borderRadius: '16px', boxShadow: '0 20px 60px rgba(0,0,0,0.1)', border: '2px solid #fde68a',
-            padding: '2rem 3rem', width: '100%', maxWidth: '28rem', textAlign: 'center'
+            background: 'linear-gradient(180deg, #ffffff 0%, ' + operationPalette.soft + ' 180%)', borderRadius: '20px', boxShadow: '0 24px 70px rgba(15,23,42,0.14)', border: '1px solid ' + operationPalette.border, borderTop: '6px solid ' + operationPalette.accent,
+            padding: '1.6rem 3rem 2rem', width: '100%', maxWidth: '28rem', textAlign: 'center'
           }
         },
-          h('div', { style: { fontSize: 'clamp(2.5rem, 8vw, 3.5rem)', fontWeight: 900, color: '#1e293b', letterSpacing: '-1px', marginBottom: '2rem', fontFamily: 'ui-monospace, monospace' } },
-            prob.a + ' ' + prob.symbol + ' ' + prob.b + ' = ?'),
+          h('div', { className: 'mf-operation-eyebrow', style: { display: 'inline-flex', alignItems: 'center', gap: '6px', marginBottom: '12px', padding: '5px 10px', borderRadius: '999px', background: operationPalette.soft, border: '1px solid ' + operationPalette.border, color: operationPalette.strong, fontSize: '10px', fontWeight: 900, letterSpacing: '0.08em', textTransform: 'uppercase' } },
+            h('span', { 'aria-hidden': 'true', style: { width: '7px', height: '7px', borderRadius: '999px', background: operationPalette.accent, boxShadow: '0 0 0 3px ' + operationPalette.soft } }),
+            operationPalette.label
+          ),
+          h('div', { className: 'mf-equation', style: { fontSize: 'clamp(2.7rem, 8vw, 3.7rem)', fontWeight: 900, color: '#0f172a', letterSpacing: '-0.04em', lineHeight: 1.1, marginBottom: readAloudRun ? '0.75rem' : '1.75rem', fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace' } },
+            h('span', { className: 'mf-equation-number' }, String(prob.a)),
+            h('span', { className: 'mf-equation-operator', style: { color: operationPalette.accent } }, ' ' + prob.symbol + ' '),
+            h('span', { className: 'mf-equation-number' }, String(prob.b)),
+            h('span', { style: { color: '#64748b' } }, ' = ?')
+          ),
+          readAloudRun ? h('button', {
+            type: 'button', className: 'mf-replay-fact',
+            'aria-label': tt('math_fluency.replay_spoken_fact', 'Replay spoken math fact'),
+            onClick: function () { speakProblem(prob); if (inputRef.current) inputRef.current.focus(); },
+            style: { margin: '0 auto 1.25rem', padding: '7px 12px', borderRadius: '999px', border: '1px solid #c4b5fd', background: '#f5f3ff', color: '#5b21b6', fontSize: '12px', fontWeight: 850, cursor: 'pointer' }
+          }, '\ud83d\udd0a ' + tt('math_fluency.replay_fact', 'Replay fact')) : null,
           strategyHint ? h('div', {
             className: 'mf-strategy-coach', role: 'status', 'aria-live': 'polite',
             style: { margin: '-8px 0 18px', padding: '12px 14px', borderRadius: '12px', background: strategyHint.reveal ? '#fef2f2' : '#f5f3ff', border: '1px solid ' + (strategyHint.reveal ? '#fca5a5' : '#c4b5fd'), color: strategyHint.reveal ? '#991b1b' : '#5b21b6', textAlign: 'left' }
@@ -1558,18 +2005,33 @@
               'aria-invalid': inputError ? 'true' : 'false',
               'aria-describedby': inputError ? 'mf-answer-error' : undefined,
               style: {
-                width: '140px', textAlign: 'center', fontSize: '2rem', fontWeight: 800,
-                borderBottom: '4px solid #f59e0b', background: 'transparent',
-                padding: '8px 0', margin: '0 auto', display: 'block', borderTop: 'none', borderLeft: 'none', borderRight: 'none'
+                width: '156px', textAlign: 'center', fontSize: '2rem', fontWeight: 850, color: '#0f172a',
+                border: '2px solid ' + operationPalette.border, borderBottom: '4px solid ' + operationPalette.accent, background: '#fff',
+                padding: '10px 12px', margin: '0 auto', display: 'block', borderRadius: '12px', boxShadow: 'inset 0 1px 2px rgba(15,23,42,0.06), 0 6px 18px rgba(15,23,42,0.06)'
               }
             }),
+            touchKeypad ? h('div', { className: 'mf-touch-keypad', role: 'group', 'aria-label': tt('math_fluency.answer_keypad', 'Answer keypad'), style: { display: 'grid', gridTemplateColumns: 'repeat(4,minmax(52px,1fr))', gap: '7px', marginTop: '14px' } },
+              ['1','2','3','4','5','6','7','8','9','-','0','backspace'].map(function(key) {
+                var label = key === 'backspace' ? tt('math_fluency.delete_digit', 'Delete digit') : key === '-' ? tt('math_fluency.toggle_negative', 'Toggle negative') : tt('math_fluency.number_key', 'Number {number}', { number: key });
+                return h('button', { key: key, type: 'button', 'aria-label': label,
+                  onMouseDown: function(e) { e.preventDefault(); },
+                  onClick: function() {
+                    if (key === 'backspace') setStudentInput(function(value) { return String(value).slice(0, -1); });
+                    else if (key === '-') setStudentInput(function(value) { value = String(value); return value.charAt(0) === '-' ? value.slice(1) : '-' + value; });
+                    else setStudentInput(function(value) { return (String(value) + key).slice(0, 8); });
+                    setInputError('');
+                  },
+                  style: { minHeight: '48px', borderRadius: '10px', border: '1px solid ' + (highContrast ? '#000' : '#cbd5e1'), background: highContrast ? '#fff' : '#f8fafc', color: '#0f172a', fontSize: '18px', fontWeight: 900, cursor: 'pointer' }
+                }, key === 'backspace' ? '⌫' : key);
+              })
+            ) : null,
             inputError ? h('div', { id: 'mf-answer-error', role: 'alert', style: { color: '#b91c1c', fontSize: '12px', fontWeight: 700, marginTop: '8px' } }, inputError) : null,
             h('div', { style: { display: 'flex', gap: '12px', marginTop: '1.5rem', justifyContent: 'center' } },
               h('button', {  type: 'submit',
                 style: {
-                  padding: '12px 32px', background: 'linear-gradient(to right, #10b981, #22c55e)',
-                  color: '#fff', fontWeight: 800, borderRadius: '12px', fontSize: '1.1rem',
-                  border: 'none', cursor: 'pointer', boxShadow: '0 4px 15px rgba(16,185,129,0.3)'
+                  padding: '12px 32px', background: 'linear-gradient(135deg, ' + operationPalette.accent + ', ' + operationPalette.strong + ')',
+                  color: '#fff', fontWeight: 850, borderRadius: '12px', fontSize: '1.05rem',
+                  border: 'none', cursor: 'pointer', boxShadow: '0 7px 18px ' + operationPalette.border
                 }
               }, tt('math_fluency.enter', 'Enter \u21b5')),
               h('button', { 'aria-label': tt('math_fluency.skip_problem', 'Skip problem'),
@@ -1583,13 +2045,42 @@
             )
           ),
           h('div', { style: { marginTop: '12px', fontSize: '11px', color: '#64748b' } },
-            tt('math_fluency.tab_controls_esc_end_early', 'Tab = Next Control \u2022 Esc = End Early') + (!isFixedRun && autoAdvance ? ' \u2022 Auto-advance ON' : '')),
+            tt('math_fluency.tab_controls_esc_end_early', 'Tab = Next Control \u2022 Esc = End Early') + (isUntimedRun ? ' \u2022 P = Pause' : '') + (!isFixedRun && autoAdvance ? ' \u2022 Auto-advance ON' : '')),
           isFixedRun && interruptionCount > 0 ? h('div', { role: 'status', style: { marginTop: '10px', color: '#b45309', fontSize: '12px', fontWeight: 700 } },
             tt('math_fluency.interrupted_run_notice', 'Interrupted - this run will be saved but excluded from comparable trends.')) : null
         ),
-        // End early button
-        h('button', { 'aria-label': tt('math_fluency.end_probe_early', 'End probe early'),
-          onClick: function () { finishProbe('early'); },
+        // End-early safeguard: one accidental click or Escape cannot discard
+        // the active flow. The confirmation explains how the partial run is used.
+        confirmEndEarly ? h('div', {
+          role: 'alertdialog',
+          'aria-labelledby': 'mf-end-early-title',
+          'aria-describedby': 'mf-end-early-description',
+          style: { width: '100%', maxWidth: '28rem', marginTop: '1.25rem', padding: '14px', borderRadius: '14px', background: '#fff7ed', border: '2px solid #fdba74', boxShadow: '0 10px 25px rgba(154,52,18,0.12)' }
+        },
+          h('div', { id: 'mf-end-early-title', style: { color: '#9a3412', fontWeight: 900, fontSize: '15px' } },
+            tt('math_fluency.end_session_question', 'End this session?')),
+          h('div', { id: 'mf-end-early-description', style: { color: '#7c2d12', fontSize: '12px', lineHeight: 1.45, marginTop: '4px' } },
+            isFixedRun
+              ? tt('math_fluency.end_benchmark_explanation', 'Your answered facts will be saved, but this benchmark will be marked incomplete and excluded from progress comparisons.')
+              : tt('math_fluency.end_practice_explanation', 'Your answered facts will be saved as an incomplete practice session.')),
+          h('div', { style: { display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap' } },
+            h('button', {
+              type: 'button',
+              autoFocus: true,
+              onClick: function () {
+                setConfirmEndEarly(false);
+                setTimeout(function () { if (inputRef.current) inputRef.current.focus(); }, 0);
+              },
+              style: { flex: '1 1 130px', padding: '9px 12px', borderRadius: '10px', border: '1px solid #cbd5e1', background: '#fff', color: '#334155', fontWeight: 800, cursor: 'pointer' }
+            }, tt('math_fluency.keep_practicing', 'Keep practicing')),
+            h('button', {
+              type: 'button',
+              onClick: function () { finishProbe('early'); },
+              style: { flex: '1 1 130px', padding: '9px 12px', borderRadius: '10px', border: '1px solid #c2410c', background: '#c2410c', color: '#fff', fontWeight: 800, cursor: 'pointer' }
+            }, tt('math_fluency.end_and_save', 'End & save'))
+          )
+        ) : h('button', { 'aria-label': tt('math_fluency.end_probe_early', 'End probe early'),
+          type: 'button', onClick: function () { setConfirmEndEarly(true); },
           style: { marginTop: '1.5rem', fontSize: '14px', color: '#64748b', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }
         }, tt('math_fluency.end_probe_early', 'End probe early'))
       );
@@ -1599,37 +2090,54 @@
     if (results && !active) {
       var bm = results.benchmarkResult;
       var ea = results.errorAnalysis;
+      var studentReview = buildStudentSessionReview(results);
       var comparisonHistory = history.filter(function (item) {
         return item.comparisonKey && item.comparisonKey === results.comparisonKey
           && item.validForComparison !== false && Number.isFinite(item.dcpm);
       });
       var maxDcpm = Math.max.apply(null, comparisonHistory.map(function (x) { return x.dcpm; }).concat([1]));
+      var resultAccuracy = Math.max(0, Math.min(100, Number(results.accuracy) || 0));
+      var resultPalette = {
+        add: { accent: '#2563eb', strong: '#1d4ed8', soft: '#eff6ff', border: '#93c5fd' },
+        sub: { accent: '#7c3aed', strong: '#6d28d9', soft: '#f5f3ff', border: '#c4b5fd' },
+        mul: { accent: '#0f766e', strong: '#115e59', soft: '#f0fdfa', border: '#99f6e4' },
+        div: { accent: '#d97706', strong: '#b45309', soft: '#fffbeb', border: '#fcd34d' }
+      }[results.operation] || { accent: '#475569', strong: '#334155', soft: '#f8fafc', border: '#cbd5e1' };
+      var resultModeLabel = results.mode === 'benchmark'
+        ? tt('math_fluency.fixed_form_named', 'Fixed Form {form}', { form: results.form || '-' })
+        : results.untimed ? tt('math_fluency.accuracy_focus', 'Accuracy Focus') : tt('math_fluency.timed_practice', 'Timed practice');
 
-      return h('div', { className: 'mf-results-panel', role: 'region', 'aria-label': tt('math_fluency.fluency_probe_results', 'Fluency Probe Results'), style: {
-          background: 'linear-gradient(135deg, #fffbeb, #fff7ed)', borderRadius: '16px',
-          border: '2px solid #fde68a', padding: '24px', marginBottom: '24px',
-          animation: 'fadeIn 0.3s ease-out'
+      return h('div', { className: 'mf-results-panel' + (reducedMotion ? ' mf-reduce-motion' : '') + (highContrast ? ' mf-high-contrast' : ''), role: 'region', 'aria-label': tt('math_fluency.fluency_probe_results', 'Fluency Probe Results'), style: {
+          background: highContrast ? '#fff' : 'radial-gradient(circle at 0% 0%, ' + resultPalette.soft + ' 0, transparent 34%), linear-gradient(145deg, #fff, #fffaf0)', borderRadius: '20px',
+          border: '1px solid ' + (highContrast ? '#000' : resultPalette.border), borderTop: '6px solid ' + (highContrast ? '#000' : resultPalette.accent), padding: '24px', marginBottom: '24px',
+          boxShadow: highContrast ? 'none' : '0 20px 50px rgba(15,23,42,0.1)', animation: 'fadeIn 0.3s ease-out'
         }
       },
         // Header
-        h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' } },
-          h('h3', { style: { fontSize: '18px', fontWeight: 900, color: '#92400e', display: 'flex', alignItems: 'center', gap: '8px', margin: 0 } },
-            h('span', { 'aria-hidden': 'true' }, '\ud83d\udcca '), tt('math_fluency.fluency_probe_results', 'Fluency Probe Results')),
+        h('header', { className: 'mf-results-header', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', marginBottom: '16px' } },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 } },
+            h('span', { 'aria-hidden': 'true', style: { width: '36px', height: '36px', display: 'grid', placeItems: 'center', flex: '0 0 36px', borderRadius: '11px', background: resultPalette.soft, border: '1px solid ' + resultPalette.border, fontSize: '18px' } }, '\ud83d\udcca'),
+            h('div', { style: { minWidth: 0 } },
+              h('h3', { style: { fontSize: '18px', fontWeight: 900, color: '#0f172a', margin: 0 } }, tt('math_fluency.fluency_probe_results', 'Fluency Probe Results')),
+              h('span', { style: { display: 'inline-flex', marginTop: '4px', padding: '3px 7px', borderRadius: '999px', background: resultPalette.soft, border: '1px solid ' + resultPalette.border, color: resultPalette.strong, fontSize: '9px', fontWeight: 900, letterSpacing: '0.05em', textTransform: 'uppercase' } }, resultModeLabel)
+            )
+          ),
           h('button', { onClick: function () { setResults(null); }, 'aria-label': tt('math_fluency.close_results', 'Close results'),
-            style: { color: '#64748b', cursor: 'pointer', background: 'none', border: 'none', padding: '4px' }
+            style: { width: '34px', height: '34px', display: 'grid', placeItems: 'center', color: '#475569', cursor: 'pointer', background: '#fff', border: '1px solid #cbd5e1', borderRadius: '10px', padding: 0 }
           }, h(X, { size: 18 }))
         ),
 
         // Benchmark banner
-        h('div', {
+        h('div', { className: 'mf-results-summary',
           style: {
-            background: bm.color + '10', border: '2px solid ' + bm.color + '40',
-            borderRadius: '12px', padding: '12px 16px', marginBottom: '16px',
-            display: 'flex', alignItems: 'center', gap: '12px'
+            background: 'linear-gradient(135deg, ' + bm.color + '10, #fff)', border: '1px solid ' + bm.color + '45',
+            borderRadius: '16px', padding: '14px 16px', marginBottom: '16px',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '14px', flexWrap: 'wrap', boxShadow: '0 8px 22px rgba(15,23,42,0.06)'
           }
         },
-          h('span', { style: { fontSize: '24px' } }, bm.emoji),
-          h('div', null,
+          h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: '12px', flex: '1 1 230px', minWidth: 0 } },
+            h('span', { 'aria-hidden': 'true', style: { width: '42px', height: '42px', display: 'grid', placeItems: 'center', flex: '0 0 42px', borderRadius: '13px', background: '#fff', border: '1px solid ' + bm.color + '35', fontSize: '24px', boxShadow: '0 5px 14px rgba(15,23,42,0.07)' } }, bm.emoji),
+            h('div', { style: { minWidth: 0 } },
             h('div', { style: { fontWeight: 800, color: bm.color, fontSize: '14px' } }, bm.label),
             h('div', { style: { fontSize: '12px', color: '#64748b' } },
               !results.validForComparison
@@ -1649,27 +2157,69 @@
                 : results.untimed && results.completionStatus === 'complete'
                   ? tt('math_fluency.accuracy_focus_excluded_detail', 'Accuracy Focus is saved for practice review and excluded from speed trends and instructional references.')
                   : tt('math_fluency.excluded_result_detail', 'Saved for review, but excluded from trends, instructional references, and XP.'))
+            )
+          ),
+          h('div', {
+            className: 'mf-accuracy-ring', role: 'img', 'data-accuracy': resultAccuracy,
+            'aria-label': tt('math_fluency.accuracy_visual_label', 'Accuracy: {accuracy} percent', { accuracy: resultAccuracy }),
+            style: { width: '82px', height: '82px', flex: '0 0 82px', display: 'grid', placeItems: 'center', borderRadius: '50%', background: 'conic-gradient(' + resultPalette.accent + ' ' + resultAccuracy + '%, #e2e8f0 0)', boxShadow: '0 8px 20px rgba(15,23,42,0.12)' }
+          },
+            h('div', { style: { width: '64px', height: '64px', display: 'grid', placeItems: 'center', borderRadius: '50%', background: '#fff', color: resultPalette.strong, fontSize: '17px', fontWeight: 950, lineHeight: 1 } }, resultAccuracy + '%')
           )
         ),
 
         // Metrics grid
         h('div', { className: 'mf-results-metrics', style: { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '16px' } },
           [
-            { val: results.dcpm == null ? '\u2014' : results.dcpm, label: results.untimed ? tt('math_fluency.speed', 'Speed') : 'DCPM', sub: results.untimed ? tt('math_fluency.not_scored_accuracy_focus', 'Not scored in Accuracy Focus') : tt('math_fluency.digits_correct_min', 'Digits Correct/Min'), color: '#d97706' },
-            { val: results.accuracy + '%', label: results.strategyCoach ? tt('math_fluency.first_try_accuracy', 'First-Try Accuracy') : tt('math_fluency.accuracy', 'Accuracy'), sub: results.strategyCoach ? tt('math_fluency.attempts_recorded', '{count} attempts recorded', { count: results.totalPracticeAttempts }) : '', color: '#16a34a' },
-            { val: results.totalCorrect + '/' + results.totalAttempted, label: tt('math_fluency.correct', 'Correct'), sub: '', color: '#2563eb' },
-            { val: results.totalDigitsCorrect, label: tt('math_fluency.total_digits', 'Total Digits'), sub: '', color: '#9333ea' }
+            { id: 'speed', icon: '\u26a1', val: results.dcpm == null ? '\u2014' : results.dcpm, label: results.untimed ? tt('math_fluency.speed', 'Speed') : 'DCPM', sub: results.untimed ? tt('math_fluency.not_scored_accuracy_focus', 'Not scored in Accuracy Focus') : tt('math_fluency.digits_correct_min', 'Digits Correct/Min'), color: '#b45309', bg: '#fffbeb', border: '#fde68a' },
+            { id: 'accuracy', icon: '\u2713', val: results.accuracy + '%', label: results.strategyCoach ? tt('math_fluency.first_try_accuracy', 'First-Try Accuracy') : tt('math_fluency.accuracy', 'Accuracy'), sub: results.strategyCoach ? tt('math_fluency.attempts_recorded', '{count} attempts recorded', { count: results.totalPracticeAttempts }) : '', color: '#15803d', bg: '#f0fdf4', border: '#bbf7d0' },
+            { id: 'correct', icon: '#', val: results.totalCorrect + '/' + results.totalAttempted, label: tt('math_fluency.correct', 'Correct'), sub: '', color: '#1d4ed8', bg: '#eff6ff', border: '#bfdbfe' },
+            { id: 'digits', icon: '123', val: results.totalDigitsCorrect, label: tt('math_fluency.total_digits', 'Total Digits'), sub: '', color: '#7e22ce', bg: '#faf5ff', border: '#e9d5ff' }
           ].map(function (m, i) {
             return h('div', {
-              key: i,
-              style: { background: '#fff', borderRadius: '12px', padding: '16px', textAlign: 'center', border: '1px solid #fef3c7', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }
+              key: m.id, className: 'mf-metric-card', 'data-metric': m.id,
+              style: { position: 'relative', overflow: 'hidden', background: m.bg, borderRadius: '14px', padding: '15px 12px', textAlign: 'center', border: '1px solid ' + m.border, boxShadow: '0 5px 14px rgba(15,23,42,0.05)' }
             },
+              h('span', { 'aria-hidden': 'true', style: { position: 'absolute', top: '7px', right: '8px', color: m.color, opacity: 0.2, fontSize: m.id === 'digits' ? '10px' : '15px', fontWeight: 950 } }, m.icon),
               h('div', { style: { fontSize: '1.8rem', fontWeight: 900, color: m.color } }, m.val),
               h('div', { style: { fontSize: '12px', fontWeight: 700, color: '#64748b', marginTop: '4px' } }, m.label),
               m.sub ? h('div', { style: { fontSize: '10px', color: '#64748b' } }, m.sub) : null
             );
           })
         ),
+
+        results.practicePauseCount > 0 ? h('div', {
+          className: 'mf-pause-result', role: 'status',
+          style: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', padding: '10px 12px', marginBottom: '16px', borderRadius: '11px', border: '1px solid #c4b5fd', background: '#f5f3ff', color: '#5b21b6' }
+        },
+          h('span', { 'aria-hidden': 'true', style: { fontSize: '18px' } }, '⏸'),
+          h('div', { style: { flex: '1 1 180px' } },
+            h('strong', { style: { display: 'block', fontSize: '12px' } }, tt('math_fluency.pause_accommodation_used', 'Pause accommodation used')),
+            h('span', { style: { display: 'block', marginTop: '2px', fontSize: '10px', lineHeight: 1.4 } },
+              tt('math_fluency.pause_result_detail', 'Paused time was excluded from response-time mastery.'))
+          ),
+          h('span', { style: { padding: '3px 8px', borderRadius: '999px', background: '#fff', border: '1px solid #ddd6fe', fontSize: '10px', fontWeight: 850 } },
+            results.practicePauseCount + ' ' + (results.practicePauseCount === 1 ? tt('math_fluency.pause_count_one', 'pause') : tt('math_fluency.pause_count_many', 'pauses')))
+        ) : null,
+
+        (results.readAloud || results.calmDisplay || results.touchKeypad || results.reducedMotion || results.highContrast) ? h('div', {
+          className: 'mf-supports-used', role: 'status',
+          style: { padding: '9px 12px', marginBottom: '16px', borderRadius: '10px', border: '1px solid #bae6fd', background: '#f0f9ff', color: '#075985', fontSize: '11px', lineHeight: 1.45 }
+        },
+          h('strong', null, tt('math_fluency.learning_supports_used', 'Learning supports used') + ': '),
+          [
+            results.readAloud ? tt('math_fluency.spoken_facts', 'spoken facts') : null,
+            results.calmDisplay ? tt('math_fluency.calm_display', 'calm display') : null,
+            results.touchKeypad ? tt('math_fluency.large_touch_keypad', 'large touch keypad') : null,
+            results.reducedMotion ? tt('math_fluency.reduced_motion', 'reduced motion') : null,
+            results.highContrast ? tt('math_fluency.high_contrast', 'high contrast') : null
+          ].filter(Boolean).join(', ')
+        ) : null,
+
+        results.resumedFromDraft ? h('div', {
+          className: 'mf-recovery-result', role: 'status',
+          style: { padding: '9px 12px', marginBottom: '16px', borderRadius: '10px', border: '1px solid #99f6e4', background: '#f0fdfa', color: '#0f766e', fontSize: '11px', fontWeight: 750 }
+        }, '↻ ' + tt('math_fluency.recovered_session_completed', 'Recovered session completed. Earlier answers and coached attempts were included.')) : null,
 
         results.goalResult ? (function () {
           var outcome = results.goalResult;
@@ -1792,6 +2342,15 @@
           );
         })() : null,
 
+        h('section', { className: 'mf-student-review', 'aria-labelledby': 'mf-student-review-title', style: { padding: '12px', marginTop: '4px', borderRadius: '12px', border: '1px solid #bae6fd', background: '#f0f9ff', color: '#0c4a6e' } },
+          h('div', { id: 'mf-student-review-title', style: { fontWeight: 900, fontSize: '13px' } }, tt('math_fluency.session_review', 'Your Session Review')),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: '8px', marginTop: '8px', fontSize: '10px' } },
+            h('div', null, h('strong', null, tt('math_fluency.facts_strengthened', 'Facts strengthened')), h('div', { style: { marginTop: '3px' } }, studentReview.strengthened.length ? studentReview.strengthened.map(function(f) { return f.a + ' ' + f.symbol + ' ' + f.b; }).join(', ') : tt('math_fluency.keep_practicing_to_build', 'Keep practicing to build this list.'))),
+            h('div', null, h('strong', null, tt('math_fluency.facts_to_revisit', 'Facts to revisit')), h('div', { style: { marginTop: '3px' } }, studentReview.revisit.length ? studentReview.revisit.map(function(f) { return f.a + ' ' + f.symbol + ' ' + f.b; }).join(', ') : tt('math_fluency.no_priority_facts', 'No priority facts this session.')))
+          ),
+          h('div', { className: 'mf-recommended-action', style: { marginTop: '9px', paddingTop: '8px', borderTop: '1px solid #bae6fd', fontWeight: 850, fontSize: '11px' } }, tt('math_fluency.recommended_next', 'Recommended next: ') + studentReview.nextLabel)
+        ),
+
         // Actions
         h('div', { style: { display: 'flex', gap: '8px', marginTop: '16px', flexWrap: 'wrap' } },
           results.focusFacts && results.focusFacts.length ? h('button', {
@@ -1799,6 +2358,10 @@
             onClick: function () { startFocusedPractice(results.focusFacts); },
             style: { flex: '1 1 180px', padding: '10px', background: 'linear-gradient(to right, #7c3aed, #6d28d9)', color: '#fff', fontWeight: 800, borderRadius: '12px', fontSize: '14px', border: 'none', cursor: 'pointer', boxShadow: '0 4px 12px rgba(109,40,217,0.25)' }
           }, '\uD83C\uDFAF ' + tt('math_fluency.practice_missed_facts', 'Practice Missed Facts') + ' (' + results.focusFacts.length + ')') : null,
+          studentReview.nextAction === 'smart-review' ? h('button', {
+            type: 'button', 'aria-label': tt('math_fluency.start_smart_review', 'Start Smart Review'), onClick: startSmartReview,
+            style: { flex: '1 1 160px', padding: '10px', background: '#0f766e', color: '#fff', fontWeight: 800, borderRadius: '12px', fontSize: '14px', border: 'none', cursor: 'pointer' }
+          }, '\uD83E\uDDE0 ' + tt('math_fluency.start_smart_review', 'Start Smart Review')) : null,
           h('button', { 'aria-label': tt('math_fluency.run_again', 'Run again'),
             onClick: startProbe,
             style: {
@@ -1808,37 +2371,132 @@
               boxShadow: '0 4px 12px rgba(245,158,11,0.3)'
             }
           }, h(RefreshCw, { size: 14 }), tt('math_fluency.run_again', ' Run Again')),
-          history.length > 0 ? h('button', { 'aria-label': tt('math_fluency.clear_history', 'Clear History'),
-            onClick: function () { setHistory([]); if (storageDB) storageDB.set('allo_fluency_history', []); addToast(tt('math_fluency.probe_history_cleared', 'Probe history cleared'), 'info'); },
+          history.length > 0 ? (confirmClearHistory ? h('div', {
+            role: 'alertdialog',
+            'aria-labelledby': 'mf-clear-history-title',
+            'aria-describedby': 'mf-clear-history-description',
+            style: { flex: '1 0 100%', padding: '12px', borderRadius: '12px', border: '2px solid #fecaca', background: '#fef2f2' }
+          },
+            h('div', { id: 'mf-clear-history-title', style: { color: '#991b1b', fontWeight: 900 } },
+              tt('math_fluency.clear_history_question', 'Clear all session history?')),
+            h('div', { id: 'mf-clear-history-description', style: { color: '#7f1d1d', fontSize: '12px', marginTop: '3px' } },
+              tt('math_fluency.clear_history_explanation', 'This permanently removes saved session trends. Fact mastery progress is kept.')),
+            h('div', { style: { display: 'flex', gap: '8px', marginTop: '10px', flexWrap: 'wrap' } },
+              h('button', {
+                type: 'button', autoFocus: true, onClick: function () { setConfirmClearHistory(false); },
+                style: { flex: '1 1 120px', padding: '9px', borderRadius: '9px', border: '1px solid #cbd5e1', background: '#fff', color: '#334155', fontWeight: 800, cursor: 'pointer' }
+              }, tt('math_fluency.cancel', 'Cancel')),
+              h('button', {
+                type: 'button',
+                onClick: function () {
+                  setHistory([]);
+                  setConfirmClearHistory(false);
+                  if (storageDB) storageDB.set('allo_fluency_history', []).catch(function () {});
+                  addToast(tt('math_fluency.probe_history_cleared', 'Probe history cleared'), 'info');
+                },
+                style: { flex: '1 1 120px', padding: '9px', borderRadius: '9px', border: '1px solid #b91c1c', background: '#b91c1c', color: '#fff', fontWeight: 850, cursor: 'pointer' }
+              }, tt('math_fluency.clear_history_confirm', 'Yes, clear history'))
+            )
+          ) : h('button', { 'aria-label': tt('math_fluency.clear_history', 'Clear History'),
+            type: 'button', onClick: function () { setConfirmClearHistory(true); },
             style: {
               padding: '10px 16px', background: '#f1f5f9', color: '#64748b',
               fontWeight: 700, borderRadius: '12px', fontSize: '14px',
               border: 'none', cursor: 'pointer'
             }
-          }, tt('math_fluency.clear_history', 'Clear History')) : null
+          }, tt('math_fluency.clear_history', 'Clear History'))) : null
         )
       );
     }
 
     // ── Config UI (default state) ──
-    return h('div', { style: {
-        padding: '16px', background: 'linear-gradient(135deg, #fffbeb, #fff7ed)',
-        borderRadius: '12px', border: '1px solid #fde68a'
+    var setupNormalizedGrade = normalizeGrade(gradeLevel);
+    var setupGradeBanks = setupNormalizedGrade && window.MATH_PROBE_BANKS ? window.MATH_PROBE_BANKS[setupNormalizedGrade] : null;
+    var setupBank = setupGradeBanks ? setupGradeBanks[probeForm] : null;
+    var setupBenchmarkReady = probeMode !== 'benchmark' || !!(setupBank && Array.isArray(setupBank.problems) && setupBank.problems.length);
+    var setupSupportCount = (reducedMotion ? 1 : 0) + (highContrast ? 1 : 0) + (touchKeypad ? 1 : 0)
+      + (calmDisplay ? 1 : 0) + (adaptivePractice && probeMode === 'practice' ? 1 : 0)
+      + (readAloud && speechAvailable && probeMode === 'practice' ? 1 : 0);
+
+    function renderSessionReadiness() {
+      var operationKey = probeMode === 'benchmark' && setupBank ? (setupBank.operation || 'mixed') : operation;
+      var operationLabels = { add: tt('math_fluency.addition', 'Addition'), sub: tt('math_fluency.subtraction', 'Subtraction'), mul: tt('math_fluency.multiplication', 'Multiplication'), div: tt('math_fluency.division', 'Division'), mixed: tt('math_fluency.mixed', 'Mixed') };
+      var effectiveCount = probeMode === 'benchmark' && setupBank ? setupBank.problems.length : problemCount;
+      var effectiveSeconds = probeMode === 'benchmark' && setupBank ? (Number(setupBank.timeLimit) || 120) : timeLimit;
+      var modeLabel = probeMode === 'benchmark'
+        ? (setupBenchmarkReady ? tt('math_fluency.fixed_form_named', 'Fixed Form {form}', { form: probeForm }) : tt('math_fluency.fixed_form_unavailable_short', 'Fixed form unavailable'))
+        : effectiveSeconds === 0 ? tt('math_fluency.accuracy_focus', 'Accuracy Focus') : tt('math_fluency.timed_practice', 'Timed practice');
+      var timeLabel = effectiveSeconds === 0 ? tt('math_fluency.no_countdown', 'No countdown') : effectiveSeconds + ' ' + tt('math_fluency.seconds', 'seconds');
+      var countLabel = effectiveCount + ' ' + (effectiveCount === 1 ? tt('math_fluency.fact', 'fact') : tt('math_fluency.facts', 'facts'));
+      var supportLabels = [];
+      if (calmDisplay) supportLabels.push(tt('math_fluency.calm_display', 'Calm display'));
+      if (readAloud && speechAvailable && probeMode === 'practice') supportLabels.push(tt('math_fluency.spoken_facts', 'Spoken facts'));
+      if (touchKeypad) supportLabels.push(tt('math_fluency.large_touch_keypad', 'Large touch keypad'));
+      if (reducedMotion) supportLabels.push(tt('math_fluency.reduced_motion', 'Reduced motion'));
+      if (highContrast) supportLabels.push(tt('math_fluency.high_contrast', 'High contrast'));
+      if (adaptivePractice && probeMode === 'practice') supportLabels.push(tt('math_fluency.adaptive_practice', 'Adaptive practice'));
+      return h('div', { className: 'mf-session-launch', style: { marginBottom: '14px' } },
+        h('section', {
+          id: 'mf-session-preview', className: 'mf-session-preview', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true',
+          style: { marginBottom: '9px', padding: '11px 12px', borderRadius: '11px', border: '1px solid ' + (setupBenchmarkReady ? '#fdba74' : '#fca5a5'), background: setupBenchmarkReady ? '#fff7ed' : '#fef2f2', color: setupBenchmarkReady ? '#9a3412' : '#991b1b' }
+        },
+          h('strong', { style: { display: 'block', fontSize: '12px', marginBottom: '7px' } }, setupBenchmarkReady ? tt('math_fluency.ready_to_start', 'Ready to start') : tt('math_fluency.choose_available_form', 'Choose an available form')),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '5px' } },
+            [modeLabel, operationLabels[operationKey] || operationKey, countLabel, timeLabel].map(function (label, index) {
+              return h('span', { key: index, style: { padding: '4px 7px', borderRadius: '999px', border: '1px solid ' + (setupBenchmarkReady ? '#fed7aa' : '#fecaca'), background: '#fff', fontSize: '10px', fontWeight: 800 } }, label);
+            })
+          ),
+          h('div', { style: { marginTop: '7px', color: '#64748b', fontSize: '10px', lineHeight: 1.4 } },
+            supportLabels.length
+              ? tt('math_fluency.supports_on', 'Supports on') + ': ' + supportLabels.join(', ')
+              : tt('math_fluency.standard_display_and_controls', 'Standard display and controls'))
+        ),
+        h('button', {
+          'aria-label': probeMode === 'benchmark' ? tt('math_fluency.start_fixed_form', 'Start fixed form') : tt('math_fluency.start_practice', 'Start practice'),
+          'aria-describedby': 'mf-session-preview', disabled: !setupBenchmarkReady, onClick: startProbe,
+          style: {
+            width: '100%', padding: '10px', background: setupBenchmarkReady ? 'linear-gradient(to right, #f59e0b, #f97316)' : '#cbd5e1',
+            color: setupBenchmarkReady ? '#fff' : '#475569', fontWeight: 800, borderRadius: '12px', fontSize: '14px',
+            border: 'none', cursor: setupBenchmarkReady ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+            boxShadow: setupBenchmarkReady ? '0 4px 15px rgba(245,158,11,0.3)' : 'none'
+          }
+        }, h(Play, { size: 16 }), !setupBenchmarkReady
+          ? tt('math_fluency.fixed_form_unavailable_short', 'Fixed Form Unavailable')
+          : probeMode === 'benchmark'
+            ? tt('math_fluency.start_fixed_form_named', 'Start Fixed Form {form}', { form: probeForm })
+            : timeLimit === 0
+              ? tt('math_fluency.start_accuracy_focus', 'Start Accuracy Focus')
+              : tt('math_fluency.start_timed_practice', 'Start {seconds}-Second Practice', { seconds: timeLimit })),
+        h('p', { style: { fontSize: '11px', color: 'rgba(146,64,14,0.72)', textAlign: 'center', margin: '8px 0 0' } },
+          probeMode === 'benchmark'
+            ? tt('math_fluency.fixed_forms_comparable', 'Fixed forms preserve timing and problem order for comparable repeated checks.')
+            : timeLimit === 0
+              ? tt('math_fluency.accuracy_focus_launch_detail', 'Accuracy Focus records first-try accuracy without a speed score.')
+              : tt('math_fluency.timed_practice_launch_detail', 'Timed practice records accuracy and Digits Correct Per Minute (DCPM).'))
+      );
+    }
+
+    return h('div', { className: 'mf-fluency-setup ' + (reducedMotion ? 'mf-reduce-motion ' : '') + (highContrast ? 'mf-high-contrast' : ''), style: {
+        padding: '16px', background: highContrast ? '#fff' : 'radial-gradient(circle at 0% 0%, #fff7ed 0, transparent 34%), linear-gradient(145deg, #fffbeb, #fff 58%, #fef3c7)',
+        borderRadius: '18px', border: '1px solid ' + (highContrast ? '#000' : '#fed7aa'), boxShadow: highContrast ? 'none' : '0 16px 40px rgba(146,64,14,0.09)'
       }
     },
       h('style', null, '.mf-teacher-report{background:#fff;border:1px solid #93c5fd;border-top:0;border-radius:0 0 10px 10px;padding:12px;margin-bottom:8px}.mf-teacher-report-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}.mf-teacher-report-actions{display:flex;gap:5px}.mf-teacher-report-actions button,.mf-teacher-report-chips button{border:1px solid #bfdbfe;background:#eff6ff;color:#1d4ed8;border-radius:7px;padding:5px 7px;font-size:10px;font-weight:750;cursor:pointer}.mf-teacher-report-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:10px}.mf-teacher-report-metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:10px}.mf-teacher-report-metrics>div{background:#eff6ff;border-radius:8px;padding:8px;text-align:center}.mf-teacher-report-metrics strong{display:block;color:#1e3a8a;font-size:16px}.mf-teacher-report-metrics span{display:block;color:#64748b;font-size:9px}.mf-next-best-step{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;padding:10px 12px;border:1px solid #99f6e4;border-radius:10px;background:linear-gradient(135deg,#f0fdfa,#ecfeff)}.mf-next-best-step button{flex:0 0 auto;border:1px solid #14b8a6;background:#0f766e;color:#fff;border-radius:8px;padding:7px 9px;font-size:10px;font-weight:850;cursor:pointer}.mf-operation-growth-wrap{margin-top:12px}.mf-operation-growth-table th[scope=row]{color:#1e3a8a}.mf-teacher-report-targets{margin-top:10px;color:#334155;font-size:10px}.mf-teacher-report-targets p{margin:5px 0 0;color:#64748b}.mf-teacher-report-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}.mf-teacher-report-maze{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;padding:7px;border-radius:8px;background:#fffbeb;color:#92400e;font-size:10px;font-weight:750}.mf-teacher-report-table-wrap{overflow-x:auto;margin-top:10px}.mf-teacher-report-table{width:100%;border-collapse:collapse;font-size:10px}.mf-teacher-report-table caption{text-align:left;font-weight:800;color:#334155;padding:0 0 5px}.mf-teacher-report-table th,.mf-teacher-report-table td{text-align:left;padding:5px;border-bottom:1px solid #e2e8f0;white-space:nowrap}.mf-teacher-report-table th{color:#475569}.mf-teacher-report-table td{color:#334155}@media(max-width:520px){.mf-session-goal-picker{grid-template-columns:1fr!important}.mf-next-best-step{display:grid}.mf-next-best-step button{width:100%}.mf-teacher-report-heading{display:grid}.mf-teacher-report-filters{grid-template-columns:1fr}.mf-teacher-report-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}@media print{body *{visibility:hidden!important}.mf-teacher-report,.mf-teacher-report *{visibility:visible!important}.mf-teacher-report{position:absolute;left:0;top:0;width:100%;border:0}.mf-teacher-report-actions{display:none!important}}'),
       // Header
-      h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' } },
-        h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
-          h(Zap, { size: 16 }),
-          h('span', { style: { fontWeight: 800, fontSize: '14px', color: '#92400e' } }, tt('math_fluency.math_fluency_probe_2', '\u26a1 Math Fluency Probe'))
+      h('header', { className: 'mf-fluency-hero', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap', marginBottom: '14px', padding: '14px', borderRadius: '14px', background: highContrast ? '#fff' : 'linear-gradient(135deg,#7c2d12 0%,#b45309 54%,#d97706 100%)', border: '1px solid ' + (highContrast ? '#000' : '#f59e0b'), color: highContrast ? '#000' : '#fff', boxShadow: highContrast ? 'none' : '0 10px 24px rgba(146,64,14,0.2)' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', gap: '11px', minWidth: 0 } },
+          h('div', { 'aria-hidden': 'true', style: { width: '38px', height: '38px', flex: '0 0 38px', display: 'grid', placeItems: 'center', borderRadius: '11px', background: highContrast ? '#fff' : 'rgba(255,255,255,0.16)', border: '1px solid ' + (highContrast ? '#000' : 'rgba(255,255,255,0.3)') } }, h(Zap, { size: 19 })),
+          h('div', { style: { minWidth: 0 } },
+            h('h2', { style: { margin: 0, fontWeight: 900, fontSize: '16px', lineHeight: 1.2, color: 'inherit' } }, tt('math_fluency.math_fluency_probe_2', 'Math Fluency Probe')),
+            h('p', { style: { margin: '3px 0 0', fontSize: '10px', lineHeight: 1.35, color: highContrast ? '#000' : 'rgba(255,255,255,0.82)' } }, tt('math_fluency.fluency_hero_subtitle', 'Build accuracy, confidence, and efficient recall - one fact at a time.'))
+          )
         ),
-        h('div', { 'aria-expanded': String(soundEnabled), style: { display: 'flex', gap: '6px' } },
+        h('div', { className: 'mf-fluency-hero-controls', 'aria-expanded': String(soundEnabled), style: { display: 'flex', gap: '6px' } },
           h('button', { 'aria-expanded': String(soundEnabled),
             onClick: function () { setSoundEnabled(!soundEnabled); },
             title: soundEnabled ? tt('math_fluency.mute_sounds', 'Mute sounds') : tt('math_fluency.enable_sounds', 'Enable sounds'),
             'aria-label': soundEnabled ? tt('math_fluency.mute_sound_effects', 'Mute sound effects') : tt('math_fluency.enable_sound_effects', 'Enable sound effects'),
-            style: { padding: '4px 8px', borderRadius: '8px', border: '1px solid #fde68a', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center' }
+            style: { minWidth: '38px', minHeight: '34px', padding: '5px 9px', borderRadius: '9px', border: '1px solid ' + (highContrast ? '#000' : 'rgba(255,255,255,0.4)'), background: highContrast ? '#fff' : 'rgba(255,255,255,0.14)', color: highContrast ? '#000' : '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
           }, soundEnabled ? h(Volume2, { size: 14 }) : h(VolumeX, { size: 14 })),
           h('button', { 'aria-expanded': String(autoAdvance && probeMode !== 'benchmark'),
             disabled: probeMode === 'benchmark',
@@ -1852,17 +2510,67 @@
               : (autoAdvance ? tt('math_fluency.disable_auto_advance', 'Disable auto-advance') : tt('math_fluency.enable_auto_advance', 'Enable auto-advance')),
             style: {
               padding: '4px 8px', borderRadius: '8px', fontSize: '11px', fontWeight: 700, cursor: probeMode === 'benchmark' ? 'not-allowed' : 'pointer',
-              border: '1px solid ' + (autoAdvance && probeMode !== 'benchmark' ? '#16a34a' : '#fde68a'),
-              background: autoAdvance && probeMode !== 'benchmark' ? '#dcfce7' : '#fff',
-              color: autoAdvance && probeMode !== 'benchmark' ? '#16a34a' : '#92400e',
+              border: '1px solid ' + (highContrast ? '#000' : (autoAdvance && probeMode !== 'benchmark' ? '#bbf7d0' : 'rgba(255,255,255,0.4)')),
+              background: highContrast ? '#fff' : (autoAdvance && probeMode !== 'benchmark' ? 'rgba(220,252,231,0.95)' : 'rgba(255,255,255,0.14)'),
+              color: highContrast ? '#000' : (autoAdvance && probeMode !== 'benchmark' ? '#166534' : '#fff'),
               opacity: probeMode === 'benchmark' ? 0.55 : 1
             }
           }, '\u26a1 Auto')
         )
       ),
 
+      accuracyDraft ? h('section', {
+        className: 'mf-resume-session-card', role: 'region',
+        'aria-labelledby': 'mf-resume-session-title',
+        style: { marginBottom: '12px', padding: '12px', borderRadius: '12px', border: '2px solid #a78bfa', background: 'linear-gradient(135deg,#f5f3ff,#faf5ff)', color: '#5b21b6' }
+      },
+        h('div', { style: { display: 'flex', alignItems: 'flex-start', gap: '9px' } },
+          h('span', { 'aria-hidden': 'true', style: { fontSize: '20px' } }, '↻'),
+          h('div', { style: { flex: 1 } },
+            h('div', { id: 'mf-resume-session-title', style: { fontSize: '13px', fontWeight: 900 } }, tt('math_fluency.continue_accuracy_focus', 'Continue Accuracy Focus?')),
+            h('div', { style: { marginTop: '3px', color: '#6b21a8', fontSize: '11px', lineHeight: 1.4 } },
+              tt('math_fluency.saved_progress_summary', '{completed} of {total} completed. Your answered facts and coached attempts are saved.', { completed: accuracyDraft.currentIndex, total: accuracyDraft.problems.length })),
+            h('div', { style: { marginTop: '3px', color: '#7c3aed', fontSize: '10px' } },
+              tt('math_fluency.new_session_replaces_draft', 'Starting another session replaces this saved draft.'))
+          )
+        ),
+        h('div', { style: { display: 'flex', gap: '8px', marginTop: '10px', flexWrap: 'wrap' } },
+          h('button', {
+            type: 'button', 'aria-label': tt('math_fluency.resume_saved_accuracy_focus', 'Resume saved Accuracy Focus'), onClick: resumeSavedAccuracyFocus,
+            style: { flex: '1 1 150px', padding: '9px 12px', border: 'none', borderRadius: '9px', background: '#7c3aed', color: '#fff', fontWeight: 850, cursor: 'pointer' }
+          }, '▶ ' + tt('math_fluency.resume_session', 'Resume Session')),
+          h('button', {
+            type: 'button', 'aria-label': tt('math_fluency.discard_saved_session', 'Discard saved session'), onClick: discardSavedAccuracyFocus,
+            style: { flex: '1 1 120px', padding: '9px 12px', border: '1px solid #c4b5fd', borderRadius: '9px', background: '#fff', color: '#6d28d9', fontWeight: 800, cursor: 'pointer' }
+          }, tt('math_fluency.discard', 'Discard'))
+        )
+      ) : null,
+
+      h('details', { className: 'mf-learning-supports', 'data-active-count': setupSupportCount, style: { marginBottom: '12px', padding: '9px 10px', borderRadius: '10px', border: '1px solid #cbd5e1', background: highContrast ? '#fff' : '#f8fafc' } },
+        h('summary', { style: { cursor: 'pointer', fontSize: '11px', fontWeight: 900, color: '#334155' } },
+          tt('math_fluency.learning_supports', 'Learning Supports') + ' \u2022 ' + setupSupportCount + ' ' + tt('math_fluency.on', 'on')),
+        h('p', { style: { margin: '7px 0', color: '#64748b', fontSize: '10px', lineHeight: 1.4 } },
+          tt('math_fluency.supports_persist', 'These preferences stay on for future Math Fluency sessions.')),
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: '6px' } },
+          [
+            { key: 'reducedMotion', value: reducedMotion, label: tt('math_fluency.reduced_motion', 'Reduced motion') },
+            { key: 'highContrast', value: highContrast, label: tt('math_fluency.high_contrast', 'High contrast') },
+            { key: 'touchKeypad', value: touchKeypad, label: tt('math_fluency.large_touch_keypad', 'Large touch keypad') },
+            { key: 'adaptivePractice', value: adaptivePractice, label: tt('math_fluency.adaptive_practice', 'Adaptive practice'), disabled: probeMode === 'benchmark' },
+            { key: 'readAloud', value: readAloud, label: tt('math_fluency.read_facts_aloud', 'Read facts aloud'), disabled: probeMode === 'benchmark' || !speechAvailable, title: probeMode === 'benchmark' ? tt('math_fluency.read_aloud_practice_only', 'Read-aloud is available in practice only.') : (!speechAvailable ? tt('math_fluency.speech_unavailable', 'Spoken facts are unavailable in this browser.') : undefined) },
+            { key: 'calmDisplay', value: calmDisplay, label: tt('math_fluency.calm_display', 'Calm display') }
+          ].map(function(item) { return h('label', { key: item.key, title: item.title, style: { display: 'flex', alignItems: 'center', gap: '6px', padding: '6px', borderRadius: '7px', background: '#fff', color: '#334155', fontSize: '10px', fontWeight: 750, opacity: item.disabled ? 0.55 : 1 } },
+            h('input', { type: 'checkbox', checked: item.value, disabled: item.disabled, 'aria-label': item.label, onChange: function() { updateSupportPreference(item.key, !item.value); } }), item.label);
+          })
+        )
+      ),
+
       // Config grid
-      h('div', { className: 'mf-config-grid', style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', marginBottom: '12px' } },
+      h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', margin: '2px 0 8px', color: '#9a3412' } },
+        h('span', { 'aria-hidden': 'true', style: { width: '22px', height: '22px', display: 'grid', placeItems: 'center', borderRadius: '999px', background: '#ffedd5', border: '1px solid #fdba74', fontSize: '10px', fontWeight: 900 } }, '1'),
+        h('strong', { style: { fontSize: '12px' } }, tt('math_fluency.choose_your_session', 'Choose your session'))
+      ),
+      h('div', { className: 'mf-config-grid', style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', marginBottom: '12px', padding: '12px', borderRadius: '13px', border: '1px solid #fed7aa', background: 'rgba(255,255,255,0.9)', boxShadow: '0 8px 20px rgba(146,64,14,0.06)' } },
         h('div', null,
           h('label', { style: { display: 'block', fontSize: '11px', color: '#64748b', marginBottom: '4px', fontWeight: 600 } }, tt('math_fluency.probe_mode', 'Probe Mode')),
           h('select', {
@@ -1946,9 +2654,8 @@
 
       // Mode summary and instructional reference preview
       (function () {
-        var normalized = normalizeGrade(gradeLevel);
-        var gradeBanks = normalized && window.MATH_PROBE_BANKS ? window.MATH_PROBE_BANKS[normalized] : null;
-        var bank = gradeBanks && gradeBanks[probeForm];
+        var normalized = setupNormalizedGrade;
+        var bank = setupBank;
         var reference = getBenchmark(gradeLevel, operation);
         var text;
         if (probeMode === 'benchmark') {
@@ -1991,6 +2698,14 @@
         );
       })(),
 
+      renderSessionReadiness(),
+
+      h('div', { role: 'separator', 'aria-label': tt('math_fluency.personalized_insights', 'Personalized insights'), style: { display: 'flex', alignItems: 'center', gap: '8px', margin: '4px 0 10px', color: '#64748b', fontSize: '10px', fontWeight: 850, textTransform: 'uppercase', letterSpacing: '0.06em' } },
+        h('span', { style: { height: '1px', flex: 1, background: '#fed7aa' } }),
+        tt('math_fluency.personalized_insights', 'Personalized insights'),
+        h('span', { style: { height: '1px', flex: 1, background: '#fed7aa' } })
+      ),
+
       // Visual mastery dashboard: persistent categories are clickable practice sets.
       (function () {
         var dashboard = buildFactMasteryDashboard(factMastery);
@@ -2003,7 +2718,7 @@
           focus: { bg: '#fee2e2', border: '#fca5a5', color: '#991b1b', icon: '\uD83C\uDFAF' }
         };
         var opLabels = { add: tt('math_fluency.addition', 'Addition'), sub: tt('math_fluency.subtraction', 'Subtraction'), mul: tt('math_fluency.multiplication', 'Multiplication'), div: tt('math_fluency.division', 'Division') };
-        return h('details', { open: true, style: { background: '#fff', border: '1px solid #ddd6fe', borderRadius: '12px', padding: '10px 12px', marginBottom: '12px' } },
+        return h('details', { className: 'mf-mastery-map', style: { background: '#fff', border: '1px solid #ddd6fe', borderRadius: '12px', padding: '10px 12px', marginBottom: '12px' } },
           h('summary', { style: { cursor: 'pointer', color: '#5b21b6', fontSize: '12px', fontWeight: 900 } }, '\uD83D\uDDFA\uFE0F ' + tt('math_fluency.fact_mastery_map', 'Fact Mastery Map') + ' \u2022 ' + dashboard.totalFacts + ' facts \u2022 ' + dashboard.overallAccuracy + '%'),
           reviewSchedule.dueCount
             ? h('button', {
@@ -2169,22 +2884,7 @@
           'aria-label': tt('math_fluency.practice_my_focus_facts', 'Practice my focus facts'),
           style: { width: '100%', padding: '9px', marginBottom: '8px', background: '#ede9fe', color: '#6d28d9', border: '1px solid #c4b5fd', borderRadius: '10px', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }
         }, '\uD83C\uDFAF ' + tt('math_fluency.practice_my_focus_facts', 'Practice My Focus Facts') + ' (' + savedFocus.length + ')');
-      })(),
-
-      // Start button
-      h('button', { 'aria-label': probeMode === 'benchmark' ? tt('math_fluency.start_fixed_form', 'Start fixed form') : tt('math_fluency.start_practice', 'Start practice'),
-        onClick: startProbe,
-        style: {
-          width: '100%', padding: '10px', background: 'linear-gradient(to right, #f59e0b, #f97316)',
-          color: '#fff', fontWeight: 800, borderRadius: '12px', fontSize: '14px',
-          border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-          boxShadow: '0 4px 15px rgba(245,158,11,0.3)'
-        }
-      }, h(Play, { size: 16 }), probeMode === 'benchmark' ? tt('math_fluency.start_fixed_form', ' Start Fixed Form') : tt('math_fluency.start_practice', ' Start Practice')),
-      h('p', { style: { fontSize: '11px', color: 'rgba(146,64,14,0.6)', textAlign: 'center', marginTop: '8px', margin: '8px 0 0' } },
-        probeMode === 'benchmark'
-          ? tt('math_fluency.fixed_forms_comparable', 'Fixed forms preserve timing and problem order for comparable repeated checks.')
-          : tt('math_fluency.practice_description', 'Customizable math-fact practice - reports Digits Correct Per Minute (DCPM).'))
+      })()
     );
   }
 
@@ -2372,6 +3072,25 @@
     return null;
   }
 
+  function buildChaseRadar(maze, player, monster) {
+    var distance = findMazePathDistance(maze, player, monster);
+    if (distance == null) return null;
+    var dr = monster.r - player.r, dc = monster.c - player.c;
+    var bearing = null;
+    if (dr !== 0 || dc !== 0) {
+      var deg = (Math.atan2(dr, dc) * 180 / Math.PI + 360) % 360;
+      bearing = ['E', 'SE', 'S', 'SW', 'W', 'NW', 'N', 'NE'][Math.round(deg / 45) % 8];
+    }
+    var level = distance === 0 ? 'caught' : distance <= 2 ? 'danger' : distance <= 4 ? 'near' : distance <= 7 ? 'watch' : 'distant';
+    var labels = { caught: 'Caught', danger: 'Danger', near: 'Monster nearby', watch: 'Stay alert', distant: 'Monster distant' };
+    var strength = { caught: 4, danger: 4, near: 3, watch: 2, distant: 1 }[level];
+    return {
+      distance: distance, bearing: distance <= 7 ? bearing : null, level: level,
+      label: labels[level], strength: strength,
+      message: labels[level] + '. ' + distance + ' gate' + (distance === 1 ? '' : 's') + ' away' + (distance <= 7 && bearing ? ' to the ' + bearing : '') + '.'
+    };
+  }
+
   function buildMazeBestKey(operation, mazeSize, difficulty, controlMode, chaseMode) {
     return [operation, mazeSize, difficulty, controlMode || 'classic', chaseMode ? 'chase' : 'standard'].join('|');
   }
@@ -2494,6 +3213,27 @@
     var performance2DState = useState(!!_prefs.performance2D);
     var performance2D = performance2DState[0];
     var setPerformance2D = function(v) { performance2DState[1](v); _savePrefs({ performance2D: v }); };
+    var mazeReducedState = useState(_prefs.reducedMotion != null ? !!_prefs.reducedMotion : !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches));
+    var mazeReducedMotion = mazeReducedState[0];
+    var setMazeReducedMotion = function(v) { mazeReducedState[1](v); _savePrefs({ reducedMotion: !!v }); };
+    var mazeContrastState = useState(!!_prefs.highContrast);
+    var mazeHighContrast = mazeContrastState[0];
+    var setMazeHighContrast = function(v) { mazeContrastState[1](v); _savePrefs({ highContrast: !!v }); };
+    var effectsState = useState(_prefs.visualEffects !== false);
+    var visualEffects = effectsState[0];
+    var setVisualEffects = function(v) { effectsState[1](v); _savePrefs({ visualEffects: !!v }); };
+    var simpleMapState = useState(!!_prefs.simplifiedMinimap);
+    var simplifiedMinimap = simpleMapState[0];
+    var setSimplifiedMinimap = function(v) { simpleMapState[1](v); _savePrefs({ simplifiedMinimap: !!v }); };
+    var sensitivityState = useState(Math.max(0.5, Math.min(2, Number(_prefs.cameraSensitivity) || 1)));
+    var cameraSensitivity = sensitivityState[0];
+    var setCameraSensitivity = function(v) { v = Math.max(0.5, Math.min(2, Number(v) || 1)); sensitivityState[1](v); _savePrefs({ cameraSensitivity: v }); };
+    var fovState = useState([65,80,95].indexOf(Number(_prefs.cameraFov)) >= 0 ? Number(_prefs.cameraFov) : 80);
+    var cameraFov = fovState[0];
+    var setCameraFov = function(v) { v = Number(v); fovState[1](v); _savePrefs({ cameraFov: v }); };
+    var brightnessState = useState(Math.max(0.8, Math.min(1.3, Number(_prefs.brightness) || 1)));
+    var mazeBrightness = brightnessState[0];
+    var setMazeBrightness = function(v) { v = Math.max(0.8, Math.min(1.3, Number(v) || 1)); brightnessState[1](v); _savePrefs({ brightness: v }); };
     // Player avatar — emoji rendered on the 2D minimap / fallback. Persists
     // to _prefs so each student keeps their chosen character across runs.
     // Stored as the literal emoji string (canvas fillText draws it).
@@ -2624,6 +3364,9 @@
     // the current value without a stale closure.
     var isExplorerRef = useRef(isExplorer);
     isExplorerRef.current = isExplorer;
+    var cameraSensitivityRef = useRef(cameraSensitivity); cameraSensitivityRef.current = cameraSensitivity;
+    var mazeReducedRef = useRef(mazeReducedMotion); mazeReducedRef.current = mazeReducedMotion;
+    var visualEffectsRef = useRef(visualEffects); visualEffectsRef.current = visualEffects;
     // Animation-time tick used only to nudge the minimap redraw when the
     // you-are-here pulse / breadcrumb trail needs a frame-accurate update.
     var minimapTickRef = useRef(0);
@@ -3265,12 +4008,12 @@
       cv.width = W * DRAW_SCALE; cv.height = H * DRAW_SCALE;
       ctx.setTransform(DRAW_SCALE, 0, 0, DRAW_SCALE, 0, 0);
       var visited = visitedCellsRef.current || { '0,0': true };
-      var pulse = Math.sin(minimapTickRef.current * 0.12) * 0.5 + 0.5; // 0..1
+      var pulse = mazeReducedMotion ? 0.5 : Math.sin(minimapTickRef.current * 0.12) * 0.5 + 0.5; // 0..1
       // Wrong-answer screen shake — shakeRef is set to 1 in submitAnswer's
       // wrong path and decayed here each frame. Applies a small random
       // offset to the entire canvas so the maze visibly jolts when the
       // gate rejects a bad answer. Decay rate keeps it under ~600ms.
-      var shake = shakeRef.current || 0;
+      var shake = mazeReducedMotion || !visualEffects ? 0 : (shakeRef.current || 0);
       if (shake > 0.02) {
         ctx.save();
         ctx.translate((Math.random() - 0.5) * shake * 12, (Math.random() - 0.5) * shake * 12);
@@ -3288,7 +4031,7 @@
 
       // Background — warm parchment-stone tone instead of slate-900, so
       // the dungeon reads like a torchlit corridor rather than a void.
-      ctx.fillStyle = '#3a2e26'; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = mazeHighContrast ? '#000000' : '#3a2e26'; ctx.fillRect(0, 0, W, H);
 
       // Soft amber base wash to evoke torchlight
       var grad = ctx.createRadialGradient(W * 0.5, H * 0.5, 10, W * 0.5, H * 0.5, Math.max(W, H) * 0.7);
@@ -3601,7 +4344,7 @@
       eng.scene.fog = new THREE.Fog(0x0a0a1a, 1, 15);
 
       // Camera
-      eng.camera = new THREE.PerspectiveCamera(80, container.clientWidth / Math.max(1, container.clientHeight), 0.1, 50);
+      eng.camera = new THREE.PerspectiveCamera(cameraFov, container.clientWidth / Math.max(1, container.clientHeight), 0.1, 50);
       eng.camera.position.set(0.5, 1.2, 0.5);
 
       // Renderer
@@ -3630,7 +4373,7 @@
       function _onMouseDown(e) { try { cnv.focus(); } catch (_) {} if (!isExplorerRef.current) return; dragging = true; lastX = e.clientX; }
       function _onMouseMove(e) {
         if (!dragging || !isExplorerRef.current) return;
-        var delta = (e.clientX - lastX) * 0.005;
+        var delta = (e.clientX - lastX) * 0.005 * cameraSensitivityRef.current;
         // Drag is direct: set both refs so the camera tracks 1:1 without
         // the lerp lag. Q/E only sets target so its motion is animated.
         lookYawRef.current -= delta;
@@ -3647,7 +4390,7 @@
       function _onTouchMove(e) {
         if (!touchActive || !isExplorerRef.current || !e.touches || e.touches.length !== 1) return;
         var x = e.touches[0].clientX;
-        var d = (x - lastTouchX) * 0.005;
+        var d = (x - lastTouchX) * 0.005 * cameraSensitivityRef.current;
         lookYawRef.current -= d;
         lookYawTargetRef.current -= d;
         lastTouchX = x;
@@ -3925,10 +4668,10 @@
         var targetX = pr.c * 2 + 1, targetZ = pr.r * 2 + 1;
         eng.camera.position.x += (targetX - eng.camera.position.x) * 0.1;
         eng.camera.position.z += (targetZ - eng.camera.position.z) * 0.1;
-        eng.camera.position.y = 1.2 + Math.sin(t2 * 3) * 0.03; // subtle bob
+        eng.camera.position.y = 1.2 + (mazeReducedRef.current ? 0 : Math.sin(t2 * 3) * 0.03); // subtle bob
         // Screen shake — decays over ~0.4s after a wrong answer. Applied as
         // a small additive offset on top of the smoothed camera position.
-        if (shakeRef.current > 0) {
+        if (!mazeReducedRef.current && visualEffectsRef.current && shakeRef.current > 0) {
           var s = shakeRef.current;
           eng.camera.position.x += (Math.random() - 0.5) * 0.12 * s;
           eng.camera.position.y += (Math.random() - 0.5) * 0.12 * s;
@@ -4100,7 +4843,11 @@
         // Advanced here, reaped when age > life. Previously these piled up in
         // the scene without ever being removed — now they animate and clean
         // themselves up.
-        if (eng._particles && eng._particles.length) {
+        if (!visualEffectsRef.current && eng._particles && eng._particles.length) {
+          eng._particles.forEach(function(pt) { eng.scene.remove(pt); if (pt.geometry) pt.geometry.dispose(); if (pt.material) pt.material.dispose(); });
+          eng._particles = [];
+        }
+        if (visualEffectsRef.current && eng._particles && eng._particles.length) {
           var dt = 0.016; // approx since RAF is ~60fps; good enough for fx
           for (var pi = eng._particles.length - 1; pi >= 0; pi--) {
             var pt = eng._particles[pi];
@@ -4498,9 +5245,28 @@
           h('input', { type: 'checkbox', checked: chaseMode, onChange: function() { setChaseMode(!chaseMode); }, style: { accentColor: '#b45309' } }),
           '\uD83D\uDC7E Chase Mode', h('span', { style: { fontSize: '10px', color: '#475569' } }, '(monster pursues you!)')
         ),
-        h('label', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '16px', fontSize: '12px', color: '#78350f', fontWeight: 600, cursor: 'pointer' } },
+        h('label', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '10px', fontSize: '12px', color: '#78350f', fontWeight: 600, cursor: 'pointer' } },
           h('input', { type: 'checkbox', checked: performance2D, onChange: function() { setPerformance2D(!performance2D); }, style: { accentColor: '#15803d' } }),
           tt('math_fluency.performance_2d_mode', '2D Performance Mode'), h('span', { style: { fontSize: '10px', color: '#475569' } }, tt('math_fluency.performance_2d_detail', '(for older or shared devices)'))
+        ),
+        h('fieldset', { className: 'mf-maze-comfort-settings', style: { border: '2px solid #f0d3ad', borderRadius: '14px', padding: '12px', margin: '0 0 14px', background: 'rgba(255,251,235,0.62)', textAlign: 'left' } },
+          h('legend', { style: { padding: '0 7px', color: '#78350f', fontSize: '13px', fontWeight: 900 } }, tt('math_fluency.maze_comfort', 'Maze Comfort')),
+          h('p', { style: { margin: '-2px 0 10px', color: '#64748b', fontSize: '11px', lineHeight: 1.45 } }, 'Adjust motion, contrast, and the map without changing the math challenge.'),
+          h('div', { style: { color: '#92400e', fontSize: '10px', fontWeight: 900, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '6px' } }, 'Display and motion'),
+          h('div', { className: 'mf-maze-comfort-grid', style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: '8px', marginBottom: '12px' } },
+            [
+              { label: tt('math_fluency.reduced_motion', 'Reduced motion'), detail: 'Limits animated effects', value: mazeReducedMotion, set: setMazeReducedMotion },
+              { label: tt('math_fluency.high_contrast', 'High contrast'), detail: 'Strengthens edges and labels', value: mazeHighContrast, set: setMazeHighContrast },
+              { label: tt('math_fluency.visual_effects', 'Visual effects'), detail: 'Glow, particles, and celebrations', value: visualEffects, set: setVisualEffects },
+              { label: tt('math_fluency.simplified_minimap', 'Simplified minimap'), detail: 'Shows only essential markers', value: simplifiedMinimap, set: setSimplifiedMinimap }
+            ].map(function(item) { return h('label', { key: item.label, className: 'mf-maze-comfort-toggle', style: { display: 'flex', gap: '8px', alignItems: 'flex-start', color: '#78350f' } }, h('input', { type: 'checkbox', checked: item.value, onChange: function() { item.set(!item.value); } }), h('span', null, h('strong', { style: { display: 'block', fontSize: '11px', lineHeight: 1.25 } }, item.label), h('small', { style: { display: 'block', marginTop: '3px', color: '#64748b', fontSize: '9px', lineHeight: 1.3 } }, item.detail))); })
+          ),
+          h('div', { style: { color: '#92400e', fontSize: '10px', fontWeight: 900, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '6px' } }, 'View controls'),
+          h('div', { className: 'mf-maze-view-grid', style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: '8px' } },
+            h('label', { className: 'mf-maze-view-control', style: { display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: '6px', color: '#78350f', fontSize: '11px', fontWeight: 800 } }, tt('math_fluency.camera_sensitivity', 'Camera sensitivity'), h('span', { style: { padding: '2px 6px', borderRadius: '999px', background: '#fff7ed', color: '#9a3412' } }, cameraSensitivity.toFixed(1) + 'x'), h('input', { type: 'range', min: 0.5, max: 2, step: 0.1, value: cameraSensitivity, onChange: function(e) { setCameraSensitivity(e.target.value); }, style: { gridColumn: '1 / -1', width: '100%' } })),
+            h('label', { className: 'mf-maze-view-control', style: { display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: '6px', color: '#78350f', fontSize: '11px', fontWeight: 800 } }, tt('math_fluency.field_of_view', 'Field of view'), h('select', { value: cameraFov, onChange: function(e) { setCameraFov(e.target.value); }, 'aria-label': tt('math_fluency.field_of_view', 'Field of view'), style: { minHeight: '36px', borderRadius: '8px', border: '1px solid #d97706', color: '#78350f', background: '#fff' } }, h('option', { value: 65 }, 'Narrow'), h('option', { value: 80 }, 'Standard'), h('option', { value: 95 }, 'Wide'))),
+            h('label', { className: 'mf-maze-view-control', style: { display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: '6px', color: '#78350f', fontSize: '11px', fontWeight: 800, gridColumn: '1 / -1' } }, tt('math_fluency.brightness', 'Brightness'), h('span', { style: { padding: '2px 6px', borderRadius: '999px', background: '#fff7ed', color: '#9a3412' } }, Math.round(mazeBrightness * 100) + '%'), h('input', { type: 'range', min: 0.8, max: 1.3, step: 0.1, value: mazeBrightness, onChange: function(e) { setMazeBrightness(e.target.value); }, style: { gridColumn: '1 / -1', width: '100%' } }))
+          )
         ),
         ),
         // Start button
@@ -4520,7 +5286,7 @@
         bronze: { emoji: '\uD83E\uDD49', label: tt('math_fluency.bronze_time', 'Bronze Time'), color: '#92400e', bg: 'linear-gradient(135deg,#fed7aa,#fdba74)', border: '#c2410c' }
       }[medal] : null;
       return h('div', { style: { maxWidth: 460, margin: '0 auto', padding: '24px 24px 20px', textAlign: 'center', background: won ? 'linear-gradient(180deg, #fef3c7 0%, #fed7aa 100%)' : 'linear-gradient(180deg, #fee2e2 0%, #fecaca 100%)', borderRadius: '14px', border: '2px solid ' + (won ? '#d97706' : '#b91c1c'), boxShadow: '0 8px 24px rgba(146,64,14,0.18), inset 0 0 32px rgba(217,119,6,0.08)', position: 'relative' } },
-        won && h('div', { style: { position: 'fixed', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 9999 }, 'aria-hidden': 'true' },
+        won && visualEffects && !mazeReducedMotion && h('div', { style: { position: 'fixed', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 9999 }, 'aria-hidden': 'true' },
           (function() {
             var pieces = [];
             for (var i = 0; i < 36; i++) {
@@ -4722,6 +5488,10 @@
       : { r: MAZE_ROWS - 1, c: MAZE_COLS - 1 };
     var objectiveDistance = maze ? findMazePathDistance(maze, playerPos, objectiveTarget) : null;
     var objectiveDistanceLabel = objectiveDistance == null ? '' : objectiveDistance === 0 ? 'Here' : objectiveDistance + ' gate' + (objectiveDistance === 1 ? '' : 's') + ' away';
+    var chaseRadar = chaseMode && moveCount > 0 ? buildChaseRadar(maze, playerPos, monsterPos) : null;
+    var chaseStatus = !chaseMode ? null : moveCount === 0
+      ? { level: 'armed', label: 'Chase armed', distance: null, bearing: null, strength: 1, message: 'Chase begins after your first move.' }
+      : chaseRadar;
     function mazeDirectionAvailable(dir) {
       if (!maze || !maze[playerPos.r] || !maze[playerPos.r][playerPos.c] || currentProblem || paused || helpOpen || !tutorialSeen) return false;
       var walls = maze[playerPos.r][playerPos.c].walls;
@@ -4736,19 +5506,21 @@
 
     // Playing mode
     return h('div', {
-      style: isFullscreen
+      className: 'mf-maze-playing' + (mazeReducedMotion ? ' mf-reduce-motion' : '') + (mazeHighContrast ? ' mf-high-contrast' : ''),
+      'data-effects': visualEffects ? 'on' : 'off',
+      style: Object.assign({ filter: 'brightness(' + mazeBrightness + ')' }, isFullscreen
         ? { position: 'fixed', inset: 0, zIndex: 9999, padding: '14px clamp(14px, 4vw, 48px)', background: 'linear-gradient(180deg, #1a0e08 0%, #2a1810 60%, #1a0e08 100%)', overflowY: 'auto', display: 'flex', flexDirection: 'column' }
-        : { maxWidth: 720, margin: '0 auto', position: 'relative' }
+        : { maxWidth: 720, margin: '0 auto', position: 'relative' })
     },
       // Responsive HUD: gameplay evidence stays grouped separately from utility controls.
-      h('div', { className: 'mf-maze-hud', style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', alignItems: 'center', padding: isFullscreen ? '10px 14px' : '7px 10px', background: 'linear-gradient(180deg, #5b4d3f 0%, #3a2e26 100%)', borderRadius: '10px', marginBottom: '6px', fontSize: isFullscreen ? '13px' : '11px', gap: isFullscreen ? '12px' : '8px', border: '1px solid #78350f', boxShadow: 'inset 0 1px 0 rgba(255,235,170,0.15), 0 2px 6px rgba(58,46,38,0.3)' } },
+      h('div', { className: 'mf-maze-hud', style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', alignItems: 'center', padding: isFullscreen ? '12px 14px' : '10px', background: 'linear-gradient(135deg, #312e81 0%, #1e1b4b 58%, #422006 140%)', borderRadius: '14px', marginBottom: '8px', fontSize: isFullscreen ? '13px' : '11px', gap: isFullscreen ? '12px' : '9px', border: '2px solid rgba(167,139,250,0.58)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.12), 0 8px 24px rgba(49,46,129,0.22)' } },
         h('div', { className: 'mf-maze-hud-main', style: { display: 'grid', gap: '5px', minWidth: 0 } },
           h('div', { className: 'mf-maze-hud-stats', style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: isFullscreen ? '12px' : '9px' } },
-            h('span', { style: { color: '#86efac', fontWeight: 800 } }, '\u2705 ' + correct),
-            h('span', { style: { color: '#fca5a5', fontWeight: 800 } }, '\u274C ' + wrong),
-            h('span', { style: { color: '#fde68a', fontWeight: 800 } }, '\uD83C\uDFAF ' + score),
+            h('span', { className: 'mf-maze-hud-stat', 'data-tone': 'success', 'aria-label': correct + ' correct answers' }, h('span', { 'aria-hidden': 'true' }, '\u2705'), h('span', null, h('strong', null, String(correct)), h('small', null, 'Correct'))),
+            h('span', { className: 'mf-maze-hud-stat', 'data-tone': 'warning', 'aria-label': wrong + ' missed answers' }, h('span', { 'aria-hidden': 'true' }, '\u274C'), h('span', null, h('strong', null, String(wrong)), h('small', null, 'Missed'))),
+            h('span', { className: 'mf-maze-hud-stat', 'data-tone': 'score', 'aria-label': score + ' points' }, h('span', { 'aria-hidden': 'true' }, '\uD83C\uDFAF'), h('span', null, h('strong', null, String(score)), h('small', null, 'Points'))),
             streak > 0 && h('span', { style: { color: streak >= 3 ? '#fff' : '#fdba74', background: streak >= 3 ? 'linear-gradient(90deg,#f97316,#ef4444)' : 'rgba(249,115,22,0.12)', fontWeight: 850, padding: '2px 8px', borderRadius: '999px', border: streak >= 3 ? '1px solid #fbbf24' : '1px solid rgba(249,115,22,0.3)', boxShadow: streak >= 3 ? '0 0 8px rgba(251,191,36,0.5)' : 'none' } }, '\uD83D\uDD25 x' + streak),
-            h('span', { style: { color: '#fde68a', fontWeight: 750 } }, '\u23F1 ' + elapsed + 's')
+            h('span', { className: 'mf-maze-hud-stat', 'aria-label': elapsed + ' seconds elapsed' }, h('span', { 'aria-hidden': 'true' }, '\u23F1'), h('span', null, h('strong', null, elapsed + 's'), h('small', null, 'Time')))
           ),
           h('div', { className: 'mf-maze-hud-context', style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '5px' } },
             (function() {
@@ -4762,7 +5534,24 @@
               var label = dirsByDeg[Math.round(deg / 45) % 8];
               return h('span', { className: 'mf-maze-bearing', style: { color: '#fde68a', fontWeight: 800, fontSize: '10px', background: 'rgba(254,243,199,0.12)', border: '1px solid rgba(254,243,199,0.28)', padding: '2px 7px', borderRadius: '999px', letterSpacing: '0.04em' }, 'aria-label': goal.label + ' is to the ' + label + (objectiveDistanceLabel ? ', ' + objectiveDistanceLabel : '') }, goal.icon + ' ' + label + (objectiveDistanceLabel ? ' - ' + objectiveDistanceLabel : ''));
             })(),
-            chaseMode && h('span', { style: { color: '#fbbf24', fontWeight: 850 } }, '\uD83D\uDC7E CHASE'),
+            chaseStatus && (function() {
+              var radarPalette = chaseStatus.level === 'caught' || chaseStatus.level === 'danger'
+                ? { bg: 'rgba(127,29,29,0.72)', border: '#f87171', color: '#fee2e2' }
+                : chaseStatus.level === 'near'
+                  ? { bg: 'rgba(154,52,18,0.64)', border: '#fb923c', color: '#ffedd5' }
+                  : chaseStatus.level === 'watch'
+                    ? { bg: 'rgba(161,98,7,0.48)', border: '#facc15', color: '#fef9c3' }
+                    : { bg: 'rgba(30,41,59,0.5)', border: '#94a3b8', color: '#e2e8f0' };
+              var detail = chaseStatus.distance == null ? 'after first move' : chaseStatus.distance + ' gate' + (chaseStatus.distance === 1 ? '' : 's') + (chaseStatus.bearing ? ' - ' + chaseStatus.bearing : '');
+              return h('span', { className: 'mf-maze-chase-radar', role: 'status', 'aria-live': 'polite', 'data-danger-level': chaseStatus.level, 'aria-label': chaseStatus.message, style: { display: 'inline-flex', alignItems: 'center', gap: '5px', color: radarPalette.color, fontWeight: 850, fontSize: '10px', background: radarPalette.bg, border: '1px solid ' + radarPalette.border, padding: '3px 7px', borderRadius: '8px' } },
+                h('span', { 'aria-hidden': 'true' }, '\uD83D\uDC7E'),
+                h('span', null, chaseStatus.label),
+                h('span', { style: { opacity: 0.82, fontWeight: 700 } }, detail),
+                h('span', { className: 'mf-maze-radar-pips', 'aria-hidden': 'true', style: { display: 'inline-flex', gap: '2px', marginLeft: '2px' } }, [1,2,3,4].map(function(level) {
+                  return h('i', { key: level, style: { display: 'block', width: '4px', height: '10px', borderRadius: '2px', background: level <= chaseStatus.strength ? radarPalette.border : 'rgba(255,255,255,0.2)' } });
+                }))
+              );
+            })(),
             isExplorer && h('span', { style: { color: '#ddd6fe', fontWeight: 750, background: 'rgba(124,58,237,0.25)', border: '1px solid rgba(167,139,250,0.45)', padding: '2px 7px', borderRadius: '999px' }, 'aria-label': tt('math_fluency.explorer_mode_active', 'Explorer mode active') }, '\uD83C\uDFAE Explorer')
           )
         ),
@@ -4774,17 +5563,17 @@
           h('button', { className: 'mf-maze-action-button mf-maze-hint-button', onClick: requestHint, disabled: !!hintDir, 'aria-label': tt('math_fluency.show_direction_toward_objective', 'Show direction toward the current objective') + '. Costs 5 points and resets streak.', title: tt('math_fluency.show_direction_toward_objective', 'Show direction toward the current objective (H key) - costs 5 points, resets streak'), style: { padding: '5px 8px', fontSize: '11px', fontWeight: 800, background: hintDir ? '#fbbf24' : 'linear-gradient(135deg, #b45309, #7c2d12)', color: hintDir ? '#7c2d12' : '#fff', border: '1px solid #f59e0b', borderRadius: '8px', cursor: hintDir ? 'default' : 'pointer', opacity: hintDir ? 0.85 : 1 } }, h('span', { 'aria-hidden': 'true' }, '\uD83D\uDCA1'), h('span', { className: 'mf-maze-action-label' }, hintDir ? ' Showing' : ' Hint -5'))
         )
       ),
-      h('div', { className: 'mf-maze-quest', role: 'status', 'aria-live': 'polite', 'aria-label': objectiveText + (objectiveDistanceLabel ? '. ' + objectiveDistanceLabel : ''), style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto minmax(0, 1fr) auto', alignItems: 'center', gap: '7px', padding: '8px 10px', marginBottom: '6px', borderRadius: '10px', background: keyCollected ? 'linear-gradient(90deg, rgba(217,119,6,0.26), rgba(251,191,36,0.14))' : 'linear-gradient(90deg, rgba(109,40,217,0.24), rgba(124,58,237,0.12))', border: '1px solid ' + (keyCollected ? '#d97706' : '#7c3aed'), color: isFullscreen ? '#fef3c7' : '#78350f' } },
-        h('div', { className: 'mf-maze-quest-step', 'aria-current': !keyCollected ? 'step' : undefined, style: { display: 'flex', alignItems: 'center', gap: '7px', minWidth: 0, opacity: keyCollected ? 0.72 : 1 } },
-          h('span', { 'aria-hidden': 'true', style: { display: 'grid', placeItems: 'center', width: '26px', height: '26px', borderRadius: '50%', background: keyCollected ? '#16a34a' : '#7c3aed', color: '#fff', fontSize: '13px', boxShadow: !keyCollected ? '0 0 12px rgba(124,58,237,0.5)' : 'none' } }, keyCollected ? '\u2713' : '1'),
-          h('span', null, h('strong', { style: { display: 'block', fontSize: '11px' } }, keyCollected ? 'Key found' : 'Find the golden key'), h('small', { style: { display: 'block', fontSize: '9px', opacity: 0.82 } }, keyCollected ? 'Exit unlocked' : 'Quest step 1'))
+      h('div', { className: 'mf-maze-quest', 'data-stage': keyCollected ? 'portal' : 'key', role: 'status', 'aria-live': 'polite', 'aria-label': objectiveText + (objectiveDistanceLabel ? '. ' + objectiveDistanceLabel : ''), style: { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto minmax(0, 1fr) auto', alignItems: 'center', gap: '8px', padding: isFullscreen ? '10px 12px' : '9px 10px', marginBottom: '8px', borderRadius: '14px', background: keyCollected ? 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)' : 'linear-gradient(135deg, #faf5ff 0%, #ede9fe 100%)', border: '2px solid ' + (keyCollected ? '#f59e0b' : '#8b5cf6'), color: '#3f2b1d', boxShadow: '0 5px 18px ' + (keyCollected ? 'rgba(217,119,6,0.14)' : 'rgba(109,40,217,0.12)') } },
+        h('div', { className: 'mf-maze-quest-step', 'aria-current': !keyCollected ? 'step' : undefined, style: { display: 'flex', alignItems: 'center', gap: '9px', minWidth: 0, opacity: keyCollected ? 0.78 : 1 } },
+          h('span', { 'aria-hidden': 'true', style: { display: 'grid', placeItems: 'center', flex: '0 0 34px', width: '34px', height: '34px', borderRadius: '11px', background: keyCollected ? '#15803d' : '#6d28d9', color: '#fff', fontSize: '17px', boxShadow: !keyCollected ? '0 0 0 4px rgba(124,58,237,0.12)' : 'none' } }, keyCollected ? '\u2713' : '\uD83D\uDDDD\uFE0F'),
+          h('span', { style: { minWidth: 0 } }, h('small', { style: { display: 'block', marginBottom: '3px', fontSize: '9px', fontWeight: 900, letterSpacing: '0.1em', opacity: 0.72, textTransform: 'uppercase' } }, keyCollected ? 'Complete' : 'Current quest'), h('strong', { style: { display: 'block', fontSize: isFullscreen ? '14px' : '12px', lineHeight: 1.25 } }, keyCollected ? 'Golden key found' : 'Find the golden key'))
         ),
-        h('span', { 'aria-hidden': 'true', style: { color: keyCollected ? '#d97706' : '#a78bfa', fontWeight: 900 } }, '\u2192'),
-        h('div', { className: 'mf-maze-quest-step', 'aria-current': keyCollected ? 'step' : undefined, style: { display: 'flex', alignItems: 'center', gap: '7px', minWidth: 0, opacity: keyCollected ? 1 : 0.56 } },
-          h('span', { 'aria-hidden': 'true', style: { display: 'grid', placeItems: 'center', width: '26px', height: '26px', borderRadius: '50%', background: keyCollected ? '#f59e0b' : '#78716c', color: '#fff', fontSize: '13px', boxShadow: keyCollected ? '0 0 12px rgba(245,158,11,0.55)' : 'none' } }, '2'),
-          h('span', null, h('strong', { style: { display: 'block', fontSize: '11px' } }, keyCollected ? 'Reach the star portal' : 'Exit locked'), h('small', { style: { display: 'block', fontSize: '9px', opacity: 0.82 } }, keyCollected ? 'Quest step 2' : 'Find the key first'))
+        h('span', { className: 'mf-maze-quest-connector', 'aria-hidden': 'true', style: { color: keyCollected ? '#d97706' : '#7c3aed', fontWeight: 950 } }, '\u2192'),
+        h('div', { className: 'mf-maze-quest-step', 'aria-current': keyCollected ? 'step' : undefined, style: { display: 'flex', alignItems: 'center', gap: '9px', minWidth: 0, opacity: keyCollected ? 1 : 0.58 } },
+          h('span', { 'aria-hidden': 'true', style: { display: 'grid', placeItems: 'center', flex: '0 0 34px', width: '34px', height: '34px', borderRadius: '11px', background: keyCollected ? '#d97706' : '#64748b', color: '#fff', fontSize: '17px', boxShadow: keyCollected ? '0 0 0 4px rgba(245,158,11,0.15)' : 'none' } }, keyCollected ? '\u2B50' : '\uD83D\uDD12'),
+          h('span', { style: { minWidth: 0 } }, h('small', { style: { display: 'block', marginBottom: '3px', fontSize: '9px', fontWeight: 900, letterSpacing: '0.1em', opacity: 0.72, textTransform: 'uppercase' } }, keyCollected ? 'Current quest' : 'Up next'), h('strong', { style: { display: 'block', fontSize: isFullscreen ? '14px' : '12px', lineHeight: 1.25 } }, keyCollected ? 'Reach the star portal' : 'Exit locked'))
         ),
-        h('span', { className: 'mf-maze-distance', style: { justifySelf: 'end', whiteSpace: 'nowrap', padding: '3px 8px', borderRadius: '999px', background: 'rgba(255,255,255,0.55)', color: keyCollected ? '#92400e' : '#5b21b6', fontSize: '10px', fontWeight: 900 } }, objectiveDistanceLabel || 'Calculating')
+        h('span', { className: 'mf-maze-distance', style: { justifySelf: 'end', whiteSpace: 'nowrap', padding: '6px 10px', borderRadius: '999px', background: keyCollected ? '#fff7d6' : '#fff', border: '1px solid ' + (keyCollected ? '#f59e0b' : '#c4b5fd'), color: keyCollected ? '#92400e' : '#5b21b6', fontSize: '11px', fontWeight: 900, boxShadow: '0 2px 8px rgba(15,23,42,0.08)' } }, objectiveDistanceLabel || 'Mapping route')
       ),
       // Exploration progress bar - visited cells / total cells. Visual
       // gauge of how much of the maze the student has uncovered. Does not
@@ -4802,7 +5591,7 @@
         return h('div', {
           role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': pct, 'aria-label': label,
           style: {
-            position: 'relative', height: isFullscreen ? '14px' : '10px',
+            position: 'relative', height: isFullscreen ? '20px' : '18px',
             background: 'rgba(58,46,38,0.55)', border: '1px solid #78350f',
             borderRadius: '999px', marginBottom: '6px', overflow: 'hidden',
             boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.4)'
@@ -4822,7 +5611,7 @@
             style: {
               position: 'absolute', inset: 0, display: 'flex',
               alignItems: 'center', justifyContent: 'center',
-              fontSize: isFullscreen ? '11px' : '9px', fontWeight: 800,
+              fontSize: isFullscreen ? '12px' : '10px', fontWeight: 850,
               color: '#fef3c7', letterSpacing: '0.04em',
               textShadow: '0 1px 2px rgba(0,0,0,0.7)',
               pointerEvents: 'none'
@@ -4830,7 +5619,13 @@
           }, label)
         );
       })(),
-      // 3D View (or 2D fallback). Heights bumped for clarity; in fullscreen
+      !simplifiedMinimap && h('div', { className: 'mf-maze-legend', role: 'note', 'aria-label': 'Minimap legend: you, visited trail, golden key, exit portal' + (chaseMode ? ', and monster when nearby' : ''), style: { display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: isFullscreen ? '12px' : '8px', padding: '5px 8px', marginBottom: '6px', borderRadius: '8px', background: 'rgba(58,46,38,0.08)', border: '1px solid rgba(120,53,15,0.18)', color: isFullscreen ? '#fde68a' : '#78350f', fontSize: '11px', fontWeight: 750 } },
+        h('span', null, playerAvatar + ' You'),
+        h('span', null, '\u2022 Trail'),
+        h('span', null, '\uD83D\uDDDD Key'),
+        h('span', null, (keyCollected ? '\u2B50 Exit' : '\uD83D\uDD12 Locked exit')),
+        chaseMode ? h('span', null, '\uD83D\uDC7E Monster when nearby') : null
+      ),      // 3D View (or 2D fallback). Heights bumped for clarity; in fullscreen
       // the 3D view fills nearly the whole viewport. The ResizeObserver in
       // the init effect keeps the WebGL canvas matched to the container.
       has3D ? h('div', { ref: maze3dRef, className: 'mf-maze-viewport', style: { width: '100%', height: isFullscreen ? 'min(78vh, 900px)' : '440px', borderRadius: '10px', overflow: 'hidden', border: '2px solid ' + (keyCollected ? '#f59e0b' : '#7c3aed'), position: 'relative', background: '#0a0a1a', flex: isFullscreen ? '1 1 auto' : 'none', boxShadow: '0 0 0 1px rgba(255,255,255,0.08), 0 6px 20px ' + (keyCollected ? 'rgba(245,158,11,0.24)' : 'rgba(124,58,237,0.22)'), transition: 'border-color 220ms, box-shadow 220ms' } }) :
@@ -4984,39 +5779,44 @@
         )
       ),
       // 2D minimap overlay (top-right of 3D view)
-      has3D && maze && h('canvas', { ref: canvasRef, className: 'mf-maze-minimap', role: 'img', 'aria-label': 'Maze minimap. ' + objectiveText + (objectiveDistanceLabel ? '. ' + objectiveDistanceLabel : ''), style: { position: 'absolute', top: isFullscreen ? '70px' : '50px', right: isFullscreen ? '24px' : '8px', width: isFullscreen ? '168px' : '112px', height: isFullscreen ? '168px' : '112px', borderRadius: '10px', border: '2px solid ' + (keyCollected ? '#f59e0b' : '#a78bfa'), opacity: 0.96, background: '#2a221c', boxShadow: '0 5px 18px rgba(0,0,0,0.5)', zIndex: 5, transition: 'border-color 220ms' } }),
+      has3D && maze && h('div', { className: 'mf-maze-minimap-shell', 'data-objective': keyCollected ? 'portal' : 'key', style: { position: 'absolute', top: isFullscreen ? '72px' : '52px', right: isFullscreen ? '24px' : '10px', width: isFullscreen ? '176px' : '124px', height: isFullscreen ? '176px' : '124px', padding: '5px', borderRadius: '14px', border: (mazeHighContrast ? '4px solid #fff' : '3px solid ' + (keyCollected ? '#f59e0b' : '#a78bfa')), background: 'rgba(15,23,42,0.94)', boxShadow: '0 10px 28px rgba(0,0,0,0.55)', zIndex: 5, transition: 'border-color 220ms, box-shadow 220ms' } },
+        h('span', { 'aria-hidden': 'true', style: { position: 'absolute', top: '7px', left: '50%', transform: 'translateX(-50%)', zIndex: 3, padding: '2px 7px', borderRadius: '999px', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(255,255,255,0.32)', color: '#fff', fontSize: '9px', fontWeight: 900, letterSpacing: '0.11em', whiteSpace: 'nowrap' } }, keyCollected ? 'MAP \u00b7 PORTAL' : 'MAP \u00b7 KEY'),
+        h('canvas', { ref: canvasRef, className: 'mf-maze-minimap' + (simplifiedMinimap ? ' mf-maze-minimap-simple' : ''), role: 'img', 'data-simplified': simplifiedMinimap ? 'true' : 'false', 'aria-label': 'Maze minimap. ' + objectiveText + (objectiveDistanceLabel ? '. ' + objectiveDistanceLabel : ''), style: { display: 'block', width: '100%', height: '100%', borderRadius: '10px', opacity: simplifiedMinimap ? 1 : 0.98, background: '#2a221c' } })
+      ),
       // Gate overlay (when at junction). Styled as a stone-gate with a
       // lock and a 3x4 number pad \u2014 the math problem is the gate's
       // combination, the pad is how you enter it. Border + glow shift
       // by feedback state: red shake on wrong, green flash on correct.
       currentProblem && h('div', {
         key: 'gate-' + (currentProblem.problem.text), // remount when problem changes so animations replay
-        className: feedback === 'wrong' ? 'allo-gate-shake' : (feedback === 'correct' ? 'allo-gate-open' : ''),
+        className: 'mf-maze-gate ' + (feedback === 'wrong' ? 'allo-gate-shake' : (feedback === 'correct' ? 'allo-gate-open' : '')),
+        role: 'dialog', 'aria-labelledby': 'mf-maze-gate-title',
+        'data-feedback': feedback || 'ready',
         style: {
           position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
           background: feedback === 'correct'
             ? 'linear-gradient(180deg, #14532d 0%, #052e16 100%)'
-            : 'linear-gradient(180deg, #3a2e26 0%, #2a221c 100%)',
+            : 'linear-gradient(160deg, #312e81 0%, #1e1b4b 58%, #172554 100%)',
           backdropFilter: 'blur(8px)',
-          borderRadius: '14px',
-          padding: '18px 22px 14px',
+          borderRadius: '18px',
+          padding: '20px 22px 16px',
           textAlign: 'center',
           border: feedback === 'wrong'
             ? '3px solid #ef4444'
-            : (feedback === 'correct' ? '3px solid #22c55e' : '3px solid #a8957d'),
+            : (feedback === 'correct' ? '3px solid #22c55e' : '3px solid #a78bfa'),
           boxShadow: feedback === 'correct'
             ? '0 0 32px rgba(34,197,94,0.7), inset 0 0 32px rgba(34,197,94,0.25)'
             : feedback === 'wrong'
               ? '0 0 24px rgba(239,68,68,0.55), inset 0 0 16px rgba(239,68,68,0.2)'
-              : '0 0 0 2px rgba(58,46,38,0.6), 0 12px 40px rgba(0,0,0,0.6), inset 0 0 24px rgba(255,180,80,0.10)',
+              : '0 0 0 2px rgba(30,27,75,0.72), 0 18px 54px rgba(15,23,42,0.72), inset 0 1px 0 rgba(255,255,255,0.10)',
           zIndex: 10,
-          width: isFullscreen ? 'min(460px, calc(100vw - 48px))' : 'min(320px, calc(100vw - 24px))',
+          width: isFullscreen ? 'min(480px, calc(100vw - 48px))' : 'min(360px, calc(100vw - 24px))',
           maxWidth: '92vw', maxHeight: 'calc(100vh - 32px)', overflowY: 'auto',
           transition: 'background 200ms, border-color 200ms, box-shadow 200ms'
         }
       },
         // Header row: "GATE" label + lock glyph (changes to unlocked on correct)
-        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '10px', color: feedback === 'correct' ? '#bbf7d0' : '#fbbf24', fontSize: '11px', fontWeight: 800, letterSpacing: '0.16em', textTransform: 'uppercase' } },
+        h('div', { id: 'mf-maze-gate-title', style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '9px', marginBottom: '11px', color: feedback === 'correct' ? '#bbf7d0' : '#fde68a', fontSize: '12px', fontWeight: 900, letterSpacing: '0.16em', textTransform: 'uppercase' } },
           h('span', { style: { fontSize: '18px' } }, feedback === 'correct' ? '\ud83d\udd13' : '\ud83d\udd12'),
           h('span', null, feedback === 'correct' ? tt('math_fluency.gate_opens_2', 'Gate Opens!') : (feedback === 'wrong' ? tt('math_fluency.wrong_combination_try_again', 'Wrong Combination \u2014 Try Again') : tt('math_fluency.locked_gate', 'Locked Gate'))),
           h('span', { style: { fontSize: '18px' } }, feedback === 'correct' ? '\ud83d\udd13' : '\ud83d\udd12')
@@ -5036,10 +5836,10 @@
             : 'Math';
           return h('div', {
             style: {
-              display: 'inline-block', fontSize: '9px', fontWeight: 800,
+              display: 'inline-block', fontSize: '10px', fontWeight: 850,
               letterSpacing: '0.14em', textTransform: 'uppercase',
-              color: '#b45309', background: 'rgba(251,191,36,0.12)',
-              border: '1px solid rgba(251,191,36,0.35)',
+              color: '#ede9fe', background: 'rgba(139,92,246,0.18)',
+              border: '1px solid rgba(196,181,253,0.52)',
               padding: '2px 8px', borderRadius: '999px', marginBottom: '6px'
             }
           }, opLabel + ' Gate');
@@ -5111,7 +5911,7 @@
                 }, isLBlock ? (d.l + '×' + d.w + '×' + d.h + '  −  ' + notch.l + '×' + notch.w + '×' + notch.h) : (d.l + ' × ' + d.w + ' × ' + d.h))
               );
             })()
-          : h('div', { style: { fontSize: isFullscreen ? '42px' : '30px', fontWeight: 800, color: '#fef3c7', marginBottom: '10px', fontFamily: 'monospace', textShadow: '0 0 12px rgba(251,191,36,0.45)' } }, currentProblem.problem.text + ' = ?'),
+          : h('div', { style: { fontSize: isFullscreen ? '44px' : '34px', fontWeight: 900, color: '#fff', margin: '2px 0 12px', fontFamily: 'monospace', letterSpacing: '0.02em', textShadow: '0 0 16px rgba(196,181,253,0.48)' } }, currentProblem.problem.text + ' = ?'),
         // Visible answer input supports keyboard, touch keyboard, and the on-screen number pad.
         h('input', {
           ref: inputRef, type: 'text', value: userInput,
@@ -5119,41 +5919,41 @@
           onKeyDown: function(e) { if (e.key === 'Enter') submitAnswer(); else if (e.key === 'Escape') setUserInput(''); },
           'aria-label': tt('math_fluency.type_your_answer_to', 'Type your answer to ') + currentProblem.problem.text,
           inputMode: 'numeric', enterKeyHint: 'done', autoComplete: 'off', autoFocus: true,
-          style: { display: 'block', width: isFullscreen ? '180px' : '140px', padding: isFullscreen ? '10px 16px' : '8px 12px', margin: '0 auto 10px', fontSize: isFullscreen ? '36px' : '26px', fontWeight: 800, fontFamily: 'monospace', textAlign: 'center', color: feedback === 'wrong' ? '#fee2e2' : (feedback === 'correct' ? '#bbf7d0' : '#fff'), background: feedback === 'wrong' ? '#7f1d1d' : (feedback === 'correct' ? '#14532d' : '#2a221c'), border: '2px solid ' + (feedback === 'wrong' ? '#ef4444' : (feedback === 'correct' ? '#22c55e' : '#a8957d')), borderRadius: '8px', letterSpacing: '0.08em', outlineOffset: '3px' }
+          style: { display: 'block', width: isFullscreen ? '180px' : '140px', padding: isFullscreen ? '10px 16px' : '8px 12px', margin: '0 auto 10px', fontSize: isFullscreen ? '36px' : '26px', fontWeight: 800, fontFamily: 'monospace', textAlign: 'center', color: feedback === 'wrong' ? '#fee2e2' : (feedback === 'correct' ? '#bbf7d0' : '#fff'), background: feedback === 'wrong' ? '#7f1d1d' : (feedback === 'correct' ? '#14532d' : '#0f172a'), border: '3px solid ' + (feedback === 'wrong' ? '#f87171' : (feedback === 'correct' ? '#4ade80' : '#a78bfa')), borderRadius: '8px', letterSpacing: '0.08em', outlineOffset: '3px' }
         }),
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: isFullscreen ? '8px' : '6px', maxWidth: isFullscreen ? '320px' : '220px', margin: '0 auto' } },
           ['1','2','3','4','5','6','7','8','9'].map(function(d) {
-            return h('button', { key: 'pad-' + d, onClick: function() { setUserInput(function(prev) { return (prev || '') + d; }); if (inputRef.current) inputRef.current.focus(); }, 'aria-label': tt('math_fluency.enter_digit', 'Enter digit ') + d, style: { padding: isFullscreen ? '16px 0' : '12px 0', fontSize: isFullscreen ? '26px' : '20px', fontWeight: 700, fontFamily: 'monospace', background: '#5b4d3f', color: '#fef3c7', border: '2px solid #a8957d', borderRadius: '8px', cursor: 'pointer', minHeight: '44px', boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.3)' } }, d);
+            return h('button', { key: 'pad-' + d, className: 'mf-maze-gate-key', onClick: function() { setUserInput(function(prev) { return (prev || '') + d; }); if (inputRef.current) inputRef.current.focus(); }, 'aria-label': tt('math_fluency.enter_digit', 'Enter digit ') + d, style: { padding: isFullscreen ? '16px 0' : '12px 0', fontSize: isFullscreen ? '26px' : '20px', fontWeight: 700, fontFamily: 'monospace', background: 'linear-gradient(180deg,#4338ca,#312e81)', color: '#fff', border: '2px solid #818cf8', borderRadius: '8px', cursor: 'pointer', minHeight: '44px', boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.3)' } }, d);
           }),
         // Bottom row: Clear, 0, Submit
           h('button', {
-            key: 'pad-clear',
+            key: 'pad-clear', className: 'mf-maze-gate-key',
             onClick: function() { setUserInput(''); if (inputRef.current) inputRef.current.focus(); },
             'aria-label': tt('math_fluency.clear_answer', 'Clear answer'),
             style: {
               padding: '12px 0', fontSize: '13px', fontWeight: 700,
-              background: '#7c2d12', color: '#fef3c7', border: '2px solid #a8957d',
+              background: '#7f1d1d', color: '#fff', border: '2px solid #f87171',
               borderRadius: '8px', cursor: 'pointer', minHeight: '44px'
             }
           }, '\u2716 Clear'),
           h('button', {
-            key: 'pad-0',
+            key: 'pad-0', className: 'mf-maze-gate-key',
             onClick: function() { setUserInput(function(prev) { return (prev || '') + '0'; }); if (inputRef.current) inputRef.current.focus(); },
             'aria-label': tt('math_fluency.enter_digit_0', 'Enter digit 0'),
             style: {
               padding: '12px 0', fontSize: '20px', fontWeight: 700, fontFamily: 'monospace',
-              background: '#5b4d3f', color: '#fef3c7', border: '2px solid #a8957d',
+              background: 'linear-gradient(180deg,#4338ca,#312e81)', color: '#fff', border: '2px solid #818cf8',
               borderRadius: '8px', cursor: 'pointer', minHeight: '44px',
               boxShadow: 'inset 0 -2px 0 rgba(0,0,0,0.3)'
             }
           }, '0'),
           h('button', {
-            key: 'pad-submit',
+            key: 'pad-submit', className: 'mf-maze-gate-key',
             onClick: submitAnswer,
             'aria-label': tt('math_fluency.submit_answer_to_unlock_the_gate', 'Submit answer to unlock the gate'),
             style: {
               padding: '12px 0', fontSize: '13px', fontWeight: 800,
-              background: '#15803d', color: '#fff', border: '2px solid #22c55e',
+              background: 'linear-gradient(180deg,#16a34a,#15803d)', color: '#fff', border: '2px solid #4ade80',
               borderRadius: '8px', cursor: 'pointer', minHeight: '44px',
               boxShadow: '0 0 8px rgba(34,197,94,0.4)'
             }
@@ -5175,7 +5975,7 @@
             letterSpacing: '0.04em'
           }
         }, '\ud83d\udca1 Answer: ' + currentProblem.problem.answer + ' \u2014 type it to continue'),
-        h('p', { style: { fontSize: '10px', color: '#a8957d', marginTop: attemptCount > 0 ? '4px' : '10px', marginBottom: 0 } }, tt('math_fluency.tap_pad_or_use_keyboard_enter_to_submit', 'Tap pad or use keyboard \u2022 Enter to submit \u2022 Esc to clear'))
+        h('p', { style: { fontSize: '11px', color: '#c4b5fd', marginTop: attemptCount > 0 ? '4px' : '10px', marginBottom: 0 } }, tt('math_fluency.tap_pad_or_use_keyboard_enter_to_submit', 'Tap pad or use keyboard \u2022 Enter to submit \u2022 Esc to clear'))
       ),
       // Arrow buttons (mobile friendly)
       h('div', { 'aria-label': tt('math_fluency.available_maze_directions', 'Available maze directions'), style: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: isFullscreen ? '8px' : '4px', maxWidth: isFullscreen ? '240px' : '160px', margin: isFullscreen ? '14px auto 0' : '8px auto 0' } },
@@ -5209,9 +6009,11 @@
     buildTeacherReport: buildTeacherReport, buildTeacherReportCsv: buildTeacherReportCsv,
     buildOperationGrowth: buildOperationGrowth, buildNextPracticeRecommendation: buildNextPracticeRecommendation,
     buildSessionGoal: buildSessionGoal, evaluateSessionGoal: evaluateSessionGoal,
+    getAdaptivePracticeLevel: getAdaptivePracticeLevel, buildStudentSessionReview: buildStudentSessionReview, formatProblemSpeech: formatProblemSpeech,
     getMasteryFocusFacts: getMasteryFocusFacts, buildFocusedProblems: buildFocusedProblems,
+    sanitizeAccuracyDraft: sanitizeAccuracyDraft,
     parseStudentAnswer: parseStudentAnswer, countCorrectDigits: countCorrectDigits,
-    findMazePathStep: findMazePathStep, findMazePathDistance: findMazePathDistance, buildMazeBestKey: buildMazeBestKey,
+    findMazePathStep: findMazePathStep, findMazePathDistance: findMazePathDistance, buildChaseRadar: buildChaseRadar, buildMazeBestKey: buildMazeBestKey,
     generateMazeProblem: generateMazeProblem,
   };
   console.log('[CDN] MathFluency + FluencyMaze modules registered');

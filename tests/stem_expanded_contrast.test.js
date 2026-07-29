@@ -16,3 +16,363 @@ describe('expanded STEM contrast coverage',()=>{
   it('keeps literal placeholders AA against their fill',()=>{const failures=[];for(const name of files()){const s=readFileSync(resolve(process.cwd(),'stem_lab',name),'utf8');for(const m of s.matchAll(/(["'\x60])([^"'\x60\r\n]*placeholder[^"'\x60\r\n]*)\1/g)){const w=m[2].split(/\s+/),p=w.find(x=>/^placeholder(?::text)?-(?:white|black|[a-z]+-\d+)$/.test(x)),bg=w.find(x=>/^bg-(?:white|black|[a-z]+-\d+)$/.test(x)&&color(x,'bg'));if(!p||!bg)continue;const fg=color(p.replace(/^placeholder(?::text)?-/,'text-'),'text');if(fg&&ratio(fg,color(bg,'bg'))<4.5)failures.push(name+': '+p+' on '+bg);}}expect(failures).toEqual([]);});
   it('keeps literal form boundaries at 3:1 against their fill',()=>{const failures=[],re=/(?:React\.createElement|\bh)\(\s*(["'])(input|select|textarea)\1\s*,\s*\{(?:(?!(?:React\.createElement|\bh)\().){0,1800}?className\s*:\s*(["'])(.*?)\3/gs;for(const name of files()){const s=readFileSync(resolve(process.cwd(),'stem_lab',name),'utf8');for(const m of s.matchAll(re)){const w=m[4].split(/\s+/),b=w.find(x=>/^border-(?:white|black|[a-z]+-\d+)$/.test(x)&&color(x,'border')),bg=w.find(x=>/^bg-(?:white|black|[a-z]+-\d+)$/.test(x)&&color(x,'bg'));if(b&&bg&&ratio(color(b,'border'),color(bg,'bg'))<3)failures.push(name+': '+b+' on '+bg);}}expect(failures).toEqual([]);});
 });
+
+
+describe('STEM alpha text and progress contrast', () => {
+  it('keeps shared catalog descriptions AA on their pastel cards', () => {
+    const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_lab_module.js'), 'utf8');
+    const failures = [];
+    for (const line of source.split(/\r?\n/)) {
+      const background = line.match(/\bbg:\s*['"](bg-[a-z]+-\d+)['"]/);
+      const description = line.match(/\bdesc:\s*['"](text-[a-z]+-\d+)(?:\/(\d+))?['"]/);
+      if (!background || !description) continue;
+      const bg = color(background[1], 'bg');
+      const fg = color(description[1], 'text');
+      if (bg && fg && ratio(fg, bg) < 4.5) failures.push(description[1] + ' on ' + background[1]);
+    }
+    expect(failures).toEqual([]);
+  });
+
+  it('pins 3:1 progress fills and theme-aware fallback messages', () => {
+    const indicatorPairs = [
+      ['bg-orange-600', 'bg-orange-100'], ['bg-amber-700', 'bg-orange-100'],
+      ['bg-emerald-600', 'bg-slate-100'], ['bg-orange-600', 'bg-slate-100'],
+      ['bg-yellow-700', 'bg-white'], ['bg-rose-500', 'bg-white'],
+      ['bg-emerald-700', 'bg-white'], ['bg-red-500', 'bg-white'],
+      ['bg-green-700', 'bg-blue-100'], ['bg-blue-500', 'bg-blue-100'],
+      ['bg-slate-400', 'bg-slate-700'], ['bg-rose-400', 'bg-slate-700'],
+      ['bg-amber-500', 'bg-slate-700'], ['bg-emerald-500', 'bg-slate-700']
+    ];
+    for (const [fill, track] of indicatorPairs) {
+      expect(ratio(color(fill, 'bg'), color(track, 'bg')), fill + ' on ' + track).toBeGreaterThanOrEqual(3);
+    }
+    const companion = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_companionplanting.js'), 'utf8');
+    expect(companion).toContain('from-orange-600 to-amber-700 transition-all');
+    expect(companion).toContain("voice.complete ? 'bg-emerald-600' : 'bg-orange-600'");
+    expect(companion).toContain("plotReady ? 'bg-yellow-700' : plotNeedsCare ? 'bg-rose-500' : 'bg-emerald-700'");
+    const dissection = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_dissection.js'), 'utf8');
+    expect(dissection).toContain("progressPct >= 100 ? 'bg-green-700' : 'bg-blue-500'");
+    const particle = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_particlelab3d.js'), 'utf8');
+    expect(particle).toContain("tone: 'text-rose-800', fill: 'bg-rose-400'");
+    const shell = readFileSync(resolve(process.cwd(), 'stem_lab/stem_lab_module.js'), 'utf8');
+    expect(shell.match(/color: 'var\(--allo-stem-text-soft, #64748b\)'/g)).toHaveLength(2);
+  });
+});
+
+describe('STEM dynamic active-state contrast', () => {
+  it.each([
+    ['emerald hover label', 'text-emerald-800', 'bg-emerald-200'],
+    ['sky hover label', 'text-sky-800', 'bg-sky-200'],
+    ['cyan action', 'text-white', 'bg-cyan-700'],
+    ['emerald selected action', 'text-white', 'bg-emerald-700'],
+    ['red hover label', 'text-red-800', 'bg-red-200'],
+    ['amber grid label', 'text-amber-700', 'bg-amber-50'],
+    ['amber highlighted grid label', 'text-amber-800', 'bg-orange-100'],
+    ['sky selected action', 'text-white', 'bg-sky-700'],
+    ['disabled thinking label', 'text-slate-300', 'bg-slate-800'],
+    ['green revealed answer', 'text-white', 'bg-green-700'],
+    ['amber selected action', 'text-white', 'bg-amber-700'],
+    ['violet hover action', 'text-white', 'bg-violet-700'],
+    ['pink hover label', 'text-pink-700', 'bg-pink-100'],
+    ['amber hover action', 'text-white', 'bg-amber-800'],
+    ['pink loading label', 'text-pink-800', 'bg-pink-200'],
+    ['amber hover label', 'text-amber-800', 'bg-amber-200'],
+    ['muted unavailable label', 'text-slate-600', 'bg-slate-100'],
+    ['indigo hover action', 'text-white', 'bg-indigo-700'],
+    ['slate quick-add hover', 'text-slate-300', 'bg-slate-700'],
+    ['emerald hover action', 'text-white', 'bg-emerald-800'],
+    ['indigo selected filter', 'text-white', 'bg-indigo-600'],
+    ['red state label', 'text-red-700', 'bg-red-100'],
+    ['emerald state label', 'text-emerald-700', 'bg-emerald-100'],
+    ['blue hover label', 'text-blue-700', 'bg-blue-100'],
+    ['red feedback label', 'text-red-700', 'bg-red-50'],
+    ['lime action', 'text-white', 'bg-lime-700'],
+    ['fuchsia hover label', 'text-fuchsia-700', 'bg-fuchsia-100'],
+    ['inactive option on slate', 'text-slate-600', 'bg-slate-50'],
+    ['answered option on white', 'text-slate-600', 'bg-white'],
+    ['rose hover label', 'text-rose-800', 'bg-rose-200'],
+    ['cyan dark hover action', 'text-white', 'bg-cyan-800'],
+    ['indigo hover label', 'text-indigo-700', 'bg-indigo-200'],
+    ['green difficulty badge', 'text-green-800', 'bg-green-200'],
+    ['gray checklist badge', 'text-gray-700', 'bg-gray-200'],
+    ['light-theme off state', 'text-slate-700', 'bg-slate-200'],
+    ['purple hover label', 'text-purple-700', 'bg-purple-200'],
+    ['purple selected action', 'text-white', 'bg-purple-600'],
+    ['fuchsia hover action', 'text-white', 'bg-fuchsia-700'],
+    ['orange dark badge', 'text-orange-100', 'bg-orange-700'],
+    ['indigo dark hover label', 'text-indigo-300', 'bg-indigo-900'],
+    ['yellow dark hover label', 'text-yellow-200', 'bg-yellow-900'],
+    ['blue selected action', 'text-white', 'bg-blue-700'],
+    ['orange label on bright badge', 'text-orange-950', 'bg-orange-400'],
+    ['indigo pale label', 'text-indigo-50', 'bg-indigo-600'],
+    ['rose pale label', 'text-rose-50', 'bg-rose-700'],
+    ['violet pale label', 'text-violet-50', 'bg-violet-600'],
+    ['blue pale label', 'text-blue-50', 'bg-blue-700'],
+    ['orange pale label', 'text-orange-50', 'bg-orange-700'],
+    ['slate light status', 'text-slate-700', 'bg-slate-100'],
+    ['teal hover label', 'text-teal-800', 'bg-teal-200'],
+    ['yellow status label', 'text-yellow-800', 'bg-yellow-100'],
+    ['green status label', 'text-green-700', 'bg-green-100'],
+    ['teal status label', 'text-teal-700', 'bg-teal-100'],
+    ['violet hover label', 'text-violet-700', 'bg-violet-200'],
+    ['yellow label on pale surface', 'text-yellow-800', 'bg-yellow-50'],
+    ['rose status label', 'text-rose-700', 'bg-rose-100'],
+    ['amber status label', 'text-amber-800', 'bg-amber-100'],
+    ['slate label on dark hover', 'text-slate-200', 'bg-slate-700'],
+    ['yellow selected action', 'text-white', 'bg-yellow-800'],
+    ['pink selected action', 'text-white', 'bg-pink-700'],
+    ['rose selected action', 'text-white', 'bg-rose-600'],
+    ['lime label on pale surface', 'text-lime-800', 'bg-lime-50'],
+    ['purple loading label', 'text-purple-800', 'bg-purple-200']
+  ])('%s remains at or above 4.5:1', (_label, foreground, background) => {
+    expect(ratio(color(foreground, 'text'), color(background, 'bg'))).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it.each([
+    ['stem_tool_a11yauditor.js', 'bg-emerald-100 text-emerald-800 rounded-lg text-[11px] font-bold hover:bg-emerald-200'],
+    ['stem_tool_numberline.js', 'bg-sky-100 text-sky-800 rounded-full hover:bg-sky-200'],
+    ['stem_tool_spaceexplorer.js', 'bg-cyan-700 text-white hover:bg-cyan-800'],
+    ['stem_tool_wave.js', 'bg-emerald-700 text-white'],
+    ['stem_tool_worldbuilder.js', 'bg-red-100 text-red-800 hover:bg-red-200'],
+    ['stem_tool_areamodel.js', 'text-[10px] text-amber-800 leading-none'],
+    ['stem_tool_areamodel.js', 'bg-sky-100 text-sky-800 rounded-full hover:bg-sky-200'],
+    ['stem_tool_brainatlas.js', 'border-emerald-700 bg-emerald-700 text-white'],
+    ['stem_tool_circuit.js', 'bg-green-700 text-white border-green-800'],
+    ['stem_tool_circuit.js', 'bg-slate-800 text-slate-300'],
+    ['stem_tool_lumen.js', 'bg-violet-600 text-white hover:bg-violet-700'],
+    ['stem_tool_artstudio.js', 'bg-pink-50 text-pink-700 border border-pink-700 hover:bg-pink-100'],
+    ['stem_tool_dataplot.js', 'bg-pink-200 text-pink-800 cursor-wait'],
+    ['stem_tool_angles.js', 'bg-pink-200 text-pink-800 cursor-wait'],
+    ['stem_tool_angles.js', 'bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-800'],
+    ['stem_tool_angles.js', 'hover:bg-red-100 hover:text-red-700 hover:border-red-700'],
+    ['stem_tool_cell.js', 'bg-amber-100 text-amber-800 hover:bg-amber-200'],
+    ['stem_tool_cell.js', 'bg-slate-100 text-slate-600 line-through'],
+    ['stem_tool_cell.js', 'bg-green-700 text-white shadow-sm'],
+    ['stem_tool_coding.js', 'bg-indigo-600 px-4 py-2 font-bold text-white hover:bg-indigo-700'],
+    ['stem_tool_coding.js', 'bg-slate-600 text-slate-300 hover:bg-slate-700'],
+    ['stem_tool_coding.js', 'bg-emerald-700 text-white hover:bg-emerald-800'],
+    ['stem_tool_economicslab.js', 'bg-sky-700 text-white'],
+    ['stem_tool_economicslab.js', 'bg-sky-100 text-sky-800 hover:bg-sky-200'],
+    ['stem_tool_economicslab.js', 'bg-indigo-600 text-white'],
+    ['stem_tool_epidemic.js', 'bg-red-100 text-red-700'],
+    ['stem_tool_epidemic.js', 'bg-emerald-100 text-emerald-700'],
+    ['stem_tool_epidemic.js', 'bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100'],
+    ['stem_tool_galaxy.js', 'bg-indigo-600 hover:bg-indigo-700 text-white'],
+    ['stem_tool_galaxy.js', 'bg-amber-700 text-white hover:bg-amber-800'],
+    ['stem_tool_galaxy.js', 'bg-red-50 text-red-700 border border-red-200'],
+    ['stem_tool_physics.js', 'bg-sky-700 text-white'],
+    ['stem_tool_physics.js', 'bg-amber-700 text-white text-[11px] font-bold rounded-lg hover:bg-amber-800'],
+    ['stem_tool_physics.js', 'bg-red-100 border-red-400 text-red-700'],
+    ['stem_tool_birdlab.js', 'bg-emerald-700 text-white'],
+    ['stem_tool_birdlab.js', 'bg-lime-700 text-white hover:bg-lime-800 active:scale-[0.97]'],
+    ['stem_tool_punnett.js', 'text-fuchsia-700 bg-fuchsia-50 border border-fuchsia-700 rounded-lg hover:bg-fuchsia-100'],
+    ['stem_tool_punnett.js', 'text-fuchsia-700 bg-fuchsia-50 border border-fuchsia-700 rounded-full hover:bg-fuchsia-100'],
+    ['stem_tool_cell.js', 'bg-slate-50 border-slate-400 text-slate-600'],
+    ['stem_tool_economicslab.js', 'border-slate-400 bg-white text-slate-600'],
+    ['stem_tool_physics.js', 'bg-slate-100 text-slate-600 cursor-not-allowed'],
+    ['stem_tool_artstudio.js', 'bg-rose-100 text-rose-800 hover:bg-rose-200'],
+    ['stem_tool_lifeskills.js', 'bg-slate-100 text-slate-600 cursor-not-allowed'],
+    ['stem_tool_lumen.js', 'border-slate-400 bg-slate-50 text-slate-600 cursor-not-allowed'],
+    ['stem_tool_spaceexplorer.js', 'bg-slate-700 text-slate-300 cursor-not-allowed'],
+    ['stem_tool_decomposer.js', 'bg-amber-700 text-white font-bold text-xs rounded-lg hover:bg-amber-800'],
+    ['stem_tool_decomposer.js', 'bg-indigo-600 text-white'],
+    ['stem_tool_decomposer.js', 'bg-red-50 text-red-700 border border-red-200'],
+    ['stem_tool_geosandbox.js', 'bg-slate-700 text-slate-300 cursor-not-allowed'],
+    ['stem_tool_nutritionlab.js', 'bg-amber-700 text-white border-amber-800 shadow'],
+    ['stem_tool_nutritionlab.js', 'bg-emerald-700 text-white hover:bg-emerald-800'],
+    ['stem_tool_coordgrid.js', 'bg-sky-100 text-sky-800 rounded-full hover:bg-sky-200'],
+    ['stem_tool_coordgrid.js', 'bg-amber-100 text-amber-800 font-bold rounded-lg text-[11px] hover:bg-amber-200'],
+    ['stem_tool_coordgrid.js', 'bg-amber-700 text-white font-bold rounded-lg text-sm hover:bg-amber-800'],
+    ['stem_tool_coordgrid.js', 'bg-cyan-700 text-white font-bold rounded-lg text-sm hover:bg-cyan-800'],
+    ['stem_tool_coordgrid.js', 'bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200'],
+    ['stem_tool_gamestudio.js', 'bg-green-200 text-green-800'],
+    ['stem_tool_gamestudio.js', 'bg-amber-200 text-amber-800'],
+    ['stem_tool_gamestudio.js', 'bg-red-200 text-red-800'],
+    ['stem_tool_gamestudio.js', 'bg-gray-200 text-gray-700'],
+    ['stem_tool_migration.js', 'bg-sky-700 hover:bg-sky-800 text-white'],
+    ['stem_tool_migration.js', 'bg-green-700 text-white'],
+    ['stem_tool_migration.js', 'bg-slate-200 text-slate-700'],
+    ['stem_tool_migration.js', 'bg-sky-700 text-white ring-2 ring-sky-300'],
+    ['stem_tool_migration.js', 'bg-sky-700 text-white'],
+    ['stem_tool_companionplanting.js', 'border border-slate-500 bg-white p-2 text-[10px]']
+  ])('%s pins its accessible dynamic state', (fileName, treatment) => {
+    expect(readFileSync(resolve(process.cwd(), 'stem_lab', fileName), 'utf8')).toContain(treatment);
+  });
+
+  it('pins the nine-tool conditional-state batch', () => {
+    const treatments = [
+      ['stem_tool_molecule.js', 'hover:bg-emerald-800'],
+      ['stem_tool_molecule.js', 'bg-red-100 text-red-800 text-sm font-bold hover:bg-red-200'],
+      ['stem_tool_molecule.js', 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'],
+      ['stem_tool_molecule.js', 'bg-green-700 text-white border-green-800'],
+      ['stem_tool_multtable.js', 'bg-purple-100 text-purple-700 hover:bg-purple-200 border border-purple-700'],
+      ['stem_tool_multtable.js', 'bg-purple-600 text-white shadow-sm'],
+      ['stem_tool_multtable.js', 'hover:bg-emerald-800'],
+      ['stem_tool_multtable.js', 'bg-pink-100 text-pink-800 hover:bg-pink-200 border border-pink-700'],
+      ['stem_tool_particlelab3d.js', 'bg-fuchsia-600 px-2 py-1 text-[10px] font-black text-white hover:bg-fuchsia-700'],
+      ['stem_tool_particlelab3d.js', 'bg-cyan-700 px-2 py-1 text-[10px] font-black text-white hover:bg-cyan-800'],
+      ['stem_tool_particlelab3d.js', 'bg-slate-100 text-slate-600'],
+      ['stem_tool_probability.js', 'bg-amber-100 text-amber-800 rounded-lg text-xs font-bold hover:bg-amber-200'],
+      ['stem_tool_probability.js', 'bg-red-100 text-red-800 font-bold text-sm hover:bg-red-200'],
+      ['stem_tool_probability.js', 'bg-emerald-100 text-emerald-800 font-bold text-sm hover:bg-emerald-200'],
+      ['stem_tool_singing.js', 'bg-red-100 hover:bg-red-200 text-red-800'],
+      ['stem_tool_singing.js', 'bg-red-50 text-red-700'],
+      ['stem_tool_singing.js', 'bg-blue-700 text-white'],
+      ['stem_tool_spacecolony.js', 'bg-orange-700 text-orange-100'],
+      ['stem_tool_spacecolony.js', 'bg-indigo-800 text-indigo-300 text-[11px] hover:bg-indigo-900'],
+      ['stem_tool_spacecolony.js', 'bg-yellow-800 text-yellow-200 text-[11px] font-bold hover:bg-yellow-900'],
+      ['stem_tool_spacecolony.js', 'bg-slate-800 text-slate-300'],
+      ['stem_tool_allobotsage.js', 'border-slate-400 bg-slate-50 text-slate-600'],
+      ['stem_tool_allobotsage.js', 'bg-emerald-700 text-white'],
+      ['stem_tool_allobotsage.js', 'bg-red-600 text-white'],
+      ['stem_tool_allobotsage.js', 'bg-amber-700 hover:bg-amber-800 text-white'],
+      ['stem_tool_allobotsage.js', 'bg-slate-100 text-slate-600 cursor-not-allowed'],
+      ['stem_tool_behaviorlab.js', 'bg-blue-600 text-white font-bold text-[11px] hover:bg-blue-700'],
+      ['stem_tool_behaviorlab.js', 'bg-red-600 border-red-500 text-white scale-110'],
+      ['stem_tool_behaviorlab.js', 'bg-emerald-700 border-emerald-600 text-white'],
+      ['stem_tool_behaviorlab.js', 'bg-red-600 text-white hover:bg-red-700'],
+      ['stem_tool_unitconvert.js', 'bg-purple-100 text-purple-700 hover:bg-purple-200 border border-purple-700'],
+      ['stem_tool_unitconvert.js', 'bg-cyan-700 text-white text-xs font-black hover:bg-cyan-800'],
+      ['stem_tool_unitconvert.js', 'bg-purple-100 text-purple-700 font-bold rounded-lg hover:bg-purple-200'],
+      ['stem_tool_unitconvert.js', 'bg-purple-100 text-purple-700 rounded-lg text-xs font-bold hover:bg-purple-200'],
+      ['stem_tool_unitconvert.js', 'bg-cyan-700 text-white hover:bg-cyan-800'],
+      ['stem_tool_unitconvert.js', 'bg-cyan-700 px-4 py-2 text-xs font-black text-white hover:bg-cyan-800']
+    ];
+    const sources = new Map();
+    for (const [fileName, treatment] of treatments) {
+      if (!sources.has(fileName)) sources.set(fileName, readFileSync(resolve(process.cwd(), 'stem_lab', fileName), 'utf8'));
+      expect(sources.get(fileName), fileName + ': ' + treatment).toContain(treatment);
+    }
+  });
+
+  it('pins the eight-tool conditional-state batch', () => {
+    const treatments = [
+      ['stem_tool_ecosystem.js', 'hover:bg-emerald-800'],
+      ['stem_tool_ecosystem.js', 'hover:bg-slate-200 dark:hover:bg-slate-700'],
+      ['stem_tool_ecosystem.js', 'hover:bg-teal-800'],
+      ['stem_tool_ecosystem.js', 'bg-orange-100 hover:bg-orange-200 text-orange-800'],
+      ['stem_tool_geologyexplorer.js', 'bg-indigo-600 border-indigo-700 text-indigo-50'],
+      ['stem_tool_geologyexplorer.js', 'bg-rose-700 border-rose-800 text-rose-50'],
+      ['stem_tool_geologyexplorer.js', 'bg-slate-50 border-slate-400 text-slate-600'],
+      ['stem_tool_geologyexplorer.js', 'bg-violet-600 border-violet-700 text-violet-50'],
+      ['stem_tool_geologyexplorer.js', 'bg-blue-700 border-blue-800 text-blue-50'],
+      ['stem_tool_geologyexplorer.js', 'bg-orange-700 border-orange-800 text-orange-50'],
+      ['stem_tool_inequality.js', 'bg-purple-100 text-purple-700 hover:bg-purple-200 border border-purple-700'],
+      ['stem_tool_inequality.js', 'bg-fuchsia-50 text-fuchsia-700 rounded border border-fuchsia-700 hover:bg-fuchsia-100'],
+      ['stem_tool_inequality.js', 'bg-fuchsia-50 text-fuchsia-700 rounded hover:bg-fuchsia-100'],
+      ['stem_tool_inequality.js', 'bg-teal-100 text-teal-800 rounded hover:bg-teal-200'],
+      ['stem_tool_geo.js', 'bg-red-600 text-white'],
+      ['stem_tool_geo.js', 'bg-orange-400 text-orange-950'],
+      ['stem_tool_geo.js', 'hover:bg-teal-800'],
+      ['stem_tool_geo.js', 'bg-slate-50 border-slate-400 text-slate-600'],
+      ['stem_tool_geo.js', 'bg-teal-700 text-white shadow'],
+      ['stem_tool_geo.js', 'bg-slate-50 border-slate-400 text-slate-700'],
+      ['stem_tool_geo.js', 'hover:bg-emerald-800'],
+      ['stem_tool_oratory.js', 'bg-violet-600 hover:bg-violet-700 text-white'],
+      ['stem_tool_oratory.js', 'bg-red-100 hover:bg-red-200 text-red-800'],
+      ['stem_tool_oratory.js', 'bg-red-600 hover:bg-red-700 text-white'],
+      ['stem_tool_oratory.js', 'bg-red-50 text-red-700'],
+      ['stem_tool_platetectonics.js', 'bg-orange-700 text-white'],
+      ['stem_tool_platetectonics.js', 'bg-emerald-700 text-white'],
+      ['stem_tool_platetectonics.js', 'bg-white text-red-700 border border-red-200 hover:bg-red-50'],
+      ['stem_tool_platetectonics.js', 'border-red-400 bg-red-50 text-red-700'],
+      ['stem_tool_platetectonics.js', 'bg-orange-100 hover:bg-orange-200 text-orange-800'],
+      ['stem_tool_volume.js', 'bg-purple-100 text-purple-700 hover:bg-purple-200 border border-purple-700'],
+      ['stem_tool_volume.js', 'hover:bg-amber-800'],
+      ['stem_tool_volume.js', 'bg-amber-100 text-amber-800 rounded-lg hover:bg-amber-200'],
+      ['stem_tool_volume.js', 'border-indigo-700 bg-indigo-600 text-white'],
+      ['stem_tool_volume.js', 'border-sky-800 bg-sky-700 text-white'],
+      ['stem_tool_volume.js', 'border-cyan-800 bg-cyan-700 text-white'],
+      ['stem_tool_universe.js', 'bg-emerald-100 text-emerald-700'],
+      ['stem_tool_universe.js', 'bg-violet-100 text-violet-700 hover:bg-violet-200'],
+      ['stem_tool_universe.js', 'bg-slate-100 border-slate-400 text-slate-700'],
+      ['stem_tool_universe.js', 'bg-green-100 text-green-700'],
+      ['stem_tool_universe.js', 'bg-yellow-100 text-yellow-800'],
+      ['stem_tool_universe.js', 'bg-red-100 text-red-700'],
+      ['stem_tool_universe.js', 'bg-sky-100 text-sky-700'],
+      ['stem_tool_universe.js', 'bg-teal-100 text-teal-700']
+    ];
+    const sources = new Map();
+    for (const [fileName, treatment] of treatments) {
+      if (!sources.has(fileName)) sources.set(fileName, readFileSync(resolve(process.cwd(), 'stem_lab', fileName), 'utf8'));
+      expect(sources.get(fileName), fileName + ': ' + treatment).toContain(treatment);
+    }
+  });
+
+  it('pins the five-tool status and loading-state batch', () => {
+    const treatments = [
+      ['stem_tool_dissection.js', 'bg-red-50 text-red-700'],
+      ['stem_tool_dissection.js', 'bg-yellow-50 text-yellow-800'],
+      ['stem_tool_dissection.js', 'bg-red-100 text-red-700'],
+      ['stem_tool_dissection.js', 'bg-emerald-100 text-emerald-700'],
+      ['stem_tool_dissection.js', 'bg-rose-100 text-rose-700'],
+      ['stem_tool_dissection.js', 'bg-amber-100 text-amber-800'],
+      ['stem_tool_dissection.js', 'bg-blue-100 text-blue-700'],
+      ['stem_tool_dissection.js', 'bg-teal-100 text-teal-700'],
+      ['stem_tool_semiconductor.js', 'bg-slate-600 text-slate-200 hover:bg-slate-700'],
+      ['stem_tool_semiconductor.js', 'bg-cyan-700 text-white hover:bg-cyan-800'],
+      ['stem_tool_semiconductor.js', 'bg-amber-700 text-white hover:bg-amber-800'],
+      ['stem_tool_watercycle.js', 'bg-sky-100 text-sky-800 hover:bg-sky-200'],
+      ['stem_tool_watercycle.js', 'bg-sky-700 text-white'],
+      ['stem_tool_watercycle.js', 'bg-purple-700 text-white cursor-wait'],
+      ['stem_tool_watercycle.js', 'bg-red-50 text-red-700 border border-red-200'],
+      ['stem_tool_weathersystems.js', 'hover:bg-indigo-700'],
+      ['stem_tool_weathersystems.js', 'border-cyan-800 bg-cyan-700 text-white'],
+      ['stem_tool_weathersystems.js', 'bg-slate-800 text-slate-300'],
+      ['stem_tool_weathersystems.js', 'bg-slate-100 text-slate-600'],
+      ['stem_tool_weathersystems.js', 'hover:bg-emerald-800'],
+      ['stem_tool_weathersystems.js', 'hover:bg-sky-800'],
+      ['stem_tool_weathersystems.js', 'hover:bg-cyan-800'],
+      ['stem_tool_weathersystems.js', 'hover:bg-teal-800'],
+      ['stem_tool_dna.js', 'hover:bg-amber-800'],
+      ['stem_tool_dna.js', 'hover:bg-emerald-800'],
+      ['stem_tool_dna.js', 'bg-purple-700 text-white cursor-wait'],
+      ['stem_tool_dna.js', 'hover:bg-violet-700'],
+      ['stem_tool_dna.js', 'bg-cyan-700 text-white cursor-wait'],
+      ['stem_tool_dna.js', 'bg-purple-200 text-purple-800 cursor-wait'],
+      ['stem_tool_dna.js', 'bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100'],
+      ['stem_tool_dna.js', 'bg-green-700 text-white border-green-800']
+    ];
+    const sources = new Map();
+    for (const [fileName, treatment] of treatments) {
+      if (!sources.has(fileName)) sources.set(fileName, readFileSync(resolve(process.cwd(), 'stem_lab', fileName), 'utf8'));
+      expect(sources.get(fileName), fileName + ': ' + treatment).toContain(treatment);
+    }
+  });
+
+  it('pins the five-tool calculus, baking, echo, and chemistry batch', () => {
+    const treatments = [
+      ['stem_tool_calculus.js', 'bg-red-100 text-red-800 hover:bg-red-200'],
+      ['stem_tool_calculus.js', 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'],
+      ['stem_tool_calculus.js', 'hover:bg-emerald-800'],
+      ['stem_tool_calculus.js', 'hover:bg-amber-800'],
+      ['stem_tool_calculus.js', 'bg-cyan-700 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-cyan-800'],
+      ['stem_tool_calculus.js', 'bg-red-600 border-red-700 text-white shadow-md'],
+      ['stem_tool_calculus.js', 'bg-indigo-600 border-indigo-700 text-white'],
+      ['stem_tool_bakingscience.js', 'bg-amber-700 text-white border-amber-800 shadow'],
+      ['stem_tool_bakingscience.js', 'bg-orange-700 text-white border-orange-800 shadow'],
+      ['stem_tool_bakingscience.js', 'bg-yellow-800 text-white shadow'],
+      ['stem_tool_bakingscience.js', 'bg-emerald-700 border-emerald-800 text-white'],
+      ['stem_tool_bakingscience.js', 'bg-red-600 border-red-700 text-white'],
+      ['stem_tool_bakingscience.js', 'bg-pink-700 border-pink-800 text-white'],
+      ['stem_tool_bakingscience.js', 'bg-rose-600 text-white'],
+      ['stem_tool_bakingscience.js', 'bg-teal-700 text-white'],
+      ['stem_tool_bakingscience.js', 'bg-sky-700 text-white'],
+      ['stem_tool_echolocation.js', 'hover:bg-emerald-800'],
+      ['stem_tool_echolocation.js', 'hover:bg-indigo-700'],
+      ['stem_tool_echolocation.js', 'bg-slate-200 text-slate-700'],
+      ['stem_tool_echolocation.js', 'bg-slate-700 text-slate-200 cursor-wait'],
+      ['stem_tool_chembalance.js', 'bg-lime-700 text-white'],
+      ['stem_tool_chembalance.js', 'bg-lime-700 rounded-lg hover:bg-lime-800'],
+      ['stem_tool_chembalance.js', 'text-white bg-lime-700 rounded-lg hover:bg-lime-800'],
+      ['stem_tool_chembalance.js', 'text-lime-800 bg-lime-50 border border-lime-800'],
+      ['stem_tool_chembalance.js', 'bg-emerald-700 text-white'],
+      ['stem_tool_chembalance.js', 'bg-orange-700 text-white']
+    ];
+    const sources = new Map();
+    for (const [fileName, treatment] of treatments) {
+      if (!sources.has(fileName)) sources.set(fileName, readFileSync(resolve(process.cwd(), 'stem_lab', fileName), 'utf8'));
+      expect(sources.get(fileName), fileName + ': ' + treatment).toContain(treatment);
+    }
+  });
+});

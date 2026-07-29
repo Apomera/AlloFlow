@@ -2,14 +2,32 @@
   HELP MODE COVERAGE AUDIT
 ====================================================
 
-Files scanned: 983
-Defined help keys (help_strings.js): 927
-Referenced help keys (data-help-key attrs): 893
-  - With definition: 887
-  - MISSING definition: 6
-Dead entries (defined but never referenced): 40
+Files scanned: 980
+Defined help keys (help_strings.js): 933
+Referenced help keys (data-help-key attrs): 901
+  - With definition: 889
+  - MISSING definition: 12
+Dead entries (defined but never referenced): 44
 
 --- MISSING help strings (referenced, no definition) ---
+  blueprint_preview_step_btn  [3x in 3 file(s)]
+     - desktop/web-app/public/persona_ui_module.js
+     - persona_ui_module.js
+  blueprint_rebuild_step_btn  [3x in 3 file(s)]
+     - desktop/web-app/public/persona_ui_module.js
+     - persona_ui_module.js
+  blueprint_save_template_btn  [3x in 3 file(s)]
+     - desktop/web-app/public/persona_ui_module.js
+     - persona_ui_module.js
+  chat_collapse  [4x in 4 file(s)]
+     - desktop/web-app/build/view_misc_modals_module.js
+     - desktop/web-app/public/view_misc_modals_module.js
+  chat_standard_tools_toggle  [4x in 4 file(s)]
+     - desktop/web-app/build/view_misc_modals_module.js
+     - desktop/web-app/public/view_misc_modals_module.js
+  educator_hub_allosheet_card  [4x in 4 file(s)]
+     - desktop/app-build/view_educator_hub_modal_module.js
+     - desktop/web-app/public/view_educator_hub_modal_module.js
   header_student_actions  [4x in 4 file(s)]
      - desktop/web-app/build/view_header_module.js
      - desktop/web-app/public/view_header_module.js
@@ -32,10 +50,13 @@ Dead entries (defined but never referenced): 40
   alignment_generate_button
   alignment_grade_select
   alignment_standard_select
+  anchor_chart_custom_instructions
   brainstorm_simulation_detailed
   brainstorm_step_count_detailed
   bridge_mode_button
+  concept_sort_custom_instructions
   concept_sort_input
+  dbq_custom_instructions
   educator_hub_bridge_card
   educator_hub_cinematic_studio_card
   header_actions
@@ -48,6 +69,7 @@ Dead entries (defined but never referenced): 40
   math_difficulty
   math_problem_count
   math_show_work
+  note_taking_custom_instructions
   persona_custom_instructions_detailed
   persona_mode_toggle
   quiz_image_style_input
@@ -71,6 +93,9 @@ Dead entries (defined but never referenced): 40
   wizard_url_source
 
 --- Top sections of MISSING keys (by snake_case prefix) ---
+     3  blueprint
+     2  chat
+     1  educator
      1  header
      1  history
      1  learning

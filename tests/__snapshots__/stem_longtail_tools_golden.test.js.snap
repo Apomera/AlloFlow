@@ -132,10 +132,10 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
 
 exports[`career/nature long-tail render goldens (default state) > renders + pins a digest for petsLab 1`] = `
 {
-  "buttons": 35,
+  "buttons": 36,
   "inputs": 6,
-  "lengthBucket": 163,
-  "sha": "643d93938f100d28",
+  "lengthBucket": 167,
+  "sha": "7669925cc6a6c9b2",
   "svgs": 1,
 }
 `;

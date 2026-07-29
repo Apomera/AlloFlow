@@ -165,6 +165,31 @@ describe('Physics.step — fixed wing', () => {
       1 / 60, { throttle: 1, pitch: 0, bank: 0 });
     expect(sprint.speed).toBeGreaterThan(163 * 1.6878);
   });
+
+  it('flaps increase lift and drag at the same speed and angle of attack', () => {
+    const start = groundState({ speed: 200, altitude: 3000, onGround: false });
+    const clean = FS.Physics.step(start, 1 / 60, { throttle: 0.5, pitch: 4, bank: 0, flaps: 0 });
+    const full = FS.Physics.step(start, 1 / 60, { throttle: 0.5, pitch: 4, bank: 0, flaps: 30 });
+    expect(full.forces.lift).toBeCloseTo(clean.forces.lift * 1.45, 4);
+    expect(full.forces.drag).toBeCloseTo(clean.forces.drag * 2.8, 4);
+    expect(full.speed).toBeLessThan(clean.speed);
+  });
+
+  it('extended flaps lower the physical stall threshold, not only the PFD marker', () => {
+    const slow = groundState({ speed: 85, altitude: 0, onGround: false });
+    const clean = FS.Physics.step(slow, 1 / 60, { throttle: 0, pitch: 0, bank: 0, flaps: 0 });
+    const configured = FS.Physics.step(slow, 1 / 60, { throttle: 0, pitch: 0, bank: 0, flaps: 30 });
+    expect(clean.stalling).toBe(true);
+    expect(configured.stalling).toBe(false);
+  });
+
+  it('wheel brakes shorten ground rollout without producing reverse motion', () => {
+    const rolling = groundState({ speed: 80 });
+    const free = FS.Physics.step(rolling, 1, { throttle: 0, pitch: 0, bank: 0, brake: 0 });
+    const braking = FS.Physics.step(rolling, 1, { throttle: 0, pitch: 0, bank: 0, brake: 1 });
+    expect(braking.speed).toBeLessThan(free.speed);
+    expect(braking.speed).toBeGreaterThanOrEqual(0);
+  });
 });
 
 // ───────────────────── helicopter + drone branches ────────────────────
@@ -297,6 +322,84 @@ describe('composeGroundSpeedKts (TAS + wind + jet → GS)', () => {
   it('direct crosswind changes GS only quadratically (small for light winds)', () => {
     const gs = FS.composeGroundSpeedKts(0, 120, 15, 90, 0); // wind FROM the east, flying north
     expect(gs).toBeCloseTo(Math.hypot(120, 15), 4);
+  });
+});
+
+describe('getFlapAerodynamics (configuration realism)', () => {
+  it('is clean at zero and applies bounded full-flap lift/drag/stall effects', () => {
+    expect(FS.getFlapAerodynamics(0)).toEqual({
+      degrees: 0, ratio: 0, liftMultiplier: 1, dragMultiplier: 1, stallSpeedFactor: 1,
+    });
+    const full = FS.getFlapAerodynamics(30);
+    expect(full.liftMultiplier).toBeCloseTo(1.45, 6);
+    expect(full.dragMultiplier).toBeCloseTo(2.8, 6);
+    expect(full.stallSpeedFactor).toBeCloseTo(1 / Math.sqrt(1.45), 6);
+    expect(FS.getFlapAerodynamics(999)).toEqual(full);
+  });
+});
+
+describe('computeFlightTelemetry (coherent PFD air data + approach gate)', () => {
+  it('separates IAS from TAS at altitude while keeping sea-level values aligned', () => {
+    const tas = 120;
+    const sea = FS.computeFlightTelemetry(
+      groundState({ onGround: false, speed: tas / KTS_PER_FTS, altitude: 0 }),
+      {}, {}, 0, 50, Infinity);
+    const high = FS.computeFlightTelemetry(
+      groundState({ onGround: false, speed: tas / KTS_PER_FTS, altitude: 10000 }),
+      {}, {}, 0, 58, Infinity);
+    expect(sea.iasKts).toBeCloseTo(tas, 4);
+    expect(high.tasKts).toBeCloseTo(tas, 4);
+    expect(high.iasKts).toBeLessThan(high.tasKts);
+    expect(high.stallIasKts).toBeLessThan(58);
+  });
+
+  it('reports meteorological headwind and crosswind components consistently', () => {
+    const head = FS.computeFlightTelemetry(
+      groundState({ onGround: false, speed: 120 / KTS_PER_FTS, heading: 0 }),
+      {}, { wind: 20, windDir: 0 }, 0, 50, Infinity);
+    const cross = FS.computeFlightTelemetry(
+      groundState({ onGround: false, speed: 120 / KTS_PER_FTS, heading: 0 }),
+      {}, { wind: 20, windDir: 90 }, 0, 50, Infinity);
+    expect(head.headwindKts).toBeCloseTo(20, 6);
+    expect(head.gsKts).toBeCloseTo(100, 4);
+    expect(cross.headwindKts).toBeCloseTo(0, 6);
+    expect(cross.crosswindKts).toBeCloseTo(20, 6);
+    expect(cross.gsKts).toBeCloseTo(Math.hypot(120, 20), 4);
+  });
+
+  it('recognizes a stabilized final and names corrections for an unstable one', () => {
+    const stable = FS.computeFlightTelemetry(
+      groundState({ onGround: false, speed: 65 / KTS_PER_FTS, altitude: 600, vsi: -10 }),
+      { bank: 5, pitch: -3 }, { wind: 8, windDir: 0 }, 0, 50, 2, 0);
+    expect(stable.approachActive).toBe(true);
+    expect(stable.approachStable).toBe(true);
+    expect(stable.glideAngleDeg).toBeGreaterThan(2);
+    expect(stable.glideAngleDeg).toBeLessThan(4.2);
+    expect(stable.approachReasons).toEqual([]);
+
+    const unstable = FS.computeFlightTelemetry(
+      groundState({ onGround: false, speed: 90 / KTS_PER_FTS, altitude: 1000, vsi: -25 }),
+      { bank: 32, pitch: -8 }, { wind: 25, windDir: 90 }, 0, 50, 1.5, 0);
+    expect(unstable.approachStable).toBe(false);
+    expect(unstable.approachReasons).toEqual(expect.arrayContaining(['FAST', 'SINK', 'BANK', 'GLIDE HIGH']));
+  });
+
+  it('does not show approach guidance during cruise or on the ground', () => {
+    const cruise = FS.computeFlightTelemetry(
+      groundState({ onGround: false, speed: 120 / KTS_PER_FTS, altitude: 7000 }),
+      {}, {}, 0, 50, 2, 0);
+    const parked = FS.computeFlightTelemetry(groundState(), {}, { wind: 40, windDir: 0 }, 0, 50, 0.2, 0);
+    const departing = FS.computeFlightTelemetry(
+      groundState({ onGround: false, speed: 80 / KTS_PER_FTS, altitude: 500, vsi: 8 }),
+      {}, {}, 0, 50, 2, 0);
+    const crossing = FS.computeFlightTelemetry(
+      groundState({ onGround: false, speed: 80 / KTS_PER_FTS, altitude: 500, vsi: -8 }),
+      {}, {}, 0, 50, 2, 90);
+    expect(cruise.approachActive).toBe(false);
+    expect(departing.approachActive).toBe(false);
+    expect(crossing.approachActive).toBe(false);
+    expect(parked.approachActive).toBe(false);
+    expect(parked.headwindKts).toBe(0);
   });
 });
 
@@ -558,6 +661,64 @@ describe('quiz banks', () => {
     for (const s of FS.ATC_QUIZ_SCENARIOS) {
       expect(s.situation.length).toBeGreaterThan(20);
       expect(s.whatToSay.length).toBeGreaterThan(10);
+    }
+  });
+});
+
+describe('shared world environment model', () => {
+  it('recognizes representative world biomes without renderer-specific rules', () => {
+    expect(FS.getWorldEnvironment(24, 18, 900, false).id).toBe('desert');
+    expect(FS.getWorldEnvironment(-4, -63, 400, false).id).toBe('tropical_rainforest');
+    expect(FS.getWorldEnvironment(47, -123, 500, false).id).toBe('temperate_forest');
+    expect(FS.getWorldEnvironment(58, 18, 500, false).id).toBe('boreal');
+    expect(FS.getWorldEnvironment(70, -40, 400, false).id).toBe('tundra');
+    expect(FS.getWorldEnvironment(28, 85, 15000, false).id).toBe('alpine');
+    expect(FS.getWorldEnvironment(20, -145, 0, true).id).toBe('ocean');
+    expect(FS.getWorldEnvironment(78, 5, 0, true).id).toBe('polar_ocean');
+  });
+
+  it('keeps ecological density and elevation relationships physically coherent', () => {
+    const desert = FS.getWorldEnvironment(24, 18, 900, false);
+    const rainforest = FS.getWorldEnvironment(-4, -63, 400, false);
+    const temperate = FS.getWorldEnvironment(42, -72, 400, false);
+    expect(rainforest.treeDensity).toBeGreaterThan(temperate.treeDensity);
+    expect(temperate.treeDensity).toBeGreaterThan(desert.treeDensity);
+    expect(desert.fieldDensity).toBeLessThan(temperate.fieldDensity);
+    expect(FS.getWorldEnvironment(70, 0, 0, false).snowLineFt)
+      .toBeLessThan(FS.getWorldEnvironment(20, 0, 0, false).snowLineFt);
+    expect(FS.getWorldEnvironment(24, 18, 900, false).moisture)
+      .toBeLessThan(FS.getWorldEnvironment(0, 23, 900, false).moisture);
+  });
+
+  it('keeps neighboring terrain colors visually continuous', () => {
+    const anchors = [[24, 18], [-4, -63], [47, -123], [58, 18], [35, -114]];
+    for (const [lat, lon] of anchors) {
+      const a = FS.getWorldEnvironment(lat, lon, 700, false);
+      const b = FS.getWorldEnvironment(lat + 0.08, lon + 0.08, 700, false);
+      const maxDelta = Math.max(...a.color.map((c, i) => Math.abs(c - b.color[i])));
+      expect(maxDelta, lat + ',' + lon).toBeLessThan(80);
+    }
+  });
+
+  it('returns bounded, deterministic visual parameters across the globe', () => {
+    for (let lat = -90; lat <= 90; lat += 15) {
+      for (let lon = -180; lon <= 180; lon += 30) {
+        const a = FS.getWorldEnvironment(lat, lon, 1200, false);
+        const b = FS.getWorldEnvironment(lat, lon, 1200, false);
+        expect(a).toEqual(b);
+        expect(a.color).toHaveLength(3);
+        expect(a.haze).toHaveLength(3);
+        for (const channel of a.color.concat(a.haze)) {
+          expect(channel).toBeGreaterThanOrEqual(0);
+          expect(channel).toBeLessThanOrEqual(255);
+        }
+        expect(a.moisture).toBeGreaterThanOrEqual(0);
+        expect(a.moisture).toBeLessThanOrEqual(1);
+        expect(a.temperature).toBeGreaterThanOrEqual(0);
+        expect(a.temperature).toBeLessThanOrEqual(1);
+        expect(a.visibilityFactor).toBeGreaterThan(0);
+        expect(a.visibilityFactor).toBeLessThanOrEqual(1);
+      }
     }
   });
 });

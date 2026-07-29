@@ -397,6 +397,18 @@ describe('accessibility preflight + workflow helpers', () => {
     expect(imageActions.find(a => a.type === 'mark-decorative')).toMatchObject({ targetId: image, issueType: 'alt', severity: 'error' });
     expect(ST.stObjectReadyActions(d, 'missing')).toEqual([]);
   });
+  it('builds contextual next actions for selected objects', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Next actions', T0);
+    const text = ST.stAppend(d, { type: 'object.add', object: { type: 'text', role: 'body', frame: { x: 20, y: 20, w: 200, h: 24 }, z: 2, runs: [{ text: 'tiny pale', style: { size: 10, color: '#fefefe' } }] } }, 'user', T0).object.id;
+    const textNext = ST.stObjectNextActions(d, text);
+    expect(textNext.map(a => a.type)).toEqual(expect.arrayContaining(['fix-small-text', 'fix-contrast', 'make-heading1', 'duplicate', 'page-width']));
+    expect(textNext.find(a => a.type === 'fix-small-text').readyAction.targetId).toBe(text);
+
+    const image = addImage(d, 'data:image/png;base64,x', 'Diagram').object.id;
+    const imageNext = ST.stObjectNextActions(d, image);
+    expect(imageNext.map(a => a.type)).toEqual(expect.arrayContaining(['crop-image', 'replace-image', 'duplicate']));
+    expect(ST.stObjectNextActions(d, 'missing')).toEqual([]);
+  });
   it('offers replace, remove, and keep actions for empty image frames', () => {
     const d = ST.stCreateDoc('letter-portrait', 'Empty image actions', T0);
     const image = addImage(d, '', '').object.id;
@@ -404,6 +416,7 @@ describe('accessibility preflight + workflow helpers', () => {
     expect(ST.stImageFrameState(d.objects[0]).key).toBe('empty-placeholder');
     expect(ST.stBuildReadyActions(d).actions.map(a => a.type)).toContain('replace-image');
     expect(ST.stObjectReadyActions(d, image).map(a => a.type)).toEqual(['replace-image', 'remove-placeholder', 'keep-placeholder']);
+    expect(ST.stObjectNextActions(d, image).map(a => a.type).filter(type => type === 'replace-image')).toHaveLength(1);
 
     const keepPatch = ST.stKeepPlaceholderPatch(d.objects[0]);
     expect(keepPatch).toMatchObject({ decorative: true, provenance: { origin: 'upload', placeholder: 'keep' } });
@@ -486,6 +499,24 @@ describe('accessibility preflight + workflow helpers', () => {
     const worksheet = ST.stExportConfidence(w).cards.find(c => c.key === 'worksheet');
     expect(worksheet.status).toBe('ready');
     expect(worksheet.message).toContain('1 structured question');
+  });
+  it('recommends export next steps by document status', () => {
+    const blocked = ST.stCreateDoc('letter-portrait', 'Blocked export', T0);
+    addImage(blocked, 'data:image/png;base64,x', '');
+    expect(ST.stRecommendedExportAction(blocked)).toMatchObject({ id: 'open-fixes', status: 'blocked', issueFilter: 'fix' });
+
+    const review = ST.stCreateDoc('letter-portrait', 'Review export', T0);
+    ST.stAppend(review, { type: 'object.add', object: { type: 'text', role: 'body', frame: { x: 20, y: 120, w: 200, h: 24 }, z: 2, runs: [{ text: 'tiny note', style: { size: 10, color: '#111827' } }] } }, 'user', T0 + 1);
+    expect(ST.stRecommendedExportAction(review)).toMatchObject({ id: 'open-review', status: 'review', issueFilter: 'review' });
+
+    const worksheet = ST.stCreateDoc('letter-portrait', 'Worksheet export', T0);
+    ST.stAppend(worksheet, { type: 'object.add', object: { type: 'text', role: 'heading1', frame: { x: 20, y: 20, w: 420, h: 52 }, z: 1, runs: [{ text: 'Lab Reflection', style: { size: 28, color: '#111827' } }] } }, 'user', T0);
+    ST.stAppend(worksheet, { type: 'object.add', object: { type: 'text', role: 'heading2', frame: { x: 20, y: 96, w: 520, h: 42 }, z: 1, runs: [{ text: '1. What did you notice?', style: { size: 18, color: '#111827' } }] } }, 'user', T0 + 1);
+    expect(ST.stRecommendedExportAction(worksheet)).toMatchObject({ id: 'worksheet-tagged-pdf', status: 'review', exportType: 'worksheet-pdf' });
+
+    const plain = ST.stCreateDoc('letter-portrait', 'Plain export', T0);
+    ST.stAppend(plain, { type: 'object.add', object: { type: 'text', role: 'heading1', frame: { x: 20, y: 20, w: 420, h: 52 }, z: 1, runs: [{ text: 'One Page Explainer', style: { size: 28, color: '#111827' } }] } }, 'user', T0);
+    expect(ST.stRecommendedExportAction(plain)).toMatchObject({ id: 'tagged-pdf', status: 'ready', exportType: 'tagged-pdf' });
   });
   it('builds optimize-image actions for large embedded images without changing alt or fit', () => {
     const d = ST.stCreateDoc('letter-portrait', 'Large image', T0);
@@ -646,6 +677,18 @@ describe('resource shelf + portfolio continuity helpers', () => {
     expect(cues.find(c => c.label === 'Cloud diagram').imageSrc).toMatch(/^data:image/);
     expect(cues.find(c => c.label === 'Remote image').imageSrc).toBe('');
   });
+  it('filters source cues by kind and search text for a calmer shelf', () => {
+    const cues = [
+      { id: 'img', kind: 'image', label: 'Cloud diagram', text: 'Water cycle visual', sourceTitle: 'Science pack' },
+      { id: 'term', kind: 'glossary', label: 'Evaporation', text: 'Liquid water becomes vapor.', sourceTitle: 'Science pack' },
+      { id: 'q', kind: 'question', label: 'Checkpoint', text: 'Why does condensation happen?', sourceTitle: 'Quiz' }
+    ];
+    expect(ST.stResourceCueKindCounts(cues).map(item => `${item.kind}:${item.count}`)).toEqual(['all:3', 'image:1', 'glossary:1', 'question:1']);
+    expect(ST.stResourceCueKindLabel('source-note')).toBe('Source notes');
+    expect(ST.stFilterResourceCues(cues, { kind: 'image' }).map(c => c.id)).toEqual(['img']);
+    expect(ST.stFilterResourceCues(cues, { query: 'condensation' }).map(c => c.id)).toEqual(['q']);
+    expect(ST.stFilterResourceCues(cues, { kind: 'glossary', query: 'science pack' }).map(c => c.id)).toEqual(['term']);
+  });
   it('turns a resource cue into editable Studio objects with import provenance', () => {
     const objects = ST.stObjectsFromResourceCue({
       id: 'term-1',
@@ -690,6 +733,23 @@ describe('resource shelf + portfolio continuity helpers', () => {
     const modes = ST.stResourceInsertModes({ kind: 'image', text: 'Diagram caption', imageSrc: 'data:image/png;base64,abc' });
     expect(modes.map(m => m.id)).toEqual(expect.arrayContaining(['smart-card', 'worksheet-question', 'captioned-image', 'anchor-section', 'source-note']));
     expect(ST.stResourceInsertModes({ kind: 'image', imageSrc: 'https://example.com/nope.png' }).map(m => m.id)).not.toContain('captioned-image');
+  });
+  it('recommends the best-fit insert mode for common source types', () => {
+    expect(ST.stRecommendedResourceInsertMode({ kind: 'image', label: 'Diagram', imageSrc: 'data:image/png;base64,abc' }).id).toBe('captioned-image');
+    expect(ST.stRecommendedResourceInsertMode({ kind: 'question', text: 'Why does condensation happen?' }).id).toBe('worksheet-question');
+    expect(ST.stRecommendedResourceInsertMode({ kind: 'glossary', label: 'Evaporation', text: 'Liquid becomes vapor.' }).id).toBe('vocabulary-card');
+    expect(ST.stRecommendedResourceInsertMode({ kind: 'section', text: 'First read the article. Then compare the models.' }).id).toBe('anchor-section');
+    expect(ST.stRecommendedResourceInsertMode({ kind: 'resource', text: 'What evidence supports the claim?' }).id).toBe('worksheet-question');
+    expect(ST.stRecommendedResourceInsertMode({ kind: 'image', imageSrc: 'https://example.com/nope.png' }).id).toBe('smart-card');
+  });
+  it('builds a single action model for recommended and manual source insert choices', () => {
+    const model = ST.stResourceInsertActionModel({ kind: 'image', label: 'Cloud diagram', text: 'Clouds form as vapor cools.', imageSrc: 'data:image/png;base64,abc' });
+    expect(model.recommended).toMatchObject({ id: 'captioned-image', label: 'Visual', recommended: true });
+    expect(model.recommended.preview.hasImage).toBe(true);
+    expect(model.modes.filter(mode => mode.recommended).map(mode => mode.id)).toEqual(['captioned-image']);
+    expect(model.modes.map(mode => mode.id)).toEqual(expect.arrayContaining(['smart-card', 'captioned-image', 'source-note']));
+    expect(model.modes.every(mode => mode.preview && mode.preview.objectCount > 0)).toBe(true);
+    expect(model.objectCount).toBeGreaterThan(model.recommended.preview.objectCount);
   });
   it('summarizes insert previews before adding resource objects', () => {
     const visual = ST.stResourceInsertPreview({ kind: 'image', label: 'Cloud diagram', text: 'Clouds form as vapor cools.', imageSrc: 'data:image/png;base64,abc' }, 'captioned-image');
@@ -757,6 +817,20 @@ describe('Studio visual ergonomics helpers', () => {
     expect(middle.find(p => p.id === 'a').frame.y).toBe(45);
     expect(middle.find(p => p.id === 'b').frame.y).toBe(50);
   });
+  it('summarizes multi-selection state for safer group controls', () => {
+    const objects = [
+      { id: 'a', type: 'text', locked: true, frame: { x: 10, y: 20, w: 100, h: 40 }, runs: [{ text: 'Title', style: {} }] },
+      { id: 'b', type: 'image', frame: { x: 180, y: 80, w: 60, h: 30 }, alt: 'Diagram' },
+      { id: 'c', type: 'shape', shape: 'rect', frame: { x: 250, y: 100, w: 50, h: 30 } }
+    ];
+    const summary = ST.stSelectionSummary(objects, ['a', 'b', 'c', 'missing']);
+    expect(summary).toMatchObject({ count: 3, lockedCount: 1, unlockedCount: 2, canAlign: true, canDistribute: false, canDuplicate: true, canDelete: true });
+    expect(summary.typeText).toBe('1 text, 1 image, 1 shape');
+    expect(summary.boundsLabel).toBe('290 x 110');
+
+    const locked = ST.stSelectionSummary(objects, ['a']);
+    expect(locked).toMatchObject({ count: 1, lockedCount: 1, unlockedCount: 0, allLocked: true, canAlign: false, canDuplicate: false, canDelete: false });
+  });
   it('distributes three selected frames along either axis', () => {
     const objects = [
       { id: 'a', frame: { x: 0, y: 0, w: 50, h: 20 } },
@@ -799,6 +873,24 @@ describe('Studio visual ergonomics helpers', () => {
     const layers = ST.stLayerItems(objects);
     expect(layers.map(item => item.id)).toEqual(['c', 'b', 'a']);
     expect(layers.find(item => item.id === 'b').readingIndex).toBe(2);
+  });
+  it('filters object navigator items by visible classroom labels', () => {
+    const objects = [
+      { id: 'title', type: 'text', role: 'heading1', frame: { x: 0, y: 0, w: 200, h: 40 }, runs: [{ text: 'Water Cycle', style: {} }] },
+      { id: 'leaf', type: 'image', alt: 'Leaf diagram', frame: { x: 0, y: 50, w: 100, h: 80 } },
+      { id: 'box', type: 'shape', shape: 'rect', locked: true, frame: { x: 0, y: 150, w: 100, h: 80 } }
+    ];
+    const analysis = { issues: [{ id: 'leaf', severity: 'error', type: 'alt' }] };
+    expect(ST.stFilterObjectNavigatorObjects(objects, '').map(o => o.id)).toEqual(['title', 'leaf', 'box']);
+    expect(ST.stFilterObjectNavigatorObjects(objects, 'water heading1').map(o => o.id)).toEqual(['title']);
+    expect(ST.stFilterObjectNavigatorObjects(objects, 'leaf image').map(o => o.id)).toEqual(['leaf']);
+    expect(ST.stFilterObjectNavigatorObjects(objects, 'locked shape').map(o => o.id)).toEqual(['box']);
+    expect(ST.stFilterObjectNavigatorObjects(objects, '', 'issues', analysis).map(o => o.id)).toEqual(['leaf']);
+    expect(ST.stFilterObjectNavigatorObjects(objects, 'leaf', 'issues', analysis).map(o => o.id)).toEqual(['leaf']);
+    expect(ST.stFilterObjectNavigatorObjects(objects, '', 'locked', analysis).map(o => o.id)).toEqual(['box']);
+    expect(ST.stFilterObjectNavigatorObjects(objects, '', 'image', analysis).map(o => o.id)).toEqual(['leaf']);
+    expect(ST.stFilterObjectNavigatorObjects(objects, 'missing')).toEqual([]);
+    expect(ST.stObjectNavigatorFilterCounts(objects, analysis).map(item => item.key + ':' + item.count)).toEqual(['all:3', 'issues:1', 'text:1', 'image:1', 'shape:1', 'locked:1']);
   });
   it('snaps dragged frames to margins, centers, and nearby object edges', () => {
     const canvas = { w: 500, h: 400 };
@@ -1420,12 +1512,35 @@ describe('AlloStudio keyboard shortcut reference (stShortcutList)', () => {
   it('documents the core editing shortcuts that the handler binds', () => {
     const byId = {};
     ST.stShortcutList().forEach((s) => { byId[s.id] = s; });
-    ['undo', 'redo', 'duplicate', 'selectAll', 'save', 'forward', 'backward', 'zoomFit', 'help'].forEach((id) => {
+    ['undo', 'redo', 'duplicate', 'selectAll', 'save', 'forward', 'backward', 'zoomFit', 'commandPalette', 'help'].forEach((id) => {
       expect(byId[id]).toBeTruthy();
     });
     expect(byId.duplicate.mod).toBe(true);
     expect(byId.help.mod).toBe(false);
     expect(byId.help.keys).toBe('?');
+    expect(byId.commandPalette).toMatchObject({ mod: true, keys: 'K' });
+  });
+});
+
+describe('AlloStudio quick action command palette helpers', () => {
+  it('builds practical commands and keeps object selection behind search', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Palette', T0);
+    const text = addText(d, 'Water Cycle', 'heading1').object.id;
+    addImage(d, 'data:image/png;base64,x', '');
+    const analysis = ST.stAnalyzeDoc(d);
+    const commands = ST.stCommandPaletteItems(d, {
+      preflight: analysis,
+      selectionCount: 1,
+      recommendedExport: ST.stRecommendedExportAction(d)
+    });
+    const ids = commands.map(c => c.id);
+    expect(ids).toEqual(expect.arrayContaining(['insert-heading1', 'fix-next-a11y', 'export-recommended', 'select-all', 'duplicate-selection', 'portfolio']));
+    expect(commands.find(c => c.id === 'fix-next-a11y').enabled).toBe(true);
+    expect(commands.filter(c => c.id.startsWith('select-object:')).length).toBe(2);
+    expect(ST.stFilterCommandPaletteItems(commands, '').some(c => c.id.startsWith('select-object:'))).toBe(false);
+    expect(ST.stFilterCommandPaletteItems(commands, 'water').map(c => c.id)).toContain('select-object:' + text);
+    expect(ST.stFilterCommandPaletteItems(commands, 'alt').map(c => c.id)).toEqual(expect.arrayContaining(['fix-next-a11y']));
+    expect(ST.stFilterCommandPaletteItems(commands, 'portfolio').map(c => c.id)).toContain('portfolio');
   });
 });
 

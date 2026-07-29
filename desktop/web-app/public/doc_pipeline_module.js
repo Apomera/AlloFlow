@@ -5272,6 +5272,22 @@ var createDocPipeline = function(deps) {
   // cost (style vs transform, legend re-extraction, recovery probes) set _alloPayloadPhase around
   // themselves. FERPA: counts only — never prompt or document text.
   var _alloPayloadPhase = null;
+  // The opening audit's payload, handed forward to the run that follows it. Null once consumed.
+  var _alloCarriedAuditPayload = null;
+  // ── Payload-cut flags (2026-07-27) ──────────────────────────────────────────────────────────
+  // Every Phase-2 cut reads its flag once at its call site and DEFAULTS OFF. This exists so a
+  // before/after measurement is one process with one build: flip a flag, re-run, diff the ledger.
+  // Without it, comparing "before" and "after" means two git checkouts and the deltas are polluted
+  // by every unrelated change between them. Precedent in this file: window.__alloForceOcr.
+  //
+  // A cut that turns out to degrade output is disabled by flipping one boolean, not by reverting a
+  // commit that other cuts have since been built on top of.
+  var _alloPayloadCut = function (name) {
+    try {
+      var flags = (typeof window !== 'undefined') ? window.__alloPayloadCuts : null;
+      return !!(flags && flags[name] === true);
+    } catch (_) { return false; }
+  };
   var _alloWithPayloadPhase = function (phase, work) {
     var prev = _alloPayloadPhase;
     _alloPayloadPhase = phase;
@@ -13621,6 +13637,14 @@ var createDocPipeline = function(deps) {
     const _skipUi = !!(options && options.skipUiUpdates);
     const _skipCache = !!(options && options.skipCache);
     const _auditSignal = options && options.signal;
+    // Payload ledger, part 2 (2026-07-27). The opening audit runs from the UI BEFORE
+    // fixAndVerifyPdf exists, and fixAndVerifyPdf then replaces _pipelineStats with a FRESH object
+    // — so the audit's whole-document uploads, potentially the largest single bucket in the run,
+    // were counted and then discarded. Open a measurement window here and hand it to the run, so
+    // one ledger covers what the teacher actually spent from upload to finished document.
+    // Consumed once (see fixAndVerifyPdf) so a second Fix without a re-audit does not re-count
+    // bytes that were already spent and already reported.
+    try { _alloCarriedAuditPayload = {}; _pipelineStats.payload = _alloCarriedAuditPayload; } catch (_) {}
     const _auditHost = _s();
     const _auditRunToken = (!_skipUi && typeof _auditHost.beginPdfAuditRun === 'function')
       ? _auditHost.beginPdfAuditRun()
@@ -21624,7 +21648,12 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
       stepTimes: {},
       lastOpenStep: null,
       lastOpenStepLabel: '',
+      // Adopt the opening audit's payload rather than starting a fresh map — otherwise the ledger
+      // reports the fix phases only and misses what the audit uploaded, which on a short document
+      // is the larger half. Consumed here so a second Fix on the same audit starts clean.
+      payload: _alloCarriedAuditPayload || {},
     };
+    _alloCarriedAuditPayload = null;
     const _runTelemetry = { runId: _runId, runSequence: _runSequence, documentEpoch: _runDocumentEpoch, stats: _runStats };
     if (!_silentMode) {
       _activeRemediationProgress = {
@@ -22893,7 +22922,19 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             return `\n\n═══ SOURCE TAG TREE — PRESERVE THESE HEADING LEVELS ═══\nThis PDF ships a logical structure tree. The headings below were extracted directly from the source's tags. When you emit h1/h2/h3 blocks, MATCH these levels exactly — do not re-infer from font size or visual weight. If a heading in the outline below is missing from your output, the document loses structure that the source explicitly encoded.\n\n${outline}\n═══════════════════════════════════════════════════\n`;
           })()
         : '';
-      const jsonPrompt = `You are a WCAG 2.2 AA accessibility specialist extracting a PDF into structured, semantically correct HTML content blocks. Your output will be used directly by screen readers, so accuracy matters.${_sourceHeadingsDirective}
+      // 2026-07-27: a PARTIAL run must say so. pageCount is the RANGE LENGTH, so a 5-page range on
+      // a 40-page PDF satisfies pageCount <= 8 and takes this single-pass branch — whose prompt
+      // carried NO page instruction at all, against an upload of the WHOLE document. The result:
+      // "remediate pages 6-10" silently remediated all forty. The chunked branch had the mirror
+      // bug (range-relative numbers); both are fixed together because a teacher cannot tell which
+      // branch their document took.
+      const _t2SinglePageScope = (_pageRange && _pageRange[0])
+        ? `
+
+SCOPE: This file contains a larger document, but you must extract ONLY pages ${Math.max(1, _pageRange[0])} through ${Math.max(1, _pageRange[0]) + pageCount - 1}. Ignore every other page completely — do not summarise them, do not mention them.
+`
+        : '';
+      const jsonPrompt = `You are a WCAG 2.2 AA accessibility specialist extracting a PDF into structured, semantically correct HTML content blocks. Your output will be used directly by screen readers, so accuracy matters.${_t2SinglePageScope}${_sourceHeadingsDirective}
 
 Extract ALL content as a JSON array of content blocks. Each block must be one of these types:
 
@@ -22994,7 +23035,7 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
           warnLog('[PDF Fix] JSON extraction failed, falling back to direct HTML:', jsonErr);
           updateProgress(2, 'Fallback: generating HTML directly...');
           const fallbackPrompt = `Transform this PDF into accessible HTML body content meeting WCAG 2.2 AA. Use proper headings, tables with th scope, alt text, lists, links. Include ALL content. Use inline CSS for styling. Return ONLY HTML.`;
-          bodyContent = await callGeminiVision(fallbackPrompt, _base64, _mimeType);
+          bodyContent = await _alloWithPayloadPhase('transform-fallback', () => callGeminiVision(fallbackPrompt, _base64, _mimeType));
           // Validate: reject empty, refusal messages, or non-HTML replies so downstream stages know to recover.
           const _fallbackOk = bodyContent
             && bodyContent.trim().length >= 50
@@ -23009,6 +23050,15 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
         // Use 3 pages per chunk (not 5) to prevent output truncation on dense documents
         updateProgress(2, 'Extracting document structure (chunked)...');
         const TRANSFORM_PAGES = 3;
+        // 2026-07-27: page numbers in this prompt are ABSOLUTE positions in the uploaded file.
+        // They used to be computed from pageCount, which is the RANGE LENGTH when a partial run is
+        // active (:21824) — while _base64 is always the WHOLE document. So a run over pages 6-10 of
+        // a 15-page PDF asked for "pages 1 through 3" and extracted THE WRONG PAGES, silently, into
+        // the document a teacher then hands out. Step 1 fixed exactly this with _rangeStart
+        // (:22135-22140); Step 2 never got the fix. Any future slicing depends on this being right,
+        // because a slice built from the wrong numbers is wrong twice.
+        const _t2RangeStart = (_pageRange && _pageRange[0]) ? Math.max(1, _pageRange[0]) : 1;
+        const _t2LastPage = _t2RangeStart + pageCount - 1;
         const transformChunks = Math.ceil(pageCount / TRANSFORM_PAGES);
         let allBlocks = [];
         const chunkMeta = []; // Track per-chunk metadata for retry
@@ -23016,8 +23066,8 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
         // Run ALL JSON extraction chunks in PARALLEL for speed
         updateProgress(2, `Extracting structure: ${transformChunks} chunks in parallel...`);
         const processJsonChunk = async (i) => {
-          const startPg = i * TRANSFORM_PAGES + 1;
-          const endPg = Math.min((i + 1) * TRANSFORM_PAGES, pageCount);
+          const startPg = _t2RangeStart + i * TRANSFORM_PAGES;
+          const endPg = Math.min(_t2RangeStart + (i + 1) * TRANSFORM_PAGES - 1, _t2LastPage);
           // Tier 8 deep wire: filter source tag-tree headings to those that
           // fall within this chunk's page range so the AI preserves source
           // levels per-chunk without context bleed across chunks.
@@ -23030,7 +23080,7 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
               })()
             : '';
           try {
-            const chunkResult = await callGeminiVision(
+            const chunkResult = await _alloWithPayloadPhase('transform-chunk', () => callGeminiVision(
               `Extract ALL content from pages ${startPg} through ${endPg} of this PDF as a JSON array of content blocks.\n\n` +
               `This is chunk ${i + 1} of ${transformChunks}.\n` +
               (i === 0 ? 'Include the document title as a "banner" or "h1" block. ' : 'Do NOT repeat the document title. Continue with h2/h3. ') +
@@ -23053,7 +23103,7 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
               _chunkHeadingsDirective +
               `\nReturn ONLY a JSON array: [{"type":"...","text":"..."}, ...]`,
               _base64, _mimeType
-            );
+            ));
             if (chunkResult) {
               let cleaned = _stripCodeFence(_restoreNeutralizedPromptFences(chunkResult));
 
@@ -23289,8 +23339,8 @@ Return ONLY a JSON array: [{"type":"...","text":"..."}, ...]`;
           if (batchEnd < transformChunks) await new Promise(r => setTimeout(r, 500));
         }
         chunkBlockArrays.forEach((blocks, ci) => {
-          const startPg = ci * TRANSFORM_PAGES + 1;
-          const endPg = Math.min((ci + 1) * TRANSFORM_PAGES, pageCount);
+          const startPg = _t2RangeStart + ci * TRANSFORM_PAGES;
+          const endPg = Math.min(_t2RangeStart + (ci + 1) * TRANSFORM_PAGES - 1, _t2LastPage);
           const failed = !blocks || blocks.length === 0;
           chunkMeta.push({ index: ci, startPage: startPg, endPage: endPg, blockCount: blocks ? blocks.length : 0, status: failed ? 'failed' : 'success' });
           if (failed) {
@@ -25853,6 +25903,10 @@ If no errors found, return: {"corrections": [], "totalErrors": 0}`, true);
         pipelineStats: {
           runId: _runId,
           runSequence: _runSequence,
+          // Payload ledger on the RESULT, so bytes and quality live in one artifact a before/after
+          // comparison can read together. Counts only — never prompt or document text (FERPA).
+          payload: _runStats.payload || {},
+          payloadSummary: _alloFormatPayloadLedger(_runStats.payload),
           // #15: 'success' was HARD-CODED here — a run whose verifiers never completed still
           // stamped success into the reliability history. The outcome now states evidence:
           // 'success' only when the AI verification ran to full coverage AND the axe checker

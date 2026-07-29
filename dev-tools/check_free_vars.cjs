@@ -94,7 +94,11 @@ const files = args.filter((a) => a !== '--update');
 // gate could see. The backlog is empty as of a77d1acba, so this baseline
 // captures only genuine injection-contract names.
 if (!files.length) {
-  files.push('doc_pipeline_source.jsx', 'view_pdf_audit_source.jsx', 'gemini_api_source.jsx', 'immersive_reader_source.jsx', 'phase_o_misc_handlers_source.jsx', 'quickstart_source.jsx', 'stem_lab/stem_lab_module.js');
+  // view_sidebar_panels_source.jsx added 2026-07-28: it holds all ~22 sidebar
+  // tool panels and is one of the most frequently edited files in the repo, yet
+  // it had no dangling-identifier coverage at all. Its baseline is large because
+  // the module wrapper injects icon vars — that is expected, not a smell.
+  files.push('doc_pipeline_source.jsx', 'view_pdf_audit_source.jsx', 'gemini_api_source.jsx', 'immersive_reader_source.jsx', 'phase_o_misc_handlers_source.jsx', 'quickstart_source.jsx', 'view_sidebar_panels_source.jsx', 'stem_lab/stem_lab_module.js');
   const stemDir = path.resolve(__dirname, '..', 'stem_lab');
   if (fs.existsSync(stemDir)) {
     for (const f of fs.readdirSync(stemDir).sort()) {

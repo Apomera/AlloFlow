@@ -7,6 +7,502 @@
 // 18 components, 2302 source lines extracted.
 
 
+// ── UniversalSettingsPanel: cross-resource settings extracted from SimplifiedPanel (2026-07-28) ──
+// Grade, output language, standards, interests, DoK and emoji support are read
+// by (nearly) every generator, not just Leveled Text, but they lived inside the
+// Text Adaptation card — a global promise wearing a per-resource costume.
+// This panel mounts ONCE, above the tool accordion. State vars are unchanged;
+// this is a presentational extraction only.
+//
+// Applicability per control is MEASURED, not aspirational: the lists below are
+// distilled from docs/resource_setting_coverage.json (regenerate with
+// `node dev-tools/check_local_llm_resource_matrix.cjs --capabilities`), and
+// tests/universal_settings_panel.test.js FAILS if this constant drifts from
+// the measured data. Do not hand-edit the lists without re-running the probe.
+const UNIVERSAL_SETTING_COVERAGE = {
+  measuredTypes: 19,
+  grade: ['simplified', 'glossary', 'outline', 'quiz', 'faq', 'brainstorm', 'sentence-frames', 'timeline', 'math', 'gemini-bridge', 'concept-sort', 'dbq', 'lesson-plan', 'adventure', 'persona', 'note-taking', 'anchor-chart'],
+  language: ['simplified', 'glossary', 'outline', 'image', 'quiz', 'faq', 'brainstorm', 'sentence-frames', 'timeline', 'math', 'gemini-bridge', 'concept-sort', 'dbq', 'lesson-plan', 'adventure', 'persona', 'note-taking', 'anchor-chart'],
+  standards: ['simplified', 'glossary', 'outline', 'quiz', 'faq', 'brainstorm', 'sentence-frames', 'timeline', 'math', 'concept-sort', 'dbq', 'lesson-plan', 'adventure', 'note-taking', 'anchor-chart'],
+  interests: ['simplified', 'glossary', 'outline', 'quiz', 'faq', 'brainstorm', 'sentence-frames', 'timeline', 'math', 'concept-sort', 'lesson-plan', 'adventure'],
+  dok: ['simplified', 'quiz', 'faq', 'brainstorm', 'sentence-frames', 'math', 'concept-sort', 'dbq', 'lesson-plan'],
+  emoji: ['simplified', 'glossary', 'outline', 'image', 'quiz', 'faq', 'sentence-frames', 'timeline', 'concept-sort'],
+};
+
+const UNIVERSAL_GRADE_CHOICES = [
+  'Kindergarten', '1st Grade', '2nd Grade', '3rd Grade', '4th Grade', '5th Grade',
+  '6th Grade', '7th Grade', '8th Grade', '9th Grade', '10th Grade', '11th Grade',
+  '12th Grade', 'College', 'Graduate Level',
+];
+
+// Types eligible for a differentiated set. Restricted to branches PROVEN to
+// honour configOverride.grade (probe, 2026-07-28: 17 of 20 reach the prompt).
+// 'image' routes grade through a helper the probe cannot see, and 'analysis'
+// estimates its own grade range by design — offering either would produce
+// same-grade duplicates under a label promising differentiation.
+const UNIVERSAL_DIFFERENTIABLE_TYPES = [
+  'simplified', 'glossary', 'quiz', 'faq', 'outline', 'sentence-frames',
+  'timeline', 'concept-sort', 'dbq', 'note-taking', 'anchor-chart',
+];
+
+function universalToolLabel(id, t) {
+  const catalog = (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.ToolCatalog) || null;
+  const entry = catalog && typeof catalog.getToolEntry === 'function' ? catalog.getToolEntry(id) : null;
+  const key = entry && entry.sidebarKey;
+  return (key && t(key)) || id;
+}
+
+// Mirrors getDifferentiationGrades' arithmetic for the cost preview only. Kept
+// deliberately simple: an estimate that is one off is fine, a teacher who does
+// not realise a run costs 30 generations is not.
+function universalDiffLevelCount(range, customGrades) {
+  if (range === 'None') return 1;
+  if (range === 'Custom') {
+    return new Set([...(customGrades || [])]).size + 1;
+  }
+  if (range === '1' || range === '2') return 3;
+  if (range === 'Both') return 5;
+  return 1;
+}
+
+// Per-control honesty chip: "Applies to N of M resource types", expandable to
+// the measured list. This is the panel telling the truth instead of implying
+// every setting reaches every resource.
+function UniversalApplicability({ settingKey, t }) {
+  const list = UNIVERSAL_SETTING_COVERAGE[settingKey] || [];
+  const total = UNIVERSAL_SETTING_COVERAGE.measuredTypes;
+  // Show the teacher-facing tool names, not the dispatcher slugs. tool_catalog
+  // already carries a sidebarKey per id; fall back to the slug if the catalog
+  // module has not loaded or an entry lacks a key.
+  const catalog = (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.ToolCatalog) || null;
+  const label = (id) => {
+    const entry = catalog && typeof catalog.getToolEntry === 'function' ? catalog.getToolEntry(id) : null;
+    const key = entry && entry.sidebarKey;
+    return (key && t(key)) || id;
+  };
+  return (
+    <details className="mt-1">
+      <summary className="text-[10px] text-slate-500 cursor-pointer select-none hover:text-indigo-600 transition-colors motion-reduce:transition-none list-none flex items-center gap-1">
+        <CheckCircle2 size={9} className="text-emerald-600 shrink-0" />
+        {(t('universal.applies') || 'Applies to {n} of {m} resource types').replace('{n}', String(list.length)).replace('{m}', String(total))}
+      </summary>
+      <p className="text-[10px] text-slate-500 leading-snug mt-1 pl-3 border-l-2 border-slate-200">{list.map(label).join(', ')}</p>
+    </details>
+  );
+}
+
+// ── ResourceCustomInstructions: the one implementation of the per-resource custom-instructions field ──
+// Custom instructions are deliberately PER-RESOURCE (a teacher wants "make the
+// quiz rhyme" without rhyming the glossary), so the VALUE stays per-resource —
+// only the UI pattern is shared. labelKey/placeholder/helpKey/aria pass through
+// unchanged so tour anchors and lang-pack keys survive the consolidation; the
+// visual shell is normalized to one canonical style.
+function ResourceCustomInstructions({ value, onChange, t, helpKey, ariaFallback, placeholderKey, labelKey, optional = true, disabled = false, wrapperClass = '' }) {
+  const label = t(labelKey || 'input.custom_instructions');
+  const hasValue = !!(value && String(value).trim());
+  // Collapsed by default: twenty always-open textareas were the single biggest
+  // source of sidebar bulk. Starts OPEN when a value already exists so restored
+  // work is never hidden.
+  const [isOpen, setIsOpen] = React.useState(hasValue);
+  // A collapsed field whose text still steers generation is the invisible-control
+  // bug this codebase has already shipped once (concept-sort, 2026-07-28). So the
+  // collapsed summary always shows whether instructions are active, and previews
+  // them — collapsing changes visibility, never behaviour.
+  const preview = hasValue ? String(value).trim().replace(/\s+/g, ' ').slice(0, 48) : '';
+  // No hard-coded margin: most call sites sit in a `gap-3`/`space-y-3` parent
+  // that already spaces them. Sites that need their own margin pass wrapperClass.
+  return (
+    <div className={wrapperClass} data-help-key={helpKey}>
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
+        disabled={disabled}
+        className={`w-full flex items-center justify-between gap-2 text-left text-xs font-medium rounded-md px-2 py-1.5 border transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed ${hasValue ? 'border-indigo-200 bg-indigo-50/60 text-indigo-800' : 'border-transparent text-slate-600 hover:bg-slate-50'}`}
+      >
+        <span className="flex items-center gap-1.5 min-w-0">
+          {hasValue
+            ? <CheckCircle2 size={12} className="text-indigo-600 shrink-0" />
+            : <Plus size={12} className="text-slate-500 shrink-0" />}
+          <span className="truncate">
+            {hasValue ? `${label}: "${preview}${String(value).trim().length > 48 ? '…' : ''}"` : label}
+            {!hasValue && optional && <span className="text-slate-400 font-normal"> {t('common.optional')}</span>}
+          </span>
+        </span>
+        <ChevronDown size={12} className={`shrink-0 transition-transform motion-reduce:transition-none ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+      {isOpen && (
+        <textarea
+          aria-label={label || ariaFallback}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={t(placeholderKey)}
+          disabled={disabled}
+          maxLength={2000}
+          className="w-full mt-1 text-xs p-2 border border-slate-400 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 resize-none h-16 bg-white text-slate-800 placeholder:text-slate-500 disabled:opacity-50 disabled:cursor-not-allowed transition-shadow motion-reduce:transition-none duration-300"
+        />
+      )}
+    </div>
+  );
+}
+
+function UniversalSettingsPanel(props) {
+  const {
+    InfoTooltip, addInterest, addToast, aiStandardQuery,
+    dokLevel, gradeLevel, handleAddStandard, handleFindStandards,
+    handleInterestKeyDown, handleRemoveStandard, handleSetStandardModeToAi, handleSetStandardModeToManual,
+    interestInput, isFindingStandards, leveledTextLanguage, removeInterest,
+    selectedLanguages, setAiStandardQuery, setDokLevel, setGradeLevel,
+    setInterestInput, setLeveledTextLanguage, setStandardInputValue, setTargetStandards,
+    setUniversalImageStyle, setUseEmojis, standardInputValue, standardMode, studentInterests,
+    suggestedStandards, t, targetStandards, universalImageStyle, useEmojis,
+    isUniversalSettingsOpen, setIsUniversalSettingsOpen,
+    differentiationRange, setDifferentiationRange,
+    differentiationTypes, setDifferentiationTypes,
+    differentiationCustomGrades, setDifferentiationCustomGrades
+  } = props;
+  // Open state lives in the host: this panel sits inside the 'create' tab
+  // subtree, so component-local state re-collapsed the card on every tab switch.
+  const isOpen = !!isUniversalSettingsOpen;
+  const setIsOpen = setIsUniversalSettingsOpen;
+  // Collapsed-state summary keeps the card useful without the height cost.
+  const summaryBits = [
+    gradeLevel,
+    leveledTextLanguage,
+    targetStandards.length > 0 ? targetStandards.length + ' ' + (t('universal.summary_standards') || 'standards') : null,
+    studentInterests.length > 0 ? studentInterests.length + ' ' + (t('universal.summary_interests') || 'interests') : null,
+    dokLevel ? dokLevel.split(':')[0] : null,
+  ].filter(Boolean);
+  return (
+            <div id="tour-universal-settings" data-help-key="tool_universal_settings" className="rounded-3xl border-2 border-indigo-200 bg-white overflow-hidden shadow-sm mb-3">
+              <button type="button"
+                aria-expanded={isOpen}
+                onClick={() => setIsOpen(!isOpen)}
+                className="w-full p-3 bg-indigo-50/60 flex justify-between items-center hover:bg-indigo-50 transition-colors motion-reduce:transition-none"
+              >
+                <div className="text-left min-w-0">
+                  <div className="text-sm font-bold text-indigo-900 flex gap-2 items-center">
+                    <Settings2 size={16} className="shrink-0"/> {t('universal.title') || 'Universal Settings'}
+                  </div>
+                  <p className="text-[11px] text-indigo-700/80 mt-0.5 truncate">{isOpen ? (t('universal.subtitle') || 'Apply to every resource you generate') : summaryBits.join(' · ')}</p>
+                </div>
+                <ChevronDown size={16} className={`text-indigo-400 shrink-0 transition-transform motion-reduce:transition-none ${isOpen ? 'rotate-180' : ''}`}/>
+              </button>
+              {isOpen && (
+                <div className="p-3 space-y-3 animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
+                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+                        <div>
+                            <label className="block text-xs text-slate-600 mb-1 font-medium">{t('wizard.grade_level')}</label>
+                            <select aria-label={t('common.selection')}
+                                data-help-key="simplified_grade_level"
+                                value={gradeLevel}
+                                onChange={(e) => setGradeLevel(e.target.value)}
+                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
+                            >
+                                <option value="Kindergarten">{t('grades.k')}</option>
+                                <option value="1st Grade">{t('grades.g1')}</option>
+                                <option value="2nd Grade">{t('grades.g2')}</option>
+                                <option value="3rd Grade">{t('grades.g3')}</option>
+                                <option value="4th Grade">{t('grades.g4')}</option>
+                                <option value="5th Grade">{t('grades.g5')}</option>
+                                <option value="6th Grade">{t('grades.g6')}</option>
+                                <option value="7th Grade">{t('grades.g7')}</option>
+                                <option value="8th Grade">{t('grades.g8')}</option>
+                                <option value="9th Grade">{t('grades.g9')}</option>
+                                <option value="10th Grade">{t('grades.g10')}</option>
+                                <option value="11th Grade">{t('grades.g11')}</option>
+                                <option value="12th Grade">{t('grades.g12')}</option>
+                                <option value="College">{t('grades.college')}</option>
+                                <option value="Graduate Level">{t('grades.grad')}</option>
+                            </select>
+                            <UniversalApplicability settingKey="grade" t={t} />
+                        </div>
+                        <div>
+                            <label className="block text-xs text-slate-600 mb-1 font-medium">{t('wizard.output_language')}</label>
+                            <select aria-label={t('common.selection')}
+                                data-help-key="simplified_language"
+                                value={leveledTextLanguage}
+                                onChange={(e) => setLeveledTextLanguage(e.target.value)}
+                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
+                            >
+                                <option value="English">{t('languages.english')}</option>
+                                {selectedLanguages.map(lang => <option key={lang} value={lang}>{lang}</option>)}
+                                {selectedLanguages.length > 0 && <option value="All Selected Languages">{t('languages.all_selected')}</option>}
+                            </select>
+                            <UniversalApplicability settingKey="language" t={t} />
+                        </div>
+                        <div>
+                            <label className="block text-xs text-slate-600 mb-1 font-medium flex items-center gap-1">
+                                {t('quiz.dok_target')}
+                                <InfoTooltip text="Depth of Knowledge: Level 1 (Recall) -> Level 4 (Extended Thinking/Synthesis)." />
+                            </label>
+                            <select aria-label={t('common.selection')}
+                                data-help-key="simplified_dok"
+                                value={dokLevel}
+                                onChange={(e) => setDokLevel(e.target.value)}
+                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
+                            >
+                                <option value="">{t('wizard.dok_levels.none')}</option>
+                                <option value="Level 1: Recall & Reproduction">{t('wizard.dok_levels.l1')}</option>
+                                <option value="Level 2: Skill/Concept">{t('wizard.dok_levels.l2')}</option>
+                                <option value="Level 3: Strategic Thinking">{t('wizard.dok_levels.l3')}</option>
+                                <option value="Level 4: Extended Thinking">{t('wizard.dok_levels.l4')}</option>
+                                {/* Mixed is also offered in the quiz panel and writes the same
+                                    state; omitting it here rendered this select blank whenever a
+                                    teacher had chosen it there. */}
+                                <option value="Mixed">{t('wizard.dok_levels.mixed')}</option>
+                            </select>
+                            <UniversalApplicability settingKey="dok" t={t} />
+                        </div>
+                    </div>
+                    <div>
+                        <div className="bg-slate-50 p-2 rounded-lg border border-slate-400" data-help-key="simplified_standards">
+                            <div className="flex justify-between items-center mb-2">
+                                <span id="simplified-standard-mode-label" className="text-xs text-slate-600 font-bold flex items-center gap-1">
+                                    <CheckCircle size={12} className="text-indigo-600"/> Target Standard
+                                </span>
+                                <div role="group" aria-labelledby="simplified-standard-mode-label" className="flex bg-white rounded-md border border-slate-400 p-0.5 shadow-sm">
+                                    <button type="button"
+                                        aria-pressed={standardMode === 'ai'} onClick={handleSetStandardModeToAi}
+                                        className={`px-2 py-0.5 text-[11px] font-bold rounded transition-colors motion-reduce:transition-none ${standardMode === 'ai' ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:text-slate-600'}`}
+                                    >
+                                        AI Match
+                                    </button>
+                                    <button type="button"
+                                        aria-pressed={standardMode === 'manual'} onClick={handleSetStandardModeToManual}
+                                        className={`px-2 py-0.5 text-[11px] font-bold rounded transition-colors motion-reduce:transition-none ${standardMode === 'manual' ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:text-slate-600'}`}
+                                    >
+                                        Manual
+                                    </button>
+                                </div>
+                            </div>
+                            {standardMode === 'ai' ? (
+                                <div className="space-y-2 animate-in motion-reduce:animate-none fade-in slide-in-from-top-1 duration-200">
+                                    <div className="flex gap-2">
+                                        <input aria-label={t('common.enter_ai_standard_query')}
+                                            type="text"
+                                            value={aiStandardQuery}
+                                            onChange={(e) => setAiStandardQuery(e.target.value)}
+                                            onKeyDown={(e) => e.key === 'Enter' && handleFindStandards(gradeLevel)}
+                                            placeholder={`Describe skill (e.g. "identify main idea") for ${gradeLevel}...`}
+                                            className="flex-grow text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300"
+                                        />
+                                        <button type="button"
+                                            aria-label={t('common.refresh')}
+                                            onClick={() => handleFindStandards(gradeLevel)}
+                                            disabled={!aiStandardQuery.trim() || isFindingStandards}
+                                            className="bg-indigo-600 hover:bg-indigo-700 text-white p-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none"
+                                            title={t('common.find_relevant_standards')}
+                                        >
+                                            {isFindingStandards ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none"/> : <Search size={14}/>}
+                                        </button>
+                                    </div>
+                                    {suggestedStandards.length > 0 && (
+                                        <div className="max-h-32 overflow-y-auto custom-scrollbar border border-slate-400 rounded bg-white divide-y divide-slate-100">
+                                            {suggestedStandards.map((std, idx) => (
+                                                <button type="button"
+                                                    key={idx}
+                                                    onClick={() => {
+                                                        const val = `${std.code}: ${std.description}`;
+                                                        if (targetStandards.length < 3 && !targetStandards.includes(val)) {
+                                                            setTargetStandards(prev => [...prev, val]);
+                                                            addToast(`Added ${std.code} to list`, "success");
+                                                        } else if (targetStandards.length >= 3) {
+                                                            addToast(t('standards.toast_max_limit'), "error");
+                                                        }
+                                                    }}
+                                                    className="w-full text-left p-2 hover:bg-indigo-50 transition-colors motion-reduce:transition-none group"
+                                                >
+                                                    <div className="flex justify-between items-start gap-1">
+                                                        <span className="text-[11px] font-bold text-indigo-700 bg-indigo-50 px-1 rounded border border-indigo-100">{std.code}</span>
+                                                        <span className="text-[11px] text-slate-600 uppercase">{std.framework}</span>
+                                                    </div>
+                                                    <p className="text-[11px] text-slate-600 leading-snug mt-1 line-clamp-2 group-hover:text-indigo-900">
+                                                        {std.description}
+                                                    </p>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                    {suggestedStandards.length === 0 && !isFindingStandards && aiStandardQuery && (
+                                        <div className="text-[11px] text-slate-600 italic text-center p-1">
+                                            {t('standards.press_search_hint')}
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="flex gap-2">
+                                    <input aria-label={t('common.enter_standard_input_value')}
+                                        type="text"
+                                        value={standardInputValue}
+                                        onChange={(e) => setStandardInputValue(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleAddStandard()}
+                                        placeholder={t('standards.manual_placeholder')}
+                                        className="flex-grow text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
+                                    />
+                                    <button type="button" aria-label={t('common.add')}
+                                        onClick={handleAddStandard}
+                                        disabled={!standardInputValue.trim() || targetStandards.length >= 3}
+                                        className="bg-indigo-100 text-indigo-700 p-1.5 rounded-md hover:bg-indigo-200 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
+                                        title={t('standards.add_button')}
+                                    >
+                                        <Plus size={16} />
+                                    </button>
+                                </div>
+                            )}
+                            <UniversalApplicability settingKey="standards" t={t} />
+                        </div>
+                        {targetStandards.length > 0 && (
+                            <div className="flex flex-wrap gap-2 mt-2 mb-2">
+                                {targetStandards.map((std, idx) => (
+                                    <span key={idx} className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold bg-indigo-100 text-indigo-700 border border-indigo-200 animate-in motion-reduce:animate-none slide-in-from-left-1 max-w-full">
+                                        <span className="truncate" title={std}>{std}</span>
+                                        <button type="button"
+                                            aria-label={t('common.close')}
+                                            onClick={() => handleRemoveStandard(idx)}
+                                            className="hover:text-indigo-900 ml-1 shrink-0"
+                                            title={t('common.remove_standard')}
+                                        >
+                                            <X size={10} />
+                                        </button>
+                                    </span>
+                                ))}
+                            </div>
+                        )}
+                        <div data-help-key="simplified_interests">
+                            <label className="block text-xs text-slate-600 mb-1 font-medium flex items-center gap-1 mt-2">
+                                <Heart size={12} className="text-indigo-500"/> {t('input.interests_label')} <span className="text-indigo-600 font-normal">{t('common.optional')}</span>
+                            </label>
+                            <div className="flex gap-2 mb-2">
+                                <input aria-label={t('common.enter_interest_input')}
+                                    type="text"
+                                    value={interestInput}
+                                    onChange={(e) => setInterestInput(e.target.value)}
+                                    onKeyDown={handleInterestKeyDown}
+                                    placeholder={t('common.interest_placeholder')}
+                                    className="flex-grow text-sm px-2 py-1.5 border border-slate-400 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300"
+                                />
+                                <button type="button" aria-label={t('common.add')}
+                                    onClick={addInterest}
+                                    disabled={!interestInput.trim() || studentInterests.length >= 5}
+                                    className="bg-indigo-100 text-indigo-700 p-1.5 rounded-md hover:bg-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none"
+                                >
+                                    <Plus size={16} />
+                                </button>
+                            </div>
+                            <div className="flex flex-wrap gap-2 min-h-[1.5rem]">
+                                {studentInterests.map((interest, idx) => (
+                                    <span key={idx} className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                        {interest}
+                                        <button type="button" onClick={() => removeInterest(interest)} className="hover:text-indigo-900" aria-label={t('common.remove')}><X size={12} /></button>
+                                    </span>
+                                ))}
+                                {studentInterests.length === 0 && <span className="text-xs text-slate-600 italic">{t('input.no_interests')}</span>}
+                            </div>
+                            <UniversalApplicability settingKey="interests" t={t} />
+                        </div>
+                        <div className="mt-2" data-help-key="simplified_emojis">
+                            <div className="flex items-center gap-2">
+                                <input aria-label={t('common.toggle_use_emojis')}
+                                    id="useEmojis"
+                                    type="checkbox"
+                                    checked={useEmojis}
+                                    onChange={(e) => setUseEmojis(e.target.checked)}
+                                    className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
+                                />
+                                <label htmlFor="useEmojis" className="text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1">
+                                    <Smile size={12} className="text-indigo-500"/> {t('simplified.use_emojis')}
+                                </label>
+                            </div>
+                            <UniversalApplicability settingKey="emoji" t={t} />
+                        </div>
+                        <div className="mt-3 pt-3 border-t border-slate-200" data-help-key="simplified_differentiation">
+                            <label className="block text-xs text-slate-600 mb-1 font-medium flex items-center gap-1">
+                                <Layout size={12} className="text-indigo-500"/> {t('simplified.diff_label')}
+                            </label>
+                            <select aria-label={t('simplified.diff_label')}
+                                value={differentiationRange}
+                                onChange={(e) => setDifferentiationRange(e.target.value)}
+                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
+                            >
+                                <option value="None">{t('simplified.diff_options.none')}</option>
+                                <option value="1">{t('simplified.diff_options.one')}</option>
+                                <option value="2">{t('simplified.diff_options.two')}</option>
+                                <option value="Both">{t('simplified.diff_options.both')}</option>
+                                <option value="Custom">{t('universal.diff_custom') || 'Custom — pick exact grades'}</option>
+                            </select>
+                            {differentiationRange === 'Custom' && (
+                              <div className="mt-2">
+                                <p className="text-[10px] text-slate-500 mb-1">
+                                  {t('universal.diff_custom_hint') || 'Pick any mix. Your target grade is always included.'}
+                                </p>
+                                <div className="flex flex-wrap gap-1">
+                                  {UNIVERSAL_GRADE_CHOICES.map((g) => {
+                                    const on = g === gradeLevel || (differentiationCustomGrades || []).includes(g);
+                                    const locked = g === gradeLevel;
+                                    return (
+                                      <button key={g} type="button" disabled={locked}
+                                        aria-pressed={on}
+                                        title={locked ? (t('universal.diff_target_locked') || 'Target grade — always included') : g}
+                                        onClick={() => setDifferentiationCustomGrades(
+                                          on ? (differentiationCustomGrades || []).filter((x) => x !== g)
+                                             : [...(differentiationCustomGrades || []), g]
+                                        )}
+                                        className={`px-1.5 py-0.5 rounded text-[10px] font-bold border transition-colors motion-reduce:transition-none ${on ? 'bg-indigo-100 text-indigo-800 border-indigo-300' : 'bg-white text-slate-600 border-slate-300 hover:border-indigo-300'} ${locked ? 'cursor-default opacity-80' : ''}`}
+                                      >{g.replace(' Grade', '').replace('Kindergarten', 'K')}</button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            )}
+                            {differentiationRange !== 'None' && (
+                              <div className="mt-2">
+                                <p className="text-[10px] text-slate-500 mb-1">
+                                  {t('universal.diff_types_hint') || 'Generate a differentiated set for:'}
+                                </p>
+                                <div className="flex flex-wrap gap-1">
+                                  {UNIVERSAL_DIFFERENTIABLE_TYPES.map((id) => {
+                                    const on = (differentiationTypes || []).includes(id);
+                                    return (
+                                      <button key={id} type="button" aria-pressed={on}
+                                        onClick={() => setDifferentiationTypes(
+                                          on ? (differentiationTypes || []).filter((x) => x !== id)
+                                             : [...(differentiationTypes || []), id]
+                                        )}
+                                        className={`px-1.5 py-0.5 rounded text-[10px] font-bold border transition-colors motion-reduce:transition-none ${on ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-white text-slate-600 border-slate-300 hover:border-emerald-300'}`}
+                                      >{universalToolLabel(id, t)}</button>
+                                    );
+                                  })}
+                                </div>
+                                <p className="text-[10px] text-amber-700 mt-1">
+                                  {(t('universal.diff_cost') || 'About {n} generations per run.')
+                                    .replace('{n}', String(Math.max(1, (differentiationTypes || []).length) * universalDiffLevelCount(differentiationRange, differentiationCustomGrades)))}
+                                </p>
+                              </div>
+                            )}
+                        </div>
+                        <div className="mt-2" data-help-key="universal_image_style">
+                            <label className="block text-xs text-slate-600 mb-1 font-medium flex items-center gap-1">
+                                <Palette size={12} className="text-indigo-500"/> {t('universal.image_style') || 'Image Style (default)'} <span className="text-indigo-600 font-normal">{t('common.optional')}</span>
+                            </label>
+                            <input
+                                aria-label={t('universal.image_style') || 'Default image style'}
+                                type="text"
+                                value={universalImageStyle}
+                                onChange={(e) => setUniversalImageStyle(e.target.value)}
+                                placeholder={t('concept_sort.style_placeholder') || "e.g. cartoon, pixel art, watercolor"}
+                                maxLength={120}
+                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
+                            />
+                            <p className="text-[10px] text-slate-500 mt-1">{t('universal.image_style_hint') || 'Used for Visuals, Glossary, Timeline and Concept Sort images unless a tool sets its own style.'}</p>
+                        </div>
+                    </div>
+                </div>
+              )}
+            </div>
+  );
+}
+
 // ── AdventurePanel: expandedTools.includes('adventure') panel from L24009-L24524 ──
 function AdventurePanel(props) {
   const {
@@ -126,17 +622,11 @@ function AdventurePanel(props) {
                                 {t('adventure.language_help')}
                                 </p>
                             </div>
-                            <div data-help-key="adventure_custom_instructions">
-                                <label className="block text-xs text-slate-600 mb-1 font-medium">{t('input.custom_instructions')} <span className="text-purple-600 font-normal">{t('common.optional')}</span></label>
-                                <textarea
-                                    aria-label={t('input.custom_instructions') || 'Custom instructions for adventure'}
-                                    value={adventureCustomInstructions}
-                                    onChange={(e) => setAdventureCustomInstructions(e.target.value)}
-                                    placeholder={t('common.adventure_instructions_placeholder')}
-                                    disabled={!isTeacherMode && (!adventurePermissions.allowCustomInstructions || adventurePermissions.lockAllSettings)}
-                                    className="w-full text-xs p-2 border border-slate-400 rounded-md focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 resize-none h-16 transition-shadow motion-reduce:transition-none duration-300"
-                                />
-                            </div>
+                            <ResourceCustomInstructions helpKey="adventure_custom_instructions" t={t}
+                                ariaFallback="Custom instructions for adventure"
+                                value={adventureCustomInstructions} onChange={setAdventureCustomInstructions}
+                                placeholderKey="common.adventure_instructions_placeholder"
+                                disabled={!isTeacherMode && (!adventurePermissions.allowCustomInstructions || adventurePermissions.lockAllSettings)} />
                             <div className="flex items-center gap-2 bg-purple-100/50 p-2 rounded border border-purple-200" data-help-key="adventure_free_response">
                                 <input aria-label={t('common.toggle_adventure_free_response_enabled')}
                                     id="freeResponseMode"
@@ -567,63 +1057,17 @@ function AdventurePanel(props) {
 // ── SimplifiedPanel: expandedTools.includes('simplified') panel from L22557-L22870 ──
 function SimplifiedPanel(props) {
   const {
-    InfoTooltip, addInterest, addToast, aiStandardQuery,
-    differentiationRange, dokLevel, expandedTools, gradeLevel,
-    handleAddStandard, handleFindStandards, handleGenerate, handleInterestKeyDown,
-    handleRemoveStandard, handleSetStandardModeToAi, handleSetStandardModeToManual, hasSourceOrAnalysis,
-    includeCharts, interestInput, isFindingStandards, isProcessing,
-    keepCitations, leveledTextCustomInstructions, leveledTextLanguage, leveledTextLength,
-    removeInterest, selectedLanguages, setAiStandardQuery, setDifferentiationRange,
-    setDokLevel, setGradeLevel, setIncludeCharts, setInterestInput,
-    setKeepCitations, setLeveledTextCustomInstructions, setLeveledTextLanguage, setLeveledTextLength,
-    setStandardInputValue, setTargetStandards, setTextFormat, setUseEmojis,
-    standardInputValue, standardMode, studentInterests, suggestedStandards,
-    t, targetStandards, textFormat, useEmojis
+    expandedTools, handleGenerate, hasSourceOrAnalysis,
+    includeCharts, isProcessing, keepCitations, leveledTextCustomInstructions,
+    leveledTextLength, setIncludeCharts, setKeepCitations,
+    setLeveledTextCustomInstructions, setLeveledTextLength, setTextFormat, t,
+    textFormat
   } = props;
   if (!expandedTools || !expandedTools.includes('simplified')) return null;
   return (
               <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
                 <div id="tour-level-settings" data-help-key="tour-simplified-settings" className="p-3 border-b border-slate-100 space-y-3">
                     <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-                        <div>
-                            <label className="block text-xs text-slate-600 mb-1 font-medium">{t('wizard.grade_level')}</label>
-                            <select aria-label={t('common.selection')}
-                                data-help-key="simplified_grade_level"
-                                value={gradeLevel}
-                                onChange={(e) => setGradeLevel(e.target.value)}
-                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
-                            >
-                                <option value="Kindergarten">{t('grades.k')}</option>
-                                <option value="1st Grade">{t('grades.g1')}</option>
-                                <option value="2nd Grade">{t('grades.g2')}</option>
-                                <option value="3rd Grade">{t('grades.g3')}</option>
-                                <option value="4th Grade">{t('grades.g4')}</option>
-                                <option value="5th Grade">{t('grades.g5')}</option>
-                                <option value="6th Grade">{t('grades.g6')}</option>
-                                <option value="7th Grade">{t('grades.g7')}</option>
-                                <option value="8th Grade">{t('grades.g8')}</option>
-                                <option value="9th Grade">{t('grades.g9')}</option>
-                                <option value="10th Grade">{t('grades.g10')}</option>
-                                <option value="11th Grade">{t('grades.g11')}</option>
-                                <option value="12th Grade">{t('grades.g12')}</option>
-                                <option value="College">{t('grades.college')}</option>
-                                <option value="Graduate Level">{t('grades.grad')}</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block text-xs text-slate-600 mb-1 font-medium">{t('simplified.diff_label')}</label>
-                            <select aria-label={t('common.selection')}
-                                data-help-key="simplified_differentiation"
-                                value={differentiationRange}
-                                onChange={(e) => setDifferentiationRange(e.target.value)}
-                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
-                            >
-                                <option value="None">{t('simplified.diff_options.none')}</option>
-                                <option value="1">{t('simplified.diff_options.one')}</option>
-                                <option value="2">{t('simplified.diff_options.two')}</option>
-                                <option value="Both">{t('simplified.diff_options.both')}</option>
-                            </select>
-                        </div>
                         <div>
                             <label className="block text-xs text-slate-600 mb-1 font-medium">{t('wizard.output_format')}</label>
                             <select aria-label={t('common.selection')}
@@ -658,206 +1102,12 @@ function SimplifiedPanel(props) {
                                 <option value="Double (200%)">{t('simplified.length_options.double')}</option>
                             </select>
                         </div>
-                        <div>
-                            <label className="block text-xs text-slate-600 mb-1 font-medium">{t('wizard.output_language')}</label>
-                            <select aria-label={t('common.selection')}
-                                data-help-key="simplified_language"
-                                value={leveledTextLanguage}
-                                onChange={(e) => setLeveledTextLanguage(e.target.value)}
-                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
-                            >
-                                <option value="English">{t('languages.english')}</option>
-                                {selectedLanguages.map(lang => <option key={lang} value={lang}>{lang}</option>)}
-                                {selectedLanguages.length > 0 && <option value="All Selected Languages">{t('languages.all_selected')}</option>}
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block text-xs text-slate-600 mb-1 font-medium flex items-center gap-1">
-                                {t('quiz.dok_target')}
-                                <InfoTooltip text="Depth of Knowledge: Level 1 (Recall) -> Level 4 (Extended Thinking/Synthesis)." />
-                            </label>
-                            <select aria-label={t('common.selection')}
-                                data-help-key="simplified_dok"
-                                value={dokLevel}
-                                onChange={(e) => setDokLevel(e.target.value)}
-                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
-                            >
-                                <option value="">{t('wizard.dok_levels.none')}</option>
-                                <option value="Level 1: Recall & Reproduction">{t('wizard.dok_levels.l1')}</option>
-                                <option value="Level 2: Skill/Concept">{t('wizard.dok_levels.l2')}</option>
-                                <option value="Level 3: Strategic Thinking">{t('wizard.dok_levels.l3')}</option>
-                                <option value="Level 4: Extended Thinking">{t('wizard.dok_levels.l4')}</option>
-                            </select>
-                        </div>
                     </div>
                     <div>
-                        <div className="bg-slate-50 p-2 rounded-lg border border-slate-400" data-help-key="simplified_standards">
-                            <div className="flex justify-between items-center mb-2">
-                                <span id="simplified-standard-mode-label" className="text-xs text-slate-600 font-bold flex items-center gap-1">
-                                    <CheckCircle size={12} className="text-indigo-600"/> Target Standard
-                                </span>
-                                <div role="group" aria-labelledby="simplified-standard-mode-label" className="flex bg-white rounded-md border border-slate-400 p-0.5 shadow-sm">
-                                    <button type="button"
-                                        aria-pressed={standardMode === 'ai'} onClick={handleSetStandardModeToAi}
-                                        className={`px-2 py-0.5 text-[11px] font-bold rounded transition-colors motion-reduce:transition-none ${standardMode === 'ai' ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:text-slate-600'}`}
-                                    >
-                                        AI Match
-                                    </button>
-                                    <button type="button"
-                                        aria-pressed={standardMode === 'manual'} onClick={handleSetStandardModeToManual}
-                                        className={`px-2 py-0.5 text-[11px] font-bold rounded transition-colors motion-reduce:transition-none ${standardMode === 'manual' ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:text-slate-600'}`}
-                                    >
-                                        Manual
-                                    </button>
-                                </div>
-                            </div>
-                            {standardMode === 'ai' ? (
-                                <div className="space-y-2 animate-in motion-reduce:animate-none fade-in slide-in-from-top-1 duration-200">
-                                    <div className="flex gap-2">
-                                        <input aria-label={t('common.enter_ai_standard_query')}
-                                            type="text"
-                                            value={aiStandardQuery}
-                                            onChange={(e) => setAiStandardQuery(e.target.value)}
-                                            onKeyDown={(e) => e.key === 'Enter' && handleFindStandards(gradeLevel)}
-                                            placeholder={`Describe skill (e.g. "identify main idea") for ${gradeLevel}...`}
-                                            className="flex-grow text-xs border border-slate-400 rounded p-1.5 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300"
-                                        />
-                                        <button type="button"
-                                            aria-label={t('common.refresh')}
-                                            onClick={() => handleFindStandards(gradeLevel)}
-                                            disabled={!aiStandardQuery.trim() || isFindingStandards}
-                                            className="bg-indigo-600 hover:bg-indigo-700 text-white p-1.5 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none"
-                                            title={t('common.find_relevant_standards')}
-                                        >
-                                            {isFindingStandards ? <RefreshCw size={14} className="animate-spin motion-reduce:animate-none"/> : <Search size={14}/>}
-                                        </button>
-                                    </div>
-                                    {suggestedStandards.length > 0 && (
-                                        <div className="max-h-32 overflow-y-auto custom-scrollbar border border-slate-400 rounded bg-white divide-y divide-slate-100">
-                                            {suggestedStandards.map((std, idx) => (
-                                                <button type="button"
-                                                    key={idx}
-                                                    onClick={() => {
-                                                        const val = `${std.code}: ${std.description}`;
-                                                        if (targetStandards.length < 3 && !targetStandards.includes(val)) {
-                                                            setTargetStandards(prev => [...prev, val]);
-                                                            addToast(`Added ${std.code} to list`, "success");
-                                                        } else if (targetStandards.length >= 3) {
-                                                            addToast(t('standards.toast_max_limit'), "error");
-                                                        }
-                                                    }}
-                                                    className="w-full text-left p-2 hover:bg-indigo-50 transition-colors motion-reduce:transition-none group"
-                                                >
-                                                    <div className="flex justify-between items-start gap-1">
-                                                        <span className="text-[11px] font-bold text-indigo-700 bg-indigo-50 px-1 rounded border border-indigo-100">{std.code}</span>
-                                                        <span className="text-[11px] text-slate-600 uppercase">{std.framework}</span>
-                                                    </div>
-                                                    <p className="text-[11px] text-slate-600 leading-snug mt-1 line-clamp-2 group-hover:text-indigo-900">
-                                                        {std.description}
-                                                    </p>
-                                                </button>
-                                            ))}
-                                        </div>
-                                    )}
-                                    {suggestedStandards.length === 0 && !isFindingStandards && aiStandardQuery && (
-                                        <div className="text-[11px] text-slate-600 italic text-center p-1">
-                                            {t('standards.press_search_hint')}
-                                        </div>
-                                    )}
-                                </div>
-                            ) : (
-                                <div className="flex gap-2">
-                                    <input aria-label={t('common.enter_standard_input_value')}
-                                        type="text"
-                                        value={standardInputValue}
-                                        onChange={(e) => setStandardInputValue(e.target.value)}
-                                        onKeyDown={(e) => e.key === 'Enter' && handleAddStandard()}
-                                        placeholder={t('standards.manual_placeholder')}
-                                        className="flex-grow text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1.5"
-                                    />
-                                    <button type="button" aria-label={t('common.add')}
-                                        onClick={handleAddStandard}
-                                        disabled={!standardInputValue.trim() || targetStandards.length >= 3}
-                                        className="bg-indigo-100 text-indigo-700 p-1.5 rounded-md hover:bg-indigo-200 transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed"
-                                        title={t('standards.add_button')}
-                                    >
-                                        <Plus size={16} />
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                        {targetStandards.length > 0 && (
-                            <div className="flex flex-wrap gap-2 mt-2 mb-2">
-                                {targetStandards.map((std, idx) => (
-                                    <span key={idx} className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold bg-indigo-100 text-indigo-700 border border-indigo-200 animate-in motion-reduce:animate-none slide-in-from-left-1 max-w-full">
-                                        <span className="truncate" title={std}>{std}</span>
-                                        <button type="button"
-                                            aria-label={t('common.close')}
-                                            onClick={() => handleRemoveStandard(idx)}
-                                            className="hover:text-indigo-900 ml-1 shrink-0"
-                                            title={t('common.remove_standard')}
-                                        >
-                                            <X size={10} />
-                                        </button>
-                                    </span>
-                                ))}
-                            </div>
-                        )}
-                        <div data-help-key="simplified_interests">
-                            <label className="block text-xs text-slate-600 mb-1 font-medium flex items-center gap-1 mt-2">
-                                <Heart size={12} className="text-indigo-500"/> {t('input.interests_label')} <span className="text-indigo-600 font-normal">{t('common.optional')}</span>
-                            </label>
-                            <div className="flex gap-2 mb-2">
-                                <input aria-label={t('common.enter_interest_input')}
-                                    type="text"
-                                    value={interestInput}
-                                    onChange={(e) => setInterestInput(e.target.value)}
-                                    onKeyDown={handleInterestKeyDown}
-                                    placeholder={t('common.interest_placeholder')}
-                                    className="flex-grow text-sm px-2 py-1.5 border border-slate-400 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300"
-                                />
-                                <button type="button" aria-label={t('common.add')}
-                                    onClick={addInterest}
-                                    disabled={!interestInput.trim() || studentInterests.length >= 5}
-                                    className="bg-indigo-100 text-indigo-700 p-1.5 rounded-md hover:bg-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none"
-                                >
-                                    <Plus size={16} />
-                                </button>
-                            </div>
-                            <div className="flex flex-wrap gap-2 min-h-[1.5rem]">
-                                {studentInterests.map((interest, idx) => (
-                                    <span key={idx} className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200">
-                                        {interest}
-                                        <button type="button" onClick={() => removeInterest(interest)} className="hover:text-indigo-900" aria-label={t('common.remove')}><X size={12} /></button>
-                                    </span>
-                                ))}
-                                {studentInterests.length === 0 && <span className="text-xs text-slate-600 italic">{t('input.no_interests')}</span>}
-                            </div>
-                        </div>
-                        <div className="mt-3" data-help-key="simplified_custom_instructions">
-                            <label className="block text-xs text-slate-600 mb-1 font-medium">
-                            {t('input.custom_instructions')} <span className="text-indigo-600 font-normal">{t('common.optional')}</span>
-                            </label>
-                            <textarea
-                            aria-label={t('input.custom_instructions') || 'Custom instructions for simplified text'}
-                            value={leveledTextCustomInstructions}
-                            onChange={(e) => setLeveledTextCustomInstructions(e.target.value)}
-                            placeholder={t('common.custom_instructions_placeholder')}
-                            className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 p-1.5 h-16 resize-none transition-shadow motion-reduce:transition-none duration-300"
-                            />
-                        </div>
-                        <div className="flex items-center gap-2 mt-2" data-help-key="simplified_emojis">
-                            <input aria-label={t('common.toggle_use_emojis')}
-                                id="useEmojis"
-                                type="checkbox"
-                                checked={useEmojis}
-                                onChange={(e) => setUseEmojis(e.target.checked)}
-                                className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500"
-                            />
-                            <label htmlFor="useEmojis" className="text-xs font-medium text-slate-700 cursor-pointer select-none flex items-center gap-1">
-                                <Smile size={12} className="text-indigo-500"/> {t('simplified.use_emojis')}
-                            </label>
-                        </div>
+                        <ResourceCustomInstructions helpKey="simplified_custom_instructions" t={t}
+                            ariaFallback="Custom instructions for simplified text"
+                            value={leveledTextCustomInstructions} onChange={setLeveledTextCustomInstructions}
+                            placeholderKey="common.custom_instructions_placeholder" />
                         <div className="flex items-center gap-2 mt-2" data-help-key="simplified_citations">
                             <input aria-label={t('common.toggle_keep_citations')}
                                 id="keepCitations"
@@ -1131,15 +1381,19 @@ function MathPanel(props) {
 // ── DbqPanel: expandedTools.includes('dbq') panel from L23581-L23769 ──
 function DbqPanel(props) {
   const {
-    addToast, callGemini, callGeminiVision, expandedTools,
+    addToast, callGemini, callGeminiVision, dbqCustomInstructions, expandedTools,
     fetchAndCleanUrl, handleGenerate, hasSourceOrAnalysis, isProcessing,
-    setExpandedTools, t
+    setDbqCustomInstructions, setExpandedTools, t
   } = props;
   if (!expandedTools || !expandedTools.includes('dbq')) return null;
   return (
                 <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
                     <div className="p-3 border-b border-slate-100 bg-rose-50 space-y-3">
                         <p className="text-xs text-slate-600">{t('dbq.desc') || 'Generate a complete Document-Based Question activity from your source text — with primary sources, HAPP framework, sourcing questions, corroboration analysis, synthesis essay prompt, and rubric.'}</p>
+                        <ResourceCustomInstructions helpKey="dbq_custom_instructions" t={t}
+                            ariaFallback="Custom instructions for DBQ"
+                            value={dbqCustomInstructions} onChange={setDbqCustomInstructions}
+                            placeholderKey="common.custom_instructions_placeholder" />
                         {/* DBQ Mode Selector */}
                         <div>
                             <div id="dbq-analysis-mode-label" className="text-[11px] font-bold text-slate-600 uppercase mb-1">{t('dbq.analysis_mode') || 'Analysis Mode'}</div>
@@ -1611,18 +1865,11 @@ function GlossaryPanel(props) {
                             </p>
                         )}
                     </div>
-                    <div className="mb-3" data-help-key="glossary_custom_instructions">
-                        <label className="block text-xs text-slate-600 mb-1 font-medium">
-                            {t('input.custom_instructions')} <span className="text-violet-600 font-normal">{t('common.optional')}</span>
-                        </label>
-                        <textarea
-                            aria-label={t('input.custom_instructions') || 'Custom instructions for glossary'}
-                            value={glossaryCustomInstructions}
-                            onChange={(e) => setGlossaryCustomInstructions(e.target.value)}
-                            placeholder={t('glossary.placeholder_instructions')}
-                            className="w-full text-xs p-2 border border-slate-400 rounded-md focus:ring-2 focus:ring-sky-200 resize-none h-16"
-                        />
-                    </div>
+                    <ResourceCustomInstructions helpKey="glossary_custom_instructions" t={t}
+                        wrapperClass="mb-3"
+                        ariaFallback="Custom instructions for glossary"
+                        value={glossaryCustomInstructions} onChange={setGlossaryCustomInstructions}
+                        placeholderKey="glossary.placeholder_instructions" />
                     <p className="text-xs text-slate-600 mb-2">{t('glossary.add_languages_label')}</p>
                     <div className="flex gap-2 mb-3" data-help-key="glossary_language_input">
                     <input
@@ -1653,19 +1900,6 @@ function GlossaryPanel(props) {
                     {selectedLanguages.length === 0 && <span className="text-xs text-slate-600 italic">{t('glossary.no_languages')}</span>}
                     </div>
                     <div className="mt-3 pt-2 border-t border-slate-100">
-                        <div className="mb-3" data-help-key="glossary_image_style">
-                            <label className="text-xs font-medium text-slate-600 block mb-1">
-                                <Palette size={12} className="inline mr-1 text-purple-500"/> {t('glossary.image_style_label')}
-                            </label>
-                            <input aria-label={t('common.glossary_style_placeholder')}
-                                type="text"
-                                value={glossaryImageStyle}
-                                onChange={(e) => setGlossaryImageStyle(e.target.value)}
-                                placeholder={t('glossary.style_placeholder')}
-                                className="w-full text-xs p-2 border border-slate-400 rounded-md focus:border-sky-500 focus:ring-2 focus:ring-sky-500/30"
-                            />
-                            <p className="text-[11px] text-slate-600 mt-1">{t('glossary.image_style_hint')}</p>
-                        </div>
                         <label className="flex items-center gap-2 text-xs font-medium text-slate-600 cursor-pointer select-none" data-help-key="glossary_auto_remove">
                             <input aria-label={t('common.toggle_auto_remove_words')}
                                 type="checkbox"
@@ -2033,22 +2267,10 @@ function QuizPanel(props) {
         </div>
 
         <div>
-          <label className="block text-xs text-slate-600 mb-1 font-medium flex items-center gap-1">
-            {t('quiz.dok_target')}
-            <InfoTooltip text="Set cognitive complexity. Level 1 (Recall) through Level 4 (Extended Thinking)." />
-          </label>
-          <select aria-label={t('common.selection')} data-help-key="quiz_dok" value={dokLevel} onChange={(event) => setDokLevel(event.target.value)} className="w-full text-sm border-slate-300 rounded-md p-1.5">
-            <option value="">{t('wizard.dok_levels.none')}</option>
-            <option value="Mixed">{t('wizard.dok_levels.mixed')}</option>
-            <option value="Level 1: Recall & Reproduction">{t('wizard.dok_levels.l1')}</option>
-            <option value="Level 2: Skill/Concept">{t('wizard.dok_levels.l2')}</option>
-            <option value="Level 3: Strategic Thinking">{t('wizard.dok_levels.l3')}</option>
-            <option value="Level 4: Extended Thinking">{t('wizard.dok_levels.l4')}</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-slate-700 mb-1">{t('input.custom_instructions')} <span className="text-indigo-600 font-normal">{t('common.optional')}</span></label>
-          <textarea aria-label={t('input.custom_instructions') || 'Custom instructions for assessment'} data-help-key="quiz_custom_instructions" value={quizCustomInstructions} onChange={(event) => setQuizCustomInstructions(event.target.value)} placeholder={t('quiz.custom_placeholder')} className="w-full text-xs p-2 border border-slate-400 rounded-md focus:ring-2 focus:ring-indigo-200 resize-none h-16" />
+          <ResourceCustomInstructions helpKey="quiz_custom_instructions" t={t}
+              ariaFallback="Custom instructions for assessment"
+              value={quizCustomInstructions} onChange={setQuizCustomInstructions}
+              placeholderKey="quiz.custom_placeholder" />
         </div>
         {(generatedContent?.data?.analysis || history.some(item => item && item.type === 'analysis')) && <div className="text-xs font-bold text-teal-700 flex items-center gap-1 pt-1 border-t border-teal-100"><CheckCircle size={12} /> {t('quiz.context_active')}</div>}
       </div>
@@ -2062,10 +2284,6 @@ function QuizPanel(props) {
           <option value="both">{t('quiz.visuals_both') || 'Question + option images'}</option>
         </select>
       </div>
-      {mcqVisualMode !== 'none' && <div className="px-3 pt-0 pb-2 flex items-center gap-2">
-        <label htmlFor="quiz-image-style-input" className="text-[10px] font-bold uppercase tracking-wider text-slate-600 flex-shrink-0">{t('quiz.style_label') || 'Style:'}</label>
-        <input id="quiz-image-style-input" type="text" value={imageStyle} onChange={(event) => setImageStyle(event.target.value)} disabled={isProcessing} maxLength="120" placeholder={t('quiz.style_placeholder') || 'e.g. flat vector or line drawing'} className="flex-1 min-w-0 text-xs px-2 py-1 rounded border border-slate-300 bg-white disabled:opacity-50" aria-label={t('quiz.style_aria') || 'Image style hint'} />
-      </div>}
       <button
         type="button"
         aria-label={t('common.generate')}
@@ -2172,22 +2390,6 @@ function TimelinePanel(props) {
                                 {t('timeline.settings.visuals_hint') || 'Generates an AI icon for each item. Adds ~30-50 seconds.'}
                             </p>
                         </div>
-                        {includeTimelineVisuals && (
-                        <div data-help-key="timeline_image_style">
-                            <label className="block text-xs font-medium text-slate-700 mb-1">
-                                <Palette size={12} className="inline mr-1 text-purple-500"/> {t('timeline.settings.image_style_label') || 'Image style'} <span className="text-indigo-600 font-normal">{t('common.optional')}</span>
-                            </label>
-                            <input
-                                aria-label={t('timeline.settings.image_style_label') || 'Image style'}
-                                type="text"
-                                value={timelineImageStyle}
-                                onChange={(e) => setTimelineImageStyle(e.target.value)}
-                                placeholder={t('timeline.settings.style_placeholder') || "e.g. cartoon, pixel art, watercolor"}
-                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 p-1.5"
-                            />
-                            <p className="text-[11px] text-slate-500 italic mt-1">{t('timeline.settings.image_style_hint') || 'Applied to all AI-generated sequence visuals.'}</p>
-                        </div>
-                        )}
                     </div>
                     <button type="button"
                         aria-label={t('common.generate')}
@@ -2209,7 +2411,7 @@ function TimelinePanel(props) {
 function ConceptSortPanel(props) {
   const {
     addConcept, conceptImageMode, conceptInput, conceptItemCount,
-    conceptSortImageStyle, expandedTools, handleConceptKeyDown, handleGenerate,
+    conceptSortCustomInstructions, conceptSortImageStyle, expandedTools, handleConceptKeyDown, handleGenerate, setConceptSortCustomInstructions,
     hasSourceOrAnalysis, isProcessing, removeConcept, selectedConcepts,
     setConceptImageMode, setConceptInput, setConceptItemCount, setConceptSortImageStyle,
     t
@@ -2281,22 +2483,13 @@ function ConceptSortPanel(props) {
                                 <option value="never">{t('concept_sort.card_visuals_never') || 'Never (text-only cards)'}</option>
                             </select>
                         </div>
-                        {conceptImageMode !== 'never' && (
-                        <div data-help-key="concept_sort_image_style">
-                            <label className="block text-xs text-slate-600 mb-1 font-medium">
-                                <Palette size={12} className="inline mr-1 text-purple-500"/> {t('concept_sort.image_style_label') || 'Image style'} <span className="text-amber-600 font-normal">{t('common.optional')}</span>
-                            </label>
-                            <input
-                                aria-label={t('concept_sort.image_style_label') || 'Image style'}
-                                type="text"
-                                value={conceptSortImageStyle}
-                                onChange={(e) => setConceptSortImageStyle(e.target.value)}
-                                placeholder={t('concept_sort.style_placeholder') || "e.g. cartoon, pixel art, watercolor"}
-                                className="w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 p-1"
-                            />
-                            <p className="text-[11px] text-slate-600 mt-1">{t('concept_sort.image_style_hint') || 'Applied to all AI-generated card visuals.'}</p>
-                        </div>
-                        )}
+                        {/* Outside the image-mode conditional on purpose: the dispatcher consumes
+                            these instructions unconditionally, so hiding the field with card
+                            visuals would leave an invisible string steering every sort. */}
+                        <ResourceCustomInstructions helpKey="concept_sort_custom_instructions" t={t}
+                            ariaFallback="Custom instructions for concept sort"
+                            value={conceptSortCustomInstructions} onChange={setConceptSortCustomInstructions}
+                            placeholderKey="common.custom_instructions_placeholder" />
                     </div>
                     <button type="button"
                         aria-label={t('common.generate')}
@@ -2324,17 +2517,11 @@ function BrainstormPanel(props) {
   return (
                 <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
                     <div className="p-3 border-b border-slate-100 bg-yellow-50/50 flex flex-col gap-3">
-                        <div>
-                        <label className="block text-xs font-medium text-slate-700 mb-1">{t('brainstorm.instructions')}</label>
-                        <textarea
-                            aria-label={t('brainstorm.instructions') || 'Brainstorm instructions'}
-                            data-help-key="brainstorm_custom_instructions"
-                            value={brainstormCustomInstructions}
-                            onChange={(e) => setBrainstormCustomInstructions(e.target.value)}
-                            placeholder={t('brainstorm.placeholder_input')}
-                            className="w-full text-xs p-2 border border-slate-400 rounded-md focus:ring-2 focus:ring-yellow-200 resize-none h-16 bg-white text-slate-800 placeholder:text-slate-500"
-                        />
-                        </div>
+                        <ResourceCustomInstructions helpKey="brainstorm_custom_instructions" t={t}
+                            labelKey="brainstorm.instructions" optional={false}
+                            ariaFallback="Brainstorm instructions"
+                            value={brainstormCustomInstructions} onChange={setBrainstormCustomInstructions}
+                            placeholderKey="brainstorm.placeholder_input" />
                     </div>
                     <button type="button"
                         aria-label={t('common.generate')}
@@ -2495,8 +2682,10 @@ function ImagePanel(props) {
                         </select>
                         </div>
                         <div>
-                        <label className="block text-xs font-medium text-slate-700 mb-1">{t('input.custom_instructions')} <span className="text-indigo-600 font-normal">{t('common.optional')}</span></label>
-                        <textarea aria-label={t('input.custom_instructions') || 'Custom instructions for visuals'} data-help-key="visuals_custom_instructions" value={visualCustomInstructions} onChange={(e) => setVisualCustomInstructions(e.target.value)} placeholder={t('visuals.placeholder_instructions')} className="w-full text-xs p-2 border border-slate-400 rounded-md focus:ring-2 focus:ring-cyan-200 resize-none h-16"/>
+                        <ResourceCustomInstructions helpKey="visuals_custom_instructions" t={t}
+                            ariaFallback="Custom instructions for visuals"
+                            value={visualCustomInstructions} onChange={setVisualCustomInstructions}
+                            placeholderKey="visuals.placeholder_instructions" />
                         </div>
                     </div>
                     <button type="button"
@@ -2525,18 +2714,10 @@ function PersonaPanel(props) {
   return (
                 <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
                     <div className="p-3 border-b border-slate-100 bg-indigo-50/50 flex flex-col gap-3">
-                         <div data-help-key="persona_custom_instructions">
-                            <label className="block text-xs font-medium text-slate-700 mb-1">
-                                {t('input.custom_instructions')} <span className="text-indigo-600 font-normal">{t('common.optional')}</span>
-                            </label>
-                            <textarea
-                                aria-label={t('input.custom_instructions') || 'Custom instructions for persona'}
-                                value={personaCustomInstructions}
-                                onChange={(e) => setPersonaCustomInstructions(e.target.value)}
-                                placeholder={t('persona.custom_placeholder')}
-                                className="w-full text-xs p-2 border border-slate-400 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 resize-none h-16 transition-shadow motion-reduce:transition-none duration-300"
-                            />
-                        </div>
+                         <ResourceCustomInstructions helpKey="persona_custom_instructions" t={t}
+                            ariaFallback="Custom instructions for persona"
+                            value={personaCustomInstructions} onChange={setPersonaCustomInstructions}
+                            placeholderKey="persona.custom_placeholder" />
                         <div className="flex items-center gap-2 bg-indigo-100/50 p-2 rounded border border-indigo-200" data-help-key="persona_free_response">
                              <input aria-label={t('common.toggle_is_persona_free_response')}
                                  id="personaFreeResponseSidebar"
@@ -2624,17 +2805,11 @@ function OutlinePanel(props) {
                             <option value="Memory Palace">{t('outline.memory_palace') || 'Memory Palace (method of loci)'}</option>
                         </select>
                     </div>
-                    <div>
-                        <label className="block text-xs font-medium text-slate-700 mb-1">{t('outline.instructions_label')}</label>
-                        <textarea
-                            aria-label={t('outline.instructions_label') || 'Custom instructions for outline'}
-                            data-help-key="outline_custom_instructions"
-                            value={outlineCustomInstructions}
-                            onChange={(e) => setOutlineCustomInstructions(e.target.value)}
-                            placeholder={t('outline.placeholder_instructions')}
-                            className="w-full text-xs p-2 border border-slate-400 rounded-md focus:ring-2 focus:ring-cyan-200 resize-none h-16"
-                        />
-                    </div>
+                    <ResourceCustomInstructions helpKey="outline_custom_instructions" t={t}
+                        labelKey="outline.instructions_label" optional={false}
+                        ariaFallback="Custom instructions for outline"
+                        value={outlineCustomInstructions} onChange={setOutlineCustomInstructions}
+                        placeholderKey="outline.placeholder_instructions" />
                 </div>
                 <button type="button"
                     aria-label={t('common.generate')}
@@ -2657,7 +2832,7 @@ function OutlinePanel(props) {
 function NoteTakingPanel(props) {
   const {
     expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing,
-    noteTakingTemplateType, setNoteTakingTemplateType, t
+    noteTakingCustomInstructions, noteTakingTemplateType, setNoteTakingCustomInstructions, setNoteTakingTemplateType, t
   } = props;
   if (!expandedTools || !expandedTools.includes('note-taking')) return null;
   return (
@@ -2680,6 +2855,10 @@ function NoteTakingPanel(props) {
             <option value="q-and-a">{t('note_taking.q_and_a') || 'Q&A Study Notes (self-quiz)'}</option>
           </select>
         </div>
+        <ResourceCustomInstructions helpKey="note_taking_custom_instructions" t={t}
+          ariaFallback="Custom instructions for notes"
+          value={noteTakingCustomInstructions} onChange={setNoteTakingCustomInstructions}
+          placeholderKey="common.custom_instructions_placeholder" />
         <p className="text-[11px] text-slate-500 italic leading-snug">
           {t('note_taking.help') || "Each template is scaffolded from today's source text but persists in your history so you can keep adding to it across lessons."}
         </p>
@@ -2706,8 +2885,8 @@ function NoteTakingPanel(props) {
 // + export.
 function AnchorChartPanel(props) {
   const {
-    expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing,
-    anchorChartType, setAnchorChartType, t
+    anchorChartCustomInstructions, anchorChartType, expandedTools, handleGenerate,
+    hasSourceOrAnalysis, isProcessing, setAnchorChartCustomInstructions, setAnchorChartType, t
   } = props;
   if (!expandedTools || !expandedTools.includes('anchor-chart')) return null;
   return (
@@ -2736,6 +2915,10 @@ function AnchorChartPanel(props) {
             <option value="question-guide">{t('anchor_chart.question_guide') || 'Question Guide (discussion / analysis prompts)'}</option>
           </select>
         </div>
+        <ResourceCustomInstructions helpKey="anchor_chart_custom_instructions" t={t}
+          ariaFallback="Custom instructions for anchor chart"
+          value={anchorChartCustomInstructions} onChange={setAnchorChartCustomInstructions}
+          placeholderKey="common.custom_instructions_placeholder" />
         <p className="text-[11px] text-slate-500 italic leading-snug">
           {t('anchor_chart.help') || "AI drafts a classroom-ready visual reference with hand-drawn icons. Edit the poster anytime, then print or download it."}
         </p>
@@ -2780,17 +2963,10 @@ function FaqPanel(props) {
                             <option value={10}>{t('faq.options.q10')}</option>
                         </select>
                         </div>
-                        <div>
-                        <label className="block text-xs font-medium text-slate-700 mb-1">{t('input.custom_instructions')} <span className="text-indigo-600 font-normal">{t('common.optional')}</span></label>
-                        <textarea
-                            aria-label={t('input.custom_instructions') || 'Custom instructions for FAQ'}
-                            data-help-key="faq_custom_instructions"
-                            value={faqCustomInstructions}
-                            onChange={(e) => setFaqCustomInstructions(e.target.value)}
-                            placeholder={t('faq.placeholder_instructions')}
-                            className="w-full text-xs p-2 border border-slate-400 rounded-md focus:ring-2 focus:ring-indigo-200 resize-none h-16"
-                        />
-                        </div>
+                        <ResourceCustomInstructions helpKey="faq_custom_instructions" t={t}
+                            ariaFallback="Custom instructions for FAQ"
+                            value={faqCustomInstructions} onChange={setFaqCustomInstructions}
+                            placeholderKey="faq.placeholder_instructions" />
                     </div>
                     <button type="button"
                         aria-label={t('common.generate')}
@@ -2829,17 +3005,11 @@ function SentenceFramesPanel(props) {
                             <option value="Discussion Prompts">{t('scaffolds.prompts')}</option>
                         </select>
                         </div>
-                        <div>
-                        <label className="block text-xs font-medium text-slate-700 mb-1">{t('input.custom_instructions')}</label>
-                        <textarea
-                            aria-label={t('input.custom_instructions') || 'Custom instructions for scaffolds'}
-                            data-help-key="scaffolds_custom_instructions"
-                            value={frameCustomInstructions}
-                            onChange={(e) => setFrameCustomInstructions(e.target.value)}
-                            placeholder={t('scaffolds.placeholder_instructions')}
-                            className="w-full text-xs p-2 border border-slate-400 rounded-md focus:ring-2 focus:ring-cyan-200 resize-none h-16"
-                        />
-                        </div>
+                        <ResourceCustomInstructions helpKey="scaffolds_custom_instructions" t={t}
+                            optional={false}
+                            ariaFallback="Custom instructions for scaffolds"
+                            value={frameCustomInstructions} onChange={setFrameCustomInstructions}
+                            placeholderKey="scaffolds.placeholder_instructions" />
                     </div>
                     <button type="button"
                         aria-label={t('common.generate')}
@@ -2864,19 +3034,11 @@ function LessonPlanPanel(props) {
   return (
                  <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
                      <div className="p-3 border-b border-slate-100 bg-indigo-50/50 flex flex-col gap-3">
-                         <div>
-                             <label className="block text-xs font-bold text-slate-600 mb-1">
-                                 {t('lesson_plan.custom_additions')} <span className="text-indigo-600 font-normal">{t('common.optional')}</span>
-                             </label>
-                             <textarea
-                                 aria-label={t('lesson_plan.custom_additions') || 'Lesson plan custom additions'}
-                                 data-help-key="lesson_plan_custom_additions"
-                                 value={lessonCustomAdditions}
-                                 onChange={(e) => setLessonCustomAdditions(e.target.value)}
-                                placeholder={t('lesson_plan.placeholder_additions')}
-                                className="w-full text-xs p-2 border border-slate-400 rounded-lg focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 resize-none h-16 bg-white"
-                            />
-                        </div>
+                         <ResourceCustomInstructions helpKey="lesson_plan_custom_additions" t={t}
+                             labelKey="lesson_plan.custom_additions"
+                             ariaFallback="Lesson plan custom additions"
+                             value={lessonCustomAdditions} onChange={setLessonCustomAdditions}
+                             placeholderKey="lesson_plan.placeholder_additions" />
                     </div>
                     <button type="button"
                         aria-label={t('common.generate_lesson_plan')}

@@ -38,7 +38,7 @@ const source = fs.readFileSync(SOURCE, 'utf-8');
 // they're injected by the wrapper preamble.
 const entry = `
 /* global React, useState, useEffect, useRef, useCallback, useMemo, useReducer */
-/* global ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Download, Edit, Eye, HelpCircle, Image, ImageIcon, Maximize2, Mic, Move, Palette, Play, Plus, RefreshCw, Save, Sparkles, Star, Trash2, Type, Volume2, X */
+/* global ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Download, Edit, Eye, HelpCircle, Image, ImageIcon, Maximize2, Mic, Move, Palette, Play, Plus, Redo2, RefreshCw, Save, Sparkles, Star, Trash2, Type, Undo2, Volume2, X */
 
 ${source}
 `;
@@ -110,12 +110,14 @@ const outputCode = `/**
   var Palette = _icons.Palette || function() { return null; };
   var Play = _icons.Play || function() { return null; };
   var Plus = _icons.Plus || function() { return null; };
+  var Redo2 = _icons.Redo2 || function() { return null; };
   var RefreshCw = _icons.RefreshCw || function() { return null; };
   var Save = _icons.Save || function() { return null; };
   var Sparkles = _icons.Sparkles || function() { return null; };
   var Star = _icons.Star || function() { return null; };
   var Trash2 = _icons.Trash2 || function() { return null; };
   var Type = _icons.Type || function() { return null; };
+  var Undo2 = _icons.Undo2 || function() { return null; };
   var Volume2 = _icons.Volume2 || function() { return null; };
   var X = _icons.X || function() { return null; };
 
@@ -132,7 +134,7 @@ ${compiled}
   window.AlloModules.StoryForge = StoryForge;
   // Test seam (read-only): expose pure reading-level and comic layout helpers for characterization
   // tests (tests/story_forge_golden.test.js). Zero behavior change.
-  try { window.AlloModules.StoryForge._meta = { computeReadingLevel: computeReadingLevel, gradeLevelToNumber: gradeLevelToNumber, clampComicLetteringWidth: clampComicLetteringWidth, sanitizePanelThumbnails: sanitizePanelThumbnails }; } catch (e) {}
+  try { window.AlloModules.StoryForge._meta = { computeReadingLevel: computeReadingLevel, gradeLevelToNumber: gradeLevelToNumber, clampComicLetteringWidth: clampComicLetteringWidth, sanitizePanelThumbnails: sanitizePanelThumbnails, createComicProductionSnapshot: createComicProductionSnapshot, sanitizeStoryForgeDraft: sanitizeStoryForgeDraft, isStoryForgeDraftMeaningful: isStoryForgeDraftMeaningful, getComicPageProductionStats: getComicPageProductionStats, getStoryForgeProjectReadiness: getStoryForgeProjectReadiness }; } catch (e) {}
 
   console.log('[StoryForge] Module registered');
 })();

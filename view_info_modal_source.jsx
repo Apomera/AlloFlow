@@ -193,10 +193,12 @@ const OSS_CREDITS = [
     ],
   },
   {
-    group: 'Desktop app (School Box)',
+    group: 'Desktop app & local tools',
     items: [
       { name: 'Electron', use: 'offline desktop app', license: 'MIT', url: 'https://electronjs.org' },
       { name: 'electron-log & electron-updater', use: 'desktop logging & updates', license: 'MIT', url: 'https://github.com/electron-userland/electron-builder' },
+      { name: 'Grist Desktop', use: 'verified local spreadsheet process for AlloSheet (v0.3.13)', license: 'Apache-2.0', url: 'https://github.com/gristlabs/grist-desktop' },
+      { name: 'Grist Core', use: 'relational spreadsheet engine included in Grist Desktop and used by optional district/server deployments', license: 'Apache-2.0', url: 'https://github.com/gristlabs/grist-core' },
     ],
   },
 ];
@@ -465,7 +467,7 @@ const ATLAS_HUBS = [
     "icon": "🔬",
     "sourceKind": "registry",
     "sourceLabel": "Generated from the STEM Lab registry",
-    "total": 126,
+    "total": 127,
     "categories": [
       {
         "name": "Math Fundamentals",
@@ -626,7 +628,8 @@ const ATLAS_HUBS = [
           "Geography Quiz",
           "Plate Tectonics",
           "Geology Explorer",
-          "Night Sky & Astronomy"
+          "Night Sky & Astronomy",
+          "GIS Studio"
         ]
       },
       {

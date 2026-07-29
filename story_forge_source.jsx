@@ -138,6 +138,9 @@ const COMIC_PRINT_GUTTERS = {
   standard: { label: 'Standard gutter', width: '0.25 in' },
   wide: { label: 'Wide gutter', width: '0.375 in' },
 };
+const hasOwnOption = (options, key) => Boolean(
+  options && typeof key === 'string' && Object.prototype.hasOwnProperty.call(options, key)
+);
 const COMIC_PANEL_FRAME_OPTIONS = [
   { value: '', label: 'Auto' },
   { value: 'wide', label: 'Wide' },
@@ -256,8 +259,8 @@ const getComicPageTurnLabel = (value) => {
 };
 const sanitizeComicPrintSafety = (obj) => {
   const source = (obj && typeof obj === 'object') ? obj : {};
-  const format = COMIC_PRINT_FORMATS[source.format] ? source.format : 'letter';
-  const gutter = COMIC_PRINT_GUTTERS[source.gutter] ? source.gutter : (format === 'digital' ? 'none' : 'standard');
+  const format = hasOwnOption(COMIC_PRINT_FORMATS, source.format) ? source.format : 'letter';
+  const gutter = hasOwnOption(COMIC_PRINT_GUTTERS, source.gutter) ? source.gutter : (format === 'digital' ? 'none' : 'standard');
   return {
     format,
     gutter: format === 'digital' ? 'none' : gutter,
@@ -346,8 +349,7 @@ const getComicLetteringStats = (dialogue = {}) => {
 };
 const comicDialogueHasBubbles = (dialogue = {}) => Boolean(
   String(dialogue.speech || '').trim() ||
-  String(dialogue.thought || '').trim() ||
-  String(dialogue.sfx || '').trim()
+  String(dialogue.thought || '').trim()
 );
 const getComicAutoLetteringSpace = (pageLayout = 'grid', pageIndex = 0, gutterSide = '') => {
   const patterns = {
@@ -402,14 +404,163 @@ const getComicPageProductionStats = (page = {}, context = {}) => {
   stats.status = stats.attention > 0 ? 'Review' : stats.artPanels === total && total > 0 ? 'Ready' : 'Clean';
   return stats;
 };
+const getStoryForgeProjectReadiness = (context = {}) => {
+  const paragraphs = Array.isArray(context.paragraphs) ? context.paragraphs : [];
+  const layoutMode = context.layoutMode === 'comic' ? 'comic' : 'prose';
+  const totalSections = paragraphs.length;
+  const writtenSections = paragraphs.filter((p) => countWords(p?.text) >= (layoutMode === 'comic' ? 2 : 5)).length;
+  const contentSections = paragraphs.filter((p) => String(p?.text || '').trim()).length;
+  const totalWords = paragraphs.reduce((sum, p) => sum + countWords(p?.text), 0);
+  const storyCueReady = Boolean(String(context.storyTitle || context.storyPrompt || context.sourceTopic || '').trim());
+  const vocabTerms = Array.isArray(context.vocabTerms) ? context.vocabTerms : [];
+  const vocabTotal = vocabTerms.length;
+  const vocabUsed = Math.max(0, Math.min(vocabTotal, Number(context.vocabUsedCount) || 0));
+  const illustrations = context.illustrations && typeof context.illustrations === 'object' ? context.illustrations : {};
+  const audioSegments = context.audioSegments && typeof context.audioSegments === 'object' ? context.audioSegments : {};
+  const illustratedSections = paragraphs.filter((p) => Boolean(illustrations[p?.id]?.imageUrl)).length;
+  const narratedSections = paragraphs.filter((p) => {
+    const segment = audioSegments[p?.id] || {};
+    return Boolean(
+      segment.studentAudioBase64 ||
+      segment.studentAudioUrl ||
+      segment.aiAudioUrl ||
+      (Array.isArray(segment.sentenceAudios) && segment.sentenceAudios.some(Boolean))
+    );
+  }).length;
+  const reviewSignals = context.reviewSignals && typeof context.reviewSignals === 'object' ? context.reviewSignals : {};
+  const reviewSignalCount = Object.values(reviewSignals).filter(Boolean).length;
+  const comicPages = Array.isArray(context.comicPages) ? context.comicPages : [];
+  const comicStats = comicPages.reduce((summary, page) => {
+    const stats = getComicPageProductionStats(page, context);
+    Object.keys(summary).forEach((key) => { summary[key] += Number(stats[key]) || 0; });
+    return summary;
+  }, {
+    total: 0,
+    artPanels: 0,
+    bubblePanels: 0,
+    placedBubbles: 0,
+    crowdedBubbles: 0,
+    unplacedBubbles: 0,
+    gutterRiskPanels: 0,
+    emptyPanels: 0,
+  });
+  const blockers = [];
+  const warnings = [];
+  const addIssue = (list, phase, code, label, detail) => list.push({ phase, code, label, detail });
+
+  if (!contentSections) {
+    addIssue(blockers, 'write', 'missing-story-content', layoutMode === 'comic' ? 'Comic panels need captions' : 'Story draft is empty', layoutMode === 'comic' ? 'Add a short narration caption to each planned panel.' : 'Write at least one complete paragraph before exporting.');
+  } else if (contentSections < totalSections && layoutMode !== 'comic') {
+    addIssue(warnings, 'write', 'incomplete-story-sections', 'Some story sections are empty', `${totalSections - contentSections} section${totalSections - contentSections === 1 ? '' : 's'} still need writing.`);
+  }
+  if (!storyCueReady) addIssue(warnings, 'configure', 'missing-story-title', 'Add a story title', 'A specific title makes the saved story easier to identify.');
+  if (!vocabTotal) addIssue(warnings, 'configure', 'missing-vocabulary', 'Add vocabulary goals', 'Choose at least one vocabulary term for the story.');
+  else if (vocabUsed < vocabTotal) addIssue(warnings, 'write', 'unused-vocabulary', 'Use the vocabulary goals', `${vocabTotal - vocabUsed} assigned term${vocabTotal - vocabUsed === 1 ? '' : 's'} have not appeared in the draft.`);
+  if (totalSections > 0 && illustratedSections < totalSections) {
+    addIssue(warnings, 'illustrate', 'missing-illustrations', 'Finish the visual pass', `${totalSections - illustratedSections} scene${totalSections - illustratedSections === 1 ? '' : 's'} still need art.`);
+  }
+  if (!reviewSignalCount) {
+    addIssue(warnings, 'review', 'review-not-run', layoutMode === 'comic' ? 'Run a comic flow review' : 'Review the story', 'Complete at least one review or revision pass before publishing.');
+  }
+
+  if (layoutMode === 'comic') {
+    if (comicStats.emptyPanels > 0 && contentSections > 0) addIssue(blockers, 'write', 'empty-comic-panels', 'Fill every comic panel', `${comicStats.emptyPanels} panel${comicStats.emptyPanels === 1 ? '' : 's'} have no narration caption.`);
+    if (comicStats.unplacedBubbles > 0) addIssue(blockers, 'export', 'unplaced-lettering', 'Place every lettering bubble', `${comicStats.unplacedBubbles} bubble panel${comicStats.unplacedBubbles === 1 ? '' : 's'} need a safe anchor.`);
+    if (comicStats.gutterRiskPanels > 0) addIssue(blockers, 'export', 'gutter-lettering-conflict', 'Move lettering away from the gutter', `${comicStats.gutterRiskPanels} panel${comicStats.gutterRiskPanels === 1 ? '' : 's'} place lettering in the binding risk area.`);
+    if (comicStats.crowdedBubbles > 0) addIssue(warnings, 'write', 'crowded-lettering', 'Trim crowded lettering', `${comicStats.crowdedBubbles} panel${comicStats.crowdedBubbles === 1 ? '' : 's'} exceed the recommended lettering load.`);
+    const printSafety = sanitizeComicPrintSafety(context.comicPrintSafety);
+    if (printSafety.format !== 'digital' && !printSafety.includeBleed) {
+      addIssue(warnings, 'export', 'missing-print-bleed', 'Enable print bleed', 'Print layouts are safer with bleed enabled.');
+    }
+    const continuity = sanitizeComicContinuity(context.comicContinuity);
+    const continuityFields = Object.values(continuity).filter(value => String(value || '').trim()).length;
+    if (continuityFields < 2) {
+      addIssue(warnings, 'illustrate', 'continuity-sheet-incomplete', 'Complete the continuity sheet', 'Lock recurring cast, setting, palette, and style details before generating final art.');
+    }
+  } else {
+    const targetWords = Math.max(80, totalSections * 25);
+    if (contentSections > 0 && totalWords < targetWords) {
+      addIssue(warnings, 'write', 'short-story-draft', 'Develop the story draft', `The current ${totalWords}-word draft is below the ${targetWords}-word production target.`);
+    }
+  }
+
+  const safeRatio = (value, total) => total > 0 ? Math.max(0, Math.min(1, value / total)) : 0;
+  const setupScore = Math.round(
+    (storyCueReady ? 40 : 0) +
+    (vocabTotal > 0 ? 30 : 0) +
+    (context.genre ? 15 : 0) +
+    (context.layoutMode ? 15 : 0)
+  );
+  const targetWords = layoutMode === 'comic' ? Math.max(20, totalSections * 8) : Math.max(80, totalSections * 25);
+  const writeScore = Math.round(
+    safeRatio(writtenSections, totalSections) * 70 +
+    Math.min(1, totalWords / targetWords) * 20 +
+    (vocabTotal ? safeRatio(vocabUsed, vocabTotal) * 10 : 10)
+  );
+  const illustrateScore = Math.round(safeRatio(illustratedSections, totalSections) * 100);
+  const narrateScore = Math.round(safeRatio(narratedSections, totalSections) * 100);
+  const reviewScore = reviewSignalCount > 0 ? 100 : 0;
+  const exportScore = Math.max(0, Math.round(100 - blockers.length * 24 - warnings.length * 4));
+  const writeBlocked = blockers.some(issue => issue.phase === 'write');
+  const phases = [
+    { key: 'configure', label: 'Setup', score: setupScore, status: setupScore >= 85 ? 'ready' : setupScore === 0 ? 'attention' : 'progress', detail: storyCueReady ? `${vocabTotal} vocabulary goal${vocabTotal === 1 ? '' : 's'}` : 'Story identity needs attention' },
+    { key: 'write', label: 'Write', score: writeScore, status: writeBlocked ? 'blocked' : writeScore >= 85 ? 'ready' : contentSections ? 'progress' : 'attention', detail: `${totalWords} words across ${contentSections}/${totalSections} sections` },
+    { key: 'illustrate', label: 'Illustrate', score: illustrateScore, status: illustratedSections === totalSections && totalSections > 0 ? 'ready' : illustratedSections > 0 ? 'progress' : 'attention', detail: `${illustratedSections}/${totalSections} scenes illustrated` },
+    { key: 'narrate', label: 'Narrate', score: narrateScore, status: narratedSections === 0 ? 'optional' : narratedSections === totalSections ? 'ready' : 'progress', detail: narratedSections === 0 ? 'Optional audio pass' : `${narratedSections}/${totalSections} scenes narrated` },
+    { key: 'review', label: 'Review', score: reviewScore, status: reviewSignalCount ? 'ready' : 'attention', detail: reviewSignalCount ? `${reviewSignalCount} review signal${reviewSignalCount === 1 ? '' : 's'} complete` : 'Review pass pending' },
+    { key: 'export', label: 'Export', score: exportScore, status: blockers.length ? 'blocked' : warnings.length ? 'attention' : 'ready', detail: blockers.length ? `${blockers.length} production blocker${blockers.length === 1 ? '' : 's'}` : warnings.length ? `${warnings.length} refinement${warnings.length === 1 ? '' : 's'} available` : 'Ready to publish' },
+  ];
+  const effectiveNarrateScore = narratedSections === 0 ? 100 : narrateScore;
+  const percent = Math.round(
+    setupScore * 0.15 +
+    writeScore * 0.35 +
+    illustrateScore * 0.15 +
+    effectiveNarrateScore * 0.1 +
+    reviewScore * 0.1 +
+    exportScore * 0.15
+  );
+  const readyCount = phases.filter(item => item.status === 'ready' || item.status === 'optional').length;
+  return {
+    percent,
+    readyCount,
+    phases,
+    blockers,
+    warnings,
+    comicStats,
+    metrics: {
+      totalSections,
+      writtenSections,
+      contentSections,
+      totalWords,
+      illustratedSections,
+      narratedSections,
+      vocabTotal,
+      vocabUsed,
+      reviewSignalCount,
+    },
+    summary: blockers.length
+      ? `${blockers.length} production blocker${blockers.length === 1 ? '' : 's'} to resolve`
+      : warnings.length
+        ? `Ready to export with ${warnings.length} refinement${warnings.length === 1 ? '' : 's'} available`
+        : 'Production-ready',
+  };
+};
 const sanitizeParagraphs = (arr) => {
   if (!Array.isArray(arr)) return null;
-  const cleaned = arr.slice(0, MAX_DRAFT_PARAGRAPHS).map((p, i) => ({
-    id: (p && typeof p.id === 'string' && p.id) ? p.id : `p-${i}`,
-    text: (p && typeof p.text === 'string') ? p.text : '',
-    scaffoldFrame: (p && typeof p.scaffoldFrame === 'string') ? p.scaffoldFrame : '',
-    plotBeat: (p && typeof p.plotBeat === 'string') ? p.plotBeat : '',
-  }));
+  const seenIds = new Set();
+  const cleaned = arr.slice(0, MAX_DRAFT_PARAGRAPHS).map((p, i) => {
+    const rawId = p && typeof p.id === 'string' ? p.id.trim().slice(0, 64) : '';
+    let id = rawId || `p-${i}`;
+    if (seenIds.has(id)) id = `p-${i}`;
+    while (seenIds.has(id)) id = `${id}-${i}`.slice(0, 64);
+    seenIds.add(id);
+    return {
+      id,
+      text: p && typeof p.text === 'string' ? p.text.slice(0, 50000) : '',
+      scaffoldFrame: p && typeof p.scaffoldFrame === 'string' ? p.scaffoldFrame.slice(0, 6000) : '',
+      plotBeat: p && typeof p.plotBeat === 'string' ? p.plotBeat.slice(0, 64) : '',
+    };
+  });
   return cleaned.length > 0 ? cleaned : [{ id: 'p-0', text: '', scaffoldFrame: '', plotBeat: '' }];
 };
 // Only inline data-image URIs or http(s) URLs are allowed; everything else (javascript:,
@@ -427,7 +578,10 @@ const sanitizeIllustrations = (obj) => {
   return out;
 };
 const sanitizeVocabTerms = (arr) => Array.isArray(arr)
-  ? arr.filter((v) => v && typeof v.term === 'string').map((v) => ({ term: v.term, definition: typeof v.definition === 'string' ? v.definition : '' }))
+  ? arr.slice(0, 64).filter((v) => v && typeof v.term === 'string' && v.term.trim()).map((v) => ({
+      term: v.term.trim().slice(0, 120),
+      definition: typeof v.definition === 'string' ? v.definition.slice(0, 600) : '',
+    }))
   : null;
 
 const sanitizePanelDialogue = (obj) => {
@@ -540,7 +694,7 @@ const sanitizeComicPageComposer = (obj) => {
     const value = sourcePages[k];
     if (!pageNo || !value || typeof value !== 'object') return;
     const clean = {};
-    if (COMIC_PAGE_LAYOUTS[value.layout]) clean.layout = value.layout;
+    if (hasOwnOption(COMIC_PAGE_LAYOUTS, value.layout)) clean.layout = value.layout;
     const turn = normalizeComicPageTurn(value.turn);
     if (turn) clean.turn = turn;
     if (typeof value.note === 'string' && value.note.trim()) clean.note = value.note.slice(0, 260);
@@ -548,6 +702,21 @@ const sanitizeComicPageComposer = (obj) => {
   });
   return { panelsPerPage, pages };
 };
+
+const createComicProductionSnapshot = (value = {}) => ({
+  paragraphs: sanitizeParagraphs(value.paragraphs) || [{ id: 'p-0', text: '', scaffoldFrame: '', plotBeat: '' }],
+  comicPageLayout: hasOwnOption(COMIC_PAGE_LAYOUTS, value.comicPageLayout) ? value.comicPageLayout : 'grid',
+  comicPageComposer: sanitizeComicPageComposer(value.comicPageComposer),
+  comicPrintSafety: sanitizeComicPrintSafety(value.comicPrintSafety),
+  comicContinuity: sanitizeComicContinuity(value.comicContinuity),
+  panelDialogue: sanitizePanelDialogue(value.panelDialogue),
+  panelDirections: sanitizePanelDirections(value.panelDirections),
+  panelThumbnails: sanitizePanelThumbnails(value.panelThumbnails),
+  panelLayouts: sanitizePanelLayouts(value.panelLayouts),
+  panelStickers: sanitizePanelStickers(value.panelStickers),
+});
+
+const getComicProductionSnapshotKey = (snapshot) => JSON.stringify(createComicProductionSnapshot(snapshot));
 
 const termUsed = (text, term) => {
   if (!text || !term) return false;
@@ -1054,6 +1223,70 @@ const LANG_OPTIONS = [
   { code: 'other', label: 'Other…', bcp47: 'en-US' },
 ];
 
+const sanitizeValenceByParagraph = (obj) => {
+  if (!obj || typeof obj !== 'object') return {};
+  const out = {};
+  Object.keys(obj).slice(0, MAX_DRAFT_PARAGRAPHS).forEach((rawKey) => {
+    const key = String(rawKey || '').slice(0, 64);
+    const value = Number(obj[rawKey]);
+    if (!key || !Number.isFinite(value)) return;
+    out[key] = Math.max(-5, Math.min(5, Math.round(value * 10) / 10));
+  });
+  return out;
+};
+
+const sanitizeStoryForgeDraft = (value = {}) => {
+  const source = value && typeof value === 'object' ? value : {};
+  const cleanString = (input, max) => typeof input === 'string' ? input.slice(0, max) : '';
+  const parsedSavedAt = typeof source.savedAt === 'string' && Number.isFinite(Date.parse(source.savedAt))
+    ? new Date(source.savedAt).toISOString()
+    : '';
+  return {
+    storyTitle: cleanString(source.storyTitle, 240),
+    genre: hasOwnOption(GENRE_TEMPLATES, source.genre) ? source.genre : 'free',
+    vocabTerms: sanitizeVocabTerms(source.vocabTerms) || [],
+    artStyle: (hasOwnOption(ART_STYLE_MAP, source.artStyle) || source.artStyle === 'custom') ? source.artStyle : 'storybook',
+    customArtStyle: cleanString(source.customArtStyle, 1000),
+    storyPrompt: cleanString(source.storyPrompt, 6000),
+    rubricText: cleanString(source.rubricText, 12000),
+    paragraphs: sanitizeParagraphs(source.paragraphs) || [{ id: 'p-0', text: '', scaffoldFrame: '', plotBeat: '' }],
+    scaffoldsGenerated: Boolean(source.scaffoldsGenerated),
+    draftCount: Math.max(1, Math.min(99, Math.round(Number(source.draftCount) || 1))),
+    phase: PHASES.includes(source.phase) ? source.phase : 'configure',
+    language: LANG_OPTIONS.some(option => option.code === source.language) ? source.language : 'en',
+    customLanguage: cleanString(source.customLanguage, 120),
+    storyShape: hasOwnOption(STORY_SHAPES, source.storyShape) ? source.storyShape : '',
+    valenceByPara: sanitizeValenceByParagraph(source.valenceByPara),
+    layoutMode: hasOwnOption(LAYOUT_MODES, source.layoutMode) ? source.layoutMode : 'prose',
+    comicPageLayout: hasOwnOption(COMIC_PAGE_LAYOUTS, source.comicPageLayout) ? source.comicPageLayout : 'grid',
+    comicPageComposer: sanitizeComicPageComposer(source.comicPageComposer),
+    comicPrintSafety: sanitizeComicPrintSafety(source.comicPrintSafety),
+    comicContinuity: sanitizeComicContinuity(source.comicContinuity),
+    panelDialogue: sanitizePanelDialogue(source.panelDialogue),
+    panelDirections: sanitizePanelDirections(source.panelDirections),
+    panelThumbnails: sanitizePanelThumbnails(source.panelThumbnails),
+    panelLayouts: sanitizePanelLayouts(source.panelLayouts),
+    panelStickers: sanitizePanelStickers(source.panelStickers),
+    savedAt: parsedSavedAt,
+  };
+};
+
+const isStoryForgeDraftMeaningful = (value = {}) => {
+  const draft = sanitizeStoryForgeDraft(value);
+  const continuityHasContent = Object.values(draft.comicContinuity).some(item => String(item || '').trim());
+  const composerChanged = draft.comicPageComposer.panelsPerPage !== 4 || Object.keys(draft.comicPageComposer.pages).length > 0;
+  const printSafetyChanged = draft.comicPrintSafety.format !== 'letter' || draft.comicPrintSafety.gutter !== 'standard' || !draft.comicPrintSafety.showGuides || !draft.comicPrintSafety.includeBleed;
+  const panelProductionHasContent = [draft.panelDialogue, draft.panelDirections, draft.panelThumbnails, draft.panelLayouts, draft.panelStickers]
+    .some(item => Object.keys(item).length > 0);
+  return Boolean(
+    draft.storyTitle.trim() || draft.storyPrompt.trim() || draft.rubricText.trim() || draft.customArtStyle.trim() || draft.customLanguage.trim() ||
+    draft.vocabTerms.length || draft.paragraphs.some(item => String(item.text || item.scaffoldFrame || item.plotBeat || '').trim()) ||
+    draft.genre !== 'free' || draft.artStyle !== 'storybook' || draft.language !== 'en' || draft.storyShape || draft.scaffoldsGenerated || draft.draftCount > 1 ||
+    draft.layoutMode !== 'prose' || draft.comicPageLayout !== 'grid' || composerChanged || printSafetyChanged || continuityHasContent || panelProductionHasContent ||
+    Object.keys(draft.valenceByPara).length > 0
+  );
+};
+
 // ═══════════════════════════════════════════════════════════════
 // MAIN COMPONENT
 // ═══════════════════════════════════════════════════════════════
@@ -1189,9 +1422,11 @@ const StoryForge = React.memo(({
   const [panelLayouts, setPanelLayouts] = useState({}); // keyed by paragraph id: { frame, colSpan, rowSpan }
   const [panelResizeDrag, setPanelResizeDrag] = useState(null);
   const [bubbleDrag, setBubbleDrag] = useState(null);
+  const [panelSequenceDrag, setPanelSequenceDrag] = useState(null);
   const [comicContinuity, setComicContinuity] = useState({ cast: '', setting: '', palette: '', styleNotes: '' });
   const [comicPageComposer, setComicPageComposer] = useState({ panelsPerPage: 4, pages: {} });
   const [comicPrintSafety, setComicPrintSafety] = useState({ format: 'letter', gutter: 'standard', showGuides: true, includeBleed: true });
+  const [comicPreviewPage, setComicPreviewPage] = useState(1);
   const updatePanelDialogue = (pId, field, value) => {
     setPanelDialogue(prev => ({ ...prev, [pId]: { ...(prev[pId] || {}), [field]: value } }));
   };
@@ -1298,6 +1533,31 @@ const StoryForge = React.memo(({
     event.currentTarget.releasePointerCapture?.(event.pointerId);
     setPanelResizeDrag(null);
   };
+  const handlePanelResizeKeyDown = (event, pId, idx, pageLayout = comicPageLayout, pageIndex = idx) => {
+    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const spans = getComicPanelLayoutSpans(panelLayouts[pId] || {}, pageLayout, pageIndex);
+    let nextColSpan = spans.colSpan;
+    let nextRowSpan = spans.rowSpan;
+    if (event.key === 'Home') {
+      nextColSpan = 1;
+      nextRowSpan = 1;
+    } else if (event.key === 'End') {
+      nextColSpan = pageLayout === 'strip' ? 1 : 2;
+      nextRowSpan = 2;
+    } else {
+      if (event.key === 'ArrowLeft') nextColSpan -= 1;
+      if (event.key === 'ArrowRight') nextColSpan += 1;
+      if (event.key === 'ArrowUp') nextRowSpan -= 1;
+      if (event.key === 'ArrowDown') nextRowSpan += 1;
+      nextColSpan = pageLayout === 'strip' ? 1 : clampComicPanelSpan(nextColSpan);
+      nextRowSpan = clampComicPanelSpan(nextRowSpan);
+    }
+    updatePanelLayout(pId, 'colSpan', nextColSpan);
+    updatePanelLayout(pId, 'rowSpan', nextRowSpan);
+    sfAnnounce(`Panel ${idx + 1} size ${nextColSpan} by ${nextRowSpan}`);
+  };
   const getBubblePositionFromPointer = (rect, event, offsetX = 0, offsetY = 0) => ({
     x: clampComicLetteringPercent((((event.clientX - offsetX) - rect.left) / Math.max(1, rect.width)) * 100),
     y: clampComicLetteringPercent((((event.clientY - offsetY) - rect.top) / Math.max(1, rect.height)) * 100),
@@ -1367,7 +1627,7 @@ const StoryForge = React.memo(({
     event.preventDefault();
     event.currentTarget.releasePointerCapture?.(event.pointerId);
     setBubbleDrag(null);
-    sfAnnounce('Speech bubble position updated');
+    sfAnnounce('Lettering bubble position updated');
   };
   const startBubbleResize = (event, pId) => {
     event.preventDefault();
@@ -1404,7 +1664,7 @@ const StoryForge = React.memo(({
     event.preventDefault();
     event.currentTarget.releasePointerCapture?.(event.pointerId);
     setBubbleDrag(null);
-    sfAnnounce('Speech bubble width updated');
+    sfAnnounce('Lettering bubble width updated');
   };
   const handleBubbleControlKeyDown = (event, pId, mode) => {
     const moveKeys = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'];
@@ -1423,7 +1683,7 @@ const StoryForge = React.memo(({
           : currentWidth + (event.key === 'ArrowRight' ? step : -step);
       const width = clampComicLetteringWidth(nextWidth);
       updatePanelLetteringWidth(pId, width);
-      sfAnnounce(`Speech bubble width ${width} percent`);
+      sfAnnounce(`Lettering bubble width ${width} percent`);
       return;
     }
     const currentPosition = getComicLetteringPosition(rough, rough.letteringSpace);
@@ -1433,7 +1693,7 @@ const StoryForge = React.memo(({
     if (event.key === 'ArrowUp') nextPosition.y -= step;
     if (event.key === 'ArrowDown') nextPosition.y += step;
     updatePanelLetteringPosition(pId, nextPosition);
-    sfAnnounce(`Speech bubble position ${Math.round(nextPosition.x)}, ${Math.round(nextPosition.y)} percent`);
+    sfAnnounce(`Lettering bubble position ${Math.round(nextPosition.x)}, ${Math.round(nextPosition.y)} percent`);
   };
   const updateComicContinuity = (field, value) => {
     setComicContinuity(prev => sanitizeComicContinuity({ ...prev, [field]: value }));
@@ -1484,6 +1744,11 @@ const StoryForge = React.memo(({
     });
   };
   const comicPageGroups = useMemo(() => buildComicPageGroups(paragraphs, comicPageComposer, comicPageLayout), [paragraphs, comicPageComposer, comicPageLayout]);
+  useEffect(() => {
+    const maxPage = Math.max(1, comicPageGroups.length);
+    setComicPreviewPage(prev => Math.max(1, Math.min(maxPage, Number(prev) || 1)));
+  }, [comicPageGroups.length]);
+  const focusedComicPreviewPage = comicPageGroups.find(page => page.page === comicPreviewPage) || comicPageGroups[0] || null;
   const applyComicLetteringPlacement = (pages, scopeLabel = 'comic') => {
     const pageList = Array.isArray(pages) ? pages.filter(Boolean) : [pages].filter(Boolean);
     const assignments = {};
@@ -1525,17 +1790,14 @@ const StoryForge = React.memo(({
     sfAnnounce(`Placed lettering anchors on ${ids.length} comic panels`);
   };
   const createDraftSnapshot = () => ({
-    storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText,
-    paragraphs, scaffoldsGenerated, draftCount, phase, language, storyShape, valenceByPara,
-    layoutMode, comicPageLayout,
-    comicPageComposer: sanitizeComicPageComposer(comicPageComposer),
-    comicPrintSafety: sanitizeComicPrintSafety(comicPrintSafety),
-    comicContinuity: sanitizeComicContinuity(comicContinuity),
-    panelDialogue: sanitizePanelDialogue(panelDialogue),
-    panelDirections: sanitizePanelDirections(panelDirections),
-    panelThumbnails: sanitizePanelThumbnails(panelThumbnails),
-    panelLayouts: sanitizePanelLayouts(panelLayouts),
-    panelStickers: sanitizePanelStickers(panelStickers),
+    ...sanitizeStoryForgeDraft({
+      storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText,
+      paragraphs, scaffoldsGenerated, draftCount, phase, language, customLanguage, storyShape, valenceByPara,
+      layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity,
+      panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers,
+    }),
+    _storyForgeAutosaveVersion: 2,
+    savedAt: new Date().toISOString(),
   });
 
   // ── Illustrate state ──
@@ -1709,10 +1971,205 @@ const StoryForge = React.memo(({
 
   // ── Unsaved changes guard ──
   const [isDirty, setIsDirty] = useState(false);
+  const [draftHydrationState, setDraftHydrationState] = useState('checking');
+  const [draftSaveState, setDraftSaveState] = useState('idle');
+  const [lastDraftSavedAt, setLastDraftSavedAt] = useState(null);
+  const [draftSaveError, setDraftSaveError] = useState('');
+  const skipNextAutosaveRef = useRef(false);
+  const hasCommittedDraftRef = useRef(false);
+  const comicHistoryRef = useRef({ past: [], future: [], current: null, currentKey: '', pending: null, timer: null });
+  const [, bumpComicHistoryVersion] = useReducer(value => value + 1, 0);
+  const comicProductionSnapshot = useMemo(() => ({
+    ...createComicProductionSnapshot({
+      paragraphs,
+      comicPageLayout,
+      comicPageComposer,
+      comicPrintSafety,
+      comicContinuity,
+      panelDialogue,
+      panelDirections,
+      panelThumbnails,
+      panelLayouts,
+      panelStickers,
+    }),
+    // Keep artwork references available when a structural panel edit is undone without
+    // serializing image data into the snapshot key or duplicating its underlying strings.
+    illustrations: illustrations && typeof illustrations === 'object' ? { ...illustrations } : {},
+    valenceByPara: valenceByPara && typeof valenceByPara === 'object' ? { ...valenceByPara } : {},
+  }), [paragraphs, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers, illustrations, valenceByPara]);
+  const comicProductionSnapshotKey = useMemo(() => getComicProductionSnapshotKey(comicProductionSnapshot), [comicProductionSnapshot]);
+  const resetComicHistory = useCallback(() => {
+    const history = comicHistoryRef.current;
+    if (history.timer) clearTimeout(history.timer);
+    comicHistoryRef.current = { past: [], future: [], current: null, currentKey: '', pending: null, timer: null };
+    setPanelSequenceDrag(null);
+    bumpComicHistoryVersion();
+  }, []);
+  useEffect(() => {
+    const history = comicHistoryRef.current;
+    if (layoutMode !== 'comic') {
+      if (history.current || history.timer || history.past.length || history.future.length) resetComicHistory();
+      return;
+    }
+    if (!history.current) {
+      history.current = comicProductionSnapshot;
+      history.currentKey = comicProductionSnapshotKey;
+      history.pending = null;
+      bumpComicHistoryVersion();
+      return;
+    }
+    if (history.currentKey === comicProductionSnapshotKey) {
+      history.current = comicProductionSnapshot;
+      history.pending = null;
+      return;
+    }
+    if (history.timer) clearTimeout(history.timer);
+    const pending = { snapshot: comicProductionSnapshot, key: comicProductionSnapshotKey };
+    history.pending = pending;
+    history.timer = setTimeout(() => {
+      if (comicHistoryRef.current !== history || history.pending !== pending) return;
+      history.past = [...history.past.slice(-39), history.current];
+      history.current = pending.snapshot;
+      history.currentKey = pending.key;
+      history.future = [];
+      history.pending = null;
+      history.timer = null;
+      bumpComicHistoryVersion();
+    }, 350);
+  }, [layoutMode, comicProductionSnapshot, comicProductionSnapshotKey, resetComicHistory]);
+  useEffect(() => () => {
+    const history = comicHistoryRef.current;
+    if (history.timer) clearTimeout(history.timer);
+  }, []);
+  const commitPendingComicHistory = () => {
+    const history = comicHistoryRef.current;
+    if (history.timer) clearTimeout(history.timer);
+    const pending = history.pending || (history.currentKey !== comicProductionSnapshotKey
+      ? { snapshot: comicProductionSnapshot, key: comicProductionSnapshotKey }
+      : null);
+    history.timer = null;
+    history.pending = null;
+    if (!pending || pending.key === history.currentKey) {
+      if (history.current) history.current = comicProductionSnapshot;
+      return false;
+    }
+    if (history.current) history.past = [...history.past.slice(-39), history.current];
+    history.current = pending.snapshot;
+    history.currentKey = pending.key;
+    history.future = [];
+    return true;
+  };
+  const applyComicHistorySnapshot = (snapshot, actionLabel) => {
+    const clean = createComicProductionSnapshot(snapshot);
+    const cleanParagraphs = clean.paragraphs || [{ id: 'p-0', text: '', scaffoldFrame: '', plotBeat: '' }];
+    setParagraphs(cleanParagraphs);
+    setComicPageLayout(clean.comicPageLayout);
+    setComicPageComposer(clean.comicPageComposer);
+    setComicPrintSafety(clean.comicPrintSafety);
+    setComicContinuity(clean.comicContinuity);
+    setPanelDialogue(clean.panelDialogue);
+    setPanelDirections(clean.panelDirections);
+    setPanelThumbnails(clean.panelThumbnails);
+    setPanelLayouts(clean.panelLayouts);
+    setPanelStickers(clean.panelStickers);
+    if (snapshot.illustrations && typeof snapshot.illustrations === 'object') setIllustrations({ ...snapshot.illustrations });
+    if (snapshot.valenceByPara && typeof snapshot.valenceByPara === 'object') setValenceByPara({ ...snapshot.valenceByPara });
+    setFocusParagraphIdx(prev => Math.max(0, Math.min(cleanParagraphs.length - 1, Number(prev) || 0)));
+    setPanelSequenceDrag(null);
+    setPanelResizeDrag(null);
+    setBubbleDrag(null);
+    setIsDirty(true);
+    sfAnnounce(`${actionLabel}. ${cleanParagraphs.length} panel${cleanParagraphs.length === 1 ? '' : 's'} in sequence`);
+  };
+  const undoComicProduction = () => {
+    if (layoutMode !== 'comic') return;
+    const history = comicHistoryRef.current;
+    commitPendingComicHistory();
+    if (!history.past.length || !history.current) return;
+    const previous = history.past[history.past.length - 1];
+    history.past = history.past.slice(0, -1);
+    history.future = [history.current, ...history.future].slice(0, 40);
+    history.current = previous;
+    history.currentKey = getComicProductionSnapshotKey(previous);
+    history.pending = null;
+    applyComicHistorySnapshot(previous, 'Comic edit undone');
+    bumpComicHistoryVersion();
+  };
+  const redoComicProduction = () => {
+    if (layoutMode !== 'comic') return;
+    const history = comicHistoryRef.current;
+    commitPendingComicHistory();
+    if (!history.future.length || !history.current) return;
+    const next = history.future[0];
+    history.future = history.future.slice(1);
+    history.past = [...history.past.slice(-39), history.current];
+    history.current = next;
+    history.currentKey = getComicProductionSnapshotKey(next);
+    history.pending = null;
+    applyComicHistorySnapshot(next, 'Comic edit redone');
+    bumpComicHistoryVersion();
+  };
+  const comicCanUndo = layoutMode === 'comic' && Boolean(
+    comicHistoryRef.current.current && (comicHistoryRef.current.past.length || comicHistoryRef.current.currentKey !== comicProductionSnapshotKey)
+  );
+  const comicCanRedo = layoutMode === 'comic' && Boolean(
+    comicHistoryRef.current.current && comicHistoryRef.current.currentKey === comicProductionSnapshotKey && !comicHistoryRef.current.pending && comicHistoryRef.current.future.length
+  );
   const [showCloseConfirm, setShowCloseConfirm] = useState(false);
   const closeConfirmDialogRef = useRef(null);
   const restorePromptDialogRef = useRef(null);
   const [showRestorePrompt, setShowRestorePrompt] = useState(false);
+  const hasMeaningfulDraft = () => isStoryForgeDraftMeaningful(createDraftSnapshot());
+  const persistDraftToStorage = ({ announce = false, allowDuringHydration = false } = {}) => {
+    if (!allowDuringHydration && (draftHydrationState !== 'ready' || showRestorePrompt)) {
+      setDraftSaveState('paused');
+      if (draftHydrationState === 'awaiting' && !showRestorePrompt) setShowRestorePrompt(true);
+      if (announce) sfAnnounce('Choose whether to restore the saved draft before saving');
+      return false;
+    }
+    setDraftSaveState('saving');
+    try {
+      const snapshot = createDraftSnapshot();
+      localStorage.setItem(SAVE_KEY, JSON.stringify(snapshot));
+      const savedAt = Date.parse(snapshot.savedAt) || Date.now();
+      hasCommittedDraftRef.current = true;
+      setLastDraftSavedAt(savedAt);
+      setDraftSaveState('saved');
+      setDraftSaveError('');
+      setIsDirty(false);
+      if (announce) {
+        if (addToast) addToast(t('toasts.draft_saved'), 'success');
+        sfAnnounce('Story draft saved');
+      }
+      return true;
+    } catch (error) {
+      const reason = error?.name === 'QuotaExceededError'
+        ? 'Browser storage is full. Export a draft file to preserve this work.'
+        : 'Draft could not be saved in this browser.';
+      setDraftSaveState('error');
+      setDraftSaveError(reason);
+      setIsDirty(true);
+      if (announce && addToast) addToast(reason, 'error');
+      sfAnnounce(reason);
+      return false;
+    }
+  };
+  const draftSaveLabel = draftHydrationState === 'awaiting'
+    ? 'Review draft'
+    : draftHydrationState !== 'ready' || showRestorePrompt
+      ? 'Save paused'
+    : draftSaveState === 'saving'
+      ? 'Saving'
+      : draftSaveState === 'error'
+        ? 'Save failed'
+        : draftSaveState === 'saved'
+          ? 'Saved'
+          : 'Save draft';
+  const draftSaveDescription = draftSaveError || (lastDraftSavedAt
+    ? `Last saved at ${new Date(lastDraftSavedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+    : draftHydrationState !== 'ready' || showRestorePrompt
+      ? 'Choose whether to restore the saved draft first'
+      : 'Save this draft in the browser');
   const [exportConsent, setExportConsent] = useState(null);
   const exportConsentDialogRef = useRef(null);
   const exportConsentResolveRef = useRef(null);
@@ -1727,7 +2184,7 @@ const StoryForge = React.memo(({
     if (resolve) resolve(accepted);
   };
   const safeClose = () => {
-    if (isDirty && paragraphs.some(p => p.text.trim().length > 0)) {
+    if (isDirty && hasMeaningfulDraft()) {
       setShowCloseConfirm(true);
     } else {
       onClose();
@@ -1742,6 +2199,7 @@ const StoryForge = React.memo(({
 
   // ── Phase content ref for focus management ──
   const phaseContentRef = useRef(null);
+  const pendingPhaseFocusRef = useRef('');
 
   // ── Modal focus-management refs (focus trap + restore) ──
   const modalRootRef = useRef(null);
@@ -1855,6 +2313,32 @@ const StoryForge = React.memo(({
 
   const vocabUsedCount = useMemo(() => Object.values(vocabUsage).filter(Boolean).length, [vocabUsage]);
   const totalWords = useMemo(() => paragraphs.reduce((sum, p) => sum + p.text.trim().split(/\s+/).filter(Boolean).length, 0), [paragraphs]);
+  const projectReadiness = useMemo(() => getStoryForgeProjectReadiness({
+    storyTitle,
+    storyPrompt,
+    sourceTopic,
+    genre,
+    layoutMode,
+    paragraphs,
+    vocabTerms,
+    vocabUsedCount,
+    illustrations,
+    audioSegments,
+    comicPages: comicPageGroups,
+    comicPageComposer,
+    comicPrintSafety,
+    comicContinuity,
+    panelDialogue,
+    panelThumbnails,
+    panelLayouts,
+    reviewSignals: {
+      grading: Boolean(gradingResult),
+      revisionPlan: Boolean(revisionPlan),
+      comicFlow: Boolean(comicFlowReport),
+      selfAssessment: Boolean(selfAssessmentSubmitted),
+    },
+  }), [storyTitle, storyPrompt, sourceTopic, genre, layoutMode, paragraphs, vocabTerms, vocabUsedCount, illustrations, audioSegments, comicPageGroups, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelThumbnails, panelLayouts, gradingResult, revisionPlan, comicFlowReport, selfAssessmentSubmitted]);
+  const readinessByPhase = useMemo(() => Object.fromEntries(projectReadiness.phases.map(item => [item.key, item])), [projectReadiness]);
 
   // ── Reading level ──
   const readingLevel = useMemo(() => {
@@ -1974,6 +2458,25 @@ const StoryForge = React.memo(({
   // ── Keyboard shortcuts ──
   useEffect(() => {
     const handler = (e) => {
+      const target = e.target;
+      const nativeTextUndo = Boolean(target?.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target?.tagName));
+      const shortcutKey = String(e.key || '').toLowerCase();
+      if (isOpen && layoutMode === 'comic' && (e.ctrlKey || e.metaKey) && !nativeTextUndo) {
+        const wantsUndo = shortcutKey === 'z' && !e.shiftKey;
+        const wantsRedo = (shortcutKey === 'z' && e.shiftKey) || shortcutKey === 'y';
+        if (wantsUndo && comicCanUndo) {
+          e.preventDefault();
+          e.stopPropagation();
+          undoComicProduction();
+          return;
+        }
+        if (wantsRedo && comicCanRedo) {
+          e.preventDefault();
+          e.stopPropagation();
+          redoComicProduction();
+          return;
+        }
+      }
       if (e.key === 'Escape' && isOpen) {
         if (exportConsent) finishExportConsent(false);
         else if (showCloseConfirm) setShowCloseConfirm(false);
@@ -1983,19 +2486,12 @@ const StoryForge = React.memo(({
       }
       if ((e.ctrlKey || e.metaKey) && e.key === 's' && isOpen) {
         e.preventDefault();
-        try {
-          const draft = createDraftSnapshot();
-          localStorage.setItem(SAVE_KEY, JSON.stringify(draft));
-          setIsDirty(false);
-          if (addToast) addToast(t('toasts.draft_saved'), 'success');
-        } catch(err) {
-          if (addToast) addToast(t('toasts.could_save_draft_u2014_browser'), 'error');
-        }
+        persistDraftToStorage({ announce: true });
       }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [isOpen, exportConsent, showCloseConfirm, showRestorePrompt, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, storyShape, valenceByPara, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers]);
+  }, [isOpen, exportConsent, showCloseConfirm, showRestorePrompt, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, customLanguage, storyShape, valenceByPara, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers, illustrations, draftHydrationState, comicProductionSnapshotKey, comicCanUndo, comicCanRedo]);
 
   // ── Focus management: move focus into the dialog on open, trap Tab inside it, and
   //    restore focus to the trigger on close (WCAG 2.4.3 Focus Order / 2.1.2 No Keyboard Trap escape). ──
@@ -2038,79 +2534,166 @@ const StoryForge = React.memo(({
 
   // ── Auto-save to localStorage ──
   const saveTimerRef = useRef(null);
-  useEffect(() => {
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = setTimeout(() => {
-      try {
-        const draft = createDraftSnapshot();
-        localStorage.setItem(SAVE_KEY, JSON.stringify(draft));
-      } catch (e) { /* localStorage full or unavailable */ }
-    }, 2000);
-    return () => { if (saveTimerRef.current) clearTimeout(saveTimerRef.current); };
-  }, [storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, phase, draftCount, language, storyShape, valenceByPara, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers]);
-
-  // ── Load saved draft on mount ──
   const savedDraftRef = useRef(null);
   _storyForgeUseFocusTrap(restorePromptDialogRef, showRestorePrompt, () => setShowRestorePrompt(false));
   _storyForgeUseFocusTrap(closeConfirmDialogRef, showCloseConfirm, () => setShowCloseConfirm(false));
   _storyForgeUseFocusTrap(exportConsentDialogRef, !!exportConsent, () => finishExportConsent(false));
+
+  // Hydrate before autosave is allowed to run. This prevents a blank initial render
+  // from replacing a recoverable draft while the restore decision is still open.
   useEffect(() => {
+    savedDraftRef.current = null;
+    hasCommittedDraftRef.current = false;
+    setDraftHydrationState('checking');
+    setDraftSaveState('idle');
+    setDraftSaveError('');
+    setLastDraftSavedAt(null);
+    setShowRestorePrompt(false);
     try {
       const saved = localStorage.getItem(SAVE_KEY);
       if (saved) {
-        const data = JSON.parse(saved);
-        if (Array.isArray(data.paragraphs) && data.paragraphs.some(p => p && (
-          (typeof p.text === 'string' && p.text.trim().length > 0) ||
-          (typeof p.scaffoldFrame === 'string' && p.scaffoldFrame.trim().length > 0)
-        ))) {
+        const data = sanitizeStoryForgeDraft(JSON.parse(saved));
+        if (isStoryForgeDraftMeaningful(data)) {
           savedDraftRef.current = data;
+          hasCommittedDraftRef.current = true;
+          const savedAt = Date.parse(data.savedAt);
+          if (Number.isFinite(savedAt)) setLastDraftSavedAt(savedAt);
+          setDraftHydrationState('awaiting');
+          setDraftSaveState('paused');
           setShowRestorePrompt(true);
+          return;
         }
       }
-    } catch (e) { /* ignore */ }
+      setDraftHydrationState('ready');
+    } catch (error) {
+      setDraftHydrationState('ready');
+      setDraftSaveState('error');
+      setDraftSaveError('The saved draft could not be read. Saving again will replace it with a clean copy.');
+    }
   }, []);
 
+  useEffect(() => {
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current);
+      saveTimerRef.current = null;
+    }
+    if (!isOpen) return undefined;
+    if (draftHydrationState !== 'ready' || showRestorePrompt) {
+      setDraftSaveState('paused');
+      return undefined;
+    }
+    if (skipNextAutosaveRef.current) {
+      skipNextAutosaveRef.current = false;
+      setDraftSaveState('saved');
+      setDraftSaveError('');
+      setIsDirty(false);
+      return undefined;
+    }
+    if (!hasMeaningfulDraft()) {
+      if (hasCommittedDraftRef.current) {
+        try {
+          localStorage.removeItem(SAVE_KEY);
+          hasCommittedDraftRef.current = false;
+          setLastDraftSavedAt(null);
+          setDraftSaveError('');
+        } catch (error) {
+          setDraftSaveState('error');
+          setDraftSaveError('The cleared draft could not be removed from browser storage.');
+          setIsDirty(true);
+          return undefined;
+        }
+      }
+      setDraftSaveState('idle');
+      setIsDirty(false);
+      return undefined;
+    }
+    setIsDirty(true);
+    setDraftSaveState('saving');
+    saveTimerRef.current = setTimeout(() => {
+      saveTimerRef.current = null;
+      persistDraftToStorage();
+    }, 1200);
+    return () => {
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    };
+  }, [isOpen, draftHydrationState, showRestorePrompt, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, phase, draftCount, language, customLanguage, storyShape, valenceByPara, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers]);
+
+  const applySanitizedDraft = (value) => {
+    const draft = sanitizeStoryForgeDraft(value);
+    resetComicHistory();
+    setStoryTitle(draft.storyTitle);
+    setGenre(draft.genre);
+    setVocabTerms(draft.vocabTerms);
+    setArtStyle(draft.artStyle);
+    setCustomArtStyle(draft.customArtStyle);
+    setStoryPrompt(draft.storyPrompt);
+    setRubricText(draft.rubricText);
+    setParagraphs(draft.paragraphs);
+    setScaffoldsGenerated(draft.scaffoldsGenerated);
+    setDraftCount(draft.draftCount);
+    setPhase(draft.phase);
+    setLanguage(draft.language);
+    setCustomLanguage(draft.customLanguage);
+    setStoryShape(draft.storyShape);
+    setValenceByPara(draft.valenceByPara);
+    setLayoutMode(draft.layoutMode);
+    setComicPageLayout(draft.comicPageLayout);
+    setComicPageComposer(draft.comicPageComposer);
+    setComicPrintSafety(draft.comicPrintSafety);
+    setComicContinuity(draft.comicContinuity);
+    setPanelDialogue(draft.panelDialogue);
+    setPanelDirections(draft.panelDirections);
+    setPanelThumbnails(draft.panelThumbnails);
+    setPanelLayouts(draft.panelLayouts);
+    setPanelStickers(draft.panelStickers);
+    setFocusParagraphIdx(0);
+    return draft;
+  };
+
   const restoreDraft = () => {
-    const d = savedDraftRef.current;
-    if (!d) return;
-    if (d.storyTitle) setStoryTitle(d.storyTitle);
-    if (d.genre) setGenre(d.genre);
-    if (d.vocabTerms) setVocabTerms(d.vocabTerms);
-    if (d.artStyle) setArtStyle(d.artStyle);
-    if (d.customArtStyle) setCustomArtStyle(d.customArtStyle);
-    if (d.storyPrompt) setStoryPrompt(d.storyPrompt);
-    if (d.rubricText) setRubricText(d.rubricText);
-    if (d.paragraphs) { const cp = sanitizeParagraphs(d.paragraphs); if (cp) setParagraphs(cp); }
-    if (d.scaffoldsGenerated) setScaffoldsGenerated(true);
-    if (d.draftCount) setDraftCount(d.draftCount);
-    if (d.phase) setPhase(d.phase);
-    if (d.language) setLanguage(d.language);
-    if (d.storyShape) setStoryShape(d.storyShape);
-    if (d.valenceByPara && typeof d.valenceByPara === 'object') setValenceByPara(d.valenceByPara);
-    if (d.layoutMode && LAYOUT_MODES[d.layoutMode]) setLayoutMode(d.layoutMode);
-    if (d.comicPageLayout && COMIC_PAGE_LAYOUTS[d.comicPageLayout]) setComicPageLayout(d.comicPageLayout);
-    setComicPageComposer(sanitizeComicPageComposer(d.comicPageComposer));
-    setComicPrintSafety(sanitizeComicPrintSafety(d.comicPrintSafety));
-    setComicContinuity(sanitizeComicContinuity(d.comicContinuity));
-    setPanelDialogue(sanitizePanelDialogue(d.panelDialogue));
-    setPanelDirections(sanitizePanelDirections(d.panelDirections));
-    setPanelThumbnails(sanitizePanelThumbnails(d.panelThumbnails));
-    setPanelLayouts(sanitizePanelLayouts(d.panelLayouts));
-    setPanelStickers(sanitizePanelStickers(d.panelStickers));
+    if (!savedDraftRef.current) return;
+    const draft = applySanitizedDraft(savedDraftRef.current);
+    skipNextAutosaveRef.current = true;
+    hasCommittedDraftRef.current = true;
+    savedDraftRef.current = null;
+    const savedAt = Date.parse(draft.savedAt);
+    if (Number.isFinite(savedAt)) setLastDraftSavedAt(savedAt);
+    setDraftHydrationState('ready');
+    setDraftSaveState('saved');
+    setDraftSaveError('');
+    setIsDirty(false);
     setShowRestorePrompt(false);
     if (addToast) addToast(t('toasts.draft_restored_2'), 'success');
     sfAnnounce('Draft restored');
   };
 
   const discardDraft = () => {
-    localStorage.removeItem(SAVE_KEY);
+    resetComicHistory();
+    let removed = false;
+    try {
+      localStorage.removeItem(SAVE_KEY);
+      removed = true;
+    } catch (error) {
+      setDraftSaveState('error');
+      setDraftSaveError('The saved draft could not be removed from browser storage.');
+    }
+    hasCommittedDraftRef.current = !removed;
     savedDraftRef.current = null;
+    setLastDraftSavedAt(null);
+    setDraftHydrationState('ready');
+    if (removed) {
+      setDraftSaveState('idle');
+      setDraftSaveError('');
+    }
+    setIsDirty(false);
     setShowRestorePrompt(false);
+    sfAnnounce('Starting a fresh StoryForge draft');
   };
 
   // ── Load initial config from teacher assignment ──
   useEffect(() => {
     if (initialConfig && initialConfig.vocabTerms) {
+      resetComicHistory();
       if (initialConfig.storyTitle) setStoryTitle(initialConfig.storyTitle);
       if (initialConfig.genre) setGenre(initialConfig.genre);
       if (initialConfig.vocabTerms) setVocabTerms(initialConfig.vocabTerms);
@@ -2118,9 +2701,11 @@ const StoryForge = React.memo(({
       if (initialConfig.customArtStyle) setCustomArtStyle(initialConfig.customArtStyle);
       if (initialConfig.storyPrompt) setStoryPrompt(initialConfig.storyPrompt);
       if (initialConfig.rubricText) setRubricText(initialConfig.rubricText);
-      if (initialConfig.language) setLanguage(initialConfig.language);
-      if (initialConfig.layoutMode && LAYOUT_MODES[initialConfig.layoutMode]) setLayoutMode(initialConfig.layoutMode);
-      if (initialConfig.comicPageLayout && COMIC_PAGE_LAYOUTS[initialConfig.comicPageLayout]) setComicPageLayout(initialConfig.comicPageLayout);
+      if (initialConfig.language) setLanguage(LANG_OPTIONS.some(option => option.code === initialConfig.language) ? initialConfig.language : 'en');
+      if (typeof initialConfig.customLanguage === 'string') setCustomLanguage(initialConfig.customLanguage.slice(0, 120));
+      if (hasOwnOption(STORY_SHAPES, initialConfig.storyShape)) setStoryShape(initialConfig.storyShape);
+      if (hasOwnOption(LAYOUT_MODES, initialConfig.layoutMode)) setLayoutMode(initialConfig.layoutMode);
+      if (hasOwnOption(COMIC_PAGE_LAYOUTS, initialConfig.comicPageLayout)) setComicPageLayout(initialConfig.comicPageLayout);
       if (initialConfig.comicPageComposer) setComicPageComposer(sanitizeComicPageComposer(initialConfig.comicPageComposer));
       if (initialConfig.comicPrintSafety) setComicPrintSafety(sanitizeComicPrintSafety(initialConfig.comicPrintSafety));
       if (initialConfig.comicContinuity) setComicContinuity(sanitizeComicContinuity(initialConfig.comicContinuity));
@@ -2139,7 +2724,7 @@ const StoryForge = React.memo(({
     if (!onSaveConfig) return;
     const config = {
       storyTitle: storyTitle || sourceTopic || 'Story Assignment',
-      genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, language,
+      genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, language, customLanguage, storyShape,
       layoutMode, comicPageLayout,
       comicPageComposer: sanitizeComicPageComposer(comicPageComposer),
       comicPrintSafety: sanitizeComicPrintSafety(comicPrintSafety),
@@ -2219,7 +2804,7 @@ const StoryForge = React.memo(({
     const submission = {
       storyTitle: storyTitle || 'My Story',
       authorName: authorName || 'Student',
-      genre, language, vocabTerms,
+      genre, language, customLanguage, vocabTerms, storyShape,
       layoutMode, comicPageLayout,
       comicPageComposer: sanitizeComicPageComposer(comicPageComposer),
       comicPrintSafety: sanitizeComicPrintSafety(comicPrintSafety),
@@ -2296,18 +2881,25 @@ const StoryForge = React.memo(({
   // ── Phase navigation with focus management ──
   const phaseIdx = PHASES.indexOf(phase);
   const canGoNext = () => {
-    if (phase === 'configure') return vocabTerms.length > 0;
-    if (phase === 'write') return paragraphs.some(p => p.text.trim().length >= 20);
+    if (phase === 'configure') return Boolean(storyTitle.trim() || storyPrompt.trim() || sourceTopic || vocabTerms.length > 0);
+    if (phase === 'write') return projectReadiness.metrics.contentSections > 0;
     return true;
   };
-  const changePhase = (newPhase) => {
+  const changePhase = (newPhase, focusTargetId = '') => {
+    if (!PHASES.includes(newPhase)) return;
+    pendingPhaseFocusRef.current = focusTargetId;
     setPhase(newPhase);
-    // Move focus to phase content area for screen readers
     setTimeout(() => {
-      if (phaseContentRef.current) {
-        phaseContentRef.current.focus();
+      const targetId = pendingPhaseFocusRef.current;
+      const target = targetId && typeof document !== 'undefined' ? document.getElementById(targetId) : null;
+      if (target && typeof target.focus === 'function') {
+        target.focus({ preventScroll: true });
+        target.scrollIntoView({ block: 'center', behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+      } else if (phaseContentRef.current) {
+        phaseContentRef.current.focus({ preventScroll: true });
         phaseContentRef.current.scrollTop = 0;
       }
+      pendingPhaseFocusRef.current = '';
     }, 100);
   };
   const goNext = () => {
@@ -2428,25 +3020,71 @@ const StoryForge = React.memo(({
       setValenceByPara(prev => { const n = { ...prev }; delete n[removedId]; return n; });
     }
     setParagraphs(prev => prev.filter((_, i) => i !== idx));
+    setFocusParagraphIdx(prev => Math.max(0, Math.min(paragraphs.length - 2, prev > idx ? prev - 1 : prev)));
+    if (!isDirty) setIsDirty(true);
+    sfAnnounce(`${layoutMode === 'comic' ? 'Panel' : 'Paragraph'} ${idx + 1} removed`);
   };
 
-  const moveParagraph = (idx, direction) => {
-    const newIdx = idx + direction;
-    if (newIdx < 0 || newIdx >= paragraphs.length) return;
+  const movePanelToIndex = (fromIdx, toIdx) => {
+    const from = Number(fromIdx);
+    const to = Number(toIdx);
+    if (!Number.isInteger(from) || !Number.isInteger(to) || from === to || from < 0 || to < 0 || from >= paragraphs.length || to >= paragraphs.length) return;
     setParagraphs(prev => {
-      const arr = [...prev];
-      const temp = arr[idx];
-      arr[idx] = arr[newIdx];
-      arr[newIdx] = temp;
-      return arr;
+      if (from >= prev.length || to >= prev.length) return prev;
+      const next = [...prev];
+      const [moved] = next.splice(from, 1);
+      next.splice(to, 0, moved);
+      return next;
     });
     setFocusParagraphIdx(prev => {
-      if (prev === idx) return newIdx;
-      if (prev === newIdx) return idx;
+      if (prev === from) return to;
+      if (from < to && prev > from && prev <= to) return prev - 1;
+      if (from > to && prev >= to && prev < from) return prev + 1;
       return prev;
     });
     if (!isDirty) setIsDirty(true);
-    sfAnnounce(`${layoutMode === 'comic' ? 'Panel' : 'Paragraph'} ${idx + 1} moved to position ${newIdx + 1}`);
+    sfAnnounce(`${layoutMode === 'comic' ? 'Panel' : 'Paragraph'} ${from + 1} moved to position ${to + 1}`);
+  };
+
+  const moveParagraph = (idx, direction) => movePanelToIndex(idx, idx + direction);
+
+  const startPanelSequenceDrag = (event, idx) => {
+    if (layoutMode !== 'comic') return;
+    setPanelSequenceDrag({ from: idx, over: idx });
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', String(idx));
+    }
+  };
+
+  const updatePanelSequenceDragTarget = (event, idx) => {
+    if (layoutMode !== 'comic') return;
+    event.preventDefault();
+    if (event.dataTransfer) event.dataTransfer.dropEffect = 'move';
+    setPanelSequenceDrag(prev => prev && prev.over === idx ? prev : (prev ? { ...prev, over: idx } : prev));
+  };
+
+  const finishPanelSequenceDrop = (event, idx) => {
+    if (layoutMode !== 'comic') return;
+    event.preventDefault();
+    const transferred = Number.parseInt(event.dataTransfer?.getData('text/plain') || '', 10);
+    const from = Number.isInteger(panelSequenceDrag?.from) ? panelSequenceDrag.from : transferred;
+    setPanelSequenceDrag(null);
+    if (Number.isInteger(from)) movePanelToIndex(from, idx);
+  };
+
+  const finishPanelSequenceDrag = () => setPanelSequenceDrag(null);
+
+  const handlePanelSequenceKeyDown = (event, idx) => {
+    if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const target = event.key === 'Home'
+      ? 0
+      : event.key === 'End'
+        ? paragraphs.length - 1
+        : idx + (event.key === 'ArrowLeft' || event.key === 'ArrowUp' ? -1 : 1);
+    movePanelToIndex(idx, Math.max(0, Math.min(paragraphs.length - 1, target)));
   };
 
   const generateScaffolds = async () => {
@@ -4268,6 +4906,71 @@ Return ONLY JSON:
     }
   };
 
+  const getReadinessActionLabel = (issue) => {
+    if (!issue) return '';
+    if (issue.code === 'unplaced-lettering' || issue.code === 'gutter-lettering-conflict') return 'Auto-place lettering';
+    if (issue.code === 'missing-print-bleed') return 'Enable bleed';
+    if (issue.code === 'continuity-sheet-incomplete') return onCallGemini ? 'Draft continuity' : 'Add continuity';
+    if (issue.code === 'review-not-run') return layoutMode === 'comic' ? 'Open comic review' : 'Open review';
+    if (issue.code === 'missing-story-title') return 'Add title';
+    if (issue.code === 'missing-vocabulary') return 'Add vocabulary';
+    if (issue.code === 'missing-illustrations') return 'Finish visual pass';
+    if (issue.code === 'crowded-lettering') return 'Edit lettering';
+    if (issue.phase === 'write') return 'Continue writing';
+    if (issue.phase === 'configure') return 'Open setup';
+    if (issue.phase === 'illustrate') return 'Open visuals';
+    return `Open ${PHASE_LABELS[PHASES.indexOf(issue.phase)] || issue.phase}`;
+  };
+
+  const getReadinessFocusTarget = (issue) => {
+    if (!issue) return '';
+    const firstParagraphId = (predicate) => {
+      const paragraph = paragraphs.find(predicate) || paragraphs[0];
+      return paragraph?.id || '';
+    };
+    if (issue.code === 'missing-story-title') return 'sf-title';
+    if (issue.code === 'missing-vocabulary') return 'sf-new-vocab-term';
+    if (issue.code === 'missing-illustrations') {
+      const id = firstParagraphId(item => !illustrations[item.id]?.imageUrl);
+      return id ? `sf-illustrate-${id}` : '';
+    }
+    if (issue.code === 'continuity-sheet-incomplete') return 'sf-comic-continuity';
+    if (issue.code === 'review-not-run') return 'sf-review-tools';
+    if (issue.code === 'crowded-lettering') {
+      const id = firstParagraphId(item => getComicLetteringStats(panelDialogue[item.id] || {}).level === 'crowded');
+      return id ? `sf-lettering-${id}` : '';
+    }
+    if (issue.code === 'incomplete-story-sections' || issue.code === 'empty-comic-panels') {
+      const id = firstParagraphId(item => !String(item.text || item.scaffoldFrame || '').trim());
+      return id ? `sf-paragraph-text-${id}` : '';
+    }
+    if (['missing-story-content', 'unused-vocabulary', 'short-story-draft'].includes(issue.code)) {
+      const id = firstParagraphId(item => Boolean(String(item.text || '').trim()));
+      return id ? `sf-paragraph-text-${id}` : '';
+    }
+    return '';
+  };
+
+  const resolveReadinessIssue = async (issue) => {
+    if (!issue) return;
+    if (issue.code === 'unplaced-lettering' || issue.code === 'gutter-lettering-conflict') {
+      applyComicLetteringPlacement(comicPageGroups, 'Comic');
+      return;
+    }
+    if (issue.code === 'missing-print-bleed') {
+      updateComicPrintSafety('includeBleed', true);
+      if (addToast) addToast('Print bleed enabled.', 'success');
+      sfAnnounce('Comic print bleed enabled');
+      return;
+    }
+    if (issue.code === 'continuity-sheet-incomplete' && onCallGemini) {
+      await draftComicContinuity();
+      changePhase('illustrate', 'sf-comic-continuity');
+      return;
+    }
+    changePhase(issue.phase || 'write', getReadinessFocusTarget(issue));
+  };
+
   const synthesizeRevisionPlan = async () => {
     if (!onCallGemini) return;
     setRevisionPlanLoading(true);
@@ -4464,7 +5167,9 @@ Return ONLY JSON:
         const panelPageIndex = panelPage ? idx - (panelPage.startPanel - 1) : idx;
         const letteringSpace = normalizeComicLetteringSpace(rough.letteringSpace);
         const spaceClass = getComicLetteringSpaceClass(letteringSpace);
-        const hasOverlayBubble = Boolean(img && safeSpeech && letteringSpace && letteringSpace !== 'none');
+        const overlayBubbleText = safeSpeech || safeThought;
+        const overlayBubbleKind = safeSpeech ? 'speech' : 'thought';
+        const hasOverlayBubble = Boolean(img && overlayBubbleText && letteringSpace && letteringSpace !== 'none');
         const customLetteringPosition = hasComicLetteringPosition(rough);
         const customLetteringWidth = hasComicLetteringWidth(rough);
         const customLetteringStyle = `${customLetteringPosition ? getComicLetteringPositionStyleText(rough, letteringSpace) : ''}${customLetteringWidth ? getComicLetteringWidthStyleText(rough) : ''}`;
@@ -4476,9 +5181,11 @@ Return ONLY JSON:
         if (img && safeSfx) chaptersHtml += `<span class="sfx-tag" aria-label="${escapeHtml(t("a11y.sound_effect", { fx: panel.sfx }))}">${safeSfx}</span>`;
         if (img && sticker) chaptersHtml += `<span class="panel-sticker" aria-hidden="true">${escapeHtml(sticker)}</span>`;
         if (hasOverlayBubble) {
-          chaptersHtml += `<div class="lettering-overlay${customLetteringPosition ? ' lettering-overlay-custom' : ''}"><div class="dialogue-bubble overlay-bubble"${customLetteringStyle ? ` style="${escapeHtml(customLetteringStyle)}"` : ''}>`;
-          if (safeSpeaker) chaptersHtml += `<div class="dialogue-speaker">${safeSpeaker}:</div>`;
-          chaptersHtml += `<div class="dialogue-speech">${safeSpeech}</div></div></div>`;
+          chaptersHtml += `<div class="lettering-overlay${customLetteringPosition ? ' lettering-overlay-custom' : ''}"><div class="${overlayBubbleKind === 'thought' ? 'thought-bubble' : 'dialogue-bubble'} overlay-bubble" data-bubble-kind="${overlayBubbleKind}"${customLetteringStyle ? ` style="${escapeHtml(customLetteringStyle)}"` : ''}>`;
+          if (overlayBubbleKind === 'speech' && safeSpeaker) chaptersHtml += `<div class="dialogue-speaker">${safeSpeaker}:</div>`;
+          chaptersHtml += overlayBubbleKind === 'thought'
+            ? `<div class="dialogue-thought" aria-label="Inner thought">&#128173; ${safeThought}</div></div></div>`
+            : `<div class="dialogue-speech">${safeSpeech}</div></div></div>`;
         }
         if (img) chaptersHtml += `</div>`;
         if (safeSpeech && !hasOverlayBubble) {
@@ -4487,7 +5194,7 @@ Return ONLY JSON:
           chaptersHtml += `<div class="dialogue-speech">${safeSpeech}</div>`;
           chaptersHtml += `</div>`;
         }
-        if (safeThought) chaptersHtml += `<div class="thought-bubble" aria-label="Inner thought">💭 ${safeThought}</div>`;
+        if (safeThought && !(hasOverlayBubble && !safeSpeech)) chaptersHtml += `<div class="thought-bubble" aria-label="Inner thought">💭 ${safeThought}</div>`;
         chaptersHtml += `<div class="speech-bubble panel-caption">${safeText.replace(/\n/g, '<br/>')}</div>`;
         chaptersHtml += `</article>`;
       } else {
@@ -4603,6 +5310,7 @@ main{display:block}
 .panel-img{width:100%;aspect-ratio:1;object-fit:cover;display:block}
 .lettering-overlay{position:absolute;left:8px;right:8px;top:8px;bottom:8px;display:flex;pointer-events:none;z-index:3}
 .lettering-overlay .overlay-bubble{max-width:72%;margin:0;box-shadow:0 2px 8px rgba(15,23,42,.18)}
+.lettering-overlay .thought-bubble{margin:0;border-style:dashed;background:#faf5ff;color:#6b21a8}
 .lettering-overlay-custom{display:block}
 .lettering-overlay-custom .overlay-bubble{position:absolute;max-width:72%}
 .lettering-space-top .lettering-overlay{align-items:flex-start;justify-content:center}
@@ -5093,7 +5801,7 @@ show();
     const draft = {
       _storyForgeVersion: 2,
       // ── Story content ──
-      storyTitle, codename: authorName, genre, language, vocabTerms, artStyle, customArtStyle,
+      storyTitle, codename: authorName, genre, language, customLanguage, vocabTerms, artStyle, customArtStyle,
       storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, storyShape, valenceByPara,
       layoutMode, comicPageLayout,
       comicPageComposer: sanitizeComicPageComposer(comicPageComposer),
@@ -5164,43 +5872,19 @@ show();
         try {
           const d = JSON.parse(ev.target.result);
           if (!d._storyForgeVersion) { if (addToast) addToast(t('toasts.invalid_storyforge_file'), 'error'); return; }
-          if (d.storyTitle) setStoryTitle(d.storyTitle);
-          // authorName derived from codename prop — no need to restore
-          if (d.genre) setGenre(d.genre);
-          if (d.language) setLanguage(d.language);
-          { const cv = sanitizeVocabTerms(d.vocabTerms); if (cv) setVocabTerms(cv); }
-          if (typeof d.artStyle === 'string') setArtStyle(d.artStyle);
-          if (typeof d.customArtStyle === 'string') setCustomArtStyle(d.customArtStyle);
-          if (typeof d.storyPrompt === 'string') setStoryPrompt(d.storyPrompt);
-          if (typeof d.rubricText === 'string') setRubricText(d.rubricText);
-          if (d.layoutMode && LAYOUT_MODES[d.layoutMode]) setLayoutMode(d.layoutMode);
-          if (d.comicPageLayout && COMIC_PAGE_LAYOUTS[d.comicPageLayout]) setComicPageLayout(d.comicPageLayout);
-          setComicPageComposer(sanitizeComicPageComposer(d.comicPageComposer));
-          setComicPrintSafety(sanitizeComicPrintSafety(d.comicPrintSafety));
-          setComicContinuity(sanitizeComicContinuity(d.comicContinuity));
+          const importedPhase = d._storyForgeVersion >= 2 && d.analytics ? 'review' : 'write';
+          applySanitizedDraft({ ...d, phase: importedPhase });
+          // authorName is derived from the codename prop and is never restored from a file.
           if (d.comicFlowReport && typeof d.comicFlowReport === 'object') setComicFlowReport(d.comicFlowReport);
-          setPanelDialogue(sanitizePanelDialogue(d.panelDialogue));
-          setPanelDirections(sanitizePanelDirections(d.panelDirections));
-          setPanelThumbnails(sanitizePanelThumbnails(d.panelThumbnails));
-          setPanelLayouts(sanitizePanelLayouts(d.panelLayouts));
-          setPanelStickers(sanitizePanelStickers(d.panelStickers));
-          { const cp = sanitizeParagraphs(d.paragraphs); if (cp) setParagraphs(cp); }
-          if (d.scaffoldsGenerated) setScaffoldsGenerated(true);
-          if (typeof d.draftCount === 'number') setDraftCount(d.draftCount);
           if (d.illustrations) setIllustrations(sanitizeIllustrations(d.illustrations));
           if (d.coverArt) { const cov = safeImageUrl(d.coverArt); if (cov) setCoverArt(cov); }
           if (d.gradingResult) setGradingResult(d.gradingResult);
           if (d.grammarResults) setGrammarResults(d.grammarResults);
-          if (d.characters) setCharacters(d.characters);
-          if (d.storyShape) setStoryShape(d.storyShape);
-          if (d.valenceByPara && typeof d.valenceByPara === 'object') setValenceByPara(d.valenceByPara);
-          // If this is a v2 file with analytics, go to review phase so teacher can see progress
-          if (d._storyForgeVersion >= 2 && d.analytics) {
-            setPhase('review');
+          if (Array.isArray(d.characters)) setCharacters(d.characters.slice(0, 32));
+          if (importedPhase === 'review') {
             if (addToast) addToast(`Student progress loaded from ${d.exportedBy || 'student'} — review their work!`, 'success');
-          } else {
-            setPhase('write');
-            if (addToast) addToast(`Draft loaded from ${d.exportedBy || 'classmate'} — keep writing!`, 'success');
+          } else if (addToast) {
+            addToast(`Draft loaded from ${d.exportedBy || 'classmate'} — keep writing!`, 'success');
           }
         } catch (err) {
           if (addToast) addToast(t('toasts.could_read_file'), 'error');
@@ -5242,6 +5926,8 @@ show();
   if (!isOpen) return null;
 
   const phaseIcons = [Sparkles, Type, ImageIcon, Volume2, Star, Download];
+  const primaryReadinessIssue = projectReadiness.blockers[0] || projectReadiness.warnings[0] || null;
+  const exportReadinessIssues = [...projectReadiness.blockers, ...projectReadiness.warnings];
   const renderComicPreviewPanel = (p, idx, previewLayout = comicPageLayout, pageIndex = idx, pageForPanel = null) => {
     const layoutFrame = panelLayouts[p.id] || {};
     const resizingPanel = panelResizeDrag?.pId === p.id;
@@ -5268,19 +5954,22 @@ show();
           const dialogue = panelDialogue[p.id] || {};
           const rough = panelThumbnails[p.id] || {};
           const space = normalizeComicLetteringSpace(rough.letteringSpace);
-          const showPlacedSpeech = Boolean(dialogue.speech && space && space !== 'none');
+          const placedBubbleText = dialogue.speech || dialogue.thought || '';
+          const placedBubbleKind = dialogue.speech ? 'speech' : 'thought';
+          const showPlacedBubble = Boolean(placedBubbleText && space && space !== 'none');
           const customLetteringPosition = hasComicLetteringPosition(rough);
           const customLetteringWidth = hasComicLetteringWidth(rough);
           const bubbleDragMode = bubbleDrag?.pId === p.id ? bubbleDrag.mode : '';
           const resizeBehavior = getBubbleResizeBehavior(rough, space);
-          const speechBubble = showPlacedSpeech ? (
+          const letteringBubble = showPlacedBubble ? (
             <div
-              className={`sf-bubble-drag-target ${customLetteringPosition ? 'absolute' : 'relative'} max-w-[72%] break-words bg-white border-2 border-slate-900 rounded-2xl p-2 text-xs text-slate-800 leading-relaxed shadow-lg ${bubbleDragMode === 'move' ? 'ring-4 ring-fuchsia-300' : bubbleDragMode === 'resize' ? 'ring-4 ring-teal-300' : ''}`}
+              className={`sf-bubble-drag-target ${customLetteringPosition ? 'absolute' : 'relative'} max-w-[72%] break-words border-2 rounded-2xl p-2 text-xs leading-relaxed shadow-lg ${placedBubbleKind === 'thought' ? 'bg-purple-50 border-dashed border-purple-500 text-purple-800 italic' : 'bg-white border-slate-900 text-slate-800'} ${bubbleDragMode === 'move' ? 'ring-4 ring-fuchsia-300' : bubbleDragMode === 'resize' ? 'ring-4 ring-teal-300' : ''}`}
               style={{ ...(customLetteringPosition ? getComicLetteringPositionStyle(rough, space) : {}), ...getComicLetteringWidthStyle(rough) }}
               data-sf-bubble-width={customLetteringWidth ? clampComicLetteringWidth(rough.letteringWidth) : 'auto'}
+              data-sf-bubble-kind={placedBubbleKind}
             >
-              {dialogue.speaker && <div className="text-[10px] font-bold text-blue-600 mb-0.5">{dialogue.speaker}:</div>}
-              {dialogue.speech}
+              {placedBubbleKind === 'speech' && dialogue.speaker && <div className="text-[10px] font-bold text-blue-600 mb-0.5">{dialogue.speaker}:</div>}
+              {placedBubbleKind === 'thought' && <span aria-hidden="true">{'\uD83D\uDCAD'} </span>}{placedBubbleText}
               <button
                 type="button"
                 onPointerDown={(e) => startBubbleDrag(e, p.id)}
@@ -5290,7 +5979,7 @@ show();
                 onKeyDown={(e) => handleBubbleControlKeyDown(e, p.id, 'move')}
                 className={`sf-bubble-drag-handle sf-bubble-move-handle absolute ${resizeBehavior.resizeFromLeft ? '-bottom-3 -right-3' : '-bottom-3 -left-3'} pointer-events-auto w-7 h-7 flex items-center justify-center rounded-full border-2 border-slate-900 bg-white text-slate-900 shadow-md cursor-move touch-none`}
                 title="Move bubble"
-                aria-label={`Move speech bubble for panel ${idx + 1}. Use arrow keys for precise movement.`}
+                aria-label={`Move ${placedBubbleKind} bubble for panel ${idx + 1}. Use arrow keys for precise movement.`}
                 data-sf-bubble-control="move"
                 data-sf-focusable
               >
@@ -5305,7 +5994,7 @@ show();
                 onKeyDown={(e) => handleBubbleControlKeyDown(e, p.id, 'resize')}
                 className={`sf-bubble-drag-handle sf-bubble-resize-handle absolute ${resizeBehavior.resizeFromLeft ? '-bottom-3 -left-3' : '-bottom-3 -right-3'} pointer-events-auto w-7 h-7 flex items-center justify-center rounded-full border-2 border-slate-900 bg-white text-slate-900 shadow-md cursor-ew-resize touch-none`}
                 title="Resize bubble"
-                aria-label={`Resize speech bubble for panel ${idx + 1}. Use left and right arrow keys for precise sizing.`}
+                aria-label={`Resize ${placedBubbleKind} bubble for panel ${idx + 1}. Use left and right arrow keys for precise sizing.`}
                 data-sf-bubble-control="resize"
                 data-sf-focusable
               >
@@ -5316,14 +6005,14 @@ show();
           return (
             <div className="relative" data-sf-comic-art-layer="true">
               <img src={illustrations[p.id].imageUrl} alt={`Panel ${idx + 1}`} className={`w-full object-cover ${isComicPanelWideFrame(layoutFrame, previewLayout, pageIndex) ? 'aspect-video' : 'aspect-square'}`} />
-              {showPlacedSpeech && (
+              {showPlacedBubble && (
                 customLetteringPosition ? (
-                  <div className="absolute inset-2 z-10 pointer-events-none">{speechBubble}</div>
+                  <div className="absolute inset-2 z-10 pointer-events-none">{letteringBubble}</div>
                 ) : (
-                  <div className={`absolute inset-2 z-10 flex pointer-events-none ${getComicLetteringPreviewFlexClass(space)}`}>{speechBubble}</div>
+                  <div className={`absolute inset-2 z-10 flex pointer-events-none ${getComicLetteringPreviewFlexClass(space)}`}>{letteringBubble}</div>
                 )
               )}
-              {space && !dialogue.speech && (
+              {space && !placedBubbleText && (
                 <div className={`absolute inset-2 z-10 flex pointer-events-none ${getComicLetteringPreviewFlexClass(space)}`}>
                   <div className="border-2 border-dashed border-teal-300 bg-white/70 text-teal-700 rounded-xl px-2 py-1 text-[10px] font-black uppercase tracking-widest">
                     Bubble space
@@ -5349,9 +6038,10 @@ show();
           onPointerMove={updatePanelResizeDrag}
           onPointerUp={endPanelResizeDrag}
           onPointerCancel={endPanelResizeDrag}
+          onKeyDown={(e) => handlePanelResizeKeyDown(e, p.id, idx, previewLayout, pageIndex)}
           className={`sf-resize-handle absolute bottom-2 right-2 z-30 w-8 h-8 rounded-lg border-2 border-slate-900 bg-white/95 text-slate-900 shadow-lg flex items-center justify-center text-base font-black cursor-nwse-resize touch-none transition-transform ${resizingPanel ? 'scale-110 ring-4 ring-fuchsia-300' : 'hover:scale-105'}`}
           title="Resize panel"
-          aria-label={`Resize panel ${idx + 1}`}
+          aria-label={`Resize panel ${idx + 1}. Use arrow keys, Home for 1 by 1, or End for the largest frame.`}
           data-sf-focusable
         >
           <Maximize2 size={15} aria-hidden="true" />
@@ -5373,7 +6063,7 @@ show();
               <div className="absolute -bottom-1.5 left-4 w-3 h-3 bg-white border-b-2 border-r-2 border-slate-800" style={{ transform: 'rotate(45deg)' }} />
             </div>
           )}
-          {(panelDialogue[p.id] || {}).thought && (
+          {(panelDialogue[p.id] || {}).thought && ((!illustrations[p.id]?.imageUrl || !normalizeComicLetteringSpace((panelThumbnails[p.id] || {}).letteringSpace) || normalizeComicLetteringSpace((panelThumbnails[p.id] || {}).letteringSpace) === 'none') || Boolean((panelDialogue[p.id] || {}).speech)) && (
             <div className="bg-purple-50 border-2 border-purple-300 rounded-2xl p-2 text-[11px] text-purple-700 italic leading-relaxed" style={{ borderRadius: '20px', borderStyle: 'dashed' }}>
               💭 {panelDialogue[p.id].thought}
             </div>
@@ -5412,6 +6102,22 @@ show();
       {/* WCAG 2.3.3 — reduced-motion safety net: kills persistent animations within StoryForge under prefers-reduced-motion */}
       <style>{`
         .sf-modal-root button{min-width:24px;min-height:24px}
+        .sf-modal-root .sf-panel-sequence-card{position:relative}
+        .sf-modal-root .sf-panel-dragging{opacity:.55}
+        .sf-modal-root .sf-panel-drop-target{outline:3px solid #c026d3;outline-offset:2px}
+        .sf-modal-root .sf-panel-drag-handle{touch-action:none}
+        .sf-modal-root .sf-panel-drag-handle:active{cursor:grabbing!important}
+        .sf-modal-root [data-sf-focusable]:focus-visible{outline:3px solid #0891b2!important;outline-offset:2px}
+        .sf-modal-root.theme-dark .sf-workflow-dashboard{background:#0f172a!important;border-color:#475569!important}
+        .sf-modal-root.theme-dark .sf-project-health .text-slate-600,.sf-modal-root.theme-dark .sf-project-health .text-slate-500{color:#cbd5e1!important}
+        .sf-modal-root.theme-dark .sf-project-health .bg-slate-200{background:#334155!important}
+        .sf-modal-root.theme-dark .sf-health-action{background:#1e293b!important;color:#f8fafc!important;border-color:#64748b!important}
+        .sf-modal-root.theme-dark .sf-export-preflight{background:#1e293b!important;border-color:#64748b!important}
+        .sf-modal-root.theme-dark .sf-export-preflight>div:first-child{background:#0f172a!important}
+        .sf-modal-root.theme-dark .sf-export-preflight .text-slate-900,.sf-modal-root.theme-dark .sf-export-preflight .text-slate-800,.sf-modal-root.theme-dark .sf-export-preflight .text-slate-600,.sf-modal-root.theme-dark .sf-export-preflight .text-slate-500{color:#e2e8f0!important}
+        .sf-modal-root.theme-dark .sf-export-preflight .divide-slate-200>*+*{border-color:#475569!important}
+        .sf-modal-root.theme-dark .sf-preflight-action{background:#0f172a!important;color:#f8fafc!important;border-color:#64748b!important}
+        .sf-modal-root.theme-dark .sf-page-nav-button:focus-visible{outline-color:#fbbf24!important}
         @media (prefers-reduced-motion: reduce){ .sf-modal-root .animate-pulse,.sf-modal-root .animate-spin,.sf-modal-root .animate-bounce,.sf-modal-root .animate-in{animation:none!important}.sf-modal-root [class*="transition-"]{transition:none!important} }
         .sf-modal-root.theme-dark .sf-dialog-card{background:#1e293b!important;color:#e2e8f0!important;border:1px solid #475569}
         .sf-modal-root.theme-dark .sf-dialog-card h3,.sf-modal-root.theme-dark .sf-dialog-card p{color:#e2e8f0!important}
@@ -5425,6 +6131,7 @@ show();
         .sf-modal-root.theme-dark .sf-comic-page-row .text-slate-800,.sf-modal-root.theme-dark .sf-comic-page-row .text-slate-700,.sf-modal-root.theme-dark .sf-comic-page-row .text-slate-600,.sf-modal-root.theme-dark .sf-comic-page-row .text-slate-500{color:#e2e8f0!important}
         .sf-modal-root.theme-dark .sf-comic-toolbar{background:rgba(15,23,42,.72)!important;border:1px solid #7e22ce!important;border-radius:10px;padding:4px}
         .sf-modal-root.theme-dark .sf-comic-action{background:#0f172a!important;color:#f8fafc!important;border-color:#7e22ce!important}
+        .sf-modal-root.theme-dark .sf-panel-drop-target{outline-color:#f0abfc!important}
         .sf-modal-root.theme-dark .sf-comic-status-pill{background:#0f172a!important;color:#f5d0fe!important;border-color:#7e22ce!important}
         .sf-modal-root.theme-dark .sf-comic-frame-choice{background:#0f172a!important;color:#f8fafc!important;border-color:#7e22ce!important}
         .sf-modal-root.theme-dark .sf-comic-frame-choice-active{background:#a21caf!important;color:#fff!important;border-color:#f0abfc!important}
@@ -5439,6 +6146,11 @@ show();
         .sf-modal-root.theme-dark .sf-resize-handle{background:#f8fafc!important;color:#0f172a!important;border-color:#0f172a!important}
         .sf-modal-root.theme-dark .sf-bubble-drag-handle{background:#f8fafc!important;color:#0f172a!important;border-color:#0f172a!important}
         .sf-modal-root.theme-dark .sf-bubble-width-slider{accent-color:#d946ef}
+        .sf-modal-root.theme-contrast [data-sf-focusable]:focus-visible{outline-color:#0f0!important}
+        .sf-modal-root.theme-contrast .sf-workflow-dashboard,.sf-modal-root.theme-contrast .sf-project-health,.sf-modal-root.theme-contrast .sf-export-preflight,.sf-modal-root.theme-contrast .sf-export-preflight>div:first-child{background:#000!important;color:#ff0!important;border-color:#ff0!important}
+        .sf-modal-root.theme-contrast .sf-project-health .text-slate-600,.sf-modal-root.theme-contrast .sf-project-health .text-slate-500,.sf-modal-root.theme-contrast .sf-export-preflight .text-slate-900,.sf-modal-root.theme-contrast .sf-export-preflight .text-slate-800,.sf-modal-root.theme-contrast .sf-export-preflight .text-slate-600,.sf-modal-root.theme-contrast .sf-export-preflight .text-slate-500{color:#ff0!important}
+        .sf-modal-root.theme-contrast .sf-health-action,.sf-modal-root.theme-contrast .sf-preflight-action,.sf-modal-root.theme-contrast .sf-page-nav-button,.sf-modal-root.theme-contrast .sf-draft-save{background:#000!important;color:#0f0!important;border-color:#0f0!important;box-shadow:none!important}
+        .sf-modal-root.theme-contrast .sf-export-preflight .divide-slate-200>*+*{border-color:#ff0!important}
         .sf-modal-root.theme-contrast .sf-dialog-card{background:#000!important;color:#ff0!important;border:2px solid #ff0!important}
         .sf-modal-root.theme-contrast .sf-comic-preview-shell,.sf-modal-root.theme-contrast .sf-comic-tool-card,.sf-modal-root.theme-contrast .sf-comic-layout-row,.sf-modal-root.theme-contrast .sf-comic-page-row{background:#000!important;color:#ff0!important;border-color:#ff0!important}
         .sf-modal-root.theme-contrast .sf-comic-layout-row select{background:#000!important;color:#ff0!important;border-color:#ff0!important}
@@ -5446,6 +6158,7 @@ show();
         .sf-modal-root.theme-contrast .sf-comic-toolbar{background:#000!important;border:2px solid #ff0!important;border-radius:10px;padding:4px}
         .sf-modal-root.theme-contrast .sf-comic-page-row select,.sf-modal-root.theme-contrast .sf-comic-page-row input{background:#000!important;color:#ff0!important;border-color:#ff0!important}
         .sf-modal-root.theme-contrast .sf-comic-action,.sf-modal-root.theme-contrast .sf-comic-frame-choice,.sf-modal-root.theme-contrast .sf-resize-handle,.sf-modal-root.theme-contrast .sf-bubble-drag-handle{background:#000!important;color:#0f0!important;border-color:#0f0!important;box-shadow:none!important}
+        .sf-modal-root.theme-contrast .sf-panel-drop-target{outline-color:#0f0!important}
         .sf-modal-root.theme-contrast .sf-comic-status-pill,.sf-modal-root.theme-contrast .sf-comic-frame-choice-active{background:#000!important;color:#ff0!important;border-color:#ff0!important}
         .sf-modal-root.theme-contrast .sf-bubble-width-slider{accent-color:#0f0}
       `}</style>
@@ -5471,11 +6184,12 @@ show();
           <div className="sf-dialog-card bg-white rounded-2xl p-6 max-w-sm mx-4 shadow-2xl text-center">
             <div className="text-3xl mb-3">{'\u270F\uFE0F'}</div>
             <h3 id="sf-close-confirm-title" className="text-lg font-black text-slate-800 mb-2">{t("ui_common.unsaved_changes")}</h3>
-            <p id="sf-close-confirm-description" className="text-sm text-slate-600 mb-4">Your story progress hasn't been exported or saved. Are you sure you want to close?</p>
-            <div className="flex gap-3 justify-center">
+            <p id="sf-close-confirm-description" className="text-sm text-slate-600 mb-4">Your latest changes have not finished saving. Save before closing, or close and keep the last confirmed draft.</p>
+            {draftSaveError && <p role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 p-2 text-xs font-bold text-red-700">{draftSaveError}</p>}
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <button type="button" data-sf-focusable onClick={() => setShowCloseConfirm(false)} className="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg text-sm font-bold hover:bg-slate-300 transition-colors">{t("ui_common.keep_working")}</button>
-              <button type="button" data-sf-focusable onClick={() => { setShowCloseConfirm(false); try { localStorage.setItem(SAVE_KEY, JSON.stringify(createDraftSnapshot())); } catch(e) {} onClose(); }} className="px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-bold hover:bg-amber-600 transition-colors">{t("ui_common.save_draft_close")}</button>
-              <button type="button" data-sf-focusable onClick={() => { setShowCloseConfirm(false); try { localStorage.removeItem(SAVE_KEY); } catch(e) {} onClose(); }} className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-bold hover:bg-red-600 transition-colors">{t("ui_common.close_anyway")}</button>
+              <button type="button" data-sf-focusable data-sf-save-close onClick={() => { if (persistDraftToStorage({ announce: true, allowDuringHydration: true })) { setShowCloseConfirm(false); onClose(); } }} className="px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-bold hover:bg-amber-700 transition-colors">{t("ui_common.save_draft_close")}</button>
+              <button type="button" data-sf-focusable onClick={() => { setShowCloseConfirm(false); onClose(); }} className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-bold hover:bg-red-700 transition-colors">{t("ui_common.close_anyway")}</button>
             </div>
           </div>
         </div>
@@ -5495,17 +6209,17 @@ show();
         </div>
       )}
       {/* ── Header ── */}
-      <div className="bg-gradient-to-r from-rose-600 to-pink-600 p-4 text-white flex justify-between items-center shadow-lg shrink-0">
+      <div className="bg-gradient-to-r from-rose-600 to-pink-600 p-3 sm:p-4 text-white flex justify-between items-center gap-2 shadow-lg shrink-0">
         <div className="flex items-center gap-3">
           <BookOpen size={24} />
           <div>
-            <h2 className="text-xl font-black">{t("headings.story_forge")}</h2>
-            <p className="text-rose-200 text-xs font-medium">{t("ui_common.creative_writing_studio")}</p>
+            <h2 className="text-lg sm:text-xl font-black">{t("headings.story_forge")}</h2>
+            <p className="hidden sm:block text-rose-100 text-xs font-medium">{t("ui_common.creative_writing_studio")}</p>
           </div>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-1 sm:gap-3">
           {/* XP / Level badge */}
-          <div className="bg-white/20 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2" title={`${xpData.totalXP} XP · ${currentLevel.name}${xpData.streak > 1 ? ` · ${xpData.streak}-day streak` : ''}`}>
+          <div className="hidden md:flex bg-white/20 px-3 py-1 rounded-full text-xs font-bold items-center gap-2" title={`${xpData.totalXP} XP · ${currentLevel.name}${xpData.streak > 1 ? ` · ${xpData.streak}-day streak` : ''}`}>
             <span>{currentLevel.emoji} {currentLevel.name}</span>
             <span className="text-rose-200">{xpData.totalXP} XP</span>
             {xpData.streak > 1 && <span className="text-amber-700">🔥{xpData.streak}</span>}
@@ -5516,13 +6230,28 @@ show();
             )}
           </div>
           {totalWords > 0 && (
-            <div className="bg-white/20 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2">
+            <div className="hidden lg:flex bg-white/20 px-3 py-1 rounded-full text-xs font-bold items-center gap-2">
               <span>{totalWords} words</span>
               <span>·</span>
               <span>{vocabUsedCount}/{vocabTerms.length} terms</span>
               {readingLevel && <><span>·</span><span>Grade {readingLevel.grade}</span></>}
             </div>
           )}
+          <button
+            type="button"
+            data-sf-focusable
+            data-sf-draft-save
+            onClick={() => draftHydrationState === 'awaiting' ? setShowRestorePrompt(true) : persistDraftToStorage({ announce: true })}
+            disabled={draftHydrationState === 'checking' || draftSaveState === 'saving'}
+            className={`sf-draft-save min-h-9 min-w-9 px-2 sm:px-3 rounded-lg border border-white/30 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 disabled:opacity-70 ${draftSaveState === 'error' ? 'bg-red-950/40 hover:bg-red-950/55' : 'bg-white/15 hover:bg-white/25'}`}
+            style={{ minWidth: '36px', minHeight: '36px' }}
+            aria-label={`${draftSaveLabel}. ${draftSaveDescription}`}
+            title={draftSaveDescription}
+          >
+            {draftSaveState === 'saving' ? <RefreshCw size={15} aria-hidden="true" /> : draftSaveState === 'saved' ? <CheckCircle2 size={15} aria-hidden="true" /> : <Save size={15} aria-hidden="true" />}
+            <span className="hidden sm:inline">{draftSaveLabel}</span>
+          </button>
+          <span className="sr-only" aria-live="polite" data-sf-draft-save-live>{draftSaveState === 'error' ? draftSaveError : draftSaveState === 'saving' ? 'Saving story draft' : draftSaveState === 'saved' ? 'Story draft saved' : ''}</span>
           <button type="button"
             data-sf-focusable
             onClick={() => { if (typeof window.AlloToggleTheme === 'function') window.AlloToggleTheme(); }}
@@ -5538,35 +6267,73 @@ show();
         </div>
       </div>
 
-      {/* ── Stepper ── */}
-      <nav className="bg-white border-b border-slate-200 px-6 py-3 flex items-center justify-center gap-1 shrink-0 overflow-x-auto" role="navigation" aria-label={t("a11y.story_creation_phases")}>
-        {PHASES.map((p, i) => {
-          const Icon = phaseIcons[i];
-          const isCurrent = i === phaseIdx;
-          const isDone = i < phaseIdx;
-          return (
-            <React.Fragment key={p}>
-              {i > 0 && <div className={`w-8 h-0.5 ${isDone ? 'bg-rose-400' : 'bg-slate-200'}`} aria-hidden="true" />}
-              <button type="button"
+      {/* Workflow readiness */}
+      <div className="sf-workflow-dashboard bg-white border-b border-slate-200 shrink-0">
+        <nav className="px-2 sm:px-6 pt-3 pb-2 flex items-center justify-center gap-1 overflow-x-auto" role="navigation" aria-label={t("a11y.story_creation_phases")}>
+          {PHASES.map((p, i) => {
+            const Icon = phaseIcons[i];
+            const phaseHealth = readinessByPhase[p] || { status: 'attention', score: 0, detail: '' };
+            const isCurrent = i === phaseIdx;
+            const isReady = phaseHealth.status === 'ready' || phaseHealth.status === 'optional';
+            const tone = isCurrent
+              ? 'bg-rose-600 text-white border-rose-600 shadow-md'
+              : phaseHealth.status === 'ready'
+                ? 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100'
+                : phaseHealth.status === 'blocked'
+                  ? 'bg-rose-50 text-rose-800 border-rose-200 hover:bg-rose-100'
+                  : phaseHealth.status === 'progress'
+                    ? 'bg-blue-50 text-blue-800 border-blue-200 hover:bg-blue-100'
+                    : phaseHealth.status === 'optional'
+                      ? 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                      : 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100';
+            const statusLabel = phaseHealth.status === 'ready' ? 'ready' : phaseHealth.status === 'optional' ? 'optional' : phaseHealth.status === 'blocked' ? 'blocked' : phaseHealth.status === 'progress' ? 'in progress' : 'needs review';
+            return (
+              <React.Fragment key={p}>
+                {i > 0 && <div className={`w-2 sm:w-7 h-0.5 shrink-0 ${isReady ? 'bg-emerald-300' : phaseHealth.status === 'blocked' ? 'bg-rose-300' : 'bg-slate-200'}`} aria-hidden="true" />}
+                <button
+                  type="button"
+                  data-sf-focusable
+                  onClick={() => changePhase(p)}
+                  className={`shrink-0 flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-lg border text-xs font-bold transition-colors ${tone}`}
+                  aria-current={isCurrent ? 'step' : undefined}
+                  aria-label={`${PHASE_LABELS[i]}, ${statusLabel}, ${phaseHealth.score} percent. ${phaseHealth.detail}`}
+                  title={phaseHealth.detail}
+                >
+                  <Icon size={14} aria-hidden="true" />
+                  <span className="hidden sm:inline">{PHASE_LABELS[i]}</span>
+                  <span className={`hidden sm:block w-1.5 h-1.5 rounded-full ${isCurrent ? 'bg-white' : isReady ? 'bg-emerald-500' : phaseHealth.status === 'blocked' ? 'bg-rose-500' : phaseHealth.status === 'progress' ? 'bg-blue-500' : 'bg-amber-500'}`} aria-hidden="true" />
+                </button>
+              </React.Fragment>
+            );
+          })}
+        </nav>
+        <div className="sf-project-health px-3 sm:px-6 pb-3">
+          <div className="max-w-4xl mx-auto flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-3 text-[11px] font-black uppercase text-slate-600">
+                <span>Production readiness</span>
+                <span>{projectReadiness.percent}%</span>
+              </div>
+              <div className="mt-1 h-2 overflow-hidden rounded-full bg-slate-200" role="progressbar" aria-label="Story production readiness" aria-valuemin="0" aria-valuemax="100" aria-valuenow={projectReadiness.percent}>
+                <div className={`h-full rounded-full transition-all ${projectReadiness.blockers.length ? 'bg-rose-500' : projectReadiness.warnings.length ? 'bg-amber-500' : 'bg-emerald-500'}`} style={{ width: `${projectReadiness.percent}%` }} />
+              </div>
+              <div className="mt-1 text-[11px] font-medium text-slate-500">{projectReadiness.summary} · {projectReadiness.readyCount}/{PHASES.length} phases ready</div>
+            </div>
+            {primaryReadinessIssue && (
+              <button
+                type="button"
                 data-sf-focusable
-                onClick={() => { if (isDone || isCurrent) changePhase(p); }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold transition-all ${
-                  isCurrent ? 'bg-rose-600 text-white shadow-lg shadow-rose-200' :
-                  isDone ? 'bg-rose-100 text-rose-700 hover:bg-rose-200' :
-                  'bg-slate-100 text-slate-600'
-                }`}
-                disabled={!isDone && !isCurrent}
-                aria-current={isCurrent ? 'step' : undefined}
-                aria-label={`${PHASE_LABELS[i]}${isDone ? ' (completed)' : isCurrent ? ' (current step)' : ''}`}
+                onClick={() => resolveReadinessIssue(primaryReadinessIssue)}
+                className={`sf-health-action min-w-0 sm:max-w-xs rounded-lg border px-3 py-2 text-left text-xs font-bold flex items-center gap-2 ${projectReadiness.blockers.length ? 'border-rose-200 bg-rose-50 text-rose-800 hover:bg-rose-100' : 'border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100'}`}
+                title={primaryReadinessIssue.detail}
               >
-                <Icon size={14} aria-hidden="true" />
-                <span className="hidden sm:inline">{PHASE_LABELS[i]}</span>
+                <span className="min-w-0 flex-1 truncate">{primaryReadinessIssue.label}</span>
+                <ArrowRight size={14} className="shrink-0" aria-hidden="true" />
               </button>
-            </React.Fragment>
-          );
-        })}
-      </nav>
-
+            )}
+          </div>
+        </div>
+      </div>
       {/* ── Phase Content ── */}
       <div className="flex-grow overflow-y-auto" ref={phaseContentRef} tabIndex={-1} role="region" aria-label={`${PHASE_LABELS[phaseIdx]} phase`}>
         <div className="max-w-4xl mx-auto p-6">
@@ -5752,6 +6519,7 @@ show();
                 </div>
                 <div className="flex gap-2">
                   <input
+                    id="sf-new-vocab-term"
                     type="text" value={newTerm} onChange={(e) => setNewTerm(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && addVocabTerm()}
                     placeholder={t("placeholders.add_a_term")}
@@ -6168,7 +6936,7 @@ show();
                     ← Previous
                   </button>
                   <div className="text-center">
-                    <div className="text-xs font-bold text-indigo-700">Paragraph {focusParagraphIdx + 1} of {paragraphs.length}</div>
+                    <div className="text-xs font-bold text-indigo-700">{layoutMode === 'comic' ? 'Panel' : 'Paragraph'} {focusParagraphIdx + 1} of {paragraphs.length}</div>
                     <div className="text-[11px] text-indigo-400 mt-0.5">
                       {paragraphs[focusParagraphIdx]?.scaffoldFrame ? paragraphs[focusParagraphIdx].scaffoldFrame.substring(0, 60) + (paragraphs[focusParagraphIdx].scaffoldFrame.length > 60 ? '...' : '') : 'Free write'}
                     </div>
@@ -6181,8 +6949,8 @@ show();
                           className={`w-2 h-2 rounded-full transition-all ${
                             pi === focusParagraphIdx ? 'bg-indigo-600 scale-125' : pp.text.trim().length > 10 ? 'bg-green-400' : 'bg-slate-300'
                           }`}
-                          title={`Jump to paragraph ${pi + 1}${pp.text.trim().length > 10 ? ' (written)' : ' (empty)'}`}
-                          aria-label={`Jump to paragraph ${pi + 1}${pp.text.trim().length > 10 ? ' (written)' : ' (empty)'}`}
+                          title={`Jump to ${layoutMode === 'comic' ? 'panel' : 'paragraph'} ${pi + 1}${pp.text.trim().length > 10 ? ' (written)' : ' (empty)'}`}
+                          aria-label={`Jump to ${layoutMode === 'comic' ? 'panel' : 'paragraph'} ${pi + 1}${pp.text.trim().length > 10 ? ' (written)' : ' (empty)'}`}
                           aria-current={pi === focusParagraphIdx ? 'true' : undefined}
                         />
                       ))}
@@ -6208,19 +6976,44 @@ show();
               {paragraphs.map((p, idx) => (
                 focusMode && idx !== focusParagraphIdx ? null :
                 <React.Fragment key={p.id}>
-                <div id={'sf-para-' + p.id} className={`rounded-2xl border-2 shadow-sm overflow-hidden transition-colors ${
-                  focusMode ? 'border-indigo-300 shadow-lg ring-2 ring-indigo-100' :
-                  layoutMode === 'dark' ? 'bg-slate-800 border-slate-600 text-slate-100' :
-                  layoutMode === 'journal' ? 'bg-amber-50 border-amber-200' :
-                  'bg-white border-slate-200 hover:border-rose-200'
-                }`}>
+                <div
+                  id={'sf-para-' + p.id}
+                  onDragOver={(e) => updatePanelSequenceDragTarget(e, idx)}
+                  onDragEnter={(e) => updatePanelSequenceDragTarget(e, idx)}
+                  onDrop={(e) => finishPanelSequenceDrop(e, idx)}
+                  className={`sf-panel-sequence-card rounded-2xl border-2 shadow-sm overflow-hidden transition-colors ${
+                    panelSequenceDrag?.from === idx ? 'sf-panel-dragging' : panelSequenceDrag?.over === idx ? 'sf-panel-drop-target' : ''
+                  } ${
+                    focusMode ? 'border-indigo-300 shadow-lg ring-2 ring-indigo-100' :
+                    layoutMode === 'dark' ? 'bg-slate-800 border-slate-600 text-slate-100' :
+                    layoutMode === 'journal' ? 'bg-amber-50 border-amber-200' :
+                    'bg-white border-slate-200 hover:border-rose-200'
+                  }`}
+                >
                   <div className="flex items-center justify-between px-4 py-2 bg-slate-50 border-b border-slate-100">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-slate-600">Paragraph {idx + 1}</span>
+                      {layoutMode === 'comic' && !focusMode && (
+                        <button
+                          type="button"
+                          draggable="true"
+                          onDragStart={(e) => startPanelSequenceDrag(e, idx)}
+                          onDragEnd={finishPanelSequenceDrag}
+                          onKeyDown={(e) => handlePanelSequenceKeyDown(e, idx)}
+                          className="sf-panel-drag-handle w-8 h-8 shrink-0 rounded-md border border-fuchsia-200 bg-white text-fuchsia-700 hover:border-fuchsia-400 flex items-center justify-center"
+                          style={{ cursor: 'grab' }}
+                          aria-label={`Reorder panel ${idx + 1}. Use arrow keys, Home, or End.`}
+                          title="Drag to reorder panel"
+                          data-sf-panel-drag-handle={p.id}
+                          data-sf-focusable
+                        >
+                          <Move size={15} aria-hidden="true" />
+                        </button>
+                      )}
+                      <span className="text-xs font-bold text-slate-600">{layoutMode === 'comic' ? 'Panel' : 'Paragraph'} {idx + 1}</span>
                       {/* Reorder buttons */}
                       <div className="flex gap-0.5">
-                        <button type="button" onClick={() => moveParagraph(idx, -1)} disabled={idx === 0} className="text-slate-500 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[11px] font-bold transition-colors" aria-label={t("a11y.move_paragraph_up")} title={t("ui_common.move_up")}>▲</button>
-                        <button type="button" onClick={() => moveParagraph(idx, 1)} disabled={idx === paragraphs.length - 1} className="text-slate-500 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[11px] font-bold transition-colors" aria-label={t("a11y.move_paragraph_down")} title={t("ui_common.move_down")}>▼</button>
+                        <button type="button" onClick={() => moveParagraph(idx, -1)} disabled={idx === 0} className="text-slate-500 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[11px] font-bold transition-colors" aria-label={layoutMode === 'comic' ? `Move panel ${idx + 1} earlier` : t("a11y.move_paragraph_up")} title={t("ui_common.move_up")}>▲</button>
+                        <button type="button" onClick={() => moveParagraph(idx, 1)} disabled={idx === paragraphs.length - 1} className="text-slate-500 hover:text-slate-700 disabled:opacity-20 p-0.5 rounded text-[11px] font-bold transition-colors" aria-label={layoutMode === 'comic' ? `Move panel ${idx + 1} later` : t("a11y.move_paragraph_down")} title={t("ui_common.move_down")}>▼</button>
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -6248,7 +7041,7 @@ show();
                         <Sparkles size={10} /> Help Me
                       </button>
                       {paragraphs.length > 1 && (
-                        <button type="button" onClick={() => removeParagraph(idx)} className="text-slate-500 hover:text-red-500 focus:text-red-500 p-1 rounded transition-colors" aria-label={`Remove paragraph ${idx + 1}`}>
+                        <button type="button" onClick={() => removeParagraph(idx)} className="text-slate-500 hover:text-red-500 focus:text-red-500 p-1 rounded transition-colors" aria-label={`Remove ${layoutMode === 'comic' ? 'panel' : 'paragraph'} ${idx + 1}`}>
                           <Trash2 size={14} />
                         </button>
                       )}
@@ -6270,7 +7063,7 @@ show();
                         value={p.plotBeat || ''}
                         onChange={(e) => updateParagraphBeat(idx, e.target.value)}
                         className="text-xs px-2 py-1 rounded-md border border-indigo-200 bg-white text-indigo-800 font-medium focus:border-indigo-500"
-                        aria-label={`Plot beat for paragraph ${idx + 1} (optional)`}
+                        aria-label={`Plot beat for ${layoutMode === 'comic' ? 'panel' : 'paragraph'} ${idx + 1} (optional)`}
                       >
                         {PLOT_BEATS.map(b => (
                           <option key={b.value || 'none'} value={b.value}>{b.label}</option>
@@ -6409,6 +7202,7 @@ show();
                           📖 Narration Caption
                         </label>
                         <textarea
+                          id={`sf-paragraph-text-${p.id}`}
                           value={p.text}
                           onChange={(e) => updateParagraph(idx, e.target.value)}
                           className="w-full p-2.5 text-xs resize-none border-2 border-amber-200 rounded-lg bg-amber-50 focus:border-amber-400 transition-colors italic"
@@ -6473,7 +7267,7 @@ show();
                         const color = lettering.level === 'crowded' ? 'bg-red-500' : lettering.level === 'watch' ? 'bg-amber-400' : 'bg-green-500';
                         const textColor = lettering.level === 'crowded' ? 'text-red-700' : lettering.level === 'watch' ? 'text-amber-700' : 'text-green-700';
                         return (
-                          <div className="rounded-lg border border-slate-200 bg-white p-2" aria-label={`Panel ${idx + 1} lettering budget`}>
+                          <div id={`sf-lettering-${p.id}`} tabIndex={-1} data-sf-focusable className="rounded-lg border border-slate-200 bg-white p-2 focus:ring-2 focus:ring-amber-400" aria-label={`Panel ${idx + 1} lettering budget`}>
                             <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
                               <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Lettering Budget</span>
                               {onCallGemini && lettering.words > COMIC_BUBBLE_WORD_WARNING && (
@@ -6502,6 +7296,7 @@ show();
                   ) : (
                     /* ── Prose / Journal / Dark Writing Mode — styled textarea ── */
                     <textarea
+                      id={`sf-paragraph-text-${p.id}`}
                       value={p.text}
                       onChange={(e) => updateParagraph(idx, e.target.value)}
                       dir="auto"
@@ -6736,7 +7531,7 @@ show();
               )}
 
               {layoutMode === 'comic' && (
-                <div className="bg-white rounded-2xl border-2 border-purple-100 shadow-sm p-4">
+                <div id="sf-comic-continuity" tabIndex={-1} data-sf-focusable className="bg-white rounded-2xl border-2 border-purple-100 shadow-sm p-4 focus:ring-2 focus:ring-purple-400">
                   <div className="flex items-center justify-between gap-3 mb-3">
                     <div className="text-[11px] font-bold text-purple-600 uppercase tracking-widest">Comic Continuity</div>
                     {onCallGemini && (
@@ -6796,7 +7591,7 @@ show();
               )}
 
               {paragraphs.map((p, idx) => (
-                <div key={p.id} className="bg-white rounded-2xl border-2 border-purple-100 shadow-sm p-5">
+                <div key={p.id} id={`sf-illustrate-${p.id}`} tabIndex={-1} data-sf-focusable className="bg-white rounded-2xl border-2 border-purple-100 shadow-sm p-5 focus:ring-2 focus:ring-purple-400">
                   <div className="flex items-start gap-4">
                     <div className="flex-1">
                       <div className="text-xs font-bold text-purple-600 mb-1">{layoutMode === 'comic' ? 'Panel' : 'Paragraph'} {idx + 1}</div>
@@ -7114,7 +7909,7 @@ show();
 
           {/* ═══ REVIEW PHASE ═══ */}
           {phase === 'review' && (
-            <div className={`space-y-6 ${animClass}`}>
+            <div id="sf-review-tools" tabIndex={-1} data-sf-focusable className={`space-y-6 focus:ring-2 focus:ring-indigo-400 ${animClass}`}>
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h3 className="text-2xl font-black text-slate-800">{t("headings.review_feedback")}</h3>
@@ -7917,6 +8712,58 @@ show();
                   ))}
                 </div>
               )}
+              <section className={`sf-export-preflight overflow-hidden rounded-lg border-2 bg-white shadow-sm ${projectReadiness.blockers.length ? 'border-rose-200' : projectReadiness.warnings.length ? 'border-amber-200' : 'border-emerald-200'}`} aria-labelledby="sf-export-preflight-title">
+                <div className={`px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 ${projectReadiness.blockers.length ? 'bg-rose-50' : projectReadiness.warnings.length ? 'bg-amber-50' : 'bg-emerald-50'}`}>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      {projectReadiness.blockers.length ? <HelpCircle size={18} className="text-rose-700" aria-hidden="true" /> : <CheckCircle2 size={18} className={projectReadiness.warnings.length ? 'text-amber-700' : 'text-emerald-700'} aria-hidden="true" />}
+                      <h4 id="sf-export-preflight-title" className="text-sm font-black text-slate-900">Export preflight</h4>
+                      <span className={`rounded-full border px-2 py-0.5 text-[10px] font-black uppercase ${projectReadiness.blockers.length ? 'border-rose-300 bg-white text-rose-700' : projectReadiness.warnings.length ? 'border-amber-300 bg-white text-amber-700' : 'border-emerald-300 bg-white text-emerald-700'}`}>
+                        {projectReadiness.blockers.length ? `${projectReadiness.blockers.length} blocker${projectReadiness.blockers.length === 1 ? '' : 's'}` : projectReadiness.warnings.length ? `${projectReadiness.warnings.length} refinement${projectReadiness.warnings.length === 1 ? '' : 's'}` : 'Ready'}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-xs font-medium text-slate-600">{projectReadiness.summary}</p>
+                  </div>
+                  <div className="grid grid-cols-4 gap-x-4 gap-y-1 text-[10px] font-bold text-slate-600" aria-label="Production coverage">
+                    <span>Words <strong className="text-slate-900">{projectReadiness.metrics.totalWords}</strong></span>
+                    <span>Art <strong className="text-slate-900">{projectReadiness.metrics.illustratedSections}/{projectReadiness.metrics.totalSections}</strong></span>
+                    <span>Audio <strong className="text-slate-900">{projectReadiness.metrics.narratedSections}/{projectReadiness.metrics.totalSections}</strong></span>
+                    <span>Review <strong className="text-slate-900">{projectReadiness.metrics.reviewSignalCount ? 'Done' : 'Open'}</strong></span>
+                  </div>
+                </div>
+                {exportReadinessIssues.length > 0 ? (
+                  <div className="divide-y divide-slate-200">
+                    {exportReadinessIssues.slice(0, 7).map((issue) => {
+                      const isBlocker = projectReadiness.blockers.some(item => item.code === issue.code);
+                      return (
+                        <div key={issue.code} className="sf-preflight-issue px-4 py-3 flex flex-col sm:flex-row sm:items-center gap-3">
+                          <span className={`w-2 h-2 rounded-full shrink-0 ${isBlocker ? 'bg-rose-500' : 'bg-amber-500'}`} aria-hidden="true" />
+                          <div className="min-w-0 flex-1">
+                            <div className="text-xs font-black text-slate-800">{issue.label}</div>
+                            <div className="mt-0.5 text-[11px] leading-relaxed text-slate-500">{issue.detail}</div>
+                          </div>
+                          <button
+                            type="button"
+                            data-sf-focusable
+                            onClick={() => resolveReadinessIssue(issue)}
+                            className={`sf-preflight-action shrink-0 rounded-lg border px-3 py-2 text-[11px] font-black flex items-center gap-1.5 ${isBlocker ? 'border-rose-200 bg-rose-50 text-rose-800 hover:bg-rose-100' : 'border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100'}`}
+                          >
+                            {getReadinessActionLabel(issue)} <ArrowRight size={12} aria-hidden="true" />
+                          </button>
+                        </div>
+                      );
+                    })}
+                    {exportReadinessIssues.length > 7 && (
+                      <div className="px-4 py-2 text-[11px] font-bold text-slate-500">{exportReadinessIssues.length - 7} additional refinement{exportReadinessIssues.length - 7 === 1 ? '' : 's'} tracked in the phase dashboard.</div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="px-4 py-4 text-sm font-bold text-emerald-800 flex items-center gap-2">
+                    <CheckCircle2 size={18} aria-hidden="true" /> Story structure, media, review, and production checks are clear.
+                  </div>
+                )}
+              </section>
+
               {layoutMode === 'comic' && (
                 <div className="sf-comic-tool-card bg-white border-2 border-blue-100 rounded-2xl p-4 shadow-sm">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
@@ -8101,6 +8948,34 @@ show();
                       </div>
                       <div className="text-xs text-slate-500 mt-1">{Object.keys(sanitizePanelLayouts(panelLayouts)).length} custom layout{Object.keys(sanitizePanelLayouts(panelLayouts)).length === 1 ? '' : 's'}</div>
                     </div>
+                    <div className="sf-comic-toolbar flex items-center gap-1.5 self-start" role="toolbar" aria-label="Comic edit history">
+                      <button
+                        type="button"
+                        onClick={undoComicProduction}
+                        disabled={!comicCanUndo}
+                        className="sf-comic-action w-9 h-9 rounded-md border border-fuchsia-100 bg-white text-fuchsia-700 hover:border-fuchsia-300 disabled:opacity-40 flex items-center justify-center"
+                        aria-label="Undo comic production edit"
+                        aria-keyshortcuts="Control+Z Meta+Z"
+                        title="Undo comic edit (Ctrl/Cmd+Z)"
+                        data-sf-comic-undo
+                        data-sf-focusable
+                      >
+                        <Undo2 size={16} aria-hidden="true" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={redoComicProduction}
+                        disabled={!comicCanRedo}
+                        className="sf-comic-action w-9 h-9 rounded-md border border-fuchsia-100 bg-white text-fuchsia-700 hover:border-fuchsia-300 disabled:opacity-40 flex items-center justify-center"
+                        aria-label="Redo comic production edit"
+                        aria-keyshortcuts="Control+Shift+Z Meta+Shift+Z Control+Y"
+                        title="Redo comic edit (Ctrl/Cmd+Shift+Z)"
+                        data-sf-comic-redo
+                        data-sf-focusable
+                      >
+                        <Redo2 size={16} aria-hidden="true" />
+                      </button>
+                    </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {paragraphs.map((p, idx) => {
@@ -8113,13 +8988,34 @@ show();
                       const hasCustomBubbleWidth = hasComicLetteringWidth(panelThumbnail);
                       const customBubbleWidth = hasCustomBubbleWidth ? clampComicLetteringWidth(panelThumbnail.letteringWidth) : 72;
                       return (
-                        <div key={p.id} className="sf-comic-layout-row border border-fuchsia-100 rounded-lg p-3 bg-fuchsia-50/40">
+                        <div
+                          key={p.id}
+                          onDragOver={(e) => updatePanelSequenceDragTarget(e, idx)}
+                          onDragEnter={(e) => updatePanelSequenceDragTarget(e, idx)}
+                          onDrop={(e) => finishPanelSequenceDrop(e, idx)}
+                          className={`sf-comic-layout-row sf-panel-sequence-card border border-fuchsia-100 rounded-lg p-3 bg-fuchsia-50/40 ${panelSequenceDrag?.from === idx ? 'sf-panel-dragging' : panelSequenceDrag?.over === idx ? 'sf-panel-drop-target' : ''}`}
+                        >
                           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
                             <div>
                               <div className="font-black text-slate-800 text-sm">Panel {idx + 1}</div>
                               <div className="text-[10px] font-bold text-slate-500">Sequence {idx + 1} of {paragraphs.length}</div>
                             </div>
                             <div className="sf-comic-toolbar flex flex-wrap items-center gap-1.5" role="toolbar" aria-label={`Panel ${idx + 1} layout actions`}>
+                              <button
+                                type="button"
+                                draggable="true"
+                                onDragStart={(e) => startPanelSequenceDrag(e, idx)}
+                                onDragEnd={finishPanelSequenceDrag}
+                                onKeyDown={(e) => handlePanelSequenceKeyDown(e, idx)}
+                                className="sf-comic-action sf-panel-drag-handle w-8 h-8 shrink-0 rounded-md border border-fuchsia-100 bg-white text-fuchsia-700 hover:border-fuchsia-300 flex items-center justify-center"
+                                style={{ cursor: 'grab' }}
+                                aria-label={`Reorder panel ${idx + 1}. Use arrow keys, Home, or End.`}
+                                title="Drag to reorder panel"
+                                data-sf-panel-drag-handle={p.id}
+                                data-sf-focusable
+                              >
+                                <Move size={14} aria-hidden="true" />
+                              </button>
                               <button
                                 type="button"
                                 onClick={() => moveParagraph(idx, -1)}
@@ -8259,51 +9155,95 @@ show();
                 {layoutMode === 'comic' ? (
                   /* Page-aware Comic Preview */
                   <>
-                  <div className="bg-slate-950 text-white text-center text-[11px] font-black uppercase tracking-widest py-2">
-                    {comicPageGroups.length} page{comicPageGroups.length === 1 ? '' : 's'} · Follow the numbered panels
-                  </div>
-                  <div className="p-4 space-y-4 bg-slate-900">
-                    {comicPageGroups.map((page) => {
-                      const printSafety = sanitizeComicPrintSafety(comicPrintSafety);
-                      const gutterSide = getComicPageGutterSide(page.page, page.layout, printSafety);
-                      const turnLabel = getComicPageTurnLabel(page.turn);
-                      const previewPageStats = getComicPageProductionStats(page, { panelDialogue, panelThumbnails, panelLayouts, illustrations, comicPrintSafety });
-                      return (
-                        <section key={`comic-page-${page.page}`} className="rounded-xl overflow-hidden border border-slate-700 bg-slate-950/75 shadow-lg" aria-label={`Comic page ${page.page}`}>
-                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-3 py-2 bg-slate-950 text-white border-b border-slate-700">
-                            <div>
-                              <div className="text-xs font-black uppercase tracking-widest">Page {page.page} · {getComicPageLayoutLabel(page.layout)}</div>
-                              <div className="text-[10px] text-slate-300 font-bold">Panels {page.startPanel}-{page.endPanel} · {getComicReadingOrderLabel(page.layout)}</div>
+                    <div className="sf-page-navigator bg-slate-950 text-white px-3 py-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-slate-700">
+                      <div className="text-[11px] font-black uppercase tracking-widest">
+                        Page {focusedComicPreviewPage?.page || 1} of {comicPageGroups.length} <span className="text-slate-400">· Follow the numbered panels</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 max-w-full" aria-label="Comic preview page navigation">
+                        <button
+                          type="button"
+                          data-sf-focusable
+                          onClick={() => setComicPreviewPage(prev => Math.max(1, prev - 1))}
+                          disabled={comicPreviewPage <= 1}
+                          className="sf-page-nav-button w-8 h-8 shrink-0 rounded-md border border-slate-600 bg-slate-900 text-white flex items-center justify-center hover:bg-slate-800 disabled:opacity-35"
+                          aria-label="Previous comic page"
+                          title="Previous page"
+                        >
+                          <ArrowLeft size={15} aria-hidden="true" />
+                        </button>
+                        <div className="flex items-center gap-1 overflow-x-auto" role="tablist" aria-label="Comic pages">
+                          {comicPageGroups.map((page) => (
+                            <button
+                              key={`preview-tab-${page.page}`}
+                              type="button"
+                              role="tab"
+                              data-sf-focusable
+                              aria-selected={comicPreviewPage === page.page}
+                              aria-controls={`sf-comic-preview-page-${page.page}`}
+                              onClick={() => setComicPreviewPage(page.page)}
+                              className={`sf-page-nav-button w-8 h-8 shrink-0 rounded-md border text-[11px] font-black ${comicPreviewPage === page.page ? 'border-amber-300 bg-amber-400 text-slate-950' : 'border-slate-600 bg-slate-900 text-white hover:bg-slate-800'}`}
+                              aria-label={`Show comic page ${page.page}`}
+                            >
+                              {page.page}
+                            </button>
+                          ))}
+                        </div>
+                        <button
+                          type="button"
+                          data-sf-focusable
+                          onClick={() => setComicPreviewPage(prev => Math.min(comicPageGroups.length, prev + 1))}
+                          disabled={comicPreviewPage >= comicPageGroups.length}
+                          className="sf-page-nav-button w-8 h-8 shrink-0 rounded-md border border-slate-600 bg-slate-900 text-white flex items-center justify-center hover:bg-slate-800 disabled:opacity-35"
+                          aria-label="Next comic page"
+                          title="Next page"
+                        >
+                          <ArrowRight size={15} aria-hidden="true" />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="p-3 sm:p-4 bg-slate-900" aria-live="polite">
+                      {focusedComicPreviewPage && (() => {
+                        const page = focusedComicPreviewPage;
+                        const printSafety = sanitizeComicPrintSafety(comicPrintSafety);
+                        const gutterSide = getComicPageGutterSide(page.page, page.layout, printSafety);
+                        const turnLabel = getComicPageTurnLabel(page.turn);
+                        const previewPageStats = getComicPageProductionStats(page, { panelDialogue, panelThumbnails, panelLayouts, illustrations, comicPrintSafety });
+                        return (
+                          <section id={`sf-comic-preview-page-${page.page}`} role="tabpanel" className="overflow-hidden rounded-lg border border-slate-700 bg-slate-950/75 shadow-lg" aria-label={`Comic page ${page.page}`}>
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-3 py-2 bg-slate-950 text-white border-b border-slate-700">
+                              <div>
+                                <div className="text-xs font-black uppercase tracking-widest">Page {page.page} · {getComicPageLayoutLabel(page.layout)}</div>
+                                <div className="text-[10px] text-slate-300 font-bold">Panels {page.startPanel}-{page.endPanel} · {getComicReadingOrderLabel(page.layout)}</div>
+                              </div>
+                              <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-black uppercase tracking-widest">
+                                <span className={`rounded-full border px-2 py-1 ${previewPageStats.status === 'Review' ? 'border-rose-300/50 bg-rose-400/20 text-rose-100' : previewPageStats.status === 'Ready' ? 'border-emerald-300/50 bg-emerald-400/20 text-emerald-100' : 'border-white/20 bg-white/10 text-white'}`}>{previewPageStats.status}</span>
+                                <span className="rounded-full border border-white/20 bg-white/10 px-2 py-1">Art {previewPageStats.artPanels}/{previewPageStats.total}</span>
+                                <span className="rounded-full border border-white/20 bg-white/10 px-2 py-1">Lettering {previewPageStats.placedBubbles}/{previewPageStats.bubblePanels}</span>
+                                <span className="rounded-full border border-white/20 bg-white/10 px-2 py-1">{getComicPrintFormatLabel(printSafety.format)}</span>
+                                {gutterSide && <span className="rounded-full border border-rose-300/40 bg-rose-400/20 px-2 py-1">{gutterSide} gutter</span>}
+                              </div>
                             </div>
-                            <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-black uppercase tracking-widest">
-                              <span className={`rounded-full border px-2 py-1 ${previewPageStats.status === 'Review' ? 'border-rose-300/50 bg-rose-400/20 text-rose-100' : previewPageStats.status === 'Ready' ? 'border-emerald-300/50 bg-emerald-400/20 text-emerald-100' : 'border-white/20 bg-white/10 text-white'}`}>{previewPageStats.status}</span>
-                              <span className="rounded-full border border-white/20 bg-white/10 px-2 py-1">Art {previewPageStats.artPanels}/{previewPageStats.total}</span>
-                              <span className="rounded-full border border-white/20 bg-white/10 px-2 py-1">Lettering {previewPageStats.placedBubbles}/{previewPageStats.bubblePanels}</span>
-                              <span className="rounded-full border border-white/20 bg-white/10 px-2 py-1">{getComicPrintFormatLabel(printSafety.format)}</span>
-                              {gutterSide && <span className="rounded-full border border-rose-300/40 bg-rose-400/20 px-2 py-1">{gutterSide} gutter</span>}
+                            <div className={`p-3 grid gap-3 ${page.layout === 'strip' ? 'grid-cols-1' : 'grid-cols-2'}`} style={{ direction: page.layout === 'manga' ? 'rtl' : 'ltr' }}>
+                              {page.panels.map(({ paragraph, idx: panelIdx }, pageIndex) => renderComicPreviewPanel(paragraph, panelIdx, page.layout, pageIndex, page))}
                             </div>
-                          </div>
-                          <div className={`p-3 grid gap-3 ${page.layout === 'strip' ? 'grid-cols-1' : 'grid-cols-2'}`} style={{ direction: page.layout === 'manga' ? 'rtl' : 'ltr' }}>
-                            {page.panels.map(({ paragraph, idx: panelIdx }, pageIndex) => renderComicPreviewPanel(paragraph, panelIdx, page.layout, pageIndex, page))}
-                          </div>
-                          {previewPageStats.attention > 0 && (
-                            <div className="px-3 py-2 bg-rose-950/40 text-rose-100 border-t border-rose-900/60 text-[11px] font-bold flex flex-wrap gap-x-3 gap-y-1">
-                              {previewPageStats.unplacedBubbles > 0 && <span>{previewPageStats.unplacedBubbles} lettering anchor{previewPageStats.unplacedBubbles === 1 ? '' : 's'} needed</span>}
-                              {previewPageStats.gutterRiskPanels > 0 && <span>{previewPageStats.gutterRiskPanels} gutter conflict{previewPageStats.gutterRiskPanels === 1 ? '' : 's'}</span>}
-                              {previewPageStats.crowdedBubbles > 0 && <span>{previewPageStats.crowdedBubbles} crowded bubble panel{previewPageStats.crowdedBubbles === 1 ? '' : 's'}</span>}
-                              {previewPageStats.emptyPanels > 0 && <span>{previewPageStats.emptyPanels} empty panel{previewPageStats.emptyPanels === 1 ? '' : 's'}</span>}
-                            </div>
-                          )}
-                          {(turnLabel || page.note) && (
-                            <div className="px-3 py-2 bg-slate-900 text-slate-200 border-t border-slate-700 text-[11px] font-bold">
-                              {turnLabel && <span>Page turn: {turnLabel}</span>}
-                              {page.note && <span>{turnLabel ? ' · ' : ''}{page.note}</span>}
-                            </div>
-                          )}
-                        </section>
-                      );
-                    })}
-                  </div>
+                            {previewPageStats.attention > 0 && (
+                              <div className="px-3 py-2 bg-rose-950/40 text-rose-100 border-t border-rose-900/60 text-[11px] font-bold flex flex-wrap gap-x-3 gap-y-1">
+                                {previewPageStats.unplacedBubbles > 0 && <span>{previewPageStats.unplacedBubbles} lettering anchor{previewPageStats.unplacedBubbles === 1 ? '' : 's'} needed</span>}
+                                {previewPageStats.gutterRiskPanels > 0 && <span>{previewPageStats.gutterRiskPanels} gutter conflict{previewPageStats.gutterRiskPanels === 1 ? '' : 's'}</span>}
+                                {previewPageStats.crowdedBubbles > 0 && <span>{previewPageStats.crowdedBubbles} crowded bubble panel{previewPageStats.crowdedBubbles === 1 ? '' : 's'}</span>}
+                                {previewPageStats.emptyPanels > 0 && <span>{previewPageStats.emptyPanels} empty panel{previewPageStats.emptyPanels === 1 ? '' : 's'}</span>}
+                              </div>
+                            )}
+                            {(turnLabel || page.note) && (
+                              <div className="px-3 py-2 bg-slate-900 text-slate-200 border-t border-slate-700 text-[11px] font-bold">
+                                {turnLabel && <span>Page turn: {turnLabel}</span>}
+                                {page.note && <span>{turnLabel ? ' · ' : ''}{page.note}</span>}
+                              </div>
+                            )}
+                          </section>
+                        );
+                      })()}
+                    </div>
                   </>
                 ) : (
                   /* ── Prose Layout ── */

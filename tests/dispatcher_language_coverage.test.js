@@ -52,11 +52,17 @@ describe('All Selected Languages fan-out', () => {
     expect(offenders).toEqual([]);
   });
 
-  it('keeps teacher-facing analysis output English-only', () => {
+  it('keeps types out of the fan-out that should not multiply', () => {
     const types = fanoutTypes(dispatcher);
-    for (const t of ['analysis', 'brainstorm', 'udl-advice', 'alignment-report', 'glossary']) {
+    // analysis / udl-advice / alignment-report are teacher-facing and English-only
+    // by design; glossary carries its own multilingual handling.
+    for (const t of ['analysis', 'udl-advice', 'alignment-report', 'glossary']) {
       expect(types).not.toContain(t);
     }
+    // brainstorm DOES honour the output language as of 2026-07-28, so its absence
+    // here is a deliberate spend decision (don't auto-generate N copies), not a
+    // capability gap. Kept as a separate assertion so the reason stays visible.
+    expect(types).not.toContain('brainstorm');
   });
 });
 

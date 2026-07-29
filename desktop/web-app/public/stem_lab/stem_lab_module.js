@@ -842,6 +842,255 @@
         // per-instance bounds, so culling tests the whole batch against one
         // unit-sized sphere at the origin and pops the model out of view.
         //
+        // ── Shared orbit-viewer lifecycle ──────────────────────────────
+        //
+        // Four tools (bridgeLab, opticsLab polarization, opticsLab Snell's
+        // window, astronomy moon geometry) had independently grown the SAME
+        // ~180 lines: a module singleton, one stable ref callback, render()
+        // stashing plain data that a rAF loop diffs by signature, an exact
+        // camera fit, context-loss handling and teardown. Rule of three, twice
+        // over. Everything tool-specific now lives in two callbacks.
+        //
+        // The contract that makes this safe, and that every consumer relies on:
+        //   * render() NEVER touches the GPU. It calls push() with plain data.
+        //     The rAF loop compares `sig` and rebuilds only when it changed.
+        //   * the tool's 2D layer is a guaranteed floor and always renders.
+        //   * status flips asynchronously, so onStatusChange() must be wired
+        //     back into React or a "Loading" overlay sits on a live canvas.
+        //
+        // cfg:
+        //   attr          data-* attribute stamped on the canvas (for tests)
+        //   clearColor    scene background
+        //   fov           camera field of view (default 42)
+        //   rot           { y, x } initial orbit, degrees
+        //   lights        function (THREE, scene) — called once at build
+        //   build         function (THREE, S, m) — rebuild S.model from pushed
+        //                 data m. Set S.target, and EITHER S.fitPts (array of
+        //                 Vector3 the scene really occupies — preferred) OR
+        //                 S.half (box half-extents). Points beat a box: a box
+        //                 invents corners for disc/cone scenes and the camera
+        //                 backs off to frame empty space.
+        //   fitPad        extra world-units of margin around fitPts
+        //   debug         function (S) — extra fields merged into debug()
+        //   failMessage   passed to ensureThree
+        //
+        // Returns { attach, push, onStatusChange, status, debug, dispose }.
+        // attach IS the ref callback — define ONE at module scope and reuse it;
+        // an inline arrow is a new identity every render, so React detaches and
+        // reattaches and the scene is rebuilt on every keystroke.
+        makeOrbitViewer: function (cfg) {
+          cfg = cfg || {};
+          var S = null, status = 'idle', pending = null, node = null, sig = '';
+          var notify = null, restoreAttempts = 0;
+          var self = this;
+
+          function setStatus(next) {
+            if (status === next) return;
+            status = next;
+            if (notify) { try { notify(next); } catch (e) {} }
+          }
+
+          function disposeGroup(group) {
+            if (!group) return;
+            for (var i = group.children.length - 1; i >= 0; i--) {
+              var c = group.children[i];
+              if (c.geometry) c.geometry.dispose();
+              if (c.material) c.material.dispose();
+              group.remove(c);
+            }
+          }
+
+          function debug() {
+            var base = {
+              state: status,
+              contextLost: !!(S && S.contextLost),
+              canvas: S && S.renderer
+                ? { w: S.renderer.domElement.width, h: S.renderer.domElement.height }
+                : null
+            };
+            if (S && cfg.debug) {
+              try {
+                var extra = cfg.debug(S) || {};
+                for (var k in extra) if (Object.prototype.hasOwnProperty.call(extra, k)) base[k] = extra[k];
+              } catch (e) {}
+            }
+            return base;
+          }
+
+          function frame(now) {
+            if (!S) return;
+            S.raf = requestAnimationFrame(frame);
+            if (S.contextLost || !S.renderer) return;
+            if (pending) {
+              var next = pending; pending = null;
+              if (next.sig !== sig) {
+                sig = next.sig;
+                disposeGroup(S.model);
+                S.fitPts = null;
+                try { cfg.build(S.THREE, S, next); } catch (e) {}
+              }
+              S.rotY = next.rotY; S.rotX = next.rotX; S.zoom = next.zoom;
+              S.data = next;
+            }
+            if (S.tick) { try { S.tick(now || 0); } catch (e) {} }
+
+            var el = S.renderer.domElement;
+            var w = el.clientWidth || 1, hgt = el.clientHeight || 1;
+            if (w !== S.lastW || hgt !== S.lastH) {
+              S.lastW = w; S.lastH = hgt;
+              S.renderer.setSize(w, hgt, false);
+              S.camera.aspect = w / Math.max(1, hgt);
+            }
+
+            var THREE = S.THREE;
+            var ry = (S.rotY || 0) * Math.PI / 180, rx = (S.rotX || 0) * Math.PI / 180;
+            var dir = new THREE.Vector3(
+              Math.cos(rx) * Math.sin(ry), Math.sin(rx), Math.cos(rx) * Math.cos(ry)
+            ).normalize();
+
+            // Exact fit: for each sample, the distance that just keeps it inside
+            // the frustum is |offset along the screen axis| / tan(half fov) plus
+            // how far it already sits toward the camera. Take the largest. Done
+            // per frame, so the fit survives orbiting — content seen end-on
+            // needs a very different distance than the same content broadside.
+            var fit = 1;
+            var up0 = new THREE.Vector3(0, 1, 0);
+            var right = new THREE.Vector3().crossVectors(up0, dir);
+            if (right.lengthSq() < 1e-6) right.set(1, 0, 0);
+            right.normalize();
+            var upv = new THREE.Vector3().crossVectors(dir, right).normalize();
+            var tanV = Math.tan(S.camera.fov * Math.PI / 360);
+            var tanH = tanV * Math.max(0.2, S.camera.aspect);
+            var pad = cfg.fitPad || 0;
+            var tgt = S.target || new THREE.Vector3();
+
+            function consider(v) {
+              var rel = new THREE.Vector3().subVectors(v, tgt);
+              var along = rel.dot(dir);
+              var nh = (Math.abs(rel.dot(right)) + pad) / tanH + along;
+              var nv = (Math.abs(rel.dot(upv)) + pad) / tanV + along;
+              if (nh > fit) fit = nh;
+              if (nv > fit) fit = nv;
+            }
+
+            if (S.fitPts && S.fitPts.length) {
+              for (var fi = 0; fi < S.fitPts.length; fi++) consider(S.fitPts[fi]);
+            } else if (S.half) {
+              for (var sx = -1; sx <= 1; sx += 2) {
+                for (var sy = -1; sy <= 1; sy += 2) {
+                  for (var sz = -1; sz <= 1; sz += 2) {
+                    consider(new THREE.Vector3(
+                      tgt.x + sx * S.half.x, tgt.y + sy * S.half.y, tgt.z + sz * S.half.z
+                    ));
+                  }
+                }
+              }
+            }
+            fit *= (cfg.fitSlack || 1.05);
+
+            var dist = fit / Math.max(0.3, S.zoom || 1);
+            S.camera.position.copy(tgt).addScaledVector(dir, dist);
+            S.camera.near = Math.max(0.05, dist * 0.01);
+            S.camera.far = dist * 8 + 200;
+            S.camera.updateProjectionMatrix();
+            S.camera.lookAt(tgt);
+            try { S.renderer.render(S.scene, S.camera); } catch (e) { /* keep looping */ }
+          }
+
+          function build(THREE, host) {
+            var renderer;
+            try {
+              renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+            } catch (e) {
+              return false;              // no WebGL here — the 2D floor carries on
+            }
+            var w = host.clientWidth || 460, hgt = host.clientHeight || 300;
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+            renderer.setSize(w, hgt);
+            renderer.setClearColor(cfg.clearColor == null ? 0x0a0e1a : cfg.clearColor, 1);
+            var el = renderer.domElement;
+            el.style.display = 'block';
+            el.style.width = '100%';
+            el.style.height = '100%';
+            el.style.borderRadius = cfg.radius == null ? '10px' : cfg.radius;
+            // pan-y, NOT none: a full-width canvas with touch-action:none
+            // swallows every vertical swipe and becomes a scroll trap on a phone.
+            el.style.touchAction = 'pan-y';
+            if (cfg.attr) el.setAttribute(cfg.attr, 'true');
+            el.setAttribute('aria-hidden', 'true');
+            host.appendChild(el);
+
+            var scene = new THREE.Scene();
+            var camera = new THREE.PerspectiveCamera(cfg.fov || 42, w / Math.max(1, hgt), 0.1, 4000);
+            var model = new THREE.Group();
+            scene.add(model);
+
+            S = {
+              THREE: THREE, renderer: renderer, scene: scene, camera: camera, model: model,
+              rotY: (cfg.rot && cfg.rot.y) || 0, rotX: (cfg.rot && cfg.rot.x) || 0, zoom: 1,
+              target: new THREE.Vector3(), half: null, fitPts: null, data: null, tick: null,
+              contextLost: false, lastW: w, lastH: hgt, raf: 0
+            };
+            if (cfg.lights) { try { cfg.lights(THREE, scene, S); } catch (e) {} }
+
+            el.addEventListener('webglcontextlost', function (ev) {
+              ev.preventDefault(); S.contextLost = true; setStatus('failed');
+            });
+            el.addEventListener('webglcontextrestored', function () {
+              if (restoreAttempts >= 1) return;
+              restoreAttempts++; S.contextLost = false; sig = ''; setStatus('ready');
+            });
+
+            sig = '';
+            S.raf = requestAnimationFrame(frame);
+            return true;
+          }
+
+          var api = {
+            /** Stable ref callback target. Host div, or null on unmount. */
+            attach: function (host) {
+              if (!host) { api.dispose(); return; }
+              if (node === host && S) return;
+              if (S) api.dispose();
+              node = host;
+              setStatus('loading');
+              var ensure = self.ensureThree
+                ? self.ensureThree({ orbit: false, failMessage: cfg.failMessage || '3D view unavailable' })
+                : Promise.reject(new Error('no host loader'));
+              ensure.then(function (THREE) {
+                if (node !== host) return;         // unmounted while loading
+                if (!THREE) { setStatus('failed'); return; }
+                setStatus(build(THREE, host) ? 'ready' : 'failed');
+              }).catch(function () { setStatus('failed'); });
+            },
+            /** render() calls this. Never touches the GPU — the rAF loop does. */
+            push: function (data) { pending = data; },
+            /** Wire back into React, or a dead overlay sits on a live canvas. */
+            onStatusChange: function (fn) { notify = fn; },
+            status: function () { return status; },
+            debug: debug,
+            dispose: function () {
+              if (S) {
+                if (S.raf) cancelAnimationFrame(S.raf);
+                disposeGroup(S.model);
+                if (S.renderer) {
+                  try { S.renderer.forceContextLoss(); } catch (e) {}
+                  try { S.renderer.dispose(); } catch (e) {}
+                  if (S.renderer.domElement && S.renderer.domElement.parentNode) {
+                    S.renderer.domElement.parentNode.removeChild(S.renderer.domElement);
+                  }
+                }
+              }
+              S = null; node = null; pending = null; sig = ''; restoreAttempts = 0;
+              // Drop the callback BEFORE the final flip: React is unmounting us,
+              // so the write would land on a dead tree.
+              notify = null;
+              setStatus('idle');
+            }
+          };
+          return api;
+        },
+
         // Usage:
         //   var batch = StemLab.makeVoxelBatch(THREE, { capacity: n, edges: true });
         //   batch.set(i, x, y, z, scale, '#2563eb');   // or 0x2563eb
@@ -2069,25 +2318,25 @@
 
       // ── Color Map (explicit classes for Tailwind JIT compatibility) ──
       var _toolColorMap = {
-        emerald: { bg: 'bg-emerald-50', border: 'border-emerald-200', hoverBorder: 'hover:border-emerald-400', title: 'text-emerald-800', desc: 'text-emerald-600/70' },
-        blue: { bg: 'bg-blue-50', border: 'border-blue-200', hoverBorder: 'hover:border-blue-400', title: 'text-blue-800', desc: 'text-blue-600/70' },
-        amber: { bg: 'bg-amber-50', border: 'border-amber-200', hoverBorder: 'hover:border-amber-400', title: 'text-amber-800', desc: 'text-amber-600/70' },
-        rose: { bg: 'bg-rose-50', border: 'border-rose-200', hoverBorder: 'hover:border-rose-400', title: 'text-rose-800', desc: 'text-rose-600/70' },
-        orange: { bg: 'bg-orange-50', border: 'border-orange-200', hoverBorder: 'hover:border-orange-400', title: 'text-orange-800', desc: 'text-orange-600/70' },
-        cyan: { bg: 'bg-cyan-50', border: 'border-cyan-200', hoverBorder: 'hover:border-cyan-400', title: 'text-cyan-800', desc: 'text-cyan-600/70' },
-        purple: { bg: 'bg-purple-50', border: 'border-purple-200', hoverBorder: 'hover:border-purple-400', title: 'text-purple-800', desc: 'text-purple-600/70' },
-        sky: { bg: 'bg-sky-50', border: 'border-sky-200', hoverBorder: 'hover:border-sky-400', title: 'text-sky-800', desc: 'text-sky-600/70' },
-        pink: { bg: 'bg-pink-50', border: 'border-pink-200', hoverBorder: 'hover:border-pink-400', title: 'text-pink-800', desc: 'text-pink-600/70' },
-        indigo: { bg: 'bg-indigo-50', border: 'border-indigo-200', hoverBorder: 'hover:border-indigo-400', title: 'text-indigo-800', desc: 'text-indigo-600/70' },
-        fuchsia: { bg: 'bg-fuchsia-50', border: 'border-fuchsia-200', hoverBorder: 'hover:border-fuchsia-400', title: 'text-fuchsia-800', desc: 'text-fuchsia-600/70' },
-        red: { bg: 'bg-red-50', border: 'border-red-200', hoverBorder: 'hover:border-red-400', title: 'text-red-800', desc: 'text-red-600/70' },
-        green: { bg: 'bg-green-50', border: 'border-green-200', hoverBorder: 'hover:border-green-400', title: 'text-green-800', desc: 'text-green-600/70' },
-        violet: { bg: 'bg-violet-50', border: 'border-violet-200', hoverBorder: 'hover:border-violet-400', title: 'text-violet-800', desc: 'text-violet-600/70' },
-        teal: { bg: 'bg-teal-50', border: 'border-teal-200', hoverBorder: 'hover:border-teal-400', title: 'text-teal-800', desc: 'text-teal-600/70' },
-        lime: { bg: 'bg-lime-50', border: 'border-lime-200', hoverBorder: 'hover:border-lime-400', title: 'text-lime-800', desc: 'text-lime-600/70' },
-        yellow: { bg: 'bg-yellow-50', border: 'border-yellow-200', hoverBorder: 'hover:border-yellow-400', title: 'text-yellow-800', desc: 'text-yellow-600/70' },
-        stone: { bg: 'bg-stone-50', border: 'border-stone-200', hoverBorder: 'hover:border-stone-400', title: 'text-stone-800', desc: 'text-stone-600/70' },
-        slate: { bg: 'bg-slate-50', border: 'border-slate-200', hoverBorder: 'hover:border-slate-400', title: 'text-slate-800', desc: 'text-slate-600/70' }
+        emerald: { bg: 'bg-emerald-50', border: 'border-emerald-200', hoverBorder: 'hover:border-emerald-400', title: 'text-emerald-800', desc: 'text-emerald-700' },
+        blue: { bg: 'bg-blue-50', border: 'border-blue-200', hoverBorder: 'hover:border-blue-400', title: 'text-blue-800', desc: 'text-blue-600' },
+        amber: { bg: 'bg-amber-50', border: 'border-amber-200', hoverBorder: 'hover:border-amber-400', title: 'text-amber-800', desc: 'text-amber-700' },
+        rose: { bg: 'bg-rose-50', border: 'border-rose-200', hoverBorder: 'hover:border-rose-400', title: 'text-rose-800', desc: 'text-rose-700' },
+        orange: { bg: 'bg-orange-50', border: 'border-orange-200', hoverBorder: 'hover:border-orange-400', title: 'text-orange-800', desc: 'text-orange-700' },
+        cyan: { bg: 'bg-cyan-50', border: 'border-cyan-200', hoverBorder: 'hover:border-cyan-400', title: 'text-cyan-800', desc: 'text-cyan-700' },
+        purple: { bg: 'bg-purple-50', border: 'border-purple-200', hoverBorder: 'hover:border-purple-400', title: 'text-purple-800', desc: 'text-purple-600' },
+        sky: { bg: 'bg-sky-50', border: 'border-sky-200', hoverBorder: 'hover:border-sky-400', title: 'text-sky-800', desc: 'text-sky-700' },
+        pink: { bg: 'bg-pink-50', border: 'border-pink-200', hoverBorder: 'hover:border-pink-400', title: 'text-pink-800', desc: 'text-pink-700' },
+        indigo: { bg: 'bg-indigo-50', border: 'border-indigo-200', hoverBorder: 'hover:border-indigo-400', title: 'text-indigo-800', desc: 'text-indigo-600' },
+        fuchsia: { bg: 'bg-fuchsia-50', border: 'border-fuchsia-200', hoverBorder: 'hover:border-fuchsia-400', title: 'text-fuchsia-800', desc: 'text-fuchsia-700' },
+        red: { bg: 'bg-red-50', border: 'border-red-200', hoverBorder: 'hover:border-red-400', title: 'text-red-800', desc: 'text-red-700' },
+        green: { bg: 'bg-green-50', border: 'border-green-200', hoverBorder: 'hover:border-green-400', title: 'text-green-800', desc: 'text-green-700' },
+        violet: { bg: 'bg-violet-50', border: 'border-violet-200', hoverBorder: 'hover:border-violet-400', title: 'text-violet-800', desc: 'text-violet-600' },
+        teal: { bg: 'bg-teal-50', border: 'border-teal-200', hoverBorder: 'hover:border-teal-400', title: 'text-teal-800', desc: 'text-teal-700' },
+        lime: { bg: 'bg-lime-50', border: 'border-lime-200', hoverBorder: 'hover:border-lime-400', title: 'text-lime-800', desc: 'text-lime-700' },
+        yellow: { bg: 'bg-yellow-50', border: 'border-yellow-200', hoverBorder: 'hover:border-yellow-400', title: 'text-yellow-800', desc: 'text-yellow-700' },
+        stone: { bg: 'bg-stone-50', border: 'border-stone-200', hoverBorder: 'hover:border-stone-400', title: 'text-stone-800', desc: 'text-stone-600' },
+        slate: { bg: 'bg-slate-50', border: 'border-slate-200', hoverBorder: 'hover:border-slate-400', title: 'text-slate-800', desc: 'text-slate-600' }
       };
 
 
@@ -6168,7 +6417,7 @@
           return React.createElement('div', { style: { padding: 40, textAlign: 'center' } },
             React.createElement('p', { style: { fontSize: 32, marginBottom: 12 } }, '\uD83D\uDD2C'),
             React.createElement('p', { style: { fontWeight: 700, fontSize: 14, color: '#1e293b', marginBottom: 8 } }, 'Loading Dissection Lab\u2026'),
-            React.createElement('p', { style: { fontSize: 11, color: '#94a3b8', marginBottom: 16 } }, 'If this persists, the plugin may have failed to load from CDN.'),
+            React.createElement('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #64748b)', marginBottom: 16 } }, 'If this persists, the plugin may have failed to load from CDN.'),
             React.createElement('button', {
               onClick: function() { setStemLabTool(null); },
               style: { marginTop: 16, padding: '8px 20px', borderRadius: 8, background: '#3b82f6', color: '#fff', fontWeight: 700, border: 'none', cursor: 'pointer' }
@@ -6648,7 +6897,7 @@
             return React.createElement('div', { style: { padding: 40, textAlign: 'center', color: '#ef4444' } },
               React.createElement('p', { style: { fontSize: 32, marginBottom: 12 } }, '⚠️'),
               React.createElement('p', { style: { fontWeight: 700, marginBottom: 8 } }, 'Error loading ' + stemLabTool),
-              React.createElement('p', { style: { fontSize: 12, color: '#94a3b8', marginBottom: 16 } }, e.message || 'Unknown error'),
+              React.createElement('p', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #64748b)', marginBottom: 16 } }, e.message || 'Unknown error'),
               React.createElement('button', {
                 onClick: function() { setStemLabTool(null); },
                 style: { padding: '8px 20px', borderRadius: 8, background: '#3b82f6', color: '#fff', fontWeight: 700, border: 'none', cursor: 'pointer' }

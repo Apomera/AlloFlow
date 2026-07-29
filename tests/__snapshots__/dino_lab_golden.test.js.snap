@@ -3451,6 +3451,28 @@ exports[`Dino Lab — render per tab (golden master) > renders the field3d tab (
 <button style="padding:9px 12px;border-radius:9px;border:1px solid var(--allo-stem-border, #334155);background:transparent;color:var(--allo-stem-text, #f1f5f9);font-size:12.5px;font-weight:800;cursor:pointer">Open species file</button>
 <button aria-pressed="true" style="padding:9px 12px;border-radius:9px;border:1px solid #14b8a6;background:rgba(20,184,166,0.15);color:var(--allo-stem-text, #f1f5f9);font-size:12.5px;font-weight:800;cursor:pointer">Pause spin</button>
 </div>
+<div role="group" aria-label="Reconstruction hypothesis" style="margin:0 0 8px;display:grid;grid-template-columns:repeat(auto-fit, minmax(142px, 1fr));gap:7px">
+<button type="button" aria-pressed="true" aria-label="Evidence-led reconstruction, Recommended. Uses direct integument where preserved, then restrained close-relative inference. The skeleton, joints, and measurements remain unchanged." style="min-height:64px;text-align:left;border-radius:9px;border:1px solid #5eead4;background:rgba(20,184,166,0.16);color:var(--allo-stem-text, #f1f5f9);padding:8px 10px;cursor:pointer;opacity:1;box-shadow:0 0 0 2px rgba(20,184,166,0.14)">
+<span style="display:block;font-size:12.5px;font-weight:900;margin-bottom:3px">Evidence-led</span>
+<span style="display:block;font-size:10.8px;color:#5eead4;line-height:1.25;font-weight:800">Recommended</span>
+</button>
+<button type="button" aria-pressed="false" aria-label="Conservative minimum, Minimum supported. Minimizes unpreserved surface structures while retaining directly supported scales, filaments, feathers, or bristles." style="min-height:64px;text-align:left;border-radius:9px;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);padding:8px 10px;cursor:pointer;opacity:1;box-shadow:none">
+<span style="display:block;font-size:12.5px;font-weight:900;margin-bottom:3px">Conservative</span>
+<span style="display:block;font-size:10.8px;color:#5eead4;line-height:1.25;font-weight:800">Minimum supported</span>
+</button>
+<button type="button" aria-pressed="false" aria-label="Historical classic, Historical comparison. Applies a uniformly scaled, leaner twentieth-century paleoart treatment while preserving the same modern skeletal rig." style="min-height:64px;text-align:left;border-radius:9px;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);padding:8px 10px;cursor:pointer;opacity:1;box-shadow:none">
+<span style="display:block;font-size:12.5px;font-weight:900;margin-bottom:3px">Classic</span>
+<span style="display:block;font-size:10.8px;color:#f59e0b;line-height:1.25;font-weight:800">Historical comparison</span>
+</button>
+<button type="button" aria-pressed="false" aria-label="Avian-informed hypothesis, Phylogenetic hypothesis. Explores a fuller soft-tissue envelope and regionally increased filament coverage without inventing flight feathers outside supported lineages." style="min-height:64px;text-align:left;border-radius:9px;border:1px solid var(--allo-stem-border, #334155);background:var(--allo-stem-deeper, #0b1220);color:var(--allo-stem-text, #f1f5f9);padding:8px 10px;cursor:pointer;opacity:1;box-shadow:none">
+<span style="display:block;font-size:12.5px;font-weight:900;margin-bottom:3px">Avian-informed</span>
+<span style="display:block;font-size:10.8px;color:#5eead4;line-height:1.25;font-weight:800">Phylogenetic hypothesis</span>
+</button>
+</div>
+<div role="note" style="margin:0 0 10px;padding:9px 10px;border-radius:9px;border:1px solid rgba(20,184,166,0.30);background:rgba(20,184,166,0.07);color:var(--allo-stem-text-soft, #94a3b8);font-size:11.5px;line-height:1.45">
+<strong style="color:var(--allo-stem-text, #f1f5f9)">Evidence-led reconstruction: </strong>Uses direct integument where preserved, then restrained close-relative inference. The skeleton, joints, and measurements remain unchanged. <span style="color:var(--allo-stem-text-soft, #94a3b8)">Unpreserved body regions remain uncertain; direct evidence from one patch does not automatically describe the whole animal.</span>
+<span style="display:block;margin-top:4px;font-weight:800;color:#cbd5e1">Invariant across modes: skeleton, articulation, pose, measurements, evidence anchors, and scientific anatomy profile.</span>
+</div>
 <div style="margin:0 0 10px;display:grid;grid-template-columns:repeat(auto-fit, minmax(118px, 1fr));gap:7px">
 <button aria-pressed="true" style="min-height:54px;text-align:left;border-radius:9px;border:1px solid #14b8a6;background:rgba(20,184,166,0.18);color:var(--allo-stem-text, #f1f5f9);padding:8px 10px;cursor:pointer;box-shadow:0 0 0 2px rgba(20,184,166,0.18)">
 <span style="display:block;font-size:12.5px;font-weight:900;margin-bottom:2px">Full model</span>
@@ -3471,13 +3493,19 @@ exports[`Dino Lab — render per tab (golden master) > renders the field3d tab (
 </div>
 <div class="dinolab-3d-shell">
 <div class="dinolab-3d-viewer" style="position:relative;min-height:420px;border-radius:14px;overflow:hidden;border:1px solid rgba(148,163,184,0.26);background:#0f172a">
-<div id="dino3d-viewer-desc-tyrannosaurus" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0, 0, 0, 0);white-space:nowrap;border:0">T. rex 3D model summary. Visible layers: skeleton proxy, body outline, human scale, evidence markers. Reconstruction profile: Deep-skulled large theropod with limited fossil coverage. Current scan focus: Skull. Logged anchors: 0 of 3. Evidence path: 0 of 2. Assembly progress: 0 of 6. Keyboard controls: Left and Right Arrow or A and D rotate; Up and Down Arrow raise or lower the camera; Page Up and Page Down zoom; Home resets the view.</div>
+<div id="dino3d-viewer-desc-tyrannosaurus" style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0, 0, 0, 0);white-space:nowrap;border:0">T. rex 3D model summary. Visible layers: skeleton proxy, body outline, human scale, evidence markers. Reconstruction profile: Deep-skulled large theropod with limited fossil coverage. Active surface hypothesis: Evidence-led reconstruction, status Recommended. Unpreserved body regions remain uncertain; direct evidence from one patch does not automatically describe the whole animal. Limb osteology: Tapered long-bone shafts, expanded articular ends, and separate paired forearm and shank bones replace uniform rod proxies.; evidence basis: Shaft proportions and major processes follow the represented clade; exact curvature, torsion, and joint cartilage are not recoverable from a generic reconstruction.. Girdle architecture: Blade-like scapulae and ilia frame distinct shoulder and hip sockets; the pubis and ischium remain separate directional struts.. Vertebral architecture: Oriented centra carry neural arches, neural spines, restrained articular-facet proxies, and region-specific transverse processes.; evidence basis: Centrum proportions and preserved processes constrain the axial column; intervertebral cartilage, ligament thickness, and the exact neutral pose remain inferred.. Thoracic cage: Double-headed dorsal ribs separate the capitulum and tuberculum, then curve through a tapered costal shaft toward the ventral thorax.; evidence basis: Preserved proximal rib heads constrain vertebral articulation and shaft curvature; distal cartilage, exact rib spacing, and resting thoracic volume remain inferred.. Gastral basket: paired, imbricated gastral basket with separate medial and lateral segments. Uncinate evidence: No ossified uncinate processes are generalized for this profile; unpreserved cartilaginous processes cannot be ruled out.. Sacral load path: 5-element series; Compact sacral centra carry neural arches and broad paired sacral ribs that expand laterally into load-bearing contacts against the ilia.; evidence basis: Sacral-rib morphology and iliac attachment facets identify the load path; co-ossification sequence, cartilage thickness, and element boundaries vary with taxon and maturity.. Caudal transition: Large proximal caudal ribs and neural spines diminish gradually toward a transition region rather than disappearing at one identical vertebra in every dinosaur.. Haemal arches: Each rendered chevron uses paired proximal rami around a haemal canal that merge into a tapering ventral haemal spine.; evidence basis: Articular facets and preserved haemal arches constrain proximal attachment and broad form; exact spacing, distal outline, and the last chevron-bearing vertebra vary among taxa.. Distal limbs: Digitigrade metatarsus with unequal articulated phalanges and narrow terminal unguals.; evidence basis: Digit counts are clade constrained, while exact phalangeal formulae, cartilage, interdigital tissue, and resting spread require specimen-level evidence.. Cranial mechanics: braced, predominantly akinetic non-avian theropod skull; evidence basis: Most non-avian theropod quadrates were not freely streptostylic; a synovial upper contact alone does not establish bird-like cranial kinesis.. Head-neck junction: A single occipital condyle meets a ring-like atlas assembled from paired neural arches and a ventral intercentrum; the axis carries an odontoid proxy and a taller neural spine.; evidence basis: The bony joint surfaces and atlas-axis elements constrain the head-neck connection. Cartilage thickness, ligament paths, fusion state, and maximum head excursion remain specimen- and maturity-dependent.. Mandibular lever: The coronoid process, surangular, articular, and retroarticular process form a clade-scaled mandibular lever around the quadrate hinge.; evidence basis: Coronoid height, the articular glenoid, and retroarticular length are osteological constraints on lever geometry; muscle mass, fiber orientation, bite force, and soft joint tissues are inferred.. Integument mode: scaled; evidence basis: direct scale impressions in large derived tyrannosaurids. Respiratory reconstruction: air-sac proxy; evidence basis: Vertebral fossae, foramina, and internal chambers are osteological correlates of air-filled diverticula; their distribution varies among theropod lineages.. Current scan focus: Skull. Logged anchors: 0 of 3. Evidence path: 0 of 2. Assembly progress: 0 of 6. Keyboard controls: Left and Right Arrow or A and D rotate; Up and Down Arrow raise or lower the camera; Page Up and Page Down zoom; Home resets the view.</div>
 <canvas class="dinolab-3d-canvas" tabindex="0" role="application" aria-roledescription="Interactive 3D dinosaur reconstruction" aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown PageUp PageDown A D Home" aria-describedby="dino3d-viewer-desc-tyrannosaurus dino3d-status-tyrannosaurus" aria-label="T. rex procedural 3D reconstruction viewer. Drag in two directions to orbit and use the wheel to zoom. Arrow keys rotate and raise or lower the camera; Page Up and Page Down zoom; Home resets the view." style="width:100%;height:420px;display:block;touch-action:none;outline:none;outline-offset:-3px">
 </canvas>
 <div class="dinolab-3d-readouts" style="position:absolute;left:10px;top:10px;right:10px;display:flex;gap:6px;flex-wrap:wrap;pointer-events:none">
 <span class="dinolab-3d-chip" style="padding:5px 8px;border-radius:999px;background:rgba(15,23,42,0.82);border:1px solid rgba(56,189,248,0.55);color:#e2e8f0;font-size:11px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,0.22)">Length 12.3 m</span>
 <span class="dinolab-3d-chip" style="padding:5px 8px;border-radius:999px;background:rgba(15,23,42,0.82);border:1px solid rgba(250,204,21,0.55);color:#e2e8f0;font-size:11px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,0.22)">Height 3.7 m</span>
 <span class="dinolab-3d-chip" style="padding:5px 8px;border-radius:999px;background:rgba(15,23,42,0.82);border:1px solid rgba(94,234,212,0.62);color:#e2e8f0;font-size:11px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,0.22)">Profile Deep-skulled large theropod</span>
+<span class="dinolab-3d-chip" style="padding:5px 8px;border-radius:999px;background:rgba(15,23,42,0.82);border:1px solid rgba(20,184,166,0.72);color:#e2e8f0;font-size:11px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,0.22)">Hypothesis Evidence-led</span>
+<span class="dinolab-3d-chip" style="padding:5px 8px;border-radius:999px;background:rgba(15,23,42,0.82);border:1px solid rgba(111,117,100,0.72);color:#e2e8f0;font-size:11px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,0.22)">Integument Scaled</span>
+<span class="dinolab-3d-chip" style="padding:5px 8px;border-radius:999px;background:rgba(15,23,42,0.82);border:1px solid rgba(103,232,249,0.72);color:#e2e8f0;font-size:11px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,0.22)">Respiration Air-sac proxy</span>
+<span class="dinolab-3d-chip" style="padding:5px 8px;border-radius:999px;background:rgba(15,23,42,0.82);border:1px solid rgba(159,184,170,0.72);color:#e2e8f0;font-size:11px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,0.22)">Thorax double-headed ribs</span>
+<span class="dinolab-3d-chip" style="padding:5px 8px;border-radius:999px;background:rgba(15,23,42,0.82);border:1px solid rgba(185,157,115,0.72);color:#e2e8f0;font-size:11px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,0.22)">Head-neck atlas-axis</span>
+<span class="dinolab-3d-chip" style="padding:5px 8px;border-radius:999px;background:rgba(15,23,42,0.82);border:1px solid rgba(201,185,144,0.72);color:#e2e8f0;font-size:11px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,0.22)">Sacrum 5 elements</span>
 <span class="dinolab-3d-chip" style="padding:5px 8px;border-radius:999px;background:rgba(15,23,42,0.82);border:1px solid rgba(245,158,11,0.65);color:#e2e8f0;font-size:11px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,0.22)">Focus Skull</span>
 <span class="dinolab-3d-chip" style="padding:5px 8px;border-radius:999px;background:rgba(15,23,42,0.82);border:1px solid rgba(34,197,94,0.65);color:#e2e8f0;font-size:11px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,0.22)">Logged 0/3</span>
 <span class="dinolab-3d-chip" style="padding:5px 8px;border-radius:999px;background:rgba(15,23,42,0.82);border:1px solid rgba(20,184,166,0.65);color:#e2e8f0;font-size:11px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,0.22)">Path 0/2</span>
@@ -3521,6 +3549,11 @@ exports[`Dino Lab — render per tab (golden master) > renders the field3d tab (
 <span style="display:inline-block;font-size:11px;letter-spacing:0.01em;font-weight:700;padding:2px 7px;border-radius:999px;background:#22c55e22;color:var(--allo-stem-text, #f1f5f9);border:1px solid #22c55e55;margin-right:6px;margin-bottom:4px;white-space:nowrap">Cretaceous · 68–66 mya</span>
 <span style="display:inline-block;font-size:11px;letter-spacing:0.01em;font-weight:700;padding:2px 7px;border-radius:999px;background:#ef444422;color:var(--allo-stem-text, #f1f5f9);border:1px solid #ef444455;margin-right:6px;margin-bottom:4px;white-space:nowrap">🥩 Carnivore</span>
 <span style="display:inline-block;font-size:11px;letter-spacing:0.01em;font-weight:700;padding:2px 7px;border-radius:999px;background:#38bdf822;color:var(--allo-stem-text, #f1f5f9);border:1px solid #38bdf855;margin-right:6px;margin-bottom:4px;white-space:nowrap">Theropod</span>
+</div>
+<div role="note" style="margin-bottom:9px;padding:9px;border-radius:8px;background:rgba(20,184,166,0.09);border:1px solid rgba(20,184,166,0.30)">
+<div style="font-size:11.5px;font-weight:900;color:#5eead4;margin-bottom:3px">Surface hypothesis | Recommended</div>
+<div style="font-size:12.5px;font-weight:800;margin-bottom:3px">Evidence-led reconstruction</div>
+<div style="font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.45">Unpreserved body regions remain uncertain; direct evidence from one patch does not automatically describe the whole animal.</div>
 </div>
 <div style="margin-bottom:9px;padding:9px;border-radius:8px;background:rgba(20,184,166,0.09);border:1px solid rgba(20,184,166,0.30)">
 <div style="font-size:11.5px;font-weight:900;color:#5eead4;margin-bottom:3px">Reconstruction profile | Limited coverage</div>
@@ -3626,6 +3659,79 @@ exports[`Dino Lab — render per tab (golden master) > renders the field3d tab (
 <div style="font-size:12.5px;color:var(--allo-stem-text, #f1f5f9);line-height:1.48">Size claims are strongest when measurements are connected to fossil anchors instead of just a number.</div>
 </div>
 </div>
+<div style="background:rgba(20,184,166,0.06);border:1px solid rgba(20,184,166,0.24);border-radius:14px;box-shadow:0 1px 3px rgba(0,0,0,0.28);padding:14px;color:var(--allo-stem-text, #f1f5f9);margin-bottom:12px">
+<div style="font-size:13px;font-weight:900;margin-bottom:2px">Scientific anatomy profile</div>
+<div style="font-size:12.5px;color:#5eead4;font-weight:900;margin-bottom:8px">Tyrannosaurid two-fingered forelimb</div>
+<div style="font-size:11.7px;color:var(--allo-stem-text, #f1f5f9);line-height:1.48;margin-bottom:6px">
+<strong>Posture: </strong>Bipedal: body mass is carried primarily by the hind limbs.</div>
+<div style="font-size:11.7px;color:var(--allo-stem-text, #f1f5f9);line-height:1.48;margin-bottom:5px">
+<strong>Skull: </strong>Fenestrated skull proxy with orbit, antorbital/nasal region, temporal opening, and a separate lower jaw. A distinct antorbital fenestra is rendered between the orbit and external naris.</div>
+<div style="font-size:11.7px;color:var(--allo-stem-text, #f1f5f9);line-height:1.48;margin-bottom:4px">
+<strong>Cranial mechanics: </strong>The quadrate-articular joint forms the primary jaw hinge. Jugal, postorbital, quadratojugal, and palatal braces distribute bite loads around the orbit and temporal openings. Mode: braced, predominantly akinetic non-avian theropod skull.</div>
+<div style="font-size:11.2px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.42;margin-bottom:5px">
+<strong>Cranial evidence: </strong>Most non-avian theropod quadrates were not freely streptostylic; a synovial upper contact alone does not establish bird-like cranial kinesis. Hyoid: simple paired ceratobranchial proxy.</div>
+<div style="font-size:11.7px;color:var(--allo-stem-text, #f1f5f9);line-height:1.48;margin-bottom:4px">
+<strong>Head-neck junction: </strong>A single occipital condyle meets a ring-like atlas assembled from paired neural arches and a ventral intercentrum; the axis carries an odontoid proxy and a taller neural spine.</div>
+<div style="font-size:11.2px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.42;margin-bottom:5px">
+<strong>Head-neck evidence: </strong>The bony joint surfaces and atlas-axis elements constrain the head-neck connection. Cartilage thickness, ligament paths, fusion state, and maximum head excursion remain specimen- and maturity-dependent.</div>
+<div style="font-size:11.7px;color:var(--allo-stem-text, #f1f5f9);line-height:1.48;margin-bottom:4px">
+<strong>Mandibular lever: </strong>The coronoid process, surangular, articular, and retroarticular process form a clade-scaled mandibular lever around the quadrate hinge.</div>
+<div style="font-size:11.2px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.42;margin-bottom:7px">
+<strong>Jaw-lever evidence: </strong>Coronoid height, the articular glenoid, and retroarticular length are osteological constraints on lever geometry; muscle mass, fiber orientation, bite force, and soft joint tissues are inferred.</div>
+<div style="font-size:11.7px;color:var(--allo-stem-text, #f1f5f9);line-height:1.48;margin-bottom:6px">
+<strong>Feeding structures: </strong>Visible marginal teeth are shown unless the clade evolved a toothless beak. The visible crowns are deep and thickened rather than uniformly blade-thin.</div>
+<div style="font-size:11.7px;color:var(--allo-stem-text, #f1f5f9);line-height:1.48;margin-bottom:4px">
+<strong>Axial skeleton: </strong>Segmented neck, trunk, sacrum, tail, ribs, and chevrons are shown as clade-informed proxies. Lateral pneumatic fossae and foramina mark the bony evidence for air-filled diverticula rather than emptying the whole vertebra. Paired sternal plates and segmented sternal-rib proxies connect the shoulder region to the ventral thorax. Paired, overlapping ventral gastralia are shown because they are supported for this profile. Expanded sacral ribs transfer trunk load into broad iliac contacts, while proximal caudal ribs and haemal arches taper along the tail.</div>
+<div style="font-size:11.7px;color:var(--allo-stem-text, #f1f5f9);line-height:1.48;margin-bottom:4px">
+<strong>Vertebral architecture: </strong>Oriented centra carry neural arches, neural spines, restrained articular-facet proxies, and region-specific transverse processes.</div>
+<div style="font-size:11.2px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.42;margin-bottom:7px">
+<strong>Vertebral evidence: </strong>Centrum proportions and preserved processes constrain the axial column; intervertebral cartilage, ligament thickness, and the exact neutral pose remain inferred.</div>
+<div style="font-size:11.7px;color:var(--allo-stem-text, #f1f5f9);line-height:1.48;margin-bottom:4px">
+<strong>Thoracic cage: </strong>Double-headed dorsal ribs separate the capitulum and tuberculum, then curve through a tapered costal shaft toward the ventral thorax.</div>
+<div style="font-size:11.2px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.42;margin-bottom:4px">
+<strong>Thoracic evidence: </strong>Preserved proximal rib heads constrain vertebral articulation and shaft curvature; distal cartilage, exact rib spacing, and resting thoracic volume remain inferred.</div>
+<div style="font-size:11.7px;color:var(--allo-stem-text, #f1f5f9);line-height:1.48;margin-bottom:4px">
+<strong>Gastral basket: </strong>paired, imbricated gastral basket with separate medial and lateral segments.</div>
+<div style="font-size:11.2px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.42;margin-bottom:7px">
+<strong>Uncinate processes: </strong>No ossified uncinate processes are generalized for this profile; unpreserved cartilaginous processes cannot be ruled out.</div>
+<div style="font-size:11.7px;color:var(--allo-stem-text, #f1f5f9);line-height:1.48;margin-bottom:4px">
+<strong>Sacral load path: </strong>5-element series. Compact sacral centra carry neural arches and broad paired sacral ribs that expand laterally into load-bearing contacts against the ilia.</div>
+<div style="font-size:11.2px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.42;margin-bottom:4px">
+<strong>Sacral evidence: </strong>Sacral-rib morphology and iliac attachment facets identify the load path; co-ossification sequence, cartilage thickness, and element boundaries vary with taxon and maturity.</div>
+<div style="font-size:11.7px;color:var(--allo-stem-text, #f1f5f9);line-height:1.48;margin-bottom:4px">
+<strong>Caudal transition: </strong>Large proximal caudal ribs and neural spines diminish gradually toward a transition region rather than disappearing at one identical vertebra in every dinosaur.</div>
+<div style="font-size:11.7px;color:var(--allo-stem-text, #f1f5f9);line-height:1.48;margin-bottom:4px">
+<strong>Haemal arches: </strong>Each rendered chevron uses paired proximal rami around a haemal canal that merge into a tapering ventral haemal spine.</div>
+<div style="font-size:11.2px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.42;margin-bottom:7px">
+<strong>Haemal-arch evidence: </strong>Articular facets and preserved haemal arches constrain proximal attachment and broad form; exact spacing, distal outline, and the last chevron-bearing vertebra vary among taxa.</div>
+<div style="font-size:11.7px;color:var(--allo-stem-text, #f1f5f9);line-height:1.48;margin-bottom:6px">
+<strong>Pelvic architecture: </strong>Saurischian-type pelvis: the pubis projects forward and down, separate from the posterior ischium.</div>
+<div style="font-size:11.7px;color:var(--allo-stem-text, #f1f5f9);line-height:1.48;margin-bottom:5px">
+<strong>Locomotor mechanics: </strong>Robust hind limbs and an arctometatarsal foot support powerful terrestrial locomotion; the forelimb is strongly shortened.</div>
+<div style="font-size:11.7px;color:var(--allo-stem-text, #f1f5f9);line-height:1.48;margin-bottom:4px">
+<strong>Limb osteology: </strong>Tapered long-bone shafts, expanded articular ends, and separate paired forearm and shank bones replace uniform rod proxies.</div>
+<div style="font-size:11.2px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.42;margin-bottom:7px">
+<strong>Limb evidence: </strong>Shaft proportions and major processes follow the represented clade; exact curvature, torsion, and joint cartilage are not recoverable from a generic reconstruction.</div>
+<div style="font-size:11.7px;color:var(--allo-stem-text, #f1f5f9);line-height:1.48;margin-bottom:5px">
+<strong>Girdle architecture: </strong>Blade-like scapulae and ilia frame distinct shoulder and hip sockets; the pubis and ischium remain separate directional struts.</div>
+<div style="font-size:11.7px;color:var(--allo-stem-text, #f1f5f9);line-height:1.48;margin-bottom:4px">
+<strong>Hands and feet mode: </strong>Digitigrade metatarsus with unequal articulated phalanges and narrow terminal unguals.</div>
+<div style="font-size:11.2px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.42;margin-bottom:7px">
+<strong>Hands and feet evidence: </strong>Digit counts are clade constrained, while exact phalangeal formulae, cartilage, interdigital tissue, and resting spread require specimen-level evidence.</div>
+<div style="font-size:11.7px;color:var(--allo-stem-text, #f1f5f9);line-height:1.48;margin-bottom:6px">
+<strong>Soft-tissue inference: </strong>Expanded temporal jaw muscles and a powerful caudofemoral tail-base retractor follow large attachment regions; cheek-side tissues are shown but their exact composition is unresolved.</div>
+<div style="font-size:11.7px;color:var(--allo-stem-text, #f1f5f9);line-height:1.48;margin-bottom:4px">
+<strong>Respiratory reconstruction: </strong>Paired dorsal lungs and pale cervical, clavicular, thoracic, and abdominal air-sac proxies illustrate a plausible flow-through system; their exact number, boundaries, and connections remain inferred.</div>
+<div style="font-size:11.2px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.42;margin-bottom:7px">
+<strong>Respiratory evidence: </strong>Vertebral fossae, foramina, and internal chambers are osteological correlates of air-filled diverticula; their distribution varies among theropod lineages.</div>
+<div style="font-size:11.7px;color:var(--allo-stem-text, #f1f5f9);line-height:1.48;margin-bottom:4px">
+<strong>Integument: </strong>Large derived tyrannosaurids are shown with scale-dominated skin; this does not erase the filamentous condition preserved in earlier tyrannosauroids.</div>
+<div style="font-size:11.2px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.42;margin-bottom:7px">
+<strong>Integument evidence: </strong>direct scale impressions in large derived tyrannosaurids</div>
+<div style="font-size:11.7px;color:var(--allo-stem-text, #f1f5f9);line-height:1.48;margin-bottom:8px">
+<strong>Hands and feet: </strong>Two functional manual digits accompany a robust, three-toed hind limb. The three central metatarsals are rendered as a load-sharing bundle with the middle element pinched proximally.</div>
+<div role="note" style="padding:7px 8px;border-radius:8px;border:1px solid rgba(245,158,11,0.34);background:rgba(245,158,11,0.08);color:var(--allo-stem-text-soft, #94a3b8);font-size:11.3px;line-height:1.45">Clade-informed procedural reconstruction; it is not a specimen scan or an exact bone count. Missing elements use close-relative and biomechanical inference. Muscle scars constrain origins and insertions more securely than muscle thickness; skin depth, keratin extent, lips or cheek tissues, and coloration remain interpretive. Preserved integument is patchy: absence at an unpreserved body region is not proof of naked skin, and close-relative feather coverage is labeled as inference. Air sacs are soft-tissue proxies: pneumatic bone can support the presence and regional reach of diverticula, but not a specimen-exact organ outline, airflow direction, or cavity air fraction. Cranial bars mark homologous load paths, not exact sutural boundaries; palate, hyoid, cartilage thickness, and permitted joint motion require specimen-specific preservation or comparative inference. Long-bone curvature is conservative because burial can flatten, bend, or twist fossils; rendered joint surfaces omit unknown cartilage thickness and are not a pose-range claim. Shoulder and pelvic blades show functional architecture rather than specimen-exact margins; distal formulas are clade proxies and do not imply preserved cartilage, webbing, pads, or a single fixed resting pose. Vertebral centra and processes are regionalized, but zygapophyseal facets are orientation proxies rather than claims about exact joint clearance or habitual spinal flexibility. Rib heads and shafts show functional architecture, not specimen-exact costovertebral clearance; distal cartilage, sternal mobility, and thoracic excursion are not preserved as fixed bony shapes. Sacral contacts and haemal arches show load paths and regional change, not a specimen-exact fusion state, chevron formula, or fixed tail-transition vertebra.</div>
+</div>
 <div style="background:rgba(20,184,166,0.08);border:1px solid rgba(20,184,166,0.32);border-radius:14px;box-shadow:0 1px 3px rgba(0,0,0,0.28);padding:14px;color:var(--allo-stem-text, #f1f5f9);margin-bottom:12px">
 <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:6px">
 <div style="font-size:13px;font-weight:900">Reconstruction challenge</div>
@@ -3646,11 +3752,131 @@ exports[`Dino Lab — render per tab (golden master) > renders the field3d tab (
 <div style="background:var(--allo-stem-panel, #1e293b);border:1px solid var(--allo-stem-border, #334155);border-radius:14px;box-shadow:0 1px 3px rgba(0,0,0,0.28);padding:14px;color:var(--allo-stem-text, #f1f5f9);margin-bottom:12px">
 <div style="font-size:13px;font-weight:900;margin-bottom:5px">Visual key</div>
 <div style="display:grid;grid-template-columns:14px 1fr;gap:8px;align-items:start;padding:7px 0;border-bottom:1px solid var(--allo-stem-border, #334155)">
+<span aria-hidden="true" style="width:12px;height:12px;border-radius:999px;background:#14b8a6;margin-top:2px;box-shadow:0 0 0 2px rgba(255,255,255,0.08)">
+</span>
+<span>
+<span style="display:block;font-size:12.5px;font-weight:900;color:var(--allo-stem-text, #f1f5f9)">Active reconstruction hypothesis</span>
+<span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">Evidence-led reconstruction — Recommended. Surface changes never alter the shared evidence-constrained skeleton.</span>
+</span>
+</div>
+<div style="display:grid;grid-template-columns:14px 1fr;gap:8px;align-items:start;padding:7px 0;border-bottom:1px solid var(--allo-stem-border, #334155)">
 <span aria-hidden="true" style="width:12px;height:12px;border-radius:999px;background:#f8fafc;margin-top:2px;box-shadow:0 0 0 2px rgba(255,255,255,0.08)">
 </span>
 <span>
 <span style="display:block;font-size:12.5px;font-weight:900;color:var(--allo-stem-text, #f1f5f9)">Skeleton proxy</span>
-<span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">White rods, vertebrae, rib loops, pelvis, and joints show the inferred bone layout. Skull, spine, pelvis, and tail callouts keep the main landmarks easy to follow.</span>
+<span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">White vertebrae, curved rib shafts, pelvis, digits, and minor struts establish the inferred bone layout and major landmarks.</span>
+</span>
+</div>
+<div style="display:grid;grid-template-columns:14px 1fr;gap:8px;align-items:start;padding:7px 0;border-bottom:1px solid var(--allo-stem-border, #334155)">
+<span aria-hidden="true" style="width:12px;height:12px;border-radius:999px;background:#e3d7bd;margin-top:2px;box-shadow:0 0 0 2px rgba(255,255,255,0.08)">
+</span>
+<span>
+<span style="display:block;font-size:12.5px;font-weight:900;color:var(--allo-stem-text, #f1f5f9)">Vertebral architecture</span>
+<span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">Oriented centra, paired neural arches, tapered neural spines, dorsal transverse processes, and restrained zygapophyseal-facet proxies replace bead-like spinal chains.</span>
+</span>
+</div>
+<div style="display:grid;grid-template-columns:14px 1fr;gap:8px;align-items:start;padding:7px 0;border-bottom:1px solid var(--allo-stem-border, #334155)">
+<span aria-hidden="true" style="width:12px;height:12px;border-radius:999px;background:#9fb8aa;margin-top:2px;box-shadow:0 0 0 2px rgba(255,255,255,0.08)">
+</span>
+<span>
+<span style="display:block;font-size:12.5px;font-weight:900;color:var(--allo-stem-text, #f1f5f9)">Thoracic articulations</span>
+<span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">Paired capitulum and tuberculum heads meet the centrum and transverse-process region before a curved, tapered shaft descends toward differentiated sternal connections. Green-gray junctions mark inferred costal cartilage or overlap.</span>
+</span>
+</div>
+<div style="display:grid;grid-template-columns:14px 1fr;gap:8px;align-items:start;padding:7px 0;border-bottom:1px solid var(--allo-stem-border, #334155)">
+<span aria-hidden="true" style="width:12px;height:12px;border-radius:999px;background:#ead9b7;margin-top:2px;box-shadow:0 0 0 2px rgba(255,255,255,0.08)">
+</span>
+<span>
+<span style="display:block;font-size:12.5px;font-weight:900;color:var(--allo-stem-text, #f1f5f9)">Gastralia and uncinate processes</span>
+<span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">Supported gastral baskets use paired sigmoidal segments that overlap near the midline. Flattened uncinate processes overlap adjacent ribs only for supported maniraptoran profiles.</span>
+</span>
+</div>
+<div style="display:grid;grid-template-columns:14px 1fr;gap:8px;align-items:start;padding:7px 0;border-bottom:1px solid var(--allo-stem-border, #334155)">
+<span aria-hidden="true" style="width:12px;height:12px;border-radius:999px;background:#c9b990;margin-top:2px;box-shadow:0 0 0 2px rgba(255,255,255,0.08)">
+</span>
+<span>
+<span style="display:block;font-size:12.5px;font-weight:900;color:var(--allo-stem-text, #f1f5f9)">Sacral load path</span>
+<span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">Compact sacral centra and neural arches carry broad paired sacral ribs into expanded iliac contact pads. Warm intercentral contacts communicate continuity without claiming a universal fusion state.</span>
+</span>
+</div>
+<div style="display:grid;grid-template-columns:14px 1fr;gap:8px;align-items:start;padding:7px 0;border-bottom:1px solid var(--allo-stem-border, #334155)">
+<span aria-hidden="true" style="width:12px;height:12px;border-radius:999px;background:#e3d7bd;margin-top:2px;box-shadow:0 0 0 2px rgba(255,255,255,0.08)">
+</span>
+<span>
+<span style="display:block;font-size:12.5px;font-weight:900;color:var(--allo-stem-text, #f1f5f9)">Caudal ribs and haemal arches</span>
+<span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">Proximal caudal ribs and posterodorsal neural spines diminish toward the transition region. V-shaped chevron rami surround a haemal canal before joining a tapered ventral spine.</span>
+</span>
+</div>
+<div style="display:grid;grid-template-columns:14px 1fr;gap:8px;align-items:start;padding:7px 0;border-bottom:1px solid var(--allo-stem-border, #334155)">
+<span aria-hidden="true" style="width:12px;height:12px;border-radius:999px;background:#e9dfc7;margin-top:2px;box-shadow:0 0 0 2px rgba(255,255,255,0.08)">
+</span>
+<span>
+<span style="display:block;font-size:12.5px;font-weight:900;color:var(--allo-stem-text, #f1f5f9)">Long-bone morphology</span>
+<span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">Major limb shafts taper toward the middle, broaden at their ends, and use restrained clade-scaled curvature. Separate radius/ulna and tibia/fibula elements replace single lower-limb rods.</span>
+</span>
+</div>
+<div style="display:grid;grid-template-columns:14px 1fr;gap:8px;align-items:start;padding:7px 0;border-bottom:1px solid var(--allo-stem-border, #334155)">
+<span aria-hidden="true" style="width:12px;height:12px;border-radius:999px;background:#c9b990;margin-top:2px;box-shadow:0 0 0 2px rgba(255,255,255,0.08)">
+</span>
+<span>
+<span style="display:block;font-size:12.5px;font-weight:900;color:var(--allo-stem-text, #f1f5f9)">Articular surfaces</span>
+<span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">Warm hinge-shaped ends distinguish hip, elbow or knee, wrist or ankle articulations from the shaft. Cartilage thickness and permitted motion remain unresolved.</span>
+</span>
+</div>
+<div style="display:grid;grid-template-columns:14px 1fr;gap:8px;align-items:start;padding:7px 0;border-bottom:1px solid var(--allo-stem-border, #334155)">
+<span aria-hidden="true" style="width:12px;height:12px;border-radius:999px;background:#efe4c9;margin-top:2px;box-shadow:0 0 0 2px rgba(255,255,255,0.08)">
+</span>
+<span>
+<span style="display:block;font-size:12.5px;font-weight:900;color:var(--allo-stem-text, #f1f5f9)">Girdle blades and sockets</span>
+<span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">Expanded scapular and iliac blades frame rimmed glenoid and acetabular sockets. Coracoid plates, pelvic peduncles, a supracetabular shelf, and an obturator process replace the former rod-only girdles.</span>
+</span>
+</div>
+<div style="display:grid;grid-template-columns:14px 1fr;gap:8px;align-items:start;padding:7px 0;border-bottom:1px solid var(--allo-stem-border, #334155)">
+<span aria-hidden="true" style="width:12px;height:12px;border-radius:999px;background:#ead9b7;margin-top:2px;box-shadow:0 0 0 2px rgba(255,255,255,0.08)">
+</span>
+<span>
+<span style="display:block;font-size:12.5px;font-weight:900;color:var(--allo-stem-text, #f1f5f9)">Articulated hands and feet</span>
+<span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">Separate metapodials lead into unequal clade-scaled phalangeal chains. Compact weight-bearing hands, the sauropod metacarpal arc, hoof-like terminals, hallux, and raised paravian digit II are applied only where supported.</span>
+</span>
+</div>
+<div style="display:grid;grid-template-columns:14px 1fr;gap:8px;align-items:start;padding:7px 0;border-bottom:1px solid var(--allo-stem-border, #334155)">
+<span aria-hidden="true" style="width:12px;height:12px;border-radius:999px;background:#d8c39a;margin-top:2px;box-shadow:0 0 0 2px rgba(255,255,255,0.08)">
+</span>
+<span>
+<span style="display:block;font-size:12.5px;font-weight:900;color:var(--allo-stem-text, #f1f5f9)">Cranial load frame</span>
+<span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">Warm bone bars separate the premaxillary/maxillary margin, jugal-postorbital cheek frame, quadratojugal, quadrate, segmented mandible, and palatal braces. They show homologous load paths rather than exact sutures.</span>
+</span>
+</div>
+<div style="display:grid;grid-template-columns:14px 1fr;gap:8px;align-items:start;padding:7px 0;border-bottom:1px solid var(--allo-stem-border, #334155)">
+<span aria-hidden="true" style="width:12px;height:12px;border-radius:999px;background:#b99d73;margin-top:2px;box-shadow:0 0 0 2px rgba(255,255,255,0.08)">
+</span>
+<span>
+<span style="display:block;font-size:12.5px;font-weight:900;color:var(--allo-stem-text, #f1f5f9)">Occiput and atlas-axis</span>
+<span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">A single occipital condyle meets paired atlas arches and a ventral intercentrum. The axis adds a centrum, neural arch, tall spine, and odontoid proxy; cartilage, ligaments, and range of motion remain unresolved.</span>
+</span>
+</div>
+<div style="display:grid;grid-template-columns:14px 1fr;gap:8px;align-items:start;padding:7px 0;border-bottom:1px solid var(--allo-stem-border, #334155)">
+<span aria-hidden="true" style="width:12px;height:12px;border-radius:999px;background:#d8c39a;margin-top:2px;box-shadow:0 0 0 2px rgba(255,255,255,0.08)">
+</span>
+<span>
+<span style="display:block;font-size:12.5px;font-weight:900;color:var(--allo-stem-text, #f1f5f9)">Mandibular levers</span>
+<span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">Clade-scaled coronoid and retroarticular processes expose the jaw-adductor input and posterior lever around the articular glenoid without pretending to calculate specimen-level bite force.</span>
+</span>
+</div>
+<div style="display:grid;grid-template-columns:14px 1fr;gap:8px;align-items:start;padding:7px 0;border-bottom:1px solid var(--allo-stem-border, #334155)">
+<span aria-hidden="true" style="width:12px;height:12px;border-radius:999px;background:#b99d73;margin-top:2px;box-shadow:0 0 0 2px rgba(255,255,255,0.08)">
+</span>
+<span>
+<span style="display:block;font-size:12.5px;font-weight:900;color:var(--allo-stem-text, #f1f5f9)">Quadrate-articular joint</span>
+<span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">A darker condyle marks the primary reptile-style jaw hinge. It is not animated as a freely swinging bird-like quadrate unless fossil mechanics support that interpretation.</span>
+</span>
+</div>
+<div style="display:grid;grid-template-columns:14px 1fr;gap:8px;align-items:start;padding:7px 0;border-bottom:1px solid var(--allo-stem-border, #334155)">
+<span aria-hidden="true" style="width:12px;height:12px;border-radius:999px;background:#c4b5d9;margin-top:2px;box-shadow:0 0 0 2px rgba(255,255,255,0.08)">
+</span>
+<span>
+<span style="display:block;font-size:12.5px;font-weight:900;color:var(--allo-stem-text, #f1f5f9)">Hyoid proxy</span>
+<span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">Paired lavender rods mark conservative tongue-support bones; elaboration is increased only for supported derived herbivorous ornithischians, while soft tongue shape is omitted.</span>
 </span>
 </div>
 <div style="display:grid;grid-template-columns:14px 1fr;gap:8px;align-items:start;padding:7px 0;border-bottom:1px solid var(--allo-stem-border, #334155)">
@@ -3658,7 +3884,63 @@ exports[`Dino Lab — render per tab (golden master) > renders the field3d tab (
 </span>
 <span>
 <span style="display:block;font-size:12.5px;font-weight:900;color:var(--allo-stem-text, #f1f5f9)">Body inference</span>
-<span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">Translucent color and a thin contour mesh show estimated soft-tissue volume around the visible skeleton.</span>
+<span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">Translucent color and a thin contour mesh show estimated soft-tissue volume around the visible skeleton; muscle and keratin overlays refine the inference.</span>
+</span>
+</div>
+<div style="display:grid;grid-template-columns:14px 1fr;gap:8px;align-items:start;padding:7px 0;border-bottom:1px solid var(--allo-stem-border, #334155)">
+<span aria-hidden="true" style="width:12px;height:12px;border-radius:999px;background:#8f3f32;margin-top:2px;box-shadow:0 0 0 2px rgba(255,255,255,0.08)">
+</span>
+<span>
+<span style="display:block;font-size:12.5px;font-weight:900;color:var(--allo-stem-text, #f1f5f9)">Muscle inference</span>
+<span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">Muted red-brown volumes mark inferred jaw, neck, chest, thigh, calf, and caudofemoral paths. Attachment regions are better constrained than their thickness.</span>
+</span>
+</div>
+<div style="display:grid;grid-template-columns:14px 1fr;gap:8px;align-items:start;padding:7px 0;border-bottom:1px solid var(--allo-stem-border, #334155)">
+<span aria-hidden="true" style="width:12px;height:12px;border-radius:999px;background:#70465c;margin-top:2px;box-shadow:0 0 0 2px rgba(255,255,255,0.08)">
+</span>
+<span>
+<span style="display:block;font-size:12.5px;font-weight:900;color:var(--allo-stem-text, #f1f5f9)">Dorsal lung proxy</span>
+<span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">Paired plum volumes show a conservative dorsal respiratory position derived from living-archosaur comparison; organ boundaries are not fossil outlines.</span>
+</span>
+</div>
+<div style="display:grid;grid-template-columns:14px 1fr;gap:8px;align-items:start;padding:7px 0;border-bottom:1px solid var(--allo-stem-border, #334155)">
+<span aria-hidden="true" style="width:12px;height:12px;border-radius:999px;background:#bdeff2;margin-top:2px;box-shadow:0 0 0 2px rgba(255,255,255,0.08)">
+</span>
+<span>
+<span style="display:block;font-size:12.5px;font-weight:900;color:var(--allo-stem-text, #f1f5f9)">Air-sac proxy</span>
+<span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">Pale volumes show a plausible cervical, clavicular, thoracic, and abdominal distribution only in supported saurischian profiles. Exact compartments and airflow remain inferred.</span>
+</span>
+</div>
+<div style="display:grid;grid-template-columns:14px 1fr;gap:8px;align-items:start;padding:7px 0;border-bottom:1px solid var(--allo-stem-border, #334155)">
+<span aria-hidden="true" style="width:12px;height:12px;border-radius:999px;background:#67e8f9;margin-top:2px;box-shadow:0 0 0 2px rgba(255,255,255,0.08)">
+</span>
+<span>
+<span style="display:block;font-size:12.5px;font-weight:900;color:var(--allo-stem-text, #f1f5f9)">Pneumatic bone evidence</span>
+<span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">Cyan-rimmed dark openings mark vertebral fossae or foramina: bony correlates of diverticula, not a claim that every visible cavity was entirely air.</span>
+</span>
+</div>
+<div style="display:grid;grid-template-columns:14px 1fr;gap:8px;align-items:start;padding:7px 0;border-bottom:1px solid var(--allo-stem-border, #334155)">
+<span aria-hidden="true" style="width:12px;height:12px;border-radius:999px;background:#4b3525;margin-top:2px;box-shadow:0 0 0 2px rgba(255,255,255,0.08)">
+</span>
+<span>
+<span style="display:block;font-size:12.5px;font-weight:900;color:var(--allo-stem-text, #f1f5f9)">Keratin sheath</span>
+<span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">Dark rough surfaces distinguish beaks, claw sheaths, and supported horn sheaths from the lighter bony cores beneath them.</span>
+</span>
+</div>
+<div style="display:grid;grid-template-columns:14px 1fr;gap:8px;align-items:start;padding:7px 0;border-bottom:1px solid var(--allo-stem-border, #334155)">
+<span aria-hidden="true" style="width:12px;height:12px;border-radius:999px;background:#6f7564;margin-top:2px;box-shadow:0 0 0 2px rgba(255,255,255,0.08)">
+</span>
+<span>
+<span style="display:block;font-size:12.5px;font-weight:900;color:var(--allo-stem-text, #f1f5f9)">Filament and feather tract</span>
+<span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">Tapered filaments form localized coats or bristle rows; flattened vanes mark supported arm, hind-limb, tail-frond, or tail-fan plumage.</span>
+</span>
+</div>
+<div style="display:grid;grid-template-columns:14px 1fr;gap:8px;align-items:start;padding:7px 0;border-bottom:1px solid var(--allo-stem-border, #334155)">
+<span aria-hidden="true" style="width:12px;height:12px;border-radius:999px;background:#343b36;margin-top:2px;box-shadow:0 0 0 2px rgba(255,255,255,0.08)">
+</span>
+<span>
+<span style="display:block;font-size:12.5px;font-weight:900;color:var(--allo-stem-text, #f1f5f9)">Regional feature scales</span>
+<span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.4">Raised flank scales sit within a finer procedural basement pattern instead of covering every taxon with one uniform reptile texture.</span>
 </span>
 </div>
 <div style="display:grid;grid-template-columns:14px 1fr;gap:8px;align-items:start;padding:7px 0;border-bottom:1px solid var(--allo-stem-border, #334155)">
@@ -3764,14 +4046,14 @@ exports[`Dino Lab — render per tab (golden master) > renders the field3d tab (
 <input type="checkbox" style="margin-top:2px" checked=""/>
 <span>
 <span style="display:block;font-size:12.5px;font-weight:800;color:var(--allo-stem-text, #f1f5f9)">Skeleton proxy</span>
-<span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.45">Shows the inferred bone layout from skull, spine, limbs, tail, and posture.</span>
+<span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.45">Shows modular cranial bars, the single occipital condyle, atlas-axis complex, clade-scaled coronoid and retroarticular jaw levers, regionalized centra and neural arches, double-headed curved dorsal ribs, differentiated sternal connections, supported gastral baskets or uncinate processes, expanded sacral ribs and iliac contacts, tapered proximal caudal ribs, true haemal arches, blade-like girdles, rimmed sockets, tapered paired limb bones, articulated phalangeal chains, and tail.</span>
 </span>
 </label>
 <label style="display:flex;gap:8px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--allo-stem-border, #334155);cursor:pointer">
 <input type="checkbox" style="margin-top:2px" checked=""/>
 <span>
-<span style="display:block;font-size:12.5px;font-weight:800;color:var(--allo-stem-text, #f1f5f9)">Body outline</span>
-<span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.45">Adds soft-tissue volume. This is the most interpretive layer.</span>
+<span style="display:block;font-size:12.5px;font-weight:800;color:var(--allo-stem-text, #f1f5f9)">Body outline + tissue inference</span>
+<span style="display:block;font-size:11.5px;color:var(--allo-stem-text-soft, #94a3b8);line-height:1.45">Adds skin volume, muscle envelopes, respiratory proxies, and keratin coverings. Thickness, organ boundaries, and external silhouette remain interpretive.</span>
 </span>
 </label>
 <label style="display:flex;gap:8px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--allo-stem-border, #334155);cursor:pointer">

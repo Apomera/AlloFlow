@@ -695,6 +695,62 @@ function buildAlloCommands(ctx, opts = {}) {
       c.openUdlGuide();
       return t("cmd.open_udl_guide_done", "UDL Guide opened.");
     } },
+    // ── Lesson blueprint commands (2026-07-28) ──
+    // Each is gated on the capability the host exposes, so a command that
+    // cannot work never appears in the palette. Deliberately NO
+    // "save as template" command: saving runs a per-directive review (which
+    // instructions suit any topic vs. which describe THIS lesson), and a
+    // one-shot command would bypass it and quietly bake the current lesson's
+    // content into a reusable template. That is a decision to make while
+    // looking at the plan — the button on the card is the right surface.
+    {
+      id: "run_lesson_blueprint",
+      icon: "\u25B6",
+      roles: "teacher",
+      when: (c) => !!c.hasActiveBlueprint && !!c.runBlueprint,
+      label: t("cmd.run_lesson_blueprint", "Generate the lesson plan"),
+      aliases: ["generate the plan", "run the blueprint", "build the lesson", "generate the lesson pack", "execute the plan", "make the resources"],
+      hint: t("cmd.run_lesson_blueprint_hint", "Generates every resource in the current plan"),
+      run: (c) => {
+        c.runBlueprint();
+        return t("cmd.run_lesson_blueprint_done", "Generating the plan now \u2014 you can watch each step on the card.");
+      }
+    },
+    {
+      id: "rebuild_lesson_step",
+      icon: "\u{1F501}",
+      roles: "teacher",
+      when: (c) => !!c.hasActiveBlueprint && !!c.rebuildBlueprintStep,
+      label: t("cmd.rebuild_lesson_step", "Rebuild one step of the plan"),
+      aliases: ["rebuild step", "regenerate step", "redo step", "rebuild that resource", "try that step again"],
+      hint: t("cmd.rebuild_lesson_step_hint", "Regenerates a single resource \u2014 say which step number"),
+      run: (c, p) => {
+        const steps = typeof c.blueprintStepList === "function" ? c.blueprintStepList() : [];
+        const asked = p && (p.step || p.position || p.index || p.number);
+        if (!asked) {
+          const listed = steps.slice(0, 8).map((s) => `${s.position}. ${s.tool}`).join(", ");
+          return t("cmd.rebuild_lesson_step_which", "Which step? ") + (listed || t("cmd.rebuild_lesson_step_none", "the plan has no steps yet."));
+        }
+        const hit = c.rebuildBlueprintStep(asked);
+        return hit === null ? t("cmd.rebuild_lesson_step_missing", "I could not find that step in the plan.") : t("cmd.rebuild_lesson_step_done", "Rebuilding step ") + asked + ".";
+      }
+    },
+    {
+      id: "apply_lesson_template",
+      icon: "\u{1F4D0}",
+      roles: "teacher",
+      when: (c) => typeof c.applyLessonTemplateByName === "function" && typeof c.lessonTemplateNames === "function" && c.lessonTemplateNames().length > 0,
+      label: t("cmd.apply_lesson_template", "Start from a saved template"),
+      aliases: ["use my template", "start from template", "apply template", "load template", "use a saved pattern"],
+      hint: t("cmd.apply_lesson_template_hint", "Starts a new plan from one of your saved templates"),
+      run: (c, p) => {
+        const names = c.lessonTemplateNames();
+        const asked = p && (p.name || p.template || p.topic);
+        if (!asked) return t("cmd.apply_lesson_template_which", "Which template? ") + names.map((n) => n.name).slice(0, 8).join(", ");
+        const hit = c.applyLessonTemplateByName(asked);
+        return hit ? t("cmd.apply_lesson_template_done", "Started from ") + '"' + hit.name + '".' : t("cmd.apply_lesson_template_missing", "I could not find a template called ") + '"' + asked + '".';
+      }
+    },
     { id: "open_command_blueprints", icon: "\u{1F9E9}", roles: "teacher", label: "Saved Command Blueprints", aliases: ["command blueprints", "saved command blueprints", "saved workflows", "workflow library", "saved plans", "command workflow library"], hint: "Open, review, and rerun saved multi-step command workflows", run: (c) => {
       c.openCommandBlueprintLibrary();
       return "Saved Command Blueprints opened in AlloBot.";

@@ -1,10 +1,16 @@
 import { describe, it, expect, beforeAll } from 'vitest';
+import { createRequire } from 'node:module';
+import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
 
 let OG;
 let OS;
 let OA;
 let UI;
+
+const testRequire = createRequire(import.meta.url);
+const ReactForOpenGrooveTest = testRequire(resolve(process.cwd(), 'desktop/web-app/node_modules/react'));
+const ReactDOMServerForOpenGrooveTest = testRequire(resolve(process.cwd(), 'desktop/web-app/node_modules/react-dom/server'));
 
 function countByteSequence(bytes, sequence) {
   let count = 0;
@@ -912,6 +918,52 @@ describe('Open Groove project core', () => {
     expect(OG.ogValidateProject(project)).toEqual([]);
   });
 
+  it('analyzes and transforms notation motifs into teachable variations', () => {
+    const project = OG.ogCreateProject({ title: 'Motif Lesson', tonic: 'C', mode: 'major' });
+    const pattern = project.patterns[0];
+    const synth = project.tracks[1];
+    const measure = OG.ogTicksPerMeasure(project);
+    OG.ogApplySynthPatchPreset(project, synth.id, 'brightLead');
+    OG.ogWriteNotationInput(project, pattern.id, synth.id, 'C4:q E4:q G4:q B4:q', { startBar: 0, replace: true });
+
+    const transforms = OG.ogListMotifTransforms();
+    expect(transforms.map(transform => transform.id)).toEqual(expect.arrayContaining(['sequenceUp', 'invert', 'retrograde', 'simplify']));
+    const analysis = OG.ogBuildMotifAnalysis(project, pattern.id, synth.id, { sourceBar: 0 });
+    expect(analysis).toMatchObject({ available: true, noteCount: 4, pitchRange: 'C4-B4', rhythmLabel: 'quarter' });
+    expect(analysis.contour).toEqual(['up', 'up', 'up']);
+    expect(analysis.suggestions.join(' ')).toMatch(/Sequence/);
+
+    const sequence = OG.ogWriteMotifTransform(project, pattern.id, synth.id, {
+      transform: 'sequenceUp',
+      sourceBar: 0,
+      destinationBar: 1
+    });
+    expect(sequence).toMatchObject({ transformId: 'sequenceUp', transformName: 'Sequence Up', noteCount: 4, destinationBar: 1 });
+    const barNotes = (bar) => pattern.events
+      .filter(event => event.type === 'note' && event.trackId === synth.id && event.startTick >= bar * measure && event.startTick < (bar + 1) * measure)
+      .sort((a, b) => a.startTick - b.startTick || a.midi - b.midi);
+    expect(barNotes(1).map(event => event.pitch)).toEqual(['D4', 'F4', 'A4', 'C5']);
+    expect(barNotes(1).every(event => event.role === 'motif' && event.source === 'motifTransform')).toBe(true);
+
+    const retrograde = OG.ogWriteMotifTransform(project, pattern.id, synth.id, {
+      transform: 'retrograde',
+      sourceBar: 0,
+      destinationBar: 2
+    });
+    expect(retrograde.noteCount).toBe(4);
+    expect(barNotes(2).map(event => event.pitch)).toEqual(['B4', 'G4', 'E4', 'C4']);
+
+    OG.ogWriteNotationInput(project, pattern.id, synth.id, 'C4:e D4:e E4:e F4:e G4:e A4:e B4:e C5:e', { startBar: 2, replace: true });
+    const simplify = OG.ogWriteMotifTransform(project, pattern.id, synth.id, {
+      transform: 'simplify',
+      sourceBar: 2,
+      destinationBar: 3
+    });
+    expect(simplify).toMatchObject({ transformId: 'simplify', noteCount: 4, destinationBar: 3 });
+    expect(barNotes(3).map(event => event.pitch)).toEqual(['C4', 'E4', 'G4', 'B4']);
+    expect(barNotes(3).map(event => event.notation.durationTicks)).toEqual([OG.ogTicksPerBeat(project), OG.ogTicksPerBeat(project), OG.ogTicksPerBeat(project), OG.ogTicksPerBeat(project)]);
+    expect(OG.ogValidateProject(project)).toEqual([]);
+  });
   it('duplicates patterns with new pattern and event ids', () => {
     const project = OG.ogMakeDemoProject({ now: 1 });
     const source = project.patterns[0];
@@ -1510,6 +1562,21 @@ describe('Open Groove browser wrappers', () => {
     expect(UI.OPEN_GROOVE_META.category).toBe('learning');
     expect(UI.ogCreateProject).toBe(OG.ogCreateProject);
     expect(UI.ogBuildPlaybackPlan).toBe(OS.ogBuildPlaybackPlan);
+  });
+
+  it('renders the Motif Lab composition controls in the standalone dialog', () => {
+    const markup = ReactDOMServerForOpenGrooveTest.renderToStaticMarkup(
+      ReactForOpenGrooveTest.createElement(UI, {
+        React: ReactForOpenGrooveTest,
+        onClose: () => {},
+        addToast: () => {}
+      })
+    );
+
+    expect(markup).toContain('Motif Lab');
+    expect(markup).toContain('Sequence Up');
+    expect(markup).toContain('Write to Bar');
+    expect(markup).toContain('Motif composition suggestions');
   });
 
   it('fails audio creation gracefully when Web Audio is unavailable', () => {

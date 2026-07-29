@@ -31,6 +31,19 @@ describe('Sketch Response pure privacy helpers', () => {
     expect(ConceptPictionary.normalizePictionaryActivityMode('unknown')).toBe('pictionary');
   });
 
+  it('bounds prepared prompt and criterion before they seed the existing composer', () => {
+    const prepared = ConceptPictionary.normalizePreparedSketchState({
+      prompt: '\u0000  ' + 'p'.repeat(700),
+      criterion: '  ' + 'c'.repeat(700),
+    });
+    expect(prepared.prompt).toBe('p'.repeat(500));
+    expect(prepared.criterion).toBe('c'.repeat(400));
+    expect(ConceptPictionary.normalizePreparedSketchState({})).toEqual({
+      prompt: '',
+      criterion: 'Which sketch most clearly and accurately communicates the idea?',
+    });
+  });
+
   it('groups teacher-local strokes by student without merging canvases', () => {
     const grouped = ConceptPictionary.groupSketchStrokesByUid([
       { uid: 'u1', strokeId: 'a' },
@@ -210,5 +223,17 @@ describe('Sketch Response UI and existing resource-delivery integration', () => 
     expect(source).toContain(
       "updates[`roster.${uid}.role`] = drawerUids.includes(uid) ? 'drawer' : (activityMode === PICTIONARY_ACTIVITY_MODE ? 'guesser' : null)",
     );
+  });
+
+  it('seeds prepared values and audience into the existing HostView without session persistence', () => {
+    expect(shell).toContain("descriptor.owner === 'concept-pictionary'");
+    expect(shell).toContain("setPictionaryInitialMode('sketch')");
+    expect(shell).toContain('initialPrompt: (pictionaryPreparedInteraction && pictionaryPreparedInteraction.prompt)');
+    expect(shell).toContain('initialCriterion: (pictionaryPreparedInteraction && pictionaryPreparedInteraction.criterion)');
+    expect(shell).toContain('initialParticipantUids: (() => {');
+    expect(source).toContain('setConcept(initialPreparedSketch.prompt)');
+    expect(source).toContain('setSketchCriterion(initialPreparedSketch.criterion)');
+    expect(source).toContain('setDrawerUids(initialSketchParticipantUids)');
+    expect(source).toContain('the prompt is not sent until Start sketch');
   });
 });

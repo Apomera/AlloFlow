@@ -9,6 +9,42 @@ describe('Geometry World animation runtime', () => {
       /function animate\(\) \{[\s\S]*?if \(!window\.THREE \|\| !engine \|\| !engine\.scene \|\| !engine\.camera\) return;\s*\/\/ Capture Three\.js[\s\S]*?var THREE = window\.THREE;\s*var dt =/
     );
   });
+
+  it('stops a failed frame and exposes a recoverable error panel', () => {
+    expect(SOURCE).toContain('function stopAnimationAfterError(error)');
+    expect(SOURCE).toContain('catch (error) { stopAnimationAfterError(error); }');
+    expect(SOURCE).toContain("window[engineKey + '_failure'] = { kind: 'runtime', message: detail };");
+    expect(SOURCE).toContain("'Technical details'");
+  });
+
+  it('resizes the WebGL backing buffer without feeding dimensions into layout', () => {
+    expect(SOURCE).toContain('engine.renderer.setSize(container.clientWidth, container.clientHeight, false);');
+    expect(SOURCE).toContain('engine.renderer.setSize(cw, ch, false);');
+    expect(SOURCE).toContain('engine._resizeRafId = requestAnimationFrame(applyViewportResize);');
+    expect(SOURCE).toContain("if (typeof ResizeObserver === 'function')");
+    expect(SOURCE).toContain("window.addEventListener('resize', _winH.resize = scheduleViewportResize);");
+    expect(SOURCE).toContain('cancelAnimationFrame(engine._resizeRafId)');
+  });
+
+  it('routes WebGL context loss through the safe animation fallback', () => {
+    expect(SOURCE).toContain("canvas.addEventListener('webglcontextlost'");
+    expect(SOURCE).toContain('ev.preventDefault();');
+    expect(SOURCE).toContain("stopAnimationAfterError(new Error('WebGL context lost.");
+  });
+
+  it('creates a copyable diagnostic and cleans stale state before retry', () => {
+    expect(SOURCE).toContain('function copyEngineFailureDetails()');
+    expect(SOURCE).toContain("navigator.clipboard.writeText(report)");
+    expect(SOURCE).toContain("'Copy error details'");
+    expect(SOURCE).toContain('if (window[engineKey]) destroyEngine();');
+  });
+
+  it('pauses background animation and resumes without a time or input jump', () => {
+    expect(SOURCE).toContain("document.addEventListener('visibilitychange'");
+    expect(SOURCE).toContain('engine._pausedByVisibility = true;');
+    expect(SOURCE).toContain('if (engine.clock) engine.clock.getDelta();');
+    expect(SOURCE).toContain('if (engine && engine._pausedByVisibility) return;');
+  });
 });
 
 function loadMeasurementMath() {
@@ -522,7 +558,7 @@ describe('Geometry World measurement model', () => {
     expect(SOURCE).not.toContain('result.length < 500');
     expect(SOURCE).toContain('COMPARE LATEST TWO COMPLETE');
     expect(SOURCE).toContain('incompleteMeasurementAttempts: allMeasurements.length - measurements.length');
-    expect(SOURCE).toContain("completedMeasurements.length + ' complete measurements taken'");
+    expect(SOURCE).toContain("completedMeasurements.length + ' complete measurements'");
     expect(SOURCE).toContain('correctMeasurements: predictionSummary.predictionsWithin10Percent');
     expect(SOURCE).toContain('Predictions within 10%');
     expect(SOURCE).toContain('Avg prediction error');
@@ -552,7 +588,7 @@ describe('Geometry World measurement model', () => {
   it('keeps touch HUD layers clear and keyboard focus visible', () => {
     expect(SOURCE).toContain("uiStyle.id = 'allo-geometryworld-ui-css'");
     expect(SOURCE).toContain('.gw-focusable:focus-visible');
-    expect(SOURCE).toContain("bottom: isMobile ? '196px' : '80px'");
+    expect(SOURCE).toContain('.gw-action-feedback{bottom:142px!important;max-width:calc(100vw - 150px)!important}');
     expect(SOURCE).toContain("whiteSpace: 'normal'");
     expect(SOURCE).toContain("maxWidth: isMobile ? 'calc(100vw - 168px)'");
     expect(SOURCE).toContain("'aria-label': 'Place block'");

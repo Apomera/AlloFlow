@@ -11,6 +11,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const anti = fs.readFileSync(path.join(ROOT, 'AlloFlowANTI.txt'), 'utf8');
 const gsSource = fs.readFileSync(path.join(ROOT, 'apps_script', 'session_mailbox', 'Code.gs'), 'utf8');
+const headerSource = fs.readFileSync(path.join(ROOT, 'view_header_source.jsx'), 'utf8');
 
 function makeGsSandbox() {
     const cacheStore = new Map();
@@ -65,7 +66,7 @@ describe('Code.gs protocol (real source, mocked Google services)', () => {
     it('runs the full live-session lifecycle with separated teacher and participant capabilities', () => {
         const { call } = makeGsSandbox();
         const K = 'k_secret_k_secret_20';
-        expect(call({ a: 'hello' }).v).toBeGreaterThanOrEqual(7);
+        expect(call({ a: 'hello' }).v).toBe(11);
         const claim = call({ a: 'claim' });
         expect(claim.ok).toBe(true);
         expect(claim.admin.length).toBeGreaterThanOrEqual(32);
@@ -155,6 +156,241 @@ describe('Code.gs protocol (real source, mocked Google services)', () => {
         expect(JSON.parse(driveFiles.get(hostedFile)).mailboxReceipt).toMatchObject({ sourceKind: 'homework', sourceId: packId });
         expect([...driveFiles.keys()].some(name => name.includes('wrong'))).toBe(false);
     });
+    it('hosts plural asynchronous Word Clouds, selects by activity id, and deletes every sidecar', () => {
+        const { call, driveFiles } = makeGsSandbox();
+        const admin = call({ a: 'claim' }).admin;
+        const id = 'PK-92345678-1234-1234-1234-123456789012';
+        const aid = 'AC-82345678-1234-1234-1234-123456789012';
+        const secondAid = 'AC-72345678-1234-1234-1234-123456789012';
+        const secret = 'p_secret_p_secret_20';
+        const expiresAt = new Date(Date.now() + 86400000).toISOString();
+        const activity = {
+            activityId: aid,
+            type: 'word_cloud',
+            delivery: 'shared_async',
+            prompt: 'What idea stayed with you?',
+            revealPolicy: 'auto_publish',
+            minParticipants: 3,
+        };
+        const secondActivity = {
+            ...activity,
+            activityId: secondAid,
+            prompt: 'What question do you still have?',
+            revealPolicy: 'teacher_review',
+            minParticipants: 5,
+        };
+
+        const hosted = call({
+            a: 'putpack', admin, id, k: secret, part: 1, of: 1, data: 'PACK',
+            title: 'Reflection', expiresAt, activities: [activity, secondActivity],
+        });
+        expect(hosted).toMatchObject({ ok: true, activities: 2 });
+        const manifest = JSON.parse(driveFiles.get(`pack-${id}.json`));
+        expect(manifest).toMatchObject({ v: 3 });
+        expect(manifest.activity).toBeUndefined();
+        expect(manifest.activities).toHaveLength(2);
+        expect(manifest.activities.map(candidate => candidate.activityId)).toEqual([aid, secondAid]);
+        expect(manifest.activities.every(candidate => candidate.expiresAt === expiresAt)).toBe(true);
+
+        const activityFile = `activity-${id}-${aid}.json`;
+        const secondActivityFile = `activity-${id}-${secondAid}.json`;
+        expect(driveFiles.has(activityFile)).toBe(true);
+        expect(driveFiles.has(secondActivityFile)).toBe(true);
+        expect(call({ a: 'joinactivity', id, aid, k: 'wrong_wrong_wrong_20' }).e).toBe('denied');
+        expect(call({ a: 'joinactivity', id, aid: 'AC-62345678-1234-1234-1234-123456789012', k: secret }).e).toBe('no-activity');
+        const secondJoin = call({ a: 'joinactivity', id, aid: secondAid, k: secret });
+        expect(secondJoin.activity).toMatchObject({
+            activityId: secondAid,
+            prompt: 'What question do you still have?',
+            revealPolicy: 'teacher_review',
+            minParticipants: 5,
+        });
+
+        const students = Array.from({ length: 4 }, () => call({ a: 'joinactivity', id, aid, k: secret }));
+        students.forEach(student => {
+            expect(student.ok).toBe(true);
+            expect(student.uid).toMatch(/^ma-/);
+            expect(student.pt.length).toBeGreaterThan(20);
+        });
+        const actor = student => ({ id, aid, uid: student.uid, pt: student.pt });
+        expect(call({ a: 'getactivitysummary', ...actor(students[0]), pt: 'wrong_wrong_wrong_wrong' }).e).toBe('denied');
+
+        const first = call({ a: 'activityupsert', ...actor(students[0]), term: 'Photosynthesis' });
+        expect(first).toMatchObject({ ok: true, participantCount: 1, revealed: false });
+        expect(first.terms).toEqual([]);
+        expect(call({ a: 'activityupsert', ...actor(students[1]), term: 'photosynthesis' }).revealed).toBe(false);
+        const threshold = call({ a: 'activityupsert', ...actor(students[2]), term: 'Light' });
+        expect(threshold.revealed).toBe(true);
+        expect(threshold.terms.find(term => term.value === 'photosynthesis')).toMatchObject({ count: 2 });
+
+        const multilingual = call({ a: 'activityupsert', ...actor(students[3]), term: '\u5b66\u3073' });
+        expect(multilingual.own).toMatchObject({ text: '\u5b66\u3073', status: 'approved' });
+        expect(multilingual.terms.some(term => term.label === '\u5b66\u3073')).toBe(true);
+
+        const held = call({ a: 'activityupsert', ...actor(students[0]), term: 'student@example.com' });
+        expect(held.own.status).toBe('pending');
+        expect(held.terms.some(term => term.label === 'student@example.com')).toBe(false);
+        expect(call({ a: 'getactivityadmin', id, aid }).e).toBe('not-admin');
+        const queue = call({ a: 'getactivityadmin', admin, id, aid });
+        expect(queue.responses.find(row => row.uid === students[0].uid)).toMatchObject({ status: 'pending', text: 'student@example.com' });
+        expect(call({ a: 'moderateactivity', ...actor(students[0]), status: 'approved' }).e).toBe('not-admin');
+        expect(call({ a: 'moderateactivity', admin, id, aid, uid: students[0].uid, status: 'approved' }).ok).toBe(true);
+        const approved = call({ a: 'getactivitysummary', ...actor(students[1]) });
+        expect(approved.terms.some(term => term.label === 'student@example.com')).toBe(true);
+        expect(call({ a: 'moderateactivity', admin, id, aid, uid: students[0].uid, status: 'hidden' }).ok).toBe(true);
+        const hidden = call({ a: 'getactivitysummary', ...actor(students[1]) });
+        expect(hidden.terms.some(term => term.label === 'student@example.com')).toBe(false);
+
+        expect(call({ a: 'delpack', admin, id }).ok).toBe(true);
+        expect(driveFiles.has(activityFile)).toBe(false);
+        expect(driveFiles.has(secondActivityFile)).toBe(false);
+        expect(call({ a: 'getactivitysummary', ...actor(students[1]) }).e).toBe('no-pack');
+    });
+
+    it('runs an aggregate-only asynchronous rating with bounded integer values and one row per actor', () => {
+        const { call, driveFiles } = makeGsSandbox();
+        const admin = call({ a: 'claim' }).admin;
+        const id = 'PK-13345678-1234-1234-1234-123456789012';
+        const aid = 'AC-13345678-1234-1234-1234-123456789012';
+        const secret = 'p_secret_p_secret_20';
+        const expiresAt = new Date(Date.now() + 86400000).toISOString();
+        const rating = {
+            activityId: aid,
+            type: 'rating',
+            delivery: 'shared_async',
+            prompt: 'How confident are you?',
+            minParticipants: 3,
+            minValue: 2,
+            maxValue: 10,
+            labels: ['Need help', '', '', '', '', '', '', '', 'Ready'],
+        };
+
+        expect(call({
+            a: 'putpack', admin, id, k: secret, part: 1, of: 1,
+            data: 'PACK', expiresAt, activities: [rating],
+        })).toMatchObject({ ok: true, activities: 1 });
+        const manifest = JSON.parse(driveFiles.get(`pack-${id}.json`));
+        expect(manifest.activities[0]).toMatchObject({
+            type: 'rating',
+            minValue: 2,
+            maxValue: 10,
+            responseLimit: 1,
+            labels: ['Need help', '', '', '', '', '', '', '', 'Ready'],
+        });
+        expect(manifest.activities[0].revealPolicy).toBeUndefined();
+
+        const students = Array.from({ length: 3 }, () => call({ a: 'joinactivity', id, aid, k: secret }));
+        const actor = student => ({ id, aid, uid: student.uid, pt: student.pt });
+        expect(call({ a: 'activityupsert', ...actor(students[0]), value: '2' }).e).toBe('bad-rating');
+        expect(call({ a: 'activityupsert', ...actor(students[0]), value: 2.5 }).e).toBe('bad-rating');
+        expect(call({ a: 'activityupsert', ...actor(students[0]), value: 1 }).e).toBe('bad-rating');
+        expect(call({ a: 'activityupsert', ...actor(students[0]), value: 11 }).e).toBe('bad-rating');
+
+        const first = call({ a: 'activityupsert', ...actor(students[0]), value: 2 });
+        expect(first).toMatchObject({
+            ok: true,
+            type: 'rating',
+            participantCount: 1,
+            revealed: false,
+            distribution: [],
+            own: { value: 2, status: 'recorded' },
+        });
+        const retry = call({ a: 'activityupsert', ...actor(students[0]), value: 10 });
+        expect(retry).toMatchObject({ participantCount: 1, own: { value: 10, status: 'recorded' } });
+        expect(call({ a: 'activityupsert', ...actor(students[1]), value: 5 }).revealed).toBe(false);
+        const threshold = call({ a: 'activityupsert', ...actor(students[2]), value: 10 });
+        expect(threshold).toMatchObject({ participantCount: 3, revealed: true });
+        expect(threshold.distribution.find(row => row.value === 2)).toMatchObject({ label: 'Need help', count: 0, percent: 0 });
+        expect(threshold.distribution.find(row => row.value === 5)).toMatchObject({ label: '5', count: 1, percent: 33 });
+        expect(threshold.distribution.find(row => row.value === 10)).toMatchObject({ label: 'Ready', count: 2, percent: 67 });
+        expect(JSON.stringify(threshold)).not.toMatch(/correct|score/i);
+
+        const teacher = call({ a: 'getactivityadmin', admin, id, aid });
+        expect(teacher.responses).toEqual([]);
+        expect(teacher.distribution).toEqual(threshold.distribution);
+        expect(JSON.stringify(teacher)).not.toContain(students[0].uid);
+        expect(call({ a: 'moderateactivity', admin, id, aid, uid: students[0].uid, status: 'hidden' }).e).toBe('no-moderation');
+
+        const defaultId = 'PK-03345678-1234-1234-1234-123456789012';
+        const defaultAid = 'AC-03345678-1234-1234-1234-123456789012';
+        expect(call({
+            a: 'putpack', admin, id: defaultId, k: secret, part: 1, of: 1, data: 'PACK',
+            expiresAt, activities: [{ ...rating, activityId: defaultAid, minValue: undefined, maxValue: undefined, labels: undefined }],
+        }).ok).toBe(true);
+        expect(JSON.parse(driveFiles.get(`pack-${defaultId}.json`)).activities[0]).toMatchObject({ minValue: 1, maxValue: 5, labels: ['', '', '', '', ''] });
+
+        const invalidId = 'PK-f3345678-1234-1234-1234-123456789012';
+        expect(call({
+            a: 'putpack', admin, id: invalidId, k: secret, part: 1, of: 1, data: 'PACK',
+            expiresAt, activities: [{ ...rating, minValue: 0, maxValue: 11 }],
+        }).e).toBe('bad-activity');
+
+        const activityFile = `activity-${id}-${aid}.json`;
+        expect(driveFiles.has(activityFile)).toBe(true);
+        expect(call({ a: 'delpack', admin, id }).ok).toBe(true);
+        expect(driveFiles.has(activityFile)).toBe(false);
+    });
+
+    it('accepts legacy singular activity requests and manifests while enforcing bounded unique plural ids', () => {
+        const { call, driveFiles } = makeGsSandbox();
+        const admin = call({ a: 'claim' }).admin;
+        const secret = 'p_secret_p_secret_20';
+        const expiresAt = new Date(Date.now() + 86400000).toISOString();
+        const activity = {
+            activityId: 'AC-52345678-1234-1234-1234-123456789012',
+            type: 'word_cloud',
+            delivery: 'shared_async',
+            prompt: 'Legacy prompt',
+            revealPolicy: 'auto_publish',
+            minParticipants: 3,
+        };
+
+        const singularRequestId = 'PK-52345678-1234-1234-1234-123456789012';
+        expect(call({
+            a: 'putpack', admin, id: singularRequestId, k: secret, part: 1, of: 1,
+            data: 'PACK', expiresAt, activity,
+        })).toMatchObject({ ok: true, activities: 1 });
+        const normalizedManifest = JSON.parse(driveFiles.get(`pack-${singularRequestId}.json`));
+        expect(normalizedManifest.activity).toBeUndefined();
+        expect(normalizedManifest.activities).toHaveLength(1);
+        expect(call({ a: 'joinactivity', id: singularRequestId, aid: activity.activityId, k: secret }).ok).toBe(true);
+
+        const legacyManifestId = 'PK-42345678-1234-1234-1234-123456789012';
+        driveFiles.set(`pack-${legacyManifestId}.json`, JSON.stringify({
+            v: 2, k: secret, title: 'Legacy', expiresAt, of: 1, activity,
+        }));
+        driveFiles.set(`pack-${legacyManifestId}-1.txt`, 'PACK');
+        const legacyJoin = call({ a: 'joinactivity', id: legacyManifestId, aid: activity.activityId, k: secret });
+        expect(legacyJoin).toMatchObject({ ok: true, activity: { activityId: activity.activityId } });
+        expect(call({
+            a: 'activityupsert',
+            id: legacyManifestId,
+            aid: activity.activityId,
+            uid: legacyJoin.uid,
+            pt: legacyJoin.pt,
+            term: 'Compatible',
+        }).ok).toBe(true);
+        const legacySidecar = `activity-${legacyManifestId}-${activity.activityId}.json`;
+        expect(driveFiles.has(legacySidecar)).toBe(true);
+        expect(call({ a: 'delpack', admin, id: legacyManifestId }).ok).toBe(true);
+        expect(driveFiles.has(legacySidecar)).toBe(false);
+
+        const duplicateId = 'PK-32345678-1234-1234-1234-123456789012';
+        expect(call({
+            a: 'putpack', admin, id: duplicateId, k: secret, part: 1, of: 1,
+            data: 'PACK', expiresAt, activities: [activity, { ...activity }],
+        }).e).toBe('bad-activity');
+
+        const tooManyId = 'PK-22345678-1234-1234-1234-123456789013';
+        const tooMany = Array.from({ length: 9 }, (_, index) => ({
+            ...activity,
+            activityId: `AC-${String(index + 1).padStart(8, '0')}-1234-1234-1234-123456789012`,
+        }));
+        expect(call({
+            a: 'putpack', admin, id: tooManyId, k: secret, part: 1, of: 1,
+            data: 'PACK', expiresAt, activities: tooMany,
+        }).e).toBe('bad-activity');
+    });
 });
 
 function sliceBetween(startMarker, endMarker) {
@@ -174,6 +410,7 @@ function buildClientHelpers({ windowObj, fetchImpl, configuredBase = 'https://al
                  _buildAlloMailboxEntryUrl, _alloRandomToken, _alloBase64UrlEncode,
                  _alloMailboxCallWithRetry, _alloNextPollDelay, _alloCollectResChunk, _alloWaitIceComplete };`
     );
+
     return factory(windowObj, fetchImpl, () => configuredBase, () => false);
 }
 
@@ -432,10 +669,63 @@ describe('ANTI wiring pins', () => {
         expect(anti).toContain('A Google account alone does not make a workflow FERPA-compliant.');
         expect(anti).toContain('What is stored, where, and for how long?');
         expect(anti).toContain('How do student saving and submissions work in each mode?');
-        expect(anti).toContain('complete portfolio is intentionally not retained as a permanent Firebase record');
+        expect(anti).toContain('complete portfolio is not retained as a permanent Firebase record');
         expect(anti).toContain("a: 'putsubmission'");
         expect(anti).toContain('setMbHostedAssignment({ url: entry.u');
         expect(anti).toContain('Mailbox submission upload failed; downloading a backup instead');
+    });
+
+    it('keeps the shared Word Cloud poll loop stable while students type and renders safe ASCII fallbacks', () => {
+        expect(anti).toContain('setTerm(current => current || result.own.text)');
+        expect(anti).toContain('[activityId, admin, clearCredential, ensureCredential, isTeacher, mailboxUrl, packId]);');
+        expect(anti).not.toContain('[activityId, admin, clearCredential, ensureCredential, isTeacher, mailboxUrl, packId, term]);');
+        expect(anti).toContain('item.count > 1 ? ` x${item.count}`');
+        expect(anti).toContain("shortLabel: 'WC', title: 'Class word cloud'");
+        expect(anti).not.toContain('<span aria-hidden="true">??</span> Class word cloud');
+        expect(anti).toContain('const refreshed = await refresh({ quiet: true })');
+        expect(anti).toContain('That change saved, but the moderation list could not refresh.');
+        expect(anti).toContain('sharedActivities: sharedActivities.length ? sharedActivities : undefined');
+        expect(anti).toContain('activities: built.sharedActivities');
+        expect(anti).toContain('sharedActivity: built.sharedActivities[0] || null');
+        expect(anti).toContain('const requiredMailboxVersion = sharedAssignmentActivity.enabled ? 11 : 9;');
+        expect(anti).not.toContain('activity: built.sharedActivity');
+    });
+
+    it('normalizes and labels shared ratings at runtime and keeps them in the existing activity surface', () => {
+        const start = anti.indexOf('function _alloNormalizeSharedRatingActivity(value)');
+        const end = anti.indexOf('const SharedAssignmentActivityPanel', start);
+        expect(start).toBeGreaterThan(-1);
+        expect(end).toBeGreaterThan(start);
+        const helpers = new Function(
+            anti.slice(start, end) + '\nreturn { normalize: _alloNormalizeSharedRatingActivity, meta: _alloSharedActivityUiMeta };'
+        )();
+        expect(helpers.normalize({
+            type: 'rating',
+            minValue: 2,
+            maxValue: 10,
+            labels: [' Need help ', '', '', '', '', '', '', '', 'Ready'],
+        })).toMatchObject({
+            type: 'rating',
+            minValue: 2,
+            maxValue: 10,
+            labels: ['Need help', '', '', '', '', '', '', '', 'Ready'],
+        });
+        expect(helpers.normalize({ type: 'rating', minValue: 99, maxValue: -1 })).toMatchObject({
+            minValue: 1,
+            maxValue: 5,
+            labels: ['', '', '', '', ''],
+        });
+        expect(helpers.normalize({ type: 'word_cloud' })).toBe(null);
+        expect(helpers.meta({ type: 'rating' })).toMatchObject({ shortLabel: 'RT', title: 'Class rating' });
+        expect(helpers.meta({ type: 'word_cloud' })).toMatchObject({ shortLabel: 'WC', title: 'Class word cloud' });
+
+        expect(anti).toContain("callStudentUpdate({ value: ratingValue })");
+        expect(anti).toContain("candidate.type === 'word_cloud' || candidate.type === 'rating'");
+        expect(anti).toContain('Anonymous aggregate only · not scored');
+        expect(anti).toContain("SharedAssignmentActivityPanel");
+        expect(headerSource).toContain('<option value="rating">Rating scale (not scored)</option>');
+        expect(headerSource).toContain("labels: event.target.value.split('|').slice(0, 10)");
+        expect(headerSource).toContain('Results are aggregate-only and never scored.');
     });
 
     it('open/putpack are admin-gated in Code.gs and boxes are restricted to up/down', () => {
@@ -575,5 +865,43 @@ describe('student-pack serialization (full-fidelity)', () => {
         // Malformed/private inputs fail closed:
         expect(helper(null)).toBe(null);
         expect(helper({ type: 'word-sounds' })).toBe(null);
+    });
+
+    it('preserves only safe, budgeted visual-quiz media in the existing chunked pack transport', () => {
+        const win = {};
+        const syncSrc = fs.readFileSync(path.join(ROOT, 'firestore_sync_module.js'), 'utf8');
+        new Function('window', syncSrc)(win);
+        const start = anti.indexOf('const _alloSerializeResourceForStudentPack = (item) => {');
+        const end = anti.indexOf('\n  };', start);
+        const helperSrc = anti.slice(start, end + 5);
+        const helper = new Function(
+            'sanitizeHistoryForCloud', 'stripUndefined', 'window',
+            helperSrc + '\nreturn _alloSerializeResourceForStudentPack;'
+        )(win.sanitizeHistoryForCloud, win.stripUndefined, win);
+        const questionImage = 'data:image/png;base64,' + 'A'.repeat(512);
+        const optionImage = 'data:image/webp;base64,' + 'B'.repeat(256);
+        const remoteImage = 'https://images.example.edu/choice.png';
+        const packed = helper({
+            id: 'visual-quiz-1',
+            type: 'quiz',
+            title: 'Visual quiz',
+            data: {
+                questions: [{
+                    question: 'Which diagram is balanced?',
+                    imageUrl: questionImage,
+                    options: ['A', 'B', 'C', 'D'],
+                    optionImageUrls: [optionImage, remoteImage, 'data:image/svg+xml;base64,PHN2Zz4=', 'javascript:alert(1)'],
+                    correctAnswer: 'A',
+                }],
+            },
+        });
+
+        expect(packed.data.questions[0].imageUrl).toBe(questionImage);
+        expect(packed.data.questions[0].optionImageUrls).toEqual([optionImage, remoteImage, null, null]);
+        expect(JSON.stringify(packed)).not.toContain('javascript:');
+        expect(JSON.stringify(packed)).not.toContain('image/svg+xml');
+        // The conservative shared Firestore sanitizer remains unchanged; this
+        // exception is scoped to the already chunked student-pack serializer.
+        expect(win.sanitizeSessionValue({ imageUrl: questionImage }, 'resource').imageUrl).toBe(null);
     });
 });

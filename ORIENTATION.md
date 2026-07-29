@@ -48,6 +48,16 @@ Hard-won across many entries. The short version:
 - **Stay in VS Code for now.** Antigravity 2.0 (May 19, 2026) dropped VS Code extension support. The Claude Code extension cannot run there.
 - **For language packs:** hand-translation for primary languages (Vietnamese, Spanish, French). The CLI batch tool is for greenfield languages with `GEMINI_API_KEY` set. Don't run the batch tool over already-translated packs — it overwrites.
 - **For RTL languages** (Arabic, Hebrew): the infrastructure is in place at `AlloFlowANTI.txt:1431` — `document.documentElement.dir = isRtl ? 'rtl' : 'ltr'`. Tailwind logical classes (`ms-*`/`me-*`) are used throughout. Recent commits `a9f411f9` and `5d1d3fb5` handle this.
+- **When you change a tool, update its tests in the same pass.** `deploy.sh` runs seventeen static gates and **zero vitest**, so a stale snapshot never blocks anything — it just goes red for whoever runs the suite next, who then cannot tell your intentional render change from a real regression. To find out what covers what you touched:
+
+  ```
+  node dev-tools/check_test_sync.cjs                     # map the whole working diff
+  node dev-tools/check_test_sync.cjs <file>              # map one file
+  node dev-tools/check_test_sync.cjs --run               # map AND run the covering tests
+  node dev-tools/check_test_sync.cjs --strict            # exit 1 if a changed file has no test
+  ```
+
+  Coverage is derived (path, filename, or registered tool id), never a hand-kept list, so it cannot rot. A `PostToolUse` hook in `.claude/settings.json` runs this automatically after every edit to `stem_lab/` or `sel_lab/`, so the covering tests are named to you without asking. **Re-baseline a snapshot only when the render change is intentional, and always scope it** — `npx vitest -u <file> -t "<toolId>"`. A bare `vitest -u` rewrites every baseline in the file, silently absorbing other tools' regressions.
 
 ## Things prior instances have built that you might not realize
 

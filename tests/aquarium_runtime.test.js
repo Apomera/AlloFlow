@@ -1,8 +1,16 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { runInNewContext } from 'node:vm';
 
 const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_aquarium.js'), 'utf8');
+const coreStart = source.indexOf('var AquariumEcosystemCore = (function() {');
+const coreEnd = source.indexOf('// === End aquarium ecosystem core ===', coreStart);
+if (coreStart < 0 || coreEnd < 0) throw new Error('Aquarium ecosystem core test boundary missing');
+const ecosystemCore = runInNewContext(
+  '(function(){ var window = {}; ' + source.slice(coreStart, coreEnd) + '; return AquariumEcosystemCore; })()',
+  { isFinite, Math, Number, Array, Object }
+);
 
 describe('Aquarium runtime and chemistry learning contract', () => {
   it('uses instance-scoped timers and audio with visibility and unmount cleanup', () => {
@@ -143,7 +151,7 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(source).toContain('var feedIndividual = function (fishId, speciesId)');
     expect(source).toContain('if (currentHunger <= 10)');
     expect(source).toContain('var individualAmmonia = quarantinedFish[fishId] ? 0 : 0.05');
-    expect(source).toContain('var careScore = Math.max(0, Math.min(100, Math.round(');
+    expect(source).toContain('var careScore = persistentVitality ? persistentVitality.score : vitalityCalculation.score;');
     expect(source).toContain("'aria-expanded': historyExpanded");
     expect(source).toContain('role: "list"');
     expect(source).toContain('role: "listitem"');
@@ -225,7 +233,8 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(source).toContain("var _filterEquipment = getTickEquipmentDefinition('filter')");
     expect(source).toContain('_filterEquipment.ammoniaReduction * _equipmentOutput.filter');
     expect(source).toContain('_filterEquipment.nitriteReduction * _equipmentOutput.filter');
-    expect(source).toContain('deltaO2 += _airPumpEquipment.o2Boost * _equipmentOutput.airPump');
+    expect(source).toContain('var airPumpOxygenAdded = _airPumpEquipment.o2Boost * _equipmentOutput.airPump');
+    expect(source).toContain('deltaO2 += airPumpOxygenAdded');
     expect(source).toContain('var lightEff = (0.5 + _lightEquipment.plantBoost) * _equipmentOutput.light');
     expect(source).toContain('pDef.growth * healthFactor * (0.5 + _lightEquipment.plantBoost) * _equipmentOutput.light');
     expect(source).toContain('var effectiveAlgaeMultiplier = 0.2 + (_lightEquipment.algaeMult - 0.2) * _equipmentOutput.light');
@@ -296,11 +305,12 @@ describe('Aquarium runtime and chemistry learning contract', () => {
   it('provides a persistent evidence-based teaching backbone', () => {
     expect(source).toContain("id: 'habitat', title: '1. Choose a Habitat'");
     expect(source).toContain("id: 'cycle', title: '3. Follow the Nitrogen Cycle'");
-    expect(source).toContain("id: 'stabilize', title: '7. Demonstrate Stability'");
+    expect(source).toContain("id: 'exchange', title: '7. Trace an Ecosystem Exchange'");
+    expect(source).toContain("id: 'stabilize', title: '8. Demonstrate Stability'");
     expect(source).toContain("concept: 'Every aquarium is a controlled ecosystem");
     expect(source).toContain("objective: 'Run at least three aquarium-hour ticks.'");
     expect(source).toContain("why: 'Overfeeding is one of the fastest ways");
-    expect(source).toContain("observe: 'Use the chemistry trend and event log");
+    expect(source).toContain("observe: 'Use the chemistry trend, vitality history, and event log");
     expect(source).not.toContain('Tap the Shop tab to buy new fish and upgrade equipment.');
 
     expect(source).toContain("var tutorialProgress = d.tutorialProgress && typeof d.tutorialProgress === 'object'");
@@ -475,7 +485,8 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(source).toContain('var environmentStressReasons = []');
     expect(source).toContain("environmentStressReasons.push('temperature')");
     expect(source).toContain("environmentStressReasons.push('pH')");
-    expect(source).toContain('if (habitatPlantBiomass > 6) environmentStressDelta -= 2');
+    expect(source).toContain('var environmentPlantRelationship = AquariumEcosystemCore.classifyOrganismPlantRelationship');
+    expect(source).toContain('if (environmentPlantRelationship.plantShelterDependent)');
     expect(source).toContain("msg: 'Environmental stress: ' + environmentStressReasons.join(', ')");
 
     expect(source).toContain('var algaeGrazingRate = finalTankFish.reduce');
@@ -524,6 +535,10 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(source).toContain('"\\uD83D\\uDD0D Why did the ecosystem change?"');
     expect(source).toContain("role: \"log\", 'aria-live': \"polite\"");
     expect(source).toContain("updMulti({ selectedPlantId: plant.id, ecosystemFocusType: 'plant', ecosystemFocusId: plant.id })");
+    expect(source).toContain("ecosystemFocusType: 'plant', ecosystemFocusId: plant.id");
+    expect(source).toContain("!plantStillPresent && ecosystemFocusType === 'plant' && ecosystemFocusId === removed ? 'all'");
+    expect(source).toContain("aq.ecosystemFocusType === 'fish' && finalFishInstanceIds.indexOf(aq.ecosystemFocusId) === -1 ? 'all'");
+    expect(source).toContain("ecosystemFocusType === 'fish' && ecosystemFocusId === removedInstanceId ? 'all'");
 
     const derivationStart = source.indexOf('var ecosystemPlantTotals = {');
     const networkStart = source.indexOf('Living Ecosystem Exchange Network');
@@ -532,37 +547,226 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(plantPanelStart).toBeGreaterThan(networkStart);
   });
 
-  it('explains every fish vitality score and traces individuals through the network', () => {
-    expect(source).toContain('var oxygenVitality =');
-    expect(source).toContain('var nitrogenVitality =');
-    expect(source).toContain('var temperatureVitality =');
-    expect(source).toContain('var pHVitality =');
-    expect(source).toContain('var spaceVitality =');
-    expect(source).toContain('var shelterVitality =');
-    expect(source).toContain('var nutritionVitality =');
-    expect(source).toContain('var calmVitality =');
-    expect(source).toContain('var illnessVitality =');
-    expect(source).toContain('var vitalityFactors = [');
-    expect(source).toContain("label: 'O\\u2082'");
-    expect(source).toContain("label: 'Shelter'");
-    expect(source).toContain('oxygenVitality * 0.15 + nitrogenVitality * 0.15');
-    expect(source).toContain('var limitingVitalityFactor = vitalityFactors.slice().sort');
+  it('calculates organism vitality behavior and traces individuals through the network', () => {
+    const healthy = ecosystemCore.calculateVitality({
+      chemistry: { dissolvedO2: 7, ammonia: 0, nitrite: 0, nitrate: 10, temp: 76, pH: 7 },
+      species: { tempRange: [72, 80], pHRange: [6.5, 7.5] },
+      loadPct: 50, plantBiomass: 5, hunger: 10, stress: 5, illnessSeverity: 0
+    });
+    const stressed = ecosystemCore.calculateVitality({
+      chemistry: { dissolvedO2: 1.5, ammonia: 1.2, nitrite: 0.8, nitrate: 90, temp: 88, pH: 5.8 },
+      species: { tempRange: [72, 80], pHRange: [6.5, 7.5] },
+      loadPct: 120, plantBiomass: 0, hunger: 95, stress: 90, illnessSeverity: 3
+    });
+
+    expect(healthy.score).toBeGreaterThan(80);
+    expect(stressed.score).toBeLessThan(healthy.score - 50);
+    expect(stressed.factors).toHaveLength(9);
+    expect(stressed.limiting.score).toBeLessThanOrEqual(stressed.factors[1].score);
+    expect(source).toContain('AquariumEcosystemCore.calculateVitality({');
+    expect(source).toContain('persistentVitality ? persistentVitality.score');
     expect(source).toContain('"Vitality " + careScore + "/100"');
     expect(source).toContain('"Why vitality? Limiting: " + limitingVitalityFactor.label');
-    expect(source).toContain("'aria-label': displayName + \" vitality factors\"");
+    expect(source).toContain('"Vitality trajectory"');
     expect(source).toContain("updMulti({ ecosystemFocusType: 'fish', ecosystemFocusId: fishKey })");
     expect(source).toContain('"Trace " + displayName + " through the ecosystem exchange network"');
-    expect(source).toContain('"\\uD83D\\uDD0E Trace"');
-
-    const factorsStart = source.indexOf('var vitalityFactors = [');
-    const scoreStart = source.indexOf('var careScore = Math.max', factorsStart);
-    const traceStart = source.indexOf('Trace " + displayName', scoreStart);
-    const explanationStart = source.indexOf('Why vitality? Limiting:', traceStart);
-    expect(scoreStart).toBeGreaterThan(factorsStart);
-    expect(traceStart).toBeGreaterThan(scoreStart);
-    expect(explanationStart).toBeGreaterThan(traceStart);
   });
 
+  it('models temperature, salinity, and volume-aware concentration behavior', () => {
+    const coldFresh = ecosystemCore.estimateOxygenSaturationMgL(55, 0);
+    const warmFresh = ecosystemCore.estimateOxygenSaturationMgL(82, 0);
+    const warmMarine = ecosystemCore.estimateOxygenSaturationMgL(82, 35);
+
+    expect(coldFresh).toBeGreaterThan(warmFresh);
+    expect(warmFresh).toBeGreaterThan(warmMarine);
+    expect(coldFresh).toBeLessThanOrEqual(14.6);
+    expect(warmMarine).toBeGreaterThanOrEqual(4);
+    expect(source).toContain('var volumeScale = Math.max(0.2, Math.min(2, 20 / volumeGallons))');
+    expect(source).toContain('oxygenSaturationTarget = AquariumEcosystemCore.estimateOxygenSaturationMgL');
+    expect(source).toContain("rateBasis: '20-gallon reference concentration model'");
+  });
+
+  it('distinguishes plant browsing, shelter use, algae grazing, and detritus recycling', () => {
+    const browser = ecosystemCore.classifyOrganismPlantRelationship({
+      load: 4,
+      habitat: 'Densely vegetated floodplain among submerged roots',
+      diet: 'Herbivore — aquatic plants, tender leaves, and algae'
+    });
+    const algaeOnly = ecosystemCore.classifyOrganismPlantRelationship({
+      load: 1,
+      habitat: 'Bare rocky stream',
+      diet: 'Obligate grazer — algae and biofilm',
+      grazeRate: 0.2
+    });
+    const recycler = ecosystemCore.classifyOrganismPlantRelationship({
+      load: 0.5,
+      habitat: 'Leaf litter',
+      diet: 'Detritivore — decaying plant matter and organic particles'
+    });
+
+    expect(browser.plantShelterDependent).toBe(true);
+    expect(browser.directPlantEater).toBe(true);
+    expect(browser.herbivoryRate).toBeGreaterThan(0);
+    expect(algaeOnly.algaeGrazer).toBe(true);
+    expect(algaeOnly.directPlantEater).toBe(false);
+    expect(recycler.detritusRecycler).toBe(true);
+    expect(source).toContain('var plantHerbivoryConsumed = 0');
+    expect(source).toContain("environmentStressReasons.push('missing preferred plant cover')");
+    expect(source).toContain('herbivoryConsumed: Math.round(plantHerbivoryConsumed');
+    expect(source).toContain('herbivoryByPlant: Object.keys(plantHerbivoryByPlant)');
+    expect(source).toContain('selectedPlantBrowsingPressure');
+    expect(source).toContain('"Browsed -" + ecosystemPlantHerbivoryByPlant[pid]');
+    expect(source).toContain('Organism \\u2194 plant relationships');
+    expect((source.match(/Organism \\u2194 plant relationships/g) || [])).toHaveLength(1);
+  });
+
+  it('adds responsive visual hierarchy to investigations, history, and matter flows', () => {
+    expect(source).toContain("'.aquarium-budget-flow { display: grid;");
+    expect(source).toContain(".aquarium-budget-flow { grid-template-columns: 1fr; }");
+    expect(source).toContain('var budgetVisualMaximum = Math.max');
+    expect(source).toContain('magnitude comparison: sources');
+    expect(source).toContain('bg-gradient-to-l from-emerald-300 to-emerald-600');
+    expect(source).toContain('var ecosystemInvestigationStage =');
+    expect(source).toContain('Investigation path');
+    expect(source).toContain("role: \"progressbar\"");
+    expect(source).toContain("'aria-current': stageActive ? \"step\"");
+    expect(source).toContain('var ecosystemBaselineX =');
+    expect(source).toContain('A vertical baseline marker identifies the preregistered comparison point.');
+    expect(source).toContain('strokeDasharray: "4 3"');
+    expect(source).toContain('"BASELINE"');
+  });
+  it('unifies organism vitality and plant health in a filterable visual map', () => {
+    expect(source).toContain("var ecosystemVitalityFilter = ['all', 'attention', 'critical']");
+    expect(source).toContain('var ecosystemVitalityItems = []');
+    expect(source).toContain("key: 'fish:' + vitalityMapFishId");
+    expect(source).toContain("key: 'plant:' + plantId + ':' + vitalityPlantIndex");
+    expect(source).toContain('var ecosystemWeakestVitalityItem =');
+    expect(source).toContain('Living System Vitality Map');
+    expect(source).toContain('Filter living system vitality');
+    expect(source).toContain('conic-gradient(');
+    expect(source).toContain('Ring length represents the 0–100 score');
+    expect(source).toContain('labels preserve meaning without relying on color');
+    expect(source).toContain("document.getElementById('aquarium-selected-plant-profile')");
+    expect(source).toContain('id: "aquarium-selected-plant-profile"');
+    expect(source).toContain("updMulti({ ecosystemFocusType: 'fish', ecosystemFocusId: vitalityItem.id })");
+    expect(source).toContain('role: "group", \'aria-label\': "Filtered organism vitality and plant health"');
+    expect(source).not.toContain('key: vitalityItem.key, type: "button", role: "listitem"');
+  });
+  it('reconciles live oxygen, carbon, and nitrogen source-sink budgets', () => {
+    const budgets = ecosystemCore.buildMatterBudget({
+      fish: { oxygenConsumed: 0.3, co2Released: 0.2, ammoniaProduced: 0.2 },
+      plants: { oxygenProduced: 0.4, co2Consumed: 0.1, nitrateConsumed: 0.05, nightOxygenConsumed: 0, nightCO2Released: 0, decompositionAmmonia: 0 },
+      photosyntheticStock: { oxygenProduced: 0.1, co2Consumed: 0, oxygenConsumed: 0, co2Released: 0 },
+      equipment: { oxygenAdded: 0.1, co2Removed: 0.015 },
+      atmosphere: { oxygenExchange: -0.02, co2Offgas: 0.03 },
+      bacteria: { nitriteToNitrate: 0.08 },
+      chemistryDelta: { dissolvedO2: 0.28, co2: 0.055, ammonia: 0.05, nitrate: 0.03 }
+    });
+    const oxygen = budgets.find((budget) => budget.id === 'oxygen');
+    const carbon = budgets.find((budget) => budget.id === 'co2');
+    const ammonia = budgets.find((budget) => budget.id === 'ammonia');
+    const nitrate = budgets.find((budget) => budget.id === 'nitrate');
+
+    expect(budgets).toHaveLength(4);
+    expect(oxygen.sourceTotal).toBe(0.6);
+    expect(oxygen.sinkTotal).toBe(0.32);
+    expect(oxygen.residual).toBe(0);
+    expect(oxygen.direction).toBe('rise');
+    expect(carbon.modeledNet).toBe(0.055);
+    expect(ammonia.sinks[0].label).toContain('inferred');
+    expect(ammonia.residual).toBe(0);
+    expect(nitrate.modeledNet).toBe(0.03);
+    expect(source).toContain('photosyntheticStock: {');
+    expect(source).toContain('co2Offgas: Math.round(co2Offgas');
+    expect(source).toContain('Matter budget ledger');
+    expect(source).toContain('sources − sinks = modeled net');
+    expect(source).toContain("'oxygen_delta','co2_delta','ammonia_delta','nitrate_delta'");
+    expect(source).toContain('var pointStock = point.photosyntheticStock || {}');
+    expect(source).toContain("'aria-label': \"Matter source and sink budgets for the last aquarium-hour tick\"");
+  });
+  it('teaches controlled interventions and evaluates preregistered directions', () => {
+    const baseline = {
+      plants: ['anubias', 'javafern'],
+      organisms: ['tetra'],
+      equipment: { filter: 1, light: 1 },
+      lightsOn: true
+    };
+    const reordered = ecosystemCore.compareInterventionFactors(baseline, {
+      plants: ['javafern', 'anubias'],
+      organisms: ['tetra'],
+      equipment: { filter: 1, light: 1 },
+      lightsOn: true
+    });
+    const controlled = ecosystemCore.compareInterventionFactors(baseline, {
+      plants: ['anubias', 'javafern', 'moss'],
+      organisms: ['tetra'],
+      equipment: { filter: 1, light: 1 },
+      lightsOn: true
+    });
+    const confounded = ecosystemCore.compareInterventionFactors(baseline, {
+      plants: ['anubias', 'javafern'],
+      organisms: ['tetra'],
+      equipment: { filter: 2, light: 1 },
+      lightsOn: false
+    });
+    const evaluation = ecosystemCore.evaluateDirectionPredictions(
+      { oxygen: 'rise', nitrate: 'stable', vitality: 'fall' },
+      { oxygen: 0.2, nitrate: 0.05, vitality: -4 }
+    );
+
+    expect(reordered.count).toBe(0);
+    expect(controlled.controlled).toBe(true);
+    expect(controlled.changes[0].id).toBe('plants');
+    expect(confounded.confounded).toBe(true);
+    expect(confounded.count).toBe(2);
+    expect(evaluation.complete).toBe(true);
+    expect(evaluation.matched).toBe(3);
+    expect(evaluation.score).toBe(100);
+    expect(source).toContain('Preregister your prediction');
+    expect(source).toContain('Confounded investigation');
+    expect(source).toContain('Predictions locked and baseline marked');
+    expect(source).toContain('controlledIntervention && baselineAge >= 6');
+    expect(source).toContain('predictionEvaluation: ecosystemPredictionEvaluation');
+    expect(source).toContain("snapshotParts.push('Prediction check: ' + notePredictionEvaluation.matched");
+  });
+  it('exports reproducible ecosystem evidence in CSV and JSON formats', () => {
+    expect(source).toContain('function downloadEcosystemEvidence(format)');
+    expect(source).toContain("var csvHeader = ['tick','day','hour','phase'");
+    expect(source).toContain('baseline: ecosystemBaseline');
+    expect(source).toContain('tutorialNotebook: tutorialNotebook');
+    expect(source).toContain("new Blob([fileBody]");
+    expect(source).toContain("downloadEcosystemEvidence('csv')");
+    expect(source).toContain("downloadEcosystemEvidence('json')");
+    expect(source).toContain('Export CSV');
+    expect(source).toContain('Export JSON');
+  });
+  it('persists bounded exchange history and reversible vitality trajectories', () => {
+    const bounded = Array.from({ length: 60 }, (_, tick) => tick).reduce(
+      (history, tick) => ecosystemCore.appendBounded(history, { tick }, 48),
+      []
+    );
+    expect(bounded).toHaveLength(48);
+    expect(bounded[0].tick).toBe(12);
+    expect(bounded[47].tick).toBe(59);
+
+    const critical = { score: 15, limiting: { id: 'oxygen', label: 'O2', score: 10 } };
+    let state = null;
+    for (let tick = 1; tick <= 7; tick++) state = ecosystemCore.createVitalityState(state, critical, tick);
+    expect(state.lowTicks).toBe(7);
+    const recovering = ecosystemCore.createVitalityState(state, { score: 95, limiting: { id: 'space', label: 'Space', score: 90 } }, 8);
+    expect(recovering.score).toBeGreaterThan(state.score);
+    expect(recovering.trend).toBe('recovering');
+
+    expect(source).toContain('ecosystemExchangeHistory: AquariumEcosystemCore.appendBounded');
+    expect(source).toContain('vitalityHistory: AquariumEcosystemCore.appendBounded');
+    expect(source).toContain('prolonged critical vitality');
+    expect(source).toContain('Ecosystem exchange history');
+    expect(source).toContain('Mark baseline');
+    expect(source).toContain('Guided investigation: make one change');
+    expect(source).toContain('var interventionDetected =');
+    expect(source).toContain("currentTutorialLesson.id === 'exchange'");
+    expect(source).toContain("snapshotParts.push('Since baseline: O2 '");
+  });
   it('models non-fish organisms as distinct ecosystem roles', () => {
     expect((source.match(/id: 'nerite'/g) || []).length).toBe(2);
     expect((source.match(/id: 'stonycoral'/g) || []).length).toBe(2);

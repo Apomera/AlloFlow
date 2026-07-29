@@ -89,6 +89,37 @@ describe('session resource asset sync', () => {
     expect(hydrated).toEqual(resources);
   });
 
+  it('round-trips nested visual-quiz question and option images through session assets', async () => {
+    const questionImage = 'data:image/png;base64,' + 'Q'.repeat(90000);
+    const optionImages = [
+      'data:image/png;base64,' + 'A'.repeat(60000),
+      null,
+      'https://images.example.edu/option-c.png',
+      'data:image/webp;base64,' + 'D'.repeat(60000),
+    ];
+    const resources = [{
+      id: 'visual-quiz',
+      type: 'quiz',
+      title: 'Visual quiz',
+      data: {
+        questions: [{
+          question: 'Choose the matching model.',
+          imageUrl: questionImage,
+          options: ['A', 'B', 'C', 'D'],
+          optionImageUrls: optionImages,
+          correctAnswer: 'A',
+        }],
+      },
+    }];
+
+    const manifest = await window.uploadSessionAssets('app-test', resources, 'A4RT');
+    const hydrated = await window.hydrateSessionAssets('app-test', manifest);
+
+    expect(hydrated).toEqual(resources);
+    expect(hydrated[0].data.questions[0].imageUrl).toBe(questionImage);
+    expect(hydrated[0].data.questions[0].optionImageUrls).toEqual(optionImages);
+  });
+
   it('uses a chunked manifest when even the resource-ref index is too large', async () => {
     const resources = Array.from({ length: 30 }, (_, index) => ({
       id: `resource-${index}`,

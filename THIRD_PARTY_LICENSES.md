@@ -81,6 +81,10 @@ that change their source. Some concrete cases:
   minification step had stripped it, so the notice travels with the code).
 - **FFmpeg** (`video_studio/vendor/ffmpeg/`) is the unmodified upstream `@ffmpeg/core`
   build; see its `THIRD_PARTY_NOTICES.md`.
+- **Grist Desktop and Grist Core** are used as separately managed, unmodified
+  upstream programs. AlloFlow downloads the pinned Grist Desktop v0.3.13
+  distribution on first use or connects to a separately administered Grist Core
+  server; AlloFlow does not maintain a fork of either project.
 
 Because none of these components is modified, no per-file "changed" notices are
 triggered. **Policy if that ever changes:** a component that AlloFlow forks or
@@ -233,22 +237,25 @@ redistributed from this repository); the OFL text is bundled for reference.
 | [Noto](https://fonts.google.com/noto) | Unicode & CJK text in PDFs | SIL OFL-1.1 | Copyright (c) The Noto Project Authors (Google) |
 | [DejaVu](https://dejavu-fonts.github.io) | PDF fallback font | Bitstream Vera / public domain | © Bitstream, Inc.; DejaVu changes public domain |
 
-### Desktop app (School Box)
+### Desktop app & local tools
 | Library | Used for | License | Copyright |
 |---|---|---|---|
 | [Electron](https://electronjs.org) | offline desktop app | MIT | Copyright (c) Electron contributors; Copyright (c) 2013-2020 GitHub Inc. |
 | [electron-log & electron-updater](https://github.com/electron-userland/electron-builder) | desktop logging & updates | MIT | Copyright (c) electron-userland contributors |
+| [Grist Desktop](https://github.com/gristlabs/grist-desktop) | verified local spreadsheet process for AlloSheet (v0.3.13) | Apache-2.0 | Copyright 2014-2023 Grist Labs Inc. |
+| [Grist Core](https://github.com/gristlabs/grist-core) | relational spreadsheet engine included in Grist Desktop and used by the optional district/server deployment | Apache-2.0 | Copyright 2014-2022 Grist Labs Inc. |
 
 ---
 
 ## Reproduced NOTICE files (Apache-2.0 §4 & GPL)
 
 Apache-2.0 §4(d) requires that the attribution notices in a component's `NOTICE`
-file be reproduced. Of the Apache-2.0 dependencies above, **Apache PDFBox** ships a
-`NOTICE` file; it is reproduced verbatim here. (The other Apache-2.0 components in
-this project — Firebase JS SDK, pdf.js, Tesseract.js, Transformers.js, Harper, IBM
-Equal Access, idb-keyval, Kokoro, math.js — do not ship a separate NOTICE file; their
-copyright notices are in the table above.)
+file be reproduced. Of the Apache-2.0 dependencies above, **Apache PDFBox** and
+**Grist Core** ship a `NOTICE` file; both are reproduced verbatim here. (The other
+Apache-2.0 components in this project — Firebase JS SDK, pdf.js, Tesseract.js,
+Transformers.js, Harper, IBM Equal Access, idb-keyval, Kokoro, math.js, and Grist
+Desktop — do not ship a separate NOTICE file; their copyright notices are in the
+table above.)
 
 ### Apache PDFBox — NOTICE
 
@@ -276,6 +283,21 @@ Copyright 2002, 2010 Adobe Systems Incorporated.
 Includes OSXAdapter
 Copyright (C) 2003-2007 Apple, Inc., All Rights Reserved
 ```
+
+### Grist Core — NOTICE
+
+```
+Grist Software
+Copyright 2014-2022 Grist Labs Inc.
+
+This product includes software developed at
+Grist Labs Inc. (https://www.getgrist.com/).
+```
+
+Grist Desktop v0.3.13 is authored by Grist Labs Inc., includes Grist Core, and
+is licensed under Apache-2.0. Official sources:
+https://github.com/gristlabs/grist-desktop and
+https://github.com/gristlabs/grist-core.
 
 ### FFmpeg (Video Studio, GPL-2.0-or-later)
 
@@ -374,6 +396,6 @@ Same as BSD 2-Clause, plus a third clause:
 
 ---
 
-_Last reviewed: 2026-07-21. This NOTICES file mirrors `OSS_CREDITS` in
+_Last reviewed: 2026-07-28. This NOTICES file mirrors `OSS_CREDITS` in
 `view_info_modal_source.jsx`; `dev-tools/check_oss_credits.cjs` fails the build if
 they drift or if a credited library is missing its entry here._

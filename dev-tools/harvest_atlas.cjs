@@ -44,9 +44,32 @@ function tShim(key, fallback) {
 // ── extract a named array literal from a module source, eval with a t shim ──
 function extractArray(file, varName) {
   const txt = read(file);
-  const m = new RegExp('(?:var|const|let)\\s+' + varName + '\\s*=\\s*\\[').exec(txt);
-  if (!m) throw new Error(`array ${varName} not found in ${file}`);
-  let i = txt.indexOf('[', m.index), depth = 0, str = null, prev = '';
+  // Try EVERY declaration-shaped match, not just the first. stem_lab_module.js
+  // documents the registry in a comment that contains the literal text
+  // `var _allStemTools = [...]`; that comment sits ~2300 lines above the real
+  // declaration, so first-match-wins grabbed it, sliced out `[...]`, and died
+  // on `SyntaxError: Unexpected token ']'` — which read as "the Atlas is
+  // stale" rather than "the harvester cannot parse". Skip anything that does
+  // not yield a real array.
+  const re = new RegExp('(?:var|const|let)\\s+' + varName + '\\s*=\\s*\\[', 'g');
+  const candidates = [];
+  let m;
+  while ((m = re.exec(txt))) candidates.push(m.index);
+  if (!candidates.length) throw new Error(`array ${varName} not found in ${file}`);
+
+  let lastErr = null;
+  for (const at of candidates) {
+    try {
+      const parsed = extractArrayAt(txt, at);
+      if (Array.isArray(parsed) && parsed.length) return parsed;
+    } catch (err) { lastErr = err; }
+  }
+  throw new Error(`array ${varName} in ${file} matched ${candidates.length} declaration(s) but none parsed`
+    + (lastErr ? ` — last error: ${lastErr.message}` : ''));
+}
+
+function extractArrayAt(txt, at) {
+  let i = txt.indexOf('[', at), depth = 0, str = null, prev = '';
   let j = i;
   for (; j < txt.length; j++) {
     const ch = txt[j];

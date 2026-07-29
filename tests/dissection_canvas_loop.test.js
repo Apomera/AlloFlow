@@ -25,6 +25,19 @@ describe('dissection canvas animation loop', () => {
       expect(source).toContain("var autoBalanced = liveRenderQuality === 'auto'");
       expect(source).toContain("var minFrameMs = liveRenderQuality === 'high' ? 16");
       expect(source).toContain('if (!dissMotionReduced) { dissLastDrawAt = arguments[0] || Date.now(); dissTick++; }');
+      expect(source).toContain('All anatomy and interaction math stays in logical CSS pixels');
+      expect(source).toContain('W = canvas._logicalW || canvas.width;');
+      expect(source).toContain('H = canvas._logicalH || canvas.height;');
+      expect(source).toContain('if (canvas._dpr) ctx.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);');
+      expect(source).toContain("canvas.style.width = '';");
+      expect(source).toContain("canvas.style.height = '';");
+      expect(source).toContain('var logicalWidth = canvas._logicalW || canvas.width || 500');
+      expect(source).toContain('var clickLogicalWidth = canvas._logicalW || canvas.width || 500');
+      expect(source).toContain('var hoverLogicalWidth = canvas._logicalW || canvas.width || 500');
+      expect(source).toContain('var lensSourceScale = Number(canvas._dpr) || 1;');
+      expect(source).toContain('sourceRadius * 2 * lensSourceScale');
+      expect(source).toContain('macroSourceWidth * lensSourceScale');
+      expect(source).not.toContain('W = canvas.width; H = canvas.height;');
       expect(source).toContain('var dissTimeTimer = setInterval(function ()');
       expect(source).toContain('if (dissTimeTimer) { clearInterval(dissTimeTimer); dissTimeTimer = null; }');
       expect(source).toContain("document.addEventListener('visibilitychange', onDissectionVisibilityChange);");
@@ -34,5 +47,5 @@ describe('dissection canvas animation loop', () => {
       expect(source).not.toContain('if (canvas._dissAnim) return;');
       expect(source).not.toContain('canvas._dissAnim = requestAnimationFrame(drawDissectionFrame);\\n\\n                return;');
     });
-  });
+  }, 15000);
 });

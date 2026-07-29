@@ -72,14 +72,14 @@ function mountLiveWithSeed(seed) {
   };
 }
 const BASE = {
-  tab: 'map', selModule: 'zarya', dayIdx: 0, sysIdx: 0,
+  tab: 'map', selModule: 'zarya', dayIdx: 0, sysIdx: 0, sysStep: 0,
   interiorRoom: 'harmony', interiorDone: {}, interiorSeen: { harmony: true }, interiorChoices: {},
   interiorInspected: {}, interiorAttempts: {}, interiorDiscovery: null, interiorLog: [],
   interiorGuided: true, lowGImpulse: 10, lowGResult: null,
   researchStep: 0, researchFeedback: '', researchErrors: 0, maintenanceChecks: {}, maintenanceReading: null, interiorNotes: {},
   cabinStow: {}, cupolaTarget: 'day', cupolaCaptured: false, cupolaShutters: false, cupolaObservation: '',
   opsMode: 'integrated', opsScenario: 'nominal', opsOrbitMinute: 0, opsFocus: 'all', opsCrew: 7, opsResearch: 60, opsArrayAngle: 86, opsEclipse: 35, opsBattery: 76, opsRecovery: 98, opsScrub: 88, opsRadiator: 82, opsCooling: 86, opsCmg: 28, opsMissionDays: 180, opsExercise: 2.5, opsDebrisSize: 1, opsShieldGap: 10, opsDebrisSpeed: 12, opsEmergency: 'leak', opsEmergencyResult: '', opsRuns: 0, opsLog: [], assemblyIdx: 11,
-  orbitAlt: 420, quizIdx: 0, quizScore: 0, quizPicked: null, quizDone: false,
+  orbitAlt: 420, quizIdx: 0, quizScore: 0, quizPicked: null, quizDone: false, quizResults: {},
   seenModules: {}, seenHours: {}, orbitTouched: false, quizBest: 0, mapView: 'overview', mapCutaway: false,
   askInput: '', askAnswer: '', askLoading: false,
 };
@@ -128,7 +128,21 @@ describe('space station tool', () => {
       const source = readFileSync(filePath, 'utf8');
 
       expect(source).toContain('prefers-reduced-motion');
+      expect(source).toContain('min-width:24px');
+      expect(source).toContain('@media (forced-colors: active)');
+      expect(source).toContain('@media (prefers-contrast: more)');
+      expect(source).toContain('.iss-root *:before,.iss-root *:after');
+      expect(source).toContain('.iss-root summary{min-height:24px}');
+      expect(source).toContain('[aria-selected="true"]');
+      expect(source).toContain('overflow:visible;border:1px solid rgba(125,211,252,.24)');
+      expect(source).toContain('.iss-location-strip{flex-wrap:wrap;overflow-x:visible}');
+      expect(source).toContain('.iss-status-strip{grid-template-columns:1fr}');
+      expect(source).toContain('iss-quiz-answer-state');
       expect(source).toContain("role: 'application'");
+      expect(source).toContain("'aria-describedby': 'iss-map-instructions iss-map-status iss-map-orientation'");
+      expect(source).toContain("'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight + - Home'");
+      expect(source).toContain("id: 'iss-map-status'");
+      expect(source).toContain("upd({ mapView: 'overview' })");
       expect(source).toContain('cv._issCleanup = cleanup');
       expect(source).toContain('cameraTween');
       expect(source).toContain('cv._issCutaway');
@@ -138,6 +152,9 @@ describe('space station tool', () => {
       expect(source).toContain('data-iss-focus-module');
       expect(source).toContain('cv._issFocusModule');
       expect(source).toContain('focusDistance');
+      expect(source).toContain('data-iss-orientation-widget');
+      expect(source).toContain("data-iss-axis': 'x'");
+      expect(source).toContain('_axisOrigin');
       expect(source).toContain("cv.addEventListener('keydown', onKey)");
       // Touch parity: without touchAction the browser steals the drag for page
       // scrolling and drag-to-rotate is dead on touchscreen Chromebooks. And
@@ -200,13 +217,32 @@ describe('space station tool', () => {
       // No per-frame React state: game state lives on the canvas element
       expect(source).toContain('cv._dockState = st');
       expect(source).toContain('cv._dockCleanup = cleanup');
+      expect(source).toContain("'data-dock-hud': 'true'");
+      expect(source).toContain("'aria-describedby': 'iss-dock-instructions iss-dock-status'");
+      expect(source).toContain('function holdKey(on)');
+      expect(source).toContain('onPointerCancel: press(false)');
+      expect(source).toContain('onKeyDown: holdKey(true)');
+      expect(source).toContain('function clearThrust()');
+      expect(source).toContain("window.addEventListener('blur', clearThrust)");
       expect(source).toContain('st.trail');
       expect(source).toContain('predictStep');
       expect(source).toContain('BRAKING DISTANCE');
+      expect(source).toContain('PROXIMITY ×');
+      expect(source).toContain('STOP MARGIN');
+      expect(source).toContain('TOTAL RATE');
+      expect(source).toContain('milestones.m15');
+      expect(source).toContain('renderDockDebrief');
+      expect(source).toContain('POST-APPROACH FLIGHT DATA');
+      expect(source).toContain('data-iss-dock-debrief');
       // EVA enforces the two-tether rule and consumables budget
       expect(source).toContain('Moved WITHOUT clipping ahead');
       expect(source).toContain('tetherA');
       expect(source).toContain('Suit consumables');
+      expect(source).toContain('SUIT BUDGET');
+      expect(source).toContain('reserveFloor = 15');
+      expect(source).toContain('RESERVE BREACH');
+      expect(source).toContain('data-iss-eva-phase');
+      expect(source).toContain("phaseSteps = ['AIRLOCK', 'TRANSLATE', 'WORKSITE', 'SECURED']");
       // Interior views wired to their modules
       expect(source).toContain('renderCupolaInterior');
       expect(source).toContain('renderSleepInterior');
@@ -221,14 +257,26 @@ describe('space station tool', () => {
       expect(source).toContain('iss-interior-layout');
       expect(source).toContain('chooseInterior');
       expect(source).toContain('data-iss-lowg-sim');
+      expect(source).toContain('data-iss-lowg-trajectory');
+      expect(source).toContain('HANDRAIL CATCH WINDOW');
       expect(source).toContain('var speed = impulse / 70');
       expect(source).toContain('Learning guidance level');
       expect(source).toContain('interiorInspected');
       expect(source).toContain('data-iss-research-procedure');
+      expect(source).toContain('data-iss-capillary-visual');
       expect(source).toContain('data-iss-maintenance-console');
+      expect(source).toContain('data-iss-maintenance-telemetry');
       expect(source).toContain('data-iss-crew-notebook');
       expect(source).toContain('data-iss-cabin-stow');
+      expect(source).toContain('data-iss-cabin-safety');
+      expect(source).toContain('LOOSE-ITEM SAFETY SCAN');
       expect(source).toContain('data-iss-cupola-observation');
+      expect(source).toContain('data-iss-cupola-view');
+      expect(source).toContain('data-observation-state');
+      expect(source).toContain("'aria-describedby': 'iss-ask-count'");
+      expect(source).toContain("'aria-disabled': d.askLoading ? 'true' : undefined");
+      expect(source).toContain("'data-iss-quiz-next': 'true'");
+      expect(source).toContain('answerState');
     });
   });
 
@@ -249,6 +297,24 @@ describe('space station tool', () => {
       expect(html).toContain('Stow your sleep station');
     });
 
+    it('moves focus and selection together across the section tabs', async () => {
+      const live = mountLiveWithSeed({ ...BASE, tab: 'interior' });
+      try {
+        const interior = live.host.querySelector('#iss-tab-interior');
+        interior.focus();
+        await act(async () => {
+          interior.dispatchEvent(new KeyboardEvent('keydown', { key: 'End', bubbles: true }));
+          await new Promise((resolve) => setTimeout(resolve, 0));
+        });
+        const quiz = live.host.querySelector('#iss-tab-quiz');
+        expect(quiz.getAttribute('aria-selected')).toBe('true');
+        expect(document.activeElement).toBe(quiz);
+        expect(live.host.querySelector('#iss-panel').getAttribute('aria-labelledby')).toBe('iss-tab-quiz');
+      } finally {
+        live.cleanup();
+      }
+    });
+
     it('renders research, maintenance, and low-g activities inside the station', () => {
       const research = mountWithSeed({ ...BASE, tab: 'interior', interiorRoom: 'destiny' });
       expect(research).toContain('Destiny laboratory');
@@ -256,13 +322,20 @@ describe('space station tool', () => {
       expect(research).toContain('Secure the sample');
       expect(research).toContain('Prime the wick');
       expect(research).toContain('Start camera + baseline');
+      expect(research).toContain('data-iss-capillary-visual');
+      expect(research).toContain('CHAMBER UNLATCHED');
       const maintenance = mountWithSeed({ ...BASE, tab: 'interior', interiorRoom: 'tranquility' });
       expect(maintenance).toContain('Restore cabin airflow');
       expect(maintenance).toContain('clogged inlet filter');
+      expect(maintenance).toContain('data-iss-maintenance-telemetry');
+      expect(maintenance).toContain('DIAGNOSE');
       const lowG = mountWithSeed({ ...BASE, tab: 'interior', interiorRoom: 'unity' });
       expect(lowG).toContain('Low-g practice');
       expect(lowG).toContain('Push impulse');
       expect(lowG).toContain('Predicted speed');
+      expect(lowG).toContain('data-iss-lowg-trajectory');
+      expect(lowG).toContain('HANDRAIL CATCH WINDOW');
+      expect(lowG).toContain('NO DRAG');
       expect(lowG).toContain('Δv = impulse ÷ 70 kg');
     });
 
@@ -271,12 +344,18 @@ describe('space station tool', () => {
       try {
         const findButton = (label) => [...live.host.querySelectorAll('button')].find((button) => button.textContent.includes(label));
         expect(live.host.textContent).toContain('0 / 3 secured');
+        expect(live.host.querySelector('[data-iss-cabin-safety]').getAttribute('data-iss-cabin-safety')).toBe('risk-3');
+        expect(live.host.textContent).toContain('3 LOOSE OBJECTS');
         act(() => { findButton('Sleeping bag').click(); });
         expect(live.host.textContent).toContain('1 / 3 secured');
+        expect(live.host.querySelector('[data-iss-cabin-safety]').getAttribute('data-iss-cabin-safety')).toBe('risk-2');
+        expect(live.host.textContent).toContain('BAG // SECURED');
         act(() => { findButton('Crew tablet').click(); });
         act(() => { findButton('Damp washcloth').click(); });
         expect(live.host.textContent).toContain('Cabin clear');
         expect(live.host.textContent).toContain('Air return unobstructed');
+        expect(live.host.querySelector('[data-iss-cabin-safety]').getAttribute('data-iss-cabin-safety')).toBe('clear');
+        expect(live.host.textContent).toContain('CABIN CLEAR');
         expect(live.host.textContent).toContain('1 / 5 jobs');
         expect(live.host.textContent).toContain('Crew attempts: 1 • first-try bonus earned');
       } finally {
@@ -289,13 +368,20 @@ describe('space station tool', () => {
       try {
         const findButton = (label) => [...live.host.querySelectorAll('button')].find((button) => button.textContent.includes(label));
         expect(findButton('Close shutters').disabled).toBe(true);
+        expect(live.host.querySelector('[data-iss-cupola-view]').getAttribute('data-iss-cupola-view')).toBe('day');
+        expect(live.host.querySelector('[data-observation-state]').getAttribute('data-observation-state')).toBe('targeting');
         act(() => { findButton('Aurora curtain').click(); });
         expect(live.host.textContent).toContain('Low light • steady camera');
+        expect(live.host.querySelector('[data-iss-cupola-view]').getAttribute('data-iss-cupola-view')).toBe('aurora');
         act(() => { findButton('Capture image').click(); });
+        expect(live.host.querySelector('[data-observation-state]').getAttribute('data-observation-state')).toBe('captured');
+        expect(live.host.textContent).toContain('FRAME CAPTURED');
         expect(live.host.textContent).toContain('Aurora traces charged particles');
         expect(findButton('Close shutters').disabled).toBe(false);
         act(() => { findButton('Close shutters').click(); });
-        expect(live.host.textContent).toContain('WINDOW SHUTTERS CLOSED');
+        expect(live.host.textContent).toContain('WINDOWS SECURED');
+        expect(live.host.textContent).toContain('SHUTTERS CLOSED');
+        expect(live.host.querySelector('[data-observation-state]').getAttribute('data-observation-state')).toBe('secured');
         expect(live.host.textContent).toContain('1 / 5 jobs');
         expect(live.host.textContent).toContain('Observation logged and Cupola secure');
       } finally {
@@ -310,11 +396,16 @@ describe('space station tool', () => {
         expect(live.host.textContent).toContain('Sequence hold: complete step 1');
         act(() => { findButton('Secure the sample').click(); });
         expect(live.host.textContent).toContain('Continue to step 2');
+        expect(live.host.querySelector('[data-iss-capillary-visual]').getAttribute('data-iss-capillary-visual')).toBe('1');
         act(() => { findButton('Prime the wick').click(); });
         expect(live.host.textContent).toContain('Continue to step 3');
+        expect(live.host.querySelector('[data-iss-capillary-visual]').getAttribute('data-iss-capillary-visual')).toBe('2');
+        expect(live.host.textContent).toContain('CAPILLARY FRONT AT ROOTS');
         act(() => { findButton('Start camera + baseline').click(); });
         expect(live.host.textContent).toContain('1 / 5 jobs');
         expect(live.host.textContent).toContain('Baseline logged');
+        expect(live.host.querySelector('[data-iss-capillary-visual]').getAttribute('data-iss-capillary-visual')).toBe('3');
+        expect(live.host.textContent).toContain('BASELINE RECORDING');
         expect(live.host.textContent).toContain('Science you used:');
         expect(live.host.textContent).toContain('Crew attempts: 2');
       } finally {
@@ -345,11 +436,16 @@ describe('space station tool', () => {
         expect(findButton('clogged inlet filter').disabled).toBe(true);
         act(() => { findButton('Fan motor current').click(); });
         expect(live.host.textContent).toContain('motor is powered');
+        expect(live.host.querySelector('[data-iss-maintenance-telemetry]').getAttribute('data-iss-maintenance-telemetry')).toBe('focus-0');
         act(() => { findButton('Inlet pressure drop').click(); });
         expect(findButton('clogged inlet filter').disabled).toBe(false);
+        expect(live.host.querySelector('[data-iss-maintenance-telemetry]').getAttribute('data-iss-maintenance-telemetry')).toBe('focus-1');
+        expect(live.host.textContent).toContain('EVIDENCE CORRELATED');
         act(() => { findButton('clogged inlet filter').click(); });
         expect(live.host.textContent).toContain('Airflow restored.');
         expect(live.host.textContent).toContain('STABLE');
+        expect(live.host.querySelector('[data-iss-maintenance-telemetry]').getAttribute('data-iss-maintenance-telemetry')).toBe('restored');
+        expect(live.host.textContent).toContain('TRENDS STABILIZING');
         expect(live.host.textContent).toContain('1 / 5 jobs');
       } finally {
         live.cleanup();
@@ -367,6 +463,12 @@ describe('space station tool', () => {
         });
         expect(live.host.textContent).toContain('observation saved');
         expect(live.host.querySelector('[data-iss-crew-notebook] textarea').value).toContain('natural convection');
+        const prompt = live.host.querySelector('#iss-notebook-prompt-harmony');
+        const count = live.host.querySelector('#iss-notebook-count-harmony');
+        expect(textarea.getAttribute('aria-describedby')).toBe('iss-notebook-prompt-harmony iss-notebook-count-harmony');
+        expect(prompt.textContent).toContain('ordinary morning routine');
+        expect(count.getAttribute('aria-live')).toBe('off');
+        expect(count.textContent).toContain('/ 240 characters');
       } finally {
         live.cleanup();
       }
@@ -378,6 +480,7 @@ describe('space station tool', () => {
         act(() => { push.click(); });
         expect(controlled.host.textContent).toContain('Controlled arrival:');
         expect(controlled.host.textContent).toContain('0.14 m/s');
+        expect(controlled.host.querySelector('[data-iss-lowg-trajectory]').getAttribute('data-iss-lowg-trajectory')).toBe('controlled');
         expect(controlled.host.textContent).toContain('1 / 5 jobs');
         act(() => { push.click(); });
         expect(controlled.host.textContent).toContain('Crew attempts: 1 • first-try bonus earned');
@@ -391,26 +494,14 @@ describe('space station tool', () => {
         act(() => { push.click(); });
         expect(unsafe.host.textContent).toContain('Flight result:');
         expect(unsafe.host.textContent).toContain('Approach too fast.');
+        expect(unsafe.host.querySelector('[data-iss-lowg-trajectory]').getAttribute('data-iss-lowg-trajectory')).toBe('overspeed');
+        expect(unsafe.host.textContent).toContain('ARRIVAL OVERSPEED');
         expect(unsafe.host.textContent).toContain('0 / 5 jobs');
       } finally {
         unsafe.cleanup();
       }
     });
-    it('has no detectable structural accessibility violations in the interior shift', async () => {
-      const live = mountLiveWithSeed({ ...BASE, tab: 'interior', interiorRoom: 'unity' });
-      try {
-        const results = await axe.run(live.host, {
-          rules: { 'color-contrast': { enabled: false }, region: { enabled: false } },
-        });
-        expect(results.violations.map((violation) => violation.id)).toEqual([]);
-      } finally {
-        live.cleanup();
-      }
-      // axe.run over a tool this dense lands near the 5s default once the
-      // preceding mounts have loaded jsdom; an aborted run also skips the
-      // cleanup above and cascades into the next test. Same explicit budget
-      // the repo already gives its other axe suites.
-    }, 20000);
+
     it('renders learned feedback and a completed interior shift log', () => {
       const html = mountWithSeed({
         ...BASE, tab: 'interior', interiorRoom: 'cupola',
@@ -447,12 +538,20 @@ describe('space station tool', () => {
         expect(live.host.textContent).toContain('SELECTED // DESTINY');
         expect(live.host.querySelector('[data-iss-module-marker]')).toBeTruthy();
         expect(live.host.querySelector('[data-iss-light-phase]')).toBeTruthy();
+        expect(live.host.querySelector('[data-iss-orientation-widget]')).toBeTruthy();
+        expect(live.host.textContent).toContain('Orientation triad: X is port to starboard');
         expect(live.host.querySelector('[data-iss-focus-module="destiny"]')).toBeTruthy();
         expect(live.host.querySelector('[data-iss-focus-module="destiny"]').textContent).toContain('Center Destiny');
-        expect(live.host.querySelector('canvas').getAttribute('aria-label')).toContain('arrow keys');
+        const canvas = live.host.querySelector('canvas');
+        expect(canvas.getAttribute('aria-label')).toContain('Interactive 3-D model');
+        expect(canvas.getAttribute('aria-describedby')).toBe('iss-map-instructions iss-map-status iss-map-orientation');
+        expect(canvas.getAttribute('aria-keyshortcuts')).toContain('Home');
+        expect(live.host.querySelector('#iss-map-status').textContent).toContain('Selected module Destiny');
+        expect(live.host.querySelector('#iss-map-instructions').textContent).toContain('equivalent non-canvas inspection path');
         const labs = live.host.querySelector('[data-iss-camera-view="labs"]');
         act(() => { labs.click(); });
         expect(live.host.querySelector('[data-iss-camera-view="labs"]').getAttribute('aria-pressed')).toBe('true');
+        expect(live.host.querySelector('#iss-map-status').textContent).toContain('Camera view labs');
         const cutaway = live.host.querySelector('[data-iss-cutaway]');
         act(() => { cutaway.click(); });
         expect(live.host.querySelector('[data-iss-cutaway]').getAttribute('aria-pressed')).toBe('true');
@@ -467,7 +566,34 @@ describe('space station tool', () => {
       expect(html).toContain('1-1.5%');
       expect(html).toContain('24-HOUR CREW TIMELINE');
       expect(html).toContain('WORK + EXERCISE');
+      expect(html).toContain('24H ALLOCATION');
+      expect(html).toContain('WORK + EX 10.5h');
       expect(html).toContain('data-iss-crew-day-timeline');
+      expect(html).toContain('data-iss-day-allocation="work"');
+      expect(html).toContain('ORBIT-CYCLE RIBBON');
+      expect(html).toContain('ORBIT 7 / 16');
+      expect(html).toContain('ECLIPSE');
+    });
+
+    it('synchronizes crew schedule selections with the orbital light cycle', () => {
+      const live = mountLiveWithSeed({ ...BASE, tab: 'day', dayIdx: 4 });
+      try {
+        expect(live.host.querySelector('[data-iss-day-light-phase]').getAttribute('data-iss-day-light-phase')).toBe('eclipse');
+        expect(live.host.querySelector('[data-iss-day-allocation]').getAttribute('data-iss-day-allocation')).toBe('work');
+        expect(live.host.textContent).toContain('ORBIT 7 / 16');
+        const science = live.host.querySelector('[data-iss-day-slot="3"]');
+        act(() => { science.click(); });
+        expect(live.host.querySelector('[data-iss-day-light-phase]').getAttribute('data-iss-day-light-phase')).toBe('sunlight');
+        expect(live.host.textContent).toContain('ORBIT 6 / 16');
+        expect(live.host.textContent).toContain('ECLIPSE IN');
+        const dinner = live.host.querySelector('[data-iss-day-slot="9"]');
+        act(() => { dinner.click(); });
+        const allocation = live.host.querySelector('[data-iss-day-allocation]');
+        expect(allocation.getAttribute('data-iss-day-allocation')).toBe('crew');
+        expect(allocation.querySelector('svg').getAttribute('aria-label')).toContain('selected event is in the meals and crew time block');
+      } finally {
+        live.cleanup();
+      }
     });
 
     it('renders the connected Mission Operations simulations', () => {
@@ -523,6 +649,37 @@ describe('space station tool', () => {
       const human = mountWithSeed({ ...BASE, tab: 'operations', opsMode: 'human' });
       expect(human).toContain('Modeled bone loss');
       expect(human).toContain('Radiation exposure');
+
+      const coolingIncident = mountWithSeed({ ...BASE, tab: 'operations', opsMode: 'emergency', opsEmergency: 'cooling' });
+      expect(coolingIncident).toContain('INCIDENT DISPLAY // EXTERNAL COOLING LOOP');
+      expect(coolingIncident).toContain('data-iss-emergency-visual="cooling"');
+      expect(coolingIncident).toContain('data-iss-emergency-state="active"');
+      expect(coolingIncident).toContain('LOOP PRESSURE LOW');
+      expect(coolingIncident).toContain('OUTLET WARMING');
+
+      const rendezvous = mountWithSeed({ ...BASE, tab: 'operations', opsMode: 'rendezvous', opsRendezvousHold: 2 });
+      expect(rendezvous).toContain('RENDEZVOUS FLIGHT-DIRECTOR BOARD');
+      expect(rendezvous).toContain('data-iss-rendezvous-planner="2"');
+      expect(rendezvous).toContain('HOLD 3 / 4 // 30 M');
+      expect(rendezvous).toContain('USE SMALL CORRECTION PULSES');
+      expect(rendezvous).toContain('Representative sequence · vehicle routes vary');
+    });
+
+    it('inspects rendezvous hold points with synchronized flight-rule cues', () => {
+      const live = mountLiveWithSeed({ ...BASE, tab: 'operations', opsMode: 'rendezvous', opsRendezvousHold: 0 });
+      try {
+        const captureHold = live.host.querySelector('[data-iss-rendezvous-hold="3"]');
+        expect(live.host.querySelector('[data-iss-rendezvous-planner]').getAttribute('data-iss-rendezvous-planner')).toBe('0');
+        expect(live.host.textContent).toContain('ESTABLISH RELATIVE NAVIGATION');
+        act(() => { captureHold.click(); });
+        expect(captureHold.getAttribute('aria-pressed')).toBe('true');
+        expect(live.host.querySelector('[data-iss-rendezvous-planner]').getAttribute('data-iss-rendezvous-planner')).toBe('3');
+        expect(live.host.textContent).toContain('CENTER, DAMP, THEN COAST');
+        expect(live.host.textContent).toContain('PORT CENTERED');
+        expect(live.host.querySelector('[data-iss-rendezvous-planner] svg').getAttribute('aria-label')).toContain('hold point 4 of 4 at 10 m');
+      } finally {
+        live.cleanup();
+      }
     });
 
     it('focuses one coupled system and explains its downstream role', () => {
@@ -576,17 +733,7 @@ describe('space station tool', () => {
         live.cleanup();
       }
     });
-    it('keeps the Mission Operations controls structurally accessible', async () => {
-      const live = mountLiveWithSeed({ ...BASE, tab: 'operations' });
-      try {
-        const results = await axe.run(live.host, {
-          rules: { 'color-contrast': { enabled: false }, region: { enabled: false } },
-        });
-        expect(results.violations.map((violation) => violation.id)).toEqual([]);
-      } finally {
-        live.cleanup();
-      }
-    }, 20000);
+
     it('runs an orbit simulation and an emergency procedure', () => {
       const live = mountLiveWithSeed({ ...BASE, tab: 'operations' });
       try {
@@ -603,11 +750,26 @@ describe('space station tool', () => {
       }
       const emergency = mountLiveWithSeed({ ...BASE, tab: 'operations', opsMode: 'emergency', opsEmergency: 'leak' });
       try {
+        expect(emergency.host.querySelector('[data-iss-emergency-visual]').getAttribute('data-iss-emergency-visual')).toBe('leak');
+        expect(emergency.host.querySelector('[data-iss-emergency-state]').getAttribute('data-iss-emergency-state')).toBe('active');
+        expect(emergency.host.textContent).toContain('PRESSURE ISOLATION');
         const isolate = [...emergency.host.querySelectorAll('button')].find((button) => button.textContent.includes('Close the suspected'));
         act(() => { isolate.click(); });
         expect(emergency.host.textContent).toContain('PROCEDURE CORRECT');
+        expect(emergency.host.querySelector('[data-iss-emergency-state]').getAttribute('data-iss-emergency-state')).toBe('contained');
+        expect(emergency.host.textContent).toContain('LEAK ISOLATED');
       } finally {
         emergency.cleanup();
+      }
+      const heldEmergency = mountLiveWithSeed({ ...BASE, tab: 'operations', opsMode: 'emergency', opsEmergency: 'fire' });
+      try {
+        const ventilate = [...heldEmergency.host.querySelectorAll('button')].find((button) => button.textContent.includes('Increase ventilation'));
+        act(() => { ventilate.click(); });
+        expect(heldEmergency.host.textContent).toContain('PROCEDURE HOLD');
+        expect(heldEmergency.host.querySelector('[data-iss-emergency-state]').getAttribute('data-iss-emergency-state')).toBe('hold');
+        expect(heldEmergency.host.textContent).toContain('HOLD // HAZARD ACTIVE');
+      } finally {
+        heldEmergency.cleanup();
       }
     });
     it('renders Systems with the air loop and design challenge', () => {
@@ -617,6 +779,74 @@ describe('space station tool', () => {
       expect(html).toContain('Design challenge');
     });
 
+    it('shows how each system couples its inputs and outputs across the station', () => {
+      const live = mountLiveWithSeed({ ...BASE, tab: 'systems', sysIdx: 1, sysStep: 0 });
+      try {
+        let coupling = live.host.querySelector('[data-iss-system-coupling]');
+        expect(coupling.getAttribute('data-iss-system-coupling')).toBe('air');
+        expect(coupling.querySelector('svg').getAttribute('aria-label')).toContain('Inputs: WATER LOOP and ELECTRIC POWER');
+        expect(live.host.textContent).toContain('STATION COUPLING // INPUTS → FUNCTION → OUTPUTS');
+        expect(live.host.textContent).toContain('Cabin air depends on water processing');
+
+        const power = [...live.host.querySelectorAll('.iss-system-tab')].find((button) => button.textContent.includes('Power'));
+        act(() => { power.click(); });
+        coupling = live.host.querySelector('[data-iss-system-coupling]');
+        expect(coupling.getAttribute('data-iss-system-coupling')).toBe('power');
+        expect(coupling.querySelector('svg').getAttribute('aria-label')).toContain('Inputs: SUNLIGHT and SOLAR ARRAYS');
+        expect(live.host.textContent).toContain('Every major station function becomes a managed electrical load.');
+      } finally {
+        live.cleanup();
+      }
+    });
+    it('focuses individual stages in a station system flow', () => {
+      const live = mountLiveWithSeed({ ...BASE, tab: 'systems', sysIdx: 1, sysStep: 0 });
+      try {
+        const recover = live.host.querySelector('[data-iss-system-step="4"]');
+        expect(recover).toBeTruthy();
+        act(() => { recover.click(); });
+        expect(live.host.querySelector('[data-iss-system-step="4"]').getAttribute('aria-pressed')).toBe('true');
+        expect(live.host.textContent).toContain('RECOVER: scrub + Sabatier');
+        expect(live.host.textContent).toContain('STAGE 4 / 4');
+        const all = live.host.querySelector('[data-iss-system-step="0"]');
+        act(() => { all.click(); });
+        expect(live.host.querySelector('[data-iss-system-step="0"]').getAttribute('aria-pressed')).toBe('true');
+      } finally {
+        live.cleanup();
+      }
+    });
+    it('gives simulation ranges stable names, units, and quiet descriptions', () => {
+      const lowG = mountLiveWithSeed({ ...BASE, tab: 'interior', interiorRoom: 'unity', lowGImpulse: 10 });
+      const operations = mountLiveWithSeed({ ...BASE, tab: 'operations', opsCrew: 7 });
+      const orbit = mountLiveWithSeed({ ...BASE, tab: 'orbit', orbitAlt: 420 });
+      const history = mountLiveWithSeed({ ...BASE, tab: 'history', assemblyIdx: 6 });
+      try {
+        const lowGRange = lowG.host.querySelector('#iss-lowg-impulse');
+        expect(lowGRange.getAttribute('aria-valuetext')).toBe('10 newton seconds');
+        expect(lowG.host.querySelector('label[for="iss-lowg-impulse"] span:last-child').getAttribute('aria-hidden')).toBe('true');
+
+        const crewRange = operations.host.querySelector('#iss-ops-crew');
+        expect(crewRange.getAttribute('aria-valuetext')).toBe('7 people');
+        expect(operations.host.querySelector('label[for="iss-ops-crew"] strong').getAttribute('aria-hidden')).toBe('true');
+        const scrubber = operations.host.querySelector('#iss-orbit-cursor');
+        expect(scrubber.getAttribute('aria-describedby')).toBe('iss-orbit-readout');
+        expect(operations.host.querySelector('#iss-orbit-readout').getAttribute('aria-live')).toBe('off');
+
+        const orbitRange = orbit.host.querySelector('#iss-orbit-alt');
+        expect(orbitRange.getAttribute('aria-valuetext')).toBe('420 kilometers');
+        expect(orbitRange.getAttribute('aria-describedby')).toBe('iss-orbit-tradeoff');
+        expect(orbit.host.querySelector('#iss-orbit-tradeoff').hasAttribute('role')).toBe(false);
+
+        const historyRange = history.host.querySelector('#iss-assembly-step');
+        expect(historyRange.getAttribute('aria-valuetext')).toContain('Milestone 7 of 13');
+        expect(historyRange.getAttribute('aria-valuetext')).toContain('2009');
+      } finally {
+        lowG.cleanup();
+        operations.cleanup();
+        orbit.cleanup();
+        history.cleanup();
+      }
+    });
+
     it('computes real orbital mechanics in the Orbit Lab', () => {
       const html = mountWithSeed({ ...BASE, tab: 'orbit', orbitAlt: 250 });
       // v = sqrt(398600.4418 / 6621) = 7.76 km/s
@@ -624,26 +854,103 @@ describe('space station tool', () => {
       expect(html).toContain('Severe drag');
       expect(html).toContain('ALTITUDE ENVIRONMENT');
       expect(html).toContain('SEVERE DRAG');
+      expect(html).toContain('VS 420 KM');
+      expect(html).toContain('DELTA V +');
       const high = mountWithSeed({ ...BASE, tab: 'orbit', orbitAlt: 1500 });
       expect(high).toContain('radiation');
       expect(high).toContain('RADIATION EXPOSURE RISES');
       const issBand = mountWithSeed({ ...BASE, tab: 'orbit', orbitAlt: 420 });
       expect(issBand).toContain('CREWED LEO / ISS BAND');
+      expect(issBand).toContain('ISS REFERENCE // 420 KM');
+      expect(issBand).toContain('DRAG + REBOOST // 30-DAY TRAINING MODEL');
+      expect(issBand).toContain('data-iss-drag-model="nominal"');
+      expect(issBand).toContain('data-iss-reboost-day="20"');
+      expect(issBand).toContain('Anchored to 75 m/day at 420 km');
+      expect(issBand).toContain('not a reentry forecast');
+    });
+
+    it('models solar-driven drag and reboost as synchronized altitude trajectories', () => {
+      const live = mountLiveWithSeed({ ...BASE, tab: 'orbit', orbitAlt: 420, orbitSolar: 'nominal', orbitReboostDay: 0 });
+      const modeledEnd = () => {
+        const aria = live.host.querySelector('[data-iss-drag-model] svg').getAttribute('aria-label');
+        return Number((aria.match(/End altitude ([0-9.]+) kilometers/) || [])[1]);
+      };
+      try {
+        const nominalEnd = modeledEnd();
+        const highSolar = live.host.querySelector('[data-iss-solar-mode="high"]');
+        act(() => { highSolar.click(); });
+        const highSolarEnd = modeledEnd();
+        expect(highSolar.getAttribute('aria-pressed')).toBe('true');
+        expect(live.host.querySelector('[data-iss-drag-model]').getAttribute('data-iss-drag-model')).toBe('high');
+        expect(highSolarEnd).toBeLessThan(nominalEnd);
+        const reboost = live.host.querySelector('[data-iss-reboost-plan="10"]');
+        act(() => { reboost.click(); });
+        const reboostEnd = modeledEnd();
+        expect(reboost.getAttribute('aria-pressed')).toBe('true');
+        expect(live.host.querySelector('[data-iss-drag-model]').getAttribute('data-iss-reboost-day')).toBe('10');
+        expect(reboostEnd).toBeGreaterThan(highSolarEnd);
+        expect(live.host.textContent).toContain('REBOOST +5 KM');
+      } finally {
+        live.cleanup();
+      }
     });
 
     it('renders both missions, including a started EVA and a docking report', () => {
       const html = mountWithSeed({
         ...BASE, tab: 'missions',
         dockResult: 'bonk', dockMsg: 'Contact too fast.', dockRuns: 2, dockWins: 1,
+        dockDebrief: { range: 4.8, speed: 1.2, offset: 3.1, fuel: 72, elapsed: 89.6, mode: 'orbital' },
         eva: { pos: 6, tetherA: 6, tetherB: 6, freeTether: 'A', o2: 61, bolts: 4, done: true, failMsg: '', started: true, log: ['done'] },
       });
       expect(html).toContain('Dock the cargo capsule');
       expect(html).toContain('Mission report');
+      expect(html).toContain('POST-APPROACH FLIGHT DATA');
+      expect(html).toContain('HARD CONTACT');
+      expect(html).toContain('CONTACT RATE');
+      expect(html).toContain('CAPTURE ENVELOPE');
+      expect(html).toContain('data-iss-dock-debrief="bonk"');
       expect(html).toContain('Pump worksite');
       expect(html).toContain('Pump secured');
       expect(html).toContain('PROJECTED');
+      expect(html).toContain('SUIT BUDGET');
+      expect(html).toContain('RESERVE +');
       expect(html).toContain('NEXT MOVE SECURED');
+      expect(html).toContain('data-iss-eva-phase="SECURED"');
       expect(html).toContain('Torque bolt');
+    });
+
+    it('supports keyboard-held docking thrusters and exposes textual telemetry', () => {
+      const live = mountLiveWithSeed({ ...BASE, tab: 'missions' });
+      try {
+        const canvas = live.host.querySelector('[data-dock-canvas]');
+        const status = live.host.querySelector('[data-dock-hud]');
+        const forward = [...live.host.querySelectorAll('button')].find((button) =>
+          (button.getAttribute('aria-label') || '').startsWith('Thrust Forward'));
+        expect(canvas.getAttribute('aria-describedby')).toBe('iss-dock-instructions iss-dock-status');
+        expect(canvas.getAttribute('aria-keyshortcuts')).toContain('ArrowRight');
+        expect(status.textContent).toContain('relative speed');
+        expect(forward).toBeTruthy();
+
+        act(() => { forward.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); });
+        expect(canvas._dockState.thrust.fwd).toBe(true);
+        act(() => { forward.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true })); });
+        expect(canvas._dockState.thrust.fwd).toBe(false);
+
+        act(() => {
+          forward.focus();
+          forward.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+        });
+        expect(canvas._dockState.thrust.fwd).toBe(true);
+        act(() => { forward.blur(); });
+        expect(canvas._dockState.thrust.fwd).toBe(false);
+
+        act(() => { canvas.dispatchEvent(new KeyboardEvent('keydown', { key: 'D', bubbles: true })); });
+        expect(canvas._dockState.thrust.fwd).toBe(true);
+        act(() => { canvas.dispatchEvent(new FocusEvent('blur', { bubbles: false })); });
+        expect(canvas._dockState.thrust.fwd).toBe(false);
+      } finally {
+        live.cleanup();
+      }
     });
 
     // The EVA consumables arithmetic had no behavioural coverage, which is how
@@ -670,6 +977,7 @@ describe('space station tool', () => {
         expect(fatal.host.textContent).toContain('Suit consumables exhausted');
         // 8% - 12% floors at 0, and the penalty must survive the abort update.
         expect(suitPct(fatal.host)).toContain('Suit consumables 0 percent');
+        expect(fatal.host.querySelector('[data-iss-eva-phase]').getAttribute('data-iss-eva-phase')).toBe('ABORTED');
       } finally {
         fatal.cleanup();
       }
@@ -685,6 +993,7 @@ describe('space station tool', () => {
         expect(lastBolt.host.textContent).toContain('Bolt 4/4 torqued');
         expect(suitPct(lastBolt.host)).toContain('Suit consumables 45 percent');
         expect(lastBolt.host.textContent).toContain('Pump secured');
+        expect(lastBolt.host.querySelector('[data-iss-eva-phase]').getAttribute('data-iss-eva-phase')).toBe('SECURED');
       } finally {
         lastBolt.cleanup();
       }
@@ -693,10 +1002,18 @@ describe('space station tool', () => {
     it('lets learners jump directly between assembly milestones', () => {
       const live = mountLiveWithSeed({ ...BASE, tab: 'history', assemblyIdx: 6 });
       try {
+        let growth = live.host.querySelector('[data-iss-assembly-growth]');
+        expect(growth.getAttribute('data-iss-assembly-growth')).toBe('6');
+        expect(growth.querySelector('svg').getAttribute('aria-label')).toContain('Station growth profile at 2009');
         const first = live.host.querySelector('[data-iss-assembly-milestone="0"]');
         expect(first).toBeTruthy();
         act(() => { first.click(); });
         expect(live.host.querySelector('[data-iss-assembly-milestone="0"]').getAttribute('aria-current')).toBe('step');
+        growth = live.host.querySelector('[data-iss-assembly-growth]');
+        expect(growth.getAttribute('data-iss-assembly-growth')).toBe('0');
+        expect(growth.querySelector('svg').getAttribute('aria-label')).toContain('major elements 2');
+        expect(growth.querySelector('svg').getAttribute('aria-label')).toContain('available power 18 kW');
+        expect(live.host.textContent).toContain('ASSEMBLY GROWTH PROFILE');
         expect(live.host.textContent).toContain('1998');
       } finally {
         live.cleanup();
@@ -706,10 +1023,13 @@ describe('space station tool', () => {
       const history = mountWithSeed({ ...BASE, tab: 'history' });
       expect(history).toContain('ORBITAL ASSEMBLY');
       expect(history).toContain('AVAILABLE POWER');
+      expect(history).toContain('ASSEMBLY GROWTH PROFILE');
+      expect(history).toContain('data-iss-assembly-growth');
       expect(history).toContain('Assembly to retirement');
       expect(history).toContain('Previous');
       expect(history).toContain('Next');
       expect(history).toContain('iss-assembly-new');
+      expect(history).toContain('data-iss-assembly-install');
       expect(history).toContain('data-iss-assembly-milestone');
       expect(history).toContain('2002-2006');
       // Derived the same way the tool derives it, so this assertion keeps
@@ -719,10 +1039,65 @@ describe('space station tool', () => {
       const retirement = mountWithSeed({ ...BASE, tab: 'history', assemblyIdx: 12 });
       expect(retirement).toContain('CONTROLLED REENTRY');
       expect(retirement).toContain('iss-deorbit-path');
-      const quiz = mountWithSeed({ ...BASE, tab: 'quiz', quizDone: true, quizScore: 8, quizBest: 8 });
+      const kiboInstall = mountWithSeed({ ...BASE, tab: 'history', assemblyIdx: 6 });
+      expect(kiboInstall).toContain('INSTALLED THIS STEP');
+      expect(kiboInstall).toContain('Kibo');
+      const quiz = mountWithSeed({ ...BASE, tab: 'quiz', quizDone: true, quizScore: 8, quizBest: 8, quizResults: { 0: true, 1: true, 2: true, 3: true, 4: true, 5: true, 6: true, 7: true, 8: false, 9: false } });
       expect(quiz).toContain('8 / 10');
       expect(quiz).toContain('Flight-controller material');
+      expect(quiz).toContain('MISSION KNOWLEDGE DEBRIEF');
+      expect(quiz).toContain('QUESTION FLIGHT RECORD');
+      expect(quiz).toContain('8 correct, 2 to review');
+      expect(quiz).toContain('data-iss-quiz-debrief="10"');
+      expect(quiz).toContain('SHIELDING');
     });
+
+    it('makes quiz outcomes color-independent and preserves keyboard focus', async () => {
+      const live = mountLiveWithSeed({ ...BASE, tab: 'quiz', quizIdx: 0, quizPicked: null, quizScore: 0 });
+      try {
+        const firstWrong = live.host.querySelector('[data-iss-quiz-option="0"]');
+        act(() => { firstWrong.click(); });
+        const selected = live.host.querySelector('#iss-quiz-option-0-0');
+        const correct = live.host.querySelector('#iss-quiz-option-0-2');
+        const next = live.host.querySelector('[data-iss-quiz-next]');
+        expect(selected.getAttribute('aria-pressed')).toBe('true');
+        expect(live.host.textContent).not.toContain('MISSION KNOWLEDGE DEBRIEF');
+        expect(selected.textContent).toContain('Your answer — incorrect');
+        expect(correct.textContent).toContain('Correct answer');
+        expect(selected.getAttribute('aria-describedby')).toBe('iss-quiz-feedback');
+        expect(live.host.querySelector('#iss-quiz-feedback').getAttribute('aria-atomic')).toBe('true');
+        expect(document.activeElement).toBe(next);
+
+        const results = await axe.run(live.host, {
+          rules: { 'color-contrast': { enabled: false }, region: { enabled: false } },
+        });
+        expect(results.violations.map((violation) => violation.id)).toEqual([]);
+
+        await act(async () => {
+          next.click();
+          await new Promise((resolve) => setTimeout(resolve, 0));
+        });
+        expect(document.activeElement).toBe(live.host.querySelector('#iss-quiz-option-1-0'));
+      } finally {
+        live.cleanup();
+      }
+    }, 120000);
+
+    it.each(['interior', 'operations', 'map', 'day', 'systems', 'orbit', 'missions', 'history', 'quiz'])(
+      'has no detectable structural accessibility violations in the %s tab',
+      async (tab) => {
+        const live = mountLiveWithSeed({ ...BASE, tab });
+        try {
+          const results = await axe.run(live.host, {
+            rules: { 'color-contrast': { enabled: false }, region: { enabled: false } },
+          });
+          expect(results.violations.map((violation) => violation.id)).toEqual([]);
+        } finally {
+          live.cleanup();
+        }
+      },
+      120000,
+    );
   });
 
   it('is registered in the catalog, loader lists, and build manifest', () => {

@@ -12,7 +12,9 @@
 // ── UDLGuideModal (UDL Guide Modal) — gate: showUDLGuide ──
 function UDLGuideModal(props) {
   const {
-    InteractiveBlueprintCard, activeBlueprint, addToast,
+    InteractiveBlueprintCard, activeBlueprint, addToast, blueprintExecutionResult, handleRebuildBlueprintStep,
+    lessonTemplates, handleSaveLessonTemplate, handleApplyLessonTemplate, handleDeleteLessonTemplate,
+    handlePreviewBlueprintStep, blueprintPreview, closeBlueprintPreview,
     aiStandardQuery, aiStandardRegion, autoSendVoice, chatStyles,
     handleAutoFillToggle, handleBlueprintUIUpdate, handleExecuteBlueprint, handleFindStandards,
     handleSendUDLMessage, handleSetShowUDLGuideToFalse, handleToggleAutoSendVoice, handleToggleIsShowMeMode,
@@ -163,6 +165,10 @@ function UDLGuideModal(props) {
                   <div className="w-full">
                       <InteractiveBlueprintCard
                           config={activeBlueprint}
+                          run={blueprintExecutionResult}
+                          onRebuildStep={handleRebuildBlueprintStep}
+                          onSaveTemplate={handleSaveLessonTemplate}
+                          onPreviewStep={handlePreviewBlueprintStep}
                           onUpdate={handleBlueprintUIUpdate}
                           onConfirm={handleExecuteBlueprint}
                           onCancel={() => {
@@ -221,6 +227,68 @@ function UDLGuideModal(props) {
               )}
             </div>
           ))}
+          {/* Start from a saved template. Shown ONLY when no plan is active:
+              templates are starting points, not a competing surface, and
+              offering them beside a live plan would invite the teacher to
+              throw away work they are in the middle of. */}
+          {!activeBlueprint && Array.isArray(lessonTemplates) && lessonTemplates.length > 0 && (
+            <div className="w-full" data-testid="bp-template-picker">
+              <p className={`text-[11px] mb-1 ${chatStyles.subText}`}>
+                {t('blueprint.template_picker_title') || 'Start from one of your templates:'}
+              </p>
+              <ul className="space-y-1">
+                {lessonTemplates.slice(0, 8).map((tpl) => (
+                  <li key={tpl.id} className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      data-testid="bp-template-apply"
+                      onClick={() => handleApplyLessonTemplate(tpl.id)}
+                      className={`flex-grow text-left text-xs px-2 py-1.5 rounded border transition-colors ${chatStyles.secondaryButton}`}
+                    >
+                      <span className="font-bold">{tpl.name}</span>
+                      <span className="opacity-70 ml-2">
+                        {(Array.isArray(tpl.resourcePlan) ? tpl.resourcePlan.length : 0)}
+                        {' '}
+                        {t('blueprint.template_step_count') || 'steps'}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      data-testid="bp-template-delete"
+                      onClick={() => handleDeleteLessonTemplate(tpl.id)}
+                      aria-label={`${t('blueprint.template_delete') || 'Delete template'}: ${tpl.name}`}
+                      title={t('blueprint.template_delete') || 'Delete template'}
+                      className="text-xs px-2 py-1.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100"
+                    >
+                      ×
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {/* Restored-plan mount (Stage 4). The card normally renders from a
+              `type:'blueprint'` chat message — but udlMessages is ephemeral
+              useState in no save path, so after a reload a perfectly persisted
+              plan would have nowhere to appear. Mount it from STATE whenever a
+              plan exists and no blueprint message is carrying it. */}
+          {activeBlueprint && !(udlMessages || []).some(m => m && m.type === 'blueprint') && (
+            <div className="w-full">
+              <p className={`text-[11px] mb-1 ${chatStyles.subText}`}>
+                {t('blueprint.restored_notice') || 'Your saved lesson plan:'}
+              </p>
+              <InteractiveBlueprintCard
+                  config={activeBlueprint}
+                  run={blueprintExecutionResult}
+                  onRebuildStep={handleRebuildBlueprintStep}
+                  onSaveTemplate={handleSaveLessonTemplate}
+                  onPreviewStep={handlePreviewBlueprintStep}
+                  onUpdate={handleBlueprintUIUpdate}
+                  onConfirm={handleExecuteBlueprint}
+                  onCancel={() => setActiveBlueprint(null)}
+              />
+            </div>
+          )}
           {isChatProcessing && (
             <div className="flex items-start">
                <div className={`p-3 rounded-xl rounded-bl-none flex items-center gap-2 text-sm ${chatStyles.modelBubble}`}>
@@ -229,6 +297,53 @@ function UDLGuideModal(props) {
             </div>
           )}
         </div>
+        {/* Stage 6 preview overlay. Scoped INSIDE the panel (absolute, not
+            fixed) so it covers the transcript without becoming a page-level
+            modal — activeView and generatedContent are never touched, so it
+            cannot hijack the main view. */}
+        {blueprintPreview && (
+          <div
+            className={`absolute inset-0 z-20 flex flex-col ${theme === 'dark' ? 'bg-slate-900' : 'bg-white'}`}
+            role="dialog"
+            aria-modal="true"
+            aria-label={t('blueprint.preview_step') || 'Preview this resource'}
+            data-testid="bp-preview-overlay"
+          >
+            <div className={`p-3 flex items-center justify-between shrink-0 border-b ${theme === 'dark' ? 'border-slate-700' : 'border-slate-200'}`}>
+              <span className={`text-sm font-bold ${chatStyles.text}`}>
+                {blueprintPreview.itemTitle || blueprintPreview.title}
+              </span>
+              <button
+                type="button"
+                data-testid="bp-preview-close"
+                onClick={closeBlueprintPreview}
+                aria-label={t('common.close')}
+                className="hover:bg-slate-500/20 p-1 rounded transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="flex-1 overflow-auto p-4 custom-scrollbar">
+              {blueprintPreview.missing ? (
+                <p className={`text-sm ${chatStyles.subText}`} data-testid="bp-preview-missing">
+                  {t('blueprint.preview_missing') || 'That resource is no longer in this workspace. Rebuild the step to make it again.'}
+                </p>
+              ) : blueprintPreview.unsupported ? (
+                // generateResourceHTML has no branch for some types and returns
+                // '' — say so rather than showing an empty white box.
+                <p className={`text-sm ${chatStyles.subText}`} data-testid="bp-preview-unsupported">
+                  {t('blueprint.preview_unsupported') || 'This resource type opens in its own view rather than a preview.'}
+                </p>
+              ) : (
+                <div
+                  className="allo-preview-body text-sm"
+                  data-testid="bp-preview-body"
+                  dangerouslySetInnerHTML={{ __html: blueprintPreview.html }}
+                />
+              )}
+            </div>
+          </div>
+        )}
         <div className={`p-3 border-t ${theme === 'dark' ? 'border-slate-700' : 'border-slate-200'} ${chatStyles.inputArea}`}>
           <button
               type="button"

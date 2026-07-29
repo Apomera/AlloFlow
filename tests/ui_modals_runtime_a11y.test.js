@@ -30,6 +30,9 @@ beforeAll(() => {
   window.AlloLanguageContext = React.createContext({ t });
   window.UiLanguageSelector = () => React.createElement('button', { type: 'button' }, 'Language');
   window.__alloFocusTrapStack = [];
+  window.__uiModalWrites = [];
+  window._fbDoc = (_db, ...parts) => parts.join('/');
+  window._fbUpdateDoc = async (ref, payload) => { window.__uiModalWrites.push({ ref, payload }); };
   window.__alloHooks = {
     useFocusTrap(ref, isOpen, onEscape) {
       const escapeRef = React.useRef(onEscape);
@@ -95,6 +98,8 @@ afterEach(() => {
   opener?.remove();
   host = opener = null;
   window.__alloFocusTrapStack = [];
+  window.__uiModalWrites = [];
+  delete window.__alloQuizChannelSend;
   vi.restoreAllMocks();
 });
 
@@ -156,6 +161,295 @@ describe('Shared UI modals rendered accessibility', () => {
       await Promise.resolve();
     });
     expect(host.querySelector('[role="dialog"]')).not.toBeNull();
+  });
+
+  it('keeps the selected answer local and writes only a bounded receipt when P2P fails', async () => {
+    const submittedAt = 1_721_234_567_890;
+    vi.spyOn(Date, 'now').mockReturnValue(submittedAt);
+    const p2pSend = vi.fn(() => false);
+    window.__alloQuizChannelSend = p2pSend;
+    const activityId = 'quiz:' + 'a'.repeat(140);
+    const sessionData = {
+      quizState: {
+        isActive: true,
+        activityId,
+        mode: 'live-pulse',
+        currentQuestionIndex: 0,
+        phase: 'answering',
+        responses: {},
+        teams: {},
+      },
+      roster: {},
+    };
+    const generatedContent = {
+      type: 'quiz',
+      data: {
+        questions: [{
+          question: 'Which answer is correct?',
+          options: ['Alpha', 'Beta'],
+          correctAnswer: 'Alpha',
+        }],
+      },
+    };
+
+    const render = async (nextSessionData) => {
+      await act(async () => {
+        root.render(React.createElement(components.StudentQuizOverlay, {
+          sessionData: nextSessionData,
+          generatedContent,
+          user: { uid: 'student-1' },
+          activeSessionCode: 'ABC123',
+          targetAppId: 'app-1',
+        }));
+        await Promise.resolve();
+      });
+    };
+    await mount(React.createElement(components.StudentQuizOverlay, {
+      sessionData,
+      generatedContent,
+      user: { uid: 'student-1' },
+      activeSessionCode: 'ABC123',
+      targetAppId: 'app-1',
+    }));
+
+    const answerButtons = Array.from(host.querySelectorAll('button[data-help-key="quiz_student_answer_option"]'));
+    await act(async () => {
+      answerButtons[1].click();
+      await Promise.resolve();
+    });
+
+    expect(p2pSend).toHaveBeenCalledWith('boss:0', 1);
+    expect(window.__uiModalWrites).toHaveLength(1);
+    const { payload } = window.__uiModalWrites[0];
+    const receiptKey = 'quizState.responseReceipts.student-1';
+    expect(Object.keys(payload)).toEqual([receiptKey]);
+    expect(payload[receiptKey]).toEqual({
+      activityId: activityId.slice(0, 120),
+      questionIndex: 0,
+      submittedAt,
+      flow: 'presentation',
+    });
+    expect(Object.keys(payload[receiptKey]).sort()).toEqual([
+      'activityId',
+      'flow',
+      'questionIndex',
+      'submittedAt',
+    ]);
+    expect(JSON.stringify(payload)).not.toContain('Beta');
+    expect(JSON.stringify(payload)).not.toContain('optionIndex');
+    expect(answerButtons[1].getAttribute('aria-pressed')).toBe('true');
+
+    await render({
+      ...sessionData,
+      quizState: {
+        ...sessionData.quizState,
+        phase: 'revealed',
+        responses: {},
+        responseReceipts: { 'student-1': payload[receiptKey] },
+      },
+    });
+    expect(host.querySelector('[role="dialog"]').textContent).toContain('quiz.status.result_incorrect');
+  });
+
+  it('does not publish a receipt when the P2P answer succeeds', async () => {
+    window.__alloQuizChannelSend = vi.fn(() => true);
+    const sessionData = {
+      quizState: {
+        isActive: true,
+        activityId: 'quiz:ABC123:attempt-1',
+        mode: 'live-pulse',
+        currentQuestionIndex: 0,
+        phase: 'answering',
+        responses: {},
+        teams: {},
+      },
+      roster: {},
+    };
+    const generatedContent = {
+      type: 'quiz',
+      data: { questions: [{ question: 'Choose one.', options: ['Alpha', 'Beta'], correctAnswer: 'Alpha' }] },
+    };
+    await mount(React.createElement(components.StudentQuizOverlay, {
+      sessionData,
+      generatedContent,
+      user: { uid: 'student-1' },
+      activeSessionCode: 'ABC123',
+      targetAppId: 'app-1',
+    }));
+    const answer = host.querySelector('button[data-help-key="quiz_student_answer_option"]');
+    await act(async () => {
+      answer.click();
+      await Promise.resolve();
+    });
+    expect(window.__alloQuizChannelSend).toHaveBeenCalledWith('boss:0', 0);
+    expect(window.__uiModalWrites).toEqual([]);
+    expect(answer.getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('reuses existing question and option images in the live quiz with stable accessible option names', async () => {
+    const questionImage = 'data:image/png;base64,QUFB';
+    const nextQuestionImage = 'data:image/png;base64,QkJC';
+    const optionImageA = 'data:image/png;base64,Q0ND';
+    const optionImageB = 'data:image/png;base64,RERE';
+    const nextOptionImage = 'data:image/png;base64,RUVF';
+    const sessionData = {
+      quizState: { isActive: true, mode: 'live-pulse', currentQuestionIndex: 0, phase: 'answering', responses: {}, teams: {} },
+      roster: { 'student-1': { groupId: 'group-1' } },
+      groups: { 'group-1': { name: 'French readers', language: 'French' } },
+    };
+    const generatedContent = {
+      type: 'quiz',
+      data: {
+        questions: [{
+          question: 'Which map shows the river?',
+          question_en: 'Which map shows the river?',
+          imageUrl: questionImage,
+          imageAlt: 'Map with a river running through the eastern valley',
+          options: ['Map A', 'Map B', 'Map C'],
+          options_en: ['Carte A', 'Carte B', 'Carte C'],
+          optionImageUrls: [optionImageA, optionImageB, null],
+          correctAnswer: 'Map A',
+        }, {
+          question: 'Which map shows the lake?',
+          imageUrl: nextQuestionImage,
+          options: ['Map D', 'Map E'],
+          optionImageUrls: [null, nextOptionImage],
+          correctAnswer: 'Map E',
+        }],
+      },
+    };
+
+    await mount(React.createElement(components.StudentQuizOverlay, {
+      sessionData,
+      generatedContent,
+      user: { uid: 'student-1' },
+      activeSessionCode: 'MEDIA1',
+      targetAppId: 'app-1',
+    }));
+
+    const dialog = host.querySelector('[role="dialog"]');
+    const renderedQuestionImage = dialog.querySelector('[data-live-quiz-question-image="true"]');
+    expect(renderedQuestionImage).not.toBeNull();
+    expect(renderedQuestionImage.getAttribute('src')).toBe(questionImage);
+    expect(renderedQuestionImage.getAttribute('alt')).toBe('Map with a river running through the eastern valley');
+    expect(renderedQuestionImage.getAttribute('loading')).toBe('eager');
+
+    const renderedOptionImages = Array.from(dialog.querySelectorAll('[data-live-quiz-option-image]'));
+    expect(renderedOptionImages).toHaveLength(2);
+    expect(renderedOptionImages.map(image => image.getAttribute('alt'))).toEqual(['', '']);
+    expect(renderedOptionImages.every(image => image.getAttribute('aria-hidden') === 'true')).toBe(true);
+
+    const answerButtons = Array.from(dialog.querySelectorAll('button[data-help-key="quiz_student_answer_option"]'));
+    expect(answerButtons.map(button => button.getAttribute('aria-label'))).toEqual(['Map A. Carte A', 'Map B. Carte B', 'Map C. Carte C']);
+    expect(answerButtons.map(button => button.getAttribute('aria-pressed'))).toEqual(['false', 'false', 'false']);
+    await act(async () => {
+      answerButtons[0].click();
+      await Promise.resolve();
+    });
+    expect(answerButtons[0].getAttribute('aria-pressed')).toBe('true');
+
+    act(() => renderedOptionImages[1].dispatchEvent(new Event('error')));
+    expect(renderedOptionImages[1].hidden).toBe(true);
+
+    const nextSessionData = {
+      ...sessionData,
+      quizState: { ...sessionData.quizState, currentQuestionIndex: 1, responses: {} },
+    };
+    await act(async () => {
+      root.render(React.createElement(components.StudentQuizOverlay, {
+        sessionData: nextSessionData,
+        generatedContent,
+        user: { uid: 'student-1' },
+        activeSessionCode: 'MEDIA1',
+        targetAppId: 'app-1',
+      }));
+      await Promise.resolve();
+    });
+    expect(dialog.querySelector('[data-live-quiz-question-image="true"]').getAttribute('src')).toBe(nextQuestionImage);
+    const nextImages = Array.from(dialog.querySelectorAll('[data-live-quiz-option-image]'));
+    expect(nextImages).toHaveLength(1);
+    expect(nextImages[0].getAttribute('data-live-quiz-option-image')).toBe('1');
+    expect(nextImages[0].getAttribute('src')).toBe(nextOptionImage);
+    expect(dialog.innerHTML).not.toContain(optionImageA);
+    await expectNoSeriousAxe(dialog);
+  });
+
+  it('reuses roster groups for deterministic Team Showdown colors and reports individual correctness honestly', async () => {
+    const groups = {
+      'group-d': { name: 'Delta' },
+      'group-b': { name: 'Beta' },
+      'group-c': { name: 'Gamma' },
+      'group-a': { name: 'Alpha' },
+    };
+    const baseSession = {
+      quizState: { isActive: true, mode: 'team-showdown', currentQuestionIndex: 0, phase: 'answering', responses: {}, teams: {} },
+      roster: {
+        'student-1': { groupId: 'group-b' },
+        'student-2': { groupId: 'group-b' },
+        'student-3': { groupId: 'group-d' },
+      },
+      groups,
+    };
+    const generatedContent = {
+      type: 'quiz',
+      data: { questions: [{ question: 'Choose Alpha.', options: ['Alpha', 'Beta'], correctAnswer: 'Alpha' }] },
+    };
+    const renderFor = async (user) => {
+      await act(async () => {
+        root.render(React.createElement(components.StudentQuizOverlay, {
+          sessionData: baseSession,
+          generatedContent,
+          user,
+          activeSessionCode: 'TEAM1',
+          targetAppId: 'app-1',
+        }));
+        await Promise.resolve();
+      });
+    };
+
+    await mount(React.createElement(components.StudentQuizOverlay, {
+      sessionData: baseSession,
+      generatedContent,
+      user: { uid: 'student-1' },
+      activeSessionCode: 'TEAM1',
+      targetAppId: 'app-1',
+    }));
+    await renderFor({ uid: 'student-2' });
+    await renderFor({ uid: 'student-3' });
+
+    const assignments = window.__uiModalWrites
+      .map(write => Object.entries(write.payload).find(([key]) => key.startsWith('quizState.teams.')))
+      .filter(Boolean)
+      .map(([key, value]) => [key.split('.').at(-1), value]);
+    expect(assignments).toEqual([
+      ['student-1', 'Blue'],
+      ['student-2', 'Blue'],
+      ['student-3', 'Yellow'],
+    ]);
+
+    const revealed = {
+      ...baseSession,
+      quizState: {
+        ...baseSession.quizState,
+        phase: 'revealed',
+        responses: { 'student-1': 0 },
+        teams: { 'student-1': 'Blue' },
+      },
+    };
+    await act(async () => {
+      root.render(React.createElement(components.StudentQuizOverlay, {
+        sessionData: revealed,
+        generatedContent,
+        user: { uid: 'student-1' },
+        activeSessionCode: 'TEAM1',
+        targetAppId: 'app-1',
+      }));
+      await Promise.resolve();
+    });
+    const dialogText = host.querySelector('[role="dialog"]').textContent;
+    expect(dialogText).toContain('quiz.status.result_correct');
+    expect(dialogText).not.toContain('quiz.status.result_score');
+    expect(dialogText).not.toContain('quiz.status.result_no_points');
   });
 
   it('contains live-quiz focus, permits Escape, restores focus, and offers re-entry', async () => {

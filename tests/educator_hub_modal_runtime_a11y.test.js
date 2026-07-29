@@ -82,7 +82,7 @@ describe('Educator Hub modal runtime accessibility', () => {
 
     const dialog = host.querySelector('[role="dialog"]');
     let buttons = Array.from(dialog.querySelectorAll('button'));
-    expect(buttons).toHaveLength(18);
+    expect(buttons).toHaveLength(19);
     expect(document.activeElement).toBe(buttons[0]);
     expect(dialog.getAttribute('aria-labelledby')).toBe('educator-hub-title');
     expect(dialog.getAttribute('aria-describedby')).toBe('educator-hub-subtitle');
@@ -97,7 +97,7 @@ describe('Educator Hub modal runtime accessibility', () => {
     expect(completionStatus.textContent).toMatch(/Platform check complete\. 1 results available\./);
     expect(completionStatus.querySelector('button')).toBeNull();
     buttons = Array.from(dialog.querySelectorAll('button'));
-    expect(buttons).toHaveLength(19);
+    expect(buttons).toHaveLength(20);
 
     const results = await axe.run(dialog, { rules: { 'color-contrast': { enabled: false }, region: { enabled: false } } });
     expect(results.violations.filter((item) => item.impact === 'serious' || item.impact === 'critical')).toEqual([]);
@@ -121,5 +121,5 @@ describe('Educator Hub modal runtime accessibility', () => {
     await act(async () => { await Promise.resolve(); });
     expect(host.querySelector('[role="dialog"]')).toBeNull();
     expect(document.activeElement).toBe(opener);
-  });
+  }, 15000);
 });

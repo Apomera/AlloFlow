@@ -51,7 +51,12 @@ const GlossaryTermSpan = ({ item, leveledTextLanguage, isDarkBg, isLineFocusMode
       onKeyDown={(e) => { if (e.key === 'Escape') hide(); }}
       tabIndex={0}
       aria-describedby={tip ? tipIdRef.current : undefined}
-      className={`cursor-help border-b border-dotted rounded px-0.5 transition-colors inline-block ${isDarkBg ? darkStyle : lightStyle}`}
+      // allo-glossary-term is a stable hook for the reading themes. isDarkBg is
+      // a prop that NO call site in the simplified view ever passes, so this
+      // span always rendered indigo-600 — 2.71:1 on the dark theme, 3.34:1 on
+      // high contrast, 2.98:1 on dim. Rather than thread the flag through six
+      // call sites, the themes restyle it via --allo-rt-link.
+      className={`allo-glossary-term cursor-help border-b border-dotted rounded px-0.5 transition-colors inline-block ${isDarkBg ? darkStyle : lightStyle}`}
     >
       {children}
       {tip && canPortal && ReactDOM.createPortal(

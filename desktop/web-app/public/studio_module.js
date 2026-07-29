@@ -967,6 +967,28 @@
     });
   }
 
+  function stRecommendedResourceInsertMode(cue) {
+    cue = cue || {};
+    var kind = stCleanText(cue.kind || cue.type || 'resource', 40).toLowerCase();
+    var text = stCleanText(cue.text || cue.definition || cue.prompt || cue.question, 500);
+    var hasImage = !!stSafeDataImage(cue.imageSrc || cue.image || cue.imageUrl || cue.src || cue.dataUrl);
+    var modes = stResourceInsertModes(cue);
+    var byId = {};
+    modes.forEach(function (mode) { if (mode && mode.id) byId[mode.id] = mode; });
+    var choose = function (id, rationale) {
+      var mode = byId[id] || byId['smart-card'] || modes[0] || { id: 'smart-card', label: 'Smart card' };
+      return { id: mode.id, label: mode.label, rationale: rationale || 'Adds a balanced editable card from this source.' };
+    };
+    if (kind === 'source-note') return choose('source-note', 'Keeps attribution and context visible.');
+    if (kind === 'image' && hasImage) return choose('captioned-image', 'Best fit for a saved visual with caption space.');
+    if (kind === 'question') return choose('worksheet-question', 'Keeps the prompt and answer space together.');
+    if (kind === 'glossary') return choose('vocabulary-card', 'Turns the term and definition into a study card.');
+    if (kind === 'section') return choose('anchor-section', 'Builds a clean section block from this source.');
+    if (hasImage) return choose('captioned-image', 'Best fit for a source that includes an image.');
+    if (/\?$/.test(text) || /^(why|how|what|when|where|which|who)\b/i.test(text)) return choose('worksheet-question', 'Looks like a prompt students may answer.');
+    if (text && text.length > 180) return choose('anchor-section', 'Longer text works best as a section block.');
+    return choose('smart-card', 'Adds a balanced editable card from this source.');
+  }
   function stObjectsFromResourceCue(cue, options) {
     cue = cue || {};
     options = options || {};
@@ -1074,6 +1096,83 @@
       summary: (bits.length ? bits.join(', ') : objects.length + ' item') + (labels.length ? ': ' + labels.slice(0, 2).join(' / ') : ''),
       labels: labels.slice(0, 4)
     };
+  }
+
+  function stResourceInsertActionModel(cue) {
+    cue = cue || {};
+    var recommended = stRecommendedResourceInsertMode(cue);
+    var modes = stResourceInsertModes(cue).map(function (mode) {
+      var preview = stResourceInsertPreview(cue, mode.id);
+      var isRecommended = !!(recommended && recommended.id === mode.id);
+      return {
+        id: mode.id,
+        label: mode.label,
+        preview: preview,
+        recommended: isRecommended,
+        rationale: isRecommended ? recommended.rationale : ''
+      };
+    });
+    var recommendedAction = modes.filter(function (mode) { return !!mode.recommended; })[0] || null;
+    if (recommendedAction) {
+      recommendedAction = Object.assign({}, recommendedAction, { rationale: recommended.rationale || recommendedAction.rationale });
+    }
+    return {
+      recommended: recommendedAction,
+      modes: modes,
+      modeCount: modes.length,
+      objectCount: modes.reduce(function (sum, mode) { return sum + ((mode.preview && mode.preview.objectCount) || 0); }, 0)
+    };
+  }
+  function stResourceCueKindLabel(kind) {
+    var clean = stCleanText(kind || 'resource', 40).toLowerCase();
+    if (clean === 'image') return 'Images';
+    if (clean === 'glossary') return 'Glossary';
+    if (clean === 'question') return 'Questions';
+    if (clean === 'section') return 'Sections';
+    if (clean === 'source-note') return 'Source notes';
+    if (!clean || clean === 'resource') return 'Resources';
+    var words = clean.replace(/-/g, ' ');
+    return words.charAt(0).toUpperCase() + words.slice(1);
+  }
+
+  function stResourceCueSearchText(cue) {
+    cue = cue || {};
+    return [cue.label, cue.text, cue.kind, cue.sourceTitle, cue.sourceType].join(' ').toLowerCase();
+  }
+
+  function stResourceCueKindCounts(cues) {
+    var list = Array.isArray(cues) ? cues : [];
+    var counts = {};
+    list.forEach(function (cue) {
+      var kind = stCleanText(cue && cue.kind || 'resource', 40).toLowerCase() || 'resource';
+      counts[kind] = (counts[kind] || 0) + 1;
+    });
+    var preferred = ['image', 'glossary', 'question', 'section', 'source-note', 'resource'];
+    var out = [{ kind: 'all', label: 'All', count: list.length }];
+    preferred.forEach(function (kind) {
+      if (counts[kind]) {
+        out.push({ kind: kind, label: stResourceCueKindLabel(kind), count: counts[kind] });
+        delete counts[kind];
+      }
+    });
+    Object.keys(counts).sort().forEach(function (kind) {
+      out.push({ kind: kind, label: stResourceCueKindLabel(kind), count: counts[kind] });
+    });
+    return out;
+  }
+
+  function stFilterResourceCues(cues, options) {
+    options = options || {};
+    var list = Array.isArray(cues) ? cues : [];
+    var kind = stCleanText(options.kind || 'all', 40).toLowerCase();
+    var query = stCleanText(options.query || '', 100).toLowerCase();
+    return list.filter(function (cue) {
+      if (!cue) return false;
+      var cueKind = stCleanText(cue.kind || 'resource', 40).toLowerCase() || 'resource';
+      if (kind && kind !== 'all' && cueKind !== kind) return false;
+      if (query && stResourceCueSearchText(cue).indexOf(query) < 0) return false;
+      return true;
+    });
   }
   function stSuggestTextColor(doc, textObj) {
     if (!doc || !textObj || textObj.type !== 'text') return null;
@@ -1194,6 +1293,25 @@
     return { status: blocked ? 'blocked' : review ? 'review' : 'ready', counts: counts, openCount: openCount, altCount: altCount, cards: cards };
   }
 
+  function stRecommendedExportAction(doc) {
+    var confidence = stExportConfidence(doc);
+    if (!doc || !Array.isArray(doc.objects)) {
+      return { id: 'open-document', label: 'Open a document', status: 'blocked', kind: 'setup', message: 'Open or create a document before exporting.' };
+    }
+    if (confidence.status === 'blocked') {
+      return { id: 'open-fixes', label: 'Open required fixes', status: 'blocked', kind: 'fix', issueFilter: 'fix', message: 'Resolve required accessibility items before accessible export.' };
+    }
+    var worksheet = stExportWorksheetData(doc);
+    var warningCount = stFiniteNumber(confidence.counts && confidence.counts.warning, 0);
+    var reviewCount = stFiniteNumber(confidence.counts && confidence.counts.review, 0);
+    if (worksheet.questions && worksheet.questions.length && !warningCount) {
+      return { id: 'worksheet-tagged-pdf', label: 'Worksheet Tagged PDF', status: reviewCount ? 'review' : 'ready', kind: 'export', exportType: 'worksheet-pdf', message: worksheet.questions.length + ' structured question(s) found; best for printable student work.' + (reviewCount ? ' Page review items remain, but the worksheet export is linear.' : '') };
+    }
+    if (confidence.status === 'review') {
+      return { id: 'open-review', label: 'Review quality checks', status: 'review', kind: 'review', issueFilter: 'review', message: confidence.openCount + ' review item(s) remain; review them before the final share.' };
+    }
+    return { id: 'tagged-pdf', label: 'Tagged PDF', status: 'ready', kind: 'export', exportType: 'tagged-pdf', message: 'Best accessible share format for this page.' };
+  }
   function stProcessStepGroups(ops) {
     var list = Array.isArray(ops) ? ops : [];
     var groups = [];
@@ -1305,6 +1423,56 @@
       .filter(Boolean);
   }
 
+  function stObjectNextActionLabel(type) {
+    return type === 'fix-small-text' ? 'Make text readable'
+      : type === 'fix-contrast' ? 'Improve contrast'
+        : type === 'add-alt' ? 'Add alt text'
+          : type === 'mark-decorative' ? 'Mark decorative'
+            : type === 'fix-bounds' ? 'Fit on page'
+              : type === 'optimize-image' ? 'Optimize image'
+                : type === 'replace-image' || type === 'select-image' ? 'Replace image'
+                  : type === 'remove-placeholder' ? 'Remove frame'
+                    : type === 'keep-placeholder' ? 'Keep placeholder'
+                      : type === 'review-reading-order' ? 'Review order'
+                        : type === 'duplicate' ? 'Duplicate'
+                          : type === 'page-width' ? 'Page width'
+                            : type === 'crop-image' ? 'Crop'
+                              : type === 'make-heading1' ? 'Make H1'
+                                : type === 'make-body' ? 'Make body'
+                                  : 'Review';
+  }
+
+  function stObjectNextActions(doc, objectId) {
+    if (!doc || !Array.isArray(doc.objects) || !objectId) return [];
+    var obj = doc.objects.filter(function (o) { return o && o.id === objectId; })[0];
+    if (!obj) return [];
+    var out = [];
+    var seen = {};
+    function push(action) {
+      if (!action || !action.type) return;
+      var id = action.type;
+      if (seen[id]) return;
+      seen[id] = true;
+      out.push(Object.assign({ id: id, label: stObjectNextActionLabel(action.type), message: '' }, action));
+    }
+    stObjectReadyActions(doc, objectId).slice(0, 3).forEach(function (action) {
+      push({ id: 'issue-' + action.type, type: action.type, readyAction: action, label: stObjectNextActionLabel(action.type), message: action.message || action.title || '' });
+    });
+    var locked = stIsLockedObject(obj);
+    if (obj.type === 'image') {
+      if (obj.src) push({ type: 'crop-image', message: 'Trim the image to the visible teaching focus.' });
+      if (!locked) push({ type: 'replace-image', message: obj.src ? 'Swap the selected image.' : 'Choose an image for this frame.' });
+    }
+    if (obj.type === 'text') {
+      if (obj.role !== 'heading1') push({ type: 'make-heading1', message: 'Use Heading 1 for the main page title.' });
+      if (obj.role !== 'body') push({ type: 'make-body', message: 'Use body text for paragraph content.' });
+    }
+    if (!locked) {
+      push({ type: 'duplicate', message: 'Make a copy of this object.' });
+      push({ type: 'page-width', message: 'Stretch this object to the printable page width.' });
+    }
+    return out.slice(0, 6);
+  }
   function stBuildAccessibilityChecklist(analysis) {
     var issues = (analysis && Array.isArray(analysis.issues)) ? analysis.issues : [];
     var rank = { error: 3, warning: 2, review: 1, pass: 0 };
@@ -1419,6 +1587,65 @@
     });
   }
 
+  function stObjectNavigatorSearchText(o) {
+    if (!o) return '';
+    var runText = '';
+    if (o.type === 'text' && Array.isArray(o.runs)) {
+      runText = o.runs.map(function (run) { return run && run.text; }).join(' ');
+    }
+    return stCleanText([
+      o.id,
+      o.type,
+      o.role,
+      o.shape,
+      stObjectLabelForAgent(o),
+      o.alt,
+      runText,
+      stIsLockedObject(o) ? 'locked' : 'unlocked'
+    ].join(' '), 2000).toLowerCase();
+  }
+
+  function stObjectNavigatorIssueIds(analysis) {
+    var ids = {};
+    ((analysis && Array.isArray(analysis.issues)) ? analysis.issues : []).forEach(function (issue) {
+      if (issue && issue.id) ids[String(issue.id)] = true;
+    });
+    return ids;
+  }
+
+  function stFilterObjectNavigatorObjects(objects, query, filter, analysis) {
+    var list = (Array.isArray(objects) ? objects : []).filter(function (o) { return !!(o && o.id); });
+    var mode = filter === 'issues' || filter === 'text' || filter === 'image' || filter === 'shape' || filter === 'locked' ? filter : 'all';
+    if (mode !== 'all') {
+      var issueIds = mode === 'issues' ? stObjectNavigatorIssueIds(analysis) : null;
+      list = list.filter(function (o) {
+        if (mode === 'issues') return !!issueIds[String(o.id)];
+        if (mode === 'locked') return stIsLockedObject(o);
+        return o && o.type === mode;
+      });
+    }
+    var q = stCleanText(query, 120).toLowerCase();
+    if (!q) return list;
+    var tokens = q.split(/\s+/).filter(Boolean);
+    return list.filter(function (o) {
+      var hay = stObjectNavigatorSearchText(o);
+      return tokens.every(function (token) { return hay.indexOf(token) >= 0; });
+    });
+  }
+
+  function stObjectNavigatorFilterCounts(objects, analysis) {
+    var defs = [
+      { key: 'all', label: 'All' },
+      { key: 'issues', label: 'Issues' },
+      { key: 'text', label: 'Text' },
+      { key: 'image', label: 'Images' },
+      { key: 'shape', label: 'Shapes' },
+      { key: 'locked', label: 'Locked' }
+    ];
+    return defs.map(function (def) {
+      return { key: def.key, label: def.label, count: stFilterObjectNavigatorObjects(objects, '', def.key, analysis).length };
+    });
+  }
   function stReadingOrderSuggestion(doc) {
     var objects = (doc && Array.isArray(doc.objects)) ? doc.objects : [];
     var canvas = doc && doc.canvas;
@@ -1522,6 +1749,42 @@
     return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
   }
 
+  function stSelectionSummary(objects, ids) {
+    var items = stSelectionObjects(objects, ids);
+    var bounds = stSelectionBounds(objects, ids);
+    var typeCounts = {};
+    var lockedCount = 0;
+    var unlockedCount = 0;
+    items.forEach(function (o) {
+      var type = o && o.type ? String(o.type) : 'object';
+      typeCounts[type] = (typeCounts[type] || 0) + 1;
+      if (stIsLockedObject(o)) lockedCount++; else unlockedCount++;
+    });
+    var order = ['text', 'image', 'shape', 'object'];
+    var seen = {};
+    var parts = [];
+    order.concat(Object.keys(typeCounts).sort()).forEach(function (type) {
+      if (seen[type] || !typeCounts[type]) return;
+      seen[type] = true;
+      var label = type === 'text' ? 'text' : type === 'image' ? 'image' : type === 'shape' ? 'shape' : 'object';
+      parts.push(typeCounts[type] + ' ' + label + (typeCounts[type] === 1 || label === 'text' ? '' : 's'));
+    });
+    return {
+      count: items.length,
+      lockedCount: lockedCount,
+      unlockedCount: unlockedCount,
+      allLocked: items.length > 0 && unlockedCount === 0,
+      typeCounts: typeCounts,
+      typeText: parts.join(', '),
+      bounds: bounds,
+      boundsLabel: bounds ? Math.round(bounds.w) + ' x ' + Math.round(bounds.h) : '',
+      canAlign: unlockedCount > 0,
+      canDistribute: unlockedCount >= 3,
+      canDuplicate: unlockedCount > 0,
+      canDelete: unlockedCount > 0,
+      label: items.length + ' object' + (items.length === 1 ? '' : 's') + ' selected'
+    };
+  }
   function stAlignFramesAsGroup(objects, ids, mode) {
     var bounds = stSelectionBounds(objects, ids);
     if (!bounds) return [];
@@ -2770,16 +3033,69 @@
       { id: 'resize', mod: false, keys: 'Shift + Arrows', label: 'Resize the selected object' },
       { id: 'remove', mod: false, keys: 'Delete', label: 'Remove the selected object' },
       { id: 'deselect', mod: false, keys: 'Esc', label: 'Deselect, or close a panel' },
+      { id: 'commandPalette', mod: true, keys: 'K', label: 'Open quick actions' },
       { id: 'help', mod: false, keys: '?', label: 'Show this shortcuts list' }
     ];
   }
 
-  // ── Color swatch palette (the Canva-style quick picker) ──
-  // PURE: gathers three ordered, de-duplicated swatch groups so a teacher clicks
-  // a color instead of hunting in the OS picker: (1) BRAND colors from the active
-  // school profile, (2) a curated STANDARD palette, (3) DOCUMENT colors already
-  // used in this design (text runs, shape fills, page background). All normalized
-  // to #rrggbb; a color never repeats across groups.
+  // Quick action command palette. PURE helpers build and filter a concise command
+  // list for keyboard-first workflows while keeping object selection behind search.
+  function stCommandPaletteItems(doc, options) {
+    options = options || {};
+    var objects = (doc && Array.isArray(doc.objects)) ? doc.objects : [];
+    var preflight = options.preflight || (doc ? stAnalyzeDoc(doc) : { counts: { error: 0, warning: 0, review: 0 }, issues: [] });
+    var counts = preflight.counts || { error: 0, warning: 0, review: 0 };
+    var issueTotal = stFiniteNumber(counts.error, 0) + stFiniteNumber(counts.warning, 0) + stFiniteNumber(counts.review, 0);
+    var selectionCount = Math.max(0, Math.round(stFiniteNumber(options.selectionCount, 0)));
+    var recommended = options.recommendedExport || (doc ? stRecommendedExportAction(doc) : null);
+    var ready = doc ? stBuildReadyActions(doc).actions[0] : null;
+    var commands = [];
+    function push(cmd) {
+      if (!cmd || !cmd.id) return;
+      commands.push(Object.assign({ enabled: true, keywords: '', hint: '' }, cmd));
+    }
+    push({ id: 'insert-heading1', group: 'Insert', label: 'Insert Heading 1', hint: 'Add a main title text box.', keywords: 'h1 title heading text' });
+    push({ id: 'insert-heading2', group: 'Insert', label: 'Insert Heading 2', hint: 'Add a section heading.', keywords: 'h2 subheading section text' });
+    push({ id: 'insert-body', group: 'Insert', label: 'Insert body text', hint: 'Add a paragraph text box.', keywords: 'paragraph text body' });
+    push({ id: 'insert-rect', group: 'Insert', label: 'Insert rectangle', hint: 'Add a shape block.', keywords: 'shape box card background' });
+    push({ id: 'insert-ellipse', group: 'Insert', label: 'Insert ellipse', hint: 'Add a circle or oval shape.', keywords: 'shape circle oval' });
+    push({ id: 'fix-next-a11y', group: 'Accessibility', label: ready ? 'Fix next accessibility item' : 'Accessibility is ready', hint: ready ? (ready.title || ready.message || 'Apply the next available fix.') : 'No quick accessibility fixes are open.', keywords: 'a11y accessibility fix issue alt contrast reading order', enabled: !!ready });
+    push({ id: 'open-a11y', group: 'Accessibility', label: 'Open accessibility review', hint: issueTotal ? issueTotal + ' item(s) need review.' : 'Review the current accessibility checklist.', keywords: 'a11y accessibility preflight checklist review issues' });
+    push({ id: 'export-recommended', group: 'Export', label: recommended ? ('Recommended export: ' + recommended.label) : 'Recommended export', hint: recommended ? recommended.message : 'Choose the best export path for this document.', keywords: 'download share tagged pdf html worksheet portfolio export' });
+    push({ id: 'export-panel', group: 'Export', label: 'Open export panel', hint: 'Show every export option.', keywords: 'download share png html pdf worksheet' });
+    push({ id: 'save', group: 'File', label: 'Save project file', hint: 'Download the editable AlloStudio file.', keywords: 'download local file json project' });
+    push({ id: 'portfolio', group: 'File', label: 'Save to Portfolio', hint: 'Add a read-only product card to AlloHaven.', keywords: 'allohaven portfolio product artifact' });
+    push({ id: 'view-edit', group: 'View', label: 'Back to editing', hint: 'Show the canvas editor.', keywords: 'canvas editor design' });
+    push({ id: 'view-process', group: 'View', label: 'Open process timeline', hint: 'Review the document history.', keywords: 'history process timeline reflection' });
+    push({ id: 'view-reading', group: 'View', label: 'Show reading order', hint: 'Open the screen-reader order list.', keywords: 'navigator order accessibility pdf' });
+    push({ id: 'view-layers', group: 'View', label: 'Show layers', hint: 'Open the visual stacking list.', keywords: 'navigator z stack layer' });
+    push({ id: 'zoom-fit', group: 'View', label: 'Zoom to fit', hint: 'Fit the page to the available space.', keywords: 'zoom fit page' });
+    push({ id: 'zoom-100', group: 'View', label: 'Zoom to 100%', hint: 'Show the canvas at actual size.', keywords: 'zoom actual size 100' });
+    push({ id: 'select-all', group: 'Selection', label: 'Select all objects', hint: objects.length ? objects.length + ' object(s) on the page.' : 'No objects to select.', keywords: 'selection all objects', enabled: !!objects.length });
+    push({ id: 'duplicate-selection', group: 'Selection', label: 'Duplicate selection', hint: selectionCount ? selectionCount + ' selected object(s).' : 'Select an object first.', keywords: 'copy clone selection', enabled: selectionCount > 0 });
+    push({ id: 'clear-selection', group: 'Selection', label: 'Clear selection', hint: selectionCount ? 'Deselect current objects.' : 'No selection to clear.', keywords: 'deselect escape selection', enabled: selectionCount > 0 });
+    stStyleKits(options.brandProfile).forEach(function (kit) {
+      push({ id: 'style:' + kit.key, group: 'Style', label: 'Apply style kit: ' + kit.name, hint: 'Update page colors and text styling.', keywords: 'theme style color kit ' + kit.key + ' ' + kit.name });
+    });
+    objects.slice(0, 80).forEach(function (o) {
+      var label = stObjectLabelForAgent(o);
+      push({ id: 'select-object:' + o.id, group: 'Objects', label: 'Select ' + label, hint: (o.type || 'object') + (stIsLockedObject(o) ? ' - locked' : ''), keywords: stObjectNavigatorSearchText(o), requiresQuery: true });
+    });
+    return commands;
+  }
+
+  function stFilterCommandPaletteItems(commands, query) {
+    var list = Array.isArray(commands) ? commands : [];
+    var q = stCleanText(query, 120).toLowerCase();
+    if (!q) return list.filter(function (cmd) { return !cmd.requiresQuery; });
+    var tokens = q.split(/\s+/).filter(Boolean);
+    return list.filter(function (cmd) {
+      var hay = stCleanText([cmd.id, cmd.group, cmd.label, cmd.hint, cmd.keywords].join(' '), 3000).toLowerCase();
+      return tokens.every(function (token) { return hay.indexOf(token) >= 0; });
+    });
+  }
+
+  // Color swatch palette. PURE helper gathers brand, standard, and document colors.
   function stHexNorm(c) {
     if (typeof c !== 'string') return null;
     var s = c.trim().toLowerCase();
@@ -3126,6 +3442,9 @@
     var _preflightGuide = React.useState(0); var preflightGuideIndex = _preflightGuide[0], setPreflightGuideIndex = _preflightGuide[1];
     var _preflightIssueFilter = React.useState('all'); var preflightIssueFilter = _preflightIssueFilter[0], setPreflightIssueFilter = _preflightIssueFilter[1];
     var _shortcutsOpen = React.useState(false); var shortcutsOpen = _shortcutsOpen[0], setShortcutsOpen = _shortcutsOpen[1];
+    var _commandOpen = React.useState(false); var commandOpen = _commandOpen[0], setCommandOpen = _commandOpen[1];
+    var _commandQuery = React.useState(''); var commandQuery = _commandQuery[0], setCommandQuery = _commandQuery[1];
+    var _commandIndex = React.useState(0); var commandIndex = _commandIndex[0], setCommandIndex = _commandIndex[1];
     // Fullscreen editing surface (Aaron request). Preference persists so it sticks
     // across opens; degrades silently if localStorage is unavailable.
     var _fullscreen = React.useState(function () { try { return localStorage.getItem('alloStudioFullscreen_v1') === '1'; } catch (_) { return false; } });
@@ -3137,9 +3456,12 @@
     var _templateFavoritesTick = React.useState(0); var templateFavoritesTick = _templateFavoritesTick[0], setTemplateFavoritesTick = _templateFavoritesTick[1];
     var _resourceOpen = React.useState(false); var resourceOpen = _resourceOpen[0], setResourceOpen = _resourceOpen[1];
     var _resourceSearch = React.useState(''); var resourceSearch = _resourceSearch[0], setResourceSearch = _resourceSearch[1];
+    var _resourceKindFilter = React.useState('all'); var resourceKindFilter = _resourceKindFilter[0], setResourceKindFilter = _resourceKindFilter[1];
     var _recentTick = React.useState(0); var recentTick = _recentTick[0], setRecentTick = _recentTick[1];
     var _canvasZoom = React.useState(null); var canvasZoom = _canvasZoom[0], setCanvasZoom = _canvasZoom[1];
     var _navigatorMode = React.useState('reading'); var navigatorMode = _navigatorMode[0], setNavigatorMode = _navigatorMode[1];
+    var _navigatorSearch = React.useState(''); var navigatorSearch = _navigatorSearch[0], setNavigatorSearch = _navigatorSearch[1];
+    var _navigatorFilter = React.useState('all'); var navigatorFilter = _navigatorFilter[0], setNavigatorFilter = _navigatorFilter[1];
     var _orderAssistOpen = React.useState(false); var orderAssistOpen = _orderAssistOpen[0], setOrderAssistOpen = _orderAssistOpen[1];
     var _snapEnabled = React.useState(true); var snapEnabled = _snapEnabled[0], setSnapEnabled = _snapEnabled[1];
     var _snapGuides = React.useState([]); var snapGuides = _snapGuides[0], setSnapGuides = _snapGuides[1];
@@ -3352,6 +3674,7 @@
     var quickReady = preflightIssueFilter === 'all' ? ready : (doc ? stBuildReadyActions(doc, preflightIssueFilter) : null);
     var preflightGuide = doc ? stPreflightGuide(doc, preflightGuideIndex, preflightIssueFilter) : { total: 0, index: -1, position: 0, issue: null, actions: [] };
     var exportConfidence = doc ? stExportConfidence(doc) : { status: 'blocked', cards: [] };
+    var recommendedExport = stRecommendedExportAction(doc);
     var a11yAutoFix = doc ? stBuildA11yAutoFixPlan(doc) : { ops: [], fixedTypes: [], reviewCount: 0 };
     var readingSuggestion = doc ? stReadingOrderSuggestion(doc) : { total: 0, changed: false, currentIds: [], suggestedIds: [], suggested: [], changes: [] };
     var applyReadingOrderSuggestion = function () {
@@ -3376,10 +3699,8 @@
       historyItems = Array.isArray(props.history) ? props.history : (Array.isArray(props.resourceHistory) ? props.resourceHistory : (Array.isArray(window.__alloflowHistory) ? window.__alloflowHistory : []));
     } catch (_) { historyItems = []; }
     var resourceCues = stBuildResourceCues(historyItems, { limit: 120 });
-    var resourceQuery = stCleanText(resourceSearch, 80).toLowerCase();
-    var visibleResourceCues = resourceQuery
-      ? resourceCues.filter(function (cue) { return [cue.label, cue.text, cue.kind, cue.sourceTitle, cue.sourceType].join(' ').toLowerCase().indexOf(resourceQuery) >= 0; })
-      : resourceCues;
+    var resourceKindOptions = stResourceCueKindCounts(resourceCues);
+    var visibleResourceCues = stFilterResourceCues(resourceCues, { query: resourceSearch, kind: resourceKindFilter });
 
     var startFromTemplate = function (tpl, preset) {
       _docRef.current = tpl.make(Date.now(), preset);
@@ -4393,7 +4714,7 @@
                 setTemplateFavoritesTick(function (n) { return n + 1; });
                 stAnnounce((next.indexOf(tpl.key) >= 0 ? TT('studio.template_saved', 'Template saved') : TT('studio.template_unsaved', 'Template removed')) + ': ' + tpl.name);
               };
-              var favoriteButton = h('button', { type: 'button', onClick: toggleFavorite, 'aria-pressed': favorite, style: Object.assign({}, S.tool, { textAlign: 'center', padding: '6px 8px', minHeight: '32px', whiteSpace: 'nowrap' }), title: favorite ? TT('studio.template_remove_favorite', 'Remove from saved templates') : TT('studio.template_add_favorite', 'Save this template') }, favorite ? TT('studio.template_favorited', 'Saved') : TT('studio.template_favorite', 'Save'));
+              var favoriteButton = h('button', { type: 'button', onClick: toggleFavorite, 'aria-pressed': favorite, 'aria-label': (favorite ? TT('studio.template_remove_favorite', 'Remove from saved templates') : TT('studio.template_add_favorite', 'Save this template')) + ': ' + tpl.name, style: Object.assign({}, S.tool, { textAlign: 'center', padding: '6px 8px', minHeight: '32px', whiteSpace: 'nowrap' }), title: favorite ? TT('studio.template_remove_favorite', 'Remove from saved templates') : TT('studio.template_add_favorite', 'Save this template') }, favorite ? TT('studio.template_favorited', 'Saved') : TT('studio.template_favorite', 'Save'));
               var info = h('div', { style: { display: 'flex', gap: '10px', alignItems: 'flex-start' } },
                 h('span', { style: { fontSize: '26px', flex: '0 0 auto' }, 'aria-hidden': true }, tpl.emoji),
                 h('span', { style: { minWidth: 0 } },
@@ -4408,7 +4729,7 @@
                   h('div', { style: { display: 'grid', gridTemplateColumns: '1fr auto', gap: '6px', alignItems: 'stretch' } },
                     h('div', { role: 'group', 'aria-label': tpl.name, style: { display: 'flex', gap: '6px' } },
                       [['letter-portrait', TT('studio.orient_portrait', 'Portrait')], ['letter-landscape', TT('studio.orient_landscape', 'Landscape')], ['square', TT('studio.orient_square', 'Square')]].map(function (opt) {
-                        return h('button', { key: opt[0], type: 'button', onClick: function () { startFromTemplate(tpl, opt[0]); }, style: Object.assign({}, S.tool, { flex: 1, textAlign: 'center' }) }, opt[1]);
+                        return h('button', { key: opt[0], type: 'button', 'aria-label': TT('studio.use_template', 'Use template') + ': ' + tpl.name + ' - ' + opt[1], onClick: function () { startFromTemplate(tpl, opt[0]); }, style: Object.assign({}, S.tool, { flex: 1, textAlign: 'center' }) }, opt[1]);
                       })),
                     favoriteButton));
               }
@@ -4416,11 +4737,12 @@
                 renderTemplatePreview(tpl),
                 info,
                 h('div', { style: { display: 'grid', gridTemplateColumns: '1fr auto', gap: '6px', marginTop: 'auto' } },
-                  h('button', { type: 'button', onClick: function () { startFromTemplate(tpl); }, style: Object.assign({}, S.tool, { textAlign: 'center' }) }, TT('studio.use_template', 'Use template')),
+                  h('button', { type: 'button', 'aria-label': TT('studio.use_template', 'Use template') + ': ' + tpl.name, onClick: function () { startFromTemplate(tpl); }, style: Object.assign({}, S.tool, { textAlign: 'center' }) }, TT('studio.use_template', 'Use template')),
                   favoriteButton));
             }) : h('div', { style: { gridColumn: '1 / -1', border: '1px solid ' + C.border, borderRadius: '8px', background: C.panel, color: C.text, padding: '16px' } },
               h('strong', { style: { display: 'block', fontSize: '13px' } }, TT('studio.no_templates_match', 'No templates match')),
-              h('span', { style: { display: 'block', marginTop: '4px', fontSize: '11px', color: C.muted } }, TT('studio.no_templates_match_hint', 'Try clearing the search or changing the use case.')))),
+              h('span', { style: { display: 'block', marginTop: '4px', fontSize: '11px', color: C.muted } }, TT('studio.no_templates_match_hint', 'Try clearing the search or changing the use case.')),
+              h('button', { type: 'button', style: Object.assign({}, S.tool, { marginTop: '10px', textAlign: 'center' }), onClick: function () { setTemplateFilter('all'); setTemplateUseCase('all'); setTemplateSearch(''); } }, TT('studio.clear_filters', 'Clear filters')))),
           h('p', { style: { margin: '0 18px 14px', fontSize: '11px', color: C.muted } },
             TT('studio.privacy_note', 'Everything stays on this device. Your document — including its full process history — lives in a local save file.')),
           h('input', { ref: loadRef, type: 'file', accept: '.json,application/json', style: { display: 'none' }, onChange: onLoadFile })));
@@ -4662,7 +4984,13 @@
         'aria-label': aria
       }, label);
     };
-    var orderList = doc.objects.map(function (o, i) {
+    var navigatorQuery = stCleanText(navigatorSearch, 80);
+    var navigatorFilters = stObjectNavigatorFilterCounts(doc.objects, preflight);
+    var navigatorObjects = stFilterObjectNavigatorObjects(doc.objects, navigatorQuery, navigatorFilter, preflight);
+    var navigatorMatchIds = {};
+    navigatorObjects.forEach(function (o) { navigatorMatchIds[o.id] = true; });
+    var orderList = navigatorObjects.map(function (o) {
+      var i = doc.objects.indexOf(o);
       var text = objectSummary(o, 28);
       var issueSummary = issueByObject[o.id];
       var issueTone = issueToneFor(issueSummary);
@@ -4675,7 +5003,7 @@
         h('button', { disabled: i === doc.objects.length - 1, onClick: function () { dispatch({ type: 'object.reorder', target: o.id, toIndex: i + 1 }, 'user'); stAnnounce(TT('studio.a11y_moved_later', 'Moved later in reading order')); }, title: TT('studio.reading_later', 'Read later'), 'aria-label': TT('studio.reading_later', 'Read later') + ' — ' + text, style: { border: '1px solid ' + C.border, background: C.inputBg, color: C.inputText, borderRadius: '4px', cursor: i === doc.objects.length - 1 ? 'default' : 'pointer', fontSize: '10px', opacity: i === doc.objects.length - 1 ? 0.4 : 1 } }, '↓'));
     });
 
-    var layerList = stLayerItems(doc.objects).map(function (item) {
+    var layerList = stLayerItems(doc.objects).filter(function (item) { return !!navigatorMatchIds[item.id]; }).map(function (item) {
       var o = doc.objects.filter(function (obj) { return obj && obj.id === item.id; })[0];
       var text = objectSummary(o, 30);
       var selectedLayer = selectionIds.indexOf(item.id) >= 0;
@@ -4693,6 +5021,7 @@
           h('button', { style: { border: '1px solid ' + C.border, background: C.inputBg, color: C.inputText, borderRadius: '4px', cursor: 'pointer', fontSize: '10px', padding: '2px 5px' }, onClick: function () { dispatch({ type: 'object.z', target: item.id, z: item.z + 1 }, 'user'); }, title: TT('studio.bring_forward', 'Bring forward (visual stacking only - reading order is the list)') }, '+z'),
           h('button', { style: { border: '1px solid ' + C.border, background: C.inputBg, color: C.inputText, borderRadius: '4px', cursor: 'pointer', fontSize: '10px', padding: '2px 5px' }, onClick: function () { dispatch({ type: 'object.z', target: item.id, z: Math.max(0, item.z - 1) }, 'user'); }, title: TT('studio.send_back', 'Send backward') }, '-z')));
     });
+    var visibleNavigatorList = navigatorMode === 'layers' ? layerList : orderList;
     var readingOrderTone = readingSuggestion.changed ? statusTone('review') : statusTone('success');
     var readingOrderAssistant = (navigatorMode === 'reading' && readingSuggestion.total > 1) ? h('div', { style: { border: '1px solid ' + readingOrderTone.border, background: readingOrderTone.bg, color: readingOrderTone.fg, borderRadius: '8px', padding: '7px', fontSize: '10.5px', lineHeight: 1.35 } },
       h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: '6px', alignItems: 'baseline' } },
@@ -4710,27 +5039,36 @@
 
     var propPanel = null;
     if (selectedGroup.length > 1) {
+      var groupSummary = stSelectionSummary(doc.objects, selectionIds);
+      var groupHint = groupSummary.allLocked ? TT('studio.group_all_locked', 'All selected objects are locked. Unlock them before aligning, duplicating, or deleting.')
+        : groupSummary.lockedCount ? TT('studio.group_locked_hint', 'Locked objects stay selected but are skipped by move, align, duplicate, and delete actions.')
+          : TT('studio.group_hint', 'Use Shift/Ctrl-click on the canvas to add or remove objects from this group.');
+      var disabledGroupTool = function (disabled, extra) { return Object.assign({}, S.tool, extra || null, disabled ? { opacity: 0.45, cursor: 'default' } : null); };
       propPanel = h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
         h('div', { style: S.label }, TT('studio.group_selection', 'Selection') + ' - ' + selectedGroup.length + ' objects'),
-        h('div', { style: { padding: '7px', border: '1px solid ' + C.border, borderRadius: '8px', background: C.panelAlt, color: C.muted, fontSize: '10.5px', lineHeight: 1.35 } },
-          TT('studio.group_hint', 'Use Shift/Ctrl-click on the canvas to add or remove objects from this group.')),
+        h('div', { style: { padding: '7px', border: '1px solid ' + C.border, borderRadius: '8px', background: C.panelAlt, color: C.text, fontSize: '10.5px', lineHeight: 1.35 } },
+          h('strong', { style: { display: 'block', fontSize: '11px' } }, groupSummary.label),
+          h('span', { style: { display: 'block', color: C.muted, marginTop: '2px' } }, (groupSummary.typeText || TT('studio.objects', 'Objects')) + (groupSummary.boundsLabel ? ' - ' + TT('studio.selection_size', 'Size') + ': ' + groupSummary.boundsLabel : '')),
+          groupSummary.lockedCount ? h('span', { style: { display: 'block', color: C.muted, marginTop: '2px', fontWeight: 800 } }, groupSummary.lockedCount + ' ' + TT('studio.locked', 'Locked') + ' - ' + groupSummary.unlockedCount + ' ' + TT('studio.editable', 'editable')) : null),
+        h('div', { style: { padding: '7px', border: '1px solid ' + C.border, borderRadius: '8px', background: C.panelAlt, color: C.muted, fontSize: '10.5px', lineHeight: 1.35 } }, groupHint),
         h('div', { style: S.label }, 'Align group'),
         h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px' } },
-          layoutButton('Left', 'Align selected objects left', function () { alignSelectedGroup('left'); }),
-          layoutButton('Center', 'Center selected objects horizontally', function () { alignSelectedGroup('hcenter'); }),
-          layoutButton('Right', 'Align selected objects right', function () { alignSelectedGroup('right'); }),
-          layoutButton('Top', 'Align selected objects top', function () { alignSelectedGroup('top'); }),
-          layoutButton('Middle', 'Center selected objects vertically', function () { alignSelectedGroup('vcenter'); }),
-          layoutButton('Bottom', 'Align selected objects bottom', function () { alignSelectedGroup('bottom'); })),
+          layoutButton('Left', 'Align selected objects left', function () { alignSelectedGroup('left'); }, !groupSummary.canAlign),
+          layoutButton('Center', 'Center selected objects horizontally', function () { alignSelectedGroup('hcenter'); }, !groupSummary.canAlign),
+          layoutButton('Right', 'Align selected objects right', function () { alignSelectedGroup('right'); }, !groupSummary.canAlign),
+          layoutButton('Top', 'Align selected objects top', function () { alignSelectedGroup('top'); }, !groupSummary.canAlign),
+          layoutButton('Middle', 'Center selected objects vertically', function () { alignSelectedGroup('vcenter'); }, !groupSummary.canAlign),
+          layoutButton('Bottom', 'Align selected objects bottom', function () { alignSelectedGroup('bottom'); }, !groupSummary.canAlign)),
         h('div', { style: S.label }, 'Distribute'),
         h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' } },
-          layoutButton('Horizontal', 'Distribute selected objects horizontally', function () { distributeSelectedGroup('x'); }, selectedGroup.length < 3),
-          layoutButton('Vertical', 'Distribute selected objects vertically', function () { distributeSelectedGroup('y'); }, selectedGroup.length < 3)),
+          layoutButton('Horizontal', 'Distribute selected objects horizontally', function () { distributeSelectedGroup('x'); }, !groupSummary.canDistribute),
+          layoutButton('Vertical', 'Distribute selected objects vertically', function () { distributeSelectedGroup('y'); }, !groupSummary.canDistribute)),
         h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' } },
-          h('button', { style: S.tool, onClick: duplicateSelectedGroup }, 'Duplicate'),
+          h('button', { style: disabledGroupTool(!groupSummary.canDuplicate), disabled: !groupSummary.canDuplicate, onClick: duplicateSelectedGroup }, 'Duplicate'),
           h('button', { style: S.tool, onClick: clearSelection }, 'Clear'),
-          h('button', { style: S.tool, onClick: function () { lockSelectedObjects(true); } }, TT('studio.lock', 'Lock')),
-          h('button', { style: S.tool, onClick: function () { lockSelectedObjects(false); } }, TT('studio.unlock', 'Unlock'))),
+          h('button', { style: disabledGroupTool(groupSummary.lockedCount === selectedGroup.length), disabled: groupSummary.lockedCount === selectedGroup.length, onClick: function () { lockSelectedObjects(true); } }, TT('studio.lock', 'Lock')),
+          h('button', { style: disabledGroupTool(!groupSummary.lockedCount), disabled: !groupSummary.lockedCount, onClick: function () { lockSelectedObjects(false); } }, TT('studio.unlock', 'Unlock')),
+          h('button', { style: disabledGroupTool(!groupSummary.canDelete, { color: '#b91c1c', borderColor: '#fca5a5' }), disabled: !groupSummary.canDelete, onClick: removeSelectedObjects }, TT('studio.delete', 'Delete'))),
         h('div', { style: S.label }, 'Objects'),
         h('div', { style: { display: 'flex', flexDirection: 'column', gap: '3px', maxHeight: '110px', overflowY: 'auto' } },
           selectedGroup.map(function (o) {
@@ -4760,6 +5098,18 @@
       var selectedIssueSummary = issueByObject[selected.id];
       var selectedIssueTone = selectedIssueSummary ? issueToneFor(selectedIssueSummary) : statusTone('success');
       var selectedA11yActions = stObjectReadyActions(doc, selected.id);
+      var selectedNextActions = stObjectNextActions(doc, selected.id);
+      var runSelectedNextAction = function (action) {
+        if (!action) return;
+        if (action.readyAction) { applyReadyAction(action.readyAction); return; }
+        if (action.type === 'duplicate') { duplicateSelected(); return; }
+        if (action.type === 'page-width') { alignSelected('page-width'); return; }
+        if (action.type === 'crop-image') { if (selected && selected.src) { setCropRect(null); setCropId(selected.id); } return; }
+        if (action.type === 'replace-image') { if (fileRef.current) { fileRef.current.setAttribute('data-st-replace', selected.id); fileRef.current.click(); } return; }
+        if (action.type === 'make-heading1' || action.type === 'make-body') {
+          dispatch({ type: 'object.update', target: selected.id, patch: { role: action.type === 'make-heading1' ? 'heading1' : 'body' } }, 'user');
+        }
+      };
       var selectedImageState = selected.type === 'image' ? stImageFrameState(selected) : null;
       propPanel = h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
         h('div', { style: S.label }, TT('studio.selection', 'Selection') + ' - ' + selected.type),
@@ -4767,6 +5117,15 @@
           h('input', { type: 'checkbox', checked: selectedLocked, onChange: function (e) { dispatch({ type: 'object.update', target: selected.id, patch: { locked: !!e.target.checked } }, 'user'); } }),
           selectedLocked ? TT('studio.locked', 'Locked') : TT('studio.unlocked', 'Unlocked')),
         selectedLocked ? h('div', { style: { padding: '7px', border: '1px solid ' + C.border, borderRadius: '8px', background: C.panelAlt, color: C.muted, fontSize: '10.5px', lineHeight: 1.35 } }, TT('studio.locked_hint', 'Unlock this object before moving, resizing, duplicating, or deleting it.')) : null,
+        selectedNextActions.length ? h('div', { style: { padding: '7px', border: '1px solid ' + C.border, background: C.panelAlt, color: C.text, borderRadius: '8px', fontSize: '10.5px', lineHeight: 1.3 } },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: '6px', alignItems: 'baseline', marginBottom: '5px' } },
+            h('strong', { style: { fontSize: '11px' } }, TT('studio.next_actions', 'Next actions')),
+            h('span', { style: { color: C.muted, fontSize: '9px', fontWeight: 800, textTransform: 'uppercase' } }, selected.type)),
+          h('div', { role: 'group', 'aria-label': TT('studio.next_actions', 'Next actions'), style: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '4px' } },
+            selectedNextActions.slice(0, 4).map(function (action, idx) {
+              var actionTone = action.readyAction ? selectedIssueTone : statusTone('review');
+              return h('button', { key: action.id || idx, type: 'button', onClick: function () { runSelectedNextAction(action); }, title: action.message || action.label, style: { border: '1px solid ' + actionTone.border, background: action.readyAction ? actionTone.bg : C.panel, color: action.readyAction ? actionTone.fg : C.text, borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: 900, padding: '4px 6px', lineHeight: 1.2, minHeight: '30px' } }, action.label);
+            }))) : null,
         h('div', { style: { padding: '7px', border: '1px solid ' + selectedIssueTone.border, background: selectedIssueTone.bg, color: selectedIssueTone.fg, borderRadius: '8px', fontSize: '10.5px', lineHeight: 1.35 } },
           selectedIssueSummary ? [
             h('strong', { key: 'title', style: { display: 'block', fontSize: '11px' } }, selectedIssueSummary.label + ': ' + selectedIssueSummary.title),
@@ -4895,6 +5254,7 @@
       var inField = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
       // Escape: close the shortcuts overlay first, then deselect, then close.
       if (ev.key === 'Escape') {
+        if (commandOpen) { ev.preventDefault(); setCommandOpen(false); setCommandQuery(''); setCommandIndex(0); return; }
         if (inField) return;
         if (shortcutsOpen) { ev.preventDefault(); setShortcutsOpen(false); return; }
         ev.preventDefault();
@@ -4910,7 +5270,8 @@
       if (!(ev.ctrlKey || ev.metaKey)) return;
       if (inField) return;
       var k = (ev.key || '').toLowerCase();
-      if (k === '+' || k === '=') { ev.preventDefault(); changeCanvasZoom('in'); }
+      if (k === 'k') { ev.preventDefault(); setCommandOpen(true); setCommandQuery(''); setCommandIndex(0); setShortcutsOpen(false); }
+      else if (k === '+' || k === '=') { ev.preventDefault(); changeCanvasZoom('in'); }
       else if (k === '-' || k === '_') { ev.preventDefault(); changeCanvasZoom('out'); }
       else if (k === '0') { ev.preventDefault(); changeCanvasZoom('fit'); }
       else if (k === 'z' && !ev.shiftKey) { ev.preventDefault(); if (stUndo(_docRef.current)) { bump(); stAnnounce(TT('studio.a11y_undone', 'Undone')); } }
@@ -4941,6 +5302,13 @@
       setPreflightGuideIndex(0);
       setPreflightOpen(true);
       stAnnounce(filter === 'fix' ? TT('studio.export_show_fixes', 'Showing required accessibility fixes') : TT('studio.export_show_review', 'Showing accessibility review items'));
+    };
+    var runRecommendedExport = function () {
+      var rec = recommendedExport || stRecommendedExportAction(doc);
+      if (rec.issueFilter) { openExportCardIssues(rec.issueFilter); return; }
+      if (rec.exportType === 'worksheet-pdf') { exportWorksheetPdf(); return; }
+      if (rec.exportType === 'tagged-pdf') { exportTagged(); return; }
+      exportTagged();
     };
     var modLabel = (function () { try { return /Mac|iPhone|iPad|iPod/.test(navigator.platform || navigator.userAgent || '') ? '⌘' : 'Ctrl'; } catch (_) { return 'Ctrl'; } })();
     // Canva-style quick color picker: brand swatches + a curated palette + the
@@ -4974,6 +5342,66 @@
             style: { width: '36px', height: '24px', padding: '1px', border: '1px solid ' + C.border, borderRadius: '6px', background: C.inputBg, cursor: 'pointer' },
             onChange: function (e) { onPick(e.target.value); } })));
     };
+    var commandPaletteCommands = stCommandPaletteItems(doc, { preflight: preflight, selectionCount: selectionIds.length, recommendedExport: recommendedExport, brandProfile: brandProfile });
+    var commandPaletteResults = stFilterCommandPaletteItems(commandPaletteCommands, commandQuery).slice(0, 60);
+    var activeCommandIndex = commandPaletteResults.length ? Math.max(0, Math.min(commandIndex, commandPaletteResults.length - 1)) : -1;
+    var closeCommandPalette = function () { setCommandOpen(false); setCommandQuery(''); setCommandIndex(0); };
+    var runCommandPaletteCommand = function (cmd) {
+      if (!cmd || cmd.enabled === false) return;
+      closeCommandPalette();
+      if (cmd.id.indexOf('style:') === 0) { applyStyleKit(cmd.id.slice(6)); return; }
+      if (cmd.id.indexOf('select-object:') === 0) { setView('edit'); selectOnly(cmd.id.slice(14)); return; }
+      if (cmd.id === 'insert-heading1') { setView('edit'); insertText('heading1'); return; }
+      if (cmd.id === 'insert-heading2') { setView('edit'); insertText('heading2'); return; }
+      if (cmd.id === 'insert-body') { setView('edit'); insertText('body'); return; }
+      if (cmd.id === 'insert-rect') { setView('edit'); insertShape('rect'); return; }
+      if (cmd.id === 'insert-ellipse') { setView('edit'); insertShape('ellipse'); return; }
+      if (cmd.id === 'fix-next-a11y') { var nextReadyAction = stBuildReadyActions(_docRef.current).actions[0]; if (nextReadyAction) applyReadyAction(nextReadyAction); return; }
+      if (cmd.id === 'open-a11y') { setPreflightIssueFilter('all'); setPreflightGuideIndex(0); setPreflightOpen(true); return; }
+      if (cmd.id === 'export-recommended') { setExportOpen(true); runRecommendedExport(); return; }
+      if (cmd.id === 'export-panel') { setExportOpen(true); return; }
+      if (cmd.id === 'save') { saveDoc(); return; }
+      if (cmd.id === 'portfolio') { saveToPortfolio(); return; }
+      if (cmd.id === 'view-edit') { setView('edit'); return; }
+      if (cmd.id === 'view-process') { setView('process'); return; }
+      if (cmd.id === 'view-reading') { setView('edit'); setNavigatorMode('reading'); return; }
+      if (cmd.id === 'view-layers') { setView('edit'); setNavigatorMode('layers'); return; }
+      if (cmd.id === 'zoom-fit') { changeCanvasZoom('fit'); return; }
+      if (cmd.id === 'zoom-100') { changeCanvasZoom('actual'); return; }
+      if (cmd.id === 'select-all') { selectAllObjects(); return; }
+      if (cmd.id === 'duplicate-selection') { if (selectionIds.length > 1) duplicateSelectedGroup(); else duplicateSelected(); return; }
+      if (cmd.id === 'clear-selection') { clearSelection(); }
+    };
+    var commandPaletteOverlay = commandOpen ? h('div', {
+        role: 'dialog', 'aria-modal': false, 'aria-label': TT('studio.quick_actions', 'Quick actions'),
+        style: { position: 'absolute', inset: 0, background: 'rgba(2,6,23,0.55)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', zIndex: 62, padding: layout.mode === 'phone' ? '12px' : '72px 20px 20px' },
+        onClick: function (e) { if (e.target === e.currentTarget) closeCommandPalette(); } },
+      h('div', { style: { background: C.panel, color: C.text, border: '1px solid ' + C.border, borderRadius: '8px', boxShadow: '0 18px 46px rgba(0,0,0,0.42)', maxWidth: '560px', width: '100%', maxHeight: layout.mode === 'phone' ? '92vh' : '78vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' } },
+        h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', padding: '12px 14px', borderBottom: '1px solid ' + C.border } },
+          h('div', null,
+            h('h2', { style: { margin: 0, fontSize: '15px', fontWeight: 900 } }, TT('studio.quick_actions', 'Quick actions')),
+            h('div', { style: { fontSize: '10.5px', color: C.soft, marginTop: '2px' } }, modLabel + '+K')),
+          h('button', { style: S.hBtn, 'aria-label': TT('studio.close', 'Close'), onClick: closeCommandPalette }, 'x')),
+        h('div', { style: { padding: '10px 12px', borderBottom: '1px solid ' + C.border } },
+          h('input', { autoFocus: true, value: commandQuery, placeholder: TT('studio.command_search_placeholder', 'Search commands or objects'), 'aria-label': TT('studio.command_search', 'Search quick actions'), style: Object.assign({}, S.input, { fontSize: '13px' }),
+            onChange: function (e) { setCommandQuery(e.target.value); setCommandIndex(0); },
+            onKeyDown: function (e) {
+              if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeCommandPalette(); return; }
+              if (e.key === 'ArrowDown') { e.preventDefault(); e.stopPropagation(); if (commandPaletteResults.length) setCommandIndex(function (n) { return (Math.max(0, n) + 1) % commandPaletteResults.length; }); return; }
+              if (e.key === 'ArrowUp') { e.preventDefault(); e.stopPropagation(); if (commandPaletteResults.length) setCommandIndex(function (n) { return (Math.max(0, n) + commandPaletteResults.length - 1) % commandPaletteResults.length; }); return; }
+              if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); runCommandPaletteCommand(commandPaletteResults[activeCommandIndex]); }
+            } }),
+          h('div', { role: 'status', 'aria-live': 'polite', style: { marginTop: '6px', fontSize: '10.5px', color: C.soft } }, commandPaletteResults.length + ' ' + TT('studio.command_results', 'results'))),
+        h('div', { role: 'listbox', 'aria-label': TT('studio.quick_actions', 'Quick actions'), style: { overflow: 'auto', padding: '8px', display: 'grid', gap: '5px' } },
+          commandPaletteResults.length ? commandPaletteResults.map(function (cmd, idx) {
+            var active = idx === activeCommandIndex;
+            var disabled = cmd.enabled === false;
+            return h('button', { key: cmd.id, type: 'button', disabled: disabled, role: 'option', 'aria-selected': active, style: { width: '100%', textAlign: 'left', border: '1px solid ' + (active ? C.accent : C.border), background: active ? C.selectedBg : C.panelAlt, color: disabled ? C.muted : C.text, borderRadius: '7px', padding: '8px 9px', cursor: disabled ? 'default' : 'pointer', opacity: disabled ? 0.55 : 1 }, onMouseEnter: function () { setCommandIndex(idx); }, onClick: function () { runCommandPaletteCommand(cmd); } },
+              h('span', { style: { display: 'flex', justifyContent: 'space-between', gap: '8px', alignItems: 'baseline' } },
+                h('strong', { style: { fontSize: '12px' } }, cmd.label),
+                h('span', { style: { flex: '0 0 auto', fontSize: '9px', color: C.soft, fontWeight: 900, textTransform: 'uppercase' } }, cmd.group)),
+              cmd.hint ? h('span', { style: { display: 'block', marginTop: '3px', fontSize: '10.5px', color: C.soft, lineHeight: 1.3 } }, cmd.hint) : null);
+          }) : h('p', { style: { margin: 0, padding: '8px', fontSize: '11px', color: C.soft } }, TT('studio.command_empty', 'No quick actions match this search.'))))) : null;
     var shortcutsOverlay = shortcutsOpen ? h('div', {
         role: 'dialog', 'aria-modal': false, 'aria-label': TT('studio.shortcuts', 'Keyboard shortcuts'),
         style: { position: 'absolute', inset: 0, background: 'rgba(2,6,23,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 60, padding: '20px' },
@@ -4992,6 +5420,7 @@
         h('p', { style: { fontSize: '11px', color: C.soft, margin: '12px 0 0' } }, TT('studio.shortcuts_note', 'Shortcuts work while the editor is focused, not while typing in a text box.'))
       )) : null;
     return h('div', { className: 'st-root theme-' + themeName, style: S.overlay, role: 'dialog', 'aria-modal': true, 'aria-label': TT('studio.title', 'AlloStudio'), onKeyDown: function (ev) { trapTab(ev); onShellKeyDown(ev); } },
+      commandPaletteOverlay,
       shortcutsOverlay,
       h('div', { ref: _shellRef, style: S.shell },
         // header
@@ -5008,6 +5437,7 @@
           h('button', { style: Object.assign({}, S.hBtn, { background: student ? '#7c3aed' : '#1e293b' }), 'aria-pressed': student, title: TT('studio.role_toggle_hint', 'Student mode uses portfolio framing for the process view'), onClick: function () { var next = student ? 'teacher' : 'student'; if (next === 'student') { setAgentOpen(false); setAgentPlan(null); setAgentSelectedOps([]); setAgentFollowUp(''); setDesignFeedback(null); setImgEditOpen(false); } setRole(next); } }, student ? '🎓 ' + TT('studio.role_student', 'Student mode') : '🧑‍🏫 ' + TT('studio.role_teacher', 'Teacher mode')),
           h('button', { style: Object.assign({}, S.hBtn, preflight.counts.error ? { borderColor: '#fca5a5' } : null), onClick: function () { setPreflightOpen(!preflightOpen); }, 'aria-expanded': preflightOpen }, 'A11y ' + preflightTotal),
           h('button', { style: Object.assign({}, S.hBtn, shortcutsOpen ? { borderColor: C.accent, background: C.selectedBg } : null), onClick: function () { setShortcutsOpen(!shortcutsOpen); }, 'aria-expanded': shortcutsOpen, 'aria-label': TT('studio.shortcuts', 'Keyboard shortcuts'), title: TT('studio.shortcuts_hint', 'Keyboard shortcuts (press ?)') }, '⌨'),
+          h('button', { style: Object.assign({}, S.hBtn, commandOpen ? { borderColor: C.accent, background: C.selectedBg } : null), onClick: function () { setCommandOpen(true); setCommandQuery(''); setCommandIndex(0); setShortcutsOpen(false); }, 'aria-expanded': commandOpen, 'aria-label': TT('studio.quick_actions', 'Quick actions'), title: TT('studio.quick_actions_hint', 'Quick actions (' + modLabel + '+K)') }, modLabel + '+K'),
           h('button', { style: Object.assign({}, S.hBtn, fullscreen ? { borderColor: C.accent, background: C.selectedBg } : null), onClick: function () { setFullscreen(!fullscreen); }, 'aria-pressed': fullscreen, 'aria-label': fullscreen ? TT('studio.fullscreen_exit', 'Exit fullscreen') : TT('studio.fullscreen_enter', 'Fullscreen'), title: fullscreen ? TT('studio.fullscreen_exit', 'Exit fullscreen') : TT('studio.fullscreen_enter', 'Fullscreen') }, '⛶'),
           h('span', { style: S.headerSpacer }),
           h('button', { style: S.hBtn, onClick: saveDoc }, '💾 ' + TT('studio.save', 'Save')),
@@ -5089,6 +5519,15 @@
               preflightIssueFilter !== 'all' ? h('button', { type: 'button', style: Object.assign({}, S.tool, { padding: '3px 7px', minHeight: '22px', fontSize: '10px' }), onClick: resetPreflightIssueFilter }, TT('studio.show_all_issues', 'Show all issues')) : null)) : null) : null,
         // export panel
         exportOpen ? h('div', { style: { padding: '10px 14px', background: C.exportBg, color: C.text, borderBottom: '1px solid ' + C.exportBorder, display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } },
+          (function () {
+            var rec = recommendedExport || stRecommendedExportAction(doc);
+            var tone = exportToneFor(rec.status);
+            return h('div', { style: { flex: '1 1 100%', border: '1px solid ' + tone.border, background: tone.bg, color: tone.fg, borderRadius: '8px', padding: '8px', display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' } },
+              h('div', { style: { minWidth: '180px', flex: '1 1 220px' } },
+                h('strong', { style: { display: 'block', fontSize: '12px' } }, TT('studio.recommended_export', 'Recommended export') + ': ' + rec.label),
+                h('span', { style: { display: 'block', fontSize: '10.5px', lineHeight: 1.3, marginTop: '2px' } }, rec.message)),
+              h('button', { type: 'button', style: Object.assign({}, S.tool, { flex: '0 0 auto', borderColor: tone.border, background: C.panel, color: C.text, fontWeight: 900 }), onClick: runRecommendedExport }, rec.issueFilter ? TT('studio.open_recommended_step', 'Open recommended step') : TT('studio.export_recommended', 'Export recommended')));
+          })(),
           h('div', { style: { display: 'grid', gridTemplateColumns: layout.compact ? '1fr' : 'repeat(4, minmax(150px, 1fr))', gap: '6px', flex: '1 1 100%' } },
             exportConfidence.cards.map(function (card) {
               var tone = exportToneFor(card.status);
@@ -5213,20 +5652,42 @@
               h('input', { type: 'search', value: resourceSearch, placeholder: TT('studio.resource_search', 'Search source history'), 'aria-label': TT('studio.resource_search', 'Search source history'), style: S.input,
                 onKeyDown: function (e) { e.stopPropagation(); },
                 onChange: function (e) { setResourceSearch(e.target.value); } }),
-              visibleResourceCues.length ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '230px', overflowY: 'auto' } },
+              resourceKindOptions.length > 1 ? h('div', { role: 'group', 'aria-label': TT('studio.resource_type_filter', 'Source type filter'), style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
+                resourceKindOptions.map(function (opt) {
+                  var active = resourceKindFilter === opt.kind;
+                  return h('button', { key: opt.kind, type: 'button', 'aria-pressed': active, style: Object.assign({}, S.tool, { padding: '4px 7px', minHeight: '26px', fontSize: '9.5px', textAlign: 'center' }, active ? { borderColor: C.accent, background: C.selectedBg } : null), onClick: function () { setResourceKindFilter(opt.kind); }, title: TT('studio.resource_filter_to', 'Filter source shelf to') + ' ' + opt.label }, opt.label + ' ' + opt.count);
+                })) : null,
+              h('div', { role: 'status', 'aria-live': 'polite', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '6px', color: C.soft, fontSize: '9.5px' } },
+                h('span', null, visibleResourceCues.length + ' ' + TT('studio.resource_matches', 'matching sources')),
+                (resourceKindFilter !== 'all' || stCleanText(resourceSearch, 80)) ? h('button', { type: 'button', style: Object.assign({}, S.tool, { padding: '2px 7px', minHeight: '22px', fontSize: '9.5px', textAlign: 'center' }), onClick: function () { setResourceKindFilter('all'); setResourceSearch(''); } }, TT('studio.clear_filters', 'Clear filters')) : null),
+              visibleResourceCues.length ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '250px', overflowY: 'auto' } },
                 visibleResourceCues.slice(0, 18).map(function (cue) {
+                  var actionModel = stResourceInsertActionModel(cue);
+                  var recommended = actionModel.recommended;
                   return h('div', { key: cue.id, style: { border: '1px solid ' + C.border, borderRadius: '8px', background: C.panel, padding: '7px', color: C.text } },
                     h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: '6px', alignItems: 'baseline' } },
                       h('strong', { style: { fontSize: '11px', overflowWrap: 'anywhere' } }, cue.label),
                       h('span', { style: { flexShrink: 0, color: C.muted, fontSize: '9px', fontWeight: 800, textTransform: 'uppercase' } }, cue.kind || 'resource')),
                     cue.sourceTitle ? h('div', { style: { color: C.soft, fontSize: '9.5px', marginTop: '2px' } }, cue.sourceTitle) : null,
                     cue.text ? h('p', { style: { margin: '4px 0 6px', color: C.muted, fontSize: '10.5px', lineHeight: 1.35 } }, cue.text.slice(0, 150) + (cue.text.length > 150 ? '...' : '')) : null,
+                    recommended ? h('button', { type: 'button', style: Object.assign({}, S.tool, { width: '100%', margin: '2px 0 6px', borderColor: C.accent, background: C.selectedBg, textAlign: 'left', padding: '6px 8px', minHeight: '44px' }), onClick: function () { insertResourceCue(cue, recommended.id); }, title: TT('studio.resource_recommended_hint', 'Add the best-fit editable layout for this source'), 'aria-label': TT('studio.resource_add_recommended', 'Add recommended') + ': ' + recommended.label + ' - ' + cue.label },
+                      h('span', { style: { display: 'block', fontSize: '10.5px', fontWeight: 900, color: C.text } }, TT('studio.resource_add_recommended', 'Add recommended') + ': ' + recommended.label),
+                      h('span', { style: { display: 'block', marginTop: '2px', fontSize: '9px', color: C.muted, lineHeight: 1.25 } }, recommended.rationale + (recommended.preview ? ' - ' + recommended.preview.objectCount + ' ' + TT('studio.resource_preview_items', 'items') : ''))) : null,
+                    h('details', { style: { margin: '2px 0 6px', borderTop: '1px solid ' + C.border, paddingTop: '5px' } },
+                      h('summary', { style: { cursor: 'pointer', color: C.soft, fontSize: '9.5px', fontWeight: 800 } }, TT('studio.resource_preview_choices', 'Preview insert choices')),
+                      h('div', { style: { display: 'flex', flexDirection: 'column', gap: '3px', marginTop: '5px' } },
+                        actionModel.modes.map(function (action) {
+                          return h('div', { key: action.id, style: { display: 'grid', gridTemplateColumns: '78px 1fr', gap: '5px', color: C.muted, fontSize: '9.5px', lineHeight: 1.25 } },
+                            h('strong', { style: { color: C.text } }, action.label + (action.recommended ? ' *' : '')),
+                            h('span', null, action.preview.summary));
+                        }))),
                     h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '4px' }, role: 'group', 'aria-label': TT('studio.insert_resource_as', 'Insert resource as') + ': ' + cue.label },
-                      stResourceInsertModes(cue).map(function (mode) {
-                        var preview = stResourceInsertPreview(cue, mode.id);
-                        return h('button', { key: mode.id, style: Object.assign({}, S.tool, { textAlign: 'center', padding: '5px 6px', fontSize: '10px', minHeight: '40px', lineHeight: 1.15 }), onClick: function () { insertResourceCue(cue, mode.id); }, title: TT('studio.insert_resource_as', 'Insert resource as') + ' ' + mode.label + ' - ' + preview.summary },
-                          h('span', { style: { display: 'block' } }, mode.label),
-                          h('span', { style: { display: 'block', marginTop: '2px', color: C.muted, fontSize: '8.5px', fontWeight: 700 } }, preview.objectCount + ' ' + TT('studio.resource_preview_items', 'items')));
+                      actionModel.modes.map(function (action) {
+                        var preview = action.preview;
+                        var modeRecommended = !!action.recommended;
+                        return h('button', { key: action.id, 'aria-label': TT('studio.insert_resource_as', 'Insert resource as') + ' ' + action.label + ': ' + cue.label + (modeRecommended ? ' - ' + TT('studio.resource_recommended', 'Recommended') : ''), style: Object.assign({}, S.tool, { textAlign: 'center', padding: '5px 6px', fontSize: '10px', minHeight: '40px', lineHeight: 1.15 }, modeRecommended ? { borderColor: C.accent, background: C.selectedBg } : null), onClick: function () { insertResourceCue(cue, action.id); }, title: TT('studio.insert_resource_as', 'Insert resource as') + ' ' + action.label + ' - ' + preview.summary },
+                          h('span', { style: { display: 'block' } }, action.label),
+                          h('span', { style: { display: 'block', marginTop: '2px', color: C.muted, fontSize: '8.5px', fontWeight: 700 } }, modeRecommended ? TT('studio.resource_recommended', 'Recommended') : (preview.objectCount + ' ' + TT('studio.resource_preview_items', 'items'))));
                       })));
                 })) : h('p', { style: { color: C.muted, fontSize: '10.5px', lineHeight: 1.35, margin: 0 } },
                 resourceCues.length ? TT('studio.no_resource_matches', 'No matching resources found.') : TT('studio.no_resources', 'No source history resources are available yet.'))) : null,
@@ -5276,8 +5737,19 @@
               h('button', { style: Object.assign({}, S.tool, { textAlign: 'center', padding: '6px 4px', fontSize: '10.5px' }, navigatorMode === 'reading' ? { borderColor: C.accent, background: C.selectedBg } : null), 'aria-pressed': navigatorMode === 'reading', onClick: function () { setNavigatorMode('reading'); } }, TT('studio.reading_order_short', 'Reading order')),
               h('button', { style: Object.assign({}, S.tool, { textAlign: 'center', padding: '6px 4px', fontSize: '10.5px' }, navigatorMode === 'layers' ? { borderColor: C.accent, background: C.selectedBg } : null), 'aria-pressed': navigatorMode === 'layers', onClick: function () { setNavigatorMode('layers'); } }, TT('studio.layers', 'Layers'))),
             h('div', { style: { fontSize: '10px', color: C.soft, lineHeight: 1.3 } }, navigatorMode === 'layers' ? TT('studio.layers_hint', 'Visual stack only. Reading order stays in the other tab.') : TT('studio.reading_order_hint', 'This is what screen readers and tagged PDF follow.')),
+            h('div', { role: 'group', 'aria-label': TT('studio.navigator_filter', 'Object filters'), style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
+              navigatorFilters.map(function (filter) {
+                var active = navigatorFilter === filter.key;
+                var disabled = filter.count === 0 && !active;
+                return h('button', { key: filter.key, type: 'button', disabled: disabled, 'aria-pressed': active, 'aria-label': filter.label + ', ' + filter.count + ' ' + TT('studio.objects', 'Objects'), style: Object.assign({}, S.tool, { flex: '0 0 auto', padding: '4px 6px', fontSize: '10px', minHeight: '26px' }, active ? { borderColor: C.accent, background: C.selectedBg, color: C.text } : null, disabled ? { opacity: 0.45, cursor: 'default' } : null), onClick: function () { setNavigatorFilter(filter.key); } }, filter.label + ' ' + filter.count);
+              })),
+            h('div', { style: { display: 'flex', gap: '4px', alignItems: 'center' } },
+              h('input', { value: navigatorSearch, placeholder: TT('studio.navigator_search_placeholder', 'Search objects'), 'aria-label': TT('studio.navigator_search', 'Search objects'), style: Object.assign({}, S.input, { flex: '1 1 auto' }),
+                onKeyDown: function (e) { e.stopPropagation(); }, onChange: function (e) { setNavigatorSearch(e.target.value); } }),
+              navigatorQuery ? h('button', { type: 'button', style: Object.assign({}, S.tool, { flex: '0 0 auto', padding: '5px 7px' }), onClick: function () { setNavigatorSearch(''); } }, TT('studio.clear', 'Clear')) : null),
+            (navigatorQuery || navigatorFilter !== 'all') ? h('div', { role: 'status', 'aria-live': 'polite', style: { fontSize: '10px', color: C.soft, lineHeight: 1.3 } }, navigatorObjects.length + ' / ' + doc.objects.length + ' ' + TT('studio.objects', 'Objects') + (navigatorFilter !== 'all' ? ' - ' + navigatorFilters.filter(function (f) { return f.key === navigatorFilter; }).map(function (f) { return f.label; })[0] : '')) : null,
             readingOrderAssistant,
-            h('div', { style: S.readingList }, navigatorMode === 'layers' ? layerList : orderList),
+            h('div', { style: S.readingList }, visibleNavigatorList.length ? visibleNavigatorList : h('p', { style: { margin: 0, padding: '4px', fontSize: '11px', color: C.soft } }, TT('studio.navigator_empty', 'No objects match this search.'))),
             propPanel || h('p', { style: { fontSize: '11px', color: C.soft } }, TT('studio.no_selection', 'Select an object on the canvas (or in the list above) to edit its properties.')))),
         h('input', { ref: fileRef, type: 'file', accept: 'image/*', style: { display: 'none' },
           onChange: function (ev) {
@@ -5364,11 +5836,18 @@
   AlloStudio.stExportProcessMarkdown = stExportProcessMarkdown;
   AlloStudio.stBuildResourceCues = stBuildResourceCues;
   AlloStudio.stResourceInsertModes = stResourceInsertModes;
+  AlloStudio.stRecommendedResourceInsertMode = stRecommendedResourceInsertMode;
+  AlloStudio.stResourceInsertActionModel = stResourceInsertActionModel;
+  AlloStudio.stResourceCueKindLabel = stResourceCueKindLabel;
+  AlloStudio.stResourceCueSearchText = stResourceCueSearchText;
+  AlloStudio.stResourceCueKindCounts = stResourceCueKindCounts;
+  AlloStudio.stFilterResourceCues = stFilterResourceCues;
   AlloStudio.stObjectsFromResourceCue = stObjectsFromResourceCue;
   AlloStudio.stResourceInsertPreview = stResourceInsertPreview;
   AlloStudio.stSuggestTextColor = stSuggestTextColor;
   AlloStudio.stBuildReadyActions = stBuildReadyActions;
   AlloStudio.stObjectReadyActions = stObjectReadyActions;
+  AlloStudio.stObjectNextActions = stObjectNextActions;
   AlloStudio.stBuildAccessibilityChecklist = stBuildAccessibilityChecklist;
   AlloStudio.stObjectIssueSummary = stObjectIssueSummary;
   AlloStudio.stBuildA11yAutoFixPlan = stBuildA11yAutoFixPlan;
@@ -5379,6 +5858,7 @@
   AlloStudio.stPreflightGuide = stPreflightGuide;
   AlloStudio.stFilterPreflightIssues = stFilterPreflightIssues;
   AlloStudio.stExportConfidence = stExportConfidence;
+  AlloStudio.stRecommendedExportAction = stRecommendedExportAction;
   AlloStudio.stProcessStepGroups = stProcessStepGroups;
   AlloStudio.stIssueIndexForObject = stIssueIndexForObject;
   AlloStudio.stNextPreflightGuideIndex = stNextPreflightGuideIndex;
@@ -5386,9 +5866,13 @@
   AlloStudio.stStyleKits = stStyleKits;
   AlloStudio.stStyleKitPatch = stStyleKitPatch;
   AlloStudio.stLayerItems = stLayerItems;
+  AlloStudio.stObjectNavigatorSearchText = stObjectNavigatorSearchText;
+  AlloStudio.stFilterObjectNavigatorObjects = stFilterObjectNavigatorObjects;
+  AlloStudio.stObjectNavigatorFilterCounts = stObjectNavigatorFilterCounts;
   AlloStudio.stReadingOrderSuggestion = stReadingOrderSuggestion;
   AlloStudio.stIsLockedObject = stIsLockedObject;
   AlloStudio.stSelectionBounds = stSelectionBounds;
+  AlloStudio.stSelectionSummary = stSelectionSummary;
   AlloStudio.stAlignFramesAsGroup = stAlignFramesAsGroup;
   AlloStudio.stDistributeFramesAsGroup = stDistributeFramesAsGroup;
   AlloStudio.stMoveFramesAsGroup = stMoveFramesAsGroup;
@@ -5396,6 +5880,8 @@
   AlloStudio.stCanvasFitScale = stCanvasFitScale;
   AlloStudio.stAdjustCanvasZoom = stAdjustCanvasZoom;
   AlloStudio.stShortcutList = stShortcutList;
+  AlloStudio.stCommandPaletteItems = stCommandPaletteItems;
+  AlloStudio.stFilterCommandPaletteItems = stFilterCommandPaletteItems;
   AlloStudio.stSwatchPalette = stSwatchPalette;
   AlloStudio.stHexNorm = stHexNorm;
   AlloStudio.stSnapFrame = stSnapFrame;

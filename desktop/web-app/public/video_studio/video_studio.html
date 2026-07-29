@@ -5333,6 +5333,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     $('recIndicator').hidden = true;
     $('startBtn').disabled = false; $('startBtn').textContent = '⏺ Start recording';
     $('pauseBtn').textContent = '⏸ Pause';
+    syncDemoExecutionControls();
     if (!raw.size || dur < 0.4) {
       // Consume demo state here too — leaking demoState.active past this
       // early return would rename and caption the NEXT unrelated take.
@@ -5404,7 +5405,23 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     });
   }
 
-  $('startBtn').addEventListener('click', startRecording);
+  function startManualRecordingOrApprovedDemo() {
+    var hasApprovedDemo = false;
+    try { hasApprovedDemo = !!approvedDemoSteps().length; } catch (_) {}
+    if (hasApprovedDemo) {
+      if ($('demoStartBtn').disabled) {
+        setStatus($('demoStatus'), 'The approved demo is busy or still being checked. Wait for “3 · Record the demo” to become available.', 'warn');
+        try { $('demoStartBtn').scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (_) {}
+        $('demoStartBtn').focus();
+        return;
+      }
+      setStatus($('demoStatus'), 'Starting the approved demo — the lower recording control now uses the reviewed plan.', 'ok');
+      $('demoStartBtn').click();
+      return;
+    }
+    startRecording();
+  }
+  $('startBtn').addEventListener('click', startManualRecordingOrApprovedDemo);
   $('pauseBtn').addEventListener('click', pauseResume);
   $('stopBtn').addEventListener('click', stopRecording);
 
@@ -12853,6 +12870,12 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         ? 'Unavailable during a Demo Autopilot run — AlloFlow would keep driving itself while the recording was frozen. Use “Stop demo”.'
         : '';
     }
+    if ($('startBtn') && !recording) {
+      $('startBtn').textContent = hasPlan ? '▶ Record approved demo' : '⏺ Start recording';
+      $('startBtn').title = hasPlan
+        ? 'Starts Demo Autopilot with the reviewed steps above.'
+        : 'Starts a manual screen, tab, or camera recording.';
+    }
     syncDemoPlanEditorControls();
   }
   function setDemoPlanningBusy(busy, kind) {
@@ -12864,7 +12887,12 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     var loadingOfficial = demoPlanSourceBusy && demoPlanSourceKind === 'official';
     $('demoPlanBtn').setAttribute('aria-busy', planning ? 'true' : 'false');
     $('demoOfficialTextBtn').setAttribute('aria-busy', loadingOfficial ? 'true' : 'false');
-    $('demoPlanBtn').textContent = planning ? 'Planning demo...' : demoPlanDefaultLabel;
+    $('demoPlanBtn').textContent = planning
+      ? 'Planning demo...'
+      : (demoState.officialId ? '✨ Replace official plan with Gemini plan' : demoPlanDefaultLabel);
+    $('demoPlanBtn').title = demoState.officialId
+      ? 'The official tutorial is already ready. Use this only to replace it with a different Gemini-planned sequence.'
+      : '';
     $('demoOfficialTextBtn').textContent = loadingOfficial ? 'Loading tutorial...' : demoOfficialDefaultLabel;
     $('demoPlanCancelBtn').hidden = !busy;
     $('demoPlanCancelBtn').textContent = loadingOfficial ? 'Cancel tutorial load' : 'Cancel planning';
@@ -12906,7 +12934,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       if (resp.error) {
         setStatus($('demoStatus'), 'Could not draft a plan: ' + resp.error, 'bad');
       } else if (!resp.steps || !resp.steps.length) {
-        setStatus($('demoStatus'), 'Gemini couldn’t map that goal to a safe, runnable command sequence. Describe concrete visible actions — for example “open the Educator Hub, then open the Document Builder”.', 'warn');
+        setStatus($('demoStatus'), demoState.officialId
+          ? 'Gemini couldn’t replace the official tutorial with a safe command sequence. The official plan is still loaded — press “3 · Record the demo” or the lower “Record approved demo” button.'
+          : 'Gemini couldn’t map that goal to a safe, runnable command sequence. Any current plan is unchanged. Describe concrete visible actions — for example “open the Educator Hub, then open the Document Builder”.', 'warn');
       } else {
         cleanupOfficialTutorial();
         clearDemoContinuation();
@@ -12952,7 +12982,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       demoState.originalSteps = demoState.steps.map(function (step) { return Object.assign({}, step); });
       $('demoGoal').value = 'Official tutorial: adapt a short science passage for Grade 5 readers';
       renderDemoPlan();
-      setStatus($('demoStatus'), 'Official Text Adaptation tutorial ready. It uses fixture content and restores your workspace after recording.', 'ok');
+      setStatus($('demoStatus'), 'Official Text Adaptation tutorial ready. It uses fixture content and restores your workspace after recording. Next, press “3 · Record the demo” or the lower “Record approved demo” button.', 'ok');
       announce('Official Text Adaptation tutorial ready');
     } catch (e) {
       if (generation !== demoPlanRequestGeneration) return;
@@ -13099,9 +13129,12 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       var capVal = demoState.captureValidation || null;
       var capLabel = (capVal && capVal.label) || captureTrackLabel || 'AlloFlow tab';
       var capInferred = !!(capVal && capVal.inferred);
+      try {
+        if (opener && !opener.closed && typeof opener.focus === 'function') opener.focus();
+      } catch (_) {}
       setStatus($('demoStatus'), (capInferred ? 'Probable tab capture: ' : 'Verified tab capture: ') + capLabel
         + (capInferred ? ' (deduced from the Canvas stream name — the browser did not name the tab, so double-check the preview before you rely on it).' : '.')
-        + ' Switch to that tab now; AlloFlow will wait until it is visible.', capInferred ? 'warn' : 'ok');
+        + ' AlloFlow was asked to come forward; if it did not, switch to that tab now. Automatic actions wait until it is visible.', capInferred ? 'warn' : 'ok');
       setDemoPrivacyIndicator(capInferred
         ? 'recording a tab that AlloFlow could not name directly — confirm the preview shows only AlloFlow. Video stays local; completed narration text may be sent to the configured speech provider.'
         : 'recording the verified AlloFlow tab only. Video stays local; completed narration text may be sent to the configured speech provider.', capInferred ? 'warn' : 'ok');

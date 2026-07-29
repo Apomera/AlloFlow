@@ -465,4 +465,30 @@ describe('homework QR hardening', () => {
     expect(headerSource).toContain('<option value={30}>30 days</option>');
     expect(headerPublicModule).toBe(headerModule);
   });
+
+  it('keeps shared asynchronous activities opt-in, mailbox-hosted, and visually subordinate to homework sharing', () => {
+    expect(headerSource).toContain('Shared class activity (optional)');
+    expect(headerSource).toContain('Add a shared asynchronous activity');
+    expect(headerSource).toContain('<option value="word_cloud">Word Cloud</option>');
+    expect(headerSource).toContain('<option value="rating">Rating scale (not scored)</option>');
+    expect(headerSource).toContain('After teacher review (safer)');
+    expect(headerSource).toContain('Uses your Class Mailbox so students can contribute while you are offline.');
+    expect(rootSource).toContain("enabled: false,\n      type: 'word_cloud'");
+    expect(rootSource).toContain('buildAssignmentPackEncoded({ includeSharedActivity: true })');
+    expect(rootSource).toContain('activities: built.sharedActivities');
+    expect(rootSource).toContain('sharedActivity: built.sharedActivities[0] || null');
+    expect(rootSource).toContain('if (sharedAssignmentActivity.enabled) {\n          return hostPackOnMailbox();');
+    expect(rootSource).toContain('sharedActivities: sharedActivities.length ? sharedActivities : undefined');
+    expect(rootSource).toContain("a: 'joinactivity'");
+    expect(rootSource).toContain("a: 'activityupsert'");
+    expect(rootSource).toContain("a: 'getactivityadmin', admin, id: packId, aid: activityId");
+    expect(rootSource).toContain("a: 'getactivitysummary', id: packId, aid: activityId");
+    expect(rootSource).toContain("a: 'moderateactivity'");
+    expect(rootSource).toContain('window.AlloModules?.LivePolling?.renderWordCloudItems');
+    expect(rootSource).toContain("Manage shared {qrShareModal.sharedActivity.type === 'rating' ? 'class rating' : 'class Word Cloud'}");
+    expect(rootSource).toContain('Only the anonymous distribution appears after the participation threshold.');
+    expect(rootSource).toContain('!isTeacherMode && sharedHostedActivity &&');
+    expect(rootSource).toContain('Students contribute on their own time.');
+    expect(headerPublicModule).toBe(headerModule);
+  });
 });

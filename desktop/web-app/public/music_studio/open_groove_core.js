@@ -1037,7 +1037,13 @@
     { id: 'ascending', name: 'Ascending', density: 0.68 },
     { id: 'callResponse', name: 'Call / Response', density: 0.58 }
   ];
-  var OG_DRUM_GROOVE_STYLES = [
+  var OG_MOTIF_TRANSFORMS = [
+    { id: 'sequenceUp', name: 'Sequence Up', shortName: 'Up', summary: 'Copies the motif one scale step higher.' },
+    { id: 'sequenceDown', name: 'Sequence Down', shortName: 'Down', summary: 'Copies the motif one scale step lower.' },
+    { id: 'invert', name: 'Invert Around First Note', shortName: 'Invert', summary: 'Flips melodic direction around the first pitch.' },
+    { id: 'retrograde', name: 'Retrograde Pitch Order', shortName: 'Reverse', summary: 'Reverses the pitch order while keeping the rhythm.' },
+    { id: 'simplify', name: 'Simplify Rhythm', shortName: 'Simplify', summary: 'Keeps the clearest beat-level version of the motif.' }
+  ];  var OG_DRUM_GROOVE_STYLES = [
     {
       id: 'boomBap',
       name: 'Boom Bap',
@@ -5064,6 +5070,270 @@
     };
   }
 
+  function ogListMotifTransforms() {
+    return ogClone(OG_MOTIF_TRANSFORMS);
+  }
+
+  function ogNormalizeMotifTransform(transformId) {
+    var id = String(transformId || '').trim();
+    for (var i = 0; i < OG_MOTIF_TRANSFORMS.length; i++) {
+      if (OG_MOTIF_TRANSFORMS[i].id === id) return OG_MOTIF_TRANSFORMS[i];
+    }
+    return OG_MOTIF_TRANSFORMS[0];
+  }
+
+  function ogNotationEventStartTick(event) {
+    if (!event) return 0;
+    if (event.notation && event.notation.startTick != null) return ogInt(event.notation.startTick, ogInt(event.startTick, 0));
+    if (event.notationStartTick != null) return ogInt(event.notationStartTick, ogInt(event.startTick, 0));
+    return ogInt(event.startTick, 0);
+  }
+
+  function ogNotationEventDurationTicks(event, fallback) {
+    if (!event) return Math.max(1, ogInt(fallback, 1));
+    if (event.notation && event.notation.durationTicks != null) return Math.max(1, ogInt(event.notation.durationTicks, fallback));
+    if (event.notationDurationTicks != null) return Math.max(1, ogInt(event.notationDurationTicks, fallback));
+    return Math.max(1, ogInt(event.durationTicks, fallback));
+  }
+
+  function ogMotifDurationLabel(project, durationTicks) {
+    var notation = ogMusicXmlDurationNotationFromTicks(project, durationTicks);
+    if (notation && notation.type) return (notation.dots ? 'dotted ' : '') + notation.type;
+    var beats = Math.round((durationTicks / ogTicksPerBeat(project)) * 100) / 100;
+    return beats + ' beat' + (beats === 1 ? '' : 's');
+  }
+
+  function ogCollectMotifNotes(project, pattern, trackId, sourceBar, bars) {
+    var measureTicks = ogTicksPerMeasure(project);
+    var startTick = Math.max(0, ogInt(sourceBar, 0)) * measureTicks;
+    var spanTicks = Math.max(1, ogInt(bars, 1)) * measureTicks;
+    var endTick = Math.min(ogPatternLengthTicks(project, pattern), startTick + spanTicks);
+    var notes = [];
+    (pattern.events || []).forEach(function (event) {
+      if (!event || event.type !== 'note') return;
+      if (trackId && event.trackId !== trackId) return;
+      var notationStart = ogNotationEventStartTick(event);
+      if (notationStart < startTick || notationStart >= endTick) return;
+      var midi = event.midi != null ? ogInt(event.midi, null) : ogNoteNameToMidi(event.pitch || event.notation && event.notation.spelling);
+      if (midi == null) return;
+      var duration = Math.min(endTick - notationStart, ogNotationEventDurationTicks(event, ogTicksPerBeat(project)));
+      notes.push({
+        id: event.id,
+        pitch: event.notation && event.notation.spelling || event.pitch || ogMidiToNoteName(midi),
+        midi: Math.max(0, Math.min(127, midi)),
+        startTick: notationStart,
+        localStart: Math.max(0, notationStart - startTick),
+        durationTicks: Math.max(1, duration),
+        velocity: ogNormalizeVelocity(event.velocity),
+        articulation: ogSafeString(event.articulation, 'normal'),
+        role: ogSafeString(event.role, 'motif')
+      });
+    });
+    notes.sort(function (a, b) { return a.localStart - b.localStart || a.midi - b.midi; });
+    return { notes: notes, startTick: startTick, endTick: endTick, spanTicks: Math.max(1, endTick - startTick) };
+  }
+
+  function ogBuildScaleMidiLadder(project) {
+    var key = project && project.key || {};
+    var scale = ogBuildScale(key.tonic || 'C', key.mode || 'minor');
+    var pcs = [];
+    scale.forEach(function (note) {
+      var pc = ogPitchClassFromName(note);
+      if (pc != null && pcs.indexOf(pc) < 0) pcs.push(pc);
+    });
+    if (!pcs.length) pcs = [0, 2, 4, 5, 7, 9, 11];
+    var ladder = [];
+    for (var midi = 0; midi <= 127; midi++) {
+      if (pcs.indexOf(midi % 12) >= 0) ladder.push(midi);
+    }
+    return ladder;
+  }
+
+  function ogNearestScaleMidi(project, targetMidi, fallbackMidi) {
+    var target = Math.max(0, Math.min(127, Math.round(ogFinite(targetMidi, fallbackMidi == null ? 60 : fallbackMidi))));
+    var fallback = fallbackMidi == null ? target : Math.round(ogFinite(fallbackMidi, target));
+    var ladder = ogBuildScaleMidiLadder(project);
+    var best = ladder[0] || target;
+    var bestScore = Infinity;
+    ladder.forEach(function (midi) {
+      var score = Math.abs(midi - target) * 100 + Math.abs(midi - fallback);
+      if (score < bestScore) {
+        best = midi;
+        bestScore = score;
+      }
+    });
+    return best;
+  }
+
+  function ogStepScaleMidi(project, midiLike, steps) {
+    var midi = Math.max(0, Math.min(127, Math.round(ogFinite(midiLike, 60))));
+    var ladder = ogBuildScaleMidiLadder(project);
+    var index = 0;
+    var bestDistance = Infinity;
+    ladder.forEach(function (candidate, i) {
+      var distance = Math.abs(candidate - midi);
+      if (distance < bestDistance) {
+        index = i;
+        bestDistance = distance;
+      }
+    });
+    return ladder[Math.max(0, Math.min(ladder.length - 1, index + ogInt(steps, 0)))] || midi;
+  }
+
+  function ogBuildMotifAnalysis(project, patternId, trackId, options) {
+    options = options || {};
+    var pattern = ogFindPattern(project, patternId || (project && project.patterns && project.patterns[0] && project.patterns[0].id));
+    if (!pattern) return { available: false, noteCount: 0, transformCount: OG_MOTIF_TRANSFORMS.length, suggestions: ['Create a pattern before analyzing a motif.'] };
+    var sourceBar = Math.max(0, Math.min(Math.max(1, pattern.bars) - 1, ogInt(options.sourceBar, options.selectedBar || 0)));
+    var bars = Math.max(1, Math.min(Math.max(1, pattern.bars) - sourceBar, ogInt(options.bars, 1)));
+    var collected = ogCollectMotifNotes(project, pattern, trackId, sourceBar, bars);
+    var notes = collected.notes;
+    var intervals = [];
+    for (var i = 1; i < notes.length; i++) intervals.push(notes[i].midi - notes[i - 1].midi);
+    var contour = intervals.map(function (interval) { return interval > 0 ? 'up' : interval < 0 ? 'down' : 'repeat'; });
+    var rhythmMap = {};
+    var rhythms = [];
+    notes.forEach(function (note) {
+      var label = ogMotifDurationLabel(project, note.durationTicks);
+      if (!rhythmMap[label]) {
+        rhythmMap[label] = true;
+        rhythms.push(label);
+      }
+    });
+    var minMidi = notes.length ? notes.reduce(function (min, note) { return Math.min(min, note.midi); }, 127) : null;
+    var maxMidi = notes.length ? notes.reduce(function (max, note) { return Math.max(max, note.midi); }, 0) : null;
+    var beatTicks = ogTicksPerBeat(project);
+    var density = Math.round((notes.length / Math.max(1, collected.spanTicks / beatTicks)) * 100) / 100;
+    var suggestions = [];
+    if (!notes.length) suggestions.push('Add a short staff idea to this bar, then transform it into the next bar.');
+    else {
+      suggestions.push('Sequence the motif to create a teachable repeated idea.');
+      if (intervals.some(function (interval) { return Math.abs(interval) >= 5; })) suggestions.push('Try inversion to show how leaps can change direction.');
+      if (density > 1.25) suggestions.push('Simplify rhythm before exporting beginner notation.');
+      if (notes.length >= 3) suggestions.push('Use retrograde pitch order for a clear variation lesson.');
+    }
+    return {
+      available: true,
+      sourceBar: sourceBar,
+      bars: bars,
+      startTick: collected.startTick,
+      endTick: collected.endTick,
+      noteCount: notes.length,
+      pitchRange: notes.length ? ogMidiToNoteName(minMidi) + '-' + ogMidiToNoteName(maxMidi) : 'None',
+      contour: contour,
+      contourLabel: contour.length ? contour.join(' / ') : notes.length === 1 ? 'single note' : 'empty',
+      intervals: intervals,
+      rhythmCells: rhythms,
+      rhythmLabel: rhythms.length ? rhythms.join(', ') : 'No rhythm yet',
+      density: density,
+      transformCount: OG_MOTIF_TRANSFORMS.length,
+      suggestions: suggestions,
+      notes: notes.map(function (note) { return ogClone(note); })
+    };
+  }
+
+  function ogSimplifyMotifNotes(project, notes, spanTicks) {
+    var beatTicks = ogTicksPerBeat(project);
+    var earliestByBeat = {};
+    notes.forEach(function (note) {
+      var beatIndex = Math.floor(note.localStart / beatTicks);
+      if (earliestByBeat[beatIndex] == null || note.localStart < earliestByBeat[beatIndex]) earliestByBeat[beatIndex] = note.localStart;
+    });
+    return notes.filter(function (note) {
+      var beatIndex = Math.floor(note.localStart / beatTicks);
+      return note.localStart === earliestByBeat[beatIndex];
+    }).map(function (note) {
+      var beatIndex = Math.floor(note.localStart / beatTicks);
+      var localStart = beatIndex * beatTicks;
+      var copy = ogClone(note);
+      copy.localStart = localStart;
+      copy.durationTicks = Math.max(1, Math.min(beatTicks, spanTicks - localStart));
+      return copy;
+    });
+  }
+
+  function ogWriteMotifTransform(project, patternId, trackId, options) {
+    options = options || {};
+    var pattern = ogFindPattern(project, patternId);
+    if (!pattern) throw new Error('OpenGroove: pattern not found');
+    var track = ogFindTrack(project, trackId);
+    if (!track || track.type !== 'synth') throw new Error('OpenGroove: synth track not found');
+    var transform = ogNormalizeMotifTransform(options.transform || options.transformId);
+    var sourceBar = Math.max(0, Math.min(Math.max(1, pattern.bars) - 1, ogInt(options.sourceBar, options.selectedBar || 0)));
+    var bars = Math.max(1, Math.min(Math.max(1, pattern.bars) - sourceBar, ogInt(options.bars, 1)));
+    var destinationBar = options.destinationBar == null ? sourceBar + bars : ogInt(options.destinationBar, sourceBar + bars);
+    if (destinationBar < 0 || destinationBar + bars > Math.max(1, pattern.bars)) throw new Error('OpenGroove: motif destination is outside the pattern');
+    if (destinationBar === sourceBar && options.allowInPlace !== true) throw new Error('OpenGroove: choose a different destination bar for motif transform');
+    var collected = ogCollectMotifNotes(project, pattern, trackId, sourceBar, bars);
+    var notes = collected.notes;
+    var analysis = ogBuildMotifAnalysis(project, pattern.id, trackId, { sourceBar: sourceBar, bars: bars });
+    if (!notes.length) return { transformId: transform.id, transformName: transform.name, sourceBar: sourceBar, destinationBar: destinationBar, bars: bars, noteCount: 0, replacedCount: 0, skippedCount: 0, rangeFitCount: 0, events: [], analysis: analysis, summary: 'No motif notes found in bar ' + (sourceBar + 1) + '.' };
+    var measureTicks = ogTicksPerMeasure(project);
+    var patternTicks = ogPatternLengthTicks(project, pattern);
+    var destStart = destinationBar * measureTicks;
+    var destEnd = Math.min(patternTicks, destStart + bars * measureTicks);
+    var axisMidi = notes[0].midi;
+    var sourceNotes = transform.id === 'simplify' ? ogSimplifyMotifNotes(project, notes, collected.spanTicks) : notes.map(function (note) { return ogClone(note); });
+    var instrumentRange = options.fitToInstrumentRange === false ? null : ogBuildInstrumentRange(options.presetId || track.instrument && track.instrument.presetId || '');
+    var rangeFitCount = 0;
+    var skipped = 0;
+    var transformed = sourceNotes.map(function (note, index) {
+      var midi = note.midi;
+      if (transform.id === 'sequenceUp') midi = ogStepScaleMidi(project, midi, 1);
+      else if (transform.id === 'sequenceDown') midi = ogStepScaleMidi(project, midi, -1);
+      else if (transform.id === 'invert') midi = ogNearestScaleMidi(project, axisMidi + (axisMidi - midi), midi);
+      else if (transform.id === 'retrograde') midi = notes[Math.max(0, notes.length - 1 - index)].midi;
+      if (instrumentRange) {
+        var fit = ogFitMidiToInstrumentRange(midi, instrumentRange);
+        if (fit && fit.changed) {
+          midi = fit.midi;
+          rangeFitCount += 1;
+        }
+      }
+      return Object.assign({}, note, { midi: midi, pitch: ogMidiToNoteName(midi) });
+    }).sort(function (a, b) { return a.localStart - b.localStart || a.midi - b.midi; });
+    var replaced = options.replace === false ? 0 : ogClearTrackEvents(project, pattern.id, trackId, { fromTick: destStart, toTick: destEnd, types: ['note'] });
+    var created = [];
+    transformed.forEach(function (note) {
+      var startTick = destStart + Math.max(0, ogInt(note.localStart, 0));
+      if (startTick >= destEnd) {
+        skipped += 1;
+        return;
+      }
+      var duration = Math.max(1, Math.min(destEnd - startTick, ogInt(note.durationTicks, ogTicksPerBeat(project))));
+      created.push(ogAppendEvent(project, pattern.id, {
+        type: 'note',
+        trackId: trackId,
+        pitch: note.pitch,
+        spelling: note.pitch,
+        midi: note.midi,
+        startTick: startTick,
+        durationTicks: duration,
+        notationStartTick: startTick,
+        notationDurationTicks: duration,
+        velocity: note.velocity,
+        articulation: note.articulation,
+        role: 'motif',
+        source: 'motifTransform',
+        phraseId: 'motif-' + transform.id + '-' + (destinationBar + 1)
+      }));
+    });
+    return {
+      transformId: transform.id,
+      transformName: transform.name,
+      sourceBar: sourceBar,
+      destinationBar: destinationBar,
+      bars: bars,
+      noteCount: created.length,
+      replacedCount: replaced,
+      skippedCount: skipped,
+      rangeFitCount: rangeFitCount,
+      pitchRange: created.length ? ogBuildMotifAnalysis(project, pattern.id, trackId, { sourceBar: destinationBar, bars: bars }).pitchRange : 'None',
+      events: created,
+      analysis: analysis,
+      summary: transform.name + ' wrote ' + created.length + ' note' + (created.length === 1 ? '' : 's') + ' to bar ' + (destinationBar + 1) + '.'
+    };
+  }
   function ogAddAsset(project, assetLike) {
     assetLike = assetLike || {};
     if (!project || !Array.isArray(project.assets)) throw new Error('OpenGroove: project is not ready');
@@ -6002,6 +6272,7 @@
     OG_AUTOMATION_TARGETS: ogListAutomationTargets(),
     OG_SONG_FORM_PRESETS: ogListSongFormPresets(),
     OG_MELODY_PHRASE_STYLES: ogListMelodyPhraseStyles(),
+    OG_MOTIF_TRANSFORMS: ogListMotifTransforms(),
     OG_DRUM_GROOVE_STYLES: ogListDrumGrooveStyles(),
     ogClone: ogClone,
     ogCreateProject: ogCreateProject,
@@ -6110,6 +6381,10 @@
     ogListMelodyPhraseStyles: ogListMelodyPhraseStyles,
     ogNormalizeMelodyPhraseStyle: ogNormalizeMelodyPhraseStyle,
     ogWriteMelodyPhrase: ogWriteMelodyPhrase,
+    ogListMotifTransforms: ogListMotifTransforms,
+    ogNormalizeMotifTransform: ogNormalizeMotifTransform,
+    ogBuildMotifAnalysis: ogBuildMotifAnalysis,
+    ogWriteMotifTransform: ogWriteMotifTransform,
     OG_STEM_TARGETS: OG_STEM_TARGETS,
     OG_STEM_ENGINE_OPTIONS: OG_STEM_ENGINE_OPTIONS,
     ogNormalizeStemMode: ogNormalizeStemMode,

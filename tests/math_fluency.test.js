@@ -55,9 +55,11 @@ it('exposes the scoring internals via the test seam', () => {
   expect(typeof M.buildSessionGoal).toBe('function');
   expect(typeof M.evaluateSessionGoal).toBe('function');
   expect(typeof M.findMazePathDistance).toBe('function');
+  expect(typeof M.buildChaseRadar).toBe('function');
   expect(typeof M.updateFactMastery).toBe('function');
   expect(typeof M.parseStudentAnswer).toBe('function');
   expect(typeof M.countCorrectDigits).toBe('function');
+  expect(typeof M.formatProblemSpeech).toBe('function');
   expect(M.BENCHMARKS && M.BENCHMARKS['3']).toBeTruthy();
 });
 
@@ -313,11 +315,97 @@ describe('probe timing and comparison integrity contract', () => {
     expect(source).toContain('item.validForComparison !== false && Number.isFinite(item.dcpm)');
   });
 
+  it('protects active work and destructive history clearing with accessible confirmation', () => {
+    const source = readFileSync(resolve(process.cwd(), 'math_fluency_module.js'), 'utf8');
+    expect(source).toContain("window.addEventListener('beforeunload', guardActiveSession)");
+    expect(source).toContain("window.removeEventListener('beforeunload', guardActiveSession)");
+    expect(source).toContain("role: 'alertdialog'");
+    expect(source).toContain("'aria-labelledby': 'mf-end-early-title'");
+    expect(source).toContain("'aria-labelledby': 'mf-clear-history-title'");
+    expect(source).toContain('setConfirmEndEarly(true)');
+    expect(source).toContain('setConfirmClearHistory(true)');
+    expect(source).toContain('Fact mastery progress is kept.');
+  });
+
   it('suppresses coaching cues during fixed comparable forms', () => {
     const source = readFileSync(resolve(process.cwd(), 'math_fluency_module.js'), 'utf8');
     expect(source).toContain('!isFixedRun && soundEnabled');
     expect(source).toContain("runConfigRef.current.mode === 'benchmark')) return");
     expect(source).toContain("config.mode !== 'benchmark'");
+  });
+});
+
+describe('student supports, adaptation, and review', () => {
+  it('uses bounded adaptive levels', () => {
+    expect(M.getAdaptivePracticeLevel({ firstTryStreak: 3, coachedOrMissed: 0 })).toBe('stretch');
+    expect(M.getAdaptivePracticeLevel({ firstTryStreak: 0, coachedOrMissed: 2 })).toBe('support');
+    expect(M.getAdaptivePracticeLevel({ firstTryStreak: 1, coachedOrMissed: 0 })).toBe('steady');
+  });
+
+  it('turns session evidence into a student-facing next action', () => {
+    const review = M.buildStudentSessionReview({ accuracy: 80, factInsights: [{ attempts: 1, correct: 1, problem: { a: 2, b: 3, symbol: '+' } }], focusFacts: [{ a: 4, b: 5, symbol: '+' }] });
+    expect(review).toMatchObject({ nextAction: 'practice-missed', nextLabel: 'Practice missed facts' });
+    expect(review.strengthened).toHaveLength(1);
+  });
+
+  it('formats each operation as a concise spoken question', () => {
+    expect(M.formatProblemSpeech({ a: 8, b: 3, op: 'add' })).toBe('8 plus 3. What is the answer?');
+    expect(M.formatProblemSpeech({ a: 8, b: 3, op: 'sub' })).toBe('8 minus 3. What is the answer?');
+    expect(M.formatProblemSpeech({ a: 8, b: 3, op: 'mul' })).toBe('8 times 3. What is the answer?');
+    expect(M.formatProblemSpeech({ a: 8, b: 2, op: 'div' })).toBe('8 divided by 2. What is the answer?');
+    expect(M.formatProblemSpeech({ a: 8, b: 2, op: 'unknown' })).toBe('');
+  });
+
+  it('keeps sensory supports persistent and adaptation out of fixed forms', () => {
+    const source = readFileSync(resolve(process.cwd(), 'math_fluency_module.js'), 'utf8');
+    expect(source).toContain('MF_SUPPORT_PREFS_KEY');
+    expect(source).toContain("className: 'mf-touch-keypad'");
+    expect(source).toContain("configNow.adaptivePractice && !configNow.focusedPractice && !configNow.smartReview");
+    expect(source).toContain("disabled: probeMode === 'benchmark'");
+    expect(source).toContain("className: 'mf-student-review'");
+    expect(source).toContain("config.mode === 'benchmark') config.readAloud = false");
+    expect(source).toContain("!isFixedRun && !isUntimedRun && !calmDisplayRun");
+    expect(source).toContain("className: 'mf-replay-fact'");
+    expect(source).toContain("className: 'mf-supports-used'");
+    expect(source).toContain("id: 'mf-session-preview'");
+    expect(source).toContain("disabled: !setupBenchmarkReady");
+    expect(source).toContain("config.mode !== 'benchmark' && !config.calmDisplay");
+    expect(source).toContain("background: isUntimedRun || calmDisplayRun");
+    expect(source).toContain("function renderSessionReadiness()");
+    expect(source).toContain("className: 'mf-learning-supports', 'data-active-count': setupSupportCount");
+    expect(source).toContain("className: 'mf-mastery-map'");
+    expect(source).not.toContain("return h('details', { open: true");
+    expect(source).toContain("className: 'mf-fluency-hero'");
+    expect(source).toContain("var operationPalette = {");
+    expect(source).toContain("className: 'mf-equation-operator'");
+    expect(source).toContain("'data-operation': prob.op");
+    expect(source).toContain(".mf-fluency-hero-controls");
+  });
+});
+
+describe('Accuracy Focus draft recovery', () => {
+  const now = new Date('2026-07-28T12:00:00.000Z');
+  const validDraft = {
+    version: 1, savedAt: now.getTime() - 1000, currentIndex: 1, elapsedMs: 2400,
+    pauseStats: { count: 1, seconds: 3 },
+    config: { mode: 'practice', grade: '3', operation: 'add', difficulty: 'focus', timeLimit: 0, untimed: true, strategyCoach: true, goal: { id: 'accuracy-90', metric: 'accuracy', target: 90, label: '90% accuracy' } },
+    problems: [
+      { a: 2, b: 3, op: 'add', symbol: '+', answer: 5, studentAnswer: 5, correct: true, responseMs: 800 },
+      { a: 4, b: 4, op: 'add', symbol: '+', answer: 8, studentAnswer: null, correct: null, responseMs: null, attemptLog: [{ studentAnswer: 7, correct: false, responseMs: 900 }] },
+    ],
+  };
+
+  it('accepts a bounded Accuracy Focus checkpoint and sanitizes its problem state', () => {
+    const draft = M.sanitizeAccuracyDraft(validDraft, now);
+    expect(draft).toMatchObject({ currentIndex: 1, elapsedMs: 2400, pauseStats: { count: 1, seconds: 3 }, config: { mode: 'practice', untimed: true, timeLimit: 0, strategyCoach: true } });
+    expect(draft.problems[1].attemptLog).toEqual([{ studentAnswer: 7, correct: false, responseMs: 900 }]);
+  });
+
+  it('rejects timed, benchmark, stale, and structurally incomplete checkpoints', () => {
+    expect(M.sanitizeAccuracyDraft({ ...validDraft, config: { ...validDraft.config, untimed: false, timeLimit: 60 } }, now)).toBeNull();
+    expect(M.sanitizeAccuracyDraft({ ...validDraft, config: { ...validDraft.config, mode: 'benchmark' } }, now)).toBeNull();
+    expect(M.sanitizeAccuracyDraft({ ...validDraft, savedAt: now.getTime() - 8 * 86400000 }, now)).toBeNull();
+    expect(M.sanitizeAccuracyDraft({ ...validDraft, problems: [validDraft.problems[1], validDraft.problems[0]] }, now)).toBeNull();
   });
 });
 
@@ -331,12 +419,29 @@ describe('Accuracy Focus and responsive probe contract', () => {
     expect(source).toContain("tt('math_fluency.accuracy_focus_practice', 'Accuracy Focus Practice')");
   });
 
+  it('offers a response-time-safe pause only in Accuracy Focus', () => {
+    const source = readFileSync(resolve(process.cwd(), 'math_fluency_module.js'), 'utf8');
+    expect(source).toContain("'aria-label': tt('math_fluency.pause_accuracy_focus', 'Pause Accuracy Focus')");
+    expect(source).toContain("'aria-label': tt('math_fluency.resume_accuracy_focus', 'Resume Accuracy Focus')");
+    expect(source).toContain('isUntimedRun && !practicePaused');
+    expect(source).toContain('itemPausedMsRef.current += pausedMs');
+    expect(source).toContain('if (manualPracticePauseRef.current !== null) return');
+    expect(source).toContain("e.key === 'p' || e.key === 'P'");
+    expect(source).toContain('practicePauseCount: practicePauseStatsRef.current.count');
+    expect(source).toContain('saveAccuracyDraft({');
+    expect(source).toContain("config.mode !== 'practice'");
+  });
+
   it('provides scoped small-screen layouts for setup, active practice, and results', () => {
     const source = readFileSync(resolve(process.cwd(), 'math_fluency_module.js'), 'utf8');
     expect(source).toContain('@media (max-width: 640px), (max-height: 700px)');
     expect(source).toContain("className: 'mf-active-probe fixed inset-0'");
     expect(source).toContain("className: 'mf-problem-card'");
     expect(source).toContain("className: 'mf-results-metrics'");
+    expect(source).toContain("className: 'mf-results-header'");
+    expect(source).toContain("className: 'mf-results-summary'");
+    expect(source).toContain("className: 'mf-accuracy-ring', role: 'img'");
+    expect(source).toContain("className: 'mf-metric-card', 'data-metric': m.id");
     expect(source).toContain("className: 'mf-config-grid'");
     expect(source).toContain('min-height: 100dvh');
   });
@@ -576,5 +681,18 @@ describe('session goal integrity', () => {
       { date: '2026-07-23T12:00:00.000Z', mode: 'practice', operation: 'add', accuracy: 70, totalCorrect: 7, totalAttempted: 10, goalResult: { met: false, status: 'incomplete' } },
     ], {}, { days: 30, mode: 'all', operation: 'all' }, '3', {}, new Date('2026-07-26T12:00:00.000Z'));
     expect(report).toMatchObject({ goalsMet: 1, goalSessions: 2, goalRate: 50 });
+  });
+});
+
+describe('Chase Mode proximity radar', () => {
+  const corridor = (length) => [Array.from({ length }, (_, index) => ({
+    walls: { top: true, right: index === length - 1, bottom: true, left: index === 0 },
+  }))];
+
+  it('uses wall-safe distance and non-color-only danger labels', () => {
+    const maze = corridor(9);
+    expect(M.buildChaseRadar(maze, { r: 0, c: 0 }, { r: 0, c: 1 })).toMatchObject({ distance: 1, bearing: 'E', level: 'danger', label: 'Danger', strength: 4 });
+    expect(M.buildChaseRadar(maze, { r: 0, c: 0 }, { r: 0, c: 4 })).toMatchObject({ distance: 4, bearing: 'E', level: 'near', label: 'Monster nearby', strength: 3 });
+    expect(M.buildChaseRadar(maze, { r: 0, c: 0 }, { r: 0, c: 8 })).toMatchObject({ distance: 8, bearing: null, level: 'distant', label: 'Monster distant', strength: 1 });
   });
 });

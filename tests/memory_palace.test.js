@@ -610,6 +610,11 @@ describe('MemoryPalace - live 3D organizer HUD contract', () => {
     expect(view).toContain('onKeyDownCapture={handleTourInteraction}');
     expect(view).toContain('window.AlloSpeechPlayer');
     expect(view).toContain('window.__alloPlaybackRate');
+    expect(view).toContain('const tourRoomGroups = progressStops.reduce');
+    expect(view).toContain('Room {current} of {total}');
+    expect(view).toContain('memory stops in this room');
+    expect(view).toContain('Route complete');
+    expect(view).toContain('Try a guided recall walk');
     expect(view).toContain('Reduced-motion settings use instant camera cuts.');
   });
 });

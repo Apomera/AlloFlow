@@ -1439,8 +1439,31 @@ function normalizeStandardsDimension(rawReports, configuredStandards) {
 
 
 const handleGenerate = async (type, langOverride = null, keepLoading = false, textOverride = null, configOverride = {}, switchView = true, deps) => {
-  const { gradeLevel, outlineType, visualStyle, visualCustomStyle, visualLayoutMode, quizMcqCount, persistedLessonDNA, leveledTextCustomInstructions, quizCustomInstructions, glossaryCustomInstructions, frameCustomInstructions, adventureCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, lessonCustomAdditions, timelineTopic, sourceTopic, history, inputText, differentiationRange, leveledTextLanguage, selectedLanguages, studentInterests, guidedMode, guidedStep, standardsInput, targetStandards, dokLevel, sourceLength, sourceTone, textFormat, useEmojis, fullPackTargetGroup, rosterKey, imageGenerationStyle, imageAspectRatio, enableEmojiInline, cellGameDifficulty, includeSourceCitations, includeBibliography, currentUiLanguage, sourceCustomInstructions, sourceVocabulary, sourceLevel, generatedContent, mathSubject, mathMode, mathInput, mathQuantity, isAutoConfigEnabled, resourceCount, isParentMode, isIndependentMode, isTeacherMode, frameType, fillInTheBlank, vocabularyType, enableFactionResources, factionResourceMode, isAdventureStoryMode, isSocialStoryMode, isImmersiveMode, adventureChanceMode, adventureConsistentCharacters, adventureFreeResponseEnabled, adventureLanguageMode, adventureInputMode, apiKey, setIsMapLocked, setIsProcessing, setGenerationStep, setInteractionMode, setDefinitionData, setSelectionMenu, setRevisionData, setIsReviewGame, setReviewGameState, setGuidedStep, setGeneratedContent, setActiveView, setHistory, setError, setShowKokoroOfferModal, alloBotRef, pdfFixResult, addToast, t, warnLog, debugLog, callGemini, cleanJson, safeJsonParse, callImagen, extractSourceTextForProcessing, formatLessonDNA, getDifferentiationGrades, getGroupDifferentiationContext, flyToElement, fisherYatesShuffle, sanitizeTruncatedCitations, normalizeCitationPlacement, fixCitationPlacement, generateBibliographyString, processGrounding, parseFlowChartData, verifyMathProblems, normalizeResourceLinks, detectClimaxArchetype, handleGenerateLessonPlan, handleGenerateMath, handleGenerateSource, autoConfigureSettings, applyDetailedAutoConfig, getAssetManifest, getLessonContext, buildLessonPlanPrompt, buildStudyGuidePrompt, buildParentGuidePrompt, GUIDED_STEPS, LENGTH_THRESHOLDS, TIMELINE_MODE_DEFINITIONS, audioRef, autoRemoveWords, bridgeSimType, bridgeStepCount, conceptImageMode, conceptItemCount, conceptSortImageStyle, creativeMode, faqCount, glossaryDefinitionLevel, glossaryImageStyle, glossaryTier2Count, glossaryTier3Count, includeCharts, includeEtymology, includeTimelineVisuals, isBotVisible, isMathGraphEnabled, keepCitations, leveledTextLength, noText, passAnalysisToQuiz, quizReflectionCount, selectedConcepts, standardsPromptString, timelineImageStyle, timelineItemCount, timelineMode, useLowQualityVisuals, setGameMode, setGlossarySearchTerm, setIsConceptMapReady, setIsEditingAnalysis, setIsEditingBrainstorm, setIsEditingFaq, setIsEditingGlossary, setIsEditingLeveledText, setIsEditingOutline, setIsEditingQuiz, setIsEditingScaffolds, setIsGeneratingPersona, setIsInteractiveVenn, setIsMatchingGame, setIsMemoryGame, setIsPlaying, setIsPresentationMode, setIsSideBySide, setIsStudentBingoGame, setIsVennPlaying, setPersonaState, setPresentationState, setProcessingProgress, setShowQuizAnswers, setStickers, calculateReadability, callGeminiImageEdit, checkAccuracyWithSearch, chunkText, countWords, executeVisualPlan, filterEducationalSources, formatMathQuestion, generateHelpfulHint, generateVisualPlan, getDefaultTitle, performDeepVerification, repairGeneratedText, resetPersonaInterviewState, validateSequenceStructure } = deps;
+  const { gradeLevel, outlineType, visualStyle, visualCustomStyle, visualLayoutMode, quizMcqCount, persistedLessonDNA, leveledTextCustomInstructions, quizCustomInstructions, glossaryCustomInstructions, frameCustomInstructions, adventureCustomInstructions, brainstormCustomInstructions, faqCustomInstructions, outlineCustomInstructions, visualCustomInstructions, lessonCustomAdditions, timelineTopic, sourceTopic, history, inputText, differentiationRange, leveledTextLanguage, selectedLanguages, studentInterests: _ambientStudentInterests, guidedMode, guidedStep, standardsInput, targetStandards, dokLevel, sourceLength, sourceTone, textFormat, useEmojis, fullPackTargetGroup, rosterKey, imageGenerationStyle, imageAspectRatio, enableEmojiInline, cellGameDifficulty, includeSourceCitations, includeBibliography, currentUiLanguage, sourceCustomInstructions, sourceVocabulary, sourceLevel, generatedContent, mathSubject, mathMode, mathInput, mathQuantity, isAutoConfigEnabled, resourceCount, isParentMode, isIndependentMode, isTeacherMode, frameType, fillInTheBlank, vocabularyType, enableFactionResources, factionResourceMode, isAdventureStoryMode, isSocialStoryMode, isImmersiveMode, adventureChanceMode, adventureConsistentCharacters, adventureFreeResponseEnabled, adventureLanguageMode, adventureInputMode, apiKey, setIsMapLocked, setIsProcessing, setGenerationStep, setInteractionMode, setDefinitionData, setSelectionMenu, setRevisionData, setIsReviewGame, setReviewGameState, setGuidedStep, setGeneratedContent, setActiveView, setHistory, setError, setShowKokoroOfferModal, alloBotRef, pdfFixResult, addToast, t, warnLog, debugLog, callGemini, cleanJson, safeJsonParse, callImagen, extractSourceTextForProcessing, formatLessonDNA, getDifferentiationGrades, getGroupDifferentiationContext, flyToElement, fisherYatesShuffle, sanitizeTruncatedCitations, normalizeCitationPlacement, fixCitationPlacement, generateBibliographyString, processGrounding, parseFlowChartData, verifyMathProblems, normalizeResourceLinks, detectClimaxArchetype, handleGenerateLessonPlan, handleGenerateMath, handleGenerateSource, autoConfigureSettings, applyDetailedAutoConfig, getAssetManifest, getLessonContext, buildLessonPlanPrompt, buildStudyGuidePrompt, buildParentGuidePrompt, GUIDED_STEPS, LENGTH_THRESHOLDS, TIMELINE_MODE_DEFINITIONS, audioRef, autoRemoveWords, bridgeSimType, bridgeStepCount, conceptImageMode, conceptItemCount, conceptSortImageStyle, creativeMode, faqCount, glossaryDefinitionLevel, glossaryImageStyle, glossaryTier2Count, glossaryTier3Count, includeCharts, includeEtymology, includeTimelineVisuals, isBotVisible, isMathGraphEnabled, keepCitations, leveledTextLength, noText, passAnalysisToQuiz, quizReflectionCount, selectedConcepts: _ambientSelectedConcepts, standardsPromptString: _ambientStandardsPromptString, timelineImageStyle, timelineItemCount, timelineMode, useLowQualityVisuals, setGameMode, setGlossarySearchTerm, setIsConceptMapReady, setIsEditingAnalysis, setIsEditingBrainstorm, setIsEditingFaq, setIsEditingGlossary, setIsEditingLeveledText, setIsEditingOutline, setIsEditingQuiz, setIsEditingScaffolds, setIsGeneratingPersona, setIsInteractiveVenn, setIsMatchingGame, setIsMemoryGame, setIsPlaying, setIsPresentationMode, setIsSideBySide, setIsStudentBingoGame, setIsVennPlaying, setPersonaState, setPresentationState, setProcessingProgress, setShowQuizAnswers, setStickers, calculateReadability, callGeminiImageEdit, checkAccuracyWithSearch, chunkText, countWords, executeVisualPlan, filterEducationalSources, formatMathQuestion, generateHelpfulHint, generateVisualPlan, getDefaultTitle, performDeepVerification, repairGeneratedText, resetPersonaInterviewState, validateSequenceStructure, universalImageStyle, conceptSortCustomInstructions, dbqCustomInstructions, noteTakingCustomInstructions, anchorChartCustomInstructions, differentiationTypes, differentiationCustomGrades } = deps;
   try { if (window._DEBUG_GEN_DISPATCHER) console.log("[GenDispatcher] handleGenerate fired:", type); } catch(_) {}
+    // ── DA CLINICAL ISOLATION ────────────────────────────────────────────
+    // Dynamic Assessment supports (visual organizers, sentence frames) route
+    // through this shared dispatcher and pass { isolatedContext: true }. A DA
+    // probe measures a student's MODIFIABILITY on one construct; if the
+    // generated support inherits the open lesson's topic, vocabulary,
+    // standards, differentiation or student interests, the support teaches
+    // outside content and the measure is confounded. That is a validity
+    // failure, not a cosmetic one.
+    //
+    // This flag was passed by the host and read by NOBODY (verified 2026-07-27:
+    // zero occurrences of isolatedContext in this file), so every DA support
+    // silently inherited the ambient lesson. The suppression happens HERE, at
+    // each value's single computation point, rather than at the ~20 prompt
+    // template sites — missing one template site is an invisible clinical
+    // defect, whereas a value that is empty at the source cannot leak.
+    //
+    // Strictly additive: when isolatedContext is falsy, every value below is
+    // exactly what it was before. Arrays stay arrays (call sites use .length
+    // and .join), strings stay strings.
+    const _isolatedContext = !!(configOverride && configOverride.isolatedContext);
+    const standardsPromptString = _isolatedContext ? '' : _ambientStandardsPromptString;
+    const selectedConcepts = _isolatedContext ? [] : _ambientSelectedConcepts;
+    const studentInterests = _isolatedContext ? [] : _ambientStudentInterests;
     const usesLocalTextBackend = (() => {
         try {
             const w = typeof window !== 'undefined' ? window : null;
@@ -1513,15 +1536,28 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
     } else if (visualStyle === 'custom') {
         const trimmed = (visualCustomStyle || '').trim().slice(0, 120);
         effectiveVisualStyle = trimmed || 'Default';
+    } else if ((!visualStyle || visualStyle === 'Default') && (universalImageStyle || '').trim()) {
+        // Universal default image style (2026-07-28): fills in ONLY when the
+        // Visuals tool is on its own 'Default' — an explicit per-tool style
+        // always wins, and configOverride (branch above) wins over everything.
+        effectiveVisualStyle = (universalImageStyle || '').trim().slice(0, 120);
     } else {
         effectiveVisualStyle = visualStyle;
     }
     const effectiveQuizCount = configOverride.quizCount || quizMcqCount;
-    const lessonDNA = configOverride.lessonDNA || persistedLessonDNA || null;
-    const dnaPromptBlock = formatLessonDNA(lessonDNA);
+    // Isolated generations carry NO golden thread — not even an explicitly
+    // passed configOverride.lessonDNA. dnaPromptBlock is injected into several
+    // prompts verbatim, so it must be empty rather than merely unused.
+    const lessonDNA = _isolatedContext ? null : (configOverride.lessonDNA || persistedLessonDNA || null);
+    const dnaPromptBlock = _isolatedContext ? '' : formatLessonDNA(lessonDNA);
+    // Isolated generations take instructions ONLY from what the caller passed
+    // explicitly. The per-type fallbacks below are all ambient: they are the
+    // teacher's main-app custom instructions for that tool (and, for timeline,
+    // the open lesson's topic). A DA support that inherits "write everything as
+    // a pirate story about the Civil War" is not measuring the construct.
     const effCustomInstructions = (configOverride && configOverride.customInstructions)
         ? configOverride.customInstructions
-        : (
+        : _isolatedContext ? '' : (
             type === 'simplified' ? leveledTextCustomInstructions :
             type === 'quiz' ? quizCustomInstructions :
             type === 'glossary' ? glossaryCustomInstructions :
@@ -1531,9 +1567,19 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             type === 'faq' ? faqCustomInstructions :
             type === 'outline' ? outlineCustomInstructions :
             type === 'image' ? visualCustomInstructions :
-            type === 'timeline' ? (timelineTopic || sourceTopic) :
+            type === 'timeline' ? (_isolatedContext ? '' : (timelineTopic || sourceTopic)) :
+            // Added 2026-07-28: these five interpolated effCustomInstructions in
+            // their prompts (or, for lesson-plan, passed it to the prompt
+            // builders) while the resolver silently fell through to '' — the
+            // probe's structurally-always-empty class. lesson-plan's field
+            // predates this fix; the other four fields are new.
+            type === 'lesson-plan' ? lessonCustomAdditions :
+            type === 'concept-sort' ? conceptSortCustomInstructions :
+            type === 'dbq' ? dbqCustomInstructions :
+            type === 'note-taking' ? noteTakingCustomInstructions :
+            type === 'anchor-chart' ? anchorChartCustomInstructions :
             ''
-        );
+        ) || '';
     let textToProcess = textOverride;
     let carriedInputReferences = '';
     if (textToProcess === null) {
@@ -1559,8 +1605,24 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             warnLog('[Generate] Bilingual source detected — using English block for ' + type + ' generation (' + textToProcess.length + ' chars)');
         }
     }
-    if (type === 'simplified' && differentiationRange !== 'None' && Object.keys(configOverride).length === 0) {
-        const gradesToGen = getDifferentiationGrades(gradeLevel, differentiationRange);
+    // Differentiation fan-out. Was hardcoded to 'simplified'; now driven by the
+    // opt-in list so a teacher can request a differentiated SET of any resource
+    // whose branch honours configOverride.grade (17 of 20, verified by probe).
+    //
+    // Two guards, both deliberate:
+    //   - `!configOverride.grade` is the recursion guard. The re-entry below is
+    //     the only caller that passes a grade, so this is precise — unlike the
+    //     old `Object.keys(configOverride).length === 0`, which also silently
+    //     excluded quiz (the one panel whose button passes a config).
+    //   - `!configOverride.skipDifferentiation` lets batch callers opt out.
+    //     Full Pack sets it: differentiating inside a pack would multiply an
+    //     already-large run (8 resources x 3 levels = 24 generations).
+    const _diffTypes = Array.isArray(differentiationTypes) ? differentiationTypes : ['simplified'];
+    if (_diffTypes.includes(type)
+        && differentiationRange !== 'None'
+        && !configOverride.grade
+        && !configOverride.skipDifferentiation) {
+        const gradesToGen = getDifferentiationGrades(gradeLevel, differentiationRange, differentiationCustomGrades);
         if (gradesToGen.length > 1) {
             setIsProcessing(true);
             try {
@@ -1572,7 +1634,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                     // (e.g. Reading Library generating in the book's language)
                     // must not have differentiated versions silently revert to
                     // the leveledTextLanguage dropdown.
-                    await handleGenerate('simplified', langOverride, !isLast, textToProcess, { grade: grade }, false, deps);
+                    await handleGenerate(type, langOverride, !isLast, textToProcess, Object.assign({}, configOverride, { grade: grade }), false, deps);
                     if (!isLast) await new Promise(r => setTimeout(r, 800));
                 }
                 addToast(`Generated ${gradesToGen.length} differentiated versions!`, "success");
@@ -1594,11 +1656,70 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
     setIsReviewGame(false);
     setReviewGameState({ claimed: new Set(), activeQuestion: null, showAnswer: false });
     const effectiveLanguage = langOverride || leveledTextLanguage;
-    const differentiationContext = getGroupDifferentiationContext();
+    // Roster/group differentiation describes THIS CLASS's lesson groupings —
+    // ambient context that must not steer a single student's DA support.
+    const differentiationContext = _isolatedContext ? '' : getGroupDifferentiationContext();
     const dialectInstruction = effectiveLanguage !== 'English' ? "STRICT DIALECT ADHERENCE: If a specific dialect is named (e.g. 'Brazilian Portuguese' vs 'European Portuguese'), explicitly use that region's vocabulary, spelling, and grammar conventions." : "";
     const languageDirective = (effectiveLanguage && effectiveLanguage !== 'English' && effectiveLanguage !== 'All Selected Languages')
         ? `LANGUAGE: Write ALL generated student-facing text in ${effectiveLanguage}. Keep JSON keys, machine-role id values, and code/math notation in English. ${dialectInstruction}`
         : '';
+    // Shared cross-cutting directives. Each collapses to '' when its setting is
+    // unset, so adding one to a prompt changes NOTHING for a teacher who has not
+    // touched that setting. Same idiom as languageDirective — a shared fragment
+    // branches interpolate, not a central assembler. Coverage is measured, not
+    // assumed: dev-tools/check_local_llm_resource_matrix.cjs --capabilities
+    // regenerates docs/resource_setting_coverage.md after any prompt change.
+    const standardsDirective = standardsPromptString
+        ? `TARGET STANDARDS: Align content emphasis and skill focus to: "${standardsPromptString}".`
+        : '';
+    const interestsDirective = (studentInterests && studentInterests.length > 0)
+        ? `STUDENT INTERESTS: Where it fits naturally, frame examples and contexts using: ${studentInterests.join(', ')}. Never force relevance or distort factual content.`
+        : '';
+    // ── Artifact provenance ──────────────────────────────────────────────
+    // ONE builder for every resource type. This used to be a literal declared
+    // inside the 'simplified' branch plus a second, thinner literal for the
+    // other nineteen types — so quizzes, glossaries, timelines and DBQs recorded
+    // four fields while leveled text recorded eleven. A record that silently
+    // omits DoK is worse than no record: it reads as "DoK was not set."
+    //
+    // Every value is the RESOLVED one this call actually used, never global UI
+    // state. `isolatedContext` is what makes an empty standards/interests value
+    // interpretable — under DA isolation those are deliberately blanked at
+    // :1461-1463, which is otherwise indistinguishable from a teacher who set
+    // nothing. `backend` is a genuine independent variable: several branches
+    // ship twin prompts behind usesLocalTextBackend and those twins have drifted.
+    const _buildItemConfig = (extra) => Object.assign({
+        grade: effectiveGrade,
+        language: effectiveLanguage,
+        standards: standardsPromptString || "",
+        interests: studentInterests,
+        dok: dokLevel || "",
+        useEmojis: !!useEmojis,
+        customInstructions: effCustomInstructions || "",
+        imageStyle: (universalImageStyle || "").trim(),
+        backend: usesLocalTextBackend ? 'local' : 'cloud',
+        isolatedContext: _isolatedContext,
+    }, (configOverride.rosterGroupId ? {
+        rosterGroupId: configOverride.rosterGroupId,
+        rosterGroupName: configOverride.rosterGroupName,
+        rosterGroupColor: configOverride.rosterGroupColor
+    } : {}), extra || {});
+    // dokLevel and useEmojis are NOT blanked by the DA isolation block above
+    // (they are ambient task-shape settings, not lesson content), but a DA
+    // support's cognitive demand is controlled by the probe protocol, not the
+    // open lesson. Guard here so widening these directives' reach can never
+    // introduce a new ambient influence on an isolated support.
+    const emojiDirective = (useEmojis && !_isolatedContext)
+        ? 'VISUAL SUPPORT: Add a relevant emoji next to key items or headings to support comprehension (UDL visual support). Keep them purposeful, not decorative clutter.'
+        : '';
+    // "Mixed" is a real option in the quiz panel (and now the universal panel);
+    // interpolating it raw asks the model to target a level literally named
+    // "Mixed". Mirror the quiz branch's progressive-ladder wording instead.
+    const dokDirective = (!dokLevel || _isolatedContext)
+        ? ''
+        : dokLevel === 'Mixed'
+            ? 'COGNITIVE DEMAND: Vary the cognitive demand progressively — begin at DOK 1 (Recall), move through DOK 2 (Skill/Concept), and finish at DOK 3 (Strategic Thinking).'
+            : `COGNITIVE DEMAND: Target Webb's Depth of Knowledge — ${dokLevel}.`;
     if (effectiveLanguage === 'All Selected Languages' && !langOverride) {
         // Opt-IN list: types whose prompts genuinely honor effectiveLanguage.
         // Anything not listed regenerates once in English instead of fanning out into
@@ -1686,7 +1807,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         if (glossaryDefinitionLevel === 'Same as Source Text') {
             levelContext = "Write definitions that match the reading level/complexity of the provided source text.";
         } else if (glossaryDefinitionLevel === 'Same as Global Level') {
-            levelContext = `Write definitions simplified for a ${gradeLevel} student.`;
+            levelContext = `Write definitions simplified for a ${effectiveGrade} student.`;
         } else {
              levelContext = `Write definitions simplified for a ${glossaryDefinitionLevel} student.`;
         }
@@ -1701,12 +1822,14 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                 ? `For each term, add a "translations" object for these languages: ${langsReq.join(', ')}. Use "Translated Term: Translated Definition" as each value.`
                 : 'Do not include translations.';
             const prompt = `
-              Analyze the source excerpt and identify vocabulary for ${gradeLevel} students.
+              Analyze the source excerpt and identify vocabulary for ${effectiveGrade} students.
               Choose up to ${localTermLimit} useful terms total, balancing Academic and Domain-Specific vocabulary when possible.
               ${levelContext}
               ${localLangInstruction}
               ${effCustomInstructions ? `Prioritize these terms or concepts if they appear: "${effCustomInstructions}".` : ''}
               ${useEmojis ? 'Include a helpful emoji only when it clarifies the term.' : 'Do not use emojis.'}
+              ${standardsDirective}
+              ${interestsDirective}
               Return ONLY valid JSON with this shape:
               { "terms": [{ "term": "Name", "def": "Student-friendly definition", "tier": "Academic" | "Domain-Specific"${langsReq.length > 0 ? ', "translations": { "Language": "Translated Term: Translated Definition" }' : ''} }] }
               Source excerpt:
@@ -1753,7 +1876,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               3. Translations into: ${langsReq.join(', ')}.
               ${includeEtymology ? `
               4. Etymology / Word Roots for EVERY term (Academic AND Domain-Specific):
-                 Provide 2-4 plain sentences on the word's origin, appropriate for a ${gradeLevel} student.
+                 Provide 2-4 plain sentences on the word's origin, appropriate for a ${effectiveGrade} student.
                  MANDATORY requirements — do NOT skip any:
                  (a) The ACTUAL root morpheme(s) must appear verbatim as named strings in the "roots" array below — e.g., for "photosynthesis" the roots are "photo" and "synthesis". Do NOT write vague phrases like "comes from Greek" without naming the specific word/morpheme.
                  (b) Include brief word history when known: when/how the term entered English, meaning-shift over time, or who coined it. If unknown, skip this sentence — do not invent history.
@@ -1777,6 +1900,8 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               ${langsReq.length > 0 ? "STRICT DIALECT ADHERENCE: For any requested language that specifies a region (e.g. 'Brazilian Portuguese'), use that specific dialect's conventions." : ""}
               CRITICAL FOR TRANSLATIONS: Provide both the translated TERM and the translated DEFINITION.
               Format: "Translated Term: Translated Definition",
+              ${standardsDirective}
+              ${interestsDirective}
               Return ONLY a JSON array: [{ "term": "Name", "def": "English Definition", "tier": "Academic" | "Domain-Specific", "translations": { "Lang": "TranslatedTerm: TranslatedDefinition" }${includeEtymology ? ', "etymology": "..." (optional), "etymologyByLang": { "English": "...", "Spanish": "..." } (optional, one key per requested language), "roots": [{ "root": "...", "lang": "...", "meaning": "..." }] (optional)' : ''} }]
               ${differentiationContext}
               Text: "${textToProcess}"
@@ -1793,7 +1918,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               2. The Tier category ("Academic" or "Domain-Specific").
               ${includeEtymology ? `
               3. Etymology / Word Roots for EVERY term (Academic AND Domain-Specific):
-                 Provide 2-4 plain sentences on the word's origin, appropriate for a ${gradeLevel} student.
+                 Provide 2-4 plain sentences on the word's origin, appropriate for a ${effectiveGrade} student.
                  MANDATORY requirements — do NOT skip any:
                  (a) The ACTUAL root morpheme(s) must appear verbatim as named strings in the "roots" array below — e.g., for "photosynthesis" the roots are "photo" and "synthesis". Do NOT write vague phrases like "comes from Greek" without naming the specific word/morpheme.
                  (b) Include brief word history when known: when/how the term entered English, meaning-shift over time, or who coined it. If unknown, skip this sentence — do not invent history.
@@ -1812,6 +1937,8 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               ` : ''}
               ${effCustomInstructions ? `IMPORTANT: Prioritize these specific terms/concepts if they appear in the text: "${effCustomInstructions}".` : ''}
               ${useEmojis ? 'Include a relevant emoji for each term.' : 'Do not use emojis.'}
+              ${standardsDirective}
+              ${interestsDirective}
               Return ONLY a JSON array: [{ "term": "Name", "def": "English Definition", "tier": "Academic" | "Domain-Specific"${includeEtymology ? ', "etymology": "..." (optional), "roots": [{ "root": "...", "lang": "...", "meaning": "..." }] (optional)' : ''} }]
               ${differentiationContext}
               Text: "${textToProcess}"
@@ -1861,7 +1988,8 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
             const processedContent = [];
             const generateImageWithRetry = async (item, index, total) => {
                 try {
-                    const styleInstruction = glossaryImageStyle.trim() ? `Style: ${glossaryImageStyle}.` : 'Simple, clear, flat vector art style.';
+                    const _glossaryStyle = (glossaryImageStyle || '').trim() || (universalImageStyle || '').trim();
+                    const styleInstruction = _glossaryStyle ? `Style: ${_glossaryStyle}.` : 'Simple, clear, flat vector art style.';
                     const imgPrompt = `Icon style illustration of "${item.term}" (Context: ${item.def}). ${styleInstruction} White background. STRICTLY NO TEXT, NO LABELS, NO LETTERS. Visual only. Educational icon.`;
                     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
                         try {
@@ -2128,18 +2256,18 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           ...citationAudit,
           stages: citationAudit.stages.map(stage => ({ ...stage }))
       });
-      const _itemConfig = {
-          grade: effectiveGrade,
-          language: effectiveLanguage,
-          standards: standardsPromptString || "",
-          interests: studentInterests,
-          citationAudit: citationAuditSnapshot(),
-          ...(configOverride.rosterGroupId ? {
-              rosterGroupId: configOverride.rosterGroupId,
-              rosterGroupName: configOverride.rosterGroupName,
-              rosterGroupColor: configOverride.rosterGroupColor
-          } : {})
-      };
+      // Provenance. Records what actually shaped THIS artifact so a generation can
+      // be reconstructed after the fact — which matters when artifacts are compared
+      // across conditions rather than just handed to a class.
+      //
+      // Two rules, both learned the hard way:
+      //   1. Record the RESOLVED value the branch used, never the global UI state.
+      //      An earlier version stamped `standards`/`interests` unconditionally, so
+      //      artifacts claimed settings their prompt never received.
+      //   2. Record the backend. The same settings produce materially different
+      //      prompts on the local vs cloud path (several branches ship twin prompts),
+      //      so "which model built this" is part of the configuration, not metadata.
+      const _itemConfig = _buildItemConfig({ citationAudit: citationAuditSnapshot() });
       const tempItem = {
           id: newId,
           type,
@@ -2458,7 +2586,8 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           ${promptInstructions}
           ${structureHint}
           ${effCustomInstructions ? `Custom Instructions: ${effCustomInstructions}` : ''}
-          Adapt the language to ${effectiveLanguage} and the complexity to ${gradeLevel}.
+          Adapt the language to ${effectiveLanguage} and the complexity to ${effectiveGrade}.
+          ${interestsDirective}
           ${standardsPromptString ? `Ensure the structure supports the cognitive requirements of Standards: "${standardsPromptString}".` : ''}
           ${useEmojis ? 'Include a relevant emoji at the start of every "main", "title", and "item" field to serve as a visual anchor.' : 'Do not use emojis.'}
           ${dialectInstruction}
@@ -2501,7 +2630,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                 throw new Error("Failed to parse Visual Organizer data. Please try regenerating.");
             }
         }
-        metaInfo = `${gradeLevel} - ${effectiveLanguage} - ${effectiveOutlineType}${usesLocalTextBackend ? ' - Local' : ''}`;
+        metaInfo = `${effectiveGrade} - ${effectiveLanguage} - ${effectiveOutlineType}${usesLocalTextBackend ? ' - Local' : ''}`;
       } else if (type === 'image') {
         console.log('[VisualDebug] dispatcher routing to image branch; effectiveVisualStyle=', effectiveVisualStyle, 'visualLayoutMode=', typeof visualLayoutMode !== 'undefined' ? visualLayoutMode : '(undefined)');
         setGenerationStep(t('status_steps.analyzing_visuals'));
@@ -2742,7 +2871,10 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         const _mcqVisualMode = (configOverride && configOverride.mcqVisualMode) || 'none';
         // Plan T v3+ Chunk 10: optional image-style hint. Empty preserves
         // today's default behavior. Trimmed + length-clamped defensively.
-        const _imageStyleRaw = (configOverride && typeof configOverride.imageStyle === 'string') ? configOverride.imageStyle : '';
+        // Falls back to the universal default (2026-07-28), matching glossary /
+        // timeline / concept-sort, so quiz visuals share the lesson's art style.
+        const _imageStyleOverride = (configOverride && typeof configOverride.imageStyle === 'string') ? configOverride.imageStyle : '';
+        const _imageStyleRaw = _imageStyleOverride.trim() ? _imageStyleOverride : (universalImageStyle || '');
         const _imageStyle = _imageStyleRaw.trim().slice(0, 120);
         const _imageStyleSuffix = _imageStyle ? ' Style: ' + _imageStyle + '.' : '';
         // Build item-type-specific instruction blocks dynamically
@@ -2822,9 +2954,10 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         const prompt = `
           ${_modeFraming}
           Quiz target: ${_modeQuestionTargets}.
-          Audience: ${gradeLevel} level students.
+          Audience: ${effectiveGrade} level students.
           Mode: ${_quizMode}.
           Language: ${effectiveLanguage}.
+          ${interestsDirective}
           ${dokInstruction}
           ${standardsPromptString ? `Target standards: "${standardsPromptString}".` : ''}
           ${analysisContext}
@@ -2835,6 +2968,8 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           ${_scoringInstruction}
           Follow the requested JSON example for each item type exactly. MCQs must have exactly 4 options and correctAnswer must exactly match one option. Every assessed item must include a short lowercase conceptLabel.
           ${_useMisconceptionDistractors ? 'Build MCQ distractors from common student misconceptions or predictable errors, not random wrong answers.' : ''}
+          ${(_mcqVisualMode === 'question' || _mcqVisualMode === 'both') && _mcqCount > 0 ? 'VISUAL MCQ (question stimulus): For EACH MCQ item, additionally provide an "imagePrompt" field: a 1-sentence prompt for an image generator that depicts the question\'s subject. Use concrete, age-appropriate, classroom-friendly imagery.' : ''}
+          ${(_mcqVisualMode === 'options' || _mcqVisualMode === 'both') && _mcqCount > 0 ? 'VISUAL MCQ (option images): For EACH MCQ item, additionally provide an "optionImagePrompts" array of 4 strings (one per option, same order as options). Each prompt must depict that option concretely.' : ''}
           ${effCustomInstructions ? `Custom instructions: ${effCustomInstructions}` : ''}
           ${useEmojis ? 'Use emojis only if they improve clarity.' : 'Do not use emojis.'}
           Return ONLY valid JSON matching this shape: ${_jsonShape}
@@ -2851,9 +2986,10 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
         const prompt = `
           ${_modeFraming}
           Quiz target: ${_modeQuestionTargets}.
-          Audience: ${gradeLevel} level students.
+          Audience: ${effectiveGrade} level students.
           ${dnaPromptBlock}
           Language: ${effectiveLanguage}.
+          ${interestsDirective}
           ${dokInstruction}
           ${standardsPromptString ? `Ensure questions align with Standards: "${standardsPromptString}".` : ''}
           ${analysisContext}
@@ -2976,7 +3112,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                     setGenerationStep(`${t('status_steps.verifying_answers')} (${idx + 1}/${content.questions.length})...`);
                     await new Promise(resolve => setTimeout(resolve, idx * 200));
                     const checkPrompt = `
-                        Verify the factual accuracy of this multiple choice question designed for a ${gradeLevel} student.
+                        Verify the factual accuracy of this multiple choice question designed for a ${effectiveGrade} student.
                         Question: "${q.question}"
                         Options: ${q.options.join(', ')}
                         Indicated Correct Answer: "${q.correctAnswer}",
@@ -3089,7 +3225,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
                         const distractors = entry.q.options.filter(o => o !== entry.q.correctAnswer);
                         return `Q${entry.qIdx + 1}: "${entry.q.question}"\n  Correct: "${entry.q.correctAnswer}"\n  Distractors: ${distractors.map((d, di) => `(${di + 1}) "${d}"`).join(' / ')}`;
                     }).join('\n\n');
-                    const reviewPrompt = `You are an assessment-design expert evaluating MCQ distractors for a ${gradeLevel} level quiz on this topic. For each MCQ below, evaluate whether each distractor encodes a REAL student misconception (a common, predictable error students make in their thinking) versus a random plausibly-wrong answer that doesn't reflect any specific misunderstanding.
+                    const reviewPrompt = `You are an assessment-design expert evaluating MCQ distractors for a ${effectiveGrade} level quiz on this topic. For each MCQ below, evaluate whether each distractor encodes a REAL student misconception (a common, predictable error students make in their thinking) versus a random plausibly-wrong answer that doesn't reflect any specific misunderstanding.
 
 Return ONLY a single valid JSON object with this exact shape:
 {
@@ -3201,7 +3337,7 @@ ${_itemsBlock}`;
         const _metaQuestionCount = _actualQuestions.length;
         const _metaMcqCount = _actualItemMix.mcq || 0;
         const _metaReflectionCount = _actualReflections.length;
-        metaInfo = `${_modeMetaPrefix}${gradeLevel} - Quiz (${_metaQuestionCount} items; ${_metaMcqCount} MCQ${_metaReflectionCount > 0 ? `; ${_metaReflectionCount} Ref` : ''})${dokLevel ? ` - ${dokLevel.split(':')[0]}` : ''} - ${effectiveLanguage}${usesLocalTextBackend ? ' - Local' : ''}${_smartSkipSuffix}`;
+        metaInfo = `${_modeMetaPrefix}${effectiveGrade} - Quiz (${_metaQuestionCount} items; ${_metaMcqCount} MCQ${_metaReflectionCount > 0 ? `; ${_metaReflectionCount} Ref` : ''})${dokLevel ? ` - ${dokLevel.split(':')[0]}` : ''} - ${effectiveLanguage}${usesLocalTextBackend ? ' - Local' : ''}${_smartSkipSuffix}`;
         // Stamp smart-skip info onto the quiz content so the view module can
         // optionally surface it to teachers (future enhancement).
         if (content && typeof content === 'object' && _smartSkips.length > 0) {
@@ -3484,8 +3620,10 @@ ${_itemsBlock}`;
             const localFaqCount = Math.max(3, Math.min(Number(faqCount) || 5, 6));
             const prompt = `
                 Generate ${localFaqCount} clear Frequently Asked Questions based on the source excerpt.
-                Audience: ${gradeLevel} students.
+                Audience: ${effectiveGrade} students.
                 Language: ${effectiveLanguage}.
+                ${standardsDirective}
+                ${dokDirective}
                 ${studentInterests.length > 0 ? `Use examples related to "${studentInterests.join(', ')}" where natural.` : ''}
                 ${useEmojis ? 'Use emojis sparingly only if they improve clarity.' : 'Do not use emojis.'}
                 ${effCustomInstructions ? `Custom instructions: ${effCustomInstructions}` : ''}
@@ -3509,13 +3647,15 @@ ${_itemsBlock}`;
             if (!content.length) {
                 throw new Error("Failed to parse FAQ JSON. The AI response was not valid.");
             }
-            metaInfo = `${content.length} Questions - ${gradeLevel} - ${effectiveLanguage} - Local`;
+            metaInfo = `${content.length} Questions - ${effectiveGrade} - ${effectiveLanguage} - Local`;
             setGenerationTaskProgress(1, 1, t('status_steps.identifying_misconceptions'));
         } else {
         const prompt = `
             Generate ${faqCount} Frequently Asked Questions (FAQs) based on the text below.
-            Target Audience: ${gradeLevel} students.
+            Target Audience: ${effectiveGrade} students.
             Language: ${effectiveLanguage}.
+            ${standardsDirective}
+            ${dokDirective}
             ${studentInterests.length > 0 ? `Integrate metaphors or examples related to "${studentInterests.join(', ')}" where helpful.` : ''}
             ${useEmojis ? 'Include relevant emojis in the questions and answers.' : 'Do not use emojis.'}
             ${effCustomInstructions ? `Custom Instructions: ${effCustomInstructions}` : ''}
@@ -3536,7 +3676,7 @@ ${_itemsBlock}`;
                  else parsed = [];
             }
             content = parsed;
-            metaInfo = `${faqCount} Questions - ${gradeLevel} - ${effectiveLanguage}`;
+            metaInfo = `${faqCount} Questions - ${effectiveGrade} - ${effectiveLanguage}`;
         } catch (parseErr) {
              warnLog("FAQ Parse Error:", parseErr);
              throw new Error("Failed to parse FAQ JSON. The AI response was not valid.");
@@ -3545,7 +3685,7 @@ ${_itemsBlock}`;
       } else if (type === 'brainstorm') {
          setGenerationStep(t('status_steps.brainstorming') || "Brainstorming ideas...");
          if (alloBotRef.current) alloBotRef.current.speak(t('bot_events.brainstorming_start') || "Ooh, let me think of some fun activities!", 'thinking');
-         const audienceDesc = isIndependentMode ? "a single independent learner (self-study)" : `${gradeLevel} students`;
+         const audienceDesc = isIndependentMode ? "a single independent learner (self-study)" : `${effectiveGrade} students`;
          const taskDesc = isIndependentMode
             ? "Generate a list of 5-8 'Solo Projects' and 'Real-world Experiments' suitable for one person to complete independently at home. Focus on DIY, creative application, or research challenges."
             : "Generate a list of 5-8 engaging, hands-on, or interdisciplinary activity ideas that connect the key concepts to other domains or physical activities.";
@@ -3557,9 +3697,11 @@ ${_itemsBlock}`;
                 ${taskDesc}
                 ${studentInterests.length > 0 ? `Student interests: ${studentInterests.join(', ')}.` : ''}
                 ${standardsPromptString ? `Target standards: ${standardsPromptString}.` : ''}
+                ${dokDirective}
                 ${effCustomInstructions ? `Custom focus: ${effCustomInstructions}.` : ''}
                 Recent resource history:
                 ${compactHistoryForLocal(historySource) || 'No previous resources generated yet.'}
+                ${languageDirective}
                 Return ONLY valid JSON with this shape:
                 { "ideas": [{ "title": "Activity Name", "description": "1-2 sentence activity description", "connection": "How it connects to the source concept" }] }
                 Source excerpt:
@@ -3595,9 +3737,11 @@ ${_itemsBlock}`;
             Source Text: "${textToProcess}",
             ${effCustomInstructions ? `Custom Focus/Instructions: ${effCustomInstructions}` : ''}
             ${standardsPromptString ? `Ensure activities help students demonstrate mastery of Standards: "${standardsPromptString}".` : ''}
+            ${dokDirective}
             ${lessonDNA ? `Task: Generate activity ideas that specifically help students answer the "Essential Question" or master the "Core Concepts".` : ''}
             Target Audience: ${audienceDesc}.
             Interests: ${studentInterests.length > 0 ? studentInterests.join(', ') : 'General'}.
+            ${languageDirective}
             Output Format: Return ONLY a JSON array of objects: [{ "title": "Activity Name", "description": "Detailed description of the activity", "connection": "How it connects to concepts" }]
          `;
          const result = await callGemini(prompt, true);
@@ -3627,9 +3771,10 @@ ${_itemsBlock}`;
          if (usesLocalTextBackend) {
              const localMode = frameType === 'Paragraph Frame' ? 'paragraph' : 'list';
              const prompt = `
-                Create writing scaffolds from the source excerpt for ${gradeLevel} students.
+                Create writing scaffolds from the source excerpt for ${effectiveGrade} students.
                 Type: ${frameType}.
                 Language: ${effectiveLanguage}.
+                ${dokDirective}
                 ${studentInterests.length > 0 ? `Relate to ${studentInterests.join(', ')} if natural.` : ''}
                 ${standardsPromptString ? `Support these standards: ${standardsPromptString}.` : ''}
                 ${effCustomInstructions ? `Instructions: ${effCustomInstructions}.` : ''}
@@ -3669,9 +3814,10 @@ ${_itemsBlock}`;
              setGenerationTaskProgress(1, 1, t('status_steps.constructing_scaffolds'));
          } else {
          const prompt = `
-            Create writing supports (Scaffolds) based on the text below for ${gradeLevel} students.
+            Create writing supports (Scaffolds) based on the text below for ${effectiveGrade} students.
             Type: ${frameType}
             Language: ${effectiveLanguage}.
+            ${dokDirective}
             ${studentInterests.length > 0 ? `Context: Relate to ${studentInterests.join(', ')} if possible.` : ''}
             ${effCustomInstructions ? `Instructions: ${effCustomInstructions}` : ''}
             ${standardsPromptString ? `Design scaffolds to support the skills required by Standards: "${standardsPromptString}".` : ''}
@@ -4267,7 +4413,10 @@ ${_itemsBlock}`;
       } else if (type === 'timeline') {
          setGenerationStep(t('status_steps.extracting_sequence'));
          const effectiveCount = configOverride.timelineCount || timelineItemCount;
-         const effectiveTopic = effCustomInstructions || timelineTopic || sourceTopic || "General Sequence";
+         // Second ambient fallback: even with effCustomInstructions suppressed,
+         // this re-derives the topic from the open lesson. Isolated timelines
+         // take their content from textToProcess (the DA directive) alone.
+         const effectiveTopic = effCustomInstructions || (_isolatedContext ? '' : (timelineTopic || sourceTopic)) || "General Sequence";
          const effectiveMode = configOverride.timelineMode || timelineMode || 'auto';
          const isAutoMode = effectiveMode === 'auto';
          const modeDef = !isAutoMode ? TIMELINE_MODE_DEFINITIONS[effectiveMode] : null;
@@ -4294,8 +4443,11 @@ ${modeListForAuto}
           const localTimelineCount = Math.max(4, Math.min(Number(effectiveCount) || 6, 7));
           const prompt = `
              Extract one clear ordered sequence from the source excerpt.
-             Audience: ${gradeLevel} students.
+             Audience: ${effectiveGrade} students.
              Language: ${effectiveLanguage}.
+             ${standardsDirective}
+             ${interestsDirective}
+             ${emojiDirective}
              Focus: "${effectiveTopic}"
              ${isAutoMode ? 'Choose the best ordering mode from: chronological, procedural, lifecycle, size, hierarchy, cause-effect, intensity, narrative. Include it as "detectedMode".' : `Use this mode: ${modeDef.label}. Criterion: ${modeDef.description}.`}
              Generate ${localTimelineCount} or fewer items only if the order is unambiguous.
@@ -4319,8 +4471,11 @@ ${modeListForAuto}
           } else {
           const prompt = `
              You are a Sequence Validation Expert. Your task is to extract or CREATE a SINGLE, UNAMBIGUOUS sequence from the provided text.
-             Target Audience: ${gradeLevel} students.
+             Target Audience: ${effectiveGrade} students.
              Language: ${effectiveLanguage}.
+             ${standardsDirective}
+             ${interestsDirective}
+             ${emojiDirective}
              Focus Topic / Content hint: "${effectiveTopic}"
              ${modeSection}
              *** FUNDAMENTAL REQUIREMENT ***
@@ -4435,7 +4590,8 @@ ${modeListForAuto}
              const MAX_RETRIES = 3;
              const progression = content.progressionLabel || 'sequential order';
              const generateOne = async (item) => {
-                 const styleInstruction = timelineImageStyle.trim() ? `Style: ${timelineImageStyle}.` : 'Educational style.';
+                 const _timelineStyle = (timelineImageStyle || '').trim() || (universalImageStyle || '').trim();
+                 const styleInstruction = _timelineStyle ? `Style: ${_timelineStyle}.` : 'Educational style.';
                  const imgPrompt = `Simple vector icon/illustration of: "${item.event}" (sequence position: "${item.date || ''}"). Context: part of a sequence ordered by ${progression}. White background. ${styleInstruction} No text. Visual only.`;
                  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
                      try {
@@ -4474,11 +4630,11 @@ ${modeListForAuto}
           const problemToSolve = configOverride.mathInput || mathInput || sourceTopic || "Create a relevant word problem based on the text";
           const mode = configOverride.mathMode || mathMode || 'Problem Set Generator';
           const subject = configOverride.mathSubject || mathSubject || 'General Math';
-          const mathContextPrompt = `Source Context: "${textToProcess.substring(0, 1500)}..."\nGrade Level: ${gradeLevel}\nInterests: ${studentInterests.join(', ')}`;
+          const mathContextPrompt = `Source Context: "${textToProcess.substring(0, 1500)}..."\nGrade Level: ${effectiveGrade}\nInterests: ${studentInterests.join(', ')}`;
           let prompt = "";
           if (usesLocalTextBackend) {
               prompt = `
-                Create a compact math/STEM resource for ${gradeLevel} students.
+                Create a compact math/STEM resource for ${effectiveGrade} students.
                 Subject: ${subject}
                 Mode: ${mode}
                 Topic or problem: "${problemToSolve}"
@@ -4493,6 +4649,8 @@ ${modeListForAuto}
                 - Do not generate SVG or graph markup; set "graphData" to null.
                 ${languageDirective ? '- ' + languageDirective + ' Keep mathematical expressions in standard notation.' : ''}
                 ${studentInterests.length > 0 ? `- Frame the word problems using these student interests: ${studentInterests.join(', ')}.` : ''}
+                ${standardsDirective ? '- ' + standardsDirective : ''}
+                ${dokDirective ? '- ' + dokDirective : ''}
                 Return ONLY valid JSON:
                 {
                   "title": "Short title",
@@ -4515,6 +4673,8 @@ ${modeListForAuto}
                 ${mathContextPrompt}
                 Instruction: Create EXACTLY the number and types of problems described in the Topic/Skill above. Match the count, types, and difficulty the user specified. If no specific count is given, create 5 problems.
                 Context Usage: Frame the word problems using characters, settings, or themes from the Source Context.
+                ${standardsDirective}
+                ${dokDirective}
                 Output Format:
                 Return a JSON object with a "problems" array.
                 Return ONLY JSON in the following format:
@@ -4541,6 +4701,7 @@ ${modeListForAuto}
                 Context: ${mathContextPrompt}
                 Instructions: Solve the problem or explain the concept.
                 ${isMathGraphEnabled ? 'VISUALS REQUIRED: Generate a self-contained SVG graph or diagram in the "graphData" field.' : ''}
+                ${standardsDirective}
                 Return ONLY JSON:
                 {
                   "problem": "Clean Latex string of the input",
@@ -4616,7 +4777,7 @@ ${modeListForAuto}
             You are an Expert Prompt Engineer specializing in Generative AI Coding tools (Gemini Canvas).
             Goal: Create a sequential, iterative guide (Chain of Thought) that a user can copy/paste one by one to build a robust educational application.
             Target Tech Stack: ${techStack}
-            Target Grade Level: ${gradeLevel}
+            Target Grade Level: ${effectiveGrade}
             Language: ${effectiveLanguage}
             Step Count: Exactly ${localBridgeStepCount} steps.
             Lesson Context:
@@ -4642,7 +4803,7 @@ ${modeListForAuto}
          metaInfo = `${t('meta.bridge_info', { type: bridgeSimType, count: localBridgeStepCount })}${usesLocalTextBackend ? ' - Local' : ''}`;
       } else if (type === 'concept-sort') {
          setGenerationStep(t('status_steps.categorizing_concepts'));
-         const isLowerGrade = ['Kindergarten', '1st Grade', '2nd Grade', '3rd Grade', '4th Grade', '5th Grade'].includes(gradeLevel);
+         const isLowerGrade = ['Kindergarten', '1st Grade', '2nd Grade', '3rd Grade', '4th Grade', '5th Grade'].includes(effectiveGrade);
          const isAutoCount = !conceptItemCount || conceptItemCount === '';
          const itemCountInstruction = isAutoCount
             ? `2. Generate items (cards) for students to sort into these categories. *** ITEM COUNT RULE *** Generate ONLY as many items as the source text can clearly support — items must be unambiguous, distinctive, and sortable into exactly ONE of the categories. Minimum 6 items. Maximum 30 items. Preferred: 12-18 items if the text supports it (richer texts can support more). Do NOT pad with weak or ambiguous items just to reach a count.`
@@ -4656,8 +4817,12 @@ ${modeListForAuto}
          const localItemCount = isAutoCount ? 10 : Math.max(6, Math.min(Number(conceptItemCount) || 10, 12));
          const prompt = `
             Create a compact Concept Sort activity from the source excerpt.
-            Audience: ${gradeLevel} students.
+            Audience: ${effectiveGrade} students.
             Language: ${effectiveLanguage}.
+            ${standardsDirective}
+            ${interestsDirective}
+            ${emojiDirective}
+            ${dokDirective}
             ${categoryInstruction}
             Generate 2 or 3 categories and up to ${localItemCount} unambiguous cards.
             Each card must clearly belong to exactly one category.
@@ -4685,12 +4850,16 @@ ${modeListForAuto}
          } else {
          const prompt = `
             Analyze the provided source text to create a "Concept Sort" activity.
-            Target Audience: ${gradeLevel} students.
+            Target Audience: ${effectiveGrade} students.
             Language: ${effectiveLanguage}.
+            ${standardsDirective}
+            ${interestsDirective}
+            ${emojiDirective}
+            ${dokDirective}
             Task:
             ${categoryInstruction}
             ${itemCountInstruction}
-            Differentiation Strategy for ${gradeLevel}:
+            Differentiation Strategy for ${effectiveGrade}:
             ${isLowerGrade
                 ? '- LOWER LEVEL: Focus on concrete, tangible examples. The content of the cards should be short (1-5 words) to act as captions for visual support.'
                 : '- UPPER LEVEL: Focus on abstract concepts, nuances, or specific quotes. Use complex sentences or scenarios.'
@@ -4737,7 +4906,8 @@ ${modeListForAuto}
                  const POOL_SIZE = 2;
                  const generateOne = async (item) => {
                      try {
-                         const styleInstruction = conceptSortImageStyle.trim() ? `Style: ${conceptSortImageStyle}.` : 'Educational style.';
+                         const _csDeckStyle = (conceptSortImageStyle || '').trim() || (universalImageStyle || '').trim();
+                         const styleInstruction = _csDeckStyle ? `Style: ${_csDeckStyle}.` : 'Educational style.';
                          const imgPrompt = `Simple, clear vector icon or illustration of: "${item.content}". White background. ${styleInstruction} No text.`;
                          const imageUrl = await callImagen(imgPrompt);
                          return { ...item, image: imageUrl };
@@ -4798,10 +4968,10 @@ ${modeListForAuto}
              throw new Error("Failed to parse Concept Sort JSON. The AI response was not valid.");
          }
       } else if (type === 'dbq') {
-         console.log('[DBQ] Branch entered. gradeLevel=' + gradeLevel + ', textToProcess length=' + (textToProcess?.length || 0) + ', effectiveLanguage=' + effectiveLanguage);
+         console.log('[DBQ] Branch entered. effectiveGrade=' + effectiveGrade + ', textToProcess length=' + (textToProcess?.length || 0) + ', effectiveLanguage=' + effectiveLanguage);
          setGenerationStep('Creating Document-Based Questions...');
-         const isElementary = /k|1st|2nd|3rd|4th|5th/i.test(gradeLevel);
-         const isMiddle = /6th|7th|8th/i.test(gradeLevel);
+         const isElementary = /k|1st|2nd|3rd|4th|5th/i.test(effectiveGrade);
+         const isMiddle = /6th|7th|8th/i.test(effectiveGrade);
          const _dbqMode = window._dbqMode || 'standard';
          const _dbqFocusTopic = document.getElementById('dbq-focus-topic')?.value || '';
          const _dbqCustomDocs = document.getElementById('dbq-custom-docs')?.value || '';
@@ -4850,9 +5020,11 @@ ${modeListForAuto}
            : '';
          let dbqPrompt = '';
          if (usesLocalTextBackend) {
-             dbqPrompt = `Create a compact Document-Based Question activity for ${gradeLevel} students.
+             dbqPrompt = `Create a compact Document-Based Question activity for ${effectiveGrade} students.
 
 Language: ${effectiveLanguage}.
+${standardsDirective}
+${dokDirective}
 ${effCustomInstructions ? `Teacher instructions: ${effCustomInstructions}` : ''}
 
 Use the source excerpt to create a MINI DBQ.
@@ -4907,8 +5079,10 @@ Create 2-3 documents only. Keep excerpts concise.`;
          } else {
          dbqPrompt = `You are an expert social studies and ELA curriculum designer creating a Document-Based Question (DBQ) activity.
 
-Target Audience: ${gradeLevel} students.
+Target Audience: ${effectiveGrade} students.
 Language: ${effectiveLanguage}.${_dbqModeInstructions}
+${standardsDirective}
+${dokDirective}
 ${effCustomInstructions ? `Teacher Instructions: ${effCustomInstructions}` : ''}
 
 Source Material (use ALL of this to create rich, substantial document excerpts):
@@ -4925,7 +5099,7 @@ Create a complete DBQ activity packet with these components:
    - A distinct passage, quote, data point, or perspective from the text
    - Labeled (Document A, Document B, etc.)
    - Accompanied by a source citation (author, date, context)
-   - Adapted to ${gradeLevel} reading level — ${isElementary ? 'use simple vocabulary and short sentences' : isMiddle ? 'use grade-appropriate vocabulary with context clues for harder terms' : 'maintain original complexity and academic vocabulary'}
+   - Adapted to ${effectiveGrade} reading level — ${isElementary ? 'use simple vocabulary and short sentences' : isMiddle ? 'use grade-appropriate vocabulary with context clues for harder terms' : 'maintain original complexity and academic vocabulary'}
    - Include a "documentType" field: one of "primary", "secondary", "data", "visual", "testimony"
    - IMPORTANT: Do NOT truncate or over-summarize. Real DBQ documents are meaty — give students something substantial to work with.
 
@@ -5013,9 +5187,9 @@ Return ONLY JSON:
          const assetManifest = configOverride.assetManifest || getAssetManifest(historySource);
          let prompt;
          if (isIndependentMode) {
-             prompt = buildStudyGuidePrompt(context, effectiveLanguage);
+             prompt = buildStudyGuidePrompt(context, effectiveLanguage, effCustomInstructions);
          } else if (isParentMode) {
-             prompt = buildParentGuidePrompt(context, effectiveLanguage);
+             prompt = buildParentGuidePrompt(context, effectiveLanguage, effCustomInstructions);
          } else {
              prompt = buildLessonPlanPrompt(context, assetManifest, effectiveLanguage, effCustomInstructions);
          }
@@ -5023,6 +5197,9 @@ Return ONLY JSON:
              prompt = `
                 Create a compact ${isIndependentMode ? 'student study guide' : (isParentMode ? 'family guide' : 'UDL-aligned lesson plan')} for ${effectiveGrade} students.
                 Language: ${effectiveLanguage}.
+                ${standardsDirective}
+                ${dokDirective}
+                ${interestsDirective}
                 ${effCustomInstructions ? `Teacher instructions: ${effCustomInstructions}` : ''}
                 Use this lesson context excerpt:
                 """
@@ -5085,9 +5262,10 @@ Return ONLY JSON:
           ${dnaPromptBlock}
           Source Material: "${adventureSourceText}",
           --- SETTINGS ---
-          Target Audience: ${gradeLevel} students.
+          Target Audience: ${effectiveGrade} students.
           ${langInstruction}
           ${toneInstruction}
+          ${standardsDirective}
           ${studentInterests.length > 0 ? `Theme/Interests: Integrate elements of "${studentInterests.join(', ')}" to engage the student.` : ''}
           ${effCustomInstructions ? `Custom Instructions: ${effCustomInstructions}` : ''}
           ${lessonDNA && lessonDNA.visualContext ? `VISUAL CONTINUITY: The student has just studied a diagram described as: "${lessonDNA.visualContext}". Ensure the opening scene description visually matches this setting.` : ''}
@@ -5139,7 +5317,7 @@ Return ONLY JSON:
                 Analyze the following text about "${sourceTopic || "the current lesson topic"}".
                 Source Text:
                 "${personaSourceText}",
-                Task: Identify ${personaCount} specific historical figures, experts, or fictional archetypes (e.g., 'A Union Soldier', 'Marie Curie', 'A Red Blood Cell') relevant to this content that a ${gradeLevel} student could interview to learn more.
+                Task: Identify ${personaCount} specific historical figures, experts, or fictional archetypes (e.g., 'A Union Soldier', 'Marie Curie', 'A Red Blood Cell') relevant to this content that a ${effectiveGrade} student could interview to learn more.
                 ${languageDirective}
                 Return ONLY a JSON array of objects with this exact structure:
                 [
@@ -5235,6 +5413,8 @@ Return ONLY JSON:
                   Analyze the following source text. Extract 5-8 key terms or anticipated student questions that would belong in the LEFT-COLUMN ("Cues") of a Cornell Notes template for a ${effectiveGrade} student. Each cue should be short (1-6 words) and act as a memory anchor or question prompt the student can return to.
                   Source: "${noteSourceText}"
                   ${languageDirective}
+                  ${standardsDirective}
+                  ${effCustomInstructions ? `TEACHER INSTRUCTIONS: ${effCustomInstructions}` : ''}
                   Return ONLY a JSON object:
                   { "title": "Lesson title", "cues": ["Cue 1", "Cue 2", "Cue 3", ...] }
               `;
@@ -5255,6 +5435,8 @@ Return ONLY JSON:
                   Analyze the following science-related source text. Extract: 1) a research question this text raises that a student could investigate, 2) a list of likely materials needed (if the source describes any experimental setup), and 3) a relevant title for the experiment. Target audience: ${effectiveGrade} student.
                   Source: "${noteSourceText}"
                   ${languageDirective}
+                  ${standardsDirective}
+                  ${effCustomInstructions ? `TEACHER INSTRUCTIONS: ${effCustomInstructions}` : ''}
                   Return ONLY a JSON object:
                   { "title": "Experiment title", "question": "Research question?", "materials": ["material 1", "material 2", ...] }
               `;
@@ -5279,6 +5461,8 @@ Return ONLY JSON:
                   Analyze the following source text. Extract the title and author (if present in the text or its metadata). If not explicit, infer the best title from the content.
                   Source: "${noteSourceText}"
                   ${languageDirective}
+                  ${standardsDirective}
+                  ${effCustomInstructions ? `TEACHER INSTRUCTIONS: ${effCustomInstructions}` : ''}
                   Return ONLY a JSON object:
                   { "title": "Reading title", "author": "Author name or empty string" }
               `;
@@ -5301,6 +5485,8 @@ Return ONLY JSON:
                   Analyze the following source text. Extract 3-5 short, vivid QUOTES or passages (each 1-2 sentences, copied verbatim from the source in its ORIGINAL language, never translated) that a ${effectiveGrade} student could respond to in a double-entry (dialectical) journal. Pick lines that are striking, puzzling, or important — the kind worth thinking about. Also extract the title and author if present.
                   Source: "${noteSourceText}"
                   ${languageDirective}
+                  ${standardsDirective}
+                  ${effCustomInstructions ? `TEACHER INSTRUCTIONS: ${effCustomInstructions}` : ''}
                   Return ONLY a JSON object:
                   { "title": "Reading title", "author": "Author or empty string", "quotes": ["Quote 1", "Quote 2", ...] }
               `;
@@ -5322,6 +5508,8 @@ Return ONLY JSON:
                   Create GUIDED NOTES (fill-in-the-blank) from the following source text for a ${effectiveGrade} student. Produce 6-10 statements that capture the most important facts/concepts. In each statement, blank out ONE key term (the single most important word or short phrase). Split each statement into the text BEFORE the blank, the ANSWER (the blanked term), and the text AFTER the blank. Keep statements concise and factually grounded in the source.
                   Source: "${noteSourceText}"
                   ${languageDirective}
+                  ${standardsDirective}
+                  ${effCustomInstructions ? `TEACHER INSTRUCTIONS: ${effCustomInstructions}` : ''}
                   Return ONLY a JSON object:
                   { "title": "Lesson title", "blanks": [ { "before": "The powerhouse of the cell is the ", "answer": "mitochondria", "after": "." }, ... ] }
               `;
@@ -5347,6 +5535,9 @@ Return ONLY JSON:
                   Analyze the following source text. Generate 4-6 STUDY QUESTIONS a ${effectiveGrade} student could use for self-testing (active recall). Mix recall ("what/when") with higher-order ("why/how") questions. For each, also write a concise, correct model answer grounded in the source.
                   Source: "${noteSourceText}"
                   ${languageDirective}
+                  ${standardsDirective}
+                  ${dokDirective}
+                  ${effCustomInstructions ? `TEACHER INSTRUCTIONS: ${effCustomInstructions}` : ''}
                   Return ONLY a JSON object:
                   { "title": "Study set title", "pairs": [ { "question": "Why does ...?", "answer": "Because ..." }, ... ] }
               `;
@@ -5412,6 +5603,8 @@ Return ONLY JSON:
               Source text for context (may be empty): "${chartSourceText}"
 
               ${languageDirective}
+              ${standardsDirective}
+              ${effCustomInstructions ? `TEACHER INSTRUCTIONS: ${effCustomInstructions}` : ''}
               The "chartType" value and every "iconPrompt" must stay in English (machine id / image-generator input).
               Return ONLY a JSON object with this exact shape:
               {
@@ -5470,17 +5663,7 @@ Return ONLY JSON:
           meta: metaInfo,
           title: itemTitle,
           timestamp: new Date(),
-          config: {
-              grade: effectiveGrade,
-              language: effectiveLanguage,
-              standards: standardsPromptString || "",
-              interests: studentInterests,
-              ...(configOverride.rosterGroupId ? {
-                  rosterGroupId: configOverride.rosterGroupId,
-                  rosterGroupName: configOverride.rosterGroupName,
-                  rosterGroupColor: configOverride.rosterGroupColor
-              } : {})
-          }
+          config: _buildItemConfig()
       };
       setHistory(prev => [...prev, newItem]);
       if (switchView || !generatedContent) {
@@ -5530,6 +5713,10 @@ Return ONLY JSON:
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.GenDispatcher = {
   handleGenerate,
+  // Pure scope selector. Exported so the blueprint<->audit handoff can be
+  // tested end to end: a run hands over artifactIds, and this is what decides
+  // whether the report scopes explicitly or falls back to a guess.
+  selectCurriculumArtifacts,
   splitAdaptationReferences,
   extractAdaptationCitationLedgerLocal,
   validateAdaptationCitationConservation,

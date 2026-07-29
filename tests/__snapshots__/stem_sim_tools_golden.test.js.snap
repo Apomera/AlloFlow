@@ -197,13 +197,13 @@ exports[`science-sim + studio render goldens > renders + pins a digest for fligh
 
 exports[`science-sim + studio render goldens > renders + pins a digest for galaxy [ssr] 1`] = `
 {
-  "buttons": 56,
+  "buttons": 57,
   "canvases": 1,
   "inputs": 1,
-  "lengthBucket": 181,
+  "lengthBucket": 223,
   "paths": 1,
   "selects": 0,
-  "sha": "8d0936619143a0c2",
+  "sha": "2f0f3e589b3ae28b",
   "svgs": 3,
 }
 `;

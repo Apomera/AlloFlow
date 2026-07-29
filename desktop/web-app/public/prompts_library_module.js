@@ -113,7 +113,11 @@ const createPromptsLibrary = ({ STEM_TOOL_REGISTRY } = {}) => {
       `;
   };
 
-  const buildParentGuidePrompt = ({ context, language, gradeLevel, sourceTopic }) => {
+  const buildParentGuidePrompt = ({ context, language, gradeLevel, sourceTopic, customAdditions }) => {
+    // customAdditions added 2026-07-28: the Lesson Plan panel's instructions box
+    // is one field, but only the default mode's builder read it, so the same box
+    // silently did nothing once a teacher switched to Family or Study Guide.
+    const hasCustom = customAdditions && customAdditions.trim().length > 0;
     return `
         You are a friendly, encouraging Family Tutor helping a parent support their child's learning at home.
         Create a simple "Family Learning Guide" based on the following context.
@@ -121,6 +125,7 @@ const createPromptsLibrary = ({ STEM_TOOL_REGISTRY } = {}) => {
         Target Grade: ${gradeLevel}
         Topic: "${sourceTopic || "General"}"
         Language: ${language}
+        ${hasCustom ? `TEACHER REQUESTS: "${customAdditions}" — honour these while keeping the family-friendly tone.` : ''}
         INSTRUCTIONS:
         Translate complex educational jargon into simple, fun, everyday language for a parent.
         The goal is to foster connection and curiosity, not just drill facts.
@@ -156,13 +161,16 @@ const createPromptsLibrary = ({ STEM_TOOL_REGISTRY } = {}) => {
       `;
   };
 
-  const buildStudyGuidePrompt = ({ context, language, gradeLevel, sourceTopic }) => {
+  const buildStudyGuidePrompt = ({ context, language, gradeLevel, sourceTopic, customAdditions }) => {
+    // See buildParentGuidePrompt — same one-field/three-builders gap.
+    const hasCustom = customAdditions && customAdditions.trim().length > 0;
     return `
         You are a supportive Study Tutor creating a personal study guide for a student.
         ${context}
         Target Grade: ${gradeLevel}
         Topic: "${sourceTopic || "General"}"
         Language: ${language}
+        ${hasCustom ? `TEACHER REQUESTS: "${customAdditions}" — honour these while keeping the student-facing tone.` : ''}
         INSTRUCTIONS:
         - Write directly to the student using "You".
         - Keep the tone encouraging, clear, and structured.

@@ -33,6 +33,10 @@
       "to": "THIRD_PARTY_LICENSES.md"
     },
     {
+      "from": "../allo_sheet/THIRD_PARTY_NOTICES.md",
+      "to": "ALLOSHEET_THIRD_PARTY_NOTICES.md"
+    },
+    {
       "from": "../LICENSE",
       "to": "LICENSE"
     },

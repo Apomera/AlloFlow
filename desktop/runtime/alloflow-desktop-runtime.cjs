@@ -7,6 +7,9 @@ const http = require('http');
 const net = require('net');
 const os = require('os');
 const { SourceFetchError, fetchPublicPage } = require('./web-source-fetch.cjs');
+const { createAlloSheetGristBridge } = require('./allosheet-grist-bridge.cjs');
+const { createAlloSheetEngineManager } = require('./allosheet-engine-manager.cjs');
+const { createWindowsZipExtractor } = require('./allosheet-zip-extractor.cjs');
 const path = require('path');
 const { spawn, spawnSync } = require('child_process');
 
@@ -29,6 +32,177 @@ function readDesktopRuntimeVersion() {
   }
 }
 const VERSION = readDesktopRuntimeVersion();
+let alloSheetEngineManager = null;
+let alloSheetEngineManagerError = null;
+let alloSheetEngineManagerDataDir = '';
+
+function getAlloSheetEngineManager() {
+  const appDataDir = path.resolve(getDataDir());
+  if (alloSheetEngineManager && alloSheetEngineManagerDataDir === appDataDir) {
+    return alloSheetEngineManager;
+  }
+  if (alloSheetEngineManagerError && alloSheetEngineManagerDataDir === appDataDir) {
+    return null;
+  }
+  alloSheetEngineManager = null;
+  alloSheetEngineManagerError = null;
+  alloSheetEngineManagerDataDir = appDataDir;
+  try {
+    // Grist Desktop currently publishes a portable Windows x64 ZIP. Windows
+    // on ARM runs that build under its supported x64 compatibility layer.
+    // Other platforms retain the administrator-configured external adapter
+    // until an equally verifiable portable upstream artifact is available.
+    if (process.platform !== 'win32') {
+      throw new Error('The managed local spreadsheet engine is currently available in AlloFlow Desktop for Windows.');
+    }
+    alloSheetEngineManager = createAlloSheetEngineManager({
+      appDataDir,
+      platformKey: 'win32-x64',
+      extractArchive: createWindowsZipExtractor(),
+    });
+    return alloSheetEngineManager;
+  } catch (error) {
+    alloSheetEngineManagerError = error;
+    return null;
+  }
+}
+
+function getManagedAlloSheetConnection() {
+  const manager = getAlloSheetEngineManager();
+  if (!manager) return null;
+  const status = manager.status();
+  if (!status.running || !status.baseUrl) return null;
+  const auth = typeof manager.getPrivateAuth === 'function' ? manager.getPrivateAuth() : null;
+  let statusOrigin = '';
+  try { statusOrigin = new URL(status.baseUrl).origin; } catch (_) {}
+  if (
+    !auth
+    || auth.origin !== statusOrigin
+    || auth.cookieName !== 'electron_key'
+    || !/^[A-Za-z0-9_-]{20,128}$/.test(String(auth.electronKey || ''))
+    || !/^[!#$%&'*+\-.^_`|~0-9A-Za-z]{1,128}$/.test(String(auth.sessionCookieName || ''))
+  ) {
+    return null;
+  }
+  return {
+    baseUrl: status.baseUrl,
+    bootstrapSession: true,
+    managed: true,
+    electronKey: auth.electronKey,
+    sessionCookieName: auth.sessionCookieName,
+  };
+}
+
+function getAlloSheetPrivateBrowserAuth() {
+  const connection = getManagedAlloSheetConnection();
+  if (!connection) return null;
+  return {
+    origin: new URL(connection.baseUrl).origin,
+    cookieName: 'electron_key',
+    electronKey: connection.electronKey,
+    sessionCookieName: connection.sessionCookieName,
+  };
+}
+
+const alloSheetGristBridge = createAlloSheetGristBridge({
+  connectionProvider: getManagedAlloSheetConnection,
+});
+
+function publicAlloSheetEngineStatus() {
+  const manager = getAlloSheetEngineManager();
+  if (!manager) {
+    const detail = String(alloSheetEngineManagerError && alloSheetEngineManagerError.message || '');
+    return {
+      implemented: false,
+      phase: 'unsupported',
+      installed: false,
+      running: false,
+      version: null,
+      editorUrl: '',
+      download: null,
+      lastError: detail.slice(0, 300),
+      message: detail || 'Use an administrator-configured spreadsheet service on this platform.',
+    };
+  }
+  const status = manager.status();
+  const download = status.download && {
+    receivedBytes: Number(status.download.receivedBytes) || 0,
+    totalBytes: Number(status.download.totalBytes) || 0,
+    received: Number(status.download.receivedBytes) || 0,
+    total: Number(status.download.totalBytes) || 0,
+    percent: Number(status.download.totalBytes) > 0
+      ? Math.round(Number(status.download.receivedBytes || 0) / Number(status.download.totalBytes) * 100)
+      : null,
+  };
+  const messages = {
+    idle: 'Preparing your private local spreadsheet.',
+    installing: 'Preparing the local spreadsheet engine. This is a one-time setup.',
+    starting: 'Starting your private local spreadsheet.',
+    running: 'Your private local spreadsheet is ready.',
+    stopping: 'Closing the local spreadsheet engine.',
+    stopped: 'The local spreadsheet engine is stopped.',
+    error: 'The local spreadsheet engine needs attention.',
+  };
+  return {
+    implemented: true,
+    phase: status.phase,
+    installed: Boolean(status.installed),
+    running: Boolean(status.running),
+    version: status.version,
+    editorUrl: status.running && status.baseUrl ? status.baseUrl : '',
+    download,
+    startedAt: status.startedAt,
+    stoppedAt: status.stoppedAt,
+    lastError: String(status.lastError || '').slice(0, 300),
+    message: messages[status.phase] || 'Preparing your private local spreadsheet.',
+  };
+}
+
+function externalAlloSheetStatusIfConfigured() {
+  const config = alloSheetGristBridge.getPublicConfig();
+  if (!config.configured || config.managedEngine) return null;
+  return {
+    implemented: true,
+    phase: 'running',
+    installed: true,
+    running: true,
+    version: null,
+    managed: false,
+    editorUrl: config.baseUrl,
+    download: null,
+    lastError: '',
+    message: 'Your administrator-managed spreadsheet is ready.',
+  };
+}
+
+function getAlloSheetEngineStatus() {
+  return externalAlloSheetStatusIfConfigured() || publicAlloSheetEngineStatus();
+}
+
+async function getAlloSheetRuntimeConfig() {
+  const bridge = alloSheetGristBridge.getPublicConfig();
+  const engine = getAlloSheetEngineStatus();
+  let workbook = null;
+  if (bridge.configured && bridge.managedEngine && engine.running) {
+    workbook = await alloSheetGristBridge.ensureManagedWorkbook();
+  }
+  const managedEngine = workbook ? { ...engine, ...workbook } : engine;
+  return {
+    ...bridge,
+    managedEngine,
+    ...(workbook ? { docId: workbook.docId } : {}),
+    editorUrl: workbook
+      ? workbook.editorUrl
+      : (engine.editorUrl || (bridge.configured ? bridge.baseUrl : '')),
+  };
+}
+
+async function stopAlloSheetEngine() {
+  const manager = getAlloSheetEngineManager();
+  if (!manager) return publicAlloSheetEngineStatus();
+  await manager.stop();
+  return publicAlloSheetEngineStatus();
+}
 const MAX_REQUEST_BODY_BYTES = 8 * 1024 * 1024;
 const MAX_PUBLIC_LAN_BODY_BYTES = 1024 * 1024;
 const MAX_PUBLIC_LAN_UPDATE_KEYS = 256;
@@ -838,6 +1012,10 @@ function isEmbeddedAppApiRoute(req, url) {
   const method = String((req && req.method) || 'GET').toUpperCase();
   const pathname = String(url && url.pathname || '');
   if (method === 'OPTIONS') return true;
+  if (method === 'GET' && pathname === '/api/allosheet/config') return true;
+  if (method === 'GET' && pathname === '/api/allosheet/engine/status') return true;
+  if (method === 'POST' && pathname === '/api/allosheet/engine/start') return true;
+  if (method === 'POST' && pathname === '/api/allosheet/grist') return true;
   if (method === 'POST' && pathname === '/api/sourceFetchProxy') return true;
   if (/^\/api\/lan-sessions(?:\/|$)/.test(pathname)) return true;
   if (/^\/api\/lan-docs(?:\/|$)/.test(pathname)) return true;
@@ -4340,6 +4518,68 @@ async function handleApi(req, res, url) {
     return;
   }
 
+  if (req.method === 'GET' && url.pathname === '/api/allosheet/config') {
+    jsonResponse(res, 200, await getAlloSheetRuntimeConfig());
+    return;
+  }
+
+  if (req.method === 'GET' && url.pathname === '/api/allosheet/engine/status') {
+    jsonResponse(res, 200, getAlloSheetEngineStatus());
+    return;
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/allosheet/engine/start') {
+    const external = externalAlloSheetStatusIfConfigured();
+    if (external) {
+      jsonResponse(res, 200, external);
+      return;
+    }
+    const manager = getAlloSheetEngineManager();
+    if (!manager) {
+      jsonResponse(res, 501, getAlloSheetEngineStatus());
+      return;
+    }
+    if (!manager.status().running) {
+      manager.start().catch((error) => {
+        console.warn('[AlloFlow Desktop] AlloSheet engine start failed:', error && error.message || error);
+      });
+    }
+    jsonResponse(res, 200, getAlloSheetEngineStatus());
+    return;
+  }
+
+  if (req.method === 'GET' && url.pathname === '/api/allosheet/engine/logs') {
+    const manager = getAlloSheetEngineManager();
+    jsonResponse(res, 200, manager ? manager.logs(100) : { logs: [] });
+    return;
+  }
+
+  if (req.method === 'POST' && url.pathname === '/api/allosheet/grist') {
+    try {
+      const body = await readRequestJson(req, 512 * 1024);
+      const result = await alloSheetGristBridge.handleOperation(body);
+      jsonResponse(res, 200, result);
+    } catch (error) {
+      const knownError = error
+        && Number.isInteger(error.statusCode)
+        && typeof error.code === 'string';
+      if (!knownError) {
+        console.warn('[AlloFlow Desktop] AlloSheet Grist bridge failed:', error && error.message || error);
+      }
+      jsonResponse(
+        res,
+        knownError ? error.statusCode : 502,
+        {
+          error: knownError
+            ? String(error.message || 'The AlloSheet request failed.').slice(0, 300)
+            : 'The AlloSheet request failed.',
+          code: knownError ? error.code : 'allosheet-request-failed'
+        }
+      );
+    }
+    return;
+  }
+
   if (req.method === 'GET' && url.pathname === '/api/app/status') {
     jsonResponse(res, 200, { app: await getManagedAppStatus(config, origin) });
     return;
@@ -5303,7 +5543,7 @@ async function main() {
   // before-quit teardown.
   ['SIGINT', 'SIGTERM'].forEach((signal) => {
     process.on(signal, () => {
-      Promise.allSettled([stopLocalEngine(), stopLocalAsr()]).finally(() => process.exit(0));
+      Promise.allSettled([stopLocalEngine(), stopLocalAsr(), stopAlloSheetEngine()]).finally(() => process.exit(0));
     });
   });
 }
@@ -5331,6 +5571,9 @@ module.exports = {
   createServer,
   configurePrivateApiToken,
   maybeAutostartEngine,
+  getAlloSheetEngineStatus,
+  getAlloSheetPrivateBrowserAuth,
+  stopAlloSheetEngine,
   stopLocalEngine,
   getLocalEngineStatus,
   getEngineCapability,

@@ -2283,6 +2283,15 @@ describe('take persistence + export hardening wiring', () => {
     expect(html).toContain('demoState.running || demoStartPending || demoRehearsePending');
     expect(html).toContain("if (e.key !== 'Enter' || (!e.ctrlKey && !e.metaKey)");
     expect(html).toContain("if (!$('demoPlanBtn').disabled) $('demoPlanBtn').click();");
+    expect(html).toContain('function startManualRecordingOrApprovedDemo()');
+    expect(html).toContain("hasApprovedDemo = !!approvedDemoSteps().length");
+    expect(html).toContain("$('demoStartBtn').click();");
+    expect(html).toContain("$('startBtn').addEventListener('click', startManualRecordingOrApprovedDemo)");
+    expect(html).toContain("hasPlan ? '▶ Record approved demo' : '⏺ Start recording'");
+    expect(html).toContain('Replace official plan with Gemini plan');
+    expect(html).toContain('The official plan is still loaded');
+    expect(html).toContain("typeof opener.focus === 'function'");
+    expect(html).toContain('AlloFlow was asked to come forward');
     expect(html).toContain('id="demoPlanList"');
     expect(html).toContain('id="demoAudioMode"');
     expect(html).toContain('id="demoStatus" role="status" aria-live="polite"');

@@ -1254,6 +1254,7 @@ const PLUGIN_FILES = [
 // Companion-window/runtime assets are not JS modules, so they must be copied as
 // folders into desktop/web-app/public for clean builds and CDN deployments.
 const COMPANION_ASSET_DIRS = [
+    'allo_sheet',
     'alphafold_explorer',
     'circuit_shelf',
     'mathlive-assets',

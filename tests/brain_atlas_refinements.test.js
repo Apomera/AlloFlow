@@ -763,6 +763,261 @@ describe('brainAtlas refinement contracts', () => {
     expect(advanced).toMatch(/Pharmacology/);
   });
 
+  it('provides a safety-bounded psychopharmacology guide connected to atlas systems', () => {
+    loadTool(FILE, 'brainAtlas');
+    const src = readFileSync(FILE, 'utf8');
+    const html = render({ view: 'lateral', psychGuideOpen: true });
+
+    expect(html).toContain('data-brainatlas-psych-guide="true"');
+    expect(html).toContain('data-brainatlas-psych-compare-builder="true"');
+    expect(html).toContain('data-brainatlas-psych-builder-count="0"');
+    expect((html.match(/data-brainatlas-psych-builder-slot="empty"/g) || [])).toHaveLength(2);
+    expect(html).toMatch(/Select Compare on any two classes/);
+    expect(html).toContain('data-brainatlas-psych-depth="quick"');
+    expect(html).toContain('data-brainatlas-psych-depth-option="quick"');
+    expect(html).toContain('aria-pressed="true"');
+    expect((html.match(/class="brainatlas-psych-fact"/g) || [])).toHaveLength(10);
+    expect(html).toMatch(/safety context visible with less text/i);
+    expect(html).toMatch(/Psychopharmacology guide/);
+    expect(html).toMatch(/not a prescribing, dosing, combination, or taper guide/i);
+    expect(html).toMatch(/Antidepressants/);
+    expect(html).toMatch(/Antipsychotics/);
+    expect(html).toMatch(/Mood stabilizers/);
+    expect(html).toMatch(/ADHD medications/);
+    expect(html).toMatch(/Anti-anxiety medications/);
+    expect((html.match(/data-brainatlas-psych-card=/g) || [])).toHaveLength(5);
+    expect(html).toMatch(/nimh\.nih\.gov\/health\/topics\/mental-health-medications/);
+    expect(html).toMatch(/fda\.gov\/drugs\/drug-safety/);
+    expect(src).toContain('openPsychopharmAtlas');
+    expect(src).toContain("upd('selectedRegion', item.atlasRegion)");
+
+    const fullReference = render({
+      view: 'lateral',
+      psychGuideOpen: true,
+      psychGuideDepth: 'full',
+    });
+    expect(fullReference).toContain('data-brainatlas-psych-depth="full"');
+    expect((fullReference.match(/class="brainatlas-psych-fact"/g) || [])).toHaveLength(20);
+    expect(fullReference).toMatch(/How it acts/);
+    expect(fullReference).toMatch(/Examples/);
+    expect(fullReference).toMatch(/adds mechanisms and medication examples/i);
+    expect(fullReference).toMatch(/Key safety context/);
+
+    const filtered = render({
+      view: 'lateral',
+      psychGuideOpen: true,
+      psychGuideQuery: 'physical dependence',
+    });
+    expect((filtered.match(/data-brainatlas-psych-card=/g) || [])).toHaveLength(1);
+    expect(filtered).toMatch(/Anti-anxiety medications/);
+  });
+  it('provides a safety-bounded brain stimulation and somatic treatments guide', () => {
+    loadTool(FILE, 'brainAtlas');
+    const src = readFileSync(FILE, 'utf8');
+    const quick = render({ view: 'lateral', stimGuideOpen: true });
+
+    expect(quick).toContain('data-brainatlas-stim-guide="true"');
+    expect(quick).toContain('data-brainatlas-stim-depth="quick"');
+    expect((quick.match(/data-brainatlas-stim-card=/g) || [])).toHaveLength(7);
+    expect((quick.match(/data-brainatlas-stim-fact=/g) || [])).toHaveLength(14);
+    expect(quick).toMatch(/Brain stimulation/);
+    expect(quick).toMatch(/not treatment selection, device setup, or protocol guidance/i);
+    expect(quick).toMatch(/TMS family/);
+    expect(quick).toMatch(/Electroconvulsive therapy/);
+    expect(quick).toMatch(/Vagus nerve stimulation/);
+    expect(quick).toMatch(/Deep brain stimulation/);
+    expect(quick).toMatch(/Magnetic seizure therapy/);
+    expect(quick).toMatch(/Transcranial electrical stimulation/);
+    expect(quick).toMatch(/Emerging noninvasive targeting/);
+    expect(quick).toMatch(/TCMS/);
+    expect(quick).toMatch(/TMS, rTMS, deep TMS, or TBS/);
+    expect(quick).toMatch(/nimh\.nih\.gov\/health\/topics\/brain-stimulation-therapies/);
+    expect(quick).toMatch(/fda\.gov\/medical-devices\/guidance-documents/);
+    expect(src).toContain('openStimTreatmentAtlas');
+    expect(src).toContain("atlasRegion: 'lower_cranial_ix_x_xi_cw'");
+    expect(src).toContain("upd('viewGroup', brainAtlasViewGroupFor(item.atlasView))");
+
+    const full = render({ view: 'lateral', stimGuideOpen: true, stimGuideDepth: 'full' });
+    expect(full).toContain('data-brainatlas-stim-depth="full"');
+    expect((full.match(/data-brainatlas-stim-fact=/g) || [])).toHaveLength(28);
+    expect(full).toMatch(/Energy delivery/);
+    expect(full).toMatch(/Circuit effect/);
+    expect(full).toMatch(/Targets/);
+    expect(full).toMatch(/Clinical status/);
+    expect(full).toMatch(/Key safety context/);
+
+    const filtered = render({ view: 'lateral', stimGuideOpen: true, stimGuideQuery: 'high-powered focused magnetic pulses' });
+    expect((filtered.match(/data-brainatlas-stim-card=/g) || [])).toHaveLength(1);
+    expect(filtered).toMatch(/Magnetic seizure therapy/);
+  });
+  it('gives the treatment guide a non-color WCAG-oriented visual hierarchy', () => {
+    loadTool(FILE, 'brainAtlas');
+    const src = readFileSync(FILE, 'utf8');
+    const html = render({ view: 'lateral', stimGuideOpen: true });
+
+    expect(html).toContain('role="list"');
+    expect(html).toContain('aria-label="Brain stimulation and somatic treatment modalities"');
+    expect((html.match(/role="listitem"/g) || [])).toHaveLength(7);
+    expect((html.match(/aria-labelledby="brainatlas-stim-card-title-/g) || [])).toHaveLength(7);
+    expect((html.match(/data-brainatlas-stim-glance=/g) || [])).toHaveLength(7);
+    expect((html.match(/class="brainatlas-stim-glance-item"/g) || [])).toHaveLength(21);
+    expect((html.match(/data-stage-tone="established"/g) || [])).toHaveLength(2);
+    expect((html.match(/data-stage-tone="mixed"/g) || [])).toHaveLength(2);
+    expect((html.match(/data-stage-tone="research"/g) || [])).toHaveLength(3);
+    expect(html).toMatch(/Evidence stage/);
+    expect(html).toMatch(/Cleared uses/);
+    expect(html).toMatch(/Mixed status/);
+    expect(html).toMatch(/Experimental/);
+    expect(src).toContain('.brainatlas-stim-guide-toggle{min-height:44px;}');
+    expect(src).toContain('min-width:44px;min-height:44px');
+    expect(src).toContain('.brainatlas-stim-guide :is(button,a,input):focus-visible{outline:3px');
+    expect(src).toContain('@media (forced-colors:active)');
+    expect(src).toContain('@media (prefers-contrast:more)');
+    expect(src).toContain('.brainatlas-stim-guide .brainatlas-psych-card-title{font-size:16px');
+    expect(src).toContain('.brainatlas-stim-guide .brainatlas-psych-fact dd{font-size:12px;line-height:1.6;}');
+  });
+  it('filters treatment cards by an accessible visual approach rail', () => {
+    loadTool(FILE, 'brainAtlas');
+
+    const all = render({ view: 'lateral', stimGuideOpen: true });
+    expect(all).toContain('data-brainatlas-stim-filter="true"');
+    expect(all).toContain('data-brainatlas-stim-family="all"');
+    expect((all.match(/data-brainatlas-stim-family-option=/g) || [])).toHaveLength(5);
+    expect(all).toContain('data-brainatlas-stim-family-option="all" aria-pressed="true"');
+    expect(all).toContain('aria-controls="brainatlas-stim-grid"');
+    expect(all).toMatch(/Explore by approach/);
+    expect(all).toMatch(/All approaches/);
+    expect(all).toMatch(/Nerve-based/);
+
+    const magnetic = render({ view: 'lateral', stimGuideOpen: true, stimGuideFamily: 'magnetic' });
+    expect(magnetic).toContain('data-brainatlas-stim-family="magnetic"');
+    expect((magnetic.match(/data-brainatlas-stim-card=/g) || [])).toHaveLength(2);
+    expect(magnetic).toMatch(/TMS family/);
+    expect(magnetic).toMatch(/Magnetic seizure therapy/);
+    expect(magnetic).not.toMatch(/data-brainatlas-stim-card="ect"/);
+
+    const electrical = render({ view: 'lateral', stimGuideOpen: true, stimGuideFamily: 'electrical' });
+    expect((electrical.match(/data-brainatlas-stim-card=/g) || [])).toHaveLength(3);
+
+    const nerve = render({ view: 'lateral', stimGuideOpen: true, stimGuideFamily: 'nerve' });
+    expect((nerve.match(/data-brainatlas-stim-card=/g) || [])).toHaveLength(1);
+    expect(nerve).toContain('data-brainatlas-stim-card="vns"');
+    expect(nerve).toContain('data-brainatlas-wide="true"');
+
+    const combined = render({ view: 'lateral', stimGuideOpen: true, stimGuideFamily: 'magnetic', stimGuideQuery: 'high-powered focused magnetic pulses' });
+    expect((combined.match(/data-brainatlas-stim-card=/g) || [])).toHaveLength(1);
+    expect(combined).toContain('data-brainatlas-stim-card="mst"');
+
+    const empty = render({ view: 'lateral', stimGuideOpen: true, stimGuideFamily: 'nerve', stimGuideQuery: 'ultrasound' });
+    expect(empty).toContain('data-brainatlas-stim-empty="true"');
+    expect(empty).toContain('role="listitem"');
+    expect(empty).toContain('data-brainatlas-stim-reset="true"');
+    expect(empty).toMatch(/Clear treatment filters/);
+
+    const invalid = render({ view: 'lateral', stimGuideOpen: true, stimGuideFamily: 'not-a-family' });
+    expect(invalid).toContain('data-brainatlas-stim-family="all"');
+    expect((invalid.match(/data-brainatlas-stim-card=/g) || [])).toHaveLength(7);
+  });
+  it('builds a bounded two-treatment visual comparison that survives filtering', () => {
+    loadTool(FILE, 'brainAtlas');
+    const src = readFileSync(FILE, 'utf8');
+
+    const emptyBuilder = render({ view: 'lateral', stimGuideOpen: true });
+    expect(emptyBuilder).toContain('data-brainatlas-stim-compare-builder="true"');
+    expect(emptyBuilder).toContain('data-brainatlas-stim-builder-count="0"');
+    expect((emptyBuilder.match(/data-brainatlas-stim-builder-slot="empty"/g) || [])).toHaveLength(2);
+    expect(emptyBuilder).toMatch(/Choose Compare on any two modalities/);
+    expect(emptyBuilder).toContain('data-brainatlas-stim-builder-view="true" disabled=""');
+    expect((emptyBuilder.match(/data-brainatlas-stim-compare-toggle=/g) || [])).toHaveLength(7);
+    expect(emptyBuilder).toContain('data-brainatlas-stim-compare-presets="true"');
+    expect((emptyBuilder.match(/data-brainatlas-stim-compare-preset=/g) || [])).toHaveLength(4);
+
+    const one = render({ view: 'lateral', stimGuideOpen: true, stimCompareIds: ['tms'] });
+    expect(one).toContain('data-brainatlas-stim-builder-count="1"');
+    expect(one).toContain('data-brainatlas-stim-compare="true"');
+    expect(one).toContain('data-brainatlas-stim-compare-count="1"');
+    expect((one.match(/data-brainatlas-stim-compare-row=/g) || [])).toHaveLength(6);
+    expect((one.match(/data-brainatlas-stim-compare-column=/g) || [])).toHaveLength(1);
+    expect((one.match(/data-brainatlas-stim-compare-matrix-empty=/g) || [])).toHaveLength(6);
+    expect(one).toContain('data-brainatlas-stim-pathways="true"');
+    expect((one.match(/data-brainatlas-stim-pathway-lane=/g) || [])).toHaveLength(1);
+    expect((one.match(/data-brainatlas-stim-pathway-step=/g) || [])).toHaveLength(3);
+    expect(one).toContain('data-brainatlas-stim-pathway-empty="true"');
+    expect(one).toMatch(/One more modality needed/);
+
+    const compared = render({ view: 'lateral', stimGuideOpen: true, stimCompareIds: ['tms', 'ect'] });
+    expect(compared).toContain('data-brainatlas-stim-builder-count="2"');
+    expect(compared).toContain('data-brainatlas-stim-compare-count="2"');
+    expect(compared).toContain('data-brainatlas-stim-compare-matrix="true"');
+    expect(compared).toContain('aria-label="Treatment modality comparison matrix"');
+    expect((compared.match(/data-brainatlas-stim-compare-column=/g) || [])).toHaveLength(2);
+    expect((compared.match(/data-brainatlas-stim-compare-symbol=/g) || [])).toHaveLength(2);
+    expect((compared.match(/data-brainatlas-stim-compare-meta=/g) || [])).toHaveLength(2);
+    expect((compared.match(/data-brainatlas-stim-compare-fact=/g) || [])).toHaveLength(12);
+    expect((compared.match(/data-brainatlas-stim-pathway-lane=/g) || [])).toHaveLength(2);
+    expect((compared.match(/data-brainatlas-stim-pathway-step=/g) || [])).toHaveLength(6);
+    expect(compared).toMatch(/Coil positioned near scalp/);
+    expect(compared).toMatch(/Distributed seizure-linked networks/);
+    expect((compared.match(/data-brainatlas-stim-compare-toggle="[^\"]+" aria-pressed="false" aria-disabled="true"/g) || [])).toHaveLength(5);
+    expect(compared).toContain('data-brainatlas-stim-compare-preset="clinical" aria-pressed="true"');
+    expect(compared).toMatch(/How it reaches the brain/);
+    expect(compared).toMatch(/Key safety context/);
+    expect(compared).toMatch(/Two modalities selected and ready/);
+    expect(compared).toMatch(/Compare educational summaries only/);
+
+    const filtered = render({ view: 'lateral', stimGuideOpen: true, stimGuideFamily: 'nerve', stimCompareIds: ['tms', 'ect'] });
+    expect((filtered.match(/data-brainatlas-stim-card=/g) || [])).toHaveLength(1);
+    expect(filtered).toContain('data-brainatlas-stim-builder-count="2"');
+    expect(filtered).toContain('data-brainatlas-stim-compare-count="2"');
+    expect((filtered.match(/data-brainatlas-stim-compare-column=/g) || [])).toHaveLength(2);
+
+    const sanitized = render({ view: 'lateral', stimGuideOpen: true, stimCompareIds: ['tms', 'tms', 'not-a-treatment'] });
+    expect(sanitized).toContain('data-brainatlas-stim-builder-count="1"');
+    expect(sanitized).toContain('data-brainatlas-stim-compare-count="1"');
+    expect(src).toContain('toggleStimTreatmentCompare');
+    expect(src).toContain('viewStimTreatmentComparison');
+    expect(src).toContain('selectStimComparePreset');
+    expect((src.match(/pathway: \[/g) || [])).toHaveLength(7);
+  });
+  it('renders a bounded two-class psychopharmacology comparison', () => {
+    loadTool(FILE, 'brainAtlas');
+
+    const compared = render({
+      view: 'lateral',
+      psychGuideOpen: true,
+      psychCompareIds: ['antidepressants', 'antipsychotics'],
+    });
+    expect(compared).toContain('data-brainatlas-psych-compare="true"');
+    expect(compared).toContain('data-brainatlas-psych-compare-count="2"');
+    expect(compared).toContain('data-brainatlas-psych-compare-matrix="true"');
+    expect(compared).toContain('aria-label="Medication class comparison matrix"');
+    expect((compared.match(/data-brainatlas-psych-compare-row=/g) || [])).toHaveLength(4);
+    expect((compared.match(/scope="col"/g) || [])).toHaveLength(3);
+    expect((compared.match(/scope="row"/g) || [])).toHaveLength(4);
+    expect(compared).toContain('data-brainatlas-psych-builder-count="2"');
+    expect((compared.match(/data-brainatlas-psych-builder-slot=/g) || [])).toHaveLength(2);
+    expect(compared).toMatch(/Two classes selected and ready/);
+    expect(compared).toMatch(/View comparison/);
+    expect((compared.match(/data-brainatlas-psych-compare-column=/g) || [])).toHaveLength(2);
+    expect((compared.match(/class="brainatlas-psych-compare-fact"/g) || [])).toHaveLength(8);
+    expect(compared).toMatch(/Compare educational summaries only/);
+    expect(compared).toMatch(/Clear comparison/);
+    expect((compared.match(/data-brainatlas-psych-compare-toggle="[^"]+" aria-pressed="false" aria-disabled="true"/g) || [])).toHaveLength(3);
+
+    const sanitized = render({
+      view: 'lateral',
+      psychGuideOpen: true,
+      psychCompareIds: ['antidepressants', 'antidepressants', 'not-a-class'],
+    });
+    expect(sanitized).toContain('data-brainatlas-psych-compare-count="1"');
+    expect(sanitized).toContain('data-brainatlas-psych-builder-count="1"');
+    expect((sanitized.match(/data-brainatlas-psych-builder-slot=/g) || [])).toHaveLength(2);
+    expect(sanitized).toMatch(/One more class needed/);
+    expect((sanitized.match(/data-brainatlas-psych-compare-column=/g) || [])).toHaveLength(1);
+    expect((sanitized.match(/class="brainatlas-psych-compare-fact"/g) || [])).toHaveLength(4);
+    expect((sanitized.match(/data-brainatlas-psych-compare-matrix-empty=/g) || [])).toHaveLength(4);
+    expect(sanitized).toContain('data-brainatlas-psych-compare-empty="true"');
+  });
   it('falls back safely when the selected-region label translation is missing', () => {
     loadTool(FILE, 'brainAtlas');
 

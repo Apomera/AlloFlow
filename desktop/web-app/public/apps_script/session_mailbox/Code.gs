@@ -18,13 +18,13 @@
  *  - session join secret: carried in the QR and accepted only by {a:'join'}.
  *    The server returns a signed participant token bound to a random uid.
  *  - participant token: permits student-up messages, privacy-filtered reads,
- *    own roster/answer/reaction/vote updates, and own signaling only.
+ *    own roster/quiz-receipt/team/reaction/vote updates, and own signaling only.
  *
  * All requests are POSTed as text/plain JSON (avoids CORS preflight, which
  * Apps Script cannot answer). GET on the /exec URL shows a human status line.
  */
 
-var VERSION = 9;
+var VERSION = 11;
 var SESSION_TTL_SEC = 6 * 60 * 60;      // live session marker + counters
 var MESSAGE_TTL_SEC = 45 * 60;          // live messages
 var UPLOAD_TTL_SEC = 30 * 60;           // pack upload parts awaiting finalize
@@ -42,6 +42,9 @@ var PARTICIPANT_WRITES_PER_MIN = 120;
 var SESSION_READS_PER_MIN = 1800;
 var MAX_PATCH_FIELDS = 60;
 var MAX_JSON_DEPTH = 12;
+var MAX_ACTIVITY_PARTICIPANTS = 250;
+var MAX_ASSIGNMENT_ACTIVITIES = 8;
+var ASYNC_ACTIVITY_CACHE_SEC = 5 * 60;
 var FOLDER_NAME = 'AlloFlow Class Mailbox';
 
 function doGet() {
@@ -181,7 +184,7 @@ function handle(p) {
 
   // Session document store (v7): teacher and participant capabilities are
   // distinct. Participants see a privacy-filtered session view and may write
-  // only their own roster/answer/reaction/vote/signaling surfaces.
+  // only their own roster/quiz-receipt/team/reaction/vote/signaling surfaces.
   if (a === 'dget' || a === 'dset' || a === 'dpatch' || a === 'ddel') {
     var dcode = String(p.c || '').toUpperCase();
     var dsecret = sessionSecretFor(dcode, cache, props);
@@ -221,9 +224,24 @@ function handle(p) {
   }
   if (a === 'putsubmission') return putSubmission(cache, props, p, admin);
   if (a === 'getpack') return getPack(cache, p);
+  // Durable shared-assignment activities (v10+; plural manifests in v11).
+  // These are deliberately
+  // separate from the six-hour live-session document store: the teacher does
+  // not need to keep a browser open while students complete hosted homework.
+  if (a === 'joinactivity') return joinAssignmentActivity(cache, p, admin);
+  if (a === 'activityupsert') return upsertAssignmentActivity(cache, p, admin);
+  if (a === 'getactivitysummary') return getAssignmentActivitySummary(cache, p, admin);
+  if (a === 'getactivityadmin') {
+    if (!isAdmin) return out({ ok: false, e: 'not-admin' });
+    return getAssignmentActivityAdmin(cache, p);
+  }
+  if (a === 'moderateactivity') {
+    if (!isAdmin) return out({ ok: false, e: 'not-admin' });
+    return moderateAssignmentActivity(cache, p);
+  }
   if (a === 'delpack') {
     if (!isAdmin) return out({ ok: false, e: 'not-admin' });
-    return delPack(p);
+    return delPack(cache, p);
   }
   return out({ ok: false, e: 'bad-action' });
 }
@@ -827,6 +845,449 @@ function replacePackFileV7(name, body, mime) {
   else packFolder().createFile(name, body, mime);
 }
 
+// v10+: durable, assignment-scoped collaboration sidecars. Word Cloud and
+// Rating share the same pseudonymous response map and mailbox lifecycle; neither
+// depends on a teacher browser being online.
+function normalizeAssignmentRatingLabels(value, minValue, maxValue) {
+  var source = value;
+  if (typeof source === 'string') {
+    try { source = JSON.parse(source); } catch (e) { source = []; }
+  }
+  var labels = [];
+  for (var rating = minValue; rating <= maxValue; rating++) {
+    var raw = Array.isArray(source)
+      ? source[rating - minValue]
+      : (source && typeof source === 'object' ? source[String(rating)] : '');
+    labels.push(String(raw || '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 40));
+  }
+  return labels;
+}
+
+function normalizeAssignmentActivityConfig(value, expiresAt) {
+  var source = value;
+  if (typeof source === 'string') {
+    try { source = JSON.parse(source); } catch (e) { return null; }
+  }
+  if (!source || typeof source !== 'object' || Array.isArray(source)) return null;
+  var activityId = String(source.activityId || '');
+  if (!/^AC-[0-9a-f-]{36}$/i.test(activityId)) return null;
+  var prompt = String(source.prompt || '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 240);
+  if (!prompt) return null;
+  var minParticipants = Math.max(3, Math.min(10, parseInt(source.minParticipants, 10) || 3));
+  if (source.type === 'rating') {
+    var minValue = source.minValue == null ? 1 : Number(source.minValue);
+    var maxValue = source.maxValue == null ? 5 : Number(source.maxValue);
+    if (!isFinite(minValue) || Math.floor(minValue) !== minValue || minValue < 1 || minValue > 9
+        || !isFinite(maxValue) || Math.floor(maxValue) !== maxValue || maxValue < 2 || maxValue > 10
+        || minValue >= maxValue) return null;
+    return {
+      v: 1,
+      activityId: activityId,
+      type: 'rating',
+      delivery: 'shared_async',
+      prompt: prompt,
+      minParticipants: minParticipants,
+      responseLimit: 1,
+      minValue: minValue,
+      maxValue: maxValue,
+      labels: normalizeAssignmentRatingLabels(source.labels, minValue, maxValue),
+      expiresAt: String(expiresAt || source.expiresAt || '')
+    };
+  }
+  if (source.type !== 'word_cloud') return null;
+  var revealPolicy = source.revealPolicy === 'auto_publish' ? 'auto_publish' : 'teacher_review';
+  return {
+    v: 1,
+    activityId: activityId,
+    type: 'word_cloud',
+    delivery: 'shared_async',
+    prompt: prompt,
+    revealPolicy: revealPolicy,
+    minParticipants: minParticipants,
+    responseLimit: 1,
+    expiresAt: String(expiresAt || source.expiresAt || '')
+  };
+}
+
+function normalizeAssignmentActivityConfigs(value, expiresAt) {
+  var source = value;
+  if (typeof source === 'string') {
+    try { source = JSON.parse(source); } catch (e) { return null; }
+  }
+  if (source === undefined || source === null) return [];
+  var list = Array.isArray(source) ? source : [source];
+  if (list.length > MAX_ASSIGNMENT_ACTIVITIES) return null;
+  var seen = {};
+  var normalized = [];
+  for (var i = 0; i < list.length; i++) {
+    var config = normalizeAssignmentActivityConfig(list[i], expiresAt);
+    if (!config || seen[config.activityId]) return null;
+    seen[config.activityId] = true;
+    normalized.push(config);
+  }
+  return normalized;
+}
+
+function assignmentActivitiesFromManifest(manifest) {
+  if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) return [];
+  if (manifest.activities !== undefined && manifest.activities !== null) {
+    return normalizeAssignmentActivityConfigs(manifest.activities, manifest.expiresAt) || [];
+  }
+  // v10 manifests stored one normalized object under activity.
+  return normalizeAssignmentActivityConfigs(manifest.activity, manifest.expiresAt) || [];
+}
+
+function assignmentActivityFileName(packId, activityId) {
+  return 'activity-' + packId + '-' + activityId + '.json';
+}
+
+function findAssignmentActivityFile(packId, activityId) {
+  return findNamedPackFileV7(assignmentActivityFileName(packId, activityId));
+}
+
+function readPackManifestForActivity(packId) {
+  if (!/^PK-[0-9a-f-]{36}$/i.test(packId)) return { error: 'bad-request' };
+  var file = findPackFile(packId);
+  if (!file) return { error: 'no-pack' };
+  var manifest;
+  try { manifest = JSON.parse(file.getBlob().getDataAsString()); } catch (e) { return { error: 'corrupt' }; }
+  if (manifest.expiresAt && Date.parse(manifest.expiresAt) <= Date.now()) return { error: 'expired' };
+  return { manifest: manifest };
+}
+
+function assignmentActivityContext(p, requirePackSecret) {
+  var packId = String(p.id || '');
+  var activityId = String(p.aid || '');
+  var found = readPackManifestForActivity(packId);
+  if (found.error) return found;
+  var manifest = found.manifest;
+  if (requirePackSecret && String(p.k || '') !== String(manifest.k || '')) return { error: 'denied' };
+  var activities = assignmentActivitiesFromManifest(manifest);
+  var config = null;
+  for (var i = 0; i < activities.length; i++) {
+    if (activities[i].activityId === activityId) {
+      config = activities[i];
+      break;
+    }
+  }
+  if (!config) return { error: 'no-activity' };
+  return { packId: packId, activityId: activityId, manifest: manifest, config: config };
+}
+
+function assignmentActivityToken(admin, packId, activityId, uid, packSecret) {
+  var bytes = Utilities.computeHmacSha256Signature(
+    'assignment|' + packId + '|' + activityId + '|' + uid + '|' + packSecret,
+    admin
+  );
+  return Utilities.base64EncodeWebSafe(bytes).replace(/=+$/g, '');
+}
+
+function assignmentActivityActor(p, context, admin) {
+  var uid = String(p.uid || '');
+  var pt = String(p.pt || '');
+  if (!/^ma-[A-Za-z0-9_-]{8,48}$/.test(uid) || !isToken(pt, 20, 96)) return null;
+  var expected = assignmentActivityToken(
+    admin,
+    context.packId,
+    context.activityId,
+    uid,
+    String(context.manifest.k || '')
+  );
+  return pt === expected ? { uid: uid } : null;
+}
+
+function newAssignmentActivityState(context) {
+  return {
+    v: 1,
+    packId: context.packId,
+    activityId: context.activityId,
+    config: context.config,
+    version: 0,
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+    responses: {}
+  };
+}
+
+function readAssignmentActivityState(context) {
+  var file = findAssignmentActivityFile(context.packId, context.activityId);
+  if (!file) return newAssignmentActivityState(context);
+  try {
+    var state = JSON.parse(file.getBlob().getDataAsString());
+    if (!state || typeof state !== 'object' || Array.isArray(state)
+        || !state.responses || typeof state.responses !== 'object' || Array.isArray(state.responses)) {
+      return newAssignmentActivityState(context);
+    }
+    state.config = context.config;
+    return state;
+  } catch (e) {
+    return newAssignmentActivityState(context);
+  }
+}
+
+function writeAssignmentActivityState(state) {
+  replacePackFileV7(
+    assignmentActivityFileName(state.packId, state.activityId),
+    JSON.stringify(state),
+    'application/json'
+  );
+}
+
+function normalizeAssignmentWordCloudTerm(value) {
+  var term = value == null ? '' : String(value);
+  try { if (typeof term.normalize === 'function') term = term.normalize('NFKC'); } catch (e) {}
+  term = term.replace(/[\u0000-\u001f\u007f<>]/g, ' ').replace(/\s+/g, ' ').trim();
+  term = term.replace(/^[\p{P}\p{S}]+|[\p{P}\p{S}]+$/gu, '').trim();
+  if (term.length > 60) term = term.slice(0, 60).trim();
+  if (!term || term.split(/\s+/).length > 10) return '';
+  return term;
+}
+
+function assignmentTermNeedsReview(term) {
+  var lower = String(term || '').toLowerCase();
+  // This is intentionally a narrow automatic gate, not a claim of complete
+  // content moderation. URLs, contact details, likely phone numbers, and a
+  // small obvious-profanity set stay held for teacher review.
+  if (/@|https?:|www\.|\.com\b|\.net\b|\.org\b/.test(lower)) return true;
+  if ((lower.match(/\d/g) || []).length >= 7) return true;
+  var compact = lower.replace(/[^a-z0-9]+/g, '');
+  var blocked = ['fuck', 'shit', 'bitch', 'cunt', 'nigger', 'faggot'];
+  for (var i = 0; i < blocked.length; i++) if (compact.indexOf(blocked[i]) !== -1) return true;
+  return false;
+}
+
+function buildAssignmentActivityPublicSummary(state) {
+  var responses = state.responses && typeof state.responses === 'object' ? state.responses : {};
+  if (state.config.type === 'rating') {
+    var counts = {};
+    var participantCount = 0;
+    for (var rating = state.config.minValue; rating <= state.config.maxValue; rating++) counts[rating] = 0;
+    Object.keys(responses).forEach(function(uid) {
+      var row = responses[uid];
+      var value = row && row.value;
+      if (typeof value !== 'number' || !isFinite(value) || Math.floor(value) !== value
+          || value < state.config.minValue || value > state.config.maxValue) return;
+      counts[value] += 1;
+      participantCount += 1;
+    });
+    var revealed = participantCount >= state.config.minParticipants;
+    var distribution = revealed ? Object.keys(counts).map(function(valueKey) {
+      var value = parseInt(valueKey, 10);
+      return {
+        value: value,
+        label: state.config.labels[value - state.config.minValue] || String(value),
+        count: counts[value],
+        percent: participantCount ? Math.round((counts[value] / participantCount) * 100) : 0
+      };
+    }) : [];
+    return {
+      ok: true,
+      activityId: state.activityId,
+      type: 'rating',
+      prompt: state.config.prompt,
+      minParticipants: state.config.minParticipants,
+      participantCount: participantCount,
+      revealed: revealed,
+      version: parseInt(state.version, 10) || 0,
+      updatedAt: parseInt(state.updatedAt, 10) || 0,
+      minValue: state.config.minValue,
+      maxValue: state.config.maxValue,
+      labels: state.config.labels,
+      distribution: distribution
+    };
+  }
+  var participantCount = Object.keys(responses).length;
+  var buckets = {};
+  Object.keys(responses).forEach(function(uid) {
+    var row = responses[uid];
+    if (!row || row.status !== 'approved') return;
+    var label = normalizeAssignmentWordCloudTerm(row.text);
+    var key = label.toLowerCase();
+    if (!key) return;
+    if (!buckets[key]) buckets[key] = { value: key, label: label, count: 0 };
+    buckets[key].count += 1;
+  });
+  var revealed = participantCount >= state.config.minParticipants;
+  var terms = revealed ? Object.keys(buckets).map(function(key) {
+    return buckets[key];
+  }).sort(function(a, b) {
+    return b.count - a.count || a.label.localeCompare(b.label);
+  }).slice(0, 100) : [];
+  return {
+    ok: true,
+    activityId: state.activityId,
+    type: 'word_cloud',
+    prompt: state.config.prompt,
+    revealPolicy: state.config.revealPolicy,
+    minParticipants: state.config.minParticipants,
+    participantCount: participantCount,
+    revealed: revealed,
+    version: parseInt(state.version, 10) || 0,
+    updatedAt: parseInt(state.updatedAt, 10) || 0,
+    terms: terms
+  };
+}
+
+function cacheAssignmentActivitySummary(cache, state) {
+  var publicKey = 'as:' + state.packId.slice(-12) + ':' + state.activityId.slice(-12);
+  cache.put(publicKey, JSON.stringify(buildAssignmentActivityPublicSummary(state)), ASYNC_ACTIVITY_CACHE_SEC);
+  Object.keys(state.responses || {}).forEach(function(uid) {
+    cache.put(publicKey + ':o:' + uid.slice(-24), JSON.stringify(state.responses[uid]), ASYNC_ACTIVITY_CACHE_SEC);
+  });
+}
+
+function assignmentActivitySummaryFor(cache, context, uid) {
+  var publicKey = 'as:' + context.packId.slice(-12) + ':' + context.activityId.slice(-12);
+  var publicRaw = cache.get(publicKey);
+  var ownRaw = cache.get(publicKey + ':o:' + uid.slice(-24));
+  if (publicRaw && ownRaw) {
+    try {
+      var cached = JSON.parse(publicRaw);
+      cached.own = JSON.parse(ownRaw);
+      return cached;
+    } catch (e) {}
+  }
+  var state = readAssignmentActivityState(context);
+  cacheAssignmentActivitySummary(cache, state);
+  var summary = buildAssignmentActivityPublicSummary(state);
+  summary.own = state.responses[uid] || null;
+  return summary;
+}
+
+function joinAssignmentActivity(cache, p, admin) {
+  var context = assignmentActivityContext(p, true);
+  if (context.error) return out({ ok: false, e: context.error });
+  if (!rateCheck(cache, 'r:aj:' + context.packId.slice(-12), 120)) {
+    return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
+  }
+  var uid = 'ma-' + Utilities.getUuid().replace(/-/g, '').slice(-20);
+  return out({
+    ok: true,
+    uid: uid,
+    pt: assignmentActivityToken(admin, context.packId, context.activityId, uid, String(context.manifest.k || '')),
+    activity: context.config,
+    t: Date.now()
+  });
+}
+
+function getAssignmentActivitySummary(cache, p, admin) {
+  var context = assignmentActivityContext(p, false);
+  if (context.error) return out({ ok: false, e: context.error });
+  var actor = assignmentActivityActor(p, context, admin);
+  if (!actor) return out({ ok: false, e: 'denied' });
+  if (!rateCheck(cache, 'r:ar:' + context.packId.slice(-12) + ':' + actor.uid.slice(-16), 30)) {
+    return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
+  }
+  return out(assignmentActivitySummaryFor(cache, context, actor.uid));
+}
+
+function upsertAssignmentActivity(cache, p, admin) {
+  var context = assignmentActivityContext(p, false);
+  if (context.error) return out({ ok: false, e: context.error });
+  var actor = assignmentActivityActor(p, context, admin);
+  if (!actor) return out({ ok: false, e: 'denied' });
+  if (!rateCheck(cache, 'r:aw:' + context.packId.slice(-12) + ':' + actor.uid.slice(-16), 20)) {
+    return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
+  }
+  var term = '';
+  var ratingValue = null;
+  if (context.config.type === 'rating') {
+    ratingValue = p.value;
+    if (typeof ratingValue !== 'number' || !isFinite(ratingValue) || Math.floor(ratingValue) !== ratingValue
+        || ratingValue < context.config.minValue || ratingValue > context.config.maxValue) {
+      return out({ ok: false, e: 'bad-rating' });
+    }
+  } else {
+    term = normalizeAssignmentWordCloudTerm(p.term);
+    if (!term) return out({ ok: false, e: 'bad-term' });
+  }
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(10000)) return out({ ok: false, e: 'busy' });
+  try {
+    var state = readAssignmentActivityState(context);
+    var responses = state.responses || {};
+    if (!responses[actor.uid] && Object.keys(responses).length >= MAX_ACTIVITY_PARTICIPANTS) {
+      return out({ ok: false, e: 'activity-full' });
+    }
+    var previous = responses[actor.uid];
+    if (context.config.type === 'rating') {
+      // One map row per pseudonymous actor. A retry or deliberate change
+      // replaces that row rather than inflating the aggregate.
+      responses[actor.uid] = {
+        value: ratingValue,
+        status: 'recorded',
+        updatedAt: Date.now()
+      };
+    } else {
+      var status = context.config.revealPolicy === 'auto_publish' && !assignmentTermNeedsReview(term)
+        ? 'approved'
+        : 'pending';
+      // A student edit cannot silently undo an explicit teacher hide.
+      if (previous && previous.status === 'hidden') status = 'pending';
+      responses[actor.uid] = {
+        text: term,
+        status: status,
+        updatedAt: Date.now()
+      };
+    }
+    state.responses = responses;
+    state.version = (parseInt(state.version, 10) || 0) + 1;
+    state.updatedAt = Date.now();
+    writeAssignmentActivityState(state);
+    cacheAssignmentActivitySummary(cache, state);
+    var summary = buildAssignmentActivityPublicSummary(state);
+    summary.own = responses[actor.uid];
+    return out(summary);
+  } finally { lock.releaseLock(); }
+}
+
+function getAssignmentActivityAdmin(cache, p) {
+  var context = assignmentActivityContext(p, false);
+  if (context.error) return out({ ok: false, e: context.error });
+  if (!rateCheck(cache, 'r:aa:' + context.packId.slice(-12), 120)) {
+    return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
+  }
+  var state = readAssignmentActivityState(context);
+  var summary = buildAssignmentActivityPublicSummary(state);
+  // Ratings are aggregate-only: even the teacher endpoint does not enumerate
+  // pseudonymous actors or expose an individual rating.
+  summary.responses = context.config.type === 'rating' ? [] : Object.keys(state.responses || {}).map(function(uid) {
+    var row = state.responses[uid] || {};
+    return {
+      uid: uid,
+      text: String(row.text || '').slice(0, 60),
+      status: row.status === 'approved' || row.status === 'hidden' ? row.status : 'pending',
+      updatedAt: parseInt(row.updatedAt, 10) || 0
+    };
+  }).sort(function(a, b) { return b.updatedAt - a.updatedAt; });
+  return out(summary);
+}
+
+function moderateAssignmentActivity(cache, p) {
+  var context = assignmentActivityContext(p, false);
+  if (context.error) return out({ ok: false, e: context.error });
+  if (context.config.type !== 'word_cloud') return out({ ok: false, e: 'no-moderation' });
+  var uid = String(p.uid || '');
+  var status = String(p.status || '');
+  if (!/^ma-[A-Za-z0-9_-]{8,48}$/.test(uid)
+      || (status !== 'pending' && status !== 'approved' && status !== 'hidden')) {
+    return out({ ok: false, e: 'bad-request' });
+  }
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(10000)) return out({ ok: false, e: 'busy' });
+  try {
+    var state = readAssignmentActivityState(context);
+    if (!state.responses || !state.responses[uid]) return out({ ok: false, e: 'no-response' });
+    state.responses[uid].status = status;
+    state.responses[uid].updatedAt = Date.now();
+    state.version = (parseInt(state.version, 10) || 0) + 1;
+    state.updatedAt = Date.now();
+    writeAssignmentActivityState(state);
+    cacheAssignmentActivitySummary(cache, state);
+    return out({ ok: true, version: state.version, t: state.updatedAt });
+  } finally { lock.releaseLock(); }
+}
+
 // v8: capability-authenticated student submissions. Live students use their
 // signed participant credential; hosted-homework students use the same
 // unguessable pack capability already present in their assignment QR. Files
@@ -929,11 +1390,23 @@ function putPack(cache, p) {
     }
     var assembled = pieces.join('');
     if (assembled.length > MAX_PACK_CHARS) return out({ ok: false, e: 'too-big' });
+    // v11 clients send activities[]. A singular activity remains accepted so
+    // deployed v10 clients can republish without losing their shared sidecar.
+    var rawActivities = p.activities !== undefined && p.activities !== null
+      ? p.activities
+      : (p.activity !== undefined && p.activity !== null ? p.activity : []);
+    var packActivities = normalizeAssignmentActivityConfigs(rawActivities, p.expiresAt);
+    if (!packActivities) return out({ ok: false, e: 'bad-activity' });
 
     var oldCount = 0;
+    var oldActivities = [];
     var oldManifest = findPackFile(id);
     if (oldManifest) {
-      try { oldCount = parseInt(JSON.parse(oldManifest.getBlob().getDataAsString()).of, 10) || 0; } catch (e) {}
+      try {
+        var oldManifestBody = JSON.parse(oldManifest.getBlob().getDataAsString());
+        oldCount = parseInt(oldManifestBody.of, 10) || 0;
+        oldActivities = assignmentActivitiesFromManifest(oldManifestBody);
+      } catch (e) {}
     }
     var downloadParts = Math.max(1, Math.ceil(assembled.length / GET_PART_CHARS));
     for (var d = 1; d <= downloadParts; d++) {
@@ -944,11 +1417,32 @@ function putPack(cache, p) {
       if (staleFile) staleFile.setTrashed(true);
     }
     replacePackFileV7('pack-' + id + '.json', JSON.stringify({
-      v: 2, k: String(p.k), t: Date.now(), title: String(p.title || '').slice(0, 140),
-      expiresAt: String(p.expiresAt || ''), chars: assembled.length, of: downloadParts
+      v: 3, k: String(p.k), t: Date.now(), title: String(p.title || '').slice(0, 140),
+      expiresAt: String(p.expiresAt || ''), chars: assembled.length, of: downloadParts,
+      activities: packActivities
     }), 'application/json');
+    var nextActivityIds = {};
+    for (var a = 0; a < packActivities.length; a++) {
+      var packActivity = packActivities[a];
+      nextActivityIds[packActivity.activityId] = true;
+      if (!findAssignmentActivityFile(id, packActivity.activityId)) {
+        writeAssignmentActivityState(newAssignmentActivityState({
+          packId: id,
+          activityId: packActivity.activityId,
+          config: packActivity
+        }));
+      }
+    }
+    // Re-hosting the same pack id must not leave a removed activity sidecar.
+    for (var oa = 0; oa < oldActivities.length; oa++) {
+      var oldActivityId = oldActivities[oa].activityId;
+      if (nextActivityIds[oldActivityId]) continue;
+      var oldActivityFile = findAssignmentActivityFile(id, oldActivityId);
+      if (oldActivityFile) oldActivityFile.setTrashed(true);
+      cache.remove('as:' + id.slice(-12) + ':' + oldActivityId.slice(-12));
+    }
     for (var r = 1; r <= of; r++) cache.remove('u:' + id + ':' + r);
-    return out({ ok: true, id: id, chars: assembled.length, of: downloadParts });
+    return out({ ok: true, id: id, chars: assembled.length, of: downloadParts, activities: packActivities.length });
   } finally { lock.releaseLock(); }
 }
 
@@ -980,17 +1474,29 @@ function getPack(cache, p) {
     chars: parseInt(body.chars, 10) || 0, data: chunk.getBlob().getDataAsString() });
 }
 
-function delPack(p) {
+function delPack(cache, p) {
   var id = String(p.id || '');
   var file = findPackFile(id);
   var count = 0;
+  var activities = [];
   if (file) {
-    try { count = parseInt(JSON.parse(file.getBlob().getDataAsString()).of, 10) || 0; } catch (e) {}
+    try {
+      var manifest = JSON.parse(file.getBlob().getDataAsString());
+      count = parseInt(manifest.of, 10) || 0;
+      activities = assignmentActivitiesFromManifest(manifest);
+    } catch (e) {}
     file.setTrashed(true);
   }
   for (var i = 1; i <= count; i++) {
     var chunk = findNamedPackFileV7(packChunkNameV7(id, i));
     if (chunk) chunk.setTrashed(true);
   }
+  for (var a = 0; a < activities.length; a++) {
+    var activityId = activities[a].activityId;
+    var activityFile = findAssignmentActivityFile(id, activityId);
+    if (activityFile) activityFile.setTrashed(true);
+    cache.remove('as:' + id.slice(-12) + ':' + activityId.slice(-12));
+  }
+
   return out({ ok: true });
 }

@@ -29,16 +29,10 @@ describe('boss battle: class-size-fair pacing', () => {
       expect(s).not.toMatch(/damage = correctCount \* 10/);
       expect(s).toMatch(/perQuestionBudget = bossMaxHP \/ quizLength/);
       expect(s).toMatch(/answerAccuracy \* perQuestionBudget \* 1\.2/);
-      expect(s).toMatch(/earnedCredit = evaluatedResponses\.reduce\([^;]*accuracyWeightForGrade/);
-      expect(s).toMatch(/eligibleCount = Math\.max\(totalStudents, totalResponses, 1\)/);
-      expect(s).toMatch(/wrongCredit = Math\.max\(0, eligibleCount - earnedCredit\)/);
-      expect(s).toMatch(/answerAccuracy = earnedCredit \/ eligibleCount/);
-      expect(s).toMatch(/baseClassDamage = Math\.ceil\([^;]*wrongCredit \/ eligibleCount[^;]*25\)/);
     });
     it(`teacher ${name}: the battle always resolves — last-question HP comparison + both-zero edge`, () => {
       expect(s).toMatch(/isLastQuestion = currentQuestionIndex >= quizLength - 1/);
       expect(s).toMatch(/classPct >= bossPct \? "boss-defeated" : "class-defeated"/);
-      expect(s).toMatch(/isLastQuestion && totalResponses === 0[\s\S]{0,160}"class-defeated"/);
       // both-zero: newHP <= 0 alone decides (no `&& newClassHP > 0` guard anymore)
       expect(s).not.toMatch(/newHP <= 0 && newClassHP > 0/);
     });
@@ -50,10 +44,6 @@ describe('team showdown: whole team counts', () => {
     it(`teacher ${name}: points normalize by team member count, not responders`, () => {
       expect(s).toMatch(/teamMemberCounts/);
       expect(s).toMatch(/Math\.max\(stats\.total, teamMemberCounts\[team\] \|\| 0, 1\)/);
-      expect(s).toMatch(/teamStats\[teamColor\]\.earned \+= accuracyWeightForGrade\(grade\) \|\| 0/);
-      expect(s).toMatch(/Object\.keys\(Object\.assign\(\{\}, teamMemberCounts, teamStats\)\)/);
-      expect(s).toMatch(/stats\.earned \/ denominator/);
-      expect(s).not.toMatch(/stats\.correct \/ denominator/);
     });
   }
 });

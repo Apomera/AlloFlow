@@ -541,6 +541,19 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                       {Array.isArray(session.liveActivities) && session.liveActivities.length > 0 && (
                         <p><span className="font-bold">Live activity evidence:</span> {session.liveActivities.length} activit{session.liveActivities.length === 1 ? 'y' : 'ies'} · {session.liveActivities.reduce((sum, activity) => sum + (activity.submitted || 0), 0)} submissions · {session.liveActivities.reduce((sum, activity) => sum + (activity.revised || 0), 0)} revisions</p>
                       )}
+                      {session.insightBrief && (
+                        <div className="rounded-lg border border-indigo-100 bg-indigo-50/70 p-2">
+                          <p><span className="font-bold text-indigo-900">Insight brief:</span> {session.insightBrief.activityCount || 0} activities · {session.insightBrief.submissions || 0} submissions · {session.insightBrief.revisions || 0} revisions · {(session.insightBrief.followUpCodenames || []).length} follow-up</p>
+                          {Array.isArray(session.insightBrief.groups) && session.insightBrief.groups.some(group => group.followUpCount > 0) && (
+                            <p><span className="font-bold">Group patterns:</span> {session.insightBrief.groups.filter(group => group.followUpCount > 0).map(group => `${groups[group.groupId]?.name || group.groupId}: ${group.followUpCount} follow-up`).join(' · ')}</p>
+                          )}
+                          {Array.isArray(session.insightBrief.nextMoves) && session.insightBrief.nextMoves.length > 0 && (
+                            <ul className="mt-1 list-disc pl-4">
+                              {session.insightBrief.nextMoves.map(move => <li key={move.code}>{move.label}</li>)}
+                            </ul>
+                          )}
+                        </div>
+                      )}
                       {Array.isArray(session.classGoals) && session.classGoals.length > 0 && (
                         <p><span className="font-bold">Class Goals met:</span> {session.classGoals.map(goal => `${goal.label} (${goal.mode === 'independent' ? goal.delivered + ' students' : '+' + goal.tokens + ' each, ' + goal.delivered + ' students'})`).join(' · ')}</p>
                       )}

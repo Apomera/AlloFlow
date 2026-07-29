@@ -112,6 +112,29 @@ describe('every view renders real content', () => {
     expect(html).toContain('skyschool-status-rail');
     expect(SRC).toContain("sp.results[idx - 1]");
     expect(SRC).toContain("sprintRef.current.phase === 'result'");
+    expect(SRC).toContain('computeFlightTelemetry(state, ctrl');
+    expect(SRC).toContain('APP STABLE');
+    expect(SRC).toContain("'IAS ' + Math.round(telemetry.iasKts)");
+    expect(SRC).not.toContain('ctrl.bank += crosswind');
+    expect(html).toContain('data-flight-configuration="true"');
+    expect(html).toContain('aria-label="Retract flaps one detent"');
+    expect(html).toContain('aria-label="Extend flaps one detent"');
+    expect(html).toContain('aria-label="Set wheel brakes"');
+    expect(SRC).toContain('FLAPS OVERSPEED');
+    expect(html).toContain('data-world-environment="true"');
+    expect(SRC).toContain('getWorldEnvironment(scanLat, scanLon, elev, water)');
+    expect(SRC).toContain('frameWorldEnv.visibilityFactor');
+    expect(SRC).toContain('localWorldEnv.fieldDensity');
+    expect(SRC).toContain('localWorldEnv.treeDensity');
+    expect(SRC).toContain('airportWorldEnv.id');
+    expect(SRC).toContain('shoreNear');
+    expect(SRC).toContain('waterTone = rowWorldEnv.color.slice()');
+    expect(SRC).toContain('regionalHazeMix');
+    expect(SRC).toContain('var horizonHaze = gfx.createLinearGradient');
+    expect(SRC).not.toContain('!isDesert');
+    expect(SRC).not.toContain('!isTundra');
+    expect(SRC).not.toContain('if (isTundra &&');
+    expect(SRC).not.toContain('snow > 20');
   });
 
   it('the lesson view exposes the Mark-lesson-complete affordance (dead-quest regression)', () => {

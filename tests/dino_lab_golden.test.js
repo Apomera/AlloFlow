@@ -214,8 +214,10 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     expect(html).toMatch(/five-meter labels, and the full estimated height/);
     expect(html).toMatch(/Survey compass/);
     expect(html).toMatch(/Amber boundary ropes and north arrow orient the reconstruction inside its excavation grid/);
-    expect(html).toMatch(/White rods, vertebrae, rib loops, pelvis, and joints show the inferred bone layout/);
-    expect(html).toMatch(/Skull, spine, pelvis, and tail callouts keep the main landmarks easy to follow/);
+    expect(html).toMatch(/White vertebrae, curved rib shafts, pelvis, digits, and minor struts establish the inferred bone layout/);
+    expect(html).toMatch(/Major limb shafts taper toward the middle, broaden at their ends/);
+    expect(html).toMatch(/Separate radius\/ulna and tibia\/fibula elements replace single lower-limb rods/);
+    expect(html).toMatch(/Warm hinge-shaped ends distinguish hip, elbow or knee, wrist or ankle articulations/);
     expect(html).toMatch(/brow bosses, beaks/);
     expect(html).toMatch(/thumb spikes, or feather fans/);
     expect(html).toMatch(/thin contour mesh show estimated soft-tissue volume around the visible skeleton/);
@@ -265,6 +267,87 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     expect(html).toMatch(/Evidence/);
     expect(html).toMatch(/Inference/);
     expect(html).toMatch(/Uncertainty/);
+    expect(html).toMatch(/Evidence-led reconstruction/);
+    expect(html).toMatch(/Conservative minimum/);
+    expect(html).toMatch(/Historical classic/);
+    expect(html).toMatch(/Avian-informed hypothesis/);
+    expect(html).toMatch(/Invariant across modes: skeleton, articulation, pose, measurements, evidence anchors, and scientific anatomy profile/);
+    expect(html).toMatch(/Head-neck atlas-axis/);
+    expect(html).toMatch(/Head-neck junction/);
+    expect(html).toMatch(/single occipital condyle meets a ring-like atlas/);
+    expect(html).toMatch(/Head-neck evidence/);
+    expect(html).toMatch(/Mandibular lever/);
+    expect(html).toMatch(/coronoid process, surangular, articular, and retroarticular process/);
+    expect(html).toMatch(/Jaw-lever evidence/);
+    expect(html).toMatch(/Occiput and atlas-axis/);
+    expect(html).toMatch(/Mandibular levers/);
+    expect(html).toMatch(/Vertebral architecture/);
+    expect(html).toMatch(/Oriented centra, paired neural arches, tapered neural spines/);
+    expect(html).toMatch(/Thoracic cage/);
+    expect(html).toMatch(/Double-headed dorsal ribs separate the capitulum and tuberculum/);
+    expect(html).toMatch(/Thoracic evidence/);
+    expect(html).toMatch(/Gastral basket: paired, imbricated gastral basket/);
+    expect(html).toMatch(/Uncinate processes:/);
+    expect(html).toMatch(/No ossified uncinate processes are generalized/);
+    expect(html).toMatch(/Thoracic articulations/);
+    expect(html).toMatch(/Paired capitulum and tuberculum heads meet the centrum and transverse-process region/);
+    expect(html).toMatch(/Gastralia and uncinate processes/);
+    expect(html).toMatch(/Sacrum 5 elements/);
+    expect(html).toMatch(/Sacral load path/);
+    expect(html).toMatch(/5-element series/);
+    expect(html).toMatch(/Compact sacral centra carry neural arches and broad paired sacral ribs/);
+    expect(html).toMatch(/Sacral evidence/);
+    expect(html).toMatch(/Caudal transition/);
+    expect(html).toMatch(/Large proximal caudal ribs and neural spines diminish gradually/);
+    expect(html).toMatch(/Haemal arches/);
+    expect(html).toMatch(/paired proximal rami around a haemal canal/);
+    expect(html).toMatch(/Haemal-arch evidence/);
+    expect(html).toMatch(/Caudal ribs and haemal arches/);
+    expect(html).toMatch(/V-shaped chevron rami surround a haemal canal/);
+  });
+
+  it('labels the classic reskin as reconstruction history without changing the skeleton', () => {
+    const data = baseData('field3d');
+    data.field3dReconstructionMode = 'classic';
+    const html = renderTab(data);
+    expect(html).toMatch(/Surface hypothesis \| Historical comparison/);
+    expect(html).toMatch(/Historical classic/);
+    expect(html).toMatch(/older shrink-wrapped, uniformly reptilian conventions/);
+    expect(html).toMatch(/Invariant across modes: skeleton, articulation, pose, measurements, evidence anchors, and scientific anatomy profile/);
+  });
+
+  it('withholds the avian-informed reskin where the represented clade does not support it', () => {
+    const data = baseData('field3d');
+    data.field3dSelected = 'brachiosaurus';
+    data.field3dReconstructionMode = 'avian';
+    const html = renderTab(data);
+    expect(html).toMatch(/Avian-informed/);
+    expect(html).toMatch(/Not supported for this clade/);
+    expect(html).toMatch(/Surface hypothesis \| Recommended/);
+    expect(html).toMatch(/Evidence-led reconstruction/);
+  });
+
+  it('shows supported maniraptoran thoracic structures without generalizing them to every dinosaur', () => {
+    const data = baseData('field3d');
+    data.field3dSelected = 'velociraptor';
+    const html = renderTab(data);
+    expect(html).toMatch(/Thorax double-headed ribs/);
+    expect(html).toMatch(/Gastral basket: paired, imbricated gastral basket with separate medial and lateral segments/);
+    expect(html).toMatch(/Uncinate processes:/);
+    expect(html).toMatch(/Flattened uncinate-process proxies are restricted to maniraptoran profiles/);
+    expect(html).toMatch(/Flattened uncinate-process proxies overlap adjacent anterior dorsal ribs only in supported maniraptoran profiles/);
+  });
+
+  it('preserves the reinforced seven-element ceratopsian sacral profile', () => {
+    const data = baseData('field3d');
+    data.field3dSelected = 'triceratops';
+    const html = renderTab(data);
+    expect(html).toMatch(/Sacrum 7 elements/);
+    expect(html).toMatch(/7-element series/);
+    expect(html).toMatch(/Expanded sacral ribs transfer trunk load into broad iliac contacts/);
+    expect(html).toMatch(/Sacral-rib morphology and iliac attachment facets identify the load path/);
+    expect(html).toMatch(/A tall coronoid process increases the jaw-adductor moment arm/);
+    expect(html).toMatch(/articular and retroarticular process define the posterior lever/);
   });
 
   it('the Dig Site exposes reviewable grid and guess state semantics', () => {

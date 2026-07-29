@@ -238,6 +238,121 @@ describe('GIS Studio', () => {
     }
     expect(html).toContain('type="file"');
   });
+
+  it('audits map composition and generates a data-aware description', () => {
+    const tool = loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
+    const incomplete = tool.testing.auditMapComposition({ title: '', rows: [] });
+    expect(incomplete.errors).toBeGreaterThan(0);
+    expect(incomplete.warnings).toBeGreaterThan(0);
+    const model = {
+      title: 'Maine access',
+      claim: 'Access is highest near the mapped service centers.',
+      altText: 'A detailed description of the mapped access pattern across three Maine locations.',
+      unit: 'index',
+      source: 'Classroom dataset',
+      showLegend: true,
+      rows: [
+        { name: 'Augusta', lat: 44.31, lon: -69.78, value: 82 },
+        { name: 'Rangeley', lat: 44.97, lon: -70.64, value: 41 }
+      ]
+    };
+    const ready = tool.testing.auditMapComposition(model);
+    expect(ready.errors).toBe(0);
+    expect(tool.testing.suggestMapAltText(model)).toContain('Augusta');
+    expect(tool.testing.suggestMapAltText(model)).toContain('Rangeley');
+  });
+
+  it('builds an escaped accessible map package with annotations and provenance', () => {
+    const tool = loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
+    const report = tool.testing.buildMapComposerReport({
+      title: 'Watershed <script>alert(1)</script>',
+      subtitle: 'Evidence map',
+      claim: 'Values cluster near the coast.',
+      altText: 'A schematic coordinate map showing two watershed monitoring locations and their measured values.',
+      unit: 'percent',
+      legendTitle: 'Water quality',
+      showLegend: true,
+      source: 'Maine agency',
+      provenance: { source: 'Maine agency', method: 'Annual monitoring', limitations: 'Learning sample' },
+      classification: 'quantile',
+      generated: '2026-07-28',
+      annotations: [{ id: 'a1', label: 'Coastal cluster', lat: 44.1, lon: -69.1 }],
+      rows: [
+        { name: 'Site A', lat: 44, lon: -69, value: 12 },
+        { name: 'Site B', lat: 45, lon: -70, value: 22 }
+      ]
+    });
+    expect(report).toContain('GIS STUDIO ACCESSIBLE MAP PACKAGE');
+    expect(report).toContain('<caption>Mapped data table</caption>');
+    expect(report).toContain('Annotation key');
+    expect(report).toContain('Sources, method, and limitations');
+    expect(report).toContain('role="img"');
+    expect(report).toContain('&lt;script&gt;');
+    expect(report).not.toContain('<script>alert');
+  });
+
+  it('renders the map composer, annotation tools, coach, and accessible export', () => {
+    loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
+    const html = renderTool('gisStudio', { gisTab: 'composer' });
+    for (const text of ['Accessible Map Composer', 'Map text and legend', 'LIVE ACCESSIBLE PREVIEW', 'Evidence annotations', 'Add callout', 'CARTOGRAPHY COACH', 'Share-readiness review', 'Download accessible map package', 'Review project provenance']) {
+      expect(html).toContain(text);
+    }
+    expect(html).toContain('type="checkbox"');
+  });
+
+
+  it('calculates spectral indices and classifies representative pixels', () => {
+    const tool = loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
+    const vegetation = { green: 0.12, red: 0.08, nir: 0.62, swir: 0.20 };
+    expect(tool.testing.calculateSpectralIndex(vegetation, 'ndvi')).toBeCloseTo(0.7714, 3);
+    expect(tool.testing.calculateSpectralIndex({ green: 0.1, nir: 0.02 }, 'ndwi')).toBeGreaterThan(0.6);
+    expect(tool.testing.classifySpectralPixel(vegetation).label).toBe('Dense vegetation');
+    expect(tool.testing.normalizeRemoteSensingState({ swipe: 0 }).swipe).toBe(0);
+  });
+
+  it('summarizes masked land-cover and index change in the Maine learning scene', () => {
+    const tool = loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
+    const scene = tool.testing.remoteScene;
+    const summary = tool.testing.summarizeRemoteChange(scene, 'ndvi', 30);
+    expect(scene.cells).toHaveLength(36);
+    expect(summary.changed).toBeGreaterThan(0);
+    expect(summary.masked).toBe(1);
+    expect(summary.changedAreaHa).toBeCloseTo(summary.changed * 0.09, 6);
+    expect(summary.forestLoss).toBeGreaterThan(0);
+    expect(summary.developedGain).toBeGreaterThan(0);
+  });
+
+  it('builds an escaped accessible remote-sensing evidence report', () => {
+    const tool = loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
+    const report = tool.testing.buildRemoteSensingReport({
+      scene: tool.testing.remoteScene,
+      state: {
+        viewMode: 'ndvi',
+        analysisIndex: 'ndvi',
+        cloudMask: true,
+        evidence: '<script>alert("no")</script> Values declined in changed forest pixels.'
+      }
+    });
+    expect(report).toContain('GIS STUDIO REMOTE SENSING LAB');
+    expect(report).toContain('Matched-scene comparison');
+    expect(report).toContain('Accessible pixel table');
+    expect(report).toContain('Before-and-after land cover and NDVI values');
+    expect(report).toContain('Cloud masked');
+    expect(report).toContain('&lt;script&gt;');
+    expect(report).not.toContain('<script>alert');
+  });
+
+  it('renders the swipe lab, spectral inspector, quality checks, and table twin', () => {
+    loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
+    const html = renderTool('gisStudio', { gisTab: 'remote' });
+    for (const text of ['Remote Sensing Lab', 'Imagery and index controls', 'Before-and-after swipe comparison', 'Color infrared', 'NDVI vegetation index', 'Pixel spectral inspector', 'Change measurement', 'Interpretation quality check', 'Accessible raster-table twin', 'Maine change investigation', 'Download remote-sensing evidence report']) {
+      expect(html).toContain(text);
+    }
+    expect((html.match(/data-remote-pixel=/g) || []).length).toBe(36);
+    expect(html).toContain('type="range"');
+    expect(html).toContain('<table');
+  });
+
   it('renders the projection lab from restored state', () => {
     loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
     const html = renderTool('gisStudio', { gisTab: 'projection' });

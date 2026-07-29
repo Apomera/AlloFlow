@@ -6,6 +6,11 @@ const fs = require('fs');
 const os = require('os');
 const { app, BrowserWindow, dialog, ipcMain, safeStorage, shell } = require('electron');
 const runtime = require('../runtime/alloflow-desktop-runtime.cjs');
+const {
+  applyAlloSheetRequestAuth,
+  isAllowedPrivateApiRequest,
+  isTrustedAlloSheetGristFrameRequest,
+} = require('./allosheet-request-auth.cjs');
 const { assertTrustedIpcSender, isSameOrigin } = require('./security.cjs');
 
 // ── Build edition ('desktop' | 'admin' | 'remediation' | '' = unflavored) ───
@@ -107,12 +112,25 @@ try {
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
 app.commandLine.appendSwitch('enable-unsafe-webgpu');
 
+// The managed AlloSheet engine owns a per-user Grist data directory. Running
+// two Electron processes against it can corrupt SQLite state, so secondary
+// launches hand focus back to the already-running app instead of starting a
+// second runtime and spreadsheet engine.
+const hasSingleInstanceLock = app.requestSingleInstanceLock();
+if (!hasSingleInstanceLock) {
+  app.quit();
+}
+
 const DEFAULT_HOST = process.env.ALLOFLOW_DESKTOP_HOST || '127.0.0.1';
 const DEFAULT_PORT = Number(process.env.ALLOFLOW_DESKTOP_PORT || 32170);
 const MAX_PORT_ATTEMPTS = 20;
 const PRIVATE_API_TOKEN = crypto.randomBytes(32).toString('base64url');
 
 let mainWindow = null;
+let focusRequestedBySecondInstance = false;
+const trustedAlloSheetWebContents = new Map();
+const knownAlloSheetSessionCookies = new Set();
+let cachedAlloSheetPrivateAuth = null;
 let runtimeServer = null;
 let runtimePort = DEFAULT_PORT;
 let commandCenterUrl = `http://${DEFAULT_HOST}:${runtimePort}`;
@@ -140,6 +158,21 @@ function notifyFullScreenChange(enabled) {
   if (mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.webContents.send('alloflow-desktop:full-screen-changed', Boolean(enabled));
   }
+}
+
+function focusMainWindow() {
+  if (!mainWindow || mainWindow.isDestroyed()) {
+    focusRequestedBySecondInstance = true;
+    return;
+  }
+  focusRequestedBySecondInstance = false;
+  if (mainWindow.isMinimized()) mainWindow.restore();
+  mainWindow.show();
+  mainWindow.focus();
+}
+
+if (hasSingleInstanceLock) {
+  app.on('second-instance', focusMainWindow);
 }
 
 function getCommandCenterUrl() {
@@ -481,16 +514,58 @@ function openExternalIfSafe(url) {
   return false;
 }
 
+function isAllowedAlloSheetPopup(url) {
+  try {
+    const parsed = new URL(url);
+    const allowedOrigins = new Set([
+      new URL(getCommandCenterUrl()).origin,
+      new URL(getBundledAppOrigin()).origin,
+    ]);
+    if (!allowedOrigins.has(parsed.origin)) return false;
+    if (parsed.pathname !== '/app/allo_sheet/allo_sheet.html') return false;
+    if (parsed.username || parsed.password) return false;
+
+    for (const key of parsed.searchParams.keys()) {
+      if (key !== 'v' && key !== 'theme') return false;
+    }
+    if (parsed.searchParams.get('v') !== '4') return false;
+    const theme = parsed.searchParams.get('theme');
+    if (theme && theme !== 'light' && theme !== 'dark' && theme !== 'contrast') return false;
+
+    const bootstrap = new URLSearchParams(parsed.hash.replace(/^#/, ''));
+    const token = bootstrap.get('bridgeToken') || '';
+    const hostOrigin = bootstrap.get('hostOrigin') || '';
+    if (!/^[a-f0-9]{32}$/i.test(token)) return false;
+    if (!allowedOrigins.has(new URL(hostOrigin).origin)) return false;
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
+
 function configurePrivateApiRequestHeaders(targetWindow) {
+  const privateApiOrigins = [
+    new URL(getCommandCenterUrl()).origin,
+    new URL(getBundledAppOrigin()).origin,
+  ];
   const filter = {
-    urls: [getCommandCenterUrl() + '/api/*', getBundledAppOrigin() + '/api/*'],
+    urls: [
+      getCommandCenterUrl() + '/api/*',
+      getBundledAppOrigin() + '/api/*',
+      'http://127.0.0.1/*',
+      'https://127.0.0.1/*',
+      'ws://127.0.0.1/*',
+      'wss://127.0.0.1/*',
+    ],
   };
   targetWindow.webContents.session.webRequest.onBeforeSendHeaders(filter, (details, callback) => {
-    const requestHeaders = { ...(details.requestHeaders || {}) };
+    let requestHeaders = { ...(details.requestHeaders || {}) };
     for (const key of Object.keys(requestHeaders)) {
       if (key.toLowerCase() === 'x-allo-desktop-token') delete requestHeaders[key];
     }
+    const trustedCompanionOrigin = trustedAlloSheetWebContents.get(details.webContentsId) || '';
     let fromCommandCenterMainFrame = false;
+    let fromAlloSheetMainFrame = false;
     try {
       fromCommandCenterMainFrame = Boolean(
         details.webContentsId === targetWindow.webContents.id &&
@@ -498,10 +573,51 @@ function configurePrivateApiRequestHeaders(targetWindow) {
         details.frame.parent === null &&
         isSameOrigin(details.frame.url, getCommandCenterUrl())
       );
+      const frameUrl = String(
+        details.frame && details.frame.url
+        || details.initiator
+        || ''
+      );
+      const isMainFrame = details.frameId === 0
+        || Boolean(details.frame && details.frame.parent === null);
+      fromAlloSheetMainFrame = Boolean(
+        trustedCompanionOrigin
+        && isMainFrame
+        && isSameOrigin(frameUrl, trustedCompanionOrigin)
+      );
     } catch (_) {
       fromCommandCenterMainFrame = false;
+      fromAlloSheetMainFrame = false;
     }
-    if (fromCommandCenterMainFrame) requestHeaders['X-Allo-Desktop-Token'] = PRIVATE_API_TOKEN;
+    if (
+      (fromCommandCenterMainFrame || fromAlloSheetMainFrame)
+      && isAllowedPrivateApiRequest(details.url, privateApiOrigins)
+    ) {
+      requestHeaders['X-Allo-Desktop-Token'] = PRIVATE_API_TOKEN;
+    }
+    if (trustedCompanionOrigin) {
+      cachedAlloSheetPrivateAuth = typeof runtime.getAlloSheetPrivateBrowserAuth === 'function'
+        ? runtime.getAlloSheetPrivateBrowserAuth()
+        : null;
+    }
+    const privateAuth = cachedAlloSheetPrivateAuth;
+    if (privateAuth && privateAuth.sessionCookieName) {
+      knownAlloSheetSessionCookies.add(privateAuth.sessionCookieName);
+    }
+    const trustedGristFrame = Boolean(
+      trustedCompanionOrigin
+      && privateAuth
+      && isTrustedAlloSheetGristFrameRequest(
+        details, trustedCompanionOrigin, privateAuth.origin
+      )
+    );
+    requestHeaders = applyAlloSheetRequestAuth(
+      requestHeaders,
+      details.url,
+      privateAuth,
+      trustedGristFrame ? details.webContentsId : 0,
+      knownAlloSheetSessionCookies
+    );
     callback({ requestHeaders });
   });
 }
@@ -537,6 +653,27 @@ function createMainWindow() {
   mainWindow.on('leave-full-screen', () => notifyFullScreenChange(false));
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (isAllowedAlloSheetPopup(url)) {
+      return {
+        action: 'allow',
+        overrideBrowserWindowOptions: {
+          width: 1500,
+          height: 920,
+          minWidth: 820,
+          minHeight: 640,
+          backgroundColor: '#101827',
+          autoHideMenuBar: true,
+          webPreferences: {
+            contextIsolation: true,
+            nodeIntegration: false,
+            sandbox: true,
+            nodeIntegrationInSubFrames: false,
+            webSecurity: true,
+            devTools: false,
+          },
+        },
+      };
+    }
     // In-app popup views (accessibility reports, print previews, export
     // windows) open via window.open with about:blank/blob:/data: URLs —
     // allow those as child windows; real external links open in the browser.
@@ -545,6 +682,29 @@ function createMainWindow() {
     }
     openExternalIfSafe(url);
     return { action: 'deny' };
+  });
+
+  mainWindow.webContents.on('did-create-window', (childWindow, details) => {
+    if (!isAllowedAlloSheetPopup(details && details.url)) return;
+    const companionOrigin = new URL(details.url).origin;
+    const childId = childWindow.webContents.id;
+    trustedAlloSheetWebContents.set(childId, companionOrigin);
+    childWindow.once('closed', () => {
+      trustedAlloSheetWebContents.delete(childId);
+      cachedAlloSheetPrivateAuth = null;
+    });
+    childWindow.webContents.setWindowOpenHandler(({ url }) => {
+      openExternalIfSafe(url);
+      return { action: 'deny' };
+    });
+    childWindow.webContents.on('will-navigate', (event, url) => {
+      try {
+        const parsed = new URL(url);
+        if (parsed.origin === companionOrigin && parsed.pathname === '/app/allo_sheet/allo_sheet.html') return;
+      } catch (_) {}
+      event.preventDefault();
+      openExternalIfSafe(url);
+    });
   });
 
   mainWindow.webContents.on('will-navigate', (event, url) => {
@@ -794,6 +954,7 @@ async function ensureAdminServerPosture() {
 }
 
 app.whenReady().then(async () => {
+  if (!hasSingleInstanceLock) return;
   configureDesktopSecretStorage();
   runtime.configurePrivateApiToken(PRIVATE_API_TOKEN);
   prepareDesktopRuntimeHome();
@@ -805,6 +966,7 @@ app.whenReady().then(async () => {
   await ensureAdminServerPosture();
   configureUpdates();
   createMainWindow();
+  if (focusRequestedBySecondInstance) focusMainWindow();
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
@@ -818,16 +980,18 @@ app.whenReady().then(async () => {
 
 let engineTorndown = false;
 app.on('before-quit', (event) => {
-  // Never orphan the child servers: llama-server holds ~2GB RAM + the engine
-  // port, whisper-server holds the ASR port, and a leftover of either would
-  // poison the next launch's health checks / port preflight.
-  const canTeardown = typeof runtime.stopLocalEngine === 'function' || typeof runtime.stopLocalAsr === 'function';
+  // Never orphan child servers: the AI, speech, and spreadsheet companions
+  // each own local resources and randomized loopback listeners.
+  const canTeardown = typeof runtime.stopLocalEngine === 'function'
+    || typeof runtime.stopLocalAsr === 'function'
+    || typeof runtime.stopAlloSheetEngine === 'function';
   if (!engineTorndown && canTeardown) {
     engineTorndown = true;
     event.preventDefault();
     const teardowns = [];
     if (typeof runtime.stopLocalEngine === 'function') teardowns.push(Promise.resolve(runtime.stopLocalEngine()).catch(() => {}));
     if (typeof runtime.stopLocalAsr === 'function') teardowns.push(Promise.resolve(runtime.stopLocalAsr()).catch(() => {}));
+    if (typeof runtime.stopAlloSheetEngine === 'function') teardowns.push(Promise.resolve(runtime.stopAlloSheetEngine()).catch(() => {}));
     Promise.allSettled(teardowns).finally(() => {
       if (runtimeServer) {
         runtimeServer.close();

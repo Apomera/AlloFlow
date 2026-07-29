@@ -7,6 +7,7 @@
     "test:coverage": "vitest run --coverage",
     "build:adventure": "node _build_adventure_module.js",
     "verify:adventure-build": "node _build_adventure_module.js --check",
+    "build:eppp-library": "node dev-tools/build_eppp_learning_library_with_reviews.cjs",
     "build:blockly": "node dev-tools/build_blockly_runtime.cjs",
     "verify:blockly-build": "node dev-tools/build_blockly_runtime.cjs --check",
     "test:e2e": "playwright test",

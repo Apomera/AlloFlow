@@ -304,6 +304,9 @@
     var melodyStylePair = React.useState('balanced');
     var selectedMelodyStyle = melodyStylePair[0];
     var setSelectedMelodyStyle = melodyStylePair[1];
+    var motifTransformPair = React.useState('sequenceUp');
+    var selectedMotifTransform = motifTransformPair[0];
+    var setSelectedMotifTransform = motifTransformPair[1];
     var stemModePair = React.useState('four');
     var selectedStemMode = stemModePair[0];
     var setSelectedStemMode = stemModePair[1];
@@ -1414,6 +1417,34 @@
       ogAnnounce('Melody phrase written' + fitted);
     }
 
+    function writeMotifTransform() {
+      if (!pattern || !synthTrack || !C.ogWriteMotifTransform) return;
+      if (selectedBar >= Math.max(1, pattern.bars) - 1) {
+        addToast('Choose a bar before the last bar so the motif has a destination.', 'info');
+        return;
+      }
+      var summary = { noteCount: 0, transformName: selectedMotifTransform };
+      mutate(function (next) {
+        var nextPattern = currentPatternIn(next);
+        var nextSynth = next.tracks.find(function (track) { return track.type === 'synth'; });
+        summary = C.ogWriteMotifTransform(next, nextPattern.id, nextSynth.id, {
+          transform: selectedMotifTransform,
+          sourceBar: selectedBar,
+          destinationBar: selectedBar + 1,
+          bars: 1,
+          replace: true
+        });
+      });
+      if (summary.noteCount) {
+        setSelectedBar(summary.destinationBar);
+        var fitted = summary.rangeFitCount ? ' ' + summary.rangeFitCount + ' fitted to range.' : '';
+        addToast((summary.transformName || 'Motif variation') + ' wrote ' + summary.noteCount + ' notes to bar ' + (summary.destinationBar + 1) + '.' + fitted, 'success');
+        ogAnnounce('Motif variation written to bar ' + (summary.destinationBar + 1));
+      } else {
+        addToast(summary.summary || 'No motif notes found in this bar.', 'info');
+        ogAnnounce('No motif notes found');
+      }
+    }
     function writeNotationEntry() {
       if (!pattern || !synthTrack || !C.ogWriteNotationInput) return;
       var summary = { noteCount: 0, warnings: [] };
@@ -2329,6 +2360,9 @@
       selectedBar: selectedBar
     }) : { keyName: compositionNames.keyName, measures: [], notes: [], offGridCount: 0, performedOffsetCount: 0 };
     var bridgeMeasure = notationBridge.measures && notationBridge.measures[selectedBar] || { steps: [], notes: [] };
+    var motifAnalysis = C.ogBuildMotifAnalysis ? C.ogBuildMotifAnalysis(project, pattern && pattern.id, synthTrack && synthTrack.id, { sourceBar: selectedBar, bars: 1 }) : { available: false, noteCount: 0, pitchRange: 'None', contourLabel: 'empty', rhythmLabel: 'No rhythm yet', suggestions: [] };
+    var motifDestinationBar = pattern ? Math.min(Math.max(1, pattern.bars) - 1, selectedBar + 1) : selectedBar;
+    var motifHasDestination = !!(pattern && selectedBar < Math.max(1, pattern.bars) - 1);
     var notationEnginePlan = C.ogBuildVexFlowNotationModel ? C.ogBuildVexFlowNotationModel(project, pattern && pattern.id, {
       trackId: synthTrack && synthTrack.id,
       clef: staffClef,
@@ -2401,6 +2435,15 @@
       { id: 'ascending', name: 'Ascending' },
       { id: 'callResponse', name: 'Call / Response' }
     ];
+    var motifTransforms = C.ogListMotifTransforms ? C.ogListMotifTransforms() : [
+      { id: 'sequenceUp', name: 'Sequence Up', summary: 'Copies the motif one scale step higher.' },
+      { id: 'sequenceDown', name: 'Sequence Down', summary: 'Copies the motif one scale step lower.' },
+      { id: 'invert', name: 'Invert Around First Note', summary: 'Flips melodic direction around the first pitch.' },
+      { id: 'retrograde', name: 'Retrograde Pitch Order', summary: 'Reverses the pitch order while keeping the rhythm.' },
+      { id: 'simplify', name: 'Simplify Rhythm', summary: 'Keeps the clearest beat-level version of the motif.' }
+    ];
+    var selectedMotifTransformInfo = motifTransforms.filter(function (item) { return item.id === selectedMotifTransform; })[0] || motifTransforms[0] || { id: selectedMotifTransform, name: 'Motif Variation', summary: '' };
+    var canWriteMotifTransform = !!(C.ogWriteMotifTransform && motifHasDestination && motifAnalysis && motifAnalysis.noteCount > 0);
     var songFormPresets = C.ogListSongFormPresets ? C.ogListSongFormPresets() : [
       { id: 'loop-sketch', name: 'Loop Sketch' },
       { id: 'verse-hook', name: 'Verse / Hook' },
@@ -3278,6 +3321,35 @@
                 h('strong', null, 'AI Score Draft'),
                 h('span', { style: styles.meta }, audioToScorePlan.status === 'ready' ? 'Worker ready' : audioToScorePlan.status === 'blocked' ? 'Rights needed' : 'Setup needed'),
                 h('span', { style: styles.integrationText }, audioToScorePlan.engine || 'manual-midi-import'))),
+            h('div', { style: styles.motifPanel, role: 'group', 'aria-label': 'Motif lab composition transformations' },
+              h('div', { style: styles.bridgeHeader },
+                h('strong', null, 'Motif Lab'),
+                h('span', { style: styles.meta }, motifAnalysis.noteCount ? motifAnalysis.pitchRange + ' - ' + motifAnalysis.contourLabel : 'Bar ' + (selectedBar + 1) + ' empty')),
+              h('div', { style: styles.motifStats, role: 'list', 'aria-label': 'Selected bar motif analysis' },
+                h('span', { style: styles.motifChip, role: 'listitem' }, (motifAnalysis.noteCount || 0) + ' notes'),
+                h('span', { style: styles.motifChip, role: 'listitem' }, motifAnalysis.rhythmLabel || 'No rhythm yet'),
+                h('span', { style: styles.motifChip, role: 'listitem' }, 'Density ' + (motifAnalysis.density || 0))),
+              h('div', { style: styles.notationComposer },
+                h('label', { style: styles.fieldLabel }, 'Transform',
+                  h('select', {
+                    style: styles.select,
+                    value: selectedMotifTransformInfo.id,
+                    onChange: function (ev) { setSelectedMotifTransform(ev.target.value); },
+                    'aria-label': 'Motif transform'
+                  },
+                    motifTransforms.map(function (item) {
+                      return h('option', { key: item.id, value: item.id }, item.name);
+                    }))),
+                h('button', {
+                  style: Object.assign({}, styles.wideButton, !canWriteMotifTransform ? styles.disabledButton : null),
+                  onClick: writeMotifTransform,
+                  disabled: !canWriteMotifTransform,
+                  'aria-label': canWriteMotifTransform ? 'Write ' + selectedMotifTransformInfo.name + ' from bar ' + (selectedBar + 1) + ' to bar ' + (motifDestinationBar + 1) : 'Motif transform unavailable'
+                }, motifHasDestination ? 'Write to Bar ' + (motifDestinationBar + 1) : 'Need Next Bar')),
+              h('div', { style: styles.motifSuggestionList, role: 'list', 'aria-label': 'Motif composition suggestions' },
+                (motifAnalysis.suggestions || []).slice(0, 3).map(function (suggestion, index) {
+                  return h('span', { key: 'motif-suggestion-' + index, style: styles.motifSuggestion, role: 'listitem' }, suggestion);
+                }))),
             h('div', { style: styles.bridgePanel, role: 'group', 'aria-label': 'Notation to step bridge' },
               h('div', { style: styles.bridgeHeader },
                 h('strong', null, 'Notation Bridge'),
@@ -3895,6 +3967,11 @@
     integrationCardReady: { border: '1px solid #0f766e', background: '#ccfbf1', color: '#0f172a' },
     integrationCardBlocked: { border: '1px solid #dc2626', background: '#fee2e2', color: '#7f1d1d' },
     integrationText: { color: 'inherit', fontSize: '11px', lineHeight: 1.3, fontWeight: 750, overflowWrap: 'anywhere' },
+    motifPanel: { display: 'grid', gap: '8px', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#334155', padding: '8px', marginBottom: '10px', minWidth: 0 },
+    motifStats: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 96px), 1fr))', gap: '6px', minWidth: 0 },
+    motifChip: { minHeight: '28px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#334155', padding: '5px 7px', fontSize: '11px', fontWeight: 900, overflowWrap: 'anywhere', minWidth: 0 },
+    motifSuggestionList: { display: 'grid', gap: '5px', minWidth: 0 },
+    motifSuggestion: { borderTop: '1px solid #cbd5e1', paddingTop: '5px', color: '#334155', fontSize: '11px', lineHeight: 1.35, fontWeight: 800, overflowWrap: 'anywhere' },
     inlineActionButton: { minHeight: '30px', border: '1px solid #0f766e', background: '#ffffff', color: '#0f172a', padding: '0 8px', fontSize: '11px', fontWeight: 900, cursor: 'pointer', textAlign: 'center', overflowWrap: 'anywhere' },
     notationComposer: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 136px), 1fr))', gap: '8px', alignItems: 'end', marginBottom: '8px' },
     notationTextarea: { width: '100%', minHeight: '54px', resize: 'vertical', border: '1px solid #9ca3af', background: '#ffffff', color: '#111827', padding: '7px', fontFamily: 'ui-monospace, SFMono-Regular, Consolas, monospace', fontSize: '12px', boxSizing: 'border-box' },
@@ -4093,6 +4170,9 @@
       bridgeStepCellOn: { border: '1px solid #5eead4', background: '#134e4a', color: '#ecfeff', boxShadow: 'inset 0 0 0 1px #5eead4' },
       bridgeStepCellDrum: { border: '1px solid #fde68a', background: '#713f12', color: '#fef3c7' },
       bridgeRow: { borderTop: '1px solid #64748b', color: '#e2e8f0' },
+      motifPanel: { border: '1px solid #64748b', background: '#111827', color: '#e2e8f0' },
+      motifChip: { border: '1px solid #64748b', background: '#020617', color: '#e2e8f0' },
+      motifSuggestion: { borderTop: '1px solid #64748b', color: '#cbd5e1' },
       integrationCard: { border: '1px solid #64748b', background: '#1f2937', color: '#e2e8f0' },
       integrationCardReady: { border: '1px solid #5eead4', background: '#134e4a', color: '#ecfeff' },
       integrationCardBlocked: { border: '1px solid #fca5a5', background: '#7f1d1d', color: '#fee2e2' },
@@ -4217,6 +4297,9 @@
       bridgeStepCellOn: { border: '2px solid #ffffff', background: '#00ffff', color: '#000000', boxShadow: 'inset 0 0 0 2px #000000' },
       bridgeStepCellDrum: { border: '2px solid #ffffff', background: '#ffff00', color: '#000000' },
       bridgeRow: { borderTop: '2px solid #ffffff', color: '#ffffff' },
+      motifPanel: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      motifChip: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      motifSuggestion: { borderTop: '2px solid #ffffff', color: '#ffffff' },
       integrationCard: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
       integrationCardReady: { border: '2px solid #ffffff', background: '#00ffff', color: '#000000' },
       integrationCardBlocked: { border: '2px solid #ffffff', background: '#ffff00', color: '#000000' },

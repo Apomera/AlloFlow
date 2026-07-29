@@ -104,6 +104,8 @@ function HeaderBar(props) {
     openRecentQrShares,
     recentQrShareCount,
     setHomeworkExpiryDays,
+    sharedAssignmentActivity,
+    setSharedAssignmentActivity,
     focusNarrationEnabled,
     generatedContent,
     globalLevel,
@@ -260,7 +262,8 @@ function HeaderBar(props) {
     blue: "reading_theme_blue",
     green: "reading_theme_green",
     rose: "reading_theme_rose",
-    dyslexia: "reading_theme_easy_read"
+    dyslexia: "reading_theme_easy_read",
+    dim: "reading_theme_dim"
   };
   const readingThemeFallbackLabels = {
     default: "Default",
@@ -271,7 +274,8 @@ function HeaderBar(props) {
     blue: "Blue",
     green: "Green",
     rose: "Rose",
-    dyslexia: "Easy Read"
+    dyslexia: "Easy Read",
+    dim: "Dim"
   };
   const selectedReadingThemeKey = readingThemeLabelKeys[readingTheme] || readingThemeLabelKeys.default;
   const selectedReadingThemeLabel = t("header." + selectedReadingThemeKey) || readingThemeFallbackLabels[readingTheme] || readingThemeFallbackLabels.default;
@@ -399,14 +403,15 @@ function HeaderBar(props) {
     }
   )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("label", { className: `text-xs font-bold flex items-center gap-1 ${theme === "light" ? "text-slate-600" : "text-slate-300"}` }, t("settings.reading_theme") || "\u{1F3A8} Reading Theme"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-mono bg-slate-100 dark:bg-slate-700 px-1.5 py-0.5 rounded" }, selectedReadingThemeLabel)), /* @__PURE__ */ React.createElement("p", { className: `text-[11px] ${theme === "light" ? "text-slate-600" : "text-slate-300"} mb-2` }, t("settings.reading_theme_desc") || "Background & text color for all content views"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-5 gap-1.5", role: "radiogroup", "aria-label": t("header.reading_theme_aria") || "Reading theme" }, [
     { id: "default", label: t("header.reading_theme_default") || "Default", bg: "#ffffff", fg: "#1e293b", border: "#e2e8f0", emoji: "\u25CB" },
-    { id: "warm", label: t("header.reading_theme_warm") || "Warm", bg: "#fef3c7", fg: "#5c4033", border: "#fde68a", emoji: "\u2600\uFE0F" },
-    { id: "sepia", label: t("header.reading_theme_sepia") || "Sepia", bg: "#f4ecd8", fg: "#5c4033", border: "#d4c5a9", emoji: "\u{1F4DC}" },
+    { id: "warm", label: t("header.reading_theme_warm") || "Warm", bg: "#fdcba5", fg: "#432714", border: "#f97e1f", emoji: "\u2600\uFE0F" },
+    { id: "sepia", label: t("header.reading_theme_sepia") || "Sepia", bg: "#d1bfa9", fg: "#2a1f13", border: "#b48950", emoji: "\u{1F4DC}" },
     { id: "dark", label: t("header.reading_theme_dark") || "Dark", bg: "#1a1a2e", fg: "#e2e8f0", border: "#334155", emoji: "\u{1F319}" },
     { id: "highContrast", label: t("header.reading_theme_contrast") || "Contrast", bg: "#000000", fg: "#ffff00", border: "#ffff00", emoji: "\u25FC\uFE0F" },
-    { id: "blue", label: t("header.reading_theme_blue") || "Blue", bg: "#d6eaf8", fg: "#1b2631", border: "#85c1e9", emoji: "\u{1F4A7}" },
-    { id: "green", label: t("header.reading_theme_green") || "Green", bg: "#e8f5e9", fg: "#1b5e20", border: "#81c784", emoji: "\u{1F33F}" },
-    { id: "rose", label: t("header.reading_theme_rose") || "Rose", bg: "#fce4ec", fg: "#880e4f", border: "#f48fb1", emoji: "\u{1F338}" },
-    { id: "dyslexia", label: t("header.reading_theme_easy_read") || "Easy Read", bg: "#faf8ef", fg: "#1e293b", border: "#e8e0c8", emoji: "\u{1F524}" }
+    { id: "blue", label: t("header.reading_theme_blue") || "Blue", bg: "#b9dbf4", fg: "#16304b", border: "#4aa9ed", emoji: "\u{1F4A7}" },
+    { id: "green", label: t("header.reading_theme_green") || "Green", bg: "#caeccf", fg: "#123f21", border: "#34c548", emoji: "\u{1F33F}" },
+    { id: "rose", label: t("header.reading_theme_rose") || "Rose", bg: "#f9c8d8", fg: "#561530", border: "#f877a2", emoji: "\u{1F338}" },
+    { id: "dyslexia", label: t("header.reading_theme_easy_read") || "Easy Read", bg: "#f4ebbe", fg: "#3f3b31", border: "#cfb017", emoji: "\u{1F524}" },
+    { id: "dim", label: t("header.reading_theme_dim") || "Dim", bg: "#adb3bd", fg: "#000000", border: "#7486a4", emoji: "\u{1F32B}\uFE0F" }
   ].map(function(th) {
     var isActive = readingTheme === th.id;
     return /* @__PURE__ */ React.createElement(
@@ -983,7 +988,91 @@ function HeaderBar(props) {
     },
     /* @__PURE__ */ React.createElement(Share2, { size: 14 }),
     " Homework QR"
-  ), /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-2" }, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600", htmlFor: "homework-qr-expiry" }, "Homework link length"), /* @__PURE__ */ React.createElement("select", { id: "homework-qr-expiry", value: homeworkExpiryDays || 14, onChange: (event) => setHomeworkExpiryDays(Number(event.target.value) || 14), className: "mt-1 w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500" }, /* @__PURE__ */ React.createElement("option", { value: 1 }, "1 day"), /* @__PURE__ */ React.createElement("option", { value: 7 }, "1 week"), /* @__PURE__ */ React.createElement("option", { value: 14 }, "2 weeks"), /* @__PURE__ */ React.createElement("option", { value: 30 }, "30 days"), /* @__PURE__ */ React.createElement("option", { value: 90 }, "90 days (quarter)"), /* @__PURE__ */ React.createElement("option", { value: 180 }, "180 days (semester)"), /* @__PURE__ */ React.createElement("option", { value: 365 }, "365 days (school year)")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+  ), /* @__PURE__ */ React.createElement("div", { className: "px-3 pb-2" }, /* @__PURE__ */ React.createElement("label", { className: "block text-[11px] font-bold text-slate-600", htmlFor: "homework-qr-expiry" }, "Homework link length"), /* @__PURE__ */ React.createElement("select", { id: "homework-qr-expiry", value: homeworkExpiryDays || 14, onChange: (event) => setHomeworkExpiryDays(Number(event.target.value) || 14), className: "mt-1 w-full rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-cyan-500" }, /* @__PURE__ */ React.createElement("option", { value: 1 }, "1 day"), /* @__PURE__ */ React.createElement("option", { value: 7 }, "1 week"), /* @__PURE__ */ React.createElement("option", { value: 14 }, "2 weeks"), /* @__PURE__ */ React.createElement("option", { value: 30 }, "30 days"), /* @__PURE__ */ React.createElement("option", { value: 90 }, "90 days (quarter)"), /* @__PURE__ */ React.createElement("option", { value: 180 }, "180 days (semester)"), /* @__PURE__ */ React.createElement("option", { value: 365 }, "365 days (school year)")), /* @__PURE__ */ React.createElement("details", { className: "mt-2 rounded-lg border border-sky-200 bg-sky-50 p-2" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-[11px] font-black text-sky-900" }, "Shared class activity (optional)"), /* @__PURE__ */ React.createElement("label", { className: "mt-2 flex cursor-pointer items-start gap-2 text-[11px] font-bold leading-snug text-sky-900" }, /* @__PURE__ */ React.createElement(
+    "input",
+    {
+      type: "checkbox",
+      className: "mt-0.5 h-4 w-4 rounded border-sky-300 text-sky-700 focus:ring-sky-500",
+      checked: sharedAssignmentActivity?.enabled === true,
+      onChange: (event) => {
+        if (typeof setSharedAssignmentActivity !== "function") return;
+        setSharedAssignmentActivity((previous) => ({
+          ...previous || {},
+          enabled: event.target.checked,
+          type: previous?.type === "rating" ? "rating" : "word_cloud"
+        }));
+      }
+    }
+  ), /* @__PURE__ */ React.createElement("span", null, "Add a shared asynchronous activity")), sharedAssignmentActivity?.enabled === true && /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-2 border-t border-sky-200 pt-2" }, /* @__PURE__ */ React.createElement("label", { className: "block text-[10px] font-bold text-sky-900" }, "Activity type", /* @__PURE__ */ React.createElement(
+    "select",
+    {
+      value: sharedAssignmentActivity?.type === "rating" ? "rating" : "word_cloud",
+      onChange: (event) => {
+        const nextType = event.target.value === "rating" ? "rating" : "word_cloud";
+        setSharedAssignmentActivity((previous) => {
+          const currentType = previous?.type === "rating" ? "rating" : "word_cloud";
+          const defaults = {
+            word_cloud: "What word or short phrase best captures your thinking?",
+            rating: "How would you rate your understanding?"
+          };
+          const currentPrompt = String(previous?.prompt || "");
+          return {
+            ...previous || {},
+            type: nextType,
+            prompt: !currentPrompt || currentPrompt === defaults[currentType] ? defaults[nextType] : currentPrompt
+          };
+        });
+      },
+      className: "mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500"
+    },
+    /* @__PURE__ */ React.createElement("option", { value: "word_cloud" }, "Word Cloud"),
+    /* @__PURE__ */ React.createElement("option", { value: "rating" }, "Rating scale (not scored)")
+  )), /* @__PURE__ */ React.createElement("label", { className: "block text-[10px] font-bold text-sky-900" }, "Prompt", /* @__PURE__ */ React.createElement(
+    "textarea",
+    {
+      rows: 2,
+      maxLength: 240,
+      value: sharedAssignmentActivity?.prompt || "",
+      onChange: (event) => setSharedAssignmentActivity((previous) => ({ ...previous || {}, prompt: event.target.value })),
+      className: "mt-1 w-full resize-y rounded-md border border-sky-300 bg-white px-2 py-1.5 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500"
+    }
+  )), sharedAssignmentActivity?.type !== "rating" && /* @__PURE__ */ React.createElement("label", { className: "block text-[10px] font-bold text-sky-900" }, "When entries appear", /* @__PURE__ */ React.createElement("select", { value: sharedAssignmentActivity?.revealPolicy === "auto_publish" ? "auto_publish" : "teacher_review", onChange: (event) => setSharedAssignmentActivity((previous) => ({ ...previous || {}, revealPolicy: event.target.value })), className: "mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500" }, /* @__PURE__ */ React.createElement("option", { value: "teacher_review" }, "After teacher review (safer)"), /* @__PURE__ */ React.createElement("option", { value: "auto_publish" }, "Automatically, with basic safety holds"))), sharedAssignmentActivity?.type === "rating" && /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-violet-200 bg-white p-2" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement("label", { className: "block text-[10px] font-bold text-violet-900" }, "Minimum", /* @__PURE__ */ React.createElement(
+    "select",
+    {
+      value: Math.max(1, Math.min(9, Number(sharedAssignmentActivity?.minValue) || 1)),
+      onChange: (event) => {
+        const minValue = Number(event.target.value) || 1;
+        setSharedAssignmentActivity((previous) => ({
+          ...previous || {},
+          minValue,
+          maxValue: Math.max(minValue + 1, Math.min(10, Number(previous?.maxValue) || 5))
+        }));
+      },
+      className: "mt-1 w-full rounded-md border border-violet-300 bg-white px-2 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500"
+    },
+    Array.from({ length: 9 }, (_, index) => index + 1).map((value) => /* @__PURE__ */ React.createElement("option", { key: value, value }, value))
+  )), /* @__PURE__ */ React.createElement("label", { className: "block text-[10px] font-bold text-violet-900" }, "Maximum", /* @__PURE__ */ React.createElement(
+    "select",
+    {
+      value: Math.max((Number(sharedAssignmentActivity?.minValue) || 1) + 1, Math.min(10, Number(sharedAssignmentActivity?.maxValue) || 5)),
+      onChange: (event) => setSharedAssignmentActivity((previous) => ({ ...previous || {}, maxValue: Number(event.target.value) || 5 })),
+      className: "mt-1 w-full rounded-md border border-violet-300 bg-white px-2 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500"
+    },
+    Array.from({ length: 9 }, (_, index) => index + 2).filter((value) => value > (Number(sharedAssignmentActivity?.minValue) || 1)).map((value) => /* @__PURE__ */ React.createElement("option", { key: value, value }, value))
+  ))), /* @__PURE__ */ React.createElement("label", { className: "mt-2 block text-[10px] font-bold text-violet-900" }, "Optional labels, minimum to maximum", /* @__PURE__ */ React.createElement(
+    "input",
+    {
+      type: "text",
+      maxLength: 420,
+      value: (Array.isArray(sharedAssignmentActivity?.labels) ? sharedAssignmentActivity.labels : []).join(" | "),
+      onChange: (event) => setSharedAssignmentActivity((previous) => ({
+        ...previous || {},
+        labels: event.target.value.split("|").slice(0, 10).map((label) => label.slice(0, 40))
+      })),
+      placeholder: "Not yet | A little | Somewhat | Mostly | Completely",
+      className: "mt-1 w-full rounded-md border border-violet-300 bg-white px-2 py-1.5 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500"
+    }
+  )), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[10px] leading-snug text-violet-800" }, "Separate labels with |. Leave blank to show numbers only. Results are aggregate-only and never scored.")), /* @__PURE__ */ React.createElement("label", { className: "block text-[10px] font-bold text-sky-900" }, "Reveal after", /* @__PURE__ */ React.createElement("select", { value: Number(sharedAssignmentActivity?.minParticipants) || 3, onChange: (event) => setSharedAssignmentActivity((previous) => ({ ...previous || {}, minParticipants: Number(event.target.value) || 3 })), className: "mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500" }, /* @__PURE__ */ React.createElement("option", { value: 3 }, "3 contributions received"), /* @__PURE__ */ React.createElement("option", { value: 5 }, "5 contributions received"), /* @__PURE__ */ React.createElement("option", { value: 8 }, "8 contributions received"))), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] leading-snug text-sky-800" }, "Uses your Class Mailbox so students can contribute while you are offline.", sharedAssignmentActivity?.type === "rating" ? " The distribution appears automatically after the threshold." : " Automatic publishing cannot replace teacher review."))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
     if (typeof openRecentQrShares === "function") openRecentQrShares();
     setShowExportMenu(false);
   }, className: "mt-2 flex w-full items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 hover:border-cyan-400 hover:text-cyan-800" }, /* @__PURE__ */ React.createElement(History, { size: 14 }), " Recent homework links", recentQrShareCount ? ` (${recentQrShareCount})` : "")), /* @__PURE__ */ React.createElement("p", { className: "px-3 pb-2 text-[11px] leading-snug text-slate-500" }, studentAiPolicyForShare === "student-byok" ? "Teacher-prepared resources open with optional personal AI. Students supply and test their own provider." : "Teacher-prepared resources open for students with AI generation off."), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1" }, "\u{1F3EB}", " LMS Integration"), activeView === "quiz" && !isIndependentMode && /* @__PURE__ */ React.createElement(

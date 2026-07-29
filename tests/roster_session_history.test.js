@@ -8,7 +8,7 @@ const modal = readFileSync(resolve(process.cwd(), 'view_session_modal_source.jsx
 const helperStart = app.indexOf('const normalizeRosterSessionCodename');
 const helperEnd = app.indexOf('const generateSessionCode', helperStart);
 const helperSource = app.slice(helperStart, helperEnd);
-const helpers = new Function(helperSource + '\nreturn { buildRosterSessionSummary, saveRosterSessionSummary };')();
+const helpers = new Function(helperSource + '\nreturn { buildRosterSessionInsightBrief, buildRosterSessionSummary, saveRosterSessionSummary };')();
 
 describe('privacy-safe roster session summaries', () => {
   it('matches normalized codenames and omits transient IDs and raw answers', () => {
@@ -35,7 +35,91 @@ describe('privacy-safe roster session summaries', () => {
     expect(serialized).not.toContain('do-not-save');
   });
 
-  it('deduplicates session IDs and caps retained class and student history', () => {
+  it('derives a bounded insight brief from existing participation evidence without claiming misconceptions', () => {
+    const summary = helpers.buildRosterSessionSummary({
+      sessionCode: 'INSIGHT', mode: 'firebase', endedAt: '2026-07-12T10:30:00.000Z',
+      rosterKey: { students: { 'Brave Otter': 'blue', 'Calm Fox': 'blue' } },
+      sessionData: {
+        createdAt: '2026-07-12T10:00:00.000Z',
+        roster: {
+          privateUidA: { name: 'Brave Otter', groupId: 'blue' },
+          privateUidB: { name: 'Calm Fox', groupId: 'blue' },
+        },
+        quizState: { allResponses: { privateUidA: { 0: { answer: 'raw answer' } } } },
+      },
+      activitySnapshots: [
+        {
+          kind: 'rating', phase: 'closed', audienceUids: ['privateUidA', 'privateUidB'],
+          participantStatus: { privateUidA: 'submitted', privateUidB: 'waiting' },
+          counts: {}, prompt: 'private prompt',
+        },
+        {
+          kind: 'feedback_response', phase: 'closed', audienceUids: ['privateUidA', 'privateUidB'],
+          participantStatus: { privateUidA: 'revised', privateUidB: 'submitted' },
+          counts: { feedbackSent: 2 }, feedback: 'private feedback',
+        },
+        {
+          kind: 'session_qa', phase: 'paused', audienceUids: ['privateUidA'],
+          participantStatus: { privateUidA: 'submitted' },
+          counts: { approved: 1, hidden: 1, votesCast: 2 }, question: 'private question',
+        },
+      ],
+    });
+
+    expect(summary.insightBrief).toMatchObject({
+      schemaVersion: 1,
+      activityCount: 3,
+      submissions: 4,
+      revisions: 1,
+      feedbackSent: 2,
+      participantsWithRecordedResponse: 2,
+      followUpCodenames: ['Calm Fox'],
+    });
+    expect(summary.insightBrief.groups).toEqual([{
+      groupId: 'blue',
+      participantCount: 2,
+      activityOpportunities: 5,
+      submissions: 4,
+      revisions: 1,
+      followUpCount: 1,
+    }]);
+    expect(summary.insightBrief.byKind).toEqual(expect.arrayContaining([
+      expect.objectContaining({ kind: 'session_qa', activityCount: 1, submitted: 1 }),
+    ]));
+    expect(summary.insightBrief.votesCast).toBe(2);
+    expect(summary.insightBrief.nextMoves.map(move => move.code)).toEqual(['activity-follow-up', 'revision-opportunity']);
+    const serialized = JSON.stringify(summary);
+    expect(serialized).not.toContain('privateUid');
+    expect(serialized).not.toContain('raw answer');
+    expect(serialized).not.toContain('private prompt');
+    expect(serialized.toLowerCase()).not.toContain('misconception');
+  });
+
+  it('handles reserved group identifiers without prototype collisions', () => {
+    const brief = helpers.buildRosterSessionInsightBrief({
+      participants: {
+        'Brave Otter': {
+          groupId: '__proto__',
+          liveActivityCount: 1,
+          liveSubmissionCount: 1,
+          liveRevisionCount: 0,
+        },
+      },
+      liveActivities: [],
+      absentCodenames: [],
+      unmatchedCodenames: [],
+    });
+    expect(brief.groups).toEqual([{
+      groupId: '__proto__',
+      participantCount: 1,
+      activityOpportunities: 1,
+      submissions: 1,
+      revisions: 0,
+      followUpCount: 0,
+    }]);
+  });
+
+    it('deduplicates session IDs and caps retained class and student history', () => {
     let roster = { students: { 'Brave Otter': 'blue' }, sessionHistory: [], progressHistory: {} };
     for (let i = 0; i < 35; i++) {
       roster = helpers.saveRosterSessionSummary(roster, { id: 's' + i, endedAt: '2026-07-12T10:00:00.000Z', participants: { 'Brave Otter': { groupId: 'blue', responseCount: i, resourcesOpened: 1 } } }, '', 30);
@@ -52,11 +136,15 @@ describe('privacy-safe roster session summaries', () => {
     expect(app).toContain('const handleEndLiveSession = () => requestEndLiveSession()');
     expect(app).toContain('onRequestEndSession={requestEndLiveSession}');
     expect(modal).toContain("typeof onRequestEndSession === 'function'");
+    expect(app).toContain('Insight brief');
+    expect(app).toContain('keep the session open and use the existing Needs attention queue');
   });
 
   it('keeps history portable and removes deleted students from saved summaries', () => {
     expect(teacher).toContain('sessionHistory: Array.isArray(data.sessionHistory) ? data.sessionHistory.slice(-30) : []');
     expect(teacher).toContain('delete participants[name]');
     expect(teacher).toContain('Saved session history ({rosterKey.sessionHistory.length})');
+    expect(teacher).toContain('session.insightBrief.activityCount');
+    expect(teacher).toContain('session.insightBrief.nextMoves');
   });
 });

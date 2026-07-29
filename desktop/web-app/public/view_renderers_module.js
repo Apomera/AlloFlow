@@ -2159,6 +2159,21 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
   const [furnishing, setFurnishing] = React.useState(null);
   const [useMnemonics, setUseMnemonics] = React.useState(true);
   const genCancelRef = React.useRef(false);
+  const [recall, setRecall] = React.useState(null);
+  const [recallIdx, setRecallIdx] = React.useState(0);
+  const [recallAnswerMode, setRecallAnswerMode] = React.useState("bank");
+  const [typedAnswer, setTypedAnswer] = React.useState("");
+  const [recallFeedback, setRecallFeedback] = React.useState(null);
+  const [recallScore, setRecallScore] = React.useState(null);
+  const [describeOpen, setDescribeOpen] = React.useState(false);
+  const recallResultsRef = React.useRef({});
+  const recallFinishedRef = React.useRef(false);
+  const recallTimersRef = React.useRef([]);
+  const recallHeadingRef = React.useRef(null);
+  React.useEffect(() => () => {
+    recallTimersRef.current.forEach(clearTimeout);
+    recallTimersRef.current = [];
+  }, []);
   const [challenge, setChallenge] = React.useState(null);
   const [placedCount, setPlacedCount] = React.useState(0);
   const placedRef = React.useRef({});
@@ -2708,7 +2723,8 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
           return;
         }
         const n = targets[i];
-        const subject = mnemonics && mnemonics[n.id] || n.label;
+        const mnem = mnemonics && mnemonics[n.id] || null;
+        const subject = mnem || n.label;
         const after = () => {
           if (!artAliveRef.current) return;
           setFurnishing({ done: i + 1, total: targets.length });
@@ -2718,7 +2734,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
           Promise.resolve(callImagen("A vivid, memorable, slightly surreal illustration: " + subject + ". Single clear subject, bright colors, centered composition, storybook style, no text, no words.", 400)).then((b64) => {
             if (!artAliveRef.current) return;
             const url = _asDataUrl(b64);
-            if (url) place(n.id, { type: "image", dataUrl: url });
+            if (url) place(n.id, mnem ? { type: "image", dataUrl: url, mnemonic: mnem } : { type: "image", dataUrl: url });
             else failures += 1;
           }).catch(() => {
             failures += 1;
@@ -2729,7 +2745,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
             const recipe = P3D.parseRecipe(_gemText(res));
             if (recipe) {
               recipe.name = n.label;
-              place(n.id, { type: "sculpture", recipe });
+              place(n.id, mnem ? { type: "sculpture", recipe, mnemonic: mnem } : { type: "sculpture", recipe });
             } else failures += 1;
           }).catch(() => {
             failures += 1;
@@ -2746,6 +2762,247 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
       });
     } else run(null);
   };
+  const artedNodes = artNodes.filter((n) => (artRef.current || {})[n.id]);
+  const recallEligible = artedNodes.length >= 3;
+  const recallCurrentId = recall ? recall.order[recallIdx] : null;
+  const recallCurrent = recallCurrentId ? artNodes.find((n) => n.id === recallCurrentId) || null : null;
+  const recallCurrentArt = recallCurrentId ? (artRef.current || {})[recallCurrentId] : null;
+  const recallDescription = recallCurrentArt && recallCurrentArt.mnemonic || null;
+  const _pseudoPalace = React.useMemo(
+    () => ({ loci: artedNodes.map((n) => ({ id: n.id, label: n.label })) }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [artNodes, data?.conceptArt]
+  );
+  const recallChoices = React.useMemo(() => {
+    const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+    if (!MP || !MP.buildLocusChoices || !recall || !recallCurrentId) return [];
+    try {
+      return MP.buildLocusChoices(_pseudoPalace, recallCurrentId, { seed: recall.seed }) || [];
+    } catch (e) {
+      return [];
+    }
+  }, [_pseudoPalace, recall, recallCurrentId]);
+  const _recallAnnounce = (order, idx) => (t("concept_space.recall_position") || "Concept {n} of {total}. Its name is hidden \u2014 use the picture to name it.").replace("{n}", String(idx + 1)).replace("{total}", String(order.length));
+  const _spotlight = (order, idx) => {
+    const H = handleRef.current;
+    if (!H || !H.flagNodes) return;
+    try {
+      H.flagNodes({ [order[idx]]: "current" }, _recallAnnounce(order, idx));
+    } catch (e) {
+    }
+  };
+  const startRecall = () => {
+    if (!recallEligible || challenge || furnishing) return;
+    const begin = () => {
+      const MP2 = window.AlloModules && window.AlloModules.MemoryPalace;
+      if (!MP2 || !MP2.buildRecallBank) {
+        if (addToast) addToast(t("concept_space.recall_unavailable") || "The recall game could not load \u2014 try again.", "error");
+        return;
+      }
+      const seed = Date.now() % 1e5 + 1;
+      let order;
+      try {
+        order = (MP2.buildRecallBank({ loci: artedNodes.map((n) => ({ id: n.id, label: n.label })) }, seed) || []).map((l) => l.id);
+      } catch (e) {
+        order = artedNodes.map((n) => n.id);
+      }
+      if (!order.length) return;
+      recallResultsRef.current = {};
+      recallFinishedRef.current = false;
+      setRecallIdx(0);
+      setTypedAnswer("");
+      setRecallFeedback(null);
+      setRecallScore(null);
+      setDescribeOpen(false);
+      setRecall({ order, seed });
+      if (playSound) {
+        try {
+          playSound("start");
+        } catch (e) {
+        }
+      }
+    };
+    const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+    if (MP && MP.buildRecallBank) begin();
+    else _voPalaceEnsure().then(() => {
+      if (artAliveRef.current) begin();
+    });
+  };
+  const exitRecall = () => {
+    recallTimersRef.current.forEach(clearTimeout);
+    recallTimersRef.current = [];
+    recallFinishedRef.current = false;
+    setRecall(null);
+    setRecallIdx(0);
+    setTypedAnswer("");
+    setRecallFeedback(null);
+    setDescribeOpen(false);
+    const H = handleRef.current;
+    try {
+      if (H && H.uncoverAll) H.uncoverAll();
+    } catch (e) {
+    }
+    try {
+      if (H && H.flagNodes) H.flagNodes({}, "");
+    } catch (e) {
+    }
+  };
+  const _finishRecall = (results, order) => {
+    if (recallFinishedRef.current) return;
+    recallFinishedRef.current = true;
+    const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+    let score = null;
+    try {
+      score = MP && MP.scoreRecall ? MP.scoreRecall(results) : null;
+    } catch (e) {
+      score = null;
+    }
+    setRecallScore(score);
+    const H = handleRef.current;
+    try {
+      if (H && H.uncoverAll) H.uncoverAll();
+    } catch (e) {
+    }
+    try {
+      if (H && H.flagNodes) H.flagNodes({}, "");
+    } catch (e) {
+    }
+    if (!score) return;
+    if (score.points > 0 && typeof onScoreUpdate === "function") {
+      try {
+        onScoreUpdate(score.points);
+      } catch (e) {
+      }
+    }
+    if (typeof onGameComplete === "function") {
+      try {
+        onGameComplete(score.perfect ? "conceptRecall" : "conceptRecallAttempt", {
+          total: score.total,
+          firstTry: score.firstTry,
+          eventual: score.eventual,
+          revealed: score.revealed,
+          points: score.points,
+          perfect: score.perfect,
+          // Per-node detail so a teacher dashboard can see WHICH concepts did not stick.
+          perNode: order.map((id) => ({ id, ...results[id] || {} }))
+        });
+      } catch (e) {
+      }
+    }
+  };
+  const _advanceRecall = () => {
+    if (!recall) return;
+    const order = recall.order;
+    const next = recallIdx + 1;
+    if (next >= order.length) {
+      _finishRecall(recallResultsRef.current, order);
+      return;
+    }
+    setRecallIdx(next);
+    setTypedAnswer("");
+    setRecallFeedback(null);
+    setDescribeOpen(false);
+  };
+  const _recordAndAdvance = (id, result) => {
+    recallResultsRef.current = { ...recallResultsRef.current, [id]: result };
+    const H = handleRef.current;
+    try {
+      if (H && H.revealNode) H.revealNode(id);
+    } catch (e) {
+    }
+    const timer = setTimeout(() => {
+      recallTimersRef.current = recallTimersRef.current.filter((x) => x !== timer);
+      if (artAliveRef.current) _advanceRecall();
+    }, 900);
+    recallTimersRef.current.push(timer);
+  };
+  const submitRecallAnswer = (given) => {
+    const MP = window.AlloModules && window.AlloModules.MemoryPalace;
+    if (!recall || !recallCurrent || !MP || recallFeedback) return;
+    const prev = recallResultsRef.current[recallCurrent.id] || { attempts: 0 };
+    const attempts = (prev.attempts || 0) + 1;
+    let ok = false;
+    try {
+      ok = !!MP.matchAnswer(recallCurrent.label, given);
+    } catch (e) {
+      ok = false;
+    }
+    if (ok) {
+      setRecallFeedback({ kind: "correct", text: (t("concept_space.recall_correct") || "Yes \u2014 {label}.").replace("{label}", recallCurrent.label) });
+      if (playSound) {
+        try {
+          playSound("correct");
+        } catch (e) {
+        }
+      }
+      _recordAndAdvance(recallCurrent.id, { correct: true, attempts });
+      return;
+    }
+    recallResultsRef.current = { ...recallResultsRef.current, [recallCurrent.id]: { correct: false, attempts } };
+    if (playSound) {
+      try {
+        playSound("incorrect");
+      } catch (e) {
+      }
+    }
+    if (attempts >= 3) {
+      setRecallFeedback({ kind: "revealed", text: (t("concept_space.recall_revealed") || "This one was {label}.").replace("{label}", recallCurrent.label) });
+      _recordAndAdvance(recallCurrent.id, { correct: false, attempts, revealed: true });
+      return;
+    }
+    setRecallFeedback({ kind: "retry", text: t("concept_space.recall_retry") || "Not that one \u2014 look at the picture again." });
+    const timer = setTimeout(() => {
+      recallTimersRef.current = recallTimersRef.current.filter((x) => x !== timer);
+      if (artAliveRef.current) {
+        setRecallFeedback(null);
+        setTypedAnswer("");
+      }
+    }, 1100);
+    recallTimersRef.current.push(timer);
+  };
+  const revealRecallAnswer = () => {
+    if (!recall || !recallCurrent || recallFeedback) return;
+    const prev = recallResultsRef.current[recallCurrent.id] || { attempts: 0 };
+    setRecallFeedback({ kind: "revealed", text: (t("concept_space.recall_revealed") || "This one was {label}.").replace("{label}", recallCurrent.label) });
+    _recordAndAdvance(recallCurrent.id, { correct: false, attempts: prev.attempts || 0, revealed: true });
+  };
+  React.useEffect(() => {
+    const H = handleRef.current;
+    if (!H || !recall) return void 0;
+    try {
+      if (H.coverNodes) H.coverNodes(recall.order, "?");
+    } catch (e) {
+    }
+    Object.keys(recallResultsRef.current).forEach((id) => {
+      try {
+        if (H.revealNode) H.revealNode(id);
+      } catch (e) {
+      }
+    });
+    return () => {
+      try {
+        if (H.uncoverAll) H.uncoverAll();
+      } catch (e) {
+      }
+    };
+  }, [recall, nonce, ready]);
+  React.useEffect(() => {
+    if (!recall || recallScore) return;
+    _spotlight(recall.order, recallIdx);
+  }, [recall, recallIdx, recallScore, nonce, ready]);
+  React.useEffect(() => {
+    if (challenge && recall) exitRecall();
+  }, [challenge]);
+  React.useEffect(() => {
+    if (!recall) return;
+    const el = recallHeadingRef.current;
+    if (el) {
+      try {
+        el.focus();
+      } catch (e) {
+      }
+    }
+  }, [recall, recallIdx, recallScore]);
   return /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-3 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-500" }, challenge ? t("concept_space.challenge_hint") || "\u{1F3AF} Click a fallen concept, then give it a strand (chips in its panel, or [ and ] keys). Check when ready." : t("concept_space.hint") || "Position carries meaning: left \u2192 right = sequence \xB7 higher = more abstract \xB7 depth = strand."), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, challenge ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-3 py-1.5 rounded-full tabular-nums" }, "\u23F1 ", fmtTime(elapsed), " \xB7 ", (t("concept_space.challenge_progress") || "{placed}/{total} placed").replace("{placed}", String(placedCount)).replace("{total}", String(challenge.targets.length))), /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -2780,7 +3037,51 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
       className: "flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
     },
     t("concept_space.challenge_exit") || "Exit challenge"
-  )) : /* @__PURE__ */ React.createElement(React.Fragment, null, hasContent && challengeEligible && !failed && /* @__PURE__ */ React.createElement(
+  )) : recall ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-sky-700 bg-sky-50 border border-sky-200 px-3 py-1.5 rounded-full tabular-nums" }, "\u{1F9E0} ", (t("concept_space.recall_progress") || "{n} of {total}").replace("{n}", String(Math.min(recallIdx + 1, recall.order.length))).replace("{total}", String(recall.order.length))), !recallScore && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-0.5 bg-slate-100 rounded-full p-0.5", role: "group", "aria-label": t("concept_space.recall_mode_label") || "How to answer" }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => {
+        setRecallAnswerMode("bank");
+        setTypedAnswer("");
+      },
+      "aria-pressed": recallAnswerMode === "bank" ? "true" : "false",
+      className: `px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors ${recallAnswerMode === "bank" ? "bg-sky-600 text-white" : "text-slate-600 hover:bg-slate-200"}`
+    },
+    t("concept_space.recall_mode_bank") || "Choose"
+  ), isTeacherMode && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => setRecallAnswerMode("typed"),
+      "aria-pressed": recallAnswerMode === "typed" ? "true" : "false",
+      title: t("concept_space.recall_mode_typed_tooltip") || "Expert: type the name instead of choosing it",
+      className: `px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors ${recallAnswerMode === "typed" ? "bg-sky-600 text-white" : "text-slate-600 hover:bg-slate-200"}`
+    },
+    t("concept_space.recall_mode_typed") || "Type"
+  )), recallScore && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: startRecall,
+      className: "flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
+    },
+    "\u21BA ",
+    t("concept_space.recall_again") || "Go again"
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: exitRecall,
+      className: "flex items-center gap-1 bg-white text-slate-600 border border-slate-300 px-3 py-1.5 rounded-full text-xs font-bold hover:bg-slate-50 transition-colors"
+    },
+    t("concept_space.recall_exit") || "Exit recall"
+  )) : /* @__PURE__ */ React.createElement(React.Fragment, null, hasContent && recallEligible && !failed && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: startRecall,
+      className: "flex items-center gap-1 bg-gradient-to-r from-sky-500 to-cyan-500 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-sm hover:shadow-md hover:scale-105 transition-all",
+      title: t("concept_space.recall_tooltip") || "Practice: every name is hidden \u2014 use the picture you made for each concept to name it"
+    },
+    "\u{1F9E0} ",
+    t("concept_space.recall_play") || "Concept Recall"
+  ), hasContent && challengeEligible && !failed && /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => startChallenge(false),
@@ -2840,7 +3141,81 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     },
     "\u26F6 ",
     t("concept_space.fullscreen") || "Fullscreen"
-  )))), furnishOpen && hasContent && persist && isTeacherMode && !failed && /* @__PURE__ */ React.createElement("div", { className: "mb-3 bg-white border border-fuchsia-300 rounded-xl px-4 py-3 text-slate-800", role: "group", "aria-label": t("concept_space.furnish_panel_aria") || "Furnish every concept" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-extrabold text-fuchsia-700" }, "\u{1F3A8} ", t("concept_space.furnish_heading") || "Furnish every concept"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-500 ml-auto" }, (t("concept_space.furnish_pending") || "{n} still need art").replace("{n}", String(furnishTargets.length)))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-0.5 bg-slate-100 rounded-full p-0.5 w-fit mb-2", role: "group", "aria-label": t("concept_space.furnish_mode_label") || "What to generate" }, /* @__PURE__ */ React.createElement(
+  )))), recall && !failed && /* @__PURE__ */ React.createElement("div", { className: "mb-3 bg-sky-50 border border-sky-300 rounded-xl px-4 py-3 text-slate-800", role: "group", "aria-label": t("concept_space.recall_panel_aria") || "Concept recall" }, /* @__PURE__ */ React.createElement(
+    "h3",
+    {
+      ref: recallHeadingRef,
+      tabIndex: -1,
+      className: "text-sm font-extrabold text-sky-800 mb-1 rounded"
+    },
+    recallScore ? "\u{1F9E0} " + (t("concept_space.recall_summary") || "Named {first} of {total} first try.").replace("{first}", String(recallScore.firstTry)).replace("{total}", String(recallScore.total)) : t("concept_space.recall_question") || "Which concept is this?",
+    !recallScore && /* @__PURE__ */ React.createElement("span", { className: "sr-only" }, " ", _recallAnnounce(recall.order, recallIdx), " ", recallDescription ? (t("concept_space.recall_cue_described") || "The picture shows: {desc}").replace("{desc}", recallDescription) : t("concept_space.recall_cue_undescribed") || "This concept is cued by a picture that has no text description.")
+  ), recallScore ? /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-600" }, (t("concept_space.recall_summary_detail") || "{eventual} took another go \xB7 {revealed} shown \xB7 {points} points").replace("{eventual}", String(recallScore.eventual)).replace("{revealed}", String(recallScore.revealed)).replace("{points}", String(recallScore.points))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 italic mt-2" }, t("concept_space.recall_framing") || "Naming a concept from its picture is retrieval practice, which is what makes the images worth making. It is a study strategy, not a measure of ability.")) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 mb-2", "aria-hidden": "true" }, (t("concept_space.recall_look") || "Concept {n} of {total} \u2014 the glowing node is the one being asked about.").replace("{n}", String(recallIdx + 1)).replace("{total}", String(recall.order.length))), recallDescription && /* @__PURE__ */ React.createElement("div", { className: "mb-2" }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: () => setDescribeOpen((o) => !o),
+      "aria-expanded": describeOpen ? "true" : "false",
+      "aria-controls": "cg3d-recall-desc",
+      className: "text-[11px] font-bold text-sky-700 underline hover:text-sky-900"
+    },
+    "\u{1F50D} ",
+    describeOpen ? t("concept_space.recall_hide_desc") || "Hide the description" : t("concept_space.recall_show_desc") || "Describe the picture"
+  ), describeOpen && /* @__PURE__ */ React.createElement("p", { id: "cg3d-recall-desc", className: "text-xs text-slate-700 bg-white border border-sky-200 rounded-lg px-2.5 py-2 mt-1.5" }, recallDescription)), recallFeedback && /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      role: "status",
+      "aria-live": "polite",
+      "aria-atomic": "true",
+      className: `text-xs font-bold rounded-lg px-2.5 py-2 mb-2 ${recallFeedback.kind === "correct" ? "bg-emerald-100 text-emerald-800" : recallFeedback.kind === "revealed" ? "bg-amber-100 text-amber-900" : "bg-rose-100 text-rose-800"}`
+    },
+    recallFeedback.text
+  ), recallAnswerMode === "typed" ? /* @__PURE__ */ React.createElement(
+    "form",
+    {
+      onSubmit: (e) => {
+        e.preventDefault();
+        if (typedAnswer.trim()) submitRecallAnswer(typedAnswer);
+      },
+      className: "flex items-center gap-2 flex-wrap"
+    },
+    /* @__PURE__ */ React.createElement(
+      "input",
+      {
+        value: typedAnswer,
+        onChange: (e) => setTypedAnswer(e.target.value),
+        disabled: !!recallFeedback,
+        placeholder: t("concept_space.recall_type_placeholder") || "Name this concept\u2026",
+        "aria-label": t("concept_space.recall_type_placeholder") || "Name this concept",
+        className: "flex-1 min-w-[180px] text-sm px-2.5 py-1.5 rounded-lg border border-sky-300 focus:ring-2 focus:ring-sky-400"
+      }
+    ),
+    /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "submit",
+        disabled: !typedAnswer.trim() || !!recallFeedback,
+        className: "px-3 py-1.5 rounded-full text-xs font-bold bg-sky-600 text-white hover:bg-sky-700 disabled:opacity-50 disabled:cursor-not-allowed"
+      },
+      t("concept_space.recall_submit") || "Check"
+    )
+  ) : /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1.5 flex-wrap", role: "group", "aria-label": t("concept_space.recall_choices_aria") || "Possible names" }, recallChoices.map((c) => /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      key: c.id,
+      onClick: () => submitRecallAnswer(c.label),
+      disabled: !!recallFeedback,
+      className: "px-3 py-1.5 rounded-full text-xs font-bold bg-white text-sky-800 border border-sky-300 hover:bg-sky-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+    },
+    c.label
+  ))), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      onClick: revealRecallAnswer,
+      disabled: !!recallFeedback,
+      className: "text-[11px] text-slate-500 underline hover:text-slate-700 mt-2 disabled:opacity-50"
+    },
+    t("concept_space.recall_reveal") || "Show me this one"
+  ))), furnishOpen && hasContent && persist && isTeacherMode && !failed && /* @__PURE__ */ React.createElement("div", { className: "mb-3 bg-white border border-fuchsia-300 rounded-xl px-4 py-3 text-slate-800", role: "group", "aria-label": t("concept_space.furnish_panel_aria") || "Furnish every concept" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap mb-2" }, /* @__PURE__ */ React.createElement("h3", { className: "text-xs font-extrabold text-fuchsia-700" }, "\u{1F3A8} ", t("concept_space.furnish_heading") || "Furnish every concept"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-500 ml-auto" }, (t("concept_space.furnish_pending") || "{n} still need art").replace("{n}", String(furnishTargets.length)))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-0.5 bg-slate-100 rounded-full p-0.5 w-fit mb-2", role: "group", "aria-label": t("concept_space.furnish_mode_label") || "What to generate" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       onClick: () => setFurnishMode("sculpture"),
@@ -2883,6 +3258,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     {
       className: "text-xs font-bold text-fuchsia-700 tabular-nums",
       role: "progressbar",
+      "aria-label": t("concept_space.furnish_progress_aria") || "Furnishing progress",
       "aria-valuemin": 0,
       "aria-valuemax": furnishing.total,
       "aria-valuenow": furnishing.done,
@@ -2910,12 +3286,13 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
     "button",
     {
       onClick: handleClearAllArt,
+      "aria-describedby": clearArmed ? "cg3d-clear-armed" : void 0,
       className: `px-3 py-1.5 rounded-full text-xs font-bold border transition-colors ${clearArmed ? "bg-rose-600 text-white border-rose-600" : "bg-white text-rose-600 border-rose-300 hover:bg-rose-50"}`,
       title: t("concept_space.furnish_clear_tooltip") || "Remove the generated art from every concept \u2014 the arrangement and the strand weights are kept"
     },
     "\u{1F5D1} ",
     clearArmed ? t("concept_space.furnish_clear_confirm") || "Click again to remove all" : (t("concept_space.furnish_clear") || "Remove all art ({n})").replace("{n}", String(artCount))
-  )), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 italic mt-2" }, t("concept_space.furnish_framing") || "Students can still make and refine art on any single concept by clicking it. Building the image yourself is where most of the memory benefit lives, so use this to seed a space rather than to replace their turn.")), constelOpen && hasContent && persist && !failed && /* @__PURE__ */ React.createElement("div", { className: "mb-3 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-slate-200" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-300" }, "\u{1F30C} ", t("cg3d.constel_heading") || "Constellation \u2014 weight the connections yourself"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-0.5 bg-slate-800 rounded-full p-0.5 ml-auto", role: "group", "aria-label": t("cg3d.constel_mode_label") || "Constellation view mode" }, ["off", "mine", "ai", "diff"].map((m) => /* @__PURE__ */ React.createElement(
+  ), clearArmed && !furnishing && /* @__PURE__ */ React.createElement("span", { id: "cg3d-clear-armed", role: "status", "aria-live": "assertive", className: "text-[11px] font-bold text-rose-700" }, (t("concept_space.furnish_clear_armed") || "This removes the art from {n} concepts. Press the button again to confirm.").replace("{n}", String(artCount)))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 italic mt-2" }, t("concept_space.furnish_framing") || "Students can still make and refine art on any single concept by clicking it. Building the image yourself is where most of the memory benefit lives, so use this to seed a space rather than to replace their turn.")), constelOpen && hasContent && persist && !failed && /* @__PURE__ */ React.createElement("div", { className: "mb-3 bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-slate-200" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 flex-wrap mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-300" }, "\u{1F30C} ", t("cg3d.constel_heading") || "Constellation \u2014 weight the connections yourself"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-0.5 bg-slate-800 rounded-full p-0.5 ml-auto", role: "group", "aria-label": t("cg3d.constel_mode_label") || "Constellation view mode" }, ["off", "mine", "ai", "diff"].map((m) => /* @__PURE__ */ React.createElement(
     "button",
     {
       key: m,
@@ -2994,7 +3371,7 @@ const ConceptSpace3DView = ({ data, title, t, addToast, callImagen, onPersist, p
       className: "text-amber-700 hover:text-amber-900 font-bold px-1"
     },
     "\u2715"
-  )), /* @__PURE__ */ React.createElement("div", { className: "relative rounded-2xl overflow-hidden border-2 border-slate-700 shadow-xl", style: { background: "#0b1020", height: "min(64vh, 560px)", minHeight: "380px" } }, !hasContent ? /* @__PURE__ */ React.createElement("div", { className: "h-full flex flex-col items-center justify-center gap-2 text-center p-8", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl", "aria-hidden": "true" }, "\u{1F9CA}"), /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-slate-200" }, t("concept_space.empty_title") || "Nothing to map yet"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-400 max-w-sm" }, t("concept_space.empty_body") || "Generate this organizer from a source text (or add sections in Edit text) and the concepts will appear here as an orbitable 3D space.")) : failed ? /* @__PURE__ */ React.createElement("div", { className: "p-6 text-slate-200 text-sm overflow-auto h-full", role: "status" }, /* @__PURE__ */ React.createElement("p", { className: "mb-3 text-amber-300" }, t("cg3d.load_error") || "The 3D library could not load. Showing the reading-order outline instead."), /* @__PURE__ */ React.createElement("ol", { className: "list-decimal pl-6 space-y-2" }, (Array.isArray(data?.branches) ? data.branches : []).map((b, bi) => /* @__PURE__ */ React.createElement("li", { key: bi }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, b.title), Array.isArray(b.items) && b.items.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "list-disc pl-5 mt-1 space-y-0.5" }, b.items.map((it, ii) => /* @__PURE__ */ React.createElement("li", { key: ii }, typeof it === "object" ? it.text : it))))))) : /* @__PURE__ */ React.createElement("div", { ref: hostRef, className: "absolute inset-0" }), !challenge && persist && selectedNode && !failed && /* @__PURE__ */ React.createElement("div", { className: "absolute left-3 bottom-3 z-10 w-72 max-w-[85%] max-h-[80%] overflow-auto rounded-xl bg-white/95 backdrop-blur border border-fuchsia-300 shadow-xl p-3 text-slate-800", role: "group", "aria-label": t("concept_space.art_panel_aria") || "Concept art" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-extrabold text-fuchsia-700 truncate pr-2" }, "\u{1F3A8} ", selectedNode.label), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+  )), /* @__PURE__ */ React.createElement("div", { className: "relative rounded-2xl overflow-hidden border-2 border-slate-700 shadow-xl", style: { background: "#0b1020", height: "min(64vh, 560px)", minHeight: "380px" } }, !hasContent ? /* @__PURE__ */ React.createElement("div", { className: "h-full flex flex-col items-center justify-center gap-2 text-center p-8", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "text-3xl", "aria-hidden": "true" }, "\u{1F9CA}"), /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-slate-200" }, t("concept_space.empty_title") || "Nothing to map yet"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-400 max-w-sm" }, t("concept_space.empty_body") || "Generate this organizer from a source text (or add sections in Edit text) and the concepts will appear here as an orbitable 3D space.")) : failed ? /* @__PURE__ */ React.createElement("div", { className: "p-6 text-slate-200 text-sm overflow-auto h-full", role: "status" }, /* @__PURE__ */ React.createElement("p", { className: "mb-3 text-amber-300" }, t("cg3d.load_error") || "The 3D library could not load. Showing the reading-order outline instead."), /* @__PURE__ */ React.createElement("ol", { className: "list-decimal pl-6 space-y-2" }, (Array.isArray(data?.branches) ? data.branches : []).map((b, bi) => /* @__PURE__ */ React.createElement("li", { key: bi }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, b.title), Array.isArray(b.items) && b.items.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "list-disc pl-5 mt-1 space-y-0.5" }, b.items.map((it, ii) => /* @__PURE__ */ React.createElement("li", { key: ii }, typeof it === "object" ? it.text : it))))))) : /* @__PURE__ */ React.createElement("div", { ref: hostRef, className: "absolute inset-0" }), !challenge && !recall && persist && selectedNode && !failed && /* @__PURE__ */ React.createElement("div", { className: "absolute left-3 bottom-3 z-10 w-72 max-w-[85%] max-h-[80%] overflow-auto rounded-xl bg-white/95 backdrop-blur border border-fuchsia-300 shadow-xl p-3 text-slate-800", role: "group", "aria-label": t("concept_space.art_panel_aria") || "Concept art" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-extrabold text-fuchsia-700 truncate pr-2" }, "\u{1F3A8} ", selectedNode.label), /* @__PURE__ */ React.createElement("button", { onClick: () => {
     setSelectedNode(null);
     selectedNodeRef.current = null;
   }, "aria-label": t("common.close") || "Close", className: "text-slate-400 hover:text-slate-700 font-bold text-sm leading-none" }, "\u2715")), nodeArtType ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500" }, nodeArtType === "sculpture" ? t("concept_space.art_has_sculpture") || "A sculpture floats above this concept." : t("concept_space.art_has_image") || "An image floats above this concept."), nodeArtType === "sculpture" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1" }, /* @__PURE__ */ React.createElement("button", { onClick: () => handleArtManualTweak("bigger"), className: "px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100" }, "\u{1F50D}+ ", t("memory_palace.refine_bigger") || "Bigger"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleArtManualTweak("smaller"), className: "px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100" }, "\u{1F50D}\u2212 ", t("memory_palace.refine_smaller") || "Smaller"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleArtManualTweak("rotate"), className: "px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100" }, "\u27F3 ", t("memory_palace.refine_rotate") || "Rotate"), /* @__PURE__ */ React.createElement("button", { onClick: () => handleArtManualTweak("recolor"), className: "px-2 py-1 rounded-full text-[11px] font-bold bg-fuchsia-50 text-fuchsia-700 border border-fuchsia-200 hover:bg-fuchsia-100" }, "\u{1F3A8} ", t("memory_palace.refine_recolor") || "Recolor")), /* @__PURE__ */ React.createElement("form", { onSubmit: (e) => {
@@ -3088,7 +3465,11 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   const [tourPace, setTourPace] = React.useState("standard");
   const [tourNarration, setTourNarration] = React.useState(false);
   const [tourAnnouncement, setTourAnnouncement] = React.useState("");
+  const [tourChapter, setTourChapter] = React.useState(null);
+  const [tourCompleted, setTourCompleted] = React.useState(false);
   const tourTimerRef = React.useRef(null);
+  const tourChapterTimerRef = React.useRef(null);
+  const tourLastRoomRef = React.useRef(null);
   const tourSpeechTextRef = React.useRef("");
   const tourOpenRef = React.useRef(false);
   const tourPlayingRef = React.useRef(false);
@@ -3139,6 +3520,13 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       } catch (e) {
       }
       tourTimerRef.current = null;
+    }
+    if (tourChapterTimerRef.current) {
+      try {
+        clearTimeout(tourChapterTimerRef.current);
+      } catch (e) {
+      }
+      tourChapterTimerRef.current = null;
     }
     const spoken = tourSpeechTextRef.current;
     const player = window.AlloSpeechPlayer;
@@ -4353,6 +4741,17 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   const tourStopIndex = current && !current.entry ? progressStops.findIndex((locus) => locus.id === current.id) : -1;
   const tourLocus = tourStopIndex >= 0 ? progressStops[tourStopIndex] : null;
   const tourRoom = tourLocus ? progressPalace?.rooms?.[tourLocus.roomIdx] : null;
+  const tourRoomGroups = progressStops.reduce((groups, locus) => {
+    let group = groups.find((entry) => entry.roomIdx === locus.roomIdx);
+    if (!group) {
+      const room = progressPalace?.rooms?.[locus.roomIdx];
+      group = { roomIdx: locus.roomIdx, label: room?.label || (t("memory_palace.room") || "Room"), color: room?.color || "#22d3ee", stops: [] };
+      groups.push(group);
+    }
+    group.stops.push(locus.id);
+    return groups;
+  }, []);
+  const tourRoomPosition = tourLocus ? tourRoomGroups.findIndex((group) => group.roomIdx === tourLocus.roomIdx) : -1;
   const clearTourTimer = () => {
     if (!tourTimerRef.current) return;
     try {
@@ -4360,6 +4759,16 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     } catch (e) {
     }
     tourTimerRef.current = null;
+  };
+  const clearTourChapter = () => {
+    if (tourChapterTimerRef.current) {
+      try {
+        clearTimeout(tourChapterTimerRef.current);
+      } catch (e) {
+      }
+      tourChapterTimerRef.current = null;
+    }
+    setTourChapter(null);
   };
   const stopTourSpeech = () => {
     const spoken = tourSpeechTextRef.current;
@@ -4375,6 +4784,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
   };
   const pauseCinematicTour = (reason = "manual") => {
     clearTourTimer();
+    clearTourChapter();
     stopTourSpeech();
     tourPlayingRef.current = false;
     setTourPlaying(false);
@@ -4388,6 +4798,9 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     tourPlayingRef.current = true;
     setTourOpen(true);
     setTourPlaying(true);
+    setTourCompleted(false);
+    setTourChapter(null);
+    tourLastRoomRef.current = null;
     setNearbyEmpty(null);
     setQuickCreate(null);
     setCustomizeOpen(false);
@@ -4398,10 +4811,13 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     pauseCinematicTour("manual");
     tourOpenRef.current = false;
     setTourOpen(false);
+    setTourCompleted(false);
+    tourLastRoomRef.current = null;
   };
   const seekCinematicTour = (direction) => {
     if (!progressStops.length || !handleRef.current) return;
     pauseCinematicTour("manual");
+    setTourCompleted(false);
     const base = tourStopIndex >= 0 ? tourStopIndex : direction > 0 ? -1 : 0;
     const target = Math.max(0, Math.min(progressStops.length - 1, base + direction));
     handleRef.current.goTo(target + 1);
@@ -4429,6 +4845,30 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     }
     const locus = progressStops[stopIndex];
     const room = progressPalace?.rooms?.[locus.roomIdx];
+    const roomPosition = tourRoomGroups.findIndex((group) => group.roomIdx === locus.roomIdx);
+    const roomGroup = roomPosition >= 0 ? tourRoomGroups[roomPosition] : null;
+    if (tourLastRoomRef.current !== locus.roomIdx) {
+      if (tourChapterTimerRef.current) {
+        try {
+          clearTimeout(tourChapterTimerRef.current);
+        } catch (e) {
+        }
+      }
+      tourLastRoomRef.current = locus.roomIdx;
+      setTourChapter({
+        roomIdx: locus.roomIdx,
+        label: roomGroup?.label || room?.label || (t("memory_palace.room") || "Room"),
+        color: roomGroup?.color || room?.color || "#22d3ee",
+        position: roomPosition + 1,
+        total: tourRoomGroups.length,
+        stopCount: roomGroup?.stops?.length || 1
+      });
+      const chapterDuration = Math.min(2400, Math.max(1500, Math.round(tourConfig.dwell * 0.38)));
+      tourChapterTimerRef.current = setTimeout(() => {
+        tourChapterTimerRef.current = null;
+        setTourChapter(null);
+      }, chapterDuration);
+    }
     try {
       handleRef.current.setTourPace?.(tourConfig.camera);
     } catch (e) {
@@ -4459,6 +4899,7 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
       if (stopIndex >= progressStops.length - 1) {
         tourPlayingRef.current = false;
         setTourPlaying(false);
+        setTourCompleted(true);
         setTourAnnouncement(t("memory_palace.tour_complete") || "Cinematic tour complete. You reached the final locus.");
         return;
       }
@@ -4957,14 +5398,23 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
     },
     "\u2715 ",
     t("memory_palace.presentation_exit") || "Exit presentation"
-  ), /* @__PURE__ */ React.createElement("span", { className: "hidden truncate text-xs font-bold text-slate-200 sm:block" }, data?.main || title || (t("memory_palace.title") || "Memory Palace")), /* @__PURE__ */ React.createElement("span", { className: "hidden text-[10px] text-slate-400 md:inline" }, t("memory_palace.presentation_escape") || "Esc also exits")), tourOpen && !recall && hasContent && !failed && /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("span", { className: "hidden truncate text-xs font-bold text-slate-200 sm:block" }, data?.main || title || (t("memory_palace.title") || "Memory Palace")), /* @__PURE__ */ React.createElement("span", { className: "hidden text-[10px] text-slate-400 md:inline" }, t("memory_palace.presentation_escape") || "Esc also exits")), tourChapter && tourOpen && tourPlaying && !recall && /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      className: "pointer-events-none absolute left-1/2 top-3 z-40 w-[calc(100%_-_1.5rem)] max-w-md -translate-x-1/2 overflow-hidden rounded-2xl border-2 bg-slate-950/95 text-center text-white shadow-2xl backdrop-blur-md",
+      style: { borderColor: tourChapter.color, boxShadow: `0 18px 50px ${tourChapter.color}33` },
+      "aria-hidden": "true"
+    },
+    /* @__PURE__ */ React.createElement("div", { className: "h-1.5", style: { backgroundColor: tourChapter.color } }),
+    /* @__PURE__ */ React.createElement("div", { className: "px-5 py-3 sm:py-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black uppercase tracking-[0.22em] text-slate-300" }, (t("memory_palace.tour_room_of") || "Room {current} of {total}").replace("{current}", String(tourChapter.position)).replace("{total}", String(tourChapter.total))), /* @__PURE__ */ React.createElement("div", { className: "mt-0.5 text-xl font-black tracking-tight text-white sm:text-2xl" }, tourChapter.label), /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-xs font-bold text-slate-300" }, (t("memory_palace.tour_room_stops") || "{count} memory stops in this room").replace("{count}", String(tourChapter.stopCount))))
+  ), tourOpen && !recall && hasContent && !failed && /* @__PURE__ */ React.createElement(
     "aside",
     {
       "data-palace-tour-control": "true",
       className: "absolute bottom-20 left-3 z-30 max-h-[calc(100%_-_5.5rem)] w-[calc(100%_-_1.5rem)] max-w-sm overflow-y-auto rounded-2xl border border-cyan-300/80 bg-slate-950/95 text-white shadow-2xl backdrop-blur-md",
       "aria-label": t("memory_palace.tour_controls_aria") || "Cinematic tour controls"
     },
-    /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3 border-b border-slate-700 px-3 py-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-lg shadow-inner " + (tourPlaying ? "bg-cyan-500 motion-safe:animate-pulse" : "bg-slate-700"), "aria-hidden": "true" }, "\u{1F3AC}"), /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300" }, t("memory_palace.tour") || "Cinematic tour"), tourPlaying && /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-emerald-400/20 px-2 py-0.5 text-[10px] font-extrabold text-emerald-200" }, t("memory_palace.tour_live") || "Playing")), /* @__PURE__ */ React.createElement("div", { className: "mt-0.5 truncate text-sm font-extrabold text-white" }, tourLocus?.label || (t("memory_palace.tour_ready") || "Ready for the first locus")), /* @__PURE__ */ React.createElement("div", { className: "truncate text-xs font-semibold text-slate-300" }, tourRoom?.label || (t("memory_palace.tour_route_overview") || "Route overview"), " \xB7 ", Math.max(0, tourStopIndex + 1), "/", progressStops.length)), /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3 border-b border-slate-700 px-3 py-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-lg shadow-inner " + (tourPlaying ? "bg-cyan-500 motion-safe:animate-pulse" : "bg-slate-700"), "aria-hidden": "true" }, "\u{1F3AC}"), /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-black uppercase tracking-[0.18em] text-cyan-300" }, t("memory_palace.tour") || "Cinematic tour"), tourPlaying && /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-emerald-400/20 px-2 py-0.5 text-[10px] font-extrabold text-emerald-200" }, t("memory_palace.tour_live") || "Playing")), /* @__PURE__ */ React.createElement("div", { className: "mt-0.5 truncate text-sm font-extrabold text-white" }, tourLocus?.label || (t("memory_palace.tour_ready") || "Ready for the first locus")), /* @__PURE__ */ React.createElement("div", { className: "truncate text-xs font-semibold text-slate-300" }, tourRoomPosition >= 0 ? (t("memory_palace.tour_room_short") || "Room {current}/{total}: {label}").replace("{current}", String(tourRoomPosition + 1)).replace("{total}", String(tourRoomGroups.length)).replace("{label}", tourRoom?.label || "") : t("memory_palace.tour_route_overview") || "Route overview", " \xB7 ", Math.max(0, tourStopIndex + 1), "/", progressStops.length)), /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -4981,14 +5431,34 @@ const MemoryPalaceView = ({ data, title, t, addToast, onPersist, callImagen, pla
         style: { width: (progressStops.length ? Math.max(0, (tourStopIndex + 1) / progressStops.length * 100) : 0) + "%" }
       }
     )),
-    /* @__PURE__ */ React.createElement("div", { className: "space-y-3 p-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
+    tourRoomGroups.length > 1 && /* @__PURE__ */ React.createElement("div", { className: "flex h-3 gap-1 bg-slate-900 px-3 pt-1.5", "aria-hidden": "true" }, tourRoomGroups.map((group, index) => /* @__PURE__ */ React.createElement(
+      "span",
+      {
+        key: group.roomIdx,
+        className: "h-1.5 rounded-full transition-opacity motion-reduce:transition-none " + (index === tourRoomPosition ? "opacity-100 ring-1 ring-white" : index < tourRoomPosition ? "opacity-70" : "opacity-30"),
+        style: { backgroundColor: group.color, flexGrow: group.stops.length, flexBasis: 0 }
+      }
+    ))),
+    /* @__PURE__ */ React.createElement("div", { className: "space-y-3 p-3" }, tourLocus?.mnemonic && !tourCompleted && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-cyan-300/25 bg-white/10 px-3 py-2.5 text-xs leading-relaxed text-slate-100" }, /* @__PURE__ */ React.createElement("span", { className: "font-black text-cyan-200" }, t("memory_palace.picture_this") || "Picture this:"), " ", tourLocus.mnemonic), tourCompleted && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-emerald-300/40 bg-gradient-to-br from-emerald-400/20 to-cyan-400/10 p-3 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl", "aria-hidden": "true" }, "\u2713"), /* @__PURE__ */ React.createElement("div", { className: "mt-0.5 text-sm font-black text-emerald-100" }, t("memory_palace.tour_complete_title") || "Route complete"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs leading-relaxed text-slate-200" }, (t("memory_palace.tour_complete_summary") || "You visited {stops} loci across {rooms} rooms.").replace("{stops}", String(progressStops.length)).replace("{rooms}", String(tourRoomGroups.length))), recallEligible && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        onClick: () => {
+          closeCinematicTour();
+          startRecall("self", false);
+        },
+        className: "mt-2 min-h-11 rounded-xl border border-emerald-200/60 bg-emerald-300 px-3 py-2 text-xs font-black text-emerald-950 hover:bg-emerald-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+      },
+      "\u2728 ",
+      t("memory_palace.tour_try_recall") || "Try a guided recall walk"
+    )), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
         onClick: tourPlaying ? () => pauseCinematicTour("manual") : startCinematicTour,
-        className: "min-h-11 flex-1 rounded-xl px-4 py-2 text-xs font-black shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 " + (tourPlaying ? "bg-amber-400 text-slate-950 hover:bg-amber-300" : "bg-cyan-500 text-slate-950 hover:bg-cyan-400")
+        className: "min-h-11 flex-1 rounded-xl px-4 py-2 text-xs font-black shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 " + (tourPlaying ? "bg-amber-400 text-slate-950 hover:bg-amber-300" : tourCompleted ? "bg-emerald-400 text-emerald-950 hover:bg-emerald-300" : "bg-cyan-500 text-slate-950 hover:bg-cyan-400")
       },
-      tourPlaying ? "\u2161 " + (t("memory_palace.tour_pause") || "Pause") : "\u25B6 " + (tourStopIndex >= 0 && tourStopIndex < progressStops.length - 1 ? t("memory_palace.tour_resume") || "Resume" : t("memory_palace.tour_start") || "Start tour")
+      tourPlaying ? "\u2161 " + (t("memory_palace.tour_pause") || "Pause") : "\u25B6 " + (tourCompleted ? t("memory_palace.tour_walk_again") || "Walk again" : tourStopIndex >= 0 && tourStopIndex < progressStops.length - 1 ? t("memory_palace.tour_resume") || "Resume" : t("memory_palace.tour_start") || "Start tour")
     ), /* @__PURE__ */ React.createElement(
       "button",
       {

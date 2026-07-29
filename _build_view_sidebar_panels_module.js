@@ -81,6 +81,7 @@ ${compiled}
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.AdventurePanel = (typeof AdventurePanel !== 'undefined') ? AdventurePanel : null;
 window.AlloModules.SimplifiedPanel = (typeof SimplifiedPanel !== 'undefined') ? SimplifiedPanel : null;
+window.AlloModules.UniversalSettingsPanel = (typeof UniversalSettingsPanel !== 'undefined') ? UniversalSettingsPanel : null;
 window.AlloModules.MathPanel = (typeof MathPanel !== 'undefined') ? MathPanel : null;
 window.AlloModules.DbqPanel = (typeof DbqPanel !== 'undefined') ? DbqPanel : null;
 window.AlloModules.SourceInputPanel = (typeof SourceInputPanel !== 'undefined') ? SourceInputPanel : null;

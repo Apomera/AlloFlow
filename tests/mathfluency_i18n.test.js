@@ -27,6 +27,8 @@ afterEach(() => {
   delete window.__alloTextLanguage;
   delete window.callGemini;
   delete window.MATH_PROBE_BANKS;
+  delete window.speechSynthesis;
+  delete window.SpeechSynthesisUtterance;
 });
 
 async function mount(extraProps = {}) {
@@ -51,11 +53,41 @@ async function click(element) {
   await act(async () => { element.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
 }
 
+async function confirmEarlyFinish() {
+  await click(document.querySelector('button[aria-label="End probe early"]'));
+  const safeguard = document.querySelector('[role="alertdialog"][aria-labelledby="mf-end-early-title"]');
+  expect(safeguard).toBeTruthy();
+  const confirm = Array.from(safeguard.querySelectorAll('button')).find((button) => button.textContent.includes('End & save'));
+  expect(confirm).toBeTruthy();
+  await click(confirm);
+}
+
 describe('Math Fluency UI localization', () => {
   it('renders the setup screen without error in English by default', async () => {
     await mount();
     expect(host.textContent).toContain('Operation');
     expect(host.textContent).not.toContain('ES·');
+  });
+
+  it('renders the refreshed setup and operation-themed practice hierarchy', async () => {
+    await mount();
+    const hero = host.querySelector('header.mf-fluency-hero');
+    const config = host.querySelector('.mf-config-grid');
+    expect(hero).toBeTruthy();
+    expect(hero.querySelector('h2').textContent).toContain('Math Fluency Probe');
+    expect(hero.textContent).toContain('Build accuracy, confidence, and efficient recall');
+    expect(config.style.borderRadius).toBe('13px');
+    expect(getComputedStyle(config.querySelector('select')).minHeight).toBe('40px');
+
+    await click(host.querySelector('button[aria-label="Start practice"]'));
+    const dialog = document.querySelector('[role="dialog"]');
+    const card = dialog.querySelector('.mf-problem-card[data-operation="add"]');
+    expect(card).toBeTruthy();
+    expect(card.style.borderTop).toContain('6px solid');
+    expect(card.querySelector('.mf-operation-eyebrow').textContent).toContain('Addition');
+    expect(card.querySelector('.mf-equation-operator').textContent).toContain('+');
+    expect(card.querySelector('input[aria-label="Your answer"]').style.borderRadius).toBe('12px');
+    expect(dialog.querySelector('.mf-probe-progress').style.backdropFilter).toBe('blur(8px)');
   });
 
   it('batch-translates display chrome into the UI language via window.callGemini, keeping keys/data English', async () => {
@@ -95,6 +127,104 @@ describe('Math Fluency probe modes and administration integrity', () => {
     expect(dialog).toBeTruthy();
     expect(dialog.textContent).toContain('÷');
     expect(dialog.textContent).not.toContain('0:42');
+  });
+
+  it('previews the exact session beside the primary action and blocks unavailable fixed forms', async () => {
+    window.MATH_PROBE_BANKS = { '3': { A: { operation: 'add', difficulty: 'fixed', timeLimit: 42, problems: [{ a: 1, b: 1, op: 'add', symbol: '+', answer: 2 }] } } };
+    await mount();
+
+    const supports = host.querySelector('details.mf-learning-supports');
+    expect(supports).toBeTruthy();
+    expect(supports.open).toBe(false);
+    expect(supports.querySelector('summary').textContent).toContain('1 on');
+
+    let preview = host.querySelector('#mf-session-preview');
+    let start = host.querySelector('button[aria-label="Start practice"]');
+    expect(preview.textContent).toContain('Ready to start');
+    expect(preview.textContent).toContain('Timed practice');
+    expect(preview.textContent).toContain('120 facts');
+    expect(preview.textContent).toContain('120 seconds');
+    expect(start.textContent).toContain('Start 120-Second Practice');
+    expect(start.getAttribute('aria-describedby')).toBe('mf-session-preview');
+
+    await change(host.querySelector('select[aria-label="Time limit"]'), '0');
+    preview = host.querySelector('#mf-session-preview');
+    start = host.querySelector('button[aria-label="Start practice"]');
+    expect(preview.textContent).toContain('Accuracy Focus');
+    expect(preview.textContent).toContain('No countdown');
+    expect(start.textContent).toContain('Start Accuracy Focus');
+
+    await change(host.querySelector('select[aria-label="Probe Mode"]'), 'benchmark');
+    preview = host.querySelector('#mf-session-preview');
+    start = host.querySelector('button[aria-label="Start fixed form"]');
+    expect(preview.textContent).toContain('Fixed Form A');
+    expect(preview.textContent).toContain('1 fact');
+    expect(preview.textContent).toContain('42 seconds');
+    expect(start.disabled).toBe(false);
+    expect(start.textContent).toContain('Start Fixed Form A');
+
+    await change(host.querySelector('select[aria-label="Fixed probe form"]'), 'B');
+    preview = host.querySelector('#mf-session-preview');
+    start = host.querySelector('button[aria-label="Start fixed form"]');
+    expect(preview.textContent).toContain('Choose an available form');
+    expect(start.disabled).toBe(true);
+    expect(start.textContent).toContain('Fixed Form Unavailable');
+  });
+
+  it('keeps the launch action ahead of collapsed personalized analytics', async () => {
+    localStorage.setItem('allo_fluency_fact_mastery_v1', JSON.stringify({
+      'add|2|3': { key: 'add|2|3', a: 2, b: 3, op: 'add', symbol: '+', answer: 5, attempts: 4, correct: 3, responseMsTotal: 5000, timedAttempts: 4, lastSeen: new Date().toISOString() },
+    }));
+    await mount();
+
+    const preview = host.querySelector('#mf-session-preview');
+    const start = host.querySelector('button[aria-label="Start practice"]');
+    const mastery = host.querySelector('details.mf-mastery-map');
+    const teacher = Array.from(host.querySelectorAll('button')).find((button) => button.textContent.includes('Teacher Report'));
+    expect(mastery).toBeTruthy();
+    expect(mastery.open).toBe(false);
+    expect(preview.compareDocumentPosition(mastery) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(start.compareDocumentPosition(teacher) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(host.textContent).toContain('Personalized insights');
+  });
+
+  it('speaks practice facts on request and keeps Calm Display free of live performance pressure', async () => {
+    const spoken = [];
+    let cancelCount = 0;
+    Object.defineProperty(window, 'SpeechSynthesisUtterance', { configurable: true, value: function SpeechSynthesisUtterance(text) { this.text = text; } });
+    Object.defineProperty(window, 'speechSynthesis', { configurable: true, value: {
+      cancel: () => { cancelCount += 1; },
+      speak: (utterance) => { spoken.push(utterance.text); },
+    } });
+    localStorage.setItem('allo_fluency_support_prefs_v1', JSON.stringify({ readAloud: true, calmDisplay: true, adaptivePractice: true }));
+    const completed = [];
+    await mount({ onProbeComplete: (entry) => completed.push(entry) });
+
+    expect(host.querySelector('input[aria-label="Read facts aloud"]').checked).toBe(true);
+    expect(host.querySelector('input[aria-label="Calm display"]').checked).toBe(true);
+    await click(host.querySelector('button[aria-label="Start practice"]'));
+    await act(async () => { await Promise.resolve(); });
+
+    const dialog = document.querySelector('[role="dialog"]');
+    expect(dialog.getAttribute('data-calm-display')).toBe('true');
+    expect(dialog.textContent.toLowerCase()).not.toContain('dcpm');
+    expect(dialog.textContent).not.toContain('\u2705');
+    expect(dialog.textContent).toContain('Time is running');
+    expect(dialog.textContent).not.toContain('2:00');
+    expect(dialog.querySelector('[aria-label="Time remaining: 120 seconds"]')).toBeTruthy();
+    expect(dialog.querySelector('[role="progressbar"]').getAttribute('aria-label')).toBe('Time remaining: 120 seconds');
+    expect(dialog.querySelector('.mf-adaptive-level')).toBeNull();
+    expect(spoken).toHaveLength(1);
+    expect(spoken[0]).toContain('What is the answer?');
+
+    await click(dialog.querySelector('button[aria-label="Replay spoken math fact"]'));
+    expect(spoken).toHaveLength(2);
+    expect(cancelCount).toBeGreaterThan(0);
+    await confirmEarlyFinish();
+    expect(completed[0].data).toMatchObject({ readAloud: true, calmDisplay: true });
+    expect(host.textContent).toContain('Learning supports used');
+    expect(host.textContent).toContain('spoken facts');
+    expect(host.textContent).toContain('calm display');
   });
 
   it('normalizes ordinal grade labels and administers the selected fixed form with locked metadata', async () => {
@@ -169,6 +299,10 @@ describe('Math Fluency probe modes and administration integrity', () => {
     });
     await click(host.querySelector('button[aria-label="Start practice"]'));
     await click(document.querySelector('button[aria-label="End probe early"]'));
+    expect(completed).toHaveLength(0);
+    const safeguard = document.querySelector('[role="alertdialog"][aria-labelledby="mf-end-early-title"]');
+    const confirm = Array.from(safeguard.querySelectorAll('button')).find((button) => button.textContent.includes('End & save'));
+    await click(confirm);
 
     expect(completed).toHaveLength(1);
     expect(completed[0].data).toMatchObject({
@@ -229,7 +363,7 @@ describe('Math Fluency personalized practice workflow', () => {
     let dialog = document.querySelector('[role="dialog"]');
     await change(dialog.querySelector('input[aria-label="Your answer"]'), '-1');
     await click(dialog.querySelector('button[type="submit"]'));
-    await click(document.querySelector('button[aria-label="End probe early"]'));
+    await confirmEarlyFinish();
 
     expect(completed).toHaveLength(1);
     expect(completed[0].data.focusFacts).toHaveLength(1);
@@ -277,6 +411,18 @@ describe('Math Fluency Accuracy Focus mode', () => {
     expect(dialog.textContent).toContain('Accuracy Focus');
     expect(dialog.textContent.toLowerCase()).not.toContain('dcpm');
     expect(dialog.querySelector('[role="progressbar"]').getAttribute('aria-label')).toContain('Problem progress');
+    const pauseButton = dialog.querySelector('button[aria-label="Pause Accuracy Focus"]');
+    expect(pauseButton).toBeTruthy();
+    await click(pauseButton);
+    dialog = document.querySelector('[role="dialog"]');
+    expect(dialog.textContent).toContain('Accuracy Focus paused');
+    expect(dialog.querySelector('input[aria-label="Your answer"]')).toBeNull();
+    expect(dialog.querySelector('button[aria-label="Resume Accuracy Focus"]')).toBeTruthy();
+    await act(async () => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'p', bubbles: true }));
+    });
+    dialog = document.querySelector('[role="dialog"]');
+    expect(dialog.querySelector('input[aria-label="Your answer"]')).toBeTruthy();
 
     for (let i = 0; i < 10; i += 1) {
       dialog = document.querySelector('[role="dialog"]');
@@ -290,6 +436,7 @@ describe('Math Fluency Accuracy Focus mode', () => {
       mode: 'practice', difficulty: 'focus', untimed: true,
       completionStatus: 'complete', validForComparison: false,
       dcpm: null, totalCorrect: 10, accuracy: 100,
+      practicePauseCount: 1,
       goal: { id: 'accuracy-90', metric: 'accuracy', target: 90 },
       goalResult: { met: true, status: 'met' },
     });
@@ -297,8 +444,49 @@ describe('Math Fluency Accuracy Focus mode', () => {
     expect(scoreUpdates[0][0]).toBe(2);
     expect(host.textContent).toContain('Accuracy Focus Practice');
     expect(host.textContent).toContain('Not scored in Accuracy Focus');
+    expect(host.textContent).toContain('Pause accommodation used');
+    expect(host.querySelector('.mf-pause-result').textContent).toContain('1 pause');
     expect(host.querySelector('.mf-goal-result').textContent).toContain('Goal Met');
+    const resultHeader = host.querySelector('.mf-results-header');
+    const accuracyRing = host.querySelector('.mf-accuracy-ring');
+    const metricCards = Array.from(host.querySelectorAll('.mf-metric-card'));
+    expect(resultHeader.textContent).toContain('Accuracy Focus');
+    expect(accuracyRing.getAttribute('data-accuracy')).toBe('100');
+    expect(accuracyRing.getAttribute('aria-label')).toBe('Accuracy: 100 percent');
+    expect(metricCards.map((card) => card.getAttribute('data-metric'))).toEqual(['speed', 'accuracy', 'correct', 'digits']);
+    expect(new Set(metricCards.map((card) => card.style.background)).size).toBe(4);
     expect(host.querySelector('.mf-results-metrics')).toBeTruthy();
+    expect(localStorage.getItem('allo_fluency_accuracy_draft_v1')).toBeNull();
+  });
+
+  it('restores a validated Accuracy Focus draft and clears it after completion', async () => {
+    const completed = [];
+    localStorage.setItem('allo_fluency_accuracy_draft_v1', JSON.stringify({
+      version: 1, savedAt: Date.now(), currentIndex: 1, elapsedMs: 1200,
+      pauseStats: { count: 1, seconds: 2 },
+      config: { mode: 'practice', form: null, grade: '3', operation: 'add', difficulty: 'focus', practiceSet: 'focus', timeLimit: 0, untimed: true, strategyCoach: true, problemCount: 2, goal: { id: 'accuracy-90', metric: 'accuracy', target: 90, available: true, label: '90% accuracy' } },
+      problems: [
+        { a: 2, b: 3, op: 'add', symbol: '+', answer: 5, studentAnswer: 5, correct: true, firstTryCorrect: true, responseMs: 700, attemptLog: [] },
+        { a: 4, b: 4, op: 'add', symbol: '+', answer: 8, studentAnswer: null, correct: null, responseMs: null, attemptLog: [] },
+      ],
+    }));
+    await mount({ onProbeComplete: (entry) => completed.push(entry) });
+
+    const recoveryCard = host.querySelector('.mf-resume-session-card');
+    expect(recoveryCard).toBeTruthy();
+    expect(recoveryCard.textContent).toContain('1 of 2 completed');
+    await click(recoveryCard.querySelector('button[aria-label="Resume saved Accuracy Focus"]'));
+
+    let dialog = document.querySelector('[role="dialog"]');
+    expect(dialog.textContent).toContain('#2');
+    await change(dialog.querySelector('input[aria-label="Your answer"]'), '8');
+    await click(dialog.querySelector('button[type="submit"]'));
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 80)); });
+
+    expect(completed).toHaveLength(1);
+    expect(completed[0].data).toMatchObject({ resumedFromDraft: true, totalAttempted: 2, totalCorrect: 2, practicePauseCount: 1 });
+    expect(localStorage.getItem('allo_fluency_accuracy_draft_v1')).toBeNull();
+    expect(host.querySelector('.mf-recovery-result').textContent).toContain('Recovered session completed');
   });
 });
 
@@ -337,7 +525,7 @@ describe('Math Fluency Strategy Coach and mastery map', () => {
     await click(dialog.querySelector('button[type="submit"]'));
     dialog = document.querySelector('[role="dialog"]');
     expect(dialog.textContent).toContain('#2');
-    await click(document.querySelector('button[aria-label="End probe early"]'));
+    await confirmEarlyFinish();
 
     expect(completed).toHaveLength(1);
     expect(completed[0].data).toMatchObject({

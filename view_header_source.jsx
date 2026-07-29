@@ -85,6 +85,7 @@ function HeaderBar(props) {
     addToast, ai, appId, currentLevelXP,
     customExportCSS, createHomeworkAssignmentLink, dismissHelpOnboarding,
     homeworkExpiryDays, openRecentQrShares, recentQrShareCount, setHomeworkExpiryDays,
+    sharedAssignmentActivity, setSharedAssignmentActivity,
     focusNarrationEnabled, generatedContent, globalLevel, globalProgress, globalXPNext,
     handleCloudToggleClick, handleExportIMS, handleExportQTI, handleRestoreView,
     handleSetActiveViewToDashboard, handleSetIsJoinPopoverOpenToFalse,
@@ -165,11 +166,12 @@ function HeaderBar(props) {
   const readingThemeLabelKeys = {
     default: 'reading_theme_default', warm: 'reading_theme_warm', sepia: 'reading_theme_sepia',
     dark: 'reading_theme_dark', highContrast: 'reading_theme_contrast', blue: 'reading_theme_blue',
-    green: 'reading_theme_green', rose: 'reading_theme_rose', dyslexia: 'reading_theme_easy_read'
+    green: 'reading_theme_green', rose: 'reading_theme_rose', dyslexia: 'reading_theme_easy_read',
+    dim: 'reading_theme_dim'
   };
   const readingThemeFallbackLabels = {
     default: 'Default', warm: 'Warm', sepia: 'Sepia', dark: 'Dark', highContrast: 'Contrast',
-    blue: 'Blue', green: 'Green', rose: 'Rose', dyslexia: 'Easy Read'
+    blue: 'Blue', green: 'Green', rose: 'Rose', dyslexia: 'Easy Read', dim: 'Dim'
   };
   const selectedReadingThemeKey = readingThemeLabelKeys[readingTheme] || readingThemeLabelKeys.default;
   const selectedReadingThemeLabel = t('header.' + selectedReadingThemeKey)
@@ -372,14 +374,15 @@ function HeaderBar(props) {
                                                 <div className="grid grid-cols-5 gap-1.5" role="radiogroup" aria-label={t('header.reading_theme_aria') || 'Reading theme'}>
                                                     {[
                                                         { id: 'default', label: t('header.reading_theme_default') || 'Default', bg: '#ffffff', fg: '#1e293b', border: '#e2e8f0', emoji: '○' },
-                                                        { id: 'warm', label: t('header.reading_theme_warm') || 'Warm', bg: '#fef3c7', fg: '#5c4033', border: '#fde68a', emoji: '☀️' },
-                                                        { id: 'sepia', label: t('header.reading_theme_sepia') || 'Sepia', bg: '#f4ecd8', fg: '#5c4033', border: '#d4c5a9', emoji: '📜' },
+                                                        { id: 'warm', label: t('header.reading_theme_warm') || 'Warm', bg: '#fdcba5', fg: '#432714', border: '#f97e1f', emoji: '☀️' },
+                                                        { id: 'sepia', label: t('header.reading_theme_sepia') || 'Sepia', bg: '#d1bfa9', fg: '#2a1f13', border: '#b48950', emoji: '📜' },
                                                         { id: 'dark', label: t('header.reading_theme_dark') || 'Dark', bg: '#1a1a2e', fg: '#e2e8f0', border: '#334155', emoji: '🌙' },
                                                         { id: 'highContrast', label: t('header.reading_theme_contrast') || 'Contrast', bg: '#000000', fg: '#ffff00', border: '#ffff00', emoji: '◼️' },
-                                                        { id: 'blue', label: t('header.reading_theme_blue') || 'Blue', bg: '#d6eaf8', fg: '#1b2631', border: '#85c1e9', emoji: '💧' },
-                                                        { id: 'green', label: t('header.reading_theme_green') || 'Green', bg: '#e8f5e9', fg: '#1b5e20', border: '#81c784', emoji: '🌿' },
-                                                        { id: 'rose', label: t('header.reading_theme_rose') || 'Rose', bg: '#fce4ec', fg: '#880e4f', border: '#f48fb1', emoji: '🌸' },
-                                                        { id: 'dyslexia', label: t('header.reading_theme_easy_read') || 'Easy Read', bg: '#faf8ef', fg: '#1e293b', border: '#e8e0c8', emoji: '🔤' },
+                                                        { id: 'blue', label: t('header.reading_theme_blue') || 'Blue', bg: '#b9dbf4', fg: '#16304b', border: '#4aa9ed', emoji: '💧' },
+                                                        { id: 'green', label: t('header.reading_theme_green') || 'Green', bg: '#caeccf', fg: '#123f21', border: '#34c548', emoji: '🌿' },
+                                                        { id: 'rose', label: t('header.reading_theme_rose') || 'Rose', bg: '#f9c8d8', fg: '#561530', border: '#f877a2', emoji: '🌸' },
+                                                        { id: 'dyslexia', label: t('header.reading_theme_easy_read') || 'Easy Read', bg: '#f4ebbe', fg: '#3f3b31', border: '#cfb017', emoji: '🔤' },
+                                                        { id: 'dim', label: t('header.reading_theme_dim') || 'Dim', bg: '#adb3bd', fg: '#000000', border: '#7486a4', emoji: '🌫️' },
                                                     ].map(function(th) {
                                                         var isActive = readingTheme === th.id;
                                                         return <button type="button" key={th.id}
@@ -1047,6 +1050,136 @@ function HeaderBar(props) {
                                         <option value={180}>180 days (semester)</option>
                                         <option value={365}>365 days (school year)</option>
                                       </select>
+                                      <details className="mt-2 rounded-lg border border-sky-200 bg-sky-50 p-2">
+                                        <summary className="cursor-pointer text-[11px] font-black text-sky-900">Shared class activity (optional)</summary>
+                                        <label className="mt-2 flex cursor-pointer items-start gap-2 text-[11px] font-bold leading-snug text-sky-900">
+                                          <input
+                                            type="checkbox"
+                                            className="mt-0.5 h-4 w-4 rounded border-sky-300 text-sky-700 focus:ring-sky-500"
+                                            checked={sharedAssignmentActivity?.enabled === true}
+                                            onChange={event => {
+                                              if (typeof setSharedAssignmentActivity !== 'function') return;
+                                              setSharedAssignmentActivity(previous => ({
+                                                ...(previous || {}),
+                                                enabled: event.target.checked,
+                                                type: previous?.type === 'rating' ? 'rating' : 'word_cloud',
+                                              }));
+                                            }}
+                                          />
+                                          <span>Add a shared asynchronous activity</span>
+                                        </label>
+                                        {sharedAssignmentActivity?.enabled === true && (
+                                          <div className="mt-2 space-y-2 border-t border-sky-200 pt-2">
+                                            <label className="block text-[10px] font-bold text-sky-900">
+                                              Activity type
+                                              <select
+                                                value={sharedAssignmentActivity?.type === 'rating' ? 'rating' : 'word_cloud'}
+                                                onChange={event => {
+                                                  const nextType = event.target.value === 'rating' ? 'rating' : 'word_cloud';
+                                                  setSharedAssignmentActivity(previous => {
+                                                    const currentType = previous?.type === 'rating' ? 'rating' : 'word_cloud';
+                                                    const defaults = {
+                                                      word_cloud: 'What word or short phrase best captures your thinking?',
+                                                      rating: 'How would you rate your understanding?',
+                                                    };
+                                                    const currentPrompt = String(previous?.prompt || '');
+                                                    return {
+                                                      ...(previous || {}),
+                                                      type: nextType,
+                                                      prompt: !currentPrompt || currentPrompt === defaults[currentType] ? defaults[nextType] : currentPrompt,
+                                                    };
+                                                  });
+                                                }}
+                                                className="mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                                              >
+                                                <option value="word_cloud">Word Cloud</option>
+                                                <option value="rating">Rating scale (not scored)</option>
+                                              </select>
+                                            </label>
+                                            <label className="block text-[10px] font-bold text-sky-900">
+                                              Prompt
+                                              <textarea
+                                                rows={2}
+                                                maxLength={240}
+                                                value={sharedAssignmentActivity?.prompt || ''}
+                                                onChange={event => setSharedAssignmentActivity(previous => ({ ...(previous || {}), prompt: event.target.value }))}
+                                                className="mt-1 w-full resize-y rounded-md border border-sky-300 bg-white px-2 py-1.5 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                                              />
+                                            </label>
+                                            {sharedAssignmentActivity?.type !== 'rating' && (
+                                              <label className="block text-[10px] font-bold text-sky-900">
+                                                When entries appear
+                                                <select value={sharedAssignmentActivity?.revealPolicy === 'auto_publish' ? 'auto_publish' : 'teacher_review'} onChange={event => setSharedAssignmentActivity(previous => ({ ...(previous || {}), revealPolicy: event.target.value }))} className="mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                                                  <option value="teacher_review">After teacher review (safer)</option>
+                                                  <option value="auto_publish">Automatically, with basic safety holds</option>
+                                                </select>
+                                              </label>
+                                            )}
+                                            {sharedAssignmentActivity?.type === 'rating' && (
+                                              <div className="rounded-lg border border-violet-200 bg-white p-2">
+                                                <div className="grid grid-cols-2 gap-2">
+                                                  <label className="block text-[10px] font-bold text-violet-900">
+                                                    Minimum
+                                                    <select
+                                                      value={Math.max(1, Math.min(9, Number(sharedAssignmentActivity?.minValue) || 1))}
+                                                      onChange={event => {
+                                                        const minValue = Number(event.target.value) || 1;
+                                                        setSharedAssignmentActivity(previous => ({
+                                                          ...(previous || {}),
+                                                          minValue,
+                                                          maxValue: Math.max(minValue + 1, Math.min(10, Number(previous?.maxValue) || 5)),
+                                                        }));
+                                                      }}
+                                                      className="mt-1 w-full rounded-md border border-violet-300 bg-white px-2 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                                                    >
+                                                      {Array.from({ length: 9 }, (_, index) => index + 1).map(value => <option key={value} value={value}>{value}</option>)}
+                                                    </select>
+                                                  </label>
+                                                  <label className="block text-[10px] font-bold text-violet-900">
+                                                    Maximum
+                                                    <select
+                                                      value={Math.max((Number(sharedAssignmentActivity?.minValue) || 1) + 1, Math.min(10, Number(sharedAssignmentActivity?.maxValue) || 5))}
+                                                      onChange={event => setSharedAssignmentActivity(previous => ({ ...(previous || {}), maxValue: Number(event.target.value) || 5 }))}
+                                                      className="mt-1 w-full rounded-md border border-violet-300 bg-white px-2 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                                                    >
+                                                      {Array.from({ length: 9 }, (_, index) => index + 2)
+                                                        .filter(value => value > (Number(sharedAssignmentActivity?.minValue) || 1))
+                                                        .map(value => <option key={value} value={value}>{value}</option>)}
+                                                    </select>
+                                                  </label>
+                                                </div>
+                                                <label className="mt-2 block text-[10px] font-bold text-violet-900">
+                                                  Optional labels, minimum to maximum
+                                                  <input
+                                                    type="text"
+                                                    maxLength={420}
+                                                    value={(Array.isArray(sharedAssignmentActivity?.labels) ? sharedAssignmentActivity.labels : []).join(' | ')}
+                                                    onChange={event => setSharedAssignmentActivity(previous => ({
+                                                      ...(previous || {}),
+                                                      labels: event.target.value.split('|').slice(0, 10).map(label => label.slice(0, 40)),
+                                                    }))}
+                                                    placeholder="Not yet | A little | Somewhat | Mostly | Completely"
+                                                    className="mt-1 w-full rounded-md border border-violet-300 bg-white px-2 py-1.5 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                                                  />
+                                                </label>
+                                                <p className="mt-1 text-[10px] leading-snug text-violet-800">Separate labels with |. Leave blank to show numbers only. Results are aggregate-only and never scored.</p>
+                                              </div>
+                                            )}
+                                            <label className="block text-[10px] font-bold text-sky-900">
+                                              Reveal after
+                                              <select value={Number(sharedAssignmentActivity?.minParticipants) || 3} onChange={event => setSharedAssignmentActivity(previous => ({ ...(previous || {}), minParticipants: Number(event.target.value) || 3 }))} className="mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-1.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500">
+                                                <option value={3}>3 contributions received</option>
+                                                <option value={5}>5 contributions received</option>
+                                                <option value={8}>8 contributions received</option>
+                                              </select>
+                                            </label>
+                                            <p className="text-[10px] leading-snug text-sky-800">
+                                              Uses your Class Mailbox so students can contribute while you are offline.
+                                              {sharedAssignmentActivity?.type === 'rating' ? ' The distribution appears automatically after the threshold.' : ' Automatic publishing cannot replace teacher review.'}
+                                            </p>
+                                          </div>
+                                        )}
+                                      </details>
                                       <button type="button" onClick={() => { if (typeof openRecentQrShares === 'function') openRecentQrShares(); setShowExportMenu(false); }} className="mt-2 flex w-full items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 hover:border-cyan-400 hover:text-cyan-800">
                                         <History size={14}/> Recent homework links{recentQrShareCount ? ` (${recentQrShareCount})` : ''}
                                       </button>

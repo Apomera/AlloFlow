@@ -12,8 +12,61 @@
   if (!React) { console.error('[EducatorHubModal] React not found on window'); return; }
 
 const _EDUCATOR_BATCH_MAX_FILES = 60;
-const _EDUCATOR_BATCH_MAX_FILE_BYTES = 200 * 1024 * 1024;
-const _EDUCATOR_BATCH_MAX_TOTAL_BYTES = 300 * 1024 * 1024;
+function _educatorBatchMemoryBudget() {
+  const deviceGb = typeof navigator !== "undefined" && Number.isFinite(Number(navigator.deviceMemory)) ? Math.max(1, Number(navigator.deviceMemory)) : 4;
+  const totalMb = Math.max(48, Math.min(128, Math.floor(deviceGb * 24)));
+  const fileMb = Math.min(64, totalMb);
+  return { perFileBytes: fileMb * 1024 * 1024, totalBytes: totalMb * 1024 * 1024 };
+}
+let _educatorAlloSheetBridgePromise = null;
+function _educatorAlloSheetBridgeUrl() {
+  const fallback = "https://alloflow-cdn.pages.dev/allo_sheet/host_bridge.js?v=4";
+  try {
+    const loc = window.location || {};
+    const host = String(loc.hostname || "");
+    const pathname = String(loc.pathname || "");
+    const isLocal = /^(localhost|127\.0\.0\.1|\[::1\])$/i.test(host);
+    const isDesktopBundled = !!window._isDesktopBundledApp || isLocal && pathname.indexOf("/app/") === 0;
+    const isAlloHosted = /(^|\.)alloflow/i.test(host) || /(^|\.)web\.app$/i.test(host) || /(^|\.)firebaseapp\.com$/i.test(host);
+    if (isDesktopBundled || isLocal || isAlloHosted) {
+      return new URL("allo_sheet/host_bridge.js?v=4", loc.href).toString();
+    }
+  } catch (_) {
+  }
+  return fallback;
+}
+function _loadEducatorAlloSheetBridge() {
+  if (window.AlloSheetHostBridge && typeof window.AlloSheetHostBridge.open === "function") {
+    return Promise.resolve(window.AlloSheetHostBridge);
+  }
+  if (_educatorAlloSheetBridgePromise) return _educatorAlloSheetBridgePromise;
+  _educatorAlloSheetBridgePromise = new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = _educatorAlloSheetBridgeUrl();
+    script.async = true;
+    script.dataset.alloSheetBridge = "true";
+    script.onload = () => {
+      if (window.AlloSheetHostBridge && typeof window.AlloSheetHostBridge.open === "function") {
+        resolve(window.AlloSheetHostBridge);
+      } else {
+        reject(new Error("AlloSheet loaded without its host bridge."));
+      }
+    };
+    script.onerror = () => reject(new Error("AlloSheet could not be loaded."));
+    document.head.appendChild(script);
+  }).catch((error) => {
+    _educatorAlloSheetBridgePromise = null;
+    throw error;
+  });
+  return _educatorAlloSheetBridgePromise;
+}
+function _educatorAlloSheetTheme() {
+  const root = document.documentElement;
+  const body = document.body;
+  if (root && root.classList.contains("theme-contrast") || body && body.classList.contains("theme-contrast")) return "contrast";
+  if (root && root.classList.contains("theme-light") || body && body.classList.contains("theme-light")) return "light";
+  return "dark";
+}
 function EducatorHubModal(props) {
   const {
     handleFileUpload,
@@ -105,6 +158,10 @@ function EducatorHubModal(props) {
     _setPdfBatchIntakeProgressIfMounted(null);
     if (notify !== false) addToast("PDF batch preparation cancelled.", "info");
   };
+  React.useEffect(function() {
+    _loadEducatorAlloSheetBridge().catch(() => {
+    });
+  }, []);
   React.useEffect(function() {
     educatorHubMountedRef.current = true;
     return function() {
@@ -359,6 +416,18 @@ function EducatorHubModal(props) {
     setPlatProbe({ when: (/* @__PURE__ */ new Date()).toLocaleString(), rows });
   };
   const _probeReportText = () => !platProbe ? "" : "AlloFlow Platform Check \u2014 " + platProbe.when + "\n" + (typeof navigator !== "undefined" ? navigator.userAgent : "") + "\n\n" + platProbe.rows.map((r) => "[" + r.status.toUpperCase() + "] " + r.name + " \u2014 " + r.detail).join("\n");
+  const _openAlloSheet = () => {
+    const bridge = window.AlloSheetHostBridge;
+    if (!bridge || typeof bridge.open !== "function") {
+      _loadEducatorAlloSheetBridge().catch((error) => {
+        addToast(error && error.message ? error.message : "AlloSheet could not be loaded.", "error");
+      });
+      addToast("AlloSheet is loading. Select it again in a moment.", "info");
+      return;
+    }
+    const popup = bridge.open({ theme: _educatorAlloSheetTheme() });
+    if (popup) setShowEducatorHub(false);
+  };
   return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[260] bg-black/40 flex items-center justify-center overflow-y-auto p-3 sm:p-4", style: { zIndex: 260 }, role: "presentation", onClick: () => setShowEducatorHub(false) }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, "data-help-key": "educator_hub_modal_panel", className: "allo-docsuite bg-white rounded-2xl shadow-2xl w-full max-w-2xl p-5 sm:p-8 max-h-[90vh] overflow-y-auto focus:outline-none", style: { maxHeight: "90vh" }, role: "dialog", "aria-modal": "true", "aria-labelledby": "educator-hub-title", "aria-describedby": "educator-hub-subtitle", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-6" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "educator-hub-title", className: "text-xl font-bold text-slate-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F6E0}\uFE0F"), " ", t("educator_hub.title") || "Educator Tools"), /* @__PURE__ */ React.createElement("p", { id: "educator-hub-subtitle", className: "text-sm text-slate-600 mt-1" }, t("educator_hub.subtitle") || "Professional tools for educators and clinicians")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setShowEducatorHub(false), className: "min-w-11 min-h-11 p-2 inline-flex items-center justify-center rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors text-xl", "aria-label": t("educator_hub.close_aria") || "Close educator tools" }, "\u2715")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-4" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "educator_hub_behavior_lens_card", onClick: () => {
     setShowEducatorHub(false);
     setShowBehaviorLens(true);
@@ -380,7 +449,7 @@ function EducatorHubModal(props) {
       openWhiteboard();
     } catch (_e) {
     }
-  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u270F\uFE0F"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-indigo-800" }, t("educator_hub.whiteboard_title") || "Whiteboard"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-indigo-600 mt-1" }, t("educator_hub.whiteboard_desc") || "A freehand canvas (Excalidraw) to sketch ideas, build diagrams, and map thinking \u2014 with ready-made graphic organizers (Venn, T-chart, story map, KWL, concept web, number line) and one-click image export."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "educator_hub_dynamic_assessment_card", onClick: () => {
+  }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u270F\uFE0F"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-indigo-800" }, t("educator_hub.whiteboard_title") || "Whiteboard"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-indigo-600 mt-1" }, t("educator_hub.whiteboard_desc") || "A freehand canvas (Excalidraw) to sketch ideas, build diagrams, and map thinking \u2014 with ready-made graphic organizers (Venn, T-chart, story map, KWL, concept web, number line) and one-click image export."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "educator_hub_allosheet_card", onClick: _openAlloSheet, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-emerald-50 to-cyan-50 border border-emerald-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1F4CA}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-emerald-800" }, t("educator_hub.allosheet_title") || "AlloSheet (Pilot)"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-emerald-700 mt-1" }, t("educator_hub.allosheet_desc") || "Accessible, agent-assisted educator data workspace with review-before-apply changes, local audits, and an open-source Grist foundation."))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "educator_hub_dynamic_assessment_card", onClick: () => {
     setShowEducatorHub(false);
     setIsDynamicAssessmentOpen(true);
   }, className: "flex items-start gap-3 p-4 bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-600 rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all motion-reduce:transform-none motion-reduce:transition-none text-left" }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl mt-1", "aria-hidden": "true" }, "\u{1F52C}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-blue-800" }, t("educator_hub.dynamic_assessment_title") || "Dynamic Assessment"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-blue-600 mt-1" }, t("educator_hub.dynamic_assessment_desc") || "Vygotsky/Feuerstein/Lidz test-teach-retest probes with graduated prompt ladders, modifiability scoring, IEP goals, accommodations, and family/teacher handoffs"))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "educator_hub_lesson_builder_card", onClick: () => {
@@ -428,6 +497,7 @@ function EducatorHubModal(props) {
         addToast("Select one DOCX or PPTX at a time, or select two or more PDFs for batch remediation.", "warning");
         return;
       }
+      const batchBudget = _educatorBatchMemoryBudget();
       const acceptedPdfFiles = [];
       const oversizedNames = [];
       let overCount = 0;
@@ -439,11 +509,11 @@ function EducatorHubModal(props) {
           overCount += 1;
           continue;
         }
-        if (size > _EDUCATOR_BATCH_MAX_FILE_BYTES) {
+        if (size > batchBudget.perFileBytes) {
           oversizedNames.push(file.name || "PDF");
           continue;
         }
-        if (acceptedBytes + size > _EDUCATOR_BATCH_MAX_TOTAL_BYTES) {
+        if (acceptedBytes + size > batchBudget.totalBytes) {
           overTotal += 1;
           continue;
         }
@@ -451,8 +521,8 @@ function EducatorHubModal(props) {
         acceptedPdfFiles.push(file);
       }
       if (overCount) addToast("Batch limit is 60 PDFs; " + overCount + " file(s) were not added. Run them as a second batch.", "warning");
-      if (oversizedNames.length) addToast("Skipped " + oversizedNames.length + " PDF(s) over the 200 MB per-file limit: " + oversizedNames.slice(0, 3).join(", ") + (oversizedNames.length > 3 ? "\u2026" : ""), "warning");
-      if (overTotal) addToast("The 300 MB batch memory budget was reached; " + overTotal + " file(s) were not added. Run them as a second batch.", "warning");
+      if (oversizedNames.length) addToast("Skipped " + oversizedNames.length + " PDF(s) over this device's " + Math.round(batchBudget.perFileBytes / 1048576) + " MB per-file safety limit: " + oversizedNames.slice(0, 3).join(", ") + (oversizedNames.length > 3 ? "\u2026" : ""), "warning");
+      if (overTotal) addToast("This device's " + Math.round(batchBudget.totalBytes / 1048576) + " MB batch memory budget was reached; " + overTotal + " file(s) were not added. Run them as a second batch.", "warning");
       if (acceptedPdfFiles.length <= 1) {
         addToast("At least two PDFs must remain after the batch safety limits are applied.", "warning");
         return;
