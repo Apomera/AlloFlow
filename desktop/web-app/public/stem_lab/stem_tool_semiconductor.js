@@ -285,11 +285,21 @@ window.StemLab = window.StemLab || {
 
       // ═══ MATERIAL DATA ═══
       var MATERIALS = {
-        silicon:    { name: t('stem.semiconductor.silicon_si', 'Silicon (Si)'),     bandGap: 1.12, color: '#4F46E5', lattice: 'Diamond Cubic', electrons: 4, tempCoeff: -0.000473, ni: 1.5e10, mobility: 1400 },
+        // tempCoeff is dE_g/dT NEAR 300 K, in eV/K, used by the linear model below.
+        // It is NOT the Varshni alpha parameter. Si and GaAs previously held their
+        // Varshni alphas (4.73e-4 and 5.405e-4), which are roughly 1.2-1.9x the actual
+        // slope at room temperature, so the linear model over-predicted how fast the
+        // gap closes with heating. Ge already held a real slope, so the table was
+        // internally inconsistent about what this column meant.
+        silicon:    { name: t('stem.semiconductor.silicon_si', 'Silicon (Si)'),     bandGap: 1.12, color: '#4F46E5', lattice: 'Diamond Cubic', electrons: 4, tempCoeff: -0.000270, ni: 1.5e10, mobility: 1400 },
         germanium:  { name: t('stem.semiconductor.germanium_ge', 'Germanium (Ge)'),   bandGap: 0.67, color: '#7C3AED', lattice: 'Diamond Cubic', electrons: 4, tempCoeff: -0.000377, ni: 2.4e13, mobility: 3900 },
-        gaas:       { name: 'GaAs',             bandGap: 1.42, color: '#DC2626', lattice: 'Zinc Blende',   electrons: 4, tempCoeff: -0.000540, ni: 1.8e6,  mobility: 8500 },
+        gaas:       { name: 'GaAs',             bandGap: 1.42, color: '#DC2626', lattice: 'Zinc Blende',   electrons: 4, tempCoeff: -0.000450, ni: 1.8e6,  mobility: 8500 },
         diamond:    { name: t('stem.semiconductor.diamond_c', 'Diamond (C)'),       bandGap: 5.47, color: '#F59E0B', lattice: 'Diamond Cubic', electrons: 4, tempCoeff: -0.000050, ni: 1e-27,  mobility: 2200 },
-        sic:        { name: 'SiC',              bandGap: 3.26, color: '#10B981', lattice: 'Zinc Blende',   electrons: 4, tempCoeff: -0.000330, ni: 6.9e-11,mobility: 900 },
+        // 3.26 eV is the 4H polytype, which is HEXAGONAL. The zinc-blende polytype of
+        // SiC is 3C and its gap is 2.36 eV, so "Zinc Blende" alongside 3.26 eV named
+        // one polytype and gave another's band gap. 4H is the one used for power
+        // devices, so the gap was the value worth keeping.
+        sic:        { name: 'SiC (4H)',         bandGap: 3.26, color: '#10B981', lattice: 'Hexagonal (4H)', electrons: 4, tempCoeff: -0.000330, ni: 6.9e-11,mobility: 900 },
         gan:        { name: 'GaN',              bandGap: 3.40, color: '#06B6D4', lattice: 'Wurtzite',      electrons: 4, tempCoeff: -0.000420, ni: 1.9e-10,mobility: 1000 },
         copper:     { name: t('stem.semiconductor.copper_cu', 'Copper (Cu)'),       bandGap: 0,    color: '#D97706', lattice: 'FCC',           electrons: 1, tempCoeff: 0,         ni: 8.5e22, mobility: 32 },
         insulator:  { name: t('stem.semiconductor.glass_sio', 'Glass (SiO\u2082)'), bandGap: 9.0,  color: '#94A3B8', lattice: 'Amorphous',    electrons: 0, tempCoeff: 0,         ni: 0,      mobility: 0 }
@@ -668,7 +678,7 @@ window.StemLab = window.StemLab || {
             mat.name + ' \u2014 ' + (isConductor ? 'Electricity flows through it easily, like water in a pipe!' : isInsulator ? 'Electricity cannot flow through it \u2014 it blocks like a wall.' : 'A special material! Sometimes it conducts, sometimes it doesn\'t. We can control it like a switch!'),
             mat.name + ' \u2014 Band Gap: ' + Eg.toFixed(2) + ' eV. ' + (isConductor ? 'Conductor: free electrons flow easily.' : isInsulator ? 'Insulator: electrons are stuck.' : 'Semiconductor: moderate gap \u2014 we can control conduction with heat, light, or doping.'),
             mat.name + ' \u2014 E\u2097 = ' + Eg.toFixed(2) + ' eV at ' + tempK + 'K. Lattice: ' + mat.lattice + '. ' + (isConductor ? 'Conductor: overlapping bands, metallic bonding.' : isInsulator ? 'Insulator: very large gap, covalent/ionic bonding.' : 'Semiconductor: moderate gap. Conductivity \u221D exp(-E\u2097/2kT).'),
-            mat.name + ' \u2014 E\u2097(' + tempK + 'K) = ' + Eg.toFixed(3) + ' eV (Varshni: E\u2097(T) = E\u2097(0) + \u03B1T). Lattice: ' + mat.lattice + '. \u03BC\u2099 = ' + mat.mobility + ' cm\u00B2/Vs. n\u1D62(' + tempK + 'K) \u2248 ' + (mat.ni > 0 ? mat.ni.toExponential(1) : '0') + ' cm\u207B\u00B3. ' + (isConductor ? 'Metal: E\u1DA0 in conduction band.' : isInsulator ? 'E\u2097 >> kT, negligible intrinsic carriers.' : 'Intrinsic: E\u1DA0 \u2248 mid-gap. \u03C3 = n\u1D62\u00B7q\u00B7(\u03BC\u2099+\u03BC\u209A).')
+            mat.name + ' \u2014 E\u2097(' + tempK + 'K) = ' + Eg.toFixed(3) + ' eV (linear fit near 300K: E\u2097(T) \u2248 E\u2097(300) + (dE\u2097/dT)(T\u2212300); exact form is Varshni E\u2097(T) = E\u2097(0) \u2212 \u03B1T\u00B2/(T+\u03B2)). Lattice: ' + mat.lattice + '. \u03BC\u2099 = ' + mat.mobility + ' cm\u00B2/Vs. n\u1D62(' + tempK + 'K) \u2248 ' + (mat.ni > 0 ? mat.ni.toExponential(1) : '0') + ' cm\u207B\u00B3. ' + (isConductor ? 'Metal: E\u1DA0 in conduction band.' : isInsulator ? 'E\u2097 >> kT, negligible intrinsic carriers.' : 'Intrinsic: E\u1DA0 \u2248 mid-gap. \u03C3 = n\u1D62\u00B7q\u00B7(\u03BC\u2099+\u03BC\u209A).')
           )),
           aiBox()
         );
@@ -828,7 +838,7 @@ window.StemLab = window.StemLab || {
             d.dopant === 'none' ? 'Silicon is like a team where everyone holds hands. No free helpers!' : dopant.type === 'n' ? dopant.name + ' brings an EXTRA helper (electron) that can move around freely!' : dopant.name + ' is missing a helper, leaving a hole that other helpers can jump into!',
             d.dopant === 'none' ? 'Intrinsic silicon: 4 valence electrons each, all shared in bonds. Very few free carriers.' : dopant.type === 'n' ? 'N-type: ' + dopant.name + ' has ' + dopant.valence + ' electrons (1 extra). Extra electrons are free to move and carry current.' : 'P-type: ' + dopant.name + ' has ' + dopant.valence + ' electrons (1 fewer). Creates holes that act as positive charge carriers.',
             d.dopant === 'none' ? 'Intrinsic Si: n\u1D62 = p\u1D62 = 1.5\u00D710\u00B9\u2070 cm\u207B\u00B3 at 300K. Equal electron-hole pairs from thermal generation.' : dopant.type === 'n' ? 'N-type with ' + dopant.name + ': N\u2093 >> n\u1D62. Majority: electrons, minority: holes. E\u1DA0 shifts toward E\u1D9C.' : 'P-type with ' + dopant.name + ': N\u2090 >> n\u1D62. Majority: holes, minority: electrons. E\u1DA0 shifts toward E\u1D65.',
-            d.dopant === 'none' ? 'Intrinsic Si at 300K: n = p = n\u1D62 = 1.5\u00D710\u00B9\u2070 cm\u207B\u00B3. Fermi level at mid-gap. \u03C3 = q\u00B7n\u1D62\u00B7(\u03BC\u2099 + \u03BC\u209A) \u2248 4.4\u00D710\u207B\u2074 S/cm.' : dopant.type === 'n' ? 'N-type (' + dopant.name + '): n \u2248 N\u2093, p = n\u1D62\u00B2/N\u2093. E\u1DA0 \u2212 E\u1D62 = kT\u00B7ln(N\u2093/n\u1D62). Conductivity \u03C3 \u2248 q\u00B7N\u2093\u00B7\u03BC\u2099. Mass-action law: np = n\u1D62\u00B2.' : 'P-type (' + dopant.name + '): p \u2248 N\u2090, n = n\u1D62\u00B2/N\u2090. E\u1D62 \u2212 E\u1DA0 = kT\u00B7ln(N\u2090/n\u1D62). \u03C3 \u2248 q\u00B7N\u2090\u00B7\u03BC\u209A. Mass-action law: np = n\u1D62\u00B2.'
+            d.dopant === 'none' ? 'Intrinsic Si at 300K: n = p = n\u1D62 = 1.5\u00D710\u00B9\u2070 cm\u207B\u00B3. Fermi level at mid-gap. \u03C3 = q\u00B7n\u1D62\u00B7(\u03BC\u2099 + \u03BC\u209A) \u2248 4.4\u00D710\u207B\u2076 S/cm (\u03C1 \u2248 2.3\u00D710\u2075 \u03A9\u00B7cm).' : dopant.type === 'n' ? 'N-type (' + dopant.name + '): n \u2248 N\u2093, p = n\u1D62\u00B2/N\u2093. E\u1DA0 \u2212 E\u1D62 = kT\u00B7ln(N\u2093/n\u1D62). Conductivity \u03C3 \u2248 q\u00B7N\u2093\u00B7\u03BC\u2099. Mass-action law: np = n\u1D62\u00B2.' : 'P-type (' + dopant.name + '): p \u2248 N\u2090, n = n\u1D62\u00B2/N\u2090. E\u1D62 \u2212 E\u1DA0 = kT\u00B7ln(N\u2090/n\u1D62). \u03C3 \u2248 q\u00B7N\u2090\u00B7\u03BC\u209A. Mass-action law: np = n\u1D62\u00B2.'
           )),
           h('div', { className: 'flex gap-2 mt-2' },
             btn('\uD83E\uDD16 AI Explain', function() { askAI(d.dopant === 'none' ? 'intrinsic semiconductor crystal lattice' : dopant.type + '-type doping with ' + dopant.name); }, 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700'),
