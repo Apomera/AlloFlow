@@ -1620,6 +1620,12 @@ window.StemLab = window.StemLab || {
           }
         }
 
+        // Sweep range. This was -3..+5 V while the Zener's breakdown sits at -5.1 V,
+        // so selecting "zener" could never reach breakdown -- the one behaviour the
+        // device exists for. -6 V brings the knee into view and costs the other
+        // devices nothing (a resistor just reads -6 mA, a diode sits at -I_s).
+        var IV_V_MIN = -6, IV_V_MAX = 5;
+
         var currentI = calcCurrent(sweepV);
 
         var canvasRef = function(canvasEl) {
@@ -1628,17 +1634,58 @@ window.StemLab = window.StemLab || {
           var W = canvasEl.width, H = canvasEl.height;
           cx.fillStyle = '#0F172A'; cx.fillRect(0, 0, W, H);
 
-          var originX = W * 0.35, originY = H * 0.65;
-          var scaleX = (W - 40) / 8; // -3V to 5V
-          var scaleY = H * 0.5 / 0.05; // current scale
+          // Zener breakdown current runs to about -25 mA in this model, so it needs
+          // room below the axis; the other devices are dominated by their forward
+          // quadrant and keep the low origin.
+          var originY = H * (device === 'zener' ? 0.42 : 0.65);
+          var scaleX = (W - 40) / (IV_V_MAX - IV_V_MIN);
+          // Derive the origin from the range instead of pinning it at 35% of the
+          // width. With the sweep widened to -6 V a fixed origin pushed everything
+          // left of about -3.7 V off the canvas, which is exactly where the Zener
+          // knee lives — it was being drawn outside the visible area.
+          var originX = 20 + (0 - IV_V_MIN) * scaleX;
+
+          // Vertical scale. calcCurrent returns AMPS, and this used to be
+          //     scaleY = H * 0.5 / 0.05      then      py = originY - i * scaleY * 1000
+          // The scale maps amps to pixels already (0.05 A across half the height), so
+          // the extra x1000 made the axis a thousand times too sensitive: full scale
+          // came out around 46 microamps, every real forward current slammed into the
+          // ceiling, and the clamp below drew it as a flat line along the top edge.
+          // That reads as current saturating, which is a JFET, not a diode.
+          //
+          // Now an explicit full-scale in mA per device, so the axis can be labelled
+          // and the numbers mean something.
+          var fullScaleMa = device === 'resistor' ? 6 : 20;
+          var plotTop = 12;
+          var scaleY = (originY - plotTop) / fullScaleMa;   // px per mA
 
           // Grid
           cx.strokeStyle = '#1E293B'; cx.lineWidth = 0.5;
-          for (var gv = -3; gv <= 5; gv++) {
+          for (var gv = IV_V_MIN; gv <= IV_V_MAX; gv++) {
             var gx = originX + gv * scaleX;
             cx.beginPath(); cx.moveTo(gx, 10); cx.lineTo(gx, H - 10); cx.stroke();
             cx.fillStyle = '#475569'; cx.font = '8px sans-serif'; cx.textAlign = 'center';
             cx.fillText(gv + 'V', gx, H - 3);
+          }
+
+          // Current ticks. The y axis was previously labelled "I (mA)" with no scale
+          // at all, so no value could be read off the graph.
+          cx.textAlign = 'right';
+          for (var ti = 1; ti <= 4; ti++) {
+            var ma = fullScaleMa * ti / 4;
+            var ty = originY - ma * scaleY;
+            cx.strokeStyle = '#1E293B';
+            cx.beginPath(); cx.moveTo(originX - 3, ty); cx.lineTo(W - 5, ty); cx.stroke();
+            cx.fillStyle = '#475569'; cx.font = '8px sans-serif';
+            cx.fillText(ma.toFixed(0), originX - 5, ty + 3);
+          }
+          // One negative tick so reverse/breakdown current is readable too.
+          var negMa = -fullScaleMa / 4;
+          var negY = originY - negMa * scaleY;
+          if (negY < H - 16) {
+            cx.strokeStyle = '#1E293B';
+            cx.beginPath(); cx.moveTo(originX - 3, negY); cx.lineTo(W - 5, negY); cx.stroke();
+            cx.fillStyle = '#475569'; cx.fillText(negMa.toFixed(0), originX - 5, negY + 3);
           }
 
           // Axes
@@ -1652,13 +1699,16 @@ window.StemLab = window.StemLab || {
 
           // I-V curve
           cx.strokeStyle = '#22D3EE'; cx.lineWidth = 2; cx.beginPath();
-          var first = true;
-          for (var v = -3; v <= 5; v += 0.05) {
-            var i = calcCurrent(v);
+          // Lift the pen when the trace leaves the plot instead of clamping it to the
+          // border. Clamping drew a hard flat line along the top, which looks like the
+          // current levelling off rather than running off the top of the scale.
+          var penDown = false;
+          for (var v = IV_V_MIN; v <= IV_V_MAX; v += 0.05) {
+            var iMa = calcCurrent(v) * 1000;
             var px = originX + v * scaleX;
-            var py = originY - i * scaleY * 1000; // to mA
-            py = Math.max(10, Math.min(H - 15, py));
-            if (first) { cx.moveTo(px, py); first = false; } else cx.lineTo(px, py);
+            var py = originY - iMa * scaleY;
+            if (py < plotTop || py > H - 15) { penDown = false; continue; }
+            if (!penDown) { cx.moveTo(px, py); penDown = true; } else cx.lineTo(px, py);
           }
           cx.stroke();
 
@@ -1676,8 +1726,10 @@ window.StemLab = window.StemLab || {
           // Current sweep marker
           var markerX = originX + sweepV * scaleX;
           var markerI = calcCurrent(sweepV);
-          var markerY = originY - markerI * scaleY * 1000;
-          markerY = Math.max(10, Math.min(H - 15, markerY));
+          // scaleY is px per mA now, so convert once here — same units bug as the
+          // trace above, which had the marker drifting off the curve it marks.
+          var markerY = originY - markerI * 1000 * scaleY;
+          markerY = Math.max(plotTop, Math.min(H - 15, markerY));
           cx.fillStyle = '#F59E0B';
           cx.shadowColor = '#F59E0B'; cx.shadowBlur = 8;
           cx.beginPath(); cx.arc(markerX, markerY, 5, 0, Math.PI * 2); cx.fill();
@@ -1727,7 +1779,7 @@ window.StemLab = window.StemLab || {
             className: 'w-full rounded-lg bg-slate-900 border border-slate-700',
             role: 'img', 'aria-label': 'I-V curve for ' + device + ' at V=' + sweepV.toFixed(2) + 'V, I=' + iDisplay
           }),
-          sliderRow('Sweep V', sweepV, -3, 5, 0.05, function(v) { upd('ivSweepV', v); }, ' V'),
+          sliderRow('Sweep V', sweepV, IV_V_MIN, IV_V_MAX, 0.05, function(v) { upd('ivSweepV', v); }, ' V'),
           sliderRow('Temp', ivTemp, 200, 500, 10, function(v) { upd('ivTemp', v); }, ' K'),
           h('div', { className: 'flex items-center gap-3 mt-2' },
             h('label', { className: 'flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer' },

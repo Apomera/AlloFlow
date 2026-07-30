@@ -230,6 +230,55 @@ describe('P-N depletion width is physical, not a pixel count', () => {
   });
 });
 
+describe('I-V curve reports real currents', () => {
+  // The plot multiplied amps by scaleY AND by 1000, so full scale came out around
+  // 46 microamps: every real forward current hit the ceiling and the clamp drew a
+  // flat line along the top, which reads as saturation rather than an exponential.
+  // The aria-label is computed from the same calcCurrent the trace uses, so it is
+  // the cheapest place to pin the model.
+  const currentAt = (ivDevice, ivSweepV) => {
+    const html = renderTool('semiconductor', { semiconductor: { subtool: 'ivcurve', ivDevice, ivSweepV } });
+    const m = /I=(-?[0-9.]+) (mA|μA)/.exec(html);
+    if (!m) return null;
+    return Number(m[1]) * (m[2] === 'mA' ? 1 : 0.001);
+  };
+
+  it('obeys Ohm law for the 1k resistor', () => {
+    expect(currentAt('resistor', 3)).toBeCloseTo(3.0, 2);   // 3 V / 1 kOhm
+    expect(currentAt('resistor', 5)).toBeCloseTo(5.0, 2);
+    expect(currentAt('resistor', -2)).toBeCloseTo(-2.0, 2);
+  });
+
+  it('passes essentially nothing at zero bias', () => {
+    expect(Math.abs(currentAt('diode', 0))).toBeLessThan(1e-3);
+  });
+
+  it('conducts in Zener breakdown', () => {
+    // Model is -0.05*(Vz - V) below Vz = -5.1 V, so -5.6 V gives -25 mA.
+    expect(currentAt('zener', -5.6)).toBeCloseTo(-25, 1);
+    // Above the knee it must NOT be conducting in reverse.
+    expect(Math.abs(currentAt('zener', -3))).toBeLessThan(0.1);
+  });
+
+  it('sweeps far enough to reach the Zener knee', () => {
+    // The range used to stop at -3 V while breakdown sits at -5.1 V, so the one
+    // behaviour a Zener exists for was unreachable.
+    const m = /var IV_V_MIN = (-?[0-9.]+)/.exec(source);
+    expect(m, 'IV_V_MIN not found').toBeTruthy();
+    const vMin = Number(m[1]);
+    const vz = Number(/var Vz = (-?[0-9.]+)/.exec(source)[1]);
+    expect(vMin).toBeLessThan(vz);
+  });
+
+  it('no longer double-converts amps to milliamps', () => {
+    // The bug was `i * scaleY * 1000` where scaleY already mapped the axis.
+    // Code lines only — the comments explaining the fix quote the old expression.
+    const code = source.split('\n').filter((l) => !/^\s*\/\//.test(l)).join('\n');
+    expect(code).not.toMatch(/originY - i \* scaleY \* 1000/);
+    expect(code).not.toMatch(/markerI \* scaleY \* 1000/);
+  });
+});
+
 describe('deploy mirror carries the corrected physics', () => {
   it('is byte-identical to the source', () => {
     // The mirror is the copy that ships and does not always auto-sync.
