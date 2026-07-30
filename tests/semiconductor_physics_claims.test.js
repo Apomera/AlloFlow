@@ -19,6 +19,7 @@
 
 import { describe, it, expect, beforeAll } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 const SOURCE = 'stem_lab/stem_tool_semiconductor.js';
 const MIRROR = 'desktop/web-app/public/stem_lab/stem_tool_semiconductor.js';
@@ -44,7 +45,11 @@ function material(key) {
   };
 }
 
-beforeAll(() => { source = readFileSync(SOURCE, 'utf8'); });
+beforeAll(() => {
+  source = readFileSync(SOURCE, 'utf8');
+  resetStemLab();
+  loadTool(SOURCE, 'semiconductor');
+});
 
 describe('Semiconductor band gaps at 300 K', () => {
   it('matches accepted values', () => {
@@ -169,6 +174,59 @@ describe('LED table obeys the photon energy relation', () => {
       expect(Math.abs(nm - expected) / expected, 'lambda != 1240/Eg on: ' + line.trim().slice(0, 50))
         .toBeLessThan(0.02);
     });
+  });
+});
+
+describe('P-N depletion width is physical, not a pixel count', () => {
+  // It used to print "Depletion (60px)" -- a drawing coordinate, which would change
+  // with canvas size and means nothing to a student. It is now solved from
+  // W = sqrt(2*eps*(V_bi - V)/q * (1/N_A + 1/N_D)) and reported in micrometres.
+  const widthFromLabel = (html) => {
+    const m = /Depletion region about ([0-9.]+) micrometres/.exec(html);
+    return m ? Number(m[1]) : null;
+  };
+  const render = (pnBias) =>
+    renderTool('semiconductor', { semiconductor: { subtool: 'pnjunction', pnBias } });
+
+  it('never reports a width in pixels', () => {
+    [-3, 0, 1].forEach((b) => {
+      expect(render(b), 'bias ' + b).not.toMatch(/Depletion \(\d+px\)/);
+    });
+    expect(source).not.toMatch(/'px\)'/);
+  });
+
+  it('gives the textbook ~0.43 um at zero bias for 1e16 doping', () => {
+    expect(widthFromLabel(render(0))).toBeCloseTo(0.43, 2);
+  });
+
+  it('widens under reverse bias and narrows under forward bias', () => {
+    const rev = widthFromLabel(render(-3));
+    const zero = widthFromLabel(render(0));
+    const fwd = widthFromLabel(render(0.5));
+    expect(rev).toBeGreaterThan(zero);
+    expect(zero).toBeGreaterThan(fwd);
+  });
+
+  it('follows the square-root dependence on junction voltage', () => {
+    // W(V) / W(0) must equal sqrt((V_bi - V) / V_bi). A linear model would not.
+    const V_BI = 0.7;
+    const zero = widthFromLabel(render(0));
+    [-3, -1, 0.3].forEach((b) => {
+      const expected = zero * Math.sqrt((V_BI - b) / V_BI);
+      expect(widthFromLabel(render(b)), 'bias ' + b).toBeCloseTo(expected, 1);
+    });
+  });
+
+  it('stops quoting a figure once forward bias passes the built-in potential', () => {
+    // The depletion approximation does not hold in high injection, so the tool must
+    // not print a precise width there.
+    const html = render(2);
+    expect(widthFromLabel(html)).toBeNull();
+    expect(html).toMatch(/collapsed by forward bias/i);
+  });
+
+  it('reports the width to screen-reader users, not just on the canvas', () => {
+    expect(render(0)).toMatch(/aria-label="[^"]*0\.43 micrometres/);
   });
 });
 

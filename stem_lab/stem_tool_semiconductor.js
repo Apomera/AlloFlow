@@ -905,6 +905,37 @@ window.StemLab = window.StemLab || {
         var showCarriers = d.pnShowCarriers !== false;
         var showDepletion = d.pnShowDepletion !== false;
 
+        // Depletion width from the step-junction relation rather than a pixel count:
+        //   W = sqrt( 2*eps*(V_bi - V)/q * (1/N_A + 1/N_D) )
+        // This used to be a linear pixel expression (60 - bias*20) whose readout was
+        // printed to the student as "Depletion (60px)" -- a drawing coordinate, in a
+        // tool where every other number is in eV, nm, V or mA, and one that would
+        // change if the canvas were resized. Now the physics sets the width and the
+        // pixels follow, so the sqrt dependence on bias is the one being taught.
+        //
+        // Symmetric doping at 1e16 cm^-3, a typical discrete-diode value, stated on
+        // the label so the number is interpretable. That gives 0.43 um at zero bias,
+        // the textbook figure, which also lands on the 60px the drawing used before,
+        // so the visual is unchanged at rest.
+        //
+        // Computed here rather than inside the canvas callback so the aria-label can
+        // report the same number the picture shows.
+        var PN_N_DOPE = 1e16;                 // cm^-3, both sides
+        var PN_V_BI = 0.7;                    // V, silicon at 300 K
+        var PN_EPS_SI = 11.7 * 8.854e-14;     // F/cm
+        var PN_Q = 1.602e-19;                 // C
+        var PN_PX_PER_UM = 141;
+        // Past V_bi the depletion approximation stops holding (high injection), so
+        // this floor is a drawing guard, not a physical claim -- the label stops
+        // quoting a figure once we are in that regime.
+        var pnJunctionV = Math.max(0.02, PN_V_BI - bias);
+        var depletionUm = Math.sqrt((2 * PN_EPS_SI * pnJunctionV / PN_Q) * (2 / PN_N_DOPE)) * 1e4;
+        var pnModelValid = bias < PN_V_BI - 0.05;
+        var depletionW = Math.max(5, Math.min(120, depletionUm * PN_PX_PER_UM));
+        var pnDepletionLabel = pnModelValid
+          ? 'Depletion region about ' + depletionUm.toFixed(2) + ' micrometres wide.'
+          : 'Depletion region collapsed by forward bias past the built-in potential.';
+
         var animFrameRef = React.useRef(null);
 
         var canvasRef = function(canvasEl) {
@@ -918,9 +949,8 @@ window.StemLab = window.StemLab || {
           var midX = W / 2;
           var junctionY = 30;
           var junctionH = H - 70;
-          var depletionW = Math.max(8, 60 - bias * 20);
-          if (bias > 2.5) depletionW = 5;
-          if (bias < -2) depletionW = Math.min(120, 60 + Math.abs(bias) * 20);
+          // depletionW / depletionUm / pnModelValid are computed at renderPNJunction
+          // scope above, so the drawing and the aria-label cannot disagree.
 
           // P-side
           var pGrad = cx.createLinearGradient(10, 0, midX - depletionW / 2, 0);
@@ -957,7 +987,14 @@ window.StemLab = window.StemLab || {
             cx.strokeRect(midX - depletionW / 2, junctionY, depletionW, junctionH);
             cx.setLineDash([]);
             cx.fillStyle = '#CBD5E1'; cx.font = '9px sans-serif'; cx.textAlign = 'center';
-            cx.fillText('Depletion (' + depletionW.toFixed(0) + 'px)', midX, junctionY + junctionH + 12);
+            // Plain glyphs on purpose: at this label size the Latin modifier-letter
+            // subscripts used elsewhere in the tool shrink to 2-3px and read as
+            // punctuation. Verified on a rendered canvas, not assumed.
+            cx.fillText(
+              pnModelValid
+                ? 'Depletion ≈ ' + depletionUm.toFixed(2) + ' µm  (doping 10¹⁶ cm⁻³)'
+                : 'Depletion collapsed (forward bias past V-built-in)',
+              midX, junctionY + junctionH + 12);
           }
 
           // E-field arrows
@@ -1077,7 +1114,11 @@ window.StemLab = window.StemLab || {
           h('canvas', { 
             id: 'semi-pn-canvas', width: 440, height: 280,
             className: 'w-full rounded-lg bg-slate-900 border border-slate-700',
-            role: 'img', 'aria-label': 'P-N junction with ' + bias.toFixed(1) + 'V bias'
+            // The depletion width is the quantity this view exists to show, so the
+            // non-visual label carries it too rather than just the bias.
+            role: 'img', 'aria-label': 'P-N junction diagram. Bias ' + bias.toFixed(1)
+              + ' volts. ' + (bias > 0.05 ? 'Forward biased' : bias < -0.05 ? 'Reverse biased' : 'Zero bias, equilibrium')
+              + '. ' + (pnDepletionLabel || '')
           }),
           sliderRow('Bias Voltage', bias, -3, 3, 0.1, function(v) {
             upd('pnBias', v);
