@@ -212,3 +212,71 @@ describe('no-source-text runs do not fail silently', () => {
     expect(line).toContain('dispatcherLoaded=');
   });
 });
+
+// ── Stop: the abort capability is finally WIRED (2026-07-29) ──
+// executeOneBlueprint accepted `signal` since Stage 3 and checked it between
+// steps, but no caller ever created a controller — the teacher's only exit from
+// a nine-step run was closing the tab. These pin the cooperative-abort contract:
+// the in-flight step finishes, nothing after it starts, and landed work counts
+// stay honest (unreached rows are in NEITHER items nor nulls, so a
+// total-minus-failed count would claim them as finished).
+describe('cooperative abort between steps', () => {
+  it('stops before the next step when aborted mid-run, keeping finished work', async () => {
+    const ctl = new AbortController();
+    const calls = [];
+    const gen = vi.fn(async (type) => {
+      calls.push(type);
+      if (calls.length === 2) ctl.abort();          // abort DURING step 2
+      return { id: 'res-' + calls.length, type, data: {} };
+    });
+    const out = await PhaseO.executeOneBlueprint(PLAN, {
+      handleGenerate: gen, historyOverride: [], signal: ctl.signal,
+    });
+    // Step 2 completes (cooperative), steps 3 and 4 never start.
+    expect(calls).toEqual(['analysis', 'image']);
+    expect(out.items).toHaveLength(2);
+    // Unreached rows are NOT failures — they were never attempted.
+    expect(out.nulls).toEqual([]);
+    expect(out.failedRows).toEqual([]);
+  });
+
+  it('a pre-aborted signal runs nothing at all', async () => {
+    const ctl = new AbortController();
+    ctl.abort();
+    const gen = vi.fn(async () => ({ id: 'x', type: 't', data: {} }));
+    const out = await PhaseO.executeOneBlueprint(PLAN, {
+      handleGenerate: gen, historyOverride: [], signal: ctl.signal,
+    });
+    expect(gen).not.toHaveBeenCalled();
+    expect(out.items).toHaveLength(0);
+  });
+
+  it('handleStopBlueprintRun is registered and a no-op between runs', () => {
+    expect(typeof PhaseO.handleStopBlueprintRun).toBe('function');
+    // No run in flight -> no controller -> returns false, throws nothing.
+    expect(PhaseO.handleStopBlueprintRun()).toBe(false);
+  });
+});
+
+describe('stopped-run accounting guardrails', () => {
+  const rd = (f) => readFileSync(resolve(process.cwd(), f), 'utf8');
+  it('the host handler counts LANDED items, never total-minus-failed', () => {
+    const src = rd('phase_o_misc_handlers_source.jsx');
+    expect(src).toContain('const _doneCount = Array.isArray(_landedItems) ? _landedItems.length : 0;');
+    // The wrong formula must not creep back in.
+    expect(src).not.toMatch(/finalResources\.length\s*-\s*nulls\.length/);
+  });
+  it('a stopped run is marked done+stopped and demotes unreached rows', () => {
+    const src = rd('phase_o_misc_handlers_source.jsx');
+    expect(src).toContain("{ rows: rows, done: true, stopped: true }");
+    expect(src).toContain('const _wasStopped');
+  });
+  it('the controller slot is cleared in the same finally as the run mutex', () => {
+    const src = rd('phase_o_misc_handlers_source.jsx');
+    // NOT sliced from the file's first `} finally {` — that belongs to an
+    // earlier handler entirely. Pin the two resets as adjacent lines instead:
+    // if the mutex is released but the controller survives, a Stop pressed
+    // between runs would abort the NEXT run at birth.
+    expect(src).toMatch(/_blueprintRunInFlight = false;\s*\n\s*_blueprintAbortCtl = null;/);
+  });
+});

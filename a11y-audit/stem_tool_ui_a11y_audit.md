@@ -1,23 +1,23 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-07-28T16:19:46.785Z
+Generated: 2026-07-30T04:55:55.898Z
 
 ## Scope
 
-- Registered STEM tools audited: 132
-- Plugin files loaded: 129
-- Shared shell coverage: 132/132 tools
+- Registered STEM tools audited: 133
+- Plugin files loaded: 130
+- Shared shell coverage: 133/133 tools
 - Light-background opt-outs: 0
 
 ## Summary
 
 | Metric | Count |
 | --- | ---: |
-| Total findings | 23 |
+| Total findings | 24 |
 | High-confidence errors | 0 |
 | Tool-level warnings | 6 |
-| Review notices | 17 |
-| Tools with any finding | 22 |
+| Review notices | 18 |
+| Tools with any finding | 23 |
 | Tools with high-confidence errors | 0 |
 | Tools with canvas surfaces | 39 |
 
@@ -25,11 +25,11 @@ Generated: 2026-07-28T16:19:46.785Z
 
 | Severity | Code | Findings | Tools | Example tools | Recommendation |
 | --- | --- | ---: | ---: | --- | --- |
-| warning | `tiny-text` | 4 | 4 | anatomy, beehive, galaxy, probability | Avoid persistent 8px/9px instructional text; keep small labels at 10px+ with clear line height. |
-| warning | `canvas-focus` | 1 | 1 | moonMission | Make interactive canvases keyboard-focusable. For static output, use role=img, a meaningful name and description, plus data-a11y-static=true. |
+| warning | `tiny-text` | 3 | 3 | anatomy, beehive, probability | Avoid persistent 8px/9px instructional text; keep small labels at 10px+ with clear line height. |
+| warning | `canvas-focus` | 2 | 2 | beehive, moonMission | Make interactive canvases keyboard-focusable. For static output, use role=img, a meaningful name and description, plus data-a11y-static=true. |
 | warning | `inline-contrast` | 1 | 1 | galaxy | Adjust inline foreground/background colors to meet at least 4.5:1 contrast for body text. |
 | notice | `metadata` | 16 | 16 | accessLens, archStudio, circuitShelf, codingPlayground, cyberDefense, dataLab, dinoLab, evoLab, geologyExplorer, geometryWorld, moleculeShelf, nutritionLab | Fill in label, description, category, and aliases so discovery and context labels stay clear. |
-| notice | `horizontal-overflow-risk` | 1 | 1 | areaPerimeter | Review fixed-width elements at 360px and 768px widths so panels and canvases do not overflow. |
+| notice | `horizontal-overflow-risk` | 2 | 2 | areaPerimeter, throwlab | Review fixed-width elements at 360px and 768px widths so panels and canvases do not overflow. |
 
 ## Recommended Next Passes
 
@@ -48,7 +48,7 @@ Generated: 2026-07-28T16:19:46.785Z
 | `algebraCAS` Algebra Solver | math | standard | 15 | 1 | 0 | 0 | 0 | 0 |  |
 | `alloBotSage` AlloBot: Starbound Sage | Games | standard | 79 | 0 | 0 | 0 | 0 | 0 |  |
 | `alphaFoldExplorer` AlphaFold Explorer | science | standard | 5 | 0 | 0 | 0 | 0 | 0 |  |
-| `anatomy` Human Anatomy Explorer | science | standard | 87 | 1 | 1 | 0 | 1 | 0 | tiny-text x1 |
+| `anatomy` Human Anatomy Explorer | science | standard | 88 | 1 | 1 | 0 | 1 | 0 | tiny-text x1 |
 | `appLab` AppLab | technology | standard | 26 | 7 | 0 | 0 | 0 | 0 |  |
 | `aquacultureLab` AquacultureLab: Mussel Farm Sim | science | standard | 178 | 5 | 0 | 0 | 0 | 0 |  |
 | `aquarium` Aquarium Lab | science | standard | 27 | 0 | 0 | 0 | 0 | 0 |  |
@@ -64,14 +64,15 @@ Generated: 2026-07-28T16:19:46.785Z
 | `autoRepair` Auto Repair Shop | life-skills | standard | 41 | 0 | 0 | 0 | 0 | 0 |  |
 | `bakingScience` Baking Lab | science | standard | 16 | 0 | 0 | 0 | 0 | 0 |  |
 | `base10` Math Manipulatives | math | standard | 52 | 1 | 0 | 0 | 0 | 0 |  |
-| `beehive` Beehive Simulator | science | standard | 79 | 5 | 1 | 0 | 1 | 0 | tiny-text x1 |
+| `beehive` Beehive Simulator | science | standard | 84 | 12 | 1 | 0 | 2 | 0 | canvas-focus x1, tiny-text x1 |
 | `behaviorLab` Behavior Lab | science | standard | 24 | 5 | 0 | 0 | 0 | 0 |  |
 | `bikeLab` BikeLab: Physics & Repair | life-skills | standard | 11 | 0 | 0 | 0 | 0 | 0 |  |
 | `birdLab` BirdLab — I-Spy Ornithology | science | standard | 127 | 1 | 0 | 0 | 0 | 0 |  |
-| `brainAtlas` Brain Atlas Explorer | science | standard | 58 | 1 | 1 | 0 | 0 | 0 |  |
+| `brainAtlas` Brain Atlas Explorer | science | standard | 68 | 1 | 1 | 0 | 0 | 0 |  |
 | `bridgeLab` Bridge Engineering Lab | science | standard | 24 | 9 | 0 | 0 | 0 | 0 |  |
 | `calculus` Calculus | math | standard | 29 | 9 | 0 | 0 | 0 | 0 |  |
 | `cell` Cell Simulator | science | standard | 41 | 3 | 1 | 0 | 0 | 0 |  |
+| `cellAtlasLab` Cell Atlas Lab | biology | standard | 22 | 0 | 0 | 0 | 0 | 0 |  |
 | `cellularLab` Cellular Automaton Lab | math | standard | 52 | 3 | 0 | 0 | 0 | 0 |  |
 | `cephalopodLab` Cephalopod Lab | science | standard | 17 | 1 | 0 | 0 | 0 | 0 |  |
 | `chemBalance` Chemistry Lab | science | standard | 12 | 1 | 1 | 0 | 0 | 0 |  |
@@ -88,7 +89,7 @@ Generated: 2026-07-28T16:19:46.785Z
 | `dataStudio` Data Studio | creative | standard | 33 | 21 | 0 | 0 | 0 | 0 |  |
 | `decomposer` Material Decomposer | science | standard | 30 | 0 | 0 | 0 | 0 | 0 |  |
 | `dinoLab` Dino Lab | explore | standard | 408 | 1 | 0 | 0 | 0 | 1 | metadata x1 |
-| `dissection` Virtual Dissection Lab | science | standard | 59 | 7 | 1 | 0 | 0 | 0 |  |
+| `dissection` Virtual Dissection Lab | science | standard | 79 | 11 | 1 | 0 | 0 | 0 |  |
 | `dnaLab` DNA Lab | biology | standard | 88 | 1 | 1 | 0 | 0 | 0 |  |
 | `echoTrainer` Echo Navigator | applied | standard | 28 | 5 | 1 | 0 | 0 | 0 |  |
 | `echolocation` Echolocation Lab | science | standard | 10 | 0 | 0 | 0 | 0 | 0 |  |
@@ -105,14 +106,14 @@ Generated: 2026-07-28T16:19:46.785Z
 | `fractions` Fraction Lab | math | standard | 41 | 2 | 1 | 0 | 0 | 0 |  |
 | `freeForms` Free Forms | creative | standard | 14 | 0 | 0 | 0 | 0 | 0 |  |
 | `funcGrapher` Function Grapher | math | standard | 0 | 0 | 0 | 0 | 0 | 0 |  |
-| `galaxy` Galaxy Explorer | science | standard | 57 | 2 | 1 | 0 | 2 | 0 | inline-contrast x1, tiny-text x1 |
+| `galaxy` Galaxy Explorer | science | standard | 57 | 2 | 1 | 0 | 1 | 0 | inline-contrast x1 |
 | `gameStudio` Game Design Studio | creativity | standard | 34 | 3 | 0 | 0 | 0 | 0 |  |
 | `geoQuiz` Geography Explorer | geo | standard | 12 | 2 | 0 | 0 | 0 | 0 |  |
 | `geoSandbox` Geometry Sandbox | math | standard | 0 | 0 | 0 | 0 | 0 | 0 |  |
 | `geologyExplorer` Geology Explorer | explore | standard | 23 | 1 | 0 | 0 | 0 | 1 | metadata x1 |
 | `geometryProver` Geometry | math | standard | 17 | 0 | 0 | 0 | 0 | 0 |  |
 | `geometryWorld` Geometry World | explore | standard | 0 | 0 | 0 | 0 | 0 | 1 | metadata x1 |
-| `gisStudio` GIS Studio | geo | standard | 11 | 9 | 0 | 0 | 0 | 0 |  |
+| `gisStudio` GIS Studio | geo | standard | 13 | 9 | 0 | 0 | 0 | 0 |  |
 | `graphCalc` graphCalc | math | standard | 26 | 7 | 1 | 0 | 0 | 0 |  |
 | `inequality` Inequality Grapher | math | standard | 30 | 8 | 0 | 0 | 0 | 0 |  |
 | `kitchenLab` Kitchen Lab | applied | standard | 8 | 1 | 0 | 0 | 0 | 0 |  |
@@ -161,11 +162,11 @@ Generated: 2026-07-28T16:19:46.785Z
 | `statsLab` Statistics Lab | math | standard | 21 | 0 | 0 | 0 | 0 | 0 |  |
 | `stewardshipHub` Environmental Stewardship Campaigns | science | standard | 2 | 0 | 0 | 0 | 0 | 0 |  |
 | `swimLab` SwimLab | life-skills | standard | 13 | 0 | 0 | 0 | 0 | 0 |  |
-| `throwlab` ThrowLab | science | standard | 53 | 8 | 1 | 0 | 0 | 0 |  |
+| `throwlab` ThrowLab | science | standard | 54 | 8 | 1 | 0 | 0 | 1 | horizontal-overflow-risk x1 |
 | `timeSchedule` Time & Schedule Lab | math | standard | 13 | 2 | 0 | 0 | 0 | 0 |  |
 | `timelineStudio` Timeline Studio | general | standard | 2 | 2 | 0 | 0 | 0 | 1 | metadata x1 |
 | `titrationLab` Titration Lab | science | standard | 9 | 0 | 0 | 0 | 0 | 0 |  |
-| `typingPractice` Typing Practice | life-skills | standard | 25 | 0 | 0 | 0 | 0 | 0 |  |
+| `typingPractice` Typing Practice | life-skills | standard | 45 | 2 | 0 | 0 | 0 | 0 |  |
 | `unitConvert` Unit Converter | math | standard | 22 | 4 | 1 | 0 | 0 | 0 |  |
 | `universe` Universe Explorer | science | standard | 78 | 4 | 1 | 0 | 0 | 0 |  |
 | `volume` 3D Volume Explorer | math | standard | 33 | 8 | 2 | 0 | 0 | 0 |  |

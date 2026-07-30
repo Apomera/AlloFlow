@@ -147,7 +147,7 @@ const GoldenThreadPanel = ({
         concept: c
       }) || 'Remove concept ' + c,
       className: "ml-1 text-amber-600 hover:text-red-500 font-bold leading-none"
-    }, "\xD7"));
+    }, "×"));
   }), isEditing && /*#__PURE__*/React.createElement("span", {
     className: "inline-flex items-center gap-1"
   }, /*#__PURE__*/React.createElement("input", {
@@ -181,7 +181,7 @@ const GoldenThreadPanel = ({
         term: term
       }) || 'Remove term ' + term,
       className: "ml-1 text-indigo-600 hover:text-red-500 font-bold leading-none"
-    }, "\xD7"));
+    }, "×"));
   }), isEditing && /*#__PURE__*/React.createElement("span", {
     className: "inline-flex items-center gap-1"
   }, /*#__PURE__*/React.createElement("input", {
@@ -205,6 +205,8 @@ const GoldenThreadPanel = ({
 const InteractiveBlueprintCard = React.memo(({
   config,
   run,
+  isRunning,
+  onStopRun,
   onRebuildStep,
   onPreviewStep,
   onSaveTemplate,
@@ -428,8 +430,10 @@ const InteractiveBlueprintCard = React.memo(({
     type: "button",
     "data-help-key": "blueprint_edit_toggle_btn",
     "aria-label": isEditing ? t('blueprint.done_editing') : t('blueprint.edit_plan'),
+    disabled: !!isRunning,
+    title: isRunning ? t('blueprint.wait_for_run') || 'Wait for the run to finish (or stop it) before editing.' : undefined,
     onClick: () => setIsEditing(prev => !prev),
-    className: `p-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-2 border ${isEditing ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`
+    className: `p-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-2 border disabled:opacity-40 disabled:cursor-not-allowed ${isEditing ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`
   }, isEditing ? /*#__PURE__*/React.createElement(CheckCircle2, {
     size: 14
   }) : /*#__PURE__*/React.createElement(Pencil, {
@@ -438,7 +442,32 @@ const InteractiveBlueprintCard = React.memo(({
     config: config,
     isEditing: isEditing,
     onUpdate: onUpdate
-  }), /*#__PURE__*/React.createElement("div", {
+  }), isRunning && run && run.rows && (() => {
+    const _rows = Object.keys(run.rows).map(k => run.rows[k]);
+    const _total = _rows.length;
+    const _settled = _rows.filter(r => r && (r.status === 'landed' || r.status === 'failed' || r.status === 'interrupted')).length;
+    const _active = _rows.find(r => r && r.status === 'running');
+    return /*#__PURE__*/React.createElement("div", {
+      "data-testid": "bp-run-progress",
+      className: "flex items-center gap-2 mb-3 p-2 rounded-lg bg-indigo-50 border border-indigo-100"
+    }, /*#__PURE__*/React.createElement(RefreshCw, {
+      size: 13,
+      className: "text-indigo-600 animate-spin motion-reduce:animate-none shrink-0",
+      "aria-hidden": "true"
+    }), /*#__PURE__*/React.createElement("p", {
+      className: "flex-grow text-xs text-indigo-900 font-medium",
+      "aria-live": "polite"
+    }, t('blueprint.progress_line', {
+      done: _settled,
+      total: _total
+    }) || `Building — ${_settled} of ${_total} steps finished`, _active ? ` · ${getToolLabel(_active.tool)}` : ''), typeof onStopRun === 'function' && /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      "data-testid": "bp-stop-run",
+      onClick: onStopRun,
+      className: "shrink-0 text-[10px] font-bold px-2 py-1 rounded border border-red-300 text-red-700 bg-white hover:bg-red-50",
+      title: t('blueprint.stop_run_hint') || 'Finishes the step in progress, then stops. Finished resources are kept.'
+    }, t('blueprint.stop_run') || 'Stop after this step'));
+  })(), /*#__PURE__*/React.createElement("div", {
     role: "status",
     "aria-live": "polite",
     "aria-atomic": "true",
@@ -740,7 +769,7 @@ const InteractiveBlueprintCard = React.memo(({
       className: "font-bold"
     }, getToolLabel(it.type)), /*#__PURE__*/React.createElement("span", {
       className: keep ? 'text-slate-700' : 'text-slate-500 line-through'
-    }, " \u2014 \"", it.directive, "\"")));
+    }, " — \"", it.directive, "\"")));
   })), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2"
   }, /*#__PURE__*/React.createElement("button", {
@@ -771,13 +800,14 @@ const InteractiveBlueprintCard = React.memo(({
   }, t('blueprint.cancel')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-help-key": "blueprint_generate_pack_btn",
-    "aria-label": t('common.generate'),
+    "aria-label": isRunning ? t('blueprint.status_running') || 'Building...' : t('common.generate'),
+    disabled: !!isRunning,
     onClick: onConfirm,
-    className: "flex-[2] py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow-md transition-transform active:scale-95 flex items-center justify-center gap-2"
+    className: "flex-[2] py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold shadow-md transition-transform active:scale-95 flex items-center justify-center gap-2"
   }, /*#__PURE__*/React.createElement(Sparkles, {
     size: 14,
     className: "text-yellow-700 fill-current"
-  }), " ", t('blueprint.generate'))));
+  }), " ", isRunning ? t('blueprint.status_running') || 'Building...' : t('blueprint.generate'))));
 });
 const HarmonyMeter = ({
   score

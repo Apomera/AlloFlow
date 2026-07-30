@@ -155,7 +155,7 @@ const GoldenThreadPanel = ({ config, isEditing, onUpdate }) => {
     );
 };
 
-const InteractiveBlueprintCard = React.memo(({ config, run, onRebuildStep, onPreviewStep, onSaveTemplate, onUpdate, onConfirm, onCancel }) => {
+const InteractiveBlueprintCard = React.memo(({ config, run, isRunning, onStopRun, onRebuildStep, onPreviewStep, onSaveTemplate, onUpdate, onConfirm, onCancel }) => {
   const { t } = useContext(LanguageContext);
   const [items, setItems] = useState([]);
   const [draggedItemIndex, setDraggedItemIndex] = useState(null);
@@ -334,18 +334,58 @@ const InteractiveBlueprintCard = React.memo(({ config, run, onRebuildStep, onPre
                 </p>
             </div>
         </div>
+        {/* Disabled during a run: editing cannot corrupt the run (the executor
+            iterates its own snapshot), but it makes the board LIE — a removed
+            row's status vanishes while its resource still generates, and added
+            rows render as never-run under a "running" banner. */}
         <button
             type="button"
             data-help-key="blueprint_edit_toggle_btn"
             aria-label={isEditing ? t('blueprint.done_editing') : t('blueprint.edit_plan')}
+            disabled={!!isRunning}
+            title={isRunning ? (t('blueprint.wait_for_run') || 'Wait for the run to finish (or stop it) before editing.') : undefined}
             onClick={() => setIsEditing(prev => !prev)}
-            className={`p-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-2 border ${isEditing ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
+            className={`p-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-2 border disabled:opacity-40 disabled:cursor-not-allowed ${isEditing ? 'bg-indigo-100 text-indigo-700 border-indigo-200' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}
         >
             {isEditing ? <CheckCircle2 size={14}/> : <Pencil size={14}/>}
             {isEditing ? t('blueprint.done_editing') : t('blueprint.edit_plan')}
         </button>
       </div>
       <GoldenThreadPanel config={config} isEditing={isEditing} onUpdate={onUpdate} />
+      {/* ── Aggregate run progress + Stop ──
+          The only progress signal used to be scattered per-row badges, and in a
+          ~24rem panel an eight-step plan meant scrolling to count green chips.
+          One line answers "how far along, what is it doing right now, and how do
+          I stop it". aria-live=polite on the TEXT (not the container with the
+          button, so the Stop control is not re-announced every step). Stop is
+          cooperative — the executor checks the signal between steps — hence
+          "after this step" in the label, which is a promise the code keeps. */}
+      {isRunning && run && run.rows && (() => {
+          const _rows = Object.keys(run.rows).map(k => run.rows[k]);
+          const _total = _rows.length;
+          const _settled = _rows.filter(r => r && (r.status === 'landed' || r.status === 'failed' || r.status === 'interrupted')).length;
+          const _active = _rows.find(r => r && r.status === 'running');
+          return (
+              <div data-testid="bp-run-progress" className="flex items-center gap-2 mb-3 p-2 rounded-lg bg-indigo-50 border border-indigo-100">
+                  <RefreshCw size={13} className="text-indigo-600 animate-spin motion-reduce:animate-none shrink-0" aria-hidden="true" />
+                  <p className="flex-grow text-xs text-indigo-900 font-medium" aria-live="polite">
+                      {(t('blueprint.progress_line', { done: _settled, total: _total }) || `Building — ${_settled} of ${_total} steps finished`)}
+                      {_active ? ` · ${getToolLabel(_active.tool)}` : ''}
+                  </p>
+                  {typeof onStopRun === 'function' && (
+                      <button
+                          type="button"
+                          data-testid="bp-stop-run"
+                          onClick={onStopRun}
+                          className="shrink-0 text-[10px] font-bold px-2 py-1 rounded border border-red-300 text-red-700 bg-white hover:bg-red-50"
+                          title={t('blueprint.stop_run_hint') || 'Finishes the step in progress, then stops. Finished resources are kept.'}
+                      >
+                          {t('blueprint.stop_run') || 'Stop after this step'}
+                      </button>
+                  )}
+              </div>
+          );
+      })()}
       <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">{reorderStatus}</div>
       {isEditing ? (
           <>
@@ -714,14 +754,19 @@ const InteractiveBlueprintCard = React.memo(({ config, run, onRebuildStep, onPre
           >
             {t('blueprint.cancel')}
           </button>
+          {/* Disabled during a run. The mutex already rejects a second run
+              safely (and now sits above the config setters), but a live-looking
+              Generate that only produces a toast still reads as broken. The
+              label changes too, so the state is visible without hovering. */}
           <button
               type="button"
               data-help-key="blueprint_generate_pack_btn"
-              aria-label={t('common.generate')}
+              aria-label={isRunning ? (t('blueprint.status_running') || 'Building...') : t('common.generate')}
+            disabled={!!isRunning}
             onClick={onConfirm}
-            className="flex-[2] py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow-md transition-transform active:scale-95 flex items-center justify-center gap-2"
+            className="flex-[2] py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-300 disabled:cursor-not-allowed text-white rounded-lg text-xs font-bold shadow-md transition-transform active:scale-95 flex items-center justify-center gap-2"
           >
-            <Sparkles size={14} className="text-yellow-700 fill-current"/> {t('blueprint.generate')}
+            <Sparkles size={14} className="text-yellow-700 fill-current"/> {isRunning ? (t('blueprint.status_running') || 'Building...') : t('blueprint.generate')}
           </button>
       </div>
     </div>

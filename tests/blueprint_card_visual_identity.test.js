@@ -634,3 +634,79 @@ describe('a failed row explains itself in the panel', () => {
     expect(el.querySelectorAll('[data-testid="bp-fail-reason"]')).toHaveLength(0);
   });
 });
+
+// ── The card during a run: progress, Stop, and honest controls (2026-07-29) ──
+describe('the card during a run', () => {
+  const CFG = { resourcePlan: [
+    { tool: 'analysis', directive: 'a', uiId: 'analysis-0' },
+    { tool: 'glossary', directive: 'g', uiId: 'glossary-1' },
+    { tool: 'quiz', directive: 'q', uiId: 'quiz-2' },
+  ] };
+  const RUN = { rows: {
+    'analysis-0': { uiId: 'analysis-0', tool: 'analysis', status: 'landed', resourceId: 'r1' },
+    'glossary-1': { uiId: 'glossary-1', tool: 'glossary', status: 'running' },
+    'quiz-2': { uiId: 'quiz-2', tool: 'quiz', status: 'planned' },
+  }, done: false };
+  const mountRunning = (extra = {}) => {
+    host = document.createElement('div');
+    document.body.appendChild(host);
+    root = ReactDOMClient.createRoot(host);
+    act(() => root.render(React.createElement(Card, {
+      config: CFG, run: RUN, isRunning: true, onStopRun: extra.onStopRun || vi.fn(),
+      onUpdate: vi.fn(), onConfirm: vi.fn(), onCancel: vi.fn(),
+    })));
+    return host;
+  };
+
+  it('shows one aggregate progress line with settled/total counts', () => {
+    const el = mountRunning();
+    const p = el.querySelector('[data-testid="bp-run-progress"]');
+    expect(p).toBeTruthy();
+    // 1 landed of 3 rows; running/planned are NOT counted as finished.
+    expect(p.textContent).toContain('1 of 3');
+  });
+
+  it('offers Stop while running and wires the click through', () => {
+    const onStopRun = vi.fn();
+    const el = mountRunning({ onStopRun });
+    const b = el.querySelector('[data-testid="bp-stop-run"]');
+    expect(b).toBeTruthy();
+    expect(b.tagName).toBe('BUTTON');
+    act(() => { b.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(onStopRun).toHaveBeenCalledTimes(1);
+  });
+
+  it('disables Edit Plan and Generate while running', () => {
+    const el = mountRunning();
+    const edit = el.querySelector('[data-help-key="blueprint_edit_toggle_btn"]');
+    const gen = el.querySelector('[data-help-key="blueprint_generate_pack_btn"]');
+    expect(edit.disabled).toBe(true);
+    expect(gen.disabled).toBe(true);
+  });
+
+  it('shows none of it when idle: no progress line, no Stop, controls live', () => {
+    host = document.createElement('div');
+    document.body.appendChild(host);
+    root = ReactDOMClient.createRoot(host);
+    act(() => root.render(React.createElement(Card, {
+      config: CFG, run: RUN, isRunning: false,
+      onUpdate: vi.fn(), onConfirm: vi.fn(), onCancel: vi.fn(),
+    })));
+    expect(host.querySelector('[data-testid="bp-run-progress"]')).toBeNull();
+    expect(host.querySelector('[data-testid="bp-stop-run"]')).toBeNull();
+    expect(host.querySelector('[data-help-key="blueprint_edit_toggle_btn"]').disabled).toBe(false);
+    expect(host.querySelector('[data-help-key="blueprint_generate_pack_btn"]').disabled).toBe(false);
+  });
+
+  it('omits the Stop button when no handler is provided (stale-host safety)', () => {
+    host = document.createElement('div');
+    document.body.appendChild(host);
+    root = ReactDOMClient.createRoot(host);
+    act(() => root.render(React.createElement(Card, {
+      config: CFG, run: RUN, isRunning: true,
+      onUpdate: vi.fn(), onConfirm: vi.fn(), onCancel: vi.fn(),
+    })));
+    expect(host.querySelector('[data-testid="bp-run-progress"]')).toBeTruthy();
+    expect(host.querySelector('[data-testid="bp-stop-run"]')).toBeNull();
+  });
+});

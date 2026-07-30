@@ -203,3 +203,8 @@ desktop-run.log
 
 # Deterministic AlloFlow portable release ZIPs and receipts
 dist/portable-remediation/
+
+# Deploy / preview run logs (build artefacts, never source)
+deploy_run*.log
+skatelab-*.log
+desktop/web-app/firestore-debug.log

@@ -13,7 +13,7 @@
 function UDLGuideModal(props) {
   const {
     InteractiveBlueprintCard, activeBlueprint, addToast, blueprintExecutionResult, setBlueprintExecutionResult,
-    isExecutingBlueprint, archiveLivePlan, archivedPlans, handleRestoreArchivedPlan, handleDeleteArchivedPlan,
+    isExecutingBlueprint, handleStopBlueprintRun, archiveLivePlan, archivedPlans, handleRestoreArchivedPlan, handleDeleteArchivedPlan,
     handleRebuildBlueprintStep,
     lessonTemplates, handleSaveLessonTemplate, handleApplyLessonTemplate, handleDeleteLessonTemplate,
     handlePreviewBlueprintStep, blueprintPreview, closeBlueprintPreview,
@@ -168,6 +168,8 @@ function UDLGuideModal(props) {
                       <InteractiveBlueprintCard
                           config={activeBlueprint}
                           run={blueprintExecutionResult}
+                          isRunning={!!isExecutingBlueprint}
+                          onStopRun={handleStopBlueprintRun}
                           onRebuildStep={handleRebuildBlueprintStep}
                           onSaveTemplate={handleSaveLessonTemplate}
                           onPreviewStep={handlePreviewBlueprintStep}
@@ -341,6 +343,8 @@ function UDLGuideModal(props) {
               <InteractiveBlueprintCard
                   config={activeBlueprint}
                   run={blueprintExecutionResult}
+                  isRunning={!!isExecutingBlueprint}
+                  onStopRun={handleStopBlueprintRun}
                   onRebuildStep={handleRebuildBlueprintStep}
                   onSaveTemplate={handleSaveLessonTemplate}
                   onPreviewStep={handlePreviewBlueprintStep}

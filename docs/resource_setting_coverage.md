@@ -32,10 +32,10 @@ covered, the teacher got nothing. Those three are fixed; the class is what this 
 | `dbq` | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ | ✅ | ❌ |
 | `lesson-plan` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ❌ |
 | `adventure` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `persona` | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| `persona` | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ |
 | `note-taking` | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ |
 | `anchor-chart` | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ |
-| **reaching / 19** | **17** | **18** | **0** | **15** | **12** | **15** | **16** | **13** |
+| **reaching / 19** | **17** | **18** | **0** | **15** | **12** | **15** | **17** | **13** |
 
 ## cloud backend
 
@@ -57,10 +57,10 @@ covered, the teacher got nothing. Those three are fixed; the class is what this 
 | `dbq` | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ | ✅ | ❌ |
 | `lesson-plan` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | `adventure` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `persona` | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
+| `persona` | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ |
 | `note-taking` | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ |
 | `anchor-chart` | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ |
-| **reaching / 19** | **16** | **17** | **1** | **14** | **11** | **14** | **15** | **13** |
+| **reaching / 19** | **16** | **17** | **1** | **14** | **11** | **14** | **16** | **13** |
 
 ## Local/cloud prompt divergence
 

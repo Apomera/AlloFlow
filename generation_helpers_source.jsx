@@ -471,11 +471,13 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
                 ...batchConfig,
                 lessonDNA: lessonDNA,
                 customInstructions: combinedInstructions,
-                historyOverride: currentSessionHistory,
-                // A pack already generates many resources; letting the
-                // differentiation fan-out run inside it would multiply the whole
-                // batch by the number of grade levels.
-                skipDifferentiation: true
+                historyOverride: currentSessionHistory
+                // Differentiation is deliberately NOT suppressed here (Aaron,
+                // 2026-07-29): differentiationTypes is opt-in per resource, so a
+                // pack only multiplies for the types the teacher explicitly
+                // chose — and a teacher who opted the quiz in wants the pack's
+                // quiz differentiated too. The universal panel's cost preview is
+                // the spend disclosure.
             };
             if (type === 'outline' && directive) {
                  const lower = directive.toLowerCase();

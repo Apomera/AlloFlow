@@ -396,6 +396,7 @@ function makeDeps(caseState, currentTypeRef) {
     dbqCustomInstructions: '',
     noteTakingCustomInstructions: '',
     anchorChartCustomInstructions: '',
+    personaCustomInstructions: '',
     sourceTopic: 'Rights and evidence',
     history,
     inputText: SAMPLE_TEXT,
@@ -707,6 +708,9 @@ const CUSTOM_FIELDS = [
   // fields were created.
   'conceptSortCustomInstructions', 'dbqCustomInstructions',
   'noteTakingCustomInstructions', 'anchorChartCustomInstructions',
+  // 2026-07-29: dispatcher persona branch gained a resolver case + interpolation
+  // so pack/guided-retry paths match the panel's handleGeneratePersonas path.
+  'personaCustomInstructions',
   // math has no separate custom-instruction field BY DESIGN — mathInput IS the
   // teacher's instruction channel ("Topic or problem"). Without this the math
   // row read a false ❌ for custom.

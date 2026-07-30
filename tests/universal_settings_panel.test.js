@@ -149,12 +149,26 @@ describe('universal settings panel — wiring', () => {
     }
   });
 
-  it('guards the fan-out against recursion and batch multiplication', () => {
+  it('guards the fan-out against recursion, and packs differentiate opted-in types', () => {
     const dispatcherSrc = readFileSync('generate_dispatcher_source.jsx', 'utf8');
     expect(dispatcherSrc).toContain('!configOverride.grade');
+    // The escape hatch stays available for future batch callers...
     expect(dispatcherSrc).toContain('!configOverride.skipDifferentiation');
-    // Full Pack must opt out, or a pack multiplies by the number of levels.
-    expect(readFileSync('generation_helpers_source.jsx', 'utf8')).toContain('skipDifferentiation: true');
+    // ...but Full Pack deliberately does NOT use it (2026-07-29): the per-type
+    // opt-in already scopes the multiplication to resources the teacher chose,
+    // and a teacher who opted the quiz in wants the pack's quiz differentiated.
+    expect(readFileSync('generation_helpers_source.jsx', 'utf8')).not.toContain('skipDifferentiation: true');
+  });
+
+  it('guided step 0 carries a settings checkpoint into the banner', () => {
+    // Universal settings now govern nearly every resource, so guided mode must
+    // point at them BEFORE the first generation — but as a checkpoint inside
+    // step 0, not a dedicated step that taxes every repeat run (2026-07-30).
+    expect(anti).toContain('openUniversalSettings={openUniversalSettings}');
+    expect(anti).toContain('const openUniversalSettings = ');
+    const banner = readFileSync('view_guided_mode_banner_source.jsx', 'utf8');
+    expect(banner).toContain('guidedStep === 0 && guidedSettingsSummary && openUniversalSettings');
+    expect(banner).toContain("t('guided.settings_adjust')");
   });
 
   it('universal.* strings exist in both ui_strings copies', () => {

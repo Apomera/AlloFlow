@@ -773,6 +773,22 @@ const executeOneBlueprint = async (blueprint, ctx) => {
 // execute. The plan now survives execution (so the teacher can watch its rows),
 // which removes that accidental protection.
 let _blueprintRunInFlight = false;
+// ── Stop button plumbing (2026-07-29) ──
+// executeOneBlueprint has accepted a cooperative abort `signal` since Stage 3,
+// and its loop checks it between steps — but nothing ever CREATED a controller,
+// so the capability was dead. With Cancel correctly disabled mid-run, a teacher
+// who started a nine-step plan with the wrong source had NO exit for up to
+// ~2 minutes per step. Module-scoped for the same reason as the mutex above:
+// this is about THE run in flight, and the card's Stop handler has no access to
+// the executing closure.
+let _blueprintAbortCtl = null;
+const handleStopBlueprintRun = () => {
+    // Aborting is safe at any time: between steps the loop breaks; during a
+    // step the abort lands after the current resource settles (cooperative),
+    // which is why the UI copy says "stopping after this step".
+    try { if (_blueprintAbortCtl) _blueprintAbortCtl.abort(); } catch (_) {}
+    return !!_blueprintAbortCtl;
+};
 const handleExecuteBlueprint = async (deps) => {
   const { gradeLevel, leveledTextLanguage, currentUiLanguage, selectedLanguages, studentInterests, sourceTopic, inputText, history, generatedContent, apiKey, standardsInput, targetStandards, dokLevel, rosterKey, sessionData, user, appId, activeSessionAppId, activeSessionCode, studentNickname, sourceLength, sourceTone, textFormat, fullPackTargetGroup, isAutoConfigEnabled, resourceCount, creativeMode, noText, fillInTheBlank, imageGenerationStyle, imageAspectRatio, useLowQualityVisuals, autoRemoveWords, globalPoints, wizardData, isWizardOpen, standardsLookupRegion, standardsLookupGoal, pdfFixResult, showExportPreview, aiStandardQuery, aiStandardRegion, imageRefinementInput, activeBlueprint, ai, webSearchProvider, alloBotRef, pdfPreviewRef, exportPreviewRef, setError, setIsProcessing, setGenerationStep, setGeneratedContent, setHistory, setActiveView, setActiveSessionCode, setActiveSessionAppId, setStudentNickname, setIsWizardOpen, setShowSourceGen, setSourceTopic, setSourceCustomInstructions, setSourceLength, setSourceTone, setTextFormat, setSelectedLanguages, setGradeLevel, setStandardsInput, setTargetStandards, setDokLevel, setStudentInterests, setSuggestedStandards, setIsLookingUpStandards, setStandardsLookupGoal, setStandardsLookupRegion, setExpandedTools, setShowUDLGuide, setUdlMessages, setGuidedFlowState, setIsRefiningImage, setShowImageRefineModal, setIsExecutingBlueprint, setBlueprintExecutionResult, setShowExportPreview, setInputText, setIsTeacherMode, setIsParentMode, setIsIndependentMode, setActiveSidebarTab, setDoc, setSessionData, setShowSessionModal, setImageRefinementInput, setIsFindingStandards, setShowWizard, setSourceLevel, setSourceVocabulary, setIncludeSourceCitations, setLeveledTextLanguage, setActiveBlueprint, setPersistedLessonDNA, addToast, t, warnLog, debugLog, callGemini, callGeminiVision, callImagen, callGeminiImageEdit, cleanJson, safeJsonParse, sanitizeTruncatedCitations, normalizeResourceLinks, flyToElement, getDefaultTitle, storageDB, updateDoc, doc, db, playSound, playAdventureEventSound, generateSessionCode, stripUndefined, uploadSessionAssets, safeSetItem, handleGenerateSource, applyDetailedAutoConfig, handleGenerate, fileInputRef } = deps;
   try { if (window._DEBUG_PHASE_O) console.log("[PhaseO] handleExecuteBlueprint fired"); } catch(_) {}
@@ -854,9 +870,13 @@ const handleExecuteBlueprint = async (deps) => {
             addToast(t('blueprint.no_source_warning')
                 || 'No source text yet, so some resources may not generate. Add or generate a source first for best results.', 'warning');
         }
-        const { dnaOut, nulls, failedRows } = await executeOneBlueprint(activeBlueprint, {
+        // The controller outlives this closure via the module slot so the card's
+        // Stop button (which runs in a different call stack) can reach it.
+        _blueprintAbortCtl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+        const { items: _landedItems, dnaOut, nulls, failedRows } = await executeOneBlueprint(activeBlueprint, {
             handleGenerate,
             warnLog,   // routes step diagnostics through the in-app log, not bare console
+            signal: _blueprintAbortCtl ? _blueprintAbortCtl.signal : null,
             historyOverride: [...history],
             dna: lessonDNA,                       // mutated in place — faithful to the original loop
             initialSourceText: currentSourceText,
@@ -891,7 +911,34 @@ const handleExecuteBlueprint = async (deps) => {
             }
         });
         setPersistedLessonDNA(dnaOut);            // dnaOut === lessonDNA (same object)
-        if (Array.isArray(nulls) && nulls.length > 0) {
+        // ── Stopped by the teacher? ──
+        // The loop exits QUIETLY on abort (a break, not a throw), so without
+        // this branch a stopped run would fall through to the "Done — N
+        // resources" message — reporting success for work that never ran. Rows
+        // never reached stay 'planned'/'running'; demote them to 'interrupted'
+        // exactly like the crash path does, so each gets its Rebuild button
+        // instead of a spinner that never resolves.
+        const _wasStopped = !!(_blueprintAbortCtl && _blueprintAbortCtl.signal && _blueprintAbortCtl.signal.aborted);
+        if (_wasStopped) {
+            setBlueprintExecutionResult(prev => {
+                if (!prev || !prev.rows) return prev;
+                const rows = {};
+                Object.keys(prev.rows).forEach(k => {
+                    const r = prev.rows[k];
+                    rows[k] = (r && (r.status === 'running' || r.status === 'planned'))
+                        ? Object.assign({}, r, { status: 'interrupted' }) : r;
+                });
+                return Object.assign({}, prev, { rows: rows, done: true, stopped: true });
+            });
+            // COUNT LANDED ITEMS, not total-minus-failed: rows the stop never
+            // reached are in neither list, so `total - nulls.length` would
+            // claim unreached rows as finished.
+            const _doneCount = Array.isArray(_landedItems) ? _landedItems.length : 0;
+            const stopMsg = t('blueprint.run_stopped', { done: _doneCount, total: finalResources.length })
+                || `Stopped. ${_doneCount} of ${finalResources.length} resources were finished before the stop — the rest show Rebuild so you can run them individually or restart the plan.`;
+            addToast(stopMsg, 'info');
+            setUdlMessages(prev => [...prev, { role: 'model', text: stopMsg }]);
+        } else if (Array.isArray(nulls) && nulls.length > 0) {
             // Name the ROW, not just the tool. `nulls` is a flat list of tool
             // names, so a plan with two image steps reported "image, image" and
             // the teacher could not tell which one to rebuild. failedRows
@@ -945,6 +992,7 @@ const handleExecuteBlueprint = async (deps) => {
         });
     } finally {
         _blueprintRunInFlight = false;
+        _blueprintAbortCtl = null;   // a Stop pressed after this is a harmless no-op
         setIsProcessing(false);
         setIsExecutingBlueprint(false);
         setBlueprintExecutionResult(prev => prev ? Object.assign({}, prev, { done: true }) : prev);
@@ -1013,5 +1061,6 @@ window.AlloModules.PhaseOHandlers = {
   handleWizardStandardLookup,
   handleExecuteBlueprint,
   handleRebuildBlueprintStep,
+  handleStopBlueprintRun,   // aborts the in-flight run's controller; no-op between runs
   executeOneBlueprint,   // exposed for the Generate-Unit driver (runs it once per lesson)
 };

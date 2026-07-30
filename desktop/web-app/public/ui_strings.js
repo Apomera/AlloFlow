@@ -89,6 +89,12 @@
     "available_languages": "Available languages"
   },
   "guided": {
+    "settings_checkpoint_label": "Class settings",
+    "settings_adjust": "Adjust",
+    "settings_adjust_aria": "Review and adjust universal settings before generating",
+    "step_cost_differentiated": "Differentiation is on: this step will generate {n} grade-level versions.",
+    "summary_emoji": "emoji support",
+    "lesson_brief_settings": "Settings",
     "indicator_title": "Guided Mode",
     "step_of": "Step {current} of {total}",
     "phase_context": "Guided phase",
@@ -9301,6 +9307,11 @@
   },
   "blueprint": {
     "header": "Lesson Blueprint",
+    "run_stopped": "Stopped. {done} of {total} resources were finished before the stop — the rest show Rebuild so you can run them individually or restart the plan.",
+    "progress_line": "Building — {done} of {total} steps finished",
+    "stop_run": "Stop after this step",
+    "stop_run_hint": "Finishes the step in progress, then stops. Finished resources are kept.",
+    "wait_for_run": "Wait for the run to finish (or stop it) before editing.",
     "fail_threw": "This step hit an error.",
     "fail_empty": "This step produced nothing. Most often there is no source text yet — add or generate a source, then rebuild.",
     "what_is_this": "What does this resource do?",

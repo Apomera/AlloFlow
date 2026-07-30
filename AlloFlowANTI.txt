@@ -9713,6 +9713,14 @@ Return ONLY JSON:
   const [guidedEngaged, setGuidedEngaged] = useState(false); // has the teacher interacted with the current step's tool?
   useEffect(() => {
     if (guidedMode && guidedStep === 0 && inputText && inputText.trim().length > 20 && guidedActiveSteps.length > 1) {
+      // Convenience skip for teachers who pasted text before entering guided
+      // mode — but ONLY once they have completed a guided run before. A
+      // first-run teacher must keep step 0 on screen long enough to see the
+      // settings checkpoint; auto-advancing in 1.5s made it flash and vanish
+      // on exactly the paste-first entry path (2026-07-30).
+      let hasPriorRun = false;
+      try { hasPriorRun = !!localStorage.getItem('allo_guided_last_completion'); } catch (_) {}
+      if (!hasPriorRun) return;
       const advanceTimer = setTimeout(() => setGuidedStep(1), 1500);
       return () => clearTimeout(advanceTimer);
     }
@@ -33324,6 +33332,68 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
   // plan captures so a later user action can't swap it out from under the
   // undo. One level deep — a new plan run overwrites it.
   const _planUndoRef = useRef(null);
+  // Guided-mode delivery helpers. COMPONENT scope on purpose: they are used by
+  // render JSX (guided banner props + the "Create Homework QR" button) AND by
+  // the AlloBot command context below. Defining them inside _alloCmdCtx crashed
+  // every render with "createGuidedHomeworkShare is not defined" (2026-07-29).
+  const latestStudentPreviewShare = (qrShareModal && qrShareModal.url) ? qrShareModal : ((Array.isArray(recentQrShares) && recentQrShares.find((share) => share && share.url)) || null);
+  const createGuidedHomeworkShare = async () => {
+    const share = await createHomeworkAssignmentLink();
+    if (share) completeGuidedDelivery('shareCreated');
+    return share;
+  };
+  const previewGuidedStudentAssignment = () => {
+    if (!latestStudentPreviewShare) {
+      addToast('Create a homework or mailbox link first, then test it as a student.', 'info');
+      return false;
+    }
+    const opened = openStudentQrPreview(latestStudentPreviewShare.url, 'homework link as a student');
+    if (opened) completeGuidedDelivery('studentPreviewed');
+    return opened;
+  };
+  // Guided-mode transparency props (2026-07-29). Both feed GuidedModeBanner:
+  //  - guidedStepCostNote: when the CURRENT step's resource type is opted into
+  //    differentiation, say so BEFORE the teacher clicks generate — a step that
+  //    silently runs 3x is a cost surprise inside a flow promising one artifact.
+  //  - guidedSettingsSummary: the universal settings a plan will generate under,
+  //    shown in the lesson brief so the plan's contract is explicit.
+  const _guidedDiffLevelCount = (() => {
+    if (differentiationRange === 'None') return 1;
+    if (differentiationRange === 'Custom') return new Set(differentiationCustomGrades || []).size + 1;
+    if (differentiationRange === 'Both') return 5;
+    return 3;
+  })();
+  const guidedStepCostNote = (() => {
+    const stepId = guidedActiveSteps[guidedStep]?.id;
+    if (!stepId || differentiationRange === 'None' || _guidedDiffLevelCount <= 1) return '';
+    const types = Array.isArray(differentiationTypes) ? differentiationTypes : ['simplified'];
+    if (!types.includes(stepId)) return '';
+    return (t('guided.step_cost_differentiated') || 'Differentiation is on: this step will generate {n} grade-level versions.').replace('{n}', String(_guidedDiffLevelCount));
+  })();
+  const guidedSettingsSummary = [
+    gradeLevel,
+    leveledTextLanguage,
+    dokLevel ? dokLevel.split(':')[0] : null,
+    targetStandards.length > 0 ? `${targetStandards.length} ${t('universal.summary_standards') || 'standards'}` : null,
+    studentInterests.length > 0 ? `${studentInterests.length} ${t('universal.summary_interests') || 'interests'}` : null,
+    useEmojis ? (t('guided.summary_emoji') || 'emoji support') : null,
+  ].filter(Boolean).join(' · ');
+  // Settings checkpoint for guided step 0 (Aaron, 2026-07-30): universal
+  // settings now govern nearly every generated resource, so walking guided mode
+  // on the factory defaults (3rd Grade, English, no standards) silently shapes
+  // the whole lesson. A dedicated step would tax every repeat run; instead the
+  // banner shows the summary during the FIRST step with this one-click opener.
+  const openUniversalSettings = () => {
+    setActiveSidebarTab('create');
+    setIsUniversalSettingsOpen(true);
+    setTimeout(() => {
+      const card = document.getElementById('tour-universal-settings');
+      if (!card) return;
+      card.scrollIntoView({ behavior: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+      const btn = card.querySelector('button');
+      if (btn?.focus) btn.focus({ preventScroll: true });
+    }, 120);
+  };
   const _alloCmdCtx = () => {
     const commandAudience = (isStudentLinkMode || !isTeacherMode)
       ? 'student'
@@ -33393,21 +33463,12 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       ? generatedContent.data.findIndex((activity) => activity && activity.title && !(activity.rubric && Array.isArray(activity.rubric.criteria) && activity.rubric.criteria.length))
       : -1;
     const latestResumableWork = (Array.isArray(history) ? history.slice().reverse() : []).find((item) => item && item.id && item.type && (commandAudience !== 'student' || !TEACHER_ONLY_TYPES.includes(item.type))) || null;
-    const latestStudentPreviewShare = (qrShareModal && qrShareModal.url) ? qrShareModal : ((Array.isArray(recentQrShares) && recentQrShares.find((share) => share && share.url)) || null);
-    const createGuidedHomeworkShare = async () => {
-      const share = await createHomeworkAssignmentLink();
-      if (share) completeGuidedDelivery('shareCreated');
-      return share;
-    };
-    const previewGuidedStudentAssignment = () => {
-      if (!latestStudentPreviewShare) {
-        addToast('Create a homework or mailbox link first, then test it as a student.', 'info');
-        return false;
-      }
-      const opened = openStudentQrPreview(latestStudentPreviewShare.url, 'homework link as a student');
-      if (opened) completeGuidedDelivery('studentPreviewed');
-      return opened;
-    };
+    // latestStudentPreviewShare / createGuidedHomeworkShare /
+    // previewGuidedStudentAssignment moved to COMPONENT scope (above) —
+    // they were defined here but referenced from render JSX (the guided
+    // banner props and the "Create Homework QR" button), which threw
+    // "createGuidedHomeworkShare is not defined" and crashed the whole app
+    // to the error boundary. The ctx below still sees them via closure.
     const ctx = {
       t, addToast, callGemini, commandAudience,
       setShowEducatorHub, setShowLearningHub, openExportPreview, setShowWizard,
@@ -34682,13 +34743,19 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       if (Array.isArray(res.items) && res.items.length) anchorItem = res.items.find(it => it && it.type === 'lesson-plan') || res.items[res.items.length - 1];
       return { items: res.items, dnaOut: res.dnaOut, anchorItem, nulls: res.nulls };
   };
+  // Auto-config writes settings that now live in the (collapsed by default)
+  // Universal Settings card. Open it when a plan applies, so what the plan
+  // chose is visible instead of silently landing behind a closed disclosure.
   const autoConfigureSettings = async (text, grade, standards, language, customInput, existingResources = [], targetCount = 'Auto') => {
     const _m = window.AlloModules && window.AlloModules.PhaseKHelpers;
-    if (_m && typeof _m.autoConfigureSettings === "function") return _m.autoConfigureSettings(text, grade, standards, language, customInput, existingResources, targetCount, _alloPhaseKHelpersDeps());
+    if (_m && typeof _m.autoConfigureSettings === "function") { setIsUniversalSettingsOpen(true); return _m.autoConfigureSettings(text, grade, standards, language, customInput, existingResources, targetCount, _alloPhaseKHelpersDeps()); }
     throw new Error("[autoConfigureSettings] PhaseKHelpers module not loaded - reload the page");
   };
   const applyDetailedAutoConfig = (config) => {
     if (!config) return;
+    // Same visibility rule as autoConfigureSettings above: several of the
+    // fields written below (DoK, visual style) surface in the Universal card.
+    setIsUniversalSettingsOpen(true);
     if (config.glossaryConfig) {
         if (config.glossaryConfig.tier2) setGlossaryTier2Count(config.glossaryConfig.tier2);
         if (config.glossaryConfig.tier3) setGlossaryTier3Count(config.glossaryConfig.tier3);
@@ -34758,6 +34825,16 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       return _m.handleRebuildBlueprintStep({ ..._alloPhaseOHandlersDeps(), activeBlueprint, blueprintExecutionResult }, uiId);
     }
     throw new Error("[handleRebuildBlueprintStep] PhaseOHandlers module not loaded - reload the page");
+  };
+  // Stops the in-flight blueprint run. Cooperative: the executor checks the
+  // abort signal between steps, so the current resource finishes and every
+  // unreached row is demoted to interrupted (each with its Rebuild button).
+  // Safe when nothing is running - the module ignores a stop with no
+  // controller - and safe when the module has not loaded (typeof guard).
+  const handleStopBlueprintRun = () => {
+    const _m = window.AlloModules && window.AlloModules.PhaseOHandlers;
+    if (_m && typeof _m.handleStopBlueprintRun === "function") return _m.handleStopBlueprintRun();
+    return false;
   };
   const _escapeRoomEngineRef = { current: null };
   const _getEscapeRoomEngine = () => {
@@ -34989,6 +35066,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
         dbqCustomInstructions,
         noteTakingCustomInstructions,
         anchorChartCustomInstructions,
+        personaCustomInstructions,
         creativeMode,
         faqCount,
         glossaryDefinitionLevel,
@@ -39659,7 +39737,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       })}
         {/* ── UDL Guide Modal — extracted to view_misc_modals_module.js (CDN) ── */}
         {(showUDLGuide) && window.AlloModules && window.AlloModules.UDLGuideModal && React.createElement(window.AlloModules.UDLGuideModal, {
-          InteractiveBlueprintCard, activeBlueprint, addToast, blueprintExecutionResult, setBlueprintExecutionResult, isExecutingBlueprint, handleRebuildBlueprintStep, handlePreviewBlueprintStep, blueprintPreview, closeBlueprintPreview, lessonTemplates, archivedPlans, handleRestoreArchivedPlan, handleDeleteArchivedPlan, archiveLivePlan, handleSaveLessonTemplate, handleApplyLessonTemplate, handleDeleteLessonTemplate, aiStandardQuery,
+          InteractiveBlueprintCard, activeBlueprint, addToast, blueprintExecutionResult, setBlueprintExecutionResult, isExecutingBlueprint, handleStopBlueprintRun, handleRebuildBlueprintStep, handlePreviewBlueprintStep, blueprintPreview, closeBlueprintPreview, lessonTemplates, archivedPlans, handleRestoreArchivedPlan, handleDeleteArchivedPlan, archiveLivePlan, handleSaveLessonTemplate, handleApplyLessonTemplate, handleDeleteLessonTemplate, aiStandardQuery,
           aiStandardRegion, autoSendVoice, chatStyles, handleAutoFillToggle, handleBlueprintUIUpdate,
           handleExecuteBlueprint, handleFindStandards, handleSendUDLMessage, handleSetShowUDLGuideToFalse, handleToggleAutoSendVoice,
           handleToggleIsShowMeMode, handleToggleIsUDLGuideExpanded, hasUsedAutoFill, isAutoFillMode, isChatProcessing,
@@ -39710,7 +39788,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             style={{ width: isWide ? `${leftWidth}%` : '100%', height: '100%' }}
         >
           {isTeacherMode && <SidebarTabsNav activeSidebarTab={activeSidebarTab} handleSetActiveSidebarTabToCreate={handleSetActiveSidebarTabToCreate} isHistoryPulsing={isHistoryPulsing} setActiveSidebarTab={setActiveSidebarTab} setIsHistoryPulsing={setIsHistoryPulsing} t={t} />}
-          {guidedMode && <GuidedModeBanner GUIDED_STEPS={guidedActiveSteps} allGuidedSteps={GUIDED_STEPS} guidedSelectedIds={guidedSelectedIds} toggleGuidedStepId={toggleGuidedStepId} GUIDED_TOUR_MAP={GUIDED_TOUR_MAP} guidedStep={guidedStep} guidedEngaged={guidedEngaged} handleExitGuidedMode={handleExitGuidedMode} handleGuidedSkip={handleGuidedSkip} setGuidedStep={setGuidedStep} setShowGuidedTip={setShowGuidedTip} showGuidedTip={showGuidedTip} t={t} tourSteps={tourSteps} history={history} getDefaultTitle={getDefaultTitle} inputText={inputText} setInputText={setInputText} guidedCompletedIds={guidedCompletedIds} guidedSkippedIds={guidedSkippedIds} guidedCreatedHistoryIds={guidedCreatedHistoryIds} wordSoundsHistory={wordSoundsHistory} currentUiLanguage={currentUiLanguage} markGuidedStepDone={markGuidedStepDone} resetGuidedProgress={resetGuidedProgress} guidedPresets={GUIDED_PRESETS} applyGuidedPreset={applyGuidedPreset} applyGuidedPlanToRemaining={applyGuidedPlanToRemaining} generateGuidedPlanFromGoal={generateGuidedPlanFromGoal} guidedPhases={GUIDED_PHASES} guidedDeliveryGroups={GUIDED_DELIVERY_GROUPS} openGuidedDocumentBuilder={() => openExportPreview('print')} createGuidedHomeworkShare={createGuidedHomeworkShare} startGuidedLiveSession={() => setShowSessionStartOptions(true)} canPreviewGuidedStudentAssignment={!!latestStudentPreviewShare} previewGuidedStudentAssignment={previewGuidedStudentAssignment} guidedDeliveryEvidence={guidedDeliveryEvidence} guidedPlanBrief={guidedPlanBrief} guidedStepError={guidedStepError} retryGuidedStep={retryGuidedStep} isGuidedRetrying={isProcessing || isGeneratingPersona || isGeneratingSource || isExtracting} openGuidedHistoryItem={handleRestoreView} guidedAutoAdvance={guidedAutoAdvance} setGuidedAutoAdvance={setGuidedAutoAdvance} handleCompleteGuidedMode={handleCompleteGuidedMode} handleGuidedJump={handleGuidedJump} focusGuidedTarget={focusGuidedTarget} processingProgress={processingProgress} generationStep={generationStep} guidedProviderProfile={String(ai?.backend || ai?.textBackend || ai?.provider || 'default')} />}
+          {guidedMode && <GuidedModeBanner GUIDED_STEPS={guidedActiveSteps} allGuidedSteps={GUIDED_STEPS} guidedSelectedIds={guidedSelectedIds} toggleGuidedStepId={toggleGuidedStepId} GUIDED_TOUR_MAP={GUIDED_TOUR_MAP} guidedStep={guidedStep} guidedEngaged={guidedEngaged} handleExitGuidedMode={handleExitGuidedMode} handleGuidedSkip={handleGuidedSkip} setGuidedStep={setGuidedStep} setShowGuidedTip={setShowGuidedTip} showGuidedTip={showGuidedTip} t={t} tourSteps={tourSteps} history={history} getDefaultTitle={getDefaultTitle} inputText={inputText} setInputText={setInputText} guidedCompletedIds={guidedCompletedIds} guidedSkippedIds={guidedSkippedIds} guidedCreatedHistoryIds={guidedCreatedHistoryIds} wordSoundsHistory={wordSoundsHistory} currentUiLanguage={currentUiLanguage} markGuidedStepDone={markGuidedStepDone} resetGuidedProgress={resetGuidedProgress} guidedPresets={GUIDED_PRESETS} applyGuidedPreset={applyGuidedPreset} applyGuidedPlanToRemaining={applyGuidedPlanToRemaining} generateGuidedPlanFromGoal={generateGuidedPlanFromGoal} guidedPhases={GUIDED_PHASES} guidedDeliveryGroups={GUIDED_DELIVERY_GROUPS} openGuidedDocumentBuilder={() => openExportPreview('print')} createGuidedHomeworkShare={createGuidedHomeworkShare} startGuidedLiveSession={() => setShowSessionStartOptions(true)} canPreviewGuidedStudentAssignment={!!latestStudentPreviewShare} previewGuidedStudentAssignment={previewGuidedStudentAssignment} guidedDeliveryEvidence={guidedDeliveryEvidence} guidedPlanBrief={guidedPlanBrief} guidedStepCostNote={guidedStepCostNote} guidedSettingsSummary={guidedSettingsSummary} openUniversalSettings={openUniversalSettings} guidedStepError={guidedStepError} retryGuidedStep={retryGuidedStep} isGuidedRetrying={isProcessing || isGeneratingPersona || isGeneratingSource || isExtracting} openGuidedHistoryItem={handleRestoreView} guidedAutoAdvance={guidedAutoAdvance} setGuidedAutoAdvance={setGuidedAutoAdvance} handleCompleteGuidedMode={handleCompleteGuidedMode} handleGuidedJump={handleGuidedJump} focusGuidedTarget={focusGuidedTarget} processingProgress={processingProgress} generationStep={generationStep} guidedProviderProfile={String(ai?.backend || ai?.textBackend || ai?.provider || 'default')} />}
           {isTeacherMode && <UDLGuideButton handleToggleShowUDLGuide={handleToggleShowUDLGuide} showUDLGuide={showUDLGuide} t={t} />}
           {isTeacherMode && activeSidebarTab === 'create' && (
           <div style={{display: isGuidedToolVisible('source-input') ? undefined : 'none'}} id="tour-input-panel" data-help-key="source_input" className={`bg-white rounded-3xl shadow-indigo-500/10 border transition-all overflow-hidden shrink-0 ${activeView === 'input' ? 'border-indigo-600 shadow-indigo-500/20' : 'border-slate-200 hover:border-indigo-200'}`}>

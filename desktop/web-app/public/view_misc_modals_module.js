@@ -55,6 +55,7 @@ function UDLGuideModal(props) {
     blueprintExecutionResult,
     setBlueprintExecutionResult,
     isExecutingBlueprint,
+    handleStopBlueprintRun,
     archiveLivePlan,
     archivedPlans,
     handleRestoreArchivedPlan,
@@ -238,6 +239,8 @@ function UDLGuideModal(props) {
     {
       config: activeBlueprint,
       run: blueprintExecutionResult,
+      isRunning: !!isExecutingBlueprint,
+      onStopRun: handleStopBlueprintRun,
       onRebuildStep: handleRebuildBlueprintStep,
       onSaveTemplate: handleSaveLessonTemplate,
       onPreviewStep: handlePreviewBlueprintStep,
@@ -335,6 +338,8 @@ function UDLGuideModal(props) {
     {
       config: activeBlueprint,
       run: blueprintExecutionResult,
+      isRunning: !!isExecutingBlueprint,
+      onStopRun: handleStopBlueprintRun,
       onRebuildStep: handleRebuildBlueprintStep,
       onSaveTemplate: handleSaveLessonTemplate,
       onPreviewStep: handlePreviewBlueprintStep,
