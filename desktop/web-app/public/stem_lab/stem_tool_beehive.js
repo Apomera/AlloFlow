@@ -2656,6 +2656,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     // dead, having been congratulated for it. Leaving enough to get to goldenrod is the actual
     // late-summer decision a beekeeper makes.
     seasonReserve: [18, 25, 60, 45],
+    // Winterizing (wrap + insulation + mouse guard) is autumn work whose whole point is the
+    // honey it saves. Real wrapping trials show meaningful but not dramatic savings, so ~18% off
+    // consumption and ~20% off cold mortality: enough to matter, not enough to replace stores.
+    winterizedConsumeMult: 0.82,
+    winterizedMortalityMult: 0.8,
     droneEvictionRate: 0.1,       // autumn drone eviction
     droneBaseMortality: 0.02,
     droneBirthRate: 0.05,         // fraction of newBrood that become drones (non-autumn/winter)
@@ -2745,13 +2750,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     var foragers = Math.round(workers * P.foragerRatio);
     var nectarIn = foragers * P.nectarPerForager * forageMult * eff * sub.honey * site.forage;
     var pollenIn = foragers * P.pollenPerForager * forageMult * eff * site.forage;
-    var honeyOut = workers * P.honeyConsumePerWorker * sf.consumeRate;
+    // A wrapped, insulated hive with a mouse guard burns less honey holding the cluster at
+    // temperature and loses fewer bees to cold — which is the margin between 60 lbs of stores
+    // being enough and not. Only applies in the cold half of the year; wrapping in June would
+    // trap heat and moisture, which is why the action itself refuses before autumn.
+    var winterized = !!s.winterized && season >= 2;
+    var honeyOut = workers * P.honeyConsumePerWorker * sf.consumeRate * (winterized ? P.winterizedConsumeMult : 1);
     var pollenOut = (brood * P.pollenConsumePerBrood + workers * P.pollenConsumePerWorker) * sf.consumeRate;
     var broodMod = season === 0 ? sub.spring : 1.0;
     var newBrood = Math.round(queenHealth / 100 * P.baseBroodPerDay * sf.broodRate * broodMod);
     var emerging = Math.round(brood * P.broodEmergeRate);
     var winterMod = season === 3 ? (1 / sub.winter) : 1.0;
-    var dying = Math.round(workers * P.baseWorkerMortality * sf.mortMult * winterMod * (1 + varroa / P.varroaMortalityDivisor));
+    var dying = Math.round(workers * P.baseWorkerMortality * sf.mortMult * winterMod
+      * (winterized ? P.winterizedMortalityMult : 1) * (1 + varroa / P.varroaMortalityDivisor));
     var dyingD = season === 2 ? Math.round(drones * P.droneEvictionRate) : Math.round(drones * P.droneBaseMortality);
     var vGrow = brood > 0 ? P.varroaGrowthBase * (1 + brood / P.varroaGrowthPerBrood) * sub.varroa : P.varroaDecayNoBrood;
     var nv = Math.max(0, Math.min(100, varroa + vGrow));
@@ -2871,6 +2882,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       starveBroodLost: starveBrood,
       lowStores: honeyAfter > 0 && honeyAfter < P.lowStoreThreshold,
       inDearth: inDearth,
+      winterized: winterized,
       seasonReserve: (P.seasonReserve || [])[season],
       flowerVisits: flowerVisits
     };
@@ -3686,8 +3698,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             activeEvent: _r.event || activeEvent, // preserve an unresolved event
             score: score + nx.scoreGain, actionPoints: 3,
             habitat: nx.habitat, pesticideExposure: nx.pesticideExposure, capacity: nx.capacity,
-            totalHoney: totalHoney + nx.honeyGain,
+            // GROSS, not net. honeyGain became the change in stores on 2026-07-30, and feeding it
+            // here would make "total honey produced" fall during a dearth — it gates the
+            // produce_honey badge, so the badge would have un-earned itself.
+            totalHoney: Math.round((totalHoney + nx.honeyGrossIn) * 10) / 10,
             totalFlowerVisits: (d.totalFlowerVisits || 0) + nx.flowerVisits,
+            // Surfaced so the UI can say a dearth is on. Nothing consumed this before, which made
+            // the flow shutting off look like a bug rather than a season.
+            inDearth: !!nx.inDearth,
             history: newHistory, journal: newJournal, diseaseRisk: nx.diseaseRisk,
             lastAdvance: { fromDay: day, toDay: nx.day, days: 1, workers: nx.workers - workers, honey: Math.round((nx.honey - honey) * 10) / 10, varroa: Math.round((nx.varroaLevel - varroaLevel) * 10) / 10, morale: Math.round((nx.morale - morale) * 10) / 10, stoppedForEvent: !!_r.event }
           });
@@ -3744,7 +3762,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               b.diseaseRisk = bnx.diseaseRisk;
               b.score = (b.score || 0) + bnx.scoreGain;
               b.actionPoints = 3;
-              b.totalHoney = (b.totalHoney || 0) + bnx.honeyGain;
+              // GROSS, matching the single-day path: honeyGain is now the change in stores, and
+              // accumulating it here would let "total honey produced" fall during a dearth.
+              b.totalHoney = Math.round(((b.totalHoney || 0) + bnx.honeyGrossIn) * 10) / 10;
+              b.inDearth = !!bnx.inDearth;
               b.totalFlowerVisits = (b.totalFlowerVisits || 0) + bnx.flowerVisits;
               daysAdvanced++;
               if (_br.event) { b.activeEvent = _br.event; stoppedForEvent = true; } // sticky until resolved
@@ -3957,6 +3978,66 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           if (awardStemXP) awardStemXP('beehive', 15, 'Harvested ' + varietal.name);
           triggerBeekeeperAction('harvest', 'Harvesting ' + varietal.name + ' honey — ' + harvested + ' lbs!', varietal.emoji || '🍯');
         }
+        // ── Split the colony ──────────────────────────────────────────────────
+        // The textbook alternative to letting a crowded hive swarm, and the main way beekeepers
+        // make increase. The crowding mechanic already existed (workers vs capacity drives the
+        // swarm gate) but the only responses were "add a super" or "lose half your bees" — the
+        // real third option was missing. Splitting costs population and this year's honey crop and
+        // buys swarm safety, a mite reduction (mites leave with the bees and the brood break
+        // interrupts their cycle), and a second colony. That is a genuine trade, not a free win.
+        function splitColony() {
+          var minToSplit = 18000;
+          if (workers < minToSplit) {
+            playSfx(sfxBeeWaggle);
+            if (addToast) addToast('Too small to split. A colony needs about ' + minToSplit.toLocaleString() + ' workers so both halves can survive; this one has ' + workers.toLocaleString() + '.', 'info');
+            return;
+          }
+          if (season >= 2) {
+            playSfx(sfxBeeWaggle);
+            if (addToast) addToast('Too late in the year to split. Both halves would go into winter too weak to survive — split in spring or early summer.', 'info');
+            return;
+          }
+          if (!apAction(2, 'Split Colony', function(b) {
+            var bw = typeof b.workers === 'number' ? b.workers : 10000;
+            var bb = typeof b.brood === 'number' ? b.brood : 3000;
+            b.workers = Math.round(bw * 0.58);   // the parent keeps rather more than half
+            b.brood = Math.round(bb * 0.6);
+            b.varroaLevel = Math.max(0, Math.round((typeof b.varroaLevel === 'number' ? b.varroaLevel : 5) * 0.65 * 10) / 10);
+            b.queenHealth = 100;                 // the split raises a new queen; parent keeps the old
+            b.morale = Math.min(100, (typeof b.morale === 'number' ? b.morale : 80) + 4);
+            b.splitsMade = (b.splitsMade || 0) + 1;
+          })) return;
+          playSfx(sfxSuccess);
+          if (addToast) addToast('🧰 Split made. The parent hive keeps about 58% of its bees and its mite load drops with them — expect little surplus honey from this colony this year.', 'success');
+          if (awardStemXP) awardStemXP('beehive', 12, 'Split a colony');
+          triggerBeekeeperAction('split', 'Moving frames of brood and bees into a second box.', '🧰');
+        }
+
+        // ── Winterize ─────────────────────────────────────────────────────────
+        // Only became a real decision once winter starvation had consequences. Wrapping, insulating
+        // and fitting a mouse guard is autumn work that cuts how much a cluster burns to stay warm,
+        // which is exactly the margin between 60 lbs being enough and not. Gated to autumn/winter
+        // because doing it in June would cook the colony, which is a real mistake worth naming.
+        function winterizeHive() {
+          if (season < 2) {
+            playSfx(sfxBeeWaggle);
+            if (addToast) addToast('Not yet. Wrapping a hive in summer traps heat and moisture — the colony needs ventilation now, not insulation. Winterize in autumn.', 'info');
+            return;
+          }
+          if (d.winterized) { if (addToast) addToast('Already winterized: wrap, insulation and mouse guard are on.', 'info'); return; }
+          if (!apAction(2, 'Winterize', function(b) {
+            b.winterized = true;
+            b.morale = Math.min(100, (typeof b.morale === 'number' ? b.morale : 80) + 6);
+            // The actual effect lives in bhStepColony, which reads s.winterized and cuts winter
+            // consumption and cold mortality. Nudging foragingEfficiency here instead would have
+            // been decorative: winter forageMult is 0, so it multiplies to nothing.
+          })) return;
+          playSfx(sfxSuccess);
+          if (addToast) addToast('🧣 Winterized: hive wrapped, insulation over the cluster, mouse guard fitted. The colony will burn less honey holding brood temperature.', 'success');
+          if (awardStemXP) awardStemXP('beehive', 8, 'Winterized the hive');
+          triggerBeekeeperAction('winterize', 'Wrapping the hive and fitting the mouse guard.', '🧣');
+        }
+
         function feedBees() {
           if (!apAction(1, 'Feed Bees', function(b) {
             b.honey = Math.round(((typeof b.honey === 'number' ? b.honey : 20) + 5) * 10) / 10;
@@ -21658,6 +21739,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           viewMode === 'beekeeper' && colonySurvived && renderColonyForecast(),
 
           viewMode === 'beekeeper' && colonySurvived && h('div', { className: 'space-y-2' },
+            // ── Forage conditions banner ────────────────────────────────────
+            // The simulation gained a summer dearth (days 52-62: the flow stops between the main
+            // bloom and goldenrod) and NOTHING told the player. Stores falling while the colony is
+            // at its biggest reads as a bug unless the game says a dearth is on, so this names the
+            // condition and the move it calls for. role=status so it is announced, not just seen.
+            (function() {
+              var dearthNow = !!d.inDearth;
+              var light = honey > 0 && honey < (SIMULATION_PARAMS.lowStoreThreshold || 8);
+              if (!dearthNow && !light) return null;
+              var msg = dearthNow
+                ? 'Dearth: the spring flow is over and goldenrod has not started. Almost nothing is coming in, and the colony is at its hungriest. Stores will fall — feed if they get light, and do not harvest now.'
+                : 'Stores are light. The colony has ' + honey + ' lbs. Feed before it runs out; a starving colony abandons brood first.';
+              return h('div', {
+                role: 'status', 'aria-live': 'polite', 'data-beehive-forage-banner': dearthNow ? 'dearth' : 'light',
+                className: 'flex items-start gap-2 rounded-xl border px-3 py-2 text-[11px] leading-relaxed font-semibold '
+                  + (dearthNow
+                    ? (dk ? 'border-amber-600/50 bg-amber-950/40 text-amber-200' : 'border-amber-300 bg-amber-50 text-amber-900')
+                    : (dk ? 'border-red-600/50 bg-red-950/40 text-red-200' : 'border-red-300 bg-red-50 text-red-900'))
+              },
+                h('span', { 'aria-hidden': 'true', className: 'text-base leading-none' }, dearthNow ? '🌾' : '⚠'),
+                h('span', null, msg));
+            })(),
             // Primary actions row
             h('div', { className: 'flex gap-2 items-center' },
               h('button', { onClick: advanceDay, className: 'flex-1 py-2.5 rounded-xl font-bold text-sm text-white shadow-sm transition-all hover:shadow-md hover:scale-[1.01] ' + (dk ? 'bg-gradient-to-r from-amber-700 to-amber-600 hover:from-amber-600 hover:to-amber-500' : 'bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-700 hover:to-amber-600'), style: { boxShadow: '0 2px 8px rgba(217,119,6,0.25)' } }, __alloT('stem.beehive.next_day_2', '\u23E9 Next Day')),
@@ -21682,7 +21785,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 { onClick: addSuper, icon: '\uD83D\uDCE6', label: __alloT('stem.beehive.super', 'Super'), tip: __alloT('stem.beehive.add_honey_super_10_morale_2_wax', 'Add honey super (+capacity, +morale, lower swarm risk) — 1 AP'), disabled: actionPoints < 1, locked: 'Need 1 AP', effect: '+40 capacity / +10 morale', color: 'blue' },
                 { onClick: harvestHoney, icon: '\uD83C\uDF6F', label: __alloT('stem.beehive.harvest', 'Harvest'), tip: __alloT('stem.beehive.harvest_surplus_honey_need_15_lbs', 'Harvest surplus honey (need 15+ lbs) — 1 AP'), disabled: honey <= 15 || actionPoints < 1, locked: honey <= 15 ? 'Need more than 15 lb' : 'Need 1 AP', effect: 'Collect surplus / leave 15 lb', color: 'amber' },
                 { onClick: feedBees, icon: '\uD83E\uDED9', label: 'Feed', tip: __alloT('stem.beehive.feed_sugar_syrup_5_lbs_honey_5_morale', 'Feed sugar syrup (+5 lbs honey, +5 morale) — 1 AP'), disabled: actionPoints < 1, locked: 'Need 1 AP', effect: '+5 honey / +5 morale', color: 'slate' },
-                { onClick: requeenColony, icon: '\uD83D\uDC51', label: __alloT('stem.beehive.requeen', 'Requeen'), tip: __alloT('stem.beehive.install_a_new_queen_restores_queenheal', 'Install a new queen — restores queenHealth to 100 (2 AP)'), disabled: actionPoints < 2, locked: 'Need 2 AP', effect: 'Queen to 100% / -5 morale', color: 'purple' }
+                { onClick: requeenColony, icon: '\uD83D\uDC51', label: __alloT('stem.beehive.requeen', 'Requeen'), tip: __alloT('stem.beehive.install_a_new_queen_restores_queenheal', 'Install a new queen — restores queenHealth to 100 (2 AP)'), disabled: actionPoints < 2, locked: 'Need 2 AP', effect: 'Queen to 100% / -5 morale', color: 'purple' },
+                // Split and Winterize (2026-07-30). Both were missing responses to mechanics the
+                // sim already had: crowding could only be answered with a super or a swarm, and
+                // winter starvation had no preparation move at all.
+                { onClick: splitColony, icon: '🧰', label: __alloT('stem.beehive.split', 'Split'),
+                  tip: __alloT('stem.beehive.split_the_colony_tip', 'Divide a crowded colony into two instead of losing half to a swarm. Spring or early summer only, and it costs this year’s crop (2 AP)'),
+                  disabled: actionPoints < 2 || workers < 18000 || season >= 2,
+                  locked: actionPoints < 2 ? 'Need 2 AP' : (season >= 2 ? 'Too late in the year' : 'Needs 18,000 workers'),
+                  effect: '-42% bees / -35% mites', color: 'indigo' },
+                { onClick: winterizeHive, icon: '🧣', label: __alloT('stem.beehive.winterize', 'Winterize'),
+                  tip: __alloT('stem.beehive.winterize_tip', 'Wrap the hive, insulate over the cluster and fit a mouse guard so the colony burns less honey through winter. Autumn onward (2 AP)'),
+                  disabled: actionPoints < 2 || season < 2 || !!d.winterized,
+                  locked: actionPoints < 2 ? 'Need 2 AP' : (season < 2 ? 'Autumn onward' : 'Already done'),
+                  effect: d.winterized ? 'Wrapped for winter' : '-18% honey burn / -20% losses', color: 'blue' }
               ].map(function(btn) {
                 var enabled = !btn.disabled;
                 var bg = enabled

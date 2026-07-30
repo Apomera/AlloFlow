@@ -463,3 +463,48 @@ describe('harvest reserve is seasonal', () => {
     expect(BH.SIMULATION_PARAMS.seasonReserve).toContain(stated);
   });
 });
+
+// ── Winterizing, 2026-07-30 ─────────────────────────────────────────────────
+// Added alongside the Split action to give the beekeeper real responses to mechanics the sim
+// already had: crowding could only be answered with a super or a swarm, and winter starvation had
+// no preparation move at all. Winterizing has to bite in the SIMULATION, not just in a toast —
+// its first draft only nudged foragingEfficiency, which winter multiplies by zero, so it would
+// have been a button that did nothing (the dead-mechanic class).
+describe('bhStepColony — winterizing', () => {
+  it('cuts winter honey burn and cold losses', () => {
+    const base = { day: 100, workers: 20000, brood: 0, honey: 60, varroaLevel: 5 };
+    const plain = BH.bhStepColony(state(base), cfg()).next;
+    const wrapped = BH.bhStepColony(state(Object.assign({}, base, { winterized: true })), cfg()).next;
+    expect(wrapped.honeyConsumed).toBeLessThan(plain.honeyConsumed);
+    expect(wrapped.workers).toBeGreaterThan(plain.workers);
+    expect(wrapped.winterized).toBe(true);
+  });
+
+  it('does nothing in summer, because wrapping a hive in June traps heat', () => {
+    const base = { day: 45, workers: 20000, brood: 10000, honey: 60 };
+    const plain = BH.bhStepColony(state(base), cfg()).next;
+    const wrapped = BH.bhStepColony(state(Object.assign({}, base, { winterized: true })), cfg()).next;
+    expect(wrapped.honeyConsumed).toBe(plain.honeyConsumed);
+    expect(wrapped.winterized).toBe(false);   // the flag is set, the EFFECT is out of season
+  });
+
+  it('reduces the winter burn without replacing the need for stores', () => {
+    // A wrap that let a colony winter on nothing would teach the wrong lesson.
+    let s = state({ day: 90, workers: 20000, brood: 0, honey: 12, winterized: true, foragingEfficiency: 0 });
+    const c = cfg();
+    for (let i = 0; i < 30; i++) s = Object.assign({}, s, BH.bhStepColony(s, c).next);
+    expect(s.honey).toBeLessThan(12);          // it still burns stores
+  });
+});
+
+describe('honey production accounting', () => {
+  it('gross income is never negative, so cumulative production cannot fall', () => {
+    // totalHoney accumulates honeyGrossIn and gates the produce_honey badge. Accumulating the NET
+    // change instead would make "total honey produced" drop during a dearth and un-earn the badge.
+    const mid = Math.floor((BH.SIMULATION_PARAMS.dearthStartDay + BH.SIMULATION_PARAMS.dearthEndDay) / 2);
+    for (const day of [10, 45, mid, 70, 100]) {
+      const { next } = BH.bhStepColony(state({ day, workers: 30000, brood: 20000, honey: 50 }), cfg());
+      expect(next.honeyGrossIn, 'day ' + day).toBeGreaterThanOrEqual(0);
+    }
+  });
+});
