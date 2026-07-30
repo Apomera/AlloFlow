@@ -17,12 +17,18 @@ const SOURCE = 'stem_lab/stem_tool_semiconductor.js';
 
 let practice, boss, orderOptions;
 
+// Decode \uXXXX so lengths and comparisons are done on what a student SEES.
+// "n²/L²" is 15 characters in the file and 5 on screen.
+const decode = (s) => s
+  .replace(/\\u([0-9A-Fa-f]{4})/g, (_, h) => String.fromCharCode(parseInt(h, 16)))
+  .replace(/\\'/g, "'");
+
 function collect(src, re) {
   const out = [];
   let m;
   while ((m = re.exec(src)) !== null) {
-    const opts = m[3].split(/',\s*'/).map((s) => s.replace(/^'/, '').replace(/'$/, '').trim());
-    out.push({ q: m[1], a: m[2], opts });
+    const opts = m[3].split(/',\s*'/).map((s) => decode(s.replace(/^'/, '').replace(/'$/, '').trim()));
+    out.push({ q: decode(m[1]), a: decode(m[2]), opts });
   }
   return out;
 }
@@ -116,25 +122,36 @@ describe('the answer position is not a tell', () => {
 });
 
 describe('the answer length is not a tell', () => {
-  // KNOWN GAP, pinned so it cannot worsen: the correct answer is the uniquely
-  // longest option in 16 of 30 practice questions (53%), against a ~25-33% chance
-  // baseline. Reordering cannot fix this -- it needs the distractors rewritten to
-  // comparable length, which is a content job and is NOT done here.
-  const uniqueLongestPct = (rows) => {
-    let n = 0;
-    rows.forEach((x) => {
-      const lens = x.opts.map((o) => o.length);
-      const mx = Math.max(...lens);
-      if (x.a.length === mx && lens.filter((l) => l === mx).length === 1) n += 1;
-    });
-    return 100 * n / rows.length;
-  };
+  // The correct answer used to be the uniquely longest option in 16 of 30 practice
+  // questions (53%), against a ~25-33% chance baseline, so "pick the longest" beat
+  // studying. Distractors were rewritten to comparable length and it is now 6/30
+  // (20%), with every remaining case within 4 characters -- not exploitable.
+  //
+  // Measured on RENDERED text. The source stores \uXXXX escapes, so "n²/L²" is 15
+  // source characters but 5 on screen; measuring the source invents tells that do
+  // not exist and hides ones that do.
+  const uniqueLongest = (rows) => rows.filter((x) => {
+    const lens = x.opts.map((o) => o.length);
+    const mx = Math.max(...lens);
+    return x.a.length === mx && lens.filter((l) => l === mx).length === 1;
+  });
+  const pct = (rows) => 100 * uniqueLongest(rows).length / rows.length;
 
-  it('does not get worse in the practice bank', () => {
-    expect(uniqueLongestPct(practice)).toBeLessThanOrEqual(55);
+  it('keeps the practice bank at or below chance', () => {
+    expect(pct(practice)).toBeLessThanOrEqual(30);
   });
 
-  it('does not get worse in the boss rounds', () => {
-    expect(uniqueLongestPct(boss)).toBeLessThanOrEqual(40);
+  it('keeps the boss rounds at or below chance', () => {
+    expect(pct(boss)).toBeLessThanOrEqual(40);
+  });
+
+  it('leaves no large length gap that could be picked off', () => {
+    // A one- or two-character edge is noise. A double-digit one is a strategy.
+    [...practice, ...boss].forEach((x) => {
+      const others = x.opts.filter((o) => o !== x.a);
+      const gap = x.a.length - Math.max(...others.map((o) => o.length));
+      expect(gap, 'answer is ' + gap + ' chars longer than any distractor: ' + x.q.slice(0, 60))
+        .toBeLessThanOrEqual(6);
+    });
   });
 });
