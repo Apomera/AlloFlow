@@ -70,11 +70,25 @@ describe('bhStepColony — core invariants', () => {
     });
   });
 
-  it('scoreGain and honeyGain derive from nectar collected (score = round(nectar*10))', () => {
-    const { next } = BH.bhStepColony(state(), cfg());
-    expect(next.honeyGain).toBeGreaterThanOrEqual(0);
-    expect(next.scoreGain).toBe(Math.round(next.honeyGain * 10));
+  it('scoreGain derives from nectar COLLECTED, while honeyGain is the change in stores', () => {
+    // These were the same number until 2026-07-30, when honeyGain was found to be reporting gross
+    // nectar: the UI told the player "+4.85 lb honey" every day while stores sat pinned at 0,
+    // because the colony ate more than it foraged. Score still tracks foraging effort; honeyGain
+    // now tracks the larder, which is what the word "gain" claims.
+    const s = state();
+    const { next } = BH.bhStepColony(s, cfg());
+    expect(next.honeyGrossIn).toBeGreaterThanOrEqual(0);
+    expect(next.scoreGain).toBe(Math.round(next.honeyGrossIn * 10));
+    expect(next.honeyGain).toBeCloseTo(next.honey - s.honey, 1);
     expect(next.flowerVisits).toBeGreaterThanOrEqual(0);
+  });
+
+  it('reports gross income and consumption separately, so a hive can forage hard and still lose', () => {
+    // The genuinely interesting lesson, and the one the old single number hid.
+    const { next } = BH.bhStepColony(state({ day: 100, workers: 30000, honey: 40 }), cfg());
+    expect(next.honeyGrossIn).toBe(0);        // winter: no foraging
+    expect(next.honeyConsumed).toBeGreaterThan(0);
+    expect(next.honeyGain).toBeLessThan(0);
   });
 
   it('is deterministic: same input + same rand sequence → identical output (kills the two-path drift)', () => {
@@ -86,16 +100,30 @@ describe('bhStepColony — core invariants', () => {
 });
 
 describe('bhStepColony — seasonal biology', () => {
-  it('summer with a healthy queen grows the worker force', () => {
-    const s = state({ day: 45, workers: 20000, brood: 12000, varroaLevel: 3 });
+  // Worker mortality was 0.005/day until 2026-07-30 — a 200-day summer bee, which let the
+  // population run away to ~90,000. At a realistic 0.03 (about a five-week summer bee) whether a
+  // colony grows depends on the BROOD-TO-ADULT RATIO, which is the real relationship and the one
+  // worth pinning. Replacement needs brood ≈ workers × mortality / emergeRate, so roughly
+  // 20,000 adults need ~15,000 brood just to hold steady.
+  it('summer grows the worker force when brood outpaces replacement', () => {
+    const s = state({ day: 45, workers: 20000, brood: 22000, varroaLevel: 3 });
     const { next } = BH.bhStepColony(s, cfg());
     expect(next.workers).toBeGreaterThan(s.workers); // emergence > mortality
+  });
+
+  it('summer SHRINKS the worker force when brood is below replacement', () => {
+    // The complement, and the thing the old mortality made impossible to express: a colony can be
+    // in high summer with a laying queen and still be dwindling.
+    const s = state({ day: 45, workers: 20000, brood: 8000, varroaLevel: 3 });
+    const { next } = BH.bhStepColony(s, cfg());
+    expect(next.workers).toBeLessThan(s.workers);
   });
 
   it('winter halts brood production and burns honey stores (no foraging)', () => {
     const s = state({ day: 100, workers: 15000, brood: 4000, honey: 60 }); // day 100 → season 3
     const { next } = BH.bhStepColony(s, cfg());
-    expect(next.honeyGain).toBe(0);          // forageMult 0 → no nectar
+    expect(next.honeyGrossIn).toBe(0);        // forageMult 0 → no nectar
+    expect(next.honeyGain).toBeLessThan(0);   // net change: the title's "burns stores"
     expect(next.honey).toBeLessThan(s.honey); // consumption only
     expect(next.brood).toBeLessThanOrEqual(s.brood); // broodRate 0 → only emergence removes brood
   });
@@ -257,5 +285,113 @@ describe('curriculum data — shape + accuracy regression guards', () => {
       expect(Array.isArray(BH[t]), t + ' should be an array').toBe(true);
       expect(BH[t].length, t + ' should be non-empty').toBeGreaterThan(0);
     });
+  });
+});
+
+// ── Realism calibration, 2026-07-30 ─────────────────────────────────────────
+// A full-year probe (tests/beehive_realism_probe.test.js) found the simulation taught the
+// opposite of beekeeping: honey consumption ran ~7x life so a default colony hit 0 lb by day 25
+// and never recovered, running out of stores cost NOTHING (a colony sat at 0 lb through an entire
+// winter and came out with 68,730 bees), worker mortality implied a 200-day summer bee so the
+// population ran away to ~90,000, and varroa grew fast enough to cap the colony by day 40.
+//
+// These pin the corrected biology against real reference figures rather than against the
+// implementation, so a future retune has to stay inside what a real hive does.
+describe('bhStepColony — realism calibration', () => {
+  const REAL = {
+    // Strong Langstroth colony, northern climate.
+    summerConsumptionPerDay: [0.4, 1.6],   // lb/day at 40,000 workers
+    peakLayingPerDay: [1500, 2000],        // eggs/day at 100% queen health
+    overwinterReserve: 60,                 // lb needed going into winter
+  };
+
+  it('consumes honey at roughly the rate a real colony does', () => {
+    // The defect that made the game unwinnable. Measured on a summer day at 40,000 workers.
+    const s = state({ day: 45, workers: 40000, brood: 20000, honey: 100 });
+    const { next } = BH.bhStepColony(s, cfg());
+    expect(next.honeyConsumed).toBeGreaterThanOrEqual(REAL.summerConsumptionPerDay[0]);
+    expect(next.honeyConsumed).toBeLessThanOrEqual(REAL.summerConsumptionPerDay[1]);
+  });
+
+  it('keeps peak laying inside what a real queen achieves', () => {
+    const P = BH.SIMULATION_PARAMS;
+    // Highest seasonal brood multiplier the stepper can apply, at full queen health.
+    const peak = P.baseBroodPerDay * 1.2;
+    expect(peak).toBeGreaterThanOrEqual(REAL.peakLayingPerDay[0]);
+    expect(peak).toBeLessThanOrEqual(REAL.peakLayingPerDay[1]);
+  });
+
+  it('implies a summer worker lifespan of weeks, not months', () => {
+    // 1/mortality is the mean adult lifespan in days. A summer bee lives about five weeks; the
+    // old 0.005 implied 200 days, which is what let the population reach 90,000.
+    const meanLifeDays = 1 / BH.SIMULATION_PARAMS.baseWorkerMortality;
+    expect(meanLifeDays).toBeGreaterThan(20);
+    expect(meanLifeDays).toBeLessThan(60);
+  });
+
+  describe('starvation has consequences', () => {
+    it('kills workers and costs brood when stores hit zero', () => {
+      // foragingEfficiency 0 = a dearth. Empty stores alone are NOT starvation: a colony with an
+      // empty larder in a good flow forages its way out, which is correct and is what the first
+      // version of this test got wrong. Starvation is income failing to cover consumption.
+      const s = state({ day: 45, workers: 30000, brood: 20000, honey: 0, foragingEfficiency: 0 });
+      const { next } = BH.bhStepColony(s, cfg());
+      expect(next.starving).toBe(true);
+      expect(next.starveDeaths).toBeGreaterThan(0);
+      expect(next.workers).toBeLessThan(s.workers);
+      expect(next.brood).toBeLessThan(s.brood);   // brood is abandoned before adults give up
+    });
+
+    it('is far deadlier in winter, when there is nothing to forage into', () => {
+      const summer = BH.bhStepColony(state({ day: 45, workers: 30000, brood: 0, honey: 0 }), cfg());
+      const winter = BH.bhStepColony(state({ day: 100, workers: 30000, brood: 0, honey: 0 }), cfg());
+      expect(winter.next.starveDeaths).toBeGreaterThan(summer.next.starveDeaths);
+    });
+
+    it('does NOT fire while there are stores left', () => {
+      const { next } = BH.bhStepColony(state({ day: 45, workers: 30000, honey: 50 }), cfg());
+      expect(next.starving).toBe(false);
+      expect(next.starveDeaths).toBe(0);
+    });
+  });
+
+  it('varroa actually accumulates day over day', () => {
+    // Regression guard for a rounding trap: varroaLevel was stored via Math.round(), so once mite
+    // growth was slowed to a realistic ~0.19/day every day's gain was truncated away and varroa
+    // sat frozen forever. The old unrealistic 1.2/day was large enough to hide this.
+    let s = state({ day: 45, brood: 20000, varroaLevel: 10 });
+    const first = BH.bhStepColony(s, cfg()).next;
+    expect(first.varroaLevel).toBeGreaterThan(10);
+    for (let i = 0; i < 20; i++) s = Object.assign({}, s, BH.bhStepColony(s, cfg()).next);
+    expect(s.varroaLevel).toBeGreaterThan(12);   // three weeks of brood rearing is visible
+    expect(s.varroaLevel).toBeLessThan(30);      // but not a month-to-collapse cliff
+  });
+
+  it('warns about overwintering stores that would pass unremarked in spring', () => {
+    // 30 lb is a working buffer in spring and a death sentence in autumn. A flat threshold cannot
+    // express that, which is why the forecaster is season-aware.
+    const autumn = BH.bhForecastColony(state({ day: 70, honey: 30 }), cfg(), 30);
+    const spring = BH.bhForecastColony(state({ day: 10, honey: 30 }), cfg(), 30);
+    expect(autumn.risks.map((r) => r.id)).toContain('honey');
+    expect(spring.risks.map((r) => r.id)).not.toContain('honey');
+    const detail = autumn.risks.find((r) => r.id === 'honey').detail;
+    // The message must name the requirement, not just the projection — "28 lb" means nothing
+    // without "against about 45 lb".
+    expect(detail).toMatch(/against about \d+ lb/);
+  });
+
+  it('a default colony can actually build an overwintering reserve across a year', () => {
+    // The whole point. Under the old numbers this was impossible at any setting.
+    let s = state({ day: 0, workers: 20000, brood: 6000, honey: 40, varroaLevel: 3 });
+    const c = cfg();
+    let peak = s.honey;
+    for (let i = 0; i < 90; i++) {           // spring through autumn
+      s = Object.assign({}, s, BH.bhStepColony(s, c).next);
+      peak = Math.max(peak, s.honey);
+    }
+    expect(peak).toBeGreaterThanOrEqual(REAL.overwinterReserve);
+    expect(peak).toBeLessThan(260);          // and not an implausible bonanza
+    expect(s.workers).toBeGreaterThan(15000);
+    expect(s.workers).toBeLessThan(70000);   // real peak is 50,000-60,000
   });
 });

@@ -2603,21 +2603,51 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
   // render loop, both advance paths via cfg.params, AND the vitest logic suite).
   // Pure data — no __alloT — so it lives safely outside the render closure.
   var SIMULATION_PARAMS = {
+    // ── Calibrated against real apiculture, 2026-07-30 ──────────────────────
+    // A probe run of a full simulated year (tests/beehive_realism_probe.test.js) showed the
+    // old numbers made the game's own goal unreachable: a default colony hit 0 lb of honey by
+    // day 25 and never recovered, because consumption ran ~7x real. Reference figures for a
+    // strong Langstroth colony in a northern climate, which is this tool's setting:
+    //   peak laying 1,500-2,000 eggs/day · worker development 21 days · summer nectar 5-15 lb/day
+    //   gross · summer consumption 0.5-1 lb/day · overwinter reserve 60-90 lb · typical harvest
+    //   30-60 lb/hive/season · peak population 50,000-60,000
     foragerRatio: 0.4,            // fraction of workers that forage each day
-    nectarPerForager: 0.0002,     // lbs nectar per forager per day (base)
+    nectarPerForager: 0.0002,     // lbs nectar per forager per day (base). Deliberately unchanged:
+                                  // instrumenting the year showed income was never the problem.
+                                  // Consumption was 7x life and varroa grew 4x too fast; those two
+                                  // were what made honey impossible.
     pollenPerForager: 0.00008,    // lbs pollen per forager per day (base)
-    honeyConsumePerWorker: 0.00015, // lbs honey consumed per worker per day (base)
+    honeyConsumePerWorker: 0.00002, // lbs honey per worker per day. Was 0.00015 = 7.2 lb/day at
+                                  // 40k workers, roughly 7x life; now ~0.96 lb/day.
     pollenConsumePerBrood: 0.0001,  // lbs pollen consumed per brood per day
     pollenConsumePerWorker: 0.00003,
     baseBroodPerDay: 1500,        // max eggs/day at 100% queen health
-    broodEmergeRate: 0.05,        // fraction of brood emerging daily
-    baseWorkerMortality: 0.005,   // base daily worker death rate
+    broodEmergeRate: 0.05,        // fraction of brood emerging daily (~21-day development)
+    baseWorkerMortality: 0.03,    // base daily worker death rate. Was 0.005 = a 200-day summer
+                                  // bee, so population ran away to ~90k; a summer worker lives
+                                  // about 5 weeks, and 0.03 puts the peak near 60k.
     varroaMortalityDivisor: 50,   // higher = varroa has less mortality impact
+    // ── Starvation (new) ──────────────────────────────────────────────────────
+    // Running out of stores used to cost nothing at all: the probe showed a colony sitting at
+    // 0 lb through an entire winter and surviving with 68,730 bees. Starvation is the single
+    // most important thing beekeeping teaches, and the sim taught its opposite.
+    starveWorkerMortality: 0.06,  // extra daily worker loss with empty stores (on top of base)
+    starveWinterMultiplier: 3,    // winter has no forage to recover from, so it is far deadlier
+    starveBroodLoss: 0.25,        // fraction of brood abandoned/cannibalised per starving day
+    starveMoraleHit: -12,         // colony stress when the larder is empty
+    lowStoreThreshold: 8,         // lbs below which the colony is "light" and warned
     droneEvictionRate: 0.1,       // autumn drone eviction
     droneBaseMortality: 0.02,
     droneBirthRate: 0.05,         // fraction of newBrood that become drones (non-autumn/winter)
-    varroaGrowthBase: 0.3,
-    varroaGrowthPerBrood: 10000,  // scale factor for brood-driven varroa growth
+    // Varroa was the hidden population cap. At 0.3 with a /10000 brood scale it grew ~1.2 points
+    // a day, so an untreated colony passed lethal mite load around day 40 and its population was
+    // pinned near 24,000 - the collapse arrived before the player had a season to read the signs.
+    // Real mite populations roughly double every four weeks of brood rearing and kill an untreated
+    // colony over a year or two, with autumn as the crisis point. These values put 0 to 100 at
+    // roughly 300 days of brood rearing, so treatment is a season-long judgement rather than a
+    // forced move in week three.
+    varroaGrowthBase: 0.12,
+    varroaGrowthPerBrood: 20000,  // scale factor for brood-driven varroa growth
     varroaDecayNoBrood: -0.5,
     pesticideChronicDivisor: 1000,
     pesticideVarroaBoost: 0.2,
@@ -2660,11 +2690,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     var diseaseRisk = typeof s.diseaseRisk === 'number' ? s.diseaseRisk : 0;
     var capacity = typeof s.capacity === 'number' ? s.capacity : 80;
 
+    // Seasonal shape. broodRate is capped at 1.2 so peak laying is 1,800 eggs/day — a real
+    // excellent queen tops out near 2,000, and the old 1.5 (2,250/day) drove the runaway
+    // population. mortMult is new: a summer forager wears out in about five weeks, while a
+    // winter bee lives four to six months, and without that distinction the winter cluster
+    // died at the summer rate.
+    // forageMult is shaped like a real nectar year rather than a flat season. The old spread
+    // (0.8 / 1.3 / 0.6) treated nine of every twelve months as productive, which forced the
+    // per-day rate down to keep the annual total sane and so taught neither number correctly.
+    // A northern colony has ONE main flow: spring is buildup that the brood eats as fast as it
+    // arrives, summer is the flow that fills supers, autumn is a thin goldenrod top-up that
+    // barely covers its own consumption. That shape lets a good summer day genuinely add
+    // several pounds while the year still totals what a real hive totals.
     var sf = [
-      { broodRate: 1.2, forageMult: 0.8, consumeRate: 0.8 },
-      { broodRate: 1.5, forageMult: 1.3, consumeRate: 1.2 },
-      { broodRate: 0.5, forageMult: 0.6, consumeRate: 0.9 },
-      { broodRate: 0.0, forageMult: 0.0, consumeRate: 0.6 }
+      { broodRate: 1.1, forageMult: 0.45, consumeRate: 0.9, mortMult: 1.0 },
+      { broodRate: 1.2, forageMult: 1.3, consumeRate: 1.0, mortMult: 1.15 },
+      // Autumn: the queen winds down hard, not gently. A real colony's population peaks around
+      // midsummer and falls through autumn as summer bees die faster than they are replaced;
+      // at broodRate 0.45 the sim peaked in AUTUMN instead, which inverts the year a beekeeper
+      // is being taught to plan around.
+      { broodRate: 0.22, forageMult: 0.25, consumeRate: 0.8, mortMult: 0.9 },
+      { broodRate: 0.0, forageMult: 0.0, consumeRate: 0.45, mortMult: 0.35 }
     ][season];
 
     var eff = (fe + garden) / 100;
@@ -2677,7 +2723,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     var newBrood = Math.round(queenHealth / 100 * P.baseBroodPerDay * sf.broodRate * broodMod);
     var emerging = Math.round(brood * P.broodEmergeRate);
     var winterMod = season === 3 ? (1 / sub.winter) : 1.0;
-    var dying = Math.round(workers * P.baseWorkerMortality * winterMod * (1 + varroa / P.varroaMortalityDivisor));
+    var dying = Math.round(workers * P.baseWorkerMortality * sf.mortMult * winterMod * (1 + varroa / P.varroaMortalityDivisor));
     var dyingD = season === 2 ? Math.round(drones * P.droneEvictionRate) : Math.round(drones * P.droneBaseMortality);
     var vGrow = brood > 0 ? P.varroaGrowthBase * (1 + brood / P.varroaGrowthPerBrood) * sub.varroa : P.varroaDecayNoBrood;
     var nv = Math.max(0, Math.min(100, varroa + vGrow));
@@ -2735,6 +2781,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       }
     }
 
+    // ── Starvation ────────────────────────────────────────────────────────────
+    // Consequence for running the larder dry. Before this, empty stores cost nothing: a probe
+    // run sat at 0 lb for an entire winter and came out with 68,730 bees. In reality a colony
+    // out of stores is the classic total loss, and "did I leave them enough honey?" is the
+    // question beekeeping actually turns on — so the sim has to answer it.
+    //
+    // Modelled the way it really goes: adults die faster, brood is abandoned first (nurses stop
+    // feeding larvae before the colony gives up on itself), and morale drops. Winter is far
+    // worse because there is no forage to recover into, which is exactly why autumn feeding
+    // exists as a practice.
+    var honeyAfter = Math.max(0, wHoney + nectarIn - honeyOut);
+    var starving = honeyAfter <= 0 && honeyOut > 0;
+    var starveDeaths = 0, starveBrood = 0;
+    if (starving) {
+      var sMult = season === 3 ? P.starveWinterMultiplier : 1;
+      starveDeaths = Math.round(wWorkers * P.starveWorkerMortality * sMult);
+      starveBrood = Math.round(wBrood * P.starveBroodLoss);
+      dying += starveDeaths;
+      wBrood = Math.max(0, wBrood - starveBrood);
+      md += P.starveMoraleHit;
+    }
+
     var flowerVisits = Math.round(Math.round(workers * P.foragerRatio * sf.forageMult) * 300 * ((fe + garden) / 100));
 
     var next = {
@@ -2742,10 +2810,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       workers: Math.max(0, Math.round(wWorkers + emerging - dying)),
       brood: Math.max(0, Math.round(wBrood + newBrood - emerging)),
       drones: Math.max(0, Math.round(drones + (season < 2 ? Math.round(newBrood * P.droneBirthRate) : 0) - dyingD)),
-      honey: Math.round(Math.max(0, wHoney + nectarIn - honeyOut) * 10) / 10,
+      honey: Math.round(honeyAfter * 10) / 10,
       pollen: Math.round(Math.max(0, wPollen + pollenIn - pollenOut) * 10) / 10,
       wax: Math.round(wWax * 10) / 10,
-      varroaLevel: Math.round(nv),
+      // One decimal, NOT an integer. Slowing mite growth to a realistic ~0.19/day exposed a
+      // rounding trap: Math.round(nv) truncated each day's sub-1.0 gain back to the starting
+      // value, so varroa would have sat frozen forever and the whole mite-management lane would
+      // have quietly stopped working. The old 1.2/day growth was large enough to survive
+      // rounding, which is why this never showed up before.
+      varroaLevel: Math.round(nv * 10) / 10,
       morale: Math.round(Math.max(0, Math.min(100, morale + md))),
       foragingEfficiency: Math.round(wFE),
       queenHealth: Math.round(wQH),
@@ -2754,7 +2827,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       habitat: habitat,
       capacity: capacity,
       scoreGain: Math.round(nectarIn * 10),
-      honeyGain: Math.max(0, nectarIn),
+      // honeyGain is what the player is TOLD they gained, so it has to be the change in stores,
+      // not gross income. It used to be gross nectar: the probe showed the UI reporting "+4.85 lb
+      // honey" every day while stores were pinned at 0, because the colony was eating more than it
+      // brought in. Gross and consumption are reported separately for anyone who wants the
+      // breakdown - that is the actually interesting lesson (a hive can forage hard and still go
+      // backwards) and it is now visible instead of hidden.
+      honeyGain: Math.round((honeyAfter - wHoney) * 10) / 10,
+      honeyGrossIn: Math.round(nectarIn * 10) / 10,
+      honeyConsumed: Math.round(honeyOut * 10) / 10,
+      starving: starving,
+      starveDeaths: starveDeaths,
+      starveBroodLost: starveBrood,
+      lowStores: honeyAfter > 0 && honeyAfter < P.lowStoreThreshold,
       flowerVisits: flowerVisits
     };
     return { next: next, event: firedEvent };
@@ -2797,11 +2882,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         'The worker force falls below the viable-colony threshold.',
         'Stabilize food, queen health, mites, and disease before advancing.');
     }
-    if (end.honey <= 10) {
+    // Stores are judged against WHAT THE SEASON AHEAD NEEDS, not a flat number.
+    //
+    // The old thresholds were a bare 10 lb critical / 15 lb watch, calibrated for an economy where
+    // consumption ran ~7x life and a colony hovered near empty all year. With realistic
+    // consumption a healthy hive carries 80-100 lb, so a flat 15 lb watch would stay silent while
+    // a colony walked into winter on 30 lb and died — the single most common way real hives are
+    // lost, and the one thing this simulator most needs to teach.
+    //
+    // A northern colony needs roughly 60-90 lb to overwinter. Spring and summer need only a working
+    // buffer because forage is coming in; autumn is when the reserve has to actually be there,
+    // which is exactly why autumn feeding is standard practice.
+    var endSeason = Math.max(0, Math.min(3, Math.floor(((end.day || 0) % 120) / 30)));
+    var reserveNeeded = [18, 15, 60, 45][endSeason];
+    var reserveLabel = ['spring buildup', 'the summer flow', 'overwintering', 'the rest of winter'][endSeason];
+    if (end.honey <= Math.max(8, reserveNeeded * 0.35)) {
       addRisk('honey', 'critical', 'Starvation risk',
-        'Honey stores fall to ' + end.honey + ' lb in this event-free projection.',
-        'Feed the colony or improve forage before advancing.');
-    } else if (end.honey < 15 || end.honey < (start.honey || 0) - 5) {
+        'Stores fall to ' + end.honey + ' lb in this event-free projection, against about '
+          + reserveNeeded + ' lb needed for ' + reserveLabel + '.',
+        endSeason >= 2
+          ? 'Feed now. A colony cannot forage its way out of a northern winter.'
+          : 'Feed the colony or improve forage before advancing.');
+    } else if (end.honey < reserveNeeded) {
+      addRisk('honey', 'watch', 'Stores below what the season needs',
+        'Projected ' + end.honey + ' lb against about ' + reserveNeeded + ' lb for ' + reserveLabel
+          + ' (from ' + (start.honey || 0) + ' lb today).',
+        endSeason >= 2
+          ? 'Build the reserve before the cold sets in, or plan to feed.'
+          : 'Watch the seasonal forage-to-consumption balance.');
+    } else if (end.honey < (start.honey || 0) - 5) {
       addRisk('honey', 'watch', 'Honey stores trending down',
         'Stores move from ' + (start.honey || 0) + ' to ' + end.honey + ' lb.',
         'Watch the seasonal forage-to-consumption balance.');
