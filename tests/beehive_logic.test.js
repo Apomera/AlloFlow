@@ -395,3 +395,71 @@ describe('bhStepColony — realism calibration', () => {
     expect(s.workers).toBeLessThan(70000);   // real peak is 50,000-60,000
   });
 });
+
+// ── The summer dearth + harvest tension, 2026-07-30 ─────────────────────────
+// A real northern nectar year is not one long season. The main flow finishes in late July and
+// almost nothing blooms until goldenrod, so a colony is at its largest and hungriest exactly when
+// the forage stops. Before this the sim's honey only ever rose during foraging months, so there
+// was no reason to be careful about harvesting early — and harvest left a flat 15 lb in every
+// season, which under realistic consumption is a winter kill the player got points for.
+describe('bhStepColony — the summer dearth', () => {
+  const P = () => BH.SIMULATION_PARAMS;
+
+  it('shuts the flow off mid-summer and flags it', () => {
+    const mid = Math.floor((P().dearthStartDay + P().dearthEndDay) / 2);
+    const { next } = BH.bhStepColony(state({ day: mid, workers: 32000, brood: 30000, honey: 70 }), cfg());
+    expect(next.inDearth).toBe(true);
+    // Flower traffic must agree with the empty super; showing full foraging would contradict it.
+    const flowing = BH.bhStepColony(state({ day: 40, workers: 32000, brood: 30000, honey: 70 }), cfg()).next;
+    expect(next.honeyGrossIn).toBeLessThan(flowing.honeyGrossIn * 0.25);
+    expect(next.flowerVisits).toBeLessThan(flowing.flowerVisits);
+  });
+
+  it('makes a big colony LOSE stores during the dearth', () => {
+    // The tension. A hive at its peak population with no income goes backwards.
+    const mid = Math.floor((P().dearthStartDay + P().dearthEndDay) / 2);
+    const { next } = BH.bhStepColony(state({ day: mid, workers: 32000, brood: 30000, honey: 70 }), cfg());
+    expect(next.honeyGain).toBeLessThan(0);
+  });
+
+  it('is over by the time goldenrod arrives', () => {
+    const after = BH.bhStepColony(state({ day: P().dearthEndDay + 2, workers: 32000, honey: 70 }), cfg()).next;
+    expect(after.inDearth).toBe(false);
+    expect(after.honeyGrossIn).toBeGreaterThan(0);
+  });
+
+  it('leaves the year total realistic rather than just removing honey', () => {
+    // A dearth that simply deleted the crop would be a different kind of wrong.
+    let s = state({ day: 0, workers: 20000, brood: 6000, honey: 40, varroaLevel: 3 });
+    const c = cfg();
+    let peak = s.honey;
+    for (let i = 0; i < 120; i++) {
+      s = Object.assign({}, s, BH.bhStepColony(s, c).next);
+      peak = Math.max(peak, s.honey);
+    }
+    expect(peak).toBeGreaterThanOrEqual(60);   // still an overwinterable crop
+    expect(s.honey).toBeGreaterThan(40);       // and it survives the year with stores
+  });
+});
+
+describe('harvest reserve is seasonal', () => {
+  it('demands far more before winter than during buildup', () => {
+    const r = BH.SIMULATION_PARAMS.seasonReserve;
+    expect(Array.isArray(r)).toBe(true);
+    expect(r).toHaveLength(4);
+    expect(r[2]).toBeGreaterThanOrEqual(55);   // autumn: the real overwintering figure
+    expect(r[2]).toBeGreaterThan(r[0]);        // and much more than spring
+    // Summer must cover crossing the dearth, not just the day of the harvest.
+    expect(r[1]).toBeGreaterThan(20);
+  });
+
+  it('is the same table the forecaster judges against', () => {
+    // Two copies would drift, and a forecaster promising 60 lb while harvest leaves 15 is the kind
+    // of contradiction that makes a simulation untrustworthy.
+    const autumn = BH.bhForecastColony(state({ day: 70, honey: 30 }), cfg(), 30);
+    const honeyRisk = autumn.risks.find((r) => r.id === 'honey');
+    expect(honeyRisk).toBeTruthy();
+    const stated = Number((honeyRisk.detail.match(/against about (\d+) lb/) || [])[1]);
+    expect(BH.SIMULATION_PARAMS.seasonReserve).toContain(stated);
+  });
+});

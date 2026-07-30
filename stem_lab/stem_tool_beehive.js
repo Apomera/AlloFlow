@@ -2636,6 +2636,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     starveBroodLoss: 0.25,        // fraction of brood abandoned/cannibalised per starving day
     starveMoraleHit: -12,         // colony stress when the larder is empty
     lowStoreThreshold: 8,         // lbs below which the colony is "light" and warned
+    // ── The summer dearth (new) ───────────────────────────────────────────────
+    // A real northern nectar year is not one long season: the spring flow ends, the main flow
+    // finishes around late July, and then almost nothing blooms until goldenrod. Colonies are at
+    // their largest and hungriest exactly when the forage stops, so a strong hive can starve
+    // surrounded by green — and it is the moment that makes a beekeeper watch the hive weight
+    // instead of the calendar. Without it, honey only ever went up during foraging months and
+    // there was no reason to be careful about harvesting early.
+    dearthStartDay: 52,           // day-of-year (120-day cycle) the flow shuts off
+    dearthEndDay: 62,             // and reopens on goldenrod
+    dearthForageMult: 0.07,       // near-nothing coming in
+    // ── Season reserve (shared by the forecaster and the harvest gate) ─────────
+    // Roughly what a northern colony needs in stores to reach the next forage. Autumn is the one
+    // that matters: 60 lb is the real overwintering figure, and the old harvest gate left a flat
+    // 15 lb in every season, which under realistic consumption is a winter kill.
+    // Summer is 25, not 15, BECAUSE of the dearth above. A probe run showed stores peaking at
+    // 78 lb on day 52 and then falling for ten days at a colony's hungriest — so a player who
+    // harvested down to 15 lb at the summer peak would cross the dearth on fumes and reach winter
+    // dead, having been congratulated for it. Leaving enough to get to goldenrod is the actual
+    // late-summer decision a beekeeper makes.
+    seasonReserve: [18, 25, 60, 45],
     droneEvictionRate: 0.1,       // autumn drone eviction
     droneBaseMortality: 0.02,
     droneBirthRate: 0.05,         // fraction of newBrood that become drones (non-autumn/winter)
@@ -2713,10 +2733,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       { broodRate: 0.0, forageMult: 0.0, consumeRate: 0.45, mortMult: 0.35 }
     ][season];
 
+    // The dearth overlays the seasonal shape: same calendar, but the flow genuinely stops for a
+    // stretch of high summer. Pollen stops too — in a real dearth the queen slows and nurses run
+    // short, which is why a dearth is felt as more than an empty super.
+    var dayOfYear = day % 120;
+    var inDearth = P.dearthStartDay !== undefined
+      && dayOfYear >= P.dearthStartDay && dayOfYear < P.dearthEndDay;
+    var forageMult = inDearth ? Math.min(sf.forageMult, P.dearthForageMult) : sf.forageMult;
+
     var eff = (fe + garden) / 100;
     var foragers = Math.round(workers * P.foragerRatio);
-    var nectarIn = foragers * P.nectarPerForager * sf.forageMult * eff * sub.honey * site.forage;
-    var pollenIn = foragers * P.pollenPerForager * sf.forageMult * eff * site.forage;
+    var nectarIn = foragers * P.nectarPerForager * forageMult * eff * sub.honey * site.forage;
+    var pollenIn = foragers * P.pollenPerForager * forageMult * eff * site.forage;
     var honeyOut = workers * P.honeyConsumePerWorker * sf.consumeRate;
     var pollenOut = (brood * P.pollenConsumePerBrood + workers * P.pollenConsumePerWorker) * sf.consumeRate;
     var broodMod = season === 0 ? sub.spring : 1.0;
@@ -2803,7 +2831,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       md += P.starveMoraleHit;
     }
 
-    var flowerVisits = Math.round(Math.round(workers * P.foragerRatio * sf.forageMult) * 300 * ((fe + garden) / 100));
+    // Uses the dearth-adjusted rate: during a dearth bees still fly, but there is nothing to
+    // visit, and showing full flower traffic would contradict the empty super.
+    var flowerVisits = Math.round(Math.round(workers * P.foragerRatio * forageMult) * 300 * ((fe + garden) / 100));
 
     var next = {
       day: day + 1,
@@ -2840,6 +2870,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
       starveDeaths: starveDeaths,
       starveBroodLost: starveBrood,
       lowStores: honeyAfter > 0 && honeyAfter < P.lowStoreThreshold,
+      inDearth: inDearth,
+      seasonReserve: (P.seasonReserve || [])[season],
       flowerVisits: flowerVisits
     };
     return { next: next, event: firedEvent };
@@ -2894,8 +2926,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
     // buffer because forage is coming in; autumn is when the reserve has to actually be there,
     // which is exactly why autumn feeding is standard practice.
     var endSeason = Math.max(0, Math.min(3, Math.floor(((end.day || 0) % 120) / 30)));
-    var reserveNeeded = [18, 15, 60, 45][endSeason];
-    var reserveLabel = ['spring buildup', 'the summer flow', 'overwintering', 'the rest of winter'][endSeason];
+    // One table, shared with the harvest gate (SIMULATION_PARAMS.seasonReserve). Two copies of
+    // this would drift, and the forecaster promising 60 lb while harvest left 15 is exactly the
+    // kind of contradiction that makes a simulation untrustworthy.
+    var reserveNeeded = ((cfg.params && cfg.params.seasonReserve) || [18, 15, 60, 45])[endSeason];
+    var reserveLabel = ['spring buildup', 'the dearth before goldenrod', 'overwintering', 'the rest of winter'][endSeason];
     if (end.honey <= Math.max(8, reserveNeeded * 0.35)) {
       addRisk('honey', 'critical', 'Starvation risk',
         'Stores fall to ' + end.honey + ' lb in this event-free projection, against about '
@@ -3873,18 +3908,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
         }
 
         function harvestHoney() {
-          // <= 15, not < 15: at exactly 15.0 lbs (reachable — honey is stored
-          // rounded to 0.1) harvested was 0, yet it still logged a varietal and
-          // a phantom "0 lb / 1 jar" harvest with a misleading toast.
-          if (honey <= 15) { playSfx(sfxBeeWaggle); if (addToast) addToast('⚠️ Not enough surplus honey to harvest safely. Leave 15+ lbs for the bees.', 'info'); return; }
+          // The reserve left behind is SEASONAL, not a flat 15 lbs.
+          //
+          // A flat floor was safe when consumption was unrealistically high and stores hovered near
+          // empty all year. With realistic consumption it became actively wrong: harvesting down to
+          // 15 lbs in autumn is a guaranteed winter kill, and the player got points, XP and a badge
+          // for doing it, then watched the colony die weeks later with nothing connecting the two.
+          // Now the floor is what the season ahead actually needs — about 60 lbs before winter —
+          // so "how much can I take?" becomes the judgement the real craft turns on.
+          var hSeason = Math.max(0, Math.min(3, Math.floor(((d.day || 0) % 120) / 30)));
+          var reserve = (SIMULATION_PARAMS.seasonReserve || [18, 15, 60, 45])[hSeason];
+          var reserveWhy = ['the spring buildup', 'the dearth before goldenrod', 'overwintering', 'the rest of winter'][hSeason];
+          // <= reserve, not < reserve: at exactly the floor (reachable — honey is stored rounded
+          // to 0.1) harvested was 0, yet it still logged a varietal and a phantom "0 lb / 1 jar"
+          // harvest with a misleading toast.
+          if (honey <= reserve) {
+            playSfx(sfxBeeWaggle);
+            if (addToast) addToast('⚠️ No surplus to take. The colony needs about ' + reserve + ' lbs for ' + reserveWhy + ' and has ' + honey + ' lbs.', 'info');
+            return;
+          }
           if (actionPoints < 1) { if (addToast) addToast('Need 1 action point to harvest. Advance a day for more.', 'info'); return; }
-          var harvested = Math.round((honey - 15) * 10) / 10;
+          var harvested = Math.round((honey - reserve) * 10) / 10;
           var varietal = identifyVarietal();
           updFn(function(b) {
             if ((typeof b.actionPoints === 'number' ? b.actionPoints : 3) < 1) return;
             var bHoney = typeof b.honey === 'number' ? b.honey : 20;
-            if (bHoney <= 15) return; // live re-check
-            var got = Math.round((bHoney - 15) * 10) / 10;
+            if (bHoney <= reserve) return; // live re-check against the same seasonal floor
+            var got = Math.round((bHoney - reserve) * 10) / 10;
             b.actionPoints = (typeof b.actionPoints === 'number' ? b.actionPoints : 3) - 1;
             var newVarietals = Object.assign({}, b.varietals || {});
             var existing = newVarietals[varietal.id];
@@ -3894,12 +3944,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             entry.jars = (entry.jars || 0) + Math.max(1, Math.round(got));
             entry.lastDay = b.day || 0;
             newVarietals[varietal.id] = entry;
-            b.honey = 15;
+            b.honey = reserve;
             b.score = (b.score || 0) + Math.round(got * 20);
             b.totalHarvested = Math.round(((b.totalHarvested || 0) + got) * 10) / 10;
             b.varietals = newVarietals;
           });
-          playSfx(sfxBeeCollect); if (addToast) addToast(varietal.emoji + ' Harvested ' + harvested + ' lbs of ' + varietal.name + ' honey! (+' + Math.round(harvested * 20) + ' pts)', 'success');
+          // Say what was LEFT and why, not just what was taken. The number the beekeeper is
+          // actually judged on is the one still in the hive.
+          playSfx(sfxBeeCollect);
+          if (addToast) addToast(varietal.emoji + ' Harvested ' + harvested + ' lbs of ' + varietal.name
+            + ' honey (+' + Math.round(harvested * 20) + ' pts) — left ' + reserve + ' lbs for ' + reserveWhy + '.', 'success');
           if (awardStemXP) awardStemXP('beehive', 15, 'Harvested ' + varietal.name);
           triggerBeekeeperAction('harvest', 'Harvesting ' + varietal.name + ' honey — ' + harvested + ' lbs!', varietal.emoji || '🍯');
         }

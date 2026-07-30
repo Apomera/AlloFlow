@@ -59,7 +59,9 @@ function run(days, opts) {
     const r = BH.bhStepColony(s, cfg);
     s = Object.assign({}, s, r.next);
     peakHoney = Math.max(peakHoney, s.honey);
-    if (i % 12 === 0 || i === days - 1) {
+    // Sample every 6 days through the dearth window so it is visible in the report.
+    const near = s.day >= 48 && s.day <= 66;
+    if (i % 12 === 0 || (near && i % 3 === 0) || i === days - 1) {
       rows.push({
         day: s.day,
         season: SEASONS[Math.floor((prev.day % 120) / 30)],
