@@ -8,7 +8,14 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const dp = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
-const _s = dp.indexOf('const addAiTableCaptions = async (html) => {');
+// PARAMETER-AGNOSTIC start anchor. This pinned `async (html) => {` and broke as
+// soon as the function gained an options arg (it takes { signal } now), which
+// made the whole suite fail to LOAD — hence its stay in quarantine. Uniqueness is
+// asserted so a rename still fails loudly rather than slicing from -1.
+const _START = 'const addAiTableCaptions = async (';
+const _startHits = dp.split(_START).length - 1;
+if (_startHits !== 1) throw new Error('expected exactly 1 addAiTableCaptions declaration, found ' + _startHits);
+const _s = dp.indexOf(_START);
 const _e = dp.indexOf('\n  // ── fixLangSpans:', _s);
 if (_s === -1 || _e === -1) throw new Error('extraction markers for addAiTableCaptions missing');
 const slice = dp.slice(_s, _e);
@@ -16,10 +23,24 @@ const slice = dp.slice(_s, _e);
 // Build a fresh instance with injected deps. _serializeDomEdit stub returns the doc body innerHTML
 // (enough to assert the inserted caption; the real serializer preserves head/doctype and is tested
 // separately). callGemini is the per-test mock.
+// The REAL prompt-fence neutralizer, extracted rather than stubbed.
+// addAiTableCaptions interpolates the table's own HTML into a prompt, so it runs
+// every table through this first. It was NOT injected here, so the per-table
+// `catch (_) {}` swallowed a ReferenceError for EVERY table: the function
+// returned fixCount 0 and the suite read as "the AI tier is broken" when the
+// harness was what was missing. Stubbing it would leave the sanitizer untested
+// at the one call site that handles untrusted document text.
+const _nfStart = dp.indexOf('function _neutralizePromptFence(s) {');
+if (_nfStart === -1) throw new Error('anchor missed _neutralizePromptFence — inject it or every table is skipped silently');
+const _nfEnd = dp.indexOf('\nfunction _restoreNeutralizedPromptFences', _nfStart);
+if (_nfEnd === -1) throw new Error('anchor missed the end of _neutralizePromptFence');
+const _neutralizePromptFence = new Function(
+  dp.slice(_nfStart, _nfEnd) + '\nreturn _neutralizePromptFence;')();
+
 const build = (callGemini, opts = {}) => {
   const warnLog = opts.warnLog || (() => {});
   const _serializeDomEdit = opts.serialize || ((html, doc) => (doc.body ? doc.body.innerHTML : html));
-  return new Function('callGemini', 'warnLog', '_serializeDomEdit', slice + '\nreturn addAiTableCaptions;')(callGemini, warnLog, _serializeDomEdit);
+  return new Function('callGemini', 'warnLog', '_serializeDomEdit', '_neutralizePromptFence', slice + '\nreturn addAiTableCaptions;')(callGemini, warnLog, _serializeDomEdit, _neutralizePromptFence);
 };
 
 const TBL = (id, body) => `<table id="${id}">${body || '<tbody><tr><td>1</td><td>2</td></tr></tbody>'}</table>`;
@@ -93,8 +114,19 @@ describe('anti-drift: addAiTableCaptions is wired into the main flow before the 
   // this test had been red — the function was orphaned. It is now restored on the live path, right
   // after the outline fix and before `const finalAudit = await auditOutputAccessibility(...)`.
   it('the main remediation calls addAiTableCaptions ahead of the final authoritative audit', () => {
-    const callIdx = dp.indexOf('await addAiTableCaptions(accessibleHtml)');
-    const finalAuditIdx = dp.indexOf('const finalAudit = await auditOutputAccessibility(accessibleHtml)');
+    // 2026-07-29: made ARGUMENT-agnostic. Both sites gained an abort signal, and
+    // the audit's input was renamed accessibleHtml -> _finalAuditHtml, so pinning
+    // the full call text made this red again for a reason that has nothing to do
+    // with the invariant. What matters is the ORDER: captions must be authored
+    // before the audit that reports final accessibility, or the audit scores a
+    // document that is about to change. Uniqueness is asserted so a rename fails
+    // loudly instead of an indexOf(-1) quietly satisfying "less than".
+    const callHits = dp.split('await addAiTableCaptions(').length - 1;
+    const auditHits = dp.split('const finalAudit = await auditOutputAccessibility(').length - 1;
+    expect(callHits, 'expected exactly one addAiTableCaptions call site').toBe(1);
+    expect(auditHits, 'expected exactly one finalAudit assignment').toBe(1);
+    const callIdx = dp.indexOf('await addAiTableCaptions(');
+    const finalAuditIdx = dp.indexOf('const finalAudit = await auditOutputAccessibility(');
     expect(callIdx).toBeGreaterThan(-1);
     expect(finalAuditIdx).toBeGreaterThan(-1);
     expect(callIdx).toBeLessThan(finalAuditIdx);

@@ -35,8 +35,18 @@ const { _isBurstQuotaErr, _isThrottleErr } = new Function(dp.slice(btStart, btEn
 // Anchor inside _geminiCall: the file also carries a DEAD legacy copy of this expression in the
 // zero-call-site _withRetry fossil (verified 2026-07-09 — grep its name: definition only), which
 // lacks the H2 burst-quota routing. Slicing THAT would test dead code.
-const gcStart = dp.indexOf('var _geminiCall = function(fn, initialMs, retryMs, label, onTransportStart) {');
-if (gcStart < 0) throw new Error('anchor missed _geminiCall — an indexOf(-1) fallthrough would slice the dead _withRetry fossil below');
+// Anchor is PARAMETER-AGNOSTIC on purpose. It used to pin the full 5-arg
+// signature and broke the moment _geminiCall gained requestProfile, owner and
+// explicitSignal — the suite then failed to LOAD, which is why it sat in
+// quarantine. The declaration name is the stable part; its arity is not.
+// Uniqueness is asserted rather than assumed, so a future RENAME still fails
+// loudly instead of letting indexOf(-1) slice the dead _withRetry fossil above
+// (that fossil carries its own isPermanent copy, so a bad slice would silently
+// test dead code).
+const GC_ANCHOR = 'var _geminiCall = function(';
+const gcHits = dp.split(GC_ANCHOR).length - 1;
+if (gcHits !== 1) throw new Error('expected exactly 1 _geminiCall declaration, found ' + gcHits + ' — re-point this anchor before trusting the slice');
+const gcStart = dp.indexOf(GC_ANCHOR);;
 const pmStart = dp.indexOf('var isPermanent = err && (err.isAuth', gcStart);
 const pmEnd = dp.indexOf('if (isPermanent) {', pmStart);
 const decide = new Function('err', '_isBurstQuotaErr',
