@@ -6522,7 +6522,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             // Bee silhouette
             c.save(); c.translate(beeCx, beeCy);
             // Wings shimmer
-            var wingF = Math.sin(t2 * 3) * 0.25;
+            // 0.4 rad/frame = 3.8 Hz, 16 samples/cycle. Was t2 * 3: 28.6 Hz at 2.1 samples per
+            // cycle, i.e. a new random-looking wing angle every single frame.
+            var wingF = Math.sin(t2 * 0.4) * 0.25;
             c.fillStyle = 'rgba(255,255,255,0.35)';
             c.save(); c.rotate(-wingF);
             c.beginPath(); c.ellipse(-12, -8, 14, 5, -0.3, 0, Math.PI * 2); c.fill();
@@ -6640,7 +6642,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             c.fillStyle = '#1e293b';
             c.beginPath(); c.arc(-16, -1, 3, 0, 6.28); c.fill();
             // Wings (fast)
-            var bWB = Math.sin(t2 * 0.7) * 3;
+            // Slowed from t2 * 0.7 (6.7 Hz, 9 samples/cycle) so the flap reads as a flap.
+            var bWB = Math.sin(t2 * 0.45) * 3;
             c.globalAlpha = 0.4; c.fillStyle = '#e0f2fe';
             c.beginPath(); c.ellipse(-4, -7 + bWB, 14, 4, -0.3, 0, 6.28); c.fill();
             c.beginPath(); c.ellipse(0, -8 - bWB, 12, 3.5, 0.3, 0, 6.28); c.fill();
@@ -7379,11 +7382,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.fillStyle = '#292524';
                 c.fillRect(fbX - 1, fbY - 2.5, 1.2, 5);
                 c.fillRect(fbX + 1, fbY - 2, 0.8, 4);
-                // BLURRED wings (big translucent ovals, high frequency)
-                var wBlur = Math.sin(t2 * 1.5 + fb) * 5;
-                c.globalAlpha = 0.3; c.fillStyle = '#e0f2fe';
-                c.beginPath(); c.ellipse(fbX - 6, fbY - 1 + wBlur, 10, 3, -0.4, 0, 6.28); c.fill();
-                c.beginPath(); c.ellipse(fbX + 6, fbY - 1 - wBlur, 10, 3, 0.4, 0, 6.28); c.fill();
+                // BLURRED wings — drawn as a motion smear, NOT as a fast oscillation.
+                //
+                // This was `Math.sin(t2 * 1.5 + fb) * 5`, moving the wings +/-5px at 1.5 radians
+                // per frame. t2 advances ~1 per frame, so that is ~14 Hz sampled 60 times a
+                // second: only 4.2 samples per cycle, far below what reads as motion. The wings
+                // did not appear to beat, they appeared to JUMP, and because the frame delta
+                // varies the jump was irregular. That is the stutter this view was reported for.
+                //
+                // A real honeybee wingbeat is ~230 Hz (the B-flat below middle C the field guide
+                // teaches). No 60 fps canvas can draw that, and a person watching a fanning bee
+                // does not see individual strokes - they see a translucent smear across the swept
+                // arc. So draw the smear: one static oval covering the same +/-5px envelope the
+                // oscillation used to sweep (ry 3 -> 5.5), with opacity breathing slowly at
+                // ~1.4 Hz (42 samples per cycle) to suggest effort without aliasing.
+                var wShimmer = 0.26 + Math.sin(t2 * 0.15 + fb) * 0.07;
+                c.globalAlpha = wShimmer; c.fillStyle = '#e0f2fe';
+                c.beginPath(); c.ellipse(fbX - 6, fbY - 1, 10, 5.5, -0.4, 0, 6.28); c.fill();
+                c.beginPath(); c.ellipse(fbX + 6, fbY - 1, 10, 5.5, 0.4, 0, 6.28); c.fill();
                 c.globalAlpha = 1;
               }
 
@@ -7523,8 +7539,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 var b1R = 15;
                 var b1X = hvX + Math.cos(b1A) * b1R;
                 var b1Y = hvY + Math.sin(b1A) * b1R;
-                // Shiver oscillation
-                var shiver = Math.sin(t2 * 0.8 + bi1) * 1;
+                // Shiver oscillation. Was t2 * 0.8 — 7.6 Hz at 7.9 samples per cycle, close
+                // enough to the frame rate to read as buzz rather than shivering, and it beat
+                // against the variable frame delta. Slowed to ~3.3 Hz (19 samples/cycle) and
+                // given slightly more amplitude so the motion is legible instead of flickery.
+                // Heater bees vibrate far faster than this in reality; as with the wings above,
+                // the honest choice at 60 fps is a visible suggestion, not a wrong fast number.
+                var shiver = Math.sin(t2 * 0.35 + bi1) * 1.6;
                 c.save(); c.translate(b1X + shiver * 0.3, b1Y + shiver * 0.3);
                 c.rotate(b1A + Math.PI / 2);
                 c.fillStyle = '#fbbf24';
@@ -7770,7 +7791,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               var inStraightRun = Math.abs(Math.sin(dnPhase)) < 0.3;
               var dancerX = dnScale * Math.cos(dnPhase) / (1 + Math.sin(dnPhase) * Math.sin(dnPhase));
               var dancerY = dnScale * 0.4 * Math.sin(dnPhase) * Math.cos(dnPhase) / (1 + Math.sin(dnPhase) * Math.sin(dnPhase));
-              var dancerWag = inStraightRun ? Math.sin(t2 * 1.2) * 3 : 0;
+              // The side-to-side waggle. A real bee wags ~13 times a second; at 60 fps that is
+              // 4.6 samples per cycle, so t2 * 1.2 did not render as a wag at all - the abdomen
+              // flicked to random offsets each frame. Unlike the wings, this motion is the thing
+              // being TAUGHT, so it must stay legible rather than become a smear: slowed to
+              // ~4 Hz (15 samples/cycle), which a student can actually follow.
+              //
+              // This does NOT touch the taught tempo. Distance encoding lives in dnPhase (the
+              // straight-run duration, standardised at ~1 km/sec to match the field guide and the
+              // worked math problems); only the wag's visual frequency changes here.
+              var dancerWag = inStraightRun ? Math.sin(t2 * 0.42) * 3 : 0;
               c.save();
               c.translate(dancerX, dancerY);
               // Orient bee along tangent (roughly upward in straight-run)
@@ -8163,11 +8193,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               c.fillStyle = '#292524';
               c.fillRect(px - 2, fbY - 5, 2, 10);
               c.fillRect(px + 1, fbY - 4, 1.5, 8);
-              // Rapid wing blur (big translucent ovals)
-              var wF = Math.sin(t2 * 0.8) * 5;
-              c.globalAlpha = 0.35; c.fillStyle = '#e0f2fe';
-              c.beginPath(); c.ellipse(px - 10, fbY - 3 + wF, 14, 3, -0.3, 0, 6.28); c.fill();
-              c.beginPath(); c.ellipse(px + 10, fbY - 3 - wF, 14, 3, 0.3, 0, 6.28); c.fill();
+              // Wing blur as a motion smear — same reasoning as the thermoregulation fanning
+              // bees: t2 * 0.8 is 7.6 Hz at 60 fps (7.9 samples per cycle), which reads as an
+              // uneven twitch rather than a wingbeat. Static oval covering the swept envelope
+              // (ry 3 -> 5.5) with a slow opacity breath instead.
+              var wFShimmer = 0.3 + Math.sin(t2 * 0.15) * 0.08;
+              c.globalAlpha = wFShimmer; c.fillStyle = '#e0f2fe';
+              c.beginPath(); c.ellipse(px - 10, fbY - 3, 14, 5.5, -0.3, 0, 6.28); c.fill();
+              c.beginPath(); c.ellipse(px + 10, fbY - 3, 14, 5.5, 0.3, 0, 6.28); c.fill();
               c.globalAlpha = 1;
 
               // Water molecules rising (steam-like particles)
@@ -9750,7 +9783,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 c.beginPath(); c.arc(-8.5, 0.5, 0.7, 0, 6.28); c.fill();
                 // 4 translucent wings (iridescent shimmer)
                 c.fillStyle = 'rgba(180,230,240,0.35)';
-                var dfBeat = Math.sin(t2 * 0.6) * 0.3;
+                var dfBeat = Math.sin(t2 * 0.45) * 0.3; // 4.3 Hz, 14 samples/cycle (was 0.6 = 10.5, borderline)
                 c.beginPath(); c.ellipse(-2, -3 + dfBeat, 6, 2, 0, 0, 6.28); c.fill();
                 c.beginPath(); c.ellipse(-2, 3 - dfBeat, 6, 2, 0, 0, 6.28); c.fill();
                 c.beginPath(); c.ellipse(2, -2.5 + dfBeat, 5, 1.6, 0, 0, 6.28); c.fill();
@@ -16054,7 +16087,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 var dnScale = 11;
                 var dnX = dnCenterX + dnScale * Math.cos(dnPhase) / (1 + Math.sin(dnPhase) * Math.sin(dnPhase));
                 var dnY = dnCenterY + dnScale * 0.35 * Math.sin(dnPhase) * Math.cos(dnPhase) / (1 + Math.sin(dnPhase) * Math.sin(dnPhase));
-                var dnWag = Math.sin(t2 * 0.9) * 1.2; // waggle on the straight run
+                var dnWag = Math.sin(t2 * 0.42) * 1.2; // waggle on the straight run, slowed to stay legible at 60 fps (dnPhase still carries the taught tempo)
                 var inStraightRun = Math.abs(Math.sin(dnPhase)) < 0.3;
                 // Direction arrow: sun-relative angle (show direction to flowers)
                 if (inStraightRun) {
@@ -19897,7 +19930,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               } : null
             }),
             h('p', { id: 'beehive-canvas-description', className: 'sr-only' }, beeView === 'scene' ? 'Use the Inspect hive, Explore meadow, and Check beekeeper buttons after the canvas. All pointer hotspots have equivalent keyboard controls.' : 'The selected educational topic is also named by its tab and described in the learning content below.'),
-            h('div', { 'data-beehive-scene-hud': 'true', className: 'pointer-events-none absolute left-3 top-3 z-20 flex max-w-[58%] flex-wrap gap-1.5' },
+            // Simulator HUD — scene ONLY. The 18 teaching diagrams share this canvas with the
+            // beekeeper simulation, and the whole HUD used to render over them: Season/Day and
+            // Colony% floated across the anatomy labels, and because the diagram's own title chip
+            // is positioned at exactly left:12px/top:12px (just below), the two collided in the
+            // same corner. A diagram is a figure, not a game screen, so it now gets a clean
+            // canvas and the stage chip alone names what is being shown.
+            beeView === 'scene' && h('div', { 'data-beehive-scene-hud': 'true', className: 'pointer-events-none absolute left-3 top-3 z-20 flex max-w-[58%] flex-wrap gap-1.5' },
               beeView === 'scene' && h('span', { 'data-beehive-stage-chip': 'beekeeper', className: 'rounded-full border border-amber-300/35 bg-amber-500/90 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-slate-950 shadow-lg backdrop-blur-md' }, 'Live apiary'),
               h('span', { className: 'rounded-full border border-white/20 bg-slate-950/70 px-2.5 py-1 text-[10px] font-black text-amber-200 shadow-lg backdrop-blur-md' }, (seasonNames[season] || 'Season') + ' \u00B7 Day ' + day),
               h('span', { className: 'rounded-full border border-white/20 bg-slate-950/70 px-2.5 py-1 text-[10px] font-black text-emerald-200 shadow-lg backdrop-blur-md' }, 'Colony ' + colonyHealth + '%'),
