@@ -279,6 +279,64 @@ describe('I-V curve reports real currents', () => {
   });
 });
 
+describe("Moore's Law milestones are real chips with their real counts", () => {
+  // In a module that teaches Moore's Law the data points ARE the lesson. Four were
+  // wrong: the A11 was listed at 19.2 billion (it is 4.3) and the M1 at 50 billion
+  // (it is 16), while the 2022 and 2024 counts were correct but attached to the
+  // wrong chips — 114 billion is the M1 Ultra, not the M2 Ultra, and 208 billion is
+  // NVIDIA's B200, not an "Apple M4 Ultra", which does not exist.
+  const milestone = (year) => {
+    const re = new RegExp('\\{ year: ' + year + ", transistors: (\\d+),[^}]*?name: t\\('[^']*',\\s*'([^']*)'\\)");
+    const m = re.exec(source);
+    if (!m) throw new Error('milestone not found for ' + year);
+    return { transistors: Number(m[1]), name: m[2] };
+  };
+
+  it('has the documented transistor counts', () => {
+    expect(milestone(1971).transistors).toBe(2300);          // Intel 4004
+    expect(milestone(2017).transistors).toBe(4.3e9);         // Apple A11 Bionic
+    expect(milestone(2020).transistors).toBe(16e9);          // Apple M1
+    expect(milestone(2022).transistors).toBe(114e9);         // Apple M1 Ultra
+    expect(milestone(2024).transistors).toBe(208e9);         // NVIDIA B200
+  });
+
+  it('names the chip that actually holds each count', () => {
+    expect(milestone(2017).name).toMatch(/A11/);
+    expect(milestone(2020).name).toMatch(/^Apple M1$/);
+    expect(milestone(2022).name).toMatch(/M1 Ultra/);
+    expect(milestone(2024).name).toMatch(/B200/);
+    // The two that were invented or misattributed must not come back.
+    expect(source).not.toMatch(/Apple M4 Ultra/);
+    expect(source).not.toMatch(/'Apple M2 Ultra'/);
+  });
+
+  it('is not overridden by a stale ui_strings entry', () => {
+    // The catalog wins over tool prose, so a leftover value there would put the
+    // wrong chip name back on the graph.
+    const cat = readFileSync('ui_strings.js', 'utf8');
+    expect(cat).not.toMatch(/"apple_m4_ultra"/);
+    expect(cat).not.toMatch(/"apple_m2_ultra"/);
+    expect(cat).toMatch(/"apple_m1_ultra": "Apple M1 Ultra"/);
+    expect(cat).toMatch(/"nvidia_b200": "NVIDIA B200"/);
+  });
+
+  it('keeps every milestone within an order of magnitude of the doubling curve', () => {
+    // Moore's own curve: 64 transistors in 1965, doubling every two years. Real
+    // chips scatter around it, but a point off by 10x means a typo, not history.
+    const re = /\{ year: (\d{4}), transistors: (\d+),/g;
+    let m, checked = 0;
+    while ((m = re.exec(source)) !== null) {
+      const year = Number(m[1]), n = Number(m[2]);
+      const pred = 64 * Math.pow(2, (year - 1965) / 2);
+      const ratio = n / pred;
+      expect(ratio, year + ' is ' + ratio.toFixed(1) + 'x the Moore curve').toBeGreaterThan(0.1);
+      expect(ratio, year + ' is ' + ratio.toFixed(1) + 'x the Moore curve').toBeLessThan(10);
+      checked += 1;
+    }
+    expect(checked).toBeGreaterThanOrEqual(14);
+  });
+});
+
 describe('deploy mirror carries the corrected physics', () => {
   it('is byte-identical to the source', () => {
     // The mirror is the copy that ships and does not always auto-sync.

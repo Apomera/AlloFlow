@@ -1285,6 +1285,11 @@ window.StemLab = window.StemLab || {
             // Drain
             cx.fillStyle = type === 'mosfet-n' ? '#EF4444' : '#3B82F6';
             cx.fillRect(midX + 55, midY - 15, 25, 30);
+            // Back to white before the letter. The line above sets fillStyle to the
+            // block colour for the rectangle, so without this the D was drawn red on
+            // red and was invisible — the source terminal was labelled and the drain
+            // silently was not.
+            cx.fillStyle = '#FFF';
             cx.fillText('D', midX + 68, midY + 4);
             // Substrate label
             cx.fillStyle = '#64748B'; cx.font = '8px sans-serif';
@@ -2523,10 +2528,10 @@ window.StemLab = window.StemLab || {
           { year: 2006, transistors: 291000000, node: '65nm',  name: t('stem.semiconductor.core_2_duo', 'Core 2 Duo'), chip: 'Multi-core era' },
           { year: 2010, transistors: 1170000000,node: '32nm',  name: t('stem.semiconductor.core_i7_westmere', 'Core i7 (Westmere)'), chip: 'High-k/Metal gate' },
           { year: 2014, transistors: 2600000000,node: '14nm',  name: t('stem.semiconductor.core_i7_broadwell', 'Core i7 (Broadwell)'), chip: 'FinFET' },
-          { year: 2017, transistors: 19200000000, node: '10nm', name: t('stem.semiconductor.apple_a11', 'Apple A11'), chip: 'Neural engine' },
-          { year: 2020, transistors: 50000000000, node: '5nm',  name: t('stem.semiconductor.apple_m1', 'Apple M1'), chip: 'Arm SoC' },
-          { year: 2022, transistors: 114000000000, node: '3nm', name: t('stem.semiconductor.apple_m2_ultra', 'Apple M2 Ultra'), chip: 'Chiplet' },
-          { year: 2024, transistors: 208000000000, node: '3nm', name: t('stem.semiconductor.apple_m4_ultra', 'Apple M4 Ultra'), chip: 'Advanced packaging' }
+          { year: 2017, transistors: 4300000000, node: '10nm', name: t('stem.semiconductor.apple_a11', 'Apple A11 Bionic'), chip: 'Neural engine' },
+          { year: 2020, transistors: 16000000000, node: '5nm',  name: t('stem.semiconductor.apple_m1', 'Apple M1'), chip: 'Arm SoC' },
+          { year: 2022, transistors: 114000000000, node: '5nm', name: t('stem.semiconductor.apple_m1_ultra', 'Apple M1 Ultra'), chip: 'Dual-die interconnect' },
+          { year: 2024, transistors: 208000000000, node: '4nm', name: t('stem.semiconductor.nvidia_b200', 'NVIDIA B200'), chip: 'Dual-reticle GPU' }
         ];
 
         // Find nearest milestone
