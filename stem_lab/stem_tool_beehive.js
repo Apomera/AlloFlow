@@ -19930,17 +19930,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               } : null
             }),
             h('p', { id: 'beehive-canvas-description', className: 'sr-only' }, beeView === 'scene' ? 'Use the Inspect hive, Explore meadow, and Check beekeeper buttons after the canvas. All pointer hotspots have equivalent keyboard controls.' : 'The selected educational topic is also named by its tab and described in the learning content below.'),
-            // Simulator HUD — scene ONLY. The 18 teaching diagrams share this canvas with the
-            // beekeeper simulation, and the whole HUD used to render over them: Season/Day and
-            // Colony% floated across the anatomy labels, and because the diagram's own title chip
-            // is positioned at exactly left:12px/top:12px (just below), the two collided in the
-            // same corner. A diagram is a figure, not a game screen, so it now gets a clean
-            // canvas and the stage chip alone names what is being shown.
-            beeView === 'scene' && h('div', { 'data-beehive-scene-hud': 'true', className: 'pointer-events-none absolute left-3 top-3 z-20 flex max-w-[58%] flex-wrap gap-1.5' },
-              beeView === 'scene' && h('span', { 'data-beehive-stage-chip': 'beekeeper', className: 'rounded-full border border-amber-300/35 bg-amber-500/90 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-slate-950 shadow-lg backdrop-blur-md' }, 'Live apiary'),
-              h('span', { className: 'rounded-full border border-white/20 bg-slate-950/70 px-2.5 py-1 text-[10px] font-black text-amber-200 shadow-lg backdrop-blur-md' }, (seasonNames[season] || 'Season') + ' \u00B7 Day ' + day),
-              h('span', { className: 'rounded-full border border-white/20 bg-slate-950/70 px-2.5 py-1 text-[10px] font-black text-emerald-200 shadow-lg backdrop-blur-md' }, 'Colony ' + colonyHealth + '%'),
-              beekeeperMotionPaused && h('span', { className: 'rounded-full border border-sky-300/35 bg-sky-700/90 px-2.5 py-1 text-[10px] font-black text-white shadow-lg backdrop-blur-md' }, 'Motion paused')),
+            // Simulator HUD — scene ONLY, and ONE pill.
+            //
+            // Two problems, both fixed here. First, the 18 teaching diagrams share this canvas with
+            // the beekeeper simulation and the whole HUD used to render over them: Season/Day and
+            // Colony% floated across the anatomy labels, and since the diagram's own title chip
+            // sits at exactly left:12px/top:12px (just below), the two collided in the same corner.
+            // A diagram is a figure, not a game screen, so it now gets a clean canvas and the stage
+            // chip alone names what is being shown.
+            //
+            // Second, the HUD was `flex max-w-[58%] flex-wrap` over four separate chips, so on a
+            // narrow canvas it wrapped to two or three rows and cost a corner plus vertical space.
+            // Now ONE non-wrapping pill, and the saving comes from LAYOUT, not from deleting
+            // information. Two things I tried to drop and had to put back, both caught by the
+            // mode smoke test:
+            //   - the stage name carries data-beehive-stage-chip and is the canvas's identity
+            //     marker for orientation; "you can see it is an apiary" is not true of a screen
+            //     reader user.
+            //   - the paused state. The big MOTION PAUSED overlay is aria-hidden="true", so this
+            //     chip is the only paused text a screen reader can reach in this region. It is
+            //     conditional, so it costs width only while actually paused.
+            // min-w-0 + overflow-hidden so the pill clips instead of growing past its cap.
+            beeView === 'scene' && h('div', { 'data-beehive-scene-hud': 'true', className: 'pointer-events-none absolute left-3 top-3 z-20 flex max-w-[52%] items-center gap-2 overflow-hidden whitespace-nowrap rounded-full border border-white/20 bg-slate-950/70 px-3 py-1 shadow-lg backdrop-blur-md' },
+              h('span', { 'data-beehive-stage-chip': 'beekeeper', className: 'shrink-0 text-[10px] font-black uppercase tracking-wide text-amber-300' }, 'Live apiary'),
+              h('span', { 'aria-hidden': 'true', className: 'h-3 w-px shrink-0 bg-white/25' }),
+              h('span', { className: 'min-w-0 truncate text-[10px] font-black text-amber-200' }, (seasonNames[season] || 'Season') + ' \u00B7 Day ' + day),
+              h('span', { 'aria-hidden': 'true', className: 'h-3 w-px shrink-0 bg-white/25' }),
+              h('span', { className: 'shrink-0 text-[10px] font-black text-emerald-200' }, 'Colony ' + colonyHealth + '%'),
+              beekeeperMotionPaused && h('span', { 'aria-hidden': 'true', className: 'h-3 w-px shrink-0 bg-white/25' }),
+              beekeeperMotionPaused && h('span', { className: 'shrink-0 text-[10px] font-black text-sky-200' }, 'Motion paused')),
             beeView !== 'scene' && h('div', { 'data-beehive-stage-chip': 'beekeeper', style: { position: 'absolute', left: '12px', top: '12px', zIndex: 20, maxWidth: 'calc(100% - 132px)' }, 'aria-hidden': 'true' },
               h('span', { 'data-stage-dot': 'true' }),
               activeBeeView.label),
@@ -19949,16 +19967,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                 h('div', { className: 'text-2xl leading-none' }, '\u23F8'),
                 h('div', { className: 'mt-2 text-base font-black tracking-tight' }, 'MOTION PAUSED'),
                 h('p', { className: 'mt-1 text-[11px] font-semibold text-amber-100' }, 'The canvas is still. Explore controls remain available.'))),
-            beeView === 'scene' && h('div', { 'data-beehive-scene-actions': 'true', className: 'absolute inset-x-3 bottom-3 z-20 grid grid-cols-3 gap-1.5 sm:gap-2', role: 'group', 'aria-label': 'Explore the living apiary scene' }, [
+            // Actions + display controls in ONE cluster. The actions used to be a full-width bar across
+            // the bottom of the canvas; icon-only here, they cost a corner instead of an edge. Every
+            // button keeps aria-label and title, so nothing is lost to a screen reader or a tooltip -
+            // only the visible caption goes, and the icons already carried the meaning.
+            h('div', { 'data-beehive-stage-controls': 'true', className: 'absolute right-2 top-2 z-30 flex max-w-[52%] flex-wrap items-center justify-end gap-2', role: 'group', 'aria-label': 'Beekeeper canvas controls' },
+              beeView === 'scene' && h('div', { 'data-beehive-scene-actions': 'true', className: 'flex items-center gap-1.5', role: 'group', 'aria-label': 'Explore the living apiary scene' }, [
               { icon: '\u2B22', label: 'Inspect hive', hint: 'Open colony systems', action: function() { upd('showInspect', true); triggerBeekeeperAction('inspect', "Opening the hive - let's see what's inside.", '\uD83D\uDD0D'); } },
               { icon: '\u273F', label: 'Explore meadow', hint: 'See pollination', action: function() { selectBeeView('pollination'); if (addToast) addToast('Switched to the Pollination view - follow the flower-to-food connection.', 'info'); } },
               { icon: '\uD83E\uDDD1\u200D\uD83C\uDF3E', label: 'Check beekeeper', hint: 'Read action status', action: function() { var currentAction = d.bkAnim && d.bkAnim.caption ? d.bkAnim.caption : 'Standing by. Choose a management action below.'; if (addToast) addToast('Beekeeper: ' + currentAction, 'info'); } }
-            ].map(function(hotspot) {
-              return h('button', { key: hotspot.label, type: 'button', onClick: hotspot.action, className: 'group min-h-[48px] rounded-xl border border-white/20 bg-slate-950/78 px-2 py-2 text-left text-white shadow-xl backdrop-blur-md transition-all hover:-translate-y-0.5 hover:bg-slate-900/90 motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300' },
-                h('span', { className: 'flex items-center justify-center gap-1 text-[9px] font-black uppercase tracking-wide sm:justify-start sm:text-[10px]' }, h('span', { className: 'text-sm', 'aria-hidden': 'true' }, hotspot.icon), h('span', null, hotspot.label)),
-                h('span', { className: 'mt-0.5 hidden text-[8px] font-semibold text-slate-300 sm:block' }, hotspot.hint));
-            })),
-            h('div', { 'data-beehive-stage-controls': 'true', className: 'absolute right-2 top-2 z-30 flex items-center gap-2', role: 'group', 'aria-label': 'Beekeeper canvas display controls' },
+              ].map(function(hotspot) {
+                return h('button', { key: hotspot.label, type: 'button', onClick: hotspot.action,
+                  'aria-label': hotspot.label + ' \u2014 ' + hotspot.hint,
+                  title: hotspot.label + ' \u2014 ' + hotspot.hint,
+                  className: 'inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border border-white/20 bg-slate-950/78 text-base text-white shadow-lg backdrop-blur-md transition-colors hover:bg-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400' },
+                  h('span', { 'aria-hidden': 'true' }, hotspot.icon));
+              })),
+              beeView === 'scene' && h('span', { 'aria-hidden': 'true', className: 'h-6 w-px bg-white/25' }),
               h('button', {
                 type: 'button',
                 onClick: function() { var nextPaused = !beekeeperMotionPaused; upd('motionPaused', nextPaused); announceBee(nextPaused ? 'Beekeeper canvas animation paused.' : 'Beekeeper canvas animation resumed.', false); },

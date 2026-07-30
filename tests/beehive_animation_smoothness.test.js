@@ -85,6 +85,52 @@ describe('beehive canvas animation smoothness', () => {
     expect(SRC).toMatch(/beeView === 'scene' && h\('div', \{ 'data-beehive-scene-hud'/);
   });
 
+  // Layout: chrome should cost corners, not edges. Before 2026-07-29 the scene carried a wrapping
+  // HUD (up to 58% wide) top-left, a full-width action bar across the bottom, and display controls
+  // top-right - three corners plus an entire edge, over a canvas whose whole job is to be looked
+  // at. These pin the shape without dictating styling.
+  describe('canvas chrome footprint', () => {
+    it('has no full-width bar pinned across the bottom of the canvas', () => {
+      // `inset-x-3 bottom-3` spans the canvas width. That is the pattern that ate the bottom edge.
+      expect(SRC).not.toMatch(/data-beehive-scene-actions': 'true', className: '[^']*inset-x-\d+ bottom-/);
+    });
+
+    it('keeps the scene HUD to a single non-wrapping pill', () => {
+      const hud = SRC.match(/'data-beehive-scene-hud': 'true', className: '([^']*)'/);
+      expect(hud, 'scene HUD not found').toBeTruthy();
+      expect(hud[1]).not.toContain('flex-wrap');
+      expect(hud[1]).toContain('whitespace-nowrap');
+      // And it must not be allowed to claim most of the width.
+      const cap = hud[1].match(/max-w-\[(\d+)%\]/);
+      expect(cap, 'HUD has no max-width cap').toBeTruthy();
+      expect(Number(cap[1])).toBeLessThanOrEqual(52);
+    });
+
+    it('keeps the information the HUD is responsible for', () => {
+      // Compaction must come from layout, not from dropping content. Each of these was removed
+      // during the 2026-07-29 pass and had to be restored: the stage chip is the canvas identity
+      // marker, and the paused text is the only paused state a screen reader can reach here
+      // (the big MOTION PAUSED overlay is aria-hidden).
+      const hudBlock = SRC.slice(SRC.indexOf("'data-beehive-scene-hud'"), SRC.indexOf("beeView !== 'scene' && h('div', { 'data-beehive-stage-chip'"));
+      expect(hudBlock).toContain("'data-beehive-stage-chip': 'beekeeper'");
+      expect(hudBlock).toContain('Motion paused');
+      expect(hudBlock).toContain('Colony ');
+    });
+
+    it('gives every icon-only scene action an accessible name', () => {
+      // The visible captions were dropped when the actions became icon buttons. aria-label and
+      // title are what is left, so their absence would make the controls unusable rather than
+      // merely terse.
+      const actions = SRC.slice(SRC.indexOf("'data-beehive-scene-actions': 'true'"));
+      const btn = actions.slice(0, actions.indexOf('})),'));
+      expect(btn).toMatch(/'aria-label': hotspot\.label/);
+      expect(btn).toMatch(/title: hotspot\.label/);
+      // And they must stay a real touch target.
+      expect(btn).toMatch(/min-h-\[44px\]/);
+      expect(btn).toMatch(/min-w-\[44px\]/);
+    });
+  });
+
   it('stays byte-identical to the CDN mirror', () => {
     // stem_lab/ is CDN-live and desktop/web-app/public/stem_lab/ is desktop-live. A fix in one
     // copy only is a fix half the users get.
