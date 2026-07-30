@@ -541,3 +541,76 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     expect(feedback.textContent).toContain('Correct because colony signals coordinate behavior');
   });
 });
+
+// ── Queen RTS + Drone Flight UX audit, 2026-07-30 ───────────────────────────
+// Audited both simulations against the failure classes this repo has been bitten by. Two came back
+// clean and are pinned so they stay that way; three were real and are fixed here.
+//
+// Clean, and worth recording so nobody "fixes" them again:
+//   - No mouse-only controls in either sim. Every interactive surface is a real <button>, so the
+//     role+tabIndex-without-onKeyDown trap (announced as a control, dead from the keyboard) is
+//     absent.
+//   - The drone canvas is NOT a dead tab stop. It is role="img" with aria-keyshortcuts and an
+//     aria-describedby paragraph naming every key, and the flight loop listens at document level.
+describe('beehive simulations — Queen RTS and Drone Flight UX', () => {
+  const SRC = source;   // the module source this suite already reads at the top of the file
+
+  it('has no aria-label stranded on a role-less div or span', () => {
+    // A container with aria-label and no role has its NAME DROPPED by browsers, so the label is
+    // announced nowhere. Four group names and one milestone glyph were in this state.
+    // Check each container's OWN props object — from `h('div', {` to the first NESTED h( on that
+    // line. Scanning the whole line matched aria-labels belonging to nested children of a
+    // <button>, which legitimately carry their own name, and is how this test first went red.
+    const stranded = [];
+    SRC.split('\n').forEach((line, i) => {
+      const re = /h\('(?:div|span)',\s*\{/g;
+      let m;
+      while ((m = re.exec(line))) {
+        const rest = line.slice(m.index + m[0].length);
+        const nested = rest.indexOf("h('");
+        const props = nested === -1 ? rest : rest.slice(0, nested);
+        if (/'aria-label':/.test(props) && !/role:/.test(props)) {
+          stranded.push('L' + (i + 1) + ' ' + line.trim().slice(0, 90));
+        }
+      }
+    });
+    expect(stranded, 'aria-label with no role:\n  ' + stranded.join('\n  ')).toEqual([]);
+  });
+
+  it('lets the drone flight pad be held with Space as well as Enter', () => {
+    // These buttons are hold-to-steer and deliberately have NO onClick, so Space — the other native
+    // button activation key, and the climb key — used to do nothing at all on a focused control.
+    // Anchor on the button itself: 'data-flight-control' first appears in a CSS string near the top
+    // of the file, so indexOf on the attribute name landed in the stylesheet.
+    const pad = SRC.slice(SRC.indexOf("h('button', { key: control.label"));
+    const decl = pad.slice(0, pad.indexOf("}, h('span'"));
+    expect(decl).toMatch(/onKeyDown[\s\S]{0,120}e\.key === ' '/);
+    expect(decl).toMatch(/onKeyUp[\s\S]{0,120}e\.key === ' '/);
+    // Releasing on blur too, or tabbing away mid-press leaves the drone steering itself.
+    expect(decl).toMatch(/onBlur: release/);
+  });
+
+  it('keeps every canvas-overlay button at a 44px touch target', () => {
+    const small = [...SRC.matchAll(/min-h-\[(\d\d)px\]/g)]
+      .map((m) => Number(m[1])).filter((px) => px < 44);
+    expect(small, 'touch targets under 44px: ' + small.join(', ')).toEqual([]);
+  });
+
+  it('keeps the drone canvas describing its own controls', () => {
+    // The description promises "equivalent labeled touch controls follow the canvas". They do exist
+    // (a full pointer-driven pad), and that promise must not outlive them.
+    expect(SRC).toMatch(/id: 'beehive-drone-canvas-description'/);
+    expect(SRC).toMatch(/aria-keyshortcuts': 'ArrowUp/);
+    expect(SRC).toMatch(/'data-flight-control'/);
+  });
+
+  it('guards the Queen RTS pause key the same way the drone game does', () => {
+    // Memory flagged the queen handler as never audited for the case-normalisation, input-target and
+    // stuck-key bugs fixed in the drone game. Audited: it normalises case and guards typing targets,
+    // and it holds no continuous key state so it needs no blur reset. Pinned rather than changed.
+    const qk = SRC.slice(SRC.indexOf('function onQueenKey'));
+    const body = qk.slice(0, qk.indexOf('document.addEventListener'));
+    expect(body).toMatch(/toLowerCase\(\)/);
+    expect(body).toMatch(/TEXTAREA|isContentEditable/);
+  });
+});
