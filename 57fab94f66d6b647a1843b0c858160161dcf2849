@@ -1,0 +1,27 @@
+SCOPE CORRECTION (added 2026-07-29, after this commit was pushed).
+
+This commit's message says "Modules + copy + tests" and reads as if ui_strings.js
+carried only blueprint/tour copy. It did not. The ui_strings.js change here added
+288 keys, of which only 24 are this commit's subject:
+
+  mine (24)   tour.udl_guide_*, tour.universal_settings_*,
+              tour.upload_accessibility_*, blueprint.* (archive, fail_*,
+              what_is_this, aria/reorder, template_step_count_one, ...)
+  swept (264) stem.areaperimeter.* (~230), plus the stem.back / layers_slider /
+              off / on / surface_area / volume_label array-to-object
+              restructuring (which also accounts for the 6 removed keys), and
+              glossary.will_translate / glossary.no_languages_hint
+
+Those 264 belong to a concurrent session's STEM area-perimeter work and were
+swept in because they live in the same file. Nothing was lost or overwritten;
+the attribution in the message is simply too narrow.
+
+Cause of the bad check: the diff was audited with a line-grep for '"stem.' —
+but ui_strings.js is NESTED JSON, so flat dotted keys never appear as literal
+text and the grep could not see them. Correct method: flatten both revisions
+(JSON.parse + recursive key join) and set-diff the key sets.
+
+Not amended: this commit is already on origin, and amend/reset are disallowed in
+this shared working tree.
+
+Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>
