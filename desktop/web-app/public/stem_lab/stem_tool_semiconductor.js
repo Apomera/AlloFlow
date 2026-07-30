@@ -736,7 +736,18 @@ window.StemLab = window.StemLab || {
       // DOPING SIMULATOR (enhanced)
       // ════════════════════════════════════════════
       function renderDoping() {
-        var dopant = DOPANTS[d.dopant] || DOPANTS.none;
+        // Normalise the raw state value ONCE. The line that seeds dopant positions
+        // used to read d.dopant.length directly, so a state slice without a `dopant`
+        // key threw "Cannot read properties of undefined" — and because renderTool
+        // swallows render throws, the whole tool went blank rather than just this
+        // panel. The default state does set dopant:'none', but any partially
+        // restored or older persisted slice hit it.
+        //
+        // It also fixes a quieter bug: `d.dopant !== 'none'` is TRUE when the key is
+        // undefined, so the animation loop below kept running on a static intrinsic
+        // lattice. Normalising makes a missing key behave exactly like 'none'.
+        var dopantKey = d.dopant || 'none';
+        var dopant = DOPANTS[dopantKey] || DOPANTS.none;
         var count = d.dopantCount || 3;
         var gridSize = d.crystalSize || 8;
 
@@ -754,7 +765,7 @@ window.StemLab = window.StemLab || {
           var cellH = (H - 30) / gridSize;
 
           var dopantPositions = {};
-          var seed = d.dopant.length * 7 + count * 13;
+          var seed = dopantKey.length * 7 + count * 13;
           for (var di = 0; di < count && di < gridSize * gridSize * 0.3; di++) {
             var pos = (seed * (di + 1) * 37 + di * 53) % (gridSize * gridSize);
             dopantPositions[pos] = true;
@@ -766,7 +777,7 @@ window.StemLab = window.StemLab || {
               var cx1 = 10 + col * cellW + cellW / 2;
               var cy1 = 10 + row * cellH + cellH / 2;
               var idx = row * gridSize + col;
-              var isDopant = dopantPositions[idx] && d.dopant !== 'none';
+              var isDopant = dopantPositions[idx] && dopantKey !== 'none';
 
               // Bonds
               cx.strokeStyle = '#334155';
@@ -832,10 +843,10 @@ window.StemLab = window.StemLab || {
           cx.font = '10px sans-serif';
           cx.textAlign = 'left';
           cx.textBaseline = 'alphabetic';
-          cx.fillText('Si lattice' + (d.dopant !== 'none' ? ' + ' + dopant.name + ' (' + dopant.type + '-type)' : ' (intrinsic)'), 10, H - 5);
+          cx.fillText('Si lattice' + (dopantKey !== 'none' ? ' + ' + dopant.name + ' (' + dopant.type + '-type)' : ' (intrinsic)'), 10, H - 5);
 
           // Doping concentration readout (6-8+)
-          if (gradeBand !== 'K-2' && gradeBand !== '3-5' && d.dopant !== 'none') {
+          if (gradeBand !== 'K-2' && gradeBand !== '3-5' && dopantKey !== 'none') {
             var concExp = 14 + count;
             cx.fillStyle = '#22D3EE';
             cx.font = '9px sans-serif';
@@ -851,16 +862,16 @@ window.StemLab = window.StemLab || {
           // Only loop while there's a moving free carrier to animate (dopant set).
           // The intrinsic (none) lattice is static — paint it once; the effect
           // re-fires and restarts the loop when the student picks a real dopant.
-          function draw() { if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; } canvasRef(canvas); if (d.dopant !== 'none') animRef.current = requestAnimationFrame(draw); }
+          function draw() { if (!canvas.isConnected) { cancelAnimationFrame(animRef.current); return; } canvasRef(canvas); if (dopantKey !== 'none') animRef.current = requestAnimationFrame(draw); }
           draw();
           return function() { cancelAnimationFrame(animRef.current); };
-        }, [d.dopant, d.dopantCount, d.crystalSize]);
+        }, [dopantKey, d.dopantCount, d.crystalSize]);
 
         return h('div', null,
           h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
             Object.keys(DOPANTS).map(function(key) {
               var dp = DOPANTS[key];
-              return pill(dp.name, d.dopant === key, function() {
+              return pill(dp.name, dopantKey === key, function() {
                 upd('dopant', key);
                 if (key !== 'none') tryAwardXP('dope-' + key, 8, 'Tried ' + dp.name + ' doping');
                 if (typeof canvasNarrate === 'function') canvasNarrate('semiconductor', 'dopantSelect', dp.name + (dp.type ? ', ' + dp.type + '-type doping. Majority carriers: ' + (dp.type === 'n' ? 'electrons' : 'holes') + '.' : '. Intrinsic silicon, no doping.'), { debounce: 500 });
@@ -871,26 +882,26 @@ window.StemLab = window.StemLab || {
           h('canvas', { 
             id: 'semi-doping-canvas', width: 440, height: 300,
             className: 'w-full rounded-lg bg-slate-900 border border-slate-700',
-            role: 'img', 'aria-label': 'Crystal lattice showing ' + (d.dopant !== 'none' ? dopant.name + ' doped silicon' : 'intrinsic silicon')
+            role: 'img', 'aria-label': 'Crystal lattice showing ' + (dopantKey !== 'none' ? dopant.name + ' doped silicon' : 'intrinsic silicon')
           }),
           sliderRow('Dopant atoms', count, 1, Math.floor(gridSize * gridSize * 0.3), 1, function(v) { upd('dopantCount', v); }),
           sliderRow('Grid size', gridSize, 4, 12, 1, function(v) { upd('crystalSize', v); }),
           // Stats
-          d.dopant !== 'none' && h('div', { className: 'flex gap-2 mt-2 flex-wrap' },
+          dopantKey !== 'none' && h('div', { className: 'flex gap-2 mt-2 flex-wrap' },
             statBadge('Type', dopant.type + '-type', dopant.type === 'n' ? 'text-blue-400' : 'text-red-400'),
             statBadge('Valence e\u207B', String(dopant.valence)),
             statBadge('Majority', dopant.type === 'n' ? 'Electrons' : 'Holes'),
             statBadge('Minority', dopant.type === 'n' ? 'Holes' : 'Electrons')
           ),
           infoBox(gradeText(
-            d.dopant === 'none' ? 'Silicon is like a team where everyone holds hands. No free helpers!' : dopant.type === 'n' ? dopant.name + ' brings an EXTRA helper (electron) that can move around freely!' : dopant.name + ' is missing a helper, leaving a hole that other helpers can jump into!',
-            d.dopant === 'none' ? 'Intrinsic silicon: 4 valence electrons each, all shared in bonds. Very few free carriers.' : dopant.type === 'n' ? 'N-type: ' + dopant.name + ' has ' + dopant.valence + ' electrons (1 extra). Extra electrons are free to move and carry current.' : 'P-type: ' + dopant.name + ' has ' + dopant.valence + ' electrons (1 fewer). Creates holes that act as positive charge carriers.',
-            d.dopant === 'none' ? 'Intrinsic Si: n\u1D62 = p\u1D62 = 1.5\u00D710\u00B9\u2070 cm\u207B\u00B3 at 300K. Equal electron-hole pairs from thermal generation.' : dopant.type === 'n' ? 'N-type with ' + dopant.name + ': N\u2093 >> n\u1D62. Majority: electrons, minority: holes. E\u1DA0 shifts toward E\u1D9C.' : 'P-type with ' + dopant.name + ': N\u2090 >> n\u1D62. Majority: holes, minority: electrons. E\u1DA0 shifts toward E\u1D65.',
-            d.dopant === 'none' ? 'Intrinsic Si at 300K: n = p = n\u1D62 = 1.5\u00D710\u00B9\u2070 cm\u207B\u00B3. Fermi level at mid-gap. \u03C3 = q\u00B7n\u1D62\u00B7(\u03BC\u2099 + \u03BC\u209A) \u2248 4.4\u00D710\u207B\u2076 S/cm (\u03C1 \u2248 2.3\u00D710\u2075 \u03A9\u00B7cm).' : dopant.type === 'n' ? 'N-type (' + dopant.name + '): n \u2248 N\u2093, p = n\u1D62\u00B2/N\u2093. E\u1DA0 \u2212 E\u1D62 = kT\u00B7ln(N\u2093/n\u1D62). Conductivity \u03C3 \u2248 q\u00B7N\u2093\u00B7\u03BC\u2099. Mass-action law: np = n\u1D62\u00B2.' : 'P-type (' + dopant.name + '): p \u2248 N\u2090, n = n\u1D62\u00B2/N\u2090. E\u1D62 \u2212 E\u1DA0 = kT\u00B7ln(N\u2090/n\u1D62). \u03C3 \u2248 q\u00B7N\u2090\u00B7\u03BC\u209A. Mass-action law: np = n\u1D62\u00B2.'
+            dopantKey === 'none' ? 'Silicon is like a team where everyone holds hands. No free helpers!' : dopant.type === 'n' ? dopant.name + ' brings an EXTRA helper (electron) that can move around freely!' : dopant.name + ' is missing a helper, leaving a hole that other helpers can jump into!',
+            dopantKey === 'none' ? 'Intrinsic silicon: 4 valence electrons each, all shared in bonds. Very few free carriers.' : dopant.type === 'n' ? 'N-type: ' + dopant.name + ' has ' + dopant.valence + ' electrons (1 extra). Extra electrons are free to move and carry current.' : 'P-type: ' + dopant.name + ' has ' + dopant.valence + ' electrons (1 fewer). Creates holes that act as positive charge carriers.',
+            dopantKey === 'none' ? 'Intrinsic Si: n\u1D62 = p\u1D62 = 1.5\u00D710\u00B9\u2070 cm\u207B\u00B3 at 300K. Equal electron-hole pairs from thermal generation.' : dopant.type === 'n' ? 'N-type with ' + dopant.name + ': N\u2093 >> n\u1D62. Majority: electrons, minority: holes. E\u1DA0 shifts toward E\u1D9C.' : 'P-type with ' + dopant.name + ': N\u2090 >> n\u1D62. Majority: holes, minority: electrons. E\u1DA0 shifts toward E\u1D65.',
+            dopantKey === 'none' ? 'Intrinsic Si at 300K: n = p = n\u1D62 = 1.5\u00D710\u00B9\u2070 cm\u207B\u00B3. Fermi level at mid-gap. \u03C3 = q\u00B7n\u1D62\u00B7(\u03BC\u2099 + \u03BC\u209A) \u2248 4.4\u00D710\u207B\u2076 S/cm (\u03C1 \u2248 2.3\u00D710\u2075 \u03A9\u00B7cm).' : dopant.type === 'n' ? 'N-type (' + dopant.name + '): n \u2248 N\u2093, p = n\u1D62\u00B2/N\u2093. E\u1DA0 \u2212 E\u1D62 = kT\u00B7ln(N\u2093/n\u1D62). Conductivity \u03C3 \u2248 q\u00B7N\u2093\u00B7\u03BC\u2099. Mass-action law: np = n\u1D62\u00B2.' : 'P-type (' + dopant.name + '): p \u2248 N\u2090, n = n\u1D62\u00B2/N\u2090. E\u1D62 \u2212 E\u1DA0 = kT\u00B7ln(N\u2090/n\u1D62). \u03C3 \u2248 q\u00B7N\u2090\u00B7\u03BC\u209A. Mass-action law: np = n\u1D62\u00B2.'
           )),
           h('div', { className: 'flex gap-2 mt-2' },
-            btn('\uD83E\uDD16 AI Explain', function() { askAI(d.dopant === 'none' ? 'intrinsic semiconductor crystal lattice' : dopant.type + '-type doping with ' + dopant.name); }, 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700'),
-            btn('\uD83D\uDD0A Read', function() { speakText(d.dopant === 'none' ? 'Intrinsic silicon with 4 valence electrons in covalent bonds.' : dopant.type + '-type doping with ' + dopant.name + '. Majority carriers are ' + (dopant.type === 'n' ? 'electrons' : 'holes') + '.'); }, 'transition-colors bg-slate-600 text-slate-200 hover:bg-slate-700')
+            btn('\uD83E\uDD16 AI Explain', function() { askAI(dopantKey === 'none' ? 'intrinsic semiconductor crystal lattice' : dopant.type + '-type doping with ' + dopant.name); }, 'transition-colors bg-indigo-600 text-white hover:bg-indigo-700'),
+            btn('\uD83D\uDD0A Read', function() { speakText(dopantKey === 'none' ? 'Intrinsic silicon with 4 valence electrons in covalent bonds.' : dopant.type + '-type doping with ' + dopant.name + '. Majority carriers are ' + (dopant.type === 'n' ? 'electrons' : 'holes') + '.'); }, 'transition-colors bg-slate-600 text-slate-200 hover:bg-slate-700')
           ),
           aiBox()
         );
