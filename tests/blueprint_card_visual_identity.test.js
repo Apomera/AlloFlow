@@ -456,3 +456,181 @@ describe('blueprint card: save as template', () => {
     expect(q(el, 'bp-template-save-open')).toBeTruthy();
   });
 });
+
+// ── Resource descriptions + the DONE/RESOURCE-GONE contradiction (2026-07-29) ──
+//
+// Two findings from driving the real app:
+//  1. The plan named tools without ever saying what they DO, and Edit Plan asked
+//     the teacher to pick from 20 bare names. TOOL_CATALOG already carries a
+//     required one-sentence `description` per tool, keyed by the same id the plan
+//     rows use — so this is wiring, not new copy.
+//  2. A row whose resource was trimmed from history rendered "DONE" and
+//     "RESOURCE GONE" together: the teacher is told the step succeeded and that
+//     its output does not exist. One truthful badge beats two conflicting ones.
+describe('resource descriptions', () => {
+  // Clean up the catalog we install: leaving it on window would silently supply
+  // descriptions to every later test in this file, so those tests would pass by
+  // inheriting state rather than by asserting it.
+  afterEach(() => { if (window.AlloModules) delete window.AlloModules.ToolCatalog; });
+  const installCatalog = () => {
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.ToolCatalog = { TOOL_CATALOG: [
+      { id: 'analysis', label: 'Analysis', description: 'Analyzes source text for key ideas.' },
+      { id: 'glossary', label: 'Glossary', description: 'Key vocabulary with definitions.' },
+      { id: 'quiz', label: 'Quiz', description: 'Checks understanding.' },
+    ] };
+  };
+
+  it('does not show any description until asked', () => {
+    installCatalog();
+    const el = mount();
+    expect(el.querySelectorAll('[data-testid="bp-desc-body"]')).toHaveLength(0);
+    // …but the affordance is present on every row that has one.
+    expect(el.querySelectorAll('[data-testid="bp-desc-toggle"]').length).toBe(3);
+  });
+
+  it('reveals the catalog description for the row that was asked, and only that row', () => {
+    installCatalog();
+    const el = mount();
+    const toggles = el.querySelectorAll('[data-testid="bp-desc-toggle"]');
+    act(() => { toggles[1].dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    const bodies = el.querySelectorAll('[data-testid="bp-desc-body"]');
+    expect(bodies).toHaveLength(1);
+    expect(bodies[0].textContent).toContain('Key vocabulary with definitions.');
+  });
+
+  it('lets two rows stay open at once, so proposed tools can be compared', () => {
+    installCatalog();
+    const el = mount();
+    const toggles = el.querySelectorAll('[data-testid="bp-desc-toggle"]');
+    act(() => { toggles[0].dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    act(() => { toggles[2].dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(el.querySelectorAll('[data-testid="bp-desc-body"]')).toHaveLength(2);
+  });
+
+  it('is a real button with aria-expanded, not an announce-only div', () => {
+    installCatalog();
+    const el = mount();
+    const t0 = el.querySelector('[data-testid="bp-desc-toggle"]');
+    // A <button> is keyboard-operable by construction — the repo's 22-site
+    // role="button"+tabIndex-without-onKeyDown class cannot recur here.
+    expect(t0.tagName).toBe('BUTTON');
+    expect(t0.getAttribute('aria-expanded')).toBe('false');
+    act(() => { t0.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
+    expect(el.querySelector('[data-testid="bp-desc-toggle"]').getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('offers no toggle when the catalog has no description for that tool', () => {
+    window.AlloModules = window.AlloModules || {};
+    window.AlloModules.ToolCatalog = { TOOL_CATALOG: [
+      { id: 'analysis', label: 'Analysis', description: 'Has one.' },
+      { id: 'glossary', label: 'Glossary' },   // no description
+      { id: 'quiz', label: 'Quiz', description: '' },
+    ] };
+    const el = mount();
+    expect(el.querySelectorAll('[data-testid="bp-desc-toggle"]').length).toBe(1);
+  });
+});
+
+describe('a missing resource never reads as a success', () => {
+  const RUN = { rows: {
+    'analysis-0': { uiId: 'analysis-0', tool: 'analysis', status: 'landed', resourceId: 'gone', resourceMissing: true },
+    'glossary-1': { uiId: 'glossary-1', tool: 'glossary', status: 'landed', resourceId: 'here' },
+  } };
+  const CFG = { resourcePlan: [
+    { tool: 'analysis', directive: 'a', uiId: 'analysis-0' },
+    { tool: 'glossary', directive: 'g', uiId: 'glossary-1' },
+  ] };
+  // Explicit, not inherited: these rows need no descriptions, and the badge
+  // assertions must hold whether or not a catalog is present.
+  afterEach(() => { if (window.AlloModules) delete window.AlloModules.ToolCatalog; });
+  const mountRun = () => {
+    host = document.createElement('div');
+    document.body.appendChild(host);
+    root = ReactDOMClient.createRoot(host);
+    act(() => root.render(React.createElement(Card, {
+      config: CFG, run: RUN, onUpdate: vi.fn(), onConfirm: vi.fn(), onCancel: vi.fn(),
+    })));
+    return host;
+  };
+
+  it('suppresses the success badge on the row whose resource is gone', () => {
+    const el = mountRun();
+    const r = rows(el);
+    // Row 0: resource trimmed → "Resource gone", and NOT also "Done".
+    expect(r[0].textContent).toContain('Resource gone');
+    expect(r[0].textContent).not.toContain('Done');
+  });
+
+  it('still shows the success badge on a row whose resource survives', () => {
+    const el = mountRun();
+    const r = rows(el);
+    expect(r[1].textContent).toContain('Done');
+    expect(r[1].textContent).not.toContain('Resource gone');
+  });
+});
+
+// ── The failure reason must be VISIBLE, not just a tooltip (2026-07-29) ──
+// Audit finding: failReason had exactly one in-app surface — title={...} — plus a
+// warnLog line. The teacher who reported "nine steps failed and the console is
+// clean" therefore still had no way to see WHY without devtools, which is the
+// same complaint the diagnostics were built to answer. A title is not reliably
+// announced and cannot be discovered by someone not already hovering the badge.
+describe('a failed row explains itself in the panel', () => {
+  afterEach(() => { if (window.AlloModules) delete window.AlloModules.ToolCatalog; });
+  const CFG = { resourcePlan: [
+    { tool: 'analysis', directive: 'a', uiId: 'analysis-0' },
+    { tool: 'glossary', directive: 'g', uiId: 'glossary-1' },
+    { tool: 'quiz', directive: 'q', uiId: 'quiz-2' },
+  ] };
+  const RUN = { rows: {
+    'analysis-0': { uiId: 'analysis-0', tool: 'analysis', status: 'failed',
+                    failReason: 'handleGenerate returned no resource (it did not throw)' },
+    'glossary-1': { uiId: 'glossary-1', tool: 'glossary', status: 'failed',
+                    failReason: 'threw: quota exhausted' },
+    'quiz-2': { uiId: 'quiz-2', tool: 'quiz', status: 'landed', resourceId: 'r1' },
+  } };
+  const mountRun = (run = RUN) => {
+    host = document.createElement('div');
+    document.body.appendChild(host);
+    root = ReactDOMClient.createRoot(host);
+    act(() => root.render(React.createElement(Card, {
+      config: CFG, run, onUpdate: vi.fn(), onConfirm: vi.fn(), onCancel: vi.fn(),
+    })));
+    return host;
+  };
+
+  it('renders the reason as visible text, once per failed row', () => {
+    const el = mountRun();
+    const reasons = el.querySelectorAll('[data-testid="bp-fail-reason"]');
+    expect(reasons).toHaveLength(2);           // the two failed rows, not the landed one
+  });
+
+  it('shows the raw reason so a bug report is diagnosable', () => {
+    const el = mountRun();
+    const txt = Array.from(el.querySelectorAll('[data-testid="bp-fail-reason"]')).map((n) => n.textContent).join(' | ');
+    expect(txt).toContain('returned no resource');
+    expect(txt).toContain('quota exhausted');
+  });
+
+  it('leads with plain language, and distinguishes a throw from an empty return', () => {
+    const el = mountRun();
+    const nodes = Array.from(el.querySelectorAll('[data-testid="bp-fail-reason"]'));
+    // Row 0 returned nothing -> points at the usual cause (no source text).
+    expect(nodes[0].textContent).toMatch(/no source text/i);
+    // Row 1 threw -> must NOT claim the source text is the problem.
+    expect(nodes[1].textContent).toMatch(/hit an error/i);
+    expect(nodes[1].textContent).not.toMatch(/no source text/i);
+  });
+
+  it('says nothing on rows that succeeded', () => {
+    const el = mountRun();
+    const r = rows(el);
+    expect(r[2].querySelector('[data-testid="bp-fail-reason"]')).toBeNull();
+  });
+
+  it('stays quiet when a row failed but no reason was captured', () => {
+    const el = mountRun({ rows: { 'analysis-0': { uiId: 'analysis-0', tool: 'analysis', status: 'failed' } } });
+    expect(el.querySelectorAll('[data-testid="bp-fail-reason"]')).toHaveLength(0);
+  });
+});

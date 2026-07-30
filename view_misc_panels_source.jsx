@@ -2072,6 +2072,35 @@ function TourOverlay(props) {
     compactTour = false
   } = props;
   const tourDialogRef = React.useRef(null);
+  // Sample the bot's published flashlight position into state so the beam
+  // actually FOLLOWS it. Reading window.__alloBotMuzzle at render time would pin
+  // the beam to wherever the bot happened to be on the render that opened the
+  // spotlight, and never move again — the bot flies to its target under a CSS
+  // transition and stays draggable throughout.
+  //
+  // Above the component's early return on purpose: a hook below it would be a
+  // conditional hook and crash on the next render.
+  const [liveMuzzle, setLiveMuzzle] = React.useState(null);
+  React.useEffect(() => {
+    if (!isSpotlightMode) { setLiveMuzzle(null); return; }
+    let timer = null;
+    let stopped = false;
+    const tick = () => {
+      if (stopped) return;
+      try {
+        const m = (typeof window !== 'undefined') ? window.__alloBotMuzzle : null;
+        if (m && typeof m.x === 'number') {
+          // Only re-render for a move worth redrawing; the publisher ticks at
+          // 120ms whether or not the bot is going anywhere.
+          setLiveMuzzle((prev) => (!prev || Math.abs(prev.x - m.x) > 1.5 || Math.abs(prev.y - m.y) > 1.5)
+            ? { x: m.x, y: m.y } : prev);
+        }
+      } catch (e) {}
+      timer = setTimeout(tick, 140);
+    };
+    tick();
+    return () => { stopped = true; if (timer) clearTimeout(timer); };
+  }, [isSpotlightMode]);
   const closeTourOverlay = () => {
     if (spotlightMessage) {
       setRunTour(false);
@@ -2107,6 +2136,95 @@ function TourOverlay(props) {
   if (!(runTour && tourRect)) return null;
   const tourAccessibleTitle = spotlightMessage ? (spotlightMessage.title || t('tour.spotlight_title')) : tourSteps[tourStep].title;
   const tourAccessibleText = spotlightMessage ? (spotlightMessage.text || spotlightMessage || '') : (tourSteps[tourStep].text || '');
+  // ── Beam geometry, computed from where the light actually IS ──
+  //
+  // The old beam was `apex -> (rect.left, rect.top) -> (rect.left, rect.bottom)`:
+  // both far points pinned to the target's LEFT edge, whatever the direction.
+  // That produced the two "wonky" cases:
+  //   - bot to the RIGHT of the target: the cone was drawn straight THROUGH the
+  //     panel to its far edge, so the light appeared to arrive from behind it;
+  //   - bot directly ABOVE or BELOW: both points collapsed onto one vertical
+  //     edge, so the cone degenerated into a thin sliver down the side.
+  // Correct construction: take the target's four corners, and span the two that
+  // subtend the widest angle from the light — the silhouette as the light sees
+  // it. Then the cone always approaches from the bot's real side and always
+  // covers the target's full apparent width.
+  const _beam = (() => {
+    if (!botSpotlightPos || !tourRect) return null;
+    // Prefer the bot's REAL flashlight position, which AlloBot publishes while it
+    // is aiming. botSpotlightPos is only a stand-in: showSpotlight sets it from
+    // the TARGET's rect, so before this the beam claimed to come from a fixed
+    // offset beside the target no matter where the teacher had dragged the bot.
+    const live = liveMuzzle;
+    // -53/+20 reproduce the old estimate for the fallback path (the bot SVG holds
+    // the light left of centre, slightly low).
+    let ax = live ? live.x : (botSpotlightPos.x - 53);
+    let ay = live ? live.y : (botSpotlightPos.y + 20);
+    const cx = tourRect.left + tourRect.width / 2;
+    const cy = tourRect.top + tourRect.height / 2;
+    // The apex must sit OUTSIDE the target or the cone folds back on itself.
+    // It usually does not: botSpotlightPos is the TARGET's centre (the bot flies
+    // to it), and moveTo pins the bot's right edge ~32px right of that point, so
+    // the bot lands left of and overlapping the target — leaving the old apex a
+    // few dozen px inside it. Hence the stubby backwards wedge.
+    // When it does overlap, push the emitter straight OUT along the centre->bot
+    // direction, so the cone still arrives from the side the bot is really on.
+    // (An earlier version always clamped to the left, which was right only
+    // because moveTo happens to land the bot there — it would have pointed the
+    // wrong way for a help-mode spotlight with the bot dragged to the right.)
+    const STANDOFF = 90;
+    const inside = ax >= tourRect.left && ax <= tourRect.right && ay >= tourRect.top && ay <= tourRect.bottom;
+    if (inside) {
+      let vx = ax - cx;
+      let vy = ay - cy;
+      let len = Math.hypot(vx, vy);
+      if (len < 1) { vx = -1; vy = 0; len = 1; }   // dead centre: fall back to the left
+      const out = Math.hypot(tourRect.width, tourRect.height) / 2 + STANDOFF;
+      ax = cx + (vx / len) * out;
+      ay = cy + (vy / len) * out;
+    }
+    const corners = [
+      { x: tourRect.left, y: tourRect.top },
+      { x: tourRect.right, y: tourRect.top },
+      { x: tourRect.right, y: tourRect.bottom },
+      { x: tourRect.left, y: tourRect.bottom },
+    ];
+    const toCentre = Math.atan2(cy - ay, cx - ax);
+    const far = Math.max.apply(null, corners.map((c) => Math.hypot(c.x - ax, c.y - ay)));
+    // A real lens emits from an aperture, not a mathematical point. A few px of
+    // width stops the Gaussian blur pinching the apex into a spike.
+    const APERTURE = 5;
+    const px = -Math.sin(toCentre) * APERTURE;
+    const py = Math.cos(toCentre) * APERTURE;
+    // CONVEX HULL of the emitter plus the target's corners.
+    //
+    // Sorting the corners by angle around the apex looked right on paper but
+    // renders a SELF-INTERSECTING polygon: angular order is the correct order
+    // for a fan of rays, not for a polygon boundary, so the edges between the
+    // middle corners cut back across the rectangle. On screen that was a hard
+    // diagonal seam splitting the panel into a bright half and a dim half.
+    // A hull is convex by construction, so it cannot fold over itself, and it is
+    // exactly the cone-plus-target envelope we want to fill.
+    const cross = (o, a, b) => (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+    const src = corners.concat([{ x: ax + px, y: ay + py }, { x: ax - px, y: ay - py }])
+      .sort((a, b) => (a.x - b.x) || (a.y - b.y));
+    const lower = [];
+    for (let i = 0; i < src.length; i++) {
+      while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], src[i]) <= 0) lower.pop();
+      lower.push(src[i]);
+    }
+    const upper = [];
+    for (let i = src.length - 1; i >= 0; i--) {
+      while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], src[i]) <= 0) upper.pop();
+      upper.push(src[i]);
+    }
+    const ring = lower.slice(0, -1).concat(upper.slice(0, -1));
+    return {
+      ax, ay, far,
+      hullSize: ring.length,
+      path: 'M ' + ring.map((p) => p.x + ' ' + p.y).join(' L ') + ' Z',
+    };
+  })();
   return (
         <div role="presentation" className="fixed inset-0 z-[9999] pointer-events-auto font-sans">
             <div className="absolute inset-0 transition-all duration-500">
@@ -2115,25 +2233,31 @@ function TourOverlay(props) {
                 <div style={{ position: 'absolute', top: tourRect.top, right: 0, left: tourRect.right, height: tourRect.height, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}></div>
                 <div style={{ position: 'absolute', top: tourRect.bottom, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}></div>
             </div>
-            {isSpotlightMode && botSpotlightPos && (
+            {isSpotlightMode && _beam && (
                 <svg className="absolute inset-0 pointer-events-none z-[10000]" style={{ overflow: 'visible' }} aria-hidden="true">
                     <defs>
                         <radialGradient
                             id="beamGradient"
                             gradientUnits="userSpaceOnUse"
-                            cx={botSpotlightPos.x - 53}
-                            cy={botSpotlightPos.y + 20}
-                            r={Math.hypot(
-                                (tourRect.left + tourRect.width/2) - (botSpotlightPos.x - 53),
-                                (tourRect.top + tourRect.height/2) - (botSpotlightPos.y + 10)
-                            ) * 1.1}
+                            cx={_beam.ax}
+                            cy={_beam.ay}
+                            /* Reaches the FARTHEST corner, so the falloff covers the
+                               whole target instead of fading out across it. The old
+                               radius measured to the centre — and mixed y+20 for the
+                               origin with y+10 in the distance, so the gradient was
+                               centred a few px off its own apex. */
+                            r={_beam.far * 1.05}
                         >
-                            <stop offset="0%" stopColor="rgba(250, 204, 21, 0.7)" />
-                            <stop offset="60%" stopColor="rgba(250, 204, 21, 0.1)" />
+                            <stop offset="0%" stopColor="rgba(254, 240, 138, 0.55)" />
+                            <stop offset="35%" stopColor="rgba(250, 204, 21, 0.28)" />
+                            <stop offset="75%" stopColor="rgba(250, 204, 21, 0.08)" />
                             <stop offset="100%" stopColor="rgba(250, 204, 21, 0)" />
                         </radialGradient>
-                        <filter id="glow">
-                            <feGaussianBlur stdDeviation="8" result="coloredBlur"/>
+                        {/* Softer than the old stdDeviation 8: that much blur on a
+                            zero-width apex smeared the cone's edges into a haze and
+                            spiked at the origin. */}
+                        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
                             <feMerge>
                                 <feMergeNode in="coloredBlur"/>
                                 <feMergeNode in="SourceGraphic"/>
@@ -2141,12 +2265,7 @@ function TourOverlay(props) {
                         </filter>
                     </defs>
                     <path
-                        d={`
-                            M ${botSpotlightPos.x - 53} ${botSpotlightPos.y + 20}
-                            L ${tourRect.left} ${tourRect.top}
-                            L ${tourRect.left} ${tourRect.bottom}
-                            Z
-                        `}
+                        d={_beam.path}
                         fill="url(#beamGradient)"
                         style={{ mixBlendMode: 'screen', filter: 'url(#glow)' }}
                         className="animate-in fade-in duration-500 motion-reduce:animate-none motion-reduce:transition-none"

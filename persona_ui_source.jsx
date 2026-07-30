@@ -166,6 +166,12 @@ const InteractiveBlueprintCard = React.memo(({ config, run, onRebuildStep, onPre
   const [showTemplateSave, setShowTemplateSave] = useState(false);
   const [templateName, setTemplateName] = useState('');
   const [directivePolicy, setDirectivePolicy] = useState({});
+  // Which rows have their "what is this?" description expanded. A LIST, not a
+  // single id: a teacher deciding between two proposed tools wants both open at
+  // once, which is the whole reason for asking. Grouped with the other state so
+  // it can never drift below a render-time reader (the TDZ crash class the
+  // deploy gates do not catch).
+  const [openDescIds, setOpenDescIds] = useState([]);
   const getReadableToolLabel = (id) => String(id || '')
     .split('-')
     .map(part => part ? part.charAt(0).toUpperCase() + part.slice(1) : '')
@@ -269,7 +275,13 @@ const InteractiveBlueprintCard = React.memo(({ config, run, onRebuildStep, onPre
         const fallbackLabel = entry.id === 'dbq' ? 'DBQ' : getReadableToolLabel(entry.id);
         return {
           value: entry.id,
-          label: (localized && localized !== entry.sidebarKey) ? localized : (entry.label || fallbackLabel)
+          label: (localized && localized !== entry.sidebarKey) ? localized : (entry.label || fallbackLabel),
+          // TOOL_CATALOG.description is a REQUIRED one-sentence "what it does",
+          // already written for every catalog tool and keyed by the same id the
+          // plan rows use — so this is wiring, not new copy. It exists for the
+          // LLM prompt, hence English-only; the t() lookup lets a translation
+          // land later without touching this code.
+          desc: t('tool_desc.' + entry.id) || entry.description || ''
         };
       });
     }
@@ -300,6 +312,12 @@ const InteractiveBlueprintCard = React.memo(({ config, run, onRebuildStep, onPre
       const opt = toolOptions.find(o => o.value === type);
       return opt ? opt.label : type;
   };
+  const getToolDesc = (type) => {
+      const opt = toolOptions.find(o => o.value === type);
+      return (opt && opt.desc) || '';
+  };
+  const toggleDesc = (id) => setOpenDescIds(prev =>
+      prev.indexOf(id) === -1 ? prev.concat([id]) : prev.filter(x => x !== id));
   return (
     <div data-help-key="blueprint_card_panel" className="bg-white border-2 border-indigo-100 rounded-xl p-4 my-2 shadow-lg animate-in zoom-in duration-300 w-full max-w-2xl">
       <div className="flex items-center justify-between mb-4 pb-3 border-b border-indigo-50">
@@ -359,6 +377,18 @@ const InteractiveBlueprintCard = React.memo(({ config, run, onRebuildStep, onPre
                                         <option key={opt.value} value={opt.value}>{opt.label}</option>
                                     ))}
                                 </select>
+                                {/* Swapping a step meant choosing blind between 20
+                                    bare tool names. The catalog already carries a
+                                    one-sentence "what it does" for each, so say it
+                                    right where the choice is made. aria-live: the
+                                    text changes as a result of the select, so a
+                                    screen-reader user hears the new tool's purpose
+                                    instead of silence. */}
+                                {getToolDesc(item.type) && (
+                                    <p className="mt-1 text-[10px] leading-snug text-slate-600" aria-live="polite">
+                                        {getToolDesc(item.type)}
+                                    </p>
+                                )}
                             </div>
                             <div className="col-span-2">
                                 <input aria-label={t('common.enter_item')}
@@ -429,6 +459,14 @@ const InteractiveBlueprintCard = React.memo(({ config, run, onRebuildStep, onPre
                   // gone. Claiming it is "Audited" would assert coverage of
                   // something that no longer exists — say it is missing instead.
                   const _missing = !!(_rowRun && _rowRun.resourceMissing);
+                  // A row whose resource was trimmed from history used to render
+                  // "DONE" and "RESOURCE GONE" side by side, which reads as a
+                  // contradiction: the teacher is told the step succeeded and that
+                  // its output does not exist. "Resource gone" is the load-bearing
+                  // half (Preview is already suppressed for these rows and Rebuild
+                  // is still offered), so drop the success badge and keep one
+                  // truthful signal instead of two conflicting ones.
+                  const _suppressStatusBadge = _missing && _status === 'landed';
                   const _auditBadge = _missing
                       ? { label: t('blueprint.resource_missing') || 'Resource gone', cls: 'bg-slate-100 text-slate-700 border-slate-300' }
                       : (!_auditIds || _isAuditRow || _status !== 'landed') ? null
@@ -458,11 +496,16 @@ const InteractiveBlueprintCard = React.memo(({ config, run, onRebuildStep, onPre
                               <span className="opacity-70 font-normal">{idx + 1}</span>
                               {getToolLabel(item.type)}
                           </span>
-                          {_statusStyle && (
+                          {/* The failure reason rides on the badge as a title:
+                              SUPPLEMENTARY only. A title is not reliably announced
+                              by screen readers, so the authoritative record stays
+                              the per-step warnLog line the executor emits. */}
+                          {_statusStyle && !_suppressStatusBadge && (
                               <span
                                   className={`ml-2 text-[10px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider ${_statusStyle.cls}`}
                                   role="status"
                                   aria-live={_status === 'running' ? 'polite' : 'off'}
+                                  title={(_rowRun && _rowRun.failReason) || undefined}
                               >
                                   {_statusStyle.label}
                               </span>
@@ -474,6 +517,27 @@ const InteractiveBlueprintCard = React.memo(({ config, run, onRebuildStep, onPre
                               >
                                   {_auditBadge.label}
                               </span>
+                          )}
+                          {/* "What is this resource?" — a real <button>, so it is
+                              keyboard-operable by construction. A div with
+                              role="button" + tabIndex and no onKeyDown is the
+                              announce-but-dead defect class this repo has a
+                              22-site backlog of; do not convert it.
+                              Collapsed by default: the chat panel is ~24rem and
+                              eight always-on descriptions would bury the plan. */}
+                          {getToolDesc(item.type) && (
+                              <button
+                                  type="button"
+                                  onClick={() => toggleDesc(item.id)}
+                                  aria-expanded={openDescIds.indexOf(item.id) !== -1}
+                                  aria-controls={`bp-desc-${item.id}`}
+                                  data-testid="bp-desc-toggle"
+                                  className="ml-1 text-[10px] font-bold w-4 h-4 rounded-full border border-slate-300 text-slate-600 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                                  title={t('blueprint.what_is_this') || 'What does this resource do?'}
+                                  aria-label={`${t('blueprint.what_is_this') || 'What does this resource do?'}: ${getToolLabel(item.type)}`}
+                              >
+                                  ?
+                              </button>
                           )}
                           {/* Rebuild ONE row. Only offered once a run has
                               touched this row — before that there is nothing to
@@ -507,6 +571,37 @@ const InteractiveBlueprintCard = React.memo(({ config, run, onRebuildStep, onPre
                               >
                                   {t('blueprint.rebuild_step_short') || 'Rebuild'}
                               </button>
+                          )}
+                          {/* What the TOOL does (from the catalog) — distinct from
+                              the directive below, which is what THIS step asks it
+                              to do. Kept visually quieter and non-italic so the
+                              two never read as one sentence. */}
+                          {openDescIds.indexOf(item.id) !== -1 && getToolDesc(item.type) && (
+                              <p id={`bp-desc-${item.id}`} data-testid="bp-desc-body"
+                                 className="mb-1 text-[11px] leading-snug text-slate-600 bg-white border border-slate-200 rounded p-2">
+                                  {getToolDesc(item.type)}
+                              </p>
+                          )}
+                          {/* WHY a step failed, visible in the panel.
+                              Until now the reason existed only as a title tooltip
+                              and a warnLog line — so the teacher who reported
+                              "nine failed and the console is clean" still had no
+                              way to see it without devtools. A tooltip is not
+                              reliably announced and cannot be found by someone who
+                              does not already know to hover the badge.
+                              Plain-language lead first, raw reason after it: the
+                              lead is actionable ("add a source"), the raw string is
+                              what makes a bug report diagnosable. */}
+                          {(_status === 'failed' || _status === 'interrupted') && _rowRun && _rowRun.failReason && (
+                              <p data-testid="bp-fail-reason"
+                                 className="mb-1 text-[11px] leading-snug text-red-800 bg-red-50 border border-red-200 rounded p-2">
+                                  <span className="font-bold">
+                                      {String(_rowRun.failReason).indexOf('threw:') === 0
+                                          ? (t('blueprint.fail_threw') || 'This step hit an error.')
+                                          : (t('blueprint.fail_empty') || 'This step produced nothing. Most often there is no source text yet — add or generate a source, then rebuild.')}
+                                  </span>
+                                  <span className="block mt-1 opacity-80 break-words">{_rowRun.failReason}</span>
+                              </p>
                           )}
                           <p className="text-sm text-slate-700 leading-relaxed italic">
                               "{item.directive || "No specific instructions."}"

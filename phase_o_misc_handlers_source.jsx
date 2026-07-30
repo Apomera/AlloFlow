@@ -646,11 +646,30 @@ const getBlueprintResourcePlan = (blueprint) => {
 const executeOneBlueprint = async (blueprint, ctx) => {
     // onStep is ADDITIVE and optional — onResource stays exactly as it was
     // because Throughline's Generate-Unit driver consumes it.
-    const { handleGenerate, historyOverride, dna, initialSourceText, onResource, onStep, signal } = ctx || {};
+    const { handleGenerate, historyOverride, dna, initialSourceText, onResource, onStep, signal, warnLog } = ctx || {};
     const emitStep = (payload) => { if (typeof onStep === 'function') { try { onStep(payload); } catch (_) {} } };
+    // Blueprint failures used to be INVISIBLE. A row was marked 'failed' purely
+    // because handleGenerate returned falsy — no exception, no capture, no log.
+    // So a run where every resource failed produced a completely clean console
+    // and no way to tell "the model refused" from "the dispatcher never loaded"
+    // from "this tool type isn't handled". Diagnostics are not optional here:
+    // this is the one path where the app does real work unattended.
+    const _diag = (msg) => {
+        try { if (typeof warnLog === 'function') warnLog(msg); else if (typeof console !== 'undefined') console.warn(msg); } catch (_) {}
+    };
     const finalResources = getBlueprintResourcePlan(blueprint);
     const lessonDNA = dna || { grade: "", topic: "", standard: "", concepts: [], keyTerms: [], visualContext: "", essentialQuestion: "" };
-    let currentSourceText = initialSourceText || "";
+    // NULL, not "". This is a SENTINEL, not a default.
+    //
+    // handleGenerate's 4th arg is textOverride, and the dispatcher branches on
+    // `if (textToProcess === null)` (generate_dispatcher_source.jsx:1582) to run
+    // its own fallback chain: latest analysis originalText, else inputText.
+    // An empty STRING is not null, so it skipped that fallback and fell straight
+    // into `if (!textToProcess || !textToProcess.trim()) return;` (:1593) — a
+    // BARE return, so every resource came back undefined and every row was
+    // scored 'failed' with no error, no toast and nothing in the console.
+    // A topic-only blueprint (no pasted source) failed all of its steps this way.
+    let currentSourceText = initialSourceText || null;
     let currentBlueprintHistory = Array.isArray(historyOverride) ? [...historyOverride] : [];
     const items = [];
     const nulls = [];
@@ -678,10 +697,34 @@ const executeOneBlueprint = async (blueprint, ctx) => {
             ? items.map(function (it) { return it && it.id; }).filter(Boolean)
             : null;
         if (auditScopeIds && auditScopeIds.length) stepConfig.artifactIds = auditScopeIds;
-        const resultItem = await handleGenerate(type, null, i < finalResources.length - 1, currentSourceText, stepConfig, false);
+        let resultItem = null;
+        let failReason = null;
+        let threw = null;
+        try {
+            resultItem = await handleGenerate(type, null, i < finalResources.length - 1, currentSourceText, stepConfig, false);
+            if (!resultItem) failReason = 'handleGenerate returned no resource (it did not throw)';
+        } catch (err) {
+            threw = err;
+            failReason = 'threw: ' + ((err && (err.message || err.name)) || String(err));
+        }
+        if (!resultItem) {
+            // Name the three things that actually distinguish the causes: which
+            // row, why, and whether the dispatcher module is even present (a
+            // missing GenDispatcher nulls EVERY row and is otherwise silent).
+            let dispatcherLoaded = 'unknown';
+            try { dispatcherLoaded = String(!!(typeof window !== 'undefined' && window.AlloModules && window.AlloModules.GenDispatcher)); } catch (_) {}
+            _diag('[Blueprint] step ' + (i + 1) + '/' + finalResources.length + ' FAILED'
+                + ' — tool=' + type + ' uiId=' + stepUiId
+                + ' reason=' + failReason
+                + ' dispatcherLoaded=' + dispatcherLoaded
+                + ' sourceTextChars=' + (currentSourceText ? currentSourceText.length : 0));
+        }
         emitStep({ uiId: stepUiId, tool: type, index: i,
                    status: resultItem ? 'landed' : 'failed',
                    resourceId: (resultItem && resultItem.id) || null,
+                   // Carried into the run record so the card can SHOW why a row
+                   // failed instead of only that it did.
+                   failReason: resultItem ? undefined : failReason,
                    // Carried so the run record can answer "which rows does the
                    // current audit actually cover?" — the basis for per-row
                    // staleness once a row is later regenerated.
@@ -713,7 +756,12 @@ const executeOneBlueprint = async (blueprint, ctx) => {
             // nulls stays a flat tool-name list for the existing toast/callers;
             // failedRows is the row-accurate record ("which image failed").
             nulls.push(type);
-            failedRows.push({ uiId: stepUiId, tool: type, index: i });
+            failedRows.push({ uiId: stepUiId, tool: type, index: i, reason: failReason });
+            // Control flow is UNCHANGED: a thrown error still aborts the run, so
+            // the caller's catch marks the remaining rows interrupted and toasts
+            // as before. Only the capture and the log above are new — the reason
+            // is recorded first so it survives the abort.
+            if (threw) throw threw;
         }
         if (i < finalResources.length - 1) await new Promise(r => setTimeout(r, 1000));
     }
@@ -734,6 +782,22 @@ const handleExecuteBlueprint = async (deps) => {
         addToast("This blueprint does not include any resources yet.", "error");
         return;
     }
+    // Re-entrancy: nulling activeBlueprint used to BE the guard (a second
+    // click found nothing to run). The plan now survives execution so the
+    // teacher can watch it, which removes that accidental protection — and the
+    // chat's execute path bypasses any disabled button. Guard explicitly.
+    // Module-scoped rather than deps.isProcessing: the VALUE isProcessing is not
+    // in this handler's deps (only setIsProcessing is), so reading it would be a
+    // ReferenceError. A module flag is also the more precise guard — this is
+    // about concurrent invocations of THIS handler, not global busy-ness.
+    //
+    // ORDER IS LOAD-BEARING: this check must precede every host setter below.
+    // It used to sit after applyDetailedAutoConfig, which fires ~18 setters, so
+    // a REJECTED second click had already overwritten the RUNNING plan's
+    // generation config (grade, tone, counts, styles) before it returned. The
+    // guard is only a guard if nothing irreversible happens above it.
+    if (_blueprintRunInFlight) { addToast(t('blueprint.already_running') || 'That plan is already generating.', 'info'); return; }
+    _blueprintRunInFlight = true;
     if (activeBlueprint.globalSettings) {
         if (activeBlueprint.globalSettings.gradeLevel) setGradeLevel(activeBlueprint.globalSettings.gradeLevel);
         if (activeBlueprint.globalSettings.tone) setSourceTone(activeBlueprint.globalSettings.tone);
@@ -748,16 +812,6 @@ const handleExecuteBlueprint = async (deps) => {
         visualContext: "",
         essentialQuestion: activeBlueprint.lessonDNA?.essentialQuestion || "",
     };
-    // Re-entrancy: nulling activeBlueprint used to BE the guard (a second
-    // click found nothing to run). The plan now survives execution so the
-    // teacher can watch it, which removes that accidental protection — and the
-    // chat's execute path bypasses any disabled button. Guard explicitly.
-    // Module-scoped rather than deps.isProcessing: the VALUE isProcessing is not
-    // in this handler's deps (only setIsProcessing is), so reading it would be a
-    // ReferenceError. A module flag is also the more precise guard — this is
-    // about concurrent invocations of THIS handler, not global busy-ness.
-    if (_blueprintRunInFlight) { addToast(t('blueprint.already_running') || 'That plan is already generating.', 'info'); return; }
-    _blueprintRunInFlight = true;
     // Seed one row per plan entry so the board shows the whole plan as
     // 'planned' immediately, rather than materialising rows as they start.
     const _runRows = {};
@@ -789,15 +843,33 @@ const handleExecuteBlueprint = async (deps) => {
         if (existingAnalysis?.data?.originalText) {
             currentSourceText = existingAnalysis.data.originalText;
         }
+        // Pre-flight. Nearly every generator needs source text, and without it
+        // the dispatcher returns undefined per resource — which the board scores
+        // as a whole plan of failures with no stated cause. Say it ONCE, up
+        // front, instead of letting the teacher watch nine steps fail. Deliberately
+        // does NOT abort: the plan may include a step that supplies the text.
+        if (!currentSourceText || !String(currentSourceText).trim()) {
+            warnLog('[Blueprint] starting with NO source text (no inputText, no prior analysis with originalText).'
+                + ' Steps that require source text will not generate.');
+            addToast(t('blueprint.no_source_warning')
+                || 'No source text yet, so some resources may not generate. Add or generate a source first for best results.', 'warning');
+        }
         const { dnaOut, nulls, failedRows } = await executeOneBlueprint(activeBlueprint, {
             handleGenerate,
+            warnLog,   // routes step diagnostics through the in-app log, not bare console
             historyOverride: [...history],
             dna: lessonDNA,                       // mutated in place — faithful to the original loop
             initialSourceText: currentSourceText,
             onStep: (step) => {
                 if (!step || !step.uiId) return;
                 setBlueprintExecutionResult(prev => {
-                    const base = (prev && prev.rows) ? prev : { rows: _runRows, done: false };
+                    // If the record was cleared while this run was in flight
+                    // (Cancel, or a new plan installed from the chat), do NOT
+                    // rebuild it from _runRows in this closure — that resurrects
+                    // the dead plan's board and leaves it on screen with
+                    // activeBlueprint already null. A cleared record stays clear.
+                    if (!prev || !prev.rows) return prev;
+                    const base = prev;
                     const next = Object.assign({}, base, {
                         rows: Object.assign({}, base.rows, {
                             [step.uiId]: Object.assign({}, base.rows[step.uiId], step)
@@ -833,6 +905,17 @@ const handleExecuteBlueprint = async (deps) => {
             const failedList = describe.join(", ");
             const extra = total > 3 ? ` and ${total - 3} more` : "";
             const warnMsg = `Blueprint finished, but ${total} resource${total === 1 ? "" : "s"} did not generate: ${failedList}${extra}.`;
+            // A run where EVERY row failed is a different event from a run where
+            // one did: it means something systemic (module not loaded, no key,
+            // auth, quota), not a bad directive. Say so once, loudly, with the
+            // distinct reasons collected — otherwise the only signal is a toast
+            // that reads like partial success.
+            if (rowsFailed && total === finalResources.length && total > 1) {
+                const reasons = [];
+                rowsFailed.forEach(r => { const x = r && r.reason; if (x && reasons.indexOf(x) === -1) reasons.push(x); });
+                warnLog('[Blueprint] ALL ' + total + ' steps failed — this is systemic, not per-resource.'
+                    + ' Distinct reasons: ' + (reasons.length ? reasons.join(' | ') : '(none captured)'));
+            }
             addToast(warnMsg, "warning");
             setUdlMessages(prev => [...prev, { role: 'model', text: warnMsg }]);
         } else {

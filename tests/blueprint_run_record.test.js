@@ -143,3 +143,72 @@ describe('run-record wiring guardrails', () => {
     expect(src).toContain('const stepUiId = finalResources[i] && finalResources[i].uiId;');
   });
 });
+
+// ── The silent whole-plan failure (found from a live run, 2026-07-29) ──
+//
+// Aaron ran a topic-only blueprint and ALL NINE resources failed with a
+// completely clean console. Cause chain, verified end to end:
+//   phase_o  : `initialSourceText || ""` coerced "no source" to an empty STRING
+//   dispatcher:1582 branches on `textToProcess === null` to run its fallback
+//              chain (latest analysis originalText, else inputText)
+//   "" !== null, so the fallback was skipped, and :1593
+//              `if (!textToProcess || !textToProcess.trim()) return;` — a BARE
+//              return — handed back undefined for every single resource.
+// The executor scores undefined as 'failed', so the plan reported nine failures
+// and named no cause anywhere. "" was a default where null was a SENTINEL.
+describe('no-source-text runs do not fail silently', () => {
+  it('passes null (never "") as textOverride so the dispatcher fallback runs', async () => {
+    const gen = vi.fn(async () => ({ id: 'x', type: 't', data: {} }));
+    await PhaseO.executeOneBlueprint(PLAN, { handleGenerate: gen, historyOverride: [] });
+    // 4th arg is textOverride. null keeps the dispatcher's fallback reachable;
+    // "" silently disables it and fails the whole plan.
+    const firstCallTextOverride = gen.mock.calls[0][3];
+    expect(firstCallTextOverride).toBeNull();
+    expect(firstCallTextOverride).not.toBe('');
+  });
+
+  it('records a reason on every failed row', async () => {
+    const { failedRows } = await PhaseO.executeOneBlueprint(PLAN, {
+      handleGenerate: makeGen(['second']), historyOverride: [],
+    });
+    expect(failedRows).toHaveLength(1);
+    expect(typeof failedRows[0].reason).toBe('string');
+    expect(failedRows[0].reason).toMatch(/returned no resource/);
+  });
+
+  it('carries failReason onto the failed step so the card can show it', async () => {
+    const steps = [];
+    await PhaseO.executeOneBlueprint(PLAN, {
+      handleGenerate: makeGen(['second']), historyOverride: [], onStep: (s) => steps.push(s),
+    });
+    const failed = steps.filter((s) => s.status === 'failed');
+    expect(failed).toHaveLength(1);
+    expect(failed[0].failReason).toMatch(/returned no resource/);
+    // Landed rows must NOT carry one.
+    expect(steps.filter((s) => s.status === 'landed').every((s) => s.failReason === undefined)).toBe(true);
+  });
+
+  it('distinguishes a THROWN failure from a null return, and still aborts', async () => {
+    const boom = vi.fn(async (type) => { if (type === 'image') throw new Error('quota exhausted'); return { id: 'r', type, data: {} }; });
+    const steps = [];
+    await expect(PhaseO.executeOneBlueprint(PLAN, {
+      handleGenerate: boom, historyOverride: [], onStep: (s) => steps.push(s),
+    })).rejects.toThrow('quota exhausted');
+    // The reason is recorded BEFORE the rethrow, so it survives the abort.
+    const failed = steps.filter((s) => s.status === 'failed');
+    expect(failed).toHaveLength(1);
+    expect(failed[0].failReason).toMatch(/threw: quota exhausted/);
+  });
+
+  it('logs a diagnostic naming the row, reason and dispatcher state', async () => {
+    const lines = [];
+    await PhaseO.executeOneBlueprint(PLAN, {
+      handleGenerate: makeGen(['second']), historyOverride: [], warnLog: (m) => lines.push(m),
+    });
+    const line = lines.find((l) => l.indexOf('[Blueprint]') === 0);
+    expect(line, 'a failed step must emit a diagnostic').toBeTruthy();
+    expect(line).toContain('row-image-2');
+    expect(line).toContain('tool=image');
+    expect(line).toContain('dispatcherLoaded=');
+  });
+});

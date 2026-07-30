@@ -1703,6 +1703,31 @@ function TourOverlay(props) {
     compactTour = false
   } = props;
   const tourDialogRef = React.useRef(null);
+  const [liveMuzzle, setLiveMuzzle] = React.useState(null);
+  React.useEffect(() => {
+    if (!isSpotlightMode) {
+      setLiveMuzzle(null);
+      return;
+    }
+    let timer = null;
+    let stopped = false;
+    const tick = () => {
+      if (stopped) return;
+      try {
+        const m = typeof window !== "undefined" ? window.__alloBotMuzzle : null;
+        if (m && typeof m.x === "number") {
+          setLiveMuzzle((prev) => !prev || Math.abs(prev.x - m.x) > 1.5 || Math.abs(prev.y - m.y) > 1.5 ? { x: m.x, y: m.y } : prev);
+        }
+      } catch (e) {
+      }
+      timer = setTimeout(tick, 140);
+    };
+    tick();
+    return () => {
+      stopped = true;
+      if (timer) clearTimeout(timer);
+    };
+  }, [isSpotlightMode]);
   const closeTourOverlay = () => {
     if (spotlightMessage) {
       setRunTour(false);
@@ -1751,30 +1776,77 @@ function TourOverlay(props) {
   if (!(runTour && tourRect)) return null;
   const tourAccessibleTitle = spotlightMessage ? spotlightMessage.title || t("tour.spotlight_title") : tourSteps[tourStep].title;
   const tourAccessibleText = spotlightMessage ? spotlightMessage.text || spotlightMessage || "" : tourSteps[tourStep].text || "";
-  return /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 z-[9999] pointer-events-auto font-sans" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 transition-all duration-500" }, /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: 0, left: 0, right: 0, height: tourRect.top, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" } }), /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: tourRect.top, left: 0, width: tourRect.left, height: tourRect.height, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" } }), /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: tourRect.top, right: 0, left: tourRect.right, height: tourRect.height, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" } }), /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: tourRect.bottom, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" } })), isSpotlightMode && botSpotlightPos && /* @__PURE__ */ React.createElement("svg", { className: "absolute inset-0 pointer-events-none z-[10000]", style: { overflow: "visible" }, "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement(
+  const _beam = (() => {
+    if (!botSpotlightPos || !tourRect) return null;
+    const live = liveMuzzle;
+    let ax = live ? live.x : botSpotlightPos.x - 53;
+    let ay = live ? live.y : botSpotlightPos.y + 20;
+    const cx = tourRect.left + tourRect.width / 2;
+    const cy = tourRect.top + tourRect.height / 2;
+    const STANDOFF = 90;
+    const inside = ax >= tourRect.left && ax <= tourRect.right && ay >= tourRect.top && ay <= tourRect.bottom;
+    if (inside) {
+      let vx = ax - cx;
+      let vy = ay - cy;
+      let len = Math.hypot(vx, vy);
+      if (len < 1) {
+        vx = -1;
+        vy = 0;
+        len = 1;
+      }
+      const out = Math.hypot(tourRect.width, tourRect.height) / 2 + STANDOFF;
+      ax = cx + vx / len * out;
+      ay = cy + vy / len * out;
+    }
+    const corners = [
+      { x: tourRect.left, y: tourRect.top },
+      { x: tourRect.right, y: tourRect.top },
+      { x: tourRect.right, y: tourRect.bottom },
+      { x: tourRect.left, y: tourRect.bottom }
+    ];
+    const toCentre = Math.atan2(cy - ay, cx - ax);
+    const far = Math.max.apply(null, corners.map((c) => Math.hypot(c.x - ax, c.y - ay)));
+    const APERTURE = 5;
+    const px = -Math.sin(toCentre) * APERTURE;
+    const py = Math.cos(toCentre) * APERTURE;
+    const cross = (o, a, b) => (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+    const src = corners.concat([{ x: ax + px, y: ay + py }, { x: ax - px, y: ay - py }]).sort((a, b) => a.x - b.x || a.y - b.y);
+    const lower = [];
+    for (let i = 0; i < src.length; i++) {
+      while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], src[i]) <= 0) lower.pop();
+      lower.push(src[i]);
+    }
+    const upper = [];
+    for (let i = src.length - 1; i >= 0; i--) {
+      while (upper.length >= 2 && cross(upper[upper.length - 2], upper[upper.length - 1], src[i]) <= 0) upper.pop();
+      upper.push(src[i]);
+    }
+    const ring = lower.slice(0, -1).concat(upper.slice(0, -1));
+    return {
+      ax,
+      ay,
+      far,
+      hullSize: ring.length,
+      path: "M " + ring.map((p) => p.x + " " + p.y).join(" L ") + " Z"
+    };
+  })();
+  return /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 z-[9999] pointer-events-auto font-sans" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 transition-all duration-500" }, /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: 0, left: 0, right: 0, height: tourRect.top, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" } }), /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: tourRect.top, left: 0, width: tourRect.left, height: tourRect.height, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" } }), /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: tourRect.top, right: 0, left: tourRect.right, height: tourRect.height, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" } }), /* @__PURE__ */ React.createElement("div", { style: { position: "absolute", top: tourRect.bottom, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.75)", backdropFilter: "blur(4px)" } })), isSpotlightMode && _beam && /* @__PURE__ */ React.createElement("svg", { className: "absolute inset-0 pointer-events-none z-[10000]", style: { overflow: "visible" }, "aria-hidden": "true" }, /* @__PURE__ */ React.createElement("defs", null, /* @__PURE__ */ React.createElement(
     "radialGradient",
     {
       id: "beamGradient",
       gradientUnits: "userSpaceOnUse",
-      cx: botSpotlightPos.x - 53,
-      cy: botSpotlightPos.y + 20,
-      r: Math.hypot(
-        tourRect.left + tourRect.width / 2 - (botSpotlightPos.x - 53),
-        tourRect.top + tourRect.height / 2 - (botSpotlightPos.y + 10)
-      ) * 1.1
+      cx: _beam.ax,
+      cy: _beam.ay,
+      r: _beam.far * 1.05
     },
-    /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: "rgba(250, 204, 21, 0.7)" }),
-    /* @__PURE__ */ React.createElement("stop", { offset: "60%", stopColor: "rgba(250, 204, 21, 0.1)" }),
+    /* @__PURE__ */ React.createElement("stop", { offset: "0%", stopColor: "rgba(254, 240, 138, 0.55)" }),
+    /* @__PURE__ */ React.createElement("stop", { offset: "35%", stopColor: "rgba(250, 204, 21, 0.28)" }),
+    /* @__PURE__ */ React.createElement("stop", { offset: "75%", stopColor: "rgba(250, 204, 21, 0.08)" }),
     /* @__PURE__ */ React.createElement("stop", { offset: "100%", stopColor: "rgba(250, 204, 21, 0)" })
-  ), /* @__PURE__ */ React.createElement("filter", { id: "glow" }, /* @__PURE__ */ React.createElement("feGaussianBlur", { stdDeviation: "8", result: "coloredBlur" }), /* @__PURE__ */ React.createElement("feMerge", null, /* @__PURE__ */ React.createElement("feMergeNode", { in: "coloredBlur" }), /* @__PURE__ */ React.createElement("feMergeNode", { in: "SourceGraphic" })))), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("filter", { id: "glow", x: "-20%", y: "-20%", width: "140%", height: "140%" }, /* @__PURE__ */ React.createElement("feGaussianBlur", { stdDeviation: "4", result: "coloredBlur" }), /* @__PURE__ */ React.createElement("feMerge", null, /* @__PURE__ */ React.createElement("feMergeNode", { in: "coloredBlur" }), /* @__PURE__ */ React.createElement("feMergeNode", { in: "SourceGraphic" })))), /* @__PURE__ */ React.createElement(
     "path",
     {
-      d: `
-                            M ${botSpotlightPos.x - 53} ${botSpotlightPos.y + 20}
-                            L ${tourRect.left} ${tourRect.top}
-                            L ${tourRect.left} ${tourRect.bottom}
-                            Z
-                        `,
+      d: _beam.path,
       fill: "url(#beamGradient)",
       style: { mixBlendMode: "screen", filter: "url(#glow)" },
       className: "animate-in fade-in duration-500 motion-reduce:animate-none motion-reduce:transition-none"

@@ -27,7 +27,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
     // Refs
     uiDispatch,
     // State setters
-    setActiveBlueprint, setActiveView, setAdventureInputMode, setDokLevel,
+    archiveLivePlan, setActiveBlueprint, setActiveView, setAdventureInputMode, setBlueprintExecutionResult, setDokLevel,
     setExpandedTools, setFillInTheBlank, setFrameType, setFullPackTargetGroup,
     setGeneratedContent, setGradeLevel, setGuidedFlowState, setIsAutoFillMode,
     setIsChatProcessing, setLeveledTextLanguage, setOutlineType, setQuizMcqCount,
@@ -384,7 +384,20 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                                  targetCount: countPreference,
                                  interests: studentInterests,
                              });
+                            // File the outgoing plan (if it ever ran) before replacing it —
+                            // the archive is what makes "start a new plan" non-destructive.
+                            // typeof-guarded like the setter below: a stale host without
+                            // this dep must degrade to the old behaviour, not throw into
+                            // the catch and stop the plan from presenting.
+                            if (typeof archiveLivePlan === 'function') archiveLivePlan();
                             setActiveBlueprint(config);
+                             // A NEW plan must never inherit the previous run's record.
+                             // uiIds are minted per-plan from a row index, so they REPEAT
+                             // across plans: without this, plan B's rows wear plan A's
+                             // 'landed' badges and Preview (gated on status==='landed')
+                             // opens the PREVIOUS lesson's resource. Same reason
+                             // handleApplyLessonTemplate clears it.
+                             if (typeof setBlueprintExecutionResult === 'function') setBlueprintExecutionResult(null);
                              // Card first, then the chooser — the chooser must be the
                              // LAST message for _pendingChoiceMsg to see it. The card
                              // renderer ignores msg.text, so the 'presented' guidance
@@ -440,7 +453,12 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                              targetCount,
                              interests: studentInterests,
                          });
+                        // Archive the outgoing plan before replacement (guarded — see above).
+                        if (typeof archiveLivePlan === 'function') archiveLivePlan();
                         setActiveBlueprint(config);
+                        // New plan, so the previous run's record must not survive —
+                        // uiIds repeat across plans and would badge these rows as landed.
+                        if (typeof setBlueprintExecutionResult === 'function') setBlueprintExecutionResult(null);
                         setUdlMessages(prev => [...prev,
                              { role: 'model', type: 'blueprint', text: t('chat_guide.blueprint.presented') },
                              buildBlueprintReviewChoices()
@@ -510,6 +528,11 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                      sendBotMsg(t('common.adjusting') + "...");
                      try {
                         const updatedConfig = await _reviseAgentCoreLegacyBlueprint(activeBlueprint, textToSend);
+                        // DELIBERATELY does NOT clear the run record, unlike the two
+                        // new-plan sites above. This is a REVISION of the same plan:
+                        // normalizePlanItems preserves existing uiIds, so rows that
+                        // already generated keep their status — which is the whole
+                        // point of a durable record. Added rows simply have no entry.
                         setActiveBlueprint(updatedConfig);
                         setUdlMessages(prev => [...prev, buildBlueprintReviewChoices(t('chat_guide.blueprint.updated'))]);
                      } catch (e) {

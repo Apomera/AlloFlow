@@ -53,6 +53,12 @@ function UDLGuideModal(props) {
     activeBlueprint,
     addToast,
     blueprintExecutionResult,
+    setBlueprintExecutionResult,
+    isExecutingBlueprint,
+    archiveLivePlan,
+    archivedPlans,
+    handleRestoreArchivedPlan,
+    handleDeleteArchivedPlan,
     handleRebuildBlueprintStep,
     lessonTemplates,
     handleSaveLessonTemplate,
@@ -238,8 +244,14 @@ function UDLGuideModal(props) {
       onUpdate: handleBlueprintUIUpdate,
       onConfirm: handleExecuteBlueprint,
       onCancel: () => {
+        if (isExecutingBlueprint) {
+          addToast(t("blueprint.cancel_while_running") || "This plan is still generating. Wait for it to finish.", "info");
+          return;
+        }
+        if (typeof archiveLivePlan === "function") archiveLivePlan();
         setUdlMessages((prev) => [...prev, { role: "model", text: t("blueprint.cancel_msg") }]);
         setActiveBlueprint(null);
+        if (typeof setBlueprintExecutionResult === "function") setBlueprintExecutionResult(null);
       }
     }
   )), msg.type === "choices" && /* @__PURE__ */ React.createElement("div", { className: `max-w-[92%] p-3 rounded-xl text-sm shadow-sm ${chatStyles.modelBubble} rounded-bl-none` }, renderFormattedText(msg.text), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 mt-3", role: "group", "aria-label": t("chat_guide.header") }, (msg.choices || []).map((choice, cIdx) => /* @__PURE__ */ React.createElement(
@@ -281,7 +293,11 @@ function UDLGuideModal(props) {
       className: `flex-grow text-left text-xs px-2 py-1.5 rounded border transition-colors ${chatStyles.secondaryButton}`
     },
     /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, tpl.name),
-    /* @__PURE__ */ React.createElement("span", { className: "opacity-70 ml-2" }, Array.isArray(tpl.resourcePlan) ? tpl.resourcePlan.length : 0, " ", t("blueprint.template_step_count") || "steps")
+    /* @__PURE__ */ React.createElement("span", { className: "opacity-70 ml-2" }, (() => {
+      const _n = Array.isArray(tpl.resourcePlan) ? tpl.resourcePlan.length : 0;
+      const _word = _n === 1 ? t("blueprint.template_step_count_one") || "step" : t("blueprint.template_step_count") || "steps";
+      return _n + " " + _word;
+    })())
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -290,6 +306,27 @@ function UDLGuideModal(props) {
       onClick: () => handleDeleteLessonTemplate(tpl.id),
       "aria-label": `${t("blueprint.template_delete") || "Delete template"}: ${tpl.name}`,
       title: t("blueprint.template_delete") || "Delete template",
+      className: "text-xs px-2 py-1.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100"
+    },
+    "\xD7"
+  ))))), !activeBlueprint && Array.isArray(archivedPlans) && archivedPlans.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "w-full", "data-testid": "bp-archive-picker" }, /* @__PURE__ */ React.createElement("p", { className: `text-[11px] mb-1 ${chatStyles.subText}` }, t("blueprint.archive_title") || "Previous plans:"), /* @__PURE__ */ React.createElement("ul", { className: "space-y-1" }, archivedPlans.slice(0, 8).map((rec) => /* @__PURE__ */ React.createElement("li", { key: rec.id, className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "data-testid": "bp-archive-restore",
+      onClick: () => handleRestoreArchivedPlan(rec.id),
+      className: `flex-grow text-left text-xs px-2 py-1.5 rounded border transition-colors ${chatStyles.secondaryButton}`
+    },
+    /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, rec.name),
+    /* @__PURE__ */ React.createElement("span", { className: "opacity-70 ml-2" }, rec.stats ? `${rec.stats.landed}/${rec.stats.total} ${t("blueprint.archive_landed") || "landed"}` : "", rec.savedAt ? ` \xB7 ${String(rec.savedAt).slice(0, 10)}` : "")
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "data-testid": "bp-archive-delete",
+      onClick: () => handleDeleteArchivedPlan(rec.id),
+      "aria-label": `${t("blueprint.archive_delete") || "Delete archived plan"}: ${rec.name}`,
+      title: t("blueprint.archive_delete") || "Delete archived plan",
       className: "text-xs px-2 py-1.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100"
     },
     "\xD7"
@@ -303,7 +340,15 @@ function UDLGuideModal(props) {
       onPreviewStep: handlePreviewBlueprintStep,
       onUpdate: handleBlueprintUIUpdate,
       onConfirm: handleExecuteBlueprint,
-      onCancel: () => setActiveBlueprint(null)
+      onCancel: () => {
+        if (isExecutingBlueprint) {
+          addToast(t("blueprint.cancel_while_running") || "This plan is still generating. Wait for it to finish.", "info");
+          return;
+        }
+        if (typeof archiveLivePlan === "function") archiveLivePlan();
+        setActiveBlueprint(null);
+        if (typeof setBlueprintExecutionResult === "function") setBlueprintExecutionResult(null);
+      }
     }
   )), isChatProcessing && /* @__PURE__ */ React.createElement("div", { className: "flex items-start" }, /* @__PURE__ */ React.createElement("div", { className: `p-3 rounded-xl rounded-bl-none flex items-center gap-2 text-sm ${chatStyles.modelBubble}` }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin" }), " ", t("bot.mood_thinking")))), blueprintPreview && /* @__PURE__ */ React.createElement(
     "div",

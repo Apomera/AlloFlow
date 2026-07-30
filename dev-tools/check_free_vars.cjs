@@ -98,7 +98,11 @@ if (!files.length) {
   // tool panels and is one of the most frequently edited files in the repo, yet
   // it had no dangling-identifier coverage at all. Its baseline is large because
   // the module wrapper injects icon vars — that is expected, not a smell.
-  files.push('doc_pipeline_source.jsx', 'view_pdf_audit_source.jsx', 'gemini_api_source.jsx', 'immersive_reader_source.jsx', 'phase_o_misc_handlers_source.jsx', 'quickstart_source.jsx', 'view_sidebar_panels_source.jsx', 'stem_lab/stem_lab_module.js');
+  // udl_chat + view_misc_modals added 2026-07-29: the two files the blueprint
+  // work edits most had ZERO dangling-identifier coverage — a free identifier
+  // there ships green and surfaces as udl_chat's generic catch ("something went
+  // wrong") on the main plan-building path. Prerequisite for the plan archive.
+  files.push('doc_pipeline_source.jsx', 'view_pdf_audit_source.jsx', 'gemini_api_source.jsx', 'immersive_reader_source.jsx', 'phase_o_misc_handlers_source.jsx', 'quickstart_source.jsx', 'view_sidebar_panels_source.jsx', 'udl_chat_source.jsx', 'view_misc_modals_source.jsx', 'allobot_source.jsx', 'stem_lab/stem_lab_module.js');
   const stemDir = path.resolve(__dirname, '..', 'stem_lab');
   if (fs.existsSync(stemDir)) {
     for (const f of fs.readdirSync(stemDir).sort()) {

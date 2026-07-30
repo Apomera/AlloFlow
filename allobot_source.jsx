@@ -278,7 +278,7 @@ function alloStemAccessory(toolId) {
     const d = alloStemDiscipline(toolId);
     return d ? (STEM_DISCIPLINE_ACCESSORY[d] || 'microscope') : null;
 }
-const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, holdingPointer = false, onReadMore, onClick, onVoiceSettingsClick, onMicClick, onToggleMute, isListening, isIdleDisabled = false, disableAnimations = false, stemLabTool = null, showStemLab = false, soundEnabled = false, selectedVoice, voiceSpeed = 1, voiceVolume = 1, onGenerateAudio, theme = 'light', colorOverlay = 'none', onSpeechEnd, onSpeechStart, activeView, isFlying = false, isSystemAudioActive = false, history = [], isParentMode = false, hasSeenBotIntro = true, onBotIntroSeen, topic, canPlayIntro = true }, ref) => {
+const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, holdingPointer = false, onReadMore, onClick, onVoiceSettingsClick, onMicClick, onToggleMute, isListening, isIdleDisabled = false, disableAnimations = false, stemLabTool = null, showStemLab = false, soundEnabled = false, selectedVoice, voiceSpeed = 1, voiceVolume = 1, onGenerateAudio, theme = 'light', colorOverlay = 'none', onSpeechEnd, onSpeechStart, activeView, isFlying = false, isSystemAudioActive = false, history = [], isParentMode = false, hasSeenBotIntro = true, onBotIntroSeen, topic, canPlayIntro = true, aimAt = null }, ref) => {
   const motionDisabled = useAlloMotionDisabled(disableAnimations);
   useEffect(() => { try { var _bot = containerRef.current; var _svg = _bot && _bot.querySelector("svg"); if (!_svg || typeof _svg.pauseAnimations !== "function") return; try { if (motionDisabled) { _svg.pauseAnimations(); _svg.setCurrentTime(0); } else { _svg.unpauseAnimations(); } } catch (e) {} } catch (e) {} }, [motionDisabled]);
   const { t } = useContext(LanguageContext);
@@ -306,6 +306,53 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
   const [eyePosition, setEyePosition] = useState({ x: 0, y: 0 });
   const [visorPosition, setVisorPosition] = useState({ x: 0, y: 0 });
   const containerRef = useRef(null);
+  // ── Flashlight aiming + muzzle reporting (2026-07-29) ──
+  // The flashlight was drawn at a fixed rotate(45) no matter where the light was
+  // supposed to be pointing, and nothing outside this component could find out
+  // where the bot actually WAS — so the tour overlay had to guess the beam's
+  // origin from the TARGET's rect instead of from the bot.
+  //
+  // The marker is placed at the flashlight's PIVOT, deliberately not inside the
+  // rotated group: measuring the rotated lens would make the muzzle position a
+  // function of the angle, and the angle a function of the muzzle position — a
+  // feedback loop that wobbles. The pivot is ~7px behind the lens, which is
+  // immaterial for a beam that travels hundreds of px.
+  const flashPivotRef = useRef(null);
+  const [aimAngle, setAimAngle] = useState(45);
+  const _aimX = aimAt ? aimAt.x : null;
+  const _aimY = aimAt ? aimAt.y : null;
+  useEffect(() => {
+      if (_aimX === null || _aimY === null) {
+          setAimAngle(45);
+          try { if (typeof window !== 'undefined') window.__alloBotMuzzle = null; } catch (e) {}
+          return;
+      }
+      let timer = null;
+      let stopped = false;
+      const sample = () => {
+          if (stopped) return;
+          try {
+              const el = flashPivotRef.current || containerRef.current;
+              if (el && typeof el.getBoundingClientRect === 'function') {
+                  const r = el.getBoundingClientRect();
+                  const mx = r.left + r.width / 2;
+                  const my = r.top + r.height / 2;
+                  // The flashlight art points +y (straight down) unrotated, so
+                  // rotate(theta) aims it along screen angle theta + 90.
+                  const deg = (Math.atan2(_aimY - my, _aimX - mx) * 180 / Math.PI) - 90;
+                  // Only re-render on a change worth seeing: the CSS position
+                  // transition would otherwise setState every tick of the flight.
+                  setAimAngle((prev) => (Math.abs(prev - deg) > 0.75 ? deg : prev));
+                  if (typeof window !== 'undefined') window.__alloBotMuzzle = { x: mx, y: my, angle: deg };
+              }
+          } catch (e) {}
+          // Re-sampled rather than computed once: the bot FLIES to its target
+          // under a CSS transition, and the teacher can drag it mid-spotlight.
+          timer = setTimeout(sample, 120);
+      };
+      sample();
+      return () => { stopped = true; if (timer) clearTimeout(timer); };
+  }, [_aimX, _aimY]);
   useEffect(() => {
       if (motionDisabled) {
           setEyePosition({ x: 0, y: 0 });
@@ -848,6 +895,25 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       speak,
       summon,
       triggerReaction,
+      // Where the bot actually IS, in screen coords. Measured from the DOM rather
+      // than derived from `position` — that state holds a RIGHT offset and a top
+      // offset, so reconstructing screen x needs viewport width and the bot's own
+      // width, and it lags the CSS flight transition. A rect is exact and live.
+      getPosition: () => {
+          try {
+              const r = containerRef.current && containerRef.current.getBoundingClientRect();
+              return r ? { x: r.left + r.width / 2, y: r.top + r.height / 2, rect: r } : null;
+          } catch (e) { return null; }
+      },
+      // The flashlight's emitter, when one is held. Falls back to the bot's centre
+      // so a caller never has to special-case "not currently holding a light".
+      getMuzzle: () => {
+          try {
+              const el = flashPivotRef.current || containerRef.current;
+              const r = el && el.getBoundingClientRect();
+              return r ? { x: r.left + r.width / 2, y: r.top + r.height / 2 } : null;
+          } catch (e) { return null; }
+      },
       dismissMessage: () => {
           setCustomMessage(null);
           setIsTruncated(false);
@@ -2098,7 +2164,17 @@ input:focus-visible, textarea:focus-visible, select:focus-visible {
                         </g>
                     )}
                     {heldItem === 'flashlight' && (
-                        <g transform="translate(10, 65) rotate(45)">
+                        <circle
+                            ref={flashPivotRef}
+                            cx="10" cy="65" r="0.5"
+                            fill="none"
+                            stroke="none"
+                            pointerEvents="none"
+                            aria-hidden="true"
+                        />
+                    )}
+                    {heldItem === 'flashlight' && (
+                        <g transform={`translate(10, 65) rotate(${aimAngle})`}>
                             <path
                                 d="M -4 -10 L 4 -10 L 6 5 L 8 8 L -8 8 L -6 5 Z"
                                 fill="#94A3B8"

@@ -189,7 +189,11 @@ describe('template host wiring', () => {
     expect(src).toContain('const handleSaveLessonTemplate');
     expect(src).toContain('const handleApplyLessonTemplate');
     expect(src).toContain('const handleDeleteLessonTemplate');
-    expect(src).toContain('lessonTemplates, handleSaveLessonTemplate');
+    // Presence, not adjacency: pinning 'lessonTemplates, handleSaveLessonTemplate'
+    // broke when the archive props were legitimately inserted between them —
+    // the third time an adjacency pin has failed correct code in this suite.
+    expect(src).toContain('lessonTemplates,');
+    expect(src).toContain('handleSaveLessonTemplate,');
   });
 
   // The documented trap from the library core: templates reuse uiIds, so a run

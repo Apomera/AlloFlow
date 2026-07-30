@@ -680,9 +680,113 @@
     };
   }
 
+  // ── Blueprint archive (singleton + archive, 2026-07-29) ────────────────
+  //
+  // ONE plan stays live (activeBlueprint, untouched); FINISHED plans are filed
+  // here and can be restored. This is deliberately NOT a multi-plan store:
+  //   - Its OWN key. Never a version bump on 'alloflow-blueprint-run-v1' — the
+  //     shipped build early-returns on env.v !== 1 and then clears the key in
+  //     the same effect flush, so a bump there is silent total loss on
+  //     downgrade. A new key is invisible to old builds.
+  //   - run.rows stays NESTED inside each record, never merged into a shared
+  //     map: uiIds are minted per-plan from a row index (contracts :264), so
+  //     'analysis-0' COLLIDES across plans by construction.
+  //   - Identity (id) lives on the RECORD, never on the plan object —
+  //     toLegacyConfig builds a fresh literal and would drop it on the chat's
+  //     revise round-trip, the same reason the run record is its own atom.
+  // A template is a plan's PATTERN (content stripped); an archive record is a
+  // plan's HISTORY (what ran, what landed, what was audited).
+  var BLUEPRINT_ARCHIVE_KEY = 'alloflow_blueprint_archive_v1';
+  var BLUEPRINT_ARCHIVE_VERSION = 1;
+  var BLUEPRINT_ARCHIVE_MAX = 12;
+
+  // Snapshot the live pair into an archive record. JSON round-trip on purpose:
+  // both values already live in a JSON envelope, and the copy means later state
+  // updates can never mutate an archived record through a shared reference.
+  function toArchivedPlan(plan, run, opts) {
+    var o = opts || {};
+    var rows = (run && run.rows && typeof run.rows === 'object') ? run.rows : {};
+    var keys = Object.keys(rows);
+    var landed = 0, failed = 0;
+    keys.forEach(function (k) {
+      var s = rows[k] && rows[k].status;
+      if (s === 'landed') landed++;
+      else if (s === 'failed' || s === 'interrupted') failed++;
+    });
+    var copy;
+    try { copy = JSON.parse(JSON.stringify({ plan: plan || null, run: run || null })); }
+    catch (_) { return null; } // a non-serializable pair must not poison the cabinet
+    return {
+      v: BLUEPRINT_ARCHIVE_VERSION,
+      id: _templateSafeString(o.id || ('arc-' + Math.random().toString(36).slice(2, 10)), 64),
+      name: _templateSafeString(o.name || 'Lesson plan', 80),
+      savedAt: _templateSafeString(o.savedAt || '', 40),
+      unitId: _templateSafeString(o.unitId, 64) || null,
+      unitName: _templateSafeString(o.unitName, 80) || null,
+      plan: copy.plan,
+      run: copy.run,
+      stats: { total: keys.length, landed: landed, failed: failed }
+    };
+  }
+
+  function createBlueprintArchive(storage) {
+    var store = storage || (function () { try { return window.localStorage; } catch (_) { return null; } })();
+    var frozen = false;
+    function readAll() {
+      if (!store) return [];
+      try {
+        var raw = store.getItem(BLUEPRINT_ARCHIVE_KEY);
+        if (!raw) { frozen = false; return []; }
+        var env = JSON.parse(raw);
+        if (env && typeof env.v === 'number' && env.v > BLUEPRINT_ARCHIVE_VERSION) {
+          // A NEWER build wrote this. Refuse to read or overwrite it — same
+          // stance as the workspace-recovery payload check. Downgrades lose
+          // access temporarily; they never lose data.
+          frozen = true;
+          return [];
+        }
+        frozen = false;
+        if (!env || env.v !== BLUEPRINT_ARCHIVE_VERSION || !Array.isArray(env.plans)) return [];
+        return env.plans;
+      } catch (_) { frozen = false; return []; }
+    }
+    function writeAll(list) {
+      if (!store || frozen) return false;
+      try {
+        // Raw setItem, NOT the host's safeSetItem: safeSetItem swallows
+        // QuotaExceededError with no return value, and the caller here needs
+        // the boolean to tell the teacher the cabinet is full.
+        store.setItem(BLUEPRINT_ARCHIVE_KEY, JSON.stringify({
+          v: BLUEPRINT_ARCHIVE_VERSION, savedAt: new Date().toISOString(),
+          plans: list.slice(0, BLUEPRINT_ARCHIVE_MAX) // newest first; oldest falls off
+        }));
+        return true;
+      } catch (_) { return false; }
+    }
+    return {
+      list: function () { return readAll(); },
+      isFrozen: function () { readAll(); return frozen; },
+      get: function (id) { return readAll().filter(function (p) { return p && p.id === id; })[0] || null; },
+      add: function (record) {
+        if (!record || !record.id) return false;
+        var list = readAll().filter(function (p) { return p && p.id !== record.id; });
+        list.unshift(record);
+        return writeAll(list);
+      },
+      remove: function (id) {
+        var before = readAll();
+        var after = before.filter(function (p) { return p && p.id !== id; });
+        if (after.length === before.length) return false;
+        return writeAll(after);
+      }
+    };
+  }
+
   var API = { createBlueprintService: createBlueprintService, createCommandWorkflowService: createCommandWorkflowService, COMMAND_WORKFLOW_LIBRARY_KEY: COMMAND_WORKFLOW_LIBRARY_KEY,
               toLessonTemplate: toLessonTemplate, applyLessonTemplate: applyLessonTemplate,
-              createLessonTemplateLibrary: createLessonTemplateLibrary, LESSON_TEMPLATE_LIBRARY_KEY: LESSON_TEMPLATE_LIBRARY_KEY };
+              createLessonTemplateLibrary: createLessonTemplateLibrary, LESSON_TEMPLATE_LIBRARY_KEY: LESSON_TEMPLATE_LIBRARY_KEY,
+              toArchivedPlan: toArchivedPlan, createBlueprintArchive: createBlueprintArchive,
+              BLUEPRINT_ARCHIVE_KEY: BLUEPRINT_ARCHIVE_KEY, BLUEPRINT_ARCHIVE_MAX: BLUEPRINT_ARCHIVE_MAX };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = API;
   if (typeof window !== 'undefined') {

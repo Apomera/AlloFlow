@@ -12,7 +12,9 @@
 // ── UDLGuideModal (UDL Guide Modal) — gate: showUDLGuide ──
 function UDLGuideModal(props) {
   const {
-    InteractiveBlueprintCard, activeBlueprint, addToast, blueprintExecutionResult, handleRebuildBlueprintStep,
+    InteractiveBlueprintCard, activeBlueprint, addToast, blueprintExecutionResult, setBlueprintExecutionResult,
+    isExecutingBlueprint, archiveLivePlan, archivedPlans, handleRestoreArchivedPlan, handleDeleteArchivedPlan,
+    handleRebuildBlueprintStep,
     lessonTemplates, handleSaveLessonTemplate, handleApplyLessonTemplate, handleDeleteLessonTemplate,
     handlePreviewBlueprintStep, blueprintPreview, closeBlueprintPreview,
     aiStandardQuery, aiStandardRegion, autoSendVoice, chatStyles,
@@ -172,8 +174,18 @@ function UDLGuideModal(props) {
                           onUpdate={handleBlueprintUIUpdate}
                           onConfirm={handleExecuteBlueprint}
                           onCancel={() => {
+                              // isExecutingBlueprint had NO reader anywhere in the app
+                              // until this line, so Cancel stayed live mid-run: it nulled
+                              // the plan while the executor was still emitting steps.
+                              if (isExecutingBlueprint) { addToast(t('blueprint.cancel_while_running') || 'This plan is still generating. Wait for it to finish.', 'info'); return; }
+                              // Cancel discards the PLAN, not its history: if it ever ran,
+                              // it is filed to the archive first (guarded for stale hosts).
+                              if (typeof archiveLivePlan === 'function') archiveLivePlan();
                               setUdlMessages(prev => [...prev, { role: 'model', text: t('blueprint.cancel_msg') }]);
                               setActiveBlueprint(null);
+                              // Clear the record too: a run persisted without its plan
+                              // rehydrates as an orphan board with nothing to describe.
+                              if (typeof setBlueprintExecutionResult === 'function') setBlueprintExecutionResult(null);
                           }}
                       />
                   </div>
@@ -246,10 +258,18 @@ function UDLGuideModal(props) {
                       className={`flex-grow text-left text-xs px-2 py-1.5 rounded border transition-colors ${chatStyles.secondaryButton}`}
                     >
                       <span className="font-bold">{tpl.name}</span>
+                      {/* Rendered "1 steps". Separate singular key rather than a
+                          suffix rule: many languages do not pluralise by adding a
+                          letter, so a hand-rolled `+ 's'` would be wrong in most
+                          of the 63 packs. Both keys fall back to English. */}
                       <span className="opacity-70 ml-2">
-                        {(Array.isArray(tpl.resourcePlan) ? tpl.resourcePlan.length : 0)}
-                        {' '}
-                        {t('blueprint.template_step_count') || 'steps'}
+                        {(() => {
+                          const _n = Array.isArray(tpl.resourcePlan) ? tpl.resourcePlan.length : 0;
+                          const _word = _n === 1
+                            ? (t('blueprint.template_step_count_one') || 'step')
+                            : (t('blueprint.template_step_count') || 'steps');
+                          return _n + ' ' + _word;
+                        })()}
                       </span>
                     </button>
                     <button
@@ -258,6 +278,47 @@ function UDLGuideModal(props) {
                       onClick={() => handleDeleteLessonTemplate(tpl.id)}
                       aria-label={`${t('blueprint.template_delete') || 'Delete template'}: ${tpl.name}`}
                       title={t('blueprint.template_delete') || 'Delete template'}
+                      className="text-xs px-2 py-1.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100"
+                    >
+                      ×
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {/* Previous plans — the archive. Restoring brings back the plan AND
+              its run record: status badges, audit coverage, rebuild targets.
+              Stateless ON PURPOSE: this sits below the component's early
+              return, where a hook would be a conditional-hook crash (this
+              file warns about that class twice). Real <button>s, so the rows
+              are keyboard-operable, not announce-only. */}
+          {!activeBlueprint && Array.isArray(archivedPlans) && archivedPlans.length > 0 && (
+            <div className="w-full" data-testid="bp-archive-picker">
+              <p className={`text-[11px] mb-1 ${chatStyles.subText}`}>
+                {t('blueprint.archive_title') || 'Previous plans:'}
+              </p>
+              <ul className="space-y-1">
+                {archivedPlans.slice(0, 8).map((rec) => (
+                  <li key={rec.id} className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      data-testid="bp-archive-restore"
+                      onClick={() => handleRestoreArchivedPlan(rec.id)}
+                      className={`flex-grow text-left text-xs px-2 py-1.5 rounded border transition-colors ${chatStyles.secondaryButton}`}
+                    >
+                      <span className="font-bold">{rec.name}</span>
+                      <span className="opacity-70 ml-2">
+                        {rec.stats ? `${rec.stats.landed}/${rec.stats.total} ${t('blueprint.archive_landed') || 'landed'}` : ''}
+                        {rec.savedAt ? ` · ${String(rec.savedAt).slice(0, 10)}` : ''}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      data-testid="bp-archive-delete"
+                      onClick={() => handleDeleteArchivedPlan(rec.id)}
+                      aria-label={`${t('blueprint.archive_delete') || 'Delete archived plan'}: ${rec.name}`}
+                      title={t('blueprint.archive_delete') || 'Delete archived plan'}
                       className="text-xs px-2 py-1.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100"
                     >
                       ×
@@ -285,7 +346,12 @@ function UDLGuideModal(props) {
                   onPreviewStep={handlePreviewBlueprintStep}
                   onUpdate={handleBlueprintUIUpdate}
                   onConfirm={handleExecuteBlueprint}
-                  onCancel={() => setActiveBlueprint(null)}
+                  onCancel={() => {
+                      if (isExecutingBlueprint) { addToast(t('blueprint.cancel_while_running') || 'This plan is still generating. Wait for it to finish.', 'info'); return; }
+                      if (typeof archiveLivePlan === 'function') archiveLivePlan();
+                      setActiveBlueprint(null);
+                      if (typeof setBlueprintExecutionResult === 'function') setBlueprintExecutionResult(null);
+                  }}
               />
             </div>
           )}

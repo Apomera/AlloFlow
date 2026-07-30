@@ -147,7 +147,7 @@ const GoldenThreadPanel = ({
         concept: c
       }) || 'Remove concept ' + c,
       className: "ml-1 text-amber-600 hover:text-red-500 font-bold leading-none"
-    }, "\xD7"));
+    }, "×"));
   }), isEditing && /*#__PURE__*/React.createElement("span", {
     className: "inline-flex items-center gap-1"
   }, /*#__PURE__*/React.createElement("input", {
@@ -181,7 +181,7 @@ const GoldenThreadPanel = ({
         term: term
       }) || 'Remove term ' + term,
       className: "ml-1 text-indigo-600 hover:text-red-500 font-bold leading-none"
-    }, "\xD7"));
+    }, "×"));
   }), isEditing && /*#__PURE__*/React.createElement("span", {
     className: "inline-flex items-center gap-1"
   }, /*#__PURE__*/React.createElement("input", {
@@ -224,6 +224,12 @@ const InteractiveBlueprintCard = React.memo(({
   const [showTemplateSave, setShowTemplateSave] = useState(false);
   const [templateName, setTemplateName] = useState('');
   const [directivePolicy, setDirectivePolicy] = useState({});
+  // Which rows have their "what is this?" description expanded. A LIST, not a
+  // single id: a teacher deciding between two proposed tools wants both open at
+  // once, which is the whole reason for asking. Grouped with the other state so
+  // it can never drift below a render-time reader (the TDZ crash class the
+  // deploy gates do not catch).
+  const [openDescIds, setOpenDescIds] = useState([]);
   const getReadableToolLabel = id => String(id || '').split('-').map(part => part ? part.charAt(0).toUpperCase() + part.slice(1) : '').join(' ');
   const getPlanItems = cfg => {
     if (!cfg) return [];
@@ -322,7 +328,13 @@ const InteractiveBlueprintCard = React.memo(({
         const fallbackLabel = entry.id === 'dbq' ? 'DBQ' : getReadableToolLabel(entry.id);
         return {
           value: entry.id,
-          label: localized && localized !== entry.sidebarKey ? localized : entry.label || fallbackLabel
+          label: localized && localized !== entry.sidebarKey ? localized : entry.label || fallbackLabel,
+          // TOOL_CATALOG.description is a REQUIRED one-sentence "what it does",
+          // already written for every catalog tool and keyed by the same id the
+          // plan rows use — so this is wiring, not new copy. It exists for the
+          // LLM prompt, hence English-only; the t() lookup lets a translation
+          // land later without touching this code.
+          desc: t('tool_desc.' + entry.id) || entry.description || ''
         };
       });
     }
@@ -392,6 +404,11 @@ const InteractiveBlueprintCard = React.memo(({
     const opt = toolOptions.find(o => o.value === type);
     return opt ? opt.label : type;
   };
+  const getToolDesc = type => {
+    const opt = toolOptions.find(o => o.value === type);
+    return opt && opt.desc || '';
+  };
+  const toggleDesc = id => setOpenDescIds(prev => prev.indexOf(id) === -1 ? prev.concat([id]) : prev.filter(x => x !== id));
   return /*#__PURE__*/React.createElement("div", {
     "data-help-key": "blueprint_card_panel",
     className: "bg-white border-2 border-indigo-100 rounded-xl p-4 my-2 shadow-lg animate-in zoom-in duration-300 w-full max-w-2xl"
@@ -480,7 +497,10 @@ const InteractiveBlueprintCard = React.memo(({
   }, toolOptions.map(opt => /*#__PURE__*/React.createElement("option", {
     key: opt.value,
     value: opt.value
-  }, opt.label)))), /*#__PURE__*/React.createElement("div", {
+  }, opt.label))), getToolDesc(item.type) && /*#__PURE__*/React.createElement("p", {
+    className: "mt-1 text-[10px] leading-snug text-slate-600",
+    "aria-live": "polite"
+  }, getToolDesc(item.type))), /*#__PURE__*/React.createElement("div", {
     className: "col-span-2"
   }, /*#__PURE__*/React.createElement("input", {
     "aria-label": t('common.enter_item'),
@@ -559,6 +579,14 @@ const InteractiveBlueprintCard = React.memo(({
     // gone. Claiming it is "Audited" would assert coverage of
     // something that no longer exists — say it is missing instead.
     const _missing = !!(_rowRun && _rowRun.resourceMissing);
+    // A row whose resource was trimmed from history used to render
+    // "DONE" and "RESOURCE GONE" side by side, which reads as a
+    // contradiction: the teacher is told the step succeeded and that
+    // its output does not exist. "Resource gone" is the load-bearing
+    // half (Preview is already suppressed for these rows and Rebuild
+    // is still offered), so drop the success badge and keep one
+    // truthful signal instead of two conflicting ones.
+    const _suppressStatusBadge = _missing && _status === 'landed';
     const _auditBadge = _missing ? {
       label: t('blueprint.resource_missing') || 'Resource gone',
       cls: 'bg-slate-100 text-slate-700 border-slate-300'
@@ -611,14 +639,24 @@ const InteractiveBlueprintCard = React.memo(({
       }
     }, /*#__PURE__*/React.createElement("span", {
       className: "opacity-70 font-normal"
-    }, idx + 1), getToolLabel(item.type)), _statusStyle && /*#__PURE__*/React.createElement("span", {
+    }, idx + 1), getToolLabel(item.type)), _statusStyle && !_suppressStatusBadge && /*#__PURE__*/React.createElement("span", {
       className: `ml-2 text-[10px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider ${_statusStyle.cls}`,
       role: "status",
-      "aria-live": _status === 'running' ? 'polite' : 'off'
+      "aria-live": _status === 'running' ? 'polite' : 'off',
+      title: _rowRun && _rowRun.failReason || undefined
     }, _statusStyle.label), _auditBadge && /*#__PURE__*/React.createElement("span", {
       className: `ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded border uppercase tracking-wider ${_auditBadge.cls}`,
       "data-testid": "bp-audit-badge"
-    }, _auditBadge.label), typeof onPreviewStep === 'function' && _status === 'landed' && !_missing && /*#__PURE__*/React.createElement("button", {
+    }, _auditBadge.label), getToolDesc(item.type) && /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: () => toggleDesc(item.id),
+      "aria-expanded": openDescIds.indexOf(item.id) !== -1,
+      "aria-controls": `bp-desc-${item.id}`,
+      "data-testid": "bp-desc-toggle",
+      className: "ml-1 text-[10px] font-bold w-4 h-4 rounded-full border border-slate-300 text-slate-600 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-400",
+      title: t('blueprint.what_is_this') || 'What does this resource do?',
+      "aria-label": `${t('blueprint.what_is_this') || 'What does this resource do?'}: ${getToolLabel(item.type)}`
+    }, "?"), typeof onPreviewStep === 'function' && _status === 'landed' && !_missing && /*#__PURE__*/React.createElement("button", {
       type: "button",
       "data-testid": "bp-preview-btn",
       "data-help-key": "blueprint_preview_step_btn",
@@ -634,7 +672,18 @@ const InteractiveBlueprintCard = React.memo(({
       title: t('blueprint.rebuild_step') || 'Rebuild just this step',
       "aria-label": `${t('blueprint.rebuild_step') || 'Rebuild just this step'}: ${getToolLabel(item.type)}`,
       className: "ml-1 text-[10px] font-bold px-1.5 py-0.5 rounded border border-slate-300 text-slate-700 hover:bg-slate-100 hover:border-slate-400 transition-colors"
-    }, t('blueprint.rebuild_step_short') || 'Rebuild'), /*#__PURE__*/React.createElement("p", {
+    }, t('blueprint.rebuild_step_short') || 'Rebuild'), openDescIds.indexOf(item.id) !== -1 && getToolDesc(item.type) && /*#__PURE__*/React.createElement("p", {
+      id: `bp-desc-${item.id}`,
+      "data-testid": "bp-desc-body",
+      className: "mb-1 text-[11px] leading-snug text-slate-600 bg-white border border-slate-200 rounded p-2"
+    }, getToolDesc(item.type)), (_status === 'failed' || _status === 'interrupted') && _rowRun && _rowRun.failReason && /*#__PURE__*/React.createElement("p", {
+      "data-testid": "bp-fail-reason",
+      className: "mb-1 text-[11px] leading-snug text-red-800 bg-red-50 border border-red-200 rounded p-2"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "font-bold"
+    }, String(_rowRun.failReason).indexOf('threw:') === 0 ? t('blueprint.fail_threw') || 'This step hit an error.' : t('blueprint.fail_empty') || 'This step produced nothing. Most often there is no source text yet — add or generate a source, then rebuild.'), /*#__PURE__*/React.createElement("span", {
+      className: "block mt-1 opacity-80 break-words"
+    }, _rowRun.failReason)), /*#__PURE__*/React.createElement("p", {
       className: "text-sm text-slate-700 leading-relaxed italic"
     }, "\"", item.directive || "No specific instructions.", "\"")));
   }), items.length === 0 && /*#__PURE__*/React.createElement("p", {
@@ -691,7 +740,7 @@ const InteractiveBlueprintCard = React.memo(({
       className: "font-bold"
     }, getToolLabel(it.type)), /*#__PURE__*/React.createElement("span", {
       className: keep ? 'text-slate-700' : 'text-slate-500 line-through'
-    }, " \u2014 \"", it.directive, "\"")));
+    }, " — \"", it.directive, "\"")));
   })), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2"
   }, /*#__PURE__*/React.createElement("button", {
