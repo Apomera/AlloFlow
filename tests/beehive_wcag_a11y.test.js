@@ -614,3 +614,54 @@ describe('beehive simulations — Queen RTS and Drone Flight UX', () => {
     expect(body).toMatch(/TEXTAREA|isContentEditable/);
   });
 });
+
+// ── Queen RTS: building without a mouse, 2026-07-30 ─────────────────────────
+// Selecting a structure was already a real button, but PLACING it required clicking the <canvas>
+// at pixel coordinates — so an entire game mechanic was mouse-only. The earlier scan missed it
+// because the trap was not a role+tabIndex div; it was a bare onClick on a canvas, which no
+// keyboard user can target.
+describe('Queen RTS structure placement is reachable without a pointer', () => {
+  const SRC = source;
+
+  it('offers labelled placement cells as real buttons', () => {
+    expect(SRC).toMatch(/QUEEN_PLACE_CELLS/);
+    expect(SRC).toMatch(/'data-queen-place-cell'/);
+    const grid = SRC.slice(SRC.indexOf('function renderQueenPlacementGrid'));
+    const body = grid.slice(0, grid.indexOf('function cancelQueenBuild'));
+    // Real buttons, not clickable divs — that is what makes them keyboard-operable.
+    expect(body).toMatch(/h\('button', \{/);
+    expect(body).toMatch(/'aria-label': taken/);
+    expect(body).toMatch(/min-h-\[44px\]/);
+  });
+
+  it('covers the whole legal build zone that buildQueenStructure clamps to', () => {
+    // buildQueenStructure clamps x to 0.08-0.48 and y to 0.14-0.86. Cells outside that would be
+    // silently snapped, so a player could pick "front top" and watch it land somewhere else.
+    const decl = SRC.slice(SRC.indexOf('var QUEEN_PLACE_CELLS'));
+    const arr = decl.slice(0, decl.indexOf('];'));
+    const xs = [...arr.matchAll(/x: ([\d.]+)/g)].map((m) => Number(m[1]));
+    const ys = [...arr.matchAll(/y: ([\d.]+)/g)].map((m) => Number(m[1]));
+    expect(xs.length).toBe(9);
+    expect(Math.min(...xs)).toBeGreaterThanOrEqual(0.08);
+    expect(Math.max(...xs)).toBeLessThanOrEqual(0.48);
+    expect(Math.min(...ys)).toBeGreaterThanOrEqual(0.14);
+    expect(Math.max(...ys)).toBeLessThanOrEqual(0.86);
+  });
+
+  it('lets Escape leave placement mode', () => {
+    // Without a cancel, selecting a structure was a commitment: the only way out of build mode was
+    // to spend the resources.
+    const qk = SRC.slice(SRC.indexOf('function onQueenKey'));
+    const body = qk.slice(0, qk.indexOf('document.addEventListener'));
+    expect(body).toMatch(/event\.key === 'Escape'/);
+    expect(body).toMatch(/cancelQueenBuild\(\)/);
+    expect(SRC).toMatch(/function cancelQueenBuild/);
+  });
+
+  it('no longer tells the player that clicking is the only way', () => {
+    // The sr-only description and the placement feedback both said "click", which was the only
+    // truthful instruction until the grid existed. A stale instruction is its own accessibility bug.
+    expect(SRC).not.toMatch(/Placement mode: click your left side of the battlefield/);
+    expect(SRC).toMatch(/placement grid below the battlefield|pick a cell in the grid/);
+  });
+});

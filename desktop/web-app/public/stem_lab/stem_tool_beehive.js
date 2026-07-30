@@ -18806,6 +18806,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
             if ((event.key || '').toLowerCase() === 'p' && !event.repeat) {
               event.preventDefault();
               toggleQueenPause();
+              return;
+            }
+            // Escape leaves placement mode. Without it the only way out of build mode was to spend
+            // the resources, which made selecting a structure feel like a commitment rather than a
+            // choice.
+            if (event.key === 'Escape' && !event.repeat) {
+              event.preventDefault();
+              cancelQueenBuild();
             }
           }
           document.addEventListener('keydown', onQueenKey);
@@ -18830,7 +18838,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
           if (!hasQueenResources(sType.cost)) { if (addToast) addToast('Need more resources to build ' + sType.label, 'info'); return; }
           updAll({ queen: Object.assign({}, queenData, {
             buildMode: typeId,
-            feedback: { tone: 'info', text: 'PLACEMENT MODE: click an open cell on your left half of the comb to build ' + sType.label + '.' }
+            feedback: { tone: 'info', text: 'PLACEMENT MODE: choose a cell in the placement grid below the battlefield, or click your left half of the comb, to build ' + sType.label + '.' }
           }) });
         }
 
@@ -19305,6 +19313,71 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
               h('div', { className: 'rounded-2xl border border-white/20 bg-slate-950/80 px-6 py-4 text-center text-white shadow-2xl backdrop-blur-md' }, h('div', { className: 'text-lg font-black' }, 'TACTICAL PAUSE'), h('div', { className: 'mt-1 text-[10px] text-slate-300' }, 'Build and issue commands, then resume time')))
           );
         }
+        // Keyboard/touch placement for build mode. buildQueenStructure clamps x to 0.08-0.48 and y to
+        // 0.14-0.86, so these nine cells span the whole legal zone; the canvas click path stays as
+        // it is for anyone who prefers to aim.
+        var QUEEN_PLACE_CELLS = [
+          { id: 'front-top', label: 'Front top', x: 0.14, y: 0.24 },
+          { id: 'front-mid', label: 'Front centre', x: 0.14, y: 0.50 },
+          { id: 'front-bot', label: 'Front bottom', x: 0.14, y: 0.76 },
+          { id: 'mid-top', label: 'Middle top', x: 0.28, y: 0.24 },
+          { id: 'mid-mid', label: 'Middle centre', x: 0.28, y: 0.50 },
+          { id: 'mid-bot', label: 'Middle bottom', x: 0.28, y: 0.76 },
+          { id: 'back-top', label: 'Back top', x: 0.42, y: 0.24 },
+          { id: 'back-mid', label: 'Back centre', x: 0.42, y: 0.50 },
+          { id: 'back-bot', label: 'Back bottom', x: 0.42, y: 0.76 }
+        ];
+        function renderQueenPlacementGrid() {
+          if (!queenBuildMode || queenResult) return null;
+          var sType = QUEEN_STRUCTURE_TYPES[queenBuildMode];
+          if (!sType) return null;
+          // Occupied cells are disabled rather than hidden, so the layout does not shift as the
+          // comb fills and a screen reader can still hear what is already there.
+          function occupantOf(cell) {
+            for (var i = 0; i < queenStructures.length; i++) {
+              var st = queenStructures[i];
+              if (Math.abs((st.x || 0) - cell.x) < 0.06 && Math.abs((st.y || 0) - cell.y) < 0.12) return st;
+            }
+            return null;
+          }
+          return h('div', { 'data-beehive-queen-placement': 'true', role: 'group', 'aria-label': 'Place ' + sType.label + ' on your comb',
+            className: 'mt-3 rounded-xl border p-2.5 ' + (dk ? 'border-amber-600/50 bg-amber-950/30' : 'border-amber-300 bg-amber-50') },
+            h('div', { className: 'mb-2 flex items-center justify-between gap-2' },
+              h('span', { className: 'text-[10px] font-black uppercase tracking-wide ' + (dk ? 'text-amber-200' : 'text-amber-900') },
+                '\u2B22 Place ' + sType.label),
+              h('button', { type: 'button', onClick: function() { cancelQueenBuild(); },
+                'aria-keyshortcuts': 'Escape', title: 'Cancel placement (Escape)',
+                className: 'min-h-[44px] rounded-lg border px-2.5 py-1 text-[10px] font-black ' + (dk ? 'border-slate-600 bg-slate-900 text-slate-200' : 'border-slate-300 bg-white text-slate-700') },
+                'Cancel')),
+            h('p', { className: 'mb-2 text-[10px] leading-relaxed ' + (dk ? 'text-amber-100/80' : 'text-amber-800') },
+              'Click the comb, or choose a cell below. Front cells sit nearest the entrance.'),
+            h('div', { className: 'grid grid-cols-3 gap-1.5' },
+              QUEEN_PLACE_CELLS.map(function(cell) {
+                var taken = occupantOf(cell);
+                var takenLabel = taken && QUEEN_STRUCTURE_TYPES[taken.type] ? QUEEN_STRUCTURE_TYPES[taken.type].label : null;
+                return h('button', {
+                  key: cell.id, type: 'button', disabled: !!taken,
+                  'data-queen-place-cell': cell.id,
+                  onClick: function() { buildQueenStructure(queenBuildMode, cell.x, cell.y); },
+                  'aria-label': taken
+                    ? cell.label + ': occupied by ' + (takenLabel || 'a structure')
+                    : 'Build ' + sType.label + ' at ' + cell.label,
+                  title: taken ? (takenLabel || 'Occupied') : cell.label,
+                  className: 'min-h-[44px] rounded-lg border px-1 py-1 text-[10px] font-black transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 '
+                    + (taken
+                      ? (dk ? 'border-slate-700 bg-slate-900 text-slate-500 opacity-60' : 'border-slate-200 bg-slate-100 text-slate-400 opacity-70')
+                      : (dk ? 'border-amber-600 bg-slate-900 text-amber-100 hover:bg-slate-800' : 'border-amber-300 bg-white text-amber-900 hover:bg-amber-100'))
+                }, taken ? '\u2716' : cell.label);
+              })));
+        }
+        function cancelQueenBuild() {
+          if (!queenBuildMode) return;
+          updAll({ queen: Object.assign({}, queenData, {
+            buildMode: null,
+            feedback: { tone: 'info', text: 'Placement cancelled.' }
+          }) });
+          announceBee('Placement cancelled.', false);
+        }
         function renderQueenBattlefieldDock() {
           var advice = queenStrategicRead();
           var quickIds = ['scout_rival', 'alarm_signal', 'raid_rival'];
@@ -19323,7 +19396,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                     h('span', { className: 'block text-base leading-none', 'aria-hidden': 'true' }, action.icon),
                     h('span', { className: 'mt-1 block text-[10px] font-black leading-tight' }, action.label),
                     h('span', { className: 'mt-0.5 block text-[8px] font-bold uppercase tracking-wide ' + (ready ? 'text-emerald-500' : '') }, ready ? (cost === 'Free' ? 'Ready / free' : 'Ready') : 'Need ' + cost));
-                }))));
+                }))),
+            // Placement grid renders only while a structure is selected.
+            renderQueenPlacementGrid());
         }
         function renderQueenImpactTimeline() {
           var pressureGain = queenDifficultyCfg.pressureGain + (queenPhase === 'defend' ? 3 : queenPhase === 'swarm' ? 5 : 0);
@@ -20611,7 +20686,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('beehive'))) {
                   // Build structures
                   h('div', { className: 'rounded-xl border p-3 ' + (dk ? 'bg-amber-900/20 border-amber-700/40' : 'bg-amber-50 border-amber-200') },
                     h('div', { className: 'flex flex-wrap items-end justify-between gap-2' }, h('div', null, h('div', { className: 'text-xs font-black ' + (dk ? 'text-amber-300' : 'text-amber-800') }, __alloT('stem.beehive.build_comb_structures', '🏗️ Build Comb Structures')), h('p', { className: 'mt-0.5 text-[9px] ' + (dk ? 'text-slate-400' : 'text-slate-600') }, 'Persistent economy, storage, and defense')), h('span', { className: 'rounded-full bg-amber-500 px-2 py-1 text-[9px] font-black text-slate-950' }, Object.keys(QUEEN_STRUCTURE_TYPES).filter(function(id) { return hasQueenResources(QUEEN_STRUCTURE_TYPES[id].cost); }).length + '/' + Object.keys(QUEEN_STRUCTURE_TYPES).length + ' ready')),
-                    h('p', { className: 'mb-2 mt-2 text-[10px] ' + (dk ? 'text-slate-300' : 'text-slate-600') }, queenBuildMode ? 'Placement mode: click your left side of the battlefield.' : 'Choose a structure, then place it directly on your comb.'),
+                    h('p', { className: 'mb-2 mt-2 text-[10px] ' + (dk ? 'text-slate-300' : 'text-slate-600') }, queenBuildMode ? 'Placement mode: pick a cell in the grid below the battlefield, or click your left side of it.' : 'Choose a structure, then place it from the grid or directly on your comb.'),
                     h('div', { 'data-mobile-rail': 'comb-structures', style: { scrollbarWidth: 'thin', WebkitOverflowScrolling: 'touch' }, className: 'grid grid-flow-col auto-cols-[84%] gap-2 overflow-x-auto overscroll-x-contain scroll-px-1 snap-x snap-mandatory touch-pan-x pb-2 sm:grid-flow-row sm:auto-cols-auto sm:grid-cols-3 sm:overflow-visible sm:pb-0' },
                       Object.keys(QUEEN_STRUCTURE_TYPES).map(function(stId) {
                         var st = QUEEN_STRUCTURE_TYPES[stId];
