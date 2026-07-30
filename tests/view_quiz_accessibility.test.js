@@ -37,13 +37,30 @@ describe('Quiz accessibility', () => {
 
   it('gives every modal layer complete dialog focus behavior', () => {
     const text = source();
-    expect(text.match(/role="dialog"/g)).toHaveLength(3);
-    expect(text.match(/aria-modal="true"/g)).toHaveLength(3);
+    expect(text.match(/role="dialog"/g)).toHaveLength(4);
+    expect(text.match(/aria-modal="true"/g)).toHaveLength(4);
     expect(text).toContain('function _quizHandleDialogKeyDown(event, dialogRef, closeDialog)');
     expect(text).toContain('aria-labelledby="quiz-concept-explainer-title"');
     expect(text).toContain('aria-labelledby="quiz-review-question-title"');
+    expect(text).toContain('aria-labelledby="quiz-allosheet-review-title"');
+    expect(text).toContain('aria-describedby="quiz-allosheet-review-summary quiz-allosheet-review-privacy"');
+    expect(text).toContain('function _quizIsolateDialog(dialog)');
+    expect(text).toContain("sibling.setAttribute('aria-hidden', 'true')");
+    expect(text).toContain('snapshot.element.inert = snapshot.inert');
     expect(text).toContain('previous.isConnected !== false');
     expect(text).toContain('reviewCloseBtnRef.current.focus()');
+  });
+
+  it('reviews the aggregate-only AlloSheet handoff before invoking the popup callback', () => {
+    const text = source();
+    expect(text).toContain('Review Quiz item analysis for AlloSheet');
+    expect(text).toContain('Signal codes remain blank until at least five learners respond.');
+    expect(text).toContain('learner names and IDs, question and option wording, raw answers, reflections, AI feedback');
+    expect(text).toContain('module.buildQuizAlloSheetEnvelope(');
+    expect(text).toContain('pending = p.onOpenAlloSheet(envelope)');
+    expect(text).toContain("setHandoffFeedback('Opening AlloSheet and waiting for secure receipt…')");
+    expect(text).toContain('aria-haspopup="dialog"');
+    expect(text).toContain('disabled={handoffBusy}');
   });
 
   it('preserves visible focus, explicit button behavior, and reduced motion', () => {

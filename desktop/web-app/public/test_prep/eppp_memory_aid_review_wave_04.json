@@ -1,0 +1,432 @@
+{
+    "schemaVersion":  1,
+    "waveId":  "eppp-memory-aid-review-wave-04",
+    "generatedAt":  "2026-07-28T12:00:00.000Z",
+    "status":  "source-reviewed-editorial-pass-independent-expert-review-pending",
+    "summary":  {
+                    "items":  16,
+                    "domains":  8,
+                    "itemsPerDomain":  2
+                },
+    "safeguards":  [
+                       "Legacy text remains preserved; reviewed replacements are applied by the native catalog builder.",
+                       "Every reviewed replacement uses a stable legacy ID and references already cataloged in the repository.",
+                       "Exact-title duplicate groups are excluded from this wave until a learner-release disposition mechanism can retire or differentiate them.",
+                       "Source review and editorial review do not constitute independent qualified expert, legal, clinical, or psychometric validation."
+                   ],
+    "items":  [
+                  {
+                      "legacyId":  "memory-aid-abc8df2a8f969bd6",
+                      "title":  "Antidepressant Mechanisms",
+                      "domainId":  1,
+                      "reviewStatus":  "source-reviewed-editorial-pass",
+                      "content":  "**Antidepressant mechanisms are multi-step and class-specific; depression is not simply too little serotonin or norepinephrine.** SSRIs inhibit the serotonin transporter, SNRIs inhibit serotonin and norepinephrine transporters, tricyclics affect several monoamine and other receptor systems, and monoamine oxidase inhibitors reduce enzymatic monoamine breakdown. Those acute molecular actions occur before typical clinical improvement and do not by themselves explain response. Downstream receptor adaptation, intracellular signaling, neuroplasticity, learning, context, and time are part of current accounts. Benefits, adverse effects, interactions, discontinuation effects, onset, and evidence differ across agents and indications. A mechanism cue cannot diagnose a disorder, predict one person\u0027s response, or replace individualized prescribing, monitoring, and safety assessment.",
+                      "references":  [
+                                         "https://pmc.ncbi.nlm.nih.gov/articles/PMC3025168/"
+                                     ],
+                      "sourceDetails":  [
+                                            {
+                                                "title":  "How antidepressant drugs act: A primer on neuroplasticity as the eventual mediator of antidepressant efficacy",
+                                                "organization":  "Indian Journal of Psychiatry; PubMed Central, U.S. National Library of Medicine",
+                                                "url":  "https://pmc.ncbi.nlm.nih.gov/articles/PMC3025168/",
+                                                "whyReputable":  "A peer-reviewed mechanistic review preserved by the U.S. National Library of Medicine that distinguishes acute monoamine effects from later adaptations associated with treatment response."
+                                            }
+                                        ],
+                      "reviewNote":  "Removed the low-neurotransmitter bathtub model and separated acute pharmacology from delayed, variable clinical effects.",
+                      "reviewDate":  "2026-07-28",
+                      "reviewMode":  "claim-level-source-and-editorial-review"
+                  },
+                  {
+                      "legacyId":  "memory-aid-f07c29d153c7a2a1",
+                      "title":  "Split-Brain Lateralization",
+                      "domainId":  1,
+                      "reviewStatus":  "source-reviewed-editorial-pass",
+                      "content":  "**Split-brain findings show task- and pathway-dependent hemispheric specialization, not a logical left brain and creative right brain personality split.** In carefully arranged visual-field tasks after commissurotomy, information presented briefly to one visual field is initially processed mainly by the opposite hemisphere. A participant may be unable to name a left-field object while still selecting or drawing it with the left hand, illustrating limited interhemispheric transfer and different response capacities. Language is commonly left-lateralized, but organization varies across people and tasks, and both hemispheres ordinarily cooperate through multiple connections. Classic samples were small, clinically unusual, and tested under controlled conditions. Do not infer intelligence, emotion, occupation, learning style, or a whole personality from one hemisphere label.",
+                      "references":  [
+                                         "https://doi.org/10.1073/pnas.48.10.1765",
+                                         "https://doi.org/10.1038/nrn1723"
+                                     ],
+                      "sourceDetails":  [
+                                            {
+                                                "title":  "Some Functional Effects of Sectioning the Cerebral Commissures in Man",
+                                                "organization":  "Proceedings of the National Academy of Sciences of the United States of America",
+                                                "url":  "https://doi.org/10.1073/pnas.48.10.1765",
+                                                "whyReputable":  "The peer-reviewed primary report from the investigators who established the human commissurotomy paradigm, directly supporting the classic field-and-response dissociations."
+                                            },
+                                            {
+                                                "title":  "Forty-Five Years of Split-Brain Research and Still Going Strong",
+                                                "organization":  "Nature Reviews Neuroscience, Springer Nature",
+                                                "url":  "https://doi.org/10.1038/nrn1723",
+                                                "whyReputable":  "A peer-reviewed scholarly review that integrates decades of split-brain findings and helps bound conclusions from small, clinically distinctive surgical samples."
+                                            }
+                                        ],
+                      "reviewNote":  "Replaced pop-psychology hemisphere traits with task-specific lateralization, interhemispheric transfer, and sample limitations.",
+                      "reviewDate":  "2026-07-28",
+                      "reviewMode":  "claim-level-source-and-editorial-review"
+                  },
+                  {
+                      "legacyId":  "memory-aid-de6448f607d4817d",
+                      "title":  "Memory Types",
+                      "domainId":  2,
+                      "reviewStatus":  "source-reviewed-editorial-pass",
+                      "content":  "**Memory systems are functional distinctions, not literal storage boxes with universal capacities.** Sensory registers briefly preserve modality-specific information. Short-term memory emphasizes temporary retention, while working-memory models add controlled maintenance, manipulation, attention, and integration. Long-term memory includes explicit or declarative memory, commonly divided into episodic and semantic forms, and nondeclarative forms such as skills, conditioning, and priming; boundaries and taxonomies vary by model. The familiar seven-plus-or-minus-two span is task-bound, not a universal working-memory limit, and long-term retention is neither perfectly permanent nor unlimited in any practically testable sense. Encoding, retrieval cues, interference, reconstruction, sleep, emotion, prior knowledge, and brain systems all shape performance. Name the model and task rather than treating a filing-cabinet analogy as anatomy.",
+                      "references":  [
+                                         "https://openstax.org/books/psychology-2e/pages/8-introduction",
+                                         "https://pubmed.ncbi.nlm.nih.gov/11058819/"
+                                     ],
+                      "sourceDetails":  [
+                                            {
+                                                "title":  "Chapter 8: Memory - Psychology 2e",
+                                                "organization":  "OpenStax, Rice University",
+                                                "url":  "https://openstax.org/books/psychology-2e/pages/8-introduction",
+                                                "whyReputable":  "An expert-authored and peer-reviewed open textbook from nonprofit Rice University that introduces memory processes, systems, reconstruction, and forgetting."
+                                            },
+                                            {
+                                                "title":  "The episodic buffer: a new component of working memory?",
+                                                "organization":  "Alan Baddeley, Trends in Cognitive Sciences",
+                                                "url":  "https://pubmed.ncbi.nlm.nih.gov/11058819/",
+                                                "whyReputable":  "A peer-reviewed article by the originator of the influential multicomponent working-memory model, indexed by the U.S. National Library of Medicine."
+                                            }
+                                        ],
+                      "reviewNote":  "Removed universal capacity and permanence claims and made the taxonomy explicitly model- and task-dependent.",
+                      "reviewDate":  "2026-07-28",
+                      "reviewMode":  "claim-level-source-and-editorial-review"
+                  },
+                  {
+                      "legacyId":  "memory-aid-7975263bbbc8526f",
+                      "title":  "Emotion Theories Compared",
+                      "domainId":  2,
+                      "reviewStatus":  "source-reviewed-editorial-pass",
+                      "content":  "**Compare classic emotion theories by the relations they propose, not by a rigid millisecond sequence.** James-Lange accounts emphasize perception of bodily change in emotional experience. Cannon-Bard historically proposed that emotional experience and bodily response can arise in parallel rather than one simply causing the other. Schachter-Singer or two-factor accounts emphasize physiological arousal interpreted in context. Cognitive-appraisal theories emphasize evaluation of a situation\u0027s significance and coping implications. These are historically important organizing models, not mutually exclusive verdicts about every emotion. Contemporary evidence involves interacting appraisal, attention, learning, interoception, physiology, expression, language, culture, and neural systems. Spinal injury does not eliminate emotion, and one bodily pattern does not uniquely identify one feeling. For exam questions, identify the mechanism described while retaining these limits.",
+                      "references":  [
+                                         "https://openstax.org/books/psychology-2e/pages/10-introduction"
+                                     ],
+                      "sourceDetails":  [
+                                            {
+                                                "title":  "Chapter 10: Emotion and Motivation - Psychology 2e",
+                                                "organization":  "OpenStax, Rice University",
+                                                "url":  "https://openstax.org/books/psychology-2e/pages/10-introduction",
+                                                "whyReputable":  "An expert-authored and peer-reviewed open textbook from nonprofit Rice University that presents classic emotion theories in broader physiological, cognitive, and cultural context."
+                                            }
+                                        ],
+                      "reviewNote":  "Removed caricatured sequences and a disability-based counterexample while preserving theory-identification cues.",
+                      "reviewDate":  "2026-07-28",
+                      "reviewMode":  "claim-level-source-and-editorial-review"
+                  },
+                  {
+                      "legacyId":  "memory-aid-c3a7b7b64f4bad19",
+                      "title":  "Aggression Theories",
+                      "domainId":  3,
+                      "reviewStatus":  "source-reviewed-editorial-pass",
+                      "content":  "**Aggression is multiply determined; no drive, hormone, transmitter, frustration, or observed model produces it inevitably.** The original frustration-aggression hypothesis was revised: aversive events can produce negative affect and activate aggression-related thoughts or action tendencies, but context, appraisal, learning, inhibition, alternatives, and consequences shape behavior. Social-learning accounts examine modeled behavior, expected outcomes, and reinforcement histories. Biological research examines interacting neural, hormonal, developmental, and environmental processes rather than equations such as low serotonin equals aggression. Distinguish aggressive behavior from assertiveness, anger, thoughts, and lawful self-protection, and specify whether an outcome is reactive, proactive, relational, verbal, or physical. Risk inference requires multiple sources, time course, culture, situational opportunity, protective factors, and direct assessment; a theory mnemonic is not a violence prediction tool.",
+                      "references":  [
+                                         "https://pubmed.ncbi.nlm.nih.gov/2667009/"
+                                     ],
+                      "sourceDetails":  [
+                                            {
+                                                "title":  "Frustration-Aggression Hypothesis: Examination and Reformulation",
+                                                "organization":  "Psychological Bulletin; PubMed, U.S. National Library of Medicine",
+                                                "url":  "https://pubmed.ncbi.nlm.nih.gov/2667009/",
+                                                "whyReputable":  "A foundational peer-reviewed theoretical reformulation indexed by the U.S. National Library of Medicine that directly rejects an inevitable frustration-to-aggression sequence."
+                                            }
+                                        ],
+                      "reviewNote":  "Removed deterministic frustration and neurotransmitter claims and separated theory recall from individualized violence assessment.",
+                      "reviewDate":  "2026-07-28",
+                      "reviewMode":  "claim-level-source-and-editorial-review"
+                  },
+                  {
+                      "legacyId":  "memory-aid-68f5ae4376ce0c56",
+                      "title":  "Stereotype Threat",
+                      "domainId":  3,
+                      "reviewStatus":  "source-reviewed-editorial-pass",
+                      "content":  "**Stereotype threat is a situational hypothesis about performance under identity-relevant evaluative conditions, not a fixed trait or universal explanation for group differences.** In foundational experiments, describing difficult verbal items as diagnostic of ability altered the performance pattern for Black students compared with less identity-threatening framing. Proposed mechanisms include attention to possible confirmation, stress, monitoring, and working-memory demands. Effects depend on population, task, identification, cues, design, outcome, and context; later studies include both supportive findings and null or smaller replications. The construct does not imply that a person endorses a stereotype, that anxiety is the only mechanism, or that framing alone removes structural inequity. Interpret a study from its manipulation, comparison, estimate, uncertainty, and boundary conditions rather than assuming the effect whenever a negatively stereotyped group takes a test.",
+                      "references":  [
+                                         "https://doi.org/10.1037/0022-3514.69.5.797",
+                                         "https://doi.org/10.1371/journal.pone.0267699"
+                                     ],
+                      "sourceDetails":  [
+                                            {
+                                                "title":  "Stereotype threat and the intellectual test performance of African Americans",
+                                                "organization":  "Journal of Personality and Social Psychology, American Psychological Association",
+                                                "url":  "https://doi.org/10.1037/0022-3514.69.5.797",
+                                                "whyReputable":  "The peer-reviewed foundational experimental article directly defining and testing the identity-relevant diagnostic-framing effect summarized in the memory aid."
+                                            },
+                                            {
+                                                "title":  "Stereotype Threat, Gender and Mathematics Attainment: A Conceptual Replication of Stricker and Ward",
+                                                "organization":  "PLOS ONE",
+                                                "url":  "https://doi.org/10.1371/journal.pone.0267699",
+                                                "whyReputable":  "A peer-reviewed preregistered field replication with openly available materials and analyses, useful for bounding rather than erasing the original construct."
+                                            }
+                                        ],
+                      "reviewNote":  "Preserved the foundational manipulation while adding replication, moderator, mechanism, and structural-context boundaries.",
+                      "reviewDate":  "2026-07-28",
+                      "reviewMode":  "claim-level-source-and-editorial-review"
+                  },
+                  {
+                      "legacyId":  "memory-aid-6a311fd99ca8ed41",
+                      "title":  "Freud\u0027s Psychosexual Stages",
+                      "domainId":  4,
+                      "reviewStatus":  "source-reviewed-editorial-pass",
+                      "content":  "**Freud\u0027s oral, anal, phallic, latency, and genital stages are a historical psychoanalytic sequence, not an empirically established map from childhood events to adult personality.** In the theory, libido is emphasized at different bodily zones and unresolved conflict or fixation is proposed to influence later functioning. Commonly taught age bands are approximate summaries of the historical model. Claims that oral fixation causes smoking or dependency, anal-stage conflict causes neatness or messiness, or phallic conflict determines sexuality are not diagnostic rules and should not be presented as established causal findings. The theory influenced clinical language and later developmental debate, but its evidence base, cultural and gender assumptions, retrospective inference, and falsifiability have been criticized. Use the sequence to identify Freud\u0027s framework on an exam; do not use it to explain an individual\u0027s symptoms, parenting, identity, or development without contemporary assessment and evidence.",
+                      "references":  [
+                                         "https://openstax.org/books/psychology-2e/pages/9-2-lifespan-theories"
+                                     ],
+                      "sourceDetails":  [
+                                            {
+                                                "title":  "Psychology 2e, Section 9.2: Lifespan Theories",
+                                                "organization":  "OpenStax, Rice University",
+                                                "url":  "https://openstax.org/books/psychology-2e/pages/9-2-lifespan-theories",
+                                                "whyReputable":  "An expert-authored and peer-reviewed open textbook from nonprofit Rice University that presents Freud\u0027s historical stage theory within a broader lifespan-development overview."
+                                            }
+                                        ],
+                      "reviewNote":  "Preserved the historical stage sequence while removing deterministic fixation outcomes and diagnostic, cultural, gender, and causal overclaims.",
+                      "reviewDate":  "2026-07-28",
+                      "reviewMode":  "claim-level-source-and-editorial-review"
+                  },
+                  {
+                      "legacyId":  "memory-aid-9953733e5579c0f2",
+                      "title":  "Gilligan\u0027s Ethics of Care",
+                      "domainId":  4,
+                      "reviewStatus":  "source-reviewed-editorial-pass",
+                      "content":  "**Gilligan\u0027s historical critique broadened moral-development research; it did not establish one female and one male way of reasoning.** Her work challenged theories and samples that privileged abstract justice and insufficiently represented relationship, responsibility, care, voice, and context. Care and justice are orientations or considerations that people may combine, and moral reasoning varies with problem, role, culture, development, power, and method. A later meta-analysis found small average gender differences rather than a categorical divide. The high-yield contrast is theoretical: Gilligan questioned whether Kohlberg\u0027s framework and samples captured the full range of moral reasoning. Do not infer an individual\u0027s reasoning style from sex or gender, rank care below justice, equate care with self-sacrifice, or convert a critique of research design into a universal developmental stage sequence.",
+                      "references":  [
+                                         "https://doi.org/10.17763/haer.47.4.g6167429416hg5l0",
+                                         "https://doi.org/10.1037/0033-2909.126.5.703"
+                                     ],
+                      "sourceDetails":  [
+                                            {
+                                                "title":  "In a Different Voice: Women\u0027s Conceptions of Self and of Morality",
+                                                "organization":  "Harvard Educational Review, Harvard Education Publishing Group",
+                                                "url":  "https://doi.org/10.17763/haer.47.4.g6167429416hg5l0",
+                                                "whyReputable":  "The traceable peer-reviewed primary article for Gilligan\u0027s critique, appropriate for describing the historical claim without treating it as settled population classification."
+                                            },
+                                            {
+                                                "title":  "Gender Differences in Moral Orientation: A Meta-Analysis",
+                                                "organization":  "Psychological Bulletin, American Psychological Association",
+                                                "url":  "https://doi.org/10.1037/0033-2909.126.5.703",
+                                                "whyReputable":  "A peer-reviewed quantitative synthesis directly testing gender differences in care and justice orientation across the broader empirical literature."
+                                            }
+                                        ],
+                      "reviewNote":  "Removed gender-essentialist contrasts and reframed Gilligan as a historically important critique bounded by meta-analytic evidence.",
+                      "reviewDate":  "2026-07-28",
+                      "reviewMode":  "claim-level-source-and-editorial-review"
+                  },
+                  {
+                      "legacyId":  "memory-aid-59487db95f2ff3ea",
+                      "title":  "Intellectual Disability Criteria",
+                      "domainId":  5,
+                      "reviewStatus":  "source-reviewed-editorial-pass",
+                      "content":  "**Intellectual disability requires converging evidence about intellectual functioning, adaptive behavior, and developmental onset; an IQ cutoff alone is insufficient.** Intellectual functioning concerns reasoning, learning, and problem solving assessed with appropriately normed measures and clinical judgment. Adaptive behavior concerns conceptual, social, and practical functioning in the person\u0027s actual cultural and community context. Limitations originate during the developmental period. Interpret any score with measurement error, language, communication access, health, education, opportunity, and test fairness in view. Severity and support decisions should not be inferred from a single total score. Strengths can coexist with limitations, and functioning can improve with individualized supports. The purpose of assessment is to answer a defined question and plan supports, not reduce a person to a number, predict a fixed life outcome, or presume competence or incapacity globally.",
+                      "references":  [
+                                         "https://aaidd.org/intellectual-disability/definition",
+                                         "https://www.aaidd.org/intellectual-disability/faqs-on-intellectual-disability"
+                                     ],
+                      "sourceDetails":  [
+                                            {
+                                                "title":  "Defining Criteria for Intellectual Disability",
+                                                "organization":  "American Association on Intellectual and Developmental Disabilities",
+                                                "url":  "https://aaidd.org/intellectual-disability/definition",
+                                                "whyReputable":  "AAIDD is a leading interdisciplinary standards organization for intellectual disability and provides the current multidimensional definition and assumptions."
+                                            },
+                                            {
+                                                "title":  "Frequently Asked Questions on Intellectual Disability",
+                                                "organization":  "American Association on Intellectual and Developmental Disabilities",
+                                                "url":  "https://www.aaidd.org/intellectual-disability/faqs-on-intellectual-disability",
+                                                "whyReputable":  "AAIDD\u0027s professional explanatory resource clarifies the roles of adaptive functioning, developmental onset, context, measurement, strengths, and individualized supports."
+                                            }
+                                        ],
+                      "reviewNote":  "Removed cutoff-driven and deterministic outcome language and made adaptive functioning, context, uncertainty, strengths, and supports explicit.",
+                      "reviewDate":  "2026-07-28",
+                      "reviewMode":  "claim-level-source-and-editorial-review"
+                  },
+                  {
+                      "legacyId":  "memory-aid-48b80a8246c186bd",
+                      "title":  "Rorschach \u0026 TAT (Projective Tests)",
+                      "domainId":  5,
+                      "reviewStatus":  "source-reviewed-editorial-pass",
+                      "content":  "**Rorschach inkblots and the Thematic Apperception Test are open-ended performance tasks historically grouped as projective techniques; responses do not transparently reveal a hidden personality.** Rorschach systems code features of responses to standardized inkblots, while TAT procedures elicit stories about ambiguous scenes. Administration, scoring system, norms, language, referral question, training, and setting matter, and not all systems or scores have the same reliability, validity evidence, or intended interpretation. Assessment conclusions should integrate multiple methods and relevant collateral information, consider plausible alternatives, and state limits. Do not equate unusual content with diagnosis, label a method objective merely because it has scoring rules, assume conscious deception from a validity indicator, or use either task as a stand-alone detector of trauma, dangerousness, personality disorder, or truth.",
+                      "references":  [
+                                         "https://dictionary.apa.org/projective-technique",
+                                         "https://www.apa.org/about/policy/guidelines-psychological-assessment-evaluation.pdf"
+                                     ],
+                      "sourceDetails":  [
+                                            {
+                                                "title":  "Projective technique",
+                                                "organization":  "APA Dictionary of Psychology, American Psychological Association",
+                                                "url":  "https://dictionary.apa.org/projective-technique",
+                                                "whyReputable":  "APA\u0027s edited professional dictionary provides a field-specific definition and historical classification for projective techniques without validating every use or inference."
+                                            },
+                                            {
+                                                "title":  "APA Guidelines for Psychological Assessment and Evaluation",
+                                                "organization":  "American Psychological Association",
+                                                "url":  "https://www.apa.org/about/policy/guidelines-psychological-assessment-evaluation.pdf",
+                                                "whyReputable":  "APA\u0027s official professional guidelines address competence, evidence, multiple methods, context, diversity, appropriate interpretation, and communication of assessment limitations."
+                                            }
+                                        ],
+                      "reviewNote":  "Removed mind-reading implications and instrument-version shortcuts; added evidence, norms, multimethod integration, and interpretive limits.",
+                      "reviewDate":  "2026-07-28",
+                      "reviewMode":  "claim-level-source-and-editorial-review"
+                  },
+                  {
+                      "legacyId":  "memory-aid-e9dbe5b14cf77fb5",
+                      "title":  "Flooding vs Implosion vs Graded Exposure",
+                      "domainId":  6,
+                      "reviewStatus":  "source-reviewed-editorial-pass",
+                      "content":  "**Exposure methods differ in stimulus, intensity, pacing, and learning target; more intense is not automatically more effective.** Flooding traditionally means direct exposure to a high-intensity feared situation without preliminary relaxation. Graded exposure proceeds through collaboratively selected steps. Implosion is a historical imaginal method that amplified feared themes and should not be treated as a routine synonym for contemporary exposure. Modern exposure planning emphasizes informed consent, a shared formulation, feasible approach behavior, expectancy testing, varied practice, reduction of avoidance or compulsions when relevant, and learning that can generalize. Within-session anxiety reduction is not required for benefit, and forcing maximum distress can increase dropout or harm. Match the protocol to the condition, person, culture, medical and safety context, accessibility needs, preferences, evidence, and clinician competence; exposure is not simply endure fear until it disappears.",
+                      "references":  [
+                                         "https://dictionary.apa.org/flooding",
+                                         "https://doi.org/10.1016/j.brat.2014.04.006"
+                                     ],
+                      "sourceDetails":  [
+                                            {
+                                                "title":  "Flooding",
+                                                "organization":  "APA Dictionary of Psychology, American Psychological Association",
+                                                "url":  "https://dictionary.apa.org/flooding",
+                                                "whyReputable":  "APA\u0027s edited professional dictionary supplies the construct-specific historical definition needed to distinguish flooding from graded exposure and other procedures."
+                                            },
+                                            {
+                                                "title":  "Maximizing Exposure Therapy: An Inhibitory Learning Approach",
+                                                "organization":  "Behaviour Research and Therapy, Elsevier",
+                                                "url":  "https://doi.org/10.1016/j.brat.2014.04.006",
+                                                "whyReputable":  "A peer-reviewed review by leading exposure researchers that distinguishes inhibitory learning and expectancy violation from mandatory within-session habituation."
+                                            }
+                                        ],
+                      "reviewNote":  "Removed a simple intensity ranking and compulsory habituation rule; added consent, formulation, learning targets, and individualized safeguards.",
+                      "reviewDate":  "2026-07-28",
+                      "reviewMode":  "claim-level-source-and-editorial-review"
+                  },
+                  {
+                      "legacyId":  "memory-aid-3b914455b3609619",
+                      "title":  "Reality Therapy — Glasser",
+                      "domainId":  6,
+                      "reviewStatus":  "source-reviewed-editorial-pass",
+                      "content":  "**Reality therapy and choice theory are historical frameworks that emphasize present choices, needs, relationships, responsibility, and workable action plans; they are not proof that all behavior is freely chosen.** A common WDEP cue is wants, doing or direction, evaluation, and planning. In practice, questions should remain collaborative and account for trauma, disability, neurobiology, coercion, poverty, discrimination, safety, developmental capacity, and limited alternatives. Responsibility language should support agency without blaming people for symptoms or circumstances outside their control. The model\u0027s own professional source can define its concepts, but effectiveness claims require independent research, a specified population and outcome, clinician competence, client preferences, and comparison with alternatives. Do not infer that external conditions are irrelevant, that insight or emotion never matters, or that one branded framework is sufficient for every presentation.",
+                      "references":  [
+                                         "https://www.realitytherapy.eu/rt-psychotherapy/choice-theory/",
+                                         "https://dictionary.apa.org/evidence-based-practice"
+                                     ],
+                      "sourceDetails":  [
+                                            {
+                                                "title":  "Choice Theory",
+                                                "organization":  "European Association for Reality Therapy",
+                                                "url":  "https://www.realitytherapy.eu/rt-psychotherapy/choice-theory/",
+                                                "whyReputable":  "A professional association source suitable for defining its own framework and terminology, while not serving as independent proof of comparative treatment effectiveness."
+                                            },
+                                            {
+                                                "title":  "Evidence-Based Practice",
+                                                "organization":  "APA Dictionary of Psychology and APA Presidential Task Force framework",
+                                                "url":  "https://dictionary.apa.org/evidence-based-practice",
+                                                "whyReputable":  "APA\u0027s professional framework defines evidence-based practice as integration of research, clinical expertise, culture, preferences, and patient characteristics."
+                                            }
+                                        ],
+                      "reviewNote":  "Preserved WDEP as a theory cue while removing universal choice, victim-blaming, and one-framework-fits-all implications.",
+                      "reviewDate":  "2026-07-28",
+                      "reviewMode":  "claim-level-source-and-editorial-review"
+                  },
+                  {
+                      "legacyId":  "memory-aid-68496936f0a3b3b4",
+                      "title":  "Meta-Analysis Concepts",
+                      "domainId":  7,
+                      "reviewStatus":  "source-reviewed-editorial-pass",
+                      "content":  "**Meta-analysis statistically synthesizes sufficiently comparable study estimates; it is not automatically the highest or least biased level of evidence.** Define the review question, eligibility criteria, outcome, effect measure, time point, and analysis before pooling. Weighting commonly reflects estimated precision, but a precise biased study remains biased. Examine clinical and methodological diversity, statistical heterogeneity, model assumptions, dependence among effects, influential studies, and sensitivity to defensible choices. A random-effects model does not make unlike studies comparable or erase bias. Funnel-plot asymmetry can have several causes and does not reveal an exact number of missing studies. Missing results, selective outcomes, poor searches, confounding, measurement problems, and publication processes can distort a pooled estimate. Interpret the effect size with its uncertainty, absolute context, harms, applicability, and certainty of evidence; synthesis cannot repair evidence that does not answer the question.",
+                      "references":  [
+                                         "https://training.cochrane.org/handbook/current/chapter-10",
+                                         "https://training.cochrane.org/handbook/current/chapter-13"
+                                     ],
+                      "sourceDetails":  [
+                                            {
+                                                "title":  "Cochrane Handbook Chapter 10: Analysing data and undertaking meta-analyses",
+                                                "organization":  "Cochrane",
+                                                "url":  "https://training.cochrane.org/handbook/current/chapter-10",
+                                                "whyReputable":  "Cochrane\u0027s official methods handbook is an internationally used systematic-review standard covering effect measures, heterogeneity, models, assumptions, and interpretation."
+                                            },
+                                            {
+                                                "title":  "Cochrane Handbook Chapter 13: Assessing risk of bias due to missing evidence in a meta-analysis",
+                                                "organization":  "Cochrane",
+                                                "url":  "https://training.cochrane.org/handbook/current/chapter-13",
+                                                "whyReputable":  "Cochrane\u0027s official methods guidance directly addresses publication processes, missing results, selective reporting, funnel plots, and cautious bias assessment."
+                                            }
+                                        ],
+                      "reviewNote":  "Removed the evidence-hierarchy shortcut and added comparability, dependence, heterogeneity, missing-evidence, and decision-context limits.",
+                      "reviewDate":  "2026-07-28",
+                      "reviewMode":  "claim-level-source-and-editorial-review"
+                  },
+                  {
+                      "legacyId":  "memory-aid-a7a5097c37eac4e0",
+                      "title":  "Sampling Methods",
+                      "domainId":  7,
+                      "reviewStatus":  "source-reviewed-editorial-pass",
+                      "content":  "**Sampling quality is judged against a target population, frame, selection process, participation, weighting, and intended inference; no method guarantees representativeness.** Simple random sampling gives listed units known, usually equal selection probabilities. Stratified sampling samples within defined strata and can improve precision or subgroup coverage when designed and analyzed correctly. Cluster sampling selects groups of units and requires analysis that accounts for within-cluster dependence. Systematic sampling uses a random start and interval and can be distorted by periodic structure. Nonprobability methods can be useful for many aims but do not support design-based population inference without additional assumptions. Coverage error, nonresponse, exclusions, small subgroups, recruitment mode, and weighting can matter more than the method label. Report who was eligible, reached, enrolled, excluded, and analyzed; probability sampling is not a cure for measurement error or attrition.",
+                      "references":  [
+                                         "https://www.itl.nist.gov/div898/handbook/ppc/section3/ppc332.htm",
+                                         "https://aapor.org/standards-and-ethics/transparency-initiative/"
+                                     ],
+                      "sourceDetails":  [
+                                            {
+                                                "title":  "Choosing a Sampling Scheme",
+                                                "organization":  "NIST/SEMATECH e-Handbook of Statistical Methods, National Institute of Standards and Technology",
+                                                "url":  "https://www.itl.nist.gov/div898/handbook/ppc/section3/ppc332.htm",
+                                                "whyReputable":  "Official federal statistical guidance describing how sampling choices depend on objectives, process structure, costs, variation, and the planned analysis."
+                                            },
+                                            {
+                                                "title":  "Transparency Initiative",
+                                                "organization":  "American Association for Public Opinion Research",
+                                                "url":  "https://aapor.org/standards-and-ethics/transparency-initiative/",
+                                                "whyReputable":  "AAPOR is the principal professional association for survey research, and its transparency standard specifies disclosure needed to evaluate sampling and inference."
+                                            }
+                                        ],
+                      "reviewNote":  "Removed gold-standard and guaranteed-representation claims and tied each design to frame, selection probabilities, dependence, nonresponse, and inference.",
+                      "reviewDate":  "2026-07-28",
+                      "reviewMode":  "claim-level-source-and-editorial-review"
+                  },
+                  {
+                      "legacyId":  "memory-aid-c3f62967fb3e55eb",
+                      "title":  "Child Abuse Reporting",
+                      "domainId":  8,
+                      "reviewStatus":  "source-reviewed-editorial-pass",
+                      "content":  "**Child-abuse reporting is a current-jurisdiction decision process, not one universal rule for every psychologist, role, allegation, or deadline.** Identify the governing jurisdiction, protected child definition, covered reporter and role, reportable conduct, threshold such as reasonable suspicion or cause, source-of-information rules, responsible agency, timing, oral or written follow-up, privilege provisions, emergency duties, and protections or penalties. Many laws do not require proof, and clinicians should not conduct a forensic investigation before a required report, but enough clarifying information may be needed to determine whether the legal threshold is met. Do not promise secrecy, notify a suspected perpetrator automatically, or delay a required report while seeking consultation. Use nonleading, developmentally and culturally responsive communication; address immediate safety; disclose only what law requires or permits; document facts, authority, consultation, timing, actions, and follow-up. Verify current official law and policy rather than memorizing 50-state absolutes.",
+                      "references":  [
+                                         "https://www.childwelfare.gov/pubpdfs/manda.pdf",
+                                         "https://www.apa.org/ethics/code"
+                                     ],
+                      "sourceDetails":  [
+                                            {
+                                                "title":  "Mandatory Reporting of Child Abuse and Neglect",
+                                                "organization":  "Child Welfare Information Gateway, Children\u0027s Bureau, U.S. Department of Health and Human Services",
+                                                "url":  "https://www.childwelfare.gov/pubpdfs/manda.pdf",
+                                                "whyReputable":  "The federal Children\u0027s Bureau synthesis documents jurisdictional variation in reporters, thresholds, timing, procedures, and privilege and directs readers to current state statutes; its May 2023 snapshot does not replace a current-law lookup."
+                                            },
+                                            {
+                                                "title":  "Ethical Principles of Psychologists and Code of Conduct",
+                                                "organization":  "American Psychological Association",
+                                                "url":  "https://www.apa.org/ethics/code",
+                                                "whyReputable":  "APA\u0027s official ethics text addresses confidentiality limits, legally mandated or permitted disclosure, minimizing intrusion, competence, and documentation context."
+                                            }
+                                        ],
+                      "reviewNote":  "Replaced universal reporter, threshold, deadline, immunity, and procedure claims with a current-law, safety, privacy, and documentation framework.",
+                      "reviewDate":  "2026-07-28",
+                      "reviewMode":  "claim-level-source-and-editorial-review"
+                  },
+                  {
+                      "legacyId":  "memory-aid-fcc69f53b8afefeb",
+                      "title":  "Termination Ethics",
+                      "domainId":  8,
+                      "reviewStatus":  "source-reviewed-editorial-pass",
+                      "content":  "**Termination decisions combine clinical need, client welfare, informed agreement, continuity, boundaries, safety, contracts, law, and access; slogans such as never terminate for nonpayment are incomplete.** APA Standard 10.10 identifies circumstances including when services are no longer needed, are unlikely to benefit, or are being harmed, and permits termination after threat by the client or a related person. Before termination, provide pretermination counseling and alternative providers as appropriate, except where precluded by the client\u0027s actions or third-party payers. Nonpayment may support termination when financial arrangements were explained and nonpayment does not pose imminent danger to the client or others. Plan transitions early when possible, consider abandonment risk, urgent needs, disability and language access, records, medications and team coordination, and document notice, reasoning, options, referrals, barriers, and follow-up. Do not terminate to evade unresolved risk, retaliate, or pursue a prohibited relationship.",
+                      "references":  [
+                                         "https://www.apa.org/ethics/code"
+                                     ],
+                      "sourceDetails":  [
+                                            {
+                                                "title":  "Ethical Principles of Psychologists and Code of Conduct, Standard 10.10",
+                                                "organization":  "American Psychological Association",
+                                                "url":  "https://www.apa.org/ethics/code",
+                                                "whyReputable":  "APA\u0027s official primary ethics text states the profession\u0027s termination conditions, nonpayment qualification, and pretermination counseling and referral provisions."
+                                            }
+                                        ],
+                      "reviewNote":  "Corrected absolute nonpayment and pretermination rules and added continuity, access, safety, documentation, and payer-context safeguards.",
+                      "reviewDate":  "2026-07-28",
+                      "reviewMode":  "claim-level-source-and-editorial-review"
+                  }
+              ]
+}

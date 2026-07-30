@@ -7,7 +7,7 @@ const json = (name) => JSON.parse(fs.readFileSync(resolve(root, name), 'utf8'));
 const text = (name) => fs.readFileSync(resolve(root, name), 'utf8');
 
 describe('EPPP flashcard review wave 03', () => {
-  it('rewrites 100 new cards across all domains without releasing them', () => {
+  it('rewrites 100 new cards while preserving the historical review-time visibility state', () => {
     const earlierIds = new Set([
       ...json('test_prep/eppp_flashcard_review_wave_01.json').items,
       ...json('test_prep/eppp_flashcard_review_wave_02.json').items,
@@ -79,7 +79,9 @@ describe('EPPP flashcard review wave 03', () => {
         reviewWave: 'eppp-flashcard-review-wave-03',
         reviewArtifact: 'eppp_flashcard_review_wave_03.json',
         independentExpertStatus: 'not-started',
-        learnerVisible: false,
+        productionStatus: 'not-production-validated',
+        reviewArtifactLearnerVisible: false,
+        learnerVisible: item.contentDisposition !== 'retire-redundant',
       });
       expect(card.sourceDetails).toEqual(item.sourceDetails);
     }
@@ -90,9 +92,6 @@ describe('EPPP flashcard review wave 03', () => {
       const source = text(`test_prep/${name}`);
       expect(text(`desktop/web-app/public/test_prep/${name}`)).toBe(source);
       expect(source).not.toMatch(/Content QA passed/i);
-    }
-    for (const name of ['content_inventory.json', 'content_inventory.md']) {
-      expect(text(`desktop/web-app/public/test_prep/eppp_legacy/${name}`)).toBe(text(`test_prep/eppp_legacy/${name}`));
     }
   });
 });

@@ -128,6 +128,7 @@ describe('driver behavioral e2e (scripted loopback Gemini)', () => {
     // Honesty surfaces are present and coherent for a below-target result.
     expect(out.verdict).toBeTruthy();
     expect(out.verificationState).toBeTruthy();
+    expect(out.verificationHtmlBound).toBe(true);
     expect(out.stats && typeof out.stats.apiCalls === 'number').toBe(true);
 
     // Primary-pass audits hit the model. The rounds' re-verifies can legitimately be served
@@ -151,7 +152,8 @@ describe('driver behavioral e2e (scripted loopback Gemini)', () => {
     expect(report.ok).toBe(true);
     expect(report.checks).toEqual({
       browserLaunched: true, modulesBooted: true,
-      auditAccepted: true, remediationStarted: true, contentPreserved: true,
+      auditAccepted: true, remediationStarted: true, contentPreserved: true, auditorCoverage: true,
+      taggedArtifact: true, taggedDelivery: true, originalLayout: true, verificationBinding: true, activeContentScan: true,
     });
     // A canary that never calls the model would pass while proving nothing.
     expect(report.modelCalls).toBeGreaterThan(0);

@@ -64,16 +64,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       '.anatomy-lens-card:hover{transform:translateY(-1px);border-color:var(--lens-accent,#4f46e5);box-shadow:0 7px 16px rgba(30,41,59,.10);}',
       '.anatomy-lens-card[data-viewed="true"]{background:linear-gradient(135deg,rgba(255,255,255,.94),rgba(236,253,245,.9));}',
       '.anatomy-lens-card strong,.anatomy-lens-card span{display:block;}.anatomy-lens-card strong{margin:2px 0 4px;font-size:13px;color:#0f172a;}.anatomy-lens-card .anatomy-lens-kicker{font-size:10px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:#64748b;}.anatomy-lens-card .anatomy-lens-desc{font-size:11px;line-height:1.45;color:#475569;}.anatomy-lens-card .anatomy-lens-action{margin-top:7px;font-size:11px;font-weight:900;color:#4338ca;}',
-      '.anatomy-motion{overflow:hidden;border-radius:12px;border:1px solid rgba(14,116,144,.22);background:linear-gradient(135deg,#f0fdfa 0%,#f8fafc 46%,#eff6ff 100%);box-shadow:0 8px 20px rgba(30,41,59,.06);}',
-      '.anatomy-motion-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:12px 14px;border-bottom:1px solid rgba(14,116,144,.16);}',
-      '.anatomy-motion-header h3{margin:1px 0 3px;font-size:17px;line-height:1.2;font-weight:950;color:#164e63;}.anatomy-motion-header p{margin:0;font-size:11px;line-height:1.45;color:#475569;}',
-      '.anatomy-motion-progress{flex:none;border-radius:999px;border:1px solid #a5f3fc;background:rgba(255,255,255,.85);padding:4px 8px;font-size:10px;font-weight:900;color:#155e75;}',
+      '.anatomy-motion{--motion-accent:#0e7490;--motion-soft:#ecfeff;--motion-alert:#9f1239;--motion-alert-soft:#fff1f2;overflow:hidden;border-radius:12px;border:1px solid var(--motion-accent);background:linear-gradient(135deg,var(--motion-soft) 0%,#f8fafc 54%,#fff 100%);box-shadow:0 8px 20px rgba(30,41,59,.06);}',
+      '.anatomy-motion-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:12px 14px;border-bottom:1px solid rgba(100,116,139,.18);}.anatomy-motion-header h3{margin:1px 0 3px;font-size:17px;line-height:1.2;font-weight:950;color:var(--motion-accent);}.anatomy-motion-header p{margin:0;font-size:11px;line-height:1.45;color:#475569;}',
+      '.anatomy-motion-progress{flex:none;border-radius:999px;border:1px solid var(--motion-accent);background:rgba(255,255,255,.88);padding:4px 8px;font-size:10px;font-weight:900;color:var(--motion-accent);}',
       '.anatomy-motion-route{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));align-items:center;gap:5px;padding:12px 14px 8px;}',
-      '.anatomy-motion-node{min-height:64px;border:1px solid rgba(100,116,139,.28);border-radius:10px;background:rgba(255,255,255,.86);padding:7px 6px;text-align:center;color:#334155;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease;}.anatomy-motion-node:hover{transform:translateY(-1px);border-color:#0891b2;}.anatomy-motion-node[aria-pressed="true"]{border-color:#0e7490;box-shadow:0 0 0 2px rgba(6,182,212,.18);background:#ecfeff;color:#164e63;}.anatomy-motion-node[data-complete="true"]:after{content:" ✓";color:#047857;font-weight:950;}',
-      '.anatomy-motion-node span{display:block;font-size:9px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;color:#64748b;}.anatomy-motion-node strong{display:block;margin-top:3px;font-size:11px;line-height:1.25;}.anatomy-motion-arrow{text-align:center;color:#0891b2;font-size:18px;font-weight:950;}',
-      '.anatomy-motion-body{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(280px,.95fr);gap:12px;padding:8px 14px 14px;}.anatomy-motion-current{border-left:4px solid #0891b2;padding:8px 10px;background:rgba(255,255,255,.7);}.anatomy-motion-current strong,.anatomy-motion-current span{display:block;}.anatomy-motion-current strong{font-size:13px;color:#0f172a;}.anatomy-motion-current span{margin-top:4px;font-size:11px;line-height:1.5;color:#475569;}',
-      '.anatomy-motion-check{padding:8px 10px;border:1px solid rgba(100,116,139,.22);border-radius:10px;background:rgba(255,255,255,.78);}.anatomy-motion-check p{margin:0 0 7px;font-size:11px;font-weight:900;color:#334155;}.anatomy-motion-options{display:grid;gap:5px;}.anatomy-motion-options button{min-height:34px;border-radius:8px;text-align:left;}.anatomy-motion-feedback{display:block;margin-top:7px;font-size:10px;line-height:1.4;font-weight:800;color:#475569;}.anatomy-motion-feedback[data-correct="true"]{color:#047857;}.anatomy-motion-footer{display:flex;justify-content:flex-end;gap:7px;margin-top:8px;}',
-      '.anatomy-metric-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;}',
+      '.anatomy-motion-node{min-height:76px;border:1px solid rgba(100,116,139,.28);border-radius:10px;background:rgba(255,255,255,.88);padding:7px 6px;text-align:center;color:#334155;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease,background .16s ease;}.anatomy-motion-node:hover{transform:translateY(-1px);border-color:var(--motion-accent);}.anatomy-motion-node[aria-pressed="true"]{border-color:var(--motion-accent);box-shadow:0 0 0 2px rgba(15,23,42,.10);background:var(--motion-soft);color:var(--motion-accent);}.anatomy-motion-node[data-complete="true"]:after{content:" ✓";color:#047857;font-weight:950;}',
+      '.anatomy-motion-node span{display:block;font-size:9px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;color:#64748b;}.anatomy-motion-node strong{display:block;margin-top:3px;font-size:11px;line-height:1.25;}.anatomy-motion-node .anatomy-motion-symbol{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:24px;margin:0 auto 4px;padding:0 6px;border-radius:999px;background:var(--motion-soft);color:var(--motion-accent);font-size:10px;letter-spacing:0;text-transform:none;}.anatomy-motion-arrow{text-align:center;color:#94a3b8;font-size:18px;font-weight:950;transition:color .18s ease,transform .18s ease;}.anatomy-motion-arrow[data-complete="true"]{color:var(--motion-accent);transform:translateX(2px);}',
+      '.anatomy-motion-body{display:grid;grid-template-columns:minmax(0,1.12fr) minmax(280px,.88fr);gap:12px;padding:8px 14px 14px;}.anatomy-motion-current{border-left:4px solid var(--motion-accent);padding:8px 10px;background:rgba(255,255,255,.74);}.anatomy-motion-current>strong,.anatomy-motion-current>span{display:block;}.anatomy-motion-current>strong{font-size:13px;color:#0f172a;}.anatomy-motion-current>span{margin-top:4px;font-size:11px;line-height:1.5;color:#475569;}',
+      '.anatomy-motion-cascade{display:grid;grid-template-columns:minmax(0,1fr) 18px minmax(0,1fr) 18px minmax(0,1fr);align-items:stretch;gap:5px;margin-top:9px;}.anatomy-motion-cascade-stage{min-width:0;padding:7px 8px;border-top:3px solid var(--motion-accent);background:var(--motion-soft);}.anatomy-motion-cascade-stage strong{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--motion-accent);}.anatomy-motion-cascade-stage span{display:block;margin-top:3px;font-size:10px;line-height:1.4;color:#334155;}.anatomy-motion-cascade-arrow{align-self:center;text-align:center;color:var(--motion-accent);font-weight:950;}',
+      '.anatomy-motion-deep{margin-top:8px;padding:8px 9px;border-left:3px solid var(--motion-accent);background:var(--motion-soft);font-size:10px;line-height:1.5;color:#334155;}.anatomy-motion-deep strong{display:block;margin-bottom:2px;color:var(--motion-accent);}',
+      '.anatomy-motion-whatif{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 14px 0;padding:8px 10px;border:1px dashed rgba(159,18,57,.42);background:rgba(255,255,255,.7);}.anatomy-motion-whatif strong,.anatomy-motion-whatif span{display:block;}.anatomy-motion-whatif strong{font-size:11px;color:#881337;}.anatomy-motion-whatif span{margin-top:2px;font-size:10px;line-height:1.35;color:#64748b;}.anatomy-motion-whatif button{flex:none;min-height:34px;border-radius:8px;}',
+      '.anatomy-motion-node[data-disruption-point="true"]{border-style:dashed;border-color:var(--motion-alert);}.anatomy-motion.is-perturbed .anatomy-motion-node[data-disruption-point="true"]{background:var(--motion-alert-soft);box-shadow:0 0 0 2px rgba(159,18,57,.15);}.anatomy-motion-node[data-disruption-point="true"] .anatomy-motion-symbol{background:var(--motion-alert-soft);color:var(--motion-alert);}',
+      '.anatomy-motion-impact{display:grid;grid-template-columns:minmax(0,1fr) 18px minmax(0,1fr) 18px minmax(0,1fr);align-items:stretch;gap:5px;margin:8px 14px 0;padding:9px;border-left:4px solid var(--motion-alert);background:var(--motion-alert-soft);}.anatomy-motion-impact-stage{min-width:0;padding:5px 6px;}.anatomy-motion-impact-stage strong{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--motion-alert);}.anatomy-motion-impact-stage span{display:block;margin-top:3px;font-size:10px;line-height:1.4;color:#334155;}.anatomy-motion-impact-arrow{align-self:center;text-align:center;color:var(--motion-alert);font-weight:950;}',
+      '.anatomy-motion-check{padding:8px 10px;border:1px solid rgba(100,116,139,.22);border-radius:10px;background:rgba(255,255,255,.8);}.anatomy-motion-check p{margin:0 0 7px;font-size:11px;font-weight:900;color:#334155;}.anatomy-motion-options{display:grid;gap:5px;}.anatomy-motion-options button{min-height:34px;border-radius:8px;text-align:left;}.anatomy-motion-feedback{display:block;margin-top:7px;font-size:10px;line-height:1.4;font-weight:800;color:#475569;}.anatomy-motion-feedback[data-correct="true"]{color:#047857;}.anatomy-motion-footer{display:flex;justify-content:flex-end;gap:7px;margin-top:8px;}',      '.anatomy-metric-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;}',
       '.anatomy-metric{border-radius:8px;border:1px solid rgba(15,23,42,.08);background:rgba(255,255,255,.72);padding:7px 8px;}',
       '.anatomy-metric strong{display:block;font-size:16px;line-height:1;font-weight:950;color:#0f172a;}',
       '.anatomy-metric span{display:block;margin-top:4px;font-size:10px;font-weight:800;text-transform:uppercase;color:#64748b;}',
@@ -224,11 +227,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       '.anatomy-scale-continuation button{min-height:36px;border-radius:8px;}',
       '.anatomy-badge-panel,.anatomy-stats-panel{border-radius:8px!important;}',
       '@media (max-width:900px){.anatomy-mission-inner{grid-template-columns:1fr}.anatomy-workspace{grid-template-columns:1fr}.anatomy-body-shell{position:relative;top:auto}.anatomy-tab-strip{position:relative}}',
-      '@media (max-width:720px){.anatomy-lens-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.anatomy-motion-body{grid-template-columns:1fr}.anatomy-motion-route{grid-template-columns:1fr 18px 1fr 18px 1fr 18px 1fr;padding-left:10px;padding-right:10px}}',
+      '@media (max-width:720px){.anatomy-lens-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.anatomy-motion-body{grid-template-columns:1fr}.anatomy-motion-route{grid-template-columns:1fr 18px 1fr 18px 1fr 18px 1fr;padding-left:10px;padding-right:10px}.anatomy-motion-cascade{grid-template-columns:1fr 14px 1fr 14px 1fr}}',
       '@media (max-width:720px){.anatomy-system-rail{grid-template-columns:repeat(3,minmax(0,1fr))}.anatomy-tab-strip{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))}.anatomy-tab-strip>button{width:100%;padding-left:8px;padding-right:8px}.anatomy-tab-strip>span{grid-column:1/-1;margin-left:0!important;text-align:right}}',
       '@media (forced-colors:active){.anatomy-canvas,.anatomy-minimap,.anatomy-canvas-toolbar button,.anatomy-marker-legend-symbol{forced-color-adjust:auto;border:1px solid CanvasText!important}.anatomy-minimap-viewport{border-color:Highlight!important}.anatomy-minimap-selected{background:Highlight!important;box-shadow:0 0 0 2px Canvas!important}}',
       '@media (max-width:560px){.anatomy-mission-inner{padding:12px}.anatomy-mission-title{font-size:18px}.anatomy-metric-grid{grid-template-columns:1fr 1fr}.anatomy-mode-card p{display:none}.anatomy-system-rail{grid-template-columns:1fr 1fr}.anatomy-tab-strip{grid-template-columns:1fr 1fr}.anatomy-body-header{align-items:flex-start}.anatomy-body-badges{align-items:flex-end}.anatomy-canvas-toolbar{align-items:stretch;flex-direction:column}.anatomy-canvas-toolbar>span{white-space:normal;max-width:none}.anatomy-canvas-toolbar-group{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));width:100%;gap:5px}.anatomy-canvas-toolbar button{width:100%;min-width:0;min-height:44px}.anatomy-minimap{right:6px;bottom:6px}.anatomy-tab-strip button,.anatomy-system-rail button,.anatomy-layer-bar button,.anatomy-controls-bar button,.anatomy-structure-list button{min-height:44px}}',
-      '@media (max-width:560px){.anatomy-lens-header,.anatomy-motion-header{display:block}.anatomy-lens-progress,.anatomy-motion-progress{display:inline-block;margin-top:7px}.anatomy-lens-grid{grid-template-columns:1fr}.anatomy-lens-card{min-height:96px}.anatomy-motion-route{grid-template-columns:1fr 1fr}.anatomy-motion-arrow{display:none}.anatomy-motion-node{min-height:58px}.anatomy-motion-footer{justify-content:stretch}.anatomy-motion-footer button{flex:1}}',
+      '@media (max-width:560px){.anatomy-lens-header,.anatomy-motion-header{display:block}.anatomy-lens-progress,.anatomy-motion-progress{display:inline-block;margin-top:7px}.anatomy-lens-grid{grid-template-columns:1fr}.anatomy-lens-card{min-height:96px}.anatomy-motion-route{grid-template-columns:1fr 1fr}.anatomy-motion-arrow{display:none}.anatomy-motion-node{min-height:68px}.anatomy-motion-cascade,.anatomy-motion-impact{grid-template-columns:1fr}.anatomy-motion-cascade-arrow,.anatomy-motion-impact-arrow{display:none}.anatomy-motion-whatif{align-items:stretch;flex-direction:column}.anatomy-motion-whatif button{width:100%}.anatomy-motion-footer{justify-content:stretch}.anatomy-motion-footer button{flex:1}}',
       '@media (prefers-reduced-motion:reduce){.anatomy-atlas-route.is-active{animation:none}.anatomy-atlas-route,.anatomy-diagram-emphasis{transition:none}}',
       '@media (max-width:560px){.anatomy-atlas-steps{grid-template-columns:1fr 1fr}.anatomy-atlas-stage svg{min-height:210px}.anatomy-atlas-step-detail{display:block}.anatomy-atlas-step-detail strong{display:block;margin:4px 0 3px}.anatomy-scale-path{margin-left:0;margin-right:0;gap:3px;padding-left:5px;padding-right:5px}.anatomy-scale-path span:not(.anatomy-scale-arrow){white-space:normal}.anatomy-atlas-visual-key,.anatomy-atlas-focus{justify-content:flex-start;gap:5px 10px}.anatomy-label-secondary{display:none}.anatomy-mechanism-layer.is-active .anatomy-label-secondary{display:inline}.anatomy-clinical-panel{grid-template-columns:1fr}}',
     ].join('');
@@ -2036,34 +2039,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
 
         var SYSTEMS_IN_MOTION_SCENARIOS = {
           exercise: {
-            id: 'exercise-response', selectorLabel: 'Exercise', routeLabel: 'Exercise response pathway',
+            id: 'exercise-response', selectorLabel: 'Exercise', routeLabel: 'Exercise response pathway', accent: '#0e7490', soft: '#ecfeff',
             title: 'Exercise: force to gas exchange',
             subtitle: 'Trace how four body systems coordinate when you climb a flight of stairs.',
+            perturbation: { id: 'pulmonary-edema', title: 'Pulmonary edema', affectedStepId: 'gas-exchange', clinicalStructureId: 'alveoli', change: 'Fluid increases the distance between alveolar air and capillary blood.', localEffect: 'Oxygen diffusion falls despite continued ventilation.', systemEffect: 'Working muscle receives less oxygen, so fatigue and breathlessness can increase.' },
             steps: [
               {
                 id: 'muscle-force', number: '01', systemLabel: 'Muscular', title: 'Generate force', structureId: 'biceps', atlasStep: 3,
-                summary: 'Motor signals produce sarcomere shortening and skeletal-muscle tension.',
+                symbol: 'Ca²⁺', trigger: 'Acetylcholine starts a muscle-fiber action potential.', mechanism: 'Calcium exposes actin sites so myosin cross-bridges cycle.', outcome: 'Sarcomeres shorten and tendon tension rises.',
+              advanced: 'Calcium binds troponin, shifts tropomyosin, and permits ATP-dependent cross-bridge cycling; force depends on motor-unit recruitment and firing frequency.',
+              summary: 'Motor signals produce sarcomere shortening and skeletal-muscle tension.',
                 question: 'What directly produces active tension inside a muscle fiber?',
                 options: ['Calcium expands the tendon', 'Actin slides past myosin', 'Cartilage contracts around the joint'], correct: 1,
                 feedback: 'Cross-bridge cycling pulls actin past myosin, shortening sarcomeres and generating tension.'
               },
               {
                 id: 'joint-motion', number: '02', systemLabel: 'Skeletal', title: 'Move the joint', structureId: 'patella', atlasStep: 1,
-                summary: 'Tendon force crosses the knee and rotates bones around the joint while cartilage distributes load.',
+                symbol: 'τ', trigger: 'Tendon tension reaches the bones around the knee.', mechanism: 'Force acting at a moment arm creates joint torque.', outcome: 'The knee changes angle while cartilage spreads compressive load.',
+              advanced: 'Net joint torque reflects muscle force, moment-arm length, gravity, and opposing muscle activity; the patella improves the quadriceps moment arm.',
+              summary: 'Tendon force crosses the knee and rotates bones around the joint while cartilage distributes load.',
                 question: 'How does muscle tension become visible joint movement?',
                 options: ['Tendon pull creates torque around the joint', 'Ligaments actively shorten', 'Synovial fluid pushes the tibia'], correct: 0,
                 feedback: 'A contracting muscle transmits force through its tendon, creating torque around the joint axis.'
               },
               {
                 id: 'cardiac-delivery', number: '03', systemLabel: 'Circulatory', title: 'Increase delivery', structureId: 'heart', atlasStep: 3,
-                summary: 'Cardiac output rises so working tissue receives more oxygenated blood and removes more carbon dioxide.',
+                symbol: 'CO', trigger: 'Working muscle raises oxygen demand and metabolite production.', mechanism: 'Heart rate and stroke volume rise while active-muscle arterioles dilate.', outcome: 'Cardiac output and local blood flow increase.',
+              advanced: 'Cardiac output equals heart rate × stroke volume; sympathetic drive raises both while local metabolites help redistribute flow toward active tissue.',
+              summary: 'Cardiac output rises so working tissue receives more oxygenated blood and removes more carbon dioxide.',
                 question: 'Which cardiovascular change best supports exercising muscle?',
                 options: ['Lower blood flow to active tissue', 'Close the aortic valve longer', 'Increase cardiac output'], correct: 2,
                 feedback: 'Higher heart rate and stroke volume increase cardiac output and support blood flow to active muscle.'
               },
               {
                 id: 'gas-exchange', number: '04', systemLabel: 'Respiratory', title: 'Exchange gases', structureId: 'alveoli', atlasStep: 1,
-                summary: 'Ventilation and pulmonary blood flow sustain diffusion across the thin alveolar-capillary barrier.',
+                symbol: 'O₂', trigger: 'Exercise increases oxygen extraction and carbon-dioxide delivery to the lungs.', mechanism: 'Ventilation and perfusion maintain steep partial-pressure gradients.', outcome: 'Oxygen enters blood while carbon dioxide leaves it.',
+              advanced: 'Diffusion follows partial-pressure gradients and depends on surface area, membrane thickness, and gas properties; matched ventilation and perfusion improve exchange.',
+              summary: 'Ventilation and pulmonary blood flow sustain diffusion across the thin alveolar-capillary barrier.',
                 question: 'What keeps oxygen moving from alveolar air into blood?',
                 options: ['Equal oxygen pressure on both sides', 'A maintained partial-pressure gradient', 'A thicker diffusion barrier'], correct: 1,
                 feedback: 'Ventilation and perfusion maintain an oxygen partial-pressure gradient across a very thin barrier.'
@@ -2071,37 +2083,90 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             ]
           },
           meal: {
-            id: 'after-meal', selectorLabel: 'After a meal', routeLabel: 'After a meal nutrient pathway',
+            id: 'after-meal', selectorLabel: 'After a meal', routeLabel: 'After a meal nutrient pathway', accent: '#c2410c', soft: '#fff7ed',
             title: 'After a meal: absorption to delivery',
             subtitle: 'Follow water-soluble nutrients from the intestinal surface through portal blood, liver processing, and systemic circulation.',
+            perturbation: { id: 'villous-atrophy', title: 'Villous atrophy', affectedStepId: 'meal-absorption', clinicalStructureId: 'sm_intestine', change: 'Shortened villi and damaged brush border reduce absorptive surface area.', localEffect: 'Fewer nutrients, electrolytes, and water cross efficiently.', systemEffect: 'Portal nutrient delivery falls and malabsorption can affect tissues throughout the body.' },
             steps: [
               {
                 id: 'meal-absorption', number: '01', systemLabel: 'Digestive', title: 'Absorb nutrients', structureId: 'sm_intestine', atlasStep: 1,
-                summary: 'Monosaccharides and amino acids cross enterocytes and enter capillaries inside each intestinal villus.',
+                symbol: 'Glc', trigger: 'Digestion produces absorbable monosaccharides and amino acids near the brush border.', mechanism: 'Apical and basolateral transporters move solutes across enterocytes.', outcome: 'Water-soluble nutrients enter villus capillary blood.',
+              advanced: 'Sodium-coupled transport drives uptake of glucose and many amino acids; basolateral carriers release them into interstitial fluid and capillaries.',
+              summary: 'Monosaccharides and amino acids cross enterocytes and enter capillaries inside each intestinal villus.',
                 question: 'Where do most absorbed sugars and amino acids enter first?',
                 options: ['Villus capillary blood', 'The central lacteal only', 'The gallbladder'], correct: 0,
                 feedback: 'Water-soluble nutrients enter villus capillaries; most long-chain dietary fats take the lacteal and lymph route.'
               },
               {
                 id: 'meal-portal', number: '02', systemLabel: 'Portal flow', title: 'Reach the liver', structureId: 'liver', atlasStep: 0,
-                summary: 'Nutrient-rich venous blood from the intestine travels to liver lobules through the hepatic portal vein.',
+                symbol: 'PV', trigger: 'Villus capillaries drain nutrient-rich blood from the intestine.', mechanism: 'Mesenteric veins converge into the hepatic portal circulation.', outcome: 'Absorbed solutes reach liver sinusoids before systemic circulation.',
+              advanced: 'Portal flow provides first-pass exposure of hepatocytes to nutrients, hormones, and some orally absorbed substances before blood returns through hepatic veins.',
+              summary: 'Nutrient-rich venous blood from the intestine travels to liver lobules through the hepatic portal vein.',
                 question: 'Why does portal blood reach the liver before the general circulation?',
                 options: ['To bypass all metabolism', 'To allow early processing and storage', 'To exchange gases in alveoli'], correct: 1,
                 feedback: 'The portal route gives hepatocytes early access to absorbed nutrients for storage, transformation, and controlled release.'
               },
               {
                 id: 'meal-processing', number: '03', systemLabel: 'Metabolic', title: 'Process the meal', structureId: 'liver', atlasStep: 1,
-                summary: 'Hepatocytes take up nutrients across sinusoids, store some, transform others, and help stabilize blood composition.',
+                symbol: 'Glyc', trigger: 'Post-meal substrates and insulin reach hepatocytes through sinusoidal blood.', mechanism: 'Hepatocytes take up glucose and other nutrients for storage or transformation.', outcome: 'Nutrient peaks are buffered before controlled systemic release.',
+              advanced: 'Insulin favors hepatic glucose uptake and glycogen synthesis; hepatocytes also process amino acids, lipids, drugs, and plasma-protein precursors.',
+              summary: 'Hepatocytes take up nutrients across sinusoids, store some, transform others, and help stabilize blood composition.',
                 question: 'Which liver response helps buffer a rise in blood glucose after a meal?',
                 options: ['Store glucose as glycogen', 'Send all glucose into bile', 'Block sinusoidal exchange'], correct: 0,
                 feedback: 'Hepatocytes can convert glucose to glycogen for storage and later release glucose when the body needs it.'
               },
               {
                 id: 'meal-delivery', number: '04', systemLabel: 'Circulatory', title: 'Deliver nutrients', structureId: 'heart', atlasStep: 3,
-                summary: 'Processed blood returns to the heart and enters systemic circulation, distributing nutrients to tissues.',
+                symbol: 'Ao', trigger: 'Processed hepatic blood returns through hepatic veins and the vena cava.', mechanism: 'The heart sends blood through pulmonary then left-heart circulation.', outcome: 'The aorta distributes nutrients and oxygen to body tissues.',
+              advanced: 'Hepatic venous blood joins systemic venous return, passes through pulmonary circulation, and is ejected by the left ventricle into the aorta.',
+              summary: 'Processed blood returns to the heart and enters systemic circulation, distributing nutrients to tissues.',
                 question: 'What is the next destination after blood leaves the left ventricle?',
                 options: ['The systemic arteries', 'The hepatic portal vein', 'The intestinal lumen'], correct: 0,
                 feedback: 'The left ventricle ejects blood through the aorta into systemic arteries that supply body tissues.'
+              }
+            ]
+          },
+          wound: {
+            id: 'wound-repair', selectorLabel: 'Wound repair', routeLabel: 'Wound repair response pathway', accent: '#be123c', soft: '#fff1f2',
+            title: 'Wound repair: perfusion to rebuilding',
+            subtitle: 'Trace how circulating blood supports clot formation, immune cleanup, and restoration of the skin barrier.',
+            perturbation: { id: 'impaired-healing', title: 'Impaired wound healing', affectedStepId: 'wound-rebuilding', clinicalStructureId: 'epidermis', change: 'Poor perfusion and prolonged inflammation delay the rebuilding phase.', localEffect: 'Keratinocyte migration, angiogenesis, and matrix deposition slow.', systemEffect: 'The wound stays open longer and becomes more vulnerable to infection and breakdown.' },
+            steps: [
+              {
+                id: 'wound-perfusion', number: '01', systemLabel: 'Circulatory', title: 'Supply the tissue', structureId: 'heart', atlasStep: 3,
+                symbol: 'O₂', trigger: 'Tissue injury disrupts local vessels and raises metabolic demand.', mechanism: 'Remaining and newly recruited microvessels deliver blood components.', outcome: 'Repair cells receive oxygen, substrates, and circulating partners.',
+              advanced: 'Perfusion supports oxidative metabolism and leukocyte delivery; ischemia, edema, or vascular disease can slow every subsequent repair phase.',
+              summary: 'Systemic blood flow supplies oxygen, platelets, immune cells, and nutrients near the injured tissue.',
+                question: 'Why is adequate perfusion important before tissue rebuilding begins?',
+                options: ['It delivers repair cells and oxygen', 'It prevents all inflammation', 'It turns epidermis into muscle'], correct: 0,
+                feedback: 'Perfusion delivers oxygen, nutrients, platelets, and circulating immune cells needed across repair phases.'
+              },
+              {
+                id: 'wound-hemostasis', number: '02', systemLabel: 'Hemostasis', title: 'Stop blood loss', structureId: 'epidermis', atlasStep: 0,
+                symbol: 'Fibrin', trigger: 'Exposed collagen and tissue factor signal vessel damage.', mechanism: 'Platelets aggregate while the coagulation cascade generates fibrin.', outcome: 'A stabilized clot limits blood loss and forms a temporary matrix.',
+              advanced: 'Platelet adhesion and activation amplify recruitment, while thrombin converts fibrinogen to fibrin that cross-links the provisional plug.',
+              summary: 'Vasoconstriction, platelet activation, and fibrin formation create a temporary wound seal and scaffold.',
+                question: 'What stabilizes the initial platelet plug?',
+                options: ['A fibrin mesh', 'New cartilage', 'Alveolar surfactant'], correct: 0,
+                feedback: 'The coagulation cascade produces fibrin strands that reinforce the platelet plug and temporary matrix.'
+              },
+              {
+                id: 'wound-inflammation', number: '03', systemLabel: 'Immune', title: 'Clear damage', structureId: 'epidermis', atlasStep: 1,
+                symbol: 'MΦ', trigger: 'Damage signals and microbial products create chemotactic gradients.', mechanism: 'Neutrophils arrive early; macrophages continue phagocytosis and signaling.', outcome: 'Debris is cleared and repair programs are activated.',
+              advanced: 'Macrophage signaling helps shift the wound from a pro-inflammatory state toward fibroblast activity, angiogenesis, and matrix deposition.',
+              summary: 'Neutrophils and macrophages remove microbes and debris while coordinating the transition toward repair.',
+                question: 'Which cell helps continue cleanup and signals later repair?',
+                options: ['A red blood cell', 'A macrophage', 'A chondrocyte'], correct: 1,
+                feedback: 'Macrophages clear debris and release signals that recruit fibroblasts, support angiogenesis, and coordinate repair.'
+              },
+              {
+                id: 'wound-rebuilding', number: '04', systemLabel: 'Integumentary', title: 'Rebuild the barrier', structureId: 'epidermis', atlasStep: 2,
+                symbol: 'ECM', trigger: 'Growth factors signal surviving epithelial and connective-tissue cells.', mechanism: 'Keratinocytes migrate, fibroblasts deposit matrix, and capillaries sprout.', outcome: 'The surface closes over vascular granulation tissue.',
+              advanced: 'Re-epithelialization restores barrier continuity while fibroblasts generate provisional extracellular matrix; later remodeling reorganizes collagen and reduces vascularity.',
+              summary: 'Keratinocytes close the surface while fibroblasts deposit matrix and new vessels support granulation tissue.',
+                question: 'Which paired processes directly restore the wound surface and support tissue beneath it?',
+                options: ['Keratinocyte migration and angiogenesis', 'Valve closure and bile flow', 'Bone resorption and ventilation'], correct: 0,
+                feedback: 'Migrating keratinocytes restore the epithelial barrier while angiogenesis supplies the rebuilding tissue.'
               }
             ]
           }
@@ -2250,6 +2315,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         var anatomyLensViewed = safeFlagMap(d._anatomyLensViewed, anatomyLensIds);
         var anatomyLensViewedCount = Object.keys(anatomyLensViewed).length;
         var showSystemsMotion = d._showSystemsMotion === true;
+        var systemsMotionDeepDive = d._systemsMotionDeepDive === true;
+        var systemsMotionPerturbation = d._systemsMotionPerturbation === true;
         var systemsMotionScenarioIds = Object.keys(SYSTEMS_IN_MOTION_SCENARIOS);
         var systemsMotionScenarioId = systemsMotionScenarioIds.indexOf(d._systemsMotionScenario) !== -1 ? d._systemsMotionScenario : 'exercise';
         var systemsMotionScenario = SYSTEMS_IN_MOTION_SCENARIOS[systemsMotionScenarioId];
@@ -2332,7 +2399,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             _regionalAtlasOpen: motionStep.structureId,
             _regionalAtlasStep: motionStep.atlasStep,
             _regionalAtlasPlaying: true,
-            _regionalAtlasClinical: false,
+            _regionalAtlasClinical: systemsMotionPerturbation && motionStep.id === requestedScenario.perturbation.affectedStepId,
             _showAnatomyLens: false,
             _showSystemsMotion: true,
             _systemsMotionScenario: requestedScenarioId,
@@ -2344,7 +2411,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           playSound('structureClick');
           if (typeof announceToSR === 'function') announceToSR(announcement || (requestedScenario.selectorLabel + ' pathway step ' + (safeIndex + 1) + ': ' + motionStep.title + '.'));
         }
-        function answerSystemsMotion(optionIndex) {
+        function toggleSystemsMotionPerturbation() {
+          var nextPerturbation = !systemsMotionPerturbation;
+          var currentIsDisruptionPoint = systemsMotionCurrent.id === systemsMotionScenario.perturbation.affectedStepId;
+          updMulti({
+            _systemsMotionPerturbation: nextPerturbation,
+            _regionalAtlasClinical: nextPerturbation && currentIsDisruptionPoint
+          });
+          playSound('connectionView');
+          if (typeof announceToSR === 'function') announceToSR(nextPerturbation
+            ? ('What-if disruption applied: ' + systemsMotionScenario.perturbation.title + '.')
+            : 'Typical physiology restored.');
+        }        function answerSystemsMotion(optionIndex) {
           var answerIndex = Math.max(0, Math.min(Math.floor(Number(optionIndex) || 0), systemsMotionCurrent.options.length - 1));
           var isCorrect = answerIndex === systemsMotionCurrent.correct;
           var completedPatch = Object.assign({}, systemsMotionCompleted);
@@ -2364,24 +2442,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               type: 'button',
               className: 'anatomy-motion-node',
               'aria-pressed': systemsMotionStep === stepIndex,
-              'aria-label': systemsMotionScenario.selectorLabel + ' pathway step ' + (stepIndex + 1) + ': ' + stepItem.title + (systemsMotionCompleted[stepItem.id] ? ', checkpoint solved' : ''),
+              'aria-label': systemsMotionScenario.selectorLabel + ' pathway step ' + (stepIndex + 1) + ': ' + stepItem.title + (stepItem.id === systemsMotionScenario.perturbation.affectedStepId ? ', disruption point' : '') + (systemsMotionCompleted[stepItem.id] ? ', checkpoint solved' : ''),
               'data-systems-motion-node': stepItem.id,
+              'data-disruption-point': stepItem.id === systemsMotionScenario.perturbation.affectedStepId ? 'true' : 'false',
               'data-complete': systemsMotionCompleted[stepItem.id] ? 'true' : 'false',
               onClick: function() { openSystemsMotionStep(stepIndex); }
             },
+              h('span', { className: 'anatomy-motion-symbol', 'aria-hidden': 'true' }, stepItem.symbol),
               h('span', null, stepItem.number + ' · ' + stepItem.systemLabel),
               h('strong', null, stepItem.title)
             ));
-            if (stepIndex < systemsMotionScenario.steps.length - 1) routeChildren.push(h('span', { key: stepItem.id + '-arrow', className: 'anatomy-motion-arrow', 'aria-hidden': 'true' }, '→'));
+            if (stepIndex < systemsMotionScenario.steps.length - 1) routeChildren.push(h('span', {
+              key: stepItem.id + '-arrow', className: 'anatomy-motion-arrow', 'aria-hidden': 'true',
+              'data-complete': systemsMotionCompleted[stepItem.id] ? 'true' : 'false'
+            }, '→'));
           });
           return h('section', {
             id: 'anatomy-systems-motion',
-            className: 'anatomy-motion mb-3',
+            className: 'anatomy-motion mb-3' + (systemsMotionPerturbation ? ' is-perturbed' : ''),
             role: 'region',
             'aria-labelledby': 'anatomy-systems-motion-title',
             'data-systems-motion': systemsMotionScenario.id,
             'data-systems-motion-scenario': systemsMotionScenarioId,
             'data-systems-motion-step': systemsMotionCurrent.id,
+            'data-systems-motion-depth': systemsMotionDeepDive ? 'advanced' : 'core',
+            'data-systems-motion-perturbation': systemsMotionPerturbation ? systemsMotionScenario.perturbation.id : 'typical',
+            style: { '--motion-accent': systemsMotionScenario.accent, '--motion-soft': systemsMotionScenario.soft },
             'data-systems-motion-answer': systemsMotionAnswer === null ? 'unanswered' : (selectedAnswerCorrect ? 'correct' : 'incorrect')
           },
             h('div', { className: 'anatomy-motion-header' },
@@ -2404,22 +2490,73 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               systemsMotionScenarioIds.map(function(scenarioId) {
                 var scenarioItem = SYSTEMS_IN_MOTION_SCENARIOS[scenarioId];
                 var scenarioSelected = systemsMotionScenarioId === scenarioId;
+                var scenarioSolvedCount = scenarioItem.steps.filter(function(stepItem) { return !!systemsMotionCompleted[stepItem.id]; }).length;
+                var scenarioComplete = scenarioSolvedCount === scenarioItem.steps.length;
                 return h('button', {
                   key: scenarioId,
                   type: 'button',
                   'aria-pressed': scenarioSelected,
                   'data-systems-motion-choice': scenarioId,
+                  'data-systems-motion-choice-progress': scenarioSolvedCount + '/' + scenarioItem.steps.length,
+                  'data-systems-motion-choice-complete': scenarioComplete ? 'true' : 'false',
+                  'aria-label': scenarioItem.selectorLabel + ', ' + scenarioSolvedCount + ' of ' + scenarioItem.steps.length + ' checkpoints solved',
                   onClick: function() { openSystemsMotionStep(0, 'Opening ' + scenarioItem.title + '.', scenarioId); },
-                  className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold border active:scale-[0.97] ' + (scenarioSelected ? 'bg-cyan-800 text-white border-cyan-800' : 'bg-white text-cyan-800 border-cyan-300 hover:bg-cyan-50')
-                }, scenarioItem.selectorLabel);
+                  style: { backgroundColor: scenarioSelected ? scenarioItem.accent : '#ffffff', borderColor: scenarioItem.accent, color: scenarioSelected ? '#ffffff' : scenarioItem.accent },
+                  className: 'min-w-[112px] px-3 py-1.5 rounded-lg text-[11px] font-bold border text-left hover:brightness-95 active:scale-[0.97]'
+                },
+                  h('span', { className: 'block' }, scenarioItem.selectorLabel),
+                  h('span', { className: 'block mt-0.5 text-[9px] font-semibold opacity-80' }, scenarioSolvedCount + '/' + scenarioItem.steps.length + ' solved')
+                );
               })
             ),
+            h('div', { className: 'anatomy-motion-whatif' },
+              h('div', null,
+                h('strong', null, 'What if physiology is disrupted?'),
+                h('span', null, systemsMotionScenario.perturbation.title + ' affects the highlighted pathway stage.')
+              ),
+              h('button', {
+                type: 'button',
+                'aria-pressed': systemsMotionPerturbation,
+                onClick: toggleSystemsMotionPerturbation,
+                className: 'px-3 py-1.5 text-[11px] font-bold border active:scale-[0.97] ' + (systemsMotionPerturbation ? 'bg-rose-800 text-white border-rose-800' : 'bg-white text-rose-800 border-rose-300 hover:bg-rose-50')
+              }, systemsMotionPerturbation ? 'Restore typical physiology' : 'Apply disruption')
+            ),
             h('div', { className: 'anatomy-motion-route', role: 'group', 'aria-label': systemsMotionScenario.routeLabel }, routeChildren),
+            systemsMotionPerturbation ? h('div', {
+              className: 'anatomy-motion-impact', role: 'note',
+              'aria-label': systemsMotionScenario.perturbation.title + ' impact chain',
+              'data-systems-motion-impact': systemsMotionScenario.perturbation.id
+            },
+              h('div', { className: 'anatomy-motion-impact-stage' }, h('strong', null, 'Structural change'), h('span', null, systemsMotionScenario.perturbation.change)),
+              h('span', { className: 'anatomy-motion-impact-arrow', 'aria-hidden': 'true' }, '→'),
+              h('div', { className: 'anatomy-motion-impact-stage' }, h('strong', null, 'Local effect'), h('span', null, systemsMotionScenario.perturbation.localEffect)),
+              h('span', { className: 'anatomy-motion-impact-arrow', 'aria-hidden': 'true' }, '→'),
+              h('div', { className: 'anatomy-motion-impact-stage' }, h('strong', null, 'Pathway consequence'), h('span', null, systemsMotionScenario.perturbation.systemEffect))
+            ) : null,
             h('div', { className: 'anatomy-motion-body' },
-              h('div', { className: 'anatomy-motion-current', role: 'status', 'aria-live': 'polite' },
+              h('div', { className: 'anatomy-motion-current', role: 'region', 'aria-label': 'Current physiology stage' },
                 h('span', { className: 'anatomy-kicker' }, 'Step ' + (systemsMotionStep + 1) + ' of ' + systemsMotionScenario.steps.length + ' · ' + systemsMotionCurrent.systemLabel),
                 h('strong', null, systemsMotionCurrent.title),
                 h('span', null, systemsMotionCurrent.summary),
+                h('div', {
+                  className: 'anatomy-motion-cascade', role: 'img',
+                  'aria-label': 'Trigger: ' + systemsMotionCurrent.trigger + ' Mechanism: ' + systemsMotionCurrent.mechanism + ' Outcome: ' + systemsMotionCurrent.outcome
+                },
+                  h('div', { className: 'anatomy-motion-cascade-stage' }, h('strong', null, 'Trigger'), h('span', null, systemsMotionCurrent.trigger)),
+                  h('span', { className: 'anatomy-motion-cascade-arrow', 'aria-hidden': 'true' }, '→'),
+                  h('div', { className: 'anatomy-motion-cascade-stage' }, h('strong', null, 'Mechanism'), h('span', null, systemsMotionCurrent.mechanism)),
+                  h('span', { className: 'anatomy-motion-cascade-arrow', 'aria-hidden': 'true' }, '→'),
+                  h('div', { className: 'anatomy-motion-cascade-stage' }, h('strong', null, 'Outcome'), h('span', null, systemsMotionCurrent.outcome))
+                ),
+                h('button', {
+                  type: 'button',
+                  'aria-expanded': systemsMotionDeepDive,
+                  onClick: function() { upd('_systemsMotionDeepDive', !systemsMotionDeepDive); },
+                  className: 'mt-2 px-2.5 py-1.5 rounded-lg text-[11px] font-bold border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 active:scale-[0.97]'
+                }, systemsMotionDeepDive ? 'Hide deeper physiology' : 'Show deeper physiology'),
+                systemsMotionDeepDive ? h('div', { className: 'anatomy-motion-deep', role: 'note', 'data-systems-motion-advanced': systemsMotionCurrent.id },
+                  h('strong', null, 'Deeper physiology'), systemsMotionCurrent.advanced
+                ) : null,
                 h('span', null, 'The matching deep-dive diagram is open below at the relevant mechanism step.')
               ),
               h('div', { className: 'anatomy-motion-check' },

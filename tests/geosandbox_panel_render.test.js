@@ -155,3 +155,61 @@ describe('placing a point at a height', () => {
     expect(onFloor).not.toContain('Taps land at height');
   });
 });
+
+describe('the unified Sculpt workspace', () => {
+  it('supports manual and AI-assisted creation under one neutral tab name', () => {
+    const html = panel({
+      mode: 'sculpt',
+      sculptRecipe: { name: 'tower', parts: [{ shape: 'box', size: [1, 2, 1], position: [0, 1, 0], rotation: [0, 0, 0], color: '#60a5fa' }] },
+    });
+    expect(html).toContain('Sculpt studio');
+    expect(html).toContain('Build directly from primitive shapes');
+    expect(html).toContain('manual sculpting below still works');
+    expect(html).not.toContain('>🧊 AI Sculpt<');
+  });
+
+  it('coordinates formulas with representations and labels overlap totals as upper bounds', () => {
+    const html = panel({
+      mode: 'sculpt',
+      sculptRecipe: { name: 'stack', parts: [
+        { shape: 'cylinder', size: [1, 2], position: [0, 1, 0], rotation: [0, 0, 0], color: '#60a5fa' },
+      ] },
+    });
+    expect(html).toContain('Slice: Circle');
+    expect(html).toContain('Net: 2 circles + 1 rectangle');
+    expect(html).toContain('Upper-bound sum of parts');
+    expect(html).toContain('actual union can have less volume');
+    expect(html).toContain('Live cross-section');
+    expect(html).toContain('Select a sculpt part to explore a slice through it');
+    expect(html).toContain('Choose a part in the 3D view or list to reveal its math');
+    expect(html).toContain('Scale investigation');
+    expect(html).toContain('predict');
+    expect(html).toContain('manipulate');
+    expect(html).toContain('compare');
+    expect(html).toContain('explain');
+  });
+
+  it('keeps privacy-conscious trace controls behind progressive disclosure', () => {
+    const collapsed = panel({ mode: 'sculpt' });
+    expect(collapsed).toContain('Learning &amp; research options');
+    expect(collapsed).not.toContain('It never records names');
+
+    const expanded = panel({ mode: 'sculpt', showAdvancedTools: true, researchTraceOn: true });
+    expect(expanded).toContain('Anonymous research trace (this session only)');
+    expect(expanded).toContain('It never records names, AI prompts, or explanation text');
+    expect(expanded).toContain('Export JSON');
+  });
+  it('renders each Sculpt Math entry as a selectable formula control', () => {
+    const html = panel({
+      mode: 'sculpt',
+      sculptRecipe: { name: 'stack', parts: [
+        { shape: 'box', size: [1, 2, 3], position: [0, 1, 0], rotation: [0, 0, 0], color: '#60a5fa' },
+        { shape: 'sphere', size: [0.5], position: [0, 2.5, 0], rotation: [0, 0, 0], color: '#f472b6' },
+      ] },
+    });
+    expect(html).toContain('Click a part in the 3D sculpt or this list');
+    expect(html).toContain('V = l × w × h');
+    expect(html).toContain('SA = 4πr²');
+    expect((html.match(/aria-pressed="false"/g) || []).length).toBeGreaterThanOrEqual(2);
+  });
+});

@@ -3,6 +3,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { ensureFamily, evidencePath } = require('./eppp_evidence_paths.cjs');
 
 function writeFileWithRetry(filePath, contents) {
   let lastError;
@@ -20,9 +21,8 @@ function writeFileWithRetry(filePath, contents) {
 }
 
 const root = path.resolve(__dirname, '..');
-const runtimeRoot = path.join(root, 'test_prep', 'eppp_legacy');
-const deployRoot = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_legacy');
-const audit = JSON.parse(fs.readFileSync(path.join(runtimeRoot, 'content_audit.json'), 'utf8'));
+const canonicalRoot = ensureFamily('review');
+const audit = JSON.parse(fs.readFileSync(evidencePath('audit', 'content_audit.json'), 'utf8'));
 const nativeQa = JSON.parse(fs.readFileSync(path.join(root, 'test_prep', 'eppp_native_qa.json'), 'utf8'));
 
 const migratedByLegacyId = new Map(
@@ -116,7 +116,7 @@ ${report.requiredGates.map((gate, index) => `${index + 1}. ${gate}`).join('\n')}
 - **Production expert validated** remains a higher bar requiring an independent qualified psychology/assessment reviewer.
 `;
 
-for (const outputRoot of [runtimeRoot, deployRoot]) {
+for (const outputRoot of [canonicalRoot]) {
   writeFileWithRetry(path.join(outputRoot, 'review_ledger.json'), JSON.stringify(report, null, 2) + '\n');
   writeFileWithRetry(path.join(outputRoot, 'review_ledger.md'), markdown);
 }

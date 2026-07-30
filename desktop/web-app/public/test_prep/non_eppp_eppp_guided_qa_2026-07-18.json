@@ -25,6 +25,11 @@
     "epppLibrary": {
       "chapters": 49,
       "sections": 278,
+      "completeSectionContents": 278,
+      "previewTruncatedSections": 265,
+      "expandableCases": 50,
+      "reflectiveCodas": 49,
+      "sourceReferences": 383,
       "diagrams": 25,
       "diagramTemplates": 25,
       "usedDiagramTemplates": 15,
@@ -33,25 +38,42 @@
       "sharedTemplateDiagramPlacements": 16,
       "inlineDiagramPlacements": 42,
       "sourceReviewedDiagramTemplates": 15,
-      "sourceReviewedDiagramPlacements": 22,
+      "sourceReviewedDiagramPlacements": 58,
+      "nativeDiagramPayloads": 67,
+      "nativeTemplateDiagramPayloads": 25,
+      "nativeInlineDiagramPayloads": 42,
+      "nativeDiagramPlacements": 58,
+      "nativeDiagramTextAlternatives": 67,
+      "nativeDiagramMotionRecords": 7,
+      "glossaryTerms": 1583,
+      "glossaryTermsWithAliases": 6,
+      "glossaryAliasLinks": 6,
+      "glossaryTermsLinkedToChapters": 1443,
+      "glossaryTermsLinkedToDomains": 1430,
+      "glossarySourceDeclarations": 1596,
+      "glossaryDuplicateSourceDeclarations": 13,
       "knowledgeChecks": 109,
       "flashcards": 415,
       "memoryAids": 255,
       "qaPassedChapters": 0,
       "sourceReviewedChapters": 49,
+      "sourceReviewedSections": 278,
+      "reviewRequiredSections": 0,
       "qaPassedFlashcards": 0,
       "sourceReviewedFlashcards": 415,
-      "retainedReviewedFlashcards": 336,
-      "retiredRedundantFlashcards": 79,
+      "retainedReviewedFlashcards": 335,
+      "retiredRedundantFlashcards": 80,
+      "learnerVisibleFlashcards": 335,
       "qaPassedMemoryAids": 0,
       "qaPassedKnowledgeChecks": 0,
-      "sourceReviewedKnowledgeChecks": 32,
-      "releasedKnowledgeChecks": 32,
-      "reviewRequiredKnowledgeChecks": 77,
-      "sourceReviewedMemoryAids": 56,
-      "releasedMemoryAids": 56,
-      "releasedFlashcards": 336,
-      "editorialReviewedSourcePendingMemoryAids": 2
+      "sourceReviewedKnowledgeChecks": 109,
+      "releasedKnowledgeChecks": 109,
+      "reviewRequiredKnowledgeChecks": 0,
+      "sourceReviewedMemoryAids": 255,
+      "releasedMemoryAids": 255,
+      "releasedFlashcards": 335,
+      "editorialReviewedSourcePendingMemoryAids": 0,
+      "referencedReviewArtifacts": 30
     },
     "adaptations": [
       "Applied EPPP one-best-answer, option-feedback, source, encoding, clue-resistance, provenance, and accessibility categories.",
@@ -100,7 +122,7 @@
   },
   "snapshot": {
     "algorithm": "sha256",
-    "sha256": "2b6d92d5434760e4cb80147e6659472a63008ad6e92b08448d601aeedf98da1a",
+    "sha256": "f08483c459110dad1f59fcd3bf8aaaa3d7ce61e8ae291667d789a2f82ab06800",
     "dependencyCount": 125,
     "dependencies": [
       {
@@ -289,11 +311,11 @@
       },
       {
         "path": "test_prep/eppp_learning_library.json",
-        "sha256": "6f60104683ac77f41a33751c6dd7ac3212e40c8818ced5000f5bb50cb4afb64e"
+        "sha256": "e7e82b15b1adc39d8902aab25eba4ac17e8e58eb538bb5c2815504d9f0f9239b"
       },
       {
         "path": "test_prep/eppp_native_qa.json",
-        "sha256": "bd43b8fe01bd4c84edc5e7c62d3170c3b656ad97b6b67ad60e1bed611f1bd6a7"
+        "sha256": "ce09c34c824f446c5899fd87a311349a55038bcf73162493c25136c59651cf8d"
       },
       {
         "path": "test_prep/esol_5362_learning_library_qa.json",
@@ -425,7 +447,7 @@
       },
       {
         "path": "test_prep/reference_catalog.json",
-        "sha256": "92f4b82aedf53af193aa00e3961b2c929a04f9cba94607be371e179246c78c4d"
+        "sha256": "c75fc0c3c81f637a943d707e1000b3fe2c5e13331c0798a2f36c6c40429dea99"
       },
       {
         "path": "test_prep/school_counselor_5422_learning_library_qa.json",

@@ -1,0 +1,1660 @@
+{
+  "schemaVersion": 1,
+  "itemSchemaVersion": 2,
+  "id": "ap-psychology-pilot",
+  "title": "AP Psychology Independent Internal Pilot",
+  "shortTitle": "AP Psychology Pilot",
+  "description": "A source-only internal pilot containing 20 independently authored multiple-choice questions aligned to the current public AP Psychology course framework. It is not released, official, endorsed, calibrated, or score-predictive.",
+  "credentialOwner": "College Board",
+  "version": "0.1.1-internal-preview",
+  "status": "preview",
+  "visibility": "internal",
+  "portfolioCategories": [
+    "k12-college-readiness"
+  ],
+  "released": false,
+  "calibrated": false,
+  "previewBadge": "Internal preview",
+  "accent": "indigo",
+  "contentReview": "Twenty original, source-aligned draft items: four per current unit, with 13 Practice 1 items, 5 Practice 2 items, 2 Practice 3 items, and five keys in each answer position. Independent AP Psychology subject-expert review, independent rights and accessibility review, production validation, field testing, and psychometric calibration remain pending.",
+  "blueprintLabel": "AP Psychology Course and Exam Description, effective Fall 2025, Course Framework V.1",
+  "blueprintEffective": "Fall 2025 CED with clarifications implemented October 2025; current official exam-format reference is the 2026 fully digital exam.",
+  "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+  "clarificationsUrl": "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description-clarifications.pdf",
+  "officialExamUrl": "https://apcentral.collegeboard.org/courses/ap-psychology/exam",
+  "learningLibraryUrl": "./test_prep/ap_psychology_pilot_learning_library.json",
+  "nativeQaUrl": "./test_prep/ap_psychology_pilot_qa.json",
+  "transitionNotice": "The target public exam year is intentionally unset. Reverify the current CED, clarifications, exam mode, timing, policies, and public-use boundaries before any release.",
+  "disclaimer": "Independent, unofficial AP Psychology preparation material for internal development only. Not affiliated with, endorsed by, or authored by College Board. AP and Advanced Placement are trademarks of College Board. All questions, answer options, explanations, and feedback in this file are independently authored; no secure AP Classroom, Question Bank, Progress Check, practice-exam, or teacher-only content was used or reproduced. Practice results are not official AP scores, score predictions, psychometric estimates, or determinations of college credit or placement. Psychology examples are educational and are not diagnosis, treatment, or medical advice.",
+  "capabilities": {
+    "currentEngineSchemaVersion": 1,
+    "itemSchemaVersion": 2,
+    "currentEngineCompatible": true,
+    "responseTypes": [
+      "single-choice"
+    ],
+    "stimulusGroupsIncluded": false,
+    "constructedResponseIncluded": false,
+    "frqWorkshopsIncluded": true,
+    "handsFreeContentCompatible": true,
+    "limitations": [
+      "This pilot does not reproduce the complete digital exam experience.",
+      "The separate AAQ- and EBQ-style workshops use original synthetic stimuli and planning self-checks; the current engine does not score constructed responses.",
+      "No official-score or readiness inference is supported."
+    ]
+  },
+  "blueprint": {
+    "academicYearReference": "2025-26",
+    "cedEffectiveLabel": "Fall 2025",
+    "cedFrameworkVersion": "V.1",
+    "cedClarificationsImplemented": "October 2025",
+    "examFormatReferenceYear": 2026,
+    "targetExamYear": null,
+    "examModeReference": "fully-digital",
+    "officialSectionOne": "75 multiple-choice questions in 90 minutes; 66.7% of the official exam score",
+    "officialSectionTwo": "2 free-response questions in 70 minutes; 33.3% of the official exam score",
+    "pilotAlignment": "20-item midpoint sampler: 4 items per unit; P1/P2/P3 counts 13/5/2",
+    "lastVerifiedAt": "2026-07-29",
+    "sourceDigest": "pending-build-generation"
+  },
+  "rightsPolicy": {
+    "authoringBasis": "Independent original wording informed by public blueprint metadata and factual sources.",
+    "secureCollegeBoardContentUsed": false,
+    "copiedOrRephrasedCollegeBoardQuestions": false,
+    "publicSourceUse": "Blueprint alignment, factual verification, and links only; no source prose is reproduced.",
+    "openStaxUse": "Facts and links only; no textbook prose, figures, or assessment content is reproduced.",
+    "status": "pending-independent-rights-review"
+  },
+  "releaseGates": {
+    "internalStructuralValidation": "passed-2026-07-29",
+    "independentRightsReview": "pending",
+    "independentAccessibilityReview": "pending",
+    "apPsychologySubjectExpertReview": "pending",
+    "productionValidation": "pending",
+    "fieldTesting": "not-started",
+    "psychometricCalibration": "not-started",
+    "cedAndPolicyReverification": "required-before-release",
+    "releaseEligible": false
+  },
+  "accessibilityGate": {
+    "contentForm": "text-only, linear single-choice items",
+    "essentialVisualItems": 0,
+    "screenReaderReadingOrderDeclared": true,
+    "handsFreeContentCompatible": true,
+    "independentReviewStatus": "pending",
+    "productionVoiceValidationStatus": "pending"
+  },
+  "expertReviewGate": {
+    "requiredRole": "Independent educator or faculty reviewer with current AP Psychology course and assessment expertise",
+    "status": "pending",
+    "releaseBlocked": true
+  },
+  "domains": [
+    {
+      "id": "biological-bases-of-behavior",
+      "label": "Unit 1: Biological Bases of Behavior",
+      "weight": 0.2,
+      "officialWeightMin": 0.15,
+      "officialWeightMax": 0.25,
+      "itemCount": 4
+    },
+    {
+      "id": "cognition",
+      "label": "Unit 2: Cognition",
+      "weight": 0.2,
+      "officialWeightMin": 0.15,
+      "officialWeightMax": 0.25,
+      "itemCount": 4
+    },
+    {
+      "id": "development-and-learning",
+      "label": "Unit 3: Development and Learning",
+      "weight": 0.2,
+      "officialWeightMin": 0.15,
+      "officialWeightMax": 0.25,
+      "itemCount": 4
+    },
+    {
+      "id": "social-psychology-and-personality",
+      "label": "Unit 4: Social Psychology and Personality",
+      "weight": 0.2,
+      "officialWeightMin": 0.15,
+      "officialWeightMax": 0.25,
+      "itemCount": 4
+    },
+    {
+      "id": "mental-and-physical-health",
+      "label": "Unit 5: Mental and Physical Health",
+      "weight": 0.2,
+      "officialWeightMin": 0.15,
+      "officialWeightMax": 0.25,
+      "itemCount": 4
+    }
+  ],
+  "practiceDistribution": {
+    "P1-concept-application": 13,
+    "P2-research-methods-and-design": 5,
+    "P3-data-interpretation": 2,
+    "P4-argumentation": 0,
+    "note": "Practice 4 belongs to free response and is outside this single-choice source pilot."
+  },
+  "answerPositionDistribution": {
+    "0": 5,
+    "1": 5,
+    "2": 5,
+    "3": 5
+  },
+  "batchSize": 20,
+  "sections": [
+    {
+      "id": "internal-pilot-sampler",
+      "label": "20-item internal source sampler",
+      "timeMinutes": null,
+      "released": false
+    }
+  ],
+  "sourceCatalog": [
+    {
+      "id": "college-board-ced",
+      "title": "AP Psychology Course and Exam Description",
+      "organization": "College Board",
+      "url": "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+      "credibility": "College Board owns the AP Program; the public CED is the official course-content, skill, and exam-design framework."
+    },
+    {
+      "id": "college-board-clarifications",
+      "title": "AP Psychology Clarifications and Corrections",
+      "organization": "College Board",
+      "url": "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description-clarifications.pdf",
+      "credibility": "This official document records corrections and clarifications implemented in October 2025, including updates to science practices and free-response scoring language."
+    },
+    {
+      "id": "college-board-exam",
+      "title": "AP Psychology Exam",
+      "organization": "College Board",
+      "url": "https://apcentral.collegeboard.org/courses/ap-psychology/exam",
+      "credibility": "This official AP Central page states the current public exam mode, section timing, weighting, and free-response structure."
+    },
+    {
+      "id": "openstax-psychology-2e",
+      "title": "Psychology 2e",
+      "organization": "OpenStax, Rice University",
+      "url": "https://openstax.org/books/psychology-2e/pages/1-introduction",
+      "credibility": "OpenStax is Rice University's nonprofit textbook initiative; Psychology 2e is a publicly accessible college-level introductory psychology text used here only for factual verification and links."
+    },
+    {
+      "id": "hhs-belmont",
+      "title": "The Belmont Report",
+      "organization": "U.S. Department of Health and Human Services, Office for Human Research Protections",
+      "url": "https://www.hhs.gov/ohrp/regulations-and-policy/belmont-report/index.html",
+      "credibility": "OHRP is the federal authority that administers core U.S. protections for human research participants; the Belmont Report states foundational ethical principles."
+    }
+  ],
+  "items": [
+    {
+      "id": "ap-psych-u1-003",
+      "templateVersion": 1,
+      "itemSchemaVersion": 2,
+      "type": "single-choice",
+      "domainId": "biological-bases-of-behavior",
+      "topicIds": [
+        "1.3"
+      ],
+      "practiceId": "P1",
+      "skillId": "1.A",
+      "difficulty": "advanced",
+      "cognitiveDemand": "application",
+      "prompt": "A sensory neuron receives progressively stronger stimulation. Once threshold is reached, individual action potentials remain about the same amplitude, while stronger stimulation produces more action potentials per second. Which explanation best fits this pattern?",
+      "choices": [
+        "Reuptake makes every neurotransmitter produce an identical postsynaptic response.",
+        "The refractory period changes each action potential amplitude in direct proportion to stimulus strength.",
+        "The all-or-none principle fixes spike size, while firing frequency can represent stimulus intensity.",
+        "Inhibitory postsynaptic potentials cause the neuron to fire more rapidly as stimulation increases."
+      ],
+      "answerIndex": 2,
+      "rationale": "Once a neuron's threshold is crossed, an individual action potential follows the all-or-none principle rather than growing with the stimulus. Stronger input can nevertheless be represented by an increased rate of action potentials.",
+      "choiceRationales": [
+        "Reuptake clears neurotransmitter from the synapse and does not explain why an axon's action potentials have stable amplitude while firing rate changes.",
+        "The refractory period limits how quickly another action potential can occur; it does not make action-potential amplitude proportional to stimulus strength.",
+        "This combines the stable size of threshold-crossing action potentials with frequency coding, directly matching both observations in the stem.",
+        "Inhibitory postsynaptic potentials generally move the membrane away from threshold, so they do not explain increased firing under stronger excitatory stimulation."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description-clarifications.pdf",
+        "https://openstax.org/books/psychology-2e/pages/3-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "AP Psychology CED Clarifications and Psychology 2e Biopsychology",
+          "organization": "College Board and OpenStax, Rice University",
+          "url": "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description-clarifications.pdf",
+          "credibility": "The official clarification confirms the current term 'all-or-none principle'; the public college-level text supports the underlying neuron-firing concepts."
+        }
+      ],
+      "provenance": "native-original",
+      "officialItem": false,
+      "rights": {
+        "secureContentUsed": false,
+        "copiedOfficialQuestion": false,
+        "sourceUse": "facts-and-blueprint-only",
+        "status": "pending-independent-rights-review"
+      },
+      "accessibility": {
+        "textOnly": true,
+        "essentialVisual": false,
+        "linearReadingOrder": true,
+        "handsFreeContentCompatible": true,
+        "status": "pending-independent-accessibility-review"
+      },
+      "expertReview": {
+        "status": "pending",
+        "releaseBlocked": true
+      },
+      "psychometricStatus": "not-calibrated",
+      "reviewStatus": "internal-editorial-draft",
+      "qaStatus": "structure-ready-content-review-pending",
+      "releaseEligible": false,
+      "editorialChecks": {
+        "scenarioBased": true,
+        "singleBestAnswer": true,
+        "parallelPlausibleOptions": true,
+        "noKeywordGiveaway": true,
+        "completeOptionFeedback": true,
+        "ageAppropriate": true,
+        "medicalSafety": true
+      }
+    },
+    {
+      "id": "ap-psych-u1-002",
+      "templateVersion": 1,
+      "itemSchemaVersion": 2,
+      "type": "single-choice",
+      "domainId": "biological-bases-of-behavior",
+      "topicIds": [
+        "1.5"
+      ],
+      "practiceId": "P2",
+      "skillId": "2.C",
+      "difficulty": "advanced",
+      "cognitiveDemand": "research-analysis",
+      "prompt": "Researchers ask 120 students to record their usual sleep times for two weeks and then complete an attention task. Students with more regular sleep schedules tend to earn higher attention scores. The researchers did not assign sleep schedules. Which conclusion is best supported?",
+      "choices": [
+        "Regular sleep schedules improved attention because the association persisted across the two-week recording period.",
+        "Sleep regularity and attention were associated, but directionality and possible third variables prevent a causal conclusion.",
+        "Higher attention probably produced more regular sleep because attention was measured after the sleep records.",
+        "Completing the same attention task controlled third variables well enough to attribute the score difference to sleep regularity."
+      ],
+      "answerIndex": 1,
+      "rationale": "The study measured naturally occurring variables without manipulation or random assignment. It can establish an association, but directionality and possible third variables such as workload, health, or daily routines prevent a causal conclusion.",
+      "choiceRationales": [
+        "The two-week period provides repeated observation, but duration alone does not establish manipulation, random assignment, or a causal effect.",
+        "This states the supported association and identifies both directionality and third-variable limits that remain in a correlational design.",
+        "Measuring attention after sleep does not establish reverse causation; temporal measurement order alone cannot show that attention changed sleep regularity.",
+        "A common outcome task standardizes attention measurement, but it neither manipulates sleep regularity nor controls other variables that could explain the association."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/2-introduction",
+        "https://openstax.org/books/psychology-2e/pages/4-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e, Chapters 2 and 4",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/2-introduction",
+          "credibility": "The public college-level research-methods chapter distinguishes experimental and nonexperimental inference; the sleep chapter supplies the topical context. The study and wording here are fictional and original."
+        }
+      ],
+      "provenance": "native-original",
+      "officialItem": false,
+      "rights": {
+        "secureContentUsed": false,
+        "copiedOfficialQuestion": false,
+        "sourceUse": "facts-and-blueprint-only",
+        "status": "pending-independent-rights-review"
+      },
+      "accessibility": {
+        "textOnly": true,
+        "essentialVisual": false,
+        "linearReadingOrder": true,
+        "handsFreeContentCompatible": true,
+        "status": "pending-independent-accessibility-review"
+      },
+      "expertReview": {
+        "status": "pending",
+        "releaseBlocked": true
+      },
+      "psychometricStatus": "not-calibrated",
+      "reviewStatus": "internal-editorial-draft",
+      "qaStatus": "structure-ready-content-review-pending",
+      "releaseEligible": false,
+      "editorialChecks": {
+        "scenarioBased": true,
+        "singleBestAnswer": true,
+        "parallelPlausibleOptions": true,
+        "noKeywordGiveaway": true,
+        "completeOptionFeedback": true,
+        "ageAppropriate": true,
+        "medicalSafety": true
+      }
+    },
+    {
+      "id": "ap-psych-u1-001",
+      "templateVersion": 1,
+      "itemSchemaVersion": 2,
+      "type": "single-choice",
+      "domainId": "biological-bases-of-behavior",
+      "topicIds": [
+        "1.4"
+      ],
+      "practiceId": "P1",
+      "skillId": "1.A",
+      "difficulty": "intermediate",
+      "cognitiveDemand": "application",
+      "prompt": "Following a cortical injury, a patient can move normally and has healthy eyes and optic nerves but cannot consciously identify objects presented visually. Which damaged region best accounts for this pattern?",
+      "choices": [
+        "The occipital cortex",
+        "The cerebellum",
+        "The primary motor cortex",
+        "The medulla"
+      ],
+      "answerIndex": 0,
+      "rationale": "The occipital cortex contains primary and associated visual-processing regions. When the eyes and optic nerves are intact, cortical damage in this region can disrupt conscious visual processing without directly impairing movement.",
+      "choiceRationales": [
+        "The occipital cortex is the strongest answer because it receives and processes visual information after signals travel through the eyes and earlier visual pathways.",
+        "The cerebellum primarily coordinates movement, posture, and motor learning; damage there would more directly predict coordination problems than isolated cortical visual loss.",
+        "The primary motor cortex initiates voluntary skeletal movement, so injury there would be expected to affect movement rather than selectively disrupt visual identification.",
+        "The medulla regulates vital autonomic functions such as breathing and heart rate; it is not the principal cortical destination for conscious visual processing."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/3-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e, Chapter 3: Biopsychology",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/3-introduction",
+          "credibility": "This publicly accessible college-level chapter surveys nervous-system and brain structure-function relationships; the item uses independently written wording and factual concepts only."
+        }
+      ],
+      "provenance": "native-original",
+      "officialItem": false,
+      "rights": {
+        "secureContentUsed": false,
+        "copiedOfficialQuestion": false,
+        "sourceUse": "facts-and-blueprint-only",
+        "status": "pending-independent-rights-review"
+      },
+      "accessibility": {
+        "textOnly": true,
+        "essentialVisual": false,
+        "linearReadingOrder": true,
+        "handsFreeContentCompatible": true,
+        "status": "pending-independent-accessibility-review"
+      },
+      "expertReview": {
+        "status": "pending",
+        "releaseBlocked": true
+      },
+      "psychometricStatus": "not-calibrated",
+      "reviewStatus": "internal-editorial-draft",
+      "qaStatus": "structure-ready-content-review-pending",
+      "releaseEligible": false,
+      "editorialChecks": {
+        "scenarioBased": true,
+        "singleBestAnswer": true,
+        "parallelPlausibleOptions": true,
+        "noKeywordGiveaway": true,
+        "completeOptionFeedback": true,
+        "ageAppropriate": true,
+        "medicalSafety": true
+      }
+    },
+    {
+      "id": "ap-psych-u1-004",
+      "templateVersion": 1,
+      "itemSchemaVersion": 2,
+      "type": "single-choice",
+      "domainId": "biological-bases-of-behavior",
+      "topicIds": [
+        "1.2"
+      ],
+      "practiceId": "P1",
+      "skillId": "1.A",
+      "difficulty": "intermediate",
+      "cognitiveDemand": "application",
+      "prompt": "A loud alarm startles a student, increasing heart rate and slowing digestion. After the student learns it was a false alarm, heart rate decreases and digestion resumes. Which division most directly supports this return toward baseline?",
+      "choices": [
+        "The endocrine system",
+        "The somatic nervous system",
+        "The sympathetic division",
+        "The parasympathetic division"
+      ],
+      "answerIndex": 3,
+      "rationale": "The parasympathetic division supports rest-and-digest functions and helps restore bodily activity after sympathetic arousal. Slower heart rate and resumed digestion are characteristic of that recovery pattern.",
+      "choiceRationales": [
+        "Hormones can influence arousal, but the question asks for an autonomic division that directly supports recovery after the alarm response.",
+        "The somatic system controls voluntary skeletal movement and carries sensory information; it is not the primary regulator of heart rate and digestion.",
+        "The sympathetic division produces the initial mobilization pattern, including faster heart rate and reduced digestive activity, rather than the return toward baseline.",
+        "The parasympathetic division slows cardiac activity and supports digestion after a threat has passed, matching both changes described."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/3-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e, Chapter 3: Biopsychology",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/3-introduction",
+          "credibility": "This public college-level chapter describes the central, peripheral, somatic, and autonomic nervous systems and supports the physiological distinction used in this original scenario."
+        }
+      ],
+      "provenance": "native-original",
+      "officialItem": false,
+      "rights": {
+        "secureContentUsed": false,
+        "copiedOfficialQuestion": false,
+        "sourceUse": "facts-and-blueprint-only",
+        "status": "pending-independent-rights-review"
+      },
+      "accessibility": {
+        "textOnly": true,
+        "essentialVisual": false,
+        "linearReadingOrder": true,
+        "handsFreeContentCompatible": true,
+        "status": "pending-independent-accessibility-review"
+      },
+      "expertReview": {
+        "status": "pending",
+        "releaseBlocked": true
+      },
+      "psychometricStatus": "not-calibrated",
+      "reviewStatus": "internal-editorial-draft",
+      "qaStatus": "structure-ready-content-review-pending",
+      "releaseEligible": false,
+      "editorialChecks": {
+        "scenarioBased": true,
+        "singleBestAnswer": true,
+        "parallelPlausibleOptions": true,
+        "noKeywordGiveaway": true,
+        "completeOptionFeedback": true,
+        "ageAppropriate": true,
+        "medicalSafety": true
+      }
+    },
+    {
+      "id": "ap-psych-u2-001",
+      "templateVersion": 1,
+      "itemSchemaVersion": 2,
+      "type": "single-choice",
+      "domainId": "cognition",
+      "topicIds": [
+        "2.2"
+      ],
+      "practiceId": "P1",
+      "skillId": "1.B",
+      "difficulty": "intermediate",
+      "cognitiveDemand": "application",
+      "prompt": "A student believes a late-night study app improves memory. The student saves every favorable testimonial but dismisses two controlled studies showing no advantage as unimportant. Which cognitive bias is most evident?",
+      "choices": [
+        "The availability heuristic",
+        "Confirmation bias",
+        "Hindsight bias",
+        "The representativeness heuristic"
+      ],
+      "answerIndex": 1,
+      "rationale": "Confirmation bias involves seeking, interpreting, or retaining information that supports an existing belief while discounting evidence that challenges it. The student's uneven treatment of testimonials and controlled studies fits that pattern.",
+      "choiceRationales": [
+        "Availability concerns judging likelihood from how easily examples come to mind; the central issue here is selective acceptance of belief-consistent evidence.",
+        "The student favors supporting testimonials and rejects contrary research, which is the defining evidence pattern for confirmation bias.",
+        "Hindsight bias is the tendency to see an outcome as having been predictable after it occurs; no retrospective prediction appears in the scenario.",
+        "Representativeness involves judging category membership or probability by similarity to a prototype, not selectively filtering research by whether it supports a prior belief."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/7-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e, Chapter 7: Thinking and Intelligence",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/7-introduction",
+          "credibility": "This publicly accessible college-level chapter covers problem solving, judgment, decision-making, and common cognitive biases; the scenario and wording are original."
+        }
+      ],
+      "provenance": "native-original",
+      "officialItem": false,
+      "rights": {
+        "secureContentUsed": false,
+        "copiedOfficialQuestion": false,
+        "sourceUse": "facts-and-blueprint-only",
+        "status": "pending-independent-rights-review"
+      },
+      "accessibility": {
+        "textOnly": true,
+        "essentialVisual": false,
+        "linearReadingOrder": true,
+        "handsFreeContentCompatible": true,
+        "status": "pending-independent-accessibility-review"
+      },
+      "expertReview": {
+        "status": "pending",
+        "releaseBlocked": true
+      },
+      "psychometricStatus": "not-calibrated",
+      "reviewStatus": "internal-editorial-draft",
+      "qaStatus": "structure-ready-content-review-pending",
+      "releaseEligible": false,
+      "editorialChecks": {
+        "scenarioBased": true,
+        "singleBestAnswer": true,
+        "parallelPlausibleOptions": true,
+        "noKeywordGiveaway": true,
+        "completeOptionFeedback": true,
+        "ageAppropriate": true,
+        "medicalSafety": true
+      }
+    },
+    {
+      "id": "ap-psych-u2-002",
+      "templateVersion": 1,
+      "itemSchemaVersion": 2,
+      "type": "single-choice",
+      "domainId": "cognition",
+      "topicIds": [
+        "2.4",
+        "2.6"
+      ],
+      "practiceId": "P1",
+      "skillId": "1.A",
+      "difficulty": "intermediate",
+      "cognitiveDemand": "application",
+      "prompt": "Two students spend equal time studying the same terms. One repeatedly rereads the list. The other alternates short review periods with attempts to recall the terms without looking. On a delayed test, the second student remembers more. Which process best explains the advantage?",
+      "choices": [
+        "Sensory adaptation reduced the second student's awareness of the terms.",
+        "Proactive interference prevented older memories from entering working memory.",
+        "Retrieval practice strengthened later access to the studied information.",
+        "State-dependent memory ensured that study and test conditions were identical."
+      ],
+      "answerIndex": 2,
+      "rationale": "Actively retrieving information provides practice reconstructing and accessing the memory, which can improve later recall more than additional passive exposure. The groups' equal study time makes the contrast in study activity especially relevant.",
+      "choiceRationales": [
+        "Sensory adaptation is reduced responsiveness to constant stimulation and would not explain better delayed recall after repeated self-testing.",
+        "Proactive interference occurs when older learning disrupts newer learning; the scenario instead contrasts rereading with active recall of the same new material.",
+        "The second student's repeated attempts to produce the terms are retrieval practice, directly matching the later memory advantage.",
+        "State-dependent memory concerns matching internal states across learning and retrieval; the scenario gives no evidence that the students' internal states differed or matched."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/8-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e, Chapter 8: Memory",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/8-introduction",
+          "credibility": "This public college-level chapter covers encoding, storage, retrieval, forgetting, and evidence-based memory strategies. The comparison and wording in this item are independently authored."
+        }
+      ],
+      "provenance": "native-original",
+      "officialItem": false,
+      "rights": {
+        "secureContentUsed": false,
+        "copiedOfficialQuestion": false,
+        "sourceUse": "facts-and-blueprint-only",
+        "status": "pending-independent-rights-review"
+      },
+      "accessibility": {
+        "textOnly": true,
+        "essentialVisual": false,
+        "linearReadingOrder": true,
+        "handsFreeContentCompatible": true,
+        "status": "pending-independent-accessibility-review"
+      },
+      "expertReview": {
+        "status": "pending",
+        "releaseBlocked": true
+      },
+      "psychometricStatus": "not-calibrated",
+      "reviewStatus": "internal-editorial-draft",
+      "qaStatus": "structure-ready-content-review-pending",
+      "releaseEligible": false,
+      "editorialChecks": {
+        "scenarioBased": true,
+        "singleBestAnswer": true,
+        "parallelPlausibleOptions": true,
+        "noKeywordGiveaway": true,
+        "completeOptionFeedback": true,
+        "ageAppropriate": true,
+        "medicalSafety": true
+      }
+    },
+    {
+      "id": "ap-psych-u2-004",
+      "templateVersion": 1,
+      "itemSchemaVersion": 2,
+      "type": "single-choice",
+      "domainId": "cognition",
+      "topicIds": [
+        "2.7"
+      ],
+      "practiceId": "P1",
+      "skillId": "1.A",
+      "difficulty": "intermediate",
+      "cognitiveDemand": "application",
+      "prompt": "After using the same password for several years, a student changes it. For the next week, the student repeatedly types the old password when trying to sign in. Which memory process best explains the errors?",
+      "choices": [
+        "Proactive interference",
+        "Retroactive interference",
+        "Encoding specificity",
+        "Chunking"
+      ],
+      "answerIndex": 0,
+      "rationale": "Proactive interference occurs when older information disrupts retrieval or use of newer information. The well-practiced old password is interfering with recall of the recently learned replacement.",
+      "choiceRationales": [
+        "The old password was learned first and is obstructing use of the new password, which is the defining direction of proactive interference.",
+        "Retroactive interference would occur if learning the new password made it harder to recall the old one, the reverse of the pattern described.",
+        "Encoding specificity concerns improved retrieval when cues at recall match cues present during encoding; cue matching is not the source of the repeated error.",
+        "Chunking groups separate pieces of information into larger meaningful units and does not explain why an older response intrudes on a newer one."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/8-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e, Chapter 8: Memory",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/8-introduction",
+          "credibility": "This public college-level chapter explains memory errors and interference. The password example and all wording are original to this pilot."
+        }
+      ],
+      "provenance": "native-original",
+      "officialItem": false,
+      "rights": {
+        "secureContentUsed": false,
+        "copiedOfficialQuestion": false,
+        "sourceUse": "facts-and-blueprint-only",
+        "status": "pending-independent-rights-review"
+      },
+      "accessibility": {
+        "textOnly": true,
+        "essentialVisual": false,
+        "linearReadingOrder": true,
+        "handsFreeContentCompatible": true,
+        "status": "pending-independent-accessibility-review"
+      },
+      "expertReview": {
+        "status": "pending",
+        "releaseBlocked": true
+      },
+      "psychometricStatus": "not-calibrated",
+      "reviewStatus": "internal-editorial-draft",
+      "qaStatus": "structure-ready-content-review-pending",
+      "releaseEligible": false,
+      "editorialChecks": {
+        "scenarioBased": true,
+        "singleBestAnswer": true,
+        "parallelPlausibleOptions": true,
+        "noKeywordGiveaway": true,
+        "completeOptionFeedback": true,
+        "ageAppropriate": true,
+        "medicalSafety": true
+      }
+    },
+    {
+      "id": "ap-psych-u2-003",
+      "templateVersion": 1,
+      "itemSchemaVersion": 2,
+      "type": "single-choice",
+      "domainId": "cognition",
+      "topicIds": [
+        "2.2"
+      ],
+      "practiceId": "P2",
+      "skillId": "2.B",
+      "difficulty": "intermediate",
+      "cognitiveDemand": "research-analysis",
+      "prompt": "A study tests whether instrumental background music changes proofreading accuracy. Participants hear a standardized playlist or work in silence. Proofreading accuracy is recorded as the number of planted errors each participant correctly marks in ten minutes. Which statement gives the operational definition of proofreading accuracy?",
+      "choices": [
+        "Proofreading accuracy is the general ability to notice mistakes in written work.",
+        "Proofreading accuracy is the effect that instrumental music has on attention.",
+        "Proofreading accuracy is the condition to which each participant is assigned.",
+        "Proofreading accuracy is errors marked correctly in the ten-minute task."
+      ],
+      "answerIndex": 3,
+      "rationale": "An operational definition specifies the concrete procedure used to measure or manipulate a variable. Here, the measured count of correctly marked planted errors during a fixed interval defines proofreading accuracy for the study.",
+      "choiceRationales": [
+        "This is a broad conceptual description, but it does not state the observable procedure or score used to measure the construct in this study.",
+        "This describes the research question rather than the rule used to turn proofreading performance into a measured value.",
+        "Assignment identifies the level of the independent variable, music or silence; it does not define the dependent measure of proofreading accuracy.",
+        "This specifies both the observable response and the time boundary, making replication and interpretation of the dependent measure possible."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/2-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e, Chapter 2: Psychological Research",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/2-introduction",
+          "credibility": "This public college-level chapter describes variables, operational definitions, experimental design, and replication. The fictional study is independently authored."
+        }
+      ],
+      "provenance": "native-original",
+      "officialItem": false,
+      "rights": {
+        "secureContentUsed": false,
+        "copiedOfficialQuestion": false,
+        "sourceUse": "facts-and-blueprint-only",
+        "status": "pending-independent-rights-review"
+      },
+      "accessibility": {
+        "textOnly": true,
+        "essentialVisual": false,
+        "linearReadingOrder": true,
+        "handsFreeContentCompatible": true,
+        "status": "pending-independent-accessibility-review"
+      },
+      "expertReview": {
+        "status": "pending",
+        "releaseBlocked": true
+      },
+      "psychometricStatus": "not-calibrated",
+      "reviewStatus": "internal-editorial-draft",
+      "qaStatus": "structure-ready-content-review-pending",
+      "releaseEligible": false,
+      "editorialChecks": {
+        "scenarioBased": true,
+        "singleBestAnswer": true,
+        "parallelPlausibleOptions": true,
+        "noKeywordGiveaway": true,
+        "completeOptionFeedback": true,
+        "ageAppropriate": true,
+        "medicalSafety": true
+      }
+    },
+    {
+      "id": "ap-psych-u3-001",
+      "templateVersion": 1,
+      "itemSchemaVersion": 2,
+      "type": "single-choice",
+      "domainId": "development-and-learning",
+      "topicIds": [
+        "3.1"
+      ],
+      "practiceId": "P2",
+      "skillId": "2.C",
+      "difficulty": "intermediate",
+      "cognitiveDemand": "research-analysis",
+      "prompt": "During one semester, researchers compare separate groups of 8-year-olds, 12-year-olds, and 16-year-olds on the same planning task. No participant is tested at more than one age. Which design are the researchers using?",
+      "choices": [
+        "A longitudinal design",
+        "A randomized experiment",
+        "A cross-sectional design",
+        "A case study"
+      ],
+      "answerIndex": 2,
+      "rationale": "A cross-sectional design compares different age groups at one period in time. It can reveal age-group differences efficiently, although cohort differences can complicate developmental interpretation.",
+      "choiceRationales": [
+        "A longitudinal design repeatedly follows the same participants over time; this study uses different participants at each age and one measurement period.",
+        "The researchers neither manipulate an independent variable nor randomly assign ages, so comparing preexisting age groups does not create a randomized experiment.",
+        "Different age cohorts are measured during the same semester, which is the defining structure of a cross-sectional design.",
+        "A case study provides intensive information about one person or a very small case, unlike the planned comparison of three age groups."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/9-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e, Chapter 9: Lifespan Development",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/9-introduction",
+          "credibility": "This publicly accessible college-level chapter covers developmental research and change across the lifespan; the study details are fictional and independently authored."
+        }
+      ],
+      "provenance": "native-original",
+      "officialItem": false,
+      "rights": {
+        "secureContentUsed": false,
+        "copiedOfficialQuestion": false,
+        "sourceUse": "facts-and-blueprint-only",
+        "status": "pending-independent-rights-review"
+      },
+      "accessibility": {
+        "textOnly": true,
+        "essentialVisual": false,
+        "linearReadingOrder": true,
+        "handsFreeContentCompatible": true,
+        "status": "pending-independent-accessibility-review"
+      },
+      "expertReview": {
+        "status": "pending",
+        "releaseBlocked": true
+      },
+      "psychometricStatus": "not-calibrated",
+      "reviewStatus": "internal-editorial-draft",
+      "qaStatus": "structure-ready-content-review-pending",
+      "releaseEligible": false,
+      "editorialChecks": {
+        "scenarioBased": true,
+        "singleBestAnswer": true,
+        "parallelPlausibleOptions": true,
+        "noKeywordGiveaway": true,
+        "completeOptionFeedback": true,
+        "ageAppropriate": true,
+        "medicalSafety": true
+      }
+    },
+    {
+      "id": "ap-psych-u3-002",
+      "templateVersion": 1,
+      "itemSchemaVersion": 2,
+      "type": "single-choice",
+      "domainId": "development-and-learning",
+      "topicIds": [
+        "3.7"
+      ],
+      "practiceId": "P1",
+      "skillId": "1.A",
+      "difficulty": "advanced",
+      "cognitiveDemand": "application",
+      "prompt": "For several days, a cafeteria chime is followed by an unannounced quiz, and a student begins feeling tense when the chime sounds. The chime then occurs repeatedly without quizzes until the tension fades. After a school break, the chime again produces a brief tense response. Which process best explains the response after the break?",
+      "choices": [
+        "Stimulus generalization",
+        "Stimulus discrimination",
+        "Shaping",
+        "Spontaneous recovery"
+      ],
+      "answerIndex": 3,
+      "rationale": "Spontaneous recovery is the reappearance of an extinguished conditioned response after a rest period. The tension faded during extinction and briefly returned after the school break.",
+      "choiceRationales": [
+        "Generalization would involve responding to a new stimulus resembling the cafeteria chime; the same chime is presented throughout this scenario.",
+        "Discrimination would involve learning to respond differently to similar cues, but the scenario focuses on extinction and later return of one response.",
+        "Shaping is an operant procedure that reinforces successive approximations to a target behavior; no sequence of reinforced voluntary behaviors occurs here.",
+        "The conditioned response had weakened when the chime was presented alone and then reappeared after time passed, exactly matching spontaneous recovery."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description-clarifications.pdf",
+        "https://openstax.org/books/psychology-2e/pages/6-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "AP Psychology Clarifications and Psychology 2e, Learning",
+          "organization": "College Board and OpenStax, Rice University",
+          "url": "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description-clarifications.pdf",
+          "credibility": "The official clarification corrects the current description of spontaneous recovery, while the public college-level learning chapter supports the classical-conditioning distinctions used in this original scenario."
+        }
+      ],
+      "provenance": "native-original",
+      "officialItem": false,
+      "rights": {
+        "secureContentUsed": false,
+        "copiedOfficialQuestion": false,
+        "sourceUse": "facts-and-blueprint-only",
+        "status": "pending-independent-rights-review"
+      },
+      "accessibility": {
+        "textOnly": true,
+        "essentialVisual": false,
+        "linearReadingOrder": true,
+        "handsFreeContentCompatible": true,
+        "status": "pending-independent-accessibility-review"
+      },
+      "expertReview": {
+        "status": "pending",
+        "releaseBlocked": true
+      },
+      "psychometricStatus": "not-calibrated",
+      "reviewStatus": "internal-editorial-draft",
+      "qaStatus": "structure-ready-content-review-pending",
+      "releaseEligible": false,
+      "editorialChecks": {
+        "scenarioBased": true,
+        "singleBestAnswer": true,
+        "parallelPlausibleOptions": true,
+        "noKeywordGiveaway": true,
+        "completeOptionFeedback": true,
+        "ageAppropriate": true,
+        "medicalSafety": true
+      }
+    },
+    {
+      "id": "ap-psych-u3-003",
+      "templateVersion": 1,
+      "itemSchemaVersion": 2,
+      "type": "single-choice",
+      "domainId": "development-and-learning",
+      "topicIds": [
+        "3.8"
+      ],
+      "practiceId": "P1",
+      "skillId": "1.A",
+      "difficulty": "intermediate",
+      "cognitiveDemand": "application",
+      "prompt": "A driver begins fastening the seat belt immediately after entering the car because doing so stops an irritating warning tone. The driver's faster seat-belt use is best explained by which consequence?",
+      "choices": [
+        "Negative reinforcement",
+        "Positive reinforcement",
+        "Positive punishment",
+        "Negative punishment"
+      ],
+      "answerIndex": 0,
+      "rationale": "The behavior becomes more likely because it removes an aversive stimulus. Increasing a behavior through removal of something unpleasant is negative reinforcement.",
+      "choiceRationales": [
+        "Fastening the belt increases because it removes the warning tone, so both the direction of behavior change and removal of a stimulus fit negative reinforcement.",
+        "Positive reinforcement would increase seat-belt use by adding a desirable consequence, whereas this consequence removes an irritating sound.",
+        "Positive punishment adds an aversive consequence to reduce a behavior; here the target behavior increases and ends the aversive event.",
+        "Negative punishment removes a valued stimulus to reduce a behavior; neither removal of a valued event nor behavioral reduction occurs."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/6-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e, Chapter 6: Learning",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/6-introduction",
+          "credibility": "This public college-level chapter distinguishes reinforcement from punishment and positive from negative consequences. The seat-belt scenario is original."
+        }
+      ],
+      "provenance": "native-original",
+      "officialItem": false,
+      "rights": {
+        "secureContentUsed": false,
+        "copiedOfficialQuestion": false,
+        "sourceUse": "facts-and-blueprint-only",
+        "status": "pending-independent-rights-review"
+      },
+      "accessibility": {
+        "textOnly": true,
+        "essentialVisual": false,
+        "linearReadingOrder": true,
+        "handsFreeContentCompatible": true,
+        "status": "pending-independent-accessibility-review"
+      },
+      "expertReview": {
+        "status": "pending",
+        "releaseBlocked": true
+      },
+      "psychometricStatus": "not-calibrated",
+      "reviewStatus": "internal-editorial-draft",
+      "qaStatus": "structure-ready-content-review-pending",
+      "releaseEligible": false,
+      "editorialChecks": {
+        "scenarioBased": true,
+        "singleBestAnswer": true,
+        "parallelPlausibleOptions": true,
+        "noKeywordGiveaway": true,
+        "completeOptionFeedback": true,
+        "ageAppropriate": true,
+        "medicalSafety": true
+      }
+    },
+    {
+      "id": "ap-psych-u3-004",
+      "templateVersion": 1,
+      "itemSchemaVersion": 2,
+      "type": "single-choice",
+      "domainId": "development-and-learning",
+      "topicIds": [
+        "3.9"
+      ],
+      "practiceId": "P1",
+      "skillId": "1.A",
+      "difficulty": "intermediate",
+      "cognitiveDemand": "application",
+      "prompt": "A child who is initially hesitant around dogs watches an older sibling calmly approach a gentle dog, offer a hand to sniff, and pet it. The child then copies those actions. Which learning process is most directly illustrated?",
+      "choices": [
+        "Latent learning",
+        "Observational learning",
+        "Habituation",
+        "Instinctive drift"
+      ],
+      "answerIndex": 1,
+      "rationale": "Observational learning occurs when behavior is acquired or changed by attending to a model and later reproducing the modeled actions. The child's sequence closely follows the sibling's example.",
+      "choiceRationales": [
+        "Latent learning is acquired without immediate reinforcement and becomes evident later when there is an incentive; direct imitation of a visible model is more specific here.",
+        "The child attends to the sibling's behavior and reproduces it, providing a clear example of modeling within observational learning.",
+        "Habituation is a reduced response after repeated exposure to a stimulus; the stem emphasizes copying a demonstrated action rather than simple response decline.",
+        "Instinctive drift is a learned behavior's tendency to shift toward species-typical behavior, which is not suggested by this social imitation."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/6-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e, Chapter 6: Learning",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/6-introduction",
+          "credibility": "This public college-level chapter describes classical, operant, and observational learning. The modeled sequence is independently authored and not taken from a source assessment."
+        }
+      ],
+      "provenance": "native-original",
+      "officialItem": false,
+      "rights": {
+        "secureContentUsed": false,
+        "copiedOfficialQuestion": false,
+        "sourceUse": "facts-and-blueprint-only",
+        "status": "pending-independent-rights-review"
+      },
+      "accessibility": {
+        "textOnly": true,
+        "essentialVisual": false,
+        "linearReadingOrder": true,
+        "handsFreeContentCompatible": true,
+        "status": "pending-independent-accessibility-review"
+      },
+      "expertReview": {
+        "status": "pending",
+        "releaseBlocked": true
+      },
+      "psychometricStatus": "not-calibrated",
+      "reviewStatus": "internal-editorial-draft",
+      "qaStatus": "structure-ready-content-review-pending",
+      "releaseEligible": false,
+      "editorialChecks": {
+        "scenarioBased": true,
+        "singleBestAnswer": true,
+        "parallelPlausibleOptions": true,
+        "noKeywordGiveaway": true,
+        "completeOptionFeedback": true,
+        "ageAppropriate": true,
+        "medicalSafety": true
+      }
+    },
+    {
+      "id": "ap-psych-u4-001",
+      "templateVersion": 1,
+      "itemSchemaVersion": 2,
+      "type": "single-choice",
+      "domainId": "social-psychology-and-personality",
+      "topicIds": [
+        "4.1"
+      ],
+      "practiceId": "P1",
+      "skillId": "1.A",
+      "difficulty": "intermediate",
+      "cognitiveDemand": "application",
+      "prompt": "A teacher sees a student arrive late once and immediately concludes that the student is irresponsible, without considering the documented train delay that affected the neighborhood. Which tendency is most evident?",
+      "choices": [
+        "The self-serving bias",
+        "The actor-observer bias",
+        "The just-world hypothesis",
+        "The fundamental attribution error"
+      ],
+      "answerIndex": 3,
+      "rationale": "The fundamental attribution error is the tendency to overemphasize dispositional explanations for another person's behavior while underweighting situational influences. The teacher favors a character judgment despite a salient external cause.",
+      "choiceRationales": [
+        "Self-serving bias concerns explaining one's own successes internally and failures externally; the teacher is instead explaining another person's behavior.",
+        "Actor-observer bias contrasts explanations of one's own behavior with explanations of another person's behavior; the scenario provides no comparison involving the teacher's own actions.",
+        "The just-world hypothesis concerns believing that people generally receive deserved outcomes; the judgment here more directly ignores a known situational cause.",
+        "The teacher overweights an inferred trait and overlooks a documented circumstance, which directly illustrates the fundamental attribution error."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/12-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e, Chapter 12: Social Psychology",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/12-introduction",
+          "credibility": "This public college-level chapter covers attribution, attitudes, social influence, and group processes. The school-transit scenario is original."
+        }
+      ],
+      "provenance": "native-original",
+      "officialItem": false,
+      "rights": {
+        "secureContentUsed": false,
+        "copiedOfficialQuestion": false,
+        "sourceUse": "facts-and-blueprint-only",
+        "status": "pending-independent-rights-review"
+      },
+      "accessibility": {
+        "textOnly": true,
+        "essentialVisual": false,
+        "linearReadingOrder": true,
+        "handsFreeContentCompatible": true,
+        "status": "pending-independent-accessibility-review"
+      },
+      "expertReview": {
+        "status": "pending",
+        "releaseBlocked": true
+      },
+      "psychometricStatus": "not-calibrated",
+      "reviewStatus": "internal-editorial-draft",
+      "qaStatus": "structure-ready-content-review-pending",
+      "releaseEligible": false,
+      "editorialChecks": {
+        "scenarioBased": true,
+        "singleBestAnswer": true,
+        "parallelPlausibleOptions": true,
+        "noKeywordGiveaway": true,
+        "completeOptionFeedback": true,
+        "ageAppropriate": true,
+        "medicalSafety": true
+      }
+    },
+    {
+      "id": "ap-psych-u4-003",
+      "templateVersion": 1,
+      "itemSchemaVersion": 2,
+      "type": "single-choice",
+      "domainId": "social-psychology-and-personality",
+      "topicIds": [
+        "4.2"
+      ],
+      "practiceId": "P2",
+      "skillId": "2.C",
+      "difficulty": "advanced",
+      "cognitiveDemand": "research-analysis",
+      "prompt": "A community survey asks students how much the school's wasteful phone policy has damaged their learning, then uses the responses to estimate opposition to the policy. Which design problem most directly threatens the estimate?",
+      "choices": [
+        "Sampling or nonresponse bias because opponents may be underrepresented among completed surveys",
+        "Wording-induced response bias because the question labels the policy and presumes harm",
+        "An order effect because earlier questions may have primed concerns about school rules",
+        "Acquiescence bias because respondents may habitually agree with a series of statements"
+      ],
+      "answerIndex": 1,
+      "rationale": "The question calls the policy wasteful and presumes it damaged learning, so its wording signals a preferred evaluation. Sampling, nonresponse, order, and acquiescence are possible survey threats, but the stem directly documents loaded wording.",
+      "choiceRationales": [
+        "Underrepresentation among completed surveys could bias an estimate, but the stem provides no sampling-frame or response-rate evidence that opponents are missing.",
+        "Calling the policy wasteful and presuming damage can steer answers, making wording-induced response bias the threat directly shown.",
+        "Earlier questions can prime later responses, but the stem does not describe any preceding questions or their sequence.",
+        "A tendency to agree can distort repeated agree-disagree items, but this prompt uses a presupposing how-much question and gives no response-set pattern."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/2-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e, Chapter 2: Psychological Research",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/2-introduction",
+          "credibility": "This public college-level research-methods chapter covers survey construction, sampling, bias, and limits of nonexperimental designs. The survey wording is original."
+        }
+      ],
+      "provenance": "native-original",
+      "officialItem": false,
+      "rights": {
+        "secureContentUsed": false,
+        "copiedOfficialQuestion": false,
+        "sourceUse": "facts-and-blueprint-only",
+        "status": "pending-independent-rights-review"
+      },
+      "accessibility": {
+        "textOnly": true,
+        "essentialVisual": false,
+        "linearReadingOrder": true,
+        "handsFreeContentCompatible": true,
+        "status": "pending-independent-accessibility-review"
+      },
+      "expertReview": {
+        "status": "pending",
+        "releaseBlocked": true
+      },
+      "psychometricStatus": "not-calibrated",
+      "reviewStatus": "internal-editorial-draft",
+      "qaStatus": "structure-ready-content-review-pending",
+      "releaseEligible": false,
+      "editorialChecks": {
+        "scenarioBased": true,
+        "singleBestAnswer": true,
+        "parallelPlausibleOptions": true,
+        "noKeywordGiveaway": true,
+        "completeOptionFeedback": true,
+        "ageAppropriate": true,
+        "medicalSafety": true
+      }
+    },
+    {
+      "id": "ap-psych-u4-002",
+      "templateVersion": 1,
+      "itemSchemaVersion": 2,
+      "type": "single-choice",
+      "domainId": "social-psychology-and-personality",
+      "topicIds": [
+        "4.2"
+      ],
+      "practiceId": "P1",
+      "skillId": "1.A",
+      "difficulty": "advanced",
+      "cognitiveDemand": "application",
+      "prompt": "A student privately opposes a school policy but voluntarily records a video defending it in exchange for a very small amount of service credit. Later, the student reports viewing the policy somewhat more favorably. Which process best explains the attitude shift?",
+      "choices": [
+        "Cognitive dissonance reduction through attitude change",
+        "Self-perception from observing one's own advocacy",
+        "Peripheral-route persuasion from appealing presentation cues",
+        "Informational social influence from accepting group judgment"
+      ],
+      "answerIndex": 0,
+      "rationale": "The prior attitude conflicts with the student's freely chosen advocacy. Because the service credit provides little external justification, shifting the attitude offers a way to reduce cognitive dissonance.",
+      "choiceRationales": [
+        "The student has a clear prior belief that conflicts with voluntary advocacy, and attitude change reduces the resulting inconsistency.",
+        "Self-perception can involve inferring attitudes from behavior, especially when prior attitudes are weak; the stem instead establishes clear prior opposition and low external justification.",
+        "Peripheral-route persuasion changes attitudes through incidental cues such as attractiveness or style; the scenario identifies no persuasive presentation cue.",
+        "Informational social influence occurs when others are treated as a source of accurate evidence; no group judgment or new evidence drives this shift."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/12-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e, Chapter 12: Social Psychology",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/12-introduction",
+          "credibility": "This public college-level chapter discusses attitudes, behavior, persuasion, and cognitive dissonance. The school-policy context and wording are original."
+        }
+      ],
+      "provenance": "native-original",
+      "officialItem": false,
+      "rights": {
+        "secureContentUsed": false,
+        "copiedOfficialQuestion": false,
+        "sourceUse": "facts-and-blueprint-only",
+        "status": "pending-independent-rights-review"
+      },
+      "accessibility": {
+        "textOnly": true,
+        "essentialVisual": false,
+        "linearReadingOrder": true,
+        "handsFreeContentCompatible": true,
+        "status": "pending-independent-accessibility-review"
+      },
+      "expertReview": {
+        "status": "pending",
+        "releaseBlocked": true
+      },
+      "psychometricStatus": "not-calibrated",
+      "reviewStatus": "internal-editorial-draft",
+      "qaStatus": "structure-ready-content-review-pending",
+      "releaseEligible": false,
+      "editorialChecks": {
+        "scenarioBased": true,
+        "singleBestAnswer": true,
+        "parallelPlausibleOptions": true,
+        "noKeywordGiveaway": true,
+        "completeOptionFeedback": true,
+        "ageAppropriate": true,
+        "medicalSafety": true
+      }
+    },
+    {
+      "id": "ap-psych-u4-004",
+      "templateVersion": 1,
+      "itemSchemaVersion": 2,
+      "type": "single-choice",
+      "domainId": "social-psychology-and-personality",
+      "topicIds": [
+        "4.5"
+      ],
+      "practiceId": "P1",
+      "skillId": "1.A",
+      "difficulty": "intermediate",
+      "cognitiveDemand": "application",
+      "prompt": "Peer, teacher, and self-reports all describe a student as consistently organized, dependable, and careful across settings. A psychologist wants a framework that directly summarizes this recurring pattern. Which perspective best fits that goal?",
+      "choices": [
+        "The humanistic perspective",
+        "The psychodynamic perspective",
+        "The trait perspective",
+        "The social-cognitive perspective"
+      ],
+      "answerIndex": 2,
+      "rationale": "Trait approaches describe personality using broad patterns such as conscientiousness. Agreement across observers and settings about organization, dependability, and carefulness makes the trait perspective the most direct summary of the evidence.",
+      "choiceRationales": [
+        "Humanistic theories emphasize subjective experience, growth, and self-concept; those concerns do not directly organize the cross-observer behavioral consistency described here.",
+        "Psychodynamic theories emphasize unconscious motives and conflicts; the stem supplies converging behavior descriptions rather than evidence about unconscious processes.",
+        "Trait theory summarizes recurring personality patterns, and conscientiousness captures the organization, dependability, and care reported across observers and settings.",
+        "Social-cognitive theory examines reciprocal influences among cognition, behavior, and situations; the stem instead asks for the most direct summary of a recurring pattern."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/11-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e, Chapter 11: Personality",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/11-introduction",
+          "credibility": "This public college-level chapter compares psychodynamic, humanistic, trait, biological, and social-cognitive accounts of personality. The multi-informant example is original."
+        }
+      ],
+      "provenance": "native-original",
+      "officialItem": false,
+      "rights": {
+        "secureContentUsed": false,
+        "copiedOfficialQuestion": false,
+        "sourceUse": "facts-and-blueprint-only",
+        "status": "pending-independent-rights-review"
+      },
+      "accessibility": {
+        "textOnly": true,
+        "essentialVisual": false,
+        "linearReadingOrder": true,
+        "handsFreeContentCompatible": true,
+        "status": "pending-independent-accessibility-review"
+      },
+      "expertReview": {
+        "status": "pending",
+        "releaseBlocked": true
+      },
+      "psychometricStatus": "not-calibrated",
+      "reviewStatus": "internal-editorial-draft",
+      "qaStatus": "structure-ready-content-review-pending",
+      "releaseEligible": false,
+      "editorialChecks": {
+        "scenarioBased": true,
+        "singleBestAnswer": true,
+        "parallelPlausibleOptions": true,
+        "noKeywordGiveaway": true,
+        "completeOptionFeedback": true,
+        "ageAppropriate": true,
+        "medicalSafety": true
+      }
+    },
+    {
+      "id": "ap-psych-u5-001",
+      "templateVersion": 1,
+      "itemSchemaVersion": 2,
+      "type": "single-choice",
+      "domainId": "mental-and-physical-health",
+      "topicIds": [
+        "5.1"
+      ],
+      "practiceId": "P3",
+      "skillId": "3.C",
+      "difficulty": "advanced",
+      "cognitiveDemand": "data-interpretation",
+      "prompt": "In a randomized study of 800 students, a brief stress-management lesson produces a lower average stress score than a control lesson, with p = .01 and a standardized effect size of d = 0.12. The researchers set alpha = .05. Which interpretation is best supported?",
+      "choices": [
+        "The average difference was statistically significant but small; neither result shows that every student benefited.",
+        "The p value shows a 99 percent probability that individual students improved because of the lesson.",
+        "The lesson had a large practical effect because statistical significance makes the difference educationally important.",
+        "Random assignment makes the result broadly generalizable even if the sample came from only one district."
+      ],
+      "answerIndex": 0,
+      "rationale": "Because p = .01 is below alpha = .05, the average difference is statistically significant. The d of 0.12 indicates a small effect under the current course framework's general benchmarks, and neither statistic establishes universal individual benefit or unlimited generalizability.",
+      "choiceRationales": [
+        "Because p = .01 is below alpha = .05, the average difference is statistically significant; d = 0.12 indicates a small effect rather than universal benefit.",
+        "A p value is not the probability that individual students benefited; it cannot supply an individual response rate or treatment-success probability.",
+        "Statistical significance and practical magnitude answer different questions, so a small p value does not by itself make an effect large.",
+        "Random assignment strengthens causal inference within the study, whereas generalizability also depends on how the sample was obtained and whom it represents."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description-clarifications.pdf",
+        "https://openstax.org/books/psychology-2e/pages/2-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "AP Psychology CED Clarifications and Corrections",
+          "organization": "College Board",
+          "url": "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description-clarifications.pdf",
+          "credibility": "The official clarification adds current framework guidance about effect size and statistical significance. The numeric study is fictional and independently authored."
+        }
+      ],
+      "provenance": "native-original",
+      "officialItem": false,
+      "rights": {
+        "secureContentUsed": false,
+        "copiedOfficialQuestion": false,
+        "sourceUse": "facts-and-blueprint-only",
+        "status": "pending-independent-rights-review"
+      },
+      "accessibility": {
+        "textOnly": true,
+        "essentialVisual": false,
+        "linearReadingOrder": true,
+        "handsFreeContentCompatible": true,
+        "status": "pending-independent-accessibility-review"
+      },
+      "expertReview": {
+        "status": "pending",
+        "releaseBlocked": true
+      },
+      "psychometricStatus": "not-calibrated",
+      "reviewStatus": "internal-editorial-draft",
+      "qaStatus": "structure-ready-content-review-pending",
+      "releaseEligible": false,
+      "editorialChecks": {
+        "scenarioBased": true,
+        "singleBestAnswer": true,
+        "parallelPlausibleOptions": true,
+        "noKeywordGiveaway": true,
+        "completeOptionFeedback": true,
+        "ageAppropriate": true,
+        "medicalSafety": true
+      }
+    },
+    {
+      "id": "ap-psych-u5-002",
+      "templateVersion": 1,
+      "itemSchemaVersion": 2,
+      "type": "single-choice",
+      "domainId": "mental-and-physical-health",
+      "topicIds": [
+        "5.1"
+      ],
+      "practiceId": "P2",
+      "skillId": "2.D",
+      "difficulty": "advanced",
+      "cognitiveDemand": "research-ethics",
+      "prompt": "A researcher plans to collect identifiable stress surveys from 14-year-old students during a required class. The principal approves, but students and families receive no choice or study information. Which revision most directly addresses participant autonomy before data collection?",
+      "choices": [
+        "Protect identities with coded records and restricted file access while keeping the required-class survey mandatory.",
+        "Obtain ethics review and appropriate parental permission and student assent, with refusal allowed without penalty.",
+        "Permit students to decline after an assent explanation, relying on principal approval without parental permission or independent ethics review.",
+        "Obtain ethics review and parental permission, then have the teacher present participation as the expected classroom choice."
+      ],
+      "answerIndex": 1,
+      "rationale": "Research involving minors ordinarily requires appropriate review and age-appropriate permission and assent procedures. Voluntary participation must be meaningful, especially in a required classroom where authority and perceived penalties can create pressure.",
+      "choiceRationales": [
+        "Codes and access controls improve confidentiality, but they do not provide informed choice or make participation voluntary before collection.",
+        "This protects voluntary choice before participation and recognizes both guardian permission and the developing autonomy of adolescent participants.",
+        "Student assent and refusal matter, but principal approval does not replace appropriate parental permission or independent ethics review for this proposed research.",
+        "Review and parental permission are important safeguards, but a teacher-framed expectation can undermine meaningful student assent and freedom from penalty."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://www.hhs.gov/ohrp/regulations-and-policy/belmont-report/index.html"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The Belmont Report",
+          "organization": "U.S. Department of Health and Human Services, Office for Human Research Protections",
+          "url": "https://www.hhs.gov/ohrp/regulations-and-policy/belmont-report/index.html",
+          "credibility": "OHRP is the federal authority for core human-research protections, and the Belmont Report establishes respect for persons, beneficence, and justice as foundational principles."
+        }
+      ],
+      "provenance": "native-original",
+      "officialItem": false,
+      "rights": {
+        "secureContentUsed": false,
+        "copiedOfficialQuestion": false,
+        "sourceUse": "facts-and-blueprint-only",
+        "status": "pending-independent-rights-review"
+      },
+      "accessibility": {
+        "textOnly": true,
+        "essentialVisual": false,
+        "linearReadingOrder": true,
+        "handsFreeContentCompatible": true,
+        "status": "pending-independent-accessibility-review"
+      },
+      "expertReview": {
+        "status": "pending",
+        "releaseBlocked": true
+      },
+      "psychometricStatus": "not-calibrated",
+      "reviewStatus": "internal-editorial-draft",
+      "qaStatus": "structure-ready-content-review-pending",
+      "releaseEligible": false,
+      "editorialChecks": {
+        "scenarioBased": true,
+        "singleBestAnswer": true,
+        "parallelPlausibleOptions": true,
+        "noKeywordGiveaway": true,
+        "completeOptionFeedback": true,
+        "ageAppropriate": true,
+        "medicalSafety": true
+      }
+    },
+    {
+      "id": "ap-psych-u5-003",
+      "templateVersion": 1,
+      "itemSchemaVersion": 2,
+      "type": "single-choice",
+      "domainId": "mental-and-physical-health",
+      "topicIds": [
+        "5.5"
+      ],
+      "practiceId": "P3",
+      "skillId": "3.B",
+      "difficulty": "intermediate",
+      "cognitiveDemand": "data-interpretation",
+      "prompt": "Five participants in a fictional treatment study have symptom-reduction scores of 1, 2, 2, 3, and 12 points. Which statement correctly reports both the median and the mean?",
+      "choices": [
+        "The median is 4 and the mean is 2.",
+        "The median is 3 and the mean is 12.",
+        "The median is 2 and the mean is 4.",
+        "The median is 12 and the mean is 3."
+      ],
+      "answerIndex": 2,
+      "rationale": "The ordered middle value is 2, so the median is 2. The scores sum to 20, and 20 divided by 5 equals a mean of 4. The high score of 12 pulls the mean above the median.",
+      "choiceRationales": [
+        "This reverses neither statistic correctly: 4 is the mean after division, while 2 is the middle ordered score.",
+        "The value 3 is the fourth ordered observation and 12 is the maximum, so this pair does not describe the median or mean.",
+        "The third of five ordered scores is 2, and the total of 20 divided by five participants is 4, so both values are correct.",
+        "The value 12 is an outlying maximum rather than the median, and the arithmetic mean is 4 rather than 3."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/2-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e, Chapter 2: Psychological Research",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/2-introduction",
+          "credibility": "This public college-level research-methods chapter covers descriptive statistics and interpretation. The dataset is fictional and independently created for this item."
+        }
+      ],
+      "provenance": "native-original",
+      "officialItem": false,
+      "rights": {
+        "secureContentUsed": false,
+        "copiedOfficialQuestion": false,
+        "sourceUse": "facts-and-blueprint-only",
+        "status": "pending-independent-rights-review"
+      },
+      "accessibility": {
+        "textOnly": true,
+        "essentialVisual": false,
+        "linearReadingOrder": true,
+        "handsFreeContentCompatible": true,
+        "status": "pending-independent-accessibility-review"
+      },
+      "expertReview": {
+        "status": "pending",
+        "releaseBlocked": true
+      },
+      "psychometricStatus": "not-calibrated",
+      "reviewStatus": "internal-editorial-draft",
+      "qaStatus": "structure-ready-content-review-pending",
+      "releaseEligible": false,
+      "editorialChecks": {
+        "scenarioBased": true,
+        "singleBestAnswer": true,
+        "parallelPlausibleOptions": true,
+        "noKeywordGiveaway": true,
+        "completeOptionFeedback": true,
+        "ageAppropriate": true,
+        "medicalSafety": true
+      }
+    },
+    {
+      "id": "ap-psych-u5-004",
+      "templateVersion": 1,
+      "itemSchemaVersion": 2,
+      "type": "single-choice",
+      "domainId": "mental-and-physical-health",
+      "topicIds": [
+        "5.5"
+      ],
+      "practiceId": "P1",
+      "skillId": "1.A",
+      "difficulty": "intermediate",
+      "cognitiveDemand": "application",
+      "prompt": "In an educational treatment vignette, a clinician and client create a hierarchy of dog-related situations, practice relaxation, and gradually work from imagining a dog to being near a calm dog. Which approach is most directly illustrated?",
+      "choices": [
+        "Free association",
+        "Unconditional positive regard",
+        "Aversive conditioning",
+        "Systematic desensitization"
+      ],
+      "answerIndex": 3,
+      "rationale": "Systematic desensitization uses gradual exposure organized by an anxiety hierarchy, traditionally paired with relaxation or another response incompatible with intense anxiety. The sequence described matches those elements.",
+      "choiceRationales": [
+        "Inviting a client to verbalize thoughts with minimal censorship is intended to explore unconscious material; it does not use a graded exposure hierarchy.",
+        "Unconditional positive regard is a person-centered therapeutic stance of acceptance, not the structured behavioral procedure described.",
+        "Aversive conditioning pairs an unwanted behavior with an unpleasant stimulus to reduce it, rather than gradually approaching a feared but safe stimulus.",
+        "The hierarchy, relaxation practice, and progression from lower- to higher-anxiety situations are the defining structure of systematic desensitization."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/16-introduction"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychology 2e, Chapter 16: Therapy and Treatment",
+          "organization": "OpenStax, Rice University",
+          "url": "https://openstax.org/books/psychology-2e/pages/16-introduction",
+          "credibility": "This public college-level chapter surveys major psychotherapy approaches and behavioral techniques. The vignette is independently authored and is educational, not clinical advice."
+        }
+      ],
+      "provenance": "native-original",
+      "officialItem": false,
+      "rights": {
+        "secureContentUsed": false,
+        "copiedOfficialQuestion": false,
+        "sourceUse": "facts-and-blueprint-only",
+        "status": "pending-independent-rights-review"
+      },
+      "accessibility": {
+        "textOnly": true,
+        "essentialVisual": false,
+        "linearReadingOrder": true,
+        "handsFreeContentCompatible": true,
+        "status": "pending-independent-accessibility-review"
+      },
+      "expertReview": {
+        "status": "pending",
+        "releaseBlocked": true
+      },
+      "psychometricStatus": "not-calibrated",
+      "reviewStatus": "internal-editorial-draft",
+      "qaStatus": "structure-ready-content-review-pending",
+      "releaseEligible": false,
+      "editorialChecks": {
+        "scenarioBased": true,
+        "singleBestAnswer": true,
+        "parallelPlausibleOptions": true,
+        "noKeywordGiveaway": true,
+        "completeOptionFeedback": true,
+        "ageAppropriate": true,
+        "medicalSafety": true
+      }
+    }
+  ]
+}

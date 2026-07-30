@@ -33,6 +33,16 @@ const render = (state, overrides) => renderTool('brainAtlas', { brainAtlas: stat
 describe('brainAtlas refinement contracts', () => {
   beforeEach(() => resetStemLab());
 
+  it('keeps Brain Atlas source free of malformed Unicode artifacts', () => {
+    const src = readFileSync(FILE, 'utf8');
+
+    expect(src).not.toMatch(/[\u00C3\u00C2\u00F0\uFFFD]/u);
+    expect(src).not.toContain('\u00e2');
+    expect(src).not.toMatch(/(?:Weeks \d+-\d+|forebrain|gestational weeks) \? /);
+    expect(src).toContain('\u{1F9E0}');
+    expect(src).toContain('Approximate gestational weeks \u2022 Processes overlap');
+  });
+
   it('keeps the Brain Atlas shell wired to AlloFlow theme tokens', () => {
     const src = readFileSync(FILE, 'utf8');
 
@@ -136,7 +146,7 @@ describe('brainAtlas refinement contracts', () => {
 
     expect(src).toContain('currentView.isPrenatal');
     expect(src).toContain("brainAtlasDrawCompactCanvasHeading('Brain development before birth'");
-    expect(src).toContain('Approximate gestational weeks ? Processes overlap');
+    expect(src).toContain('Approximate gestational weeks \u2022 Processes overlap');
     expect(src).toContain('.brainatlas-prenatal-stage-list{display:flex;');
   });
 
@@ -155,7 +165,8 @@ describe('brainAtlas refinement contracts', () => {
     expect(src).toContain('max-width:1440px!important');
     expect(src).toContain('el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen');
     expect(src).toContain('function setBrainAtlasFallbackFullscreen(el, enabled)');
-    expect(src).toContain('var fontScale = Math.min(1.3');
+    expect(src).toContain('var fontScale = Math.min(1.3 * diagramLabelScale');
+    expect(src).toContain('* neuroTextScale * diagramLabelScale');
     expect(html).toContain('width="840"');
     expect(html).toContain('data-brainatlas-canvas-status="true"');
     expect(html).toContain('data-brainatlas-learning-footer="true"');
@@ -170,6 +181,19 @@ describe('brainAtlas refinement contracts', () => {
     expect(selected).toMatch(/stem\.synth_ui\.lateral.*Atlas/);
     expect(selected).toMatch(/Focus:/);
     expect(selected).toMatch(/Executive function/);
+  });
+
+  it('keeps diagram canvas text at a legible nine-pixel minimum', () => {
+    const src = readFileSync(FILE, 'utf8');
+
+    expect(src).not.toMatch(/ctx\.font\s*=\s*['"](?:bold )?8px/u);
+    expect(src).not.toContain('fontSize: 8');
+    expect(src).not.toMatch(/var (?:subtitlePx|bodyPx|textPx|titlePx|fontPx) = Math\.max\((?:7|8),/u);
+    expect(src).toContain("Math.max(9, Math.round(6.2 * fontScale)) + 'px Inter");
+    expect(src).toContain('var clueChipY = H * 0.160;');
+    expect(src).toContain('var disorderChipY = H * 0.165;');
+    expect(src).toContain('var limbicChipY = H * 0.165;');
+    expect(src).toContain('var safePulseLabelMargin = Math.max(70, W * 0.085);');
   });
 
   it('presents search, quiz, and region browsing as clear responsive controls', () => {
@@ -1027,6 +1051,87 @@ describe('brainAtlas refinement contracts', () => {
     expect(html).toContain('data-brainatlas-tool="true"');
   });
 
+  it('offers persistent, accessible diagram label density and text-size controls', () => {
+    loadTool(FILE, 'brainAtlas');
+    const src = readFileSync(FILE, 'utf8');
+
+    const defaults = render({ view: 'lateral' });
+    expect(defaults).toContain('data-brainatlas-label-toolbar="true"');
+    expect(defaults).toContain('data-brainatlas-label-density="standard"');
+    expect(defaults).toContain('data-brainatlas-label-size="medium"');
+    expect(defaults).toContain('data-brainatlas-density-supported="true"');
+    expect(defaults).toContain('role="region" aria-label="Diagram label controls"');
+    expect((defaults.match(/data-brainatlas-label-density-option=/g) || [])).toHaveLength(3);
+    expect((defaults.match(/data-brainatlas-label-size-option=/g) || [])).toHaveLength(3);
+    expect(defaults).toContain('data-brainatlas-label-density-option="standard" aria-pressed="true"');
+    expect(defaults).toContain('data-brainatlas-label-size-option="medium" aria-label="Medium diagram label text" aria-pressed="true"');
+    expect(defaults).toContain('role="group" aria-labelledby="brainatlas-label-density-title"');
+    expect(defaults).toContain('role="group" aria-labelledby="brainatlas-label-size-title"');
+
+    const customized = render({
+      view: 'lateral',
+      diagramLabelDensity: 'essential',
+      diagramLabelSize: 'large',
+    });
+    expect(customized).toContain('data-brainatlas-label-density="essential"');
+    expect(customized).toContain('data-brainatlas-label-size="large"');
+    expect(customized).toContain('data-brainatlas-label-density-option="essential" aria-pressed="true"');
+    expect(customized).toContain('data-brainatlas-label-size-option="large" aria-label="Large diagram label text" aria-pressed="true"');
+
+    const specialty = render({
+      view: 'neuron',
+      diagramLabelDensity: 'all',
+      diagramLabelSize: 'large',
+    });
+    expect(specialty).toContain('data-brainatlas-density-supported="false"');
+    expect(specialty).toContain('data-brainatlas-label-managed="true" role="status" aria-label="Automatic label layout is active"');
+    expect(specialty).toMatch(/Auto layout/);
+    expect(specialty).toMatch(/Protected spacing/);
+    expect((specialty.match(/data-brainatlas-label-density-option=/g) || [])).toHaveLength(0);
+    expect((specialty.match(/data-brainatlas-label-size-option=/g) || [])).toHaveLength(3);
+    expect(specialty).toContain('data-brainatlas-label-size-option="large" aria-label="Large diagram label text" aria-pressed="true"');
+
+    const sanitized = render({
+      view: 'lateral',
+      diagramLabelDensity: 'crowded',
+      diagramLabelSize: 'huge',
+    });
+    expect(sanitized).toContain('data-brainatlas-label-density="standard"');
+    expect(sanitized).toContain('data-brainatlas-label-size="medium"');
+
+    expect(src).toContain('brainAtlasFindRegionLabelPlacement');
+    expect(src).toContain('canvas._brainLabelMetrics');
+    expect(src).toContain('standardLabelStride');
+    expect(src).toContain('.brainatlas-label-segment button{display:inline-flex;min-width:44px;min-height:44px');
+    expect(src).toContain('.brainatlas-label-managed{display:grid;');
+    expect(src).toContain('min-height:44px;box-sizing:border-box');
+    expect(src).toContain('.theme-dark .brainatlas-tool-shell .brainatlas-label-managed-copy strong{color:#5eead4;}');
+    expect(src).toContain('.brainatlas-canvas-shell:fullscreen .brainatlas-label-toolbar');
+    expect(src).toContain('@media (forced-colors:active){.brainatlas-label-toolbar');
+  });
+
+  it('keeps view-group summaries readable throughout dark and contrast theme changes', () => {
+    const src = readFileSync(FILE, 'utf8');
+
+    expect(src).toContain('transition:transform .14s ease,border-color .14s ease,box-shadow .14s ease;');
+    expect(src).not.toContain('transition:transform .14s ease,border-color .14s ease,background .14s ease;');
+    expect(src).toContain('.theme-dark .brainatlas-tool-shell .brainatlas-group-button{background:#334155!important;color:#f8fafc!important;border-color:#64748b!important;}');
+    expect(src).toContain('.theme-dark .brainatlas-tool-shell .brainatlas-group-button[aria-pressed="true"]{background:#1f2937!important;}');
+    expect(src).toContain('.theme-dark .brainatlas-tool-shell .brainatlas-group-button span{color:#cbd5e1!important;}');
+    expect(src).toContain('.theme-contrast .brainatlas-tool-shell .brainatlas-group-button:not([aria-pressed="true"]) span{color:#fff!important;}');
+    expect(src).toContain('.theme-contrast .brainatlas-tool-shell .brainatlas-group-button[aria-pressed="true"] span{color:#000!important;}');
+  });
+  it('reflows overview, metrics, and 3D controls at 320 CSS pixels', () => {
+    const src = readFileSync(FILE, 'utf8');
+
+    expect(src).toContain('@media (max-width:360px){.brainatlas-mission-title-row{flex-wrap:wrap;}');
+    expect(src).toContain('.brainatlas-mission-title{min-width:0;overflow-wrap:anywhere;}');
+    expect(src).toContain('.brainatlas-overview-toggle{max-width:100%;margin-left:auto;}');
+    expect(src).toContain('.brainatlas-metric-value{overflow-wrap:anywhere;word-break:break-word;}');
+    expect(src).toContain('.brainatlas-3d-control-group{width:100%;}');
+    expect(src).toContain('.brainatlas-3d-segment{display:flex;width:100%;flex-wrap:wrap;}');
+    expect(src).toContain('.brainatlas-3d-segment button{flex:1 1 calc(50% - 2px);min-width:0;white-space:normal;}');
+  });
   it('normalizes older neurotransmitter inquiry state with no log array', () => {
     loadTool(FILE, 'brainAtlas');
 

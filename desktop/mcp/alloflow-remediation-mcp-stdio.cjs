@@ -85,7 +85,7 @@ const crypto = require('crypto');
 
 const Driver = require(path.join(__dirname, 'remediation_headless_driver.cjs'));
 
-const SERVER_INFO = { name: 'alloflow-remediation', title: 'AlloFlow PDF Remediation (local)', version: '0.1.0' };
+const SERVER_INFO = { name: 'alloflow-remediation', title: 'AlloFlow PDF Remediation (local)', version: '0.3.0' };
 const SUPPORTED_PROTOCOL_VERSIONS = ['2025-06-18', '2025-03-26', '2024-11-05'];
 const MAX_LINE_CHARS = 4000000;
 const MAX_PDF_BYTES = 200 * 1024 * 1024; // mirrors the app's per-file batch preflight
@@ -202,12 +202,39 @@ function optionalBoundedNumber(args, key, min, max) {
   return n;
 }
 
+// Keep this contract identical to the remote MCP. The pipeline's internal mapper falls back to
+// English for unknown values, so accepting Tesseract's legacy `spa` / `fra` codes here would
+// silently run the wrong OCR model. Accept only canonical lower-case ISO/BCP 47 tags whose base
+// language is actually supported.
+const SUPPORTED_OCR_LANGUAGE_BASES = Object.freeze([
+  'en', 'es', 'fr', 'de', 'it', 'pt', 'nl', 'ru', 'uk', 'pl',
+  'tr', 'sv', 'da', 'nb', 'no', 'fi', 'cs', 'sk', 'ro', 'hu', 'el', 'bg',
+  'hr', 'sr', 'he', 'ar', 'fa', 'ps', 'ur', 'hi', 'bn', 'pa', 'gu', 'ta',
+  'te', 'kn', 'ml', 'th', 'lo', 'km', 'my', 'vi', 'id', 'ms', 'tl', 'ja',
+  'ko', 'am', 'ti', 'sw', 'so', 'ht', 'zh',
+]);
+const SUPPORTED_OCR_LANGUAGE_BASE_SET = new Set(SUPPORTED_OCR_LANGUAGE_BASES);
+const OCR_LANGUAGE_TAG_RE = /^[a-z]{2}(?:-[a-z]{2,4})?$/;
+const OCR_LANGUAGE_SCHEMA_PATTERN = '^(?:$|(?:' + SUPPORTED_OCR_LANGUAGE_BASES.join('|') + ')(?:-[a-z]{2,4})?)$';
+const OCR_LANGUAGE_INPUT_SCHEMA = Object.freeze({
+  type: 'string',
+  description: "Supported lower-case ISO/BCP 47 OCR language tag (for example 'es', 'fr', or 'zh-hant'); omit or pass '' for auto-detect. Legacy Tesseract codes such as 'spa' and 'fra' are not accepted.",
+  maxLength: 12,
+  pattern: OCR_LANGUAGE_SCHEMA_PATTERN,
+});
+
 function optionalOcrLanguage(args) {
-  if (args.ocr_language === undefined) return '';
-  if (typeof args.ocr_language !== 'string' || args.ocr_language.length > 20 || !/^[a-z_+-]*$/i.test(args.ocr_language)) {
-    throw invalidParams("arguments.ocr_language must be a short language code (e.g. 'spa', 'fra') or '' for auto-detect");
+  if (args.ocr_language === undefined || args.ocr_language === '') return '';
+  const value = args.ocr_language;
+  if (
+    typeof value !== 'string'
+    || value.length > 12
+    || !OCR_LANGUAGE_TAG_RE.test(value)
+    || !SUPPORTED_OCR_LANGUAGE_BASE_SET.has(value.slice(0, 2))
+  ) {
+    throw invalidParams("arguments.ocr_language must be '' or a supported lower-case ISO/BCP 47 tag such as 'es', 'fr', or 'zh-hant' (legacy codes such as 'spa'/'fra' and combined codes are not accepted)");
   }
-  return args.ocr_language;
+  return value;
 }
 
 // Collision-safe output path: never overwrite an existing file.
@@ -678,6 +705,76 @@ function auditRow(filePath, out) {
   };
 }
 
+const DISTRIBUTION_LEVELS = new Set(['ready', 'caution', 'review']);
+const VERIFICATION_STATES = new Set(['complete', 'complete-for-tested-scope', 'partial', 'review-required', 'unavailable']);
+const TAGGED_PDF_DELIVERY_CODES = new Set([
+  'verified',
+  'typeset-content-dropped',
+  'roundtrip-unavailable',
+  'roundtrip-failed',
+  'validator-unavailable',
+  'validator-error',
+  'validator-failed',
+  'ocr-text-layer-incomplete',
+  'delivery-verdict-unavailable',
+]);
+const TAGGED_PDF_EXPORT_MODES = new Set(['original_layout', 'clean_rebuild']);
+
+function boundedEvidenceCount(value) {
+  return Number.isSafeInteger(value) && value >= 0 && value <= 1000000 ? value : null;
+}
+
+function safeEvidenceBoolean(value) {
+  return typeof value === 'boolean' ? value : null;
+}
+
+function safeDistributionVerdict(value) {
+  if (
+    !value
+    || typeof value !== 'object'
+    || Array.isArray(value)
+    || !DISTRIBUTION_LEVELS.has(value.level)
+    || !Array.isArray(value.review)
+    || !Array.isArray(value.cautions)
+    || value.review.length > 1000000
+    || value.cautions.length > 1000000
+  ) return null;
+  return {
+    level: value.level,
+    reviewCount: value.review.length,
+    cautionCount: value.cautions.length,
+  };
+}
+
+function safeVerificationState(value) {
+  return VERIFICATION_STATES.has(value) ? value : null;
+}
+
+function safeTaggedPdfDelivery(value) {
+  if (
+    !value
+    || typeof value !== 'object'
+    || Array.isArray(value)
+    || typeof value.ok !== 'boolean'
+    || !TAGGED_PDF_DELIVERY_CODES.has(value.code)
+  ) return null;
+  return { ok: value.ok, code: value.code };
+}
+
+function safeTaggedPdfExportMode(value) {
+  return TAGGED_PDF_EXPORT_MODES.has(value) ? value : null;
+}
+
+function safeAuditCoverage(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+  return {
+    configuredAuditorCap: boundedEvidenceCount(value.configuredAuditorCap),
+    requestedAuditors: boundedEvidenceCount(value.requestedAuditors),
+    completedAuditors: boundedEvidenceCount(value.completedAuditors),
+    sliced: safeEvidenceBoolean(value.sliced),
+  };
+}
+
 async function remediateOneFile(filePath, outDir, opts, onLog) {
   const out = await getDriver().remediate(Object.assign({ filePath, onLog }, opts));
   const stem = path.basename(filePath).replace(/\.(pdf|docx|pptx)$/i, '');
@@ -705,7 +802,7 @@ async function remediateOneFile(filePath, outDir, opts, onLog) {
     input: filePath,
     files,
     pdfUa,
-    verdict: out.verdict,
+    verdict: safeDistributionVerdict(out.verdict),
     beforeScore: out.beforeScore,
     afterScore: out.afterScore,
     aiVerificationIncomplete: out.aiVerificationIncomplete,
@@ -714,7 +811,15 @@ async function remediateOneFile(filePath, outDir, opts, onLog) {
     integrityCoverage: out.integrityCoverage,
     integrityWarning: out.integrityWarning,
     fidelityNotes: out.fidelityNotes,
-    verificationState: out.verificationState,
+    verificationState: safeVerificationState(out.verificationState),
+    verificationHtmlBound: safeEvidenceBoolean(out.verificationHtmlBound),
+    remainingAxeViolations: boundedEvidenceCount(out.remainingAxeViolations),
+    remainingEqualAccessFailures: boundedEvidenceCount(out.remainingEqualAccessFailures),
+    taggedPdfDelivery: safeTaggedPdfDelivery(out.taggedPdfDelivery),
+    taggedPdfExportMode: safeTaggedPdfExportMode(out.taggedPdfExportMode),
+    activeContentScanVerified: safeEvidenceBoolean(out.activeContentScanVerified),
+    activeContentDetected: safeEvidenceBoolean(out.activeContentDetected),
+    auditCoverage: safeAuditCoverage(out.auditCoverage),
     autoContinue: out.autoContinue,
     taggedPdfError: out.taggedPdfError || undefined,
     runId: out.runId,
@@ -961,7 +1066,7 @@ const TOOLS = [
       required: ['file_path'],
       properties: {
         file_path: { type: 'string', description: 'Absolute path to a local .pdf, .docx, or .pptx file (max 200MB)' },
-        ocr_language: { type: 'string', description: "Tesseract language code for scanned pages (e.g. 'spa'); omit for auto-detect", maxLength: 20 },
+        ocr_language: OCR_LANGUAGE_INPUT_SCHEMA,
       },
       additionalProperties: false,
     },
@@ -989,7 +1094,7 @@ const TOOLS = [
       auto_continue: { type: 'boolean', description: "Run the app's auto-continue improvement loop after the primary pass: extra fix rounds merged through the same canonical reducer the app uses, until the target score + complete verification or the rounds are spent (default false; adds time and Gemini quota)" },
       auto_continue_rounds: { type: 'number', minimum: 1, maximum: 5, description: 'Max auto-continue rounds (default 3)' },
       validate_ua: { type: 'boolean', description: 'Also run the independent keyless PDF/UA-1 (ISO 14289-1) veraPDF check on the tagged output and include its verdict in the report (default false; ~1 min extra)' },
-      ocr_language: { type: 'string', description: "Tesseract language code for scanned pages (e.g. 'spa'); omit for auto-detect", maxLength: 20 },
+      ocr_language: OCR_LANGUAGE_INPUT_SCHEMA,
     };
     const JOB_ID_SCHEMA = { type: 'object', required: ['job_id'], properties: { job_id: { type: 'string', minLength: 1, maxLength: 200 } }, additionalProperties: false };
     const RESULT_DOC = 'Accepts .pdf, .docx, or .pptx. Writes <name>-accessible.html, <name>-tagged.pdf, and <name>-remediation-report.json next to the input (or to output_dir), never overwriting existing files (Office inputs skip the tagged-PDF export — the accessible HTML is the deliverable). Returns the distribution verdict, before/after scores, and every fidelity/honesty disclosure. Sends document content to the Gemini API.';
@@ -1040,7 +1145,7 @@ const TOOLS = [
             dir_path: { type: 'string', description: 'Folder containing .pdf/.docx/.pptx files (searched non-recursively)' },
             output_dir: { type: 'string', description: 'Where to write the scoreboard (default: the audited folder)' },
             skip_existing: { type: 'boolean', description: 'Skip files already recorded as audited in a scoreboard in the output folder — makes an interrupted triage resumable without re-spending quota. Their prior rows are carried into the new scoreboard so it stays complete (default true)' },
-            ocr_language: { type: 'string', description: "Tesseract language code for scanned pages (e.g. 'spa'); omit for auto-detect", maxLength: 20 },
+            ocr_language: OCR_LANGUAGE_INPUT_SCHEMA,
           },
           additionalProperties: false,
         },
@@ -1101,9 +1206,17 @@ const TOOLS = [
 // declare properties and require nothing — a schema that lied about a branch would be worse than
 // no schema at all.
 const obj = (properties, required) => ({ type: 'object', properties, additionalProperties: true, ...(required && required.length ? { required } : {}) });
+const strictObj = (properties, required, nullable) => ({
+  type: nullable ? ['object', 'null'] : 'object',
+  properties,
+  additionalProperties: false,
+  ...(required && required.length ? { required } : {}),
+});
 const S_NUM = { type: 'number' };
 const S_STR = { type: 'string' };
 const S_BOOL = { type: 'boolean' };
+const S_NULLABLE_NUM = { type: ['number', 'null'], minimum: 0, maximum: 1000000 };
+const S_NULLABLE_BOOL = { type: ['boolean', 'null'] };
 const S_JOB_START = obj({
   jobId: { type: 'string', description: 'Pass to remediation_job_status / _result / _cancel' },
   status: S_STR, files: S_NUM, note: S_STR,
@@ -1118,11 +1231,35 @@ const S_AUDIT = obj({
 const S_REMEDIATE = obj({
   input: S_STR,
   files: obj({ accessibleHtml: S_STR, taggedPdf: S_STR, report: S_STR }),
-  verdict: { type: ['string', 'null'], description: 'Distribution verdict from the honesty-gated verification' },
+  verdict: strictObj({
+    level: { type: 'string', enum: ['ready', 'caution', 'review'] },
+    reviewCount: S_NUM,
+    cautionCount: S_NUM,
+  }, ['level', 'reviewCount', 'cautionCount'], true),
   beforeScore: { type: ['number', 'null'] }, afterScore: { type: ['number', 'null'] },
   aiVerificationIncomplete: { type: ['boolean', 'null'], description: 'True when the AI semantic audit degraded — the headline is then the deterministic score' },
   scoreSource: { type: ['string', 'null'] }, estimatedMinimumScore: { type: ['number', 'null'] },
-  integrityCoverage: {}, integrityWarning: {}, fidelityNotes: {}, verificationState: {},
+  integrityCoverage: {}, integrityWarning: {}, fidelityNotes: {},
+  verificationState: { type: ['string', 'null'], enum: ['complete', 'complete-for-tested-scope', 'partial', 'review-required', 'unavailable', null] },
+  verificationHtmlBound: S_NULLABLE_BOOL,
+  remainingAxeViolations: S_NULLABLE_NUM,
+  remainingEqualAccessFailures: S_NULLABLE_NUM,
+  taggedPdfDelivery: strictObj({
+    ok: S_BOOL,
+    code: {
+      type: 'string',
+      enum: ['verified', 'typeset-content-dropped', 'roundtrip-unavailable', 'roundtrip-failed', 'validator-unavailable', 'validator-error', 'validator-failed', 'ocr-text-layer-incomplete', 'delivery-verdict-unavailable'],
+    },
+  }, ['ok', 'code'], true),
+  taggedPdfExportMode: { type: ['string', 'null'], enum: ['original_layout', 'clean_rebuild', null] },
+  activeContentScanVerified: S_NULLABLE_BOOL,
+  activeContentDetected: S_NULLABLE_BOOL,
+  auditCoverage: strictObj({
+    configuredAuditorCap: S_NULLABLE_NUM,
+    requestedAuditors: S_NULLABLE_NUM,
+    completedAuditors: S_NULLABLE_NUM,
+    sliced: S_NULLABLE_BOOL,
+  }, ['configuredAuditorCap', 'requestedAuditors', 'completedAuditors', 'sliced'], true),
   autoContinue: {}, taggedPdfError: {}, runId: {}, stats: {},
   pdfUa: obj({ standard: S_STR, compliant: S_BOOL, failedChecks: S_NUM, failedRules: { type: 'array' } }),
   note: S_STR,

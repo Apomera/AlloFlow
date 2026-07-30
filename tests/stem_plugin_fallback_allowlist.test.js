@@ -11,7 +11,7 @@ function read(rel) {
 function collectRegisteredStemPluginIds() {
   const ids = new Map();
   for (const file of readdirSync(resolve(root, 'stem_lab'))) {
-    if (!/^stem_tool_.*\.js$/.test(file) || file.endsWith('.bak')) continue;
+    if (!/^stem_tool_.*\.js$/.test(file) || file.endsWith('.bak') || file.endsWith('.codex.tmp.js')) continue;
     const src = read(`stem_lab/${file}`);
     const re = /window\.StemLab\.registerTool\s*\(\s*['"]([A-Za-z_$][A-Za-z0-9_$]*)['"]/g;
     let match;

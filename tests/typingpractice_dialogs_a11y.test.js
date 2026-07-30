@@ -30,9 +30,11 @@ describe('Typing Practice decision and print-message accessibility', () => {
     expect(source).toContain('min-width:44px;min-height:44px');
   });
 
-  it('routes all eight decision steps through the accessible service', () => {
-    expect(source.match(/askTypingPracticeConfirmation\(/g)).toHaveLength(9);
+  it('routes every decision step through the accessible service', () => {
+    expect(source.match(/askTypingPracticeConfirmation\(/g)).toHaveLength(11);
     for (const title of [
+      'Exit without saving?',
+      'Quit Battle Mode?',
       'Remove custom drill',
       'Remove saved passage',
       'Discard this session?',
@@ -45,9 +47,12 @@ describe('Typing Practice decision and print-message accessibility', () => {
   });
 
   it('announces print failures non-modally with a visible fallback', () => {
-    expect(source.match(/reportTypingPracticeIssue\(/g)).toHaveLength(3);
+    expect(source).toContain("reportTypingPracticeIssue('Please allow popups");
+    expect(source).toContain("reportTypingPracticeIssue('Print failed");
+    expect(source).toContain("reportTypingPracticeIssue('CSV export failed");
     expect(source).toContain("notice.setAttribute('role', 'alert')");
-    expect(source).toContain("document.getElementById('allo-live-typingpractice')");
+    expect(source).not.toContain('allo-live-typingpractice');
+    expect(source).toContain("close.setAttribute('aria-label', 'Dismiss Typing Practice message')");
     expect(source).toContain("printIEPReport(report, state.studentName || '', addToast)");
   });
 

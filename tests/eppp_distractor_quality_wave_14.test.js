@@ -87,7 +87,7 @@ describe('EPPP distractor-quality repair wave 14', () => {
     expect(byId.get('eppp-v2-intervention-068').rationale).toMatch(/externalizing conversations/i);
   });
 
-  it('publishes synchronized sources, clean feedback, native QA, and runtime content', () => {
+  it('publishes synchronized sources, clean feedback, native QA, and lazy pack content', () => {
     const sourceCatalog = read('test_prep/reference_catalog.json');
     expect(read('desktop/web-app/public/test_prep/reference_catalog.json')).toBe(sourceCatalog);
     const catalog = JSON.parse(sourceCatalog);
@@ -113,10 +113,10 @@ describe('EPPP distractor-quality repair wave 14', () => {
     expect(qa.summary).toMatchObject({ totalItems: 1500, passedItems: 1500, reviewRequiredItems: 0, status: 'pass' });
     expect(qa.items.filter((item) => selected.has(item.id)).every((item) => item.qaStatus === 'pass')).toBe(true);
 
-    const sourceRuntime = read('test_prep_hub_module.js');
-    expect(read('desktop/web-app/public/test_prep_hub_module.js')).toBe(sourceRuntime);
-    expect(sourceRuntime).toContain('most of its grant on software');
-    expect(sourceRuntime).toContain('closed feedback loop uses measured neural activity');
-    expect(sourceRuntime).toContain('Failure story');
+    const sourcePack = read('test_prep/eppp_part_one_pack.json');
+    expect(read('desktop/web-app/public/test_prep/eppp_part_one_pack.json')).toBe(sourcePack);
+    expect(sourcePack).toContain('most of its grant on software');
+    expect(sourcePack).toContain('closed feedback loop uses measured neural activity');
+    expect(sourcePack).toContain('Failure story');
   });
 });

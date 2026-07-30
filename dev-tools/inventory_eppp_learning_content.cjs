@@ -5,6 +5,8 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 const { buildDiagramCatalog } = require('./eppp_diagram_catalog.cjs');
+const { ensureFamily, evidencePath } = require('./eppp_evidence_paths.cjs');
+const { openEpppMigrationSourceArchive } = require('./eppp_migration_source_archive.cjs');
 
 function writeFileWithRetry(filePath, contents) {
   let lastError;
@@ -22,11 +24,10 @@ function writeFileWithRetry(filePath, contents) {
 }
 
 const root = path.resolve(__dirname, '..');
-const runtimeRoot = path.join(root, 'test_prep', 'eppp_legacy');
-const deployRoot = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_legacy');
-const indexPath = path.join(runtimeRoot, 'index.html');
-const html = fs.readFileSync(indexPath, 'utf8');
-const scriptPaths = Array.from(html.matchAll(/<script\s+src=["']([^"']+\.js)(?:\?[^"']*)?["']/gi), (match) => match[1]);
+const outputRoot = ensureFamily('audit');
+const archive = openEpppMigrationSourceArchive({ workspaceRoot: root });
+const learningPlan = archive.manifest.execution.learningLibrary;
+const scriptPaths = Object.values(learningPlan).flat();
 
 const quietConsole = { log() {}, warn() {}, error() {} };
 const windowObject = {};
@@ -42,13 +43,11 @@ windowObject.window = windowObject;
 windowObject.document = documentStub;
 
 function run(relativePath) {
-  const filePath = path.join(runtimeRoot, relativePath);
-  if (!fs.existsSync(filePath)) throw new Error('Missing loaded EPPP asset: ' + relativePath);
-  vm.runInContext(fs.readFileSync(filePath, 'utf8'), context, { filename: relativePath, timeout: 15000 });
+  vm.runInContext(archive.readText(relativePath), context, { filename: relativePath, timeout: 15000 });
 }
 
-run('js/data.js');
-for (const relativePath of scriptPaths.filter((entry) => /^js\/flashcards_(?:data|batch\d+)\.js$/i.test(entry))) run(relativePath);
+run(learningPlan.baseData[0]);
+for (const relativePath of learningPlan.flashcards) run(relativePath);
 const domains = vm.runInContext('EPPPData.domains', context);
 const flashcardsByDomain = domains.map((domain) => ({
   domainId: domain.id,
@@ -56,7 +55,7 @@ const flashcardsByDomain = domains.map((domain) => ({
   count: Array.isArray(domain.flashcards) ? domain.flashcards.length : 0,
 }));
 
-run('js/memory_aids.js');
+run(learningPlan.memoryAids[0]);
 const memoryAids = vm.runInContext('MemoryAids.aids', context);
 const memoryAidTypes = memoryAids.reduce((counts, aid) => {
   const type = String(aid.type || 'unspecified');
@@ -64,15 +63,15 @@ const memoryAidTypes = memoryAids.reduce((counts, aid) => {
   return counts;
 }, {});
 
-const chapterScripts = scriptPaths.filter((entry) => /^js\/textbook_ch(?:\d+|\d+_\d+)\.js$/i.test(entry));
+const chapterScripts = learningPlan.chapters;
 const chapterSourceById = new Map();
 for (const relativePath of chapterScripts) {
   const before = (windowObject.TextbookChapters || []).length;
   run(relativePath);
   for (const chapter of (windowObject.TextbookChapters || []).slice(before)) chapterSourceById.set(String(chapter.id || ''), relativePath);
 }
-run('js/textbook_diagrams.js');
-run('js/textbook_term_defs.js');
+run(learningPlan.diagrams[0]);
+run(learningPlan.glossary[0]);
 const chapters = windowObject.TextbookChapters || [];
 const diagrams = windowObject._epppDiagrams || {};
 const diagramCatalog = buildDiagramCatalog({ root, chapters, diagramTemplates: diagrams, chapterSourceById });
@@ -97,7 +96,7 @@ for (const chapter of chapters) {
 
 if (observedDiagramPlacements !== diagramCatalog.placements.length) throw new Error('Diagram placement catalog does not match learner-visible chapter placements.');
 
-const legacyAudit = JSON.parse(fs.readFileSync(path.join(runtimeRoot, 'content_audit.json'), 'utf8'));
+const legacyAudit = JSON.parse(fs.readFileSync(evidencePath('audit', 'content_audit.json'), 'utf8'));
 const nativeQaPath = path.join(root, 'test_prep', 'eppp_native_qa.json');
 const nativeQa = fs.existsSync(nativeQaPath) ? JSON.parse(fs.readFileSync(nativeQaPath, 'utf8')) : null;
 const learningQaPath = path.join(root, 'test_prep', 'eppp_learning_library_qa.json');
@@ -111,8 +110,7 @@ const reviewedMemoryAids = Number(learningSummary.sourceReviewedMemoryAids || 0)
 const retainedReviewedFlashcards = Number(learningSummary.retainedReviewedFlashcards || 0);
 const retiredRedundantFlashcards = Number(learningSummary.retiredRedundantFlashcards || 0);
 const editorialMemoryAids = Number(learningSummary.editorialReviewedSourcePendingMemoryAids || 0);
-const navigationPages = Array.from(html.matchAll(/class=["'][^"']*nav-item[^"']*["'][^>]*data-page=["']([^"']+)["']/gi), (match) => match[1]);
-const learnerModes = [...new Set(navigationPages)].filter((page) => !['dashboard', 'settings', 'about'].includes(page));
+const learnerModes = Object.freeze(['diagnostic', 'study', 'textbook', 'flashcards', 'quiz', 'exam', 'cat', 'analytics', 'goals', 'memory_aids', 'bookmarks', 'search', 'reflections', 'menu']);
 
 const nativeDomainIds = ['biological', 'cognitive-affective', 'social-cultural', 'lifespan', 'assessment', 'intervention', 'research', 'professional'];
 const migratedNativeItems = nativeQa ? nativeQa.items.filter((item) => item.legacySourceId) : [];
@@ -135,6 +133,11 @@ const nativeCurrentQuestions = domainTargets.reduce((sum, domain) => sum + domai
 const report = {
   schemaVersion: 2,
   generatedAt: new Date().toISOString(),
+  sourceArchive: {
+    archiveId: archive.manifest.archiveId,
+    root: archive.archiveRootRelative,
+    payloadSha256: archive.payloadSha256,
+  },
   summary: {
     legacyQuestions: legacyAudit.summary.totalItems,
     nativeQaQuestions: nativeQa ? nativeQa.summary.passedItems : 0,
@@ -256,10 +259,8 @@ ${learnerModes.map((mode) => `- ${mode}`).join('\n')}
 > ${report.migrationNote}
 `;
 
-for (const outputRoot of [runtimeRoot, deployRoot]) {
-  writeFileWithRetry(path.join(outputRoot, 'content_inventory.json'), JSON.stringify(report, null, 2) + '\n');
-  writeFileWithRetry(path.join(outputRoot, 'content_inventory.md'), markdown);
-}
+writeFileWithRetry(path.join(outputRoot, 'content_inventory.json'), JSON.stringify(report, null, 2) + '\n');
+writeFileWithRetry(path.join(outputRoot, 'content_inventory.md'), markdown);
 
 console.log('EPPP content inventory:');
 for (const [key, value] of Object.entries(report.summary)) console.log(key + ': ' + value);

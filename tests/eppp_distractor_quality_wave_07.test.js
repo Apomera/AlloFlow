@@ -10,8 +10,8 @@ const diagnosticsPath = path.join(root, 'test_prep', 'eppp_distractor_quality_di
 const feedbackPath = path.join(root, 'test_prep', 'eppp_option_feedback_diagnostics.json');
 const qaPath = path.join(root, 'test_prep', 'eppp_native_qa.json');
 const qaScriptPath = path.join(root, 'dev-tools', 'qa_eppp_native_pack.cjs');
-const runtimePath = path.join(root, 'test_prep_hub_module.js');
-const deployRuntimePath = path.join(root, 'desktop/web-app', 'public', 'test_prep_hub_module.js');
+const runtimePackPath = path.join(root, 'test_prep', 'eppp_part_one_pack.json');
+const deployRuntimePackPath = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_part_one_pack.json');
 const ids = [
   'eppp-v2-intervention-020',
   'eppp-v3-intervention-069',
@@ -98,11 +98,11 @@ describe('EPPP distractor-quality repair wave 07', () => {
     expect(qaScript).toContain("sourceRecord.sourceReviewBasis!=='item-specific-authoritative-source-review'");
   });
 
-  it('synchronizes the revised bank into both runtime modules', () => {
-    const sourceRuntime = fs.readFileSync(runtimePath, 'utf8');
-    expect(fs.readFileSync(deployRuntimePath, 'utf8')).toBe(sourceRuntime);
-    expect(sourceRuntime).toContain("Bateman and Fonagy's mentalizing approach");
-    expect(sourceRuntime).toContain('Scale A has reliability .92 and Scale B has reliability .68');
-    expect(sourceRuntime).toContain('docosahexaenoic acid (DHA) is abundant in brain phospholipids');
+  it('synchronizes the revised bank into both lazy pack assets', () => {
+    const sourcePack = fs.readFileSync(runtimePackPath, 'utf8');
+    expect(fs.readFileSync(deployRuntimePackPath, 'utf8')).toBe(sourcePack);
+    expect(sourcePack).toContain("Bateman and Fonagy's mentalizing approach");
+    expect(sourcePack).toContain('Scale A has reliability .92 and Scale B has reliability .68');
+    expect(sourcePack).toContain('docosahexaenoic acid (DHA) is abundant in brain phospholipids');
   });
 });

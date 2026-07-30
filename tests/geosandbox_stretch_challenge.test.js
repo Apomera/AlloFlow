@@ -797,3 +797,91 @@ describe('geoVerbApplies (keyboard and VR obey the same rule as the button)', ()
     expect(P.geoVerbApplies(undefined, 'taper')).toBe(false);
   });
 });
+describe('geoSculptRepresentation and scale investigation', () => {
+  it('coordinates each sculpt primitive with a cross-section and net', () => {
+    expect(P.geoSculptRepresentation('box')).toMatchObject({ crossSection: 'Rectangle', net: '6 rectangles' });
+    expect(P.geoSculptRepresentation('cylinder')).toMatchObject({ crossSection: 'Circle', net: '2 circles + 1 rectangle' });
+    expect(P.geoSculptRepresentation('sphere').net).toContain('No distortion-free');
+  });
+
+  it('shows why uniform scaling changes volume faster than surface area', () => {
+    const study = P.geoSculptScaleStudy({ shape: 'box', size: [2, 3, 4] }, 1.25, 1, 1);
+    expect(study.volumeRatio).toBeCloseTo(Math.pow(1.25, 3), 8);
+    expect(study.areaRatio).toBeCloseTo(Math.pow(1.25, 2), 8);
+    expect(study.after.vol).toBeGreaterThan(study.before.vol);
+    expect(study.volumeRatio).toBeGreaterThan(study.areaRatio);
+  });
+  it('turns projected pointer travel into bounded axis steps in either direction', () => {
+    expect(P.geoSculptDragSteps(0, 42, 0, 1, 0, 18)).toEqual({ steps: 2, direction: 1, remaining: 6 });
+    expect(P.geoSculptDragSteps(0, -20, 0, 1, 0, 18)).toEqual({ steps: 1, direction: -1, remaining: -2 });
+    expect(P.geoSculptDragSteps(12, 0, 7, 0, 1, 18)).toEqual({ steps: 1, direction: 1, remaining: 1 });
+  });
+
+  it('restores only the investigated part to its baseline', () => {
+    const recipe = { name: 'stack', parts: [
+      { shape: 'box', size: [1.25, 2.5, 3.75], position: [0, 0, 0] },
+      { shape: 'sphere', size: [0.5], position: [0, 3, 0] },
+    ] };
+    const baseline = { shape: 'box', size: [1, 2, 3], position: [0, 0, 0] };
+    const restored = P.geoRestoreSculptPart(recipe, 0, baseline);
+    expect(restored.parts[0]).toEqual(baseline);
+    expect(restored.parts[1]).toBe(recipe.parts[1]);
+    expect(restored).not.toBe(recipe);
+  });
+  it('computes live cross-sectional areas across every sculpt primitive', () => {
+    const box = P.geoSculptSliceStudy({ shape: 'box', size: [2, 3, 4] }, 0.2, 1, 1);
+    expect(box.area).toBeCloseTo(8, 8);
+    expect(box.label).toBe('rectangle');
+
+    const sphereCenter = P.geoSculptSliceStudy({ shape: 'sphere', size: [2] }, 0.5, 1, 1);
+    const sphereTop = P.geoSculptSliceStudy({ shape: 'sphere', size: [2] }, 1, 1, 1);
+    expect(sphereCenter.area).toBeCloseTo(4 * Math.PI, 8);
+    expect(sphereTop.area).toBeCloseTo(0, 8);
+
+    const cylinder = P.geoSculptSliceStudy({ shape: 'cylinder', size: [2, 5] }, 0.9, 1, 1);
+    expect(cylinder.area).toBeCloseTo(4 * Math.PI, 8);
+
+    const coneBottom = P.geoSculptSliceStudy({ shape: 'cone', size: [2, 5] }, 0, 1, 1);
+    const coneTop = P.geoSculptSliceStudy({ shape: 'cone', size: [2, 5] }, 1, 1, 1);
+    expect(coneBottom.area).toBeCloseTo(4 * Math.PI, 8);
+    expect(coneTop.area).toBeCloseTo(0, 8);
+
+    const torus = P.geoSculptSliceStudy({ shape: 'torus', size: [3, 1] }, 0.5, 1, 1);
+    expect(torus.label).toBe('annulus');
+    expect(torus.area).toBeCloseTo(12 * Math.PI, 8);
+  });
+
+  it('applies recipe and world scale squared to section area', () => {
+    const base = P.geoSculptSliceStudy({ shape: 'box', size: [2, 3, 4] }, 0.5, 1, 1);
+    const scaled = P.geoSculptSliceStudy({ shape: 'box', size: [2, 3, 4] }, 0.5, 2, 3);
+    expect(scaled.area).toBeCloseTo(base.area * 36, 8);
+  });
+
+  it('reconstructs volume by stacking horizontal section areas', () => {
+    const box = P.geoSculptSliceProfile({ shape: 'box', size: [2, 3, 4] }, 0.25, 1, 1, 12);
+    expect(box.estimate).toBeCloseTo(24, 8);
+    expect(box.exact).toBeCloseTo(24, 8);
+    expect(box.belowEstimate).toBeCloseTo(6, 8);
+    expect(box.samples).toHaveLength(13);
+    expect(box.errorPercent).toBeCloseTo(0, 8);
+
+    const sphere = P.geoSculptSliceProfile({ shape: 'sphere', size: [2] }, 0.5, 1, 1, 32);
+    expect(sphere.estimate).toBeCloseTo(4 / 3 * Math.PI * 8, 1);
+    expect(sphere.belowEstimate).toBeCloseTo(sphere.exact / 2, 2);
+    expect(sphere.maxArea).toBeCloseTo(4 * Math.PI, 8);
+    expect(sphere.errorPercent).toBeLessThan(0.2);
+
+    const torus = P.geoSculptSliceProfile({ shape: 'torus', size: [3, 1] }, 0.5, 1, 1, 64);
+    expect(torus.estimate).toBeCloseTo(2 * Math.PI * Math.PI * 3, 0);
+    expect(torus.errorPercent).toBeLessThan(1);
+  });
+
+  it('scales slice-stack volume cubically while area scales quadratically', () => {
+    const base = P.geoSculptSliceProfile({ shape: 'cone', size: [2, 5] }, 0.4, 1, 1, 32);
+    const doubled = P.geoSculptSliceProfile({ shape: 'cone', size: [2, 5] }, 0.4, 2, 1, 32);
+    expect(doubled.exact).toBeCloseTo(base.exact * 8, 8);
+    expect(doubled.estimate).toBeCloseTo(base.estimate * 8, 8);
+    expect(doubled.maxArea).toBeCloseTo(base.maxArea * 4, 8);
+    expect(doubled.sliceThickness).toBeCloseTo(base.sliceThickness * 2, 8);
+  });
+});

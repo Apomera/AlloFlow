@@ -2907,6 +2907,26 @@
         var cnv = document.getElementById('geo-sandbox-canvas');
         if (!cnv) return;
         var gd = (labToolData && labToolData.geoSandbox) || {};
+        // The plugin owns stretch/sculpt scene graphs. This legacy single-shape
+        // bridge used to rebuild a primitive on every tool-data change regardless
+        // of mode, racing the plugin and flashing that primitive over stretch mode.
+        var activeGeoMode = window._geoActiveMode || gd.mode || 'single';
+        if (activeGeoMode !== 'single') {
+          var legacyGeoScene = window._geoScene;
+          if (legacyGeoScene && legacyGeoScene.mesh) {
+            legacyGeoScene.mesh.visible = false;
+            legacyGeoScene.scene.remove(legacyGeoScene.mesh);
+            legacyGeoScene.mesh.traverse(function(o) {
+              if (o.geometry && o.geometry.dispose) o.geometry.dispose();
+              if (o.material) {
+                var materials = Array.isArray(o.material) ? o.material : [o.material];
+                materials.forEach(function(material) { if (material && material.dispose) material.dispose(); });
+              }
+            });
+            legacyGeoScene.mesh = null;
+          }
+          return;
+        }
         var shapeType = gd.shape || 'box';
         var dims = gd.dims || { w: 3, h: 3, d: 3, r: 1.5, rTop: 1.5, rBot: 1.5, tube: 0.5, segs: 32 };
         var shapeColor = gd.color || '#60a5fa';
@@ -4800,6 +4820,11 @@
                 color: 'purple', ready: true
               },
               {
+                id: 'cellAtlasLab', icon: '\u2237', label: 'Cell Atlas Lab',
+                desc: 'Classify human pancreatic cell types from gene-expression evidence, compare marker profiles, solve mystery cells, and follow insulin toward AlphaFold structure.',
+                color: 'cyan', ready: true
+              },
+              {
                 id: 'molecule', icon: '⚛️', label: t('stem.tools_menu.molecule_builder'),
                 desc: 'Build molecules with atoms and bonds. Explore molecular geometry.',
                 color: 'stone', ready: true
@@ -5143,6 +5168,7 @@
               accessLens: 'camera photo picture describe scene description blind low vision ocr read text aloud large print translate translation language sign label socratic investigate object identify accessibility',
               dataLab: 'data science codap statistics dataset table graph plot scatter chart mean median analyze census concord tutor socratic data literacy spreadsheet cases attributes',
               alphaFoldExplorer: 'alphafold alpha fold protein structure prediction uniprot accession molstar mol molecule molecular biology bioinformatics pdb cif mmcif bcif plddt pae confidence sequence amino acid fasta server deepmind ebi structure viewer',
+              cellAtlasLab: 'human cell atlas hca single cell scrna rna sequencing transcriptomics gene expression marker genes pancreas beta alpha delta ductal acinar stellate endothelial immune insulin cell type bioinformatics data literacy',
               simShelf: 'phet simulation simulations sims physics forces energy circuits light waves matter orbits evolution fractions probability predict explore explain poe lab colorado interactive',
               particleLab3d: 'particle particles 3d molecular dynamics states matter solid liquid gas diffusion kinetic theory temperature pressure collisions attraction intermolecular forces gas laws',
               zoomGallery: 'zoom gallery deep zoom openseadragon iiif image images photo photos picture pictures magnify magnifier close up detail details observe observation notice wonder smithsonian open access nasa museum artifact artifacts space astronomy hubble webb pillars creation saturn moon apollo bootprint coral fossil low vision cc0 public domain'
@@ -6514,7 +6540,7 @@
             areaPerimeter: true,
             timeSchedule: true,
             // Science
-            anatomy: true, aquarium: true, aquacultureLab: true, brainAtlas: true, cell: true,
+            anatomy: true, aquarium: true, aquacultureLab: true, brainAtlas: true, cell: true, cellAtlasLab: true,
             chemBalance: true, climateExplorer: true, companionPlanting: true, fisherLab: true, renewablesLab: true, petsLab: true,
             dataPlot: true, dinoLab: true, dissection: true, dnaLab: true, ecosystem: true,
             epidemicSim: true, fireEcology: true, microbiology: true, molecule: true, opticsLab: true, punnett: true,

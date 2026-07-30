@@ -19,11 +19,14 @@ describe('dissection canvas animation loop', () => {
       expect(source).toContain('function cancelDissectionFrame()');
       expect(source).toContain('function scheduleDissectionFrame()');
       expect(source).toContain('if (!dissAlive || dissMotionReduced || canvas._dissAnim || isDissectionHidden()) return;');
+      expect(source).toContain('canvas._dissMotionReduced = dissMotionReduced;');
+      expect(source).toContain('canvas._drawDissectionNow = function ()');
+      expect(source).toContain('canvas._drawDissectionNow = null; canvas._dissMotionReduced = null;');
       expect(source).toContain('canvas._dissAnim = requestAnimationFrame(drawDissectionFrame);');
       expect(source).toContain("window.matchMedia('(prefers-reduced-motion: reduce)').matches");
       expect(source).toContain("var liveRenderQuality = drawState.renderQuality || 'auto';");
       expect(source).toContain("var autoBalanced = liveRenderQuality === 'auto'");
-      expect(source).toContain("var minFrameMs = liveRenderQuality === 'high' ? 16");
+      expect(source).toContain("var minFrameMs = Math.max(adaptiveFrameFloor, liveRenderQuality === 'high' ? 16");
       expect(source).toContain('if (!dissMotionReduced) { dissLastDrawAt = arguments[0] || Date.now(); dissTick++; }');
       expect(source).toContain('All anatomy and interaction math stays in logical CSS pixels');
       expect(source).toContain('W = canvas._logicalW || canvas.width;');

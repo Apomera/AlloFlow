@@ -1,0 +1,98 @@
+name: remote-mcp-verify
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "services/alloflow-remote-mcp/**"
+      - ".github/workflows/remote-mcp-verify.yml"
+      - "desktop/mcp/**"
+      - "verification_policy_module.js"
+      - "doc_builder_renderer_module.js"
+      - "doc_pipeline_source.jsx"
+      - "doc_pipeline_module.js"
+      - "view_pdf_validator_module.js"
+      - "tests/active_content_scan_completeness.test.js"
+      - "tests/mcp_driver_scripted_e2e.test.js"
+      - "tests/mcp_remediation_stdio_smoke.test.js"
+      - "tests/roundtrip_coverage_gate.test.js"
+      - "tests/remediation_evidence_invariants_20260723.test.js"
+      - "tests/batch_q_honesty_fixes.test.js"
+  pull_request:
+    branches: [main]
+    paths:
+      - "services/alloflow-remote-mcp/**"
+      - ".github/workflows/remote-mcp-verify.yml"
+      - "desktop/mcp/**"
+      - "verification_policy_module.js"
+      - "doc_builder_renderer_module.js"
+      - "doc_pipeline_source.jsx"
+      - "doc_pipeline_module.js"
+      - "view_pdf_validator_module.js"
+      - "tests/active_content_scan_completeness.test.js"
+      - "tests/mcp_driver_scripted_e2e.test.js"
+      - "tests/mcp_remediation_stdio_smoke.test.js"
+      - "tests/roundtrip_coverage_gate.test.js"
+      - "tests/remediation_evidence_invariants_20260723.test.js"
+      - "tests/batch_q_honesty_fixes.test.js"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: remote-mcp-verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Worker, security, runner, and image
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/alloflow-remote-mcp
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            services/alloflow-remote-mcp/package-lock.json
+            services/alloflow-remote-mcp/runner/package-lock.json
+      - name: Install pinned shared-engine test dependencies
+        working-directory: ${{ github.workspace }}
+        run: npm ci --no-audit --no-fund
+      - name: Install Chromium for the real remediation canary
+        working-directory: ${{ github.workspace }}
+        run: npx playwright install --with-deps chromium
+      - name: Install pinned Worker dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Install pinned runner dependencies
+        run: npm ci --prefix runner --no-audit --no-fund
+      - name: Stage the canonical isolated runner
+        run: npm run runner:stage
+      - name: Verify generated bindings, types, tests, preflight, and bundle
+        run: npm run check
+      - name: Verify and test the canonical isolated runner
+        run: npm run runner:check
+      - name: Verify the real shared remediation engine and tagged-PDF canary
+        working-directory: ${{ github.workspace }}
+        run: >-
+          npx vitest run
+          tests/active_content_scan_completeness.test.js
+          tests/mcp_driver_scripted_e2e.test.js
+          tests/mcp_remediation_stdio_smoke.test.js
+          tests/roundtrip_coverage_gate.test.js
+          tests/remediation_evidence_invariants_20260723.test.js
+          tests/batch_q_honesty_fixes.test.js
+          --maxWorkers=1
+      - name: Profile Worker startup
+        run: npm run startup:check
+      - name: Build the linux/amd64 runner image from the allowlisted context
+        run: >-
+          docker build
+          --platform linux/amd64
+          --file runner/Dockerfile
+          --tag alloflow-remediation-runner:ci
+          .

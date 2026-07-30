@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "waveId": "eppp-memory-aid-review-wave-05",
+  "generatedAt": "2026-07-28T12:00:00.000Z",
+  "status": "source-reviewed-editorial-pass-independent-expert-review-pending",
+  "summary": {
+    "items": 2,
+    "domains": 2,
+    "itemsPerDomain": 1
+  },
+  "safeguards": [
+    "Legacy text remains preserved; reviewed replacements are applied by the native catalog builder.",
+    "Each reviewed replacement uses its stable legacy ID and claim-level scholarly or professional sources.",
+    "Source review and editorial review do not constitute independent qualified expert, clinical, or psychometric validation."
+  ],
+  "items": [
+    {
+      "legacyId": "memory-aid-8f73cb6379241610",
+      "title": "Research Design Hierarchy",
+      "domainId": 7,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**There is no universal research-design ladder; use QUESTION → DESIGN → QUALITY → BODY.** Start with the inference the study must support. Random assignment in a well-conducted experiment strengthens causal inference about intervention effects, but weak implementation, attrition, selective reporting, measurement error, or an unrepresentative sample can still threaten validity or applicability. Observational designs may be necessary for prognosis, uncommon harms, natural exposures, or questions for which assignment is infeasible or unethical; alternative explanations then need careful evaluation. Qualitative and case-based approaches can examine experience, context, process, feasibility, and possible mechanisms without, by themselves, estimating a population causal effect. Systematic reviews and meta-analyses synthesize studies rather than automatically outranking them; conclusions depend on the review methods, included evidence, heterogeneity, and missing-result bias. Match the method to the question, appraise how well it was executed, and judge the converging body of evidence rather than the design label alone.",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/12821702/",
+        "https://www.apa.org/practice/guidelines/evidence-based-statement.html",
+        "https://training.cochrane.org/handbook/current/chapter-10"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Evidence, hierarchies, and typologies: horses for courses",
+          "organization": "Journal of Epidemiology and Community Health; PubMed, U.S. National Library of Medicine",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/12821702/",
+          "whyReputable": "This peer-reviewed methodological article explicitly replaces a single evidence ladder with a question-by-design matrix and explains why methodological appropriateness must be judged against the inference sought."
+        },
+        {
+          "title": "Policy Statement on Evidence-Based Practice in Psychology",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/practice/guidelines/evidence-based-statement.html",
+          "whyReputable": "APA's official policy defines best evidence as a body drawn from varied designs and methodologies, while requiring attention to systematic review, effect magnitude, limitations, and applicability to the person and context."
+        },
+        {
+          "title": "Chapter 10: Analysing data and undertaking meta-analyses",
+          "organization": "Cochrane Handbook for Systematic Reviews of Interventions",
+          "url": "https://training.cochrane.org/handbook/current/chapter-10",
+          "whyReputable": "Cochrane's current methods handbook is authoritative evidence-synthesis guidance and directly supports evaluating heterogeneity, study limitations, missing results, and whether quantitative synthesis is appropriate."
+        }
+      ],
+      "reviewNote": "Replaced a universal evidence pyramid with question-design fit, execution quality, inference limits, synthesis caveats, and body-of-evidence appraisal.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-review"
+    },
+    {
+      "legacyId": "memory-aid-185b0998347f44f8",
+      "title": "Maslow's Hierarchy of Needs",
+      "domainId": 2,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Maslow's hierarchy is a historical hypothesis about relative need prepotency, not an empirically settled five-step staircase.** The familiar sequence is physiological needs, safety, love and belonging, esteem, and self-actualization. Maslow's 1943 paper says that people are commonly partly satisfied and partly unsatisfied across needs, that one behavior can express several needs, and that reversals of the average order occur. He presented the theory as a framework for future research, not as a validated scoring rule for individuals. A later scholarly review found only partial support for a need hierarchy and no clear support for several deprivation and activation propositions, while identifying substantial measurement and design problems. For the EPPP, recognize the classic order and its place in humanistic motivation theory, but do not infer a person's current motive, mental health, cultural values, or readiness from one unmet level. Treat the levels as broad historical categories and testable propositions—not a diagnosis, a universal developmental sequence, or proof that lower needs must be fully satisfied before higher pursuits can occur.",
+      "references": [
+        "https://doi.org/10.1037/h0054346",
+        "https://doi.org/10.1016/0030-5073(76)90038-6"
+      ],
+      "sourceDetails": [
+        {
+          "title": "A theory of human motivation",
+          "organization": "Psychological Review, American Psychological Association",
+          "url": "https://doi.org/10.1037/h0054346",
+          "whyReputable": "Maslow's original peer-reviewed article is the primary historical source; it states the proposed sequence while also describing partial satisfaction, multiple motivation, reversals, and the need for future research."
+        },
+        {
+          "title": "Maslow reconsidered: A review of research on the need hierarchy theory",
+          "organization": "Organizational Behavior and Human Performance, Elsevier",
+          "url": "https://doi.org/10.1016/0030-5073(76)90038-6",
+          "whyReputable": "This peer-reviewed scholarly review directly evaluates studies testing Maslow's hierarchy and reports only partial support, weak support for key propositions, and important conceptual, measurement, and design limitations."
+        }
+      ],
+      "reviewNote": "Preserved the classic exam sequence while separating Maslow's qualified historical proposal from a rigid, universal, empirically validated pyramid.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-and-editorial-review"
+    }
+  ]
+}

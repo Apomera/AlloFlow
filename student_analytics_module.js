@@ -129,6 +129,629 @@
     return dialogRef;
   }
 
+  // Keep a nested review dialog modal even though Assessment Center is itself
+  // rendered in a portal. Every sibling between the review and document.body is
+  // isolated, then restored exactly as it was.
+  function isolateStudentAnalyticsDialog(dialog) {
+    var snapshots = [];
+    if (!dialog || typeof document === 'undefined') return function() {};
+    var current = dialog;
+    while (current && current.parentElement) {
+      var parent = current.parentElement;
+      Array.prototype.forEach.call(parent.children, function(sibling) {
+        if (sibling === current) return;
+        snapshots.push({
+          element: sibling,
+          inert: sibling.inert === true,
+          ariaHidden: sibling.getAttribute('aria-hidden')
+        });
+        sibling.inert = true;
+        sibling.setAttribute('aria-hidden', 'true');
+      });
+      current = parent;
+      if (current === document.body) break;
+    }
+    return function() {
+      snapshots.forEach(function(snapshot) {
+        snapshot.element.inert = snapshot.inert;
+        if (snapshot.ariaHidden === null) snapshot.element.removeAttribute('aria-hidden');
+        else snapshot.element.setAttribute('aria-hidden', snapshot.ariaHidden);
+      });
+    };
+  }
+
+  // -------------------------------------------------------------------------
+  // Student Analytics -> AlloSheet privacy boundary
+  // -------------------------------------------------------------------------
+  // This allowlist is deliberately independent of the identifiable CSV
+  // exporters below. The builder never copies an imported student object, a
+  // learner name, an intervention label/note, or a clinical recommendation.
+  var SA_ALLOSHEET_MIN_GROUP_SIZE = 5;
+  var SA_ALLOSHEET_COLUMNS = {
+    probe_trends: [
+      { key: 'learner_code', label: 'Learner code', type: 'category' },
+      { key: 'measure_code', label: 'Measure', type: 'category' },
+      { key: 'measurement_date', label: 'Measurement date', type: 'date' },
+      { key: 'score_value', label: 'Score', type: 'number' },
+      { key: 'score_unit', label: 'Score unit', type: 'category' },
+      { key: 'accuracy_percent', label: 'Accuracy (percent)', type: 'number' },
+      { key: 'correct_count', label: 'Correct count', type: 'number' },
+      { key: 'attempted_count', label: 'Attempted count', type: 'number' },
+      { key: 'benchmark_50th_value', label: 'Benchmark 50th percentile', type: 'number' },
+      { key: 'grade_level', label: 'Grade level', type: 'category' },
+      { key: 'form_code', label: 'Form code', type: 'category' },
+      { key: 'source_type', label: 'Source type', type: 'category' }
+    ],
+    intervention_summary: [
+      { key: 'learner_code', label: 'Learner code', type: 'category' },
+      { key: 'intervention_code', label: 'Intervention code', type: 'category' },
+      { key: 'frequency_code', label: 'Frequency', type: 'category' },
+      { key: 'minutes_per_session', label: 'Minutes per session', type: 'number' },
+      { key: 'group_size', label: 'Group size', type: 'number' },
+      { key: 'start_date', label: 'Start date', type: 'date' },
+      { key: 'logged_date', label: 'Logged date', type: 'date' }
+    ],
+    goal_progress: [
+      { key: 'learner_code', label: 'Learner code', type: 'category' },
+      { key: 'measure_code', label: 'Measure', type: 'category' },
+      { key: 'baseline_value', label: 'Baseline', type: 'number' },
+      { key: 'baseline_date', label: 'Baseline date', type: 'date' },
+      { key: 'target_value', label: 'Target', type: 'number' },
+      { key: 'target_date', label: 'Target date', type: 'date' },
+      { key: 'latest_value', label: 'Latest observed value', type: 'number' },
+      { key: 'latest_measurement_date', label: 'Latest measurement date', type: 'date' },
+      { key: 'expected_at_latest', label: 'Aimline expected at latest', type: 'number' },
+      { key: 'difference_from_aimline', label: 'Difference from aimline', type: 'number' },
+      { key: 'weekly_growth_target', label: 'Weekly growth target', type: 'number' },
+      { key: 'measurement_count', label: 'Measurements in window', type: 'number' }
+    ],
+    group_tier_counts: [
+      { key: 'tier_group', label: 'Screening tier group', type: 'category' },
+      { key: 'learner_count', label: 'Learner count', type: 'number' },
+      { key: 'count_status', label: 'Count status', type: 'category' },
+      { key: 'minimum_group_size', label: 'Minimum reportable group size', type: 'number' },
+      { key: 'scope_code', label: 'Scope', type: 'category' },
+      { key: 'as_of_date', label: 'As-of date', type: 'date' }
+    ]
+  };
+  var SA_ALLOSHEET_MEASURES = {
+    orf: { code: 'orf', probeType: 'orf', unit: 'wcpm', scores: ['wcpm', 'itemsPerMin', 'correct'] },
+    nwf: { code: 'nwf_cls', probeType: 'nwf_cls', unit: 'correct_letter_sounds', scores: ['cls', 'itemsPerMin', 'correct'] },
+    nwf_cls: { code: 'nwf_cls', probeType: 'nwf_cls', unit: 'correct_letter_sounds', scores: ['cls', 'itemsPerMin', 'correct'] },
+    lnf: { code: 'lnf', probeType: 'lnf', unit: 'letters_correct', scores: ['itemsPerMin', 'correct'] },
+    ran: { code: 'ran', probeType: null, unit: 'items_per_minute', scores: ['itemsPerMin', 'correct'] },
+    math: { code: 'math_dcpm', probeType: 'math_dcpm', unit: 'digits_correct_per_minute', scores: ['dcpm', 'itemsPerMin', 'correct'] },
+    math_dcpm: { code: 'math_dcpm', probeType: 'math_dcpm', unit: 'digits_correct_per_minute', scores: ['dcpm', 'itemsPerMin', 'correct'] },
+    math_fluency: { code: 'math_dcpm', probeType: 'math_dcpm', unit: 'digits_correct_per_minute', scores: ['dcpm', 'itemsPerMin', 'correct'] },
+    missing_number: { code: 'missing_number', probeType: null, unit: 'items_per_minute', scores: ['itemsPerMin', 'correct'] },
+    quantity_discrimination: { code: 'quantity_discrimination', probeType: null, unit: 'items_per_minute', scores: ['itemsPerMin', 'correct'] },
+    segmentation: { code: 'segmentation', probeType: null, unit: 'correct_count', scores: ['correct', 'itemsPerMin'] },
+    blending: { code: 'blending', probeType: null, unit: 'correct_count', scores: ['correct', 'itemsPerMin'] },
+    isolation: { code: 'isolation', probeType: null, unit: 'correct_count', scores: ['correct', 'itemsPerMin'] },
+    rhyming: { code: 'rhyming', probeType: null, unit: 'correct_count', scores: ['correct', 'itemsPerMin'] },
+    items_per_min: { code: 'items_per_min', probeType: null, unit: 'items_per_minute', scores: ['itemsPerMin', 'correct'] }
+  };
+
+  function saAlloSheetAdapter() {
+    var candidate = window.AlloSheetTransferAdapter
+      || (window.AlloModules && window.AlloModules.AlloSheetTransferAdapter);
+    if (!candidate
+      || typeof candidate.column !== 'function'
+      || typeof candidate.table !== 'function'
+      || typeof candidate.envelope !== 'function'
+      || typeof candidate.withinDateRange !== 'function') {
+      throw new Error('The secure AlloSheet transfer adapter is still loading. Try again in a moment.');
+    }
+    return candidate;
+  }
+
+  function saAlloSheetPlainObject(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+    var prototype = Object.getPrototypeOf(value);
+    return prototype === Object.prototype || prototype === null;
+  }
+
+  function saAlloSheetNumber(value) {
+    if (value === '' || value === null || value === undefined) return null;
+    var parsed = typeof value === 'number' ? value : Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  function saAlloSheetCount(value) {
+    var parsed = saAlloSheetNumber(value);
+    return parsed === null ? null : Math.max(0, Math.min(1000000, Math.floor(parsed)));
+  }
+
+  function saAlloSheetMeasure(rawValue) {
+    var normalized = String(rawValue == null ? '' : rawValue).trim().toLowerCase().replace(/[\s-]+/g, '_');
+    return SA_ALLOSHEET_MEASURES[normalized] || {
+      code: 'other_measure',
+      probeType: null,
+      unit: 'score',
+      scores: ['wcpm', 'cls', 'dcpm', 'itemsPerMin', 'correct']
+    };
+  }
+
+  function saAlloSheetRecordMeasure(record) {
+    return saAlloSheetMeasure(record && (record.activity || record.type || record.metric));
+  }
+
+  function saAlloSheetScore(record, measure) {
+    var fields = measure && measure.scores || [];
+    for (var i = 0; i < fields.length; i++) {
+      var value = saAlloSheetNumber(record && record[fields[i]]);
+      if (value !== null) return value;
+    }
+    return null;
+  }
+
+  function saAlloSheetGrade(value) {
+    var normalized = String(value == null ? '' : value).trim().toUpperCase();
+    if (normalized === 'PK' || normalized === 'PREK' || normalized === 'PRE-K') return 'PK';
+    if (normalized === 'K') return 'K';
+    if (/^(?:[1-9]|1[0-2])$/.test(normalized)) return normalized;
+    return 'unknown';
+  }
+
+  function saAlloSheetForm(value) {
+    var normalized = String(value == null ? '' : value).trim().toUpperCase();
+    return /^[A-Z0-9_-]{1,12}$/.test(normalized) ? normalized : 'unknown';
+  }
+
+  function saAlloSheetSource(value) {
+    var normalized = String(value == null ? '' : value).trim().toLowerCase();
+    if (normalized === 'live-session') return 'live_session';
+    if (normalized === 'imported' || normalized === 'external') return 'imported';
+    if (normalized === 'teacher-administered' || normalized === 'teacher') return 'teacher_administered';
+    return 'local_assessment';
+  }
+
+  function saAlloSheetFrequency(value) {
+    var normalized = String(value == null ? '' : value).trim().toLowerCase();
+    var allowed = {
+      daily: 'daily',
+      '3x/week': '3x_week',
+      '2x/week': '2x_week',
+      weekly: 'weekly',
+      biweekly: 'biweekly',
+      monthly: 'monthly'
+    };
+    return allowed[normalized] || 'other';
+  }
+
+  function saAlloSheetTimestamp(value) {
+    if (value instanceof Date) return value.getTime();
+    if (typeof value === 'number' && Number.isFinite(value)) return value;
+    var parsed = Date.parse(String(value == null ? '' : value));
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  function saAlloSheetRecordTime(record) {
+    return saAlloSheetTimestamp(record && (record.timestamp || record.date || record.at));
+  }
+
+  function saAlloSheetSeason(value) {
+    var time = saAlloSheetTimestamp(value);
+    var month = time === null ? new Date().getMonth() : new Date(time).getMonth();
+    if (month >= 7 && month <= 10) return 'fall';
+    if (month === 11 || month <= 1) return 'winter';
+    return 'spring';
+  }
+
+  function saAlloSheetRandomCode(prefix, index, factory, used) {
+    for (var attempt = 0; attempt < 12; attempt++) {
+      var candidate = '';
+      if (typeof factory === 'function') {
+        candidate = String(factory(prefix, index, attempt) || '').trim().toUpperCase();
+      } else {
+        if (!window.crypto || typeof window.crypto.getRandomValues !== 'function') {
+          throw new Error('Secure random learner codes are unavailable in this browser.');
+        }
+        var bytes = new Uint8Array(6);
+        window.crypto.getRandomValues(bytes);
+        candidate = prefix + '-' + Array.prototype.map.call(bytes, function(value) {
+          return value.toString(16).padStart(2, '0');
+        }).join('').toUpperCase();
+      }
+      if (/^[A-Z][A-Z0-9-]{5,31}$/.test(candidate) && !used[candidate]) {
+        used[candidate] = true;
+        return candidate;
+      }
+    }
+    throw new Error('A unique transfer-local code could not be created.');
+  }
+
+  function saAlloSheetCodeMap(values, prefix, factory) {
+    var result = Object.create(null);
+    var used = Object.create(null);
+    var seen = Object.create(null);
+    (Array.isArray(values) ? values : []).forEach(function(value) {
+      var key = String(value == null ? '' : value);
+      if (!key || seen[key]) return;
+      seen[key] = true;
+      result[key] = saAlloSheetRandomCode(prefix, Object.keys(seen).length - 1, factory, used);
+    });
+    return result;
+  }
+
+  function saAlloSheetLearnerName(student) {
+    return String(student && (student.nickname || student.name) || '');
+  }
+
+  function saAlloSheetAllNames(data) {
+    var names = [];
+    var seen = Object.create(null);
+    function add(value) {
+      var name = String(value == null ? '' : value);
+      if (!name || seen[name]) return;
+      seen[name] = true;
+      names.push(name);
+    }
+    (Array.isArray(data.importedStudents) ? data.importedStudents : []).forEach(function(student) {
+      add(saAlloSheetLearnerName(student));
+    });
+    [data.probeHistory, data.interventionLogs, data.rtiGoals].forEach(function(store) {
+      if (!saAlloSheetPlainObject(store)) return;
+      Object.keys(store).forEach(add);
+    });
+    return names;
+  }
+
+  function saAlloSheetGroupNames(interventionLogs, selectedProgram) {
+    var names = [];
+    if (!selectedProgram || !saAlloSheetPlainObject(interventionLogs)) return names;
+    Object.keys(interventionLogs).forEach(function(name) {
+      var logs = Array.isArray(interventionLogs[name]) ? interventionLogs[name] : [];
+      if (logs.some(function(log) {
+        return String(log && log.program || '') === String(selectedProgram);
+      })) names.push(name);
+    });
+    return names;
+  }
+
+  function saAlloSheetSelectedNames(data, options) {
+    var scope = options.scope;
+    if (scope === 'active-student') {
+      var active = String(options.activeLearner || '');
+      if (!active) throw new Error('Choose one learner for the active-student review.');
+      return [active];
+    }
+    if (scope === 'intervention-group') {
+      var groupNames = saAlloSheetGroupNames(data.interventionLogs, options.interventionGroup);
+      if (groupNames.length < SA_ALLOSHEET_MIN_GROUP_SIZE) {
+        throw new Error('Intervention-group transfers require at least five distinct learners.');
+      }
+      return groupNames;
+    }
+    return saAlloSheetAllNames(data);
+  }
+
+  function saAlloSheetColumns(adapter, tableId) {
+    return SA_ALLOSHEET_COLUMNS[tableId].map(function(column) {
+      return adapter.column(column.key, column.label, column.type);
+    });
+  }
+
+  function saAlloSheetBenchmark(record, measure, score, resolver) {
+    if (!measure.probeType || score === null || typeof resolver !== 'function') return null;
+    var grade = saAlloSheetGrade(record && record.grade);
+    if (grade === 'unknown') return null;
+    try {
+      var result = resolver(
+        measure.probeType,
+        score,
+        grade,
+        saAlloSheetSeason(record && (record.timestamp || record.date || record.at))
+      );
+      return saAlloSheetNumber(result && result.benchmark50);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function buildStudentAnalyticsAlloSheetEnvelope(sourceData, options) {
+    var adapter = saAlloSheetAdapter();
+    var data = saAlloSheetPlainObject(sourceData) ? sourceData : {};
+    var opts = saAlloSheetPlainObject(options) ? options : {};
+    var scope = opts.scope === 'active-student' || opts.scope === 'intervention-group'
+      ? opts.scope
+      : 'class-summary';
+    var dateRange = opts.dateRange === '30d' || opts.dateRange === '365d' || opts.dateRange === 'all'
+      ? opts.dateRange
+      : '90d';
+    var datasets = saAlloSheetPlainObject(opts.datasets) ? opts.datasets : {};
+    var createdTime = saAlloSheetTimestamp(opts.createdAt);
+    if (createdTime === null) createdTime = Date.now();
+    var createdAt = new Date(createdTime).toISOString();
+    var asOfDate = createdAt.slice(0, 10);
+    var selectedNames = saAlloSheetSelectedNames(data, {
+      scope: scope,
+      activeLearner: opts.activeLearner,
+      interventionGroup: opts.interventionGroup
+    });
+    var learnerCodes = scope === 'class-summary'
+      ? Object.create(null)
+      : saAlloSheetCodeMap(selectedNames, 'L', opts.pseudonymFactory);
+    var benchmarkResolver = typeof opts.benchmarkResolver === 'function'
+      ? opts.benchmarkResolver
+      : window.AlloModules && window.AlloModules.StudentAnalyticsInternals
+        && window.AlloModules.StudentAnalyticsInternals.interpretProbeResult;
+    var tierResolver = typeof opts.tierResolver === 'function'
+      ? opts.tierResolver
+      : window.AlloModules && window.AlloModules.StudentAnalyticsInternals
+        && window.AlloModules.StudentAnalyticsInternals.classifyRTITier;
+    var tables = [];
+    var sourceCounts = {};
+    var smallGroupSuppressed = false;
+
+    if (scope !== 'class-summary' && datasets.probeTrends !== false) {
+      var probeCandidates = [];
+      selectedNames.forEach(function(name) {
+        var records = saAlloSheetPlainObject(data.probeHistory) && Array.isArray(data.probeHistory[name])
+          ? data.probeHistory[name]
+          : [];
+        records.forEach(function(record) {
+          if (!record || typeof record !== 'object') return;
+          var time = saAlloSheetRecordTime(record);
+          if (time === null || !adapter.withinDateRange(time, dateRange, createdTime)) return;
+          var measure = saAlloSheetRecordMeasure(record);
+          var score = saAlloSheetScore(record, measure);
+          if (score === null) return;
+          var correct = saAlloSheetCount(record.correct != null ? record.correct : record.correctWords);
+          var attempted = saAlloSheetCount(
+            record.total != null ? record.total
+              : record.totalScored != null ? record.totalScored
+                : record.wordsAttempted
+          );
+          var accuracy = saAlloSheetNumber(record.accuracy);
+          if (accuracy === null && correct !== null && attempted) accuracy = correct / attempted * 100;
+          if (accuracy !== null) accuracy = Math.max(0, Math.min(100, accuracy));
+          probeCandidates.push({
+            time: time,
+            values: {
+              learner_code: learnerCodes[name],
+              measure_code: measure.code,
+              measurement_date: adapter.toIsoDate(time),
+              score_value: score,
+              score_unit: measure.unit,
+              accuracy_percent: accuracy,
+              correct_count: correct,
+              attempted_count: attempted,
+              benchmark_50th_value: saAlloSheetBenchmark(record, measure, score, benchmarkResolver),
+              grade_level: saAlloSheetGrade(record.grade),
+              form_code: saAlloSheetForm(record.form),
+              source_type: saAlloSheetSource(record.source)
+            }
+          });
+        });
+      });
+      probeCandidates.sort(function(a, b) { return a.time - b.time; });
+      sourceCounts.probeTrends = probeCandidates.length;
+      var probeLimited = probeCandidates.slice(-200);
+      tables.push(adapter.table({
+        id: 'probe_trends',
+        title: 'Probe trends',
+        columns: saAlloSheetColumns(adapter, 'probe_trends'),
+        rows: probeLimited.map(function(candidate, index) {
+          return { id: 'probe-trend-' + (index + 1), values: candidate.values };
+        }),
+        sourceRowCount: probeCandidates.length
+      }));
+    }
+
+    if (scope !== 'class-summary' && datasets.interventionSummary !== false) {
+      var interventionCandidates = [];
+      selectedNames.forEach(function(name) {
+        var logs = saAlloSheetPlainObject(data.interventionLogs) && Array.isArray(data.interventionLogs[name])
+          ? data.interventionLogs[name]
+          : [];
+        logs.forEach(function(log) {
+          if (!log || typeof log !== 'object') return;
+          if (scope === 'intervention-group'
+            && String(log.program || '') !== String(opts.interventionGroup || '')) return;
+          var time = saAlloSheetTimestamp(log.startDate || log.createdAt);
+          if (time === null || !adapter.withinDateRange(time, dateRange, createdTime)) return;
+          interventionCandidates.push({ name: name, log: log, time: time });
+        });
+      });
+      interventionCandidates.sort(function(a, b) { return a.time - b.time; });
+      sourceCounts.interventionSummary = interventionCandidates.length;
+      var programCodes = saAlloSheetCodeMap(
+        interventionCandidates.map(function(candidate) { return String(candidate.log.program || 'recorded'); }),
+        'I',
+        opts.pseudonymFactory
+      );
+      var interventionLimited = interventionCandidates.slice(-200);
+      tables.push(adapter.table({
+        id: 'intervention_summary',
+        title: 'Intervention summary',
+        columns: saAlloSheetColumns(adapter, 'intervention_summary'),
+        rows: interventionLimited.map(function(candidate, index) {
+          var log = candidate.log;
+          return {
+            id: 'intervention-' + (index + 1),
+            values: {
+              learner_code: learnerCodes[candidate.name],
+              intervention_code: programCodes[String(log.program || 'recorded')],
+              frequency_code: saAlloSheetFrequency(log.frequency),
+              minutes_per_session: saAlloSheetCount(log.minutes),
+              group_size: saAlloSheetCount(log.groupSize),
+              start_date: adapter.toIsoDate(log.startDate),
+              logged_date: adapter.toIsoDate(log.createdAt)
+            }
+          };
+        }),
+        sourceRowCount: interventionCandidates.length
+      }));
+    }
+
+    if (scope !== 'class-summary' && datasets.goalProgress !== false) {
+      var goalCandidates = [];
+      selectedNames.forEach(function(name) {
+        var goal = saAlloSheetPlainObject(data.rtiGoals) && saAlloSheetPlainObject(data.rtiGoals[name])
+          ? data.rtiGoals[name]
+          : null;
+        if (!goal) return;
+        var measure = saAlloSheetMeasure(goal.metric);
+        var baseline = saAlloSheetNumber(goal.baseline);
+        var target = saAlloSheetNumber(goal.target);
+        if (baseline === null || target === null) return;
+        var records = saAlloSheetPlainObject(data.probeHistory) && Array.isArray(data.probeHistory[name])
+          ? data.probeHistory[name]
+          : [];
+        var matching = records.map(function(record) {
+          if (!record || typeof record !== 'object') return null;
+          var recordMeasure = saAlloSheetRecordMeasure(record);
+          var time = saAlloSheetRecordTime(record);
+          var value = saAlloSheetScore(record, recordMeasure);
+          if (recordMeasure.code !== measure.code || time === null || value === null
+            || !adapter.withinDateRange(time, dateRange, createdTime)) return null;
+          return { time: time, value: value };
+        }).filter(Boolean).sort(function(a, b) { return a.time - b.time; });
+        var latest = matching.length ? matching[matching.length - 1] : null;
+        var baselineTime = saAlloSheetTimestamp(goal.baselineDate);
+        var targetTime = saAlloSheetTimestamp(goal.targetDate);
+        var weeklyGrowth = null;
+        var expected = null;
+        if (baselineTime !== null && targetTime !== null && targetTime > baselineTime) {
+          var totalWeeks = (targetTime - baselineTime) / (7 * 24 * 60 * 60 * 1000);
+          weeklyGrowth = (target - baseline) / totalWeeks;
+          var comparisonTime = latest ? latest.time : createdTime;
+          var elapsedWeeks = Math.max(0, Math.min(totalWeeks, (comparisonTime - baselineTime) / (7 * 24 * 60 * 60 * 1000)));
+          expected = baseline + weeklyGrowth * elapsedWeeks;
+        }
+        goalCandidates.push({
+          sortTime: saAlloSheetTimestamp(goal.updatedAt || goal.baselineDate) || 0,
+          values: {
+            learner_code: learnerCodes[name],
+            measure_code: measure.code,
+            baseline_value: baseline,
+            baseline_date: adapter.toIsoDate(goal.baselineDate),
+            target_value: target,
+            target_date: adapter.toIsoDate(goal.targetDate),
+            latest_value: latest ? latest.value : null,
+            latest_measurement_date: latest ? adapter.toIsoDate(latest.time) : '',
+            expected_at_latest: expected,
+            difference_from_aimline: latest && expected !== null ? latest.value - expected : null,
+            weekly_growth_target: weeklyGrowth,
+            measurement_count: matching.length
+          }
+        });
+      });
+      goalCandidates.sort(function(a, b) { return a.sortTime - b.sortTime; });
+      sourceCounts.goalProgress = goalCandidates.length;
+      var goalLimited = goalCandidates.slice(-200);
+      tables.push(adapter.table({
+        id: 'goal_progress',
+        title: 'Goal and aimline progress',
+        columns: saAlloSheetColumns(adapter, 'goal_progress'),
+        rows: goalLimited.map(function(candidate, index) {
+          return { id: 'goal-progress-' + (index + 1), values: candidate.values };
+        }),
+        sourceRowCount: goalCandidates.length
+      }));
+    }
+
+    var includeTierCounts = scope === 'class-summary'
+      ? datasets.groupTierCounts !== false
+      : scope === 'intervention-group' && datasets.groupTierCounts !== false;
+    if (includeTierCounts) {
+      var selectedLookup = Object.create(null);
+      selectedNames.forEach(function(name) { selectedLookup[name] = true; });
+      var tierCounts = { 1: 0, 2: 0, 3: 0 };
+      var classified = 0;
+      (Array.isArray(data.importedStudents) ? data.importedStudents : []).forEach(function(student) {
+        var name = saAlloSheetLearnerName(student);
+        if (scope === 'intervention-group' && !selectedLookup[name]) return;
+        if (typeof tierResolver !== 'function') return;
+        var result = null;
+        try { result = tierResolver(student && student.stats || {}); } catch (_) { result = null; }
+        var tier = saAlloSheetCount(result && result.tier);
+        if (tier !== 1 && tier !== 2 && tier !== 3) return;
+        tierCounts[tier] += 1;
+        classified += 1;
+      });
+      if (classified > 0) {
+        smallGroupSuppressed = [1, 2, 3].some(function(tier) {
+          return tierCounts[tier] > 0 && tierCounts[tier] < SA_ALLOSHEET_MIN_GROUP_SIZE;
+        });
+        sourceCounts.groupTierCounts = 3;
+        tables.push(adapter.table({
+          id: 'group_tier_counts',
+          title: 'Group screening tier counts',
+          columns: saAlloSheetColumns(adapter, 'group_tier_counts'),
+          rows: [1, 2, 3].map(function(tier) {
+            return {
+              id: 'tier-group-' + tier,
+              values: {
+                tier_group: 'tier_' + tier,
+                learner_count: smallGroupSuppressed ? null : tierCounts[tier],
+                count_status: smallGroupSuppressed ? 'suppressed_small_group' : 'available',
+                minimum_group_size: SA_ALLOSHEET_MIN_GROUP_SIZE,
+                scope_code: scope === 'class-summary' ? 'class_summary' : 'intervention_group',
+                as_of_date: asOfDate
+              }
+            };
+          }),
+          sourceRowCount: 3
+        }));
+      } else {
+        sourceCounts.groupTierCounts = 0;
+        tables.push(adapter.table({
+          id: 'group_tier_counts',
+          title: 'Group screening tier counts',
+          columns: saAlloSheetColumns(adapter, 'group_tier_counts'),
+          rows: [],
+          sourceRowCount: 0
+        }));
+      }
+    }
+
+    var identifierIncluded = scope !== 'class-summary';
+    return adapter.envelope({
+      source: { tool: 'student-analytics', label: 'Student Analytics / RTI', version: '1' },
+      title: scope === 'class-summary'
+        ? 'Student Analytics class summary'
+        : scope === 'active-student'
+          ? 'Student Analytics active-student trends'
+          : 'Student Analytics intervention-group trends',
+      createdAt: createdAt,
+      classification: {
+        level: identifierIncluded ? 'education-data' : 'aggregate-education-data',
+        studentIdentifierIncluded: identifierIncluded,
+        freeTextNotesIncluded: false
+      },
+      privacy: {
+        scope: scope,
+        identifierIncluded: identifierIncluded,
+        reducedData: true,
+        notesIncluded: false
+      },
+      tables: tables,
+      provenance: {
+        measurementWindow: dateRange,
+        scope: scope,
+        sourceCounts: sourceCounts,
+        benchmarkBasis: 'student-analytics-1.0.0-current-cbm-norms',
+        aimlineMethod: 'linear-baseline-target',
+        pseudonymType: identifierIncluded ? 'random-transfer-local-opaque' : 'none',
+        minimumReportableGroupSize: SA_ALLOSHEET_MIN_GROUP_SIZE,
+        groupCountsSuppressed: smallGroupSuppressed,
+        suppressionRule: 'all-tier-counts-if-any-nonzero-tier-is-below-five',
+        learnerTierAssignmentsTransferred: false,
+        dateRangeAppliesTo: ['probe measurements', 'intervention records'],
+        exclusions: [
+          'learner names, nicknames, UIDs, filenames, and raw uploaded profiles',
+          'raw responses, prompts, options, reflections, safety information, audio, and transcripts',
+          'intervention notes and program labels',
+          'IEP, accommodation, and report-writer narrative',
+          'learner-level tiers, reasons, recommendations, alerts, and automatic decisions',
+          'source record identifiers and local storage keys'
+        ]
+      }
+    });
+  }
+
   var studentAnalyticsConfirmSequence = 0;
   function askStudentAnalyticsConfirmation(message, options) {
     return new Promise(function(resolve) {
@@ -529,7 +1152,9 @@
     // global, so the typeof-guarded call in launchBenchmarkProbe was always a no-op.
     setShowClassAnalytics,
     // Opens the host Report Writer (used by the "Send to Report Writer" action).
-    openReportWriter
+    openReportWriter,
+    // Opens the reviewed, one-way Student Analytics copy in AlloSheet.
+    onOpenAlloSheet
   }) => {
     const [importedStudents, setImportedStudents] = React.useState([]);
     const [selectedStudent, setSelectedStudent] = React.useState(null);
@@ -554,6 +1179,20 @@
     const [showResearchSetup, setShowResearchSetup] = React.useState(false);
     const [researchFirstVisit, setResearchFirstVisit] = React.useState(true);
     const [showAssessmentGuide, setShowAssessmentGuide] = React.useState(false);
+    const [showAlloSheetHandoff, setShowAlloSheetHandoff] = React.useState(false);
+    const [alloSheetScope, setAlloSheetScope] = React.useState('class-summary');
+    const [alloSheetDateRange, setAlloSheetDateRange] = React.useState('90d');
+    const [alloSheetDatasets, setAlloSheetDatasets] = React.useState({
+      probeTrends: true,
+      interventionSummary: true,
+      goalProgress: true,
+      groupTierCounts: true
+    });
+    const [alloSheetActiveLearner, setAlloSheetActiveLearner] = React.useState('');
+    const [alloSheetInterventionGroup, setAlloSheetInterventionGroup] = React.useState('');
+    const [alloSheetBusy, setAlloSheetBusy] = React.useState(false);
+    const [alloSheetFeedback, setAlloSheetFeedback] = React.useState({ kind: '', text: '' });
+    const alloSheetBusyRef = React.useRef(false);
     const bundleFileInputRef = React.useRef(null);
     // Custom survey-items editor state. Custom items live on the active
     // researchMode.customQuestions[population] and are included in the
@@ -4090,6 +4729,445 @@
         })()
       };
     }, [importedStudents]);
+    const alloSheetSourceData = React.useMemo(() => ({
+      importedStudents: importedStudents,
+      probeHistory: probeHistory || {},
+      interventionLogs: interventionLogs || {},
+      rtiGoals: rtiGoals || {}
+    }), [importedStudents, probeHistory, interventionLogs, rtiGoals]);
+    const alloSheetLearners = React.useMemo(() => {
+      return saAlloSheetAllNames(alloSheetSourceData).slice().sort(function(a, b) {
+        return a.localeCompare(b);
+      });
+    }, [alloSheetSourceData]);
+    const alloSheetInterventionGroups = React.useMemo(() => {
+      var groups = Object.create(null);
+      if (saAlloSheetPlainObject(interventionLogs)) {
+        Object.keys(interventionLogs).forEach(function(name) {
+          var logs = Array.isArray(interventionLogs[name]) ? interventionLogs[name] : [];
+          logs.forEach(function(log) {
+            var program = String(log && log.program || '').trim();
+            if (!program) return;
+            if (!groups[program]) groups[program] = Object.create(null);
+            groups[program][name] = true;
+          });
+        });
+      }
+      return Object.keys(groups).map(function(program) {
+        return {
+          value: program,
+          label: program.slice(0, 120),
+          count: Object.keys(groups[program]).length
+        };
+      }).sort(function(a, b) {
+        return a.label.localeCompare(b.label);
+      });
+    }, [interventionLogs]);
+    const eligibleAlloSheetGroups = React.useMemo(() => {
+      return alloSheetInterventionGroups.filter(function(group) {
+        return group.count >= SA_ALLOSHEET_MIN_GROUP_SIZE;
+      });
+    }, [alloSheetInterventionGroups]);
+    const alloSheetPreview = React.useMemo(() => {
+      try {
+        var artifact = buildStudentAnalyticsAlloSheetEnvelope(alloSheetSourceData, {
+          scope: alloSheetScope,
+          activeLearner: alloSheetActiveLearner,
+          interventionGroup: alloSheetInterventionGroup,
+          dateRange: alloSheetDateRange,
+          datasets: alloSheetDatasets,
+          createdAt: new Date().toISOString(),
+          tierResolver: classifyRTITier,
+          benchmarkResolver: interpretProbeResult
+        });
+        return { artifact: artifact, error: '' };
+      } catch (error) {
+        return {
+          artifact: null,
+          error: error && error.message
+            ? error.message
+            : 'Student Analytics could not prepare a bounded AlloSheet preview.'
+        };
+      }
+    }, [
+      alloSheetSourceData,
+      alloSheetScope,
+      alloSheetActiveLearner,
+      alloSheetInterventionGroup,
+      alloSheetDateRange,
+      alloSheetDatasets
+    ]);
+    const closeAlloSheetHandoff = React.useCallback(() => {
+      if (alloSheetBusyRef.current) return;
+      setShowAlloSheetHandoff(false);
+      setAlloSheetFeedback({ kind: '', text: '' });
+    }, []);
+    const alloSheetDialogRef = useStudentAnalyticsDialog(
+      !!showAlloSheetHandoff,
+      closeAlloSheetHandoff
+    );
+    React.useEffect(() => {
+      if (!showAlloSheetHandoff) return undefined;
+      return isolateStudentAnalyticsDialog(alloSheetDialogRef.current);
+    }, [showAlloSheetHandoff]);
+    const openAlloSheetHandoff = React.useCallback((event) => {
+      if (typeof onOpenAlloSheet !== 'function') {
+        if (addToast) addToast('AlloSheet is still loading. Try again in a moment.', 'error');
+        return;
+      }
+      var preferredLearner = selectedStudent && saAlloSheetLearnerName(selectedStudent);
+      setAlloSheetScope('class-summary');
+      setAlloSheetDateRange('90d');
+      setAlloSheetDatasets({
+        probeTrends: true,
+        interventionSummary: true,
+        goalProgress: true,
+        groupTierCounts: true
+      });
+      setAlloSheetActiveLearner(preferredLearner || alloSheetLearners[0] || '');
+      setAlloSheetInterventionGroup(eligibleAlloSheetGroups[0] ? eligibleAlloSheetGroups[0].value : '');
+      setAlloSheetFeedback({ kind: '', text: '' });
+      alloSheetBusyRef.current = false;
+      setShowAlloSheetHandoff(true);
+    }, [
+      onOpenAlloSheet,
+      addToast,
+      selectedStudent,
+      alloSheetLearners,
+      eligibleAlloSheetGroups
+    ]);
+    const confirmAlloSheetHandoff = React.useCallback(async () => {
+      if (alloSheetBusyRef.current || typeof onOpenAlloSheet !== 'function') return;
+      var artifact;
+      try {
+        artifact = buildStudentAnalyticsAlloSheetEnvelope(alloSheetSourceData, {
+          scope: alloSheetScope,
+          activeLearner: alloSheetActiveLearner,
+          interventionGroup: alloSheetInterventionGroup,
+          dateRange: alloSheetDateRange,
+          datasets: alloSheetDatasets,
+          createdAt: new Date().toISOString(),
+          tierResolver: classifyRTITier,
+          benchmarkResolver: interpretProbeResult
+        });
+        if (!artifact.tables.some(function(table) { return table.rowCount > 0; })) {
+          throw new Error('No reviewed Student Analytics rows match these choices.');
+        }
+      } catch (error) {
+        setAlloSheetFeedback({
+          kind: 'error',
+          text: error && error.message
+            ? error.message
+            : 'Student Analytics could not prepare a bounded AlloSheet transfer.'
+        });
+        return;
+      }
+      alloSheetBusyRef.current = true;
+      setAlloSheetBusy(true);
+      setAlloSheetFeedback({
+        kind: 'status',
+        text: 'Opening AlloSheet and waiting for secure receipt...'
+      });
+      try {
+        var pending = onOpenAlloSheet(artifact);
+        var opened = pending && typeof pending.then === 'function' ? await pending : pending;
+        if (opened === false || opened == null) throw new Error('AlloSheet did not open.');
+        alloSheetBusyRef.current = false;
+        setAlloSheetBusy(false);
+        setShowAlloSheetHandoff(false);
+        setAlloSheetFeedback({ kind: '', text: '' });
+        if (addToast) {
+          addToast(
+            'Reviewed Student Analytics tables were received for destination review in AlloSheet.',
+            'success'
+          );
+        }
+      } catch (error) {
+        setAlloSheetFeedback({
+          kind: 'error',
+          text: error && error.message
+            ? error.message
+            : 'AlloSheet could not receive the reviewed Student Analytics tables.'
+        });
+      } finally {
+        alloSheetBusyRef.current = false;
+        setAlloSheetBusy(false);
+      }
+    }, [
+      onOpenAlloSheet,
+      alloSheetSourceData,
+      alloSheetScope,
+      alloSheetActiveLearner,
+      alloSheetInterventionGroup,
+      alloSheetDateRange,
+      alloSheetDatasets,
+      addToast
+    ]);
+    const renderAlloSheetHandoffReview = () => {
+      if (!showAlloSheetHandoff) return null;
+      var e = React.createElement;
+      var artifact = alloSheetPreview.artifact;
+      var tables = artifact && Array.isArray(artifact.tables) ? artifact.tables : [];
+      var hasRows = tables.some(function(table) { return table.rowCount > 0; });
+      var scopeOptions = [
+        {
+          key: 'class-summary',
+          label: 'Class summary (recommended)',
+          description: 'Only privacy-suppressed aggregate screening tier counts.',
+          disabled: false
+        },
+        {
+          key: 'active-student',
+          label: 'Active student',
+          description: 'Probe, intervention, and goal rows joined with a random transfer-local learner code.',
+          disabled: alloSheetLearners.length === 0
+        },
+        {
+          key: 'intervention-group',
+          label: 'Intervention group',
+          description: 'Pseudonymous rows for a recorded intervention shared by at least five learners.',
+          disabled: eligibleAlloSheetGroups.length === 0
+        }
+      ];
+      var datasetOptions = [
+        { key: 'probeTrends', table: 'probe_trends', label: 'Probe trends', individual: true },
+        { key: 'interventionSummary', table: 'intervention_summary', label: 'Intervention summary', individual: true },
+        { key: 'goalProgress', table: 'goal_progress', label: 'Goal and aimline progress', individual: true },
+        { key: 'groupTierCounts', table: 'group_tier_counts', label: 'Group screening tier counts', individual: false }
+      ];
+      return ReactDOM.createPortal(e('div', {
+        role: 'presentation',
+        className: 'fixed inset-0 z-[220] flex items-center justify-center bg-slate-950/75 p-3 sm:p-4',
+        onClick: function(event) {
+          if (event.target === event.currentTarget && !alloSheetBusy) closeAlloSheetHandoff();
+        }
+      }, e('div', {
+        ref: alloSheetDialogRef,
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-busy': alloSheetBusy ? 'true' : 'false',
+        'aria-labelledby': 'sa-allosheet-review-title',
+        'aria-describedby': 'sa-allosheet-review-description sa-allosheet-review-privacy',
+        tabIndex: -1,
+        className: 'allo-docsuite w-full max-w-3xl max-h-[92vh] overflow-y-auto rounded-2xl border-4 border-indigo-300 bg-white text-slate-900 shadow-2xl'
+      },
+        e('div', { className: 'border-b border-slate-300 p-4 sm:p-6' },
+          e('h2', {
+            id: 'sa-allosheet-review-title',
+            className: 'text-xl font-black text-indigo-950'
+          }, 'Review Student Analytics data for AlloSheet'),
+          e('p', {
+            id: 'sa-allosheet-review-description',
+            className: 'mt-2 text-sm text-slate-700'
+          }, 'Choose a bounded scope, date window, and exact tables. Student Analytics remains authoritative and AlloSheet cannot write back.')
+        ),
+        e('div', { className: 'space-y-5 p-4 text-sm sm:p-6' },
+          e('fieldset', { className: 'space-y-2' },
+            e('legend', { className: 'font-black text-slate-900' }, 'Review scope'),
+            scopeOptions.map(function(option) {
+              return e('label', {
+                key: option.key,
+                className: 'flex min-h-11 items-start gap-3 rounded-xl border-2 p-3 '
+                  + (option.disabled ? 'cursor-not-allowed opacity-60 ' : 'cursor-pointer ')
+                  + (alloSheetScope === option.key ? 'border-indigo-600 bg-indigo-50' : 'border-slate-300 bg-white')
+              },
+                e('input', {
+                  type: 'radio',
+                  name: 'sa-allosheet-scope',
+                  value: option.key,
+                  checked: alloSheetScope === option.key,
+                  disabled: option.disabled,
+                  onChange: function() {
+                    setAlloSheetScope(option.key);
+                    setAlloSheetFeedback({ kind: '', text: '' });
+                  },
+                  className: 'mt-1 h-5 w-5'
+                }),
+                e('span', null,
+                  e('span', { className: 'block font-bold text-slate-900' }, option.label),
+                  e('span', { className: 'mt-0.5 block text-xs text-slate-700' }, option.description)
+                )
+              );
+            })
+          ),
+          alloSheetScope === 'active-student' && e('div', null,
+            e('label', {
+              htmlFor: 'sa-allosheet-active-learner',
+              className: 'mb-1.5 block font-black text-slate-900'
+            }, 'Learner reviewed in Student Analytics'),
+            e('select', {
+              id: 'sa-allosheet-active-learner',
+              value: alloSheetActiveLearner,
+              onChange: function(event) { setAlloSheetActiveLearner(event.target.value); },
+              className: 'min-h-11 w-full rounded-lg border-2 border-slate-400 bg-white px-3 py-2'
+            }, alloSheetLearners.map(function(name) {
+              return e('option', { key: name, value: name }, name.slice(0, 120));
+            }))
+          ),
+          alloSheetScope === 'intervention-group' && e('div', null,
+            e('label', {
+              htmlFor: 'sa-allosheet-intervention-group',
+              className: 'mb-1.5 block font-black text-slate-900'
+            }, 'Recorded intervention group'),
+            e('select', {
+              id: 'sa-allosheet-intervention-group',
+              value: alloSheetInterventionGroup,
+              onChange: function(event) { setAlloSheetInterventionGroup(event.target.value); },
+              className: 'min-h-11 w-full rounded-lg border-2 border-slate-400 bg-white px-3 py-2'
+            }, eligibleAlloSheetGroups.map(function(group) {
+              return e('option', { key: group.value, value: group.value },
+                group.label + ' (' + group.count + ' learners)'
+              );
+            }))
+          ),
+          e('div', null,
+            e('label', {
+              htmlFor: 'sa-allosheet-date-range',
+              className: 'mb-1.5 block font-black text-slate-900'
+            }, 'Measurement window'),
+            e('select', {
+              id: 'sa-allosheet-date-range',
+              value: alloSheetDateRange,
+              onChange: function(event) { setAlloSheetDateRange(event.target.value); },
+              className: 'min-h-11 w-full rounded-lg border-2 border-slate-400 bg-white px-3 py-2'
+            },
+              e('option', { value: '30d' }, 'Last 30 days'),
+              e('option', { value: '90d' }, 'Last 90 days (recommended)'),
+              e('option', { value: '365d' }, 'Last 365 days'),
+              e('option', { value: 'all' }, 'All available dates')
+            ),
+            e('p', { className: 'mt-1 text-xs text-slate-700' },
+              'The window filters probe measurements and intervention records. Current goal and group-screening snapshots remain current as of transfer.'
+            )
+          ),
+          e('fieldset', { className: 'space-y-2' },
+            e('legend', { className: 'font-black text-slate-900' }, 'Tables'),
+            datasetOptions.map(function(dataset) {
+              var available = alloSheetScope === 'class-summary'
+                ? !dataset.individual
+                : alloSheetScope === 'active-student'
+                  ? dataset.individual
+                  : true;
+              return e('label', {
+                key: dataset.key,
+                className: 'flex min-h-11 items-center gap-3 rounded-lg border border-slate-400 px-3 py-2 '
+                  + (available ? '' : 'opacity-60')
+              },
+                e('input', {
+                  type: 'checkbox',
+                  checked: available && alloSheetDatasets[dataset.key] !== false,
+                  disabled: !available,
+                  onChange: function(event) {
+                    setAlloSheetDatasets(function(previous) {
+                      return Object.assign({}, previous, { [dataset.key]: event.target.checked });
+                    });
+                  },
+                  className: 'h-5 w-5 rounded'
+                }),
+                e('span', { className: 'font-bold text-slate-800' }, dataset.label),
+                e('span', { className: 'ms-auto text-xs text-slate-700' }, (function() {
+                  var table = tables.find(function(candidate) { return candidate.id === dataset.table; });
+                  return table ? table.rowCount + ' rows' : 'not in this scope';
+                })())
+              );
+            })
+          ),
+          e('p', {
+            id: 'sa-allosheet-review-privacy',
+            className: 'rounded-xl border-2 border-amber-400 bg-amber-50 p-3 text-sm text-amber-950'
+          },
+            e('strong', null, 'Privacy boundary: '),
+            alloSheetScope === 'class-summary'
+              ? 'No learner codes are included. If any nonzero tier group is smaller than five, every tier count is blank rather than zero.'
+              : 'Random transfer-local learner codes are still identifiers, not de-identification. Exact dates, grades, measures, and intervention logistics can indirectly identify a learner.'
+          ),
+          e('section', {
+            'aria-labelledby': 'sa-allosheet-preview-heading',
+            className: 'rounded-xl border-2 border-slate-400 bg-slate-50 p-4'
+          },
+            e('h3', {
+              id: 'sa-allosheet-preview-heading',
+              className: 'font-black text-slate-900'
+            }, 'Exact transfer preview'),
+            alloSheetPreview.error && e('p', {
+              role: 'alert',
+              className: 'mt-2 rounded-lg border border-red-300 bg-red-50 p-3 font-bold text-red-800'
+            }, alloSheetPreview.error),
+            !alloSheetPreview.error && e('ul', {
+              className: 'mt-3 space-y-3'
+            }, tables.map(function(table) {
+              return e('li', {
+                key: table.id,
+                className: 'rounded-lg border border-slate-300 bg-white p-3'
+              },
+                e('div', { className: 'font-bold text-slate-900' }, table.title),
+                e('div', { className: 'mt-1 text-xs text-slate-700' },
+                  table.rowCount + ' of ' + table.sourceRowCount + ' source rows included'
+                ),
+                e('ul', {
+                  'aria-label': table.title + ' fields',
+                  className: 'mt-2 flex flex-wrap gap-1.5'
+                }, table.columns.map(function(column) {
+                  return e('li', {
+                    key: column.key,
+                    className: 'rounded border border-slate-400 bg-slate-50 px-2 py-1 text-xs'
+                  }, column.label + ' (' + column.type + ')');
+                })),
+                table.truncated && e('p', {
+                  role: 'status',
+                  className: 'mt-2 font-bold text-amber-800'
+                }, 'Only the newest 200 rows fit the secure transfer limit.')
+              );
+            })),
+            artifact && artifact.provenance && artifact.provenance.groupCountsSuppressed
+              && e('p', {
+                role: 'status',
+                className: 'mt-3 rounded-lg border border-amber-300 bg-amber-50 p-2 font-bold text-amber-900'
+              }, 'Small-group suppression is active: all tier counts will be blank.')
+          ),
+          e('div', {
+            className: 'rounded-xl border border-rose-300 bg-rose-50 p-4 text-rose-950'
+          },
+            e('p', { className: 'font-black' }, 'Always excluded'),
+            e('p', { className: 'mt-1 text-xs leading-relaxed' },
+              'Learner names, nicknames, UIDs, filenames, raw uploaded profiles, prompts, answers, reflections, safety information, audio, transcripts, intervention notes and program labels, IEP or accommodation narrative, report-writer narrative, learner-level tiers, reasons, recommendations, alerts, and automatic decisions.'
+            )
+          ),
+          e('div', {
+            className: 'rounded-xl border border-emerald-400 bg-emerald-50 p-4 text-emerald-950'
+          },
+            e('p', { className: 'font-black' }, 'One-way reviewed copy'),
+            e('p', { className: 'mt-1 text-xs' },
+              'This transfer does not enable AI, send data to an AI service, change Student Analytics, or allow AlloSheet to write back.'
+            )
+          ),
+          alloSheetFeedback.text && e('p', {
+            role: alloSheetFeedback.kind === 'error' ? 'alert' : 'status',
+            'aria-live': alloSheetFeedback.kind === 'error' ? 'assertive' : 'polite',
+            className: 'rounded-lg border p-3 font-bold '
+              + (alloSheetFeedback.kind === 'error'
+                ? 'border-red-300 bg-red-50 text-red-800'
+                : 'border-indigo-300 bg-indigo-50 text-indigo-900')
+          }, alloSheetFeedback.text)
+        ),
+        e('div', {
+          className: 'sticky bottom-0 flex flex-wrap justify-end gap-3 border-t border-slate-300 bg-white p-4 sm:p-5'
+        },
+          e('button', {
+            type: 'button',
+            onClick: closeAlloSheetHandoff,
+            disabled: alloSheetBusy,
+            className: 'min-h-11 rounded-lg border-2 border-slate-500 bg-white px-4 py-2 font-bold text-slate-900 disabled:opacity-50'
+          }, 'Cancel'),
+          e('button', {
+            type: 'button',
+            onClick: confirmAlloSheetHandoff,
+            disabled: alloSheetBusy || !!alloSheetPreview.error || !hasRows,
+            className: 'min-h-11 rounded-lg bg-indigo-700 px-5 py-2 font-black text-white disabled:cursor-not-allowed disabled:opacity-50'
+          }, alloSheetBusy ? 'Waiting for AlloSheet...' : 'Confirm and open AlloSheet')
+        )
+      )), document.body);
+    };
     React.useEffect(() => {
       if (!quizChartRef.current || importedStudents.length === 0 || typeof Chart === 'undefined') return;
       if (quizChartInstance.current) quizChartInstance.current.destroy();
@@ -4344,7 +5422,7 @@
     // sub-modal is open (otherwise the sub-modal owns that Escape).
     var dialogRef = React.useRef(null);
     var subModalOpenRef = React.useRef(false);
-    subModalOpenRef.current = !!(showCBMModal || showSurveyModal || showResearchSetup || showCustomQuestions || showRTISettings || showAutoSurveyPrompt);
+    subModalOpenRef.current = !!(showCBMModal || showSurveyModal || showResearchSetup || showCustomQuestions || showRTISettings || showAutoSurveyPrompt || showAlloSheetHandoff);
     React.useEffect(function() {
       if (!isOpen) return undefined;
       alloSaveFocus();
@@ -4369,7 +5447,7 @@
       return function() { if (node) node.removeEventListener('keydown', onKey); alloRestoreFocus(); };
     }, [isOpen]);
     if (!isOpen) return null;
-    return ReactDOM.createPortal(/*#__PURE__*/React.createElement("div", {
+    return React.createElement(React.Fragment, null, ReactDOM.createPortal(/*#__PURE__*/React.createElement("div", {
       // theme-${theme} on the portal root (a document.body sibling of the app's
       // theme root) makes the scoped `.theme-dark .allo-docsuite` remap rules reach
       // the card below; the card carries the `allo-docsuite` scope class.
@@ -4610,7 +5688,13 @@
       className: "bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
     }, /*#__PURE__*/React.createElement(Upload, {
       size: 16
-    }), t('class_analytics.import_button'))), importedStudents.length > 0 && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+    }), t('class_analytics.import_button'))), typeof onOpenAlloSheet === 'function' && alloSheetLearners.length > 0 && /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: openAlloSheetHandoff,
+      "aria-haspopup": "dialog",
+      "aria-label": "Review Student Analytics data before opening it in AlloSheet",
+      className: "min-h-11 bg-indigo-700 hover:bg-indigo-800 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-colors"
+    }, "📊 Open in AlloSheet"), importedStudents.length > 0 && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
       "aria-label": t('common.download'),
       "data-help-key": "dashboard_export_csv",
       onClick: handleExportCSV,
@@ -8011,7 +9095,14 @@
             onClick: () => { setImportedStudents([]); },
             className: "bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
           }, React.createElement(Trash2, { size: 16 }), t('class_analytics.clear_data'))
-        )
+        ),
+        typeof onOpenAlloSheet === 'function' && alloSheetLearners.length > 0 && React.createElement("button", {
+          type: "button",
+          onClick: openAlloSheetHandoff,
+          "aria-haspopup": "dialog",
+          "aria-label": "Review Student Analytics data before opening it in AlloSheet",
+          className: "min-h-11 bg-indigo-700 hover:bg-indigo-800 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-colors"
+        }, "📊 Open in AlloSheet")
       ),
       // Summary + student search
       importedStudents.length > 0 && React.createElement("div", { className: "mb-3" },
@@ -8420,7 +9511,7 @@
         React.createElement('div', { className: 'text-3xl font-black text-amber-600 tabular-nums' }, '\u23F1 ' + ranProbeElapsed + 's')
       )
     )
-    )))))))), document.body);
+    )))))))), document.body), showAlloSheetHandoff && renderAlloSheetHandoffReview());
   });
 
   // Register module
@@ -8478,6 +9569,8 @@
   var _saMeta = {
     version: '1.0.0',
     storageKey: 'alloflow_probe_history',
+    allosheetMinimumGroupSize: SA_ALLOSHEET_MIN_GROUP_SIZE,
+    buildAlloSheetEnvelope: buildStudentAnalyticsAlloSheetEnvelope,
     getStudentProbeHistory: function(nickname) {
       var arr = _readProbeStore()[nickname];
       return Array.isArray(arr) ? arr.slice() : [];

@@ -3079,7 +3079,7 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
 
     // ─── ExportPanel ────────────────────────────────────────────────────
     // Export behavioral data as JSON, CSV, or summary text
-    const ExportPanel = ({ abcEntries, observationSessions, studentName, aiAnalysis, t }) => {
+    const ExportPanel = ({ abcEntries, observationSessions, studentName, aiAnalysis, t, onOpenAlloSheetReview }) => {
         const [format, setFormat] = useState('json');
         const [dateRange, setDateRange] = useState('all');
 
@@ -3247,6 +3247,12 @@ Analyze which routines are behavioral hotspots and return ONLY valid JSON:
                     disabled: filteredAbc.length === 0 && filteredObs.length === 0,
                     className: 'w-full py-3 bg-gradient-to-r from-slate-700 to-slate-900 text-white rounded-xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 transition-all'
                 }, '📥 ' + (tt('behavior_lens.export.download', 'Download Export'))),
+                h('button', {
+                    type: 'button',
+                    onClick: onOpenAlloSheetReview,
+                    className: 'w-full min-h-[44px] py-3 bg-emerald-700 text-white rounded-xl font-bold shadow-lg hover:bg-emerald-800 hover:shadow-xl transition-all'
+                }, '📊 Open in AlloSheet'),
+                h('p', { className: 'text-xs text-slate-700' }, 'Review a privacy-reduced one-way copy before it opens. This action does not enable AI.'),
                 // Portfolio PDF (print-optimized)
                 h('button', { onClick: () => {
                         const student = studentName || 'Student';
@@ -16241,7 +16247,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
             setSessionActive(true);
             setSessionStart(Date.now());
             setElapsed(0);
-            setTargets(prev => prev.map(t => ({ ...t, count: 0, durations: [], intervals: [] })));
+            setTargets(prev => prev.map(t => ({ ...t, count: 0, total: 0, durations: [], intervals: [] })));
         };
 
         const endSession = () => {
@@ -16254,6 +16260,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                     name: t.name,
                     type: t.type,
                     count: t.count,
+                    total: t.total,
                     durations: t.durations || [],
                     intervals: t.intervals || [],
                     rate: duration > 0 ? parseFloat((t.count / (duration / 60)).toFixed(2)) : 0,
@@ -16266,6 +16273,13 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
         };
 
         const recordCount = (id) => updateTarget(id, 'count', targets.find(t => t.id === id).count + 1);
+        const recordPercentage = (id, correct) => {
+            setTargets(prev => prev.map(target => target.id === id ? {
+                ...target,
+                count: target.count + (correct ? 1 : 0),
+                total: (target.total == null ? target.count : target.total) + 1
+            } : target));
+        };
 
         const toggleDuration = (id) => {
             if (durationTimers[id]) {
@@ -16437,8 +16451,8 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                                     ) :
                                         tgt.type === 'percentage' ? h('div', { className: 'flex items-center gap-4' },
                                             h('div', { className: 'flex gap-2' },
-                                                h('button', { onClick: () => recordCount(tgt.id), className: 'px-4 py-3 bg-green-100 text-green-700 rounded-xl font-bold text-sm hover:bg-green-200' }, '✓ Correct'),
-                                                h('button', { "aria-label": "Incorrect", onClick: () => updateTarget(tgt.id, 'total', (tgt.total || tgt.count) + 1), className: 'px-4 py-3 bg-red-100 text-red-700 rounded-xl font-bold text-sm hover:bg-red-200' }, '✗ Incorrect'),
+                                                h('button', { onClick: () => recordPercentage(tgt.id, true), className: 'px-4 py-3 bg-green-100 text-green-700 rounded-xl font-bold text-sm hover:bg-green-200' }, '✓ Correct'),
+                                                h('button', { "aria-label": "Incorrect", onClick: () => recordPercentage(tgt.id, false), className: 'px-4 py-3 bg-red-100 text-red-700 rounded-xl font-bold text-sm hover:bg-red-200' }, '✗ Incorrect'),
                                             ),
                                             h('p', { className: 'text-xs text-slate-600' }, `${tgt.count}/${tgt.total || tgt.count} = ${tgt.total ? Math.round(tgt.count / tgt.total * 100) : 100}%`)
                                         ) : null
@@ -24443,9 +24457,716 @@ IMPORTANT rules for expert keys:
         );
     };
 
+    // ─── BehaviorLens -> AlloSheet handoff ─────────────────────────────
+    // This builder is deliberately pure: it receives the current workspace
+    // data, returns a bounded plain object, and never stores a student-data
+    // snapshot on window, localStorage, or the host bridge.
+    const BL_ALLOSHEET_KIND = 'alloflow.tabular.v1';
+    const BL_ALLOSHEET_LIMITS = Object.freeze({
+        maxTables: 5,
+        maxColumnsPerTable: 40,
+        maxRowsPerTable: 200,
+        maxCellCharacters: 1200,
+        maxEnvelopeBytes: 2000000,
+        maxTableBytes: 500000
+    });
+
+    const blAlloSheetByteLength = (value) => {
+        const text = typeof value === 'string' ? value : JSON.stringify(value);
+        try {
+            if (typeof TextEncoder !== 'undefined') return new TextEncoder().encode(text).length;
+        } catch (_) {}
+        try { return unescape(encodeURIComponent(text)).length; } catch (_) { return text.length; }
+    };
+
+    const blAlloSheetText = (value, max) => String(value == null ? '' : value)
+        .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, ' ')
+        .slice(0, Math.min(BL_ALLOSHEET_LIMITS.maxCellCharacters, max || BL_ALLOSHEET_LIMITS.maxCellCharacters));
+
+    const blAlloSheetNumber = (value) => {
+        if (value == null || value === '') return null;
+        const number = Number(value);
+        return Number.isFinite(number) ? number : null;
+    };
+
+    const blAlloSheetRound = (value, digits) => {
+        if (!Number.isFinite(value)) return null;
+        const factor = Math.pow(10, digits == null ? 2 : digits);
+        return Math.round(value * factor) / factor;
+    };
+
+    const blAlloSheetRecordTime = (record) => {
+        const value = record && (record.timestamp || record.date || record.createdAt);
+        const time = value ? new Date(value).getTime() : NaN;
+        return Number.isFinite(time) ? time : null;
+    };
+
+    const blAlloSheetDate = (record) => {
+        const time = blAlloSheetRecordTime(record);
+        return time == null ? '' : new Date(time).toISOString().slice(0, 10);
+    };
+
+    const blAlloSheetFilterByDate = (records, dateRange, nowMs) => {
+        const source = Array.isArray(records) ? records : [];
+        const days = dateRange === '7d' ? 7 : dateRange === '30d' ? 30 : null;
+        const cutoff = days == null ? null : nowMs - (days * 86400000);
+        return source.filter((record) => {
+            if (cutoff == null) return true;
+            const time = blAlloSheetRecordTime(record);
+            return time != null && time >= cutoff && time <= nowMs;
+        }).sort((a, b) => (blAlloSheetRecordTime(b) || 0) - (blAlloSheetRecordTime(a) || 0));
+    };
+
+    const blAlloSheetColumn = (key, label, type) => ({
+        key: blAlloSheetText(key, 80),
+        label: blAlloSheetText(label, 160),
+        type: ['text', 'number', 'boolean', 'date', 'datetime'].includes(type) ? type : 'text'
+    });
+
+    const blAlloSheetCell = (value, type) => {
+        if (value == null) return null;
+        if (type === 'number') return blAlloSheetNumber(value);
+        if (type === 'boolean') return value === true;
+        return blAlloSheetText(value);
+    };
+
+    const blAlloSheetTable = (id, title, columns, candidateRows, sourceRowCount) => {
+        const safeColumns = (Array.isArray(columns) ? columns : [])
+            .slice(0, BL_ALLOSHEET_LIMITS.maxColumnsPerTable)
+            .map((column) => blAlloSheetColumn(column.key, column.label, column.type));
+        const rows = [];
+        let tableBytes = blAlloSheetByteLength(safeColumns);
+        const sourceRows = Array.isArray(candidateRows) ? candidateRows : [];
+
+        for (let index = 0; index < sourceRows.length && rows.length < BL_ALLOSHEET_LIMITS.maxRowsPerTable; index += 1) {
+            const sourceRow = sourceRows[index] || {};
+            const values = {};
+            safeColumns.forEach((column) => {
+                values[column.key] = blAlloSheetCell(sourceRow.values && sourceRow.values[column.key], column.type);
+            });
+            const row = {
+                id: blAlloSheetText(sourceRow.id || (id + '-' + (index + 1)), 120),
+                values
+            };
+            const rowBytes = blAlloSheetByteLength(row);
+            if (tableBytes + rowBytes > BL_ALLOSHEET_LIMITS.maxTableBytes) break;
+            tableBytes += rowBytes;
+            rows.push(row);
+        }
+
+        return {
+            id: blAlloSheetText(id, 80),
+            title: blAlloSheetText(title, 180),
+            columns: safeColumns,
+            rows,
+            rowCount: rows.length,
+            sourceRowCount: Math.max(0, Math.floor(Number(sourceRowCount) || 0)),
+            truncated: rows.length < sourceRows.length
+        };
+    };
+
+    const blAlloSheetMostCommon = (counts) => {
+        const entries = Object.entries(counts || {}).sort((a, b) => b[1] - a[1]);
+        return entries.length ? entries[0][0] : '';
+    };
+
+    const blAlloSheetIdentifierColumn = (identifierIncluded) => (
+        identifierIncluded ? [blAlloSheetColumn('student_identifier', 'Student identifier', 'text')] : []
+    );
+
+    const blAlloSheetWithIdentifier = (values, identifierIncluded, studentIdentifier) => {
+        if (!identifierIncluded) return values;
+        return Object.assign({ student_identifier: studentIdentifier }, values);
+    };
+
+    const blAlloSheetAbcSummaryRows = (records, identifierIncluded, studentIdentifier) => {
+        const groups = new Map();
+        records.forEach((entry) => {
+            const date = blAlloSheetDate(entry);
+            const phase = blAlloSheetText(entry && entry.phase || 'Unspecified', 120);
+            const key = date + '\u001f' + phase;
+            if (!groups.has(key)) {
+                groups.set(key, {
+                    date,
+                    phase,
+                    count: 0,
+                    intensityTotal: 0,
+                    intensityCount: 0,
+                    durationTotal: 0,
+                    behaviorCounts: {}
+                });
+            }
+            const group = groups.get(key);
+            group.count += 1;
+            const intensity = blAlloSheetNumber(entry && entry.intensity);
+            if (intensity != null) { group.intensityTotal += intensity; group.intensityCount += 1; }
+            const duration = blAlloSheetNumber(entry && entry.duration);
+            if (duration != null) group.durationTotal += duration;
+            const behavior = blAlloSheetText(entry && entry.behavior, 1200);
+            if (behavior) group.behaviorCounts[behavior] = (group.behaviorCounts[behavior] || 0) + 1;
+        });
+        return Array.from(groups.values()).map((group, index) => ({
+            id: 'abc-summary-' + (index + 1),
+            values: blAlloSheetWithIdentifier({
+                date: group.date,
+                phase: group.phase,
+                entry_count: group.count,
+                average_intensity: group.intensityCount ? blAlloSheetRound(group.intensityTotal / group.intensityCount, 2) : null,
+                total_duration_seconds: blAlloSheetRound(group.durationTotal, 2),
+                most_common_behavior: blAlloSheetMostCommon(group.behaviorCounts)
+            }, identifierIncluded, studentIdentifier)
+        }));
+    };
+
+    const blAlloSheetObservationMetrics = (session) => {
+        const data = session && session.data && typeof session.data === 'object' ? session.data : (session || {});
+        const labels = [];
+        if (session && session.behavior) labels.push(blAlloSheetText(session.behavior, 1200));
+        if (Array.isArray(data.counters)) {
+            data.counters.forEach((counter) => {
+                const label = blAlloSheetText(counter && counter.label, 1200);
+                if (label && label.toLowerCase() !== 'unlabeled') labels.push(label);
+            });
+        }
+        const occurredIntervals = blAlloSheetNumber(data.occurredCount);
+        const recordedIntervals = data.completedCount != null
+            ? blAlloSheetNumber(data.completedCount)
+            : blAlloSheetNumber(data.totalIntervals);
+        const completedIntervals = Math.max(recordedIntervals || 0, occurredIntervals || 0) || null;
+        const plannedIntervals = data.totalIntervals != null
+            ? blAlloSheetNumber(data.totalIntervals)
+            : completedIntervals;
+        const latencyMs = blAlloSheetNumber(data.latencyMs);
+        return {
+            count: blAlloSheetNumber(data.count != null ? data.count : (data.occurredCount != null ? data.occurredCount : data.totalCount)),
+            ratePerMinute: blAlloSheetNumber(data.rate),
+            occurred: occurredIntervals,
+            completedIntervals,
+            plannedIntervals,
+            percentage: blAlloSheetNumber(data.percentage),
+            totalBehaviorDuration: blAlloSheetNumber(data.totalDuration),
+            latencySeconds: latencyMs == null ? null : blAlloSheetRound(latencyMs / 1000, 3),
+            behaviorLabels: Array.from(new Set(labels)).join('; ')
+        };
+    };
+
+    const blAlloSheetObservationSummaryRows = (records, identifierIncluded, studentIdentifier) => {
+        const groups = new Map();
+        records.forEach((session) => {
+            const date = blAlloSheetDate(session);
+            const method = blAlloSheetText(session && (session.method || session.type) || 'Observation', 120);
+            const key = date + '\u001f' + method;
+            if (!groups.has(key)) {
+                groups.set(key, {
+                    date,
+                    method,
+                    sessions: 0,
+                    durationTotal: 0,
+                    eventTotal: 0,
+                    eventCount: 0,
+                    rateTotal: 0,
+                    rateCount: 0,
+                    percentageTotal: 0,
+                    percentageCount: 0,
+                    behaviorDurationTotal: 0,
+                    behaviorDurationCount: 0,
+                    latencyTotal: 0,
+                    latencyCount: 0
+                });
+            }
+            const group = groups.get(key);
+            const metrics = blAlloSheetObservationMetrics(session);
+            group.sessions += 1;
+            group.durationTotal += blAlloSheetNumber(session && session.duration) || 0;
+            if (metrics.count != null) { group.eventTotal += metrics.count; group.eventCount += 1; }
+            if (metrics.ratePerMinute != null) { group.rateTotal += metrics.ratePerMinute; group.rateCount += 1; }
+            if (metrics.percentage != null) { group.percentageTotal += metrics.percentage; group.percentageCount += 1; }
+            if (metrics.totalBehaviorDuration != null) { group.behaviorDurationTotal += metrics.totalBehaviorDuration; group.behaviorDurationCount += 1; }
+            if (metrics.latencySeconds != null) { group.latencyTotal += metrics.latencySeconds; group.latencyCount += 1; }
+        });
+        return Array.from(groups.values()).map((group, index) => ({
+            id: 'observation-summary-' + (index + 1),
+            values: blAlloSheetWithIdentifier({
+                date: group.date,
+                method: group.method,
+                session_count: group.sessions,
+                total_session_duration_seconds: blAlloSheetRound(group.durationTotal, 2),
+                event_count: group.eventCount ? blAlloSheetRound(group.eventTotal, 2) : null,
+                average_rate: group.rateCount ? blAlloSheetRound(group.rateTotal / group.rateCount, 2) : null,
+                average_percentage: group.percentageCount ? blAlloSheetRound(group.percentageTotal / group.percentageCount, 2) : null,
+                total_behavior_duration_seconds: group.behaviorDurationCount ? blAlloSheetRound(group.behaviorDurationTotal, 2) : null,
+                average_latency_seconds: group.latencyCount ? blAlloSheetRound(group.latencyTotal / group.latencyCount, 3) : null
+            }, identifierIncluded, studentIdentifier)
+        }));
+    };
+
+    const blAlloSheetSessionMeasurementRows = (records, identifierIncluded, studentIdentifier, notesIncluded) => {
+        const rows = [];
+        const safeRecords = Array.isArray(records) ? records : [];
+        safeRecords.forEach((session, sessionIndex) => {
+            const date = blAlloSheetDate(session);
+            const phase = blAlloSheetText(session && session.phase || 'Unspecified', 120);
+            const sessionDurationSeconds = blAlloSheetNumber(session && session.durationSec);
+            const sessionDuration = sessionDurationSeconds == null
+                ? blAlloSheetText(session && session.duration, 120)
+                : '';
+            const sessionSource = blAlloSheetText(session && session.source || '', 120);
+
+            const pushRow = (target, targetIndex) => {
+                const targetType = blAlloSheetText(target && target.type, 80).toLowerCase();
+                const count = blAlloSheetNumber(target && target.count);
+                const rate = blAlloSheetNumber(target && target.rate);
+                const durations = Array.isArray(target && target.durations)
+                    ? target.durations.map(blAlloSheetNumber).filter((value) => value != null)
+                    : [];
+                const intervals = Array.isArray(target && target.intervals) ? target.intervals : [];
+                const total = blAlloSheetNumber(target && target.total);
+                let measurementType = targetType || 'count';
+                let measurementValue = null;
+                let measurementUnit = 'count';
+                let ratePerMinute = null;
+                let totalDurationSeconds = null;
+                let percentage = null;
+
+                if (targetType === 'frequency' || targetType === 'rate') {
+                    measurementType = targetType;
+                    measurementValue = rate;
+                    measurementUnit = 'per_minute';
+                    ratePerMinute = rate;
+                } else if (targetType === 'duration') {
+                    measurementType = 'duration';
+                    totalDurationSeconds = durations.length
+                        ? blAlloSheetRound(durations.reduce((sum, value) => sum + value, 0), 2)
+                        : null;
+                    measurementValue = totalDurationSeconds;
+                    measurementUnit = 'seconds';
+                } else if (targetType === 'interval') {
+                    measurementType = 'interval';
+                    percentage = intervals.length
+                        ? blAlloSheetRound((intervals.filter(Boolean).length / intervals.length) * 100, 2)
+                        : null;
+                    measurementValue = percentage;
+                    measurementUnit = 'percent';
+                } else if (targetType === 'percentage') {
+                    measurementType = 'percentage';
+                    percentage = total != null && total > 0 && count != null
+                        ? blAlloSheetRound((count / total) * 100, 2)
+                        : null;
+                    measurementValue = percentage;
+                    measurementUnit = 'percent';
+                } else {
+                    measurementValue = count;
+                }
+
+                rows.push({
+                    id: 'session-' + (sessionIndex + 1) + '-target-' + (targetIndex + 1),
+                    values: blAlloSheetWithIdentifier(Object.assign({
+                        date,
+                        behavior: target && target.name || '',
+                        measurement_type: measurementType,
+                        measurement_value: measurementValue,
+                        measurement_unit: measurementUnit,
+                        count,
+                        rate_per_minute: ratePerMinute,
+                        total_duration_seconds: totalDurationSeconds,
+                        percentage,
+                        phase,
+                        session_duration_seconds: sessionDurationSeconds,
+                        session_duration: sessionDuration,
+                        source: sessionSource || 'session-data-tracker'
+                    }, notesIncluded ? { notes: session && session.notes || '' } : {}), identifierIncluded, studentIdentifier)
+                });
+            };
+
+            if (Array.isArray(session && session.targets) && session.targets.length) {
+                session.targets.forEach(pushRow);
+                return;
+            }
+
+            const sourceLower = sessionSource.toLowerCase();
+            const phaseLower = phase.toLowerCase();
+            const count = blAlloSheetNumber(session && session.count);
+            const legacyValue = blAlloSheetNumber(session && session.rate);
+            let measurementType = 'count';
+            let measurementValue = count;
+            let measurementUnit = 'count';
+            let ratePerMinute = null;
+            let percentage = null;
+
+            if (sourceLower === 'latency-recorder' || phaseLower === 'latency') {
+                measurementType = 'latency';
+                measurementValue = legacyValue;
+                measurementUnit = 'seconds';
+            } else if (sourceLower.includes('interval')) {
+                measurementType = 'interval';
+                measurementValue = legacyValue;
+                measurementUnit = 'percent';
+                percentage = legacyValue;
+            } else if (sourceLower.includes('frequency')) {
+                measurementType = 'frequency';
+                measurementValue = legacyValue;
+                measurementUnit = 'per_minute';
+                ratePerMinute = legacyValue;
+            } else if (legacyValue != null) {
+                measurementType = 'rate';
+                measurementValue = legacyValue;
+                measurementUnit = 'per_minute';
+                ratePerMinute = legacyValue;
+            }
+
+            rows.push({
+                id: 'session-' + (sessionIndex + 1),
+                values: blAlloSheetWithIdentifier(Object.assign({
+                    date,
+                    behavior: session && session.behavior || '',
+                    measurement_type: measurementType,
+                    measurement_value: measurementValue,
+                    measurement_unit: measurementUnit,
+                    count,
+                    rate_per_minute: ratePerMinute,
+                    total_duration_seconds: null,
+                    percentage,
+                    phase,
+                    session_duration_seconds: sessionDurationSeconds,
+                    session_duration: sessionDuration,
+                    source: sessionSource
+                }, notesIncluded ? { notes: session && session.notes || '' } : {}), identifierIncluded, studentIdentifier)
+            });
+        });
+        return rows;
+    };
+
+    const blAlloSheetSessionSummaryRows = (records, identifierIncluded, studentIdentifier) => {
+        const groups = new Map();
+        blAlloSheetSessionMeasurementRows(records, false, '', false).forEach((row) => {
+            const values = row.values || {};
+            const date = values.date || '';
+            const phase = values.phase || 'Unspecified';
+            const measurementType = values.measurement_type || 'count';
+            const measurementUnit = values.measurement_unit || 'count';
+            const key = [date, phase, measurementType, measurementUnit].join('\u001f');
+            if (!groups.has(key)) {
+                groups.set(key, {
+                    date,
+                    phase,
+                    measurementType,
+                    measurementUnit,
+                    rows: 0,
+                    countTotal: 0,
+                    countCount: 0,
+                    measurementTotal: 0,
+                    measurementCount: 0,
+                    behaviorCounts: {}
+                });
+            }
+            const group = groups.get(key);
+            group.rows += 1;
+            const count = blAlloSheetNumber(values.count);
+            if (count != null) { group.countTotal += count; group.countCount += 1; }
+            const measurement = blAlloSheetNumber(values.measurement_value);
+            if (measurement != null) { group.measurementTotal += measurement; group.measurementCount += 1; }
+            const behavior = blAlloSheetText(values.behavior, 1200);
+            if (behavior) group.behaviorCounts[behavior] = (group.behaviorCounts[behavior] || 0) + 1;
+        });
+        return Array.from(groups.values()).map((group, index) => ({
+            id: 'session-summary-' + (index + 1),
+            values: blAlloSheetWithIdentifier({
+                date: group.date,
+                phase: group.phase,
+                measurement_type: group.measurementType,
+                measurement_unit: group.measurementUnit,
+                measurement_rows: group.rows,
+                total_count: group.countCount ? blAlloSheetRound(group.countTotal, 2) : null,
+                average_measurement: group.measurementCount ? blAlloSheetRound(group.measurementTotal / group.measurementCount, 3) : null,
+                most_common_behavior: blAlloSheetMostCommon(group.behaviorCounts)
+            }, identifierIncluded, studentIdentifier)
+        }));
+    };
+
+    const blAlloSheetAbcDetailedRows = (records, identifierIncluded, studentIdentifier, notesIncluded) => (
+        records.map((entry, index) => ({
+            id: 'abc-' + (index + 1),
+            values: blAlloSheetWithIdentifier(Object.assign({
+                timestamp: entry && entry.timestamp || null,
+                antecedent: entry && entry.antecedent || '',
+                behavior: entry && entry.behavior || '',
+                consequence: entry && entry.consequence || '',
+                setting: entry && entry.setting || '',
+                intensity: entry && entry.intensity,
+                duration_seconds: entry && entry.duration,
+                phase: entry && entry.phase || '',
+                function: entry && entry.function || '',
+                source: entry && entry.source || ''
+            }, notesIncluded ? { notes: entry && entry.notes || '' } : {}), identifierIncluded, studentIdentifier)
+        }))
+    );
+
+    const blAlloSheetObservationDetailedRows = (records, identifierIncluded, studentIdentifier, notesIncluded) => (
+        records.map((session, index) => {
+            const metrics = blAlloSheetObservationMetrics(session);
+            return {
+                id: 'observation-' + (index + 1),
+                values: blAlloSheetWithIdentifier(Object.assign({
+                    timestamp: session && session.timestamp || null,
+                    method: session && (session.method || session.type) || '',
+                    behavior_labels: metrics.behaviorLabels,
+                    duration_seconds: session && session.duration,
+                    event_count: metrics.count,
+                    rate_per_minute: metrics.ratePerMinute,
+                    occurred_intervals: metrics.occurred,
+                    completed_intervals: metrics.completedIntervals,
+                    planned_intervals: metrics.plannedIntervals,
+                    percentage: metrics.percentage,
+                    total_behavior_duration_seconds: metrics.totalBehaviorDuration,
+                    latency_seconds: metrics.latencySeconds
+                }, notesIncluded ? { notes: session && session.notes || '' } : {}), identifierIncluded, studentIdentifier)
+            };
+        })
+    );
+
+    const blAlloSheetSessionDetailedRows = blAlloSheetSessionMeasurementRows;
+
+    function buildBehaviorLensAlloSheetEnvelope(input, options) {
+        const workspace = input && typeof input === 'object' ? input : {};
+        const settings = options && typeof options === 'object' ? options : {};
+        const mode = settings.mode === 'detailed' ? 'detailed' : 'summary';
+        const dateRange = ['all', '30d', '7d'].includes(settings.dateRange) ? settings.dateRange : '30d';
+        const createdAtCandidate = settings.createdAt || new Date().toISOString();
+        const createdAtMs = new Date(createdAtCandidate).getTime();
+        const nowMs = Number.isFinite(createdAtMs) ? createdAtMs : Date.now();
+        const createdAt = new Date(nowMs).toISOString();
+        const requestedDatasets = settings.datasets && typeof settings.datasets === 'object' ? settings.datasets : {};
+        const datasets = {
+            abc: requestedDatasets.abc !== false,
+            observations: requestedDatasets.observations !== false,
+            sessionHistory: requestedDatasets.sessionHistory !== false
+        };
+        const studentIdentifier = blAlloSheetText(workspace.studentIdentifier || workspace.studentName || '', 160);
+        const identifierIncluded = settings.includeStudentIdentifier === true && !!studentIdentifier;
+        const notesIncluded = mode === 'detailed' && settings.includeNotes === true;
+        const filteredAbc = blAlloSheetFilterByDate(workspace.abcEntries, dateRange, nowMs);
+        const filteredObservations = blAlloSheetFilterByDate(workspace.observationSessions, dateRange, nowMs);
+        const filteredSessions = blAlloSheetFilterByDate(workspace.sessionHistory, dateRange, nowMs);
+        const tables = [];
+
+        if (datasets.abc) {
+            const columns = blAlloSheetIdentifierColumn(identifierIncluded);
+            if (mode === 'summary') {
+                columns.push(
+                    blAlloSheetColumn('date', 'Date', 'date'),
+                    blAlloSheetColumn('phase', 'Phase', 'text'),
+                    blAlloSheetColumn('entry_count', 'ABC entries', 'number'),
+                    blAlloSheetColumn('average_intensity', 'Average intensity', 'number'),
+                    blAlloSheetColumn('total_duration_seconds', 'Total duration (seconds)', 'number'),
+                    blAlloSheetColumn('most_common_behavior', 'Most common behavior', 'text')
+                );
+                tables.push(blAlloSheetTable(
+                    'abc-data',
+                    'ABC daily summary',
+                    columns,
+                    blAlloSheetAbcSummaryRows(filteredAbc, identifierIncluded, studentIdentifier),
+                    filteredAbc.length
+                ));
+            } else {
+                columns.push(
+                    blAlloSheetColumn('timestamp', 'Timestamp', 'datetime'),
+                    blAlloSheetColumn('antecedent', 'Antecedent', 'text'),
+                    blAlloSheetColumn('behavior', 'Behavior', 'text'),
+                    blAlloSheetColumn('consequence', 'Consequence', 'text'),
+                    blAlloSheetColumn('setting', 'Setting', 'text'),
+                    blAlloSheetColumn('intensity', 'Intensity', 'number'),
+                    blAlloSheetColumn('duration_seconds', 'Duration (seconds)', 'number'),
+                    blAlloSheetColumn('phase', 'Phase', 'text'),
+                    blAlloSheetColumn('function', 'Function', 'text'),
+                    blAlloSheetColumn('source', 'Source', 'text')
+                );
+                if (notesIncluded) columns.push(blAlloSheetColumn('notes', 'Notes', 'text'));
+                tables.push(blAlloSheetTable(
+                    'abc-data',
+                    'ABC data',
+                    columns,
+                    blAlloSheetAbcDetailedRows(filteredAbc, identifierIncluded, studentIdentifier, notesIncluded),
+                    filteredAbc.length
+                ));
+            }
+        }
+
+        if (datasets.observations) {
+            const columns = blAlloSheetIdentifierColumn(identifierIncluded);
+            if (mode === 'summary') {
+                columns.push(
+                    blAlloSheetColumn('date', 'Date', 'date'),
+                    blAlloSheetColumn('method', 'Observation method', 'text'),
+                    blAlloSheetColumn('session_count', 'Sessions', 'number'),
+                    blAlloSheetColumn('total_session_duration_seconds', 'Total session duration (seconds)', 'number'),
+                    blAlloSheetColumn('event_count', 'Event count', 'number'),
+                    blAlloSheetColumn('average_rate', 'Average rate', 'number'),
+                    blAlloSheetColumn('average_percentage', 'Average percentage', 'number'),
+                    blAlloSheetColumn('total_behavior_duration_seconds', 'Total behavior duration (seconds)', 'number'),
+                    blAlloSheetColumn('average_latency_seconds', 'Average latency (seconds)', 'number')
+                );
+                tables.push(blAlloSheetTable(
+                    'observation-sessions',
+                    'Observation session summary',
+                    columns,
+                    blAlloSheetObservationSummaryRows(filteredObservations, identifierIncluded, studentIdentifier),
+                    filteredObservations.length
+                ));
+            } else {
+                columns.push(
+                    blAlloSheetColumn('timestamp', 'Timestamp', 'datetime'),
+                    blAlloSheetColumn('method', 'Observation method', 'text'),
+                    blAlloSheetColumn('behavior_labels', 'Behavior labels', 'text'),
+                    blAlloSheetColumn('duration_seconds', 'Session duration (seconds)', 'number'),
+                    blAlloSheetColumn('event_count', 'Event count', 'number'),
+                    blAlloSheetColumn('rate_per_minute', 'Rate per minute', 'number'),
+                    blAlloSheetColumn('occurred_intervals', 'Occurred intervals', 'number'),
+                    blAlloSheetColumn('completed_intervals', 'Completed intervals', 'number'),
+                    blAlloSheetColumn('planned_intervals', 'Planned intervals', 'number'),
+                    blAlloSheetColumn('percentage', 'Percentage', 'number'),
+                    blAlloSheetColumn('total_behavior_duration_seconds', 'Behavior duration (seconds)', 'number'),
+                    blAlloSheetColumn('latency_seconds', 'Latency (seconds)', 'number')
+                );
+                if (notesIncluded) columns.push(blAlloSheetColumn('notes', 'Notes', 'text'));
+                tables.push(blAlloSheetTable(
+                    'observation-sessions',
+                    'Observation sessions',
+                    columns,
+                    blAlloSheetObservationDetailedRows(filteredObservations, identifierIncluded, studentIdentifier, notesIncluded),
+                    filteredObservations.length
+                ));
+            }
+        }
+
+        if (datasets.sessionHistory) {
+            const columns = blAlloSheetIdentifierColumn(identifierIncluded);
+            if (mode === 'summary') {
+                columns.push(
+                    blAlloSheetColumn('date', 'Date', 'date'),
+                    blAlloSheetColumn('phase', 'Phase', 'text'),
+                    blAlloSheetColumn('measurement_type', 'Measurement type', 'text'),
+                    blAlloSheetColumn('measurement_unit', 'Measurement unit', 'text'),
+                    blAlloSheetColumn('measurement_rows', 'Measurement rows', 'number'),
+                    blAlloSheetColumn('total_count', 'Total count', 'number'),
+                    blAlloSheetColumn('average_measurement', 'Average measurement', 'number'),
+                    blAlloSheetColumn('most_common_behavior', 'Most common behavior', 'text')
+                );
+                tables.push(blAlloSheetTable(
+                    'session-history',
+                    'Session history summary',
+                    columns,
+                    blAlloSheetSessionSummaryRows(filteredSessions, identifierIncluded, studentIdentifier),
+                    filteredSessions.length
+                ));
+            } else {
+                columns.push(
+                    blAlloSheetColumn('date', 'Date', 'date'),
+                    blAlloSheetColumn('behavior', 'Behavior', 'text'),
+                    blAlloSheetColumn('measurement_type', 'Measurement type', 'text'),
+                    blAlloSheetColumn('measurement_value', 'Measurement value', 'number'),
+                    blAlloSheetColumn('measurement_unit', 'Measurement unit', 'text'),
+                    blAlloSheetColumn('count', 'Count', 'number'),
+                    blAlloSheetColumn('rate_per_minute', 'Rate per minute', 'number'),
+                    blAlloSheetColumn('total_duration_seconds', 'Total duration (seconds)', 'number'),
+                    blAlloSheetColumn('percentage', 'Percentage', 'number'),
+                    blAlloSheetColumn('phase', 'Phase', 'text'),
+                    blAlloSheetColumn('session_duration_seconds', 'Session duration (seconds)', 'number'),
+                    blAlloSheetColumn('session_duration', 'Session duration label', 'text'),
+                    blAlloSheetColumn('source', 'Source', 'text')
+                );
+                if (notesIncluded) columns.push(blAlloSheetColumn('notes', 'Notes', 'text'));
+                const detailedRows = blAlloSheetSessionDetailedRows(
+                    filteredSessions,
+                    identifierIncluded,
+                    studentIdentifier,
+                    notesIncluded
+                );
+                tables.push(blAlloSheetTable(
+                    'session-history',
+                    'Session history',
+                    columns,
+                    detailedRows,
+                    detailedRows.length
+                ));
+            }
+        }
+
+        const selectedDatasets = Object.keys(datasets).filter((key) => datasets[key]);
+        const cutoffDays = dateRange === '7d' ? 7 : dateRange === '30d' ? 30 : null;
+        const envelope = {
+            kind: BL_ALLOSHEET_KIND,
+            version: 1,
+            source: {
+                tool: 'behaviorlens',
+                label: 'BehaviorLens',
+                version: '1.0.0'
+            },
+            title: identifierIncluded ? 'BehaviorLens - ' + studentIdentifier : 'BehaviorLens data review',
+            createdAt,
+            classification: {
+                level: 'sensitive-education-record',
+                label: 'Sensitive student education data',
+                identifierIncluded,
+                freeTextNotesIncluded: notesIncluded
+            },
+            privacy: {
+                scope: 'active-student',
+                identifierIncluded,
+                notesIncluded,
+                reducedData: mode === 'summary' || !identifierIncluded || !notesIncluded,
+                transferEnablesAI: false
+            },
+            tables: tables.slice(0, BL_ALLOSHEET_LIMITS.maxTables),
+            provenance: {
+                sourceTool: 'behaviorlens',
+                transferMode: mode,
+                dateRange,
+                datasets: selectedDatasets,
+                filters: {
+                    cutoff: cutoffDays == null ? null : new Date(nowMs - (cutoffDays * 86400000)).toISOString()
+                },
+                sourceCounts: {
+                    abc: filteredAbc.length,
+                    observations: filteredObservations.length,
+                    sessionHistory: filteredSessions.length
+                },
+                limits: {
+                    maxTables: BL_ALLOSHEET_LIMITS.maxTables,
+                    maxColumnsPerTable: BL_ALLOSHEET_LIMITS.maxColumnsPerTable,
+                    maxRowsPerTable: BL_ALLOSHEET_LIMITS.maxRowsPerTable,
+                    maxCellCharacters: BL_ALLOSHEET_LIMITS.maxCellCharacters,
+                    maxEnvelopeBytes: BL_ALLOSHEET_LIMITS.maxEnvelopeBytes
+                }
+            },
+            capabilities: {
+                writeBack: false,
+                aiEnabled: false
+            }
+        };
+
+        // Per-table budgets keep normal payloads well below the envelope
+        // ceiling. This final guard protects the contract if metadata grows.
+        while (blAlloSheetByteLength(envelope) >= BL_ALLOSHEET_LIMITS.maxEnvelopeBytes) {
+            const table = envelope.tables
+                .filter((candidate) => candidate.rows.length > 0)
+                .sort((a, b) => b.rows.length - a.rows.length)[0];
+            if (!table) break;
+            table.rows.pop();
+            table.rowCount = table.rows.length;
+            table.truncated = true;
+        }
+
+        return envelope;
+    }
+
     // ─── BehaviorTab (Hub) ──────────────────────────────────────────────
     // The main hub component that renders inside a fullscreen overlay
     window.AlloModules = window.AlloModules || {};
+    window.AlloModules.BehaviorLensHandoff = Object.freeze({
+        kind: BL_ALLOSHEET_KIND,
+        limits: BL_ALLOSHEET_LIMITS,
+        buildEnvelope: buildBehaviorLensAlloSheetEnvelope
+    });
     window.AlloModules.BehaviorLens = ({
         onClose,
         callGemini,
@@ -24458,7 +25179,8 @@ IMPORTANT rules for expert keys:
         alloBotRef,
         firestore,
         firebaseAuth,
-        isCanvasEnv
+        isCanvasEnv,
+        onOpenAlloSheet
     }) => {
 
         // ── UI localization state (drives tt()/trRuntime declared above) ──
@@ -25723,6 +26445,184 @@ Analyze this data and return ONLY valid JSON:
 
         // ── Per-Tool Export Utilities ──────────────────────────────
         const [showExportMenu, setShowExportMenu] = useState(false);
+        // One-way BehaviorLens -> AlloSheet review state. Summary, a recent
+        // date range, and privacy-reduced fields are the safe defaults.
+        const [showAlloSheetHandoff, setShowAlloSheetHandoff] = useState(false);
+        const [alloSheetHandoffMode, setAlloSheetHandoffMode] = useState('summary');
+        const [alloSheetHandoffDateRange, setAlloSheetHandoffDateRange] = useState('30d');
+        const [alloSheetHandoffDatasets, setAlloSheetHandoffDatasets] = useState({
+            abc: true,
+            observations: true,
+            sessionHistory: true
+        });
+        const [alloSheetIncludeIdentifier, setAlloSheetIncludeIdentifier] = useState(false);
+        const [alloSheetIncludeNotes, setAlloSheetIncludeNotes] = useState(false);
+        const [alloSheetHandoffBusy, setAlloSheetHandoffBusy] = useState(false);
+        const [alloSheetHandoffFeedback, setAlloSheetHandoffFeedback] = useState({ kind: '', text: '' });
+        const alloSheetHandoffDialogRef = useRef(null);
+        const alloSheetHandoffOpenerRef = useRef(null);
+        const alloSheetHandoffBusyRef = useRef(false);
+
+        const alloSheetHandoffPreview = useMemo(() => buildBehaviorLensAlloSheetEnvelope({
+            studentName: selectedStudent,
+            abcEntries,
+            observationSessions,
+            sessionHistory
+        }, {
+            mode: alloSheetHandoffMode,
+            dateRange: alloSheetHandoffDateRange,
+            datasets: alloSheetHandoffDatasets,
+            includeStudentIdentifier: alloSheetIncludeIdentifier,
+            includeNotes: alloSheetIncludeNotes
+        }), [
+            selectedStudent,
+            abcEntries,
+            observationSessions,
+            sessionHistory,
+            alloSheetHandoffMode,
+            alloSheetHandoffDateRange,
+            alloSheetHandoffDatasets,
+            alloSheetIncludeIdentifier,
+            alloSheetIncludeNotes
+        ]);
+
+        const closeAlloSheetHandoff = useCallback(() => {
+            if (alloSheetHandoffBusyRef.current) return;
+            setShowAlloSheetHandoff(false);
+            setAlloSheetHandoffFeedback({ kind: '', text: '' });
+        }, []);
+
+        useEffect(() => {
+            if (!showAlloSheetHandoff) return undefined;
+            const dialog = alloSheetHandoffDialogRef.current;
+            const opener = alloSheetHandoffOpenerRef.current;
+            if (!dialog) return undefined;
+            const selector = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+            const focusInitial = window.setTimeout(() => {
+                const markedInitial = dialog.querySelector('[data-bl-allosheet-initial]');
+                const initial = markedInitial && !markedInitial.disabled
+                    ? markedInitial
+                    : dialog.querySelector(selector);
+                if (initial && typeof initial.focus === 'function') initial.focus();
+            }, 0);
+            const handleAlloSheetDialogKeyDown = (event) => {
+                if (event.key === 'Escape') {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    if (!alloSheetHandoffBusyRef.current) setShowAlloSheetHandoff(false);
+                    return;
+                }
+                if (event.key !== 'Tab') return;
+                const focusable = Array.from(dialog.querySelectorAll(selector)).filter((element) =>
+                    element.getAttribute('aria-hidden') !== 'true' && !element.classList.contains('hidden')
+                );
+                if (!focusable.length) {
+                    event.preventDefault();
+                    dialog.focus();
+                    return;
+                }
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+                if (event.shiftKey && (document.activeElement === first || !dialog.contains(document.activeElement))) {
+                    event.preventDefault();
+                    last.focus();
+                } else if (!event.shiftKey && (document.activeElement === last || !dialog.contains(document.activeElement))) {
+                    event.preventDefault();
+                    first.focus();
+                }
+            };
+            document.addEventListener('keydown', handleAlloSheetDialogKeyDown, true);
+            return () => {
+                window.clearTimeout(focusInitial);
+                document.removeEventListener('keydown', handleAlloSheetDialogKeyDown, true);
+                if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus();
+            };
+        }, [showAlloSheetHandoff]);
+
+        const openAlloSheetHandoffReview = useCallback((event) => {
+            if (typeof onOpenAlloSheet !== 'function') {
+                const message = tt('behavior_lens.allosheet.unavailable', 'AlloSheet is still loading. Try again in a moment.');
+                if (addToast) addToast(message, 'error');
+                blAnnounceToSR(message);
+                return;
+            }
+            alloSheetHandoffOpenerRef.current = event && event.currentTarget ? event.currentTarget : document.activeElement;
+            alloSheetHandoffBusyRef.current = false;
+            setAlloSheetHandoffFeedback({ kind: '', text: '' });
+            setShowExportMenu(false);
+            setShowAlloSheetHandoff(true);
+        }, [onOpenAlloSheet, addToast, blAnnounceToSR]);
+
+        const handleAlloSheetHandoffTransfer = useCallback(async () => {
+            const hasSelectedDataset = Object.values(alloSheetHandoffDatasets).some(Boolean);
+            const hasRows = alloSheetHandoffPreview.tables.some((table) => table.rowCount > 0);
+            if (!hasSelectedDataset || !hasRows || typeof onOpenAlloSheet !== 'function') {
+                const message = !hasSelectedDataset
+                    ? tt('behavior_lens.allosheet.choose_dataset', 'Choose at least one dataset.')
+                    : tt('behavior_lens.allosheet.no_rows', 'No records match these choices.');
+                setAlloSheetHandoffFeedback({ kind: 'error', text: message });
+                blAnnounceToSR(message);
+                return;
+            }
+
+            alloSheetHandoffBusyRef.current = true;
+            const dialog = alloSheetHandoffDialogRef.current;
+            if (dialog && typeof dialog.focus === 'function') dialog.focus();
+            setAlloSheetHandoffBusy(true);
+            setAlloSheetHandoffFeedback({
+                kind: 'status',
+                text: tt('behavior_lens.allosheet.opening', 'Opening the reviewed tables in AlloSheet...')
+            });
+
+            // Rebuild at the click boundary so createdAt and provenance match
+            // the actual handoff. The callback opens the popup synchronously.
+            const envelope = buildBehaviorLensAlloSheetEnvelope({
+                studentName: selectedStudent,
+                abcEntries,
+                observationSessions,
+                sessionHistory
+            }, {
+                mode: alloSheetHandoffMode,
+                dateRange: alloSheetHandoffDateRange,
+                datasets: alloSheetHandoffDatasets,
+                includeStudentIdentifier: alloSheetIncludeIdentifier,
+                includeNotes: alloSheetIncludeNotes
+            });
+
+            try {
+                const pending = onOpenAlloSheet(envelope);
+                const opened = pending && typeof pending.then === 'function' ? await pending : pending;
+                if (opened === false || opened == null) throw new Error('AlloSheet did not open.');
+                const message = tt('behavior_lens.allosheet.received_for_review', 'Reviewed tables were received for destination review in AlloSheet. This did not enable AI or write back to BehaviorLens.');
+                setShowAlloSheetHandoff(false);
+                setAlloSheetHandoffFeedback({ kind: '', text: '' });
+                if (addToast) addToast(message, 'success');
+                blAnnounceToSR(message);
+            } catch (error) {
+                const message = error && error.message
+                    ? error.message
+                    : tt('behavior_lens.allosheet.failed', 'AlloSheet could not open these tables.');
+                setAlloSheetHandoffFeedback({ kind: 'error', text: message });
+                blAnnounceToSR(message);
+            } finally {
+                alloSheetHandoffBusyRef.current = false;
+                setAlloSheetHandoffBusy(false);
+            }
+        }, [
+            onOpenAlloSheet,
+            selectedStudent,
+            abcEntries,
+            observationSessions,
+            sessionHistory,
+            alloSheetHandoffMode,
+            alloSheetHandoffDateRange,
+            alloSheetHandoffDatasets,
+            alloSheetIncludeIdentifier,
+            alloSheetIncludeNotes,
+            alloSheetHandoffPreview,
+            addToast,
+            blAnnounceToSR
+        ]);
 
         const exportSvgAsPng = (filename) => {
             const svgEl = document.querySelector('.flex-1.overflow-y-auto svg');
@@ -27578,6 +28478,12 @@ Analyze this data and return ONLY valid JSON:
                                     onClick: handleDownloadToolCsv,
                                     className: 'w-full px-4 py-2 text-start text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2'
                                 }, '📁 Download CSV'),
+                                h('button', {
+                                    type: 'button',
+                                    'aria-label': 'Open this BehaviorLens data in AlloSheet',
+                                    onClick: openAlloSheetHandoffReview,
+                                    className: 'w-full min-h-[44px] px-4 py-2 text-start text-sm font-bold text-emerald-800 hover:bg-emerald-50 flex items-center gap-2'
+                                }, '📊 Open in AlloSheet'),
                                 graphPanels.includes(activePanel) && h('button', { "aria-label": "Export as PNG",
                                     onClick: () => { exportSvgAsPng(`behaviorlens-${activePanel}.png`); setShowExportMenu(false); },
                                     className: 'w-full px-4 py-2 text-start text-sm text-slate-700 hover:bg-slate-50 flex items-center gap-2'
@@ -27633,7 +28539,8 @@ Analyze this data and return ONLY valid JSON:
                     observationSessions,
                     studentName: selectedStudent,
                     aiAnalysis,
-                    t
+                    t,
+                    onOpenAlloSheetReview: openAlloSheetHandoffReview
                 }),
                 activePanel === 'record' && h(RecordReview, {
                     studentName: selectedStudent,
@@ -28897,6 +29804,219 @@ Analyze this data and return ONLY valid JSON:
                 t,
                 addToast
             }),
+            // BehaviorLens -> AlloSheet review dialog. Nothing is handed to
+            // the host until the educator selects Open in AlloSheet.
+            showAlloSheetHandoff && h('div', {
+                role: 'presentation',
+                className: 'fixed inset-0 z-[320] flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4',
+                onClick: (event) => {
+                    if (event.target === event.currentTarget && !alloSheetHandoffBusy) closeAlloSheetHandoff();
+                }
+            },
+                h('div', {
+                    ref: alloSheetHandoffDialogRef,
+                    role: 'dialog',
+                    'aria-modal': 'true',
+                    'aria-busy': alloSheetHandoffBusy ? 'true' : 'false',
+                    'aria-labelledby': 'bl-allosheet-review-title',
+                    'aria-describedby': 'bl-allosheet-review-description',
+                    tabIndex: -1,
+                    className: 'bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[92vh] overflow-y-auto'
+                },
+                    h('div', { className: 'p-5 sm:p-6 border-b border-slate-200' },
+                        h('h2', {
+                            id: 'bl-allosheet-review-title',
+                            className: 'text-xl font-black text-slate-900'
+                        }, 'Open BehaviorLens data in AlloSheet'),
+                        h('p', {
+                            id: 'bl-allosheet-review-description',
+                            className: 'text-sm text-slate-700 mt-2'
+                        }, 'Review exactly which tables and fields will be copied. BehaviorLens keeps its original data and AlloSheet cannot write back.')
+                    ),
+                    h('div', { className: 'p-5 sm:p-6 space-y-5 text-sm text-slate-800' },
+                        h('fieldset', { className: 'space-y-2' },
+                            h('legend', { className: 'font-black text-slate-900' }, 'Level of detail'),
+                            [
+                                {
+                                    key: 'summary',
+                                    label: 'Summary (recommended)',
+                                    description: 'Groups records into daily trends and excludes row-level notes.'
+                                },
+                                {
+                                    key: 'detailed',
+                                    label: 'Detailed',
+                                    description: 'Includes row-level ABC descriptions and behavior labels. Identifier and notes remain optional.'
+                                }
+                            ].map((option) =>
+                                h('label', {
+                                    key: option.key,
+                                    className: `flex items-start gap-3 rounded-xl border-2 p-3 cursor-pointer ${alloSheetHandoffMode === option.key ? 'border-indigo-600 bg-indigo-50' : 'border-slate-300 bg-white'}`
+                                },
+                                    h('input', {
+                                        type: 'radio',
+                                        name: 'bl-allosheet-mode',
+                                        value: option.key,
+                                        checked: alloSheetHandoffMode === option.key,
+                                        onChange: () => setAlloSheetHandoffMode(option.key),
+                                        className: 'mt-1 h-5 w-5 text-indigo-600'
+                                    }),
+                                    h('span', null,
+                                        h('span', { className: 'block font-bold text-slate-900' }, option.label),
+                                        h('span', { className: 'block text-xs text-slate-700 mt-0.5' }, option.description)
+                                    )
+                                )
+                            )
+                        ),
+                        h('div', null,
+                            h('label', {
+                                htmlFor: 'bl-allosheet-date-range',
+                                className: 'block font-black text-slate-900 mb-1.5'
+                            }, 'Date range'),
+                            h('select', {
+                                id: 'bl-allosheet-date-range',
+                                value: alloSheetHandoffDateRange,
+                                onChange: (event) => setAlloSheetHandoffDateRange(event.target.value),
+                                className: 'w-full min-h-[44px] rounded-lg border-2 border-slate-400 bg-white px-3 py-2 text-slate-900 focus:border-indigo-600'
+                            },
+                                h('option', { value: '7d' }, 'Last 7 days'),
+                                h('option', { value: '30d' }, 'Last 30 days'),
+                                h('option', { value: 'all' }, 'All available dates')
+                            )
+                        ),
+                        h('fieldset', { className: 'space-y-2' },
+                            h('legend', { className: 'font-black text-slate-900' }, 'Datasets'),
+                            [
+                                { key: 'abc', countKey: 'abc', label: 'ABC entries' },
+                                { key: 'observations', countKey: 'observations', label: 'Observation sessions' },
+                                { key: 'sessionHistory', countKey: 'sessionHistory', label: 'Session history' }
+                            ].map((dataset) =>
+                                h('label', {
+                                    key: dataset.key,
+                                    className: 'flex min-h-[44px] items-center gap-3 rounded-lg border border-slate-300 px-3 py-2'
+                                },
+                                    h('input', {
+                                        type: 'checkbox',
+                                        checked: !!alloSheetHandoffDatasets[dataset.key],
+                                        onChange: () => setAlloSheetHandoffDatasets((previous) =>
+                                            Object.assign({}, previous, { [dataset.key]: !previous[dataset.key] })
+                                        ),
+                                        className: 'h-5 w-5 rounded text-indigo-600'
+                                    }),
+                                    h('span', { className: 'font-bold text-slate-800' }, dataset.label),
+                                    h('span', { className: 'ms-auto text-xs text-slate-700' },
+                                        (alloSheetHandoffPreview.provenance.sourceCounts[dataset.countKey] || 0) + ' matching'
+                                    )
+                                )
+                            )
+                        ),
+                        h('fieldset', { className: 'space-y-2' },
+                            h('legend', { className: 'font-black text-slate-900' }, 'Privacy options'),
+                            h('label', {
+                                className: `flex min-h-[44px] items-start gap-3 rounded-lg border border-slate-300 px-3 py-2 ${selectedStudent ? '' : 'opacity-60'}`
+                            },
+                                h('input', {
+                                    type: 'checkbox',
+                                    checked: alloSheetIncludeIdentifier,
+                                    disabled: !selectedStudent,
+                                    onChange: (event) => setAlloSheetIncludeIdentifier(event.target.checked),
+                                    className: 'mt-0.5 h-5 w-5 rounded text-indigo-600'
+                                }),
+                                h('span', null,
+                                    h('span', { className: 'block font-bold text-slate-800' }, 'Include active student identifier'),
+                                    h('span', { className: 'block text-xs text-slate-700' }, 'Off by default. This adds the current BehaviorLens codename to each row.')
+                                )
+                            ),
+                            h('label', {
+                                className: `flex min-h-[44px] items-start gap-3 rounded-lg border border-slate-300 px-3 py-2 ${alloSheetHandoffMode === 'summary' ? 'opacity-60' : ''}`
+                            },
+                                h('input', {
+                                    type: 'checkbox',
+                                    checked: alloSheetHandoffMode === 'detailed' && alloSheetIncludeNotes,
+                                    disabled: alloSheetHandoffMode === 'summary',
+                                    onChange: (event) => setAlloSheetIncludeNotes(event.target.checked),
+                                    className: 'mt-0.5 h-5 w-5 rounded text-indigo-600'
+                                }),
+                                h('span', null,
+                                    h('span', { className: 'block font-bold text-slate-800' }, 'Include free-text notes'),
+                                    h('span', { className: 'block text-xs text-slate-700' }, 'Off by default and available only for Detailed transfer.')
+                                )
+                            )
+                        ),
+                        h('p', {
+                            className: 'rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs font-bold text-amber-950'
+                        }, alloSheetIncludeIdentifier
+                            ? 'An explicit active-student identifier column will be included. Free-text fields can still contain other identifying details.'
+                            : 'No explicit student identifier column will be included. Free-text fields can still contain identifying details; review every field below before opening.'),
+                        h('section', {
+                            'aria-labelledby': 'bl-allosheet-preview-heading',
+                            className: 'rounded-xl border-2 border-slate-300 bg-slate-50 p-4'
+                        },
+                            h('h3', {
+                                id: 'bl-allosheet-preview-heading',
+                                className: 'font-black text-slate-900'
+                            }, 'Transfer review'),
+                            h('ul', { className: 'mt-2 space-y-2' },
+                                alloSheetHandoffPreview.tables.map((table) =>
+                                    h('li', { key: table.id, className: 'rounded-lg bg-white border border-slate-200 p-3' },
+                                        h('div', { className: 'font-bold text-slate-900' }, table.title),
+                                        h('div', { className: 'text-xs text-slate-700 mt-1' },
+                                            alloSheetHandoffMode === 'summary'
+                                                ? `${table.sourceRowCount} source records summarized into ${table.rowCount} rows`
+                                                : `${table.rowCount} of ${table.sourceRowCount} matching records included`
+                                        ),
+                                        h('div', { className: 'mt-2 text-xs font-bold text-slate-800' }, 'Fields'),
+                                        h('ul', {
+                                            'aria-label': `${table.title} fields`,
+                                            className: 'mt-1 flex flex-wrap gap-1.5'
+                                        },
+                                            table.columns.map((column) =>
+                                                h('li', {
+                                                    key: column.key,
+                                                    className: 'rounded-md border border-slate-300 bg-slate-50 px-2 py-1 text-xs text-slate-800'
+                                                }, column.label)
+                                            )
+                                        ),
+                                        table.truncated && h('div', {
+                                            role: 'status',
+                                            className: 'mt-1 text-xs font-bold text-amber-800'
+                                        }, `Limited to ${table.rowCount} rows by the secure handoff size limit.`)
+                                    )
+                                )
+                            ),
+                            alloSheetHandoffPreview.tables.length === 0 && h('p', {
+                                role: 'alert',
+                                className: 'mt-2 text-sm font-bold text-red-700'
+                            }, 'Choose at least one dataset.')
+                        ),
+                        h('div', { className: 'rounded-xl border border-emerald-300 bg-emerald-50 p-4 text-emerald-950' },
+                            h('p', { className: 'font-bold' }, 'This is a one-way copy.'),
+                            h('p', { className: 'text-xs mt-1' }, 'Opening these tables does not enable AI, send them to an AI service, change BehaviorLens data, or allow AlloSheet to write back.')
+                        ),
+                        alloSheetHandoffFeedback.text && h('div', {
+                            role: alloSheetHandoffFeedback.kind === 'error' ? 'alert' : 'status',
+                            'aria-live': alloSheetHandoffFeedback.kind === 'error' ? 'assertive' : 'polite',
+                            className: `rounded-lg border p-3 font-bold ${alloSheetHandoffFeedback.kind === 'error' ? 'border-red-300 bg-red-50 text-red-800' : 'border-blue-300 bg-blue-50 text-blue-900'}`
+                        }, alloSheetHandoffFeedback.text)
+                    ),
+                    h('div', { className: 'sticky bottom-0 flex flex-wrap justify-end gap-3 border-t border-slate-200 bg-white p-5 sm:p-6' },
+                        h('button', {
+                            type: 'button',
+                            'data-bl-allosheet-initial': 'true',
+                            onClick: closeAlloSheetHandoff,
+                            disabled: alloSheetHandoffBusy,
+                            className: 'min-h-[44px] rounded-lg border-2 border-slate-500 bg-white px-4 py-2 font-bold text-slate-800 hover:bg-slate-100 disabled:opacity-50'
+                        }, 'Cancel'),
+                        h('button', {
+                            type: 'button',
+                            onClick: handleAlloSheetHandoffTransfer,
+                            disabled: alloSheetHandoffBusy
+                                || !Object.values(alloSheetHandoffDatasets).some(Boolean)
+                                || !alloSheetHandoffPreview.tables.some((table) => table.rowCount > 0),
+                            className: 'min-h-[44px] rounded-lg bg-emerald-700 px-5 py-2 font-bold text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-50'
+                        }, alloSheetHandoffBusy ? 'Opening AlloSheet...' : 'Open in AlloSheet')
+                    )
+                )
+            ),
             // ─── AI Consent Modal (first OFF→ON transition) ──
             // FERPA-adjacent: sending student PII to a third-party LLM
             // requires informed consent. This modal fires on the very first

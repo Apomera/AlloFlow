@@ -88,7 +88,7 @@ describe('EPPP distractor-quality repair wave 16', () => {
     expect(byId.get('eppp-v3-intervention-006').rationale).toMatch(/social-ecological formulation/i);
   });
 
-  it('publishes synchronized sources, clean feedback, native QA, and runtime content', () => {
+  it('publishes synchronized sources, clean feedback, native QA, and lazy pack content', () => {
     const sourceCatalog = read('test_prep/reference_catalog.json');
     expect(read('desktop/web-app/public/test_prep/reference_catalog.json')).toBe(sourceCatalog);
     const catalog = JSON.parse(sourceCatalog);
@@ -110,10 +110,10 @@ describe('EPPP distractor-quality repair wave 16', () => {
     expect(qa.summary).toMatchObject({ totalItems: 1500, passedItems: 1500, reviewRequiredItems: 0, status: 'pass' });
     expect(qa.items.filter((item) => selected.has(item.id)).every((item) => item.qaStatus === 'pass')).toBe(true);
 
-    const sourceRuntime = read('test_prep_hub_module.js');
-    expect(read('desktop/web-app/public/test_prep_hub_module.js')).toBe(sourceRuntime);
-    expect(sourceRuntime).toContain('get through the evening');
-    expect(sourceRuntime).toContain('I must get rid of anxious thoughts');
-    expect(sourceRuntime).toContain('probation-involved adolescent');
+    const sourcePack = read('test_prep/eppp_part_one_pack.json');
+    expect(read('desktop/web-app/public/test_prep/eppp_part_one_pack.json')).toBe(sourcePack);
+    expect(sourcePack).toContain('get through the evening');
+    expect(sourcePack).toContain('I must get rid of anxious thoughts');
+    expect(sourcePack).toContain('probation-involved adolescent');
   });
 });

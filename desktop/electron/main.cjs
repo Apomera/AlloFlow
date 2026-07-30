@@ -528,7 +528,7 @@ function isAllowedAlloSheetPopup(url) {
     for (const key of parsed.searchParams.keys()) {
       if (key !== 'v' && key !== 'theme') return false;
     }
-    if (parsed.searchParams.get('v') !== '4') return false;
+    if (parsed.searchParams.get('v') !== '7') return false;
     const theme = parsed.searchParams.get('theme');
     if (theme && theme !== 'light' && theme !== 'dark' && theme !== 'contrast') return false;
 

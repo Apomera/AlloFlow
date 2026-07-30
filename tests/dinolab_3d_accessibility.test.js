@@ -53,9 +53,54 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     expect(source).toContain("'aria-label': piece.label + ' fossil");
     expect(source).toContain('var DinoFieldStation3DStable = null;');
     expect(source).toContain('if (!DinoFieldStation3DStable) DinoFieldStation3DStable = DinoFieldStation3D;');
-    expect(source).toContain('el(DinoFieldStation3DStable, { species: dn, reconstructionMode: activeHypothesis.id,');
+    expect(source).toContain('el(DinoFieldStation3DStable, { species: dn, focusMode: focusMode, reconstructionMode: activeHypothesis.id,');
+    expect(source).toContain("var focusMode = d.field3dFocusMode === true;");
+    expect(source).toContain("else if (focusMode) { e.preventDefault(); toggleFieldFocus(); }");
+    expect(source).toContain("'aria-keyshortcuts': focusMode ? 'Escape' : null");
+    expect(source).toContain("hidden: !drawerOpen || focusMode");
+    expect(source).toContain("props.focusMode ? 'clamp(620px, 76vh, 920px)' : 'clamp(520px, 62vh, 760px)'");
+    expect(source).toContain("key.field3dFocusMode = false;");
     expect(source).toContain('function reconstructionHypothesesFor(dn, skeletalProfile, requestedMode)');
+    expect(source).toContain("var fieldFocusActive = tab === 'field3d' && d.field3dFocusMode === true;");
+    expect(source).toContain('fieldFocusActive ? null : tabNavigation');
+    expect(source).toContain("'aria-labelledby': fieldFocusActive ? null : 'dinotab-' + tab");
+    expect(source).toContain("role: fieldFocusActive ? 'region' : 'tabpanel'");
+    expect(source).toContain('padding: fieldFocusActive ? 10 : 16');
+    expect(source).toContain('function openSpeciesFile()');
+    expect(source).toContain("field3dDrawerOpen: false, field3dFocusMode: false");
+    expect(source).toContain("className: 'dinolab-field-toolbar-actions', role: 'group', 'aria-label': '3D model view controls'");
+    expect(source).toContain("id: 'dinolab-field-species-file'");
+    expect(source).toContain('grid-template-columns:repeat(auto-fit,minmax(108px,1fr))');
+    expect(source).toContain('function workflowStepAvailable(step)');
+    expect(source).toContain('function openWorkflowStep(step)');
+    expect(source).toContain("if (step === 'assemble') return scanComplete;");
+    expect(source).toContain("if (step === 'claim') return assemblyComplete;");
+    expect(source).toContain("disabled: !available, 'aria-current': current ? 'step' : null");
+    expect(source).toContain("'aria-label': 'Step ' + (index + 1) + ' ' + cap(step) + ', ' + state");
     expect(source).toContain("id: 'evidence'");
+    expect(source).toContain('function fieldDrawerSectionAvailable(section)');
+    expect(source).toContain('var drawerSection = fieldDrawerSectionAvailable(requestedDrawerSection)');
+    expect(source).toContain("disabled: !available, 'aria-pressed': active ? 'true' : 'false'");
+    expect(source).toContain('function focusFieldControlSoon(id)');
+    expect(source).toContain('function currentFieldOpenerId()');
+    expect(source).toContain("updates.field3dDrawerReturnFocusId = currentFieldOpenerId()");
+    expect(source).toContain("focusFieldControlSoon('dinolab-field-drawer-close')");
+    expect(source).toContain("var returnFocusId = d.field3dDrawerReturnFocusId || 'dinolab-field-tools-toggle'");
+    expect(source).toContain("if (drawerOpen) { e.preventDefault(); closeFieldDrawer(); }");
+    expect(source).toContain("'aria-labelledby': 'dinolab-field-drawer-title'");
+    expect(source).toContain("'aria-keyshortcuts': 'Escape'");
+
+    const evidenceDrawerStart = source.indexOf("el('div', { hidden: drawerSection !== 'evidence' }");
+    const challengeDisclosure = source.indexOf("'Reconstruction challenge'), challengePanel", evidenceDrawerStart);
+    const modelDrawerStart = source.indexOf("el('div', { hidden: drawerSection !== 'reconstruct' }");
+    const anatomyDisclosure = source.indexOf("'Scientific anatomy profile'), anatomyProfilePanel", modelDrawerStart);
+    const visualKeyDisclosure = source.indexOf("'Visual key'), visualKeyPanel", modelDrawerStart);
+    expect(evidenceDrawerStart).toBeGreaterThan(-1);
+    expect(challengeDisclosure).toBeGreaterThan(evidenceDrawerStart);
+    expect(challengeDisclosure).toBeLessThan(modelDrawerStart);
+    expect(modelDrawerStart).toBeGreaterThan(-1);
+    expect(anatomyDisclosure).toBeGreaterThan(modelDrawerStart);
+    expect(visualKeyDisclosure).toBeGreaterThan(modelDrawerStart);
     expect(source).toContain("id: 'conservative'");
     expect(source).toContain("id: 'classic'");
     expect(source).toContain("id: 'avian'");
@@ -536,6 +581,75 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
     await api.React.act(async () => { root.unmount(); });
     host.remove();
   });
+  it('lets keyboard users enter and revisit available Field Station workflow steps', async () => {
+    const api = setupDinoLab();
+    const host = document.createElement('div');
+    document.body.appendChild(host);
+    const root = ReactDOMClient.createRoot(host);
+    let data = baseData('field3d');
+    const render = () => root.render(api.tool.cfg.render({
+      React: api.React,
+      toolData: { dinoLab: data },
+      update: (_toolId, key, value) => {
+        data = { ...data, [key]: value };
+        render();
+      },
+      updateMulti: (_toolId, values) => {
+        data = { ...data, ...values };
+        render();
+      },
+      announceToSR: () => {},
+    }));
+
+    await api.React.act(async () => { render(); });
+    const scanStep = host.querySelector('button[aria-label="Step 2 Scan, Ready"]');
+    const lockedAssembly = host.querySelector('button[aria-label="Step 3 Assemble, Locked"]');
+    expect(scanStep).not.toBeNull();
+    const lockedAssemblyTools = host.querySelector('button[aria-label="Assemble field tools, locked. Finish scan first"]');
+    expect(scanStep?.disabled).toBe(false);
+    expect(lockedAssembly?.disabled).toBe(true);
+    expect(lockedAssemblyTools?.disabled).toBe(true);
+
+    scanStep?.focus();
+    await api.React.act(async () => { scanStep?.click(); await new Promise(resolve => setTimeout(resolve, 5)); });
+    expect(data.field3dWorkflowStarted).toBe(true);
+    expect(data.field3dDrawerOpen).toBe(true);
+    expect(data.field3dDrawerSection).toBe('evidence');
+    expect(host.querySelector('button[aria-label="Step 2 Scan, Current"]')).not.toBeNull();
+    const viewControls = host.querySelector('[role="group"][aria-label="3D model view controls"]');
+    expect(viewControls).not.toBeNull();
+    expect([...viewControls.querySelectorAll('button')].map(button => button.textContent)).toEqual(['Pause spin', 'Close field tools', 'Focus model']);
+    expect(host.querySelector('.dinolab-field-toolbar button#dinolab-field-species-file')).toBeNull();
+    expect(host.querySelector('#dinolab-field-drawer #dinolab-field-species-file')?.textContent).toBe('Open full species file');
+    expect(document.activeElement?.id).toBe('dinolab-field-drawer-close');
+
+    const closeDrawer = host.querySelector('#dinolab-field-drawer-close');
+    await api.React.act(async () => { closeDrawer?.click(); await new Promise(resolve => setTimeout(resolve, 5)); });
+    expect(data.field3dDrawerOpen).toBe(false);
+    expect(document.activeElement?.id).toBe('dinolab-field-step-scan');
+
+
+    data = { ...data, field3dScanSpecies: 'tyrannosaurus', field3dScanLogged: { skull: true, shoulder: true, hip: true } };
+    await api.React.act(async () => { render(); });
+    const assembleStep = host.querySelector('button[aria-label="Step 3 Assemble, Current"]');
+    expect(assembleStep?.disabled).toBe(false);
+    const availableAssemblyTools = host.querySelector('button[aria-label="Assemble field tools"]');
+    expect(availableAssemblyTools?.disabled).toBe(false);
+    expect(host.querySelector('button[aria-label="Claim field tools, locked. Finish assembly first"]')?.disabled).toBe(true);
+    assembleStep?.focus();
+    await api.React.act(async () => { assembleStep?.click(); await new Promise(resolve => setTimeout(resolve, 5)); });
+    expect(data.field3dDrawerSection).toBe('assemble');
+    expect(document.activeElement?.id).toBe('dinolab-field-drawer-close');
+    await api.React.act(async () => {
+      document.activeElement?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+      await new Promise(resolve => setTimeout(resolve, 5));
+    });
+    expect(data.field3dDrawerOpen).toBe(false);
+    expect(document.activeElement?.id).toBe('dinolab-field-step-assemble');
+
+    await api.React.act(async () => { root.unmount(); });
+    host.remove();
+  });
   it('keeps the same 3D canvas mounted across unrelated Field Station updates', async () => {
     const api = setupDinoLab();
     const host = document.createElement('div');
@@ -575,6 +689,17 @@ describe('Dino Lab 3D Field Station accessibility contract', () => {
 
     data = { ...data, field3dShowBody: false, field3dScanTargetIdx: 2, field3dScanLogged: { skull: true }, field3dAssemblyPlaced: { skull: true } };
     await api.React.act(async () => { render(); });
+
+    data = { ...data, field3dFocusMode: true };
+    await api.React.act(async () => { render(); });
+    expect(host.querySelector('canvas[aria-roledescription="Interactive 3D dinosaur reconstruction"]')).toBe(firstCanvas);
+    expect(host.querySelector('.dinolab-tablist')).toBeNull();
+    expect([...host.querySelectorAll('button')].some(button => button.textContent === 'Exit focus view')).toBe(true);
+
+    data = { ...data, field3dFocusMode: false };
+    await api.React.act(async () => { render(); });
+    expect(host.querySelector('canvas[aria-roledescription="Interactive 3D dinosaur reconstruction"]')).toBe(firstCanvas);
+    expect(host.querySelector('.dinolab-tablist')).not.toBeNull();
     expect(host.querySelector('canvas[aria-roledescription="Interactive 3D dinosaur reconstruction"]')).toBe(firstCanvas);
     expect(host.querySelector('input[aria-label="Body inference opacity"]')?.disabled).toBe(true);
 

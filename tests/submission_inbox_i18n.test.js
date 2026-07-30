@@ -20,8 +20,10 @@ beforeAll(() => {
   React = require(resolve(md, 'react'));
   ReactDOMClient = require(resolve(md, 'react-dom/client'));
   ({ act } = require(resolve(md, 'react-dom/test-utils')));
+  global.ReactDOM = window.ReactDOM = require(resolve(md, 'react-dom'));
   global.React = window.React = React;
   global.IS_REACT_ACT_ENVIRONMENT = true;
+  loadAlloModule('allo_sheet/transfer_adapter.js');
   loadAlloModule('view_submission_inbox_module.js');
   SubmissionInbox = window.AlloModules.SubmissionInbox.SubmissionInbox;
 });
@@ -34,12 +36,13 @@ afterEach(() => {
   delete window.callGemini;
 });
 
-async function mount(onClose = () => {}) {
+async function mount(onClose = () => {}, extraProps = {}) {
   host = document.createElement('div'); document.body.appendChild(host);
   root = ReactDOMClient.createRoot(host);
   await act(async () => {
     root.render(React.createElement(SubmissionInbox, {
       isOpen: true, onClose, rosterKey: 'test', t: (k, a) => (typeof a === 'string' ? a : undefined), addToast: () => {},
+      ...extraProps,
     }));
   });
 }
@@ -76,6 +79,89 @@ describe('Submission Inbox UI localization', () => {
     expect(Object.keys(cache.Spanish || {}).length).toBeGreaterThan(0);
     const [enKey, esVal] = Object.entries(cache.Spanish)[0]; // English IS the key
     expect(esVal).toBe('ES·' + enKey);
+  });
+
+  it('never sends source-only AlloSheet review data in a UI translation prompt', async () => {
+    const privateValues = {
+      assignment: 'PRIVATE_ASSIGNMENT_TRANSLATION_SENTINEL_6F9A',
+      className: 'PRIVATE_CLASS_TRANSLATION_SENTINEL_7B2C',
+      nickname: 'PRIVATE_NICKNAME_TRANSLATION_SENTINEL_8D4E',
+      rubric: 'PRIVATE_RUBRIC_TRANSLATION_SENTINEL_9F6A',
+      response: 'PRIVATE_RESPONSE_TRANSLATION_SENTINEL_A1C3',
+      responseKey: 'PRIVATE_RESPONSE_KEY_TRANSLATION_SENTINEL_B5D7',
+      feedback: 'PRIVATE_FEEDBACK_TRANSLATION_SENTINEL_C9E1',
+      storageKey: 'PRIVATE_STORAGE_KEY_TRANSLATION_SENTINEL_D3F5',
+    };
+    const savedAt = new Date().toISOString();
+    const savedGrades = {};
+    for (let index = 0; index < 5; index += 1) {
+      savedGrades[`${privateValues.storageKey}-${index}`] = {
+        nickname: `${privateValues.nickname}-${index}`,
+        className: privateValues.className,
+        docTitle: privateValues.assignment,
+        submittedAt: savedAt,
+        gradedAt: savedAt,
+        source: 'offline-html',
+        responses: {
+          [privateValues.responseKey]: `${privateValues.response}-${index}`,
+        },
+        grades: {
+          [privateValues.responseKey]: {
+            score: 80 + index,
+            status: 'correct',
+            feedback: `${privateValues.feedback}-${index}`,
+          },
+        },
+        rubric: privateValues.rubric,
+      };
+    }
+    localStorage.setItem('alloflow_offline_grades', JSON.stringify(savedGrades));
+
+    window.__alloTextLanguage = 'Spanish';
+    const translationPrompts = [];
+    window.callGemini = async (prompt) => {
+      if (
+        typeof prompt === 'string'
+        && prompt.includes('Return ONLY a JSON object mapping each ENGLISH')
+      ) {
+        translationPrompts.push(prompt);
+        const list = JSON.parse(prompt.slice(prompt.indexOf('[')));
+        return JSON.stringify(Object.fromEntries(
+          list.map(label => [label, `ES·${label}`]),
+        ));
+      }
+      return '';
+    };
+
+    await mount(() => {}, { onOpenAlloSheet: () => true });
+    await act(async () => {
+      await new Promise(resolvePromise => setTimeout(resolvePromise, 800));
+    });
+
+    const opener = Array.from(host.querySelectorAll('button[aria-haspopup="dialog"]'))
+      .find(button => button.textContent.includes('Open in AlloSheet'));
+    expect(opener).toBeTruthy();
+    await act(async () => {
+      opener.click();
+      await Promise.resolve();
+    });
+
+    const review = document.body.querySelector(
+      '[role="dialog"][aria-labelledby="submission-inbox-allosheet-review-title"]',
+    );
+    expect(review).toBeTruthy();
+    expect(review.textContent).toContain(privateValues.assignment);
+    expect(review.textContent).toContain(privateValues.className);
+
+    await act(async () => {
+      await new Promise(resolvePromise => setTimeout(resolvePromise, 800));
+    });
+
+    expect(translationPrompts.length).toBeGreaterThan(0);
+    const translatedPayload = translationPrompts.join('\n');
+    Object.values(privateValues).forEach(privateValue => {
+      expect(translatedPayload).not.toContain(privateValue);
+    });
   });
 
   it('exposes a named focus-managed dialog with keyboard dismissal', async () => {

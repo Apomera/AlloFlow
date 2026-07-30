@@ -81,6 +81,13 @@ function _alloDiagnosticDocumentLabel(name) {
   return match ? '[document.' + match[1].toLowerCase() + ']' : '[document]';
 }
 function _alloTaggedPdfDeliveryVerdict(result) {
+  var typesetSummary = result && result.summary;
+  var unicodeWarning = typesetSummary && typesetSummary.unicodeTypesetWarning;
+  var droppedChars = Number(unicodeWarning && unicodeWarning.droppedChars);
+  var droppedImages = Number(typesetSummary && typesetSummary.imagesDropped);
+  if ((Number.isFinite(droppedChars) && droppedChars > 0) || (Number.isFinite(droppedImages) && droppedImages > 0)) {
+    return { ok: false, code: 'typeset-content-dropped', reason: 'the clean rebuild dropped source text or images' };
+  }
   var roundTrip = result && result.roundTrip;
   if (!roundTrip) return { ok: false, code: 'roundtrip-unavailable', reason: 'post-save structure verification was unavailable' };
   if (roundTrip.ok !== true) {
@@ -133,7 +140,7 @@ function _alloOcrTextLayerVerdict(result) {
 
 function _alloExecutableActiveContentFindings(result) {
   var findings = result && result.activeContent && Array.isArray(result.activeContent.findings) ? result.activeContent.findings : [];
-  var executable = { 'open-action': 1, javascript: 1, launch: 1, 'additional-actions': 1 };
+  var executable = { 'open-action': 1, javascript: 1, launch: 1, 'additional-actions': 1, 'other-actions': 1, multimedia: 1 };
   return findings.filter(function (finding) { return finding && executable[finding.type]; });
 }
 
@@ -602,46 +609,295 @@ function _alloScanActiveContent(pdfDoc, PDFLibNS) {
     var NS = PDFLibNS || (typeof window !== 'undefined' && window.PDFLib) || null;
     if (!pdfDoc || !NS || !NS.PDFName) return null;
     var nm = function (s) { return NS.PDFName.of(s); };
+    var counts = { openAction: 0, javascript: 0, launch: 0, embeddedFiles: 0, additionalActions: 0, otherActions: 0, multimedia: 0, externalLinks: 0 };
+    var pageScanFailures = 0;
+    var unexaminedStructures = 0;
     var ctx = pdfDoc.context;
-    var _resolve = function (o) { try { return (o && o.constructor && o.constructor.name === 'PDFRef') ? ctx.lookup(o) : o; } catch (_) { return o; } };
-    var counts = { openAction: 0, javascript: 0, launch: 0, embeddedFiles: 0, additionalActions: 0, externalLinks: 0 };
+    var _resolve = function (o) {
+      try { return (o && o.constructor && o.constructor.name === 'PDFRef') ? ctx.lookup(o) : o; }
+      catch (_) { unexaminedStructures++; return null; }
+    };
     var catalog = pdfDoc.catalog;
     if (catalog.get(nm('OpenAction'))) counts.openAction = 1;
     if (catalog.get(nm('AA'))) counts.additionalActions++;
+    if (catalog.get(nm('AcroForm'))) unexaminedStructures++;
+    if (catalog.get(nm('Outlines'))) unexaminedStructures++;
+    if (catalog.get(nm('Collection'))) unexaminedStructures++;
+    var catalogAssociatedFiles = _resolve(catalog.get(nm('AF')));
+    if (catalogAssociatedFiles) counts.embeddedFiles++;
     var names = _resolve(catalog.get(nm('Names')));
-    if (names && names.get) {
+    if (names && typeof names.get !== 'function') {
+      unexaminedStructures++;
+    } else if (names) {
       var jsTree = _resolve(names.get(nm('JavaScript')));
-      if (jsTree && jsTree.get) {
+      if (jsTree && typeof jsTree.get !== 'function') {
+        unexaminedStructures++;
+        counts.javascript++;
+      } else if (jsTree) {
+        if (jsTree.get(nm('Kids'))) unexaminedStructures++;
         var jsNames = _resolve(jsTree.get(nm('Names')));
-        counts.javascript += (jsNames && jsNames.size) ? Math.ceil(jsNames.size() / 2) : 1;
+        if (jsNames && typeof jsNames.size !== 'function') unexaminedStructures++;
+        counts.javascript += (jsNames && typeof jsNames.size === 'function') ? Math.ceil(jsNames.size() / 2) : 1;
       }
       var efTree = _resolve(names.get(nm('EmbeddedFiles')));
-      if (efTree && efTree.get) {
+      if (efTree && typeof efTree.get !== 'function') {
+        unexaminedStructures++;
+        counts.embeddedFiles++;
+      } else if (efTree) {
+        if (efTree.get(nm('Kids'))) unexaminedStructures++;
         var efNames = _resolve(efTree.get(nm('Names')));
-        counts.embeddedFiles += (efNames && efNames.size) ? Math.ceil(efNames.size() / 2) : 1;
+        if (efNames && typeof efNames.size !== 'function') unexaminedStructures++;
+        counts.embeddedFiles += (efNames && typeof efNames.size === 'function') ? Math.ceil(efNames.size() / 2) : 1;
       }
+      if (names.get(nm('Renditions'))) unexaminedStructures++;
+      if (names.get(nm('AlternatePresentations'))) unexaminedStructures++;
     }
+    // Associated files and actions can also be attached below the catalog:
+    // notably on Form XObjects reachable from page resources and on structure
+    // elements. Walk only those two bounded graphs. Object-identity tracking
+    // makes shared resources and malicious cycles safe without scanning every
+    // indirect object in the file.
+    var MAX_REACHABLE_OBJECTS = 20000;
+    var MAX_REACHABLE_DEPTH = 128;
+    var MAX_CONTAINER_ENTRIES = 10000;
+    var _newWalkState = function () {
+      return {
+        seen: (typeof WeakSet === 'function') ? new WeakSet() : [],
+        visited: 0,
+        limitReported: false
+      };
+    };
+    var _claimWalkObject = function (state, obj, depth, fail) {
+      if (depth > MAX_REACHABLE_DEPTH || state.visited >= MAX_REACHABLE_OBJECTS) {
+        if (!state.limitReported) { state.limitReported = true; fail(); }
+        return false;
+      }
+      if (!obj || (typeof obj !== 'object' && typeof obj !== 'function')) return true;
+      if (state.seen && typeof state.seen.has === 'function') {
+        if (state.seen.has(obj)) return false;
+        state.seen.add(obj);
+      } else {
+        if (state.seen.indexOf(obj) !== -1) return false;
+        state.seen.push(obj);
+      }
+      state.visited++;
+      return true;
+    };
+    var _resolveScoped = function (o, fail) {
+      try {
+        var resolved = (o && o.constructor && o.constructor.name === 'PDFRef') ? ctx.lookup(o) : o;
+        if (o && !resolved) fail();
+        return resolved || null;
+      } catch (_) { fail(); return null; }
+    };
+    var _isArrayObject = function (o) {
+      return !!(o && (Array.isArray(o)
+        || (o.constructor && o.constructor.name === 'PDFArray')
+        || (typeof o.size === 'function' && typeof o.get === 'function' && typeof o.keys !== 'function')));
+    };
+    var _arraySize = function (o) {
+      return Array.isArray(o) ? o.length : o.size();
+    };
+    var _arrayGet = function (o, i) {
+      return Array.isArray(o) ? o[i] : o.get(i);
+    };
+    var _scanAssociatedFiles = function (owner, resolveFn, fail) {
+      var raw = owner.get(nm('AF'));
+      if (!raw) return;
+      // Keep the established count semantics: one finding per AF-bearing
+      // container, while still validating every referenced file spec.
+      counts.embeddedFiles++;
+      var af = resolveFn(raw);
+      if (!af) return;
+      if (!_isArrayObject(af)) { fail(); return; }
+      var size;
+      try { size = _arraySize(af); } catch (_) { fail(); return; }
+      if (size > MAX_CONTAINER_ENTRIES) { fail(); size = MAX_CONTAINER_ENTRIES; }
+      for (var afi = 0; afi < size; afi++) {
+        var spec;
+        try { spec = resolveFn(_arrayGet(af, afi)); } catch (_) { fail(); continue; }
+        var specDict = spec && spec.dict && typeof spec.dict.get === 'function' ? spec.dict : spec;
+        if (!specDict || typeof specDict.get !== 'function') fail();
+      }
+    };
+    var _classifyAction = function (raw, resolveFn, fail, allowStructureAttribute) {
+      var action = resolveFn(raw);
+      if (!action) return;
+      if (_isArrayObject(action)) {
+        // /A on a StructElem is also the standard structure-attribute entry.
+        // Inspect dictionary members for real action /S values but allow
+        // ordinary attribute dictionaries and revision numbers.
+        if (!allowStructureAttribute) { fail(); return; }
+        var actionSize;
+        try { actionSize = _arraySize(action); } catch (_) { fail(); return; }
+        if (actionSize > MAX_CONTAINER_ENTRIES) { fail(); actionSize = MAX_CONTAINER_ENTRIES; }
+        for (var ai = 0; ai < actionSize; ai++) {
+          var member;
+          try { member = resolveFn(_arrayGet(action, ai)); } catch (_) { fail(); continue; }
+          if (member && typeof member.get === 'function'
+            && (member.get(nm('S')) || member.get(nm('Next')))) {
+            _classifyAction(member, resolveFn, fail, false);
+          }
+        }
+        return;
+      }
+      if (typeof action.get !== 'function') {
+        if (!allowStructureAttribute) fail();
+        return;
+      }
+      var sType = String(action.get(nm('S')) || '');
+      if (sType === '/JavaScript') counts.javascript++;
+      else if (sType === '/Launch') counts.launch++;
+      else if (sType === '/URI') counts.externalLinks++;
+      else if (sType && sType !== '/GoTo') counts.otherActions++;
+      else if (!sType && !allowStructureAttribute && !action.get(nm('Next'))) fail();
+      if (action.get(nm('Next'))) counts.otherActions++;
+    };
+    var _scanActionEntries = function (owner, resolveFn, fail, allowStructureAttribute) {
+      var aaRaw = owner.get(nm('AA'));
+      if (aaRaw) {
+        counts.additionalActions++;
+        var aa = resolveFn(aaRaw);
+        if (aa && typeof aa.get !== 'function') fail();
+      }
+      var actionRaw = owner.get(nm('A'));
+      if (actionRaw) _classifyAction(actionRaw, resolveFn, fail, allowStructureAttribute);
+      var openRaw = owner.get(nm('OpenAction'));
+      if (openRaw) {
+        counts.openAction++;
+        _classifyAction(openRaw, resolveFn, fail, false);
+      }
+    };
+    var resourceState = _newWalkState();
+    var _resourceFail = function () { pageScanFailures++; };
+    var _resolveResource = function (o) { return _resolveScoped(o, _resourceFail); };
+    var _scanResources = function (rawResources, depth) {
+      var resources = _resolveResource(rawResources);
+      if (!resources) return;
+      if (!_claimWalkObject(resourceState, resources, depth, _resourceFail)) return;
+      if (typeof resources.get !== 'function') { _resourceFail(); return; }
+      var rawXObjects = resources.get(nm('XObject'));
+      if (!rawXObjects) return;
+      var xobjects = _resolveResource(rawXObjects);
+      if (!xobjects) return;
+      if (!_claimWalkObject(resourceState, xobjects, depth + 1, _resourceFail)) return;
+      if (typeof xobjects.get !== 'function' || typeof xobjects.keys !== 'function') {
+        _resourceFail();
+        return;
+      }
+      var keys;
+      try { keys = xobjects.keys(); } catch (_) { _resourceFail(); return; }
+      if (!Array.isArray(keys)) { _resourceFail(); return; }
+      var keyCount = keys.length;
+      if (keyCount > MAX_CONTAINER_ENTRIES) { _resourceFail(); keyCount = MAX_CONTAINER_ENTRIES; }
+      for (var xi = 0; xi < keyCount; xi++) {
+        var xobject;
+        try { xobject = _resolveResource(xobjects.get(keys[xi])); }
+        catch (_) { _resourceFail(); continue; }
+        if (!xobject) continue;
+        if (!_claimWalkObject(resourceState, xobject, depth + 2, _resourceFail)) continue;
+        var xdict = xobject.dict && typeof xobject.dict.get === 'function' ? xobject.dict : xobject;
+        if (!xdict || typeof xdict.get !== 'function') { _resourceFail(); continue; }
+        var subtype = String(xdict.get(nm('Subtype')) || '');
+        if (subtype === '/Form') {
+          _scanAssociatedFiles(xdict, _resolveResource, _resourceFail);
+          _scanActionEntries(xdict, _resolveResource, _resourceFail, false);
+          var nestedResources = xdict.get(nm('Resources'));
+          if (nestedResources) _scanResources(nestedResources, depth + 3);
+        } else if (!subtype) {
+          // Every XObject requires a subtype. An unclassified reachable object
+          // could conceal a Form graph, so an absent subtype is incomplete.
+          _resourceFail();
+        }
+      }
+    };
     var pages = pdfDoc.getPages ? pdfDoc.getPages() : [];
     for (var pi = 0; pi < pages.length; pi++) {
       var pg = pages[pi];
       try {
         if (pg.node.get(nm('AA'))) counts.additionalActions++;
+        var pageAssociatedFiles = _resolve(pg.node.get(nm('AF')));
+        if (pageAssociatedFiles) counts.embeddedFiles++;
+        var pageResources = pg.node.get(nm('Resources'));
+        if (!pageResources && typeof pg.node.getInheritableAttribute === 'function') {
+          pageResources = pg.node.getInheritableAttribute(nm('Resources'));
+        }
+        if (pageResources) _scanResources(pageResources, 0);
         var annots = _resolve(pg.node.get(nm('Annots')));
-        if (annots && annots.size) {
+        if (annots && (typeof annots.size !== 'function' || typeof annots.get !== 'function')) {
+          pageScanFailures++;
+          continue;
+        }
+        if (annots) {
           for (var i = 0; i < annots.size(); i++) {
             var an = _resolve(annots.get(i));
-            if (!an || !an.get) continue;
+            if (!an || !an.get) { pageScanFailures++; continue; }
+            var subtype = String(an.get(nm('Subtype')) || '');
+            if (subtype === '/FileAttachment') counts.embeddedFiles++;
+            if (subtype === '/RichMedia' || subtype === '/3D' || subtype === '/Movie'
+              || subtype === '/Sound' || subtype === '/Screen') {
+              counts.multimedia++;
+            }
             if (an.get(nm('AA'))) counts.additionalActions++;
             var act = _resolve(an.get(nm('A')));
-            if (act && act.get) {
+            if (act && typeof act.get !== 'function') {
+              pageScanFailures++;
+              continue;
+            }
+            if (act) {
               var sType = String(act.get(nm('S')) || '');
               if (sType === '/JavaScript') counts.javascript++;
               else if (sType === '/Launch') counts.launch++;
               else if (sType === '/URI') counts.externalLinks++;
+              else if (sType && sType !== '/GoTo') counts.otherActions++;
+              if (act.get(nm('Next'))) counts.otherActions++;
             }
           }
         }
-      } catch (_) { /* per-page fail-soft */ }
+      } catch (_) { pageScanFailures++; }
+    }
+    var _structureFail = function () { unexaminedStructures++; };
+    var _resolveStructure = function (o) { return _resolveScoped(o, _structureFail); };
+    var structureState = _newWalkState();
+    var _scanStructureKid = function (rawKid, depth) {
+      var kid = _resolveStructure(rawKid);
+      if (!kid) return;
+      if (typeof kid === 'number'
+        || (kid.constructor && kid.constructor.name === 'PDFNumber')) return;
+      if (_isArrayObject(kid)) {
+        if (!_claimWalkObject(structureState, kid, depth, _structureFail)) return;
+        var kidCount;
+        try { kidCount = _arraySize(kid); } catch (_) { _structureFail(); return; }
+        if (kidCount > MAX_CONTAINER_ENTRIES) { _structureFail(); kidCount = MAX_CONTAINER_ENTRIES; }
+        for (var ki = 0; ki < kidCount; ki++) {
+          try { _scanStructureKid(_arrayGet(kid, ki), depth + 1); }
+          catch (_) { _structureFail(); }
+        }
+        return;
+      }
+      if (typeof kid.get !== 'function') { _structureFail(); return; }
+      if (!_claimWalkObject(structureState, kid, depth, _structureFail)) return;
+      var kidType = String(kid.get(nm('Type')) || '');
+      // Marked-content and object-reference dictionaries are terminal K
+      // children, not StructElems.
+      if (kidType === '/MCR' || kidType === '/OBJR') return;
+      if (kidType && kidType !== '/StructElem') _structureFail();
+      _scanAssociatedFiles(kid, _resolveStructure, _structureFail);
+      _scanActionEntries(kid, _resolveStructure, _structureFail, true);
+      var nestedKids = kid.get(nm('K'));
+      if (nestedKids) _scanStructureKid(nestedKids, depth + 1);
+    };
+    var rawStructTree = catalog.get(nm('StructTreeRoot'));
+    if (rawStructTree) {
+      var structTree = _resolveStructure(rawStructTree);
+      if (structTree && typeof structTree.get === 'function') {
+        if (_claimWalkObject(structureState, structTree, 0, _structureFail)) {
+          var rootKids = structTree.get(nm('K'));
+          if (rootKids) _scanStructureKid(rootKids, 1);
+        }
+      } else if (structTree) {
+        _structureFail();
+      }
     }
     var findings = [];
     if (counts.openAction) findings.push({ type: 'open-action', count: counts.openAction, label: 'auto-run action on open (/OpenAction)' });
@@ -649,9 +905,19 @@ function _alloScanActiveContent(pdfDoc, PDFLibNS) {
     if (counts.launch) findings.push({ type: 'launch', count: counts.launch, label: 'launch-external-program action(s)' });
     if (counts.embeddedFiles) findings.push({ type: 'embedded-files', count: counts.embeddedFiles, label: 'embedded file attachment(s)' });
     if (counts.additionalActions) findings.push({ type: 'additional-actions', count: counts.additionalActions, label: 'additional-action (/AA) trigger(s)' });
+    if (counts.otherActions) findings.push({ type: 'other-actions', count: counts.otherActions, label: 'other or chained PDF action(s)' });
+    if (counts.multimedia) findings.push({ type: 'multimedia', count: counts.multimedia, label: 'interactive multimedia annotation(s)' });
     // externalLinks reported separately (ordinary links are NOT active content — context only).
     // Built as a var, NOT a 2-space `return {` — the check-pipeline-integrity.js export-parse trap.
-    var _sc = { any: findings.length > 0, findings: findings, externalLinks: counts.externalLinks };
+    var _sc = {
+      schema: 1,
+      complete: pageScanFailures === 0 && unexaminedStructures === 0,
+      pageScanFailures: pageScanFailures,
+      unexaminedStructures: unexaminedStructures,
+      any: findings.length > 0,
+      findings: findings,
+      externalLinks: counts.externalLinks
+    };
     return _sc;
   } catch (_) { return null; }
 }
@@ -3220,7 +3486,9 @@ function _alloDistributionVerdict(r, opts) {
   // (a checker that never loaded) is NOT clean and stays in review.
   var _aiOnlyIncomplete = !!(r._aiVerificationIncomplete && vio === 0 && (eaFails === 0 || eaFails == null));
   if (r.verificationState && r.verificationState !== 'complete' && !_aiOnlyIncomplete) review.push('WCAG verification is ' + r.verificationState + '; review the engine coverage and unresolved evidence before distribution');
-  if (r.needsExpertReview) {
+  var _expertNeeded = !!r.needsExpertReview;
+  var _expertReason = r.expertReviewReason;
+  if (_expertNeeded) {
     // A2 residual (2026-07-13): expertReviewReason is a machine token
     // ('accessibility' | 'content-fidelity' | 'both') — render it as a sentence,
     // not a raw token, in the teacher-facing verdict bullet.
@@ -3228,8 +3496,8 @@ function _alloDistributionVerdict(r, opts) {
       'accessibility': 'confirmed accessibility barriers need an expert pass',
       'content-fidelity': 'content fidelity needs a human check (possible loss or changed values)',
       'both': 'accessibility barriers and content fidelity both need human review'
-    }[r.expertReviewReason];
-    review.push(_reasonText || String(r.expertReviewReason || 'this run was flagged for expert review'));
+    }[_expertReason];
+    review.push(_reasonText || String(_expertReason || 'this run was flagged for expert review'));
   }
   // L5 (audit 2026-07-26): integrityCoverage is a CHARACTER-COUNT ratio. It says nothing about
   // order, and no reading-order check runs against the source — so "preserved in reading order"
@@ -16773,7 +17041,7 @@ HTML section ${chunkNum}/${chunks.length}:
           y -= h + 6;
           page.drawImage(img, { x: M, y, width: w, height: h });
           y -= 6;
-        } catch (_) { /* unembeddable image → its alt rides the tag tree anyway */ }
+        } catch (_) { _imagesDropped++; /* alt remains in the tag tree, but the visual was lost */ }
         continue;
       }
       const text = (tag === 'li')
@@ -39199,6 +39467,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
     equalAccessUnavailable: _equalAccessUnavailable,
     visionAltSpotCheck: _visionAltSpotCheck, // sampled alt-vs-image ground truth (fail-soft; 2026-07-13)
     describeAndClassifyImages: _wrapAsync(describeAndClassifyImages),
+    executableActiveContentFindings: _alloExecutableActiveContentFindings,
+    taggedPdfDeliveryVerdict: _alloTaggedPdfDeliveryVerdict,
     _applyImageIntel,
     createTypesetTaggedPdf: _wrapAsync(createTypesetTaggedPdf),
     encodeTranscriptPayload,
@@ -39327,6 +39597,7 @@ window.AlloModules.createDocPipeline.contrastFixPair = _alloContrastFixPair; // 
 window.AlloModules.createDocPipeline.docFingerprint = _alloDocFingerprint; // static: H2 (2026-07-02) — the ANTI host stamps v2 resume projects with it so resume can refuse a different file wearing the same name
 window.AlloModules.createDocPipeline.normTokenForDiff = _alloNormTokenForDiff; // static: S7 (2026-07-02) — the view's missing-word/restoration UI folds tokens with the SAME function the pipeline's residual count uses
 window.AlloModules.createDocPipeline.loopPolicy = _alloLoopPolicy; // static: S3 (2026-07-02) — canonical fix-loop revert/keep-best/plateau policy, golden-tested
+window.AlloModules.createDocPipeline.taggedPdfDeliveryVerdict = _alloTaggedPdfDeliveryVerdict;
 window.AlloModules.createDocPipeline.altQuality = _alloAltQuality; // static: alt-text quality heuristics (2026-07-02), unit-tested
 window.AlloModules.createDocPipeline.scanAltQuality = _alloScanAltQuality; // static: whole-document alt scan (DOMParser envs only)
 window.AlloModules.createDocPipeline.scanActiveContent = _alloScanActiveContent; // static: A1 Document Safety walk (needs a pdf-lib doc — exercised by the Playwright corpus)

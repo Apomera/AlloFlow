@@ -78,6 +78,80 @@ describe('Cell — interior organelle catalogue (the biology behind the visual)'
     expect(C.interiorHitTest('animal', 0.02, 0.5)).toBe('cellMembrane'); // animal has no wall → membrane
   });
 
+  it('provides expansive function, structure, and connection details for every structure', () => {
+    Object.values(C.CELL_ORGANELLES).forEach((organelle) => {
+      expect(organelle.fn.length).toBeGreaterThan(120);
+      expect(organelle.structure.length).toBeGreaterThan(100);
+      expect(organelle.connections.length).toBeGreaterThan(100);
+    });
+  });
+  it('provides a concise visual feature key for every selectable structure', () => {
+    Object.keys(C.CELL_ORGANELLES).forEach((key) => {
+      expect(C.CELL_ULTRASTRUCTURE[key], key).toBeTypeOf('string');
+      expect(C.CELL_ULTRASTRUCTURE[key].length, key).toBeGreaterThan(16);
+    });
+  });
+
+  it('places the added ultrastructure in biologically appropriate cell types', () => {
+    ['animal', 'plant'].forEach((type) => {
+      expect(C.interiorHas(type, 'peroxisome')).toBe(true);
+      expect(C.interiorHas(type, 'cytoskeleton')).toBe(true);
+    });
+    expect(C.interiorHas('bacterium', 'peroxisome')).toBe(false);
+    expect(C.interiorHas('bacterium', 'cytoskeleton')).toBe(false);
+    expect(C.interiorHas('plant', 'plasmodesmata')).toBe(true);
+    expect(C.interiorHas('animal', 'plasmodesmata')).toBe(false);
+    expect(C.interiorHas('bacterium', 'capsule')).toBe(true);
+    expect(C.interiorHas('bacterium', 'pili')).toBe(true);
+    expect(C.CELL_ORGANELLES.capsule.bust).toMatch(/not all|some bacteria/i);
+    expect(C.CELL_ORGANELLES.pili.bust).toMatch(/not bacterial flagella|shorter/i);
+  });
+  it('uses shared display geometry for accurate bacterial proportions and click targeting', () => {
+    const animal = C.interiorGeometry(760, 440, 'animal');
+    const bacterium = C.interiorGeometry(760, 440, 'bacterium');
+    expect(bacterium.RX).toBeLessThan(animal.RX);
+    expect(bacterium.RY).toBeLessThan(animal.RY);
+
+    const plasmidX = (bacterium.cx + (0.74 - 0.5) * 2 * bacterium.RX) / 760;
+    const plasmidY = (bacterium.cy + (0.34 - 0.5) * 2 * bacterium.RY) / 440;
+    expect(C.interiorHitTest('bacterium', plasmidX, plasmidY, 760, 440)).toBe('plasmid');
+  });
+  it('draws labeled cell identity, selection, section, stage, and stain annotations', () => {
+    const labels = [];
+    const noop = () => {};
+    const context = {
+      clearRect: noop, fillRect: noop, save: noop, restore: noop, beginPath: noop, closePath: noop,
+      ellipse: noop, arc: noop, fill: noop, stroke: noop, clip: noop, moveTo: noop, lineTo: noop,
+      bezierCurveTo: noop, quadraticCurveTo: noop, translate: noop, rotate: noop, setLineDash: noop,
+      fillText(value) { labels.push(value); },
+      createRadialGradient() { return { addColorStop: noop }; },
+    };
+
+    C.drawCellMicrodissection(context, 760, 440, 'plant', 0, 'cellWall', true, 4, 'laser', 62, 'fluorescence');
+
+    expect(labels).toContain('PLANT CELL');
+    expect(labels).toContain('EUKARYOTE');
+    expect(labels).toContain('SCHEMATIC • NOT TO SCALE');
+    expect(labels).toContain('SELECTED STRUCTURE');
+    expect(labels).toContain('Cell wall');
+    expect(labels).toContain('SECTION PLANE • DEPTH 62%');
+    expect(labels).toContain('MICRODISSECTION PROTOCOL');
+    expect(labels).toContain('STEP 5/5 • RECORD');
+    expect(labels).toContain('CONTRAST LABEL • FLUORESCENCE');
+    expect(labels).toContain('WALL • MEMBRANE • PLASMODESMATA');
+    expect(labels).toContain('PROCESS LENS');
+    expect(labels).toContain('WATER, TURGOR + CELL-TO-CELL FLOW');
+    expect(labels).toContain('SUPPORTING MATRIX \u2022 POROUS LAYER');
+
+    labels.length = 0;
+    C.drawCellMicrodissection(context, 760, 440, 'bacterium', 0, 'capsule', true, 2, 'microtome', 38, 'none');
+    expect(labels).toContain('BACTERIAL CELL');
+    expect(labels).toContain('PROKARYOTE');
+    expect(labels).toContain('CAPSULE • WALL • MEMBRANE');
+    expect(labels).toContain('Capsule (some bacteria)');
+    expect(labels).toContain('ENVELOPE, ATTACHMENT + MOTILITY');
+    expect(labels).toContain('HYDRATED MATRIX \u2022 EXTERNAL PROTECTION');
+  });
   it('the misconception-busts are present on the right organelles', () => {
     expect(C.CELL_ORGANELLES.nucleoid.bust).toMatch(/nucleus|prokaryote|bacteria/i);
     expect(C.CELL_ORGANELLES.mitochondria.bust).toMatch(/energy|ATP|plant/i);

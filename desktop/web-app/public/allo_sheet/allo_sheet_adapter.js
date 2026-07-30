@@ -315,6 +315,7 @@
     MAX_CELL_CHARS: MAX_CELL_CHARS,
     safeText: safeText,
     isSafeFieldName: isSafeFieldName,
+    sanitizeScalar: sanitizeScalar,
     normalizeRecords: normalizeRecords,
     deriveColumns: deriveColumns,
     formatValue: formatValue,

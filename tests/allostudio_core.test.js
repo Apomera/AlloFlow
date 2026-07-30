@@ -1530,17 +1530,47 @@ describe('AlloStudio quick action command palette helpers', () => {
     const analysis = ST.stAnalyzeDoc(d);
     const commands = ST.stCommandPaletteItems(d, {
       preflight: analysis,
-      selectionCount: 1,
+      selectionIds: [text],
+      selectedId: text,
       recommendedExport: ST.stRecommendedExportAction(d)
     });
     const ids = commands.map(c => c.id);
-    expect(ids).toEqual(expect.arrayContaining(['insert-heading1', 'fix-next-a11y', 'export-recommended', 'select-all', 'duplicate-selection', 'portfolio']));
+    expect(ids).toEqual(expect.arrayContaining(['insert-heading1', 'fix-next-a11y', 'export-recommended', 'select-all', 'duplicate-selection', 'portfolio', 'align-left', 'page-width-selection', 'reading-later']));
     expect(commands.find(c => c.id === 'fix-next-a11y').enabled).toBe(true);
     expect(commands.filter(c => c.id.startsWith('select-object:')).length).toBe(2);
     expect(ST.stFilterCommandPaletteItems(commands, '').some(c => c.id.startsWith('select-object:'))).toBe(false);
     expect(ST.stFilterCommandPaletteItems(commands, 'water').map(c => c.id)).toContain('select-object:' + text);
     expect(ST.stFilterCommandPaletteItems(commands, 'alt').map(c => c.id)).toEqual(expect.arrayContaining(['fix-next-a11y']));
     expect(ST.stFilterCommandPaletteItems(commands, 'portfolio').map(c => c.id)).toContain('portfolio');
+  });
+  it('models selection-aware layout and order actions with clear disabled states', () => {
+    const d = ST.stCreateDoc('letter-portrait', 'Layout commands', T0);
+    const a = addText(d, 'Title', 'heading1').object.id;
+    const b = ST.stAppend(d, { type: 'object.add', object: { type: 'shape', shape: 'rect', fill: '#dbeafe', frame: { x: 120, y: 30, w: 80, h: 40 }, z: 3 } }, 'user', T0).object.id;
+    const c = addImage(d, 'data:image/png;base64,x', 'Diagram').object.id;
+    const none = Object.fromEntries(ST.stCommandPaletteItems(d, {}).map(cmd => [cmd.id, cmd]));
+    expect(none['align-left'].enabled).toBe(false);
+    expect(none['lock-selection'].enabled).toBe(false);
+
+    const single = Object.fromEntries(ST.stCommandPaletteItems(d, { selectionIds: [b], selectedId: b }).map(cmd => [cmd.id, cmd]));
+    expect(single['align-hcenter'].enabled).toBe(true);
+    expect(single['page-width-selection'].enabled).toBe(true);
+    expect(single['reading-earlier'].enabled).toBe(true);
+    expect(single['reading-later'].enabled).toBe(true);
+    expect(single['distribute-x'].enabled).toBe(false);
+
+    const group = Object.fromEntries(ST.stCommandPaletteItems(d, { selectionIds: [a, b, c], selectedId: c }).map(cmd => [cmd.id, cmd]));
+    expect(group['align-left'].enabled).toBe(true);
+    expect(group['distribute-x'].enabled).toBe(true);
+    expect(group['distribute-y'].enabled).toBe(true);
+    expect(group['page-width-selection'].enabled).toBe(false);
+    expect(group['lock-selection'].enabled).toBe(true);
+    expect(group['unlock-selection'].enabled).toBe(false);
+
+    d.objects.find(o => o.id === b).locked = true;
+    const mixed = Object.fromEntries(ST.stCommandPaletteItems(d, { selectionIds: [a, b, c], selectedId: c }).map(cmd => [cmd.id, cmd]));
+    expect(mixed['unlock-selection'].enabled).toBe(true);
+    expect(ST.stFilterCommandPaletteItems(mixed ? Object.values(mixed) : [], 'distribute horizontal').map(c => c.id)).toContain('distribute-x');
   });
 });
 

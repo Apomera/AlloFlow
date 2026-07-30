@@ -88,7 +88,7 @@ describe('EPPP distractor-quality repair wave 15', () => {
     expect(byId.get('eppp-v2-research-014').rationale).toMatch(/order and treatment-by-order effects may still require analysis/i);
   });
 
-  it('publishes synchronized sources, clean feedback, native QA, and runtime content', () => {
+  it('publishes synchronized sources, clean feedback, native QA, and lazy pack content', () => {
     const sourceCatalog = read('test_prep/reference_catalog.json');
     expect(read('desktop/web-app/public/test_prep/reference_catalog.json')).toBe(sourceCatalog);
     const catalog = JSON.parse(sourceCatalog);
@@ -110,10 +110,10 @@ describe('EPPP distractor-quality repair wave 15', () => {
     expect(qa.summary).toMatchObject({ totalItems: 1500, passedItems: 1500, reviewRequiredItems: 0, status: 'pass' });
     expect(qa.items.filter((item) => selected.has(item.id)).every((item) => item.qaStatus === 'pass')).toBe(true);
 
-    const sourceRuntime = read('test_prep_hub_module.js');
-    expect(read('desktop/web-app/public/test_prep_hub_module.js')).toBe(sourceRuntime);
-    expect(sourceRuntime).toContain('Most guests in this hotel reuse their towels');
-    expect(sourceRuntime).toContain('grant narrative');
-    expect(sourceRuntime).toContain('background speech');
+    const sourcePack = read('test_prep/eppp_part_one_pack.json');
+    expect(read('desktop/web-app/public/test_prep/eppp_part_one_pack.json')).toBe(sourcePack);
+    expect(sourcePack).toContain('Most guests in this hotel reuse their towels');
+    expect(sourcePack).toContain('grant narrative');
+    expect(sourcePack).toContain('background speech');
   });
 });

@@ -1,0 +1,1190 @@
+{
+  "schemaVersion": 1,
+  "reportId": "ap-psychology-pilot-qa",
+  "generatedAt": "2026-07-29T00:00:00.000Z",
+  "packId": "ap-psychology-pilot",
+  "packVersion": "0.1.1-internal-preview",
+  "inputs": {
+    "pack": {
+      "path": "test_prep/ap_psychology_pilot.json",
+      "byteLength": 81274,
+      "sha256": "a941f32c680cd5aec4a7e0a6ec4703391a46129f6d697d7e378c2881b19b3445"
+    },
+    "learningLibrary": {
+      "path": "test_prep/ap_psychology_pilot_learning_library.json",
+      "byteLength": 107332,
+      "sha256": "5604d19e32b89905f6a06f6f0683ff738937a3796a0d5966f57dfe76196d900f"
+    }
+  },
+  "standard": {
+    "label": "AlloFlow AP Psychology internal-pilot structural and editorial QA v1",
+    "meaning": "Automated pass signals cover deterministic structure, public-source linkage, blueprint distributions, answer-key balance and sequence screens, length and lexical cue screens, feedback completeness, independent-authoring declarations, library inventory, original accessible diagram specifications and placements, unscored workshop safeguards, and source/deploy parity.",
+    "limitation": "Automated QA cannot establish AP Psychology content validity, distractor functioning, fairness, accessibility conformance, rights clearance, student safety, psychometric quality, official AP alignment, score meaning, or release readiness. College Board has not reviewed or endorsed these materials."
+  },
+  "automatedAssessment": {
+    "automatedQaStatus": "pass",
+    "releaseReady": false,
+    "structuralFindingCount": 0,
+    "signals": [
+      {
+        "check": "asset-identity",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "Pack and library identities, versions, preview state, and cross-links are structurally consistent."
+      },
+      {
+        "check": "blueprint-and-unit-balance",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "The five current public framework units are declared and receive four pilot items each."
+      },
+      {
+        "check": "science-practice-balance",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "The pilot preserves its declared P1/P2/P3/P4 allocation of 13/5/2/0."
+      },
+      {
+        "check": "answer-key-balance",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "Answer positions are exactly balanced at five keys in each A-D position."
+      },
+      {
+        "check": "answer-key-sequence",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "Ordered key transitions avoid a mechanically dominant modulo-four progression; sequence metrics do not establish psychometric quality."
+      },
+      {
+        "check": "one-best-answer",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "Every item and chapter check has one prompt, four distinct options, and a valid key."
+      },
+      {
+        "check": "substantive-feedback",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "Every pilot item has a substantive rationale and four substantive option explanations."
+      },
+      {
+        "check": "source-and-provenance",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "Public source links, source details, and independent native provenance declarations are complete."
+      },
+      {
+        "check": "rights-boundary",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "Automated QA confirms only that restricted-content and release flags remain closed; it is not independent rights clearance."
+      },
+      {
+        "check": "accessibility-boundary",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "Automated QA confirms text/reading-order declarations and a still-pending independent accessibility gate."
+      },
+      {
+        "check": "expert-review-boundary",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "Automated QA confirms the independent AP Psychology expert gate remains pending and release-blocking."
+      },
+      {
+        "check": "psychometric-boundary",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "Automated QA confirms the items remain uncalibrated, unfielded, and ineligible for score inference or release."
+      },
+      {
+        "check": "prompt-originality",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "No exact or high-similarity prompt pair crosses the conservative automated duplicate threshold."
+      },
+      {
+        "check": "keyed-option-length-cues",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "No severe item-level or bank-level keyed-option length cue crosses the automated threshold."
+      },
+      {
+        "check": "distractor-editorial",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "Choices are distinct and substantive and avoid all/none-of-the-above; wording advisories remain human-review signals."
+      },
+      {
+        "check": "library-inventory",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "Declared chapter, section, check, study-aid, and workshop counts match the actual library."
+      },
+      {
+        "check": "library-content-structure",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "Chapters, study aids, references, review declarations, and release boundaries remain structurally complete."
+      },
+      {
+        "check": "diagram-integrity",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "Optional original diagram specifications have accessible text equivalents, valid graph structure, and exactly linked section placements across all five units."
+      },
+      {
+        "check": "workshop-unscored-safeguards",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "AAQ- and EBQ-style workshops remain original, synthetic, unscored, non-predictive, and release-ineligible."
+      },
+      {
+        "check": "deployment-parity",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "When deployment mirrors exist, they are byte-identical to source; absent pre-build mirrors are reported as deferred."
+      }
+    ],
+    "structuralFindings": []
+  },
+  "independentHumanReview": {
+    "releaseStatus": "blocked-pending-independent-review",
+    "releaseReady": false,
+    "blockerCount": 8,
+    "blockers": [
+      {
+        "gate": "independent-rights-review",
+        "expectedBlockingState": "pending",
+        "packDeclaredStatus": "pending",
+        "libraryDeclaredStatus": "pending",
+        "requiredEvidence": "Independent intellectual-property and public-use review of both assets."
+      },
+      {
+        "gate": "independent-accessibility-review",
+        "expectedBlockingState": "pending",
+        "packDeclaredStatus": "pending",
+        "libraryDeclaredStatus": "pending",
+        "requiredEvidence": "Independent WCAG/assistive-technology content review plus production screen-reader and voice validation."
+      },
+      {
+        "gate": "ap-psychology-subject-expert-review",
+        "expectedBlockingState": "pending",
+        "packDeclaredStatus": "pending",
+        "libraryDeclaredStatus": "pending",
+        "requiredEvidence": "Independent review by a current AP Psychology educator or faculty subject expert."
+      },
+      {
+        "gate": "production-validation",
+        "expectedBlockingState": "pending",
+        "packDeclaredStatus": "pending",
+        "libraryDeclaredStatus": "pending",
+        "requiredEvidence": "End-to-end browser, keyboard, screen-reader, hands-free, and deployment validation."
+      },
+      {
+        "gate": "student-safety-review",
+        "expectedBlockingState": "pending",
+        "packDeclaredStatus": "not-declared-for-pack",
+        "libraryDeclaredStatus": "pending",
+        "requiredEvidence": "Independent student-safety review of mental-health examples and cautions."
+      },
+      {
+        "gate": "field-testing",
+        "expectedBlockingState": "not-started",
+        "packDeclaredStatus": "not-started",
+        "libraryDeclaredStatus": "not-started",
+        "requiredEvidence": "Representative learner field testing and documented item/library revisions."
+      },
+      {
+        "gate": "psychometric-calibration",
+        "expectedBlockingState": "not-started",
+        "packDeclaredStatus": "not-started",
+        "libraryDeclaredStatus": "not-started",
+        "requiredEvidence": "Qualified psychometric review, calibration, and validity evidence before any score or readiness inference."
+      },
+      {
+        "gate": "ced-and-policy-reverification",
+        "expectedBlockingState": "required-before-release",
+        "packDeclaredStatus": "required-before-release",
+        "libraryDeclaredStatus": "required-before-release",
+        "requiredEvidence": "Fresh verification of the current CED, clarifications, exam mode, timing, policies, and public-use boundary."
+      }
+    ],
+    "note": "These are genuine release blockers. Their presence is expected and does not make structural QA fail; automated checks must never convert them into completed reviews."
+  },
+  "deploymentParity": [
+    {
+      "asset": "pack",
+      "status": "pass",
+      "blocking": false,
+      "sourceSha256": "a941f32c680cd5aec4a7e0a6ec4703391a46129f6d697d7e378c2881b19b3445",
+      "deploySha256": "a941f32c680cd5aec4a7e0a6ec4703391a46129f6d697d7e378c2881b19b3445",
+      "note": "Source and deployment bytes are identical."
+    },
+    {
+      "asset": "learning-library",
+      "status": "pass",
+      "blocking": false,
+      "sourceSha256": "5604d19e32b89905f6a06f6f0683ff738937a3796a0d5966f57dfe76196d900f",
+      "deploySha256": "5604d19e32b89905f6a06f6f0683ff738937a3796a0d5966f57dfe76196d900f",
+      "note": "Source and deployment bytes are identical."
+    }
+  ],
+  "metrics": {
+    "blueprint": {
+      "framework": "Fall 2025 AP Psychology Course Framework V.1",
+      "clarificationsImplemented": "October 2025",
+      "examFormatReferenceYear": 2026,
+      "targetExamYear": null,
+      "itemCount": 20,
+      "unitItemCounts": {
+        "biological-bases-of-behavior": 4,
+        "cognition": 4,
+        "development-and-learning": 4,
+        "social-psychology-and-personality": 4,
+        "mental-and-physical-health": 4
+      },
+      "declaredUnitWeight": 0.2,
+      "officialUnitWeightRange": [
+        0.15,
+        0.25
+      ]
+    },
+    "sciencePractices": {
+      "itemCounts": {
+        "P1": 13,
+        "P2": 5,
+        "P3": 2,
+        "P4": 0
+      },
+      "expectedItemCounts": {
+        "P1": 13,
+        "P2": 5,
+        "P3": 2,
+        "P4": 0
+      }
+    },
+    "answerKeys": {
+      "itemCounts": {
+        "0": 5,
+        "1": 5,
+        "2": 5,
+        "3": 5
+      },
+      "expectedItemCounts": {
+        "0": 5,
+        "1": 5,
+        "2": 5,
+        "3": 5
+      },
+      "sequence": {
+        "orderedAnswerKeys": [
+          2,
+          1,
+          0,
+          3,
+          1,
+          2,
+          0,
+          3,
+          2,
+          3,
+          0,
+          1,
+          3,
+          1,
+          0,
+          2,
+          0,
+          1,
+          2,
+          3
+        ],
+        "transitionDeltasMod4": [
+          3,
+          3,
+          3,
+          2,
+          1,
+          2,
+          3,
+          3,
+          1,
+          1,
+          1,
+          2,
+          2,
+          3,
+          2,
+          2,
+          1,
+          1,
+          1
+        ],
+        "transitionDeltaCounts": {
+          "0": 0,
+          "1": 7,
+          "2": 6,
+          "3": 6
+        },
+        "dominantTransitionDelta": 1,
+        "dominantTransitionDeltas": [
+          1
+        ],
+        "dominantTransitionCount": 7,
+        "dominantTransitionRate": 0.368,
+        "longestSameKeyRun": 1,
+        "advisoryThresholdExclusive": 0.6,
+        "structuralThresholdExclusive": 0.7
+      }
+    },
+    "itemQuality": {
+      "completeOptionFeedbackItems": 20,
+      "editorialDeclarationItems": 20,
+      "sourceCompleteItems": 20,
+      "rightsBoundaryItems": 20,
+      "accessibilityBoundaryItems": 20,
+      "expertGateItems": 20,
+      "psychometricBoundaryItems": 20,
+      "keyedOptionMeanWords": 6.65,
+      "distractorOptionMeanWords": 6.8,
+      "keyedToDistractorMeanRatio": 0.978,
+      "uniquelyLongestKeyedOptions": 1,
+      "severeKeyedLengthCueItems": 0,
+      "optionLengthMetrics": [
+        {
+          "id": "ap-psych-u1-003",
+          "keyedWords": 13,
+          "longestDistractorWords": 14,
+          "severeCue": false
+        },
+        {
+          "id": "ap-psych-u1-002",
+          "keyedWords": 16,
+          "longestDistractorWords": 18,
+          "severeCue": false
+        },
+        {
+          "id": "ap-psych-u1-001",
+          "keyedWords": 3,
+          "longestDistractorWords": 4,
+          "severeCue": false
+        },
+        {
+          "id": "ap-psych-u1-004",
+          "keyedWords": 3,
+          "longestDistractorWords": 4,
+          "severeCue": false
+        },
+        {
+          "id": "ap-psych-u2-001",
+          "keyedWords": 2,
+          "longestDistractorWords": 3,
+          "severeCue": false
+        },
+        {
+          "id": "ap-psych-u2-002",
+          "keyedWords": 9,
+          "longestDistractorWords": 10,
+          "severeCue": false
+        },
+        {
+          "id": "ap-psych-u2-004",
+          "keyedWords": 2,
+          "longestDistractorWords": 2,
+          "severeCue": false
+        },
+        {
+          "id": "ap-psych-u2-003",
+          "keyedWords": 10,
+          "longestDistractorWords": 12,
+          "severeCue": false
+        },
+        {
+          "id": "ap-psych-u3-001",
+          "keyedWords": 3,
+          "longestDistractorWords": 3,
+          "severeCue": false
+        },
+        {
+          "id": "ap-psych-u3-002",
+          "keyedWords": 2,
+          "longestDistractorWords": 2,
+          "severeCue": false
+        },
+        {
+          "id": "ap-psych-u3-003",
+          "keyedWords": 2,
+          "longestDistractorWords": 2,
+          "severeCue": false
+        },
+        {
+          "id": "ap-psych-u3-004",
+          "keyedWords": 2,
+          "longestDistractorWords": 2,
+          "severeCue": false
+        },
+        {
+          "id": "ap-psych-u4-001",
+          "keyedWords": 4,
+          "longestDistractorWords": 3,
+          "severeCue": false
+        },
+        {
+          "id": "ap-psych-u4-003",
+          "keyedWords": 12,
+          "longestDistractorWords": 13,
+          "severeCue": false
+        },
+        {
+          "id": "ap-psych-u4-002",
+          "keyedWords": 6,
+          "longestDistractorWords": 7,
+          "severeCue": false
+        },
+        {
+          "id": "ap-psych-u4-004",
+          "keyedWords": 3,
+          "longestDistractorWords": 3,
+          "severeCue": false
+        },
+        {
+          "id": "ap-psych-u5-001",
+          "keyedWords": 15,
+          "longestDistractorWords": 16,
+          "severeCue": false
+        },
+        {
+          "id": "ap-psych-u5-002",
+          "keyedWords": 15,
+          "longestDistractorWords": 19,
+          "severeCue": false
+        },
+        {
+          "id": "ap-psych-u5-003",
+          "keyedWords": 9,
+          "longestDistractorWords": 9,
+          "severeCue": false
+        },
+        {
+          "id": "ap-psych-u5-004",
+          "keyedWords": 2,
+          "longestDistractorWords": 3,
+          "severeCue": false
+        }
+      ],
+      "categoricalCueMetrics": [
+        {
+          "id": "ap-psych-u1-003",
+          "keyedCueTerms": [],
+          "distractorCueChoices": [
+            {
+              "index": 0,
+              "terms": [
+                "every"
+              ]
+            }
+          ],
+          "advisory": false
+        },
+        {
+          "id": "ap-psych-u1-002",
+          "keyedCueTerms": [],
+          "distractorCueChoices": [],
+          "advisory": false
+        },
+        {
+          "id": "ap-psych-u1-001",
+          "keyedCueTerms": [],
+          "distractorCueChoices": [],
+          "advisory": false
+        },
+        {
+          "id": "ap-psych-u1-004",
+          "keyedCueTerms": [],
+          "distractorCueChoices": [],
+          "advisory": false
+        },
+        {
+          "id": "ap-psych-u2-001",
+          "keyedCueTerms": [],
+          "distractorCueChoices": [],
+          "advisory": false
+        },
+        {
+          "id": "ap-psych-u2-002",
+          "keyedCueTerms": [],
+          "distractorCueChoices": [],
+          "advisory": false
+        },
+        {
+          "id": "ap-psych-u2-004",
+          "keyedCueTerms": [],
+          "distractorCueChoices": [],
+          "advisory": false
+        },
+        {
+          "id": "ap-psych-u2-003",
+          "keyedCueTerms": [],
+          "distractorCueChoices": [],
+          "advisory": false
+        },
+        {
+          "id": "ap-psych-u3-001",
+          "keyedCueTerms": [],
+          "distractorCueChoices": [],
+          "advisory": false
+        },
+        {
+          "id": "ap-psych-u3-002",
+          "keyedCueTerms": [],
+          "distractorCueChoices": [],
+          "advisory": false
+        },
+        {
+          "id": "ap-psych-u3-003",
+          "keyedCueTerms": [],
+          "distractorCueChoices": [],
+          "advisory": false
+        },
+        {
+          "id": "ap-psych-u3-004",
+          "keyedCueTerms": [],
+          "distractorCueChoices": [],
+          "advisory": false
+        },
+        {
+          "id": "ap-psych-u4-001",
+          "keyedCueTerms": [],
+          "distractorCueChoices": [],
+          "advisory": false
+        },
+        {
+          "id": "ap-psych-u4-003",
+          "keyedCueTerms": [],
+          "distractorCueChoices": [],
+          "advisory": false
+        },
+        {
+          "id": "ap-psych-u4-002",
+          "keyedCueTerms": [],
+          "distractorCueChoices": [],
+          "advisory": false
+        },
+        {
+          "id": "ap-psych-u4-004",
+          "keyedCueTerms": [],
+          "distractorCueChoices": [],
+          "advisory": false
+        },
+        {
+          "id": "ap-psych-u5-001",
+          "keyedCueTerms": [
+            "every"
+          ],
+          "distractorCueChoices": [
+            {
+              "index": 3,
+              "terms": [
+                "only"
+              ]
+            }
+          ],
+          "advisory": false
+        },
+        {
+          "id": "ap-psych-u5-002",
+          "keyedCueTerms": [],
+          "distractorCueChoices": [],
+          "advisory": false
+        },
+        {
+          "id": "ap-psych-u5-003",
+          "keyedCueTerms": [],
+          "distractorCueChoices": [],
+          "advisory": false
+        },
+        {
+          "id": "ap-psych-u5-004",
+          "keyedCueTerms": [],
+          "distractorCueChoices": [],
+          "advisory": false
+        }
+      ],
+      "lexicalCueMetrics": [
+        {
+          "id": "ap-psych-u1-003",
+          "keyedOverlap": 0,
+          "maxDistractorOverlap": 4,
+          "keyOverlapAdvantage": -4,
+          "uniqueStemKeyTerms": [],
+          "advisory": false
+        },
+        {
+          "id": "ap-psych-u1-002",
+          "keyedOverlap": 3,
+          "maxDistractorOverlap": 5,
+          "keyOverlapAdvantage": -2,
+          "uniqueStemKeyTerms": [
+            "conclusion"
+          ],
+          "advisory": false
+        },
+        {
+          "id": "ap-psych-u1-001",
+          "keyedOverlap": 0,
+          "maxDistractorOverlap": 0,
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
+          "advisory": false
+        },
+        {
+          "id": "ap-psych-u1-004",
+          "keyedOverlap": 1,
+          "maxDistractorOverlap": 1,
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
+          "advisory": false
+        },
+        {
+          "id": "ap-psych-u2-001",
+          "keyedOverlap": 1,
+          "maxDistractorOverlap": 1,
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
+          "advisory": false
+        },
+        {
+          "id": "ap-psych-u2-002",
+          "keyedOverlap": 0,
+          "maxDistractorOverlap": 2,
+          "keyOverlapAdvantage": -2,
+          "uniqueStemKeyTerms": [],
+          "advisory": false
+        },
+        {
+          "id": "ap-psych-u2-004",
+          "keyedOverlap": 0,
+          "maxDistractorOverlap": 0,
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
+          "advisory": false
+        },
+        {
+          "id": "ap-psych-u2-003",
+          "keyedOverlap": 4,
+          "maxDistractorOverlap": 4,
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [
+            "correctly",
+            "errors"
+          ],
+          "advisory": false
+        },
+        {
+          "id": "ap-psych-u3-001",
+          "keyedOverlap": 0,
+          "maxDistractorOverlap": 0,
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
+          "advisory": false
+        },
+        {
+          "id": "ap-psych-u3-002",
+          "keyedOverlap": 0,
+          "maxDistractorOverlap": 0,
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
+          "advisory": false
+        },
+        {
+          "id": "ap-psych-u3-003",
+          "keyedOverlap": 0,
+          "maxDistractorOverlap": 0,
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
+          "advisory": false
+        },
+        {
+          "id": "ap-psych-u3-004",
+          "keyedOverlap": 1,
+          "maxDistractorOverlap": 1,
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
+          "advisory": false
+        },
+        {
+          "id": "ap-psych-u4-001",
+          "keyedOverlap": 0,
+          "maxDistractorOverlap": 0,
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
+          "advisory": false
+        },
+        {
+          "id": "ap-psych-u4-003",
+          "keyedOverlap": 1,
+          "maxDistractorOverlap": 1,
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [
+            "policy"
+          ],
+          "advisory": false
+        },
+        {
+          "id": "ap-psych-u4-002",
+          "keyedOverlap": 1,
+          "maxDistractorOverlap": 0,
+          "keyOverlapAdvantage": 1,
+          "uniqueStemKeyTerms": [
+            "attitude"
+          ],
+          "advisory": false
+        },
+        {
+          "id": "ap-psych-u4-004",
+          "keyedOverlap": 1,
+          "maxDistractorOverlap": 1,
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
+          "advisory": false
+        },
+        {
+          "id": "ap-psych-u5-001",
+          "keyedOverlap": 1,
+          "maxDistractorOverlap": 1,
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [
+            "average"
+          ],
+          "advisory": false
+        },
+        {
+          "id": "ap-psych-u5-002",
+          "keyedOverlap": 0,
+          "maxDistractorOverlap": 2,
+          "keyOverlapAdvantage": -2,
+          "uniqueStemKeyTerms": [],
+          "advisory": false
+        },
+        {
+          "id": "ap-psych-u5-003",
+          "keyedOverlap": 2,
+          "maxDistractorOverlap": 2,
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
+          "advisory": false
+        },
+        {
+          "id": "ap-psych-u5-004",
+          "keyedOverlap": 0,
+          "maxDistractorOverlap": 0,
+          "keyOverlapAdvantage": 0,
+          "uniqueStemKeyTerms": [],
+          "advisory": false
+        }
+      ],
+      "feedbackOpeningRestatementMetrics": [
+        {
+          "id": "ap-psych-u1-003",
+          "choiceIndexes": []
+        },
+        {
+          "id": "ap-psych-u1-002",
+          "choiceIndexes": []
+        },
+        {
+          "id": "ap-psych-u1-001",
+          "choiceIndexes": []
+        },
+        {
+          "id": "ap-psych-u1-004",
+          "choiceIndexes": []
+        },
+        {
+          "id": "ap-psych-u2-001",
+          "choiceIndexes": []
+        },
+        {
+          "id": "ap-psych-u2-002",
+          "choiceIndexes": []
+        },
+        {
+          "id": "ap-psych-u2-004",
+          "choiceIndexes": []
+        },
+        {
+          "id": "ap-psych-u2-003",
+          "choiceIndexes": []
+        },
+        {
+          "id": "ap-psych-u3-001",
+          "choiceIndexes": []
+        },
+        {
+          "id": "ap-psych-u3-002",
+          "choiceIndexes": []
+        },
+        {
+          "id": "ap-psych-u3-003",
+          "choiceIndexes": []
+        },
+        {
+          "id": "ap-psych-u3-004",
+          "choiceIndexes": []
+        },
+        {
+          "id": "ap-psych-u4-001",
+          "choiceIndexes": []
+        },
+        {
+          "id": "ap-psych-u4-003",
+          "choiceIndexes": []
+        },
+        {
+          "id": "ap-psych-u4-002",
+          "choiceIndexes": []
+        },
+        {
+          "id": "ap-psych-u4-004",
+          "choiceIndexes": []
+        },
+        {
+          "id": "ap-psych-u5-001",
+          "choiceIndexes": []
+        },
+        {
+          "id": "ap-psych-u5-002",
+          "choiceIndexes": []
+        },
+        {
+          "id": "ap-psych-u5-003",
+          "choiceIndexes": []
+        },
+        {
+          "id": "ap-psych-u5-004",
+          "choiceIndexes": []
+        }
+      ],
+      "heuristicDefinitions": {
+        "categoricalCueAdvisory": "At least two distractor choices contain unprotected categorical terms while the key contains none; named all-or-none/only-child constructs and explicit not-necessarily or does-not-prove/show/mean/establish/imply/guarantee phrases are excluded.",
+        "stemKeyLexicalAdvisory": "At least two meaningful terms occur uniquely in the stem and key, and keyed stem overlap exceeds every distractor by at least two terms.",
+        "feedbackOpeningRestatementAdvisory": "The first feedback sentence contains only the option label plus a bare correctness claim."
+      }
+    },
+    "promptOriginality": {
+      "threshold": {
+        "method": "lowercased alphanumeric non-stopword token-set Jaccard",
+        "nearDuplicateAtOrAbove": 0.72
+      },
+      "promptRecordsChecked": 32,
+      "exactDuplicateGroups": [],
+      "nearDuplicatePairs": []
+    },
+    "learningLibrary": {
+      "inventory": {
+        "chapters": 5,
+        "sections": 15,
+        "diagrams": 5,
+        "diagramPlacements": 5,
+        "knowledgeChecks": 10,
+        "skills": 4,
+        "flashcards": 15,
+        "memoryAids": 10,
+        "constructedResponseWorkshops": 2
+      },
+      "expectedInventory": {
+        "chapters": 5,
+        "sections": 15,
+        "diagrams": 5,
+        "diagramPlacements": 5,
+        "knowledgeChecks": 10,
+        "skills": 4,
+        "flashcards": 15,
+        "memoryAids": 10,
+        "constructedResponseWorkshops": 2
+      },
+      "sourceReviewedChapters": 5,
+      "sourceReviewedFlashcards": 15,
+      "sourceReviewedMemoryAids": 10,
+      "sourceReviewedConstructedResponseWorkshops": 2,
+      "independentExpertReviewedChapters": 0,
+      "releaseEligibleRecords": 0,
+      "diagramAccessibility": {
+        "accessibleDiagramCount": 5,
+        "originalSpecificationDiagramCount": 5,
+        "unscoredDiagramCount": 5,
+        "validDiagramCount": 5,
+        "validDiagramPlacementCount": 5,
+        "placedDiagramCount": 5,
+        "coveredChapterCount": 5,
+        "essentialVisualDiagramCount": 0,
+        "diagramsRequiredForComprehension": false,
+        "fallbackMode": "ordered-text-equivalent"
+      },
+      "workshopSafeguards": {
+        "aaqWorkshopCount": 1,
+        "ebqWorkshopCount": 1,
+        "safeguardedWorkshopCount": 2,
+        "unscoredWorkshops": 2,
+        "automatedScoringWorkshops": 0,
+        "scorePredictionWorkshops": 0,
+        "officialWorkshops": 0,
+        "releaseEligibleWorkshops": 0
+      }
+    }
+  },
+  "editorialReviewQueue": {
+    "count": 0,
+    "advisories": [],
+    "note": "Advisories identify worthwhile human review targets. They are not automated proof that an item is defective."
+  },
+  "items": [
+    {
+      "id": "ap-psych-u1-003",
+      "domainId": "biological-bases-of-behavior",
+      "practiceId": "P1",
+      "answerIndex": 2,
+      "findings": [],
+      "editorialAdvisories": [],
+      "rationaleWords": 33,
+      "minimumChoiceFeedbackWords": 19,
+      "sourceDetailCount": 1,
+      "automatedStatus": "pass"
+    },
+    {
+      "id": "ap-psych-u1-002",
+      "domainId": "biological-bases-of-behavior",
+      "practiceId": "P2",
+      "answerIndex": 1,
+      "findings": [],
+      "editorialAdvisories": [],
+      "rationaleWords": 33,
+      "minimumChoiceFeedbackWords": 18,
+      "sourceDetailCount": 1,
+      "automatedStatus": "pass"
+    },
+    {
+      "id": "ap-psych-u1-001",
+      "domainId": "biological-bases-of-behavior",
+      "practiceId": "P1",
+      "answerIndex": 0,
+      "findings": [],
+      "editorialAdvisories": [],
+      "rationaleWords": 31,
+      "minimumChoiceFeedbackWords": 22,
+      "sourceDetailCount": 1,
+      "automatedStatus": "pass"
+    },
+    {
+      "id": "ap-psych-u1-004",
+      "domainId": "biological-bases-of-behavior",
+      "practiceId": "P1",
+      "answerIndex": 3,
+      "findings": [],
+      "editorialAdvisories": [],
+      "rationaleWords": 26,
+      "minimumChoiceFeedbackWords": 18,
+      "sourceDetailCount": 1,
+      "automatedStatus": "pass"
+    },
+    {
+      "id": "ap-psych-u2-001",
+      "domainId": "cognition",
+      "practiceId": "P1",
+      "answerIndex": 1,
+      "findings": [],
+      "editorialAdvisories": [],
+      "rationaleWords": 31,
+      "minimumChoiceFeedbackWords": 18,
+      "sourceDetailCount": 1,
+      "automatedStatus": "pass"
+    },
+    {
+      "id": "ap-psych-u2-002",
+      "domainId": "cognition",
+      "practiceId": "P1",
+      "answerIndex": 2,
+      "findings": [],
+      "editorialAdvisories": [],
+      "rationaleWords": 33,
+      "minimumChoiceFeedbackWords": 18,
+      "sourceDetailCount": 1,
+      "automatedStatus": "pass"
+    },
+    {
+      "id": "ap-psych-u2-004",
+      "domainId": "cognition",
+      "practiceId": "P1",
+      "answerIndex": 0,
+      "findings": [],
+      "editorialAdvisories": [],
+      "rationaleWords": 26,
+      "minimumChoiceFeedbackWords": 22,
+      "sourceDetailCount": 1,
+      "automatedStatus": "pass"
+    },
+    {
+      "id": "ap-psych-u2-003",
+      "domainId": "cognition",
+      "practiceId": "P2",
+      "answerIndex": 3,
+      "findings": [],
+      "editorialAdvisories": [],
+      "rationaleWords": 33,
+      "minimumChoiceFeedbackWords": 18,
+      "sourceDetailCount": 1,
+      "automatedStatus": "pass"
+    },
+    {
+      "id": "ap-psych-u3-001",
+      "domainId": "development-and-learning",
+      "practiceId": "P2",
+      "answerIndex": 2,
+      "findings": [],
+      "editorialAdvisories": [],
+      "rationaleWords": 25,
+      "minimumChoiceFeedbackWords": 18,
+      "sourceDetailCount": 1,
+      "automatedStatus": "pass"
+    },
+    {
+      "id": "ap-psych-u3-002",
+      "domainId": "development-and-learning",
+      "practiceId": "P1",
+      "answerIndex": 3,
+      "findings": [],
+      "editorialAdvisories": [],
+      "rationaleWords": 26,
+      "minimumChoiceFeedbackWords": 20,
+      "sourceDetailCount": 1,
+      "automatedStatus": "pass"
+    },
+    {
+      "id": "ap-psych-u3-003",
+      "domainId": "development-and-learning",
+      "practiceId": "P1",
+      "answerIndex": 0,
+      "findings": [],
+      "editorialAdvisories": [],
+      "rationaleWords": 22,
+      "minimumChoiceFeedbackWords": 18,
+      "sourceDetailCount": 1,
+      "automatedStatus": "pass"
+    },
+    {
+      "id": "ap-psych-u3-004",
+      "domainId": "development-and-learning",
+      "practiceId": "P1",
+      "answerIndex": 1,
+      "findings": [],
+      "editorialAdvisories": [],
+      "rationaleWords": 28,
+      "minimumChoiceFeedbackWords": 19,
+      "sourceDetailCount": 1,
+      "automatedStatus": "pass"
+    },
+    {
+      "id": "ap-psych-u4-001",
+      "domainId": "social-psychology-and-personality",
+      "practiceId": "P1",
+      "answerIndex": 3,
+      "findings": [],
+      "editorialAdvisories": [],
+      "rationaleWords": 30,
+      "minimumChoiceFeedbackWords": 18,
+      "sourceDetailCount": 1,
+      "automatedStatus": "pass"
+    },
+    {
+      "id": "ap-psych-u4-003",
+      "domainId": "social-psychology-and-personality",
+      "practiceId": "P2",
+      "answerIndex": 1,
+      "findings": [],
+      "editorialAdvisories": [],
+      "rationaleWords": 34,
+      "minimumChoiceFeedbackWords": 18,
+      "sourceDetailCount": 1,
+      "automatedStatus": "pass"
+    },
+    {
+      "id": "ap-psych-u4-002",
+      "domainId": "social-psychology-and-personality",
+      "practiceId": "P1",
+      "answerIndex": 0,
+      "findings": [],
+      "editorialAdvisories": [],
+      "rationaleWords": 28,
+      "minimumChoiceFeedbackWords": 19,
+      "sourceDetailCount": 1,
+      "automatedStatus": "pass"
+    },
+    {
+      "id": "ap-psych-u4-004",
+      "domainId": "social-psychology-and-personality",
+      "practiceId": "P1",
+      "answerIndex": 2,
+      "findings": [],
+      "editorialAdvisories": [],
+      "rationaleWords": 31,
+      "minimumChoiceFeedbackWords": 19,
+      "sourceDetailCount": 1,
+      "automatedStatus": "pass"
+    },
+    {
+      "id": "ap-psych-u5-001",
+      "domainId": "mental-and-physical-health",
+      "practiceId": "P3",
+      "answerIndex": 0,
+      "findings": [],
+      "editorialAdvisories": [],
+      "rationaleWords": 40,
+      "minimumChoiceFeedbackWords": 21,
+      "sourceDetailCount": 1,
+      "automatedStatus": "pass"
+    },
+    {
+      "id": "ap-psych-u5-002",
+      "domainId": "mental-and-physical-health",
+      "practiceId": "P2",
+      "answerIndex": 1,
+      "findings": [],
+      "editorialAdvisories": [],
+      "rationaleWords": 31,
+      "minimumChoiceFeedbackWords": 18,
+      "sourceDetailCount": 1,
+      "automatedStatus": "pass"
+    },
+    {
+      "id": "ap-psych-u5-003",
+      "domainId": "mental-and-physical-health",
+      "practiceId": "P3",
+      "answerIndex": 2,
+      "findings": [],
+      "editorialAdvisories": [],
+      "rationaleWords": 37,
+      "minimumChoiceFeedbackWords": 18,
+      "sourceDetailCount": 1,
+      "automatedStatus": "pass"
+    },
+    {
+      "id": "ap-psych-u5-004",
+      "domainId": "mental-and-physical-health",
+      "practiceId": "P1",
+      "answerIndex": 3,
+      "findings": [],
+      "editorialAdvisories": [],
+      "rationaleWords": 27,
+      "minimumChoiceFeedbackWords": 16,
+      "sourceDetailCount": 1,
+      "automatedStatus": "pass"
+    }
+  ],
+  "releaseAssessment": {
+    "releaseStatus": "not-release-ready",
+    "releaseReady": false,
+    "reason": "Automated structural QA passed, but every independent review, production, field-test, psychometric, and reverification gate remains open."
+  }
+}

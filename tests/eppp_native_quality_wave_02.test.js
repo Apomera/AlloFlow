@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import { resolve } from 'node:path';
-import vm from 'node:vm';
 
 const root = resolve(import.meta.dirname, '..');
 const read = (relativePath) => fs.readFileSync(resolve(root, relativePath), 'utf8');
@@ -92,15 +91,15 @@ describe('EPPP native quality repair wave 02', () => {
     expect([consent, confidentiality].some((item) => /state law|licens|court|subpoena|mandated|legal/i.test(item.prompt + ' ' + item.rationale))).toBe(false);
   });
 
-  it('embeds every rewritten learner record in the generated runtime', () => {
+  it('publishes every rewritten learner record in the lazy runtime asset', () => {
     const bank = json('test_prep/eppp_native_items.json');
     const audit = json('test_prep/eppp_native_quality_audit_wave_02.json');
+    const pack = json('test_prep/eppp_part_one_pack.json');
     const canonical = new Map(bank.map((item) => [item.id, item]));
-    const react = { useState: (value) => [typeof value === 'function' ? value() : value, () => {}], useEffect: () => {}, useRef: () => ({ current: null }), createElement: () => null, Fragment: 'fragment' };
-    const context = vm.createContext({ console: { log() {}, warn() {}, error() {} }, window: { React: react } });
-    vm.runInContext(read('test_prep_hub_module.js'), context, { timeout: 30000 });
-    const runtimeItems = context.window.AlloModules.TestPrepHub.listPacks().find((pack) => pack.id === 'eppp-part-one').items;
-    const runtime = new Map(runtimeItems.map((item) => [item.id, item]));
+    const runtime = new Map(pack.items.map((item) => [item.id, item]));
+
+    expect(pack.id).toBe('eppp-part-one');
+    expect(pack.items).toHaveLength(1500);
     for (const id of audit.rewrittenItemIds) {
       const expected = canonical.get(id);
       const actual = runtime.get(id);
@@ -108,9 +107,14 @@ describe('EPPP native quality repair wave 02', () => {
         expect(actual[field], id + ' ' + field).toEqual(expected[field]);
       }
     }
+    expect(read('desktop/web-app/public/test_prep/eppp_part_one_pack.json')).toBe(read('test_prep/eppp_part_one_pack.json'));
     expect(read('desktop/web-app/public/test_prep_hub_module.js')).toBe(read('test_prep_hub_module.js'));
-  }, 15_000);
-
+    for (const modulePath of ['test_prep_hub_module.js', 'desktop/web-app/public/test_prep_hub_module.js']) {
+      const moduleText = read(modulePath);
+      expect(moduleText).not.toContain('EPPP_NATIVE_ITEMS');
+      expect(moduleText).not.toContain('EPPP_PART_ONE_SCAFFOLD');
+    }
+  });
   it('publishes exact source/deployment mirrors and deterministic regeneration', () => {
     for (const name of ['eppp_native_items.json', 'eppp_native_quality_audit_wave_02.json', 'eppp_native_quality_audit_wave_02.md', 'eppp_native_qa.json', 'eppp_native_qa.md']) {
       expect(read(`desktop/web-app/public/test_prep/${name}`)).toBe(read(`test_prep/${name}`));

@@ -14,14 +14,12 @@ describe('EPPP 1,000-question curation and expansion audit', () => {
     expect(audit.items.every((item) => Object.values(item.checks).every((status) => status === 'pass' || status === 'automated-pass' || status === 'editorial-pass' || status === 'editorial-pass-after-manual-option-review'))).toBe(true);
   });
 
-  it('publishes a deployment-identical 1,000-item curation record and expansion audit', () => {
-    const curation = read('test_prep/eppp_legacy/curation_1000.json');
+  it('records the 1,000-item curation milestone while keeping the native expansion audit deployable', () => {
+    const curation = read('quality/eppp_provenance/evidence/curation/curation_1000.json');
     expect(curation.summary).toMatchObject({ targetItems: 1000, editorialQaPassedItems: 1000, legacySeededReauthoredItems: 962, sourceAuthoredReplacementItems: 30, nativeOriginalItems: 8, pendingItems: 0 });
     expect(curation.batching).toMatchObject({ batchSize: 100, batches: 10 });
-    for (const rel of ['eppp_legacy/curation_1000.json', 'eppp_native_expansion_1000_audit.json']) {
-      const runtime = fs.readFileSync(resolve(process.cwd(), 'test_prep', rel), 'utf8');
-      const deployed = fs.readFileSync(resolve(process.cwd(), 'desktop/web-app/public/test_prep', rel), 'utf8');
-      expect(deployed).toBe(runtime);
-    }
+    const runtime = fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_native_expansion_1000_audit.json'), 'utf8');
+    const deployed = fs.readFileSync(resolve(process.cwd(), 'desktop/web-app/public/test_prep/eppp_native_expansion_1000_audit.json'), 'utf8');
+    expect(deployed).toBe(runtime);
   });
 });

@@ -3,11 +3,11 @@
 
 const fs = require('fs');
 const path = require('path');
+const { ensureFamily, evidencePath } = require('./eppp_evidence_paths.cjs');
 
 const root = path.resolve(__dirname, '..');
-const sourceRoot = path.join(root, 'test_prep', 'eppp_legacy');
-const deployRoot = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_legacy');
-const docket = JSON.parse(fs.readFileSync(path.join(sourceRoot, 'next_review_docket.json'), 'utf8'));
+const canonicalRoot = ensureFamily('adjudication');
+const docket = JSON.parse(fs.readFileSync(evidencePath('review', 'next_review_docket.json'), 'utf8'));
 
 const sources = {
   cerebellum: {
@@ -302,7 +302,7 @@ ${report.reviewMethod.map((step) => `- ${step}`).join('\n')}
 The JSON companion contains the original prompt, specific findings, revised prompt and choices, answer key, full rationale, four option explanations, and complete source provenance for each candidate.
 `;
 
-for (const outputRoot of [sourceRoot, deployRoot]) {
+for (const outputRoot of [canonicalRoot]) {
   fs.writeFileSync(path.join(outputRoot, 'adjudication_batch_01.json'), JSON.stringify(report, null, 2) + '\n', 'utf8');
   fs.writeFileSync(path.join(outputRoot, 'adjudication_batch_01.md'), markdown, 'utf8');
 }

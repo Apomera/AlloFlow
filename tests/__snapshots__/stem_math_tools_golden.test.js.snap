@@ -113,9 +113,9 @@ exports[`basic-math manipulatives render goldens (default state) > renders + pin
   "buttons": 33,
   "circles": 0,
   "inputs": 6,
-  "lengthBucket": 189,
+  "lengthBucket": 195,
   "rects": 0,
-  "sha": "b6c4d8542732310d",
+  "sha": "c8179303140ed9f8",
   "svgs": 0,
 }
 `;

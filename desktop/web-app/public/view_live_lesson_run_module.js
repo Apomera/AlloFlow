@@ -505,6 +505,78 @@ function buildLiveActivityTimeline(snapshots, limit = 8) {
     durationMs: item.durationMs
   }));
 }
+const LIVE_COMPANION_STATUS_LABELS = Object.freeze({
+  waiting: "Waiting",
+  working: "Working",
+  submitted: "Submitted",
+  revised: "Revised"
+});
+function buildLiveCompanionModel(input) {
+  const source = input && typeof input === "object" ? input : {};
+  const activity = selectLiveActivityPulse(source.activitySnapshots);
+  if (!activity) {
+    return {
+      schemaVersion: 1,
+      activity: null,
+      statusCohorts: [],
+      moderation: {
+        approved: 0,
+        hidden: 0,
+        revealed: 0,
+        feedbackSent: 0,
+        showcased: 0,
+        votesCast: 0
+      }
+    };
+  }
+  const explicitConnectedUids = Array.isArray(source.connectedUids) ? source.connectedUids : source.connectedUids instanceof Set ? Array.from(source.connectedUids) : null;
+  const roster = source.roster && typeof source.roster === "object" ? source.roster : null;
+  const currentConnectedUids = explicitConnectedUids || (roster ? Object.entries(roster).filter(([, entry]) => entry && typeof entry === "object").map(([uid]) => uid) : activity.audienceUids);
+  const connectedUidSet = new Set(
+    currentConnectedUids.map((uid) => boundedLiveActivityText(uid, 128)).filter(Boolean).slice(0, 250)
+  );
+  const statusBuckets = {
+    waiting: [],
+    working: [],
+    submitted: [],
+    revised: []
+  };
+  activity.audienceUids.filter((uid) => connectedUidSet.has(uid)).forEach((uid) => {
+    const status = normalizeLiveActivityParticipantStatus(activity.participantStatus[uid]);
+    statusBuckets[status].push(uid);
+  });
+  const statusCohorts = Object.keys(LIVE_COMPANION_STATUS_LABELS).map((status) => ({
+    status,
+    label: LIVE_COMPANION_STATUS_LABELS[status],
+    count: statusBuckets[status].length,
+    // The canonical sender chunks this bounded cohort into safe patches.
+    uids: statusBuckets[status].slice(0, 250)
+  })).filter((cohort) => cohort.count > 0);
+  return {
+    schemaVersion: 1,
+    activity: {
+      activityId: activity.activityId,
+      family: activity.family,
+      kind: activity.kind,
+      phase: activity.phase,
+      invited: Object.values(statusBuckets).reduce((sum, uids) => sum + uids.length, 0),
+      working: statusBuckets.working.length,
+      submitted: statusBuckets.submitted.length + statusBuckets.revised.length,
+      revised: statusBuckets.revised.length,
+      startedAt: activity.startedAt,
+      updatedAt: activity.updatedAt
+    },
+    statusCohorts,
+    moderation: {
+      approved: activity.counts.approved,
+      hidden: activity.counts.hidden,
+      revealed: activity.counts.revealed,
+      feedbackSent: activity.counts.feedbackSent,
+      showcased: activity.counts.showcased,
+      votesCast: activity.counts.votesCast
+    }
+  };
+}
 function resolveLiveAttentionTarget(uid, entry, groups, currentResourceId, sessionMode) {
   if (entry && entry.resourceId) {
     return { resourceId: entry.resourceId, assignedAt: boundedLiveActivityCount(entry.resourceAt, Number.MAX_SAFE_INTEGER) };
@@ -754,7 +826,12 @@ function LiveLessonRunPanel(props) {
   } = props || {};
   const [selectedStepId, setSelectedStepId] = React.useState(null);
   const [audienceKey, setAudienceKey] = React.useState("class");
+  const [companionMode, setCompanionMode] = React.useState(false);
   const [attentionSelectedUids, setAttentionSelectedUids] = React.useState([]);
+  const [companionSelection, setCompanionSelection] = React.useState({
+    activityId: "",
+    byStatus: {}
+  });
   const [attentionSending, setAttentionSending] = React.useState(false);
   const [attentionSendingUid, setAttentionSendingUid] = React.useState(null);
   const [attentionSendStatus, setAttentionSendStatus] = React.useState("");
@@ -850,6 +927,11 @@ function LiveLessonRunPanel(props) {
     onLaunchPreparedInteraction(preparedCheckpoint, focusItem, selectedAudience);
   };
   const activityPulse = selectLiveActivityPulse(activitySnapshots);
+  const companionActive = !preparationOnly && companionMode;
+  const companionModel = React.useMemo(
+    () => buildLiveCompanionModel({ activitySnapshots, roster }),
+    [activitySnapshots, roster]
+  );
   const attentionQueue = React.useMemo(() => buildLiveAttentionQueue({
     roster,
     groups,
@@ -870,11 +952,24 @@ function LiveLessonRunPanel(props) {
   );
   const attentionUidSet = new Set(attentionQueue.map((item) => item.uid));
   const validAttentionSelectedUids = attentionSelectedUids.filter((uid) => attentionUidSet.has(uid));
+  const currentCompanionActivityId = boundedLiveActivityText(
+    companionModel.activity && companionModel.activity.activityId,
+    128
+  );
+  const validCompanionSelectedUids = companionActive && currentCompanionActivityId && companionSelection.activityId === currentCompanionActivityId ? companionModel.statusCohorts.flatMap((cohort) => {
+    const currentUidSet = new Set(cohort.uids);
+    const selectedForStatus = Array.isArray(companionSelection.byStatus?.[cohort.status]) ? companionSelection.byStatus[cohort.status] : [];
+    return selectedForStatus.filter((uid) => currentUidSet.has(uid));
+  }) : [];
+  const validSelectedUids = Array.from(new Set(
+    validAttentionSelectedUids.concat(validCompanionSelectedUids)
+  )).slice(0, companionActive ? 250 : 12);
   const acknowledgedResourceOverrideUids = React.useMemo(
     () => buildAcknowledgedLiveResourceOverrides(roster, 25),
     [roster]
   );
   const toggleAttentionSelection = (uid) => {
+    if (!attentionUidSet.has(uid)) return;
     setAttentionSendStatus("");
     setAttentionSelectedUids((current) => current.includes(uid) ? current.filter((item) => item !== uid) : current.concat([uid]).slice(0, 12));
   };
@@ -890,23 +985,61 @@ function LiveLessonRunPanel(props) {
       return Array.from(new Set(current.concat(cohortUids))).slice(0, 12);
     });
   };
+  const toggleCompanionStatusCohort = (cohort) => {
+    const activityId = currentCompanionActivityId;
+    const status = cohort && Object.prototype.hasOwnProperty.call(LIVE_COMPANION_STATUS_LABELS, cohort.status) ? cohort.status : "";
+    const cohortUids = Array.from(new Set(
+      cohort && Array.isArray(cohort.uids) ? cohort.uids : []
+    )).slice(0, 250);
+    if (!activityId || !status || cohortUids.length === 0) return;
+    setAttentionSendStatus("");
+    setCompanionSelection((current) => {
+      const byStatus = current.activityId === activityId && current.byStatus && typeof current.byStatus === "object" ? { ...current.byStatus } : {};
+      const existing = Array.isArray(byStatus[status]) ? byStatus[status] : [];
+      const allSelected = cohortUids.every((uid) => existing.includes(uid));
+      if (allSelected) {
+        delete byStatus[status];
+      } else {
+        byStatus[status] = cohortUids;
+      }
+      return { activityId, byStatus };
+    });
+  };
   const sendAttentionSelection = async () => {
-    if (!focusItem || validAttentionSelectedUids.length === 0 || attentionSending || attentionReleasing || attentionSendingUid) return;
+    const selectedUids = validSelectedUids;
+    if (!focusItem || attentionSending || attentionReleasing || attentionSendingUid) return;
+    if (selectedUids.length === 0) {
+      const hasStoredCompanionSelection = Object.values(companionSelection.byStatus || {}).some((uids) => Array.isArray(uids) && uids.length > 0);
+      if (attentionSelectedUids.length > 0 || hasStoredCompanionSelection) {
+        setAttentionSelectedUids([]);
+        setCompanionSelection({ activityId: "", byStatus: {} });
+        setAttentionSendStatus("The selected students are no longer connected. Select a current cohort and try again.");
+      }
+      return;
+    }
     setAttentionSending(true);
     setAttentionSendStatus("");
     try {
       if (typeof onSendToStudents === "function") {
-        const result = await onSendToStudents(validAttentionSelectedUids, focusItem);
-        const sent = result && Number.isFinite(Number(result.sent)) ? Number(result.sent) : validAttentionSelectedUids.length;
+        const result = await onSendToStudents(selectedUids, focusItem);
+        const sent = result && Number.isFinite(Number(result.sent)) ? Number(result.sent) : selectedUids.length;
         const failed = result && Number.isFinite(Number(result.failed)) ? Number(result.failed) : 0;
-        setAttentionSendStatus(failed > 0 ? `${sent} sent; ${failed} could not be sent.` : `Sent to ${sent} student${sent === 1 ? "" : "s"}.`);
+        const noLongerConnected = Math.max(0, selectedUids.length - sent - failed);
+        if (sent === 0 && failed === 0 && noLongerConnected > 0) {
+          setAttentionSendStatus("The selected students are no longer connected. Select a current cohort and try again.");
+        } else if (noLongerConnected > 0) {
+          setAttentionSendStatus(`${sent} assigned; ${noLongerConnected} no longer connected${failed > 0 ? `; ${failed} could not be assigned` : ""}.`);
+        } else {
+          setAttentionSendStatus(failed > 0 ? `${sent} assigned; ${failed} could not be assigned.` : `Assigned to ${sent} student${sent === 1 ? "" : "s"}.`);
+        }
       } else if (typeof onSendToStudent === "function") {
-        await Promise.all(validAttentionSelectedUids.map((uid) => onSendToStudent(uid, focusItem)));
-        setAttentionSendStatus(`Sent to ${validAttentionSelectedUids.length} student${validAttentionSelectedUids.length === 1 ? "" : "s"}.`);
+        await Promise.all(selectedUids.map((uid) => onSendToStudent(uid, focusItem)));
+        setAttentionSendStatus(`Assigned to ${selectedUids.length} student${selectedUids.length === 1 ? "" : "s"}.`);
       }
       setAttentionSelectedUids([]);
+      setCompanionSelection({ activityId: "", byStatus: {} });
     } catch (error) {
-      setAttentionSendStatus("Could not send that resource. Please try again.");
+      setAttentionSendStatus("Could not assign that resource. Please try again.");
     } finally {
       setAttentionSending(false);
     }
@@ -920,9 +1053,9 @@ function LiveLessonRunPanel(props) {
     try {
       const result = await onSendToStudent(uid, focusItem);
       const failed = result && Number.isFinite(Number(result.failed)) ? Number(result.failed) : 0;
-      setAttentionSendStatus(failed > 0 ? `Could not send ${attentionResourceTitle || "that resource"} to ${name}. Please try again.` : `Sent ${attentionResourceTitle || "the selected resource"} to ${name}.`);
+      setAttentionSendStatus(failed > 0 ? `Could not assign ${attentionResourceTitle || "that resource"} to ${name}. Please try again.` : `Assigned ${attentionResourceTitle || "the selected resource"} to ${name}.`);
     } catch (error) {
-      setAttentionSendStatus(`Could not send ${attentionResourceTitle || "that resource"} to ${name}. Please try again.`);
+      setAttentionSendStatus(`Could not assign ${attentionResourceTitle || "that resource"} to ${name}. Please try again.`);
     } finally {
       setAttentionSendingUid(null);
     }
@@ -981,7 +1114,8 @@ function LiveLessonRunPanel(props) {
   return /* @__PURE__ */ React.createElement(
     "section",
     {
-      "aria-label": preparationOnly ? "Prepare live run" : t("live_lesson.title") || "Lesson path",
+      "aria-label": preparationOnly ? "Prepare live run" : companionActive ? t("live_lesson.companion_title") || "Live moderation companion" : t("live_lesson.title") || "Lesson path",
+      "data-live-companion-mode": companionActive ? "focused" : "off",
       style: {
         padding: "0.55rem",
         border: "1px solid #bfdbfe",
@@ -989,11 +1123,37 @@ function LiveLessonRunPanel(props) {
         background: "#eff6ff"
       }
     },
-    /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 6 } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u25B6"), /* @__PURE__ */ React.createElement("strong", { style: { color: "#1e3a8a", fontSize: "0.78rem" } }, preparationOnly ? "Prepare live run" : t("live_lesson.title") || "Lesson path"), /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 6 } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u25B6"), /* @__PURE__ */ React.createElement("strong", { style: { color: "#1e3a8a", fontSize: "0.78rem" } }, preparationOnly ? "Prepare live run" : companionActive ? t("live_lesson.companion_title") || "Live companion" : t("live_lesson.title") || "Lesson path"), !preparationOnly && /* @__PURE__ */ React.createElement(
+      "button",
+      {
+        type: "button",
+        "aria-pressed": companionActive,
+        onClick: () => {
+          setAttentionSelectedUids([]);
+          setCompanionSelection({ activityId: "", byStatus: {} });
+          setAttentionSendStatus("");
+          setCompanionMode((current) => !current);
+        },
+        style: {
+          marginLeft: "auto",
+          minHeight: 32,
+          border: "1px solid #818cf8",
+          borderRadius: 7,
+          background: companionActive ? "#4338ca" : "#eef2ff",
+          color: companionActive ? "white" : "#3730a3",
+          padding: "0.25rem 0.45rem",
+          fontFamily: "inherit",
+          fontSize: "0.6rem",
+          fontWeight: 900,
+          cursor: "pointer"
+        }
+      },
+      companionActive ? t("live_lesson.return_lesson_path") || "Lesson path" : t("live_lesson.open_companion") || "Companion"
+    ), /* @__PURE__ */ React.createElement(
       "span",
       {
         style: {
-          marginLeft: "auto",
+          marginLeft: preparationOnly ? "auto" : 0,
           color: "#1d4ed8",
           fontSize: "0.66rem",
           fontWeight: 800
@@ -1001,7 +1161,7 @@ function LiveLessonRunPanel(props) {
       },
       steps.length ? `${focusIndex + 1} / ${steps.length}` : `0 ${t("live_lesson.steps") || "steps"}`
     )),
-    activeUnitLabel && /* @__PURE__ */ React.createElement(
+    activeUnitLabel && !companionActive && /* @__PURE__ */ React.createElement(
       "div",
       {
         title: activeUnitLabel,
@@ -1017,6 +1177,45 @@ function LiveLessonRunPanel(props) {
       t("live_lesson.order_source") || "History order",
       ": ",
       activeUnitLabel
+    ),
+    companionActive && /* @__PURE__ */ React.createElement(
+      "section",
+      {
+        "data-live-companion-focus": "status-only",
+        "aria-label": t("live_lesson.companion_focus") || "Companion moderation focus",
+        style: {
+          marginTop: 7,
+          padding: "0.5rem",
+          border: "1px solid #818cf8",
+          borderRadius: 9,
+          background: "#eef2ff"
+        }
+      },
+      /* @__PURE__ */ React.createElement("strong", { style: { display: "block", color: "#312e81", fontSize: "0.68rem" } }, t("live_lesson.companion_focus") || "Focused moderation"),
+      /* @__PURE__ */ React.createElement("p", { style: { margin: "0.2rem 0 0", color: "#4338ca", fontSize: "0.58rem", lineHeight: 1.35 } }, t("live_lesson.companion_focus_hint") || "Status cohorts and moderation counts stay here; reviewing responses opens the existing activity owner."),
+      steps.length > 0 && focusItem && /* @__PURE__ */ React.createElement("label", { style: { display: "block", marginTop: 5, color: "#312e81", fontSize: "0.6rem", fontWeight: 900 } }, t("live_lesson.follow_up_resource") || "Follow-up resource", /* @__PURE__ */ React.createElement(
+        "select",
+        {
+          value: focusItem.id,
+          onChange: (event) => setSelectedStepId(event.target.value),
+          "aria-label": t("live_lesson.companion_resource_aria") || "Choose the resource to send from companion moderation",
+          style: {
+            display: "block",
+            width: "100%",
+            minHeight: 36,
+            marginTop: 3,
+            border: "1px solid #a5b4fc",
+            borderRadius: 7,
+            background: "white",
+            color: "#0f172a",
+            padding: "0.3rem",
+            fontFamily: "inherit",
+            fontSize: "0.64rem"
+          }
+        },
+        steps.map((item, index) => /* @__PURE__ */ React.createElement("option", { key: item.id, value: item.id }, index + 1, ". ", getTitle(item)))
+      )),
+      !companionModel.activity && /* @__PURE__ */ React.createElement("p", { role: "status", style: { margin: "0.4rem 0 0", color: "#475569", fontSize: "0.61rem" } }, t("live_lesson.companion_waiting") || "No live activity yet. Start an interaction from the existing Live Session tools.")
     ),
     preparationOnly && /* @__PURE__ */ React.createElement(
       "details",
@@ -1173,6 +1372,72 @@ function LiveLessonRunPanel(props) {
       ),
       /* @__PURE__ */ React.createElement("p", { style: { margin: "0.45rem 0 0", color: "#6366f1", fontSize: "0.59rem", lineHeight: 1.35 } }, t("live_lesson.activity_pulse_privacy") || "Status and counts only; student responses remain in the activity owner.")
     ),
+    companionActive && companionModel.activity && companionModel.statusCohorts.length > 0 && /* @__PURE__ */ React.createElement(
+      "section",
+      {
+        "aria-label": t("live_lesson.activity_status_cohorts") || "Activity status cohorts",
+        "data-live-companion-cohorts": companionModel.activity.activityId,
+        style: {
+          marginTop: 7,
+          padding: "0.5rem",
+          border: "1px solid #c4b5fd",
+          borderRadius: 9,
+          background: "#faf5ff"
+        }
+      },
+      /* @__PURE__ */ React.createElement("div", { style: { color: "#5b21b6", fontSize: "0.65rem", fontWeight: 900 } }, t("live_lesson.activity_status_cohorts") || "Activity cohorts"),
+      /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": t("live_lesson.select_activity_cohort") || "Select an activity cohort for follow-up", style: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 5, marginTop: 5 } }, companionModel.statusCohorts.map((cohort) => {
+        const selectedForStatus = companionSelection.activityId === currentCompanionActivityId && Array.isArray(companionSelection.byStatus?.[cohort.status]) ? companionSelection.byStatus[cohort.status] : [];
+        const selected = cohort.uids.length > 0 && cohort.uids.every((uid) => selectedForStatus.includes(uid));
+        return /* @__PURE__ */ React.createElement(
+          "button",
+          {
+            key: cohort.status,
+            type: "button",
+            "aria-pressed": selected,
+            onClick: () => toggleCompanionStatusCohort(cohort),
+            style: {
+              minHeight: 42,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 4,
+              border: "1px solid " + (selected ? "#7c3aed" : "#c4b5fd"),
+              borderRadius: 7,
+              background: selected ? "#ede9fe" : "white",
+              color: "#4c1d95",
+              padding: "0.3rem 0.4rem",
+              fontFamily: "inherit",
+              fontSize: "0.6rem",
+              fontWeight: 900,
+              cursor: "pointer"
+            }
+          },
+          /* @__PURE__ */ React.createElement("span", null, cohort.label),
+          /* @__PURE__ */ React.createElement("span", null, cohort.count)
+        );
+      })),
+      Object.entries(companionModel.moderation).some(([, count]) => count > 0) && /* @__PURE__ */ React.createElement("div", { "aria-label": t("live_lesson.moderation_counts") || "Moderation counts", style: { display: "flex", flexWrap: "wrap", gap: 4, marginTop: 5 } }, Object.entries(companionModel.moderation).filter(([, count]) => count > 0).map(([key, count]) => /* @__PURE__ */ React.createElement("span", { key, style: { borderRadius: 999, background: "#ede9fe", color: "#5b21b6", padding: "0.15rem 0.36rem", fontSize: "0.55rem", fontWeight: 900 } }, key.replace(/([A-Z])/g, " $1").toLowerCase(), " ", count))),
+      /* @__PURE__ */ React.createElement("p", { style: { margin: "0.4rem 0 0", color: "#6d28d9", fontSize: "0.56rem", lineHeight: 1.3 } }, t("live_lesson.companion_selection_hint") || "Select a cohort, then use the existing resource sender below. Larger cohorts are delivered automatically in privacy-safe batches of 25."),
+      attentionQueue.length === 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          disabled: !focusItem || validSelectedUids.length === 0 || attentionSending || attentionReleasing || !!attentionSendingUid,
+          onClick: sendAttentionSelection,
+          "aria-label": "Send " + (attentionResourceTitle || "selected lesson step") + " to " + validSelectedUids.length + " selected student" + (validSelectedUids.length === 1 ? "" : "s"),
+          style: {
+            ...focusItem && validSelectedUids.length > 0 && !attentionSending && !attentionReleasing && !attentionSendingUid ? buttonBase : disabledButton,
+            width: "100%",
+            marginTop: 6,
+            borderColor: "#7c3aed",
+            background: focusItem && validSelectedUids.length > 0 && !attentionSending && !attentionReleasing && !attentionSendingUid ? "#7c3aed" : "#f8fafc",
+            color: focusItem && validSelectedUids.length > 0 && !attentionSending && !attentionReleasing && !attentionSendingUid ? "white" : "#94a3b8"
+          }
+        },
+        attentionSending ? t("common.sending") || "Sending..." : (t("live_lesson.send_selected_resource") || "Send selected resource") + " (" + validSelectedUids.length + ")"
+      ), attentionSendStatus && /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", style: { margin: "0.35rem 0 0", color: "#5b21b6", fontSize: "0.61rem" } }, attentionSendStatus))
+    ),
     !preparationOnly && Object.keys(roster).length > 0 && /* @__PURE__ */ React.createElement(
       "section",
       {
@@ -1190,12 +1455,14 @@ function LiveLessonRunPanel(props) {
         "button",
         {
           type: "button",
-          onClick: () => setAttentionSelectedUids(
-            validAttentionSelectedUids.length === attentionQueue.length ? [] : attentionQueue.map((item) => item.uid)
-          ),
+          onClick: () => {
+            const queueUids = attentionQueue.map((item) => item.uid);
+            const allQueueSelected = queueUids.every((uid) => validAttentionSelectedUids.includes(uid));
+            setAttentionSelectedUids((current) => allQueueSelected ? current.filter((uid) => !queueUids.includes(uid)) : Array.from(new Set(current.concat(queueUids))).slice(0, companionActive ? 25 : 12));
+          },
           style: { border: "none", background: "transparent", color: "#92400e", padding: 2, fontSize: "0.6rem", fontWeight: 900, cursor: "pointer" }
         },
-        validAttentionSelectedUids.length === attentionQueue.length ? t("common.clear") || "Clear" : t("common.select_all") || "Select all"
+        attentionQueue.every((item) => validAttentionSelectedUids.includes(item.uid)) ? t("common.clear") || "Clear" : t("common.select_all") || "Select all"
       )), focusItem && /* @__PURE__ */ React.createElement(
         "div",
         {
@@ -1305,19 +1572,19 @@ function LiveLessonRunPanel(props) {
         "button",
         {
           type: "button",
-          disabled: !focusItem || validAttentionSelectedUids.length === 0 || attentionSending || attentionReleasing || !!attentionSendingUid,
+          disabled: !focusItem || validSelectedUids.length === 0 || attentionSending || attentionReleasing || !!attentionSendingUid,
           onClick: sendAttentionSelection,
-          "aria-label": "Send " + (attentionResourceTitle || "selected lesson step") + " to " + validAttentionSelectedUids.length + " selected student" + (validAttentionSelectedUids.length === 1 ? "" : "s"),
+          "aria-label": "Send " + (attentionResourceTitle || "selected lesson step") + " to " + validSelectedUids.length + " selected student" + (validSelectedUids.length === 1 ? "" : "s"),
           style: {
-            ...focusItem && validAttentionSelectedUids.length > 0 && !attentionSending && !attentionReleasing && !attentionSendingUid ? buttonBase : disabledButton,
+            ...focusItem && validSelectedUids.length > 0 && !attentionSending && !attentionReleasing && !attentionSendingUid ? buttonBase : disabledButton,
             width: "100%",
             marginTop: 6,
             borderColor: "#d97706",
-            background: focusItem && validAttentionSelectedUids.length > 0 && !attentionSending && !attentionReleasing && !attentionSendingUid ? "#d97706" : "#f8fafc",
-            color: focusItem && validAttentionSelectedUids.length > 0 && !attentionSending && !attentionReleasing && !attentionSendingUid ? "white" : "#94a3b8"
+            background: focusItem && validSelectedUids.length > 0 && !attentionSending && !attentionReleasing && !attentionSendingUid ? "#d97706" : "#f8fafc",
+            color: focusItem && validSelectedUids.length > 0 && !attentionSending && !attentionReleasing && !attentionSendingUid ? "white" : "#94a3b8"
           }
         },
-        attentionSending ? t("common.sending") || "Sending..." : (t("live_lesson.send_selected_resource") || "Send selected resource") + " (" + validAttentionSelectedUids.length + ")"
+        attentionSending ? t("common.sending") || "Sending..." : (t("live_lesson.send_selected_resource") || "Send selected resource") + " (" + validSelectedUids.length + ")"
       ), attentionSendStatus && /* @__PURE__ */ React.createElement("p", { role: "status", "aria-live": "polite", style: { margin: "0.35rem 0 0", color: "#78350f", fontSize: "0.61rem" } }, attentionSendStatus)),
       acknowledgedResourceOverrideUids.length > 0 && typeof onReleaseStudentResources === "function" && /* @__PURE__ */ React.createElement(
         "div",
@@ -1364,7 +1631,7 @@ function LiveLessonRunPanel(props) {
         ));
       }))
     ),
-    steps.length === 0 ? /* @__PURE__ */ React.createElement("p", { style: { margin: "0.55rem 0 0", color: "#475569", fontSize: "0.7rem", lineHeight: 1.4 } }, t("live_lesson.empty") || "Add student-facing resources to this unit to build its live lesson path.") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
+    !companionActive && (steps.length === 0 ? /* @__PURE__ */ React.createElement("p", { style: { margin: "0.55rem 0 0", color: "#475569", fontSize: "0.7rem", lineHeight: 1.4 } }, t("live_lesson.empty") || "Add student-facing resources to this unit to build its live lesson path.") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
       "div",
       {
         "aria-live": "polite",
@@ -1704,7 +1971,7 @@ function LiveLessonRunPanel(props) {
         },
         delivery.total > 0 ? `${delivery.viewing} ${t("common.of") || "of"} ${delivery.total} ${t("live_lesson.viewing_step") || "last reported on this step"}` : t("live_lesson.no_connected_audience") || "No connected students in this audience yet."
       )
-    ), /* @__PURE__ */ React.createElement("p", { style: { margin: "0.45rem 0 0", color: "#475569", fontSize: "0.62rem", lineHeight: 1.35 } }, selectedAudience && selectedAudience.kind !== "class" ? t("live_lesson.targeting_hint") || "Specific sends reuse the existing priority: individual overrides group, and group overrides class." : teacherPaced ? t("live_lesson.teacher_paced_hint") || "Teacher-paced: presenting follows this step on student screens." : t("live_lesson.student_paced_hint") || "Student-paced: opening changes your view while students keep navigation control.")))
+    ), /* @__PURE__ */ React.createElement("p", { style: { margin: "0.45rem 0 0", color: "#475569", fontSize: "0.62rem", lineHeight: 1.35 } }, selectedAudience && selectedAudience.kind !== "class" ? t("live_lesson.targeting_hint") || "Specific sends reuse the existing priority: individual overrides group, and group overrides class." : teacherPaced ? t("live_lesson.teacher_paced_hint") || "Teacher-paced: presenting follows this step on student screens." : t("live_lesson.student_paced_hint") || "Student-paced: opening changes your view while students keep navigation control."))))
   );
 }
 
@@ -1728,6 +1995,7 @@ function LiveLessonRunPanel(props) {
     upsertLiveActivitySnapshot: upsertLiveActivitySnapshot,
     selectLiveActivityPulse: selectLiveActivityPulse,
     buildLiveActivityTimeline: buildLiveActivityTimeline,
+    buildLiveCompanionModel: buildLiveCompanionModel,
     buildLiveAttentionQueue: buildLiveAttentionQueue,
     buildLiveAttentionCohorts: buildLiveAttentionCohorts,
     buildAcknowledgedLiveResourceOverrides: buildAcknowledgedLiveResourceOverrides,

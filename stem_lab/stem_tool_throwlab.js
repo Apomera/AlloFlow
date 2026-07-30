@@ -63,6 +63,12 @@ window.StemLab = window.StemLab || {
     st.id = 'allo-throwlab-polish-css';
     st.textContent = [
       '.throwlab-play-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,320px);gap:16px;align-items:start}',
+      '[data-throwlab-root] button,[data-throwlab-root] summary{min-height:44px}[data-throwlab-root] button{min-width:44px}[data-throwlab-root] input[type=range]{min-height:44px}',
+      '[data-throwlab-root] button:focus-visible,[data-throwlab-root] summary:focus-visible,[data-throwlab-root] input:focus-visible,[data-throwlab-root] textarea:focus-visible{outline:3px solid #67e8f9;outline-offset:3px}',
+      '.throwlab-mode-tabs{scrollbar-width:thin}.throwlab-mode-tab{scroll-snap-align:start}',
+      '.throwlab-compendium-scroll{overflow-x:auto;overscroll-behavior-inline:contain;scrollbar-width:thin;border-radius:8px}.throwlab-compendium-scroll:focus-visible{outline:3px solid #67e8f9;outline-offset:3px}',
+      '#throwlab-fs-workspace:fullscreen,#throwlab-fs-workspace:-webkit-full-screen{box-sizing:border-box;width:100vw;height:100vh;overflow:auto;padding:clamp(10px,2vw,20px);background:#020617;align-content:start}',
+      '#throwlab-fs-workspace:fullscreen .throwlab-sim-shell,#throwlab-fs-workspace:-webkit-full-screen .throwlab-sim-shell{min-height:min(68vh,720px)}',
       '.throwlab-run-focus-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(220px,.85fr);gap:12px}',
       '.throwlab-metric-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}',
       '.throwlab-launch-arc{position:relative;min-height:118px;margin-top:12px;border-radius:14px;overflow:hidden;background:linear-gradient(180deg,rgba(14,165,233,.16),rgba(22,163,74,.18));border:1px solid rgba(125,211,252,.24)}',
@@ -76,8 +82,15 @@ window.StemLab = window.StemLab || {
       '.throwlab-sim-shell{position:relative;border-radius:16px;padding:10px;background:linear-gradient(180deg,rgba(15,23,42,.98),#08111f);border:1px solid rgba(251,191,36,.32);box-shadow:0 18px 40px rgba(15,23,42,.34),inset 0 1px 0 rgba(255,255,255,.08)}',
       '.throwlab-sim-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px}',
       '.throwlab-control-card{background:linear-gradient(180deg,rgba(15,23,42,.98),rgba(30,41,59,.94));border:1px solid rgba(148,163,184,.22);border-radius:14px;padding:12px;box-shadow:0 12px 26px rgba(15,23,42,.22)}',
+      '.throwlab-analysis-details>summary{list-style-position:inside}.throwlab-analysis-details[open]>summary{border-bottom:1px solid rgba(192,132,252,.24);margin-bottom:10px}.throwlab-analysis-grid{grid-template-columns:minmax(0,1fr)}',
+      '#throwlab-fs-workspace:fullscreen [data-throwlab-immersive-zone],#throwlab-fs-workspace:-webkit-full-screen [data-throwlab-immersive-zone]{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,380px);gap:10px;align-items:start}',
+      '#throwlab-fs-workspace:fullscreen [data-throwlab-immersive-header],#throwlab-fs-workspace:fullscreen [data-throwlab-view-presets],#throwlab-fs-workspace:fullscreen #throwlab-immersive-help,#throwlab-fs-workspace:-webkit-full-screen [data-throwlab-immersive-header],#throwlab-fs-workspace:-webkit-full-screen [data-throwlab-view-presets],#throwlab-fs-workspace:-webkit-full-screen #throwlab-immersive-help{grid-column:1/-1}',
+      '#throwlab-fs-workspace:fullscreen [data-throwlab-immersive-canvas],#throwlab-fs-workspace:-webkit-full-screen [data-throwlab-immersive-canvas]{grid-column:1;max-height:52vh;object-fit:contain}',
+      '#throwlab-fs-workspace:fullscreen .throwlab-analysis-details,#throwlab-fs-workspace:-webkit-full-screen .throwlab-analysis-details{grid-column:2;grid-row:2/span 6;margin-top:0!important;max-height:calc(100vh - 150px);overflow:auto;position:sticky;top:8px}',
+      '@media(max-width:1100px){#throwlab-fs-workspace:fullscreen [data-throwlab-immersive-zone],#throwlab-fs-workspace:-webkit-full-screen [data-throwlab-immersive-zone]{grid-template-columns:1fr}#throwlab-fs-workspace:fullscreen .throwlab-analysis-details,#throwlab-fs-workspace:-webkit-full-screen .throwlab-analysis-details{grid-column:1;grid-row:auto;position:static;max-height:none}}',
       '@media(max-width:920px){.throwlab-play-grid,.throwlab-run-focus-grid{grid-template-columns:1fr!important}.throwlab-sim-shell{padding:6px!important}.throwlab-metric-grid,.throwlab-result-grid{grid-template-columns:1fr 1fr!important}.throwlab-sim-toolbar{justify-content:flex-start!important}}',
-      '@media(max-width:560px){.throwlab-preset-grid,.throwlab-result-grid{grid-template-columns:1fr!important}.throwlab-launch-arc{min-height:104px}}'
+      '@media(max-width:560px){.throwlab-preset-grid,.throwlab-result-grid{grid-template-columns:1fr!important}.throwlab-launch-arc{min-height:104px}.throwlab-mode-tabs{flex-wrap:nowrap!important;overflow-x:auto;padding:2px 2px 8px;scroll-snap-type:x proximity}.throwlab-mode-tab{flex:0 0 auto}}',
+      '@media(forced-colors:active){[data-throwlab-root] button:focus-visible,[data-throwlab-root] summary:focus-visible,[data-throwlab-root] input:focus-visible,[data-throwlab-root] textarea:focus-visible,.throwlab-compendium-scroll:focus-visible{outline:3px solid Highlight!important}}'
     ].join('');
     document.head.appendChild(st);
   })();
@@ -272,8 +285,9 @@ window.StemLab = window.StemLab || {
     var s = d.drillStats || {};
     var pct = function(num, den) { return den ? Math.round((num / den) * 100) + '%' : '—'; };
     var rows = [];
-    var totalThrows = d.throwCount || 0;
-    rows.push({ label: 'Total throws', value: totalThrows });
+    var totalThrows = (d.modeThrowCounts && d.modeThrowCounts[d.mode]) || 0;
+    rows.push({ label: 'Sport attempts', value: totalThrows });
+    rows.push({ label: 'All-sport attempts', value: d.throwCount || 0 });
     rows.push({ label: 'Hot streak', value: s.hotStreak || 0 });
     if (d.mode === 'pitching') {
       rows.push({ label: 'Strikes', value: d.strikeCount || 0 });
@@ -458,8 +472,11 @@ window.StemLab = window.StemLab || {
     'Trust the work',
     'Take the shot'
   ];
-  function pickHypePhrase() {
-    return HYPE_PHRASES[Math.floor(Math.random() * HYPE_PHRASES.length)];
+  function pickHypePhrase(mode, attemptCount) {
+    var modeOrder = ['pitching', 'freethrow', 'freekick', 'fieldgoal', 'bowling', 'golf', 'volleyball'];
+    var modeIndex = Math.max(0, modeOrder.indexOf(mode));
+    var attemptIndex = Math.max(0, Number(attemptCount) || 0);
+    return HYPE_PHRASES[(attemptIndex + modeIndex * 3) % HYPE_PHRASES.length];
   }
   // Map a streak count to a Hot-Hand label. Returns null if the streak
   // is too short to surface (keeps the UI quiet during early misses).
@@ -1603,6 +1620,21 @@ window.StemLab = window.StemLab || {
   // ═══════════════════════════════════════════
   // TOOL REGISTRATION
   // ═══════════════════════════════════════════
+  // Reusable dependency-free perspective math for Throw Lab and future STEM canvases.
+  var TL_PERSPECTIVE = Object.freeze({
+    normalizeYaw: function(value) { return ((Number(value) + 180) % 360 + 360) % 360 - 180; },
+    clampPitch: function(value) { return Math.max(10, Math.min(55, Number(value) || 10)); },
+    createProjector: function(camera, target, width, height) {
+      function sub(a,b){ return { x:a.x-b.x, y:a.y-b.y, z:a.z-b.z }; }
+      function dot(a,b){ return a.x*b.x+a.y*b.y+a.z*b.z; }
+      function cross(a,b){ return { x:a.y*b.z-a.z*b.y, y:a.z*b.x-a.x*b.z, z:a.x*b.y-a.y*b.x }; }
+      function unit(v){ var n=Math.sqrt(dot(v,v))||1; return { x:v.x/n, y:v.y/n, z:v.z/n }; }
+      var forward=unit(sub(target,camera)),right=unit(cross(forward,{x:0,y:1,z:0})),up=unit(cross(right,forward));
+      return { project:function(point){var rel=sub(point,camera),depth=dot(rel,forward);if(depth<=0.5)return null;var focal=width*0.88;return [width/2+dot(rel,right)*focal/depth,height*0.56-dot(rel,up)*focal/depth,depth];},unit:unit,cross:cross };
+    }
+  });
+  window.StemLab.ThrowLabProjection = TL_PERSPECTIVE;
+
   window.StemLab.registerTool('throwlab', {
     icon: '⚾',
     label: 'ThrowLab',
@@ -1663,6 +1695,7 @@ window.StemLab = window.StemLab || {
             replayActive: false,
             replayT: 0,
             throwCount: 0,
+            modeThrowCounts: {},
             strikeCount: 0,
             pitchTypesUsed: {},
             // Mode + per-mode extras
@@ -1755,6 +1788,28 @@ window.StemLab = window.StemLab || {
       var _tlCeleb = React.useState(null);
       var tlCeleb = _tlCeleb[0];
       var setTlCeleb = _tlCeleb[1];
+
+      // Keep delayed celebrations and announcements inside the component
+      // lifecycle. This prevents stale callbacks from updating a Throw Lab
+      // that has already been closed or switched away.
+      var _tlMounted = React.useRef(true);
+      var _tlTimers = React.useRef([]);
+      React.useEffect(function() {
+        _tlMounted.current = true;
+        return function() {
+          _tlMounted.current = false;
+          _tlTimers.current.forEach(function(timerId) { clearTimeout(timerId); });
+          _tlTimers.current = [];
+        };
+      }, []);
+      function scheduleTl(callback, delay) {
+        var timerId = setTimeout(function() {
+          _tlTimers.current = _tlTimers.current.filter(function(id) { return id !== timerId; });
+          if (_tlMounted.current) callback();
+        }, delay);
+        _tlTimers.current.push(timerId);
+        return timerId;
+      }
 
       // Mirror to window slot + localStorage.
       React.useEffect(function () {
@@ -2028,17 +2083,11 @@ window.StemLab = window.StemLab || {
           });
         }
         var lr = d.lastResult;
+        var trial = lr.trial || buildTrialSnapshot(d, lr.location);
         var stats = d.drillStats || {};
-        var modeLbl = (MODES[d.mode] || {}).label || d.mode;
-        var modeIcon = (MODES[d.mode] || {}).icon || '🏆';
-        var presetLbl = isPitching ? (currentPitch && currentPitch.label) || 'pitch'
-                      : isFreeThrow ? (currentShot && currentShot.label) || 'shot'
-                      : isFreeKick ? (currentKick && currentKick.label) || 'kick'
-                      : isFieldGoal ? (currentGoal && currentGoal.label) || 'kick'
-                      : isBowling ? (currentBowl && currentBowl.label) || 'delivery'
-                      : isGolf ? (currentGolfClub && currentGolfClub.label) || 'club'
-                      : isVolleyball ? (currentVolley && currentVolley.label) || 'serve'
-                      : 'throw';
+        var modeLbl = (MODES[trial.mode] || {}).label || trial.mode;
+        var modeIcon = (MODES[trial.mode] || {}).icon || '🏆';
+        var presetLbl = trial.presetLabel || trial.shotKind || 'throw';
         // Build a tiny inline SVG trajectory of the last throw
         var samples = (lr.samples || []).slice(0, 60);
         var maxZ = Math.max.apply(null, samples.map(function(s) { return s.z; })) || 1;
@@ -2096,7 +2145,7 @@ window.StemLab = window.StemLab || {
           + '      <line x1="0" y1="120" x2="280" y2="120" stroke="#475569" stroke-width="1"/>'
           + '      <polyline points="' + pts + '" fill="none" stroke="#fbbf24" stroke-width="2.5"/>'
           + '    </svg></div>'
-          + '    <div class="params">' + d.speedMph + ' mph · ' + d.spinRpm + ' rpm @ ' + d.spinAxisDeg + '° axis · launch ' + d.aimDegV.toFixed(1) + '°</div>'
+          + '    <div class="params">' + trial.speedMph + ' mph · ' + trial.spinRpm + ' rpm @ ' + trial.spinAxisDeg + '° axis · launch ' + trial.angleV.toFixed(1) + '°</div>'
           + '    <div class="stat-line">' + statLine + '</div>'
           + '    <div class="badges">' + badgesHtml + '</div>'
           + '    <div class="footer">ThrowLab — Sports Physics Lab · AlloFlow · ' + new Date().toLocaleDateString() + '</div>'
@@ -2224,13 +2273,18 @@ window.StemLab = window.StemLab || {
             gravityId: s.gravityId || 'earth',
             lastResult: null, replayActive: false, replayT: 0,
             coachReply: '', coachError: '',
-            activeScenarioId: scenarioId
+            activeScenarioId: scenarioId,
+            referenceList: [], referenceResult: null, referenceLabel: ''
           });
           nextThrowlab[presetIdField] = s.presetId;
           if (s.mode === 'fieldgoal' && preset.distanceYd) nextThrowlab.fgDistanceYd = preset.distanceYd;
           return Object.assign({}, prev, { throwlab: nextThrowlab });
         });
-        tlAnnounce('Scenario loaded: ' + s.label + '. ' + s.teach);
+        tlAnnounce('Scenario loaded: ' + s.label + '. ' + s.teach + (((d.referenceList || []).length || d.referenceResult) ? ' Saved comparison trajectories were cleared for this new setup.' : ''));
+        try {
+          scenarioOpenerRef.current = document.activeElement;
+        } catch (e) {}
+
         setScenarioIntro({
           id: s.id, label: s.label, icon: s.icon, mode: s.mode,
           teach: s.teach, questions: s.questions || []
@@ -2271,18 +2325,12 @@ window.StemLab = window.StemLab || {
       ];
       var MAX_REFERENCES = 4;
 
-      function buildRefLabel() {
-        var modeLabel = isPitching ? (currentPitch && currentPitch.label) || 'pitch'
-                      : isFreeThrow ? (currentShot && currentShot.label) || 'shot'
-                      : isFreeKick ? (currentKick && currentKick.label) || 'kick'
-                      : isFieldGoal ? (currentGoal && currentGoal.label) || 'kick'
-                      : isBowling ? (currentBowl && currentBowl.label) || 'delivery'
-                      : isGolf ? (currentGolfClub && currentGolfClub.label) || 'club'
-                      : isVolleyball ? (currentVolley && currentVolley.label) || 'serve'
-                      : 'throw';
-        return d.speedMph + ' mph · ' + modeLabel
-             + (isPitching || isFreeKick || isBowling || isVolleyball ? ' · ' + d.spinRpm + ' rpm @ ' + d.spinAxisDeg + '°' : '')
-             + (isFreeThrow || isFieldGoal || isGolf ? ' · ' + d.aimDegV.toFixed(1) + '°' : '');
+      function buildRefLabel(result) {
+        var trial = result && result.trial ? result.trial : buildTrialSnapshot(d, result && result.location);
+        var modeLabel = trial.presetLabel || trial.shotKind || 'throw';
+        return trial.speedMph + ' mph · ' + modeLabel
+             + (trial.mode === 'pitching' || trial.mode === 'freekick' || trial.mode === 'bowling' || trial.mode === 'volleyball' ? ' · ' + trial.spinRpm + ' rpm @ ' + trial.spinAxisDeg + '°' : '')
+             + (trial.mode === 'freethrow' || trial.mode === 'fieldgoal' || trial.mode === 'golf' ? ' · ' + Number(trial.angleV).toFixed(1) + '°' : '');
       }
 
       function saveReference() {
@@ -2291,7 +2339,7 @@ window.StemLab = window.StemLab || {
           if (addToast) addToast('No throw to save yet');
           return;
         }
-        var label = buildRefLabel();
+        var label = buildRefLabel(d.lastResult);
         setLabToolData(function(prev) {
           var existingList = prev.throwlab.referenceList || [];
           // Hydrate from legacy single-reference if list is empty + legacy is set
@@ -2303,12 +2351,14 @@ window.StemLab = window.StemLab || {
             // Cap reached — replace the oldest (FIFO)
             nextList = existingList.slice(1).concat([{
               result: prev.throwlab.lastResult,
+              mode: prev.throwlab.mode,
               label: label,
               color: REFERENCE_COLORS[(existingList.length) % REFERENCE_COLORS.length].color
             }]);
           } else {
             nextList = existingList.concat([{
               result: prev.throwlab.lastResult,
+              mode: prev.throwlab.mode,
               label: label,
               color: REFERENCE_COLORS[existingList.length % REFERENCE_COLORS.length].color
             }]);
@@ -2381,28 +2431,30 @@ window.StemLab = window.StemLab || {
           : tier === 2
           ? 'an upper-elementary student — speed and angle are fair game, but go easy on spin'
           : 'a high-school physics student — full equations, spin axis, drag, Magnus all fair game';
-        var modeLabel = (MODES[d.mode] || {}).label || d.mode;
+        var coachTrial = d.lastResult.trial || buildTrialSnapshot(d, d.lastResult.location);
+        var coachPreset = findPresetForTrial(coachTrial);
+        var modeLabel = (MODES[coachTrial.mode] || {}).label || coachTrial.mode;
         var lastSummary = JSON.stringify((d.recentThrows || []).slice(-5));
         var lastLoc = d.lastResult.location;
         // Per-sport physics anchor — reminds the coach about what's
         // distinctive about THIS sport so feedback uses the right
         // vocabulary and references the right geometry.
-        var sportAnchor = d.mode === 'pitching'
+        var sportAnchor = coachTrial.mode === 'pitching'
           ? 'Strike zone is ~17 in wide × ~25 in tall at home plate (60 ft 6 in). Spin axis controls break: 0° = backspin lift (4-seam), 180° = topspin drop (curveball), 90° = sidespin (slider). Outcomes: strike / borderline / ball / wild.'
-          : d.mode === 'freethrow'
+          : coachTrial.mode === 'freethrow'
           ? 'Rim is 4.34 m from shooter at 3.05 m height (NBA). Backspin softens rim contact; higher arc is more forgiving but needs more speed. Pass variants (bounce/chest) target a teammate at 6 m. Outcomes: swish / made / rim / backboard / air / caught / wrongbounce.'
-          : d.mode === 'freekick'
+          : coachTrial.mode === 'freekick'
           ? 'Goal is 7.32 m wide × 2.44 m tall at 22 m. Defender wall at 9.15 m, ~1.7 m tall. Sidespin (axis ~90°) curls the ball laterally — Beckham gets ~1.5 m of curl from 600 rpm. Outcomes: goal / post / over / wide / blocked / short.'
-          : d.mode === 'fieldgoal'
+          : coachTrial.mode === 'fieldgoal'
           ? 'Crossbar at 3.05 m; uprights ±2.82 m. Goal-line distance is preset-driven (20-60 yd). Optimal launch is ~38-42° depending on distance — drag eats ~10-12% of horizontal range at long FGs. Outcomes: good / doink / shortbar / wideclose / wide / short.'
-          : d.mode === 'bowling'
+          : coachTrial.mode === 'bowling'
           ? 'Stumps are 0.71 m tall × 0.23 m wide at 20.12 m. Ball BOUNCES on the pitch before reaching the batter (good length is 5-8 m in front of stumps). Seam tilt creates in-swing or out-swing in the air; off-spin / leg-spin turn off the surface after the bounce. Outcomes: wicket / shaved / overhead / wide / dot / short.'
-          : d.mode === 'golf'
+          : coachTrial.mode === 'golf'
           ? 'Target distance is preset-driven (~85-250 yd carry). Backspin generates Magnus lift = airtime; dimples trip airflow into a turbulent boundary layer that doubles range vs a smooth ball. Loft + clubhead speed determine carry. Outcomes: green / fairway / rough / woods / short / long / topped.'
-          : d.mode === 'volleyball'
+          : coachTrial.mode === 'volleyball'
           ? 'Net at 9 m midcourt, height 2.43 m (men). Receiving court is 9 m wide × 9 m deep beyond the net. Topspin drops the ball past the net (jump serve); no-spin "float" wobbles unpredictably from drag asymmetry. Outcomes: ace (deep corner) / in / net / out / long / short.'
           : '';
-        var presetTeach = (activePreset && activePreset.teach) ? activePreset.teach : '';
+        var presetTeach = (coachPreset && coachPreset.teach) ? coachPreset.teach : '';
         // Coach personality — prepended so the same physics anchors come
         // through in different voices (Analyst / Old School / Hype Man / Zen)
         var personaId = d.coachPersona || 'analyst';
@@ -2411,11 +2463,11 @@ window.StemLab = window.StemLab || {
           + 'You are coaching a student in a sports physics simulator (ThrowLab). '
           + 'The student is in ' + modeLabel + ' mode. They are ' + tierHint + '. '
           + (sportAnchor ? 'Sport context: ' + sportAnchor + ' ' : '')
-          + (presetTeach ? 'Active preset (' + (activePreset.label || '') + '): ' + presetTeach + ' ' : '')
+          + (presetTeach ? 'Active preset (' + (coachTrial.presetLabel || coachTrial.shotKind || '') + '): ' + presetTeach + ' ' : '')
           + 'Their last throw outcome: ' + lastLoc + '. Last 5 throws history (JSON): ' + lastSummary + '. '
-          + 'Current parameters: speed ' + d.speedMph + ' mph, vertical aim ' + (d.aimDegV || 0).toFixed(1) + '°, '
-          + 'horizontal aim ' + (d.aimDegH || 0).toFixed(1) + '°, spin ' + d.spinRpm + ' rpm at axis ' + d.spinAxisDeg + '°, '
-          + 'gravity ' + d.gravityId + ', wind ' + (d.windMph || 0) + ' mph @ ' + (d.windDirDeg || 0) + '°. '
+          + 'Launched parameters: speed ' + coachTrial.speedMph + ' mph, vertical aim ' + (coachTrial.angleV || 0).toFixed(1) + '°, '
+          + 'horizontal aim ' + (coachTrial.angleH || 0).toFixed(1) + '°, spin ' + coachTrial.spinRpm + ' rpm at axis ' + coachTrial.spinAxisDeg + '°, '
+          + 'gravity ' + coachTrial.gravityId + ', wind ' + (coachTrial.windMph || 0) + ' mph @ ' + (coachTrial.windDirDeg || 0) + '°. '
           + 'Give 2-3 sentences of warm, specific coaching: (1) acknowledge what just happened using the sport\'s actual vocabulary (wicket / ace / doink / etc.), (2) suggest ONE concrete change tied to the sport\'s SPECIFIC geometry above, '
           + '(3) tie it to the underlying physics in a way the student can use next throw. '
           + 'Plain prose, no markdown, no bullets, no headings.';
@@ -2457,7 +2509,9 @@ window.StemLab = window.StemLab || {
 
       function switchMode(newMode) {
         var modeMeta = MODES[newMode];
-        if (!modeMeta) return;
+        // Clicking the selected tab is a no-op. Reapplying mode defaults here
+        // would otherwise erase the current result and saved comparisons.
+        if (!modeMeta || newMode === d.mode) return;
         setLabToolData(function(prev) {
           var defaults;
           if (newMode === 'pitching') {
@@ -2476,11 +2530,12 @@ window.StemLab = window.StemLab || {
             defaults = { speedMph: 50, releaseHeight: 2.0, aimDegV: 8, aimDegH: 0, spinRpm: 30, spinAxisDeg: 0, serveType: 'float' };
           }
           var next = Object.assign({}, prev.throwlab, defaults, {
-            mode: newMode, lastResult: null, replayActive: false, replayT: 0
+            mode: newMode, lastResult: null, replayActive: false, replayT: 0,
+            referenceList: [], referenceResult: null, referenceLabel: ''
           });
           return Object.assign({}, prev, { throwlab: next });
         });
-        tlAnnounce('Switched to ' + modeMeta.label + ' mode.');
+        tlAnnounce('Switched to ' + modeMeta.label + ' mode.' + (((d.referenceList || []).length || d.referenceResult) ? ' Saved comparison trajectories were cleared because sport scales are not compatible.' : ''));
       }
 
       // Plain-language trajectory shape for screen-reader narration.
@@ -2496,7 +2551,79 @@ window.StemLab = window.StemLab || {
         return ' Trajectory peaked at ' + apex.toFixed(1) + ' meters, traveled ' + maxZ.toFixed(1) + ' meters forward over ' + hangT.toFixed(2) + ' seconds.';
       }
 
+      function trialShotKind(data) {
+        return data.mode === 'pitching' ? data.pitchType
+          : data.mode === 'freekick' ? data.kickType
+          : data.mode === 'fieldgoal' ? data.goalType
+          : data.mode === 'bowling' ? data.bowlType
+          : data.mode === 'golf' ? data.golfClub
+          : data.mode === 'volleyball' ? data.serveType
+          : data.shotType;
+      }
+
+      function findPresetForTrial(trial) {
+        if (!trial) return null;
+        var list = trial.mode === 'pitching' ? PITCH_TYPES
+          : trial.mode === 'freethrow' ? SHOT_TYPES
+          : trial.mode === 'freekick' ? KICK_TYPES
+          : trial.mode === 'fieldgoal' ? GOAL_TYPES
+          : trial.mode === 'bowling' ? CRICKET_DELIVERIES
+          : trial.mode === 'golf' ? GOLF_TYPES
+          : trial.mode === 'volleyball' ? VOLLEYBALL_TYPES : [];
+        return list.find(function(preset) { return preset.id === trial.shotKind; }) || null;
+      }
+
+      function buildTrialSnapshot(data, location) {
+        var shotKind = trialShotKind(data);
+        var preset = findPresetForTrial({ mode: data.mode, shotKind: shotKind });
+        return {
+          mode: data.mode, shotKind: shotKind,
+          presetLabel: preset ? preset.label : shotKind,
+          speedMph: data.speedMph, releaseHeight: data.releaseHeight,
+          angleV: data.aimDegV, angleH: data.aimDegH,
+          spinRpm: data.spinRpm, spinAxisDeg: data.spinAxisDeg,
+          throwerHand: data.throwerHand,
+          gravityId: data.gravityId, windMph: data.windMph, windDirDeg: data.windDirDeg,
+          targetDistanceYd: data.mode === 'fieldgoal' ? data.fgDistanceYd : data.mode === 'golf' && preset ? preset.carryYd : null,
+          location: location
+        };
+      }
+
+      function findPreviousTrial(history, mode) {
+        return (history || []).slice().reverse().find(function(trial) {
+          return trial && trial.mode === mode;
+        });
+      }
+
+      var TRIAL_COMPARISON_FIELDS = [
+        ['shotKind', 'preset'], ['speedMph', 'speed'], ['releaseHeight', 'release height'],
+        ['angleV', 'release angle'], ['angleH', 'aim'], ['spinRpm', 'spin rate'],
+        ['spinAxisDeg', 'spin axis'], ['gravityId', 'gravity'], ['windMph', 'wind speed'],
+        ['windDirDeg', 'wind direction']
+      ];
+
+      function changedTrialVariables(previous, current) {
+        if (!previous || !current) return [];
+        return TRIAL_COMPARISON_FIELDS.filter(function(pair) {
+          if (!Object.prototype.hasOwnProperty.call(previous, pair[0])) return false;
+          if (pair[0] === 'windDirDeg' && !(Number(previous.windMph) || Number(current.windMph))) return false;
+          return String(previous[pair[0]]) !== String(current[pair[0]]);
+        }).map(function(pair) { return pair[1]; });
+      }
+
+      function buildFairTestFeedback(previous, current, modeLabel) {
+        if (!previous) {
+          return { level: 'first', label: 'First trial', changed: [], summary: 'No earlier ' + String(modeLabel || 'sport').toLowerCase() + ' trial yet. Establish a baseline, then repeat it or change one variable.' };
+        }
+        var changed = changedTrialVariables(previous, current);
+        if (!changed.length) return { level: 'repeat', label: 'Repeat trial', changed: changed, summary: 'The setup stayed the same, which helps check consistency.' };
+        if (changed.length === 1) return { level: 'fair', label: 'Fair test', changed: changed, summary: 'Only ' + changed[0] + ' changed. Compare the outcomes to isolate its effect.' };
+        var visibleChanges = changed.slice(0, 3).join(', ');
+        var remaining = changed.length > 3 ? ' and ' + (changed.length - 3) + ' more' : '';
+        return { level: 'multiple', label: 'Multiple variables changed', changed: changed, summary: 'Changed ' + changed.length + ' variables: ' + visibleChanges + remaining + '. Change one variable next for clearer evidence.' };
+      }
       function throwPitch() {
+        setReplayPaused(false);
         var modeMeta = MODES[d.mode] || MODES.pitching;
         // Field goal distance is preset-driven so the goal line moves per kick type.
         var effectiveTargetZ = d.mode === 'fieldgoal'
@@ -2581,6 +2708,8 @@ window.StemLab = window.StemLab || {
         }
         sfxThrow();
         var newThrowCount = (d.throwCount || 0) + 1;
+        var newModeThrowCounts = Object.assign({}, d.modeThrowCounts || {});
+        newModeThrowCounts[d.mode] = (newModeThrowCounts[d.mode] || 0) + 1;
         // Unified "make" predicate across all sports — feeds the
         // cross-sport Hot-Hand streak counter so a great cricket bowl
         // followed by a great golf shot keeps the flame lit.
@@ -2632,21 +2761,13 @@ window.StemLab = window.StemLab || {
         // We only keep the fields a coach would need (mode, parameters,
         // outcome) so this object stays small even if the user throws
         // hundreds of times.
+        var currentTrial = buildTrialSnapshot(d, loc);
+        currentTrial.launchedAt = Date.now();
+        result.trial = currentTrial;
+        var previousTrial = findPreviousTrial(d.recentThrows, d.mode);
+        result.fairTest = buildFairTestFeedback(previousTrial, currentTrial, modeMeta.label);
         var newRecent = (d.recentThrows || []).slice(-4);
-        newRecent.push({
-          mode: d.mode,
-          shotKind: d.mode === 'pitching' ? d.pitchType
-                  : d.mode === 'freekick' ? d.kickType
-                  : d.mode === 'fieldgoal' ? d.goalType
-                  : d.mode === 'bowling' ? d.bowlType
-                  : d.mode === 'golf' ? d.golfClub
-                  : d.mode === 'volleyball' ? d.serveType
-                  : d.shotType,
-          speedMph: d.speedMph, angleV: d.aimDegV, angleH: d.aimDegH,
-          spinRpm: d.spinRpm, spinAxisDeg: d.spinAxisDeg,
-          gravityId: d.gravityId, windMph: d.windMph,
-          location: loc
-        });
+        newRecent.push(currentTrial);
         // ── Drill stat updates ──
         // We compute the new drillStats here (synchronously, off d) and
         // include it in the same setLabToolData so the active task's
@@ -2802,6 +2923,7 @@ window.StemLab = window.StemLab || {
             replayT: 0,
             throwCount: newThrowCount,
             strikeCount: newStrikeCount,
+            modeThrowCounts: newModeThrowCounts,
             shotMakeCount: newMakeCount,
             goalCount: newGoalCount,
             fgMakeCount: newFgMakeCount,
@@ -2824,14 +2946,14 @@ window.StemLab = window.StemLab || {
         if (firedNewLifter) {
           try {
             setTlCeleb(Object.assign({}, firedNewLifter, { at: Date.now() }));
-            setTimeout(function () { setTlCeleb(null); }, 3500);
+            scheduleTl(function () { setTlCeleb(null); }, 3500);
           } catch (e) {}
           if (addToast) addToast('🏅 Pitch Locker: ' + firedNewLifter.label + ' added (' + firedNewLifter.total + '/' + PITCH_TYPES.length + ')');
         }
         if (taskJustCompleted) {
           var modeDrills2 = DRILLS[d.mode];
           var allDone = modeDrills2 && newDrillTaskIdx >= modeDrills2.tasks.length;
-          setTimeout(function() {
+          scheduleTl(function() {
             if (allDone) {
               tlAnnounce('Drill complete! All ' + modeDrills2.tasks.length + ' tasks finished.');
               if (addToast) addToast('🏆 Drill complete!');
@@ -2848,7 +2970,7 @@ window.StemLab = window.StemLab || {
         // staggered so multiple earns don\'t pile on top of each other
         if (newlyEarned.length) {
           newlyEarned.forEach(function(b, i) {
-            setTimeout(function() {
+            scheduleTl(function() {
               tlAnnounce('Badge unlocked: ' + b.label + '. ' + b.hint + '.');
               if (addToast) addToast('🏅 ' + b.emoji + ' ' + b.label + '!');
               if (awardXP) awardXP('throwlab', 8, 'Badge: ' + b.label);
@@ -2861,7 +2983,7 @@ window.StemLab = window.StemLab || {
         // collide. PBs are rarer than badges so 12 XP each.
         if (newPbRecords.length) {
           newPbRecords.forEach(function(r, i) {
-            setTimeout(function() {
+            scheduleTl(function() {
               tlAnnounce('NEW PERSONAL BEST: ' + r.label + ' — ' + r.value);
               if (addToast) addToast('🏆 New PB: ' + r.label + ' (' + r.value + ')');
               if (awardXP) awardXP('throwlab', 12, 'Personal Best: ' + r.label);
@@ -2873,7 +2995,7 @@ window.StemLab = window.StemLab || {
         // it stacks rather than getting drowned out
         if (dailyJustCompleted) {
           var dailyName = (getDailyChallenge() || {}).label || 'Today\'s Challenge';
-          setTimeout(function() {
+          scheduleTl(function() {
             tlAnnounce('Daily Challenge complete: ' + dailyName + '!');
             if (addToast) addToast('🌟 Daily Challenge done!');
             if (awardXP) awardXP('throwlab', 15, 'Daily Challenge');
@@ -2881,7 +3003,7 @@ window.StemLab = window.StemLab || {
           }, 600);
         }
         // Outcome SFX + announcement after a tiny delay so it doesn't talk over the throw
-        setTimeout(function() {
+        scheduleTl(function() {
           if (d.mode === 'pitching') {
             if (loc === 'strike') {
               sfxStrike();
@@ -3120,9 +3242,146 @@ window.StemLab = window.StemLab || {
       var scenarioIntroState = React.useState(null);
       var scenarioIntro = scenarioIntroState[0];
       var setScenarioIntro = scenarioIntroState[1];
+      var scenarioDialogRef = React.useRef(null);
+      var scenarioCloseRef = React.useRef(null);
+      var scenarioOpenerRef = React.useRef(null);
+      var fullscreenState = React.useState(false);
+      var isWorkspaceFullscreen = fullscreenState[0];
+      var setWorkspaceFullscreen = fullscreenState[1];
+      // Optional Canvas 2D perspective view. Keeping this independent of WebGL
+      // avoids a heavy runtime dependency while still providing spatial depth.
+      var immersiveState = React.useState(false);
+      var showImmersive3D = immersiveState[0];
+      var setShowImmersive3D = immersiveState[1];
+      var immersiveYawState = React.useState(-28);
+      var immersiveYaw = immersiveYawState[0];
+      var setImmersiveYaw = immersiveYawState[1];
+      var immersivePitchState = React.useState(24);
+      var immersivePitch = immersivePitchState[0];
+      var setImmersivePitch = immersivePitchState[1];
+      var immersiveGuidesState = React.useState(true);
+      var showImmersiveGuides = immersiveGuidesState[0];
+      var setShowImmersiveGuides = immersiveGuidesState[1];
+      var immersiveTimeState = React.useState(false);
+      var showImmersiveTimeMarkers = immersiveTimeState[0];
+      var setShowImmersiveTimeMarkers = immersiveTimeState[1];
+      var immersiveReferencesState = React.useState(true);
+      var showImmersiveReferences = immersiveReferencesState[0];
+      var setShowImmersiveReferences = immersiveReferencesState[1];
+      var immersiveFollowState = React.useState(false);
+      var followImmersiveBall = immersiveFollowState[0];
+      var setFollowImmersiveBall = immersiveFollowState[1];
+      var immersiveVectorState = React.useState({ velocity: true, gravity: false, wind: false, spin: false, magnus: false });
+      var immersiveVectors = immersiveVectorState[0];
+      var setImmersiveVectors = immersiveVectorState[1];
+      var replaySpeedState = React.useState(1);
+      var replaySpeed = replaySpeedState[0];
+      var setReplaySpeed = replaySpeedState[1];
+      var replayPausedState = React.useState(false);
+      var replayPaused = replayPausedState[0];
+      var setReplayPaused = replayPausedState[1];
+      var immersiveVisibilityState = React.useState(true);
+      var immersiveInView = immersiveVisibilityState[0];
+      var setImmersiveInView = immersiveVisibilityState[1];
+      var compactAnalysisState = React.useState(false);
+      var compactAnalysis = compactAnalysisState[0];
+      var setCompactAnalysis = compactAnalysisState[1];
+      var immersiveCanvasRef = React.useRef(null);
+      var immersiveDragRef = React.useRef(null);
+
+      // Keep the fullscreen toggle's accessible name and pressed state in sync
+      // even when fullscreen exits through Escape or the browser's own UI.
+      React.useEffect(function() {
+        function syncWorkspaceFullscreen() {
+          var active = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement;
+          setWorkspaceFullscreen(!!(active && active.id === 'throwlab-fs-workspace'));
+        }
+        var events = ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange'];
+        events.forEach(function(eventName) { document.addEventListener(eventName, syncWorkspaceFullscreen); });
+        syncWorkspaceFullscreen();
+        return function() {
+          events.forEach(function(eventName) { document.removeEventListener(eventName, syncWorkspaceFullscreen); });
+        };
+      }, []);
 
       // ── Side-view canvas (Z = horizontal axis = mound→plate, Y = vertical) ──
+      React.useEffect(function() {
+        if (!showImmersive3D || !immersiveCanvasRef.current) return;
+        var intersecting = true;
+        function syncImmersiveVisibility() {
+          setImmersiveInView(intersecting && (typeof document === 'undefined' || document.visibilityState !== 'hidden'));
+        }
+        function onVisibilityChange() { syncImmersiveVisibility(); }
+        document.addEventListener('visibilitychange', onVisibilityChange);
+        var observer = null;
+        if (typeof IntersectionObserver === 'function') {
+          observer = new IntersectionObserver(function(entries) {
+            if (entries && entries[0]) { intersecting = entries[0].isIntersecting !== false; syncImmersiveVisibility(); }
+          }, { rootMargin: '120px' });
+          observer.observe(immersiveCanvasRef.current);
+        } else syncImmersiveVisibility();
+        return function() {
+          document.removeEventListener('visibilitychange', onVisibilityChange);
+          if (observer) observer.disconnect();
+        };
+      }, [showImmersive3D]);
+
+      React.useEffect(function() {
+        if (typeof window.matchMedia !== 'function') return;
+        var query = window.matchMedia('(max-width: 1100px)');
+        function syncCompactAnalysis(event) { setCompactAnalysis(!!event.matches); }
+        syncCompactAnalysis(query);
+        if (query.addEventListener) query.addEventListener('change', syncCompactAnalysis);
+        else if (query.addListener) query.addListener(syncCompactAnalysis);
+        return function() {
+          if (query.removeEventListener) query.removeEventListener('change', syncCompactAnalysis);
+          else if (query.removeListener) query.removeListener(syncCompactAnalysis);
+        };
+      }, []);
+
       var canvasRef = React.useRef(null);
+      function closeScenarioIntro(focusCanvas) {
+        setScenarioIntro(null);
+        scheduleTl(function() {
+          var target = focusCanvas ? canvasRef.current : scenarioOpenerRef.current;
+          if (target && target.isConnected && typeof target.focus === 'function') target.focus();
+        }, 0);
+      }
+      React.useEffect(function() {
+        if (!scenarioIntro) return;
+        var previousBodyOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        var dialog = scenarioDialogRef.current;
+        var closeButton = scenarioCloseRef.current;
+        if (closeButton) closeButton.focus(); else if (dialog) dialog.focus();
+        function onScenarioKeyDown(event) {
+          if (event.key === 'Escape') {
+            event.preventDefault();
+            closeScenarioIntro(false);
+            return;
+          }
+          if (event.key !== 'Tab' || !dialog) return;
+          var selector = 'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+          var focusable = Array.prototype.slice.call(dialog.querySelectorAll(selector)).filter(function(node) {
+            return !node.hidden && node.getAttribute('aria-hidden') !== 'true';
+          });
+          if (!focusable.length) { event.preventDefault(); dialog.focus(); return; }
+          var first = focusable[0];
+          var last = focusable[focusable.length - 1];
+          if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+          } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+          }
+        }
+        document.addEventListener('keydown', onScenarioKeyDown);
+        return function() {
+          document.removeEventListener('keydown', onScenarioKeyDown);
+          document.body.style.overflow = previousBodyOverflow;
+        };
+      }, [scenarioIntro]);
       // PL6: HiDPI canvas setup (same pattern as PlayLab _plSetupHiDPI).
       // Without this, the canvas renders at 720x360 internal pixels and
       // gets CSS-scaled up to fill container — text + curves blur on
@@ -3152,12 +3411,13 @@ window.StemLab = window.StemLab || {
         gfx.clearRect(0, 0, W, H);
 
         var modeMeta = MODES[d.mode] || MODES.pitching;
+        var displayTrial = d.lastResult && d.lastResult.trial ? d.lastResult.trial : buildTrialSnapshot(d, null);
         // FREE KICK uses a TOP-DOWN view (z forward / x lateral) so the curl
         // around the wall is visible. Pitching + Free Throw + Field Goal stay
         // side-view (z forward / y vertical) so the arc reads.
         var isTopDown = d.mode === 'freekick';
         // For field goal mode the goal line is preset-driven (20-60 yd).
-        var fgGoalZ = d.mode === 'fieldgoal' ? (d.fgDistanceYd || 35) * 0.9144 : 0;
+        var fgGoalZ = d.mode === 'fieldgoal' ? (displayTrial.targetDistanceYd || 35) * 0.9144 : 0;
         // Layout
         var marginL = 40, marginR = 80, marginT = 30, marginB = 60;
         var fieldW = W - marginL - marginR;
@@ -3169,7 +3429,7 @@ window.StemLab = window.StemLab || {
         // Golf needs the longest renderMaxZ — driver carry is 250 yd ≈ 228 m,
         // plus a margin so the landing zone is visible past the carry point.
         var golfTargetZ = d.mode === 'golf' ? (function() {
-          var p = GOLF_TYPES.find(function(g) { return g.id === d.golfClub; }) || GOLF_TYPES[0];
+          var p = GOLF_TYPES.find(function(g) { return g.id === displayTrial.shotKind; }) || GOLF_TYPES[0];
           return p.carryYd * 0.9144;
         })() : 0;
         var renderMaxZ = d.mode === 'pitching' ? modeMeta.targetZ
@@ -3271,7 +3531,7 @@ window.StemLab = window.StemLab || {
           gfx.fillText('Mound', moundPts[0], marginT + fieldH + 22);
           gfx.fillText('Plate', plPts[0], marginT + fieldH + 36);
         } else if (d.mode === 'freethrow' && (function() {
-          var sp = SHOT_TYPES.find(function(s) { return s.id === d.shotType; });
+          var sp = SHOT_TYPES.find(function(s) { return s.id === displayTrial.shotKind; });
           return sp && sp.kind === 'pass';
         })()) {
           // Passing court — passer on left, receiver silhouette on right at z=6m.
@@ -3331,7 +3591,7 @@ window.StemLab = window.StemLab || {
           gfx.fillText('You', passerPts[0], marginT + fieldH + 22);
           gfx.fillText('6 m to teammate →', (passerPts[0] + receiverPts[0]) / 2, marginT + fieldH + 22);
           gfx.fillText('Teammate', receiverPts[0], marginT + fieldH + 36);
-          if (d.shotType === 'bouncepass') {
+          if (displayTrial.shotKind === 'bouncepass') {
             gfx.fillStyle = 'rgba(251, 191, 36, 0.85)';
             gfx.fillText('Aim bounce here →', (bzStart[0] + bzEnd[0]) / 2, bzStart[1] - 12);
           }
@@ -3401,7 +3661,7 @@ window.StemLab = window.StemLab || {
           gfx.fillStyle = 'rgba(255,255,255,0.4)';
           gfx.font = '9px system-ui';
           gfx.textAlign = 'center';
-          for (var hyd = 10; hyd < d.fgDistanceYd + 6; hyd += 10) {
+          for (var hyd = 10; hyd < displayTrial.targetDistanceYd + 6; hyd += 10) {
             var hzm = hyd * 0.9144;
             if (hzm > renderMaxZ) break;
             var hpos = worldToCanvas(hzm, 0);
@@ -3439,7 +3699,7 @@ window.StemLab = window.StemLab || {
           gfx.fillStyle = '#cbd5e1';
           gfx.font = '12px system-ui';
           gfx.textAlign = 'center';
-          gfx.fillText(d.fgDistanceYd + ' yd', (teePts[0] + postBase[0]) / 2, marginT + fieldH + 28);
+          gfx.fillText(displayTrial.targetDistanceYd + ' yd', (teePts[0] + postBase[0]) / 2, marginT + fieldH + 28);
         } else if (d.mode === 'freekick') {
           // Top-down free-kick scene: ball at left (z=0), wall at z=9.15m,
           // goal at z=22m. Centerline = canvas vertical center.
@@ -3609,7 +3869,7 @@ window.StemLab = window.StemLab || {
           gfx.font = '11px system-ui';
           gfx.textAlign = 'center';
           gfx.fillText('Tee', teePts[0], marginT + fieldH + 22);
-          gfx.fillText((d.golfClub === 'wedge' ? 85 : d.golfClub === 'iron' ? 150 : d.golfClub === 'fairway' ? 210 : 250) + ' yd target →', (teePts[0] + greenCenter[0]) / 2, marginT + fieldH + 22);
+          gfx.fillText((displayTrial.shotKind === 'wedge' ? 85 : displayTrial.shotKind === 'iron' ? 150 : displayTrial.shotKind === 'fairway' ? 210 : 250) + ' yd target →', (teePts[0] + greenCenter[0]) / 2, marginT + fieldH + 22);
           gfx.fillStyle = '#86efac';
           gfx.fillText('Green', greenCenter[0], marginT + fieldH + 36);
         } else if (d.mode === 'bowling') {
@@ -3676,7 +3936,7 @@ window.StemLab = window.StemLab || {
         // canvas. Only renders when wind is non-zero so calm scenes stay
         // clean. Direction matches the simulator's convention (0° = headwind
         // pointing toward the thrower / down on the canvas in side-view).
-        if ((d.mode === 'freekick' || d.mode === 'fieldgoal' || d.mode === 'bowling' || d.mode === 'golf') && (d.windMph || 0) > 0) {
+        if ((d.mode === 'freekick' || d.mode === 'fieldgoal' || d.mode === 'bowling' || d.mode === 'golf') && (displayTrial.windMph || 0) > 0) {
           var wIndW = 60, wIndH = 60;
           var wcx = W - 20 - wIndW / 2;
           var wcy = 20 + wIndH / 2;
@@ -3692,7 +3952,7 @@ window.StemLab = window.StemLab || {
           // is to the right, so a 0° headwind arrow should point LEFT.
           // Top-down (free kick) view: +Z is to the right too. So same
           // direction convention works.
-          var wDeg = d.windDirDeg || 0;
+          var wDeg = displayTrial.windDirDeg || 0;
           // Math.cos(0)=1, sin(0)=0. We want 0° → arrow points left (-X) so:
           var arx = -Math.cos(wDeg * Math.PI / 180);
           var ary = -Math.sin(wDeg * Math.PI / 180);
@@ -3718,7 +3978,7 @@ window.StemLab = window.StemLab || {
           gfx.font = 'bold 10px system-ui';
           gfx.textAlign = 'center';
           gfx.fillText('Wind', wcx, wcy - 22);
-          gfx.fillText(d.windMph + ' mph', wcx, wcy + 25);
+          gfx.fillText(displayTrial.windMph + ' mph', wcx, wcy + 25);
         }
 
         // ── Saved REFERENCE trajectories (multi-ghost Compare Mode) ──
@@ -3727,9 +3987,7 @@ window.StemLab = window.StemLab || {
         // tag is "REF1" / "REF2" / etc. so students can map the colored
         // line to the entry in the saved list. Backwards compat: if no
         // referenceList but a legacy referenceResult exists, render that.
-        var refList = (d.referenceList && d.referenceList.length)
-          ? d.referenceList
-          : (d.referenceResult ? [{ result: d.referenceResult, label: d.referenceLabel, color: '#d946ef' }] : []);
+        var refList = activeReferenceList();
         refList.forEach(function(ref, refIdx) {
           var rrSamples = ref.result && ref.result.samples;
           if (!rrSamples || rrSamples.length < 2) return;
@@ -3764,16 +4022,16 @@ window.StemLab = window.StemLab || {
         if (lr && d.showPhysics) {
           var noSpin = simulatePitch({
             ball: modeMeta.ball,
-            speedMph: d.speedMph, releaseHeight: d.releaseHeight,
-            aimDegV: d.aimDegV, aimDegH: d.aimDegH,
+            speedMph: displayTrial.speedMph, releaseHeight: displayTrial.releaseHeight,
+            aimDegV: displayTrial.angleV, aimDegH: displayTrial.angleH,
             spinRpm: 0, spinAxisDeg: 0,
-            throwerHand: d.throwerHand,
+            throwerHand: displayTrial.throwerHand,
             targetZ: modeMeta.targetZ,
             releaseStride: modeMeta.releaseStrideDefault,
-            windMph: d.windMph || 0, windDirDeg: d.windDirDeg || 0,
+            windMph: displayTrial.windMph || 0, windDirDeg: displayTrial.windDirDeg || 0,
             truncateAtTarget: d.mode === 'pitching',
             gravity: (function() {
-              var p = GRAVITY_PRESETS.find(function(g) { return g.id === (d.gravityId || 'earth'); });
+              var p = GRAVITY_PRESETS.find(function(g) { return g.id === (displayTrial.gravityId || 'earth'); });
               return p ? p.g : G;
             })()
           });
@@ -3793,32 +4051,9 @@ window.StemLab = window.StemLab || {
 
         // Actual trajectory (color by outcome — palette per mode).
         if (lr) {
-          var trajColor;
-          if (d.mode === 'freethrow') {
-            trajColor = lr.location === 'swish' ? '#10b981'
-                      : lr.location === 'made' ? '#3b82f6'
-                      : lr.location === 'caught' ? '#10b981'
-                      : (lr.location === 'highpass' || lr.location === 'lowpass') ? '#fbbf24'
-                      : lr.location === 'wrongbounce' ? '#f97316'
-                      : lr.location === 'rim' ? '#fbbf24'
-                      : lr.location === 'backboard' ? '#94a3b8'
-                      : '#ef4444';
-          } else if (d.mode === 'freekick') {
-            trajColor = lr.location === 'goal' ? '#10b981'
-                      : lr.location === 'post' ? '#fbbf24'
-                      : lr.location === 'blocked' ? '#94a3b8'
-                      : '#ef4444';
-          } else if (d.mode === 'fieldgoal') {
-            trajColor = lr.location === 'good' ? '#10b981'
-                      : lr.location === 'doink' ? '#fbbf24'
-                      : lr.location === 'wideclose' ? '#f97316'
-                      : '#ef4444';
-          } else {
-            trajColor = lr.location === 'strike' ? '#10b981'
-                      : lr.location === 'borderline' ? '#fbbf24'
-                      : lr.location === 'ball' ? '#94a3b8'
-                      : '#ef4444';
-          }
+          // Use the same sport-aware palette as the result card so a success
+          // never appears as a failure color in cricket, golf, or volleyball.
+          var trajColor = outcomeColor(lr.location);
           gfx.strokeStyle = trajColor;
           gfx.lineWidth = 2.5;
           gfx.beginPath();
@@ -3853,92 +4088,289 @@ window.StemLab = window.StemLab || {
         d.lastResult, d.replayActive, d.replayT,
         d.speedMph, d.releaseHeight, d.aimDegV, d.aimDegH,
         d.spinRpm, d.spinAxisDeg, d.throwerHand, d.showPhysics,
-        d.referenceResult, d.mode, d.fgDistanceYd,
+        d.referenceList, d.referenceResult, d.mode, d.fgDistanceYd,
         d.windMph, d.windDirDeg, d.gravityId
       ]);
 
       // ── Space-key hotkey for throw/shoot/kick ──
-      // WCAG 2.1.1 Keyboard: the throw button is already keyboard-reachable,
-      // but power users want a single-key shortcut. Listen on window so the
-      // hotkey works regardless of whether a slider has focus. Skip when the
-      // user is typing in an input that handles Space natively (none in this
-      // tool, but defensive against future text inputs).
+      // Optional immersive perspective zone. It projects the exact same samples
+      // as the side view and deliberately avoids a Three.js/WebGL dependency.
       React.useEffect(function() {
-        function onKey(e) {
-          if (e.key !== ' ' && e.code !== 'Space') return;
-          var tag = e.target && e.target.tagName;
-          if (tag === 'INPUT' && e.target.type !== 'range') return;
-          if (tag === 'TEXTAREA' || (e.target && e.target.isContentEditable)) return;
-          e.preventDefault();
-          throwPitch();
-        }
-        window.addEventListener('keydown', onKey);
-        return function() { window.removeEventListener('keydown', onKey); };
-      }, [d.mode, d.speedMph, d.releaseHeight, d.aimDegV, d.aimDegH, d.spinRpm, d.spinAxisDeg, d.fgDistanceYd]);
+        if (!showImmersive3D || !immersiveInView || !immersiveCanvasRef.current) return;
+        var canvas = immersiveCanvasRef.current;
+        var W = 640, H = 340;
+        var gfx = _tlSetupHiDPI(canvas, W, H);
+        if (!gfx) return;
+        gfx.clearRect(0, 0, W, H);
+        var bg = gfx.createLinearGradient(0, 0, 0, H);
+        bg.addColorStop(0, '#071426'); bg.addColorStop(0.62, '#10263a'); bg.addColorStop(1, '#183422');
+        gfx.fillStyle = bg; gfx.fillRect(0, 0, W, H);
 
-      // ── Replay animator: walk replayT from 0 → 1 over ~1s ──
-      // WCAG 2.3.3 (Animation from Interactions): if the user prefers reduced
-      // motion, skip the replay walk and snap straight to the final trajectory.
-      // The CSS guard at the top of the IIFE only handles CSS animations; the
-      // canvas trajectory is JS-driven so we have to honor the preference here.
+        var references = showImmersiveReferences ? activeReferenceList() : [];
+        var sampleSets = [];
+        references.forEach(function(ref) {
+          if (ref && ref.result && ref.result.samples && ref.result.samples.length) sampleSets.push(ref.result.samples);
+        });
+        if (d.lastResult && d.lastResult.samples && d.lastResult.samples.length) sampleSets.push(d.lastResult.samples);
+        var immersiveTrial = d.lastResult && d.lastResult.trial ? d.lastResult.trial : buildTrialSnapshot(d, null);
+        var immersiveShotPreset = d.mode === 'freethrow' ? SHOT_TYPES.find(function(item) { return item.id === immersiveTrial.shotKind; }) : null;
+        var isImmersivePass = !!(immersiveShotPreset && immersiveShotPreset.kind === 'pass');
+        var landmarkZ = modeMeta.targetZ;
+        if (d.mode === 'fieldgoal') landmarkZ = (immersiveTrial.targetDistanceYd || d.fgDistanceYd || 35) * 0.9144;
+        if (d.mode === 'golf') {
+          var immersiveClub = GOLF_TYPES.find(function(item) { return item.id === immersiveTrial.shotKind; }) || GOLF_TYPES[0];
+          landmarkZ = immersiveClub.carryYd * 0.9144;
+        }
+        if (isImmersivePass) landmarkZ = 6.0;
+        var maxZ = Math.max(6, landmarkZ * 1.15), maxY = 4, maxX = 2;
+        sampleSets.forEach(function(samples) { samples.forEach(function(sample) {
+          maxZ = Math.max(maxZ, Math.abs(Number(sample.z) || 0));
+          maxY = Math.max(maxY, Number(sample.y) || 0);
+          maxX = Math.max(maxX, Math.abs(Number(sample.x) || 0));
+        }); });
+        var sportHalfWidth = d.mode === 'volleyball' ? modeMeta.courtHalfWidth
+          : d.mode === 'freekick' ? modeMeta.goalHalfWidth + 1.4
+          : d.mode === 'fieldgoal' ? modeMeta.goalHalfWidth + 1.4
+          : d.mode === 'golf' ? modeMeta.fairwayHalfYd * 0.9144
+          : d.mode === 'bowling' ? 1.5 : 3;
+        var halfWidth = Math.max(sportHalfWidth, Math.min(maxZ * 0.22, maxX * 1.7 + 2));
+        var yaw = immersiveYaw * Math.PI / 180, pitch = immersivePitch * Math.PI / 180;
+        var target = { x: 0, y: maxY * 0.18, z: maxZ * 0.47 };
+        if(followImmersiveBall&&d.lastResult&&d.lastResult.samples&&d.lastResult.samples.length){
+          var followIndex=d.replayActive?Math.min(d.lastResult.samples.length-1,Math.floor((d.lastResult.samples.length-1)*Math.max(0,Math.min(1,d.replayT||0)))):d.lastResult.samples.length-1;
+          var followSample=d.lastResult.samples[followIndex];
+          target={x:Number(followSample.x)||0,y:Math.max(0.3,(Number(followSample.y)||0)*0.65),z:Number(followSample.z)||0};
+        }
+        var radius = followImmersiveBall ? Math.max(8,Math.min(26,maxZ*0.18)) : Math.max(16, maxZ * 1.02);
+        var camera = { x: target.x + Math.sin(yaw) * radius, y: target.y + Math.sin(pitch) * radius, z: target.z - Math.cos(yaw) * radius };
+        var projector=TL_PERSPECTIVE.createProjector(camera,target,W,H);
+        var project=projector.project;
+        function drawSegment(a,b){ var pa=project(a),pb=project(b); if(!pa||!pb)return; gfx.beginPath();gfx.moveTo(pa[0],pa[1]);gfx.lineTo(pb[0],pb[1]);gfx.stroke(); }
+        function drawPolyline(points,color,width,dashed){
+          gfx.save();gfx.strokeStyle=color;gfx.lineWidth=width||2;gfx.setLineDash(dashed||[]);gfx.beginPath();var started=false;
+          points.forEach(function(point){var p=project(point);if(!p)return;if(!started){gfx.moveTo(p[0],p[1]);started=true;}else gfx.lineTo(p[0],p[1]);});
+          if(started)gfx.stroke();gfx.restore();
+        }
+        function drawRing(cx,y,cz,radius,color){
+          var points=[];for(var ri=0;ri<=24;ri++){var angle=Math.PI*2*ri/24;points.push({x:cx+Math.cos(angle)*radius,y:y,z:cz+Math.sin(angle)*radius});}
+          drawPolyline(points,color,2,[]);
+        }
+        function drawLandmarkLabel(point,label,color){
+          var p=project(point);if(!p)return;gfx.fillStyle=color||'#fde68a';gfx.font='700 11px system-ui, sans-serif';gfx.textAlign='center';gfx.fillText(label,p[0],p[1]-7);gfx.textAlign='left';
+        }
+        function drawTargetLandmarks(){
+          var gold='#fbbf24', white='rgba(241,245,249,0.9)', cyan='#7dd3fc';
+          if(d.mode==='pitching'){
+            drawPolyline([{x:-0.24,y:0.48,z:landmarkZ},{x:-0.24,y:1.04,z:landmarkZ},{x:0.24,y:1.04,z:landmarkZ},{x:0.24,y:0.48,z:landmarkZ},{x:-0.24,y:0.48,z:landmarkZ}],gold,3,[6,4]);
+            drawLandmarkLabel({x:0,y:1.18,z:landmarkZ},'STRIKE ZONE',gold);return;
+          }
+          if(d.mode==='freethrow'&&isImmersivePass){
+            drawRing(0,1.35,landmarkZ,0.38,cyan);drawLandmarkLabel({x:0,y:1.9,z:landmarkZ},'RECEIVING TARGET',cyan);return;
+          }
+          if(d.mode==='freethrow'){
+            drawPolyline([{x:-0.9,y:2.55,z:modeMeta.targetZ},{x:-0.9,y:3.85,z:modeMeta.targetZ},{x:0.9,y:3.85,z:modeMeta.targetZ},{x:0.9,y:2.55,z:modeMeta.targetZ},{x:-0.9,y:2.55,z:modeMeta.targetZ}],white,2,[]);
+            drawRing(0,modeMeta.rimY,modeMeta.rimZ,modeMeta.rimRadius,'#f97316');drawLandmarkLabel({x:0,y:4.05,z:modeMeta.targetZ},'BACKBOARD + RIM','#fdba74');return;
+          }
+          if(d.mode==='freekick'){
+            drawPolyline([{x:-modeMeta.goalHalfWidth,y:0,z:landmarkZ},{x:-modeMeta.goalHalfWidth,y:modeMeta.goalHeight,z:landmarkZ},{x:modeMeta.goalHalfWidth,y:modeMeta.goalHeight,z:landmarkZ},{x:modeMeta.goalHalfWidth,y:0,z:landmarkZ}],white,3,[]);
+            drawPolyline([{x:-modeMeta.wallHalfWidth,y:0,z:modeMeta.wallZ},{x:-modeMeta.wallHalfWidth,y:modeMeta.wallHeight,z:modeMeta.wallZ},{x:modeMeta.wallHalfWidth,y:modeMeta.wallHeight,z:modeMeta.wallZ},{x:modeMeta.wallHalfWidth,y:0,z:modeMeta.wallZ}],gold,2,[5,4]);drawLandmarkLabel({x:0,y:modeMeta.goalHeight+0.35,z:landmarkZ},'GOAL',white);return;
+          }
+          if(d.mode==='fieldgoal'){
+            drawPolyline([{x:-modeMeta.goalHalfWidth,y:modeMeta.crossbarHeight,z:landmarkZ},{x:modeMeta.goalHalfWidth,y:modeMeta.crossbarHeight,z:landmarkZ}],gold,4,[]);
+            drawPolyline([{x:-modeMeta.goalHalfWidth,y:modeMeta.crossbarHeight,z:landmarkZ},{x:-modeMeta.goalHalfWidth,y:modeMeta.crossbarHeight+4.5,z:landmarkZ}],gold,4,[]);
+            drawPolyline([{x:modeMeta.goalHalfWidth,y:modeMeta.crossbarHeight,z:landmarkZ},{x:modeMeta.goalHalfWidth,y:modeMeta.crossbarHeight+4.5,z:landmarkZ}],gold,4,[]);drawLandmarkLabel({x:0,y:modeMeta.crossbarHeight+4.8,z:landmarkZ},'UPRIGHTS',gold);return;
+          }
+          if(d.mode==='bowling'){
+            [-0.076,0,0.076].forEach(function(stumpX){drawPolyline([{x:stumpX,y:0,z:landmarkZ},{x:stumpX,y:modeMeta.stumpsHeight,z:landmarkZ}],white,3,[]);});
+            drawPolyline([{x:-0.12,y:modeMeta.stumpsHeight,z:landmarkZ},{x:0.12,y:modeMeta.stumpsHeight,z:landmarkZ}],gold,2,[]);drawLandmarkLabel({x:0,y:1.0,z:landmarkZ},'WICKET',white);return;
+          }
+          if(d.mode==='golf'){
+            drawRing(0,0.02,landmarkZ,Math.min(8,modeMeta.fairwayHalfYd*0.45),cyan);drawPolyline([{x:0,y:0,z:landmarkZ},{x:0,y:3,z:landmarkZ}],white,2,[]);
+            drawPolyline([{x:0,y:3,z:landmarkZ},{x:1.1,y:2.65,z:landmarkZ},{x:0,y:2.35,z:landmarkZ}],gold,2,[]);drawLandmarkLabel({x:0,y:3.5,z:landmarkZ},'TARGET GREEN',gold);return;
+          }
+          if(d.mode==='volleyball'){
+            drawPolyline([{x:-modeMeta.courtHalfWidth,y:0,z:modeMeta.netZ},{x:-modeMeta.courtHalfWidth,y:modeMeta.netHeight,z:modeMeta.netZ},{x:modeMeta.courtHalfWidth,y:modeMeta.netHeight,z:modeMeta.netZ},{x:modeMeta.courtHalfWidth,y:0,z:modeMeta.netZ}],white,2,[]);
+            drawPolyline([{x:-modeMeta.courtHalfWidth,y:0,z:modeMeta.netZ},{x:-modeMeta.courtHalfWidth,y:0,z:landmarkZ},{x:modeMeta.courtHalfWidth,y:0,z:landmarkZ},{x:modeMeta.courtHalfWidth,y:0,z:modeMeta.netZ}],cyan,2,[]);drawLandmarkLabel({x:0,y:modeMeta.netHeight+0.4,z:modeMeta.netZ},'NET',white);
+          }
+        }
+
+        for(var zi=0;zi<=10;zi++){
+          var z=maxZ*zi/10; gfx.lineWidth=1; gfx.strokeStyle=zi===0?'rgba(251,191,36,0.58)':'rgba(148,163,184,0.19)';
+          drawSegment({x:-halfWidth,y:0,z:z},{x:halfWidth,y:0,z:z});
+        }
+        for(var xi=-4;xi<=4;xi++){
+          var x=halfWidth*xi/4; gfx.strokeStyle=xi===0?'rgba(125,211,252,0.48)':'rgba(148,163,184,0.16)';
+          drawSegment({x:x,y:0,z:0},{x:x,y:0,z:maxZ});
+        }
+        drawTargetLandmarks();
+        function drawTrajectory(result,color,dashed,width,current){
+          if(!result||!result.samples||!result.samples.length)return;
+          var samples=result.samples, visible=samples.length;
+          if(current&&d.replayActive)visible=Math.max(1,Math.floor(samples.length*Math.max(0,Math.min(1,d.replayT||0))));
+          gfx.save();gfx.strokeStyle=color;gfx.lineWidth=width;gfx.setLineDash(dashed?[8,6]:[]);gfx.lineCap='round';gfx.lineJoin='round';gfx.shadowColor=color;gfx.shadowBlur=current?7:2;gfx.beginPath();
+          var drew=false;
+          for(var si=0;si<visible;si++){var s=samples[si],p=project({x:Number(s.x)||0,y:Math.max(0,Number(s.y)||0),z:Number(s.z)||0});if(!p)continue;if(!drew){gfx.moveTo(p[0],p[1]);drew=true;}else gfx.lineTo(p[0],p[1]);}
+          if(drew)gfx.stroke();gfx.restore();
+          if(current&&visible>0){var ball=samples[Math.min(visible-1,samples.length-1)],bp=project({x:Number(ball.x)||0,y:Math.max(0,Number(ball.y)||0),z:Number(ball.z)||0});if(bp){gfx.fillStyle='#fff';gfx.strokeStyle=color;gfx.lineWidth=2;gfx.beginPath();gfx.arc(bp[0],bp[1],5,0,Math.PI*2);gfx.fill();gfx.stroke();}}
+        }
+        function drawPhysicsAnnotations(result){
+          if(!result||!result.samples||!result.samples.length)return;
+          var samples=result.samples,visible=samples.length;
+          if(d.replayActive)visible=Math.max(1,Math.floor(samples.length*Math.max(0,Math.min(1,d.replayT||0))));
+          var visibleSamples=samples.slice(0,visible);
+          if(showImmersiveGuides&&visibleSamples.length){
+            var apex=visibleSamples.reduce(function(best,item){return (Number(item.y)||0)>(Number(best.y)||0)?item:best;},visibleSamples[0]);
+            var apexPoint={x:Number(apex.x)||0,y:Math.max(0,Number(apex.y)||0),z:Number(apex.z)||0};
+            drawPolyline([{x:apexPoint.x,y:0,z:apexPoint.z},apexPoint],'rgba(125,211,252,0.72)',1,[4,4]);
+            drawRing(apexPoint.x,0.02,apexPoint.z,Math.max(0.16,maxZ*0.006),'rgba(125,211,252,0.7)');
+            var projectedApex=project(apexPoint);if(projectedApex){gfx.fillStyle='#7dd3fc';gfx.beginPath();gfx.arc(projectedApex[0],projectedApex[1],4,0,Math.PI*2);gfx.fill();}
+            drawLandmarkLabel({x:apexPoint.x,y:apexPoint.y+Math.max(0.18,maxY*0.035),z:apexPoint.z},'APEX '+apexPoint.y.toFixed(1)+' m','#7dd3fc');
+            if(!d.replayActive){
+              var end=samples[samples.length-1],endPoint={x:Number(end.x)||0,y:Math.max(0,Number(end.y)||0),z:Number(end.z)||0};
+              drawRing(endPoint.x,0.025,endPoint.z,Math.max(0.2,maxZ*0.008),'#fbbf24');
+              drawLandmarkLabel({x:endPoint.x,y:Math.max(0.22,endPoint.y+0.2),z:endPoint.z},'END · '+cleanOutcomeText(result).toUpperCase(),'#fde68a');
+            }
+          }
+          if(showImmersiveTimeMarkers&&visibleSamples.length>2){
+            var markerStep=Math.max(1,Math.floor(visibleSamples.length/5)),timeLabelPositions=[];
+            gfx.save();gfx.font='700 9px system-ui, sans-serif';gfx.textAlign='left';
+            for(var mi=markerStep;mi<visibleSamples.length;mi+=markerStep){
+              var marker=visibleSamples[mi],markerPoint=project({x:Number(marker.x)||0,y:Math.max(0,Number(marker.y)||0),z:Number(marker.z)||0});
+              if(!markerPoint)continue;gfx.fillStyle='#f8fafc';gfx.beginPath();gfx.arc(markerPoint[0],markerPoint[1],3,0,Math.PI*2);gfx.fill();
+              var labelX=markerPoint[0]+5,labelY=markerPoint[1]-4,attempt=0;
+              while(timeLabelPositions.some(function(pos){return Math.abs(pos.x-labelX)<34&&Math.abs(pos.y-labelY)<13;})&&attempt<3){labelY-=12;attempt++;}
+              timeLabelPositions.push({x:labelX,y:labelY});gfx.fillStyle='#bae6fd';gfx.fillText((Number(marker.t)||0).toFixed(1)+'s',labelX,labelY);
+            }
+            gfx.restore();
+          }
+        }
+        function drawVectorArrow(origin, vector, color, label) {
+          var end={x:origin.x+vector.x,y:origin.y+vector.y,z:origin.z+vector.z},a=project(origin),b=project(end);if(!a||!b)return;
+          gfx.save();gfx.strokeStyle=color;gfx.fillStyle=color;gfx.lineWidth=2.5;gfx.beginPath();gfx.moveTo(a[0],a[1]);gfx.lineTo(b[0],b[1]);gfx.stroke();
+          var angle=Math.atan2(b[1]-a[1],b[0]-a[0]);gfx.beginPath();gfx.moveTo(b[0],b[1]);gfx.lineTo(b[0]-9*Math.cos(angle-0.45),b[1]-9*Math.sin(angle-0.45));gfx.lineTo(b[0]-9*Math.cos(angle+0.45),b[1]-9*Math.sin(angle+0.45));gfx.closePath();gfx.fill();gfx.font='800 10px system-ui, sans-serif';gfx.fillText(label,b[0]+6,b[1]-6);gfx.restore();
+        }
+        function drawPhysicsVectors(result) {
+          if(!result||!result.samples||!result.samples.length)return;
+          var vectorIndex=d.replayActive?Math.min(result.samples.length-1,Math.floor((result.samples.length-1)*Math.max(0,Math.min(1,d.replayT||0)))):result.samples.length-1;
+          var sample=result.samples[vectorIndex],origin={x:Number(sample.x)||0,y:Math.max(0.08,Number(sample.y)||0),z:Number(sample.z)||0};
+          var velocity={x:Number(sample.vx)||0,y:Number(sample.vy)||0,z:Number(sample.vz)||0},velocityUnit=projector.unit(velocity),scale=Math.max(0.8,Math.min(8,maxZ*0.08));
+          if(immersiveVectors.velocity)drawVectorArrow(origin,{x:velocityUnit.x*scale,y:velocityUnit.y*scale,z:velocityUnit.z*scale},'#22d3ee','VELOCITY');
+          if(immersiveVectors.gravity)drawVectorArrow(origin,{x:0,y:-Math.max(0.7,maxY*0.16),z:0},'#facc15','GRAVITY');
+          if(immersiveVectors.wind&&(Number(immersiveTrial.windMph)||0)>0){var windRad=(Number(immersiveTrial.windDirDeg)||0)*Math.PI/180;drawVectorArrow(origin,{x:Math.sin(windRad)*scale*0.8,y:0,z:-Math.cos(windRad)*scale*0.8},'#a7f3d0','WIND');}
+          var spin=spinAxisVector(Number(immersiveTrial.spinAxisDeg)||0,immersiveTrial.throwerHand||'right');
+          if(immersiveVectors.spin&&(Number(immersiveTrial.spinRpm)||0)>0)drawVectorArrow(origin,{x:spin.x*scale*0.72,y:spin.y*scale*0.72,z:0},'#f472b6','SPIN AXIS');
+          if(immersiveVectors.magnus&&(Number(immersiveTrial.spinRpm)||0)>0){var lift=projector.unit(projector.cross(spin,velocityUnit));drawVectorArrow(origin,{x:lift.x*scale*0.82,y:lift.y*scale*0.82,z:lift.z*scale*0.82},'#c084fc','MAGNUS');}
+        }
+        references.forEach(function(ref){ drawTrajectory(ref.result,outcomeColor(ref.result&&ref.result.location),true,2,false); });
+        if(d.lastResult){drawTrajectory(d.lastResult,outcomeColor(d.lastResult.location),false,3,true);drawPhysicsAnnotations(d.lastResult);drawPhysicsVectors(d.lastResult);}
+        gfx.fillStyle='rgba(7,20,38,0.82)';gfx.fillRect(12,12,275,sampleSets.length?44:64);
+        gfx.fillStyle='#fde68a';gfx.font='700 12px system-ui, sans-serif';gfx.fillText('IMMERSIVE 3D · SAME PHYSICS DATA',22,31);
+        gfx.fillStyle='#cbd5e1';gfx.font='11px system-ui, sans-serif';
+        var trailLegend=d.lastResult?(references.length?'Solid: current · Dashed: saved reference':'Solid: current trajectory'):(references.length?'Dashed: saved reference':'Launch a trial to project its trajectory.');
+        gfx.fillText(trailLegend,22,50);
+      }, [showImmersive3D, immersiveInView, immersiveYaw, immersivePitch, followImmersiveBall, immersiveVectors, showImmersiveGuides, showImmersiveTimeMarkers, showImmersiveReferences, d.lastResult, d.referenceList, d.referenceResult, d.mode, d.replayActive, d.replayT, d.fgDistanceYd, d.golfClub, d.shotType]);
+
+      // WCAG 2.1.1 Keyboard: Space is scoped to the focusable trajectory.
+      // Native Space behavior on buttons, sliders, summaries, and fields remains intact.
+
+      // Controlled replay analysis: play, pause, scrub, step, and speed changes.
+      function writeReplayState(active, progress) {
+        var nextProgress = Math.max(0, Math.min(1, Number(progress) || 0));
+        setLabToolData(function(prev) {
+          return Object.assign({}, prev, { throwlab: Object.assign({}, prev.throwlab, { replayActive: !!active, replayT: nextProgress }) });
+        });
+      }
+      function startReplayAt(progress) {
+        setReplayPaused(false);
+        writeReplayState(true, progress >= 1 ? 0 : progress);
+      }
+      function scrubReplay(progress) {
+        var next = Math.max(0, Math.min(1, progress));
+        setReplayPaused(true);
+        writeReplayState(next < 1, next);
+      }
+      function stepReplay(direction) {
+        if (!d.lastResult || !d.lastResult.samples || !d.lastResult.samples.length) return;
+        var step = 1 / Math.max(1, d.lastResult.samples.length - 1);
+        var current = d.replayActive ? (d.replayT || 0) : 1;
+        scrubReplay(current + direction * step);
+        tlAnnounce(direction < 0 ? 'Replay stepped backward one sample.' : 'Replay stepped forward one sample.');
+      }
+      function finishReplayAnalysis() {
+        setReplayPaused(false);
+        writeReplayState(false, 1);
+        tlAnnounce('Replay analysis finished. Full trajectory shown.');
+      }
       React.useEffect(function() {
-        if (!d.replayActive) return;
+        if (!d.replayActive || replayPaused) return;
         var prefersReduced = false;
-        try {
-          prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        } catch (e) {}
+        try { prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
         if (prefersReduced) {
-          // Snap to end immediately
-          upd('replayT', 1);
-          upd('replayActive', false);
+          writeReplayState(false, 1);
+          tlAnnounce('Replay shown without animation because reduced motion is enabled. Use the timeline or step controls to inspect frames.');
           return;
         }
-        var start = performance.now();
-        var raf;
-        // Slow-mo extends the 0→1 walk from 1.0s to 3.5s when toggled.
-        // Same data, same trajectory — just three-and-a-half-times more
-        // dwell time so students can SEE the curl / drop / break unfold.
-        // Sports-broadcast aesthetic: the replay reveals what was too
-        // fast to perceive at full speed.
-        var dur = d.slowMoActive ? 3.5 : 1.0;
+        var duration = 1 / Math.max(0.25, replaySpeed || 1);
+        var initial = Math.max(0, Math.min(1, d.replayT || 0));
+        var startTime = performance.now() - initial * duration * 1000;
+        var raf, lastPaint = -1;
         function step() {
-          var t = (performance.now() - start) / 1000;
-          var prog = Math.min(1, t / dur);
-          upd('replayT', prog);
-          if (prog < 1) {
-            raf = requestAnimationFrame(step);
-          } else {
-            upd('replayActive', false);
-          }
+          var progress = Math.min(1, (performance.now() - startTime) / 1000 / duration);
+          if (progress >= 1 || lastPaint < 0 || progress - lastPaint >= 0.025) { lastPaint = progress; upd('replayT', progress); }
+          if (progress < 1) raf = requestAnimationFrame(step);
+          else { writeReplayState(false, 1); tlAnnounce('Replay complete.'); }
         }
         raf = requestAnimationFrame(step);
         return function() { if (raf) cancelAnimationFrame(raf); };
-      }, [d.replayActive]);
+      }, [d.replayActive, replayPaused, replaySpeed]);
 
       // ── UI ──────────────────────────────────────────────
       var currentPitch = PITCH_TYPES.find(function(p) { return p.id === d.pitchType; }) || PITCH_TYPES[0];
+      var modeIds = Object.keys(MODES);
+      function onModeTabKeyDown(event, currentMode) {
+        var index = Math.max(0, modeIds.indexOf(currentMode));
+        var nextIndex = index;
+        if (event.key === 'ArrowRight' || event.key === 'ArrowDown') nextIndex = (index + 1) % modeIds.length;
+        else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') nextIndex = (index - 1 + modeIds.length) % modeIds.length;
+        else if (event.key === 'Home') nextIndex = 0;
+        else if (event.key === 'End') nextIndex = modeIds.length - 1;
+        else return;
+        event.preventDefault();
+        var nextMode = modeIds[nextIndex];
+        switchMode(nextMode);
+        scheduleTl(function() {
+          var nextTab = document.getElementById('throwlab-mode-tab-' + nextMode);
+          if (nextTab) nextTab.focus();
+        }, 0);
+      }
 
       function slider(label, value, min, max, step, onChange, suffix) {
-        // WCAG 1.3.1 Info & Relationships: bind the visible label to the
-        // <input type=range> via htmlFor + id so screen readers announce the
-        // label when the slider gets focus. WCAG 4.1.2 Name, Role, Value:
-        // aria-valuetext gives the live value with units (otherwise the SR
-        // would read "92" instead of "92 mph").
-        // Mode prefix on the ID protects against collisions if a future
-        // refactor renders multiple modes' sliders simultaneously.
+        // WCAG 1.3.1 Info & Relationships: keep the concise visible label
+        // separate from its live visual output. aria-labelledby supplies the
+        // control name while aria-valuetext supplies the current value + unit,
+        // avoiding duplicate announcements such as "Speed 92 mph, 92 mph."
         var inputId = 'tl-' + d.mode + '-slider-' + label.replace(/\s+/g, '-').toLowerCase();
+        var labelId = inputId + '-label';
         return h('div', { style: { marginBottom: 10 } },
-          h('label', {
-            htmlFor: inputId,
-            style: { display: 'flex', justifyContent: 'space-between', fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 4, cursor: 'pointer' }
+          h('div', {
+            style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, fontSize: 12, marginBottom: 4 }
           },
-            h('span', null, label),
-            h('span', { style: { color: '#fbbf24', fontWeight: 600 } }, value + (suffix || ''))
+            h('label', {
+              id: labelId,
+              htmlFor: inputId,
+              style: { color: 'var(--allo-stem-text, #cbd5e1)', cursor: 'pointer' }
+            }, label),
+            h('output', {
+              htmlFor: inputId,
+              'aria-live': 'off',
+              style: { color: '#fbbf24', fontWeight: 600, fontVariantNumeric: 'tabular-nums' }
+            }, value + (suffix || ''))
           ),
           h('input', {
             id: inputId,
             'data-tl-focusable': 'true',
             type: 'range', min: min, max: max, step: step, value: value,
+            'aria-labelledby': labelId,
             'aria-valuetext': value + (suffix || ''),
             onChange: function(e) { onChange(parseFloat(e.target.value)); },
             style: { width: '100%', accentColor: '#fbbf24' }
@@ -3970,6 +4402,125 @@ window.StemLab = window.StemLab || {
                        : isGolf ? currentGolfClub
                        : isVolleyball ? currentVolley
                        : currentGolfClub;
+      var pendingTrialSnapshot = buildTrialSnapshot(d, null);
+      var previousModeTrial = findPreviousTrial(d.recentThrows, d.mode);
+      var nextTrialCheck = buildFairTestFeedback(previousModeTrial, pendingTrialSnapshot, modeMeta.label);
+      var resultTrial = lr && lr.trial ? lr.trial : pendingTrialSnapshot;
+      var resultPreset = findPresetForTrial(resultTrial) || activePreset;
+      var resultChangedVariables = lr && lr.trial ? changedTrialVariables(lr.trial, pendingTrialSnapshot) : [];
+      var resultControlsChanged = resultChangedVariables.length > 0;
+
+      function activeReferenceList() {
+        return (d.referenceList && d.referenceList.length)
+          ? d.referenceList
+          : (d.referenceResult ? [{ result: d.referenceResult, label: d.referenceLabel, color: '#d946ef' }] : []);
+      }
+
+      function cleanOutcomeText(result) {
+        return result ? outcomeLabel(result.location).replace(/^[^A-Za-z]+/, '') : 'Unknown outcome';
+      }
+
+      function referenceComparisonText(ref, index) {
+        var result = ref && ref.result;
+        var label = (ref && ref.label) || (result ? buildRefLabel(result) : 'saved trajectory');
+        return 'Reference ' + (index + 1) + ': ' + label + '. Outcome: ' + cleanOutcomeText(result) + '.' + describeShape(result);
+      }
+
+      function referenceComparisonDescription() {
+        var refs = activeReferenceList();
+        return refs.length ? ' Saved comparison overlays. ' + refs.map(referenceComparisonText).join(' ') : '';
+      }
+
+      function canvasSceneDescription() {
+        if (isPitching) return 'Baseball side view. The pitcher\'s mound is on the left, home plate is on the right, and a dashed yellow strike zone sits above the plate 60 feet 6 inches away.';
+        if (isFreeThrow && resultPreset && resultPreset.kind === 'pass') return 'Basketball passing side view. The passer is on the left, a teammate is 6 meters to the right, and the chest-height receiving target is marked. Bounce passes also show an ideal floor-bounce zone.';
+        if (isFreeThrow) return 'Basketball court side view. The free-throw line is on the left and the hoop, backboard, 10-foot rim, and net are on the right.';
+        if (isFreeKick) return 'Soccer pitch top-down view. The ball is on the left, a four-defender wall is 10 yards away, and a 7.32-meter goal is on the right. Lateral spin curves the trajectory around the wall.';
+        if (isFieldGoal) return 'Football field side view. The tee is on the left, yard markers cross the field, and yellow goalposts with a 10-foot crossbar are ' + (resultTrial.targetDistanceYd || d.fgDistanceYd) + ' yards away.';
+        if (isBowling) return 'Cricket pitch side view. The bowler is on the left, the good-length bounce zone is highlighted, and three stumps stand at the far end of the 22-yard pitch.';
+        if (isGolf) return 'Golf-hole side view. The tee is on the left, distance markers cross the fairway, and a flagged green marks the ' + (resultTrial.targetDistanceYd || currentGolfClub.carryYd) + '-yard target for the selected club.';
+        if (isVolleyball) return 'Volleyball court side view. The server is on the left, a 2.43-meter net divides the court, and the receiving court and deep ace zone are highlighted on the right.';
+        return 'Interactive sports trajectory simulation.';
+      }
+
+      function immersiveTargetDescription() {
+        if (isPitching) return 'A strike-zone target plane marks home plate.';
+        if (isFreeThrow && resultPreset && resultPreset.kind === 'pass') return 'A chest-height receiving target marks the teammate.';
+        if (isFreeThrow) return 'A backboard and rim mark the basket target.';
+        if (isFreeKick) return 'The defender wall and full goal frame are shown.';
+        if (isFieldGoal) return 'The crossbar and both uprights mark the goal.';
+        if (isBowling) return 'Three stumps and their bails mark the wicket.';
+        if (isGolf) return 'A flag and landing ring mark the selected club target.';
+        if (isVolleyball) return 'The regulation net and receiving court are shown.';
+        return 'The sport target is shown in perspective.';
+      }
+
+      function trajectoryMetrics(result) {
+        if (!result || !result.samples || !result.samples.length) return null;
+        var samples = result.samples, last = samples[samples.length - 1];
+        return { apex: Math.max.apply(null, samples.map(function(sample) { return Number(sample.y) || 0; })), distance: Math.max.apply(null, samples.map(function(sample) { return Number(sample.z) || 0; })), duration: Number(last.t) || 0, lateral: Number(last.x) || 0, endpointHeight: Number(last.y) || 0 };
+      }
+      function formatMetricDelta(value, unit) { var rounded = Math.abs(value) < 0.005 ? 0 : value; return (rounded > 0 ? '+' : '') + rounded.toFixed(unit === 's' ? 2 : 1) + ' ' + unit; }
+      function immersiveComparisonRows() {
+        var current = trajectoryMetrics(d.lastResult); if (!current) return [];
+        return activeReferenceList().map(function(ref, index) { var metrics = trajectoryMetrics(ref.result); if (!metrics) return null; return { index: index, label: ref.label || ('Reference ' + (index + 1)), color: ref.color || '#d946ef', apex: current.apex - metrics.apex, distance: current.distance - metrics.distance, duration: current.duration - metrics.duration, lateral: current.lateral - metrics.lateral }; }).filter(Boolean);
+      }
+      function immersiveObservationPrompts() {
+        var prompts = ['Scrub to the apex. What is the vertical velocity doing just before and just after it?', 'Turn on velocity and gravity together. Which vector changes direction during flight?'];
+        if (d.mode === 'pitching' || d.mode === 'bowling') prompts.push('Where does spin create the largest visible break relative to the no-spin direction?');
+        else if (d.mode === 'freekick' || d.mode === 'fieldgoal' || d.mode === 'golf') prompts.push('Turn on wind and Magnus vectors. Do they push the ball in the same direction or compete?');
+        else prompts.push('How does launch angle trade forward speed for peak height and flight time?');
+        if (activeReferenceList().length) prompts.push('Use the delta table: which single measured change best explains the different outcome?');
+        return prompts.slice(0, 4);
+      }
+      function triggerThrowLabDownload(filename, blob, fallbackText, mimeType) {
+        var link = document.createElement('a'), objectUrl = '';
+        try {
+          if (blob && window.URL && typeof window.URL.createObjectURL === 'function') { objectUrl = window.URL.createObjectURL(blob); link.href = objectUrl; }
+          else link.href = 'data:' + (mimeType || 'text/plain') + ';charset=utf-8,' + encodeURIComponent(fallbackText || '');
+          link.download = filename; link.style.display = 'none'; document.body.appendChild(link); link.click(); link.remove();
+          if (objectUrl) scheduleTl(function() { try { window.URL.revokeObjectURL(objectUrl); } catch (e) {} }, 1000);
+        } catch (error) { if (addToast) addToast('Download failed', 'error'); }
+      }
+      function exportImmersivePng() {
+        var canvas = immersiveCanvasRef.current; if (!canvas) return; var filename = 'throwlab-' + d.mode + '-perspective.png';
+        if (typeof canvas.toBlob === 'function') canvas.toBlob(function(blob) { if (blob) triggerThrowLabDownload(filename, blob, '', 'image/png'); else if (addToast) addToast('Snapshot could not be created', 'error'); }, 'image/png');
+        else { try { var link = document.createElement('a'); link.download = filename; link.href = canvas.toDataURL('image/png'); link.click(); } catch (error) { if (addToast) addToast('Snapshot could not be created', 'error'); } }
+        tlAnnounce('Immersive perspective snapshot prepared.');
+      }
+      function exportTrajectoryCsv() {
+        if (!d.lastResult) return;
+        var rows = [['series','label','time_s','x_m','y_m','z_m','vx_mps','vy_mps','vz_mps','outcome']];
+        function addSeries(result, series, label) { (result.samples || []).forEach(function(sample) { rows.push([series,label,Number(sample.t||0).toFixed(4),Number(sample.x||0).toFixed(4),Number(sample.y||0).toFixed(4),Number(sample.z||0).toFixed(4),Number(sample.vx||0).toFixed(4),Number(sample.vy||0).toFixed(4),Number(sample.vz||0).toFixed(4),cleanOutcomeText(result)]); }); }
+        addSeries(d.lastResult, 'current', buildRefLabel(d.lastResult)); activeReferenceList().forEach(function(ref,index) { addSeries(ref.result, 'reference_' + (index + 1), ref.label || ('Reference ' + (index + 1))); });
+        var quote=String.fromCharCode(34); var csv = rows.map(function(row) { return row.map(function(value) { return quote + String(value).replace(new RegExp(quote,'g'),quote+quote) + quote; }).join(','); }).join('\r\n');
+        var blob = typeof Blob === 'function' ? new Blob([csv], { type: 'text/csv;charset=utf-8' }) : null; triggerThrowLabDownload('throwlab-' + d.mode + '-trajectory.csv', blob, csv, 'text/csv'); tlAnnounce('Trajectory CSV prepared with ' + (rows.length - 1) + ' samples.');
+      }
+      function resetImmersiveAnalysis() {
+        setFollowImmersiveBall(false); setImmersiveYaw(-28); setImmersivePitch(24); setShowImmersiveGuides(true); setShowImmersiveTimeMarkers(false); setShowImmersiveReferences(true); setImmersiveVectors({ velocity: true, gravity: false, wind: false, spin: false, magnus: false }); setReplaySpeed(1); setReplayPaused(false); if (d.replayActive) writeReplayState(false, 1); tlAnnounce('Immersive camera, overlays, vectors, and replay settings reset.');
+      }
+
+      function launchActionLabel() {
+        var action = isPitching ? 'THROW PITCH'
+          : isFreeKick ? 'STRIKE'
+          : isFieldGoal ? 'KICK'
+          : isBowling ? 'BOWL'
+          : isGolf ? 'TEE OFF'
+          : isVolleyball ? 'SERVE'
+          : 'SHOOT';
+        return modeMeta.icon + ' ' + action;
+      }
+
+      function sessionSummaryItems() {
+        var modeAttempts = (d.modeThrowCounts && d.modeThrowCounts[d.mode]) || 0;
+        if (isPitching) return ['Pitches: ' + modeAttempts, 'Strikes: ' + (d.strikeCount || 0), 'Types: ' + Object.keys(d.pitchTypesUsed || {}).length + '/' + PITCH_TYPES.length];
+        if (isFreeKick) return ['Kicks: ' + modeAttempts, 'Goals: ' + (d.goalCount || 0), 'Kick: ' + currentKick.label];
+        if (isFieldGoal) return ['Field goals: ' + modeAttempts, 'Made: ' + (d.fgMakeCount || 0), 'Distance: ' + d.fgDistanceYd + ' yd'];
+        if (isBowling) return ['Deliveries: ' + modeAttempts, 'Wickets: ' + (d.wicketCount || 0), 'Delivery: ' + currentBowl.label];
+        if (isGolf) return ['Shots: ' + modeAttempts, 'Greens: ' + (d.golfGreenCount || 0), 'Club: ' + currentGolfClub.label];
+        if (isVolleyball) return ['Serves: ' + modeAttempts, 'Aces: ' + (d.volleyAceCount || 0), 'Serve: ' + currentVolley.label];
+        return ['Shots: ' + modeAttempts, 'Made: ' + (d.shotMakeCount || 0), 'Shot: ' + currentShot.label];
+      }
 
       // Outcome label + color (mode-specific)
       function outcomeLabel(loc) {
@@ -4042,6 +4593,8 @@ window.StemLab = window.StemLab || {
       function explainResult(lr) {
         if (!lr) return null;
         var loc = lr.location;
+        var trial = lr.trial || buildTrialSnapshot(d, loc);
+        var trialPreset = findPresetForTrial(trial);
         // Pitching
         if (isPitching) {
           if (loc === 'strike') {
@@ -4059,7 +4612,7 @@ window.StemLab = window.StemLab || {
         }
         // Free throw
         if (isFreeThrow) {
-          if (loc === 'swish') return 'Clean swish! Your release angle (' + d.aimDegV.toFixed(1) + '°) and speed (' + d.speedMph + ' mph) line up perfectly for a 15 ft shot from ' + d.releaseHeight.toFixed(2) + ' m.';
+          if (loc === 'swish') return 'Clean swish! Your release angle (' + trial.angleV.toFixed(1) + '°) and speed (' + trial.speedMph + ' mph) line up perfectly for a 15 ft shot from ' + trial.releaseHeight.toFixed(2) + ' m.';
           if (loc === 'made') return 'In with a friendly bounce. Your arc was close to ideal — backspin helped soften the rim contact.';
           if (loc === 'rim') {
             var apex = Math.max.apply(null, lr.samples.map(function(s) { return s.y; }));
@@ -4073,7 +4626,7 @@ window.StemLab = window.StemLab || {
         if (isFreeKick) {
           var curlM = lr.samples ? (Math.max.apply(null, lr.samples.map(function(s) { return s.x; })) - Math.min.apply(null, lr.samples.map(function(s) { return s.x; }))) : 0;
           if (loc === 'goal') {
-            return 'GOAL! Magnus curl bent the ball ' + curlM.toFixed(2) + ' m laterally — that\'s ' + (d.spinRpm > 400 ? 'classic Beckham work.' : 'a low-spin power finish.');
+            return 'GOAL! Magnus curl bent the ball ' + curlM.toFixed(2) + ' m laterally — that\'s ' + (trial.spinRpm > 400 ? 'classic Beckham work.' : 'a low-spin power finish.');
           }
           if (loc === 'post') return 'Inches from glory. Tweak spin axis by ±5° or speed by 1-2 mph and you\'ll find the net.';
           if (loc === 'over') return 'Over the bar. Reduce launch angle (vertical aim) by 4-6° or lower speed slightly.';
@@ -4085,33 +4638,33 @@ window.StemLab = window.StemLab || {
         if (isFieldGoal) {
           var apexFG = Math.max.apply(null, lr.samples.map(function(s) { return s.y; }));
           if (loc === 'good') {
-            return 'GOOD from ' + d.fgDistanceYd + ' yards. Peak height ' + apexFG.toFixed(1) + ' m. Optimal launch angle for this distance was around ' + (d.fgDistanceYd < 30 ? '38°' : d.fgDistanceYd < 45 ? '40°' : '42°') + ' — you used ' + d.aimDegV.toFixed(0) + '°.';
+            return 'GOOD from ' + trial.targetDistanceYd + ' yards. Peak height ' + apexFG.toFixed(1) + ' m. Optimal launch angle for this distance was around ' + (trial.targetDistanceYd < 30 ? '38°' : trial.targetDistanceYd < 45 ? '40°' : '42°') + ' — you used ' + trial.angleV.toFixed(0) + '°.';
           }
           if (loc === 'doink') return 'Doink! The post or crossbar got it by inches. Move your speed up 1-2 mph or shift launch angle by 1-2°.';
-          if (loc === 'shortbar') return 'Under the crossbar. You needed either more launch angle (try ' + Math.min(60, (d.aimDegV + 5)).toFixed(0) + '°) or more power.';
+          if (loc === 'shortbar') return 'Under the crossbar. You needed either more launch angle (try ' + Math.min(60, (trial.angleV + 5)).toFixed(0) + '°) or more power.';
           if (loc === 'wideclose') return 'Just wide of the upright. Lateral aim is the lever here — check your horizontal aim slider.';
           if (loc === 'wide') return 'No good — well wide of the goalposts. Reset horizontal aim toward 0°.';
           return 'Short of the goal line — kick didn\'t carry the distance. Add power, or accept a shorter distance preset.';
         }
         // Volleyball
         if (isVolleyball) {
-          if (loc === 'ace') return 'ACE! Deep corner — receiver had no chance. ' + (d.spinRpm > 800 ? 'Topspin (' + d.spinRpm + ' rpm) made the ball dive past the net.' : 'No-spin float wobble forced a misread.');
+          if (loc === 'ace') return 'ACE! Deep corner — receiver had no chance. ' + (trial.spinRpm > 800 ? 'Topspin (' + trial.spinRpm + ' rpm) made the ball dive past the net.' : 'No-spin float wobble forced a misread.');
           if (loc === 'in') return 'Serve in. Receivable, but landed in court. To level up, aim for the deep corner (back 15% × outer 30% of the court) for an ace.';
-          if (loc === 'net') return 'Hit the net. Net is 2.43 m at center; you cleared it ' + (d.aimDegV < 4 ? 'too flat — add 2-4° vertical aim' : 'narrowly') + '. Try ' + (d.aimDegV + 3).toFixed(0) + '° launch.';
+          if (loc === 'net') return 'Hit the net. Net is 2.43 m at center; you cleared it ' + (trial.angleV < 4 ? 'too flat — add 2-4° vertical aim' : 'narrowly') + '. Try ' + (trial.angleV + 3).toFixed(0) + '° launch.';
           if (loc === 'out') return 'Wide of the sideline. Court is 9 m wide (±4.5 m). Reset horizontal aim toward 0°.';
           if (loc === 'long') return 'Past the back line. Reduce speed by 5-8 mph or ease back launch angle by 2-3°. Topspin would also pull the ball down faster.';
-          return 'Short — landed on your side of the net. Add power (try ' + (d.speedMph + 8) + ' mph) or a steeper launch.';
+          return 'Short — landed on your side of the net. Add power (try ' + (trial.speedMph + 8) + ' mph) or a steeper launch.';
         }
         // Golf
         if (isGolf) {
           var apexG = Math.max.apply(null, lr.samples.map(function(s) { return s.y; }));
           var landZ = lr.outcome && lr.outcome.landZ ? lr.outcome.landZ : null;
-          var carryYd = currentGolfClub.carryYd;
+          var carryYd = (trialPreset && trialPreset.carryYd ? trialPreset.carryYd : trial.targetDistanceYd);
           if (loc === 'green') {
-            return 'On the green from ' + d.speedMph + ' mph ball speed. Apex ' + apexG.toFixed(1) + ' m. Backspin (' + d.spinRpm + ' rpm) created Magnus lift to keep the ball airborne and dropped it pin-high.';
+            return 'On the green from ' + trial.speedMph + ' mph ball speed. Apex ' + apexG.toFixed(1) + ' m. Backspin (' + trial.spinRpm + ' rpm) created Magnus lift to keep the ball airborne and dropped it pin-high.';
           }
           if (loc === 'fairway') return 'In the fairway, just past pin distance. Tweak speed by 2-3 mph and you\'ll be on the green next time.';
-          if (loc === 'rough') return 'In the rough — your line drifted off-center. Spin axis (' + d.spinAxisDeg + '°) is curving the ball; reset toward 0° for a straight shot.';
+          if (loc === 'rough') return 'In the rough — your line drifted off-center. Spin axis (' + trial.spinAxisDeg + '°) is curving the ball; reset toward 0° for a straight shot.';
           if (loc === 'woods') return 'Way off-line. The spin axis or horizontal aim is the lever — drop them both toward 0° and rebuild your shot from straight.';
           if (loc === 'short') return 'Short of the ' + carryYd + '-yard target. Add 5-10 mph clubhead speed, or pick a longer club (one less number = ~10 more yards).';
           if (loc === 'long') return 'Flew the green. Either ease back on speed by 5 mph, or pick a shorter club (one more number = ~10 fewer yards).';
@@ -4121,7 +4674,7 @@ window.StemLab = window.StemLab || {
         if (isBowling) {
           var swingM = lr.samples ? (Math.max.apply(null, lr.samples.map(function(s) { return s.x; })) - Math.min.apply(null, lr.samples.map(function(s) { return s.x; }))) : 0;
           if (loc === 'wicket') {
-            return 'WICKET! Ball clattered into the stumps at ' + d.speedMph + ' mph after ' + swingM.toFixed(2) + ' m of lateral swing. ' + (d.spinRpm > 2000 ? 'Spin axis ' + d.spinAxisDeg + '° produced classic finger/wrist deviation.' : 'Pace + line did the work — minimal swing needed.');
+            return 'WICKET! Ball clattered into the stumps at ' + trial.speedMph + ' mph after ' + swingM.toFixed(2) + ' m of lateral swing. ' + (trial.spinRpm > 2000 ? 'Spin axis ' + trial.spinAxisDeg + '° produced classic finger/wrist deviation.' : 'Pace + line did the work — minimal swing needed.');
           }
           if (loc === 'shaved') return 'Bail-trembler — just clipped the stumps. Tighten line by ~5 cm and the next one is unmistakable.';
           if (loc === 'overhead') return 'Over the bails — that\'s a head-height ball, no-ball under test cricket rules. Lower your launch angle by 3-5°.';
@@ -4250,8 +4803,26 @@ window.StemLab = window.StemLab || {
         if (isFieldGoal) {
           return loc === 'good' ? '#10b981' : loc === 'doink' ? '#fbbf24' : loc === 'wideclose' ? '#f97316' : '#ef4444';
         }
-        // Pass outcomes reuse this palette: caught = green, high/low = yellow,
-        // wrongbounce = orange, others = red.
+        if (isBowling) {
+          return loc === 'wicket' || loc === 'shaved' ? '#10b981'
+               : loc === 'dot' ? '#3b82f6'
+               : loc === 'overhead' ? '#f97316'
+               : '#ef4444';
+        }
+        if (isGolf) {
+          return loc === 'green' ? '#10b981'
+               : loc === 'fairway' ? '#3b82f6'
+               : loc === 'rough' ? '#fbbf24'
+               : loc === 'short' || loc === 'long' ? '#f97316'
+               : '#ef4444';
+        }
+        if (isVolleyball) {
+          return loc === 'ace' ? '#10b981'
+               : loc === 'in' ? '#3b82f6'
+               : loc === 'net' ? '#f97316'
+               : '#ef4444';
+        }
+        // Basketball shot and pass outcomes.
         return loc === 'swish' ? '#10b981'
              : loc === 'made' ? '#3b82f6'
              : loc === 'caught' ? '#10b981'
@@ -4412,7 +4983,6 @@ window.StemLab = window.StemLab || {
             h('button', {
               onClick: throwPitch,
               'data-tl-focusable': 'true',
-              'aria-keyshortcuts': 'Space',
               style: {
                 marginTop: 10,
                 width: '100%',
@@ -4431,21 +5001,25 @@ window.StemLab = window.StemLab || {
         );
       }
 
-      return h('div', { style: { padding: 16, color: 'var(--allo-stem-text, #f1f5f9)', maxWidth: '68rem', margin: '0 auto' } },
+      return h('div', { 'data-throwlab-root': 'true', style: { padding: 16, color: 'var(--allo-stem-text, #f1f5f9)', maxWidth: '68rem', margin: '0 auto' } },
         // Scenario intro card — pops when a one-click teaching demo loads.
         // Surfaces the scenario's `teach` paragraph + discussion questions
         // before the simulation runs (previously hover-only on the chip).
         // Port of SkateLab SK3 pattern: "Run it now" fires synchronously
         // (no setTimeout — caused stale-closure / canvas-race in SK3).
         scenarioIntro && h('div', {
-          role: 'dialog', 'aria-modal': 'true',
-          'aria-labelledby': 'tl-scenario-intro-title',
-          onClick: function(e) { if (e.target === e.currentTarget) setScenarioIntro(null); },
+          onClick: function(e) { if (e.target === e.currentTarget) closeScenarioIntro(false); },
           style: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
                    zIndex: 9998, display: 'flex', alignItems: 'center', justifyContent: 'center',
                    padding: 16 }
         },
           h('div', {
+            ref: scenarioDialogRef,
+            role: 'dialog', 'aria-modal': 'true',
+            tabIndex: -1,
+            'aria-labelledby': 'tl-scenario-intro-title',
+            'aria-describedby': 'tl-scenario-intro-description',
+            'data-throwlab-scenario-dialog': 'true',
             style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '2px solid var(--allo-stem-border, #334155)', borderRadius: 14,
                      maxWidth: 560, width: '100%', maxHeight: '85vh', overflow: 'auto',
                      padding: 20, boxShadow: '0 20px 60px rgba(0,0,0,0.6)' }
@@ -4457,7 +5031,8 @@ window.StemLab = window.StemLab || {
                 style: { flex: 1, margin: 0, fontSize: 18, fontWeight: 800, color: 'var(--allo-stem-text, #f1f5f9)' } },
                 scenarioIntro.label),
               h('button', {
-                onClick: function() { setScenarioIntro(null); },
+                ref: scenarioCloseRef,
+                onClick: function() { closeScenarioIntro(false); },
                 'aria-label': __alloT('stem.throwlab.close_scenario_intro', 'Close scenario intro'),
                 style: { background: 'transparent', border: '1px solid var(--allo-stem-border, #475569)', color: 'var(--allo-stem-text, #cbd5e1)',
                          width: 32, height: 32, borderRadius: 6, cursor: 'pointer',
@@ -4469,7 +5044,7 @@ window.StemLab = window.StemLab || {
               h('div', { style: { fontSize: 11, fontWeight: 700, color: '#fbbf24',
                                   textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 6 } },
                 __alloT('stem.throwlab.the_story', '📜 The story')),
-              h('p', { style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.5 } },
+              h('p', { id: 'tl-scenario-intro-description', style: { margin: 0, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.5 } },
                 scenarioIntro.teach)
             ),
             // Discussion questions (only if present)
@@ -4488,7 +5063,7 @@ window.StemLab = window.StemLab || {
             // Buttons
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 4 } },
               h('button', {
-                onClick: function() { setScenarioIntro(null); throwPitch(); },
+                onClick: function() { closeScenarioIntro(true); throwPitch(); },
                 'data-tl-focusable': 'true',
                 style: { flex: '1 1 200px', padding: '10px 14px', borderRadius: 8,
                          border: 'none', background: 'linear-gradient(135deg, #f59e0b, #ef4444)',
@@ -4496,7 +5071,7 @@ window.StemLab = window.StemLab || {
                          boxShadow: '0 4px 12px rgba(239,68,68,0.3)' }
               }, __alloT('stem.throwlab.run_it_now', '🎯 Run it now')),
               h('button', {
-                onClick: function() { setScenarioIntro(null); },
+                onClick: function() { closeScenarioIntro(false); },
                 'data-tl-focusable': 'true',
                 style: { flex: '1 1 160px', padding: '10px 14px', borderRadius: 8,
                          border: '1px solid var(--allo-stem-border, #475569)', background: 'var(--allo-stem-panel, #1e293b)',
@@ -4591,15 +5166,26 @@ window.StemLab = window.StemLab || {
 
         // Mode picker — pill row, prominent under header. role=tablist makes
         // assistive-tech treat it as a single-select control group.
-        h('div', { role: 'tablist', 'aria-label': __alloT('stem.throwlab.sport_modes', 'Sport modes'), style: { display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' } },
-          Object.keys(MODES).map(function(mid) {
+        h('div', {
+          className: 'throwlab-mode-tabs',
+          role: 'tablist',
+          'aria-label': __alloT('stem.throwlab.sport_modes', 'Sport modes'),
+          'aria-orientation': 'horizontal',
+          style: { display: 'flex', gap: 6, marginBottom: 14, flexWrap: 'wrap' }
+        },
+          modeIds.map(function(mid) {
             var mm = MODES[mid];
             var sel = d.mode === mid;
             return h('button', {
               key: mid,
+              id: 'throwlab-mode-tab-' + mid,
+              className: 'throwlab-mode-tab',
+              tabIndex: sel ? 0 : -1,
+              onKeyDown: function(event) { onModeTabKeyDown(event, mid); },
               role: 'tab',
               onClick: function() { switchMode(mid); },
               'aria-selected': sel,
+              'aria-controls': 'throwlab-fs-workspace',
               'data-tl-focusable': 'true',
               style: {
                 padding: '8px 14px', borderRadius: 22, cursor: 'pointer',
@@ -4846,19 +5432,19 @@ window.StemLab = window.StemLab || {
           h('summary', {
             style: { cursor: 'pointer', fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 600 }
           }, '📊 Your Numbers — ' + (d.playerName || 'session stats')),
-          h('div', {
-            role: 'table', 'aria-label': __alloT('stem.throwlab.session_stats', 'Session stats'),
-            style: { marginTop: 10, display: 'grid', gridTemplateColumns: '1fr auto', gap: '4px 12px', fontSize: 12 }
+          h('dl', {
+            'aria-label': __alloT('stem.throwlab.session_stats', 'Session stats'),
+            style: { margin: '10px 0 0', display: 'grid', gridTemplateColumns: '1fr auto', gap: '4px 12px', fontSize: 12 }
           },
             getStatsRows(d).reduce(function(acc, row) {
-              acc.push(h('span', {
-                key: 'sl-' + row.label, role: 'rowheader',
+              acc.push(h('dt', {
+                key: 'sl-' + row.label,
                 style: { color: 'var(--allo-stem-text-soft, #94a3b8)' }
               }, row.label));
-              acc.push(h('span', {
-                key: 'sv-' + row.label, role: 'cell',
+              acc.push(h('dd', {
+                key: 'sv-' + row.label,
                 style: {
-                  color: '#fbbf24', fontWeight: 700,
+                  margin: 0, color: '#fbbf24', fontWeight: 700,
                   fontFamily: 'ui-monospace, monospace', textAlign: 'right'
                 }
               }, row.value));
@@ -5073,7 +5659,14 @@ window.StemLab = window.StemLab || {
         })(),
 
         // Two-column layout
-        h('div', { className: 'throwlab-play-grid', 'data-throwlab-play-grid': 'true' },
+        h('div', {
+          id: 'throwlab-fs-workspace',
+          className: 'throwlab-play-grid',
+          'data-throwlab-play-grid': 'true',
+          'data-throwlab-fullscreen-workspace': 'true',
+          role: 'tabpanel',
+          'aria-labelledby': 'throwlab-mode-tab-' + d.mode
+        },
 
           // LEFT: side-view canvas (wrapped for fullscreen) + result panel
           h('div', null,
@@ -5089,7 +5682,7 @@ window.StemLab = window.StemLab || {
                     color: '#bae6fd',
                     border: '1px solid rgba(56,189,248,0.26)'
                   }
-                }, activePreset.label || modeMeta.label),
+                }, lr ? (resultTrial.presetLabel || resultTrial.shotKind || modeMeta.label) : (activePreset.label || modeMeta.label)),
                 h('span', {
                   style: {
                     padding: '4px 8px',
@@ -5098,32 +5691,60 @@ window.StemLab = window.StemLab || {
                     color: '#fde68a',
                     border: '1px solid rgba(251,191,36,0.28)'
                   }
-                }, d.speedMph + ' mph')
+                }, (lr ? resultTrial.speedMph : d.speedMph) + ' mph'),
+                h('button', {
+                  type: 'button',
+                  'aria-expanded': showImmersive3D,
+                  'aria-controls': 'throwlab-immersive-zone',
+                  'data-tl-focusable': 'true',
+                  onClick: function() {
+                    var next = !showImmersive3D;
+                    setShowImmersive3D(next);
+                    tlAnnounce(next ? 'Immersive 3D perspective opened.' : 'Immersive 3D perspective closed.');
+                  },
+                  style: {
+                    minHeight: 44, padding: '8px 12px', borderRadius: 10, cursor: 'pointer',
+                    border: showImmersive3D ? '2px solid #fbbf24' : '1px solid rgba(125,211,252,0.42)',
+                    background: showImmersive3D ? 'rgba(251,191,36,0.18)' : 'rgba(14,165,233,0.12)',
+                    color: showImmersive3D ? '#fde68a' : '#bae6fd', fontWeight: 800
+                  }
+                }, showImmersive3D ? 'Hide 3D zone' : 'Open 3D zone')
               )
             ),
             h('div', { id: 'throwlab-fs-wrap', className: 'throwlab-sim-shell', 'data-throwlab-sim-surface': 'true', style: { position: 'relative' } },
+            h('span', { id: 'throwlab-canvas-help',
+              style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }
+            }, 'Focus this trajectory simulation and press Space to launch. All settings and the Launch button are also available beside the canvas.'),
             h('canvas', {
               ref: canvasRef, width: 640, height: 360,
-              role: 'img',
+              role: 'application',
+              'aria-roledescription': 'interactive trajectory simulation',
               tabIndex: 0,
               'data-tl-focusable': 'true',
               'data-throwlab-canvas': 'true',
-              'aria-label': (isPitching
-                ? 'Pitcher\'s mound side view. Mound on the left, home plate on the right, dashed yellow strike zone above the plate.'
-                : isFreeKick
-                  ? 'Soccer pitch top-down view. Ball at bottom, four-defender wall in the middle at 10 yards, goalposts 7.32 meters wide at the top. Spin curls the ball laterally.'
-                  : isFieldGoal
-                    ? 'Football field side view with hash-mark distance labels, yellow tee on the left, and yellow goalposts at ' + d.fgDistanceYd + ' yards.'
-                    : 'Basketball court side view. Free-throw line on the left, hoop with backboard on the right. Orange bar is the rim at 10 feet.')
-                + (lr ? ' Last throw outcome: ' + outcomeLabel(lr.location).replace(/^[^A-Za-z]+/, '') + '.' : ''),
+              'aria-describedby': 'throwlab-canvas-help',
+              'aria-keyshortcuts': 'Space',
+              onKeyDown: function(event) {
+                if (event.repeat || (event.key !== ' ' && event.code !== 'Space')) return;
+                event.preventDefault();
+                throwPitch();
+              },
+              'aria-label': canvasSceneDescription()
+                + (lr ? ' Last throw outcome: ' + cleanOutcomeText(lr) + '.' + describeShape(lr) : '')
+                + referenceComparisonDescription(),
               style: { width: '100%', maxWidth: 'none', height: 'auto', borderRadius: 12, border: '1px solid rgba(148,163,184,0.26)', background: 'var(--allo-stem-canvas, #0f172a)', boxShadow: 'inset 0 0 44px rgba(14,165,233,0.07)' }
             }),
             // Fullscreen toggle (top-right of canvas wrapper)
             h('button', {
-              'aria-label': __alloT('stem.throwlab.toggle_fullscreen_for_the_throw_lab_ca', 'Toggle fullscreen for the throw lab canvas'),
-              title: __alloT('stem.throwlab.fullscreen', 'Fullscreen'),
+              'aria-label': isWorkspaceFullscreen
+                ? __alloT('stem.throwlab.exit_fullscreen_workspace', 'Exit fullscreen for the Throw Lab workspace')
+                : __alloT('stem.throwlab.enter_fullscreen_workspace', 'Enter fullscreen for the Throw Lab workspace'),
+              'aria-pressed': isWorkspaceFullscreen,
+              title: isWorkspaceFullscreen
+                ? __alloT('stem.throwlab.exit_fullscreen', 'Exit fullscreen')
+                : __alloT('stem.throwlab.enter_fullscreen', 'Enter fullscreen'),
               onClick: function() {
-                var el = document.getElementById('throwlab-fs-wrap');
+                var el = document.getElementById('throwlab-fs-workspace');
                 if (!el) return;
                 var inFull = document.fullscreenElement === el || document.webkitFullscreenElement === el || document.mozFullScreenElement === el;
                 if (inFull) { var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen; if (ex) ex.call(document); }
@@ -5139,6 +5760,121 @@ window.StemLab = window.StemLab || {
               }
             }, '⛶')
             ),
+            showImmersive3D ? h('section', {
+              id: 'throwlab-immersive-zone',
+              'data-throwlab-immersive-zone': 'true',
+              'aria-labelledby': 'throwlab-immersive-heading',
+              style: { marginTop: 12, padding: 12, borderRadius: 14, border: '1px solid rgba(125,211,252,0.34)', background: 'linear-gradient(145deg, rgba(8,24,43,0.98), rgba(20,42,55,0.98))', boxShadow: '0 12px 28px rgba(2,6,23,0.26)' }
+            },
+              h('div', { 'data-throwlab-immersive-header': 'true', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginBottom: 8 } },
+                h('div', null,
+                  h('h3', { id: 'throwlab-immersive-heading', style: { margin: 0, color: '#f8fafc', fontSize: 15 } }, '3D Immersive Zone'),
+                  h('div', { style: { marginTop: 2, color: '#bae6fd', fontSize: 11 } }, 'Perspective projection · same trial data')
+                ),
+                h('output', { 'aria-live': 'polite', style: { color: '#fde68a', fontSize: 11, fontWeight: 800 } }, 'Camera: yaw ' + immersiveYaw + '° · height ' + immersivePitch + '°' + (followImmersiveBall ? ' · following ball' : ''))
+              ),
+              h('div', { role: 'group', 'aria-label': '3D view presets', 'data-throwlab-view-presets': 'true', style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 9 } },
+                h('button', { type: 'button', 'aria-pressed': immersiveYaw === 0 && immersivePitch === 18, 'data-tl-focusable': 'true', onClick: function() { setFollowImmersiveBall(false); setImmersiveYaw(0); setImmersivePitch(18); tlAnnounce('Behind-launch 3D view selected.'); }, style: { minHeight: 44, padding: '8px 12px', flex: '1 1 110px', borderRadius: 18, cursor: 'pointer', border: immersiveYaw === 0 && immersivePitch === 18 ? '2px solid #fbbf24' : '1px solid rgba(125,211,252,0.42)', background: immersiveYaw === 0 && immersivePitch === 18 ? 'rgba(251,191,36,0.18)' : 'rgba(15,23,42,0.72)', color: '#e0f2fe', fontWeight: 800 } }, 'Behind launch'),
+                h('button', { type: 'button', 'aria-pressed': immersiveYaw === -90 && immersivePitch === 22, 'data-tl-focusable': 'true', onClick: function() { setFollowImmersiveBall(false); setImmersiveYaw(-90); setImmersivePitch(22); tlAnnounce('Sideline 3D view selected.'); }, style: { minHeight: 44, padding: '8px 12px', flex: '1 1 110px', borderRadius: 18, cursor: 'pointer', border: immersiveYaw === -90 && immersivePitch === 22 ? '2px solid #fbbf24' : '1px solid rgba(125,211,252,0.42)', background: immersiveYaw === -90 && immersivePitch === 22 ? 'rgba(251,191,36,0.18)' : 'rgba(15,23,42,0.72)', color: '#e0f2fe', fontWeight: 800 } }, 'Sideline'),
+                h('button', { type: 'button', 'aria-pressed': immersivePitch === 55 && !followImmersiveBall, 'data-tl-focusable': 'true', onClick: function() { setFollowImmersiveBall(false); setImmersiveYaw(-28); setImmersivePitch(55); tlAnnounce('Overhead 3D view selected.'); }, style: { minHeight: 44, padding: '8px 12px', flex: '1 1 110px', borderRadius: 18, cursor: 'pointer', border: immersivePitch === 55 && !followImmersiveBall ? '2px solid #fbbf24' : '1px solid rgba(125,211,252,0.42)', background: immersivePitch === 55 && !followImmersiveBall ? 'rgba(251,191,36,0.18)' : 'rgba(15,23,42,0.72)', color: '#e0f2fe', fontWeight: 800 } }, 'Overhead'),
+                h('button', { type: 'button', 'aria-pressed': followImmersiveBall, disabled: !lr, 'data-tl-focusable': 'true', onClick: function() { setFollowImmersiveBall(!followImmersiveBall); tlAnnounce(followImmersiveBall ? 'Follow-ball camera off.' : 'Follow-ball camera on. Replay to track the ball in flight.'); }, style: { minHeight: 44, padding: '8px 12px', flex: '1 1 110px', borderRadius: 18, cursor: lr ? 'pointer' : 'not-allowed', border: followImmersiveBall ? '2px solid #fbbf24' : '1px solid rgba(125,211,252,0.42)', background: followImmersiveBall ? 'rgba(251,191,36,0.18)' : 'rgba(15,23,42,0.72)', color: lr ? '#e0f2fe' : '#64748b', fontWeight: 800 } }, 'Follow ball')
+              ),
+              h('canvas', {
+                ref: immersiveCanvasRef, width: 640, height: 340, role: 'img',
+                'data-throwlab-immersive-canvas': 'true',
+                'aria-describedby': 'throwlab-immersive-help',
+                onPointerDown: function(event) {
+                  if (event.button !== undefined && event.button !== 0) return;
+                  setFollowImmersiveBall(false);
+                  immersiveDragRef.current = { x: event.clientX, y: event.clientY, yaw: immersiveYaw, pitch: immersivePitch, pointerId: event.pointerId };
+                  if (event.currentTarget.setPointerCapture && event.pointerId !== undefined) event.currentTarget.setPointerCapture(event.pointerId);
+                },
+                onPointerMove: function(event) {
+                  var drag = immersiveDragRef.current; if (!drag) return;
+                  setImmersiveYaw(TL_PERSPECTIVE.normalizeYaw(drag.yaw + (event.clientX - drag.x) * 0.35));
+                  setImmersivePitch(TL_PERSPECTIVE.clampPitch(drag.pitch - (event.clientY - drag.y) * 0.25));
+                },
+                onPointerUp: function(event) {
+                  immersiveDragRef.current = null;
+                  if (event.currentTarget.releasePointerCapture && event.pointerId !== undefined && event.currentTarget.hasPointerCapture && event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+                },
+                onPointerCancel: function() { immersiveDragRef.current = null; },
+                'aria-label': '3D perspective view. ' + canvasSceneDescription() + ' ' + immersiveTargetDescription()
+                  + (lr ? ' Current outcome: ' + cleanOutcomeText(lr) + '.' + describeShape(lr) : ' No trial has been launched yet.')
+                  + (showImmersiveGuides ? ' Apex and endpoint guides are visible.' : ' Apex and endpoint guides are hidden.')
+                  + (showImmersiveTimeMarkers ? ' Time markers are visible.' : '')
+                  + (Object.keys(immersiveVectors).filter(function(key) { return immersiveVectors[key]; }).length ? ' Physics vectors visible: ' + Object.keys(immersiveVectors).filter(function(key) { return immersiveVectors[key]; }).join(', ') + '.' : '')
+                  + (showImmersiveReferences ? referenceComparisonDescription() : (activeReferenceList().length ? ' Saved comparison overlays are hidden.' : '')),
+                style: { width: '100%', height: 'auto', display: 'block', touchAction: 'none', cursor: 'grab', borderRadius: 10, border: '1px solid rgba(148,163,184,0.3)', background: '#071426' }
+              }),
+              h('div', { 'data-throwlab-spatial-readout': 'true', role: 'note', style: { display: 'flex', gap: 8, alignItems: 'baseline', flexWrap: 'wrap', marginTop: 8, padding: '7px 9px', borderRadius: 8, background: 'rgba(14,165,233,0.1)', border: '1px solid rgba(125,211,252,0.22)', color: '#cbd5e1', fontSize: 11 } },
+                h('strong', { style: { color: '#7dd3fc' } }, 'Spatial readout:'),
+                lr ? describeShape(lr).replace(/^ /, '') : 'Launch a trial to measure peak height, flight time, and lateral movement.'
+              ),
+              h('fieldset', { 'aria-label': '3D learning overlays', 'data-throwlab-learning-overlays': 'true', style: { margin: '10px 0 0', padding: '8px 9px 9px', borderRadius: 10, border: '1px solid rgba(148,163,184,0.28)' } },
+                h('legend', { style: { padding: '0 5px', color: '#fde68a', fontSize: 11, fontWeight: 800 } }, 'Learning overlays'),
+                h('div', { style: { display: 'flex', gap: 7, flexWrap: 'wrap' } },
+                  h('label', { htmlFor: 'throwlab-overlay-guides', style: { minHeight: 44, padding: '7px 10px', flex: '1 1 145px', display: 'flex', alignItems: 'center', gap: 8, borderRadius: 9, cursor: 'pointer', background: showImmersiveGuides ? 'rgba(14,165,233,0.16)' : 'rgba(15,23,42,0.58)', border: showImmersiveGuides ? '1px solid rgba(125,211,252,0.58)' : '1px solid rgba(148,163,184,0.25)', color: '#e2e8f0', fontSize: 11, fontWeight: 700 } },
+                    h('input', { id: 'throwlab-overlay-guides', type: 'checkbox', checked: showImmersiveGuides, 'data-tl-focusable': 'true', onChange: function(event) { setShowImmersiveGuides(event.target.checked); tlAnnounce(event.target.checked ? 'Apex and endpoint guides shown.' : 'Apex and endpoint guides hidden.'); }, style: { width: 20, height: 20, accentColor: '#0ea5e9' } }),
+                    'Apex + endpoint'
+                  ),
+                  h('label', { htmlFor: 'throwlab-overlay-time', style: { minHeight: 44, padding: '7px 10px', flex: '1 1 130px', display: 'flex', alignItems: 'center', gap: 8, borderRadius: 9, cursor: 'pointer', background: showImmersiveTimeMarkers ? 'rgba(14,165,233,0.16)' : 'rgba(15,23,42,0.58)', border: showImmersiveTimeMarkers ? '1px solid rgba(125,211,252,0.58)' : '1px solid rgba(148,163,184,0.25)', color: '#e2e8f0', fontSize: 11, fontWeight: 700 } },
+                    h('input', { id: 'throwlab-overlay-time', type: 'checkbox', checked: showImmersiveTimeMarkers, 'data-tl-focusable': 'true', onChange: function(event) { setShowImmersiveTimeMarkers(event.target.checked); tlAnnounce(event.target.checked ? 'Trajectory time markers shown.' : 'Trajectory time markers hidden.'); }, style: { width: 20, height: 20, accentColor: '#0ea5e9' } }),
+                    'Time markers'
+                  ),
+                  h('label', { htmlFor: 'throwlab-overlay-references', style: { minHeight: 44, padding: '7px 10px', flex: '1 1 165px', display: 'flex', alignItems: 'center', gap: 8, borderRadius: 9, cursor: 'pointer', background: showImmersiveReferences ? 'rgba(14,165,233,0.16)' : 'rgba(15,23,42,0.58)', border: showImmersiveReferences ? '1px solid rgba(125,211,252,0.58)' : '1px solid rgba(148,163,184,0.25)', color: '#e2e8f0', fontSize: 11, fontWeight: 700 } },
+                    h('input', { id: 'throwlab-overlay-references', type: 'checkbox', checked: showImmersiveReferences, 'data-tl-focusable': 'true', onChange: function(event) { setShowImmersiveReferences(event.target.checked); tlAnnounce(event.target.checked ? 'Saved comparison trajectories shown.' : 'Saved comparison trajectories hidden.'); }, style: { width: 20, height: 20, accentColor: '#0ea5e9' } }),
+                    'Saved comparisons (' + activeReferenceList().length + ')'
+                  )
+                )
+              ),
+              h('div', { className: 'throwlab-immersive-controls', role: 'group', 'aria-label': '3D camera controls', style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginTop: 10 } },
+                h('button', { type: 'button', 'data-tl-focusable': 'true', onClick: function() { setFollowImmersiveBall(false); setImmersiveYaw(function(v) { return TL_PERSPECTIVE.normalizeYaw(v - 15); }); }, 'aria-label': 'Rotate camera left 15 degrees', style: { minHeight: 44, padding: '8px 10px', border: '1px solid rgba(125,211,252,0.42)', background: 'rgba(15,23,42,0.82)', color: '#e0f2fe', fontWeight: 800, flex: '1 1 104px', borderRadius: 9, cursor: 'pointer' } }, '↶ Rotate left'),
+                h('button', { type: 'button', 'data-tl-focusable': 'true', onClick: function() { setFollowImmersiveBall(false); setImmersiveYaw(function(v) { return TL_PERSPECTIVE.normalizeYaw(v + 15); }); }, 'aria-label': 'Rotate camera right 15 degrees', style: { minHeight: 44, padding: '8px 10px', border: '1px solid rgba(125,211,252,0.42)', background: 'rgba(15,23,42,0.82)', color: '#e0f2fe', fontWeight: 800, flex: '1 1 104px', borderRadius: 9, cursor: 'pointer' } }, 'Rotate right ↷'),
+                h('button', { type: 'button', 'data-tl-focusable': 'true', onClick: function() { setFollowImmersiveBall(false); setImmersivePitch(function(v) { return TL_PERSPECTIVE.clampPitch(v - 7); }); }, 'aria-label': 'Lower camera', style: { minHeight: 44, padding: '8px 10px', border: '1px solid rgba(125,211,252,0.42)', background: 'rgba(15,23,42,0.82)', color: '#e0f2fe', fontWeight: 800, flex: '1 1 90px', borderRadius: 9, cursor: 'pointer' } }, '↓ Lower'),
+                h('button', { type: 'button', 'data-tl-focusable': 'true', onClick: function() { setFollowImmersiveBall(false); setImmersivePitch(function(v) { return TL_PERSPECTIVE.clampPitch(v + 7); }); }, 'aria-label': 'Raise camera', style: { minHeight: 44, padding: '8px 10px', border: '1px solid rgba(125,211,252,0.42)', background: 'rgba(15,23,42,0.82)', color: '#e0f2fe', fontWeight: 800, flex: '1 1 90px', borderRadius: 9, cursor: 'pointer' } }, '↑ Raise'),
+                h('button', { type: 'button', 'data-tl-focusable': 'true', onClick: function() { setFollowImmersiveBall(false); setImmersiveYaw(-28); setImmersivePitch(24); tlAnnounce('3D camera reset.'); }, 'aria-label': 'Reset 3D camera', style: { minHeight: 44, padding: '8px 10px', border: '1px solid rgba(125,211,252,0.42)', background: 'rgba(15,23,42,0.82)', color: '#e0f2fe', fontWeight: 800, flex: '1 1 90px', borderRadius: 9, cursor: 'pointer' } }, 'Reset view')
+              ),
+              h('details', { className: 'throwlab-analysis-details', 'data-throwlab-analysis-details': 'true', open: isWorkspaceFullscreen && !compactAnalysis ? true : undefined, style: { marginTop: 10, borderRadius: 11, border: '1px solid rgba(192,132,252,0.35)', background: 'rgba(15,23,42,0.62)' } },
+                h('summary', { 'data-tl-focusable': 'true', style: { padding: '10px 12px', cursor: 'pointer', color: '#e9d5ff', fontWeight: 900, fontSize: 12 } }, 'Analysis tools · vectors, comparisons, exports'),
+                h('div', { className: 'throwlab-analysis-grid', style: { padding: '0 10px 10px', display: 'grid', gap: 10 } },
+                  h('section', { 'aria-labelledby': 'throwlab-fine-camera-heading', style: { padding: 9, borderRadius: 9, background: 'rgba(30,41,59,0.72)' } },
+                    h('h4', { id: 'throwlab-fine-camera-heading', style: { margin: '0 0 6px', color: '#bae6fd', fontSize: 11 } }, 'Fine camera tuning'),
+                    h('label', { htmlFor: 'throwlab-camera-yaw', style: { display: 'flex', justifyContent: 'space-between', color: '#cbd5e1', fontSize: 11 } }, h('span', null, 'Orbit'), h('output', { htmlFor: 'throwlab-camera-yaw', style: { color: '#fde68a' } }, immersiveYaw + '°')),
+                    h('input', { id: 'throwlab-camera-yaw', type: 'range', min: -180, max: 180, step: 1, value: immersiveYaw, 'data-tl-focusable': 'true', 'aria-valuetext': immersiveYaw + ' degrees', onChange: function(event) { setFollowImmersiveBall(false); setImmersiveYaw(TL_PERSPECTIVE.normalizeYaw(event.target.value)); }, style: { width: '100%', accentColor: '#38bdf8' } }),
+                    h('label', { htmlFor: 'throwlab-camera-pitch', style: { display: 'flex', justifyContent: 'space-between', color: '#cbd5e1', fontSize: 11 } }, h('span', null, 'Elevation'), h('output', { htmlFor: 'throwlab-camera-pitch', style: { color: '#fde68a' } }, immersivePitch + '°')),
+                    h('input', { id: 'throwlab-camera-pitch', type: 'range', min: 10, max: 55, step: 1, value: immersivePitch, 'data-tl-focusable': 'true', 'aria-valuetext': immersivePitch + ' degrees', onChange: function(event) { setFollowImmersiveBall(false); setImmersivePitch(TL_PERSPECTIVE.clampPitch(event.target.value)); }, style: { width: '100%', accentColor: '#38bdf8' } })
+                  ),
+                  h('fieldset', { 'aria-label': 'Physics vector overlays', 'data-throwlab-vector-controls': 'true', style: { margin: 0, padding: 9, borderRadius: 9, border: '1px solid rgba(192,132,252,0.3)' } },
+                    h('legend', { style: { padding: '0 5px', color: '#e9d5ff', fontSize: 11, fontWeight: 800 } }, 'Physics vectors'),
+                    h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 6 } },
+                      [{ key: 'velocity', label: 'Velocity' }, { key: 'gravity', label: 'Gravity' }, { key: 'wind', label: 'Wind' }, { key: 'spin', label: 'Spin axis' }, { key: 'magnus', label: 'Magnus force' }].map(function(item) {
+                        return h('label', { key: item.key, style: { minHeight: 44, display: 'flex', alignItems: 'center', gap: 7, padding: '6px 8px', borderRadius: 8, cursor: 'pointer', background: immersiveVectors[item.key] ? 'rgba(192,132,252,0.16)' : 'rgba(15,23,42,0.45)', color: '#e2e8f0', fontSize: 11 } },
+                          h('input', { type: 'checkbox', checked: !!immersiveVectors[item.key], 'data-vector-key': item.key, 'data-tl-focusable': 'true', onChange: function(event) { var checked=event.target.checked; setImmersiveVectors(function(previous) { var next=Object.assign({},previous); next[item.key]=checked; return next; }); tlAnnounce(item.label + ' vector ' + (checked ? 'shown.' : 'hidden.')); }, style: { width: 20, height: 20, accentColor: '#a855f7' } }), item.label
+                        );
+                      })
+                    )
+                  ),
+                  immersiveComparisonRows().length ? h('div', { className: 'throwlab-comparison-deltas', 'data-throwlab-comparison-deltas': 'true', style: { overflowX: 'auto', borderRadius: 9, border: '1px solid rgba(217,70,239,0.32)' } },
+                    h('table', { style: { width: '100%', borderCollapse: 'collapse', minWidth: 500, color: '#e2e8f0', fontSize: 10 } },
+                      h('caption', { style: { textAlign: 'left', padding: '8px 9px', color: '#f5d0fe', fontWeight: 900 } }, 'Current trajectory minus each saved reference'),
+                      h('thead', null, h('tr', null, ['Reference','Apex Δ','Distance Δ','Time Δ','Lateral Δ'].map(function(label) { return h('th', { key: label, scope: 'col', style: { padding: 7, textAlign: 'left', borderTop: '1px solid rgba(148,163,184,0.2)' } }, label); }))),
+                      h('tbody', null, immersiveComparisonRows().map(function(row) { return h('tr', { key: row.index }, h('th', { scope: 'row', style: { padding: 7, textAlign: 'left', color: row.color } }, 'Ref ' + (row.index + 1)), h('td', { style: { padding: 7 } }, formatMetricDelta(row.apex,'m')), h('td', { style: { padding: 7 } }, formatMetricDelta(row.distance,'m')), h('td', { style: { padding: 7 } }, formatMetricDelta(row.duration,'s')), h('td', { style: { padding: 7 } }, formatMetricDelta(row.lateral,'m'))); }))
+                    )
+                  ) : h('div', { role: 'note', style: { padding: 9, borderRadius: 9, background: 'rgba(217,70,239,0.08)', color: '#e9d5ff', fontSize: 11 } }, 'Save a trajectory, change one variable, and launch again to unlock quantitative comparison deltas.'),
+                  h('aside', { 'aria-labelledby': 'throwlab-observation-heading', style: { padding: 9, borderRadius: 9, background: 'rgba(14,165,233,0.09)', color: '#dbeafe' } },
+                    h('h4', { id: 'throwlab-observation-heading', style: { margin: '0 0 5px', color: '#7dd3fc', fontSize: 11 } }, 'Observation prompts'),
+                    h('ul', { style: { margin: 0, paddingLeft: 18, fontSize: 11, lineHeight: 1.5 } }, immersiveObservationPrompts().map(function(prompt,index) { return h('li', { key: index }, prompt); }))
+                  ),
+                  h('div', { role: 'group', 'aria-label': 'Immersive analysis exports and reset', style: { display: 'flex', gap: 7, flexWrap: 'wrap' } },
+                    h('button', { type: 'button', disabled: !lr, 'data-tl-focusable': 'true', onClick: exportImmersivePng, style: { minHeight: 44, flex: '1 1 110px', borderRadius: 8, cursor: lr ? 'pointer' : 'not-allowed' } }, 'Download PNG'),
+                    h('button', { type: 'button', disabled: !lr, 'data-tl-focusable': 'true', onClick: exportTrajectoryCsv, style: { minHeight: 44, flex: '1 1 110px', borderRadius: 8, cursor: lr ? 'pointer' : 'not-allowed' } }, 'Export CSV'),
+                    h('button', { type: 'button', 'data-tl-focusable': 'true', onClick: resetImmersiveAnalysis, style: { minHeight: 44, flex: '1 1 110px', borderRadius: 8, cursor: 'pointer' } }, 'Reset immersive')
+                  )
+                )
+              ),
+              h('p', { id: 'throwlab-immersive-help', style: { margin: '8px 2px 0', color: '#cbd5e1', fontSize: 11, lineHeight: 1.45 } }, 'Drag the scene to rotate, or use the camera buttons for keyboard-equivalent control. The accessible side-view simulation and all launch controls remain available.')
+            ) : null,
             // Result panel — given an h3 so AT users tabbing into the section
             // know what they're reading. region role makes the panel announce
             // its label when entered.
@@ -5150,11 +5886,27 @@ window.StemLab = window.StemLab || {
                 id: 'tl-result-heading',
                 style: { fontSize: 12, margin: 0, marginBottom: 8, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 }
               }, lr ? 'Last throw' : 'Ready to throw'),
+              lr && resultControlsChanged && h('div', {
+                'data-throwlab-result-stale': 'true',
+                role: 'note',
+                style: {
+                  margin: '0 0 9px', padding: '7px 9px', borderRadius: 7,
+                  background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(251,191,36,0.55)',
+                  color: '#fde68a', fontSize: 11, lineHeight: 1.4
+                }
+              },
+                h('strong', null, 'Controls changed. '),
+                h('span', { style: { color: 'var(--allo-stem-text, #e2e8f0)' } },
+                  'This result stays pinned to the launched settings. Changed since launch: ' + resultChangedVariables.slice(0, 3).join(', ') + (resultChangedVariables.length > 3 ? ' and ' + (resultChangedVariables.length - 3) + ' more' : '') + '.')
+              ),
               lr ? (
                 h('div', null,
-                  h('div', { style: { fontSize: 14, fontWeight: 700, color: outcomeColor(lr.location), marginBottom: 6 } }, outcomeLabel(lr.location)),
+                  h('div', {
+                    'data-throwlab-outcome': lr.location,
+                    style: { fontSize: 14, fontWeight: 700, color: outcomeColor(lr.location), marginBottom: 6 }
+                  }, outcomeLabel(lr.location)),
                   h('div', { className: 'throwlab-result-grid', style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)' } },
-                    h('div', null, h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11 } }, __alloT('stem.throwlab.speed', 'Speed')), h('div', { style: { fontWeight: 700 } }, d.speedMph + ' mph')),
+                    h('div', null, h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11 } }, __alloT('stem.throwlab.speed', 'Speed')), h('div', { style: { fontWeight: 700 } }, resultTrial.speedMph + ' mph')),
                     h('div', null,
                       h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 11 } },
                         isPitching ? 'Time to plate'
@@ -5176,14 +5928,28 @@ window.StemLab = window.StemLab || {
                       h('div', { style: { fontWeight: 700 } }, isPitching
                         ? (lr.hBreakIn !== null ? lr.hBreakIn.toFixed(1) + ' in' : '—')
                         : isFreeKick
-                          ? (d.spinAxisDeg + '°')
-                          : (d.aimDegV.toFixed(1) + '°')))
+                          ? (resultTrial.spinAxisDeg + '°')
+                          : (resultTrial.angleV.toFixed(1) + '°')))
                   ),
                   // Dynamic explainer — outcome-specific feedback after a throw,
                   // generated from the actual physics result. Falls through to
                   // the active preset's static teach blurb if there's no result.
                   h('div', { style: { marginTop: 8, fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic' } },
-                    explainResult(lr) || activePreset.teach)
+                    explainResult(lr) || resultPreset.teach),
+                  lr.fairTest && h('div', {
+                    'data-throwlab-fair-test': lr.fairTest.level,
+                    role: 'status',
+                    style: {
+                      marginTop: 10, padding: '9px 10px', borderRadius: 8,
+                      display: 'flex', gap: 8, alignItems: 'flex-start', flexWrap: 'wrap',
+                      background: lr.fairTest.level === 'fair' ? 'rgba(16,185,129,0.12)' : lr.fairTest.level === 'multiple' ? 'rgba(245,158,11,0.12)' : 'rgba(56,189,248,0.10)',
+                      border: '1px solid ' + (lr.fairTest.level === 'fair' ? 'rgba(52,211,153,0.55)' : lr.fairTest.level === 'multiple' ? 'rgba(251,191,36,0.55)' : 'rgba(125,211,252,0.45)'),
+                      color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 11, lineHeight: 1.45
+                    }
+                  },
+                    h('strong', { style: { color: lr.fairTest.level === 'fair' ? '#6ee7b7' : lr.fairTest.level === 'multiple' ? '#fde68a' : '#bae6fd' } }, lr.fairTest.label + ':'),
+                    h('span', { style: { flex: '1 1 230px' } }, lr.fairTest.summary)
+                  ),
                 )
               ) : h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 13, textAlign: 'center', padding: 16 } },
                 isPitching
@@ -5216,9 +5982,9 @@ window.StemLab = window.StemLab || {
                   __alloT('stem.throwlab.show_formulas_math_behind_the_throw', 'Show formulas (math behind the throw)'))
               ),
               h('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
-                'Hotkey: ',
+                'Trajectory shortcut: ',
                 h('kbd', { style: { padding: '1px 5px', borderRadius: 3, border: '1px solid var(--allo-stem-border, #475569)', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #cbd5e1)', fontFamily: 'monospace' } }, __alloT('stem.throwlab.space', 'Space')),
-                __alloT('stem.throwlab.to_throw', ' to throw'))
+                __alloT('stem.throwlab.to_throw', ' while focused'))
             ),
             // ── Coach Mode bubble ──
             // Sits between the toggles and the formulas panel so it always
@@ -5247,9 +6013,14 @@ window.StemLab = window.StemLab || {
           // RIGHT: preset picker + sliders + throw button
           h('div', null,
             // Preset picker (pitches OR shots, mode-driven)
-            h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10, padding: 12, marginBottom: 12 } },
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 } },
-                isPitching ? 'Pitch type' : isFreeKick ? 'Kick style' : isFieldGoal ? 'Distance' : isBowling ? 'Delivery' : isGolf ? 'Club' : isVolleyball ? 'Serve type' : 'Shot type'),
+            h('section', {
+              'aria-labelledby': 'tl-preset-picker-heading',
+              style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10, padding: 12, marginBottom: 12 }
+            },
+              h('h3', {
+                id: 'tl-preset-picker-heading',
+                style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 }
+              }, isPitching ? 'Pitch type' : isFreeKick ? 'Kick style' : isFieldGoal ? 'Distance' : isBowling ? 'Delivery' : isGolf ? 'Club' : isVolleyball ? 'Serve type' : 'Shot type'),
               h('div', { className: 'throwlab-preset-grid' },
                 modeMeta.presets.map(function(pt) {
                   var sel = isPitching ? d.pitchType === pt.id
@@ -5297,9 +6068,9 @@ window.StemLab = window.StemLab || {
             // A side-by-side comparison of EVERY preset in the active
             // sport — speed / spin / axis / launch / release height (+
             // carry distance for golf). Lets students see how the
-            // presets relate to each other parameter-by-parameter
-            // without flipping back and forth. Click any row to load
-            // that preset. Collapsed by default to keep the layout tight.
+            // presets relate to each other parameter-by-parameter without
+            // flipping back and forth. Each row exposes a clearly named load
+            // button in its first column. Collapsed by default to stay compact.
             h('details', {
               style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10, padding: '8px 12px', marginBottom: 12 }
             },
@@ -5307,71 +6078,91 @@ window.StemLab = window.StemLab || {
                 style: { cursor: 'pointer', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', fontWeight: 600 }
               }, '📋 Preset compendium — compare every ' + (isPitching ? 'pitch' : isFreeKick ? 'kick' : isFieldGoal ? 'distance' : isBowling ? 'delivery' : isGolf ? 'club' : isVolleyball ? 'serve' : 'shot') + ' in this sport'),
               h('div', {
-                role: 'table',
-                'aria-label': 'Preset comparison — ' + modeMeta.label,
-                style: { marginTop: 8, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)' }
+                className: 'throwlab-compendium-scroll',
+                role: 'region',
+                tabIndex: 0,
+                'aria-label': 'Scrollable preset comparison for ' + modeMeta.label,
+                style: { marginTop: 8 }
               },
-                // Header row
-                h('div', { role: 'row', style: { display: 'flex', borderBottom: '1px solid var(--allo-stem-border, #334155)', paddingBottom: 4, marginBottom: 4, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)' } },
-                  h('div', { style: { flex: '0 0 110px' } }, __alloT('stem.throwlab.preset', 'Preset')),
-                  h('div', { style: { flex: '0 0 50px', textAlign: 'right' } }, __alloT('stem.throwlab.speed_2', 'Speed')),
-                  h('div', { style: { flex: '0 0 60px', textAlign: 'right' } }, __alloT('stem.throwlab.spin', 'Spin')),
-                  h('div', { style: { flex: '0 0 50px', textAlign: 'right' } }, __alloT('stem.throwlab.axis', 'Axis')),
-                  h('div', { style: { flex: '0 0 50px', textAlign: 'right' } }, __alloT('stem.throwlab.launch', 'Launch')),
-                  h('div', { style: { flex: '0 0 50px', textAlign: 'right' } }, isGolf ? 'Carry' : 'Height')
-                ),
-                // Data rows
-                modeMeta.presets.map(function(pt) {
-                  var activePresetId = isPitching ? d.pitchType
-                                     : isFreeThrow ? d.shotType
-                                     : isFreeKick ? d.kickType
-                                     : isFieldGoal ? d.goalType
-                                     : isBowling ? d.bowlType
-                                     : isGolf ? d.golfClub
-                                     : d.serveType;
-                  var sel = pt.id === activePresetId;
-                  return h('button', {
-                    key: 'comp-' + pt.id,
-                    role: 'row',
-                    onClick: function() {
-                      if (isPitching) applyPitchPreset(pt.id);
-                      else if (isFreeKick) applyKickPreset(pt.id);
-                      else if (isFieldGoal) applyGoalPreset(pt.id);
-                      else if (isBowling) applyBowlPreset(pt.id);
-                      else if (isGolf) applyGolfPreset(pt.id);
-                      else if (isVolleyball) applyVolleyPreset(pt.id);
-                      else applyShotPreset(pt.id);
-                    },
-                    'aria-label': pt.label + ': ' + pt.speedMph + ' mph, ' + pt.spinRpm + ' rpm, axis ' + pt.spinAxisDeg + '°, launch ' + pt.aimDegV + '°',
-                    'aria-pressed': sel,
-                    'data-tl-focusable': 'true',
-                    style: {
-                      display: 'flex', alignItems: 'center',
-                      width: '100%', padding: '4px 6px', borderRadius: 4,
-                      border: sel ? '1px solid #fbbf24' : '1px solid transparent',
-                      background: sel ? 'rgba(251,191,36,0.10)' : 'transparent',
-                      color: sel ? '#fbbf24' : '#cbd5e1',
-                      cursor: 'pointer', fontSize: 11, fontWeight: sel ? 700 : 500,
-                      marginBottom: 1
-                    }
-                  },
-                    h('div', { style: { flex: '0 0 110px', textAlign: 'left' } }, pt.icon + ' ' + pt.label),
-                    h('div', { style: { flex: '0 0 50px', textAlign: 'right', fontFamily: 'ui-monospace, monospace' } }, pt.speedMph + ' mph'),
-                    h('div', { style: { flex: '0 0 60px', textAlign: 'right', fontFamily: 'ui-monospace, monospace' } }, pt.spinRpm + ' rpm'),
-                    h('div', { style: { flex: '0 0 50px', textAlign: 'right', fontFamily: 'ui-monospace, monospace' } }, pt.spinAxisDeg + '°'),
-                    h('div', { style: { flex: '0 0 50px', textAlign: 'right', fontFamily: 'ui-monospace, monospace' } },
-                      (pt.aimDegV != null ? pt.aimDegV : '—') + '°'),
-                    h('div', { style: { flex: '0 0 50px', textAlign: 'right', fontFamily: 'ui-monospace, monospace' } },
-                      isGolf ? ((pt.carryYd != null ? pt.carryYd : '—') + ' yd')
-                             : ((pt.releaseHeight != null ? pt.releaseHeight.toFixed(2) : '—') + ' m'))
-                  );
-                })
+                h('table', {
+                  style: {
+                    width: '100%', minWidth: 430, borderCollapse: 'separate', borderSpacing: 0,
+                    fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)'
+                  }
+                },
+                  h('caption', {
+                    style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }
+                  }, 'Preset comparison for ' + modeMeta.label + '. Use the button in the first column to load a preset.'),
+                  h('thead', null,
+                    h('tr', null,
+                      h('th', { scope: 'col', style: { width: 130, padding: '5px 6px', textAlign: 'left', borderBottom: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.throwlab.preset', 'Preset')),
+                      h('th', { scope: 'col', style: { width: 58, padding: '5px 4px', textAlign: 'right', borderBottom: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.throwlab.speed_2', 'Speed')),
+                      h('th', { scope: 'col', style: { width: 64, padding: '5px 4px', textAlign: 'right', borderBottom: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.throwlab.spin', 'Spin')),
+                      h('th', { scope: 'col', style: { width: 52, padding: '5px 4px', textAlign: 'right', borderBottom: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.throwlab.axis', 'Axis')),
+                      h('th', { scope: 'col', style: { width: 58, padding: '5px 4px', textAlign: 'right', borderBottom: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloT('stem.throwlab.launch', 'Launch')),
+                      h('th', { scope: 'col', style: { width: 62, padding: '5px 4px', textAlign: 'right', borderBottom: '1px solid var(--allo-stem-border, #334155)', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, isGolf ? 'Carry' : 'Height')
+                    )
+                  ),
+                  h('tbody', null,
+                    modeMeta.presets.map(function(pt) {
+                      var activePresetId = isPitching ? d.pitchType
+                                         : isFreeThrow ? d.shotType
+                                         : isFreeKick ? d.kickType
+                                         : isFieldGoal ? d.goalType
+                                         : isBowling ? d.bowlType
+                                         : isGolf ? d.golfClub
+                                         : d.serveType;
+                      var sel = pt.id === activePresetId;
+                      var rowBg = sel ? 'rgba(251,191,36,0.10)' : 'transparent';
+                      return h('tr', {
+                        key: 'comp-' + pt.id,
+                        'data-throwlab-preset-selected': sel ? 'true' : 'false',
+                        style: { background: rowBg }
+                      },
+                        h('th', { scope: 'row', style: { padding: 2, textAlign: 'left', borderBottom: '1px solid rgba(51,65,85,0.55)' } },
+                          h('button', {
+                            onClick: function() {
+                              if (isPitching) applyPitchPreset(pt.id);
+                              else if (isFreeKick) applyKickPreset(pt.id);
+                              else if (isFieldGoal) applyGoalPreset(pt.id);
+                              else if (isBowling) applyBowlPreset(pt.id);
+                              else if (isGolf) applyGolfPreset(pt.id);
+                              else if (isVolleyball) applyVolleyPreset(pt.id);
+                              else applyShotPreset(pt.id);
+                            },
+                            'aria-label': 'Load ' + pt.label + ' preset',
+                            'aria-pressed': sel,
+                            'data-tl-focusable': 'true',
+                            style: {
+                              width: '100%', padding: '6px 7px', borderRadius: 5, textAlign: 'left',
+                              border: sel ? '1px solid #fbbf24' : '1px solid transparent',
+                              background: sel ? 'rgba(251,191,36,0.08)' : 'transparent',
+                              color: sel ? '#fbbf24' : '#cbd5e1', cursor: 'pointer',
+                              fontSize: 11, fontWeight: sel ? 700 : 500
+                            }
+                          }, pt.icon + ' ' + pt.label)
+                        ),
+                        h('td', { style: { padding: '5px 4px', textAlign: 'right', borderBottom: '1px solid rgba(51,65,85,0.55)', fontFamily: 'ui-monospace, monospace' } }, pt.speedMph + ' mph'),
+                        h('td', { style: { padding: '5px 4px', textAlign: 'right', borderBottom: '1px solid rgba(51,65,85,0.55)', fontFamily: 'ui-monospace, monospace' } }, pt.spinRpm + ' rpm'),
+                        h('td', { style: { padding: '5px 4px', textAlign: 'right', borderBottom: '1px solid rgba(51,65,85,0.55)', fontFamily: 'ui-monospace, monospace' } }, pt.spinAxisDeg + '\u00b0'),
+                        h('td', { style: { padding: '5px 4px', textAlign: 'right', borderBottom: '1px solid rgba(51,65,85,0.55)', fontFamily: 'ui-monospace, monospace' } }, (pt.aimDegV != null ? pt.aimDegV : '\u2014') + '\u00b0'),
+                        h('td', { style: { padding: '5px 4px', textAlign: 'right', borderBottom: '1px solid rgba(51,65,85,0.55)', fontFamily: 'ui-monospace, monospace' } }, isGolf ? ((pt.carryYd != null ? pt.carryYd : '\u2014') + ' yd') : ((pt.releaseHeight != null ? pt.releaseHeight.toFixed(2) : '\u2014') + ' m'))
+                      );
+                    })
+                  )
+                )
               )
             ),
 
             // Sliders — ranges scale with mode
-            h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10, padding: 12, marginBottom: 12 } },
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 } }, __alloT('stem.throwlab.release_controls', 'Release controls')),
+            h('section', {
+              'aria-labelledby': 'tl-release-controls-heading',
+              style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10, padding: 12, marginBottom: 12 }
+            },
+              h('h3', {
+                id: 'tl-release-controls-heading',
+                style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 }
+              }, __alloT('stem.throwlab.release_controls', 'Release controls')),
               slider('Speed', d.speedMph, modeMeta.speedRange[0], modeMeta.speedRange[1], 1, function(v) { upd('speedMph', v); }, ' mph'),
               // Tier 2+: release height + angles. Tier 1 hides them so the
               // student can focus on the speed-distance relationship alone.
@@ -5392,11 +6183,14 @@ window.StemLab = window.StemLab || {
             // so the UI doesn't clutter with irrelevant sliders.
             // Tier 1 students stick to "more speed = more distance"; wind
             // joins at Tier 2 once they've grasped the basic relationship.
-            ((isFreeKick || isFieldGoal || isBowling || isGolf) && (d.scaffoldTier || 3) >= 2) ? h('div', {
+            ((isFreeKick || isFieldGoal || isBowling || isGolf) && (d.scaffoldTier || 3) >= 2) ? h('section', {
+              'aria-labelledby': 'tl-wind-controls-heading',
               style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #1e293b)', borderRadius: 10, padding: 12, marginBottom: 12 }
             },
-              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 } },
-                __alloT('stem.throwlab.wind_relative_to_throw', 'Wind (relative to throw)')),
+              h('h3', {
+                id: 'tl-wind-controls-heading',
+                style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', margin: '0 0 8px', textTransform: 'uppercase', letterSpacing: 0.5, fontWeight: 600 }
+              }, __alloT('stem.throwlab.wind_relative_to_throw', 'Wind (relative to throw)')),
               // Quick-pick wind presets — calm / tailwind / headwind / cross / tornado
               h('div', { role: 'group', 'aria-label': __alloT('stem.throwlab.wind_presets', 'Wind presets'),
                 style: { display: 'flex', gap: 4, marginBottom: 8, flexWrap: 'wrap' } },
@@ -5495,14 +6289,26 @@ window.StemLab = window.StemLab || {
                 React.createElement('div', { className: 'text-[10px] italic text-slate-400' }, __alloT('stem.throwlab.design_note_discrete_4_state_trajector', 'Design note: discrete 4-state trajectory marker; no distance score; no reveal — by design.'))
               );
             })(),
+            h('div', {
+              'data-throwlab-next-trial-check': nextTrialCheck.level,
+              'aria-label': 'Next trial check. ' + nextTrialCheck.label + '. ' + nextTrialCheck.summary,
+              style: {
+                marginBottom: 8, padding: '8px 10px', borderRadius: 8,
+                background: nextTrialCheck.level === 'fair' ? 'rgba(16,185,129,0.12)' : nextTrialCheck.level === 'multiple' ? 'rgba(245,158,11,0.12)' : 'rgba(56,189,248,0.10)',
+                border: '1px solid ' + (nextTrialCheck.level === 'fair' ? 'rgba(52,211,153,0.55)' : nextTrialCheck.level === 'multiple' ? 'rgba(251,191,36,0.55)' : 'rgba(125,211,252,0.45)'),
+                color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 11, lineHeight: 1.4
+              }
+            },
+              h('strong', { style: { display: 'block', marginBottom: 2, color: nextTrialCheck.level === 'fair' ? '#6ee7b7' : nextTrialCheck.level === 'multiple' ? '#fde68a' : '#bae6fd' } }, 'Next trial - ' + nextTrialCheck.label),
+              h('span', null, nextTrialCheck.summary)
+            ),
             // ── Hot Hand + Hype HUD (engagement layer) ──
             // Sits directly above the throw button so the streak status
             // and pre-throw motivator are inline with where the student's
             // attention already is. Both auto-derive from existing state:
-            // Hot Hand from drillStats.hotStreak, hype from a freshly
-            // picked phrase whenever the user has no result yet (i.e.,
-            // before they\'ve thrown — once a throw has happened, the
-            // outcome banner takes over the spot).
+            // Hot Hand comes from drillStats.hotStreak. The hype phrase is
+            // stable for each sport and attempt, so slider changes do not
+            // unexpectedly replace it before the learner launches a trial.
             (function() {
               var hot = getHotHand((d.drillStats || {}).hotStreak);
               var showHype = !d.lastResult && !d.replayActive;
@@ -5520,74 +6326,45 @@ window.StemLab = window.StemLab || {
                 hot ? h('span', { style: { color: hot.color, fontWeight: 700 } },
                   hot.emoji + ' ' + hot.label + ' (streak: ' + d.drillStats.hotStreak + ')'
                 ) : h('span', { style: { color: '#a78bfa', fontStyle: 'italic' } },
-                  '🎙️ ' + pickHypePhrase()
+                  '🎙️ ' + pickHypePhrase(d.mode, ((d.modeThrowCounts || {})[d.mode] || 0))
                 )
               );
             })(),
             // Throw / Shoot button — mode-aware label
             h('button', {
               onClick: throwPitch,
+              disabled: !!d.replayActive,
+              'aria-label': d.replayActive ? 'Replay in progress; wait to launch another trial' : launchActionLabel(),
               'data-tl-focusable': 'true',
-              'aria-keyshortcuts': 'Space',
               style: {
-                width: '100%', padding: '12px 16px', borderRadius: 8, cursor: 'pointer',
+                width: '100%', padding: '12px 16px', borderRadius: 8, cursor: d.replayActive ? 'wait' : 'pointer',
                 border: '1px solid #fbbf24', background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
                 color: '#1a1a2e', fontSize: 16, fontWeight: 800
               }
-            }, isPitching ? '⚾ THROW PITCH' : isFreeKick ? '⚽ STRIKE' : isFieldGoal ? '🏈 KICK' : isBowling ? '🏏 BOWL' : isGolf ? '⛳ TEE OFF' : isVolleyball ? '🏐 SERVE' : '🏀 SHOOT'),
-            // ── Slow-mo replay controls ──
-            // "Replay last throw" re-runs the canvas trajectory animation
-            // for the current lastResult — students can re-watch a throw
-            // they already executed. Slow-mo toggle stretches the replay
-            // duration from 1.0s to 3.5s. Together they give a SportsCenter-
-            // style "let's see that again, slowed down" experience that
-            // also reveals subtle physics (Magnus curl, late break, etc.)
-            d.lastResult ? h('div', { style: { marginTop: 6, display: 'flex', gap: 6 } },
-              h('button', {
-                onClick: function() {
-                  setLabToolData(function(prev) {
-                    return Object.assign({}, prev, { throwlab: Object.assign({}, prev.throwlab, {
-                      replayActive: true, replayT: 0
-                    })});
-                  });
-                  tlAnnounce(d.slowMoActive ? 'Replaying in slow-motion.' : 'Replaying last throw.');
-                },
-                disabled: !!d.replayActive,
-                'aria-label': 'Replay the last throw' + (d.slowMoActive ? ' in slow motion' : ''),
-                'data-tl-focusable': 'true',
-                style: {
-                  flex: 1, padding: '8px 10px', borderRadius: 6, cursor: d.replayActive ? 'wait' : 'pointer',
-                  border: '1px solid var(--allo-stem-border, #475569)',
-                  background: d.replayActive ? '#1e293b' : 'rgba(34,197,94,0.10)',
-                  color: '#86efac', fontSize: 11, fontWeight: 600
-                }
-              }, d.replayActive ? '▶ Playing…' : '⏪ Replay last throw'),
-              h('button', {
-                onClick: function() {
-                  upd('slowMoActive', !d.slowMoActive);
-                  tlAnnounce(d.slowMoActive ? 'Slow-motion off.' : 'Slow-motion on.');
-                },
-                'aria-label': __alloT('stem.throwlab.toggle_slow_motion_replay_3_5x_slower', 'Toggle slow-motion replay (3.5x slower)'),
-                'aria-pressed': !!d.slowMoActive,
-                'data-tl-focusable': 'true',
-                title: __alloT('stem.throwlab.toggle_slow_motion_replays_at_3_5_slow', 'Toggle slow-motion — replays at 3.5× slower so you can see the curl / drop / break'),
-                style: {
-                  padding: '8px 12px', borderRadius: 6, cursor: 'pointer',
-                  border: '1px solid ' + (d.slowMoActive ? '#86efac' : '#475569'),
-                  background: d.slowMoActive ? 'rgba(34,197,94,0.18)' : '#1e293b',
-                  color: d.slowMoActive ? '#86efac' : '#cbd5e1',
-                  fontSize: 11, fontWeight: 600
-                }
-              }, '🐢 ' + (d.slowMoActive ? 'Slow-mo ON' : 'Slow-mo'))
+            }, d.replayActive ? 'Replay in progress...' : launchActionLabel()),
+            // Replay analysis controls: a native timeline plus equivalent buttons.
+            d.lastResult ? h('section', { 'data-throwlab-replay-analysis': 'true', 'aria-labelledby': 'throwlab-replay-heading', style: { marginTop: 8, padding: 9, borderRadius: 10, border: '1px solid rgba(134,239,172,0.32)', background: 'rgba(15,23,42,0.5)' } },
+              h('h4', { id: 'throwlab-replay-heading', style: { margin: '0 0 7px', color: '#bbf7d0', fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5 } }, 'Replay analysis'),
+              h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+                h('button', { type: 'button', 'data-tl-focusable': 'true', 'aria-label': d.replayActive && !replayPaused ? 'Pause trajectory replay' : d.replayActive ? 'Resume trajectory replay' : 'Replay trajectory from start', onClick: function() { if (d.replayActive && !replayPaused) { setReplayPaused(true); tlAnnounce('Replay paused.'); } else startReplayAt(d.replayActive ? (d.replayT || 0) : 0); }, style: { minHeight: 44, flex: '1 1 115px', borderRadius: 8, cursor: 'pointer', border: '1px solid #22c55e', background: d.replayActive && !replayPaused ? 'rgba(34,197,94,0.24)' : '#1e293b', color: '#bbf7d0', fontWeight: 800 } }, d.replayActive && !replayPaused ? 'Pause' : d.replayActive ? 'Resume' : 'Replay'),
+                h('button', { type: 'button', 'data-tl-focusable': 'true', 'aria-label': 'Step replay backward one physics sample', onClick: function() { stepReplay(-1); }, style: { minHeight: 44, flex: '1 1 92px', borderRadius: 8, cursor: 'pointer' } }, 'Step back'),
+                h('button', { type: 'button', 'data-tl-focusable': 'true', 'aria-label': 'Step replay forward one physics sample', onClick: function() { stepReplay(1); }, style: { minHeight: 44, flex: '1 1 92px', borderRadius: 8, cursor: 'pointer' } }, 'Step ahead'),
+                h('button', { type: 'button', 'data-tl-focusable': 'true', disabled: !d.replayActive, onClick: finishReplayAnalysis, 'aria-label': 'Finish replay analysis and show the full trajectory', style: { minHeight: 44, flex: '1 1 80px', borderRadius: 8, cursor: d.replayActive ? 'pointer' : 'not-allowed' } }, 'Done')
+              ),
+              h('label', { htmlFor: 'throwlab-replay-scrubber', style: { display: 'flex', justifyContent: 'space-between', gap: 8, marginTop: 7, color: '#cbd5e1', fontSize: 11 } }, h('span', null, 'Timeline'), h('output', { htmlFor: 'throwlab-replay-scrubber', style: { color: '#86efac', fontVariantNumeric: 'tabular-nums', fontWeight: 800 } }, ((d.lastResult.samples[d.lastResult.samples.length - 1].t || 0) * (d.replayActive ? (d.replayT || 0) : 1)).toFixed(2) + ' s')),
+              h('input', { id: 'throwlab-replay-scrubber', type: 'range', min: 0, max: 100, step: 1, value: Math.round((d.replayActive ? (d.replayT || 0) : 1) * 100), 'aria-label': 'Trajectory replay timeline', 'aria-valuetext': Math.round((d.replayActive ? (d.replayT || 0) : 1) * 100) + ' percent of the trajectory', 'data-tl-focusable': 'true', onChange: function(event) { scrubReplay(Number(event.target.value) / 100); }, style: { width: '100%', accentColor: '#22c55e' } }),
+              h('div', { role: 'progressbar', 'aria-label': 'Replay progress', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': Math.round((d.replayActive ? (d.replayT || 0) : 1) * 100), style: { height: 6, overflow: 'hidden', borderRadius: 999, background: '#334155', border: '1px solid #475569' } }, h('span', { 'aria-hidden': 'true', style: { display: 'block', height: '100%', width: ((d.replayActive ? (d.replayT || 0) : 1) * 100) + '%', background: '#86efac', transition: 'width 80ms linear' } })),
+              h('div', { role: 'group', 'aria-label': 'Replay speed', style: { display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', marginTop: 7 } },
+                h('span', { style: { color: '#94a3b8', fontSize: 10, fontWeight: 800 } }, 'Speed'),
+                [0.25, 0.5, 1].map(function(speed) { return h('button', { key: speed, type: 'button', 'aria-pressed': replaySpeed === speed, 'data-tl-focusable': 'true', onClick: function() { setReplaySpeed(speed); tlAnnounce('Replay speed ' + speed + ' times.'); }, style: { minHeight: 44, padding: '7px 11px', borderRadius: 18, cursor: 'pointer', border: replaySpeed === speed ? '2px solid #86efac' : '1px solid #475569', background: replaySpeed === speed ? 'rgba(34,197,94,0.18)' : '#1e293b', color: '#d1fae5', fontWeight: 800 } }, speed + '×'); })
+              )
             ) : null,
             // ── Compare Mode controls ──
             // Save the latest trajectory as a reference ghost for the next throw,
             // OR clear the existing reference. Sits between the throw button and
             // the stats so it reads as a secondary action.
             (function() {
-              var refList = (d.referenceList && d.referenceList.length)
-                ? d.referenceList
-                : (d.referenceResult ? [{ result: d.referenceResult, label: d.referenceLabel, color: '#d946ef' }] : []);
+              var refList = activeReferenceList();
               var atCap = refList.length >= MAX_REFERENCES;
               return h('div', { style: { marginTop: 8 } },
                 h('div', { style: { display: 'flex', gap: 6 } },
@@ -5617,22 +6394,53 @@ window.StemLab = window.StemLab || {
                     }
                   }, __alloT('stem.throwlab.clear', 'Clear')) : null
                 ),
-                // Per-reference list with color swatch + label + per-item remove
-                refList.length ? h('div', { style: { marginTop: 6, display: 'flex', flexDirection: 'column', gap: 3 } },
+                // Match the canvas encoding: current trajectory is solid;
+                // saved references are dashed, numbered, and outcome-labeled.
+                refList.length && d.lastResult ? h('div', {
+                  'data-throwlab-current-legend': 'true',
+                  role: 'note',
+                  'aria-label': 'Current trajectory: ' + buildRefLabel(d.lastResult) + '. Outcome: ' + cleanOutcomeText(d.lastResult) + '.' + describeShape(d.lastResult),
+                  style: {
+                    marginTop: 7, display: 'grid', gridTemplateColumns: '24px auto minmax(0,1fr)',
+                    alignItems: 'center', gap: 6, fontSize: 10
+                  }
+                },
+                  h('span', {
+                    'data-throwlab-current-line': 'true',
+                    'aria-hidden': 'true',
+                    style: { width: 24, height: 0, borderTop: '3px solid ' + outcomeColor(d.lastResult.location) }
+                  }),
+                  h('span', { style: { color: outcomeColor(d.lastResult.location), fontWeight: 800 } }, 'CURRENT'),
+                  h('span', { style: { color: 'var(--allo-stem-text, #cbd5e1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, cleanOutcomeText(d.lastResult))
+                ) : null,
+                refList.length ? h('div', {
+                  role: 'list',
+                  'aria-label': 'Saved comparison trajectories',
+                  style: { marginTop: 5, display: 'flex', flexDirection: 'column', gap: 4 }
+                },
                   refList.map(function(ref, idx) {
+                    var refOutcome = cleanOutcomeText(ref.result);
                     return h('div', {
                       key: 'ref-' + idx,
-                      style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 10 }
+                      role: 'listitem',
+                      'aria-label': referenceComparisonText(ref, idx),
+                      style: {
+                        display: 'grid', gridTemplateColumns: '24px minmax(0,1fr) auto',
+                        alignItems: 'center', gap: 6, fontSize: 10
+                      }
                     },
                       h('span', {
+                        'data-throwlab-reference-line': 'true',
                         'aria-hidden': 'true',
-                        style: {
-                          width: 12, height: 12, borderRadius: 2, flexShrink: 0,
-                          background: ref.color || '#d946ef', border: '1px solid rgba(255,255,255,0.2)'
-                        }
+                        style: { width: 24, height: 0, borderTop: '3px dashed ' + (ref.color || '#d946ef') }
                       }),
-                      h('span', { style: { color: ref.color || '#d946ef', fontWeight: 700, flexShrink: 0 } }, 'REF' + (idx + 1)),
-                      h('span', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, ref.label || 'reference'),
+                      h('div', { style: { minWidth: 0 } },
+                        h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 6 } },
+                          h('span', { style: { color: ref.color || '#d946ef', fontWeight: 800, flexShrink: 0 } }, 'REF' + (idx + 1)),
+                          h('span', { style: { color: 'var(--allo-stem-text, #e2e8f0)', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, refOutcome)
+                        ),
+                        h('div', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } }, ref.label || 'reference')
+                      ),
                       h('button', {
                         onClick: (function(i) { return function() { removeReferenceAt(i); }; })(idx),
                         'aria-label': 'Remove reference ' + (idx + 1) + ': ' + (ref.label || ''),
@@ -5641,7 +6449,7 @@ window.StemLab = window.StemLab || {
                           minWidth: 24, minHeight: 24, padding: '2px 6px', borderRadius: 4, cursor: 'pointer',
                           border: '1px solid var(--allo-stem-border, #475569)', background: 'transparent', color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 11
                         }
-                      }, '✕')
+                      }, '\u2715')
                     );
                   })
                 ) : null
@@ -5692,18 +6500,11 @@ window.StemLab = window.StemLab || {
             ) : null,
             // Stats line — mode-aware. Bumped slate-400 → slate-300 (#cbd5e1)
             // for AA contrast on the dark panel background.
-            h('div', { style: { marginTop: 12, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', justifyContent: 'space-between' } },
-              h('span', null, (isPitching ? 'Pitches: ' : isFreeKick ? 'Kicks: ' : isFieldGoal ? 'FGs: ' : 'Shots: ') + (d.throwCount || 0)),
-              h('span', null, isPitching ? 'Strikes: ' + (d.strikeCount || 0)
-                            : isFreeKick ? 'Goals: ' + (d.goalCount || 0)
-                            : isFieldGoal ? 'Made: ' + (d.fgMakeCount || 0)
-                            : 'Made: ' + (d.shotMakeCount || 0)),
-              h('span', null, isPitching
-                ? 'Types: ' + Object.keys(d.pitchTypesUsed || {}).length + '/' + PITCH_TYPES.length
-                : isFreeKick ? 'Kick: ' + currentKick.label
-                : isFieldGoal ? d.fgDistanceYd + ' yd'
-                : 'Shot: ' + currentShot.label)
-            )
+            h('div', { role: 'list', 'aria-label': 'Current Throw Lab session summary',
+              style: { marginTop: 12, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '6px 12px' }
+            }, sessionSummaryItems().map(function(item, index) {
+              return h('span', { key: 'session-stat-' + index, role: 'listitem' }, item);
+            }))
           )
         )
       );

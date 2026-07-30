@@ -34,6 +34,40 @@ describe('Immersive Geometry stretch mechanics', () => {
     expect(source).toContain('r1(L * W * H)');
     expect(source).toContain('Math.round(n * 100) / 100');
   });
+  it('gives the floating mathematics card a clear causal hierarchy', () => {
+    expect(source).toContain('id="labelAccent" width="3.25" height="0.04"');
+    expect(source).toContain('id="labelTitle" value="A point"');
+    expect(source).toContain('id="label3d" value="Zero dimensions"');
+    expect(source).toContain('id="labelAxis" value="Selected: no editable axis"');
+    expect(source).toContain('id="labelDelta" value="Resize a dimension to compare change."');
+    expect(source).toContain('id="labelReason" value=""');
+    expect(source).toContain("labelReason.setAttribute('visible', !!(comparing && reasonLine))");
+    expect(source).toContain("labelTitle.setAttribute('color', dimensionColor)");
+    expect(source).toContain("label3d.setAttribute('color', '#f7faff')");
+    expect(source).toContain("labelAccent.setAttribute('material', 'emissive', dimensionColor)");
+  });
+
+  it('shows symbolic formulas and signed before-to-now metric change', () => {
+    expect(source).toContain('function liveMathLine(s)');
+    expect(source).toContain("'A = L \\u00d7 W = '");
+    expect(source).toContain("'V = (W \\u00d7 H) \\u00d7 L = '");
+    expect(source).toContain("'V = (L \\u00d7 H) \\u00d7 W = '");
+    expect(source).toContain("'V = (L \\u00d7 W) \\u00d7 H = '");
+    expect(source).toContain('function comparisonDeltaLine(s, component)');
+    expect(source).toContain('function comparisonReasonLine(s, component)');
+    expect(source).toContain("return 'WHY | ' + heldKey");
+    expect(source).toContain("return 'WHY | slice '");
+    expect(source).toContain('signedNumber(deltaMetric)');
+    expect(source).toContain("labelReason.setAttribute('value', reasonLine)");
+    expect(source).toContain("labelAxis.setAttribute('position', '-1.45 ' + r1(-cardTop + (comparing ? 0.37 : 0.23))");
+    expect(source).toContain("return '\\u0394' + symbols[s.d] + ' ' + signedNumber(afterMetric - beforeMetric)");
+    expect(source).toContain("' | factor ' + factor + '\\u00d7'");
+    expect(source).toContain("vrLiveMathText.setAttribute('value', mathLine");
+    expect(source).toContain('sectionLine ?');
+    expect(source).toContain("deltaLine.indexOf(' +') >= 0 ? '#86efac'");
+    expect(source).toContain("deltaLine.indexOf(' -') >= 0 ? '#fda4af'");
+  });
+
   it('treats continuous slider resizing as one quiet undoable action', () => {
     expect(source).toContain('id="uiAxisValue"');
     expect(source).toContain('beginResize: function ()');
@@ -56,6 +90,8 @@ describe('Immersive Geometry stretch mechanics', () => {
     expect(source).toContain("handle.addEventListener('click'");
     expect(source).toContain("handle.setAttribute('visible', i < this.d)");
     expect(source).toContain('i === this.axis ? 1.3 : 0.85');
+    expect(source).toContain('h[0].object3D.position.set(this.cx + 0.1, this.cy / 2, this.cz / 2)');
+    expect(source).toContain('h[2].object3D.position.set(this.cx / 2, this.cy + 0.1, this.cz / 2)');
   });
 
   it('maps common headset buttons and offers optional haptic confirmation', () => {
@@ -99,17 +135,17 @@ describe('Immersive Geometry stretch mechanics', () => {
     expect(source).toContain("this.grow(shrink ? -1 : 1)");
     expect(source).toContain('event.detail.mouseEvent || event.detail.originalEvent');
     expect(source).toContain("handle.addEventListener('mouseenter'");
-    expect(source).toContain('Trigger grows handle.');
+    expect(source).toContain('Pull a face handle. Stick resizes or changes axis. Menu centers.');
     expect(source).toContain('<kbd>Shift</kbd>+click to shrink');
   });
   it('groups rapid resize input into one undo transaction', () => {
     expect(source).toContain('beginNudge: function ()');
     expect(source).toContain('endNudge: function (silent)');
-    expect(source).toContain('if (!this.nudgeStart) this.nudgeStart = this.capture()');
+    expect(source).toContain('if (!this.nudgeStart) { this.clearComparison(); this.nudgeStart = this.capture(); }');
     expect(source).toContain('this.emitState(null, true)');
     expect(source).toContain('this.endNudge(false); }.bind(this), 360');
     expect(source).toContain('remember: function () { this.endNudge(true)');
-    expect(source).toContain('remove: function () { if (this.nudgeTimer) clearTimeout(this.nudgeTimer); }');
+    expect(source).toContain('if (this.axisDrag) this.endAxisDrag(true)');
   });
   it('renders an origin-anchored spatial target outline', () => {
     expect(source).toContain('this.targetGhost = document.createElement');
@@ -154,9 +190,9 @@ describe('Immersive Geometry stretch mechanics', () => {
 
   it('keeps the floating formula panel above current and target solids', () => {
     expect(source).toContain('function positionMeasurePanel(s, mission)');
-    expect(source).toContain('var currentHeight = s.d >= 3 ? s.dimensions.H : THIN');
-    expect(source).toContain('var targetHeight = showTarget && mission && mission.d >= 3 ? mission.H : THIN');
-    expect(source).toContain('var clearance = boundaryLines > 1 ? 0.92 : boundaryLines ? 0.68 : 0.42');
+    expect(source).toContain('var currentHeight = (s.d >= 3 ? s.dimensions.H : THIN) * presentationScale');
+    expect(source).toContain('var targetHeight = (showTarget && mission && mission.d >= 3 ? mission.H : THIN) * presentationScale');
+    expect(source).toContain('var clearance = measureCardHeight(boundaryLines, comparing) / 2 + 0.32');
     expect(source).toContain('var defaultY = Math.max(2.5, 1.1 + Math.max(currentHeight, targetHeight) + clearance)');
     expect(source).toContain('positionMeasurePanel(lastMissionState, MISSIONS[missionIndex])');
   });
@@ -190,7 +226,7 @@ describe('Immersive Geometry stretch mechanics', () => {
   it('clears persisted and in-memory session state without creating an undo entry', () => {
     expect(source).toContain('freshStart: function ()');
     expect(source).toContain('this.nudgeTimer = null; this.nudgeStart = null; this.resizeStart = null; this.history = []');
-    expect(source).toContain('missionIndex = 0; missionComplete = false; showTarget = true; showBoundary = false; completedMask = 0; SAVED_STATE = null');
+    expect(source).toContain('missionIndex = 0; missionComplete = false; showTarget = true; showBoundary = false; completedMask = 0; viewScaleIndex = 1; LAUNCH_STATE = null; SAVED_STATE = null');
     expect(source).toContain('localStorage.removeItem(STORAGE_KEY)');
     expect(source).toContain('if (suppressNextSave) { suppressNextSave = false; return; }');
     expect(source).toContain("this.apply(false, 'Started over with a fresh point and first mission.')");
@@ -206,7 +242,7 @@ describe('Immersive Geometry stretch mechanics', () => {
 
   it('communicates local save and restoration status without blocking use', () => {
     expect(source).toContain('id="sessionNote"');
-    expect(source).toContain("saved ? 'Restored your saved stretch session.' : null");
+    expect(source).toContain("LAUNCH_STATE ? 'Opened the current Geometry Sandbox selection in the immersive lab.'");
     expect(source).toContain("sessionNote.textContent = 'Progress saved on this device.'");
     expect(source).toContain("sessionNote.textContent = 'Saving unavailable; this session still works.'");
     expect(source).toContain("sessionNote.textContent = 'Fresh start. New changes will save on this device.'");
@@ -231,9 +267,11 @@ describe('Immersive Geometry stretch mechanics', () => {
   it('persists boundary preferences and expands spatial labels only when needed', () => {
     expect(source).toContain('showBoundary: saved.showBoundary === true');
     expect(source).toContain('showBoundary: showBoundary');
-    expect(source).toContain("labelBack.setAttribute('height', boundaryLines > 1 ? '1.38' : boundaryLines ? '1.12' : '0.78')");
-    expect(source).toContain('var clearance = boundaryLines > 1 ? 0.92 : boundaryLines ? 0.68 : 0.42');
-    expect(source).toContain('showBoundary = false; completedMask = 0; SAVED_STATE = null');
+    expect(source).toContain('function measureCardHeight(boundaryLines, comparing)');
+    expect(source).toContain('return 0.98 + boundaryLines * 0.22 + (comparing ? 0.32 : 0)');
+    expect(source).toContain("labelBack.setAttribute('height', r1(cardHeight))");
+    expect(source).toContain('var clearance = measureCardHeight(boundaryLines, comparing) / 2 + 0.32');
+    expect(source).toContain('showBoundary = false; completedMask = 0; viewScaleIndex = 1; LAUNCH_STATE = null; SAVED_STATE = null');
   });
   it('tracks current and completed guided missions accessibly', () => {
     expect(source).toContain('id="missionSteps" role="list" aria-label="Mission progress"');
@@ -247,7 +285,7 @@ describe('Immersive Geometry stretch mechanics', () => {
     expect(source).toContain('Math.max(0, Math.min(saved.completedMask, 15))');
     expect(source).toContain('completedMask: completedMask');
     expect(source).toContain('completedMask |= (1 << missionIndex)');
-    expect(source).toContain('completedMask = 0; SAVED_STATE = null');
+    expect(source).toContain('completedMask = 0; viewScaleIndex = 1; LAUNCH_STATE = null; SAVED_STATE = null');
     expect(source).toContain('for (var i = 0; i < MISSIONS.length; i++) if (completedMask & (1 << i)) count++');
   });
 
@@ -336,8 +374,10 @@ describe('Immersive Geometry stretch mechanics', () => {
     expect(source).toContain("hud.removeAttribute('aria-hidden')");
     expect(source).toContain("scene.addEventListener('enter-vr', function () { setImmersiveMode(true); })");
     expect(source).toContain("scene.addEventListener('exit-vr', function () { setImmersiveMode(false); })");
-    expect(source).toContain('Immersive mode entered. Trigger grows the active handle.');
+    expect(source).toContain('Immersive mode entered. Aim at a handle, hold trigger or grip, and pull continuously.');
     expect(source).toContain('Immersive mode exited. Desktop controls restored.');
+    expect(source).toContain("if (labelWrap) labelWrap.setAttribute('visible', false)");
+    expect(source).toContain("if (labelWrap) labelWrap.setAttribute('visible', true)");
   });
 
   it('restores a usable desktop focus target after leaving immersive mode', () => {
@@ -407,7 +447,7 @@ describe('Immersive Geometry stretch mechanics', () => {
   });
 
   it('clears the redo branch after any fresh geometry edit', () => {
-    expect(source).toContain('remember: function () { this.endNudge(true); this.future = []');
+    expect(source).toContain('remember: function () { this.endNudge(true); this.clearComparison(); this.future = []');
     expect(source).toContain('rememberSnapshot: function (snapshot) { this.future = []');
     expect(source).toContain('this.resizeStart = null; this.history = []; this.future = []');
     const writer = source.match(/function saveLabState\(s\) \{[\s\S]*?\n  \}/);
@@ -432,8 +472,9 @@ describe('Immersive Geometry stretch mechanics', () => {
     expect(source).toContain('cameraObject.getWorldPosition(eye); cameraObject.getWorldDirection(view)');
     expect(source).toContain('view.y = 0');
     expect(source).toContain('if (view.lengthSq() < 0.0001) view.set(0, 0, -1); else view.normalize()');
-    expect(source).toContain('eye.x + view.x * 1.35');
-    expect(source).toContain('Math.max(0.75, eye.y - 0.65)');
+    expect(source).toContain('eye.x + view.x * panelDistance');
+    expect(source).toContain('Math.max(0.85, eye.y - 0.3)');
+    expect(source).toContain('spatialPanel.object3D.scale.setScalar(0.88)');
     expect(source).toContain('Math.atan2(-view.x, -view.z)');
   });
 
@@ -443,16 +484,17 @@ describe('Immersive Geometry stretch mechanics', () => {
     expect(source).toContain('recenterSpatialPanel(false)');
     expect(source).toContain('Spatial workspace centered in front of you.');
     expect(source).toContain('<kbd>C</kbd> center workspace');
-    expect(source).toContain('Menu centers workspace.');
+    expect(source).toContain('Menu centers.');
   });
   it('keeps geometry and measures aligned with the recentered workspace', () => {
     expect(source).toContain('var workspacePose = { x: 0, z: -2.4, baseY: 1.1, yaw: 0 }');
-    expect(source).toContain('workspacePose.x = eye.x + view.x * 2.4');
+    expect(source).toContain('workspacePose.centerX = eye.x + view.x * centerDistance');
+    expect(source).toContain('workspacePose.x = workspacePose.centerX - right.x * length / 2 + view.x * depth / 2');
     expect(source).toContain('workspacePose.baseY = Math.max(0.35, eye.y - 0.5)');
     expect(source).toContain('figure.object3D.position.set(workspacePose.x, workspacePose.baseY, workspacePose.z)');
     expect(source).toContain('figure.object3D.rotation.set(0, yaw, 0)');
     expect(source).toContain('var y = workspacePose.baseY + defaultY - 1.1');
-    expect(source).toContain('labelWrap.object3D.position.set(workspacePose.x, y, workspacePose.z)');
+    expect(source).toContain('workspacePose.centerX == null ? workspacePose.x : workspacePose.centerX');
     expect(source).toContain('labelWrap.object3D.rotation.set(0, workspacePose.yaw, 0)');
     expect(source).toContain('positionMeasurePanel(lastMissionState, MISSIONS[missionIndex])');
   });
@@ -488,9 +530,11 @@ describe('Immersive Geometry stretch mechanics', () => {
   it('sizes and repositions measurement panels for multiline boundary comparison', () => {
     expect(source).toContain("white-space: pre-line");
     expect(source).toContain("boundaryText.split('\\n').length");
-    expect(source).toContain("boundaryLines > 1 ? '1.38' : boundaryLines ? '1.12' : '0.78'");
+    expect(source).toContain('function measureCardHeight(boundaryLines, comparing)');
+    expect(source).toContain('return 0.98 + boundaryLines * 0.22 + (comparing ? 0.32 : 0)');
+    expect(source).toContain("labelBack.setAttribute('height', r1(cardHeight))");
     expect(source).toContain('var boundaryLines = showBoundary ? (s.boundary ? 1 : 0) + (mission && mission.d >= 2 ? 1 : 0) : 0');
-    expect(source).toContain('var clearance = boundaryLines > 1 ? 0.92 : boundaryLines ? 0.68 : 0.42');
+    expect(source).toContain('var clearance = measureCardHeight(boundaryLines, comparing) / 2 + 0.32');
     const toggle = source.match(/function toggleBoundaryMeasures\(value, announce\) \{[\s\S]*?\n  \}/);
     expect(toggle).not.toBeNull();
     expect(toggle[0]).toContain('positionMeasurePanel(lastMissionState, MISSIONS[missionIndex])');
@@ -511,5 +555,216 @@ describe('Immersive Geometry stretch mechanics', () => {
     expect(source).toContain("shortcut === 'z'");
     expect(source).toContain("shortcut === 'y'");
     expect(source).toContain('e.preventDefault(); e.stopPropagation(); return;');
+  });
+  it('turns a controller pull into a continuous one-gesture stretch', () => {
+    expect(source).toContain('beginAxisDrag: function (hand, index)');
+    expect(source).toContain('updateAxisDrag: function ()');
+    expect(source).toContain('endAxisDrag: function (cancel)');
+    expect(source).toContain('currentPosition.sub(drag.startPosition).dot(drag.axisVector)');
+    expect(source).toContain("hand.addEventListener('triggerdown', function () { beginDirectDrag(hand); })");
+    expect(source).toContain("hand.addEventListener('gripup', function () { endDirectDrag(hand, false); })");
+    expect(source).toContain('this.beginResize()');
+    expect(source).toContain('this.endResize()');
+  });
+
+  it('shows the before-state and live mathematics during direct stretching', () => {
+    expect(source).toContain('this.gestureGhost = document.createElement');
+    expect(source).toContain("this.gestureGhost.setAttribute('visible', true)");
+    expect(source).toContain("this.gestureGhost.setAttribute('visible', false)");
+    expect(source).toContain('id="vrTransformText"');
+    expect(source).toContain('id="vrLiveMathText"');
+    expect(source).toContain("'DIRECT STRETCH | formula updating'");
+    expect(source).toContain(String.raw`'VIEW ' + definition.label.toUpperCase() + ' ' + definition.scale + '\u00d7 | math unchanged'`);
+  });
+
+  it('accepts only bounded launch state from the Geometry Sandbox', () => {
+    expect(source).toContain('function loadLaunchState()');
+    expect(source).toContain("var query = new URLSearchParams(window.location.search || '')");
+    expect(source).toContain("if (!query.has('d')) return null");
+    expect(source).toContain('launched.d < 0 || launched.d > 3');
+    expect(source).toContain('value >= MINV && value <= MAXV');
+    expect(source).toContain('var SAVED_STATE = LAUNCH_STATE || loadSavedState()');
+  });
+  it('offers three explicit presentation scales without changing mathematical dimensions', () => {
+    expect(source).toContain("{ id: 'tabletop', label: 'Tabletop', scale: 0.65 }");
+    expect(source).toContain("{ id: 'body', label: 'Body', scale: 1 }");
+    expect(source).toContain("{ id: 'room', label: 'Room', scale: 1.5 }");
+    expect(source).toContain('figure.object3D.scale.setScalar(definition.scale)');
+    expect(source).toContain('component.presentationScale = definition.scale');
+    expect(source).toContain('Length, area, and volume are unchanged.');
+    expect(source).toContain('id="uiViewScale"');
+    expect(source).toContain('id="vrView"');
+    expect(source).toContain("case 'v': case 'V': cycleViewScale()");
+  });
+
+  it('keeps direct stretch values and spatial layout calibrated at every presentation scale', () => {
+    expect(source).toContain('drag.startValue + distance / presentationScale');
+    expect(source).toContain('var presentationScale = this.presentationScale > 0 ? this.presentationScale : 1');
+    expect(source).toContain('var length = (state && state.d >= 1 ? dims.L : THIN) * presentationScale');
+    expect(source).toContain('var depth = (state && state.d >= 2 ? dims.W : THIN) * presentationScale');
+    expect(source).toContain('var currentHeight = (s.d >= 3 ? s.dimensions.H : THIN) * presentationScale');
+  });
+
+  it('persists only the selected presentation scale and does not add it to geometry history', () => {
+    expect(source).toContain('viewScaleIndex: viewScaleIndex');
+    expect(source).toContain('saved.viewScaleIndex');
+    expect(source).toContain("query.has('view') ? Number(query.get('view')) : 1");
+    const applyViewScale = source.slice(source.indexOf('function applyViewScale'), source.indexOf('function cycleViewScale'));
+    expect(applyViewScale).not.toContain('remember');
+    expect(applyViewScale).not.toContain('history.push');
+  });
+
+  it('names changed and invariant dimensions and updates the derived measure', () => {
+    expect(source).toContain('changeNotice: function (before, after)');
+    expect(source).toContain("held.join(' and ') + ' stayed fixed. '");
+    expect(source).toContain('metricValue(after.d, before)');
+    expect(source).toContain('metricValue(after.d, after)');
+    expect(source).toContain("this.el.emit('geometrynotice', { text: text }, false)");
+    expect(source).toContain('id="invariantNotice" class="invariantnote" role="status" aria-live="polite"');
+    expect(source).toContain('id="vrNoticeText"');
+  });
+  it('builds a layered half-unit metric grid with emphasized world axes', () => {
+    expect(source).toContain('id="grid" metric-grid');
+    expect(source).toContain("AFRAME.registerComponent('metric-grid'");
+    expect(source).toContain('var coordinate = i * 0.5');
+    expect(source).toContain('i % 10 === 0 ? groups.major : i % 2 === 0 ? groups.unit : groups.half');
+    expect(source).toContain("color: '#38bdf8'");
+    expect(source).toContain("color: '#4ade80'");
+    expect(source).toContain('resource.geometry.dispose()');
+    expect(source).toContain('resource.material.dispose()');
+  });
+
+  it('adds crisp construction edges and a selected-face depth cue', () => {
+    expect(source).toContain('new THREE.EdgesGeometry(new THREE.BoxGeometry(1, 1, 1))');
+    expect(source).toContain('this.edgeFrame.object3D.scale.set(this.cx, this.cy, this.cz)');
+    expect(source).toContain('this.faceHighlights =');
+    expect(source).toContain("face.setAttribute('visible', i < this.d && i === this.axis)");
+    expect(source).toContain('faces[0].object3D.scale.set(this.cz, this.cy, 1)');
+    expect(source).toContain('faces[2].object3D.scale.set(this.cx, this.cz, 1)');
+  });
+
+  it('uses shape and motion cues as well as color for the selected handle', () => {
+    expect(source).toContain("var glow = document.createElement('a-sphere')");
+    expect(source).toContain("var arrow = document.createElement('a-cone')");
+    expect(source).toContain('handle._selectionGlow = glow');
+    expect(source).toContain("handle._selectionGlow.setAttribute('visible', i < this.d && i === this.axis)");
+    expect(source).toContain('var pulse = this.reduceMotion ? 1');
+    expect(source).toContain("arrow.setAttribute('rotation', '0 0 -90')");
+    expect(source).toContain("arrow.setAttribute('rotation', '90 0 0')");
+  });
+
+  it('keeps desktop solids centered at a stable oblique viewing distance', () => {
+    expect(source).toContain('function positionDesktopWorkspace(s)');
+    expect(source).toContain('var centerX = 0.65, centerZ = -3.2');
+    expect(source).toContain('THREE.MathUtils.degToRad(-18)');
+    expect(source).toContain('workspacePose.x = centerX - offsetX; workspacePose.z = centerZ - offsetZ');
+    expect(source).toContain('else positionDesktopWorkspace(lastMissionState)');
+    expect(source).toContain('else positionDesktopWorkspace(s)');
+  });
+
+  it('keeps duplicate spatial controls immersive-only', () => {
+    expect(source).toContain('id="panel" position="0 0.95 -1.35" rotation="-22 0 0" visible="false"');
+    expect(source).toContain("spatialPanel.setAttribute('visible', immersiveActive)");
+    expect(source).toContain("scene.addEventListener('enter-vr', function () { setImmersiveMode(true); })");
+    expect(source).toContain("scene.addEventListener('exit-vr', function () { setImmersiveMode(false); })");
+  });
+
+  it('connects dimension and measure changes through the same scale factor', () => {
+    expect(source).toContain('var scaleFactor = r1(after[keys[changedAxis]] / before[keys[changedAxis]])');
+    expect(source).toContain('var metricFactor = r1(metricValue(after.d, after) / metricValue(after.d, before))');
+    expect(source).toContain("' units. Scale factor ' + scaleFactor + '×. '");
+    expect(source).toContain("' and scaled by ' + metricFactor + '×.'");
+  });
+  it('retains a labeled previous boundary after committed resizes', () => {
+    expect(source).toContain('this.comparisonFrame = document.createElement');
+    expect(source).toContain("color: '#60a5fa'");
+    expect(source).toContain('showComparison: function (snapshot)');
+    expect(source).toContain('this.comparisonFrame.object3D.scale.set(x, y, z)');
+    expect(source).toContain("this.comparisonLabel.setAttribute('value', 'BEFORE\\n' + axisSymbols[comparisonAxis]");
+    expect(source).toContain('if (comparisonAxis === 0) this.comparisonLabel.object3D.position.set(x, y / 2, z + 0.08)');
+    expect(source).toContain("this.comparisonBadge.setAttribute('width', '0.46')");
+    expect(source).toContain("this.comparisonBadge.setAttribute('material', 'color: #0c4a6e");
+    expect(source).toContain("this.comparisonLabel.setAttribute('width', '1.35')");
+    expect(source).toContain("this.comparisonBadge.setAttribute('visible', true)");
+    expect(source).toContain('this.showComparison(before)');
+  });
+
+  it('clears stale comparisons at every incompatible geometry transition', () => {
+    expect(source).toContain('clearComparison: function ()');
+    expect(source).toContain('remember: function () { this.endNudge(true); this.clearComparison()');
+    expect(source).toContain('if (!this.nudgeStart) { this.clearComparison(); this.nudgeStart = this.capture(); }');
+    expect(source).toContain('if (!this.resizeStart && this.d > 0) { this.clearComparison(); this.resizeStart = this.capture(); }');
+    const undoBlock = source.slice(source.indexOf('undo: function ()'), source.indexOf('redo: function ()'));
+    const redoBlock = source.slice(source.indexOf('redo: function ()'), source.indexOf('selectAxis: function'));
+    expect(undoBlock).toContain('this.clearComparison()');
+    expect(redoBlock).toContain('this.clearComparison()');
+  });
+
+  it('renders a fine-grained active-axis ruler without per-frame attribute churn', () => {
+    expect(source).toContain('for (var rulerIndex = 0; rulerIndex <= 16; rulerIndex++)');
+    expect(source).toContain('var rulerValue = rulerIndex * 0.25');
+    expect(source).toContain('for (var wholeUnit = 1; wholeUnit <= 4; wholeUnit++)');
+    expect(source).toContain("rulerLabel.setAttribute('value', wholeUnit + 'u')");
+    expect(source).toContain('updateRuler: function ()');
+    expect(source).toContain('value <= activeValue + 0.001');
+    expect(source).toContain('tick.object3D.visible = visible');
+    expect(source).toContain('label.object3D.visible = visible');
+    const rulerUpdate = source.slice(source.indexOf('updateRuler: function ()'), source.indexOf('setTarget: function'));
+    expect(rulerUpdate).not.toContain("setAttribute('visible', visible)");
+  });
+
+  it('projects rectangles and solids onto the floor as a live area scaffold', () => {
+    expect(source).toContain('this.projectionFill = document.createElement');
+    expect(source).toContain('this.projectionFrameGeometry = new THREE.BufferGeometry()');
+    expect(source).toContain('this.projectionDropGeometry = new THREE.BufferGeometry()');
+    expect(source).toContain('this.projectionAxisGeometry = new THREE.BufferGeometry()');
+    expect(source).toContain("color: '#facc15'");
+    expect(source).toContain('this.projectionAxisGeometry.setDrawRange(0, 4)');
+    expect(source).toContain('this.projectionAxisGeometry.setDrawRange(0, 8)');
+    expect(source).toContain('new THREE.LineDashedMaterial');
+    expect(source).toContain('updateProjection: function ()');
+    expect(source).toContain('var visible = this.d >= 2');
+    expect(source).toContain("'PLAN | A = L × W = ' + r1(this.L * this.W) + ' units²'");
+    expect(source).toContain('var floorY = (0.022 - this.el.object3D.position.y) / presentationScale');
+    expect(source).toContain('this.projectionDropLines.computeLineDistances()');
+    expect(source).toContain("if (signature === this.projectionSignature) return");
+    expect(source).toContain('this.updateProjection()');
+    expect(source).toContain('if (this.projectionFrameGeometry) this.projectionFrameGeometry.dispose()');
+    expect(source).toContain('if (this.projectionAxisMaterial) this.projectionAxisMaterial.dispose()');
+    expect(source).toContain('if (this.projectionDropMaterial) this.projectionDropMaterial.dispose()');
+  });
+
+  it('reveals a selected solid as cached half-unit cross-sections', () => {
+    expect(source).toContain("this.sectionPlane = document.createElement('a-plane')");
+    expect(source).toContain('for (var sectionIndex = 0; sectionIndex < 7; sectionIndex++)');
+    expect(source).toContain('new THREE.LineLoop(this.sectionSliceGeometry, this.sectionSliceMaterial)');
+    expect(source).toContain('updateSections: function ()');
+    expect(source).toContain('var visible = this.d === 3');
+    expect(source).toContain('var axisValue = [x, z, y][this.axis]');
+    expect(source).toContain('orient(this.sectionPlane, axisValue / 2)');
+    expect(source).toContain('var value = (index + 1) * 0.5');
+    expect(source).toContain('slice.object3D.visible = value < axisValue - 0.04');
+    expect(source).toContain('entity.object3D.rotation.y = Math.PI / 2');
+    expect(source).toContain('entity.object3D.rotation.x = -Math.PI / 2');
+    expect(source).toContain('if (signature === this.sectionSignature) return');
+    expect(source).toContain('function crossSectionLine(s)');
+    expect(source).toContain("'X MID-SLICE | W × H = '");
+    expect(source).toContain("'Z MID-SLICE | L × H = '");
+    expect(source).toContain("'Y MID-SLICE | L × W = '");
+    expect(source).toContain("comparing ? deltaLine : sectionLine || 'Resize a dimension");
+    expect(source).toContain('this.updateSections()');
+    expect(source).toContain('if (this.sectionSliceGeometry) this.sectionSliceGeometry.dispose()');
+    expect(source).toContain('if (this.sectionSliceMaterial) this.sectionSliceMaterial.dispose()');
+  });
+
+  it('explains the Now, Before, and selected-ruler visual language accessibly', () => {
+    expect(source).toContain('Scene key: solid is now, blue outline is before, yellow marks the selected dimension and cross-sections, and the dashed floor footprint is the plan projection.');
+    expect(source).toContain('<i class="legendmark projection" aria-hidden="true"></i>Plan projection');
+    expect(source).toContain('<i class="legendmark section" aria-hidden="true"></i>Cross-sections');
+    expect(source).toContain('<i class="legendmark now" aria-hidden="true"></i>Now');
+    expect(source).toContain('<i class="legendmark before" aria-hidden="true"></i>Before');
+    expect(source).toContain('<i class="legendmark ruler" aria-hidden="true"></i>Selected axis');
+    expect(source).toContain("(comparing ? 'NOW | ' : '') + s.title");
+    expect(source).toContain("'NOW SOLID | BEFORE BLUE OUTLINE'");
   });
 });

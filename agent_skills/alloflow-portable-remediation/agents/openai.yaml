@@ -1,0 +1,6 @@
+interface:
+  display_name: "AlloFlow Portable Remediation"
+  short_description: "Remediate PDFs without an AlloFlow server"
+  default_prompt: "Use $alloflow-portable-remediation to remediate the attached PDF and return the repaired copy and report."
+policy:
+  allow_implicit_invocation: true

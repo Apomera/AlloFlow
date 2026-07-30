@@ -1,0 +1,450 @@
+{
+  "schemaVersion": 1,
+  "baselineId": "eppp-evidence-relocation-v1",
+  "sourceCommit": "e30337c715bc61879a09e637cdd3b144da07a783",
+  "purpose": "Immutable byte-fidelity record for the 44 QA-only artifacts relocated out of the historical EPPP runtime trees.",
+  "artifactCount": 44,
+  "preservationPolicy": "Unchanged originals remain canonical; regenerated foundational reports preserve their relocation-time originals under quality/eppp_provenance/history/v1.",
+  "artifacts": [
+    {
+      "family": "adjudication",
+      "file": "adjudication_batch_01.json",
+      "historicalSourcePath": "test_prep/eppp_legacy/adjudication_batch_01.json",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/adjudication_batch_01.json",
+      "originalBytes": 30611,
+      "originalSha256": "4c71f62bcf2f59c79b21774d3b5ec278988ea9f9e7ff2845c2dafd98b5a9f328",
+      "preservationPath": "quality/eppp_provenance/evidence/adjudication/adjudication_batch_01.json",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "adjudication",
+      "file": "adjudication_batch_01.md",
+      "historicalSourcePath": "test_prep/eppp_legacy/adjudication_batch_01.md",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/adjudication_batch_01.md",
+      "originalBytes": 2420,
+      "originalSha256": "2a588637d324b553ac9d25970db198e80a1cc77fe9ca2b1e7c142cc0d81fd279",
+      "preservationPath": "quality/eppp_provenance/evidence/adjudication/adjudication_batch_01.md",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "adjudication",
+      "file": "adjudication_batch_02.json",
+      "historicalSourcePath": "test_prep/eppp_legacy/adjudication_batch_02.json",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/adjudication_batch_02.json",
+      "originalBytes": 31927,
+      "originalSha256": "b946989366fef6fdf1194c7186b493829f0b85f09fea2e41abe599e4d4af4c2e",
+      "preservationPath": "quality/eppp_provenance/evidence/adjudication/adjudication_batch_02.json",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "adjudication",
+      "file": "adjudication_batch_02.md",
+      "historicalSourcePath": "test_prep/eppp_legacy/adjudication_batch_02.md",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/adjudication_batch_02.md",
+      "originalBytes": 2465,
+      "originalSha256": "18e9c74d9d17ea3f816ba65273cbc795aeccf24537bca9a1f8d196d94f3e1fac",
+      "preservationPath": "quality/eppp_provenance/evidence/adjudication/adjudication_batch_02.md",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "adjudication",
+      "file": "adjudication_batch_03.json",
+      "historicalSourcePath": "test_prep/eppp_legacy/adjudication_batch_03.json",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/adjudication_batch_03.json",
+      "originalBytes": 33653,
+      "originalSha256": "c2b8150898c808c58ec21ab94dda25aac0b132eb2b39a9d27f2339e8b5956762",
+      "preservationPath": "quality/eppp_provenance/evidence/adjudication/adjudication_batch_03.json",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "adjudication",
+      "file": "adjudication_batch_03.md",
+      "historicalSourcePath": "test_prep/eppp_legacy/adjudication_batch_03.md",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/adjudication_batch_03.md",
+      "originalBytes": 2616,
+      "originalSha256": "de3791472795f73bb16c713ad189a1af1556fce577ac6dca86b990a81cbfe3bf",
+      "preservationPath": "quality/eppp_provenance/evidence/adjudication/adjudication_batch_03.md",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "adjudication",
+      "file": "adjudication_batch_04.json",
+      "historicalSourcePath": "test_prep/eppp_legacy/adjudication_batch_04.json",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/adjudication_batch_04.json",
+      "originalBytes": 34097,
+      "originalSha256": "f34e3d884d29cabb964e9b7699bae926c86e3629b14e6a5eaaeb24cfaa5bf95b",
+      "preservationPath": "quality/eppp_provenance/evidence/adjudication/adjudication_batch_04.json",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "adjudication",
+      "file": "adjudication_batch_04.md",
+      "historicalSourcePath": "test_prep/eppp_legacy/adjudication_batch_04.md",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/adjudication_batch_04.md",
+      "originalBytes": 2674,
+      "originalSha256": "52844d9a6a8eb6f2c21561316327dffd8c58f20b116acc7a99d018fdc406318c",
+      "preservationPath": "quality/eppp_provenance/evidence/adjudication/adjudication_batch_04.md",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "adjudication",
+      "file": "adjudication_batch_05.json",
+      "historicalSourcePath": "test_prep/eppp_legacy/adjudication_batch_05.json",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/adjudication_batch_05.json",
+      "originalBytes": 36637,
+      "originalSha256": "193114b449ef5661ab612a4ce08e1b37e92b76e2831bf40dde152911be95084a",
+      "preservationPath": "quality/eppp_provenance/evidence/adjudication/adjudication_batch_05.json",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "adjudication",
+      "file": "adjudication_batch_05.md",
+      "historicalSourcePath": "test_prep/eppp_legacy/adjudication_batch_05.md",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/adjudication_batch_05.md",
+      "originalBytes": 2774,
+      "originalSha256": "d99b73e143ea7139d16da1b161e0b351fc9ab68f6a3c43a67cf1fa6ab48f291a",
+      "preservationPath": "quality/eppp_provenance/evidence/adjudication/adjudication_batch_05.md",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "adjudication",
+      "file": "adjudication_batch_06.json",
+      "historicalSourcePath": "test_prep/eppp_legacy/adjudication_batch_06.json",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/adjudication_batch_06.json",
+      "originalBytes": 40683,
+      "originalSha256": "af0c670883ef47b7bf38a9ff5b5f2f5b64d4ae67d3c2fab2441ec078a3cb064d",
+      "preservationPath": "quality/eppp_provenance/evidence/adjudication/adjudication_batch_06.json",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "adjudication",
+      "file": "adjudication_batch_06.md",
+      "historicalSourcePath": "test_prep/eppp_legacy/adjudication_batch_06.md",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/adjudication_batch_06.md",
+      "originalBytes": 3042,
+      "originalSha256": "3bf0d6412ae0d0beb9f14e406170d6e1a5e94b0a76b307c8f7f008e6c3fa374a",
+      "preservationPath": "quality/eppp_provenance/evidence/adjudication/adjudication_batch_06.md",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "adjudication",
+      "file": "adjudication_batch_07.json",
+      "historicalSourcePath": "test_prep/eppp_legacy/adjudication_batch_07.json",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/adjudication_batch_07.json",
+      "originalBytes": 42431,
+      "originalSha256": "97b3cda2f7083be11665fd1c71ae87b3d17a6a888c08a12c3d92c30aed7ffe56",
+      "preservationPath": "quality/eppp_provenance/evidence/adjudication/adjudication_batch_07.json",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "adjudication",
+      "file": "adjudication_batch_07.md",
+      "historicalSourcePath": "test_prep/eppp_legacy/adjudication_batch_07.md",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/adjudication_batch_07.md",
+      "originalBytes": 3349,
+      "originalSha256": "e3f37c5a543a6edfb19f7fb761a5c0577a5afe07ac5be41b6bd6c757254050eb",
+      "preservationPath": "quality/eppp_provenance/evidence/adjudication/adjudication_batch_07.md",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "adjudication",
+      "file": "adjudication_index.json",
+      "historicalSourcePath": "test_prep/eppp_legacy/adjudication_index.json",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/adjudication_index.json",
+      "originalBytes": 38291,
+      "originalSha256": "d342fda6479cb475b1020678d91e5f7b65f319c18790e5ac95327d46e4eba646",
+      "preservationPath": "quality/eppp_provenance/evidence/adjudication/adjudication_index.json",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "adjudication",
+      "file": "adjudication_index.md",
+      "historicalSourcePath": "test_prep/eppp_legacy/adjudication_index.md",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/adjudication_index.md",
+      "originalBytes": 6308,
+      "originalSha256": "dc0adfe3ed65aa5d0133196237e2f42da3e51a38b86959d6d5cdb8eabdadc8f6",
+      "preservationPath": "quality/eppp_provenance/evidence/adjudication/adjudication_index.md",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "audit",
+      "file": "content_audit.json",
+      "historicalSourcePath": "test_prep/eppp_legacy/content_audit.json",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/content_audit.json",
+      "originalBytes": 4353475,
+      "originalSha256": "3922a148a8e168bc0ce913c764926e9527397b53bd84f837542729bb3577696b",
+      "preservationPath": "quality/eppp_provenance/history/v1/audit/content_audit.json",
+      "liveArtifactMayAdvance": true
+    },
+    {
+      "family": "audit",
+      "file": "content_audit.md",
+      "historicalSourcePath": "test_prep/eppp_legacy/content_audit.md",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/content_audit.md",
+      "originalBytes": 1992,
+      "originalSha256": "ec08e24f9f32c77135d49f169aa7362310bf10e8e09a3fab0c3f7fd6b1bb9296",
+      "preservationPath": "quality/eppp_provenance/history/v1/audit/content_audit.md",
+      "liveArtifactMayAdvance": true
+    },
+    {
+      "family": "audit",
+      "file": "content_inventory.json",
+      "historicalSourcePath": "test_prep/eppp_legacy/content_inventory.json",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/content_inventory.json",
+      "originalBytes": 255157,
+      "originalSha256": "3993681106cad567fa3a779d328062fb0ead881fef6780aa4c4715abf64b8761",
+      "preservationPath": "quality/eppp_provenance/history/v1/audit/content_inventory.json",
+      "liveArtifactMayAdvance": true
+    },
+    {
+      "family": "audit",
+      "file": "content_inventory.md",
+      "historicalSourcePath": "test_prep/eppp_legacy/content_inventory.md",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/content_inventory.md",
+      "originalBytes": 4514,
+      "originalSha256": "d39b9c091e0e65dc9b4eeefb6594024ee607a16d45ec6428f3f791338cdf6a6a",
+      "preservationPath": "quality/eppp_provenance/history/v1/audit/content_inventory.md",
+      "liveArtifactMayAdvance": true
+    },
+    {
+      "family": "curation",
+      "file": "curation_1000.json",
+      "historicalSourcePath": "test_prep/eppp_legacy/curation_1000.json",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/curation_1000.json",
+      "originalBytes": 213034,
+      "originalSha256": "d4ed122d486ad76cd0e3fa3fca933696feb280049a648a365441d51f00d6f1d3",
+      "preservationPath": "quality/eppp_provenance/evidence/curation/curation_1000.json",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "curation",
+      "file": "curation_1000.md",
+      "historicalSourcePath": "test_prep/eppp_legacy/curation_1000.md",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/curation_1000.md",
+      "originalBytes": 809,
+      "originalSha256": "0981503f92c6938c91db13f611ed664d11f4371d62a722ac248508da6cafcb08",
+      "preservationPath": "quality/eppp_provenance/evidence/curation/curation_1000.md",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "curation",
+      "file": "curation_1500.json",
+      "historicalSourcePath": "test_prep/eppp_legacy/curation_1500.json",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/curation_1500.json",
+      "originalBytes": 320058,
+      "originalSha256": "d3a2da5a071ca65df702675a7ba6c0d31fefd0a757fc0de22dd2ee9b888c8e80",
+      "preservationPath": "quality/eppp_provenance/evidence/curation/curation_1500.json",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "curation",
+      "file": "curation_1500.md",
+      "historicalSourcePath": "test_prep/eppp_legacy/curation_1500.md",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/curation_1500.md",
+      "originalBytes": 789,
+      "originalSha256": "5bef1e31548f87934ad953415aa9f13c8c036c9e80a028b40e9aee6d5e900b75",
+      "preservationPath": "quality/eppp_provenance/evidence/curation/curation_1500.md",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "curation",
+      "file": "curation_500.json",
+      "historicalSourcePath": "test_prep/eppp_legacy/curation_500.json",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/curation_500.json",
+      "originalBytes": 284798,
+      "originalSha256": "0e073b67066e1c99f44f40bb931de80996d08b027fb8fdd48f5e99d065e24d3a",
+      "preservationPath": "quality/eppp_provenance/evidence/curation/curation_500.json",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "curation",
+      "file": "curation_500.md",
+      "historicalSourcePath": "test_prep/eppp_legacy/curation_500.md",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/curation_500.md",
+      "originalBytes": 1439,
+      "originalSha256": "6298463a31bf0cfad3b21ec71914b5d684a91c781e9c073ecb064583ab2657e1",
+      "preservationPath": "quality/eppp_provenance/evidence/curation/curation_500.md",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "review",
+      "file": "bulk_review_wave_01_set_01.json",
+      "historicalSourcePath": "test_prep/eppp_legacy/bulk_review_wave_01_set_01.json",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/bulk_review_wave_01_set_01.json",
+      "originalBytes": 372377,
+      "originalSha256": "624bbe00f167a6aeecf75b9659396ce3f37b7ec2b5c5c5b23d87d8f7856bd3bc",
+      "preservationPath": "quality/eppp_provenance/evidence/review/bulk_review_wave_01_set_01.json",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "review",
+      "file": "bulk_review_wave_01_set_01.md",
+      "historicalSourcePath": "test_prep/eppp_legacy/bulk_review_wave_01_set_01.md",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/bulk_review_wave_01_set_01.md",
+      "originalBytes": 611,
+      "originalSha256": "14c3e7a2ca28d1af8e8bf4fa9dbac592a6aadd3932352508b10d4cc382f16856",
+      "preservationPath": "quality/eppp_provenance/evidence/review/bulk_review_wave_01_set_01.md",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "review",
+      "file": "bulk_review_wave_01_set_02.json",
+      "historicalSourcePath": "test_prep/eppp_legacy/bulk_review_wave_01_set_02.json",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/bulk_review_wave_01_set_02.json",
+      "originalBytes": 393800,
+      "originalSha256": "62825c229f3622969d6fb950e69c22b94115f6a2249da33d912f11151e1762ca",
+      "preservationPath": "quality/eppp_provenance/evidence/review/bulk_review_wave_01_set_02.json",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "review",
+      "file": "bulk_review_wave_01_set_02.md",
+      "historicalSourcePath": "test_prep/eppp_legacy/bulk_review_wave_01_set_02.md",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/bulk_review_wave_01_set_02.md",
+      "originalBytes": 611,
+      "originalSha256": "847ef4b35aa49cccba267025bc4bd496ab29d504b029d15a036eacfbb250cbdf",
+      "preservationPath": "quality/eppp_provenance/evidence/review/bulk_review_wave_01_set_02.md",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "review",
+      "file": "bulk_review_wave_01_set_03.json",
+      "historicalSourcePath": "test_prep/eppp_legacy/bulk_review_wave_01_set_03.json",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/bulk_review_wave_01_set_03.json",
+      "originalBytes": 421086,
+      "originalSha256": "da0f6401e70cfaef0170bfa4f754361d3d0414f7799a925920326d5e184e9f38",
+      "preservationPath": "quality/eppp_provenance/evidence/review/bulk_review_wave_01_set_03.json",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "review",
+      "file": "bulk_review_wave_01_set_03.md",
+      "historicalSourcePath": "test_prep/eppp_legacy/bulk_review_wave_01_set_03.md",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/bulk_review_wave_01_set_03.md",
+      "originalBytes": 611,
+      "originalSha256": "cd1395e400f2c04de9c6343f80c12642dda48531e9f7fbfd5dd2d6f4a07d34d4",
+      "preservationPath": "quality/eppp_provenance/evidence/review/bulk_review_wave_01_set_03.md",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "review",
+      "file": "bulk_review_wave_01_set_04.json",
+      "historicalSourcePath": "test_prep/eppp_legacy/bulk_review_wave_01_set_04.json",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/bulk_review_wave_01_set_04.json",
+      "originalBytes": 459058,
+      "originalSha256": "cff932e7419bba4c327d346ae5fdc616b5628b534a0d5d7fd863dbb383a2f074",
+      "preservationPath": "quality/eppp_provenance/evidence/review/bulk_review_wave_01_set_04.json",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "review",
+      "file": "bulk_review_wave_01_set_04.md",
+      "historicalSourcePath": "test_prep/eppp_legacy/bulk_review_wave_01_set_04.md",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/bulk_review_wave_01_set_04.md",
+      "originalBytes": 611,
+      "originalSha256": "4de4533a1c875a6423114071506847254f8ed07a5152d29e502d56771a248d03",
+      "preservationPath": "quality/eppp_provenance/evidence/review/bulk_review_wave_01_set_04.md",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "review",
+      "file": "bulk_review_wave_01_set_05.json",
+      "historicalSourcePath": "test_prep/eppp_legacy/bulk_review_wave_01_set_05.json",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/bulk_review_wave_01_set_05.json",
+      "originalBytes": 473802,
+      "originalSha256": "1829bfec48d393424756d3450de1ca9ba17c32ad4db4d73ff11b114b6e0a1703",
+      "preservationPath": "quality/eppp_provenance/evidence/review/bulk_review_wave_01_set_05.json",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "review",
+      "file": "bulk_review_wave_01_set_05.md",
+      "historicalSourcePath": "test_prep/eppp_legacy/bulk_review_wave_01_set_05.md",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/bulk_review_wave_01_set_05.md",
+      "originalBytes": 611,
+      "originalSha256": "808cffd541cdd55ba0b1c3955df0947959c05214e73b5f5dbe733275ccf1a27b",
+      "preservationPath": "quality/eppp_provenance/evidence/review/bulk_review_wave_01_set_05.md",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "review",
+      "file": "bulk_review_wave_01.json",
+      "historicalSourcePath": "test_prep/eppp_legacy/bulk_review_wave_01.json",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/bulk_review_wave_01.json",
+      "originalBytes": 2118345,
+      "originalSha256": "7dd335125c15b1a8caf7c3a9b4629d9d51bac01b18d217704dabcaa8dfe21c8b",
+      "preservationPath": "quality/eppp_provenance/evidence/review/bulk_review_wave_01.json",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "review",
+      "file": "bulk_review_wave_01.md",
+      "historicalSourcePath": "test_prep/eppp_legacy/bulk_review_wave_01.md",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/bulk_review_wave_01.md",
+      "originalBytes": 607,
+      "originalSha256": "f323f56c0710c87a7e804191c620b1c8626d1df7e539d54698a717b6c373fc65",
+      "preservationPath": "quality/eppp_provenance/evidence/review/bulk_review_wave_01.md",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "review",
+      "file": "next_review_docket.json",
+      "historicalSourcePath": "test_prep/eppp_legacy/next_review_docket.json",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/next_review_docket.json",
+      "originalBytes": 1143643,
+      "originalSha256": "08b5bb4081fa44b45605a3529558f9b06035163af7d6cd37ff6602e5164bbdb7",
+      "preservationPath": "quality/eppp_provenance/evidence/review/next_review_docket.json",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "review",
+      "file": "next_review_docket.md",
+      "historicalSourcePath": "test_prep/eppp_legacy/next_review_docket.md",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/next_review_docket.md",
+      "originalBytes": 2277,
+      "originalSha256": "05383d426d7a4d15743ac13d05d01c56da005faf0831d750caad0b804fe5fde0",
+      "preservationPath": "quality/eppp_provenance/evidence/review/next_review_docket.md",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "review",
+      "file": "review_ledger.json",
+      "historicalSourcePath": "test_prep/eppp_legacy/review_ledger.json",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/review_ledger.json",
+      "originalBytes": 1824595,
+      "originalSha256": "e0ffb660b1792d8b2071ed7c05ecea09179999321a9445953fe21734533d72e2",
+      "preservationPath": "quality/eppp_provenance/evidence/review/review_ledger.json",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "review",
+      "file": "review_ledger.md",
+      "historicalSourcePath": "test_prep/eppp_legacy/review_ledger.md",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/review_ledger.md",
+      "originalBytes": 1389,
+      "originalSha256": "160c8ea2809ca1c4c3d43c9a21a297bd57c1594db6efa95135a165702eff1099",
+      "preservationPath": "quality/eppp_provenance/evidence/review/review_ledger.md",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "review",
+      "file": "review_progress.json",
+      "historicalSourcePath": "test_prep/eppp_legacy/review_progress.json",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/review_progress.json",
+      "originalBytes": 650,
+      "originalSha256": "4f18fc9621d34860c46e227ce6bad87db58b301ea09ac0b712fc63f9476aec6f",
+      "preservationPath": "quality/eppp_provenance/evidence/review/review_progress.json",
+      "liveArtifactMayAdvance": false
+    },
+    {
+      "family": "review",
+      "file": "review_progress.md",
+      "historicalSourcePath": "test_prep/eppp_legacy/review_progress.md",
+      "historicalPublicPath": "desktop/web-app/public/test_prep/eppp_legacy/review_progress.md",
+      "originalBytes": 287,
+      "originalSha256": "6a1104eefcc4bfaa71befc419e4d76271717e686efa23541f6428667914a9d4f",
+      "preservationPath": "quality/eppp_provenance/evidence/review/review_progress.md",
+      "liveArtifactMayAdvance": false
+    }
+  ]
+}

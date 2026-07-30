@@ -76,7 +76,7 @@ describe('Typing Practice interaction and reflow refinements', () => {
 
   it('restores navigation focus without stealing active-drill input', () => {
     expect(source).toContain('var viewRegionRef = useRef(null)');
-    expect(source).toContain("if (state.view === 'drill') return;");
+    expect(source).toContain("if (state.view === 'drill' || state.view === 'battle') return;");
     expect(source).toContain('region.focus({ preventScroll: true })');
     expect(source).toContain("'aria-label': typingPracticeViewLabel(state.view)");
     expect(source).toContain("className: 'tp-view-shell'");

@@ -505,7 +505,7 @@ describe('Activity Pulse presentation and resource action', () => {
     tree = api.LiveLessonRunPanel(props);
     const status = walk(tree).find(node => node.props
       && node.props.role === 'status'
-      && nodeText(node).includes('Sent Support resource to Ana.'));
+      && nodeText(node).includes('Assigned Support resource to Ana.'));
     expect(status).toBeTruthy();
   });
 
@@ -535,7 +535,7 @@ describe('Activity Pulse presentation and resource action', () => {
     tree = api.LiveLessonRunPanel(props);
     const status = walk(tree).find(node => node.props
       && node.props.role === 'status'
-      && nodeText(node).includes('Could not send Support resource to Ana.'));
+      && nodeText(node).includes('Could not assign Support resource to Ana.'));
     expect(status).toBeTruthy();
   });
 

@@ -1,0 +1,17 @@
+# Deny by default: the remote builder needs only the runner and the staged,
+# hash-recorded canonical driver closure. In particular, never send local
+# secrets, Wrangler state, dependencies, tests, or documents as build context.
+**
+
+!runner/
+!runner/Dockerfile
+!runner/package.json
+!runner/package-lock.json
+!runner/server.cjs
+
+!.runner-context/
+!.runner-context/**
+
+# Keep these explicit so automated checks catch future broad allow rules.
+.dev.vars*
+.env*

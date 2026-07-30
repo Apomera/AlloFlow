@@ -1096,7 +1096,11 @@ function buildAssignmentActivityPublicSummary(state) {
       distribution: distribution
     };
   }
-  var participantCount = Object.keys(responses).length;
+  // The public threshold must describe the same approved contributor set that
+  // can appear in `terms`. Counting pending/hidden rows here could reveal a
+  // single approved learner's term once unrelated held responses brought the
+  // total over the anonymity floor.
+  var participantCount = 0;
   var buckets = {};
   Object.keys(responses).forEach(function(uid) {
     var row = responses[uid];
@@ -1104,6 +1108,7 @@ function buildAssignmentActivityPublicSummary(state) {
     var label = normalizeAssignmentWordCloudTerm(row.text);
     var key = label.toLowerCase();
     if (!key) return;
+    participantCount += 1;
     if (!buckets[key]) buckets[key] = { value: key, label: label, count: 0 };
     buckets[key].count += 1;
   });

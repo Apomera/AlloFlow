@@ -258,10 +258,76 @@ window.StemLab = window.StemLab || {
     // three.js Plane satisfies normal·p + constant = 0, so height h → constant -h.
     var _groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
     var _gpHit = new THREE.Vector3();
-    function _geoPickDown(e) { _pick.down = true; _pick.moved = false; _pick.x = e.clientX; _pick.y = e.clientY; }
-    function _geoPickMove(e) { if (_pick.down && (Math.abs(e.clientX - _pick.x) + Math.abs(e.clientY - _pick.y)) > 6) _pick.moved = true; }
+    function _geoHandleAtPointer(e) {
+      try {
+        var gs = window._geoScene, grp = gs && gs.sculptGroup;
+        if (window._geoActiveMode !== 'sculpt' || !grp) return null;
+        var rect = renderer.domElement.getBoundingClientRect();
+        if (!rect.width || !rect.height) return null;
+        _pickV2.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+        _pickV2.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+        _pickRay.setFromCamera(_pickV2, camera);
+        var hits = _pickRay.intersectObjects(grp.children, true);
+        for (var hi = 0; hi < hits.length; hi++) {
+          var node = hits[hi].object;
+          while (node) {
+            if (node.userData && node.userData.isGeoSculptHandle) return node;
+            node = node.parent;
+          }
+        }
+      } catch (err) {}
+      return null;
+    }
+    function _geoHandleScreenAxis(handle) {
+      var fallback = handle && handle.userData && handle.userData.geoSculptHandleAxis === 'y' ? { x: 0, y: -1 } : { x: 1, y: 0 };
+      try {
+        var grp = window._geoScene && window._geoScene.sculptGroup, axis = handle.userData.geoSculptHandleAxis;
+        var positive = null, negative = null;
+        grp.traverse(function(node) {
+          if (!(node.userData && node.userData.isGeoSculptHandle && node.userData.geoSculptHandleAxis === axis)) return;
+          if (node.userData.geoSculptHandleDir > 0) positive = node; else negative = node;
+        });
+        if (!positive || !negative) return fallback;
+        var pp = new THREE.Vector3(), pn = new THREE.Vector3();
+        positive.getWorldPosition(pp); negative.getWorldPosition(pn); pp.project(camera); pn.project(camera);
+        var dx = pp.x - pn.x, dy = -(pp.y - pn.y), mag = Math.sqrt(dx * dx + dy * dy);
+        return mag > 0.0001 ? { x: dx / mag, y: dy / mag } : fallback;
+      } catch (err) { return fallback; }
+    }
+    function _geoPickDown(e) {
+      _pick.down = true; _pick.moved = false; _pick.x = e.clientX; _pick.y = e.clientY; _pick.handle = null;
+      var handle = _geoHandleAtPointer(e);
+      if (handle) {
+        var screenAxis = _geoHandleScreenAxis(handle);
+        _pick.handle = { axis: handle.userData.geoSculptHandleAxis, dir: handle.userData.geoSculptHandleDir, sx: screenAxis.x, sy: screenAxis.y, lastX: e.clientX, lastY: e.clientY, travel: 0 };
+        if (controls) controls.enabled = false;
+        try { renderer.domElement.setPointerCapture(e.pointerId); } catch (err) {}
+        e.preventDefault();
+      }
+    }
+    function _geoPickMove(e) {
+      if (_pick.down && _pick.handle) {
+        var hd = _pick.handle, dx = e.clientX - hd.lastX, dy = e.clientY - hd.lastY;
+        hd.lastX = e.clientX; hd.lastY = e.clientY;
+        var dragStep = geoSculptDragSteps(hd.travel, dx, dy, hd.sx, hd.sy, 18);
+        hd.travel = dragStep.remaining;
+        if (dragStep.steps && window._geoNudgeSculptPart) {
+          for (var si = 0; si < dragStep.steps; si++) window._geoNudgeSculptPart(hd.axis, dragStep.direction);
+          _pick.moved = true;
+        }
+        e.preventDefault(); return;
+      }
+      if (_pick.down && (Math.abs(e.clientX - _pick.x) + Math.abs(e.clientY - _pick.y)) > 6) _pick.moved = true;
+    }
     function _geoPickUp(e) {
-      var wasDown = _pick.down; _pick.down = false;
+      var wasDown = _pick.down, activeHandle = _pick.handle, handleMoved = _pick.moved;
+      _pick.down = false; _pick.handle = null;
+      if (activeHandle) {
+        if (controls) controls.enabled = true;
+        try { renderer.domElement.releasePointerCapture(e.pointerId); } catch (err) {}
+        if (!handleMoved && window._geoNudgeSculptPart) window._geoNudgeSculptPart(activeHandle.axis, activeHandle.dir);
+        e.preventDefault(); return;
+      }
       if (!wasDown || _pick.moved) return;                       // it was an orbit drag, not a tap
       var rect = renderer.domElement.getBoundingClientRect();
       if (!rect.width || !rect.height) return;
@@ -271,7 +337,7 @@ window.StemLab = window.StemLab || {
       // 1) Tap an existing construction object → select it (parity with VR point-select).
       try {
         var gs = window._geoScene; var grp = gs && gs.constructionGroup;
-        if (grp && grp.children && grp.children.length) {
+        if (window._geoActiveMode === 'stretch' && grp && grp.children && grp.children.length) {
           var hits = _pickRay.intersectObjects(grp.children, true);
           if (hits.length) {
             var node = hits[0].object, id = null;
@@ -280,7 +346,33 @@ window.StemLab = window.StemLab || {
           }
         }
       } catch (err) {}
-      // 2) Otherwise, if click-to-place is armed, drop a point on the ground plane.
+      // 2) In Sculpt mode, select the exact primitive mesh that was tapped.
+      try {
+        var sculptScene = window._geoScene, sculptGroup = sculptScene && sculptScene.sculptGroup;
+        if (window._geoActiveMode === 'sculpt' && sculptGroup && sculptGroup.children && sculptGroup.children.length) {
+          var sculptHits = _pickRay.intersectObjects(sculptGroup.children, true);
+          if (sculptHits.length) {
+            // Editing handles get first refusal even when a larger solid sits behind
+            // them in the same ray. This makes the colored ±X/±Y/±Z knobs reliable.
+            var handleHit = null;
+            for (var shi = 0; shi < sculptHits.length && !handleHit; shi++) {
+              var handleNode = sculptHits[shi].object;
+              while (handleNode) {
+                if (handleNode.userData && handleNode.userData.isGeoSculptHandle) { handleHit = handleNode; break; }
+                handleNode = handleNode.parent;
+              }
+            }
+            if (handleHit && window._geoNudgeSculptPart) {
+              window._geoNudgeSculptPart(handleHit.userData.geoSculptHandleAxis, handleHit.userData.geoSculptHandleDir);
+              return;
+            }
+            var sculptNode = sculptHits[0].object, sculptPartIndex = null;
+            while (sculptNode) { if (sculptNode.userData && sculptNode.userData.prim3dPartIndex != null) { sculptPartIndex = sculptNode.userData.prim3dPartIndex; break; } sculptNode = sculptNode.parent; }
+            if (sculptPartIndex != null && window._geoSelectSculptPart) { window._geoSelectSculptPart(sculptPartIndex); return; }
+          }
+        }
+      } catch (err) {}
+      // 3) Otherwise, if click-to-place is armed, drop a point on the ground plane.
       try {
         if (window._geoPlaceArmed && window._geoPlacePoint) {
           var _ph = +window._geoPlaceY || 0;
@@ -309,7 +401,8 @@ window.StemLab = window.StemLab || {
     };
     animate();
     // ── WebXR Tier 2: controllers — grip-GRAB the model (one hand = 6DOF move +
-    //    rotate; two hands = scale by the distance between them). Guarded +
+    //    rotate; two hands = view-scale by their distance, with proportions and
+    //    mathematical measurements preserved). Guarded +
     //    presenting-only; never touches the 2D path. ──
     var _xrCtrlsGeo = null, _grab = null;   // _grab = {ctrl, obj, two:{ctrlB,startDist,startScale}|null}
     function _geoTarget() { var gs = window._geoScene; return (gs && (gs.sculptGroup || gs.mesh)) || null; }
@@ -323,22 +416,23 @@ window.StemLab = window.StemLab || {
       try {
         var obj = _geoTarget(); if (!obj) return;
         if (_grab && _grab.obj === obj && _grab.ctrl !== ctrl) {
-          _grab.two = { ctrlB: ctrl, startDist: _ctrlDist(_grab.ctrl, ctrl) || 1, startScale: obj.scale.x || 1 };   // second hand → scale
+          _grab.two = { ctrlB: ctrl, startDist: _ctrlDist(_grab.ctrl, ctrl) || 1, startScale: obj.scale.clone(), ratio: 1 };   // second hand → view scale
         } else {
           ctrl.attach(obj);                          // 6DOF follow (three preserves world transform)
           _grab = { ctrl: ctrl, obj: obj, two: null };
         }
         _geoHaptic(0.5, 30);
+        _geoSetVrStatus(_grab && _grab.two ? 'VIEW SCALE | measurements unchanged' : 'VIEW TRANSFORM | measurements unchanged');
       } catch (e) {}
     }
     function _grabEnd(ctrl) {
       try {
         if (!_grab) return;
-        if (_grab.two && _grab.two.ctrlB === ctrl) { _grab.two = null; return; }   // release 2nd hand, keep holding
+        if (_grab.two && _grab.two.ctrlB === ctrl) { _grab.two = null; _geoSetVrStatus('VIEW TRANSFORM | measurements unchanged'); return; }   // release 2nd hand, keep holding
         if (_grab.ctrl === ctrl) {
           var obj = _grab.obj;
-          if (_grab.two) { var b = _grab.two.ctrlB; try { b.attach(obj); } catch (e) {} _grab = { ctrl: b, obj: obj, two: null }; }   // hand off to the other hand
-          else { try { scene.attach(obj); } catch (e) {} _grab = null; }
+          if (_grab.two) { var b = _grab.two.ctrlB; try { b.attach(obj); } catch (e) {} _grab = { ctrl: b, obj: obj, two: null }; _geoSetVrStatus('VIEW TRANSFORM | measurements unchanged'); }   // hand off to the other hand
+          else { try { scene.attach(obj); } catch (e) {} _grab = null; _geoSetVrStatus(''); }
         }
       } catch (e) {}
     }
@@ -346,12 +440,14 @@ window.StemLab = window.StemLab || {
       try {
         if (_grab && _grab.two && _grab.obj) {
           var d = _ctrlDist(_grab.ctrl, _grab.two.ctrlB);
-          var s = Math.max(0.2, Math.min(8, (_grab.two.startScale || 1) * (d / (_grab.two.startDist || d))));
-          _grab.obj.scale.setScalar(s);
+          var ratio = Math.max(0.25, Math.min(4, d / (_grab.two.startDist || d)));
+          _grab.two.ratio = ratio;
+          _grab.obj.scale.copy(_grab.two.startScale).multiplyScalar(ratio);
+          _geoSetVrStatus('VIEW SCALE ×' + ratio.toFixed(2) + ' | measurements unchanged');
         }
       } catch (e) {}
     }
-    function _xrReleaseGrab() { try { if (_grab && _grab.obj) { scene.attach(_grab.obj); } _grab = null; } catch (e) {} }
+    function _xrReleaseGrab() { try { if (_grab && _grab.obj) { scene.attach(_grab.obj); } _grab = null; _geoSetVrStatus(''); } catch (e) {} }
     // ── Thumbstick tuning in VR (armed edge-trigger so one flick = one step):
     //    RIGHT stick X cycles the stretch axis, Y adjusts the stretch length —
     //    routed to the React handlers so 2D + VR share one source of truth. ──
@@ -377,27 +473,32 @@ window.StemLab = window.StemLab || {
     //    in VR, where the 2D UI is out of view). Updated by the React voice flow
     //    through window._geoScene.setVrCaption. ──
     var _vrCapCanvas = null, _vrCapTex = null, _vrCapSprite = null;
-    function _geoSetVrCaption(text) {
-      try {
-        if (!_vrCapSprite) {
-          _vrCapCanvas = document.createElement('canvas'); _vrCapCanvas.width = 512; _vrCapCanvas.height = 128;
-          _vrCapTex = new THREE.CanvasTexture(_vrCapCanvas);
-          _vrCapSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: _vrCapTex, transparent: true, depthTest: false, depthWrite: false }));
-          _vrCapSprite.scale.set(0.95, 0.24, 1); _vrCapSprite.position.set(0, -0.5, -1.4); _vrCapSprite.renderOrder = 9998;
-          camera.add(_vrCapSprite);
-        }
-        var t = String(text || '');
-        _vrCapSprite.visible = !!t;
-        if (t) {
-          var cxx = _vrCapCanvas.getContext('2d');
-          cxx.clearRect(0, 0, 512, 128);
-          cxx.fillStyle = 'rgba(2,6,23,0.82)'; cxx.fillRect(0, 0, 512, 128);
-          cxx.fillStyle = '#e0e7ff'; cxx.font = 'bold 34px sans-serif'; cxx.textAlign = 'center'; cxx.textBaseline = 'middle';
-          cxx.fillText(t.length > 36 ? t.slice(0, 35) + '…' : t, 256, 64);
-          _vrCapTex.needsUpdate = true;
-        }
-      } catch (e) {}
+    var _vrMathText = '', _vrStatusText = '';
+    function _geoDrawVrCaption() {
+      if (!_vrCapSprite) {
+        _vrCapCanvas = document.createElement('canvas'); _vrCapCanvas.setAttribute('aria-hidden', 'true'); _vrCapCanvas.width = 1024; _vrCapCanvas.height = 256;
+        _vrCapTex = new THREE.CanvasTexture(_vrCapCanvas);
+        _vrCapSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: _vrCapTex, transparent: true, depthTest: false, depthWrite: false }));
+        _vrCapSprite.scale.set(1.6, 0.4, 1); _vrCapSprite.position.set(0, -0.42, -1.6); _vrCapSprite.renderOrder = 9998;
+        camera.add(_vrCapSprite);
+      }
+      var visible = !!(_vrMathText || _vrStatusText);
+      _vrCapSprite.visible = visible;
+      if (!visible) return;
+      var cxx = _vrCapCanvas.getContext('2d');
+      cxx.clearRect(0, 0, 1024, 256);
+      cxx.fillStyle = 'rgba(2,6,23,0.9)'; cxx.fillRect(0, 0, 1024, 256);
+      cxx.textAlign = 'center'; cxx.textBaseline = 'middle';
+      cxx.fillStyle = '#f8fafc'; cxx.font = 'bold 43px sans-serif';
+      var math = _vrMathText.length > 58 ? _vrMathText.slice(0, 57) + '…' : _vrMathText;
+      cxx.fillText(math, 512, 92);
+      cxx.fillStyle = '#a7f3d0'; cxx.font = 'bold 31px sans-serif';
+      var status = _vrStatusText.length > 70 ? _vrStatusText.slice(0, 69) + '…' : _vrStatusText;
+      cxx.fillText(status, 512, 172);
+      _vrCapTex.needsUpdate = true;
     }
+    function _geoSetVrCaption(text) { try { _vrMathText = String(text || ''); _geoDrawVrCaption(); } catch (e) {} }
+    function _geoSetVrStatus(text) { try { _vrStatusText = String(text || ''); _geoDrawVrCaption(); } catch (e) {} }
     function _xrSetupControllersGeo() {
       if (_xrCtrlsGeo) return;
       _xrCtrlsGeo = [];
@@ -457,7 +558,7 @@ window.StemLab = window.StemLab || {
           return session;
         });
     }
-    return { scene: scene, camera: camera, renderer: renderer, controls: controls, animId: animId, mesh: null, xrRig: xrRig, enterVR: enterVR, setVrCaption: _geoSetVrCaption };
+    return { scene: scene, camera: camera, renderer: renderer, controls: controls, animId: animId, mesh: null, xrRig: xrRig, enterVR: enterVR, setVrCaption: _geoSetVrCaption, setVrStatus: _geoSetVrStatus };
   }
 
   function updateMesh(gs, shapeType, dims, shapeColor, wireframe, opacity) {
@@ -520,6 +621,8 @@ window.StemLab = window.StemLab || {
 
   function cleanupScene() {
     if (window._geoSrTimer) { clearTimeout(window._geoSrTimer); window._geoSrTimer = null; }
+    if (window._geoFocusAnim) { cancelAnimationFrame(window._geoFocusAnim); window._geoFocusAnim = null; }
+    window._geoActiveMode = null;
     if (window._geoScene) {
       cancelAnimationFrame((window._geoScene.renderer && window._geoScene.renderer._geoAnimId) || window._geoScene.animId);
       // End any live VR session and stop the XR frame loop before disposing the GL.
@@ -940,7 +1043,119 @@ window.StemLab = window.StemLab || {
     };
   }
 
+  // Horizontal cross-section through a sculpt primitive. t=0 is its local bottom,
+  // t=1 its local top; returned dimensions are in the caller's display units.
+  function geoSculptSliceStudy(part, t, recipeScale, worldUnit) {
+    part = part || { shape: 'box', size: [1, 1, 1] };
+    t = Math.max(0, Math.min(1, isFinite(+t) ? +t : 0.5));
+    var f = (recipeScale > 0 ? recipeScale : 1) * (worldUnit > 0 ? worldUnit : 1);
+    var size = (part.size || []).map(function(n) { return Math.max(0, +n || 0) * f; });
+    var PI = Math.PI, shape = part.shape || 'box';
+    if (shape === 'box') {
+      var w = size[0] || 0, h = size[1] || 0, d = size[2] || 0;
+      return { shape: shape, label: 'rectangle', t: t, offset: (t - 0.5) * h, width: w, depth: d, area: w * d, formula: 'A = w × d', substituted: 'A = ' + w.toFixed(2) + ' × ' + d.toFixed(2) };
+    }
+    if (shape === 'sphere') {
+      var rs = size[0] || 0, ys = (2 * t - 1) * rs, rSlice = Math.sqrt(Math.max(0, rs * rs - ys * ys));
+      return { shape: shape, label: 'circle', t: t, offset: ys, radius: rSlice, area: PI * rSlice * rSlice, formula: 'A = π(r² − y²)', substituted: 'A = π × ' + rSlice.toFixed(2) + '²' };
+    }
+    if (shape === 'cylinder') {
+      var rc = size[0] || 0, hc = size[1] || 0;
+      return { shape: shape, label: 'circle', t: t, offset: (t - 0.5) * hc, radius: rc, area: PI * rc * rc, formula: 'A = πr²', substituted: 'A = π × ' + rc.toFixed(2) + '²' };
+    }
+    if (shape === 'cone') {
+      var rco = size[0] || 0, hco = size[1] || 0, rAt = rco * (1 - t);
+      return { shape: shape, label: 'circle', t: t, offset: (t - 0.5) * hco, radius: rAt, area: PI * rAt * rAt, formula: 'A = π[r(1 − t)]²', substituted: 'A = π × ' + rAt.toFixed(2) + '²' };
+    }
+    if (shape === 'torus') {
+      var R = size[0] || 0, tube = size[1] || 0, yt = (2 * t - 1) * tube;
+      var q = Math.sqrt(Math.max(0, tube * tube - yt * yt)), outer = R + q, inner = Math.max(0, R - q);
+      return { shape: shape, label: 'annulus', t: t, offset: yt, innerRadius: inner, outerRadius: outer, area: PI * (outer * outer - inner * inner), formula: 'A = π(Rₒ² − Rᵢ²)', substituted: 'A = π(' + outer.toFixed(2) + '² − ' + inner.toFixed(2) + '²)' };
+    }
+    return { shape: shape, label: 'section', t: t, offset: 0, area: 0, formula: 'A varies', substituted: '' };
+  }
+  // Approximate a primitive's volume as a Riemann stack of horizontal slices.
+  // The returned profile also powers the area-vs-height graph, so the numerical
+  // model and the visual model cannot drift apart.
+  function geoSculptSliceProfile(part, t, recipeScale, worldUnit, sliceCount) {
+    part = part || { shape: 'box', size: [1, 1, 1] };
+    t = Math.max(0, Math.min(1, isFinite(+t) ? +t : 0.5));
+    sliceCount = Math.max(4, Math.min(200, Math.round(+sliceCount || 32)));
+    var f = (recipeScale > 0 ? recipeScale : 1) * (worldUnit > 0 ? worldUnit : 1);
+    var size = (part.size || []).map(function(n) { return Math.max(0, +n || 0) * f; });
+    var shape = part.shape || 'box', height = 0;
+    if (shape === 'sphere') height = 2 * (size[0] || 0);
+    else if (shape === 'torus') height = 2 * (size[1] || 0);
+    else height = size[1] || 0;
+    var exact = geoPrimitiveMeasure(shape, size).vol;
+    var thickness = sliceCount ? height / sliceCount : 0;
+    var estimate = 0, belowEstimate = 0, i;
+    for (i = 0; i < sliceCount; i++) {
+      estimate += geoSculptSliceStudy(part, (i + 0.5) / sliceCount, recipeScale, worldUnit).area * thickness;
+    }
+    var belowThickness = sliceCount ? (height * t) / sliceCount : 0;
+    for (i = 0; i < sliceCount; i++) {
+      belowEstimate += geoSculptSliceStudy(part, t * (i + 0.5) / sliceCount, recipeScale, worldUnit).area * belowThickness;
+    }
+    var samples = [];
+    for (i = 0; i <= sliceCount; i++) {
+      var sample = geoSculptSliceStudy(part, i / sliceCount, recipeScale, worldUnit);
+      samples.push({ t: i / sliceCount, area: sample.area });
+    }
+    var maxArea = samples.reduce(function(max, sample) { return Math.max(max, sample.area); }, 0);
+    return {
+      shape: shape, t: t, height: height, sliceCount: sliceCount,
+      sliceThickness: thickness, estimate: estimate, exact: exact,
+      errorPercent: exact ? Math.abs(estimate - exact) / exact * 100 : 0,
+      belowEstimate: belowEstimate, maxArea: maxArea, samples: samples
+    };
+  }
+
+  // Convert pointer travel projected onto a screen-space axis into bounded 0.2-unit
+  // nudge steps. Kept pure so oblique-camera drag behavior is deterministic.
+  function geoSculptDragSteps(travel, deltaX, deltaY, axisX, axisY, threshold) {
+    threshold = threshold > 0 ? threshold : 18;
+    var nextTravel = (travel || 0) + (deltaX || 0) * (axisX || 0) + (deltaY || 0) * (axisY || 0);
+    var steps = Math.min(3, Math.floor(Math.abs(nextTravel) / threshold));
+    var direction = nextTravel >= 0 ? 1 : -1;
+    return { steps: steps, direction: direction, remaining: nextTravel - direction * steps * threshold };
+  }
+
+  function geoRestoreSculptPart(recipe, index, baseline) {
+    if (!recipe || !recipe.parts || !recipe.parts[index] || !baseline) return recipe;
+    return Object.assign({}, recipe, { parts: recipe.parts.map(function(part, i) { return i === index ? JSON.parse(JSON.stringify(baseline)) : part; }) });
+  }
   // ── Challenge calculations (includes lateral area for challenge) ──
+  // Coordinate a selected 3D primitive with the two-dimensional representations
+  // learners commonly use to reason about its surface and interior.
+  function geoSculptRepresentation(shape) {
+    var map = {
+      box: { crossSection: 'Rectangle', net: '6 rectangles', cue: 'Opposite faces match in area.' },
+      sphere: { crossSection: 'Circle', net: 'No distortion-free flat net', cue: 'Every central slice is a circle.' },
+      cylinder: { crossSection: 'Circle', net: '2 circles + 1 rectangle', cue: 'The rectangle wraps around the circumference.' },
+      cone: { crossSection: 'Circle', net: '1 circle + 1 sector', cue: 'The sector radius is the cone slant height.' },
+      torus: { crossSection: 'Circle', net: 'No distortion-free flat net', cue: 'A circular cross-section travels around a circular path.' }
+    };
+    return map[shape] || { crossSection: 'Varies', net: 'No simple flat net', cue: 'Compare a slice with the full surface.' };
+  }
+
+  // A pure predict-manipulate-compare calculation for a uniformly scaled part.
+  function geoSculptScaleStudy(part, factor, recipeScale, worldUnit) {
+    factor = factor > 0 ? factor : 1;
+    var baseScale = (recipeScale > 0 ? recipeScale : 1) * (worldUnit > 0 ? worldUnit : 1);
+    var size = (part && part.size) || [];
+    var before = geoPrimitiveMeasure((part && part.shape) || 'box', size.map(function(n) { return (n || 0) * baseScale; }));
+    var after = geoPrimitiveMeasure((part && part.shape) || 'box', size.map(function(n) { return (n || 0) * baseScale * factor; }));
+    return {
+      factor: factor,
+      before: before,
+      after: after,
+      volumeRatio: before.vol ? after.vol / before.vol : 0,
+      areaRatio: before.sa ? after.sa / before.sa : 0,
+      expectedVolumeRatio: factor * factor * factor,
+      expectedAreaRatio: factor * factor
+    };
+  }
   function challengeCalc(sid, rd) {
     var PI = Math.PI;
     switch (sid) {
@@ -1455,6 +1670,33 @@ window.StemLab = window.StemLab || {
   // ── Measurement of a construction object (PURE) — the dimension it lives in
   //    plus the size that "counts" there (length / area / volume) and the vector
   //    formula that produced it. This is the math the stretch mechanic teaches. ──
+  // Convert the active orthogonal stretch construction into the compact state used
+  // by the guided immersive lab. Unsupported tapered and revolved solids stay in
+  // the full sandbox instead of being silently simplified into a box.
+  function geoImmersiveLaunchState(o) {
+    if (!o || ['point', 'segment', 'rect', 'prism'].indexOf(o.type) < 0) return null;
+    var state = { d: 0, L: 1.6, W: 1.1, H: 1.1, axis: 0 };
+    if (o.type === 'point') return state;
+    state.d = 1; state.L = vec3Mag(o.vector || [0, 0, 0]);
+    if (o.type === 'segment') { state.axis = 0; }
+    if (o.type === 'rect' || o.type === 'prism') {
+      var u = o.u || [0, 0, 0], v = o.v || [0, 0, 0];
+      state.d = o.type === 'rect' ? 2 : 3;
+      state.L = vec3Mag(u); state.W = vec3Mag(v);
+      var uvCos = state.L && state.W ? Math.abs((u[0] * v[0] + u[1] * v[1] + u[2] * v[2]) / (state.L * state.W)) : 1;
+      if (uvCos > 0.001) return null;
+      state.axis = state.d - 1;
+    }
+    if (o.type === 'prism') {
+      var normal = vec3Norm(vec3Cross(o.u || [1, 0, 0], o.v || [0, 0, 1]));
+      var extrusion = o.w || [0, 1, 0];
+      state.H = Math.abs(extrusion[0] * normal[0] + extrusion[1] * normal[1] + extrusion[2] * normal[2]);
+      if (Math.abs(vec3Mag(extrusion) - state.H) > 0.001) return null;
+    }
+    var valid = [state.L, state.W, state.H].every(function(value) { return isFinite(value) && value >= 0.25 && value <= 4; });
+    return valid ? state : null;
+  }
+
   function geoStretchMeasure(o) {
     if (!o) return null;
     if (o.type === 'point')   return { dim: 0, kind: 'point',  value: 0, unitExp: 0, formula: '—', label: 'Point' };
@@ -1796,7 +2038,7 @@ window.StemLab = window.StemLab || {
       return 'Dimensional-stretch scene with ' + objs.length + ' objects: ' + parts.join(', ') + '. ' +
         (selected ? 'Selected ' + geoObjectLabelText(selected, units).replace(/\n/g, ', ') + '.' : 'No object selected.') + place;
     }
-    if (mode === 'sculpt') return 'AI sculpture scene. Use the sculpture controls to create or edit primitive parts.';
+    if (mode === 'sculpt') return 'Sculpt scene. Use manual primitive controls or AI-assisted creation to build and edit parts.';
     var names = { box: 'box', sphere: 'sphere', cylinder: 'cylinder', cone: 'cone', pyramid: 'square pyramid', torus: 'torus', prism: 'triangular prism' };
     var mm = calcMeasurements(shape, dims || {});
     return 'Single ' + (names[shape] || shape || 'shape') + '. Volume ' + (Math.round(mm.vol * 100) / 100) + ' ' + units + ' cubed. Surface area ' + (Math.round(mm.sa * 100) / 100) + ' ' + units + ' squared.';
@@ -1811,7 +2053,7 @@ window.StemLab = window.StemLab || {
     }
     if (mode === 'sculpt') {
       var sm = geoSculptMeasure(sculptRecipe, SCULPT_GRID_UNIT);
-      if (!sm.parts.length) return intro + 'The AI sculpture scene is empty. Suggest one simple object to build from two or three geometric primitives and ask which primitive the student would start with.';
+      if (!sm.parts.length) return intro + 'The sculpt scene is empty. Suggest one simple object to build from two or three geometric primitives and ask which primitive the student would start with.';
       var partText = sm.parts.slice(0, 12).map(function(p) { return p.name + ' (' + p.dims + ')'; }).join(', ');
       return intro + 'The student is editing a sculpture named ' + ((sculptRecipe && sculptRecipe.name) || 'untitled') + '. Parts: ' + partText +
         '. Sum-of-parts volume ' + sm.totalVol.toFixed(2) + ' ' + units + ' cubed; sum-of-parts surface area ' + sm.totalSA.toFixed(2) + ' ' + units +
@@ -1848,6 +2090,7 @@ window.StemLab = window.StemLab || {
   function buildGeoLabelSprite(THREE, text, anchor) {
     if (typeof document === 'undefined' || !text) return null;
     var canvas = document.createElement('canvas');
+    canvas.setAttribute('aria-hidden', 'true');
     var lines = String(text).split('\n').slice(0, 4);
     canvas.width = 512;
     canvas.height = 34 + lines.length * 42;
@@ -1940,6 +2183,75 @@ window.StemLab = window.StemLab || {
     group.add(label);
   }
 
+  // Six high-contrast, directly pickable handles surround the selected primitive.
+  // They live in recipe coordinates inside the scaled sculpt group, so they stay
+  // aligned through whole-sculpt scaling and rotation. Sidebar buttons remain the
+  // keyboard/touch alternative and share the same nudge callback.
+  function addSculptEditHandles(THREE, group, recipe, selectedPart) {
+    if (!THREE || !group || !recipe || !recipe.parts || !recipe.parts[selectedPart]) return null;
+    var part = recipe.parts[selectedPart];
+    var pos = part.position || [0, 0.5, 0];
+    var size = part.size || [1];
+    var extent = Math.max.apply(Math, size.concat([0.8])) * 0.62 + 0.28;
+    var root = new THREE.Group();
+    root.userData = root.userData || {};
+    root.userData.isGeoSculptHandleGroup = true;
+    var axes = [
+      { axis: 'x', color: 0xfb7185, vector: [1, 0, 0] },
+      { axis: 'y', color: 0x4ade80, vector: [0, 1, 0] },
+      { axis: 'z', color: 0x60a5fa, vector: [0, 0, 1] }
+    ];
+    axes.forEach(function(def) {
+      // A thin stem makes the axis readable from oblique camera angles. Positive
+      // ends use spheres; negative ends use cubes, so direction never relies on
+      // red/green/blue color alone.
+      var stemGeometry = new THREE.BoxGeometry(def.axis === 'x' ? extent * 2 : 0.026, def.axis === 'y' ? extent * 2 : 0.026, def.axis === 'z' ? extent * 2 : 0.026);
+      var stemMaterial = new THREE.MeshBasicMaterial({ color: def.color, transparent: true, opacity: 0.42, depthTest: false });
+      var stem = new THREE.Mesh(stemGeometry, stemMaterial);
+      stem.position.set(pos[0] || 0, pos[1] || 0, pos[2] || 0); stem.renderOrder = 9997;
+      stem.userData = stem.userData || {}; stem.userData.isGeoSculptHandleStem = true;
+      root.add(stem);
+      [-1, 1].forEach(function(dir) {
+        var geometry = dir > 0 && THREE.SphereGeometry ? new THREE.SphereGeometry(0.13, 14, 10) : new THREE.BoxGeometry(0.19, 0.19, 0.19);
+        var material = new THREE.MeshBasicMaterial({ color: def.color, transparent: true, opacity: dir > 0 ? 1 : 0.82, depthTest: false });
+        var handle = new THREE.Mesh(geometry, material);
+        handle.position.set((pos[0] || 0) + def.vector[0] * extent * dir, (pos[1] || 0) + def.vector[1] * extent * dir, (pos[2] || 0) + def.vector[2] * extent * dir);
+        handle.renderOrder = 9998;
+        handle.userData = handle.userData || {};
+        handle.userData.isGeoSculptHandle = true;
+        handle.userData.geoSculptHandleAxis = def.axis;
+        handle.userData.geoSculptHandleDir = dir;
+        handle.userData.geoSculptHandleSign = dir > 0 ? 'positive' : 'negative';
+        handle.userData.geoSculptPartIndex = selectedPart;
+        root.add(handle);
+      });
+    });
+    group.add(root);
+    return root;
+  }
+  // A luminous horizontal section guide that follows the selected part's local
+  // transform. It is deliberately non-pickable so it never steals sculpt taps.
+  function addSculptCrossSectionGuide(THREE, group, recipe, selectedPart, t) {
+    if (!THREE || !group || !recipe || !recipe.parts || !recipe.parts[selectedPart]) return null;
+    var part = recipe.parts[selectedPart], study = geoSculptSliceStudy(part, t, 1, 1), geometry = null;
+    try {
+      if (study.shape === 'box' && THREE.PlaneGeometry) geometry = new THREE.PlaneGeometry(Math.max(0.02, study.width), Math.max(0.02, study.depth));
+      else if (study.shape === 'torus' && THREE.RingGeometry) geometry = new THREE.RingGeometry(Math.max(0.001, study.innerRadius), Math.max(0.015, study.outerRadius), 64);
+      else if (THREE.CircleGeometry) geometry = new THREE.CircleGeometry(Math.max(0.015, study.radius || 0), 64);
+    } catch (e) { geometry = null; }
+    if (!geometry) return null;
+    var anchor = new THREE.Group(), pos = part.position || [0, 0.5, 0], rot = part.rotation || [0, 0, 0];
+    anchor.position.set(pos[0] || 0, pos[1] || 0, pos[2] || 0);
+    anchor.rotation.set((rot[0] || 0) * Math.PI / 180, (rot[1] || 0) * Math.PI / 180, (rot[2] || 0) * Math.PI / 180);
+    anchor.userData = anchor.userData || {}; anchor.userData.isGeoSculptSliceGuide = true;
+    var material = new THREE.MeshBasicMaterial({ color: 0xfacc15, transparent: true, opacity: 0.48, side: THREE.DoubleSide, depthTest: false, depthWrite: false });
+    var plane = new THREE.Mesh(geometry, material);
+    plane.position.y = study.offset || 0; plane.rotation.x = -Math.PI / 2; plane.renderOrder = 9996;
+    plane.userData = plane.userData || {}; plane.userData.isGeoSculptSliceGuide = true; plane.userData.geoSculptSliceArea = study.area;
+    plane.raycast = function() {};
+    anchor.add(plane); group.add(anchor);
+    return anchor;
+  }
   // ── Transparent-sort fix (PURE transform, world position unchanged) ──────────
   // Construction geometry is authored in WORLD coordinates with the mesh left at
   // the origin. three.js keys the transparent-pass sort on the projected origin of
@@ -2245,6 +2557,9 @@ window.StemLab = window.StemLab || {
       geoCrossSection: geoCrossSection, geoConicSection: geoConicSection,
       geoShapeNet: geoShapeNet, geoRealWorldScale: geoRealWorldScale,
       geoPrimitiveMeasure: geoPrimitiveMeasure, geoSculptMeasure: geoSculptMeasure,
+      geoSculptRepresentation: geoSculptRepresentation, geoSculptScaleStudy: geoSculptScaleStudy,
+      geoSculptDragSteps: geoSculptDragSteps, geoRestoreSculptPart: geoRestoreSculptPart,
+      geoSculptSliceStudy: geoSculptSliceStudy, geoSculptSliceProfile: geoSculptSliceProfile,
       SCULPT_GRID_UNIT: SCULPT_GRID_UNIT,
       geoPrismNet: geoPrismNet
     };
@@ -2354,6 +2669,21 @@ window.StemLab = window.StemLab || {
 
       // v2 additions ─────────────────────────────────────────────
       var mode = gd.mode || 'single'; // 'single' | 'stretch' | 'sculpt'
+      // Hide incompatible roots synchronously at the interaction boundary. The
+      // persisted mode update and Three.js rebuild happen in passive effects;
+      // without this pre-paint guard the previous mode can survive for one frame.
+      function prepareGeoModeTransition(nextMode) {
+        window._geoActiveMode = nextMode;
+        var gs = window._geoScene;
+        if (!gs) return;
+        [['mesh', 'single'], ['constructionGroup', 'stretch'], ['sliceGroup', 'stretch'], ['ghostGroup', 'stretch'], ['sculptGroup', 'sculpt']]
+          .forEach(function(entry) { var root = gs[entry[0]]; if (root && entry[1] !== nextMode) root.visible = false; });
+      }
+      function setGeoMode(nextMode) {
+        prepareGeoModeTransition(nextMode);
+        recordGeoResearch('mode_change', { mode: nextMode });
+        upd('mode', nextMode);
+      }
       var construction = gd.construction || { objects: [], selection: null };
       // Free-placement + resize state (Foundation wave): where new points land, the
       // snap grid, and whether a canvas tap drops a point.
@@ -2372,6 +2702,32 @@ window.StemLab = window.StemLab || {
       var _scEd = React.useState(false); var sculptEdit = _scEd[0], setSculptEdit = _scEd[1];       // hand-editing a recipe?
       var _scSel = React.useState(null); var selPart = _scSel[0], setSelPart = _scSel[1];             // selected part index
       var _scUndo = React.useState([]); var sculptUndo = _scUndo[0], setSculptUndo = _scUndo[1];      // edit undo stack (session)
+      var _scHist = React.useState([]); var sculptActionHistory = _scHist[0], setSculptActionHistory = _scHist[1];
+      var _scGal = React.useState(false); var showSculptGallery = _scGal[0], setShowSculptGallery = _scGal[1];
+      var _scInv = React.useState({ active: false, phase: 'predict', prediction: '', partIndex: null, study: null, explanation: '' });
+      var sculptInvestigation = _scInv[0], setSculptInvestigation = _scInv[1];
+      // Optional, session-only research trace. It stores action categories and
+      // coarse numeric metadata—never prompts, names, or explanation text.
+      var researchTraceOn = !!gd.researchTraceOn;
+      var showAdvancedTools = !!gd.showAdvancedTools;
+      var _rt = React.useState([]); var researchTrace = _rt[0], setResearchTrace = _rt[1];
+      var researchStartedRef = React.useRef(Date.now());
+      function recordGeoResearch(eventName, detail) {
+        if (!researchTraceOn) return;
+        var safe = {}, allowed = ['mode', 'part', 'axis', 'direction', 'factor', 'phase', 'objectCount', 'predictionCategory', 'explanationLength'];
+        detail = detail || {};
+        allowed.forEach(function(key) { if (detail[key] != null && ['string', 'number', 'boolean'].indexOf(typeof detail[key]) >= 0) safe[key] = detail[key]; });
+        safe.event = String(eventName || 'interaction').slice(0, 40);
+        safe.elapsedMs = Math.max(0, Date.now() - researchStartedRef.current);
+        setResearchTrace(function(items) { var next = items.concat([safe]); return next.length > 120 ? next.slice(next.length - 120) : next; });
+      }
+      function rememberSculptAction(label, partIndex) {
+        if (!label) return;
+        setSculptActionHistory(function(items) {
+          var next = items.concat([{ label: String(label).slice(0, 60), part: partIndex, at: Date.now() }]);
+          return next.length > 12 ? next.slice(next.length - 12) : next;
+        });
+      }
       // ── Voice sculpting (hands-free making). Feature-detected on Web Speech;
       //    the mic only shows where dictation is available — no clutter otherwise. ──
       var _vSup = React.useState(false); var voiceSupported = _vSup[0], setVoiceSupported = _vSup[1];
@@ -2411,6 +2767,8 @@ window.StemLab = window.StemLab || {
       React.useEffect(function() { if (deletePending && deleteCancelRef.current) deleteCancelRef.current.focus(); }, [deletePending]);
       React.useEffect(function() { if (saveOpen && saveNameRef.current) saveNameRef.current.focus(); }, [saveOpen]);
       var showSceneLabels = gd.showSceneLabels !== false;
+      var sculptSliceOn = !!gd.sculptSliceOn;
+      var sculptSliceT = gd.sculptSliceT != null ? Math.max(0, Math.min(1, +gd.sculptSliceT || 0)) : 0.5;
       var unitId = gd.unitId || 'unit';
       var unitDef = GEO_UNITS.find(function(u) { return u.id === unitId; }) || GEO_UNITS[0];
       var stretchAxis = gd.stretchAxis || 'x';
@@ -2504,6 +2862,7 @@ window.StemLab = window.StemLab || {
           return Object.assign({}, p, { geoSandbox: Object.assign({}, g, { construction: { objects: newObjs, selection: newObj.id }, pendingPredict: null }) });
         });
         geoSound('shapeChange');
+        recordGeoResearch('stretch_commit', { mode: 'stretch', objectCount: newObjs.length });
         var lbl = newObj.type === 'segment' ? 'segment (line)' : newObj.type === 'rect' ? 'rectangle (plane)' : newObj.type === 'prism' ? 'prism (solid)' : newObj.type === 'pyramid' ? 'tapered solid' : newObj.type === 'revolution' ? 'solid of revolution' : newObj.type;
         if (announceToSR) announceToSR((verb || 'Stretched') + ' to ' + lbl + '. Now ' + newObjs.length + ' objects in construction.');
       }
@@ -2573,6 +2932,7 @@ window.StemLab = window.StemLab || {
         if (isFinite(guess) && pp.actual) {
           var err = Math.abs(guess - pp.actual) / Math.abs(pp.actual);
           var pct = Math.round(err * 100);
+          recordGeoResearch('stretch_prediction', { mode: 'stretch', phase: 'compare', predictionCategory: err <= 0.05 ? 'within_5_percent' : err <= 0.15 ? 'within_15_percent' : 'outside_15_percent' });
           if (err <= 0.05) { if (awardXP) awardXP('geoSandbox', 15, 'Spot-on prediction'); if (addToast) addToast('🎯 Spot on! ' + pp.label + ' = ' + (Math.round(pp.actual * 100) / 100) + ' (you said ' + guess + ')', 'success'); }
           else if (err <= 0.15) { if (awardXP) awardXP('geoSandbox', 8, 'Close prediction'); if (addToast) addToast('👍 Within ' + pct + '% — ' + pp.label + ' = ' + (Math.round(pp.actual * 100) / 100), 'success'); }
           else if (addToast) addToast('Actual ' + pp.label.toLowerCase() + ' = ' + (Math.round(pp.actual * 100) / 100) + ' (you said ' + guess + ', off by ' + pct + '%)', 'info');
@@ -2949,8 +3309,96 @@ window.StemLab = window.StemLab || {
         _updSculpt(Object.assign({}, base, { parts: newParts }));
         if (msg && announceToSR) announceToSR(msg);
       }
-      function startFromScratch() {
-        _pushSculptUndo();
+      function selectSculptPart(index) {
+        if (!sculptRecipe || !sculptRecipe.parts || index < 0 || index >= sculptRecipe.parts.length) return;
+        setSelPart(index);
+        recordGeoResearch('part_select', { mode: 'sculpt', part: index });
+        var measuredSculpt = geoSculptMeasure(sculptRecipe, SCULPT_GRID_UNIT), measuredPart = measuredSculpt.parts[index];
+        if (announceToSR && measuredPart) announceToSR('Selected part ' + (index + 1) + ', ' + measuredPart.name + '. ' + measuredPart.volFormula + ' equals ' + measuredPart.vol.toFixed(2) + ' cubic ' + unitDef.short + '. ' + measuredPart.saFormula + ' equals ' + measuredPart.sa.toFixed(2) + ' square ' + unitDef.short + '.');
+      }
+      // Preview is deliberately presentation-only: mouse hover and keyboard focus
+      // illuminate the corresponding 3D primitive without changing selection.
+      function previewSculptPart(index) {
+        var gs = window._geoScene;
+        if (!gs || !gs.sculptGroup) return;
+        gs.sculptGroup.traverse(function(o) {
+          if (!o || !o.isMesh || !o.userData || o.userData.prim3dPartIndex == null) return;
+          var selected = !!o.userData.geoSculptSelected;
+          var previewed = index != null && o.userData.prim3dPartIndex === index && !selected;
+          o.userData.geoSculptPreview = previewed;
+          var materials = Array.isArray(o.material) ? o.material : [o.material];
+          materials.forEach(function(material) {
+            if (!material || !material.emissive) return;
+            if (selected) {
+              if (material.emissive.set) material.emissive.set(0xf0abfc);
+              material.emissiveIntensity = 0.48;
+            } else if (previewed) {
+              if (material.emissive.set) material.emissive.set(0x22d3ee);
+              material.emissiveIntensity = 0.38;
+            } else {
+              if (material.emissive.setHex) material.emissive.setHex(material.userData && material.userData.geoBaseEmissive != null ? material.userData.geoBaseEmissive : 0x000000);
+              else if (material.emissive.set) material.emissive.set(material.userData && material.userData.geoBaseEmissive != null ? material.userData.geoBaseEmissive : 0x000000);
+              material.emissiveIntensity = material.userData && material.userData.geoBaseEmissiveIntensity != null ? material.userData.geoBaseEmissiveIntensity : 0;
+            }
+          });
+        });
+      }
+      // Center one primitive, or the whole sculpture when index is null, while
+      // preserving the learner's viewing angle. Motion becomes an immediate jump
+      // when reduced motion is requested.
+      function focusSculptPart(index) {
+        var gs = window._geoScene, THREE = window.THREE;
+        if (!gs || !THREE || !gs.camera || !gs.sculptGroup) return false;
+        try {
+          var bounds = new THREE.Box3(), mesh = null;
+          if (index == null) {
+            gs.sculptGroup.children.forEach(function(child) {
+              if (child && child.userData && child.userData.prim3dPartIndex != null) { child.updateMatrixWorld(true); bounds.expandByObject(child); }
+            });
+          } else {
+            gs.sculptGroup.children.some(function(child) {
+              if (child && child.userData && child.userData.prim3dPartIndex === index) { mesh = child; return true; }
+              return false;
+            });
+            if (!mesh) return false;
+            mesh.updateMatrixWorld(true); bounds.setFromObject(mesh);
+          }
+          if (bounds.isEmpty && bounds.isEmpty()) return false;
+          var center = bounds.getCenter(new THREE.Vector3());
+          var size = bounds.getSize(new THREE.Vector3());
+          var currentTarget = gs.controls && gs.controls.target ? gs.controls.target.clone() : new THREE.Vector3(0, 0, 0);
+          var direction = gs.camera.position.clone().sub(currentTarget);
+          if (direction.lengthSq() < 0.0001) direction.set(1, 0.75, 1);
+          direction.normalize();
+          var radius = Math.max(size.x, size.y, size.z, 0.5) * 0.5;
+          var halfFov = Math.max(0.2, (gs.camera.fov || 50) * Math.PI / 360);
+          var distance = Math.max(2.4, Math.min(24, radius / Math.tan(halfFov) * 1.65));
+          var endPosition = center.clone().add(direction.multiplyScalar(distance));
+          var startPosition = gs.camera.position.clone(), startTarget = currentTarget.clone();
+          var reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+          if (window._geoFocusAnim) cancelAnimationFrame(window._geoFocusAnim);
+          if (gs.controls) gs.controls.autoRotate = false;
+          var startTime = null, duration = reduced ? 0 : 420;
+          function frame(now) {
+            if (!window._geoScene || window._geoScene !== gs || !gs.renderer || !gs.renderer.domElement.isConnected) return;
+            if (startTime == null) startTime = now;
+            var p = duration ? Math.min(1, (now - startTime) / duration) : 1;
+            var eased = 1 - Math.pow(1 - p, 3);
+            gs.camera.position.lerpVectors(startPosition, endPosition, eased);
+            var look = new THREE.Vector3().lerpVectors(startTarget, center, eased);
+            if (gs.controls && gs.controls.target) gs.controls.target.copy(look);
+            gs.camera.lookAt(look);
+            if (gs.controls) gs.controls.update();
+            if (p < 1) window._geoFocusAnim = requestAnimationFrame(frame);
+            else window._geoFocusAnim = null;
+          }
+          window._geoFocusAnim = requestAnimationFrame(frame);
+          var measured = index == null ? null : geoSculptMeasure(sculptRecipe, SCULPT_GRID_UNIT).parts[index];
+          if (announceToSR) announceToSR(index == null ? 'Framed the whole sculpt in the 3D view.' : ('Focused the 3D view on part ' + (index + 1) + (measured ? ', ' + measured.name : '') + '.'));
+          return true;
+        } catch (e) { return false; }
+      }
+      function startFromScratch() {        _pushSculptUndo();
         _updSculpt({ name: 'my sculpt', parts: [{ shape: 'box', size: [1, 1, 1], position: [0, 0.5, 0], rotation: [0, 0, 0], color: '#60a5fa' }] });
         setSelPart(0); setSculptEdit(true);
         if (announceToSR) announceToSR('New sculpt started with one box. Add parts and shape them by hand.');
@@ -2968,12 +3416,19 @@ window.StemLab = window.StemLab || {
         _pushSculptUndo();
         var parts = sculptRecipe.parts.map(function(p, i) { return i === selPart ? fn(JSON.parse(JSON.stringify(p))) : p; });
         _setParts(parts, msg);
+        rememberSculptAction(msg || 'Edited part', selPart);
       }
-      function nudgePart(axis, dir) { _editSel(function(p) { var i = { x: 0, y: 1, z: 2 }[axis]; var pos = (p.position || [0, 0, 0]).slice(); pos[i] = Math.round((pos[i] + dir * 0.2) * 100) / 100; p.position = pos; return p; }); }
-      function scaleSelPart(f) { _editSel(function(p) { p.size = (p.size || [1, 1, 1]).map(function(s) { return Math.max(0.1, Math.min(4, Math.round(s * f * 100) / 100)); }); return p; }, f > 1 ? 'Bigger' : 'Smaller'); }
-      function rotateSelPart() { _editSel(function(p) { var r = (p.rotation || [0, 0, 0]).slice(); r[1] = (r[1] + 15) % 360; p.rotation = r; return p; }, 'Rotated'); }
-      function recolorSelPart() { _editSel(function(p) { var i = SCULPT_PART_COLORS.indexOf(p.color); p.color = SCULPT_PART_COLORS[(i + 1) % SCULPT_PART_COLORS.length]; return p; }, 'Recolored'); }
-      function reshapeSelPart() { _editSel(function(p) { var i = SCULPT_SHAPES.indexOf(p.shape); p.shape = SCULPT_SHAPES[(i + 1) % SCULPT_SHAPES.length]; return p; }, 'Changed shape'); }
+      function nudgePart(axis, dir) {
+        _editSel(function(p) { var i = { x: 0, y: 1, z: 2 }[axis]; var pos = (p.position || [0, 0, 0]).slice(); pos[i] = Math.round((pos[i] + dir * 0.2) * 100) / 100; p.position = pos; return p; }, 'Moved ' + String(axis).toUpperCase() + ' ' + (dir > 0 ? '+0.2' : '−0.2'));
+        recordGeoResearch('part_move', { mode: 'sculpt', part: selPart, axis: axis, direction: dir });
+      }
+      function scaleSelPart(f) {
+        _editSel(function(p) { p.size = (p.size || [1, 1, 1]).map(function(s) { return Math.max(0.1, Math.min(4, Math.round(s * f * 100) / 100)); }); return p; }, f > 1 ? 'Scaled bigger ×' + f.toFixed(2) : 'Scaled smaller ×' + f.toFixed(2));
+        recordGeoResearch('part_scale', { mode: 'sculpt', part: selPart, factor: f });
+      }
+      function rotateSelPart() { _editSel(function(p) { var r = (p.rotation || [0, 0, 0]).slice(); r[1] = (r[1] + 15) % 360; p.rotation = r; return p; }, 'Rotated 15°'); recordGeoResearch('part_rotate', { mode: 'sculpt', part: selPart }); }
+      function recolorSelPart() { _editSel(function(p) { var i = SCULPT_PART_COLORS.indexOf(p.color); p.color = SCULPT_PART_COLORS[(i + 1) % SCULPT_PART_COLORS.length]; return p; }, 'Recolored'); recordGeoResearch('part_recolor', { mode: 'sculpt', part: selPart }); }
+      function reshapeSelPart() { _editSel(function(p) { var i = SCULPT_SHAPES.indexOf(p.shape); p.shape = SCULPT_SHAPES[(i + 1) % SCULPT_SHAPES.length]; return p; }, 'Changed primitive'); recordGeoResearch('part_reshape', { mode: 'sculpt', part: selPart }); }
       function deleteSelPart() {
         if (!sculptRecipe || !sculptRecipe.parts || selPart == null) return;
         _pushSculptUndo();
@@ -2982,6 +3437,127 @@ window.StemLab = window.StemLab || {
         else { _updSculpt(null); setSelPart(null); setSculptEdit(false); if (announceToSR) announceToSR('All parts deleted'); }
       }
 
+      // A compact investigation cycle: predict → manipulate → compare → explain.
+      // The baseline part is cloned so the comparison remains stable while React
+      // commits the resized recipe.
+      function startSculptInvestigation() {
+        if (!sculptRecipe || selPart == null || !sculptRecipe.parts || !sculptRecipe.parts[selPart]) return;
+        setSculptInvestigation({ active: true, phase: 'predict', prediction: '', partIndex: selPart, baseline: JSON.parse(JSON.stringify(sculptRecipe.parts[selPart])), study: null, explanation: '' });
+        recordGeoResearch('investigation_start', { mode: 'sculpt', part: selPart, phase: 'predict' });
+        if (announceToSR) announceToSR('Investigation started. Predict which measure will grow faster when every dimension is scaled by 1.25.');
+      }
+      function chooseSculptPrediction(choice) {
+        setSculptInvestigation(Object.assign({}, sculptInvestigation, { prediction: choice, phase: 'manipulate' }));
+        recordGeoResearch('investigation_prediction', { mode: 'sculpt', part: sculptInvestigation.partIndex, phase: 'predict', predictionCategory: choice });
+      }
+      function manipulateSculptInvestigation() {
+        if (!sculptInvestigation.active || !sculptInvestigation.baseline || sculptInvestigation.partIndex !== selPart) return;
+        var study = geoSculptScaleStudy(sculptInvestigation.baseline, 1.25, sculptRecipe && sculptRecipe.scale, SCULPT_GRID_UNIT);
+        scaleSelPart(1.25);
+        setSculptInvestigation(Object.assign({}, sculptInvestigation, { phase: 'compare', study: study }));
+        recordGeoResearch('investigation_manipulate', { mode: 'sculpt', part: selPart, phase: 'manipulate', factor: 1.25 });
+        if (announceToSR) announceToSR('Part scaled. Compare volume times ' + study.volumeRatio.toFixed(2) + ' with surface area times ' + study.areaRatio.toFixed(2) + '.');
+      }
+      function resetSculptInvestigation(restart) {
+        var shouldRestore = !!(sculptInvestigation.study && sculptInvestigation.baseline && sculptRecipe && sculptRecipe.parts && sculptRecipe.parts[sculptInvestigation.partIndex]);
+        if (shouldRestore) {
+          _pushSculptUndo();
+          var restoredRecipe = geoRestoreSculptPart(sculptRecipe, sculptInvestigation.partIndex, sculptInvestigation.baseline);
+          _setParts(restoredRecipe.parts, restart ? 'Investigation restarted at the original size' : 'Investigation scale change undone');
+          rememberSculptAction(restart ? 'Restored investigation baseline' : 'Undid investigation scale', sculptInvestigation.partIndex);
+        }
+        recordGeoResearch(restart ? 'investigation_restart' : 'investigation_exit', { mode: 'sculpt', part: sculptInvestigation.partIndex, phase: sculptInvestigation.phase });
+        if (restart) {
+          setSculptInvestigation(Object.assign({}, sculptInvestigation, { phase: 'predict', prediction: '', study: null, explanation: '' }));
+          if (announceToSR) announceToSR('Investigation restarted at the original part size.');
+        } else {
+          setSculptInvestigation({ active: false, phase: 'predict', prediction: '', partIndex: null, study: null, explanation: '' });
+          if (announceToSR) announceToSR(shouldRestore ? 'Investigation exited and its scale change was undone.' : 'Investigation exited.');
+        }
+      }
+      function finishSculptInvestigation() {
+        var explanationLength = String(sculptInvestigation.explanation || '').trim().length;
+        recordGeoResearch('investigation_explain', { mode: 'sculpt', part: sculptInvestigation.partIndex, phase: 'explain', explanationLength: explanationLength });
+        setSculptInvestigation({ active: false, phase: 'predict', prediction: '', partIndex: null, study: null, explanation: '' });
+        if (announceToSR) announceToSR('Investigation complete.');
+      }
+      function exportResearchTrace() {
+        if (!researchTrace.length || typeof document === 'undefined') return;
+        try {
+          var payload = { schema: 'geo-sandbox-anonymous-trace-v1', privacy: 'No names, prompts, or explanation text.', events: researchTrace };
+          var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+          var url = URL.createObjectURL(blob), link = document.createElement('a');
+          link.href = url; link.download = 'geometry-sandbox-research-trace.json'; document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
+          if (announceToSR) announceToSR('Anonymous research trace exported.');
+        } catch (e) { if (addToast) addToast('Could not export the research trace.', 'warning'); }
+      }
+      // Compact, shape-specific net + cross-section diagram for the selected-part
+      // overlay. The same relationship remains stated in text immediately below.
+      function renderSculptRepresentationDiagram(shape, rep) {
+        var marks = [];
+        var line = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.7, vectorEffect: 'non-scaling-stroke' };
+        function rect(key, x, y, w, ht) { marks.push(h('rect', Object.assign({ key: key, x: x, y: y, width: w, height: ht, rx: 1 }, line))); }
+        function circle(key, cx, cy, r) { marks.push(h('circle', Object.assign({ key: key, cx: cx, cy: cy, r: r }, line))); }
+        if (shape === 'box') {
+          [[25,18],[39,18],[53,18],[67,18],[39,4],[39,32]].forEach(function(p, i) { rect('box-' + i, p[0], p[1], 14, 14); });
+        } else if (shape === 'cylinder') {
+          rect('cyl-wrap', 19, 14, 48, 24); circle('cyl-a', 12, 26, 7); circle('cyl-b', 74, 26, 7);
+        } else if (shape === 'cone') {
+          circle('cone-base', 15, 29, 8);
+          marks.push(h('path', Object.assign({ key: 'cone-sector', d: 'M 39 39 A 31 31 0 0 1 75 8 L 46 25 Z' }, line)));
+        } else if (shape === 'sphere') {
+          circle('sphere-net', 46, 25, 18);
+          marks.push(h('path', Object.assign({ key: 'sphere-meridian', d: 'M 46 7 C 30 15 30 35 46 43 C 62 35 62 15 46 7', strokeDasharray: '3 2' }, line)));
+          marks.push(h('path', Object.assign({ key: 'sphere-slash', d: 'M 18 44 L 75 6', opacity: 0.65 }, line)));
+        } else if (shape === 'torus') {
+          circle('torus-outer', 46, 25, 19); circle('torus-inner', 46, 25, 8);
+          marks.push(h('path', Object.assign({ key: 'torus-slash', d: 'M 18 44 L 75 6', opacity: 0.65 }, line)));
+        } else {
+          rect('generic', 28, 10, 36, 30);
+        }
+        marks.push(h('line', { key: 'divider', x1: 94, y1: 4, x2: 94, y2: 47, stroke: 'currentColor', opacity: 0.3, strokeWidth: 1 }));
+        if (shape === 'box') rect('slice-box', 111, 15, 30, 22);
+        else {
+          circle('slice-round', 126, 26, 13);
+          if (shape === 'torus') circle('slice-torus-core', 126, 26, 3);
+        }
+        return h('svg', { viewBox: '0 0 152 52', className: 'w-full h-14 text-cyan-200', role: 'img', 'aria-label': geoShapeTitle(shape) + ' representation: net ' + rep.net + ', cross-section ' + rep.crossSection },
+          h('title', null, geoShapeTitle(shape) + ' net and cross-section'),
+          h('desc', null, 'Left: ' + rep.net + '. Right: ' + rep.crossSection + ' cross-section.'),
+          h('text', { x: 4, y: 8, fill: 'currentColor', fontSize: 7, fontWeight: 700 }, 'NET'),
+          h('text', { x: 105, y: 8, fill: 'currentColor', fontSize: 7, fontWeight: 700 }, 'SLICE'),
+          marks
+        );
+      }
+      // Compact area-vs-height profile. The moving marker uses the same slice
+      // study as the 3D plane, while the filled curve shows why stacking areas
+      // across height produces volume.
+      function renderSculptSliceProfile(profile, currentArea, unitShort) {
+        var left = 11, top = 7, plotW = 138, plotH = 36, baseY = top + plotH;
+        var maxArea = profile.maxArea || 1;
+        var points = profile.samples.map(function(sample) {
+          return [left + sample.t * plotW, baseY - (sample.area / maxArea) * plotH];
+        });
+        var lineD = points.map(function(point, i) { return (i ? 'L ' : 'M ') + point[0].toFixed(2) + ' ' + point[1].toFixed(2); }).join(' ');
+        var areaD = 'M ' + left + ' ' + baseY + ' ' + lineD + ' L ' + (left + plotW) + ' ' + baseY + ' Z';
+        var cursorX = left + profile.t * plotW;
+        var cursorY = baseY - (Math.max(0, currentArea) / maxArea) * plotH;
+        var label = 'Cross-sectional area by height. At ' + Math.round(profile.t * 100) + ' percent, area is ' + currentArea.toFixed(2) + ' square ' + unitShort + '. The ' + profile.sliceCount + '-slice volume estimate is ' + profile.estimate.toFixed(2) + ' cubic ' + unitShort + ', compared with exact volume ' + profile.exact.toFixed(2) + '.';
+        return h('svg', { 'data-geo-sculpt-slice-profile': 'true', viewBox: '0 0 160 62', className: 'w-full h-20 text-amber-300', role: 'img', 'aria-label': label },
+          h('title', null, 'Cross-sectional area by height'),
+          h('desc', null, label),
+          h('rect', { x: left, y: top, width: Math.max(0, cursorX - left), height: plotH, fill: 'currentColor', opacity: 0.08 }),
+          h('path', { d: areaD, fill: 'currentColor', opacity: 0.14 }),
+          h('path', { d: lineD, fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, vectorEffect: 'non-scaling-stroke' }),
+          h('line', { x1: left, y1: baseY, x2: left + plotW, y2: baseY, stroke: 'currentColor', opacity: 0.45, strokeWidth: 1 }),
+          h('line', { x1: cursorX, y1: top, x2: cursorX, y2: baseY, stroke: 'currentColor', strokeWidth: 1.3, strokeDasharray: '2 2', vectorEffect: 'non-scaling-stroke' }),
+          h('circle', { cx: cursorX, cy: cursorY, r: 2.8, fill: 'currentColor', stroke: 'currentColor', strokeWidth: 1 }),
+          h('text', { x: left, y: 54, fill: 'currentColor', fontSize: 6.5 }, '0%'),
+          h('text', { x: left + plotW, y: 54, fill: 'currentColor', fontSize: 6.5, textAnchor: 'end' }, '100% height'),
+          h('text', { x: left, y: 5.5, fill: 'currentColor', fontSize: 6.5 }, 'AREA'),
+          h('text', { x: cursorX < 92 ? cursorX + 4 : cursorX - 4, y: Math.max(8, cursorY - 4), fill: 'currentColor', fontSize: 6.5, textAnchor: cursorX < 92 ? 'start' : 'end' }, currentArea.toFixed(2))
+        );
+      }
       // ── Saved-sculpts gallery (mirrors saveConstruction/load/delete) ──
       function saveSculpt(rawName) {
         if (!sculptRecipe) return;
@@ -3160,15 +3736,17 @@ window.StemLab = window.StemLab || {
         // On-screen click-to-select: the canvas raycaster (initScene) calls this
         // when a construction object is tapped — same selectObject as the list.
         window._geoSelectObj = function(id) { selectObject(id); };
+        window._geoSelectSculptPart = function(index) { if (mode === 'sculpt') selectSculptPart(index); };
+        window._geoNudgeSculptPart = function(axis, dir) { if (mode === 'sculpt' && sculptEdit) nudgePart(axis, dir); };
         // Click-to-place: armed only in stretch mode; the raycaster drops a point on
         // the placement plane where the student taps (placePoint applies the snap).
         // _geoPlaceY tells the raycaster what height to put that plane at.
         window._geoPlacePoint = function(x, z, y) { placePoint(x, z, y); };
         window._geoPlaceArmed = (mode === 'stretch') && placeArmed;
         window._geoPlaceY = placeY;
-        return function() { try { window._geoXrPrimary = null; window._geoXrAxis = null; window._geoXrLen = null; window._geoSelectObj = null; window._geoPlacePoint = null; window._geoPlaceArmed = false; window._geoPlaceY = 0; } catch (e) {} };
+        return function() { try { window._geoXrPrimary = null; window._geoXrAxis = null; window._geoXrLen = null; window._geoSelectObj = null; window._geoSelectSculptPart = null; window._geoNudgeSculptPart = null; window._geoPlacePoint = null; window._geoPlaceArmed = false; window._geoPlaceY = 0; } catch (e) {} };
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      }, [mode, construction, stretchAxis, stretchLength, placeArmed, snap, placeY]);
+      }, [mode, construction, stretchAxis, stretchLength, placeArmed, snap, placeY, sculptEdit, selPart, JSON.stringify(sculptRecipe)]);
 
       // ── VR math HUD: while a headset session is presenting, pin a compact line
       //    (axis · length · current measurement · challenge target) in view so the
@@ -3252,7 +3830,7 @@ window.StemLab = window.StemLab || {
             // nothing — undoSculptEdit existed but was never bound to a key.
             case 'u': if (mode === 'stretch') doStretchUndo(); else if (mode === 'sculpt') undoSculptEdit(); break;
             case 'm':
-              upd('mode', mode === 'single' ? 'stretch' : 'single');
+              setGeoMode(mode === 'single' ? 'stretch' : 'single');
               if (announceToSR) announceToSR((mode === 'single' ? 'Stretch' : 'Single shape') + ' mode');
               break;
             case '/': e.preventDefault(); askAI(); break;
@@ -3301,6 +3879,7 @@ window.StemLab = window.StemLab || {
         var _clearMesh = function() { if (window._geoScene.mesh) { window._geoScene.scene.remove(window._geoScene.mesh); window._geoScene.mesh.traverse(function(o) { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); window._geoScene.mesh = null; } };
         var _clearGhost = function() { if (window._geoScene.ghostGroup) { window._geoScene.scene.remove(window._geoScene.ghostGroup); disposeGeoObject3D(window._geoScene.ghostGroup); window._geoScene.ghostGroup = null; } };
         _clearGhost();
+        window._geoActiveMode = mode;
         if (mode === 'single') {
           _clearConstruction(); _clearSculpt(); _clearSlice();
           updateMesh(window._geoScene, shape, dims, shapeColor, wireframe, opacity);
@@ -3313,8 +3892,26 @@ window.StemLab = window.StemLab || {
               var sg = P3D.buildObject(window.THREE, sculptRecipe, { unit: SCULPT_GRID_UNIT });   // ~2.5 units tall on the grid
               if (sg) {
                 sg.position.y = 0;
-                sg.traverse(function(o){ if(o.isMesh){ o.castShadow = true; } });
+                sg.traverse(function(o){
+                  if (!o.isMesh) return;
+                  o.castShadow = true;
+                  var selectedMesh = o.userData && o.userData.prim3dPartIndex === selPart;
+                  o.userData.geoSculptSelected = selectedMesh;
+                  o.userData.geoSculptPreview = false;
+                  if (o.material) {
+                    var selectedMaterials = Array.isArray(o.material) ? o.material : [o.material];
+                    selectedMaterials.forEach(function(selectedMaterial) {
+                      if (!selectedMaterial || !selectedMaterial.emissive) return;
+                      selectedMaterial.userData = selectedMaterial.userData || {};
+                      if (selectedMaterial.userData.geoBaseEmissive == null && selectedMaterial.emissive.getHex) selectedMaterial.userData.geoBaseEmissive = selectedMaterial.emissive.getHex();
+                      if (selectedMaterial.userData.geoBaseEmissiveIntensity == null) selectedMaterial.userData.geoBaseEmissiveIntensity = selectedMaterial.emissiveIntensity || 0;
+                      if (selectedMesh) { if (selectedMaterial.emissive.set) selectedMaterial.emissive.set(0xf0abfc); selectedMaterial.emissiveIntensity = 0.48; }
+                    });
+                  }
+                });
                 if (showSceneLabels) addSculptSceneLabel(window.THREE, sg, sculptRecipe, selPart, unitDef.short);
+                if (sculptEdit && selPart != null) addSculptEditHandles(window.THREE, sg, sculptRecipe, selPart);
+                if (sculptSliceOn && selPart != null) addSculptCrossSectionGuide(window.THREE, sg, sculptRecipe, selPart, sculptSliceT);
                 window._geoScene.sculptGroup = sg;
                 window._geoScene.scene.add(sg);
               }
@@ -3353,7 +3950,7 @@ window.StemLab = window.StemLab || {
         };
         window.addEventListener('resize', handleResize);
         return function() { window.removeEventListener('resize', handleResize); };
-      }, [shape, dims, shapeColor, wireframe, opacity, theme, mode, JSON.stringify(construction), JSON.stringify(sculptRecipe), prim3dReady, gd.sliceOn, gd.sliceT, showSceneLabels, unitId, selPart, placeArmed, placeX, placeY, placeZ]);
+      }, [shape, dims, shapeColor, wireframe, opacity, theme, mode, JSON.stringify(construction), JSON.stringify(sculptRecipe), prim3dReady, gd.sliceOn, gd.sliceT, showSceneLabels, unitId, selPart, sculptEdit, sculptSliceOn, sculptSliceT, placeArmed, placeX, placeY, placeZ]);
 
       // Cleanup on unmount
       React.useEffect(function() {
@@ -3409,8 +4006,8 @@ window.StemLab = window.StemLab || {
               var index = modes.indexOf(mode);
               var next = e.key === 'Home' ? modes[0] : e.key === 'End' ? modes[2] : modes[(index + (e.key === 'ArrowRight' ? 1 : -1) + modes.length) % modes.length];
               if (next === 'sculpt' && !(window.AlloModules && window.AlloModules.Prim3D)) ensurePrim3d(function(ok) { if (ok) setPrim3dReady(true); });
-              upd('mode', next);
-              if (announceToSR) announceToSR((next === 'single' ? 'Single shape' : next === 'stretch' ? 'Dimensional stretch' : 'AI sculpt') + ' mode');
+              setGeoMode(next);
+              if (announceToSR) announceToSR((next === 'single' ? 'Single shape' : next === 'stretch' ? 'Dimensional stretch' : 'Sculpt') + ' mode');
               window.setTimeout(function() { var tab = document.getElementById('geo-mode-tab-' + next); if (tab) tab.focus(); }, 0);
             }
           },
@@ -3421,7 +4018,7 @@ window.StemLab = window.StemLab || {
               'aria-controls': 'geo-fullscreen-container',
               tabIndex: mode === 'single' ? 0 : -1,
               onClick: function() {
-                upd('mode', 'single');
+                setGeoMode('single');
                 if (announceToSR) announceToSR('Single shape mode');
               },
               className: 'px-3 py-1 rounded-full text-[11px] font-bold transition-all ' +
@@ -3434,7 +4031,7 @@ window.StemLab = window.StemLab || {
               'aria-controls': 'geo-fullscreen-container',
               tabIndex: mode === 'stretch' ? 0 : -1,
               onClick: function() {
-                upd('mode', 'stretch');
+                setGeoMode('stretch');
                 if (announceToSR) announceToSR('Dimensional stretch mode. Place a point and stretch it into higher dimensions.');
               },
               title: t('stem.geosandbox.handwaver_inspired_build_by_stretching', 'HandWaver-inspired: build by stretching point \u2192 line \u2192 plane \u2192 solid'),
@@ -3449,13 +4046,13 @@ window.StemLab = window.StemLab || {
               tabIndex: mode === 'sculpt' ? 0 : -1,
               onClick: function() {
                 if (!(window.AlloModules && window.AlloModules.Prim3D)) ensurePrim3d(function(ok) { if (ok) setPrim3dReady(true); });
-                upd('mode', 'sculpt');
-                if (announceToSR) announceToSR('AI sculpt mode. Describe an object and the AI builds it from primitive shapes.');
+                setGeoMode('sculpt');
+                if (announceToSR) announceToSR('Sculpt mode. Build manually from primitive shapes or use AI-assisted creation.');
               },
-              title: t('stem.geosandbox.sculpt_mode_title', 'AI Sculpt: describe an object, the AI builds it from primitives \u2014 then refine it'),
+              title: t('stem.geosandbox.sculpt_mode_title', 'Sculpt: build manually from primitives or create with AI'),
               className: 'px-3 py-1 rounded-full text-[11px] font-bold transition-all ' +
                 (mode === 'sculpt' ? 'bg-fuchsia-700 text-white shadow' : 'text-slate-300 hover:text-slate-100')
-            }, t('stem.geosandbox.sculpt_mode', '\uD83E\uDDCA AI Sculpt'))
+            }, t('stem.geosandbox.sculpt_mode', '\uD83E\uDDCA Sculpt'))
           ),
           h('div', { className: 'flex gap-2 flex-wrap' },
             xrSupported && h('button', {
@@ -3474,7 +4071,18 @@ window.StemLab = window.StemLab || {
               onClick: function() {
                 // Top-level window (Video-Studio / Access-Lens escape-hatch), so WebXR
                 // works even when the AlloFlow app is inside Gemini Canvas's sandboxed iframe.
-                var url = 'https://alloflow-cdn.pages.dev/immersive_geometry/immersive_geometry.html?v=1';
+                var immersiveBase = 'https://alloflow-cdn.pages.dev/immersive_geometry/immersive_geometry.html';
+                try {
+                  var immersiveHost = String(window.location && window.location.hostname || '');
+                  if (/^(localhost|127\.0\.0\.1)$/i.test(immersiveHost) || /alloflow/i.test(immersiveHost)) immersiveBase = window.location.origin + '/immersive_geometry/immersive_geometry.html';
+                } catch (_) {}
+                var url = immersiveBase + '?v=2&source=geosandbox';
+                var selectedForImmersive = construction.objects.find(function(o) { return o.id === construction.selection; });
+                var launchState = mode === 'stretch' ? geoImmersiveLaunchState(selectedForImmersive) : null;
+                if (launchState) {
+                  ['d', 'L', 'W', 'H', 'axis'].forEach(function(key) { url += '&' + key + '=' + encodeURIComponent(launchState[key]); });
+                  url += '&target=1&boundary=0';
+                }
                 var w = null;
                 try { w = window.open(url, 'alloflow-immersive-geometry', 'width=1180,height=820'); } catch (_) { w = null; }
                 if (!w) { if (announceToSR) announceToSR(t('stem.geosandbox.open_immersive_blocked', 'The immersive window was blocked. Allow pop-ups for this page, then try again.')); return; }
@@ -3575,10 +4183,10 @@ window.StemLab = window.StemLab || {
 
             // ── v3: AI SCULPT PANEL — reuses window.AlloModules.Prim3D ──
             mode === 'sculpt' && h('div', { className: 'bg-gradient-to-br from-fuchsia-900/40 to-pink-900/30 rounded-xl p-3 border border-fuchsia-500/40 space-y-3' },
-              h('div', { className: 'text-xs font-bold text-fuchsia-200 uppercase tracking-wider' }, t('stem.geosandbox.ai_sculpt', '🧊 AI Sculpt')),
-              h('p', { className: 'text-[11px] text-fuchsia-200/80 leading-relaxed' }, t('stem.geosandbox.ai_sculpt_help', 'Describe an object — the AI designs it from primitive shapes (box, sphere, cylinder, cone, torus). Then refine it by hand or by asking.')),
+              h('div', { className: 'text-xs font-bold text-fuchsia-200 uppercase tracking-wider' }, t('stem.geosandbox.ai_sculpt', '🧊 Sculpt studio')),
+              h('p', { className: 'text-[11px] text-fuchsia-200/80 leading-relaxed' }, t('stem.geosandbox.ai_sculpt_help', 'Build directly from primitive shapes, or describe an object for AI-assisted creation. Every result can be refined by hand.')),
               (typeof ctx.callGemini !== 'function')
-                ? h('p', { className: 'text-[11px] text-amber-300' }, t('stem.geosandbox.ai_sculpt_no_ai', 'AI Sculpt needs the Gemini API.'))
+                ? h('p', { className: 'text-[11px] text-amber-300' }, t('stem.geosandbox.ai_sculpt_no_ai', 'AI-assisted creation is unavailable, but manual sculpting below still works.'))
                 : h(React.Fragment, null,
                     h('input', {
                       type: 'text', value: sculptPrompt,
@@ -3642,7 +4250,11 @@ window.StemLab = window.StemLab || {
                     sculptRecipe.parts.map(function(pp, i) {
                       return h('button', {
                         key: i,
-                        onClick: function() { setSelPart(i); },
+                        onClick: function() { selectSculptPart(i); },
+                        onMouseEnter: function() { previewSculptPart(i); },
+                        onMouseLeave: function() { previewSculptPart(null); },
+                        onFocus: function() { previewSculptPart(i); },
+                        onBlur: function() { previewSculptPart(null); },
                         className: 'flex items-center gap-1 px-2 py-1 rounded-lg text-[11px] font-bold border transition-all ' + (selPart === i ? 'bg-fuchsia-600/40 border-fuchsia-400 text-white' : 'bg-slate-800/60 border-slate-600/40 text-slate-200 hover:bg-slate-800')
                       },
                         h('span', { className: 'w-2.5 h-2.5 rounded-full inline-block', style: { backgroundColor: pp.color || '#ffffff' } }),
@@ -3675,17 +4287,20 @@ window.StemLab = window.StemLab || {
                 )
               ),
 
-              // ── Saved-sculpts gallery ──
+              // ── Saved-sculpts gallery — disclosed only when the learner asks ──
               h('div', { className: 'pt-2 mt-1 border-t border-fuchsia-500/30 space-y-2' },
                 h('div', { className: 'flex items-center justify-between gap-2' },
-                  h('div', { className: 'text-[11px] font-bold text-fuchsia-200' }, '🖼 ' + t('stem.geosandbox.sculpt_gallery', 'Saved sculpts') + ' (' + Object.keys(savedSculpts).length + ')'),
+                  h('button', { type: 'button', onClick: function() { setShowSculptGallery(!showSculptGallery); }, 'aria-expanded': showSculptGallery ? 'true' : 'false', className: 'flex-1 flex items-center justify-between rounded px-2 py-1 text-[11px] font-bold text-fuchsia-200 bg-slate-900/35 border border-fuchsia-500/20 hover:border-fuchsia-400/50' },
+                    h('span', null, '🖼 ' + t('stem.geosandbox.sculpt_gallery', 'Saved sculpts') + ' (' + Object.keys(savedSculpts).length + ')'),
+                    h('span', { 'aria-hidden': 'true' }, showSculptGallery ? '−' : '+')
+                  ),
                   sculptRecipe && h('button', {
                     onClick: function() { saveSculpt(sculptRecipe.name); },
                     'aria-label': t('stem.geosandbox.sculpt_save', 'Save this sculpt'),
                     className: 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-fuchsia-600 text-white hover:bg-fuchsia-700'
                   }, '💾 ' + t('stem.geosandbox.sculpt_save_2', 'Save'))
                 ),
-                (Object.keys(savedSculpts).length === 0)
+                showSculptGallery && ((Object.keys(savedSculpts).length === 0)
                   ? h('p', { className: 'text-[11px] text-fuchsia-200/60' }, t('stem.geosandbox.sculpt_gallery_empty', 'No saved sculpts yet — make one, then press Save.'))
                   : h('div', { className: 'flex flex-wrap gap-1' },
                       Object.keys(savedSculpts).map(function(nm) {
@@ -3694,39 +4309,143 @@ window.StemLab = window.StemLab || {
                           h('button', { onClick: function() { deleteSculpt(nm); }, 'aria-label': t('stem.geosandbox.sculpt_delete', 'Delete') + ' ' + nm, className: 'px-1.5 py-1 text-[11px] text-rose-300 hover:bg-rose-900/40 border-l border-fuchsia-500/30' }, '×')
                         );
                       })
-                    )
+                    ))
               )
             ),
-
-            // ═══ SCULPT MATH — per-part formulas for the primitives in a sculpt ═══
+            // ═══ SCULPT MATH — coordinated formulas, representations, and inquiry ═══
             mode === 'sculpt' && sculptRecipe && sculptRecipe.parts && sculptRecipe.parts.length > 0 && (function() {
               var sm = geoSculptMeasure(sculptRecipe, SCULPT_GRID_UNIT);
               return h('div', { className: 'bg-gradient-to-br from-emerald-900/30 to-slate-900/40 rounded-xl p-3 border border-emerald-500/40 space-y-2' },
                 h('div', { className: 'text-xs font-bold text-emerald-200 uppercase tracking-wider' }, t('stem.geosandbox.sculpt_math', '🧮 Sculpt math')),
                 h('p', { className: 'text-[10.5px] text-emerald-200/70' },
-                  t('stem.geosandbox.sculpt_math_intro', 'Every sculpt is built from primitives. Here is each part’s formula and size') +
+                  t('stem.geosandbox.sculpt_math_intro', 'Click a part in the 3D sculpt or this list to connect its shape, formulas, cross-section, and net') +
                   (sm.scale !== 1 ? ' (' + t('stem.geosandbox.at_scale', 'at scale') + ' ×' + sm.scale + ')' : '') + ':'),
-                h('div', { className: 'space-y-1 max-h-48 overflow-y-auto' },
+                h('div', { 'data-geo-sculpt-part-navigator': 'true', className: 'rounded-lg border border-emerald-400/30 bg-emerald-950/20 px-2 py-1.5' },
+                  selPart == null || !sm.parts[selPart]
+                    ? h('div', { className: 'flex items-center gap-2 text-[10.5px] text-emerald-100/75' },
+                        h('span', { 'aria-hidden': 'true', className: 'text-base leading-none' }, '◇'),
+                        h('span', null, 'Choose a part in the 3D view or list to reveal its math.')
+                      )
+                    : h('div', { className: 'flex flex-wrap items-center justify-between gap-1.5' },
+                        h('div', { className: 'min-w-0' },
+                          h('div', { className: 'text-[10.5px] font-bold text-emerald-50 truncate' }, 'Part ' + (selPart + 1) + ' of ' + sm.parts.length + ' · ' + sm.parts[selPart].name),
+                          h('div', { className: 'text-[9.5px] font-mono text-emerald-200/75 truncate' }, sm.parts[selPart].dims)
+                        ),
+                        h('div', { className: 'flex flex-wrap gap-1', role: 'group', 'aria-label': 'Selected sculpt part navigation' },
+                          sm.parts.length > 1 && h('button', { type: 'button', onClick: function() { selectSculptPart(selPart - 1); }, disabled: selPart <= 0, 'aria-label': 'Select previous sculpt part', className: 'px-2 py-1 rounded text-[9.5px] font-bold bg-slate-800 text-emerald-100 border border-emerald-500/30 disabled:opacity-40' }, '← Previous'),
+                          h('button', { type: 'button', onClick: function() { focusSculptPart(selPart); }, className: 'px-2 py-1 rounded text-[9.5px] font-bold bg-emerald-700 text-white border border-emerald-400/40' }, '◎ Focus 3D'),
+                          sm.parts.length > 1 && h('button', { type: 'button', onClick: function() { focusSculptPart(null); }, className: 'px-2 py-1 rounded text-[9.5px] font-bold bg-slate-800 text-emerald-100 border border-emerald-500/30' }, '▣ View all'),
+                          sm.parts.length > 1 && h('button', { type: 'button', onClick: function() { selectSculptPart(selPart + 1); }, disabled: selPart >= sm.parts.length - 1, 'aria-label': 'Select next sculpt part', className: 'px-2 py-1 rounded text-[9.5px] font-bold bg-slate-800 text-emerald-100 border border-emerald-500/30 disabled:opacity-40' }, 'Next →')
+                        )
+                      )
+                ),
+                h('div', { className: 'space-y-1 max-h-52 overflow-y-auto' },
                   sm.parts.map(function(pt, i) {
-                    return h('div', { key: 'sm-' + i, className: 'text-[11px] bg-slate-900/40 rounded px-2 py-1' },
+                    var rep = geoSculptRepresentation(pt.shape);
+                    return h('button', { type: 'button', key: 'sm-' + i, onClick: function() { selectSculptPart(i); }, onMouseEnter: function() { previewSculptPart(i); }, onMouseLeave: function() { previewSculptPart(null); }, onFocus: function() { previewSculptPart(i); }, onBlur: function() { previewSculptPart(null); }, 'aria-pressed': selPart === i ? 'true' : 'false', className: 'w-full text-left text-[11px] rounded px-2 py-1.5 border transition-all ' + (selPart === i ? 'bg-emerald-700/35 border-emerald-300 text-white' : 'bg-slate-900/40 border-transparent hover:border-emerald-500/50') },
                       h('div', { className: 'flex justify-between font-bold text-emerald-100' },
                         h('span', null, (i + 1) + '. ' + pt.name + ' (' + pt.dims + ')'),
                         h('span', { className: 'font-mono text-emerald-300' }, 'V ' + pt.vol.toFixed(2))
                       ),
-                      h('div', { className: 'font-mono text-[10px] text-emerald-400/70' }, pt.volFormula + ' · ' + pt.saFormula + ' → SA ' + pt.sa.toFixed(1))
+                      h('div', { className: 'font-mono text-[10px] text-emerald-300/80' }, pt.volFormula + ' · ' + pt.saFormula + ' → SA ' + pt.sa.toFixed(1)),
+                      h('div', { className: 'text-[9.5px] text-cyan-200/75 mt-0.5' }, 'Slice: ' + rep.crossSection + ' · Net: ' + rep.net)
                     );
                   })
                 ),
-                h('div', { className: 'flex justify-between text-[11px] font-bold pt-1.5 border-t border-emerald-500/30' },
-                  h('span', { className: 'text-emerald-200' }, t('stem.geosandbox.sculpt_total', 'Sum of parts')),
-                  h('span', { className: 'font-mono text-emerald-300' },
-                    'V ' + sm.totalVol.toFixed(2) + ' ' + unitDef.short + '³ · SA ' + sm.totalSA.toFixed(1) + ' ' + unitDef.short + '²')
+                h('div', { 'data-geo-sculpt-upper-bound': 'true', className: 'flex justify-between gap-2 text-[11px] font-bold pt-1.5 border-t border-emerald-500/30' },
+                  h('span', { className: 'text-amber-200' }, t('stem.geosandbox.sculpt_total_upper', 'Upper-bound sum of parts')),
+                  h('span', { className: 'font-mono text-emerald-300 text-right' },
+                    'V ≤ ' + sm.totalVol.toFixed(2) + ' ' + unitDef.short + '³ · SA ≤ ' + sm.totalSA.toFixed(1) + ' ' + unitDef.short + '²')
                 ),
-                h('div', { className: 'text-[10px] text-emerald-200/60 italic' },
-                  t('stem.geosandbox.sculpt_overlap_note', 'This is the sum of the parts — where pieces overlap, the real solid’s volume is a little less. Good to notice!'))
+                h('div', { className: 'text-[10px] text-amber-100/80 italic rounded bg-amber-950/25 border border-amber-500/20 px-2 py-1' },
+                  t('stem.geosandbox.sculpt_overlap_note', 'Upper bound: overlapping pieces are counted separately. The actual union can have less volume and less exposed surface area.')),                h('div', { 'data-geo-sculpt-cross-section': 'true', className: 'rounded-lg border border-amber-400/35 bg-amber-950/20 p-2 space-y-1.5' },
+                  h('div', { className: 'text-[11px] font-bold text-amber-100' }, '◒ Live cross-section'),
+                  selPart == null || !sculptRecipe.parts[selPart]
+                    ? h('p', { className: 'text-[10px] text-amber-100/70' }, 'Select a sculpt part to explore a slice through it.')
+                    : (function() {
+                        var sliceStudy = geoSculptSliceStudy(sculptRecipe.parts[selPart], sculptSliceT, sculptRecipe.scale, SCULPT_GRID_UNIT);
+                        var sliceProfile = geoSculptSliceProfile(sculptRecipe.parts[selPart], sculptSliceT, sculptRecipe.scale, SCULPT_GRID_UNIT, 32);
+                        return h(React.Fragment, null,
+                          h('label', { className: 'flex items-center gap-2 text-[10.5px] font-bold text-amber-50 cursor-pointer' },
+                            h('input', { type: 'checkbox', checked: sculptSliceOn, onChange: function(e) { upd('sculptSliceOn', e.target.checked); if (announceToSR) announceToSR(e.target.checked ? 'Live cross-section on.' : 'Live cross-section off.'); }, 'aria-controls': 'geo-sculpt-slice-controls' }),
+                            h('span', null, 'Show the section plane in the 3D sculpt')
+                          ),
+                          sculptSliceOn && h('div', { id: 'geo-sculpt-slice-controls', className: 'space-y-1' },
+                            h('div', { className: 'flex items-center justify-between gap-2 text-[10px]' },
+                              h('span', { className: 'text-amber-100' }, 'Height ' + Math.round(sculptSliceT * 100) + '% · ' + sliceStudy.label),
+                              h('span', { className: 'font-mono font-bold text-amber-200' }, 'A = ' + sliceStudy.area.toFixed(2) + ' ' + unitDef.short + '²')
+                            ),
+                            h('input', { type: 'range', min: 0, max: 1, step: 0.01, value: sculptSliceT, onChange: function(e) { upd('sculptSliceT', parseFloat(e.target.value)); }, 'aria-label': 'Cross-section height through selected part', 'aria-valuetext': Math.round(sculptSliceT * 100) + ' percent; area ' + sliceStudy.area.toFixed(2) + ' square ' + unitDef.short, className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-400' }),
+                            h('div', { className: 'font-mono text-[9.5px] text-amber-100/75' }, sliceStudy.formula + ' · ' + sliceStudy.substituted),
+                            h('div', { className: 'flex items-center justify-between gap-2 pt-1 border-t border-amber-300/20 text-[9.5px]' },
+                              h('span', { className: 'font-bold text-amber-100' }, 'Volume by slices'),
+                              h('span', { className: 'text-amber-100/70' }, 'area × thickness')
+                            ),
+                            renderSculptSliceProfile(sliceProfile, sliceStudy.area, unitDef.short),
+                            h('div', { 'data-geo-sculpt-slice-volume': 'true', className: 'space-y-0.5 font-mono text-[9.5px] text-amber-100/80' },
+                              h('div', null, sliceProfile.sliceCount + ' slices × Δh ' + sliceProfile.sliceThickness.toFixed(2) + ' ' + unitDef.short),
+                              h('div', null, 'Stack V ≈ ' + sliceProfile.estimate.toFixed(2) + ' ' + unitDef.short + '³ · exact ' + sliceProfile.exact.toFixed(2) + ' ' + unitDef.short + '³'),
+                              h('div', null, 'Below plane ≈ ' + sliceProfile.belowEstimate.toFixed(2) + ' ' + unitDef.short + '³ · error ' + sliceProfile.errorPercent.toFixed(2) + '%')
+                            )
+                          )
+                        );
+                      })()
+                ),
+                h('div', { 'data-geo-sculpt-investigation': 'true', className: 'rounded-lg border border-cyan-400/35 bg-cyan-950/25 p-2 space-y-2' },
+                  h('div', { className: 'flex items-center justify-between gap-2' },
+                    h('div', { className: 'text-[11px] font-bold text-cyan-100' }, '🔬 Scale investigation'),
+                    !sculptInvestigation.active
+                      ? h('button', { type: 'button', onClick: startSculptInvestigation, disabled: selPart == null, className: 'px-2 py-1 rounded text-[10px] font-bold bg-cyan-700 text-white disabled:bg-slate-700 disabled:text-slate-300' }, selPart == null ? 'Select a part first' : 'Start')
+                      : h('div', { className: 'flex gap-1' },
+                          sculptInvestigation.study && h('button', { type: 'button', onClick: function() { resetSculptInvestigation(true); }, className: 'px-2 py-1 rounded text-[9.5px] font-bold bg-slate-700 text-white' }, 'Restart'),
+                          h('button', { type: 'button', onClick: function() { resetSculptInvestigation(false); }, className: 'px-2 py-1 rounded text-[9.5px] font-bold bg-rose-900/45 text-rose-100 border border-rose-500/40' }, sculptInvestigation.study ? 'Undo & exit' : 'Exit')
+                        )
+                  ),
+                  h('div', { className: 'grid grid-cols-4 gap-1', 'aria-label': 'Investigation phases' },
+                    ['predict', 'manipulate', 'compare', 'explain'].map(function(phase, phaseIndex) {
+                      var order = ['predict', 'manipulate', 'compare', 'explain'];
+                      var currentIndex = sculptInvestigation.active ? order.indexOf(sculptInvestigation.phase) : -1;
+                      var reached = phaseIndex <= currentIndex;
+                      return h('div', { key: phase, className: 'rounded px-1 py-1 text-center text-[8.5px] font-bold uppercase tracking-wide border ' + (reached ? 'bg-cyan-500/20 border-cyan-300 text-cyan-50' : 'bg-slate-900/50 border-slate-600 text-slate-400') }, (phaseIndex + 1) + ' ' + phase);
+                    })
+                  ),
+                  !sculptInvestigation.active && h('p', { className: 'text-[10px] text-cyan-100/70' }, 'Predict, change the selected part, compare exact ratios, then explain the pattern.'),
+                  sculptInvestigation.active && sculptInvestigation.phase === 'predict' && h('div', { className: 'space-y-1.5' },
+                    h('p', { className: 'text-[10.5px] text-cyan-50 font-bold' }, 'If every dimension becomes ×1.25, which measure grows faster?'),
+                    h('div', { className: 'grid grid-cols-3 gap-1' },
+                      [['volume', 'Volume'], ['area', 'Surface area'], ['same', 'Same rate']].map(function(choice) {
+                        return h('button', { key: choice[0], type: 'button', onClick: function() { chooseSculptPrediction(choice[0]); }, className: 'px-1.5 py-1.5 rounded text-[9.5px] font-bold bg-slate-800 text-cyan-50 border border-cyan-500/35 hover:bg-cyan-900/50' }, choice[1]);
+                      })
+                    )
+                  ),
+                  sculptInvestigation.active && sculptInvestigation.phase === 'manipulate' && h('div', { className: 'space-y-1.5' },
+                    h('p', { className: 'text-[10.5px] text-cyan-50' }, 'Prediction recorded. Now make the same scale change in the 3D model.'),
+                    h('button', { type: 'button', onClick: manipulateSculptInvestigation, disabled: sculptInvestigation.partIndex !== selPart, className: 'w-full px-2 py-1.5 rounded text-[10px] font-bold bg-fuchsia-700 text-white disabled:bg-slate-700' }, sculptInvestigation.partIndex === selPart ? 'Scale selected part ×1.25' : 'Re-select the investigation part')
+                  ),
+                  sculptInvestigation.active && sculptInvestigation.phase === 'compare' && sculptInvestigation.study && h('div', { className: 'space-y-1.5' },
+                    h('div', { className: 'grid grid-cols-2 gap-1 text-center' },
+                      h('div', { className: 'rounded bg-slate-900/55 p-1.5' },
+                        h('div', { className: 'text-[9px] text-slate-300' }, 'Volume'),
+                        h('div', { className: 'font-mono text-[9px] text-fuchsia-100/80' }, sculptInvestigation.study.before.vol.toFixed(2) + ' → ' + sculptInvestigation.study.after.vol.toFixed(2)),
+                        h('div', { className: 'font-mono font-bold text-fuchsia-200' }, '×' + sculptInvestigation.study.volumeRatio.toFixed(3) + ' = 1.25³')
+                      ),
+                      h('div', { className: 'rounded bg-slate-900/55 p-1.5' },
+                        h('div', { className: 'text-[9px] text-slate-300' }, 'Surface area'),
+                        h('div', { className: 'font-mono text-[9px] text-sky-100/80' }, sculptInvestigation.study.before.sa.toFixed(2) + ' → ' + sculptInvestigation.study.after.sa.toFixed(2)),
+                        h('div', { className: 'font-mono font-bold text-sky-200' }, '×' + sculptInvestigation.study.areaRatio.toFixed(3) + ' = 1.25²')
+                      )
+                    ),
+                    h('p', { className: 'text-[10px] ' + (sculptInvestigation.prediction === 'volume' ? 'text-emerald-200' : 'text-amber-200') }, sculptInvestigation.prediction === 'volume' ? 'Your prediction matched: volume grows faster.' : 'The model shows volume grows faster because its scale factor is cubed.'),
+                    h('button', { type: 'button', onClick: function() { setSculptInvestigation(Object.assign({}, sculptInvestigation, { phase: 'explain' })); recordGeoResearch('investigation_compare', { mode: 'sculpt', part: selPart, phase: 'compare' }); }, className: 'w-full px-2 py-1 rounded text-[10px] font-bold bg-cyan-700 text-white' }, 'Explain the pattern →')
+                  ),
+                  sculptInvestigation.active && sculptInvestigation.phase === 'explain' && h('div', { className: 'space-y-1.5' },
+                    h('label', { htmlFor: 'geo-sculpt-explanation', className: 'block text-[10px] font-bold text-cyan-50' }, 'Why does volume grow faster than surface area?'),
+                    h('textarea', { id: 'geo-sculpt-explanation', rows: 2, value: sculptInvestigation.explanation || '', onChange: function(e) { setSculptInvestigation(Object.assign({}, sculptInvestigation, { explanation: e.target.value })); }, placeholder: 'Use dimensions, squares, cubes, or the model in your explanation…', className: 'w-full rounded bg-slate-950 border border-cyan-400/45 p-2 text-[10px] text-white placeholder-slate-400 focus:ring-2 focus:ring-cyan-300 outline-none' }),
+                    h('button', { type: 'button', onClick: finishSculptInvestigation, disabled: String(sculptInvestigation.explanation || '').trim().length < 8, className: 'w-full px-2 py-1 rounded text-[10px] font-bold bg-emerald-700 text-white disabled:bg-slate-700 disabled:text-slate-300' }, 'Complete investigation')
+                  )
+                )
               );
             })(),
-
             // ── v2: STRETCH MODE PANEL — the HandWaver-inspired workflow ──
             mode === 'stretch' && h('div', { className: 'bg-gradient-to-br from-purple-900/40 to-fuchsia-900/30 rounded-xl p-3 border border-purple-500/40 space-y-3' },
               h('div', { className: 'text-xs font-bold text-purple-200 uppercase tracking-wider' }, t('stem.geosandbox.dimensional_stretch_builder', '📐 Dimensional Stretch Builder')),
@@ -4690,6 +5409,22 @@ window.StemLab = window.StemLab || {
             // ── v2: Real-world unit + save/load shared between modes ──
             h('div', { className: 'bg-slate-800/60 backdrop-blur-md rounded-xl p-3 border border-slate-700/50 space-y-2' },
               h('div', { className: 'text-xs font-bold text-slate-300 uppercase tracking-wider' }, t('stem.geosandbox.tools', '🛠 Tools')),
+              h('button', { type: 'button', onClick: function() { upd('showAdvancedTools', !showAdvancedTools); }, 'aria-expanded': showAdvancedTools ? 'true' : 'false', className: 'w-full flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-[11px] font-bold bg-slate-900/55 text-slate-200 border border-slate-600/45 hover:border-sky-400/60' },
+                h('span', null, 'Learning & research options'),
+                h('span', { 'aria-hidden': 'true' }, showAdvancedTools ? '−' : '+')
+              ),
+              showAdvancedTools && h('div', { 'data-geo-advanced-tools': 'true', className: 'rounded-lg border border-sky-500/30 bg-sky-950/20 p-2 space-y-1.5' },
+                h('label', { className: 'flex items-start gap-2 text-[10.5px] font-bold text-sky-100 cursor-pointer' },
+                  h('input', { type: 'checkbox', checked: researchTraceOn, onChange: function(e) { upd('researchTraceOn', e.target.checked); if (e.target.checked) { researchStartedRef.current = Date.now(); if (announceToSR) announceToSR('Anonymous session trace on.'); } else if (announceToSR) announceToSR('Anonymous session trace paused.'); }, 'aria-describedby': 'geo-research-privacy' }),
+                  h('span', null, 'Anonymous research trace (this session only)')
+                ),
+                h('p', { id: 'geo-research-privacy', className: 'text-[9.5px] text-sky-100/70 leading-relaxed' }, 'Records action types, phases, and coarse numbers. It never records names, AI prompts, or explanation text.'),
+                researchTraceOn && h('div', { className: 'flex items-center gap-1' },
+                  h('span', { className: 'flex-1 text-[9.5px] text-sky-200 font-mono' }, researchTrace.length + ' event' + (researchTrace.length === 1 ? '' : 's')),
+                  h('button', { type: 'button', onClick: exportResearchTrace, disabled: !researchTrace.length, className: 'px-2 py-1 rounded text-[9.5px] font-bold bg-sky-700 text-white disabled:bg-slate-700 disabled:text-slate-300' }, 'Export JSON'),
+                  h('button', { type: 'button', onClick: function() { setResearchTrace([]); researchStartedRef.current = Date.now(); if (announceToSR) announceToSR('Research trace cleared.'); }, disabled: !researchTrace.length, className: 'px-2 py-1 rounded text-[9.5px] font-bold bg-slate-700 text-white disabled:opacity-50' }, 'Clear')
+                )
+              ),
               h('div', { className: 'flex items-center gap-1' },
                 h('label', { className: 'text-[11px] text-slate-300 font-bold mr-1' }, 'Units:'),
                 h('select', {
@@ -4975,9 +5710,9 @@ window.StemLab = window.StemLab || {
                     if (gs.controls) gs.controls.update();
                   },
                   className: 'w-full h-full',
-                  style: { display: 'block', width: '100%', height: '100%', minHeight: '400px' }
+                  style: { display: 'block', width: '100%', height: '100%', minHeight: '400px', cursor: mode === 'sculpt' ? 'pointer' : (mode === 'stretch' && placeArmed ? 'crosshair' : 'grab') }
                 }),
-            h('div', { id: 'geo-sandbox-canvas-description', className: 'sr-only' }, canvasDescription + ' Keyboard: arrow keys orbit the camera; plus and minus zoom. In stretch mode, left and right brackets change selection and Delete removes the selected object.'),
+            h('div', { id: 'geo-sandbox-canvas-description', className: 'sr-only' }, canvasDescription + ' Keyboard: arrow keys orbit the camera; plus and minus zoom. In stretch mode, left and right brackets change selection and Delete removes the selected object. In Sculpt mode, click a visible primitive or use the Sculpt Math buttons to select it and reveal its formulas. During hand editing, click the red X, green Y, or blue Z handles to move the selected part by 0.2. A yellow plane shows the selected live cross-section when that explorer is enabled.'),
             // Fullscreen toggle (top-right) — fills the frame with controls +
             // canvas via the shared __alloStemFS helper (real OS fullscreen
             // where the host iframe allows it, else a CSS fill-frame fallback
@@ -5005,7 +5740,11 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'absolute top-2 left-2 text-xs font-bold text-sky-300 bg-slate-900/80 px-2 py-1 rounded-md' },
               mode === 'stretch'
                 ? '\uD83D\uDCD0 ' + construction.objects.length + ' object' + (construction.objects.length === 1 ? '' : 's') + ' in scene'
-                : m.name
+                : mode === 'sculpt'
+                  ? (selPart != null && sculptRecipe && sculptRecipe.parts && sculptRecipe.parts[selPart]
+                    ? '\uD83E\uDDCA Sculpt \u2022 Part ' + (selPart + 1) + ' ' + sculptRecipe.parts[selPart].shape
+                    : '\uD83E\uDDCA Sculpt \u2022 Click a part to inspect its math')
+                  : m.name
             ),
             // \u2500\u2500 v2: Floating measurement label for the selected stretch object \u2500\u2500
             // Acts as the "label on the geometry" \u2014 when you select a point/segment/rect/prism
@@ -5049,6 +5788,49 @@ window.StemLab = window.StemLab || {
                 lines.map(function(line, i) {
                   return h('div', { key: i, className: i === 0 ? 'font-bold text-fuchsia-200 mb-1' : 'font-mono text-fuchsia-100/90' }, line);
                 })
+              );
+            })(),
+            // Selected Sculpt primitive: formulas stay in the 3D view so the
+            // picture and calculation can be read together.
+            mode === 'sculpt' && selPart != null && sculptRecipe && sculptRecipe.parts && sculptRecipe.parts[selPart] && (function() {
+              var sculptReadout = geoSculptMeasure(sculptRecipe, SCULPT_GRID_UNIT), selectedReadout = sculptReadout.parts[selPart];
+              if (!selectedReadout) return null;
+              var selectedRepresentation = geoSculptRepresentation(selectedReadout.shape);
+              var selectedActions = sculptActionHistory.filter(function(item) { return item.part === selPart; }).slice(-3).reverse();
+              var selectedSliceStudy = sculptSliceOn ? geoSculptSliceStudy(sculptRecipe.parts[selPart], sculptSliceT, sculptRecipe.scale, SCULPT_GRID_UNIT) : null;
+              return h('div', {
+                'data-geo-sculpt-math-overlay': 'true',
+                className: 'pointer-events-none absolute top-12 left-2 w-[min(19rem,calc(100%_-_4rem))] text-[11px] text-emerald-50 bg-slate-950/90 backdrop-blur-md px-3 py-2.5 rounded-lg border border-emerald-300/50 shadow-xl shadow-emerald-900/30',
+                role: 'status',
+                'aria-live': 'polite'
+              },
+                h('div', { className: 'flex items-center justify-between gap-2 mb-1.5' },
+                  h('span', { className: 'font-bold text-emerald-200' }, 'Part ' + (selPart + 1) + ' \u2022 ' + selectedReadout.name),
+                  h('span', { className: 'font-mono text-emerald-100' }, selectedReadout.dims)
+                ),
+                h('div', { className: 'grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 border-t border-emerald-300/20 pt-1.5' },
+                  h('span', { className: 'font-bold text-emerald-300' }, 'Volume'),
+                  h('span', { className: 'font-mono text-emerald-50' }, selectedReadout.volFormula + ' = ' + selectedReadout.vol.toFixed(2) + ' ' + unitDef.short + '\u00B3'),
+                  h('span', { className: 'font-bold text-emerald-300' }, 'Surface area'),
+                  h('span', { className: 'font-mono text-emerald-50' }, selectedReadout.saFormula + ' = ' + selectedReadout.sa.toFixed(2) + ' ' + unitDef.short + '\u00B2')
+                ),
+                h('div', { 'data-geo-sculpt-representation': 'true', className: 'mt-1.5 pt-1.5 border-t border-cyan-300/20 text-cyan-100' },
+                  h('div', { className: 'font-bold text-cyan-200' }, 'Linked representation'),
+                  renderSculptRepresentationDiagram(selectedReadout.shape, selectedRepresentation),
+                  h('div', null, 'Cross-section: ' + selectedRepresentation.crossSection + ' · Net: ' + selectedRepresentation.net),
+                  h('div', { className: 'text-cyan-100/75 italic' }, selectedRepresentation.cue),
+                  selectedSliceStudy && h('div', { className: 'mt-1 pt-1 border-t border-amber-300/20 text-amber-100 font-mono' }, 'Section ' + Math.round(sculptSliceT * 100) + '% · ' + selectedSliceStudy.label + ' · A = ' + selectedSliceStudy.area.toFixed(2) + ' ' + unitDef.short + '²')
+                ),
+                sculptEdit && h('div', { className: 'mt-1.5 rounded bg-slate-900/60 px-2 py-1 text-[10px] text-slate-200' },
+                  h('span', { className: 'font-bold text-rose-300' }, 'X'), ' · ',
+                  h('span', { className: 'font-bold text-green-300' }, 'Y'), ' · ',
+                  h('span', { className: 'font-bold text-blue-300' }, 'Z'),
+                  ' handles move this part by 0.2'
+                ),
+                selectedActions.length > 0 && h('div', { 'data-geo-sculpt-history': 'true', className: 'mt-1.5 pt-1.5 border-t border-emerald-300/20' },
+                  h('div', { className: 'font-bold text-amber-200' }, 'Recent transformations'),
+                  selectedActions.map(function(item, i) { return h('div', { key: item.at + '-' + i, className: 'text-amber-50/80' }, (i === 0 ? 'Now: ' : 'Before: ') + item.label); })
+                )
               );
             })(),
             // Keyboard shortcuts overlay

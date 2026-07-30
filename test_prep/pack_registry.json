@@ -1,0 +1,281 @@
+{
+  "schemaVersion": 1,
+  "catalogVersion": "2026.07.29",
+  "categories": [
+    {
+      "id": "professional-school-personnel",
+      "label": "Professional licensure and school-personnel exams"
+    },
+    {
+      "id": "workforce-vocational",
+      "label": "Workforce and industry credentials"
+    },
+    {
+      "id": "k12-college-readiness",
+      "label": "K-12 and college-readiness exams"
+    }
+  ],
+  "entries": [
+    {
+      "id": "workplace-safety-foundations-demo",
+      "embedded": true,
+      "loadMode": "bundled",
+      "visibility": "public",
+      "portfolioCategories": [
+        "workforce-vocational"
+      ]
+    },
+    {
+      "id": "eppp-part-one",
+      "learningLibraryUrl": "https://alloflow-cdn.pages.dev/test_prep/eppp_learning_library.json",
+      "learningLibraryQaUrl": "https://alloflow-cdn.pages.dev/test_prep/eppp_learning_library_qa.json",
+      "nativeQaUrl": "https://alloflow-cdn.pages.dev/test_prep/eppp_native_qa.json",
+      "loadMode": "lazy",
+      "visibility": "public",
+      "portfolioCategories": [
+        "professional-school-personnel"
+      ],
+      "sourcePath": "test_prep/eppp_part_one_pack.json"
+    },
+    {
+      "id": "eppp-integrated-2027-preview",
+      "sourcePath": "test_prep/eppp_2027_preview_pack.json",
+      "pipelineFamily": "eppp-native-preview",
+      "loadMode": "bundled",
+      "visibility": "preview",
+      "portfolioCategories": [
+        "professional-school-personnel"
+      ]
+    },
+    {
+      "id": "parapro-1755-practice-1",
+      "sourcePath": "test_prep/parapro_pack.json",
+      "pipelineFamily": "praxis-legacy",
+      "loadMode": "bundled",
+      "visibility": "public",
+      "portfolioCategories": [
+        "professional-school-personnel"
+      ]
+    },
+    {
+      "id": "praxis-special-education-5355",
+      "sourcePath": "test_prep/special_education_5355_pack.json",
+      "pipelineFamily": "praxis-legacy",
+      "loadMode": "bundled",
+      "visibility": "public",
+      "portfolioCategories": [
+        "professional-school-personnel"
+      ]
+    },
+    {
+      "id": "praxis-school-counselor-5422",
+      "sourcePath": "test_prep/school_counselor_5422_pack.json",
+      "pipelineFamily": "praxis-legacy",
+      "loadMode": "bundled",
+      "visibility": "public",
+      "portfolioCategories": [
+        "professional-school-personnel"
+      ]
+    },
+    {
+      "id": "praxis-school-psychologist-5403",
+      "sourcePath": "test_prep/school_psychologist_5403_pack.json",
+      "pipelineFamily": "praxis-legacy",
+      "loadMode": "bundled",
+      "visibility": "public",
+      "portfolioCategories": [
+        "professional-school-personnel"
+      ]
+    },
+    {
+      "id": "praxis-speech-language-pathology-5331",
+      "sourcePath": "test_prep/speech_language_pathology_5331_pack.json",
+      "pipelineFamily": "praxis-legacy",
+      "loadMode": "bundled",
+      "visibility": "public",
+      "portfolioCategories": [
+        "professional-school-personnel"
+      ]
+    },
+    {
+      "id": "praxis-audiology-5343",
+      "sourcePath": "test_prep/audiology_5343_pack.json",
+      "pipelineFamily": "praxis-legacy",
+      "loadMode": "bundled",
+      "visibility": "public",
+      "portfolioCategories": [
+        "professional-school-personnel"
+      ]
+    },
+    {
+      "id": "praxis-reading-specialist-5302",
+      "sourcePath": "test_prep/reading_specialist_5302_pack.json",
+      "pipelineFamily": "praxis-legacy",
+      "loadMode": "bundled",
+      "visibility": "public",
+      "portfolioCategories": [
+        "professional-school-personnel"
+      ]
+    },
+    {
+      "id": "praxis-educational-leadership-5412",
+      "sourcePath": "test_prep/educational_leadership_5412_pack.json",
+      "pipelineFamily": "praxis-legacy",
+      "loadMode": "bundled",
+      "visibility": "public",
+      "portfolioCategories": [
+        "professional-school-personnel"
+      ]
+    },
+    {
+      "id": "praxis-plt-k6-5622",
+      "sourcePath": "test_prep/plt_k6_5622_pack.json",
+      "pipelineFamily": "praxis-legacy",
+      "loadMode": "bundled",
+      "visibility": "public",
+      "portfolioCategories": [
+        "professional-school-personnel"
+      ]
+    },
+    {
+      "id": "praxis-core-5752",
+      "sourcePath": "test_prep/praxis_core_5752_pack.json",
+      "pipelineFamily": "praxis-legacy",
+      "loadMode": "bundled",
+      "visibility": "public",
+      "portfolioCategories": [
+        "professional-school-personnel"
+      ]
+    },
+    {
+      "id": "praxis-esol-5362",
+      "sourcePath": "test_prep/esol_5362_pack.json",
+      "pipelineFamily": "praxis-legacy",
+      "loadMode": "bundled",
+      "visibility": "public",
+      "portfolioCategories": [
+        "professional-school-personnel"
+      ]
+    },
+    {
+      "id": "praxis-teaching-reading-5205",
+      "sourcePath": "test_prep/teaching_reading_5205_pack.json",
+      "pipelineFamily": "praxis-legacy",
+      "loadMode": "bundled",
+      "visibility": "public",
+      "portfolioCategories": [
+        "professional-school-personnel"
+      ]
+    },
+    {
+      "id": "praxis-early-childhood-5025",
+      "sourcePath": "test_prep/early_childhood_5025_pack.json",
+      "pipelineFamily": "praxis-legacy",
+      "loadMode": "bundled",
+      "visibility": "public",
+      "portfolioCategories": [
+        "professional-school-personnel"
+      ]
+    },
+    {
+      "id": "praxis-plt-early-childhood-5621",
+      "sourcePath": "test_prep/plt_early_childhood_5621_pack.json",
+      "pipelineFamily": "praxis-legacy",
+      "loadMode": "bundled",
+      "visibility": "public",
+      "portfolioCategories": [
+        "professional-school-personnel"
+      ]
+    },
+    {
+      "id": "praxis-special-education-early-childhood-5692",
+      "sourcePath": "test_prep/special_education_early_childhood_5692_pack.json",
+      "pipelineFamily": "praxis-legacy",
+      "loadMode": "bundled",
+      "visibility": "public",
+      "portfolioCategories": [
+        "professional-school-personnel"
+      ]
+    },
+    {
+      "id": "praxis-special-education-severe-profound-5547",
+      "sourcePath": "test_prep/special_education_severe_profound_5547_pack.json",
+      "pipelineFamily": "praxis-legacy",
+      "loadMode": "bundled",
+      "visibility": "public",
+      "portfolioCategories": [
+        "professional-school-personnel"
+      ]
+    },
+    {
+      "id": "praxis-special-education-learning-disabilities-5383",
+      "sourcePath": "test_prep/special_education_learning_disabilities_5383_pack.json",
+      "pipelineFamily": "praxis-legacy",
+      "loadMode": "bundled",
+      "visibility": "public",
+      "portfolioCategories": [
+        "professional-school-personnel"
+      ]
+    },
+    {
+      "id": "praxis-special-education-behavior-emotional-5372",
+      "sourcePath": "test_prep/special_education_behavior_emotional_5372_pack.json",
+      "pipelineFamily": "praxis-legacy",
+      "loadMode": "bundled",
+      "visibility": "public",
+      "portfolioCategories": [
+        "professional-school-personnel"
+      ]
+    },
+    {
+      "id": "praxis-special-education-intellectual-disabilities-5322",
+      "sourcePath": "test_prep/special_education_intellectual_disabilities_5322_pack.json",
+      "pipelineFamily": "praxis-legacy",
+      "loadMode": "bundled",
+      "visibility": "public",
+      "portfolioCategories": [
+        "professional-school-personnel"
+      ]
+    },
+    {
+      "id": "praxis-plt-grades-5-9-5623",
+      "sourcePath": "test_prep/plt_5_9_5623_pack.json",
+      "pipelineFamily": "praxis-legacy",
+      "loadMode": "bundled",
+      "visibility": "public",
+      "portfolioCategories": [
+        "professional-school-personnel"
+      ]
+    },
+    {
+      "id": "praxis-plt-grades-7-12-5624",
+      "sourcePath": "test_prep/plt_7_12_5624_pack.json",
+      "pipelineFamily": "praxis-legacy",
+      "loadMode": "bundled",
+      "visibility": "public",
+      "portfolioCategories": [
+        "professional-school-personnel"
+      ]
+    },
+    {
+      "id": "praxis-school-librarian-5312",
+      "sourcePath": "test_prep/school_librarian_5312_pack.json",
+      "pipelineFamily": "praxis-legacy",
+      "loadMode": "bundled",
+      "visibility": "public",
+      "portfolioCategories": [
+        "professional-school-personnel"
+      ]
+    },
+    {
+      "id": "ap-psychology-pilot",
+      "sourcePath": "test_prep/ap_psychology_pilot.json",
+      "pipelineFamily": "ap-native",
+      "loadMode": "lazy",
+      "visibility": "internal",
+      "portfolioCategories": [
+        "k12-college-readiness"
+      ]
+    }
+  ]
+}

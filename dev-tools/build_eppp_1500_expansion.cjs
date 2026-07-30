@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 'use strict';
 const fs=require('fs'),path=require('path'),root=path.resolve(__dirname,'..');
+const {evidencePath}=require('./eppp_evidence_paths.cjs');
 const bankPath=path.join(root,'test_prep','eppp_native_items.json');
-const auditPath=path.join(root,'test_prep','eppp_legacy','content_audit.json');
+const auditPath=evidencePath('audit','content_audit.json');
 const outputAudit=path.join(root,'test_prep','eppp_native_expansion_1500_audit.json');
 const reservedReviewPaths=[
-  path.join(root,'test_prep','eppp_legacy','next_review_docket.json'),
-  path.join(root,'test_prep','eppp_legacy','bulk_review_wave_01.json'),
-  path.join(root,'test_prep','eppp_legacy','adjudication_index.json'),
+  evidencePath('review','next_review_docket.json'),
+  evidencePath('review','bulk_review_wave_01.json'),
+  evidencePath('adjudication','adjudication_index.json'),
 ];
 const deployAudit=path.join(root,'desktop/web-app','public','test_prep','eppp_native_expansion_1500_audit.json');
 const reviewedAt='2026-07-14',batchId='native-1001-1500';

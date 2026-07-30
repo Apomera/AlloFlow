@@ -3,11 +3,11 @@
 
 const fs = require('fs');
 const path = require('path');
+const { ensureFamily, evidencePath } = require('./eppp_evidence_paths.cjs');
 
 const root = path.resolve(__dirname, '..');
-const runtimeRoot = path.join(root, 'test_prep', 'eppp_legacy');
-const deployRoot = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_legacy');
-const audit = JSON.parse(fs.readFileSync(path.join(runtimeRoot, 'content_audit.json'), 'utf8'));
+const canonicalRoot = ensureFamily('curation');
+const audit = JSON.parse(fs.readFileSync(evidencePath('audit', 'content_audit.json'), 'utf8'));
 const nativeQa = JSON.parse(fs.readFileSync(path.join(root, 'test_prep', 'eppp_native_qa.json'), 'utf8'));
 
 const domainPlan = [
@@ -177,7 +177,7 @@ ${domainSummary.map((domain) => `| ${domain.label} | ${Math.round(domain.bluepri
 > Selection is not approval. Every pending slot remains outside the native question bank until re-authored, source-verified, clue-checked, accessibility/bias reviewed, and passed by the build-blocking native QA gate.
 `;
 
-for (const outputRoot of [runtimeRoot, deployRoot]) {
+for (const outputRoot of [canonicalRoot]) {
   fs.writeFileSync(path.join(outputRoot, 'curation_500.json'), JSON.stringify(report, null, 2) + '\n', 'utf8');
   fs.writeFileSync(path.join(outputRoot, 'curation_500.md'), markdown, 'utf8');
 }

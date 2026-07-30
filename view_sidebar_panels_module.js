@@ -55,8 +55,8 @@ const UNIVERSAL_SETTING_COVERAGE = {
   language: ["simplified", "glossary", "outline", "image", "quiz", "faq", "brainstorm", "sentence-frames", "timeline", "math", "gemini-bridge", "concept-sort", "dbq", "lesson-plan", "adventure", "persona", "note-taking", "anchor-chart"],
   standards: ["simplified", "glossary", "outline", "quiz", "faq", "brainstorm", "sentence-frames", "timeline", "math", "concept-sort", "dbq", "lesson-plan", "adventure", "note-taking", "anchor-chart"],
   interests: ["simplified", "glossary", "outline", "quiz", "faq", "brainstorm", "sentence-frames", "timeline", "math", "concept-sort", "lesson-plan", "adventure"],
-  dok: ["simplified", "quiz", "faq", "brainstorm", "sentence-frames", "math", "concept-sort", "dbq", "lesson-plan"],
-  emoji: ["simplified", "glossary", "outline", "image", "quiz", "faq", "sentence-frames", "timeline", "concept-sort"]
+  dok: ["simplified", "glossary", "outline", "quiz", "faq", "brainstorm", "sentence-frames", "timeline", "math", "concept-sort", "dbq", "lesson-plan", "adventure", "note-taking", "anchor-chart"],
+  emoji: ["simplified", "glossary", "outline", "image", "quiz", "faq", "sentence-frames", "timeline", "math", "concept-sort", "adventure", "note-taking", "anchor-chart"]
 };
 const UNIVERSAL_GRADE_CHOICES = [
   "Kindergarten",
@@ -186,7 +186,12 @@ function UniversalSettingsPanel(props) {
     differentiationTypes,
     setDifferentiationTypes,
     differentiationCustomGrades,
-    setDifferentiationCustomGrades
+    setDifferentiationCustomGrades,
+    languageInput,
+    setLanguageInput,
+    addLanguage,
+    removeLanguage,
+    handleKeyDown
   } = props;
   const isOpen = !!isUniversalSettingsOpen;
   const setIsOpen = setIsUniversalSettingsOpen;
@@ -243,7 +248,29 @@ function UniversalSettingsPanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: "English" }, t("languages.english")),
     selectedLanguages.map((lang) => /* @__PURE__ */ React.createElement("option", { key: lang, value: lang }, lang)),
     selectedLanguages.length > 0 && /* @__PURE__ */ React.createElement("option", { value: "All Selected Languages" }, t("languages.all_selected"))
-  ), /* @__PURE__ */ React.createElement(UniversalApplicability, { settingKey: "language", t })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium flex items-center gap-1" }, t("quiz.dok_target"), /* @__PURE__ */ React.createElement(InfoTooltip, { text: "Depth of Knowledge: Level 1 (Recall) -> Level 4 (Extended Thinking/Synthesis)." })), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement(UniversalApplicability, { settingKey: "language", t }), /* @__PURE__ */ React.createElement("div", { className: "mt-2", "data-help-key": "glossary_language_input" }, /* @__PURE__ */ React.createElement("label", { className: "block text-[10px] text-slate-500 mb-1" }, t("glossary.add_languages_label")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement(
+    "input",
+    {
+      type: "text",
+      value: languageInput,
+      onChange: (e) => setLanguageInput(e.target.value),
+      onKeyDown: handleKeyDown,
+      placeholder: t("glossary.language_placeholder"),
+      maxLength: 40,
+      className: "flex-grow text-sm px-2 py-1 border border-slate-400 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300",
+      "aria-label": t("common.target_language_aria")
+    }
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: addLanguage,
+      disabled: !languageInput.trim() || selectedLanguages.length >= 4,
+      className: "bg-indigo-100 text-indigo-700 p-1.5 rounded-md hover:bg-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none",
+      "aria-label": t("common.add")
+    },
+    /* @__PURE__ */ React.createElement(Plus, { size: 16 })
+  )), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 min-h-[1.5rem] mt-2" }, selectedLanguages.map((lang) => /* @__PURE__ */ React.createElement("span", { key: lang, className: "inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200" }, lang, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeLanguage(lang), className: "hover:text-indigo-900", "aria-label": "Remove " + lang }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), selectedLanguages.length === 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 italic" }, t("glossary.no_languages"))))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium flex items-center gap-1" }, t("quiz.dok_target"), /* @__PURE__ */ React.createElement(InfoTooltip, { text: "Depth of Knowledge: Level 1 (Recall) -> Level 4 (Extended Thinking/Synthesis)." })), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection"),
@@ -1668,31 +1695,24 @@ function SourceInputPanel(props) {
 function GlossaryPanel(props) {
   const {
     InfoTooltip,
-    addLanguage,
     autoRemoveWords,
     expandedTools,
     glossaryCustomInstructions,
     glossaryDefinitionLevel,
-    glossaryImageStyle,
     glossaryTier2Count,
     glossaryTier3Count,
     gradeLevel,
     handleGenerate,
-    handleKeyDown,
     hasSourceOrAnalysis,
     includeEtymology,
     isProcessing,
-    languageInput,
-    removeLanguage,
     selectedLanguages,
     setAutoRemoveWords,
     setGlossaryCustomInstructions,
     setGlossaryDefinitionLevel,
-    setGlossaryImageStyle,
     setGlossaryTier2Count,
     setGlossaryTier3Count,
     setIncludeEtymology,
-    setLanguageInput,
     t
   } = props;
   if (!expandedTools || !expandedTools.includes("glossary")) return null;
@@ -1759,28 +1779,7 @@ function GlossaryPanel(props) {
       onChange: setGlossaryCustomInstructions,
       placeholderKey: "glossary.placeholder_instructions"
     }
-  ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-2" }, t("glossary.add_languages_label")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-3", "data-help-key": "glossary_language_input" }, /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      type: "text",
-      value: languageInput,
-      onChange: (e) => setLanguageInput(e.target.value),
-      onKeyDown: handleKeyDown,
-      placeholder: t("glossary.language_placeholder"),
-      className: "flex-grow text-sm px-2 py-1 border border-slate-400 rounded-md focus:ring-2 focus:ring-sky-200",
-      "aria-label": t("common.target_language_aria")
-    }
-  ), /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: addLanguage,
-      disabled: !languageInput.trim() || selectedLanguages.length >= 4,
-      className: "bg-sky-100 text-sky-700 p-1.5 rounded-md hover:bg-sky-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none",
-      "aria-label": t("common.add")
-    },
-    /* @__PURE__ */ React.createElement(Plus, { size: 16 })
-  )), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 min-h-[2rem]" }, selectedLanguages.map((lang) => /* @__PURE__ */ React.createElement("span", { key: lang, className: "inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-sky-50 text-sky-700 border border-sky-100" }, lang, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeLanguage(lang), className: "hover:text-sky-900", "aria-label": "Remove " + lang }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), selectedLanguages.length === 0 && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600 italic" }, t("glossary.no_languages"))), /* @__PURE__ */ React.createElement("div", { className: "mt-3 pt-2 border-t border-slate-100" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs font-medium text-slate-600 cursor-pointer select-none", "data-help-key": "glossary_auto_remove" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("div", { className: "mb-3 text-xs text-slate-600", "data-help-key": "glossary_language_summary" }, selectedLanguages.length > 0 ? /* @__PURE__ */ React.createElement("span", null, t("glossary.will_translate") || "Will include translations for", ": ", /* @__PURE__ */ React.createElement("span", { className: "font-bold text-sky-700" }, selectedLanguages.join(", "))) : /* @__PURE__ */ React.createElement("span", { className: "italic" }, t("glossary.no_languages_hint") || "No translation languages set \u2014 add them in Universal Settings.")), /* @__PURE__ */ React.createElement("div", { className: "mt-3 pt-2 border-t border-slate-100" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs font-medium text-slate-600 cursor-pointer select-none", "data-help-key": "glossary_auto_remove" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.toggle_auto_remove_words"),

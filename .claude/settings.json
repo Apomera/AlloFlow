@@ -69,5 +69,20 @@
       "c:\\Users\\cabba\\OneDrive\\Desktop\\my-video\\src\\components",
       "c:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated"
     ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node dev-tools/check_test_sync.cjs --hook",
+            "timeout": 30,
+            "statusMessage": "Mapping covering tests..."
+          }
+        ]
+      }
+    ]
   }
 }

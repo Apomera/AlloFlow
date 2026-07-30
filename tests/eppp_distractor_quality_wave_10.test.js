@@ -14,8 +14,8 @@ const feedbackPath = path.join(root, 'test_prep', 'eppp_option_feedback_diagnost
 const qaPath = path.join(root, 'test_prep', 'eppp_native_qa.json');
 const runnerPath = path.join(root, 'dev-tools', 'run_eppp_native_quality_wave.cjs');
 const repairPath = path.join(root, 'dev-tools', 'repair_eppp_native_quality_wave_10.cjs');
-const runtimePath = path.join(root, 'test_prep_hub_module.js');
-const deployRuntimePath = path.join(root, 'desktop/web-app', 'public', 'test_prep_hub_module.js');
+const runtimePackPath = path.join(root, 'test_prep', 'eppp_part_one_pack.json');
+const deployRuntimePackPath = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_part_one_pack.json');
 const ids = [
   'eppp-b024-assessment-3',
   'eppp-b015-professional-1',
@@ -115,11 +115,11 @@ describe('EPPP distractor-quality repair wave 10', () => {
     expect(qa.items.filter((item) => selected.has(item.id)).every((item) => item.qaStatus === 'pass')).toBe(true);
   });
 
-  it('synchronizes the revised bank into both runtime modules', () => {
-    const sourceRuntime = fs.readFileSync(runtimePath, 'utf8');
-    expect(fs.readFileSync(deployRuntimePath, 'utf8')).toBe(sourceRuntime);
-    expect(sourceRuntime).toContain('assigned by coin flip to Blue or Green');
-    expect(sourceRuntime).toContain('residual standard deviation of 5.8 rating points');
-    expect(sourceRuntime).toContain('exchanging original artwork for psychotherapy sessions');
+  it('synchronizes the revised bank into both lazy pack assets', () => {
+    const sourcePack = fs.readFileSync(runtimePackPath, 'utf8');
+    expect(fs.readFileSync(deployRuntimePackPath, 'utf8')).toBe(sourcePack);
+    expect(sourcePack).toContain('assigned by coin flip to Blue or Green');
+    expect(sourcePack).toContain('residual standard deviation of 5.8 rating points');
+    expect(sourcePack).toContain('exchanging original artwork for psychotherapy sessions');
   });
 });

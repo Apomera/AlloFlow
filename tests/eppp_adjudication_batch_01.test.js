@@ -7,7 +7,7 @@ const read = (relativePath) => JSON.parse(fs.readFileSync(resolve(root, relative
 
 describe('EPPP claim-level adjudication batch 01', () => {
   it('deeply reviews the ten lowest-risk candidates without releasing them', () => {
-    const report = read('test_prep/eppp_legacy/adjudication_batch_01.json');
+    const report = read('quality/eppp_provenance/evidence/adjudication/adjudication_batch_01.json');
     const native = read('test_prep/eppp_native_items.json');
     const nativeLegacyIds = new Set(native.map((item) => item.legacySourceId).filter(Boolean));
 
@@ -20,7 +20,7 @@ describe('EPPP claim-level adjudication batch 01', () => {
   });
 
   it('requires revised four-option questions with complete explanatory feedback', () => {
-    const report = read('test_prep/eppp_legacy/adjudication_batch_01.json');
+    const report = read('quality/eppp_provenance/evidence/adjudication/adjudication_batch_01.json');
     for (const item of report.items) {
       expect(item.findings.length).toBeGreaterThanOrEqual(2);
       expect(['minor-revision', 'major-rewrite']).toContain(item.decision);
@@ -31,9 +31,8 @@ describe('EPPP claim-level adjudication batch 01', () => {
     }
   });
 
-  it('uses full source names, stable URLs, credibility explanations, and matching deployment artifacts', () => {
-    const report = read('test_prep/eppp_legacy/adjudication_batch_01.json');
-    const deployed = read('desktop/web-app/public/test_prep/eppp_legacy/adjudication_batch_01.json');
+  it('uses full source names, stable URLs, and credibility explanations in canonical evidence', () => {
+    const report = read('quality/eppp_provenance/evidence/adjudication/adjudication_batch_01.json');
     for (const item of report.items) {
       expect(item.revisedItem.sourceDetails.length).toBeGreaterThan(0);
       for (const source of item.revisedItem.sourceDetails) {
@@ -43,6 +42,6 @@ describe('EPPP claim-level adjudication batch 01', () => {
         expect(source.credibility.length).toBeGreaterThanOrEqual(120);
       }
     }
-    expect(deployed).toEqual(report);
+    expect(fs.existsSync(resolve(root, 'desktop/web-app/public/test_prep/eppp_legacy/adjudication_batch_01.json'))).toBe(false);
   });
 });

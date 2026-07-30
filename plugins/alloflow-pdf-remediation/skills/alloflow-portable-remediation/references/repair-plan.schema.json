@@ -1,0 +1,210 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://alloflow.org/schemas/portable-remediation-plan-v1.json",
+  "title": "AlloFlow portable remediation plan",
+  "$comment": "Runtime validation additionally enforces page-count bounds, unique source pages, safe link schemes, exactly one h1, no skipped heading levels, blocked document types, and aggregate image/text budgets.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "document", "blocks", "review_notes"],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "document": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "language", "source_page_count", "source_sha256", "document_type"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "language": {
+          "type": "string",
+          "pattern": "^[A-Za-z]{2,8}(?:-[A-Za-z0-9]{1,8})*$"
+        },
+        "source_page_count": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "source_sha256": {
+          "type": "string",
+          "pattern": "^[A-Fa-f0-9]{64}$",
+          "description": "SHA-256 returned by the packaged source-info command for the exact source PDF."
+        },
+        "document_type": {
+          "enum": ["handout", "report", "article", "booklet", "other", "form", "signed-record", "legal-record"]
+        },
+        "subject": {
+          "type": "string",
+          "maxLength": 1000
+        }
+      }
+    },
+    "source_pages": {
+      "type": "array",
+      "description": "Host-extracted page text used for plan-internal completeness checks; it is not independently extracted or verified by the packaged scripts.",
+      "maxItems": 1000,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["page", "text"],
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 200000
+          }
+        }
+      }
+    },
+    "blocks": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5000,
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "level", "text", "source_page"],
+            "properties": {
+              "type": { "const": "heading" },
+              "level": { "type": "integer", "minimum": 1, "maximum": 6 },
+              "text": { "type": "string", "minLength": 1, "maxLength": 20000 },
+              "source_page": { "type": "integer", "minimum": 1 }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "text", "source_page"],
+            "properties": {
+              "type": { "const": "paragraph" },
+              "text": { "type": "string", "minLength": 1, "maxLength": 200000 },
+              "source_page": { "type": "integer", "minimum": 1 }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "text", "source_page"],
+            "properties": {
+              "type": { "const": "blockquote" },
+              "text": { "type": "string", "minLength": 1, "maxLength": 200000 },
+              "cite": { "type": "string", "maxLength": 2000 },
+              "source_page": { "type": "integer", "minimum": 1 }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "ordered", "items", "source_page"],
+            "properties": {
+              "type": { "const": "list" },
+              "ordered": { "type": "boolean" },
+              "items": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 1000,
+                "items": { "type": "string", "minLength": 1, "maxLength": 20000 }
+              },
+              "source_page": { "type": "integer", "minimum": 1 }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "caption", "columns", "rows", "source_page"],
+            "properties": {
+              "type": { "const": "table" },
+              "caption": { "type": "string", "minLength": 1, "maxLength": 2000 },
+              "columns": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 100,
+                "items": { "type": "string", "minLength": 1, "maxLength": 2000 }
+              },
+              "rows": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 5000,
+                "items": {
+                  "type": "array",
+                  "minItems": 1,
+                  "maxItems": 100,
+                  "items": { "type": "string", "maxLength": 20000 }
+                }
+              },
+              "row_headers": { "type": "boolean" },
+              "source_page": { "type": "integer", "minimum": 1 }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "alt", "decorative", "source_page"],
+            "properties": {
+              "type": { "const": "image" },
+              "alt": { "type": "string", "maxLength": 4000 },
+              "decorative": { "type": "boolean" },
+              "path": { "type": "string", "maxLength": 1000 },
+              "caption": { "type": "string", "maxLength": 4000 },
+              "source_page": { "type": "integer", "minimum": 1 }
+            },
+            "allOf": [
+              {
+                "if": {
+                  "required": ["decorative"],
+                  "properties": {
+                    "decorative": { "const": false }
+                  }
+                },
+                "then": {
+                  "properties": {
+                    "alt": { "minLength": 1 }
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "text", "url", "source_page"],
+            "properties": {
+              "type": { "const": "link" },
+              "text": { "type": "string", "minLength": 1, "maxLength": 2000 },
+              "url": { "type": "string", "minLength": 1, "maxLength": 4000, "pattern": "^(?:#|https?:|mailto:|tel:)" },
+              "source_page": { "type": "integer", "minimum": 1 }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "page"],
+            "properties": {
+              "type": { "const": "page_break" },
+              "page": { "type": "integer", "minimum": 1 },
+              "label": { "type": "string", "maxLength": 200 }
+            }
+          }
+        ]
+      }
+    },
+    "review_notes": {
+      "type": "array",
+      "maxItems": 1000,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 10000
+      }
+    }
+  }
+}

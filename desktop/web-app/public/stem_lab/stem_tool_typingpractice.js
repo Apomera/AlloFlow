@@ -134,7 +134,7 @@
     '  position: absolute; top: 38%; left: 50%; z-index: 20;',
     '  pointer-events: none;',
     '  font-family: ui-sans-serif, system-ui, sans-serif;',
-    '  font-weight: 900; font-size: 56px;',
+    '  font-weight: 900; font-size: clamp(28px, 12vw, 56px);',
     '  letter-spacing: 0.04em;',
     '  background: linear-gradient(135deg, #f59e0b, #ec4899, #8b5cf6);',
     '  -webkit-background-clip: text; background-clip: text;',
@@ -142,7 +142,8 @@
     '  filter: drop-shadow(0 4px 12px rgba(236,72,153,0.6));',
     '  text-shadow: 0 0 0 white;',
     '  animation: tp-fest-combo-phrase 1.6s ease-out forwards;',
-    '  white-space: nowrap;',
+    '  width: max-content; max-width: calc(100% - 32px); text-align: center;',
+    '  white-space: normal; overflow-wrap: anywhere;',
     '}',
     // Mascot speech bubble — slides up + fades
     '@keyframes tp-fest-speech-bubble {',
@@ -160,7 +161,8 @@
     '  border: 2px solid #f97316;',
     '  box-shadow: 0 3px 8px rgba(0,0,0,0.2);',
     '  animation: tp-fest-speech-bubble 1.8s ease-out forwards;',
-    '  white-space: nowrap;',
+    '  max-width: min(18rem, calc(100% - 32px)); text-align: center;',
+    '  white-space: normal; overflow-wrap: anywhere;',
     '}',
     '.tp-fest-speech-bubble::after {',
     '  content: ""; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);',
@@ -192,13 +194,14 @@
     '  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);',
     '  z-index: 30; pointer-events: none;',
     '  font-family: ui-sans-serif, system-ui, sans-serif;',
-    '  font-weight: 900; font-size: 64px;',
+    '  font-weight: 900; font-size: clamp(32px, 14vw, 64px);',
     '  background: linear-gradient(135deg, #fbbf24, #f97316, #ec4899, #8b5cf6, #3b82f6);',
     '  -webkit-background-clip: text; background-clip: text;',
     '  -webkit-text-fill-color: transparent;',
     '  filter: drop-shadow(0 6px 18px rgba(0,0,0,0.4));',
     '  animation: tp-fest-combo-phrase 2.8s ease-out forwards;',
-    '  white-space: nowrap;',
+    '  width: max-content; max-width: calc(100% - 32px); text-align: center;',
+    '  white-space: normal; overflow-wrap: anywhere;',
     '}'
   ].join('\n');
   if (document.head) document.head.appendChild(st);
@@ -228,20 +231,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
 
 (function() {
   'use strict';
-  // ── Accessibility live region (WCAG 4.1.3) ──
-  (function() {
-    if (document.getElementById('allo-live-typingpractice')) return;
-    var lr = document.createElement('div');
-    lr.id = 'allo-live-typingpractice';
-    lr.setAttribute('aria-live', 'polite');
-    lr.setAttribute('aria-atomic', 'true');
-    lr.setAttribute('role', 'status');
-    lr.className = 'sr-only';
-    lr.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);border:0';
-    document.body.appendChild(lr);
-  })();
-
-
   // ─────────────────────────────────────────────────────────
   // SECTION 1: DEFAULT STATE SHAPE
   // ─────────────────────────────────────────────────────────
@@ -323,14 +312,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     });
   }
 
-  // Print errors are informational, so announce them non-modally. The normal
-  // path uses the app toast; the fallback remains both visible and live-region announced.
+  // Print and export errors are informational, so announce them non-modally.
+  // The normal path uses the app toast. The fallback alert is the single
+  // announcement source and remains until the user dismisses it.
   function reportTypingPracticeIssue(message, notify) {
     message = String(message || 'An action could not be completed.');
     if (typeof notify === 'function') { notify(message, 'info'); return; }
     if (typeof document === 'undefined' || !document.body) return;
-    var live = document.getElementById('allo-live-typingpractice');
-    if (live) { live.textContent = ''; setTimeout(function() { live.textContent = message; }, 0); }
     var prior = document.getElementById('typing-practice-issue');
     if (prior && prior.parentNode) prior.parentNode.removeChild(prior);
     var notice = document.createElement('div');
@@ -340,11 +328,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     notice.style.cssText = 'position:fixed;right:20px;bottom:20px;z-index:10000;max-width:min(30rem,calc(100vw - 40px));display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:#fff7ed;color:#7c2d12;border:2px solid #c2410c;border-radius:10px;box-shadow:0 12px 36px rgba(0,0,0,.25);font-family:system-ui,sans-serif;line-height:1.45;';
     var text = document.createElement('span'); text.textContent = message;
     var close = document.createElement('button');
-    close.type = 'button'; close.textContent = 'Dismiss'; close.setAttribute('aria-label', 'Dismiss print message');
+    close.type = 'button'; close.textContent = 'Dismiss'; close.setAttribute('aria-label', 'Dismiss Typing Practice message');
     close.style.cssText = 'min-width:44px;min-height:44px;padding:8px 10px;border:2px solid #9a3412;border-radius:7px;background:#fff;color:#7c2d12;font-weight:700;cursor:pointer;';
     close.addEventListener('click', function() { if (notice.parentNode) notice.parentNode.removeChild(notice); });
     notice.appendChild(text); notice.appendChild(close); document.body.appendChild(notice);
-    setTimeout(function() { if (notice.parentNode) notice.parentNode.removeChild(notice); }, 10000);
   }
 
   var DEFAULT_STATE = {
@@ -357,6 +344,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       largeKeys: false,
       showKeyboard: true,      // finger-color on-screen keyboard, shown by default (no text enlargement, unlike largeKeys) — the core teaching surface
       highContrast: false,
+      reducedMotion: false,     // in-app override for learners who cannot change the device-level motion preference
       paceTargetWpm: null,     // null = no pace target (motor-planning-safe default)
       audioCues: false,
       errorTolerant: false,
@@ -584,6 +572,141 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   // Bot send cadence per speed — how many words bot clears before
   // sending an attack to the player. Faster bots send more often.
   var BOT_SEND_EVERY = { slow: 7, medium: 5, fast: 4 };
+
+  // Battle deadlines use wall-clock timestamps, so simply stopping the
+  // interval is not enough: without shifting the deadlines, a paused match
+  // catches up all at once on resume. Keep this pure for regression testing.
+  function typingPracticeShiftBattleClock(current, pauseDurationMs) {
+    var duration = Math.max(0, Number(pauseDurationMs) || 0);
+    var next = Object.assign({}, current || {});
+    [
+      'startedAt', 'lastRiseAt', 'pauseUntil', 'botLastRiseAt',
+      'botNextKeyAt', 'incomingFlashTo', 'outgoingFlashTo', 'clearBurstAt',
+      'pickerOpenedAt'
+    ].forEach(function(field) {
+      var value = Number(next[field]) || 0;
+      if (value > 0) next[field] = value + duration;
+    });
+    next.pausedMs = Math.max(0, Number(next.pausedMs) || 0) + duration;
+    return next;
+  }
+
+  function typingPracticePauseBattleClock(current, now, automatic) {
+    if (!current || current.paused) return current;
+    return Object.assign({}, current, {
+      paused: true,
+      pausedAt: Math.max(0, Number(now) || 0),
+      autoPaused: automatic === true
+    });
+  }
+
+  function typingPracticeResumeBattleClock(current, now) {
+    if (!current || !current.paused) return current;
+    var resumedAt = Math.max(0, Number(now) || 0);
+    var pausedAt = Math.max(0, Number(current.pausedAt) || resumedAt);
+    var next = typingPracticeShiftBattleClock(current, resumedAt - pausedAt);
+    next.paused = false;
+    next.pausedAt = 0;
+    next.autoPaused = false;
+    return next;
+  }
+
+  // Attack selection is deliberately untimed. The whole clock is suspended
+  // while the choice is open, and the same deadline shift prevents either
+  // stack or the match duration from charging decision time.
+  function typingPracticeResolveBattlePicker(current, now, pickedWord) {
+    if (!current || !current.pickerOpen) return current;
+    var resolvedAt = Math.max(0, Number(now) || 0);
+    var openedAt = Math.max(0, Number(current.pickerOpenedAt) || resolvedAt);
+    var next = typingPracticeShiftBattleClock(current, resolvedAt - openedAt);
+    if (typeof pickedWord === 'string' && pickedWord) {
+      next.botStack = (Array.isArray(current.botStack) ? current.botStack : []).concat([pickedWord]);
+      next.outgoingFlashTo = resolvedAt + 1200;
+    }
+    next.pickerOpen = false;
+    next.pickerOptions = [];
+    next.pickerOpenedAt = 0;
+    next.combo = 0;
+    return next;
+  }
+
+  // Apply one text-input event to the current Battle word. This deliberately
+  // accepts multiple graphemes so touch keyboards, switch controls, dictation,
+  // paste, and IME composition can use the same game surface. A single event
+  // never spills into the next word: once the current word clears, remaining
+  // input is ignored so predictive text cannot clear an unseen target.
+  // One semantic color source for every Battle surface. Theme palettes were
+  // authored for AA contrast; bypassing them with bright dark-theme constants
+  // made the light Kawaii theme unreadable. Bot violet has a dark light-theme
+  // variant and automatically falls back to the high-contrast palette.
+  function typingPracticeBattleSemanticColors(palette, themeName) {
+    palette = palette || PALETTE;
+    var lightSurface = palette.onAccent === '#ffffff';
+    return {
+      easy: palette.success,
+      medium: palette.warn,
+      danger: palette.danger,
+      incomingText: palette.danger,
+      outgoingText: palette.success,
+      botText: lightSurface ? '#5b21b6' : (palette === HIGH_CONTRAST_PALETTE ? palette.text : '#c4b5fd'),
+      botBorder: lightSurface ? '#6d28d9' : (palette === HIGH_CONTRAST_PALETTE ? palette.border : '#a78bfa'),
+      playerSurface: lightSurface ? palette.surface : 'linear-gradient(180deg, ' + palette.accent + '14, rgba(15,23,42,0.4))',
+      botSurface: lightSurface ? '#f3e8ff' : 'linear-gradient(180deg, rgba(167,139,250,0.08), rgba(15,23,42,0.4))'
+    };
+  }
+
+  function typingPracticeApplyBattleTextInput(current, rawText, now, postClearPauseMs) {
+    var next = Object.assign({}, current || {});
+    var steps = [];
+    if (!current || current.paused || current.ended || current.pickerOpen) {
+      return { state: next, steps: steps, wordCleared: false };
+    }
+    var stack = Array.isArray(current.stack) ? current.stack : [];
+    var word = stack[0] || '';
+    if (!word) return { state: next, steps: steps, wordCleared: false };
+    var target = typingPracticeGraphemes(word);
+    var typed = typingPracticeGraphemes(current.typed || '');
+    var input = typingPracticeGraphemes(rawText);
+    var wordCleared = false;
+    var feedback = current.feedback || null;
+    for (var i = 0; i < input.length && !wordCleared; i++) {
+      var actual = input[i];
+      var expected = target[typed.length];
+      if (expected === undefined) break;
+      var correct = typingPracticeNormalizeText(actual).toLocaleLowerCase() ===
+        typingPracticeNormalizeText(expected).toLocaleLowerCase();
+      steps.push({ expected: expected, actual: actual, correct: correct, index: typed.length });
+      if (correct) {
+        typed.push(expected);
+        feedback = null;
+        if (typed.length >= target.length) {
+          wordCleared = true;
+          next.stack = stack.slice(1);
+          next.typed = '';
+          next.cleared = Math.max(0, Number(current.cleared) || 0) + 1;
+          next.combo = Math.max(0, Number(current.combo) || 0) + 1;
+          next.bestCombo = Math.max(Math.max(0, Number(current.bestCombo) || 0), next.combo);
+          next.pauseUntil = Math.max(0, Number(now) || 0) + Math.max(0, Number(postClearPauseMs) || 0);
+          next.clearBurstAt = Math.max(0, Number(now) || 0);
+          next.clearBurstCount = Math.max(0, Number(current.clearBurstCount) || 0) + 1;
+        }
+      } else {
+        next.errors = Math.max(0, Number(next.errors) || 0) + 1;
+        next.combo = 0;
+        feedback = {
+          expected: expected,
+          actual: actual,
+          advanced: false,
+          index: typed.length,
+          attempt: feedback && feedback.index === typed.length ? feedback.attempt + 1 : 1
+        };
+      }
+    }
+    if (!wordCleared) next.typed = typed.join('');
+    next.feedback = wordCleared ? null : feedback;
+    next.lastWasWrong = steps.length ? !steps[steps.length - 1].correct : !!current.lastWasWrong;
+    return { state: next, steps: steps, wordCleared: wordCleared };
+  }
 
   // ──────────────────────────────────────────────────────────
   // BATTLE MASCOTS — bespoke SVG characters per theme
@@ -1558,7 +1681,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   var VISUAL_GALLERY_MAX = 3;
 
   // Accommodation presets — single-click bundles of common accommodation combos.
-  // Applying a preset overwrites the student's current accommodation settings.
+  // Applying a preset changes only the settings named by that bundle, preserving
+  // independent supports such as reduced motion, speech, and keyboard visibility.
   // Each bundle is informed by the relevant disability literature:
   //   Dyslexia-friendly — OpenDyslexic font + high-contrast + error tolerance +
   //                       audio cues help students with visual processing and
@@ -2872,7 +2996,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '.tp-root input:focus-visible,',
       '.tp-root select:focus-visible,',
       '.tp-root textarea:focus-visible,',
-      '.tp-root [role="switch"]:focus-visible {',
+      '.tp-root [role="switch"]:focus-visible,',
+      '.tp-root a:focus-visible,',
+      '.tp-root summary:focus-visible {',
       '  outline: 3px solid #fbbf24;',
       '  outline-offset: 2px;',
       '  border-radius: 8px;',
@@ -2882,31 +3008,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '.tp-root.tp-theme-steampunk input:focus-visible,',
       '.tp-root.tp-theme-steampunk select:focus-visible,',
       '.tp-root.tp-theme-steampunk textarea:focus-visible,',
-      '.tp-root.tp-theme-steampunk [role="switch"]:focus-visible { outline-color: #e8a040; }',
+      '.tp-root.tp-theme-steampunk [role="switch"]:focus-visible,',
+      '.tp-root.tp-theme-steampunk a:focus-visible,',
+      '.tp-root.tp-theme-steampunk summary:focus-visible { outline-color: #e8a040; }',
       '.tp-root.tp-theme-cyberpunk button:focus-visible,',
       '.tp-root.tp-theme-cyberpunk [tabindex]:focus-visible,',
       '.tp-root.tp-theme-cyberpunk input:focus-visible,',
       '.tp-root.tp-theme-cyberpunk select:focus-visible,',
       '.tp-root.tp-theme-cyberpunk textarea:focus-visible,',
-      '.tp-root.tp-theme-cyberpunk [role="switch"]:focus-visible { outline-color: #ffd700; }',
+      '.tp-root.tp-theme-cyberpunk [role="switch"]:focus-visible,',
+      '.tp-root.tp-theme-cyberpunk a:focus-visible,',
+      '.tp-root.tp-theme-cyberpunk summary:focus-visible { outline-color: #ffd700; }',
       '.tp-root.tp-theme-kawaii button:focus-visible,',
       '.tp-root.tp-theme-kawaii [tabindex]:focus-visible,',
       '.tp-root.tp-theme-kawaii input:focus-visible,',
       '.tp-root.tp-theme-kawaii select:focus-visible,',
       '.tp-root.tp-theme-kawaii textarea:focus-visible,',
-      '.tp-root.tp-theme-kawaii [role="switch"]:focus-visible { outline-color: #4a2838; }',
+      '.tp-root.tp-theme-kawaii [role="switch"]:focus-visible,',
+      '.tp-root.tp-theme-kawaii a:focus-visible,',
+      '.tp-root.tp-theme-kawaii summary:focus-visible { outline-color: #4a2838; }',
       '.tp-root.tp-theme-oceanic button:focus-visible,',
       '.tp-root.tp-theme-oceanic [tabindex]:focus-visible,',
       '.tp-root.tp-theme-oceanic input:focus-visible,',
       '.tp-root.tp-theme-oceanic select:focus-visible,',
       '.tp-root.tp-theme-oceanic textarea:focus-visible,',
-      '.tp-root.tp-theme-oceanic [role="switch"]:focus-visible { outline-color: #67e8f9; }',
+      '.tp-root.tp-theme-oceanic [role="switch"]:focus-visible,',
+      '.tp-root.tp-theme-oceanic a:focus-visible,',
+      '.tp-root.tp-theme-oceanic summary:focus-visible { outline-color: #67e8f9; }',
       '.tp-root.tp-theme-neutral button:focus-visible,',
       '.tp-root.tp-theme-neutral [tabindex]:focus-visible,',
       '.tp-root.tp-theme-neutral input:focus-visible,',
       '.tp-root.tp-theme-neutral select:focus-visible,',
       '.tp-root.tp-theme-neutral textarea:focus-visible,',
-      '.tp-root.tp-theme-neutral [role="switch"]:focus-visible { outline-color: #d4a060; }',
+      '.tp-root.tp-theme-neutral [role="switch"]:focus-visible,',
+      '.tp-root.tp-theme-neutral a:focus-visible,',
+      '.tp-root.tp-theme-neutral summary:focus-visible { outline-color: #d4a060; }',
       '.tp-root button:focus:not(:focus-visible),',
       '.tp-root [tabindex]:focus:not(:focus-visible) { outline: none; }',
 
@@ -3809,6 +3945,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '}',
       '.tp-root.tp-theme-cyberpunk .tp-progress-fill::after { background: linear-gradient(90deg, transparent 0%, rgba(0,255,200,0.28) 50%, transparent 100%); animation-duration: 1600ms; }',
       '.tp-root.tp-theme-kawaii    .tp-progress-fill::after { background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.45) 50%, transparent 100%); animation-duration: 2800ms; }',
+      '.tp-root .tp-progress-fill-complete::after { display: none; }',
 
       /* ── Word-complete glow — applied to each char of the just-finished
          word when the student types a terminal space. Subtle theme-
@@ -3877,13 +4014,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '.tp-root button { touch-action: manipulation; }',
       '.tp-root button:not(.tp-session-bar) { min-width: 24px; min-height: 24px; }',
       '.tp-root .tp-view-shell { scroll-margin-top: 12px; }',
+      '.tp-root button, .tp-root a, .tp-root input, .tp-root select, .tp-root textarea, .tp-root summary, .tp-root [tabindex] { scroll-margin-block: 12px; }',
+      '.tp-root .tp-settings-anchor, .tp-root #tp-s-presets { scroll-margin-top: 112px; }',
+      /* WCAG 2.2 target-size floor for fine pointers, with larger targets
+         for stateful choices and native motor controls. */
+      '.tp-root button:not(.tp-session-bar) { min-width: 24px; min-height: 24px; touch-action: manipulation; overflow-wrap: anywhere; white-space: normal; line-height: 1.35; }',
+      '.tp-root button[aria-pressed] { min-width: 44px; min-height: 44px; }',
+      '.tp-root input[type="checkbox"], .tp-root input[type="radio"] { min-width: 24px; min-height: 24px; }',
+      '.tp-root input[type="range"] { min-height: 44px; touch-action: manipulation; }',
+      '.tp-root .tp-sr-only { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0, 0, 0, 0) !important; white-space: nowrap !important; border: 0 !important; }',
       '.tp-root .tp-session-chart { overflow-x: auto; overscroll-behavior-inline: contain; scrollbar-width: thin; }',
+      '.tp-root .tp-goal-hit-dot { flex: 0 0 auto; }',
       '.tp-root .tp-session-bar { display: flex; align-items: flex-end; justify-content: stretch; background: transparent !important; }',
       '.tp-root .tp-session-bar-fill { width: 100%; border-radius: 4px 4px 0 0; transition: transform 140ms ease, filter 140ms ease; transform-origin: bottom center; }',
       '.tp-root .tp-session-bar:hover .tp-session-bar-fill,',
       '.tp-root .tp-session-bar:focus-visible .tp-session-bar-fill { transform: scaleX(1.08); filter: brightness(1.12); }',
       '.tp-root .tp-table-scroll { max-width: 100%; overflow-x: auto; overscroll-behavior-inline: contain; scrollbar-width: thin; }',
-      '.tp-root .tp-settings-nav a { min-height: 36px; display: inline-flex; align-items: center; }',
+      '.tp-root .tp-practice-calendar-grid { display: grid; grid-template-columns: repeat(15, minmax(12px, 1fr)); gap: 3px; }',
+      '.tp-root .tp-calendar-details > summary { min-height: 44px; display: inline-flex; align-items: center; cursor: pointer; font-weight: 700; }',
+      '.tp-root .tp-calendar-table { width: 100%; min-width: 520px; border-collapse: collapse; }',
+      '.tp-root .tp-calendar-table th, .tp-root .tp-calendar-table td { padding: 8px 10px; border-bottom: 1px solid currentColor; text-align: left; font-variant-numeric: tabular-nums; }',
+      '.tp-root .tp-calendar-table th { font-weight: 800; }',
+      '.tp-root .tp-history-search-controls { display: flex; gap: 6px; align-items: center; flex: 1 1 260px; justify-content: flex-end; }',
+      '.tp-root .tp-history-search-controls input { min-width: 0; }',
+      '.tp-root .tp-settings-nav a { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; touch-action: manipulation; overflow-wrap: anywhere; line-height: 1.35; text-align: center; }',
+      '.tp-root .tp-theme-quick-choice { max-width: 100%; }',
+      '.tp-root .tp-theme-quick-label { min-width: 0; overflow-wrap: anywhere; }',
       '@media (pointer: coarse) {',
       '  .tp-root button:not(.tp-session-bar),',
       '  .tp-root input[type="search"],',
@@ -3895,6 +4051,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '}',
       '.tp-root .tp-favorite-toggle { box-shadow: none !important; }',
       '.tp-root .tp-favorite-toggle:hover { transform: none; border-color: currentColor; }',
+      '@media (max-width: 760px) {',
+      '  .tp-root .tp-settings-nav { position: static !important; }',
+      '  .tp-root .tp-settings-anchor, .tp-root #tp-s-presets { scroll-margin-top: 16px !important; }',
+      '}',
       '@media (max-width: 560px) {',
       '  .tp-root .tp-coach-layout,',
       '  .tp-root .tp-discovery-toolbar,',
@@ -3907,16 +4067,70 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       '  .tp-root .tp-toggle-row { align-items: flex-start !important; }',
       '  .tp-root .tp-toggle-switch { margin-left: auto; }',
       '  .tp-root .tp-settings-nav { position: static !important; }',
+      '  .tp-root .tp-practice-calendar-grid { grid-template-columns: repeat(10, minmax(16px, 1fr)) !important; }',
+      '  .tp-root .tp-history-toolbar, .tp-root .tp-history-item { flex-direction: column !important; align-items: stretch !important; }',
+      '  .tp-root .tp-history-search-controls { width: 100%; justify-content: stretch; }',
+      '  .tp-root .tp-history-search-controls input { width: 100%; flex: 1 1 auto !important; }',
+      '  .tp-root .tp-history-primary, .tp-root .tp-history-metrics { flex-basis: auto !important; width: 100%; }',
+      '  .tp-root .tp-saved-passage-item { flex-direction: column !important; align-items: stretch !important; }',
+      '  .tp-root .tp-saved-passage-actions { width: 100%; flex-direction: row !important; flex-wrap: wrap; }',
+      '  .tp-root .tp-saved-passage-actions button { flex: 1 1 120px; }',
       '  .tp-root .tp-visual-keyboard { margin-inline: -8px; border-radius: 8px; }',
+      '  .tp-root .tp-battle-stage, .tp-root .tp-battle-menu { padding: 12px !important; }',
+      '  .tp-root .tp-battle-menu-hero { flex-direction: column; align-items: flex-start !important; }',
+      '  .tp-root .tp-battle-menu-copy { width: 100%; min-width: 0 !important; }',
+      '  .tp-root .tp-battle-hud-metrics { width: 100%; margin-left: 0 !important; justify-content: space-between; }',
+      '  .tp-root .tp-stack-col { min-width: 0 !important; width: 100%; min-height: 300px !important; }',
+      '}',
+      '@media (prefers-contrast: more) {',
+      '  .tp-root .tp-char, .tp-root .tp-session-bar-fill { opacity: 1 !important; }',
+      '  .tp-root .tp-progress-track, .tp-root .tp-session-bar-fill { border: 2px solid currentColor !important; }',
+      '  .tp-root .tp-toggle-switch { border-width: 2px !important; }',
+      '  .tp-root button:focus-visible, .tp-root a:focus-visible, .tp-root input:focus-visible, .tp-root select:focus-visible, .tp-root textarea:focus-visible, .tp-root summary:focus-visible { outline-width: 3px !important; }',
       '}',
       '@media (forced-colors: active) {',
       '  .tp-root [aria-pressed="true"],',
-      '  .tp-root [aria-checked="true"] { outline: 2px solid Highlight; outline-offset: 2px; }',
-      '  .tp-root .tp-current-char,',
-      '  .tp-root .tp-wrong-flash { background: Highlight !important; color: HighlightText !important; }',
-      '  .tp-root .tp-progress-fill, .tp-root .tp-session-bar-fill { background: Highlight !important; }',
+      '  .tp-root [aria-checked="true"] { outline: 3px solid Highlight; outline-offset: 2px; }',
+      '  .tp-root [aria-pressed="true"] .tp-choice-check { color: Highlight !important; }',
+      '  .tp-root .tp-theme-quick-swatch { border-color: CanvasText !important; }',
+      '  .tp-root .tp-char { opacity: 1 !important; }',
+      '  .tp-root .tp-char-current { background: Highlight !important; color: HighlightText !important; outline: 2px solid Highlight !important; outline-offset: 1px; }',
+      '  .tp-root .tp-char-wrong-current, .tp-root .tp-char-done-error { background: Canvas !important; color: CanvasText !important; outline: 3px double CanvasText !important; text-decoration: underline wavy CanvasText !important; text-underline-offset: 3px; }',
+      '  .tp-root .tp-char-done { border-bottom: 2px solid CanvasText !important; }',
+      '  .tp-root .tp-char-preview { border-bottom: 2px dotted Highlight !important; }',
+      '  .tp-root .tp-progress-track { background: Canvas !important; border: 1px solid CanvasText !important; }',
+      '  .tp-root .tp-progress-fill, .tp-root .tp-session-bar-fill { background: Highlight !important; opacity: 1 !important; border: 1px solid CanvasText !important; }',
+      '  .tp-root .tp-toggle-switch { background: ButtonFace !important; color: ButtonText !important; border: 2px solid ButtonText !important; }',
+      '  .tp-root .tp-toggle-thumb { background: ButtonText !important; border: 1px solid ButtonFace !important; }',
+      '  .tp-root .tp-toggle-state { color: ButtonText !important; }',
+      '  .tp-root .tp-goal-hit-dot-met { background: Highlight !important; border-color: Highlight !important; }',
+      '  .tp-root .tp-goal-hit-dot-not-met { background: Canvas !important; border-color: CanvasText !important; }',
+      '  .tp-root .tp-calendar-day-active { background: Highlight !important; border-color: Highlight !important; }',
+      '  .tp-root .tp-calendar-day-inactive { background: Canvas !important; border-color: CanvasText !important; }',
       '  .tp-root .tp-favorite-toggle { border: 1px solid ButtonText !important; }',
+      '  .tp-root .tp-battle-target, .tp-root .tp-stack-col { border-color: CanvasText !important; }',
+      '  .tp-root .tp-battle-target:focus-within { outline: 3px solid Highlight !important; }',
       '}',
+
+      /* In-app motion accommodation mirrors the OS-level preference for
+         learners who cannot change shared or managed device settings. */
+      '.tp-root.tp-reduce-motion *,',
+      '.tp-root.tp-reduce-motion *::before,',
+      '.tp-root.tp-reduce-motion *::after {',
+      '  animation-duration: 0.01ms !important;',
+      '  animation-iteration-count: 1 !important;',
+      '  transition-duration: 0.01ms !important;',
+      '  scroll-behavior: auto !important;',
+      '}',
+      '.tp-root.tp-reduce-motion .tp-battle-ambience,',
+      '.tp-root.tp-reduce-motion .tp-fest-confetti,',
+      '.tp-root.tp-reduce-motion .tp-fest-keystroke-sparkle,',
+      '.tp-root.tp-reduce-motion .tp-fest-finale-flash,',
+      '.tp-root.tp-reduce-motion .tp-clear-burst { display: none !important; }',
+      '.tp-root.tp-reduce-motion .tp-session-bar-fill { transition: none !important; transform: none !important; }',
+      '.tp-root.tp-reduce-motion .tp-stat-stagger > * { opacity: 1 !important; transform: none !important; animation: none !important; }',
+      '.tp-root.tp-reduce-motion .tp-drill-card:hover,',
+      '.tp-root.tp-reduce-motion .tp-drill-card:focus-visible { transform: none !important; }',
 
       '@media (prefers-reduced-motion: reduce) {',
       '  .tp-root .tp-current-char,',
@@ -3942,6 +4156,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   })();
 
   // ─────────────────────────────────────────────────────────
+  // Dynamic result counts stay visually current while screen-reader speech
+  // waits for a short pause. This prevents search from interrupting once per
+  // character and avoids announcing an initial count during route focus.
+  function TypingPracticeDebouncedStatus(props) {
+    props = props || {};
+    var React = props.react || window.React;
+    var h = React.createElement;
+    var message = String(props.message || '');
+    var announcedTuple = React.useState('');
+    var announcedMessage = announcedTuple[0], setAnnouncedMessage = announcedTuple[1];
+    var previousMessageRef = React.useRef(message);
+    React.useEffect(function() {
+      if (message === previousMessageRef.current) return;
+      previousMessageRef.current = message;
+      var delay = Math.max(200, Number(props.delay) || 400);
+      var timer = setTimeout(function() {
+        setAnnouncedMessage(message);
+      }, delay);
+      return function() { clearTimeout(timer); };
+    }, [message, props.delay]);
+    return h('span', {
+      id: props.id,
+      role: 'status',
+      'aria-live': 'polite',
+      'aria-atomic': 'true',
+      'aria-relevant': 'text',
+      className: 'sr-only'
+    }, announcedMessage);
+  }
+
   // SECTION 4: REGISTER TOOL
   // ─────────────────────────────────────────────────────────
 
@@ -4103,6 +4347,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         // aria-live region so assistive tech reads milestones aloud.
         var announceTuple = useState('');
         var announceText = announceTuple[0], setAnnounceText = announceTuple[1];
+        // Avoid interrupting a learner for every rapid repeat of the same
+        // mistake. A correct key or a different mistake resets this throttle.
+        var mistakeAnnouncementRef = useRef({ signature: '', at: 0 });
 
         // Goal inputs keep an editable local draft until blur/Enter. This prevents
         // incomplete or out-of-range values from leaking into saved progress data.
@@ -4110,8 +4357,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         var goalNumberDrafts = goalNumberDraftsTuple[0], setGoalNumberDrafts = goalNumberDraftsTuple[1];
         var goalNumberTouchedTuple = useState({});
         var goalNumberTouched = goalNumberTouchedTuple[0], setGoalNumberTouched = goalNumberTouchedTuple[1];
-
-        var startBtnRef = useRef(null);
 
         // Local note draft for the summary view's "add a note" field.
         // Persists into the session record when student/clinician clicks Save.
@@ -4176,7 +4421,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
 
         var captureRef = useRef(null);
         var composingInputRef = useRef(false);
+        var pendingInputKindRef = useRef('text-input');
+        var skipComposedInputRef = useRef('');
+        var inputMethodCountsRef = useRef({ keyboard: 0, 'text-input': 0, ime: 0, paste: 0 });
         var completionSavedRef = useRef(false);
+        var interruptionPauseRef = useRef(false);
+        var exitConfirmationPendingRef = useRef(false);
 
         // ── Active drill and target text ──
         var activeDrill = state.currentDrill ? DRILLS[state.currentDrill] : null;
@@ -4205,6 +4455,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         }
 
         targetStr = typingPracticeNormalizeText(targetStr);
+        // Keep the translated interface language separate from the target
+        // passage language. A saved Spanish passage must not make menus,
+        // settings, or English instructions sound Spanish to a screen reader.
+        var uiLanguage = typingPracticeUiLanguage(ctx);
+        var activeTargetLanguage = activeDrill && activeDrill.id === 'passage'
+          ? typingPracticeNormalizeLanguageTag(state.aiPassage && state.aiPassage.language, 'en')
+          : uiLanguage;
         var targetChars = typingPracticeGraphemes(targetStr);
         var typedChars = typingPracticeGraphemes(typed);
         var targetLength = targetChars.length;
@@ -4226,11 +4483,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             setWordPulse({ start: -1, end: -1, key: 0 });
             setStreak(0);
             setAnnounceText('');
+            mistakeAnnouncementRef.current = { signature: '', at: 0 };
             progressMilestoneRef.current = 0;
             previousSightReadRef.current = 0;
             completionSavedRef.current = false;
+            interruptionPauseRef.current = false;
+            exitConfirmationPendingRef.current = false;
             restNudgeShownRef.current = false;
             keystrokeTimesRef.current = [];
+            pendingInputKindRef.current = 'text-input';
+            skipComposedInputRef.current = '';
+            inputMethodCountsRef.current = { keyboard: 0, 'text-input': 0, ime: 0, paste: 0 };
             // Clear any stale note draft from a prior summary
             setNoteDraft('');
             setNoteSaved(false);
@@ -4248,12 +4511,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
 
         // ── Live clock: tick rapidly during drill so WPM + pace beat stay smooth ──
         // Move focus to the newly rendered view so keyboard and screen-reader
-        // users receive the same navigation context as sighted pointer users. The
-        // active drill is excluded because its capture surface owns focus.
+        // users receive the same navigation context as sighted pointer users.
+        // Active drills and Battle are excluded because their capture surface
+        // and nested workflow headings own focus respectively.
         useEffect(function() {
           if (previousViewRef.current === state.view) return;
           previousViewRef.current = state.view;
-          if (state.view === 'drill') return;
+          if (state.view === 'drill' || state.view === 'battle') return;
           var focusTimer = setTimeout(function() {
             var region = viewRegionRef.current;
             if (!region || !region.focus) return;
@@ -4264,11 +4528,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         }, [state.view]);
 
         useEffect(function() {
-          if (state.view !== 'drill' || drillComplete) return;
+          if (state.view !== 'drill' || drillComplete || paused) return;
           // 100ms is cheap and keeps the pace-target beat dot fluid even at 40 WPM.
+          // Stop it while paused so background breaks do not burn render work.
           var iv = setInterval(function() { setNowTick(Date.now()); }, 100);
           return function() { clearInterval(iv); };
-        }, [state.view, drillComplete]);
+        }, [state.view, drillComplete, paused]);
 
         // ── Menu-level keyboard shortcuts ──
         // Power-user keys. Active ONLY when on the menu view and no
@@ -4370,6 +4635,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         useEffect(function() {
           if (state.view !== 'drill' || sightReadLeft <= 0 || drillComplete) return;
           var iv = setInterval(function() {
+            // Preserve the full reading accommodation when the page is hidden.
+            if (typeof document !== 'undefined' && document.hidden) return;
             setSightReadLeft(function(prev) { return prev > 1 ? prev - 1 : 0; });
           }, 1000);
           return function() { clearInterval(iv); };
@@ -4415,6 +4682,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           if (completionSavedRef.current) return;
           completionSavedRef.current = true;
           var endMs = Date.now();
+          var inputContext = typingPracticeInputContext(inputMethodCountsRef.current);
 
           // Warmup mode: skip all persistence. Show summary with a notice
           // that nothing was saved, then route back to menu.
@@ -4435,6 +4703,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               charCount: typedLength,
               date: new Date().toISOString(),
               isWarmup: true,
+              inputMethods: inputContext.inputMethods,
+              primaryInputMethod: inputContext.primaryInputMethod,
+              inputEventCounts: inputContext.inputEventCounts,
+              measurementComparable: inputContext.measurementComparable,
+              measurementNote: 'Input method detected for this warmup. Warmups are not saved or included in performance comparisons.',
               accommodationsUsed: []
             });
             setAnnounceText('Warmup complete. This session was not saved. ' + wmWpm +
@@ -4476,6 +4749,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             paceBuckets: paceBuckets, // chars typed per 10-second bucket
             charCount: typedLength,
             date: new Date().toISOString(),
+            inputMethods: inputContext.inputMethods,
+            primaryInputMethod: inputContext.primaryInputMethod,
+            inputEventCounts: inputContext.inputEventCounts,
+            measurementComparable: inputContext.measurementComparable,
+            measurementNote: inputContext.measurementNote,
             accommodationsUsed: Object.keys(state.accommodations).filter(function(k) { return state.accommodations[k] === true || (state.accommodations[k] && state.accommodations[k] !== false); })
           };
 
@@ -4503,7 +4781,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           var nextUpdates = { sessions: sessions, lifetime: lifetime, aggregateErrors: aggregateErrors };
 
           // Set baseline if first-ever session
-          if (!state.baseline) {
+          if (summary.measurementComparable && !state.baseline) {
             nextUpdates.baseline = { wpm: wpm, accuracy: accuracy, date: summary.date, drillId: activeDrill.id };
           }
 
@@ -4511,20 +4789,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           var pb = Object.assign({}, state.personalBest || {});
           var prev = pb[activeDrill.id];
           var isNewBest = false;
-          if (!prev || wpm > prev.wpm || (wpm === prev.wpm && accuracy > prev.accuracy)) {
+          if (summary.measurementComparable && (!prev || wpm > prev.wpm || (wpm === prev.wpm && accuracy > prev.accuracy))) {
             pb[activeDrill.id] = { wpm: wpm, accuracy: accuracy, date: summary.date };
             nextUpdates.personalBest = pb;
             isNewBest = !!prev;
           }
 
           summary.isNewBest = isNewBest;
-          summary.isBaseline = !state.baseline;
+          summary.isBaseline = summary.measurementComparable && !state.baseline;
 
           // ── IEP goal met tracking ──
           // When both WPM and accuracy thresholds from the clinician-set IEP
           // goal are met, flag the session. Also tag whether this is the
           // FIRST time the student has ever met the goal — dignified milestone.
-          if (state.iepGoal && state.iepGoal.targetWpm && state.iepGoal.targetAccuracy) {
+          if (summary.measurementComparable && state.iepGoal && state.iepGoal.targetWpm && state.iepGoal.targetAccuracy) {
             var metNow = wpm >= state.iepGoal.targetWpm && accuracy >= state.iepGoal.targetAccuracy;
             if (metNow) {
               summary.goalMet = true;
@@ -4543,7 +4821,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           // + there's a next tier to advance to. Passage (tier 7) is terminal
           // for mastery but doesn't gate anything.
           var maxAdvanceableTier = 6; // above symbols tier; passage is terminal
-          if (activeDrill.masteryWpm && activeDrill.masteryAcc &&
+          if (summary.measurementComparable && activeDrill.masteryWpm && activeDrill.masteryAcc &&
               wpm >= activeDrill.masteryWpm && accuracy >= activeDrill.masteryAcc &&
               state.masteryLevel === activeDrill.tier && activeDrill.tier <= maxAdvanceableTier) {
             nextUpdates.masteryLevel = state.masteryLevel + 1;
@@ -4608,7 +4886,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             else                          _mToast = '🎉 Milestone: ' + _mLabels;
             addToast(_mToast);
           }
-          if (masteryAdvanced) {
+          if (summary.measurementComparable === false) {
+            setAnnounceText('Assisted practice complete. Results were saved for practice history but excluded from baseline, personal best, mastery, and IEP goal comparisons. ' + wpm + ' words per minute at ' + accuracy + ' percent accuracy. Session summary ready.');
+          } else if (masteryAdvanced) {
             var _drillName = DRILLS[activeDrill.id].name;
             var _masteryToast;
             if (_tm === 'steampunk')      _masteryToast = '⚙ Tier mastered: ' + _drillName + '. The next workbench awaits.';
@@ -4634,8 +4914,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         // ── Pause toggle ──
         var togglePause = function() {
           if (paused) {
-            // Resume: add this paused chunk to total, then clear the marker
-            if (pauseStartedAt) setPausedMs(pausedMs + (Date.now() - pauseStartedAt));
+            // Resume: add this paused chunk to total, then clear the marker.
+            if (pauseStartedAt) {
+              var pausedChunk = Math.max(0, Date.now() - pauseStartedAt);
+              setPausedMs(function(total) { return total + pausedChunk; });
+            }
+            interruptionPauseRef.current = false;
             setPauseStartedAt(null);
             setPaused(false);
             setAnnounceText('Typing resumed.');
@@ -4643,40 +4927,120 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               if (captureRef.current) captureRef.current.focus();
             }, 20);
           } else {
-            // Pause: mark start-of-pause
+            // Pause: mark start-of-pause.
+            interruptionPauseRef.current = true;
             setPauseStartedAt(Date.now());
             setPaused(true);
             setAnnounceText('Typing paused. Your WPM is not affected.');
           }
         };
 
-        // ── Auto-pause on window blur ──
-        // When a student alt-tabs to another window or switches browser
-        // tabs mid-drill, auto-pause so their WPM isn't artificially
-        // deflated by time-away-from-keyboard. Only fires during an active
-        // drill where typing has started. Does NOT auto-resume on focus
-        // return — student explicitly clicks Resume so they can mentally
-        // re-engage before keystrokes start counting again. Skip when
-        // already paused (user is in a manual pause).
+        // ── Auto-pause on window or page interruption ──
+        // Window blur alone is unreliable on mobile and embedded browsers, so
+        // visibilitychange covers background tabs and app switching. The ref
+        // guard prevents blur + visibilitychange from starting two pause chunks.
         useEffect(function() {
-          if (state.view !== 'drill' || drillComplete) return;
-          if (!startTime) return; // haven't started typing yet — no pause needed
-          var onBlur = function() {
-            if (paused) return;
+          if (state.view !== 'drill' || drillComplete || !startTime) return;
+          var pauseForInterruption = function(reason) {
+            if (paused || interruptionPauseRef.current) return;
+            interruptionPauseRef.current = true;
             setPauseStartedAt(Date.now());
             setPaused(true);
-            setAnnounceText('Typing paused because this window lost focus. Resume when you are ready.');
+            setAnnounceText('Typing paused because ' + reason + '. Resume when you are ready.');
+          };
+          var onBlur = function() {
+            pauseForInterruption('this window lost focus');
+          };
+          var onVisibilityChange = function() {
+            if (document.hidden) pauseForInterruption('this page moved to the background');
           };
           window.addEventListener('blur', onBlur);
-          return function() { window.removeEventListener('blur', onBlur); };
+          document.addEventListener('visibilitychange', onVisibilityChange);
+          return function() {
+            window.removeEventListener('blur', onBlur);
+            document.removeEventListener('visibilitychange', onVisibilityChange);
+          };
         }, [state.view, drillComplete, startTime, paused]);
 
-            // Inclusive text-input pipeline shared by physical keyboards,
+        // All active-drill exit controls share this path. Once typing has
+        // started, an accessible confirmation prevents accidental data loss.
+        // Time spent deciding is treated as paused if the student cancels.
+        var requestDrillExit = function() {
+          var hasUnsavedProgress = typedLength > 0 && !drillComplete;
+          if (!hasUnsavedProgress) {
+            setAnnounceText('Drill closed. Returning to Typing Practice home.');
+            upd('view', 'menu');
+            return Promise.resolve(true);
+          }
+          if (exitConfirmationPendingRef.current) return Promise.resolve(false);
+          exitConfirmationPendingRef.current = true;
+
+          var pausedForConfirmationAt = null;
+          var resumeAfterCancel = !paused && startTime !== null;
+          if (resumeAfterCancel) {
+            pausedForConfirmationAt = Date.now();
+            interruptionPauseRef.current = true;
+            setPauseStartedAt(pausedForConfirmationAt);
+            setPaused(true);
+          }
+
+          return askTypingPracticeConfirmation(
+            'Exit this drill? Your current typing will not be saved.',
+            {
+              title: 'Exit without saving?',
+              confirmText: 'Exit without saving',
+              cancelText: 'Keep practicing'
+            }
+          ).then(function(confirmed) {
+            exitConfirmationPendingRef.current = false;
+            if (!confirmed) {
+              if (resumeAfterCancel && pausedForConfirmationAt !== null) {
+                var confirmationPauseMs = Math.max(0, Date.now() - pausedForConfirmationAt);
+                setPausedMs(function(total) { return total + confirmationPauseMs; });
+                interruptionPauseRef.current = false;
+                setPauseStartedAt(null);
+                setPaused(false);
+                setAnnounceText('Exit canceled. Typing resumed; confirmation time was excluded from WPM.');
+                setTimeout(function() {
+                  if (captureRef.current) captureRef.current.focus();
+                }, 20);
+              } else {
+                setAnnounceText('Exit canceled. The drill remains paused.');
+              }
+              return false;
+            }
+
+            if (!isWarmup) {
+              var lt = state.lifetime || {};
+              upd('lifetime', Object.assign({}, lt, {
+                abandonments: (lt.abandonments || 0) + 1
+              }));
+            }
+            var tm = state.theme || 'default';
+            var toast;
+            if (isWarmup) toast = 'Warmup exited. Nothing was saved.';
+            else if (tm === 'steampunk') toast = 'The bench remains. Stop when the gearwork tires - no fault in it.';
+            else if (tm === 'cyberpunk') toast = '[DRILL ABORTED] :: no log :: self-regulation registered :: respect';
+            else if (tm === 'kawaii') toast = 'It is okay to stop when you need to. You can return when you are ready.';
+            else if (tm === 'oceanic') toast = 'Drifted off - no log. Resting is part of the dive.';
+            else if (tm === 'neutral') toast = 'Drill exited. Not saved.';
+            else toast = 'Drill exited - knowing when to stop is a skill too.';
+            addToast(toast);
+            setAnnounceText('Drill exited without saving. Returning to Typing Practice home.');
+            upd('view', 'menu');
+            return true;
+          });
+        };
+
+        // Inclusive text-input pipeline shared by physical keyboards,
         // touch keyboards, switch controls, paste, and IME composition.
-        var commitTypingText = useCallback(function(rawText) {
+        var commitTypingText = useCallback(function(rawText, inputKind) {
           if (state.view !== 'drill' || drillComplete || !targetStr || paused || sightReadLeft > 0) return;
           var result = typingPracticeApplyTextInput(targetStr, typed, rawText, { errorTolerant: state.accommodations.errorTolerant, streak: streak, feedback: mistakeFeedback });
           if (!result.steps.length) return;
+          inputKind = inputKind || 'text-input';
+          if (!Object.prototype.hasOwnProperty.call(inputMethodCountsRef.current, inputKind)) inputKind = 'text-input';
+          inputMethodCountsRef.current[inputKind] = (inputMethodCountsRef.current[inputKind] || 0) + 1;
           var eventTime = Date.now();
           if (startTime === null) setStartTime(eventTime);
           setTyped(result.typed); setErrorCount(errorCount + result.errorCount); setLastWasWrong(result.lastWasWrong); setMistakeFeedback(result.feedback); setStreak(result.streak);
@@ -4685,16 +5049,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             Object.keys(result.errorsByCharacter).forEach(function(key) { nextErrors[key] = (nextErrors[key] || 0) + result.errorsByCharacter[key]; });
             setErrorChars(nextErrors);
           }
-          var offset = startTime === null ? 0 : Math.max(0, eventTime - startTime);
+          var offset = typingPracticeActiveOffset(eventTime, startTime, pausedMs, pauseStartedAt);
           for (var i = 0; i < result.advancedCount; i++) keystrokeTimesRef.current.push(offset);
           var lastStep = result.steps[result.steps.length - 1];
-          if (lastStep && !lastStep.correct && result.feedback) setAnnounceText(typingPracticeMistakeMessage(result.feedback));
+          if (lastStep && lastStep.correct) {
+            mistakeAnnouncementRef.current = { signature: '', at: 0 };
+          } else if (lastStep && result.feedback) {
+            var mistakeAnnouncement = typingPracticeMistakeAnnouncement(
+              mistakeAnnouncementRef.current,
+              result.feedback,
+              eventTime,
+              1400
+            );
+            mistakeAnnouncementRef.current = mistakeAnnouncement.next;
+            if (mistakeAnnouncement.shouldAnnounce) setAnnounceText(mistakeAnnouncement.message);
+          }
           if (state.accommodations.audioCues && lastStep) { if (lastStep.correct) audioCorrect(state.audioTheme); else audioError(state.audioTheme); }
           if (result.lastCompletedRange) setWordPulse(function(prev) { return { start: result.lastCompletedRange.start, end: result.lastCompletedRange.end, key: prev.key + 1 }; });
           if (state.accommodations.speakWordsOnSpace && result.lastCompletedWord && ctx.callTTS) {
             try { ctx.callTTS(result.lastCompletedWord, null, 1.1, { force: false }).catch(function() {}); } catch (e) {}
           }
-        }, [state.view, drillComplete, targetStr, typed, startTime, errorCount, errorChars, mistakeFeedback, state.accommodations.errorTolerant, state.accommodations.audioCues, state.accommodations.speakWordsOnSpace, state.audioTheme, paused, sightReadLeft, streak]);
+        }, [state.view, drillComplete, targetStr, typed, startTime, errorCount, errorChars, mistakeFeedback, state.accommodations.errorTolerant, state.accommodations.audioCues, state.accommodations.speakWordsOnSpace, state.audioTheme, paused, pausedMs, pauseStartedAt, sightReadLeft, streak]);
 
         var removeLastTypedCharacter = useCallback(function() {
           if (paused || sightReadLeft > 0) return;
@@ -4711,44 +5086,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           if (e.isComposing || key === 'Process' || key === 'Dead') return;
           if (key === 'Escape') {
             e.preventDefault();
-            var midDrill = (startTime !== null && !drillComplete && !isWarmup);
-            if (midDrill) {
-              var lt = state.lifetime || {};
-              upd('lifetime', Object.assign({}, lt, { abandonments: (lt.abandonments || 0) + 1 }));
-              var tm = state.theme || 'default', toast;
-              if (tm === 'steampunk') toast = 'The bench remains. Stop when the gearwork tires - no fault in it.';
-              else if (tm === 'cyberpunk') toast = '[DRILL ABORTED] :: no log :: self-regulation registered :: respect';
-              else if (tm === 'kawaii') toast = 'It is okay to stop when you need to. You can return when you are ready.';
-              else if (tm === 'oceanic') toast = 'Drifted off - no log. Resting is part of the dive.';
-              else if (tm === 'neutral') toast = 'Drill exited. Not saved.';
-              else toast = 'Drill exited - knowing when to stop is a skill too.';
-              addToast(toast);
-            }
-            setAnnounceText(midDrill ? 'Drill exited without saving. Returning to Typing Practice home.' : 'Drill closed. Returning to Typing Practice home.');
-            upd('view', 'menu'); return;
+            requestDrillExit();
+            return;
           }
           if (key === 'F2') { e.preventDefault(); setAnnounceText(typingPracticeTargetCue(targetStr, typedLength)); return; }
           if (paused || sightReadLeft > 0) { e.preventDefault(); return; }
           if (key === 'Backspace') { e.preventDefault(); removeLastTypedCharacter(); return; }
           if (typingPracticeGraphemes(key).length !== 1) return;
-          e.preventDefault(); commitTypingText(key);
-        }, [state.view, drillComplete, targetStr, typedLength, startTime, isWarmup, state.lifetime, state.theme, paused, sightReadLeft, removeLastTypedCharacter, commitTypingText]);
+          e.preventDefault(); commitTypingText(key, 'keyboard');
+        }, [state.view, drillComplete, targetStr, typedLength, startTime, isWarmup, state.lifetime, state.theme, paused, sightReadLeft, removeLastTypedCharacter, commitTypingText, requestDrillExit]);
 
         var onAssistiveInput = function(e) {
           if (composingInputRef.current) return;
           var value = e.currentTarget.value; e.currentTarget.value = '';
-          if (value) commitTypingText(value);
+          if (!value) return;
+          if (skipComposedInputRef.current && value === skipComposedInputRef.current) {
+            skipComposedInputRef.current = '';
+            pendingInputKindRef.current = 'text-input';
+            return;
+          }
+          var inputKind = pendingInputKindRef.current || 'text-input';
+          pendingInputKindRef.current = 'text-input';
+          commitTypingText(value, inputKind);
         };
-        var onCompositionStart = function() { composingInputRef.current = true; };
+        var onCompositionStart = function() {
+          composingInputRef.current = true;
+          pendingInputKindRef.current = 'ime';
+        };
         var onCompositionEnd = function(e) {
           composingInputRef.current = false;
           var value = e.currentTarget.value || (e.data || ''); e.currentTarget.value = '';
-          if (value) commitTypingText(value);
+          pendingInputKindRef.current = 'text-input';
+          if (value) {
+            skipComposedInputRef.current = value;
+            commitTypingText(value, 'ime');
+            setTimeout(function() {
+              if (skipComposedInputRef.current === value) skipComposedInputRef.current = '';
+            }, 0);
+          }
         };
         var onTypingBeforeInput = function(e) {
           var nativeEvent = e.nativeEvent || e;
-          if (nativeEvent.inputType === 'deleteContentBackward') { e.preventDefault(); removeLastTypedCharacter(); }
+          var inputType = nativeEvent.inputType || '';
+          if (inputType === 'deleteContentBackward') {
+            e.preventDefault();
+            removeLastTypedCharacter();
+            return;
+          }
+          if (inputType === 'insertFromPaste' || inputType === 'insertFromDrop') pendingInputKindRef.current = 'paste';
+          else if (inputType.indexOf('Composition') !== -1) pendingInputKindRef.current = 'ime';
+          else if (inputType.indexOf('insert') === 0) pendingInputKindRef.current = 'text-input';
         };
+        var onTypingPaste = function() { pendingInputKindRef.current = 'paste'; };
 
         // ── Session mutation helper — used by retrospective editing from
         // the history-timeline detail panel. Finds a session by its unique
@@ -4965,10 +5354,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
 
             // Menu theme quick-switcher — fast-path for the 5-palette chooser
             // that used to live only deep in Settings. Horizontal strip of
-            // circular swatches + a small 'T cycles' hint. Active theme gets
-            // an accent ring + bold border + a text label under it (the label
-            // is the non-color indicator for high-contrast mode and
-            // color-vision differences, so the active state isn't color-only).
+            // labeled swatch chips + a small 'T cycles' hint. Every option
+            // keeps its name visible, while the active theme also gets a check
+            // and stronger border. This stays understandable in monochrome,
+            // forced-colors mode, and for touch users without hover titles.
             // Full picker (with accent-color control) still lives in Settings.
             !state.accommodations.highContrast ? h('div', {
               role: 'group',
@@ -5003,39 +5392,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   var isActive = (state.theme || 'default') === opt.id;
                   return h('button', {
                     key: 'tpqs-' + opt.id,
+                    className: 'tp-theme-quick-choice',
                     onClick: function() { upd('theme', opt.id); },
                     'aria-pressed': isActive ? 'true' : 'false',
                     'aria-label': 'Switch to ' + opt.label.replace(/^\S+\s/, '') + ' theme (' + opt.sub + ')' + (isActive ? ', currently active' : ''),
                     title: opt.label + ' — ' + opt.sub,
                     style: {
-                      width: isActive ? '28px' : '24px',
-                      height: isActive ? '28px' : '24px',
-                      borderRadius: '50%',
+                      minHeight: '44px',
+                      borderRadius: '999px',
                       border: isActive ? ('2px solid ' + palette.accent) : ('1px solid ' + palette.border),
-                      background: opt.bgSample,
-                      position: 'relative',
+                      background: palette.surface,
+                      color: palette.textDim,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '7px',
                       cursor: 'pointer',
-                      padding: 0,
-                      transition: 'transform 140ms ease, border-color 140ms ease, width 140ms ease, height 140ms ease',
+                      padding: '6px 10px',
+                      fontSize: '11px',
+                      fontWeight: isActive ? 800 : 600,
+                      fontFamily: 'inherit',
+                      transition: 'border-color 140ms ease, box-shadow 140ms ease',
                       boxShadow: isActive ? ('0 0 0 2px ' + palette.bg + ', 0 0 0 4px ' + palette.accent) : 'none'
                     }
                   },
-                    // Inner accent dot — shows the theme's accent color so
-                    // the swatch conveys two dimensions at a glance.
                     h('span', {
+                      className: 'tp-theme-quick-swatch',
                       'aria-hidden': 'true',
                       style: {
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        width: '10px',
-                        height: '10px',
+                        position: 'relative',
+                        width: '20px',
+                        height: '20px',
+                        flexShrink: 0,
                         borderRadius: '50%',
-                        background: opt.accentSample,
-                        transform: 'translate(-50%, -50%)',
-                        pointerEvents: 'none'
+                        background: opt.bgSample,
+                        border: '1px solid ' + palette.border
                       }
-                    })
+                    },
+                      h('span', { style: { position: 'absolute', width: '8px', height: '8px', right: '2px', bottom: '2px', borderRadius: '50%', background: opt.accentSample, border: '1px solid ' + palette.bg } })
+                    ),
+                    h('span', { className: 'tp-theme-quick-label' }, opt.label),
+                    h('span', {
+                      className: 'tp-choice-check',
+                      'aria-hidden': 'true',
+                      style: { width: '12px', opacity: isActive ? 1 : 0, color: palette.accent, fontWeight: 900 }
+                    }, '✓')
                   );
                 }),
                 // ── 🌈 Festival mode toggle ──
@@ -6188,7 +6588,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       if (e.key === 'Escape' && drillQuery) {
                         e.preventDefault();
                         setDrillQuery('');
-                        setAnnounceText('Drill search cleared.');
                       }
                     },
                     placeholder: 'Search drills',
@@ -6212,11 +6611,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               },
                 h('div', {
                   id: 'tp-drill-results-status',
-                  role: 'status',
-                  'aria-live': 'polite',
-                  'aria-atomic': 'true',
                   style: { fontSize: '11px', color: palette.textMute, fontVariantNumeric: 'tabular-nums' }
                 }, drillResultSummary),
+                h(TypingPracticeDebouncedStatus, {
+                  react: React,
+                  id: 'tp-drill-results-announcer',
+                  message: drillResultSummary,
+                  delay: 400
+                }),
                 h('label', {
                   style: { display: 'flex', alignItems: 'center', gap: '7px', fontSize: '11px', color: palette.textMute }
                 },
@@ -6226,6 +6628,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     onChange: function(e) { setDrillSort(e.target.value); },
                     'aria-label': 'Sort drills',
                     'aria-controls': 'tp-drill-results',
+                    'aria-describedby': 'tp-drill-results-status',
                     style: {
                       minHeight: '44px', padding: '8px 28px 8px 9px', borderRadius: '8px',
                       border: '1px solid ' + palette.border, background: palette.bg,
@@ -6265,7 +6668,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       setDrillQuery('');
                       setDrillFilter('all');
                       setDrillSort('recommended');
-                      setAnnounceText('Drill filters reset. All drills are shown.');
                       setTimeout(function() { if (drillSearchRef.current) drillSearchRef.current.focus(); }, 0);
                     },
                     style: Object.assign({}, secondaryBtnStyle(palette), { minHeight: '44px' })
@@ -6458,9 +6860,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   }
                 },
                   h('div', { style: { flex: 1, minWidth: 0 } },
-                    h('div', { style: { fontSize: '12px', fontWeight: 700, color: palette.text, marginBottom: '4px' } },
+                    h('div', { dir: 'auto', style: { fontSize: '12px', fontWeight: 700, color: palette.text, marginBottom: '4px' } },
                       entry.label || '(untitled)'),
-                    h('div', { style: { fontSize: '11px', color: palette.textDim, fontStyle: 'italic', lineHeight: '1.5' } },
+                    h('div', { dir: 'auto', style: { fontSize: '11px', color: palette.textDim, fontStyle: 'italic', lineHeight: '1.5' } },
                       '"' + preview + '"'),
                     h('div', { style: { fontSize: '10px', color: palette.textMute, marginTop: '4px' } },
                       'saved ' + new Date(entry.savedAt).toLocaleDateString() + ' · ' + entry.text.length + ' chars')
@@ -6547,6 +6949,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 h('input', {
                   id: 'tp-custom-label',
                   type: 'text',
+                  dir: 'auto',
                   value: customLabelDraft,
                   'aria-describedby': 'tp-custom-label-count',
                   onChange: function(e) { setCustomLabelDraft(e.target.value); },
@@ -6575,6 +6978,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   draftTrimmed.length + ' / 500 chars — minimum 5')),
                 h('textarea', {
                   id: 'tp-custom-text',
+                  dir: 'auto',
                   value: customTextDraft,
                   'aria-describedby': 'tp-custom-text-count tp-custom-text-status',
                   'aria-invalid': showDraftError ? 'true' : 'false',
@@ -6687,6 +7091,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           if (acc.dyslexiaFont)  activeAccLabels.push('dyslexia font');
           if (acc.largeKeys)     activeAccLabels.push('on-screen keyboard');
           if (acc.highContrast)  activeAccLabels.push('high contrast');
+          if (acc.reducedMotion)  activeAccLabels.push('reduced motion');
           if (acc.audioCues)     activeAccLabels.push('audio cues (' + (state.audioTheme || 'chime') + ')');
           if (acc.errorTolerant) activeAccLabels.push('error-tolerant');
           if (acc.paceTargetWpm) activeAccLabels.push('pace target ' + acc.paceTargetWpm + ' WPM');
@@ -6809,6 +7214,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 else if (tm === 'neutral')   { lq = '';    rq = '';    }
                 else                         { lq = '"';   rq = '"';   }
                 return h('div', {
+                  lang: activeTargetLanguage,
+                  dir: 'auto',
                   style: {
                     background: palette.bg,
                     border: '1px solid ' + palette.border,
@@ -6978,6 +7385,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     { key: 'dyslexiaFont',  spoken: 'Dyslexia-friendly font', label: __alloT('stem.typingpractice.font', '🔤 Font') },
                     { key: 'largeKeys',     spoken: 'On-screen keyboard', label: __alloT('stem.typingpractice.keyboard', '⌨️ Keyboard') },
                     { key: 'highContrast',  spoken: 'High contrast', label: __alloT('stem.typingpractice.contrast', '🌓 Contrast') },
+                    { key: 'reducedMotion', spoken: 'Reduce motion', label: __alloT('stem.typingpractice.reduce_motion', '⏸ Motion') },
                     { key: 'audioCues',     spoken: 'Audio cues', label: __alloT('stem.typingpractice.audio', '🔔 Audio') },
                     { key: 'errorTolerant', spoken: 'Error-tolerant mode', label: __alloT('stem.typingpractice.error_tolerant', '🤝 Error-tolerant') },
                     { key: 'predictiveAssist', spoken: 'Predictive assist', label: __alloT('stem.typingpractice.predict', '🪄 Predict') }
@@ -7118,7 +7526,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               h('div', { style: { display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center' } },
                 h('button', {
                   type: 'button',
-                  ref: startBtnRef,
                   onClick: startNow,
                   style: Object.assign({}, primaryBtnStyle(palette), {
                     padding: '14px 32px',
@@ -7142,10 +7549,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 (ctx.callTTS && preview) ? h('button', {
                   type: 'button',
                   onClick: function() {
+                    var reportTtsFailure = function(error) {
+                      console.warn('[TypingPractice] TTS failed:', error);
+                      addToast('Read aloud was unavailable. You can still review the passage visually.');
+                      setAnnounceText('Read aloud failed. The passage remains available on screen.');
+                    };
                     try {
-                      ctx.callTTS(targetStr, null, 1.0, { force: true }).catch(function() { /* ignore */ });
+                      var ttsRequest = ctx.callTTS(targetStr, null, 1.0, { force: true, language: activeTargetLanguage });
                       addToast('🔊 Reading the passage aloud…');
-                    } catch (e) { console.warn('[TypingPractice] TTS failed:', e); }
+                      setAnnounceText('Reading the passage aloud.');
+                      if (ttsRequest && typeof ttsRequest.catch === 'function') ttsRequest.catch(reportTtsFailure);
+                    } catch (e) {
+                      reportTtsFailure(e);
+                    }
                   },
                   style: Object.assign({}, secondaryBtnStyle(palette), {
                     padding: '14px 20px',
@@ -7170,13 +7586,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         // ── Keyboard shortcut: space/enter on the intro screen starts the drill ──
         useEffect(function() {
           if (state.view !== 'drill-intro') return;
-          // Focus the Start button once on entry so keyboard users can
-          // immediately press Enter/Space without tabbing first.
-          setTimeout(function() {
-            if (startBtnRef.current && startBtnRef.current.focus) {
-              try { startBtnRef.current.focus(); } catch (e) { /* ignore */ }
-            }
-          }, 60);
+          // Route entry remains on the labelled preparation view so its
+          // context is announced once. Enter or Space still starts the drill
+          // from non-interactive space; controls keep their native behavior.
           var handler = function(e) {
             if (e.key === ' ' || e.key === 'Enter') {
               // Let buttons, toggles, links, and form fields handle their own
@@ -7209,8 +7621,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         var generatePassage = function() {
           var callGemini = ctx.callGemini;
           if (!callGemini) {
+            // The newly rendered alert is the single announcement source.
             setGenError('AI generation is not available in this context. Please reload and try again.');
-            setAnnounceText('Passage generation is unavailable. Reload the app and try again.');
             return;
           }
           var grade = draftGrade;
@@ -7314,9 +7726,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             .catch(function(err) {
               if (passageGenerationRef.current !== generationId) return;
               console.warn('[TypingPractice] Passage generation failed:', err);
+              // The error alert announces this failure once; choices stay intact.
               setGenError('Could not generate a passage. ' + (err && err.message ? err.message : 'Please try again.'));
               setGenLoading(false);
-              setAnnounceText('Passage generation failed. Your choices are unchanged; review the message and try again.');
             });
         };
 
@@ -7437,6 +7849,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   return h('button', {
                     type: 'button',
                     key: 'lang-' + lang.code,
+                    lang: lang.code,
+                    dir: 'auto',
                     'aria-pressed': isActive ? 'true' : 'false',
                     onClick: function() {
                       setDraftLanguage(lang.code);
@@ -7586,6 +8000,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               h('input', {
                 id: 'tp-passage-topic',
                 type: 'text',
+                dir: 'auto',
                 'aria-describedby': 'tp-passage-topic-help tp-passage-topic-count',
                 value: draftTopic,
                 onChange: function(e) {
@@ -7632,9 +8047,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
 
             genLoading ? h('div', {
               id: 'tp-passage-generation-status',
-              role: 'status',
-              'aria-live': 'polite',
-              'aria-atomic': 'true',
+              // Describes the disabled Generate and active Cancel controls.
+              // The root live region already announces generation start.
               className: 'sr-only'
             }, getLoadingLabel(state.theme, 'passage') + '. Please wait.') : null,
 
@@ -7694,8 +8108,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             },
               h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '6px' } },
                 'Last passage: grade ' + cached.gradeLevel + (cached.topic ? ' · ' + cached.topic : '')),
-              h('div', { style: { fontSize: '13px', color: palette.textDim, fontStyle: 'italic', lineHeight: '1.5' } },
-                '"' + (cached.text.length > 140 ? cached.text.slice(0, 140) + '…' : cached.text) + '"')
+              h('div', {
+                lang: typingPracticeNormalizeLanguageTag(cached.language, 'en'),
+                dir: 'auto',
+                style: { fontSize: '13px', color: palette.textDim, fontStyle: 'italic', lineHeight: '1.5' }
+              }, '"' + (cached.text.length > 140 ? cached.text.slice(0, 140) + '…' : cached.text) + '"')
             ) : null,
 
             // ─── Curated packs ───
@@ -7835,9 +8252,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                         color: palette.text, fontStyle: 'italic'
                       }
                     },
-                      h('span', { style: { color: accent, fontWeight: 700, marginRight: '4px' } }, '“'),
-                      snippet,
-                      h('span', { style: { color: accent, fontWeight: 700, marginLeft: '2px' } }, '”'),
+                      h('span', { style: { color: accent, fontWeight: 700, marginRight: '4px' }, 'aria-hidden': 'true' }, '“'),
+                      h('span', { lang: typingPracticeNormalizeLanguageTag(midPassage.language, 'en'), dir: 'auto' }, snippet),
+                      h('span', { style: { color: accent, fontWeight: 700, marginLeft: '2px' }, 'aria-hidden': 'true' }, '”'),
                       h('div', { style: { fontSize: '9px', color: palette.textMute, fontStyle: 'normal', marginTop: '4px', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 } },
                         'sample · grade ' + midPassage.gradeLevel)
                     ),
@@ -7929,15 +8346,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 }
               },
                 state.aiPassageLibrary.map(function(p) {
-                  var langLabel = '';
-                  if (p.language && p.language !== 'en') {
-                    var lang = PASSAGE_LANGUAGES.filter(function(l) { return l.code === p.language; })[0];
-                    langLabel = lang ? ' · ' + lang.label : '';
-                  }
+                  var passageLanguage = typingPracticeNormalizeLanguageTag(p.language, 'en');
+                  var languageOption = PASSAGE_LANGUAGES.filter(function(l) { return l.code === passageLanguage; })[0];
+                  var langLabel = passageLanguage !== 'en' && languageOption ? ' · ' + languageOption.label : '';
                   var isActive = state.aiPassage && state.aiPassage.id === p.id;
                   return h('div', {
                     key: 'lib-' + p.id,
                     role: 'listitem',
+                    className: 'tp-saved-passage-item',
                     style: {
                       padding: '10px 12px',
                       background: palette.bg,
@@ -7950,12 +8366,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   },
                     h('div', { style: { flex: 1, minWidth: 0 } },
                       h('div', { style: { fontSize: '11px', color: palette.textMute, marginBottom: '4px' } },
-                        'grade ' + p.gradeLevel + (p.topic ? ' · ' + p.topic : '') + langLabel +
-                        (isActive ? ' · current' : '')),
-                      h('div', { style: { fontSize: '12px', color: palette.textDim, lineHeight: '1.4', overflow: 'hidden', textOverflow: 'ellipsis' } },
-                        '"' + (p.text.length > 100 ? p.text.slice(0, 100) + '…' : p.text) + '"')
+                        'grade ' + p.gradeLevel + (p.topic ? ' · ' + p.topic : ''),
+                        langLabel ? h('span', { lang: passageLanguage, dir: 'auto' }, langLabel) : null,
+                        isActive ? ' · current' : ''),
+                      h('div', {
+                        lang: passageLanguage,
+                        dir: 'auto',
+                        style: { fontSize: '12px', color: palette.textDim, lineHeight: '1.4', overflowWrap: 'anywhere' }
+                      }, '"' + (p.text.length > 100 ? p.text.slice(0, 100) + '…' : p.text) + '"')
                     ),
-                    h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px', flexShrink: 0 } },
+                    h('div', { className: 'tp-saved-passage-actions', style: { display: 'flex', flexDirection: 'column', gap: '4px', flexShrink: 0 } },
                       h('button', {
                         type: 'button',
                         onClick: function() {
@@ -8142,9 +8562,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         // ═════════════════════════════════════════════════════
         function renderDrill() {
           var drill = activeDrill || DRILLS['home-row'];
+          var stuckKeyExpected = targetStr && typedLength < targetLength ? targetChars[typedLength] : '';
+          var stuckKeyCount = stuckKeyExpected && stuckKeyExpected !== ' '
+            ? (errorChars[stuckKeyExpected.toLowerCase()] || 0)
+            : 0;
+          var stuckKeyMeta = stuckKeyExpected ? findKeyMeta(stuckKeyExpected) : null;
+          var showStuckKeySupport = !state.accommodations.largeKeys &&
+            !state.accommodations.showKeyboard &&
+            stuckKeyCount >= 3 &&
+            !!stuckKeyMeta;
           if (!targetStr) {
             return h('div', { style: { padding: '20px', color: palette.text, fontFamily: fontFamily } },
-              renderBackButton(function() { go('menu'); }, palette),
+              renderBackButton(requestDrillExit, palette),
               h('div', { style: { marginTop: '16px' } }, __alloT('stem.typingpractice.no_text_loaded_for_this_drill', 'No text loaded for this drill.'))
             );
           }
@@ -8203,9 +8632,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               transition: 'background-color 80ms ease, color 80ms ease'
             };
             if (charState === 'done') { charStyle.color = palette.success; charStyle.opacity = 0.85; }
-            else if (charState === 'done-error') { charStyle.color = palette.onAccent; charStyle.background = palette.danger; charStyle.borderRadius = '3px'; }
+            else if (charState === 'done-error') { charStyle.color = palette.onAccent; charStyle.background = palette.danger; charStyle.borderRadius = '3px'; charStyle.textDecoration = 'underline wavy'; charStyle.textUnderlineOffset = '3px'; }
             else if (charState === 'current') { charStyle.color = palette.onAccent; charStyle.background = palette.accent; charStyle.borderRadius = '3px'; }
-            else if (charState === 'wrong-current') { charStyle.color = palette.onAccent; charStyle.background = palette.danger; charStyle.borderRadius = '3px'; }
+            else if (charState === 'wrong-current') { charStyle.color = palette.onAccent; charStyle.background = palette.danger; charStyle.borderRadius = '3px'; charStyle.textDecoration = 'underline wavy'; charStyle.textUnderlineOffset = '3px'; }
             else if (charState === 'preview') {
               // Soft scaffolding: dotted underline + slightly brighter than upcoming.
               // Fades progressively across the preview window so the 3rd preview
@@ -8247,8 +8676,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             var isCurrentWrong = charState === 'wrong-current';
             var isWrong = isCurrentWrong || charState === 'done-error';
             var isInWord = wordPulse.start >= 0 && i >= wordPulse.start && i <= wordPulse.end;
-            var chClass = '';
-            if (isCur || isCurrentWrong) chClass = 'tp-current-char';
+            var chClass = 'tp-char tp-char-' + charState;
+            if (isCur || isCurrentWrong) chClass += ' tp-current-char';
             if (isWrong) chClass += ' tp-wrong-flash';
             if (isInWord && !isCur && !isWrong) chClass += ' tp-word-pulse';
             var chKey;
@@ -8431,7 +8860,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             h('div', {
               style: { display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px', flexWrap: 'wrap' }
             },
-              renderBackButton(function() { go('menu'); }, palette),
+              renderBackButton(requestDrillExit, palette),
               h('div', { style: { fontSize: '16px', fontWeight: 700, color: palette.text } },
                 drill.icon + '  ' + drill.name
               ),
@@ -8715,14 +9144,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             // (redundant). Theme-voiced. Clears automatically when the
             // student moves past the stuck char.
             (function() {
-              if (state.accommodations.largeKeys || state.accommodations.showKeyboard) return null; // already visible on keyboard
-              if (!targetStr || typedLength >= targetLength) return null;
-              var expected = targetChars[typedLength];
-              if (!expected || expected === ' ') return null;
-              var stuckCount = errorChars[expected.toLowerCase()] || 0;
-              if (stuckCount < 3) return null;
-              var meta = findKeyMeta(expected);
-              if (!meta) return null;
+              if (!showStuckKeySupport) return null;
+              var expected = stuckKeyExpected;
+              var stuckCount = stuckKeyCount;
+              var meta = stuckKeyMeta;
               var tm = state.theme || 'default';
               var finger = fingerLabel(meta.f);
               var charLabel = expected.toUpperCase();
@@ -8734,8 +9159,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               else if (tm === 'neutral')   body = charLabel + ' missed ' + stuckCount + '×. Use ' + finger + '.';
               else                         body = '🎯 You\'ve missed ' + charLabel + ' ' + stuckCount + '× this drill — try using your ' + finger + '.';
               return h('div', {
-                role: 'status',
-                'aria-live': 'polite',
+                id: 'tp-stuck-key-support',
+                role: 'note',
                 style: {
                   marginBottom: '12px',
                   padding: '8px 12px',
@@ -8778,7 +9203,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             h('p', {
               id: 'tp-target-transcript',
               className: 'sr-only'
-            }, 'Full typing target: ' + targetStr),
+            },
+              'Full typing target: ',
+              h('span', { lang: activeTargetLanguage, dir: 'auto' }, targetStr)
+            ),
             h('span', {
               id: 'tp-current-key-cue',
               className: 'sr-only'
@@ -8791,13 +9219,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               onMouseDown: function() { if (captureRef.current) captureRef.current.focus(); }
             },
               h('div', { 'aria-hidden': 'true', style: { pointerEvents: 'none' } }, chars),
+              h('span', { id: 'tp-typing-capture-label', className: 'sr-only', lang: uiLanguage },
+                (paused ? 'Typing paused. Use Resume to continue. ' : sightReadLeft > 0 ? 'Reading time. Typing begins when the countdown ends. ' : 'Typing target ready. ') + (drill.name || 'drill') + '. ' + (state.accommodations.errorTolerant ? 'Error-tolerant mode is on; wrong input advances anyway. ' : '') + 'Physical keyboards, touch keyboards, switch input, paste, and input methods are supported. Press F2 to repeat the next key. Press Escape to open an exit confirmation.'),
               h('textarea', {
                 id: 'tp-typing-capture', ref: captureRef, defaultValue: '', rows: 1, inputMode: 'text', autoCapitalize: 'none', autoCorrect: 'off', spellCheck: false,
-                lang: activeDrill && activeDrill.id === 'passage' && state.aiPassage ? state.aiPassage.language : undefined,
-                'aria-label': (paused ? 'Typing paused. Use Resume to continue. ' : sightReadLeft > 0 ? 'Reading time. Typing begins when the countdown ends. ' : 'Typing target ready. ') + (drill.name || 'drill') + '. ' + (state.accommodations.errorTolerant ? 'Error-tolerant mode is on; wrong input advances anyway. ' : '') + 'Physical keyboards, touch keyboards, switch input, paste, and input methods are supported. Press F2 to repeat the next key. Press Escape to exit without saving.',
-                'aria-describedby': 'tp-capture-help tp-input-method-help tp-capture-progress-text tp-current-key-cue',
+                lang: activeTargetLanguage,
+                dir: 'auto',
+                'aria-labelledby': 'tp-typing-capture-label',
+                'aria-describedby': 'tp-capture-help tp-input-method-help tp-capture-progress-text tp-current-key-cue' + (showStuckKeySupport ? ' tp-stuck-key-support' : ''),
                 'aria-details': 'tp-target-transcript', 'aria-errormessage': mistakeFeedback ? 'tp-mistake-feedback' : undefined, 'aria-invalid': mistakeFeedback ? 'true' : 'false', 'aria-keyshortcuts': 'Escape F2', 'aria-disabled': paused || sightReadLeft > 0 ? 'true' : 'false', 'aria-busy': sightReadLeft > 0 ? 'true' : 'false', 'aria-multiline': targetLength > 60 ? 'true' : 'false',
-                onKeyDown: onKeyDown, onBeforeInput: onTypingBeforeInput, onInput: onAssistiveInput, onCompositionStart: onCompositionStart, onCompositionEnd: onCompositionEnd,
+                onKeyDown: onKeyDown, onBeforeInput: onTypingBeforeInput, onInput: onAssistiveInput, onPaste: onTypingPaste, onCompositionStart: onCompositionStart, onCompositionEnd: onCompositionEnd,
                 onFocus: function(e) { e.currentTarget.style.outlineColor = palette.accent; if (e.currentTarget.parentNode) e.currentTarget.parentNode.style.borderColor = palette.accent; },
                 onBlur: function(e) {
                   e.currentTarget.style.outlineColor = 'transparent'; if (e.currentTarget.parentNode) e.currentTarget.parentNode.style.borderColor = lastWasWrong ? palette.danger : palette.border;
@@ -8836,7 +9267,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     transition: 'opacity 100ms linear'
                   }
                 }) : null,
-                h('span', { id: 'tp-capture-help' }, paceHint + ' - F2 repeats the next key - Esc exits without saving.')
+                h('span', { id: 'tp-capture-help' }, paceHint + ' - F2 repeats the next key - Esc opens exit confirmation.')
               ),
               h('div', { id: 'tp-capture-progress-text' }, typedLength + ' / ' + targetLength + ' characters')
             ),
@@ -8877,6 +9308,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               // Neutral and default: solid fill (unchanged)
               return h('div', {
                 id: 'tp-drill-progress',
+                className: 'tp-progress-track',
                 role: 'progressbar',
                 'aria-label': 'Typing progress',
                 'aria-valuemin': 0,
@@ -8896,7 +9328,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 // tp-progress-fill hooks a CSS shimmer overlay layer so the
                 // bar feels alive while the user types. Suppressed when done
                 // (static success fill is the intended final state).
-                className: done ? undefined : 'tp-progress-fill',
+                className: 'tp-progress-fill' + (done ? ' tp-progress-fill-complete' : ''),
                 style: fillStyle
               }));
             })() : null,
@@ -9058,6 +9490,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           var headline;
           if (s.isWarmup) {
             headline = phrases.warmup;
+          } else if (s.measurementComparable === false) {
+            headline = 'Assisted practice saved.';
           } else if (s.firstGoalMet) {
             headline = phrases.firstGoalMet;
           } else if (s.masteryAdvanced) {
@@ -9077,7 +9511,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           // Dignified, not Nitrotype-style fanfare. Theme-voiced per palette.
           var _hintTm = state.theme || 'default';
           var nextStepHint = null;
-          if (s.masteryAdvanced && s.newMasteryLevel) {
+          if (!s.isWarmup && s.measurementComparable === false) {
+            nextStepHint = 'This run still counts as practice. Its speed and accuracy are not used for baseline, personal-best, mastery, or IEP-goal decisions.';
+          } else if (s.masteryAdvanced && s.newMasteryLevel) {
             var nextDrillId = null;
             for (var ti = 0; ti < TIER_ORDER.length; ti++) {
               if (DRILLS[TIER_ORDER[ti]] && DRILLS[TIER_ORDER[ti]].tier === s.newMasteryLevel) {
@@ -9280,8 +9716,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 style: { marginTop: 0, fontSize: '20px', fontWeight: 700, color: s.isNewBest || s.isBaseline || s.masteryAdvanced ? palette.success : palette.text, marginBottom: nextStepHint ? '6px' : '20px', position: 'relative', zIndex: 1 }
               }, headline),
               nextStepHint ? h('div', {
-                style: { fontSize: '13px', color: palette.textDim, marginBottom: '20px', lineHeight: '1.5' }
+                style: { fontSize: '13px', color: palette.textDim, marginBottom: s.measurementNote ? '10px' : '20px', lineHeight: '1.5' }
               }, nextStepHint) : null,
+              s.measurementNote ? h('div', {
+                role: 'note',
+                style: { margin: '0 0 20px', padding: '10px 12px', border: '1px solid ' + (s.measurementComparable === false ? palette.warn : palette.border), borderRadius: '8px', color: palette.textDim, fontSize: '12px', lineHeight: '1.5', textAlign: 'left' }
+              },
+                h('strong', { style: { color: palette.text } }, 'Measurement context: '),
+                (s.inputMethods && s.inputMethods.length ? s.inputMethods.join(', ') + '. ' : '') + s.measurementNote
+              ) : null,
 
               h('dl', {
                 className: 'tp-stat-stagger',
@@ -9312,7 +9755,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               // numbers dipped (compassion card handles that path) or when
               // baseline doesn't exist yet.
               (function() {
-                if (s.isWarmup) return null;
+                if (s.isWarmup || s.measurementComparable === false) return null;
                 if (s.isNewBest || s.isBaseline || s.masteryAdvanced || s.firstGoalMet || s.goalMet) return null;
                 if (!state.baseline || !state.baseline.wpm) return null;
                 var wpmDelta = s.wpm - state.baseline.wpm;
@@ -9363,7 +9806,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               // dysgraphia / motor-planning difficulty WILL have rough sessions;
               // the tool's job is to let those exist without shame.
               (function() {
-                if (s.isWarmup) return null;
+                if (s.isWarmup || s.measurementComparable === false) return null;
                 if (s.isNewBest || s.isBaseline || s.masteryAdvanced || s.firstGoalMet || s.goalMet) return null;
                 var acc = s.accuracy || 0;
                 var baselineAcc = state.baseline ? (state.baseline.accuracy || 0) : 0;
@@ -10004,7 +10447,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       color: palette.success,
                       fontSize: '11px',
                       padding: '6px 12px',
-                      whiteSpace: 'nowrap'
+                      textAlign: 'center',
+                      overflowWrap: 'anywhere'
                     }),
                     title: 'Open ' + recDrill.name
                   }, __alloT('stem.typingpractice.try_this_drill', 'Try this drill →'))
@@ -10061,45 +10505,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 // for the most-recent session to keep the fix surgical.
                 (state.sessions && state.sessions.length > 0 && state.sessions[state.sessions.length - 1].date === s.date) ? h('button', {
                   onClick: async function() {
-                    if (!(await askTypingPracticeConfirmation('WPM, accuracy, and any mastery advancement from this run will be removed.', {
+                    if (!(await askTypingPracticeConfirmation('Session results, notes, and error history from this run will be removed. Baseline, personal-best, goal, and mastery records will be recalculated. This cannot be undone.', {
                       title: 'Discard this session?', confirmText: 'Discard session'
                     }))) return;
-                    var sessions = (state.sessions || []).slice(0, -1);
-                    var lifetime = Object.assign({}, state.lifetime || {});
-                    lifetime.totalSessions = Math.max(0, (lifetime.totalSessions || 1) - 1);
-                    lifetime.totalCharsTyped = Math.max(0, (lifetime.totalCharsTyped || 0) - (s.charCount || 0));
-                    lifetime.totalErrorsLogged = Math.max(0, (lifetime.totalErrorsLogged || 0) - (s.errors || 0));
-                    // Roll back aggregateErrors for this session's errorChars
-                    var agg = Object.assign({}, state.aggregateErrors || {});
-                    if (s.errorChars) {
-                      Object.keys(s.errorChars).forEach(function(k) {
-                        agg[k] = Math.max(0, (agg[k] || 0) - s.errorChars[k]);
-                        if (agg[k] === 0) delete agg[k];
-                      });
-                    }
-                    var updates = { sessions: sessions, lifetime: lifetime, aggregateErrors: agg, view: 'menu' };
-                    // Roll back mastery advancement if this session caused it
-                    if (s.masteryAdvanced && state.masteryLevel === s.newMasteryLevel) {
-                      updates.masteryLevel = Math.max(0, state.masteryLevel - 1);
-                    }
-                    // Roll back personal best only if this session set it and it's the current best
-                    if (s.isNewBest && state.personalBest && state.personalBest[s.drillId] &&
-                        state.personalBest[s.drillId].date === s.date) {
-                      // Recompute personal best from remaining sessions for this drill
-                      var drillSessions = sessions.filter(function(x) { return x.drillId === s.drillId; });
-                      var newPB = null;
-                      drillSessions.forEach(function(x) {
-                        if (!newPB || x.wpm > newPB.wpm || (x.wpm === newPB.wpm && x.accuracy > newPB.accuracy)) {
-                          newPB = { wpm: x.wpm, accuracy: x.accuracy, date: x.date };
-                        }
-                      });
-                      var pbCopy = Object.assign({}, state.personalBest);
-                      if (newPB) pbCopy[s.drillId] = newPB;
-                      else delete pbCopy[s.drillId];
-                      updates.personalBest = pbCopy;
-                    }
-                    // Roll back baseline if this was the first-ever session
-                    if (s.isBaseline) updates.baseline = null;
+                    var updates = typingPracticeDiscardSessionUpdates(state, s);
                     setAnnounceText('Session discarded. Returning to Typing Practice home.');
                     updMulti(updates);
                     addToast('Session discarded.');
@@ -10347,7 +10756,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 background: palette.surface,
                 border: '1px solid ' + palette.border,
                 borderRadius: '10px',
-                scrollMarginTop: '20px'
+                scrollMarginTop: '112px'
               }
             },
               h('div', { id: 'tp-s-presets-heading', role: 'heading', 'aria-level': 4, style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px', fontWeight: 700 } },
@@ -10375,7 +10784,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   return h('button', {
                     key: 'preset-' + preset.id,
                     onClick: function() {
-                      upd('accommodations', Object.assign({}, preset.apply));
+                      upd('accommodations', Object.assign({}, acc, preset.apply));
                       var earned = state.accommodationBadges || [];
                       var badgeId = 'preset-' + preset.id;
                       if (earned.indexOf(badgeId) === -1) {
@@ -10412,6 +10821,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             // a keyboard is shown. Hide it otherwise to reduce clutter.
             (acc.largeKeys || acc.showKeyboard) ? renderToggleRow('Focus mode on keyboard', 'When the on-screen keyboard is on, heavily dims all keys except the next target. Same-finger keys stay slightly visible as a motor-planning hint.', acc.focusKeyboard, function() { toggle('focusKeyboard', 'Focus mode on keyboard'); }, palette) : null,
             renderToggleRow('High-contrast mode', 'Black / yellow / white palette with maximum contrast.', acc.highContrast, function() { toggle('highContrast', 'High-contrast mode'); }, palette),
+            renderToggleRow('Reduce motion', 'Stops decorative animation, moving particles, screen shake, and smooth scrolling inside Typing Lab. Festival Mode stays colorful but still. This works independently of the device setting.', acc.reducedMotion, function() { toggle('reducedMotion', 'Reduce motion'); }, palette),
             renderToggleRow('Audio cues', 'Soft chime on correct keypress, low tone on errors. Non-alarming.', acc.audioCues, function() { toggle('audioCues', 'Audio cues'); }, palette),
             renderToggleRow('Speak words as you type', 'After each space, the tool reads the just-completed word aloud. Supports listening + reading practice and screen-free typing. Requires the hub\'s text-to-speech to be available.', acc.speakWordsOnSpace, function() { toggle('speakWordsOnSpace', 'Speak words as you type'); }, palette),
             renderToggleRow('Companion mascot in drills', 'Shows the active theme\'s mascot (Pip, Cogsworth, Vex, Mochi, or Inko) in the corner of the drill view. Reacts to clean keystreaks (excited), errors (worried), and completion (celebration). Off by default — some students find peripheral motion distracting; others want a quiet companion through practice.', acc.showCompanion, function() { toggle('showCompanion', 'Companion mascot in drills'); }, palette),
@@ -10590,10 +11000,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                           h('span', { style: { flex: 1, background: opt.accentSample } })
                         )
                     ),
-                    h('span', null,
+                    h('span', { style: { flex: '1 1 auto' } },
                       h('div', { style: { fontSize: '12px', fontWeight: isActive ? 700 : 600 } }, opt.label),
                       h('div', { style: { fontSize: '10px', color: palette.textMute, fontWeight: 400 } }, opt.sub)
-                    )
+                    ),
+                    h('span', {
+                      className: 'tp-choice-check',
+                      'aria-hidden': 'true',
+                      style: { width: '12px', opacity: isActive ? 1 : 0, color: palette.accent, fontWeight: 900 }
+                    }, '✓')
                   );
                 })
               )
@@ -10651,7 +11066,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                         border: isActive ? '2px solid ' + palette.text : '1px solid ' + palette.border
                       }
                     }),
-                    opt.label
+                    h('span', null, opt.label),
+                    h('span', {
+                      className: 'tp-choice-check',
+                      'aria-hidden': 'true',
+                      style: { width: '12px', opacity: isActive ? 1 : 0, color: palette.accent, fontWeight: 900 }
+                    }, '✓')
                   );
                 })
               )
@@ -11110,9 +11530,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       addToast('Profile exported.');
                       setAnnounceText('Typing Practice profile exported.');
                     } catch (e) {
-                      // Fallback: copy JSON to clipboard
-                      copyTextToClipboard(json, addToast);
-                      setAnnounceText('Profile download was unavailable. Profile JSON copied to the clipboard instead.');
+                      // Fallback: copy JSON to clipboard and report its real outcome.
+                      copyTextToClipboard(json, addToast).then(function(copied) {
+                        setAnnounceText(copied
+                          ? 'Profile download was unavailable. Profile JSON copied to the clipboard instead.'
+                          : 'Profile download and clipboard copy both failed. Please try again.');
+                      });
                     }
                   },
                   style: Object.assign({}, secondaryBtnStyle(palette), { fontSize: '11px', padding: '7px 12px' })
@@ -11317,6 +11740,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         // ═════════════════════════════════════════════════════
         function renderProgress() {
           var allSessions = state.sessions || [];
+          var comparableSessions = typingPracticeComparableSessions(allSessions);
+          var assistedSessionCount = allSessions.length - comparableSessions.length;
 
           // Apply filters: date range + drill type. Reversed ranges are an
           // explicit validation error rather than a misleading empty result.
@@ -11327,6 +11752,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             drillId: filterDrill || null
           };
           var filteredSessions = filterRangeInvalid ? [] : applySessionFilters(allSessions, filterOpts);
+          var filteredComparableSessions = typingPracticeComparableSessions(filteredSessions);
           var filterActive = !!(filterOpts.startDate || filterOpts.endDate || filterOpts.drillId);
           var resetProgressExploration = function() {
             setSelectedDetailIdx(null);
@@ -11346,7 +11772,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
 
           // Build trend data from FILTERED sessions: chronologically ordered WPM/accuracy
           var sessions = filteredSessions;
-          var trend = sessions.slice(-12); // last 12 matching sessions
+          var trend = filteredComparableSessions.slice(-12); // last 12 comparable matching sessions
           var trendMax = trend.reduce(function(m, s) { return Math.max(m, s.wpm || 0); }, 10);
 
           // Progress hero mascot — quieter than the Achievements hero
@@ -11394,6 +11820,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             h('p', {
               style: { margin: '0 0 20px 0', fontSize: '12px', color: palette.textMute, lineHeight: '1.5', textAlign: 'center' }
             }, __alloT('stem.typingpractice.your_personal_growth_path_no_peer_comp', 'Your personal growth path. No peer comparison — this is just you, over time.')),
+            assistedSessionCount > 0 ? h('div', {
+              role: 'note',
+              style: { margin: '0 0 20px', padding: '10px 12px', border: '1px solid ' + palette.warn, borderRadius: '8px', color: palette.textDim, fontSize: '12px', lineHeight: '1.5' }
+            }, assistedSessionCount + ' pasted practice session' + (assistedSessionCount === 1 ? ' is' : 's are') + ' retained in history and excluded from comparative performance metrics.') : null,
 
             // Skill tree: tier progression visual
             h('div', {
@@ -11516,8 +11946,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               // Week-over-week trend: compare this-7-days avg to prior-7-days avg
               var now = Date.now();
               var d7 = 7 * 24 * 60 * 60 * 1000;
-              var thisWk = allSessions.filter(function(s) { return now - new Date(s.date).getTime() < d7; });
-              var prevWk = allSessions.filter(function(s) {
+              var thisWk = comparableSessions.filter(function(s) { return now - new Date(s.date).getTime() < d7; });
+              var prevWk = comparableSessions.filter(function(s) {
                 var age = now - new Date(s.date).getTime();
                 return age >= d7 && age < 2 * d7;
               });
@@ -11559,8 +11989,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 },
                   renderMetric('Baseline WPM', state.baseline.wpm, palette, state.theme),
                   renderMetric('Best WPM', getBestWpm(state), palette, state.theme),
-                  renderMetric('Recent avg', getRecentAvg(allSessions, 'wpm'), palette, state.theme),
-                  renderMetric('Recent acc', getRecentAvg(allSessions, 'accuracy') + '%', palette, state.theme)
+                  renderMetric('Recent avg', getRecentAvg(comparableSessions, 'wpm'), palette, state.theme),
+                  renderMetric('Recent acc', getRecentAvg(comparableSessions, 'accuracy') + '%', palette, state.theme)
                 ),
                 // Week-over-week trend strip — only renders when there's
                 // this-week activity to compare against.
@@ -11598,15 +12028,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             // the absolute gain + its unit, and stays positive-framed without
             // fabricating gains that aren't there. Header is theme-voiced;
             // the clinical facts stay in plain language.
-            (state.baseline && allSessions.length >= 10) ? (function() {
+            (state.baseline && comparableSessions.length >= 10) ? (function() {
               var baselineDate = new Date(state.baseline.date);
               var firstSessionDate = allSessions.length > 0 ? new Date(allSessions[0].date) : baselineDate;
               var lastSessionDate = new Date(allSessions[allSessions.length - 1].date);
               var dayMs = 24 * 60 * 60 * 1000;
               var daysSpan = Math.max(1, Math.round((lastSessionDate.getTime() - firstSessionDate.getTime()) / dayMs));
 
-              var recentWpm = getRecentAvg(allSessions, 'wpm');
-              var recentAcc = getRecentAvg(allSessions, 'accuracy');
+              var recentWpm = getRecentAvg(comparableSessions, 'wpm');
+              var recentAcc = getRecentAvg(comparableSessions, 'accuracy');
               var wpmGain  = recentWpm - (state.baseline.wpm || 0);
               var accGain  = recentAcc - (state.baseline.accuracy || 0);
 
@@ -11701,16 +12131,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               );
             })() : null,
 
-            // IEP-goal hit-rate sparkline — one dot per session (up to 20),
-            // green when the session met the goal, neutral when not. Gives a
-            // clinician an instant read of "has the student been hitting the
-            // goal consistently?" that's more defensible than a single
-            // aggregate number.
-            (state.iepGoal && state.iepGoal.targetWpm && allSessions.length > 0) ? (function() {
-              var recent = allSessions.slice(-20);
+            // IEP goal history. Shape and text supplement color so goal
+            // status remains understandable with color-vision differences,
+            // forced colors, and nonvisual browsing.
+            (state.iepGoal && state.iepGoal.targetWpm && comparableSessions.length > 0) ? (function() {
+              var recent = comparableSessions.slice(-20);
               var metCount = recent.filter(function(s) { return s.goalMet; }).length;
               var rate = Math.round((metCount / recent.length) * 100);
-              return h('div', {
+              return h('section', {
+                'aria-labelledby': 'tp-iep-hit-rate-title',
                 style: {
                   marginBottom: '24px',
                   padding: '16px',
@@ -11720,33 +12149,82 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 }
               },
                 h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' } },
-                  h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 } },
-                    '🎯 IEP goal hit rate · last ' + recent.length + ' sessions'),
-                  h('div', { style: { fontSize: '14px', color: palette.text, fontVariantNumeric: 'tabular-nums' } },
-                    h('strong', { style: { color: rate >= 60 ? palette.success : (rate >= 30 ? palette.warn : palette.textDim) } },
-                      metCount + '/' + recent.length),
-                    ' · ',
-                    h('strong', { style: { color: rate >= 60 ? palette.success : (rate >= 30 ? palette.warn : palette.textDim) } },
-                      rate + '%')
+                  h('h3', {
+                    id: 'tp-iep-hit-rate-title',
+                    style: { margin: 0, fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 }
+                  }, 'IEP goal hit rate - last ' + recent.length + ' comparable sessions'),
+                  h('p', {
+                    style: { margin: 0, fontSize: '14px', color: palette.text, fontVariantNumeric: 'tabular-nums' }
+                  },
+                    h('span', { className: 'tp-sr-only' }, metCount + ' of ' + recent.length + ' sessions met the goal, ' + rate + ' percent'),
+                    h('span', { 'aria-hidden': 'true' },
+                      h('strong', { style: { color: rate >= 60 ? palette.success : (rate >= 30 ? palette.warn : palette.textDim) } },
+                        metCount + '/' + recent.length),
+                      ' - ',
+                      h('strong', { style: { color: rate >= 60 ? palette.success : (rate >= 30 ? palette.warn : palette.textDim) } },
+                        rate + '%')
+                    )
                   )
                 ),
-                h('p', { style: { fontSize: '11px', color: palette.textMute, margin: '0 0 10px 0', lineHeight: '1.5' } },
-                  'Target: ' + state.iepGoal.targetWpm + ' WPM @ ' + state.iepGoal.targetAccuracy + '% · green dot = met, gray = not met. Oldest on the left.'),
-                h('div', { style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
+                h('p', {
+                  id: 'tp-iep-hit-rate-help',
+                  style: { fontSize: '11px', color: palette.textMute, margin: '0 0 10px 0', lineHeight: '1.5' }
+                }, 'Target: ' + state.iepGoal.targetWpm + ' WPM at ' + state.iepGoal.targetAccuracy + ' percent accuracy. Circle = met; square = not met. Oldest is on the left.'),
+                h('div', {
+                  'aria-hidden': 'true',
+                  className: 'tp-goal-hit-plot',
+                  style: { display: 'flex', gap: '5px', flexWrap: 'wrap' }
+                },
                   recent.map(function(s, i) {
-                    return h('div', {
+                    return h('span', {
                       key: 'ghr-' + i,
-                      title: new Date(s.date).toLocaleDateString() + ': ' + s.wpm + ' WPM / ' + s.accuracy + '% — ' + (s.goalMet ? 'met' : 'not met'),
-                      'aria-label': 'Session ' + (i + 1) + ': ' + (s.goalMet ? 'goal met' : 'goal not met'),
+                      className: 'tp-goal-hit-dot ' + (s.goalMet ? 'tp-goal-hit-dot-met' : 'tp-goal-hit-dot-not-met'),
+                      title: new Date(s.date).toLocaleDateString() + ': ' + s.wpm + ' WPM / ' + s.accuracy + '% - ' + (s.goalMet ? 'met' : 'not met'),
                       style: {
-                        width: '14px',
-                        height: '14px',
-                        borderRadius: '50%',
-                        background: s.goalMet ? palette.success : palette.surface2,
-                        border: '1px solid ' + (s.goalMet ? palette.success : palette.border)
+                        width: '16px',
+                        height: '16px',
+                        borderRadius: s.goalMet ? '50%' : '2px',
+                        background: s.goalMet ? palette.success : 'transparent',
+                        border: '2px solid ' + (s.goalMet ? palette.success : palette.textMute),
+                        boxSizing: 'border-box'
                       }
                     });
                   })
+                ),
+                h('details', { style: { marginTop: '10px' } },
+                  h('summary', {
+                    style: { minHeight: '44px', display: 'flex', alignItems: 'center', color: palette.accent, fontSize: '12px', fontWeight: 700, cursor: 'pointer' }
+                  }, 'View goal session details'),
+                  h('div', { className: 'tp-table-scroll', style: { marginTop: '4px' } },
+                    h('table', {
+                      style: { width: '100%', minWidth: '520px', borderCollapse: 'collapse', color: palette.textDim, fontSize: '11px', fontVariantNumeric: 'tabular-nums' }
+                    },
+                      h('caption', { className: 'tp-sr-only' }, 'IEP goal results for the last ' + recent.length + ' comparable sessions'),
+                      h('thead', null,
+                        h('tr', null,
+                          ['Session', 'Date', 'Drill', 'WPM', 'Accuracy', 'Goal result'].map(function(label) {
+                            return h('th', {
+                              key: 'goal-head-' + label,
+                              scope: 'col',
+                              style: { padding: '7px 8px', textAlign: label === 'WPM' || label === 'Accuracy' ? 'right' : 'left', borderBottom: '1px solid ' + palette.border, color: palette.text, whiteSpace: 'nowrap' }
+                            }, label);
+                          })
+                        )
+                      ),
+                      h('tbody', null,
+                        recent.map(function(s, i) {
+                          return h('tr', { key: 'goal-row-' + i },
+                            h('th', { scope: 'row', style: { padding: '7px 8px', textAlign: 'left', borderBottom: '1px solid ' + palette.border, color: palette.text } }, i + 1),
+                            h('td', { style: { padding: '7px 8px', borderBottom: '1px solid ' + palette.border, whiteSpace: 'nowrap' } }, new Date(s.date).toLocaleDateString()),
+                            h('td', { style: { padding: '7px 8px', borderBottom: '1px solid ' + palette.border } }, s.drillName),
+                            h('td', { style: { padding: '7px 8px', textAlign: 'right', borderBottom: '1px solid ' + palette.border } }, s.wpm),
+                            h('td', { style: { padding: '7px 8px', textAlign: 'right', borderBottom: '1px solid ' + palette.border } }, s.accuracy + '%'),
+                            h('td', { style: { padding: '7px 8px', borderBottom: '1px solid ' + palette.border, fontWeight: 700, color: s.goalMet ? palette.success : palette.textDim } }, s.goalMet ? 'Met' : 'Not met')
+                          );
+                        })
+                      )
+                    )
+                  )
                 )
               );
             })() : null,
@@ -11764,8 +12242,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             },
               h('h3', {
                 id: 'tp-report-filters-title',
-                'aria-live': 'polite',
-                'aria-atomic': 'true',
                 style: { margin: '0 0 8px', fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 700 }
               }, 'Report filters ' + (filterRangeInvalid ? '(date range needs correction)' : (filterActive ? ('(' + sessions.length + ' of ' + allSessions.length + ' sessions)') : '(all sessions)'))),
 
@@ -11904,6 +12380,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               }, 'The From date must be on or before the To date. Adjust either date to continue.') : null
             ) : null,
 
+            filteredSessions.length > 0 && filteredComparableSessions.length === 0 ? h('div', {
+              role: 'note',
+              style: {
+                marginBottom: '24px',
+                padding: '12px 14px',
+                background: palette.surface,
+                border: '1px solid ' + palette.warn,
+                borderRadius: '10px',
+                color: palette.textDim,
+                fontSize: '12px',
+                lineHeight: '1.5'
+              }
+            }, 'No comparable sessions match these filters. Assisted practice remains available in the session history, but it is not plotted as performance evidence.') : null,
+
             // Trend sparkline (last 12 sessions)
             trend.length > 0 ? h('section', {
               'aria-labelledby': 'tp-session-trend-title',
@@ -11929,9 +12419,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   })()),
                 h('div', { style: { display: 'flex', gap: '6px', alignItems: 'center' } },
                   compareMode && compareSelections.length > 0 ? h('span', {
-                    role: 'status',
-                    'aria-live': 'polite',
-                    'aria-atomic': 'true',
+                    id: 'tp-compare-selection-count',
                     style: { fontSize: '10px', color: palette.textMute }
                   }, compareSelections.length + ' / 2 picked') : null,
                   h('button', {
@@ -11972,7 +12460,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 className: 'tp-session-chart',
                 role: 'group',
                 'aria-labelledby': 'tp-session-trend-title',
-                'aria-describedby': 'tp-session-chart-help',
+                'aria-describedby': 'tp-session-chart-help' + (compareMode && compareSelections.length > 0 ? ' tp-compare-selection-count' : ''),
                 onKeyDown: handleTypingPracticeSessionBarKeys,
                 style: {
                   display: 'flex',
@@ -12163,6 +12651,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   ) : null,
                   accs.length > 0 ? h('div', { style: { color: palette.textMute, fontSize: '11px', marginBottom: '4px' } },
                     '🏅 Accommodations: ' + accs.join(', ')
+                  ) : null,
+                  d.inputMethods && d.inputMethods.length ? h('div', { style: { color: palette.textMute, fontSize: '11px', marginBottom: '4px' } },
+                    'Input: ' + d.inputMethods.join(', ')
+                  ) : null,
+                  d.measurementComparable === false ? h('div', { role: 'note', style: { color: palette.warn, fontSize: '11px', fontWeight: 600, marginBottom: '4px' } },
+                    'Assisted practice - excluded from comparative performance metrics'
                   ) : null,
                   d.isNewBest ? h('div', { style: { color: palette.success, fontSize: '11px', fontWeight: 600 } }, __alloT('stem.typingpractice.personal_best', '⭐ Personal best')) : null,
                   d.masteryAdvanced ? h('div', { style: { color: palette.success, fontSize: '11px', fontWeight: 600 } }, '🌟 Mastery tier advanced to ' + d.newMasteryLevel) : null,
@@ -12513,6 +13007,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     return (s.note || '').toLowerCase().indexOf(q) !== -1;
                   })
                 : sessions;
+              var historyResultText = typingPracticeHistoryResultText(
+                historySessions.length,
+                q,
+                filterActive
+              );
+              var clearHistoryNoteSearch = function() {
+                setNoteQuery('');
+                setTimeout(function() {
+                  var search = document.getElementById('tp-history-search');
+                  if (search && search.focus) search.focus();
+                }, 0);
+              };
               return h('div', {
                 style: {
                   marginBottom: '24px',
@@ -12522,31 +13028,86 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   border: '1px solid ' + palette.border
                 }
               },
-              h('div', { style: { display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap' } },
-                h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 700 } },
-                  'Drill history · ' + historySessions.length + (q ? ' matching' : (filterActive ? ' filtered' : ' sessions'))),
-                h('input', {
-                  type: 'search',
-                  'aria-label': 'Search drill history notes',
-                  value: noteQuery,
-                  onChange: function(e) { setNoteQuery(e.target.value); },
-                  placeholder: __alloT('stem.typingpractice.search_notes', '🔎 Search notes…'),
-                  style: {
-                    padding: '4px 8px',
-                    borderRadius: '6px',
-                    background: palette.bg,
-                    border: '1px solid ' + palette.border,
-                    color: palette.text,
-                    fontSize: '11px',
-                    fontFamily: fontFamily,
-                    minWidth: '160px',
-                    flex: '0 1 auto'
-                  }
-                }),
-                q && historySessions.length === 0 ? h('span', { style: { fontSize: '10px', color: palette.warn, fontStyle: 'italic' } }, __alloT('stem.typingpractice.no_matches', 'No matches')) : null
+              h('div', {
+                className: 'tp-history-toolbar',
+                style: {
+                  display: 'flex',
+                  gap: '10px',
+                  alignItems: 'center',
+                  marginBottom: '10px',
+                  flexWrap: 'wrap'
+                }
+              },
+                h('div', { style: { flex: '1 1 180px', minWidth: 0 } },
+                  h('h4', {
+                    id: 'tp-history-title',
+                    style: {
+                      margin: 0,
+                      fontSize: '11px',
+                      color: palette.textMute,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.08em',
+                      fontWeight: 700
+                    }
+                  }, 'Drill history'),
+                  h('span', {
+                    id: 'tp-history-count',
+                    style: { display: 'block', marginTop: '3px', fontSize: '10px', color: palette.textMute }
+                  }, historyResultText),
+                  h(TypingPracticeDebouncedStatus, {
+                    react: React,
+                    id: 'tp-history-results-announcer',
+                    message: historyResultText,
+                    delay: 400
+                  })
+                ),
+                h('div', { className: 'tp-history-search-controls' },
+                  h('input', {
+                    id: 'tp-history-search',
+                    type: 'search',
+                    'aria-label': 'Search drill history notes',
+                    'aria-controls': 'tp-history-list',
+                    'aria-describedby': 'tp-history-count',
+                    value: noteQuery,
+                    onChange: function(e) { setNoteQuery(e.target.value); },
+                    onKeyDown: function(e) {
+                      if (e.key === 'Escape' && noteQuery) {
+                        e.preventDefault();
+                        clearHistoryNoteSearch();
+                      }
+                    },
+                    placeholder: __alloT('stem.typingpractice.search_notes', 'Search notes…'),
+                    style: {
+                      minHeight: '44px',
+                      padding: '8px 10px',
+                      borderRadius: '6px',
+                      background: palette.bg,
+                      border: '1px solid ' + palette.border,
+                      color: palette.text,
+                      fontSize: '11px',
+                      fontFamily: fontFamily,
+                      flex: '1 1 180px'
+                    }
+                  }),
+                  q ? h('button', {
+                    type: 'button',
+                    onClick: clearHistoryNoteSearch,
+                    'aria-label': 'Clear history note search',
+                    style: Object.assign({}, secondaryBtnStyle(palette), {
+                      minHeight: '44px',
+                      padding: '8px 12px',
+                      fontSize: '11px',
+                      flex: '0 0 auto'
+                    })
+                  }, 'Clear') : null
+                )
               ),
               h('div', {
+                id: 'tp-history-list',
                 role: 'list',
+                tabIndex: 0,
+                'aria-labelledby': 'tp-history-title',
+                'aria-describedby': 'tp-history-count',
                 style: {
                   maxHeight: '320px',
                   overflowY: 'auto',
@@ -12555,7 +13116,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   background: palette.bg
                 }
               },
-                historySessions.slice().reverse().map(function(s, idx) {
+                historySessions.length === 0 ? h('div', {
+                  role: 'listitem',
+                  'aria-labelledby': 'tp-history-empty-title',
+                  style: {
+                    padding: '16px',
+                    color: palette.textDim,
+                    lineHeight: '1.5'
+                  }
+                },
+                  h('strong', { id: 'tp-history-empty-title', style: { color: palette.text } },
+                    'No note matches'),
+                  h('p', { style: { margin: '4px 0 10px', fontSize: '11px' } },
+                    'Try another phrase or clear the note search. Progress filters remain unchanged.'),
+                  h('button', {
+                    type: 'button',
+                    onClick: clearHistoryNoteSearch,
+                    style: Object.assign({}, secondaryBtnStyle(palette), {
+                      minHeight: '44px',
+                      fontSize: '11px'
+                    })
+                  }, 'Clear note search')
+                ) : historySessions.slice().reverse().map(function(s, idx) {
                   var reflectionEmoji = s.reflection === 'hard' ? '💪'
                                       : s.reflection === 'just-right' ? '😌'
                                       : s.reflection === 'too-easy' ? '🌱'
@@ -12569,9 +13151,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   if (s.goalMet) badges.push(s.firstGoalMet ? '🎯 1st goal met' : '🎯 goal met');
                   if (s.isNewBest) badges.push('⭐ PB');
                   if (s.masteryAdvanced) badges.push('🌟 tier ↑');
+                  if (s.measurementComparable === false) badges.push('assisted - not comparable');
                   return h('div', {
-                    key: 'hist-' + idx,
+                    key: 'hist-' + s.date,
                     role: 'listitem',
+                    className: 'tp-history-item',
                     style: {
                       padding: '10px 12px',
                       borderBottom: idx === historySessions.length - 1 ? 'none' : '1px solid ' + palette.border,
@@ -12582,7 +13166,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     }
                   },
                     // Left: drill + date
-                    h('div', { style: { flex: '0 0 140px', color: palette.textDim } },
+                    h('div', { className: 'tp-history-primary', style: { flex: '0 0 140px', color: palette.textDim } },
                       h('div', { style: { fontWeight: 600, color: palette.text, lineHeight: '1.4' } },
                         (DRILLS[s.drillId] ? DRILLS[s.drillId].icon + ' ' : '') + (s.drillName || s.drillId)),
                       h('div', { style: { fontSize: '10px', color: palette.textMute } },
@@ -12590,6 +13174,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     ),
                     // Middle: metrics
                     h('div', {
+                      className: 'tp-history-metrics',
                       style: {
                         flex: '0 0 130px',
                         fontVariantNumeric: 'tabular-nums',
@@ -12607,7 +13192,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       )
                     ),
                     // Right: badges + reflection + note preview
-                    h('div', { style: { flex: 1, color: palette.textDim, lineHeight: '1.5' } },
+                    h('div', { style: { flex: 1, minWidth: 0, overflowWrap: 'anywhere', color: palette.textDim, lineHeight: '1.5' } },
                       badges.length > 0 ? h('div', { style: { fontSize: '10px', color: palette.success, marginBottom: '2px' } }, badges.join(' · ')) : null,
                       reflectionEmoji ? h('span', { style: { marginRight: '4px' }, title: 'felt: ' + s.reflection }, reflectionEmoji) : null,
                       s.note ? h('span', { style: { fontStyle: 'italic', color: palette.textMute } },
@@ -12731,12 +13316,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             // Skips rendering when the student hasn't tried any accommodation both ways
             // (keeps the chart from showing as empty noise during the first weeks of use).
             (function() {
-              var efficacy = computeAccommodationEfficacy(sessions);
+              var efficacy = computeAccommodationEfficacy(filteredComparableSessions);
               if (!efficacy || efficacy.length === 0) return null;
               // Common scale across rows so bar widths are comparable
-              var maxBarWpm = efficacy.reduce(function(m, r) {
-                return Math.max(m, r.sessionsWith > 0 ? Math.abs(r.wpmDelta) + 30 : 30);
-              }, 30);
+              var maxBarWpm = efficacy.reduce(function(m, row) {
+                return Math.max(m, row.avgWpmWith || 0, row.avgWpmWithout || 0);
+              }, 1);
               var deltaColor = function(delta) {
                 if (delta >= 3) return palette.success;
                 if (delta <= -3) return palette.danger;
@@ -12762,16 +13347,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               },
                 h('div', { style: { fontSize: '11px', color: palette.textMute, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px', fontWeight: 700 } }, __alloT('stem.typingpractice.accommodation_efficacy', 'Accommodation efficacy')),
                 h('p', { style: { fontSize: '11px', color: palette.textMute, margin: '0 0 14px 0', lineHeight: '1.5' } },
-                  __alloT('stem.typingpractice.average_wpm_with_each_accommodation_on', 'Average WPM with each accommodation on vs off. Aggregate across drill types — drill mix can confound, so use the per-drill breakdown in the report below for high-stakes decisions.')),
+                  __alloT('stem.typingpractice.average_wpm_with_each_accommodation_on', 'Actual average WPM with each accommodation on vs off, using comparable sessions only. Pasted practice is excluded. Drill mix can still confound, so use the per-drill report breakdown for high-stakes decisions.')),
                 efficacy.map(function(row, idx) {
-                  var withWpm = Math.max(0, Math.round((row.sessionsWith > 0 ? row.wpmDelta : 0) + 0)); // not directly stored; reconstructed for display
-                  // We only have wpmDelta + session counts; derive approximate "with" / "without" bars
-                  // by anchoring "without" at a midline and showing "with" as midline + delta.
-                  // This is an honest visualization of the comparison data we actually have.
-                  var midpointWpm = 30; // visual anchor for "without"
-                  var withBarWpm = Math.max(2, midpointWpm + row.wpmDelta);
-                  var withBarPct = Math.min(100, Math.round((withBarWpm / maxBarWpm) * 100));
-                  var withoutBarPct = Math.min(100, Math.round((midpointWpm / maxBarWpm) * 100));
+                  var withBarPct = Math.min(100, Math.round((row.avgWpmWith / maxBarWpm) * 100));
+                  var withoutBarPct = Math.min(100, Math.round((row.avgWpmWithout / maxBarWpm) * 100));
                   var dC = deltaColor(row.wpmDelta);
                   return h('div', {
                     key: 'eff-' + row.key,
@@ -12794,29 +13373,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                       h('div', {
                         style: { flex: 1, height: '14px', background: palette.bg, borderRadius: '4px', overflow: 'hidden', position: 'relative' },
                         role: 'img',
-                        'aria-label': 'With ' + row.label + ': ' + (row.wpmDelta >= 0 ? '+' : '') + row.wpmDelta + ' WPM compared to without'
+                        'aria-label': 'With ' + row.label + ': average ' + row.avgWpmWith + ' WPM'
                       },
-                        h('div', { style: { width: withBarPct + '%', height: '100%', background: row.wpmDelta >= 0 ? palette.success : palette.danger, transition: 'width 240ms ease', borderRadius: '4px' } })
+                        h('div', { style: { width: withBarPct + '%', height: '100%', background: palette.accent, transition: 'width 240ms ease', borderRadius: '4px' } })
                       ),
-                      h('span', { style: { fontSize: '11px', color: palette.text, width: '48px', fontFamily: 'ui-monospace, Menlo, Consolas, monospace' } },
-                        (row.wpmDelta >= 0 ? '+' : '') + row.wpmDelta + ' WPM')
+                      h('span', { style: { fontSize: '11px', color: palette.text, width: '58px', fontFamily: 'ui-monospace, Menlo, Consolas, monospace' } },
+                        row.avgWpmWith + ' WPM')
                     ),
-                    // "Without" bar (visual anchor)
+                    // "Without" bar uses the actual average from comparable sessions.
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
                       h('span', { style: { fontSize: '10px', color: palette.textDim, width: '54px', textAlign: 'right' } }, __alloT('stem.typingpractice.without', 'Without')),
                       h('div', {
                         style: { flex: 1, height: '14px', background: palette.bg, borderRadius: '4px', overflow: 'hidden' },
-                        'aria-hidden': 'true'
+                        role: 'img',
+                        'aria-label': 'Without ' + row.label + ': average ' + row.avgWpmWithout + ' WPM'
                       },
-                        h('div', { style: { width: withoutBarPct + '%', height: '100%', background: palette.textMute, opacity: 0.5, borderRadius: '4px' } })
+                        h('div', { style: { width: withoutBarPct + '%', height: '100%', background: palette.textMute, opacity: 0.65, borderRadius: '4px' } })
                       ),
-                      h('span', { style: { fontSize: '11px', color: palette.textMute, width: '48px', fontFamily: 'ui-monospace, Menlo, Consolas, monospace' } }, 'baseline')
+                      h('span', { style: { fontSize: '11px', color: palette.text, width: '58px', fontFamily: 'ui-monospace, Menlo, Consolas, monospace' } }, row.avgWpmWithout + ' WPM')
                     ),
                     // Delta + interpretation line
                     h('div', {
                       style: { fontSize: '11px', color: dC, marginTop: '6px', fontStyle: 'italic' }
                     },
-                      'Accuracy Δ ' + (row.accDelta >= 0 ? '+' : '') + row.accDelta + '% · ' + deltaInterp(row.wpmDelta) + ' for this student'
+                      'WPM difference ' + (row.wpmDelta >= 0 ? '+' : '') + row.wpmDelta +
+                      ' · accuracy ' + row.avgAccWith + '% with vs ' + row.avgAccWithout + '% without (' +
+                      (row.accDelta >= 0 ? '+' : '') + row.accDelta + ' points) · ' + deltaInterp(row.wpmDelta)
                     )
                   );
                 })
@@ -12878,8 +13460,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   type: 'button',
                   onClick: function() {
                     var report = buildIEPReport(state, filterOpts);
-                    copyTextToClipboard(report, addToast);
-                    setAnnounceText('Progress report copied to the clipboard.');
+                    copyTextToClipboard(report, addToast).then(function(copied) {
+                      setAnnounceText(copied
+                        ? 'Progress report copied to the clipboard.'
+                        : 'Progress report copy failed. Select the report text and copy it manually.');
+                    });
                   },
                   style: Object.assign({}, primaryBtnStyle(palette), {
                     fontSize: '11px',
@@ -12900,8 +13485,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 h('button', {
                   type: 'button',
                   onClick: function() {
-                    downloadSessionsCSV(state, filterOpts);
-                    setAnnounceText('Progress CSV download started.');
+                    var started = downloadSessionsCSV(state, filterOpts, addToast);
+                    setAnnounceText(started
+                      ? 'Progress CSV download started.'
+                      : 'Progress CSV download could not start. Please try again.');
                   },
                   style: Object.assign({}, secondaryBtnStyle(palette), {
                     fontSize: '11px',
@@ -12912,8 +13499,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   type: 'button',
                   onClick: function() {
                     var summary = buildParentSummary(state);
-                    copyTextToClipboard(summary, addToast);
-                    setAnnounceText('Parent summary copied to the clipboard.');
+                    copyTextToClipboard(summary, addToast).then(function(copied) {
+                      setAnnounceText(copied
+                        ? 'Parent summary copied to the clipboard.'
+                        : 'Parent summary copy failed. Please try again.');
+                    });
                   },
                   style: Object.assign({}, secondaryBtnStyle(palette), {
                     fontSize: '11px',
@@ -13260,7 +13850,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               { keys: ['Any letter/number/symbol'], desc: __alloT('stem.typingpractice.types_the_next_character', 'Types the next character') },
               { keys: ['Backspace'],               desc: __alloT('stem.typingpractice.undo_last_character', 'Undo last character') },
               { keys: ['F2'],                      desc: 'Repeat the next target key and character position' },
-              { keys: ['Esc'],                     desc: __alloT('stem.typingpractice.abandon_drill_progress_won_t_save', 'Abandon drill (progress won\'t save)') }
+              { keys: ['Esc'],                     desc: __alloT('stem.typingpractice.abandon_drill_progress_won_t_save', 'Review exit without saving current drill progress') }
             ]},
             { heading: __alloT('stem.typingpractice.on_any_screen_with_a_form', 'On any screen with a form'), items: [
               { keys: ['Tab'],   desc: __alloT('stem.typingpractice.move_to_next_field_button', 'Move to next field / button') },
@@ -13344,7 +13934,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         var battleStateRaw = useState({
           stack: [], typed: '', startedAt: 0, lastRiseAt: 0, pauseUntil: 0,
           cleared: 0, errors: 0, combo: 0, bestCombo: 0,
-          paused: false, ended: false,
+          paused: false, pausedAt: 0, pausedMs: 0, autoPaused: false, ended: false,
+          feedback: null, lastWasWrong: false, assistedInput: false,
+          inputMethods: { keyboard: 0, 'text-input': 0, ime: 0, paste: 0 },
           // Bot side (only used in vs-bot mode)
           botStack: [], botTyped: '', botCleared: 0, botLastRiseAt: 0,
           botNextKeyAt: 0,
@@ -13357,14 +13949,154 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           incomingFlashTo: 0,    // ts until which to flash "incoming" indicator on player stack
           outgoingFlashTo: 0,    // ts for "sent" indicator after a player attack lands
           // Attack picker (Phase 3b) — opens on combo threshold reach.
-          // Pauses main game input; player picks 1 of 3 attack words OR
-          // auto-confirms first option after pickerTimeoutAt.
+          // It is untimed and suspends both stacks until the player chooses
+          // or skips, meeting WCAG timing-adjustability requirements.
           pickerOpen: false,
           pickerOptions: [],     // 3 attack words to choose from
-          pickerTimeoutAt: 0     // ts at which auto-pick fires
+          pickerOpenedAt: 0
         });
         var battleSt = battleStateRaw[0];
         var setBattleSt = battleStateRaw[1];
+        var battlePauseInterruptionRef = useRef(false);
+        var battleAttackOptionRef = useRef(null);
+        var battlePauseButtonRef = useRef(null);
+        var battleCaptureRef = useRef(null);
+        var battleMenuHeadingRef = useRef(null);
+        var battleSummaryHeadingRef = useRef(null);
+        var battleExitPendingRef = useRef(false);
+        var battleComposingRef = useRef(false);
+        var battlePendingInputKindRef = useRef('text-input');
+        var battleSkipComposedInputRef = useRef('');
+        var battlePickerWasOpenRef = useRef(false);
+        var battleMistakeAnnouncementRef = useRef({ signature: '', at: 0 });
+
+        function setBattlePaused(nextPaused, reason) {
+          var automatic = !!reason;
+          if (nextPaused && automatic && battlePauseInterruptionRef.current) return;
+          if (nextPaused && automatic) battlePauseInterruptionRef.current = true;
+          if (!nextPaused) battlePauseInterruptionRef.current = false;
+          var now = Date.now();
+          setBattleSt(function(current) {
+            return nextPaused
+              ? typingPracticePauseBattleClock(current, now, automatic)
+              : typingPracticeResumeBattleClock(current, now);
+          });
+          setAnnounceText(nextPaused
+            ? ('Battle paused' + (reason ? ' because ' + reason : '') + '. Both stacks and the match clock are frozen.')
+            : 'Battle resumed. The match clock and both stacks are running.');
+        }
+
+        function resolveBattlePicker(pickedWord) {
+          var now = Date.now();
+          setBattleSt(function(current) {
+            return typingPracticeResolveBattlePicker(current, now, pickedWord);
+          });
+          setAnnounceText(pickedWord
+            ? 'Attack word ' + pickedWord + ' sent. Battle resumed.'
+            : 'Attack skipped. Battle resumed.');
+        }
+
+        function requestBattleExit() {
+          if (battleExitPendingRef.current) return Promise.resolve(false);
+          battleExitPendingRef.current = true;
+          var wasPaused = !!battleSt.paused;
+          var wasPickerOpen = !!battleSt.pickerOpen;
+          var confirmationStartedAt = Date.now();
+          if (!wasPaused) {
+            setBattleSt(function(current) {
+              return typingPracticePauseBattleClock(current, confirmationStartedAt, false);
+            });
+          }
+          setAnnounceText('Battle paused while you confirm whether to quit.');
+          return askTypingPracticeConfirmation(
+            'Quit this Battle match? Current cleared words, combo, and outcome will not be saved.',
+            {
+              title: 'Quit Battle Mode?',
+              confirmText: 'Quit match',
+              cancelText: 'Keep playing'
+            }
+          ).then(function(accepted) {
+            battleExitPendingRef.current = false;
+            if (accepted) {
+              battlePauseInterruptionRef.current = false;
+              setAnnounceText('Battle match ended without saving. Returning to the Battle menu.');
+              updMulti({ battle: Object.assign({}, state.battle, { view: 'menu' }) });
+              return true;
+            }
+            if (!wasPaused) {
+              var resumeAt = Date.now();
+              setBattleSt(function(current) {
+                return typingPracticeResumeBattleClock(current, resumeAt);
+              });
+              setAnnounceText('Quit canceled. Battle resumed; confirmation time was excluded from the match clock.');
+              setTimeout(function() {
+                var target = wasPickerOpen ? battleAttackOptionRef.current : battleCaptureRef.current;
+                if (target) target.focus();
+              }, 20);
+            } else {
+              setAnnounceText('Quit canceled. Battle remains paused.');
+              setTimeout(function() {
+                if (battlePauseButtonRef.current) battlePauseButtonRef.current.focus();
+              }, 20);
+            }
+            return false;
+          }, function() {
+            battleExitPendingRef.current = false;
+            if (!wasPaused) {
+              setBattleSt(function(current) {
+                return typingPracticeResumeBattleClock(current, Date.now());
+              });
+            }
+            setAnnounceText(wasPaused
+              ? 'The quit confirmation could not open. Battle remains paused.'
+              : 'The quit confirmation could not open. Battle resumed.');
+            return false;
+          });
+        }
+
+        // Battle is a nested three-view workflow inside the main Battle route.
+        // Move focus whenever its own view changes so the menu and result are
+        // announced even though the outer Typing Practice route is unchanged.
+        useEffect(function() {
+          if (state.view !== 'battle') return;
+          var target = state.battle.view === 'summary'
+            ? battleSummaryHeadingRef.current
+            : state.battle.view === 'menu'
+              ? battleMenuHeadingRef.current
+              : null;
+          if (!target) return;
+          var focusTimer = setTimeout(function() { if (target && target.focus) target.focus(); }, 20);
+          return function() { clearTimeout(focusTimer); };
+        }, [state.view, state.battle.view]);
+
+        useEffect(function() {
+          var wasOpen = battlePickerWasOpenRef.current;
+          battlePickerWasOpenRef.current = battleSt.pickerOpen;
+          if (battleSt.pickerOpen) {
+            // The word-clear announcement introduces the choice; focus then
+            // exposes the named dialog and its no-time-limit instructions.
+            var focusTimer = setTimeout(function() {
+              if (battleAttackOptionRef.current) battleAttackOptionRef.current.focus();
+            }, 20);
+            return function() { clearTimeout(focusTimer); };
+          }
+          if (wasOpen) {
+            setTimeout(function() {
+              if (battleCaptureRef.current) battleCaptureRef.current.focus();
+            }, 20);
+          }
+        }, [battleSt.pickerOpen]);
+
+        // Restore the real Battle text-input surface after starting or
+        // resuming. This invokes touch keyboards when the browser permits and
+        // gives switch, voice, paste, and IME users a native editable target.
+        useEffect(function() {
+          if (state.battle.view !== 'playing' || battleSt.paused || battleSt.pickerOpen || battleSt.ended) return;
+          var focusTimer = setTimeout(function() {
+            if (battleCaptureRef.current) battleCaptureRef.current.focus();
+          }, 20);
+          return function() { clearTimeout(focusTimer); };
+        }, [state.battle.view, battleSt.paused]);
 
         function pickBattleWord(mix) {
           var r = Math.random();
@@ -13388,13 +14120,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           setBattleSt({
             stack: initialStack, typed: '', startedAt: now, lastRiseAt: now, pauseUntil: 0,
             cleared: 0, errors: 0, combo: 0, bestCombo: 0,
-            paused: false, ended: false,
+            paused: false, pausedAt: 0, pausedMs: 0, autoPaused: false, ended: false,
+            feedback: null, lastWasWrong: false, assistedInput: false,
+            inputMethods: { keyboard: 0, 'text-input': 0, ime: 0, paste: 0 },
             botStack: botInitial, botTyped: '', botCleared: 0, botLastRiseAt: now,
             botNextKeyAt: isVsBot ? now + 1500 : 0,
             botClearedSinceSend: 0,
             incomingFlashTo: 0, outgoingFlashTo: 0,
-            pickerOpen: false, pickerOptions: [], pickerTimeoutAt: 0
+            pickerOpen: false, pickerOptions: [], pickerOpenedAt: 0
           });
+          battlePauseInterruptionRef.current = false;
+          battleMistakeAnnouncementRef.current = { signature: '', at: 0 };
           updMulti({ battle: Object.assign({}, state.battle, { view: 'playing' }) });
         }
 
@@ -13402,7 +14138,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         // bot typing if vs-bot mode, and detects match-end on either side.
         useEffect(function() {
           if (state.battle.view !== 'playing') return;
-          if (battleSt.ended || battleSt.paused) return;
+          if (battleSt.ended || battleSt.paused || battleSt.pickerOpen) return;
           var diff = BATTLE_DIFFICULTY[state.battle.difficulty || 'mercy'];
           var isVsBot = state.battle.mode === 'vs-bot';
           var bot = isVsBot ? BATTLE_BOTS[state.battle.botSpeed || 'medium'] : null;
@@ -13416,24 +14152,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             var newBotTyped = battleSt.botTyped;
             var newBotCleared = battleSt.botCleared;
             var newBotNextKey = battleSt.botNextKeyAt;
-            // PICKER auto-timeout — if open and timer expired, auto-confirm
-            // the FIRST option so newer players still get attacks even if
-            // they don't engage with the picker.
-            if (battleSt.pickerOpen && now >= battleSt.pickerTimeoutAt && battleSt.pickerOptions.length > 0) {
-              newBotStack = newBotStack.concat([battleSt.pickerOptions[0]]);
-              patch.botStack = newBotStack;
-              patch.outgoingFlashTo = now + 1200;
-              patch.pickerOpen = false;
-              patch.pickerOptions = [];
-              patch.combo = 0; // reset after spending
-              didChange = true;
-            }
-            // While picker is open, freeze the player stack rise — feels
-            // unfair to lose to a rising stack while the player is choosing.
-            // Bot stack still rises (you're "saving up" your attack at a
-            // small cost; bot doesn't get free time too).
-            // PLAYER stack rise (skipped if picker open)
-            if (!battleSt.pickerOpen && battleSt.pauseUntil <= now && now - battleSt.lastRiseAt >= diff.riseMs) {
+            // Attack choice pauses this interval entirely. When play resumes,
+            // picker resolution shifts every deadline by the decision time.
+            if (battleSt.pauseUntil <= now && now - battleSt.lastRiseAt >= diff.riseMs) {
               newPlayerStack = battleSt.stack.concat([pickBattleWord(diff.lengthMix)]);
               patch.stack = newPlayerStack;
               patch.lastRiseAt = now;
@@ -13501,149 +14222,230 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 botCleared: newBotCleared,
                 durationSec: Math.round((now - battleSt.startedAt) / 1000),
                 difficulty: state.battle.difficulty,
-                botSpeed: state.battle.botSpeed
+                botSpeed: state.battle.botSpeed,
+                inputMethods: typingPracticeInputContext(battleSt.inputMethods).inputMethods,
+                inputEventCounts: typingPracticeInputContext(battleSt.inputMethods).inputEventCounts,
+                measurementComparable: !battleSt.assistedInput && typingPracticeInputContext(battleSt.inputMethods).measurementComparable,
+                measurementNote: battleSt.assistedInput
+                  ? 'A multi-character assistive input event was used. This match remains valid practice but is excluded from Battle records.'
+                  : typingPracticeInputContext(battleSt.inputMethods).measurementNote
               };
               setBattleSt(Object.assign({}, battleSt, patch, { ended: true }));
+              var comparableBattle = result.measurementComparable !== false;
               var pb = state.battle.personalBest || { cleared: 0, longestStreak: 0, durationSec: 0 };
-              var newPb = {
+              var newPb = comparableBattle ? {
                 cleared: Math.max(pb.cleared, result.cleared),
                 longestStreak: Math.max(pb.longestStreak, result.bestCombo),
                 durationSec: Math.max(pb.durationSec, result.durationSec)
-              };
+              } : pb;
               var pbBot = state.battle.personalBestVsBot || { wins: 0, losses: 0, ties: 0 };
-              var newPbBot = isVsBot ? {
+              var newPbBot = isVsBot && comparableBattle ? {
                 wins: pbBot.wins + (outcome === 'win' ? 1 : 0),
                 losses: pbBot.losses + (outcome === 'loss' ? 1 : 0),
                 ties: pbBot.ties + (outcome === 'tie' ? 1 : 0)
               } : pbBot;
+              setAnnounceText(isVsBot
+                ? ('Battle complete. ' + (outcome === 'win' ? 'You won.' : outcome === 'loss' ? 'The bot won this round.' : 'The match was a tie.') + ' You cleared ' + result.cleared + ' words; the bot cleared ' + result.botCleared + '. Results summary ready.')
+                : ('Battle complete. You cleared ' + result.cleared + ' word' + (result.cleared === 1 ? '' : 's') + '. Results summary ready.'));
               updMulti({ battle: Object.assign({}, state.battle, { view: 'summary', lastResult: result, personalBest: newPb, personalBestVsBot: newPbBot }) });
               return;
             }
             if (didChange) setBattleSt(Object.assign({}, battleSt, patch));
           }, 100);
           return function() { clearInterval(iv); };
-        }, [state.battle.view, state.battle.mode, state.battle.botSpeed, state.battle.difficulty, battleSt.ended, battleSt.paused, battleSt.lastRiseAt, battleSt.pauseUntil, battleSt.stack.length, battleSt.botLastRiseAt, battleSt.botStack.length, battleSt.botNextKeyAt, battleSt.botTyped, battleSt.pickerOpen, battleSt.pickerTimeoutAt]);
+        }, [state.battle.view, state.battle.mode, state.battle.botSpeed, state.battle.difficulty, battleSt.ended, battleSt.paused, battleSt.lastRiseAt, battleSt.pauseUntil, battleSt.stack.length, battleSt.botLastRiseAt, battleSt.botStack.length, battleSt.botNextKeyAt, battleSt.botTyped, battleSt.pickerOpen]);
 
-        // Keystroke handler for Battle mode — separate from drill mode
+        // A match must never progress while it is hidden or while its window
+        // lacks focus. The ref deduplicates the common blur + visibilitychange
+        // pair, and resume shifts all deadlines rather than catching up.
         useEffect(function() {
-          if (state.battle.view !== 'playing') return;
-          if (battleSt.ended) return;
+          if (state.battle.view !== 'playing' || battleSt.ended || battleSt.paused || battleSt.pickerOpen) return;
+          var pauseForInterruption = function(reason) {
+            if (battlePauseInterruptionRef.current) return;
+            setBattlePaused(true, reason);
+          };
+          var onBlur = function() {
+            pauseForInterruption('this window lost focus');
+          };
+          var onVisibilityChange = function() {
+            if (document.hidden) pauseForInterruption('this page moved to the background');
+          };
+          window.addEventListener('blur', onBlur);
+          document.addEventListener('visibilitychange', onVisibilityChange);
+          return function() {
+            window.removeEventListener('blur', onBlur);
+            document.removeEventListener('visibilitychange', onVisibilityChange);
+          };
+        }, [state.battle.view, battleSt.ended, battleSt.paused, battleSt.pickerOpen]);
+
+        function buildBattleAttackOptions() {
+          var pool = BATTLE_ATTACK_WORDS.slice();
+          var options = [];
+          var flavorPool = BATTLE_ATTACK_FLAVOR[state.theme || 'default'];
+          if (flavorPool && flavorPool.length) {
+            options.push(flavorPool[Math.floor(Math.random() * flavorPool.length)]);
+          }
+          while (options.length < 3 && pool.length > 0) {
+            var index = Math.floor(Math.random() * pool.length);
+            var word = pool.splice(index, 1)[0];
+            if (options.indexOf(word) === -1) options.push(word);
+          }
+          for (var i = options.length - 1; i > 0; i--) {
+            var swapIndex = Math.floor(Math.random() * (i + 1));
+            var temp = options[i]; options[i] = options[swapIndex]; options[swapIndex] = temp;
+          }
+          return options;
+        }
+
+        var commitBattleText = useCallback(function(rawText, inputKind) {
+          if (state.battle.view !== 'playing' || battleSt.ended || battleSt.paused || battleSt.pickerOpen) return;
+          var now = Date.now();
+          var diff = BATTLE_DIFFICULTY[state.battle.difficulty || 'mercy'];
+          var transition = typingPracticeApplyBattleTextInput(battleSt, rawText, now, diff.postClearPauseMs);
+          if (!transition.steps.length) return;
+          inputKind = inputKind || 'text-input';
+          if (['keyboard', 'text-input', 'ime', 'paste'].indexOf(inputKind) === -1) inputKind = 'text-input';
+          var next = transition.state;
+          var methods = Object.assign({ keyboard: 0, 'text-input': 0, ime: 0, paste: 0 }, battleSt.inputMethods || {});
+          methods[inputKind] = (methods[inputKind] || 0) + 1;
+          next.inputMethods = methods;
+          var insertedCount = typingPracticeGraphemes(rawText).length;
+          next.assistedInput = !!battleSt.assistedInput || inputKind === 'paste' || insertedCount > 1;
+          if (transition.wordCleared && state.battle.mode === 'vs-bot' && next.combo >= COMBO_SEND_THRESHOLD) {
+            next.pickerOpen = true;
+            next.pickerOptions = buildBattleAttackOptions();
+            next.pickerOpenedAt = now;
+          }
+          setBattleSt(next);
+          if (transition.wordCleared) {
+            battleMistakeAnnouncementRef.current = { signature: '', at: 0 };
+            setAnnounceText(next.pickerOpen
+              ? 'Word cleared. Attack choice ready; the match is paused with no time limit.'
+              : 'Word cleared. ' + next.cleared + ' cleared. ' + next.stack.length + ' rows remain.');
+          } else if (next.feedback) {
+            var battleMistakeAnnouncement = typingPracticeMistakeAnnouncement(
+              battleMistakeAnnouncementRef.current,
+              next.feedback,
+              now,
+              1400
+            );
+            battleMistakeAnnouncementRef.current = battleMistakeAnnouncement.next;
+            if (battleMistakeAnnouncement.shouldAnnounce) setAnnounceText(battleMistakeAnnouncement.message);
+          } else {
+            battleMistakeAnnouncementRef.current = { signature: '', at: 0 };
+          }
+        }, [state.battle.view, state.battle.mode, state.battle.difficulty, state.theme, battleSt]);
+
+        var removeBattleCharacter = useCallback(function() {
+          if (state.battle.view !== 'playing' || battleSt.ended || battleSt.paused || battleSt.pickerOpen) return;
+          var characters = typingPracticeGraphemes(battleSt.typed || '');
+          if (!characters.length) return;
+          setBattleSt(Object.assign({}, battleSt, {
+            typed: characters.slice(0, -1).join(''),
+            feedback: null,
+            lastWasWrong: false
+          }));
+        }, [state.battle.view, battleSt]);
+
+        var onBattleKeyDown = function(e) {
+          if (e.metaKey || e.ctrlKey || e.altKey || e.isComposing || battleComposingRef.current) return;
+          if (e.key === 'Escape') {
+            e.preventDefault(); e.stopPropagation();
+            setBattlePaused(!battleSt.paused);
+            return;
+          }
+          if (e.key === 'F2') {
+            e.preventDefault(); e.stopPropagation();
+            setAnnounceText(typingPracticeTargetCue(battleSt.stack[0] || '', typingPracticeGraphemes(battleSt.typed || '').length));
+            return;
+          }
+          if (battleSt.paused || battleSt.pickerOpen || battleSt.ended) { e.preventDefault(); return; }
+          if (e.key === 'Backspace') {
+            e.preventDefault(); e.stopPropagation();
+            removeBattleCharacter();
+            return;
+          }
+          if (typingPracticeGraphemes(e.key).length !== 1) return;
+          e.preventDefault(); e.stopPropagation();
+          commitBattleText(e.key, 'keyboard');
+        };
+
+        var onBattleAssistiveInput = function(e) {
+          if (battleComposingRef.current) return;
+          var value = e.currentTarget.value; e.currentTarget.value = '';
+          if (!value) return;
+          if (battleSkipComposedInputRef.current && value === battleSkipComposedInputRef.current) {
+            battleSkipComposedInputRef.current = '';
+            battlePendingInputKindRef.current = 'text-input';
+            return;
+          }
+          var inputKind = battlePendingInputKindRef.current || 'text-input';
+          battlePendingInputKindRef.current = 'text-input';
+          commitBattleText(value, inputKind);
+        };
+        var onBattleCompositionStart = function() {
+          battleComposingRef.current = true;
+          battlePendingInputKindRef.current = 'ime';
+        };
+        var onBattleCompositionEnd = function(e) {
+          battleComposingRef.current = false;
+          var value = e.currentTarget.value || (e.data || ''); e.currentTarget.value = '';
+          battlePendingInputKindRef.current = 'text-input';
+          if (value) {
+            battleSkipComposedInputRef.current = value;
+            commitBattleText(value, 'ime');
+            setTimeout(function() {
+              if (battleSkipComposedInputRef.current === value) battleSkipComposedInputRef.current = '';
+            }, 0);
+          }
+        };
+        var onBattleBeforeInput = function(e) {
+          var nativeEvent = e.nativeEvent || e;
+          var inputType = nativeEvent.inputType || '';
+          if (inputType === 'deleteContentBackward') {
+            e.preventDefault();
+            removeBattleCharacter();
+            return;
+          }
+          if (inputType === 'insertFromPaste' || inputType === 'insertFromDrop') battlePendingInputKindRef.current = 'paste';
+          else if (inputType.indexOf('Composition') !== -1) battlePendingInputKindRef.current = 'ime';
+          else if (inputType.indexOf('insert') === 0) battlePendingInputKindRef.current = 'text-input';
+        };
+        var onBattlePaste = function() { battlePendingInputKindRef.current = 'paste'; };
+
+        // Hardware keys can still reach the game from the named play region;
+        // native edit controls retain their own Space/Enter behavior.
+        useEffect(function() {
+          if (state.battle.view !== 'playing' || battleSt.ended) return;
           function onKey(e) {
             if (e.metaKey || e.ctrlKey || e.altKey) return;
-            // PICKER intercept — when the 3-option overlay is open, only
-            // 1/2/3 select an option; Esc skips (no attack sent). Other
-            // keys are blocked so they don't accidentally edit the typing
-            // queue while the player is choosing.
             if (battleSt.pickerOpen) {
-              if (e.key === 'Escape') {
-                e.preventDefault();
-                setBattleSt(Object.assign({}, battleSt, { pickerOpen: false, pickerOptions: [], combo: 0 }));
-                return;
-              }
+              if (e.key === 'Escape') { e.preventDefault(); resolveBattlePicker(''); return; }
               if (e.key === '1' || e.key === '2' || e.key === '3') {
                 e.preventDefault();
-                var idx = parseInt(e.key, 10) - 1;
-                if (idx >= 0 && idx < battleSt.pickerOptions.length) {
-                  var picked = battleSt.pickerOptions[idx];
-                  setBattleSt(Object.assign({}, battleSt, {
-                    botStack: battleSt.botStack.concat([picked]),
-                    outgoingFlashTo: Date.now() + 1200,
-                    pickerOpen: false, pickerOptions: [],
-                    combo: 0
-                  }));
-                }
+                var index = parseInt(e.key, 10) - 1;
+                if (index >= 0 && index < battleSt.pickerOptions.length) resolveBattlePicker(battleSt.pickerOptions[index]);
                 return;
               }
-              // Block all other keys during picker
+              if (typingPracticeIsInteractiveTarget(e.target)) return;
               e.preventDefault();
               return;
             }
-            // Allow Esc to pause
-            if (e.key === 'Escape') {
-              setBattleSt(Object.assign({}, battleSt, { paused: !battleSt.paused }));
-              return;
-            }
-            if (battleSt.paused) return;
-            if (battleSt.stack.length === 0) return;
-            var topWord = battleSt.stack[0];
-            // Backspace — undo one char
-            if (e.key === 'Backspace') {
-              if (battleSt.typed.length > 0) {
-                setBattleSt(Object.assign({}, battleSt, { typed: battleSt.typed.slice(0, -1) }));
-                e.preventDefault();
-              }
-              return;
-            }
-            if (e.key.length !== 1) return;
-            e.preventDefault();
-            var expected = topWord[battleSt.typed.length];
-            if (e.key.toLowerCase() === expected.toLowerCase()) {
-              var nextTyped = battleSt.typed + e.key;
-              if (nextTyped.length === topWord.length) {
-                // Word cleared
-                var diff = BATTLE_DIFFICULTY[state.battle.difficulty || 'mercy'];
-                var newCombo = battleSt.combo + 1;
-                var nowMs = Date.now();
-                // Combo-attack trigger — vs-bot only. Hit the threshold,
-                // open the 3-option picker overlay (pauses main game until
-                // player picks or auto-pick timer fires).
-                var pickerPatch = {};
-                if (state.battle.mode === 'vs-bot' && newCombo >= COMBO_SEND_THRESHOLD && !battleSt.ended && !battleSt.pickerOpen) {
-                  // Pick 3 distinct random attack words for the menu. If the
-                  // active theme has a flavor pool, bias one option toward it
-                  // so Inko's send-words feel marine, Cogsworth's clockwork,
-                  // etc. The other two come from the generic harder pool —
-                  // keeps vocabulary practice broad while adding character.
-                  var pool = BATTLE_ATTACK_WORDS.slice();
-                  var options = [];
-                  var flavorPool = BATTLE_ATTACK_FLAVOR[state.theme || 'default'];
-                  if (flavorPool && flavorPool.length) {
-                    options.push(flavorPool[Math.floor(Math.random() * flavorPool.length)]);
-                  }
-                  for (var pp = options.length; pp < 3 && pool.length > 0; pp++) {
-                    var idx = Math.floor(Math.random() * pool.length);
-                    var pickWord = pool.splice(idx, 1)[0];
-                    if (options.indexOf(pickWord) !== -1) { pp--; continue; }
-                    options.push(pickWord);
-                  }
-                  // Shuffle so the flavor word isn't always option 1
-                  for (var sh = options.length - 1; sh > 0; sh--) {
-                    var sj = Math.floor(Math.random() * (sh + 1));
-                    var tmp = options[sh]; options[sh] = options[sj]; options[sj] = tmp;
-                  }
-                  pickerPatch.pickerOpen = true;
-                  pickerPatch.pickerOptions = options;
-                  pickerPatch.pickerTimeoutAt = nowMs + 3000;
-                  // combo stays — gets reset when picker resolves
-                }
-                setBattleSt(Object.assign({}, battleSt, pickerPatch, {
-                  stack: battleSt.stack.slice(1),
-                  typed: '',
-                  cleared: battleSt.cleared + 1,
-                  combo: newCombo,
-                  bestCombo: Math.max(battleSt.bestCombo, newCombo),
-                  pauseUntil: nowMs + diff.postClearPauseMs,
-                  // Burst trigger — keyed by clear count so React remounts
-                  // the burst element each time, replaying the CSS one-shot.
-                  clearBurstAt: nowMs,
-                  clearBurstCount: (battleSt.clearBurstCount || 0) + 1
-                }));
-              } else {
-                setBattleSt(Object.assign({}, battleSt, { typed: nextTyped }));
-              }
-            } else {
-              // Forgiveness mode (default): error logged, but typed not advanced
-              setBattleSt(Object.assign({}, battleSt, { errors: battleSt.errors + 1, combo: 0 }));
-            }
+            if (e.key === 'Escape') { e.preventDefault(); setBattlePaused(!battleSt.paused); return; }
+            if (typingPracticeIsInteractiveTarget(e.target)) return;
+            onBattleKeyDown(e);
           }
           window.addEventListener('keydown', onKey);
           return function() { window.removeEventListener('keydown', onKey); };
-        }, [state.battle.view, state.battle.mode, battleSt.ended, battleSt.paused, battleSt.stack, battleSt.typed, battleSt.combo, battleSt.bestCombo, battleSt.cleared, battleSt.errors, battleSt.pickerOpen, battleSt.pickerOptions, battleSt.botStack]);
+        }, [state.battle.view, battleSt, commitBattleText, removeBattleCharacter]);
 
         function renderBattleMenu() {
           var diff = state.battle.difficulty || 'mercy';
           var pb = state.battle.personalBest || { cleared: 0, longestStreak: 0, durationSec: 0 };
+          var menuBattleColors = typingPracticeBattleSemanticColors(palette, state.theme || 'default');
           return h('div', {
+            className: 'tp-battle-menu',
+            'aria-labelledby': 'tp-battle-menu-title',
             style: { padding: 24, maxWidth: 720, margin: '0 auto', color: palette.text, fontFamily: fontFamily, background: palette.bg, minHeight: '60vh' }
           },
             renderBackButton(function() { go('menu'); }, palette),
@@ -13652,31 +14454,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               // pick up the active theme's character. Pink/Mochi was the
               // baseline; each theme now has its own palette.
               var tm = state.theme || 'default';
-              var heroAccent, heroAccentSoft, heroText, heroHeadline;
-              if (tm === 'steampunk') {
-                heroAccent = '#d4884c'; heroAccentSoft = 'rgba(212,136,76,0.18)'; heroText = '#fed7aa';
-                heroHeadline = '⚙ The Bench — Battle Mode';
-              } else if (tm === 'cyberpunk') {
-                heroAccent = '#06b6d4'; heroAccentSoft = 'rgba(6,182,212,0.18)'; heroText = '#a5f3fc';
-                heroHeadline = '[ARENA] Battle Mode';
-              } else if (tm === 'oceanic') {
-                heroAccent = '#22d3ee'; heroAccentSoft = 'rgba(34,211,238,0.18)'; heroText = '#a5f3fc';
-                heroHeadline = '🌊 The Shelf — Battle Mode';
-              } else if (tm === 'neutral') {
-                heroAccent = '#b8a080'; heroAccentSoft = 'rgba(184,160,128,0.16)'; heroText = '#e8e8e8';
-                heroHeadline = 'Battle Mode';
-              } else if (tm === 'kawaii') {
-                heroAccent = '#f472b6'; heroAccentSoft = 'rgba(244,114,182,0.18)'; heroText = '#f9a8d4';
-                heroHeadline = '✨ Battle Mode 💕';
-              } else {
-                heroAccent = '#60a5fa'; heroAccentSoft = 'rgba(96,165,250,0.18)'; heroText = '#bfdbfe';
-                heroHeadline = '⌨ Battle Mode';
-              }
+              var heroAccent = palette.accent;
+              var heroAccentSoft = palette.accent + '2E';
+              var heroText = palette.text;
+              var heroHeadline;
+              if (tm === 'steampunk') heroHeadline = '⚙ The Bench — Battle Mode';
+              else if (tm === 'cyberpunk') heroHeadline = '[ARENA] Battle Mode';
+              else if (tm === 'oceanic') heroHeadline = '🌊 The Shelf — Battle Mode';
+              else if (tm === 'neutral') heroHeadline = 'Battle Mode';
+              else if (tm === 'kawaii') heroHeadline = '✨ Battle Mode 💕';
+              else heroHeadline = '⌨ Battle Mode';
               return h('div', {
+                className: 'tp-battle-menu-hero',
                 style: {
                   display: 'flex', alignItems: 'center', gap: 14, marginTop: 16, marginBottom: 16, padding: '14px 16px',
-                  background: 'radial-gradient(ellipse 60% 100% at 0% 50%, ' + heroAccentSoft.replace('0.18', '0.10') + ', transparent 70%), rgba(15,23,42,0.45)',
-                  border: '1px solid ' + heroAccentSoft.replace('0.18', '0.20'), borderLeft: '4px solid ' + heroAccent, borderRadius: 14
+                  background: 'radial-gradient(ellipse 60% 100% at 0% 50%, ' + heroAccentSoft + ', transparent 70%), ' + palette.surface,
+                  border: '1px solid ' + palette.border, borderLeft: '4px solid ' + heroAccent, borderRadius: 14
                 }
               },
                 // Hero mascot — active theme's character at idle. Sets the
@@ -13684,7 +14477,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                 // the wave emoji for the neutral theme (no mascot).
                 (function() {
                   var menuMascot = renderBattleMascot(tm, 'idle', { size: 64, label: __alloT('stem.typingpractice.battle_mode_mascot', 'Battle Mode mascot') });
-                  return menuMascot ? h('div', { style: {
+                  return menuMascot ? h('div', { className: 'tp-battle-menu-mascot', style: {
                     width: 64, height: 64, flexShrink: 0,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     filter: 'drop-shadow(0 4px 12px ' + heroAccentSoft.replace('0.18', '0.30') + ')'
@@ -13696,8 +14489,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     boxShadow: '0 4px 16px ' + heroAccentSoft.replace('0.18', '0.25')
                   } }, '⌨');
                 })(),
-                h('div', { style: { flex: 1, minWidth: 220 } },
-                  h('h2', { style: { margin: 0, color: heroText, fontSize: 22, fontWeight: 900, letterSpacing: '-0.01em' } }, heroHeadline),
+                h('div', { className: 'tp-battle-menu-copy', style: { flex: 1, minWidth: 0 } },
+                  h('h2', {
+                    id: 'tp-battle-menu-title',
+                    ref: battleMenuHeadingRef,
+                    tabIndex: -1,
+                    onFocus: function(e) { e.currentTarget.style.outlineColor = heroAccent; },
+                    onBlur: function(e) { e.currentTarget.style.outlineColor = 'transparent'; },
+                    style: { margin: 0, color: heroText, fontSize: 22, fontWeight: 900, letterSpacing: '-0.01em', outline: '3px solid transparent', outlineOffset: '4px', borderRadius: 4 }
+                  }, heroHeadline),
                   h('p', { style: { margin: '4px 0 0', fontSize: 12, color: palette.textMute, lineHeight: 1.55 } },
                     __alloT('stem.typingpractice.optional_game_mode_words_rise_from_the', 'Optional game mode. Words rise from the bottom; type the top word to clear it. Stack hits the ceiling and the match ends. No leaderboard, no streak guilt — just personal best.'))
                 )
@@ -13707,15 +14507,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             // and label color pick up the active mascot's signature accent.
             (function() {
               var modeTm = state.theme || 'default';
-              var modeAccentByTheme = {
-                'default':   { border: '#fde047', soft: 'rgba(253,224,71,0.10)', text: '#fde68a' },
-                'steampunk': { border: '#d4884c', soft: 'rgba(212,136,76,0.10)', text: '#fed7aa' },
-                'cyberpunk': { border: '#06b6d4', soft: 'rgba(6,182,212,0.10)',  text: '#a5f3fc' },
-                'kawaii':    { border: '#f472b6', soft: 'rgba(244,114,182,0.10)', text: '#f9a8d4' },
-                'oceanic':   { border: '#22d3ee', soft: 'rgba(34,211,238,0.10)', text: '#a5f3fc' },
-                'neutral':   { border: '#b8a080', soft: 'rgba(184,160,128,0.10)', text: '#e8e8e8' }
-              };
-              var modeAcc = modeAccentByTheme[modeTm] || modeAccentByTheme['default'];
+              var modeAcc = { border: palette.accent, soft: palette.accent + '1A', text: palette.accent };
               // Per-theme solo-mode label so the headline copy carries the
               // theme's vocabulary without any extra plumbing.
               var soloLabel = (modeTm === 'oceanic')   ? '🌊 Solo Drift'
@@ -13765,9 +14557,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                     'aria-pressed': active ? 'true' : 'false',
                     style: {
                       padding: '12px 14px', borderRadius: 10,
-                      border: '1.5px solid ' + (active ? '#a78bfa' : palette.border),
-                      background: active ? 'rgba(167,139,250,0.10)' : palette.surface,
-                      color: active ? '#c4b5fd' : palette.text,
+                      border: '1.5px solid ' + (active ? menuBattleColors.botBorder : palette.border),
+                      background: active ? menuBattleColors.botSurface : palette.surface,
+                      color: active ? menuBattleColors.botText : palette.text,
                       fontSize: 13, fontWeight: active ? 800 : 600, textAlign: 'left', cursor: 'pointer',
                       fontFamily: 'inherit'
                     }
@@ -13927,14 +14719,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           var isVsBot = state.battle.mode === 'vs-bot';
           var bot = isVsBot ? BATTLE_BOTS[state.battle.botSpeed || 'medium'] : null;
           var botRisePct = isVsBot ? Math.min(100, (battleSt.botStack.length / BATTLE_STACK_LIMIT) * 100) : 0;
+          var themeName = state.theme || 'default';
+          var battleColors = typingPracticeBattleSemanticColors(palette, themeName);
           // Word-length difficulty color. The "long word" color was hardcoded
           // pink (Mochi); now uses palette.accent so each theme's long words
           // glow in that mascot's signature color (cyan for Inko, brass for
           // Cogsworth, etc.). Short/medium stay green/amber as universal
           // difficulty signals (green = easy, amber = medium).
           function colorForLen(w) {
-            if (w.length <= 5) return '#22c55e';
-            if (w.length <= 7) return '#fbbf24';
+            if (w.length <= 5) return battleColors.easy;
+            if (w.length <= 7) return battleColors.medium;
             return palette.accent;
           }
           // Compute live mascot state for the player column from current
@@ -13967,7 +14761,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             : battleSt.outgoingFlashTo > nowMs ? 'incoming'
             : botStackHi ? 'danger'
             : 'idle';
-          var themeName = state.theme || 'default';
           // Reusable stack-column renderer — used for both player and bot
           function renderStackColumn(opts) {
             var s = opts.stack;
@@ -14017,7 +14810,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               },
                 h('div', { style: {
                   width: pct + '%', height: '100%',
-                  background: pct < 60 ? palette.success : pct < 85 ? '#fbbf24' : '#ef4444',
+                  background: pct < 60 ? battleColors.easy : pct < 85 ? battleColors.medium : battleColors.danger,
                   transition: 'width 200ms ease, background 200ms ease'
                 } })
               ),
@@ -14038,22 +14831,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               // (theme-aware) so oceanic = deep-sea midnight, kawaii = pale
               // cream, etc., instead of always-slate-900.
               s.length > 0 ? h('div', {
+                className: 'tp-battle-target',
                 style: {
                   padding: '12px 10px', borderRadius: 8,
-                  background: palette.bg, border: '2px solid ' + colorForLen(top),
+                  background: palette.bg, border: '2px solid ' + (!opts.isBot && battleSt.lastWasWrong ? palette.danger : colorForLen(top)),
                   fontSize: opts.large ? 24 : 18, fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 700,
-                  textAlign: 'center', letterSpacing: '0.06em'
+                  textAlign: 'center', letterSpacing: '0.06em', position: 'relative', cursor: !opts.isBot ? 'text' : 'default'
                 },
-                'aria-live': 'off'
+                'aria-live': 'off',
+                onMouseDown: !opts.isBot ? function() { if (battleCaptureRef.current) battleCaptureRef.current.focus(); } : undefined
               },
-                top.split('').map(function(ch, i) {
-                  var t = typed[i];
+                typingPracticeGraphemes(top).map(function(ch, i) {
+                  var t = typingPracticeGraphemes(typed)[i];
                   var color, bg;
                   if (t === undefined) { color = palette.textMute; bg = 'transparent'; }
-                  else if (t.toLowerCase() === ch.toLowerCase()) { color = '#22c55e'; bg = 'rgba(34,197,94,0.10)'; }
-                  else { color = '#ef4444'; bg = 'rgba(239,68,68,0.10)'; }
-                  return h('span', { key: i, style: { color: color, background: bg, padding: '2px 1px', borderRadius: 3 } }, ch);
-                })
+                  else if (t.toLowerCase() === ch.toLowerCase()) { color = battleColors.easy; bg = palette.surface; }
+                  else { color = battleColors.danger; bg = palette.surface; }
+                  return h('span', { key: i, 'aria-hidden': 'true', style: { color: color, background: bg, padding: '2px 1px', borderRadius: 3 } }, ch);
+                }),
+                !opts.isBot ? h('textarea', {
+                  id: 'tp-battle-capture',
+                  ref: battleCaptureRef,
+                  defaultValue: '',
+                  rows: 1,
+                  inputMode: 'text',
+                  autoComplete: 'off',
+                  autoCapitalize: 'none',
+                  autoCorrect: 'off',
+                  spellCheck: false,
+                  'aria-label': (battleSt.paused ? 'Battle paused. ' : 'Battle typing target. ') + 'Type ' + top + '. Physical keyboards, touch keyboards, switch input, paste, dictation, and input methods are supported.',
+                  'aria-describedby': 'tp-battle-play-help tp-battle-current-key' + (battleSt.paused ? ' tp-battle-pause-status' : ''),
+                  'aria-errormessage': battleSt.feedback ? 'tp-battle-mistake-feedback' : undefined,
+                  'aria-invalid': battleSt.feedback ? 'true' : 'false',
+                  'aria-keyshortcuts': 'Escape F2',
+                  'aria-disabled': battleSt.paused || battleSt.pickerOpen ? 'true' : 'false',
+                  onKeyDown: onBattleKeyDown,
+                  onBeforeInput: onBattleBeforeInput,
+                  onInput: onBattleAssistiveInput,
+                  onPaste: onBattlePaste,
+                  onCompositionStart: onBattleCompositionStart,
+                  onCompositionEnd: onBattleCompositionEnd,
+                  onFocus: function(e) { e.currentTarget.style.outlineColor = palette.accent; },
+                  onBlur: function(e) { e.currentTarget.style.outlineColor = 'transparent'; },
+                  style: { position: 'absolute', inset: 0, width: '100%', height: '100%', boxSizing: 'border-box', resize: 'none', border: 0, padding: 0, margin: 0, background: 'transparent', color: 'transparent', caretColor: 'transparent', opacity: 0.02, cursor: 'text', zIndex: 2, outline: '3px solid transparent', outlineOffset: '3px' }
+                }) : null
               ) : null,
               // Remaining stack
               s.slice(1).map(function(word, i) {
@@ -14062,7 +14883,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                   key: opts.label + '-' + i + '-' + word,
                   style: {
                     padding: '6px 10px', borderRadius: 6,
-                    background: 'rgba(15,23,42,0.6)', border: '1px solid ' + c + '55',
+                    background: palette.surface, border: '1px solid ' + c,
                     fontSize: opts.large ? 14 : 12, fontFamily: 'ui-monospace, Menlo, monospace', fontWeight: 600,
                     textAlign: 'center', color: c, letterSpacing: '0.03em'
                   }
@@ -14072,6 +14893,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           }
           return h('div', {
             className: 'tp-battle-stage tp-battle-stage-' + themeName,
+            role: 'region',
+            'aria-label': 'Battle Mode typing play area',
+            'aria-describedby': 'tp-battle-play-help',
             style: { padding: 24, maxWidth: isVsBot ? 900 : 720, margin: '0 auto', color: palette.text, fontFamily: fontFamily, background: palette.bg, minHeight: '60vh', position: 'relative', overflow: 'hidden' }
           },
             // Theme-flavored ambient particles — drift through the playfield
@@ -14091,26 +14915,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               })
             ),
             // HUD bar
-            h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' } },
+            h('div', { className: 'tp-battle-hud', style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' } },
               h('button', {
-                onClick: function() { setBattleSt(Object.assign({}, battleSt, { paused: !battleSt.paused })); },
-                style: Object.assign({}, secondaryBtnStyle(palette), { fontSize: 11, padding: '5px 10px' })
+                ref: battlePauseButtonRef,
+                type: 'button',
+                'aria-keyshortcuts': 'Escape',
+                'aria-label': battleSt.paused ? 'Resume Battle Mode' : 'Pause Battle Mode',
+                onClick: function() { setBattlePaused(!battleSt.paused); },
+                style: Object.assign({}, secondaryBtnStyle(palette), { fontSize: 12, padding: '8px 12px', minWidth: 44, minHeight: 44 })
               }, battleSt.paused ? '▶ Resume' : '⏸ Pause'),
               h('button', {
-                onClick: function() { updMulti({ battle: Object.assign({}, state.battle, { view: 'menu' }) }); },
-                style: Object.assign({}, secondaryBtnStyle(palette), { fontSize: 11, padding: '5px 10px' })
+                type: 'button',
+                'aria-haspopup': 'dialog',
+                onClick: requestBattleExit,
+                style: Object.assign({}, secondaryBtnStyle(palette), { fontSize: 12, padding: '8px 12px', minWidth: 44, minHeight: 44 })
               }, __alloT('stem.typingpractice.quit', '✕ Quit')),
               isVsBot ? h('span', { style: { fontSize: 11, color: palette.textMute, fontStyle: 'italic' } }, bot.label + ' · ' + bot.wpm + ' WPM') : null,
-              h('div', { style: { marginLeft: 'auto', display: 'flex', gap: 12, fontVariantNumeric: 'tabular-nums', fontSize: 12, alignItems: 'center' } },
+              h('div', { className: 'tp-battle-hud-metrics', style: { marginLeft: 'auto', display: 'flex', gap: 12, fontVariantNumeric: 'tabular-nums', fontSize: 12, alignItems: 'center', flexWrap: 'wrap' } },
                 // SEND SLOT chip — vs-bot only, lights up when combo is one shy of threshold (preview).
                 // Amber chip = "one more clear ⚡"; pink chip = "attack ready ⚡⚡⚡".
                 isVsBot && battleSt.combo >= COMBO_SEND_THRESHOLD - 1 ? h('span', {
                   className: battleSt.combo >= COMBO_SEND_THRESHOLD ? 'tp-attack-ready' : undefined,
                   style: {
                     padding: '2px 8px', borderRadius: 999,
-                    background: battleSt.combo >= COMBO_SEND_THRESHOLD ? (palette.accent + '33') : 'rgba(251,191,36,0.18)',
-                    border: '1px solid ' + (battleSt.combo >= COMBO_SEND_THRESHOLD ? palette.accent : '#fbbf24'),
-                    color: battleSt.combo >= COMBO_SEND_THRESHOLD ? palette.accent : '#fcd34d',
+                    background: battleSt.combo >= COMBO_SEND_THRESHOLD ? (palette.accent + '22') : (palette.warn + '22'),
+                    border: '1px solid ' + (battleSt.combo >= COMBO_SEND_THRESHOLD ? palette.accent : battleColors.medium),
+                    color: battleSt.combo >= COMBO_SEND_THRESHOLD ? palette.accent : battleColors.medium,
                     fontSize: 10, fontWeight: 700, letterSpacing: '0.04em',
                     display: 'inline-block'
                   }
@@ -14146,10 +14976,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
             // theme doesn't override the danger/success semantic.
             (battleSt.incomingFlashTo > Date.now()) ? h('div', {
               role: 'status',
+              'aria-live': 'polite',
+              'aria-atomic': 'true',
               style: {
                 marginBottom: 10, padding: '6px 12px', borderRadius: 6,
                 background: 'rgba(239,68,68,0.16)', border: '1px solid rgba(239,68,68,0.40)',
-                color: '#fca5a5', fontSize: 12, fontWeight: 700, textAlign: 'center'
+                color: battleColors.incomingText, fontSize: 12, fontWeight: 700, textAlign: 'center'
               }
             }, (function() {
               var inTm = state.theme || 'default';
@@ -14161,11 +14993,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                    :                         '⚡ Bot sent you a word!';
             })()) : null,
             (battleSt.outgoingFlashTo > Date.now()) ? h('div', {
-              role: 'status',
+              role: 'note',
               style: {
                 marginBottom: 10, padding: '6px 12px', borderRadius: 6,
                 background: 'rgba(34,197,94,0.16)', border: '1px solid rgba(34,197,94,0.40)',
-                color: '#86efac', fontSize: 12, fontWeight: 700, textAlign: 'center'
+                color: battleColors.outgoingText, fontSize: 12, fontWeight: 700, textAlign: 'center'
               }
             }, (function() {
               var outTm = state.theme || 'default';
@@ -14181,113 +15013,121 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               renderStackColumn({
                 label: 'You', cleared: battleSt.cleared,
                 stack: battleSt.stack, typed: battleSt.typed,
-                bg: 'linear-gradient(180deg, ' + palette.accent + '14, rgba(15,23,42,0.4))',
-                border: palette.accent + '4D', headerColor: palette.accent, large: true,
+                bg: battleColors.playerSurface,
+                border: palette.border, headerColor: palette.accent, large: true,
                 showMascot: true, isBot: false, mascotState: playerMascotState
               }),
               renderStackColumn({
                 label: 'Bot', cleared: battleSt.botCleared,
                 stack: battleSt.botStack, typed: battleSt.botTyped,
-                bg: 'linear-gradient(180deg, rgba(167,139,250,0.08), rgba(15,23,42,0.4))',
-                border: 'rgba(167,139,250,0.30)', headerColor: '#c4b5fd', large: false,
+                bg: battleColors.botSurface,
+                border: battleColors.botBorder, headerColor: battleColors.botText, large: false,
                 showMascot: true, isBot: true, mascotState: botMascotState
               })
             ) : renderStackColumn({
               label: 'You', cleared: battleSt.cleared,
               stack: battleSt.stack, typed: battleSt.typed,
-              bg: 'linear-gradient(180deg, ' + palette.accent + '11, rgba(15,23,42,0.4))',
-              border: palette.accent + '33', headerColor: palette.accent, large: true,
+              bg: battleColors.playerSurface,
+              border: palette.border, headerColor: palette.accent, large: true,
               showMascot: true, isBot: false, mascotState: playerMascotState
             }),
-            // ATTACK PICKER OVERLAY — opens when combo hits threshold.
-            // 3 random attack words; pick one (1/2/3 keys or click) within
-            // 3 seconds or auto-pick option 1. Esc skips entirely.
-            battleSt.pickerOpen ? (function() {
-              var msLeft = Math.max(0, battleSt.pickerTimeoutAt - Date.now());
-              var secLeft = Math.ceil(msLeft / 1000);
-              return h('div', {
-                role: 'dialog',
-                'aria-modal': 'true',
-                'aria-label': __alloT('stem.typingpractice.choose_an_attack_word_to_send_to_the_b', 'Choose an attack word to send to the bot'),
-                style: {
-                  marginTop: 12, padding: 16, borderRadius: 10,
-                  background: 'linear-gradient(135deg, ' + palette.accent + '22, rgba(15,23,42,0.4))',
-                  border: '2px solid ' + palette.accent,
-                  boxShadow: '0 4px 20px ' + palette.accent + '40'
-                }
-              },
-                h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, flexWrap: 'wrap', gap: 8 } },
-                  h('div', { style: { fontSize: 13, fontWeight: 800, color: palette.accent } }, __alloT('stem.typingpractice.attack_ready_pick_a_word_to_send', '⚡ ATTACK READY — pick a word to send')),
-                  h('div', { style: { fontSize: 11, color: palette.textMute, fontFamily: 'ui-monospace, Menlo, monospace' } }, secLeft + 's · auto-pick option 1')
-                ),
-                h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8 } },
-                  battleSt.pickerOptions.map(function(w, i) {
-                    return h('button', {
-                      key: 'pick-' + i,
-                      onClick: function() {
-                        setBattleSt(Object.assign({}, battleSt, {
-                          botStack: battleSt.botStack.concat([w]),
-                          outgoingFlashTo: Date.now() + 1200,
-                          pickerOpen: false, pickerOptions: [],
-                          combo: 0
-                        }));
-                      },
-                      style: {
-                        padding: '14px 12px', borderRadius: 8,
-                        background: palette.bg, border: '2px solid ' + palette.accent,
-                        color: palette.text, fontSize: 17, fontWeight: 700,
-                        fontFamily: 'ui-monospace, Menlo, monospace',
-                        cursor: 'pointer', letterSpacing: '0.06em',
-                        boxShadow: '0 2px 6px rgba(0,0,0,0.3)'
-                      }
-                    },
-                      h('div', { style: { fontSize: 9, color: palette.accent, fontWeight: 800, marginBottom: 4, fontFamily: 'inherit' } }, '[' + (i + 1) + ']'),
-                      w
-                    );
-                  })
-                ),
-                h('div', { style: { fontSize: 10, color: palette.textMute, marginTop: 10, fontStyle: 'italic', textAlign: 'center' } },
-                  __alloT('stem.typingpractice.tap_a_card_or_press_1_2_3_to_send_pres', 'Tap a card OR press 1 / 2 / 3 to send. Press Esc to skip and not send. Your stack is frozen while you choose.'))
-              );
-            })() : null,
+            h('div', {
+              id: 'tp-battle-current-key',
+              className: 'sr-only'
+            }, typingPracticeTargetCue(topWord, typingPracticeGraphemes(battleSt.typed || '').length)),
+            battleSt.feedback ? h('div', {
+              id: 'tp-battle-mistake-feedback',
+              role: 'note',
+              style: { marginTop: 10, padding: '10px 12px', borderRadius: 8, background: 'rgba(239,68,68,0.12)', border: '2px solid ' + palette.danger, color: palette.text, fontSize: 12, fontWeight: 700, textAlign: 'center' }
+            }, typingPracticeMistakeMessage(battleSt.feedback)) : null,
+            // ATTACK PICKER — the match clock and both stacks stop until the
+            // player chooses or skips. It is an announced, non-modal dialog:
+            // the nearby Pause/Quit controls remain available, and no claim of
+            // background isolation is made to assistive technology.
+            battleSt.pickerOpen ? h('div', {
+              role: 'dialog',
+              'aria-labelledby': 'tp-battle-picker-title',
+              'aria-describedby': 'tp-battle-picker-timing tp-battle-picker-help',
+              style: {
+                marginTop: 12, padding: 16, borderRadius: 10,
+                background: 'linear-gradient(135deg, ' + palette.accent + '22, rgba(15,23,42,0.4))',
+                border: '2px solid ' + palette.accent,
+                boxShadow: '0 4px 20px ' + palette.accent + '40'
+              }
+            },
+              h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, flexWrap: 'wrap', gap: 8 } },
+                h('div', { id: 'tp-battle-picker-title', style: { fontSize: 13, fontWeight: 800, color: palette.accent } },
+                  __alloT('stem.typingpractice.attack_ready_pick_a_word_to_send', '⚡ ATTACK READY — pick a word to send')),
+                h('div', {
+                  id: 'tp-battle-picker-timing',
+                  style: { fontSize: 11, color: palette.textMute, fontFamily: 'ui-monospace, Menlo, monospace' }
+                }, 'No time limit · both stacks paused')
+              ),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8 } },
+                battleSt.pickerOptions.map(function(w, i) {
+                  return h('button', {
+                    key: 'pick-' + i,
+                    ref: i === 0 ? battleAttackOptionRef : null,
+                    type: 'button',
+                    'aria-keyshortcuts': String(i + 1),
+                    onClick: function() { resolveBattlePicker(w); },
+                    style: {
+                      minHeight: 44, padding: '14px 12px', borderRadius: 8,
+                      background: palette.bg, border: '2px solid ' + palette.accent,
+                      color: palette.text, fontSize: 17, fontWeight: 700,
+                      fontFamily: 'ui-monospace, Menlo, monospace',
+                      cursor: 'pointer', letterSpacing: '0.06em',
+                      boxShadow: '0 2px 6px rgba(0,0,0,0.3)'
+                    }
+                  },
+                    h('div', { 'aria-hidden': 'true', style: { fontSize: 9, color: palette.accent, fontWeight: 800, marginBottom: 4, fontFamily: 'inherit' } }, '[' + (i + 1) + ']'),
+                    w
+                  );
+                })
+              ),
+              h('div', { style: { display: 'flex', justifyContent: 'center', marginTop: 12 } },
+                h('button', {
+                  type: 'button',
+                  onClick: function() { resolveBattlePicker(''); },
+                  style: Object.assign({}, secondaryBtnStyle(palette), { minWidth: 44, minHeight: 44, padding: '8px 14px' })
+                }, 'Skip attack')
+              ),
+              h('div', { id: 'tp-battle-picker-help', style: { fontSize: 11, color: palette.textMute, marginTop: 10, fontStyle: 'italic', textAlign: 'center', lineHeight: 1.5 } },
+                __alloT('stem.typingpractice.tap_a_card_or_press_1_2_3_to_send_pres', 'Choose a card or press 1, 2, or 3 to send. Choose Skip attack or press Escape to continue without sending.'))
+            ) : null,
             // Pause overlay
             battleSt.paused ? h('div', {
-              role: 'status',
+              id: 'tp-battle-pause-status',
+              role: 'note',
               style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(251,191,36,0.10)', border: '1px solid rgba(251,191,36,0.30)', textAlign: 'center', color: 'var(--allo-stem-text, #fcd34d)', fontSize: 13, fontWeight: 700 }
-            }, __alloT('stem.typingpractice.paused_both_stacks_frozen_press_resume', '⏸ Paused — both stacks frozen. Press Resume or Esc to continue.')) : null,
+            }, battleSt.autoPaused
+              ? '⏸ Auto-paused after an interruption — both stacks and the match clock are frozen. Choose Resume when ready.'
+              : __alloT('stem.typingpractice.paused_both_stacks_frozen_press_resume', '⏸ Paused — both stacks and the match clock are frozen. Press Resume or Esc to continue.')) : null,
             // Difficulty + cadence footer
-            h('div', { style: { marginTop: 14, fontSize: 11, color: palette.textMute, textAlign: 'center', fontStyle: 'italic' } },
-              diff.label + ' · rise every ' + Math.round(diff.riseMs / 1000) + 's · Esc to pause' + (isVsBot ? ' · type only YOUR stack' : ''))
+            h('div', { id: 'tp-battle-play-help', style: { marginTop: 14, fontSize: 11, color: palette.textMute, textAlign: 'center', fontStyle: 'italic', lineHeight: 1.5 } },
+              'Type the highlighted word in your stack. Tap the highlighted word to open a touch keyboard. Physical keyboards, switch input, paste, dictation, and IME are supported. Press F2 to hear the next key. ' + diff.label + ' · rise every ' + Math.round(diff.riseMs / 1000) + 's · Esc pauses or resumes' + (isVsBot ? ' · type only YOUR stack' : ''))
           );
         }
 
         function renderBattleSummary() {
           var r = state.battle.lastResult || { cleared: 0, errors: 0, bestCombo: 0, durationSec: 0, difficulty: 'mercy', mode: 'solo', outcome: 'solo' };
           var pb = state.battle.personalBest || { cleared: 0, longestStreak: 0, durationSec: 0 };
-          var newPbCleared = r.cleared > 0 && r.cleared >= pb.cleared;
-          var newPbStreak = r.bestCombo > 0 && r.bestCombo >= pb.longestStreak;
+          var newPbCleared = r.measurementComparable !== false && r.cleared > 0 && r.cleared >= pb.cleared;
+          var newPbStreak = r.measurementComparable !== false && r.bestCombo > 0 && r.bestCombo >= pb.longestStreak;
           var diff = BATTLE_DIFFICULTY[r.difficulty || 'mercy'];
           var isVsBot = r.mode === 'vs-bot';
           var bot = isVsBot ? BATTLE_BOTS[r.botSpeed || 'medium'] : null;
+          var summaryThemeName = state.theme || 'default';
+          var summaryBattleColors = typingPracticeBattleSemanticColors(palette, summaryThemeName);
           // Outcome theming for vs-bot. Mascot state mapped to outcome
           // (win → celebrate; loss → droop; tie/solo → idle).
-          // Theme-flavored solo-completion accent — picks up the active
-          // mascot's signature color so Solo Cascade summaries match the
-          // theme (Pip yellow, Cogsworth brass, Vex cyan, Mochi pink, Inko
-          // bioluminescent cyan, Pip default for fallback).
-          var soloAccentByTheme = {
-            'default':   '#fde047',
-            'steampunk': '#d4884c',
-            'cyberpunk': '#06b6d4',
-            'kawaii':    '#f9a8d4',
-            'oceanic':   '#22d3ee',
-            'neutral':   '#b8a080'
-          };
+          // Solo summaries use the active verified accent, including high
+          // contrast and user-selected accent overrides.
           var outcomeIcon, outcomeTitle, outcomeAccent, outcomeMascotState;
           var _outTm = state.theme || 'default';
           if (isVsBot) {
             if (r.outcome === 'win') {
-              outcomeIcon = '🏆'; outcomeAccent = '#22c55e'; outcomeMascotState = 'win';
+              outcomeIcon = '🏆'; outcomeAccent = summaryBattleColors.easy; outcomeMascotState = 'win';
               outcomeTitle = (_outTm === 'oceanic')   ? 'You surfaced first'
                            : (_outTm === 'steampunk') ? 'The bench prevailed'
                            : (_outTm === 'cyberpunk') ? '[VICTORY]'
@@ -14295,7 +15135,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                            : (_outTm === 'neutral')   ? 'Win.'
                            :                             'You won!';
             } else if (r.outcome === 'loss') {
-              outcomeIcon = '🌊'; outcomeAccent = '#a78bfa'; outcomeMascotState = 'loss';
+              outcomeIcon = '🌊'; outcomeAccent = summaryBattleColors.botText; outcomeMascotState = 'loss';
               outcomeTitle = (_outTm === 'oceanic')   ? 'The bot reached the surface first'
                            : (_outTm === 'steampunk') ? 'The bot edged the bench this round'
                            : (_outTm === 'cyberpunk') ? '[BOT WINS] :: this round'
@@ -14303,7 +15143,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                            : (_outTm === 'neutral')   ? 'Bot win.'
                            :                             'Bot won this round';
             } else {
-              outcomeIcon = '🤝'; outcomeAccent = '#fbbf24'; outcomeMascotState = 'idle';
+              outcomeIcon = '🤝'; outcomeAccent = summaryBattleColors.medium; outcomeMascotState = 'idle';
               outcomeTitle = (_outTm === 'oceanic')   ? 'Both stacks broke surface together'
                            : (_outTm === 'steampunk') ? 'A draw — both benches at the brink'
                            : (_outTm === 'cyberpunk') ? '[STALEMATE] both stacks capped'
@@ -14324,16 +15164,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
                          : (_soloTm === 'kawaii')    ? 'Run complete! 💕'
                          : (_soloTm === 'neutral')   ? 'Run complete.'
                          :                              'Match complete';
-            outcomeAccent = soloAccentByTheme[_soloTm] || soloAccentByTheme['default'];
+            outcomeAccent = palette.accent;
             outcomeMascotState = r.cleared > 0 ? 'win' : 'idle';
           }
-          var summaryThemeName = state.theme || 'default';
           var summaryMascot = renderBattleMascot(summaryThemeName, outcomeMascotState, {
             size: 96,
             label: 'Match-result mascot — ' + outcomeMascotState
           });
           return h('div', {
             className: 'tp-battle-stage tp-battle-stage-' + summaryThemeName,
+            'aria-labelledby': 'tp-battle-summary-title',
+            'aria-describedby': 'tp-battle-summary-result',
             style: { padding: 24, maxWidth: 720, margin: '0 auto', color: palette.text, fontFamily: fontFamily, background: palette.bg, minHeight: '60vh', position: 'relative', overflow: 'hidden' }
           },
             // Theme-flavored ambience layer — same particles as the playfield
@@ -14361,20 +15202,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
               // Mascot if theme has one, else fall back to the outcome emoji
               summaryMascot ? h('div', { style: { display: 'flex', justifyContent: 'center', marginBottom: 8 } }, summaryMascot)
                             : h('div', { style: { fontSize: 48, lineHeight: 1, marginBottom: 8 } }, outcomeIcon),
-              h('h2', { style: { margin: '0 0 4px', color: outcomeAccent, fontSize: 22, fontWeight: 900 } }, outcomeTitle),
-              h('p', { style: { margin: '0 0 16px', fontSize: 12, color: palette.textMute, fontStyle: 'italic' } },
+              h('h2', {
+                id: 'tp-battle-summary-title',
+                ref: battleSummaryHeadingRef,
+                tabIndex: -1,
+                'aria-describedby': 'tp-battle-summary-result',
+                onFocus: function(e) { e.currentTarget.style.outlineColor = outcomeAccent; },
+                onBlur: function(e) { e.currentTarget.style.outlineColor = 'transparent'; },
+                style: { margin: '0 0 4px', color: outcomeAccent, fontSize: 22, fontWeight: 900, outline: '3px solid transparent', outlineOffset: '4px', borderRadius: 4 }
+              }, outcomeTitle),
+              h('p', { id: 'tp-battle-summary-result', style: { margin: '0 0 16px', fontSize: 12, color: palette.textMute, fontStyle: 'italic', lineHeight: 1.5 } },
                 isVsBot
                   ? ('You cleared ' + r.cleared + ' vs the bot\'s ' + (r.botCleared || 0) + ' on ' + diff.label + ' against ' + bot.label + '. Every match resets both stacks.')
                   : ('You cleared ' + r.cleared + ' word' + (r.cleared === 1 ? '' : 's') + ' on ' + diff.label + '. Every run resets the stack.'))
             ),
+            r.measurementComparable === false ? h('div', {
+              role: 'note',
+              style: { marginTop: 14, padding: '10px 12px', borderRadius: 8, background: palette.surface, border: '1px solid ' + palette.accent, color: palette.textDim, fontSize: 12, lineHeight: 1.5 }
+            },
+              h('strong', { style: { color: palette.text } }, 'Practice result · '),
+              (r.measurementNote || 'Assistive multi-character input was used, so this match is excluded from Battle records.'),
+              ' Input methods: ' + ((r.inputMethods || []).join(', ') || 'not detected') + '.'
+            ) : null,
             // Stat grid — adds Bot Cleared column when vs-bot
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 10, marginTop: 14, marginBottom: 14 } },
               [
                 { label: isVsBot ? 'You cleared' : 'Cleared', value: r.cleared, color: palette.success, isPb: newPbCleared }
               ].concat(isVsBot ? [
-                { label: __alloT('stem.typingpractice.bot_cleared', 'Bot cleared'), value: r.botCleared || 0, color: '#a78bfa', isPb: false }
+                { label: __alloT('stem.typingpractice.bot_cleared', 'Bot cleared'), value: r.botCleared || 0, color: summaryBattleColors.botText, isPb: false }
               ] : []).concat([
-                { label: __alloT('stem.typingpractice.best_streak', 'Best streak'), value: r.bestCombo, color: soloAccentByTheme[summaryThemeName] || '#f472b6', isPb: newPbStreak },
+                { label: __alloT('stem.typingpractice.best_streak', 'Best streak'), value: r.bestCombo, color: palette.accent, isPb: newPbStreak },
                 { label: __alloT('stem.typingpractice.duration', 'Duration'), value: r.durationSec + 's', color: palette.text, isPb: false },
                 { label: __alloT('stem.typingpractice.errors', 'Errors'), value: r.errors, color: palette.textMute, isPb: false }
               ]).map(function(s, i) {
@@ -14573,11 +15430,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         // Single .tp-root wrapper so CSS focus-ring targeting hits every
         // interactive descendant without per-element annotation. Also hosts
         // a visually-hidden aria-live region for milestone announcements.
-        // Derive lang for the tool root from the active AI-passage language,
-        // or default to 'en'. Matters for screen-reader pronunciation.
-        var rootLang = (state.aiPassage && state.aiPassage.language) || 'en';
+        // The tool chrome follows the application language. Passage text
+        // overrides this only at the exact language-of-parts boundaries.
+        var rootLang = uiLanguage;
         return h('div', {
-          className: 'tp-root tp-theme-' + (state.theme || 'default'),
+          className: 'tp-root tp-theme-' + (state.theme || 'default') + (state.accommodations && state.accommodations.reducedMotion ? ' tp-reduce-motion' : ''),
           lang: rootLang,
           style: {
             background: rootBackground,
@@ -14678,7 +15535,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     if (!element || !element.scrollIntoView) return;
     var reduceMotion = false;
     try {
-      reduceMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+      var appReducedMotion = typeof document !== 'undefined' && !!document.querySelector('.tp-root.tp-reduce-motion');
+      var systemReducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+      reduceMotion = appReducedMotion || systemReducedMotion;
     } catch (err) {}
     try {
       element.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: block || 'nearest' });
@@ -14711,7 +15570,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         color: palette.text,
         fontSize: '15px',
         lineHeight: '1.35',
-        scrollMarginTop: '20px'
+        scrollMarginTop: '112px'
       }
     }, label);
   }
@@ -14902,6 +15761,59 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     return message;
   }
 
+  function typingPracticeMistakeFingerCue(feedback) {
+    if (!feedback || feedback.advanced || Number(feedback.attempt) < 3) return '';
+    var meta = findKeyMeta(feedback.expected);
+    if (!meta) return '';
+    return ' Finger guide: use your ' + fingerLabel(meta.f) + '.';
+  }
+
+  // Returns both the spoken message and the next throttle state so the
+  // policy remains deterministic and independently testable.
+  function typingPracticeMistakeAnnouncement(previous, feedback, now, intervalMs) {
+    previous = previous && typeof previous === 'object' ? previous : { signature: '', at: 0 };
+    var message = typingPracticeMistakeMessage(feedback) +
+      typingPracticeMistakeFingerCue(feedback);
+    if (!message || !feedback) {
+      return { shouldAnnounce: false, message: '', next: { signature: '', at: 0 } };
+    }
+    var signature = [
+      String(feedback.expected == null ? '' : feedback.expected),
+      String(feedback.actual == null ? '' : feedback.actual),
+      feedback.advanced ? 'advanced' : 'retry'
+    ].join('|');
+    var timestamp = Number(now);
+    if (!Number.isFinite(timestamp)) timestamp = Date.now();
+    var interval = Number(intervalMs);
+    if (!Number.isFinite(interval) || interval < 0) interval = 1400;
+    var previousAt = Number(previous.at);
+    if (!Number.isFinite(previousAt)) previousAt = 0;
+    var shouldAnnounce = signature !== String(previous.signature || '') ||
+      timestamp - previousAt >= interval;
+    return {
+      shouldAnnounce: shouldAnnounce,
+      message: message,
+      next: shouldAnnounce
+        ? { signature: signature, at: timestamp }
+        : { signature: String(previous.signature || ''), at: previousAt }
+    };
+  }
+
+  function typingPracticeActiveOffset(eventTime, startTime, pausedMs, pauseStartedAt) {
+    if (eventTime === null || eventTime === undefined ||
+        startTime === null || startTime === undefined || startTime === '') return 0;
+    eventTime = Number(eventTime);
+    startTime = Number(startTime);
+    if (!Number.isFinite(eventTime) || !Number.isFinite(startTime)) return 0;
+    var elapsed = Math.max(0, eventTime - startTime);
+    var pausedTotal = Math.max(0, Number(pausedMs) || 0);
+    var currentPauseStart = Number(pauseStartedAt);
+    if (Number.isFinite(currentPauseStart) && currentPauseStart > 0 && currentPauseStart < eventTime) {
+      pausedTotal += eventTime - currentPauseStart;
+    }
+    return Math.max(0, elapsed - pausedTotal);
+  }
+
   function typingPracticeProgressMilestone(previous, completed, total) {
     previous = Number(previous) || 0;
     completed = Number(completed) || 0;
@@ -14947,6 +15859,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     event.preventDefault();
     buttons[next].focus();
     buttons[next].click();
+  }
+
+  function typingPracticeNormalizeLanguageTag(value, fallback) {
+    var namedLanguages = {
+      english: 'en', spanish: 'es', 'spanish (latin america)': 'es-419', 'spanish (castilian)': 'es',
+      french: 'fr', 'french (canadian)': 'fr-CA', portuguese: 'pt', 'portuguese (brazil)': 'pt-BR',
+      'portuguese (angola)': 'pt', chinese: 'zh', 'chinese (simplified)': 'zh-Hans',
+      'chinese (traditional)': 'zh-Hant', arabic: 'ar', hebrew: 'he', urdu: 'ur',
+      farsi: 'fa', dari: 'fa-AF'
+    };
+    var raw = String(value == null ? '' : value).trim();
+    var named = namedLanguages[raw.toLowerCase()];
+    if (named) return named;
+    raw = raw.replace(/_/g, '-');
+    if (/^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(raw)) return raw;
+    var safeFallback = String(fallback == null ? 'en' : fallback).trim().replace(/_/g, '-');
+    return /^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(safeFallback) ? safeFallback : 'en';
+  }
+
+  function typingPracticeUiLanguage(ctx, documentRef) {
+    if (!documentRef && typeof document !== 'undefined') documentRef = document;
+    var documentLanguage = documentRef && documentRef.documentElement
+      ? documentRef.documentElement.lang
+      : '';
+    var contextLanguage = ctx && (ctx.uiLanguage || ctx.currentUiLanguage || ctx.language || ctx.lang || ctx.locale);
+    return typingPracticeNormalizeLanguageTag(documentLanguage || contextLanguage || 'en', 'en');
   }
 
   function typingPracticeViewLabel(view) {
@@ -15348,40 +16286,103 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     );
   }
 
-  // Render a 30-day practice calendar (GitHub-contribution-style). Each cell
-  // is one day; color intensity scales with session count. No pressure to fill
-  // every day — days with 0 sessions stay neutral, not red.
+  function typingPracticeHistoryResultText(count, query, filterActive) {
+    count = Math.max(0, Number(count) || 0);
+    query = String(query || '').trim();
+    var sessions = count + ' history session' + (count === 1 ? '' : 's');
+    if (query) return sessions + ' match "' + query + '".';
+    if (filterActive) return sessions + ' shown by the active progress filters.';
+    return sessions + ' shown.';
+  }
+
+  function typingPracticeCalendarStats(days) {
+    return (days || []).reduce(function(stats, day) {
+      var count = Math.max(0, Number(day && day.count) || 0);
+      if (count > 0) stats.practiceDays += 1;
+      stats.sessions += count;
+      stats.characters += Math.max(0, Number(day && day.totalChars) || 0);
+      stats.comparableSessions += Math.max(0, Number(day && day.comparable) || 0);
+      stats.assistedSessions += Math.max(0, Number(day && day.assisted) || 0);
+      stats.bestComparableWpm = Math.max(
+        stats.bestComparableWpm,
+        Math.max(0, Number(day && day.best) || 0)
+      );
+      return stats;
+    }, {
+      practiceDays: 0,
+      sessions: 0,
+      characters: 0,
+      comparableSessions: 0,
+      assistedSessions: 0,
+      bestComparableWpm: 0
+    });
+  }
+
+  // Render a 30-day practice calendar. The compact color grid is visual only;
+  // a visible summary and native disclosure table provide the same information
+  // without relying on color, hover tooltips, or a wide 15-column layout.
   function renderPracticeCalendar(sessions, palette) {
     var React = window.React;
     var h = React.createElement;
     var today = new Date();
     today.setHours(0, 0, 0, 0);
     var DAYS = 30;
-    // Build a map of local-date-key → session summary for that day
     var bucket = {};
-    sessions.forEach(function(s) {
+    (sessions || []).forEach(function(s) {
+      if (!s || !s.date) return;
       var d = new Date(s.date);
+      if (!Number.isFinite(d.getTime())) return;
       var key = d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
-      if (!bucket[key]) bucket[key] = { count: 0, best: 0, totalChars: 0 };
-      bucket[key].count++;
-      bucket[key].best = Math.max(bucket[key].best, s.wpm || 0);
-      bucket[key].totalChars += (s.charCount || 0);
+      if (!bucket[key]) {
+        bucket[key] = {
+          count: 0,
+          best: 0,
+          totalChars: 0,
+          comparable: 0,
+          assisted: 0
+        };
+      }
+      bucket[key].count += 1;
+      bucket[key].totalChars += Math.max(0, Number(s.charCount) || 0);
+      if (s.measurementComparable === false) {
+        bucket[key].assisted += 1;
+      } else {
+        bucket[key].comparable += 1;
+        bucket[key].best = Math.max(bucket[key].best, Math.max(0, Number(s.wpm) || 0));
+      }
     });
-    // Build the ordered list of the last 30 days (oldest first)
+
     var days = [];
     for (var i = DAYS - 1; i >= 0; i--) {
       var d = new Date(today);
       d.setDate(today.getDate() - i);
       var key = d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+      var saved = bucket[key] || {};
       days.push({
         date: d,
         key: key,
-        count: bucket[key] ? bucket[key].count : 0,
-        best: bucket[key] ? bucket[key].best : 0,
-        totalChars: bucket[key] ? bucket[key].totalChars : 0
+        count: saved.count || 0,
+        best: saved.best || 0,
+        totalChars: saved.totalChars || 0,
+        comparable: saved.comparable || 0,
+        assisted: saved.assisted || 0
       });
     }
-    // Intensity → color: 0 = bg/dim, 1 = light, 2-3 = medium, 4+ = full
+
+    var stats = typingPracticeCalendarStats(days);
+    var practicedDays = days.filter(function(day) { return day.count > 0; });
+    var summary = stats.practiceDays + ' practice day' + (stats.practiceDays === 1 ? '' : 's') +
+      ', ' + stats.sessions + ' completed session' + (stats.sessions === 1 ? '' : 's') +
+      ', and ' + stats.characters.toLocaleString() + ' characters during the last 30 days. ' +
+      (stats.bestComparableWpm > 0
+        ? 'Best comparable speed: ' + stats.bestComparableWpm + ' words per minute.'
+        : 'No comparable speed result is available.');
+    if (stats.assistedSessions > 0) {
+      summary += ' ' + stats.assistedSessions + ' assisted session' +
+        (stats.assistedSessions === 1 ? ' is' : 's are') +
+        ' included in participation totals and excluded from best speed.';
+    }
+
     var intensity = function(count) {
       if (count === 0) return 0;
       if (count === 1) return 0.35;
@@ -15389,26 +16390,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       return 1;
     };
 
-    return h('div', null,
-      h('div', {
-        role: 'img',
-        'aria-label': 'Last 30 days of practice calendar',
+    return h('div', {
+      role: 'group',
+      'aria-labelledby': 'tp-practice-calendar-summary'
+    },
+      h('p', {
+        id: 'tp-practice-calendar-summary',
         style: {
-          display: 'grid',
-          gridTemplateColumns: 'repeat(15, 1fr)',
-          gap: '3px'
+          margin: '0 0 10px',
+          color: palette.textDim,
+          fontSize: '12px',
+          lineHeight: '1.5'
         }
+      }, summary),
+      h('div', {
+        className: 'tp-practice-calendar-grid',
+        'aria-hidden': 'true'
       },
-        // Group into 2 rows of 15 days each — simpler than a week-grid and
-        // keeps it compact horizontally.
         days.map(function(day, idx) {
           var op = intensity(day.count);
           var bg = op === 0 ? palette.bg : mixColor(palette.surface, palette.accent, op);
           var dateLabel = day.date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+          var tooltip = dateLabel + ' · ' + day.count + ' session' + (day.count === 1 ? '' : 's');
+          if (day.best > 0) tooltip += ' · best comparable speed ' + day.best + ' WPM';
+          if (day.assisted > 0) tooltip += ' · ' + day.assisted + ' assisted';
           return h('div', {
             key: 'cal-' + idx,
-            title: dateLabel + ' · ' + day.count + ' session' + (day.count === 1 ? '' : 's') +
-                   (day.best > 0 ? ' · best ' + day.best + ' WPM' : ''),
+            className: day.count > 0 ? 'tp-calendar-day-active' : 'tp-calendar-day-inactive',
+            title: tooltip,
             style: {
               aspectRatio: '1',
               borderRadius: '3px',
@@ -15420,6 +16429,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         })
       ),
       h('div', {
+        'aria-hidden': 'true',
         style: {
           display: 'flex',
           justifyContent: 'space-between',
@@ -15447,6 +16457,45 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           h('span', null, 'More')
         ),
         h('span', null, 'Today')
+      ),
+      h('details', {
+        className: 'tp-calendar-details',
+        style: { marginTop: '8px', color: palette.textDim, fontSize: '12px' }
+      },
+        h('summary', null, 'View day-by-day calendar data'),
+        practicedDays.length > 0 ? h('div', {
+          className: 'tp-table-scroll',
+          tabIndex: 0,
+          'aria-label': 'Scrollable practice calendar table',
+          style: { marginTop: '6px' }
+        },
+          h('table', { className: 'tp-calendar-table' },
+            h('caption', {
+              style: { textAlign: 'left', padding: '8px 10px', fontWeight: 700 }
+            }, 'Days with completed practice during the last 30 days'),
+            h('thead', null,
+              h('tr', null,
+                h('th', { scope: 'col' }, 'Date'),
+                h('th', { scope: 'col' }, 'Sessions'),
+                h('th', { scope: 'col' }, 'Assisted'),
+                h('th', { scope: 'col' }, 'Best comparable WPM'),
+                h('th', { scope: 'col' }, 'Characters')
+              )
+            ),
+            h('tbody', null,
+              practicedDays.map(function(day) {
+                return h('tr', { key: 'calendar-row-' + day.key },
+                  h('th', { scope: 'row' }, day.date.toLocaleDateString()),
+                  h('td', null, day.count),
+                  h('td', null, day.assisted),
+                  h('td', null, day.best > 0 ? day.best : 'Not available'),
+                  h('td', null, day.totalChars.toLocaleString())
+                );
+              })
+            )
+          )
+        ) : h('p', { style: { margin: '6px 0 0' } },
+          'No completed practice sessions in this 30-day window.')
       )
     );
   }
@@ -15545,6 +16594,148 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   // Progress / IEP helpers
   // ─────────────────────────────────────────────────────────
 
+  function typingPracticeDiscardSessionUpdates(state, discarded) {
+    state = state || {};
+    discarded = discarded || {};
+    var sessions = (state.sessions || []).slice();
+    var discardIndex = -1;
+    for (var i = sessions.length - 1; i >= 0; i--) {
+      if ((discarded.date && sessions[i].date === discarded.date) || sessions[i] === discarded) {
+        discardIndex = i;
+        break;
+      }
+    }
+    if (discardIndex < 0) return { view: 'menu' };
+    sessions.splice(discardIndex, 1);
+
+    var lifetime = Object.assign({}, state.lifetime || {});
+    lifetime.totalSessions = Math.max(0, (lifetime.totalSessions || 1) - 1);
+    lifetime.totalCharsTyped = Math.max(0, (lifetime.totalCharsTyped || 0) - (discarded.charCount || 0));
+    lifetime.totalErrorsLogged = Math.max(0, (lifetime.totalErrorsLogged || 0) - (discarded.errors || 0));
+
+    var aggregateErrors = Object.assign({}, state.aggregateErrors || {});
+    if (discarded.errorChars) {
+      Object.keys(discarded.errorChars).forEach(function(key) {
+        aggregateErrors[key] = Math.max(0, (aggregateErrors[key] || 0) - discarded.errorChars[key]);
+        if (aggregateErrors[key] === 0) delete aggregateErrors[key];
+      });
+    }
+
+    var updates = {
+      sessions: sessions,
+      lifetime: lifetime,
+      aggregateErrors: aggregateErrors,
+      view: 'menu'
+    };
+
+    if (discarded.masteryAdvanced && state.masteryLevel === discarded.newMasteryLevel) {
+      updates.masteryLevel = Math.max(0, state.masteryLevel - 1);
+    }
+
+    var personalBest = state.personalBest || {};
+    var currentBest = personalBest[discarded.drillId];
+    if (currentBest && currentBest.date === discarded.date) {
+      var replacementBest = null;
+      typingPracticeComparableSessions(sessions).forEach(function(session) {
+        if (session.drillId !== discarded.drillId) return;
+        if (!replacementBest || session.wpm > replacementBest.wpm ||
+            (session.wpm === replacementBest.wpm && session.accuracy > replacementBest.accuracy)) {
+          replacementBest = { wpm: session.wpm, accuracy: session.accuracy, date: session.date };
+        }
+      });
+      var personalBestCopy = Object.assign({}, personalBest);
+      if (replacementBest) personalBestCopy[discarded.drillId] = replacementBest;
+      else delete personalBestCopy[discarded.drillId];
+      updates.personalBest = personalBestCopy;
+    }
+
+    var baselineWasDiscarded = !!(state.baseline && state.baseline.date === discarded.date) || !!discarded.isBaseline;
+    if (baselineWasDiscarded) {
+      sessions = sessions.map(function(session) {
+        if (!session.isBaseline) return session;
+        var copy = Object.assign({}, session);
+        delete copy.isBaseline;
+        return copy;
+      });
+      var replacementBaseline = typingPracticeComparableSessions(sessions)[0] || null;
+      if (replacementBaseline) {
+        sessions = sessions.map(function(session) {
+          return session.date === replacementBaseline.date
+            ? Object.assign({}, session, { isBaseline: true })
+            : session;
+        });
+        updates.baseline = {
+          wpm: replacementBaseline.wpm,
+          accuracy: replacementBaseline.accuracy,
+          date: replacementBaseline.date,
+          drillId: replacementBaseline.drillId
+        };
+      } else {
+        updates.baseline = null;
+      }
+      updates.sessions = sessions;
+    }
+
+    if (discarded.firstGoalMet) {
+      var firstGoalDate = null;
+      typingPracticeComparableSessions(sessions).some(function(session) {
+        if (!session.goalMet) return false;
+        firstGoalDate = session.date;
+        return true;
+      });
+      sessions = sessions.map(function(session) {
+        if (!session.firstGoalMet && session.date !== firstGoalDate) return session;
+        var copy = Object.assign({}, session);
+        if (session.date === firstGoalDate) copy.firstGoalMet = true;
+        else delete copy.firstGoalMet;
+        return copy;
+      });
+      updates.sessions = sessions;
+    }
+
+    return updates;
+  }
+
+  function typingPracticeInputContext(rawCounts) {
+    var counts = rawCounts || {};
+    var normalized = {
+      keyboard: Math.max(0, Number(counts.keyboard) || 0),
+      'text-input': Math.max(0, Number(counts['text-input']) || 0),
+      ime: Math.max(0, Number(counts.ime) || 0),
+      paste: Math.max(0, Number(counts.paste) || 0)
+    };
+    var definitions = [
+      { key: 'keyboard', label: 'Physical keyboard' },
+      { key: 'text-input', label: 'Touch or assistive text input' },
+      { key: 'ime', label: 'Language input method (IME)' },
+      { key: 'paste', label: 'Pasted text' }
+    ];
+    var inputMethods = definitions.filter(function(item) {
+      return normalized[item.key] > 0;
+    }).map(function(item) {
+      return item.label;
+    });
+    var primary = definitions.reduce(function(best, item) {
+      return normalized[item.key] > normalized[best.key] ? item : best;
+    }, definitions[0]);
+    var measurementComparable = normalized.paste === 0;
+    return {
+      inputMethods: inputMethods.length ? inputMethods : ['Input method not detected'],
+      primaryInputMethod: inputMethods.length ? primary.label : 'Input method not detected',
+      inputEventCounts: normalized,
+      measurementComparable: measurementComparable,
+      measurementNote: measurementComparable
+        ? 'Input method recorded for interpretation.'
+        : 'Pasted text was used, so this run is retained as practice but excluded from comparative performance metrics.'
+    };
+  }
+
+  function typingPracticeComparableSessions(sessions) {
+    return (sessions || []).filter(function(session) {
+      return session && session.measurementComparable !== false;
+    });
+  }
+
   function getBestWpm(state) {
     var best = 0;
     var pb = state.personalBest || {};
@@ -15555,7 +16746,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   }
 
   function getRecentAvg(sessions, key) {
-    if (!sessions || sessions.length === 0) return 0;
+    sessions = typingPracticeComparableSessions(sessions);
+    if (sessions.length === 0) return 0;
     var recent = sessions.slice(-5);
     var sum = recent.reduce(function(acc, s) { return acc + (s[key] || 0); }, 0);
     return Math.round(sum / recent.length);
@@ -15630,22 +16822,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   // available, falls back to a hidden textarea + execCommand for older browsers.
   // Fires a toast through `notify` when given (typically ctx.addToast).
   function copyTextToClipboard(text, notify) {
-    var notifyOk = function() { if (notify) notify('📋 Copied to clipboard'); };
-    var notifyFail = function() { if (notify) notify('⚠️ Copy failed — select the report text and copy manually'); };
-    try {
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(notifyOk).catch(function() {
-          legacyCopy(text, notifyOk, notifyFail);
-        });
-        return;
-      }
-    } catch (e) { /* fall through */ }
-    legacyCopy(text, notifyOk, notifyFail);
+    return new Promise(function(resolve) {
+      var settled = false;
+      var finish = function(ok) {
+        if (settled) return;
+        settled = true;
+        if (notify) notify(ok ? '📋 Copied to clipboard' : '⚠️ Copy failed — select the report text and copy manually');
+        resolve(ok);
+      };
+      var notifyOk = function() { finish(true); };
+      var notifyFail = function() { finish(false); };
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(notifyOk).catch(function() {
+            legacyCopy(text, notifyOk, notifyFail);
+          });
+          return;
+        }
+      } catch (e) { /* fall through */ }
+      legacyCopy(text, notifyOk, notifyFail);
+    });
   }
 
   function legacyCopy(text, ok, fail) {
+    var ta = null;
+    var appended = false;
+    var copied = false;
     try {
-      var ta = document.createElement('textarea');
+      ta = document.createElement('textarea');
       ta.setAttribute('aria-label', 'Temporary clipboard copy buffer');
       ta.setAttribute('readonly', '');
       ta.value = text;
@@ -15653,22 +16857,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       ta.style.left = '-9999px';
       ta.style.top = '0';
       document.body.appendChild(ta);
+      appended = true;
       ta.focus();
       ta.select();
-      var ok_ = false;
-      try { ok_ = document.execCommand('copy'); } catch (e) { /* ignore */ }
-      document.body.removeChild(ta);
-      if (ok_) ok(); else fail();
-    } catch (e) { fail(); }
+      try { copied = document.execCommand('copy'); } catch (e) { copied = false; }
+    } catch (e) {
+      copied = false;
+    } finally {
+      if (appended && ta && ta.parentNode) {
+        try { ta.parentNode.removeChild(ta); } catch (cleanupError) {}
+      }
+    }
+    if (copied) ok(); else fail();
   }
 
   // Build a CSV blob of sessions and trigger a browser download.
   // Columns are Excel / Google-Sheets-friendly: one row per session.
   // Optional `opts` = { startDate, endDate, drillId } filters the session set.
-  function downloadSessionsCSV(state, opts) {
+  function downloadSessionsCSV(state, opts, notify) {
     var allSessions = (state && state.sessions) || [];
     var sessions = opts ? applySessionFilters(allSessions, opts) : allSessions;
-    if (sessions.length === 0) return;
+    if (sessions.length === 0) {
+      reportTypingPracticeIssue('No sessions match the current filters, so there is no CSV to download.', notify);
+      return false;
+    }
     var esc = function(v) {
       if (v === null || v === undefined) return '';
       var s = String(v);
@@ -15676,7 +16888,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
       return s;
     };
-    var headers = ['date', 'drill_id', 'drill_name', 'wpm', 'accuracy_pct', 'duration_sec', 'paused_sec', 'errors', 'chars_typed', 'accommodations_used', 'tag', 'is_new_best', 'is_baseline', 'mastery_advanced', 'new_mastery_level', 'reflection', 'error_chars', 'note'];
+    var headers = ['date', 'drill_id', 'drill_name', 'wpm', 'accuracy_pct', 'duration_sec', 'paused_sec', 'errors', 'chars_typed', 'accommodations_used', 'input_methods', 'primary_input_method', 'measurement_comparable', 'measurement_note', 'tag', 'is_new_best', 'is_baseline', 'mastery_advanced', 'new_mastery_level', 'reflection', 'error_chars', 'note'];
     var rows = sessions.map(function(s) {
       // Serialize per-char errors as "a:2|d:1|k:3" for compact CSV consumption
       var errorChars = s.errorChars ? Object.keys(s.errorChars).map(function(k) {
@@ -15686,6 +16898,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         s.date, s.drillId, s.drillName, s.wpm, s.accuracy,
         s.durationSec, (s.pausedSec || 0), s.errors, s.charCount,
         (s.accommodationsUsed || []).join('|'),
+        (s.inputMethods || []).join('|'),
+        s.primaryInputMethod || '',
+        s.measurementComparable === false ? 'no' : 'yes',
+        s.measurementNote || '',
         s.tag || '',
         s.isNewBest ? 'yes' : '', s.isBaseline ? 'yes' : '',
         s.masteryAdvanced ? 'yes' : '', (s.newMasteryLevel || ''),
@@ -15694,26 +16910,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       ].map(esc).join(',');
     });
     var csv = headers.join(',') + '\n' + rows.join('\n') + '\n';
+    var url = null;
+    var a = null;
     try {
       var blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement('a');
+      url = URL.createObjectURL(blob);
+      a = document.createElement('a');
       a.href = url;
       var student = (state.studentName || 'student').replace(/[^a-z0-9_-]/gi, '_');
       var stamp = new Date().toISOString().slice(0, 10);
       a.download = 'typing_practice_' + student + '_' + stamp + '.csv';
       document.body.appendChild(a);
       a.click();
-      document.body.removeChild(a);
-      setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
-    } catch (e) { console.warn('[TypingPractice] CSV export failed:', e); }
+      if (a.parentNode) a.parentNode.removeChild(a);
+      a = null;
+      var completedUrl = url;
+      url = null;
+      setTimeout(function() { URL.revokeObjectURL(completedUrl); }, 1000);
+      return true;
+    } catch (e) {
+      if (a && a.parentNode) {
+        try { a.parentNode.removeChild(a); } catch (cleanupError) {}
+      }
+      if (url) {
+        try { URL.revokeObjectURL(url); } catch (revokeError) {}
+      }
+      console.warn('[TypingPractice] CSV export failed:', e);
+      reportTypingPracticeIssue('CSV export failed. Please try again or copy the progress report instead.', notify);
+      return false;
+    }
   }
 
   // Estimate a drill's active typing time from the student's recent pace on
   // that same drill. New students receive a conservative 18 WPM estimate.
   function estimateTypingPracticeDuration(state, drill, text) {
     if (!text || !text.length) return null;
-    var sessions = (state.sessions || []).filter(function(s) {
+    var sessions = typingPracticeComparableSessions(state.sessions || []).filter(function(s) {
       return drill && s.drillId === drill.id && !s.isWarmup && s.wpm > 0;
     }).slice(-5);
     var pb = drill ? (state.personalBest || {})[drill.id] : null;
@@ -15733,6 +16965,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   // never makes a student interpret a wall of choices before they can begin.
   function computePracticeRecommendation(state) {
     var sessions = state.sessions || [];
+    var performanceSessions = typingPracticeComparableSessions(sessions);
     var now = Date.now();
 
     // Same-day fatigue: 5+ sessions in two hours. Rest outranks more practice.
@@ -15826,7 +17059,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       var did = TIER_ORDER[k];
       var drl = DRILLS[did];
       if (!drl) continue;
-      var recent3 = sessions.filter(function(s) { return s.drillId === did; }).slice(-3);
+      var recent3 = performanceSessions.filter(function(s) { return s.drillId === did; }).slice(-3);
       if (recent3.length < 3) continue;
       var pb3 = (state.personalBest || {})[did];
       if (!pb3) continue;
@@ -15864,7 +17097,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   // return an array of buckets with session counts + average WPM/accuracy.
   // Returns null if there's not enough data to be interesting (< 5 sessions).
   function computeTimeOfDayPerformance(sessions) {
-    if (!sessions || sessions.length < 5) return null;
+    sessions = typingPracticeComparableSessions(sessions);
+    if (sessions.length < 5) return null;
     var buckets = [
       { id: 'early',     label: 'Early morning (5–8am)',  match: function(h) { return h >= 5 && h < 8; },  count: 0, wpmSum: 0, accSum: 0 },
       { id: 'morning',   label: 'Morning (8am–12pm)',     match: function(h) { return h >= 8 && h < 12; }, count: 0, wpmSum: 0, accSum: 0 },
@@ -15904,7 +17138,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   // Only emits rows where the student has 2+ sessions BOTH with AND without
   // that accommodation on that specific drill — anything less is noise.
   function computePerDrillEfficacy(sessions) {
-    if (!sessions || sessions.length < 4) return [];
+    sessions = typingPracticeComparableSessions(sessions);
+    if (sessions.length < 4) return [];
     var KEYS = [
       { key: 'dyslexiaFont',   label: 'dyslexia font' },
       { key: 'largeKeys',      label: 'on-screen keyboard' },
@@ -15941,13 +17176,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           return (s.accommodationsUsed || []).indexOf(k.key) === -1;
         });
         if (withIt.length < 2 || withoutIt.length < 2) return;
+        var avgWpmWith = Math.round(avg(withIt, 'wpm'));
+        var avgWpmWithout = Math.round(avg(withoutIt, 'wpm'));
+        var avgAccWith = Math.round(avg(withIt, 'accuracy'));
+        var avgAccWithout = Math.round(avg(withoutIt, 'accuracy'));
         rows.push({
           key: k.key,
           label: k.label,
           sessionsWith: withIt.length,
           sessionsWithout: withoutIt.length,
-          wpmDelta: Math.round(avg(withIt, 'wpm') - avg(withoutIt, 'wpm')),
-          accDelta: Math.round(avg(withIt, 'accuracy') - avg(withoutIt, 'accuracy'))
+          avgWpmWith: avgWpmWith,
+          avgWpmWithout: avgWpmWithout,
+          avgAccWith: avgAccWith,
+          avgAccWithout: avgAccWithout,
+          wpmDelta: avgWpmWith - avgWpmWithout,
+          accDelta: avgAccWith - avgAccWithout
         });
       });
       if (rows.length > 0) {
@@ -15961,7 +17204,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
   // the student has at least one session with AND one session without that
   // accommodation — otherwise a delta is meaningless.
   function computeAccommodationEfficacy(sessions) {
-    if (!sessions || sessions.length < 2) return [];
+    sessions = typingPracticeComparableSessions(sessions);
+    if (sessions.length < 2) return [];
     var KEYS = [
       { key: 'dyslexiaFont',   label: 'dyslexia-friendly font' },
       { key: 'largeKeys',      label: 'on-screen keyboard' },
@@ -15983,13 +17227,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         return (s.accommodationsUsed || []).indexOf(k.key) === -1;
       });
       if (withIt.length === 0 || withoutIt.length === 0) return;
+      var avgWpmWith = Math.round(avg(withIt, 'wpm'));
+      var avgWpmWithout = Math.round(avg(withoutIt, 'wpm'));
+      var avgAccWith = Math.round(avg(withIt, 'accuracy'));
+      var avgAccWithout = Math.round(avg(withoutIt, 'accuracy'));
       out.push({
         key: k.key,
         label: k.label,
         sessionsWith: withIt.length,
         sessionsWithout: withoutIt.length,
-        wpmDelta: Math.round(avg(withIt, 'wpm') - avg(withoutIt, 'wpm')),
-        accDelta: Math.round(avg(withIt, 'accuracy') - avg(withoutIt, 'accuracy'))
+        avgWpmWith: avgWpmWith,
+        avgWpmWithout: avgWpmWithout,
+        avgAccWith: avgAccWith,
+        avgAccWithout: avgAccWithout,
+        wpmDelta: avgWpmWith - avgWpmWithout,
+        accDelta: avgAccWith - avgAccWithout
       });
     });
     return out;
@@ -16020,8 +17272,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
 
   function buildParentSummary(state) {
     var tm = state.theme || 'default';
-    var sessions = state.sessions || [];
+    var allSessions = state.sessions || [];
+    var sessions = typingPracticeComparableSessions(allSessions);
     var name = state.studentName ? state.studentName.split(' ')[0] : 'Your student';
+
+    if (allSessions.length > 0 && sessions.length === 0) {
+      return name + ' has completed ' + allSessions.length + ' assisted practice session' + (allSessions.length === 1 ? '' : 's') + '. Those runs remain in practice history, but no comparable keyboard-performance session is available yet.';
+    }
 
     // Empty-state — theme-voiced so parents get the same personality
     if (sessions.length === 0) {
@@ -16046,46 +17303,47 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     var now = Date.now();
     var sevenDaysAgo = now - 7 * 24 * 60 * 60 * 1000;
     var thisWeek = sessions.filter(function(s) { return new Date(s.date).getTime() >= sevenDaysAgo; });
+    var practiceThisWeek = allSessions.filter(function(s) { return new Date(s.date).getTime() >= sevenDaysAgo; });
     var bestWpm = sessions.reduce(function(m, s) { return Math.max(m, s.wpm || 0); }, 0);
     var bestWpmThisWeek = thisWeek.reduce(function(m, s) { return Math.max(m, s.wpm || 0); }, 0);
     var uniqueDays = {};
-    thisWeek.forEach(function(s) { uniqueDays[new Date(s.date).toLocaleDateString()] = true; });
+    practiceThisWeek.forEach(function(s) { uniqueDays[new Date(s.date).toLocaleDateString()] = true; });
     var daysThisWeek = Object.keys(uniqueDays).length;
 
     var parts = [];
 
     // Opener — effort + cadence (per-theme voice)
-    if (thisWeek.length > 0) {
+    if (practiceThisWeek.length > 0) {
       if (tm === 'steampunk') {
-        parts.push(name + ' logged ' + thisWeek.length + ' practice session' + (thisWeek.length === 1 ? '' : 's') +
+        parts.push(name + ' logged ' + practiceThisWeek.length + ' practice session' + (practiceThisWeek.length === 1 ? '' : 's') +
           ' in the workshop this week, across ' + daysThisWeek + ' distinct day' + (daysThisWeek === 1 ? '' : 's') + '.');
       } else if (tm === 'cyberpunk') {
-        parts.push('[WEEK] ' + thisWeek.length + ' run' + (thisWeek.length === 1 ? '' : 's') + ' :: ' + daysThisWeek + ' day' + (daysThisWeek === 1 ? '' : 's') + ' online.');
+        parts.push('[WEEK] ' + practiceThisWeek.length + ' run' + (practiceThisWeek.length === 1 ? '' : 's') + ' :: ' + daysThisWeek + ' day' + (daysThisWeek === 1 ? '' : 's') + ' online.');
       } else if (tm === 'kawaii') {
-        parts.push('💕 ' + name + ' showed up for ' + thisWeek.length + ' practice session' + (thisWeek.length === 1 ? '' : 's') +
+        parts.push('💕 ' + name + ' showed up for ' + practiceThisWeek.length + ' practice session' + (practiceThisWeek.length === 1 ? '' : 's') +
           ' this week across ' + daysThisWeek + ' day' + (daysThisWeek === 1 ? '' : 's') + ' — so proud of them! ✨');
       } else if (tm === 'oceanic') {
-        parts.push(name + ' visited the typing shelf for ' + thisWeek.length + ' session' + (thisWeek.length === 1 ? '' : 's') +
+        parts.push(name + ' visited the typing shelf for ' + practiceThisWeek.length + ' session' + (practiceThisWeek.length === 1 ? '' : 's') +
           ' across ' + daysThisWeek + ' day' + (daysThisWeek === 1 ? '' : 's') + ' this week — steady tide.');
       } else if (tm === 'neutral') {
-        parts.push(name + ': ' + thisWeek.length + ' session' + (thisWeek.length === 1 ? '' : 's') + ' across ' + daysThisWeek + ' day' + (daysThisWeek === 1 ? '' : 's') + ' this week.');
+        parts.push(name + ': ' + practiceThisWeek.length + ' session' + (practiceThisWeek.length === 1 ? '' : 's') + ' across ' + daysThisWeek + ' day' + (daysThisWeek === 1 ? '' : 's') + ' this week.');
       } else {
-        parts.push(name + ' practiced typing ' + thisWeek.length + ' time' + (thisWeek.length === 1 ? '' : 's') +
+        parts.push(name + ' practiced typing ' + practiceThisWeek.length + ' time' + (practiceThisWeek.length === 1 ? '' : 's') +
           ' this week (across ' + daysThisWeek + ' day' + (daysThisWeek === 1 ? '' : 's') + ').');
       }
     } else {
       if (tm === 'steampunk') {
-        parts.push(name + ' has ' + sessions.length + ' session' + (sessions.length === 1 ? '' : 's') + ' on the ledger, though the workshop has been quiet this past week.');
+        parts.push(name + ' has ' + allSessions.length + ' session' + (allSessions.length === 1 ? '' : 's') + ' on the ledger, though the workshop has been quiet this past week.');
       } else if (tm === 'cyberpunk') {
-        parts.push('[TOTAL] ' + sessions.length + ' session' + (sessions.length === 1 ? '' : 's') + ' :: [7D] no activity.');
+        parts.push('[TOTAL] ' + allSessions.length + ' session' + (allSessions.length === 1 ? '' : 's') + ' :: [7D] no activity.');
       } else if (tm === 'kawaii') {
-        parts.push('🌸 ' + name + ' has ' + sessions.length + ' practice session' + (sessions.length === 1 ? '' : 's') + ' recorded — they haven\'t stopped by in the last 7 days, and that\'s okay! 💕');
+        parts.push('🌸 ' + name + ' has ' + allSessions.length + ' practice session' + (allSessions.length === 1 ? '' : 's') + ' recorded — they haven\'t stopped by in the last 7 days, and that\'s okay! 💕');
       } else if (tm === 'oceanic') {
-        parts.push(name + ' has ' + sessions.length + ' session' + (sessions.length === 1 ? '' : 's') + ' on the chart; the shelf has been quiet for 7 days. Tide turns at its own pace.');
+        parts.push(name + ' has ' + allSessions.length + ' session' + (allSessions.length === 1 ? '' : 's') + ' on the chart; the shelf has been quiet for 7 days. Tide turns at its own pace.');
       } else if (tm === 'neutral') {
-        parts.push(name + ': ' + sessions.length + ' total session' + (sessions.length === 1 ? '' : 's') + '; no practice in the last 7 days.');
+        parts.push(name + ': ' + allSessions.length + ' total session' + (allSessions.length === 1 ? '' : 's') + '; no practice in the last 7 days.');
       } else {
-        parts.push(name + ' has ' + sessions.length + ' typing-practice session' + (sessions.length === 1 ? '' : 's') + ' recorded, with no practice in the last 7 days.');
+        parts.push(name + ' has ' + allSessions.length + ' typing-practice session' + (allSessions.length === 1 ? '' : 's') + ' recorded, with no practice in the last 7 days.');
       }
     }
 
@@ -16197,12 +17455,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       }
     }
 
+    var assistedCount = allSessions.length - sessions.length;
+    if (assistedCount > 0) {
+      parts.push(assistedCount + ' pasted practice session' + (assistedCount === 1 ? ' remains' : 's remain') + ' in the practice history and ' + (assistedCount === 1 ? 'is' : 'are') + ' excluded from performance comparisons.');
+    }
+
     return parts.join(' ');
   }
 
   function buildIEPReport(state, opts) {
     var allSessions = state.sessions || [];
     var sessions = opts ? applySessionFilters(allSessions, opts) : allSessions;
+    var comparableSessions = typingPracticeComparableSessions(sessions);
+    var excludedAssisted = sessions.length - comparableSessions.length;
     var pb = state.personalBest || {};
     var badges = state.accommodationBadges || [];
     var accommodations = state.accommodations || {};
@@ -16222,6 +17487,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     } else {
       lines.push('Total sessions: ' + sessions.length);
     }
+    if (excludedAssisted > 0) {
+      lines.push('Measurement note: ' + excludedAssisted + ' pasted practice session' + (excludedAssisted === 1 ? ' was' : 's were') + ' retained in history and excluded from comparative performance metrics.');
+      lines.push('Comparable sessions used for performance calculations: ' + comparableSessions.length);
+    }
     lines.push('');
 
     if (state.baseline) {
@@ -16232,10 +17501,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       lines.push('');
     }
 
-    if (sessions.length > 0) {
-      lines.push('CURRENT PERFORMANCE (last 5 sessions)');
-      lines.push('  Average WPM: ' + getRecentAvg(sessions, 'wpm'));
-      lines.push('  Average accuracy: ' + getRecentAvg(sessions, 'accuracy') + '%');
+    if (comparableSessions.length > 0) {
+      lines.push('CURRENT PERFORMANCE (last 5 comparable sessions)');
+      lines.push('  Average WPM: ' + getRecentAvg(comparableSessions, 'wpm'));
+      lines.push('  Average accuracy: ' + getRecentAvg(comparableSessions, 'accuracy') + '%');
+      lines.push('');
+    } else if (sessions.length > 0) {
+      lines.push('CURRENT PERFORMANCE');
+      lines.push('  No comparable sessions in this report range.');
       lines.push('');
     }
 
@@ -16253,7 +17526,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     var agg = state.aggregateErrors || {};
     var sortedErrorKeys = Object.keys(agg).sort(function(a, b) { return agg[b] - agg[a]; }).slice(0, 5);
     if (sortedErrorKeys.length > 0 && agg[sortedErrorKeys[0]] > 0) {
-      lines.push('TOP ERROR-PRONE KEYS (all-time)');
+      lines.push('TOP ERROR-PRONE KEYS (all completed practice, including assisted sessions)');
       sortedErrorKeys.forEach(function(k) {
         if (agg[k] > 0) lines.push('  ' + k.toUpperCase() + ': ' + agg[k] + ' error' + (agg[k] === 1 ? '' : 's'));
       });
@@ -16287,7 +17560,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     // Time-of-day performance — groups sessions into rough parts of the day
     // and computes average WPM per part. Reveals whether the student performs
     // best in the morning, afternoon, etc. Useful for scheduling decisions.
-    var todReport = computeTimeOfDayPerformance(sessions);
+    var todReport = computeTimeOfDayPerformance(comparableSessions);
     if (todReport) {
       lines.push('TIME-OF-DAY PERFORMANCE');
       todReport.forEach(function(b) {
@@ -16307,7 +17580,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       lines.push('  Tier ' + drill.tier + ' — ' + drill.name + ': ' + status);
     });
     if (state.lifetime && state.lifetime.totalSessions) {
-      lines.push('  Lifetime sessions: ' + state.lifetime.totalSessions);
+      lines.push('  Lifetime sessions (all completed practice): ' + state.lifetime.totalSessions);
       lines.push('  Lifetime characters typed: ' + state.lifetime.totalCharsTyped);
       // Completion rate — completed sessions vs abandoned starts. Useful signal
       // for whether drill difficulty is calibrated right; a low rate suggests
@@ -16342,15 +17615,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
     // accommodation key. Only includes accommodations the student has tried
     // both ways. Delta = WPM (with) - WPM (without). Positive = helped speed.
     // NOTE: aggregates across all drill types; drill mix can confound.
-    var efficacy = computeAccommodationEfficacy(sessions);
+    var efficacy = computeAccommodationEfficacy(comparableSessions);
     if (efficacy.length > 0) {
       lines.push('ACCOMMODATION EFFICACY — AGGREGATE (data-only, no clinical interpretation)');
-      lines.push('  Format: with-vs-without sessions; WPM delta; accuracy delta');
+      lines.push('  Comparable sessions only; pasted practice excluded.');
+      lines.push('  Format: with-vs-without sessions; actual averages; WPM delta; accuracy delta');
       efficacy.forEach(function(row) {
         lines.push('  ' + row.label + ': ' +
           row.sessionsWith + ' with / ' + row.sessionsWithout + ' without · ' +
-          (row.wpmDelta >= 0 ? '+' : '') + row.wpmDelta + ' WPM · ' +
-          (row.accDelta >= 0 ? '+' : '') + row.accDelta + '% acc');
+          row.avgWpmWith + ' vs ' + row.avgWpmWithout + ' WPM (' +
+          (row.wpmDelta >= 0 ? '+' : '') + row.wpmDelta + ') · ' +
+          row.avgAccWith + '% vs ' + row.avgAccWithout + '% acc (' +
+          (row.accDelta >= 0 ? '+' : '') + row.accDelta + ' points)');
       });
       lines.push('  Caveat: aggregate across drill types. Drill mix may confound.');
       lines.push('');
@@ -16358,7 +17634,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       // Per-drill efficacy matrix — same analysis but within each drill type.
       // Less confounding because drill difficulty is held constant per row.
       // Only emit rows where at least one accommodation has comparable data.
-      var perDrillMatrix = computePerDrillEfficacy(sessions);
+      var perDrillMatrix = computePerDrillEfficacy(comparableSessions);
       if (perDrillMatrix.length > 0) {
         lines.push('ACCOMMODATION EFFICACY — PER DRILL (less confounded than aggregate)');
         lines.push('  Only drill+accommodation pairs with 2+ sessions both with and without appear.');
@@ -16380,16 +17656,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       lines.push('  Target: ' + state.iepGoal.targetWpm + ' WPM at ' + state.iepGoal.targetAccuracy + '% accuracy');
       if (state.iepGoal.notes) lines.push('  Notes: ' + state.iepGoal.notes);
       // Goal-met aggregation — defensible stat for IEP progress notes.
-      var goalMetTotal = sessions.filter(function(s) { return s.goalMet; }).length;
+      var goalMetTotal = comparableSessions.filter(function(s) { return s.goalMet; }).length;
       if (goalMetTotal > 0) {
-        var last10 = sessions.slice(-10);
+        var last10 = comparableSessions.slice(-10);
         var goalMetLast10 = last10.filter(function(s) { return s.goalMet; }).length;
-        var firstMet = sessions.filter(function(s) { return s.firstGoalMet; })[0];
-        lines.push('  Goal met: ' + goalMetTotal + ' of ' + sessions.length + ' sessions' +
-          (sessions.length >= 10 ? ' · ' + goalMetLast10 + ' of last 10' : ''));
+        var firstMet = comparableSessions.filter(function(s) { return s.firstGoalMet; })[0];
+        lines.push('  Goal met: ' + goalMetTotal + ' of ' + comparableSessions.length + ' comparable sessions' +
+          (comparableSessions.length >= 10 ? ' · ' + goalMetLast10 + ' of last 10' : ''));
         if (firstMet) lines.push('  First met: ' + new Date(firstMet.date).toLocaleDateString());
-      } else if (sessions.length > 0) {
-        lines.push('  Goal met: not yet (' + sessions.length + ' sessions tracked)');
+      } else if (comparableSessions.length > 0) {
+        lines.push('  Goal met: not yet (' + comparableSessions.length + ' comparable sessions tracked)');
       }
       lines.push('');
     }
@@ -16543,6 +17819,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
       // see next if they tap this card. Monospace, dim, so it reads as
       // quoted text rather than navigation UI.
       (unlocked && preview) ? h('div', {
+        className: 'tp-drill-preview',
         style: {
           fontSize: '11px',
           color: palette.textMute,
@@ -16552,9 +17829,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           borderRadius: '4px',
           border: '1px dashed ' + palette.border,
           fontStyle: 'italic',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap'
+          whiteSpace: 'normal',
+          overflowWrap: 'anywhere'
         },
         title: preview
       }, '"' + preview + '"') : null,
@@ -16636,8 +17912,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
           position: 'absolute',
           top: '6px',
           right: '8px',
-          width: '36px',
-          height: '36px',
+          width: '44px',
+          height: '44px',
           padding: 0,
           border: '1px solid transparent',
           background: 'transparent',
@@ -16671,7 +17947,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         fontSize: '12px',
         cursor: disabled ? 'not-allowed' : 'pointer',
         opacity: disabled ? 0.5 : 1,
-        fontFamily: 'inherit'
+        fontFamily: 'inherit',
+        minHeight: '44px'
       }
     }, label);
   }
@@ -16689,7 +17966,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         fontSize: '12px',
         fontWeight: 700,
         cursor: 'pointer',
-        padding: '4px 0'
+        padding: '8px 4px',
+        minWidth: '44px',
+        minHeight: '44px',
+        display: 'inline-flex',
+        alignItems: 'center'
       }
     }, '← Menu');
   }
@@ -16740,8 +18021,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         'aria-labelledby': idBase + '-label',
         'aria-describedby': idBase + '-description',
         style: {
-          width: '64px',
-          minWidth: '64px',
+          width: '80px',
+          minWidth: '80px',
           height: '44px',
           minHeight: '44px',
           borderRadius: '999px',
@@ -16755,11 +18036,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('typingPractice
         }
       },
         h('span', {
+          className: 'tp-toggle-state',
+          'aria-hidden': 'true',
+          style: {
+            position: 'absolute',
+            top: '50%',
+            left: isOn ? '9px' : '43px',
+            transform: 'translateY(-50%)',
+            color: isOn ? palette.bg : palette.text,
+            fontSize: '10px',
+            fontWeight: 800,
+            lineHeight: 1,
+            pointerEvents: 'none'
+          }
+        }, isOn ? 'On' : 'Off'),
+        h('span', {
+          className: 'tp-toggle-thumb',
           'aria-hidden': 'true',
           style: {
             position: 'absolute',
             top: '7px',
-            left: isOn ? '29px' : '7px',
+            left: isOn ? '45px' : '7px',
             width: '28px',
             height: '28px',
             borderRadius: '50%',

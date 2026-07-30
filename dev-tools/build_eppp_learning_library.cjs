@@ -6,12 +6,27 @@ const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
 const { buildDiagramCatalog } = require('./eppp_diagram_catalog.cjs');
+const {
+  copyReferencedReviewArtifacts,
+  resolveReferencedReviewArtifacts,
+} = require('./eppp_learning_artifact_support.cjs');
+const {
+  fingerprintManifest,
+  migrateLegacyHtmlContent,
+  migrateLegacyTextRecord,
+} = require('./eppp_learning_content_migration.cjs');
+const {
+  buildNativeDiagramProjection,
+  buildNativeGlossaryProjection,
+} = require('./eppp_native_learning_payloads.cjs');
+const {
+  openEpppMigrationSourceArchive,
+} = require('./eppp_migration_source_archive.cjs');
 
 const root = path.resolve(__dirname, '..');
-const legacyRoot = path.join(root, 'test_prep', 'eppp_legacy');
 const deployRoot = path.join(root, 'desktop/web-app', 'public', 'test_prep');
-const html = fs.readFileSync(path.join(legacyRoot, 'index.html'), 'utf8');
-const scriptPaths = Array.from(html.matchAll(/<script\s+src=["']([^"']+\.js)(?:\?[^"']*)?["']/gi), (match) => match[1]);
+const migrationArchive = openEpppMigrationSourceArchive({ workspaceRoot: root });
+const migrationExecution = migrationArchive.manifest.execution.learningLibrary;
 const windowObject = {};
 const documentStub = { readyState: 'complete', addEventListener() {}, querySelector() { return null; }, querySelectorAll() { return []; } };
 const context = vm.createContext({
@@ -40,9 +55,11 @@ function writeFileWithRetry(filePath, contents) {
 }
 
 function run(relativePath) {
-  const target = path.join(legacyRoot, relativePath);
-  if (!fs.existsSync(target)) throw new Error('Missing learning-library asset: ' + relativePath);
-  vm.runInContext(fs.readFileSync(target, 'utf8'), context, { filename: relativePath, timeout: 15000 });
+  vm.runInContext(
+    migrationArchive.readText(relativePath),
+    context,
+    { filename: relativePath, timeout: 15000 },
+  );
 }
 
 function cleanText(value) {
@@ -63,22 +80,31 @@ function stableId(prefix, parts) {
   return prefix + '-' + digest;
 }
 
-run('js/data.js');
-for (const relativePath of scriptPaths.filter((entry) => /^js\/flashcards_(?:data|batch\d+)\.js$/i.test(entry))) run(relativePath);
-run('js/memory_aids.js');
+for (const relativePath of migrationExecution.baseData) run(relativePath);
+for (const relativePath of migrationExecution.flashcards) run(relativePath);
+for (const relativePath of migrationExecution.memoryAids) run(relativePath);
 const chapterSourceById = new Map();
-for (const relativePath of scriptPaths.filter((entry) => /^js\/textbook_ch(?:\d+|\d+_\d+)\.js$/i.test(entry))) {
+for (const relativePath of migrationExecution.chapters) {
   const before = (windowObject.TextbookChapters || []).length;
   run(relativePath);
   for (const chapter of (windowObject.TextbookChapters || []).slice(before)) chapterSourceById.set(String(chapter.id || ''), relativePath);
 }
-run('js/textbook_diagrams.js');
+for (const relativePath of migrationExecution.diagrams) run(relativePath);
+for (const relativePath of migrationExecution.glossary) run(relativePath);
 
+const termDefinitionsSource = migrationArchive.readText(migrationExecution.glossary[0]);
 const domains = vm.runInContext('EPPPData.domains', context);
 const memoryAids = vm.runInContext('MemoryAids.aids', context);
 const chapters = windowObject.TextbookChapters || [];
 const diagramTemplates = windowObject._epppDiagrams || {};
+const termDefinitions = windowObject._epppTermDefs || {};
 const diagramCatalog = buildDiagramCatalog({ root, chapters, diagramTemplates, chapterSourceById });
+const nativeDiagramProjection = buildNativeDiagramProjection({
+  diagramTemplates,
+  chapters,
+  diagramCatalog,
+  chapterSourceById,
+});
 const diagramPlacementBySectionId = new Map(diagramCatalog.placements.map((placement) => [placement.sectionId, placement]));
 const overridesPath = path.join(root, 'test_prep', 'eppp_learning_review_overrides.json');
 const reviewOverrides = fs.existsSync(overridesPath) ? JSON.parse(fs.readFileSync(overridesPath, 'utf8')) : { memoryAids: {} };
@@ -226,6 +252,25 @@ const reviewChecks = ['source-support', 'accuracy-and-currency', 'instructional-
 const knowledgeCheckRecords = [];
 const discoveredKnowledgeCheckIds = new Set();
 const chapterRecords = chapters.map((chapter, chapterIndex) => {
+  const chapterId = String(chapter.id || 'chapter-' + (chapterIndex + 1));
+  const sourceReferences = (Array.isArray(chapter.references) ? chapter.references : []).map((reference, referenceIndex) => {
+    const migration = migrateLegacyHtmlContent(reference);
+    if (!migration.plainText || !migration.blocks.length) {
+      throw new Error(`Chapter ${chapterId} reference ${referenceIndex + 1} did not produce native content.`);
+    }
+    return {
+      id: `${chapterId}-reference-${referenceIndex + 1}`,
+      legacyReferenceIndex: referenceIndex + 1,
+      text: migration.plainText,
+      blocks: migration.blocks,
+      sourceCharacters: migration.sourceCharacters,
+      textCharacters: migration.plainTextCharacters,
+      contentFingerprints: migration.fingerprints,
+    };
+  });
+  const reflectiveCoda = chapter.aiCoda
+    ? migrateLegacyTextRecord(chapter.aiCoda, ['teaser', 'content', 'studyNote'])
+    : null;
   const override = reviewOverrides.chapters && reviewOverrides.chapters[String(chapter.id || '')] || {};
   const chapterReviewStatus = override.reviewStatus || 'review-required';
   const chapterIsSourceReviewed = chapterReviewStatus === 'source-reviewed-editorial-pass';
@@ -236,11 +281,17 @@ const chapterRecords = chapters.map((chapter, chapterIndex) => {
   }
   const releasedKnowledgeChecks = [];
   const sections = (Array.isArray(chapter.sections) ? chapter.sections : []).map((section, sectionIndex) => {
-    const chapterId = String(chapter.id || 'chapter-' + (chapterIndex + 1));
     const id = chapterId + '-section-' + (sectionIndex + 1);
     const runtimeSectionId = chapterId + '-section-' + sectionIndex;
     const placement = diagramPlacementBySectionId.get(runtimeSectionId);
     const legacyCheck = section && section.knowledgeCheck;
+    const contentMigration = migrateLegacyHtmlContent(section && section.content);
+    if (!contentMigration.plainText || !contentMigration.blocks.length) {
+      throw new Error(`Section ${id} did not produce complete native content.`);
+    }
+    const expandableCase = section && section.expandableCase
+      ? migrateLegacyTextRecord(section.expandableCase, ['title', 'clinicalDescription', 'diagnosis', 'explanation'])
+      : null;
     let knowledgeCheckId = null;
     let knowledgeCheckReviewStatus = null;
     if (legacyCheck) {
@@ -297,12 +348,23 @@ const chapterRecords = chapters.map((chapter, chapterIndex) => {
     return {
       id,
       runtimeSectionId,
+      legacySectionIndex: sectionIndex + 1,
       heading: cleanText(section && section.heading) || 'Untitled section',
-      preview: cleanText(section && section.content).slice(0, 320),
+      contentSchemaVersion: 1,
+      contentComplete: true,
+      contentTruncated: false,
+      content: contentMigration.plainText,
+      contentBlocks: contentMigration.blocks,
+      sourceContentCharacters: contentMigration.sourceCharacters,
+      contentCharacters: contentMigration.plainTextCharacters,
+      contentFingerprints: contentMigration.fingerprints,
+      preview: contentMigration.plainText.slice(0, 320),
+      previewTruncated: contentMigration.plainText.length > 320,
       keyTerms: (Array.isArray(section && section.keyTerms) ? section.keyTerms : []).map(cleanText).filter(Boolean),
       hasDiagram: Boolean(placement),
       diagramPlacementId: placement ? placement.id : null,
       diagramId: placement ? placement.diagramId : null,
+      nativeDiagramId: placement ? placement.diagramId : null,
       diagramOrigin: placement ? placement.origin : null,
       diagramTemplateKey: placement ? placement.templateKey : null,
       diagramDescription: placement ? placement.description : '',
@@ -310,6 +372,7 @@ const chapterRecords = chapters.map((chapter, chapterIndex) => {
       knowledgeCheckId,
       knowledgeCheckReviewStatus,
       hasExpandableCase: !!(section && section.expandableCase),
+      expandableCase,
       reviewStatus: chapterReviewStatus,
       reviewScope: chapterIsSourceReviewed ? 'containing-chapter' : 'section-review-pending',
       reviewArtifact: chapterIsSourceReviewed ? 'eppp_learning_review_overrides.json' : '',
@@ -320,7 +383,8 @@ const chapterRecords = chapters.map((chapter, chapterIndex) => {
     };
   });
   return {
-    id: String(chapter.id || 'chapter-' + (chapterIndex + 1)),
+    id: chapterId,
+    legacyChapterIndex: chapterIndex + 1,
     title: cleanText(chapter.title) || 'Untitled chapter',
     domain: cleanText(chapter.domain) || domainByNumber.get(Number(chapter.domainNumber)) || 'Unassigned',
     domainNumber: Number(chapter.domainNumber) || null,
@@ -329,8 +393,11 @@ const chapterRecords = chapters.map((chapter, chapterIndex) => {
     diagramCount: sections.filter((section) => section.hasDiagram).length,
     knowledgeCheckCount: sections.filter((section) => section.hasKnowledgeCheck).length,
     releasedKnowledgeCheckCount: releasedKnowledgeChecks.length,
-    referenceCount: Array.isArray(chapter.references) ? chapter.references.length : 0,
+    referenceCount: sourceReferences.length,
+    references: sourceReferences.map((reference) => reference.text),
+    sourceReferences,
     hasAiReflectiveCoda: !!chapter.aiCoda,
+    reflectiveCoda,
     legacySource: chapterSourceById.get(String(chapter.id || '')) || '',
     reviewStatus: chapterReviewStatus,
     reviewNote: cleanText(override.reviewNote),
@@ -340,6 +407,145 @@ const chapterRecords = chapters.map((chapter, chapterIndex) => {
     sections,
   };
 });
+
+const expectedLegacySectionMappings = chapters.flatMap((chapter, chapterIndex) => {
+  const chapterId = String(chapter.id || 'chapter-' + (chapterIndex + 1));
+  return (Array.isArray(chapter.sections) ? chapter.sections : []).map((section, sectionIndex) => ({
+    chapterId,
+    legacySectionIndex: sectionIndex + 1,
+  }));
+});
+const nativeSectionRecords = chapterRecords.flatMap((chapter) => chapter.sections.map((section) => ({
+  chapterId: chapter.id,
+  section,
+})));
+if (expectedLegacySectionMappings.length !== 278) {
+  throw new Error(`The phase-one EPPP native migration is locked to 278 reviewed legacy sections; found ${expectedLegacySectionMappings.length}. Deliberately review and update the migration gate before changing this total.`);
+}
+const expectedMappingKeys = expectedLegacySectionMappings.map((entry) => `${entry.chapterId}:${entry.legacySectionIndex}`);
+const nativeMappingKeys = nativeSectionRecords.map(({ chapterId, section }) => `${chapterId}:${section.legacySectionIndex}`);
+const duplicateMappingKeys = nativeMappingKeys.filter((key, index) => nativeMappingKeys.indexOf(key) !== index);
+const missingMappingKeys = expectedMappingKeys.filter((key) => !nativeMappingKeys.includes(key));
+const unexpectedMappingKeys = nativeMappingKeys.filter((key) => !expectedMappingKeys.includes(key));
+const nativeSectionIds = nativeSectionRecords.map(({ section }) => section.id);
+const duplicateSectionIds = nativeSectionIds.filter((id, index) => nativeSectionIds.indexOf(id) !== index);
+if (duplicateMappingKeys.length || missingMappingKeys.length || unexpectedMappingKeys.length || duplicateSectionIds.length) {
+  throw new Error([
+    'EPPP native section mapping is not one-to-one.',
+    duplicateMappingKeys.length ? `duplicate mappings: ${[...new Set(duplicateMappingKeys)].join(', ')}` : '',
+    missingMappingKeys.length ? `missing mappings: ${missingMappingKeys.join(', ')}` : '',
+    unexpectedMappingKeys.length ? `unexpected mappings: ${unexpectedMappingKeys.join(', ')}` : '',
+    duplicateSectionIds.length ? `duplicate section ids: ${[...new Set(duplicateSectionIds)].join(', ')}` : '',
+  ].filter(Boolean).join(' '));
+}
+const incompleteNativeSections = nativeSectionRecords.filter(({ section }) => (
+  section.contentComplete !== true
+  || section.contentTruncated !== false
+  || !section.content
+  || !Array.isArray(section.contentBlocks)
+  || !section.contentBlocks.length
+  || section.contentCharacters !== section.content.length
+));
+if (incompleteNativeSections.length) {
+  throw new Error(`EPPP native content is incomplete for: ${incompleteNativeSections.map(({ section }) => section.id).join(', ')}`);
+}
+const sourceContentManifest = nativeSectionRecords.map(({ chapterId, section }) => ({
+  chapterId,
+  sectionId: section.id,
+  legacySectionIndex: section.legacySectionIndex,
+  sourceCharacters: section.sourceContentCharacters,
+  sha256: section.contentFingerprints.legacySource,
+}));
+const plainTextContentManifest = nativeSectionRecords.map(({ chapterId, section }) => ({
+  chapterId,
+  sectionId: section.id,
+  legacySectionIndex: section.legacySectionIndex,
+  characters: section.contentCharacters,
+  sha256: section.contentFingerprints.plainText,
+}));
+const structuredContentManifest = nativeSectionRecords.map(({ chapterId, section }) => ({
+  chapterId,
+  sectionId: section.id,
+  legacySectionIndex: section.legacySectionIndex,
+  sha256: section.contentFingerprints.structuredBlocks,
+}));
+const supplementalContentManifest = [
+  ...nativeSectionRecords
+    .filter(({ section }) => section.expandableCase)
+    .map(({ chapterId, section }) => ({
+      type: 'expandable-case',
+      chapterId,
+      sectionId: section.id,
+      legacySectionIndex: section.legacySectionIndex,
+      sourceCharacters: section.expandableCase.sourceCharacters,
+      plainTextCharacters: section.expandableCase.plainTextCharacters,
+      contentFingerprints: section.expandableCase.contentFingerprints,
+    })),
+  ...chapterRecords
+    .filter((chapter) => chapter.reflectiveCoda)
+    .map((chapter) => ({
+      type: 'reflective-coda',
+      chapterId: chapter.id,
+      sourceCharacters: chapter.reflectiveCoda.sourceCharacters,
+      plainTextCharacters: chapter.reflectiveCoda.plainTextCharacters,
+      contentFingerprints: chapter.reflectiveCoda.contentFingerprints,
+    })),
+  ...chapterRecords.flatMap((chapter) => chapter.sourceReferences.map((reference) => ({
+    type: 'source-reference',
+    chapterId: chapter.id,
+    legacyReferenceIndex: reference.legacyReferenceIndex,
+    sourceCharacters: reference.sourceCharacters,
+    textCharacters: reference.textCharacters,
+    contentFingerprints: reference.contentFingerprints,
+  }))),
+];
+const migrationSourceArchive = {
+  schemaVersion: migrationArchive.manifest.schemaVersion,
+  archiveId: migrationArchive.manifest.archiveId,
+  root: migrationArchive.archiveRootRelative,
+  manifestSha256: migrationArchive.manifestSha256,
+  payloadSha256: migrationArchive.payloadSha256,
+  verifiedFiles: migrationArchive.manifest.files.length,
+  learningExecutionInputs: Object.values(migrationExecution).flat().length,
+  questionAuditExecutionInputs: Object.values(
+    migrationArchive.manifest.execution.questionAudit,
+  ).flat().length,
+};
+const contentMigration = {
+  schemaVersion: 1,
+  status: 'complete-native-projection-expert-pending',
+  legacySource: 'Historical Pass the EPPP JavaScript inputs preserved in the immutable migration archive',
+  sourceArchive: migrationSourceArchive,
+  sections: expectedLegacySectionMappings.length,
+  completeSections: nativeSectionRecords.length,
+  missingSections: missingMappingKeys.length,
+  duplicateMappings: duplicateMappingKeys.length,
+  duplicateSectionIds: duplicateSectionIds.length,
+  previewTruncatedSections: nativeSectionRecords.filter(({ section }) => section.previewTruncated).length,
+  sourceContentCharacters: sourceContentManifest.reduce((sum, entry) => sum + entry.sourceCharacters, 0),
+  plainTextCharacters: plainTextContentManifest.reduce((sum, entry) => sum + entry.characters, 0),
+  expandableCases: nativeSectionRecords.filter(({ section }) => section.expandableCase).length,
+  reflectiveCodas: chapterRecords.filter((chapter) => chapter.reflectiveCoda).length,
+  sourceReferences: chapterRecords.reduce((sum, chapter) => sum + chapter.sourceReferences.length, 0),
+  mappingManifestSha256: fingerprintManifest(nativeSectionRecords.map(({ chapterId, section }) => ({
+    chapterId,
+    sectionId: section.id,
+    legacySectionIndex: section.legacySectionIndex,
+  }))),
+  sourceManifestSha256: fingerprintManifest(sourceContentManifest),
+  plainTextManifestSha256: fingerprintManifest(plainTextContentManifest),
+  structuredManifestSha256: fingerprintManifest(structuredContentManifest),
+  supplementalManifestSha256: fingerprintManifest(supplementalContentManifest),
+  safety: 'Legacy markup is parsed into an allowlisted native block/run schema plus a plain-text fallback. Raw or executable HTML is not embedded in the generated catalog.',
+  reviewBoundary: 'Migration fingerprints establish source-to-native fidelity only; they do not replace independent qualified-expert review or production validation.',
+};
+
+const glossaryProjection = buildNativeGlossaryProjection({
+  legacyDefinitions: termDefinitions,
+  legacySource: termDefinitionsSource,
+  chapters: chapterRecords,
+});
+
 for (const legacyId of knowledgeCheckWaveRecords.keys()) {
   if (!discoveredKnowledgeCheckIds.has(legacyId)) throw new Error(`Knowledge-check review wave references unknown legacyId ${legacyId}.`);
 }
@@ -355,6 +561,8 @@ for (const domain of domains) {
     const override = { ...waveOverride, ...manualOverride };
     const front = cleanText(waveOverride.front || legacyFront);
     const back = cleanText(waveOverride.back || legacyBack);
+    const reviewStatus = override.reviewStatus || 'review-required';
+    const contentDisposition = cleanText(override.contentDisposition) || 'retain-after-rewrite';
     const checks = waveOverride.id ? {
         atomicAnswer: override.checks && override.checks.atomicAnswer || (override.reviewStatus ? 'editorial-pass' : 'pending'),
         sourceSupport: override.checks && override.checks.sourceSupport || (override.reviewStatus === 'source-reviewed-editorial-pass' ? 'pass' : 'pending'),
@@ -380,20 +588,20 @@ for (const domain of domains) {
       reviewDate: cleanText(override.reviewDate),
       reviewArtifact: cleanText(waveOverride.reviewArtifact),
       sourceDetails: Array.isArray(override.sourceDetails) ? override.sourceDetails : [],
-      contentDisposition: cleanText(override.contentDisposition) || 'retain-after-rewrite',
+      contentDisposition,
       independentExpertStatus: cleanText(override.independentExpertStatus) || 'not-started',
       productionStatus: cleanText(override.productionStatus) || 'not-production-validated',
-      learnerVisible: override.learnerVisible === true,
+      reviewArtifactLearnerVisible: override.learnerVisible === true,
     } : override.reviewStatus === 'source-reviewed-editorial-pass' ? {
       reviewMode: cleanText(override.reviewMode || reviewOverrides.reviewMode),
       reviewWave: cleanText(override.reviewWave || reviewOverrides.reviewWave),
       reviewDate: cleanText(override.reviewDate || reviewOverrides.reviewDate),
       reviewArtifact: 'eppp_learning_review_overrides.json',
       sourceDetails: reviewedSourceDetails(override.references),
-      contentDisposition: cleanText(override.contentDisposition) || 'retain-after-rewrite',
+      contentDisposition,
       independentExpertStatus: cleanText(override.independentExpertStatus) || 'not-started',
       productionStatus: cleanText(override.productionStatus) || 'not-production-validated',
-      learnerVisible: override.learnerVisible === true,
+      reviewArtifactLearnerVisible: override.learnerVisible === true,
     } : {};
     flashcards.push({
       id,
@@ -401,11 +609,13 @@ for (const domain of domains) {
       domain: cleanText(domain.name),
       front,
       back,
-      reviewStatus: override.reviewStatus || 'review-required',
+      reviewStatus,
       references: Array.isArray(override.references) ? override.references : [],
       reviewNote: String(override.reviewNote || ''),
       checks,
       ...waveMetadata,
+      learnerVisible: reviewStatus === 'source-reviewed-editorial-pass'
+        && contentDisposition !== 'retire-redundant',
     });
   }
 }
@@ -477,18 +687,30 @@ const catalog = {
   schemaVersion: 1,
   generatedAt: new Date().toISOString(),
   libraryId: 'eppp-learning-library',
+  migrationSourceArchive,
   reviewStandard: {
     checks: reviewChecks,
     meaning: 'Review status records completed source and editorial gates separately from the independent expert-review and production-validation gates, which remain explicitly pending.',
     accessibilityBaseline: 'The shared renderer provides keyboard controls, persistent section progress, diagram text alternatives, learner motion controls, and reduced-motion support.',
     sectionProvenance: 'A section marked source-reviewed-editorial-pass inherits the containing chapter review and names that parent scope; knowledge-check and diagram reviews remain independent.',
     diagramCatalog: 'Shared templates and concrete learner-visible placements are cataloged separately. Inline diagrams exist only as placements; unused templates remain visible in the template registry but are not counted as placements.',
+    nativeDiagramMigration: 'Every shared or inline legacy diagram is projected into an allowlisted inert vector schema with local-only references, complete ordered text alternatives, stable placement bindings, and SHA-256 parity manifests. Migration parity is not independent expert review.',
+    glossaryMigration: 'The effective legacy term-definition payload is projected one-to-one into normalized plain text with stable IDs, exact-definition aliases, occurrence-derived chapter/domain links, duplicate-source diagnostics, and SHA-256 parity manifests. Migration parity is not independent expert review.',
+    learnerVisibility: 'A flashcard is learner-visible in the integrated runtime only when it is source-reviewed-editorial-pass and is not retired as redundant. Visibility does not imply independent expert validation or production validation.',
+    contentMigration: 'All 278 legacy sections are projected one-to-one into a safe native block/run schema with a complete plain-text fallback, stable mapping metadata, and SHA-256 fidelity manifests. This migration gate is separate from expert and production approval.',
   },
   summary: {
     chapters: chapterRecords.length,
     sections: chapterRecords.reduce((sum, chapter) => sum + chapter.sectionCount, 0),
+    completeSectionContents: contentMigration.completeSections,
+    previewTruncatedSections: contentMigration.previewTruncatedSections,
+    expandableCases: contentMigration.expandableCases,
+    reflectiveCodas: contentMigration.reflectiveCodas,
+    sourceReferences: contentMigration.sourceReferences,
     diagrams: diagramRecords.length,
     ...diagramCatalog.summary,
+    ...nativeDiagramProjection.summary,
+    ...glossaryProjection.summary,
     knowledgeChecks: knowledgeCheckRecords.length,
     flashcards: flashcards.length,
     memoryAids: aidRecords.length,
@@ -500,6 +722,7 @@ const catalog = {
     sourceReviewedFlashcards: flashcards.filter((card) => card.reviewStatus === 'source-reviewed-editorial-pass').length,
     retainedReviewedFlashcards: flashcards.filter((card) => card.reviewStatus === 'source-reviewed-editorial-pass' && card.contentDisposition !== 'retire-redundant').length,
     retiredRedundantFlashcards: flashcards.filter((card) => card.contentDisposition === 'retire-redundant').length,
+    learnerVisibleFlashcards: flashcards.filter((card) => card.learnerVisible === true).length,
     qaPassedMemoryAids: aidRecords.filter((aid) => aid.reviewStatus === 'qa-passed').length,
     qaPassedKnowledgeChecks: knowledgeCheckRecords.filter((item) => item.reviewStatus === 'qa-passed').length,
     sourceReviewedKnowledgeChecks: knowledgeCheckRecords.filter((item) => item.reviewStatus === 'source-reviewed-editorial-pass').length,
@@ -510,16 +733,29 @@ const catalog = {
     releasedFlashcards: flashcards.filter((card) => card.reviewStatus === 'source-reviewed-editorial-pass' && card.contentDisposition !== 'retire-redundant').length,
     editorialReviewedSourcePendingMemoryAids: aidRecords.filter((aid) => aid.reviewStatus === 'editorial-reviewed-source-pending').length,
   },
+  contentMigration,
+  diagramMigration: nativeDiagramProjection.migration,
+  glossaryMigration: glossaryProjection.migration,
   chapters: chapterRecords,
   knowledgeChecks: knowledgeCheckRecords,
   diagrams: diagramRecords,
   diagramPlacements: diagramPlacementRecords,
+  nativeDiagrams: nativeDiagramProjection.records,
+  glossary: glossaryProjection.records,
   flashcards,
   memoryAids: aidRecords,
 };
+const referencedReviewArtifacts = resolveReferencedReviewArtifacts({
+  catalog,
+  sourceRoot: path.join(root, 'test_prep'),
+}).map((artifact) => artifact.filename);
+catalog.reviewArtifacts = referencedReviewArtifacts;
+catalog.summary.referencedReviewArtifacts = referencedReviewArtifacts.length;
 
 const sourceEditorialQueuesComplete =
   catalog.summary.reviewRequiredSections === 0
+  && catalog.diagramMigration.missingPlacementMappings === 0
+  && catalog.glossaryMigration.missingMappings === 0
   && catalog.summary.sourceReviewedDiagramPlacements === catalog.summary.diagramPlacements
   && catalog.summary.sourceReviewedFlashcards === catalog.summary.flashcards
   && catalog.summary.sourceReviewedMemoryAids === catalog.summary.memoryAids
@@ -536,12 +772,17 @@ const report = {
     ? 'first-pass-complete-expert-pending'
     : 'review-in-progress',
   findings: [
-    'Legacy content is preserved but is not automatically approved for native publication.',
+    'Historical content is preserved in a manifest-bound immutable archive but is not automatically approved for native publication.',
+    `Verified ${catalog.migrationSourceArchive.verifiedFiles} immutable migration-source files against manifest SHA-256 ${catalog.migrationSourceArchive.manifestSha256} before projection.`,
+    `${catalog.contentMigration.completeSections} of ${catalog.contentMigration.sections} legacy sections have complete one-to-one native content projections with source, plain-text, structured-block, and supplemental-content SHA-256 manifests; no raw executable HTML is embedded. This is a migration-fidelity result, not an expert-validation claim.`,
     `${catalog.summary.sourceReviewedSections} of ${catalog.summary.sections} section records inherit source/editorial review from their explicitly reviewed parent chapters; this does not claim independent section-level expert validation.`,
     `Shared renderer accessibility controls are implemented. ${catalog.summary.sourceReviewedDiagramPlacements} of ${catalog.summary.diagramPlacements} learner-visible placements have source-review records; ${catalog.summary.diagramPlacements - catalog.summary.sourceReviewedDiagramPlacements} placements still need concept and label review.`,
     `${catalog.summary.diagramPlacements} learner-visible diagram placements are cataloged: ${catalog.summary.sharedTemplateDiagramPlacements} use shared templates and ${catalog.summary.inlineDiagramPlacements} are inline chapter diagrams. ${catalog.summary.unusedDiagramTemplates} shared templates are currently unused.`,
+    `${catalog.summary.nativeDiagramPayloads} native diagram payloads cover all ${catalog.summary.nativeDiagramPlacements} learner-visible placements with inert vector trees and complete ordered text alternatives; raw SVG/HTML is not embedded, and migration parity is not an independent expert-review claim.`,
+    `${catalog.summary.glossaryTerms} effective legacy glossary terms have one-to-one native text projections; ${catalog.summary.glossaryDuplicateSourceDeclarations} overwritten legacy source declarations remain explicitly diagnosed, and migration parity is not an independent expert-review claim.`,
     `${catalog.summary.sourceReviewedFlashcards} of ${catalog.summary.flashcards} flashcards have source-review records; ${catalog.summary.flashcards - catalog.summary.sourceReviewedFlashcards} remain in first-pass review, and independent qualified expert validation is still pending.`,
     `${catalog.summary.retiredRedundantFlashcards} source-reviewed duplicate flashcards are explicitly retired from future learner release rather than counted as distinct study targets.`,
+    `${catalog.summary.learnerVisibleFlashcards} retained source-reviewed flashcards are learner-visible in the integrated runtime; learner visibility does not claim independent expert validation or production readiness.`,
     `${catalog.summary.sourceReviewedMemoryAids} of ${catalog.summary.memoryAids} memory aids have source-review records and are released; ${catalog.summary.memoryAids - catalog.summary.sourceReviewedMemoryAids} remain in the editorial/source-review queue, and independent qualified expert validation is still pending.`,
     `${catalog.summary.sourceReviewedKnowledgeChecks} of ${catalog.summary.knowledgeChecks} knowledge checks have source-review records and are released to their chapter payloads; ${catalog.summary.reviewRequiredKnowledgeChecks} remain gated for review.`,
   ],
@@ -552,6 +793,14 @@ const reportJson = JSON.stringify(report, null, 2) + '\n';
 if (process.env.EPPP_LIBRARY_VALIDATE_ONLY === '1') {
   console.log(`EPPP learning library validation-only: ${catalog.summary.sourceReviewedMemoryAids}/${catalog.summary.memoryAids} memory aids pass projection guards; no catalog files written.`);
 } else {
+  const copiedReviewArtifacts = copyReferencedReviewArtifacts({
+    catalog,
+    sourceRoot: path.join(root, 'test_prep'),
+    deployRoot,
+  });
+  if (JSON.stringify(copiedReviewArtifacts) !== JSON.stringify(referencedReviewArtifacts)) {
+    throw new Error('EPPP learning review artifact deployment set does not match the generated catalog.');
+  }
   for (const outputRoot of [path.join(root, 'test_prep'), deployRoot]) {
     fs.mkdirSync(outputRoot, { recursive: true });
     writeFileWithRetry(path.join(outputRoot, 'eppp_learning_library.json'), catalogJson);
@@ -559,5 +808,5 @@ if (process.env.EPPP_LIBRARY_VALIDATE_ONLY === '1') {
   }
 }
 
-console.log(`EPPP learning library: ${catalog.summary.chapters} chapters, ${catalog.summary.sections} sections, ${catalog.summary.diagrams} diagrams, ${catalog.summary.flashcards} flashcards, ${catalog.summary.memoryAids} memory aids cataloged.`);
+console.log(`EPPP learning library: ${catalog.summary.chapters} chapters, ${catalog.summary.sections} sections, ${catalog.summary.nativeDiagramPayloads} native diagram payloads, ${catalog.summary.glossaryTerms} glossary terms, ${catalog.summary.flashcards} flashcards, ${catalog.summary.memoryAids} memory aids cataloged.`);
 console.log('Learning-library QA status: ' + report.status + '.');

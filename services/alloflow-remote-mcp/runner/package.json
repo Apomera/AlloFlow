@@ -1,0 +1,17 @@
+{
+  "name": "@alloflow/remediation-runner",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Isolated per-job HTTP runner for the AlloFlow institution pilot",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "start": "node server.cjs",
+    "test": "node --test test/*.test.cjs"
+  },
+  "dependencies": {
+    "playwright": "1.60.0"
+  }
+}

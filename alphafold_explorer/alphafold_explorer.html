@@ -614,6 +614,35 @@
     line-height: 1.45;
     white-space: pre-wrap;
   }
+  .cellAtlasReturn {
+    border-color: rgba(34, 211, 238, 0.48);
+    background: linear-gradient(145deg, rgba(8, 145, 178, 0.12), rgba(15, 23, 42, 0.76));
+  }
+  .cellAtlasReturn[hidden] { display: none; }
+  .cellAtlasReturnContext {
+    margin: 8px 0;
+    border-left: 4px solid #22d3ee;
+  }
+  .cellAtlasReturnChecks {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    margin: 9px 0;
+  }
+  .cellAtlasReturnCheck {
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 5px 8px;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 800;
+  }
+  .cellAtlasReturnCheck[data-done="true"] {
+    border-color: rgba(74, 222, 128, 0.45);
+    background: rgba(74, 222, 128, 0.09);
+    color: #bbf7d0;
+  }
+  @media (max-width: 520px) { .cellAtlasReturnChecks { grid-template-columns: 1fr; } }
   .glossary {
     display: grid;
     gap: 8px;
@@ -1555,6 +1584,15 @@
       <button class="primary" id="coachBtn" type="button">Ask for an inspection question</button>
       <div id="coachOutput" class="coachbox" hidden></div>
     </section>
+
+    <section id="cellAtlasReturnSection" class="cellAtlasReturn" aria-labelledby="cellAtlasReturnTitle" data-flow="explore submit" hidden>
+      <h2 id="cellAtlasReturnTitle">Send evidence back to Cell Atlas</h2>
+      <p class="help">This explicit handoff sends public-record metadata and your redacted reasoning. It never sends the amino-acid sequence, structure file, or PAE matrix.</p>
+      <div id="cellAtlasReturnContext" class="summaryBox cellAtlasReturnContext"></div>
+      <div id="cellAtlasReturnChecks" class="cellAtlasReturnChecks" aria-label="Cell Atlas return requirements"></div>
+      <button class="primary" id="sendCellAtlasEvidenceBtn" type="button" disabled>Send verified evidence to Cell Atlas</button>
+      <p class="status" id="cellAtlasReturnStatus" role="status" aria-live="polite"></p>
+    </section>
   </aside>
 
   <main id="viewerMain" tabindex="-1" aria-label="AlphaFold structure viewer">
@@ -2207,6 +2245,7 @@
   var lastJson = '';
   var openerOk = false;
   var aiAvailable = false;
+  var cellAtlasHandoff = null;
   var busy = false;
   var pending = {};
   var reflectIndex = 0;
@@ -2409,6 +2448,11 @@
   var noteInput = document.getElementById('noteInput');
   var coachBtn = document.getElementById('coachBtn');
   var coachOutput = document.getElementById('coachOutput');
+  var cellAtlasReturnSection = document.getElementById('cellAtlasReturnSection');
+  var cellAtlasReturnContext = document.getElementById('cellAtlasReturnContext');
+  var cellAtlasReturnChecks = document.getElementById('cellAtlasReturnChecks');
+  var sendCellAtlasEvidenceBtn = document.getElementById('sendCellAtlasEvidenceBtn');
+  var cellAtlasReturnStatus = document.getElementById('cellAtlasReturnStatus');
   var placeholder = document.getElementById('placeholder');
   var loadmsg = document.getElementById('loadmsg');
   var detailTitle = document.getElementById('detailTitle');
@@ -3803,6 +3847,7 @@
     renderClaimReview();
     renderRubric();
     renderAccessibleSummary();
+    renderCellAtlasReturn();
   }
 
   function nextGuidePrompt() {
@@ -3834,7 +3879,9 @@
     if (data.type === 'allocaf-ready') {
       openerOk = true;
       aiAvailable = Boolean(data.ai);
+      cellAtlasHandoff = sanitizeCellAtlasHandoff(data.cellAtlasHandoff);
       renderAiState();
+      renderCellAtlasReturn();
       return;
     }
     if (data.type === 'allocaf-ai-response' && data.id && pending[data.id]) {
@@ -3844,6 +3891,117 @@
       entry.resolve(data);
     }
   });
+
+  function sanitizeCellAtlasHandoff(value) {
+    if (!value || value.schemaVersion !== 1 || value.source !== 'cellAtlasLab') return null;
+    var accession = normalizeAccession(value.accession);
+    var gene = String(value.gene || '').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 24).toUpperCase();
+    if (!accession || !gene) return null;
+    function clip(text, limit) { return redactSequenceLikeText(String(text || '')).replace(/\s+/g, ' ').trim().slice(0, limit); }
+    return {
+      schemaVersion: 1,
+      source: 'cellAtlasLab',
+      accession: accession,
+      gene: gene,
+      protein: clip(value.protein, 100),
+      cellType: clip(value.cellType, 80),
+      tissue: clip(value.tissue, 80),
+      atlasMetricLabel: clip(value.atlasMetricLabel, 80),
+      atlasEvidence: clip(value.atlasEvidence, 500),
+      evidenceBoundary: clip(value.evidenceBoundary, 360)
+    };
+  }
+
+  function cellAtlasReturnState() {
+    var matchedPublicRecord = !!(cellAtlasHandoff && current && structureLoaded && current.source === 'AlphaFold DB' && normalizeAccession(current.accession) === cellAtlasHandoff.accession);
+    return {
+      matchedPublicRecord: matchedPublicRecord,
+      observation: hasText(noteInput, 12),
+      evidence: hasText(evidenceInput, 12),
+      claim: hasText(claimInput, 12),
+      caution: hasText(cautionInput, 12)
+    };
+  }
+
+  function renderCellAtlasReturn() {
+    if (!cellAtlasReturnSection) return;
+    cellAtlasReturnSection.hidden = !cellAtlasHandoff;
+    if (!cellAtlasHandoff) return;
+    cellAtlasReturnContext.textContent = [
+      cellAtlasHandoff.tissue || 'Tissue atlas',
+      cellAtlasHandoff.cellType || 'Selected cell',
+      cellAtlasHandoff.gene + ' → ' + (cellAtlasHandoff.protein || 'protein'),
+      'Expected public accession ' + cellAtlasHandoff.accession,
+      (cellAtlasHandoff.atlasMetricLabel || 'RNA evidence') + ': ' + (cellAtlasHandoff.atlasEvidence || 'No detail supplied')
+    ].join('\n');
+    var state = cellAtlasReturnState();
+    var checks = [
+      ['Matching public structure loaded', state.matchedPublicRecord],
+      ['Observation recorded', state.observation],
+      ['Structure evidence recorded', state.evidence],
+      ['Cautious claim recorded', state.claim],
+      ['Limit or next test recorded', state.caution]
+    ];
+    cellAtlasReturnChecks.innerHTML = '';
+    checks.forEach(function (item) {
+      var node = el('span', { class: 'cellAtlasReturnCheck', 'data-done': item[1] ? 'true' : 'false' }, (item[1] ? '✓ ' : '') + item[0]);
+      cellAtlasReturnChecks.appendChild(node);
+    });
+    var ready = checks.every(function (item) { return item[1]; });
+    sendCellAtlasEvidenceBtn.disabled = !ready;
+    if (!state.matchedPublicRecord) {
+      setStatus(cellAtlasReturnStatus, 'Load the handed-off public AlphaFold DB record ' + cellAtlasHandoff.accession + ' successfully before sending evidence.', 'warn');
+    } else if (!ready) {
+      setStatus(cellAtlasReturnStatus, 'Complete the observation, evidence, cautious claim, and next-test fields.', 'warn');
+    } else {
+      setStatus(cellAtlasReturnStatus, 'Ready to send a sequence-free evidence record to Cell Atlas.', 'ok');
+    }
+  }
+
+  function selectedPaeMetadata() {
+    if (!paeMatrix) return { available: false };
+    var aligned = Math.max(1, Math.min(paeMatrix.size, Number(paeAlignedResidue.value) || 1));
+    var compared = Math.max(1, Math.min(paeMatrix.size, Number(paeComparedResidue.value) || 1));
+    var forward = Number(paeMatrix.values[aligned - 1][compared - 1]);
+    var reverse = Number(paeMatrix.values[compared - 1][aligned - 1]);
+    return {
+      available: true,
+      matrixSize: paeMatrix.size,
+      alignedResidue: aligned,
+      comparedResidue: compared,
+      forwardAngstroms: Number.isFinite(forward) ? Math.round(forward * 10) / 10 : null,
+      reverseAngstroms: Number.isFinite(reverse) ? Math.round(reverse * 10) / 10 : null,
+      interpretation: redactSequenceLikeText(paeLiveReading.textContent || '').slice(0, 360)
+    };
+  }
+
+  function sendCellAtlasEvidence() {
+    var state = cellAtlasReturnState();
+    if (!cellAtlasHandoff || !state.matchedPublicRecord || !state.observation || !state.evidence || !state.claim || !state.caution) {
+      renderCellAtlasReturn();
+      return;
+    }
+    var payload = {
+      type: 'allocaf-cross-scale-evidence',
+      schemaVersion: 1,
+      source: 'AlphaFold DB',
+      structureLoaded: true,
+      accession: normalizeAccession(current.accession),
+      entryId: redactSequenceLikeText(current.entryId || '').slice(0, 80),
+      proteinName: redactSequenceLikeText(current.name || '').slice(0, 160),
+      organism: redactSequenceLikeText(current.organism || '').slice(0, 120),
+      gene: redactSequenceLikeText(current.gene || '').slice(0, 40),
+      length: redactSequenceLikeText(current.length || '').slice(0, 60),
+      confidenceSummary: redactSequenceLikeText(current.confidence || '').slice(0, 240),
+      paeSelection: selectedPaeMetadata(),
+      observation: redactSequenceLikeText(noteInput.value.trim()).slice(0, 600),
+      evidence: redactSequenceLikeText(evidenceInput.value.trim()).slice(0, 600),
+      claim: redactSequenceLikeText(claimInput.value.trim()).slice(0, 600),
+      caution: redactSequenceLikeText(cautionInput.value.trim()).slice(0, 600)
+    };
+    if (toOpener(payload)) setStatus(cellAtlasReturnStatus, 'Verified public-record metadata and redacted reasoning sent to Cell Atlas.', 'ok');
+    else setStatus(cellAtlasReturnStatus, 'AlloFlow is not connected. Keep this window open and return through the Stem Lab launcher.', 'warn');
+  }
 
   function renderAiState() {
     if (openerOk && aiAvailable) {
@@ -4892,11 +5050,13 @@
       fitStructureBtn.disabled = false;
       hideLoading();
       scheduleStructureFit();
+      renderCellAtlasReturn();
       return true;
     }).catch(function (error) {
       if (loadVersion !== structureLoadVersion || isCanceledRequest(error)) throw supersededLoadError();
       structureLoaded = false;
       fitStructureBtn.disabled = true;
+      renderCellAtlasReturn();
       if (record.source === 'Uploaded file') releaseLocalObjectUrls('');
       loadmsg.textContent = 'Could not load the structure. ' + String((error && error.message) || error).slice(0, 130);
       loadmsg.style.display = 'flex';
@@ -6129,6 +6289,7 @@
   copyActivityCardBtn.addEventListener('click', copyActivityCard);
   copyRubricBtn.addEventListener('click', copyRubric);
   coachBtn.addEventListener('click', coach);
+  sendCellAtlasEvidenceBtn.addEventListener('click', sendCellAtlasEvidence);
   addNotebookEntryBtn.addEventListener('click', addNotebookEntry);
   captureWorkspaceBtn.addEventListener('click', captureWorkspace);
   sendResearchHubBtn.addEventListener('click', sendWorkspaceToResearchHub);

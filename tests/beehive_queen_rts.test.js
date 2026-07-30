@@ -63,6 +63,14 @@ describe('Beehive Queen mode - real-time RTS behavior', () => {
     expect(latest.beehive.queen.rival.strength).toBeGreaterThan(360);
     expect(latest.beehive.queen.feedback.text).toContain('Cycle 1');
     expect(host.textContent).toContain('Cycle 1');
+    expect(latest.beehive.queen.lastImpact.kind).toBe('cycle');
+    expect(latest.beehive.queen.lastImpact.cycle).toBe(1);
+    expect(latest.beehive.queen.lastImpact.changes.some((change) => change.label === 'Rival power')).toBe(true);
+    expect(latest.beehive.queen.lastImpact.changes.some((change) => change.label === 'QMP')).toBe(true);
+    const timeline = host.querySelector('[data-beehive-rts-timeline="true"]');
+    expect(timeline.querySelector('[data-rts-impact-kind="cycle"]')).toBeTruthy();
+    expect(timeline.querySelector('[data-rts-impact-metric="rival-power"]')).toBeTruthy();
+    expect(timeline.querySelectorAll('[data-rts-forecast]')).toHaveLength(3);
   });
 
   it('stops simulation cycles while paused', async () => {
@@ -102,18 +110,28 @@ describe('Beehive Queen mode - real-time RTS behavior', () => {
     expect(host.textContent).toContain('PLACE GUARD POST');
     expect(host.textContent).toContain('1 active threat');
     expect(host.textContent).toContain('Live economy');
+    const timeline = host.querySelector('[data-beehive-rts-timeline="true"]');
+    expect(timeline).toBeTruthy();
+    expect(timeline.getAttribute('aria-labelledby')).toBe('beehive-rts-timeline-title');
+    expect(timeline.querySelector('[data-rts-impact-kind="awaiting"]')).toBeTruthy();
+    expect(timeline.querySelector('[data-rts-forecast="next-cycle"]').textContent).toContain('Clock paused');
+    expect(timeline.querySelector('[data-rts-forecast="raid"]').textContent).toContain('4 cycles');
+    expect(timeline.querySelector('[data-rts-forecast="rival-build"]').textContent).toContain('5 cycles');
   });
 
   it('puts the battlefield first and makes essential commands immediately actionable', async () => {
     await mountQueen({ paused: true });
     const canvas = host.querySelector('[data-beehive-queen-canvas="true"]');
     const dock = host.querySelector('[data-beehive-battlefield-dock="true"]');
+    const timeline = host.querySelector('[data-beehive-rts-timeline="true"]');
     const advisor = host.querySelector('[aria-label="Strategic advisor"]');
     expect(canvas).toBeTruthy();
     expect(dock).toBeTruthy();
+    expect(timeline).toBeTruthy();
     expect(advisor).toBeTruthy();
     expect(canvas.compareDocumentPosition(dock) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(dock.compareDocumentPosition(advisor) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(dock.compareDocumentPosition(timeline) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(timeline.compareDocumentPosition(advisor) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 
     const scout = dock.querySelector('[data-quick-command="scout_rival"]');
     expect(scout).toBeTruthy();
@@ -121,6 +139,12 @@ describe('Beehive Queen mode - real-time RTS behavior', () => {
     await act(async () => { scout.click(); await Promise.resolve(); });
     expect(latest.beehive.queen.rival.intel).toBeGreaterThan(0);
     expect(host.textContent).toContain('Rival intel');
+    expect(latest.beehive.queen.lastImpact.kind).toBe('command');
+    expect(latest.beehive.queen.lastImpact.title).toBe('Scout Rival');
+    expect(latest.beehive.queen.lastImpact.changes.map((change) => change.label)).toEqual(expect.arrayContaining(['Forage control', 'Rival intel', 'Scouts', 'Nectar']));
+    const impact = host.querySelector('[data-rts-impact-kind="command"]');
+    expect(impact.textContent).toContain('Scouts report rival power');
+    expect(impact.querySelector('[data-rts-impact-metric="rival-intel"]')).toBeTruthy();
   });
 
   it('uses structure selection plus a battlefield click for direct building', async () => {
@@ -143,6 +167,12 @@ describe('Beehive Queen mode - real-time RTS behavior', () => {
     expect(latest.beehive.queen.structures.at(-1).x).toBeCloseTo(0.3);
     expect(latest.beehive.queen.buildMode).toBeNull();
     expect(latest.beehive.queen.feedback.text).toContain('Guard Post online');
+    expect(latest.beehive.queen.lastImpact.kind).toBe('structure');
+    expect(latest.beehive.queen.lastImpact.title).toBe('Guard Post built');
+    expect(latest.beehive.queen.lastImpact.changes.map((change) => change.label)).toEqual(expect.arrayContaining(['Structures', 'Wax']));
+    const buildImpact = host.querySelector('[data-rts-impact-kind="structure"]');
+    expect(buildImpact.querySelector('[data-rts-impact-metric="structures"]')).toBeTruthy();
+    expect(buildImpact.querySelector('[data-rts-impact-why="true"]').textContent).toContain('completed at the selected comb cell');
   });
 
   it('offers non-canvas placement shortcuts for keyboard and touch users', async () => {
@@ -299,7 +329,39 @@ describe('Beehive Queen mode - real-time RTS behavior', () => {
     };
     await act(async () => { root.render(React.createElement(Component)); await Promise.resolve(); });
     expect(frameCallback).toBeTypeOf('function');
-    await act(async () => { frameCallback(performance.now() + 16); await Promise.resolve(); });
+    const flightStart = performance.now();
+    await act(async () => { frameCallback(flightStart + 300); await Promise.resolve(); });
+
+    const route = host.querySelector('[data-beehive-flight-route="true"]');
+    expect(route.querySelectorAll('[data-flight-checkpoint]')).toHaveLength(3);
+    const envelope = host.querySelector('[data-beehive-flight-envelope="true"]');
+    expect(envelope.querySelectorAll('[data-flight-envelope-item]')).toHaveLength(5);
+    expect(envelope.getAttribute('data-envelope-overall')).toBe('caution');
+    expect(envelope.querySelector('[data-flight-envelope-item="energy"] [data-envelope-value]').textContent).toContain('%');
+    expect(envelope.querySelector('[data-flight-envelope-item="bearing"] [data-envelope-status]').textContent).toBe('Aligned');
+    expect(envelope.querySelector('[data-flight-envelope-item="hazard"] [data-envelope-status]').textContent).toBe('Clear');
+    expect(route.querySelector('[aria-current="step"]').getAttribute('data-flight-checkpoint')).toBe('boosts');
+    const thrust = host.querySelector('[data-flight-control="ArrowUp"]');
+    expect(thrust.getAttribute('data-control-active')).toBe('false');
+    await act(async () => {
+      thrust.dispatchEvent(new Event('pointerdown', { bubbles: true, cancelable: true }));
+      frameCallback(flightStart + 700);
+      await Promise.resolve();
+    });
+    expect(thrust.getAttribute('data-control-active')).toBe('true');
+    expect(host.querySelector('[data-flight-maneuver="action"]').textContent).toContain('Thrust');
+    expect(host.querySelector('[data-flight-maneuver="impact"]').textContent).toContain('Distance');
+    expect(host.querySelector('[data-flight-maneuver="impact"]').textContent).toContain('Energy');
+    expect(host.querySelector('[data-beehive-flight-instruments="true"]').getAttribute('aria-label')).toContain('Flight envelope Adjust');
+    expect(host.querySelector('[data-beehive-flight-instruments="true"]').getAttribute('aria-label')).toContain('Current maneuver Thrust');
+    expect(envelope.querySelector('[data-flight-envelope-item="speed"] [data-envelope-advice]').textContent).toContain('momentum');
+    await act(async () => {
+      thrust.dispatchEvent(new Event('pointerup', { bubbles: true, cancelable: true }));
+      frameCallback(flightStart + 1100);
+      await Promise.resolve();
+    });
+    expect(thrust.getAttribute('data-control-active')).toBe('false');
+    expect(host.querySelector('[data-flight-maneuver="action"]').textContent).toBe('Glide');
 
     const labels = fillText.mock.calls.map((call) => String(call[0]));
     expect(labels.some((label) => label.includes('TAKE OFF'))).toBe(true);

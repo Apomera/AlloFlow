@@ -1,0 +1,42 @@
+{
+  "name": "@alloflow/remediation-remote-mcp",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "description": "Stateless Streamable HTTP MCP gateway for AlloFlow document remediation.",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "wrangler dev",
+    "preflight:staging": "node scripts/pilot-preflight.cjs --config wrangler.pilot.local.jsonc",
+    "preflight:staging:accepted": "node scripts/pilot-preflight.cjs --config wrangler.pilot.local.jsonc --allow-synthetic-acceptance",
+    "deploy:staging": "npm run runner:stage && npm run runner:stage:check && npm run preflight:staging && wrangler deploy --config wrangler.pilot.local.jsonc",
+    "deploy:staging:accepted": "npm run runner:stage && npm run runner:stage:check && npm run preflight:staging:accepted && wrangler deploy --config wrangler.pilot.local.jsonc",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "types": "wrangler types --config wrangler.jsonc && wrangler types pilot-configuration.d.ts --config wrangler.pilot.example.jsonc --env-interface PilotDeploymentEnv --include-runtime false --strict-vars false",
+    "types:check": "wrangler types --config wrangler.jsonc --check && wrangler types pilot-configuration.d.ts --config wrangler.pilot.example.jsonc --env-interface PilotDeploymentEnv --include-runtime false --strict-vars false --check",
+    "preflight:test": "node --test scripts/test/*.test.cjs",
+    "check": "npm run runner:stage:check && npm run types:check && npm run typecheck && npm test && npm run preflight:test && wrangler deploy --dry-run --outdir .wrangler-build",
+    "startup:check": "wrangler check startup --config wrangler.jsonc --outfile .wrangler-build/worker-startup.cpuprofile",
+    "runner:stage": "node scripts/stage-runner.cjs",
+    "runner:stage:check": "node scripts/stage-runner.cjs --check",
+    "runner:test": "npm --prefix runner test",
+    "runner:check": "npm run runner:stage:check && npm run runner:test"
+  },
+  "dependencies": {
+    "@cloudflare/containers": "0.3.7",
+    "@cloudflare/workers-oauth-provider": "0.8.3",
+    "@modelcontextprotocol/server": "2.0.0",
+    "agents": "0.20.1",
+    "jose": "6.2.4",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "26.1.2",
+    "typescript": "6.0.3",
+    "vitest": "4.1.10",
+    "wrangler": "4.115.0"
+  }
+}

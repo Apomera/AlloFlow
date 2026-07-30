@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0",
+  "document": {
+    "title": "The Water Cycle (scrambled-stream test: read 1 to 8 in order)",
+    "language": "en",
+    "source_page_count": 1,
+    "source_sha256": "c8a68f4feb2e9e5fe5bbd5e978bedbbf4ed7855080dfe4a20bcc541ea4cc8751",
+    "document_type": "handout"
+  },
+  "source_pages": [
+    {
+      "page": 1,
+      "text": "The Water Cycle (scrambled-stream test: read 1 to 8 in order)\n1. Evaporation: the sun heats water into invisible vapor.\n2. Condensation: rising vapor cools into clouds and fog.\n3. Precipitation: heavy droplets fall as rain or snow.\n4. Collection: water gathers in oceans and the cycle repeats.\n5. Groundwater: water seeps down and is stored underground.\n6. Transpiration: plants release water vapor from leaves.\n7. Runoff: surface water flows downhill into rivers.\n8. Human impact: cities and dams change how water moves."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "heading",
+      "level": 1,
+      "text": "The Water Cycle (scrambled-stream test: read 1 to 8 in order)",
+      "source_page": 1
+    },
+    {
+      "type": "list",
+      "ordered": true,
+      "items": [
+        "Evaporation: the sun heats water into invisible vapor.",
+        "Condensation: rising vapor cools into clouds and fog.",
+        "Precipitation: heavy droplets fall as rain or snow.",
+        "Collection: water gathers in oceans and the cycle repeats.",
+        "Groundwater: water seeps down and is stored underground.",
+        "Transpiration: plants release water vapor from leaves.",
+        "Runoff: surface water flows downhill into rivers.",
+        "Human impact: cities and dams change how water moves."
+      ],
+      "source_page": 1
+    }
+  ],
+  "review_notes": [
+    "The source uses two visual columns, but its title explicitly establishes numbered reading order from 1 through 8; preserve it as one ordered list."
+  ]
+}

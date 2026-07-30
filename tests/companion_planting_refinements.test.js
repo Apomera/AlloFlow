@@ -229,7 +229,7 @@ describe('Companion Planting refinements', () => {
     expect(source).toContain('data-field-material');
     expect(source).toContain('data-field-step');
     expect(source).toContain('data-field-transfer-caution');
-    expect(source).toContain('cgPlantCell(activePlantingTarget, candidate.key, { clearSelection: true })');
+    expect(source).toContain('cgStagePlacementPreview(activePlantingTarget, candidate.key, surface)');
     expect(source).not.toContain('else if (cgGrid[cellIdx].plantId && !cgSelectedPlant) { cgRemoveCell(cellIdx); }');
   });
 
@@ -872,7 +872,7 @@ describe('Companion Planting refinements', () => {
     expect(html).toContain('data-planting-dock-surface="map"');
     expect(html).toContain('Plant inside the garden');
     expect(html).toContain('Plot 5: choose its crop');
-    expect(html).toContain('Three-step planting workflow');
+    expect(html).toContain('Four-step planting workflow');
     expect(html).toContain('1 Plot ✓');
     expect(html).toContain('Suggestions are ranked using the plants in the eight neighboring plots.');
     expect(html).toContain('data-planting-target="5"');
@@ -884,7 +884,7 @@ describe('Companion Planting refinements', () => {
     expect(html).toContain('BEST FIT');
     expect(html).toContain('modeled ally link');
     expect(html).toContain('data-candidate-fit="ally"');
-    expect(html).toContain('Plant Beans in Plot 5');
+    expect(html).toContain('Preview Beans in Plot 5');
     expect(html).toContain('Choose another plot');
     expect(html).toContain('data-clear-focused-plot="true"');
     expect(html).toContain('Clear this plot');
@@ -1583,8 +1583,8 @@ describe('Companion Planting refinements', () => {
     expect(html).toContain('data-community-advisor-response="true"');
     expect(html).toContain('Try planting a nitrogen fixer near a heavy feeder.');
     expect(html).toContain('aria-label="Dismiss garden advisor response"');
-    expect(html).toContain('aria-label="Add lime to raise pH (+$0.50)"');
-    expect(html).toContain('aria-label="Add sulfur to lower pH (+$0.50)"');
+    expect(html).toContain('aria-label="Preview lime effect before applying (+$0.50)"');
+    expect(html).toContain('aria-label="Preview sulfur effect before applying (+$0.50)"');
     expect(html).toContain('aria-label="Release ladybugs ($1.50)"');
     expect(html).toContain('aria-label="Neem spray ($1.00)"');
     expect(html).toContain('aria-label="Hand-pick pests (free)"');

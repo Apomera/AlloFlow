@@ -1,0 +1,1983 @@
+{
+  "schemaVersion": 1,
+  "librarySchemaVersion": 1,
+  "generatedAt": "2026-07-29",
+  "libraryId": "ap-psychology-pilot-learning-library",
+  "packId": "ap-psychology-pilot",
+  "version": "0.1.1-internal-preview",
+  "title": "AP Psychology Independent Pilot Learning Library",
+  "description": "A compact, independently authored preview covering all five units in the Fall 2025 AP Psychology Framework V.1, with original study aids and clearly unscored AAQ-style and EBQ-style planning workshops.",
+  "status": "preview",
+  "visibility": "internal",
+  "released": false,
+  "releaseEligible": false,
+  "officialItem": false,
+  "blueprint": {
+    "academicYearReference": "2025-26",
+    "cedEffectiveLabel": "Fall 2025",
+    "cedFrameworkVersion": "V.1",
+    "clarificationsImplemented": "October 2025",
+    "examFormatReferenceYear": 2026,
+    "targetExamYear": null,
+    "lastVerifiedAt": "2026-07-29",
+    "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+    "clarificationsUrl": "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description-clarifications.pdf",
+    "officialExamUrl": "https://apcentral.collegeboard.org/courses/ap-psychology/exam",
+    "transitionNotice": "Reverify the current CED, clarifications, exam format, policies, and public-use boundaries before any release."
+  },
+  "reviewStandard": "Independent source and editorial review against the public College Board framework and openly available factual references. Independent AP Psychology subject-expert, accessibility, rights, production, and psychometric review remain required.",
+  "disclaimer": "Independent, unofficial AP Psychology preparation material for internal preview only. Not affiliated with, endorsed by, or authored by College Board. AP and Advanced Placement are trademarks of College Board. No secure AP Classroom, Question Bank, Progress Check, practice-exam, teacher-only, or other restricted material was used or reproduced. This library does not provide official AP questions, rubrics, scores, score predictions, college-credit predictions, diagnosis, treatment, or medical advice.",
+  "legalCaution": "Course names and public framework labels are used only to describe independent blueprint alignment. All instructional wording, checks, flashcards, memory aids, diagram specifications, and workshop stimuli are original AlloFlow material.",
+  "healthCaution": "Psychology examples are educational. Do not use a brief example, flashcard, workshop, or practice result to diagnose or treat any person. People seeking help should use qualified local professionals and appropriate emergency resources.",
+  "workshopLabel": "Unscored AAQ-style and EBQ-style planning workshops",
+  "workshopPracticeNote": "These independently authored workshops practice research analysis and evidence-based reasoning. The study summaries are synthetic and do not describe real publications. AlloFlow does not score the responses, apply an official College Board rubric, estimate an AP score, or predict credit or placement.",
+  "rightsPolicy": {
+    "authoringBasis": "Independent original wording informed by public blueprint metadata and factual sources.",
+    "secureCollegeBoardContentUsed": false,
+    "copiedOrRephrasedCollegeBoardQuestions": false,
+    "copiedCollegeBoardRubricText": false,
+    "sourceProseOrFiguresReproduced": false,
+    "workshopStudiesAreSynthetic": true,
+    "publicSourceUse": "Blueprint alignment, factual verification, and links only.",
+    "status": "pending-independent-rights-review",
+    "diagramSpecificationsOriginal": true
+  },
+  "releaseGates": {
+    "structuralValidation": "passed-2026-07-29",
+    "independentRightsReview": "pending",
+    "independentAccessibilityReview": "pending",
+    "apPsychologySubjectExpertReview": "pending",
+    "productionValidation": "pending",
+    "studentSafetyReview": "pending",
+    "fieldTesting": "not-started",
+    "psychometricCalibration": "not-started",
+    "cedAndPolicyReverification": "required-before-release",
+    "releaseEligible": false
+  },
+  "expertReviewGate": {
+    "requiredRole": "Independent educator or faculty reviewer with current AP Psychology course and assessment expertise",
+    "status": "pending",
+    "releaseBlocked": true
+  },
+  "accessibility": {
+    "contentForm": "Text-first chapters, linear single-choice checks, cards, memory aids, optional JSON-native diagrams, and plain-text workshop stimuli",
+    "essentialVisualItems": 0,
+    "screenReaderReadingOrderDeclared": true,
+    "headingsAndListsStructured": true,
+    "workshopStimuliUsePlainText": true,
+    "handsFreeContentCompatible": true,
+    "independentReviewStatus": "pending",
+    "productionScreenReaderValidationStatus": "pending",
+    "productionVoiceValidationStatus": "pending",
+    "optionalDiagramCount": 5,
+    "diagramTextEquivalentsRequired": true,
+    "diagramsRequiredForComprehension": false,
+    "diagramFallbackMode": "ordered-text-equivalent"
+  },
+  "sourceCatalog": [
+    {
+      "id": "college-board-ced",
+      "title": "AP Psychology Course and Exam Description",
+      "organization": "College Board",
+      "url": "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+      "use": "Public unit, topic, science-practice, and exam-design framework only; no assessment content reproduced."
+    },
+    {
+      "id": "college-board-clarifications",
+      "title": "AP Psychology Clarifications and Corrections",
+      "organization": "College Board",
+      "url": "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description-clarifications.pdf",
+      "use": "Public October 2025 framework clarifications and corrections."
+    },
+    {
+      "id": "college-board-exam",
+      "title": "AP Psychology Exam",
+      "organization": "College Board",
+      "url": "https://apcentral.collegeboard.org/courses/ap-psychology/exam",
+      "use": "Current public exam-format and free-response task descriptions."
+    },
+    {
+      "id": "openstax-psychology-2e",
+      "title": "Psychology 2e",
+      "organization": "OpenStax, Rice University",
+      "url": "https://openstax.org/books/psychology-2e/pages/1-introduction",
+      "use": "Open college-level factual cross-checking and links only; no prose, figures, or questions reproduced."
+    },
+    {
+      "id": "hhs-belmont",
+      "title": "The Belmont Report",
+      "organization": "U.S. Department of Health and Human Services, Office for Human Research Protections",
+      "url": "https://www.hhs.gov/ohrp/regulations-and-policy/belmont-report/index.html",
+      "use": "Public primary reference for foundational human-research ethics."
+    }
+  ],
+  "summary": {
+    "chapters": 5,
+    "sections": 15,
+    "diagrams": 5,
+    "diagramPlacements": 5,
+    "knowledgeChecks": 10,
+    "skills": 4,
+    "flashcards": 15,
+    "memoryAids": 10,
+    "constructedResponseWorkshops": 2,
+    "sourceReviewedChapters": 5,
+    "sourceReviewedFlashcards": 15,
+    "sourceReviewedMemoryAids": 10,
+    "sourceReviewedConstructedResponseWorkshops": 2,
+    "editorialReviewedSourcePendingMemoryAids": 0,
+    "independentExpertReviewedChapters": 0,
+    "releaseEligibleRecords": 0,
+    "sourceReviewedDiagrams": 5,
+    "independentExpertReviewedDiagrams": 0
+  },
+  "skills": [
+    {
+      "id": "P1",
+      "label": "Concept Understanding",
+      "description": "Apply psychological perspectives, theories, concepts, and research findings while accounting for context and cognitive bias."
+    },
+    {
+      "id": "P2",
+      "label": "Research Methods and Design",
+      "description": "Identify and evaluate methods, variables, design elements, and ethical procedures."
+    },
+    {
+      "id": "P3",
+      "label": "Data Interpretation",
+      "description": "Identify, calculate, and interpret relevant descriptive and inferential information in accessible representations."
+    },
+    {
+      "id": "P4",
+      "label": "Argumentation",
+      "description": "Develop defensible claims and reason from scientifically derived evidence."
+    }
+  ],
+  "chapters": [
+    {
+      "id": "ap-psych-ch-01",
+      "title": "Biological Bases of Behavior",
+      "domainId": "biological-bases-of-behavior",
+      "domain": "Unit 1: Biological Bases of Behavior",
+      "skillId": "1.A",
+      "topicCoverage": [
+        "1.1 Interaction of Heredity and Environment",
+        "1.2 Overview of the Nervous System",
+        "1.3 The Neuron and Neural Firing",
+        "1.4 The Brain",
+        "1.5 Sleep",
+        "1.6 Sensation"
+      ],
+      "summary": "Connect heredity, neural and endocrine communication, brain systems, sleep, and sensory transduction to observable behavior without reducing complex outcomes to a single cause.",
+      "objectives": [
+        "Trace communication from receptors and neurons through nervous-system and brain processes.",
+        "Apply heredity-environment interaction, plasticity, sleep, and sensation concepts to scenarios.",
+        "Separate causal conclusions from correlations and other limits in biopsychological research."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/1-introduction"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Independently authored and source reviewed against the public Fall 2025 Framework V.1; independent AP Psychology expert, accessibility, and psychometric review remain pending. Not official College Board content.",
+      "expertReviewStatus": "pending",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false,
+      "sectionCount": 3,
+      "knowledgeCheckCount": 2,
+      "referenceCount": 2,
+      "sections": [
+        {
+          "id": "ap-psych-ch-01-section-01",
+          "heading": "Heredity, environment, and research claims",
+          "content": "Behavior and mental processes emerge from interaction among inherited variation, development, learning, and social and physical environments. A heritability estimate describes variation within a studied population under particular conditions; it does not state how much of one person's trait is genetic or make a trait fixed. Twin, adoption, family, and molecular studies can reveal patterns, but sampling, shared environments, measurement choices, and correlational designs limit causal claims. When reading a scenario, name the design, identify what was measured or manipulated, and match the conclusion to the evidence.",
+          "keyTerms": [
+            "heredity-environment interaction",
+            "heritability",
+            "correlation",
+            "causal inference"
+          ],
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+            "https://openstax.org/books/psychology-2e/pages/3-introduction"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original summary; AP Psychology subject-expert review remains pending."
+        },
+        {
+          "id": "ap-psych-ch-01-section-02",
+          "heading": "Neural communication, nervous systems, and the brain",
+          "content": "Neurons receive, integrate, and transmit signals. An action potential is an all-or-none electrical event; communication across many synapses depends on neurotransmitter release, receptor activity, reuptake, and breakdown. Agonists generally increase a neurotransmitter's effect, while antagonists generally reduce or block it, but effects depend on the receptor and system. The central nervous system includes brain and spinal cord; the peripheral system links them with the body. The sympathetic division mobilizes resources, the parasympathetic division supports restoration, and the somatic system supports voluntary skeletal movement. Brain regions work in networks, so a structure-function answer should avoid claiming that one region alone produces a complex behavior.",
+          "keyTerms": [
+            "action potential",
+            "neurotransmitter",
+            "agonist and antagonist",
+            "central and peripheral nervous systems",
+            "plasticity"
+          ],
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+            "https://openstax.org/books/psychology-2e/pages/3-introduction"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original summary; AP Psychology subject-expert review remains pending."
+        },
+        {
+          "id": "ap-psych-ch-01-section-03",
+          "heading": "Sleep and sensation",
+          "content": "Circadian processes help organize sleep and waking, while sleep cycles include changing non-REM and REM patterns. Sleep loss can affect attention, memory, emotion, and health, but a single association does not establish a specific cause. Sensation begins when receptors detect energy or chemicals and transduce them into neural signals. Absolute thresholds concern detection under defined conditions; difference thresholds concern noticing change; sensory adaptation reduces responsiveness to unchanging stimulation. Vision, hearing, touch, pain, taste, smell, balance, and body-position systems use different receptors and pathways. Preserve the distinction between receiving stimulation and interpreting it.",
+          "keyTerms": [
+            "circadian rhythm",
+            "REM and non-REM sleep",
+            "transduction",
+            "absolute threshold",
+            "sensory adaptation"
+          ],
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+            "https://openstax.org/books/psychology-2e/pages/5-introduction"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original summary; AP Psychology subject-expert review remains pending."
+        }
+      ],
+      "knowledgeChecks": [
+        {
+          "id": "ap-psych-ch-01-check-01",
+          "prompt": "A pedestrian narrowly avoids a fast-moving bicycle. The pedestrian's heart rate rises and digestion temporarily slows. Which system most directly produces this coordinated pattern?",
+          "choices": [
+            "The somatic nervous system",
+            "The sympathetic division of the autonomic nervous system",
+            "The parasympathetic division of the autonomic nervous system",
+            "The sensory cortex acting without peripheral input"
+          ],
+          "answerIndex": 1,
+          "rationale": "The sympathetic division coordinates mobilizing responses such as increased cardiovascular activity and reduced digestive activity. The parasympathetic division is more associated with restoration; the somatic system controls voluntary skeletal movement.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+            "https://openstax.org/books/psychology-2e/pages/3-introduction"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original check; independent AP Psychology and psychometric review remain pending."
+        },
+        {
+          "id": "ap-psych-ch-01-check-02",
+          "prompt": "Researchers find that identical twins raised in different homes are more similar on a measured trait than unrelated people, but the twins are not identical on the trait. Which conclusion is most defensible?",
+          "choices": [
+            "The trait is entirely genetic because the twins share genes.",
+            "The trait is entirely environmental because the twins lived in different homes.",
+            "Inherited variation may contribute, while environmental and developmental factors also matter.",
+            "The finding proves the trait cannot change within a person."
+          ],
+          "answerIndex": 2,
+          "rationale": "The pattern is consistent with a hereditary contribution but does not eliminate environmental, developmental, measurement, or sampling influences. Similarity does not show that a trait is fixed or entirely genetic.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+            "https://openstax.org/books/psychology-2e/pages/3-introduction"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original check; independent AP Psychology and psychometric review remain pending."
+        }
+      ]
+    },
+    {
+      "id": "ap-psych-ch-02",
+      "title": "Cognition",
+      "domainId": "cognition",
+      "domain": "Unit 2: Cognition",
+      "skillId": "1.B",
+      "topicCoverage": [
+        "2.1 Perception",
+        "2.2 Thinking, Problem-Solving, Judgments, and Decision-Making",
+        "2.3 Introduction to Memory",
+        "2.4 Encoding Memories",
+        "2.5 Storing Memories",
+        "2.6 Retrieving Memories",
+        "2.7 Forgetting and Other Memory Challenges",
+        "2.8 Intelligence and Achievement"
+      ],
+      "summary": "Study how perception, attention, judgment, memory, and assessment transform information while remaining sensitive to context, bias, evidence quality, and measurement limits.",
+      "objectives": [
+        "Distinguish sensation from perception and bottom-up from top-down processing.",
+        "Explain encoding, storage, retrieval, forgetting, and memory reconstruction.",
+        "Evaluate intelligence and achievement measures using reliability, validity, and sociocultural context."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/1-introduction"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Independently authored and source reviewed against the public Fall 2025 Framework V.1; independent AP Psychology expert, accessibility, and psychometric review remain pending. Not official College Board content.",
+      "expertReviewStatus": "pending",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false,
+      "sectionCount": 3,
+      "knowledgeCheckCount": 2,
+      "referenceCount": 2,
+      "sections": [
+        {
+          "id": "ap-psych-ch-02-section-01",
+          "heading": "Perception, attention, and judgment",
+          "content": "Perception organizes and interprets sensory input. Bottom-up processing begins with incoming features; top-down processing uses expectations, schemas, context, and prior knowledge. Both can support efficient interpretation and also produce error. Selective attention prioritizes some input, which can leave other changes unnoticed. In judgment, heuristics can simplify decisions but may contribute to predictable biases. For any scenario, identify the available evidence, the expectation or shortcut being used, and the specific conclusion that follows rather than treating every error as the same bias.",
+          "keyTerms": [
+            "bottom-up processing",
+            "top-down processing",
+            "schema",
+            "selective attention",
+            "heuristic"
+          ],
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+            "https://openstax.org/books/psychology-2e/pages/5-introduction"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original summary; AP Psychology subject-expert review remains pending."
+        },
+        {
+          "id": "ap-psych-ch-02-section-02",
+          "heading": "Memory as encoding, storage, retrieval, and reconstruction",
+          "content": "Memory depends on encoding information, maintaining it over time, and retrieving it when needed. Attention and meaningful organization can improve encoding; spacing and retrieval practice can strengthen later access. Working memory supports limited active processing, while long-term memory includes different forms of knowledge and experience. Forgetting can reflect weak encoding, decay or loss of access, interference, or retrieval failure. Memory is reconstructive: schemas, later information, source confusion, and suggestion can alter reports. Confidence alone does not establish accuracy.",
+          "keyTerms": [
+            "encoding",
+            "working memory",
+            "long-term memory",
+            "retrieval practice",
+            "interference",
+            "misinformation effect"
+          ],
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+            "https://openstax.org/books/psychology-2e/pages/8-introduction"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original summary; AP Psychology subject-expert review remains pending."
+        },
+        {
+          "id": "ap-psych-ch-02-section-03",
+          "heading": "Intelligence, achievement, and responsible measurement",
+          "content": "Intelligence theories organize different patterns of cognitive performance; tests operationalize only selected constructs. Reliability concerns consistency, while validity concerns whether evidence supports a score interpretation and use. Standardization creates common administration and comparison conditions, not freedom from bias. Aptitude measures aim to predict later performance; achievement measures focus on learned knowledge or skills, although real assessments can overlap. Interpret scores in light of opportunity, language, culture, disability access, stereotype threat, measurement error, and the consequences of decisions. Group averages never determine an individual's capacity.",
+          "keyTerms": [
+            "reliability",
+            "validity",
+            "standardization",
+            "aptitude",
+            "achievement",
+            "measurement error"
+          ],
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+            "https://openstax.org/books/psychology-2e/pages/7-introduction"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original summary; AP Psychology subject-expert review remains pending."
+        }
+      ],
+      "knowledgeChecks": [
+        {
+          "id": "ap-psych-ch-02-check-01",
+          "prompt": "After studying a list, a student closes the notes and repeatedly tries to recall the ideas before checking the answers. Which process is the student using most directly to strengthen later access?",
+          "choices": [
+            "Sensory adaptation",
+            "Perceptual constancy",
+            "Proactive interference",
+            "Retrieval practice"
+          ],
+          "answerIndex": 3,
+          "rationale": "Retrieval practice requires attempting to bring learned information to mind. Repeated, spaced retrieval with corrective feedback can strengthen later access; the other choices describe sensory, perceptual, or interference processes.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+            "https://openstax.org/books/psychology-2e/pages/8-introduction"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original check; independent AP Psychology and psychometric review remain pending."
+        },
+        {
+          "id": "ap-psych-ch-02-check-02",
+          "prompt": "After viewing a minor collision, witnesses are asked a misleading question that implies broken glass was present. Some later report seeing glass that was never shown. Which concept best explains this change?",
+          "choices": [
+            "The misinformation effect",
+            "Sensory adaptation",
+            "The absolute threshold",
+            "State-dependent learning"
+          ],
+          "answerIndex": 0,
+          "rationale": "Post-event information can become incorporated into a reconstructed memory, producing the misinformation effect. The scenario does not concern reduced receptor response, stimulus detection, or matching internal states.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+            "https://openstax.org/books/psychology-2e/pages/8-introduction"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original check; independent AP Psychology and psychometric review remain pending."
+        }
+      ]
+    },
+    {
+      "id": "ap-psych-ch-03",
+      "title": "Development and Learning",
+      "domainId": "development-and-learning",
+      "domain": "Unit 3: Development and Learning",
+      "skillId": "1.A",
+      "topicCoverage": [
+        "3.1 Themes and Methods in Developmental Psychology",
+        "3.2 Physical Development Across the Lifespan",
+        "3.3 Gender and Sexual Orientation",
+        "3.4 Cognitive Development Across the Lifespan",
+        "3.5 Communication and Language Development",
+        "3.6 Social-Emotional Development Across the Lifespan",
+        "3.7 Classical Conditioning",
+        "3.8 Operant Conditioning",
+        "3.9 Social, Cognitive, and Neurological Factors in Learning"
+      ],
+      "summary": "Integrate lifespan development with classical, operant, observational, cognitive, and biological accounts of learning while matching claims to research design.",
+      "objectives": [
+        "Compare developmental change across physical, cognitive, language, identity, and social-emotional domains.",
+        "Distinguish cross-sectional, longitudinal, and experimental evidence.",
+        "Apply conditioning and observational-learning concepts by identifying antecedents, behavior, and consequences."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/1-introduction"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Independently authored and source reviewed against the public Fall 2025 Framework V.1; independent AP Psychology expert, accessibility, and psychometric review remain pending. Not official College Board content.",
+      "expertReviewStatus": "pending",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false,
+      "sectionCount": 3,
+      "knowledgeCheckCount": 2,
+      "referenceCount": 2,
+      "sections": [
+        {
+          "id": "ap-psych-ch-03-section-01",
+          "heading": "Lifespan development and its evidence",
+          "content": "Developmental psychology asks how people change and remain stable across the lifespan. Physical, cognitive, language, identity, and social-emotional development influence one another and occur within family, cultural, historical, and biological contexts. Cross-sectional research compares age groups at one time but can confound age with cohort; longitudinal research follows participants and can reveal within-person change but faces attrition and repeated-testing effects. Stage theories can organize patterns, yet development also shows continuity, variation, and context dependence. Describe what a design can establish before applying a theory.",
+          "keyTerms": [
+            "stability and change",
+            "continuity and stages",
+            "cross-sectional design",
+            "longitudinal design",
+            "cohort effect"
+          ],
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+            "https://openstax.org/books/psychology-2e/pages/9-introduction"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original summary; AP Psychology subject-expert review remains pending."
+        },
+        {
+          "id": "ap-psych-ch-03-section-02",
+          "heading": "Classical and operant conditioning",
+          "content": "Classical conditioning links stimuli so that a previously neutral cue comes to elicit a response. Identify the unconditioned stimulus and response first, then the conditioned stimulus and response. Operant conditioning changes behavior through its consequences. Reinforcement increases behavior; punishment decreases it. Positive means adding a stimulus and negative means removing one, not good or bad. Schedules, immediacy, discriminative cues, generalization, discrimination, and extinction affect learning. Analyze the consequence from the perspective of the behavior whose future frequency changes.",
+          "keyTerms": [
+            "classical conditioning",
+            "operant conditioning",
+            "reinforcement",
+            "punishment",
+            "extinction",
+            "generalization"
+          ],
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+            "https://openstax.org/books/psychology-2e/pages/6-introduction"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original summary; AP Psychology subject-expert review remains pending."
+        },
+        {
+          "id": "ap-psych-ch-03-section-03",
+          "heading": "Observational, cognitive, and biological factors in learning",
+          "content": "People can learn by observing models and consequences without directly receiving the consequence. Attention, retention, ability to reproduce behavior, motivation, model similarity, and perceived outcomes influence performance. Cognitive processes also appear in latent learning, cognitive maps, insight, and expectations. Biological preparedness and constraints can make some associations easier or harder to acquire. Learning therefore cannot be reduced to a single mechanism. In a scenario, identify the evidence for observation, expectation, consequence, or biological constraint rather than selecting a theory from one familiar word.",
+          "keyTerms": [
+            "observational learning",
+            "modeling",
+            "vicarious conditioning",
+            "latent learning",
+            "cognitive map",
+            "biological preparedness"
+          ],
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+            "https://openstax.org/books/psychology-2e/pages/6-introduction"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original summary; AP Psychology subject-expert review remains pending."
+        }
+      ],
+      "knowledgeChecks": [
+        {
+          "id": "ap-psych-ch-03-check-01",
+          "prompt": "A child whines when asked to clean up. The caregiver removes the cleanup demand, and whining becomes more frequent. For the child's whining, removal of the demand functions as which consequence?",
+          "choices": [
+            "Positive punishment",
+            "Negative reinforcement",
+            "Positive reinforcement",
+            "Negative punishment"
+          ],
+          "answerIndex": 1,
+          "rationale": "The removal of an aversive demand follows whining and the whining increases, so it is negative reinforcement of the child's behavior. The label depends on what happens to that behavior, not on the caregiver's intention.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+            "https://openstax.org/books/psychology-2e/pages/6-introduction"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original check; independent AP Psychology and psychometric review remain pending."
+        },
+        {
+          "id": "ap-psych-ch-03-check-02",
+          "prompt": "A researcher tests groups of 15-, 35-, and 65-year-olds once during the same month. Which description and limitation best fit this design?",
+          "choices": [
+            "It is longitudinal, and attrition is the only major concern.",
+            "It is experimental, so random assignment establishes age as the cause.",
+            "It is cross-sectional, and age differences may be mixed with cohort differences.",
+            "It is a case study, so no group comparison is possible."
+          ],
+          "answerIndex": 2,
+          "rationale": "Comparing different age groups at one time is cross-sectional. The groups also grew up during different periods, so cohort experiences can be confounded with age.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+            "https://openstax.org/books/psychology-2e/pages/9-introduction"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original check; independent AP Psychology and psychometric review remain pending."
+        }
+      ]
+    },
+    {
+      "id": "ap-psych-ch-04",
+      "title": "Social Psychology and Personality",
+      "domainId": "social-psychology-and-personality",
+      "domain": "Unit 4: Social Psychology and Personality",
+      "skillId": "1.A",
+      "topicCoverage": [
+        "4.1 Attribution Theory and Person Perception",
+        "4.2 Attitude Formation and Attitude Change",
+        "4.3 Psychology of Social Situations",
+        "4.4 Psychodynamic and Humanistic Theories of Personality",
+        "4.5 Social-Cognitive and Trait Theories of Personality",
+        "4.6 Motivation",
+        "4.7 Emotion"
+      ],
+      "summary": "Explain how social situations, attributions, attitudes, groups, personality perspectives, motivation, and emotion interact without treating a label as a complete account of a person.",
+      "objectives": [
+        "Apply attribution, persuasion, conformity, obedience, helping, and group-process concepts.",
+        "Compare psychodynamic, humanistic, trait, and social-cognitive personality explanations.",
+        "Connect motivational and emotional processes with biological, cognitive, social, and cultural context."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/1-introduction"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Independently authored and source reviewed against the public Fall 2025 Framework V.1; independent AP Psychology expert, accessibility, and psychometric review remain pending. Not official College Board content.",
+      "expertReviewStatus": "pending",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false,
+      "sectionCount": 3,
+      "knowledgeCheckCount": 2,
+      "referenceCount": 2,
+      "sections": [
+        {
+          "id": "ap-psych-ch-04-section-01",
+          "heading": "Attribution, attitudes, and social situations",
+          "content": "Attributions explain behavior using dispositional or situational causes. The fundamental attribution error overweights disposition when explaining others, while self-serving patterns can protect one's view of personal outcomes. Attitudes can be shaped through learning, persuasion, and social context, and cognitive dissonance can motivate efforts to reduce inconsistency. Conformity, obedience, social facilitation, social loafing, group polarization, groupthink, prejudice, helping, and aggression depend on features of the person and situation. Apply each concept to the mechanism shown, not merely to the presence of a group.",
+          "keyTerms": [
+            "dispositional attribution",
+            "situational attribution",
+            "fundamental attribution error",
+            "cognitive dissonance",
+            "conformity",
+            "groupthink"
+          ],
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+            "https://openstax.org/books/psychology-2e/pages/12-introduction"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original summary; AP Psychology subject-expert review remains pending."
+        },
+        {
+          "id": "ap-psych-ch-04-section-02",
+          "heading": "Personality perspectives and measurement",
+          "content": "Psychodynamic theories emphasize unconscious processes and early relationships; humanistic theories emphasize growth, self-concept, and subjective experience; trait approaches describe relatively stable dimensions; social-cognitive approaches emphasize reciprocal interaction among cognition, behavior, and environment. Each perspective asks different questions and uses different evidence. Personality inventories require reliability and validity evidence, while projective interpretations raise additional standardization concerns. A theory can organize observations without explaining every action, and context can change how a trait is expressed.",
+          "keyTerms": [
+            "psychodynamic",
+            "humanistic",
+            "trait",
+            "social-cognitive",
+            "reciprocal determinism",
+            "personality inventory"
+          ],
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+            "https://openstax.org/books/psychology-2e/pages/11-introduction"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original summary; AP Psychology subject-expert review remains pending."
+        },
+        {
+          "id": "ap-psych-ch-04-section-03",
+          "heading": "Motivation and emotion",
+          "content": "Motivation reflects interacting biological, cognitive, learned, and social influences. Incentives, internal states, expectations, self-efficacy, and goals can affect initiation and persistence. Hunger illustrates interaction among physiological regulation, available cues, learning, and culture. Emotion includes physiological arousal, expressive behavior, subjective experience, and cognitive appraisal; different accounts emphasize their order and interaction. Cultural display rules and situational norms shape emotional expression. Avoid inferring a person's private motive or emotion from one behavior without supporting evidence.",
+          "keyTerms": [
+            "incentive",
+            "self-efficacy",
+            "intrinsic and extrinsic motivation",
+            "cognitive appraisal",
+            "display rules"
+          ],
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+            "https://openstax.org/books/psychology-2e/pages/10-introduction"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original summary; AP Psychology subject-expert review remains pending."
+        }
+      ],
+      "knowledgeChecks": [
+        {
+          "id": "ap-psych-ch-04-check-01",
+          "prompt": "A manager sees a driver arrive late and immediately concludes that the driver is irresponsible, without considering a road closure announced that morning. Which concept best fits the manager's judgment?",
+          "choices": [
+            "The mere-exposure effect",
+            "Group polarization",
+            "Reciprocal determinism",
+            "The fundamental attribution error"
+          ],
+          "answerIndex": 3,
+          "rationale": "The manager overemphasizes a dispositional explanation and neglects a clear situational factor, which illustrates the fundamental attribution error.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+            "https://openstax.org/books/psychology-2e/pages/12-introduction"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original check; independent AP Psychology and psychometric review remain pending."
+        },
+        {
+          "id": "ap-psych-ch-04-check-02",
+          "prompt": "A planning team values unanimity, withholds concerns, and does not examine realistic alternatives before approving a risky plan. Which process is most evident?",
+          "choices": [
+            "Groupthink",
+            "Social facilitation",
+            "The bystander effect",
+            "Operant shaping"
+          ],
+          "answerIndex": 0,
+          "rationale": "Groupthink involves pressure toward consensus and inadequate critical evaluation within a cohesive decision group. The scenario emphasizes suppressed dissent and failure to consider alternatives.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+            "https://openstax.org/books/psychology-2e/pages/12-introduction"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original check; independent AP Psychology and psychometric review remain pending."
+        }
+      ]
+    },
+    {
+      "id": "ap-psych-ch-05",
+      "title": "Mental and Physical Health",
+      "domainId": "mental-and-physical-health",
+      "domain": "Unit 5: Mental and Physical Health",
+      "skillId": "3.C",
+      "topicCoverage": [
+        "5.1 Introduction to Health Psychology",
+        "5.2 Positive Psychology",
+        "5.3 Explaining and Classifying Psychological Disorders",
+        "5.4 Selection of Categories of Psychological Disorders",
+        "5.5 Treatment of Psychological Disorders"
+      ],
+      "summary": "Use biopsychosocial and evidence-based reasoning to study stress, well-being, classification, selected disorder categories, and treatments while avoiding diagnosis from limited information.",
+      "objectives": [
+        "Explain stress, coping, resilience, and health through interacting biological, psychological, and social factors.",
+        "Describe classification and selected disorder categories without diagnosing individuals from vignettes.",
+        "Evaluate treatment claims using research design, ethics, effectiveness, access, and cultural context."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/1-introduction"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Independently authored and source reviewed against the public Fall 2025 Framework V.1; independent AP Psychology expert, accessibility, safety, and psychometric review remain pending. Educational content only; not diagnosis or treatment advice.",
+      "expertReviewStatus": "pending",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false,
+      "sectionCount": 3,
+      "knowledgeCheckCount": 2,
+      "referenceCount": 2,
+      "sections": [
+        {
+          "id": "ap-psych-ch-05-section-01",
+          "heading": "Stress, coping, and well-being",
+          "content": "Stress responses reflect appraisal of demands and perceived resources as well as biological and social conditions. Acute activation can be adaptive; chronic or uncontrollable stress can carry costs, but effects vary. Problem-focused coping addresses a changeable stressor, while emotion-focused coping manages emotional response; either can be useful depending on context. Social support, sleep, movement, meaning, and access to resources can relate to well-being, but no single habit guarantees an outcome. Positive psychology studies strengths and flourishing without denying adversity or structural conditions.",
+          "keyTerms": [
+            "stress appraisal",
+            "problem-focused coping",
+            "emotion-focused coping",
+            "social support",
+            "resilience",
+            "well-being"
+          ],
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+            "https://openstax.org/books/psychology-2e/pages/14-introduction"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original educational summary; independent AP Psychology and safety review remain pending. Not health advice."
+        },
+        {
+          "id": "ap-psych-ch-05-section-02",
+          "heading": "Classification and selected disorder categories",
+          "content": "Classification systems organize patterns of symptoms, duration, distress, and impairment to support communication, research, and care. They are revised as evidence changes and must be applied with cultural and developmental context. Biopsychosocial explanations integrate biological vulnerability, cognition, learning, relationships, stress, and environment. Selected categories differ in defining features and should not be reduced to stereotypes or casual labels. A short classroom vignette cannot establish a diagnosis: qualified evaluation considers history, functioning, alternatives, context, consent, and current professional standards.",
+          "keyTerms": [
+            "classification",
+            "distress and impairment",
+            "biopsychosocial approach",
+            "comorbidity",
+            "stigma",
+            "differential assessment"
+          ],
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+            "https://openstax.org/books/psychology-2e/pages/15-introduction"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original educational summary; independent AP Psychology and safety review remain pending. Not diagnostic guidance."
+        },
+        {
+          "id": "ap-psych-ch-05-section-03",
+          "heading": "Treatment evidence, ethics, and access",
+          "content": "Psychological treatments include multiple psychotherapy and biomedical approaches. Their proposed mechanisms, evidence, risks, benefits, and fit differ across problems and people. Random assignment, credible comparison conditions, masked outcome assessment where feasible, validated measures, retention, effect size, follow-up, and replication strengthen treatment evidence. Statistical change is not automatically meaningful change, and average benefit does not guarantee individual benefit. Ethical care also requires informed consent, competence, privacy, monitoring for harm, cultural responsiveness, and attention to access. Learning about treatment is not a substitute for care from a qualified professional.",
+          "keyTerms": [
+            "psychotherapy",
+            "biomedical treatment",
+            "randomized experiment",
+            "treatment effectiveness",
+            "informed consent",
+            "cultural responsiveness"
+          ],
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+            "https://openstax.org/books/psychology-2e/pages/16-introduction",
+            "https://www.hhs.gov/ohrp/regulations-and-policy/belmont-report/index.html"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original educational summary; independent AP Psychology and safety review remain pending. Not treatment advice."
+        }
+      ],
+      "knowledgeChecks": [
+        {
+          "id": "ap-psych-ch-05-check-01",
+          "prompt": "A student has trouble concentrating during one stressful week. Which response best reflects responsible psychological reasoning?",
+          "choices": [
+            "Assign a disorder label because impaired concentration appears in several diagnoses.",
+            "Avoid diagnosis from one brief example and consider duration, context, impairment, alternatives, and qualified assessment.",
+            "Conclude that the difficulty is voluntary because it appeared recently.",
+            "Recommend a specific treatment before gathering additional information."
+          ],
+          "answerIndex": 1,
+          "rationale": "One nonspecific experience in a brief vignette cannot establish a disorder. Responsible reasoning preserves uncertainty and recognizes the need for context and qualified assessment; it does not provide diagnosis or treatment advice.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+            "https://openstax.org/books/psychology-2e/pages/15-introduction"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original educational check; independent AP Psychology, safety, and psychometric review remain pending."
+        },
+        {
+          "id": "ap-psych-ch-05-check-02",
+          "prompt": "Which feature most directly strengthens a causal conclusion that a treatment, rather than a preexisting group difference, changed the measured outcome?",
+          "choices": [
+            "Recruiting only participants who strongly expect the treatment to work",
+            "Reporting testimonials from participants who completed treatment",
+            "Randomly assigning consenting participants to treatment and credible comparison conditions",
+            "Measuring the outcome only after participants choose their preferred condition"
+          ],
+          "answerIndex": 2,
+          "rationale": "Random assignment helps distribute preexisting differences across conditions, strengthening causal inference. A credible comparison and ethical consent add interpretive and ethical value; testimonials and self-selection do not rule out major alternatives.",
+          "references": [
+            "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+            "https://www.hhs.gov/ohrp/regulations-and-policy/belmont-report/index.html"
+          ],
+          "reviewStatus": "source-reviewed-editorial-pass",
+          "reviewNote": "Original educational check; independent AP Psychology, safety, and psychometric review remain pending."
+        }
+      ]
+    }
+  ],
+  "diagrams": [
+    {
+      "id": "ap-psych-diagram-001",
+      "chapterId": "ap-psych-ch-01",
+      "domainId": "biological-bases-of-behavior",
+      "title": "From stimulation to neural interpretation",
+      "diagramType": "directed-concept-flow",
+      "learnerPurpose": "Trace how detectable stimulation becomes a neural message while keeping sensation distinct from later perceptual interpretation.",
+      "caption": "An original, simplified flow from environmental stimulation through receptor transduction and neural signaling to interpretation.",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/1-introduction"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Flow showing stimulation converted by receptors into neural signals before perceptual interpretation.",
+        "longDescription": "Read from left to right. A detectable stimulus reaches a sensory receptor. The receptor transduces the stimulation into a neural signal. Neural pathways carry and process that signal. Perceptual interpretation then uses the neural input together with context and prior knowledge.",
+        "textEquivalent": [
+          "A detectable stimulus reaches a sensory receptor.",
+          "The receptor converts, or transduces, stimulation into a neural signal.",
+          "Neural pathways transmit and process the signal.",
+          "Perceptual interpretation uses neural input together with context and prior knowledge."
+        ],
+        "readingOrder": [
+          "stimulus",
+          "receptor",
+          "transduction",
+          "neural-signal",
+          "interpretation"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
+        "nodes": [
+          {
+            "id": "stimulus",
+            "label": "Detectable stimulus",
+            "detail": "Environmental energy or chemicals within a receptor system’s usable range."
+          },
+          {
+            "id": "receptor",
+            "label": "Sensory receptor",
+            "detail": "A specialized receptor responds to the stimulation."
+          },
+          {
+            "id": "transduction",
+            "label": "Transduction",
+            "detail": "The receptor converts stimulation into neural activity."
+          },
+          {
+            "id": "neural-signal",
+            "label": "Neural signaling",
+            "detail": "Pathways carry and process the signal."
+          },
+          {
+            "id": "interpretation",
+            "label": "Perceptual interpretation",
+            "detail": "Context and prior knowledge help organize meaning."
+          }
+        ],
+        "edges": [
+          {
+            "id": "stimulus-to-receptor",
+            "from": "stimulus",
+            "to": "receptor",
+            "label": "reaches"
+          },
+          {
+            "id": "receptor-to-transduction",
+            "from": "receptor",
+            "to": "transduction",
+            "label": "detects and converts"
+          },
+          {
+            "id": "transduction-to-signal",
+            "from": "transduction",
+            "to": "neural-signal",
+            "label": "produces"
+          },
+          {
+            "id": "signal-to-interpretation",
+            "from": "neural-signal",
+            "to": "interpretation",
+            "label": "provides input for"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    },
+    {
+      "id": "ap-psych-diagram-002",
+      "chapterId": "ap-psych-ch-02",
+      "domainId": "cognition",
+      "title": "Memory retrieval and reconstruction cycle",
+      "diagramType": "directed-concept-cycle",
+      "learnerPurpose": "Connect encoding, storage, retrieval cues, and reconstruction without treating memory as a literal recording that is replayed unchanged.",
+      "caption": "An original memory-process cycle emphasizing that retrieval is cue-dependent and can contribute to later reconstruction.",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/1-introduction"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Cycle connecting attention and encoding, storage, retrieval cues, remembering, and reconstruction.",
+        "longDescription": "Begin with attended information that is encoded. Some encoded information is maintained in storage. A retrieval cue can activate stored information, producing a remembered account. Because remembering is reconstructive, new context or later information can influence what is stored and accessible during a future retrieval attempt.",
+        "textEquivalent": [
+          "Attention and meaningful processing support encoding.",
+          "Some encoded information is maintained in storage over time.",
+          "Internal or external retrieval cues can activate stored information.",
+          "Remembering produces a reconstructed account rather than an unchanged recording.",
+          "The reconstructed account and later context can influence future memory access."
+        ],
+        "readingOrder": [
+          "encoding",
+          "storage",
+          "cue",
+          "remembering",
+          "reconstruction"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "clockwise-cycle",
+        "nodes": [
+          {
+            "id": "encoding",
+            "label": "Attention and encoding",
+            "detail": "Information is selected and processed."
+          },
+          {
+            "id": "storage",
+            "label": "Storage",
+            "detail": "Some encoded information persists over time."
+          },
+          {
+            "id": "cue",
+            "label": "Retrieval cue",
+            "detail": "Context, associations, or prompts support access."
+          },
+          {
+            "id": "remembering",
+            "label": "Remembering",
+            "detail": "Accessible information is assembled into a current account."
+          },
+          {
+            "id": "reconstruction",
+            "label": "Reconstruction and update",
+            "detail": "Current context or later information may shape future access."
+          }
+        ],
+        "edges": [
+          {
+            "id": "encoding-to-storage",
+            "from": "encoding",
+            "to": "storage",
+            "label": "may establish"
+          },
+          {
+            "id": "storage-to-cue",
+            "from": "storage",
+            "to": "cue",
+            "label": "is accessed with"
+          },
+          {
+            "id": "cue-to-remembering",
+            "from": "cue",
+            "to": "remembering",
+            "label": "supports"
+          },
+          {
+            "id": "remembering-to-reconstruction",
+            "from": "remembering",
+            "to": "reconstruction",
+            "label": "can involve"
+          },
+          {
+            "id": "reconstruction-to-storage",
+            "from": "reconstruction",
+            "to": "storage",
+            "label": "may influence later access to"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    },
+    {
+      "id": "ap-psych-diagram-003",
+      "chapterId": "ap-psych-ch-03",
+      "domainId": "development-and-learning",
+      "title": "Operant consequence decision map",
+      "diagramType": "branching-concept-map",
+      "learnerPurpose": "Classify operant consequences by what changes after a behavior and by whether the behavior becomes more or less likely.",
+      "caption": "An original decision map separating addition versus removal from reinforcement versus punishment.",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/1-introduction"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Decision map classifying consequences by addition or removal and increased or decreased behavior.",
+        "longDescription": "Start with a consequence that follows a behavior. First ask whether a stimulus was added or removed. Then ask whether the future probability of the behavior increased or decreased. An increase indicates reinforcement and a decrease indicates punishment; positive means added and negative means removed.",
+        "textEquivalent": [
+          "Identify the consequence that follows a behavior.",
+          "Positive means a stimulus is added; negative means a stimulus is removed.",
+          "Reinforcement means the behavior becomes more likely in the future.",
+          "Punishment means the behavior becomes less likely in the future.",
+          "Combine the two decisions to classify positive reinforcement, negative reinforcement, positive punishment, or negative punishment."
+        ],
+        "readingOrder": [
+          "consequence",
+          "stimulus-change",
+          "behavior-change",
+          "classification"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "top-down-branching",
+        "nodes": [
+          {
+            "id": "consequence",
+            "label": "Consequence follows behavior",
+            "detail": "Describe the observable change after the response."
+          },
+          {
+            "id": "stimulus-change",
+            "label": "Added or removed?",
+            "detail": "Added is positive; removed is negative."
+          },
+          {
+            "id": "behavior-change",
+            "label": "Future behavior increases or decreases?",
+            "detail": "Increase is reinforcement; decrease is punishment."
+          },
+          {
+            "id": "classification",
+            "label": "Combine both decisions",
+            "detail": "Name the consequence with both dimensions."
+          }
+        ],
+        "edges": [
+          {
+            "id": "consequence-to-stimulus",
+            "from": "consequence",
+            "to": "stimulus-change",
+            "label": "first identify"
+          },
+          {
+            "id": "stimulus-to-behavior",
+            "from": "stimulus-change",
+            "to": "behavior-change",
+            "label": "then evaluate"
+          },
+          {
+            "id": "behavior-to-classification",
+            "from": "behavior-change",
+            "to": "classification",
+            "label": "combine dimensions"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    },
+    {
+      "id": "ap-psych-diagram-004",
+      "chapterId": "ap-psych-ch-04",
+      "domainId": "social-psychology-and-personality",
+      "title": "Balanced attribution evidence map",
+      "diagramType": "converging-evidence-map",
+      "learnerPurpose": "Practice considering both situational and person-related evidence before explaining behavior or inferring a stable trait.",
+      "caption": "An original evidence map showing that observed behavior can have multiple candidate explanations that require additional evidence.",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/1-introduction"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Evidence map combining situational and person-related information before making an attribution.",
+        "longDescription": "An observer begins with one behavior. Situational information, such as norms, constraints, and other people’s responses, offers one evidence path. Person-related information, such as patterns across time and settings, offers another. Both paths feed a cautious explanation, followed by a check for missing context and attribution bias.",
+        "textEquivalent": [
+          "Begin with an observed behavior rather than an assumed trait.",
+          "Consider situational evidence such as norms, constraints, and how others respond in the same setting.",
+          "Consider person-related evidence such as consistency across time and across settings.",
+          "Build a tentative explanation from both evidence paths.",
+          "Check whether missing context or attribution bias could change the explanation."
+        ],
+        "readingOrder": [
+          "behavior",
+          "situation",
+          "person-pattern",
+          "tentative-explanation",
+          "bias-check"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "converging-paths",
+        "nodes": [
+          {
+            "id": "behavior",
+            "label": "Observed behavior",
+            "detail": "Describe what occurred without adding a trait label."
+          },
+          {
+            "id": "situation",
+            "label": "Situational evidence",
+            "detail": "Consider norms, constraints, and comparison with others."
+          },
+          {
+            "id": "person-pattern",
+            "label": "Person-related pattern",
+            "detail": "Consider consistency across time and settings."
+          },
+          {
+            "id": "tentative-explanation",
+            "label": "Tentative explanation",
+            "detail": "Integrate available evidence without claiming certainty."
+          },
+          {
+            "id": "bias-check",
+            "label": "Context and bias check",
+            "detail": "Ask what is missing and whether one cause was overweighted."
+          }
+        ],
+        "edges": [
+          {
+            "id": "behavior-to-situation",
+            "from": "behavior",
+            "to": "situation",
+            "label": "consider context"
+          },
+          {
+            "id": "behavior-to-person",
+            "from": "behavior",
+            "to": "person-pattern",
+            "label": "consider pattern"
+          },
+          {
+            "id": "situation-to-explanation",
+            "from": "situation",
+            "to": "tentative-explanation",
+            "label": "contributes evidence"
+          },
+          {
+            "id": "person-to-explanation",
+            "from": "person-pattern",
+            "to": "tentative-explanation",
+            "label": "contributes evidence"
+          },
+          {
+            "id": "explanation-to-check",
+            "from": "tentative-explanation",
+            "to": "bias-check",
+            "label": "test cautiously"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    },
+    {
+      "id": "ap-psych-diagram-005",
+      "chapterId": "ap-psych-ch-05",
+      "domainId": "mental-and-physical-health",
+      "title": "Responsible assessment reasoning pathway",
+      "diagramType": "directed-safeguard-flow",
+      "learnerPurpose": "Organize non-diagnostic reasoning about a reported pattern while preserving context, alternatives, qualified assessment, and uncertainty.",
+      "caption": "An original safeguard flow for moving from a reported experience toward qualified evaluation without diagnosing from a brief example.",
+      "unscored": true,
+      "officialItem": false,
+      "releaseEligible": false,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "expertReviewStatus": "pending",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/1-introduction"
+      ],
+      "rights": {
+        "originalSpecification": true,
+        "officialFigureReproduced": false,
+        "sourceFigureReproduced": false,
+        "thirdPartyArtworkIncluded": false
+      },
+      "accessibility": {
+        "essentialVisualContent": false,
+        "shortAlt": "Safeguard flow from a reported pattern through context and alternatives to qualified assessment.",
+        "longDescription": "Begin with a reported experience or observed pattern. Gather information about duration, context, distress, and functional impact. Consider plausible alternative explanations and cultural context. A qualified professional may then conduct a fuller assessment. Any classification remains evidence-based, provisional, and separate from treatment decisions.",
+        "textEquivalent": [
+          "Begin with a reported experience or observed pattern, not a diagnosis.",
+          "Gather information about duration, context, distress, and functional impact.",
+          "Consider plausible alternatives, medical factors, substance effects, development, and cultural context.",
+          "Use qualified assessment and appropriate evidence before considering classification.",
+          "Keep classification provisional and evaluate support options separately from the label."
+        ],
+        "readingOrder": [
+          "reported-pattern",
+          "context-impact",
+          "alternatives",
+          "qualified-assessment",
+          "provisional-conclusion"
+        ],
+        "colorIndependent": true,
+        "shapeIndependentLabels": true,
+        "fallbackMode": "ordered-text-equivalent",
+        "independentReviewStatus": "pending"
+      },
+      "spec": {
+        "format": "alloflow-diagram-v1",
+        "layout": "left-to-right",
+        "nodes": [
+          {
+            "id": "reported-pattern",
+            "label": "Reported pattern",
+            "detail": "Record the experience without assigning a disorder."
+          },
+          {
+            "id": "context-impact",
+            "label": "Duration, context, distress, and impact",
+            "detail": "Gather the information needed to interpret the pattern."
+          },
+          {
+            "id": "alternatives",
+            "label": "Alternative explanations",
+            "detail": "Consider health, substances, development, environment, and culture."
+          },
+          {
+            "id": "qualified-assessment",
+            "label": "Qualified assessment",
+            "detail": "Use broader evidence and appropriate professional competence."
+          },
+          {
+            "id": "provisional-conclusion",
+            "label": "Provisional evidence-based conclusion",
+            "detail": "Preserve uncertainty and keep care planning distinct."
+          }
+        ],
+        "edges": [
+          {
+            "id": "pattern-to-context",
+            "from": "reported-pattern",
+            "to": "context-impact",
+            "label": "gather"
+          },
+          {
+            "id": "context-to-alternatives",
+            "from": "context-impact",
+            "to": "alternatives",
+            "label": "evaluate"
+          },
+          {
+            "id": "alternatives-to-assessment",
+            "from": "alternatives",
+            "to": "qualified-assessment",
+            "label": "inform"
+          },
+          {
+            "id": "assessment-to-conclusion",
+            "from": "qualified-assessment",
+            "to": "provisional-conclusion",
+            "label": "may support"
+          }
+        ],
+        "renderingHints": {
+          "connectorStyle": "arrow",
+          "allowHorizontalScroll": true,
+          "minimumTextSize": "user-scalable"
+        }
+      }
+    }
+  ],
+  "diagramPlacements": [
+    {
+      "id": "ap-psych-diagram-placement-001",
+      "diagramId": "ap-psych-diagram-001",
+      "chapterId": "ap-psych-ch-01",
+      "sectionId": "ap-psych-ch-01-section-03",
+      "position": "after-section-content",
+      "learnerPurpose": "Rehearse the sequence while preserving the distinction between sensory detection and perceptual interpretation.",
+      "requiredForComprehension": false,
+      "unscored": true,
+      "fallbackMode": "diagram-text-equivalent",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-psych-diagram-placement-002",
+      "diagramId": "ap-psych-diagram-002",
+      "chapterId": "ap-psych-ch-02",
+      "sectionId": "ap-psych-ch-02-section-02",
+      "position": "after-section-content",
+      "learnerPurpose": "Review memory as an active, cue-dependent process that can be reconstructed during retrieval.",
+      "requiredForComprehension": false,
+      "unscored": true,
+      "fallbackMode": "diagram-text-equivalent",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-psych-diagram-placement-003",
+      "diagramId": "ap-psych-diagram-003",
+      "chapterId": "ap-psych-ch-03",
+      "sectionId": "ap-psych-ch-03-section-02",
+      "position": "after-section-content",
+      "learnerPurpose": "Classify an operant consequence using observable stimulus and future-behavior changes instead of everyday connotations.",
+      "requiredForComprehension": false,
+      "unscored": true,
+      "fallbackMode": "diagram-text-equivalent",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-psych-diagram-placement-004",
+      "diagramId": "ap-psych-diagram-004",
+      "chapterId": "ap-psych-ch-04",
+      "sectionId": "ap-psych-ch-04-section-01",
+      "position": "after-section-content",
+      "learnerPurpose": "Slow attribution judgments by checking situational evidence, person-related patterns, missing context, and possible bias.",
+      "requiredForComprehension": false,
+      "unscored": true,
+      "fallbackMode": "diagram-text-equivalent",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-psych-diagram-placement-005",
+      "diagramId": "ap-psych-diagram-005",
+      "chapterId": "ap-psych-ch-05",
+      "sectionId": "ap-psych-ch-05-section-02",
+      "position": "after-section-content",
+      "learnerPurpose": "Practice responsible reasoning that does not turn a short classroom example into a diagnosis or treatment recommendation.",
+      "requiredForComprehension": false,
+      "unscored": true,
+      "fallbackMode": "diagram-text-equivalent",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "accessibilityReviewStatus": "pending-independent-review",
+      "releaseEligible": false
+    }
+  ],
+  "flashcards": [
+    {
+      "id": "ap-psych-card-001",
+      "chapterId": "ap-psych-ch-01",
+      "skillId": "1.A",
+      "domainId": "biological-bases-of-behavior",
+      "domain": "Unit 1: Biological Bases of Behavior",
+      "front": "Why does a heritability estimate not show how much of one person's trait is genetic?",
+      "back": "Heritability describes variation among people in a particular population and environment; it does not partition one individual's trait or make the trait fixed.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/3-introduction"
+      ],
+      "reviewNote": "Independent source-reviewed study card; AP Psychology expert validation remains pending."
+    },
+    {
+      "id": "ap-psych-card-002",
+      "chapterId": "ap-psych-ch-01",
+      "skillId": "1.A",
+      "domainId": "biological-bases-of-behavior",
+      "domain": "Unit 1: Biological Bases of Behavior",
+      "front": "How do sympathetic and parasympathetic activity usually differ?",
+      "back": "Sympathetic activity mobilizes resources for action; parasympathetic activity generally supports restoration and routine maintenance.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/3-introduction"
+      ],
+      "reviewNote": "Independent source-reviewed study card; AP Psychology expert validation remains pending."
+    },
+    {
+      "id": "ap-psych-card-003",
+      "chapterId": "ap-psych-ch-01",
+      "skillId": "1.A",
+      "domainId": "biological-bases-of-behavior",
+      "domain": "Unit 1: Biological Bases of Behavior",
+      "front": "What is sensory transduction?",
+      "back": "The conversion of stimulus energy or chemicals detected by receptors into neural signals the nervous system can process.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/5-introduction"
+      ],
+      "reviewNote": "Independent source-reviewed study card; AP Psychology expert validation remains pending."
+    },
+    {
+      "id": "ap-psych-card-004",
+      "chapterId": "ap-psych-ch-02",
+      "skillId": "1.B",
+      "domainId": "cognition",
+      "domain": "Unit 2: Cognition",
+      "front": "Bottom-up versus top-down processing?",
+      "back": "Bottom-up processing builds from incoming sensory features; top-down processing uses expectations, schemas, context, and prior knowledge.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/5-introduction"
+      ],
+      "reviewNote": "Independent source-reviewed study card; AP Psychology expert validation remains pending."
+    },
+    {
+      "id": "ap-psych-card-005",
+      "chapterId": "ap-psych-ch-02",
+      "skillId": "1.A",
+      "domainId": "cognition",
+      "domain": "Unit 2: Cognition",
+      "front": "What are the three broad memory processes?",
+      "back": "Encoding brings information into a usable form, storage maintains it over time, and retrieval brings stored information back into use.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/8-introduction"
+      ],
+      "reviewNote": "Independent source-reviewed study card; AP Psychology expert validation remains pending."
+    },
+    {
+      "id": "ap-psych-card-006",
+      "chapterId": "ap-psych-ch-02",
+      "skillId": "2.B",
+      "domainId": "cognition",
+      "domain": "Unit 2: Cognition",
+      "front": "Reliability versus validity?",
+      "back": "Reliability concerns consistency of scores or observations; validity concerns evidence supporting a particular interpretation and use.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/7-introduction"
+      ],
+      "reviewNote": "Independent source-reviewed study card; AP Psychology expert validation remains pending."
+    },
+    {
+      "id": "ap-psych-card-007",
+      "chapterId": "ap-psych-ch-03",
+      "skillId": "2.C",
+      "domainId": "development-and-learning",
+      "domain": "Unit 3: Development and Learning",
+      "front": "Cross-sectional versus longitudinal development research?",
+      "back": "Cross-sectional studies compare age groups at one time; longitudinal studies follow the same participants across time.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/9-introduction"
+      ],
+      "reviewNote": "Independent source-reviewed study card; AP Psychology expert validation remains pending."
+    },
+    {
+      "id": "ap-psych-card-008",
+      "chapterId": "ap-psych-ch-03",
+      "skillId": "1.A",
+      "domainId": "development-and-learning",
+      "domain": "Unit 3: Development and Learning",
+      "front": "Why is negative reinforcement not punishment?",
+      "back": "Negative reinforcement removes a stimulus and increases behavior; punishment decreases behavior. Negative means removal, not bad.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/6-introduction"
+      ],
+      "reviewNote": "Independent source-reviewed study card; AP Psychology expert validation remains pending."
+    },
+    {
+      "id": "ap-psych-card-009",
+      "chapterId": "ap-psych-ch-03",
+      "skillId": "1.A",
+      "domainId": "development-and-learning",
+      "domain": "Unit 3: Development and Learning",
+      "front": "What distinguishes observational learning from direct operant conditioning?",
+      "back": "Observational learning can occur by watching a model and consequences without the observer first receiving the consequence.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/6-introduction"
+      ],
+      "reviewNote": "Independent source-reviewed study card; AP Psychology expert validation remains pending."
+    },
+    {
+      "id": "ap-psych-card-010",
+      "chapterId": "ap-psych-ch-04",
+      "skillId": "1.A",
+      "domainId": "social-psychology-and-personality",
+      "domain": "Unit 4: Social Psychology and Personality",
+      "front": "Dispositional versus situational attribution?",
+      "back": "Dispositional attributions explain behavior through internal characteristics; situational attributions emphasize external circumstances.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/12-introduction"
+      ],
+      "reviewNote": "Independent source-reviewed study card; AP Psychology expert validation remains pending."
+    },
+    {
+      "id": "ap-psych-card-011",
+      "chapterId": "ap-psych-ch-04",
+      "skillId": "1.A",
+      "domainId": "social-psychology-and-personality",
+      "domain": "Unit 4: Social Psychology and Personality",
+      "front": "What warning signs suggest groupthink?",
+      "back": "Pressure for unanimity, suppressed dissent, illusion of consensus, and inadequate examination of alternatives or risks.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/12-introduction"
+      ],
+      "reviewNote": "Independent source-reviewed study card; AP Psychology expert validation remains pending."
+    },
+    {
+      "id": "ap-psych-card-012",
+      "chapterId": "ap-psych-ch-04",
+      "skillId": "1.A",
+      "domainId": "social-psychology-and-personality",
+      "domain": "Unit 4: Social Psychology and Personality",
+      "front": "Trait versus social-cognitive personality approaches?",
+      "back": "Trait approaches describe relatively stable dimensions; social-cognitive approaches emphasize reciprocal interaction among cognition, behavior, and environment.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/11-introduction"
+      ],
+      "reviewNote": "Independent source-reviewed study card; AP Psychology expert validation remains pending."
+    },
+    {
+      "id": "ap-psych-card-013",
+      "chapterId": "ap-psych-ch-05",
+      "skillId": "1.A",
+      "domainId": "mental-and-physical-health",
+      "domain": "Unit 5: Mental and Physical Health",
+      "front": "Problem-focused versus emotion-focused coping?",
+      "back": "Problem-focused coping addresses a stressor or its demands; emotion-focused coping addresses the emotional response. Fit depends on context.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/14-introduction"
+      ],
+      "reviewNote": "Independent educational card; AP Psychology and safety validation remain pending. Not health advice."
+    },
+    {
+      "id": "ap-psych-card-014",
+      "chapterId": "ap-psych-ch-05",
+      "skillId": "2.D",
+      "domainId": "mental-and-physical-health",
+      "domain": "Unit 5: Mental and Physical Health",
+      "front": "Why can a brief vignette not establish a psychological diagnosis?",
+      "back": "Diagnosis requires qualified assessment of symptoms, duration, distress or impairment, history, context, cultural factors, and plausible alternatives.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/15-introduction"
+      ],
+      "reviewNote": "Independent educational card; AP Psychology and safety validation remain pending. Not diagnostic guidance."
+    },
+    {
+      "id": "ap-psych-card-015",
+      "chapterId": "ap-psych-ch-05",
+      "skillId": "3.C",
+      "domainId": "mental-and-physical-health",
+      "domain": "Unit 5: Mental and Physical Health",
+      "front": "What evidence features strengthen a treatment claim?",
+      "back": "Appropriate comparison, random assignment when feasible, valid outcomes, retention, effect size, follow-up, replication, and transparent limits.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://openstax.org/books/psychology-2e/pages/16-introduction"
+      ],
+      "reviewNote": "Independent educational card; AP Psychology and safety validation remain pending. Not treatment advice."
+    }
+  ],
+  "memoryAids": [
+    {
+      "id": "ap-psych-memory-01",
+      "type": "retrieval cue",
+      "title": "Signal path",
+      "content": "Stimulus or change -> receptor -> transduction -> neural signaling -> distributed brain processing -> perception or response.",
+      "tags": [
+        "sensation",
+        "transduction",
+        "neural communication"
+      ],
+      "domain": "Unit 1: Biological Bases of Behavior",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Retrieval cue only; preserve modality-specific pathways and distributed processing. Expert review pending."
+    },
+    {
+      "id": "ap-psych-memory-02",
+      "type": "contrast cue",
+      "title": "Autonomic direction",
+      "content": "Sympathetic mobilizes; parasympathetic restores. Neither system acts alone in every situation.",
+      "tags": [
+        "autonomic nervous system",
+        "sympathetic",
+        "parasympathetic"
+      ],
+      "domain": "Unit 1: Biological Bases of Behavior",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Retrieval cue only; do not replace scenario-specific reasoning. Expert review pending."
+    },
+    {
+      "id": "ap-psych-memory-03",
+      "type": "process cue",
+      "title": "Memory pipeline",
+      "content": "Encode -> store -> retrieve -> reconstruct. Failure or distortion can enter at more than one point.",
+      "tags": [
+        "encoding",
+        "storage",
+        "retrieval",
+        "reconstruction"
+      ],
+      "domain": "Unit 2: Cognition",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Retrieval cue only; memory systems and causes of forgetting require fuller reasoning. Expert review pending."
+    },
+    {
+      "id": "ap-psych-memory-04",
+      "type": "decision cue",
+      "title": "Bias evidence check",
+      "content": "Name the judgment -> identify the information used -> identify the shortcut or expectation -> test a plausible alternative.",
+      "tags": [
+        "judgment",
+        "heuristic",
+        "bias",
+        "evidence"
+      ],
+      "domain": "Unit 2: Cognition",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Retrieval cue only; do not label a bias without matching its mechanism. Expert review pending."
+    },
+    {
+      "id": "ap-psych-memory-05",
+      "type": "comparison grid",
+      "title": "Consequence grid",
+      "content": "Reinforcement increases behavior; punishment decreases it. Positive adds a consequence; negative removes one.",
+      "tags": [
+        "operant conditioning",
+        "reinforcement",
+        "punishment"
+      ],
+      "domain": "Unit 3: Development and Learning",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Retrieval cue only; identify whose behavior changes and what consequence follows it. Expert review pending."
+    },
+    {
+      "id": "ap-psych-memory-06",
+      "type": "design cue",
+      "title": "Development design",
+      "content": "Different ages now = cross-sectional and possible cohort effects. Same people over time = longitudinal and possible attrition or retest effects.",
+      "tags": [
+        "development",
+        "cross-sectional",
+        "longitudinal"
+      ],
+      "domain": "Unit 3: Development and Learning",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Retrieval cue only; specific designs can include additional strengths and limitations. Expert review pending."
+    },
+    {
+      "id": "ap-psych-memory-07",
+      "type": "reasoning cue",
+      "title": "Attribution pause",
+      "content": "Before inferring disposition, ask what situational constraint, role, norm, incentive, or missing information could also explain the behavior.",
+      "tags": [
+        "attribution",
+        "situation",
+        "disposition"
+      ],
+      "domain": "Unit 4: Social Psychology and Personality",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Retrieval cue only; alternatives should be evidence based rather than invented. Expert review pending."
+    },
+    {
+      "id": "ap-psych-memory-08",
+      "type": "group-process cue",
+      "title": "Social influence scan",
+      "content": "Who is present? What norm or authority operates? Is the task easy or hard? Is responsibility visible? Is dissent protected?",
+      "tags": [
+        "conformity",
+        "obedience",
+        "groups",
+        "helping"
+      ],
+      "domain": "Unit 4: Social Psychology and Personality",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Retrieval cue only; match the stated mechanism to the scenario. Expert review pending."
+    },
+    {
+      "id": "ap-psych-memory-09",
+      "type": "coping cue",
+      "title": "Stress response choice",
+      "content": "Appraise demand and resources -> decide what is changeable -> address the problem, the emotional response, or both -> reassess.",
+      "tags": [
+        "stress",
+        "appraisal",
+        "coping"
+      ],
+      "domain": "Unit 5: Mental and Physical Health",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Educational retrieval cue only; not individualized health advice. Expert and safety review pending."
+    },
+    {
+      "id": "ap-psych-memory-10",
+      "type": "safety cue",
+      "title": "Evidence before label",
+      "content": "Description is not diagnosis. Check duration, distress or impairment, context, alternatives, qualified assessment, and current standards.",
+      "tags": [
+        "classification",
+        "diagnosis caution",
+        "context"
+      ],
+      "domain": "Unit 5: Mental and Physical Health",
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Educational retrieval cue only; not diagnostic guidance. Expert and safety review pending."
+    }
+  ],
+  "constructedResponseWorkshops": [
+    {
+      "id": "ap-psych-aaq-workshop-01",
+      "taskType": "AAQ-style analysis (unscored)",
+      "title": "Phone notifications and selective attention",
+      "prompt": "Analyze the independently authored synthetic study summary. Respond in complete sentences and keep every conclusion within the evidence provided.",
+      "stimulus": "SYNTHETIC STUDY FOR PRACTICE — NOT A REAL OR PUBLISHED ARTICLE.\n\nResearchers recruited 160 adult volunteers ages 18 to 30 through community notices in one metropolitan area. After informed consent, participants were randomly assigned to one of two conditions. All participants completed the same 12-minute visual monitoring task on a laptop and pressed a key whenever a designated target appeared among distractors. In the notification condition, a nearby study phone produced a brief tone and displayed a neutral message every 45 seconds; participants were told not to touch it. In the silent condition, the same phone remained visible but produced no messages. Selective attention was operationalized as the number of targets correctly detected out of 40. The notification group detected a mean of 31.6 targets (SD = 4.8); the silent group detected a mean of 35.2 targets (SD = 3.9). Participants could stop at any time, responses were stored under codes rather than names, and all participants were debriefed. The summary provides no inferential statistic.",
+      "taskParts": [
+        "A. Identify the research method used.",
+        "B. State the operational definition of selective attention.",
+        "C. Describe what the reported means show, without claiming statistical significance.",
+        "D. Identify one ethical safeguard in the study and explain how it protects participants.",
+        "E. Explain one limitation on generalizing the findings.",
+        "F. Using a relevant psychological concept, explain whether the results support or challenge the claim that intermittent notifications can impair selective attention in this task."
+      ],
+      "planningFrame": [
+        {
+          "label": "Method and variables",
+          "guidance": "Name random assignment, the manipulated notification condition, and the measured target detections."
+        },
+        {
+          "label": "Statistic",
+          "guidance": "Compare 31.6 with 35.2 and preserve the fact that no inferential test is reported."
+        },
+        {
+          "label": "Ethics and generalizability",
+          "guidance": "Connect a stated safeguard to protection, then connect the volunteer age and location limits to the population claim."
+        },
+        {
+          "label": "Argument",
+          "guidance": "Make a qualified claim about this task and use selective attention or divided attention to explain the observed pattern."
+        }
+      ],
+      "successCriteria": [
+        "Answers all six parts and ties each response to a specific detail in the synthetic summary.",
+        "Distinguishes random assignment from random sampling and causation from population generalization.",
+        "Interprets the mean difference without inventing statistical significance, an effect size, or an official score.",
+        "Uses a psychological concept to explain why the evidence bears on a qualified claim."
+      ],
+      "commonPitfalls": [
+        "Calling the sample random when volunteers were recruited through community notices.",
+        "Defining attention with a vague phrase instead of the number of targets correctly detected out of 40.",
+        "Claiming the difference is statistically significant when no inferential result is provided.",
+        "Generalizing directly to children, all phone use, classroom achievement, or clinical attention problems."
+      ],
+      "sampleOutline": [
+        "Method: randomized experiment; notification condition manipulated.",
+        "Operational definition: correct detections out of 40 during the monitoring task.",
+        "Result: silent-condition mean exceeded notification-condition mean by 3.6 detections; significance is unknown.",
+        "Ethics and limits: connect one stated safeguard to protection; volunteer young adults from one area limit generalization.",
+        "Argument: qualify the conclusion to intermittent notifications and this selective-attention task."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description-clarifications.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-psychology/exam",
+        "https://www.hhs.gov/ohrp/regulations-and-policy/belmont-report/index.html"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Unscored independent planning practice using a wholly synthetic study. Not an official College Board prompt, article, rubric, point award, score, score prediction, college-credit prediction, or diagnosis. Independent AP Psychology, accessibility, rights, safety, and psychometric validation remain pending.",
+      "unscored": true,
+      "automatedScoring": false,
+      "scorePrediction": false,
+      "officialItem": false,
+      "stimulusNature": "Independently authored synthetic study summary; it does not describe a real or peer-reviewed publication.",
+      "rights": {
+        "secureCollegeBoardContentUsed": false,
+        "copiedOrRephrasedOfficialPrompt": false,
+        "copiedOfficialRubric": false,
+        "originalStimulus": true
+      },
+      "accessibility": {
+        "stimulusFormat": "plain text",
+        "essentialVisualContent": false,
+        "readingOrder": "linear",
+        "independentReviewStatus": "pending"
+      },
+      "expertReviewStatus": "pending",
+      "releaseEligible": false
+    },
+    {
+      "id": "ap-psych-ebq-workshop-01",
+      "taskType": "EBQ-style evidence synthesis (unscored)",
+      "title": "Distributed retrieval in classroom learning",
+      "prompt": "Using at least two of the independently authored synthetic source summaries, develop a qualified claim about whether high school courses should include brief, low-stakes retrieval opportunities distributed across the week when the goal is durable learning.",
+      "stimulus": "SYNTHETIC EVIDENCE SET FOR PRACTICE — THESE ARE NOT REAL OR PUBLISHED STUDIES.\n\nSource A: Eighteen introductory-psychology classes in six public high schools were assigned by class to one of two four-week routines. Retrieval classes completed three brief closed-note questions twice per week and then received corrective feedback. Comparison classes spent the same time rereading matched summaries. On a common delayed assessment four weeks later, the retrieval classes averaged 81% and the comparison classes averaged 74%. Because classes rather than students were assigned, teacher and class differences may remain.\n\nSource B: Ninety-six adolescents learned two matched sets of unfamiliar word pairs in a laboratory. Each participant used spaced retrieval with feedback for one set and equal-time restudy for the other; set order and condition were counterbalanced. One week later, mean recall was 68% for the retrieval set and 54% for the restudied set. The artificial word-pair task may not represent complex course learning.\n\nSource C: In a survey of 1,200 high school students, reported frequency of self-quizzing correlated positively with end-of-term course grades (r = .24). The survey did not fully control prior achievement, study time, course difficulty, or motivation, and self-reports may be inaccurate.",
+      "taskParts": [
+        "A. State a defensible, qualified claim that answers the question.",
+        "B. Use one specific result from one source as evidence and explain why it supports or limits the claim.",
+        "C. Use a specific result from a different source and a relevant AP Psychology concept to justify the claim, while acknowledging an important limitation or alternative explanation."
+      ],
+      "planningFrame": [
+        {
+          "label": "Claim",
+          "guidance": "Answer the policy question with conditions rather than claiming retrieval always works for every student or task."
+        },
+        {
+          "label": "First evidence chain",
+          "guidance": "Select a quantitative result, identify the design, and explain how the result bears on durable learning."
+        },
+        {
+          "label": "Second evidence chain",
+          "guidance": "Use a different source and connect its result to retrieval practice, spacing, feedback, encoding, or access to long-term memory."
+        },
+        {
+          "label": "Boundary check",
+          "guidance": "Preserve design limits such as clustered assignment, laboratory artificiality, self-report, confounding, and modest correlation."
+        }
+      ],
+      "successCriteria": [
+        "Makes a relevant, qualified claim rather than restating the question.",
+        "Uses specific evidence from at least two different synthetic sources.",
+        "Explains how each cited result supports or limits the claim rather than merely listing numbers.",
+        "Accurately applies a psychological concept and acknowledges what the evidence cannot establish."
+      ],
+      "commonPitfalls": [
+        "Treating the survey correlation in Source C as proof that self-quizzing caused higher grades.",
+        "Ignoring that Source A assigned intact classes and may retain teacher or classroom differences.",
+        "Generalizing Source B's word-pair task to every kind of complex learning without qualification.",
+        "Inventing an official rubric, point total, AP score, or statistical result not included in the summaries."
+      ],
+      "sampleOutline": [
+        "Claim: recommend brief, feedback-supported retrieval as one evidence-informed routine, while monitoring task fit and access.",
+        "Evidence 1: use the delayed classroom means from Source A and preserve the cluster-design limitation.",
+        "Evidence 2: use the within-person one-week recall difference from Source B and connect it to retrieval practice or spacing.",
+        "Boundary: Source C is consistent with the claim but cannot remove motivation, prior-achievement, or self-report alternatives."
+      ],
+      "references": [
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf",
+        "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description-clarifications.pdf",
+        "https://apcentral.collegeboard.org/courses/ap-psychology/exam",
+        "https://openstax.org/books/psychology-2e/pages/8-introduction"
+      ],
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "reviewNote": "Unscored independent planning practice using three wholly synthetic study summaries. Not official College Board sources, a prompt, rubric, point award, score, score prediction, college-credit prediction, or classroom mandate. Independent AP Psychology, accessibility, rights, and psychometric validation remain pending.",
+      "unscored": true,
+      "automatedScoring": false,
+      "scorePrediction": false,
+      "officialItem": false,
+      "stimulusNature": "Three independently authored synthetic study summaries; they do not describe real or peer-reviewed publications.",
+      "rights": {
+        "secureCollegeBoardContentUsed": false,
+        "copiedOrRephrasedOfficialPrompt": false,
+        "copiedOfficialRubric": false,
+        "originalStimulus": true
+      },
+      "accessibility": {
+        "stimulusFormat": "plain text",
+        "essentialVisualContent": false,
+        "readingOrder": "linear",
+        "independentReviewStatus": "pending"
+      },
+      "expertReviewStatus": "pending",
+      "releaseEligible": false
+    }
+  ]
+}

@@ -420,7 +420,7 @@
     if (!THREE || !r) return null;
     var unit = isNum(opts.unit) ? opts.unit : 1;
     var group = new THREE.Group();
-    r.parts.forEach(function (p) {
+    r.parts.forEach(function (p, partIndex) {
       var geo = null;
       try {
         if (p.shape === 'box') geo = new THREE.BoxGeometry(p.size[0], p.size[1], p.size[2]);
@@ -431,6 +431,8 @@
       } catch (e) { geo = null; }
       if (!geo) return;
       var mesh = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: new THREE.Color(p.color), roughness: 0.55, metalness: 0.08 }));
+      mesh.userData = mesh.userData || {};
+      mesh.userData.prim3dPartIndex = partIndex;
       mesh.position.set(p.position[0], p.position[1], p.position[2]);
       mesh.rotation.set(p.rotation[0] * Math.PI / 180, p.rotation[1] * Math.PI / 180, p.rotation[2] * Math.PI / 180);
       group.add(mesh);

@@ -2137,7 +2137,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                   }, '\u2600\uFE0F Begin Day \u2014 ' + maxAP + ' Actions Available')
                 )
               ),
-              React.createElement('div', { className: 'flex justify-between items-center mb-1' },
+              React.createElement('section', { id: 'spacecolony-fs-workspace', 'data-spacecolony-fullscreen-workspace': 'true', role: 'region', 'aria-label': t('stem.spacecolony.colony_map_workspace', 'Colony map and navigation controls') },
+              React.createElement('style', null, '#spacecolony-fs-workspace:fullscreen,#spacecolony-fs-workspace:-webkit-full-screen{box-sizing:border-box;display:flex;flex-direction:column;width:100vw;height:100vh;overflow:hidden;padding:12px;background:#020617;color:#e2e8f0}#spacecolony-fs-workspace:fullscreen #spacecolony-fs-wrap,#spacecolony-fs-workspace:-webkit-full-screen #spacecolony-fs-wrap{flex:1;min-height:0}#spacecolony-fs-workspace:fullscreen #spacecolony-fs-wrap canvas,#spacecolony-fs-workspace:-webkit-full-screen #spacecolony-fs-wrap canvas{width:100%;height:100%;max-height:none;margin-bottom:0;object-fit:contain}'),
+              React.createElement('div', { className: 'flex flex-wrap justify-between items-center gap-2 mb-1' },
                 React.createElement('div', { className: 'flex gap-1 items-center', role: 'toolbar', 'aria-label': t('stem.spacecolony.map_navigation_controls', 'Map navigation controls') },
                   React.createElement('button', { type: 'button', onClick: function () { upd('colonyCamX', Math.max(0, camX - 10)); }, 'aria-label': t('stem.spacecolony.scroll_left', 'Scroll Left'), className: 'transition-colors px-2 py-1 bg-slate-700 text-white rounded text-[11px] hover:bg-slate-600 active:scale-[0.97]', title: t('stem.spacecolony.scroll_left', 'Scroll Left') }, '\u2190'),
                   React.createElement('button', { type: 'button', onClick: function () { upd('colonyCamY', Math.max(0, camY - 10)); }, 'aria-label': t('stem.spacecolony.scroll_up', 'Scroll Up'), className: 'transition-colors px-2 py-1 bg-slate-700 text-white rounded text-[11px] hover:bg-slate-600 active:scale-[0.97]', title: t('stem.spacecolony.scroll_up', 'Scroll Up') }, '\u2191'),
@@ -2174,10 +2176,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                   style: { maxHeight: '520px', cursor: dragState.dragging ? 'grabbing' : 'grab' }
                 }),
                 React.createElement('button', {
-                  'aria-label': t('stem.spacecolony.toggle_fullscreen_for_the_colony_map', 'Toggle fullscreen for the colony map'),
+                  'aria-label': t('stem.spacecolony.toggle_fullscreen_for_the_colony_map', 'Toggle fullscreen for the colony map and navigation controls'),
                   title: t('stem.spacecolony.fullscreen', 'Fullscreen'),
                   onClick: function() {
-                    var el = document.getElementById('spacecolony-fs-wrap');
+                    var el = document.getElementById('spacecolony-fs-workspace');
                     if (!el) return;
                     var inFull = document.fullscreenElement === el || document.webkitFullscreenElement === el || document.mozFullScreenElement === el;
                     if (inFull) { var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen; if (ex) ex.call(document); }
@@ -2192,6 +2194,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     fontSize: 16, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.4)'
                   }
                 }, '⛶')
+              ),
               ),
               // ── Minimap ──
               React.createElement('div', { className: 'relative', style: { width: '120px', height: '120px', position: 'absolute', right: '16px', top: '80px', zIndex: 10 } },

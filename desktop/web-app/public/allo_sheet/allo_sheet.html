@@ -7,7 +7,7 @@
   <meta name="referrer" content="no-referrer">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; form-action 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-src http://127.0.0.1:* http://localhost:* https:; frame-ancestors 'self' https://alloflow-cdn.pages.dev;">
   <title>AlloSheet — Agentic Educator Spreadsheet</title>
-  <link rel="stylesheet" href="allo_sheet.css?v=4">
+  <link rel="stylesheet" href="allo_sheet.css?v=7">
 </head>
 <body>
   <a class="skip-link" href="#mainContent">Skip to workbook</a>
@@ -30,6 +30,35 @@
     workbook values stay local unless you explicitly select rows and confirm sending those values through your configured AlloFlow AI provider.
   </div>
 
+  <div id="artifactReviewBackdrop" class="artifact-review-backdrop" hidden>
+    <section
+      id="artifactReview"
+      class="connection-card artifact-review"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="artifactReviewTitle"
+      aria-describedby="artifactSourceSummary artifactPrivacySummary artifactProvenanceSummary artifactReviewHelp"
+      tabindex="-1"
+      hidden
+    >
+      <h2 id="artifactReviewTitle">Review tables sent to AlloSheet</h2>
+      <p id="artifactSourceSummary"></p>
+      <p id="artifactPrivacySummary" class="privacy-detail"></p>
+      <p id="artifactProvenanceSummary" class="artifact-provenance"></p>
+      <fieldset class="artifact-table-fieldset">
+        <legend>Select the tables to open</legend>
+        <ul id="artifactTableList" class="artifact-table-list"></ul>
+      </fieldset>
+      <p id="artifactSelectionSummary" class="field-hint" role="status" aria-live="polite"></p>
+      <p id="artifactReviewHelp" class="field-hint"><strong>Opening these tables does not enable AI.</strong> Values remain in this popup unless you separately select rows and approve an AI request.</p>
+      <div class="button-row">
+        <button id="acceptArtifactButton" type="button">Open selected tables</button>
+        <button id="cancelArtifactButton" type="button" class="quiet-button">Cancel transfer</button>
+      </div>
+      <p id="artifactReviewStatus" class="form-error" role="status" aria-live="polite" aria-atomic="true" hidden></p>
+    </section>
+  </div>
+
   <div class="app-layout">
     <main id="mainContent" tabindex="-1">
       <section id="engineCard" class="connection-card" aria-labelledby="connectionTitle">
@@ -46,17 +75,67 @@
         </div>
 
         <section id="canvasFallback" class="canvas-fallback" aria-labelledby="canvasFallbackTitle" hidden>
-          <h3 id="canvasFallbackTitle">Use a CSV in this browser</h3>
-          <p>Gemini Canvas cannot start desktop software. Import a CSV to use direct cell editing, the accessible table, local audit, and human-reviewed AI plans in this popup. Data stays in this window until you download it.</p>
-          <p><strong>Need .xlsx or full Grist?</strong> Open AlloFlow Desktop, or use a district-hosted AlloSheet service configured by your administrator.</p>
-          <div class="canvas-file-actions">
-            <label for="canvasCsvInput">
-              Import CSV
+          <h3 id="canvasFallbackTitle">Start fresh or import a table</h3>
+          <p id="canvasModeDescription">Create a new sheet or import a CSV to use direct editing, the accessible table, local audit, and human-reviewed AI plans. Data stays in this popup until you download a CSV or an AlloSheet workspace file.</p>
+          <div class="canvas-start-actions">
+            <button id="showNewSheetButton" type="button" aria-expanded="false" aria-controls="newSheetForm">Start a new sheet</button>
+            <label class="file-button" for="canvasCsvInput">
+              Import a CSV
               <input id="canvasCsvInput" type="file" accept=".csv,text/csv" aria-describedby="canvasFileStatus">
             </label>
-            <button id="downloadCanvasCsvButton" type="button" class="quiet-button" disabled>Download reviewed CSV</button>
+          </div>
+
+          <form id="newSheetForm" class="new-sheet-form" aria-labelledby="newSheetFormTitle" novalidate hidden>
+            <h4 id="newSheetFormTitle">New local sheet</h4>
+            <div class="form-grid new-sheet-form-grid">
+              <label>
+                Sheet name
+                <input id="newSheetName" type="text" maxlength="100" value="Untitled sheet" autocomplete="off" aria-describedby="newSheetHint newSheetError" required>
+              </label>
+              <label>
+                Initial rows
+                <input id="newSheetRows" type="number" min="1" max="200" step="1" value="10" inputmode="numeric" aria-describedby="newSheetHint newSheetError" required>
+              </label>
+            </div>
+            <label>
+              Column names, one per line
+              <textarea id="newSheetColumns" rows="4" maxlength="6440" aria-describedby="newSheetHint newSheetError" required>Column 1
+Column 2
+Column 3</textarea>
+            </label>
+            <p id="newSheetHint" class="field-hint">Use 1–40 unique column names and create 1–200 rows. You can rename the neutral defaults before creating the sheet.</p>
+            <p id="newSheetError" class="form-error" role="alert" tabindex="-1" hidden></p>
+            <div class="button-row">
+              <button id="createNewSheetButton" type="submit">Create sheet</button>
+              <button id="cancelNewSheetButton" type="button" class="quiet-button">Cancel</button>
+            </div>
+          </form>
+
+          <p id="desktopFeatureHint"><strong>Need .xlsx or full Grist?</strong> Open AlloFlow Desktop, or use a district-hosted AlloSheet service configured by your administrator.</p>
+          <div class="canvas-save-actions">
+            <button id="downloadCanvasCsvButton" type="button" class="quiet-button" disabled>Download current table CSV</button>
           </div>
           <p id="canvasFileStatus" class="field-hint" role="status" aria-live="polite">Choose a CSV up to 2 MB, 200 data rows, 40 columns, and 1,200 characters per cell. Files over a limit are rejected without changing the open data.</p>
+        </section>
+
+        <section id="workspaceFilePanel" class="workspace-file-panel" aria-labelledby="workspaceFileTitle">
+          <h3 id="workspaceFileTitle">Save or reopen a local AlloSheet workspace</h3>
+          <p>Use one file to keep every table in the bounded local workspace. Reopening validates the file and shows a table-by-table review before replacing anything.</p>
+          <div class="workspace-file-actions">
+            <label class="file-button" for="workspaceFileInput">
+              Open saved AlloSheet workspace
+              <input
+                id="workspaceFileInput"
+                type="file"
+                accept=".allosheet.json,application/vnd.alloflow.allosheet+json,application/json"
+                aria-describedby="workspaceFileWarning workspaceFileStatus workspaceFileError"
+              >
+            </label>
+            <button id="downloadWorkspaceButton" type="button" class="quiet-button" disabled>Download all-table workspace</button>
+          </div>
+          <p id="workspaceFileWarning" class="privacy-detail"><strong>Protect the downloaded file:</strong> AlloSheet workspace JSON is unencrypted and may contain education records. Store and share it only through an approved secure location.</p>
+          <p id="workspaceFileStatus" class="field-hint" role="status" aria-live="polite">Workspace files stay on this device unless you choose where to save or upload them. Local analysis results are recalculated rather than stored.</p>
+          <p id="workspaceFileError" class="form-error" role="alert" aria-atomic="true" hidden></p>
         </section>
 
         <label id="tablePicker" class="table-picker">
@@ -97,6 +176,7 @@
         <button id="editorTab" type="button" role="tab" aria-selected="true" aria-controls="editorView" tabindex="0">Spreadsheet editor <span class="tab-selected-cue" aria-hidden="true">Selected</span></button>
         <button id="tableTab" type="button" role="tab" aria-selected="false" aria-controls="tableView" tabindex="-1">Accessible table mirror <span class="tab-selected-cue" aria-hidden="true">Selected</span></button>
         <button id="auditTab" type="button" role="tab" aria-selected="false" aria-controls="auditView" tabindex="-1">Data audit <span class="tab-selected-cue" aria-hidden="true">Selected</span></button>
+        <button id="analysisTab" type="button" role="tab" aria-selected="false" aria-controls="analysisView" tabindex="-1">Local analysis <span class="tab-selected-cue" aria-hidden="true">Selected</span></button>
       </nav>
 
       <section id="editorView" class="work-view" role="tabpanel" aria-labelledby="editorTab">
@@ -137,6 +217,93 @@
           Load a table, then run the audit.
         </div>
       </section>
+
+      <section id="analysisView" class="work-view" role="tabpanel" aria-labelledby="analysisTab" hidden>
+        <div class="section-heading">
+          <div>
+            <h2>Accessible local analysis</h2>
+            <p>Filter, group, and summarize the loaded table in this popup. These calculations do not enable AI, write back to the source, or change workbook cells.</p>
+          </div>
+        </div>
+        <form id="analysisForm" class="analysis-form" novalidate>
+          <fieldset>
+            <legend>Optional row filter</legend>
+            <div class="analysis-control-grid">
+              <label>
+                Filter column
+                <select id="analysisFilterColumn">
+                  <option value="">No filter</option>
+                </select>
+              </label>
+              <label>
+                Condition
+                <select id="analysisFilterOperator" disabled>
+                  <option value="contains">Contains</option>
+                  <option value="equals">Equals</option>
+                  <option value="not-equals">Does not equal</option>
+                  <option value="is-blank">Is blank</option>
+                  <option value="not-blank">Is not blank</option>
+                  <option value="gte">Is at least</option>
+                  <option value="lte">Is at most</option>
+                </select>
+              </label>
+              <label>
+                Filter value
+                <input id="analysisFilterValue" type="text" maxlength="1200" disabled>
+              </label>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Summary definition</legend>
+            <div class="analysis-control-grid">
+              <label>
+                Group by
+                <select id="analysisGroupColumn" required>
+                  <option value="">Load a table first</option>
+                </select>
+              </label>
+              <label>
+                Measure
+                <select id="analysisMeasureColumn">
+                  <option value="__count__">Row count</option>
+                </select>
+              </label>
+              <label>
+                Calculation
+                <select id="analysisCalculation">
+                  <option value="count">Count rows</option>
+                  <option value="average">Average</option>
+                  <option value="sum">Sum</option>
+                  <option value="min">Minimum</option>
+                  <option value="max">Maximum</option>
+                </select>
+              </label>
+              <label>
+                Representation
+                <select id="analysisRepresentation">
+                  <option value="bar">Bar summary</option>
+                  <option id="analysisTrendOption" value="trend">Date trend</option>
+                </select>
+              </label>
+            </div>
+          </fieldset>
+          <p class="field-hint">Blank and non-numeric measures are excluded rather than converted to zero. Trend views require an ISO date or date-time group column. Results are descriptive and do not establish cause.</p>
+          <p id="analysisError" class="form-error" role="alert" tabindex="-1" hidden></p>
+          <div class="button-row">
+            <button id="runAnalysisButton" type="submit" disabled>Run local analysis</button>
+            <button id="clearAnalysisButton" type="button" class="quiet-button">Clear results</button>
+          </div>
+        </form>
+        <p id="analysisNarrative" class="analysis-narrative" role="status" aria-live="polite" aria-atomic="true">Load a table to configure a local analysis.</p>
+        <div id="analysisVisual" class="analysis-visual" aria-hidden="true" hidden></div>
+        <div id="analysisTableScroll" class="table-scroll" tabindex="0" role="region" aria-label="Scrollable local analysis results. Use arrow keys to review every column.">
+          <table id="analysisTable">
+            <caption id="analysisCaption">No local analysis has been run.</caption>
+            <thead id="analysisHead"></thead>
+            <tbody id="analysisBody"></tbody>
+          </table>
+        </div>
+      </section>
     </main>
 
     <aside class="agent-panel" aria-labelledby="agentTitle">
@@ -145,6 +312,13 @@
         <h2 id="agentTitle">AlloSheet assistant</h2>
         <p>Ask for an explanation or a bounded change plan. Nothing is written until you review and apply it.</p>
       </div>
+
+      <section id="hostAuthorization" class="host-authorization" aria-labelledby="hostAuthorizationTitle" hidden>
+        <h3 id="hostAuthorizationTitle">Authorize this Canvas origin?</h3>
+        <p id="hostAuthorizationText"></p>
+        <button id="authorizeHostButton" type="button">Authorize this origin for AI requests</button>
+        <p class="field-hint">This lasts only for the current popup. You must still choose a data scope and separately approve selected values for each request.</p>
+      </section>
 
       <label>
         What should AlloSheet help with?
@@ -215,7 +389,9 @@
     <a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener">Third-party notices</a>
   </footer>
 
-  <script src="allo_sheet_adapter.js?v=4"></script>
-  <script src="allo_sheet.js?v=4"></script>
+  <script src="allo_sheet_adapter.js?v=7"></script>
+  <script src="allo_sheet_analysis.js?v=7"></script>
+  <script src="allo_sheet_workspace.js?v=7"></script>
+  <script src="allo_sheet.js?v=7"></script>
 </body>
 </html>

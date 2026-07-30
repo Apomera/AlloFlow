@@ -39,7 +39,7 @@
         "uiLang": "absent",
         "standards": "reaches",
         "interests": "reaches",
-        "dok": "absent",
+        "dok": "reaches",
         "custom": "reaches",
         "emoji": "reaches"
       }
@@ -55,7 +55,7 @@
         "uiLang": "absent",
         "standards": "reaches",
         "interests": "reaches",
-        "dok": "absent",
+        "dok": "reaches",
         "custom": "reaches",
         "emoji": "reaches"
       }
@@ -167,7 +167,7 @@
         "uiLang": "absent",
         "standards": "reaches",
         "interests": "reaches",
-        "dok": "absent",
+        "dok": "reaches",
         "custom": "reaches",
         "emoji": "reaches"
       }
@@ -185,7 +185,7 @@
         "interests": "reaches",
         "dok": "reaches",
         "custom": "reaches",
-        "emoji": "absent"
+        "emoji": "reaches"
       }
     },
     {
@@ -263,9 +263,9 @@
         "uiLang": "absent",
         "standards": "reaches",
         "interests": "reaches",
-        "dok": "absent",
+        "dok": "reaches",
         "custom": "reaches",
-        "emoji": "absent"
+        "emoji": "reaches"
       }
     },
     {
@@ -295,9 +295,9 @@
         "uiLang": "absent",
         "standards": "reaches",
         "interests": "absent",
-        "dok": "absent",
+        "dok": "reaches",
         "custom": "reaches",
-        "emoji": "absent"
+        "emoji": "reaches"
       }
     },
     {
@@ -311,9 +311,9 @@
         "uiLang": "absent",
         "standards": "reaches",
         "interests": "absent",
-        "dok": "absent",
+        "dok": "reaches",
         "custom": "reaches",
-        "emoji": "absent"
+        "emoji": "reaches"
       }
     },
     {
@@ -343,7 +343,7 @@
         "uiLang": "absent",
         "standards": "reaches",
         "interests": "reaches",
-        "dok": "absent",
+        "dok": "reaches",
         "custom": "reaches",
         "emoji": "reaches"
       }
@@ -359,7 +359,7 @@
         "uiLang": "absent",
         "standards": "reaches",
         "interests": "reaches",
-        "dok": "absent",
+        "dok": "reaches",
         "custom": "reaches",
         "emoji": "reaches"
       }
@@ -471,7 +471,7 @@
         "uiLang": "absent",
         "standards": "reaches",
         "interests": "reaches",
-        "dok": "absent",
+        "dok": "reaches",
         "custom": "reaches",
         "emoji": "reaches"
       }
@@ -489,7 +489,7 @@
         "interests": "reaches",
         "dok": "reaches",
         "custom": "reaches",
-        "emoji": "absent"
+        "emoji": "reaches"
       }
     },
     {
@@ -567,9 +567,9 @@
         "uiLang": "absent",
         "standards": "reaches",
         "interests": "reaches",
-        "dok": "absent",
+        "dok": "reaches",
         "custom": "reaches",
-        "emoji": "absent"
+        "emoji": "reaches"
       }
     },
     {
@@ -599,9 +599,9 @@
         "uiLang": "absent",
         "standards": "reaches",
         "interests": "absent",
-        "dok": "absent",
+        "dok": "reaches",
         "custom": "reaches",
-        "emoji": "absent"
+        "emoji": "reaches"
       }
     },
     {
@@ -615,9 +615,9 @@
         "uiLang": "absent",
         "standards": "reaches",
         "interests": "absent",
-        "dok": "absent",
+        "dok": "reaches",
         "custom": "reaches",
-        "emoji": "absent"
+        "emoji": "reaches"
       }
     }
   ]

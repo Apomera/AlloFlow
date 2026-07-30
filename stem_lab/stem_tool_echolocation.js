@@ -64,6 +64,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
       '.echo-metric-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}',
       '.echo-scene-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}',
       '.echo-canvas-shell{position:relative;border-radius:16px;padding:10px;background:linear-gradient(180deg,rgba(15,23,42,.96),#050816);border:1px solid rgba(129,140,248,.45);box-shadow:0 16px 36px rgba(15,23,42,.34),inset 0 1px 0 rgba(255,255,255,.08)}',
+      '#echo-sonar-fs-workspace:fullscreen,#echo-sonar-fs-workspace:-webkit-full-screen{box-sizing:border-box;display:flex;flex-direction:column;gap:10px;width:100vw;height:100vh;overflow:auto;padding:clamp(8px,1.5vw,16px);background:#020617;color:#e2e8f0}',
+      '#echo-sonar-fs-workspace:fullscreen .echo-canvas-shell,#echo-sonar-fs-workspace:-webkit-full-screen .echo-canvas-shell{flex:1;min-height:360px}#echo-sonar-fs-workspace:fullscreen .echo-canvas-shell canvas,#echo-sonar-fs-workspace:-webkit-full-screen .echo-canvas-shell canvas{width:100%;height:100%;object-fit:contain}',
       '.echo-canvas-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px}',
       '.echo-control-chip{min-height:32px}',
       '@media(max-width:760px){.echo-focus-grid,.echo-metric-grid{grid-template-columns:1fr!important}.echo-canvas-shell{padding:6px!important}.echo-canvas-toolbar{justify-content:flex-start!important}.echo-focus-subtitle{white-space:normal!important}}'
@@ -1977,7 +1979,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
           : ['Cave Exploration', 'Night Forest', 'Urban Night', 'Custom'];
         var sceneIndices = isFrugivore ? [3, 1, 2, 4] : [0, 1, 2, 4];
 
-        return h('div', { className: 'space-y-3' },
+        return h('div', { id: 'echo-sonar-fs-workspace', className: 'space-y-3', 'data-echolocation-fullscreen-workspace': 'true', role: 'region', 'aria-label': 'Echolocation sonar scene and flight controls' },
           // Species toggle + energy bar
           h('div', { className: 'flex flex-wrap gap-2 items-center justify-between' },
             h('div', { className: 'flex items-center gap-2' },
@@ -2081,10 +2083,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               // banner which is top-center). Uses the standard
               // requestFullscreen API with vendor-prefix fallbacks.
               h('button', {
-                'aria-label': t('stem.echolocation.toggle_fullscreen_for_the_sonar_canvas', 'Toggle fullscreen for the sonar canvas'),
+                'aria-label': t('stem.echolocation.toggle_fullscreen_for_the_sonar_canvas', 'Toggle fullscreen for the sonar scene and flight controls'),
                 title: t('stem.echolocation.fullscreen_2', 'Fullscreen'),
                 onClick: function() {
-                  var el = document.getElementById('echo-sonar-fs-wrap');
+                  var el = document.getElementById('echo-sonar-fs-workspace');
                   if (!el) return;
                   var inFull = document.fullscreenElement === el
                     || document.webkitFullscreenElement === el

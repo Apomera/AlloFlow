@@ -75,6 +75,22 @@ describe('universal settings panel — help-key custody', () => {
     }
   });
 
+  it('owns the shared language list, with glossary showing it read-only', () => {
+    // The list feeds three consumers (this output-language select, Adventure's
+    // language mode, Glossary's translations). Its BUILDER used to sit in the
+    // Glossary panel, so adding a language meant opening an unrelated tool.
+    const uni = componentBody(panelSrc, 'UniversalSettingsPanel', 'AdventurePanel');
+    const gloss = componentBody(panelSrc, 'GlossaryPanel', 'QuizPanel');
+    for (const fn of ['addLanguage', 'removeLanguage', 'setLanguageInput']) {
+      expect(uni, `${fn} in universal panel`).toContain(fn);
+      expect(gloss, `${fn} must be OUT of glossary`).not.toContain(fn);
+    }
+    // Glossary must still SAY what it will translate into, or a teacher cannot
+    // tell whether translations are coming — read-only, not editable.
+    expect(gloss).toContain('selectedLanguages.join');
+    expect(gloss).toContain('glossary_language_summary');
+  });
+
   it('the shared custom-instructions component renders its helpKey as data-help-key', () => {
     const comp = componentBody(panelSrc, 'ResourceCustomInstructions', 'UniversalSettingsPanel');
     expect(comp).toContain('data-help-key={helpKey}');

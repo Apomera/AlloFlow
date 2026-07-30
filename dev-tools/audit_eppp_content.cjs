@@ -5,11 +5,12 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
+const { ensureFamily } = require('./eppp_evidence_paths.cjs');
+const { openEpppMigrationSourceArchive } = require('./eppp_migration_source_archive.cjs');
 
 const workspaceRoot = path.resolve(__dirname, '..');
-const runtimeRoot = path.join(workspaceRoot, 'test_prep', 'eppp_legacy');
-const deployRoot = path.join(workspaceRoot, 'desktop/web-app', 'public', 'test_prep', 'eppp_legacy');
-const indexPath = path.join(runtimeRoot, 'index.html');
+const outputRoot = ensureFamily('audit');
+const archive = openEpppMigrationSourceArchive({ workspaceRoot });
 
 function canonicalText(value) {
   return String(value || '')
@@ -26,18 +27,15 @@ function stableId(question, choices, sourceFile, ordinal) {
 }
 
 function loadLearnerBank() {
-  if (!fs.existsSync(indexPath)) throw new Error('Missing imported EPPP runtime: ' + indexPath);
-  const html = fs.readFileSync(indexPath, 'utf8');
-  const scripts = Array.from(html.matchAll(/<script\s+src=["'](js\/[^"']+\.js)["']/gi), (match) => match[1])
-    .filter((relative) => /\/(?:data|questions_bank|data_batch\d+|rationale_enhancements\d*|references_overlay\d+)\.js$/i.test(relative));
+  const plan = archive.manifest.execution.questionAudit;
+  const scripts = Object.values(plan).flat();
   if (!scripts.includes('js/data.js') || !scripts.includes('js/questions_bank.js')) {
     throw new Error('Could not identify the canonical EPPP data scripts.');
   }
 
   const context = vm.createContext({ console: { log() {}, warn() {}, error() {} } });
   for (const relative of scripts) {
-    const filePath = path.join(runtimeRoot, relative);
-    vm.runInContext(fs.readFileSync(filePath, 'utf8'), context, { filename: relative, timeout: 10000 });
+    vm.runInContext(archive.readText(relative), context, { filename: relative, timeout: 10000 });
     const domains = vm.runInContext('EPPPData.domains', context);
     for (const domain of domains) {
       for (const question of Array.isArray(domain.questions) ? domain.questions : []) {
@@ -151,7 +149,12 @@ function buildAudit() {
   const report = {
     schemaVersion: 1,
     generatedAt: new Date().toISOString(),
-    source: 'Pass the EPPP learner-visible runtime after rationale and reference overlays',
+    source: 'Frozen Pass the EPPP migration-source archive after rationale and reference overlays',
+    sourceArchive: {
+      archiveId: archive.manifest.archiveId,
+      root: archive.archiveRootRelative,
+      payloadSha256: archive.payloadSha256,
+    },
     methodology: 'Automated triage only. Flags are review prompts, not findings of factual inaccuracy or expert validation.',
     scriptsAudited: loaded.scripts,
     summary: {
@@ -225,11 +228,8 @@ ${report.byDomain.map((domain) => `| ${domain.domainName || domain.domainId} | $
 const report = buildAudit();
 const json = JSON.stringify(report, null, 2) + '\n';
 const markdown = markdownReport(report);
-for (const outputRoot of [runtimeRoot, deployRoot]) {
-  if (!fs.existsSync(outputRoot)) throw new Error('Missing EPPP output directory: ' + outputRoot);
-  fs.writeFileSync(path.join(outputRoot, 'content_audit.json'), json, 'utf8');
-  fs.writeFileSync(path.join(outputRoot, 'content_audit.md'), markdown, 'utf8');
-}
+fs.writeFileSync(path.join(outputRoot, 'content_audit.json'), json, 'utf8');
+fs.writeFileSync(path.join(outputRoot, 'content_audit.md'), markdown, 'utf8');
 
 console.log('Audited ' + report.summary.totalItems + ' learner-visible EPPP questions.');
 console.log('Reference coverage: ' + report.summary.referenceCoveragePercent + '%');

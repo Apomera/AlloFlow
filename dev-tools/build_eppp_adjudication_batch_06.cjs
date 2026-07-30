@@ -3,12 +3,12 @@
 
 const fs = require('fs');
 const path = require('path');
+const { ensureFamily, evidencePath } = require('./eppp_evidence_paths.cjs');
 
 const root = path.resolve(__dirname, '..');
-const sourceRoot = path.join(root, 'test_prep', 'eppp_legacy');
-const deployRoot = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_legacy');
+const canonicalRoot = ensureFamily('adjudication');
 const readJson = (file) => JSON.parse(fs.readFileSync(file, 'utf8'));
-const docket = readJson(path.join(sourceRoot, 'next_review_docket.json'));
+const docket = readJson(evidencePath('review', 'next_review_docket.json'));
 const priorIds = new Set(['01', '02', '03', '04', '05'].flatMap((batch) => readJson(path.join(sourceRoot, `adjudication_batch_${batch}.json`)).items.map((item) => item.legacyId)));
 
 const sources = {
@@ -274,7 +274,7 @@ const report = {
 const rows = items.map((item) => `| ${item.adjudicationPosition} | ${item.legacyId} | ${item.domainId} | ${item.decision} | ${item.sourceVerification} |`).join('\n');
 const markdown = `# EPPP editorial adjudication batch 06\n\nGenerated: ${report.generatedAt}\n\n**Status: editorial adjudication complete; all items remain quarantined.**\n\n${report.purpose}\n\n## Outcome\n\n- ${summary.adjudicatedCandidates} candidates reviewed across all eight EPPP domains.\n- ${summary.minorRevision} required minor corrections.\n- ${summary.majorRewrite} required major rewriting.\n- ${summary.promotedToNativeBank} were promoted to the learner-facing bank.\n- Independent qualified review remains pending for every item.\n- Current regulatory and jurisdiction-sensitive sources were checked through ${report.currentSourceReviewDate}.\n\n| # | Legacy ID | Domain | Decision | Source finding |\n| ---: | --- | --- | --- | --- |\n${rows}\n\n## Review method\n\n${report.reviewMethod.map((step) => `- ${step}`).join('\n')}\n\nThe JSON companion preserves the original prompt and key, item-specific findings, the complete revised item, explanation of every option, and full source provenance.\n`;
 
-for (const outputRoot of [sourceRoot, deployRoot]) {
+for (const outputRoot of [canonicalRoot]) {
   fs.writeFileSync(path.join(outputRoot, 'adjudication_batch_06.json'), JSON.stringify(report, null, 2) + '\n', 'utf8');
   fs.writeFileSync(path.join(outputRoot, 'adjudication_batch_06.md'), markdown, 'utf8');
 }

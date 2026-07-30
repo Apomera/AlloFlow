@@ -43,7 +43,7 @@ describe('Geometry World animation runtime', () => {
     expect(SOURCE).toContain("document.addEventListener('visibilitychange'");
     expect(SOURCE).toContain('engine._pausedByVisibility = true;');
     expect(SOURCE).toContain('if (engine.clock) engine.clock.getDelta();');
-    expect(SOURCE).toContain('if (engine && engine._pausedByVisibility) return;');
+    expect(SOURCE).toContain('if (engine && (engine._pausedByVisibility || engine._pausedByViewport)) return;');
   });
 });
 

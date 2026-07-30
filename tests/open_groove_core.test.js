@@ -814,6 +814,85 @@ describe('Open Groove project core', () => {
     expect(forcedTrebleNote.ledgerLines.length).toBeGreaterThan(bassNote.ledgerLines.length);
   });
 
+  it('updates and deletes selected staff notes without breaking notation timing', () => {
+    const project = OG.ogCreateProject({ tonic: 'F', mode: 'major' });
+    const pattern = project.patterns[0];
+    const synth = project.tracks[1];
+    const placed = OG.ogSetStaffNote(project, pattern.id, synth.id, {
+      startBar: 0,
+      startBeat: 1,
+      pitch: 'Bb4',
+      duration: 'q',
+      replaceSlot: true
+    });
+
+    const updated = OG.ogUpdateStaffNote(project, pattern.id, synth.id, placed.event.id, {
+      pitch: 'C5',
+      duration: 'h.',
+      startBar: 0,
+      startBeat: 2
+    });
+    expect(updated).toMatchObject({ changed: true, duration: 'h.', startTick: OG.ogTicksPerBeat(project) });
+    expect(updated.event).toMatchObject({ pitch: 'C5', durationTicks: OG.ogTicksPerBeat(project) * 3, notation: { spelling: 'C5' } });
+    expect(OG.ogBuildNotationPreview(project, pattern.id).measures[0].notes[0]).toMatchObject({ pitch: 'C5', startBeat: 2, durationTicks: OG.ogTicksPerBeat(project) * 3 });
+    expect(OG.ogStaffDurationTokenFromTicks(project, updated.event.durationTicks)).toBe('h.');
+
+    const missing = OG.ogUpdateStaffNote(project, pattern.id, synth.id, 'missing-note', { pitch: 'D5' });
+    expect(missing).toMatchObject({ changed: false, reason: 'not-found' });
+
+    const deleted = OG.ogDeleteStaffNote(project, pattern.id, synth.id, placed.event.id);
+    expect(deleted).toMatchObject({ removed: true, eventId: placed.event.id });
+    expect(pattern.events.filter(event => event.type === 'note')).toHaveLength(0);
+    expect(OG.ogValidateProject(project)).toEqual([]);
+  });
+
+  it('resolves staff click targets and writes notation phrase presets', () => {
+    const project = OG.ogCreateProject({ tonic: 'C', mode: 'major' });
+    const pattern = project.patterns[0];
+    const synth = project.tracks[1];
+    const staff = OG.ogBuildStaffEngraving(project, pattern.id, { trackId: synth.id, clef: 'treble', slotsPerMeasure: 8 });
+    const c5Y = staff.geometry.bottomY - ((5 * 7) - staff.geometry.bottomLineIndex) * staff.geometry.stepY;
+    const target = OG.ogResolveStaffPoint(project, pattern.id, {
+      trackId: synth.id,
+      clef: 'treble',
+      slotsPerMeasure: 8,
+      width: staff.width,
+      height: staff.height,
+      x: staff.measures[0].slots[2].x + 2,
+      y: c5Y
+    });
+
+    expect(target).toMatchObject({ barIndex: 0, bar: 1, slotIndex: 2, startBeat: 2, pitch: 'C5', inRange: true });
+    const placed = OG.ogSetStaffNote(project, pattern.id, synth.id, {
+      startBar: target.barIndex,
+      startBeat: target.startBeat,
+      pitch: target.pitch,
+      duration: 'q',
+      replaceSlot: true
+    });
+    expect(placed.event).toMatchObject({ pitch: 'C5', notation: { spelling: 'C5' }, source: 'staffEditor' });
+
+    const presets = OG.ogListNotationPhrasePresets();
+    expect(presets.map(preset => preset.id)).toContain('twoBarCallResponse');
+    const phrase = OG.ogWriteNotationPhrasePreset(project, pattern.id, synth.id, 'stepwiseQuestion', {
+      startBar: 1,
+      octave: 4,
+      replace: true
+    });
+    expect(phrase).toMatchObject({ presetId: 'stepwiseQuestion', noteCount: 4, startBar: 1, bars: 1 });
+    const barTwoNotes = pattern.events.filter(event => event.type === 'note' && event.trackId === synth.id && event.startTick >= OG.ogTicksPerMeasure(project) && event.startTick < OG.ogTicksPerMeasure(project) * 2);
+    expect(barTwoNotes.map(event => event.pitch)).toEqual(['C4', 'D4', 'E4', 'G4']);
+    expect(barTwoNotes.every(event => event.role === 'notationPhrase' && event.source === 'notationPhrasePreset')).toBe(true);
+
+    const twoBar = OG.ogWriteNotationPhrasePreset(project, pattern.id, synth.id, 'twoBarCallResponse', {
+      startBar: 2,
+      octave: 4,
+      replace: true
+    });
+    expect(twoBar).toMatchObject({ presetId: 'twoBarCallResponse', noteCount: 7, bars: 2 });
+    expect(OG.ogValidateProject(project)).toEqual([]);
+  });
+
   it('bridges notation notes to grid steps, scale names, chords, and performance offsets', () => {
     const project = OG.ogCreateProject({ tonic: 'C', mode: 'minor' });
     const pattern = project.patterns[0];
@@ -1577,6 +1656,13 @@ describe('Open Groove browser wrappers', () => {
     expect(markup).toContain('Sequence Up');
     expect(markup).toContain('Write to Bar');
     expect(markup).toContain('Motif composition suggestions');
+    expect(markup).toContain('Notation Workflow');
+    expect(markup).toContain('Stepwise Question');
+    expect(markup).toContain('Write Phrase');
+    expect(markup).toContain('MusicXML Export');
+    expect(markup).toContain('Selected Note');
+    expect(markup).toContain('Delete Note');
+    expect(markup).toContain('Staff notes in selected bar');
   });
 
   it('fails audio creation gracefully when Web Audio is unavailable', () => {

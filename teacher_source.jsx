@@ -5,6 +5,59 @@ var _alloFocusTrigger = null;
 function alloSaveFocus() { _alloFocusTrigger = document.activeElement; }
 function alloRestoreFocus() { if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === 'function') { try { _alloFocusTrigger.focus(); } catch(e) {} _alloFocusTrigger = null; } }
 
+const rosterSessionCsvCell = (value) => {
+  const raw = value === null || value === undefined ? '' : String(value);
+  const text = /^[=+@-]/.test(raw) ? "'" + raw : raw;
+  return /[",\r\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
+};
+
+const buildRosterSessionEvidenceCsv = (session) => {
+  const source = session && typeof session === 'object' ? session : {};
+  const headers = [
+    'record_type', 'session_id', 'ended_at', 'duration_minutes', 'transport',
+    'codename', 'group_id', 'quiz_responses', 'activity_opportunities',
+    'activity_submissions', 'revisions', 'follow_up', 'activity_kind',
+    'invited', 'submitted', 'approved', 'hidden', 'feedback_sent', 'votes_cast',
+  ];
+  const rows = [headers];
+  const followUp = new Set((source.insightBrief?.followUpCodenames || []).map(String));
+  Object.entries(source.participants && typeof source.participants === 'object' ? source.participants : {})
+    .sort(([a], [b]) => a.localeCompare(b))
+    .forEach(([codename, rawRecord]) => {
+      const record = rawRecord && typeof rawRecord === 'object' ? rawRecord : {};
+      rows.push([
+        'participant', source.id || '', source.endedAt || '', source.durationMinutes ?? '', source.mode || '',
+        codename, record.groupId || '', record.responseCount || 0, record.liveActivityCount || 0,
+        record.liveSubmissionCount || 0, record.liveRevisionCount || 0, followUp.has(codename) ? 'yes' : 'no',
+        '', '', '', '', '', '', '',
+      ]);
+    });
+  (Array.isArray(source.liveActivities) ? source.liveActivities : []).slice(0, 60).forEach(activity => {
+    const record = activity && typeof activity === 'object' ? activity : {};
+    rows.push([
+      'activity', source.id || '', source.endedAt || '', source.durationMinutes ?? '', source.mode || '',
+      '', '', '', '', '', record.revised || 0, '', record.kind || 'activity',
+      record.invited || 0, record.submitted || 0, record.approved || 0, record.hidden || 0,
+      record.feedbackSent || 0, record.votesCast || 0,
+    ]);
+  });
+  return rows.map(row => row.map(rosterSessionCsvCell).join(',')).join('\r\n');
+};
+
+const downloadRosterSessionEvidenceCsv = (session) => {
+  const csv = buildRosterSessionEvidenceCsv(session);
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement('a');
+  const stamp = String(session?.endedAt || new Date().toISOString()).slice(0, 10);
+  anchor.href = url;
+  anchor.download = 'alloflow_session_evidence_' + stamp + '.csv';
+  document.body.appendChild(anchor);
+  anchor.click();
+  document.body.removeChild(anchor);
+  URL.revokeObjectURL(url);
+};
+
 const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, onApplyGroup, onSyncToSession, onBatchGenerate, activeSessionCode, t, isParentMode, isIndependentMode, onOpenSubmissionInbox, onOpenSeatingChart }) => {
   const [newGroupName, setNewGroupName] = useState('');
   const [newGroupColor, setNewGroupColor] = useState('#4F46E5');
@@ -213,7 +266,15 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       const np = { ...(prev.progressHistory || {}) }; delete np[name];
       const nh = (Array.isArray(prev.sessionHistory) ? prev.sessionHistory : []).map(session => {
         const participants = { ...(session.participants || {}) }; delete participants[name];
-        return { ...session, participants, absentCodenames: (session.absentCodenames || []).filter(codename => codename !== name) };
+        const insightBrief = session.insightBrief && typeof session.insightBrief === 'object' ? {
+          ...session.insightBrief,
+          followUpCodenames: (session.insightBrief.followUpCodenames || []).filter(codename => codename !== name),
+          evidenceCohorts: (session.insightBrief.evidenceCohorts || []).map(cohort => {
+            const codenames = (cohort.codenames || []).filter(codename => codename !== name);
+            return { ...cohort, codenames, count: codenames.length };
+          }).filter(cohort => cohort.count > 0),
+        } : session.insightBrief;
+        return { ...session, participants, insightBrief, absentCodenames: (session.absentCodenames || []).filter(codename => codename !== name) };
       });
       return { ...prev, students: ns, displayNames: nd, progressHistory: np, sessionHistory: nh };
     });
@@ -536,6 +597,9 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                       <span className="text-slate-500">{session.mode === 'mailbox' ? 'Mailbox' : 'Firebase'}</span>
                     </summary>
                     <div className="mt-2 text-xs text-slate-600 space-y-1">
+                      <div className="flex justify-end">
+                        <button type="button" onClick={() => downloadRosterSessionEvidenceCsv(session)} className="min-h-9 rounded-lg border border-cyan-300 bg-cyan-50 px-2 py-1 text-[11px] font-bold text-cyan-900 hover:bg-cyan-100" aria-label="Download this privacy-safe session evidence report as CSV">Download evidence CSV</button>
+                      </div>
                       {typeof session.durationMinutes === 'number' && <p>Duration: {session.durationMinutes} min</p>}
                       {session.teacherNote && <p><span className="font-bold">Teacher note:</span> {session.teacherNote}</p>}
                       {Array.isArray(session.liveActivities) && session.liveActivities.length > 0 && (
@@ -544,6 +608,17 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
                       {session.insightBrief && (
                         <div className="rounded-lg border border-indigo-100 bg-indigo-50/70 p-2">
                           <p><span className="font-bold text-indigo-900">Insight brief:</span> {session.insightBrief.activityCount || 0} activities · {session.insightBrief.submissions || 0} submissions · {session.insightBrief.revisions || 0} revisions · {(session.insightBrief.followUpCodenames || []).length} follow-up</p>
+                          {Array.isArray(session.insightBrief.evidenceCohorts) && session.insightBrief.evidenceCohorts.length > 0 && (
+                            <div className="mt-2 space-y-1" aria-label="Saved evidence cohorts">
+                              {session.insightBrief.evidenceCohorts.map(cohort => (
+                                <details key={cohort.code} className={'rounded border p-1.5 ' + (cohort.intent === 'celebrate' ? 'border-emerald-200 bg-emerald-50' : 'border-amber-200 bg-amber-50')}>
+                                  <summary className="cursor-pointer font-bold text-slate-700">{cohort.label} - {cohort.count}</summary>
+                                  <p className="mt-1 text-[11px] text-slate-600">{cohort.recommendedAction}</p>
+                                  <p className="mt-1 text-[11px] text-slate-600">{(cohort.codenames || []).join(', ')}</p>
+                                </details>
+                              ))}
+                            </div>
+                          )}
                           {Array.isArray(session.insightBrief.groups) && session.insightBrief.groups.some(group => group.followUpCount > 0) && (
                             <p><span className="font-bold">Group patterns:</span> {session.insightBrief.groups.filter(group => group.followUpCount > 0).map(group => `${groups[group.groupId]?.name || group.groupId}: ${group.followUpCount} follow-up`).join(' · ')}</p>
                           )}
@@ -6287,6 +6362,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
 // ─────────────────────────────────────────────────────────────────────────────
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.RosterKeyPanel             = RosterKeyPanel;
+window.AlloModules.buildRosterSessionEvidenceCsv = buildRosterSessionEvidenceCsv;
 window.AlloModules.SimpleBarChart             = SimpleBarChart;
 window.AlloModules.SimpleDonutChart           = SimpleDonutChart;
 window.AlloModules.ConfettiEffect             = ConfettiEffect;

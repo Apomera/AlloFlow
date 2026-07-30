@@ -11,7 +11,6 @@ describe('EPPP memory-aid Wave 08 final modular artifact', () => {
   const manifest = read('dev-tools/eppp_memory_aid_wave08/manifest.json');
   const correction = read('test_prep/eppp_memory_aid_correction_wave_01.json');
   const builderSource = fs.readFileSync(resolve(process.cwd(), 'dev-tools/build_eppp_learning_library.cjs'), 'utf8');
-  const wrapperSource = fs.readFileSync(resolve(process.cwd(), 'dev-tools/build_eppp_learning_library_with_reviews.cjs'), 'utf8');
   const moduleItems = Object.entries(manifest.domains).flatMap(([domainId, entry]) =>
     read(`dev-tools/eppp_memory_aid_wave08/${entry.module}`).items.map((item) => ({
       ...item,
@@ -75,11 +74,8 @@ describe('EPPP memory-aid Wave 08 final modular artifact', () => {
       && item.references.length > 0
       && JSON.stringify(item.references) === JSON.stringify(item.sourceDetails.map((source) => source.url))
     )).toBe(true);
-    const composeIndex = wrapperSource.indexOf('compose_eppp_memory_aid_review_wave_08.cjs');
-    const correctionIndex = wrapperSource.indexOf('build_eppp_memory_aid_correction_wave_01.cjs');
-    const catalogIndex = wrapperSource.indexOf('build_eppp_learning_library.cjs');
-    expect(composeIndex).toBeLessThan(correctionIndex);
-    expect(correctionIndex).toBeLessThan(catalogIndex);
+    expect(builderSource).toContain('openEpppMigrationSourceArchive');
+    expect(builderSource).toContain('migrationArchive.manifest.execution.learningLibrary');
     expect(builderSource).toContain('memoryAidCorrectionWavePattern');
     expect(builderSource).toContain('{ ...manualOverride, ...waveOverride, ...correctionOverride }');
   });

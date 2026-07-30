@@ -294,8 +294,10 @@ describe('shell integration reuses canonical handlers', () => {
     expect(anti).toContain('const handleSetStudentsResource = async (uids, resourceId) =>');
     expect(anti).toContain('const handleReleaseStudentResources = async (uids) =>');
     expect(anti).toContain('entry.viewingResourceId !== entry.resourceId');
-    expect(anti).toContain('.slice(0, 25)');
-    expect(anti).toContain('await updateDoc(sessionRef, updates)');
+    expect(anti).toContain('const buildStudentResourcePatchBatches =');
+    expect(anti).toContain('for (let offset = 0; offset < safeUids.length; offset += 25)');
+    expect(anti).toContain('for (const batch of plan.batches)');
+    expect(anti).toContain('await updateDoc(sessionRef, batch.updates)');
   });
 
   it('keeps navigation as selection-only and delivery in one explicit action', () => {

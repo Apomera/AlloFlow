@@ -1,0 +1,6 @@
+{
+  "name": "alloflow",
+  "displayName": "AlloFlow",
+  "version": "0.1.0",
+  "description": "Sandbox-local PDF accessibility remediation with no AlloFlow document service."
+}

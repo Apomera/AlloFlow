@@ -25,8 +25,8 @@ const UNIVERSAL_SETTING_COVERAGE = {
   language: ['simplified', 'glossary', 'outline', 'image', 'quiz', 'faq', 'brainstorm', 'sentence-frames', 'timeline', 'math', 'gemini-bridge', 'concept-sort', 'dbq', 'lesson-plan', 'adventure', 'persona', 'note-taking', 'anchor-chart'],
   standards: ['simplified', 'glossary', 'outline', 'quiz', 'faq', 'brainstorm', 'sentence-frames', 'timeline', 'math', 'concept-sort', 'dbq', 'lesson-plan', 'adventure', 'note-taking', 'anchor-chart'],
   interests: ['simplified', 'glossary', 'outline', 'quiz', 'faq', 'brainstorm', 'sentence-frames', 'timeline', 'math', 'concept-sort', 'lesson-plan', 'adventure'],
-  dok: ['simplified', 'quiz', 'faq', 'brainstorm', 'sentence-frames', 'math', 'concept-sort', 'dbq', 'lesson-plan'],
-  emoji: ['simplified', 'glossary', 'outline', 'image', 'quiz', 'faq', 'sentence-frames', 'timeline', 'concept-sort'],
+  dok: ['simplified', 'glossary', 'outline', 'quiz', 'faq', 'brainstorm', 'sentence-frames', 'timeline', 'math', 'concept-sort', 'dbq', 'lesson-plan', 'adventure', 'note-taking', 'anchor-chart'],
+  emoji: ['simplified', 'glossary', 'outline', 'image', 'quiz', 'faq', 'sentence-frames', 'timeline', 'math', 'concept-sort', 'adventure', 'note-taking', 'anchor-chart'],
 };
 
 const UNIVERSAL_GRADE_CHOICES = [
@@ -159,7 +159,8 @@ function UniversalSettingsPanel(props) {
     isUniversalSettingsOpen, setIsUniversalSettingsOpen,
     differentiationRange, setDifferentiationRange,
     differentiationTypes, setDifferentiationTypes,
-    differentiationCustomGrades, setDifferentiationCustomGrades
+    differentiationCustomGrades, setDifferentiationCustomGrades,
+    languageInput, setLanguageInput, addLanguage, removeLanguage, handleKeyDown
   } = props;
   // Open state lives in the host: this panel sits inside the 'create' tab
   // subtree, so component-local state re-collapsed the card on every tab switch.
@@ -230,6 +231,45 @@ function UniversalSettingsPanel(props) {
                                 {selectedLanguages.length > 0 && <option value="All Selected Languages">{t('languages.all_selected')}</option>}
                             </select>
                             <UniversalApplicability settingKey="language" t={t} />
+                            {/* The builder for this list used to live in the Glossary panel while
+                                its main consumer was this dropdown — so adding a language meant
+                                opening an unrelated tool. The list is shared by three consumers
+                                (this select, Adventure's language mode, and Glossary's
+                                translations), so it belongs with the shared settings. */}
+                            <div className="mt-2" data-help-key="glossary_language_input">
+                                <label className="block text-[10px] text-slate-500 mb-1">
+                                    {t('glossary.add_languages_label')}
+                                </label>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={languageInput}
+                                        onChange={(e) => setLanguageInput(e.target.value)}
+                                        onKeyDown={handleKeyDown}
+                                        placeholder={t('glossary.language_placeholder')}
+                                        maxLength={40}
+                                        className="flex-grow text-sm px-2 py-1 border border-slate-400 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 transition-shadow motion-reduce:transition-none duration-300"
+                                        aria-label={t('common.target_language_aria')}
+                                    />
+                                    <button type="button"
+                                        onClick={addLanguage}
+                                        disabled={!languageInput.trim() || selectedLanguages.length >= 4}
+                                        className="bg-indigo-100 text-indigo-700 p-1.5 rounded-md hover:bg-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none"
+                                        aria-label={t('common.add')}
+                                    >
+                                        <Plus size={16} />
+                                    </button>
+                                </div>
+                                <div className="flex flex-wrap gap-2 min-h-[1.5rem] mt-2">
+                                    {selectedLanguages.map(lang => (
+                                        <span key={lang} className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                            {lang}
+                                            <button type="button" onClick={() => removeLanguage(lang)} className="hover:text-indigo-900" aria-label={"Remove " + lang}><X size={12} /></button>
+                                        </span>
+                                    ))}
+                                    {selectedLanguages.length === 0 && <span className="text-xs text-slate-600 italic">{t('glossary.no_languages')}</span>}
+                                </div>
+                            </div>
                         </div>
                         <div>
                             <label className="block text-xs text-slate-600 mb-1 font-medium flex items-center gap-1">
@@ -1784,13 +1824,13 @@ function SourceInputPanel(props) {
 // ── GlossaryPanel: expandedTools.includes('glossary') panel from L22391-L22541 ──
 function GlossaryPanel(props) {
   const {
-    InfoTooltip, addLanguage, autoRemoveWords, expandedTools,
-    glossaryCustomInstructions, glossaryDefinitionLevel, glossaryImageStyle, glossaryTier2Count,
-    glossaryTier3Count, gradeLevel, handleGenerate, handleKeyDown,
-    hasSourceOrAnalysis, includeEtymology, isProcessing, languageInput,
-    removeLanguage, selectedLanguages, setAutoRemoveWords, setGlossaryCustomInstructions,
-    setGlossaryDefinitionLevel, setGlossaryImageStyle, setGlossaryTier2Count, setGlossaryTier3Count,
-    setIncludeEtymology, setLanguageInput, t
+    InfoTooltip, autoRemoveWords, expandedTools,
+    glossaryCustomInstructions, glossaryDefinitionLevel, glossaryTier2Count,
+    glossaryTier3Count, gradeLevel, handleGenerate,
+    hasSourceOrAnalysis, includeEtymology, isProcessing,
+    selectedLanguages, setAutoRemoveWords, setGlossaryCustomInstructions,
+    setGlossaryDefinitionLevel, setGlossaryTier2Count, setGlossaryTier3Count,
+    setIncludeEtymology, t
   } = props;
   if (!expandedTools || !expandedTools.includes('glossary')) return null;
   return (
@@ -1870,34 +1910,14 @@ function GlossaryPanel(props) {
                         ariaFallback="Custom instructions for glossary"
                         value={glossaryCustomInstructions} onChange={setGlossaryCustomInstructions}
                         placeholderKey="glossary.placeholder_instructions" />
-                    <p className="text-xs text-slate-600 mb-2">{t('glossary.add_languages_label')}</p>
-                    <div className="flex gap-2 mb-3" data-help-key="glossary_language_input">
-                    <input
-                        type="text"
-                        value={languageInput}
-                        onChange={(e) => setLanguageInput(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        placeholder={t('glossary.language_placeholder')}
-                        className="flex-grow text-sm px-2 py-1 border border-slate-400 rounded-md focus:ring-2 focus:ring-sky-200"
-                        aria-label={t('common.target_language_aria')}
-                    />
-                    <button type="button"
-                        onClick={addLanguage}
-                        disabled={!languageInput.trim() || selectedLanguages.length >= 4}
-                        className="bg-sky-100 text-sky-700 p-1.5 rounded-md hover:bg-sky-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none"
-                        aria-label={t('common.add')}
-                    >
-                        <Plus size={16} />
-                    </button>
-                    </div>
-                    <div className="flex flex-wrap gap-2 min-h-[2rem]">
-                    {selectedLanguages.map(lang => (
-                        <span key={lang} className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-sky-50 text-sky-700 border border-sky-100">
-                        {lang}
-                        <button type="button" onClick={() => removeLanguage(lang)} className="hover:text-sky-900" aria-label={"Remove " + lang}><X size={12} /></button>
-                        </span>
-                    ))}
-                    {selectedLanguages.length === 0 && <span className="text-xs text-slate-600 italic">{t('glossary.no_languages')}</span>}
+                    {/* Read-only: the language list is built in Universal Settings (three
+                        consumers share it). Glossary still needs to SAY what it will
+                        translate into, or a teacher cannot tell whether translations are
+                        coming — but it is not the place to edit the list. */}
+                    <div className="mb-3 text-xs text-slate-600" data-help-key="glossary_language_summary">
+                        {selectedLanguages.length > 0
+                            ? <span>{t('glossary.will_translate') || 'Will include translations for'}: <span className="font-bold text-sky-700">{selectedLanguages.join(', ')}</span></span>
+                            : <span className="italic">{t('glossary.no_languages_hint') || 'No translation languages set — add them in Universal Settings.'}</span>}
                     </div>
                     <div className="mt-3 pt-2 border-t border-slate-100">
                         <label className="flex items-center gap-2 text-xs font-medium text-slate-600 cursor-pointer select-none" data-help-key="glossary_auto_remove">

@@ -3046,7 +3046,16 @@
     var preflight = options.preflight || (doc ? stAnalyzeDoc(doc) : { counts: { error: 0, warning: 0, review: 0 }, issues: [] });
     var counts = preflight.counts || { error: 0, warning: 0, review: 0 };
     var issueTotal = stFiniteNumber(counts.error, 0) + stFiniteNumber(counts.warning, 0) + stFiniteNumber(counts.review, 0);
-    var selectionCount = Math.max(0, Math.round(stFiniteNumber(options.selectionCount, 0)));
+    var selectionIds = Array.isArray(options.selectionIds) ? options.selectionIds.filter(function (id) { return id != null; }).map(String) : [];
+    var selectedId = options.selectedId != null ? String(options.selectedId) : (selectionIds.length === 1 ? selectionIds[0] : '');
+    var selectionSummary = selectionIds.length ? stSelectionSummary(objects, selectionIds) : null;
+    var selectionCount = selectionSummary ? selectionSummary.count : Math.max(0, Math.round(stFiniteNumber(options.selectionCount, 0)));
+    var selectedIndex = selectedId ? objects.findIndex(function (o) { return o && String(o.id) === selectedId; }) : -1;
+    var hasSelection = selectionCount > 0;
+    var hasUnlockedSelection = selectionSummary ? selectionSummary.unlockedCount > 0 : hasSelection;
+    var hasLockedSelection = selectionSummary ? selectionSummary.lockedCount > 0 : false;
+    var canDistributeSelection = selectionSummary ? selectionSummary.canDistribute : selectionCount >= 3;
+    var singleSelection = selectionCount === 1;
     var recommended = options.recommendedExport || (doc ? stRecommendedExportAction(doc) : null);
     var ready = doc ? stBuildReadyActions(doc).actions[0] : null;
     var commands = [];
@@ -3072,8 +3081,27 @@
     push({ id: 'zoom-fit', group: 'View', label: 'Zoom to fit', hint: 'Fit the page to the available space.', keywords: 'zoom fit page' });
     push({ id: 'zoom-100', group: 'View', label: 'Zoom to 100%', hint: 'Show the canvas at actual size.', keywords: 'zoom actual size 100' });
     push({ id: 'select-all', group: 'Selection', label: 'Select all objects', hint: objects.length ? objects.length + ' object(s) on the page.' : 'No objects to select.', keywords: 'selection all objects', enabled: !!objects.length });
-    push({ id: 'duplicate-selection', group: 'Selection', label: 'Duplicate selection', hint: selectionCount ? selectionCount + ' selected object(s).' : 'Select an object first.', keywords: 'copy clone selection', enabled: selectionCount > 0 });
-    push({ id: 'clear-selection', group: 'Selection', label: 'Clear selection', hint: selectionCount ? 'Deselect current objects.' : 'No selection to clear.', keywords: 'deselect escape selection', enabled: selectionCount > 0 });
+    push({ id: 'duplicate-selection', group: 'Selection', label: 'Duplicate selection', hint: hasSelection ? selectionCount + ' selected object(s).' : 'Select an object first.', keywords: 'copy clone selection', enabled: hasUnlockedSelection });
+    push({ id: 'clear-selection', group: 'Selection', label: 'Clear selection', hint: hasSelection ? 'Deselect current objects.' : 'No selection to clear.', keywords: 'deselect escape selection', enabled: hasSelection });
+    [
+      ['align-left', 'Align left', 'left'],
+      ['align-hcenter', 'Align center', 'center horizontal middle hcenter'],
+      ['align-right', 'Align right', 'right'],
+      ['align-top', 'Align top', 'top'],
+      ['align-vcenter', 'Align middle', 'middle vertical vcenter'],
+      ['align-bottom', 'Align bottom', 'bottom']
+    ].forEach(function (item) {
+      push({ id: item[0], group: 'Layout', label: item[1], hint: hasSelection ? (selectionCount > 1 ? 'Align unlocked selected objects within the selection.' : 'Align the selected object to the page.') : 'Select an object first.', keywords: 'layout arrange position align ' + item[2], enabled: hasUnlockedSelection });
+    });
+    push({ id: 'page-width-selection', group: 'Layout', label: 'Fit selection to page width', hint: singleSelection ? 'Stretch the selected object to the printable width.' : 'Select one unlocked object first.', keywords: 'layout page width fit stretch printable', enabled: singleSelection && hasUnlockedSelection });
+    push({ id: 'distribute-x', group: 'Layout', label: 'Distribute horizontally', hint: canDistributeSelection ? 'Space selected objects evenly left to right.' : 'Select at least three unlocked objects.', keywords: 'layout arrange distribute horizontal spacing even', enabled: canDistributeSelection });
+    push({ id: 'distribute-y', group: 'Layout', label: 'Distribute vertically', hint: canDistributeSelection ? 'Space selected objects evenly top to bottom.' : 'Select at least three unlocked objects.', keywords: 'layout arrange distribute vertical spacing even', enabled: canDistributeSelection });
+    push({ id: 'lock-selection', group: 'Selection', label: 'Lock selection', hint: hasUnlockedSelection ? 'Prevent accidental edits to selected object(s).' : 'Select an unlocked object first.', keywords: 'lock freeze protect selection object', enabled: hasUnlockedSelection });
+    push({ id: 'unlock-selection', group: 'Selection', label: 'Unlock selection', hint: hasLockedSelection ? 'Allow edits to selected locked object(s).' : 'No locked selected objects.', keywords: 'unlock unfreeze edit selection object', enabled: hasLockedSelection });
+    push({ id: 'reading-earlier', group: 'Order', label: 'Move earlier in reading order', hint: singleSelection ? 'Move the selected object one step earlier for screen readers.' : 'Select one object first.', keywords: 'reading order earlier accessibility screen reader up', enabled: singleSelection && selectedIndex > 0 });
+    push({ id: 'reading-later', group: 'Order', label: 'Move later in reading order', hint: singleSelection ? 'Move the selected object one step later for screen readers.' : 'Select one object first.', keywords: 'reading order later accessibility screen reader down', enabled: singleSelection && selectedIndex >= 0 && selectedIndex < objects.length - 1 });
+    push({ id: 'layer-forward', group: 'Order', label: 'Bring visual layer forward', hint: singleSelection ? 'Move the selected object forward visually without changing reading order.' : 'Select one object first.', keywords: 'layer z visual stack forward bring front', enabled: singleSelection && hasUnlockedSelection });
+    push({ id: 'layer-backward', group: 'Order', label: 'Send visual layer backward', hint: singleSelection ? 'Move the selected object backward visually without changing reading order.' : 'Select one object first.', keywords: 'layer z visual stack backward send back', enabled: singleSelection && hasUnlockedSelection });
     stStyleKits(options.brandProfile).forEach(function (kit) {
       push({ id: 'style:' + kit.key, group: 'Style', label: 'Apply style kit: ' + kit.name, hint: 'Update page colors and text styling.', keywords: 'theme style color kit ' + kit.key + ' ' + kit.name });
     });
@@ -5342,7 +5370,7 @@
             style: { width: '36px', height: '24px', padding: '1px', border: '1px solid ' + C.border, borderRadius: '6px', background: C.inputBg, cursor: 'pointer' },
             onChange: function (e) { onPick(e.target.value); } })));
     };
-    var commandPaletteCommands = stCommandPaletteItems(doc, { preflight: preflight, selectionCount: selectionIds.length, recommendedExport: recommendedExport, brandProfile: brandProfile });
+    var commandPaletteCommands = stCommandPaletteItems(doc, { preflight: preflight, selectionIds: selectionIds, selectedId: selectedId, selectionCount: selectionIds.length, recommendedExport: recommendedExport, brandProfile: brandProfile });
     var commandPaletteResults = stFilterCommandPaletteItems(commandPaletteCommands, commandQuery).slice(0, 60);
     var activeCommandIndex = commandPaletteResults.length ? Math.max(0, Math.min(commandIndex, commandPaletteResults.length - 1)) : -1;
     var closeCommandPalette = function () { setCommandOpen(false); setCommandQuery(''); setCommandIndex(0); };
@@ -5370,7 +5398,17 @@
       if (cmd.id === 'zoom-100') { changeCanvasZoom('actual'); return; }
       if (cmd.id === 'select-all') { selectAllObjects(); return; }
       if (cmd.id === 'duplicate-selection') { if (selectionIds.length > 1) duplicateSelectedGroup(); else duplicateSelected(); return; }
-      if (cmd.id === 'clear-selection') { clearSelection(); }
+      if (cmd.id === 'clear-selection') { clearSelection(); return; }
+      if (cmd.id.indexOf('align-') === 0) { var alignMode = cmd.id.slice(6); if (selectionIds.length > 1) alignSelectedGroup(alignMode); else alignSelected(alignMode); return; }
+      if (cmd.id === 'page-width-selection') { alignSelected('page-width'); return; }
+      if (cmd.id === 'distribute-x') { distributeSelectedGroup('x'); return; }
+      if (cmd.id === 'distribute-y') { distributeSelectedGroup('y'); return; }
+      if (cmd.id === 'lock-selection') { lockSelectedObjects(true); return; }
+      if (cmd.id === 'unlock-selection') { lockSelectedObjects(false); return; }
+      if (cmd.id === 'reading-earlier') { reorderSelected(-1); return; }
+      if (cmd.id === 'reading-later') { reorderSelected(1); return; }
+      if (cmd.id === 'layer-forward') { if (selected) dispatch({ type: 'object.z', target: selected.id, z: stFiniteNumber(selected.z, 1) + 1 }, 'user'); return; }
+      if (cmd.id === 'layer-backward') { if (selected) dispatch({ type: 'object.z', target: selected.id, z: Math.max(0, stFiniteNumber(selected.z, 1) - 1) }, 'user'); return; }
     };
     var commandPaletteOverlay = commandOpen ? h('div', {
         role: 'dialog', 'aria-modal': false, 'aria-label': TT('studio.quick_actions', 'Quick actions'),

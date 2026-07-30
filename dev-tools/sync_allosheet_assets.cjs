@@ -15,6 +15,9 @@ const files = [
   'allo_sheet.css',
   'allo_sheet.js',
   'allo_sheet_adapter.js',
+  'allo_sheet_analysis.js',
+  'allo_sheet_workspace.js',
+  'transfer_adapter.js',
   'host_bridge.js',
   'README.md',
   'THIRD_PARTY_NOTICES.md'
@@ -22,6 +25,10 @@ const files = [
 const rootMirrorFiles = [
   'view_educator_hub_modal_module.js',
   'view_info_modal_module.js',
+  'quiz_live_aggregators.js',
+  'view_quiz_module.js',
+  'student_analytics_module.js',
+  'view_submission_inbox_module.js',
 ];
 const checkOnly = process.argv.includes('--check');
 const mismatches = [];

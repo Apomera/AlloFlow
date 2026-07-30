@@ -15,8 +15,8 @@ const feedbackPath = path.join(root, 'test_prep', 'eppp_option_feedback_diagnost
 const qaPath = path.join(root, 'test_prep', 'eppp_native_qa.json');
 const runnerPath = path.join(root, 'dev-tools', 'run_eppp_native_quality_wave.cjs');
 const repairPath = path.join(root, 'dev-tools', 'repair_eppp_native_quality_wave_13.cjs');
-const runtimePath = path.join(root, 'test_prep_hub_module.js');
-const deployRuntimePath = path.join(root, 'desktop/web-app', 'public', 'test_prep_hub_module.js');
+const runtimePackPath = path.join(root, 'test_prep', 'eppp_part_one_pack.json');
+const deployRuntimePackPath = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_part_one_pack.json');
 const ids = [
   'eppp-b005-intervention-1',
   'eppp-b005-intervention-2',
@@ -108,7 +108,7 @@ describe('EPPP distractor-quality repair wave 13', () => {
     expect(byId.get('eppp-b025-lifespan-1').rationale).toMatch(/not interchangeable/i);
   });
 
-  it('publishes synchronized sources, clean feedback, native QA, and runtime content', () => {
+  it('publishes synchronized sources, clean feedback, native QA, and lazy pack content', () => {
     const bank = JSON.parse(fs.readFileSync(sourcePath, 'utf8'));
     const byId = new Map(bank.map((item) => [item.id, item]));
     const catalogText = fs.readFileSync(catalogPath, 'utf8');
@@ -134,10 +134,10 @@ describe('EPPP distractor-quality repair wave 13', () => {
     expect(qa.summary).toMatchObject({ totalItems: 1500, passedItems: 1500, reviewRequiredItems: 0, status: 'pass' });
     expect(qa.items.filter((item) => selected.has(item.id)).every((item) => item.qaStatus === 'pass')).toBe(true);
 
-    const sourceRuntime = fs.readFileSync(runtimePath, 'utf8');
-    expect(fs.readFileSync(deployRuntimePath, 'utf8')).toBe(sourceRuntime);
-    expect(sourceRuntime).toContain('eight-year-old has carefully assessed ADHD');
-    expect(sourceRuntime).toContain('successive stages from progenitor proliferation');
-    expect(sourceRuntime).toContain('distributed face-processing network');
+    const sourcePack = fs.readFileSync(runtimePackPath, 'utf8');
+    expect(fs.readFileSync(deployRuntimePackPath, 'utf8')).toBe(sourcePack);
+    expect(sourcePack).toContain('eight-year-old has carefully assessed ADHD');
+    expect(sourcePack).toContain('successive stages from progenitor proliferation');
+    expect(sourcePack).toContain('distributed face-processing network');
   });
 });

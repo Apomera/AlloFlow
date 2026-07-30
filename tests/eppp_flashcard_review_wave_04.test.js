@@ -73,6 +73,7 @@ describe('EPPP flashcard review wave 04', () => {
       sourceReviewedFlashcards: 415,
       retainedReviewedFlashcards: 335,
       retiredRedundantFlashcards: 80,
+      learnerVisibleFlashcards: 335,
     });
     expect(library.flashcards.filter((card) => card.reviewStatus === 'review-required')).toHaveLength(0);
     expect(library.flashcards.filter((card) => card.contentDisposition === 'retire-redundant')).toHaveLength(80);
@@ -85,7 +86,9 @@ describe('EPPP flashcard review wave 04', () => {
         reviewArtifact: 'eppp_flashcard_review_wave_04.json',
         contentDisposition: item.contentDisposition,
         independentExpertStatus: 'not-started',
-        learnerVisible: false,
+        productionStatus: 'not-production-validated',
+        reviewArtifactLearnerVisible: false,
+        learnerVisible: item.contentDisposition !== 'retire-redundant',
       });
     }
   });
@@ -95,9 +98,6 @@ describe('EPPP flashcard review wave 04', () => {
       const source = text(`test_prep/${name}`);
       expect(text(`desktop/web-app/public/test_prep/${name}`)).toBe(source);
       expect(source).not.toMatch(/Content QA passed/i);
-    }
-    for (const name of ['content_inventory.json', 'content_inventory.md']) {
-      expect(text(`desktop/web-app/public/test_prep/eppp_legacy/${name}`)).toBe(text(`test_prep/eppp_legacy/${name}`));
     }
   });
 });

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-07-28T21:18:21.544Z",
+  "generatedAt": "2026-07-30T00:19:26.082Z",
   "libraryId": "eppp-learning-library",
   "standard": {
     "checks": [
@@ -14,11 +14,20 @@
     "meaning": "Review status records completed source and editorial gates separately from the independent expert-review and production-validation gates, which remain explicitly pending.",
     "accessibilityBaseline": "The shared renderer provides keyboard controls, persistent section progress, diagram text alternatives, learner motion controls, and reduced-motion support.",
     "sectionProvenance": "A section marked source-reviewed-editorial-pass inherits the containing chapter review and names that parent scope; knowledge-check and diagram reviews remain independent.",
-    "diagramCatalog": "Shared templates and concrete learner-visible placements are cataloged separately. Inline diagrams exist only as placements; unused templates remain visible in the template registry but are not counted as placements."
+    "diagramCatalog": "Shared templates and concrete learner-visible placements are cataloged separately. Inline diagrams exist only as placements; unused templates remain visible in the template registry but are not counted as placements.",
+    "nativeDiagramMigration": "Every shared or inline legacy diagram is projected into an allowlisted inert vector schema with local-only references, complete ordered text alternatives, stable placement bindings, and SHA-256 parity manifests. Migration parity is not independent expert review.",
+    "glossaryMigration": "The effective legacy term-definition payload is projected one-to-one into normalized plain text with stable IDs, exact-definition aliases, occurrence-derived chapter/domain links, duplicate-source diagnostics, and SHA-256 parity manifests. Migration parity is not independent expert review.",
+    "learnerVisibility": "A flashcard is learner-visible in the integrated runtime only when it is source-reviewed-editorial-pass and is not retired as redundant. Visibility does not imply independent expert validation or production validation.",
+    "contentMigration": "All 278 legacy sections are projected one-to-one into a safe native block/run schema with a complete plain-text fallback, stable mapping metadata, and SHA-256 fidelity manifests. This migration gate is separate from expert and production approval."
   },
   "summary": {
     "chapters": 49,
     "sections": 278,
+    "completeSectionContents": 278,
+    "previewTruncatedSections": 265,
+    "expandableCases": 50,
+    "reflectiveCodas": 49,
+    "sourceReferences": 383,
     "diagrams": 25,
     "diagramTemplates": 25,
     "usedDiagramTemplates": 15,
@@ -28,6 +37,19 @@
     "inlineDiagramPlacements": 42,
     "sourceReviewedDiagramTemplates": 15,
     "sourceReviewedDiagramPlacements": 58,
+    "nativeDiagramPayloads": 67,
+    "nativeTemplateDiagramPayloads": 25,
+    "nativeInlineDiagramPayloads": 42,
+    "nativeDiagramPlacements": 58,
+    "nativeDiagramTextAlternatives": 67,
+    "nativeDiagramMotionRecords": 7,
+    "glossaryTerms": 1583,
+    "glossaryTermsWithAliases": 6,
+    "glossaryAliasLinks": 6,
+    "glossaryTermsLinkedToChapters": 1443,
+    "glossaryTermsLinkedToDomains": 1430,
+    "glossarySourceDeclarations": 1596,
+    "glossaryDuplicateSourceDeclarations": 13,
     "knowledgeChecks": 109,
     "flashcards": 415,
     "memoryAids": 255,
@@ -39,6 +61,7 @@
     "sourceReviewedFlashcards": 415,
     "retainedReviewedFlashcards": 335,
     "retiredRedundantFlashcards": 80,
+    "learnerVisibleFlashcards": 335,
     "qaPassedMemoryAids": 0,
     "qaPassedKnowledgeChecks": 0,
     "sourceReviewedKnowledgeChecks": 109,
@@ -47,16 +70,22 @@
     "sourceReviewedMemoryAids": 255,
     "releasedMemoryAids": 255,
     "releasedFlashcards": 335,
-    "editorialReviewedSourcePendingMemoryAids": 0
+    "editorialReviewedSourcePendingMemoryAids": 0,
+    "referencedReviewArtifacts": 30
   },
   "status": "first-pass-complete-expert-pending",
   "findings": [
-    "Legacy content is preserved but is not automatically approved for native publication.",
+    "Historical content is preserved in a manifest-bound immutable archive but is not automatically approved for native publication.",
+    "Verified 128 immutable migration-source files against manifest SHA-256 1740a513606b69d1e462605008128a5b4ce2ae1959651c11a57d87273b1a34fd before projection.",
+    "278 of 278 legacy sections have complete one-to-one native content projections with source, plain-text, structured-block, and supplemental-content SHA-256 manifests; no raw executable HTML is embedded. This is a migration-fidelity result, not an expert-validation claim.",
     "278 of 278 section records inherit source/editorial review from their explicitly reviewed parent chapters; this does not claim independent section-level expert validation.",
     "Shared renderer accessibility controls are implemented. 58 of 58 learner-visible placements have source-review records; 0 placements still need concept and label review.",
     "58 learner-visible diagram placements are cataloged: 16 use shared templates and 42 are inline chapter diagrams. 10 shared templates are currently unused.",
+    "67 native diagram payloads cover all 58 learner-visible placements with inert vector trees and complete ordered text alternatives; raw SVG/HTML is not embedded, and migration parity is not an independent expert-review claim.",
+    "1583 effective legacy glossary terms have one-to-one native text projections; 13 overwritten legacy source declarations remain explicitly diagnosed, and migration parity is not an independent expert-review claim.",
     "415 of 415 flashcards have source-review records; 0 remain in first-pass review, and independent qualified expert validation is still pending.",
     "80 source-reviewed duplicate flashcards are explicitly retired from future learner release rather than counted as distinct study targets.",
+    "335 retained source-reviewed flashcards are learner-visible in the integrated runtime; learner visibility does not claim independent expert validation or production readiness.",
     "255 of 255 memory aids have source-review records and are released; 0 remain in the editorial/source-review queue, and independent qualified expert validation is still pending.",
     "109 of 109 knowledge checks have source-review records and are released to their chapter payloads; 0 remain gated for review."
   ]

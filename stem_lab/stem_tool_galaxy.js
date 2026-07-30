@@ -4324,16 +4324,23 @@ if (!window._galaxyHasLoadedOnce) {
             };
             canvasEl._galaxySetHudHidden = function (hidden) { hudHidden = hidden === true; if (!hudHidden) { orientationEl = null; lastOrientationLabel = ''; requestAnimationFrame(function () { if (canvasEl.isConnected) updateCamera(); }); } };
             canvasEl._galaxyToggleFullscreen = function () {
-              var frame = canvasEl.parentElement;
+              var canvasFrame = canvasEl.parentElement;
+              var frame = canvasFrame && canvasFrame.parentElement ? canvasFrame.parentElement : canvasFrame;
               if (document.fullscreenElement) { if (document.exitFullscreen) document.exitFullscreen(); return; }
               if (!frame || !frame.requestFullscreen) return;
               var previousHeight = frame.style.height;
+              var previousOverflow = frame.style.overflow;
+              var previousPadding = frame.style.padding;
+              var previousBackground = frame.style.background;
+              var previousCanvasHeight = canvasFrame ? canvasFrame.style.height : '';
               frame.style.height = '100vh';
-              var restoreFullscreenHeight = function () { if (!document.fullscreenElement) { frame.style.height = previousHeight; document.removeEventListener('fullscreenchange', restoreFullscreenHeight); canvasEl._galaxyFullscreenRestore = null; } };
+              frame.style.overflow = 'auto'; frame.style.padding = '12px'; frame.style.background = '#020617';
+              if (canvasFrame) canvasFrame.style.height = 'calc(100vh - 24px)';
+              var restoreFullscreenHeight = function () { if (!document.fullscreenElement) { frame.style.height = previousHeight; frame.style.overflow = previousOverflow; frame.style.padding = previousPadding; frame.style.background = previousBackground; if (canvasFrame) canvasFrame.style.height = previousCanvasHeight; document.removeEventListener('fullscreenchange', restoreFullscreenHeight); canvasEl._galaxyFullscreenRestore = null; } };
               canvasEl._galaxyFullscreenRestore = restoreFullscreenHeight;
               document.addEventListener('fullscreenchange', restoreFullscreenHeight);
               var fullscreenRequest = frame.requestFullscreen();
-              if (fullscreenRequest && fullscreenRequest.catch) fullscreenRequest.catch(function () { frame.style.height = previousHeight; document.removeEventListener('fullscreenchange', restoreFullscreenHeight); });
+              if (fullscreenRequest && fullscreenRequest.catch) fullscreenRequest.catch(function () { frame.style.height = previousHeight; frame.style.overflow = previousOverflow; frame.style.padding = previousPadding; frame.style.background = previousBackground; if (canvasFrame) canvasFrame.style.height = previousCanvasHeight; document.removeEventListener('fullscreenchange', restoreFullscreenHeight); });
             };
 
             var animId, startT = Date.now();

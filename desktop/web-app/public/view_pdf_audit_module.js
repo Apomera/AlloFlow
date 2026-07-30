@@ -61,6 +61,18 @@ const OCR_LANG_OPTIONS = [
   { code: "he", label: "\u{1F1EE}\u{1F1F1} Hebrew \u2014 \u05E2\u05D1\u05E8\u05D9\u05EA" }
 ];
 function _alloTaggedPdfDeliveryVerdict(result) {
+  try {
+    const shared = typeof window !== "undefined" && window.AlloModules && window.AlloModules.createDocPipeline && window.AlloModules.createDocPipeline.taggedPdfDeliveryVerdict;
+    if (typeof shared === "function" && shared !== _alloTaggedPdfDeliveryVerdict) return shared(result);
+  } catch (_) {
+  }
+  const typesetSummary = result && result.summary;
+  const unicodeWarning = typesetSummary && typesetSummary.unicodeTypesetWarning;
+  const typesetDroppedChars = Number(unicodeWarning && unicodeWarning.droppedChars);
+  const typesetDroppedImages = Number(typesetSummary && typesetSummary.imagesDropped);
+  if (Number.isFinite(typesetDroppedChars) && typesetDroppedChars > 0 || Number.isFinite(typesetDroppedImages) && typesetDroppedImages > 0) {
+    return { ok: false, code: "typeset-content-dropped", reason: "the clean rebuild dropped source text or images" };
+  }
   const roundTrip = result && result.roundTrip;
   if (!roundTrip) return { ok: false, code: "roundtrip-unavailable", reason: "post-save structure verification was unavailable" };
   if (roundTrip.ok !== true) {

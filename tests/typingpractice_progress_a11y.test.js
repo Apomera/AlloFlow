@@ -103,9 +103,14 @@ describe('Typing Practice Progress accessibility and UX', () => {
     expect(source).toContain("'aria-labelledby': 'tp-session-comparison-title'");
     expect(source).toContain("'aria-describedby': 'tp-session-comparison-legend'");
     expect(source).toContain("'aria-label': 'Progress report actions'");
-    expect(source).toContain("setAnnounceText('Progress report copied to the clipboard.')");
-    expect(source).toContain("setAnnounceText('Progress CSV download started.')");
-    expect(source).toContain("setAnnounceText('Parent summary copied to the clipboard.')");
+    expect(source).toContain('copyTextToClipboard(report, addToast).then(function(copied)');
+    expect(source).toContain("'Progress report copied to the clipboard.'");
+    expect(source).toContain("'Progress report copy failed. Select the report text and copy it manually.'");
+    expect(source).toContain("'Progress CSV download started.'");
+    expect(source).toContain("'Progress CSV download could not start. Please try again.'");
+    expect(source).toContain('copyTextToClipboard(summary, addToast).then(function(copied)');
+    expect(source).toContain("'Parent summary copied to the clipboard.'");
+    expect(source).toContain("'Parent summary copy failed. Please try again.'");
   });
 
   it('gives both empty states a named recovery path', () => {

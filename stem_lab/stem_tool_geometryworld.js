@@ -72,7 +72,7 @@
       '.gw-history-panel{position:absolute!important;left:230px!important;bottom:150px!important;z-index:23!important;box-sizing:border-box;width:280px!important;max-width:calc(100% - 470px)!important;max-height:44%;overflow:auto;padding:10px!important;border:1px solid rgba(103,232,249,.22)!important;border-radius:13px!important;background:linear-gradient(155deg,rgba(8,47,73,.88),rgba(15,23,42,.93))!important;box-shadow:0 16px 42px rgba(2,6,23,.46),inset 0 1px 0 rgba(255,255,255,.05)!important;backdrop-filter:blur(11px);scrollbar-width:thin}.gw-history-title{margin-bottom:7px;color:#a5f3fc;font-size:9px;font-weight:850;letter-spacing:.08em}.gw-history-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:7px;min-height:25px;padding:4px 6px;border-radius:7px;color:#94a3b8;font-size:9px}.gw-history-row[data-current="true"]{background:rgba(8,145,178,.14);color:#e2e8f0;font-weight:700}.gw-history-row[data-incomplete="true"]{color:#fecaca}.gw-history-comparison,.gw-retrieval-card{margin-top:8px;padding:8px;border-top:1px solid rgba(103,232,249,.24);border-radius:0 0 8px 8px;background:rgba(2,6,23,.18)}.gw-retrieval-title{margin-bottom:3px;color:#67e8f9;font-size:8px;font-weight:850;letter-spacing:.08em}.gw-retrieval-controls{display:flex;align-items:center;gap:6px;margin-top:6px}.gw-retrieval-input{box-sizing:border-box;width:76px!important;min-height:30px;padding:4px 6px!important;border:1px solid rgba(103,232,249,.34)!important;border-radius:7px!important;background:rgba(2,6,23,.66)!important;color:#fff!important}.gw-retrieval-button{min-height:30px;padding:4px 10px!important;border:1px solid rgba(103,232,249,.22)!important;border-radius:7px!important;background:#0e7490!important;color:#fff!important;font-size:9px!important;font-weight:800!important}',
       '.gw-inventory-panel{position:absolute!important;top:52px!important;right:280px!important;z-index:23!important;box-sizing:border-box;width:166px;padding:10px!important;border:1px solid rgba(251,191,36,.22)!important;border-radius:13px!important;background:linear-gradient(155deg,rgba(69,26,3,.78),rgba(15,23,42,.92))!important;box-shadow:0 16px 42px rgba(2,6,23,.42),inset 0 1px 0 rgba(255,255,255,.05)!important;backdrop-filter:blur(11px)}.gw-inventory-title{margin-bottom:6px;color:#fde68a;font-size:9px;font-weight:850;letter-spacing:.08em}.gw-inventory-volume{margin-bottom:7px;padding:6px;border:1px solid rgba(251,191,36,.16);border-radius:8px;background:rgba(120,53,15,.18);color:#fbbf24;font-size:13px;font-weight:850;text-align:center}.gw-inventory-row{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:23px;padding:3px 5px;border-radius:6px;color:#dbeafe;font-size:9px}.gw-inventory-row:nth-child(even){background:rgba(15,23,42,.34)}.gw-inventory-count{color:#d8b4fe;font-family:monospace;font-weight:800}@media(max-width:720px){.gw-history-panel{left:8px!important;bottom:238px!important;width:calc(50% - 12px)!important;max-width:none!important;max-height:34vh}.gw-inventory-panel{top:auto!important;right:8px!important;bottom:238px!important;width:calc(50% - 12px)}.gw-history-row{grid-template-columns:minmax(0,1fr) auto}.gw-history-row span:nth-child(3){grid-column:1/-1}}@media(max-width:420px){.gw-history-panel,.gw-inventory-panel{padding:7px!important}.gw-history-title,.gw-inventory-title{letter-spacing:.04em}.gw-inventory-row{padding-left:2px;padding-right:2px}}',
       '.gw-environment-tint{position:absolute;inset:0;z-index:5;pointer-events:none;transition:background .3s ease}.gw-environment-tint--water{background:linear-gradient(180deg,rgba(14,116,144,.12),rgba(30,64,175,.24))}.gw-environment-tint--lava{background:radial-gradient(circle at 50% 70%,rgba(251,146,60,.34),rgba(220,38,38,.18) 52%,rgba(69,10,10,.3))}.gw-environment-warning{position:absolute;left:50%;bottom:50%;display:flex;align-items:center;gap:8px;transform:translate(-50%,50%);max-width:calc(100% - 32px);padding:10px 14px;border:1px solid rgba(253,186,116,.62);border-radius:12px;background:rgba(67,20,7,.9);box-shadow:0 12px 32px rgba(69,10,10,.46),inset 0 1px 0 rgba(255,255,255,.08);color:#ffedd5;font-size:13px;font-weight:850;line-height:1.3;text-align:center;text-shadow:0 2px 8px rgba(0,0,0,.75);backdrop-filter:blur(8px)}@media(prefers-reduced-motion:reduce){.gw-environment-tint{transition:none!important}}',
-      '.gw-toolbar{display:grid!important;grid-template-columns:minmax(0,1fr) auto;align-items:center!important;column-gap:14px!important;row-gap:8px!important}.gw-brand-lockup{display:flex;min-width:0;align-items:center;gap:10px}.gw-brand-copy{min-width:0}.gw-title{margin:0;color:#f8fafc;font-size:15px;font-weight:850;line-height:1.15}.gw-lesson-title{display:block;margin-top:2px!important;color:var(--allo-stem-text-soft,#94a3b8);font-size:10px!important;line-height:1.3}.gw-status-cluster{display:flex;min-width:0;align-items:center;justify-content:flex-end;gap:6px}.gw-prediction-bar{grid-column:1/-1;display:grid!important;grid-template-columns:auto 62px auto auto minmax(116px,150px) minmax(150px,1fr);align-items:center;gap:6px!important;width:100%;box-sizing:border-box}.gw-prediction-bar>[data-geometry-prediction-scaffold]{grid-column:1/-1}.gw-badge-strip{max-width:190px;overflow:hidden}.gw-badge-strip [role="listitem"]{display:inline-flex;align-items:center;justify-content:center;min-width:20px;min-height:20px}@media(max-width:720px){.gw-toolbar{grid-template-columns:minmax(0,1fr)!important}.gw-status-cluster{grid-row:2;width:100%;justify-content:flex-start;overflow-x:auto;padding-bottom:2px;scrollbar-width:thin}.gw-prediction-bar{grid-row:3;display:flex!important;width:100%;flex-wrap:wrap!important}.gw-lesson-title{max-width:none!important;padding-left:0!important;margin-top:2px!important}.gw-badge-strip{flex:0 0 auto}}@media(max-width:420px){.gw-brand-mark{width:29px;height:29px}.gw-title{font-size:14px}.gw-stat-chip{min-height:24px;padding:2px 7px!important}.gw-prediction-bar{padding:7px!important}.gw-prediction-bar input[aria-label="Brief reason for prediction"]{flex:1 1 150px;width:auto!important}}',
+      '.gw-toolbar{display:grid!important;grid-template-columns:minmax(0,1fr) auto;align-items:center!important;column-gap:14px!important;row-gap:8px!important}.gw-brand-lockup{display:flex;min-width:0;align-items:center;gap:10px}.gw-brand-copy{min-width:0}.gw-title{margin:0;color:#f8fafc;font-size:15px;font-weight:850;line-height:1.15}.gw-lesson-title{display:block;margin-top:2px!important;color:var(--allo-stem-text-soft,#94a3b8);font-size:10px!important;line-height:1.3}.gw-status-cluster{display:flex;min-width:0;align-items:center;justify-content:flex-end;gap:6px}.gw-quality-control{display:inline-flex;min-height:32px;align-items:center;gap:5px;padding:2px 5px 2px 8px;border:1px solid rgba(148,163,184,.24);border-radius:9px;background:rgba(15,23,42,.62);color:#cbd5e1}.gw-quality-label{font-size:9px;font-weight:800;white-space:nowrap}.gw-quality-control select{min-height:28px;border:1px solid rgba(167,139,250,.34);border-radius:7px;background:#111827;color:#f8fafc;font-size:10px;font-weight:700}.gw-quality-control select:focus-visible{outline:3px solid #f8fafc;outline-offset:2px}.gw-prediction-bar{grid-column:1/-1;display:grid!important;grid-template-columns:auto 62px auto auto minmax(116px,150px) minmax(150px,1fr);align-items:center;gap:6px!important;width:100%;box-sizing:border-box}.gw-prediction-bar>[data-geometry-prediction-scaffold]{grid-column:1/-1}.gw-badge-strip{max-width:190px;overflow:hidden}.gw-badge-strip [role="listitem"]{display:inline-flex;align-items:center;justify-content:center;min-width:20px;min-height:20px}@media(max-width:720px){.gw-toolbar{grid-template-columns:minmax(0,1fr)!important}.gw-status-cluster{grid-row:2;width:100%;justify-content:flex-start;overflow-x:auto;padding-bottom:2px;scrollbar-width:thin}.gw-prediction-bar{grid-row:3;display:flex!important;width:100%;flex-wrap:wrap!important}.gw-lesson-title{max-width:none!important;padding-left:0!important;margin-top:2px!important}.gw-badge-strip{flex:0 0 auto}}@media(max-width:420px){.gw-brand-mark{width:29px;height:29px}.gw-title{font-size:14px}.gw-stat-chip{min-height:24px;padding:2px 7px!important}.gw-prediction-bar{padding:7px!important}.gw-prediction-bar input[aria-label="Brief reason for prediction"]{flex:1 1 150px;width:auto!important}}',
       '.gw-tutorial-shell{bottom:150px!important;box-sizing:border-box;max-height:calc(100% - 170px);overflow:auto;scrollbar-width:thin}.gw-tutorial-card{padding:16px 18px!important;text-align:left!important}.gw-tutorial-kicker{margin-bottom:4px;color:#c4b5fd;font-size:9px;font-weight:850;letter-spacing:.12em;text-transform:uppercase}.gw-tutorial-title{margin:0;color:#f8fafc;font-size:16px;font-weight:850;letter-spacing:-.01em;line-height:1.25}.gw-tutorial-instruction{margin:7px 0 12px;color:#cbd5e1;font-size:12px;font-weight:600;line-height:1.5}.gw-tutorial-progress{display:flex;align-items:center;gap:6px;margin-bottom:12px}.gw-tutorial-track{display:flex;flex:1;gap:5px}.gw-tutorial-dot{height:4px;flex:1;border-radius:999px;background:rgba(100,116,139,.38);transition:background 180ms ease,box-shadow 180ms ease}.gw-tutorial-dot[data-complete="true"]{background:#22c55e}.gw-tutorial-dot[data-current="true"]{background:#a78bfa;box-shadow:0 0 10px rgba(167,139,250,.55)}.gw-tutorial-count{color:#a8b3c7;font-size:9px;font-weight:750;white-space:nowrap}.gw-tutorial-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px}.gw-tutorial-skip,.gw-tutorial-next{min-height:38px;padding:7px 13px!important;border-radius:9px!important;font-size:11px!important;font-weight:750!important;cursor:pointer}.gw-tutorial-skip{border:1px solid rgba(148,163,184,.28)!important;background:rgba(15,23,42,.54)!important;color:#cbd5e1!important}.gw-tutorial-next{border:1px solid rgba(196,181,253,.28)!important;background:linear-gradient(135deg,#7c3aed,#6d28d9)!important;color:#fff!important;box-shadow:0 8px 20px rgba(76,29,149,.32)}@media(max-width:520px){.gw-tutorial-shell{bottom:150px!important;width:calc(100vw - 16px)!important;max-height:calc(100% - 166px)}.gw-tutorial-card{padding:14px!important}.gw-tutorial-actions{align-items:stretch}.gw-tutorial-skip,.gw-tutorial-next{min-height:44px;flex:1}}@media(prefers-reduced-motion:reduce){.gw-tutorial-dot{transition:none!important}}',
       '.gw-intro-card{box-sizing:border-box;width:min(520px,calc(100% - 24px))!important;max-width:none!important;max-height:calc(100% - 24px);overflow:auto;text-align:left!important;scrollbar-width:thin}.gw-intro-heading{display:grid;grid-template-columns:52px minmax(0,1fr);align-items:center;gap:14px;margin-bottom:16px}.gw-intro-icon{display:flex;width:52px;height:52px;align-items:center;justify-content:center;border:1px solid rgba(167,139,250,.28);border-radius:16px;background:linear-gradient(145deg,rgba(124,58,237,.26),rgba(34,211,238,.1));font-size:28px}.gw-intro-title{margin:0;color:#f8fafc;font-size:22px;font-weight:850;letter-spacing:-.02em;line-height:1.18}.gw-intro-description{margin:5px 0 0;color:#a8b3c7;font-size:12px;line-height:1.55}.gw-intro-objectives{margin-bottom:12px;padding:12px 14px;border:1px solid rgba(167,139,250,.24);border-radius:12px;background:rgba(124,58,237,.09)}.gw-intro-section-title{margin:0 0 7px;color:#c4b5fd;font-size:10px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}.gw-intro-objectives ol{display:grid;gap:5px;margin:0;padding-left:20px;color:#dbeafe}.gw-intro-objectives li{padding-left:2px;font-size:11px;line-height:1.45}.gw-intro-objectives li::marker{color:#a78bfa;font-weight:800}.gw-intro-formula{margin-bottom:12px;padding:10px 12px;border:1px solid rgba(251,191,36,.22);border-radius:10px;background:rgba(120,53,15,.16);color:#fde68a;font-family:monospace;font-size:12px;font-weight:750;text-align:center}.gw-intro-meta{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin-bottom:18px}.gw-intro-meta span{padding:4px 8px;border:1px solid rgba(148,163,184,.18);border-radius:999px;background:rgba(15,23,42,.46);color:#a8b3c7;font-size:10px;font-weight:700}.gw-intro-actions{display:flex;align-items:stretch;gap:8px}.gw-intro-start,.gw-intro-secondary{min-height:46px;flex:1;border-radius:11px!important;font-size:12px!important;font-weight:800!important;cursor:pointer}.gw-intro-secondary{border:1px solid rgba(148,163,184,.28)!important;background:rgba(15,23,42,.58)!important;color:#cbd5e1!important}@media(max-width:520px){.gw-intro-heading{grid-template-columns:42px minmax(0,1fr);gap:10px}.gw-intro-icon{width:42px;height:42px;border-radius:13px;font-size:23px}.gw-intro-title{font-size:18px}.gw-intro-actions{flex-direction:column}.gw-intro-start,.gw-intro-secondary{width:100%;min-height:48px}}',
       '.gw-reflection-dialog{box-sizing:border-box;width:min(430px,calc(100% - 24px))!important;max-width:none!important;padding:22px!important;text-align:left!important}.gw-reflection-heading{display:grid;grid-template-columns:42px minmax(0,1fr);align-items:center;gap:11px;margin-bottom:13px}.gw-reflection-icon{display:flex;width:42px;height:42px;align-items:center;justify-content:center;border:1px solid rgba(167,139,250,.26);border-radius:13px;background:rgba(124,58,237,.14);font-size:22px}.gw-reflection-title{margin:0;color:#f8fafc;font-size:17px;font-weight:850;line-height:1.2}.gw-reflection-description{margin:3px 0 0;color:#a8b3c7;font-size:11px;line-height:1.45}.gw-reflection-prompt{margin-bottom:10px;padding:9px 10px;border:1px solid rgba(34,211,238,.24);border-radius:9px;background:rgba(14,116,144,.14);color:#cffafe;font-size:11px;line-height:1.5}.gw-reflection-label{display:block;margin-bottom:5px;color:#ddd6fe;font-size:10px;font-weight:800}.gw-reflection-textarea{box-sizing:border-box;width:100%!important;min-height:92px;padding:9px!important;border:1px solid rgba(148,163,184,.34)!important;border-radius:9px!important;background:rgba(2,6,23,.66)!important;color:#f8fafc!important;font:12px/1.5 inherit!important;resize:vertical}.gw-reflection-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:5px;color:#94a3b8;font-size:9px}.gw-reflection-readiness[data-ready="true"]{color:#86efac;font-weight:750}.gw-reflection-actions{display:flex;align-items:stretch;justify-content:flex-end;gap:8px;margin-top:14px}.gw-reflection-save,.gw-reflection-skip{min-height:42px;padding:8px 14px!important;border-radius:9px!important;font-size:11px!important;font-weight:800!important}.gw-reflection-save{border:1px solid rgba(196,181,253,.28)!important;background:linear-gradient(135deg,#7c3aed,#6d28d9)!important;color:#fff!important}.gw-reflection-save:disabled{cursor:not-allowed;filter:saturate(.55);opacity:.55}.gw-reflection-skip{border:1px solid rgba(148,163,184,.28)!important;background:rgba(15,23,42,.52)!important;color:#cbd5e1!important}@media(max-width:520px){.gw-reflection-dialog{padding:16px!important}.gw-reflection-actions{flex-direction:column}.gw-reflection-save,.gw-reflection-skip{width:100%;min-height:48px}}',
@@ -198,6 +198,23 @@
     night:   { sky: [0.06, 0.05, 0.15], fog: [0.06, 0.05, 0.15], sunIntensity: 0.1, ambientIntensity: 0.12, fogNear: 10, fogFar: 40, cloudOpacity: 0.15, label: '\uD83C\uDF19 Night' },
     golden:  { sky: [1.0, 0.85, 0.5],   fog: [0.95, 0.8, 0.45], sunIntensity: 0.85, ambientIntensity: 0.35, fogNear: 25, fogFar: 70, cloudOpacity: 0.45, label: '\uD83C\uDF1F Golden' },
   };
+
+  // Centralized display profiles keep the WebGL workload predictable and make
+  // the same quality choices reusable by future Geometry World surfaces.
+  function resolveGeometryRenderProfile(preference, runtime) {
+    var requested = ['auto', 'saver', 'balanced', 'detail'].indexOf(preference) >= 0 ? preference : 'auto';
+    var env = runtime || {};
+    var reducedMotion = !!env.reducedMotion;
+    var lowPower = !!env.isMobile || reducedMotion || (env.hardwareConcurrency > 0 && env.hardwareConcurrency <= 4);
+    var tier = requested === 'auto' ? (lowPower ? 'saver' : 'detail') : requested;
+    var profiles = {
+      saver: { label: 'Battery saver', maxPixelRatio: 1, shadows: false, postFx: false, ambientMotion: false },
+      balanced: { label: 'Balanced', maxPixelRatio: 1.5, shadows: true, postFx: false, ambientMotion: true },
+      detail: { label: 'Detailed', maxPixelRatio: 2, shadows: true, postFx: true, ambientMotion: true }
+    };
+    return Object.assign({ preference: requested, tier: tier }, profiles[tier]);
+  }
+  window.StemLab.GeometryWorldRenderProfile = resolveGeometryRenderProfile;
 
   function applyEnvPreset(engine, presetKey) {
     var p = ENV_PRESETS[presetKey];
@@ -2262,6 +2279,9 @@
       var webglErrState = React.useState(false);
       var webglError = webglErrState[0];
       var setWebglError = webglErrState[1];
+      var fullscreenState = React.useState(false);
+      var isWorkspaceFullscreen = fullscreenState[0];
+      var setWorkspaceFullscreen = fullscreenState[1];
       // WebXR: "Enter VR" shows ONLY while a headset is present (reactive to
       // connect/unplug via devicechange) — no clutter for the 2D majority.
       var _xrSup = React.useState(false); var xrSupported = _xrSup[0]; var setXrSupported = _xrSup[1];
@@ -2274,6 +2294,16 @@
         return function() { alive = false; try { if (navigator.xr && navigator.xr.removeEventListener) navigator.xr.removeEventListener('devicechange', dc); } catch(e){} };
       }, []);
       // ── Stable container ref for the 3D engine ──
+      React.useEffect(function() {
+        function syncGeometryFullscreen() {
+          var active = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement;
+          setWorkspaceFullscreen(!!(active && active.id === 'geoworld-fs-workspace'));
+        }
+        var events = ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange'];
+        events.forEach(function(eventName) { document.addEventListener(eventName, syncGeometryFullscreen); });
+        syncGeometryFullscreen();
+        return function() { events.forEach(function(eventName) { document.removeEventListener(eventName, syncGeometryFullscreen); }); };
+      }, []);
       // The world container used to take an INLINE callback ref. React hands a new
       // function identity to every commit, so each re-render fired ref(null) →
       // destroyEngine() then ref(node) → initEngine(). Clicking "Start Lesson" calls
@@ -2399,6 +2429,7 @@
       var showLessonEditor = d.showLessonEditor || false;
       var showLessonIntro = d.showLessonIntro || false;
       var soundMuted = d.soundMuted || false;
+      var renderQuality = d.renderQuality || 'auto';
       var showReflection = d.showReflection || false;
       var reflectionText = d.reflectionText || '';
       var lessonEditorJson = d.lessonEditorJson || '';
@@ -2809,8 +2840,23 @@
         engine.renderer = new THREE.WebGLRenderer({ canvas: cnv, antialias: true, powerPreference: 'high-performance' });
         // CSS already owns the canvas size; avoid writing pixels back into layout.
         engine.renderer.setSize(container.clientWidth, container.clientHeight, false);
-        engine.renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.5 : 2));
-        engine.renderer.shadowMap.enabled = true;
+        engine.applyRenderQuality = function(preference) {
+          var profile = resolveGeometryRenderProfile(preference, {
+            isMobile: isMobile,
+            reducedMotion: !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches),
+            hardwareConcurrency: Number(navigator.hardwareConcurrency) || 0
+          });
+          engine._renderProfile = profile;
+          engine._postFxEnabled = profile.postFx;
+          engine._ambientMotionEnabled = profile.ambientMotion;
+          engine.renderer.setPixelRatio(Math.min(Number(window.devicePixelRatio) || 1, profile.maxPixelRatio));
+          engine.renderer.shadowMap.enabled = profile.shadows;
+          if (engine.composer && container.clientWidth && container.clientHeight) {
+            try { engine.composer.setSize(container.clientWidth, container.clientHeight); } catch (e) {}
+          }
+          return profile;
+        };
+        engine.applyRenderQuality(d.renderQuality || 'auto');
         engine.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         engine.renderer.toneMapping = THREE.ACESFilmicToneMapping;
         engine.renderer.toneMappingExposure = 1.1;
@@ -2847,8 +2893,8 @@
             try {
               var T = window.THREE;
               if (!T || !T.EffectComposer || !T.RenderPass || !T.UnrealBloomPass) return;
-              var reduce = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-              var lowPower = reduce || isMobile || (!!navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
+              var renderProfile = engine._renderProfile || resolveGeometryRenderProfile('auto', { isMobile: isMobile, hardwareConcurrency: Number(navigator.hardwareConcurrency) || 0 });
+              var lowPower = renderProfile.tier !== 'detail';
               var res = lowPower ? 0.5 : 1;
               var cw = container.clientWidth, ch = container.clientHeight;
               var c = new T.EffectComposer(engine.renderer);
@@ -3695,10 +3741,26 @@
           } else if (engine._pausedByVisibility && !engine._destroyed && !engine._runtimeFailed) {
             engine._pausedByVisibility = false;
             if (engine.clock) engine.clock.getDelta();
-            animate();
+            if (!engine._pausedByViewport) animate();
           }
         });
         engine._pausedByVisibility = !!document.hidden;
+        engine._pausedByViewport = false;
+        if (typeof IntersectionObserver === 'function') {
+          engine._intersectionObserver = new IntersectionObserver(function(entries) {
+            if (!entries || !entries[0] || engine._destroyed) return;
+            var wasPaused = engine._pausedByViewport;
+            engine._pausedByViewport = entries[0].isIntersecting === false;
+            if (engine._pausedByViewport) {
+              if (engine._rafId) cancelAnimationFrame(engine._rafId);
+              engine._rafId = null;
+            } else if (wasPaused && !engine._pausedByVisibility && !engine._runtimeFailed) {
+              if (engine.clock) engine.clock.getDelta();
+              animate();
+            }
+          }, { rootMargin: '160px' });
+          engine._intersectionObserver.observe(container);
+        }
         canvas.addEventListener('click', _cvH.click = function() { if (!engine.isLocked) canvas.requestPointerLock(); });
         document.addEventListener('pointerlockchange', _docH.pointerlockchange = function() {
           engine.isLocked = !!document.pointerLockElement;
@@ -4581,7 +4643,7 @@
         function animate() {
           if (engine && engine._destroyed) return; // teardown ran — stop rescheduling (the closure engine keeps scene/camera, so the guard below won't catch it)
           if (engine && engine._runtimeFailed) return;
-          if (engine && engine._pausedByVisibility) return;
+          if (engine && (engine._pausedByVisibility || engine._pausedByViewport)) return;
           // Catch future frame failures and cancel the successor they schedule so one
           // broken effect cannot create an endless exception loop in the host browser.
           engine._rafId = requestAnimationFrame(function() {
@@ -5125,7 +5187,7 @@
           // ── Animate water blocks — gentle vertical bob + opacity shimmer ──
           if (!engine._waterAnimFrame) engine._waterAnimFrame = 0;
           engine._waterAnimFrame++;
-          if (engine._waterAnimFrame % 3 === 0) { // Every 3rd frame for performance
+          if (engine._ambientMotionEnabled !== false && engine._waterAnimFrame % 3 === 0) { // Every 3rd frame for performance
             var wt = engine.clock.getElapsedTime();
             var blockKeys = Object.keys(engine.blocks);
             for (var wi = 0; wi < blockKeys.length; wi++) {
@@ -5182,7 +5244,7 @@
 
           // ── Ambient dust motes (floating particles near player) ──
           if (!engine._dustMotes) engine._dustMotes = [];
-          if (engine._dustMotes.length < 12 && Math.random() < 0.03) {
+          if (engine._ambientMotionEnabled !== false && engine._dustMotes.length < 12 && Math.random() < 0.03) {
             var camPos = engine.camera.position;
             var dGeo = new THREE.SphereGeometry(0.02, 4, 4);
             var dMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.25 });
@@ -5213,7 +5275,7 @@
           }
 
           // ── Animate clouds — slow UV drift ──
-          if (engine._cloudTex) {
+          if (engine._ambientMotionEnabled !== false && engine._cloudTex) {
             engine._cloudTex.offset.x += dt * 0.005;
             engine._cloudTex.offset.y += dt * 0.002;
           }
@@ -5230,7 +5292,7 @@
             engine._sunSprite.position.z = engine.camera.position.z + 40;
           }
 
-          if (engine.composer) { try { engine.composer.render(); } catch (e) { engine.composer = null; engine.renderer.render(engine.scene, engine.camera); } }
+          if (engine.composer && engine._postFxEnabled !== false) { try { engine.composer.render(); } catch (e) { engine.composer = null; engine.renderer.render(engine.scene, engine.camera); } }
           else { engine.renderer.render(engine.scene, engine.camera); }
         }
         animate();
@@ -5663,7 +5725,7 @@
                     THREE: THREE, renderer: engine.renderer, scene: engine.scene, camera: engine.camera,
                     seat: { position: [0, 0, 6], scale: 1 },
                     bounds: { minX: -35, maxX: 35, minZ: -35, maxZ: 35 },
-                    render: function() { if (engine.composer) { try { engine.composer.render(); return; } catch (e) { engine.composer = null; } } engine.renderer.render(engine.scene, engine.camera); },
+                    render: function() { if (engine.composer && engine._postFxEnabled !== false) { try { engine.composer.render(); return; } catch (e) { engine.composer = null; } } engine.renderer.render(engine.scene, engine.camera); },
                     pauseLoop: function() { if (engine._rafId) { cancelAnimationFrame(engine._rafId); engine._rafId = null; } },
                     resumeLoop: function() { try { animate(); } catch (e) {} }
                   });
@@ -5728,6 +5790,7 @@
           if (engine._gridHelper) { engine.scene.remove(engine._gridHelper); engine._gridHelper.geometry.dispose(); engine._gridHelper.material.dispose(); }
           if (engine._badgeDismissTimer) clearTimeout(engine._badgeDismissTimer);
           if (engine._resizeObserver) { try { engine._resizeObserver.disconnect(); } catch (e) {} engine._resizeObserver = null; }
+          if (engine._intersectionObserver) { try { engine._intersectionObserver.disconnect(); } catch (e) {} engine._intersectionObserver = null; }
           if (engine._resizeRafId) { cancelAnimationFrame(engine._resizeRafId); engine._resizeRafId = null; }
           // Collab peer avatars are built inside the animate loop, so teardown never
           // saw them — each body/head Mesh (plus its material) outlived the engine.
@@ -6259,7 +6322,8 @@
           .catch(function() { if (addToast) addToast('Could not copy automatically. Select the technical details manually.', 'error'); });
       }
 
-      return el('div', { role: 'region', className: 'gw-root', 'aria-label': __alloT('stem.geometryworld.tool_name', 'Geometry World'), style: { display: 'flex', flexDirection: 'column', height: '100%', position: 'relative', background: 'var(--allo-stem-canvas, #000)' } },
+      return el('div', { id: 'geoworld-fs-workspace', role: 'region', 'data-geometry-fullscreen-workspace': 'true', 'data-fullscreen': isWorkspaceFullscreen ? 'true' : 'false', className: 'gw-root', 'aria-label': __alloT('stem.geometryworld.tool_name', 'Geometry World'), style: { display: 'flex', flexDirection: 'column', height: '100%', position: 'relative', background: 'var(--allo-stem-canvas, #000)' } },
+        el('style', null, '#geoworld-fs-workspace:fullscreen,#geoworld-fs-workspace:-webkit-full-screen{width:100vw;height:100vh;overflow:hidden;background:#020617}#geoworld-fs-workspace:fullscreen .gw-toolbar,#geoworld-fs-workspace:-webkit-full-screen .gw-toolbar{max-height:32vh;overflow:auto;padding:8px 10px}#geoworld-fs-workspace:fullscreen .gw-viewport,#geoworld-fs-workspace:-webkit-full-screen .gw-viewport{flex:1;min-height:0}'),
         // Top bar — glass style
         el('header', { className: 'gw-toolbar', 'aria-label': 'Geometry World lesson controls', style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'linear-gradient(180deg, rgba(15,23,42,0.94), rgba(15,23,42,0.82))', backdropFilter: 'blur(14px) saturate(120%)', borderBottom: '1px solid rgba(148,163,184,0.16)', flexShrink: 0, flexWrap: 'wrap' } },
           el('div', { className: 'gw-brand-lockup' },
@@ -6270,6 +6334,26 @@
             )
           ),
           el('div', { className: 'gw-status-cluster', 'aria-label': 'Lesson status' },
+          el('label', { className: 'gw-quality-control' },
+            el('span', { className: 'gw-quality-label' }, '3D quality'),
+            el('select', {
+              value: renderQuality,
+              'data-geometry-render-quality': 'true',
+              'aria-label': '3D graphics quality',
+              onChange: function(ev) {
+                var preference = ev.target.value;
+                upd('renderQuality', preference);
+                var liveEngine = window[engineKey];
+                var profile = liveEngine && liveEngine.applyRenderQuality ? liveEngine.applyRenderQuality(preference) : resolveGeometryRenderProfile(preference, {});
+                announceToSR('3D graphics quality set to ' + profile.label + '.');
+              }
+            },
+              el('option', { value: 'auto' }, 'Auto'),
+              el('option', { value: 'saver' }, 'Battery saver'),
+              el('option', { value: 'balanced' }, 'Balanced'),
+              el('option', { value: 'detail' }, 'Detailed')
+            )
+          ),
           // Score
           // Block counter
           engine && el('span', { className: 'gw-stat-chip', style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)' } },
@@ -8781,11 +8865,12 @@
               el('button', {
                 type: 'button',
                 className: 'gw-viewport-control gw-viewport-control--fullscreen gw-focusable',
-                'aria-label': __alloT('stem.geometryworld.toggle_fullscreen_for_the_3d_world', 'Toggle fullscreen for the 3D world'),
-                title: __alloT('stem.geometryworld.fullscreen', 'Fullscreen'),
+                'aria-label': isWorkspaceFullscreen ? 'Exit fullscreen for the Geometry World workspace' : 'Enter fullscreen for the Geometry World workspace',
+                'aria-pressed': isWorkspaceFullscreen,
+                title: isWorkspaceFullscreen ? 'Exit fullscreen' : 'Enter fullscreen',
                 onClick: function(ev) {
                   ev.stopPropagation();
-                  var fsEl = document.getElementById('geoworld-fs-wrap');
+                  var fsEl = document.getElementById('geoworld-fs-workspace');
                   if (!fsEl) return;
                   var inFull = document.fullscreenElement === fsEl || document.webkitFullscreenElement === fsEl || document.mozFullScreenElement === fsEl;
                   if (inFull) { var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen; if (ex) ex.call(document); }

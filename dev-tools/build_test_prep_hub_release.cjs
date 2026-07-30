@@ -10,7 +10,9 @@ function writeGeneratedFile(file,data){let error;for(let attempt=1;attempt<=8;at
 
 const root = path.resolve(__dirname, '..');
 const sourcePath = path.join(root, 'test_prep_hub_source.jsx');
-const epppBankPath = path.join(root, 'test_prep', 'eppp_native_items.json');
+const epppPartOnePackPath = path.join(root, 'test_prep', 'eppp_part_one_pack.json');
+const epppPartOnePackBuildPath = path.join(root, 'dev-tools', 'build_eppp_part_one_pack.cjs');
+const epppNativeQaPath = path.join(root, 'dev-tools', 'qa_eppp_native_pack.cjs');
 const eppp2027PreviewPackPath = path.join(root, 'test_prep', 'eppp_2027_preview_pack.json');
 const eppp2027PreviewBuildPath = path.join(root, 'dev-tools', 'build_eppp_2027_preview.cjs');
 const eppp2027PreviewQaPath = path.join(root, 'dev-tools', 'qa_eppp_2027_preview.cjs');
@@ -119,6 +121,9 @@ const applyTestPrepSourceReviewCorrectionsPath=path.join(root,'dev-tools','apply
 const writeTestPrepAssistantReviewPath=path.join(root,'dev-tools','write_test_prep_assistant_review.cjs');
 const verifyTestPrepAssistantReviewPath=path.join(root,'dev-tools','verify_test_prep_assistant_review.cjs');
 const buildTestPrepReferenceCatalogPath=path.join(root,'dev-tools','build_test_prep_reference_catalog.cjs');
+const buildTestPrepPackManifestPath=path.join(root,'dev-tools','build_test_prep_pack_manifest.cjs');
+const epppMigrationArchivePath=path.join(root,'dev-tools','build_eppp_migration_source_archive.cjs');
+const epppLearningLibraryBuildPath=path.join(root,'dev-tools','build_eppp_learning_library.cjs');
 const reviewNonEpppAgainstEpppPath=path.join(root,'dev-tools','review_non_eppp_against_eppp.cjs');
 const applyTestPrepIndependentAdditionsPath=path.join(root,'dev-tools','apply_test_prep_independent_additions.cjs');
 const expandTestPrepPacksPath=path.join(root,'dev-tools','expand_test_prep_packs_to_500.cjs');
@@ -149,7 +154,6 @@ const outputPath = path.join(root, 'test_prep_hub_module.js');
 const deployOutputPath = path.join(root, 'desktop/web-app', 'public', 'test_prep_hub_module.js');
 const tempEntryPath = path.join(root, '_tmp_test_prep_hub_release_entry.jsx');
 const compiledPath = tempEntryPath + '.compiled.js';
-const registrationMarker = 'registerTestPrepPack(EPPP_PART_ONE_SCAFFOLD);';
 const eppp2027PreviewRegistration = 'registerTestPrepPack(EPPP_INTEGRATED_2027_PREVIEW_PACK);';
 const paraProRegistration = 'registerTestPrepPack(PARAPRO_PRACTICE_PACK);';
 const specialEducation5355Registration = 'registerTestPrepPack(SPECIAL_EDUCATION_5355_PRACTICE_PACK);';
@@ -175,7 +179,9 @@ const plt7125624Registration='registerTestPrepPack(PLT_7_12_5624_PRACTICE_PACK);
 const schoolLibrarian5312Registration='registerTestPrepPack(SCHOOL_LIBRARIAN_5312_PRACTICE_PACK);';
 
 if (!fs.existsSync(sourcePath)) throw new Error('Test Prep Hub source not found.');
-if (!fs.existsSync(epppBankPath)) throw new Error('EPPP bank not found.');
+if (!fs.existsSync(buildTestPrepPackManifestPath)) throw new Error('Test Prep pack manifest builder not found.');
+if (!fs.existsSync(epppPartOnePackBuildPath)) throw new Error('EPPP Part 1 pack builder not found.');
+if (!fs.existsSync(epppNativeQaPath)) throw new Error('EPPP Part 1 QA builder not found.');
 if (!fs.existsSync(eppp2027PreviewPackPath)) throw new Error('Integrated EPPP 2027 preview pack not found.');
 if (!fs.existsSync(paraProSourcePath)) throw new Error('ParaPro release source not found.');
 if (!fs.existsSync(specialEducation5355SourcePath)) throw new Error('Praxis Special Education 5355 release source not found.');
@@ -294,14 +300,17 @@ execFileSync(process.execPath,[writeTestPrepAssistantReviewPath],{cwd:root,stdio
 execFileSync(process.execPath,[reviewNonEpppAgainstEpppPath],{cwd:root,stdio:'inherit'});
 execFileSync(process.execPath,[verifyTestPrepAssistantReviewPath],{cwd:root,stdio:'inherit'});
 }
+execFileSync(process.execPath,[epppMigrationArchivePath,'--verify'],{cwd:root,stdio:'inherit'});
+execFileSync(process.execPath,[epppLearningLibraryBuildPath],{cwd:root,stdio:'inherit'});
+execFileSync(process.execPath,[epppPartOnePackBuildPath],{cwd:root,stdio:'inherit'});
+execFileSync(process.execPath,[epppNativeQaPath],{cwd:root,stdio:'inherit'});
+execFileSync(process.execPath,[buildTestPrepPackManifestPath],{cwd:root,stdio:'inherit'});
 
 const originalSource = fs.readFileSync(sourcePath, 'utf8');
-if (!originalSource.includes(registrationMarker)) throw new Error('Test Prep Hub registration marker changed; review the ParaPro release injection.');
+if (originalSource.includes('EPPP_PART_ONE_SCAFFOLD') || originalSource.includes('EPPP_NATIVE_ITEMS')) throw new Error('Test Prep Hub source must not embed the lazy EPPP Part 1 bank.');
 if (!originalSource.includes(eppp2027PreviewRegistration)) throw new Error('Test Prep Hub source must register the Integrated EPPP 2027 preview pack.');
-const source = originalSource.includes(paraProRegistration)
-  ? originalSource
-  : originalSource.replace(registrationMarker, registrationMarker + '\n' + paraProRegistration);
-const epppItems = JSON.parse(fs.readFileSync(epppBankPath, 'utf8'));
+if (!originalSource.includes(paraProRegistration)) throw new Error('Test Prep Hub source must register the ParaPro pack.');
+const source = originalSource;
 const eppp2027PreviewPack = JSON.parse(fs.readFileSync(eppp2027PreviewPackPath, 'utf8'));
 if (!eppp2027PreviewPack || eppp2027PreviewPack.id !== 'eppp-integrated-2027-preview' || eppp2027PreviewPack.status !== 'preview' || eppp2027PreviewPack.items?.length !== 20) throw new Error('Integrated EPPP 2027 preview pack is invalid.');
 const referenceCatalog = JSON.parse(fs.readFileSync(referenceCatalogPath, 'utf8'));
@@ -331,7 +340,7 @@ const specialEducation5355Pack = JSON.parse(fs.readFileSync(specialEducation5355
 const schoolCounselor5422Pack = JSON.parse(fs.readFileSync(schoolCounselor5422SourcePath, 'utf8'));
 const schoolPsychologist5403Pack = JSON.parse(fs.readFileSync(schoolPsychologist5403SourcePath, 'utf8'));
 const speechLanguagePathology5331Pack = JSON.parse(fs.readFileSync(speechLanguagePathology5331SourcePath, 'utf8'));
-if (!Array.isArray(epppItems) || !epppItems.length) throw new Error('EPPP bank is empty or invalid.');
+if (!fs.existsSync(epppPartOnePackPath)) throw new Error('Generated EPPP Part 1 lazy pack is missing.');
 const audiology5343Pack = JSON.parse(fs.readFileSync(audiology5343SourcePath, 'utf8'));
 const readingSpecialist5302Pack = JSON.parse(fs.readFileSync(readingSpecialist5302SourcePath, 'utf8'));
 const educationalLeadership5412Pack = JSON.parse(fs.readFileSync(educationalLeadership5412SourcePath, 'utf8'));
@@ -416,7 +425,6 @@ function embedPack(pack) {
 }
 const prelude = 'const TEST_PREP_GUIDED_EXPANSION = (' + guidedCore.factorySource + ')();\n\n'
   + 'const TEST_PREP_REFERENCE_CATALOG = ' + JSON.stringify(referenceCatalog) + ';\n\n'
-  + 'const EPPP_NATIVE_ITEMS = ' + JSON.stringify(epppItems) + ';\n\n'
   + 'const EPPP_INTEGRATED_2027_PREVIEW_PACK = ' + JSON.stringify(eppp2027PreviewPack) + ';\n\n'
   + 'const PARAPRO_PRACTICE_PACK = ' + JSON.stringify(embedPack(paraProPack)) + ';\n\n'
   + 'const SPECIAL_EDUCATION_5355_PRACTICE_PACK = ' + JSON.stringify(embedPack(specialEducation5355Pack)) + ';\n\n'
@@ -484,6 +492,9 @@ ${prelude}${compiled}
     normalizePack: normalizeTestPrepPack,
     validatePack: validateTestPrepPack,
     normalizeProgress: normalizeTestPrepProgress,
+    resolvePackContentIdentity: testPrepResolvePackContentIdentity,
+    contentIdentityStatus: testPrepContentIdentityStatus,
+    normalizeSession: testPrepNormalizeSession,
     scoreAttempt: scoreTestPrepAttempt,
     recordAttempt: recordTestPrepAttempt,
     arrangeBalancedBatches: testPrepArrangeBalancedBatches,
@@ -506,6 +517,16 @@ ${prelude}${compiled}
     buildClarificationPrompt: testPrepBuildClarificationPrompt,
     repoAssetCandidates: testPrepRepoAssetCandidates,
     fetchRepoJson: testPrepFetchRepoJson,
+    manifestSchemaVersion: TEST_PREP_PACK_MANIFEST_SCHEMA_VERSION,
+    portfolioCategories: TEST_PREP_PORTFOLIO_CATEGORIES.slice(),
+    normalizeManifest: normalizeTestPrepPackManifest,
+    validateManifest: validateTestPrepPackManifest,
+    listManifestEntries: listTestPrepManifestEntries,
+    fetchManifest: testPrepFetchPackManifest,
+    loadManifestPack: testPrepLoadManifestPack,
+    learningLibraryIdentity: testPrepLearningLibraryIdentity,
+    packSkillCatalog: testPrepPackSkillCatalog,
+    itemSkillIds: testPrepItemSkillIds,
     searchPack: testPrepSearchPack,
     normalizeFlashcardSchedule: normalizeTestPrepFlashcardSchedule,
     rateFlashcard: testPrepRateFlashcard,

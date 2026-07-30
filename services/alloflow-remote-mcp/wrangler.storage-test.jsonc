@@ -1,0 +1,20 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "alloflow-remediation-storage-test",
+  "main": "src/pilot-index.ts",
+  "compatibility_date": "2026-07-29",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "vars": {
+    "PILOT_ENABLED": "false"
+  },
+  "d1_databases": [
+    {
+      "binding": "PILOT_DB",
+      "database_name": "alloflow-pilot-migration-test",
+      "database_id": "00000000-0000-0000-0000-000000000001",
+      "migrations_dir": "./migrations"
+    }
+  ]
+}

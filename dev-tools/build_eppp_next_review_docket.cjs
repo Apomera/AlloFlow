@@ -3,6 +3,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { ensureFamily, evidencePath } = require('./eppp_evidence_paths.cjs');
 
 function writeFileWithRetry(filePath, contents) {
   let lastError;
@@ -20,9 +21,8 @@ function writeFileWithRetry(filePath, contents) {
 }
 
 const root = path.resolve(__dirname, '..');
-const sourceRoot = path.join(root, 'test_prep', 'eppp_legacy');
-const deployRoot = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_legacy');
-const audit = JSON.parse(fs.readFileSync(path.join(sourceRoot, 'content_audit.json'), 'utf8'));
+const canonicalRoot = ensureFamily('review');
+const audit = JSON.parse(fs.readFileSync(evidencePath('audit', 'content_audit.json'), 'utf8'));
 const nativeQa = JSON.parse(fs.readFileSync(path.join(root, 'test_prep', 'eppp_native_qa.json'), 'utf8'));
 
 const blueprint = [
@@ -198,7 +198,7 @@ ${riskRows}
 ${report.safeguards.map((guardrail) => `- ${guardrail}`).join('\n')}
 `;
 
-for (const outputRoot of [sourceRoot, deployRoot]) {
+for (const outputRoot of [canonicalRoot]) {
   writeFileWithRetry(path.join(outputRoot, 'next_review_docket.json'), JSON.stringify(report, null, 2) + '\n');
   writeFileWithRetry(path.join(outputRoot, 'next_review_docket.md'), markdown);
 }

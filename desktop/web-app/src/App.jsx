@@ -2384,7 +2384,11 @@ function buildAssignmentActivityPublicSummary(state) {
       distribution: distribution
     };
   }
-  var participantCount = Object.keys(responses).length;
+  // The public threshold must describe the same approved contributor set that
+  // can appear in \`terms\`. Counting pending/hidden rows here could reveal a
+  // single approved learner's term once unrelated held responses brought the
+  // total over the anonymity floor.
+  var participantCount = 0;
   var buckets = {};
   Object.keys(responses).forEach(function(uid) {
     var row = responses[uid];
@@ -2392,6 +2396,7 @@ function buildAssignmentActivityPublicSummary(state) {
     var label = normalizeAssignmentWordCloudTerm(row.text);
     var key = label.toLowerCase();
     if (!key) return;
+    participantCount += 1;
     if (!buckets[key]) buckets[key] = { value: key, label: label, count: 0 };
     buckets[key].count += 1;
   });
@@ -4479,6 +4484,37 @@ function _alloSharedActivityUiMeta(activity) {
         : { isRating: false, shortLabel: 'WC', title: 'Class word cloud', dialogId: 'shared-assignment-word-cloud-title' };
 }
 
+function _alloNextSharedActivitySummaryOrder(currentValue, result, requestSequence, requestScope, activeScope) {
+    if (!result || typeof result !== 'object') return null;
+    const scope = String(requestScope || '');
+    if (!scope || scope !== String(activeScope || '')) return null;
+    const previous = currentValue && typeof currentValue === 'object'
+        ? currentValue
+        : null;
+    const current = previous && previous.scope === scope
+        ? previous
+        : { scope, sequence: 0, version: -1 };
+    const sequence = Number.isFinite(Number(requestSequence))
+        ? Number(requestSequence)
+        : 0;
+    const hasVersion = result.version !== undefined
+        && result.version !== null
+        && Number.isFinite(Number(result.version));
+    const version = hasVersion ? Number(result.version) : -1;
+    // Server version is authoritative. For equal or unversioned results,
+    // request order breaks ties so a slower poll cannot undo a submission or
+    // moderation response that has already reached the panel.
+    if (hasVersion && version < current.version) return null;
+    if (hasVersion && version === current.version && sequence < current.sequence) return null;
+    if (!hasVersion && current.version >= 0) return null;
+    if (!hasVersion && sequence < current.sequence) return null;
+    return {
+        scope,
+        sequence,
+        version: hasVersion ? version : current.version,
+    };
+}
+
 const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivityPanel({
     activity,
     mailbox,
@@ -4493,17 +4529,33 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     const isRating = activityMeta.isRating;
     const packId = String(mailbox?.id || '');
     const activityId = String(effectiveActivity?.activityId || '');
+    const activityScope = `${packId}:${activityId}`;
     const mailboxUrl = String(mailbox?.url || '');
     const packSecret = String(mailbox?.secret || '');
     const credentialRef = React.useRef(null);
+    const activeActivityScopeRef = React.useRef(activityScope);
+    const requestSequenceRef = React.useRef(0);
+    const lastAppliedSummaryRef = React.useRef({ scope: activityScope, sequence: 0, version: -1 });
     const [summary, setSummary] = React.useState(null);
     const [term, setTerm] = React.useState('');
     const [ratingValue, setRatingValue] = React.useState(null);
     const [busy, setBusy] = React.useState(false);
     const [error, setError] = React.useState('');
     const [lastUpdatedAt, setLastUpdatedAt] = React.useState(0);
+    activeActivityScopeRef.current = activityScope;
 
     const storageKey = `allo_shared_activity_v1:${packId}:${activityId}`;
+    React.useEffect(() => {
+        credentialRef.current = null;
+        lastAppliedSummaryRef.current = { scope: activityScope, sequence: 0, version: -1 };
+        setSummary(null);
+        setTerm('');
+        setRatingValue(null);
+        setError('');
+        setBusy(false);
+        setLastUpdatedAt(0);
+    }, [activityScope]);
+
     const rememberCredential = React.useCallback((credential) => {
         credentialRef.current = credential;
         try { localStorage.setItem(storageKey, JSON.stringify(credential)); } catch (_) {}
@@ -4548,8 +4600,24 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
         }
     }, [activityId, clearCredential, ensureCredential, mailboxUrl, packId]);
 
+    const applySharedActivitySummary = React.useCallback((result, requestSequence, requestScope) => {
+        const nextOrder = _alloNextSharedActivitySummaryOrder(
+            lastAppliedSummaryRef.current,
+            result,
+            requestSequence,
+            requestScope,
+            activeActivityScopeRef.current
+        );
+        if (!nextOrder) return false;
+        lastAppliedSummaryRef.current = nextOrder;
+        setSummary(result);
+        setLastUpdatedAt(Date.now());
+        return true;
+    }, []);
+
     const refresh = React.useCallback(async ({ quiet = false, retryCredential = true } = {}) => {
         if (!mailboxUrl || !packId || !activityId) return null;
+        const requestSequence = ++requestSequenceRef.current;
         if (!quiet) setBusy(true);
         try {
             let result;
@@ -4574,19 +4642,23 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
                     });
                 }
             }
-            setSummary(result);
-            if (result?.own?.text) setTerm(current => current || result.own.text);
-            if (Number.isInteger(result?.own?.value)) setRatingValue(current => current == null ? result.own.value : current);
-            setLastUpdatedAt(Date.now());
-            setError('');
+            const applied = applySharedActivitySummary(result, requestSequence, activityScope);
+            if (applied) {
+                if (result?.own?.text) setTerm(current => current || result.own.text);
+                if (Number.isInteger(result?.own?.value)) setRatingValue(current => current == null ? result.own.value : current);
+                setError('');
+            }
             return result;
         } catch (requestError) {
-            if (!quiet) setError(`The ${activityMeta.title.toLowerCase()} could not update. Check the connection and try again.`);
+            const currentOrder = lastAppliedSummaryRef.current || { sequence: 0 };
+            if (!quiet && activeActivityScopeRef.current === activityScope && requestSequence >= currentOrder.sequence) {
+                setError(`The ${activityMeta.title.toLowerCase()} could not update. Check the connection and try again.`);
+            }
             return null;
         } finally {
-            if (!quiet) setBusy(false);
+            if (!quiet && activeActivityScopeRef.current === activityScope) setBusy(false);
         }
-    }, [activityId, admin, clearCredential, ensureCredential, isTeacher, mailboxUrl, packId]);
+    }, [activityId, activityScope, admin, applySharedActivitySummary, clearCredential, ensureCredential, isTeacher, mailboxUrl, packId]);
 
     React.useEffect(() => {
         let cancelled = false;
@@ -4626,19 +4698,22 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
             return;
         }
         setBusy(true);
+        const requestSequence = ++requestSequenceRef.current;
         try {
             const result = await callStudentUpdate({ term: normalized });
-            setTerm(result?.own?.text || normalized);
-            setSummary(result);
-            setLastUpdatedAt(Date.now());
-            setError('');
+            if (applySharedActivitySummary(result, requestSequence, activityScope)) {
+                setTerm(result?.own?.text || normalized);
+                setError('');
+            }
             addToast(result?.own?.status === 'approved'
                 ? 'Your word is now part of the anonymous class cloud.'
                 : 'Your word was saved and is waiting for teacher review.', 'success');
         } catch (requestError) {
-            setError('Your word was not saved. Check the connection and use Save again.');
+            if (activeActivityScopeRef.current === activityScope) {
+                setError('Your word was not saved. Check the connection and use Save again.');
+            }
         } finally {
-            setBusy(false);
+            if (activeActivityScopeRef.current === activityScope) setBusy(false);
         }
     };
 
@@ -4652,17 +4727,20 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
             return;
         }
         setBusy(true);
+        const requestSequence = ++requestSequenceRef.current;
         try {
             const result = await callStudentUpdate({ value: ratingValue });
-            setRatingValue(Number.isInteger(result?.own?.value) ? result.own.value : ratingValue);
-            setSummary(result);
-            setLastUpdatedAt(Date.now());
-            setError('');
+            if (applySharedActivitySummary(result, requestSequence, activityScope)) {
+                setRatingValue(Number.isInteger(result?.own?.value) ? result.own.value : ratingValue);
+                setError('');
+            }
             addToast('Your rating was saved anonymously. You can update it while the assignment is open.', 'success');
         } catch (requestError) {
-            setError('Your rating was not saved. Check the connection and use Save again.');
+            if (activeActivityScopeRef.current === activityScope) {
+                setError('Your rating was not saved. Check the connection and use Save again.');
+            }
         } finally {
-            setBusy(false);
+            if (activeActivityScopeRef.current === activityScope) setBusy(false);
         }
     };
 
@@ -4674,11 +4752,15 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
                 a: 'moderateactivity', admin, id: packId, aid: activityId, uid, status,
             });
             const refreshed = await refresh({ quiet: true });
-            setError(refreshed ? '' : 'That change saved, but the moderation list could not refresh. Check the connection and refresh again.');
+            if (activeActivityScopeRef.current === activityScope) {
+                setError(refreshed ? '' : 'That change saved, but the moderation list could not refresh. Check the connection and refresh again.');
+            }
         } catch (requestError) {
-            setError('That moderation change did not save. Please try again.');
+            if (activeActivityScopeRef.current === activityScope) {
+                setError('That moderation change did not save. Please try again.');
+            }
         } finally {
-            setBusy(false);
+            if (activeActivityScopeRef.current === activityScope) setBusy(false);
         }
     };
 
@@ -7331,6 +7413,43 @@ const countWords = (text) => {
   return clean.trim().split(/\s+/).filter(w => w.length > 0).length;
 };
 const normalizeRosterSessionCodename = (value) => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+const buildStudentResourcePatchBatches = ({ uids, roster, resourceId, resourceAt, maxRecipients = 250 } = {}) => {
+    const safeRoster = roster && typeof roster === 'object' && !Array.isArray(roster) ? roster : {};
+    const safeResourceId = String(resourceId || '');
+    const safeResourceAt = Number(resourceAt);
+    if (!safeResourceId || !Number.isFinite(safeResourceAt) || safeResourceAt <= 0) {
+        return { uids: [], batches: [] };
+    }
+    const recipientLimit = Math.max(1, Math.min(250, Number(maxRecipients) || 250));
+    const safeUids = Array.from(new Set(
+        (Array.isArray(uids) ? uids : [])
+            .map(uid => String(uid || ''))
+            .filter(uid => uid
+                && Object.prototype.hasOwnProperty.call(safeRoster, uid)
+                && safeRoster[uid]
+                && typeof safeRoster[uid] === 'object')
+    )).slice(0, recipientLimit);
+    const batches = [];
+    for (let offset = 0; offset < safeUids.length; offset += 25) {
+        const batchUids = safeUids.slice(offset, offset + 25);
+        const updates = {};
+        batchUids.forEach(uid => {
+            updates[`roster.${uid}.resourceId`] = safeResourceId;
+            updates[`roster.${uid}.resourceAt`] = safeResourceAt;
+        });
+        batches.push({ uids: batchUids, updates });
+    }
+    return { uids: safeUids, batches };
+};
+const countValidRosterQuizResponses = (responseMap) => Object.entries(
+    responseMap && typeof responseMap === 'object' && !Array.isArray(responseMap) ? responseMap : {}
+).filter(([key, record]) => {
+    if (!/^(0|[1-9]\d{0,3})$/.test(String(key)) || Number(key) > 9999) return false;
+    const itemType = record && typeof record === 'object' && !Array.isArray(record)
+        ? String(record.itemType || '')
+        : '';
+    return itemType !== 'assessment-complete' && itemType !== 'reflection';
+}).length;
 const getValidCurrentQuizResponseReceiptUids = (quizState, expectedFlow = null) => {
     const state = quizState && typeof quizState === 'object' ? quizState : {};
     const activityId = String(state.activityId || '').trim();
@@ -7448,6 +7567,9 @@ const buildRosterSessionInsightBrief = (summary) => {
         votesCast += clampCount(activity.votesCast);
     });
     const followUpCodenames = [];
+    const noEvidenceCodenames = [];
+    const partialParticipationCodenames = [];
+    const revisionGrowthCodenames = [];
     const groupMap = Object.create(null);
     let participantsWithRecordedResponse = 0;
     Object.entries(participants).slice(0, 250).forEach(([rawCodename, rawRecord]) => {
@@ -7458,7 +7580,12 @@ const buildRosterSessionInsightBrief = (summary) => {
         const activityRevisions = Math.min(activitySubmissions, clampCount(record.liveRevisionCount, 60));
         const quizResponses = clampCount(record.responseCount, 1000);
         if (activitySubmissions > 0 || quizResponses > 0) participantsWithRecordedResponse += 1;
-        if (codename && activityCount > activitySubmissions) followUpCodenames.push(codename);
+        if (codename && activityCount > activitySubmissions) {
+            followUpCodenames.push(codename);
+            if (activitySubmissions === 0 && quizResponses === 0) noEvidenceCodenames.push(codename);
+            else partialParticipationCodenames.push(codename);
+        }
+        if (codename && activityRevisions > 0) revisionGrowthCodenames.push(codename);
         const groupId = record.groupId === null || record.groupId === undefined ? '' : String(record.groupId).trim().slice(0, 80);
         if (!groupId) return;
         const group = groupMap[groupId] || { groupId, participantCount: 0, activityOpportunities: 0, submissions: 0, revisions: 0, followUpCount: 0 };
@@ -7469,6 +7596,16 @@ const buildRosterSessionInsightBrief = (summary) => {
         if (activityCount > activitySubmissions) group.followUpCount += 1;
         groupMap[groupId] = group;
     });
+    const evidenceCohorts = [];
+    const addEvidenceCohort = (code, intent, label, codenames, recommendedAction) => {
+        const safeCodenames = Array.from(new Set((Array.isArray(codenames) ? codenames : []).map(String).filter(Boolean))).slice(0, 250);
+        if (safeCodenames.length === 0) return;
+        evidenceCohorts.push({ code, intent, label, count: safeCodenames.length, codenames: safeCodenames, recommendedAction });
+    };
+    addEvidenceCohort('no-recorded-evidence', 'support', 'No recorded activity evidence', noEvidenceCodenames, 'Check access first, then send a smaller or alternative support resource.');
+    addEvidenceCohort('incomplete-participation', 'support', 'Partial activity participation', partialParticipationCodenames, 'Send a focused follow-up resource or reopen the activity with more time.');
+    addEvidenceCohort('absent-catch-up', 'support', 'Catch-up needed', absentCodenames, 'Prepare or send a catch-up resource in the current or next session.');
+    addEvidenceCohort('revision-growth', 'celebrate', 'Revision growth recorded', revisionGrowthCodenames, 'Acknowledge productive revision and preserve the successful support pattern.');
     const nextMoves = [];
     if (followUpCodenames.length > 0) nextMoves.push({ code: 'activity-follow-up', count: followUpCodenames.length, label: 'Review incomplete activity participation and send support while the session is still open.' });
     if (absentCodenames.length > 0) nextMoves.push({ code: 'absent-catch-up', count: absentCodenames.length, label: 'Prepare a catch-up resource for learners who were not present.' });
@@ -7478,7 +7615,7 @@ const buildRosterSessionInsightBrief = (summary) => {
         nextMoves.push({ code: 'review-evidence', count: participantsWithRecordedResponse, label: 'Review the recorded participation evidence when choosing the next lesson step.' });
     }
     return {
-        schemaVersion: 1,
+        schemaVersion: 2,
         activityCount: Math.min(60, activities.length),
         submissions,
         revisions,
@@ -7486,31 +7623,58 @@ const buildRosterSessionInsightBrief = (summary) => {
         votesCast,
         participantsWithRecordedResponse,
         followUpCodenames: followUpCodenames.slice(0, 250),
-        byKind: Object.values(byKind).sort((a, b) => a.kind.localeCompare(b.kind)),
+        evidenceCohorts: evidenceCohorts.slice(0, 8),
+        evidenceScope: 'teacher-device-derived-participation',
+        byKind: Object.values(byKind).map(item => ({
+            ...item,
+            completionPercent: item.invited > 0 ? Math.max(0, Math.min(100, Math.round((item.submitted / item.invited) * 100))) : 0,
+        })).sort((a, b) => a.kind.localeCompare(b.kind)),
         groups: Object.values(groupMap).sort((a, b) => a.groupId.localeCompare(b.groupId)),
         nextMoves: nextMoves.slice(0, 4),
     };
 };
 const buildRosterSessionSummary = ({ sessionCode, sessionData, rosterKey, mode, activitySnapshots = [], endedAt = new Date().toISOString() }) => {
     const rosterStudents = rosterKey?.students && typeof rosterKey.students === 'object' ? rosterKey.students : {};
-    const rosterByNormalizedName = {};
+    const rosterByNormalizedName = Object.create(null);
     Object.keys(rosterStudents).forEach(name => {
         const normalized = normalizeRosterSessionCodename(name);
-        if (normalized && !rosterByNormalizedName[normalized]) rosterByNormalizedName[normalized] = name;
+        if (!normalized) return;
+        if (!Object.prototype.hasOwnProperty.call(rosterByNormalizedName, normalized)) rosterByNormalizedName[normalized] = name;
+        else if (rosterByNormalizedName[normalized] !== name) rosterByNormalizedName[normalized] = null;
     });
     const liveRoster = sessionData?.roster && typeof sessionData.roster === 'object' ? sessionData.roster : {};
     const allResponses = sessionData?.quizState?.allResponses && typeof sessionData.quizState.allResponses === 'object' ? sessionData.quizState.allResponses : {};
+    // A duplicated live codename cannot be attributed to one roster learner
+    // without risking a silent merge. Fail closed for both participant evidence
+    // and activity totals, while retaining only the bounded codename indicator
+    // already used for unmatched joins (never the transient live UIDs).
+    const liveCodenameCounts = Object.create(null);
+    Object.values(liveRoster).forEach(liveStudent => {
+        const normalized = normalizeRosterSessionCodename(liveStudent?.name);
+        if (normalized) liveCodenameCounts[normalized] = (liveCodenameCounts[normalized] || 0) + 1;
+    });
+    const evidenceRosterByNormalizedName = Object.assign(Object.create(null), rosterByNormalizedName);
+    Object.entries(liveCodenameCounts).forEach(([normalized, count]) => {
+        if (count !== 1) evidenceRosterByNormalizedName[normalized] = null;
+    });
     const participants = {};
     const unmatchedCodenames = [];
+    const addUnmatchedCodename = value => {
+        if (unmatchedCodenames.length >= 250) return;
+        const codename = String(value || '').trim().slice(0, 80);
+        const normalized = normalizeRosterSessionCodename(codename);
+        if (!normalized || unmatchedCodenames.some(name => normalizeRosterSessionCodename(name) === normalized)) return;
+        unmatchedCodenames.push(codename);
+    };
     Object.entries(liveRoster).forEach(([uid, liveStudent]) => {
         const rawName = String(liveStudent?.name || '').trim();
-        const rosterName = rosterByNormalizedName[normalizeRosterSessionCodename(rawName)];
+        const rosterName = evidenceRosterByNormalizedName[normalizeRosterSessionCodename(rawName)];
         if (!rosterName) {
-            if (rawName && !unmatchedCodenames.some(name => normalizeRosterSessionCodename(name) === normalizeRosterSessionCodename(rawName))) unmatchedCodenames.push(rawName);
+            addUnmatchedCodename(rawName);
             return;
         }
         const responseMap = allResponses[uid] && typeof allResponses[uid] === 'object' ? allResponses[uid] : {};
-        participants[rosterName] = { groupId: liveStudent?.groupId || rosterStudents[rosterName] || null, joinedAt: typeof liveStudent?.joinedAt === 'string' ? liveStudent.joinedAt : null, responseCount: Object.keys(responseMap).length, resourcesOpened: liveStudent?.viewingResourceId ? 1 : 0 };
+        participants[rosterName] = { groupId: liveStudent?.groupId || rosterStudents[rosterName] || null, joinedAt: typeof liveStudent?.joinedAt === 'string' ? liveStudent.joinedAt : null, responseCount: countValidRosterQuizResponses(responseMap), resourcesOpened: liveStudent?.viewingResourceId ? 1 : 0 };
     });
     const createdAt = typeof sessionData?.createdAt === 'string' ? sessionData.createdAt : null;
     const startMs = createdAt ? Date.parse(createdAt) : NaN;
@@ -7533,7 +7697,7 @@ const buildRosterSessionSummary = ({ sessionCode, sessionData, rosterKey, mode, 
             delivered: Math.max(0, Math.floor(Number(entry.delivered) || 0)),
             at: Number(entry.at) || 0,
         }));
-    const liveActivityEvidence = summarizeRosterLiveActivities(activitySnapshots, liveRoster, rosterByNormalizedName);
+    const liveActivityEvidence = summarizeRosterLiveActivities(activitySnapshots, liveRoster, evidenceRosterByNormalizedName);
     Object.entries(liveActivityEvidence.participantTotals).forEach(([rosterName, totals]) => {
         if (!participants[rosterName]) return;
         participants[rosterName] = {
@@ -10606,7 +10770,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // safety net for other components.
     if (window.__alloCdnBootstrapped) return;
     window.__alloCdnBootstrapped = true;
-    var pluginCdnVersion = '89bf073fe';
+    var pluginCdnVersion = '1785374595835';
     var isDesktopBundledApp = typeof window !== 'undefined'
       && /^(localhost|127\.0\.0\.1)$/i.test(window.location.hostname || '')
       && (window.location.pathname || '').startsWith('/app/');
@@ -10906,28 +11070,28 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       document.head.appendChild(s);
     })();
-    loadModule('AlloData', 'https://alloflow-cdn.pages.dev/allo_data_module.js?v=89bf073fe');
-    loadModule('ToolCatalog', 'https://alloflow-cdn.pages.dev/tool_catalog_module.js?v=89bf073fe');
-    loadModule('SubmissionCrypto', 'https://alloflow-cdn.pages.dev/submission_crypto_module.js?v=89bf073fe');
-    loadModule('AlloCrypto', 'https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=89bf073fe');
+    loadModule('AlloData', './allo_data_module.js');
+    loadModule('ToolCatalog', './tool_catalog_module.js');
+    loadModule('SubmissionCrypto', './submission_crypto_module.js');
+    loadModule('AlloCrypto', './allo_crypto_module.js');
     // Shared quest/goal vocabulary for directions goals, STEM Lab and SEL Hub
     // quests. Tiny and dependency-free; every consumer degrades gracefully if it
     // has not landed yet, so load order is not load-bearing.
     loadModule('AlloQuestContract', 'https://alloflow-cdn.pages.dev/allo_quest_contract_module.js?v=355fa3d9a');
-    loadModule('SubmissionInbox', 'https://alloflow-cdn.pages.dev/view_submission_inbox_module.js?v=89bf073fe');
-    loadModule('FirestoreSync', 'https://alloflow-cdn.pages.dev/firestore_sync_module.js?v=ce049d79');
-    loadModule('SafetyChecker', 'https://alloflow-cdn.pages.dev/safety_checker_module.js?v=89bf073fe');
-    loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=89bf073fe');
-    loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=89bf073fe');
-    loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=89bf073fe');
-    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=89bf073fe');
-    loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=89bf073fe');
-    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=69b2ba76');
-    loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=0e96a73e');
-    loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=4ced3dc7');
-    loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=89bf073fe');
-    loadModule('RemediationAudio', 'https://alloflow-cdn.pages.dev/remediation_audio_module.js?v=89bf073fe');
-    loadModule('StemLab', 'https://alloflow-cdn.pages.dev/stem_lab/stem_lab_module.js?v=89bf073fe');
+    loadModule('SubmissionInbox', './view_submission_inbox_module.js');
+    loadModule('FirestoreSync', './firestore_sync_module.js');
+    loadModule('SafetyChecker', './safety_checker_module.js');
+    loadModule('Fluency', './fluency_module.js');
+    loadModule('LargeFileModule', './large_file_module.js');
+    loadModule('KeyConceptMapModule', './key_concept_map_module.js');
+    loadModule('UtilsPure', './utils_pure_module.js');
+    loadModule('GeminiAPI', './gemini_api_module.js');
+    loadModule('TTS', './tts_module.js');
+    loadModule('Personas', './personas_module.js');
+    loadModule('Export', './export_module.js');
+    loadModule('MiscComponents', './misc_components_module.js');
+    loadModule('RemediationAudio', './remediation_audio_module.js');
+    loadModule('StemLab', './stem_lab/stem_lab_module.js');
     // Word Sounds is the largest CDN module in the app (~744KB) and was loaded
     // eagerly here for EVERY user at boot, including the majority who never open
     // it. It registers exactly one component, WordSoundsModal, and the only
@@ -10940,111 +11104,113 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // The render site already has a "Loading Word Sounds..." fallback with a
     // Close escape, and the module registry re-renders the app when the load
     // lands, so the fallback resolves on its own.
-    window.__alloLazyWordSounds = (function() { var L=false; return function() { if(L)return; L=true; loadModule('WordSoundsModal', 'https://alloflow-cdn.pages.dev/word_sounds_module.js?v=89bf073fe'); }; })();
-    loadModule('StudentAnalytics', 'https://alloflow-cdn.pages.dev/student_analytics_module.js?v=89bf073fe');
-    loadModule('BehaviorLens', 'https://alloflow-cdn.pages.dev/behavior_lens_module.js?v=89bf073fe');
-    loadModule('ReportWriter', 'https://alloflow-cdn.pages.dev/report_writer_module.js?v=89bf073fe');
-    loadModule('CinematicStudio', 'https://alloflow-cdn.pages.dev/cinematic_studio_module.js?v=89bf073fe');
-    loadModule('BrandProfile', 'https://alloflow-cdn.pages.dev/brand_profile_module.js?v=89bf073fe');
+    window.__alloLazyWordSounds = (function() { var L=false; return function() { if(L)return; L=true; loadModule('WordSoundsModal', './word_sounds_module.js'); }; })();
+    loadModule('AlloSheetTransferAdapter', './allo_sheet/transfer_adapter.js');
+    loadModule('StudentAnalytics', './student_analytics_module.js');
+    loadModule('AlloSheetHostBridge', './allo_sheet/host_bridge.js');
+    loadModule('BehaviorLens', './behavior_lens_module.js');
+    loadModule('ReportWriter', './report_writer_module.js');
+    loadModule('CinematicStudio', './cinematic_studio_module.js');
+    loadModule('BrandProfile', './brand_profile_module.js');
     // Pyodide is ~10MB on first hit; load lazily so non–Report-Writer users
     // don't pay the cost at boot. Report Writer's generateReport() calls
     // window.__alloLazyPyodide() as soon as the user clicks Generate.
     window.__alloLazyPyodide = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PyodideRuntime', 'https://alloflow-cdn.pages.dev/pyodide_runtime_module.js'); }; })();
-    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', 'https://alloflow-cdn.pages.dev/symbol_studio_module.js?v=89bf073fe'); }; })();
+    window.__alloLazySymbolStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SymbolStudio', './symbol_studio_module.js'); }; })();
     window.__alloLazyVideoStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TutorialCompilerModule', 'https://alloflow-cdn.pages.dev/tutorial_compiler_module.js?v=1e5f07c6'); loadModule('VideoStudio', 'https://alloflow-cdn.pages.dev/video_studio_module.js?v=1e5f07c6'); }; })();
-    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', 'https://alloflow-cdn.pages.dev/studio_module.js?v=89bf073fe'); }; })();
-    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', 'https://alloflow-cdn.pages.dev/allohaven_module.js?v=89bf073fe'); }; })();
+    window.__alloLazyAlloStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloStudio', './studio_module.js'); }; })();
+    window.__alloLazyAlloHaven = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AlloHaven', './allohaven_module.js'); }; })();
     // Dynamic Assessment Studio (Phase A+B) — clinical tool, lazy-loaded.
     // School-psych workflow: pretest → AI-mediated or clinician-led mediation
     // → posttest with graduated prompt hierarchies + modifiability scoring.
     window.__alloLazyDynamicAssessment = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DynamicAssessment', 'https://alloflow-cdn.pages.dev/dynamic_assessment_module.js'); }; })();
     // Seating Chart (Ring 0+1, July 21 2026) — teacher-only roster tool,
     // lazy-loaded from the Roster panel's Seating Chart button.
-    window.__alloLazySeatingChart = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SeatingChart', 'https://alloflow-cdn.pages.dev/seating_chart_module.js?v=89bf073fe'); }; })();
+    window.__alloLazySeatingChart = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SeatingChart', './seating_chart_module.js'); }; })();
     // Voice infrastructure (Phase 3v) — shared dictation + audio surface.
     // Loaded after AlloHaven so it's available for arcade modes and for
     // the 7+ existing inline SpeechRecognition reimplementations to migrate
     // onto in subsequent commits.
-    loadModule('Voice', 'https://alloflow-cdn.pages.dev/voice_module.js?v=89bf073fe');
-    loadModule('SelHub', 'https://alloflow-cdn.pages.dev/sel_hub/sel_hub_module.js?v=89bf073fe');
-    loadModule('CommunityCatalog', 'https://alloflow-cdn.pages.dev/catalog_module.js?v=89bf073fe');
-    loadModule('ReadingLibrary', 'https://alloflow-cdn.pages.dev/reading_library_module.js?v=89bf073fe');
-    loadModule('AccessibilityEvidence', 'https://alloflow-cdn.pages.dev/accessibility_evidence_module.js?v=89bf073fe');
-    loadModule('AccessibilityLab', 'https://alloflow-cdn.pages.dev/accessibility_lab_module.js?v=89bf073fe');
-    loadModule('AuditRemediator', 'https://alloflow-cdn.pages.dev/audit_remediator_module.js?v=89bf073fe');
-    loadModule('QuizModeStrategies', 'https://alloflow-cdn.pages.dev/quiz_mode_strategies.js?v=89bf073fe');
-    loadModule('QuizAIHelpers', 'https://alloflow-cdn.pages.dev/quiz_ai_helpers.js?v=89bf073fe');
-    loadModule('QuizLiveAggregators', 'https://alloflow-cdn.pages.dev/quiz_live_aggregators.js?v=89bf073fe');
-    loadModule('GamesBundle', 'https://alloflow-cdn.pages.dev/games_module.js?v=89bf073fe');
-    loadModule('QuickStartWizard', 'https://alloflow-cdn.pages.dev/quickstart_module.js?v=89bf073fe');
-    loadModule('AlloBot', 'https://alloflow-cdn.pages.dev/allobot_module.js?v=89bf073fe');
-    loadModule('TeacherModule', 'https://alloflow-cdn.pages.dev/teacher_module.js?v=89bf073fe');
-    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', 'https://alloflow-cdn.pages.dev/story_forge_module.js?v=89bf073fe'); }; })();
-    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', 'https://alloflow-cdn.pages.dev/story_stage_module.js?v=89bf073fe'); }; })();
-    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', 'https://alloflow-cdn.pages.dev/mind_map_module.js?v=89bf073fe'); }; })();
-    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', 'https://alloflow-cdn.pages.dev/poet_tree_module.js?v=89bf073fe'); }; })();
+    loadModule('Voice', './voice_module.js');
+    loadModule('SelHub', './sel_hub/sel_hub_module.js');
+    loadModule('CommunityCatalog', './catalog_module.js');
+    loadModule('ReadingLibrary', './reading_library_module.js');
+    loadModule('AccessibilityEvidence', './accessibility_evidence_module.js');
+    loadModule('AccessibilityLab', './accessibility_lab_module.js');
+    loadModule('AuditRemediator', './audit_remediator_module.js');
+    loadModule('QuizModeStrategies', './quiz_mode_strategies.js');
+    loadModule('QuizAIHelpers', './quiz_ai_helpers.js');
+    loadModule('QuizLiveAggregators', './quiz_live_aggregators.js');
+    loadModule('GamesBundle', './games_module.js');
+    loadModule('QuickStartWizard', './quickstart_module.js');
+    loadModule('AlloBot', './allobot_module.js');
+    loadModule('TeacherModule', './teacher_module.js');
+    window.__alloLazyStoryForge = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StoryForge', './story_forge_module.js'); }; })();
+    window.__alloLazyLitLab = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LitLab', './story_stage_module.js'); }; })();
+    window.__alloLazyMindMap = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MindMap', './mind_map_module.js'); }; })();
+    window.__alloLazyPoetTree = (function() { var L=false; return function() { if(L)return; L=true; loadModule('PoetTree', './poet_tree_module.js'); }; })();
     window.__alloLazyResearchHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ResearchHub', 'https://alloflow-cdn.pages.dev/research_hub_module.js'); loadModule('ResearchLaneScientific', 'https://alloflow-cdn.pages.dev/research_lane_scientific_module.js'); loadModule('ResearchLaneEngineering', 'https://alloflow-cdn.pages.dev/research_lane_engineering_module.js'); loadModule('ResearchLaneHumanities', 'https://alloflow-cdn.pages.dev/research_lane_humanities_module.js'); loadModule('ResearchHubEducator', 'https://alloflow-cdn.pages.dev/research_hub_educator_module.js'); }; })();
-    loadModule('VisualPanelModule', 'https://alloflow-cdn.pages.dev/visual_panel_module.js?v=89bf073fe');
-    loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=89bf073fe');
-    loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=89bf073fe');
-    loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=216a1867');
-    loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=89bf073fe');
-    loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=89bf073fe');
-    loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=89bf073fe');
-    loadModule('VoiceConfig', 'https://alloflow-cdn.pages.dev/voice_config_module.js?v=89bf073fe');
-    loadModule('CanvasTips', 'https://alloflow-cdn.pages.dev/canvas_tips_module.js?v=89bf073fe');
+    loadModule('VisualPanelModule', './visual_panel_module.js');
+    loadModule('WordSoundsSetupModule', './word_sounds_setup_module.js');
+    loadModule('AdventureModule', './adventure_module.js');
+    loadModule('StudentInteractionModule', './student_interaction_module.js');
+    loadModule('MathFluency', './math_fluency_module.js');
+    loadModule('UIModalsModule', './ui_modals_module.js');
+    loadModule('UIFontLibrary', './ui_font_library_module.js');
+    loadModule('VoiceConfig', './voice_config_module.js');
+    loadModule('CanvasTips', './canvas_tips_module.js');
     // ── Lazy-loaded modal modules (May 12 2026) ──
     // Each modal is gated by a wrapped setter that fires its ensure-loader on
     // first true. Until that happens the script is not fetched, cutting ~9
     // requests off cold boot. The embedded loadModule(...) call still matches
     // build.js's URL rewriter regex, so hashes auto-update on deploy.
-    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', 'https://alloflow-cdn.pages.dev/view_kokoro_offer_modal_module.js?v=89bf073fe'); }; })();
+    window.__alloLazyKokoroOfferModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('KokoroOfferModal', './view_kokoro_offer_modal_module.js'); }; })();
     // ConfirmDialog stays eager — used by many widgets (delete unit, end session, clear edges, etc.).
-    loadModule('ConfirmDialog', 'https://alloflow-cdn.pages.dev/view_confirm_dialog_module.js?v=89bf073fe');
+    loadModule('ConfirmDialog', './view_confirm_dialog_module.js');
     // PromptDialog (May 2026 polish pass): polished replacement for window.prompt(); shared by AlloFlowUX.
-    loadModule('PromptDialog', 'https://alloflow-cdn.pages.dev/view_prompt_dialog_module.js?v=89bf073fe');
-    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', 'https://alloflow-cdn.pages.dev/view_hints_modal_module.js?v=89bf073fe'); }; })();
-    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', 'https://alloflow-cdn.pages.dev/view_xp_modal_module.js?v=89bf073fe'); }; })();
-    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', 'https://alloflow-cdn.pages.dev/view_storybook_export_modal_module.js?v=059104c5'); }; })();
-    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', 'https://alloflow-cdn.pages.dev/view_info_modal_module.js?v=89bf073fe'); }; })();
-    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', 'https://alloflow-cdn.pages.dev/view_session_modal_module.js?v=89bf073fe'); }; })();
-    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', 'https://alloflow-cdn.pages.dev/view_socratic_chat_module.js?v=e7423298'); }; })();
-    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', 'https://alloflow-cdn.pages.dev/view_global_level_up_module.js?v=89bf073fe'); }; })();
-    loadModule('HeaderBar', 'https://alloflow-cdn.pages.dev/view_header_module.js?v=89bf073fe');
-    loadModule('GuidedModeBanner', 'https://alloflow-cdn.pages.dev/view_guided_mode_banner_module.js?v=89bf073fe');
-    loadModule('LiveLessonRun', 'https://alloflow-cdn.pages.dev/view_live_lesson_run_module.js?v=89bf073fe');
-    loadModule('StudentJoinPanel', 'https://alloflow-cdn.pages.dev/view_student_join_panel_module.js?v=d4463f3d');
-    loadModule('StudentSaveAdventurePanel', 'https://alloflow-cdn.pages.dev/view_student_save_adventure_module.js?v=ea313f84');
-    loadModule('SidebarTabsNav', 'https://alloflow-cdn.pages.dev/view_sidebar_tabs_nav_module.js?v=89bf073fe');
-    loadModule('UDLGuideButton', 'https://alloflow-cdn.pages.dev/view_udl_guide_button_module.js?v=89bf073fe');
-    loadModule('TeacherHistoryTab', 'https://alloflow-cdn.pages.dev/view_teacher_history_tab_module.js?v=89bf073fe');
-    loadModule('HistoryPanel', 'https://alloflow-cdn.pages.dev/view_history_panel_module.js?v=89bf073fe');
-    loadModule('FabStack', 'https://alloflow-cdn.pages.dev/view_fab_stack_module.js?v=89bf073fe');
-    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', 'https://alloflow-cdn.pages.dev/view_study_timer_modal_module.js?v=89bf073fe'); }; })();
-    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', 'https://alloflow-cdn.pages.dev/view_educator_hub_modal_module.js?v=89bf073fe'); }; })();
-    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', 'https://alloflow-cdn.pages.dev/brand_profile_editor_module.js?v=89bf073fe'); }; })();
-    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', 'https://alloflow-cdn.pages.dev/view_visual_supports_modal_module.js?v=89bf073fe'); }; })();
-    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', 'https://alloflow-cdn.pages.dev/view_learning_hub_modal_module.js?v=89bf073fe'); }; })();
-    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_core.js?v=89bf073fe'); loadModule('OpenGrooveScheduler', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_scheduler.js?v=89bf073fe'); loadModule('OpenGrooveAudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_audio.js?v=89bf073fe'); loadModule('OpenGrooveStudio', 'https://alloflow-cdn.pages.dev/music_studio/open_groove_module.js?v=89bf073fe'); }; })();
-    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', 'https://alloflow-cdn.pages.dev/timeline_studio_module.js?v=89bf073fe'); }; })();
-    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LinguaPractice', 'https://alloflow-cdn.pages.dev/lingua_practice_module.js?v=89bf073fe'); }; })();
-    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', 'https://alloflow-cdn.pages.dev/test_prep_hub_module.js?v=89bf073fe'); }; })();
-    loadModule('ClozeInteractionPanel', 'https://alloflow-cdn.pages.dev/view_cloze_interaction_panel_module.js?v=89bf073fe');
-    loadModule('LabelPositions', 'https://alloflow-cdn.pages.dev/label_positions_module.js?v=89bf073fe');
-    loadModule('UILanguageSelector', 'https://alloflow-cdn.pages.dev/ui_language_selector_module.js?v=89bf073fe');
+    loadModule('PromptDialog', './view_prompt_dialog_module.js');
+    window.__alloLazyHintsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('HintsModal', './view_hints_modal_module.js'); }; })();
+    window.__alloLazyXPModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('XPModal', './view_xp_modal_module.js'); }; })();
+    window.__alloLazyStorybookExportModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StorybookExportModal', './view_storybook_export_modal_module.js'); }; })();
+    window.__alloLazyInfoModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('InfoModal', './view_info_modal_module.js'); }; })();
+    window.__alloLazySessionModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SessionModal', './view_session_modal_module.js'); }; })();
+    window.__alloLazySocraticChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SocraticChat', './view_socratic_chat_module.js'); }; })();
+    window.__alloLazyGlobalLevelUpModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('GlobalLevelUpModal', './view_global_level_up_module.js'); }; })();
+    loadModule('HeaderBar', './view_header_module.js');
+    loadModule('GuidedModeBanner', './view_guided_mode_banner_module.js');
+    loadModule('LiveLessonRun', './view_live_lesson_run_module.js');
+    loadModule('StudentJoinPanel', './view_student_join_panel_module.js');
+    loadModule('StudentSaveAdventurePanel', './view_student_save_adventure_module.js');
+    loadModule('SidebarTabsNav', './view_sidebar_tabs_nav_module.js');
+    loadModule('UDLGuideButton', './view_udl_guide_button_module.js');
+    loadModule('TeacherHistoryTab', './view_teacher_history_tab_module.js');
+    loadModule('HistoryPanel', './view_history_panel_module.js');
+    loadModule('FabStack', './view_fab_stack_module.js');
+    window.__alloLazyStudyTimerModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('StudyTimerModal', './view_study_timer_modal_module.js'); }; })();
+    window.__alloLazyEducatorHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorHubModal', './view_educator_hub_modal_module.js'); }; })();
+    window.__alloLazyBrandProfileEditor = (function() { var L=false; return function() { if(L)return; L=true; loadModule('BrandProfileEditor', './brand_profile_editor_module.js'); }; })();
+    window.__alloLazyVisualSupportsModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('VisualSupportsModal', './view_visual_supports_modal_module.js'); }; })();
+    window.__alloLazyLearningHubModal = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LearningHubModal', './view_learning_hub_modal_module.js'); }; })();
+    window.__alloLazyOpenGrooveStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('OpenGrooveCore', './music_studio/open_groove_core.js'); loadModule('OpenGrooveScheduler', './music_studio/open_groove_scheduler.js'); loadModule('OpenGrooveAudio', './music_studio/open_groove_audio.js'); loadModule('OpenGrooveStudio', './music_studio/open_groove_module.js'); }; })();
+    window.__alloLazyTimelineStudio = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TimelineStudio', './timeline_studio_module.js'); }; })();
+    window.__alloLazyLinguaPractice = (function() { var L=false; return function() { if(L)return; L=true; loadModule('LinguaPractice', './lingua_practice_module.js'); }; })();
+    window.__alloLazyTestPrepHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('TestPrepHub', './test_prep_hub_module.js'); }; })();
+    loadModule('ClozeInteractionPanel', './view_cloze_interaction_panel_module.js');
+    loadModule('LabelPositions', './label_positions_module.js');
+    loadModule('UILanguageSelector', './ui_language_selector_module.js');
     // Fuzzy-match user-typed language strings against known packs (typos, endonyms, variants)
     loadModule('LanguageMatcher', 'https://alloflow-cdn.pages.dev/language_matcher_module.js');
-    loadModule('AudioBanks', 'https://alloflow-cdn.pages.dev/audio_banks_module.js?v=89bf073fe');
-    loadModule('VerificationPolicy', 'https://alloflow-cdn.pages.dev/verification_policy_module.js?v=89bf073fe');
-    loadModule('DocBuilderRenderer', 'https://alloflow-cdn.pages.dev/doc_builder_renderer_module.js?v=89bf073fe');
-    loadModule('PdfAuditView', 'https://alloflow-cdn.pages.dev/view_pdf_audit_module.js?v=89bf073fe');
-    loadModule('ExportPreviewView', 'https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=89bf073fe');
-    loadModule('MiscModals', 'https://alloflow-cdn.pages.dev/view_misc_modals_module.js?v=89bf073fe');
-    loadModule('GeminiBridge', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=89bf073fe');
-    loadModule('MiscPanels', 'https://alloflow-cdn.pages.dev/view_misc_panels_module.js?v=89bf073fe');
-    loadModule('UIPolish', 'https://alloflow-cdn.pages.dev/ui_polish_module.js?v=89bf073fe');
-    loadModule('SidebarPanels', 'https://alloflow-cdn.pages.dev/view_sidebar_panels_module.js?v=89bf073fe');
-    loadModule('ModuleScopeExtras', 'https://alloflow-cdn.pages.dev/module_scope_extras_module.js?v=89bf073fe');
+    loadModule('AudioBanks', './audio_banks_module.js');
+    loadModule('VerificationPolicy', './verification_policy_module.js');
+    loadModule('DocBuilderRenderer', './doc_builder_renderer_module.js');
+    loadModule('PdfAuditView', './view_pdf_audit_module.js');
+    loadModule('ExportPreviewView', './view_export_preview_module.js');
+    loadModule('MiscModals', './view_misc_modals_module.js');
+    loadModule('GeminiBridge', './view_gemini_bridge_module.js');
+    loadModule('MiscPanels', './view_misc_panels_module.js');
+    loadModule('UIPolish', './ui_polish_module.js');
+    loadModule('SidebarPanels', './view_sidebar_panels_module.js');
+    loadModule('ModuleScopeExtras', './module_scope_extras_module.js');
     // ModuleScopeExtras exposes isRtlLang, getSpeechLangCode, ErrorBoundary, etc.
     // The generic loadModule() doesn't accept post-load callbacks, and the
     // upgrade-on-parse calls at lines ~693 and ~2002 fire before the CDN script
@@ -11081,75 +11247,75 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       setTimeout(function () { awaitModuleScopeExtras(tries - 1); }, 100);
     })(50);
-    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=d4205d9b');
-    loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=89bf073fe');
-    loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=89bf073fe');
+    loadModule('ImmersiveReaderModule', './immersive_reader_module.js');
+    loadModule('PersonaUIModule', './persona_ui_module.js');
+    loadModule('DocPipelineModule', './doc_pipeline_module.js');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
-    loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=89bf073fe');
-    loadModule('TimelineRevisionModule', 'https://alloflow-cdn.pages.dev/timeline_revision_module.js?v=89bf073fe');
-    loadModule('PromptsLibraryModule', 'https://alloflow-cdn.pages.dev/prompts_library_module.js?v=89bf073fe');
-    loadModule('TextPipelineHelpersModule', 'https://alloflow-cdn.pages.dev/text_pipeline_helpers_module.js?v=89bf073fe');
-    loadModule('AdaptiveControllerModule', 'https://alloflow-cdn.pages.dev/adaptive_controller_module.js?v=89bf073fe');
-    loadModule('AgentCoreContracts', 'https://alloflow-cdn.pages.dev/agent_core_contracts_module.js?v=89bf073fe');
-    loadModule('AgentCoreBlueprintService', 'https://alloflow-cdn.pages.dev/agent_core_blueprint_service_module.js?v=89bf073fe');
-    loadModule('AgentCoreUIAdapter', 'https://alloflow-cdn.pages.dev/agent_core_ui_adapter_module.js?v=89bf073fe');
-    loadModule('UdlChatModule', 'https://alloflow-cdn.pages.dev/udl_chat_module.js?v=89bf073fe');
-    loadModule('AdventureHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_handlers_module.js?v=89bf073fe');
-    loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=89bf073fe');
-    loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=89bf073fe');
-    loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=89bf073fe');
-    loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=d1304d57');
+    loadModule('ContentEngineModule', './content_engine_module.js');
+    loadModule('TimelineRevisionModule', './timeline_revision_module.js');
+    loadModule('PromptsLibraryModule', './prompts_library_module.js');
+    loadModule('TextPipelineHelpersModule', './text_pipeline_helpers_module.js');
+    loadModule('AdaptiveControllerModule', './adaptive_controller_module.js');
+    loadModule('AgentCoreContracts', './agent_core_contracts_module.js');
+    loadModule('AgentCoreBlueprintService', './agent_core_blueprint_service_module.js');
+    loadModule('AgentCoreUIAdapter', './agent_core_ui_adapter_module.js');
+    loadModule('UdlChatModule', './udl_chat_module.js');
+    loadModule('AdventureHandlersModule', './adventure_handlers_module.js');
+    loadModule('GlossaryHelpersModule', './glossary_helpers_module.js');
+    loadModule('ViewRenderersModule', './view_renderers_module.js');
+    loadModule('AudioHelpersModule', './audio_helpers_module.js');
+    loadModule('KaraokeAudioStoreModule', './karaoke_audio_store_module.js');
     // Word-by-word karaoke timing (deterministic envelope + valley snapping).
-    loadModule('WordTimingModule', 'https://alloflow-cdn.pages.dev/word_timing_module.js?v=df764e1d');
+    loadModule('WordTimingModule', './word_timing_module.js');
     // Unified live-session content channel (SessionTransport stage 1).
-    loadModule('SessionTransportModule', 'https://alloflow-cdn.pages.dev/session_transport_module.js?v=415b9b14');
-    loadModule('ReadAloudAudioServiceModule', 'https://alloflow-cdn.pages.dev/read_aloud_audio_service_module.js?v=7a343075');
-    loadModule('ReadAloudArtifactContractModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_contract_module.js?v=501639a2');
-    loadModule('ReadAloudArtifactAudioModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_audio_module.js?v=3a046659');
-    loadModule('PersonaSessionArtifactModule', 'https://alloflow-cdn.pages.dev/persona_session_artifact_module.js?v=b41bcb0a');
-    loadModule('GenerationHelpersModule', 'https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=89bf073fe');
-    loadModule('MiscHandlersModule', 'https://alloflow-cdn.pages.dev/misc_handlers_module.js?v=89bf073fe');
-    loadModule('PureHelpersModule', 'https://alloflow-cdn.pages.dev/pure_helpers_module.js?v=89bf073fe');
-    loadModule('MathHelpersModule', 'https://alloflow-cdn.pages.dev/math_helpers_module.js?v=89bf073fe');
-    loadModule('CmapHandlersModule', 'https://alloflow-cdn.pages.dev/concept_map_handlers_module.js?v=89bf073fe');
-    loadModule('GenDispatcherModule', 'https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=89bf073fe');
-    loadModule('PhaseKHelpersModule', 'https://alloflow-cdn.pages.dev/phase_k_helpers_module.js?v=5ab2822e');
-    loadModule('AdventureSessionHandlersModule', 'https://alloflow-cdn.pages.dev/adventure_session_handlers_module.js?v=89bf073fe');
-    loadModule('TextUtilityHelpersModule', 'https://alloflow-cdn.pages.dev/text_utility_helpers_module.js?v=89bf073fe');
-    loadModule('ViewDbqModule', 'https://alloflow-cdn.pages.dev/view_dbq_module.js?v=89bf073fe');
-    loadModule('ViewTimelineModule', 'https://alloflow-cdn.pages.dev/view_timeline_module.js?v=89bf073fe');
-    loadModule('ViewGlossaryModule', 'https://alloflow-cdn.pages.dev/view_glossary_module.js?v=89bf073fe');
-    loadModule('ViewOutlineModule', 'https://alloflow-cdn.pages.dev/view_outline_module.js?v=89bf073fe');
-    loadModule('ViewFaqModule', 'https://alloflow-cdn.pages.dev/view_faq_module.js?v=2c2f5ff1');
-    loadModule('ViewSentenceFramesModule', 'https://alloflow-cdn.pages.dev/view_sentence_frames_module.js?v=89bf073fe');
-    loadModule('ViewBrainstormModule', 'https://alloflow-cdn.pages.dev/view_brainstorm_module.js?v=89bf073fe');
-    loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=89bf073fe');
-    loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=89bf073fe');
-    loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=89bf073fe');
-    loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=07825e64');
-    loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=89bf073fe');
-    loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=89bf073fe');
-    loadModule('ViewAlignmentReportModule', 'https://alloflow-cdn.pages.dev/view_alignment_report_module.js?v=89bf073fe');
-    loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=89bf073fe');
-    loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=89bf073fe');
-    loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=89bf073fe');
-    loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=d12e82b7');
-    loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=89bf073fe');
-    loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=89bf073fe');
-    loadModule('ViewLaunchPadModule', 'https://alloflow-cdn.pages.dev/view_launch_pad_module.js?v=89bf073fe');
+    loadModule('SessionTransportModule', './session_transport_module.js');
+    loadModule('ReadAloudAudioServiceModule', './read_aloud_audio_service_module.js');
+    loadModule('ReadAloudArtifactContractModule', './read_aloud_artifact_contract_module.js');
+    loadModule('ReadAloudArtifactAudioModule', './read_aloud_artifact_audio_module.js');
+    loadModule('PersonaSessionArtifactModule', './persona_session_artifact_module.js');
+    loadModule('GenerationHelpersModule', './generation_helpers_module.js');
+    loadModule('MiscHandlersModule', './misc_handlers_module.js');
+    loadModule('PureHelpersModule', './pure_helpers_module.js');
+    loadModule('MathHelpersModule', './math_helpers_module.js');
+    loadModule('CmapHandlersModule', './concept_map_handlers_module.js');
+    loadModule('GenDispatcherModule', './generate_dispatcher_module.js');
+    loadModule('PhaseKHelpersModule', './phase_k_helpers_module.js');
+    loadModule('AdventureSessionHandlersModule', './adventure_session_handlers_module.js');
+    loadModule('TextUtilityHelpersModule', './text_utility_helpers_module.js');
+    loadModule('ViewDbqModule', './view_dbq_module.js');
+    loadModule('ViewTimelineModule', './view_timeline_module.js');
+    loadModule('ViewGlossaryModule', './view_glossary_module.js');
+    loadModule('ViewOutlineModule', './view_outline_module.js');
+    loadModule('ViewFaqModule', './view_faq_module.js');
+    loadModule('ViewSentenceFramesModule', './view_sentence_frames_module.js');
+    loadModule('ViewBrainstormModule', './view_brainstorm_module.js');
+    loadModule('ViewImageModule', './view_image_module.js');
+    loadModule('ViewAnalysisModule', './view_analysis_module.js');
+    loadModule('ViewQuizModule', './view_quiz_module.js');
+    loadModule('ViewSimplifiedModule', './view_simplified_module.js');
+    loadModule('ViewMathModule', './view_math_module.js');
+    loadModule('ViewLessonPlanModule', './view_lesson_plan_module.js');
+    loadModule('ViewAlignmentReportModule', './view_alignment_report_module.js');
+    loadModule('ViewWordSoundsPreviewModule', './view_word_sounds_preview_module.js');
+    loadModule('ViewGeminiBridgeModule', './view_gemini_bridge_module.js');
+    loadModule('ViewConceptSortModule', './view_concept_sort_module.js');
+    loadModule('ViewPersonaChatModule', './view_persona_chat_module.js');
+    loadModule('ViewSpotlightTourModule', './view_spotlight_tour_module.js');
+    loadModule('ViewProjectSettingsModule', './view_project_settings_module.js');
+    loadModule('ViewLaunchPadModule', './view_launch_pad_module.js');
     loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
     loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js');
     loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
-    loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=89bf073fe');
-    loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=89bf073fe');
-    loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=89bf073fe');
-    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=89bf073fe');
-    loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=89bf073fe');
-    loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=89bf073fe');
-    loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=89bf073fe');
-    loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=89bf073fe');
-    loadModule('ConceptPictionaryModule', 'https://alloflow-cdn.pages.dev/concept_pictionary_module.js?v=89bf073fe');
-    loadModule('EscapeRoomModule', 'https://alloflow-cdn.pages.dev/escape_room_module.js?v=89bf073fe');
+    loadModule('ViewAdventureModule', './view_adventure_module.js');
+    loadModule('PhaseNHelpersModule', './phase_n_misc_helpers_module.js');
+    loadModule('PhaseOHandlersModule', './phase_o_misc_handlers_module.js');
+    loadModule('ExportHandlersModule', './export_handlers_module.js');
+    loadModule('AnnotationSuiteModule', './annotation_suite_module.js');
+    loadModule('NoteTakingTemplatesModule', './note_taking_templates_module.js');
+    loadModule('AnchorChartsModule', './anchor_charts_module.js');
+    loadModule('LivePolling', './live_polling_module.js');
+    loadModule('ConceptPictionaryModule', './concept_pictionary_module.js');
+    loadModule('EscapeRoomModule', './escape_room_module.js');
     (function() {
       var s = document.createElement('script');
       s.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjs/13.2.0/math.min.js';
@@ -11284,6 +11450,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         // Jul 2026: AlphaFold Explorer — public AlphaFold DB lookup + Mol*
         // viewer + safe AlphaFold Server input prep; launcher + AI bridge.
         'stem_lab/stem_tool_alphafold.js',
+        // Aggregate-only, version-pinned Muraro snapshot; must load before the lab.
+        'stem_lab/stem_data_cellatlas_muraro.js',
+        // Jul 2026: Cell Atlas Lab - HCA pancreas marker-evidence investigation
+        // with mystery-cell classification and gene-to-AlphaFold handoff.
+        'stem_lab/stem_tool_cellatlas.js',
         // Jul 2026: Data Lab — CODAP (Concord Consortium, MIT) companion window
         // with a Socratic tutor; this tool is the launcher + AI bridge.
         'stem_lab/stem_tool_datalab.js',
@@ -11373,7 +11544,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
             manifest.forEach(function(mod) {
               var s = document.createElement('script');
               s.src = pluginCdnBase + mod + '?v=' + pluginCdnVersion;
-              s.async = true;
+              // Keep the generated Cell Atlas snapshot and its consumer ordered;
+              // every unrelated plugin remains parallel.
+              var orderedCellAtlasDependency = mod === 'stem_lab/stem_data_cellatlas_muraro.js' || mod === 'stem_lab/stem_tool_cellatlas.js';
+              s.async = !orderedCellAtlasDependency;
               s.crossOrigin = 'anonymous';
               s.onload = function() {
                 console.log('[' + label + ' Plugin] Loaded: ' + mod);
@@ -13305,7 +13479,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       const previousFocus = document.activeElement;
       dialog.focus();
       const onKeyDown = (event) => {
-          if (event.key === 'Escape' && !endSessionPreview.busy) {
+          if (event.key === 'Escape' && !endSessionPreview.busy && !endSessionPreview.followUpBusy) {
               event.preventDefault();
               setEndSessionPreview(null);
               setEndSessionNote('');
@@ -14530,6 +14704,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       // Discovery step for the remediation pipeline (2026-06-12): the most
       // consequential feature was invisible in the tour.
       { id: 'tour-upload-source', text: t('tour.upload_accessibility_text') || 'Make any document accessible: upload a PDF, Word, or PowerPoint file here and AlloFlow audits it for accessibility barriers, fixes what it can, and hands back ready-to-share copies — including a screen-reader-ready Tagged PDF that looks identical to the original. One click ("Make Accessible") runs the whole pipeline; you can also batch a folder of files at once from the Educator Hub.', title: t('tour.upload_accessibility_title') || 'Turn any document accessible' },
+      // Anchors that existed but had no step (2026-07-29). The AI Guide is the
+      // conversational path to a whole lesson pack; Universal Settings governs
+      // grade + language for every generator, so a teacher who never opens it
+      // gets wrong-grade output everywhere and no single tool looks at fault.
+      { id: 'tour-tool-udl', text: t('tour.udl_guide_text'), title: t('tour.udl_guide_title') },
+      { id: 'tour-universal-settings', text: t('tour.universal_settings_text'), title: t('tour.universal_settings_title') },
       { id: 'tour-tool-analysis', text: t('tour.analysis_text'), title: t('tour.analysis_title') },
       { id: 'ui-tool-glossary', text: t('tour.glossary_text'), title: t('tour.glossary_title') },
       { id: 'ui-tool-simplified', text: t('tour.simplified_text'), title: t('tour.simplified_title') },
@@ -19308,16 +19488,118 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
       if (!activeSessionCode) return;
       const mergedSessionData = sessionData ? { ...sessionData, quizState: { ...(sessionData.quizState || {}), allResponses: quizMergedAllResponses || {} } } : { roster: {}, quizState: { allResponses: quizMergedAllResponses || {} } };
       const summary = buildRosterSessionSummary({ sessionCode: activeSessionCode, sessionData: mergedSessionData, rosterKey, mode: mbLive ? 'mailbox' : 'firebase', activitySnapshots: liveActivitySnapshots });
+      const followUpResources = _alloStudentSafeResources(getFilteredHistory()).slice(0, 250).map(item => ({
+          id: String(item.id),
+          title: String(item.title || item.label || getDefaultTitle(item.type)).slice(0, 120),
+          type: String(item.type || '').slice(0, 60),
+      }));
+      const currentFollowUpResource = followUpResources.find(item => generatedContent && item.id === generatedContent.id) || followUpResources[0] || null;
       setEndSessionNote('');
-      setEndSessionPreview({ summary, busy: false });
+      setEndSessionPreview({
+          summary,
+          busy: false,
+          followUpResources,
+          followUpResourceId: currentFollowUpResource ? currentFollowUpResource.id : '',
+          followUpBusy: '',
+          followUpStatus: '',
+      });
+  };
+  const resolveEndSessionCohortUids = (codenames) => {
+      const rosterNameCounts = Object.keys(rosterKey?.students || {}).reduce((counts, codename) => {
+          const normalized = normalizeRosterSessionCodename(codename);
+          if (normalized) counts.set(normalized, (counts.get(normalized) || 0) + 1);
+          return counts;
+      }, new Map());
+      const wanted = new Set(
+          (Array.isArray(codenames) ? codenames : [])
+              .map(normalizeRosterSessionCodename)
+              .filter(normalized => normalized && rosterNameCounts.get(normalized) === 1)
+      );
+      const buckets = Object.entries(sessionData?.roster || {}).reduce((out, [uid, entry]) => {
+          const normalized = normalizeRosterSessionCodename(entry?.name);
+          if (!normalized || !wanted.has(normalized)) return out;
+          const existing = out.get(normalized) || [];
+          existing.push(uid);
+          out.set(normalized, existing);
+          return out;
+      }, new Map());
+      return Array.from(buckets.values())
+          .filter(uids => uids.length === 1)
+          .map(uids => uids[0])
+          .slice(0, 250);
+  };
+  const sendEndSessionEvidenceCohort = async (cohort) => {
+      if (!endSessionPreview || endSessionPreview.busy || endSessionPreview.followUpBusy) return;
+      const resourceId = String(endSessionPreview.followUpResourceId || '');
+      const cohortCode = String(cohort?.code || 'cohort');
+      const latestSessionData = sessionData
+          ? { ...sessionData, quizState: { ...(sessionData.quizState || {}), allResponses: quizMergedAllResponses || {} } }
+          : { roster: {}, quizState: { allResponses: quizMergedAllResponses || {} } };
+      const latestSummary = buildRosterSessionSummary({
+          sessionCode: activeSessionCode,
+          sessionData: latestSessionData,
+          rosterKey,
+          mode: mbLive ? 'mailbox' : 'firebase',
+          activitySnapshots: liveActivitySnapshots,
+      });
+      const latestCohort = (latestSummary?.insightBrief?.evidenceCohorts || [])
+          .find(candidate => candidate?.code === cohortCode);
+      const uids = resolveEndSessionCohortUids(latestCohort?.codenames);
+      if (!resourceId || uids.length === 0) {
+          const followUpStatus = !resourceId
+              ? 'Choose a follow-up resource first.'
+              : latestCohort
+                  ? 'No uniquely matched learners in this cohort are connected.'
+                  : 'This cohort changed after the review opened. The current evidence summary has been refreshed.';
+          setEndSessionPreview(prev => prev ? { ...prev, summary: latestSummary, followUpStatus } : prev);
+          return;
+      }
+      setEndSessionPreview(prev => prev ? {
+          ...prev,
+          summary: latestSummary,
+          followUpBusy: cohortCode,
+          followUpStatus: '',
+      } : prev);
+      try {
+          const result = await handleSetStudentsResource(uids, resourceId);
+          const sent = Number(result?.sent) || 0;
+          const failed = Number(result?.failed) || 0;
+          setEndSessionPreview(prev => prev ? {
+              ...prev,
+              followUpBusy: '',
+              followUpStatus: failed > 0
+                  ? `${sent} assigned; ${failed} could not be assigned.`
+                  : `Assigned the follow-up resource to ${sent} learner${sent === 1 ? '' : 's'}.`,
+          } : prev);
+      } catch (error) {
+          setEndSessionPreview(prev => prev ? { ...prev, followUpBusy: '', followUpStatus: 'The follow-up resource could not be assigned. Try again before ending the session.' } : prev);
+      }
   };
   const completeLiveSessionEnd = async (saveSummary) => {
-      if (!activeSessionCode || endSessionPreview?.busy) return;
+      if (!activeSessionCode || endSessionPreview?.busy || endSessionPreview?.followUpBusy) return;
       const endingCode = activeSessionCode;
       const endingAppId = activeSessionAppId || appId;
-      const summary = endSessionPreview?.summary;
+      // The preview is intentionally a review-time snapshot, but connections
+      // remain active while the teacher sends follow-up support. Rebuild once
+      // at the actual end boundary so the saved report includes the latest
+      // response receipts, activity status, resource opens, and duration.
+      const endedAt = new Date().toISOString();
+      const endingMode = mbLive ? 'mailbox' : 'firebase';
+      const latestSessionData = sessionData
+          ? { ...sessionData, quizState: { ...(sessionData.quizState || {}), allResponses: quizMergedAllResponses || {} } }
+          : { roster: {}, quizState: { allResponses: quizMergedAllResponses || {} } };
+      const latestSummary = saveSummary && rosterKey
+          ? buildRosterSessionSummary({
+              sessionCode: endingCode,
+              sessionData: latestSessionData,
+              rosterKey,
+              mode: endingMode,
+              activitySnapshots: liveActivitySnapshots,
+              endedAt,
+          })
+          : null;
       setEndSessionPreview(prev => prev ? { ...prev, busy: true } : prev);
-      if (saveSummary && rosterKey && summary) setRosterKey(prev => saveRosterSessionSummary(prev, summary, endSessionNote, 30));
+      if (latestSummary) setRosterKey(prev => saveRosterSessionSummary(prev, latestSummary, endSessionNote, 30));
       try {
           if (mbLive) await endMailboxLiveSession();
           else {
@@ -22548,6 +22830,21 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
   // a fresh object literal and would silently drop anything hung on it.
   const [isExecutingBlueprint, setIsExecutingBlueprint] = useState(false);
   const [blueprintExecutionResult, setBlueprintExecutionResult] = useState(null);
+  // A row frozen at 'running' is a spinner that never resolves on a row that
+  // can never be rebuilt. EVERY path that installs a run record from storage
+  // must demote in-flight rows, not just the boot hydrate — extracted so the
+  // archive-restore path physically cannot skip it. The literal comparison is
+  // pinned by tests/blueprint_durability.test.js.
+  const _demoteInFlightRows = (rowsIn) => {
+    const out = {};
+    Object.keys(rowsIn || {}).forEach((k) => {
+      const r = rowsIn[k];
+      out[k] = (r && (r.status === 'running' || r.status === 'planned'))
+        ? Object.assign({}, r, { status: 'interrupted' })
+        : r;
+    });
+    return out;
+  };
   // ── Blueprint durability (Stage 4, 2026-07-28) ────────────────────────
   // Persisted through an EFFECT, not a value-shaped setter like
   // setPersistedLessonDNA: the executor updates the run record with the
@@ -22572,13 +22869,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
         // A run that was in flight when the tab closed must NOT come back as
         // 'running' — that is a spinner that never resolves on a row that can
         // never be rebuilt. Demote to interrupted so the board can offer retry.
-        const rows = {};
-        Object.keys(env.run.rows).forEach((k) => {
-          const r = env.run.rows[k];
-          rows[k] = (r && (r.status === 'running' || r.status === 'planned'))
-            ? Object.assign({}, r, { status: 'interrupted' })
-            : r;
-        });
+        const rows = _demoteInFlightRows(env.run.rows);
         setBlueprintExecutionResult(Object.assign({}, env.run, { rows: rows, done: true, restored: true }));
       }
     } catch (e) {
@@ -22590,7 +22881,7 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     if (!_blueprintHydratedRef.current) return; // never write before we've read
     try {
       if (!activeBlueprint && !blueprintExecutionResult) {
-        safeSetItem(ALLO_BLUEPRINT_STORE_KEY, '');
+        safeRemoveItem(ALLO_BLUEPRINT_STORE_KEY);
         return;
       }
       safeSetItem(ALLO_BLUEPRINT_STORE_KEY, JSON.stringify({
@@ -22720,11 +23011,36 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     if (!S || typeof S.createLessonTemplateLibrary !== 'function') return null;
     try { return S.createLessonTemplateLibrary(); } catch (_) { return null; }
   };
+  // Hydrate a list from a CDN-module-backed library. The module registers
+  // ASYNCHRONOUSLY (~3.7s after boot, measured), so a plain mount-once effect
+  // reads a null lib and the list stays empty for the entire session. Retry on
+  // the loader's registry event, with a bounded interval as a safety net, and
+  // stop as soon as it lands.
+  const _hydrateWhenModuleReady = (getLib, apply) => {
+    let settled = false;
+    let timer = null;
+    // WALL-CLOCK deadline, never a call count: the registry event fires on
+    // every module transition, so a call-count ceiling is consumed in seconds
+    // by event volume and stops retrying long before a late module lands.
+    const _deadline = Date.now() + 120000;
+    function onChange() { Promise.resolve().then(hydrate); }
+    const stop = () => {
+      try { window.removeEventListener('alloflow:module-registry-changed', onChange); } catch (_) {}
+      if (timer) { clearInterval(timer); timer = null; }
+    };
+    function hydrate() {
+      if (settled) return;
+      const lib = getLib();
+      if (!lib) { if (Date.now() > _deadline) stop(); return; }   // 120s wall-clock, then give up quietly
+      try { apply(lib); settled = true; stop(); } catch (_) {}
+    }
+    try { window.addEventListener('alloflow:module-registry-changed', onChange); } catch (_) {}
+    timer = setInterval(hydrate, 1000);
+    hydrate();
+    return stop;
+  };
   const [lessonTemplates, setLessonTemplates] = useState([]);
-  useEffect(() => {
-    const lib = _lessonTemplateLib();
-    if (lib) { try { setLessonTemplates(lib.list()); } catch (_) {} }
-  }, []);
+  useEffect(() => _hydrateWhenModuleReady(_lessonTemplateLib, (lib) => setLessonTemplates(lib.list())), []);
   const handleSaveLessonTemplate = (opts) => {
     const S = window.AlloModules && window.AlloModules.AgentCoreBlueprintService;
     const lib = _lessonTemplateLib();
@@ -22744,6 +23060,8 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     const tpl = lib.get(id);
     if (!tpl) { addToast(t('blueprint.template_missing') || 'That template is no longer saved.', 'warning'); return; }
     try {
+      // The outgoing plan may hold a finished run — file it before replacing.
+      archiveLivePlan();
       setActiveBlueprint(S.applyLessonTemplate(tpl));
       // REQUIRED: templates reuse uiIds, so a run record left over from the
       // previous plan would render as though it described this one — landed
@@ -22757,6 +23075,68 @@ const handleToggleShowMathAnswers = React.useCallback(() => setShowMathAnswers(p
     const lib = _lessonTemplateLib();
     if (!lib) return;
     try { lib.remove(id); setLessonTemplates(lib.list()); } catch (_) {}
+  };
+  // ── Blueprint archive: singleton + archive ─────────────────────────────
+  // activeBlueprint stays the ONE live plan; finished plans are filed here and
+  // can be restored. A template is a plan's PATTERN (content stripped); an
+  // archive record is its HISTORY (which rows ran, landed, failed, and what
+  // the audit covered). Own key ('alloflow_blueprint_archive_v1') — NEVER a
+  // version bump on the live envelope's key, which old builds would wipe.
+  const _blueprintArchiveLib = () => {
+    const S = window.AlloModules && window.AlloModules.AgentCoreBlueprintService;
+    if (!S || typeof S.createBlueprintArchive !== 'function') return null;
+    try { return S.createBlueprintArchive(); } catch (_) { return null; }
+  };
+  const [archivedPlans, setArchivedPlans] = useState([]);
+  useEffect(() => _hydrateWhenModuleReady(_blueprintArchiveLib, (lib) => setArchivedPlans(lib.list())), []);
+  // Files the live plan+run into the archive. Only a plan that actually RAN is
+  // worth keeping — a never-executed plan is what templates are for — so this
+  // is safe to call unconditionally at every site that destroys the live plan.
+  const archiveLivePlan = () => {
+    if (!activeBlueprint || !blueprintExecutionResult || !blueprintExecutionResult.rows) return;
+    if (!Object.keys(blueprintExecutionResult.rows).length) return;
+    const S = window.AlloModules && window.AlloModules.AgentCoreBlueprintService;
+    const lib = _blueprintArchiveLib();
+    if (!S || !lib || typeof S.toArchivedPlan !== 'function') return;
+    try {
+      const _unit = (Array.isArray(units) ? units : []).find(u => u && u.id === activeUnitId);
+      const rec = S.toArchivedPlan(activeBlueprint, blueprintExecutionResult, {
+        name: (sourceTopic && String(sourceTopic).trim()) || 'Lesson plan',
+        savedAt: new Date().toISOString(),
+        unitId: (activeUnitId && activeUnitId !== 'all' && activeUnitId !== 'uncategorized') ? activeUnitId : null,
+        unitName: _unit ? _unit.name : null
+      });
+      if (!rec) return;
+      if (!lib.add(rec)) {
+        addToast(t('blueprint.archive_save_failed') || 'Could not archive the previous plan — storage may be full.', 'warning');
+        return;
+      }
+      setArchivedPlans(lib.list());
+    } catch (e) { warnLog('[BlueprintArchive] file failed:', e?.message || e); }
+  };
+  const handleRestoreArchivedPlan = (id) => {
+    if (isExecutingBlueprint) { addToast(t('blueprint.archive_restore_while_running') || 'Wait for the current plan to finish generating first.', 'info'); return; }
+    const lib = _blueprintArchiveLib();
+    const rec = lib && lib.get(id);
+    if (!rec || !rec.plan) { addToast(t('blueprint.archive_missing') || 'That plan is no longer archived.', 'warning'); return; }
+    // File the outgoing live plan first — restoring must never destroy work.
+    archiveLivePlan();
+    setActiveBlueprint(rec.plan);
+    // Restored rows go through the SAME demotion as the boot hydrate: a record
+    // archived mid-run must not come back as a spinner that never resolves.
+    setBlueprintExecutionResult((rec.run && rec.run.rows)
+      ? Object.assign({}, rec.run, { rows: _demoteInFlightRows(rec.run.rows), done: true, restored: true })
+      : null);
+    // Deliberately does NOT touch persistedLessonDNA. A restore is a view of an
+    // old plan, not a workspace time machine — retargeting ambient DNA here is
+    // the same leak class the DA clinical-isolation work closed.
+    setShowUDLGuide(true);
+    addToast(t('blueprint.archive_restored', { name: rec.name }) || ('Restored "' + rec.name + '".'), 'success');
+  };
+  const handleDeleteArchivedPlan = (id) => {
+    const lib = _blueprintArchiveLib();
+    if (!lib) return;
+    try { lib.remove(id); setArchivedPlans(lib.list()); } catch (_) {}
   };
   const handleBotIntroSeen = useCallback(() => {
     setHasSeenBotIntro(true);
@@ -28677,31 +29057,39 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
           return { sent: 0, released: 0, failed: 1 };
       }
   };
-  // Atomic multi-student resource send for the Lesson Path attention queue.
-  // One session patch avoids a burst of per-student writes/toasts; 25 students
-  // x 2 Tier-1 fields stays below the Class Mailbox 60-field patch ceiling.
+  // Canonical multi-student resource sender. Each 25-recipient patch uses 50
+  // Tier-1 fields, staying below the Class Mailbox 60-field ceiling; larger
+  // cohorts are delivered sequentially through this same owner.
   const handleSetStudentsResource = async (uids, resourceId) => {
       if (!activeSessionCode || !resourceId) return { sent: 0, failed: 0 };
-      const safeUids = Array.from(new Set(Array.isArray(uids) ? uids : []))
-          .filter(uid => sessionData && sessionData.roster && sessionData.roster[uid])
-          .slice(0, 25);
-      if (safeUids.length === 0) return { sent: 0, failed: 0 };
-      const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
-      const resourceAt = Date.now();
-      const updates = {};
-      safeUids.forEach(uid => {
-          updates[`roster.${uid}.resourceId`] = resourceId;
-          updates[`roster.${uid}.resourceAt`] = resourceAt;
+      const plan = buildStudentResourcePatchBatches({
+          uids,
+          roster: sessionData && sessionData.roster,
+          resourceId,
+          resourceAt: Date.now(),
+          maxRecipients: 250,
       });
-      try {
-          await updateDoc(sessionRef, updates);
-          addToast('Resource sent to ' + safeUids.length + ' student' + (safeUids.length === 1 ? '.' : 's.'), 'success');
-          return { sent: safeUids.length, failed: 0 };
-      } catch (error) {
-          warnLog('Error setting resource for selected students:', error);
-          addToast(t('toasts.resource_assign_failed') || 'Could not push resource — try again.', 'error');
-          return { sent: 0, failed: safeUids.length };
+      if (plan.uids.length === 0) return { sent: 0, failed: 0 };
+      const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+      let sent = 0;
+      let failed = 0;
+      for (const batch of plan.batches) {
+          try {
+              await updateDoc(sessionRef, batch.updates);
+              sent += batch.uids.length;
+          } catch (error) {
+              failed += batch.uids.length;
+              warnLog('Error assigning resource batch to selected students:', error);
+          }
       }
+      if (failed > 0) {
+          addToast(sent > 0
+              ? `Resource assigned to ${sent} student${sent === 1 ? '' : 's'}; ${failed} could not be assigned.`
+              : (t('toasts.resource_assign_failed') || 'Could not push resource - try again.'), 'error');
+      } else {
+          addToast('Resource assigned to ' + sent + ' student' + (sent === 1 ? '.' : 's.'), 'success');
+      }
+      return { sent, failed };
   };
   // Release only individual overrides that are already acknowledged. This
   // restores the existing group/class precedence without touching unopened or
@@ -29500,6 +29888,10 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       // leaving them behind strands a status board pointing at resources that
       // no longer exist, and the rows would invite a rebuild that duplicates
       // work. Clear them with the history they belong to.
+      // Continuity: the archive key is deliberately NOT cleared here, and the
+      // outgoing plan is filed before the wipe — clearing a workspace must not
+      // silently empty the cabinet, or the archive is worse than nothing.
+      archiveLivePlan();
       setActiveBlueprint(null);
       setBlueprintExecutionResult(null);
       resetCanvasWorkspaceSettings();
@@ -33522,7 +33914,7 @@ Notes on the schema: "type" defaults to "image" if omitted — only specify it a
       voiceSpeed: typeof voiceSpeed !== 'undefined' ? voiceSpeed : undefined,
       voiceVolume: typeof voiceVolume !== 'undefined' ? voiceVolume : undefined,
       uiDispatch,
-      setActiveBlueprint, setActiveView, setAdventureInputMode, setDokLevel,
+      archiveLivePlan, setActiveBlueprint, setActiveView, setAdventureInputMode, setBlueprintExecutionResult, setDokLevel,
       setExpandedTools, setFillInTheBlank, setFrameType, setFullPackTargetGroup,
       setGeneratedContent, setGradeLevel, setGuidedFlowState, setIsAutoFillMode,
       setIsChatProcessing, setLeveledTextLanguage, setOutlineType, setQuizMcqCount,
@@ -38215,6 +38607,59 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     {endSessionPreview.summary.insightBrief.byKind.map(item => <span key={item.kind} className="rounded-full border border-indigo-200 bg-white px-2 py-1 text-[10px] font-bold text-indigo-800">{item.kind.replace(/_/g, ' ')} · {item.submitted}/{item.invited}</span>)}
                   </div>
                 )}
+                {(endSessionPreview.summary.insightBrief.evidenceCohorts || []).length > 0 && (
+                  <div className="mt-3 rounded-xl border border-violet-200 bg-white p-3" aria-label="Evidence cohorts and targeted follow-up">
+                    <div className="text-[10px] font-black uppercase tracking-wide text-violet-900">Evidence cohorts</div>
+                    <p className="mt-1 text-[11px] text-slate-600">Participation signals are review suggestions, not automatic mastery or misconception labels.</p>
+                    {(endSessionPreview.followUpResources || []).length > 0 && (
+                      <label className="mt-2 block text-[11px] font-bold text-slate-700">
+                        Follow-up resource
+                        <select
+                          value={endSessionPreview.followUpResourceId || ''}
+                          disabled={!!endSessionPreview.followUpBusy}
+                          onChange={event => setEndSessionPreview(prev => prev ? { ...prev, followUpResourceId: event.target.value, followUpStatus: '' } : prev)}
+                          aria-label="Choose the student-safe resource to send to an evidence cohort"
+                          className="mt-1 min-h-11 w-full rounded-lg border border-violet-300 bg-white px-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-400"
+                        >
+                          {(endSessionPreview.followUpResources || []).map(resource => <option key={resource.id} value={resource.id}>{resource.title}</option>)}
+                        </select>
+                      </label>
+                    )}
+                    <div className="mt-2 space-y-2">
+                      {endSessionPreview.summary.insightBrief.evidenceCohorts.map(cohort => {
+                        const connectedCount = resolveEndSessionCohortUids(cohort.codenames).length;
+                        const supportCohort = cohort.intent === 'support';
+                        const sending = endSessionPreview.followUpBusy === cohort.code;
+                        return (
+                          <div key={cohort.code} className={'rounded-lg border p-2 ' + (supportCohort ? 'border-amber-200 bg-amber-50' : 'border-emerald-200 bg-emerald-50')}>
+                            <div className="flex items-start gap-2">
+                              <div className="min-w-0 flex-1">
+                                <div className={'text-xs font-black ' + (supportCohort ? 'text-amber-900' : 'text-emerald-900')}>{cohort.label} - {cohort.count}</div>
+                                <div className="mt-0.5 text-[10px] text-slate-600">{cohort.recommendedAction}</div>
+                              </div>
+                              {supportCohort && connectedCount > 0 && (endSessionPreview.followUpResources || []).length > 0 && (
+                                <button
+                                  type="button"
+                                  disabled={!!endSessionPreview.followUpBusy || endSessionPreview.busy}
+                                  onClick={() => sendEndSessionEvidenceCohort(cohort)}
+                                  aria-label={'Send the selected follow-up resource to ' + connectedCount + ' connected learners in ' + cohort.label}
+                                  className="min-h-11 shrink-0 rounded-lg bg-violet-700 px-2.5 py-1.5 text-[10px] font-black text-white hover:bg-violet-800 disabled:opacity-50"
+                                >
+                                  {sending ? 'Sending...' : 'Send to ' + connectedCount}
+                                </button>
+                              )}
+                            </div>
+                            <details className="mt-1">
+                              <summary className="cursor-pointer text-[10px] font-bold text-slate-600">Review codenames</summary>
+                              <div className="mt-1 text-[10px] text-slate-600">{(cohort.codenames || []).join(', ')}</div>
+                            </details>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {endSessionPreview.followUpStatus && <p role="status" aria-live="polite" className="mt-2 rounded-lg bg-violet-50 p-2 text-[11px] font-bold text-violet-900">{endSessionPreview.followUpStatus}</p>}
+                  </div>
+                )}
                 {(endSessionPreview.summary.insightBrief.groups || []).some(group => group.followUpCount > 0) && (
                   <div className="mt-3">
                     <div className="text-[10px] font-black uppercase tracking-wide text-indigo-900">Group patterns</div>
@@ -38231,7 +38676,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     </ul>
                   </div>
                 )}
-                {(endSessionPreview.summary.insightBrief.followUpCodenames || []).length > 0 && <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-2 text-[11px] font-semibold text-amber-900">To send a specific resource privately, keep the session open and use the existing Needs attention queue. Ending removes temporary student connections.</p>}
+                {(endSessionPreview.summary.insightBrief.followUpCodenames || []).length > 0 && <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-2 text-[11px] font-semibold text-amber-900">Connections remain active during this review. Use the cohort controls above or the companion view before ending; ending removes temporary student connections.</p>}
               </section>
             )}
             {(endSessionPreview.summary.unmatchedCodenames || []).length > 0 && <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 mb-4"><div className="text-xs font-black text-rose-800">Unmatched codenames are not added automatically</div><div className="text-xs text-rose-700 mt-1">{endSessionPreview.summary.unmatchedCodenames.join(', ')}</div></div>}
@@ -38241,9 +38686,9 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             <div className="text-[11px] text-slate-500 text-right">{endSessionNote.length}/500</div>
             {!rosterKey && <p className="mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg p-2">Create or import a class roster to save longitudinal summaries. You can still end this session normally.</p>}
             <div className="flex flex-col sm:flex-row gap-2 mt-5 justify-end">
-              <button disabled={endSessionPreview.busy} onClick={() => { setEndSessionPreview(null); setEndSessionNote(''); }} className="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold disabled:opacity-50">Keep session open</button>
-              <button disabled={endSessionPreview.busy} onClick={() => completeLiveSessionEnd(false)} className="px-4 py-2.5 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 font-bold disabled:opacity-50">End without saving</button>
-              {rosterKey && <button disabled={endSessionPreview.busy} onClick={() => completeLiveSessionEnd(true)} className="px-4 py-2.5 rounded-xl bg-indigo-600 text-white font-bold shadow-lg disabled:opacity-50">{endSessionPreview.busy ? 'Ending…' : 'Save summary & end'}</button>}
+              <button disabled={endSessionPreview.busy || !!endSessionPreview.followUpBusy} onClick={() => { setEndSessionPreview(null); setEndSessionNote(''); }} className="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-bold disabled:opacity-50">Keep session open</button>
+              <button disabled={endSessionPreview.busy || !!endSessionPreview.followUpBusy} onClick={() => completeLiveSessionEnd(false)} className="px-4 py-2.5 rounded-xl border border-rose-200 bg-rose-50 text-rose-700 font-bold disabled:opacity-50">End without saving</button>
+              {rosterKey && <button disabled={endSessionPreview.busy || !!endSessionPreview.followUpBusy} onClick={() => completeLiveSessionEnd(true)} className="px-4 py-2.5 rounded-xl bg-indigo-600 text-white font-bold shadow-lg disabled:opacity-50">{endSessionPreview.busy ? 'Ending…' : 'Save summary & end'}</button>}
             </div>
           </div>
         </div>
@@ -39214,7 +39659,7 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
       })}
         {/* ── UDL Guide Modal — extracted to view_misc_modals_module.js (CDN) ── */}
         {(showUDLGuide) && window.AlloModules && window.AlloModules.UDLGuideModal && React.createElement(window.AlloModules.UDLGuideModal, {
-          InteractiveBlueprintCard, activeBlueprint, addToast, blueprintExecutionResult, handleRebuildBlueprintStep, handlePreviewBlueprintStep, blueprintPreview, closeBlueprintPreview, lessonTemplates, handleSaveLessonTemplate, handleApplyLessonTemplate, handleDeleteLessonTemplate, aiStandardQuery,
+          InteractiveBlueprintCard, activeBlueprint, addToast, blueprintExecutionResult, setBlueprintExecutionResult, isExecutingBlueprint, handleRebuildBlueprintStep, handlePreviewBlueprintStep, blueprintPreview, closeBlueprintPreview, lessonTemplates, archivedPlans, handleRestoreArchivedPlan, handleDeleteArchivedPlan, archiveLivePlan, handleSaveLessonTemplate, handleApplyLessonTemplate, handleDeleteLessonTemplate, aiStandardQuery,
           aiStandardRegion, autoSendVoice, chatStyles, handleAutoFillToggle, handleBlueprintUIUpdate,
           handleExecuteBlueprint, handleFindStandards, handleSendUDLMessage, handleSetShowUDLGuideToFalse, handleToggleAutoSendVoice,
           handleToggleIsShowMeMode, handleToggleIsUDLGuideExpanded, hasUsedAutoFill, isAutoFillMode, isChatProcessing,
@@ -39575,7 +40020,8 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
           isUniversalSettingsOpen, setIsUniversalSettingsOpen,
           differentiationRange, setDifferentiationRange,
           differentiationTypes, setDifferentiationTypes,
-          differentiationCustomGrades, setDifferentiationCustomGrades
+          differentiationCustomGrades, setDifferentiationCustomGrades,
+          languageInput, setLanguageInput, addLanguage, removeLanguage, handleKeyDown
             })}
             <div style={{display: isGuidedToolVisible('analysis') ? undefined : 'none'}} id="tour-tool-analysis" data-help-key="tool_analysis" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
                 ${activeView === 'analysis' ? 'border-violet-600 shadow-xl shadow-violet-500/20' : 'border-slate-200 hover:border-violet-200 shadow-lg shadow-violet-500/10'}
@@ -39610,12 +40056,12 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
               </button>
                 {/* ── GlossaryPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
                 {expandedTools.includes('glossary') && window.AlloModules && window.AlloModules.GlossaryPanel && React.createElement(window.AlloModules.GlossaryPanel, {
-          expandedTools, InfoTooltip, addLanguage, autoRemoveWords, glossaryCustomInstructions,
-          glossaryDefinitionLevel, glossaryImageStyle, glossaryTier2Count, glossaryTier3Count, gradeLevel,
-          handleGenerate, handleKeyDown, hasSourceOrAnalysis, includeEtymology, isProcessing,
-          languageInput, removeLanguage, selectedLanguages, setAutoRemoveWords, setGlossaryCustomInstructions,
-          setGlossaryDefinitionLevel, setGlossaryImageStyle, setGlossaryTier2Count, setGlossaryTier3Count, setIncludeEtymology,
-          setLanguageInput, t
+          expandedTools, InfoTooltip, autoRemoveWords, glossaryCustomInstructions,
+          glossaryDefinitionLevel, glossaryTier2Count, glossaryTier3Count, gradeLevel,
+          handleGenerate, hasSourceOrAnalysis, includeEtymology, isProcessing,
+          selectedLanguages, setAutoRemoveWords, setGlossaryCustomInstructions,
+          setGlossaryDefinitionLevel, setGlossaryTier2Count, setGlossaryTier3Count, setIncludeEtymology,
+          t
                 })}
             </div>
             <div style={{display: isGuidedToolVisible('simplified') ? undefined : 'none'}} id="ui-tool-simplified" className={`rounded-3xl border-2 transition-all bg-white overflow-hidden
@@ -41052,6 +41498,49 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     // imports (device-local model; no cloud conceptMastery reads).
                     conceptMasteryByUid: teacherConceptMasteryByUid,
                     onSubmitLiveAnswer: handleSubmitLiveAnswer,
+                    onOpenAlloSheet: (artifact) => {
+                        const bridge = window.AlloSheetHostBridge;
+                        if (!bridge || typeof bridge.open !== 'function') {
+                            addToast('AlloSheet is still loading. Try again in a moment.', 'error');
+                            return false;
+                        }
+                        const root = document.documentElement;
+                        const body = document.body;
+                        const theme = ((root && root.classList.contains('theme-contrast')) || (body && body.classList.contains('theme-contrast')))
+                            ? 'contrast'
+                            : ((root && root.classList.contains('theme-light')) || (body && body.classList.contains('theme-light')))
+                                ? 'light'
+                                : 'dark';
+                        if (typeof bridge.openTransfer === 'function') {
+                            const transfer = bridge.openTransfer({ theme, artifact });
+                            if (!transfer) {
+                                addToast('AlloSheet could not open. Allow pop-ups and try again.', 'error');
+                                return false;
+                            }
+                            let receiptConfirmed = false;
+                            transfer.decision.then((decision) => {
+                                if (decision && decision.status === 'accepted') {
+                                    addToast('AlloSheet opened the selected tables.', 'success');
+                                } else if (decision && decision.status === 'cancelled') {
+                                    addToast('AlloSheet table review was canceled. No destination data changed.', 'info');
+                                }
+                            }).catch((error) => {
+                                if (receiptConfirmed) {
+                                    addToast(error && error.message ? error.message : 'AlloSheet could not finish the table review.', 'error');
+                                }
+                            });
+                            return transfer.delivered.then(() => {
+                                receiptConfirmed = true;
+                                return true;
+                            });
+                        }
+                        const popup = bridge.open({ theme, artifact });
+                        if (!popup) {
+                            addToast('AlloSheet could not open. Allow pop-ups and try again.', 'error');
+                            return false;
+                        }
+                        return true;
+                    },
                     // Resource-keyed completion bridge (2026-07-27): the quiz's own
                     // attempt receipt is namespaced by content hash, so directions
                     // goals cannot find it. This reports by resourceId instead.
@@ -43203,6 +43692,49 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             rosterKey={rosterKey}
             t={t}
             addToast={addToast}
+            onOpenAlloSheet={(artifact) => {
+              const bridge = window.AlloSheetHostBridge;
+              if (!bridge || typeof bridge.open !== 'function') {
+                addToast('AlloSheet is still loading. Try again in a moment.', 'error');
+                return false;
+              }
+              const root = document.documentElement;
+              const body = document.body;
+              const alloSheetTheme = ((root && root.classList.contains('theme-contrast')) || (body && body.classList.contains('theme-contrast')))
+                ? 'contrast'
+                : ((root && root.classList.contains('theme-light')) || (body && body.classList.contains('theme-light')))
+                  ? 'light'
+                  : 'dark';
+              if (typeof bridge.openTransfer === 'function') {
+                const transfer = bridge.openTransfer({ theme: alloSheetTheme, artifact });
+                if (!transfer) {
+                  addToast('AlloSheet could not open. Allow pop-ups and try again.', 'error');
+                  return false;
+                }
+                let receiptConfirmed = false;
+                transfer.decision.then((decision) => {
+                  if (decision && decision.status === 'accepted') {
+                    addToast('AlloSheet opened the selected Submission Inbox summaries.', 'success');
+                  } else if (decision && decision.status === 'cancelled') {
+                    addToast('AlloSheet summary review was canceled. No destination data changed.', 'info');
+                  }
+                }).catch((error) => {
+                  if (receiptConfirmed) {
+                    addToast(error && error.message ? error.message : 'AlloSheet could not finish the summary review.', 'error');
+                  }
+                });
+                return transfer.delivered.then(() => {
+                  receiptConfirmed = true;
+                  return true;
+                });
+              }
+              const popup = bridge.open({ theme: alloSheetTheme, artifact });
+              if (!popup) {
+                addToast('AlloSheet could not open. Allow pop-ups and try again.', 'error');
+                return false;
+              }
+              return true;
+            }}
           />
         );
       })()}
@@ -43679,6 +44211,49 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
               setScreenerSession={setScreenerSession}
               setShowClassAnalytics={setShowClassAnalytics}
               openReportWriter={() => setShowReportWriter(true)}
+              onOpenAlloSheet={(artifact) => {
+                  const bridge = window.AlloSheetHostBridge;
+                  if (!bridge || typeof bridge.open !== 'function') {
+                      addToast('AlloSheet is still loading. Try again in a moment.', 'error');
+                      return false;
+                  }
+                  const root = document.documentElement;
+                  const body = document.body;
+                  const alloSheetTheme = ((root && root.classList.contains('theme-contrast')) || (body && body.classList.contains('theme-contrast')))
+                      ? 'contrast'
+                      : ((root && root.classList.contains('theme-light')) || (body && body.classList.contains('theme-light')))
+                          ? 'light'
+                          : 'dark';
+                  if (typeof bridge.openTransfer === 'function') {
+                      const transfer = bridge.openTransfer({ theme: alloSheetTheme, artifact });
+                      if (!transfer) {
+                          addToast('AlloSheet could not open. Allow pop-ups and try again.', 'error');
+                          return false;
+                      }
+                      let receiptConfirmed = false;
+                      transfer.decision.then((decision) => {
+                          if (decision && decision.status === 'accepted') {
+                              addToast('AlloSheet opened the selected Student Analytics tables.', 'success');
+                          } else if (decision && decision.status === 'cancelled') {
+                              addToast('AlloSheet table review was canceled. No destination data changed.', 'info');
+                          }
+                      }).catch((error) => {
+                          if (receiptConfirmed) {
+                              addToast(error && error.message ? error.message : 'AlloSheet could not finish the table review.', 'error');
+                          }
+                      });
+                      return transfer.delivered.then(() => {
+                          receiptConfirmed = true;
+                          return true;
+                      });
+                  }
+                  const popup = bridge.open({ theme: alloSheetTheme, artifact });
+                  if (!popup) {
+                      addToast('AlloSheet could not open. Allow pop-ups and try again.', 'error');
+                      return false;
+                  }
+                  return true;
+              }}
               onLaunchORF={handleLaunchORF}
               probeHistory={probeHistory}
               interventionLogs={interventionLogs}
@@ -43848,6 +44423,9 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
             mood={isProcessing || isChatProcessing ? 'thinking' : 'idle'}
             accessory={botAccessory}
             holdingPointer={isSpotlightMode}
+            aimAt={(isSpotlightMode && tourRect)
+                ? { x: tourRect.left + tourRect.width / 2, y: tourRect.top + tourRect.height / 2 }
+                : null}
             onReadMore={handleReadMore}
             onClick={handleBotClick}
             onVoiceSettingsClick={handleVoiceSettingsClick}
@@ -45289,7 +45867,50 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
                     alloBotRef,
                     firestore: db,
                     firebaseAuth: auth,
-                    isCanvasEnv: _isCanvasEnv
+                    isCanvasEnv: _isCanvasEnv,
+                    onOpenAlloSheet: (artifact) => {
+                        const bridge = window.AlloSheetHostBridge;
+                        if (!bridge || typeof bridge.open !== 'function') {
+                            addToast('AlloSheet is still loading. Try again in a moment.', 'error');
+                            return false;
+                        }
+                        const root = document.documentElement;
+                        const body = document.body;
+                        const theme = ((root && root.classList.contains('theme-contrast')) || (body && body.classList.contains('theme-contrast')))
+                            ? 'contrast'
+                            : ((root && root.classList.contains('theme-light')) || (body && body.classList.contains('theme-light')))
+                                ? 'light'
+                                : 'dark';
+                        if (typeof bridge.openTransfer === 'function') {
+                            const transfer = bridge.openTransfer({ theme, artifact });
+                            if (!transfer) {
+                                addToast('AlloSheet could not open. Allow pop-ups and try again.', 'error');
+                                return false;
+                            }
+                            let receiptConfirmed = false;
+                            transfer.decision.then((decision) => {
+                                if (decision && decision.status === 'accepted') {
+                                    addToast('AlloSheet opened the selected tables.', 'success');
+                                } else if (decision && decision.status === 'cancelled') {
+                                    addToast('AlloSheet table review was canceled. No destination data changed.', 'info');
+                                }
+                            }).catch((error) => {
+                                if (receiptConfirmed) {
+                                    addToast(error && error.message ? error.message : 'AlloSheet could not finish the table review.', 'error');
+                                }
+                            });
+                            return transfer.delivered.then(() => {
+                                receiptConfirmed = true;
+                                return true;
+                            });
+                        }
+                        const popup = bridge.open({ theme, artifact });
+                        if (!popup) {
+                            addToast('AlloSheet could not open. Allow pop-ups and try again.', 'error');
+                            return false;
+                        }
+                        return true;
+                    }
             })}
         </CDNModuleGate>
       {/* @section READ_THIS_PAGE_PANEL — Floating smart content reader + focus narration toggle */}
@@ -45427,40 +46048,179 @@ Place "lesson-plan" LAST in a lesson's resources when it is a full teaching bloc
     </ActiveViewContext.Provider>
   );
 }
+// Fatal-crash boundary. Three rules govern everything below, learned from the version this
+// replaced (2026-07-29):
+//
+//   1. NEVER destroy evidence as the first offer. The old screen's only button cleared
+//      localStorage AND deleted every IndexedDB database. A user hitting the one available
+//      button wiped both their work and the state that caused the crash, so a reproducible
+//      bug became unreproducible at the exact moment someone was looking at it.
+//   2. The log must be reachable HERE. The in-app diagnostics panel can export logs, but it
+//      lives inside the app that just died. Non-fatal errors were exportable and fatal ones —
+//      the ones that actually need a bug report — were not.
+//   3. This code runs when everything else is broken. No t(), no imports, no CDN module, no
+//      app state. Plain DOM, hardcoded English, every step in its own try/catch. A crash
+//      handler that can crash is not a crash handler.
 class AlloFlowErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false, error: null, componentStack: null, saved: false };
   }
   static getDerivedStateFromError(error) {
     return { hasError: true, error };
   }
   componentDidCatch(error, errorInfo) {
     console.error("[AlloFlow] Fatal error caught by ErrorBoundary:", error, errorInfo);
+    // The component stack is the single most useful line for finding which view blew up, and
+    // it exists ONLY here — getDerivedStateFromError never receives it. Keep it.
+    var stack = null;
+    try { stack = (errorInfo && errorInfo.componentStack) || null; } catch (e) {}
+    try { this.setState({ componentStack: stack }); } catch (e) {}
+    // Persist immediately, before any button is pressed. If the user reloads, force-quits, or
+    // the tab dies, the report survives; the diagnostics panel can surface it on next boot.
+    try {
+      localStorage.setItem('alloflow_last_crash', JSON.stringify({
+        at: new Date().toISOString(),
+        message: (error && error.message) || String(error),
+        stack: (error && error.stack) || null,
+        componentStack: stack,
+      }).slice(0, 200000));
+    } catch (e) {}
+  }
+  buildReport() {
+    var lines = [];
+    var push = function (label, value) { try { lines.push(label + ': ' + value); } catch (e) {} };
+    lines.push('AlloFlow crash report');
+    lines.push('='.repeat(60));
+    push('Time', new Date().toISOString());
+    try { push('URL', String(location.href).slice(0, 500)); } catch (e) {}
+    try { push('Browser', navigator.userAgent); } catch (e) {}
+    try { push('Language', navigator.language); } catch (e) {}
+    try { push('Screen', window.innerWidth + 'x' + window.innerHeight); } catch (e) {}
+    // Build hash tells us which deploy this was, which is the difference between "we fixed
+    // that" and "you are running the version from before we fixed it".
+    try { push('Build', (window.pluginCdnVersion || window.__alloBuildHash || 'unknown')); } catch (e) {}
+    try { push('In Canvas', String(window.self !== window.top)); } catch (e) {}
+    lines.push('');
+    lines.push('ERROR');
+    lines.push('-'.repeat(60));
+    try {
+      var err = this.state.error;
+      lines.push(String((err && err.message) || err || 'unknown error'));
+      if (err && err.stack) { lines.push(''); lines.push(String(err.stack)); }
+    } catch (e) { lines.push('(error object could not be read)'); }
+    if (this.state.componentStack) {
+      lines.push('');
+      lines.push('COMPONENT STACK (which view crashed)');
+      lines.push('-'.repeat(60));
+      lines.push(String(this.state.componentStack));
+    }
+    // The diagnostics ring buffer is what makes this report worth reading: it holds the
+    // warnLog/debugLog lines from BEFORE the crash, which is usually where the real cause is.
+    lines.push('');
+    lines.push('DIAGNOSTICS LOG (most recent last)');
+    lines.push('-'.repeat(60));
+    try {
+      var log = (window.__alloDiagLog || []);
+      if (!log.length) lines.push('(empty — the crash happened before anything was logged)');
+      for (var i = 0; i < log.length; i++) {
+        var e2 = log[i];
+        lines.push('[' + new Date(e2.t).toISOString().slice(11, 23) + '] ' + e2.level + ': ' + e2.msg);
+      }
+    } catch (e) { lines.push('(diagnostics log unavailable)'); }
+    return lines.join('\n');
+  }
+  downloadReport() {
+    var text = 'AlloFlow crash report could not be assembled.';
+    try { text = this.buildReport(); } catch (e) {}
+    var name = 'alloflow-crash-' + new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19) + '.txt';
+    try {
+      var blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url; a.download = name;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function () { try { URL.revokeObjectURL(url); } catch (e) {} }, 1000);
+      this.setState({ saved: true });
+    } catch (e) {
+      // Blob/download can be blocked in a sandboxed iframe — which is exactly where Canvas
+      // runs. Fall back to the clipboard, then to a new window, so the log is never trapped.
+      try {
+        navigator.clipboard.writeText(text);
+        this.setState({ saved: true });
+        alert('Download was blocked here, so the crash report was copied to your clipboard instead. Paste it into your bug report.');
+        return;
+      } catch (e2) {}
+      try {
+        var w = window.open('', '_blank');
+        w.document.write('<pre>' + text.replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</pre>');
+      } catch (e3) {
+        alert('Could not save the log automatically. Copy the details shown on screen.');
+      }
+    }
   }
   render() {
     if (this.state.hasError) {
+      var self = this;
+      var btn = function (bg, color, border) {
+        return { padding: "0.75rem 1.25rem", borderRadius: "0.5rem", border: border || "none",
+                 background: bg, color: color, fontSize: "0.95rem", cursor: "pointer",
+                 fontWeight: "600", fontFamily: "inherit" };
+      };
+      var msg = '';
+      try { msg = String((this.state.error && this.state.error.message) || this.state.error || ''); } catch (e) {}
       return React.createElement("div", {
+        role: "alert", "aria-live": "assertive",
         style: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-                 minHeight: "100vh", fontFamily: "Inter, sans-serif", background: "#0f172a", color: "#475569", padding: "2rem" }
+                 minHeight: "100vh", fontFamily: "Inter, sans-serif", background: "#0f172a", color: "#cbd5e1", padding: "2rem" }
       },
-        React.createElement("h1", { style: { fontSize: "1.5rem", marginBottom: "1rem" } }, "Something went wrong"),
-        React.createElement("p", { style: { color: "#475569", marginBottom: "1.5rem", textAlign: "center", maxWidth: "400px" } },
-          "AlloFlow encountered an unexpected error. This can happen if cached data is corrupted."),
-        React.createElement("button", {
-          onClick: () => {
-            try { localStorage.clear(); } catch(e) {}
-            try {
-              indexedDB.databases().then(dbs => {
-                dbs.forEach(db => { try { indexedDB.deleteDatabase(db.name); } catch(e) {} });
-              }).catch(() => {});
-            } catch(e) {}
-            window.location.reload();
-          },
-          style: { padding: "0.75rem 1.5rem", borderRadius: "0.5rem", border: "none",
-                   background: "linear-gradient(135deg, #6366f1, #8b5cf6)", color: "white",
-                   fontSize: "1rem", cursor: "pointer", fontWeight: "600" }
-        }, "Clear Data & Reload")
+        React.createElement("h1", { style: { fontSize: "1.5rem", marginBottom: "1rem", color: "#f1f5f9" } }, "Something went wrong"),
+        React.createElement("p", { style: { color: "#94a3b8", marginBottom: "1.25rem", textAlign: "center", maxWidth: "460px", lineHeight: "1.6" } },
+          "AlloFlow hit an unexpected error. Your saved work has not been touched. Please download the error log below and send it along — it says exactly what broke."),
+        // The message, on screen, unconditionally. Someone reading it aloud over the phone
+        // should not have to open a file first.
+        msg ? React.createElement("pre", {
+          style: { background: "#1e293b", color: "#fca5a5", padding: "0.75rem 1rem", borderRadius: "0.5rem",
+                   maxWidth: "560px", maxHeight: "120px", overflow: "auto", fontSize: "0.8rem",
+                   marginBottom: "1.5rem", whiteSpace: "pre-wrap", textAlign: "left", width: "100%" }
+        }, msg) : null,
+        React.createElement("div", { style: { display: "flex", gap: "0.75rem", flexWrap: "wrap", justifyContent: "center" } },
+          // Primary action is SAVING the evidence, not destroying it.
+          React.createElement("button", {
+            type: "button", onClick: function () { self.downloadReport(); },
+            style: btn("linear-gradient(135deg, #6366f1, #8b5cf6)", "white")
+          }, this.state.saved ? "✓ Log saved — download again" : "⬇ Download error log"),
+          React.createElement("button", {
+            type: "button", onClick: function () { try { window.location.reload(); } catch (e) {} },
+            style: btn("#334155", "#e2e8f0")
+          }, "↻ Reload the app")
+        ),
+        // Destructive, so: separate, visually quieter, explicitly described, and confirmed.
+        // It is a real fix for genuinely corrupt cached data, but it must be a choice rather
+        // than the only button on the screen.
+        React.createElement("details", { style: { marginTop: "2rem", maxWidth: "460px", width: "100%", fontSize: "0.8rem", color: "#64748b" } },
+          React.createElement("summary", { style: { cursor: "pointer" } }, "Still broken after reloading?"),
+          React.createElement("p", { style: { margin: "0.75rem 0", lineHeight: "1.6" } },
+            "Clearing cached data fixes crashes caused by corrupted local storage, but it signs you out and removes anything saved only on this device. Download the log first."),
+          React.createElement("button", {
+            type: "button",
+            onClick: function () {
+              try { if (!window.confirm("Clear all locally cached AlloFlow data? Anything saved only on this device will be lost. This cannot be undone.")) return; } catch (e) {}
+              // Preserve the crash record itself across the wipe — it is the reason we are here.
+              var keep = null;
+              try { keep = localStorage.getItem('alloflow_last_crash'); } catch (e) {}
+              try { localStorage.clear(); } catch (e) {}
+              try { if (keep) localStorage.setItem('alloflow_last_crash', keep); } catch (e) {}
+              try {
+                indexedDB.databases().then(function (dbs) {
+                  dbs.forEach(function (db) { try { indexedDB.deleteDatabase(db.name); } catch (e) {} });
+                }).catch(function () {});
+              } catch (e) {}
+              try { window.location.reload(); } catch (e) {}
+            },
+            style: btn("transparent", "#f87171", "1px solid #7f1d1d")
+          }, "Clear cached data & reload")
+        )
       );
     }
     return this.props.children;

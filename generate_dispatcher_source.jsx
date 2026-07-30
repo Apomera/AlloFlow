@@ -1712,11 +1712,20 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
     // "Mixed" is a real option in the quiz panel (and now the universal panel);
     // interpolating it raw asks the model to target a level literally named
     // "Mixed". Mirror the quiz branch's progressive-ladder wording instead.
+    // Webb's DoK is rooted in assessment ALIGNMENT, but the construct itself
+    // describes the cognitive demand of a TASK — and every learning task has one.
+    // A Venn diagram at DOK 2 asks what differs; at DOK 3 it asks which
+    // difference matters and why. A Cornell cue can be "define erosion" or "why
+    // does erosion accelerate here". So the directive is worded for tasks in
+    // general, with an explicit guard against the obvious failure mode: a model
+    // told to "target DOK 3" on a glossary should deepen the thinking the
+    // resource invites, NOT bolt questions onto it.
+    const _dokTaskFraming = ' Apply this to the depth of thinking the resource invites. Do NOT add quiz items, questions, or assessment scaffolding to a resource that is not an assessment.';
     const dokDirective = (!dokLevel || _isolatedContext)
         ? ''
         : dokLevel === 'Mixed'
-            ? 'COGNITIVE DEMAND: Vary the cognitive demand progressively — begin at DOK 1 (Recall), move through DOK 2 (Skill/Concept), and finish at DOK 3 (Strategic Thinking).'
-            : `COGNITIVE DEMAND: Target Webb's Depth of Knowledge — ${dokLevel}.`;
+            ? 'COGNITIVE DEMAND: Vary the cognitive demand progressively - begin at DOK 1 (Recall), move through DOK 2 (Skill/Concept), and finish at DOK 3 (Strategic Thinking).' + _dokTaskFraming
+            : `COGNITIVE DEMAND: Pitch the thinking this resource asks for at Webb's Depth of Knowledge ${dokLevel}.` + _dokTaskFraming;
     if (effectiveLanguage === 'All Selected Languages' && !langOverride) {
         // Opt-IN list: types whose prompts genuinely honor effectiveLanguage.
         // Anything not listed regenerates once in English instead of fanning out into
@@ -1826,6 +1835,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               ${effCustomInstructions ? `Prioritize these terms or concepts if they appear: "${effCustomInstructions}".` : ''}
               ${useEmojis ? 'Include a helpful emoji only when it clarifies the term.' : 'Do not use emojis.'}
               ${standardsDirective}
+              ${dokDirective}
               ${interestsDirective}
               Return ONLY valid JSON with this shape:
               { "terms": [{ "term": "Name", "def": "Student-friendly definition", "tier": "Academic" | "Domain-Specific"${langsReq.length > 0 ? ', "translations": { "Language": "Translated Term: Translated Definition" }' : ''} }] }
@@ -1898,6 +1908,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               CRITICAL FOR TRANSLATIONS: Provide both the translated TERM and the translated DEFINITION.
               Format: "Translated Term: Translated Definition",
               ${standardsDirective}
+              ${dokDirective}
               ${interestsDirective}
               Return ONLY a JSON array: [{ "term": "Name", "def": "English Definition", "tier": "Academic" | "Domain-Specific", "translations": { "Lang": "TranslatedTerm: TranslatedDefinition" }${includeEtymology ? ', "etymology": "..." (optional), "etymologyByLang": { "English": "...", "Spanish": "..." } (optional, one key per requested language), "roots": [{ "root": "...", "lang": "...", "meaning": "..." }] (optional)' : ''} }]
               ${differentiationContext}
@@ -1935,6 +1946,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
               ${effCustomInstructions ? `IMPORTANT: Prioritize these specific terms/concepts if they appear in the text: "${effCustomInstructions}".` : ''}
               ${useEmojis ? 'Include a relevant emoji for each term.' : 'Do not use emojis.'}
               ${standardsDirective}
+              ${dokDirective}
               ${interestsDirective}
               Return ONLY a JSON array: [{ "term": "Name", "def": "English Definition", "tier": "Academic" | "Domain-Specific"${includeEtymology ? ', "etymology": "..." (optional), "roots": [{ "root": "...", "lang": "...", "meaning": "..." }] (optional)' : ''} }]
               ${differentiationContext}
@@ -2585,6 +2597,7 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
           ${effCustomInstructions ? `Custom Instructions: ${effCustomInstructions}` : ''}
           Adapt the language to ${effectiveLanguage} and the complexity to ${effectiveGrade}.
           ${interestsDirective}
+          ${dokDirective}
           ${standardsPromptString ? `Ensure the structure supports the cognitive requirements of Standards: "${standardsPromptString}".` : ''}
           ${useEmojis ? 'Include a relevant emoji at the start of every "main", "title", and "item" field to serve as a visual anchor.' : 'Do not use emojis.'}
           ${dialectInstruction}
@@ -4445,6 +4458,7 @@ ${modeListForAuto}
              ${standardsDirective}
              ${interestsDirective}
              ${emojiDirective}
+             ${dokDirective}
              Focus: "${effectiveTopic}"
              ${isAutoMode ? 'Choose the best ordering mode from: chronological, procedural, lifecycle, size, hierarchy, cause-effect, intensity, narrative. Include it as "detectedMode".' : `Use this mode: ${modeDef.label}. Criterion: ${modeDef.description}.`}
              Generate ${localTimelineCount} or fewer items only if the order is unambiguous.
@@ -4473,6 +4487,7 @@ ${modeListForAuto}
              ${standardsDirective}
              ${interestsDirective}
              ${emojiDirective}
+             ${dokDirective}
              Focus Topic / Content hint: "${effectiveTopic}"
              ${modeSection}
              *** FUNDAMENTAL REQUIREMENT ***
@@ -4648,6 +4663,7 @@ ${modeListForAuto}
                 ${studentInterests.length > 0 ? `- Frame the word problems using these student interests: ${studentInterests.join(', ')}.` : ''}
                 ${standardsDirective ? '- ' + standardsDirective : ''}
                 ${dokDirective ? '- ' + dokDirective : ''}
+                ${emojiDirective ? '- ' + emojiDirective + ' Keep all mathematical notation, expressions and numeric answers free of emoji.' : ''}
                 Return ONLY valid JSON:
                 {
                   "title": "Short title",
@@ -4671,6 +4687,7 @@ ${modeListForAuto}
                 Instruction: Create EXACTLY the number and types of problems described in the Topic/Skill above. Match the count, types, and difficulty the user specified. If no specific count is given, create 5 problems.
                 Context Usage: Frame the word problems using characters, settings, or themes from the Source Context.
                 ${standardsDirective}
+                ${emojiDirective ? emojiDirective + ' Keep all mathematical notation, expressions and numeric answers free of emoji.' : ''}
                 ${dokDirective}
                 Output Format:
                 Return a JSON object with a "problems" array.
@@ -4699,6 +4716,7 @@ ${modeListForAuto}
                 Instructions: Solve the problem or explain the concept.
                 ${isMathGraphEnabled ? 'VISUALS REQUIRED: Generate a self-contained SVG graph or diagram in the "graphData" field.' : ''}
                 ${standardsDirective}
+                ${emojiDirective ? emojiDirective + ' Keep all mathematical notation, expressions and numeric answers free of emoji.' : ''}
                 Return ONLY JSON:
                 {
                   "problem": "Clean Latex string of the input",
@@ -5263,6 +5281,8 @@ Return ONLY JSON:
           ${langInstruction}
           ${toneInstruction}
           ${standardsDirective}
+          ${dokDirective}
+          ${emojiDirective ? emojiDirective + ' CRITICAL: emoji may appear ONLY in narrative prose and choice text. Character names, the "voices" map keys and values, and "soundParams" values must remain plain ASCII with no emoji -- they are matched against fixed lists to select audio.' : ''}
           ${studentInterests.length > 0 ? `Theme/Interests: Integrate elements of "${studentInterests.join(', ')}" to engage the student.` : ''}
           ${effCustomInstructions ? `Custom Instructions: ${effCustomInstructions}` : ''}
           ${lessonDNA && lessonDNA.visualContext ? `VISUAL CONTINUITY: The student has just studied a diagram described as: "${lessonDNA.visualContext}". Ensure the opening scene description visually matches this setting.` : ''}
@@ -5411,6 +5431,8 @@ Return ONLY JSON:
                   Source: "${noteSourceText}"
                   ${languageDirective}
                   ${standardsDirective}
+                  ${emojiDirective}
+                  ${dokDirective}
                   ${effCustomInstructions ? `TEACHER INSTRUCTIONS: ${effCustomInstructions}` : ''}
                   Return ONLY a JSON object:
                   { "title": "Lesson title", "cues": ["Cue 1", "Cue 2", "Cue 3", ...] }
@@ -5433,6 +5455,8 @@ Return ONLY JSON:
                   Source: "${noteSourceText}"
                   ${languageDirective}
                   ${standardsDirective}
+                  ${emojiDirective}
+                  ${dokDirective}
                   ${effCustomInstructions ? `TEACHER INSTRUCTIONS: ${effCustomInstructions}` : ''}
                   Return ONLY a JSON object:
                   { "title": "Experiment title", "question": "Research question?", "materials": ["material 1", "material 2", ...] }
@@ -5533,6 +5557,7 @@ Return ONLY JSON:
                   Source: "${noteSourceText}"
                   ${languageDirective}
                   ${standardsDirective}
+                  ${emojiDirective}
                   ${dokDirective}
                   ${effCustomInstructions ? `TEACHER INSTRUCTIONS: ${effCustomInstructions}` : ''}
                   Return ONLY a JSON object:
@@ -5601,6 +5626,8 @@ Return ONLY JSON:
 
               ${languageDirective}
               ${standardsDirective}
+              ${emojiDirective}
+              ${dokDirective}
               ${effCustomInstructions ? `TEACHER INSTRUCTIONS: ${effCustomInstructions}` : ''}
               The "chartType" value and every "iconPrompt" must stay in English (machine id / image-generator input).
               Return ONLY a JSON object with this exact shape:

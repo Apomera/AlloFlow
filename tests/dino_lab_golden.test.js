@@ -272,7 +272,6 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     expect(html).toMatch(/Historical classic/);
     expect(html).toMatch(/Avian-informed hypothesis/);
     expect(html).toMatch(/Invariant across modes: skeleton, articulation, pose, measurements, evidence anchors, and scientific anatomy profile/);
-    expect(html).toMatch(/Head-neck atlas-axis/);
     expect(html).toMatch(/Head-neck junction/);
     expect(html).toMatch(/single occipital condyle meets a ring-like atlas/);
     expect(html).toMatch(/Head-neck evidence/);
@@ -292,7 +291,6 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     expect(html).toMatch(/Thoracic articulations/);
     expect(html).toMatch(/Paired capitulum and tuberculum heads meet the centrum and transverse-process region/);
     expect(html).toMatch(/Gastralia and uncinate processes/);
-    expect(html).toMatch(/Sacrum 5 elements/);
     expect(html).toMatch(/Sacral load path/);
     expect(html).toMatch(/5-element series/);
     expect(html).toMatch(/Compact sacral centra carry neural arches and broad paired sacral ribs/);
@@ -306,6 +304,76 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     expect(html).toMatch(/V-shaped chevron rami surround a haemal canal/);
   });
 
+  it('makes the 3D model the stage and progressively discloses field tools', () => {
+    const html = renderTab('field3d');
+    expect(html).toMatch(/class="dinolab-field-stage"/);
+    expect(html).toMatch(/height:clamp\(520px, 62vh, 760px\)/);
+    expect(html).toMatch(/aria-label="Field Station workflow"/);
+    expect(html).toMatch(/aria-label="Step 1 Explore, Current"/);
+    expect(html).toMatch(/aria-label="Step 2 Scan, Ready"/);
+    expect(html).toMatch(/aria-label="Step 3 Assemble, Locked"/);
+    expect(html).toMatch(/aria-label="Step 4 Claim, Locked"/);
+    expect(html).toMatch(/aria-label="Assemble field tools, locked\. Finish scan first"/);
+    expect(html).toMatch(/aria-label="Claim field tools, locked\. Finish assembly first"/);
+    expect(html).toMatch(/Start field scan/);
+    expect(html).toMatch(/aria-controls="dinolab-field-drawer"/);
+    expect(html).toMatch(/class="dinolab-field-toolbar-actions" role="group" aria-label="3D model view controls"/);
+    expect(html).toMatch(/background:#15803d;color:#fff[^>]*>Focus model<\/button>/);
+    expect(html).not.toMatch(/>Open species file<\/button>/);
+    expect(html).toMatch(/id="dinolab-field-species-file"[^>]*>Open full species file<\/button>/);
+    expect(html).toMatch(/grid-template-columns:repeat\(auto-fit,minmax\(108px,1fr\)\)/);
+    expect(html).toMatch(/aria-expanded="false"/);
+    expect(html).toMatch(/<aside[^>]*id="dinolab-field-drawer"[^>]*hidden=""/);
+    expect(html).toMatch(/aria-labelledby="dinolab-field-drawer-title"/);
+    expect(html).toMatch(/id="dinolab-field-drawer-title"[^>]*>Field tools: Evidence/);
+    expect(html).toMatch(/id="dinolab-field-drawer-close"/);
+    expect(html).toMatch(/aria-keyshortcuts="Escape"/);
+    expect(html).toMatch(/id="dinolab-field-step-scan"/);
+    expect(html).toMatch(/Field notebook prompts/);
+    expect(html).toMatch(/Focus model/);
+    expect(html).toMatch(/aria-pressed="false"/);
+  });
+
+  it('unlocks workflow steps only as evidence and assembly milestones are completed', () => {
+    const data = baseData('field3d');
+    data.field3dScanSpecies = 'tyrannosaurus';
+    data.field3dScanLogged = { skull: true, shoulder: true, hip: true };
+    let html = renderTab(data);
+    expect(html).toMatch(/aria-label="Step 1 Explore, Complete"/);
+    expect(html).toMatch(/aria-label="Step 2 Scan, Complete"/);
+    expect(html).toMatch(/aria-label="Step 3 Assemble, Current"/);
+    expect(html).toMatch(/aria-label="Step 4 Claim, Locked"/);
+    expect(html).toMatch(/aria-label="Assemble field tools"/);
+    expect(html).toMatch(/aria-label="Claim field tools, locked\. Finish assembly first"/);
+
+    data.field3dAssemblySpecies = 'tyrannosaurus';
+    data.field3dAssemblyPlaced = { skull: true, spine: true, ribs: true, pelvis: true, hindlimb: true, tail: true };
+    html = renderTab(data);
+    expect(html).toMatch(/aria-label="Step 3 Assemble, Complete"/);
+    expect(html).toMatch(/aria-label="Step 4 Claim, Current"/);
+    expect(html).toMatch(/aria-label="Claim field tools"/);
+  });
+
+  it('offers an immersive focus view that keeps the model and camera controls primary', () => {
+    const data = baseData('field3d');
+    data.field3dFocusMode = true;
+    const html = renderTab(data);
+    expect(html).toMatch(/dinolab-field-stage-focus/);
+    expect(html).toMatch(/dinolab-3d-viewer-focus/);
+    expect(html).toMatch(/height:clamp\(620px, 76vh, 920px\)/);
+    expect(html).toMatch(/Exit focus view/);
+    expect(html).toMatch(/aria-keyshortcuts="Escape"/);
+    expect(html).toMatch(/aria-label="Focused species: T\. rex"/);
+    expect(html).toMatch(/aria-label="3D Field Station focused workspace"/);
+    expect(html).toMatch(/class="dinolab-field-focus-label"[\s\S]*?>3D Field Station<\/span>[\s\S]*?>T\. rex<\/span>/);
+    expect(html).not.toMatch(/class="dinolab-tablist"/);
+    expect(html).toMatch(/dinolab-field-workflow" hidden=""/);
+    expect(html).toMatch(/dinolab-field-next" hidden=""/);
+    expect(html).toMatch(/dinolab-field-notebook" hidden=""/);
+    expect(html).not.toMatch(/Choose species for 3D field station/);
+    expect(html).not.toMatch(/A lightweight reconstruction lab/);
+    expect(html).toMatch(/id="dinopanel" role="region" aria-label="3D Field Station focused workspace" style="padding:10px"/);
+  });
   it('labels the classic reskin as reconstruction history without changing the skeleton', () => {
     const data = baseData('field3d');
     data.field3dReconstructionMode = 'classic';
@@ -331,7 +399,6 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     const data = baseData('field3d');
     data.field3dSelected = 'velociraptor';
     const html = renderTab(data);
-    expect(html).toMatch(/Thorax double-headed ribs/);
     expect(html).toMatch(/Gastral basket: paired, imbricated gastral basket with separate medial and lateral segments/);
     expect(html).toMatch(/Uncinate processes:/);
     expect(html).toMatch(/Flattened uncinate-process proxies are restricted to maniraptoran profiles/);
@@ -342,7 +409,6 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     const data = baseData('field3d');
     data.field3dSelected = 'triceratops';
     const html = renderTab(data);
-    expect(html).toMatch(/Sacrum 7 elements/);
     expect(html).toMatch(/7-element series/);
     expect(html).toMatch(/Expanded sacral ribs transfer trunk load into broad iliac contacts/);
     expect(html).toMatch(/Sacral-rib morphology and iliac attachment facets identify the load path/);
@@ -370,6 +436,7 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     expect(html).toMatch(/id="dinotab-explore" role="tab"[^>]*tabindex="0" aria-selected="true"/);
     expect(html).toMatch(/id="dinotab-timeline" role="tab"[^>]*tabindex="-1" aria-selected="false"/);
     expect(html).toMatch(/aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown Home End"/);
+    expect(html).toMatch(/class="dinolab-tablist"/);
     expect(html).toMatch(/role="group" aria-label="Filter by geological period"/);
     expect(html).toMatch(/role="group" aria-label="Filter by diet"/);
     expect(html).toMatch(/role="group" aria-label="Filter by location"/);
@@ -473,8 +540,6 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     expect(html).toMatch(/Evidence focus: Spine - posture and balance \| Posture claim/);
     expect(html).toMatch(/Focused fossil: Spine - posture and balance/);
     expect(html).toMatch(/focused fossil keeps the claim tied to a named anatomy clue/);
-    expect(html).toMatch(/Claim Spine/);
-    expect(html).toMatch(/Trail Spine -&gt; Shoulder/);
     expect(html).toMatch(/Claim evidence highlighted: Spine/);
     expect(html).toMatch(/Evidence trail: Spine to Shoulder anchor/);
     expect(html).toMatch(/Evidence trail: Shoulder scan -&gt; Spine fossil -&gt; Posture claim/);

@@ -151,3 +151,223 @@ describe('teacher item analysis and attempt status', () => {
     expect(book.studentRows.find(row => row.uid === 's1').attemptStatus).toBe('in-progress');
   });
 });
+describe('privacy-safe quiz evidence snapshots', () => {
+  it('keeps bounded outcome counts and transient cohorts without copying response content or names', () => {
+    const generatedContent = {
+      id: 'quiz-private-1',
+      title: 'Fractions check',
+      data: {
+        questions: [
+          {
+            type: 'mcq',
+            question: 'PRIVATE authored capital prompt',
+            options: ['Correct private option', 'Secret wrong choice', 'Unused private option'],
+            correctAnswer: 'Correct private option',
+          },
+          { type: 'short-answer', question: 'PRIVATE explanation prompt' },
+          {
+            type: 'opinion-mcq',
+            question: 'PRIVATE opinion prompt',
+            options: ['Private agree', 'Private disagree'],
+          },
+        ],
+      },
+    };
+    const roster = {};
+    const allResponses = {};
+    ['a', 'b', 'c', 'd', 'e'].forEach((uid, index) => {
+      roster[uid] = { displayName: 'Private Student ' + index };
+      allResponses[uid] = {
+        0: {
+          itemType: 'mcq',
+          answer: { optionIdx: uid === 'b' ? 0 : 1 },
+          confidence: uid === 'b' ? 'guessed' : 'knew',
+        },
+      };
+    });
+    allResponses.a[1] = {
+      itemType: 'short-answer',
+      answer: { text: 'Private essay answer A' },
+    };
+    allResponses.b[1] = {
+      itemType: 'short-answer',
+      answer: { text: 'Private essay answer B' },
+    };
+    allResponses.a[2] = {
+      itemType: 'opinion-mcq',
+      answer: { optionIdx: 1 },
+    };
+    allResponses.a.r0 = {
+      itemType: 'reflection',
+      answer: { text: 'Private reflection' },
+    };
+    allResponses.a[3] = {
+      itemType: 'assessment-complete',
+      answer: { answered: 3, total: 3 },
+    };
+    const quizState = {
+      activityId: 'quiz:ROOM:attempt',
+      startedAt: 100,
+      endedAt: 200,
+      allResponses,
+    };
+    const before = JSON.stringify({ quizState, generatedContent, roster });
+
+    const snapshot = aggregators.buildPrivacySafeQuizEvidenceSnapshot(
+      quizState,
+      generatedContent,
+      roster,
+      {
+        aiGradedCache: {
+          'b:1': { status: 'incorrect', feedback: 'Private AI feedback' },
+        },
+      },
+    );
+
+    expect(JSON.stringify({ quizState, generatedContent, roster })).toBe(before);
+    expect(snapshot).toMatchObject({
+      schemaVersion: 1,
+      activityId: 'quiz:ROOM:attempt',
+      sourceResourceId: 'quiz-private-1',
+      resourceTitle: 'Fractions check',
+      questionCount: 3,
+      participantCount: 5,
+      respondentCount: 5,
+      completedCount: 1,
+      questionsTruncated: 0,
+      participantsTruncated: 0,
+      minimumSignalSample: 5,
+    });
+    expect(Object.getPrototypeOf(snapshot.byUid)).toBeNull();
+    expect(snapshot.byUid.a).toMatchObject({
+      answered: 3,
+      omitted: 0,
+      incorrect: 1,
+      awaitingReview: 1,
+      unscored: 1,
+      completed: true,
+      followUpQuestionIdxs: [0],
+      reviewQuestionIdxs: [1],
+      confidenceMismatchQuestionIdxs: [0],
+    });
+    expect(snapshot.byUid.b).toMatchObject({
+      answered: 2,
+      omitted: 1,
+      correct: 1,
+      incorrect: 1,
+      completed: false,
+      followUpQuestionIdxs: [1],
+    });
+    expect(snapshot.items[0]).toMatchObject({
+      questionIdx: 0,
+      itemType: 'mcq',
+      respondents: 5,
+      correctCount: 1,
+      incorrectCount: 4,
+      correctRate: 20,
+      smallSample: false,
+      signalCodes: ['challenging', 'confidence-mismatch'],
+    });
+    expect(snapshot.items[0].cohorts.followUpUids).toEqual(['a', 'c', 'd', 'e']);
+    expect(snapshot.items[0].cohorts.confidenceMismatchUids).toEqual(['a', 'c', 'd', 'e']);
+    expect(snapshot.items[1]).toMatchObject({ awaitingReviewCount: 1, incorrectCount: 1 });
+    expect(snapshot.items[1].cohorts.awaitingReviewUids).toEqual(['a']);
+    expect(snapshot.items[1].cohorts.followUpUids).toEqual(['b']);
+    expect(snapshot.items[2]).toMatchObject({
+      unscored: true,
+      unscoredResponseCount: 1,
+      correctRate: null,
+      signalCodes: [],
+    });
+
+    const serialized = JSON.stringify(snapshot);
+    [
+      'PRIVATE authored capital prompt',
+      'PRIVATE explanation prompt',
+      'Secret wrong choice',
+      'Private essay answer A',
+      'Private essay answer B',
+      'Private reflection',
+      'Private AI feedback',
+      'Private Student',
+    ].forEach(secret => expect(serialized).not.toContain(secret));
+  });
+
+  it('retains the five-response signal floor in the evidence snapshot', () => {
+    const questions = [{
+      type: 'mcq',
+      question: 'Private prompt',
+      options: ['Right', 'Wrong'],
+      correctAnswer: 'Right',
+    }];
+    const roster = {};
+    const allResponses = {};
+    for (let i = 0; i < 4; i++) {
+      const uid = 's' + i;
+      roster[uid] = { displayName: 'Private ' + i };
+      allResponses[uid] = {
+        0: {
+          itemType: 'mcq',
+          answer: { optionIdx: 1 },
+          confidence: 'knew',
+        },
+      };
+    }
+    const snapshot = aggregators.buildPrivacySafeQuizEvidenceSnapshot(
+      { allResponses },
+      { data: { questions } },
+      roster,
+    );
+    expect(snapshot.items[0]).toMatchObject({
+      respondents: 4,
+      smallSample: true,
+      correctRate: 0,
+      signalCodes: [],
+    });
+  });
+
+  it('caps questions and participants while ignoring reflection and completion records as answers', () => {
+    const questions = Array.from({ length: 105 }, (_, index) => ({
+      type: 'mcq',
+      question: 'Private question ' + index,
+      options: ['Yes', 'No'],
+      correctAnswer: 'Yes',
+    }));
+    const roster = {};
+    for (let i = 0; i < 260; i++) {
+      const uid = 'u' + String(i).padStart(3, '0');
+      roster[uid] = { displayName: 'Private Student ' + i };
+    }
+    const allResponses = {
+      u000: {
+        0: { itemType: 'mcq', answer: { optionIdx: 0 } },
+        r0: { itemType: 'reflection', answer: { text: 'Private reflection' } },
+        105: { itemType: 'assessment-complete', answer: { answered: 105, total: 105 } },
+      },
+    };
+
+    const snapshot = aggregators.buildPrivacySafeQuizEvidenceSnapshot(
+      { allResponses },
+      { data: { questions } },
+      roster,
+    );
+
+    expect(snapshot).toMatchObject({
+      questionCount: 100,
+      participantCount: 250,
+      questionsTruncated: 5,
+      participantsTruncated: 10,
+      respondentCount: 1,
+      completedCount: 1,
+    });
+    expect(snapshot.items).toHaveLength(100);
+    expect(Object.keys(snapshot.byUid)).toHaveLength(250);
+    expect(snapshot.byUid.u000).toMatchObject({
+      answered: 1,
+      omitted: 99,
+      correct: 1,
+      completed: true,
+    });
+    expect(JSON.stringify(snapshot)).not.toContain('Private reflection');
+  });
+});

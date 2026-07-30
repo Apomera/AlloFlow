@@ -1,0 +1,682 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "knowledge-check-wave-01",
+  "reviewDate": "2026-07-23",
+  "scope": "Balanced first source-review wave for learner-visible chapter knowledge checks, with two checks from each official EPPP content domain.",
+  "summary": {
+    "items": 16,
+    "domains": 8,
+    "itemsPerDomain": 2,
+    "sourceReviewedEditorialPass": 16,
+    "independentExpertReviewPending": 16,
+    "productionValidationPending": 16,
+    "domainCounts": {
+      "Assessment & Diagnosis": 2,
+      "Biological Bases of Behavior": 2,
+      "Cognitive-Affective Bases of Behavior": 2,
+      "Ethical, Legal & Professional Issues": 2,
+      "Growth & Lifespan Development": 2,
+      "Research Methods & Statistics": 2,
+      "Social & Cultural Bases of Behavior": 2,
+      "Treatment, Intervention & Prevention": 2
+    }
+  },
+  "releasePolicy": "Only source-reviewed-editorial-pass records are emitted in chapter.knowledgeChecks for learner rendering. All preserved but unreviewed records remain available only in the top-level inventory with review-required status.",
+  "safeguards": [
+    "Stable legacy IDs are computed from preserved chapter, section index, prompt, and choices before editorial overrides.",
+    "Answer keys, distractors, rationales, claim-level references, accessibility, and bias/context are reviewed together.",
+    "Source review is not independent expert validation and is not production validation.",
+    "Clinical and legal items preserve referral, jurisdiction, scope, and emergency-context qualifications."
+  ],
+  "items": [
+    {
+      "legacyId": "knowledge-check-6e353989172af693",
+      "chapterId": "ch-2",
+      "sectionId": "ch-2-section-8",
+      "domainId": 1,
+      "domain": "Assessment & Diagnosis",
+      "prompt": "An examinee scores below criterion on one stand-alone performance validity test. What is the most defensible conclusion?",
+      "choices": [
+        "The examinee is malingering because a failed PVT proves intent",
+        "All neurological impairment can be ruled out",
+        "The affected cognitive scores may not validly estimate ability; integrate multiple validity indicators and context before drawing conclusions about cause or intent",
+        "The result should be ignored whenever the examinee has a diagnosed disorder"
+      ],
+      "answerIndex": 2,
+      "rationale": "The best answer preserves the boundary between score validity and motive. A performance-validity failure can indicate that affected cognitive scores may not support the intended ability inference, so the evaluator should integrate the full pattern of validity indicators, behavioral observations, history, context, and referral demands. One failed indicator does not by itself prove deception or establish malingering; that conclusion requires the broader clinical and forensic evidence and applicable criteria.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://doi.org/10.1080/13854046.2021.1896036",
+        "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "AACN 2021 consensus statement on validity assessment",
+          "organization": "American Academy of Clinical Neuropsychology",
+          "url": "https://doi.org/10.1080/13854046.2021.1896036",
+          "whyReputable": "Peer-reviewed specialty consensus statement addressing performance and symptom validity assessment and the limits of inferring malingering."
+        },
+        {
+          "title": "Standards for Educational and Psychological Testing",
+          "organization": "AERA, APA, and NCME",
+          "url": "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf",
+          "whyReputable": "Joint professional standards governing validity, fairness, interpretation, and appropriate use of educational and psychological tests."
+        }
+      ],
+      "reviewNote": "Clarified the distinction between an invalid performance-validity result and the broader, multi-source conclusion of malingering.",
+      "reviewDate": "2026-07-23",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-01",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-d76a76f7bf1de8ba",
+      "chapterId": "ch-6",
+      "sectionId": "ch-6-section-7",
+      "domainId": 1,
+      "domain": "Assessment & Diagnosis",
+      "prompt": "A toddler has an elevated M-CHAT-R/F result and later exceeds an ADOS-2 classification threshold. What is the best next conclusion?",
+      "choices": [
+        "ASD is confirmed because two instruments agree.",
+        "The child should wait six months before any referral so false positives can resolve.",
+        "A qualified clinician should integrate developmental and caregiver history, direct observation, language/cognitive/adaptive and sensory functioning, impairment, and differential diagnoses while connecting the child with indicated services.",
+        "The ADOS-2 result should replace caregiver and school information."
+      ],
+      "answerIndex": 2,
+      "rationale": "The best answer treats both instruments as evidence rather than as a self-executing diagnosis. CDC guidance states that no single tool should determine diagnosis; a qualified clinician integrates developmental and caregiver history, direct observation, functioning, diagnostic criteria, impairment, and plausible alternatives. A positive screen or concerning findings warrant timely comprehensive evaluation, and referral for indicated supports does not need to wait for a final diagnostic label.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.cdc.gov/autism/hcp/diagnosis/index.html",
+        "https://www.cdc.gov/autism/hcp/diagnosis/screening.html"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Clinical Testing and Diagnosis for Autism Spectrum Disorder",
+          "organization": "Centers for Disease Control and Prevention",
+          "url": "https://www.cdc.gov/autism/hcp/diagnosis/index.html",
+          "whyReputable": "Current U.S. public-health clinical guidance explaining that diagnosis integrates caregiver history and professional observation and is not based on one tool."
+        },
+        {
+          "title": "Clinical Screening for Autism Spectrum Disorder",
+          "organization": "Centers for Disease Control and Prevention",
+          "url": "https://www.cdc.gov/autism/hcp/diagnosis/screening.html",
+          "whyReputable": "Current U.S. public-health guidance distinguishing screening from comprehensive evaluation and supporting prompt referral after a positive screen."
+        }
+      ],
+      "reviewNote": "Kept screening, structured observation, diagnosis, and access to indicated early services conceptually separate.",
+      "reviewDate": "2026-07-23",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-01",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-bcab77572f80a7e2",
+      "chapterId": "ch-11",
+      "sectionId": "ch-11-section-2",
+      "domainId": 2,
+      "domain": "Ethical, Legal & Professional Issues",
+      "prompt": "A psychologist’s established client temporarily relocates to another jurisdiction and requests continued video therapy. The psychologist has not verified that jurisdiction’s rules and holds no compact authority. What is the best next step?",
+      "choices": [
+        "Continue because the original treatment relationship controls jurisdiction.",
+        "Continue because technology-specific informed consent replaces licensure requirements.",
+        "Pause interjurisdictional sessions while promptly verifying and, if needed, obtaining lawful authority in all relevant jurisdictions or arranging an appropriate continuity-of-care alternative.",
+        "Terminate immediately because cross-border telepsychology is always prohibited."
+      ],
+      "answerIndex": 2,
+      "rationale": "The best answer is to pause the cross-jurisdiction session long enough to verify lawful authority and arrange safe continuity. The client?s actual location during telepsychology is commonly legally relevant, and compact practice has provider-location, client-location, credential, and receiving-jurisdiction requirements. An established relationship and telehealth informed consent do not replace a license, compact authority, temporary permission, or other valid legal basis. Emergency and continuity obligations still require prompt, context-sensitive planning.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://psypact.gov/general/custom.asp?page=Practice_Related_FAQs",
+        "https://www.apa.org/practice/guidelines/telepsychology"
+      ],
+      "sourceDetails": [
+        {
+          "title": "PSYPACT Practice Related FAQs",
+          "organization": "Psychology Interjurisdictional Compact Commission",
+          "url": "https://psypact.gov/general/custom.asp?page=Practice_Related_FAQs",
+          "whyReputable": "Official compact guidance on provider and client location requirements for authorized interjurisdictional telepsychology practice."
+        },
+        {
+          "title": "Guidelines for the Practice of Telepsychology",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/practice/guidelines/telepsychology",
+          "whyReputable": "APA professional-practice guidance addressing competence, informed consent, security, emergencies, and applicable interjurisdictional requirements."
+        }
+      ],
+      "reviewNote": "Removed any implication that an established relationship or telehealth consent overrides jurisdictional authority.",
+      "reviewDate": "2026-07-23",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-01",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-8e1c264e7dcc7939",
+      "chapterId": "ch-11",
+      "sectionId": "ch-11-section-7",
+      "domainId": 2,
+      "domain": "Ethical, Legal & Professional Issues",
+      "prompt": "A psychologist is closing a practice and asks whether every record can be destroyed exactly seven years after the final session. What is the best answer?",
+      "choices": [
+        "Yes. Seven years is a universal APA rule that overrides state law.",
+        "Yes, except records for minors must always be kept forever.",
+        "No. Determine retention and destruction requirements from current jurisdictional law, record type, client age, limitation periods, contracts and payers, institutional policy, and any litigation hold or pending proceeding.",
+        "No. Ethical records may never be destroyed."
+      ],
+      "answerIndex": 2,
+      "rationale": "The best answer rejects a universal seven-year rule. Retention and lawful destruction depend on the governing jurisdiction, record type, client age, limitation periods, payer or contract terms, institutional policy, and the purpose for which records may be needed. Destruction must also stop when litigation, an audit, a board matter, or another preservation duty creates a hold. The item tests a decision process, not a memorized national deadline, and it does not imply that records must be kept forever.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.apa.org/practice/guidelines/record-keeping",
+        "https://www.apa.org/ethics/code"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Record Keeping Guidelines",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/practice/guidelines/record-keeping",
+          "whyReputable": "APA professional-practice guidance that frames record maintenance, retention, disclosure, and disposal in relation to law, context, and professional obligations."
+        },
+        {
+          "title": "Ethical Principles of Psychologists and Code of Conduct",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/ethics/code",
+          "whyReputable": "The official APA Ethics Code, including standards governing documentation, confidentiality, fees, and disposal of confidential records."
+        }
+      ],
+      "reviewNote": "Rejected the exam-prep shortcut that seven years is a universal retention period.",
+      "reviewDate": "2026-07-23",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-01",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-4d7ca9d61c084560",
+      "chapterId": "ch-18",
+      "sectionId": "ch-18-section-3",
+      "domainId": 3,
+      "domain": "Treatment, Intervention & Prevention",
+      "prompt": "A recently bereaved client reports escalating alcohol use, hopelessness, a newly purchased firearm, and current thoughts of suicide. What is the best immediate response?",
+      "choices": [
+        "Begin cognitive restructuring and defer direct suicide questions to preserve rapport.",
+        "Ask the client to sign a no-suicide contract and schedule next week.",
+        "Conduct a direct, structured assessment of current thoughts, plan, intent, access, past behavior, intoxication, supports, and ability to stay safe; do not leave the person alone if imminent risk is present, arrange the appropriate emergency disposition, and include collaborative lethal-means safety.",
+        "Provide a grief-group referral as the sole intervention because bereavement explains the thoughts."
+      ],
+      "answerIndex": 2,
+      "rationale": "The described combination calls for direct, structured assessment now: current thoughts, plan, intent, access to the firearm, prior suicidal behavior, intoxication, agitation, supports, and ability to remain safe. Current suicidal thoughts with feasible lethal-means access may require emergency evaluation and continuous supervision rather than a routine follow-up visit. Collaborative reduction of access to lethal means, an appropriate disposition, safety planning, treatment connection, and follow-up are coordinated parts of the response; none is a stand-alone risk guarantee.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.nimh.nih.gov/research/research-conducted-at-nimh/asq-toolkit-materials/adult-outpatient/adult-outpatient-brief-suicide-safety-assessment-guide",
+        "https://www.nimh.nih.gov/health/publications/5-action-steps-to-help-someone-having-thoughts-of-suicide"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Adult Outpatient Brief Suicide Safety Assessment Guide",
+          "organization": "National Institute of Mental Health",
+          "url": "https://www.nimh.nih.gov/research/research-conducted-at-nimh/asq-toolkit-materials/adult-outpatient/adult-outpatient-brief-suicide-safety-assessment-guide",
+          "whyReputable": "Federal clinical guide covering direct assessment of current thoughts, plan, access, past behavior, supports, and emergency disposition."
+        },
+        {
+          "title": "5 Action Steps to Help Someone Having Thoughts of Suicide",
+          "organization": "National Institute of Mental Health",
+          "url": "https://www.nimh.nih.gov/health/publications/5-action-steps-to-help-someone-having-thoughts-of-suicide",
+          "whyReputable": "Federal public-health guidance supporting direct inquiry, immediate safety, connection, follow-up, and reduction of access to lethal means."
+        }
+      ],
+      "reviewNote": "Strengthened the immediate safety sequence and avoided treating a no-suicide contract or one demographic fact as sufficient.",
+      "reviewDate": "2026-07-23",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-01",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-e91e8e1ea9392789",
+      "chapterId": "ch-18",
+      "sectionId": "ch-18-section-4",
+      "domainId": 3,
+      "domain": "Treatment, Intervention & Prevention",
+      "prompt": "Immediately after a disaster, an organization proposes requiring every survivor to recount the event in detail during a single group session to prevent PTSD. What is the best response?",
+      "choices": [
+        "Require attendance because immediate emotional ventilation prevents PTSD.",
+        "Replace individualized triage with the group session so everyone receives identical care.",
+        "Do not require detailed recounting. Offer flexible, nonintrusive PFA-style safety, practical support, connection, coping information, and referral based on needs and preferences.",
+        "Avoid all contact because any early support interferes with natural recovery."
+      ],
+      "answerIndex": 2,
+      "rationale": "The best answer declines compulsory detailed recounting. Systematic-review evidence does not support routine single-session psychological debriefing as a way to prevent PTSD and indicates that it may worsen outcomes for some people. WHO psychological first aid is humane, practical, culturally respectful, and nonintrusive: it supports safety, immediate needs, connection, coping information, and referral while respecting readiness and preference. This does not mean abandoning survivors or withholding indicated assessment and treatment.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.who.int/publications/i/item/9789241548205",
+        "https://www.cochrane.org/evidence/CD000560_psychological-debriefing-preventing-post-traumatic-stress-disorder-ptsd"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychological first aid: Guide for field workers",
+          "organization": "World Health Organization",
+          "url": "https://www.who.int/publications/i/item/9789241548205",
+          "whyReputable": "WHO field guide defining humane, practical, culturally respectful, nonintrusive early support without pressuring people to recount events."
+        },
+        {
+          "title": "Psychological debriefing for preventing post traumatic stress disorder",
+          "organization": "Cochrane",
+          "url": "https://www.cochrane.org/evidence/CD000560_psychological-debriefing-preventing-post-traumatic-stress-disorder-ptsd",
+          "whyReputable": "Systematic-review evidence finding no support for compulsory single-session individual debriefing to prevent PTSD and noting possible harm."
+        }
+      ],
+      "reviewNote": "Distinguished voluntary, needs-based psychological first aid from compulsory detailed trauma recounting.",
+      "reviewDate": "2026-07-23",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-01",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-c14f59ac2954d022",
+      "chapterId": "ch-21",
+      "sectionId": "ch-21-section-2",
+      "domainId": 4,
+      "domain": "Biological Bases of Behavior",
+      "prompt": "In the classic dopamine-pathway teaching model, which antipsychotic adverse-effect pairing is most accurate?",
+      "choices": [
+        "Mesolimbic pathway; tardive dyskinesia",
+        "Mesocortical pathway; avolition",
+        "Nigrostriatal pathway; akathisia",
+        "Tuberoinfundibular pathway; galactorrhea"
+      ],
+      "answerIndex": 2,
+      "rationale": "The keyed pairing is nigrostriatal dopamine D2 blockade with akathisia, an extrapyramidal movement adverse effect characterized by subjective inner restlessness and observable motor activity. The pathway model is a teaching simplification rather than patient-specific mechanistic proof. Clinically, akathisia can resemble or coexist with agitation and anxiety, so timing, medication exposure, movement findings, distress, and other causes require assessment. The other pathway pairings confuse movement, prolactin, therapeutic, and cognitive associations.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.nice.org.uk/guidance/cg178/chapter/Recommendations",
+        "https://www.nice.org.uk/guidance/cg178/evidence/full-guideline-490503565"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Psychosis and schizophrenia in adults: prevention and management ? Recommendations",
+          "organization": "National Institute for Health and Care Excellence",
+          "url": "https://www.nice.org.uk/guidance/cg178/chapter/Recommendations",
+          "whyReputable": "Current national clinical guideline requiring systematic monitoring for movement disorders and noting overlap between akathisia, agitation, and anxiety."
+        },
+        {
+          "title": "Psychosis and schizophrenia in adults ? Full guideline",
+          "organization": "National Institute for Health and Care Excellence",
+          "url": "https://www.nice.org.uk/guidance/cg178/evidence/full-guideline-490503565",
+          "whyReputable": "Evidence-based national guideline describing akathisia, parkinsonism, and dystonia as clinically important extrapyramidal adverse effects."
+        }
+      ],
+      "reviewNote": "Qualified the classic dopamine-pathway teaching model and added the clinical differential between akathisia and agitation or anxiety.",
+      "reviewDate": "2026-07-23",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-01",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-682e0cf3631d69d1",
+      "chapterId": "ch-22",
+      "sectionId": "ch-22-section-4",
+      "domainId": 4,
+      "domain": "Biological Bases of Behavior",
+      "prompt": "A 72-year-old retired professor presents with visual hallucinations of children playing in her living room, fluctuating alertness throughout the day, and mild Parkinsonian tremor. Her family reports she acts out her dreams at night. Her physician is considering prescribing haloperidol for the hallucinations. What is the most critical concern?",
+      "choices": [
+        "Haloperidol may worsen her depression.",
+        "Lewy body dementia can confer severe neuroleptic sensitivity; typical antipsychotics such as haloperidol generally should be avoided, and any medication decision requires careful specialist risk–benefit assessment.",
+        "Haloperidol is contraindicated in patients over age 70.",
+        "Her symptoms suggest delirium, not dementia, so antipsychotics are unnecessary."
+      ],
+      "answerIndex": 1,
+      "rationale": "The best answer recognizes marked antipsychotic sensitivity as an important Lewy body dementia safety clue. NINDS warns that antipsychotics can cause severe confusion, worsened parkinsonism, extreme sleepiness, hypotension, neuroleptic malignant syndrome, and death; typical agents such as haloperidol generally should not be prescribed. Hallucinations that are not distressing or dangerous may not require medication. If symptoms create serious risk, a knowledgeable clinician weighs non-drug measures and, when necessary, the lowest-risk medication strategy with close monitoring.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.ninds.nih.gov/health-information/disorders/lewy-body-dementia"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Lewy Body Dementia",
+          "organization": "National Institute of Neurological Disorders and Stroke",
+          "url": "https://www.ninds.nih.gov/health-information/disorders/lewy-body-dementia",
+          "whyReputable": "Current NIH disease guidance describing core LBD features and potentially severe or fatal sensitivity to antipsychotic medications, especially typical agents."
+        }
+      ],
+      "reviewNote": "Made the medication warning explicit without implying that every hallucination requires medication or that all antipsychotics are equivalent.",
+      "reviewDate": "2026-07-23",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-01",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-7ab5d132da1c049b",
+      "chapterId": "ch-26",
+      "sectionId": "ch-26-section-2",
+      "domainId": 5,
+      "domain": "Cognitive-Affective Bases of Behavior",
+      "prompt": "A screening test is positive for a rare condition. A clinician focuses on how closely the result resembles a typical positive case but does not consider the condition’s low prevalence or the test’s false-positive rate. Which error is most central?",
+      "choices": [
+        "Availability heuristic",
+        "Representativeness with base-rate neglect",
+        "Hindsight bias",
+        "Sunk-cost effect"
+      ],
+      "answerIndex": 1,
+      "rationale": "The clinician is matching the vivid case to a prototype while underweighting how uncommon the disorder is in the relevant population, which is representativeness with base-rate neglect. Diagnostic reasoning should begin with an appropriate pretest probability and update it with the test?s performance, such as likelihood ratios, to estimate posttest probability. A highly representative description can still yield a low posterior probability when the base rate is very low. This is not a reason to ignore case evidence; it is a reason to combine it with prevalence and test accuracy.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.fda.gov/regulatory-information/search-fda-guidance-documents/statistical-guidance-reporting-results-studies-evaluating-diagnostic-tests-guidance-industry-and-fda",
+        "https://www.ncbi.nlm.nih.gov/books/NBK235178/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Statistical Guidance on Reporting Results from Studies Evaluating Diagnostic Tests",
+          "organization": "U.S. Food and Drug Administration",
+          "url": "https://www.fda.gov/regulatory-information/search-fda-guidance-documents/statistical-guidance-reporting-results-studies-evaluating-diagnostic-tests-guidance-industry-and-fda",
+          "whyReputable": "Federal diagnostic-test guidance defining sensitivity, specificity, predictive values, and likelihood ratios and their appropriate interpretation."
+        },
+        {
+          "title": "The Use of Diagnostic Tests: A Probabilistic Approach",
+          "organization": "National Academies / NCBI Bookshelf",
+          "url": "https://www.ncbi.nlm.nih.gov/books/NBK235178/",
+          "whyReputable": "National Academies monograph explaining pretest probability, test performance, likelihood ratios, and posttest probability in diagnostic reasoning."
+        }
+      ],
+      "reviewNote": "Linked the cognitive heuristic to the formal need to use pretest probability when interpreting diagnostic evidence.",
+      "reviewDate": "2026-07-23",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-01",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-f0c0f3f14f4399bd",
+      "chapterId": "ch-28",
+      "sectionId": "ch-28-section-4",
+      "domainId": 5,
+      "domain": "Cognitive-Affective Bases of Behavior",
+      "prompt": "A school psychologist is asked to evaluate a 7-year-old bilingual Spanish-English student for intellectual disability. The child scored 78 on an English-administered WISC-V. What is the MOST appropriate next step?",
+      "choices": [
+        "Diagnose intellectual disability based on the IQ score below 80",
+        "Re-administer the WISC-V in Spanish",
+        "Develop a multilingual, culturally and linguistically responsive evaluation using relevant-language measures, qualified bilingual support, reduced-language-demand tools where appropriate, adaptive functioning, records, observation, and validity evidence",
+        "Refer for adaptive behavior assessment only"
+      ],
+      "answerIndex": 2,
+      "rationale": "The best answer is a comprehensive, multilingual, culturally responsive evaluation rather than a diagnosis from one English-language score. Intellectual disability requires evidence of significant limitations in both intellectual functioning and adaptive behavior with developmental onset. Test interpretations must be supported for the intended person and use, and language proficiency, educational opportunity, acculturation, disability access, and culturally typical communication can create construct-irrelevant barriers. Qualified evaluators integrate appropriately selected measures, adaptive information across settings, history, observation, and strengths.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf",
+        "https://aaidd.org/intellectual-disability/definition",
+        "https://www.apa.org/about/policy/multicultural-guidelines.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Standards for Educational and Psychological Testing",
+          "organization": "AERA, APA, and NCME",
+          "url": "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf",
+          "whyReputable": "Joint professional standards governing validity, fairness, interpretation, and appropriate use of educational and psychological tests."
+        },
+        {
+          "title": "Defining Criteria for Intellectual Disability",
+          "organization": "American Association on Intellectual and Developmental Disabilities",
+          "url": "https://aaidd.org/intellectual-disability/definition",
+          "whyReputable": "Specialty association criteria requiring intellectual and adaptive-function evidence, developmental onset, comprehensive evaluation, and attention to linguistic and cultural diversity."
+        },
+        {
+          "title": "Multicultural Guidelines: An Ecological Approach to Context, Identity, and Intersectionality",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/about/policy/multicultural-guidelines.pdf",
+          "whyReputable": "APA policy guidance emphasizing ecological context, identity, intersectionality, power, and culturally responsive professional practice."
+        }
+      ],
+      "reviewNote": "Replaced a score-only inference with multilingual, culturally responsive, multi-method evaluation safeguards.",
+      "reviewDate": "2026-07-23",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-01",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-67fbaa91b34656d8",
+      "chapterId": "ch-32",
+      "sectionId": "ch-32-section-3",
+      "domainId": 6,
+      "domain": "Social & Cultural Bases of Behavior",
+      "prompt": "What is the most accurate interpretation of Allport’s favorable contact conditions?",
+      "choices": [
+        "Contact reduces prejudice only when all four conditions are present",
+        "The conditions often facilitate stronger effects, while contact effects also depend on quality, power, norms, and context",
+        "Any contact is beneficial because familiarity always overrides conflict",
+        "The conditions diagnose whether an individual is prejudiced"
+      ],
+      "answerIndex": 1,
+      "rationale": "The keyed answer identifies Allport?s optimal contact conditions: equal status within the situation, common goals, intergroup cooperation, and support from authorities, law, or custom. Meta-analytic evidence finds that intergroup contact typically relates to reduced prejudice and that these conditions tend to strengthen the effect. They are facilitative conditions, not a guarantee for every person or setting. Power, threat, institutional climate, contact quality, group status, voluntariness, and opportunities for meaningful interaction can change the outcome.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/16737372/",
+        "https://pubmed.ncbi.nlm.nih.gov/15012467/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "A meta-analytic test of intergroup contact theory",
+          "organization": "Journal of Personality and Social Psychology / PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/16737372/",
+          "whyReputable": "Peer-reviewed meta-analysis of 713 independent samples testing contact effects and the added value of Allport optimal-contact conditions."
+        },
+        {
+          "title": "Intergroup contact theory",
+          "organization": "Annual Review of Psychology / PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/15012467/",
+          "whyReputable": "Peer-reviewed synthesis identifying equal status, common goals, cooperation, and authority support as Allport optimal-contact conditions."
+        }
+      ],
+      "reviewNote": "Retained Allport?s optimal conditions while avoiding a deterministic claim that contact always reduces prejudice.",
+      "reviewDate": "2026-07-23",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-01",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-033e8a3e18bf1273",
+      "chapterId": "ch-34",
+      "sectionId": "ch-34-section-3",
+      "domainId": 6,
+      "domain": "Social & Cultural Bases of Behavior",
+      "prompt": "Which statement best qualifies Berry’s acculturation framework?",
+      "choices": [
+        "Integration always produces the best outcome for every person",
+        "Marginalization is freely chosen and reflects poor coping",
+        "The labels describe patterns on two dimensions, while opportunity, discrimination, support, and context shape both pattern and outcome",
+        "Assimilation is required for healthy adaptation"
+      ],
+      "answerIndex": 2,
+      "rationale": "The best answer describes Berry?s integration pattern: maintaining meaningful participation in a heritage culture while also engaging with the larger receiving society. The framework uses two dimensions and supports four conceptual patterns, but it is not a personality test, diagnosis, fixed identity, or universal ranking of outcomes. A person?s pattern can vary across language, family, work, community, and time. Opportunity, discrimination, power, social support, migration history, intersectional identity, and the receiving context shape what options are actually available.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://doi.org/10.1111/j.1464-0597.1997.tb01087.x",
+        "https://www.apa.org/about/policy/multicultural-guidelines.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Immigration, Acculturation, and Adaptation",
+          "organization": "Applied Psychology",
+          "url": "https://doi.org/10.1111/j.1464-0597.1997.tb01087.x",
+          "whyReputable": "Foundational peer-reviewed source for Berry acculturation dimensions and patterns, interpreted as a contextual framework rather than a fixed person label."
+        },
+        {
+          "title": "Multicultural Guidelines: An Ecological Approach to Context, Identity, and Intersectionality",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/about/policy/multicultural-guidelines.pdf",
+          "whyReputable": "APA policy guidance emphasizing ecological context, identity, intersectionality, power, and culturally responsive professional practice."
+        }
+      ],
+      "reviewNote": "Kept the two-dimensional acculturation model but prevented it from becoming a fixed label or universal outcome hierarchy.",
+      "reviewDate": "2026-07-23",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-01",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-b4b92a336dde43e0",
+      "chapterId": "ch-35",
+      "sectionId": "ch-35-section-2",
+      "domainId": 7,
+      "domain": "Growth & Lifespan Development",
+      "prompt": "Which conclusion about prenatal exposure is most defensible?",
+      "choices": [
+        "Any germinal-period exposure inevitably causes miscarriage",
+        "The embryonic period is often especially vulnerable to major structural disruption because organogenesis is occurring",
+        "The fetal period is safe because organs already exist",
+        "Prenatal alcohol exposure by itself establishes FASD"
+      ],
+      "answerIndex": 1,
+      "rationale": "The keyed developmental principle is that early embryonic organ formation can create particular vulnerability to structural disruption, while later fetal development also remains vulnerable to growth and functional effects. Timing can guide a cautious risk hypothesis, but an exposure report alone does not diagnose a condition, prove causation in an individual, or predict one inevitable outcome. Dose, pattern, co-exposures, genetics, maternal and placental factors, measurement limits, and postnatal context all matter. Any concern warrants qualified medical and developmental assessment.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.cdc.gov/alcohol-pregnancy/about/index.html",
+        "https://www.cdc.gov/birth-defects/prevention/index.html"
+      ],
+      "sourceDetails": [
+        {
+          "title": "About Alcohol Use During Pregnancy",
+          "organization": "Centers for Disease Control and Prevention",
+          "url": "https://www.cdc.gov/alcohol-pregnancy/about/index.html",
+          "whyReputable": "Current federal public-health guidance on prenatal alcohol exposure, variable outcomes, and the absence of a known safe amount or timing."
+        },
+        {
+          "title": "Preventing Birth Defects",
+          "organization": "Centers for Disease Control and Prevention",
+          "url": "https://www.cdc.gov/birth-defects/prevention/index.html",
+          "whyReputable": "Current federal public-health guidance on multifactorial birth-defect risk and prevention without inferring a diagnosis from exposure alone."
+        }
+      ],
+      "reviewNote": "Preserved the developmental-timing concept while preventing exposure history from being treated as diagnosis or deterministic proof.",
+      "reviewDate": "2026-07-23",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-01",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-b25c5ab32653cd68",
+      "chapterId": "ch-39",
+      "sectionId": "ch-39-section-4",
+      "domainId": 7,
+      "domain": "Growth & Lifespan Development",
+      "prompt": "A bereaved person alternates between intense sadness and periods focused on work, childcare, and new routines. What is the best interpretation?",
+      "choices": [
+        "The person is avoiding grief and must return to the depression stage",
+        "Oscillation between loss- and restoration-oriented coping can be expected in the dual-process model",
+        "Periods of ordinary functioning rule out grief",
+        "Acceptance must occur before restoration-focused activity"
+      ],
+      "answerIndex": 1,
+      "rationale": "The best answer is the dual-process model: bereaved people may oscillate between loss-oriented coping, such as yearning and sadness, and restoration-oriented coping, such as work, caregiving, changing roles, and new routines. Periods of ordinary functioning do not rule out grief, and restoration does not require completing an acceptance stage first. The model is descriptive and flexible, not a mandatory schedule. Diagnosis requires the full duration, symptom, impairment, and cultural-context criteria, not a person?s movement between these coping modes.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC8675126/",
+        "https://www.psychiatry.org/File%20Library/Psychiatrists/Practice/DSM/DSM-5-TR/APA-DSM5TR-ProlongedGriefDisorder.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Current bereavement research and the dual process model",
+          "organization": "Peer-reviewed article indexed in PubMed Central",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8675126/",
+          "whyReputable": "Peer-reviewed critical review of bereavement models, including oscillation between loss- and restoration-oriented coping."
+        },
+        {
+          "title": "Prolonged Grief Disorder fact sheet",
+          "organization": "American Psychiatric Association",
+          "url": "https://www.psychiatry.org/File%20Library/Psychiatrists/Practice/DSM/DSM-5-TR/APA-DSM5TR-ProlongedGriefDisorder.pdf",
+          "whyReputable": "Official professional summary distinguishing prolonged grief disorder criteria from ordinary variation in grief and cultural mourning."
+        }
+      ],
+      "reviewNote": "Removed stage-based pathologizing and presented oscillation as a flexible coping process.",
+      "reviewDate": "2026-07-23",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-01",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-8b961bbc696a7d86",
+      "chapterId": "ch-42",
+      "sectionId": "ch-42-section-4",
+      "domainId": 8,
+      "domain": "Research Methods & Statistics",
+      "prompt": "A study with 10,000 participants finds that a new antidepressant produces a statistically significant improvement over placebo (p < .001), but Cohen's d = 0.08. The MOST appropriate conclusion is:",
+      "choices": [
+        "The treatment is highly effective because p < .001",
+        "The treatment is not effective because d = 0.08 is not significant",
+        "The estimated standardized mean difference is small; practical importance requires the outcome scale, uncertainty interval, benefits, harms, costs, and a meaningful-change threshold",
+        "The study lacks power and should be replicated"
+      ],
+      "answerIndex": 2,
+      "rationale": "A low p-value and a small effect size answer different questions. With a very large sample, a small average difference can produce p < .001; that p-value does not show that the benefit is large, clinically meaningful, or cost-effective. Cohen?s d = 0.08 describes a small standardized mean difference, but practical importance still depends on the outcome scale, confidence interval, baseline risk or severity, benefits, harms, costs, and a defensible meaningful-change threshold. The result should be interpreted with design quality and uncertainty, not dismissed or celebrated from one statistic.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.amstat.org/asa/files/pdfs/p-valuestatement.pdf",
+        "https://pubmed.ncbi.nlm.nih.gov/24324449/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "ASA Statement on Statistical Significance and P-Values",
+          "organization": "American Statistical Association",
+          "url": "https://www.amstat.org/asa/files/pdfs/p-valuestatement.pdf",
+          "whyReputable": "Official statistical-association statement explaining that a p-value does not measure effect size, importance, or the probability a hypothesis is true."
+        },
+        {
+          "title": "Calculating and reporting effect sizes to facilitate cumulative science",
+          "organization": "Frontiers in Psychology / PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/24324449/",
+          "whyReputable": "Peer-reviewed methods article on interpreting and reporting effect sizes with context, uncertainty, and design information."
+        }
+      ],
+      "reviewNote": "Separated statistical evidence against a null model from magnitude, uncertainty, and practical importance.",
+      "reviewDate": "2026-07-23",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-01",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-ab7eed899445fa05",
+      "chapterId": "ch-44",
+      "sectionId": "ch-44-section-2",
+      "domainId": 8,
+      "domain": "Research Methods & Statistics",
+      "prompt": "A researcher designs a study that selectively recruits low-income participants because they are easier to recruit and less likely to refuse. The study involves moderate risk. This practice MOST violates which Belmont Report principle?",
+      "choices": [
+        "Respect for Persons — failure to obtain informed consent",
+        "Beneficence — failure to minimize risks",
+        "Justice — unfair distribution of research burdens on a vulnerable population",
+        "Fidelity — failure to maintain professional relationships"
+      ],
+      "answerIndex": 2,
+      "rationale": "The best answer is justice. Belmont applies justice to fair subject selection and to the distribution of research burdens and benefits. Recruiting economically disadvantaged people specifically because they are convenient or less likely to refuse can place risk on an already burdened group without a scientific reason tied to that population. Respect for persons and beneficence still apply, but the distinctive defect described is inequitable selection. Fidelity is an APA ethical principle, not one of Belmont?s three principles.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.hhs.gov/ohrp/regulations-and-policy/belmont-report/read-the-belmont-report/index.html"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Read the Belmont Report",
+          "organization": "U.S. Department of Health and Human Services, Office for Human Research Protections",
+          "url": "https://www.hhs.gov/ohrp/regulations-and-policy/belmont-report/read-the-belmont-report/index.html",
+          "whyReputable": "Official federal text defining respect for persons, beneficence, and justice, including equitable selection and distribution of research burdens and benefits."
+        }
+      ],
+      "reviewNote": "Removed an imprecise Tuskegee analogy and anchored the answer directly in Belmont?s equitable-selection requirement.",
+      "reviewDate": "2026-07-23",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-01",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    }
+  ]
+}

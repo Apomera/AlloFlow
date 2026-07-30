@@ -101,6 +101,32 @@ function _quizHandleDialogKeyDown(event, dialogRef, closeDialog) {
     first.focus();
   }
 }
+function _quizIsolateDialog(dialog) {
+  var snapshots = [];
+  if (!dialog || typeof document === 'undefined') return function () {};
+  var current = dialog;
+  while (current && current.parentElement) {
+    var parent = current.parentElement;
+    Array.prototype.forEach.call(parent.children, function (sibling) {
+      if (sibling === current) return;
+      snapshots.push({
+        element: sibling,
+        inert: sibling.inert === true,
+        ariaHidden: sibling.getAttribute('aria-hidden')
+      });
+      sibling.inert = true;
+      sibling.setAttribute('aria-hidden', 'true');
+    });
+    current = parent;
+    if (current === document.body) break;
+  }
+  return function () {
+    snapshots.forEach(function (snapshot) {
+      snapshot.element.inert = snapshot.inert;
+      if (snapshot.ariaHidden === null) snapshot.element.removeAttribute('aria-hidden');else snapshot.element.setAttribute('aria-hidden', snapshot.ariaHidden);
+    });
+  };
+}
 function _quizShuffleCopy(arr) {
   var copy = (arr || []).slice();
   for (var i = copy.length - 1; i > 0; i--) {
@@ -1509,9 +1535,91 @@ function AssessmentItemAnalysisPanel(p) {
   var openState = React.useState(false);
   var open = openState[0];
   var setOpen = openState[1];
-  if (items.length === 0 || !items.some(function (item) {
+  var handoffState = React.useState(false);
+  var handoffOpen = handoffState[0];
+  var setHandoffOpen = handoffState[1];
+  var handoffBusyState = React.useState(false);
+  var handoffBusy = handoffBusyState[0];
+  var setHandoffBusy = handoffBusyState[1];
+  var handoffFeedbackState = React.useState('');
+  var handoffFeedback = handoffFeedbackState[0];
+  var setHandoffFeedback = handoffFeedbackState[1];
+  var handoffDialogRef = React.useRef(null);
+  var handoffTriggerRef = React.useRef(null);
+  var hasRespondentItems = items.length > 0 && items.some(function (item) {
     return item.respondents > 0;
-  })) return null;
+  });
+  React.useEffect(function () {
+    if (!handoffOpen) return undefined;
+    if (!hasRespondentItems) {
+      setHandoffOpen(false);
+      setHandoffFeedback('');
+      return undefined;
+    }
+    var restore = _quizIsolateDialog(handoffDialogRef.current);
+    if (handoffDialogRef.current && typeof handoffDialogRef.current.focus === 'function') {
+      handoffDialogRef.current.focus();
+    }
+    return restore;
+  }, [handoffOpen, hasRespondentItems]);
+  if (!hasRespondentItems) return null;
+  function closeAlloSheetReview() {
+    if (handoffBusy) return;
+    setHandoffOpen(false);
+    setHandoffFeedback('');
+    window.setTimeout(function () {
+      if (handoffTriggerRef.current && typeof handoffTriggerRef.current.focus === 'function') {
+        handoffTriggerRef.current.focus();
+      }
+    }, 0);
+  }
+  function openAlloSheetReview(event) {
+    handoffTriggerRef.current = event && event.currentTarget || null;
+    setHandoffFeedback('');
+    setHandoffOpen(true);
+  }
+  function confirmAlloSheetReview() {
+    if (handoffBusy || typeof p.onOpenAlloSheet !== 'function') return;
+    var module = window.AlloModules && window.AlloModules.QuizLiveAggregators;
+    if (!module || typeof module.buildQuizAlloSheetEnvelope !== 'function') {
+      setHandoffFeedback('Quiz item analysis is still loading. Try again in a moment.');
+      return;
+    }
+    var envelope;
+    try {
+      envelope = module.buildQuizAlloSheetEnvelope(p.quizState || {}, p.generatedContent, p.roster || {}, {
+        aiGradedCache: p.aiGradedCache || {},
+        teacherOverrides: p.teacherOverrides || {},
+        mode: p.mode,
+        createdAt: new Date().toISOString()
+      });
+    } catch (error) {
+      setHandoffFeedback(error && error.message || 'Quiz item analysis could not prepare a bounded table.');
+      return;
+    }
+    setHandoffBusy(true);
+    setHandoffFeedback('Opening AlloSheet and waiting for secure receipt…');
+    var pending;
+    try {
+      pending = p.onOpenAlloSheet(envelope);
+    } catch (error) {
+      pending = Promise.reject(error);
+    }
+    Promise.resolve(pending).then(function (opened) {
+      if (opened === false || opened == null) throw new Error('AlloSheet did not open.');
+      setHandoffBusy(false);
+      setHandoffFeedback('');
+      setHandoffOpen(false);
+      window.setTimeout(function () {
+        if (handoffTriggerRef.current && typeof handoffTriggerRef.current.focus === 'function') {
+          handoffTriggerRef.current.focus();
+        }
+      }, 0);
+    }).catch(function (error) {
+      setHandoffBusy(false);
+      setHandoffFeedback(error && error.message || 'AlloSheet could not receive the reviewed item analysis.');
+    });
+  }
   function downloadCsv() {
     var rows = [['Question', 'Type', 'Responses', 'Gradable', 'Correct %', 'Omitted', 'IDK', 'Signal', 'Flags']];
     items.forEach(function (item) {
@@ -1548,8 +1656,14 @@ function AssessmentItemAnalysisPanel(p) {
   }, "Item analysis"), /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-cyan-900 mt-1"
   }, "Difficulty, omissions, confidence mismatches, and MCQ choice patterns. Flags wait for at least 5 responses.")), /*#__PURE__*/React.createElement("div", {
-    className: "flex gap-2"
-  }, /*#__PURE__*/React.createElement("button", {
+    className: "flex gap-2 flex-wrap"
+  }, typeof p.onOpenAlloSheet === 'function' && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    ref: handoffTriggerRef,
+    onClick: openAlloSheetReview,
+    "aria-haspopup": "dialog",
+    className: "text-xs font-bold px-3 py-1.5 rounded-lg bg-indigo-700 text-white border border-indigo-800"
+  }, "Open in AlloSheet"), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: downloadCsv,
     className: "text-xs font-bold px-3 py-1.5 rounded-lg bg-white border border-cyan-300 text-cyan-900"
@@ -1628,7 +1742,57 @@ function AssessmentItemAnalysisPanel(p) {
     })), item.smallSample && !item.unscored && /*#__PURE__*/React.createElement("p", {
       className: "text-[10px] text-slate-500 mt-2"
     }, "Early signal only—no quality flag is assigned until 5 learners respond."));
-  })));
+  })), handoffOpen && /*#__PURE__*/React.createElement("div", {
+    className: "fixed inset-0 z-[120] grid place-items-center bg-slate-950/75 p-4",
+    role: "presentation"
+  }, /*#__PURE__*/React.createElement("div", {
+    ref: handoffDialogRef,
+    role: "dialog",
+    "aria-modal": "true",
+    "aria-labelledby": "quiz-allosheet-review-title",
+    "aria-describedby": "quiz-allosheet-review-summary quiz-allosheet-review-privacy",
+    "aria-busy": handoffBusy,
+    tabIndex: -1,
+    onKeyDown: function (event) {
+      _quizHandleDialogKeyDown(event, handoffDialogRef, function () {
+        if (!handoffBusy) closeAlloSheetReview();
+      });
+    },
+    className: "w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl border-4 border-indigo-300 bg-white p-5 text-slate-900 shadow-2xl"
+  }, /*#__PURE__*/React.createElement("h3", {
+    id: "quiz-allosheet-review-title",
+    className: "text-xl font-black text-indigo-950"
+  }, "Review Quiz item analysis for AlloSheet"), /*#__PURE__*/React.createElement("p", {
+    id: "quiz-allosheet-review-summary",
+    className: "mt-2 text-sm text-slate-700"
+  }, "This creates one aggregate table with up to 100 item rows. It includes question number, item type, response and scoring counts, correct rate, sample status, and bounded signal codes."), /*#__PURE__*/React.createElement("p", {
+    id: "quiz-allosheet-review-privacy",
+    className: "mt-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950"
+  }, /*#__PURE__*/React.createElement("strong", null, "Excluded:"), " learner names and IDs, question and option wording, raw answers, reflections, AI feedback, session codes, resource IDs, and cohort arrays. Signal codes remain blank until at least five learners respond. The transfer cannot enable AI or write back to Quiz."), /*#__PURE__*/React.createElement("div", {
+    className: "mt-3 rounded-lg border border-slate-300 bg-slate-50 p-3"
+  }, /*#__PURE__*/React.createElement("h4", {
+    className: "text-sm font-black text-slate-900"
+  }, "Fields sent"), /*#__PURE__*/React.createElement("p", {
+    className: "mt-1 text-xs text-slate-700"
+  }, "Question number; item type; unscored status; respondents; omitted, gradable, correct, partial, incorrect, IDK, awaiting-review, and high-confidence-incorrect counts; correct-rate percent; sample status; signal codes."), /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 text-xs font-semibold text-slate-700"
+  }, items.length + ' authored item' + (items.length === 1 ? '' : 's') + ' available for bounded aggregate review.')), handoffFeedback && /*#__PURE__*/React.createElement("p", {
+    className: 'mt-3 rounded-lg p-3 text-sm font-semibold ' + (handoffBusy ? 'bg-indigo-50 text-indigo-900' : 'bg-rose-50 text-rose-900'),
+    role: handoffBusy ? 'status' : 'alert',
+    "aria-live": "polite"
+  }, handoffFeedback), /*#__PURE__*/React.createElement("div", {
+    className: "mt-4 flex flex-wrap justify-end gap-2"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: closeAlloSheetReview,
+    disabled: handoffBusy,
+    className: "rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-800 disabled:opacity-50"
+  }, "Cancel"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: confirmAlloSheetReview,
+    disabled: handoffBusy,
+    className: "rounded-lg bg-indigo-700 px-4 py-2 text-sm font-black text-white disabled:opacity-50"
+  }, handoffBusy ? 'Waiting for AlloSheet…' : 'Confirm and open AlloSheet')))));
 }
 function LiveResultsDashboard(p) {
   var aggsMod = window.AlloModules && window.AlloModules.QuizLiveAggregators;
@@ -2708,7 +2872,14 @@ function LiveResultsDashboard(p) {
     role: "region",
     "aria-label": t("a11y.live_results_dashboard")
   }, header, body, /*#__PURE__*/React.createElement(AssessmentItemAnalysisPanel, {
-    analysis: itemAnalysis
+    analysis: itemAnalysis,
+    quizState: quizState,
+    generatedContent: generatedContent,
+    roster: roster,
+    aiGradedCache: aiGradedCache,
+    teacherOverrides: teacherOverrides,
+    mode: mode,
+    onOpenAlloSheet: p.onOpenAlloSheet
   }), reflectionsEl, explainerModalEl);
 }
 function _quizEmitDeterministicAnswer(p, itemType, answer, confidence) {
@@ -6153,7 +6324,8 @@ function QuizView(props) {
     callGemini: props.callGemini,
     callTTS: props.callTTS,
     gradeLevel: props.gradeLevel,
-    conceptMasteryByUid: props.conceptMasteryByUid
+    conceptMasteryByUid: props.conceptMasteryByUid,
+    onOpenAlloSheet: props.onOpenAlloSheet
   }), /*#__PURE__*/React.createElement(ErrorBoundary, {
     fallbackMessage: "Live quiz controls encountered an error. Refreshing..."
   }, /*#__PURE__*/React.createElement(TeacherLiveQuizControls, {

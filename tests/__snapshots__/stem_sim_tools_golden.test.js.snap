@@ -366,13 +366,13 @@ exports[`science-sim + studio render goldens > renders + pins a digest for swimL
 
 exports[`science-sim + studio render goldens > renders + pins a digest for throwlab [ssr] 1`] = `
 {
-  "buttons": 53,
+  "buttons": 54,
   "canvases": 1,
   "inputs": 7,
-  "lengthBucket": 237,
+  "lengthBucket": 265,
   "paths": 0,
   "selects": 0,
-  "sha": "f689ccec628747e9",
+  "sha": "7d81a2778062260b",
   "svgs": 0,
 }
 `;

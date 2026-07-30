@@ -1037,6 +1037,74 @@
     { id: 'ascending', name: 'Ascending', density: 0.68 },
     { id: 'callResponse', name: 'Call / Response', density: 0.58 }
   ];
+  var OG_NOTATION_PHRASE_PRESETS = [
+    {
+      id: 'stepwiseQuestion',
+      name: 'Stepwise Question',
+      shortName: 'Question',
+      bars: 1,
+      summary: 'A four-note rising question for teaching contour and scale degrees.',
+      notes: [
+        { beat: 1, degree: 0, duration: 'q' },
+        { beat: 2, degree: 1, duration: 'q' },
+        { beat: 3, degree: 2, duration: 'q' },
+        { beat: 4, degree: 4, duration: 'q' }
+      ]
+    },
+    {
+      id: 'answerCadence',
+      name: 'Answer Cadence',
+      shortName: 'Answer',
+      bars: 1,
+      summary: 'A settling response that returns toward tonic for phrase writing lessons.',
+      notes: [
+        { beat: 1, degree: 4, duration: 'q' },
+        { beat: 2, degree: 3, duration: 'q' },
+        { beat: 3, degree: 1, duration: 'q' },
+        { beat: 4, degree: 0, duration: 'q' }
+      ]
+    },
+    {
+      id: 'triadOutline',
+      name: 'Triad Outline',
+      shortName: 'Triad',
+      bars: 1,
+      summary: 'Outlines tonic harmony so students can see chord tones on the staff.',
+      notes: [
+        { beat: 1, degree: 0, duration: 'q' },
+        { beat: 2, degree: 2, duration: 'q' },
+        { beat: 3, degree: 4, duration: 'q' },
+        { beat: 4, degree: 2, duration: 'q' }
+      ]
+    },
+    {
+      id: 'twoBarCallResponse',
+      name: 'Two-Bar Call / Response',
+      shortName: 'Call / Response',
+      bars: 2,
+      summary: 'A compact two-measure idea for teaching antecedent and consequent phrases.',
+      notes: [
+        { bar: 0, beat: 1, degree: 0, duration: 'q' },
+        { bar: 0, beat: 2, degree: 2, duration: 'q' },
+        { bar: 0, beat: 3, degree: 4, duration: 'h' },
+        { bar: 1, beat: 1, degree: 4, duration: 'q' },
+        { bar: 1, beat: 2, degree: 3, duration: 'q' },
+        { bar: 1, beat: 3, degree: 1, duration: 'q' },
+        { bar: 1, beat: 4, degree: 0, duration: 'q' }
+      ]
+    },
+    {
+      id: 'bassAnchor',
+      name: 'Bass Anchor',
+      shortName: 'Bass',
+      bars: 1,
+      summary: 'A lower-register tonic and dominant pattern for band/orchestra foundations.',
+      notes: [
+        { beat: 1, degree: 0, octaveOffset: -1, duration: 'h' },
+        { beat: 3, degree: 4, octaveOffset: -1, duration: 'h' }
+      ]
+    }
+  ];
   var OG_MOTIF_TRANSFORMS = [
     { id: 'sequenceUp', name: 'Sequence Up', shortName: 'Up', summary: 'Copies the motif one scale step higher.' },
     { id: 'sequenceDown', name: 'Sequence Down', shortName: 'Down', summary: 'Copies the motif one scale step lower.' },
@@ -2362,6 +2430,89 @@
     return lines;
   }
 
+  function ogDiatonicPitchForIndex(project, diatonicIndex) {
+    var steps = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+    var index = Math.round(ogFinite(diatonicIndex, 4 * 7 + 2));
+    var stepIndex = ((index % 7) + 7) % 7;
+    var octave = Math.floor(index / 7);
+    var step = steps[stepIndex] || 'C';
+    var key = project && project.key || {};
+    var fifths = ogKeySignatureFifths(key.tonic || 'C', key.mode || 'minor');
+    var accidental = '';
+    var sharpOrder = ['F', 'C', 'G', 'D', 'A', 'E', 'B'];
+    var flatOrder = ['B', 'E', 'A', 'D', 'G', 'C', 'F'];
+    if (fifths > 0 && sharpOrder.slice(0, fifths).indexOf(step) >= 0) accidental = '#';
+    if (fifths < 0 && flatOrder.slice(0, Math.abs(fifths)).indexOf(step) >= 0) accidental = 'b';
+    var pitch = step + accidental + octave;
+    return ogNoteNameToMidi(pitch) == null ? step + octave : pitch;
+  }
+
+  function ogPitchForStaffY(project, y, geometry, options) {
+    options = options || {};
+    var g = geometry || {};
+    var staffTop = ogFinite(g.staffTop, 42);
+    var lineSpacing = Math.max(1, ogFinite(g.lineSpacing, 10));
+    var bottomY = ogFinite(g.bottomY, staffTop + 4 * lineSpacing);
+    var stepY = Math.max(1, ogFinite(g.stepY, lineSpacing / 2));
+    var bottomLineIndex = ogInt(g.bottomLineIndex, ogStaffBottomLineIndex(options.clef || 'treble'));
+    var diatonicIndex = bottomLineIndex + Math.round((bottomY - ogFinite(y, bottomY)) / stepY);
+    var snappedY = bottomY - (diatonicIndex - bottomLineIndex) * stepY;
+    var pitch = ogDiatonicPitchForIndex(project, diatonicIndex);
+    var midi = ogNoteNameToMidi(pitch);
+    var track = ogFindTrack(project, options.trackId);
+    var range = options.fitToInstrumentRange === false ? null : ogBuildInstrumentRange(options.presetId || track && track.instrument && track.instrument.presetId || '');
+    var inRange = !range || midi == null || midi >= range.lowMidi && midi <= range.highMidi;
+    return {
+      pitch: pitch,
+      midi: midi,
+      y: Math.round(snappedY * 100) / 100,
+      diatonicIndex: diatonicIndex,
+      inRange: inRange,
+      rangeLabel: range && range.rangeLabel || null,
+      staffTop: staffTop,
+      bottomY: bottomY
+    };
+  }
+
+  function ogResolveStaffPoint(project, patternId, options) {
+    options = options || {};
+    var pattern = ogFindPattern(project, patternId || (project && project.patterns && project.patterns[0] && project.patterns[0].id));
+    if (!pattern) return null;
+    var engraving = options.engraving || ogBuildStaffEngraving(project, pattern.id, options);
+    var g = engraving.geometry || {};
+    var bars = Math.max(1, ogInt(pattern.bars, 1));
+    var left = ogFinite(g.left, 48);
+    var right = ogFinite(g.right, 16);
+    var width = Math.max(left + right + 1, ogFinite(engraving.width || g.width || options.width, 680));
+    var measureWidth = Math.max(1, ogFinite(g.measureWidth, (width - left - right) / bars));
+    var x = Math.max(left, Math.min(width - right, ogFinite(options.x, left)));
+    var measureIndex = Math.max(0, Math.min(bars - 1, Math.floor((x - left) / measureWidth)));
+    var measure = engraving.measures && engraving.measures[measureIndex] || null;
+    var slots = measure && measure.slots || [];
+    var slot = slots[0] || null;
+    var bestDistance = Infinity;
+    slots.forEach(function (candidate) {
+      var distance = Math.abs(ogFinite(candidate.x, x) - x);
+      if (distance < bestDistance) {
+        slot = candidate;
+        bestDistance = distance;
+      }
+    });
+    var pitchInfo = ogPitchForStaffY(project, options.y, g, options);
+    var beatTicks = ogTicksPerBeat(project);
+    var startBeat = slot ? slot.startBeat : 1 + Math.round(((x - (left + measureIndex * measureWidth)) / measureWidth) * 4 * 1000) / 1000;
+    var absoluteTick = slot && slot.tick != null
+      ? ogInt(slot.tick, measureIndex * ogTicksPerMeasure(project))
+      : measureIndex * ogTicksPerMeasure(project) + Math.round((startBeat - 1) * beatTicks);
+    return Object.assign({}, pitchInfo, {
+      barIndex: measureIndex,
+      bar: measureIndex + 1,
+      startBeat: Math.max(1, Math.round(startBeat * 1000) / 1000),
+      slotIndex: slot ? slot.index : null,
+      absoluteTick: absoluteTick,
+      x: slot ? Math.round(ogFinite(slot.x, x) * 100) / 100 : Math.round(x * 100) / 100
+    });
+  }
   function ogBuildStaffEngraving(project, patternId, options) {
     options = options || {};
     var pattern = ogFindPattern(project, patternId || (project && project.patterns && project.patterns[0] && project.patterns[0].id));
@@ -2462,6 +2613,13 @@
     };
   }
 
+  function ogStaffDurationTokenFromTicks(project, ticks) {
+    var notation = ogMusicXmlDurationNotationFromTicks(project, ticks);
+    var map = { whole: 'w', half: 'h', quarter: 'q', eighth: 'e', '16th': 's' };
+    if (!notation || !map[notation.type]) return 'q';
+    return map[notation.type] + (notation.dots ? new Array(notation.dots + 1).join('.') : '');
+  }
+
   function ogSetStaffNote(project, patternId, trackId, options) {
     options = options || {};
     var pattern = ogFindPattern(project, patternId);
@@ -2500,6 +2658,184 @@
       source: 'staffEditor'
     });
     return { event: event, removed: removed, rest: false, startTick: startTick };
+  }
+
+
+  function ogFindStaffNoteEvent(project, patternId, trackId, eventId) {
+    var pattern = ogFindPattern(project, patternId);
+    if (!pattern || !eventId) return null;
+    for (var i = 0; i < (pattern.events || []).length; i++) {
+      var event = pattern.events[i];
+      if (event && event.type === 'note' && event.id === eventId && (!trackId || event.trackId === trackId)) return event;
+    }
+    return null;
+  }
+
+  function ogUpdateStaffNote(project, patternId, trackId, eventId, options) {
+    options = options || {};
+    var pattern = ogFindPattern(project, patternId);
+    if (!pattern) throw new Error('OpenGroove: pattern not found');
+    var track = ogFindTrack(project, trackId);
+    if (!track || track.type !== 'synth') throw new Error('OpenGroove: synth track not found');
+    var event = ogFindStaffNoteEvent(project, pattern.id, track.id, eventId);
+    if (!event) return { event: null, changed: false, reason: 'not-found' };
+    var measureTicks = ogTicksPerMeasure(project);
+    var beatTicks = ogTicksPerBeat(project);
+    var patternTicks = ogPatternLengthTicks(project, pattern);
+    var startTick = event.notation && event.notation.startTick != null ? ogInt(event.notation.startTick, event.startTick) : ogInt(event.startTick, 0);
+    if (options.startBar != null || options.startBeat != null) {
+      var currentBar = Math.max(0, Math.min(Math.max(1, pattern.bars) - 1, Math.floor(startTick / measureTicks)));
+      var bar = Math.max(0, Math.min(Math.max(1, pattern.bars) - 1, ogInt(options.startBar, currentBar)));
+      var beat = Math.max(1, ogFinite(options.startBeat, (startTick - currentBar * measureTicks) / beatTicks + 1));
+      startTick = Math.max(0, Math.min(patternTicks - 1, bar * measureTicks + Math.round((beat - 1) * beatTicks)));
+    }
+    var durationTicks = event.notation && event.notation.durationTicks != null ? ogInt(event.notation.durationTicks, event.durationTicks) : ogInt(event.durationTicks, beatTicks);
+    if (options.durationTicks != null) durationTicks = Math.max(1, ogInt(options.durationTicks, durationTicks));
+    else if (options.duration != null) durationTicks = ogNotationDurationTicks(project, options.duration);
+    durationTicks = Math.max(1, Math.min(durationTicks, patternTicks - startTick));
+    if (options.pitch != null) {
+      var pitch = ogNormalizeNotationPitch(options.pitch, options.octave || 4);
+      var midi = ogNoteNameToMidi(pitch);
+      if (midi == null) throw new Error('OpenGroove: invalid note pitch');
+      event.pitch = pitch;
+      event.spelling = pitch;
+      event.midi = midi;
+    }
+    event.startTick = startTick;
+    event.durationTicks = durationTicks;
+    event.velocity = ogNormalizeVelocity(options.velocity != null ? options.velocity : event.velocity);
+    if (options.role) event.role = ogSafeString(options.role, event.role || 'notation');
+    else if (!event.role) event.role = 'notation';
+    if (options.source) event.source = ogSafeString(options.source, event.source || 'staffEditor');
+    else if (!event.source) event.source = 'staffEditor';
+    event.notation = event.notation || {};
+    event.notation.startTick = startTick;
+    event.notation.durationTicks = durationTicks;
+    event.notation.spelling = event.spelling || event.pitch;
+    ogSortEvents(pattern);
+    return {
+      event: event,
+      changed: true,
+      startTick: startTick,
+      durationTicks: durationTicks,
+      duration: ogStaffDurationTokenFromTicks(project, durationTicks)
+    };
+  }
+
+  function ogDeleteStaffNote(project, patternId, trackId, eventId) {
+    var event = ogFindStaffNoteEvent(project, patternId, trackId, eventId);
+    if (!event) return { removed: false, eventId: eventId || null };
+    return { removed: ogRemoveEvent(project, patternId, event.id), eventId: event.id };
+  }
+
+  function ogListNotationPhrasePresets() {
+    return ogClone(OG_NOTATION_PHRASE_PRESETS);
+  }
+
+  function ogNormalizeNotationPhrasePreset(presetId) {
+    var id = String(presetId || '').trim();
+    for (var i = 0; i < OG_NOTATION_PHRASE_PRESETS.length; i++) {
+      if (OG_NOTATION_PHRASE_PRESETS[i].id === id) return OG_NOTATION_PHRASE_PRESETS[i];
+    }
+    return OG_NOTATION_PHRASE_PRESETS[0];
+  }
+
+  function ogNotationPhrasePitch(project, noteDef, octave) {
+    noteDef = noteDef || {};
+    if (noteDef.pitch) {
+      var explicitPitch = ogNormalizeNotationPitch(noteDef.pitch, octave);
+      return { pitch: explicitPitch, midi: ogNoteNameToMidi(explicitPitch), degree: null };
+    }
+    var key = project && project.key || {};
+    var scale = ogBuildScale(key.tonic || 'C', key.mode || 'minor');
+    if (!scale.length) scale = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+    var degree = ogInt(noteDef.degree, 0);
+    var degreeIndex = ((degree % scale.length) + scale.length) % scale.length;
+    var octaveShift = Math.floor(degree / scale.length) + ogInt(noteDef.octaveOffset, 0);
+    var pitch = scale[degreeIndex] + (ogInt(noteDef.octave, octave) + octaveShift);
+    var midi = ogNoteNameToMidi(pitch);
+    if (midi == null) {
+      pitch = ogMidiToNoteName(ogBuildScaleMidiPool(project, octave)[Math.max(0, Math.min(scale.length - 1, degreeIndex))] || 60);
+      midi = ogNoteNameToMidi(pitch);
+    }
+    return { pitch: pitch, midi: midi, degree: degreeIndex + 1 };
+  }
+
+  function ogWriteNotationPhrasePreset(project, patternId, trackId, presetId, options) {
+    options = options || {};
+    var pattern = ogFindPattern(project, patternId);
+    if (!pattern) throw new Error('OpenGroove: pattern not found');
+    var track = ogFindTrack(project, trackId);
+    if (!track || track.type !== 'synth') throw new Error('OpenGroove: synth track not found');
+    var preset = ogNormalizeNotationPhrasePreset(presetId || options.presetId);
+    var measureTicks = ogTicksPerMeasure(project);
+    var beatTicks = ogTicksPerBeat(project);
+    var patternTicks = ogPatternLengthTicks(project, pattern);
+    var startBar = Math.max(0, Math.min(Math.max(1, pattern.bars) - 1, ogInt(options.startBar, 0)));
+    var bars = Math.max(1, Math.min(Math.max(1, pattern.bars) - startBar, ogInt(options.bars, preset.bars || 1)));
+    var startTick = startBar * measureTicks;
+    var endTick = Math.min(patternTicks, startTick + bars * measureTicks);
+    var octave = Math.max(1, Math.min(7, ogInt(options.octave, 4)));
+    var velocity = ogNormalizeVelocity(options.velocity == null ? 0.76 : options.velocity);
+    var range = options.fitToInstrumentRange === false ? null : ogBuildInstrumentRange(options.presetIdForRange || track.instrument && track.instrument.presetId || '');
+    var created = [];
+    var warnings = [];
+    var rangeFitChanges = [];
+    if (options.replace !== false) {
+      pattern.events = (pattern.events || []).filter(function (event) {
+        var nStart = event.notation && event.notation.startTick != null ? event.notation.startTick : event.startTick;
+        return !(event.type === 'note' && event.trackId === trackId && nStart >= startTick && nStart < endTick);
+      });
+    }
+    (preset.notes || []).forEach(function (noteDef, index) {
+      noteDef = noteDef || {};
+      var barOffset = Math.max(0, Math.min(bars - 1, ogInt(noteDef.bar, 0)));
+      var beat = Math.max(1, ogFinite(noteDef.beat, 1));
+      var noteStartTick = startTick + barOffset * measureTicks + Math.round((beat - 1) * beatTicks);
+      if (noteStartTick >= endTick || noteDef.rest) return;
+      var durationTicks = Math.max(1, Math.min(ogNotationDurationTicks(project, noteDef.duration || preset.duration || 'q'), endTick - noteStartTick));
+      var pitchInfo = ogNotationPhrasePitch(project, noteDef, octave);
+      if (pitchInfo.midi == null) {
+        warnings.push('Skipped preset note ' + (index + 1));
+        return;
+      }
+      var midi = pitchInfo.midi;
+      var pitch = pitchInfo.pitch;
+      if (range) {
+        var fit = ogFitMidiToInstrumentRange(midi, range);
+        if (fit && fit.changed) {
+          rangeFitChanges.push({ fromPitch: pitch, toPitch: fit.pitch, semitones: fit.semitones, index: index });
+          midi = fit.midi;
+          pitch = fit.pitch;
+        }
+      }
+      created.push(ogAppendEvent(project, pattern.id, {
+        type: 'note',
+        trackId: trackId,
+        pitch: pitch,
+        spelling: pitch,
+        startTick: noteStartTick,
+        durationTicks: durationTicks,
+        notationStartTick: noteStartTick,
+        notationDurationTicks: durationTicks,
+        velocity: velocity,
+        role: 'notationPhrase',
+        source: 'notationPhrasePreset',
+        phrasePresetId: preset.id
+      }));
+    });
+    return {
+      presetId: preset.id,
+      presetName: preset.name,
+      startBar: startBar,
+      bars: bars,
+      noteCount: created.length,
+      events: created,
+      warnings: warnings,
+      rangeFitCount: rangeFitChanges.length,
+      rangeFitChanges: rangeFitChanges,
+      summary: created.length ? preset.name + ' wrote ' + created.length + ' notation notes.' : preset.name + ' did not create notes.'
+    };
   }
 
   function ogNormalizeVelocity(value) {
@@ -3670,6 +4006,7 @@
         var dur = event.notation && event.notation.durationTicks != null ? event.notation.durationTicks : event.durationTicks;
         entry.pitch = event.notation && event.notation.spelling || event.pitch || ogMidiToNoteName(event.midi);
         entry.durationBeats = Math.round((Math.max(1, ogInt(dur, beatTicks)) / beatTicks) * 1000) / 1000;
+        entry.durationTicks = Math.max(1, ogInt(dur, beatTicks));
         entry.performedStartTick = event.startTick;
         entry.notationStartTick = nStart;
         if (event.role) entry.role = event.role;
@@ -6272,6 +6609,7 @@
     OG_AUTOMATION_TARGETS: ogListAutomationTargets(),
     OG_SONG_FORM_PRESETS: ogListSongFormPresets(),
     OG_MELODY_PHRASE_STYLES: ogListMelodyPhraseStyles(),
+    OG_NOTATION_PHRASE_PRESETS: ogListNotationPhrasePresets(),
     OG_MOTIF_TRANSFORMS: ogListMotifTransforms(),
     OG_DRUM_GROOVE_STYLES: ogListDrumGrooveStyles(),
     ogClone: ogClone,
@@ -6317,7 +6655,15 @@
     ogNormalizeStaffClef: ogNormalizeStaffClef,
     ogInferStaffClef: ogInferStaffClef,
     ogBuildStaffEngraving: ogBuildStaffEngraving,
+    ogPitchForStaffY: ogPitchForStaffY,
+    ogResolveStaffPoint: ogResolveStaffPoint,
+    ogStaffDurationTokenFromTicks: ogStaffDurationTokenFromTicks,
     ogSetStaffNote: ogSetStaffNote,
+    ogUpdateStaffNote: ogUpdateStaffNote,
+    ogDeleteStaffNote: ogDeleteStaffNote,
+    ogListNotationPhrasePresets: ogListNotationPhrasePresets,
+    ogNormalizeNotationPhrasePreset: ogNormalizeNotationPhrasePreset,
+    ogWriteNotationPhrasePreset: ogWriteNotationPhrasePreset,
     ogNormalizeSynthInstrument: ogNormalizeSynthInstrument,
     ogListSynthPatchPresets: ogListSynthPatchPresets,
     ogListSynthPatchFamilies: ogListSynthPatchFamilies,

@@ -136,8 +136,10 @@ etiquette and how to relay the honesty fields without overstating them — insta
 the connector for best results.
 
 **Recommended flow for a client like Claude:** `remediation_capabilities` → `pdf_remediate_start`
-→ poll `remediation_job_status` every 30–60 s → `remediation_job_result`. Jobs are in-memory:
-they do not survive a server restart.
+→ poll `remediation_job_status` every 30–60 s → `remediation_job_result`. Job records persist
+locally for 30 days and survive a server restart; a job that was actively running returns as
+`interrupted` because its browser process cannot survive the restart. See **Jobs survive a
+restart** below.
 
 The result carries AlloFlow's honesty surfaces verbatim: the distribution verdict
 (ready / cautions / review-before-handing-out), before/after scores with their source,

@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import { resolve } from 'node:path';
-import { loadAlloModule } from './setup.js';
+import { loadAlloModule, registerEpppPartOne } from './setup.js';
 
 let eppp, report;
 
@@ -14,7 +14,7 @@ beforeAll(() => {
     Fragment: 'fragment',
   };
   loadAlloModule('test_prep_hub_module.js');
-  eppp = window.AlloModules.TestPrepHub.listPacks().find((pack) => pack.id === 'eppp-part-one');
+  eppp = registerEpppPartOne(window.AlloModules.TestPrepHub);
   report = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_native_qa.json'), 'utf8'));
 });
 

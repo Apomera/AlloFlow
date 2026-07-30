@@ -37,6 +37,7 @@ const MODULE_FILES = [
   'verification_policy_module.js',
   'doc_builder_renderer_module.js',
   'doc_pipeline_module.js',
+  'view_pdf_validator_module.js',
 ];
 // Where the pipeline modules + verapdf/ actually live. A repo checkout serves them from the
 // repo root; a packaged MCPB bundle ships them in an assets/ dir next to server/. Resolution:
@@ -48,6 +49,7 @@ function resolveAssetsRoot() {
 }
 const ASSETS_ROOT = resolveAssetsRoot();
 const PDFLIB_CDN = 'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js';
+const HEADLESS_AUDITOR_COUNT = 5;
 
 // veraPDF validator transport. The page + its 16MB JAR live in the repo (verapdf/), and
 // CheerpJ (the in-browser JVM) REQUIRES HTTP Range (206) responses to load a JAR — the
@@ -329,7 +331,13 @@ function createDriver(options) {
       if (/\[GeminiGate\]|\[Retry\]|\[PDF Fix\]|\[Tesseract\]|\[Throttle\]|API-start|Vision-start/.test(t)) rlog(t.slice(0, 500));
       else if (process.env.ALLOFLOW_MCP_VERBOSE === '1') rlog('console: ' + t.slice(0, 300));
     });
-    await page.goto('about:blank');
+    // Web Crypto is unavailable in Chromium's opaque `about:blank` context. The canonical
+    // pipeline binds verification evidence to the exact HTML with SHA-256, so boot on a
+    // browser-trustworthy loopback origin. Route fulfillment keeps this entirely in-process:
+    // no listener, DNS, network request, cookie scope, or document data leaves the machine.
+    const bootUrl = 'http://127.0.0.1/__alloflow_mcp_boot__';
+    await page.route(bootUrl, (route) => route.fulfill({ status: 200, contentType: 'text/html', body: '<!doctype html><html><head></head><body></body></html>' }));
+    await page.goto(bootUrl);
 
     await page.exposeFunction('__mcpGeminiText', async (prompt) => {
       return geminiCallWithFallback({ apiKey, model: DEFAULT_MODEL, parts: [{ text: String(prompt) }], log: rlog });
@@ -479,8 +487,8 @@ function createDriver(options) {
     const b64 = readDocBase64(opts.filePath);
     (opts.onLog || log)('audit: ' + fileName + ' (' + Math.round(b64.length * 0.75 / 1024) + ' KB)');
     return withRunPage(Object.assign({ fileName, base64ForRender: b64 }, opts), (page) =>
-      page.evaluate(async ({ b64, fileName }) => {
-        const a = await window.__mcpPipeline.runPdfAccessibilityAudit(b64, { skipUiUpdates: true, skipCache: true, fileName });
+      page.evaluate(async ({ b64, fileName, auditorCount }) => {
+        const a = await window.__mcpPipeline.runPdfAccessibilityAudit(b64, { skipUiUpdates: true, skipCache: true, fileName, auditorCount });
         return {
           score: a && typeof a.score === 'number' ? a.score : null,
           summary: (a && a.summary) || '',
@@ -497,9 +505,15 @@ function createDriver(options) {
           issues: ['critical', 'serious', 'moderate', 'minor'].flatMap((sev) =>
             ((a && a[sev]) || []).slice(0, 40).map((i) => ({ severity: sev, issue: i.issue || i.description || i.text || '', wcag: i.wcag || '', location: i.location || '' }))
           ),
+          auditCoverage: {
+            configuredAuditorCap: auditorCount,
+            requestedAuditors: Number.isSafeInteger(a && a.requestedAuditors) ? a.requestedAuditors : null,
+            completedAuditors: Number.isSafeInteger(a && a.auditorCount) ? a.auditorCount : null,
+            sliced: !!(a && a._slicedAudit),
+          },
           _fullAudit: a,
         };
-      }, { b64, fileName })
+      }, { b64, fileName, auditorCount: HEADLESS_AUDITOR_COUNT })
     );
   }
 
@@ -509,15 +523,29 @@ function createDriver(options) {
     const _isPdfInput = /\.pdf$/i.test(fileName);
     (opts.onLog || log)('remediate: ' + fileName + ' (' + Math.round(b64.length * 0.75 / 1024) + ' KB, target ' + (opts.targetScore || 95) + ')');
     return withRunPage(Object.assign({ fileName, base64ForRender: b64 }, opts), (page) =>
-      page.evaluate(async ({ b64, fileName, targetScore, fixPasses, polishPasses, wantTaggedPdf, wantAutoContinue, autoContinueRounds, pdfLibCdn }) => {
+      page.evaluate(async ({ b64, fileName, targetScore, fixPasses, polishPasses, wantTaggedPdf, wantAutoContinue, autoContinueRounds, pdfLibCdn, auditorCount }) => {
         const pipeline = window.__mcpPipeline;
         const progress = (stage, msg) => { try { window.__mcpProgress(stage + ' — ' + msg); } catch (_) {} };
+        const loopPolicy = window.AlloModules
+          && window.AlloModules.createDocPipeline
+          && window.AlloModules.createDocPipeline.loopPolicy;
+        if (typeof pipeline.isLiveVerificationHtmlBound !== 'function'
+          || typeof pipeline.rehydrateVerificationHtmlBinding !== 'function') {
+          throw new Error('Canonical verification binding is unavailable.');
+        }
+        if (wantAutoContinue && (
+          !loopPolicy
+          || typeof loopPolicy.roundProgressed !== 'function'
+          || typeof loopPolicy.roundRegressed !== 'function'
+        )) {
+          throw new Error('Canonical remediation loop policy is unavailable.');
+        }
         progress('audit', 'opening accessibility audit');
-        const audit = await pipeline.runPdfAccessibilityAudit(b64, { skipUiUpdates: true, skipCache: true, fileName });
+        const audit = await pipeline.runPdfAccessibilityAudit(b64, { skipUiUpdates: true, skipCache: true, fileName, auditorCount });
         progress('audit', 'before-score ' + (audit && audit.score));
         const result = await pipeline.fixAndVerifyPdf({
           base64: b64, fileName, auditResult: audit,
-          targetScore: targetScore, autoFixPasses: fixPasses, polishPasses: polishPasses,
+          targetScore: targetScore, autoFixPasses: fixPasses, polishPasses: polishPasses, auditorCount,
           onProgress: (step, msg) => progress('fix', (typeof step === 'number' ? 'step ' + step + ': ' : '') + (msg || '')),
         });
         // ── AUTO-CONTINUE (#6-full payoff): the SAME improvement loop the app runs, merging every
@@ -529,16 +557,16 @@ function createDriver(options) {
         // too: wait-not-stop calm gate per round, noise-aware revert on a REAL deterministic
         // regression (the reducer's _detScore), two-stall abandon.
         let cur = result;
+        if (cur && typeof cur.accessibleHtml === 'string') {
+          cur = await pipeline.rehydrateVerificationHtmlBinding(cur);
+        }
         let roundsRun = 0;
         const roundLog = [];
         if (wantAutoContinue && cur && typeof cur.accessibleHtml === 'string') {
-          const isComplete = (r) => r.verificationState === 'complete' && r.afterScoreVerified === true && !r.requiresManualReview;
-          // Det baseline starts ONLY from a reducer-produced _detScore (min of axe+EA). The
-          // primary fixAndVerifyPdf result never carries one, and falling back to its axe-only
-          // score compared apples to oranges: EA < axe made EVERY first round read as a
-          // regression (caught by the scripted-model golden). Round 1 is still guarded by the
-          // more-issues check and stagnation; det-vs-det starts once a round has merged.
-          let curDet = (typeof cur._detScore === 'number') ? cur._detScore : null;
+          const isComplete = (r) => r.verificationState === 'complete' && r.afterScoreVerified === true && !r.requiresManualReview && pipeline.isLiveVerificationHtmlBound(r, r.accessibleHtml);
+          let lastViolations = Infinity;
+          let lastDet = -1;
+          let lastIssues = Infinity;
           let stagnant = 0;
           for (let round = 0; round < autoContinueRounds; round++) {
             if ((cur.afterScore || 0) >= targetScore && isComplete(cur)) break;
@@ -547,6 +575,27 @@ function createDriver(options) {
             const _eaFails = (cur.secondEngineAudit && (cur.secondEngineAudit.failViolations
               || (Array.isArray(cur.secondEngineAudit.fails) ? cur.secondEngineAudit.fails.length : 0))) || 0;
             const auditOnly = _vio === 0 && _aiIssues.length === 0 && _eaFails === 0 && !isComplete(cur);
+            const _curAxe = (cur.axeAudit && typeof cur.axeAudit.score === 'number') ? cur.axeAudit.score : null;
+            const _curEa = (cur.secondEngineAudit && typeof cur.secondEngineAudit.score === 'number') ? cur.secondEngineAudit.score : null;
+            const _curDet = (typeof cur._detScore === 'number') ? cur._detScore
+              : ((_curAxe !== null) ? (_curEa !== null ? Math.min(_curAxe, _curEa) : _curAxe) : _curEa);
+            const _progressed = loopPolicy.roundProgressed({
+              violations: _vio, prevViolations: lastViolations,
+              newDet: _curDet, prevDet: lastDet,
+              newIssues: _aiIssues.length, prevIssues: lastIssues,
+            });
+            if (!_progressed) { stagnant++; if (stagnant >= 2) break; } else stagnant = 0;
+            lastViolations = _vio;
+            lastDet = _curDet;
+            lastIssues = _aiIssues.length;
+            if (auditOnly) {
+              const _cov = cur.verificationCoverage || {};
+              const _eaDead = typeof pipeline.equalAccessUnavailable === 'function' && pipeline.equalAccessUnavailable();
+              if (_eaDead && _cov.ai === 'complete' && _cov.axe === 'complete' && _cov.equalAccess !== 'complete') {
+                roundLog.push('verification refresh skipped: Equal Access is unavailable in this environment');
+                break;
+              }
+            }
             try { await pipeline.waitForGeminiCalm({ maxWaitMs: 120000 }); } catch (_) {}
             progress('auto-continue', 'round ' + (round + 1) + '/' + autoContinueRounds + ' — ' +
               (auditOnly ? 'verification refresh (no rewrite)' : (_vio > 0 ? _vio + ' axe violation(s)' : _aiIssues.length + ' AI-flagged issue(s)')) +
@@ -564,7 +613,9 @@ function createDriver(options) {
                 const _eaLines = ((cur.secondEngineAudit && Array.isArray(cur.secondEngineAudit.fails)) ? cur.secondEngineAudit.fails : []).slice(0, 15)
                   .map((f) => 'EQUAL-ACCESS-CONFIRMED: ' + String((f && (f.message || f.ruleId || f.reasonId)) || JSON.stringify(f)).slice(0, 200));
                 const _instr = _aiIssues.slice(0, 25).map((i) => 'AI-FLAGGED: ' + (typeof i === 'string' ? i : (i.issue || i.description || JSON.stringify(i)))).concat(_eaLines).join('\n');
-                const _fixedHtml = await pipeline.aiFixChunked(cur.accessibleHtml, _instr, 'mcp-auto-continue-round-' + (round + 1));
+                let _fixedHtml = await pipeline.aiFixChunked(cur.accessibleHtml, _instr, 'mcp-auto-continue-round-' + (round + 1));
+                const _hasContrast = _aiIssues.some((i) => { const _s = (typeof i === 'string') ? i : (((i.wcag || '') + ' ' + (i.issue || i.description || ''))); return /1\.4\.3|contrast/i.test(_s); });
+                if (_hasContrast) { try { const _sr = pipeline.sanitizeStyleForWCAG(_fixedHtml); if (_sr && _sr.html && _sr.fixCount > 0) _fixedHtml = _sr.html; } catch (_) {} }
                 let _axe = null;
                 try { _axe = await pipeline.runAxeAudit(_fixedHtml); } catch (_) {}
                 roundOut = { html: _fixedHtml, axe: _axe, passes: 1 };
@@ -577,37 +628,77 @@ function createDriver(options) {
             try { _ea = await pipeline.runEqualAccessAudit(roundOut.html); } catch (_) {}
             let _roundIR = cur.issueResolution;
             try { const _r = pipeline.recomputeIssueResolution(cur.issueResolution, reVerify); if (_r) _roundIR = _r; } catch (_) {}
+            let _plainText = null;
+            try { _plainText = pipeline.htmlToPlainText(roundOut.html); } catch (_) {}
             let merged;
             try {
               merged = await pipeline.finalizeRemediationRound(cur, {
                 html: roundOut.html, aiAudit: reVerify, axeAudit: roundOut.axe, eaAudit: _ea,
                 auditOnly: !!roundOut._auditOnly, sourceText: cur.sourceText, issueResolution: _roundIR,
-                passes: roundOut.passes || 0,
+                plainText: _plainText, passes: roundOut.passes || 0,
+                chunkState: roundOut.chunkState, chunkWeightedScore: roundOut.chunkWeightedScore,
               });
+              merged = await pipeline.rehydrateVerificationHtmlBinding(merged);
             } catch (e) { roundLog.push('round ' + (round + 1) + ' merge failed: ' + ((e && e.message) || e)); break; }
             const _det = merged._detScore;
-            const _detRegressed = (_det !== null) && (typeof curDet === 'number') && _det < (curDet - 1);
-            const _moreIssues = (_vio === 0) && ((reVerify.issues ? reVerify.issues.length : 0) > _aiIssues.length);
-            if (!roundOut._auditOnly && (_detRegressed || _moreIssues)) {
-              roundLog.push('round ' + (round + 1) + ' REVERTED (det ' + _det + ' vs ' + curDet + ', issues ' + (reVerify.issues ? reVerify.issues.length : 0) + ' vs ' + _aiIssues.length + ')');
-              stagnant++;
-              if (stagnant >= 2) break;
+            const _regressed = loopPolicy.roundRegressed({
+              newDet: _det, prevDet: _curDet, violations: _vio,
+              newIssues: reVerify.issues ? reVerify.issues.length : 0, prevIssues: _aiIssues.length,
+            });
+            if (!roundOut._auditOnly && _regressed) {
+              roundLog.push('round ' + (round + 1) + ' REVERTED (det ' + _det + ' vs ' + _curDet + ', issues ' + (reVerify.issues ? reVerify.issues.length : 0) + ' vs ' + _aiIssues.length + ')');
               continue;
             }
-            if ((merged.afterScore || 0) <= (cur.afterScore || 0)) stagnant++; else stagnant = 0;
             roundLog.push('round ' + (round + 1) + ' accepted: score ' + (cur.afterScore || 0) + ' → ' + (merged.afterScore || 0) + ' (det ' + _det + ', state ' + merged.verificationState + ')');
             cur = merged;
-            curDet = _det;
             if (roundOut._auditOnly) break; // evidence refresh is deliberately single-shot
-            if (stagnant >= 2) break;
           }
         }
-        const verdict = (() => {
-          try { return pipeline.distributionVerdict(cur, { targetScore }); } catch (_) { return null; }
-        })();
-        let taggedPdfB64 = null, taggedPdfError = null;
+        let verdict = null;
+        let taggedPdfB64 = null, taggedPdfError = null, taggedPdfDelivery = null, taggedPdfExportMode = null;
+        let activeContentDetected = false;
+        let activeContentScanVerified = false;
         if (wantTaggedPdf) {
           try {
+            if (typeof pipeline.taggedPdfDeliveryVerdict !== 'function') {
+              throw new Error('Canonical tagged-PDF safety gates are unavailable.');
+            }
+            const activeScan = cur && cur.activeContent;
+            const activeTypes = new Set([
+              'open-action',
+              'javascript',
+              'launch',
+              'embedded-files',
+              'additional-actions',
+              'other-actions',
+              'multimedia',
+            ]);
+            const scanFindings = activeScan && activeScan.findings;
+            const findingsValid = Array.isArray(scanFindings) && scanFindings.every((finding) =>
+              finding && typeof finding === 'object'
+              && activeTypes.has(finding.type)
+              && Number.isSafeInteger(finding.count)
+              && finding.count > 0
+              && typeof finding.label === 'string');
+            if (!activeScan || activeScan.schema !== 1 || activeScan.complete !== true
+              || activeScan.pageScanFailures !== 0 || typeof activeScan.any !== 'boolean'
+              || activeScan.unexaminedStructures !== 0
+              || !findingsValid || activeScan.any !== (scanFindings.length > 0)
+              || !Number.isSafeInteger(activeScan.externalLinks) || activeScan.externalLinks < 0) {
+              throw new Error('active_content_scan_unavailable');
+            }
+            activeContentScanVerified = true;
+            activeContentDetected = activeScan.any;
+            if (activeContentDetected) throw new Error('active_content_requires_review');
+            taggedPdfExportMode = 'original_layout';
+            let artifactVerdict = null;
+            try {
+              verdict = pipeline.distributionVerdict(cur, { targetScore });
+              artifactVerdict = verdict;
+            } catch (_) { verdict = null; artifactVerdict = null; }
+            if (!artifactVerdict || artifactVerdict.level === 'review') {
+              throw new Error(artifactVerdict ? 'distribution_review_required' : 'distribution_verdict_unavailable');
+            }
             progress('tag', 'building tagged PDF');
             if (!(window.PDFLib && window.PDFLib.PDFDocument)) {
               await new Promise((res, rej) => {
@@ -619,20 +710,26 @@ function createDriver(options) {
             const bin = atob(b64);
             const bytes = new Uint8Array(bin.length);
             for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-            const tagged = await pipeline.createTaggedPdf(bytes, cur, {
+            const tagOptions = {
               title: fileName.replace(/\.pdf$/i, ''),
               lang: (cur && cur.documentLanguage) || (audit && audit.documentLanguage) || 'en',
               subject: 'Remediated for accessibility by AlloFlow',
-            });
+            };
+            const tagged = await pipeline.createTaggedPdf(bytes, cur, tagOptions);
             const outBytes = tagged && (tagged.bytes || tagged);
-            if (outBytes && outBytes.length) {
+            const delivery = pipeline.taggedPdfDeliveryVerdict(tagged);
+            taggedPdfDelivery = delivery && typeof delivery === 'object'
+              ? { ok: delivery.ok === true, code: String(delivery.code || '') }
+              : { ok: false, code: 'delivery-verdict-unavailable' };
+            if (outBytes && outBytes.length && taggedPdfDelivery.ok) {
               let ob = ''; const CH = 0x8000;
               for (let i = 0; i < outBytes.length; i += CH) ob += String.fromCharCode.apply(null, Array.from(outBytes.subarray(i, i + CH)));
               taggedPdfB64 = btoa(ob);
-              if (tagged && tagged.declarationWithheld !== undefined) progress('tag', 'PDF/UA declaration withheld: ' + !!tagged.declarationWithheld);
-            } else taggedPdfError = 'createTaggedPdf returned no bytes';
+              verdict = artifactVerdict;
+            } else taggedPdfError = outBytes && outBytes.length ? 'tagged_pdf_delivery_unverified' : 'createTaggedPdf returned no bytes';
           } catch (e) { taggedPdfError = (e && e.message) || String(e); }
         }
+        if (!verdict) { try { verdict = pipeline.distributionVerdict(cur, { targetScore }); } catch (_) { verdict = null; } }
         const stats = (() => { try { return pipeline.getPipelineStats(); } catch (_) { return null; } })();
         return {
           beforeScore: audit && typeof audit.score === 'number' ? audit.score : null,
@@ -645,10 +742,21 @@ function createDriver(options) {
           integrityWarning: (cur && cur.integrityWarning) || null,
           fidelityNotes: ((cur && cur.fidelityNotes) || []).map((n) => ({ kind: n.kind, msg: (n.msg || n.message || '').slice(0, 400) })),
           verificationState: (cur && cur.verificationState) || null,
-          runId: (cur && cur._runId) || null,
+          verificationHtmlBound: !!(cur && typeof pipeline.isLiveVerificationHtmlBound === 'function' && pipeline.isLiveVerificationHtmlBound(cur, cur.accessibleHtml)),
+          remainingAxeViolations: (cur && cur.axeAudit && Number.isSafeInteger(cur.axeAudit.totalViolations) && cur.axeAudit.totalViolations >= 0) ? cur.axeAudit.totalViolations : null,
+          remainingEqualAccessFailures: (cur && cur.secondEngineAudit && Number.isSafeInteger(cur.secondEngineAudit.failViolations) && cur.secondEngineAudit.failViolations >= 0)
+            ? cur.secondEngineAudit.failViolations : null,
+          runId: (cur && (cur.runId || cur._runId)) || null,
           autoContinue: wantAutoContinue ? { roundsRun, log: roundLog } : undefined,
+          auditCoverage: {
+            configuredAuditorCap: auditorCount,
+            requestedAuditors: Number.isSafeInteger(audit && audit.requestedAuditors) ? audit.requestedAuditors : null,
+            completedAuditors: Number.isSafeInteger(audit && audit.auditorCount) ? audit.auditorCount : null,
+            sliced: !!(audit && audit._slicedAudit),
+          },
           accessibleHtml: (cur && cur.accessibleHtml) || null,
-          taggedPdfB64, taggedPdfError,
+          taggedPdfB64, taggedPdfError, taggedPdfDelivery, taggedPdfExportMode,
+          activeContentScanVerified, activeContentDetected,
           stats: stats ? { apiCalls: stats.apiCalls, visionCalls: stats.visionCalls, retries: stats.retries, recoveredRetries: stats.recoveredRetries, authThrottles: stats.authThrottles, terminalFailures: stats.terminalFailures } : null,
         };
       }, {
@@ -662,6 +770,7 @@ function createDriver(options) {
         wantAutoContinue: !!opts.autoContinue,
         autoContinueRounds: Math.max(1, Math.min(5, Number(opts.autoContinueRounds) || 3)),
         pdfLibCdn: PDFLIB_CDN,
+        auditorCount: HEADLESS_AUDITOR_COUNT,
       })
     );
   }
@@ -901,12 +1010,33 @@ function createDriver(options) {
     try {
       const out = await remediate({
         filePath: pdfPath, onLog: o.onLog,
-        targetScore: 100, fixPasses: 0, polishPasses: 0, taggedPdf: false, autoContinue: false,
+        targetScore: 100, fixPasses: 0, polishPasses: 0, taggedPdf: true, autoContinue: false,
       });
       const producedHtml = !!(out && typeof out.accessibleHtml === 'string' && out.accessibleHtml.trim());
       const carriedContent = producedHtml && out.accessibleHtml.indexOf(SELFTEST_MARKER) !== -1;
       const scoredHonestly = !!(out && Number.isFinite(Number(out.beforeScore)) && Number(out.beforeScore) >= 0);
-      const ok = producedHtml && carriedContent && scoredHonestly;
+      const auditorCoverage = !!(out && out.auditCoverage
+        && out.auditCoverage.configuredAuditorCap === HEADLESS_AUDITOR_COUNT
+        && Number.isSafeInteger(out.auditCoverage.requestedAuditors)
+        && out.auditCoverage.requestedAuditors >= 3
+        && out.auditCoverage.requestedAuditors <= HEADLESS_AUDITOR_COUNT
+        && Number.isSafeInteger(out.auditCoverage.completedAuditors)
+        && out.auditCoverage.completedAuditors >= out.auditCoverage.requestedAuditors
+        && out.auditCoverage.completedAuditors <= out.auditCoverage.configuredAuditorCap
+        && out.auditCoverage.sliced === false);
+      const taggedBytes = out && typeof out.taggedPdfB64 === 'string'
+        ? Buffer.from(out.taggedPdfB64, 'base64')
+        : null;
+      const taggedArtifact = !!(taggedBytes && taggedBytes.length > 5
+        && taggedBytes.subarray(0, 5).toString('latin1') === '%PDF-');
+      const taggedDelivery = !!(out && out.taggedPdfDelivery
+        && out.taggedPdfDelivery.ok === true
+        && out.taggedPdfDelivery.code === 'verified');
+      const originalLayout = !!(out && out.taggedPdfExportMode === 'original_layout');
+      const verificationBinding = !!(out && out.verificationHtmlBound === true);
+      const activeContentScan = !!(out && out.activeContentScanVerified === true && out.activeContentDetected === false);
+      const ok = producedHtml && carriedContent && scoredHonestly && auditorCoverage
+        && taggedArtifact && taggedDelivery && originalLayout && verificationBinding && activeContentScan;
       return {
         ok,
         stage: ok ? 'complete' : 'output',
@@ -918,6 +1048,12 @@ function createDriver(options) {
           auditAccepted: scoredHonestly,     // the strict audit parse produced usable evidence
           remediationStarted: producedHtml,  // ownership + baseline gates let the run begin
           contentPreserved: carriedContent,  // the document survived the round trip
+          auditorCoverage,
+          taggedArtifact,
+          taggedDelivery,
+          originalLayout,
+          verificationBinding,
+          activeContentScan,
         },
         beforeScore: out && out.beforeScore,
         afterScore: out && out.afterScore,

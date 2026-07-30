@@ -1,11 +1,17 @@
 {
   "factoryFunctions": 117,
-  "reachedByConnector": 28,
-  "mcpTools": 24,
-  "shippedModules": [
+  "reachedByConnector": 30,
+  "mcpTools": 27,
+  "bootModules": [
     "verification_policy_module.js",
     "doc_builder_renderer_module.js",
     "doc_pipeline_module.js"
+  ],
+  "shippedAssets": [
+    "verification_policy_module.js",
+    "doc_builder_renderer_module.js",
+    "doc_pipeline_module.js",
+    "view_pdf_audit_module.js"
   ],
   "capabilities": [
     {
@@ -217,11 +223,13 @@
       "implementedIn": [
         "view_pdf_audit_module.js",
         "view_export_preview_module.js",
-        "test_prep_hub_module.js"
+        "test_prep_hub_module.js",
+        "_build_view_pdf_audit_module.js"
       ],
       "shippedWithConnector": true,
-      "callable": false,
-      "state": "shipped but trapped in the React view"
+      "publishedBuilder": "epub",
+      "callable": true,
+      "state": "reachable"
     },
     {
       "format": "DAISY export",
@@ -229,8 +237,9 @@
         "view_pdf_audit_module.js"
       ],
       "shippedWithConnector": true,
-      "callable": false,
-      "state": "shipped but trapped in the React view"
+      "publishedBuilder": "daisy",
+      "callable": true,
+      "state": "reachable"
     },
     {
       "format": "ODT export",
@@ -238,19 +247,21 @@
         "view_pdf_audit_module.js"
       ],
       "shippedWithConnector": true,
+      "publishedBuilder": null,
       "callable": true,
       "state": "reachable"
     },
     {
       "format": "Braille / BRF",
       "implementedIn": [
-        "view_export_preview_module.js",
         "view_pdf_audit_module.js",
+        "view_export_preview_module.js",
         "view_info_modal_module.js"
       ],
       "shippedWithConnector": true,
-      "callable": false,
-      "state": "shipped but trapped in the React view"
+      "publishedBuilder": "braille",
+      "callable": true,
+      "state": "reachable"
     }
   ],
   "gaps": [
@@ -258,5 +269,5 @@
     "Resource / pack HTML generation",
     "Preview + expert commands"
   ],
-  "note": "A capability that is \"in pipeline\" but not reached is a candidate MCP tool. A format not shipped with the bundle is unreachable until the bundle includes its module."
+  "note": "bootModules are loaded for every pipeline run; shippedAssets is the complete connector bundle asset set. A capability that is in the pipeline but not reached is a candidate MCP tool."
 }

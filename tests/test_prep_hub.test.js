@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import { resolve } from 'node:path';
-import { loadAlloModule } from './setup.js';
+import { loadAlloModule, registerEpppPartOne } from './setup.js';
 
 let Hub;
 
@@ -16,10 +16,69 @@ beforeAll(() => {
   loadAlloModule('test_prep_hub_module.js');
   Hub = window.AlloModules.TestPrepHub;
   if (!Hub) throw new Error('TestPrepHub did not register');
+  registerEpppPartOne(Hub);
 });
 
 describe('Test Prep Hub exam-pack contract', () => {
-  it('registers the demo and the source-reviewed EPPP pilot', () => {
+  it('keys validated learning libraries to the complete pack and manifest identity', () => {
+    const pack = {
+      id: 'identity-pack',
+      version: '1.0.0',
+      visibility: 'public',
+      learningLibraryUrl: './test_prep/identity_pack_library.json',
+    };
+    const entry = {
+      id: pack.id,
+      version: pack.version,
+      visibility: pack.visibility,
+      learningLibraryUrl: pack.learningLibraryUrl,
+      learningLibrarySha256: 'a'.repeat(64),
+    };
+    const identity = Hub.learningLibraryIdentity(pack, entry);
+
+    expect(identity).toContain(pack.id);
+    expect(Hub.learningLibraryIdentity({ ...pack, version: '1.0.1' }, entry)).not.toBe(identity);
+    expect(Hub.learningLibraryIdentity({ ...pack, visibility: 'internal' }, entry)).not.toBe(identity);
+    expect(Hub.learningLibraryIdentity({ ...pack, learningLibraryUrl: './test_prep/identity_pack_library_v2.json' }, entry)).not.toBe(identity);
+    expect(Hub.learningLibraryIdentity(pack, { ...entry, version: '1.0.1' })).not.toBe(identity);
+    expect(Hub.learningLibraryIdentity(pack, { ...entry, learningLibrarySha256: 'b'.repeat(64) })).not.toBe(identity);
+  });
+
+  it('derives targeted-skill labels from items before the full library is available and upgrades them from library metadata', () => {
+    const pack = {
+      domains: [{ id: 'safety-domain', label: 'Safety Domain' }],
+      items: [{ domainId: 'safety-domain', skillIds: ['hazard-recognition'] }],
+    };
+    expect(Hub.packSkillCatalog(pack, null)).toEqual([{
+      id: 'hazard-recognition',
+      label: 'Hazard Recognition',
+      domain: 'Safety Domain',
+    }]);
+    expect(Hub.packSkillCatalog(pack, {
+      skills: [{ id: 'hazard-recognition', label: 'Recognize Workplace Hazards', domain: 'Applied Safety' }],
+    })).toEqual([{
+      id: 'hazard-recognition',
+      label: 'Recognize Workplace Hazards',
+      domain: 'Applied Safety',
+    }]);
+  });
+
+  it('returns the empty search contract before reading or normalizing pack and library data', () => {
+    const unreadable = new Proxy({}, {
+      get() {
+        throw new Error('Blank search must not traverse this object.');
+      },
+    });
+    expect(Hub.searchPack(unreadable, unreadable, '   ', { limit: 17 })).toEqual({
+      query: '',
+      total: 0,
+      counts: {},
+      results: [],
+      limit: 17,
+    });
+  });
+
+  it('registers the demo and explicitly loads the source-reviewed EPPP lazy pack fixture', () => {
     const packs = Hub.listPacks();
     const demo = packs.find((pack) => pack.id === 'workplace-safety-foundations-demo');
     const eppp = packs.find((pack) => pack.id === 'eppp-part-one');
@@ -35,7 +94,7 @@ describe('Test Prep Hub exam-pack contract', () => {
     expect(eppp.items.every((item) => item.reviewStatus === 'source-reviewed')).toBe(true);
     expect(eppp.items.every((item) => item.references.length > 0)).toBe(true);
     expect(eppp.items.every((item) => item.choiceRationales.length === item.choices.length)).toBe(true);
-    expect(eppp.legacyUrl).toBe('https://alloflow-cdn.pages.dev/test_prep/eppp_legacy/index.html?embedded=1');
+    expect(eppp.legacyUrl).toBe('');
     expect(eppp.nativeQaUrl).toBe('https://alloflow-cdn.pages.dev/test_prep/eppp_native_qa.json');
     expect(eppp.learningLibraryUrl).toBe('https://alloflow-cdn.pages.dev/test_prep/eppp_learning_library.json');
     expect(eppp.learningLibraryQaUrl).toBe('https://alloflow-cdn.pages.dev/test_prep/eppp_learning_library_qa.json');
@@ -340,10 +399,14 @@ describe('Test Prep Hub exam-pack contract', () => {
 });
 
 describe('Test Prep Hub host contract', () => {
-  it('is registered, lazy-loaded, gated, and exposed in Learning Tools', () => {
+  it('is registered, lazy-loaded, gated, exposed in Learning Tools, and retires the standalone EPPP runtime', () => {
     const app = fs.readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
     const launcher = fs.readFileSync(resolve(process.cwd(), 'view_learning_hub_modal_source.jsx'), 'utf8');
     const build = fs.readFileSync(resolve(process.cwd(), 'build.js'), 'utf8');
+    const registry = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/pack_registry.json'), 'utf8'));
+    const manifest = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/pack_manifest.json'), 'utf8'));
+    const epppRegistryEntry = registry.entries.find((entry) => entry.id === 'eppp-part-one');
+    const epppDescriptor = manifest.entries.find((entry) => entry.id === 'eppp-part-one');
 
     expect(app).toContain("loadModule('TestPrepHub'");
     expect(app).toContain('moduleKey="TestPrepHub"');
@@ -352,25 +415,35 @@ describe('Test Prep Hub host contract', () => {
     expect(launcher).toContain('setIsTestPrepHubOpen(true)');
     expect(build).toContain("filename: 'test_prep_hub_module.js'");
 
-    const legacyIndex = fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_legacy/index.html'), 'utf8');
-    const deployedLegacyIndex = fs.readFileSync(resolve(process.cwd(), 'desktop/web-app/public/test_prep/eppp_legacy/index.html'), 'utf8');
-    expect(legacyIndex).not.toMatch(/js\/auth\.js/i);
-    expect(fs.existsSync(resolve(process.cwd(), 'test_prep/eppp_legacy/js/auth.js'))).toBe(false);
-    const legacyApp = fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_legacy/js/app.js'), 'utf8');
-    expect(legacyApp).not.toMatch(/AUTH & PAYWALL GATE|renderPaywall/);
-    expect(legacyIndex).toContain('alloflow_embed.js');
-    const legacyBridge = fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_legacy/alloflow_embed.js'), 'utf8');
-    const legacyEmbedCss = fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_legacy/alloflow_embed.css'), 'utf8');
-    const deployedLegacyEmbedCss = fs.readFileSync(resolve(process.cwd(), 'desktop/web-app/public/test_prep/eppp_legacy/alloflow_embed.css'), 'utf8');
-    expect(legacyBridge).toContain('not official EPPP equating');
-    expect(legacyBridge).not.toContain('legacy workspace');
-    expect(legacyIndex).toContain('AlloFlow Study Suite');
-    expect(legacyIndex).not.toContain('AlloFlow Legacy Workspace');
-    expect(deployedLegacyIndex).toBe(legacyIndex);
-    expect(legacyEmbedCss).toContain('0.875rem/1.45');
-    expect(legacyEmbedCss).not.toContain('14px/1.45');
-    expect(deployedLegacyEmbedCss).toBe(legacyEmbedCss);
-    expect(fs.existsSync(resolve(process.cwd(), 'dev-tools/import_eppp_legacy.cjs'))).toBe(true);
+    expect(epppRegistryEntry).toMatchObject({
+      loadMode: 'lazy',
+      visibility: 'public',
+      sourcePath: 'test_prep/eppp_part_one_pack.json',
+    });
+    expect(epppRegistryEntry.embedded).toBeUndefined();
+    expect(epppDescriptor).toMatchObject({
+      loadMode: 'lazy',
+      packUrl: './test_prep/eppp_part_one_pack.json',
+      itemCount: 1500,
+      domainCount: 8,
+    });
+    expect(epppDescriptor.sha256).toMatch(/^[a-f0-9]{64}$/);
+
+    const hubSource = fs.readFileSync(resolve(process.cwd(), 'test_prep_hub_source.jsx'), 'utf8');
+    const eppp = Hub.listPacks().find((pack) => pack.id === 'eppp-part-one');
+    expect(eppp).toBeTruthy();
+    expect(eppp.legacyUrl).toBe('');
+    expect(hubSource).not.toContain('eppp_legacy');
+    expect(hubSource).not.toContain('EPPP_NATIVE_ITEMS');
+    expect(hubSource).not.toContain('EPPP_PART_ONE_SCAFFOLD');
+    expect(hubSource).not.toContain('<iframe');
+    expect(hubSource).not.toContain('legacy chapter fallback');
+    expect(hubSource).toContain("return requireCompleteNative === true ? 'native-incomplete' : 'native-basic';");
+    expect(hubSource).toContain("testPrepNativeChapterRoute(learningLibrary, chapter, selectedPack.id === 'eppp-part-one')");
+    expect(hubSource).toContain("if (route === 'native-incomplete')");
+    expect(hubSource).toContain('aria-labelledby="native-chapter-unavailable-title" role="alert" aria-live="assertive"');
+    expect(hubSource).toContain('To protect study accuracy, the chapter has not been displayed.');
+    expect(hubSource).toContain('legacyUrl: testPrepNormalizeRepoAssetUrl(input.legacyUrl)');
   });
 });
 

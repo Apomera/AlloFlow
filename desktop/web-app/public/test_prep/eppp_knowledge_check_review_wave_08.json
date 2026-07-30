@@ -1,0 +1,476 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "knowledge-check-wave-08",
+  "reviewDate": "2026-07-28",
+  "scope": "Eighth claim-level source-review wave for learner-visible chapter knowledge checks, closing the remaining editorial queue in four domains and reviewing two high-risk or oversimplified records in each of the two domains that retain a small queue.",
+  "summary": {
+    "items": 12,
+    "domains": 6,
+    "itemsPerDomain": 2,
+    "sourceReviewedEditorialPass": 12,
+    "independentExpertReviewPending": 12,
+    "productionValidationPending": 12,
+    "domainCounts": {
+      "Assessment & Diagnosis": 2,
+      "Treatment, Intervention & Prevention": 2,
+      "Cognitive-Affective Bases of Behavior": 2,
+      "Social & Cultural Bases of Behavior": 2,
+      "Growth & Lifespan Development": 2,
+      "Research Methods & Statistics": 2
+    }
+  },
+  "releasePolicy": "Only source-reviewed-editorial-pass records are eligible for learner rendering. Source review does not replace independent expert review, psychometric evaluation, or production validation.",
+  "safeguards": [
+    "Interview structure and cultural inquiry are presented as supports for assessment rather than guarantees of reliability or substitutes for diagnosis.",
+    "Named therapy and relationship constructs are distinguished using model-specific features without implying exclusive techniques, diagnoses, or deterministic outcomes.",
+    "Classic language, attention, conformity, bystander, and developmental findings retain task, sample, measurement, and inference boundaries.",
+    "Statistical direction and association are separated from distributional heuristics and causal conclusions.",
+    "Emergency-response language follows current public first-aid guidance while remaining within a psychology exam-preparation context.",
+    "Every record remains explicitly gated for independent expert and production validation."
+  ],
+  "items": [
+    {
+      "legacyId": "knowledge-check-d335fd83aa8ad97c",
+      "chapterId": "ch-5",
+      "sectionId": "ch-5-section-2",
+      "domainId": 1,
+      "domain": "Assessment & Diagnosis",
+      "prompt": "A multicenter trial wants different trained clinicians to apply the same major-depressive-disorder criteria consistently when determining eligibility. Which plan best supports that goal?",
+      "choices": [
+        "Use a validated disorder-appropriate structured or semistructured diagnostic interview, train and calibrate raters, and monitor agreement during implementation",
+        "Allow each clinician to conduct an entirely unstructured interview because clinical expertise makes explicit coding rules unnecessary",
+        "Select any interview called structured and assume its format alone guarantees accurate diagnoses across populations, languages, and settings",
+        "Replace diagnostic interviewing with a symptom checklist total because a numerical cutoff eliminates the need to evaluate criteria and impairment"
+      ],
+      "answerIndex": 0,
+      "rationale": "A validated structured or semistructured diagnostic interview can standardize questions, follow-up probes, and criterion coding, which supports interrater agreement in research. A SCID-5-CV study reported generally adequate reliability and also emphasized careful use by less-experienced professionals. The trial should therefore choose an instrument validated for its disorders, language, population, and purpose; train raters; document coding rules; assess agreement; and address drift. Structure does not replace clinical judgment, impairment assessment, or relevant exclusion and differential considerations. Crucially, format alone cannot guarantee reliability, validity, or transportability when training, prevalence, information quality, or implementation differs.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/31490607/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Clinical validity and intrarater and test-retest reliability of the Structured Clinical Interview for DSM-5 - Clinician Version (SCID-5-CV)",
+          "organization": "Psychiatry and Clinical Neurosciences via U.S. National Library of Medicine",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/31490607/",
+          "whyReputable": "This peer-reviewed primary study directly evaluates SCID-5-CV validity and several reliability conditions in a heterogeneous clinical sample."
+        }
+      ],
+      "reviewNote": "Replaced an absolute format-ranking item with an implementation decision that includes instrument fit, training, calibration, rater drift, and separate reliability and validity limits.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-08",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-67819ac286663041",
+      "chapterId": "ch-5",
+      "sectionId": "ch-5-section-9",
+      "domainId": 1,
+      "domain": "Assessment & Diagnosis",
+      "prompt": "A client and clinician appear to understand the client's distress, causes, supports, and preferred care differently. What is the most defensible use of the DSM-5-TR Cultural Formulation Interview?",
+      "choices": [
+        "Reserve it for clients whose race or ethnicity differs visibly from the clinician because culture is otherwise unlikely to affect assessment",
+        "Use its 16-question framework to elicit the client's cultural perspective and care context, then integrate that information with the rest of the assessment",
+        "Score it as a stand-alone diagnostic test that determines whether the presentation meets criteria for a culture-bound disorder",
+        "Administer it only after every standard diagnostic procedure has failed because cultural inquiry can contaminate objective clinical data"
+      ],
+      "answerIndex": 1,
+      "rationale": "The American Psychiatric Association describes the CFI as 16 questions used during mental health assessment to examine culture's impact on clinical presentation and care. Its domains include the person's definition of the problem, explanatory model, stressors and supports, coping, help seeking, and preferences, including relationship or access concerns. Culture is not limited to visibly different groups, and inquiry need not wait for diagnostic failure. The CFI supports collaborative understanding and can guide further questions, but it supplements rather than replaces diagnostic interviewing, risk and functional assessment, collateral information when appropriate, or criterion-based clinical judgment. It is not a scored stand-alone diagnostic instrument.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.psychiatry.org/psychiatrists/practice/dsm/educational-resources/assessment-measures",
+        "https://www.psychiatry.org/getmedia/5cc5329d-3bd4-4c6a-bae1-dfd0d6496f44/APA-DSM5TR-CulturalFormulationInterview.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "DSM-5-TR Online Assessment Measures",
+          "organization": "American Psychiatric Association",
+          "url": "https://www.psychiatry.org/psychiatrists/practice/dsm/educational-resources/assessment-measures",
+          "whyReputable": "This official APA resource defines the CFI's 16-question assessment purpose and states that assessment measures should enhance, not solely determine, diagnosis."
+        },
+        {
+          "title": "Cultural Formulation Interview",
+          "organization": "American Psychiatric Association",
+          "url": "https://www.psychiatry.org/getmedia/5cc5329d-3bd4-4c6a-bae1-dfd0d6496f44/APA-DSM5TR-CulturalFormulationInterview.pdf",
+          "whyReputable": "This is the official DSM-5-TR CFI form and interviewer guide, providing the actual domains, questions, and instructions represented in the item."
+        }
+      ],
+      "reviewNote": "Reframed the CFI as a broadly relevant, collaborative assessment component and removed race-only, last-resort, and stand-alone diagnostic misconceptions.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-08",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-d614ba7edc6af5e5",
+      "chapterId": "ch-14",
+      "sectionId": "ch-14-section-3",
+      "domainId": 3,
+      "domain": "Treatment, Intervention & Prevention",
+      "prompt": "A therapist focuses on the client's rigid demand, \"I must get this promotion,\" and disputes the conclusion, \"If I do not, I am a total failure as a person.\" Which formulation is most characteristic?",
+      "choices": [
+        "Acceptance and Commitment Therapy, because its defining move is to prove that an unwanted thought is logically false before values work can begin",
+        "Person-centered therapy, because empathic reflection requires the therapist to classify the client's belief as irrational and debate it directly",
+        "Rational Emotive Behavior Therapy, because demandingness and global self-rating are explicit targets in its model of irrational beliefs",
+        "Behavioral activation, because the promotion belief is treated primarily as an environmental reinforcer scheduled independently of cognition"
+      ],
+      "answerIndex": 2,
+      "rationale": "REBT theory identifies demandingness, often expressed as rigid musts or shoulds, and global evaluation of self or others as central irrational-belief processes. The vignette's combination of disputing a must and challenging a total self-rating therefore makes REBT the best model-specific answer. Other cognitive and behavioral therapies may also examine evidence, language, avoidance, behavior, values, or consequences, so questioning a belief is not exclusive to REBT. The inference rests on the distinctive formulation, not on the mere fact that the therapist asks challenging questions. In practice, technique choice also depends on a collaborative case formulation, client goals, competence, responsiveness, and outcome monitoring.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://albertellis.org/wp-content/uploads/2018/02/REBT-Theory-Metaanalysis.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "A Meta-Analysis of the Fundamental REBT Theory: Focus on Irrational Beliefs",
+          "organization": "Journal of Clinical Psychology and Albert Ellis Institute",
+          "url": "https://albertellis.org/wp-content/uploads/2018/02/REBT-Theory-Metaanalysis.pdf",
+          "whyReputable": "This peer-reviewed meta-analysis hosted by the model's institute defines and evaluates demandingness, awfulizing, frustration intolerance, and global evaluation in REBT theory."
+        }
+      ],
+      "reviewNote": "Made the discrimination depend on REBT-specific demandingness and global evaluation while acknowledging technique overlap and the need for collaborative formulation.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-08",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-97e00d15171c5bbd",
+      "chapterId": "ch-15",
+      "sectionId": "ch-15-section-5",
+      "domainId": 3,
+      "domain": "Treatment, Intervention & Prevention",
+      "prompt": "During a disagreement, one partner repeatedly mocks the other, rolls their eyes, and speaks from a position of superiority. In Gottman's Four Horsemen framework, how should this pattern be classified?",
+      "choices": [
+        "Criticism, because any negative statement about a partner is classified as a character attack regardless of its form or relational position",
+        "Defensiveness, because mockery and superiority primarily communicate innocent-victim status and countercomplaining",
+        "Stonewalling, because visible eye movement is sufficient evidence that the partner has physiologically withdrawn from the interaction",
+        "Contempt, while recognizing that the model-specific label describes an interaction pattern rather than diagnosing the partner or determining the relationship's fate"
+      ],
+      "answerIndex": 3,
+      "rationale": "Within the Four Horsemen framework, contempt communicates disrespect or superiority and can appear as mockery, sarcasm, sneering, name-calling, or eye-rolling. Criticism frames a complaint as a defect in the partner, defensiveness wards off responsibility or counterattacks, and stonewalling involves disengagement. The behavior in the vignette therefore most clearly fits contempt. Longitudinal work links patterns of negative interaction with later relationship distress or dissolution, but a risk association is not an individual certainty. This classification does not diagnose the relationship or make divorce certain; assessment should separately address frequency, context, reciprocity, safety, coercion, culture, distress, strengths, and each partner's perspective.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.gottman.com/blog/the-four-horsemen-contempt/",
+        "https://pubmed.ncbi.nlm.nih.gov/1403613/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The Four Horsemen: Contempt",
+          "organization": "The Gottman Institute",
+          "url": "https://www.gottman.com/blog/the-four-horsemen-contempt/",
+          "whyReputable": "This model-author institute resource defines contempt and gives the verbal and nonverbal examples represented in the item."
+        },
+        {
+          "title": "Marital processes predictive of later dissolution: behavior, physiology, and health",
+          "organization": "Journal of Personality and Social Psychology via U.S. National Library of Medicine",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/1403613/",
+          "whyReputable": "This peer-reviewed prospective study by the model's researchers supports bounded risk language rather than certain individual prediction."
+        }
+      ],
+      "reviewNote": "Preserved the model-specific contempt cue while removing deterministic divorce language and separating communication-pattern classification from diagnosis and safety assessment.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-08",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-b478e4361ac886f0",
+      "chapterId": "ch-28",
+      "sectionId": "ch-28-section-2",
+      "domainId": 5,
+      "domain": "Cognitive-Affective Bases of Behavior",
+      "prompt": "A child who correctly says \"walked\" also says \"goed,\" and can apply an English past-tense ending to a novel verb. What conclusion is best supported by this pattern?",
+      "choices": [
+        "The child can generalize a productive morphological pattern beyond memorized adult word forms, while still learning exceptions",
+        "The child must have heard and imitated the exact form \"goed,\" because novel inflections cannot be generated without direct reinforcement",
+        "The error uniquely proves a specific innate language module and rules out statistical, analogy-based, and connectionist learning accounts",
+        "The child has permanently lost the representation of irregular verbs and should therefore be assumed to have a language disorder"
+      ],
+      "answerIndex": 0,
+      "rationale": "Berko's primary study used unfamiliar words to test whether children could extend English morphological patterns beyond forms they had heard. Applying a regular past-tense ending to a novel verb, together with an overregularization such as \"goed,\" supports productive generalization rather than simple repetition of that exact adult form. It does not mean that irregular forms are erased or that the error itself is pathological; development includes learning how regular patterns and lexical exceptions interact. The observation also does not uniquely identify one learning architecture. Rule-based, statistical, analogical, and connectionist accounts make different claims about the mechanism, so the defensible conclusion stays at the demonstrated behavioral capacity.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://doi.org/10.1080/00437956.1958.11659661"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The Child's Learning of English Morphology",
+          "organization": "WORD, Taylor & Francis",
+          "url": "https://doi.org/10.1080/00437956.1958.11659661",
+          "whyReputable": "This is Berko's peer-reviewed primary experiment using novel words to distinguish productive morphological generalization from memorization."
+        }
+      ],
+      "reviewNote": "Retained the high-yield overregularization inference while preventing the single behavior from proving one mechanism, direct reinforcement, permanent loss, or disorder.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-08",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-ce66a37e0098d776",
+      "chapterId": "ch-29",
+      "sectionId": "ch-29-section-5",
+      "domainId": 5,
+      "domain": "Cognitive-Affective Bases of Behavior",
+      "prompt": "While shadowing speech in one ear, some participants notice their own name in the nominally ignored ear and briefly lose accuracy. What is the strongest inference from this result?",
+      "choices": [
+        "All words in the ignored channel must have been consciously identified and stored, because noticing one salient name demonstrates complete semantic analysis",
+        "Personally salient material can sometimes capture or redirect attention after enough unattended information is processed to distinguish it",
+        "Participants were never attending to the target channel, because any distraction proves that selective attention had entirely failed before the name",
+        "The result establishes a permanently open late-selection filter that operates identically for every listener, stimulus, workload, and listening condition"
+      ],
+      "answerIndex": 1,
+      "rationale": "Moray's classic result and Wood and Cowan's later primary study show that a participant's own name can sometimes be detected in an irrelevant auditory channel during dichotic shadowing. Wood and Cowan also linked later awareness to an attention shift, and detection occurred for only a subset of participants. The bounded conclusion is therefore that personally salient information may receive enough processing to capture or redirect attention under some conditions. Detection of one name is not evidence that every unattended word received full semantic analysis, that the target was never attended, or that one historical early- versus late-selection model is universally correct. Stimulus timing, acoustic features, task instructions, working-memory differences, and momentary attention matter.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/7673862/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The cocktail party phenomenon revisited: attention and memory in the classic selective listening procedure of Cherry (1953)",
+          "organization": "Journal of Experimental Psychology: General via U.S. National Library of Medicine",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/7673862/",
+          "whyReputable": "This peer-reviewed primary experiment revisits own-name detection and directly examines whether awareness reflects shifts toward the irrelevant channel."
+        }
+      ],
+      "reviewNote": "Changed a categorical filter-model question into a bounded inference about occasional salience-driven attention capture, individual variability, and incomplete unattended processing.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-08",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-484b1c12245b343b",
+      "chapterId": "ch-42",
+      "sectionId": "ch-42-section-2",
+      "domainId": 8,
+      "domain": "Research Methods & Statistics",
+      "prompt": "A histogram of income shows most observations between $30,000 and $50,000 and a sparse tail extending toward several much larger values. How should the distribution be described?",
+      "choices": [
+        "Left-skewed, because the observations with the greatest values pull the tail toward the lower end of the horizontal axis",
+        "Symmetric, because the presence of one central cluster is sufficient to establish equal tail length around its center",
+        "Right-skewed or positively skewed, because the relatively long tail extends toward the larger observed values",
+        "Bimodal, because every distribution containing outliers necessarily has a second local peak at the extreme values"
+      ],
+      "answerIndex": 2,
+      "rationale": "NIST defines positive skew as a distribution with a relatively long right tail and negative skew as one with a relatively long left tail. The described high-income observations create the long tail toward larger values, so right-skewed or positively skewed is the best answer. A histogram is especially useful because skewness concerns the shape and relative tails of the observed distribution. In many unimodal right-skewed data sets the mean exceeds the median, but mean-median-mode ordering is a heuristic, not the definition of skewness, and it need not hold under every distributional shape or sample. Outliers also do not by themselves establish a second mode, and skewness does not identify the substantive process that generated the data.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.itl.nist.gov/div898/handbook/eda/section3/eda35b.htm"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Measures of Skewness and Kurtosis",
+          "organization": "National Institute of Standards and Technology",
+          "url": "https://www.itl.nist.gov/div898/handbook/eda/section3/eda35b.htm",
+          "whyReputable": "This U.S. government statistical handbook defines left and right skewness by distributional asymmetry and tail direction and explains alternative coefficients."
+        }
+      ],
+      "reviewNote": "Moved the construct test from a memorized mean-median-mode slogan to visible tail direction and explicitly marked that ordering as a conditional heuristic.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-08",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-80f5b4b1e7021c2f",
+      "chapterId": "ch-42",
+      "sectionId": "ch-42-section-5",
+      "domainId": 8,
+      "domain": "Research Methods & Statistics",
+      "prompt": "Across months, ice-cream sales correlate at r = .60 with drowning deaths. With no manipulation or adequate causal adjustment, which interpretation is most defensible?",
+      "choices": [
+        "The association is too weak to matter, because only coefficients of at least .80 can represent a real relationship between measured variables",
+        "The coefficient proves reverse causation, because drowning deaths necessarily cause later increases in community ice-cream purchases",
+        "The coefficient of determination proves that temperature explains exactly 36% of drowning deaths, even though temperature was not measured",
+        "The variables are associated, but season or temperature is a plausible common cause and the correlation alone cannot establish ice cream as causal"
+      ],
+      "answerIndex": 3,
+      "rationale": "A correlation of .60 describes a moderately strong positive linear association in the observed data; it does not identify the causal structure. Temperature or season plausibly affects both exposure to swimming and ice-cream sales, creating a common-cause explanation. Directionality, chance, selection, measurement, and other confounding explanations also require consideration. Squaring r yields .36 as shared linear variance between the two measured variables in that sample, not the percentage caused by an unmeasured temperature variable and not the proportion of individual deaths explained. The result does not establish that ice cream itself causes or prevents drowning. Causal inference requires design, temporal, measurement, and analytic assumptions beyond the coefficient alone.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.itl.nist.gov/div898/handbook/ppc/section1/ppc136.htm",
+        "https://www.cdc.gov/field-epi-manual/php/chapters/analyze-interpret-data.html"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Experiments and Experimental Design",
+          "organization": "National Institute of Standards and Technology",
+          "url": "https://www.itl.nist.gov/div898/handbook/ppc/section1/ppc136.htm",
+          "whyReputable": "This U.S. government statistical handbook directly distinguishes correlation from causality and explains why association alone is insufficient."
+        },
+        {
+          "title": "Analyzing and Interpreting Data",
+          "organization": "Centers for Disease Control and Prevention Field Epidemiology Manual",
+          "url": "https://www.cdc.gov/field-epi-manual/php/chapters/analyze-interpret-data.html",
+          "whyReputable": "This official epidemiology manual defines confounding and enumerates alternative explanations that must be evaluated before causal interpretation."
+        }
+      ],
+      "reviewNote": "Retained the classic confounding example while making the coefficient informative, correcting the r-squared distractor, and distinguishing association from proof of no causation.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-08",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-d6482e3b3b744d52",
+      "chapterId": "ch-31",
+      "sectionId": "ch-31-section-2",
+      "domainId": 6,
+      "domain": "Social & Cultural Bases of Behavior",
+      "prompt": "In an Asch-style line-judgment task, one confederate begins disagreeing with an otherwise unanimous incorrect majority. What is the best evidence-bounded prediction?",
+      "choices": [
+        "Conformity will probably decrease relative to an otherwise unanimous majority, but the amount depends on the dissenter's response and the task and sample",
+        "Conformity must fall to zero because any dissent gives every participant sufficient social support to answer independently on every trial",
+        "Conformity must rise because any disagreement increases ambiguity even when the perceptual comparison remains objectively straightforward",
+        "The manipulation proves that all earlier yielding was normative rather than informational, because behavior alone reveals each participant's motive"
+      ],
+      "answerIndex": 0,
+      "rationale": "Experimental work following the Asch paradigm found that breaking group consensus can reduce conformity relative to a unanimous condition. The result is probabilistic, and a dissenter who agrees with the participant may provide different support from one who supplies another wrong answer. Thus the strongest prediction is a relative reduction whose magnitude depends on the dissent manipulation, task, instructions, response visibility, sample, and context. Breaking unanimity does not guarantee zero conformity, and a behavioral difference does not identify every participant's private motive or establish a pure normative-versus-informational mechanism. Classic laboratory findings also should not be treated as culture-free effect sizes for all real groups.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://eric.ed.gov/?id=ED020552"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Consensus and Conformity",
+          "organization": "U.S. Department of Education ERIC archive",
+          "url": "https://eric.ed.gov/?id=ED020552",
+          "whyReputable": "This government-indexed primary experimental report directly compares unanimous-group conditions with different ways of breaking consensus."
+        }
+      ],
+      "reviewNote": "Replaced a universal dissent effect with a relative, context-bounded prediction and separated observed yielding from unmeasured normative or informational motives.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-08",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-6607bca9f2de16e3",
+      "chapterId": "ch-31",
+      "sectionId": "ch-31-section-4",
+      "domainId": 6,
+      "domain": "Social & Cultural Bases of Behavior",
+      "prompt": "A person suddenly collapses on a crowded platform while several observers look at one another. Which interpretation and immediate response are best supported?",
+      "choices": [
+        "Assume stable apathy among all observers and wait for a person with a more prosocial personality to determine whether the event is real",
+        "Recognize diffusion and ambiguity as possible barriers; check scene safety, call or direct a specific person to call emergency services, and follow dispatcher guidance",
+        "Expect the largest crowd to respond fastest because social facilitation necessarily improves performance in every emergency",
+        "Conclude that deindividuation has made intervention impossible and disperse the crowd before contacting emergency services"
+      ],
+      "answerIndex": 1,
+      "rationale": "Bystander research supports an average reduction in individual helping when others are present, with diffusion of responsibility and ambiguity among plausible mechanisms. Meta-analysis also shows meaningful moderators: dangerous events and circumstances in which other bystanders provide support can attenuate or reverse the average pattern. The scene therefore does not make nonhelpers apathetic by definition or guarantee delay. For a possible life-threatening collapse, public first-aid guidance prioritizes scene safety, calling emergency services or clearly directing someone to call and obtain equipment, and following dispatcher instructions while providing care within one's training. The social explanation must never become a reason to postpone emergency action.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/21534650/",
+        "https://www.redcross.org/take-a-class/resources/articles/the-three-cs-of-first-aid-check-call-care"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The bystander-effect: a meta-analytic review on bystander intervention in dangerous and non-dangerous emergencies",
+          "organization": "Psychological Bulletin via U.S. National Library of Medicine",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/21534650/",
+          "whyReputable": "This peer-reviewed meta-analysis synthesizes 105 independent effects and directly tests moderators of the average bystander effect."
+        },
+        {
+          "title": "Check, Call, Care: 3 Emergency Action Steps",
+          "organization": "American Red Cross",
+          "url": "https://www.redcross.org/take-a-class/resources/articles/the-three-cs-of-first-aid-check-call-care",
+          "whyReputable": "This current national first-aid organization guidance supports the item's safe action sequence of scene check, emergency call, and appropriate care."
+        }
+      ],
+      "reviewNote": "Added current emergency-action guidance and meta-analytic moderators so the item teaches a plausible social mechanism without trait blame or dangerous delay.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-08",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-ed93476d937a6bae",
+      "chapterId": "ch-37",
+      "sectionId": "ch-37-section-2",
+      "domainId": 7,
+      "domain": "Growth & Lifespan Development",
+      "prompt": "An infant looks longer when a hidden object appears to vanish yet searches at the previously rewarded location on an A-not-B reach trial. Which conclusion best fits both findings?",
+      "choices": [
+        "One measure must be invalid because a valid measure of object representation must produce identical behavior across looking and reaching tasks",
+        "The infant has reached formal operations, because noticing an unexpected event is equivalent to abstract hypothetical-deductive reasoning",
+        "Looking and manual search impose partly different memory, inhibition, representation, motor, and social demands, so knowledge may not control both responses identically",
+        "The reach error proves the infant has no representation of the hidden object, making the looking-time difference necessarily random"
+      ],
+      "answerIndex": 2,
+      "rationale": "Research comparing looking and reaching versions of A-not-B tasks shows that performance can diverge within development and even within the same infant. Looking-time responses can indicate an expectation about an object's location while a manual response still reflects a previously reinforced reach. Memory for the new location, delay, inhibitory control, motor planning, attention, cueing, and the social task context can all affect search. Accordingly, failure of manual search is not a pure readout of whether the infant represents the hidden object, and longer looking is not a direct window into a fully adult concept. Converging measures and carefully matched task demands support a stronger developmental inference than treating either behavior as exhaustive.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC3564966/",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC7187186/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Developmental Progression of Looking and Reaching Performance on the A-not-B Task",
+          "organization": "Developmental Psychology research article via PubMed Central",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3564966/",
+          "whyReputable": "This peer-reviewed primary within-subjects study directly compares infants' looking and reaching performance on related A-not-B tasks."
+        },
+        {
+          "title": "Investigating the social environment of the A-not-B search task",
+          "organization": "Infant and Child Development research article via PubMed Central",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7187186/",
+          "whyReputable": "This peer-reviewed primary study tests how experimenter gaze and the social environment contribute to active search performance."
+        }
+      ],
+      "reviewNote": "Converted an apparent contradiction into a multiple-measures inference that separates representation from executive, motor, temporal, and social task demands.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-08",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-be3d8ddd0366c457",
+      "chapterId": "ch-38",
+      "sectionId": "ch-38-section-3",
+      "domainId": 7,
+      "domain": "Growth & Lifespan Development",
+      "prompt": "A student claims that Kohlberg measures justice reasoning for men, whereas Gilligan proves that women reason through care. Which correction is most defensible?",
+      "choices": [
+        "A moral choice reveals a Kohlberg stage directly, so the reasons offered, dilemma content, and scoring procedure are unnecessary",
+        "Care and justice are mutually exclusive developmental stages, and every person permanently enters one according to sex assigned at birth",
+        "Because average gender differences are not absolute, moral-reasoning structure, orientation, culture, relationships, and behavior should all be collapsed into one score",
+        "Reasoning structures and care or justice emphases can organize inquiry, but justification, context, measurement, and overlapping individual variation must be assessed separately"
+      ],
+      "answerIndex": 3,
+      "rationale": "Kohlberg's approach concerns the structure of the justification offered for a moral judgment, not the chosen action alone. Gilligan's critique broadened attention to care, relationships, and dilemma context, but it should not be converted into a fixed binary by gender. A meta-analysis found only small average differences in moral orientation overall, with effects varying by how dilemmas and orientations were elicited. These data do not support a categorical women-care/men-justice rule, nor do they show that care and justice are mutually exclusive stages. A defensible contemporary use examines reasoning, content, context, culture, role opportunities, action, and measurement separately and avoids treating a framework as a diagnosis or deterministic developmental rank.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/10989620/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Gender differences in moral orientation: a meta-analysis",
+          "organization": "Psychological Bulletin via U.S. National Library of Medicine",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/10989620/",
+          "whyReputable": "This peer-reviewed meta-analysis directly evaluates the claimed care-versus-justice gender difference across methods and samples."
+        }
+      ],
+      "reviewNote": "Removed gender essentialism while retaining the high-yield distinction between reasoning structure, moral orientation, chosen action, context, and measurement.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-08",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    }
+  ]
+}

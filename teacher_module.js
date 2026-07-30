@@ -117,6 +117,99 @@ function alloRestoreFocus() {
     _alloFocusTrigger = null;
   }
 }
+const rosterSessionCsvCell = (value) => {
+  const raw = value === null || value === void 0 ? "" : String(value);
+  const text = /^[=+@-]/.test(raw) ? "'" + raw : raw;
+  return /[",\r\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
+};
+const buildRosterSessionEvidenceCsv = (session) => {
+  const source = session && typeof session === "object" ? session : {};
+  const headers = [
+    "record_type",
+    "session_id",
+    "ended_at",
+    "duration_minutes",
+    "transport",
+    "codename",
+    "group_id",
+    "quiz_responses",
+    "activity_opportunities",
+    "activity_submissions",
+    "revisions",
+    "follow_up",
+    "activity_kind",
+    "invited",
+    "submitted",
+    "approved",
+    "hidden",
+    "feedback_sent",
+    "votes_cast"
+  ];
+  const rows = [headers];
+  const followUp = new Set((source.insightBrief?.followUpCodenames || []).map(String));
+  Object.entries(source.participants && typeof source.participants === "object" ? source.participants : {}).sort(([a], [b]) => a.localeCompare(b)).forEach(([codename, rawRecord]) => {
+    const record = rawRecord && typeof rawRecord === "object" ? rawRecord : {};
+    rows.push([
+      "participant",
+      source.id || "",
+      source.endedAt || "",
+      source.durationMinutes ?? "",
+      source.mode || "",
+      codename,
+      record.groupId || "",
+      record.responseCount || 0,
+      record.liveActivityCount || 0,
+      record.liveSubmissionCount || 0,
+      record.liveRevisionCount || 0,
+      followUp.has(codename) ? "yes" : "no",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]);
+  });
+  (Array.isArray(source.liveActivities) ? source.liveActivities : []).slice(0, 60).forEach((activity) => {
+    const record = activity && typeof activity === "object" ? activity : {};
+    rows.push([
+      "activity",
+      source.id || "",
+      source.endedAt || "",
+      source.durationMinutes ?? "",
+      source.mode || "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      record.revised || 0,
+      "",
+      record.kind || "activity",
+      record.invited || 0,
+      record.submitted || 0,
+      record.approved || 0,
+      record.hidden || 0,
+      record.feedbackSent || 0,
+      record.votesCast || 0
+    ]);
+  });
+  return rows.map((row) => row.map(rosterSessionCsvCell).join(",")).join("\r\n");
+};
+const downloadRosterSessionEvidenceCsv = (session) => {
+  const csv = buildRosterSessionEvidenceCsv(session);
+  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  const stamp = String(session?.endedAt || (/* @__PURE__ */ new Date()).toISOString()).slice(0, 10);
+  anchor.href = url;
+  anchor.download = "alloflow_session_evidence_" + stamp + ".csv";
+  document.body.appendChild(anchor);
+  anchor.click();
+  document.body.removeChild(anchor);
+  URL.revokeObjectURL(url);
+};
 const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, onApplyGroup, onSyncToSession, onBatchGenerate, activeSessionCode, t, isParentMode, isIndependentMode, onOpenSubmissionInbox, onOpenSeatingChart }) => {
   const [newGroupName, setNewGroupName] = useState("");
   const [newGroupColor, setNewGroupColor] = useState("#4F46E5");
@@ -327,7 +420,15 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       const nh = (Array.isArray(prev.sessionHistory) ? prev.sessionHistory : []).map((session) => {
         const participants = { ...session.participants || {} };
         delete participants[name];
-        return { ...session, participants, absentCodenames: (session.absentCodenames || []).filter((codename) => codename !== name) };
+        const insightBrief = session.insightBrief && typeof session.insightBrief === "object" ? {
+          ...session.insightBrief,
+          followUpCodenames: (session.insightBrief.followUpCodenames || []).filter((codename) => codename !== name),
+          evidenceCohorts: (session.insightBrief.evidenceCohorts || []).map((cohort) => {
+            const codenames = (cohort.codenames || []).filter((codename) => codename !== name);
+            return { ...cohort, codenames, count: codenames.length };
+          }).filter((cohort) => cohort.count > 0)
+        } : session.insightBrief;
+        return { ...session, participants, insightBrief, absentCodenames: (session.absentCodenames || []).filter((codename) => codename !== name) };
       });
       return { ...prev, students: ns, displayNames: nd, progressHistory: np, sessionHistory: nh };
     });
@@ -573,7 +674,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     },
     /* @__PURE__ */ React.createElement("option", { value: "" }, "\u2192"),
     groupIds.map((gId) => /* @__PURE__ */ React.createElement("option", { key: gId, value: gId }, groups[gId].name))
-  ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleRemoveStudent(name), className: "hover:text-red-500 transition-colors motion-reduce:transition-none", "aria-label": "Remove " + name }, /* @__PURE__ */ React.createElement(X, { size: 12 })))))), Array.isArray(rosterKey?.sessionHistory) && rosterKey.sessionHistory.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "rounded-xl border border-cyan-200 bg-cyan-50/60 p-3" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-sm text-cyan-900" }, "Saved session history (", rosterKey.sessionHistory.length, ")"), /* @__PURE__ */ React.createElement("div", { className: "mt-3 space-y-2" }, [...rosterKey.sessionHistory].reverse().slice(0, 10).map((session) => /* @__PURE__ */ React.createElement("details", { key: session.id, className: "rounded-lg border border-cyan-100 bg-white p-2" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-xs font-bold text-slate-700 flex flex-wrap gap-x-2" }, /* @__PURE__ */ React.createElement("span", null, session.endedAt ? new Date(session.endedAt).toLocaleString() : "Saved session"), /* @__PURE__ */ React.createElement("span", { className: "text-cyan-700" }, Object.keys(session.participants || {}).length, " present"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-500" }, session.mode === "mailbox" ? "Mailbox" : "Firebase")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-xs text-slate-600 space-y-1" }, typeof session.durationMinutes === "number" && /* @__PURE__ */ React.createElement("p", null, "Duration: ", session.durationMinutes, " min"), session.teacherNote && /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Teacher note:"), " ", session.teacherNote), Array.isArray(session.liveActivities) && session.liveActivities.length > 0 && /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Live activity evidence:"), " ", session.liveActivities.length, " activit", session.liveActivities.length === 1 ? "y" : "ies", " \xB7 ", session.liveActivities.reduce((sum, activity) => sum + (activity.submitted || 0), 0), " submissions \xB7 ", session.liveActivities.reduce((sum, activity) => sum + (activity.revised || 0), 0), " revisions"), session.insightBrief && /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-indigo-100 bg-indigo-50/70 p-2" }, /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-indigo-900" }, "Insight brief:"), " ", session.insightBrief.activityCount || 0, " activities \xB7 ", session.insightBrief.submissions || 0, " submissions \xB7 ", session.insightBrief.revisions || 0, " revisions \xB7 ", (session.insightBrief.followUpCodenames || []).length, " follow-up"), Array.isArray(session.insightBrief.groups) && session.insightBrief.groups.some((group) => group.followUpCount > 0) && /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Group patterns:"), " ", session.insightBrief.groups.filter((group) => group.followUpCount > 0).map((group) => `${groups[group.groupId]?.name || group.groupId}: ${group.followUpCount} follow-up`).join(" \xB7 ")), Array.isArray(session.insightBrief.nextMoves) && session.insightBrief.nextMoves.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "mt-1 list-disc pl-4" }, session.insightBrief.nextMoves.map((move) => /* @__PURE__ */ React.createElement("li", { key: move.code }, move.label)))), Array.isArray(session.classGoals) && session.classGoals.length > 0 && /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Class Goals met:"), " ", session.classGoals.map((goal) => `${goal.label} (${goal.mode === "independent" ? goal.delivered + " students" : "+" + goal.tokens + " each, " + goal.delivered + " students"})`).join(" \xB7 ")), Object.entries(session.participants || {}).map(([codename, record]) => /* @__PURE__ */ React.createElement("p", { key: codename }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, codename), ": ", record.responseCount || 0, " quiz response", record.responseCount === 1 ? "" : "s", record.liveActivityCount ? ` \xB7 ${record.liveSubmissionCount || 0}/${record.liveActivityCount} activity submissions` : "", record.liveRevisionCount ? ` \xB7 ${record.liveRevisionCount} revision${record.liveRevisionCount === 1 ? "" : "s"}` : "", record.groupId ? ` \xB7 group ${record.groupId}` : "")), (session.unmatchedCodenames || []).length > 0 && /* @__PURE__ */ React.createElement("p", { className: "text-rose-700" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Unmatched:"), " ", session.unmatchedCodenames.join(", "))))), rosterKey.sessionHistory.length > 10 && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-cyan-800" }, "Showing the 10 most recent of ", rosterKey.sessionHistory.length, ". Export JSON for the complete retained history."))), "          ", rosterKey && /* @__PURE__ */ React.createElement("div", { className: "flex gap-4 pt-3 border-t border-slate-100 text-[11px] text-slate-600 font-medium" }, /* @__PURE__ */ React.createElement("span", null, groupIds.length, " group", groupIds.length !== 1 ? "s" : ""), /* @__PURE__ */ React.createElement("span", null, Object.keys(students).length, " student", Object.keys(students).length !== 1 ? "s" : ""), /* @__PURE__ */ React.createElement("span", null, getUnassigned().length, " unassigned"), /* @__PURE__ */ React.createElement("span", { className: "ml-auto flex items-center gap-1" }, /* @__PURE__ */ React.createElement(ShieldCheck, { size: 10, className: "text-green-500" }), " ", t("teacher.local_only") || "Local only"))), submissionDialog && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 z-20 bg-slate-900/70 flex items-center justify-center p-4" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleRemoveStudent(name), className: "hover:text-red-500 transition-colors motion-reduce:transition-none", "aria-label": "Remove " + name }, /* @__PURE__ */ React.createElement(X, { size: 12 })))))), Array.isArray(rosterKey?.sessionHistory) && rosterKey.sessionHistory.length > 0 && /* @__PURE__ */ React.createElement("details", { className: "rounded-xl border border-cyan-200 bg-cyan-50/60 p-3" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-sm text-cyan-900" }, "Saved session history (", rosterKey.sessionHistory.length, ")"), /* @__PURE__ */ React.createElement("div", { className: "mt-3 space-y-2" }, [...rosterKey.sessionHistory].reverse().slice(0, 10).map((session) => /* @__PURE__ */ React.createElement("details", { key: session.id, className: "rounded-lg border border-cyan-100 bg-white p-2" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-xs font-bold text-slate-700 flex flex-wrap gap-x-2" }, /* @__PURE__ */ React.createElement("span", null, session.endedAt ? new Date(session.endedAt).toLocaleString() : "Saved session"), /* @__PURE__ */ React.createElement("span", { className: "text-cyan-700" }, Object.keys(session.participants || {}).length, " present"), /* @__PURE__ */ React.createElement("span", { className: "text-slate-500" }, session.mode === "mailbox" ? "Mailbox" : "Firebase")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-xs text-slate-600 space-y-1" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-end" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => downloadRosterSessionEvidenceCsv(session), className: "min-h-9 rounded-lg border border-cyan-300 bg-cyan-50 px-2 py-1 text-[11px] font-bold text-cyan-900 hover:bg-cyan-100", "aria-label": "Download this privacy-safe session evidence report as CSV" }, "Download evidence CSV")), typeof session.durationMinutes === "number" && /* @__PURE__ */ React.createElement("p", null, "Duration: ", session.durationMinutes, " min"), session.teacherNote && /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Teacher note:"), " ", session.teacherNote), Array.isArray(session.liveActivities) && session.liveActivities.length > 0 && /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Live activity evidence:"), " ", session.liveActivities.length, " activit", session.liveActivities.length === 1 ? "y" : "ies", " \xB7 ", session.liveActivities.reduce((sum, activity) => sum + (activity.submitted || 0), 0), " submissions \xB7 ", session.liveActivities.reduce((sum, activity) => sum + (activity.revised || 0), 0), " revisions"), session.insightBrief && /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-indigo-100 bg-indigo-50/70 p-2" }, /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-indigo-900" }, "Insight brief:"), " ", session.insightBrief.activityCount || 0, " activities \xB7 ", session.insightBrief.submissions || 0, " submissions \xB7 ", session.insightBrief.revisions || 0, " revisions \xB7 ", (session.insightBrief.followUpCodenames || []).length, " follow-up"), Array.isArray(session.insightBrief.evidenceCohorts) && session.insightBrief.evidenceCohorts.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-1", "aria-label": "Saved evidence cohorts" }, session.insightBrief.evidenceCohorts.map((cohort) => /* @__PURE__ */ React.createElement("details", { key: cohort.code, className: "rounded border p-1.5 " + (cohort.intent === "celebrate" ? "border-emerald-200 bg-emerald-50" : "border-amber-200 bg-amber-50") }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-slate-700" }, cohort.label, " - ", cohort.count), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[11px] text-slate-600" }, cohort.recommendedAction), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[11px] text-slate-600" }, (cohort.codenames || []).join(", "))))), Array.isArray(session.insightBrief.groups) && session.insightBrief.groups.some((group) => group.followUpCount > 0) && /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Group patterns:"), " ", session.insightBrief.groups.filter((group) => group.followUpCount > 0).map((group) => `${groups[group.groupId]?.name || group.groupId}: ${group.followUpCount} follow-up`).join(" \xB7 ")), Array.isArray(session.insightBrief.nextMoves) && session.insightBrief.nextMoves.length > 0 && /* @__PURE__ */ React.createElement("ul", { className: "mt-1 list-disc pl-4" }, session.insightBrief.nextMoves.map((move) => /* @__PURE__ */ React.createElement("li", { key: move.code }, move.label)))), Array.isArray(session.classGoals) && session.classGoals.length > 0 && /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Class Goals met:"), " ", session.classGoals.map((goal) => `${goal.label} (${goal.mode === "independent" ? goal.delivered + " students" : "+" + goal.tokens + " each, " + goal.delivered + " students"})`).join(" \xB7 ")), Object.entries(session.participants || {}).map(([codename, record]) => /* @__PURE__ */ React.createElement("p", { key: codename }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, codename), ": ", record.responseCount || 0, " quiz response", record.responseCount === 1 ? "" : "s", record.liveActivityCount ? ` \xB7 ${record.liveSubmissionCount || 0}/${record.liveActivityCount} activity submissions` : "", record.liveRevisionCount ? ` \xB7 ${record.liveRevisionCount} revision${record.liveRevisionCount === 1 ? "" : "s"}` : "", record.groupId ? ` \xB7 group ${record.groupId}` : "")), (session.unmatchedCodenames || []).length > 0 && /* @__PURE__ */ React.createElement("p", { className: "text-rose-700" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Unmatched:"), " ", session.unmatchedCodenames.join(", "))))), rosterKey.sessionHistory.length > 10 && /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-cyan-800" }, "Showing the 10 most recent of ", rosterKey.sessionHistory.length, ". Export JSON for the complete retained history."))), "          ", rosterKey && /* @__PURE__ */ React.createElement("div", { className: "flex gap-4 pt-3 border-t border-slate-100 text-[11px] text-slate-600 font-medium" }, /* @__PURE__ */ React.createElement("span", null, groupIds.length, " group", groupIds.length !== 1 ? "s" : ""), /* @__PURE__ */ React.createElement("span", null, Object.keys(students).length, " student", Object.keys(students).length !== 1 ? "s" : ""), /* @__PURE__ */ React.createElement("span", null, getUnassigned().length, " unassigned"), /* @__PURE__ */ React.createElement("span", { className: "ml-auto flex items-center gap-1" }, /* @__PURE__ */ React.createElement(ShieldCheck, { size: 10, className: "text-green-500" }), " ", t("teacher.local_only") || "Local only"))), submissionDialog && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 z-20 bg-slate-900/70 flex items-center justify-center p-4" }, /* @__PURE__ */ React.createElement(
     "div",
     {
       ref: submissionDialogRef,
@@ -4703,6 +4804,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
 });
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.RosterKeyPanel = RosterKeyPanel;
+window.AlloModules.buildRosterSessionEvidenceCsv = buildRosterSessionEvidenceCsv;
 window.AlloModules.SimpleBarChart = SimpleBarChart;
 window.AlloModules.SimpleDonutChart = SimpleDonutChart;
 window.AlloModules.ConfettiEffect = ConfettiEffect;

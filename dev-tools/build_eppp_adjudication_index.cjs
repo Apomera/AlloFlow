@@ -3,17 +3,17 @@
 
 const fs = require('fs');
 const path = require('path');
+const { ensureFamily } = require('./eppp_evidence_paths.cjs');
 
 const root = path.resolve(__dirname, '..');
-const sourceRoot = path.join(root, 'test_prep', 'eppp_legacy');
-const deployRoot = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_legacy');
+const canonicalRoot = ensureFamily('adjudication');
 const readJson = (file) => JSON.parse(fs.readFileSync(file, 'utf8'));
-const batchNumbers = fs.readdirSync(sourceRoot)
+const batchNumbers = fs.readdirSync(canonicalRoot)
   .map((file) => file.match(/^adjudication_batch_(\d{2})\.json$/)?.[1])
   .filter(Boolean)
   .sort();
 if (!batchNumbers.length) throw new Error('No adjudication batch reports were found.');
-const reports = batchNumbers.map((number) => readJson(path.join(sourceRoot, `adjudication_batch_${number}.json`)));
+const reports = batchNumbers.map((number) => readJson(path.join(canonicalRoot, `adjudication_batch_${number}.json`)));
 const allItems = reports.flatMap((report, reportIndex) => report.items.map((item) => ({ ...item, batchId: `batch-${batchNumbers[reportIndex]}` })));
 const ids = allItems.map((item) => item.legacyId);
 
@@ -73,7 +73,7 @@ const batchRows = batches.map((batch) => `| ${batch.batchId} | ${batch.adjudicat
 const itemRows = items.map((item) => `| ${item.batchId} | ${item.legacyId} | ${item.domainId} | ${item.decision} | ${item.sourceCount} |`).join('\n');
 const markdown = `# EPPP legacy adjudication index\n\nGenerated: ${report.generatedAt}\n\n**Status: all ${summary.adjudicatedCandidates} indexed candidates remain quarantined and learner-invisible.**\n\nThis is an inventory, not a release manifest. Independent qualified review and production validation remain pending for every candidate.\n\n## Cumulative outcome\n\n- ${summary.batchCount} adjudication batches.\n- ${summary.adjudicatedCandidates} unique legacy candidates reviewed.\n- ${summary.minorRevision} minor revisions and ${summary.majorRewrite} major rewrites.\n- ${summary.promotedToNativeBank} promoted to the learner-facing bank.\n- ${summary.independentExpertValidated} independently expert validated.\n\n| Batch | Candidates | Minor | Major | Source review date |\n| --- | ---: | ---: | ---: | --- |\n${batchRows}\n\n## Candidate inventory\n\n| Batch | Legacy ID | Domain | Decision | Sources |\n| --- | --- | --- | --- | ---: |\n${itemRows}\n\nThe individual batch JSON files retain each original item, detailed findings, proposed revision, option-by-option feedback, and full provenance.\n`;
 
-for (const outputRoot of [sourceRoot, deployRoot]) {
+for (const outputRoot of [canonicalRoot]) {
   fs.writeFileSync(path.join(outputRoot, 'adjudication_index.json'), JSON.stringify(report, null, 2) + '\n', 'utf8');
   fs.writeFileSync(path.join(outputRoot, 'adjudication_index.md'), markdown, 'utf8');
 }

@@ -16,8 +16,13 @@ const {
   UNICODE_CONTENT_REPLACEMENTS,
   UNICODE_METADATA_REPLACEMENTS,
 } = require('./eppp_memory_aid_correction_wave_01_data.cjs');
+const {
+  openEpppMigrationSourceArchive,
+} = require('./eppp_migration_source_archive.cjs');
 
 const root = path.resolve(__dirname, '..');
+const migrationArchive = openEpppMigrationSourceArchive({ workspaceRoot: root });
+const memoryAidSourcePath = migrationArchive.manifest.execution.learningLibrary.memoryAids[0];
 const catalogPath = process.env.EPPP_MEMORY_AID_CORRECTION_CATALOG_PATH
   ? path.resolve(process.env.EPPP_MEMORY_AID_CORRECTION_CATALOG_PATH)
   : path.join(root, 'test_prep', 'eppp_learning_library.json');
@@ -46,7 +51,11 @@ function stableId(prefix, parts) {
 }
 
 const legacyContext = vm.createContext({ console: { log() {}, warn() {}, error() {} } });
-vm.runInContext(fs.readFileSync(path.join(root, 'test_prep', 'eppp_legacy', 'js', 'memory_aids.js'), 'utf8'), legacyContext, { timeout: 15000 });
+vm.runInContext(
+  migrationArchive.readText(memoryAidSourcePath),
+  legacyContext,
+  { filename: memoryAidSourcePath, timeout: 15000 },
+);
 const legacyAids = vm.runInContext('MemoryAids.aids', legacyContext);
 const immutableLegacyById = new Map(legacyAids.map((aid) => [
   stableId('memory-aid', [aid.domainId, aid.title, aid.type, aid.content]),

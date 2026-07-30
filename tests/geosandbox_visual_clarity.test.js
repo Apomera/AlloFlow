@@ -108,7 +108,7 @@ describe('Geometry Sandbox visual clarity', () => {
     expect(source).toContain('disposeGeoObject3D(window._geoScene.ghostGroup)');
     // A stale ghost is worse than none — the scene effect has to re-run when the
     // target moves, so the placement values belong in its dependency array.
-    expect(source).toContain('selPart, placeArmed, placeX, placeY, placeZ]);');
+    expect(source).toContain('selPart, sculptEdit, sculptSliceOn, sculptSliceT, placeArmed, placeX, placeY, placeZ]);');
   });
 
   it('gives the non-visual channel the same information as the 3D view', () => {
@@ -258,5 +258,29 @@ describe('Geometry Sandbox visual clarity', () => {
     expect(source).toContain("'aria-busy': aiLoading");
     expect(source).toContain("Analyzing the current geometry scene");
     expect(source).toContain("document.getElementById('geo-ai-tutor-button')");
+  });
+  it('keeps headset view transforms distinct from mathematical dilation', () => {
+    const source = read(SOURCE_FILE);
+
+    expect(source).toContain('startScale: obj.scale.clone()');
+    expect(source).toContain('_grab.obj.scale.copy(_grab.two.startScale).multiplyScalar(ratio)');
+    expect(source).toContain("'VIEW SCALE ×' + ratio.toFixed(2) + ' | measurements unchanged'");
+    expect(source).not.toContain('_grab.obj.scale.setScalar(s)');
+    expect(source).toContain("var _vrMathText = '', _vrStatusText = ''");
+    expect(source).toContain('setVrStatus: _geoSetVrStatus');
+  });
+
+  it('hands compatible selected constructions into the guided immersive lab', () => {
+    const source = read(SOURCE_FILE);
+
+    expect(source).toContain('function geoImmersiveLaunchState(o)');
+    expect(source).toContain("['point', 'segment', 'rect', 'prism'].indexOf(o.type)");
+    expect(source).toContain('state.H = Math.abs(');
+    expect(source).toContain('if (uvCos > 0.001) return null');
+    expect(source).toContain('if (Math.abs(vec3Mag(extrusion) - state.H) > 0.001) return null');
+    expect(source).toContain("var launchState = mode === 'stretch' ? geoImmersiveLaunchState(selectedForImmersive) : null");
+    expect(source).toContain("url += '&' + key + '=' + encodeURIComponent(launchState[key])");
+    expect(source).toContain("immersiveBase = window.location.origin + '/immersive_geometry/immersive_geometry.html'");
+    expect(source).toContain("var url = immersiveBase + '?v=2&source=geosandbox'");
   });
 });

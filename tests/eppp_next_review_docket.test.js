@@ -8,7 +8,7 @@ const expectedPerBatch = { biological: 10, 'cognitive-affective': 13, 'social-cu
 
 describe('EPPP next-500 editorial review docket', () => {
   it('creates five balanced 100-item batches that remain quarantined', () => {
-    const docket = read('test_prep/eppp_legacy/next_review_docket.json');
+    const docket = read('quality/eppp_provenance/evidence/review/next_review_docket.json');
     expect(docket.status).toBe('editorial-docket-only-not-released');
     expect(docket.summary).toMatchObject({ docketItems: 500, reviewBatches: 5, itemsPerBatch: 100, remainingQuarantinedItems: 1490 });
     expect(docket.items).toHaveLength(500);
@@ -23,7 +23,7 @@ describe('EPPP next-500 editorial review docket', () => {
   });
 
   it('does not leak docket candidates into the native learner bank', () => {
-    const docket = read('test_prep/eppp_legacy/next_review_docket.json');
+    const docket = read('quality/eppp_provenance/evidence/review/next_review_docket.json');
     const native = read('test_prep/eppp_native_items.json');
     const nativeLegacyIds = new Set(native.map((item) => item.legacySourceId).filter(Boolean));
 
@@ -37,14 +37,12 @@ describe('EPPP next-500 editorial review docket', () => {
     }
   });
 
-  it('records the current official blueprint, future transition, and an identical deploy artifact', () => {
-    const docket = read('test_prep/eppp_legacy/next_review_docket.json');
-    const deployed = read('desktop/web-app/public/test_prep/eppp_legacy/next_review_docket.json');
+  it('records the current official blueprint and future transition in canonical evidence', () => {
+    const docket = read('quality/eppp_provenance/evidence/review/next_review_docket.json');
 
     expect(docket.blueprint).toMatchObject({ label: expect.stringContaining('2026–2027'), owner: expect.stringContaining('Association of State and Provincial Psychology Boards') });
     expect(docket.blueprint.officialUrl).toMatch(/^https:\/\/asppb\.net\//);
     expect(docket.transition.notice).toContain('fourth quarter of 2027');
     expect(docket.transition.officialUrl).toMatch(/^https:\/\/asppb\.net\//);
-    expect(deployed).toEqual(docket);
   });
 });

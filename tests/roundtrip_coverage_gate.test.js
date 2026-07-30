@@ -73,6 +73,18 @@ describe('tagged-PDF verified-delivery policy', () => {
     }
   });
 
+  it('withholds clean rebuilds that dropped text or images before any other gate', () => {
+    for (const policy of policies) {
+      expect(policy.verdict({
+        summary: { unicodeTypesetWarning: { droppedChars: 1 } },
+      })).toMatchObject({ ok: false, code: 'typeset-content-dropped' });
+      expect(policy.verdict({
+        summary: { imagesDropped: 1 },
+      })).toMatchObject({ ok: false, code: 'typeset-content-dropped' });
+    }
+    expect(pipeSrc).toContain('catch (_) { _imagesDropped++;');
+  });
+
   it('passes only when both saved-byte checks affirmatively pass', () => {
     for (const policy of policies) expect(policy.verdict(passingResult())).toEqual({ ok: true, code: 'verified', reason: '' });
   });
@@ -94,6 +106,26 @@ describe('tagged-PDF verified-delivery policy', () => {
     expect(viewSrc).toContain('const _deliveryVerdict = _alloTaggedPdfDeliveryVerdict(_result);');
     expect(pipeSrc).not.toContain('if (rt && rt.ok === false)');
     expect(viewSrc).not.toContain('if (roundTrip && roundTrip.ok === false)');
+  });
+
+  it('exports one canonical helper and lets the view delegate to it at runtime', () => {
+    expect(pipeSrc).toContain('createDocPipeline.taggedPdfDeliveryVerdict = _alloTaggedPdfDeliveryVerdict;');
+    expect(viewSrc).toContain('window.AlloModules.createDocPipeline.taggedPdfDeliveryVerdict');
+    const sharedResult = { ok: false, code: 'shared-policy-sentinel', reason: '' };
+    const previousWindow = globalThis.window;
+    globalThis.window = {
+      AlloModules: {
+        createDocPipeline: {
+          taggedPdfDeliveryVerdict: () => sharedResult,
+        },
+      },
+    };
+    try {
+      expect(viewPolicy.verdict(passingResult())).toBe(sharedResult);
+    } finally {
+      if (previousWindow === undefined) delete globalThis.window;
+      else globalThis.window = previousWindow;
+    }
   });
 
   it('anti-drift: executable sources default to a clean rebuild with an advanced override', () => {

@@ -1810,7 +1810,9 @@ const d = labToolData.artStudio || {};
 
             ),
 
-            tab === 'symmetry' && React.createElement("div", { className: "space-y-3" },
+            tab === 'symmetry' && React.createElement("div", { id: 'symmetryFullscreenWorkspace', className: "space-y-3", 'data-symmetry-fullscreen-workspace': 'true', role: 'region', 'aria-label': 'Symmetry Studio canvas and drawing controls' },
+
+              React.createElement("style", null, '#symmetryFullscreenWorkspace:fullscreen,#symmetryFullscreenWorkspace:-webkit-full-screen{box-sizing:border-box;width:100vw;height:100vh;overflow:auto;padding:clamp(10px,2vw,20px);background:#020617}#symmetryFullscreenWorkspace:fullscreen #symmetryCanvasContainer,#symmetryFullscreenWorkspace:-webkit-full-screen #symmetryCanvasContainer{min-height:calc(100vh - 150px)}'),
 
               React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap" },
 
@@ -1838,7 +1840,7 @@ const d = labToolData.artStudio || {};
 
                 React.createElement("button", { onClick: function () { var c = document.getElementById('symmetryCanvas'); if (!c) return; var link = document.createElement('a'); link.download = 'symmetry-art-' + Date.now() + '.png'; link.href = c.toDataURL('image/png'); link.click(); if (typeof addToast === 'function') addToast('\uD83D\uDCE5 PNG exported!', 'success'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all" }, __alloT('stem.artstudio.export_png_2', "\uD83D\uDCE5 Export PNG")),
 
-                React.createElement("button", { "aria-label": __alloT('stem.artstudio.fullscreen', "Fullscreen"), onClick: function () { toggleFullscreen('symmetryCanvasContainer'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-white hover:bg-slate-700 transition-all" }, __alloT('stem.artstudio.fullscreen_2', "\uD83D\uDD0D Fullscreen"))
+                React.createElement("button", { "aria-label": __alloT('stem.artstudio.fullscreen', "Toggle fullscreen Symmetry Studio workspace"), onClick: function () { toggleFullscreen('symmetryFullscreenWorkspace'); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-800 text-white hover:bg-slate-700 transition-all" }, __alloT('stem.artstudio.fullscreen_2', "\u26F6 Fullscreen"))
 
               ),
 

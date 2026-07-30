@@ -67,7 +67,7 @@ describe('privacy-safe roster session summaries', () => {
     });
 
     expect(summary.insightBrief).toMatchObject({
-      schemaVersion: 1,
+      schemaVersion: 2,
       activityCount: 3,
       submissions: 4,
       revisions: 1,
@@ -137,7 +137,7 @@ describe('privacy-safe roster session summaries', () => {
     expect(app).toContain('onRequestEndSession={requestEndLiveSession}');
     expect(modal).toContain("typeof onRequestEndSession === 'function'");
     expect(app).toContain('Insight brief');
-    expect(app).toContain('keep the session open and use the existing Needs attention queue');
+    expect(app).toContain('Connections remain active during this review.');
   });
 
   it('keeps history portable and removes deleted students from saved summaries', () => {

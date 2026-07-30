@@ -1,0 +1,141 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "alloflow-remediation-institution-staging",
+  "main": "src/pilot-index.ts",
+  "compatibility_date": "2026-07-29",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [
+    {
+      "pattern": "mcp-staging.REPLACE_WITH_INSTITUTION_DOMAIN",
+      "custom_domain": true
+    }
+  ],
+  "vars": {
+    "PILOT_ENABLED": "true",
+    // Add only after the synthetic acceptance suite passes:
+    // "PILOT_ACCEPTANCE_VERSION": "institution-pilot-synthetic-v2",
+
+    "APP_ENV": "staging",
+    "PUBLIC_ORIGIN": "https://mcp-staging.REPLACE_WITH_INSTITUTION_DOMAIN",
+    "INSTITUTION_ID": "REPLACE_WITH_OPAQUE_INSTITUTION_ID",
+    "ACCESS_AUTHORIZATION_URL": "https://REPLACE_WITH_ACCESS_AUTHORIZATION_ENDPOINT",
+    "ACCESS_TOKEN_URL": "https://REPLACE_WITH_ACCESS_TOKEN_ENDPOINT",
+    "ACCESS_JWKS_URL": "https://REPLACE_WITH_ACCESS_JWKS_ENDPOINT",
+    "ACCESS_ISSUER": "https://REPLACE_WITH_PINNED_ACCESS_ISSUER",
+    "ACCESS_CLIENT_ID": "REPLACE_WITH_ACCESS_CLIENT_ID",
+    "TRANSFER_ACCESS_AUDIENCE": "REPLACE_WITH_64_HEX_ACCESS_APPLICATION_AUDIENCE",
+    "ACCESS_SUBJECT_CLAIM": "sub",
+    "ALLOW_LOCAL_OAUTH": "false",
+    "CHATGPT_REDIRECT_URI": "REPLACE_WITH_CHATGPT_APP_REDIRECT_URI",
+    "GEMINI_MODEL": "REPLACE_WITH_INSTITUTION_APPROVED_MODEL",
+    "UPLOAD_MAX_BYTES": "26214400",
+    "UPLOAD_TTL_SECONDS": "600",
+    "UNSTARTED_INPUT_TTL_SECONDS": "7200",
+    "OUTPUT_TTL_SECONDS": "86400",
+    "DOWNLOAD_GRACE_SECONDS": "3600",
+    "METADATA_TTL_SECONDS": "604800",
+    "REMEDIATION_MAX_RUN_MINUTES": "25",
+    "MAX_OPEN_UPLOADS_PER_OWNER": "3",
+    "MAX_UPLOAD_ATTEMPTS_PER_OWNER_24H": "20",
+    "MAX_UPLOAD_ATTEMPTS_PER_INSTITUTION_24H": "100",
+    "MAX_ACTIVE_JOBS_PER_OWNER": "1",
+    "MAX_ACTIVE_JOBS_PER_INSTITUTION": "2",
+    "MAX_JOBS_PER_OWNER_24H": "10",
+    "MAX_JOBS_PER_INSTITUTION_24H": "50"
+  },
+  "secrets": {
+    "required": [
+      "ACCESS_CLIENT_SECRET",
+      "GEMINI_API_KEY",
+      "RUNNER_AUTH_SECRET"
+    ]
+  },
+  "kv_namespaces": [
+    {
+      "binding": "OAUTH_KV",
+      "id": "REPLACE_WITH_INSTITUTION_KV_ID"
+    }
+  ],
+  "d1_databases": [
+    {
+      "binding": "PILOT_DB",
+      "database_name": "alloflow-institution-pilot-staging",
+      "database_id": "REPLACE_WITH_INSTITUTION_D1_ID",
+      "migrations_dir": "./migrations"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "DOCUMENTS",
+      "bucket_name": "alloflow-institution-pilot-staging-documents"
+    }
+  ],
+  "workflows": [
+    {
+      "binding": "REMEDIATION_WORKFLOW",
+      "name": "alloflow-institution-remediation-staging",
+      "class_name": "RemediationWorkflow"
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "REMEDIATION_CONTAINER",
+        "class_name": "RemediationContainer"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1-remediation-container",
+      "new_sqlite_classes": [
+        "RemediationContainer"
+      ]
+    }
+  ],
+  "containers": [
+    {
+      "class_name": "RemediationContainer",
+      "image": "./runner/Dockerfile",
+      "image_build_context": ".",
+      "max_instances": 2,
+      "instance_type": "standard-2"
+    }
+  ],
+  "ratelimits": [
+    {
+      "name": "DCR_RATE_LIMITER",
+      // Account-unique namespace reserved for AlloFlow institution staging.
+      "namespace_id": "2026072901",
+      "simple": {
+        "limit": 30,
+        "period": 60
+      }
+    }
+  ],
+  "triggers": {
+    "crons": [
+      "0 * * * *"
+    ]
+  },
+  "limits": {
+    "cpu_ms": 100
+  },
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "invocation_logs": false
+    },
+    "traces": {
+      "enabled": true,
+      "head_sampling_rate": 0.1
+    }
+  }
+}
+

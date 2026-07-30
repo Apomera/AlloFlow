@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Cell Atlas Lab runtime fixture</title>
+  <style>
+    body { margin: 0; padding: 18px; background: #eaf2f8; }
+    #runtime-status {
+      max-width: 1240px;
+      margin: 0 auto 10px;
+      color: #334e68;
+      font: 12px/1.4 system-ui, sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <div id="runtime-status" role="status">Loading Cell Atlas Lab…</div>
+  <div id="root"></div>
+
+  <script src="../../desktop/web-app/node_modules/react/umd/react.development.js"></script>
+  <script src="../../desktop/web-app/node_modules/react-dom/umd/react-dom.development.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      window.__runtimeToolData = {
+        cellAtlasLab: {
+          tissue: 'pancreas',
+          view: 'map',
+          selectedCell: 'beta',
+          selectedGene: 'INS'
+        }
+      };
+      window.__runtimeLastTool = null;
+      window.__runtimeAnnouncements = [];
+      window.StemLab = {
+        _registry: {},
+        registerTool: function (id, config) {
+          this._registry[id] = config;
+        }
+      };
+    })();
+  </script>
+  <script src="../../stem_lab/stem_data_cellatlas_muraro.js"></script>
+  <script src="../../stem_lab/stem_tool_cellatlas.js"></script>
+  <script>
+    (function () {
+      'use strict';
+      var root = ReactDOM.createRoot(document.getElementById('root'));
+      function render() {
+        var tool = window.StemLab._registry.cellAtlasLab;
+        if (!tool) throw new Error('Cell Atlas Lab did not register.');
+        var context = {
+          React: window.React,
+          toolData: window.__runtimeToolData,
+          setToolData: function (updater) {
+            window.__runtimeToolData = typeof updater === 'function'
+              ? updater(window.__runtimeToolData)
+              : updater;
+            render();
+          },
+          setStemLabTool: function (toolId) {
+            window.__runtimeLastTool = toolId;
+          },
+          setStemLabTab: function () {},
+          announceToSR: function (message) {
+            window.__runtimeAnnouncements.push(message);
+            document.getElementById('runtime-status').textContent = message;
+          }
+        };
+        root.render(tool.render(context));
+      }
+      render();
+      document.getElementById('runtime-status').textContent = 'Cell Atlas Lab runtime ready.';
+      window.__cellAtlasRuntimeReady = true;
+    })();
+  </script>
+</body>
+</html>

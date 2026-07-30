@@ -3,6 +3,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { evidencePath } = require('./eppp_evidence_paths.cjs');
 const { clean, normalize, parseChoiceReasons } = require('./eppp_editorial_support.cjs');
 
 const root = path.resolve(__dirname, '..');
@@ -10,12 +11,12 @@ const sourcePath = path.join(root, 'test_prep', 'eppp_native_items.json');
 const deployPath = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_native_items.json');
 const auditPath = path.join(__dirname, 'eppp_option_feedback_wave_01_audit.json');
 const auditMarkdownPath = path.join(__dirname, 'eppp_option_feedback_wave_01_audit.md');
-const legacyAuditPath = path.join(root, 'test_prep', 'eppp_legacy', 'content_audit.json');
+const contentAuditPath = evidencePath('audit', 'content_audit.json');
 const reviewedAt = '2026-07-16';
 const waveId = 'eppp-option-feedback-wave-01';
 
 const bank = JSON.parse(fs.readFileSync(sourcePath, 'utf8'));
-const legacyAudit = JSON.parse(fs.readFileSync(legacyAuditPath, 'utf8'));
+const legacyAudit = JSON.parse(fs.readFileSync(contentAuditPath, 'utf8'));
 const legacyById = new Map(legacyAudit.reviewQueue.map((item) => [item.id, item]));
 const targetItems = bank.filter((item) => !Array.isArray(item.choiceRationales)
   || item.choiceRationales.length !== item.choices.length

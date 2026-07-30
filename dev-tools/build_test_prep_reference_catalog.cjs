@@ -110,6 +110,27 @@ for (const file of fs.readdirSync(sourceDir).filter((name) => name.endsWith('_le
 }
 
 const explicitMetadataOverrides = {
+  'https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf': {
+    title: 'AP Psychology Course and Exam Description',
+    organization: 'College Board',
+    summary: 'This official course and exam description presents the current AP Psychology framework, including units, topics, learning objectives, science practices, course skills, and the published exam design.',
+    credibility: 'College Board owns and administers the AP Psychology program, making this the primary public source for its course framework and exam design. AlloFlow study materials remain independently authored and are not endorsed by College Board.',
+    metadataSource: 'explicit-override',
+  },
+  'https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description-clarifications.pdf': {
+    title: 'AP Psychology Course and Exam Description Clarifications and Corrections',
+    organization: 'College Board',
+    summary: 'This official companion document records published clarifications and corrections to the AP Psychology course framework and should be read alongside the current course and exam description.',
+    credibility: 'College Board publishes the AP Psychology framework and its corrections, making this the primary source for official clarifications. Readers should use the current document version and verify whether later updates have been issued.',
+    metadataSource: 'explicit-override',
+  },
+  'https://apcentral.collegeboard.org/courses/ap-psychology/exam': {
+    title: 'AP Psychology Exam',
+    organization: 'College Board',
+    summary: 'This official exam page describes the current AP Psychology exam format, section timing, question types, scoring proportions, and public preparation resources for students and educators.',
+    credibility: 'College Board owns and administers the AP Psychology exam, making this the primary public source for current exam structure and logistics. AlloFlow practice is independently authored and does not reproduce official exam questions.',
+    metadataSource: 'explicit-override',
+  },
   'https://www.ets.org/pdfs/parapro/1755.pdf': {
     title: 'ParaPro Assessment (1755) - Official Study Companion',
     organization: 'Educational Testing Service (ETS)',

@@ -45,6 +45,73 @@ window.StemLab = window.StemLab || {
       return safeHistory.concat([item]).slice(-safeLimit);
     }
 
+    var HABITAT_TYPES = [
+      { id: 'river_stone', label: 'River stone', icon: '\uD83E\uDEA8', color: '#64748b', shelter: 6, territory: 5, flowBreak: 8, plantAnchors: 1, spawning: 1, footprint: 8 },
+      { id: 'driftwood', label: 'Branching driftwood', icon: '\uD83E\uDEB5', color: '#92400e', shelter: 18, territory: 10, flowBreak: 16, plantAnchors: 3, spawning: 5, footprint: 14 },
+      { id: 'cave', label: 'Shelter cave', icon: '\uD83D\uDD73\uFE0F', color: '#475569', shelter: 26, territory: 22, flowBreak: 14, plantAnchors: 1, spawning: 20, footprint: 18 },
+      { id: 'rock_arch', label: 'Rock arch', icon: '\u26F0\uFE0F', color: '#78716c', shelter: 22, territory: 18, flowBreak: 20, plantAnchors: 2, spawning: 12, footprint: 20 },
+      { id: 'leaf_litter', label: 'Leaf-litter patch', icon: '\uD83C\uDF42', color: '#a16207', shelter: 12, territory: 4, flowBreak: 4, plantAnchors: 0, spawning: 10, footprint: 12 }
+    ];
+
+    function getHabitatType(typeId) {
+      return HABITAT_TYPES.find(function(type) { return type.id === typeId; }) || null;
+    }
+
+    function getHabitatCatalog() {
+      return HABITAT_TYPES.map(function(type) { return Object.assign({}, type); });
+    }
+
+    function sanitizeHabitatLayout(layout) {
+      if (!Array.isArray(layout)) return [];
+      var seen = {};
+      return layout.slice(0, 12).map(function(item, index) {
+        item = item || {};
+        var type = getHabitatType(item.type);
+        if (!type) return null;
+        var baseId = typeof item.id === 'string' && item.id ? item.id.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 48) : 'habitat-' + (index + 1);
+        var id = baseId || 'habitat-' + (index + 1);
+        while (seen[id]) id += '-' + (index + 1);
+        seen[id] = true;
+        return {
+          id: id,
+          type: type.id,
+          x: clamp(item.x, -5.2, 5.2),
+          y: clamp(item.y, 0, 2.8),
+          z: clamp(item.z, -2.8, 2.8),
+          rotation: clamp(item.rotation, -180, 180),
+          scale: clamp(item.scale || 1, 0.65, 1.6)
+        };
+      }).filter(Boolean);
+    }
+
+    function summarizeHabitatLayout(layout) {
+      var safeLayout = sanitizeHabitatLayout(layout);
+      var totals = safeLayout.reduce(function(summary, item) {
+        var type = getHabitatType(item.type);
+        if (!type) return summary;
+        summary.shelter += type.shelter * item.scale;
+        summary.territory += type.territory * item.scale;
+        summary.flowBreak += type.flowBreak * item.scale;
+        summary.plantAnchors += type.plantAnchors;
+        summary.spawning += type.spawning * item.scale;
+        summary.footprint += type.footprint * item.scale * item.scale;
+        summary.types[type.id] = (summary.types[type.id] || 0) + 1;
+        return summary;
+      }, { shelter: 0, territory: 0, flowBreak: 0, plantAnchors: 0, spawning: 0, footprint: 0, types: {} });
+      var left = safeLayout.filter(function(item) { return item.x < -0.8; }).length;
+      var center = safeLayout.filter(function(item) { return item.x >= -0.8 && item.x <= 0.8; }).length;
+      var right = safeLayout.filter(function(item) { return item.x > 0.8; }).length;
+      var occupiedZones = [left, center, right].filter(function(count) { return count > 0; }).length;
+      totals.items = safeLayout.length;
+      totals.shelterScore = Math.round(clamp(totals.shelter, 0, 100));
+      totals.territoryScore = Math.round(clamp(totals.territory + occupiedZones * 6, 0, 100));
+      totals.flowScore = Math.round(clamp(totals.flowBreak, 0, 100));
+      totals.spawningScore = Math.round(clamp(totals.spawning, 0, 100));
+      totals.openSwimScore = Math.round(clamp(100 - Math.max(0, totals.footprint - 35) * 1.2, 20, 100));
+      totals.zoneBalance = occupiedZones;
+      totals.layout = safeLayout;
+      return totals;
+    }
     // Freshwater oxygen-solubility approximation from 0-30 C, with a conservative
     // salinity correction. This is a teaching model, not a substitute for a probe.
     function estimateOxygenSaturationMgL(tempF, salinityPpt) {
@@ -74,18 +141,20 @@ window.StemLab = window.StemLab || {
         : 80;
       var loadPct = clamp(input.loadPct, 0, 300);
       var plantBiomass = clamp(input.plantBiomass, 0, 1000);
+      var habitatShelter = clamp(input.habitatShelter, 0, 100);
       var hunger = clamp(input.hunger, 0, 100);
       var stress = clamp(input.stress, 0, 100);
       var illnessSeverity = clamp(input.illnessSeverity, 0, 3);
       var spaceVitality = Math.max(20, 100 - Math.max(0, loadPct - 60) * 1.5);
-      var shelterVitality = plantBiomass > 6 ? 100 : plantBiomass > 3 ? 80 : plantBiomass > 0 ? 58 : 35;
+      var vegetationShelter = plantBiomass > 6 ? 100 : plantBiomass > 3 ? 80 : plantBiomass > 0 ? 58 : 35;
+      var shelterVitality = Math.max(vegetationShelter, habitatShelter);
       var factors = [
         { id: 'oxygen', label: 'O\u2082', score: Math.round(oxygenVitality), detail: oxygen.toFixed(1) + ' mg/L dissolved oxygen' },
         { id: 'nitrogen', label: 'Water', score: Math.round(nitrogenVitality), detail: 'NH\u2083 ' + ammonia.toFixed(2) + ', NO\u2082 ' + nitrite.toFixed(2) },
         { id: 'temperature', label: 'Temp', score: Math.round(temperatureVitality), detail: temperature.toFixed(1) + '\u00B0F; species range ' + (species.tempRange ? species.tempRange[0] + '\u2013' + species.tempRange[1] : 'unknown') },
         { id: 'ph', label: 'pH', score: Math.round(pHVitality), detail: pH.toFixed(1) + '; species range ' + (species.pHRange ? species.pHRange[0] + '\u2013' + species.pHRange[1] : 'unknown') },
         { id: 'space', label: 'Space', score: Math.round(spaceVitality), detail: Math.round(loadPct) + '% bioload capacity' },
-        { id: 'shelter', label: 'Shelter', score: Math.round(shelterVitality), detail: plantBiomass.toFixed(1) + ' plant biomass' },
+        { id: 'shelter', label: 'Shelter', score: Math.round(shelterVitality), detail: plantBiomass.toFixed(1) + ' plant biomass; habitat shelter ' + Math.round(habitatShelter) + '/100' },
         { id: 'nutrition', label: 'Nutrition', score: Math.round(Math.max(0, 100 - hunger)), detail: hunger.toFixed(0) + '% hunger' },
         { id: 'stress', label: 'Calm', score: Math.round(Math.max(0, 100 - stress)), detail: stress.toFixed(0) + '% stress' },
         { id: 'illness', label: 'Health', score: Math.round(Math.max(0, 100 - illnessSeverity * 32)), detail: illnessSeverity > 0 ? 'illness severity ' + illnessSeverity : 'no detected illness' }
@@ -126,6 +195,337 @@ window.StemLab = window.StemLab || {
       };
     }
 
+    function calculateHabitatFit(species, habitatSummary, plantBiomass, breedingType) {
+      species = species || {};
+      habitatSummary = habitatSummary || {};
+      var habitatText = String(species.habitat || '').toLowerCase();
+      var temperamentText = String(species.temperament || '').toLowerCase();
+      var dietText = String(species.diet || '').toLowerCase();
+      var roleText = String(species.ecosystemRole || '').toLowerCase();
+      var relationship = classifyOrganismPlantRelationship(species);
+      var load = clamp(species.load, 0, 50);
+      var plantCover = plantBiomass > 6 ? 90 : plantBiomass > 3 ? 65 : plantBiomass > 0 ? 40 : 0;
+      var shelterNeed = 28;
+      if (relationship.plantShelterDependent) shelterNeed = Math.max(shelterNeed, 65);
+      if (/cave|crevice|rock|reef|wood|root|leaf litter|bottom|benthic|burrow|mangrove/.test(habitatText)) shelterNeed = Math.max(shelterNeed, 75);
+      if (/prey|shy|peaceful|nocturnal/.test(temperamentText + ' ' + roleText) || load > 0 && load <= 1) shelterNeed = Math.max(shelterNeed, 52);
+      if (species.passiveStock) shelterNeed = Math.max(shelterNeed, 45);
+      var territoryNeed = 22;
+      if (/territor|aggressive|predator|solitary|dominant/.test(temperamentText + ' ' + dietText + ' ' + roleText)) territoryNeed = 72;
+      else if (/semi-aggressive|pair/.test(temperamentText)) territoryNeed = 55;
+      if (breedingType === 'egg_layer' || breedingType === 'mouthbrooder') territoryNeed = Math.max(territoryNeed, 52);
+      var openSwimNeed = 32;
+      if (/school|shoal|pelagic|open water|active swimmer|cruiser|oceanic/.test(temperamentText + ' ' + habitatText + ' ' + roleText)) openSwimNeed = 76;
+      else if (/surface|midwater|mid-water/.test(habitatText)) openSwimNeed = 55;
+      if (/cave|burrow|sedentary|bottom|benthic/.test(habitatText) || species.passiveStock) openSwimNeed = Math.min(openSwimNeed, 30);
+      var spawningNeed = 0;
+      if (breedingType === 'egg_scatter') spawningNeed = 65;
+      else if (breedingType === 'egg_layer' || breedingType === 'mouthbrooder') spawningNeed = 55;
+      else if (breedingType === 'colony') spawningNeed = 48;
+      else if (breedingType === 'livebearer') spawningNeed = 38;
+      else if (breedingType === 'bubble_nest') spawningNeed = 28;
+      var supplies = {
+        shelter: Math.max(Number(habitatSummary.shelterScore) || 0, plantCover),
+        territory: Number(habitatSummary.territoryScore) || 0,
+        openSwim: Number(habitatSummary.openSwimScore) || 100,
+        spawning: Math.max(Number(habitatSummary.spawningScore) || 0, plantCover)
+      };
+      function factor(id, label, need, available, weight, recommendation) {
+        var score = need <= 0 ? 100 : Math.round(clamp(available / Math.max(1, need) * 100, 0, 100));
+        return { id: id, label: label, need: Math.round(need), available: Math.round(available), score: score, weight: weight, recommendation: recommendation };
+      }
+      var factors = [
+        factor('shelter', 'Retreat cover', shelterNeed, supplies.shelter, 0.34, 'Add a cave or branching driftwood, or increase living plant cover.'),
+        factor('territory', 'Territory separation', territoryNeed, supplies.territory, 0.25, 'Spread caves or rock arches across different tank zones to break sight lines.'),
+        factor('openSwim', 'Open swimming room', openSwimNeed, supplies.openSwim, 0.31, 'Remove, shrink, or move structures toward the edges to reopen swimming lanes.'),
+        factor('spawning', 'Spawning refuge', spawningNeed, supplies.spawning, spawningNeed > 0 ? 0.10 : 0, breedingType === 'egg_scatter' ? 'Add fine plant cover or leaf litter for scattered eggs.' : 'Add a protected cave, arch, wood surface, or plant refuge for breeding.')
+      ];
+      var activeWeight = factors.reduce(function(sum, item) { return sum + item.weight; }, 0) || 1;
+      var score = Math.round(factors.reduce(function(sum, item) { return sum + item.score * item.weight; }, 0) / activeWeight);
+      var limiting = factors.filter(function(item) { return item.weight > 0; }).sort(function(a, b) { return a.score - b.score; })[0];
+      var status = score >= 85 ? 'excellent' : score >= 65 ? 'workable' : score >= 45 ? 'strained' : 'poor';
+      return {
+        score: score,
+        status: status,
+        limiting: limiting,
+        factors: factors,
+        needs: { shelter: shelterNeed, territory: territoryNeed, openSwim: openSwimNeed, spawning: spawningNeed },
+        supplies: supplies,
+        summary: limiting ? limiting.label + ' ' + limiting.available + '/' + limiting.need : 'Habitat needs met'
+      };
+    }
+    function summarizeHabitatCommunity(entries, habitatSummary, plantBiomass) {
+      var sourceEntries = Array.isArray(entries) ? entries : [];
+      var items = sourceEntries.map(function(entry, index) {
+        entry = entry || {};
+        var fit = calculateHabitatFit(entry.species, habitatSummary, plantBiomass, entry.breedingType);
+        return Object.assign({
+          id: entry.id || 'organism-' + index,
+          speciesId: entry.speciesId || '',
+          name: entry.name || (entry.species && entry.species.name) || 'Organism',
+          icon: entry.icon || (entry.species && entry.species.icon) || '\uD83D\uDC1F',
+          type: entry.type || (entry.species && entry.species.organismType) || 'Fish',
+          zone: entry.zone || 'mid',
+          relationship: entry.relationship || null,
+          symbiosisWith: entry.symbiosisWith || null,
+          cleaningRate: Number(entry.cleaningRate) || 0
+        }, fit);
+      });
+      var counts = items.reduce(function(result, item) {
+        result[item.status] = (result[item.status] || 0) + 1;
+        return result;
+      }, { excellent: 0, workable: 0, strained: 0, poor: 0 });
+      var sorted = items.slice().sort(function(a, b) { return a.score - b.score; });
+      return {
+        items: items,
+        average: items.length ? Math.round(items.reduce(function(sum, item) { return sum + item.score; }, 0) / items.length) : 100,
+        minimum: sorted.length ? sorted[0].score : 100,
+        weakest: sorted[0] || null,
+        counts: counts
+      };
+    }
+
+    function getPlantHabitatPosition(zone, index) {
+      var presets = {
+        foreground: { x: -3.4, y: 0, z: 1.9 }, midground: { x: 0.6, y: 0, z: 0.7 }, background: { x: -2.8, y: 0, z: -2.1 },
+        hardscape: { x: 2.4, y: 0.5, z: 0.1 }, surface: { x: 0.5, y: 4.9, z: 0 }, emergent: { x: 4.5, y: 2.2, z: -1.7 }, refugium: { x: 4.5, y: 0, z: 2.1 }
+      };
+      var base = presets[zone] || presets.midground;
+      var safeIndex = Math.max(0, Math.floor(Number(index) || 0));
+      return {
+        x: Math.round(clamp(base.x + (safeIndex % 3) * 0.55, -5.2, 5.2) * 100) / 100,
+        y: Math.round(base.y * 100) / 100,
+        z: Math.round(clamp(base.z + Math.floor(safeIndex / 3) * 0.42, -2.7, 2.7) * 100) / 100
+      };
+    }
+
+    function buildSpatialInteractionNetwork(organisms, plants) {
+      var residents = Array.isArray(organisms) ? organisms : [];
+      var planted = Array.isArray(plants) ? plants : [];
+      var links = [];
+      var seen = {};
+      var counts = { symbiosis: 0, cleaning: 0, browsing: 0, cover: 0, grazing: 0, recycling: 0 };
+      function residentY(resident) { return resident.zone === 'bottom' ? 0.75 : resident.zone === 'top' ? 4.3 : 2.25; }
+      function residentEndpoint(resident) {
+        return { kind: 'organism', id: resident.id, label: resident.name || 'Organism', x: Number(resident.targetX) || 0, y: residentY(resident), z: Number(resident.targetZ) || 0 };
+      }
+      function plantEndpoint(plant) {
+        return { kind: 'plant', id: plant.id, label: plant.name || 'Plant', x: Number(plant.x) || 0, y: (Number(plant.y) || 0) + 0.7, z: Number(plant.z) || 0 };
+      }
+      function addLink(type, source, target, label, detail, color, bidirectional) {
+        if (!source || !target || links.length >= 32) return;
+        var key = type + ':' + source.id + ':' + target.id;
+        if (seen[key]) return;
+        seen[key] = true;
+        counts[type] = (counts[type] || 0) + 1;
+        links.push({ id: key, type: type, source: source, target: target, label: label, detail: detail, color: color, bidirectional: !!bidirectional });
+      }
+      residents.forEach(function(resident, index) {
+        resident = resident || {};
+        var relationship = resident.relationship || {};
+        var residentPoint = residentEndpoint(resident);
+        if (resident.symbiosisWith) {
+          var partner = residents.find(function(candidate) { return candidate && candidate.speciesId === resident.symbiosisWith; });
+          if (partner) {
+            var pairIds = [resident.id, partner.id].sort();
+            var pairKey = 'symbiosis:' + pairIds.join(':');
+            if (!seen[pairKey]) {
+              seen[pairKey] = true;
+              counts.symbiosis++;
+              links.push({ id: pairKey, type: 'symbiosis', source: residentPoint, target: residentEndpoint(partner), label: residentPoint.label + ' and ' + (partner.name || 'partner') + ' symbiosis', detail: 'Partners exchange protection, access, or services.', color: '#c084fc', bidirectional: true });
+            }
+          }
+        }
+        if (resident.cleaningRate > 0) {
+          residents.filter(function(candidate) { return candidate && candidate.id !== resident.id; }).slice(0, 2).forEach(function(client) {
+            addLink('cleaning', residentPoint, residentEndpoint(client), residentPoint.label + ' cleans ' + (client.name || 'a tankmate'), 'Cleaning can reduce modeled parasite and disease pressure.', '#67e8f9', false);
+          });
+        }
+        if (planted.length && relationship.directPlantEater) {
+          var browsedPlant = planted[index % planted.length];
+          addLink('browsing', plantEndpoint(browsedPlant), residentPoint, residentPoint.label + ' browses ' + (browsedPlant.name || 'plant tissue'), 'Plant biomass transfers to the organism and later returns as waste.', '#fbbf24', false);
+        } else if (planted.length && relationship.plantShelterDependent) {
+          var coverPlant = planted[index % planted.length];
+          addLink('cover', plantEndpoint(coverPlant), residentPoint, residentPoint.label + ' uses ' + (coverPlant.name || 'living plant') + ' cover', 'Living cover can reduce exposure and stress.', '#4ade80', false);
+        }
+        if (relationship.algaeGrazer) {
+          var algaePoint = { kind: 'algae', id: 'algae-zone-' + index, label: 'Algae / biofilm', x: clamp(residentPoint.x + 0.55, -5, 5), y: 0.16, z: clamp(residentPoint.z + 0.35, -2.6, 2.6) };
+          addLink('grazing', algaePoint, residentPoint, residentPoint.label + ' grazes algae or biofilm', 'Stored algal energy becomes organism biomass and waste.', '#84cc16', false);
+        }
+        if (relationship.detritusRecycler) {
+          var detritusPoint = { kind: 'detritus', id: 'detritus-zone-' + index, label: 'Detritus', x: clamp(residentPoint.x - 0.45, -5, 5), y: 0.12, z: clamp(residentPoint.z - 0.3, -2.6, 2.6) };
+          addLink('recycling', detritusPoint, residentPoint, residentPoint.label + ' recycles detritus', 'Organic particles are consumed, fragmented, and returned to nutrient cycles.', '#fb923c', false);
+        }
+      });
+      return { links: links, counts: counts, total: links.length };
+    }
+
+    function assignHabitatOccupancy(entries, layout, catalog) {
+      var organisms = Array.isArray(entries) ? entries : [];
+      var safeLayout = sanitizeHabitatLayout(layout);
+      var typeList = Array.isArray(catalog) && catalog.length ? catalog : getHabitatCatalog();
+      var typesById = {};
+      typeList.forEach(function(type) { if (type && type.id) typesById[type.id] = type; });
+      var structures = safeLayout.map(function(item) {
+        return { item: item, type: typesById[item.type] || getHabitatType(item.type) };
+      }).filter(function(entry) { return !!entry.type; });
+      var openCandidates = [
+        { x: -4.2, z: 0 }, { x: -2.1, z: 1.25 }, { x: 0, z: 0 }, { x: 2.1, z: -1.25 }, { x: 4.2, z: 0 },
+        { x: -2.6, z: -1.4 }, { x: 2.6, z: 1.4 }
+      ].map(function(candidate) {
+        var clearance = structures.length ? Math.min.apply(null, structures.map(function(structure) {
+          var dx = candidate.x - structure.item.x;
+          var dz = candidate.z - structure.item.z;
+          return Math.sqrt(dx * dx + dz * dz) - structure.item.scale * 0.7;
+        })) : 8;
+        return Object.assign({}, candidate, { clearance: clearance });
+      }).sort(function(a, b) { return b.clearance - a.clearance; });
+      var useCounts = { shelter: 0, territory: 0, spawning: 0, openSwim: 0 };
+      function rankedStructures(metric) {
+        return structures.slice().sort(function(a, b) {
+          var scoreA = Number(a.type[metric]) * a.item.scale || 0;
+          var scoreB = Number(b.type[metric]) * b.item.scale || 0;
+          return scoreB - scoreA || a.item.id.localeCompare(b.item.id);
+        });
+      }
+      return organisms.map(function(organism, index) {
+        organism = organism || {};
+        var limitingId = organism.limiting && organism.limiting.id ? organism.limiting.id : 'openSwim';
+        var fitScore = clamp(organism.score, 0, 100);
+        var metric = limitingId === 'spawning' ? 'spawning' : limitingId === 'territory' ? 'territory' : limitingId === 'shelter' ? 'shelter' : null;
+        var ranked = metric ? rankedStructures(metric) : [];
+        var target = null;
+        var behaviorMode = 'open-water';
+        var behaviorLabel = 'Cruising the clearest open-water lane';
+        var anchorId = null;
+        var anchorLabel = 'Open water';
+        var pathSpan = 1.35 + fitScore / 100 * 1.15;
+        if (ranked.length && metric) {
+          var counterKey = limitingId === 'spawning' ? 'spawning' : limitingId === 'territory' ? 'territory' : 'shelter';
+          var rankedIndex = useCounts[counterKey] % ranked.length;
+          useCounts[counterKey]++;
+          var chosen = ranked[rankedIndex];
+          var angle = (index + 1) * 2.3999632297;
+          var radius = limitingId === 'territory' ? 0.85 : limitingId === 'spawning' ? 0.24 : 0.38;
+          target = {
+            x: clamp(chosen.item.x + Math.cos(angle) * radius, -5.1, 5.1),
+            z: clamp(chosen.item.z + Math.sin(angle) * radius, -2.7, 2.7)
+          };
+          anchorId = chosen.item.id;
+          anchorLabel = chosen.type.label;
+          if (limitingId === 'territory') {
+            behaviorMode = 'holding-territory';
+            behaviorLabel = 'Holding a territory near ' + chosen.type.label;
+            pathSpan = 0.62 + fitScore / 100 * 0.42;
+          } else if (limitingId === 'spawning') {
+            behaviorMode = 'using-spawning-refuge';
+            behaviorLabel = 'Inspecting a spawning refuge near ' + chosen.type.label;
+            pathSpan = 0.24 + fitScore / 100 * 0.28;
+          } else {
+            behaviorMode = 'using-refuge';
+            behaviorLabel = 'Using retreat cover near ' + chosen.type.label;
+            pathSpan = 0.32 + fitScore / 100 * 0.38;
+          }
+        } else {
+          var lane = openCandidates[useCounts.openSwim % openCandidates.length] || { x: 0, z: 0 };
+          useCounts.openSwim++;
+          target = { x: lane.x, z: lane.z };
+          if (metric && !ranked.length) {
+            behaviorMode = 'searching-refuge';
+            behaviorLabel = limitingId === 'territory' ? 'Searching for an unoccupied territory' : limitingId === 'spawning' ? 'Searching for a spawning refuge' : 'Searching for retreat cover';
+            anchorLabel = 'No suitable structure';
+            pathSpan = 0.65 + fitScore / 100 * 0.35;
+          } else if (organism.zone === 'bottom') {
+            behaviorMode = 'bottom-foraging';
+            behaviorLabel = 'Foraging along an open bottom lane';
+          } else if (organism.zone === 'top') {
+            behaviorMode = 'surface-patrol';
+            behaviorLabel = 'Patrolling an open surface lane';
+          }
+        }
+        return {
+          id: organism.id || 'organism-' + index,
+          targetX: Math.round(target.x * 100) / 100,
+          targetZ: Math.round(target.z * 100) / 100,
+          anchorId: anchorId,
+          anchorLabel: anchorLabel,
+          behaviorMode: behaviorMode,
+          behaviorLabel: behaviorLabel,
+          pathSpan: Math.round(clamp(pathSpan, 0.2, 2.7) * 100) / 100
+        };
+      });
+    }
+
+    function getHabitatMissionCatalog() {
+      return [
+        { id: 'refuge', icon: '\uD83C\uDFE0', title: 'Refuge Rescue', brief: 'Create meaningful retreat cover without collapsing open swimming space.', focus: 'shelter', requiredTicks: 4 },
+        { id: 'corridor', icon: '\uD83C\uDF0A', title: 'Open-Water Corridor', brief: 'Restore a usable movement lane while preserving essential cover.', focus: 'openSwim', requiredTicks: 4 },
+        { id: 'territory', icon: '\u2691', title: 'Territory Truce', brief: 'Break sight lines and create separated territories without crowding the tank.', focus: 'territory', requiredTicks: 4 },
+        { id: 'balance', icon: '\u2696\uFE0F', title: 'Community Balance', brief: 'Raise whole-community fit while protecting the most vulnerable resident.', focus: 'minimum', requiredTicks: 6 }
+      ];
+    }
+
+    function evaluateHabitatMission(missionId, baseline, current, elapsedTicks, prediction) {
+      baseline = baseline || {};
+      current = current || {};
+      var mission = getHabitatMissionCatalog().find(function(item) { return item.id === missionId; }) || getHabitatMissionCatalog()[0];
+      function metric(source, key, fallback) {
+        var value = Number(source[key]);
+        return Number.isFinite(value) ? value : fallback;
+      }
+      var before = {
+        shelter: metric(baseline, 'shelter', 0), territory: metric(baseline, 'territory', 0), openSwim: metric(baseline, 'openSwim', 100),
+        average: metric(baseline, 'average', 100), minimum: metric(baseline, 'minimum', 100), vitality: metric(baseline, 'vitality', 100), stress: metric(baseline, 'stress', 0)
+      };
+      var after = {
+        shelter: metric(current, 'shelter', before.shelter), territory: metric(current, 'territory', before.territory), openSwim: metric(current, 'openSwim', before.openSwim),
+        average: metric(current, 'average', before.average), minimum: metric(current, 'minimum', before.minimum), vitality: metric(current, 'vitality', before.vitality), stress: metric(current, 'stress', before.stress)
+      };
+      var deltas = {};
+      Object.keys(after).forEach(function(key) { deltas[key] = Math.round((after[key] - before[key]) * 10) / 10; });
+      var conditions = [];
+      if (mission.id === 'refuge') {
+        conditions.push({ id: 'shelter', label: 'Shelter reaches 55 or improves by 12', met: after.shelter >= 55 || deltas.shelter >= 12 });
+        conditions.push({ id: 'minimum', label: 'Weakest resident fit does not decline', met: deltas.minimum >= 0 });
+        conditions.push({ id: 'openSwim', label: 'At least 35 open-swim points remain', met: after.openSwim >= 35 });
+      } else if (mission.id === 'corridor') {
+        conditions.push({ id: 'openSwim', label: 'Open swim reaches 80 or improves by 10', met: after.openSwim >= 80 || deltas.openSwim >= 10 });
+        conditions.push({ id: 'minimum', label: 'Weakest resident loses no more than 3 fit points', met: deltas.minimum >= -3 });
+        conditions.push({ id: 'shelter', label: 'Shelter remains within 10 points of baseline', met: deltas.shelter >= -10 });
+      } else if (mission.id === 'territory') {
+        conditions.push({ id: 'territory', label: 'Territory reaches 55 or improves by 12', met: after.territory >= 55 || deltas.territory >= 12 });
+        conditions.push({ id: 'minimum', label: 'Weakest resident fit does not decline', met: deltas.minimum >= 0 });
+        conditions.push({ id: 'openSwim', label: 'At least 35 open-swim points remain', met: after.openSwim >= 35 });
+      } else {
+        conditions.push({ id: 'average', label: 'Average fit reaches 80 or improves by 6', met: after.average >= 80 || deltas.average >= 6 });
+        conditions.push({ id: 'minimum', label: 'Minimum fit reaches 60 or improves by 5', met: after.minimum >= 60 || deltas.minimum >= 5 });
+        conditions.push({ id: 'openSwim', label: 'At least 45 open-swim points remain', met: after.openSwim >= 45 });
+      }
+      conditions.push({ id: 'controlled', label: 'Keep the locked habitat unchanged during observation', met: current.controlled !== false });
+      conditions.push({ id: 'observation', label: 'Observe at least ' + mission.requiredTicks + ' aquarium-hour ticks', met: Number(elapsedTicks) >= mission.requiredTicks });
+      var structuralDeltas = { shelter: deltas.shelter, territory: deltas.territory, openSwim: deltas.openSwim, minimum: deltas.minimum };
+      var actualLeadingMetric = Object.keys(structuralDeltas).sort(function(a, b) { return structuralDeltas[b] - structuralDeltas[a]; })[0];
+      var predictionCorrect = prediction === actualLeadingMetric || prediction === mission.focus && structuralDeltas[mission.focus] > 0;
+      var vitalityProtected = deltas.vitality >= -5 && deltas.stress <= 8;
+      var success = conditions.every(function(condition) { return condition.met; });
+      var stars = success ? 1 + (predictionCorrect ? 1 : 0) + (vitalityProtected ? 1 : 0) : 0;
+      return {
+        mission: mission,
+        success: success,
+        stars: stars,
+        points: stars * 100,
+        predictionCorrect: predictionCorrect,
+        actualLeadingMetric: actualLeadingMetric,
+        vitalityProtected: vitalityProtected,
+        conditions: conditions,
+        metCount: conditions.filter(function(condition) { return condition.met; }).length,
+        deltas: deltas,
+        before: before,
+        after: after,
+        elapsedTicks: Math.max(0, Number(elapsedTicks) || 0)
+      };
+    }
+
     function compareInterventionFactors(before, after) {
       before = before || {};
       after = after || {};
@@ -135,6 +535,7 @@ window.StemLab = window.StemLab || {
       var changes = [];
       if (listSignature(before.plants) !== listSignature(after.plants)) changes.push({ id: 'plants', label: 'plant community' });
       if (listSignature(before.organisms) !== listSignature(after.organisms)) changes.push({ id: 'organisms', label: 'organism community' });
+      if (listSignature(before.habitat) !== listSignature(after.habitat)) changes.push({ id: 'habitat', label: 'habitat layout' });
       var beforeEquipment = before.equipment || {};
       var afterEquipment = after.equipment || {};
       var equipmentKeys = {};
@@ -296,9 +697,19 @@ window.StemLab = window.StemLab || {
     return {
       clamp: clamp,
       appendBounded: appendBounded,
+      getHabitatCatalog: getHabitatCatalog,
+      sanitizeHabitatLayout: sanitizeHabitatLayout,
+      summarizeHabitatLayout: summarizeHabitatLayout,
       estimateOxygenSaturationMgL: estimateOxygenSaturationMgL,
       calculateVitality: calculateVitality,
       classifyOrganismPlantRelationship: classifyOrganismPlantRelationship,
+      calculateHabitatFit: calculateHabitatFit,
+      summarizeHabitatCommunity: summarizeHabitatCommunity,
+      getPlantHabitatPosition: getPlantHabitatPosition,
+      buildSpatialInteractionNetwork: buildSpatialInteractionNetwork,
+      assignHabitatOccupancy: assignHabitatOccupancy,
+      getHabitatMissionCatalog: getHabitatMissionCatalog,
+      evaluateHabitatMission: evaluateHabitatMission,
       compareInterventionFactors: compareInterventionFactors,
       classifyDeltaDirection: classifyDeltaDirection,
       evaluateDirectionPredictions: evaluateDirectionPredictions,
@@ -11064,6 +11475,448 @@ window.StemLab = window.StemLab || {
     futureGoal: 'Best-in-class STEM curriculum tool for aquatic sciences in K-12 education'
   };
 
+  function createAquariumHabitatScene(canvas, initialOptions) {
+    var THREE = window.THREE;
+    if (!THREE || !canvas) return null;
+    var options = initialOptions || {};
+    var reducedMotion = false;
+    try { reducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (_) {}
+    var width = canvas.clientWidth || 760;
+    var height = canvas.clientHeight || 420;
+    var scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x082f49);
+    scene.fog = new THREE.Fog(0x082f49, 14, 28);
+    var camera = new THREE.PerspectiveCamera(48, width / Math.max(1, height), 0.1, 80);
+    camera.position.set(10.5, 7.5, 12.5);
+    camera.lookAt(0, 1.5, 0);
+    var renderer;
+    try { renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false, powerPreference: 'high-performance' }); }
+    catch (error) { return null; }
+    renderer.setPixelRatio(Math.max(1, Math.min(2, window.devicePixelRatio || 1)));
+    renderer.setSize(width, height, false);
+    renderer.outputEncoding = THREE.sRGBEncoding;
+    var ambient = new THREE.HemisphereLight(0xdbeafe, 0x082f49, 1.05);
+    scene.add(ambient);
+    var keyLight = new THREE.DirectionalLight(0xfef3c7, 1.25);
+    keyLight.position.set(-4, 9, 6);
+    scene.add(keyLight);
+    var fillLight = new THREE.PointLight(0x22d3ee, 0.8, 24);
+    fillLight.position.set(5, 4, 3);
+    scene.add(fillLight);
+
+    var tankGroup = new THREE.Group();
+    scene.add(tankGroup);
+    var substrateMaterial = new THREE.MeshStandardMaterial({ color: options.saltwater ? 0xc7a56b : 0x7c5a36, roughness: 0.95 });
+    var substrate = new THREE.Mesh(new THREE.BoxGeometry(11.7, 0.35, 6.2), substrateMaterial);
+    substrate.position.y = -0.2;
+    tankGroup.add(substrate);
+    var waterMaterial = new THREE.MeshPhongMaterial({ color: options.saltwater ? 0x0891b2 : 0x0e7490, transparent: true, opacity: 0.14, side: THREE.BackSide, depthWrite: false });
+    var water = new THREE.Mesh(new THREE.BoxGeometry(11.9, 5.5, 6.4), waterMaterial);
+    water.position.y = 2.55;
+    tankGroup.add(water);
+    var tankEdges = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(12, 5.8, 6.6)), new THREE.LineBasicMaterial({ color: 0x67e8f9, transparent: true, opacity: 0.6 }));
+    tankEdges.position.y = 2.7;
+    tankGroup.add(tankEdges);
+    var grid = new THREE.GridHelper(11.4, 12, 0x22d3ee, 0x155e75);
+    grid.position.y = 0.01;
+    tankGroup.add(grid);
+
+    var habitatRoot = new THREE.Group();
+    var plantRoot = new THREE.Group();
+    var creatureRoot = new THREE.Group();
+    var overlayRoot = new THREE.Group();
+    scene.add(habitatRoot);
+    scene.add(plantRoot);
+    scene.add(creatureRoot);
+    scene.add(overlayRoot);
+    var controls = null;
+    if (THREE.OrbitControls) {
+      controls = new THREE.OrbitControls(camera, canvas);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.08;
+      controls.enablePan = false;
+      controls.minDistance = 8;
+      controls.maxDistance = 24;
+      controls.maxPolarAngle = Math.PI * 0.49;
+      controls.target.set(0, 1.4, 0);
+      controls.update();
+    }
+
+    function disposeGroup(group) {
+      while (group.children.length) {
+        var child = group.children.pop();
+        child.traverse(function(node) {
+          if (node.geometry && node.geometry.dispose) node.geometry.dispose();
+          if (node.material) {
+            var materials = Array.isArray(node.material) ? node.material : [node.material];
+            materials.forEach(function(material) { if (material && material.dispose) material.dispose(); });
+          }
+        });
+      }
+    }
+    function habitatMaterial(color, selected) {
+      return new THREE.MeshStandardMaterial({ color: color, roughness: 0.82, metalness: 0.03, emissive: selected ? 0x164e63 : 0x000000, emissiveIntensity: selected ? 0.8 : 0 });
+    }
+    function tagHabitat(group, id) {
+      group.userData.habitatId = id;
+      group.traverse(function(node) { node.userData.habitatId = id; });
+    }
+    function addStone(group, x, y, z, scale, color, selected) {
+      var stone = new THREE.Mesh(new THREE.DodecahedronGeometry(0.62, 0), habitatMaterial(color, selected));
+      stone.position.set(x, y, z);
+      stone.scale.set(scale * 1.2, scale * 0.78, scale);
+      stone.rotation.set(0.16, x * 0.2, -0.08);
+      group.add(stone);
+      return stone;
+    }
+    function buildHabitatItem(item, type, selected) {
+      var group = new THREE.Group();
+      group.position.set(item.x, item.y, item.z);
+      group.rotation.y = item.rotation * Math.PI / 180;
+      group.scale.setScalar(item.scale);
+      if (type.id === 'river_stone') {
+        addStone(group, 0, 0.42, 0, 0.9, 0x64748b, selected);
+      } else if (type.id === 'driftwood') {
+        var woodMat = habitatMaterial(0x92400e, selected);
+        var trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.34, 3.4, 9), woodMat);
+        trunk.rotation.z = Math.PI / 2.8;
+        trunk.position.y = 0.85;
+        group.add(trunk);
+        [-1, 1].forEach(function(direction, index) {
+          var branch = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.18, 1.8, 8), woodMat.clone());
+          branch.rotation.z = direction * (0.75 + index * 0.2);
+          branch.rotation.x = direction * 0.35;
+          branch.position.set(direction * 0.7, 1.2, direction * 0.28);
+          group.add(branch);
+        });
+      } else if (type.id === 'cave') {
+        [-1.05, -0.55, 0, 0.55, 1.05].forEach(function(x, index) {
+          var archY = index === 2 ? 1.25 : index === 1 || index === 3 ? 0.95 : 0.52;
+          addStone(group, x, archY, 0, 0.72, 0x475569, selected);
+        });
+        var caveDark = new THREE.Mesh(new THREE.CircleGeometry(0.72, 24), new THREE.MeshBasicMaterial({ color: 0x020617, side: THREE.DoubleSide }));
+        caveDark.position.set(0, 0.58, 0.38);
+        group.add(caveDark);
+      } else if (type.id === 'rock_arch') {
+        [-1.35, -0.9, -0.45, 0, 0.45, 0.9, 1.35].forEach(function(x, index) {
+          var normalized = Math.abs(index - 3) / 3;
+          addStone(group, x, 0.45 + (1 - normalized) * 1.2, 0, 0.62, 0x78716c, selected);
+        });
+      } else {
+        var leafMat = new THREE.MeshStandardMaterial({ color: 0xa16207, side: THREE.DoubleSide, roughness: 1 });
+        for (var leafIndex = 0; leafIndex < 9; leafIndex++) {
+          var leaf = new THREE.Mesh(new THREE.CircleGeometry(0.34 + (leafIndex % 3) * 0.06, 10), leafMat.clone());
+          leaf.rotation.x = -Math.PI / 2;
+          leaf.rotation.z = leafIndex * 0.8;
+          leaf.scale.y = 0.48;
+          leaf.position.set(-0.9 + (leafIndex % 5) * 0.42, 0.06 + leafIndex * 0.003, -0.45 + Math.floor(leafIndex / 5) * 0.65);
+          group.add(leaf);
+        }
+      }
+      if (selected) {
+        var selectedRing = new THREE.Mesh(new THREE.TorusGeometry(1.25, 0.055, 8, 40), new THREE.MeshBasicMaterial({ color: 0xf0abfc }));
+        selectedRing.rotation.x = Math.PI / 2;
+        selectedRing.position.y = 0.08;
+        group.add(selectedRing);
+      }
+      tagHabitat(group, item.id);
+      return group;
+    }
+    function plantCoordinates(zone, index) {
+      return AquariumEcosystemCore.getPlantHabitatPosition(zone, index);
+    }
+    function addPlant(plant, index) {
+      var coords = plantCoordinates(plant.zone, index);
+      var group = new THREE.Group();
+      group.position.set(coords.x, coords.y, coords.z);
+      var plantColor = plant.health < 45 ? 0x78716c : plant.health < 70 ? 0x84cc16 : 0x22c55e;
+      var stemMat = new THREE.MeshStandardMaterial({ color: plantColor, roughness: 0.9, side: THREE.DoubleSide });
+      var stemCount = plant.zone === 'surface' ? 3 : 5;
+      for (var i = 0; i < stemCount; i++) {
+        var stem = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.07, 1.1 + (i % 3) * 0.32, 6), stemMat.clone());
+        stem.position.set((i - 2) * 0.18, 0.55 + (i % 3) * 0.16, (i % 2) * 0.14);
+        stem.rotation.z = (i - 2) * 0.08;
+        group.add(stem);
+        var leaf = new THREE.Mesh(new THREE.SphereGeometry(0.22, 8, 6), stemMat.clone());
+        leaf.scale.set(1.8, 0.45, 0.65);
+        leaf.position.set(stem.position.x + (i % 2 ? 0.2 : -0.2), stem.position.y + 0.5, stem.position.z);
+        group.add(leaf);
+      }
+      if (plant.zone === 'surface') group.rotation.z = Math.PI / 2;
+      group.userData.plantId = plant.id;
+      plantRoot.add(group);
+    }
+    function behaviorOffset(mode, angle, span) {
+      if (mode === 'holding-territory') return { x: Math.sin(angle) * span, z: Math.sin(angle * 2) * span * 0.38 };
+      if (mode === 'using-refuge' || mode === 'using-spawning-refuge') return { x: Math.cos(angle) * span, z: Math.sin(angle) * span * 0.72 };
+      if (mode === 'searching-refuge') return { x: Math.sin(angle) * span, z: Math.sin(angle * 2) * span * 0.45 };
+      if (mode === 'bottom-foraging') return { x: Math.sin(angle) * span, z: Math.sin(angle * 2) * Math.min(0.62, span * 0.42) };
+      return { x: Math.sin(angle) * span, z: Math.cos(angle) * Math.min(0.52, span * 0.28) };
+    }
+    function addFish(fish, index) {
+      var group = new THREE.Group();
+      var colorPalette = [0x38bdf8, 0xf97316, 0xfacc15, 0xa78bfa, 0x34d399, 0xfb7185];
+      var fitScore = Math.max(0, Math.min(100, Number(fish.fitScore) || 0));
+      var fitColor = fitScore >= 85 ? 0x34d399 : fitScore >= 65 ? 0x22d3ee : fitScore >= 45 ? 0xfbbf24 : 0xfb7185;
+      var bodyColor = options.overlay === 'organisms' ? fitColor : colorPalette[index % colorPalette.length];
+      var bodyMat = new THREE.MeshStandardMaterial({ color: bodyColor, roughness: 0.5, emissive: fish.selected ? fitColor : 0x000000, emissiveIntensity: fish.selected ? 0.45 : 0 });
+      var body = new THREE.Mesh(new THREE.SphereGeometry(0.34, 14, 9), bodyMat);
+      body.scale.set(1.65, 0.75, 0.55);
+      group.add(body);
+      var tail = new THREE.Mesh(new THREE.ConeGeometry(0.32, 0.6, 3), bodyMat.clone());
+      tail.rotation.z = -Math.PI / 2;
+      tail.position.x = -0.72;
+      group.add(tail);
+      var zoneY = fish.zone === 'bottom' ? 0.75 : fish.zone === 'top' ? 4.3 : 2.25;
+      var targetX = Number.isFinite(Number(fish.targetX)) ? Number(fish.targetX) : -4.5 + (index * 1.7) % 9;
+      var targetZ = Number.isFinite(Number(fish.targetZ)) ? Number(fish.targetZ) : -1.7 + (index * 1.1) % 3.4;
+      group.position.set(targetX, zoneY + (index % 2) * 0.2, targetZ);
+      group.userData.baseX = group.position.x;
+      group.userData.baseZ = group.position.z;
+      group.userData.phase = index * 1.7;
+      group.userData.speed = Math.max(0.18, (0.35 + (index % 3) * 0.08) * (1 - Math.min(80, Number(fish.stress) || 0) * 0.004));
+      group.userData.swimSpan = Math.max(0.2, Math.min(2.7, Number(fish.pathSpan) || (0.45 + fitScore / 100 * 1.1)));
+      group.userData.behaviorMode = fish.behaviorMode || 'open-water';
+      group.userData.fishInstanceId = fish.instanceId;
+      group.traverse(function(node) { node.userData.fishInstanceId = fish.instanceId; });
+      if (fish.selected) {
+        var focusHalo = new THREE.Mesh(new THREE.SphereGeometry(0.72, 16, 10), new THREE.MeshBasicMaterial({ color: fitColor, wireframe: true, transparent: true, opacity: 0.8 }));
+        focusHalo.scale.set(1.6, 0.9, 0.8);
+        focusHalo.userData.fishInstanceId = fish.instanceId;
+        group.add(focusHalo);
+      }
+      creatureRoot.add(group);
+    }
+    function addOverlay(overlay, layout, catalogById, fishItems, interactions) {
+      if (overlay === 'flow') {
+        [-1.7, 0, 1.7].forEach(function(z, index) {
+          var arrow = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), new THREE.Vector3(-5.1, 1.2 + index * 0.55, z), 10, 0x22d3ee, 0.45, 0.22);
+          overlayRoot.add(arrow);
+        });
+      } else if (overlay === 'light') {
+        [-3.5, 0, 3.5].forEach(function(x) {
+          var cone = new THREE.Mesh(new THREE.ConeGeometry(1.4, 5.5, 24, 1, true), new THREE.MeshBasicMaterial({ color: 0xfef08a, transparent: true, opacity: 0.1, side: THREE.DoubleSide, depthWrite: false }));
+          cone.position.set(x, 3.1, 0);
+          cone.rotation.z = Math.PI;
+          overlayRoot.add(cone);
+        });
+      } else if (overlay === 'shelter' || overlay === 'territory') {
+        layout.forEach(function(item) {
+          var type = catalogById[item.type];
+          if (!type) return;
+          var magnitude = overlay === 'shelter' ? type.shelter : type.territory;
+          var radius = 0.8 + magnitude / 16;
+          var zone = new THREE.Mesh(new THREE.SphereGeometry(radius, 18, 12), new THREE.MeshBasicMaterial({ color: overlay === 'shelter' ? 0x34d399 : 0xf59e0b, wireframe: true, transparent: true, opacity: 0.22 }));
+          zone.position.set(item.x, Math.max(0.65, item.y + radius * 0.45), item.z);
+          zone.scale.y = 0.55;
+          overlayRoot.add(zone);
+        });
+      } else if (overlay === 'interactions') {
+        (interactions || []).slice(0, 32).forEach(function(interaction, interactionIndex) {
+          if (!interaction || !interaction.source || !interaction.target) return;
+          var interactionColor = new THREE.Color(interaction.color || '#67e8f9');
+          var startPoint = new THREE.Vector3(interaction.source.x, interaction.source.y, interaction.source.z);
+          var endPoint = new THREE.Vector3(interaction.target.x, interaction.target.y, interaction.target.z);
+          var interactionGeometry = new THREE.BufferGeometry().setFromPoints([startPoint, endPoint]);
+          var interactionLine = new THREE.Line(interactionGeometry, new THREE.LineBasicMaterial({ color: interactionColor, transparent: true, opacity: 0.42 }));
+          overlayRoot.add(interactionLine);
+          var pulse = new THREE.Mesh(new THREE.SphereGeometry(0.09, 9, 7), new THREE.MeshBasicMaterial({ color: interactionColor }));
+          pulse.position.lerpVectors(startPoint, endPoint, 0.5);
+          pulse.userData.isInteractionPulse = true;
+          pulse.userData.startPoint = startPoint;
+          pulse.userData.endPoint = endPoint;
+          pulse.userData.phase = interactionIndex * 0.17;
+          pulse.userData.bidirectional = !!interaction.bidirectional;
+          overlayRoot.add(pulse);
+          [startPoint, endPoint].forEach(function(point, endpointIndex) {
+            var endpointHalo = new THREE.Mesh(new THREE.SphereGeometry(0.15, 9, 7), new THREE.MeshBasicMaterial({ color: interactionColor, wireframe: true, transparent: true, opacity: endpointIndex === 0 ? 0.55 : 0.35 }));
+            endpointHalo.position.copy(point);
+            overlayRoot.add(endpointHalo);
+          });
+        });
+      } else if (overlay === 'organisms') {
+        (fishItems || []).slice(0, 12).forEach(function(fish, index) {
+          var fitScore = Math.max(0, Math.min(100, Number(fish.fitScore) || 0));
+          var pathColor = fitScore >= 85 ? 0x34d399 : fitScore >= 65 ? 0x22d3ee : fitScore >= 45 ? 0xfbbf24 : 0xfb7185;
+          var zoneY = fish.zone === 'bottom' ? 0.72 : fish.zone === 'top' ? 4.3 : 2.25;
+          var centerX = Number.isFinite(Number(fish.targetX)) ? Number(fish.targetX) : -4.5 + (index * 1.7) % 9;
+          var centerZ = Number.isFinite(Number(fish.targetZ)) ? Number(fish.targetZ) : -1.7 + (index * 1.1) % 3.4;
+          var span = Math.max(0.2, Math.min(2.7, Number(fish.pathSpan) || (0.45 + fitScore / 100 * 1.1)));
+          var pathPoints = [];
+          for (var pathIndex = 0; pathIndex < 48; pathIndex++) {
+            var angle = pathIndex / 48 * Math.PI * 2;
+            var offset = behaviorOffset(fish.behaviorMode || 'open-water', angle, span);
+            pathPoints.push(new THREE.Vector3(centerX + offset.x, zoneY, centerZ + offset.z));
+          }
+          var pathGeometry = new THREE.BufferGeometry().setFromPoints(pathPoints);
+          var path = new THREE.LineLoop(pathGeometry, new THREE.LineBasicMaterial({ color: pathColor, transparent: true, opacity: fish.selected ? 0.95 : 0.5 }));
+          overlayRoot.add(path);
+          var occupancy = new THREE.Mesh(new THREE.SphereGeometry(Math.max(0.35, span * 0.42), 14, 9), new THREE.MeshBasicMaterial({ color: pathColor, wireframe: true, transparent: true, opacity: fish.selected ? 0.3 : 0.12 }));
+          occupancy.position.set(centerX, zoneY, centerZ);
+          occupancy.scale.set(2.1, fish.zone === 'mid' ? 0.75 : 0.45, 0.9);
+          overlayRoot.add(occupancy);
+          if (fish.anchorId) {
+            var anchoredStructure = layout.find(function(item) { return item.id === fish.anchorId; });
+            if (anchoredStructure) {
+              var anchorGeometry = new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(centerX, zoneY, centerZ),
+                new THREE.Vector3(anchoredStructure.x, 0.16, anchoredStructure.z)
+              ]);
+              var anchorLine = new THREE.Line(anchorGeometry, new THREE.LineBasicMaterial({ color: pathColor, transparent: true, opacity: fish.selected ? 0.9 : 0.28 }));
+              overlayRoot.add(anchorLine);
+              var anchorRing = new THREE.Mesh(new THREE.TorusGeometry(0.34, fish.selected ? 0.055 : 0.025, 8, 28), new THREE.MeshBasicMaterial({ color: pathColor, transparent: true, opacity: fish.selected ? 0.95 : 0.45 }));
+              anchorRing.rotation.x = Math.PI / 2;
+              anchorRing.position.set(anchoredStructure.x, 0.12, anchoredStructure.z);
+              overlayRoot.add(anchorRing);
+            }
+          }
+        });
+      }
+    }
+    function rebuild(nextOptions) {
+      options = nextOptions || options;
+      disposeGroup(habitatRoot);
+      disposeGroup(plantRoot);
+      disposeGroup(creatureRoot);
+      disposeGroup(overlayRoot);
+      var catalog = options.catalog || [];
+      var catalogById = {};
+      catalog.forEach(function(type) { catalogById[type.id] = type; });
+      (options.layout || []).forEach(function(item) {
+        var type = catalogById[item.type];
+        if (type) habitatRoot.add(buildHabitatItem(item, type, item.id === options.selectedId));
+      });
+      (options.plants || []).forEach(addPlant);
+      (options.fish || []).slice(0, 12).forEach(addFish);
+      addOverlay(options.overlay || 'none', options.layout || [], catalogById, options.fish || [], options.interactions || []);
+    }
+    rebuild(options);
+
+    var raycaster = new THREE.Raycaster();
+    var pointer = new THREE.Vector2();
+    function onPointerUp(event) {
+      var rect = canvas.getBoundingClientRect();
+      pointer.x = ((event.clientX - rect.left) / Math.max(1, rect.width)) * 2 - 1;
+      pointer.y = -((event.clientY - rect.top) / Math.max(1, rect.height)) * 2 + 1;
+      raycaster.setFromCamera(pointer, camera);
+      var intersections = raycaster.intersectObjects(habitatRoot.children, true);
+      var hit = intersections.find(function(intersection) { return intersection.object && intersection.object.userData && intersection.object.userData.habitatId; });
+      if (hit && options.onSelect) {
+        options.onSelect(hit.object.userData.habitatId);
+        return;
+      }
+      var fishIntersections = raycaster.intersectObjects(creatureRoot.children, true);
+      var fishHit = fishIntersections.find(function(intersection) { return intersection.object && intersection.object.userData && intersection.object.userData.fishInstanceId; });
+      if (fishHit && options.onSelectFish) options.onSelectFish(fishHit.object.userData.fishInstanceId);
+    }
+    canvas.addEventListener('pointerup', onPointerUp);
+    var contextLost = false;
+    function onContextLost(event) { event.preventDefault(); contextLost = true; if (options.onContextLost) options.onContextLost(); }
+    canvas.addEventListener('webglcontextlost', onContextLost, false);
+    function resize() {
+      var nextWidth = canvas.clientWidth || 760;
+      var nextHeight = canvas.clientHeight || 420;
+      camera.aspect = nextWidth / Math.max(1, nextHeight);
+      camera.updateProjectionMatrix();
+      renderer.setSize(nextWidth, nextHeight, false);
+    }
+    var resizeObserver = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(resize) : null;
+    if (resizeObserver) resizeObserver.observe(canvas);
+    else window.addEventListener('resize', resize);
+    var animationFrame = 0;
+    var startTime = performance.now();
+    function animate(now) {
+      if (contextLost) return;
+      animationFrame = requestAnimationFrame(animate);
+      if (!reducedMotion) {
+        var elapsed = (now - startTime) / 1000;
+        creatureRoot.children.forEach(function(fish) {
+          var behaviorAngle = elapsed * fish.userData.speed + fish.userData.phase;
+          var behaviorMotion = behaviorOffset(fish.userData.behaviorMode, behaviorAngle, fish.userData.swimSpan);
+          fish.position.x = fish.userData.baseX + behaviorMotion.x;
+          fish.position.z = fish.userData.baseZ + behaviorMotion.z;
+          var directionSignal = fish.userData.behaviorMode === 'using-refuge' || fish.userData.behaviorMode === 'using-spawning-refuge' ? -Math.sin(behaviorAngle) : Math.cos(behaviorAngle);
+          fish.rotation.y = directionSignal < 0 ? Math.PI : 0;
+        });
+        plantRoot.children.forEach(function(plant, index) { plant.rotation.z = Math.sin(elapsed * 0.65 + index) * 0.025; });
+        overlayRoot.children.forEach(function(overlayItem) {
+          if (!overlayItem.userData || !overlayItem.userData.isInteractionPulse) return;
+          var pulseProgress = overlayItem.userData.bidirectional
+            ? (Math.sin(elapsed * 1.25 + overlayItem.userData.phase * Math.PI * 2) + 1) / 2
+            : (elapsed * 0.28 + overlayItem.userData.phase) % 1;
+          overlayItem.position.lerpVectors(overlayItem.userData.startPoint, overlayItem.userData.endPoint, pulseProgress);
+        });
+      }
+      if (controls) controls.update();
+      renderer.render(scene, camera);
+    }
+    animationFrame = requestAnimationFrame(animate);
+    function setView(view) {
+      if (view === 'top') camera.position.set(0, 14.5, 0.01);
+      else if (view === 'left') camera.position.set(-13, 5.4, 0);
+      else camera.position.set(10.5, 7.5, 12.5);
+      camera.lookAt(0, 1.4, 0);
+      if (controls) { controls.target.set(0, 1.4, 0); controls.update(); }
+    }
+    return {
+      update: rebuild,
+      setView: setView,
+      dispose: function() {
+        cancelAnimationFrame(animationFrame);
+        canvas.removeEventListener('pointerup', onPointerUp);
+        canvas.removeEventListener('webglcontextlost', onContextLost, false);
+        if (resizeObserver) resizeObserver.disconnect(); else window.removeEventListener('resize', resize);
+        if (controls && controls.dispose) controls.dispose();
+        disposeGroup(habitatRoot); disposeGroup(plantRoot); disposeGroup(creatureRoot); disposeGroup(overlayRoot); disposeGroup(tankGroup);
+        renderer.dispose();
+      }
+    };
+  }
+
+  function AquariumHabitat3DViewport(props) {
+    var React = props.React;
+    var canvasRef = React.useRef(null);
+    var engineRef = React.useRef(null);
+    var onSelectRef = React.useRef(props.onSelect);
+    var onSelectFishRef = React.useRef(props.onSelectFish);
+    onSelectRef.current = props.onSelect;
+    onSelectFishRef.current = props.onSelectFish;
+    var statusState = React.useState('loading');
+    var status = statusState[0];
+    var setStatus = statusState[1];
+    React.useEffect(function() {
+      var cancelled = false;
+      function start() {
+        if (cancelled || !canvasRef.current) return;
+        var nextOptions = Object.assign({}, props.sceneOptions, { onSelect: function(id) { if (onSelectRef.current) onSelectRef.current(id); }, onSelectFish: function(id) { if (onSelectFishRef.current) onSelectFishRef.current(id); }, onContextLost: function() { if (!cancelled) setStatus('error'); } });
+        var engine = createAquariumHabitatScene(canvasRef.current, nextOptions);
+        if (!engine) { setStatus('error'); return; }
+        engineRef.current = engine;
+        setStatus('ready');
+      }
+      if (window.THREE) start();
+      else if (window.StemLab && typeof window.StemLab.ensureThree === 'function') {
+        window.StemLab.ensureThree({ orbit: true, orbitRequired: false }).then(start).catch(function() { if (!cancelled) setStatus('error'); });
+      } else setStatus('error');
+      return function() {
+        cancelled = true;
+        if (engineRef.current && engineRef.current.dispose) engineRef.current.dispose();
+        engineRef.current = null;
+      };
+    }, [props.instanceKey]);
+    var sceneSignature = JSON.stringify({ layout: props.sceneOptions.layout, plants: props.sceneOptions.plants, fish: props.sceneOptions.fish, interactions: props.sceneOptions.interactions, overlay: props.sceneOptions.overlay, selectedId: props.sceneOptions.selectedId });
+    React.useEffect(function() {
+      if (engineRef.current && engineRef.current.update) engineRef.current.update(Object.assign({}, props.sceneOptions, { onSelect: function(id) { if (onSelectRef.current) onSelectRef.current(id); }, onSelectFish: function(id) { if (onSelectFishRef.current) onSelectFishRef.current(id); }, onContextLost: function() { setStatus('error'); } }));
+    }, [sceneSignature]);
+    return React.createElement('div', { className: 'relative min-h-[320px] overflow-hidden rounded-xl border border-cyan-300/30 bg-slate-950' },
+      React.createElement('canvas', { ref: canvasRef, className: 'block h-[320px] w-full', role: 'img', 'aria-label': props.label }),
+      status === 'loading' && React.createElement('div', { role: 'status', 'aria-live': 'polite', className: 'absolute inset-0 flex items-center justify-center bg-slate-950/80 text-sm font-bold text-cyan-100' }, 'Building the 3D habitat'),
+      status === 'error' && React.createElement('div', { role: 'status', className: 'absolute inset-0 flex items-center justify-center bg-slate-950/90 p-6 text-center text-sm text-amber-100' }, 'The 3D view could not start. The synchronized habitat plan and controls remain fully available.'),
+      status === 'ready' && React.createElement('div', { className: 'absolute bottom-2 left-2 flex gap-1 rounded-lg bg-slate-950/75 p-1', role: 'group', 'aria-label': '3D camera presets' },
+        ['front', 'top', 'left'].map(function(view) { return React.createElement('button', { key: view, type: 'button', onClick: function() { if (engineRef.current) engineRef.current.setView(view); }, className: 'rounded border border-white/20 bg-white/10 px-2 py-1 text-[9px] font-bold text-white hover:bg-white/20' }, view.charAt(0).toUpperCase() + view.slice(1)); })
+      )
+    );
+  }
   window.StemLab.registerTool('aquarium', {
     icon: '\uD83D\uDC20',
     label: "Aquarium Lab",
@@ -14465,6 +15318,19 @@ var d = (labToolData && labToolData._aquarium) || {};
           var tutorialOutlineOpen = d.tutorialOutlineOpen === true;
           var tutorialNotebook = d.tutorialNotebook && typeof d.tutorialNotebook === 'object' ? d.tutorialNotebook : {};
           var tutorialNotebookOpen = d.tutorialNotebookOpen === true;
+          var habitatMissionCatalog = AquariumEcosystemCore.getHabitatMissionCatalog();
+          var habitatMissionIds = habitatMissionCatalog.map(function(mission) { return mission.id; });
+          var habitatMissionId = habitatMissionIds.indexOf(d.habitatMissionId) !== -1 ? d.habitatMissionId : null;
+          var habitatMissionStage = ['brief', 'predict', 'build', 'observe', 'reflect'].indexOf(d.habitatMissionStage) !== -1 ? d.habitatMissionStage : 'brief';
+          var habitatMissionBaseline = d.habitatMissionBaseline && typeof d.habitatMissionBaseline === 'object' ? d.habitatMissionBaseline : null;
+          var habitatMissionPrediction = ['shelter', 'territory', 'openSwim', 'minimum'].indexOf(d.habitatMissionPrediction) !== -1 ? d.habitatMissionPrediction : null;
+          var habitatMissionObservationStartTick = typeof d.habitatMissionObservationStartTick === 'number' ? d.habitatMissionObservationStartTick : null;
+          var habitatMissionObservationLayoutSignature = typeof d.habitatMissionObservationLayoutSignature === 'string' ? d.habitatMissionObservationLayoutSignature : null;
+          var habitatMissionOutcome = d.habitatMissionOutcome && typeof d.habitatMissionOutcome === 'object' && Array.isArray(d.habitatMissionOutcome.conditions) ? Object.assign({}, d.habitatMissionOutcome, { stars: Math.max(0, Math.min(3, Number(d.habitatMissionOutcome.stars) || 0)) }) : null;
+          var habitatMissionReflection = typeof d.habitatMissionReflection === 'string' ? d.habitatMissionReflection.slice(0, 600) : '';
+          var habitatMissionCompleted = d.habitatMissionCompleted && typeof d.habitatMissionCompleted === 'object' ? d.habitatMissionCompleted : {};
+          var habitatMissionPoints = Math.max(0, Math.floor(Number(d.habitatMissionPoints) || 0));
+          var habitatMissionPanelOpen = d.habitatMissionPanelOpen !== false;
           var shopOpen = d.shopOpen || false;
           var shopTab = d.shopTab || 'fish';
 
@@ -14563,7 +15429,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               snapshotParts.push('NO3 ' + (noteDeltas.nitrate >= 0 ? '+' : '') + noteDeltas.nitrate.toFixed(1));
               snapshotParts.push('vitality ' + (noteDeltas.vitality >= 0 ? '+' : '') + Math.round(noteDeltas.vitality));
               if (d.ecosystemBaseline.factors) {
-                var noteCurrentFactors = { plants: d.tankPlants || [], organisms: d.tankFish || [], equipment: d.equipment || {}, lightsOn: d.lightsOn !== false };
+                var noteCurrentFactors = { plants: d.tankPlants || [], organisms: d.tankFish || [], habitat: AquariumEcosystemCore.sanitizeHabitatLayout(d.habitatLayout).map(function(item) { return item.type + ':' + item.x.toFixed(1) + ':' + item.z.toFixed(1); }), equipment: d.equipment || {}, lightsOn: d.lightsOn !== false };
                 var noteInterventionComparison = AquariumEcosystemCore.compareInterventionFactors(d.ecosystemBaseline.factors, noteCurrentFactors);
                 snapshotParts.push(noteInterventionComparison.controlled ? 'Design: controlled (' + noteInterventionComparison.summary + ')' : noteInterventionComparison.confounded ? 'Design: confounded (' + noteInterventionComparison.summary + ')' : 'Design: no intervention yet');
               }
@@ -14590,6 +15456,18 @@ var d = (labToolData && labToolData._aquarium) || {};
           var selectedPlantId = typeof d.selectedPlantId === 'string' ? d.selectedPlantId : null;
           var selectedPlant = selectedPlantId ? plantCatalog.find(function (plant) { return plant.id === selectedPlantId; }) : null;
           var selectedPlantProfile = selectedPlant ? getPlantProfile(selectedPlant) : null;
+          function inferPlantHabitatZone(plant) {
+            if (!plant) return 'midground';
+            var profile = getPlantProfile(plant);
+            var placementText = ((profile && profile.placement) + ' ' + (profile && profile.form) + ' ' + (profile && profile.aquascape)).toLowerCase();
+            if (plant.id === 'chaeto' || /refugium|sump|macroalga/.test(placementText)) return 'refugium';
+            if (/float|surface/.test(placementText)) return 'surface';
+            if (/emergent|mangrove|shoreline|above the water/.test(placementText)) return 'emergent';
+            if (/foreground|carpet|low mat/.test(placementText)) return 'foreground';
+            if (/background|rear|tall stem/.test(placementText)) return 'background';
+            if (/rock|wood|hardscape|epiphyte|attach/.test(placementText)) return 'hardscape';
+            return 'midground';
+          }
           var plantLearningAnswers = d.plantLearningAnswers && typeof d.plantLearningAnswers === 'object' ? d.plantLearningAnswers : {};
           var ecosystemExchangeView = ['live', 'day', 'night', 'net'].indexOf(d.ecosystemExchangeView) !== -1 ? d.ecosystemExchangeView : 'live';
           var ecosystemFocusType = ['all', 'fish', 'plant', 'bacteria', 'algae', 'water'].indexOf(d.ecosystemFocusType) !== -1 ? d.ecosystemFocusType : 'all';
@@ -14607,6 +15485,18 @@ var d = (labToolData && labToolData._aquarium) || {};
             vitality: ['rise', 'stable', 'fall'].indexOf(savedEcosystemPrediction.vitality) !== -1 ? savedEcosystemPrediction.vitality : null
           };
           var ecosystemInterventionNote = typeof d.ecosystemInterventionNote === 'string' ? d.ecosystemInterventionNote.slice(0, 240) : '';
+          var habitatCatalog = AquariumEcosystemCore.getHabitatCatalog();
+          var habitatLayout = AquariumEcosystemCore.sanitizeHabitatLayout(d.habitatLayout);
+          var habitatSummary = AquariumEcosystemCore.summarizeHabitatLayout(habitatLayout);
+          var habitatStudioOpen = d.habitatStudioOpen === true;
+          var habitatViewMode = d.habitatViewMode === '3d' ? '3d' : 'plan';
+          var habitatOverlay = ['none', 'shelter', 'territory', 'flow', 'light', 'organisms', 'interactions'].indexOf(d.habitatOverlay) !== -1 ? d.habitatOverlay : 'none';
+          var selectedHabitatItemId = typeof d.selectedHabitatItemId === 'string' && habitatLayout.some(function(item) { return item.id === d.selectedHabitatItemId; }) ? d.selectedHabitatItemId : null;
+          var selectedHabitatItem = selectedHabitatItemId ? habitatLayout.find(function(item) { return item.id === selectedHabitatItemId; }) : null;
+          var selectedHabitatType = selectedHabitatItem ? habitatCatalog.find(function(type) { return type.id === selectedHabitatItem.type; }) : null;
+          var habitatPlantZones = d.habitatPlantZones && typeof d.habitatPlantZones === 'object' ? d.habitatPlantZones : {};
+          var nextHabitatItemId = typeof d.nextHabitatItemId === 'number' && d.nextHabitatItemId > 0 ? Math.floor(d.nextHabitatItemId) : 1;
+          var habitatUndoLayout = AquariumEcosystemCore.sanitizeHabitatLayout(d.habitatUndoLayout);
 
           var selectedPlantLearningAnswer = selectedPlant ? plantLearningAnswers[selectedPlant.id] : null;
           var currentLightLevel = Math.max(0, Math.min(EQUIPMENT_CATALOG.light.levels.length - 1, Number(equipment.light) || 0));
@@ -14639,6 +15529,10 @@ var d = (labToolData && labToolData._aquarium) || {};
             if (selectedPlant.co2Need >= 0.6 && waterChem && waterChem.co2 < 2) selectedPlantCareAlerts.push({ severity: 'warning', text: 'This carbon-demanding plant is below the simulator baseline for dependable dense growth.' });
             if (waterChem && waterChem.nitrate < 2) selectedPlantCareAlerts.push({ severity: 'warning', text: 'Nitrate is extremely low; fast growth may be nitrogen-limited even though the water looks clean.' });
             if (algaeLevel > 50) selectedPlantCareAlerts.push({ severity: 'warning', text: 'Heavy algae is shading leaves and reducing effective light in the simulation.' });
+            var preferredSelectedPlantZone = inferPlantHabitatZone(selectedPlant);
+            var assignedSelectedPlantZone = habitatPlantZones[selectedPlant.id];
+            if (assignedSelectedPlantZone === 'hardscape' && habitatSummary.plantAnchors < 1) selectedPlantCareAlerts.push({ severity: 'danger', text: 'This plant is assigned to hardscape, but the layout has no available plant anchor. Add wood or stone, or move the specimen.' });
+            else if (assignedSelectedPlantZone && assignedSelectedPlantZone !== preferredSelectedPlantZone) selectedPlantCareAlerts.push({ severity: 'warning', text: 'The chosen ' + assignedSelectedPlantZone + ' zone differs from the species-informed ' + preferredSelectedPlantZone + ' placement. Observe new growth before deciding whether the tradeoff works.' });
             if (selectedPlantCareAlerts.length === 0) selectedPlantCareAlerts.push({ severity: 'success', text: 'No immediate simulator warning is detected. Confirm success from healthy new growth over several ticks.' });
           }
           var selectedPlantCheckOptions = [];
@@ -14685,6 +15579,21 @@ var d = (labToolData && labToolData._aquarium) || {};
               selectedPlantZoneLayout = { top: '58%', left: '65%' };
             }
 
+            var selectedPlantZoneOverride = habitatPlantZones[selectedPlant.id];
+            var selectedPlantZoneDefinitions = {
+              foreground: { label: 'Foreground / substrate', layout: { top: '78%', left: '28%' } },
+              midground: { label: 'Midground', layout: { top: '52%', left: '52%' } },
+              background: { label: 'Background', layout: { top: '42%', left: '18%' } },
+              hardscape: { label: 'Hardscape', layout: { top: '58%', left: '65%' } },
+              surface: { label: 'Surface', layout: { top: '12%', left: '52%' } },
+              emergent: { label: 'Emergent margin', layout: { top: '8%', left: '82%' } },
+              refugium: { label: 'Refugium / utility zone', layout: { top: '64%', left: '86%' } }
+            };
+            if (selectedPlantZoneOverride && selectedPlantZoneDefinitions[selectedPlantZoneOverride]) {
+              selectedPlantPlacementZone = selectedPlantZoneOverride;
+              selectedPlantPlacementLabel = selectedPlantZoneDefinitions[selectedPlantZoneOverride].label;
+              selectedPlantZoneLayout = selectedPlantZoneDefinitions[selectedPlantZoneOverride].layout;
+            }
             var selectedPlantLightNeed = selectedPlant.light === 'high' ? 82 : selectedPlant.light === 'medium' ? 58 : 32;
             var selectedPlantLightAvailable = Math.max(0, Math.min(100, Math.round(((0.3 + currentLightDefinition.plantBoost) / 1.1) * currentLightOutput * 100)));
             var selectedPlantCarbonNeed = Math.max(20, Math.min(95, Math.round(20 + selectedPlant.co2Need * 85)));
@@ -15744,8 +16653,9 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               selectedTank: tankId,
               selectedPlantId: null,
-              ecosystemExchangeView: 'live', ecosystemFocusType: 'all', ecosystemFocusId: null, ecosystemVitalityFilter: 'all', lastEcosystemExchange: null,
+              ecosystemExchangeView: 'live', ecosystemFocusType: 'all', ecosystemFocusId: null, ecosystemVitalityFilter: 'all', habitatLayout: [], habitatUndoLayout: [], habitatPlantZones: {}, habitatStudioOpen: false, habitatViewMode: 'plan', habitatOverlay: 'none', selectedHabitatItemId: null, nextHabitatItemId: 1, lastEcosystemExchange: null,
               ecosystemExchangeHistory: [], vitalityHistory: [], fishVitality: {}, ecosystemBaseline: null, ecosystemPrediction: { oxygen: null, nitrate: null, vitality: null }, ecosystemInterventionNote: '',
+              habitatMissionId: null, habitatMissionStage: 'brief', habitatMissionBaseline: null, habitatMissionPrediction: null, habitatMissionObservationStartTick: null, habitatMissionObservationLayoutSignature: null, habitatMissionOutcome: null, habitatMissionReflection: '', habitatMissionCompleted: {}, habitatMissionPoints: 0, habitatMissionPanelOpen: true,
 
               fishBirthTicks: {}, fishCareLog: {},
               fishInstanceIds: [], nextFishInstanceId: 1, fishIdentityVersion: 3,
@@ -15886,6 +16796,100 @@ var d = (labToolData && labToolData._aquarium) || {};
 
           var closePlantProfile = function () {
             upd('selectedPlantId', null);
+          };
+          var commitHabitatLayout = function(nextLayout, nextSelection, message) {
+            var safeNext = AquariumEcosystemCore.sanitizeHabitatLayout(nextLayout);
+            updMulti({ habitatLayout: safeNext, habitatUndoLayout: habitatLayout, selectedHabitatItemId: nextSelection || null, habitatStudioOpen: true });
+            if (message && announceToSR) announceToSR(message);
+          };
+
+          var getHabitatPlacementSlot = function(itemCount) {
+            var slots = [
+              { x: -3.8, z: -1.5 }, { x: 0, z: -1.5 }, { x: 3.8, z: -1.5 },
+              { x: -3.8, z: 0.2 }, { x: 0, z: 0.2 }, { x: 3.8, z: 0.2 },
+              { x: -3.8, z: 1.8 }, { x: 0, z: 1.8 }, { x: 3.8, z: 1.8 }
+            ];
+            return slots[Math.max(0, Number(itemCount) || 0) % slots.length];
+          };
+
+          var addHabitatItem = function(typeId) {
+            var type = habitatCatalog.find(function(candidate) { return candidate.id === typeId; });
+            if (!type || habitatLayout.length >= 12) {
+              if (habitatLayout.length >= 12 && addToast) addToast('Habitat limit reached. Remove or resize an object before adding another.', 'info');
+              return;
+            }
+            var slot = getHabitatPlacementSlot(habitatLayout.length);
+            var itemId = 'habitat-' + nextHabitatItemId;
+            var nextItem = { id: itemId, type: type.id, x: slot.x, y: 0, z: slot.z, rotation: 0, scale: 1 };
+            updMulti({ habitatLayout: habitatLayout.concat([nextItem]), habitatUndoLayout: habitatLayout, selectedHabitatItemId: itemId, nextHabitatItemId: nextHabitatItemId + 1, habitatStudioOpen: true });
+            if (announceToSR) announceToSR(type.label + ' added to the habitat and selected.');
+          };
+
+          var applyHabitatForecast = function(forecast) {
+            if (!forecast || !Array.isArray(forecast.layout)) return;
+            var safeNext = AquariumEcosystemCore.sanitizeHabitatLayout(forecast.layout);
+            updMulti({
+              habitatLayout: safeNext,
+              habitatUndoLayout: habitatLayout,
+              selectedHabitatItemId: forecast.selection || null,
+              nextHabitatItemId: forecast.usesNextId ? nextHabitatItemId + 1 : nextHabitatItemId,
+              habitatStudioOpen: true
+            });
+            if (announceToSR) announceToSR(forecast.label + ' applied. Projected average habitat fit ' + forecast.average + ' out of 100.');
+          };
+
+          var updateSelectedHabitatItem = function(patch, message) {
+            if (!selectedHabitatItem) return;
+            var nextLayout = habitatLayout.map(function(item) {
+              return item.id === selectedHabitatItem.id ? Object.assign({}, item, patch) : item;
+            });
+            commitHabitatLayout(nextLayout, selectedHabitatItem.id, message);
+          };
+
+          var moveSelectedHabitatItem = function(dx, dz) {
+            if (!selectedHabitatItem || (dx === 0 && dz === 0)) return;
+            updateSelectedHabitatItem({ x: Math.max(-5.2, Math.min(5.2, selectedHabitatItem.x + dx)), z: Math.max(-2.8, Math.min(2.8, selectedHabitatItem.z + dz)) }, selectedHabitatType.label + ' moved.');
+          };
+
+          var removeSelectedHabitatItem = function() {
+            if (!selectedHabitatItem) return;
+            commitHabitatLayout(habitatLayout.filter(function(item) { return item.id !== selectedHabitatItem.id; }), null, selectedHabitatType.label + ' removed from the habitat.');
+          };
+
+          var undoHabitatEdit = function() {
+            if (!habitatUndoLayout.length && !habitatLayout.length) return;
+            var restored = habitatUndoLayout;
+            updMulti({ habitatLayout: restored, habitatUndoLayout: habitatLayout, selectedHabitatItemId: restored.length ? restored[restored.length - 1].id : null, habitatStudioOpen: true });
+            if (announceToSR) announceToSR('Previous habitat layout restored.');
+          };
+
+          var applyHabitatPreset = function(presetId) {
+            var preset;
+            if (presetId === 'spawning') preset = [
+              { id: 'habitat-' + nextHabitatItemId, type: 'cave', x: -3.3, y: 0, z: -1.1, rotation: 8, scale: 1.15 },
+              { id: 'habitat-' + (nextHabitatItemId + 1), type: 'leaf_litter', x: 0.1, y: 0, z: 1.5, rotation: -18, scale: 1.25 },
+              { id: 'habitat-' + (nextHabitatItemId + 2), type: 'driftwood', x: 3.1, y: 0, z: -0.4, rotation: -22, scale: 1 }
+            ];
+            else if (presetId === 'iwagumi') preset = [
+              { id: 'habitat-' + nextHabitatItemId, type: 'rock_arch', x: -1.4, y: 0, z: -0.8, rotation: 12, scale: 1.1 },
+              { id: 'habitat-' + (nextHabitatItemId + 1), type: 'river_stone', x: 2.5, y: 0, z: 0.8, rotation: 0, scale: 1.35 },
+              { id: 'habitat-' + (nextHabitatItemId + 2), type: 'river_stone', x: 4.1, y: 0, z: 1.5, rotation: 0, scale: 0.75 }
+            ];
+            else preset = [
+              { id: 'habitat-' + nextHabitatItemId, type: 'driftwood', x: -2.8, y: 0, z: -0.8, rotation: 18, scale: 1.1 },
+              { id: 'habitat-' + (nextHabitatItemId + 1), type: 'cave', x: 2.8, y: 0, z: -1, rotation: -10, scale: 0.95 },
+              { id: 'habitat-' + (nextHabitatItemId + 2), type: 'river_stone', x: 0.3, y: 0, z: 1.5, rotation: 0, scale: 0.8 }
+            ];
+            updMulti({ habitatLayout: preset, habitatUndoLayout: habitatLayout, selectedHabitatItemId: preset[0].id, nextHabitatItemId: nextHabitatItemId + preset.length, habitatStudioOpen: true });
+            if (announceToSR) announceToSR('Habitat preset applied with three editable objects.');
+          };
+
+          var setSelectedPlantHabitatZone = function(zoneId) {
+            if (!selectedPlant || ['foreground', 'midground', 'background', 'hardscape', 'surface', 'emergent', 'refugium'].indexOf(zoneId) === -1) return;
+            var nextZones = Object.assign({}, habitatPlantZones);
+            nextZones[selectedPlant.id] = zoneId;
+            upd('habitatPlantZones', nextZones);
+            if (announceToSR) announceToSR(selectedPlant.name + ' moved to the ' + zoneId + ' zone.');
           };
 
           var answerPlantLearningCheck = function (answerIndex) {
@@ -16526,6 +17530,7 @@ var d = (labToolData && labToolData._aquarium) || {};
               // ── Plant state ──
 
               var _tankPlants = aq.tankPlants || [];
+              var _habitatSummary = AquariumEcosystemCore.summarizeHabitatLayout(aq.habitatLayout);
 
               var _plantHealth = Object.assign({}, aq.plantHealth || {});
 
@@ -16686,6 +17691,12 @@ var d = (labToolData && labToolData._aquarium) || {};
                 if (scheduledPlantDaylight && (!_lightsOn || _equipmentOutput.light <= 0)) healthDelta -= 1;
                 if (isDaylight && pDef.light === 'high' && Number(_equipment.light) < 2) healthDelta -= 0.5;
 
+                var assignedHabitatZone = aq.habitatPlantZones && aq.habitatPlantZones[pId];
+                var preferredHabitatZone = inferPlantHabitatZone(pDef);
+                if (assignedHabitatZone === preferredHabitatZone) healthDelta += 0.15;
+                if (preferredHabitatZone === 'hardscape' && assignedHabitatZone && assignedHabitatZone !== 'hardscape') healthDelta -= 0.6;
+                if ((preferredHabitatZone === 'surface' || preferredHabitatZone === 'emergent' || preferredHabitatZone === 'refugium') && assignedHabitatZone && assignedHabitatZone !== preferredHabitatZone) healthDelta -= 0.45;
+                if (assignedHabitatZone === 'hardscape' && _habitatSummary.plantAnchors < 1) healthDelta -= 0.8;
                 // Bad: very low nitrates (no nutrients)
 
                 if (newNitrate < 2) healthDelta -= 1;
@@ -17033,6 +18044,9 @@ var d = (labToolData && labToolData._aquarium) || {};
 
               var newStress = Object.assign({}, _fishStress);
               var habitatPlantBiomass = _tankPlants.reduce(function (sum, plantId) { return sum + (_plantBiomass[plantId] || 0); }, 0);
+              var habitatFitTotal = 0;
+              var habitatFitCount = 0;
+              var habitatFitMinimum = 100;
 
               _tankFish.forEach(function (fId, idx) {
 
@@ -17095,6 +18109,25 @@ var d = (labToolData && labToolData._aquarium) || {};
                     }
                   } else if (habitatPlantBiomass > 6) {
                     environmentStressDelta -= 1;
+                  }
+                  var environmentBreedingData = BREEDING_DATA[fId];
+                  var environmentHabitatFit = AquariumEcosystemCore.calculateHabitatFit(
+                    environmentSpecies,
+                    _habitatSummary,
+                    habitatPlantBiomass,
+                    environmentBreedingData ? environmentBreedingData.type : null
+                  );
+                  habitatFitTotal += environmentHabitatFit.score;
+                  habitatFitCount++;
+                  habitatFitMinimum = Math.min(habitatFitMinimum, environmentHabitatFit.score);
+                  if (environmentHabitatFit.score >= 85) {
+                    environmentStressDelta -= 2;
+                  } else if (environmentHabitatFit.score < 45) {
+                    environmentStressDelta += 3;
+                    environmentStressReasons.push('habitat mismatch: ' + environmentHabitatFit.limiting.label.toLowerCase());
+                  } else if (environmentHabitatFit.score < 65) {
+                    environmentStressDelta += 1;
+                    environmentStressReasons.push('marginal habitat: ' + environmentHabitatFit.limiting.label.toLowerCase());
                   }
                   if (environmentStressReasons.length === 0) environmentStressDelta -= 1;
                   var previousEnvironmentStress = newStress[fishKey] || 0;
@@ -17194,6 +18227,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                   if (!compatible) {
 
                     var aggressionChance = overcrowded ? 0.08 : 0.03;
+                    aggressionChance *= Math.max(0.35, 1 - _habitatSummary.territoryScore / 140);
 
                     var sp1Idx = _tankFish.findIndex(function (speciesId, index) { return speciesId === sp1.id && !_quarantinedFish[_fishInstanceIds[index]]; });
                     var sp2Idx = _tankFish.findIndex(function (speciesId, index) { return speciesId === sp2.id && !_quarantinedFish[_fishInstanceIds[index]]; });
@@ -17255,6 +18289,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                   species: vitalitySpecies,
                   loadPct: vitalityLoadPct,
                   plantBiomass: habitatPlantBiomass,
+                  habitatShelter: _habitatSummary.shelterScore,
                   hunger: newHunger[vitalityFishId] !== undefined ? newHunger[vitalityFishId] : 50,
                   stress: newStress[vitalityFishId] || 0,
                   illnessSeverity: newSickness[vitalityFishId] ? newSickness[vitalityFishId].severity : 0
@@ -17489,6 +18524,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                     if (hasPredators) survivalRate -= 0.4; // predators eat fry
 
                     if (_totalPlantBiomass > 3) survivalRate += 0.15; // plants provide hiding spots
+                    if (_habitatSummary.shelterScore >= 45) survivalRate += 0.12; // hardscape refuges protect fry
 
                     if (_totalPlantBiomass > 6) survivalRate += 0.1;
 
@@ -17610,7 +18646,7 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                 // Egg-scatterers need plant cover
 
-                if (bData.type === 'egg_scatter' && _totalPlantBiomass < 1) return;
+                if (bData.type === 'egg_scatter' && _totalPlantBiomass < 1 && _habitatSummary.spawningScore < 20) return;
 
 
 
@@ -17676,7 +18712,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                 perFish: vitalityPerFish
               };
 
-              var exchangeShelterBonus = _totalPlantBiomass > 6 ? 0.25 : _totalPlantBiomass > 3 ? 0.15 : 0;
+              var exchangeShelterBonus = Math.max(_totalPlantBiomass > 6 ? 0.25 : _totalPlantBiomass > 3 ? 0.15 : 0, _habitatSummary.shelterScore >= 55 ? 0.25 : _habitatSummary.shelterScore >= 25 ? 0.15 : 0);
               var exchangeReasons = [];
               if (bioload > 0) exchangeReasons.push('\uD83E\uDE7A Living-stock bioload added ' + ammoniaGen.toFixed(3) + ' ammonia, used ' + fishO2Consume.toFixed(3) + ' O\u2082, and released ' + fishCO2Produce.toFixed(3) + ' CO\u2082.');
               if (isDaylight && plantO2Produced > 0) exchangeReasons.push('\uD83C\uDF3F Daylight plants produced ' + plantO2Produced.toFixed(3) + ' O\u2082, used ' + plantCO2Consumed.toFixed(3) + ' CO\u2082, and removed ' + plantNitrateAbsorb.toFixed(3) + ' nitrate.');
@@ -17696,7 +18732,8 @@ var d = (labToolData && labToolData._aquarium) || {};
                 return count + (hasFirst && hasPartner ? 1 : 0);
               }, 0);
               if (activeSymbiosisPairs > 0) exchangeReasons.push('\uD83E\uDD90 Goby\u2013shrimp mutualism lowered partner stress through shared shelter and vigilance.');
-              if (exchangeShelterBonus > 0) exchangeReasons.push('\uD83E\uDEB9 Dense plants added ' + Math.round(exchangeShelterBonus * 100) + ' percentage points to modeled fry survival.');
+              if (exchangeShelterBonus > 0) exchangeReasons.push('\uD83E\uDEB9 Plants and habitat cover added ' + Math.round(exchangeShelterBonus * 100) + ' percentage points to modeled fry survival.');
+              if (_habitatSummary.items > 0) exchangeReasons.push('\uD83E\uDEA8 ' + _habitatSummary.items + ' habitat structures provided shelter ' + _habitatSummary.shelterScore + '/100, territory separation ' + _habitatSummary.territoryScore + '/100, and open swimming space ' + _habitatSummary.openSwimScore + '/100.');
               if (decompositionAmmonia > 0) exchangeReasons.push('\uD83E\uDD40 Decomposing plant matter released ' + decompositionAmmonia.toFixed(2) + ' ammonia.');
               if (newChem.dissolvedO2 < 4) exchangeReasons.push('\u26A0\uFE0F Low dissolved oxygen is reducing fish vitality and increasing environmental stress.');
               if (newChem.ammonia >= 0.25 || newChem.nitrite >= 0.1) exchangeReasons.push('\u26A0\uFE0F Nitrogen toxins are reducing fish vitality and increasing disease pressure.');
@@ -17740,7 +18777,17 @@ var d = (labToolData && labToolData._aquarium) || {};
                   // reading it threw while building this telemetry object.
                   grazerLoad: Math.round(algaeGrazingRate * 100) / 100
                 },
-                bacteria: {
+                habitat: {
+                  items: _habitatSummary.items,
+                  shelterScore: _habitatSummary.shelterScore,
+                  territoryScore: _habitatSummary.territoryScore,
+                  flowScore: _habitatSummary.flowScore,
+                  spawningScore: _habitatSummary.spawningScore,
+                  openSwimScore: _habitatSummary.openSwimScore,
+                  plantAnchors: _habitatSummary.plantAnchors,
+                  fitAverage: habitatFitCount ? Math.round(habitatFitTotal / habitatFitCount) : 100,
+                  fitMinimum: habitatFitCount ? habitatFitMinimum : 100
+                },                bacteria: {
                   ammoniaToNitrite: Math.round(nitriteBact * 1000) / 1000,
                   nitriteToNitrate: Math.round(nitrateBact * 1000) / 1000
                 },
@@ -19022,6 +20069,105 @@ var d = (labToolData && labToolData._aquarium) || {};
               }
 
               var ecosystemAllPlantBiomass = tankPlants.reduce(function (sum, plantId) { return sum + (plantBiomass[plantId] || 0); }, 0);
+              var habitatFitEntries = tankFish.map(function(speciesId, habitatFitIndex) {
+                var habitatFitSpecies = species.find(function(candidate) { return candidate.id === speciesId; }) || {};
+                var habitatFitBreeding = BREEDING_DATA[speciesId];
+                return {
+                  id: fishInstanceIds[habitatFitIndex],
+                  speciesId: speciesId,
+                  name: fishNames[fishInstanceIds[habitatFitIndex]] || habitatFitSpecies.name || 'Organism',
+                  icon: habitatFitSpecies.icon || '\uD83D\uDC1F',
+                  type: habitatFitSpecies.organismType || 'Fish',
+                  zone: (SPECIES_ANIM[speciesId] || {}).yZone || 'mid',
+                  species: habitatFitSpecies,
+                  breedingType: habitatFitBreeding ? habitatFitBreeding.type : null,
+                  relationship: AquariumEcosystemCore.classifyOrganismPlantRelationship(habitatFitSpecies),
+                  symbiosisWith: habitatFitSpecies.symbiosisWith || null,
+                  cleaningRate: habitatFitSpecies.cleaningRate || 0
+                };
+              });
+              var habitatCommunityFit = AquariumEcosystemCore.summarizeHabitatCommunity(habitatFitEntries, habitatSummary, ecosystemAllPlantBiomass);
+              var habitatFitItems = habitatCommunityFit.items;
+              var habitatOccupancyAssignments = AquariumEcosystemCore.assignHabitatOccupancy(habitatFitItems, habitatLayout, habitatCatalog);
+              var habitatOccupancyById = habitatOccupancyAssignments.reduce(function(result, assignment) { result[assignment.id] = assignment; return result; }, {});
+              habitatFitItems = habitatFitItems.map(function(item) { return Object.assign({}, item, habitatOccupancyById[item.id] || {}); });
+              var habitatInteractionPlants = tankPlants.map(function(plantId, plantIndex) {
+                var interactionPlant = plantCatalog.find(function(candidate) { return candidate.id === plantId; }) || {};
+                var interactionZone = habitatPlantZones[plantId] || inferPlantHabitatZone(interactionPlant);
+                var interactionPosition = AquariumEcosystemCore.getPlantHabitatPosition(interactionZone, plantIndex);
+                return { id: plantId, name: interactionPlant.name || 'Plant', zone: interactionZone, x: interactionPosition.x, y: interactionPosition.y, z: interactionPosition.z };
+              });
+              var habitatInteractionNetwork = AquariumEcosystemCore.buildSpatialInteractionNetwork(habitatFitItems, habitatInteractionPlants);
+              var habitatWeakestFit = habitatFitItems.slice().sort(function(a, b) { return a.score - b.score; })[0] || null;
+              var habitatFitAverage = habitatCommunityFit.average;
+              var habitatRecommendedType = null;
+              if (habitatWeakestFit && habitatWeakestFit.limiting) {
+                if (habitatWeakestFit.limiting.id === 'shelter') habitatRecommendedType = 'cave';
+                else if (habitatWeakestFit.limiting.id === 'territory') habitatRecommendedType = 'rock_arch';
+                else if (habitatWeakestFit.limiting.id === 'spawning') habitatRecommendedType = habitatWeakestFit.limiting.recommendation.indexOf('leaf litter') !== -1 ? 'leaf_litter' : 'cave';
+              }
+              var habitatForecasts = [];
+              if (habitatLayout.length < 12) {
+                var habitatForecastSlot = getHabitatPlacementSlot(habitatLayout.length);
+                habitatCatalog.forEach(function(forecastType) {
+                  var forecastItemId = 'habitat-' + nextHabitatItemId;
+                  var forecastLayout = habitatLayout.concat([{ id: forecastItemId, type: forecastType.id, x: habitatForecastSlot.x, y: 0, z: habitatForecastSlot.z, rotation: 0, scale: 1 }]);
+                  var forecastSummary = AquariumEcosystemCore.summarizeHabitatLayout(forecastLayout);
+                  var forecastCommunity = AquariumEcosystemCore.summarizeHabitatCommunity(habitatFitEntries, forecastSummary, ecosystemAllPlantBiomass);
+                  var forecastAverageDelta = forecastCommunity.average - habitatCommunityFit.average;
+                  var forecastMinimumDelta = forecastCommunity.minimum - habitatCommunityFit.minimum;
+                  var forecastOpenDelta = forecastSummary.openSwimScore - habitatSummary.openSwimScore;
+                  var forecastShelterDelta = forecastSummary.shelterScore - habitatSummary.shelterScore;
+                  habitatForecasts.push({
+                    id: 'add-' + forecastType.id,
+                    label: 'Add ' + forecastType.label,
+                    icon: forecastType.icon,
+                    layout: forecastLayout,
+                    selection: forecastItemId,
+                    usesNextId: true,
+                    average: forecastCommunity.average,
+                    minimum: forecastCommunity.minimum,
+                    openSwim: forecastSummary.openSwimScore,
+                    shelter: forecastSummary.shelterScore,
+                    averageDelta: forecastAverageDelta,
+                    minimumDelta: forecastMinimumDelta,
+                    openDelta: forecastOpenDelta,
+                    shelterDelta: forecastShelterDelta,
+                    value: forecastAverageDelta + forecastMinimumDelta * 1.4 + forecastOpenDelta * 0.2 + forecastShelterDelta * 0.08
+                  });
+                });
+              }
+              if (habitatLayout.length > 0) {
+                var habitatLargestItem = habitatLayout.slice().sort(function(a, b) { return b.scale - a.scale; })[0];
+                var habitatReopenLayout = habitatLargestItem.scale > 0.75
+                  ? habitatLayout.map(function(item) { return item.id === habitatLargestItem.id ? Object.assign({}, item, { scale: Math.max(0.65, item.scale - 0.25) }) : item; })
+                  : habitatLayout.filter(function(item) { return item.id !== habitatLargestItem.id; });
+                var habitatReopenSummary = AquariumEcosystemCore.summarizeHabitatLayout(habitatReopenLayout);
+                var habitatReopenCommunity = AquariumEcosystemCore.summarizeHabitatCommunity(habitatFitEntries, habitatReopenSummary, ecosystemAllPlantBiomass);
+                var habitatReopenAverageDelta = habitatReopenCommunity.average - habitatCommunityFit.average;
+                var habitatReopenMinimumDelta = habitatReopenCommunity.minimum - habitatCommunityFit.minimum;
+                var habitatReopenOpenDelta = habitatReopenSummary.openSwimScore - habitatSummary.openSwimScore;
+                var habitatReopenShelterDelta = habitatReopenSummary.shelterScore - habitatSummary.shelterScore;
+                habitatForecasts.push({
+                  id: 'reopen-swim',
+                  label: 'Reopen swimming lane',
+                  icon: '\uD83C\uDF0A',
+                  layout: habitatReopenLayout,
+                  selection: habitatReopenLayout.some(function(item) { return item.id === habitatLargestItem.id; }) ? habitatLargestItem.id : null,
+                  usesNextId: false,
+                  average: habitatReopenCommunity.average,
+                  minimum: habitatReopenCommunity.minimum,
+                  openSwim: habitatReopenSummary.openSwimScore,
+                  shelter: habitatReopenSummary.shelterScore,
+                  averageDelta: habitatReopenAverageDelta,
+                  minimumDelta: habitatReopenMinimumDelta,
+                  openDelta: habitatReopenOpenDelta,
+                  shelterDelta: habitatReopenShelterDelta,
+                  value: habitatReopenAverageDelta + habitatReopenMinimumDelta * 1.4 + habitatReopenOpenDelta * 0.2 + habitatReopenShelterDelta * 0.08
+                });
+              }
+              habitatForecasts.sort(function(a, b) { return b.value - a.value; });
+              var habitatBestForecastId = habitatForecasts.length && habitatForecasts[0].value > 0 ? habitatForecasts[0].id : null;
               var ecosystemGrazerCount = tankFish.reduce(function (count, speciesId) {
                 var grazerSpecies = species.find(function (candidate) { return candidate.id === speciesId; });
                 return count + (grazerSpecies && grazerSpecies.diet && /herbivore|algae|biofilm|vegetation|detritivore/i.test(grazerSpecies.diet) ? 1 : 0);
@@ -19056,6 +20202,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                   species: vitalityMapSpecies,
                   loadPct: vitalityMapLoadPct,
                   plantBiomass: ecosystemAllPlantBiomass,
+                  habitatShelter: habitatSummary.shelterScore,
                   hunger: hungerLevels[vitalityMapFishId] !== undefined ? hungerLevels[vitalityMapFishId] : 50,
                   stress: fishStress[vitalityMapFishId] || 0,
                   illnessSeverity: fishSickness[vitalityMapFishId] ? fishSickness[vitalityMapFishId].severity : 0
@@ -19111,7 +20258,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                 if (ecosystemVitalityFilter === 'attention') return item.status !== 'thriving';
                 return true;
               });
-              var ecosystemShelterBonus = ecosystemAllPlantBiomass > 6 ? 25 : ecosystemAllPlantBiomass > 3 ? 15 : 0;
+              var ecosystemShelterBonus = Math.max(ecosystemAllPlantBiomass > 6 ? 25 : ecosystemAllPlantBiomass > 3 ? 15 : 0, habitatSummary.shelterScore >= 55 ? 25 : habitatSummary.shelterScore >= 25 ? 15 : 0);
               var ecosystemAlgaeSuppression = Math.round(Math.min(0.8, ecosystemAllPlantBiomass * 0.08) * 100);
               var withoutPlantsNextOxygen = Math.max(0, waterChem.dissolvedO2 - Math.max(0, ecosystemViewData.plantOxygen - ecosystemViewData.plantOxygenUse));
               var withoutPlantsNextNitrate = waterChem.nitrate + Math.max(0, ecosystemViewData.plantNitrate);
@@ -19159,7 +20306,97 @@ var d = (labToolData && labToolData._aquarium) || {};
                 return Object.assign({}, lane, { values: values, minimum: minimum, maximum: maximum, top: top, points: points, latest: values.length ? values[values.length - 1] : null });
               });
               var latestVitalityAverage = ecosystemHistoryPoints.length ? ecosystemHistoryPoints[ecosystemHistoryPoints.length - 1].vitality.average : 100;
-              var ecosystemCurrentFactors = { plants: tankPlants.slice(), organisms: tankFish.slice(), equipment: Object.assign({}, equipment), lightsOn: lightsOn };
+              var activeHabitatMission = habitatMissionId ? habitatMissionCatalog.find(function(mission) { return mission.id === habitatMissionId; }) : null;
+              var habitatMissionStressValues = fishInstanceIds.filter(function(instanceId) { return !quarantinedFish[instanceId]; }).map(function(instanceId) { return Number(fishStress[instanceId]) || 0; });
+              var habitatMissionCurrentStress = habitatMissionStressValues.length ? Math.round(habitatMissionStressValues.reduce(function(sum, value) { return sum + value; }, 0) / habitatMissionStressValues.length * 10) / 10 : 0;
+              var habitatMissionCurrent = {
+                shelter: habitatSummary.shelterScore,
+                territory: habitatSummary.territoryScore,
+                openSwim: habitatSummary.openSwimScore,
+                average: habitatCommunityFit.average,
+                minimum: habitatCommunityFit.minimum,
+                vitality: latestVitalityAverage,
+                stress: habitatMissionCurrentStress
+              };
+              var habitatMissionLayoutSignature = JSON.stringify(habitatLayout);
+              var habitatMissionObservationControlled = !habitatMissionObservationLayoutSignature || habitatMissionObservationLayoutSignature === habitatMissionLayoutSignature;
+              habitatMissionCurrent.controlled = habitatMissionObservationControlled;
+              var habitatMissionLayoutChanged = !!(habitatMissionBaseline && habitatMissionBaseline.layoutSignature !== habitatMissionLayoutSignature);
+              var habitatMissionElapsedTicks = habitatMissionObservationStartTick === null ? 0 : Math.max(0, simTick - habitatMissionObservationStartTick);
+              var habitatMissionLiveEvaluation = activeHabitatMission && habitatMissionBaseline
+                ? AquariumEcosystemCore.evaluateHabitatMission(activeHabitatMission.id, habitatMissionBaseline, habitatMissionCurrent, habitatMissionElapsedTicks, habitatMissionPrediction)
+                : null;
+
+              function startHabitatMission(missionId) {
+                var mission = habitatMissionCatalog.find(function(candidate) { return candidate.id === missionId; });
+                if (!mission) return;
+                updMulti({
+                  habitatMissionId: mission.id,
+                  habitatMissionStage: 'predict',
+                  habitatMissionBaseline: Object.assign({ tick: simTick, layoutSignature: habitatMissionLayoutSignature }, habitatMissionCurrent),
+                  habitatMissionPrediction: null,
+                  habitatMissionObservationStartTick: null,
+                  habitatMissionObservationLayoutSignature: null,
+                  habitatMissionOutcome: null,
+                  habitatMissionReflection: '',
+                  habitatMissionPanelOpen: true,
+                  habitatStudioOpen: true
+                });
+                if (announceToSR) announceToSR(mission.title + ' started. Make a prediction before changing the habitat.');
+              }
+
+              function chooseHabitatMissionPrediction(metric) {
+                if (!activeHabitatMission || habitatMissionStage !== 'predict' || ['shelter', 'territory', 'openSwim', 'minimum'].indexOf(metric) === -1) return;
+                updMulti({ habitatMissionPrediction: metric, habitatMissionStage: 'build', habitatViewMode: '3d' });
+                if (announceToSR) announceToSR('Prediction recorded. Build one habitat intervention, then lock it for observation.');
+              }
+
+              function beginHabitatMissionObservation() {
+                if (!activeHabitatMission || habitatMissionStage !== 'build' || !habitatMissionLayoutChanged) return;
+                updMulti({ habitatMissionStage: 'observe', habitatMissionObservationStartTick: simTick, habitatMissionObservationLayoutSignature: habitatMissionLayoutSignature, habitatMissionOutcome: null, habitatViewMode: '3d', habitatOverlay: 'organisms' });
+                if (announceToSR) announceToSR('Intervention locked. Run the aquarium for ' + activeHabitatMission.requiredTicks + ' ticks and watch organism paths, stress, and vitality.');
+              }
+
+              function evaluateActiveHabitatMission() {
+                if (!activeHabitatMission || habitatMissionStage !== 'observe' || habitatMissionElapsedTicks < activeHabitatMission.requiredTicks) return;
+                var outcome = AquariumEcosystemCore.evaluateHabitatMission(activeHabitatMission.id, habitatMissionBaseline, habitatMissionCurrent, habitatMissionElapsedTicks, habitatMissionPrediction);
+                stopAquariumRuntime(false);
+                updMulti({ habitatMissionStage: 'reflect', habitatMissionOutcome: outcome, simRunning: false });
+                if (announceToSR) announceToSR(outcome.success ? 'Mission targets met. Review the evidence and write a reflection.' : 'Mission targets are not all met. Review the evidence before revising.');
+              }
+
+              function recordHabitatMissionReflection() {
+                if (!activeHabitatMission || habitatMissionStage !== 'reflect' || !habitatMissionOutcome || habitatMissionReflection.trim().length < 20) return;
+                var previousMissionRecord = habitatMissionCompleted[activeHabitatMission.id] || {};
+                var previousStars = Math.max(0, Number(previousMissionRecord.stars) || 0);
+                var nextStars = Math.max(previousStars, Number(habitatMissionOutcome.stars) || 0);
+                var nextCompleted = Object.assign({}, habitatMissionCompleted);
+                nextCompleted[activeHabitatMission.id] = {
+                  success: habitatMissionOutcome.success,
+                  stars: nextStars,
+                  attempts: Math.max(0, Number(previousMissionRecord.attempts) || 0) + 1,
+                  reflection: habitatMissionReflection.trim(),
+                  tick: simTick
+                };
+                var earnedPoints = Math.max(0, nextStars - previousStars) * 100;
+                updMulti({ habitatMissionCompleted: nextCompleted, habitatMissionPoints: habitatMissionPoints + earnedPoints, habitatMissionId: null, habitatMissionStage: 'brief', habitatMissionBaseline: null, habitatMissionPrediction: null, habitatMissionObservationStartTick: null, habitatMissionObservationLayoutSignature: null, habitatMissionOutcome: null, habitatMissionReflection: '', eventLog: appendTankEvent('Habitat mission ' + activeHabitatMission.title + ': ' + (habitatMissionOutcome.success ? 'completed' : 'attempt recorded') + ' with ' + habitatMissionOutcome.stars + ' star' + (habitatMissionOutcome.stars === 1 ? '' : 's')) });
+                if (addToast) addToast(habitatMissionOutcome.success ? activeHabitatMission.title + ' completed! +' + earnedPoints + ' habitat points.' : 'Reflection saved. Revise the design and try again.', habitatMissionOutcome.success ? 'success' : 'info');
+              }
+
+              function retryHabitatMission() {
+                if (!activeHabitatMission) return;
+                updMulti({
+                  habitatMissionStage: 'predict',
+                  habitatMissionBaseline: Object.assign({ tick: simTick, layoutSignature: habitatMissionLayoutSignature }, habitatMissionCurrent),
+                  habitatMissionPrediction: null,
+                  habitatMissionObservationStartTick: null,
+                  habitatMissionObservationLayoutSignature: null,
+                  habitatMissionOutcome: null,
+                  habitatMissionReflection: ''
+                });
+              }
+
+              var ecosystemCurrentFactors = { plants: tankPlants.slice(), organisms: tankFish.slice(), habitat: habitatLayout.map(function(item) { return item.type + ':' + item.x.toFixed(1) + ':' + item.z.toFixed(1); }), equipment: Object.assign({}, equipment), lightsOn: lightsOn };
               var baselineAge = ecosystemBaseline && typeof ecosystemBaseline.tick === 'number' ? simTick - ecosystemBaseline.tick : 0;
               var baselineDeltas = ecosystemBaseline && ecosystemBaseline.chemistry ? {
                 oxygen: waterChem.dissolvedO2 - ecosystemBaseline.chemistry.dissolvedO2,
@@ -19216,6 +20453,13 @@ var d = (labToolData && labToolData._aquarium) || {};
                   fileBody = JSON.stringify({
                     exportedAt: new Date().toISOString(),
                     tank: { id: selectedTank, name: tank.name, gallons: tank.size, day: simDay, hour: simHour },
+                    habitat: {
+                      layout: habitatLayout,
+                      plantZones: habitatPlantZones,
+                      summary: habitatSummary,
+                      occupancy: habitatFitItems.map(function(item) { return { id: item.id, name: item.name, fit: item.score, zone: item.zone, behaviorMode: item.behaviorMode, behaviorLabel: item.behaviorLabel, targetX: item.targetX, targetZ: item.targetZ, anchorId: item.anchorId, anchorLabel: item.anchorLabel }; }),
+                      interactions: habitatInteractionNetwork
+                    },
                     baseline: ecosystemBaseline,
                     investigation: {
                       plannedIntervention: ecosystemBaseline ? ecosystemBaseline.plannedIntervention || '' : ecosystemInterventionNote,
@@ -19227,10 +20471,24 @@ var d = (labToolData && labToolData._aquarium) || {};
                     exchanges: ecosystemExchangeHistory,
                     vitality: vitalityHistory,
                     tutorialNotebook: tutorialNotebook,
+                    habitatMissions: {
+                      points: habitatMissionPoints,
+                      completed: habitatMissionCompleted,
+                      active: activeHabitatMission ? {
+                        id: activeHabitatMission.id,
+                        stage: habitatMissionStage,
+                        prediction: habitatMissionPrediction,
+                        baseline: habitatMissionBaseline,
+                        elapsedTicks: habitatMissionElapsedTicks,
+                        controlled: habitatMissionObservationControlled,
+                        outcome: habitatMissionOutcome,
+                        reflection: habitatMissionReflection
+                      } : null
+                    },
                     events: eventLog
                   }, null, 2);
                 } else {
-                  var csvHeader = ['tick','day','hour','phase','oxygen_mg_l','co2_mg_l','ammonia_ppm','nitrite_ppm','nitrate_ppm','mean_vitality','minimum_vitality','plant_biomass','plant_o2_produced','plant_nitrate_used','plant_herbivory','organism_o2_used','organism_ammonia_produced','oxygen_delta','co2_delta','ammonia_delta','nitrate_delta','surface_oxygen_exchange','co2_offgas','aeration_oxygen_added','stock_oxygen_produced','stock_oxygen_consumed'];
+                  var csvHeader = ['tick','day','hour','phase','oxygen_mg_l','co2_mg_l','ammonia_ppm','nitrite_ppm','nitrate_ppm','mean_vitality','minimum_vitality','plant_biomass','plant_o2_produced','plant_nitrate_used','plant_herbivory','organism_o2_used','organism_ammonia_produced','oxygen_delta','co2_delta','ammonia_delta','nitrate_delta','surface_oxygen_exchange','co2_offgas','aeration_oxygen_added','stock_oxygen_produced','stock_oxygen_consumed','habitat_shelter','habitat_territory','habitat_open_swim','habitat_fit_average','habitat_fit_minimum'];
                   var csvRows = ecosystemExchangeHistory.map(function (point) {
                     var chemistry = point.chemistry || {};
                     var pointVitality = point.vitality || {};
@@ -19240,7 +20498,8 @@ var d = (labToolData && labToolData._aquarium) || {};
                     var pointAtmosphere = point.atmosphere || {};
                     var pointEquipment = point.equipment || {};
                     var pointStock = point.photosyntheticStock || {};
-                    return [point.tick,point.day,point.hour,point.phase || '',chemistry.dissolvedO2,chemistry.co2,chemistry.ammonia,chemistry.nitrite,chemistry.nitrate,pointVitality.average,pointVitality.minimum,pointPlants.biomass,pointPlants.oxygenProduced,pointPlants.nitrateConsumed,pointPlants.herbivoryConsumed || 0,pointFish.oxygenConsumed,pointFish.ammoniaProduced,pointDelta.dissolvedO2,pointDelta.co2,pointDelta.ammonia,pointDelta.nitrate,pointAtmosphere.oxygenExchange,pointAtmosphere.co2Offgas,pointEquipment.oxygenAdded,pointStock.oxygenProduced,pointStock.oxygenConsumed].join(',');
+                    var pointHabitat = point.habitat || {};
+                    return [point.tick,point.day,point.hour,point.phase || '',chemistry.dissolvedO2,chemistry.co2,chemistry.ammonia,chemistry.nitrite,chemistry.nitrate,pointVitality.average,pointVitality.minimum,pointPlants.biomass,pointPlants.oxygenProduced,pointPlants.nitrateConsumed,pointPlants.herbivoryConsumed || 0,pointFish.oxygenConsumed,pointFish.ammoniaProduced,pointDelta.dissolvedO2,pointDelta.co2,pointDelta.ammonia,pointDelta.nitrate,pointAtmosphere.oxygenExchange,pointAtmosphere.co2Offgas,pointEquipment.oxygenAdded,pointStock.oxygenProduced,pointStock.oxygenConsumed,pointHabitat.shelterScore,pointHabitat.territoryScore,pointHabitat.openSwimScore,pointHabitat.fitAverage,pointHabitat.fitMinimum].join(',');
                   });
                   fileBody = [csvHeader.join(',')].concat(csvRows).join('\n');
                 }
@@ -20828,6 +22087,28 @@ var d = (labToolData && labToolData._aquarium) || {};
 
                   }),
 
+                  // Persistent hardscape from the Spatial Habitat Studio
+                  habitatLayout.map(function(item) {
+                    var habitatType = habitatCatalog.find(function(candidate) { return candidate.id === item.type; });
+                    if (!habitatType) return null;
+                    var depthRatio = (item.z + 3) / 6;
+                    var perspectiveScale = (0.72 + depthRatio * 0.42) * item.scale;
+                    return React.createElement("button", {
+                      key: 'main-tank-' + item.id,
+                      type: "button",
+                      onClick: function() { updMulti({ habitatStudioOpen: true, selectedHabitatItemId: item.id }); },
+                      'aria-label': "Open habitat studio with " + habitatType.label + " selected",
+                      title: habitatType.label + " \u2014 shelter " + habitatType.shelter + ", territory " + habitatType.territory,
+                      className: "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-200",
+                      style: {
+                        position: 'absolute', left: ((item.x + 5.5) / 11 * 100) + '%', bottom: (23 + (1 - depthRatio) * 38) + 'px',
+                        transform: 'translateX(-50%) rotate(' + item.rotation + 'deg) scale(' + perspectiveScale + ')', transformOrigin: 'bottom center',
+                        zIndex: 3 + Math.round(depthRatio * 2), borderRadius: '999px', padding: '2px', border: item.id === selectedHabitatItemId ? '2px solid rgba(240,171,252,0.95)' : '1px solid rgba(255,255,255,0.28)',
+                        background: 'rgba(15,23,42,0.34)', boxShadow: item.id === selectedHabitatItemId ? '0 0 0 3px rgba(240,171,252,0.35)' : '0 3px 8px rgba(0,0,0,0.28)',
+                        fontSize: '25px', lineHeight: 1, cursor: 'pointer', opacity: 0.82 + depthRatio * 0.18
+                      }
+                    }, habitatType.icon);
+                  }),
                   // Actual planted specimens are interactive and reflect health and biomass
                   tankPlants.map(function (plantId, plantIndex) {
                     var plantedSpecies = plantCatalog.find(function (candidate) { return candidate.id === plantId; });
@@ -21341,6 +22622,432 @@ var d = (labToolData && labToolData._aquarium) || {};
 
 
 
+                // Interactive spatial habitat studio: accessible plan view + optional Three.js view
+                React.createElement("section", {
+                  className: "overflow-hidden rounded-2xl border border-teal-300/40 bg-gradient-to-br from-slate-950 via-teal-950 to-cyan-950 text-white shadow-lg",
+                  'aria-labelledby': "aquarium-habitat-studio-title"
+                },
+                  React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 p-3" },
+                    React.createElement("div", null,
+                      React.createElement("h4", { id: "aquarium-habitat-studio-title", className: "text-sm font-black text-teal-100" }, "\uD83E\uDEA8 Spatial Habitat Studio"),
+                      React.createElement("p", { className: "mt-0.5 max-w-2xl text-[9px] leading-relaxed text-cyan-100" }, "Design the tank in three dimensions, then test how shelter, territory boundaries, flow breaks, plant anchors, and open swimming space change living-system vitality.")
+                    ),
+                    React.createElement("button", {
+                      type: "button", 'aria-expanded': habitatStudioOpen, 'aria-controls': "aquarium-habitat-studio-body",
+                      onClick: function() { upd('habitatStudioOpen', !habitatStudioOpen); },
+                      className: "rounded-lg border border-teal-200/40 bg-white/10 px-3 py-1.5 text-[10px] font-black text-teal-50 hover:bg-white/20"
+                    }, habitatStudioOpen ? "Close studio" : (habitatLayout.length ? "Edit habitat" : "Build habitat"))
+                  ),
+                  React.createElement("div", { className: "grid grid-cols-2 gap-px border-t border-white/10 bg-white/10 sm:grid-cols-5", role: "list", 'aria-label': "Current habitat scores" },
+                    [
+                      { label: 'Shelter', value: habitatSummary.shelterScore, icon: '\uD83C\uDFE0' },
+                      { label: 'Territory', value: habitatSummary.territoryScore, icon: '\u2691' },
+                      { label: 'Flow breaks', value: habitatSummary.flowScore, icon: '\u224B' },
+                      { label: 'Open swim', value: habitatSummary.openSwimScore, icon: '\uD83C\uDF0A' },
+                      { label: 'Spawning', value: habitatSummary.spawningScore, icon: '\uD83E\uDD5A' }
+                    ].map(function(metric) {
+                      return React.createElement("div", { key: metric.label, role: "listitem", className: "bg-slate-950/55 p-2 text-center" },
+                        React.createElement("div", { className: "text-base font-black " + (metric.value >= 70 ? "text-emerald-300" : metric.value >= 35 ? "text-amber-300" : "text-rose-300") }, metric.icon + " " + metric.value),
+                        React.createElement("div", { className: "text-[7px] font-bold uppercase tracking-wide text-slate-300" }, metric.label)
+                      );
+                    })
+                  ),
+                  habitatStudioOpen && React.createElement("div", { id: "aquarium-habitat-studio-body", className: "space-y-3 border-t border-white/10 p-3" },
+                    React.createElement("section", { className: "overflow-hidden rounded-xl border border-amber-300/30 bg-gradient-to-br from-amber-950/80 via-slate-950/70 to-violet-950/70", 'aria-labelledby': "aquarium-habitat-missions-title" },
+                      React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 p-2.5" },
+                        React.createElement("div", null,
+                          React.createElement("h5", { id: "aquarium-habitat-missions-title", className: "text-[10px] font-black text-amber-100" }, "🎯 3D Habitat Field Missions"),
+                          React.createElement("p", { className: "text-[8px] text-amber-200" }, "Predict → build → observe → explain. Earn stars for ecological balance, not object count.")
+                        ),
+                        React.createElement("div", { className: "flex items-center gap-1.5" },
+                          React.createElement("span", { className: "rounded-full bg-amber-300 px-2 py-0.5 text-[8px] font-black text-amber-950", 'aria-label': habitatMissionPoints + " habitat mission points" }, "🏅 " + habitatMissionPoints + " pts"),
+                          React.createElement("span", { className: "rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-[8px] font-bold text-white" }, Object.keys(habitatMissionCompleted).filter(function(missionId) { return habitatMissionCompleted[missionId] && habitatMissionCompleted[missionId].success; }).length + "/" + habitatMissionCatalog.length + " complete"),
+                          React.createElement("button", { type: "button", 'aria-expanded': habitatMissionPanelOpen, 'aria-controls': "aquarium-habitat-mission-body", onClick: function() { upd('habitatMissionPanelOpen', !habitatMissionPanelOpen); }, className: "rounded border border-white/20 bg-white/5 px-2 py-1 text-[8px] font-bold text-white" }, habitatMissionPanelOpen ? "Hide" : "Show")
+                        )
+                      ),
+                      habitatMissionPanelOpen && React.createElement("div", { id: "aquarium-habitat-mission-body", className: "border-t border-white/10 p-2.5" },
+                        !activeHabitatMission
+                          ? React.createElement(React.Fragment, null,
+                              tankFish.length === 0 && React.createElement("div", { role: "note", className: "mb-2 rounded-lg border border-amber-300/30 bg-amber-400/10 p-2 text-[8px] text-amber-100" }, "Add at least one resident before starting a mission so the model can evaluate organism-specific consequences."),
+                              React.createElement("div", { className: "grid gap-2 md:grid-cols-2 xl:grid-cols-4", role: "list", 'aria-label': "Habitat field missions" }, habitatMissionCatalog.map(function(mission) {
+                                var missionRecord = habitatMissionCompleted[mission.id] || null;
+                                return React.createElement("article", { key: mission.id, role: "listitem", className: "rounded-lg border p-2 " + (missionRecord && missionRecord.success ? "border-emerald-300/35 bg-emerald-400/10" : "border-white/15 bg-white/5") },
+                                  React.createElement("div", { className: "flex items-start justify-between gap-1" },
+                                    React.createElement("strong", { className: "text-[9px] text-white" }, mission.icon + " " + mission.title),
+                                    missionRecord && React.createElement("span", { className: "text-[8px] text-amber-300", 'aria-label': missionRecord.stars + " of 3 stars" }, "★".repeat(Math.max(0, Math.min(3, Number(missionRecord.stars) || 0))) + "☆".repeat(3 - Math.max(0, Math.min(3, Number(missionRecord.stars) || 0))))
+                                  ),
+                                  React.createElement("p", { className: "mt-1 min-h-[3.3em] text-[7px] leading-relaxed text-slate-200" }, mission.brief),
+                                  React.createElement("div", { className: "mt-1 text-[7px] text-slate-400" }, mission.requiredTicks + " observation ticks" + (missionRecord ? " • " + missionRecord.attempts + " attempt" + (missionRecord.attempts === 1 ? "" : "s") : "")),
+                                  React.createElement("button", { type: "button", disabled: tankFish.length === 0, onClick: function() { startHabitatMission(mission.id); }, className: "mt-1.5 w-full rounded border border-amber-200/30 bg-amber-300/15 px-2 py-1 text-[8px] font-black text-amber-100 hover:bg-amber-300 hover:text-amber-950 disabled:opacity-40" }, missionRecord ? "Replay mission" : "Start mission")
+                                );
+                              }))
+                            )
+                          : React.createElement(React.Fragment, null,
+                              React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" },
+                                React.createElement("div", null,
+                                  React.createElement("strong", { className: "text-[11px] text-white" }, activeHabitatMission.icon + " " + activeHabitatMission.title),
+                                  React.createElement("p", { className: "mt-0.5 text-[8px] text-slate-200" }, activeHabitatMission.brief)
+                                ),
+                                React.createElement("button", { type: "button", onClick: function() { updMulti({ habitatMissionId: null, habitatMissionStage: 'brief', habitatMissionBaseline: null, habitatMissionPrediction: null, habitatMissionObservationStartTick: null, habitatMissionObservationLayoutSignature: null, habitatMissionOutcome: null, habitatMissionReflection: '' }); }, className: "rounded border border-white/20 bg-white/5 px-2 py-1 text-[8px] font-bold text-white" }, "Mission board")
+                              ),
+                              React.createElement("div", { className: "mt-2 grid grid-cols-4 gap-1", role: "list", 'aria-label': "Mission learning-loop stages" },
+                                [
+                                  { id: 'predict', label: '1 Predict' }, { id: 'build', label: '2 Build' }, { id: 'observe', label: '3 Observe' }, { id: 'reflect', label: '4 Explain' }
+                                ].map(function(stage, stageIndex) {
+                                  var currentIndex = ['predict', 'build', 'observe', 'reflect'].indexOf(habitatMissionStage);
+                                  var complete = stageIndex < currentIndex;
+                                  var current = stage.id === habitatMissionStage;
+                                  return React.createElement("div", { key: stage.id, role: "listitem", className: "rounded px-1 py-1 text-center text-[7px] font-black " + (current ? "bg-amber-300 text-amber-950" : complete ? "bg-emerald-400/20 text-emerald-200" : "bg-white/5 text-slate-400"), 'aria-current': current ? 'step' : undefined }, (complete ? "✓ " : "") + stage.label);
+                                })
+                              ),
+                              habitatMissionStage === 'predict' && React.createElement("div", { className: "mt-2 rounded-lg border border-violet-300/25 bg-violet-400/10 p-2" },
+                                React.createElement("strong", { className: "text-[9px] text-violet-100" }, "Prediction: which outcome will improve the most?"),
+                                React.createElement("p", { className: "mt-0.5 text-[7px] text-violet-200" }, "Commit before editing. Accuracy can earn a second star."),
+                                React.createElement("div", { className: "mt-1.5 grid grid-cols-2 gap-1 sm:grid-cols-4", role: "group", 'aria-label': "Choose mission prediction" },
+                                  [
+                                    { id: 'shelter', label: '🏠 Shelter' }, { id: 'territory', label: '⚑ Territory' }, { id: 'openSwim', label: '🌊 Open swim' }, { id: 'minimum', label: '🛟 Weakest resident' }
+                                  ].map(function(option) { return React.createElement("button", { key: option.id, type: "button", onClick: function() { chooseHabitatMissionPrediction(option.id); }, className: "rounded border border-violet-200/25 bg-slate-950/35 px-2 py-1.5 text-[8px] font-bold text-violet-100 hover:bg-violet-300 hover:text-violet-950" }, option.label); })
+                                )
+                              ),
+                              habitatMissionStage === 'build' && React.createElement("div", { className: "mt-2 rounded-lg border border-cyan-300/25 bg-cyan-400/10 p-2" },
+                                React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" },
+                                  React.createElement("div", null,
+                                    React.createElement("strong", { className: "text-[9px] text-cyan-100" }, "Build one controlled intervention"),
+                                    React.createElement("p", { className: "text-[7px] text-cyan-200" }, "Prediction locked: " + habitatMissionPrediction + ". Use 3D, plan controls, or a what-if forecast.")
+                                  ),
+                                  React.createElement("span", { role: "status", className: "rounded-full px-2 py-0.5 text-[7px] font-black " + (habitatMissionLayoutChanged ? "bg-emerald-300 text-emerald-950" : "bg-slate-700 text-slate-200") }, habitatMissionLayoutChanged ? "Intervention detected" : "No habitat change yet")
+                                ),
+                                React.createElement("div", { className: "mt-1.5 grid grid-cols-3 gap-1 text-center" },
+                                  [
+                                    { label: 'Shelter', before: habitatMissionBaseline.shelter, now: habitatMissionCurrent.shelter },
+                                    { label: 'Open swim', before: habitatMissionBaseline.openSwim, now: habitatMissionCurrent.openSwim },
+                                    { label: 'Minimum fit', before: habitatMissionBaseline.minimum, now: habitatMissionCurrent.minimum }
+                                  ].map(function(metric) { return React.createElement("div", { key: metric.label, className: "rounded bg-slate-950/40 p-1 text-[7px] text-slate-200" }, React.createElement("strong", { className: "block text-[9px] text-white" }, metric.before + " → " + metric.now), metric.label); })
+                                ),
+                                React.createElement("button", { type: "button", disabled: !habitatMissionLayoutChanged, onClick: beginHabitatMissionObservation, className: "mt-2 w-full rounded border border-cyan-200/30 bg-cyan-300/15 px-2 py-1.5 text-[8px] font-black text-cyan-100 hover:bg-cyan-300 hover:text-cyan-950 disabled:opacity-40" }, "Lock intervention and observe")
+                              ),
+                              habitatMissionStage === 'observe' && React.createElement("div", { className: "mt-2 rounded-lg border border-emerald-300/25 bg-emerald-400/10 p-2" },
+                                React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" },
+                                  React.createElement("div", null,
+                                    React.createElement("strong", { className: "text-[9px] text-emerald-100" }, "Observe organism response in 3D"),
+                                    React.createElement("p", { className: "text-[7px] text-emerald-200" }, "Behavior paths are active. Watch movement range, stress, vitality, and exchange evidence.")
+                                  ),
+                                  React.createElement("button", { type: "button", onClick: function() { if (simRunning) { upd('simRunning', false); stopAquariumRuntime(false); } else { var missionSpeed = simSpeed || 1; updMulti({ simRunning: true, simSpeed: missionSpeed }); startAquaAmbient(); startAquaSimInterval(missionSpeed); } }, className: "rounded border border-emerald-200/30 px-2 py-1 text-[8px] font-black " + (simRunning ? "bg-rose-400/20 text-rose-100" : "bg-emerald-300 text-emerald-950") }, simRunning ? "Pause observation" : "Run observation")
+                                ),
+                                !habitatMissionObservationControlled && React.createElement("div", { role: "alert", className: "mt-1.5 rounded-lg border border-rose-300/35 bg-rose-400/15 p-1.5 text-[7px] font-bold text-rose-100" }, "Confounded trial: the habitat changed after observation began. Evaluate to inspect the failed control criterion, or return to the mission board and retry."),
+                                React.createElement("div", { className: "mt-1.5 h-2 overflow-hidden rounded-full bg-slate-950/60", role: "progressbar", 'aria-label': "Mission observation progress", 'aria-valuemin': 0, 'aria-valuemax': activeHabitatMission.requiredTicks, 'aria-valuenow': Math.min(activeHabitatMission.requiredTicks, habitatMissionElapsedTicks) }, React.createElement("div", { className: "h-full bg-emerald-400 transition-all", style: { width: Math.min(100, habitatMissionElapsedTicks / activeHabitatMission.requiredTicks * 100) + '%' } })),
+                                React.createElement("div", { className: "mt-1 flex flex-wrap justify-between gap-1 text-[7px] text-emerald-100" },
+                                  React.createElement("span", null, habitatMissionElapsedTicks + "/" + activeHabitatMission.requiredTicks + " ticks"),
+                                  React.createElement("span", null, "Vitality " + habitatMissionCurrent.vitality + " (" + (habitatMissionLiveEvaluation.deltas.vitality >= 0 ? "+" : "") + habitatMissionLiveEvaluation.deltas.vitality + ")"),
+                                  React.createElement("span", null, "Stress " + habitatMissionCurrent.stress + " (" + (habitatMissionLiveEvaluation.deltas.stress >= 0 ? "+" : "") + habitatMissionLiveEvaluation.deltas.stress + ")")
+                                ),
+                                React.createElement("button", { type: "button", disabled: habitatMissionElapsedTicks < activeHabitatMission.requiredTicks, onClick: evaluateActiveHabitatMission, className: "mt-2 w-full rounded border border-emerald-200/30 bg-emerald-300/15 px-2 py-1.5 text-[8px] font-black text-emerald-100 hover:bg-emerald-300 hover:text-emerald-950 disabled:opacity-40" }, habitatMissionElapsedTicks < activeHabitatMission.requiredTicks ? "Observe " + (activeHabitatMission.requiredTicks - habitatMissionElapsedTicks) + " more ticks" : "Evaluate mission evidence")
+                              ),
+                              habitatMissionStage === 'reflect' && habitatMissionOutcome && React.createElement("div", { className: "mt-2 rounded-lg border p-2 " + (habitatMissionOutcome.success ? "border-emerald-300/30 bg-emerald-400/10" : "border-amber-300/30 bg-amber-400/10") },
+                                React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" },
+                                  React.createElement("div", null,
+                                    React.createElement("strong", { className: "text-[10px] text-white" }, habitatMissionOutcome.success ? "Targets met — explain why" : "Revise using the evidence"),
+                                    React.createElement("p", { className: "text-[7px] text-slate-200" }, "Prediction " + (habitatMissionOutcome.predictionCorrect ? "matched" : "did not match") + " the strongest change • vitality " + (habitatMissionOutcome.vitalityProtected ? "protected" : "was not protected"))
+                                  ),
+                                  React.createElement("span", { className: "text-sm text-amber-300", 'aria-label': habitatMissionOutcome.stars + " of 3 stars earned" }, "★".repeat(habitatMissionOutcome.stars) + "☆".repeat(3 - habitatMissionOutcome.stars))
+                                ),
+                                React.createElement("div", { className: "mt-1.5 grid gap-1 sm:grid-cols-2", role: "list", 'aria-label': "Mission success criteria" }, habitatMissionOutcome.conditions.map(function(condition) { return React.createElement("div", { key: condition.id, role: "listitem", className: "rounded border px-1.5 py-1 text-[7px] " + (condition.met ? "border-emerald-300/25 bg-emerald-400/10 text-emerald-100" : "border-rose-300/25 bg-rose-400/10 text-rose-100") }, (condition.met ? "✓ " : "○ ") + condition.label); })),
+                                React.createElement("label", { htmlFor: "aquarium-habitat-mission-reflection", className: "mt-2 block text-[8px] font-black text-white" }, "Evidence reflection"),
+                                React.createElement("textarea", { id: "aquarium-habitat-mission-reflection", value: habitatMissionReflection, maxLength: 600, onChange: function(event) { upd('habitatMissionReflection', event.target.value.slice(0, 600)); }, placeholder: "Explain which habitat change caused the response. Cite at least two numbers or observations.", className: "mt-1 min-h-[66px] w-full rounded-lg border border-white/20 bg-slate-950/60 p-2 text-[8px] text-white placeholder:text-slate-400" }),
+                                React.createElement("div", { className: "mt-1.5 flex flex-wrap gap-1" },
+                                  React.createElement("button", { type: "button", disabled: habitatMissionReflection.trim().length < 20, onClick: recordHabitatMissionReflection, className: "flex-1 rounded border border-amber-200/30 bg-amber-300 px-2 py-1.5 text-[8px] font-black text-amber-950 disabled:opacity-40" }, habitatMissionOutcome.success ? "Save reflection and claim points" : "Record attempt and return"),
+                                  !habitatMissionOutcome.success && React.createElement("button", { type: "button", onClick: retryHabitatMission, className: "rounded border border-white/20 bg-white/5 px-2 py-1.5 text-[8px] font-bold text-white" }, "Retry from current tank")
+                                )
+                              )
+                            )
+                      )
+                    ),
+                    React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" },
+                      React.createElement("div", { className: "flex gap-1", role: "group", 'aria-label': "Habitat view mode" },
+                        ['plan', '3d'].map(function(viewMode) {
+                          var active = habitatViewMode === viewMode;
+                          return React.createElement("button", { key: viewMode, type: "button", 'aria-pressed': active, onClick: function() { upd('habitatViewMode', viewMode); }, className: "rounded-lg border px-2.5 py-1 text-[9px] font-black " + (active ? "border-cyan-200 bg-cyan-300 text-slate-950" : "border-white/20 bg-white/5 text-cyan-100 hover:bg-white/10") }, viewMode === '3d' ? "3D orbit view" : "Accessible plan");
+                        })
+                      ),
+                      React.createElement("div", { className: "flex flex-wrap gap-1", role: "group", 'aria-label': "Habitat ecological overlay" },
+                        ['none', 'shelter', 'territory', 'flow', 'light', 'organisms', 'interactions'].map(function(overlayId) {
+                          var active = habitatOverlay === overlayId;
+                          return React.createElement("button", { key: overlayId, type: "button", 'aria-pressed': active, onClick: function() { upd('habitatOverlay', overlayId); }, className: "rounded-full border px-2 py-1 text-[8px] font-bold " + (active ? "border-fuchsia-200 bg-fuchsia-300 text-fuchsia-950" : "border-white/20 bg-white/5 text-slate-200 hover:bg-white/10") }, overlayId.charAt(0).toUpperCase() + overlayId.slice(1));
+                        })
+                      ),
+                      React.createElement("button", { type: "button", onClick: undoHabitatEdit, disabled: !habitatUndoLayout.length && !habitatLayout.length, className: "rounded-lg border border-white/20 bg-white/5 px-2 py-1 text-[9px] font-bold text-white disabled:opacity-35" }, "\u21B6 Undo")
+                    ),
+                    React.createElement("div", { className: "grid gap-3 xl:grid-cols-[190px_minmax(0,1fr)_220px]" },
+                      React.createElement("aside", { className: "rounded-xl border border-white/10 bg-slate-950/45 p-2", 'aria-label': "Habitat object catalog" },
+                        React.createElement("strong", { className: "text-[9px] uppercase tracking-wide text-teal-200" }, "Add structure"),
+                        React.createElement("div", { className: "mt-1.5 space-y-1" }, habitatCatalog.map(function(type) {
+                          return React.createElement("button", { key: type.id, type: "button", disabled: habitatLayout.length >= 12, onClick: function() { addHabitatItem(type.id); }, 'aria-label': "Add " + type.label + ". Shelter " + type.shelter + ", territory " + type.territory + ", flow break " + type.flowBreak + ".", className: "w-full rounded-lg border border-white/15 bg-white/5 p-1.5 text-left hover:border-teal-300 hover:bg-white/10 disabled:opacity-40" },
+                            React.createElement("span", { className: "flex items-center justify-between gap-1 text-[9px] font-black text-white" }, React.createElement("span", null, type.icon + " " + type.label), React.createElement("span", { className: "text-[7px] text-teal-200" }, "+" + type.shelter + " cover")),
+                            React.createElement("span", { className: "mt-0.5 block text-[7px] text-slate-300" }, "Territory " + type.territory + " \u2022 Flow " + type.flowBreak + " \u2022 Anchors " + type.plantAnchors)
+                          );
+                        })),
+                        React.createElement("strong", { className: "mt-3 block text-[9px] uppercase tracking-wide text-teal-200" }, "Start from a pattern"),
+                        React.createElement("div", { className: "mt-1 grid gap-1" },
+                          [
+                            { id: 'community', label: 'Balanced community' },
+                            { id: 'spawning', label: 'Spawning refuge' },
+                            { id: 'iwagumi', label: 'Open stone layout' }
+                          ].map(function(preset) { return React.createElement("button", { key: preset.id, type: "button", onClick: function() { applyHabitatPreset(preset.id); }, className: "rounded border border-teal-300/20 bg-teal-300/5 px-2 py-1 text-[8px] font-bold text-teal-100 hover:bg-teal-300/10" }, preset.label); })
+                        )
+                      ),
+                      React.createElement("div", { className: "min-w-0" },
+                        habitatViewMode === '3d'
+                          ? React.createElement(AquariumHabitat3DViewport, {
+                              React: React,
+                              instanceKey: selectedTank,
+                              onSelect: function(itemId) { upd('selectedHabitatItemId', itemId); },
+                              onSelectFish: function(instanceId) { updMulti({ ecosystemFocusType: 'fish', ecosystemFocusId: instanceId }); },
+                              label: tank.name + " 3D habitat. " + habitatSummary.items + " structures. Shelter " + habitatSummary.shelterScore + ", territory " + habitatSummary.territoryScore + ", open swimming space " + habitatSummary.openSwimScore + ". Residents can be selected in 3D to trace their exchanges. Use the synchronized object list and movement controls to edit.",
+                              sceneOptions: {
+                                layout: habitatLayout, catalog: habitatCatalog, selectedId: selectedHabitatItemId, overlay: habitatOverlay,
+                                saltwater: selectedTank === 'reef' || selectedTank === 'invert' || selectedTank === 'marine',
+                                plants: tankPlants.map(function(plantId) { var plantDef = plantCatalog.find(function(candidate) { return candidate.id === plantId; }) || {}; return { id: plantId, health: plantHealth[plantId] !== undefined ? plantHealth[plantId] : 80, zone: habitatPlantZones[plantId] || inferPlantHabitatZone(plantDef) }; }),
+                                fish: habitatFitItems.map(function(fitItem) { return {
+                                  id: fitItem.speciesId,
+                                  instanceId: fitItem.id,
+                                  name: fitItem.name,
+                                  zone: fitItem.zone,
+                                  fitScore: fitItem.score,
+                                  stress: fishStress[fitItem.id] || 0,
+                                  targetX: fitItem.targetX,
+                                  targetZ: fitItem.targetZ,
+                                  pathSpan: fitItem.pathSpan,
+                                  behaviorMode: fitItem.behaviorMode,
+                                  behaviorLabel: fitItem.behaviorLabel,
+                                  anchorId: fitItem.anchorId,
+                                  selected: ecosystemFocusType === 'fish' && ecosystemFocusId === fitItem.id
+                                }; }),
+                                interactions: habitatInteractionNetwork.links
+                              }
+                            })
+                          : React.createElement("div", { className: "relative h-[320px] overflow-hidden rounded-xl border border-cyan-300/30 bg-gradient-to-b from-cyan-800 via-cyan-950 to-slate-950", role: "group", 'aria-label': "Editable aquarium habitat floor plan. Select a structure, then use the movement controls." },
+                              React.createElement("div", { className: "absolute inset-0 opacity-30", 'aria-hidden': "true", style: { backgroundImage: 'linear-gradient(rgba(103,232,249,.3) 1px, transparent 1px), linear-gradient(90deg, rgba(103,232,249,.3) 1px, transparent 1px)', backgroundSize: '10% 16.66%' } }),
+                              habitatOverlay === 'flow' && [22, 48, 74].map(function(top) { return React.createElement("div", { key: top, className: "absolute left-[5%] right-[5%] h-0.5 bg-cyan-300/60", style: { top: top + '%' }, 'aria-hidden': "true" }, React.createElement("span", { className: "absolute -right-1 -top-2 text-cyan-200" }, "\u25B6")); }),
+                              habitatOverlay === 'light' && [18, 50, 82].map(function(left) { return React.createElement("div", { key: left, className: "absolute top-0 h-full w-[18%] bg-gradient-to-b from-yellow-100/25 to-transparent", style: { left: (left - 9) + '%' }, 'aria-hidden': "true" }); }),
+                              habitatOverlay === 'interactions' && React.createElement("svg", { className: "pointer-events-none absolute inset-0 z-[4] h-full w-full", viewBox: "0 0 100 100", preserveAspectRatio: "none", 'aria-hidden': "true" }, habitatInteractionNetwork.links.map(function(interaction) {
+                                var sourceLeft = (interaction.source.x + 5.5) / 11 * 100;
+                                var sourceTop = (interaction.source.z + 3) / 6 * 100;
+                                var targetLeft = (interaction.target.x + 5.5) / 11 * 100;
+                                var targetTop = (interaction.target.z + 3) / 6 * 100;
+                                var pulseLeft = sourceLeft + (targetLeft - sourceLeft) * 0.62;
+                                var pulseTop = sourceTop + (targetTop - sourceTop) * 0.62;
+                                return React.createElement("g", { key: interaction.id },
+                                  React.createElement("line", { x1: sourceLeft, y1: sourceTop, x2: targetLeft, y2: targetTop, stroke: interaction.color, strokeWidth: 0.8, strokeDasharray: interaction.bidirectional ? "1.4 1.4" : "3 1.5", opacity: 0.82 }),
+                                  React.createElement("circle", { cx: pulseLeft, cy: pulseTop, r: 1.15, fill: interaction.color, stroke: "#ffffff", strokeWidth: 0.3 }),
+                                  interaction.bidirectional && React.createElement("circle", { cx: targetLeft + (sourceLeft - targetLeft) * 0.62, cy: targetTop + (sourceTop - targetTop) * 0.62, r: 1.15, fill: interaction.color, stroke: "#ffffff", strokeWidth: 0.3 })
+                                );
+                              })),
+                              habitatOverlay === 'organisms' && habitatFitItems.slice(0, 12).map(function(fitItem) {
+                                var trailWidth = Math.max(10, Math.min(48, fitItem.pathSpan / 2.7 * 48));
+                                var trailHeight = fitItem.behaviorMode === 'using-refuge' || fitItem.behaviorMode === 'using-spawning-refuge' ? Math.max(8, trailWidth * 0.45) : fitItem.behaviorMode === 'holding-territory' || fitItem.behaviorMode === 'bottom-foraging' || fitItem.behaviorMode === 'searching-refuge' ? Math.max(9, trailWidth * 0.38) : Math.max(7, trailWidth * 0.22);
+                                var trailColor = fitItem.score >= 85 ? '#34d399' : fitItem.score >= 65 ? '#22d3ee' : fitItem.score >= 45 ? '#fbbf24' : '#fb7185';
+                                var trailTop = (fitItem.targetZ + 3) / 6 * 100;
+                                var markerLeft = (fitItem.targetX + 5.5) / 11 * 100;
+                                var trailLeft = Math.max(1, Math.min(99 - trailWidth, markerLeft - trailWidth / 2));
+                                var anchorItem = fitItem.anchorId ? habitatLayout.find(function(item) { return item.id === fitItem.anchorId; }) : null;
+                                var anchorLeft = anchorItem ? (anchorItem.x + 5.5) / 11 * 100 : null;
+                                var anchorTop = anchorItem ? (anchorItem.z + 3) / 6 * 100 : null;
+                                var focused = ecosystemFocusType === 'fish' && ecosystemFocusId === fitItem.id;
+                                return React.createElement(React.Fragment, { key: 'organism-path-' + fitItem.id },
+                                  anchorItem && React.createElement("svg", { className: "pointer-events-none absolute inset-0 z-[4] h-full w-full", viewBox: "0 0 100 100", preserveAspectRatio: "none", 'aria-hidden': "true" }, React.createElement("line", { x1: markerLeft, y1: trailTop, x2: anchorLeft, y2: anchorTop, stroke: trailColor, strokeWidth: focused ? 0.9 : 0.45, strokeDasharray: "2 2", opacity: focused ? 0.9 : 0.45 })),
+                                  React.createElement("div", { className: "pointer-events-none absolute z-[4] rounded-[50%] border border-dashed", 'aria-hidden': "true", style: { left: trailLeft + '%', top: Math.max(1, Math.min(99 - trailHeight, trailTop - trailHeight / 2)) + '%', width: trailWidth + '%', height: trailHeight + '%', borderColor: trailColor, backgroundColor: trailColor + '12', boxShadow: focused ? '0 0 0 3px ' + trailColor + '55' : 'none' } }),
+                                  focused && React.createElement("div", { className: "pointer-events-none absolute z-[8] max-w-[150px] rounded bg-slate-950/90 px-1.5 py-1 text-[6px] font-bold leading-tight text-white", style: { left: Math.min(72, markerLeft + 4) + '%', top: Math.max(2, trailTop - 10) + '%' } }, fitItem.behaviorLabel),
+                                  React.createElement("button", { type: "button", onClick: function() { updMulti({ ecosystemFocusType: 'fish', ecosystemFocusId: fitItem.id }); }, 'aria-pressed': focused, 'aria-label': "Focus " + fitItem.name + ". " + fitItem.behaviorLabel + ". " + fitItem.zone + " water occupancy. Habitat fit " + fitItem.score + " out of 100.", title: fitItem.name + " • " + fitItem.behaviorLabel + " • fit " + fitItem.score, className: "absolute z-[7] flex h-8 w-8 items-center justify-center rounded-full border bg-slate-950/85 text-base shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white", style: { left: markerLeft + '%', top: trailTop + '%', transform: 'translate(-50%, -50%)', borderColor: trailColor, boxShadow: focused ? '0 0 0 4px ' + trailColor + '66' : '0 3px 10px rgba(0,0,0,.45)' } }, fitItem.icon)
+                                );
+                              }),
+                              habitatLayout.map(function(item) {
+                                var type = habitatCatalog.find(function(candidate) { return candidate.id === item.type; });
+                                if (!type) return null;
+                                var selected = item.id === selectedHabitatItemId;
+                                var halo = habitatOverlay === 'shelter' ? '0 0 0 ' + Math.round(8 + type.shelter * 0.55) + 'px rgba(52,211,153,.18)' : habitatOverlay === 'territory' ? '0 0 0 ' + Math.round(8 + type.territory * 0.6) + 'px rgba(245,158,11,.18)' : selected ? '0 0 0 4px rgba(240,171,252,.7)' : '0 3px 10px rgba(0,0,0,.35)';
+                                return React.createElement("button", { key: item.id, type: "button", onClick: function() { upd('selectedHabitatItemId', item.id); }, 'aria-pressed': selected, 'aria-label': "Select " + type.label + " at horizontal " + item.x.toFixed(1) + ", depth " + item.z.toFixed(1), className: "absolute flex items-center justify-center rounded-full border bg-slate-900/80 transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-300", style: { left: ((item.x + 5.5) / 11 * 100) + '%', top: ((item.z + 3) / 6 * 100) + '%', width: (30 * item.scale) + 'px', height: (30 * item.scale) + 'px', transform: 'translate(-50%, -50%) rotate(' + item.rotation + 'deg)', borderColor: selected ? '#f0abfc' : type.color, boxShadow: halo, zIndex: selected ? 8 : 5, fontSize: Math.max(14, 19 * item.scale) + 'px' } }, type.icon);
+                              }),
+                              tankPlants.map(function(plantId, plantIndex) {
+                                var plantDef = plantCatalog.find(function(candidate) { return candidate.id === plantId; });
+                                if (!plantDef) return null;
+                                var zone = habitatPlantZones[plantId] || inferPlantHabitatZone(plantDef);
+                                var plantHabitatPoint = AquariumEcosystemCore.getPlantHabitatPosition(zone, plantIndex);
+
+                                return React.createElement("button", { key: 'habitat-plant-' + plantId + '-' + plantIndex, type: "button", onClick: function() { selectPlant(plantId); }, title: plantDef.name + " \u2022 " + zone, 'aria-label': "Select " + plantDef.name + " in the " + zone + " zone", className: "absolute z-[6] rounded-full border border-emerald-200/50 bg-emerald-950/60 p-1 text-lg focus-visible:ring-2 focus-visible:ring-emerald-200", style: { left: ((plantHabitatPoint.x + 5.5) / 11 * 100) + '%', top: ((plantHabitatPoint.z + 3) / 6 * 100) + '%', transform: 'translate(-50%, -50%)', opacity: Math.max(0.45, (plantHealth[plantId] !== undefined ? plantHealth[plantId] : 80) / 100) } }, plantDef.icon || '\uD83C\uDF3F');
+                              }),
+                              habitatLayout.length === 0 && React.createElement("div", { className: "absolute inset-0 flex items-center justify-center p-6 text-center text-xs text-cyan-100" }, "Choose a structure or apply a habitat pattern. The grid represents tank width and front-to-back depth.")
+                            ),
+                        React.createElement("p", { className: "mt-1 text-[8px] leading-relaxed text-cyan-100" }, habitatViewMode === '3d' ? "Drag to orbit and scroll to zoom. Select structures or organisms in the scene; synchronized controls remain keyboard-operable." : "Plan view preserves exact selection and movement without requiring WebGL. Left/right change tank width; forward/back change depth."),
+                        habitatOverlay === 'organisms' && React.createElement("div", { role: "note", className: "mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-white/10 bg-slate-950/45 p-1.5 text-[7px] text-cyan-100" },
+                          React.createElement("strong", { className: "text-white" }, "Behavior map:"),
+                          React.createElement("span", null, "Path size estimates usable movement from habitat fit"),
+                          React.createElement("span", null, "green excellent • cyan workable • amber strained • rose poor"),
+                          React.createElement("span", null, "Select a resident to trace its ecosystem exchanges")
+                        ),
+                        habitatOverlay === 'interactions' && React.createElement("section", { className: "mt-1.5 rounded-lg border border-fuchsia-300/20 bg-slate-950/55 p-2 text-[8px] text-slate-100", 'aria-labelledby': "habitat-interaction-title" },
+                          React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-1" },
+                            React.createElement("strong", { id: "habitat-interaction-title", className: "text-[9px] text-white" }, "Living interaction network"),
+                            React.createElement("span", { className: "rounded-full bg-fuchsia-300/10 px-2 py-0.5 font-bold text-fuchsia-100" }, habitatInteractionNetwork.total + " visible " + (habitatInteractionNetwork.total === 1 ? "exchange" : "exchanges"))
+                          ),
+                          React.createElement("div", { className: "mt-1 flex flex-wrap gap-x-3 gap-y-1", 'aria-label': "Interaction diagram legend" }, [
+                            ['symbiosis', 'purple', 'two-way partnership'], ['cleaning', 'cyan', 'cleaner to client'], ['browsing', 'amber', 'plant to browser'],
+                            ['cover', 'green', 'plant cover to resident'], ['grazing', 'lime', 'algae to grazer'], ['recycling', 'orange', 'detritus to recycler']
+                          ].map(function(legendItem) { return React.createElement("span", { key: legendItem[0] }, React.createElement("strong", null, legendItem[0] + ": "), legendItem[1] + " — " + legendItem[2]); })),
+                          habitatInteractionNetwork.links.length
+                            ? React.createElement("div", { className: "mt-1.5 grid gap-1 md:grid-cols-2", role: "list", 'aria-label': "Visible organism and plant interactions" }, habitatInteractionNetwork.links.slice(0, 12).map(function(interaction) {
+                                function focusEndpoint(endpoint) {
+                                  if (endpoint.kind === 'organism') updMulti({ ecosystemFocusType: 'fish', ecosystemFocusId: endpoint.id });
+                                  else if (endpoint.kind === 'plant') selectPlant(endpoint.id);
+                                }
+                                return React.createElement("article", { key: interaction.id, role: "listitem", className: "rounded-md border border-white/10 bg-white/5 p-1.5", style: { borderLeftColor: interaction.color, borderLeftWidth: '3px' } },
+                                  React.createElement("div", { className: "flex flex-wrap items-center gap-1 font-bold text-white" },
+                                    (interaction.source.kind === 'organism' || interaction.source.kind === 'plant') ? React.createElement("button", { type: "button", onClick: function() { focusEndpoint(interaction.source); }, className: "rounded bg-white/10 px-1 py-0.5 underline decoration-dotted underline-offset-2" }, interaction.source.label) : React.createElement("span", null, interaction.source.label),
+                                    React.createElement("span", { 'aria-label': interaction.bidirectional ? "exchanges with" : "flows to" }, interaction.bidirectional ? "↔" : "→"),
+                                    (interaction.target.kind === 'organism' || interaction.target.kind === 'plant') ? React.createElement("button", { type: "button", onClick: function() { focusEndpoint(interaction.target); }, className: "rounded bg-white/10 px-1 py-0.5 underline decoration-dotted underline-offset-2" }, interaction.target.label) : React.createElement("span", null, interaction.target.label)
+                                  ),
+                                  React.createElement("p", { className: "mt-0.5 leading-snug text-slate-300" }, interaction.detail)
+                                );
+                              }))
+                            : React.createElement("p", { className: "mt-1.5 rounded-md border border-dashed border-white/15 p-2 text-slate-300" }, "No spatial exchanges are visible yet. Add a living plant plus a grazer, browser, cover-dependent resident, cleaner, detritivore, or compatible symbiotic pair.")
+                        )
+                      ),
+                      React.createElement("aside", { className: "rounded-xl border border-white/10 bg-slate-950/45 p-2", 'aria-label': "Selected habitat object inspector" },
+                        selectedHabitatItem && selectedHabitatType
+                          ? React.createElement(React.Fragment, null,
+                              React.createElement("div", { className: "flex items-center justify-between gap-2" }, React.createElement("strong", { className: "text-[10px] text-white" }, selectedHabitatType.icon + " " + selectedHabitatType.label), React.createElement("button", { type: "button", onClick: removeSelectedHabitatItem, className: "rounded border border-rose-300/30 bg-rose-400/10 px-1.5 py-0.5 text-[8px] font-bold text-rose-200" }, "Remove")),
+                              React.createElement("p", { className: "mt-1 text-[8px] text-slate-300" }, "Position " + selectedHabitatItem.x.toFixed(1) + " wide, " + selectedHabitatItem.z.toFixed(1) + " deep \u2022 rotation " + Math.round(selectedHabitatItem.rotation) + "\u00B0 \u2022 scale " + selectedHabitatItem.scale.toFixed(2)),
+                              React.createElement("div", { className: "mx-auto mt-2 grid w-28 grid-cols-3 gap-1", role: "group", 'aria-label': "Move selected habitat object" },
+                                React.createElement("span", null), React.createElement("button", { type: "button", onClick: function() { moveSelectedHabitatItem(0, -0.5); }, 'aria-label': "Move toward the back", className: "rounded border border-white/20 bg-white/10 py-1 text-sm" }, "\u2191"), React.createElement("span", null),
+                                React.createElement("button", { type: "button", onClick: function() { moveSelectedHabitatItem(-0.5, 0); }, 'aria-label': "Move left", className: "rounded border border-white/20 bg-white/10 py-1 text-sm" }, "\u2190"), React.createElement("span", { className: "flex items-center justify-center text-xs", 'aria-hidden': "true" }, selectedHabitatType.icon), React.createElement("button", { type: "button", onClick: function() { moveSelectedHabitatItem(0.5, 0); }, 'aria-label': "Move right", className: "rounded border border-white/20 bg-white/10 py-1 text-sm" }, "\u2192"),
+                                React.createElement("span", null), React.createElement("button", { type: "button", onClick: function() { moveSelectedHabitatItem(0, 0.5); }, 'aria-label': "Move toward the front", className: "rounded border border-white/20 bg-white/10 py-1 text-sm" }, "\u2193"), React.createElement("span", null)
+                              ),
+                              React.createElement("div", { className: "mt-2 grid grid-cols-2 gap-1" },
+                                React.createElement("button", { type: "button", onClick: function() { updateSelectedHabitatItem({ rotation: selectedHabitatItem.rotation - 15 }, selectedHabitatType.label + ' rotated left.'); }, className: "rounded border border-white/20 bg-white/5 py-1 text-[8px] font-bold" }, "\u21BA Rotate"),
+                                React.createElement("button", { type: "button", onClick: function() { updateSelectedHabitatItem({ rotation: selectedHabitatItem.rotation + 15 }, selectedHabitatType.label + ' rotated right.'); }, className: "rounded border border-white/20 bg-white/5 py-1 text-[8px] font-bold" }, "Rotate \u21BB"),
+                                React.createElement("button", { type: "button", onClick: function() { updateSelectedHabitatItem({ scale: Math.max(0.65, selectedHabitatItem.scale - 0.1) }, selectedHabitatType.label + ' made smaller.'); }, className: "rounded border border-white/20 bg-white/5 py-1 text-[8px] font-bold" }, "\u2212 Size"),
+                                React.createElement("button", { type: "button", onClick: function() { updateSelectedHabitatItem({ scale: Math.min(1.6, selectedHabitatItem.scale + 0.1) }, selectedHabitatType.label + ' made larger.'); }, className: "rounded border border-white/20 bg-white/5 py-1 text-[8px] font-bold" }, "+ Size")
+                              ),
+                              React.createElement("div", { className: "mt-2 rounded-lg border border-white/10 bg-white/5 p-1.5 text-[8px] leading-relaxed text-slate-200" }, "Effects: shelter " + selectedHabitatType.shelter + ", territory " + selectedHabitatType.territory + ", flow break " + selectedHabitatType.flowBreak + ", plant anchors " + selectedHabitatType.plantAnchors + ", spawning " + selectedHabitatType.spawning + ".")
+                            )
+                          : React.createElement("p", { className: "text-[9px] leading-relaxed text-slate-300" }, "Select a structure in either view or from this list to move, rotate, resize, or remove it."),
+                        habitatLayout.length > 0 && React.createElement("div", { className: "mt-2 max-h-32 space-y-1 overflow-y-auto", role: "group", 'aria-label': "Habitat structures" }, habitatLayout.map(function(item) { var type = habitatCatalog.find(function(candidate) { return candidate.id === item.type; }); return type && React.createElement("button", { key: item.id, type: "button", onClick: function() { upd('selectedHabitatItemId', item.id); }, className: "flex w-full items-center justify-between rounded border px-1.5 py-1 text-left text-[8px] " + (item.id === selectedHabitatItemId ? "border-fuchsia-300 bg-fuchsia-300/15 text-fuchsia-100" : "border-white/10 bg-white/5 text-slate-200") }, React.createElement("span", null, type.icon + " " + type.label), React.createElement("span", { className: "text-[7px] text-slate-400" }, item.x.toFixed(1) + ", " + item.z.toFixed(1))); }))
+                      )
+                    ),
+                    React.createElement("section", { className: "rounded-xl border border-violet-300/30 bg-violet-950/35 p-2.5", 'aria-labelledby': "aquarium-habitat-forecast-title" },
+                      React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" },
+                        React.createElement("div", null,
+                          React.createElement("h5", { id: "aquarium-habitat-forecast-title", className: "text-[10px] font-black text-violet-100" }, "🔭 What-if Habitat Forecast"),
+                          React.createElement("p", { className: "mt-0.5 max-w-2xl text-[8px] leading-relaxed text-violet-200" }, "Compare modeled consequences before changing the tank. Forecasts protect the weakest resident, expose open-water tradeoffs, and never alter the habitat until you apply one.")
+                        ),
+                        React.createElement("div", { className: "rounded-lg border border-violet-200/25 bg-slate-950/50 px-2 py-1 text-[7px] text-violet-100" }, "Current: average " + habitatCommunityFit.average + " • minimum " + habitatCommunityFit.minimum + " • open swim " + habitatSummary.openSwimScore)
+                      ),
+                      React.createElement("div", { className: "mt-2 grid gap-2 md:grid-cols-2 xl:grid-cols-3", role: "list", 'aria-label': "Reversible habitat design forecasts" }, habitatForecasts.map(function(forecast) {
+                        var isBestForecast = forecast.id === habitatBestForecastId;
+                        var forecastTradeoffs = [];
+                        if (forecast.averageDelta > 0) forecastTradeoffs.push('average fit +' + forecast.averageDelta);
+                        else if (forecast.averageDelta < 0) forecastTradeoffs.push('average fit ' + forecast.averageDelta);
+                        if (forecast.minimumDelta > 0) forecastTradeoffs.push('weakest resident +' + forecast.minimumDelta);
+                        else if (forecast.minimumDelta < 0) forecastTradeoffs.push('weakest resident ' + forecast.minimumDelta);
+                        if (forecast.openDelta < 0) forecastTradeoffs.push('costs ' + Math.abs(forecast.openDelta) + ' open-swim points');
+                        else if (forecast.openDelta > 0) forecastTradeoffs.push('restores ' + forecast.openDelta + ' open-swim points');
+                        if (!forecastTradeoffs.length) forecastTradeoffs.push('no major modeled score change');
+                        var previewTone = forecast.averageDelta > 0 || forecast.minimumDelta > 0 ? 'border-emerald-300/35 bg-emerald-400/10' : forecast.openDelta > 0 ? 'border-cyan-300/35 bg-cyan-400/10' : 'border-white/15 bg-slate-950/35';
+                        return React.createElement("article", { key: forecast.id, role: "listitem", className: "rounded-xl border p-2 " + previewTone },
+                          React.createElement("div", { className: "flex items-start justify-between gap-2" },
+                            React.createElement("strong", { className: "text-[9px] text-white" }, forecast.icon + " " + forecast.label),
+                            isBestForecast && React.createElement("span", { className: "rounded-full bg-emerald-300 px-1.5 py-0.5 text-[7px] font-black text-emerald-950" }, "Best modeled tradeoff")
+                          ),
+                          React.createElement("div", { className: "mt-1.5 space-y-1", 'aria-label': forecast.label + " comparison. Current average " + habitatFitAverage + ", forecast average " + forecast.average },
+                            React.createElement("div", { className: "grid grid-cols-[44px_1fr_24px] items-center gap-1 text-[7px] text-slate-300" }, React.createElement("span", null, "Current"), React.createElement("div", { className: "h-1.5 overflow-hidden rounded-full bg-slate-900" }, React.createElement("div", { className: "h-full bg-slate-400", style: { width: habitatFitAverage + '%' } })), React.createElement("strong", { className: "text-right text-slate-100" }, habitatFitAverage)),
+                            React.createElement("div", { className: "grid grid-cols-[44px_1fr_24px] items-center gap-1 text-[7px] text-violet-200" }, React.createElement("span", null, "Forecast"), React.createElement("div", { className: "h-1.5 overflow-hidden rounded-full bg-slate-900" }, React.createElement("div", { className: "h-full " + (forecast.average >= 85 ? "bg-emerald-400" : forecast.average >= 65 ? "bg-cyan-400" : forecast.average >= 45 ? "bg-amber-400" : "bg-rose-400"), style: { width: forecast.average + '%' } })), React.createElement("strong", { className: "text-right text-white" }, forecast.average))
+                          ),
+                          React.createElement("div", { className: "mt-1.5 grid grid-cols-3 gap-1 text-center" },
+                            React.createElement("div", { className: "rounded bg-slate-950/45 p-1" }, React.createElement("strong", { className: "block text-[9px] text-white" }, forecast.minimum), React.createElement("span", { className: "block text-[6px] uppercase text-slate-400" }, "minimum")),
+                            React.createElement("div", { className: "rounded bg-slate-950/45 p-1" }, React.createElement("strong", { className: "block text-[9px] text-white" }, forecast.openSwim), React.createElement("span", { className: "block text-[6px] uppercase text-slate-400" }, "open swim")),
+                            React.createElement("div", { className: "rounded bg-slate-950/45 p-1" }, React.createElement("strong", { className: "block text-[9px] text-white" }, forecast.shelter), React.createElement("span", { className: "block text-[6px] uppercase text-slate-400" }, "shelter"))
+                          ),
+                          React.createElement("p", { className: "mt-1.5 min-h-[2.2em] text-[7px] leading-snug text-slate-200" }, forecastTradeoffs.join(' • ') + "."),
+                          React.createElement("button", { type: "button", onClick: function() { applyHabitatForecast(forecast); }, 'aria-label': "Apply forecast: " + forecast.label + ". " + forecastTradeoffs.join(', ') + ".", className: "mt-1.5 w-full rounded-lg border border-violet-200/35 bg-violet-300/15 px-2 py-1 text-[8px] font-black text-violet-100 hover:bg-violet-300 hover:text-violet-950" }, "Apply this preview")
+                        );
+                      })),
+                      React.createElement("p", { className: "mt-2 text-[7px] leading-relaxed text-slate-300" }, "Forecasts are comparative model outputs, not guarantees. Apply one change, observe stress and vitality across several ticks, then use Undo or compare against your experimental baseline.")
+                    ),
+                    React.createElement("section", { className: "rounded-xl border border-cyan-300/25 bg-cyan-950/35 p-2.5", 'aria-labelledby': "aquarium-habitat-fit-title" },
+                      React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" },
+                        React.createElement("div", null,
+                          React.createElement("h5", { id: "aquarium-habitat-fit-title", className: "text-[10px] font-black text-cyan-100" }, "🐟 Organism Habitat Fit"),
+                          React.createElement("p", { className: "mt-0.5 text-[8px] leading-relaxed text-cyan-200" }, "The same layout can help one species and strain another. Each profile compares this organism’s behavioral and breeding needs with available structure, plants, and swimming room.")
+                        ),
+                        React.createElement("div", { className: "rounded-lg border border-cyan-200/30 bg-slate-950/50 px-2 py-1 text-center", 'aria-label': "Average organism habitat fit " + habitatFitAverage + " out of 100" },
+                          React.createElement("strong", { className: "block text-sm " + (habitatFitAverage >= 85 ? "text-emerald-300" : habitatFitAverage >= 65 ? "text-amber-200" : "text-rose-300") }, habitatFitAverage + "/100"),
+                          React.createElement("span", { className: "block text-[7px] uppercase tracking-wide text-cyan-200" }, "stock average")
+                        )
+                      ),
+                      habitatWeakestFit && React.createElement("div", { className: "mt-2 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-fuchsia-300/25 bg-fuchsia-400/10 p-2", role: "status" },
+                        React.createElement("p", { className: "min-w-0 flex-1 text-[8px] leading-relaxed text-fuchsia-100" },
+                          React.createElement("strong", null, "Priority: " + habitatWeakestFit.icon + " " + habitatWeakestFit.name + " needs " + habitatWeakestFit.limiting.label.toLowerCase() + ". "),
+                          habitatWeakestFit.limiting.recommendation
+                        ),
+                        habitatRecommendedType && habitatWeakestFit.score < 85 && React.createElement("button", { type: "button", disabled: habitatLayout.length >= 12, onClick: function() { addHabitatItem(habitatRecommendedType); }, className: "rounded-lg border border-fuchsia-200/50 bg-fuchsia-200 px-2 py-1 text-[8px] font-black text-fuchsia-950 hover:bg-white disabled:opacity-40" }, "Add recommended structure")
+                      ),
+                      habitatFitItems.length > 0
+                        ? React.createElement("div", { className: "mt-2 grid gap-2 lg:grid-cols-2", role: "list", 'aria-label': "Habitat fit by organism" }, habitatFitItems.map(function(fitItem) {
+                            var fitTone = fitItem.status === 'excellent' ? 'border-emerald-300/35 bg-emerald-400/10' : fitItem.status === 'workable' ? 'border-cyan-300/35 bg-cyan-400/10' : fitItem.status === 'strained' ? 'border-amber-300/40 bg-amber-400/10' : 'border-rose-300/45 bg-rose-400/10';
+                            var fitText = fitItem.status === 'excellent' ? 'text-emerald-300' : fitItem.status === 'workable' ? 'text-cyan-200' : fitItem.status === 'strained' ? 'text-amber-200' : 'text-rose-300';
+                            var residentInteractionLinks = habitatInteractionNetwork.links.filter(function(interaction) { return interaction.source.id === fitItem.id || interaction.target.id === fitItem.id; });
+                            return React.createElement("article", { key: fitItem.id, role: "listitem", className: "rounded-xl border p-2 " + fitTone },
+                              React.createElement("div", { className: "flex items-start justify-between gap-2" },
+                                React.createElement("div", { className: "min-w-0" },
+                                  React.createElement("strong", { className: "block truncate text-[10px] text-white" }, fitItem.icon + " " + fitItem.name),
+                                  React.createElement("span", { className: "block text-[7px] font-bold uppercase tracking-wide text-slate-300" }, fitItem.type + " • " + fitItem.zone + " water • " + fitItem.status)
+                                ),
+                                React.createElement("div", { className: "text-right" },
+                                  React.createElement("strong", { className: "block text-base " + fitText }, fitItem.score),
+                                  React.createElement("span", { className: "block text-[7px] text-slate-300" }, "/100 fit")
+                                )
+                              ),
+                              React.createElement("div", { className: "mt-1.5 h-1.5 overflow-hidden rounded-full bg-slate-950/70", role: "progressbar", 'aria-label': fitItem.name + " habitat fit", 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': fitItem.score },
+                                React.createElement("div", { className: "h-full rounded-full " + (fitItem.score >= 85 ? "bg-emerald-400" : fitItem.score >= 65 ? "bg-cyan-400" : fitItem.score >= 45 ? "bg-amber-400" : "bg-rose-400"), style: { width: fitItem.score + '%' } })
+                              ),
+                              React.createElement("div", { className: "mt-1.5 flex flex-wrap items-center gap-1 rounded-md border border-cyan-300/15 bg-cyan-400/5 px-1.5 py-1 text-[7px] text-cyan-100" },
+                                React.createElement("strong", null, "Behavior:"),
+                                React.createElement("span", null, fitItem.behaviorLabel),
+                                React.createElement("span", { className: "ml-auto rounded-full bg-slate-950/55 px-1.5 py-0.5 text-[6px] text-slate-300" }, "Anchor: " + fitItem.anchorLabel)
+                              ),
+                              residentInteractionLinks.length > 0 && React.createElement("div", { className: "mt-1 flex flex-wrap items-center gap-1 rounded-md border border-fuchsia-300/15 bg-fuchsia-400/5 px-1.5 py-1 text-[7px] text-fuchsia-100" },
+                                React.createElement("strong", null, "Interactions:"),
+                                residentInteractionLinks.slice(0, 3).map(function(interaction) { return React.createElement("span", { key: interaction.id, className: "rounded-full bg-slate-950/55 px-1.5 py-0.5" }, interaction.type + " — " + interaction.label); }),
+                                residentInteractionLinks.length > 3 && React.createElement("span", null, "+" + (residentInteractionLinks.length - 3) + " more"),
+                                React.createElement("button", { type: "button", onClick: function() { upd('habitatOverlay', 'interactions'); }, className: "ml-auto rounded border border-fuchsia-200/30 bg-fuchsia-200/10 px-1.5 py-0.5 font-bold text-fuchsia-100" }, "Map links")
+                              ),
+                              React.createElement("div", { className: "mt-2 grid grid-cols-2 gap-1" }, fitItem.factors.filter(function(factorItem) { return factorItem.weight > 0; }).map(function(factorItem) {
+                                return React.createElement("div", { key: factorItem.id, className: "rounded-md border border-white/10 bg-slate-950/35 p-1", title: factorItem.recommendation },
+                                  React.createElement("div", { className: "flex items-center justify-between gap-1 text-[7px]" }, React.createElement("span", { className: "truncate text-slate-200" }, factorItem.label), React.createElement("strong", { className: factorItem.score >= 100 ? "text-emerald-300" : factorItem.score >= 65 ? "text-amber-200" : "text-rose-300" }, factorItem.available + "/" + factorItem.need)),
+                                  React.createElement("div", { className: "mt-0.5 h-1 overflow-hidden rounded-full bg-slate-900" }, React.createElement("div", { className: "h-full " + (factorItem.score >= 100 ? "bg-emerald-400" : factorItem.score >= 65 ? "bg-amber-400" : "bg-rose-400"), style: { width: factorItem.score + '%' } }))
+                                );
+                              })),
+                              React.createElement("div", { className: "mt-1.5 flex items-center justify-between gap-2" },
+                                React.createElement("span", { className: "text-[7px] leading-snug text-slate-200" }, "Limiting: " + fitItem.limiting.label + " • available " + fitItem.limiting.available + ", need " + fitItem.limiting.need),
+                                React.createElement("button", { type: "button", onClick: function() { updMulti({ ecosystemFocusType: 'fish', ecosystemFocusId: fitItem.id }); }, 'aria-pressed': ecosystemFocusType === 'fish' && ecosystemFocusId === fitItem.id, className: "shrink-0 rounded border border-cyan-200/30 bg-white/5 px-1.5 py-0.5 text-[7px] font-bold text-cyan-100 hover:bg-white/10" }, "Trace exchanges")
+                              )
+                            );
+                          }))
+                        : React.createElement("div", { className: "mt-2 rounded-lg border border-dashed border-cyan-300/25 p-3 text-center text-[9px] text-cyan-100" }, "Add living stock to reveal species-specific retreat, territory, swimming, and spawning requirements."),
+                      React.createElement("p", { className: "mt-2 text-[7px] leading-relaxed text-slate-300" }, "Diagram key: each mini-bar shows available habitat / modeled need. Color and words carry the same meaning; values are comparative design guidance, not universal husbandry prescriptions.")
+                    ),
+                    tankPlants.length > 0 && React.createElement("div", { className: "rounded-xl border border-emerald-300/20 bg-emerald-950/35 p-2" },
+                      React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" },
+                        React.createElement("div", null, React.createElement("strong", { className: "text-[9px] text-emerald-100" }, "Plant spatial placement"), React.createElement("p", { className: "text-[8px] text-emerald-200" }, selectedPlant ? "Move " + selectedPlant.name + " and compare its species-informed recommendation." : "Select a planted specimen in the plan or plant panel first.")),
+                        selectedPlant && React.createElement("div", { className: "flex flex-wrap gap-1", role: "group", 'aria-label': "Place " + selectedPlant.name + " in habitat zone" }, ['foreground', 'midground', 'background', 'hardscape', 'surface', 'emergent', 'refugium'].map(function(zoneId) { var active = selectedPlantPlacementZone === zoneId; return React.createElement("button", { key: zoneId, type: "button", 'aria-pressed': active, onClick: function() { setSelectedPlantHabitatZone(zoneId); }, className: "rounded-full border px-2 py-1 text-[8px] font-bold " + (active ? "border-emerald-200 bg-emerald-300 text-emerald-950" : "border-white/20 bg-white/5 text-emerald-100") }, zoneId); }))
+                      )
+                    ),
+                    React.createElement("div", { role: "note", className: "rounded-xl border p-2 text-[9px] leading-relaxed " + (habitatSummary.openSwimScore < 45 ? "border-rose-300/40 bg-rose-400/10 text-rose-100" : habitatSummary.shelterScore < 25 ? "border-amber-300/40 bg-amber-400/10 text-amber-100" : "border-emerald-300/30 bg-emerald-400/10 text-emerald-100") },
+                      React.createElement("strong", null, "Design reading: "),
+                      habitatLayout.length === 0 ? "The tank currently relies on plants alone for cover. Add structure, but preserve open water." : habitatSummary.openSwimScore < 45 ? "The layout provides structure but crowds the swimming volume. Shrink, remove, or spread objects before adding active fish." : habitatSummary.shelterScore < 25 ? "Open swimming space is strong, but vulnerable or territorial organisms have little retreat cover." : "This layout balances usable structure with open water. Use overlays and organism vitality to test whether the pattern fits the stocked species.",
+                      " Habitat changes are recorded as experimental interventions, so change one factor at a time when a baseline is active."
+                    )
+                  )
+                ),
                 // Living-stock catalog
 
                 React.createElement("div", { className: "bg-white rounded-xl p-3 border border-slate-400" },
@@ -21867,6 +23574,7 @@ var d = (labToolData && labToolData._aquarium) || {};
                           species: sp || {},
                           loadPct: loadPct,
                           plantBiomass: ecosystemAllPlantBiomass,
+                          habitatShelter: habitatSummary.shelterScore,
                           hunger: hunger,
                           stress: stress,
                           illnessSeverity: illnessSeverity

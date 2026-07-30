@@ -8,6 +8,20 @@ Companion: [Test Prep Hub legacy-parity and reuse audit](test-prep-legacy-parity
 
 Preserve broad AP preparation as a Test Prep Hub expansion opportunity, but begin with one bounded pilot instead of creating a separate AP Psychology pathway or attempting all AP courses at once. Reuse the pack-agnostic Hub and retain its independent-content, transparent-evidence, accessibility, and no-official-score posture.
 
+## Implemented internal foundation
+
+As of 2026-07-29, the repository has an explicit three-category pack registry, a generated CDN manifest, and one lazy AP Psychology vertical slice. The internal pilot contains 20 original selected-response items across the five current units; a native five-chapter library with 15 sections, 15 flashcards, 10 memory aids, and five original accessible diagram placements; and separate original AAQ- and EBQ-style planning workshops that are explicitly unscored.
+
+The AP assets are not embedded in the size-limited Hub bundle and do not use the legacy `*_pack.json` pipeline. The manifest-aware catalog keeps bundled public packs usable while it loads or if it fails, displays lazy-pack metadata without prefetching content, and downloads a lazy pack only after activation. The AP entry requires both internal-QA mode and an exact pack-ID allowlist; it remains hidden on ordinary mounts even after a prior QA session registered it.
+
+The canonical build mirrors the pack, library, native QA report, and manifest to the deploy tree, validates byte parity, and binds each asset with SHA-256; the runtime verifies exact asset bytes before parsing. These hashes detect drift relative to the retrieved manifest, not coordinated replacement of both manifest and asset, which would require a signed manifest or separately pinned verification key. Deterministic QA currently reports zero structural findings and zero diagram-coverage advisories. The item bank's answer-transition dominance is 36.8%, its longest same-key run is one, its keyed/distractor median-length ratio is 0.978, and severe length-cue, categorical, lexical, and feedback-restatement advisories are zero.
+
+Internal visibility is a product and release gate, not confidentiality or authentication. Because these files are in the repository and on a public CDN, their contents must always be safe to treat as publicly retrievable; no secure questions, secrets, or personally identifiable information belong in them.
+
+The shared Hub now supports hands-free question, option, feedback, and navigation narration; bounded voice commands; guarded AI clarification; and quiet prewarming of the next three questions when configured TTS is available and data-saver mode is not active. Essential-visual or explicitly incompatible content cannot claim complete hands-free access without a declared accessible equivalent, and the UI states that configured speech/AI processing may be local or remote and that learners should not speak PII.
+
+This is architecture and automated content-QA progress, not a release decision. AP subject-expert, rights, independent accessibility, hands-free production, field-testing, and psychometric gates remain closed. The current engine supports the pilot multiple-choice items; the workshops are planning/self-check resources only.
+
 ## Market hypothesis
 
 Strong free AP resources already exist, but the learner experience is fragmented, some practice is teacher-assigned, and depth varies by subject. AlloFlow may fill a useful self-study gap by combining original blueprint-mapped practice, native chapters, flashcards, memory aids, transparent feedback and provenance, progress tools, and hands-free and large-text access in one workspace.
@@ -20,14 +34,14 @@ Treat this as a hypothesis. Re-check competitor coverage and pricing, College Bo
 - Never copy secure or released questions. Author original material and use public course and exam descriptions only as blueprints; link learners to public official free-response materials where appropriate.
 - Version every course against a named course and exam description and exam year. Blueprint drift triggers a new review rather than silently changing an existing pack.
 - The current runtime is single-choice. Existing written-response workshops support planning and self-check; they are not automated FRQ scoring.
-- The current release builder hardcodes pack names and counts and embeds large banks. Broad AP expansion requires a manifest-driven catalog and lazy CDN pack loading.
+- The manifest-driven catalog and lazy CDN loader now keep AP assets outside the size-limited bundle. Broad expansion still requires schema-v2 stimulus and response types, catalog-scale usability testing, and per-course release gates.
 - Visual and source-heavy courses require structured stimuli, meaningful alt text, accessible math, tables and media, rights review, and narration that does not erase information conveyed visually.
 - Release requires original content, source review, accessibility QA, production validation, and independent course expertise. Psychometric or automated-writing claims require separate evidence.
 
 ## Phases
 
-1. **Foundation:** Replace hardcoded catalog and release counts with manifest-driven registration and lazy pack loading; strengthen schema, library, accessibility, and build-parity validation.
-2. **Pilot:** Build one AP Psychology pilot containing original multiple-choice practice, native learning content, and clearly unscored FRQ planning workshops.
+1. **Foundation (implemented):** Manifest-driven registration, lazy pack loading, schema/library validation, accessible failure states, explicit internal-QA controls, deterministic QA, and build-parity validation.
+2. **Pilot (internal QA):** Original AP Psychology multiple-choice practice, native learning content, accessible diagram placements, and clearly unscored FRQ planning workshops are implemented; all independent release gates remain open.
 3. **Schema v2:** Add reusable stimulus groups; multi-select, numeric, short-response, and constructed-response records; accessible media, math, and tables; and rubric-grounded self-check.
 4. **Course expansion:** Add subjects only when their current blueprint crosswalk, original item bank, learning library, rights and accessibility review, and subject-expert release gate are complete.
 

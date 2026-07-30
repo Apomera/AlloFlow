@@ -44,6 +44,18 @@ export function loadAlloModule(filename) {
   _loadedModules.add(filename);
 }
 
+/**
+ * Register the production EPPP Part 1 lazy pack as an explicit test fixture.
+ * The release module intentionally does not embed this 1,500-item payload.
+ */
+export function registerEpppPartOne(hub = window.AlloModules.TestPrepHub) {
+  if (!hub || typeof hub.registerPack !== 'function') {
+    throw new Error('TestPrepHub must be loaded before registering the EPPP Part 1 fixture');
+  }
+  const packPath = resolve(process.cwd(), 'test_prep/eppp_part_one_pack.json');
+  const pack = JSON.parse(readFileSync(packPath, 'utf8'));
+  return hub.registerPack(pack);
+}
 // For backwards compat with the original pure_helpers.test.js that expected
 // pure_helpers to be auto-loaded by setup. New test files should NOT rely on
 // this — they should call loadAlloModule explicitly in beforeAll.

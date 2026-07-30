@@ -1,6 +1,6 @@
 {
   "schemaVersion": 5,
-  "generatedAt": "2026-07-28T21:24:36.265Z",
+  "generatedAt": "2026-07-28T00:00:00.000Z",
   "packId": "eppp-part-one",
   "packVersion": "3.1.0",
   "standard": {
@@ -34,6 +34,7 @@
       "2": 375,
       "3": 375
     },
+    "orderedItemSha256": "3fa8e0dd748bdb9a4c27a77a1bf54c76a05c75d3d2c4765e2d24d9d10c41c75e",
     "packFindings": [],
     "status": "pass"
   },

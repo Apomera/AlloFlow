@@ -60,7 +60,16 @@ const outputCode = `/**
 ${compiled}
 
   window.AlloModules = window.AlloModules || {};
-  window.AlloModules.SubmissionInbox = { SubmissionInbox: SubmissionInbox };
+  window.AlloModules.SubmissionInbox = {
+    SubmissionInbox: SubmissionInbox,
+    _meta: {
+      allosheetMinimumScoreGroup: SI_ALLOSHEET_MIN_SCORE_GROUP,
+      allosheetMaximumAssignments: SI_ALLOSHEET_MAX_ASSIGNMENTS,
+      prepareAlloSheetSource: siPrepareAlloSheetSavedSource,
+      getAlloSheetOptions: siSubmissionInboxAlloSheetOptions,
+      buildAlloSheetEnvelope: siBuildSubmissionInboxAlloSheetEnvelope
+    }
+  };
   console.log('[CDN] SubmissionInbox loaded');
 })();
 `;

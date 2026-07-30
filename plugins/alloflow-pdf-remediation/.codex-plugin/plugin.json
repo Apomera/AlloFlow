@@ -1,0 +1,38 @@
+{
+  "name": "alloflow-pdf-remediation",
+  "version": "0.1.0",
+  "description": "Rebuild attached PDFs for accessibility inside the active file sandbox.",
+  "author": {
+    "name": "AlloFlow",
+    "url": "https://github.com/Apomera/AlloFlow"
+  },
+  "homepage": "https://github.com/Apomera/AlloFlow",
+  "repository": "https://github.com/Apomera/AlloFlow",
+  "license": "AGPL-3.0-or-later",
+  "keywords": [
+    "accessibility",
+    "education",
+    "pdf",
+    "remediation",
+    "wcag"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "AlloFlow PDF Remediation",
+    "shortDescription": "Remediate inaccessible PDFs privately.",
+    "longDescription": "Rebuild attached PDFs as accessible HTML and, when local capabilities permit, a tagged PDF plus a scoped verification report without sending documents to an AlloFlow service.",
+    "developerName": "AlloFlow",
+    "category": "Education",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/Apomera/AlloFlow",
+    "privacyPolicyURL": "https://github.com/Apomera/AlloFlow/blob/main/agent_skills/alloflow-portable-remediation/PRIVACY.md",
+    "termsOfServiceURL": "https://github.com/Apomera/AlloFlow/blob/main/LICENSE",
+    "defaultPrompt": [
+      "Remediate the attached PDF for accessibility and return the rebuilt copy and scoped report."
+    ]
+  }
+}

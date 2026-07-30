@@ -652,6 +652,246 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(source).toContain('role: "group", \'aria-label\': "Filtered organism vitality and plant health"');
     expect(source).not.toContain('key: vitalityItem.key, type: "button", role: "listitem"');
   });
+  it('scores spatial habitat structure and applies shelter to organism vitality', () => {
+    const layout = [
+      { id: 'wood-1', type: 'driftwood', x: -3, y: 0, z: -1, rotation: 10, scale: 1 },
+      { id: 'cave-1', type: 'cave', x: 3, y: 0, z: 1, rotation: -10, scale: 1 },
+      { id: 'stone-1', type: 'river_stone', x: 0, y: 0, z: 0, rotation: 0, scale: 1 }
+    ];
+    const summary = ecosystemCore.summarizeHabitatLayout(layout);
+    expect(summary.items).toBe(3);
+    expect(summary.shelterScore).toBeGreaterThan(40);
+    expect(summary.territoryScore).toBeGreaterThan(40);
+    expect(summary.plantAnchors).toBe(5);
+    expect(summary.openSwimScore).toBeGreaterThan(40);
+    expect(summary.zoneBalance).toBe(3);
+
+    const sanitized = ecosystemCore.sanitizeHabitatLayout([
+      { id: 'unsafe id!', type: 'cave', x: 99, y: -5, z: -99, rotation: 900, scale: 4 },
+      { id: 'invalid', type: 'not-real', x: 0, y: 0, z: 0 }
+    ]);
+    expect(sanitized).toHaveLength(1);
+    expect(sanitized[0].id).toBe('unsafeid');
+    expect(sanitized[0].x).toBe(5.2);
+    expect(sanitized[0].z).toBe(-2.8);
+    expect(sanitized[0].scale).toBe(1.6);
+
+    const baseInput = {
+      chemistry: { dissolvedO2: 7, ammonia: 0, nitrite: 0, nitrate: 10, temp: 76, pH: 7 },
+      species: { tempRange: [72, 80], pHRange: [6.5, 7.5] },
+      loadPct: 50, plantBiomass: 0, hunger: 20, stress: 10, illnessSeverity: 0
+    };
+    const bare = ecosystemCore.calculateVitality({ ...baseInput, habitatShelter: 0 });
+    const sheltered = ecosystemCore.calculateVitality({ ...baseInput, habitatShelter: 90 });
+    expect(sheltered.score).toBeGreaterThan(bare.score);
+    expect(sheltered.factors.find((factor) => factor.id === 'shelter').score).toBe(90);
+    const intervention = ecosystemCore.compareInterventionFactors(
+      { plants: [], organisms: [], habitat: [], equipment: {}, lightsOn: true },
+      { plants: [], organisms: [], habitat: ['cave:0:0'], equipment: {}, lightsOn: true }
+    );
+    expect(intervention.controlled).toBe(true);
+    expect(intervention.changes[0].id).toBe('habitat');
+  });
+
+  it('matches habitat structure to species behavior and breeding strategy', () => {
+    const bare = ecosystemCore.summarizeHabitatLayout([]);
+    const structured = ecosystemCore.summarizeHabitatLayout([
+      { id: 'cave-a', type: 'cave', x: -3.5, y: 0, z: -1.5, rotation: 0, scale: 1.2 },
+      { id: 'arch-a', type: 'rock_arch', x: 2.8, y: 0, z: 1.2, rotation: 20, scale: 1.1 },
+      { id: 'wood-a', type: 'driftwood', x: 0, y: 0, z: -1.8, rotation: -15, scale: 1 }
+    ]);
+    const schooler = {
+      habitat: 'Open water midwater', temperament: 'Peaceful schooling fish',
+      diet: 'Omnivore', ecosystemRole: 'Active shoaling consumer', load: 1.5
+    };
+    const cavePredator = {
+      habitat: 'Rocky cave and bottom crevices', temperament: 'Territorial predator',
+      diet: 'Predator', ecosystemRole: 'Solitary benthic predator', load: 4
+    };
+    const schoolerFit = ecosystemCore.calculateHabitatFit(schooler, structured, 0, null);
+    const caveBareFit = ecosystemCore.calculateHabitatFit(cavePredator, bare, 0, 'egg_layer');
+    const caveStructuredFit = ecosystemCore.calculateHabitatFit(cavePredator, structured, 0, 'egg_layer');
+    const breedingFit = ecosystemCore.calculateHabitatFit(schooler, structured, 0, 'egg_scatter');
+    const plantedFit = ecosystemCore.calculateHabitatFit(schooler, bare, 7, null);
+
+    expect(schoolerFit.needs.openSwim).toBe(76);
+    expect(caveStructuredFit.needs.shelter).toBe(75);
+    expect(caveStructuredFit.needs.territory).toBe(72);
+    expect(caveStructuredFit.score).toBeGreaterThan(caveBareFit.score);
+    expect(breedingFit.factors.find((factor) => factor.id === 'spawning').need).toBe(65);
+    expect(plantedFit.supplies.shelter).toBe(90);
+    expect(plantedFit.factors.find((factor) => factor.id === 'shelter').score).toBe(100);
+    expect(['excellent', 'workable', 'strained', 'poor']).toContain(schoolerFit.status);
+
+    const community = ecosystemCore.summarizeHabitatCommunity([
+      { id: 'schooler-1', speciesId: 'schooler', name: 'Schooler', species: schooler, breedingType: null, zone: 'mid' },
+      { id: 'predator-1', speciesId: 'predator', name: 'Cave predator', species: cavePredator, breedingType: 'egg_layer', zone: 'bottom' }
+    ], structured, 0);
+    expect(community.items).toHaveLength(2);
+    expect(community.average).toBe(Math.round((schoolerFit.score + caveStructuredFit.score) / 2));
+    expect(community.minimum).toBe(Math.min(schoolerFit.score, caveStructuredFit.score));
+    expect(community.weakest.score).toBe(community.minimum);
+    expect(Object.values(community.counts).reduce((sum, count) => sum + count, 0)).toBe(2);
+    expect(ecosystemCore.summarizeHabitatCommunity([], bare, 0)).toMatchObject({ average: 100, minimum: 100, weakest: null });
+  });
+
+  it('assigns deterministic refuge, territory, spawning, and open-water occupancy', () => {
+    const layout = [
+      { id: 'cave-home', type: 'cave', x: -3, y: 0, z: -1, rotation: 0, scale: 1.2 },
+      { id: 'arch-home', type: 'rock_arch', x: 2.8, y: 0, z: 1.2, rotation: 0, scale: 1 },
+      { id: 'wood-home', type: 'driftwood', x: 0, y: 0, z: -1.8, rotation: 0, scale: 1 }
+    ];
+    const organisms = [
+      { id: 'refuge-fish', score: 60, zone: 'bottom', limiting: { id: 'shelter' } },
+      { id: 'territory-fish', score: 72, zone: 'mid', limiting: { id: 'territory' } },
+      { id: 'spawning-fish', score: 68, zone: 'bottom', limiting: { id: 'spawning' } },
+      { id: 'schooler', score: 82, zone: 'mid', limiting: { id: 'openSwim' } }
+    ];
+    const assignments = ecosystemCore.assignHabitatOccupancy(organisms, layout, ecosystemCore.getHabitatCatalog());
+    expect(assignments.map((item) => item.behaviorMode)).toEqual(['using-refuge', 'holding-territory', 'using-spawning-refuge', 'open-water']);
+    expect(assignments[0]).toMatchObject({ anchorId: 'cave-home', anchorLabel: 'Shelter cave' });
+    expect(assignments[1].anchorId).toBeTruthy();
+    expect(assignments[2].anchorId).toBe('cave-home');
+    expect(assignments[3]).toMatchObject({ anchorId: null, anchorLabel: 'Open water' });
+    expect(assignments.every((item) => item.targetX >= -5.2 && item.targetX <= 5.2 && item.targetZ >= -2.8 && item.targetZ <= 2.8)).toBe(true);
+    expect(ecosystemCore.assignHabitatOccupancy(organisms, layout, ecosystemCore.getHabitatCatalog())).toEqual(assignments);
+
+    const noRefuge = ecosystemCore.assignHabitatOccupancy([organisms[0]], [], ecosystemCore.getHabitatCatalog())[0];
+    expect(noRefuge).toMatchObject({ behaviorMode: 'searching-refuge', anchorLabel: 'No suitable structure' });
+  });
+
+  it('builds deterministic spatial exchange networks across organisms, plants, algae, and detritus', () => {
+    const plantPosition = ecosystemCore.getPlantHabitatPosition('midground', 0);
+    expect(plantPosition).toEqual({ x: 0.6, y: 0, z: 0.7 });
+    const plants = [{ id: 'anubias', name: 'Anubias', ...plantPosition }];
+    const organisms = [
+      { id: 'goby-1', speciesId: 'watchman_goby', name: 'Watchman goby', zone: 'bottom', targetX: -2, targetZ: 0.5, symbiosisWith: 'pistol_shrimp', relationship: {} },
+      { id: 'shrimp-1', speciesId: 'pistol_shrimp', name: 'Pistol shrimp', zone: 'bottom', targetX: -1.4, targetZ: 0.6, symbiosisWith: 'watchman_goby', relationship: { detritusRecycler: true } },
+      { id: 'cleaner-1', speciesId: 'cleaner_shrimp', name: 'Cleaner shrimp', zone: 'mid', targetX: 0, targetZ: 0, cleaningRate: 0.2, relationship: {} },
+      { id: 'browser-1', speciesId: 'browser', name: 'Plant browser', zone: 'mid', targetX: 1, targetZ: 0.2, relationship: { directPlantEater: true } },
+      { id: 'cover-1', speciesId: 'cover_user', name: 'Cover user', zone: 'mid', targetX: 1.8, targetZ: -0.2, relationship: { plantShelterDependent: true } },
+      { id: 'grazer-1', speciesId: 'grazer', name: 'Algae grazer', zone: 'bottom', targetX: 2.5, targetZ: 1, relationship: { algaeGrazer: true } }
+    ];
+    const network = ecosystemCore.buildSpatialInteractionNetwork(organisms, plants);
+    expect(network.total).toBe(network.links.length);
+    expect(network.counts).toMatchObject({ symbiosis: 1, cleaning: 2, browsing: 1, cover: 1, grazing: 1, recycling: 1 });
+    expect(new Set(network.links.map((link) => link.type))).toEqual(new Set(['symbiosis', 'cleaning', 'browsing', 'cover', 'grazing', 'recycling']));
+    expect(network.links.find((link) => link.type === 'symbiosis').bidirectional).toBe(true);
+    expect(network.links.find((link) => link.type === 'browsing').bidirectional).toBe(false);
+    expect(network.links.every((link) => link.source.id && link.target.id && link.label && link.detail && link.color)).toBe(true);
+    expect(ecosystemCore.buildSpatialInteractionNetwork(organisms, plants)).toEqual(network);
+  });
+  it('evaluates adaptive habitat missions from prediction through observed evidence', () => {
+    const missions = ecosystemCore.getHabitatMissionCatalog();
+    expect(missions.map((mission) => mission.id)).toEqual(['refuge', 'corridor', 'territory', 'balance']);
+    expect(missions.every((mission) => mission.requiredTicks >= 4)).toBe(true);
+
+    const baseline = { shelter: 20, territory: 20, openSwim: 62, average: 58, minimum: 48, vitality: 72, stress: 20 };
+    const improved = { shelter: 58, territory: 32, openSwim: 55, average: 69, minimum: 54, vitality: 74, stress: 23 };
+    const success = ecosystemCore.evaluateHabitatMission('refuge', baseline, improved, 4, 'shelter');
+    expect(success.success).toBe(true);
+    expect(success.predictionCorrect).toBe(true);
+    expect(success.vitalityProtected).toBe(true);
+    expect(success.stars).toBe(3);
+    expect(success.points).toBe(300);
+    expect(success.conditions.every((condition) => condition.met)).toBe(true);
+    expect(success.deltas.shelter).toBe(38);
+
+    const premature = ecosystemCore.evaluateHabitatMission('refuge', baseline, improved, 2, 'shelter');
+    expect(premature.success).toBe(false);
+    expect(premature.conditions.find((condition) => condition.id === 'observation').met).toBe(false);
+    const corridor = ecosystemCore.evaluateHabitatMission('corridor', baseline, { ...improved, shelter: 15, openSwim: 82, minimum: 46, vitality: 68, stress: 27 }, 4, 'openSwim');
+    expect(corridor.success).toBe(true);
+    expect(corridor.actualLeadingMetric).toBe('openSwim');
+    const confounded = ecosystemCore.evaluateHabitatMission('refuge', baseline, { ...improved, controlled: false }, 4, 'shelter');
+    expect(confounded.success).toBe(false);
+    expect(confounded.conditions.find((condition) => condition.id === 'controlled')).toMatchObject({ met: false });
+  });
+
+  it('provides a progressive-enhancement 3D habitat studio with a complete accessible editor', () => {
+    expect(source).toContain('Spatial Habitat Studio');
+    expect(source).toContain('function createAquariumHabitatScene(canvas, initialOptions)');
+    expect(source).toContain('function AquariumHabitat3DViewport(props)');
+    expect(source).toContain("window.StemLab.ensureThree({ orbit: true, orbitRequired: false })");
+    expect(source).toContain("canvas.addEventListener('webglcontextlost', onContextLost, false)");
+    expect(source).toContain('The 3D view could not start. The synchronized habitat plan and controls remain fully available.');
+    expect(source).toContain('Accessible plan');
+    expect(source).toContain('Editable aquarium habitat floor plan');
+    expect(source).toContain('Habitat ecological overlay');
+    expect(source).toContain('Move selected habitat object');
+    expect(source).toContain('var habitatUndoLayout =');
+    expect(source).toContain('var applyHabitatPreset = function(presetId)');
+    expect(source).toContain('onClick: function() { applyHabitatPreset(preset.id); }');
+    expect(source).toContain("key: 'main-tank-' + item.id");
+    expect(source).toContain('habitat mismatch: ');
+    expect(source).toContain('var habitatFitEntries = tankFish.map');
+    expect(source).toContain('AquariumEcosystemCore.summarizeHabitatCommunity');
+    expect(source).toContain('Organism Habitat Fit');
+    expect(source).toContain('Add recommended structure');
+    expect(source).toContain('What-if Habitat Forecast');
+    expect(source).toContain('3D Habitat Field Missions');
+    expect(source).toContain('Predict → build → observe → explain');
+    expect(source).toContain('var habitatMissionStage =');
+    expect(source).toContain('function startHabitatMission(missionId)');
+    expect(source).toContain('function chooseHabitatMissionPrediction(metric)');
+    expect(source).toContain('function beginHabitatMissionObservation()');
+    expect(source).toContain('function evaluateActiveHabitatMission()');
+    expect(source).toContain('function recordHabitatMissionReflection()');
+    expect(source).toContain('Mission learning-loop stages');
+    expect(source).toContain('Lock intervention and observe');
+    expect(source).toContain('Evaluate mission evidence');
+    expect(source).toContain('Evidence reflection');
+    expect(source).toContain('Save reflection and claim points');
+    expect(source).toContain('habitatMissionObservationLayoutSignature');
+    expect(source).toContain('Confounded trial: the habitat changed after observation began');
+    expect(source).toContain("id: 'controlled'");
+    expect(source).toContain('habitatMissions: {');
+    expect(source).toContain('controlled: habitatMissionObservationControlled');
+    expect(source).toContain("habitatOverlay: 'organisms'");
+    expect(source).toContain("habitatMissionStage: 'brief'");
+    expect(source).toContain('Reversible habitat design forecasts');
+    expect(source).toContain('var habitatForecasts = []');
+    expect(source).toContain("id: 'reopen-swim'");
+    expect(source).toContain('var applyHabitatForecast = function(forecast)');
+    expect(source).toContain('Apply this preview');
+    expect(source).toContain('Best modeled tradeoff');
+    expect(source).toContain('Forecasts are comparative model outputs, not guarantees');
+    expect(source).toContain("['none', 'shelter', 'territory', 'flow', 'light', 'organisms', 'interactions']");
+    expect(source).toContain("overlay === 'organisms'");
+expect(source).toContain("overlay === 'interactions'");
+    expect(source).toContain('function buildSpatialInteractionNetwork(organisms, plants)');
+    expect(source).toContain('isInteractionPulse');
+    expect(source).toContain('interactions: habitatInteractionNetwork.links');
+    expect(source).toContain('interactions: habitatInteractionNetwork');
+    expect(source).toContain('Living interaction network');
+    expect(source).toContain('Interaction diagram legend');
+    expect(source).toContain('Visible organism and plant interactions');
+    expect(source).toContain('new THREE.LineLoop(pathGeometry');
+    expect(source).toContain('onSelectFish: function(id)');
+    expect(source).toContain('fishInstanceId');
+    expect(source).toContain('Behavior map:');
+    expect(source).toContain('function assignHabitatOccupancy(entries, layout, catalog)');
+    expect(source).toContain('function behaviorOffset(mode, angle, span)');
+    expect(source).toContain("behaviorMode = 'holding-territory'");
+    expect(source).toContain("behaviorMode = 'using-spawning-refuge'");
+    expect(source).toContain("behaviorMode = 'searching-refuge'");
+    expect(source).toContain('targetX: fitItem.targetX');
+    expect(source).toContain('pathSpan: fitItem.pathSpan');
+    expect(source).toContain('var anchoredStructure = layout.find');
+    expect(source).toContain('new THREE.TorusGeometry(0.34');
+    expect(source).toContain('Anchor: " + fitItem.anchorLabel');
+    expect(source).toContain('occupancy: habitatFitItems.map');
+    expect(source).toContain('Path size estimates usable movement from habitat fit');
+    expect(source).toContain('green excellent • cyan workable • amber strained • rose poor');
+    expect(source).toContain('fitItem.zone + " water');
+    expect(source).toContain('each mini-bar shows available habitat / modeled need');
+    expect(source).toContain('role: "progressbar", \'aria-label\': fitItem.name + " habitat fit"');
+    expect(source).toContain('hardscape refuges protect fry');
+    expect(source).toContain("var assignedHabitatZone = aq.habitatPlantZones && aq.habitatPlantZones[pId]");
+    expect(source).toContain("'habitat_shelter','habitat_territory','habitat_open_swim','habitat_fit_average','habitat_fit_minimum'");
+    expect(source).toContain('Habitat changes are recorded as experimental interventions');
+    expect(source).not.toContain('key: item.id, type: "button", role: "listitem"');
+  });
   it('reconciles live oxygen, carbon, and nitrogen source-sink budgets', () => {
     const budgets = ecosystemCore.buildMatterBudget({
       fish: { oxygenConsumed: 0.3, co2Released: 0.2, ammoniaProduced: 0.2 },

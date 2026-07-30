@@ -159,6 +159,7 @@ describe('Prim3D.buildObject (recipe → group; THREE stub, no GL)', () => {
     ] });
     expect(g.children.length).toBe(2);
     expect(g.userData.prim3dName).toBe('Robot');
+    expect(g.children.map((mesh) => mesh.userData.prim3dPartIndex)).toEqual([0, 1]);
   });
   it('returns null for empty/invalid recipes', () => {
     expect(P.buildObject(threeStub(), { parts: [{ shape: 'nope' }] })).toBe(null);

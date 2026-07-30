@@ -307,6 +307,9 @@
     var motifTransformPair = React.useState('sequenceUp');
     var selectedMotifTransform = motifTransformPair[0];
     var setSelectedMotifTransform = motifTransformPair[1];
+    var notationPhrasePair = React.useState('stepwiseQuestion');
+    var selectedNotationPhraseId = notationPhrasePair[0];
+    var setSelectedNotationPhraseId = notationPhrasePair[1];
     var stemModePair = React.useState('four');
     var selectedStemMode = stemModePair[0];
     var setSelectedStemMode = stemModePair[1];
@@ -329,10 +332,16 @@
     var staffToolPair = React.useState('note');
     var staffTool = staffToolPair[0];
     var setStaffTool = staffToolPair[1];
+    var staffCursorPair = React.useState(null);
+    var staffCursor = staffCursorPair[0];
+    var setStaffCursor = staffCursorPair[1];
+    var selectedStaffNotePair = React.useState('');
+    var selectedStaffNoteId = selectedStaffNotePair[0];
+    var setSelectedStaffNoteId = selectedStaffNotePair[1];
     var staffClefPair = React.useState('auto');
     var staffClef = staffClefPair[0];
     var setStaffClef = staffClefPair[1];
-    var notationRendererPair = React.useState('auto');
+    var notationRendererPair = React.useState('opengroove');
     var notationRenderer = notationRendererPair[0];
     var setNotationRenderer = notationRendererPair[1];
     var selectedPatternPair = React.useState(initialProjectRef.current.patterns[0] && initialProjectRef.current.patterns[0].id);
@@ -1445,6 +1454,11 @@
         ogAnnounce('No motif notes found');
       }
     }
+    function activeStaffOctave() {
+      var match = /(-?\d+)$/.exec(String(activeStaffPitch || staffPitch || 'C4'));
+      return match ? Number(match[1]) : 4;
+    }
+
     function writeNotationEntry() {
       if (!pattern || !synthTrack || !C.ogWriteNotationInput) return;
       var summary = { noteCount: 0, warnings: [] };
@@ -1463,6 +1477,37 @@
       ogAnnounce('Notation input written');
     }
 
+
+    function writeNotationPhrasePreset() {
+      if (!pattern || !synthTrack || !C.ogWriteNotationPhrasePreset) return;
+      var summary = { noteCount: 0, presetName: 'Notation phrase', warnings: [] };
+      mutate(function (next) {
+        var nextPattern = currentPatternIn(next);
+        var nextSynth = next.tracks.find(function (track) { return track.type === 'synth'; });
+        if (!nextPattern || !nextSynth) return;
+        summary = C.ogWriteNotationPhrasePreset(next, nextPattern.id, nextSynth.id, selectedNotationPhraseId, {
+          startBar: selectedBar,
+          octave: activeStaffOctave(),
+          replace: true
+        });
+      });
+      if (summary.events && summary.events[0]) {
+        setStaffPitch(summary.events[0].pitch || activeStaffPitch);
+        setStaffCursor({
+          barIndex: summary.startBar || selectedBar,
+          bar: (summary.startBar || selectedBar) + 1,
+          startBeat: 1,
+          pitch: summary.events[0].pitch || activeStaffPitch,
+          duration: staffDuration,
+          tool: 'note'
+        });
+      }
+      var fitted = summary.rangeFitCount ? ' ' + summary.rangeFitCount + ' fit to the instrument range.' : '';
+      var skipped = summary.warnings && summary.warnings.length ? ' ' + summary.warnings.length + ' skipped.' : '';
+      addToast((summary.presetName || 'Notation phrase') + ' wrote ' + (summary.noteCount || 0) + ' notes.' + fitted + skipped, summary.noteCount ? 'success' : 'info');
+      ogAnnounce((summary.presetName || 'Notation phrase') + ' written');
+    }
+
     function fitNotesToInstrumentRange() {
       if (!pattern || !synthTrack || !C.ogFitTrackNotesToInstrumentRange) return;
       var result = { changedCount: 0, summary: 'No notes needed range fitting.' };
@@ -1475,8 +1520,12 @@
       ogAnnounce(result.summary);
     }
 
-    function writeStaffSlot(barIndex, startBeat) {
-      if (!pattern || !synthTrack || !C.ogSetStaffNote) return;
+    function writeStaffSlot(barIndex, startBeat, entryOptions) {
+      entryOptions = entryOptions || {};
+      if (!pattern || !synthTrack || !C.ogSetStaffNote) return null;
+      var targetTool = entryOptions.tool || staffTool;
+      var targetPitch = entryOptions.pitch || activeStaffPitch;
+      var targetDuration = entryOptions.duration || staffDuration;
       var result = null;
       mutate(function (next) {
         var nextPattern = currentPatternIn(next);
@@ -1484,24 +1533,167 @@
         result = C.ogSetStaffNote(next, nextPattern.id, nextSynth.id, {
           startBar: barIndex,
           startBeat: startBeat,
-          pitch: activeStaffPitch,
-          duration: staffDuration,
-          tool: staffTool,
-          rest: staffTool === 'rest',
+          pitch: targetPitch,
+          duration: targetDuration,
+          tool: targetTool,
+          rest: targetTool === 'rest',
           replaceSlot: true
         });
       });
-      if (staffTool === 'rest') {
+      setStaffCursor({
+        barIndex: barIndex,
+        bar: barIndex + 1,
+        startBeat: startBeat,
+        pitch: targetPitch,
+        duration: targetDuration,
+        tool: targetTool,
+        x: entryOptions.x,
+        y: entryOptions.y,
+        inRange: entryOptions.inRange,
+        rangeLabel: entryOptions.rangeLabel
+      });
+      if (targetTool === 'rest') {
+        setSelectedStaffNoteId('');
         addToast('Staff slot cleared.', 'success');
         ogAnnounce('Staff slot cleared');
       } else {
-        triggerNote(activeStaffPitch, 0.72);
-        addToast(activeStaffPitch + ' written on the staff.', 'success');
-        ogAnnounce(activeStaffPitch + ' written');
+        triggerNote(targetPitch, 0.72);
+        addToast(targetPitch + ' written on the staff.', 'success');
+        ogAnnounce(targetPitch + ' written');
       }
       return result;
     }
 
+    function staffSvgPointFromEvent(ev) {
+      var svg = ev && ev.currentTarget && ev.currentTarget.ownerSVGElement || ev && ev.currentTarget;
+      if (!svg || !svg.getBoundingClientRect) return null;
+      var rect = svg.getBoundingClientRect();
+      if (!rect || !rect.width || !rect.height) return null;
+      var viewBox = svg.viewBox && svg.viewBox.baseVal || null;
+      var width = viewBox && viewBox.width || staffEngraving && staffEngraving.width || rect.width;
+      var height = viewBox && viewBox.height || staffEngraving && staffEngraving.height || rect.height;
+      return {
+        x: ((ev.clientX - rect.left) / rect.width) * width,
+        y: ((ev.clientY - rect.top) / rect.height) * height
+      };
+    }
+
+    function writeStaffPointer(ev) {
+      if (ev && ev.stopPropagation) ev.stopPropagation();
+      if (!pattern || !synthTrack || !staffEngraving || !C.ogResolveStaffPoint) return;
+      var point = staffSvgPointFromEvent(ev);
+      if (!point) return;
+      var target = C.ogResolveStaffPoint(project, pattern.id, {
+        trackId: synthTrack.id,
+        clef: staffClef,
+        slotsPerMeasure: staffEngraving.slotsPerMeasure,
+        width: staffEngraving.width,
+        height: staffEngraving.height,
+        x: point.x,
+        y: point.y
+      });
+      if (!target) return;
+      setSelectedBar(target.barIndex);
+      if (staffTool !== 'rest') setStaffPitch(target.pitch);
+      writeStaffSlot(target.barIndex, target.startBeat, {
+        pitch: target.pitch,
+        x: target.x,
+        y: target.y,
+        inRange: target.inRange,
+        rangeLabel: target.rangeLabel
+      });
+    }
+
+
+    function staffDurationTokenFor(note) {
+      if (!note) return staffDuration;
+      if (C.ogStaffDurationTokenFromTicks && note.durationTicks != null) return C.ogStaffDurationTokenFromTicks(project, note.durationTicks);
+      var beats = Number(note.durationBeats || 1);
+      if (beats >= 3.75) return 'w';
+      if (beats >= 1.75) return 'h';
+      if (beats >= 0.75) return 'q';
+      if (beats >= 0.375) return 'e';
+      return 's';
+    }
+
+    function selectStaffNote(note, measure) {
+      if (!note) return;
+      setSelectedStaffNoteId(note.id || '');
+      setSelectedBar(Math.max(0, (measure && measure.bar || note.bar || selectedBar + 1) - 1));
+      if (note.pitch) setStaffPitch(note.pitch);
+      setStaffDuration(staffDurationTokenFor(note));
+      setStaffTool('note');
+      setStaffCursor({
+        barIndex: Math.max(0, (measure && measure.bar || note.bar || selectedBar + 1) - 1),
+        bar: measure && measure.bar || note.bar || selectedBar + 1,
+        startBeat: note.startBeat || 1,
+        pitch: note.pitch || activeStaffPitch,
+        duration: staffDurationTokenFor(note),
+        tool: 'note',
+        noteId: note.id || '',
+        x: note.x,
+        y: note.y,
+        inRange: true
+      });
+      if (note.pitch) triggerNote(note.pitch, 0.62);
+      ogAnnounce('Selected ' + (note.pitch || 'note') + ' in bar ' + (measure && measure.bar || note.bar || selectedBar + 1));
+    }
+
+    function staffNoteKey(ev, note, measure) {
+      if (ev.key === 'Enter' || ev.key === ' ') {
+        ev.preventDefault();
+        selectStaffNote(note, measure);
+      } else if (ev.key === 'Delete' || ev.key === 'Backspace') {
+        ev.preventDefault();
+        selectStaffNote(note, measure);
+        deleteSelectedStaffNote(note.id);
+      }
+    }
+
+    function updateSelectedStaffNote(updates) {
+      if (!selectedStaffNoteId || !pattern || !synthTrack || !C.ogUpdateStaffNote) return;
+      var summary = { event: null, changed: false };
+      mutate(function (next) {
+        var nextPattern = currentPatternIn(next);
+        var nextSynth = next.tracks.find(function (track) { return track.type === 'synth'; });
+        if (!nextPattern || !nextSynth) return;
+        summary = C.ogUpdateStaffNote(next, nextPattern.id, nextSynth.id, selectedStaffNoteId, Object.assign({ source: 'staffInspector' }, updates || {}));
+      });
+      if (summary && summary.event) {
+        setStaffPitch(summary.event.pitch || activeStaffPitch);
+        setStaffDuration(summary.duration || staffDuration);
+        setStaffCursor({
+          barIndex: Math.max(0, Math.floor((summary.startTick || 0) / C.ogTicksPerMeasure(project))),
+          bar: Math.max(1, Math.floor((summary.startTick || 0) / C.ogTicksPerMeasure(project)) + 1),
+          startBeat: Math.round((((summary.startTick || 0) % C.ogTicksPerMeasure(project)) / C.ogTicksPerBeat(project) + 1) * 1000) / 1000,
+          pitch: summary.event.pitch || activeStaffPitch,
+          duration: summary.duration || staffDuration,
+          tool: 'note',
+          noteId: selectedStaffNoteId
+        });
+        addToast((summary.event.pitch || 'Note') + ' updated.', 'success');
+        ogAnnounce('Staff note updated');
+      }
+    }
+
+    function deleteSelectedStaffNote(noteId) {
+      var id = noteId || selectedStaffNoteId;
+      if (!id || !pattern || !synthTrack || !C.ogDeleteStaffNote) return;
+      var result = { removed: false };
+      mutate(function (next) {
+        var nextPattern = currentPatternIn(next);
+        var nextSynth = next.tracks.find(function (track) { return track.type === 'synth'; });
+        if (nextPattern && nextSynth) result = C.ogDeleteStaffNote(next, nextPattern.id, nextSynth.id, id);
+      });
+      if (result.removed) {
+        setSelectedStaffNoteId('');
+        setStaffCursor(null);
+        addToast('Staff note deleted.', 'success');
+        ogAnnounce('Staff note deleted');
+      } else {
+        addToast('No selected staff note to delete.', 'info');
+      }
+    }
     function staffSlotKey(ev, barIndex, startBeat) {
       if (ev.key === 'Enter' || ev.key === ' ') {
         ev.preventDefault();
@@ -1666,7 +1858,7 @@
             tabIndex: 0,
             focusable: 'true',
             'aria-label': 'Write ' + (staffTool === 'rest' ? 'rest' : activeStaffPitch) + ' in bar ' + measure.bar + ' beat ' + slot.startBeat,
-            onClick: function () { writeStaffSlot(measure.bar - 1, slot.startBeat); },
+            onClick: function (ev) { writeStaffPointer(ev); },
             onKeyDown: function (ev) { staffSlotKey(ev, measure.bar - 1, slot.startBeat); }
           }));
           if (slot.index % 2 === 0) {
@@ -1711,6 +1903,24 @@
               }));
             }
           }
+          if (selectedStaffNoteId && selectedStaffNoteId === note.id) {
+            children.push(h('rect', { key: key + '-selected', x: note.x - 15, y: note.y - 14, width: 30, height: 28, rx: 3, fill: accent, opacity: 0.18, stroke: accent, strokeWidth: 1.2 }));
+          }
+          children.push(h('rect', {
+            key: key + '-hit',
+            x: note.x - 16,
+            y: note.y - 16,
+            width: 32,
+            height: 32,
+            fill: accent,
+            opacity: 0.001,
+            role: 'button',
+            tabIndex: 0,
+            focusable: 'true',
+            'aria-label': 'Select note ' + note.pitch + ' in bar ' + measure.bar + ' beat ' + note.startBeat,
+            onClick: function (ev) { if (ev && ev.stopPropagation) ev.stopPropagation(); selectStaffNote(note, measure); },
+            onKeyDown: function (ev) { staffNoteKey(ev, note, measure); }
+          }));
         });
       });
       return h('svg', {
@@ -2354,6 +2564,30 @@
       slotsPerMeasure: 8,
       clef: staffClef
     }) : null;
+    var staffNoteRows = [];
+    (staffEngraving.measures || []).forEach(function (measure) {
+      (measure.notes || []).forEach(function (note) {
+        staffNoteRows.push(Object.assign({}, note, { bar: measure.bar, barIndex: Math.max(0, measure.bar - 1) }));
+      });
+    });
+    var selectedStaffNote = staffNoteRows.filter(function (note) { return note.id === selectedStaffNoteId; })[0] || null;
+    var selectedStaffNoteDuration = selectedStaffNote ? staffDurationTokenFor(selectedStaffNote) : staffDuration;
+    var currentBarStaffNotes = staffNoteRows.filter(function (note) { return note.barIndex === selectedBar; });
+    var staffDurationOptions = [
+      { value: 'w', label: 'Whole' },
+      { value: 'h.', label: 'Dotted Half' },
+      { value: 'h', label: 'Half' },
+      { value: 'q.', label: 'Dotted Quarter' },
+      { value: 'q', label: 'Quarter' },
+      { value: 'e.', label: 'Dotted Eighth' },
+      { value: 'e', label: 'Eighth' },
+      { value: 's', label: 'Sixteenth' }
+    ];
+    var selectedStaffMeasure = staffEngraving.measures && staffEngraving.measures[selectedBar] || null;
+    var staffBeatOptions = selectedStaffMeasure && selectedStaffMeasure.slots && selectedStaffMeasure.slots.length
+      ? selectedStaffMeasure.slots.map(function (slot) { return { value: slot.startBeat, label: 'Beat ' + slot.startBeat }; })
+      : [{ value: 1, label: 'Beat 1' }, { value: 2, label: 'Beat 2' }, { value: 3, label: 'Beat 3' }, { value: 4, label: 'Beat 4' }];
+    var selectedStaffBeat = selectedStaffNote ? selectedStaffNote.startBeat : (staffCursor && staffCursor.startBeat || 1);
     var notationBridge = C.ogBuildNotationGridBridge ? C.ogBuildNotationGridBridge(project, pattern && pattern.id, {
       trackId: synthTrack && synthTrack.id,
       stepsPerBar: stepsPerBar,
@@ -2443,6 +2677,14 @@
       { id: 'simplify', name: 'Simplify Rhythm', summary: 'Keeps the clearest beat-level version of the motif.' }
     ];
     var selectedMotifTransformInfo = motifTransforms.filter(function (item) { return item.id === selectedMotifTransform; })[0] || motifTransforms[0] || { id: selectedMotifTransform, name: 'Motif Variation', summary: '' };
+    var notationPhrasePresets = C.ogListNotationPhrasePresets ? C.ogListNotationPhrasePresets() : [
+      { id: 'stepwiseQuestion', name: 'Stepwise Question', bars: 1, summary: 'A four-note rising question.' },
+      { id: 'answerCadence', name: 'Answer Cadence', bars: 1, summary: 'A settling response.' },
+      { id: 'triadOutline', name: 'Triad Outline', bars: 1, summary: 'Tonic chord tones.' }
+    ];
+    var selectedNotationPhraseInfo = notationPhrasePresets.filter(function (item) { return item.id === selectedNotationPhraseId; })[0] || notationPhrasePresets[0] || { id: selectedNotationPhraseId, name: 'Notation Phrase', bars: 1, summary: '' };
+    var selectedNotationPhraseBars = Math.max(1, selectedNotationPhraseInfo.bars || 1);
+    var canWriteNotationPhrase = !!(C.ogWriteNotationPhrasePreset && pattern && synthTrack && selectedBar <= Math.max(0, (pattern.bars || 1) - selectedNotationPhraseBars));
     var canWriteMotifTransform = !!(C.ogWriteMotifTransform && motifHasDestination && motifAnalysis && motifAnalysis.noteCount > 0);
     var songFormPresets = C.ogListSongFormPresets ? C.ogListSongFormPresets() : [
       { id: 'loop-sketch', name: 'Loop Sketch' },
@@ -2552,6 +2794,9 @@
       : { available: false, instrumentName: 'Default staff', rangeLabel: 'C4-C6', pitchNames: defaultStaffPitches, pitches: defaultStaffPitches.map(function (pitch) { return { pitch: pitch }; }) };
     var staffPitches = staffPitchPalette.pitchNames && staffPitchPalette.pitchNames.length ? staffPitchPalette.pitchNames : defaultStaffPitches;
     activeStaffPitch = staffPitches.indexOf(staffPitch) >= 0 ? staffPitch : staffPitches[0] || staffPitch;
+    var staffCursorLabel = staffCursor
+      ? ((staffCursor.tool === 'rest' ? 'Rest' : staffCursor.pitch) + ' - bar ' + staffCursor.bar + ' beat ' + staffCursor.startBeat + ' - ' + String(staffCursor.duration || staffDuration).toUpperCase() + (staffCursor.inRange === false && staffCursor.rangeLabel ? ' - outside ' + staffCursor.rangeLabel : ''))
+      : (activeStaffPitch + ' - bar ' + (selectedBar + 1) + ' - ' + String(staffDuration || 'q').toUpperCase());
     var instrumentRoleStarterPresets = [];
     if (selectedInstrumentRoleGuide && selectedInstrumentRoleGuide.starterPresetIds) {
       selectedInstrumentRoleGuide.starterPresetIds.forEach(function (presetId) {
@@ -3307,7 +3552,80 @@
                     h('option', { value: 'auto' }, 'Auto'),
                     h('option', { value: 'opengroove' }, 'Open Groove'),
                     h('option', { value: 'vexflow' }, 'VexFlow')))),
-              renderScoreStaff()),
+              renderScoreStaff(),
+              h('div', { style: styles.staffStatus, role: 'status', 'aria-live': 'polite' }, staffCursorLabel),
+              h('div', { style: styles.staffInspector, role: 'group', 'aria-label': 'Selected staff note editor' },
+                h('div', { style: styles.bridgeHeader },
+                  h('strong', null, 'Selected Note'),
+                  h('span', { style: styles.meta }, selectedStaffNote ? selectedStaffNote.pitch + ' - bar ' + selectedStaffNote.bar + ' beat ' + selectedStaffNote.startBeat : 'No note selected')),
+                h('div', { style: styles.staffInspectorGrid },
+                  h('label', { style: styles.fieldLabel }, 'Pitch',
+                    h('select', {
+                      style: styles.select,
+                      value: selectedStaffNote && selectedStaffNote.pitch || activeStaffPitch,
+                      disabled: !selectedStaffNote && staffTool === 'rest',
+                      onChange: function (ev) { selectedStaffNote ? updateSelectedStaffNote({ pitch: ev.target.value }) : setStaffPitch(ev.target.value); },
+                      'aria-label': selectedStaffNote ? 'Selected staff note pitch' : 'Next staff note pitch'
+                    },
+                      staffPitches.map(function (pitch) { return h('option', { key: 'selected-note-pitch-' + pitch, value: pitch }, pitch); }))),
+                  h('label', { style: styles.fieldLabel }, 'Value',
+                    h('select', {
+                      style: styles.select,
+                      value: selectedStaffNoteDuration,
+                      onChange: function (ev) { selectedStaffNote ? updateSelectedStaffNote({ duration: ev.target.value }) : setStaffDuration(ev.target.value); },
+                      'aria-label': selectedStaffNote ? 'Selected staff note value' : 'Next staff note value'
+                    },
+                      staffDurationOptions.map(function (item) { return h('option', { key: 'selected-note-duration-' + item.value, value: item.value }, item.label); }))),
+                  h('label', { style: styles.fieldLabel }, 'Beat',
+                    h('select', {
+                      style: styles.select,
+                      value: selectedStaffBeat,
+                      disabled: !selectedStaffNote,
+                      onChange: function (ev) { if (selectedStaffNote) updateSelectedStaffNote({ startBar: selectedBar, startBeat: Number(ev.target.value) || 1 }); },
+                      'aria-label': 'Selected staff note beat'
+                    },
+                      staffBeatOptions.map(function (item) { return h('option', { key: 'selected-note-beat-' + item.value, value: item.value }, item.label); }))),
+                  h('button', {
+                    style: Object.assign({}, styles.smallButton, !selectedStaffNote ? styles.disabledButton : null),
+                    onClick: function () { deleteSelectedStaffNote(); },
+                    disabled: !selectedStaffNote,
+                    'aria-label': selectedStaffNote ? 'Delete selected staff note' : 'No staff note selected'
+                  }, 'Delete Note')),
+                h('div', { style: styles.staffNoteList, role: 'list', 'aria-label': 'Staff notes in selected bar' },
+                  currentBarStaffNotes.length ? currentBarStaffNotes.map(function (note) {
+                    return h('button', {
+                      key: 'staff-note-row-' + note.id,
+                      style: Object.assign({}, styles.staffNoteButton, selectedStaffNote && selectedStaffNote.id === note.id ? styles.staffNoteButtonOn : null),
+                      onClick: function () { selectStaffNote(note, { bar: note.bar }); },
+                      'aria-label': 'Select ' + note.pitch + ' at beat ' + note.startBeat + ' in bar ' + note.bar
+                    }, note.pitch + ' - beat ' + note.startBeat + ' - ' + staffDurationTokenFor(note).toUpperCase());
+                  }) : h('span', { style: styles.muted }, 'No staff notes in this bar.'))),            ),
+            h('div', { style: styles.notationWorkflowPanel, role: 'group', 'aria-label': 'Notation phrase presets and MusicXML round trip workflow' },
+              h('div', { style: styles.bridgeHeader },
+                h('strong', null, 'Notation Workflow'),
+                h('span', { style: styles.meta }, selectedNotationPhraseInfo.summary || 'Staff-first composition')),
+              h('div', { style: styles.notationComposer },
+                h('label', { style: styles.fieldLabel }, 'Phrase Preset',
+                  h('select', {
+                    style: styles.select,
+                    value: selectedNotationPhraseInfo.id,
+                    onChange: function (ev) { setSelectedNotationPhraseId(ev.target.value); },
+                    'aria-label': 'Notation phrase preset'
+                  },
+                    notationPhrasePresets.map(function (item) {
+                      return h('option', { key: item.id, value: item.id }, item.name + (item.bars > 1 ? ' (' + item.bars + ' bars)' : ''));
+                    }))),
+                h('button', {
+                  style: Object.assign({}, styles.wideButton, !canWriteNotationPhrase ? styles.disabledButton : null),
+                  onClick: writeNotationPhrasePreset,
+                  disabled: !canWriteNotationPhrase,
+                  'aria-label': canWriteNotationPhrase ? 'Write ' + selectedNotationPhraseInfo.name + ' notation phrase to selected bar' : 'Notation phrase needs enough remaining bars'
+                }, canWriteNotationPhrase ? 'Write Phrase' : 'Need More Bars')),
+              h('div', { style: styles.notationWorkflowSteps, role: 'list', 'aria-label': 'Notation round trip workflow status' },
+                h('span', { style: styles.workflowStep, role: 'listitem' }, 'Staff Edit'),
+                h('span', { style: styles.workflowStep, role: 'listitem' }, 'MusicXML Export'),
+                h('span', { style: styles.workflowStep, role: 'listitem' }, 'MuseScore Polish'),
+                h('span', { style: styles.workflowStep, role: 'listitem' }, 'Import Revision'))),
             h('div', { style: styles.integrationPanel, role: 'group', 'aria-label': 'Notation engine, MuseScore, and audio transcription status' },
               h('div', { style: Object.assign({}, styles.integrationCard, notationEnginePlan.rendererStatus === 'ready' ? styles.integrationCardReady : null) },
                 h('strong', null, 'VexFlow'),
@@ -3949,6 +4267,12 @@
     staffToolbar: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(96px, 1fr))', gap: '8px', alignItems: 'end' },
     staffRangeHint: { minHeight: '34px', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#334155', padding: '7px', display: 'inline-flex', alignItems: 'center', fontSize: '12px', fontWeight: 900, overflowWrap: 'anywhere' },
     staffSvg: { width: '100%', minHeight: '148px', display: 'block', border: '1px solid #cbd5e1', background: '#ffffff', touchAction: 'manipulation' },
+    staffStatus: { minHeight: '28px', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#334155', padding: '5px 7px', fontSize: '12px', fontWeight: 900, overflowWrap: 'anywhere' },
+    staffInspector: { display: 'grid', gap: '8px', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#334155', padding: '8px', minWidth: 0 },
+    staffInspectorGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 104px), 1fr))', gap: '8px', alignItems: 'end', minWidth: 0 },
+    staffNoteList: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 108px), 1fr))', gap: '6px', minWidth: 0 },
+    staffNoteButton: { minHeight: '30px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#334155', padding: '5px 7px', fontSize: '11px', fontWeight: 900, textAlign: 'left', cursor: 'pointer', overflowWrap: 'anywhere' },
+    staffNoteButtonOn: { border: '1px solid #0f766e', background: '#ccfbf1', color: '#0f172a', boxShadow: 'inset 0 0 0 1px #0f766e' },
     vexflowStage: { width: '100%', minHeight: '152px', display: 'block', border: '1px solid #cbd5e1', background: '#ffffff', color: '#111827', overflowX: 'auto', padding: '4px', touchAction: 'manipulation' },
     integrationNotice: { border: '1px solid #cbd5e1', background: '#f8fafc', color: '#334155', padding: '7px', marginBottom: '8px', fontSize: '12px', fontWeight: 800, overflowWrap: 'anywhere' },
     bridgePanel: { display: 'grid', gap: '8px', marginBottom: '10px' },
@@ -3962,6 +4286,9 @@
     bridgeNotePill: { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minHeight: '16px', border: '1px solid currentColor', padding: '0 3px', fontSize: '10px', lineHeight: 1.1 },
     bridgeRows: { display: 'grid', gap: '5px' },
     bridgeRow: { display: 'grid', gridTemplateColumns: 'minmax(38px, 0.7fr) repeat(4, minmax(42px, 1fr))', gap: '5px', alignItems: 'center', borderTop: '1px solid #cbd5e1', paddingTop: '5px', color: '#334155', fontSize: '11px', fontWeight: 800, overflowWrap: 'anywhere', minWidth: 0 },
+    notationWorkflowPanel: { display: 'grid', gap: '8px', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#334155', padding: '8px', marginBottom: '10px', minWidth: 0 },
+    notationWorkflowSteps: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 96px), 1fr))', gap: '6px', minWidth: 0 },
+    workflowStep: { minHeight: '26px', border: '1px solid #cbd5e1', background: '#ffffff', color: '#334155', padding: '5px 7px', fontSize: '11px', fontWeight: 900, overflowWrap: 'anywhere' },
     integrationPanel: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 148px), 1fr))', gap: '8px', marginBottom: '10px' },
     integrationCard: { minHeight: '76px', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#334155', padding: '8px', display: 'grid', gap: '5px', alignContent: 'start', fontSize: '12px', fontWeight: 800, overflowWrap: 'anywhere' },
     integrationCardReady: { border: '1px solid #0f766e', background: '#ccfbf1', color: '#0f172a' },
@@ -4163,6 +4490,10 @@
       instrumentRoleBox: { border: '1px solid #38bdf8', background: '#0f172a', color: '#e0f2fe' },
       staffRangeHint: { border: '1px solid #64748b', background: '#111827', color: '#e2e8f0' },
       staffSvg: { border: '1px solid #64748b', background: '#020617' },
+      staffStatus: { border: '1px solid #64748b', background: '#111827', color: '#e2e8f0' },
+      staffInspector: { border: '1px solid #64748b', background: '#111827', color: '#e2e8f0' },
+      staffNoteButton: { border: '1px solid #64748b', background: '#020617', color: '#e2e8f0' },
+      staffNoteButtonOn: { border: '1px solid #5eead4', background: '#134e4a', color: '#ecfeff', boxShadow: 'inset 0 0 0 1px #5eead4' },
       vexflowStage: { border: '1px solid #64748b', background: '#ffffff', color: '#111827' },
       integrationNotice: { border: '1px solid #64748b', background: '#111827', color: '#e2e8f0' },
       bridgeHeader: { color: '#f8fafc' },
@@ -4173,6 +4504,8 @@
       motifPanel: { border: '1px solid #64748b', background: '#111827', color: '#e2e8f0' },
       motifChip: { border: '1px solid #64748b', background: '#020617', color: '#e2e8f0' },
       motifSuggestion: { borderTop: '1px solid #64748b', color: '#cbd5e1' },
+      notationWorkflowPanel: { border: '1px solid #64748b', background: '#111827', color: '#e2e8f0' },
+      workflowStep: { border: '1px solid #64748b', background: '#020617', color: '#e2e8f0' },
       integrationCard: { border: '1px solid #64748b', background: '#1f2937', color: '#e2e8f0' },
       integrationCardReady: { border: '1px solid #5eead4', background: '#134e4a', color: '#ecfeff' },
       integrationCardBlocked: { border: '1px solid #fca5a5', background: '#7f1d1d', color: '#fee2e2' },
@@ -4290,6 +4623,10 @@
       instrumentRoleBox: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
       staffRangeHint: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
       staffSvg: { border: '2px solid #ffffff', background: '#000000' },
+      staffStatus: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      staffInspector: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      staffNoteButton: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      staffNoteButtonOn: { border: '2px solid #ffffff', background: '#00ffff', color: '#000000', boxShadow: 'inset 0 0 0 2px #000000' },
       vexflowStage: { border: '2px solid #ffffff', background: '#ffffff', color: '#000000' },
       integrationNotice: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
       bridgeHeader: { color: '#ffffff' },
@@ -4300,6 +4637,8 @@
       motifPanel: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
       motifChip: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
       motifSuggestion: { borderTop: '2px solid #ffffff', color: '#ffffff' },
+      notationWorkflowPanel: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
+      workflowStep: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
       integrationCard: { border: '2px solid #ffffff', background: '#000000', color: '#ffffff' },
       integrationCardReady: { border: '2px solid #ffffff', background: '#00ffff', color: '#000000' },
       integrationCardBlocked: { border: '2px solid #ffffff', background: '#ffff00', color: '#000000' },

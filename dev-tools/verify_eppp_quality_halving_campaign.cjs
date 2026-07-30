@@ -12,6 +12,11 @@ const {
 } = require('./eppp_quality_campaign_core.cjs');
 const distractorManifest = require('./eppp_distractor_halving_campaign_manifest.cjs');
 const feedbackCampaign = require('./eppp_feedback_halving_campaign_data.cjs');
+const {
+  EXPECTED_ORDER_SHA256,
+  arrangeBalancedBatches,
+  orderSha256,
+} = require('./build_eppp_part_one_pack.cjs');
 
 const ROOT = path.resolve(__dirname, '..');
 const FINAL_CAMPAIGN_ID = 'eppp-quality-halving-final-verification-v1';
@@ -53,6 +58,14 @@ const PATHS = Object.freeze({
     source: 'test_prep_hub_module.js',
     deploy: 'desktop/web-app/public/test_prep_hub_module.js',
   }),
+  pack: Object.freeze({
+    source: 'test_prep/eppp_part_one_pack.json',
+    deploy: 'desktop/web-app/public/test_prep/eppp_part_one_pack.json',
+  }),
+  manifest: Object.freeze({
+    source: 'test_prep/pack_manifest.json',
+    deploy: 'desktop/web-app/public/test_prep/pack_manifest.json',
+  }),
   finalAudit: Object.freeze({
     source: 'test_prep/eppp_quality_halving_campaign_final_audit.json',
     deploy: 'desktop/web-app/public/test_prep/eppp_quality_halving_campaign_final_audit.json',
@@ -60,7 +73,6 @@ const PATHS = Object.freeze({
 });
 
 const START_MARKER = 'const EPPP_NATIVE_ITEMS = ';
-const NEXT_MARKER = 'const EPPP_INTEGRATED_2027_PREVIEW_PACK = ';
 const verifiedPublications = new WeakMap();
 
 class EpppQualityHalvingVerificationError extends Error {
@@ -189,32 +201,13 @@ function assertKeyedFeedbackEqualsRationale(items, label = 'item bank') {
   return items.length;
 }
 
-function extractEmbeddedEpppItems(moduleText, label = 'runtime module') {
+function assertRuntimeExcludesEmbeddedEppp(moduleText, label = 'runtime module') {
   invariant(typeof moduleText === 'string', `${label} must be text.`);
-  const markerIndex = moduleText.indexOf(START_MARKER);
   invariant(
-    markerIndex >= 0 && moduleText.indexOf(START_MARKER, markerIndex + 1) < 0,
-    `${label} must contain exactly one EPPP native-bank marker.`,
+    !moduleText.includes(START_MARKER),
+    `${label} must not contain the retired embedded EPPP native bank.`,
   );
-  const dataStart = markerIndex + START_MARKER.length;
-  const nextIndex = moduleText.indexOf(NEXT_MARKER, dataStart);
-  invariant(
-    nextIndex >= 0 && moduleText.indexOf(NEXT_MARKER, nextIndex + 1) < 0,
-    `${label} must contain exactly one EPPP preview-pack marker after the native bank.`,
-  );
-  const separatorStart = moduleText.lastIndexOf(';', nextIndex);
-  invariant(
-    separatorStart >= dataStart && !moduleText.slice(separatorStart + 1, nextIndex).trim(),
-    `${label} has an unexpected separator between the EPPP bank and preview pack.`,
-  );
-  let embedded;
-  try {
-    embedded = JSON.parse(moduleText.slice(dataStart, separatorStart));
-  } catch (error) {
-    fail(`${label} contains an invalid embedded EPPP bank.`, { cause: error.message });
-  }
-  invariant(Array.isArray(embedded), `${label} embedded EPPP bank must be an array.`);
-  return embedded;
+  return true;
 }
 
 function collectStrings(value, output = []) {
@@ -661,6 +654,8 @@ function verifyCampaign(root = ROOT, { now = () => new Date().toISOString() } = 
     ),
     feedbackAudit: readPairedJson(resolvedRoot, PATHS.feedbackAudit, 'feedback campaign audit'),
     runtime: readPairedText(resolvedRoot, PATHS.runtime, 'AlloFlow Test Prep Hub runtime'),
+    pack: readPairedJson(resolvedRoot, PATHS.pack, 'lazy EPPP Part 1 pack'),
+    manifest: readPairedJson(resolvedRoot, PATHS.manifest, 'Test Prep pack manifest'),
   };
 
   const bank = artifacts.bank.value;
@@ -718,15 +713,34 @@ function verifyCampaign(root = ROOT, { now = () => new Date().toISOString() } = 
     feedbackMetrics,
   );
 
-  const sourceRuntimeItems = extractEmbeddedEpppItems(
+  assertRuntimeExcludesEmbeddedEppp(
     artifacts.runtime.text,
     'source AlloFlow Test Prep Hub runtime',
   );
+  const expectedPackItems = arrangeBalancedBatches(bank);
+  const lazyPack = artifacts.pack.value;
   invariant(
-    sourceRuntimeItems.length === EXPECTED_ITEM_COUNT,
-    'The embedded AlloFlow runtime must contain 1,500 EPPP items.',
+    lazyPack && lazyPack.id === 'eppp-part-one' && Array.isArray(lazyPack.items)
+      && lazyPack.items.length === EXPECTED_ITEM_COUNT,
+    'The lazy EPPP Part 1 pack must contain 1,500 items.',
   );
-  assertJsonEqual(sourceRuntimeItems, bank, 'canonical/runtime EPPP item bank');
+  assertJsonEqual(lazyPack.items, expectedPackItems, 'canonical/lazy-pack EPPP item bank');
+  invariant(
+    orderSha256(lazyPack.items) === EXPECTED_ORDER_SHA256,
+    'The lazy EPPP Part 1 pack order drifted from its frozen runtime contract.',
+  );
+  const manifestEntry = Array.isArray(artifacts.manifest.value?.entries)
+    ? artifacts.manifest.value.entries.find((entry) => entry?.id === 'eppp-part-one')
+    : null;
+  invariant(
+    manifestEntry && manifestEntry.loadMode === 'lazy'
+      && manifestEntry.visibility === 'public'
+      && manifestEntry.packUrl === './test_prep/eppp_part_one_pack.json'
+      && manifestEntry.version === lazyPack.version
+      && manifestEntry.itemCount === EXPECTED_ITEM_COUNT
+      && manifestEntry.sha256 === artifacts.pack.sha256,
+    'The Test Prep manifest must bind the exact public lazy EPPP pack.',
+  );
 
   const generatedAt = now();
   invariant(
@@ -766,7 +780,10 @@ function verifyCampaign(root = ROOT, { now = () => new Date().toISOString() } = 
       feedbackAuditItems: feedbackCoverage.auditItems,
       deepCohortSourceRecords: deepCoverage.hydratedSourceRecords,
       keyedFeedbackMatchingRationale: bank.length,
-      canonicalRuntimeItemsEqual: true,
+      canonicalLazyPackItemsEqual: true,
+      lazyPackOrderSha256: EXPECTED_ORDER_SHA256,
+      runtimeExcludesEmbeddedItems: true,
+      manifestBindsLazyPack: true,
       sourceDeployParity: true,
     },
     campaignAudits: {
@@ -854,7 +871,6 @@ module.exports = {
   EXPECTED_FEEDBACK_MARKERS,
   EXPECTED_ITEM_COUNT,
   FINAL_CAMPAIGN_ID,
-  NEXT_MARKER,
   PATHS,
   START_MARKER,
   answerPositionCounts,
@@ -865,7 +881,7 @@ module.exports = {
   assertTruthfulLimitations,
   campaignAuditPresence,
   deriveHalfCeilings,
-  extractEmbeddedEpppItems,
+  assertRuntimeExcludesEmbeddedEppp,
   metricSnapshot,
   runCli,
   verifyCampaign,

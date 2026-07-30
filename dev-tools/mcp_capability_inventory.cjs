@@ -191,7 +191,8 @@ function moduleHomeFor(pattern) {
   console.log('pipeline functions exposed by the factory : ' + fns.length);
   console.log('of those, reached by the connector        : ' + reached.size);
   console.log('MCP tools advertised                      : ' + tools.length);
-  console.log('modules the bundle ships                  : ' + Driver.MODULE_FILES.join(', '));
+  console.log('pipeline boot modules                     : ' + Driver.MODULE_FILES.join(', '));
+  console.log('complete bundle asset set                 : ' + BUNDLE_ASSETS.join(', '));
   console.log('');
   console.log(pad('CAPABILITY', 38) + pad('IN PIPELINE', 13) + 'REACHED BY MCP');
   console.log('-'.repeat(72));
@@ -214,9 +215,10 @@ function moduleHomeFor(pattern) {
 
   const report = {
     factoryFunctions: fns.length, reachedByConnector: reached.size, mcpTools: tools.length,
-    shippedModules: Driver.MODULE_FILES, capabilities, outOfBundleFormats: formats,
+    bootModules: Driver.MODULE_FILES, shippedAssets: BUNDLE_ASSETS,
+    capabilities, outOfBundleFormats: formats,
     gaps: gaps.map((g) => g.capability),
-    note: 'A capability that is "in pipeline" but not reached is a candidate MCP tool. A format not shipped with the bundle is unreachable until the bundle includes its module.',
+    note: 'bootModules are loaded for every pipeline run; shippedAssets is the complete connector bundle asset set. A capability that is in the pipeline but not reached is a candidate MCP tool.',
   };
   if (jsonOut) { fs.writeFileSync(jsonOut, JSON.stringify(report, null, 2), 'utf8'); console.log('\nrecord: ' + jsonOut); }
 })().catch((e) => { console.error('FAILED: ' + ((e && e.message) || e)); process.exit(1); });

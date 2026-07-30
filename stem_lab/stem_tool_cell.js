@@ -81,24 +81,192 @@ window.StemLab = window.StemLab || {
   // misconception-busting: bacteria have NO nucleus, plants AND animals both have
   // mitochondria, every cell has ribosomes, only plants have chloroplasts/wall.
   var CELL_ORGANELLES = {
-    cellMembrane: { name: 'Cell membrane', fn: 'A fluid phospholipid bilayer \u2014 a flexible gatekeeper, not a solid wall \u2014 controlling what enters and leaves.', types: ['animal', 'plant', 'bacterium'], color: '#7dd3fc' },
-    cellWall: { name: 'Cell wall', fn: 'A rigid outer layer for support and shape. Plants, bacteria and fungi have one; animal cells do NOT.', types: ['plant', 'bacterium'], color: '#a3b18a' },
-    cytoplasm: { name: 'Cytoplasm', fn: 'The crowded, jelly-like fluid where most reactions happen \u2014 a living cell is PACKED with machinery, not empty.', types: ['animal', 'plant', 'bacterium'], color: '#0e7490' },
-    nucleus: { name: 'Nucleus', fn: 'The membrane-bound control center holding the DNA. Only EUKARYOTES (plant + animal) have one.', types: ['animal', 'plant'], color: '#a78bfa' },
-    nucleolus: { name: 'Nucleolus', fn: 'A dense spot inside the nucleus where ribosomes are assembled.', types: ['animal', 'plant'], color: '#7c3aed' },
-    nucleoid: { name: 'Nucleoid (free DNA)', fn: 'In bacteria the DNA floats free in a tangled loop \u2014 there is NO nucleus wrapped around it.', types: ['bacterium'], color: '#c4b5fd', bust: 'Not every cell has a nucleus. Bacteria (prokaryotes) keep their DNA loose in the cytoplasm.' },
-    plasmid: { name: 'Plasmid', fn: 'A small extra ring of DNA bacteria can swap with each other \u2014 one way antibiotic resistance spreads.', types: ['bacterium'], color: '#f0abfc' },
-    mitochondria: { name: 'Mitochondria', fn: 'The powerhouse: it CONVERTS the energy in food into ATP (it does not make energy from nothing). BOTH plant and animal cells have them.', types: ['animal', 'plant'], color: '#fb7185', bust: 'Mitochondria don\u2019t create energy \u2014 they release the energy stored in food and repackage it as ATP. And plant cells have them too, not just animals.' },
-    chloroplast: { name: 'Chloroplast', fn: 'Captures sunlight to build sugar (photosynthesis). PLANT cells only \u2014 the headline plant-vs-animal difference.', types: ['plant'], color: '#22c55e', bust: 'Chloroplasts are the plant-only organelle \u2014 but plant cells STILL have mitochondria too.' },
-    roughER: { name: 'Rough ER', fn: 'A folded membrane network studded with ribosomes \u2014 the protein factory and the start of the shipping line.', types: ['animal', 'plant'], color: '#38bdf8' },
-    smoothER: { name: 'Smooth ER', fn: 'Ribosome-free membranes that build lipids and detoxify chemicals.', types: ['animal', 'plant'], color: '#67e8f9' },
-    golgi: { name: 'Golgi apparatus', fn: 'The post office: it modifies, packages and ships proteins out in vesicles.', types: ['animal', 'plant'], color: '#fcd34d' },
-    ribosomes: { name: 'Ribosomes', fn: 'Tiny machines that build proteins. EVERY living cell has them \u2014 including bacteria.', types: ['animal', 'plant', 'bacterium'], color: '#fde68a', bust: 'Ribosomes are in ALL cells, not just plants \u2014 they\u2019re how every living thing makes protein.' },
-    vesicle: { name: 'Vesicles', fn: 'Membrane bubbles that ferry cargo along the line: ER \u2192 Golgi \u2192 cell membrane.', types: ['animal', 'plant'], color: '#fbbf24' },
-    lysosome: { name: 'Lysosome', fn: 'The recycling crew: enzyme-filled sacs that break down worn-out parts (mainly in animal cells).', types: ['animal'], color: '#f472b6' },
-    vacuole: { name: 'Central vacuole', fn: 'A huge water-filled sac that props the plant cell firm (turgor pressure) and stores material. Animal cells have only small vacuoles by comparison.', types: ['plant'], color: '#5eead4' },
-    centriole: { name: 'Centrioles', fn: 'Paired barrels that organize the spindle fibers during animal-cell division.', types: ['animal'], color: '#cbd5e1' },
-    flagellum: { name: 'Flagellum', fn: 'A whip-like tail some bacteria spin like a propeller to swim.', types: ['bacterium'], color: '#94a3b8' }
+    cellMembrane: {
+      name: 'Cell membrane',
+      fn: 'The plasma membrane is the cell\u2019s selectively permeable boundary. It maintains a stable internal environment by controlling the movement of water, ions, nutrients, wastes, and signaling molecules instead of simply sealing the cell shut.',
+      structure: 'Its basic structure is a fluid bilayer of phospholipids: water-attracting heads face the watery environments inside and outside the cell, while water-repelling tails meet in the middle. Embedded proteins act as channels, carriers, pumps, receptors, enzymes, and anchors; carbohydrates on the outer surface help cells recognize one another.',
+      connections: 'It works with transport vesicles during endocytosis and exocytosis, with the cytoskeleton to maintain shape, and with receptors and signaling pathways to help the cell respond to its environment. Bacterial membranes also host important energy-producing reactions because bacteria do not have mitochondria.',
+      types: ['animal', 'plant', 'bacterium'], color: '#7dd3fc'
+    },
+    cellWall: {
+      name: 'Cell wall',
+      fn: 'The cell wall is a strong layer outside the plasma membrane that supports the cell, helps preserve its shape, and resists bursting when water enters by osmosis. It is porous, so it provides mechanical protection without replacing the membrane\u2019s selective transport role.',
+      structure: 'Plant walls are built mainly from cellulose fibers embedded in a matrix of other carbohydrates. Bacterial walls usually contain peptidoglycan, a mesh of sugars linked by short peptides. Because these materials differ, many antibiotics can target bacterial wall construction without attacking plant or animal cells.',
+      connections: 'In plants, the wall works with the central vacuole: water entering the vacuole creates turgor pressure that pushes the membrane against the wall and keeps tissues firm. Channels called plasmodesmata pass through neighboring plant-cell walls to connect their cytoplasm.',
+      types: ['plant', 'bacterium'], color: '#a3b18a'
+    },
+    cytoplasm: {
+      name: 'Cytoplasm',
+      fn: 'The cytoplasm is the active interior between the plasma membrane and, in eukaryotes, the nucleus. It includes the watery cytosol plus suspended organelles, molecules, and structural fibers; it is crowded and constantly moving rather than an empty background.',
+      structure: 'Cytosol is mostly water but contains dissolved ions, metabolites, enzymes, and proteins. Many essential reactions occur here, including glycolysis and numerous steps in biosynthesis. A network of microfilaments, intermediate filaments, and microtubules forms the cytoskeleton and organizes movement through this space.',
+      connections: 'The cytoplasm links every cell structure. Ribosomes translate proteins in it, vesicles and motor proteins carry cargo through it, and metabolites move between pathways in the cytosol and pathways inside mitochondria, chloroplasts, and other organelles.',
+      types: ['animal', 'plant', 'bacterium'], color: '#0e7490'
+    },
+    nucleus: {
+      name: 'Nucleus',
+      fn: 'The nucleus protects most of a eukaryotic cell\u2019s DNA and regulates which genetic instructions are used. DNA replication occurs here before division, and transcription produces RNA copies of genes that can guide protein production or perform regulatory roles.',
+      structure: 'A double membrane called the nuclear envelope surrounds the nucleus and is continuous with the endoplasmic reticulum. Nuclear pore complexes control traffic in and out. Inside, DNA is wrapped around proteins to form chromatin, which can become more open or compact as genes are activated, silenced, or packaged into chromosomes.',
+      connections: 'Messenger RNA exits through nuclear pores to ribosomes, while regulatory proteins and building materials enter. The nucleolus assembles ribosomal subunits inside the nucleus, and the nuclear envelope connects physically with the rough ER to coordinate gene expression and protein processing.',
+      types: ['animal', 'plant'], color: '#a78bfa'
+    },
+    nucleolus: {
+      name: 'Nucleolus',
+      fn: 'The nucleolus is a specialized region inside the nucleus that produces ribosomal RNA and begins assembling ribosomes. Cells that manufacture large amounts of protein often have especially prominent nucleoli because they need many ribosomes.',
+      structure: 'It is not enclosed by a membrane. Instead, it forms around chromosome regions containing repeated ribosomal-RNA genes, concentrating RNA, enzymes, and ribosomal proteins into a dense molecular workspace.',
+      connections: 'Ribosomal proteins made in the cytoplasm enter the nucleus and join ribosomal RNA in the nucleolus. The resulting small and large subunits leave through nuclear pores and complete assembly in the cytoplasm when protein translation begins.',
+      types: ['animal', 'plant'], color: '#7c3aed'
+    },
+    nucleoid: {
+      name: 'Nucleoid (free DNA)',
+      fn: 'The nucleoid is the region of a bacterial cell containing its main chromosome. It is not a nucleus and has no surrounding membrane, so bacterial DNA can be copied and transcribed in the same cytoplasmic space where ribosomes translate messenger RNA.',
+      structure: 'Most bacteria carry one long, circular chromosome. The molecule is compacted by supercoiling and DNA-binding proteins into an organized, dynamic region rather than floating as a loose, random tangle.',
+      connections: 'The chromosome supplies the essential genes for cell maintenance and reproduction. Its RNA products can meet ribosomes almost immediately, while smaller plasmids may add optional abilities such as antibiotic resistance or new metabolic pathways.',
+      types: ['bacterium'], color: '#c4b5fd', bust: 'Not every cell has a nucleus. Bacteria are prokaryotes: their chromosome occupies a nucleoid region that has no surrounding nuclear membrane.'
+    },
+    plasmid: {
+      name: 'Plasmid',
+      fn: 'A plasmid is a small DNA molecule that replicates separately from the main bacterial chromosome. Plasmids usually carry accessory genes that are helpful in particular environments rather than genes required for basic survival.',
+      structure: 'Most plasmids are circular and double-stranded, although their sizes and forms vary. They contain an origin of replication and may occur in one or many copies per cell.',
+      connections: 'Some plasmids can move between bacteria through horizontal gene transfer, including conjugation. This can spread traits such as antibiotic resistance, toxin production, or the ability to digest unusual nutrients through a population much faster than ordinary reproduction alone.',
+      types: ['bacterium'], color: '#f0abfc'
+    },
+    mitochondria: {
+      name: 'Mitochondria',
+      fn: 'Mitochondria transfer chemical energy from food molecules into ATP, the immediately usable energy currency that powers much of a cell\u2019s work. They also participate in metabolism, calcium regulation, heat production, and controlled cell death.',
+      structure: 'An outer membrane encloses the organelle, while a highly folded inner membrane forms cristae that increase surface area. The matrix contains enzymes for pyruvate oxidation and the Krebs cycle. Electron-transport proteins in the inner membrane build a proton gradient, and ATP synthase uses that gradient to make most aerobic ATP.',
+      connections: 'Glycolysis in the cytosol supplies pyruvate, oxygen serves as the final electron acceptor, and ATP is exported to energy-requiring processes throughout the cell. Mitochondria contain some of their own DNA and ribosomes, evidence of their evolutionary origin from ancient bacteria.',
+      types: ['animal', 'plant'], color: '#fb7185', bust: 'Mitochondria do not create energy from nothing. They transform energy already stored in nutrients into ATP, and plant cells rely on them as well as chloroplasts.'
+    },
+    chloroplast: {
+      name: 'Chloroplast',
+      fn: 'Chloroplasts carry out photosynthesis, converting light energy into chemical energy and using carbon dioxide to build carbohydrate. Water supplies electrons for the process, and oxygen is released as a by-product.',
+      structure: 'A double outer envelope surrounds fluid called stroma and an internal membrane system of flattened thylakoids, often stacked into grana. Light reactions in the thylakoid membrane produce ATP and NADPH; enzymes in the stroma use those molecules in the Calvin cycle to fix carbon into G3P, a building block for sugars.',
+      connections: 'The sugars produced can be stored, used to build cellulose and other molecules, or broken down by mitochondria during cellular respiration. Like mitochondria, chloroplasts contain some of their own DNA and ribosomes and arose through endosymbiosis.',
+      types: ['plant'], color: '#22c55e', bust: 'Chloroplasts capture light and build energy-rich molecules, but they do not replace mitochondria. Plant cells use both organelles.'
+    },
+    roughER: {
+      name: 'Rough ER',
+      fn: 'The rough endoplasmic reticulum makes, folds, and begins modifying proteins destined for secretion, membranes, or many parts of the endomembrane system. Ribosomes attached to its cytosolic surface give it a rough appearance.',
+      structure: 'It is a connected network of flattened membrane sacs whose internal space, or lumen, is continuous with the nuclear envelope. A signal sequence on a growing protein directs its ribosome to a membrane channel, allowing the new chain to enter the ER or become inserted into its membrane.',
+      connections: 'Chaperone proteins help new proteins fold, quality-control systems retain or recycle defective products, and enzymes can add initial carbohydrate groups. Correctly processed cargo buds into transport vesicles that carry it to the Golgi apparatus.',
+      types: ['animal', 'plant'], color: '#38bdf8'
+    },
+    smoothER: {
+      name: 'Smooth ER',
+      fn: 'The smooth endoplasmic reticulum is a ribosome-free membrane network that synthesizes many lipids, helps process carbohydrates, detoxifies certain chemicals, and stores or releases calcium ions.',
+      structure: 'Its branching tubules provide extensive membrane surface for embedded enzymes. The amount and specialization of smooth ER differ by cell type: liver cells use it heavily for detoxification, while muscle cells contain a specialized calcium-storing form called the sarcoplasmic reticulum.',
+      connections: 'It supplies phospholipids and other lipids for cellular membranes, exchanges materials with the rough ER and Golgi, and uses controlled calcium release to influence muscle contraction, secretion, metabolism, and cell signaling.',
+      types: ['animal', 'plant'], color: '#67e8f9'
+    },
+    golgi: {
+      name: 'Golgi apparatus',
+      fn: 'The Golgi apparatus modifies, sorts, and packages proteins and lipids arriving from the ER. It acts as a processing and routing center, using molecular tags to direct cargo toward secretion, the plasma membrane, lysosomes, vacuoles, or other destinations.',
+      structure: 'The organelle consists of stacked, flattened membrane sacs called cisternae. Cargo generally enters on the cis face nearest the ER, moves through processing compartments, and leaves from the trans face in newly formed vesicles.',
+      connections: 'Transport vesicles deliver ER cargo to the Golgi and carry sorted products away. Golgi enzymes trim or add carbohydrate groups and perform other modifications that can change a molecule\u2019s stability, activity, or destination.',
+      types: ['animal', 'plant'], color: '#fcd34d'
+    },
+    ribosomes: {
+      name: 'Ribosomes',
+      fn: 'Ribosomes translate the nucleotide sequence of messenger RNA into the amino-acid sequence of a protein. Every living cell depends on them because proteins serve as enzymes, receptors, structural components, transporters, motors, and signals.',
+      structure: 'Each ribosome contains a small and a large subunit made from ribosomal RNA and proteins. Eukaryotic cytosolic ribosomes are larger than bacterial ribosomes; this difference allows several antibiotics to disrupt bacterial translation more strongly than human-cell translation.',
+      connections: 'Free ribosomes generally make proteins that remain in the cytosol or are imported into organelles. Ribosomes directed to the rough ER make proteins for secretion, membranes, lysosomes, and the endomembrane system. Multiple ribosomes can read the same messenger RNA at once.',
+      types: ['animal', 'plant', 'bacterium'], color: '#fde68a', bust: 'Ribosomes occur in every cell, not only in plants or eukaryotes. They are not membrane-bound organelles, but they are essential molecular machines.'
+    },
+    vesicle: {
+      name: 'Vesicles',
+      fn: 'Vesicles are small membrane-bound carriers that move, store, or release cellular cargo. They let water-soluble molecules travel between membrane compartments without mixing freely into the cytosol.',
+      structure: 'A vesicle forms by budding from a donor membrane and carries selected proteins, lipids, or dissolved contents. Coat proteins help shape the bud and select cargo, while recognition and fusion proteins help it dock with the correct target membrane.',
+      connections: 'Vesicles connect the ER, Golgi, lysosomes, vacuoles, and plasma membrane. Exocytosis fuses a vesicle with the surface to release cargo or add membrane; endocytosis brings membrane and outside material inward for sorting, use, or recycling.',
+      types: ['animal', 'plant'], color: '#fbbf24'
+    },
+    lysosome: {
+      name: 'Lysosome',
+      fn: 'Lysosomes digest and recycle macromolecules, damaged organelles, and material brought into the cell. Their breakdown products can return to the cytosol as reusable building blocks.',
+      structure: 'A single membrane encloses dozens of acid hydrolase enzymes. Proton pumps keep the interior acidic, creating the conditions those enzymes need while separating their activity from the rest of the cell.',
+      connections: 'Lysosomes receive cargo from endocytosis and phagocytosis and fuse with autophagosomes that enclose worn-out cell parts. Plants often perform similar digestive and recycling work in lytic vacuoles rather than in typical animal-style lysosomes.',
+      types: ['animal'], color: '#f472b6'
+    },
+    vacuole: {
+      name: 'Central vacuole',
+      fn: 'The large central vacuole stores water, ions, pigments, nutrients, defensive compounds, and some wastes. By filling with water, it generates turgor pressure that supports leaves and stems and powers much plant-cell expansion.',
+      structure: 'A membrane called the tonoplast surrounds the vacuolar fluid, or cell sap. Transport proteins in the tonoplast regulate its composition and acidity; in mature plant cells the vacuole can occupy most of the cell\u2019s volume.',
+      connections: 'The vacuole works with the cell wall to resist osmotic swelling and keep tissues firm. It also contributes to ion balance, pH control, recycling, and defense. Animal cells may have smaller vacuoles or related compartments, but not this dominant central structure.',
+      types: ['plant'], color: '#5eead4'
+    },
+    peroxisome: {
+      name: 'Peroxisome',
+      fn: 'Peroxisomes are small oxidative organelles that break down selected fatty acids and detoxify reactive molecules. Their enzymes transfer hydrogen to oxygen, producing hydrogen peroxide, and catalase rapidly converts that potentially damaging peroxide into water and oxygen.',
+      structure: 'A single membrane encloses a concentrated set of oxidative enzymes, sometimes arranged around a dense crystalline core. Unlike mitochondria and chloroplasts, peroxisomes contain no DNA or ribosomes; they import their proteins after those proteins are made in the cytosol.',
+      connections: 'Peroxisomes exchange lipids and metabolites with the smooth ER, mitochondria, chloroplasts, and cytosol. In plants, specialized peroxisomes participate in photorespiration and seed-lipid conversion; in animal cells they contribute to lipid metabolism and chemical detoxification.',
+      types: ['animal', 'plant'], color: '#60a5fa'
+    },
+    cytoskeleton: {
+      name: 'Cytoskeleton',
+      fn: 'The cytoskeleton is a dynamic network that supports cell shape, resists mechanical stress, positions organelles, enables cell movement, and reorganizes the cell during division. It is an active transport system rather than a fixed internal skeleton.',
+      structure: 'Eukaryotic cytoskeletons combine actin microfilaments, rope-like intermediate filaments, and hollow microtubules. Each fiber class has different mechanical properties, and motor proteins such as myosin, kinesin, and dynein move along them or generate force.',
+      connections: 'Cytoskeletal fibers anchor to membrane proteins, connect to cell junctions, guide vesicles between the ER and Golgi, position mitochondria and other organelles, and form structures such as the mitotic spindle, cilia, flagella, and contractile ring.',
+      types: ['animal', 'plant'], color: '#22d3ee'
+    },
+    plasmodesmata: {
+      name: 'Plasmodesmata',
+      fn: 'Plasmodesmata are microscopic channels that cross plant-cell walls and connect the cytoplasm of neighboring cells. They allow regulated movement of water, ions, sugars, hormones, RNA, and some proteins directly from cell to cell.',
+      structure: 'Each channel is lined by plasma membrane and often contains a narrow tube of endoplasmic reticulum called a desmotubule. A sleeve of cytoplasm surrounds the desmotubule, while proteins near the opening can adjust the channel width and transport selectivity.',
+      connections: 'Plasmodesmata turn separate plant cells into a connected symplast for transport and signaling. They coordinate growth and defense across tissues, connect with the ER and plasma membrane, and can be narrowed by callose deposition when a plant limits communication.',
+      types: ['plant'], color: '#f59e0b'
+    },
+    capsule: {
+      name: 'Capsule (some bacteria)',
+      fn: 'A bacterial capsule is an organized, sticky outer coating that can help a cell retain water, adhere to surfaces, avoid engulfment by immune cells, and survive environmental stress. Capsules occur in some bacterial species, not every bacterium.',
+      structure: 'The capsule lies outside the cell wall and is usually made from polysaccharides, although a few bacteria build polypeptide capsules. Its hydrated material forms a transparent protective layer that is physically distinct from the membrane and peptidoglycan wall.',
+      connections: 'Capsules help neighboring bacteria attach within biofilms, interact with host tissues, and resist drying or chemical exposure. Material for the capsule is synthesized inside the cell, exported across the membrane and wall, and assembled on the outer surface.',
+      types: ['bacterium'], color: '#93c5fd', bust: 'Not all bacteria have capsules. When present, a capsule is an external protective coating, not the bacterial cell wall or plasma membrane.'
+    },
+    pili: {
+      name: 'Pili / fimbriae (some bacteria)',
+      fn: 'Pili and fimbriae are thin protein fibers projecting from the surfaces of some bacteria. Short, numerous fimbriae commonly support adhesion, while specialized pili can pull cells across surfaces or connect cells during DNA transfer.',
+      structure: 'These fibers are assembled from repeating protein subunits anchored in the bacterial envelope. A conjugation pilus can form a controlled cell-to-cell connection, while type IV pili repeatedly extend and retract to produce twitching movement.',
+      connections: 'Surface fibers help bacteria attach to tissues, minerals, medical devices, or other cells and can support biofilm formation. Conjugative pili work with plasmids and DNA-transfer machinery, allowing accessory genes such as antibiotic-resistance genes to spread horizontally.',
+      types: ['bacterium'], color: '#cbd5e1', bust: 'Pili are not bacterial flagella: pili are usually shorter and support attachment, DNA transfer, or surface movement, while flagella rotate to propel a cell through liquid.'
+    },    centriole: {
+      name: 'Centrioles',
+      fn: 'Centrioles help organize microtubules and are especially important when many animal cells prepare for division or build cilia and flagella. A nearby pair is usually part of a larger microtubule-organizing center called the centrosome.',
+      structure: 'Each centriole is a short cylinder built from nine triplets of microtubules. The pair is commonly positioned at roughly right angles and duplicates once per cell cycle.',
+      connections: 'The centrosome helps arrange the mitotic spindle that separates chromosomes. A centriole can also become a basal body that anchors and organizes a eukaryotic cilium or flagellum. Many plants and some specialized animal cells organize microtubules without typical centrioles.',
+      types: ['animal'], color: '#cbd5e1'
+    },
+    flagellum: {
+      name: 'Flagellum',
+      fn: 'A bacterial flagellum is a long rotating propeller that lets some bacteria swim toward favorable conditions or away from harmful ones, a behavior called chemotaxis.',
+      structure: 'It has a helical filament connected by a hook to a motor embedded in the cell envelope. Flow of protons, or sometimes sodium ions, down an electrochemical gradient turns the motor and rotates the filament.',
+      connections: 'Sensory receptors adjust the direction and duration of motor rotation, producing runs and direction-changing tumbles. Bacterial flagella differ fundamentally from the membrane-covered, bending flagella of eukaryotic cells.',
+      types: ['bacterium'], color: '#94a3b8'
+    }
+  };
+  // Concise feature keys connect each schematic symbol to the anatomy students should notice.
+  var CELL_ULTRASTRUCTURE = {
+    cellMembrane: 'PHOSPHOLIPID BILAYER | TRANSPORT PROTEINS',
+    cellWall: 'SUPPORTING MATRIX | POROUS LAYER',
+    cytoplasm: 'CYTOSOL | DISSOLVED SOLUTES | STREAMING',
+    nucleus: 'DOUBLE ENVELOPE | PORES | CHROMATIN',
+    nucleolus: 'rRNA ASSEMBLY | RIBOSOME SUBUNITS',
+    ribosomes: 'LARGE + SMALL SUBUNITS | mRNA',
+    roughER: 'FLATTENED CISTERNAE | BOUND RIBOSOMES',
+    smoothER: 'TUBULAR NETWORK | LIPID ENZYMES',
+    golgi: 'CIS FACE | CISTERNAE | TRANS FACE',
+    vesicle: 'LIPID BILAYER | MOLECULAR CARGO',
+    lysosome: 'ACIDIC LUMEN | HYDROLASES | RECYCLED CARGO',
+    mitochondria: 'DOUBLE MEMBRANE | CRISTAE | MATRIX',
+    chloroplast: 'DOUBLE ENVELOPE | GRANA | STROMA',
+    vacuole: 'TONOPLAST | CELL SAP | TURGOR PRESSURE',
+    peroxisome: 'OXIDATIVE ENZYMES | CATALASE CORE',
+    cytoskeleton: 'ACTIN | INTERMEDIATE FILAMENTS | MICROTUBULES',
+    plasmodesmata: 'MEMBRANE LINING | DESMOTUBULE | CYTOSOL',
+    centriole: '9 MICROTUBULE TRIPLETS | CENTROSOME',
+    nucleoid: 'LOOPED CHROMOSOME | NO NUCLEAR ENVELOPE',
+    plasmid: 'SMALL CIRCULAR DNA | COPY ORIGIN',
+    capsule: 'HYDRATED MATRIX | EXTERNAL PROTECTION',
+    pili: 'PILIN SUBUNITS | SURFACE ANCHOR',
+    flagellum: 'FILAMENT | HOOK | ROTARY MOTOR'
   };
   function interiorHas(type, key) { var o = CELL_ORGANELLES[key]; return !!(o && o.types.indexOf(type) >= 0); }
   function interiorOrganelles(type) { return Object.keys(CELL_ORGANELLES).filter(function (k) { return interiorHas(type, k); }); }
@@ -109,6 +277,8 @@ window.StemLab = window.StemLab || {
     if (type === 'bacterium') {
       add('nucleoid', 0.5, 0.5, 0.20);
       add('plasmid', 0.74, 0.34, 0.05);
+      add('capsule', 0.5, 0.045, 0.035);
+      add('pili', 0.70, 0.055, 0.035);
       add('flagellum', 0.04, 0.5, 0.06);
       for (var b = 0; b < 26; b++) L.push({ key: 'ribosomes', x: 0.18 + (b * 0.137 % 0.66), y: 0.22 + ((b * 0.231) % 0.58), r: 0.012, dot: true });
       return L;
@@ -119,6 +289,7 @@ window.StemLab = window.StemLab || {
       [[0.2, 0.26], [0.32, 0.74], [0.7, 0.78], [0.18, 0.56], [0.84, 0.58]].forEach(function (p, i) { add('chloroplast', p[0], p[1], 0.06, { phase: i }); });
       [[0.26, 0.4], [0.62, 0.18], [0.8, 0.74]].forEach(function (p, i) { add('mitochondria', p[0], p[1], 0.045, { phase: i }); });
       add('roughER', 0.6, 0.36, 0.1); add('golgi', 0.28, 0.6, 0.07);
+      add('peroxisome', 0.86, 0.40, 0.034); add('cytoskeleton', 0.14, 0.82, 0.045); add('plasmodesmata', 0.965, 0.70, 0.03);
       for (var pr = 0; pr < 14; pr++) L.push({ key: 'ribosomes', x: 0.5 + 0.42 * Math.cos(pr), y: 0.5 + 0.42 * Math.sin(pr * 1.7), r: 0.01, dot: true });
       return L;
     }
@@ -128,38 +299,88 @@ window.StemLab = window.StemLab || {
     add('roughER', 0.45, 0.42, 0.13); add('smoothER', 0.5, 0.68, 0.1);
     add('golgi', 0.32, 0.56, 0.08);
     add('lysosome', 0.8, 0.4, 0.035); add('lysosome', 0.5, 0.24, 0.03);
+    add('peroxisome', 0.86, 0.30, 0.034); add('cytoskeleton', 0.18, 0.80, 0.045);
     add('centriole', 0.78, 0.5, 0.03);
     [[0.4, 0.5], [0.55, 0.58], [0.68, 0.52]].forEach(function (p, i) { add('vesicle', p[0], p[1], 0.018, { phase: i }); });
     for (var r2 = 0; r2 < 18; r2++) L.push({ key: 'ribosomes', x: 0.2 + (r2 * 0.17 % 0.62), y: 0.18 + ((r2 * 0.29) % 0.66), r: 0.011, dot: true });
     return L;
   }
-  function interiorHitTest(type, nx, ny) {           // normalized click \u2192 organelle key (nearest within radius)
+  function interiorGeometry(W, H, type) {
+    var pad = Math.min(W, H) * 0.06;
+    return {
+      pad: pad,
+      cx: W / 2,
+      cy: H / 2,
+      RX: type === 'bacterium' ? W * 0.34 : W / 2 - pad,
+      RY: type === 'bacterium' ? H * 0.28 : H / 2 - pad
+    };
+  }
+  function traceInteriorBoundary(cx2d, geometry, type, inset) {
+    inset = Number(inset) || 0; inset = Math.max(-Math.min(geometry.RX, geometry.RY) * 0.14, inset);
+    var left = geometry.cx - geometry.RX + inset, right = geometry.cx + geometry.RX - inset;
+    var top = geometry.cy - geometry.RY + inset, bottom = geometry.cy + geometry.RY - inset;
+    cx2d.beginPath();
+    if (type === 'plant' || type === 'bacterium') {
+      var corner = type === 'bacterium' ? Math.max(2, (bottom - top) / 2) : Math.max(12, Math.min(30, (bottom - top) * 0.12));
+      corner = Math.min(corner, (right - left) / 2, (bottom - top) / 2);
+      cx2d.moveTo(left + corner, top); cx2d.lineTo(right - corner, top);
+      cx2d.quadraticCurveTo(right, top, right, top + corner); cx2d.lineTo(right, bottom - corner);
+      cx2d.quadraticCurveTo(right, bottom, right - corner, bottom); cx2d.lineTo(left + corner, bottom);
+      cx2d.quadraticCurveTo(left, bottom, left, bottom - corner); cx2d.lineTo(left, top + corner);
+      cx2d.quadraticCurveTo(left, top, left + corner, top);
+    } else cx2d.ellipse(geometry.cx, geometry.cy, Math.max(1, geometry.RX - inset), Math.max(1, geometry.RY - inset), 0, 0, 6.2832);
+    cx2d.closePath();
+  }
+  function interiorHitTest(type, nx, ny, W, H) {     // canvas-normalized click \u2192 internal layout \u2192 structure
+    if (Number(W) > 0 && Number(H) > 0) {
+      var geometry = interiorGeometry(Number(W), Number(H), type);
+      var pixelX = nx * Number(W), pixelY = ny * Number(H);
+      nx = 0.5 + (pixelX - geometry.cx) / (2 * geometry.RX);
+      ny = 0.5 + (pixelY - geometry.cy) / (2 * geometry.RY);
+    }
     var L = interiorLayout(type), best = null, bd = 1e9;
     for (var i = 0; i < L.length; i++) { var o = L[i]; if (o.dot) continue; var dx = nx - o.x, dy = ny - o.y, dd = Math.sqrt(dx * dx + dy * dy); if (dd < o.r * 1.25 && dd < bd) { bd = dd; best = o.key; } }
     if (best) return best;
-    var cdx = nx - 0.5, cdy = ny - 0.5, cr = Math.sqrt(cdx * cdx + cdy * cdy);   // edge \u2192 wall/membrane
-    if (cr > 0.42) return interiorHas(type, 'cellWall') ? 'cellWall' : 'cellMembrane';
+    var cdx = nx - 0.5, cdy = ny - 0.5;
+    var onBoundary = type === 'plant'
+      ? Math.max(Math.abs(cdx), Math.abs(cdy)) > 0.42
+      : type === 'bacterium'
+        ? Math.sqrt(Math.pow(Math.max(0, Math.abs(cdx) - 0.32) / 0.16, 2) + Math.pow(cdy / 0.46, 2)) > 0.86
+        : Math.sqrt(cdx * cdx + cdy * cdy) > 0.42;
+    if (onBoundary) return interiorHas(type, 'cellWall') ? 'cellWall' : 'cellMembrane';
     return 'cytoplasm';
   }
   function _ih(i) { var s = Math.sin(i * 12.9898) * 43758.5453; return s - Math.floor(s); }   // deterministic hash 0..1
   function drawCellInterior(cx2d, W, H, type, t, sel, reduced) {
-    var pad = Math.min(W, H) * 0.06, cx = W / 2, cy = H / 2, RX = W / 2 - pad, RY = H / 2 - pad;
+    var geometry = interiorGeometry(W, H, type), pad = geometry.pad, cx = geometry.cx, cy = geometry.cy, RX = geometry.RX, RY = geometry.RY;
     function P(nx, ny) { return [cx + (nx - 0.5) * 2 * RX, cy + (ny - 0.5) * 2 * RY]; }
     function S(nr) { return nr * 2 * Math.min(RX, RY); }
+    var typeMeta = type === 'plant'
+      ? { title: 'PLANT CELL', subtitle: 'EUKARYOTE', detail: 'WALL • MEMBRANE • PLASMODESMATA', center: '#164e3b', middle: '#0b3b32', edge: '#041d19' }
+      : type === 'bacterium'
+        ? { title: 'BACTERIAL CELL', subtitle: 'PROKARYOTE', detail: 'CAPSULE • WALL • MEMBRANE', center: '#17375e', middle: '#102a46', edge: '#061827' }
+        : { title: 'ANIMAL CELL', subtitle: 'EUKARYOTE', detail: 'MEMBRANE • CYTOSKELETON', center: '#0b3b46', middle: '#072a33', edge: '#04181d' };
     cx2d.clearRect(0, 0, W, H);
-    // cytoplasm
+    // Type-specific cytoplasm tint keeps the three comparison diagrams distinct.
     var g = cx2d.createRadialGradient(cx, cy, 10, cx, cy, Math.max(RX, RY) * 1.2);
-    g.addColorStop(0, '#0b3b46'); g.addColorStop(0.7, '#072a33'); g.addColorStop(1, '#04181d');
+    g.addColorStop(0, typeMeta.center); g.addColorStop(0.7, typeMeta.middle); g.addColorStop(1, typeMeta.edge);
     cx2d.fillStyle = '#02101400'; cx2d.fillRect(0, 0, W, H);
     // boundary
-    cx2d.save(); cx2d.beginPath(); cx2d.ellipse(cx, cy, RX, RY, 0, 0, 6.2832); cx2d.closePath();
-    if (interiorHas(type, 'cellWall')) { cx2d.lineWidth = S(0.03); cx2d.strokeStyle = '#7c8f5e'; cx2d.stroke(); }
+    cx2d.save(); traceInteriorBoundary(cx2d, geometry, type, 0);
+    var wallSelected = sel === 'cellWall';
+    if (interiorHas(type, 'cellWall')) {
+      cx2d.lineWidth = S(wallSelected ? 0.042 : 0.03);
+      cx2d.strokeStyle = wallSelected ? '#fef08a' : (type === 'plant' ? '#86a96b' : '#94a3b8');
+      if (wallSelected) { cx2d.shadowColor = '#fef08a'; cx2d.shadowBlur = 18; }
+      cx2d.stroke(); cx2d.shadowBlur = 0;
+    }
     cx2d.fillStyle = g; cx2d.fill(); cx2d.clip();
     // cytoplasmic streaming particles
     var drift = reduced ? 0 : t;
     for (var i = 0; i < 80; i++) { var a = _ih(i) * 6.2832 + drift * (0.2 + _ih(i + 99) * 0.3), rr = _ih(i + 7) * 0.46; var pp = P(0.5 + Math.cos(a) * rr, 0.5 + Math.sin(a) * rr * (RY / RX)); cx2d.fillStyle = 'rgba(125,211,252,' + (0.04 + _ih(i + 3) * 0.06) + ')'; cx2d.beginPath(); cx2d.arc(pp[0], pp[1], 1 + _ih(i + 5) * 1.6, 0, 6.2832); cx2d.fill(); }
     // Cytoskeleton: faint structural fibers beneath the organelles.
-    cx2d.save(); cx2d.globalAlpha = 0.13; cx2d.lineWidth = Math.max(1, S(0.004));
+    cx2d.save(); cx2d.globalAlpha = sel === 'cytoskeleton' ? 0.46 : 0.13; cx2d.lineWidth = Math.max(sel === 'cytoskeleton' ? 2.2 : 1, S(sel === 'cytoskeleton' ? 0.007 : 0.004));
+    if (sel === 'cytoskeleton') { cx2d.shadowColor = '#22d3ee'; cx2d.shadowBlur = 10; }
     for (var cf = 0; cf < 9; cf++) {
       var cfa = cf / 9 * 6.2832 + (reduced ? 0 : t * 0.025);
       cx2d.strokeStyle = cf % 2 ? '#a78bfa' : '#67e8f9';
@@ -171,9 +392,11 @@ window.StemLab = window.StemLab || {
     cx2d.restore();
     // Fluid-mosaic membrane: two phospholipid head layers with hydrophobic tails.
     var memInset = Math.max(2, S(0.008));
-    cx2d.lineWidth = Math.max(1, S(0.004)); cx2d.strokeStyle = '#22d3ee'; cx2d.globalAlpha = 0.72;
-    cx2d.beginPath(); cx2d.ellipse(cx, cy, RX - memInset, RY - memInset, 0, 0, 6.2832); cx2d.stroke();
-    cx2d.beginPath(); cx2d.ellipse(cx, cy, RX - memInset * 2.7, RY - memInset * 2.7, 0, 0, 6.2832); cx2d.stroke();
+    var membraneSelected = sel === 'cellMembrane';
+    cx2d.lineWidth = Math.max(1, S(membraneSelected ? 0.009 : 0.004)); cx2d.strokeStyle = membraneSelected ? '#fef08a' : '#22d3ee'; cx2d.globalAlpha = membraneSelected ? 1 : 0.72;
+    if (membraneSelected) { cx2d.shadowColor = '#fef08a'; cx2d.shadowBlur = 14; }
+    traceInteriorBoundary(cx2d, geometry, type, memInset); cx2d.stroke();
+    traceInteriorBoundary(cx2d, geometry, type, memInset * 2.7); cx2d.stroke();
     for (var ml = 0; ml < 64; ml++) {
       var ma = ml / 64 * 6.2832;
       var ux = Math.cos(ma), uy = Math.sin(ma);
@@ -185,7 +408,7 @@ window.StemLab = window.StemLab || {
       cx2d.beginPath(); cx2d.arc(hx, hy, ml % 11 === 0 ? 2.7 : 1.7, 0, 6.2832); cx2d.fill();
       cx2d.beginPath(); cx2d.arc(ix, iy, ml % 11 === 0 ? 2.7 : 1.7, 0, 6.2832); cx2d.fill();
     }
-    cx2d.globalAlpha = 1;
+    cx2d.globalAlpha = 1; cx2d.shadowBlur = 0;
     var L = interiorLayout(type);
     // dot clusters first (ribosomes) so organelles sit on top
     L.forEach(function (o) { if (!o.dot) return; var p = P(o.x, o.y); cx2d.fillStyle = CELL_ORGANELLES.ribosomes.color; cx2d.globalAlpha = 0.9; cx2d.beginPath(); cx2d.arc(p[0], p[1], Math.max(1.3, S(o.r)), 0, 6.2832); cx2d.fill(); });
@@ -248,23 +471,90 @@ window.StemLab = window.StemLab || {
         cx2d.shadowBlur = 0;
         cx2d.restore();
       } else if (o.key === 'vacuole') {
-        cx2d.fillStyle = 'rgba(94,234,212,0.16)'; cx2d.strokeStyle = 'rgba(94,234,212,0.55)';
-        cx2d.beginPath(); cx2d.arc(p[0], p[1], R, 0, 6.2832); cx2d.fill(); cx2d.stroke();
+        // Tonoplast, cell sap, dissolved solutes, and outward turgor cues.
+        var vacPulse = reduced ? 0.45 : 0.35 + 0.10 * Math.sin(t * 0.8);
+        cx2d.fillStyle = 'rgba(94,234,212,' + vacPulse.toFixed(2) + ')'; cx2d.strokeStyle = on ? '#fef08a' : 'rgba(94,234,212,0.78)';
+        cx2d.lineWidth = Math.max(1.5, R * 0.035); cx2d.beginPath(); cx2d.arc(p[0], p[1], R, 0, 6.2832); cx2d.fill(); cx2d.stroke();
+        cx2d.strokeStyle = 'rgba(153,246,228,0.50)'; cx2d.beginPath(); cx2d.arc(p[0], p[1], R * 0.94, 0, 6.2832); cx2d.stroke();
+        for (var vs = 0; vs < 16; vs++) {
+          var vsa = _ih(vs + 211) * 6.2832, vsr = R * (0.18 + _ih(vs + 239) * 0.68);
+          cx2d.fillStyle = vs % 3 === 0 ? 'rgba(251,191,36,0.72)' : 'rgba(207,250,254,0.58)';
+          cx2d.beginPath(); cx2d.arc(p[0] + Math.cos(vsa) * vsr, p[1] + Math.sin(vsa) * vsr, Math.max(1.2, R * 0.014), 0, 6.2832); cx2d.fill();
+        }
+        if (on) {
+          cx2d.strokeStyle = '#fef08a'; cx2d.fillStyle = '#fef08a'; cx2d.lineWidth = 1.5;
+          for (var tp = 0; tp < 8; tp++) { var tpa = tp / 8 * 6.2832, tpx = p[0] + Math.cos(tpa) * R * 0.70, tpy = p[1] + Math.sin(tpa) * R * 0.70; cx2d.beginPath(); cx2d.moveTo(tpx, tpy); cx2d.lineTo(p[0] + Math.cos(tpa) * R * 0.91, p[1] + Math.sin(tpa) * R * 0.91); cx2d.stroke(); }
+        }
       } else if (o.key === 'roughER' || o.key === 'smoothER') {
-        cx2d.strokeStyle = col; cx2d.lineWidth = R * 0.14;
-        for (var er = 0; er < 4; er++) { cx2d.beginPath(); for (var w = 0; w <= 16; w++) { var wx = p[0] + (w / 16 - 0.5) * R * 2, wy = p[1] + (er - 1.5) * R * 0.32 + Math.sin(w * 0.8 + er) * R * 0.12; if (w === 0) cx2d.moveTo(wx, wy); else cx2d.lineTo(wx, wy); } cx2d.stroke(); }
-        if (o.key === 'roughER') { cx2d.fillStyle = CELL_ORGANELLES.ribosomes.color; for (var rr3 = 0; rr3 < 22; rr3++) { var rx = p[0] + (_ih(rr3) - 0.5) * R * 2, ry = p[1] + (_ih(rr3 + 5) - 0.5) * R * 1.2; cx2d.beginPath(); cx2d.arc(rx, ry, R * 0.06, 0, 6.2832); cx2d.fill(); } }
+        cx2d.strokeStyle = col; cx2d.lineCap = 'round'; cx2d.lineWidth = R * (o.key === 'roughER' ? 0.13 : 0.10);
+        var erRows = o.key === 'roughER' ? 4 : 5;
+        for (var er = 0; er < erRows; er++) {
+          cx2d.beginPath();
+          for (var w = 0; w <= 18; w++) {
+            var wx = p[0] + (w / 18 - 0.5) * R * 2;
+            var wave = o.key === 'roughER' ? Math.sin(w * 0.8 + er) * R * 0.10 : Math.sin(w * 0.58 + er * 1.7) * R * 0.22;
+            var wy = p[1] + (er - (erRows - 1) / 2) * R * (o.key === 'roughER' ? 0.30 : 0.25) + wave;
+            if (w === 0) cx2d.moveTo(wx, wy); else cx2d.lineTo(wx, wy);
+          }
+          cx2d.stroke();
+        }
+        if (o.key === 'roughER') {
+          cx2d.fillStyle = CELL_ORGANELLES.ribosomes.color;
+          for (var rr3 = 0; rr3 < 24; rr3++) { var rx = p[0] + (_ih(rr3) - 0.5) * R * 2, ry = p[1] + (_ih(rr3 + 5) - 0.5) * R * 1.2; cx2d.beginPath(); cx2d.arc(rx, ry, R * 0.055, 0, 6.2832); cx2d.fill(); }
+        } else {
+          cx2d.fillStyle = 'rgba(251,191,36,0.72)';
+          for (var ld = 0; ld < 5; ld++) { cx2d.beginPath(); cx2d.arc(p[0] + (_ih(ld + 41) - 0.5) * R * 1.65, p[1] + (_ih(ld + 61) - 0.5) * R * 1.05, R * 0.07, 0, 6.2832); cx2d.fill(); }
+        }
       } else if (o.key === 'golgi') {
-        cx2d.strokeStyle = col; cx2d.lineWidth = R * 0.16;
-        for (var go = 0; go < 4; go++) { cx2d.beginPath(); cx2d.arc(p[0], p[1] + go * R * 0.28 - R * 0.4, R * (1 - go * 0.12), -0.6, 0.6); cx2d.stroke(); }
-      } else if (o.key === 'lysosome' || o.key === 'vesicle' || o.key === 'plasmid') {
+        // Polarized cisternae: receiving cis face, processing stacks, shipping trans face.
+        cx2d.strokeStyle = col; cx2d.lineCap = 'round'; cx2d.lineWidth = R * 0.15;
+        for (var go = 0; go < 5; go++) { cx2d.beginPath(); cx2d.arc(p[0], p[1] + go * R * 0.23 - R * 0.46, R * (1 - go * 0.10), -0.68, 0.68); cx2d.stroke(); }
+        for (var gb = 0; gb < 7; gb++) {
+          var gba = gb < 3 ? 2.65 : 0.22, gbr = R * (0.90 + (gb % 3) * 0.18);
+          cx2d.fillStyle = gb < 3 ? '#c4b5fd' : '#fde68a'; cx2d.beginPath(); cx2d.arc(p[0] + Math.cos(gba) * gbr, p[1] + (gb - 3) * R * 0.17, Math.max(1.6, R * 0.075), 0, 6.2832); cx2d.fill();
+        }
+        if (on) {
+          cx2d.font = '800 ' + Math.max(7, R * 0.12) + 'px Inter, system-ui, sans-serif';
+          cx2d.fillStyle = '#ddd6fe'; cx2d.fillText('CIS', p[0] - R * 1.25, p[1] - R * 0.62);
+          cx2d.fillStyle = '#fde68a'; cx2d.fillText('TRANS', p[0] + R * 0.68, p[1] + R * 0.62);
+        }
+      } else if (o.key === 'plasmid') {
+        // Plasmids are small loops of DNA, not solid membrane-bound bodies.
+        cx2d.save(); cx2d.translate(p[0], p[1]); cx2d.rotate(-0.35);
+        cx2d.strokeStyle = col; cx2d.lineWidth = Math.max(1.5, R * 0.18); cx2d.beginPath(); cx2d.ellipse(0, 0, R, R * 0.66, 0, 0, 6.2832); cx2d.stroke();
+        cx2d.strokeStyle = 'rgba(253,230,138,0.78)'; cx2d.lineWidth = Math.max(1, R * 0.08); cx2d.beginPath(); cx2d.ellipse(0, 0, R * 0.76, R * 0.46, 0, 0, 6.2832); cx2d.stroke();
+        for (var pb = 0; pb < 6; pb++) { var pba = pb / 6 * 6.2832; cx2d.strokeStyle = pb % 2 ? '#f9a8d4' : '#fde68a'; cx2d.beginPath(); cx2d.moveTo(Math.cos(pba) * R * 0.76, Math.sin(pba) * R * 0.46); cx2d.lineTo(Math.cos(pba) * R, Math.sin(pba) * R * 0.66); cx2d.stroke(); }
+        cx2d.restore();
+      } else if (o.key === 'lysosome' || o.key === 'vesicle') {
         var vp = (o.key === 'vesicle' && !reduced) ? (t * 0.3 + ph) % 1 : 0;
         var vx = p[0] + vp * S(0.12), vy = p[1] - vp * S(0.06);
         cx2d.fillStyle = col; cx2d.globalAlpha = 0.85; cx2d.beginPath(); cx2d.arc(vx, vy, R, 0, 6.2832); cx2d.fill(); cx2d.globalAlpha = 1;
         if (o.key === 'lysosome') { cx2d.fillStyle = '#831843'; for (var ly = 0; ly < 4; ly++) { cx2d.beginPath(); cx2d.arc(vx + (_ih(ly) - 0.5) * R, vy + (_ih(ly + 2) - 0.5) * R, R * 0.18, 0, 6.2832); cx2d.fill(); } }
+      } else if (o.key === 'peroxisome') {
+        var pg = cx2d.createRadialGradient(p[0] - R * 0.25, p[1] - R * 0.25, 1, p[0], p[1], R);
+        pg.addColorStop(0, '#dbeafe'); pg.addColorStop(0.58, '#60a5fa'); pg.addColorStop(1, '#1d4ed8');
+        cx2d.fillStyle = pg; cx2d.beginPath(); cx2d.arc(p[0], p[1], R, 0, 6.2832); cx2d.fill();
+        cx2d.strokeStyle = '#bfdbfe'; cx2d.lineWidth = Math.max(1, R * 0.10); cx2d.stroke();
+        cx2d.fillStyle = '#1e3a8a'; cx2d.beginPath(); cx2d.arc(p[0] + R * 0.12, p[1] - R * 0.05, R * 0.28, 0, 6.2832); cx2d.fill();
+        cx2d.strokeStyle = 'rgba(219,234,254,0.8)'; cx2d.lineWidth = 1;
+        for (var pe = 0; pe < 4; pe++) { cx2d.beginPath(); cx2d.moveTo(p[0] - R * 0.35, p[1] + (pe - 1.5) * R * 0.15); cx2d.lineTo(p[0] + R * 0.42, p[1] + (pe - 1.5) * R * 0.15); cx2d.stroke(); }
+      } else if (o.key === 'cytoskeleton') {
+        cx2d.save(); cx2d.translate(p[0], p[1]); cx2d.lineCap = 'round';
+        ['#22d3ee', '#a78bfa', '#f472b6'].forEach(function(fiberColor, fiberIndex) {
+          cx2d.strokeStyle = fiberColor; cx2d.lineWidth = Math.max(1.5, R * (0.13 - fiberIndex * 0.02));
+          cx2d.beginPath(); cx2d.moveTo(-R, (fiberIndex - 1) * R * 0.35);
+          cx2d.bezierCurveTo(-R * 0.35, -R * 0.8 + fiberIndex * R * 0.25, R * 0.35, R * 0.8 - fiberIndex * R * 0.25, R, (1 - fiberIndex) * R * 0.35); cx2d.stroke();
+        }); cx2d.restore();
+      } else if (o.key === 'plasmodesmata' || o.key === 'capsule' || o.key === 'pili') {
+        cx2d.strokeStyle = col; cx2d.lineWidth = Math.max(2, R * 0.18); cx2d.beginPath(); cx2d.arc(p[0], p[1], R, 0, 6.2832); cx2d.stroke();
+        cx2d.fillStyle = col; cx2d.beginPath(); cx2d.arc(p[0], p[1], Math.max(2, R * 0.22), 0, 6.2832); cx2d.fill();
       } else if (o.key === 'centriole') {
-        cx2d.strokeStyle = col; cx2d.lineWidth = R * 0.3;
-        cx2d.strokeRect(p[0] - R, p[1] - R * 0.4, R * 1.2, R * 0.8); cx2d.strokeRect(p[0] - R * 0.2, p[1] - R, R * 0.8, R * 1.2);
+        cx2d.save(); cx2d.translate(p[0], p[1]); cx2d.strokeStyle = col; cx2d.lineWidth = Math.max(1.5, R * 0.13);
+        cx2d.save(); cx2d.rotate(-0.45); cx2d.strokeRect(-R, -R * 0.36, R * 1.55, R * 0.72);
+        for (var ct = 0; ct < 6; ct++) { var ctxp = -R * 0.82 + ct * R * 0.25; cx2d.beginPath(); cx2d.moveTo(ctxp, -R * 0.33); cx2d.lineTo(ctxp, R * 0.33); cx2d.stroke(); } cx2d.restore();
+        cx2d.save(); cx2d.rotate(1.08); cx2d.strokeRect(-R * 0.88, -R * 0.32, R * 1.45, R * 0.64);
+        for (var ct2 = 0; ct2 < 5; ct2++) { var ctxp2 = -R * 0.70 + ct2 * R * 0.27; cx2d.beginPath(); cx2d.moveTo(ctxp2, -R * 0.29); cx2d.lineTo(ctxp2, R * 0.29); cx2d.stroke(); } cx2d.restore();
+        cx2d.restore();
       } else if (o.key === 'nucleoid') {
         cx2d.strokeStyle = col; cx2d.lineWidth = R * 0.12; cx2d.beginPath();
         for (var nd = 0; nd <= 60; nd++) { var ta = nd / 60 * 6.2832 * 3, rr4 = R * (0.5 + 0.4 * Math.sin(nd * 0.5)); var ax = p[0] + Math.cos(ta) * rr4 * (0.8 + 0.2 * Math.sin(nd)), ay = p[1] + Math.sin(ta) * rr4 * 0.7; if (nd === 0) cx2d.moveTo(ax, ay); else cx2d.lineTo(ax, ay); } cx2d.stroke();
@@ -274,13 +564,160 @@ window.StemLab = window.StemLab || {
       }
       if (on) cx2d.restore();
     });
+    // Process lens: selecting a structure reveals the living pathway that connects it to its partners.
+    var processLens = null;
+    var secretorySelection = ['roughER', 'smoothER', 'golgi', 'vesicle', 'cellMembrane'];
+    var informationSelection = ['nucleus', 'nucleolus', 'ribosomes'];
+    var metabolismSelection = ['mitochondria', 'peroxisome', 'chloroplast'];
+    if (type !== 'bacterium' && secretorySelection.indexOf(sel) >= 0) processLens = { label: 'PROTEIN + LIPID TRAFFICKING', color: '#67e8f9', keys: type === 'plant' ? ['roughER', 'golgi', 'cellMembrane'] : ['roughER', 'golgi', 'vesicle', 'cellMembrane'] };
+    else if (type !== 'bacterium' && informationSelection.indexOf(sel) >= 0) processLens = { label: 'GENE EXPRESSION: DNA TO PROTEIN', color: '#c4b5fd', keys: ['nucleus', 'nucleolus', 'roughER', 'ribosomes'] };
+    else if (type !== 'bacterium' && metabolismSelection.indexOf(sel) >= 0) processLens = { label: type === 'plant' ? 'PHOTOSYNTHESIS + RESPIRATION' : 'ENERGY + REDOX METABOLISM', color: '#fde047', keys: type === 'plant' ? ['chloroplast', 'peroxisome', 'mitochondria'] : ['peroxisome', 'mitochondria'] };
+    else if (type === 'plant' && ['vacuole', 'cellWall', 'plasmodesmata'].indexOf(sel) >= 0) processLens = { label: 'WATER, TURGOR + CELL-TO-CELL FLOW', color: '#5eead4', keys: ['vacuole', 'plasmodesmata', 'cellWall'] };
+    else if (type === 'bacterium' && ['nucleoid', 'plasmid', 'ribosomes'].indexOf(sel) >= 0) processLens = { label: 'BACTERIAL DNA TO PROTEIN', color: '#f9a8d4', keys: ['nucleoid', 'plasmid', 'ribosomes'] };
+    else if (type === 'bacterium' && ['cellMembrane', 'cellWall', 'capsule', 'pili', 'flagellum'].indexOf(sel) >= 0) processLens = { label: 'ENVELOPE, ATTACHMENT + MOTILITY', color: '#bfdbfe', keys: ['cellMembrane', 'cellWall', 'capsule', 'pili', 'flagellum'] };
+    else if (type !== 'bacterium' && sel === 'cytoskeleton') processLens = { label: 'MOTOR-DRIVEN INTRACELLULAR TRANSPORT', color: '#22d3ee', keys: type === 'plant' ? ['cytoskeleton', 'golgi', 'cellMembrane'] : ['cytoskeleton', 'vesicle', 'cellMembrane'] };
+    if (processLens) {
+      function processPoint(key) {
+        if (key === 'cellMembrane') return P(0.92, 0.50);
+        if (key === 'cellWall') return P(0.975, 0.50);
+        var entry = L.find(function(item) { return item.key === key; });
+        return entry ? P(entry.x, entry.y) : null;
+      }
+      var routePoints = processLens.keys.map(processPoint).filter(function(point) { return !!point; });
+      if (routePoints.length > 1) {
+        cx2d.save(); cx2d.lineCap = 'round'; cx2d.lineJoin = 'round'; cx2d.strokeStyle = processLens.color; cx2d.lineWidth = 2.4; cx2d.globalAlpha = 0.72; cx2d.setLineDash([7, 5]);
+        cx2d.beginPath(); cx2d.moveTo(routePoints[0][0], routePoints[0][1]);
+        for (var rp = 1; rp < routePoints.length; rp++) cx2d.lineTo(routePoints[rp][0], routePoints[rp][1]);
+        cx2d.stroke(); cx2d.setLineDash([]);
+        for (var rs = 0; rs < routePoints.length - 1; rs++) {
+          var routeStart = routePoints[rs], routeEnd = routePoints[rs + 1];
+          var cargoPhase = reduced ? 0.55 : ((t * 0.16 + rs * 0.31) % 1);
+          var cargoX = routeStart[0] + (routeEnd[0] - routeStart[0]) * cargoPhase;
+          var cargoY = routeStart[1] + (routeEnd[1] - routeStart[1]) * cargoPhase;
+          cx2d.shadowColor = processLens.color; cx2d.shadowBlur = 9; cx2d.fillStyle = processLens.color;
+          cx2d.beginPath(); cx2d.arc(cargoX, cargoY, 4, 0, 6.2832); cx2d.fill(); cx2d.shadowBlur = 0;
+          var routeAngle = Math.atan2(routeEnd[1] - routeStart[1], routeEnd[0] - routeStart[0]);
+          cx2d.beginPath(); cx2d.moveTo(routeEnd[0], routeEnd[1]); cx2d.lineTo(routeEnd[0] - Math.cos(routeAngle - 0.55) * 9, routeEnd[1] - Math.sin(routeAngle - 0.55) * 9); cx2d.lineTo(routeEnd[0] - Math.cos(routeAngle + 0.55) * 9, routeEnd[1] - Math.sin(routeAngle + 0.55) * 9); cx2d.closePath(); cx2d.fill();
+        }
+        cx2d.restore();
+      }
+    }
     cx2d.restore();   // un-clip
+    if (processLens) {
+      cx2d.save(); var lensW = 248, lensX = W - lensW - 14;
+      cx2d.fillStyle = 'rgba(2,6,23,0.90)'; cx2d.fillRect(lensX, 14, lensW, 25);
+      cx2d.fillStyle = processLens.color; cx2d.fillRect(lensX, 14, 5, 25);
+      cx2d.font = '800 9px Inter, system-ui, sans-serif'; cx2d.fillStyle = '#94a3b8'; cx2d.fillText('PROCESS LENS', lensX + 14, 24);
+      cx2d.font = '800 9px Inter, system-ui, sans-serif'; cx2d.fillStyle = '#f8fafc'; cx2d.fillText(processLens.label, lensX + 83, 24);
+      cx2d.restore();
+    }
+
+    // Plant-wall ultrastructure: middle lamella plus membrane-lined plasmodesmata.
+    if (type === 'plant') {
+      cx2d.save();
+      cx2d.strokeStyle = sel === 'cellWall' ? 'rgba(254,240,138,0.92)' : 'rgba(217,249,157,0.42)';
+      cx2d.lineWidth = sel === 'cellWall' ? 4 : 2; traceInteriorBoundary(cx2d, geometry, type, -7); cx2d.stroke();
+      var pdColor = sel === 'plasmodesmata' ? '#fef08a' : CELL_ORGANELLES.plasmodesmata.color;
+      if (sel === 'plasmodesmata') { cx2d.shadowColor = pdColor; cx2d.shadowBlur = 14; }
+      [0.28, 0.50, 0.72].forEach(function(pdYNorm) {
+        var pdY = cy + (pdYNorm - 0.5) * 2 * RY;
+        [cx - RX, cx + RX].forEach(function(pdX, sideIndex) {
+          cx2d.strokeStyle = pdColor; cx2d.lineWidth = 4; cx2d.beginPath();
+          cx2d.moveTo(pdX - (sideIndex ? 8 : -8), pdY); cx2d.lineTo(pdX + (sideIndex ? 8 : -8), pdY); cx2d.stroke();
+          cx2d.fillStyle = '#0f766e'; cx2d.beginPath(); cx2d.arc(pdX, pdY, 3, 0, 6.2832); cx2d.fill();
+        });
+      });
+      cx2d.restore();
+    }
+
+    // Bacterial envelope ultrastructure: hydrated capsule and surface pili.
+    if (type === 'bacterium') {
+      cx2d.save();
+      var capsuleSelected = sel === 'capsule';
+      cx2d.strokeStyle = capsuleSelected ? 'rgba(254,240,138,0.96)' : 'rgba(147,197,253,0.32)';
+      cx2d.lineWidth = capsuleSelected ? 16 : 12;
+      if (capsuleSelected) { cx2d.shadowColor = '#fef08a'; cx2d.shadowBlur = 18; }
+      traceInteriorBoundary(cx2d, geometry, type, -11); cx2d.stroke(); cx2d.shadowBlur = 0;
+      cx2d.strokeStyle = capsuleSelected ? '#fef08a' : 'rgba(191,219,254,0.54)'; cx2d.lineWidth = 1.5;
+      traceInteriorBoundary(cx2d, geometry, type, -18); cx2d.stroke();
+
+      var piliSelected = sel === 'pili';
+      cx2d.strokeStyle = piliSelected ? '#fef08a' : 'rgba(203,213,225,0.88)'; cx2d.lineWidth = piliSelected ? 3.2 : 1.5;
+      if (piliSelected) { cx2d.shadowColor = '#fef08a'; cx2d.shadowBlur = 10; }
+      for (var pil = 0; pil < 12; pil++) {
+        var pilTop = pil % 2 === 0;
+        var pilX = cx - RX * 0.70 + (pil / 11) * RX * 1.40;
+        var pilY = cy + (pilTop ? -RY : RY);
+        var pilLean = Math.sin(pil * 2.3) * 7;
+        cx2d.beginPath(); cx2d.moveTo(pilX, pilY); cx2d.lineTo(pilX + pilLean, pilY + (pilTop ? -12 : 12)); cx2d.stroke();
+      }
+      [-0.45, 0, 0.45].forEach(function(pilSide) {
+        var sideY = cy + pilSide * RY;
+        cx2d.beginPath(); cx2d.moveTo(cx - RX, sideY); cx2d.lineTo(cx - RX - 13, sideY + pilSide * 5); cx2d.stroke();
+        cx2d.beginPath(); cx2d.moveTo(cx + RX, sideY); cx2d.lineTo(cx + RX + 13, sideY - pilSide * 5); cx2d.stroke();
+      });
+      cx2d.restore();
+    }
+    // A bacterial flagellum extends beyond the cell wall; drawing it after the
+    // clip makes its extracellular location and rotary attachment visible.
+    if (type === 'bacterium') {
+      var flagStartX = cx - RX + 3, flagStartY = cy + RY * 0.12;
+      var flagLength = Math.max(54, Math.min(112, flagStartX - 10));
+      cx2d.save(); cx2d.lineCap = 'round'; cx2d.lineJoin = 'round';
+      cx2d.strokeStyle = sel === 'flagellum' ? '#fef08a' : 'rgba(203,213,225,0.92)';
+      cx2d.lineWidth = sel === 'flagellum' ? 5 : 3;
+      if (sel === 'flagellum') { cx2d.shadowColor = '#fef08a'; cx2d.shadowBlur = 14; }
+      cx2d.beginPath(); cx2d.moveTo(flagStartX, flagStartY);
+      for (var extFl = 1; extFl <= 32; extFl++) {
+        var flagProgress = extFl / 32;
+        var flagX = flagStartX - flagLength * flagProgress;
+        var flagY = flagStartY + Math.sin(extFl * 0.72 + (reduced ? 0 : t * 4)) * (5 + flagProgress * 11);
+        cx2d.lineTo(flagX, flagY);
+      }
+      cx2d.stroke(); cx2d.shadowBlur = 0;
+      cx2d.fillStyle = '#94a3b8'; cx2d.beginPath(); cx2d.arc(flagStartX + 2, flagStartY, 5, 0, 6.2832); cx2d.fill();
+      cx2d.restore();
+    }
+
+    // Diagram chrome: cell identity, scale caveat, and a leader-line callout.
+    cx2d.save();
+    cx2d.fillStyle = 'rgba(2,6,23,0.86)'; cx2d.fillRect(14, 14, 230, 58);
+    cx2d.font = '800 12px Inter, system-ui, sans-serif'; cx2d.fillStyle = '#f8fafc'; cx2d.fillText(typeMeta.title, 25, 31);
+    cx2d.font = '700 9px Inter, system-ui, sans-serif'; cx2d.fillStyle = '#67e8f9'; cx2d.fillText(typeMeta.subtitle, 25, 45);
+    cx2d.font = '700 8px Inter, system-ui, sans-serif'; cx2d.fillStyle = '#cbd5e1'; cx2d.fillText(typeMeta.detail, 25, 60);
+    cx2d.fillStyle = 'rgba(2,6,23,0.72)'; cx2d.fillRect(W - 164, H - 31, 150, 18);
+    cx2d.font = '700 9px Inter, system-ui, sans-serif'; cx2d.fillStyle = '#cbd5e1'; cx2d.fillText('SCHEMATIC \u2022 NOT TO SCALE', W - 153, H - 19);
+    if (sel && CELL_ORGANELLES[sel]) {
+      var focusEntry = L.find(function(entry) { return !entry.dot && entry.key === sel; });
+      var focusNorm = focusEntry ? [focusEntry.x, focusEntry.y]
+        : (sel === 'cellWall' ? [0.975, 0.5] : sel === 'cellMembrane' ? [0.945, 0.5] : [0.5, 0.82]);
+      var focusPoint = P(focusNorm[0], focusNorm[1]);
+      var focusColor = CELL_ORGANELLES[sel].color || '#facc15';
+      var calloutW = 240, calloutH = 62;
+      var calloutX = focusPoint[0] < cx ? W - calloutW - 18 : 18;
+      var calloutY = Math.max(78, Math.min(H - calloutH - 42, focusPoint[1] - calloutH / 2));
+      var calloutEdgeX = focusPoint[0] < cx ? calloutX : calloutX + calloutW;
+      cx2d.strokeStyle = focusColor; cx2d.lineWidth = 2; cx2d.setLineDash([5, 3]);
+      cx2d.beginPath(); cx2d.moveTo(focusPoint[0], focusPoint[1]); cx2d.lineTo(calloutEdgeX, calloutY + calloutH / 2); cx2d.stroke(); cx2d.setLineDash([]);
+      cx2d.fillStyle = focusColor; cx2d.beginPath(); cx2d.arc(focusPoint[0], focusPoint[1], 4.5, 0, 6.2832); cx2d.fill();
+      cx2d.fillStyle = 'rgba(2,6,23,0.94)'; cx2d.fillRect(calloutX, calloutY, calloutW, calloutH);
+      cx2d.fillStyle = focusColor; cx2d.fillRect(calloutX, calloutY, 5, calloutH);
+      cx2d.font = '800 9px Inter, system-ui, sans-serif'; cx2d.fillStyle = '#94a3b8'; cx2d.fillText('SELECTED STRUCTURE', calloutX + 14, calloutY + 15);
+      cx2d.font = '800 12px Inter, system-ui, sans-serif'; cx2d.fillStyle = '#f8fafc'; cx2d.fillText(CELL_ORGANELLES[sel].name, calloutX + 14, calloutY + 32);
+      cx2d.font = '700 8px Inter, system-ui, sans-serif'; cx2d.fillStyle = '#cbd5e1';
+      cx2d.fillText((CELL_ULTRASTRUCTURE[sel] || 'CELLULAR STRUCTURE').replace(/\|/g, '\u2022'), calloutX + 14, calloutY + 49);
+    }
+    cx2d.restore();
   }
   function drawCellMicrodissection(cx2d, W, H, type, t, sel, reduced, stage, tool, sectionDepth, stain) {
     drawCellInterior(cx2d, W, H, type, t, sel, reduced);
-    var cx = W * 0.5, cy = H * 0.5, RX = W * (type === 'bacterium' ? 0.39 : type === 'plant' ? 0.38 : 0.35), RY = H * (type === 'bacterium' ? 0.24 : type === 'plant' ? 0.36 : 0.34);
+    var geometry = interiorGeometry(W, H, type), cx = geometry.cx, cy = geometry.cy, RX = geometry.RX, RY = geometry.RY;
     var layout = interiorLayout(type);
-    var target = layout.find(function (entry) { return entry.key === sel && !entry.dot; }) || { x: 0.5, y: 0.5, r: 0.05 };
+    var target = layout.find(function (entry) { return entry.key === sel && !entry.dot; });
+    if (!target) target = sel === 'cellWall' ? { x: 0.975, y: 0.5, r: 0.035 }
+      : sel === 'cellMembrane' ? { x: 0.945, y: 0.5, r: 0.035 }
+        : sel === 'cytoplasm' ? { x: 0.5, y: 0.82, r: 0.05 }
+          : { x: 0.5, y: 0.5, r: 0.05 };
     var targetX = cx + (target.x - 0.5) * 2 * RX, targetY = cy + (target.y - 0.5) * 2 * RY;
     var sectionY = cy - RY + Math.max(0, Math.min(100, Number(sectionDepth) || 50)) / 100 * RY * 2;
     cx2d.save();
@@ -288,10 +725,14 @@ window.StemLab = window.StemLab || {
       cx2d.fillStyle = 'rgba(2,6,23,0.34)'; cx2d.fillRect(0, 0, W, Math.max(0, sectionY - 28)); cx2d.fillRect(0, sectionY + 28, W, H - sectionY - 28);
       cx2d.fillStyle = 'rgba(56,189,248,0.10)'; cx2d.fillRect(0, sectionY - 28, W, 56);
       cx2d.strokeStyle = 'rgba(125,211,252,0.86)'; cx2d.lineWidth = 1.5; cx2d.setLineDash([7, 5]); cx2d.beginPath(); cx2d.moveTo(cx - RX * 1.08, sectionY); cx2d.lineTo(cx + RX * 1.08, sectionY); cx2d.stroke(); cx2d.setLineDash([]);
+      var planeLabelY = Math.max(76, Math.min(H - 72, sectionY - 24));
+      cx2d.fillStyle = 'rgba(3,30,44,0.90)'; cx2d.fillRect(cx - 92, planeLabelY, 184, 19);
+      cx2d.font = '800 9px Inter, system-ui, sans-serif'; cx2d.fillStyle = '#bae6fd';
+      cx2d.fillText('SECTION PLANE \u2022 DEPTH ' + Math.round(Number(sectionDepth) || 0) + '%', cx - 82, planeLabelY + 13);
     }
     if (stage >= 3 && stain && stain !== 'none') {
       cx2d.globalCompositeOperation = 'screen';
-      if (stain === 'membrane') { cx2d.strokeStyle = 'rgba(244,114,182,0.92)'; cx2d.lineWidth = 5; cx2d.beginPath(); cx2d.ellipse(cx, cy, RX, RY, 0, 0, Math.PI * 2); cx2d.stroke(); }
+      if (stain === 'membrane') { cx2d.strokeStyle = 'rgba(244,114,182,0.92)'; cx2d.lineWidth = 5; traceInteriorBoundary(cx2d, geometry, type, 0); cx2d.stroke(); }
       else {
         layout.filter(function (entry) { return !entry.dot && (stain !== 'nuclear' || entry.key === 'nucleus' || entry.key === 'nucleoid'); }).forEach(function (entry, index) {
           var glowX = cx + (entry.x - 0.5) * 2 * RX, glowY = cy + (entry.y - 0.5) * 2 * RY;
@@ -305,16 +746,35 @@ window.StemLab = window.StemLab || {
     }
     if (stage >= 4 && sel) { cx2d.strokeStyle = '#facc15'; cx2d.lineWidth = 2.5; cx2d.setLineDash([4, 3]); cx2d.beginPath(); cx2d.arc(targetX, targetY, Math.max(14, target.r * Math.min(RX, RY) * 2.5), 0, Math.PI * 2); cx2d.stroke(); cx2d.setLineDash([]); }
     cx2d.lineCap = 'round'; cx2d.lineJoin = 'round';
-    if (tool === 'objective') { cx2d.fillStyle = 'rgba(15,23,42,0.9)'; cx2d.fillRect(34, 18, 100, 17); cx2d.fillStyle = '#64748b'; cx2d.fillRect(48, 34, 72, 26); cx2d.fillStyle = '#bae6fd'; cx2d.beginPath(); cx2d.ellipse(84, 62, 38, 9, 0, 0, Math.PI * 2); cx2d.fill(); }
+    if (tool === 'objective') {
+      var objectiveX = cx - 50;
+      cx2d.fillStyle = 'rgba(15,23,42,0.92)'; cx2d.fillRect(objectiveX, 14, 100, 17);
+      cx2d.fillStyle = '#64748b'; cx2d.fillRect(objectiveX + 14, 30, 72, 26);
+      cx2d.fillStyle = '#bae6fd'; cx2d.beginPath(); cx2d.ellipse(cx, 58, 38, 9, 0, 0, Math.PI * 2); cx2d.fill();
+      cx2d.font = '800 9px Inter, system-ui, sans-serif'; cx2d.fillStyle = '#e0f2fe'; cx2d.fillText('CALIBRATED OBJECTIVE', cx - 54, 79);
+    }
     else if (tool === 'microtome') { cx2d.strokeStyle = '#e2e8f0'; cx2d.lineWidth = 7; cx2d.beginPath(); cx2d.moveTo(24, sectionY - 7); cx2d.lineTo(W - 24, sectionY - 7); cx2d.stroke(); cx2d.strokeStyle = '#38bdf8'; cx2d.lineWidth = 2; cx2d.beginPath(); cx2d.moveTo(28, sectionY); cx2d.lineTo(W - 28, sectionY); cx2d.stroke(); }
     else if (tool === 'laser') { cx2d.strokeStyle = 'rgba(248,113,113,0.95)'; cx2d.lineWidth = 1.5; cx2d.setLineDash([3, 3]); cx2d.beginPath(); cx2d.moveTo(targetX - 22, targetY); cx2d.lineTo(targetX + 22, targetY); cx2d.moveTo(targetX, targetY - 22); cx2d.lineTo(targetX, targetY + 22); cx2d.stroke(); cx2d.setLineDash([]); cx2d.fillStyle = 'rgba(248,113,113,0.75)'; cx2d.beginPath(); cx2d.arc(targetX, targetY, 3, 0, Math.PI * 2); cx2d.fill(); }
     else if (tool === 'micropipette' || tool === 'microprobe') { cx2d.strokeStyle = tool === 'micropipette' ? '#bae6fd' : '#cbd5e1'; cx2d.lineWidth = tool === 'micropipette' ? 9 : 3; cx2d.beginPath(); cx2d.moveTo(W - 24, 42); cx2d.lineTo(targetX + 5, targetY - 4); cx2d.stroke(); cx2d.fillStyle = '#f8fafc'; cx2d.beginPath(); cx2d.arc(targetX + 3, targetY - 2, tool === 'micropipette' ? 3.5 : 2, 0, Math.PI * 2); cx2d.fill(); }
     cx2d.fillStyle = 'rgba(2,6,23,0.82)'; cx2d.fillRect(14, H - 45, 142, 31); cx2d.strokeStyle = '#f8fafc'; cx2d.lineWidth = 3; cx2d.beginPath(); cx2d.moveTo(28, H - 25); cx2d.lineTo(88, H - 25); cx2d.stroke(); cx2d.font = 'bold 11px Inter, system-ui, sans-serif'; cx2d.fillStyle = '#e2e8f0'; cx2d.fillText(type === 'bacterium' ? '1 µm' : '10 µm', 98, H - 21);
-    cx2d.fillStyle = 'rgba(2,6,23,0.78)'; cx2d.fillRect(W - 146, 14, 132, 27); cx2d.fillStyle = '#bae6fd'; cx2d.fillText('Micro stage ' + Math.min(5, stage + 1) + '/5', W - 134, 32); cx2d.restore();
+    var stageNames = ['CALIBRATE', 'SECTION', 'STAIN', 'SAMPLE', 'RECORD', 'COMPLETE'];
+    var stageIndex = Math.max(0, Math.min(5, Number(stage) || 0));
+    cx2d.fillStyle = 'rgba(2,6,23,0.88)'; cx2d.fillRect(W - 194, 14, 180, 39);
+    cx2d.font = '800 9px Inter, system-ui, sans-serif'; cx2d.fillStyle = '#94a3b8'; cx2d.fillText('MICRODISSECTION PROTOCOL', W - 182, 29);
+    cx2d.font = '800 12px Inter, system-ui, sans-serif'; cx2d.fillStyle = stageIndex >= 5 ? '#86efac' : '#bae6fd';
+    cx2d.fillText('STEP ' + Math.min(5, stageIndex + 1) + '/5 \u2022 ' + stageNames[stageIndex], W - 182, 45);
+    if (stageIndex >= 3) {
+      var stainName = String(stain || 'none').toUpperCase();
+      var stainColor = stain === 'nuclear' ? '#c4b5fd' : stain === 'membrane' ? '#f9a8d4' : stain === 'fluorescence' ? '#67e8f9' : '#cbd5e1';
+      cx2d.fillStyle = 'rgba(2,6,23,0.82)'; cx2d.fillRect(W - 194, 59, 180, 24);
+      cx2d.fillStyle = stainColor; cx2d.beginPath(); cx2d.arc(W - 181, 71, 4, 0, 6.2832); cx2d.fill();
+      cx2d.font = '800 9px Inter, system-ui, sans-serif'; cx2d.fillStyle = '#e2e8f0'; cx2d.fillText('CONTRAST LABEL \u2022 ' + stainName, W - 171, 74);
+    }
+    cx2d.restore();
   }
 
   try {
-    window.__alloCellPure = { CELL_ORGANELLES: CELL_ORGANELLES, interiorHas: interiorHas, interiorOrganelles: interiorOrganelles, interiorLayout: interiorLayout, interiorHitTest: interiorHitTest, drawCellMicrodissection: drawCellMicrodissection };
+    window.__alloCellPure = { CELL_ORGANELLES: CELL_ORGANELLES, CELL_ULTRASTRUCTURE: CELL_ULTRASTRUCTURE, interiorHas: interiorHas, interiorOrganelles: interiorOrganelles, interiorLayout: interiorLayout, interiorGeometry: interiorGeometry, interiorHitTest: interiorHitTest, drawCellMicrodissection: drawCellMicrodissection };
   } catch (e) {}
 
   window.StemLab.registerTool('cell', {
@@ -16963,7 +17423,8 @@ var d = labToolData.cell || {};
 
             var initialZoom = Math.max(0.5, Math.min(10, Number(d.zoom) || 1));
 
-            var cam = { x: 0, y: 0, zoom: initialZoom };
+            // World coordinates are 0..800 by 0..600, so begin at the dish center.
+            var cam = { x: 400, y: 300, zoom: initialZoom };
 
             var WORLD_W = 800, WORLD_H = 600;
 
@@ -19871,7 +20332,7 @@ var d = labToolData.cell || {};
 
             canvasEl._cellSimSetZoom = function (z) { cam.zoom = z; clampCamera(); if (canvasEl._cellSimPaused) renderStaticFrame(); };
 
-            canvasEl._cellSimResetView = function () { cam.x = 0; cam.y = 0; cam.zoom = 1; clampCamera(); if (canvasEl._onZoom) canvasEl._onZoom(cam.zoom); if (canvasEl._cellSimPaused) renderStaticFrame(); };
+            canvasEl._cellSimResetView = function () { cam.x = WORLD_W / 2; cam.y = WORLD_H / 2; cam.zoom = 1; clampCamera(); if (canvasEl._onZoom) canvasEl._onZoom(cam.zoom); if (canvasEl._cellSimPaused) renderStaticFrame(); };
 
             canvasEl._cellSimSetPaused = function (p) {
               canvasEl._cellSimPaused = !!p;
@@ -20128,6 +20589,83 @@ var d = labToolData.cell || {};
           };
 
           var canvasRefCb = canvasRefStableRef.current;
+          // Keep the Microdissection canvas mounted while protocol controls change.
+          // The previous state-derived key and inline ref tore down the canvas on
+          // every click or slider movement, visibly restarting the studio.
+          var microCanvasLatestRef = React.useRef({});
+          var microReducedMotion = false;
+          try { microReducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+          microCanvasLatestRef.current = {
+            type: d.microCellType || 'animal',
+            target: d.microTarget || null,
+            stage: Math.max(0, Math.min(5, Number(d.microStage) || 0)),
+            tool: d.microTool || 'objective',
+            depth: d.microSectionDepth == null ? 50 : Math.max(0, Math.min(100, Number(d.microSectionDepth) || 0)),
+            stain: d.microStain || 'none',
+            reduced: microReducedMotion
+          };
+          var microCanvasStateRef = React.useRef({ canvas: null });
+          var microCanvasRefStableRef = React.useRef(null);
+          if (!microCanvasRefStableRef.current) {
+            microCanvasRefStableRef.current = function(cv) {
+              var state = microCanvasStateRef.current;
+              if (!cv) {
+                if (state.canvas && state.canvas._cellMicroCleanup) state.canvas._cellMicroCleanup();
+                state.canvas = null;
+                return;
+              }
+              if (state.canvas === cv && cv._cellMicroInit) return;
+              if (state.canvas && state.canvas !== cv && state.canvas._cellMicroCleanup) state.canvas._cellMicroCleanup();
+              var cx2d = cv.getContext && cv.getContext('2d');
+              if (!cx2d) return;
+              state.canvas = cv;
+              cv._cellMicroInit = true;
+              var alive = true;
+              var frameId = null;
+              var phase = Number(cv._cellMicroPhase) || 0;
+              function cancelMicroFrame() { if (frameId) cancelAnimationFrame(frameId); frameId = null; }
+              function drawMicroFrame() {
+                if (!alive || !cv.isConnected) return;
+                var opts = microCanvasLatestRef.current;
+                try { drawCellMicrodissection(cx2d, cv.width, cv.height, opts.type, phase, opts.target, opts.reduced, opts.stage, opts.tool, opts.depth, opts.stain); } catch (e) {}
+              }
+              function scheduleMicroFrame() {
+                var opts = microCanvasLatestRef.current;
+                if (!alive || opts.reduced || frameId) return;
+                if (typeof document !== 'undefined' && document.hidden) return;
+                frameId = requestAnimationFrame(frame);
+              }
+              function frame() {
+                frameId = null;
+                if (!alive || !cv.isConnected) return;
+                phase += 0.016;
+                cv._cellMicroPhase = phase;
+                drawMicroFrame();
+                scheduleMicroFrame();
+              }
+              function onMicroVisibilityChange() {
+                if (typeof document !== 'undefined' && document.hidden) cancelMicroFrame();
+                else { drawMicroFrame(); scheduleMicroFrame(); }
+              }
+              cv._cellMicroRedraw = drawMicroFrame;
+              cv._cellMicroCleanup = function() {
+                alive = false;
+                cancelMicroFrame();
+                if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onMicroVisibilityChange);
+                cv._cellMicroInit = false;
+                cv._cellMicroRedraw = null;
+                if (microCanvasStateRef.current.canvas === cv) microCanvasStateRef.current.canvas = null;
+              };
+              if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onMicroVisibilityChange);
+              drawMicroFrame();
+              scheduleMicroFrame();
+            };
+          }
+          var microCanvasRefCb = microCanvasRefStableRef.current;
+          React.useEffect(function() {
+            var cv = microCanvasStateRef.current.canvas;
+            if (cv && cv._cellMicroRedraw) cv._cellMicroRedraw();
+          }, [d.microCellType, d.microTarget, d.microStage, d.microTool, d.microSectionDepth, d.microStain]);
 
 
 
@@ -20471,7 +21009,7 @@ var d = labToolData.cell || {};
 
             // Canvas (petri dish) — hidden while the "Inside the Cell" interior view is active
 
-            d.mode !== 'interior' && d.mode !== 'microdissection' && d.mode !== 'processes' && React.createElement("div", { "data-cell-stage": true, className: "relative rounded-xl overflow-hidden border border-emerald-300 bg-slate-950 shadow-xl", style: { height: '560px', background: 'radial-gradient(circle at 22% 18%,rgba(34,197,94,0.22),rgba(2,6,23,0) 34%),radial-gradient(circle at 78% 16%,rgba(14,165,233,0.18),rgba(2,6,23,0) 30%),#020617' } },
+            d.mode !== 'interior' && d.mode !== 'microdissection' && d.mode !== 'processes' && React.createElement("div", { "data-cell-stage": true, className: "relative rounded-xl overflow-hidden border border-emerald-300 bg-slate-950 shadow-xl", style: { height: '680px', background: 'radial-gradient(circle at 22% 18%,rgba(34,197,94,0.22),rgba(2,6,23,0) 34%),radial-gradient(circle at 78% 16%,rgba(14,165,233,0.18),rgba(2,6,23,0) 30%),#020617' } },
 
               React.createElement("div", { id: "cell-sim-status", role: "status", "aria-live": "polite", className: typeof srOnly === 'string' ? srOnly : "sr-only", style: srOnly && typeof srOnly === 'object' ? srOnly : undefined }, cellCanvasStatus),
 
@@ -21387,9 +21925,9 @@ var d = labToolData.cell || {};
               var seen = d.interiorSeen || [];
               var reducedMo = false; try { reducedMo = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
               var CTYPES = [
-                { id: 'animal', label: '🐾 Animal', note: 'A typical animal cell — nucleus, mitochondria, ER, Golgi, lysosomes. No cell wall and no chloroplasts.' },
-                { id: 'plant', label: '🌿 Plant', note: 'An animal cell PLUS a rigid cell wall, green chloroplasts (photosynthesis) and a huge central vacuole — and it STILL has mitochondria.' },
-                { id: 'bacterium', label: '🦠 Bacterium', note: 'A prokaryote: NO nucleus (its DNA floats free as a nucleoid) and no membrane-bound organelles — but it still has ribosomes and a wall.' }
+                { id: 'animal', label: '🐾 Animal', note: 'A typical animal cell: a flexible membrane surrounding the nucleus, mitochondria, ER, Golgi, lysosomes, peroxisomes, and a dynamic cytoskeleton. It has no cell wall or chloroplasts.' },
+                { id: 'plant', label: '🌿 Plant', note: 'A plant cell adds a cellulose wall, chloroplasts, a large central vacuole, and plasmodesmata to the shared eukaryotic machinery. It still uses mitochondria, ER, Golgi, peroxisomes, ribosomes, and a cytoskeleton.' },
+                { id: 'bacterium', label: '🦠 Bacterium', note: 'A prokaryote with no nucleus or membrane-bound organelles. This detailed example shows a nucleoid, plasmid, ribosomes, membrane, wall, flagellum, and the capsule and pili found in some bacteria.' }
               ];
               var note = (CTYPES.find(function (c) { return c.id === ctype; }) || CTYPES[0]).note;
               var orgKeys = interiorOrganelles(ctype).filter(function (k) { return k !== 'cytoplasm'; });
@@ -21419,7 +21957,7 @@ var d = labToolData.cell || {};
                   h('canvas', { key: 'cell-interior-canvas', "data-cell-interior-canvas": true, width: 760, height: 440, role: 'img',
                     'aria-label': 'Cross-section of a living ' + ctype + ' cell. ' + (selOrg ? ('Selected: ' + selOrg.name + '. ' + selOrg.fn) : 'Tap an organelle, or use the buttons below, to learn what each one does.'),
                     style: { width: '100%', height: 'auto', display: 'block', cursor: 'pointer' },
-                    onClick: function (e) { var cv = e.currentTarget, r = cv.getBoundingClientRect(); pick(interiorHitTest(ctype, (e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height)); },
+                    onClick: function (e) { var cv = e.currentTarget, r = cv.getBoundingClientRect(); pick(interiorHitTest(ctype, (e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height, cv.width, cv.height)); },
                     ref: function (cv) {
                       if (!cv) { try { if (window.__alloCellInteriorCleanup) window.__alloCellInteriorCleanup(); } catch (e) {} return; }
                       if (cv._cellInteriorCleanup) cv._cellInteriorCleanup();
@@ -21475,7 +22013,18 @@ var d = labToolData.cell || {};
                   h('div', { className: 'flex items-center gap-2 mb-1' },
                     h('span', { className: 'inline-block w-3 h-3 rounded-full', 'aria-hidden': 'true', style: { background: selOrg.color } }),
                     h('span', { className: 'text-base font-black text-slate-800' }, selOrg.name)),
-                  h('div', { className: 'text-[13px] text-slate-700 leading-relaxed mb-1.5' }, selOrg.fn),
+                  CELL_ULTRASTRUCTURE[sel] ? h('div', { className: 'mb-2 flex flex-wrap gap-1', 'aria-label': 'Ultrastructure features to notice' },
+                    CELL_ULTRASTRUCTURE[sel].split(' | ').map(function(feature) { return h('span', { key: feature, className: 'rounded-full border px-2 py-0.5 text-[10px] font-black tracking-wide', style: { borderColor: selOrg.color, color: '#334155', background: '#f8fafc' } }, feature); })) : null,
+                  h('div', { className: 'rounded-lg bg-slate-50 p-2.5 text-[13px] text-slate-700 leading-relaxed' },
+                    h('div', { className: 'mb-1 text-[10.5px] font-black uppercase tracking-wide text-slate-500' }, 'Core function'),
+                    selOrg.fn),
+                  h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
+                    h('div', { className: 'rounded-lg border border-slate-200 bg-white p-2.5' },
+                      h('div', { className: 'mb-1 text-[10.5px] font-black uppercase tracking-wide text-slate-500' }, 'Structure and mechanism'),
+                      h('p', { className: 'text-[12.5px] leading-relaxed text-slate-700' }, selOrg.structure)),
+                    h('div', { className: 'rounded-lg border border-slate-200 bg-white p-2.5' },
+                      h('div', { className: 'mb-1 text-[10.5px] font-black uppercase tracking-wide text-slate-500' }, 'Connections in the cell'),
+                      h('p', { className: 'text-[12.5px] leading-relaxed text-slate-700' }, selOrg.connections))),
                   h('div', { className: 'flex flex-wrap gap-1 items-center mb-1' },
                     h('span', { className: 'text-[10.5px] font-bold text-slate-400 uppercase tracking-wide' }, __alloT('stem.cell.found_in', 'Found in') + ':'),
                     ['animal', 'plant', 'bacterium'].map(function (tp) {
@@ -21504,7 +22053,7 @@ var d = labToolData.cell || {};
               var linkedAnatomyProcedure = labToolData.anatomy && labToolData.anatomy.procedure && typeof labToolData.anatomy.procedure === 'object' ? labToolData.anatomy.procedure : {};
               var targetDef = microTarget && CELL_ORGANELLES[microTarget] ? CELL_ORGANELLES[microTarget] : null;
               var microKeys = interiorOrganelles(microType).filter(function(key) { return key !== 'cytoplasm'; });
-              var reducedMicro = false; try { reducedMicro = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) {}
+
               var MICRO_TYPES = [{ id: 'animal', label: 'Animal cell' }, { id: 'plant', label: 'Plant cell' }, { id: 'bacterium', label: 'Bacterium' }];
               var MICRO_TOOLS = [
                 { id: 'objective', label: 'Objective', use: 'calibrate magnification' },
@@ -21568,18 +22117,7 @@ var d = labToolData.cell || {};
                   h('div', null,
                     h('div', { className: 'flex flex-wrap gap-2 mb-2', role: 'group', 'aria-label': 'Cell specimen type' }, MICRO_TYPES.map(function(item) { var on = item.id === microType; return h('button', { key: item.id, 'aria-pressed': on ? 'true' : 'false', onClick: function() { microPatch({ microCellType: item.id, microTarget: null, microStage: 0, microTool: 'objective', microFeedback: 'Specimen changed. Recalibrate the objective.' }); }, className: 'rounded-lg border px-3 py-1.5 text-xs font-bold transition-colors ' + (on ? 'border-violet-700 bg-violet-700 text-white' : 'border-violet-200 bg-white text-violet-800 hover:bg-violet-50') }, item.label); })),
                     h('div', { className: 'overflow-hidden rounded-xl border border-slate-800 bg-slate-950 shadow-xl' },
-                      h('canvas', { key: 'cell-micro-' + microType + '-' + microStage + '-' + microTool + '-' + microDepth + '-' + microStain + '-' + (microTarget || 'none'), 'data-cell-microdissection-canvas': true, width: 760, height: 440, role: 'img', 'aria-label': 'Microdissection view of a ' + microType + ' cell at protocol stage ' + Math.min(5, microStage + 1) + '. ' + (targetDef ? 'Target: ' + targetDef.name + '.' : 'No target selected.'), style: { width: '100%', height: 'auto', display: 'block', cursor: 'crosshair' }, onClick: function(e) { var cv = e.currentTarget, r = cv.getBoundingClientRect(); setMicroTarget(interiorHitTest(microType, (e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height)); }, ref: function(cv) {
-                        if (!cv) { try { if (window.__alloCellMicroCleanup) window.__alloCellMicroCleanup(); } catch (e) {} return; }
-                        if (cv._cellMicroCleanup) cv._cellMicroCleanup();
-                        try { if (window.__alloCellMicroCleanup && window.__alloCellMicroCleanup !== cv._cellMicroCleanup) window.__alloCellMicroCleanup(); } catch (e) {}
-                        var cx2d = cv.getContext && cv.getContext('2d'); if (!cx2d) return;
-                        var alive = true, frameId = null, phase = 0;
-                        function drawMicroFrame() { if (!alive || !cv.isConnected) return; try { drawCellMicrodissection(cx2d, cv.width, cv.height, microType, phase, microTarget, reducedMicro, microStage, microTool, microDepth, microStain); } catch (e) {} }
-                        function frame() { frameId = null; if (!alive || !cv.isConnected) return; phase += 0.016; drawMicroFrame(); if (!reducedMicro) frameId = requestAnimationFrame(frame); }
-                        cv._cellMicroCleanup = function() { alive = false; if (frameId) cancelAnimationFrame(frameId); if (window.__alloCellMicroCleanup === cv._cellMicroCleanup) window.__alloCellMicroCleanup = null; };
-                        try { window.__alloCellMicroCleanup = cv._cellMicroCleanup; } catch (e) {}
-                        drawMicroFrame(); if (!reducedMicro) frameId = requestAnimationFrame(frame);
-                      } })
+                      h('canvas', { key: 'cell-micro-canvas', 'data-cell-microdissection-canvas': true, width: 760, height: 440, role: 'img', 'aria-label': 'Microdissection view of a ' + microType + ' cell at protocol stage ' + Math.min(5, microStage + 1) + '. ' + (targetDef ? 'Target: ' + targetDef.name + '.' : 'No target selected.'), style: { width: '100%', height: 'auto', display: 'block', cursor: 'crosshair' }, onClick: function(e) { var cv = e.currentTarget, r = cv.getBoundingClientRect(); setMicroTarget(interiorHitTest(microType, (e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height, cv.width, cv.height)); }, ref: microCanvasRefCb })
                     ),
                     h('div', { className: 'mt-2 flex flex-wrap items-center gap-2' }, h('label', { className: 'text-xs font-bold text-slate-700', htmlFor: 'micro-section-depth' }, 'Section depth ' + microDepth + '%'), h('input', { id: 'micro-section-depth', type: 'range', min: 0, max: 100, step: 1, value: microDepth, onChange: function(e) { microPatch({ microSectionDepth: Number(e.target.value) }); }, className: 'min-w-[180px] flex-1 accent-violet-600', 'aria-label': 'Optical section depth' })),
                     h('div', { className: 'mt-2 flex flex-wrap gap-1.5', role: 'group', 'aria-label': 'Cell structures to target' }, microKeys.map(function(key) { var item = CELL_ORGANELLES[key], on = key === microTarget; return h('button', { key: key, 'aria-pressed': on ? 'true' : 'false', onClick: function() { setMicroTarget(key); }, className: 'rounded-md border px-2 py-1 text-[11px] font-bold transition-colors ' + (on ? 'text-white' : 'bg-white text-slate-700 hover:bg-slate-50'), style: on ? { background: item.color, borderColor: item.color } : { borderColor: item.color } }, item.name); }))

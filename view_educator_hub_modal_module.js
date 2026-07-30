@@ -20,7 +20,7 @@ function _educatorBatchMemoryBudget() {
 }
 let _educatorAlloSheetBridgePromise = null;
 function _educatorAlloSheetBridgeUrl() {
-  const fallback = "https://alloflow-cdn.pages.dev/allo_sheet/host_bridge.js?v=4";
+  const fallback = "https://alloflow-cdn.pages.dev/allo_sheet/host_bridge.js?v=5";
   try {
     const loc = window.location || {};
     const host = String(loc.hostname || "");
@@ -29,7 +29,7 @@ function _educatorAlloSheetBridgeUrl() {
     const isDesktopBundled = !!window._isDesktopBundledApp || isLocal && pathname.indexOf("/app/") === 0;
     const isAlloHosted = /(^|\.)alloflow/i.test(host) || /(^|\.)web\.app$/i.test(host) || /(^|\.)firebaseapp\.com$/i.test(host);
     if (isDesktopBundled || isLocal || isAlloHosted) {
-      return new URL("allo_sheet/host_bridge.js?v=4", loc.href).toString();
+      return new URL("allo_sheet/host_bridge.js?v=5", loc.href).toString();
     }
   } catch (_) {
   }

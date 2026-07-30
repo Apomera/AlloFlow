@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import { resolve } from 'node:path';
-import { loadAlloModule } from './setup.js';
+import { loadAlloModule, registerEpppPartOne } from './setup.js';
 
 let eppp;
 
@@ -14,7 +14,7 @@ beforeAll(() => {
     Fragment: 'fragment',
   };
   loadAlloModule('test_prep_hub_module.js');
-  eppp = window.AlloModules.TestPrepHub.listPacks().find((pack) => pack.id === 'eppp-part-one');
+  eppp = registerEpppPartOne(window.AlloModules.TestPrepHub);
 });
 
 describe('EPPP traced migration batch', () => {
@@ -31,7 +31,7 @@ describe('EPPP traced migration batch', () => {
   });
 
   it('traces every migrated item to the generated legacy audit with reviewed structure or expanded feedback', () => {
-    const report = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_legacy/content_audit.json'), 'utf8'));
+    const report = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'quality/eppp_provenance/evidence/audit/content_audit.json'), 'utf8'));
     const auditById = new Map(report.reviewQueue.map((item) => [item.id, item]));
     const migrated = eppp.items.filter((item) => item.legacySourceId);
 

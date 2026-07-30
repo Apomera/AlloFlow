@@ -200,3 +200,6 @@ desktop/electron-builder.*.effective.json
 # Transient desktop build/run logs
 desktop-build.log
 desktop-run.log
+
+# Deterministic AlloFlow portable release ZIPs and receipts
+dist/portable-remediation/

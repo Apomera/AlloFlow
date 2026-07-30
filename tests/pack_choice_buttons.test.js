@@ -66,6 +66,10 @@ const makeDeps = ({ messages, guidedFlowState, isAutoFillMode }) => {
     setUdlInput: () => {},
     setIsChatProcessing: () => {},
     setActiveBlueprint: vi.fn((cfg) => { store.activeBlueprint = cfg; }),
+    // Installing a new plan must also clear the previous run record — uiIds are
+    // minted per-plan from a row index, so they repeat across plans and a stale
+    // record badges plan B's rows with plan A's results.
+    setBlueprintExecutionResult: vi.fn((v) => { store.blueprintExecutionResult = apply(store.blueprintExecutionResult, v); }),
     setActiveView: () => {},
     setShowStemLab: () => {},
     addToast: vi.fn(),
@@ -142,6 +146,8 @@ describe('Step/Pack chooser routing (handleSendUDLMessage)', () => {
     expect(deps.autoConfigureSettings).toHaveBeenCalledTimes(1);
     expect(deps.autoConfigureSettings.mock.calls[0][4]).toBe(''); // context arg
     expect(deps.setActiveBlueprint).toHaveBeenCalled();
+    // A new plan never inherits the previous run's record.
+    expect(deps.setBlueprintExecutionResult).toHaveBeenCalledWith(null);
     expect(deps.parseUserIntent).not.toHaveBeenCalled();
     expect(deps.detectWorkflowIntent).not.toHaveBeenCalled();
   });

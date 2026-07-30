@@ -500,6 +500,16 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'AlloSheetTransferAdapter',
+        filename: 'allo_sheet/transfer_adapter.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
+        name: 'AlloSheetHostBridge',
+        filename: 'allo_sheet/host_bridge.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'ReportWriter',
         filename: 'report_writer_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -1051,6 +1061,8 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_cellular.js',
     'stem_lab/stem_tool_accesslens.js',
     'stem_lab/stem_tool_alphafold.js',
+    'stem_lab/stem_data_cellatlas_muraro.js',
+    'stem_lab/stem_tool_cellatlas.js',
     'stem_lab/stem_tool_datalab.js',
     'stem_lab/stem_tool_simshelf.js',
     'stem_lab/stem_tool_circuitshelf.js',

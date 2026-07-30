@@ -124,6 +124,29 @@ describe('remediation MCP: protocol + tool registry', () => {
     const audit = tools.find((t) => t.name === 'pdf_audit');
     expect(audit.annotations.readOnlyHint).toBe(true);
     expect(audit.annotations.openWorldHint).toBe(true); // read-only on disk, but network egress
+
+    // OCR input uses the same fail-closed language contract as the remote MCP. The JSON Schema
+    // must not advertise legacy Tesseract codes which the runtime rejects.
+    for (const name of ['pdf_audit', 'pdf_remediate', 'pdf_batch_audit_start']) {
+      const ocr = tools.find((t) => t.name === name).inputSchema.properties.ocr_language;
+      expect(ocr.maxLength).toBe(12);
+      expect(ocr.description).toMatch(/lower-case ISO\/BCP 47/);
+      const pattern = new RegExp(ocr.pattern);
+      for (const valid of ['', 'es', 'fr', 'zh-hant']) expect(pattern.test(valid), name + ': ' + valid).toBe(true);
+      for (const invalid of ['spa', 'fra', 'eng+spa', 'zh-Hant', 'zz']) expect(pattern.test(invalid), name + ': ' + invalid).toBe(false);
+    }
+
+    // The driver returns a verdict object. Keep its public shape finite and schema-declared
+    // instead of claiming it is a string or forwarding its explanatory arrays.
+    const remediationOutput = remediate.outputSchema.properties;
+    expect(remediationOutput.verdict.type).toEqual(['object', 'null']);
+    expect(remediationOutput.verdict.properties.level.enum).toEqual(['ready', 'caution', 'review']);
+    expect(remediationOutput.verdict.additionalProperties).toBe(false);
+    expect(remediationOutput.verificationState.enum).toContain('complete');
+    expect(remediationOutput.taggedPdfDelivery.properties.code.enum).toContain('verified');
+    expect(remediationOutput.taggedPdfExportMode.enum).toContain('original_layout');
+    expect(remediationOutput.activeContentScanVerified.type).toEqual(['boolean', 'null']);
+    expect(remediationOutput.activeContentDetected.type).toEqual(['boolean', 'null']);
   });
 
   it('remediation_capabilities reports an HONEST not-ready environment (no key in this smoke)', async () => {
@@ -249,11 +272,20 @@ describe('remediation MCP: validation fires BEFORE any browser/quota spend', () 
     expect(v.description).toContain('NO Gemini key');
   });
 
-  it('ocr_language is validated as a short language code', async () => {
+  it.each(['es', 'fr', 'zh-hant'])('accepts supported canonical OCR language %s before the key gate', async (ocrLanguage) => {
     const pdf = join(tmp, 'real.pdf');
-    const msg = await request('tools/call', { name: 'pdf_audit', arguments: { file_path: pdf, ocr_language: 'not a lang!!' } });
+    writeFileSync(pdf, '%PDF-1.4\n%%EOF\n');
+    const res = await callTool('pdf_audit', { file_path: pdf, ocr_language: ocrLanguage });
+    expect(res.isError).toBe(true);
+    expect(res.content[0].text).toContain('GEMINI_API_KEY');
+  });
+
+  it.each(['spa', 'fra', 'eng+spa', 'zh-Hant', 'en-US', 'zz', 'not a lang!!'])('rejects unsupported or non-canonical OCR language %s', async (ocrLanguage) => {
+    const pdf = join(tmp, 'real.pdf');
+    writeFileSync(pdf, '%PDF-1.4\n%%EOF\n');
+    const msg = await request('tools/call', { name: 'pdf_audit', arguments: { file_path: pdf, ocr_language: ocrLanguage } });
     expect(msg.error.code).toBe(-32602);
-    expect(msg.error.message).toContain('ocr_language');
+    expect(msg.error.message).toMatch(/ocr_language.*supported lower-case ISO\/BCP 47/);
   });
 
   it('pdf_remediate_start validates + key-gates BEFORE creating a job (a bad start never occupies the queue)', async () => {

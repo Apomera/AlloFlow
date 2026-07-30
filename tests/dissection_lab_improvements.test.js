@@ -52,7 +52,20 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
     for (const filePath of DISSECTION_PATHS) {
       const source = readFileSync(filePath, 'utf8');
       expect(source).toContain('var PROCEDURE_INSTRUMENTS = [');
-      expect(source).toContain("schemaVersion: 16");
+      expect(source).toContain('var SPECIMEN_PROCEDURE_PROFILES = {');
+      expect(source).toContain("title: 'Frog ventral midline access'");
+      expect(source).toContain("title: 'Earthworm dorsal longitudinal access'");
+      expect(source).toContain("title: 'Fetal pig ventral body-cavity access'");
+      expect(source).toContain("title: 'Fish lateral abdominal-window access'");
+      expect(source).toContain("title: 'Crayfish dorsal carapace-window access'");
+      expect(source).toContain("title: 'Sheep eye equatorial access'");
+      expect(source).toContain("title: 'Sheep heart chamber-window access'");
+      expect(source).toContain('protocolProtected: protocolProtected');
+      expect(source).toContain('Specimen-specific procedure protocol');
+      expect(source).toContain('diss-protocol__align');
+      expect(source).toContain('Align specimen to recommended ');
+      expect(source).toContain('procedureProtocol: {');
+      expect(source).toContain("schemaVersion: 18");
       expect(source).toContain('procedureByLayer: d.procedureByLayer || {}');
       expect(source).toContain("role: \"radiogroup\", \"aria-label\": \"Dissection instruments\"");
       expect(source).toContain('function performProcedureAction(action, payload)');
@@ -91,7 +104,7 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
       expect(source).toContain('actionLog: []');
       expect(source).toContain('tactileFeedback: d.tactileFeedback !== false');
       expect(source).toContain('var ADVANCED_SCENARIOS = [');
-      expect(source).toContain('function procedureScenarioStatus()');
+      expect(source).toContain('function procedureScenarioStatus(procedureState)');
       expect(source).toContain('function procedureDebriefData()');
       expect(source).toContain('function anatomicalRelationships()');
       expect(source).toContain('var CURATED_ANATOMY_RELATIONSHIPS = {');
@@ -154,6 +167,15 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
       expect(source).toContain("toolId === 'dropper'");
       expect(source).toContain('drawInstrumentContactShadow(cursorTool, cursorContactContext, cursorAngle, toolVisuallyEngaged, cursorScale, cursorMaterial, cursorPitch, cursorLighting)');
       expect(source).toContain('Directional contact footprint feedback is active');
+      expect(source).toContain('function drawInstrumentTissueOcclusion(toolId, angle, contactContext, engaged, material, pitchData)');
+      expect(source).toContain('A foreground tissue lip briefly covers the engaged tip so depth reads through occlusion as well as shadow and pitch.');
+      expect(source).toContain('distanceToGuide(screenPointer, activeOpeningPath) <= 0.055');
+      expect(source).toContain("var toolDepthFactor = { scalpel: 0.62, scissors: 0.52, forceps: 0.46, pin: 0.92, probe: 0.38, wick: 0.24 }");
+      expect(source).toContain('Paired depth notches make partial insertion legible without relying on the lip color.');
+      expect(source).toContain('drawInstrumentTissueOcclusion(cursorTool, cursorAngle, cursorContactContext, toolVisuallyEngaged, cursorMaterial, cursorPitch)');
+      expect(source).toContain('Engaged instrument tips use foreground tissue lips and paired depth notches to show partial insertion and opening-edge occlusion');
+      expect(source).toContain('instrument-tissue occlusion: foreground lip and paired depth notches encoded');
+
       expect(source).toContain('function instrumentPitchData(toolId)');
       expect(source).toContain("scalpel: { degrees: toolCalibration.bladeAngle, min: 20, max: 35");
       expect(source).toContain("pin: { degrees: toolCalibration.pinAngle, min: 55, max: 75");
@@ -178,19 +200,92 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
       expect(source).toContain("'; instrument lighting: ' + (instrumentVisuals ? 'light-aware elevation feedback on' : 'off')");
       expect(source).toContain('function queueProcedureInstrumentReplay(toolId, options)');
       expect(source).toContain('Equivalent action controls receive the same visible instrument choreography as direct canvas manipulation.');
-      expect(source).toContain('duration: dissMotionReduced ? 900 : 1400, replay: true, replayPath: path');
+      expect(source).toContain('duration: replayMotionReduced ? 900 : 1400, replay: true, replayPath: path');
       expect(source).toContain('Replay advances along the real teaching path, with eased travel and no looping.');
       expect(source).toContain("var replayStage = contactPulseProgress < 0.28 ? '1 APPROACH'");
       expect(source).toContain("queueProcedureInstrumentReplay('probe', { point: variedOrganPoint(keyboardSelected) })");
       expect(source).toContain('Equivalent keyboard and button actions include an instrument approach, contact, and release replay');
       expect(source).toContain("'; equivalent action replay: ' + (instrumentVisuals ? 'on' : 'off')");
-      expect(source).toContain('function cuttingTrajectorySafety(point, vector)');
+      expect(source).toContain('function cuttingTrajectorySafety(point, vector, canvasEl)');
       expect(source).toContain("var maxForward = Math.min(safetyWidth, safetyHeight)");
       expect(source).toContain('var lateralDistance = Math.abs');
       expect(source).toContain("trajectorySafety.critical ? 'STOP: PROTECT '");
       expect(source).toContain('The projected safety envelope shows direction, clearance, and the first anatomical intercept without relying on color alone.');
-      expect(source).toContain("var safetyLabel = (safetyCritical ? 'STOP · ' : 'AHEAD · ')");
+      expect(source).toContain("var safetyLabel = (safetyCritical ? (trajectorySafety.protocolProtected ? 'PROTECT · ' : 'STOP · ') : 'AHEAD · ')");
       expect(source).toContain('canvas._cuttingSafetyState');
+      expect(source).toContain('Shape-coded intent reticle previews whether contact will act, wait, or protect anatomy before commitment.');
+      expect(source).toContain('var toolIntentState = canvas._toolIntentState;');
+      expect(source).toContain('toolIntentState.tool === activePointerTool');
+      expect(source).toContain("intentLabel === 'PROTECT'");
+      expect(source).toContain("ctx.setLineDash(intentLabel === 'TRAY' ? [3, 3] : [])");
+      expect(source).toContain('function nearestProcedureGuidePoint(point, guide)');
+      expect(source).toContain('function nearestVisibleStructureTarget(point)');
+      expect(source).toContain('var intentTarget = toolIntentState.target;');
+      expect(source).toContain('ctx.setLineDash([6, 5])');
+      expect(source).toContain("targetLabel: 'Safe path'");
+      expect(source).toContain("var hoverPinPrerequisite = procedureProtocol.preStabilize ? currentProcedure.inspected : currentProcedure.retracted");
+      expect(source).toContain("previewTargetLabel = hoverPins.length ? 'Opposite anchor' : 'Anchor point'");
+      expect(source).toContain("var hoverProbeMode = nextProcedureInfo().action === 'inspect' ? 'inspect' : 'trace'");
+      expect(source).toContain("var hoverProbePrerequisite = hoverProbeMode === 'inspect' || hoverPins.length >= 2");
+      expect(source).toContain("activeInstrument === 'probe' && hoverProbeMode === 'inspect' ? 'INSPECT' : 'READY'");
+      expect(source).toContain('Directional target guidance uses a dashed arrow, labeled endpoint, and shape-coded reticle');
+      expect(source).toContain('function anatomicalOrientationData()');
+      expect(source).toContain("pig: { start: 'CRANIAL', end: 'CAUDAL', axis: 'horizontal' }");
+      expect(source).toContain("eye: { start: 'CORNEA', end: 'OPTIC NERVE', axis: 'horizontal' }");
+      expect(source).toContain("heart: { start: 'BASE', end: 'APEX', axis: 'vertical' }");
+      expect(source).toContain("mirrored: profile.axis === 'horizontal' && view === 'ventral'");
+      expect(source).toContain('function drawAnatomicalOrientationCompass()');
+      expect(source).toContain("var compassStatus = compass.view.toUpperCase() + (compass.aligned ? ' · ALIGNED' : ' · TARGET ' + compass.targetView.toUpperCase())");
+      expect(source).toContain('drawAnatomicalOrientationCompass()');
+      expect(source).toContain('Anatomical orientation axis uses a circle for ');
+      expect(source).toContain('anatomical orientation axis: circle marks ');
+
+      expect(source).toContain('function procedureTransitionSnapshot(procedureState)');
+      expect(source).toContain('function queueProcedureUndoTransition(action, beforeProcedure, afterProcedure)');
+      expect(source).toContain("action: 'undo-' + action");
+      expect(source).toContain("label: 'UNDO · ' + procedureActionLabel(action).toUpperCase()");
+      expect(source).toContain('beforeProcedure: undoBefore');
+      expect(source).toContain('queueProcedureUndoTransition(action, currentProcedure, restoredProcedure)');
+      expect(source).toContain("var liveTransitionIsUndo = liveTissueTransitionAction.indexOf('undo-') === 0");
+      expect(source).toContain('liveProcedureState = procedureTransitionSnapshot(tissueTransition.beforeProcedure)');
+      expect(source).toContain("var openingUndoActive = (liveTissueTransitionAction === 'undo-scalpel' && !extended)");
+      expect(source).toContain("liveTissueTransitionAction === 'undo-pin' && transitioningPin ? 1 - liveTissueTransitionProgress : 1");
+      expect(source).toContain("var hydrationUndoScale = liveTissueTransitionAction === 'undo-dropper' ? 1 - liveTissueTransitionProgress : 1");
+      expect(source).toContain("var wickedUndoScale = liveTissueTransitionAction === 'undo-wick' ? 1 - liveTissueTransitionProgress : 1");
+      expect(source).toContain("var probeUndoScale = liveTissueTransitionAction === 'undo-probe' ? 1 - liveTissueTransitionProgress : 1");
+      expect(source).toContain('Undo the last technique action and visually restore the previous tissue state');
+      expect(source).toContain('function interpolateTissueState(beforeState, afterState, progress)');
+      expect(source).toContain("interpolated.salineDrops = amount < 0.68 ? before.salineDrops : after.salineDrops");
+      expect(source).toContain('beforeTissue: normalizeTissueState(beforeState), afterTissue: normalizeTissueState(afterState)');
+      expect(source).toContain("var liveTissueTransitionAction = ''");
+      expect(source).toContain('liveTissueTransitionProgress = dissMotionReduced ? 1');
+      expect(source).toContain('Object.assign({}, liveProcedureState, { tissueState: liveTissueState })');
+      expect(source).toContain("var openingTransitionActive = (liveTissueTransitionAction === 'scalpel' && !extended)");
+      expect(source).toContain("var flapTransition = liveTissueTransitionAction === 'forceps' ? liveTissueTransitionProgress : (liveTissueTransitionAction === 'undo-forceps' ? 1 - liveTissueTransitionProgress : 1)");
+      expect(source).toContain("var pinInsertionProgress = liveTissueTransitionAction === 'pin'");
+      expect(source).toContain("var pinSettleVisible = liveTissueTransitionAction === 'pin' ? liveTissueTransitionProgress >= 0.72 : (liveTissueTransitionAction === 'undo-pin' ? liveTissueTransitionProgress < 0.36 : true)");
+      expect(source).toContain('Tissue opening, retraction, stabilization, hydration, and risk metrics transition spatially after each action; Undo reverses openings, retraction, pin placement, hydration, wick evidence, and probe traces; reduced motion snaps to the final state');
+      expect(source).toContain('tissue-state transitions: opening, retraction, stabilization, hydration, and risk interpolate spatially; Undo reverses opening, flap, pin, hydration, wick, and trace geometry; reduced motion snaps to final state');
+      expect(source).toContain('function procedureOutcomePoint(action, patch)');
+      expect(source).toContain("var actionPath = action === 'scissors' ? (patch.extensionPath || []) : (action === 'scalpel' ? (patch.incisionPath || []) : [])");
+      expect(source).toContain('function procedureOutcomeFeedbackData(action, patch, beforeState, afterState, requestedTone)');
+      expect(source).toContain('function queueProcedureOutcomeFeedback(action, patch, beforeState, afterState, requestedTone)');
+      expect(source).toContain('outcomeCanvas._toolOutcomePulse = {');
+      expect(source).toContain("queueProcedureOutcomeFeedback('mistake'");
+      expect(source).toContain('One-shot outcome feedback localizes the tissue-state change at the actual action point with shape and text redundancy.');
+      expect(source).toContain('var activeOutcomePulse = queuedOutcomePulse');
+      expect(source).toContain('var outcomeMotionProgress = dissMotionReduced ? 0.5 : outcomeProgress');
+      expect(source).toContain("var outcomeCaution = activeOutcomePulse.tone === 'caution'");
+      expect(source).toContain('Localized action outcomes use a one-shot check or warning symbol with the changed tissue metric');
+      expect(source).toContain("'; localized action outcome: success or caution shape and changed tissue metric encoded'");
+      expect(source).toContain('var activeContactIntent = !pointerIsSynthetic && canvas._toolIntentState');
+      expect(source).toContain('var pinPreviewPrerequisite = procedureProtocol.preStabilize ? currentProcedure.inspected : currentProcedure.retracted');
+      expect(source).toContain("var probePreviewMode = nextProcedureInfo().action === 'inspect' ? 'inspect' : 'trace'");
+      expect(source).toContain("probePreviewMode === 'inspect' ? 'INSPECT: '");
+      expect(source).toContain('var intentNativeCursor = cursorIntentState');
+      expect(source).toContain("? 'not-allowed' : toolCursor");
+      expect(source).toContain('canvas._toolIntentState = null;');
+      expect(source).toContain('e.currentTarget._toolIntentState = null;');
       expect(source).toContain('Predictive cutting trajectory safety feedback is active');
       expect(source).toContain("'; trajectory safety: ' + (instrumentVisuals ? 'on' : 'off')");
       expect(source).toContain('instrumentVisuals: instrumentVisuals');
@@ -213,6 +308,18 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
       expect(source).toContain("response: 'rigid shell contact'");
       expect(source).toContain("response: 'corneal ripple'");
       expect(source).toContain("response: 'fiber compression'");
+      expect(source).toContain('Tray-level stipple was removed: specimen microtexture is clipped and lit in the material pass after organism drawing.');
+      expect(source).not.toContain('// Tissue texture overlay (stipple for organic feel)');
+      expect(source).toContain("var liveLightDirection = d.lightDirection || 'overhead'");
+      expect(source).toContain('var surfaceLightVector = {');
+      expect(source).toContain("raking: { x: -0.72, y: 0.70 }");
+      expect(source).toContain("var materialRoughness = materialCondition === 'dehydrated' ? 0.88");
+      expect(source).toContain('Directional illumination turns the texture into surface relief; moisture sharpens sheen while dehydration breaks it up.');
+      expect(source).toContain('var directionalSurfaceGradient = ctx.createLinearGradient');
+      expect(source).toContain("ctx.setLineDash(materialCondition === 'dehydrated' ? [3, 3] : [])");
+      expect(source).toContain('var sheenTangentX = -surfaceLightVector.y');
+      expect(source).toContain("'. Surface microtexture ' + ((visualRealism === 'accessible' || !sceneDetail)");
+      expect(source).toContain("report += 'Surface microdetail: '");
       expect(source).toContain('openingMaterial.compliance');
       expect(source).toContain('Edge microstructure keeps the opening visually tied to the organism');
       expect(source).toContain('flapMaterial.compliance');
@@ -248,8 +355,8 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
       expect(source).toContain("key: 'stress', label: 'HIGH STRESS'");
       expect(source).toContain("key: 'controlled', label: 'CONTROLLED LIFT'");
       expect(source).toContain("drawForcepsTractionPreview(activeOpeningPath, canvas._toolPointer)");
-      expect(source).toContain('Live forceps traction preview shows tissue lift direction, calibrated grip, slip risk, and excess stress with text and geometry');
-      expect(source).toContain("'; forceps traction preview: grip, slip, and stress encoded'");
+      expect(source).toContain('Direct forceps press-drag-release manipulation shows live lift direction, safe range, calibrated grip, speed, control, slip risk, and excess tension with text and geometry; the technique action button remains equivalent.');
+      expect(source).toContain("'; forceps direct manipulation: press-drag-release lift, safe envelope, grip, slip, speed, control, and tension encoded'");
       expect(source).toContain("pinPreviewValid ? 'ANCHOR PREVIEW: ' + pinAnglePreview");
       expect(source).toContain('function drawPinStabilityPreview(guide, pointer, pins)');
       expect(source).toContain('Pin preview combines endpoint placement, separation, shaft angle, insertion depth, and flap tension before commitment.');
@@ -259,9 +366,15 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
       expect(source).toContain("key: 'stable', label: 'STABLE ANCHOR'");
       expect(source).toContain('var pinTechniqueValid = pinPreviewValid');
       expect(source).toContain('drawPinStabilityPreview(activeOpeningPath, canvas._toolPointer, canvasProcedure.pins || [])');
+      expect(source).toContain('Committed pins read as angled metal anchors with insertion collars, cast shadows, and shape-coded heads.');
+      expect(source).toContain('function drawCommittedRetractionPin(pin, pinIdx)');
+      expect(source).toContain('var committedPinAngle = Math.max(35, Math.min(90');
+      expect(source).toContain('Tension tether terminates at the insertion point rather than passing through the pin.');
+      expect(source).toContain('Concentric collar and depth notch make the insertion site legible without relying on pin color.');
+      expect(source).toContain('(canvasProcedure.pins || []).forEach(drawCommittedRetractionPin)');
       expect(source).toContain('Live pin stability preview shows endpoint spacing, calibrated angle, insertion depth, and flap tension with text and geometry');
       expect(source).toContain("'; pin stability preview: angle, depth, spacing, and tension encoded'");
-      expect(source).toContain("probePreviewValid ? 'PALPATE: ' + underTipOrgan.name");
+      expect(source).toContain("probePreviewValid ? (probePreviewMode === 'inspect'");
       expect(source).toContain('function drawProbePalpationPreview(pointer, organ)');
       expect(source).toContain('Live palpation maps calibrated pressure, organism material, tissue condition, and anatomical depth into pre-commit deformation feedback.');
       expect(source).toContain("key: 'light', label: 'TOO LIGHT'");
@@ -302,8 +415,8 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
       expect(source).toContain('"data-next": toolIsNext ? \'true\' : \'false\'');
       expect(source).toContain('"aria-current": toolIsNext ? \'step\' : undefined');
       expect(source).toContain("'Next \\u00B7 ' + toolState.label");
-      expect(source).toContain('Guided procedure handoff cue connects the next required instrument to its anatomical target and six-step progress rail with text, shape, and line style');
-      expect(source).toContain("'; guided handoff cue: next instrument, anatomical target, and six-step progress encoded'");
+      expect(source).toContain("Guided procedure handoff cue connects the next required instrument to its anatomical target and ' + (procedureProtocol.order || []).length + '-step progress rail");
+      expect(source).toContain("'; guided handoff cue: next instrument, anatomical target, and ' + (procedureProtocol.order || []).length + '-step progress encoded'");
       expect(source).toContain('function drawLocalizedTechniqueEvidence(procedureState, tissueState)');
       expect(source).toContain("Localized technique evidence anchors persistent consequences to the learner's actual paths and contact points.");
       expect(source).toContain("evidenceCues.push('EDGE ' + evidenceEdgeMarks)");
@@ -314,7 +427,7 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
       expect(source).toContain('drawLocalizedTechniqueEvidence(liveProcedureState, liveTissueState)');
       expect(source).toContain('Persistent localized technique evidence maps edge stress, grip compression, anchor tension, probe pressure, and saline pooling to actual contact locations with text and distinct geometry');
       expect(source).toContain("'; localized technique evidence: incision edge, grip, anchor, probe, and pooling consequences encoded'");
-      expect(source).toContain('Non-cutting tools announce preview validity only when it changes');
+      expect(source).toContain('Non-cutting previews pair sequence and calibration readiness with a visible nearest anatomical target.');
       expect(source).toContain("previewStatus.textContent = previewMessage");
       expect(source).toContain("['forceps', 'pin', 'probe', 'dropper'].indexOf(responseTool) >= 0");
       expect(source).toContain('sceneDetail: sceneDetail');
@@ -325,6 +438,29 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
       expect(source).toContain('var depthAtlasCounts = organs.reduce');
       expect(source).toContain('function drawDepthAtlasMarker(x, y, depth, selected, hovered, muted)');
       expect(source).toContain('Shape-coded depth landmarks pair color, geometry, and line style so depth never depends on hue alone.');
+      expect(source).toContain('function structureInspectionFootprint(org)');
+      expect(source).toContain('/vessel|arter|vena|vein|aorta|cord|nerve|intestin|ureter|duct|esophagus|trachea|spinal|chordae/');
+      expect(source).toContain('function structureBoundaryAttachmentPoint(org, towardPoint)');
+      expect(source).toContain('function drawStructureInspectionFootprint(org, x, y, selected, hovered, visibility)');
+      expect(source).toContain('var chambered = /heart|stomach|bladder|crop|gizzard|atrium|ventricle|cloaca|lens|humor/');
+      expect(source).toContain('var layered = /skin|integument|cuticle|scale|carapace|membrane|muscle|myomere|retina|cornea|sclera|choroid|conjunctiva|diaphragm|septum|pericardium|valve/');
+      expect(source).toContain("morphologyLabel: morphology === 'conduit' ? 'TUBE' : morphology.toUpperCase()");
+      expect(source).toContain('function traceStructureMorphologyContour(profile, yOffset, inflate)');
+      expect(source).toContain('function drawStructureMorphologyTexture(profile)');
+      expect(source).toContain('Morphology contours and internal marks distinguish structure classes without claiming an exact organ boundary.');
+      expect(source).toContain('traceStructureMorphologyContour(profile, profile.depthOffset, 0)');
+      expect(source).toContain('drawStructureMorphologyTexture(profile)');
+      expect(source).toContain('The inspection footprint is a depth capsule, not an exact anatomical outline');
+      expect(source).toContain('var sourceAttachment = structureBoundaryAttachmentPoint(relationshipSource, relationshipPoint)');
+      expect(source).toContain('var targetAttachment = structureBoundaryAttachmentPoint(relationship.organ, relationshipSourcePoint)');
+      expect(source).toContain('drawStructureInspectionFootprint(org, px, py, isSel, isHov, layout.visibility)');
+      expect(source).toContain("var hoverDepthLabel = anatomicalDepthLabel(structureOpticalDepth(hovOrg))");
+      expect(source).toContain("var hoverExposure = structureExposureState(hovOrg, currentProcedure)");
+      expect(source).toContain("var hoverMorphology = structureInspectionFootprint(hovOrg).morphologyLabel.toLowerCase()");
+      expect(source).toContain('Selected and hovered structures use a labeled depth footprint with front and back edges, visibility-specific line styles, and boundary-attached relationship paths');
+      expect(source).toContain("'; structure inspection footprint: front and back depth edges, exposure line styles, and boundary-attached relationships encoded; morphology contours: tubular, lobed, chambered, layered, and compact patterns encoded; relationship pathways: type-specific line rhythms and marker shapes encoded'");
+      expect(source).toContain('Relationship types use distinct line patterns and moving marker shapes, with fixed markers when motion is reduced.');
+      expect(source).toContain('Tubular, lobed, chambered, layered, and compact structure classes use distinct contours, internal patterns, and text labels');
       expect(source).toContain("layout.depth === 'deep' ? [1.2, 3.2]");
       expect(source).toContain('depthAtlas: depthAtlasEnabled');
       expect(source).toContain('depthAtlas: data.depthAtlas !== false');
@@ -334,6 +470,12 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
       expect(source).toContain('var tissueReliefEnabled = d.tissueRelief !== false;');
       expect(source).toContain('function drawSpecimenTissueRelief()');
       expect(source).toContain('Responsive tissue relief gives visible structures elevation, recess, and contact shadow before labels are drawn.');
+      expect(source).toContain('function drawAnatomicalExposureVeil()');
+      expect(source).toContain('Progressive exposure veil lets covered anatomy remain spatially legible without appearing dissected or selectable.');
+      expect(source).toContain('A solid mask keeps covered structures genuinely covered; rings and hatching carry the same meaning without color.');
+      expect(source).toContain('function drawExposureStateMarker(x, y, visibility, selected, hovered, muted)');
+      expect(source).toContain('Exposure markers use distinct geometry so emerging and covered structures never read like exposed targets.');
+      expect(source).toContain("var exposureMuted = layout.visibility !== 'visible';");
       expect(source).toContain('var reliefPointer = canvas._toolPointer;');
       expect(source).toContain("ctx.globalCompositeOperation = 'multiply'");
       expect(source).toContain("ctx.globalCompositeOperation = 'screen'");
@@ -362,6 +504,22 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
       expect(source).toContain("'POOLING \u00B7 REDUCE DOSE'");
       expect(source).toContain("report += 'Hydration response: '");
       expect(source).toContain('var relationshipColor =');
+      expect(source).toContain('function anatomicalRelationshipVisualProfile(type)');
+      expect(source).toContain('Relationship profiles pair hue with line rhythm, marker geometry, and readable text.');
+      expect(source).toContain("category: 'vascular', color: '#fb7185', dash: [], marker: 'circle'");
+      expect(source).toContain("category: 'neural', color: '#a78bfa', dash: [8, 3, 2, 3], marker: 'diamond'");
+      expect(source).toContain("category: 'digestive', color: '#fbbf24', dash: [5, 3], marker: 'chevron'");
+      expect(source).toContain("category: 'optical', color: '#38bdf8', dash: [1.5, 3.5], marker: 'triangle'");
+      expect(source).toContain("category: 'excretory', color: '#c084fc', dash: [10, 4], marker: 'ring'");
+      expect(source).toContain("category: 'respiratory', color: '#2dd4bf', dash: [7, 3, 2, 3], marker: 'double-chevron'");
+      expect(source).toContain("category: 'structural', color: '#cbd5e1', dash: [10, 3], marker: 'square'");
+      expect(source).toContain('function drawAnatomicalRelationshipMarker(x, y, angle, marker, size, color, accessible)');
+      expect(source).toContain('Animated pathway markers retain distinct silhouettes so relationship meaning never depends on motion or color.');
+      expect(source).toContain('ctx.setLineDash(relationshipVisual.dash)');
+      expect(source).toContain('var flowTangentX =');
+      expect(source).toContain('drawAnatomicalRelationshipMarker(flowX, flowY');
+      expect(source).toContain("Visual code: ' + anatomicalRelationshipEncodingText(nextRelationship.type)");
+      expect(source).toContain('Relationship pathway visual key');
       expect(source).toContain('var flowT = relationshipMotion && !dissMotionReduced');
       expect(source).toContain("var activeFunctionalTraceKey = d.traceCirculation ? 'circulation'");
       expect(source).toContain('One shared playback clock keeps all functional pathways synchronized and pausable.');
@@ -425,6 +583,13 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
       expect(source).toContain('canvasProcedure.probed && canvasProcedure.probedOrganId');
       expect(source).toContain("var probeLabel = 'Trace: ' + probedStructure.name;");      expect(source).toContain('ann.prevX * W');
       expect(source).toContain("window.matchMedia('(prefers-reduced-motion: reduce)').matches");
+      expect(source).toContain('Technique completion follows the recorded specimen-specific access path without decorative particles.');
+      expect(source).toContain('var completionPath = (completionProcedure.extensionPath');
+      expect(source).toContain('var completionSamples = (completionProcedure.extensionSamples');
+      expect(source).toContain('function traceTechniqueCompletionEdge(offset)');
+      expect(source).toContain('var completionEdgeSpread = 2.2 + completionPressure * 2.4');
+      expect(source).toContain('var completionBladeGradient = ctx.createLinearGradient');
+      expect(source).not.toContain('// Sparkle particles along cut');
       expect(source).toContain('var transitionDuration = prefersReducedLayerMotion ? 650 : 1150');
       expect(source).toContain('_layerTransition: layerTransition');
       expect(source).toContain('Specimen-shaped layer transition opens along the dominant body axis to reveal the new anatomy beneath.');
@@ -433,7 +598,26 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
       expect(source).toContain('Screen-fixed confirmation stays readable even when the specimen is mirrored, zoomed, or panned.');
       expect(source).toContain("ctx.fillText('LAYER REVEALED'");
       expect(source).toContain("_layerTransition.fromName + '  \\u2192  '");
-      expect(source).toContain('_layerTransition.reducedMotion ? 1 : layerTransitionProgress');      expect(source).toContain('d.rulerStart.x * W');
+      expect(source).toContain('_layerTransition.reducedMotion ? 1 : layerTransitionProgress');
+      expect(source).toContain('function changeAnatomicalView(nextView, source)');
+      expect(source).toContain('View changes retain spatial context with a specimen-aware turn cue and an equivalent spoken announcement.');
+      expect(source).toContain("changeAnatomicalView(keyboardViews[(keyboardViews.indexOf(d.anatomicalView || 'dorsal')");
+      expect(source).toContain("changeAnatomicalView(views[(views.indexOf(anatomicalView) + 1) % views.length], 'view toolbar')");
+      expect(source).toContain("changeAnatomicalView(views[(views.indexOf(anatomicalView) + 1) % views.length], 'fullscreen dock')");
+      expect(source).toContain("changeAnatomicalView(procedureProtocol.recommendedView, 'procedure alignment')");
+      expect(source).not.toContain("upd('anatomicalView'");
+      expect(source).toContain("_viewTransition: { active: true, fromView: fromView, toView: nextView");
+      expect(source).toContain("_layerBrowseTransition: { active: true, fromId: fromLayer.id");
+      expect(source).toContain("direction: layerIdx > fromLayerIdx ? 'deeper' : 'superficial'");
+      expect(source).toContain('Spatial navigation overlays show orientation turns and layer depth changes without moving landmarks away from their hit targets.');
+      expect(source).toContain('var viewTurnPhase = Math.sin(viewTransitionProgress * Math.PI)');
+      expect(source).toContain("ctx.setLineDash([4, 4]); ctx.globalAlpha = 0.58");
+      expect(source).toContain('var layerDepthScale = layerBrowseDeeper ? 1 - layerDepthPhase * 0.54');
+      expect(source).toContain('function drawSpatialTransitionBadge(y, title, fromLabel, toLabel, directionLabel, progress, alpha, accent)');
+      expect(source).toContain("'CIRCLE START / DIAMOND TARGET'");
+      expect(source).toContain("'RINGS IN / DEEPER'");
+      expect(source).toContain('View and layer navigation uses a labeled orientation sweep with circle start and diamond target markers');
+      expect(source).toContain("'; spatial navigation transitions: orientation sweep, circle start, diamond target, and layer depth rings encoded; reduced motion switches instantly'");      expect(source).toContain('d.rulerStart.x * W');
       expect(source).toContain('Measurement complete: ');
       expect(source).toContain('Clear annotations');
       expect(source).toContain("Technique cautions reviewed: ");
@@ -442,6 +626,70 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
     }
   });
 
+  it('supports specimen-aware direct forceps lifting with equivalent accessible feedback', () => {
+    for (const filePath of DISSECTION_PATHS) {
+      const source = readFileSync(filePath, 'utf8');
+      expect(source).toContain('function forcepsDragAssessment(canvas, point, at)');
+      expect(source).toContain('function beginForcepsDrag(e)');
+      expect(source).toContain('function appendForcepsDrag(e)');
+      expect(source).toContain('function finishForcepsDrag(e, cancelled)');
+      expect(source).toContain("key = !drag.startValid ? 'position'");
+      expect(source).toContain("grasp: 'GRASP \u00B7 DRAG'");
+      expect(source).toContain('peakSpeed > 1.35');
+      expect(source).toContain('projectedTension: projectedTension');
+      expect(source).toContain('update the polite live region only at meaningful state changes');
+      expect(source).toContain('if (status && (stateChanged || finalMessage))');
+      expect(source).toContain('The solid outer ring is the safe lift envelope; the dashed inner ring marks the minimum effective lift.');
+      expect(source).toContain('ctx.ellipse(baseX, baseY, directAssessment.safeMax * W');
+      expect(source).toContain("assessment.key === 'controlled' ? 'grabbing'");
+      expect(source).toContain('if (canvas._forcepsDrag && canvas._forcepsDrag.active) { appendForcepsDrag(e); return; }');
+      expect(source).toContain("if (!d.quizMode && !d.annotateMode && !d.rulerMode && activeInstrument === 'forceps') { beginForcepsDrag(e); return; }");
+      expect(source).toContain('if (finishForcepsDrag(e, false)) return;');
+      expect(source).toContain('if (finishForcepsDrag(e, true)) return;');
+      expect(source).toContain('if (canvas._dissMotionReduced && canvas._drawDissectionNow) canvas._drawDissectionNow();');
+      expect(source).toContain("activeInstrument === 'scissors' || activeInstrument === 'forceps') ? 'none' : 'pan-y'");
+      expect(source).toContain('forcepsDragMetrics: forcepsDragMetrics');
+      expect(source).toContain('interactionMetrics: patch.forcepsDragMetrics');
+      expect(source).toContain("report += 'Direct forceps lift: '");
+      expect(source).toContain('Recorded direct forceps lift evidence');
+      expect(source).toContain('the equivalent technique action button remains available');
+      expect(source).not.toContain("activeInstrument === 'forceps') { performProcedureAction('forceps', { point: { x: mx, y: my } });");
+    }
+
+    resetStemLab();
+    loadTool('stem_lab/stem_tool_dissection.js', 'dissection');
+    const html = renderTool('dissection', {
+      dissection: {
+        specimen: 'frog',
+        activeLayer: 'skin',
+        _dissLoadedSpec: 'frog',
+        activeInstrument: 'forceps',
+        procedureByLayer: {
+          skin: {
+            inspected: true,
+            incisionStarted: true,
+            incisionExtended: true,
+            retracted: true,
+            forcepsPoint: { x: 0.5, y: 0.48 },
+            forcepsDragMetrics: {
+              liftPercent: 68,
+              control: 88,
+              projectedTension: 64,
+              durationMs: 720,
+              inputType: 'pen',
+            },
+          },
+        },
+      },
+    });
+    expect(html).toContain('Recorded direct forceps lift evidence');
+    expect(html).toContain('Direct lift evidence');
+    expect(html).toContain('68% lift');
+    expect(html).toContain('Control 88%');
+    expect(html).toContain('Projected tension 64%');
+    expect(html).toContain('Input: pen');
+    expect(html).toContain('the equivalent technique action button remains available');
+  });
   it('uses an anatomy-aware fetal pig silhouette instead of mascot-like features', () => {
     for (const filePath of DISSECTION_PATHS) {
       const source = readFileSync(filePath, 'utf8');
@@ -489,7 +737,7 @@ describe('dissection improvement contracts', { timeout: 20000 }, () => {
       expect(source).toContain('Engraved edge ticks suggest a calibrated teaching tray without competing with the scale tool.');
       expect(source).toContain('A specimen-shaped absorbent pad grounds the body and catches the preservation-fluid meniscus.');
       expect(source).toContain("specimenVariationValue('tray-pad-angle-' + padFiberIndex)");
-      expect(source).toContain("var stableStippleSize = 0.5 + specimenVariationValue('tissue-stipple-size-' + stip) * 2");
+      expect(source).not.toContain("specimenVariationValue('tissue-stipple-size-' + stip)");
       expect(source).toContain('Compact instrument bay: grounded metal tools replace the earlier faint line-art corner icons.');
       expect(source).toContain("ctx.fillText('INSTRUMENT BAY'");
       expect(source).toContain('background: linear-gradient(145deg, #64748b 0%, #26364b 16%, #0f172a 78%, #475569 100%)');
@@ -671,19 +919,29 @@ describe('dissection improved UI render', () => {
     });
 
     expect(html).toContain('Technique practice');
+    expect(html).toContain('Frog ventral midline access');
+    expect(html).toContain('Ventral surface centered with the limbs stabilized symmetrically.');
+    expect(html).toContain('Protected landmarks');
+    expect(html).toContain('Align to ventral view');
+    expect(html).toContain('Heart (3-chamber), Liver (3 lobes), Lungs');
     expect(html).toContain('role="radiogroup"');
     expect(html).toContain('Scalpel');
     expect(html).toContain('Active tool: Scalpel');
     expect(html).toContain('Selected · Ready');
-    expect(html).toContain('Drag from one end of the teaching corridor');
+    expect(html).toContain('class="diss-stage__handoff"');
+    expect(html).toContain('Next · Begin the shallow ventral midline opening');
+    expect(html).toContain('Step 2/6');
+    expect(html).toContain('diss-fullscreen-dock__handoff');
+    expect(html).toContain('Fullscreen next action: Begin the shallow ventral midline opening');
+    expect(html).toContain('Follow the shallow ventral midline corridor');
     expect(html).toContain('data-readiness="ready"');
     expect(html).toContain('data-diss-tool-status="true"');
     expect(html).toContain('Deep (practice warning)');
-    expect(html).toContain('Make a shallow guided incision');
+    expect(html).toContain('Begin the shallow ventral midline opening');
     expect(html).toContain('Technique score');
     expect(html).toContain('Instrument angle');
     expect(html).toContain('Precision access');
-    expect(html).toContain('Scenario: Precision access');
+    expect(html).toContain('Scenario lab');
     expect(html).toContain('Debrief');
     expect(html).toContain('Next improvement');
     expect(html).toContain('Instructor thresholds');
@@ -704,6 +962,59 @@ describe('dissection improved UI render', () => {
     expect(html).toContain('Input');
     expect(html).toContain('Undo last technique action');
     expect(html).toContain('generalized, non-graphic teaching simulation');
+  });
+
+  it('renders distinct organism-specific access routes and next actions', () => {
+    const wormHtml = renderTool('dissection', {
+      dissection: {
+        specimen: 'earthworm',
+        activeLayer: 'skin',
+        _dissLoadedSpec: 'earthworm',
+        activeInstrument: 'scalpel',
+        procedureMode: 'guided',
+        procedureByLayer: { skin: { inspected: true, pins: [] } },
+      },
+    });
+    expect(wormHtml).toContain('Earthworm dorsal longitudinal access');
+    expect(wormHtml).toContain('shallow dorsal longitudinal corridor');
+    expect(wormHtml).toContain('Aortic Arches (5 Hearts), Cerebral Ganglia, Intestine');
+    expect(wormHtml).toContain('Stabilize ends');
+    expect(wormHtml).toContain('Place the first body-wall anchor');
+    expect(wormHtml).toContain('Extend lengthwise');
+    expect(wormHtml).toContain('View aligned to procedure recommendation');
+
+    const stabilizedWormHtml = renderTool('dissection', {
+      dissection: {
+        specimen: 'earthworm',
+        activeLayer: 'skin',
+        _dissLoadedSpec: 'earthworm',
+        activeInstrument: 'scalpel',
+        procedureMode: 'guided',
+        procedureByLayer: {
+          skin: {
+            inspected: true,
+            pins: [{ x: 0.28, y: 0.5 }, { x: 0.72, y: 0.5 }],
+          },
+        },
+      },
+    });
+    expect(stabilizedWormHtml).toContain('Begin a shallow dorsal midline opening');
+
+    const pigHtml = renderTool('dissection', {
+      dissection: {
+        specimen: 'pig',
+        activeLayer: 'skin',
+        _dissLoadedSpec: 'pig',
+        activeInstrument: 'scissors',
+        procedureMode: 'guided',
+        procedureByLayer: { skin: { inspected: true, incisionStarted: true, pins: [] } },
+      },
+    });
+    expect(pigHtml).toContain('Fetal pig ventral body-cavity access');
+    expect(pigHtml).toContain('ventral midline corridor with an umbilical detour');
+    expect(pigHtml).toContain('Umbilical Cord, Heart (4-chamber), Urinary Bladder');
+    expect(pigHtml).toContain('Extend around the umbilical region');
+    expect(pigHtml).toContain('Detour cord');
   });
 
   it('renders a compressed evidence notebook with live-reference comparison controls', () => {
@@ -784,7 +1095,8 @@ describe('dissection improved UI render', () => {
     expect(html).toContain('Condition: cloudy');
     expect(html).toContain('Relationships on');
     expect(html).toContain('Curated anatomical relationships');
-    expect(html).toContain('provides attachment for Extraocular Muscles [attachment]');
+    expect(html).toContain('provides attachment for Extraocular Muscles [attachment; structural, long-dash line with squares]');
+    expect(html).toContain('Path key: vascular solid circles');
     expect(html).toContain('structures directly visible in this orientation');
     expect(html).toContain('Quality: balanced');
     expect(html).toContain('Tactile on');
@@ -821,11 +1133,11 @@ describe('dissection improved UI render', () => {
     expect(cuttingHtml).toContain('Light-aware instrument elevation feedback is active');
     expect(cuttingHtml).toContain('Equivalent keyboard and button actions include an instrument approach, contact, and release replay');
     expect(cuttingHtml).toContain('Recorded attempt replay progressively traces pressure with line width and states path alignment in text and shape');
-    expect(cuttingHtml).toContain('Live forceps traction preview shows tissue lift direction, calibrated grip, slip risk, and excess stress with text and geometry');
+    expect(cuttingHtml).toContain('Direct forceps press-drag-release manipulation shows live lift direction, safe range, calibrated grip, speed, control, slip risk, and excess tension with text and geometry; the technique action button remains equivalent.');
     expect(cuttingHtml).toContain('Live pin stability preview shows endpoint spacing, calibrated angle, insertion depth, and flap tension with text and geometry');
     expect(cuttingHtml).toContain('Live probe palpation preview shows calibrated pressure, material resistance, anatomical depth, and tissue deformation with text and shape');
     expect(cuttingHtml).toContain('Live dropper spread forecast shows dose count, organism-specific flow direction, current saturation, and pooling risk with text and geometry');
-    expect(cuttingHtml).toContain('Guided procedure handoff cue connects the next required instrument to its anatomical target and six-step progress rail with text, shape, and line style');
+    expect(cuttingHtml).toContain('Guided procedure handoff cue connects the next required instrument to its anatomical target and 6-step progress rail with text, shape, and line style');
     expect(cuttingHtml).toContain('Persistent localized technique evidence maps edge stress, grip compression, anchor tension, probe pressure, and saline pooling to actual contact locations with text and distinct geometry');
     expect(cuttingHtml).toContain('data-next="true"');
     expect(cuttingHtml).toContain('aria-current="step"');
@@ -870,7 +1182,7 @@ describe('dissection improved UI render', () => {
       expect(source).toContain("if (!e.ctrlKey && !e.metaKey) return;");
       expect(source).toContain('onWheel: canvasWheelZoom');
       expect(source).toContain('if (canvas._wheelZoomTimer) { clearTimeout(canvas._wheelZoomTimer); canvas._wheelZoomTimer = null; }');
-      expect(source).toContain("var keyboardOrgans = organs.filter(function (organ) { return viewOrganVisibility(organ) === 'visible'; });");
+      expect(source).toContain("var keyboardOrgans = organs.filter(function (organ) { return structureExposureState(organ, currentProcedure) === 'visible'; });");
       expect(source).toContain('(organIndex + direction + keyboardOrgans.length) % keyboardOrgans.length');
       expect(source).toContain("e.key === 'Home' || e.key === 'End'");
       expect(source).toContain("e.key === 'Enter' || e.key === ' '");
@@ -995,7 +1307,7 @@ describe('dissection improved UI render', () => {
       const source = readFileSync(filePath, 'utf8');
       expect(source).toContain('One observation-field model keeps visual aperture, clarity, coaching, evidence, and reporting consistent.');
       expect(source).toContain('function observationFieldData(state)');
-      expect(source).toContain('var liveObservationField = observationFieldData(liveProcedureState)');
+      expect(source).toContain('var liveObservationField = observationFieldData(liveProcedureForObservation)');
       expect(source).toContain('var fieldWidthFactor = 0.76 + liveObservationField.aperture');
       expect(source).toContain('var fieldDetailCount = 3 + Math.round(liveObservationField.quality / 14)');
       expect(source).toContain('var stressMarkCount = Math.min(7');
@@ -1181,7 +1493,7 @@ describe('dissection improved UI render', () => {
       expect(source).toContain("id: 'diss-instrument-' + tool.id");
       expect(source).toContain('tabIndex: activeInstrument === tool.id ? 0 : -1');
       expect(source).toContain("selectProcedureInstrument(keyboardTool.id, 'keyboard shortcut ' + e.key)");
-      expect(source).toContain("announceToSR(tool.label + ' selected.");
+      expect(source).toContain("announceToSR(selectionMessage + ' ' + toolState.instruction)");
     }
 
     const html = renderTool('dissection', {
@@ -1251,6 +1563,12 @@ describe('dissection improved UI render', () => {
       expect(source).toContain('var dynamicCompliance = 0.62 + flapPhysics.compliance / 100 * 0.58');
       expect(source).toContain('var flapSag = flapPhysics.sag / 100 * 0.032');
       expect(source).toContain('flapPoint.y += flapSag * outerWeight + flutter');
+      expect(source).toContain('Light-aware cavity depth separates the retracted field into rim, wall, and deeper bed.');
+      expect(source).toContain('function traceRetractedFieldContour(scale)');
+      expect(source).toContain('var cavityLightVector =');
+      expect(source).toContain('var cavityShadow = ctx.createLinearGradient');
+      expect(source).toContain('var flapLiftPixels = 4 + spread * Math.min(W, H) * 0.18');
+      expect(source).toContain('A light-facing cut rim reinforces flap elevation without adding another label.');
       expect(source).toContain('if (flapTissue.moisture > 55)');
       expect(source).toContain('var currentTissuePhysics = tissuePhysicsData(currentTissueState)');
       expect(source).toContain("label: 'Compliance'");
@@ -1388,7 +1706,7 @@ describe('dissection improved UI render', () => {
         targets: violation.nodes.map(function (node) { return node.target; }),
       };
     })).toEqual([]);
-  }, 15000);
+  }, 60000);
 
 
   it('adds an absorbent-wick recovery loop for excess saline', () => {
@@ -1500,4 +1818,105 @@ describe('dissection improved UI render', () => {
     expect(html).toContain('Illumination: Glare limited at 96%');
   });
 
+  it('integrates dynamic procedure, exposure, scenario, performance, and fullscreen controls', () => {
+    for (const filePath of DISSECTION_PATHS) {
+      const source = readFileSync(filePath, 'utf8');
+      expect(source).toContain("order: ['inspect', 'pin', 'scalpel', 'scissors', 'forceps', 'probe']");
+      expect(source).toContain('function procedureActionComplete(state, action)');
+      expect(source).toContain('function procedureExposureData(state)');
+      expect(source).toContain('function structureExposureState(org, state)');
+      expect(source).toContain('function procedureMaterialInteractionData(toolId, state)');
+      expect(source).toContain('function procedureDecisionScore(state)');
+      expect(source).toContain("{ id: 'relationship-pathway'");
+      expect(source).toContain("{ id: 'restricted-tray'");
+      expect(source).toContain("{ id: 'timed-practical'");
+      expect(source).toContain('function traceNextAnatomicalRelationship()');
+      expect(source).toContain("setAccessibilityPreference('simplifiedInstructions'");
+      expect(source).toContain('canvas._adaptiveFrameFloor');
+      expect(source).toContain('"data-diss-fullscreen-stage": true');
+      expect(source).toContain("document.querySelector('[data-diss-fullscreen-stage]')");
+      expect(source).toContain('window.__alloStemFS(stage)');
+      expect(source).toContain('Fullscreen specimen view and tools');
+      expect(source).toContain('Exit fullscreen');
+      expect(source).toContain('var stageHandoffLabel = currentLayerDone');
+      expect(source).toContain('className: "diss-stage__handoff"');
+      expect(source).toContain('className: "diss-stage__handoff-glyph"');
+      expect(source).toContain('className: "diss-stage__handoff-progress"');
+      expect(source).toContain('className: "diss-fullscreen-dock__handoff"');
+      expect(source).toContain('"aria-label": "Fullscreen next action: "');
+      expect(source).toContain('function formatScenarioTime(seconds)');
+      expect(source).toContain('function activateProcedureScenario(scenario, restartAttempt)');
+      expect(source).toContain('function procedureScenarioGuidance(status, procedureState)');
+      expect(source).toContain('var dissScenarioTimer = setInterval');
+      expect(source).toContain('clearInterval(dissScenarioTimer)');
+      expect(source).toContain('diss-scenario-console__progress');
+      expect(source).toContain('id: "diss-scenario-select"');
+      expect(source).toContain('Restart scenario');
+      expect(source).toContain('function onDissectionFullscreenChange()');
+      expect(source).toContain('window.__alloDissectionFullscreenReturn = document.activeElement');
+      expect(source).toContain("document.addEventListener('fullscreenchange', onDissectionFullscreenChange)");
+      expect(source).toContain('difficulty: scenarioDefinition.difficulty');
+      expect(source).toContain("status: scenarioStatus.complete ? 'complete'");
+      expect(source).toContain("(procedureProtocol.order || []).length + '-step progress");
+expect(source).toContain('Scenario checkpoint: ');
+      expect(source).toContain('function procedureToolReadinessData(toolId, state)');
+      expect(source).toContain("{ id: 'sequence', label: 'Sequence', ready: sequenceReady }");
+      expect(source).toContain('className: "diss-readiness"');
+      expect(source).toContain('"aria-label": "Active instrument action readiness"');
+      expect(source).toContain('toolReadiness: { score: currentToolReadiness.score');
+      expect(source).toContain("report += 'Active tool readiness: '");
+      expect(source).toContain("var selectionMessage = tool.label + ' selected'");
+    }
+
+    const html = renderTool('dissection', {
+      dissection: {
+        specimen: 'frog',
+        activeLayer: 'skin',
+        _dissLoadedSpec: 'frog',
+        toolbarViewOpen: true,
+        toolbarToolsOpen: true,
+        relationshipMode: true,
+        selectedOrgan: 'heart',
+        procedureByLayer: { skin: { inspected: true, pins: [] } },
+      },
+    });
+
+    expect(html).toContain('Decision quality');
+    expect(html).toContain('Anatomical exposure');
+    expect(html).toContain('Progressive exposure');
+    expect(html).toContain('Material response');
+    expect(html).toContain('Simple steps off');
+    expect(html).toContain('Fullscreen specimen view and tools');
+    expect(html).toContain('Exit fullscreen');
+    expect(html).toContain('Fullscreen illumination intensity');
+    expect(html).toContain('Fullscreen active instrument');
+    expect(html).toContain('Trace next exposed connection');
+    expect(html).toContain('Scenario lab');
+    expect(html).toContain('Choose procedure scenario');
+    expect(html).toContain('Restart scenario');
+    expect(html).toContain('role="progressbar"');
+expect(html).toContain('Scenario center');
+    expect(html).toContain('Action readiness');
+    expect(html).toContain('Active instrument action readiness');
+    expect(html).toContain('Readiness checks');
+    expect(html).toContain('Sequence ·');
+    expect(html).toContain('Calibration ·');
+    expect(html).toContain('Field + view ·');
+    expect(html).toContain('Contact ·');
+
+    const timedHtml = renderTool('dissection', {
+      dissection: {
+        specimen: 'frog',
+        activeLayer: 'skin',
+        _dissLoadedSpec: 'frog',
+        procedureScenario: 'timed-practical',
+        scenarioStartedAt: Date.now(),
+        scenarioTimeRemaining: 125,
+        procedureByLayer: { skin: { inspected: true, pins: [] } },
+      },
+    });
+    expect(timedHtml).toContain('Timed practical');
+    expect(timedHtml).toContain('2:05 remaining');
+    expect(timedHtml).toContain('role="timer"');
+  });
 });

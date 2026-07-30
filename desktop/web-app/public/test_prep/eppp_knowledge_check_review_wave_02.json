@@ -1,0 +1,633 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "knowledge-check-wave-02",
+  "reviewDate": "2026-07-23",
+  "scope": "Second balanced source-review wave for learner-visible chapter knowledge checks, with two additional checks from each official EPPP content domain.",
+  "summary": {
+    "items": 16,
+    "domains": 8,
+    "itemsPerDomain": 2,
+    "sourceReviewedEditorialPass": 16,
+    "independentExpertReviewPending": 16,
+    "productionValidationPending": 16,
+    "domainCounts": {
+      "Assessment & Diagnosis": 2,
+      "Biological Bases of Behavior": 2,
+      "Cognitive-Affective Bases of Behavior": 2,
+      "Ethical, Legal & Professional Issues": 2,
+      "Growth & Lifespan Development": 2,
+      "Research Methods & Statistics": 2,
+      "Social & Cultural Bases of Behavior": 2,
+      "Treatment, Intervention & Prevention": 2
+    }
+  },
+  "releasePolicy": "Only source-reviewed-editorial-pass records are emitted in chapter.knowledgeChecks for learner rendering. Preserved unreviewed records remain in the top-level inventory with review-required status.",
+  "safeguards": [
+    "Stable legacy IDs remain anchored to the preserved pre-revision prompt and choices.",
+    "Answer positions remain unchanged while prompts, distractors, and rationales may be clarified.",
+    "Clinical and legal items preserve urgent referral, scope, applicable-law, and individualized-assessment boundaries.",
+    "Source review does not constitute independent expert validation or production validation."
+  ],
+  "items": [
+    {
+      "legacyId": "knowledge-check-21d1436de9cb7825",
+      "chapterId": "ch-5",
+      "sectionId": "ch-5-section-7",
+      "domainId": 1,
+      "domain": "Assessment & Diagnosis",
+      "prompt": "A 45-year-old patient presents with sudden onset of visual hallucinations, confusion, and disorientation. What should the psychologist do FIRST in the differential diagnosis process?",
+      "choices": [
+        "Diagnose Schizophrenia, late onset",
+        "Administer the MMPI-2 to assess for psychotic symptoms",
+        "Refer for medical evaluation to rule out delirium or other medical causes",
+        "Begin cognitive-behavioral therapy for psychotic symptoms"
+      ],
+      "answerIndex": 2,
+      "rationale": "The best first step is prompt medical evaluation for delirium and other acute causes. A change developing over hours or days with confusion, disorientation, altered attention, or visual hallucinations is a delirium warning pattern, particularly when it differs sharply from baseline. A psychologist should assess immediate safety and facilitate timely medical care rather than diagnose late-onset schizophrenia, begin psychotherapy, or rely on a personality inventory. Delirium is a clinical syndrome with many possible causes; the vignette raises concern but does not establish its etiology by itself.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.nice.org.uk/guidance/cg103/chapter/Recommendations"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Delirium: prevention, diagnosis and management ? Recommendations",
+          "organization": "National Institute for Health and Care Excellence",
+          "url": "https://www.nice.org.uk/guidance/cg103/chapter/Recommendations",
+          "whyReputable": "Current national clinical guideline identifying acute confusion and perceptual changes as delirium indicators requiring competent assessment and medical diagnosis."
+        }
+      ],
+      "reviewNote": "Reframed abrupt confusion and visual hallucinations as an urgent medical differential rather than an automatic primary psychiatric diagnosis.",
+      "reviewDate": "2026-07-23",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-02",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-3e681f798139b39a",
+      "chapterId": "ch-3",
+      "sectionId": "ch-3-section-7",
+      "domainId": 1,
+      "domain": "Assessment & Diagnosis",
+      "prompt": "A company asks a psychologist to exclude leadership applicants with any elevated MCMI-IV personality-pattern score. What is the best response?",
+      "choices": [
+        "Proceed because BR scores are universal diagnostic probabilities",
+        "Proceed because the inventory is brief",
+        "Decline that automatic use and select methods supported for the employment population, construct, fairness, and decision",
+        "Convert BR scores to T scores and retain the rule"
+      ],
+      "answerIndex": 2,
+      "rationale": "The psychologist should decline the automatic exclusion rule. Pearson describes the MCMI-IV as a clinical instrument scored against an adult inpatient and outpatient clinical sample; an elevated personality-pattern score is not a universal probability that an applicant will fail as a leader. High-stakes employment use requires evidence for the intended population, job-relevant construct, decision rule, incremental value, fairness, accessibility, and consequences. Converting score metrics or pointing to brevity does not create that evidence, and assessment findings should not substitute for a defensible job analysis.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.pearsonassessments.com/store/en/usd/p/100001362.html",
+        "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "MCMI-IV ? Millon Clinical Multiaxial Inventory-IV",
+          "organization": "Pearson Assessments",
+          "url": "https://www.pearsonassessments.com/store/en/usd/p/100001362.html",
+          "whyReputable": "Official publisher documentation specifying the instrument?s clinical purpose, adult inpatient and outpatient scoring framework, and clinical normative sample."
+        },
+        {
+          "title": "Standards for Educational and Psychological Testing",
+          "organization": "AERA, APA, and NCME",
+          "url": "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf",
+          "whyReputable": "Joint professional standards governing evidence for intended test interpretations and uses, fairness, appropriate populations, administration, and high-stakes decisions."
+        }
+      ],
+      "reviewNote": "Anchored the response to the MCMI-IV clinical normative framework and the validity and fairness evidence required for employment selection.",
+      "reviewDate": "2026-07-23",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-02",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-e2de3c5b45ca52b0",
+      "chapterId": "ch-7",
+      "sectionId": "ch-7-section-5",
+      "domainId": 2,
+      "domain": "Ethical, Legal & Professional Issues",
+      "prompt": "Dr. Smith, a clinical psychologist in a small rural town, discovers that the only mechanic in town who can fix her car is also the father of her current 12-year-old therapy client. According to the APA Ethics Code, what is the most appropriate course of action?",
+      "choices": [
+        "Terminate therapy with the child immediately before having the car repaired.",
+        "Have the car repaired because agreeing not to discuss the child eliminates every possible boundary risk.",
+        "Consider using the mechanic only after assessing whether the limited business contact is reasonably expected to impair objectivity, competence, or effectiveness or risk exploitation or harm, and manage foreseeable boundaries.",
+        "Refuse to have the car repaired by him in every circumstance because any business contact is automatically unethical."
+      ],
+      "answerIndex": 2,
+      "rationale": "Standard 3.05 does not make every overlapping role unethical and does not use ?unavoidable? as a complete safe harbor. The psychologist should assess prospectively whether this limited business contact could reasonably impair objectivity, competence, or effectiveness or create exploitation or harm, while considering the child, caregiver, local alternatives, confidentiality, power, and foreseeable future contact. If the risks are acceptably low, the transaction may be permissible with thoughtful boundary management; if material risks emerge, the psychologist should seek another arrangement. A promise not to discuss therapy does not eliminate every risk.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.apa.org/ethics/code"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Ethical Principles of Psychologists and Code of Conduct",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/ethics/code",
+          "whyReputable": "Official APA Ethics Code containing Standards 3.05, 9.04, and 9.11 on multiple relationships, test-data release, and protection of test materials."
+        }
+      ],
+      "reviewNote": "Removed the implication that ?unavoidable? is the Ethics Code test and added prospective risk assessment and boundary management.",
+      "reviewDate": "2026-07-23",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-02",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-859c96501a806e58",
+      "chapterId": "ch-10",
+      "sectionId": "ch-10-section-3",
+      "domainId": 2,
+      "domain": "Ethical, Legal & Professional Issues",
+      "prompt": "A client signs a release directing the psychologist to send the client’s raw scores and response data to a named qualified psychologist, and separately asks for a blank test manual and item booklet. What is the best response under Standards 9.04 and 9.11?",
+      "choices": [
+        "Send everything because a signed release overrides test-security duties.",
+        "Refuse both requests because all assessment information is protected test material.",
+        "Apply the 9.04 release pathway to the requested test data and recipient, while protecting the blank manual and item booklet under 9.11 consistent with law and contractual obligations.",
+        "Send only a narrative interpretation because raw scores can never be test data."
+      ],
+      "answerIndex": 2,
+      "rationale": "The keyed response keeps Standards 9.04 and 9.11 distinct. Test data can include raw and scaled scores and the client?s responses, and a valid release to a named qualified psychologist ordinarily triggers the 9.04 pathway subject to its exceptions and applicable law. A blank manual and unused item booklet are test materials whose security remains protected consistent with law, publisher contracts, and professional obligations. A release is not a waiver of every security duty, but neither is test security a categorical reason to withhold all client test data or provide only a narrative summary.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.apa.org/ethics/code",
+        "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Ethical Principles of Psychologists and Code of Conduct",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/ethics/code",
+          "whyReputable": "Official APA Ethics Code containing Standards 3.05, 9.04, and 9.11 on multiple relationships, test-data release, and protection of test materials."
+        },
+        {
+          "title": "Standards for Educational and Psychological Testing",
+          "organization": "AERA, APA, and NCME",
+          "url": "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf",
+          "whyReputable": "Joint professional standards governing evidence for intended test interpretations and uses, fairness, appropriate populations, administration, and high-stakes decisions."
+        }
+      ],
+      "reviewNote": "Preserved the distinction between releasable test data and protected blank test materials without turning either standard into an absolute.",
+      "reviewDate": "2026-07-23",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-02",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-3f0cd52860438657",
+      "chapterId": "ch-14",
+      "sectionId": "ch-14-section-6",
+      "domainId": 3,
+      "domain": "Treatment, Intervention & Prevention",
+      "prompt": "During a planned ERP exercise, a client’s anxiety remains elevated, but the feared catastrophe does not occur and the client refrains from the ritual. What is the best interpretation?",
+      "choices": [
+        "The exercise failed because anxiety must decline before it ends.",
+        "The exercise may still support corrective or inhibitory learning; review the prediction, observed outcome, ritual prevention, and what to practice next.",
+        "The therapist should add reassurance until anxiety reaches zero.",
+        "ERP should be replaced automatically with flooding."
+      ],
+      "answerIndex": 1,
+      "rationale": "The exercise may still produce useful corrective or inhibitory learning even though anxiety did not fall during that session. The client encountered the feared cue, prevented the ritual, and observed that the predicted catastrophe did not occur; those facts support reviewing the original prediction, what was learned, what safety behaviors remained, and how to retrieve and generalize the learning in future contexts. Within-session habituation can occur, but it is not the only outcome or a mandatory stopping rule. Reassurance can become a safety behavior, and persistent anxiety alone does not justify automatically abandoning ERP or switching to flooding.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.nice.org.uk/guidance/cg31",
+        "https://pubmed.ncbi.nlm.nih.gov/24864005/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Obsessive-compulsive disorder and body dysmorphic disorder: treatment",
+          "organization": "National Institute for Health and Care Excellence",
+          "url": "https://www.nice.org.uk/guidance/cg31",
+          "whyReputable": "Evidence-based national clinical guideline identifying cognitive-behavioral treatment including exposure and response prevention for OCD."
+        },
+        {
+          "title": "Maximizing exposure therapy: an inhibitory learning approach",
+          "organization": "Behaviour Research and Therapy / PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/24864005/",
+          "whyReputable": "Peer-reviewed clinical review distinguishing inhibitory learning and expectancy violation from a requirement for within-session fear habituation."
+        }
+      ],
+      "reviewNote": "Kept ERP success separate from mandatory within-session anxiety reduction and centered prediction testing and response prevention.",
+      "reviewDate": "2026-07-23",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-02",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-a08ce22420fae4ce",
+      "chapterId": "ch-19",
+      "sectionId": "ch-19-section-6",
+      "domainId": 3,
+      "domain": "Treatment, Intervention & Prevention",
+      "prompt": "An older adult reports new memory problems and depressed mood. Which response is most accurate?",
+      "choices": [
+        "Diagnose depression-related pseudodementia and promise cognition will normalize with mood treatment.",
+        "Assume dementia because cognitive decline is a normal part of aging.",
+        "Assess onset, function, mood, delirium, medications, sensory and medical factors, and possible neurocognitive disorder; depression and neurocognitive illness can coexist.",
+        "Use age alone to choose reminiscence therapy before assessment."
+      ],
+      "answerIndex": 2,
+      "rationale": "New memory complaints and depressed mood call for a broad evaluation, not a shortcut label. History should clarify onset, course, daily functioning, mood and suicide risk, delirium features, sleep, substance use, medications, sensory access, neurologic and medical conditions, and available informant observations, with cognitive assessment and medical referral as indicated. Depression can impair concentration and memory and may improve with treatment, but it can coexist with mild or major neurocognitive disorder. Aging alone neither explains significant decline nor establishes dementia, and treatment selection should follow assessment rather than age.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.nia.nih.gov/health/health-care-professionals-information/assessing-cognitive-impairment-older-patients",
+        "https://www.nia.nih.gov/health/depression-and-older-adults"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Assessing Cognitive Impairment in Older Patients",
+          "organization": "National Institute on Aging",
+          "url": "https://www.nia.nih.gov/health/health-care-professionals-information/assessing-cognitive-impairment-older-patients",
+          "whyReputable": "Current NIH clinical guidance covering cognitive, functional, mood, medication, medical, delirium, sensory, and potentially reversible contributors."
+        },
+        {
+          "title": "Depression and Older Adults",
+          "organization": "National Institute on Aging",
+          "url": "https://www.nia.nih.gov/health/depression-and-older-adults",
+          "whyReputable": "Current NIH guidance explaining that depression is treatable, can affect cognition, may coexist with dementia, and requires medical and psychological evaluation."
+        }
+      ],
+      "reviewNote": "Rejected both ?pseudodementia? certainty and age-based dementia assumptions in favor of a broad, function-centered evaluation.",
+      "reviewDate": "2026-07-23",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-02",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-00c8f653423b6373",
+      "chapterId": "ch-21",
+      "sectionId": "ch-21-section-4",
+      "domainId": 4,
+      "domain": "Biological Bases of Behavior",
+      "prompt": "A study estimates a trait’s heritability at .70 in one sampled population. Which conclusion is justified?",
+      "choices": [
+        "Seventy percent of each person’s trait is caused by genes.",
+        "The trait cannot be changed environmentally.",
+        "Under that study’s model and population conditions, genetic differences statistically account for about 70% of observed variance; the estimate need not generalize to other populations or environments.",
+        "The difference between two demographic groups is 70% genetic."
+      ],
+      "answerIndex": 2,
+      "rationale": "A heritability estimate of .70 means that, under the sampled population, environment, measurements, and statistical model, genetic differences account for about 70% of the observed variation among people in that trait. It does not mean that 70% of any one person?s trait was caused by genes, identify which genes or environments matter, prove that the trait cannot change, or explain a difference between demographic groups. Heritability can change when environmental variation, population composition, measurement, or other conditions change, so the estimate should not be exported automatically to another population.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://medlineplus.gov/genetics/understanding/inheritance/heritability/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "What is heritability?",
+          "organization": "MedlinePlus Genetics, National Library of Medicine",
+          "url": "https://medlineplus.gov/genetics/understanding/inheritance/heritability/",
+          "whyReputable": "Authoritative NIH explanation that heritability concerns population variance under specific environmental conditions, not individual causation or immutability."
+        }
+      ],
+      "reviewNote": "Made the population-variance interpretation explicit and blocked individual, between-group, and immutability misconceptions.",
+      "reviewDate": "2026-07-23",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-02",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-a3d605541e93d3a9",
+      "chapterId": "ch-23",
+      "sectionId": "ch-23-section-4",
+      "domainId": 4,
+      "domain": "Biological Bases of Behavior",
+      "prompt": "A 22-year-old college student reports excessive daytime sleepiness and episodes where she suddenly loses muscle tone and collapses when laughing or surprised. She also reports vivid hallucinations at sleep onset and occasionally wakes up unable to move. What is the most likely diagnosis?",
+      "choices": [
+        "Obstructive sleep apnea",
+        "REM sleep behavior disorder",
+        "Narcolepsy with cataplexy",
+        "Generalized anxiety disorder with panic attacks"
+      ],
+      "answerIndex": 2,
+      "rationale": "Among the choices, narcolepsy with cataplexy is the best fit. Excessive daytime sleepiness combined with brief emotion-triggered loss of muscle tone is the characteristic cataplexy pattern; hallucinations at sleep onset and paralysis on awakening are additional REM-related features often seen in narcolepsy. The vignette is not a substitute for diagnosis: a sleep specialist evaluates sleep schedule, medications, substances, sleep apnea and other alternatives and uses overnight polysomnography, a multiple sleep latency test, and other criteria as indicated. Hallucinations or sleep paralysis alone would be nonspecific.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.nhlbi.nih.gov/health/narcolepsy"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Narcolepsy",
+          "organization": "National Heart, Lung, and Blood Institute",
+          "url": "https://www.nhlbi.nih.gov/health/narcolepsy",
+          "whyReputable": "Current NIH disease guidance describing excessive daytime sleepiness, emotion-triggered cataplexy, sleep paralysis, hallucinations, and diagnostic evaluation."
+        }
+      ],
+      "reviewNote": "Retained the classic narcolepsy pattern while distinguishing a best-answer inference from a completed sleep-disorder diagnosis.",
+      "reviewDate": "2026-07-23",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-02",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-9e3412c360f26f39",
+      "chapterId": "ch-29",
+      "sectionId": "ch-29-section-2",
+      "domainId": 5,
+      "domain": "Cognitive-Affective Bases of Behavior",
+      "prompt": "A client makes many perseverative errors on the WCST. Which conclusion is best supported by that result alone?",
+      "choices": [
+        "The client has a confirmed focal prefrontal lesion",
+        "The client showed difficulty adapting sorting behavior to feedback under this task’s combined demands",
+        "The client has a pure shifting deficit with memory, language, and motivation ruled out",
+        "The client meets diagnostic criteria for dysexecutive syndrome"
+      ],
+      "answerIndex": 1,
+      "rationale": "Perseverative errors most directly show difficulty changing a sorting response when feedback indicates that the rule has changed. The WCST draws on abstract reasoning, feedback use, working memory, attention, comprehension, motivation, sensory access, and set shifting, so one score does not isolate a pure mechanism. Although performance can be sensitive to frontal-system dysfunction, it is not specific enough by itself to confirm a focal prefrontal lesion or a dysexecutive diagnosis. Interpretation requires appropriate norms, performance-validity context, history, behavior, and converging neuropsychological and medical evidence.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.parinc.com/products/WCST",
+        "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Wisconsin Card Sorting Test",
+          "organization": "PAR, Inc.",
+          "url": "https://www.parinc.com/products/WCST",
+          "whyReputable": "Official publisher description defining the task as a measure of perseveration, abstract reasoning, feedback use, and set shifting within broader executive-function assessment."
+        },
+        {
+          "title": "Standards for Educational and Psychological Testing",
+          "organization": "AERA, APA, and NCME",
+          "url": "https://www.testingstandards.net/uploads/7/6/6/4/76643089/standards_2014edition.pdf",
+          "whyReputable": "Joint professional standards requiring test interpretations to stay within supported validity evidence and to integrate relevant context for the intended use."
+        }
+      ],
+      "reviewNote": "Constrained interpretation to observed task behavior and required converging evidence before lesion localization or diagnosis.",
+      "reviewDate": "2026-07-23",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-02",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-2dae48215c727eed",
+      "chapterId": "ch-29",
+      "sectionId": "ch-29-section-4",
+      "domainId": 5,
+      "domain": "Cognitive-Affective Bases of Behavior",
+      "prompt": "What is the best conclusion from the larger marshmallow-test conceptual replication?",
+      "choices": [
+        "Preschool delay behavior has no relation to any later outcome",
+        "Family background alone was proven to cause both waiting and achievement",
+        "The predictive association was smaller and substantially attenuated after relevant controls, so the task should not be treated as a pure causal measure of willpower",
+        "The original investigators fabricated their findings"
+      ],
+      "answerIndex": 2,
+      "rationale": "The larger conceptual replication found a smaller bivariate association between preschool waiting and later achievement than the famous early reports, and the association was reduced substantially after controls for family background, early cognitive ability, and the home environment. Behavioral-outcome associations were smaller and often not statistically significant. This supports treating the task as contextual and multicausal rather than as a pure causal measure of willpower or a destiny test. Covariate adjustment does not prove that family background alone caused both variables, and attenuation does not show that all self-regulation evidence is meaningless.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://doi.org/10.1177/0956797618761661"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Revisiting the Marshmallow Test: A Conceptual Replication Investigating Links Between Early Delay of Gratification and Later Outcomes",
+          "organization": "Psychological Science",
+          "url": "https://doi.org/10.1177/0956797618761661",
+          "whyReputable": "Peer-reviewed conceptual replication using a larger, more diverse sample and reporting attenuation after family, cognitive, and home-environment controls."
+        }
+      ],
+      "reviewNote": "Preserved the replication?s actual attenuation result without claiming that self-regulation is meaningless or that covariates prove causation.",
+      "reviewDate": "2026-07-23",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-02",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-af4d594cf6d7bf40",
+      "chapterId": "ch-32",
+      "sectionId": "ch-32-section-4",
+      "domainId": 6,
+      "domain": "Social & Cultural Bases of Behavior",
+      "prompt": "Which statement about an individual IAT score is most defensible?",
+      "choices": [
+        "It diagnoses prejudice and predicts how the person will behave in every setting",
+        "It directly reveals a stable unconscious belief",
+        "It reflects relative task performance that may inform research but needs reliability, context, and criterion limits",
+        "It is interchangeable with an explicit self-report attitude scale"
+      ],
+      "answerIndex": 2,
+      "rationale": "An IAT score reflects relative response-time performance for the paired categories under a particular administration. Project Implicit cautions against treating one score as a permanent property of an individual or a confident forecast of that person?s behavior on a specific occasion; practice, order, context, reliability, scoring, and the selected categories can matter. Research can find aggregate relationships between IAT scores and outcomes, but an aggregate association does not make a single score diagnostic of prejudice. The measure is also not interchangeable with explicit self-report, which captures different information.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://implicit.harvard.edu/implicit/faqs.html",
+        "https://pubmed.ncbi.nlm.nih.gov/19586237/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Frequently Asked Questions",
+          "organization": "Project Implicit",
+          "url": "https://implicit.harvard.edu/implicit/faqs.html",
+          "whyReputable": "Current guidance from the IAT research organization cautioning against permanent individual interpretations and specific individual behavioral predictions."
+        },
+        {
+          "title": "Understanding and using the Implicit Association Test: III. Meta-analysis of predictive validity",
+          "organization": "Journal of Personality and Social Psychology / PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/19586237/",
+          "whyReputable": "Peer-reviewed meta-analysis quantifying aggregate predictive relationships while supporting careful interpretation across outcomes and methods."
+        }
+      ],
+      "reviewNote": "Updated the individual-score interpretation using Project Implicit?s current cautions and aggregate predictive-validity evidence.",
+      "reviewDate": "2026-07-23",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-02",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-acdc5f5ce3b70db4",
+      "chapterId": "ch-34",
+      "sectionId": "ch-34-section-2",
+      "domainId": 6,
+      "domain": "Social & Cultural Bases of Behavior",
+      "prompt": "A national survey reports a higher average collectivism score in one country than another. What can a psychologist conclude about a client from that country?",
+      "choices": [
+        "The client necessarily prefers family-led treatment",
+        "The client is unlikely to value autonomy",
+        "The group result can guide a respectful question, but it cannot determine the client’s values or preferred care",
+        "The client should be assigned a high-context communication style"
+      ],
+      "answerIndex": 2,
+      "rationale": "A country-level average describes a sampled group and cannot determine an individual client?s values, communication style, decision preferences, or treatment goals. Treating the mean as the person commits an ecological inference error and obscures within-country diversity, migration history, region, language, generation, class, disability, religion, gender, and other intersecting contexts. The finding can support a respectful question about family involvement, autonomy, authority, communication, and goals, but the clinician should listen to the client?s own account and revisit assumptions as the relationship and context develop.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.apa.org/about/policy/multicultural-guidelines.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Multicultural Guidelines: An Ecological Approach to Context, Identity, and Intersectionality",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/about/policy/multicultural-guidelines.pdf",
+          "whyReputable": "APA policy guidance emphasizing within-group diversity, intersectionality, ecological context, power, language, and individualized culturally responsive inquiry."
+        }
+      ],
+      "reviewNote": "Prevented ecological stereotyping while preserving national survey findings as possible prompts for individualized inquiry.",
+      "reviewDate": "2026-07-23",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-02",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-e77404777e6e9eb3",
+      "chapterId": "ch-36",
+      "sectionId": "ch-36-section-2",
+      "domainId": 7,
+      "domain": "Growth & Lifespan Development",
+      "prompt": "An infant receives a disorganized classification in a properly coded Strange Situation. Which conclusion is justified?",
+      "choices": [
+        "The caregiver has maltreated the infant",
+        "The infant has reactive attachment disorder",
+        "The observed strategy showed disruption in that procedure and relationship; broader assessment is required before clinical or protective conclusions",
+        "The infant will develop adult psychopathology"
+      ],
+      "answerIndex": 2,
+      "rationale": "The justified conclusion stays at the level of the observed procedure and relationship: the infant showed a disruption in attachment strategy during a properly coded Strange Situation. Expert consensus warns that disorganized classification is not proof of maltreatment, not a DSM attachment disorder, not a fixed trait, and not a deterministic predictor of later pathology. Maltreatment can increase group-level rates, but multiple pathways can produce disorganized behavior and many maltreated infants are not classified this way. Clinical or protective decisions require broad, case-specific evidence from qualified assessment.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/28745146/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Disorganized attachment in infancy: implications for clinicians and policy-makers",
+          "organization": "Attachment & Human Development / PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/28745146/",
+          "whyReputable": "Broad expert consensus review rejecting use of disorganized attachment as proof of maltreatment, a fixed trait, a diagnosis, or a strong deterministic predictor."
+        }
+      ],
+      "reviewNote": "Replaced HTML-encoded option-by-option shorthand with the consensus boundary between a research classification, maltreatment, and diagnosis.",
+      "reviewDate": "2026-07-23",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-02",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-d618789af58acc09",
+      "chapterId": "ch-38",
+      "sectionId": "ch-38-section-4",
+      "domainId": 7,
+      "domain": "Growth & Lifespan Development",
+      "prompt": "When are adolescent-adult decision differences most likely according to a qualified dual-systems account?",
+      "choices": [
+        "In every decision because adolescents lack reasoning capacity",
+        "Only after age 25, when the brain suddenly becomes adult",
+        "More often in emotionally arousing, immediately rewarding, stressful, fatigued, or peer-salient contexts than in calm deliberative contexts",
+        "Whenever an adolescent makes a choice an adult dislikes"
+      ],
+      "answerIndex": 2,
+      "rationale": "A qualified dual-systems account predicts larger adolescent-adult differences most often in ?hot? contexts involving immediate rewards, emotional arousal, stress, fatigue, or salient peers, rather than in calm settings that allow deliberation. The model describes average developmental tendencies and interacting systems; it does not say every adolescent lacks reasoning capacity, that the brain becomes adult on a particular birthday, or that any choice an adult dislikes is immature. Individual development, experience, culture, opportunity, supportive relationships, and the direction of peer influence all matter, and adolescent exploration can be adaptive.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.nationalacademies.org/read/25388/chapter/2",
+        "https://doi.org/10.1002/dev.20445"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The Promise of Adolescence: Realizing Opportunity for All Youth",
+          "organization": "National Academies of Sciences, Engineering, and Medicine",
+          "url": "https://www.nationalacademies.org/read/25388/chapter/2",
+          "whyReputable": "National Academies consensus review presenting adolescent development as adaptive, context-sensitive, variable, and shaped by family, peers, culture, and opportunity."
+        },
+        {
+          "title": "A dual systems model of adolescent risk-taking",
+          "organization": "Developmental Psychobiology",
+          "url": "https://doi.org/10.1002/dev.20445",
+          "whyReputable": "Peer-reviewed foundational model examining different developmental trajectories for reward seeking and impulse control without claiming universal incapacity."
+        }
+      ],
+      "reviewNote": "Kept the context-sensitive dual-systems account while rejecting universal adolescent incapacity and the age-25 switch myth.",
+      "reviewDate": "2026-07-23",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-02",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-5f22b09acfe5dc19",
+      "chapterId": "ch-41",
+      "sectionId": "ch-41-section-2",
+      "domainId": 8,
+      "domain": "Research Methods & Statistics",
+      "prompt": "A school selects the 20 lowest-scoring students on a reading test for a new tutoring program. After 8 weeks, the students are retested and their scores have improved. The principal concludes the tutoring was effective. The MOST likely threat to this conclusion is:",
+      "choices": [
+        "History — outside events caused the improvement",
+        "Maturation — the students simply grew older",
+        "Statistical regression to the mean — extreme scores naturally move toward average on retesting",
+        "Mortality — the lowest students dropped out"
+      ],
+      "answerIndex": 2,
+      "rationale": "Regression toward the mean is the leading alternative explanation because the school selected students for unusually low observed scores and then measured the same construct again. Each score contains stable performance plus occasion-specific influences and measurement error; unusually unfavorable influences are unlikely to recur in exactly the same combination, so the selected group tends to be less extreme on retest even without effective tutoring. Improvement therefore does not establish a treatment effect. A concurrent comparison group selected by the same rule, repeated baseline measurement, random assignment when feasible, and analysis of measurement reliability would strengthen the inference.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.bmj.com/content/309/6957/780"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Statistics Notes: Some examples of regression towards the mean",
+          "organization": "BMJ",
+          "url": "https://www.bmj.com/content/309/6957/780",
+          "whyReputable": "Peer-reviewed statistical explanation of why groups selected for extreme values tend to be less extreme on a later imperfectly correlated measurement."
+        }
+      ],
+      "reviewNote": "Shortened the legacy coaching language and tied the threat precisely to selection on extreme, imperfectly reliable scores.",
+      "reviewDate": "2026-07-23",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-02",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-52708d9f28539b52",
+      "chapterId": "ch-41",
+      "sectionId": "ch-41-section-4",
+      "domainId": 8,
+      "domain": "Research Methods & Statistics",
+      "prompt": "In a psychotherapy study, the researcher who conducts the therapy sessions also rates patient improvement. The researcher strongly believes in the treatment's efficacy. This design is MOST vulnerable to:",
+      "choices": [
+        "Demand characteristics — patients guess the hypothesis",
+        "Experimenter expectancy (Rosenthal effect) — the researcher's beliefs influence ratings",
+        "Statistical regression — patients were selected for extreme scores",
+        "History — outside events affected outcomes"
+      ],
+      "answerIndex": 1,
+      "rationale": "The design is especially vulnerable to experimenter expectancy and biased outcome measurement because the same person strongly favors the treatment, delivers it, knows the condition, and makes a judgment-based improvement rating. Beliefs can influence treatment delivery, interactions, thresholds, and interpretation even without deliberate distortion. Psychotherapy trials often cannot blind therapists or participants, so ?double-blind? is not a universal solution. Important safeguards include independent assessors masked to condition where feasible, standardized outcomes, preregistered scoring and time points, fidelity monitoring, balanced expertise, transparent allegiance disclosure, and sensitivity analyses.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.cochrane.org/authors/handbooks-and-manuals/handbook/current/chapter-08",
+        "https://pubmed.ncbi.nlm.nih.gov/38616708/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Cochrane Handbook Chapter 8: Assessing risk of bias in a randomized trial",
+          "organization": "Cochrane",
+          "url": "https://www.cochrane.org/authors/handbooks-and-manuals/handbook/current/chapter-08",
+          "whyReputable": "Authoritative evidence-synthesis guidance explaining differential outcome-measurement bias when assessors know intervention assignment, especially for judgment-based outcomes."
+        },
+        {
+          "title": "Does Researcher Allegiance Bias Outcomes in Psychotherapy Research?",
+          "organization": "Clinical Psychology & Psychotherapy / PubMed",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/38616708/",
+          "whyReputable": "Recent peer-reviewed quasi-experimental analysis finding patterns consistent with allegiance bias in many paired psychotherapy comparisons while noting it is not inevitable."
+        }
+      ],
+      "reviewNote": "Removed the impossible blanket recommendation for double-blinding psychotherapy and focused on unblinded judgment-based outcome measurement.",
+      "reviewDate": "2026-07-23",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-02",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    }
+  ]
+}

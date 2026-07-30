@@ -1,0 +1,193 @@
+{
+  "schemaVersion": 1,
+  "waveId": "eppp-memory-aid-review-wave-03",
+  "generatedAt": "2026-07-23T15:05:23.309Z",
+  "status": "source-reviewed-editorial-pass-independent-expert-review-pending",
+  "summary": { "items": 16, "domains": 8, "itemsPerDomain": 2 },
+  "safeguards": [
+    "Legacy text remains preserved; reviewed replacements are applied by the native catalog builder.",
+    "Every released item names an authoritative source and explains why it is reputable.",
+    "Clinical and legal aids explicitly reject one-size-fits-all treatment, diagnosis, reporting, and duty-to-protect rules.",
+    "Independent qualified expert review and production validation remain pending."
+  ],
+  "items": [
+    {
+      "legacyId": "memory-aid-31b101e16012bd81",
+      "title": "Neurotransmitter Functions",
+      "domainId": 1,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Use a many-to-many map, not one chemical = one behavior or disorder.** Glutamate is the principal excitatory transmitter in much of the CNS, while GABA is a principal inhibitory transmitter; the effect still depends on receptor, cell, circuit, and timing. Dopamine contributes to movement, learning, motivation, reward-related processing, and executive functions. Norepinephrine contributes to arousal, attention, stress responding, and autonomic regulation. Acetylcholine has neuromuscular, autonomic, attentional, and memory-related roles. Serotonin modulates multiple neural and bodily processes. Disorders cannot be diagnosed from a presumed transmitter level: shortcuts such as \"low serotonin = depression\" or \"high dopamine = schizophrenia\" erase pathway, receptor, developmental, and systems-level evidence.",
+      "references": ["https://www.ncbi.nlm.nih.gov/books/NBK10795/", "https://www.ncbi.nlm.nih.gov/books/NBK539894/"],
+      "sourceDetails": [
+        { "title": "Neuroscience, 2nd edition: Neurotransmitters", "organization": "NCBI Bookshelf, U.S. National Library of Medicine", "url": "https://www.ncbi.nlm.nih.gov/books/NBK10795/", "whyReputable": "A scholarly neuroscience textbook hosted and maintained by the U.S. National Library of Medicine." },
+        { "title": "Physiology, Neurotransmitters", "organization": "StatPearls Publishing and NCBI Bookshelf", "url": "https://www.ncbi.nlm.nih.gov/books/NBK539894/", "whyReputable": "A clinically reviewed reference with current summaries of transmitter systems, receptors, and their multiple functions." }
+      ],
+      "reviewNote": "Removed single-transmitter disorder equations and replaced them with receptor-, pathway-, and circuit-aware functions.",
+      "reviewDate": "2026-07-23",
+      "reviewMode": "claim-level-source-and-editorial-review"
+    },
+    {
+      "legacyId": "memory-aid-d22a33a9607200a7",
+      "title": "Antipsychotics & Side Effects",
+      "domainId": 1,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Antipsychotic adverse effects are medication-specific risks, not a universal first-generation/second-generation timeline.** Review expected benefit and each drug's metabolic, extrapyramidal, cardiovascular/QT, hormonal/prolactin, sedating, and subjective effects with the person. Obtain and follow indicated weight, waist, blood pressure, glucose or HbA1c, lipids, movement findings, prolactin, and ECG information. Acute dystonia, akathisia, drug-induced parkinsonism, and tardive dyskinesia can differ in onset and persistence; akathisia can resemble agitation or anxiety. Neuroleptic malignant syndrome is an urgent medical concern. Clozapine has distinct monitoring requirements. For exam reasoning, identify the observed syndrome and medication rather than relying on \"four D's in order\" or assuming every newer drug has low movement risk.",
+      "references": ["https://www.nice.org.uk/guidance/cg178/chapter/recommendations", "https://www.nimh.nih.gov/health/publications/schizophrenia"],
+      "sourceDetails": [
+        { "title": "Psychosis and schizophrenia in adults: prevention and management (CG178), Recommendations", "organization": "National Institute for Health and Care Excellence", "url": "https://www.nice.org.uk/guidance/cg178/chapter/recommendations", "whyReputable": "A current public clinical guideline developed through systematic evidence review and explicit monitoring recommendations." },
+        { "title": "Schizophrenia", "organization": "National Institute of Mental Health, National Institutes of Health", "url": "https://www.nimh.nih.gov/health/publications/schizophrenia", "whyReputable": "An official federal clinical-information resource that describes antipsychotic benefits, common adverse effects, and clozapine monitoring." }
+      ],
+      "reviewNote": "Replaced a deterministic side-effect timeline and class dichotomy with medication-specific risk recognition and monitoring.",
+      "reviewDate": "2026-07-23",
+      "reviewMode": "claim-level-source-and-editorial-review"
+    },
+    {
+      "legacyId": "memory-aid-0d9f55e55bdf8638",
+      "title": "Yerkes-Dodson Law",
+      "domainId": 2,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Treat Yerkes-Dodson as a historical task-performance finding, not a universal coffee curve.** In the 1908 experiment, mice learned a light-dark discrimination under different shock intensities; the intensity associated with faster learning differed with discrimination difficulty. The familiar inverted-U is a later, broader teaching summary. Performance can depend on what \"arousal\" measures, task demands, skill, motivation, fatigue, anxiety, individual differences, and the outcome being scored. A safer exam cue is: activation may help or hinder performance depending on person, task, and context; difficult tasks do not all have one optimal moderate level, and simple tasks do not improve indefinitely as arousal rises.",
+      "references": ["https://doi.org/10.1002/cne.920180503"],
+      "sourceDetails": [
+        { "title": "The relation of strength of stimulus to rapidity of habit-formation", "organization": "Robert M. Yerkes and John D. Dodson, Journal of Comparative Neurology and Psychology", "url": "https://doi.org/10.1002/cne.920180503", "whyReputable": "The landmark primary experiment, which permits the original species, task, manipulation, and boundary conditions to be stated accurately." }
+      ],
+      "reviewNote": "Bounded the inverted-U mnemonic to the original discrimination experiment and removed unlimited simple-task improvement.",
+      "reviewDate": "2026-07-23",
+      "reviewMode": "claim-level-source-and-editorial-review"
+    },
+    {
+      "legacyId": "memory-aid-03276f70e3313877",
+      "title": "Learned Helplessness & Seligman",
+      "domainId": 2,
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Core cue: experienced controllability changes later responding, but the theory has evolved.** Early animal studies found that prior uncontrollable aversive events could interfere with later escape learning. The original account proposed learning that outcomes were independent of responses. Later neuroscience reframed important mechanisms: passivity can be a default response to prolonged aversive stimulation, while detecting control recruits circuitry that can inhibit stress responses and support later resilience. The reformulated human model examined causal explanations using internal-external, stable-unstable, and global-specific dimensions, but \"internal + stable + global = depression\" is not a diagnosis or inevitable outcome. Avoid anthropomorphic dog stories, victim-blaming, and direct one-step generalization from laboratory stress to a person's depressive disorder.",
+      "references": ["https://pubmed.ncbi.nlm.nih.gov/27337390/"],
+      "sourceDetails": [
+        { "title": "Learned helplessness at fifty: Insights from neuroscience", "organization": "Steven F. Maier and Martin E. P. Seligman, Psychological Review", "url": "https://pubmed.ncbi.nlm.nih.gov/27337390/", "whyReputable": "A peer-reviewed fifty-year reappraisal by the original investigators that explicitly revises the early learning account using later evidence." }
+      ],
+      "reviewNote": "Updated the historical model, separated controllability research from diagnosis, and removed deterministic depressive attributions.",
+      "reviewDate": "2026-07-23",
+      "reviewMode": "claim-level-source-and-editorial-review"
+    },
+    {
+      "legacyId": "memory-aid-593884549c640076", "title": "Berry's Acculturation Strategies", "domainId": 3, "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Berry's two questions organize a model; they do not sort people into fixed or ranked identities.** Ask whether maintaining heritage culture and identity is valued and whether relationships or participation with a larger society are sought or available. The combinations are commonly labeled integration, assimilation, separation, and marginalization. Apply them at a specified time and domain because language, family, work, religion, and community participation can differ. Adaptation also depends on migration history, discrimination, policy, opportunity, reception, and the attitudes of the larger society. Do not phrase the grid as \"take theirs,\" treat integration as universally best, or portray marginalization as a freely chosen personal failure; power and exclusion can constrain every option.",
+      "references": ["https://doi.org/10.1111/j.1464-0597.1997.tb01087.x", "https://www.apa.org/about/policy/multicultural-guidelines.pdf"],
+      "sourceDetails": [
+        { "title": "Immigration, Acculturation, and Adaptation", "organization": "John W. Berry, Applied Psychology: An International Review", "url": "https://doi.org/10.1111/j.1464-0597.1997.tb01087.x", "whyReputable": "The peer-reviewed primary presentation of the framework, including social and personal variables in both origin and settlement contexts." },
+        { "title": "Multicultural Guidelines: An Ecological Approach to Context, Identity, and Intersectionality", "organization": "American Psychological Association", "url": "https://www.apa.org/about/policy/multicultural-guidelines.pdf", "whyReputable": "APA's official professional guidelines for contextual, ecological, identity-aware, and intersectional psychological work." }
+      ],
+      "reviewNote": "Removed dominant-culture ownership language, fixed rankings, and person-only explanations of acculturation.", "reviewDate": "2026-07-23", "reviewMode": "claim-level-source-and-editorial-review"
+    },
+    {
+      "legacyId": "memory-aid-f12ef1a059bea901", "title": "Sue's Multicultural Competence", "domainId": 3, "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Awareness, knowledge, and skills are an ongoing practice framework, not a completed checklist.** Awareness includes examining one's identities, assumptions, power, privilege, limits, and potential bias. Knowledge includes the client's own meaning-making plus historical, community, institutional, and sociopolitical context; it is not memorizing traits assigned to a group. Skills include adapting assessment, communication, formulation, intervention, consultation, and advocacy collaboratively, then evaluating impact and repairing misattunement. Ask rather than assume, use cultural humility, attend to intersectionality and within-group variation, and distinguish self-rated confidence from demonstrated competence. The therapeutic relationship and structural barriers remain part of the work.",
+      "references": ["https://doi.org/10.1002/j.2161-1912.1992.tb00563.x", "https://www.apa.org/about/policy/multicultural-guidelines.pdf"],
+      "sourceDetails": [
+        { "title": "Multicultural Counseling Competencies and Standards: A Call to the Profession", "organization": "Derald Wing Sue, Patricia Arredondo, and Roderick J. McDavis, Journal of Multicultural Counseling and Development", "url": "https://doi.org/10.1002/j.2161-1912.1992.tb00563.x", "whyReputable": "The peer-reviewed foundational articulation of the awareness, knowledge, and skills competency framework." },
+        { "title": "Multicultural Guidelines: An Ecological Approach to Context, Identity, and Intersectionality", "organization": "American Psychological Association", "url": "https://www.apa.org/about/policy/multicultural-guidelines.pdf", "whyReputable": "APA's official guidelines expand the framework to ecological context, intersectionality, power, and institutional influences." }
+      ],
+      "reviewNote": "Expanded AKS beyond group facts and self-confidence to humility, relationship, context, action, and evaluated impact.", "reviewDate": "2026-07-23", "reviewMode": "claim-level-source-and-editorial-review"
+    },
+    {
+      "legacyId": "memory-aid-22822888f466ab22", "title": "Kubler-Ross Grief Stages", "domainId": 4, "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**DABDA is a historical vocabulary, not a required sequence or timetable for bereavement.** Denial, anger, bargaining, depression, and acceptance described responses associated with confronting death and were later widely applied to grief. A person may experience some, none, several at once, or revisit feelings without progressing through stages. Culture, relationship, circumstances of the death, development, health, support, and prior loss shape grieving. Do not tell a bereaved person which stage they are in or treat continuing sadness as failure to reach acceptance. Distinguish varied, often oscillating grief from DSM-5-TR prolonged grief disorder, which requires its own duration, symptoms, impairment, developmental, and cultural-context criteria.",
+      "references": ["https://pmc.ncbi.nlm.nih.gov/articles/PMC8675126/", "https://www.psychiatry.org/File%20Library/Psychiatrists/Practice/DSM/DSM-5-TR/APA-DSM5TR-ProlongedGriefDisorder.pdf"],
+      "sourceDetails": [
+        { "title": "Stages of Grief Portrayed on the Internet: A Systematic Analysis and Critical Appraisal", "organization": "Frontiers in Psychology, indexed in PubMed Central", "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8675126/", "whyReputable": "A peer-reviewed critical analysis documenting how prescriptive stage presentations can misrepresent and harmfully constrain grief." },
+        { "title": "DSM-5-TR: Prolonged Grief Disorder", "organization": "American Psychiatric Association", "url": "https://www.psychiatry.org/File%20Library/Psychiatrists/Practice/DSM/DSM-5-TR/APA-DSM5TR-ProlongedGriefDisorder.pdf", "whyReputable": "The official psychiatric association fact sheet explaining the evidence-reviewed DSM-5-TR diagnostic addition and its core features." }
+      ],
+      "reviewNote": "Recast DABDA as nonprescriptive history and separated normal variability in grief from a formal diagnosis.", "reviewDate": "2026-07-23", "reviewMode": "claim-level-source-and-editorial-review"
+    },
+    {
+      "legacyId": "memory-aid-f544e474db9589e8", "title": "Teratogens & Prenatal Development", "domainId": 4, "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Prenatal risk depends on exposure, dose, timing, route, susceptibility, co-exposures, and the outcome measured; do not memorize a mixed \"FATAL CATS\" list.** A teratogen is an exposure capable of disrupting prenatal development under particular conditions. Alcohol has no known safe amount or time during pregnancy and can affect development throughout pregnancy. Some medications, infections, nicotine products, illicit substances, toxic metals, radiation levels, fever, and poorly controlled health conditions can increase specific risks, but they are not interchangeable. Maternal age is a risk factor, not a teratogen; ordinary stress and medically indicated diagnostic imaging should not be equated with known high-risk exposures. Do not advise abruptly stopping prescribed medication: current individualized medical and prenatal guidance is required.",
+      "references": ["https://www.cdc.gov/alcohol-pregnancy/about/index.html", "https://www.cdc.gov/birth-defects/prevention/index.html"],
+      "sourceDetails": [
+        { "title": "About Alcohol Use During Pregnancy", "organization": "Centers for Disease Control and Prevention", "url": "https://www.cdc.gov/alcohol-pregnancy/about/index.html", "whyReputable": "Current official U.S. public-health guidance on timing, uncertainty, and documented developmental risks of prenatal alcohol exposure." },
+        { "title": "Preventing Birth Defects", "organization": "Centers for Disease Control and Prevention", "url": "https://www.cdc.gov/birth-defects/prevention/index.html", "whyReputable": "Current federal guidance distinguishing modifiable exposures, infections, medications, health conditions, and preventive care." }
+      ],
+      "reviewNote": "Separated teratogens from risk factors, removed stigmatizing labels, and added dose, timing, susceptibility, and medication-safety boundaries.", "reviewDate": "2026-07-23", "reviewMode": "claim-level-source-and-editorial-review"
+    },
+    {
+      "legacyId": "memory-aid-28fd96d344b9008e", "title": "DSM-5 Schizophrenia Criteria", "domainId": 5, "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**DSM-5-TR retrieval cue: symptoms + function + course + exclusions, never one symptom or a dopamine story.** The active-phase cluster requires at least two of delusions, hallucinations, disorganized speech, grossly disorganized or catatonic behavior, and negative symptoms for a significant portion of one month, with at least one of the first three. Continuous disturbance lasts at least six months and includes the active phase; functioning is markedly below the prior level in major areas. Evaluate mood episodes, substances, medications, neurological or medical causes, developmental history, and cultural context. Hallucinations and unusual beliefs occur in multiple conditions, and schizophrenia is not dissociative identity disorder. Use the current DSM-5-TR for exact wording, coding, and exceptions.",
+      "references": ["https://www.ncbi.nlm.nih.gov/books/NBK487620/", "https://www.nimh.nih.gov/health/publications/schizophrenia"],
+      "sourceDetails": [
+        { "title": "Treatments for Schizophrenia in Adults: A Systematic Review, Evidence Summary", "organization": "Agency for Healthcare Research and Quality, hosted by NCBI Bookshelf", "url": "https://www.ncbi.nlm.nih.gov/books/NBK487620/", "whyReputable": "A U.S. federal comparative-effectiveness review that accurately summarizes the DSM symptom and duration structure." },
+        { "title": "Schizophrenia", "organization": "National Institute of Mental Health, National Institutes of Health", "url": "https://www.nimh.nih.gov/health/publications/schizophrenia", "whyReputable": "An official federal resource describing psychotic, negative, and cognitive symptoms, differential context, and recovery-oriented treatment." }
+      ],
+      "reviewNote": "Added functional, course, exclusion, developmental, and cultural gates and rejected single-symptom diagnosis.", "reviewDate": "2026-07-23", "reviewMode": "claim-level-source-and-editorial-review"
+    },
+    {
+      "legacyId": "memory-aid-9455736a7497a5a4", "title": "DSM-5 Major Depression", "domainId": 5, "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**SIGECAPS is only a symptom-retrieval cue; diagnosis requires threshold, change, impairment, exclusions, and context.** A major depressive episode involves at least five symptoms during the same two-week period, representing a change from prior functioning, with depressed mood or diminished interest or pleasure among them. Symptoms include sleep, appetite or weight, psychomotor, energy, guilt or worthlessness, concentration or decision-making, and death or suicidal-thinking changes, but exact frequency and developmental wording matter. Establish clinically significant distress or impairment and assess bipolar history, substances, medications, medical conditions, psychosis, grief, culture, and safety. Bereavement does not automatically exclude an episode, and sadness alone does not establish one. Use current DSM-5-TR criteria rather than the mnemonic for diagnosis.",
+      "references": ["https://www.ncbi.nlm.nih.gov/books/NBK498652/table/depress-diab.T.dsm5__major_depressive_ep/", "https://www.nimh.nih.gov/health/publications/depression"],
+      "sourceDetails": [
+        { "title": "DSM-5 Major Depressive Episode", "organization": "Endotext, hosted by NCBI Bookshelf", "url": "https://www.ncbi.nlm.nih.gov/books/NBK498652/table/depress-diab.T.dsm5__major_depressive_ep/", "whyReputable": "A medically reviewed NCBI-hosted criteria table specifying the symptom threshold, two-week period, change, and impairment requirements." },
+        { "title": "Depression", "organization": "National Institute of Mental Health, National Institutes of Health", "url": "https://www.nimh.nih.gov/health/publications/depression", "whyReputable": "An official federal resource addressing symptom variation, medical mimics, treatment, functional impact, and help-seeking." }
+      ],
+      "reviewNote": "Kept the symptom cue but added change, impairment, differential diagnosis, bipolar, grief, culture, and safety requirements.", "reviewDate": "2026-07-23", "reviewMode": "claim-level-source-and-editorial-review"
+    },
+    {
+      "legacyId": "memory-aid-52975d7ab9dc4cfb", "title": "Evidence-Based Treatment Pairings", "domainId": 6, "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Evidence-based practice is not a one-disorder/one-brand lookup table.** Integrate the best available research with clinical expertise and the person's characteristics, culture, preferences, goals, access needs, comorbidity, risk, setting, and prior response. Exam pairings can identify well-supported options: exposure-based methods for many anxiety presentations, ERP for OCD, behavioral activation or structured psychotherapies for depression, and trauma-focused psychotherapies for PTSD. Medication, combined care, family or systems work, and level of care may also be indicated. \"Most effective,\" \"gold standard,\" and \"CBT works for everything\" require a defined population, comparator, outcome, time point, harms, and evidence source. Shared decision-making, competence, monitoring, and revising a nonbeneficial plan remain essential.",
+      "references": ["https://dictionary.apa.org/evidence-based-practice", "https://www.apa.org/ptsd-guideline"],
+      "sourceDetails": [
+        { "title": "Evidence-based practice", "organization": "APA Dictionary of Psychology, American Psychological Association", "url": "https://dictionary.apa.org/evidence-based-practice", "whyReputable": "APA's professional definition explicitly integrates research, clinical expertise, culture, preferences, and patient characteristics." },
+        { "title": "Clinical Practice Guideline for the Treatment of PTSD in Adults", "organization": "American Psychological Association", "url": "https://www.apa.org/ptsd-guideline", "whyReputable": "An APA guideline based on systematic evidence review that models bounded recommendations, comparisons, patient factors, and harms." }
+      ],
+      "reviewNote": "Replaced a branded treatment lookup list with evidence integration, shared decisions, defined claims, and monitoring.", "reviewDate": "2026-07-23", "reviewMode": "claim-level-source-and-editorial-review"
+    },
+    {
+      "legacyId": "memory-aid-50cd991b6e6457b9", "title": "Crisis Intervention", "domainId": 6, "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Crisis care is person-centered, safety-oriented, least restrictive, accessible, and connected to follow-up; it is not a fixed ABC script or session count.** Establish engagement and communication access, clarify the person's view and immediate needs, assess medical and behavioral urgency, suicide or violence risk, substance effects, supports, environment, and access to lethal means, then collaborate on the safest feasible next steps. Use existing strengths and natural supports with consent, address practical needs, create a concrete safety and follow-up plan, coordinate handoffs, and document reasoning. Do not promise confidentiality beyond its limits, use \"normal reaction\" as a substitute for assessment, or assume returning to pre-crisis functioning is every person's goal. Emergency and jurisdiction procedures govern imminent danger.",
+      "references": ["https://library.samhsa.gov/sites/default/files/national-guidelines-crisis-care-pep24-01-037.pdf", "https://www.nimh.nih.gov/research/research-conducted-at-nimh/asq-toolkit-materials/adult-outpatient/adult-outpatient-brief-suicide-safety-assessment-guide"],
+      "sourceDetails": [
+        { "title": "2025 National Guidelines for a Behavioral Health Coordinated System of Crisis Care", "organization": "Substance Abuse and Mental Health Services Administration", "url": "https://library.samhsa.gov/sites/default/files/national-guidelines-crisis-care-pep24-01-037.pdf", "whyReputable": "Current federal crisis-system guidance emphasizing person-centered, accessible, coordinated, least restrictive, and follow-up care." },
+        { "title": "Adult Outpatient Brief Suicide Safety Assessment Guide", "organization": "National Institute of Mental Health, National Institutes of Health", "url": "https://www.nimh.nih.gov/research/research-conducted-at-nimh/asq-toolkit-materials/adult-outpatient/adult-outpatient-brief-suicide-safety-assessment-guide", "whyReputable": "An official federal clinician guide for direct safety assessment, supports, plans, access to means, and disposition decisions." }
+      ],
+      "reviewNote": "Removed a fixed script and duration, added direct safety assessment, accessibility, least-restrictive care, handoffs, and follow-up.", "reviewDate": "2026-07-23", "reviewMode": "claim-level-source-and-editorial-review"
+    },
+    {
+      "legacyId": "memory-aid-17c813e9917a2a88", "title": "Effect Size Benchmarks", "domainId": 7, "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Effect-size benchmarks are conventions, not universal labels of practical importance.** Cohen offered d values near 0.2, 0.5, and 0.8 and r values near .10, .30, and .50 as rough defaults when a field lacks better reference information. Interpret the estimate using the outcome scale, design, population, reliability, baseline risk, costs and harms, prior studies, and a smallest effect of interest. Report the effect definition, direction, uncertainty interval, and analysis choices. A \"small\" standardized effect can matter when outcomes are consequential or exposure is broad; a \"large\" effect can be imprecise, biased, or trivial for the decision. Benchmarks do not show causality, replication, clinical significance, or the probability that a hypothesis is true.",
+      "references": ["https://doi.org/10.1037/0033-2909.112.1.155", "https://pubmed.ncbi.nlm.nih.gov/24324449/"],
+      "sourceDetails": [
+        { "title": "A power primer", "organization": "Jacob Cohen, Psychological Bulletin", "url": "https://doi.org/10.1037/0033-2909.112.1.155", "whyReputable": "The peer-reviewed methodological source for the familiar conventional benchmarks and their intended fallback use." },
+        { "title": "Calculating and reporting effect sizes to facilitate cumulative science: a practical primer for t-tests and ANOVAs", "organization": "Daniel Lakens, Frontiers in Psychology", "url": "https://pubmed.ncbi.nlm.nih.gov/24324449/", "whyReputable": "A peer-reviewed practical review emphasizing transparent effect definitions, confidence intervals, and context-aware interpretation." }
+      ],
+      "reviewNote": "Removed visible-to-the-naked-eye labels and made magnitude conditional on construct, uncertainty, context, and decision consequences.", "reviewDate": "2026-07-23", "reviewMode": "claim-level-source-and-editorial-review"
+    },
+    {
+      "legacyId": "memory-aid-8d8fd16db8e8fea2", "title": "Criterion-Referenced vs. Norm-Referenced Tests", "domainId": 7, "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**These terms describe score interpretations, not mutually exclusive kinds of tests.** A criterion-referenced interpretation compares performance with a defined domain, performance standard, or cut score. A norm-referenced interpretation locates performance in a specified reference-population distribution. The same assessment can support both only when evidence justifies each use. A cut score is a decision boundary established through a standard-setting process, not an error-free \"absolute\" measure of competence; a percentile is meaningful only for its named norm group and date. ASPPB currently recommends 500 as the passing score for EPPP Part 1-Knowledge, but the licensing jurisdiction determines applicable requirements. Do not generalize that number to every EPPP component, historical scale, jurisdiction, or future integrated examination.",
+      "references": ["https://ncme.org/resources/professional-learning/glossary/", "https://asppb.net/exams/asppb-examination-for-professional-psychology-eppp/"],
+      "sourceDetails": [
+        { "title": "NCME Assessment Glossary", "organization": "National Council on Measurement in Education", "url": "https://ncme.org/resources/professional-learning/glossary/", "whyReputable": "Field-standard definitions distinguishing criterion-referenced and norm-referenced interpretations, cut scores, norms, and validation." },
+        { "title": "Examination for Professional Practice in Psychology (EPPP)", "organization": "Association of State and Provincial Psychology Boards", "url": "https://asppb.net/exams/asppb-examination-for-professional-psychology-eppp/", "whyReputable": "The examination owner's current official page for recommended passing scores, exam components, and jurisdiction-dependent requirements." }
+      ],
+      "reviewNote": "Corrected the test-type dichotomy, bounded cut-score meaning, and made the current EPPP recommendation jurisdiction- and version-specific.", "reviewDate": "2026-07-23", "reviewMode": "claim-level-source-and-editorial-review"
+    },
+    {
+      "legacyId": "memory-aid-de048afe0e382d04", "title": "Tarasoff & Duty to Protect", "domainId": 8, "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Tarasoff is the historical California anchor; the controlling duty is current jurisdiction-specific law and policy.** California Civil Code section 43.92 addresses a patient-communicated serious threat of physical violence against a reasonably identifiable victim and describes reasonable efforts to communicate with the victim and law enforcement. Other jurisdictions may impose, permit, or not specify warning or protective action, define covered professionals and triggering information differently, and recognize case law as well as statutes. Do not require the words \"credible\" or \"imminent\" unless the governing authority does. Clinically assess the threat and context, consult promptly without unnecessary disclosure, follow emergency and organizational procedures, take legally authorized protective steps, and document facts, authority, consultation, reasoning, actions, and follow-up.",
+      "references": ["https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=CIV&sectionNum=43.92", "https://doi.org/10.1176/appi.focus.17402"],
+      "sourceDetails": [
+        { "title": "California Civil Code section 43.92", "organization": "California Legislative Information", "url": "https://leginfo.legislature.ca.gov/faces/codes_displaySection.xhtml?lawCode=CIV&sectionNum=43.92", "whyReputable": "The official current statutory text for California's psychotherapist duty-to-protect liability rule and specified protective efforts." },
+        { "title": "The Tarasoff Rule: The Implications of Interstate Variation and Gaps in Professional Training", "organization": "FOCUS, American Psychiatric Association Publishing", "url": "https://doi.org/10.1176/appi.focus.17402", "whyReputable": "A peer-reviewed law-and-psychiatry review documenting mandatory, permissive, common-law, and unspecified interstate approaches." }
+      ],
+      "reviewNote": "Removed a universal trigger and checklist, quoted California's actual rule, and centered current jurisdiction-specific authority.", "reviewDate": "2026-07-23", "reviewMode": "claim-level-source-and-editorial-review"
+    },
+    {
+      "legacyId": "memory-aid-870d820f57f71d55", "title": "Mandated Reporting Details", "domainId": 8, "reviewStatus": "source-reviewed-editorial-pass",
+      "content": "**Mandated reporting is a current-law lookup, not \"when in doubt, report.\"** Determine the jurisdiction, protected population, whether the psychologist's role is covered, reporting threshold, source and timing rules, designated agency, required oral or written follow-up, privilege provisions, and emergency procedures. Child, elder, dependent-adult, intimate-partner, and other reporting duties are not interchangeable. Many child-abuse statutes use reasonable suspicion or reasonable cause rather than proof, but wording and deadlines vary, and not every state names every profession in the same way. Explain confidentiality limits early and, when safe and legally appropriate, tell the client what will be disclosed. Report only what the law requires or permits, consult promptly when uncertain, protect privacy, document the authority and facts, and never let consultation create a prohibited delay.",
+      "references": ["https://www.childwelfare.gov/pubpdfs/manda.pdf", "https://www.apa.org/ethics/code"],
+      "sourceDetails": [
+        { "title": "Mandatory Reporting of Child Abuse and Neglect", "organization": "Children's Bureau, Administration for Children and Families, U.S. Department of Health and Human Services", "url": "https://www.childwelfare.gov/pubpdfs/manda.pdf", "whyReputable": "An official federal state-statutes synthesis that expressly documents variation in covered reporters, standards, and reporting provisions." },
+        { "title": "Ethical Principles of Psychologists and Code of Conduct", "organization": "American Psychological Association", "url": "https://www.apa.org/ethics/code", "whyReputable": "APA's official ethics text for confidentiality limits, legally mandated or permitted disclosures, minimizing intrusion, and documentation context." }
+      ],
+      "reviewNote": "Replaced a universal report-first slogan with a jurisdiction, role, threshold, timing, privacy, and documentation decision structure.", "reviewDate": "2026-07-23", "reviewMode": "claim-level-source-and-editorial-review"
+    }
+  ]
+}

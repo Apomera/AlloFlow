@@ -79,6 +79,33 @@ var _lazyIcon = function (name) {
       first.focus();
     }
   }
+  function _quizIsolateDialog(dialog) {
+    var snapshots = [];
+    if (!dialog || typeof document === 'undefined') return function () {};
+    var current = dialog;
+    while (current && current.parentElement) {
+      var parent = current.parentElement;
+      Array.prototype.forEach.call(parent.children, function (sibling) {
+        if (sibling === current) return;
+        snapshots.push({
+          element: sibling,
+          inert: sibling.inert === true,
+          ariaHidden: sibling.getAttribute('aria-hidden')
+        });
+        sibling.inert = true;
+        sibling.setAttribute('aria-hidden', 'true');
+      });
+      current = parent;
+      if (current === document.body) break;
+    }
+    return function () {
+      snapshots.forEach(function (snapshot) {
+        snapshot.element.inert = snapshot.inert;
+        if (snapshot.ariaHidden === null) snapshot.element.removeAttribute('aria-hidden');
+        else snapshot.element.setAttribute('aria-hidden', snapshot.ariaHidden);
+      });
+    };
+  }
   function _quizShuffleCopy(arr) {
     var copy = (arr || []).slice();
     for (var i = copy.length - 1; i > 0; i--) {
@@ -914,7 +941,96 @@ var _lazyIcon = function (name) {
     var openState = React.useState(false);
     var open = openState[0];
     var setOpen = openState[1];
-    if (items.length === 0 || !items.some(function (item) { return item.respondents > 0; })) return null;
+    var handoffState = React.useState(false);
+    var handoffOpen = handoffState[0];
+    var setHandoffOpen = handoffState[1];
+    var handoffBusyState = React.useState(false);
+    var handoffBusy = handoffBusyState[0];
+    var setHandoffBusy = handoffBusyState[1];
+    var handoffFeedbackState = React.useState('');
+    var handoffFeedback = handoffFeedbackState[0];
+    var setHandoffFeedback = handoffFeedbackState[1];
+    var handoffDialogRef = React.useRef(null);
+    var handoffTriggerRef = React.useRef(null);
+    var hasRespondentItems = items.length > 0 && items.some(function (item) {
+      return item.respondents > 0;
+    });
+    React.useEffect(function () {
+      if (!handoffOpen) return undefined;
+      if (!hasRespondentItems) {
+        setHandoffOpen(false);
+        setHandoffFeedback('');
+        return undefined;
+      }
+      var restore = _quizIsolateDialog(handoffDialogRef.current);
+      if (handoffDialogRef.current && typeof handoffDialogRef.current.focus === 'function') {
+        handoffDialogRef.current.focus();
+      }
+      return restore;
+    }, [handoffOpen, hasRespondentItems]);
+    if (!hasRespondentItems) return null;
+    function closeAlloSheetReview() {
+      if (handoffBusy) return;
+      setHandoffOpen(false);
+      setHandoffFeedback('');
+      window.setTimeout(function () {
+        if (handoffTriggerRef.current && typeof handoffTriggerRef.current.focus === 'function') {
+          handoffTriggerRef.current.focus();
+        }
+      }, 0);
+    }
+    function openAlloSheetReview(event) {
+      handoffTriggerRef.current = event && event.currentTarget || null;
+      setHandoffFeedback('');
+      setHandoffOpen(true);
+    }
+    function confirmAlloSheetReview() {
+      if (handoffBusy || typeof p.onOpenAlloSheet !== 'function') return;
+      var module = window.AlloModules && window.AlloModules.QuizLiveAggregators;
+      if (!module || typeof module.buildQuizAlloSheetEnvelope !== 'function') {
+        setHandoffFeedback('Quiz item analysis is still loading. Try again in a moment.');
+        return;
+      }
+      var envelope;
+      try {
+        envelope = module.buildQuizAlloSheetEnvelope(
+          p.quizState || {},
+          p.generatedContent,
+          p.roster || {},
+          {
+            aiGradedCache: p.aiGradedCache || {},
+            teacherOverrides: p.teacherOverrides || {},
+            mode: p.mode,
+            createdAt: new Date().toISOString()
+          }
+        );
+      } catch (error) {
+        setHandoffFeedback(error && error.message || 'Quiz item analysis could not prepare a bounded table.');
+        return;
+      }
+      setHandoffBusy(true);
+      setHandoffFeedback('Opening AlloSheet and waiting for secure receipt…');
+      var pending;
+      try {
+        pending = p.onOpenAlloSheet(envelope);
+      } catch (error) {
+        pending = Promise.reject(error);
+      }
+      Promise.resolve(pending).then(function (opened) {
+        if (opened === false || opened == null) throw new Error('AlloSheet did not open.');
+        setHandoffBusy(false);
+        setHandoffFeedback('');
+        setHandoffOpen(false);
+        window.setTimeout(function () {
+          if (handoffTriggerRef.current && typeof handoffTriggerRef.current.focus === 'function') {
+            handoffTriggerRef.current.focus();
+          }
+        }, 0);
+      }).catch(function (error) {
+        setHandoffBusy(false);
+        setHandoffFeedback(error && error.message || 'AlloSheet could not receive the reviewed item analysis.');
+      });
+    }
     function downloadCsv() {
       var rows = [['Question', 'Type', 'Responses', 'Gradable', 'Correct %', 'Omitted', 'IDK', 'Signal', 'Flags']];
       items.forEach(function (item) {
@@ -933,14 +1049,14 @@ var _lazyIcon = function (name) {
         URL.revokeObjectURL(url);
       } catch (e) {}
     }
-    return <section className="mt-5 rounded-xl border-2 border-cyan-200 bg-cyan-50 p-4" aria-labelledby="item-analysis-heading"><div className="flex items-start justify-between gap-3 flex-wrap"><div><h4 id="item-analysis-heading" className="font-black text-cyan-950">Item analysis</h4><p className="text-xs text-cyan-900 mt-1">Difficulty, omissions, confidence mismatches, and MCQ choice patterns. Flags wait for at least 5 responses.</p></div><div className="flex gap-2"><button type="button" onClick={downloadCsv} className="text-xs font-bold px-3 py-1.5 rounded-lg bg-white border border-cyan-300 text-cyan-900">Export CSV</button><button type="button" onClick={function () { setOpen(!open); }} aria-expanded={open} className="text-xs font-bold px-3 py-1.5 rounded-lg bg-cyan-800 text-white">{open ? 'Hide details' : 'Review items'}</button></div></div>{open && <div className="space-y-3 mt-4">{items.map(function (item) {
+    return <section className="mt-5 rounded-xl border-2 border-cyan-200 bg-cyan-50 p-4" aria-labelledby="item-analysis-heading"><div className="flex items-start justify-between gap-3 flex-wrap"><div><h4 id="item-analysis-heading" className="font-black text-cyan-950">Item analysis</h4><p className="text-xs text-cyan-900 mt-1">Difficulty, omissions, confidence mismatches, and MCQ choice patterns. Flags wait for at least 5 responses.</p></div><div className="flex gap-2 flex-wrap">{typeof p.onOpenAlloSheet === 'function' && <button type="button" ref={handoffTriggerRef} onClick={openAlloSheetReview} aria-haspopup="dialog" className="text-xs font-bold px-3 py-1.5 rounded-lg bg-indigo-700 text-white border border-indigo-800">Open in AlloSheet</button>}<button type="button" onClick={downloadCsv} className="text-xs font-bold px-3 py-1.5 rounded-lg bg-white border border-cyan-300 text-cyan-900">Export CSV</button><button type="button" onClick={function () { setOpen(!open); }} aria-expanded={open} className="text-xs font-bold px-3 py-1.5 rounded-lg bg-cyan-800 text-white">{open ? 'Hide details' : 'Review items'}</button></div></div>{open && <div className="space-y-3 mt-4">{items.map(function (item) {
       if (item.respondents === 0) return <div key={item.questionIdx} className="rounded-lg border border-slate-200 bg-white p-3"><div className="text-xs font-black text-slate-700">{'Q' + (item.questionIdx + 1) + ' · No responses yet'}</div><p className="text-sm text-slate-600 mt-1">{item.questionText}</p></div>;
       var rateColor = item.correctRate == null ? 'slate' : item.correctRate < 40 ? 'rose' : item.correctRate > 85 ? 'emerald' : 'indigo';
       return <article key={item.questionIdx} className="rounded-lg border border-cyan-200 bg-white p-3"><div className="flex items-start gap-3"><div className="flex-grow min-w-0"><div className="text-[10px] uppercase font-black tracking-wider text-slate-500">{'Q' + (item.questionIdx + 1) + ' · ' + item.type}</div><p className="text-sm font-semibold text-slate-800 mt-1">{item.questionText}</p></div><div className={'rounded-lg px-3 py-2 text-center bg-' + rateColor + '-50 text-' + rateColor + '-900 border border-' + rateColor + '-200'}><div className="text-lg font-black">{item.unscored ? 'Unscored' : item.correctRate == null ? '—' : item.correctRate + '%'}</div><div className="text-[9px] uppercase font-bold">{item.unscored ? 'distribution' : 'correct'}</div></div></div><div className="flex gap-2 flex-wrap mt-3 text-[11px]"><span className="rounded-full bg-slate-100 text-slate-700 px-2 py-1 font-bold">{item.respondents + ' responses'}</span><span className="rounded-full bg-slate-100 text-slate-700 px-2 py-1 font-bold">{item.omittedCount + ' omitted'}</span>{item.idkCount > 0 && <span className="rounded-full bg-sky-100 text-sky-800 px-2 py-1 font-bold">{item.idkCount + ' IDK'}</span>}<span className={'rounded-full px-2 py-1 font-bold ' + (item.smallSample ? 'bg-amber-100 text-amber-900' : 'bg-emerald-100 text-emerald-800')}>{item.signalLabel}</span></div>{Array.isArray(item.options) && item.options.length > 0 && <div className="space-y-1.5 mt-3">{item.options.map(function (option) {
         var width = item.respondents > 0 ? Math.round(option.count / item.respondents * 100) : 0;
         return <div key={option.optionIdx} className="grid grid-cols-[1.5rem_1fr_auto] items-center gap-2 text-xs"><span className={'font-black ' + (!item.unscored && option.correct ? 'text-emerald-700' : 'text-slate-600')}>{String.fromCharCode(65 + option.optionIdx)}</span><div className="h-2 rounded-full bg-slate-100 overflow-hidden"><div className={!item.unscored && option.correct ? 'h-full bg-emerald-500' : item.unscored ? 'h-full bg-purple-500' : 'h-full bg-cyan-500'} style={{ width: width + '%' }} /></div><span className="text-slate-600 tabular-nums">{option.count + ' · ' + width + '%'}</span></div>;
       })}</div>}{item.flags && item.flags.length > 0 && <ul className="mt-3 space-y-1">{item.flags.map(function (flag, idx) { return <li key={idx} className="text-xs rounded bg-amber-50 border border-amber-200 text-amber-900 px-2 py-1">{'⚑ ' + flag}</li>; })}</ul>}{item.smallSample && !item.unscored && <p className="text-[10px] text-slate-500 mt-2">Early signal only—no quality flag is assigned until 5 learners respond.</p>}</article>;
-    })}</div>}</section>;
+    })}</div>}{handoffOpen && <div className="fixed inset-0 z-[120] grid place-items-center bg-slate-950/75 p-4" role="presentation"><div ref={handoffDialogRef} role="dialog" aria-modal="true" aria-labelledby="quiz-allosheet-review-title" aria-describedby="quiz-allosheet-review-summary quiz-allosheet-review-privacy" aria-busy={handoffBusy} tabIndex={-1} onKeyDown={function (event) { _quizHandleDialogKeyDown(event, handoffDialogRef, function () { if (!handoffBusy) closeAlloSheetReview(); }); }} className="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl border-4 border-indigo-300 bg-white p-5 text-slate-900 shadow-2xl"><h3 id="quiz-allosheet-review-title" className="text-xl font-black text-indigo-950">Review Quiz item analysis for AlloSheet</h3><p id="quiz-allosheet-review-summary" className="mt-2 text-sm text-slate-700">This creates one aggregate table with up to 100 item rows. It includes question number, item type, response and scoring counts, correct rate, sample status, and bounded signal codes.</p><p id="quiz-allosheet-review-privacy" className="mt-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950"><strong>Excluded:</strong> learner names and IDs, question and option wording, raw answers, reflections, AI feedback, session codes, resource IDs, and cohort arrays. Signal codes remain blank until at least five learners respond. The transfer cannot enable AI or write back to Quiz.</p><div className="mt-3 rounded-lg border border-slate-300 bg-slate-50 p-3"><h4 className="text-sm font-black text-slate-900">Fields sent</h4><p className="mt-1 text-xs text-slate-700">Question number; item type; unscored status; respondents; omitted, gradable, correct, partial, incorrect, IDK, awaiting-review, and high-confidence-incorrect counts; correct-rate percent; sample status; signal codes.</p><p className="mt-2 text-xs font-semibold text-slate-700">{items.length + ' authored item' + (items.length === 1 ? '' : 's') + ' available for bounded aggregate review.'}</p></div>{handoffFeedback && <p className={'mt-3 rounded-lg p-3 text-sm font-semibold ' + (handoffBusy ? 'bg-indigo-50 text-indigo-900' : 'bg-rose-50 text-rose-900')} role={handoffBusy ? 'status' : 'alert'} aria-live="polite">{handoffFeedback}</p>}<div className="mt-4 flex flex-wrap justify-end gap-2"><button type="button" onClick={closeAlloSheetReview} disabled={handoffBusy} className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-800 disabled:opacity-50">Cancel</button><button type="button" onClick={confirmAlloSheetReview} disabled={handoffBusy} className="rounded-lg bg-indigo-700 px-4 py-2 text-sm font-black text-white disabled:opacity-50">{handoffBusy ? 'Waiting for AlloSheet…' : 'Confirm and open AlloSheet'}</button></div></div></div>}</section>;
   }  function LiveResultsDashboard(p) {
     var aggsMod = window.AlloModules && window.AlloModules.QuizLiveAggregators;
     if (!aggsMod) return null;
@@ -1587,7 +1703,7 @@ var _lazyIcon = function (name) {
                 return <div key={r.uid} className="p-2 rounded bg-white border border-indigo-100"><p className="text-xs font-bold text-slate-700 mb-0.5">{r.displayName}</p><p className="text-sm text-slate-800 whitespace-pre-wrap break-words">{r.text}</p></div>;
               })}</div>}</div>;
         })}</div>}</div> : null;
-    return <div className="p-5 rounded-xl border-2 border-indigo-300 bg-white mb-4 shadow-sm" role="region" aria-label={t("a11y.live_results_dashboard")}>{header}{body}<AssessmentItemAnalysisPanel analysis={itemAnalysis} />{reflectionsEl}{explainerModalEl}</div>;
+    return <div className="p-5 rounded-xl border-2 border-indigo-300 bg-white mb-4 shadow-sm" role="region" aria-label={t("a11y.live_results_dashboard")}>{header}{body}<AssessmentItemAnalysisPanel analysis={itemAnalysis} quizState={quizState} generatedContent={generatedContent} roster={roster} aiGradedCache={aiGradedCache} teacherOverrides={teacherOverrides} mode={mode} onOpenAlloSheet={p.onOpenAlloSheet} />{reflectionsEl}{explainerModalEl}</div>;
   }
   function _quizEmitDeterministicAnswer(p, itemType, answer, confidence) {
     if (typeof p.onSubmitLiveAnswer !== 'function' || typeof p.questionIdx !== 'number') return;
@@ -3316,7 +3432,7 @@ var _lazyIcon = function (name) {
                 openEscapeRoomSettings();
               }
             }
-          }} disabled={isPresentationMode || isReviewGame} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all motion-reduce:transition-none shadow-sm disabled:opacity-50 disabled:cursor-not-allowed ${escapeRoomState.isActive ? 'bg-purple-600 text-white hover:bg-purple-700 ring-2 ring-purple-200' : 'bg-white text-purple-600 border border-purple-200 hover:bg-purple-50'}`} title={isTeacherMode && activeSessionCode ? t('escape_room.launch_live_tooltip') : t('escape_room.title')} aria-label={t('escape_room.title')}>{escapeRoomState.isActive ? <XCircle size={14} /> : <DoorOpen size={14} />}{escapeRoomState.isActive ? t('common.close') : isTeacherMode && activeSessionCode ? t('escape_room.launch_live_btn') : t('escape_room.title')}</button>{isTeacherMode && !isIndependentMode && <button type="button" onClick={handleExportQTI} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-teal-600 border border-teal-200 hover:bg-teal-50 transition-all motion-reduce:transition-none shadow-sm" title={t('export_menu.qti')} aria-label={t('export_menu.qti')}><FolderDown size={14} /> {t('quiz.export_qti_btn')}</button>}{!isPresentationMode && !isReviewGame && (isTeacherMode || isParentMode) && <>{!isIndependentMode && !isParentMode && <button type="button" aria-label={t('common.toggle_edit_quiz')} onClick={handleToggleIsEditingQuiz} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all motion-reduce:transition-none shadow-sm ${isEditingQuiz ? 'bg-teal-700 text-white hover:bg-teal-700' : 'bg-white text-teal-700 border border-teal-200 hover:bg-teal-50'}`}>{isEditingQuiz ? <CheckCircle2 size={14} /> : <Pencil size={14} />}{isEditingQuiz ? t('common.done_editing') : t('quiz.edit')}</button>}<button type="button" onClick={handleToggleShowQuizAnswers} className="text-xs flex items-center gap-2 bg-teal-100 text-teal-700 px-3 py-1.5 rounded-full font-bold hover:bg-teal-200 transition-colors motion-reduce:transition-none">{showQuizAnswers ? <CheckSquare size={14} className="fill-current" /> : <CheckSquare size={14} />}{showQuizAnswers ? isIndependentMode ? t('quiz.hide_answers_student') : isParentMode ? 'Hide Scores' : t('quiz.hide_key') : isIndependentMode ? t('quiz.check_answers') : isParentMode ? 'View Scores' : t('quiz.show_key')}</button></>}</div></div>{isTeacherMode && activeSessionCode && sessionData?.escapeRoomState?.isActive && <ErrorBoundary fallbackMessage="Escape room controls encountered an error. Refreshing..."><EscapeRoomTeacherControls sessionData={sessionData} activeSessionCode={activeSessionCode} appId={appId} t={t} /></ErrorBoundary>}{isTeacherMode && activeSessionCode && sessionData?.quizState?.isActive ? <div className="flex flex-col gap-4"><LiveResultsDashboard sessionData={sessionData} generatedContent={generatedContent} appId={appId} activeSessionCode={activeSessionCode} callGemini={props.callGemini} callTTS={props.callTTS} gradeLevel={props.gradeLevel} conceptMasteryByUid={props.conceptMasteryByUid} /><ErrorBoundary fallbackMessage="Live quiz controls encountered an error. Refreshing..."><TeacherLiveQuizControls sessionData={sessionData} generatedContent={generatedContent} activeSessionCode={activeSessionCode} appId={appId} onGenerateImage={callImagen} onRefineImage={callGeminiImageEdit} onCreateGroup={handleCreateGroup} onAssignStudent={handleAssignStudent} onSetGroupResource={handleSetGroupResource} isPushingResource={isPushingResource} onSetGroupLanguage={handleSetGroupLanguage} onSetGroupProfile={handleSetGroupProfile} onDeleteGroup={handleDeleteGroup} onUpdateQuestionRoutingRules={handleUpdateQuestionRoutingRules} history={props.history} /></ErrorBoundary><div className="flex justify-end px-4"><button type="button" onClick={handleEndLiveSession} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none shadow-sm flex items-center gap-2"><XCircle size={14} /> {t('session.action_end')}</button></div></div> : isReviewGame ? <div className="animate-in motion-reduce:animate-none fade-in duration-500"><div className="bg-slate-900 p-6 rounded-2xl shadow-2xl border-4 border-yellow-500 relative overflow-hidden min-h-[700px] flex flex-col"><div className="absolute inset-0 opacity-10 pointer-events-none"><div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1),transparent_70%)]" /><div className="absolute bottom-0 left-0 right-0 h-1/2 bg-[linear-gradient(to_top,rgba(59,130,246,0.2),transparent)]" /></div><div className="flex justify-between items-start mb-6 relative z-10"><div className="text-left"><h2 className="text-3xl font-black text-yellow-700 tracking-widest uppercase drop-shadow-md flex items-center gap-3"><Gamepad2 size={32} /> {t('review_game.title')}</h2><p className="text-slate-600 text-sm mt-1 font-medium">{t('review_game.subtitle')}</p></div><div className="flex gap-2"><button type="button" aria-label={t('common.volume')} onClick={() => {
+          }} disabled={isPresentationMode || isReviewGame} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all motion-reduce:transition-none shadow-sm disabled:opacity-50 disabled:cursor-not-allowed ${escapeRoomState.isActive ? 'bg-purple-600 text-white hover:bg-purple-700 ring-2 ring-purple-200' : 'bg-white text-purple-600 border border-purple-200 hover:bg-purple-50'}`} title={isTeacherMode && activeSessionCode ? t('escape_room.launch_live_tooltip') : t('escape_room.title')} aria-label={t('escape_room.title')}>{escapeRoomState.isActive ? <XCircle size={14} /> : <DoorOpen size={14} />}{escapeRoomState.isActive ? t('common.close') : isTeacherMode && activeSessionCode ? t('escape_room.launch_live_btn') : t('escape_room.title')}</button>{isTeacherMode && !isIndependentMode && <button type="button" onClick={handleExportQTI} className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-white text-teal-600 border border-teal-200 hover:bg-teal-50 transition-all motion-reduce:transition-none shadow-sm" title={t('export_menu.qti')} aria-label={t('export_menu.qti')}><FolderDown size={14} /> {t('quiz.export_qti_btn')}</button>}{!isPresentationMode && !isReviewGame && (isTeacherMode || isParentMode) && <>{!isIndependentMode && !isParentMode && <button type="button" aria-label={t('common.toggle_edit_quiz')} onClick={handleToggleIsEditingQuiz} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all motion-reduce:transition-none shadow-sm ${isEditingQuiz ? 'bg-teal-700 text-white hover:bg-teal-700' : 'bg-white text-teal-700 border border-teal-200 hover:bg-teal-50'}`}>{isEditingQuiz ? <CheckCircle2 size={14} /> : <Pencil size={14} />}{isEditingQuiz ? t('common.done_editing') : t('quiz.edit')}</button>}<button type="button" onClick={handleToggleShowQuizAnswers} className="text-xs flex items-center gap-2 bg-teal-100 text-teal-700 px-3 py-1.5 rounded-full font-bold hover:bg-teal-200 transition-colors motion-reduce:transition-none">{showQuizAnswers ? <CheckSquare size={14} className="fill-current" /> : <CheckSquare size={14} />}{showQuizAnswers ? isIndependentMode ? t('quiz.hide_answers_student') : isParentMode ? 'Hide Scores' : t('quiz.hide_key') : isIndependentMode ? t('quiz.check_answers') : isParentMode ? 'View Scores' : t('quiz.show_key')}</button></>}</div></div>{isTeacherMode && activeSessionCode && sessionData?.escapeRoomState?.isActive && <ErrorBoundary fallbackMessage="Escape room controls encountered an error. Refreshing..."><EscapeRoomTeacherControls sessionData={sessionData} activeSessionCode={activeSessionCode} appId={appId} t={t} /></ErrorBoundary>}{isTeacherMode && activeSessionCode && sessionData?.quizState?.isActive ? <div className="flex flex-col gap-4"><LiveResultsDashboard sessionData={sessionData} generatedContent={generatedContent} appId={appId} activeSessionCode={activeSessionCode} callGemini={props.callGemini} callTTS={props.callTTS} gradeLevel={props.gradeLevel} conceptMasteryByUid={props.conceptMasteryByUid} onOpenAlloSheet={props.onOpenAlloSheet} /><ErrorBoundary fallbackMessage="Live quiz controls encountered an error. Refreshing..."><TeacherLiveQuizControls sessionData={sessionData} generatedContent={generatedContent} activeSessionCode={activeSessionCode} appId={appId} onGenerateImage={callImagen} onRefineImage={callGeminiImageEdit} onCreateGroup={handleCreateGroup} onAssignStudent={handleAssignStudent} onSetGroupResource={handleSetGroupResource} isPushingResource={isPushingResource} onSetGroupLanguage={handleSetGroupLanguage} onSetGroupProfile={handleSetGroupProfile} onDeleteGroup={handleDeleteGroup} onUpdateQuestionRoutingRules={handleUpdateQuestionRoutingRules} history={props.history} /></ErrorBoundary><div className="flex justify-end px-4"><button type="button" onClick={handleEndLiveSession} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-xs font-bold transition-colors motion-reduce:transition-none shadow-sm flex items-center gap-2"><XCircle size={14} /> {t('session.action_end')}</button></div></div> : isReviewGame ? <div className="animate-in motion-reduce:animate-none fade-in duration-500"><div className="bg-slate-900 p-6 rounded-2xl shadow-2xl border-4 border-yellow-500 relative overflow-hidden min-h-[700px] flex flex-col"><div className="absolute inset-0 opacity-10 pointer-events-none"><div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(255,255,255,0.1),transparent_70%)]" /><div className="absolute bottom-0 left-0 right-0 h-1/2 bg-[linear-gradient(to_top,rgba(59,130,246,0.2),transparent)]" /></div><div className="flex justify-between items-start mb-6 relative z-10"><div className="text-left"><h2 className="text-3xl font-black text-yellow-700 tracking-widest uppercase drop-shadow-md flex items-center gap-3"><Gamepad2 size={32} /> {t('review_game.title')}</h2><p className="text-slate-600 text-sm mt-1 font-medium">{t('review_game.subtitle')}</p></div><div className="flex gap-2"><button type="button" aria-label={t('common.volume')} onClick={() => {
                 setSoundEnabled(!soundEnabled);
                 if (!soundEnabled) playSound('click');
               }} className={`p-2 rounded-full transition-colors motion-reduce:transition-none ${soundEnabled ? 'bg-yellow-500 text-slate-900' : 'bg-slate-700 text-slate-100'}`} title={t('review_game.toggle_sound')}>{soundEnabled ? <Volume2 size={20} /> : <MicOff size={20} />}</button><button type="button" aria-label={t('common.regenerate_vocabulary')} onClick={() => {

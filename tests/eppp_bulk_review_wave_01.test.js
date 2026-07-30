@@ -9,9 +9,9 @@ const unstableText = /\b(?:current|recent|dsm(?:-?5(?:-?tr)?)?|law|legal|statute
 
 describe('EPPP bulk editorial review wave 01', () => {
   it('reviews 500 additional unique candidates in five balanced sets without releasing them', () => {
-    const wave = readJson('test_prep/eppp_legacy/bulk_review_wave_01.json');
+    const wave = readJson('quality/eppp_provenance/evidence/review/bulk_review_wave_01.json');
     const nativeIds = new Set(readJson('test_prep/eppp_native_qa.json').items.map((item) => item.legacySourceId).filter(Boolean));
-    const highTouchIds = new Set(readJson('test_prep/eppp_legacy/adjudication_index.json').items.map((item) => item.legacyId));
+    const highTouchIds = new Set(readJson('quality/eppp_provenance/evidence/adjudication/adjudication_index.json').items.map((item) => item.legacyId));
     const ids = wave.items.map((item) => item.legacyId);
 
     expect(wave.status).toBe('assisted-editorial-review-complete-still-quarantined');
@@ -30,7 +30,7 @@ describe('EPPP bulk editorial review wave 01', () => {
   });
 
   it('excludes unstable claims and requires complete question, feedback, and provenance templates', () => {
-    const wave = readJson('test_prep/eppp_legacy/bulk_review_wave_01.json');
+    const wave = readJson('quality/eppp_provenance/evidence/review/bulk_review_wave_01.json');
     for (const item of wave.items) {
       const revised = item.revisedItem;
       expect(unstableText.test(`${item.originalPrompt} ${revised.choices.join(' ')} ${revised.rationale}`)).toBe(false);
@@ -53,10 +53,10 @@ describe('EPPP bulk editorial review wave 01', () => {
   });
 
   it('keeps each set at 100 items with exactly 25 answers in every position', () => {
-    const wave = readJson('test_prep/eppp_legacy/bulk_review_wave_01.json');
+    const wave = readJson('quality/eppp_provenance/evidence/review/bulk_review_wave_01.json');
     for (let setNumber = 1; setNumber <= 5; setNumber += 1) {
       const suffix = String(setNumber).padStart(2, '0');
-      const report = readJson(`test_prep/eppp_legacy/bulk_review_wave_01_set_${suffix}.json`);
+      const report = readJson(`quality/eppp_provenance/evidence/review/bulk_review_wave_01_set_${suffix}.json`);
       const waveItems = wave.items.filter((item) => item.reviewSet === setNumber);
       expect(report.items).toHaveLength(100);
       expect(report.items.map((item) => item.legacyId)).toEqual(waveItems.map((item) => item.legacyId));
@@ -67,7 +67,7 @@ describe('EPPP bulk editorial review wave 01', () => {
   });
 
   it('reports 920 legacy questions without an editorial review after this wave', () => {
-    const progress = readJson('test_prep/eppp_legacy/review_progress.json');
+    const progress = readJson('quality/eppp_provenance/evidence/review/review_progress.json');
     expect(progress.summary).toEqual({
       legacyUniverse: 2933,
       nativeEditorialLegacyItems: 1443,
@@ -81,14 +81,15 @@ describe('EPPP bulk editorial review wave 01', () => {
     });
   });
 
-  it('keeps every generated deployment artifact identical to its source companion', () => {
+  it('keeps every generated artifact in the canonical review evidence family', () => {
     const names = ['bulk_review_wave_01.json', 'bulk_review_wave_01.md', 'review_progress.json', 'review_progress.md'];
     for (let setNumber = 1; setNumber <= 5; setNumber += 1) {
       const suffix = String(setNumber).padStart(2, '0');
       names.push(`bulk_review_wave_01_set_${suffix}.json`, `bulk_review_wave_01_set_${suffix}.md`);
     }
     for (const name of names) {
-      expect(readText(`desktop/web-app/public/test_prep/eppp_legacy/${name}`)).toBe(readText(`test_prep/eppp_legacy/${name}`));
+      expect(readText(`quality/eppp_provenance/evidence/review/${name}`).length).toBeGreaterThan(0);
+      expect(fs.existsSync(resolve(root, `desktop/web-app/public/test_prep/eppp_legacy/${name}`))).toBe(false);
     }
   });
 });

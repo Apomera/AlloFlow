@@ -3,11 +3,11 @@
 
 const fs = require('fs');
 const path = require('path');
+const { ensureFamily, evidencePath } = require('./eppp_evidence_paths.cjs');
 
 const root = path.resolve(__dirname, '..');
-const sourceRoot = path.join(root, 'test_prep', 'eppp_legacy');
-const deployRoot = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_legacy');
-const docket = JSON.parse(fs.readFileSync(path.join(sourceRoot, 'next_review_docket.json'), 'utf8'));
+const canonicalRoot = ensureFamily('adjudication');
+const docket = JSON.parse(fs.readFileSync(evidencePath('review', 'next_review_docket.json'), 'utf8'));
 const prior = JSON.parse(fs.readFileSync(path.join(sourceRoot, 'adjudication_batch_01.json'), 'utf8'));
 
 const sources = {
@@ -227,7 +227,7 @@ const report = {
 const rows = items.map((item) => `| ${item.adjudicationPosition} | ${item.legacyId} | ${item.domainId} | ${item.decision} | ${item.sourceVerification} |`).join('\n');
 const markdown = `# EPPP editorial adjudication batch 02\n\nGenerated: ${report.generatedAt}\n\n**Status: editorial adjudication complete; all items remain quarantined.**\n\n${report.purpose}\n\n## Outcome\n\n- ${summary.adjudicatedCandidates} candidates reviewed across all eight EPPP domains.\n- ${summary.minorRevision} required minor corrections.\n- ${summary.majorRewrite} required major rewriting.\n- ${summary.promotedToNativeBank} were promoted to the learner-facing bank.\n- Independent qualified review remains pending for every item.\n\n| # | Legacy ID | Domain | Decision | Source finding |\n| ---: | --- | --- | --- | --- |\n${rows}\n\n## Review method\n\n${report.reviewMethod.map((step) => `- ${step}`).join('\n')}\n\nThe JSON companion preserves the original prompt and key, item-specific findings, the complete revised item, explanation of every option, and full source provenance.\n`;
 
-for (const outputRoot of [sourceRoot, deployRoot]) {
+for (const outputRoot of [canonicalRoot]) {
   fs.writeFileSync(path.join(outputRoot, 'adjudication_batch_02.json'), JSON.stringify(report, null, 2) + '\n', 'utf8');
   fs.writeFileSync(path.join(outputRoot, 'adjudication_batch_02.md'), markdown, 'utf8');
 }

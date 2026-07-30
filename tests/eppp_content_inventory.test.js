@@ -8,7 +8,7 @@ function read(relativePath) {
 
 describe('EPPP learning-library inventory and full-review program', () => {
   it('counts the complete legacy learning library', () => {
-    const report = read('test_prep/eppp_legacy/content_inventory.json');
+    const report = read('quality/eppp_provenance/evidence/audit/content_inventory.json');
 
     expect(report.summary).toMatchObject({
       legacyQuestions: 2933,
@@ -58,7 +58,7 @@ describe('EPPP learning-library inventory and full-review program', () => {
   });
 
   it('tracks all 2,933 legacy questions without mixing in native-original items', () => {
-    const report = read('test_prep/eppp_legacy/content_inventory.json');
+    const report = read('quality/eppp_provenance/evidence/audit/content_inventory.json');
     const targets = report.nativeRoadmap.domainTargets;
 
     expect(report.summary).toMatchObject({
@@ -76,7 +76,7 @@ describe('EPPP learning-library inventory and full-review program', () => {
   });
 
   it('keeps every unreviewed legacy item quarantined in an explicit ledger', () => {
-    const ledger = read('test_prep/eppp_legacy/review_ledger.json');
+    const ledger = read('quality/eppp_provenance/evidence/review/review_ledger.json');
 
     expect(ledger.summary).toMatchObject({
       legacyReviewUniverse: 2933,
@@ -93,21 +93,18 @@ describe('EPPP learning-library inventory and full-review program', () => {
     expect(ledger.requiredGates).toContain('independent qualified psychology/assessment review before production validation');
   });
 
-  it('regenerates identical development and deployment artifacts', () => {
-    for (const name of ['content_inventory.json', 'review_ledger.json', 'curation_500.json', 'curation_1000.json', 'curation_1500.json']) {
-      const source = fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_legacy', name), 'utf8');
-      const deployed = fs.readFileSync(resolve(process.cwd(), 'desktop/web-app/public/test_prep/eppp_legacy', name), 'utf8');
-      expect(deployed).toBe(source);
-    }
-    const importer = fs.readFileSync(resolve(process.cwd(), 'dev-tools/import_eppp_legacy.cjs'), 'utf8');
+  it('keeps QA evidence non-runtime and normal Hub builds native-only', () => {
     const builder = fs.readFileSync(resolve(process.cwd(), '_build_test_prep_hub_module.js'), 'utf8');
-    expect(importer).toContain('inventory_eppp_learning_content.cjs');
-    expect(importer).toContain('build_eppp_review_ledger.cjs');
-    expect(importer).toContain('build_eppp_500_curation_manifest.cjs');
-    expect(builder).toContain('inventory_eppp_learning_content.cjs');
-    expect(builder).toContain('build_eppp_learning_library_with_reviews.cjs');
-    expect(builder).not.toContain("path.join(ROOT, 'dev-tools', 'build_eppp_learning_library.cjs')");
-    expect(builder).toContain('build_eppp_review_ledger.cjs');
-    expect(builder).toContain('build_eppp_1500_curation_manifest.cjs');
+    const inventoryBuilder = fs.readFileSync(resolve(process.cwd(), 'dev-tools/inventory_eppp_learning_content.cjs'), 'utf8');
+    expect(fs.existsSync(resolve(process.cwd(), 'quality/eppp_provenance/evidence/audit/content_inventory.json'))).toBe(true);
+    expect(fs.existsSync(resolve(process.cwd(), 'quality/eppp_provenance/evidence/review/review_ledger.json'))).toBe(true);
+    expect(fs.existsSync(resolve(process.cwd(), 'test_prep/eppp_legacy/content_inventory.json'))).toBe(false);
+    expect(inventoryBuilder).toContain('openEpppMigrationSourceArchive');
+    expect(builder).toContain('MIGRATION_ARCHIVE_SCRIPT');
+    expect(builder).toContain('LEARNING_LIBRARY_SCRIPT');
+    expect(builder).toContain('QA_SCRIPT');
+    expect(builder).not.toContain('inventory_eppp_learning_content.cjs');
+    expect(builder).not.toContain('build_eppp_review_ledger.cjs');
+    expect(builder).not.toContain('build_eppp_1500_curation_manifest.cjs');
   });
 });

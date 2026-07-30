@@ -13,8 +13,8 @@ const feedbackPath = path.join(root, 'test_prep', 'eppp_option_feedback_diagnost
 const qaPath = path.join(root, 'test_prep', 'eppp_native_qa.json');
 const runnerPath = path.join(root, 'dev-tools', 'run_eppp_native_quality_wave.cjs');
 const repairPath = path.join(root, 'dev-tools', 'repair_eppp_native_quality_wave_09.cjs');
-const runtimePath = path.join(root, 'test_prep_hub_module.js');
-const deployRuntimePath = path.join(root, 'desktop/web-app', 'public', 'test_prep_hub_module.js');
+const runtimePackPath = path.join(root, 'test_prep', 'eppp_part_one_pack.json');
+const deployRuntimePackPath = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_part_one_pack.json');
 const ids = [
   'eppp-v2-social-cultural-036',
   'eppp-v3-assessment-033',
@@ -145,11 +145,11 @@ describe('EPPP distractor-quality repair wave 09', () => {
     expect(qa.items.filter((item) => selected.has(item.id)).every((item) => item.qaStatus === 'pass')).toBe(true);
   });
 
-  it('synchronizes the revised bank into both runtime modules', () => {
-    const sourceRuntime = fs.readFileSync(runtimePath, 'utf8');
-    expect(fs.readFileSync(deployRuntimePath, 'utf8')).toBe(sourceRuntime);
-    expect(sourceRuntime).toContain('markedly below chance on an easy two-choice recognition task');
-    expect(sourceRuntime).toContain('after retirement, describing loss of professional identity');
-    expect(sourceRuntime).toContain('essential equipment is broken');
+  it('synchronizes the revised bank into both lazy pack assets', () => {
+    const sourcePack = fs.readFileSync(runtimePackPath, 'utf8');
+    expect(fs.readFileSync(deployRuntimePackPath, 'utf8')).toBe(sourcePack);
+    expect(sourcePack).toContain('markedly below chance on an easy two-choice recognition task');
+    expect(sourcePack).toContain('after retirement, describing loss of professional identity');
+    expect(sourcePack).toContain('essential equipment is broken');
   });
 });

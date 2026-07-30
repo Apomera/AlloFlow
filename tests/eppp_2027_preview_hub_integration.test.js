@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import { resolve } from 'node:path';
-import { loadAlloModule } from './setup.js';
+import { loadAlloModule, registerEpppPartOne } from './setup.js';
 
 let Hub;
 
@@ -16,6 +16,7 @@ beforeAll(() => {
   loadAlloModule('test_prep_hub_module.js');
   Hub = window.AlloModules.TestPrepHub;
   if (!Hub) throw new Error('TestPrepHub did not register');
+  registerEpppPartOne(Hub);
 });
 
 describe('Integrated EPPP 2027 preview Hub integration', () => {

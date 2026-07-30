@@ -15,6 +15,10 @@ losslessly.
 - An Educator Hub launcher and accessible companion window.
 - A Grist editor view plus a semantic, screen-reader-friendly table mirror.
 - A local audit for blanks, duplicates, and surrounding whitespace.
+- Deterministic local filtering, grouping, counts, numeric summaries, bar
+  comparisons, and date trends with an equivalent narrative and semantic table.
+- Explicit save/reopen for the complete bounded local workspace in one
+  validated `.allosheet.json` file.
 - An AI flow that defaults to structure-only context.
 - Explicit row selection and consent before any cell values are sent to the
   configured AlloFlow AI provider.
@@ -27,7 +31,9 @@ The pilot permits record reads and reviewed updates only. It does not expose
 row deletion, column deletion, schema mutation, arbitrary formulas, code
 execution, or unrestricted Grist routes.
 
-The same popup also has a bounded browser-local CSV workspace for Gemini Canvas.
+The same popup also has a bounded browser-local table workspace for Gemini
+Canvas. An educator can start with a blank sheet, import a CSV, or accept a
+reviewed multi-table handoff from another AlloFlow tool.
 
 ## Default: local popup, no Docker
 
@@ -81,15 +87,30 @@ default distribution path.
 When AlloFlow is running inside Gemini Canvas, the same AlloSheet launcher opens
 the same accessible companion popup. Because Canvas cannot start or reach the
 Desktop-only Grist sidecar, the popup switches automatically to a browser-local
-CSV workspace after a validated handshake with its opener:
+table workspace after a validated handshake with its opener:
 
-- Data stays in the popup's memory unless the educator explicitly downloads a
-  reviewed CSV.
-- Imports are limited to 2 MB, 200 rows, and 40 columns.
+- The educator can choose **Start a new sheet** without supplying a file, name
+  the sheet, define up to 40 columns, and create between 1 and 200 blank rows.
+- The educator can instead import a CSV of up to 2 MB, 200 rows, and 40
+  columns.
+- Data stays in the popup's memory unless the educator explicitly downloads the
+  current table as hardened CSV or saves every local table in one AlloSheet
+  workspace file. Nothing is persisted automatically.
 - Direct cell editing, the local accessibility audit, reviewed AI suggestions,
   apply, and one-step undo remain available.
-- Selected values are sent for AI assistance only after an explicit consent
-  step that identifies the connected host.
+- A cross-origin Canvas opener cannot use AI silently. When an AI provider is
+  available, the popup displays the exact opener origin and requires the
+  educator to authorize that origin for the current popup. This temporary
+  authorization sends no data and is never persisted.
+- Selected values are sent for AI assistance only after a second, one-request
+  consent bound to the current table, data revision, and exact selected rows.
+  Changing the table, editing data, or changing row selection clears it.
+
+A newly created sheet is treated as unsaved immediately. AlloSheet also tracks
+subsequent local edits and warns before replacing an edited table or closing
+the popup. A successful CSV download marks the current table's present state as
+saved; later edits make it unsaved again. Imported files and accepted handoffs
+remain copies: AlloSheet never changes the source CSV or source tool.
 
 Canvas mode does not claim full Excel compatibility. Native `.xlsx` handling,
 large workbooks, and the full Grist editor require AlloFlow Desktop or an
@@ -98,6 +119,145 @@ to prevent spreadsheet applications from executing it when the CSV is opened.
 
 Educators still see one AlloSheet popup and one workflow; there is no Docker,
 terminal, port, server-address, or second setup window in either mode.
+
+### Deterministic accessible local analysis
+
+The **Local analysis** tab operates only on the currently loaded bounded table.
+It supports an optional contains/equality/blank or numeric comparison filter,
+grouping, row count, average, sum, minimum, and maximum. A bar summary is
+available for ordinary groups; an ISO date or date-time field can use a trend
+whose horizontal spacing reflects elapsed time.
+
+Every visual has an equivalent narrative and semantic result table. Blank and
+non-numeric measures are excluded rather than changed to zero, invalid or
+missing date groups remain in the table but are not plotted as dated points,
+numeric overflow is disclosed as unavailable, and visuals are omitted beyond
+50 groups while the complete table remains available. Trend language is
+descriptive and never claims causation.
+
+The analysis code is deterministic: it does not call AI, mutate cells, write
+back, or contact a source tool. Recipes and derived results are not stored in a
+workspace file; the educator reruns them against the reopened source tables so
+saved charts cannot silently become stale.
+
+### Portable bounded workspace files
+
+**Download all-table workspace** saves the complete browser-local workbook as a
+versioned `alloflow.allosheet.workspace.v1` JSON document. **Open saved
+AlloSheet workspace** validates it locally and shows the same isolated,
+keyboard-contained table review before any current local data is replaced.
+The review lists tables, rows, fields, types, truncation, privacy declarations,
+and recorded provenance. File provenance is descriptive metadata, not an
+authenticated assertion.
+
+The workspace limit is 8 MiB UTF-8, five tables, 40 columns and 200 rows per
+table, and 1,200 characters per cell. Unknown properties, versions,
+capabilities, non-finite numbers, unsafe identifiers, prototype keys, and
+inconsistent active/modified table references are rejected without changing
+the open data. Formula-like and HTML-like cell strings remain literal data.
+
+Workspace JSON is intentionally portable but **unencrypted** and may contain
+education records. Educators must store and share it only through an approved
+secure location. AlloSheet does not place a workspace in localStorage,
+IndexedDB, a URL, an AI request, or a source-system writeback.
+
+### Reviewed handoffs from educator tools
+
+BehaviorLens supports a reviewed **Open in AlloSheet** handoff. Its source
+review lets the educator choose:
+
+- a summary transfer, which is recommended and groups records into daily
+  trends, or a detailed row-level transfer;
+- the last 7 days, last 30 days, or all available dates;
+- ABC entries, observation sessions, and session history as separate tables;
+- whether to include the active student identifier; and
+- whether to include free-text notes in a detailed transfer.
+
+Student identifiers and notes are off by default. The source review identifies
+the copy as sensitive education data and lists exactly which tables and row
+counts will be included.
+
+Quiz Analytics also supports **Open in AlloSheet** from live Item analysis. Its
+current v1 handoff is aggregate-only: question number, item type, response and
+scoring counts, correct-rate percent, sample status, and bounded signal codes.
+It excludes names, learner IDs, question and option wording, raw answers,
+reflections, AI feedback, session and resource identifiers, and cohorts.
+Signal codes remain blank until at least five learners respond.
+
+Student Analytics / RTI supports a reviewed **Open in AlloSheet** copy with a
+90-day class summary as the default. The educator may instead choose one active
+learner or an intervention group of at least five and may select 30, 90, or 365
+days or all available dates. Its fixed tables are `probe_trends`,
+`intervention_summary`, `goal_progress`, and `group_tier_counts`.
+Individual scopes use fresh random transfer-local learner and program codes;
+the class summary is aggregate-only. Any nonzero tier cell below five
+suppresses the full tier distribution instead of exposing a small cell.
+
+The Student Analytics allowlist excludes names, nicknames, stable UIDs, raw
+uploads, program labels, free-text intervention notes, IEP or accommodation
+narrative, safety and SEL information, audio, transcripts, automatic tier
+decisions, recommendations, and generated narrative. It is a one-way reviewed
+copy and cannot change a learner, goal, intervention, or tier.
+
+Submission Inbox supports a reviewed **Open in AlloSheet** copy of records the
+educator explicitly saved to its gradebook. The educator may select assignments
+and either the last 30 days, the last 90 days (the default), or all available
+dates. The default attempt policy keeps the latest saved record for each
+normalized class-name + nickname key within a normalized class-name +
+document-title group; the educator may instead include all saved
+records. The fixed tables are `saved_submission_summary` and
+`saved_score_summary`.
+
+Submission Inbox does not store stable learner or assignment IDs for these
+records. `unique_class_nickname_count` therefore counts unique saved class
+nicknames, not verified unique learners. Reusing a nickname may merge different
+people, changing a nickname may split one person, and repeated documents with
+the same title in one class may merge into one assignment group. The source
+review visibly discloses its 2,000-source-record and 200-grade-results-per-record
+limits and reports truncation.
+
+Source-only assignment/class labels distinguish same-titled assignments in the
+review. Each selected assignment/class group becomes a fresh transfer-local
+`A###` assignment code in the envelope. Names, class names, assignment titles,
+response text and keys, feedback, rubric prose, file references, and source
+storage keys do not cross the boundary. Score-derived statistics and
+distributions are suppressed for samples below five and whenever a nonzero
+score band or status would expose a group smaller than five.
+
+A saved gradebook record may contain AI-assisted scoring or feedback. Its
+presence is not an attestation that a person reviewed the result. Submission
+Inbox does not currently provide reliable due dates, structured rubric
+criteria, or human-review status, so the handoff makes no missing, late,
+criterion-level, or human-verified claims. The copy is one-way and neither
+enables AI nor writes anything back to Submission Inbox.
+
+AlloSheet performs its own validation and shows an isolated second review with
+the stable source ID and version, privacy flags, provenance, exact field names
+and types, row counts, and truncation. The educator may exclude individual
+tables before opening the local copy.
+
+Handoffs use the versioned `alloflow.tabular.v1` envelope and a shared
+deny-by-default adapter. The current boundary is 2 MiB measured as UTF-8, at
+most 5 tables, 40 columns per table, 200 rows per table, and 1,200 characters
+per cell. The bridge validates the envelope before opening AlloSheet, assigns a
+random transfer ID, queues up to five transfers in FIFO order, and sends data
+only through the authenticated popup message channel. It never places table
+data in the popup URL. AlloSheet validates the envelope again and returns
+separate received, accepted, cancelled, or rejected receipts. Popup close,
+destination rejection, delivery timeout, and queue-wait timeout fail pending
+source requests explicitly rather than silently dropping or overwriting them.
+
+A transfer is one-way. It does not change a source tool, enable AI in
+AlloSheet, send data to an AI service, or grant AlloSheet permission to write
+back. Any later AI action remains behind AlloSheet's separate selection and
+consent workflow. Any future writeback integration must use a new, narrowly
+allowlisted and educator-reviewed contract; it must not silently extend this
+handoff.
+
+The ranked follow-up plan for Dynamic Assessment, Live Polling, Fluency,
+Accessibility Lab, and Research Hub
+is in
+[`docs/allosheet_integration_roadmap.md`](../docs/allosheet_integration_roadmap.md).
 
 ### Windows import acceptance check
 
@@ -132,8 +292,9 @@ deployment-specific privacy approval.
 
 ## Accessibility conformance scope
 
-The AlloFlow-owned companion shell, accessible table workflow, reviewed-change
-workflow, and Gemini Canvas CSV workflow target WCAG 2.2 Level AA. The browser
+The AlloFlow-owned companion shell, accessible table, reviewed-change,
+workspace-file review, deterministic analysis, and Gemini Canvas local-table
+workflows target WCAG 2.2 Level AA. The browser
 regression suite covers WCAG A/AA axe rules, all three themes, 320 CSS-pixel
 reflow, text-spacing overrides, forced colors, keyboard tab and table
 navigation, focus persistence and recovery, visible input errors, target sizes,

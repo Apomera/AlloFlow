@@ -9,7 +9,7 @@ describe('BehaviorLens AI consent dialog accessibility', () => {
   const source = read('behavior_lens_module.js');
 
   it('uses a named and described modal dialog inside a presentational backdrop', () => {
-    expect(source).toContain("showAiConsentModal && h('div', {\r\n                role: 'presentation'");
+    expect(source).toMatch(/showAiConsentModal && h\('div', \{\r?\n\s+role: 'presentation'/);
     expect(source).toContain('ref: aiConsentDialogRef');
     expect(source).toContain("'aria-modal': 'true'");
     expect(source).toContain("'aria-labelledby': 'bl-ai-consent-title'");

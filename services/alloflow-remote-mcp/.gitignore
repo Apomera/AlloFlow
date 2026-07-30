@@ -1,0 +1,9 @@
+node_modules/
+.dev.vars*
+.env*
+.wrangler/
+.wrangler-build/
+coverage/
+.runner-context/
+wrangler.pilot.local.jsonc
+*.cpuprofile

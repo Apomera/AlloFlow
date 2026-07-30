@@ -17,50 +17,50 @@ covered, the teacher got nothing. Those three are fixed; the class is what this 
 | resource type | grade | lang | uiLang | standards | interests | dok | custom | emoji |
 |---|---|---|---|---|---|---|---|---|
 | `simplified` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `glossary` | ✅ | ✅ | ❌ | ✅ | ✅ | ❌ | ✅ | ✅ |
-| `outline` | ✅ | ✅ | ❌ | ✅ | ✅ | ❌ | ✅ | ✅ |
+| `glossary` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `outline` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `image` | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
 | `quiz` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `analysis` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | `faq` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `brainstorm` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ❌ |
 | `sentence-frames` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `timeline` | ✅ | ✅ | ❌ | ✅ | ✅ | ❌ | ✅ | ✅ |
-| `math` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ❌ |
+| `timeline` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `math` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `gemini-bridge` | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | `concept-sort` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `dbq` | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ | ✅ | ❌ |
 | `lesson-plan` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ❌ |
-| `adventure` | ✅ | ✅ | ❌ | ✅ | ✅ | ❌ | ✅ | ❌ |
+| `adventure` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `persona` | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| `note-taking` | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ |
-| `anchor-chart` | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ |
-| **reaching / 19** | **17** | **18** | **0** | **15** | **12** | **9** | **16** | **9** |
+| `note-taking` | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ |
+| `anchor-chart` | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ |
+| **reaching / 19** | **17** | **18** | **0** | **15** | **12** | **15** | **16** | **13** |
 
 ## cloud backend
 
 | resource type | grade | lang | uiLang | standards | interests | dok | custom | emoji |
 |---|---|---|---|---|---|---|---|---|
 | `simplified` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `glossary` | ✅ | ✅ | ❌ | ✅ | ✅ | ❌ | ✅ | ✅ |
-| `outline` | ✅ | ✅ | ❌ | ✅ | ✅ | ❌ | ✅ | ✅ |
+| `glossary` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `outline` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `image` | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ |
 | `quiz` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `analysis` | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | `faq` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `brainstorm` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ❌ |
 | `sentence-frames` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `timeline` | ✅ | ✅ | ❌ | ✅ | ✅ | ❌ | ✅ | ✅ |
-| `math` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ❌ |
+| `timeline` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `math` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `gemini-bridge` | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
 | `concept-sort` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `dbq` | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ | ✅ | ❌ |
 | `lesson-plan` | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| `adventure` | ✅ | ✅ | ❌ | ✅ | ✅ | ❌ | ✅ | ❌ |
+| `adventure` | ✅ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `persona` | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| `note-taking` | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ |
-| `anchor-chart` | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | ❌ |
-| **reaching / 19** | **16** | **17** | **1** | **14** | **11** | **8** | **15** | **9** |
+| `note-taking` | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ |
+| `anchor-chart` | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ |
+| **reaching / 19** | **16** | **17** | **1** | **14** | **11** | **14** | **15** | **13** |
 
 ## Local/cloud prompt divergence
 

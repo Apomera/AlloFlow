@@ -32,19 +32,15 @@ describe('EPPP final quality-halving verifier', () => {
     }
   });
 
-  it('extracts only the native EPPP JSON literal from an AlloFlow runtime module', () => {
-    const fixture = [
+  it('requires the AlloFlow runtime to exclude the retired embedded EPPP bank', () => {
+    expect(verifier.assertRuntimeExcludesEmbeddedEppp(
       'const BEFORE = true;',
-      `${verifier.START_MARKER}[{"id":"one","answerIndex":0}];`,
-      `${verifier.NEXT_MARKER}{"id":"preview"};`,
-    ].join('\n');
-    expect(verifier.extractEmbeddedEpppItems(fixture, 'fixture runtime')).toEqual([
-      { id: 'one', answerIndex: 0 },
-    ]);
-    expect(() => verifier.extractEmbeddedEpppItems(
-      `${fixture}\n${verifier.START_MARKER}[];`,
-      'duplicate fixture runtime',
-    )).toThrow(/exactly one EPPP native-bank marker/i);
+      'fixture runtime',
+    )).toBe(true);
+    expect(() => verifier.assertRuntimeExcludesEmbeddedEppp(
+      `${verifier.START_MARKER}[];`,
+      'fixture runtime',
+    )).toThrow(/must not contain the retired embedded EPPP native bank/i);
   });
 
   it('requires truthful review limitations and rejects an independent-validation claim', () => {
@@ -97,7 +93,10 @@ describe('EPPP final quality-halving verifier', () => {
       feedbackOnlyCampaignMarkers: 420,
       feedbackAuditItems: 420,
       keyedFeedbackMatchingRationale: 1500,
-      canonicalRuntimeItemsEqual: true,
+      canonicalLazyPackItemsEqual: true,
+      lazyPackOrderSha256: '3fa8e0dd748bdb9a4c27a77a1bf54c76a05c75d3d2c4765e2d24d9d10c41c75e',
+      runtimeExcludesEmbeddedItems: true,
+      manifestBindsLazyPack: true,
       sourceDeployParity: true,
     });
     for (const campaign of ['distractor', 'feedback']) {

@@ -151,7 +151,7 @@ describe('EPPP distractor-quality repair wave 17', () => {
       .toBeLessThan(builder.indexOf('runDistractorHalvingCampaign();'));
   });
 
-  it('publishes synchronized catalogs, feedback, QA, and runtime content', () => {
+  it('publishes synchronized catalogs, feedback, QA, and lazy pack content', () => {
     const sourceCatalog = read('test_prep/reference_catalog.json');
     expect(read('desktop/web-app/public/test_prep/reference_catalog.json')).toBe(sourceCatalog);
     const catalog = JSON.parse(sourceCatalog);
@@ -181,10 +181,10 @@ describe('EPPP distractor-quality repair wave 17', () => {
       (item) => item.qaStatus === 'pass',
     )).toBe(true);
 
-    const sourceRuntime = read('test_prep_hub_module.js');
-    expect(read('desktop/web-app/public/test_prep_hub_module.js')).toBe(sourceRuntime);
-    expect(sourceRuntime).toContain('follows two-step spoken commands');
-    expect(sourceRuntime).toContain('incompatible with screen readers');
-    expect(sourceRuntime).toContain('smaller classes and more experienced teachers');
+    const sourcePack = read('test_prep/eppp_part_one_pack.json');
+    expect(read('desktop/web-app/public/test_prep/eppp_part_one_pack.json')).toBe(sourcePack);
+    expect(sourcePack).toContain('follows two-step spoken commands');
+    expect(sourcePack).toContain('incompatible with screen readers');
+    expect(sourcePack).toContain('smaller classes and more experienced teachers');
   });
 });

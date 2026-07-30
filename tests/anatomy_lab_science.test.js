@@ -1587,4 +1587,130 @@ describe('Anatomy Systems in Motion', () => {
     expect(html).not.toContain('2/4 checkpoints solved');
     expect(html).toContain('Water-soluble nutrients enter villus capillaries');
   });
+  it('coordinates perfusion, hemostasis, inflammation, and skin rebuilding', () => {
+    const html = renderAnatomy({
+      system: 'integumentary', view: 'anterior', complexity: 3, selectedStructure: 'epidermis',
+      _regionalAtlasOpen: 'epidermis', _regionalAtlasStep: 2, _showSystemsMotion: true,
+      _systemsMotionScenario: 'wound', _systemsMotionStep: 3
+    });
+    expect(html).toContain('data-systems-motion="wound-repair"');
+    expect(html).toContain('data-systems-motion-scenario="wound"');
+    expect(html).toContain('aria-label="Wound repair response pathway"');
+    expect(html).toContain('Wound repair: perfusion to rebuilding');
+    expect(html).toContain('data-systems-motion-node="wound-perfusion"');
+    expect(html).toContain('data-systems-motion-node="wound-hemostasis"');
+    expect(html).toContain('data-systems-motion-node="wound-inflammation"');
+    expect(html).toContain('data-systems-motion-node="wound-rebuilding"');
+    expect(html).toContain('Rebuild the barrier');
+  });
+
+  it('summarizes independent completion on every scenario choice', () => {
+    const html = renderAnatomy({
+      system: 'integumentary', view: 'anterior', complexity: 3, selectedStructure: 'epidermis',
+      _regionalAtlasOpen: 'epidermis', _showSystemsMotion: true, _systemsMotionScenario: 'wound',
+      _systemsMotionCompleted: {
+        'muscle-force': true, 'joint-motion': true,
+        'meal-absorption': true,
+        'wound-perfusion': true, 'wound-hemostasis': true, 'wound-inflammation': true
+      }
+    });
+    expect(html).toContain('data-systems-motion-choice="exercise" data-systems-motion-choice-progress="2/4"');
+    expect(html).toContain('data-systems-motion-choice="meal" data-systems-motion-choice-progress="1/4"');
+    expect(html).toContain('data-systems-motion-choice="wound" data-systems-motion-choice-progress="3/4"');
+    expect(html).toContain('aria-label="Wound repair, 3 of 4 checkpoints solved"');
+    expect(html).toContain('3/4 solved');
+  });
+  it('renders a trigger-to-mechanism-to-outcome diagram for the selected stage', () => {
+    const html = renderAnatomy({
+      system: 'muscular', view: 'anterior', complexity: 3, selectedStructure: 'biceps',
+      _regionalAtlasOpen: 'biceps', _showSystemsMotion: true, _systemsMotionScenario: 'exercise'
+    });
+    expect(html).toContain('class="anatomy-motion-cascade" role="img"');
+    expect(html).toContain('Trigger');
+    expect(html).toContain('Acetylcholine starts a muscle-fiber action potential.');
+    expect(html).toContain('Calcium exposes actin sites so myosin cross-bridges cycle.');
+    expect(html).toContain('Sarcomeres shorten and tendon tension rises.');
+    expect(html).toContain('Show deeper physiology');
+    expect(html).not.toContain('data-systems-motion-advanced="muscle-force"');
+  });
+
+  it('provides stage-specific advanced physiology across every scenario', () => {
+    const depthCases = [
+      { scenario: 'exercise', step: 2, system: 'circulatory', structure: 'heart', advancedId: 'cardiac-delivery', text: 'Cardiac output equals heart rate × stroke volume' },
+      { scenario: 'meal', step: 2, system: 'organs', structure: 'liver', advancedId: 'meal-processing', text: 'Insulin favors hepatic glucose uptake and glycogen synthesis' },
+      { scenario: 'wound', step: 1, system: 'integumentary', structure: 'epidermis', advancedId: 'wound-hemostasis', text: 'Platelet adhesion and activation amplify recruitment' }
+    ];
+    depthCases.forEach((scenario) => {
+      const html = renderAnatomy({
+        system: scenario.system, view: 'anterior', complexity: 3, selectedStructure: scenario.structure,
+        _regionalAtlasOpen: scenario.structure, _showSystemsMotion: true,
+        _systemsMotionScenario: scenario.scenario, _systemsMotionStep: scenario.step, _systemsMotionDeepDive: true
+      });
+      expect(html).toContain('data-systems-motion-depth="advanced"');
+      expect(html).toContain(`data-systems-motion-advanced="${scenario.advancedId}"`);
+      expect(html).toContain('Hide deeper physiology');
+      expect(html).toContain(scenario.text);
+    });
+  });
+
+  it('uses scenario-specific visual identity and marks completed causal transitions', () => {
+    const html = renderAnatomy({
+      system: 'organs', view: 'anterior', complexity: 3, selectedStructure: 'sm_intestine',
+      _regionalAtlasOpen: 'sm_intestine', _showSystemsMotion: true, _systemsMotionScenario: 'meal',
+      _systemsMotionCompleted: { 'meal-absorption': true }
+    });
+    expect(html).toContain('style="--motion-accent:#c2410c;--motion-soft:#fff7ed"');
+    expect(html).toContain('class="anatomy-motion-symbol" aria-hidden="true">Glc</span>');
+    expect(html).toContain('class="anatomy-motion-arrow" aria-hidden="true" data-complete="true"');
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    expect(source).toContain('.anatomy-motion-cascade{display:grid');
+    expect(source).toContain('.anatomy-motion-arrow[data-complete="true"]');
+    expect(source).toContain('@media (max-width:560px)');
+  });
+  it('keeps typical physiology as the default scenario state', () => {
+    const html = renderAnatomy({
+      system: 'muscular', view: 'anterior', complexity: 3, selectedStructure: 'biceps',
+      _regionalAtlasOpen: 'biceps', _showSystemsMotion: true
+    });
+    expect(html).toContain('data-systems-motion-perturbation="typical"');
+    expect(html).toContain('What if physiology is disrupted?');
+    expect(html).toContain('Apply disruption');
+    expect(html).not.toContain('class="anatomy-motion-impact"');
+    expect(html).not.toContain('is-perturbed');
+  });
+
+  it('shows a scenario-specific impact chain at each clinical bottleneck', () => {
+    const disruptionCases = [
+      { scenario: 'exercise', step: 3, system: 'respiratory', structure: 'alveoli', atlasStep: 1, impact: 'pulmonary-edema', clinical: 'pulmonary_edema', title: 'Pulmonary edema', effect: 'Oxygen diffusion falls despite continued ventilation.' },
+      { scenario: 'meal', step: 0, system: 'organs', structure: 'sm_intestine', atlasStep: 1, impact: 'villous-atrophy', clinical: 'villous_atrophy', title: 'Villous atrophy', effect: 'Fewer nutrients, electrolytes, and water cross efficiently.' },
+      { scenario: 'wound', step: 3, system: 'integumentary', structure: 'epidermis', atlasStep: 2, impact: 'impaired-healing', clinical: 'impaired_wound_healing', title: 'Impaired wound healing', effect: 'Keratinocyte migration, angiogenesis, and matrix deposition slow.' }
+    ];
+    disruptionCases.forEach((scenario) => {
+      const html = renderAnatomy({
+        system: scenario.system, view: 'anterior', complexity: 3, selectedStructure: scenario.structure,
+        _regionalAtlasOpen: scenario.structure, _regionalAtlasStep: scenario.atlasStep, _regionalAtlasClinical: true,
+        _showSystemsMotion: true, _systemsMotionScenario: scenario.scenario,
+        _systemsMotionStep: scenario.step, _systemsMotionPerturbation: true
+      });
+      expect(html).toContain('class="anatomy-motion mb-3 is-perturbed"');
+      expect(html).toContain(`data-systems-motion-perturbation="${scenario.impact}"`);
+      expect(html).toContain(`data-systems-motion-impact="${scenario.impact}"`);
+      expect(html).toContain(`${scenario.title} impact chain`);
+      expect(html).toContain(scenario.effect);
+      expect(html).toContain('Structural change');
+      expect(html).toContain('Local effect');
+      expect(html).toContain('Pathway consequence');
+      expect(html).toContain(`data-anatomy-clinical="${scenario.clinical}"`);
+      expect(html).toContain('Restore typical physiology');
+    });
+  });
+
+  it('synchronizes the selected disruption point with the matching Clinical Lens', () => {
+    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
+    expect(source).toContain('function toggleSystemsMotionPerturbation()');
+    expect(source).toContain('_regionalAtlasClinical: systemsMotionPerturbation && motionStep.id === requestedScenario.perturbation.affectedStepId');
+    expect(source).toContain("'data-disruption-point': stepItem.id === systemsMotionScenario.perturbation.affectedStepId ? 'true' : 'false'");
+    expect(source).toContain('.anatomy-motion-node[data-disruption-point="true"]');
+    expect(source).toContain('.anatomy-motion-impact{display:grid');
+  });
 });

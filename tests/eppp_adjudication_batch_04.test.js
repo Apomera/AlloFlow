@@ -7,8 +7,8 @@ const read = (relativePath) => JSON.parse(fs.readFileSync(resolve(root, relative
 
 describe('EPPP claim-level adjudication batch 04', () => {
   it('reviews ten high-risk candidates without releasing or repeating them', () => {
-    const report = read('test_prep/eppp_legacy/adjudication_batch_04.json');
-    const priorIds = new Set(['01', '02', '03'].flatMap((batch) => read(`test_prep/eppp_legacy/adjudication_batch_${batch}.json`).items.map((item) => item.legacyId)));
+    const report = read('quality/eppp_provenance/evidence/adjudication/adjudication_batch_04.json');
+    const priorIds = new Set(['01', '02', '03'].flatMap((batch) => read(`quality/eppp_provenance/evidence/adjudication/adjudication_batch_${batch}.json`).items.map((item) => item.legacyId)));
     const nativeIds = new Set(read('test_prep/eppp_native_items.json').map((item) => item.legacySourceId).filter(Boolean));
 
     expect(report.status).toBe('editorial-adjudication-complete-still-quarantined');
@@ -28,7 +28,7 @@ describe('EPPP claim-level adjudication batch 04', () => {
   });
 
   it('requires complete option feedback, findings, and named provenance', () => {
-    const report = read('test_prep/eppp_legacy/adjudication_batch_04.json');
+    const report = read('quality/eppp_provenance/evidence/adjudication/adjudication_batch_04.json');
     for (const item of report.items) {
       expect(item.findings.length).toBeGreaterThanOrEqual(2);
       expect(['minor-revision', 'major-rewrite']).toContain(item.decision);
@@ -46,8 +46,9 @@ describe('EPPP claim-level adjudication batch 04', () => {
     }
   });
 
-  it('keeps deployment artifacts identical to source artifacts', () => {
-    expect(read('desktop/web-app/public/test_prep/eppp_legacy/adjudication_batch_04.json')).toEqual(read('test_prep/eppp_legacy/adjudication_batch_04.json'));
-    expect(fs.readFileSync(resolve(root, 'desktop/web-app/public/test_prep/eppp_legacy/adjudication_batch_04.md'), 'utf8')).toBe(fs.readFileSync(resolve(root, 'test_prep/eppp_legacy/adjudication_batch_04.md'), 'utf8'));
+  it('keeps JSON and Markdown canonical and outside runtime publication', () => {
+    expect(fs.existsSync(resolve(root, 'quality/eppp_provenance/evidence/adjudication/adjudication_batch_04.json'))).toBe(true);
+    expect(fs.existsSync(resolve(root, 'quality/eppp_provenance/evidence/adjudication/adjudication_batch_04.md'))).toBe(true);
+    expect(fs.existsSync(resolve(root, 'desktop/web-app/public/test_prep/eppp_legacy/adjudication_batch_04.json'))).toBe(false);
   });
 });

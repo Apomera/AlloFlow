@@ -13,7 +13,7 @@
   'use strict';
   if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
 
-  var ALPHAFOLD_CDN_URL = 'https://alloflow-cdn.pages.dev/alphafold_explorer/alphafold_explorer.html?v=1';
+  var ALPHAFOLD_CDN_URL = 'https://alloflow-cdn.pages.dev/alphafold_explorer/alphafold_explorer.html?v=2';
 
   function companionUrl(path, cdnUrl) {
     try {
@@ -29,7 +29,7 @@
     return cdnUrl;
   }
 
-  var ALPHAFOLD_URL = companionUrl('alphafold_explorer/alphafold_explorer.html?v=1', ALPHAFOLD_CDN_URL);
+  var ALPHAFOLD_URL = companionUrl('alphafold_explorer/alphafold_explorer.html?v=2', ALPHAFOLD_CDN_URL);
 
   if (typeof document !== 'undefined' && !document.getElementById('alphafold-launcher-css')) {
     var alphaFoldStyle = document.createElement('style');
@@ -78,6 +78,7 @@
       '.af-primary{min-height:46px;padding:11px 17px;border:1px solid rgba(153,246,228,.38);border-radius:12px;background:linear-gradient(135deg,#0f766e,#0369a1);color:#fff;font-size:13px;font-weight:900;cursor:pointer;box-shadow:0 10px 24px rgba(8,145,178,.23);transition:transform .18s,box-shadow .18s;}',
       '.af-primary:hover{transform:translateY(-1px);box-shadow:0 14px 28px rgba(8,145,178,.3);}',
       '.af-action-note{color:#94a3b8;font-size:10px;line-height:1.45;}',
+      '.af-cross-scale{border-color:rgba(34,211,238,.45);background:linear-gradient(145deg,rgba(8,145,178,.14),rgba(15,23,42,.82) 72%);}.af-cross-meta{display:flex;flex-wrap:wrap;gap:6px;margin:9px 0}.af-cross-chip{padding:5px 8px;border:1px solid rgba(103,232,249,.25);border-radius:999px;background:rgba(8,47,73,.65);color:#cffafe;font-size:9px;font-weight:850}.af-evidence-ladder{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:11px}.af-evidence-step{padding:11px;border:1px solid rgba(103,232,249,.2);border-radius:12px;background:rgba(15,23,42,.8)}.af-evidence-step span{color:#67e8f9;font-size:9px;font-weight:950;text-transform:uppercase}.af-evidence-step h4{margin:6px 0 5px;color:#f8fafc;font-size:11px}.af-evidence-step p{margin:0;color:#cbd5e1;font-size:9px;line-height:1.5}.af-cross-evidence{margin-top:10px;padding:10px;border-left:4px solid #22d3ee;background:rgba(8,47,73,.5);color:#cffafe;font-size:10px;line-height:1.5}.af-claim-grid{display:grid;gap:7px;margin-top:9px}.af-claim-choice{width:100%;padding:9px;border:1px solid #475569;border-radius:10px;background:#0f172a;color:#cbd5e1;text-align:left;font-size:10px;font-weight:750;line-height:1.45;cursor:pointer}.af-claim-choice[aria-pressed=true]{border-color:#22d3ee;background:rgba(8,145,178,.18);color:#ecfeff}.af-cross-feedback{margin-top:9px;padding:9px;border-radius:10px;font-size:10px;font-weight:800;line-height:1.45}.af-cross-feedback[data-correct=true]{background:rgba(22,101,52,.35);color:#bbf7d0}.af-cross-feedback[data-correct=false]{background:rgba(154,52,18,.32);color:#fed7aa}.af-secondary{min-height:40px;padding:9px 13px;border:1px solid #475569;border-radius:10px;background:#0f172a;color:#e2e8f0;font-size:11px;font-weight:850;cursor:pointer}.af-primary:disabled,.af-secondary:disabled{cursor:not-allowed;opacity:.5;transform:none}.af-evidence-notebook{margin-top:13px;padding:13px;border:1px solid rgba(167,243,208,.3);border-radius:14px;background:rgba(6,78,59,.15)}.af-evidence-notebook h3{font-size:13px}.af-evidence-notebook>p{margin:5px 0 10px;color:#a7f3d0;font-size:9px;line-height:1.5}.af-note-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.af-note-field label{display:block;margin-bottom:5px;color:#d1fae5;font-size:9px;font-weight:900;text-transform:uppercase}.af-note-field textarea{box-sizing:border-box;width:100%;min-height:82px;resize:vertical;border:1px solid #475569;border-radius:10px;background:#020617;color:#e2e8f0;padding:9px;font:inherit;font-size:10px;line-height:1.45}.af-note-field textarea:focus{outline:3px solid #22d3ee;outline-offset:2px}.af-record-checks{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0}.af-record-check{padding:4px 7px;border-radius:999px;background:#3f3f46;color:#d4d4d8;font-size:8px;font-weight:900}.af-record-check[data-done=true]{background:#14532d;color:#bbf7d0}.af-record-saved{margin-top:9px;padding:8px;border-radius:9px;background:rgba(22,101,52,.38);color:#bbf7d0;font-size:9px;font-weight:850}',
       '.af-section{padding:16px;border:1px solid #334155;border-radius:16px;background:rgba(15,23,42,.62);}',
       '.af-section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:11px;}',
       '.af-section h3{margin:0;color:#f8fafc;font-size:15px;}',
@@ -101,7 +102,8 @@
       '.af-alert{padding:11px 13px;border:1px solid rgba(251,191,36,.45);border-radius:12px;background:rgba(120,53,15,.2);color:#fde68a;font-size:11px;line-height:1.5;}',
       '.af-alert a{color:#fef3c7;text-decoration:underline;font-weight:800;}',
       '.af-credit{margin:0;padding:0 4px;color:#64748b;font-size:9px;line-height:1.5;}',
-      '@media(max-width:760px){.af-confidence-atlas{grid-template-columns:1fr;}.af-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}.af-route{grid-template-columns:1fr;}.af-support-grid{grid-template-columns:1fr;}}',
+      '@media(max-width:760px){.af-confidence-atlas{grid-template-columns:1fr;}.af-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}.af-route{grid-template-columns:1fr;}.af-support-grid{grid-template-columns:1fr;}.af-evidence-ladder,.af-note-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}',
+      '@media(max-width:520px){.af-evidence-ladder,.af-note-grid{grid-template-columns:1fr;}}',
       '@media(max-width:520px){.af-mission{padding:15px;border-radius:16px;}.af-mission-top{flex-direction:column;}.af-status{white-space:normal;}.af-metrics{grid-template-columns:1fr 1fr;}.af-primary{width:100%;}.af-actions{align-items:stretch;}.af-action-note{width:100%;}}',
       '@media(prefers-reduced-motion:reduce){.af-primary,.af-fold-ribbon,.af-fold-segment{transition:none;}.af-primary:hover{transform:none;}.af-fold-ribbon,.af-residue-node{animation:none;}}',
       '.theme-contrast .af-mission,.theme-contrast .af-section,.theme-contrast .af-route-card,.theme-contrast .af-details,.theme-contrast .af-guardrail{box-shadow:none;border-width:2px;}'
@@ -111,6 +113,12 @@
 
   function safeClip(value, limit) {
     return String(value == null ? '' : value).replace(/\s+/g, ' ').trim().slice(0, limit || 300);
+  }
+
+  function safeEvidenceText(value, limit) {
+    return safeClip(value, limit || 600)
+      .replace(/\b[ACGTUN]{40,}\b/gi, '[nucleic-acid sequence omitted]')
+      .replace(/\b[ACDEFGHIKLMNPQRSTVWY]{40,}\b/gi, '[protein sequence omitted]');
   }
 
   function buildCoachPrompt(payload) {
@@ -276,6 +284,27 @@
       var _bandState = React.useState('all'); var confidenceBand = _bandState[0], setConfidenceBand = _bandState[1];
       var aiOn = !!(ctx.aiHintsEnabled && typeof ctx.callGemini === 'function');
       var progress = (ctx.toolData && ctx.toolData._alphaFoldExplorer) || {};
+      var prefillAccession = String(progress.prefillAccession || '').trim().toUpperCase();
+      if (!/^[A-Z0-9-]{3,24}$/.test(prefillAccession)) prefillAccession = '';
+      var prefillLabel = String(progress.prefillLabel || '').trim().slice(0, 80);
+      var prefillSource = safeClip(progress.prefillSource, 120);
+      var prefillGene = safeClip(progress.prefillGene, 24).toUpperCase();
+      var prefillProtein = safeClip(progress.prefillProtein, 80);
+      var prefillCellType = safeClip(progress.prefillCellType, 80);
+      var prefillTissue = safeClip(progress.prefillTissue, 80);
+      var prefillEvidenceMode = safeClip(progress.prefillEvidenceMode, 80);
+      var prefillMetricLabel = safeClip(progress.prefillMetricLabel, 80);
+      var prefillEvidenceDetail = safeClip(progress.prefillEvidenceDetail, 360);
+      var prefillBiologicalRole = safeClip(progress.prefillBiologicalRole, 260);
+      var prefillEvidenceBoundary = safeClip(progress.prefillEvidenceBoundary, 260);
+      var cellAtlasHandoff = progress._scaleJourneySource === 'cellAtlasLab' && !!prefillAccession && !!prefillGene;
+      var crossScaleAnswer = safeClip(progress.crossScaleAnswer, 24);
+      var savedCrossScaleRecord = progress.crossScaleEvidenceRecord && progress.crossScaleEvidenceRecord.accession === prefillAccession ? progress.crossScaleEvidenceRecord : {};
+      var _observationState = React.useState(safeClip(savedCrossScaleRecord.structureObservation, 600)); var structureObservation = _observationState[0], setStructureObservation = _observationState[1];
+      var _structureEvidenceState = React.useState(safeClip(savedCrossScaleRecord.structureEvidence, 600)); var structureEvidence = _structureEvidenceState[0], setStructureEvidence = _structureEvidenceState[1];
+      var _claimState = React.useState(safeClip(savedCrossScaleRecord.cautiousClaim, 600)); var cautiousClaim = _claimState[0], setCautiousClaim = _claimState[1];
+      var _nextTestState = React.useState(safeClip(savedCrossScaleRecord.nextTest, 600)); var nextTest = _nextTestState[0], setNextTest = _nextTestState[1];
+      var explorerLaunchUrl = ALPHAFOLD_URL + '&lang=' + encodeURIComponent(ctx.lang || 'en') + '&theme=' + encodeURIComponent(ctx.theme || 'dark') + (prefillAccession ? '&accession=' + encodeURIComponent(prefillAccession) : '');
       var openedCount = progress.openedCount || (progress.opened ? 1 : 0);
       var lookupCount = progress.lookupCount || 0;
       var preparedCount = progress.sequencePreparedCount || 0;
@@ -310,6 +339,162 @@
           h('p', null, body));
       }
 
+      function patchProgress(patch) {
+        setLabToolData(function (prev) {
+          var next = Object.assign({}, prev || {});
+          next._alphaFoldExplorer = Object.assign({}, next._alphaFoldExplorer || {}, patch || {});
+          return next;
+        });
+      }
+
+      function answerCrossScale(answer) {
+        patchProgress({
+          crossScaleAnswer: answer,
+          crossScaleReasoningCount: (progress.crossScaleReasoningCount || 0) + 1
+        });
+        if (announceToSR) announceToSR(answer === 'separate' ? 'Cautious cross-scale conclusion recorded.' : 'Review the evidence boundaries between RNA, protein, structure, and function.');
+      }
+
+      function saveCrossScaleEvidenceRecord() {
+        var observation = safeEvidenceText(structureObservation, 600);
+        var modelEvidence = safeEvidenceText(structureEvidence, 600);
+        var claim = safeEvidenceText(cautiousClaim, 600);
+        var experiment = safeEvidenceText(nextTest, 600);
+        var complete = crossScaleAnswer === 'separate' && observation.length >= 12 && modelEvidence.length >= 12 && claim.length >= 12 && experiment.length >= 12;
+        if (!complete) {
+          if (announceToSR) announceToSR('Complete the evidence-boundary check and all four evidence-record fields before saving.');
+          return;
+        }
+        var record = {
+          schemaVersion: 1,
+          kind: 'cell-atlas-alphafold-evidence',
+          sourceLabel: 'Learner-authored cross-scale record',
+          complete: true,
+          accession: prefillAccession,
+          gene: prefillGene,
+          protein: prefillProtein || prefillLabel,
+          cellType: prefillCellType,
+          tissue: prefillTissue,
+          atlasEvidenceMode: prefillEvidenceMode,
+          atlasMetricLabel: prefillMetricLabel,
+          atlasEvidence: prefillEvidenceDetail,
+          structureObservation: observation,
+          structureEvidence: modelEvidence,
+          cautiousClaim: claim,
+          nextTest: experiment,
+          evidenceBoundary: prefillEvidenceBoundary
+        };
+        setLabToolData(function (prev) {
+          var next = Object.assign({}, prev || {});
+          var explorer = Object.assign({}, next._alphaFoldExplorer || {});
+          explorer.crossScaleEvidenceRecord = record;
+          explorer.crossScaleRecordCount = (explorer.crossScaleRecordCount || 0) + 1;
+          next._alphaFoldExplorer = explorer;
+          next.cellAtlasLab = Object.assign({}, next.cellAtlasLab || {}, { alphaFoldEvidenceRecord: record });
+          return next;
+        });
+        if (announceToSR) announceToSR('Cross-scale evidence record saved for Cell Atlas.');
+      }
+
+      function companionHandoffPayload() {
+        if (!cellAtlasHandoff) return null;
+        return {
+          schemaVersion: 1,
+          source: 'cellAtlasLab',
+          accession: prefillAccession,
+          gene: prefillGene,
+          protein: prefillProtein || prefillLabel,
+          cellType: prefillCellType,
+          tissue: prefillTissue,
+          atlasMetricLabel: prefillMetricLabel,
+          atlasEvidence: prefillEvidenceDetail,
+          evidenceBoundary: prefillEvidenceBoundary
+        };
+      }
+
+      function captureCompanionEvidence(data) {
+        if (!cellAtlasHandoff || !data || data.schemaVersion !== 1 || data.source !== 'AlphaFold DB' || data.structureLoaded !== true) return;
+        var accession = safeClip(data.accession, 24).toUpperCase();
+        if (!/^[A-Z0-9-]{3,24}$/.test(accession) || accession !== prefillAccession) return;
+        var observation = safeEvidenceText(data.observation, 600);
+        var evidence = safeEvidenceText(data.evidence, 600);
+        var claim = safeEvidenceText(data.claim, 600);
+        var caution = safeEvidenceText(data.caution, 600);
+        if (observation.length < 12 || evidence.length < 12 || claim.length < 12 || caution.length < 12) return;
+        var pae = data.paeSelection && typeof data.paeSelection === 'object' ? data.paeSelection : {};
+        function finitePae(value) {
+          var number = Number(value);
+          return Number.isFinite(number) && number >= 0 && number <= 100 ? Math.round(number * 10) / 10 : null;
+        }
+        var paeSelection = {
+          available: pae.available === true,
+          matrixSize: Math.max(0, Math.min(2500, Math.round(Number(pae.matrixSize) || 0))),
+          alignedResidue: Math.max(0, Math.min(100000, Math.round(Number(pae.alignedResidue) || 0))),
+          comparedResidue: Math.max(0, Math.min(100000, Math.round(Number(pae.comparedResidue) || 0))),
+          forwardAngstroms: finitePae(pae.forwardAngstroms),
+          reverseAngstroms: finitePae(pae.reverseAngstroms),
+          interpretation: safeEvidenceText(pae.interpretation, 360)
+        };
+        var record = {
+          schemaVersion: 1,
+          kind: 'cell-atlas-alphafold-evidence',
+          sourceLabel: 'Learner-authored reasoning with companion-verified public-record metadata',
+          captureMethod: 'alphafold-companion-explicit-send',
+          complete: true,
+          accession: prefillAccession,
+          gene: prefillGene,
+          protein: prefillProtein || prefillLabel,
+          cellType: prefillCellType,
+          tissue: prefillTissue,
+          atlasEvidenceMode: prefillEvidenceMode,
+          atlasMetricLabel: prefillMetricLabel,
+          atlasEvidence: prefillEvidenceDetail,
+          structureObservation: observation,
+          structureEvidence: evidence,
+          cautiousClaim: claim,
+          nextTest: caution,
+          evidenceBoundary: prefillEvidenceBoundary,
+          structureRecord: {
+            source: 'AlphaFold DB',
+            accession: accession,
+            entryId: safeClip(data.entryId, 80),
+            proteinName: safeClip(data.proteinName, 160),
+            organism: safeClip(data.organism, 120),
+            gene: safeClip(data.gene, 40),
+            length: safeClip(data.length, 60),
+            confidenceSummary: safeEvidenceText(data.confidenceSummary, 240),
+            structureLoaded: true,
+            databaseUrl: 'https://alphafold.ebi.ac.uk/entry/' + encodeURIComponent(accession),
+            paeSelection: paeSelection
+          }
+        };
+        setLabToolData(function (prev) {
+          var next = Object.assign({}, prev || {});
+          var explorer = Object.assign({}, next._alphaFoldExplorer || {});
+          explorer.crossScaleEvidenceRecord = record;
+          explorer.companionEvidenceCount = (explorer.companionEvidenceCount || 0) + 1;
+          explorer.lookupCount = Math.max(1, explorer.lookupCount || 0);
+          next._alphaFoldExplorer = explorer;
+          next.cellAtlasLab = Object.assign({}, next.cellAtlasLab || {}, { alphaFoldEvidenceRecord: record });
+          return next;
+        });
+        if (announceToSR) announceToSR('Verified AlphaFold companion evidence received for ' + accession + '.');
+      }
+
+      function returnToCellAtlas() {
+        setLabToolData(function (prev) {
+          var next = Object.assign({}, prev || {});
+          next._alphaFoldExplorer = Object.assign({}, next._alphaFoldExplorer || {}, {
+            crossScaleReturnCount: ((next._alphaFoldExplorer && next._alphaFoldExplorer.crossScaleReturnCount) || 0) + 1
+          });
+          next.cellAtlasLab = Object.assign({}, next.cellAtlasLab || {}, { alphaFoldRoundTrip: true });
+          return next;
+        });
+        if (typeof ctx.setStemLabTab === 'function') ctx.setStemLabTab('explore');
+        if (typeof ctx.setStemLabTool === 'function') ctx.setStemLabTool('cellAtlasLab');
+        if (announceToSR) announceToSR('Returning to the Cell Atlas evidence investigation.');
+      }
+
       function bumpSlice(key) {
         setLabToolData(function (prev) {
           var cur = Object.assign({}, (prev && prev._alphaFoldExplorer) || {});
@@ -324,7 +509,8 @@
           var data = ev && ev.data;
           if (!data || typeof data.type !== 'string') return;
           if (data.type === 'allocaf-hello') {
-            try { if (ev.source) ev.source.postMessage({ type: 'allocaf-ready', ai: aiOn }, '*'); } catch (_) {}
+            if (_win.current && ev.source !== _win.current) return;
+            try { if (ev.source) ev.source.postMessage({ type: 'allocaf-ready', ai: aiOn, cellAtlasHandoff: companionHandoffPayload() }, '*'); } catch (_) {}
             setPopupState('open');
             return;
           }
@@ -332,6 +518,11 @@
           if (data.type === 'allocaf-db-hit') { bumpSlice('lookupCount'); return; }
           if (data.type === 'allocaf-file-imported') { bumpSlice('fileImportCount'); return; }
           if (data.type === 'allocaf-sequence-prepared') { bumpSlice('sequencePreparedCount'); return; }
+          if (data.type === 'allocaf-cross-scale-evidence') {
+            if (!_win.current || ev.source !== _win.current) return;
+            captureCompanionEvidence(data);
+            return;
+          }
           var isCoachRequest = data.type === 'allocaf-ai-request';
           var isGuideRequest = data.type === 'allocaf-ai-guide-request';
           var isVariantRequest = data.type === 'allocaf-ai-variant-request';
@@ -358,10 +549,9 @@
 
       function openExplorer() {
         var existing = _win.current;
-        if (existing && !existing.closed) { try { existing.focus(); } catch (_) {} return; }
-        var lang = (ctx.lang || 'en');
+        if (existing && !existing.closed) { try { if (prefillAccession) existing.location.href = explorerLaunchUrl; existing.focus(); } catch (_) {} return; }
         var w = null;
-        try { w = window.open(ALPHAFOLD_URL + '&lang=' + encodeURIComponent(lang) + '&theme=' + encodeURIComponent(ctx.theme || 'dark'), 'alloflow-alphafold-explorer', 'width=1360,height=900'); } catch (_) { w = null; }
+        try { w = window.open(explorerLaunchUrl, 'alloflow-alphafold-explorer', 'width=1360,height=900'); } catch (_) { w = null; }
         if (!w) {
           setPopupState('blocked');
           if (announceToSR) announceToSR(t('stem.alphaFold.popup_blocked', 'The AlphaFold Explorer window was blocked. Allow pop-ups for this page, then try again.'));
@@ -371,6 +561,86 @@
         setPopupState('opening');
         bumpSlice('openedCount');
         if (announceToSR) announceToSR(t('stem.alphaFold.opened_sr', 'Opened AlphaFold Explorer in a new window.'));
+      }
+
+      function renderCellAtlasBridge() {
+        if (!cellAtlasHandoff) return null;
+        var correct = crossScaleAnswer === 'separate';
+        return h('section', { className: 'af-section af-cross-scale', 'aria-labelledby': 'af-cross-scale-title' },
+          h('div', { className: 'af-section-head' },
+            h('div', null,
+              h('p', { className: 'af-eyebrow' }, 'Cell Atlas → AlphaFold evidence bridge'),
+              h('h3', { id: 'af-cross-scale-title' }, 'One biological story, four different evidence levels'),
+              h('p', null, 'Carry the RNA observation forward without letting one tool answer a question measured by another.'))),
+          h('div', { className: 'af-cross-meta', role: 'list', 'aria-label': 'Cell Atlas handoff context' },
+            h('span', { className: 'af-cross-chip', role: 'listitem' }, prefillTissue || 'Tissue atlas'),
+            h('span', { className: 'af-cross-chip', role: 'listitem' }, prefillCellType || 'Selected cell'),
+            h('span', { className: 'af-cross-chip', role: 'listitem' }, prefillGene + ' → ' + (prefillProtein || prefillLabel)),
+            h('span', { className: 'af-cross-chip', role: 'listitem' }, prefillMetricLabel || 'RNA evidence')),
+          h('div', { className: 'af-cross-evidence' },
+            h('strong', null, 'Atlas observation: '), prefillEvidenceDetail,
+            prefillSource && h('span', null, ' Source context: ' + prefillSource + '.')),
+          h('div', { className: 'af-evidence-ladder' },
+            h('article', { className: 'af-evidence-step' },
+              h('span', null, '01 Observed'),
+              h('h4', null, 'RNA evidence'),
+              h('p', null, prefillEvidenceMode + '. ' + (prefillEvidenceBoundary || 'RNA abundance does not directly measure protein.'))),
+            h('article', { className: 'af-evidence-step' },
+              h('span', null, '02 Hypothesized'),
+              h('h4', null, 'Protein presence'),
+              h('p', null, 'The transcript supports a hypothesis that the protein may be produced. Confirm abundance and cellular localization with proteomics, immunostaining, or another protein assay.')),
+            h('article', { className: 'af-evidence-step' },
+              h('span', null, '03 Predicted'),
+              h('h4', null, 'Protein structure'),
+              h('p', null, 'AlphaFold predicts a sequence-compatible 3D model. Inspect pLDDT and PAE; structural confidence is not evidence that this cell produced an active protein.')),
+            h('article', { className: 'af-evidence-step' },
+              h('span', null, '04 Tested'),
+              h('h4', null, 'Function in context'),
+              h('p', null, 'Use localization, perturbation, interaction, or functional assays to test whether the protein contributes to the proposed cell role.'))),
+          prefillBiologicalRole && h('div', { className: 'af-confidence-caution' },
+            h('strong', null, 'Biological hypothesis from the atlas: '), prefillBiologicalRole),
+          h('div', { style: { marginTop: '12px' } },
+            h('h3', null, 'Which conclusion respects every evidence boundary?'),
+            h('div', { className: 'af-claim-grid', role: 'group', 'aria-label': 'Cross-scale claim choices' },
+              h('button', { type: 'button', className: 'af-claim-choice', 'aria-pressed': crossScaleAnswer === 'proof' ? 'true' : 'false', onClick: function () { answerCrossScale('proof'); } }, 'High RNA evidence plus a confident AlphaFold model proves the protein is abundant, correctly localized, and active in this cell.'),
+              h('button', { type: 'button', className: 'af-claim-choice', 'aria-pressed': crossScaleAnswer === 'separate' ? 'true' : 'false', onClick: function () { answerCrossScale('separate'); } }, 'The atlas supports a transcript-level hypothesis, while AlphaFold supplies separate structural-model evidence; protein abundance, localization, and function still require appropriate experiments.'),
+              h('button', { type: 'button', className: 'af-claim-choice', 'aria-pressed': crossScaleAnswer === 'expression' ? 'true' : 'false', onClick: function () { answerCrossScale('expression'); } }, 'A low-confidence AlphaFold region would show that the gene was not expressed in the atlas.')),
+            crossScaleAnswer && h('div', { className: 'af-cross-feedback', 'data-correct': correct ? 'true' : 'false', role: 'status' },
+              correct
+                ? 'Well separated: transcript, protein, structure, and function are connected hypotheses measured by different evidence.'
+                : 'That claim crosses measurement levels. AlphaFold confidence describes a structural model; it cannot establish RNA expression, protein abundance, localization, or activity.')),
+          h('div', { className: 'af-evidence-notebook', 'aria-labelledby': 'af-evidence-notebook-title' },
+            h('h3', { id: 'af-evidence-notebook-title' }, 'Build a cross-scale evidence record'),
+            h('p', null, 'Write only what you actually inspected. AlphaFold model evidence remains separate from the atlas RNA measurement, and no protein sequence is stored in this record.'),
+            h('div', { className: 'af-note-grid' },
+              h('div', { className: 'af-note-field' },
+                h('label', { htmlFor: 'af-cross-observation' }, '1. Structural observation'),
+                h('textarea', { id: 'af-cross-observation', rows: 3, maxLength: 600, value: structureObservation, placeholder: 'I observed a compact region and a lower-confidence flexible segment...', onChange: function (event) { setStructureObservation(event.target.value); } })),
+              h('div', { className: 'af-note-field' },
+                h('label', { htmlFor: 'af-cross-evidence' }, '2. Model evidence'),
+                h('textarea', { id: 'af-cross-evidence', rows: 3, maxLength: 600, value: structureEvidence, placeholder: 'The pLDDT colors support local confidence in..., while PAE suggests uncertainty between...', onChange: function (event) { setStructureEvidence(event.target.value); } })),
+              h('div', { className: 'af-note-field' },
+                h('label', { htmlFor: 'af-cross-claim' }, '3. Cautious claim'),
+                h('textarea', { id: 'af-cross-claim', rows: 3, maxLength: 600, value: cautiousClaim, placeholder: 'Together, the atlas and model support the hypothesis that..., but they do not establish...', onChange: function (event) { setCautiousClaim(event.target.value); } })),
+              h('div', { className: 'af-note-field' },
+                h('label', { htmlFor: 'af-cross-next-test' }, '4. Missing evidence or next test'),
+                h('textarea', { id: 'af-cross-next-test', rows: 3, maxLength: 600, value: nextTest, placeholder: 'Next I would test protein abundance, localization, or function by...', onChange: function (event) { setNextTest(event.target.value); } }))),
+            h('div', { className: 'af-record-checks', 'aria-label': 'Evidence record completion' },
+              h('span', { className: 'af-record-check', 'data-done': correct ? 'true' : 'false' }, correct ? '✓ Evidence levels separated' : 'Evidence levels not yet separated'),
+              h('span', { className: 'af-record-check', 'data-done': safeClip(structureObservation, 600).length >= 12 ? 'true' : 'false' }, 'Observation'),
+              h('span', { className: 'af-record-check', 'data-done': safeClip(structureEvidence, 600).length >= 12 ? 'true' : 'false' }, 'Model evidence'),
+              h('span', { className: 'af-record-check', 'data-done': safeClip(cautiousClaim, 600).length >= 12 ? 'true' : 'false' }, 'Cautious claim'),
+              h('span', { className: 'af-record-check', 'data-done': safeClip(nextTest, 600).length >= 12 ? 'true' : 'false' }, 'Next test')),
+            h('button', {
+              type: 'button',
+              className: 'af-primary',
+              disabled: !(correct && safeClip(structureObservation, 600).length >= 12 && safeClip(structureEvidence, 600).length >= 12 && safeClip(cautiousClaim, 600).length >= 12 && safeClip(nextTest, 600).length >= 12),
+              onClick: saveCrossScaleEvidenceRecord
+            }, 'Save cross-scale evidence record'),
+            savedCrossScaleRecord.complete && h('div', { className: 'af-record-saved', role: 'status' }, 'Evidence record saved for return to Cell Atlas. Revise any field and save again to update it.')),
+          h('div', { className: 'af-actions' },
+            h('button', { type: 'button', className: 'af-primary', onClick: openExplorer }, 'Inspect ' + (prefillProtein || prefillGene) + ' structure →'),
+            h('button', { type: 'button', className: 'af-secondary', onClick: returnToCellAtlas }, '← Return to Cell Atlas evidence')));
       }
 
       var statusText = popupState === 'open'
@@ -423,14 +693,16 @@
               onClick: openExplorer,
               className: 'af-primary',
               'aria-label': t('stem.alphaFold.open_title', 'Open AlphaFold Explorer in a new window')
-            }, popupState === 'open' ? t('stem.alphaFold.refocus', 'Return to AlphaFold Explorer') : t('stem.alphaFold.open', 'Open AlphaFold Explorer')),
+            }, prefillAccession ? 'Open ' + (prefillLabel || prefillAccession) + ' in AlphaFold Explorer' : (popupState === 'open' ? t('stem.alphaFold.refocus', 'Return to AlphaFold Explorer') : t('stem.alphaFold.open', 'Open AlphaFold Explorer'))),
             h('span', { className: 'af-action-note' },
-              t('stem.alphaFold.action_note', 'Opens a companion window. Keep AlloFlow open for progress and optional guidance.')))),
+              prefillAccession ? 'Cell Atlas handoff ready: ' + (prefillLabel || 'public protein') + ' (' + prefillAccession + '). The public accession will load automatically.' : t('stem.alphaFold.action_note', 'Opens a companion window. Keep AlloFlow open for progress and optional guidance.')))),
+
+        renderCellAtlasBridge(),
 
         popupState === 'blocked' && h('div', { className: 'af-alert', role: 'alert' },
           t('stem.alphaFold.blocked_note', 'Pop-up blocked - allow pop-ups for this page and try again. '),
           h('a', {
-            href: ALPHAFOLD_URL + '&lang=' + encodeURIComponent(ctx.lang || 'en'),
+            href: explorerLaunchUrl,
             target: '_blank',
             rel: 'noopener'
           }, t('stem.alphaFold.blocked_link', 'Open AlphaFold Explorer directly'))),

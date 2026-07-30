@@ -90,7 +90,8 @@ describe('Typing Practice active drill accessibility', () => {
     expect(source).toContain("id: 'tp-mistake-feedback'");
     expect(source).toContain("'aria-errormessage': mistakeFeedback ? 'tp-mistake-feedback' : undefined");
     expect(source).toContain("'aria-invalid': mistakeFeedback ? 'true' : 'false'");
-    expect(source).toContain('setAnnounceText(typingPracticeMistakeMessage(result.feedback))');
+    expect(source).toContain('typingPracticeMistakeAnnouncement(\n              mistakeAnnouncementRef.current');
+    expect(source).toContain('if (mistakeAnnouncement.shouldAnnounce) setAnnounceText(mistakeAnnouncement.message)');
   });
 
   it('keeps pace samples aligned when tolerant input advances or Backspace undoes', () => {
@@ -148,7 +149,9 @@ describe('Typing Practice active drill accessibility', () => {
     expect(source).toContain("id: 'tp-drill-paused-status'");
     expect(source).toContain("role: 'note'");
     expect(source).toContain("setAnnounceText('')");
-    expect(source).toContain("'Typing paused because this window lost focus.");
+    expect(source).toContain("pauseForInterruption('this window lost focus')");
+    expect(source).toContain("pauseForInterruption('this page moved to the background')");
+    expect(source).toContain("setAnnounceText('Typing paused because ' + reason");
     expect(source).toContain('Consider a short break. Your WPM will not be affected.');
   });
 });

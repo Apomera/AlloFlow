@@ -69,6 +69,7 @@ const HARNESS = `<!doctype html>
 <script src="/desktop/web-app/node_modules/react/umd/react.production.min.js"></script>
 <script src="/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js"></script>
 <script src="/vendor/three-r128/three.min.js"></script>
+<script src="/prim3d_module.js"></script>
 <script>
   window.__events = { toasts: [], errors: [] };
   window.addEventListener('error', function (e) { window.__events.errors.push(String(e.message)); });
@@ -351,6 +352,194 @@ test.describe('Geometry Sandbox — real WebGL', () => {
     expect(gl.lost).toBe(false);
     expect(gl.canvasCount).toBe(1);
     expect(gl.w).toBeGreaterThan(400);
+  });
+
+  test('clicking a sculpt primitive selects it and reveals its formulas in the viewport', async ({ page }) => {
+    await mount(page, {
+      mode: 'sculpt',
+      sculptRecipe: { name: 'Math box', parts: [
+        { shape: 'box', size: [1, 2, 3], position: [0, 1, 0], rotation: [0, 0, 0], color: '#60a5fa' },
+        { shape: 'sphere', size: [0.7], position: [4, 1, 0], rotation: [0, 0, 0], color: '#f472b6' },
+      ] },
+    });
+    await page.waitForFunction(() => !!(window as any)._geoScene?.sculptGroup?.children?.length);
+    const clickPoint = await page.evaluate(() => {
+      const gs = (window as any)._geoScene;
+      const canvas = document.getElementById('geo-sandbox-canvas') as HTMLCanvasElement;
+      const mesh = gs.sculptGroup.children.find((child: any) => child.userData?.prim3dPartIndex === 0);
+      gs.camera.updateMatrixWorld(true);
+      mesh.updateMatrixWorld(true);
+      const projected = new (window as any).THREE.Vector3();
+      mesh.getWorldPosition(projected);
+      projected.project(gs.camera);
+      const box = canvas.getBoundingClientRect();
+      return { x: box.left + (projected.x + 1) * box.width / 2, y: box.top + (1 - projected.y) * box.height / 2 };
+    });
+    const hitCount = await page.evaluate(({ x, y }) => {
+      const gs = (window as any)._geoScene;
+      const canvas = document.getElementById('geo-sandbox-canvas') as HTMLCanvasElement;
+      const box = canvas.getBoundingClientRect();
+      const pointer = new (window as any).THREE.Vector2(((x - box.left) / box.width) * 2 - 1, -((y - box.top) / box.height) * 2 + 1);
+      const ray = new (window as any).THREE.Raycaster();
+      ray.setFromCamera(pointer, gs.camera);
+      return ray.intersectObjects(gs.sculptGroup.children, true).length;
+    }, clickPoint);
+    expect(hitCount).toBeGreaterThan(0);
+    await page.evaluate(({ x, y }) => {
+      const canvas = document.getElementById('geo-sandbox-canvas') as HTMLCanvasElement;
+      canvas.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: x, clientY: y, button: 0 }));
+      canvas.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, clientX: x, clientY: y, button: 0 }));
+    }, clickPoint);
+
+    const overlay = page.locator('[data-geo-sculpt-math-overlay="true"]');
+    await expect(overlay).toBeVisible();
+    await expect(overlay).toContainText('V = l × w × h');
+    await expect(overlay).toContainText('SA = 2(lw + lh + wh)');
+    await page.waitForFunction(() => !!(window as any)._geoScene?.sculptGroup?.children?.some((child: any) => child.userData?.geoSculptSelected));
+    await expect(overlay).toContainText('Linked representation');
+    await expect(overlay).toContainText('Cross-section: Rectangle');
+    await expect(overlay).toContainText('Net: 6 rectangles');
+    await expect(overlay.locator('svg[role="img"]')).toBeVisible();
+    await expect(overlay.locator('svg title')).toHaveText('Box net and cross-section');
+
+    // A compact navigator names the selection, moves predictably between parts,
+    // and offers an explicit camera focus without coupling camera motion to selection.
+    const partNavigator = page.locator('[data-geo-sculpt-part-navigator="true"]');
+    await expect(partNavigator).toContainText('Part 1 of 2 · Rectangular Prism');
+    const sphereMathButton = page.getByRole('button', { name: /^2\. Sphere/ });
+    await sphereMathButton.focus();
+    await page.waitForFunction(() => !!(window as any)._geoScene?.sculptGroup?.children?.some((child: any) => child.userData?.prim3dPartIndex === 1 && child.userData?.geoSculptPreview));
+    await sphereMathButton.evaluate((button: HTMLElement) => button.blur());
+    await page.waitForFunction(() => !(window as any)._geoScene?.sculptGroup?.children?.some((child: any) => child.userData?.geoSculptPreview));
+    await partNavigator.getByRole('button', { name: 'Focus 3D' }).click();
+    await page.waitForFunction(() => {
+      const gs = (window as any)._geoScene;
+      const mesh = gs?.sculptGroup?.children?.find((child: any) => child.userData?.prim3dPartIndex === 0);
+      if (!mesh || !gs.camera || (window as any)._geoFocusAnim) return false;
+      mesh.updateMatrixWorld(true);
+      const THREE = (window as any).THREE;
+      const center = new THREE.Box3().setFromObject(mesh).getCenter(new THREE.Vector3());
+      if (gs.controls?.target) return gs.controls.target.distanceTo(center) < 0.03 && gs.controls.autoRotate === false;
+      const view = new THREE.Vector3(); gs.camera.getWorldDirection(view);
+      const towardCenter = center.clone().sub(gs.camera.position).normalize();
+      return view.dot(towardCenter) > 0.999;
+    });
+    await partNavigator.getByRole('button', { name: 'View all' }).click();
+    await page.waitForFunction(() => {
+      const gs = (window as any)._geoScene;
+      if (!gs?.camera || (window as any)._geoFocusAnim) return false;
+      const THREE = (window as any).THREE;
+      const bounds = new THREE.Box3();
+      gs.sculptGroup.children.forEach((child: any) => {
+        if (child.userData?.prim3dPartIndex != null) { child.updateMatrixWorld(true); bounds.expandByObject(child); }
+      });
+      const center = bounds.getCenter(new THREE.Vector3());
+      if (gs.controls?.target) return gs.controls.target.distanceTo(center) < 0.03;
+      const view = new THREE.Vector3(); gs.camera.getWorldDirection(view);
+      return view.dot(center.clone().sub(gs.camera.position).normalize()) > 0.999;
+    });
+    await partNavigator.getByRole('button', { name: 'Select next sculpt part' }).click();
+    await expect(partNavigator).toContainText('Part 2 of 2 · Sphere');
+    await expect(overlay).toContainText('V = ⁴⁄₃πr³');
+    await partNavigator.getByRole('button', { name: 'Select previous sculpt part' }).click();
+    await expect(partNavigator).toContainText('Part 1 of 2 · Rectangular Prism');
+    await expect(overlay).toContainText('V = l × w × h');
+
+    // The optional live section is spatially linked to the selected primitive,
+    // reports the exact grid-scaled area, and never intercepts object picking.
+    const sliceExplorer = page.locator('[data-geo-sculpt-cross-section="true"]');
+    await expect(sliceExplorer).toBeVisible();
+    await sliceExplorer.getByLabel('Show the section plane in the 3D sculpt').check();
+    await page.waitForFunction(() => {
+      let guide: any = null;
+      (window as any)._geoScene?.sculptGroup?.traverse((node: any) => {
+        if (node.userData?.isGeoSculptSliceGuide) guide = node;
+      });
+      return !!guide;
+    });
+    const sliceGuide = await page.evaluate(() => {
+      let guide: any = null;
+      (window as any)._geoScene.sculptGroup.traverse((node: any) => {
+        if (node.userData?.isGeoSculptSliceGuide) guide = node;
+      });
+      return {
+        y: guide.position.y,
+        area: guide.userData.geoSculptSliceArea,
+        depthWrite: guide.material.depthWrite,
+        hasRaycastOverride: Object.prototype.hasOwnProperty.call(guide, 'raycast'),
+      };
+    });
+    expect(sliceGuide.y).toBeCloseTo(0, 5);
+    expect(sliceGuide.area).toBeCloseTo(3, 5);
+    expect(sliceGuide.depthWrite).toBe(false);
+    expect(sliceGuide.hasRaycastOverride).toBe(true);
+    await expect(overlay).toContainText('Section 50%');
+    await expect(overlay).toContainText('A = 20.28 u²');
+    const areaProfile = sliceExplorer.locator('[data-geo-sculpt-slice-profile="true"]');
+    await expect(areaProfile).toBeVisible();
+    await expect(areaProfile.locator('title')).toHaveText('Cross-sectional area by height');
+    await expect(areaProfile).toHaveAttribute('aria-label', /32-slice volume estimate/);
+    const sliceVolume = sliceExplorer.locator('[data-geo-sculpt-slice-volume="true"]');
+    await expect(sliceVolume).toContainText('32 slices × Δh');
+    await expect(sliceVolume).toContainText('Stack V ≈ 105.46 u³ · exact 105.46 u³');
+    await expect(sliceVolume).toContainText('Below plane ≈ 52.73 u³');
+    const sliceSlider = sliceExplorer.getByRole('slider', { name: 'Cross-section height' });
+    await sliceSlider.fill('0.25');
+    await page.waitForFunction(() => {
+      let guide: any = null;
+      (window as any)._geoScene?.sculptGroup?.traverse((node: any) => {
+        if (node.userData?.isGeoSculptSliceGuide) guide = node;
+      });
+      return guide?.position?.y < -0.49;
+    });
+    await expect(sliceExplorer).toContainText('25%');
+
+    // Hand-editing adds six directly pickable ±X/±Y/±Z handles around the part.
+    await page.getByRole('button', { name: /Edit by hand/ }).click();
+    await page.waitForFunction(() => {
+      let count = 0;
+      (window as any)._geoScene?.sculptGroup?.traverse((node: any) => { if (node.userData?.isGeoSculptHandle) count++; });
+      return count === 6;
+    });    const handleKinds = await page.evaluate(() => {
+      let handles = 0, stems = 0, positiveSpheres = 0, negativeCubes = 0;
+      (window as any)._geoScene.sculptGroup.traverse((node: any) => {
+        if (node.userData?.isGeoSculptHandleStem) stems++;
+        if (node.userData?.isGeoSculptHandle) {
+          handles++;
+          if (node.userData.geoSculptHandleSign === 'positive' && node.geometry?.type === 'SphereGeometry') positiveSpheres++;
+          if (node.userData.geoSculptHandleSign === 'negative' && node.geometry?.type === 'BoxGeometry') negativeCubes++;
+        }
+      });
+      return { handles, stems, positiveSpheres, negativeCubes };
+    });
+    expect(handleKinds).toEqual({ handles: 6, stems: 3, positiveSpheres: 3, negativeCubes: 3 });
+    const handlePoint = await page.evaluate(() => {
+      const gs = (window as any)._geoScene;
+      const canvas = document.getElementById('geo-sandbox-canvas') as HTMLCanvasElement;
+      let positive: any = null, negative: any = null;
+      gs.sculptGroup.traverse((node: any) => {
+        if (!(node.userData?.isGeoSculptHandle && node.userData.geoSculptHandleAxis === 'x')) return;
+        if (node.userData.geoSculptHandleDir > 0) positive = node; else negative = node;
+      });
+      gs.camera.updateMatrixWorld(true); positive.updateMatrixWorld(true); negative.updateMatrixWorld(true);
+      const pp = new (window as any).THREE.Vector3(), pn = new (window as any).THREE.Vector3();
+      positive.getWorldPosition(pp); negative.getWorldPosition(pn); pp.project(gs.camera); pn.project(gs.camera);
+      const box = canvas.getBoundingClientRect();
+      const plus = { x: box.left + (pp.x + 1) * box.width / 2, y: box.top + (1 - pp.y) * box.height / 2 };
+      const minus = { x: box.left + (pn.x + 1) * box.width / 2, y: box.top + (1 - pn.y) * box.height / 2 };
+      const dx = plus.x - minus.x, dy = plus.y - minus.y, mag = Math.hypot(dx, dy);
+      return { x: plus.x, y: plus.y, ux: dx / mag, uy: dy / mag };
+    });
+    await page.evaluate(({ x, y, ux, uy }) => {
+      const canvas = document.getElementById('geo-sandbox-canvas') as HTMLCanvasElement;
+      canvas.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, clientX: x, clientY: y, button: 0, pointerId: 7 }));
+      canvas.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, clientX: x + ux * 42, clientY: y + uy * 42, button: 0, pointerId: 7 }));
+      canvas.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, clientX: x + ux * 42, clientY: y + uy * 42, button: 0, pointerId: 7 }));
+    }, handlePoint);
+    await page.waitForFunction(() => (window as any).__toolData.geoSandbox.sculptRecipe.parts[0].position[0] > 0);
+    await expect(overlay).toContainText('Recent transformations');
+    await expect(overlay).toContainText('Moved X +0.2');
+    if (process.env.GEO_VISUAL_CAPTURE) await page.screenshot({ path: process.env.GEO_VISUAL_CAPTURE, fullPage: true });
   });
 
   test('the solid stays visible from below the grid, and the catcher cannot eat it', async ({ page }) => {

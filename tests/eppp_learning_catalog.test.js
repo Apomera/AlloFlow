@@ -1,9 +1,15 @@
+import { createRequire } from 'node:module';
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import { resolve } from 'node:path';
 
+const require = createRequire(import.meta.url);
+const {
+  openEpppMigrationSourceArchive,
+} = require('../dev-tools/eppp_migration_source_archive.cjs');
+const migrationArchive = openEpppMigrationSourceArchive({ workspaceRoot: process.cwd() });
 const read = (relativePath) => JSON.parse(fs.readFileSync(resolve(process.cwd(), relativePath), 'utf8'));
-const readText = (relativePath) => fs.readFileSync(resolve(process.cwd(), relativePath), 'utf8');
+const readArchiveText = (relativePath) => migrationArchive.readText(relativePath);
 
 describe('EPPP native learning-library catalog', () => {
   const catalog = read('test_prep/eppp_learning_library.json');
@@ -54,10 +60,15 @@ describe('EPPP native learning-library catalog', () => {
     expect(catalog.flashcards.filter((card) => card.contentDisposition === 'retire-redundant')).toHaveLength(80);
     expect(catalog.flashcards.find((card) => card.id === 'flashcard-64a47430077d02d6')).toMatchObject({
       contentDisposition: 'retire-redundant',
+      reviewArtifactLearnerVisible: false,
       learnerVisible: false,
     });
     expect(catalog.flashcards.find((card) => card.id === 'flashcard-10736b0e2a20017d')).toMatchObject({
       contentDisposition: 'retain-after-rewrite',
+      reviewArtifactLearnerVisible: false,
+      learnerVisible: true,
+      independentExpertStatus: 'not-started',
+      productionStatus: 'not-production-validated',
     });
     const manualReviewCards = catalog.flashcards.filter((card) => card.reviewArtifact === 'eppp_learning_review_overrides.json');
     expect(manualReviewCards).toHaveLength(9);
@@ -74,6 +85,8 @@ describe('EPPP native learning-library catalog', () => {
     expect(catalog.memoryAids.every((aid) => typeof aid.reviewArtifact === 'string' && aid.reviewArtifact.length > 0)).toBe(true);
     expect(catalog.summary).toMatchObject({
       releasedFlashcards: 335,
+      learnerVisibleFlashcards: 335,
+      referencedReviewArtifacts: 30,
       releasedMemoryAids: 255,
       qaPassedKnowledgeChecks: 0,
       sourceReviewedKnowledgeChecks: 109,
@@ -88,14 +101,14 @@ describe('EPPP native learning-library catalog', () => {
     expect(catalog.diagramPlacements.find(
       (placement) => placement.id === 'diagram-placement-ch-48-section-01',
     ).description).toContain('The area percentages require a normal model');
-    expect(readText('test_prep/eppp_legacy/js/textbook_ch48.js')).not.toMatch(/Î¼|Ïƒ/);
+    expect(readArchiveText('js/textbook_ch48.js')).not.toMatch(/Î¼|Ïƒ/);
     expect(qa.status).toBe('first-pass-complete-expert-pending');
     expect(qa.summary).toMatchObject({ qaPassedChapters: 0, sourceReviewedChapters: 49, sourceReviewedSections: 278, reviewRequiredSections: 0, sourceReviewedDiagramPlacements: 58, qaPassedFlashcards: 0, qaPassedMemoryAids: 0 });
   });
 
   it('keeps Chapter 1 psychometric claims qualified and interaction metadata intact', () => {
-    const chapter = readText('test_prep/eppp_legacy/js/textbook_ch5_1.js');
-    const diagrams = readText('test_prep/eppp_legacy/js/textbook_diagrams.js');
+    const chapter = readArchiveText('js/textbook_ch5_1.js');
+    const diagrams = readArchiveText('js/textbook_diagrams.js');
 
     expect(chapter).toContain('current EPPP Part 1');
     expect(chapter).toContain('conditional SEM');
@@ -110,7 +123,7 @@ describe('EPPP native learning-library catalog', () => {
   });
 
   it('keeps Chapter 2 cognitive-assessment claims qualified and interaction metadata intact', () => {
-    const chapter = readText('test_prep/eppp_legacy/js/textbook_ch5_2.js');
+    const chapter = readArchiveText('js/textbook_ch5_2.js');
     const cognitiveAssessment = catalog.chapters.find((item) => item.id === 'ch-2');
 
     expect(cognitiveAssessment).toMatchObject({
@@ -132,7 +145,7 @@ describe('EPPP native learning-library catalog', () => {
   });
 
   it('keeps Chapter 3 personality-assessment claims versioned, contextual, and interactive', () => {
-    const chapter = readText('test_prep/eppp_legacy/js/textbook_ch5_3.js');
+    const chapter = readArchiveText('js/textbook_ch5_3.js');
     const personality = catalog.chapters.find((item) => item.id === 'ch-3');
 
     expect(personality).toMatchObject({
@@ -154,7 +167,7 @@ describe('EPPP native learning-library catalog', () => {
   });
 
   it('keeps Chapter 4 behavioral-assessment inference cautious, current, and interactive', () => {
-    const chapter = readText('test_prep/eppp_legacy/js/textbook_ch4.js');
+    const chapter = readArchiveText('js/textbook_ch4.js');
     const behavioral = catalog.chapters.find((item) => item.id === 'ch-4');
 
     expect(behavioral).toMatchObject({
@@ -177,7 +190,7 @@ describe('EPPP native learning-library catalog', () => {
   });
 
   it('keeps Chapter 29 executive-function, calibration, and self-regulation claims qualified and interactive', () => {
-    const chapter = readText('test_prep/eppp_legacy/js/textbook_ch29.js');
+    const chapter = readArchiveText('js/textbook_ch29.js');
     const metacognition = catalog.chapters.find((item) => item.id === 'ch-29');
 
     expect(metacognition).toMatchObject({
@@ -203,7 +216,7 @@ describe('EPPP native learning-library catalog', () => {
   });
 
   it('keeps Chapter 30 attribution, culture, and expectancy claims qualified and interactive', () => {
-    const chapter = readText('test_prep/eppp_legacy/js/textbook_ch30.js');
+    const chapter = readArchiveText('js/textbook_ch30.js');
     const attribution = catalog.chapters.find((item) => item.id === 'ch-30');
 
     expect(attribution).toMatchObject({
@@ -228,7 +241,7 @@ describe('EPPP native learning-library catalog', () => {
   });
 
   it('keeps Chapter 31 social-influence claims conditional, nondiagnostic, and interactive', () => {
-    const chapter = readText('test_prep/eppp_legacy/js/textbook_ch31.js');
+    const chapter = readArchiveText('js/textbook_ch31.js');
     const socialInfluence = catalog.chapters.find((item) => item.id === 'ch-31');
 
     expect(socialInfluence).toMatchObject({
@@ -257,9 +270,9 @@ describe('EPPP native learning-library catalog', () => {
   });
 
   it('keeps Chapters 32-34 social and cultural claims bounded, current, and interactive', () => {
-    const attitudesText = readText('test_prep/eppp_legacy/js/textbook_ch32.js');
-    const aggressionText = readText('test_prep/eppp_legacy/js/textbook_ch33.js');
-    const cultureText = readText('test_prep/eppp_legacy/js/textbook_ch34.js');
+    const attitudesText = readArchiveText('js/textbook_ch32.js');
+    const aggressionText = readArchiveText('js/textbook_ch33.js');
+    const cultureText = readArchiveText('js/textbook_ch34.js');
     const attitudes = catalog.chapters.find((item) => item.id === 'ch-32');
     const aggression = catalog.chapters.find((item) => item.id === 'ch-33');
     const culture = catalog.chapters.find((item) => item.id === 'ch-34');
@@ -283,7 +296,7 @@ describe('EPPP native learning-library catalog', () => {
   });
 
   it('keeps Chapters 35-39 lifespan claims bounded, current, and interactive', () => {
-    const texts = Object.fromEntries([35, 36, 37, 38, 39].map((number) => [number, readText(`test_prep/eppp_legacy/js/textbook_ch${number}.js`)]));
+    const texts = Object.fromEntries([35, 36, 37, 38, 39].map((number) => [number, readArchiveText(`js/textbook_ch${number}.js`)]));
     const chapters = Object.fromEntries([35, 36, 37, 38, 39].map((number) => [number, catalog.chapters.find((item) => item.id === `ch-${number}`)]));
 
     expect(chapters[35]).toMatchObject({ reviewStatus: 'source-reviewed-editorial-pass', sectionCount: 5, diagramCount: 1, knowledgeCheckCount: 4, referenceCount: 9, checks: { 'expert-review': 'pending-independent-prenatal-infant-and-developmental-assessment-review' } });

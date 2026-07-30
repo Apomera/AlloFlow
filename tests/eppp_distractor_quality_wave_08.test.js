@@ -12,8 +12,8 @@ const diagnosticsPath = path.join(root, 'test_prep', 'eppp_distractor_quality_di
 const feedbackPath = path.join(root, 'test_prep', 'eppp_option_feedback_diagnostics.json');
 const qaPath = path.join(root, 'test_prep', 'eppp_native_qa.json');
 const qaScriptPath = path.join(root, 'dev-tools', 'qa_eppp_native_pack.cjs');
-const runtimePath = path.join(root, 'test_prep_hub_module.js');
-const deployRuntimePath = path.join(root, 'desktop/web-app', 'public', 'test_prep_hub_module.js');
+const runtimePackPath = path.join(root, 'test_prep', 'eppp_part_one_pack.json');
+const deployRuntimePackPath = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_part_one_pack.json');
 const ids = [
   'eppp-b027-intervention-3',
   'eppp-v2-assessment-037',
@@ -137,11 +137,11 @@ describe('EPPP distractor-quality repair wave 08', () => {
     expect(qa.items.filter((item) => selected.has(item.id)).every((item) => item.qaStatus === 'pass')).toBe(true);
   });
 
-  it('synchronizes the revised bank into both runtime modules', () => {
-    const sourceRuntime = fs.readFileSync(runtimePath, 'utf8');
-    expect(fs.readFileSync(deployRuntimePath, 'utf8')).toBe(sourceRuntime);
-    expect(sourceRuntime).toContain('If this discouraging message had a name');
-    expect(sourceRuntime).toContain('z = +1.2 on one measure and T = 62');
-    expect(sourceRuntime).toContain('randomized Solomon four-group study');
+  it('synchronizes the revised bank into both lazy pack assets', () => {
+    const sourcePack = fs.readFileSync(runtimePackPath, 'utf8');
+    expect(fs.readFileSync(deployRuntimePackPath, 'utf8')).toBe(sourcePack);
+    expect(sourcePack).toContain('If this discouraging message had a name');
+    expect(sourcePack).toContain('z = +1.2 on one measure and T = 62');
+    expect(sourcePack).toContain('randomized Solomon four-group study');
   });
 });

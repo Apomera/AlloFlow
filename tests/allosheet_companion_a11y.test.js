@@ -8,6 +8,8 @@ const html = fs.readFileSync(path.join(root, 'allo_sheet', 'allo_sheet.html'), '
 const css = fs.readFileSync(path.join(root, 'allo_sheet', 'allo_sheet.css'), 'utf8');
 const axeSource = fs.readFileSync(path.join(root, 'desktop', 'web-app', 'node_modules', 'axe-core', 'axe.min.js'), 'utf8');
 const adapterSource = fs.readFileSync(path.join(root, 'allo_sheet', 'allo_sheet_adapter.js'), 'utf8');
+const analysisSource = fs.readFileSync(path.join(root, 'allo_sheet', 'allo_sheet_analysis.js'), 'utf8');
+const workspaceSource = fs.readFileSync(path.join(root, 'allo_sheet', 'allo_sheet_workspace.js'), 'utf8');
 const appSource = fs.readFileSync(path.join(root, 'allo_sheet', 'allo_sheet.js'), 'utf8');
 const staticPage = html
   .replace(/<meta http-equiv="Content-Security-Policy"[^>]*>/i, '')
@@ -17,6 +19,8 @@ const interactivePage = html
   .replace(/<meta http-equiv="Content-Security-Policy"[^>]*>/i, '<base href="https://allosheet.test/">')
   .replace(/<link rel="stylesheet" href="allo_sheet\.css(?:\?v=\d+)?">/, `<style>${css}</style>`)
   .replace(/<script src="allo_sheet_adapter\.js(?:\?v=\d+)?"><\/script>/, `<script>${adapterSource}</script>`)
+  .replace(/<script src="allo_sheet_analysis\.js(?:\?v=\d+)?"><\/script>/, `<script>${analysisSource}</script>`)
+  .replace(/<script src="allo_sheet_workspace\.js(?:\?v=\d+)?"><\/script>/, `<script>${workspaceSource}</script>`)
   .replace(/<script src="allo_sheet\.js(?:\?v=\d+)?"><\/script>/, `<script>${appSource}</script>`);
 
 const wcagTags = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22a', 'wcag22aa'];
@@ -99,7 +103,7 @@ describe('AlloSheet companion accessibility in a real browser', () => {
         targets: violation.nodes.map((node) => node.target),
       }))).toEqual([]);
       expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth);
-      expect(metrics.tabCount).toBe(3);
+      expect(metrics.tabCount).toBe(4);
       expect(metrics.liveRegion).toBe('polite');
       expect(metrics.engineLiveRegion).toBe('polite');
       expect(metrics.advancedOpen).toBe(false);
@@ -179,7 +183,7 @@ describe('AlloSheet companion accessibility in a real browser', () => {
       selected: document.querySelector('[role="tab"][aria-selected="true"]')?.id,
     }))).toEqual({ active: 'tableTab', selected: 'tableTab' });
     await page.keyboard.press('End');
-    expect(await page.evaluate(() => document.activeElement?.id)).toBe('auditTab');
+    expect(await page.evaluate(() => document.activeElement?.id)).toBe('analysisTab');
     await page.keyboard.press('Home');
     expect(await page.evaluate(() => document.activeElement?.id)).toBe('editorTab');
 
@@ -252,6 +256,11 @@ describe('AlloSheet companion accessibility in a real browser', () => {
     let startCalls = 0;
     let configCalls = 0;
     let slowConfig = false;
+    let failNextRecordRead = false;
+    let failRefreshAfterNextApply = false;
+    let delayNextRecordRead = false;
+    let delayNextApply = false;
+    const gristOperations = [];
 
     await page.route('https://allosheet.test/api/allosheet/**', async (route) => {
       const request = route.request();
@@ -289,6 +298,57 @@ describe('AlloSheet companion accessibility in a real browser', () => {
         });
         return;
       }
+      if (pathname === '/api/allosheet/grist' && request.method() === 'POST') {
+        const operation = request.postDataJSON();
+        gristOperations.push(operation);
+        if (operation.operation === 'listTables') {
+          await route.fulfill({
+            contentType: 'application/json',
+            body: JSON.stringify({ tables: ['T'] }),
+          });
+          return;
+        }
+        if (operation.operation === 'readRecords') {
+          if (delayNextRecordRead) {
+            delayNextRecordRead = false;
+            await new Promise((resolve) => setTimeout(resolve, 120));
+          }
+          if (failNextRecordRead) {
+            failNextRecordRead = false;
+            await route.fulfill({
+              status: 503,
+              contentType: 'application/json',
+              body: '{"error":"simulated post-write refresh failure"}',
+            });
+            return;
+          }
+          await route.fulfill({
+            contentType: 'application/json',
+            body: JSON.stringify({
+              records: [{
+                id: 1,
+                fields: { Value: ' Loaded from ' + operation.docId + ' ' },
+              }],
+            }),
+          });
+          return;
+        }
+        if (operation.operation === 'applyUpdates') {
+          if (delayNextApply) {
+            delayNextApply = false;
+            await new Promise((resolve) => setTimeout(resolve, 300));
+          }
+          if (failRefreshAfterNextApply) {
+            failRefreshAfterNextApply = false;
+            failNextRecordRead = true;
+          }
+          await route.fulfill({
+            contentType: 'application/json',
+            body: '{"updated":true}',
+          });
+          return;
+        }
+      }
       await route.fulfill({ status: 404, contentType: 'application/json', body: '{"error":"not found"}' });
     });
     await page.route('https://sheet.local/**', (route) => route.fulfill({
@@ -318,6 +378,129 @@ describe('AlloSheet companion accessibility in a real browser', () => {
     expect(result.tablesDisabled).toBe(false);
     expect(result.advancedOpen).toBe(false);
     expect(result.documentFieldVisible).toBe(false);
+
+    await page.click('#loadTablesButton');
+    await page.waitForFunction(() => document.querySelectorAll('#tableSelect option').length === 2);
+    await page.selectOption('#tableSelect', 'T');
+    await page.click('#loadRecordsButton');
+    await page.waitForFunction(() =>
+      document.querySelector('#dataBody')?.textContent.includes('Loaded from managed-demo')
+    );
+    expect(await page.locator('.row-share-checkbox').count()).toBe(1);
+
+    await page.locator('#advancedConnection').evaluate((details) => { details.open = true; });
+    await page.fill('#documentIdInput', 'other-workbook');
+    await page.locator('#documentIdInput').blur();
+    await page.waitForFunction(() => document.querySelectorAll('.row-share-checkbox').length === 0);
+    expect(await page.evaluate(() => ({
+      rows: document.querySelectorAll('.row-share-checkbox').length,
+      options: Array.from(document.querySelectorAll('#tableSelect option'), (option) => option.textContent),
+      tableDisabled: document.querySelector('#tableSelect')?.disabled,
+      loadRecordsDisabled: document.querySelector('#loadRecordsButton')?.disabled,
+      planHidden: document.querySelector('#planSection')?.hidden,
+      undoDisabled: document.querySelector('#undoButton')?.disabled,
+    }))).toEqual({
+      rows: 0,
+      options: ['Load tables for this workbook'],
+      tableDisabled: true,
+      loadRecordsDisabled: true,
+      planHidden: true,
+      undoDisabled: true,
+    });
+
+    await page.click('#loadTablesButton');
+    await page.waitForFunction(() => document.querySelectorAll('#tableSelect option').length === 2);
+    await page.selectOption('#tableSelect', 'T');
+    await page.click('#loadRecordsButton');
+    await page.waitForFunction(() =>
+      document.querySelector('#dataBody')?.textContent.includes('Loaded from other-workbook')
+    );
+    expect(gristOperations.some((operation) =>
+      operation.operation === 'readRecords' && operation.docId === 'managed-demo'
+    )).toBe(true);
+    expect(gristOperations.some((operation) =>
+      operation.operation === 'readRecords' && operation.docId === 'other-workbook'
+    )).toBe(true);
+
+    await page.click('#auditTab');
+    await page.click('#runAuditButton');
+    await page.getByRole('button', { name: 'Review whitespace cleanup' }).click();
+    await page.click('#applyPlanButton');
+    await page.waitForFunction(() => document.querySelector('#undoButton')?.disabled === false);
+
+    await page.click('#auditTab');
+    await page.click('#runAuditButton');
+    await page.getByRole('button', { name: 'Review whitespace cleanup' }).click();
+    const writesBeforeLockCheck = gristOperations.filter((operation) => operation.operation === 'applyUpdates').length;
+    delayNextApply = true;
+    await page.click('#applyPlanButton');
+    expect(await page.locator('#undoButton').getAttribute('aria-disabled')).toBe('true');
+    await page.evaluate(() => document.querySelector('#undoButton').click());
+    await page.waitForFunction(() =>
+      document.querySelector('#liveStatus')?.textContent.includes('current workbook write')
+    );
+    await page.waitForFunction(() => !document.querySelector('#applyPlanButton')?.hasAttribute('aria-busy'));
+    expect(gristOperations.filter((operation) => operation.operation === 'applyUpdates').length).toBe(writesBeforeLockCheck + 1);
+    expect(await page.locator('#undoButton').getAttribute('aria-disabled')).toBeNull();
+
+    await page.click('#auditTab');
+    await page.click('#runAuditButton');
+    await page.getByRole('button', { name: 'Review whitespace cleanup' }).click();
+    delayNextRecordRead = true;
+    delayNextApply = true;
+    await page.click('#loadRecordsButton');
+    await page.evaluate(() => document.querySelector('#applyPlanButton').click());
+    await page.waitForFunction(() =>
+      document.querySelector('#liveStatus')?.textContent.includes('loaded data changed before refresh')
+    );
+    expect(await page.evaluate(() => ({
+      rows: document.querySelectorAll('.row-share-checkbox').length,
+      options: Array.from(document.querySelectorAll('#tableSelect option'), (option) => option.textContent),
+      tableDisabled: document.querySelector('#tableSelect')?.disabled,
+      auditText: document.querySelector('#auditResults')?.textContent,
+    }))).toEqual({
+      rows: 0,
+      options: ['Load tables for this workbook'],
+      tableDisabled: true,
+      auditText: 'Run the local audit for the current loaded table.',
+    });
+
+    await page.click('#loadTablesButton');
+    await page.waitForFunction(() => document.querySelectorAll('#tableSelect option').length === 2);
+    await page.selectOption('#tableSelect', 'T');
+    await page.click('#loadRecordsButton');
+    await page.waitForFunction(() =>
+      document.querySelector('#dataBody')?.textContent.includes('Loaded from other-workbook')
+    );
+
+    await page.click('#auditTab');
+    await page.click('#runAuditButton');
+    await page.getByRole('button', { name: 'Review whitespace cleanup' }).click();
+    failRefreshAfterNextApply = true;
+    await page.click('#applyPlanButton');
+    await page.waitForFunction(() =>
+      document.querySelector('#liveStatus')?.textContent.includes('current view could not be refreshed')
+    );
+    expect(await page.evaluate(() => ({
+      rows: document.querySelectorAll('.row-share-checkbox').length,
+      tableOptions: Array.from(document.querySelectorAll('#tableSelect option'), (option) => option.textContent),
+      tableDisabled: document.querySelector('#tableSelect')?.disabled,
+      auditText: document.querySelector('#auditResults')?.textContent,
+      undoDisabled: document.querySelector('#undoButton')?.disabled,
+    }))).toEqual({
+      rows: 0,
+      tableOptions: ['Load tables for this workbook'],
+      tableDisabled: true,
+      auditText: 'Run the local audit for the current loaded table.',
+      undoDisabled: true,
+    });
+    expect(gristOperations.some((operation) =>
+      operation.operation === 'applyUpdates' && operation.docId === 'other-workbook'
+    )).toBe(true);
+
+    await page.fill('#documentIdInput', '');
+    await page.locator('#documentIdInput').blur();
+    await page.locator('#advancedConnection').evaluate((details) => { details.open = false; });
 
     slowConfig = true;
     await page.click('#checkServiceButton');
@@ -363,7 +546,7 @@ describe('AlloSheet companion accessibility in a real browser', () => {
     expect(advancedError.invalid).toBe('true');
     expect(advancedError.active).toBe('documentUrlInput');
     await page.close();
-  }, 15000);
+  }, 30000);
 
   it('uses a validated Canvas opener for a zero-API local CSV workflow with edit, apply, undo, and hardened export', async () => {
     const context = await browser.newContext({ acceptDownloads: true });
@@ -425,6 +608,9 @@ describe('AlloSheet companion accessibility in a real browser', () => {
     await host.click('#open');
     const page = await popupPromise;
     await page.waitForFunction(() => document.querySelector('#serviceBadge')?.textContent === 'Canvas browser mode');
+    expect(await page.locator('#askAgentButton').isDisabled()).toBe(true);
+    await page.click('#authorizeHostButton');
+    expect(await page.locator('#askAgentButton').isEnabled()).toBe(true);
 
     await page.setInputFiles('#canvasCsvInput', {
       name: 'students.csv',
@@ -474,7 +660,7 @@ describe('AlloSheet companion accessibility in a real browser', () => {
       invalid: document.querySelector('#valuesConsent')?.getAttribute('aria-invalid'),
     }))).toEqual({
       active: 'valuesConsent',
-      error: 'Review and confirm the selected-value sharing statement first.',
+      error: 'Review the currently selected rows and confirm sharing for this request.',
       invalid: 'true',
     });
     await page.check('#valuesConsent');

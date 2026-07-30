@@ -2,11 +2,11 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest
 import fs from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
-import { loadAlloModule } from './setup.js';
+import { loadAlloModule, registerEpppPartOne } from './setup.js';
 
 const require = createRequire(import.meta.url);
 const modulesDir = resolve(process.cwd(), 'desktop/web-app/node_modules');
-let React, ReactDOMClient, act, axe, Hub, Component, root, host, originalFetch;
+let React, ReactDOMClient, act, axe, Hub, Component, root, host, originalFetch, epppLibraryFixture;
 
 const AXE_OPTIONS = {
   runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'] },
@@ -28,11 +28,10 @@ beforeAll(() => {
   global.IS_REACT_ACT_ENVIRONMENT = true;
   loadAlloModule('test_prep_hub_module.js');
   Hub = window.AlloModules.TestPrepHub;
+  registerEpppPartOne(Hub);
   Component = Hub.TestPrepHub;
   originalFetch = global.fetch;
-  const auditFixture = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_legacy/content_audit.json'), 'utf8'));
-  const inventoryFixture = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_legacy/content_inventory.json'), 'utf8'));
-  const libraryFixture = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_learning_library.json'), 'utf8'));
+  epppLibraryFixture = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_learning_library.json'), 'utf8'));
   const paraProLibraryFixture = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/parapro_learning_library.json'), 'utf8'));
   const specialEducation5355LibraryFixture = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/special_education_5355_learning_library.json'), 'utf8'));
   const schoolCounselor5422LibraryFixture = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/school_counselor_5422_learning_library.json'), 'utf8'));
@@ -45,9 +44,7 @@ beforeAll(() => {
   const praxisCore5752LibraryFixture = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/praxis_core_5752_learning_library.json'), 'utf8'));
   const esol5362LibraryFixture = JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep/esol_5362_learning_library.json'), 'utf8'));
   const reportFetch = async (url) => {
-    if (String(url).includes('content_audit.json')) return { ok: true, json: async () => auditFixture };
-    if (String(url).includes('content_inventory.json')) return { ok: true, json: async () => inventoryFixture };
-    if (String(url).includes('eppp_learning_library.json')) return { ok: true, json: async () => libraryFixture };
+    if (String(url).includes('eppp_learning_library.json')) return { ok: true, json: async () => epppLibraryFixture };
     if (String(url).includes('parapro_learning_library.json')) return { ok: true, json: async () => paraProLibraryFixture };
     if (String(url).includes('special_education_5355_learning_library.json')) return { ok: true, json: async () => specialEducation5355LibraryFixture };
     if (String(url).includes('school_counselor_5422_learning_library.json')) return { ok: true, json: async () => schoolCounselor5422LibraryFixture };
@@ -89,6 +86,13 @@ function findButton(text) {
   return Array.from(host.querySelectorAll('button')).find((button) => button.textContent.includes(text));
 }
 
+async function openPackById(packId) {
+  const card = host.querySelector('[data-test-prep-pack-id="' + packId + '"]');
+  expect(card, packId).toBeTruthy();
+  const button = Array.from(card.querySelectorAll('button')).find((candidate) => candidate.textContent.includes('Open practice pack'));
+  expect(button, packId + ' open button').toBeTruthy();
+  await act(async () => { button.click(); });
+}
 async function waitForText(text, timeoutMs = 10_000) {
   const deadline = Date.now() + timeoutMs;
   while (!host.textContent.includes(text) && Date.now() < deadline) {
@@ -447,8 +451,7 @@ describe('Test Prep Hub render flow', () => {
 
   it('offers fifteen directly selectable EPPP practice banks with global ranges', async () => {
     await mount();
-    const openButtons = Array.from(host.querySelectorAll('button')).filter((button) => button.textContent.includes('Open practice pack'));
-    await act(async () => { openButtons[1].click(); });
+    await openPackById('eppp-part-one');
     await waitForText('Choose a 100-question practice bank');
 
     const bankButtons = Array.from(host.querySelectorAll('button')).filter((button) => /^Start Practice Bank [0-9]+$/.test(button.textContent.trim()));
@@ -469,8 +472,7 @@ describe('Test Prep Hub render flow', () => {
   }, 30_000);
   it('builds a balanced custom quiz through the shared pack UI', async () => {
     await mount();
-    const openButtons = Array.from(host.querySelectorAll('button')).filter((button) => button.textContent.includes('Open practice pack'));
-    await act(async () => { openButtons[1].click(); });
+    await openPackById('eppp-part-one');
     await waitForText('Choose a study mode');
 
     expect(host.textContent).toContain('Custom quiz builder');
@@ -484,8 +486,7 @@ describe('Test Prep Hub render flow', () => {
   }, 30_000);
   it('starts an accessible EPPP Domain focus set without a skills catalog and saves its targeting metadata', async () => {
     await mount();
-    const openButtons = Array.from(host.querySelectorAll('button')).filter((button) => button.textContent.includes('Open practice pack'));
-    await act(async () => { openButtons[1].click(); });
+    await openPackById('eppp-part-one');
     await waitForText('Choose a study mode');
 
     const domainSelect = host.querySelector('select[aria-label="Domain focus domain"]');
@@ -556,8 +557,7 @@ describe('Test Prep Hub render flow', () => {
 
   it('browses, filters, and opens the native EPPP learning catalog', async () => {
     await mount();
-    const openButtons = Array.from(host.querySelectorAll('button')).filter((button) => button.textContent.includes('Open practice pack'));
-    await act(async () => { openButtons[1].click(); });
+    await openPackById('eppp-part-one');
     await clickButton('Learning library');
     await waitForText('Showing 49 of 49 chapters');
 
@@ -572,15 +572,43 @@ describe('Test Prep Hub render flow', () => {
     expect(chapterCard).toBeTruthy();
     await expectNoAxeViolations('learning library catalog');
     await act(async () => { chapterCard.querySelector('button').click(); });
-    const frame = host.querySelector('iframe[title="Selected EPPP chapter"]');
-    expect(frame).toBeTruthy();
-    expect(frame.getAttribute('src')).toContain('page=textbook#ch-4');
+    expect(host.querySelector('article[data-native-chapter-route="native-complete"]')).toBeTruthy();
+    expect(host.textContent).toContain('Complete native study chapter');
+    expect(host.textContent).toContain('Native content complete');
+    expect(findButton('Read chapter aloud')).toBeTruthy();
+    expect(findButton('Mark section complete')).toBeTruthy();
+    expect(host.textContent).not.toContain('Chapter temporarily unavailable');
+    expect(host.querySelector('iframe')).toBeNull();
+    await expectNoAxeViolations('native EPPP chapter');
+  }, 30_000);
+
+  it('fails closed accessibly when EPPP native chapter completeness cannot be verified', async () => {
+    const priorCompleteSections = epppLibraryFixture.contentMigration.completeSections;
+    epppLibraryFixture.contentMigration.completeSections = priorCompleteSections - 1;
+    try {
+      await mount();
+      await openPackById('eppp-part-one');
+      await clickButton('Learning library');
+      await waitForText('Showing 49 of 49 chapters');
+      const chapterCard = Array.from(host.querySelectorAll('article')).find((article) => article.textContent.includes('Behavioral Assessment & Functional Analysis'));
+      expect(chapterCard).toBeTruthy();
+      await act(async () => { chapterCard.querySelector('button').click(); });
+      const alert = Array.from(host.querySelectorAll('[role="alert"]')).find((entry) => entry.textContent.includes('Chapter temporarily unavailable'));
+      expect(alert).toBeTruthy();
+      expect(alert.getAttribute('aria-live')).toBe('assertive');
+      expect(alert.textContent).toContain('could not verify that this chapter’s native content is complete');
+      expect(alert.textContent).toContain('the chapter has not been displayed');
+      expect(host.querySelector('article[data-native-chapter-route]')).toBeNull();
+      expect(host.querySelector('iframe')).toBeNull();
+      await expectNoAxeViolations('incomplete native EPPP chapter');
+    } finally {
+      epppLibraryFixture.contentMigration.completeSections = priorCompleteSections;
+    }
   }, 30_000);
 
   it('studies flashcards and memory aids with persistent accessible controls', async () => {
     await mount();
-    const openButtons = Array.from(host.querySelectorAll('button')).filter((button) => button.textContent.includes('Open practice pack'));
-    await act(async () => { openButtons[1].click(); });
+    await openPackById('eppp-part-one');
     await clickButton('Learning library');
     await waitForText('Showing 49 of 49 chapters');
 
@@ -598,11 +626,11 @@ describe('Test Prep Hub render flow', () => {
 
     await clickButton('Memory aids');
     expect(host.textContent).toContain('Memory-aid library');
-    const releasedMemoryAids = JSON.parse(
+    const sourceReviewedMemoryAids = JSON.parse(
       fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_learning_library.json'), 'utf8'),
-    ).summary.releasedMemoryAids;
+    ).summary.sourceReviewedMemoryAids;
     expect(host.textContent).toContain(
-      `Showing ${releasedMemoryAids} of ${releasedMemoryAids} released memory aids`,
+      `Showing ${sourceReviewedMemoryAids} of ${sourceReviewedMemoryAids} source-reviewed memory aids`,
     );
     await clickButton('Show aid');
     expect(findButton('Hide aid')).toBeTruthy();

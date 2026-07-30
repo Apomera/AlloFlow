@@ -48,6 +48,27 @@
     "credibility": "This peer-reviewed meta-analysis hosted by the model's institute defines and evaluates demandingness, awfulizing, frustration intolerance, and global evaluation in REBT theory.",
     "metadataSource": "pack-authored"
   },
+  "https://alloflow-cdn.pages.dev/test_prep/eppp_learning_library_qa.json": {
+    "title": "Eppp Learning Library Qa.Json",
+    "organization": "alloflow-cdn.pages.dev",
+    "summary": "This alloflow-cdn.pages.dev resource addresses Eppp Learning Library Qa.Json. Open the source to review its complete scope, definitions, recommendations, examples, publication date, and stated limitations.",
+    "credibility": "alloflow-cdn.pages.dev is the primary publisher of this professional standard, framework, position, or practice resource. It is authoritative for the organization’s own guidance, but users should distinguish professional guidance from law, official test specifications, and independent empirical evidence.",
+    "metadataSource": "url-derived-reviewed-fallback"
+  },
+  "https://alloflow-cdn.pages.dev/test_prep/eppp_learning_library.json": {
+    "title": "Eppp Learning Library.Json",
+    "organization": "alloflow-cdn.pages.dev",
+    "summary": "This alloflow-cdn.pages.dev resource addresses Eppp Learning Library.Json. Open the source to review its complete scope, definitions, recommendations, examples, publication date, and stated limitations.",
+    "credibility": "alloflow-cdn.pages.dev is the primary publisher of this professional standard, framework, position, or practice resource. It is authoritative for the organization’s own guidance, but users should distinguish professional guidance from law, official test specifications, and independent empirical evidence.",
+    "metadataSource": "url-derived-reviewed-fallback"
+  },
+  "https://alloflow-cdn.pages.dev/test_prep/eppp_native_qa.json": {
+    "title": "Eppp Native Qa.Json",
+    "organization": "alloflow-cdn.pages.dev",
+    "summary": "This alloflow-cdn.pages.dev resource addresses Eppp Native Qa.Json. Open the source to review its complete scope, definitions, recommendations, examples, publication date, and stated limitations.",
+    "credibility": "alloflow-cdn.pages.dev is the primary publisher of this professional standard, framework, position, or practice resource. It is authoritative for the organization’s own guidance, but users should distinguish professional guidance from law, official test specifications, and independent empirical evidence.",
+    "metadataSource": "url-derived-reviewed-fallback"
+  },
   "https://apastyle.apa.org/jars/quantitative": {
     "url": "https://apastyle.apa.org/jars/quantitative",
     "title": "Journal Article Reporting Standards for Quantitative Research",
@@ -62,6 +83,27 @@
     "summary": "This apastyle.apa.org resource addresses Sample Papers. Open the source to review its complete scope, definitions, recommendations, examples, publication date, and stated limitations.",
     "credibility": "apastyle.apa.org is the primary publisher of this professional standard, framework, position, or practice resource. It is authoritative for the organization’s own guidance, but users should distinguish professional guidance from law, official test specifications, and independent empirical evidence.",
     "metadataSource": "url-derived-reviewed-fallback"
+  },
+  "https://apcentral.collegeboard.org/courses/ap-psychology/exam": {
+    "title": "AP Psychology Exam",
+    "organization": "College Board",
+    "summary": "This official exam page describes the current AP Psychology exam format, section timing, question types, scoring proportions, and public preparation resources for students and educators.",
+    "credibility": "College Board owns and administers the AP Psychology exam, making this the primary public source for current exam structure and logistics. AlloFlow practice is independently authored and does not reproduce official exam questions.",
+    "metadataSource": "explicit-override"
+  },
+  "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description-clarifications.pdf": {
+    "title": "AP Psychology Course and Exam Description Clarifications and Corrections",
+    "organization": "College Board",
+    "summary": "This official companion document records published clarifications and corrections to the AP Psychology course framework and should be read alongside the current course and exam description.",
+    "credibility": "College Board publishes the AP Psychology framework and its corrections, making this the primary source for official clarifications. Readers should use the current document version and verify whether later updates have been issued.",
+    "metadataSource": "explicit-override"
+  },
+  "https://apcentral.collegeboard.org/media/pdf/ap-psychology-course-and-exam-description.pdf": {
+    "title": "AP Psychology Course and Exam Description",
+    "organization": "College Board",
+    "summary": "This official course and exam description presents the current AP Psychology framework, including units, topics, learning objectives, science practices, course skills, and the published exam design.",
+    "credibility": "College Board owns and administers the AP Psychology program, making this the primary public source for its course framework and exam design. AlloFlow study materials remain independently authored and are not endorsed by College Board.",
+    "metadataSource": "explicit-override"
   },
   "https://apps.who.int/iris/handle/10665/250219": {
     "title": "Interpersonal Psychotherapy for Depression",
@@ -3776,6 +3818,13 @@
     "credibility": "OpenStax is a Rice University nonprofit educational publisher, and this peer-reviewed management textbook section directly presents the component relationships used in the scenario.",
     "metadataSource": "pack-authored"
   },
+  "https://openstax.org/books/psychology-2e/pages/1-introduction": {
+    "title": "Ch. 1 Introduction - Psychology 2e | OpenStax",
+    "organization": "OpenStax, Rice University",
+    "summary": "Clive Wearing is an accomplished musician who lost his ability to form new memories when he became sick at the age of 46. While he can remember how to p...",
+    "credibility": "OpenStax is a nonprofit educational initiative at Rice University whose openly licensed textbooks use expert authorship, faculty review, and a documented errata process. Textbook guidance should still be distinguished from an official assessment blueprint or primary empirical evidence.",
+    "metadataSource": "page-metadata"
+  },
   "https://openstax.org/books/psychology-2e/pages/10-4-emotion": {
     "url": "https://openstax.org/books/psychology-2e/pages/10-4-emotion",
     "title": "10.4 Emotion - Psychology 2e",
@@ -3804,6 +3853,13 @@
     "summary": "Individualist cultures and collectivist cultures place emphasis on different basic values. People who live in individualist cultures tend to believe tha...",
     "credibility": "OpenStax is a nonprofit educational initiative at Rice University whose openly licensed textbooks use expert authorship, faculty review, and a documented errata process. Textbook guidance should still be distinguished from an official assessment blueprint or primary empirical evidence.",
     "metadataSource": "pack-authored"
+  },
+  "https://openstax.org/books/psychology-2e/pages/11-introduction": {
+    "title": "Ch. 11 Introduction - Psychology 2e | OpenStax",
+    "organization": "OpenStax, Rice University",
+    "summary": "Three months before William Jefferson Blythe III was born, his father died in a car accident. He was raised by his mother, Virginia Dell, and grandparen...",
+    "credibility": "OpenStax is a nonprofit educational initiative at Rice University whose openly licensed textbooks use expert authorship, faculty review, and a documented errata process. Textbook guidance should still be distinguished from an official assessment blueprint or primary empirical evidence.",
+    "metadataSource": "page-metadata"
   },
   "https://openstax.org/books/psychology-2e/pages/12-1-what-is-social-psychology": {
     "title": "12.1 What Is Social Psychology? - Psychology 2e, OpenStax, Rice University",
@@ -3932,6 +3988,13 @@
     "summary": "OpenStax is a Rice University nonprofit publisher. Psychology 2e is openly peer reviewed, cites its evidence base, and is maintained through an editorial revision process; this section directly covers the tested foundational concept.",
     "credibility": "OpenStax is a nonprofit educational initiative at Rice University whose openly licensed textbooks use expert authorship, faculty review, and a documented errata process. Textbook guidance should still be distinguished from an official assessment blueprint or primary empirical evidence.",
     "metadataSource": "pack-authored"
+  },
+  "https://openstax.org/books/psychology-2e/pages/3-introduction": {
+    "title": "Ch. 3 Introduction - Psychology 2e | OpenStax",
+    "organization": "OpenStax, Rice University",
+    "summary": "Have you ever taken a device apart to find out how it works? Many of us have done so, whether to attempt a repair or simply to satisfy our curiosity. A ...",
+    "credibility": "OpenStax is a nonprofit educational initiative at Rice University whose openly licensed textbooks use expert authorship, faculty review, and a documented errata process. Textbook guidance should still be distinguished from an official assessment blueprint or primary empirical evidence.",
+    "metadataSource": "page-metadata"
   },
   "https://openstax.org/books/psychology-2e/pages/4-3-stages-of-sleep": {
     "title": "4.3 Stages of Sleep - Psychology 2e | OpenStax",

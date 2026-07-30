@@ -7,7 +7,7 @@ const read = (relativePath) => JSON.parse(fs.readFileSync(resolve(root, relative
 
 describe('EPPP cumulative adjudication index', () => {
   it('indexes seven batches and seventy unique quarantined candidates', () => {
-    const index = read('test_prep/eppp_legacy/adjudication_index.json');
+    const index = read('quality/eppp_provenance/evidence/adjudication/adjudication_index.json');
     const ids = index.items.map((item) => item.legacyId);
     expect(index.status).toBe('editorial-adjudication-index-all-candidates-quarantined');
     expect(index.currentSourceReviewDate).toBe('2026-07-14');
@@ -24,8 +24,8 @@ describe('EPPP cumulative adjudication index', () => {
   });
 
   it('matches the batch reports and excludes every candidate from the native bank', () => {
-    const index = read('test_prep/eppp_legacy/adjudication_index.json');
-    const reports = ['01', '02', '03', '04', '05', '06', '07'].map((batch) => read(`test_prep/eppp_legacy/adjudication_batch_${batch}.json`));
+    const index = read('quality/eppp_provenance/evidence/adjudication/adjudication_index.json');
+    const reports = ['01', '02', '03', '04', '05', '06', '07'].map((batch) => read(`quality/eppp_provenance/evidence/adjudication/adjudication_batch_${batch}.json`));
     const batchItems = reports.flatMap((report) => report.items);
     const nativeIds = new Set(read('test_prep/eppp_native_items.json').map((item) => item.legacySourceId).filter(Boolean));
     expect(index.summary.minorRevision).toBe(reports.reduce((sum, report) => sum + report.summary.minorRevision, 0));
@@ -35,8 +35,9 @@ describe('EPPP cumulative adjudication index', () => {
     expect(index.items.every((item) => item.sourceCount > 0)).toBe(true);
   });
 
-  it('keeps deployment artifacts identical to source artifacts', () => {
-    expect(read('desktop/web-app/public/test_prep/eppp_legacy/adjudication_index.json')).toEqual(read('test_prep/eppp_legacy/adjudication_index.json'));
-    expect(fs.readFileSync(resolve(root, 'desktop/web-app/public/test_prep/eppp_legacy/adjudication_index.md'), 'utf8')).toBe(fs.readFileSync(resolve(root, 'test_prep/eppp_legacy/adjudication_index.md'), 'utf8'));
+  it('keeps the index canonical and outside runtime publication', () => {
+    expect(fs.existsSync(resolve(root, 'quality/eppp_provenance/evidence/adjudication/adjudication_index.json'))).toBe(true);
+    expect(fs.existsSync(resolve(root, 'quality/eppp_provenance/evidence/adjudication/adjudication_index.md'))).toBe(true);
+    expect(fs.existsSync(resolve(root, 'desktop/web-app/public/test_prep/eppp_legacy/adjudication_index.json'))).toBe(false);
   });
 });

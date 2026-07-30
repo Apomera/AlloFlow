@@ -9,6 +9,11 @@ import { describe, expect, it } from 'vitest';
 
 const require = createRequire(import.meta.url);
 const data = require('../dev-tools/eppp_memory_aid_correction_wave_01_data.cjs');
+const {
+  openEpppMigrationSourceArchive,
+} = require('../dev-tools/eppp_migration_source_archive.cjs');
+const migrationArchive = openEpppMigrationSourceArchive({ workspaceRoot: process.cwd() });
+const memoryAidSourcePath = migrationArchive.manifest.execution.learningLibrary.memoryAids[0];
 const read = (relativePath) => JSON.parse(fs.readFileSync(resolve(process.cwd(), relativePath), 'utf8'));
 const artifactPath = 'test_prep/eppp_memory_aid_correction_wave_01.json';
 const cleanText = (value) => String(value || '')
@@ -23,7 +28,11 @@ const cleanText = (value) => String(value || '')
   .trim();
 const stableId = (prefix, parts) => `${prefix}-${crypto.createHash('sha256').update(parts.map(cleanText).join('\n')).digest('hex').slice(0, 16)}`;
 const legacyContext = vm.createContext({ console: { log() {}, warn() {}, error() {} } });
-vm.runInContext(fs.readFileSync(resolve(process.cwd(), 'test_prep/eppp_legacy/js/memory_aids.js'), 'utf8'), legacyContext);
+vm.runInContext(
+  migrationArchive.readText(memoryAidSourcePath),
+  legacyContext,
+  { filename: memoryAidSourcePath },
+);
 const legacyById = new Map(vm.runInContext('MemoryAids.aids', legacyContext).map((aid) => [
   stableId('memory-aid', [aid.domainId, aid.title, aid.type, aid.content]),
   aid,
@@ -186,20 +195,16 @@ describe('EPPP memory-aid correction Wave 01', () => {
     expect(byId.get('memory-aid-28fd96d344b9008e').title).toBe('Schizophrenia Criteria: DSM-5-TR Cue');
   });
 
-  it('is consumed after numbered waves and before catalog projection in normal builds', () => {
+  it('is consumed after numbered waves by the archive-backed catalog projection', () => {
     const builder = fs.readFileSync(resolve(process.cwd(), 'dev-tools/build_eppp_learning_library.cjs'), 'utf8');
-    const wrapper = fs.readFileSync(resolve(process.cwd(), 'dev-tools/build_eppp_learning_library_with_reviews.cjs'), 'utf8');
     expect(builder).toContain('const memoryAidCorrectionWavePattern = /^eppp_memory_aid_correction_wave_\\d+\\.json$/i;');
     expect(builder.indexOf('const memoryAidWaveRecords = new Map();')).toBeLessThan(builder.indexOf('const memoryAidCorrectionRecords = new Map();'));
     expect(builder.indexOf('const memoryAidCorrectionRecords = new Map();')).toBeLessThan(builder.indexOf('const aidRecords = memoryAids.map'));
     expect(builder).toContain('const override = { ...manualOverride, ...waveOverride, ...correctionOverride };');
     expect(builder).toContain('Corrected memory aids lack reviewArtifact');
     expect(builder).toContain('Released memory aids lack complete artifact, source, or pending-gate metadata');
-    const composeIndex = wrapper.indexOf("require('./compose_eppp_memory_aid_review_wave_08.cjs')");
-    const correctionIndex = wrapper.indexOf("require('./build_eppp_memory_aid_correction_wave_01.cjs')");
-    const catalogIndex = wrapper.indexOf("require('./build_eppp_learning_library.cjs')");
-    expect(composeIndex).toBeLessThan(correctionIndex);
-    expect(correctionIndex).toBeLessThan(catalogIndex);
+    expect(builder).toContain('openEpppMigrationSourceArchive');
+    expect(builder).toContain('migrationArchive.manifest.execution.learningLibrary');
   });
 
   it('projects all 255 reviewed aids through the real builder without writing shared catalogs', () => {

@@ -14,8 +14,8 @@ const feedbackPath = path.join(root, 'test_prep', 'eppp_option_feedback_diagnost
 const qaPath = path.join(root, 'test_prep', 'eppp_native_qa.json');
 const runnerPath = path.join(root, 'dev-tools', 'run_eppp_native_quality_wave.cjs');
 const repairPath = path.join(root, 'dev-tools', 'repair_eppp_native_quality_wave_12.cjs');
-const runtimePath = path.join(root, 'test_prep_hub_module.js');
-const deployRuntimePath = path.join(root, 'desktop/web-app', 'public', 'test_prep_hub_module.js');
+const runtimePackPath = path.join(root, 'test_prep', 'eppp_part_one_pack.json');
+const deployRuntimePackPath = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_part_one_pack.json');
 const ids = [
   'eppp-v2-social-cultural-009',
   'eppp-b010-intervention-2',
@@ -121,11 +121,11 @@ describe('EPPP distractor-quality repair wave 12', () => {
     expect(qa.items.filter((item) => selected.has(item.id)).every((item) => item.qaStatus === 'pass')).toBe(true);
   });
 
-  it('synchronizes the revised bank into both runtime modules', () => {
-    const sourceRuntime = fs.readFileSync(runtimePath, 'utf8');
-    expect(fs.readFileSync(deployRuntimePath, 'utf8')).toBe(sourceRuntime);
-    expect(sourceRuntime).toContain('Two recently consolidated high schools');
-    expect(sourceRuntime).toContain('After four sessions of a supported treatment');
-    expect(sourceRuntime).toContain('medication warning but later reports hearing it from the physician');
+  it('synchronizes the revised bank into both lazy pack assets', () => {
+    const sourcePack = fs.readFileSync(runtimePackPath, 'utf8');
+    expect(fs.readFileSync(deployRuntimePackPath, 'utf8')).toBe(sourcePack);
+    expect(sourcePack).toContain('Two recently consolidated high schools');
+    expect(sourcePack).toContain('After four sessions of a supported treatment');
+    expect(sourcePack).toContain('medication warning but later reports hearing it from the physician');
   });
 });

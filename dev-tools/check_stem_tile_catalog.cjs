@@ -110,7 +110,7 @@ if (!fs.existsSync(STEM_DIR)) {
 }
 
 const toolFiles = fs.readdirSync(STEM_DIR)
-  .filter(f => /^stem_tool_.*\.js$/.test(f))
+  .filter(f => /^stem_tool_.*\.js$/.test(f) && !f.endsWith('.codex.tmp.js'))
   .sort();
 
 const registeredIds = new Map(); // id → file
@@ -138,7 +138,7 @@ for (const f of toolFiles) {
 const catalogSrc = fs.readFileSync(CATALOG_FILE, 'utf8');
 
 // Find `var _allStemTools = [` (the declaration, not other refs).
-const declRe = /(?:var|let|const)\s+_allStemTools\s*=\s*\[/;
+const declRe = /^[ \t]*(?:var|let|const)\s+_allStemTools\s*=\s*\[/m;
 const declMatch = declRe.exec(catalogSrc);
 if (!declMatch) {
   console.error('Could not locate `var _allStemTools = [` declaration in ' + CATALOG_FILE);

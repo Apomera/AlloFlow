@@ -25,6 +25,21 @@ describe('Volume Lab accessibility', () => {
     expect(text).toContain("'aria-label': 'Explain how each dimension contributes to total volume'");
   });
 
+  it('keeps the dimension sliders inside the enlarged fullscreen model workspace', () => {
+    const text = source();
+    const workspaceIndex = text.indexOf("id: 'volume-3d-workspace'");
+    const controlsIndex = text.indexOf('renderDimensionSliders()', workspaceIndex);
+    const viewportIndex = text.indexOf("id: 'volume-3d-viewport'", workspaceIndex);
+    expect(workspaceIndex).toBeGreaterThan(-1);
+    expect(controlsIndex).toBeGreaterThan(workspaceIndex);
+    expect(viewportIndex).toBeGreaterThan(controlsIndex);
+    expect(text).toContain("document.getElementById('volume-3d-workspace')");
+    expect(text).toContain('Toggle fullscreen for the rectangular prism and dimension sliders');
+    expect(text).toContain("minHeight: 'clamp(400px, 52vh, 560px)'");
+    expect(text).toContain('#volume-3d-workspace:fullscreen [data-volume-dimension-controls="true"]');
+    expect(text).toContain('flex:1 1 auto;min-height:min(58vh,640px)!important');
+  });
+
   it('respects reduced motion for transient indicators', () => {
     const text = source();
     expect(text).toContain("window.matchMedia('(prefers-reduced-motion: reduce)').matches");

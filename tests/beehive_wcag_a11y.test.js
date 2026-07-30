@@ -15,6 +15,7 @@ describe('Beehive WCAG 2.2 accessibility', () => {
   let originalRaf;
   let originalCancelRaf;
   let originalMatchMedia;
+  let originalClipboardDescriptor;
 
   async function mount(state) {
     const Component = () => {
@@ -29,6 +30,7 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     resetStemLab();
     config = loadTool('stem_lab/stem_tool_beehive.js', 'beehive');
     originalMatchMedia = window.matchMedia;
+    originalClipboardDescriptor = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
     window.matchMedia = vi.fn(() => ({ matches: false, media: '(prefers-reduced-motion: reduce)', addEventListener: vi.fn(), removeEventListener: vi.fn() }));
     const gradient = { addColorStop: vi.fn() };
     const context = new Proxy({
@@ -61,6 +63,8 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     globalThis.requestAnimationFrame = window.requestAnimationFrame = originalRaf;
     globalThis.cancelAnimationFrame = window.cancelAnimationFrame = originalCancelRaf;
     window.matchMedia = originalMatchMedia;
+    if (originalClipboardDescriptor) Object.defineProperty(navigator, 'clipboard', originalClipboardDescriptor);
+    else delete navigator.clipboard;
     vi.restoreAllMocks();
   });
 
@@ -174,6 +178,33 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     expect(document.getElementById('allo-live-beehive').textContent).toContain('Exploration progress updated');
   });
 
+  it('lets learners switch between overview-first and stage-first layouts without losing content', async () => {
+    await mount({ viewMode: 'beekeeper', beeView: 'scene', day: 5, motionPaused: true });
+    let layoutButton = host.querySelector('[data-beehive-focus-layout="true"]');
+    let pulse = host.querySelector('[data-beehive-pulse="true"]');
+    let stage = document.getElementById('beehive-canvas-wrap');
+    expect(layoutButton.className).toContain('min-h-[44px]');
+    expect(layoutButton.getAttribute('aria-pressed')).toBe('false');
+    expect(host.querySelector('[data-beehive-root="true"]').getAttribute('data-beehive-layout')).toBe('overview-first');
+    expect(Boolean(pulse.compareDocumentPosition(stage) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
+
+    await act(async () => { layoutButton.click(); await Promise.resolve(); });
+    expect(latest.beehive.focusLayout).toBe(true);
+    layoutButton = host.querySelector('[data-beehive-focus-layout="true"]');
+    pulse = host.querySelector('[data-beehive-pulse="true"]');
+    stage = document.getElementById('beehive-canvas-wrap');
+    expect(layoutButton.getAttribute('aria-pressed')).toBe('true');
+    expect(host.querySelector('[data-beehive-root="true"]').getAttribute('data-beehive-layout')).toBe('stage-first');
+    expect(Boolean(stage.compareDocumentPosition(pulse) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
+    expect(host.querySelector('[data-beehive-learning-brief="true"]')).toBeTruthy();
+    expect(host.querySelector('[data-beehive-journey-disclosure="true"]')).toBeTruthy();
+    expect(document.getElementById('allo-live-beehive').textContent).toContain('Stage-first layout enabled');
+
+    await act(async () => { layoutButton.click(); await Promise.resolve(); });
+    expect(latest.beehive.focusLayout).toBe(false);
+    expect(host.querySelector('[data-beehive-root="true"]').getAttribute('data-beehive-layout')).toBe('overview-first');
+  });
+
   it('provides a keyboard-accessible learning-flow navigator with valid targets in every mode', async () => {
     const cases = [
       [{ viewMode: 'beekeeper', beeView: 'scene', day: 5, motionPaused: true }, 'beehive-canvas-wrap'],
@@ -186,16 +217,116 @@ describe('Beehive WCAG 2.2 accessibility', () => {
       expect(nav.tagName).toBe('NAV');
       expect(nav.getAttribute('aria-label')).toBe('Bee simulation learning flow');
       const links = Array.from(nav.querySelectorAll('a[data-beehive-flow-step]'));
-      expect(links).toHaveLength(4);
+      expect(links).toHaveLength(5);
       expect(links.every((link) => link.className.includes('min-h-[48px]'))).toBe(true);
       for (const link of links) {
         const target = document.getElementById(link.getAttribute('href').slice(1));
         expect(target).toBeTruthy();
       }
       expect(nav.querySelector('[data-beehive-flow-step="play"]').getAttribute('href')).toBe('#' + playTarget);
+      expect(nav.querySelector('[data-beehive-flow-step="learn"]').getAttribute('href')).toBe('#beehive-learning-brief-summary');
+      expect(nav.querySelector('[data-beehive-flow-step="explain"]').getAttribute('href')).toBe('#beehive-notebook-summary');
       expect(document.getElementById(playTarget).tabIndex).toBe(-1);
       expect(document.getElementById('beehive-play-focus').tabIndex).toBe(-1);
     }
+  });
+
+  it('captures live evidence and persists a complete notebook separately for each role', async () => {
+    await mount({ viewMode: 'beekeeper', beeView: 'scene', day: 5, motionPaused: true, notebookOpen: true });
+    const capture = host.querySelector('[data-beehive-capture-evidence="beekeeper"]');
+    expect(capture.className).toContain('min-h-[44px]');
+    await act(async () => { capture.click(); await Promise.resolve(); });
+    expect(latest.beehive.notebook.beekeeper.evidence).toContain('Day 5');
+    expect(latest.beehive.notebook.beekeeper.evidence).toContain('Varroa 5%');
+    expect(document.getElementById('allo-live-beehive').textContent).toContain('evidence captured in the Science Notebook');
+
+    let reviewInputs = Array.from(host.querySelectorAll('input[data-notebook-review]'));
+    expect(reviewInputs).toHaveLength(3);
+    expect(reviewInputs.find((input) => input.dataset.notebookReview === 'prediction').disabled).toBe(true);
+    expect(reviewInputs.find((input) => input.dataset.notebookReview === 'evidence').disabled).toBe(false);
+    expect(reviewInputs.find((input) => input.dataset.notebookReview === 'explanation').disabled).toBe(true);
+    const firstCoachAction = host.querySelector('[data-beehive-review-next="prediction"]');
+    const predictionArea = host.querySelector('[data-notebook-field="prediction"]');
+    predictionArea.scrollIntoView = vi.fn();
+    expect(firstCoachAction.className).toContain('min-h-[44px]');
+    await act(async () => { firstCoachAction.click(); await Promise.resolve(); });
+    expect(document.activeElement).toBe(predictionArea);
+    expect(predictionArea.scrollIntoView).toHaveBeenCalled();
+    expect(document.getElementById('allo-live-beehive').textContent).toContain('Prediction writing area focused');
+
+    const setTextarea = async (field, value) => {
+      const textarea = host.querySelector('[data-notebook-field="' + field + '"]');
+      const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
+      await act(async () => { setter.call(textarea, value); textarea.dispatchEvent(new Event('input', { bubbles: true })); await Promise.resolve(); });
+    };
+    await setTextarea('prediction', 'Honey stores will change after one day.');
+    await setTextarea('explanation', 'Foraging income and colony consumption changed the balance.');
+
+    expect(latest.beehive.notebook.beekeeper.prediction).toContain('Honey stores');
+    expect(latest.beehive.notebook.beekeeper.explanation).toContain('Foraging income');
+    reviewInputs = Array.from(host.querySelectorAll('input[data-notebook-review]'));
+    expect(reviewInputs.every((input) => !input.disabled)).toBe(true);
+    expect(reviewInputs.every((input) => input.className.includes('h-5') && input.className.includes('w-5'))).toBe(true);
+    for (const input of reviewInputs) {
+      await act(async () => { input.click(); await Promise.resolve(); });
+    }
+    expect(latest.beehive.notebook.beekeeper.review).toEqual({ prediction: true, evidence: true, explanation: true });
+    let cerReview = host.querySelector('[data-beehive-cer-review="beekeeper"]');
+    expect(cerReview.getAttribute('data-review-complete')).toBe('true');
+    expect(cerReview.querySelector('[role="progressbar"]').getAttribute('aria-valuenow')).toBe('3');
+    expect(cerReview.querySelector('[data-beehive-review-next="synthesis"]')).toBeTruthy();
+
+    await setTextarea('explanation', '');
+    expect(latest.beehive.notebook.beekeeper.review.explanation).toBe(false);
+    expect(host.querySelector('[data-notebook-review="explanation"]').disabled).toBe(true);
+    await setTextarea('explanation', 'Foraging income and colony consumption changed the balance.');
+    await act(async () => { host.querySelector('[data-notebook-review="explanation"]').click(); await Promise.resolve(); });
+    cerReview = host.querySelector('[data-beehive-cer-review="beekeeper"]');
+    expect(cerReview.getAttribute('data-review-complete')).toBe('true');
+    const notebook = host.querySelector('[data-beehive-notebook="beekeeper"]');
+    expect(notebook.getAttribute('data-notebook-complete')).toBe('true');
+    expect(notebook.querySelector('[role="progressbar"]').getAttribute('aria-valuenow')).toBe('3');
+    const portfolio = host.querySelector('[data-beehive-notebook-portfolio="true"]');
+    const portfolioProgress = portfolio.querySelector('[role="progressbar"]');
+    expect(portfolioProgress.getAttribute('aria-valuemin')).toBe('0');
+    expect(portfolioProgress.getAttribute('aria-valuemax')).toBe('10');
+    expect(portfolioProgress.getAttribute('aria-valuenow')).toBe('3');
+    expect(portfolio.querySelectorAll('button[data-notebook-role]')).toHaveLength(3);
+    expect(Array.from(portfolio.querySelectorAll('button[data-notebook-role]')).every((button) => button.className.includes('min-h-[48px]'))).toBe(true);
+    expect(host.querySelectorAll('textarea[data-notebook-field]')).toHaveLength(3);
+    expect(Array.from(host.querySelectorAll('textarea[data-notebook-field]')).every((area) => area.maxLength === 1200)).toBe(true);
+
+    const queenPortfolioButton = host.querySelector('[data-notebook-role="queen"]');
+    expect(queenPortfolioButton.getAttribute('aria-label')).toContain('0 of 3 sections written, self-review 0 of 3 ready');
+    await act(async () => { queenPortfolioButton.click(); await Promise.resolve(); });
+    expect(latest.beehive.viewMode).toBe('queen');
+    expect(latest.beehive.notebook.beekeeper.evidence).toContain('Day 5');
+    expect(host.querySelector('[data-beehive-notebook="queen"] [role="progressbar"]').getAttribute('aria-valuenow')).toBe('0');
+    expect(host.querySelector('[data-notebook-role="queen"]').getAttribute('aria-current')).toBe('true');
+
+    const synthesis = host.querySelector('[data-notebook-synthesis="true"]');
+    const synthesisSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, 'value').set;
+    await act(async () => {
+      synthesisSetter.call(synthesis, 'Bee decisions scale from individual movement to colony strategy and pollination outcomes.');
+      synthesis.dispatchEvent(new Event('input', { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(latest.beehive.notebook.synthesis).toContain('colony strategy');
+    expect(host.querySelector('[data-beehive-notebook-portfolio="true"] [role="progressbar"]').getAttribute('aria-valuenow')).toBe('4');
+
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: undefined });
+    const copyPortfolio = host.querySelector('[data-beehive-copy-notebook="true"]');
+    expect(copyPortfolio.className).toContain('min-h-[44px]');
+    await act(async () => { copyPortfolio.click(); await Promise.resolve(); });
+    expect(latest.beehive.exportedReportTitle).toBe('Science Notebook Portfolio');
+    expect(latest.beehive.exportedReport).toContain('# Bee Science Notebook Portfolio');
+    expect(latest.beehive.exportedReport).toContain('## Beekeeper');
+    expect(latest.beehive.exportedReport).toContain('## Queen RTS');
+    expect(latest.beehive.exportedReport).toContain('## Drone Flight');
+    expect(latest.beehive.exportedReport).toContain('**CER self-review:** 3/3 checks ready.');
+    const exportPanel = host.querySelector('[data-beehive-focus-panel="report"]');
+    expect(exportPanel.getAttribute('aria-label')).toBe('Science Notebook Portfolio export');
+    expect(exportPanel.textContent).toContain('Science Notebook Portfolio');
   });
 
   it('provides keyboard-sized contextual actions and direct event navigation', async () => {
@@ -259,7 +390,33 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     const droneCanvas = host.querySelector('[data-beehive-drone-canvas="true"]');
     expect(droneCanvas.tabIndex).toBe(0);
     expect(document.getElementById(droneCanvas.getAttribute('aria-describedby'))).toBeTruthy();
-    expect(host.querySelectorAll('[data-flight-control]')).toHaveLength(6);
+    const flightControls = host.querySelectorAll('[data-flight-control]');
+    expect(flightControls).toHaveLength(6);
+    flightControls.forEach((control) => {
+      expect(control.getAttribute('data-control-active')).toBe('false');
+      expect(control.className).toContain('min-h-[58px]');
+    });
+    const route = host.querySelector('[data-beehive-flight-route="true"]');
+    expect(route.tagName).toBe('SECTION');
+    expect(document.getElementById(route.getAttribute('aria-labelledby'))).toBeTruthy();
+    expect(route.querySelector('ol').getAttribute('aria-label')).toBe('Drone Flight route progress');
+    expect(route.querySelectorAll('li[data-flight-checkpoint]')).toHaveLength(3);
+    expect(route.querySelectorAll('[aria-current="step"]')).toHaveLength(1);
+    expect(route.querySelector('[data-flight-checkpoint="boosts"]').getAttribute('aria-current')).toBe('step');
+    const envelope = host.querySelector('[data-beehive-flight-envelope="true"]');
+    expect(envelope.tagName).toBe('SECTION');
+    expect(document.getElementById(envelope.getAttribute('aria-labelledby'))).toBeTruthy();
+    expect(document.getElementById(envelope.getAttribute('aria-describedby'))).toBeTruthy();
+    expect(envelope.hasAttribute('aria-live')).toBe(false);
+    expect(envelope.querySelector('ul').getAttribute('aria-label')).toBe('Flight envelope conditions');
+    const envelopeItems = envelope.querySelectorAll('li[data-flight-envelope-item]');
+    expect(envelopeItems).toHaveLength(5);
+    expect(Array.from(envelopeItems).every((item) => item.getAttribute('data-envelope-state') === 'paused')).toBe(true);
+    expect(Array.from(envelopeItems).every((item) => (item.getAttribute('aria-label') || '').split('.').length >= 3)).toBe(true);
+    expect(envelope.querySelector('[data-flight-envelope-overall]').textContent).toBe('Planning');
+    const maneuver = host.querySelector('[data-beehive-maneuver-impact="true"]');
+    expect(maneuver.getAttribute('role')).toBe('note');
+    expect(maneuver.getAttribute('aria-label')).toBe('Current maneuver impact and coaching');
   });
 
   it('announces meaningful Queen commands without making the cycle banner assertive', async () => {
@@ -273,6 +430,14 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     expect(live.getAttribute('role')).toBe('status');
     expect(live.getAttribute('aria-atomic')).toBe('true');
     expect(live.textContent).toContain('Scouts report rival power');
+    const timeline = host.querySelector('[data-beehive-rts-timeline="true"]');
+    expect(timeline.tagName).toBe('SECTION');
+    expect(document.getElementById(timeline.getAttribute('aria-labelledby'))).toBeTruthy();
+    expect(timeline.querySelector('ol[aria-label="Upcoming Queen RTS events"]')).toBeTruthy();
+    expect(timeline.querySelectorAll('li[data-rts-forecast]')).toHaveLength(3);
+    const impactList = timeline.querySelector('[role="list"][aria-label="Last impact metric changes"]');
+    expect(impactList).toBeTruthy();
+    expect(Array.from(impactList.querySelectorAll('[role="listitem"]')).every((item) => (item.getAttribute('aria-label') || '').includes('changed from'))).toBe(true);
   });
 
   it('honors reduced-motion preferences across Beekeeper, Drone, and Queen visuals', async () => {
@@ -358,7 +523,7 @@ describe('Beehive WCAG 2.2 accessibility', () => {
   });
 
   it('provides persistent labels, semantic progress, reflow, and announced quiz feedback', async () => {
-    await mount({ viewMode: 'beekeeper', day: 5, motionPaused: true, tutorialDone: true, exportedReport: 'Colony report text', thermHunt: { outsideC: 20, beesFanning: 30, broodCount: 5000, hypothesis: '', understood: true, explanation: '', log: [] } });
+    await mount({ viewMode: 'beekeeper', day: 5, motionPaused: true, tutorialDone: true, exportedReport: 'Colony report text', exportedReportTitle: 'Colony Report', thermHunt: { outsideC: 20, beesFanning: 30, broodCount: 5000, hypothesis: '', understood: true, explanation: '', log: [] } });
     const report = host.querySelector('#beehive-export-report');
     expect(host.querySelector('label[for="beehive-export-report"]').control).toBe(report);
     const hypothesis = host.querySelector('#beehive-thermo-hypothesis');

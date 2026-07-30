@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { loadAlloModule } from './setup.js';
+import { loadAlloModule, registerEpppPartOne } from './setup.js';
 
 let Hub;
 
@@ -31,6 +31,7 @@ beforeAll(() => {
   };
   loadAlloModule('test_prep_hub_module.js');
   Hub = window.AlloModules.TestPrepHub;
+  registerEpppPartOne(Hub);
 });
 
 describe('reusable Test Prep Hub learning engine', () => {
@@ -155,7 +156,7 @@ describe('reusable Test Prep Hub learning engine', () => {
     const payload = Hub.exportProgress(progress, { 'engine-reuse-fixture': ['alpha-1', 'alpha-1', 'beta-2'] }, 9999, { annotations, studyPlans });
     const restored = Hub.importProgress(JSON.stringify(payload));
 
-    expect(payload).toMatchObject({ schemaVersion: 2, kind: 'alloflow-test-prep-progress', exportedAt: 9999 });
+    expect(payload).toMatchObject({ schemaVersion: 3, kind: 'alloflow-test-prep-progress', exportedAt: 9999 });
     expect(restored.progress).toEqual(Hub.normalizeProgress(progress));
     expect(restored.reviewItems['engine-reuse-fixture']).toEqual(['alpha-1', 'beta-2']);
     expect(restored.annotations).toEqual(Hub.normalizeAnnotations(annotations));

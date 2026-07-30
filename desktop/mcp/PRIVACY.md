@@ -1,6 +1,6 @@
 # Privacy — AlloFlow PDF Remediation connector
 
-_Last updated: 2026-07-16._
+_Last updated: 2026-07-29._
 
 This connector runs **entirely on your machine**. There is no AlloFlow server, account,
 telemetry, or analytics of any kind.
@@ -10,6 +10,7 @@ telemetry, or analytics of any kind.
 | Data | Destination | Why |
 | --- | --- | --- |
 | The documents you audit/remediate (full content) | **Google Gemini API**, under the API key **you** provide | The pipeline's OCR, audits, and fixes are AI calls |
+| Background-job records (arguments, paths, status, capped logs, result/error metadata) | **Your local disk only**, under `~/.alloflow-mcp/jobs` by default | Lets status and results survive a client/server restart |
 | Nothing | AlloFlow / the connector author | The connector has no backend |
 | Library fetches (no document content) | Public CDNs (pdf.js, Tesseract, pdf-lib, axe-core) | Runtime libraries the pipeline loads |
 | Output files (accessible HTML, tagged PDF, report JSON) | **Your local disk only**, at paths you choose | The deliverables |
@@ -32,5 +33,12 @@ institution's agreements cover Gemini API use for that data — or scrub the doc
 
 - Reads only the files/folders you pass to tools; writes outputs with collision-safe names
   (never overwrites) to the folder you choose.
-- Job records live in memory and vanish when the connector stops.
+- Background-job records persist as local JSON under `~/.alloflow-mcp/jobs` (override with
+  `ALLOFLOW_MCP_STATE_DIR`) so a restarted connector can still report status and results.
+  They contain tool arguments (including local paths and options), timestamps, status, capped
+  log lines, and result/error metadata. They do **not** contain source-document bytes or the
+  Gemini API key.
+- Records older than 30 days are deleted when the connector next starts. Finished records may
+  be evicted sooner when the bounded job store fills. To remove them immediately, stop the
+  connector and delete its state directory.
 - Headless Chromium runs with a fresh, isolated browser context per document.

@@ -61,7 +61,13 @@ function plugins(dir, re) {
     return fs.existsSync(d) ? fs.readdirSync(d).map((f) => dir + '/' + f).filter(keep) : [];
   }
 }
-const disk = [...plugins('stem_lab', /^stem_tool_.*\.js$/), ...plugins('sel_hub', /^sel_.*\.js$/)];
+// stem_data_*.js added 2026-07-29: the cellatlas tool ships a companion DATA
+// file, and a data file must be listed in PLUGIN_FILES or it never reaches the
+// CDN — the tool would load and then fail to fetch its dataset. The disk scan
+// only recognised stem_tool_*.js, so a correctly-listed data file was reported
+// as "entry with NO file on disk" and blocked the deploy. Widen the scan rather
+// than delist the file.
+const disk = [...plugins('stem_lab', /^stem_(tool|data)_.*\.js$/), ...plugins('sel_hub', /^sel_.*\.js$/)];
 const diskByLower = new Map(disk.map((d) => [d.toLowerCase(), d]));
 const entrySet = new Set(entries);
 

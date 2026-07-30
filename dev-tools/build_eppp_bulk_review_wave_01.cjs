@@ -3,19 +3,19 @@
 
 const fs = require('fs');
 const path = require('path');
+const { ensureFamily, evidencePath } = require('./eppp_evidence_paths.cjs');
 const {
   clean, normalize, hasFlag, sourceFor, parseChoiceReasons,
   mainRationale, ensureLength, moveKey,
 } = require('./eppp_editorial_support.cjs');
 
 const root = path.resolve(__dirname, '..');
-const sourceRoot = path.join(root, 'test_prep', 'eppp_legacy');
-const deployRoot = path.join(root, 'desktop/web-app', 'public', 'test_prep', 'eppp_legacy');
+const canonicalRoot = ensureFamily('review');
 const readJson = (file) => JSON.parse(fs.readFileSync(file, 'utf8'));
-const audit = readJson(path.join(sourceRoot, 'content_audit.json'));
+const audit = readJson(evidencePath('audit', 'content_audit.json'));
 const nativeQa = readJson(path.join(root, 'test_prep', 'eppp_native_qa.json'));
-const adjudication = readJson(path.join(sourceRoot, 'adjudication_index.json'));
-const docket = readJson(path.join(sourceRoot, 'next_review_docket.json'));
+const adjudication = readJson(evidencePath('adjudication', 'adjudication_index.json'));
+const docket = readJson(evidencePath('review', 'next_review_docket.json'));
 const sourceReviewDate = '2026-07-14';
 
 const domains = [
@@ -272,7 +272,7 @@ function markdownForSet(report) {
 const waveMarkdown = `# EPPP bulk editorial review wave 01\n\nGenerated: ${wave.generatedAt}\n\n**Status: 500 additional candidates reviewed in five sets of 100; every candidate remains quarantined.**\n\n- ${summary.minorRevisionProposals} minor-revision proposals.\n- ${summary.majorRewriteProposals} major-rewrite proposals.\n- ${summary.existingCompleteOptionFeedback} retained complete legacy option-feedback structures.\n- ${summary.answerLengthWarningsRequiringIndependentStyleReview} retain an explicit option-style gate before any release.\n- 0 promoted to the native bank.\n- 0 independently expert validated.\n\nThis assisted editorial wave is intentionally distinct from the smaller high-touch adjudication batches. The JSON record preserves the review mode and all unresolved gates.\n`;
 const progressMarkdown = `# EPPP legacy review progress\n\nGenerated: ${progress.generatedAt}\n\n- ${progress.summary.uniqueLegacyItemsWithEditorialReview} of ${progress.summary.legacyUniverse} legacy questions have an editorial review record.\n- ${progress.summary.remainingWithoutEditorialReview} legacy questions remain without an editorial review.\n- ${progress.summary.quarantinedItemsWithEditorialReview} reviewed candidates remain quarantined.\n- Independent expert validation remains pending.\n`;
 
-for (const outputRoot of [sourceRoot, deployRoot]) {
+for (const outputRoot of [canonicalRoot]) {
   fs.writeFileSync(path.join(outputRoot, 'bulk_review_wave_01.json'), JSON.stringify(wave, null, 2) + '\n');
   fs.writeFileSync(path.join(outputRoot, 'bulk_review_wave_01.md'), waveMarkdown);
   fs.writeFileSync(path.join(outputRoot, 'review_progress.json'), JSON.stringify(progress, null, 2) + '\n');

@@ -1303,12 +1303,28 @@
         });
       }
       var flags = [];
+      var signalCodes = [];
       if (!smallSample && !unscored) {
-        if (correctRate != null && correctRate <= 35) flags.push('Many learners found this item challenging; review wording, instruction, and the answer key.');
-        if (correctRate != null && correctRate >= 90) flags.push('This item may be too easy for the intended decision; consider a deeper follow-up.');
-        if (totalStudents > 0 && omittedCount / totalStudents >= 0.25) flags.push('At least one quarter of the class omitted this item; check clarity and placement.');
-        if (gradableCount > 0 && highConfidenceIncorrect / gradableCount >= 0.2) flags.push('Several confident responses were incorrect; review the underlying misconception.');
-        if (options.length >= 3 && respondents >= 10 && options.some(function (option) { return !option.correct && option.count === 0; })) flags.push('One or more distractors were never selected; consider strengthening them.');
+        if (correctRate != null && correctRate <= 35) {
+          flags.push('Many learners found this item challenging; review wording, instruction, and the answer key.');
+          signalCodes.push('challenging');
+        }
+        if (correctRate != null && correctRate >= 90) {
+          flags.push('This item may be too easy for the intended decision; consider a deeper follow-up.');
+          signalCodes.push('very-easy');
+        }
+        if (totalStudents > 0 && omittedCount / totalStudents >= 0.25) {
+          flags.push('At least one quarter of the class omitted this item; check clarity and placement.');
+          signalCodes.push('high-omission');
+        }
+        if (gradableCount > 0 && highConfidenceIncorrect / gradableCount >= 0.2) {
+          flags.push('Several confident responses were incorrect; review the underlying misconception.');
+          signalCodes.push('confidence-mismatch');
+        }
+        if (options.length >= 3 && respondents >= 10 && options.some(function (option) { return !option.correct && option.count === 0; })) {
+          flags.push('One or more distractors were never selected; consider strengthening them.');
+          signalCodes.push('weak-distractor');
+        }
       }
       var signalLabel = unscored ? 'Unscored distribution' : smallSample ? 'Early signal (' + respondents + '/5)' : correctRate == null ? 'Teacher review needed' : correctRate <= 35 ? 'Challenging' : correctRate >= 90 ? 'Very easy' : 'Useful range';
       return {
@@ -1328,15 +1344,495 @@
         highConfidenceIncorrect: highConfidenceIncorrect,
         smallSample: smallSample,
         signalLabel: signalLabel,
+        signalCodes: signalCodes,
         flags: flags,
         options: options
       };
     });
     return { items: items, totalStudents: totalStudents, minimumFlagSample: 5 };
   }
+  // ─── Bounded, privacy-safe quiz evidence snapshot ─────────────────────
+  // Reduces the teacher's merged P2P/fallback response view to outcome counts
+  // and transient UID cohorts. It deliberately omits response text, answer
+  // choices, prompts, names, feedback, and grading rationale. Callers may use
+  // `byUid`/`cohorts` while the session is live, but should map UIDs to roster
+  // codenames and discard those transient fields before persistence.
+  //
+  // options: {
+  //   activityId?, sourceResourceId?, resourceTitle?, startedAt?, endedAt?,
+  //   aiGradedCache?, teacherOverrides?
+  // }
+  function buildPrivacySafeQuizEvidenceSnapshot(quizState, generatedContent, roster, options) {
+    var MAX_QUESTIONS = 100;
+    var MAX_PARTICIPANTS = 250;
+    var MAX_UID_LENGTH = 128;
+    var opts = options && typeof options === 'object' && !Array.isArray(options) ? options : {};
+    var state = quizState && typeof quizState === 'object' && !Array.isArray(quizState) ? quizState : {};
+    var content = generatedContent && typeof generatedContent === 'object' && !Array.isArray(generatedContent) ? generatedContent : {};
+    var data = content.data && typeof content.data === 'object' && !Array.isArray(content.data) ? content.data : {};
+    var rawQuestions = Array.isArray(data.questions) ? data.questions : [];
+    var questions = rawQuestions.slice(0, MAX_QUESTIONS);
+    var questionsTruncated = Math.max(0, rawQuestions.length - questions.length);
+    var rawRoster = roster && typeof roster === 'object' && !Array.isArray(roster) ? roster : {};
+    var rawResponses = state.allResponses && typeof state.allResponses === 'object' && !Array.isArray(state.allResponses)
+      ? state.allResponses
+      : {};
+
+    function boundedText(value, maxLength) {
+      return String(value == null ? '' : value)
+        .replace(/[\u0000-\u001f\u007f]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, maxLength);
+    }
+    function boundedTimestamp(value) {
+      var parsed = Number(value);
+      return Number.isFinite(parsed)
+        ? Math.max(0, Math.min(Number.MAX_SAFE_INTEGER, Math.floor(parsed)))
+        : 0;
+    }
+    function safeUid(value) {
+      var uid = boundedText(value, MAX_UID_LENGTH);
+      if (!uid || uid === '__proto__' || uid === 'prototype' || uid === 'constructor') return '';
+      return uid;
+    }
+
+    var participantUids = [];
+    var seenUids = Object.create(null);
+    function addUid(value) {
+      if (participantUids.length >= MAX_PARTICIPANTS) return;
+      var uid = safeUid(value);
+      if (!uid || seenUids[uid]) return;
+      seenUids[uid] = true;
+      participantUids.push(uid);
+    }
+    Object.keys(rawRoster).sort().forEach(addUid);
+    Object.keys(rawResponses).sort().forEach(addUid);
+
+    var rawParticipantCount = Object.keys(rawRoster).length;
+    Object.keys(rawResponses).forEach(function (uid) {
+      if (!Object.prototype.hasOwnProperty.call(rawRoster, uid)) rawParticipantCount++;
+    });
+    var participantsTruncated = Math.max(0, rawParticipantCount - participantUids.length);
+    var safeRoster = Object.create(null);
+    var safeAllResponses = Object.create(null);
+    participantUids.forEach(function (uid) {
+      safeRoster[uid] = {};
+      if (rawResponses[uid] && typeof rawResponses[uid] === 'object' && !Array.isArray(rawResponses[uid])) {
+        safeAllResponses[uid] = rawResponses[uid];
+      }
+    });
+
+    var safeContent = { data: { questions: questions } };
+    var safeState = Object.assign({}, state, { allResponses: safeAllResponses });
+    var graded = collectAllGradedResponses(
+      safeAllResponses,
+      questions,
+      opts.aiGradedCache,
+      opts.teacherOverrides
+    );
+    var analysis = aggregateItemAnalysis(
+      safeState,
+      safeContent,
+      safeRoster,
+      opts.aiGradedCache,
+      opts.teacherOverrides
+    );
+    var gradedByQuestion = Object.create(null);
+    graded.forEach(function (entry) {
+      var qKey = String(entry.questionIdx);
+      if (!gradedByQuestion[qKey]) gradedByQuestion[qKey] = [];
+      gradedByQuestion[qKey].push(entry);
+    });
+
+    var byUid = Object.create(null);
+    participantUids.forEach(function (uid) {
+      byUid[uid] = {
+        answered: 0,
+        omitted: 0,
+        correct: 0,
+        partial: 0,
+        incorrect: 0,
+        idk: 0,
+        awaitingReview: 0,
+        unscored: 0,
+        completed: false,
+        followUpQuestionIdxs: [],
+        reviewQuestionIdxs: [],
+        confidenceMismatchQuestionIdxs: []
+      };
+    });
+
+    graded.forEach(function (entry) {
+      var participant = byUid[entry.uid];
+      var grade = entry.grade && typeof entry.grade === 'object' ? entry.grade : {};
+      var status = grade.status;
+      if (!participant || status === 'no-response') return;
+      participant.answered++;
+      if (grade.unscored) {
+        participant.unscored++;
+        return;
+      }
+      if (status === 'correct') participant.correct++;
+      else if (status === 'partially-correct') {
+        participant.partial++;
+        participant.followUpQuestionIdxs.push(entry.questionIdx);
+      } else if (status === 'incorrect') {
+        participant.incorrect++;
+        participant.followUpQuestionIdxs.push(entry.questionIdx);
+      } else if (status === 'idk') {
+        participant.idk++;
+        participant.followUpQuestionIdxs.push(entry.questionIdx);
+      } else if (status === 'submitted') {
+        participant.awaitingReview++;
+        participant.reviewQuestionIdxs.push(entry.questionIdx);
+      }
+      if ((status === 'incorrect' || status === 'partially-correct') && grade.confidence === 'knew') {
+        participant.confidenceMismatchQuestionIdxs.push(entry.questionIdx);
+      }
+    });
+
+    participantUids.forEach(function (uid) {
+      var participant = byUid[uid];
+      participant.omitted = Math.max(0, questions.length - participant.answered);
+      var bucket = safeAllResponses[uid] || {};
+      var completionAtAnalyzedCount = bucket[questions.length];
+      var completionAtAuthoredCount = bucket[rawQuestions.length];
+      var hasCompletionMarker = [completionAtAnalyzedCount, completionAtAuthoredCount].some(function (record) {
+        return record && typeof record === 'object' && record.itemType === 'assessment-complete';
+      });
+      if (!hasCompletionMarker) {
+        hasCompletionMarker = Object.keys(bucket).slice(0, MAX_QUESTIONS + 20).some(function (key) {
+          var record = bucket[key];
+          return record && typeof record === 'object' && record.itemType === 'assessment-complete';
+        });
+      }
+      participant.completed = hasCompletionMarker
+        || (questionsTruncated === 0 && questions.length > 0 && participant.answered >= questions.length);
+    });
+
+    var items = (analysis.items || []).slice(0, MAX_QUESTIONS).map(function (item) {
+      var rows = gradedByQuestion[String(item.questionIdx)] || [];
+      var responded = Object.create(null);
+      var followUpUids = [];
+      var awaitingReviewUids = [];
+      var confidenceMismatchUids = [];
+      var unscoredResponseCount = 0;
+      rows.forEach(function (entry) {
+        var grade = entry.grade && typeof entry.grade === 'object' ? entry.grade : {};
+        var status = grade.status;
+        if (status === 'no-response') return;
+        responded[entry.uid] = true;
+        if (grade.unscored) {
+          unscoredResponseCount++;
+          return;
+        }
+        if (status === 'incorrect' || status === 'partially-correct' || status === 'idk') {
+          followUpUids.push(entry.uid);
+        } else if (status === 'submitted') {
+          awaitingReviewUids.push(entry.uid);
+        }
+        if ((status === 'incorrect' || status === 'partially-correct') && grade.confidence === 'knew') {
+          confidenceMismatchUids.push(entry.uid);
+        }
+      });
+      var omittedUids = participantUids.filter(function (uid) { return !responded[uid]; });
+      return {
+        questionIdx: item.questionIdx,
+        itemType: boundedText(item.type, 40) || 'mcq',
+        unscored: item.unscored === true,
+        respondents: Math.max(0, Math.min(MAX_PARTICIPANTS, Number(item.respondents) || 0)),
+        omittedCount: Math.max(0, Math.min(MAX_PARTICIPANTS, Number(item.omittedCount) || 0)),
+        correctCount: Math.max(0, Math.min(MAX_PARTICIPANTS, Number(item.correctCount) || 0)),
+        partialCount: Math.max(0, Math.min(MAX_PARTICIPANTS, Number(item.partialCount) || 0)),
+        incorrectCount: Math.max(0, Math.min(MAX_PARTICIPANTS, Number(item.incorrectCount) || 0)),
+        idkCount: Math.max(0, Math.min(MAX_PARTICIPANTS, Number(item.idkCount) || 0)),
+        awaitingReviewCount: awaitingReviewUids.length,
+        unscoredResponseCount: unscoredResponseCount,
+        gradableCount: Math.max(0, Math.min(MAX_PARTICIPANTS, Number(item.gradableCount) || 0)),
+        highConfidenceIncorrect: Math.max(0, Math.min(MAX_PARTICIPANTS, Number(item.highConfidenceIncorrect) || 0)),
+        correctRate: item.correctRate == null
+          ? null
+          : Math.max(0, Math.min(100, Math.round(Number(item.correctRate) || 0))),
+        smallSample: item.smallSample === true,
+        signalCodes: Array.isArray(item.signalCodes) ? item.signalCodes.slice(0, 5) : [],
+        cohorts: {
+          followUpUids: followUpUids.slice(0, MAX_PARTICIPANTS),
+          awaitingReviewUids: awaitingReviewUids.slice(0, MAX_PARTICIPANTS),
+          omittedUids: omittedUids.slice(0, MAX_PARTICIPANTS),
+          confidenceMismatchUids: confidenceMismatchUids.slice(0, MAX_PARTICIPANTS)
+        }
+      };
+    });
+
+    var respondentCount = participantUids.filter(function (uid) { return byUid[uid].answered > 0; }).length;
+    var completedCount = participantUids.filter(function (uid) { return byUid[uid].completed; }).length;
+    return {
+      schemaVersion: 1,
+      activityId: boundedText(opts.activityId || state.activityId, 120),
+      sourceResourceId: boundedText(opts.sourceResourceId || content.id, 128),
+      resourceTitle: boundedText(opts.resourceTitle || content.title, 140),
+      startedAt: boundedTimestamp(opts.startedAt != null ? opts.startedAt : state.startedAt),
+      endedAt: boundedTimestamp(opts.endedAt != null ? opts.endedAt : state.endedAt),
+      questionCount: questions.length,
+      participantCount: participantUids.length,
+      respondentCount: respondentCount,
+      completedCount: completedCount,
+      questionsTruncated: questionsTruncated,
+      participantsTruncated: participantsTruncated,
+      minimumSignalSample: analysis.minimumFlagSample || 5,
+      items: items,
+      byUid: byUid
+    };
+  }
+
   // ─── Mode → aggregator router ─────────────────────────────────────────
   // For review mode, requires conceptMasteryByUid argument; falls back to
   // liveHeatmap if not provided.
+
+  // Reviewed Quiz item analysis -> AlloSheet.
+  // This adapter intentionally emits aggregate item measures only. It never
+  // copies the privacy snapshot's transient byUid or cohort arrays, and it
+  // does not include authored prompts/options, learner names, raw responses,
+  // reflections, AI feedback, session identifiers, or grading rationale.
+  //
+  // The five-respondent floor matches aggregateItemAnalysis: descriptive
+  // counts remain available below five, but interpretive signal codes do not.
+  var QUIZ_ALLOSHEET_MIN_SIGNAL_SAMPLE = 5;
+  var QUIZ_ALLOSHEET_ITEM_TYPES = {
+    mcq: true,
+    'multi-select': true,
+    'fill-blank': true,
+    'short-answer': true,
+    'self-explanation': true,
+    'sequence-sense': true,
+    'relation-mismatch': true,
+    'answer-evidence': true,
+    'numeric-response': true,
+    matching: true,
+    order: true,
+    likert: true,
+    'opinion-mcq': true
+  };
+  var QUIZ_ALLOSHEET_SIGNAL_CODES = {
+    challenging: true,
+    'very-easy': true,
+    'high-omission': true,
+    'confidence-mismatch': true,
+    'weak-distractor': true
+  };
+  var QUIZ_ALLOSHEET_COLUMNS = [
+    { key: 'question_number', label: 'Question number', type: 'number' },
+    { key: 'item_type', label: 'Item type', type: 'category' },
+    { key: 'unscored', label: 'Unscored item', type: 'boolean' },
+    { key: 'respondents', label: 'Respondents', type: 'number' },
+    { key: 'omitted_count', label: 'Omitted', type: 'number' },
+    { key: 'gradable_count', label: 'Gradable responses', type: 'number' },
+    { key: 'correct_count', label: 'Correct', type: 'number' },
+    { key: 'partial_count', label: 'Partially correct', type: 'number' },
+    { key: 'incorrect_count', label: 'Incorrect', type: 'number' },
+    { key: 'idk_count', label: 'I do not know', type: 'number' },
+    { key: 'awaiting_review_count', label: 'Awaiting review', type: 'number' },
+    { key: 'high_confidence_incorrect', label: 'High-confidence incorrect', type: 'number' },
+    { key: 'correct_rate_percent', label: 'Correct rate (percent)', type: 'number' },
+    { key: 'sample_status', label: 'Sample status', type: 'category' },
+    { key: 'signal_codes', label: 'Signal codes', type: 'text' }
+  ];
+
+  function quizAlloSheetAdapter() {
+    var candidate = window.AlloSheetTransferAdapter
+      || (window.AlloModules && window.AlloModules.AlloSheetTransferAdapter);
+    return candidate
+      && typeof candidate.column === 'function'
+      && typeof candidate.table === 'function'
+      && typeof candidate.envelope === 'function'
+      ? candidate
+      : null;
+  }
+
+  function quizAlloSheetBoundedInt(value, max) {
+    var parsed = Number(value);
+    if (!Number.isFinite(parsed)) return 0;
+    return Math.max(0, Math.min(max, Math.floor(parsed)));
+  }
+
+  function quizAlloSheetRate(value) {
+    if (value === null || value === undefined || value === '') return null;
+    var parsed = Number(value);
+    return Number.isFinite(parsed) ? Math.max(0, Math.min(100, parsed)) : null;
+  }
+
+  function quizAlloSheetItemType(value) {
+    var normalized = String(value || '').trim().toLowerCase();
+    return QUIZ_ALLOSHEET_ITEM_TYPES[normalized] ? normalized : 'other';
+  }
+
+  function quizAlloSheetMode(value) {
+    var normalized = String(value || '').trim().toLowerCase();
+    return normalized === 'exit-ticket'
+      || normalized === 'pre-check'
+      || normalized === 'formative'
+      || normalized === 'poll'
+      || normalized === 'review'
+      ? normalized
+      : 'unknown';
+  }
+
+  function quizAlloSheetCreatedAt(value) {
+    var parsed = value instanceof Date ? value.getTime() : Date.parse(String(value || ''));
+    if (!Number.isFinite(parsed)) parsed = Date.now();
+    try { return new Date(parsed).toISOString(); } catch (_) { return new Date().toISOString(); }
+  }
+
+  function quizAlloSheetFallbackTable(config) {
+    var rows = (config.rows || []).slice(0, 200).map(function (row) {
+      return {
+        id: String(row.id),
+        values: Object.assign({}, row.values)
+      };
+    });
+    var sourceRowCount = Math.max(rows.length, quizAlloSheetBoundedInt(config.sourceRowCount, 1000000));
+    return {
+      id: 'quiz_item_analysis',
+      title: 'Quiz item analysis',
+      columns: QUIZ_ALLOSHEET_COLUMNS.map(function (column) { return Object.assign({}, column); }),
+      rows: rows,
+      rowCount: rows.length,
+      sourceRowCount: sourceRowCount,
+      truncated: sourceRowCount > rows.length
+    };
+  }
+
+  function quizAlloSheetFallbackEnvelope(table, createdAt, provenance) {
+    return {
+      kind: 'alloflow.tabular.v1',
+      version: 1,
+      source: { tool: 'quiz-analytics', label: 'Quiz Analytics', version: '1' },
+      title: 'Quiz item analysis',
+      createdAt: createdAt,
+      classification: {
+        level: 'aggregate-education-data',
+        studentIdentifierIncluded: false,
+        freeTextNotesIncluded: false
+      },
+      privacy: {
+        scope: 'educator-reviewed-aggregate',
+        identifierIncluded: false,
+        reducedData: true,
+        notesIncluded: false,
+        transferEnablesAI: false
+      },
+      tables: [table],
+      provenance: provenance,
+      capabilities: { writeBack: false, aiEnabled: false }
+    };
+  }
+
+  function buildQuizAlloSheetEnvelope(quizState, generatedContent, roster, options) {
+    var opts = options && typeof options === 'object' && !Array.isArray(options) ? options : {};
+    var snapshot = buildPrivacySafeQuizEvidenceSnapshot(
+      quizState,
+      generatedContent,
+      roster,
+      {
+        aiGradedCache: opts.aiGradedCache,
+        teacherOverrides: opts.teacherOverrides
+      }
+    );
+    var minimumSignalSample = Math.max(
+      QUIZ_ALLOSHEET_MIN_SIGNAL_SAMPLE,
+      quizAlloSheetBoundedInt(snapshot.minimumSignalSample, 100)
+    );
+    var sourceItems = Array.isArray(snapshot.items) ? snapshot.items : [];
+    var rows = sourceItems.slice(0, 100).map(function (item, index) {
+      var respondents = quizAlloSheetBoundedInt(item && item.respondents, 250);
+      var earlySignal = respondents < minimumSignalSample;
+      var signalCodes = earlySignal
+        ? []
+        : (Array.isArray(item && item.signalCodes) ? item.signalCodes : []).reduce(function (codes, value) {
+          var normalized = String(value || '').trim().toLowerCase();
+          if (QUIZ_ALLOSHEET_SIGNAL_CODES[normalized] && codes.indexOf(normalized) === -1) codes.push(normalized);
+          return codes;
+        }, []).slice(0, 5);
+      return {
+        id: 'quiz-item-' + (index + 1),
+        values: {
+          question_number: index + 1,
+          item_type: quizAlloSheetItemType(item && item.itemType),
+          unscored: !!(item && item.unscored),
+          respondents: respondents,
+          omitted_count: quizAlloSheetBoundedInt(item && item.omittedCount, 250),
+          gradable_count: quizAlloSheetBoundedInt(item && item.gradableCount, 250),
+          correct_count: quizAlloSheetBoundedInt(item && item.correctCount, 250),
+          partial_count: quizAlloSheetBoundedInt(item && item.partialCount, 250),
+          incorrect_count: quizAlloSheetBoundedInt(item && item.incorrectCount, 250),
+          idk_count: quizAlloSheetBoundedInt(item && item.idkCount, 250),
+          awaiting_review_count: quizAlloSheetBoundedInt(item && item.awaitingReviewCount, 250),
+          high_confidence_incorrect: quizAlloSheetBoundedInt(item && item.highConfidenceIncorrect, 250),
+          correct_rate_percent: quizAlloSheetRate(item && item.correctRate),
+          sample_status: earlySignal ? 'early_signal' : 'sufficient_sample',
+          signal_codes: signalCodes.join(';')
+        }
+      };
+    });
+    var authoredQuestionCount = quizAlloSheetBoundedInt(
+      snapshot.questionCount + snapshot.questionsTruncated,
+      1000000
+    );
+    var provenance = {
+      aggregation: 'item-analysis',
+      quizMode: quizAlloSheetMode(
+        opts.mode
+        || (generatedContent && generatedContent.data && generatedContent.data.mode)
+      ),
+      minimumSignalSample: minimumSignalSample,
+      authoredQuestionCount: authoredQuestionCount,
+      analyzedQuestionCount: rows.length,
+      participantCount: quizAlloSheetBoundedInt(snapshot.participantCount, 250),
+      respondentCount: quizAlloSheetBoundedInt(snapshot.respondentCount, 250),
+      completedCount: quizAlloSheetBoundedInt(snapshot.completedCount, 250),
+      questionsTruncated: quizAlloSheetBoundedInt(snapshot.questionsTruncated, 1000000),
+      participantsTruncated: quizAlloSheetBoundedInt(snapshot.participantsTruncated, 1000000)
+    };
+    var createdAt = quizAlloSheetCreatedAt(opts.createdAt);
+    var adapter = quizAlloSheetAdapter();
+    if (!adapter) {
+      return quizAlloSheetFallbackEnvelope(
+        quizAlloSheetFallbackTable({ rows: rows, sourceRowCount: authoredQuestionCount }),
+        createdAt,
+        provenance
+      );
+    }
+    var columns = QUIZ_ALLOSHEET_COLUMNS.map(function (column) {
+      return adapter.column(column.key, column.label, column.type);
+    });
+    var table = adapter.table({
+      id: 'quiz_item_analysis',
+      title: 'Quiz item analysis',
+      columns: columns,
+      rows: rows,
+      sourceRowCount: authoredQuestionCount
+    });
+    return adapter.envelope({
+      source: { tool: 'quiz-analytics', label: 'Quiz Analytics', version: '1' },
+      title: 'Quiz item analysis',
+      createdAt: createdAt,
+      classification: {
+        level: 'aggregate-education-data',
+        studentIdentifierIncluded: false,
+        freeTextNotesIncluded: false
+      },
+      privacy: {
+        scope: 'educator-reviewed-aggregate',
+        identifierIncluded: false,
+        reducedData: true,
+        notesIncluded: false
+      },
+      tables: [table],
+      provenance: provenance
+    });
+  }
+
   function aggregateForMode(mode, quizState, generatedContent, roster, conceptMasteryByUid, aiGradedCache, teacherOverrides) {
     if (mode === 'pre-check') return { variant: 'preLessonGap', data: aggregatePreLessonGap(quizState, generatedContent, roster, aiGradedCache, teacherOverrides) };
     if (mode === 'formative') return { variant: 'liveHeatmap', data: aggregateLiveHeatmap(quizState, generatedContent, roster, aiGradedCache, teacherOverrides) };
@@ -1360,6 +1856,8 @@
     aggregateRetentionCurve: aggregateRetentionCurve,
     aggregateReflections: aggregateReflections,
     aggregateItemAnalysis: aggregateItemAnalysis,
+    buildPrivacySafeQuizEvidenceSnapshot: buildPrivacySafeQuizEvidenceSnapshot,
+    buildQuizAlloSheetEnvelope: buildQuizAlloSheetEnvelope,
     aggregateForMode: aggregateForMode,
     gradeResponseForItem: gradeResponseForItem,
     gradePresentationResponse: gradePresentationResponse,
@@ -1373,6 +1871,11 @@
     extractLikertNumericValue: extractLikertNumericValue,
     describePresentationCorrectAnswer: describePresentationCorrectAnswer,
     normalizeConceptId: normalizeConceptId,
+    _meta: {
+      version: '1',
+      allosheetMinimumSignalSample: QUIZ_ALLOSHEET_MIN_SIGNAL_SAMPLE,
+      buildQuizAlloSheetEnvelope: buildQuizAlloSheetEnvelope
+    },
   };
   console.log('[CDN] QuizLiveAggregators loaded');
 })();

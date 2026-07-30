@@ -2845,6 +2845,50 @@ window.StemLab = window.StemLab || {
         { n: '3', title: 'Generalize', detail: 'Connect the model to a formula.' }
       ];
 
+      var renderDimensionSliders = function() {
+        if (!isSlider) return null;
+        return h('fieldset', {
+          'data-volume-dimension-controls': 'true',
+          className: 'min-w-0 rounded-xl border border-emerald-200 bg-white/95 p-3 shadow-sm'
+        },
+          h('legend', { className: 'sr-only' }, 'Rectangular prism dimensions'),
+          h('div', { className: 'grid grid-cols-1 gap-3 sm:grid-cols-3' },
+            ['l','w','h'].map(function(dim) {
+              var label = dim === 'l' ? 'Length' : dim === 'w' ? 'Width' : 'Height';
+              return h('div', { key: dim, className: 'rounded-lg border border-emerald-100 bg-emerald-50 p-3' },
+                h('label', { htmlFor: 'volume-dimension-' + dim, className: 'block text-xs text-emerald-700 mb-1 font-bold uppercase' }, label),
+                h('input', { id: 'volume-dimension-' + dim,
+                  type: 'range',
+                  min: _v.allowFractional ? '0.5' : '1',
+                  max: '10',
+                  step: _v.allowFractional ? '0.5' : '1',
+                  value: dims[dim],
+                  onChange: function(e) {
+                    var nd = Object.assign({}, dims);
+                    nd[dim] = parseFloat(e.target.value);
+                    var newVol = nd.l * nd.w * nd.h;
+                    upd({ dims: nd, challenge: null, feedback: null, showLayers: null });
+                    if (window._volSrTimer) clearTimeout(window._volSrTimer);
+                    window._volSrTimer = setTimeout(function() {
+                      announceToSR(volPredArmed
+                        ? label + ' ' + nd[dim] + '. Volume hidden until you lock your prediction.'
+                        : label + ' ' + nd[dim] + '. Volume now ' + (Math.round(newVol * 100) / 100) + ' cubic units.');
+                    }, 350);
+                    if (nd.l === 10 && nd.w === 10 && nd.h === 10) checkBadges({ dimensionKing: true });
+                  },
+                  'aria-label': label + ' slider, currently ' + dims[dim] +
+                    (volPredArmed ? ', volume hidden until you lock your prediction' : ', volume ' + volume + ' cubic units'),
+                  'aria-valuenow': dims[dim],
+                  'aria-valuemin': _v.allowFractional ? 0.5 : 1,
+                  'aria-valuemax': 10,
+                  className: 'h-3 w-full cursor-pointer appearance-none rounded-lg bg-emerald-200 accent-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2'
+                }),
+                h('div', { className: 'mt-1 text-center text-lg font-bold text-emerald-700' }, dims[dim])
+              );
+            })
+          )
+        );
+      };
       return h('div', { className: 'space-y-4 max-w-5xl mx-auto animate-in fade-in duration-200 ' + bgClass },
         // Header
         h('section', { 'data-volume-command': 'true', className: 'overflow-hidden rounded-2xl border border-emerald-300/40 bg-gradient-to-br from-slate-950 via-emerald-950 to-teal-950 text-white shadow-xl' },
@@ -3157,46 +3201,7 @@ window.StemLab = window.StemLab || {
         })(),
 
         // Sliders (slider mode) — step 0.5 supports fractional dimensions.
-        // SR announcements fire on each change so blind users hear the new volume.
-        isSlider && h('div', { className: 'grid grid-cols-3 gap-3' },
-          ['l','w','h'].map(function(dim) {
-            var label = dim === 'l' ? 'Length' : dim === 'w' ? 'Width' : 'Height';
-            return h('div', { key: dim, className: 'bg-emerald-50 rounded-lg p-3 border border-emerald-100' },
-              h('label', { htmlFor: 'volume-dimension-' + dim, className: 'block text-xs text-emerald-700 mb-1 font-bold uppercase' }, label),
-              h('input', { id: 'volume-dimension-' + dim,
-                type: 'range',
-                min: _v.allowFractional ? '0.5' : '1',
-                max: '10',
-                step: _v.allowFractional ? '0.5' : '1',
-                value: dims[dim],
-                onChange: function(e) {
-                  var nd = Object.assign({}, dims);
-                  nd[dim] = parseFloat(e.target.value);
-                  var newVol = nd.l * nd.w * nd.h;
-                  upd({ dims: nd, challenge: null, feedback: null, showLayers: null });
-                  // Debounced SR announcement so we don't spam during rapid slider drags
-                  if (window._volSrTimer) clearTimeout(window._volSrTimer);
-                  window._volSrTimer = setTimeout(function() {
-                    // While a prediction is armed the volume is masked visually, so it
-                    // must be masked here too or the announcement leaks the answer.
-                    announceToSR(volPredArmed
-                      ? label + ' ' + nd[dim] + '. Volume hidden until you lock your prediction.'
-                      : label + ' ' + nd[dim] + '. Volume now ' + (Math.round(newVol * 100) / 100) + ' cubic units.');
-                  }, 350);
-                  if (nd.l === 10 && nd.w === 10 && nd.h === 10) checkBadges({ dimensionKing: true });
-                },
-                'aria-label': label + ' slider, currently ' + dims[dim] +
-                  (volPredArmed ? ', volume hidden until you lock your prediction' : ', volume ' + volume + ' cubic units'),
-                'aria-valuenow': dims[dim],
-                'aria-valuemin': _v.allowFractional ? 0.5 : 1,
-                'aria-valuemax': 10,
-                className: 'w-full h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer accent-emerald-600'
-              }),
-              h('div', { className: 'text-center text-lg font-bold text-emerald-700 mt-1' }, dims[dim])
-            );
-          })
-        ),
-
+        // They render with the 3D workspace below so fullscreen keeps them visible and usable.
         // Freeform layer builder: a visible top-down placement surface that
         // remains usable even when the 3D model is rotated or zoomed.
         isFreeform && (function() {
@@ -3313,10 +3318,28 @@ window.StemLab = window.StemLab || {
 
         // 3D viewport — pointer events (mouse + touch + pen), pinch-to-zoom,
         // keyboard rotation. tabIndex=0 makes it focusable for keyboard users.
-        !isDisplacement && h('div', {
+        !isDisplacement && h('section', {
+          id: 'volume-3d-workspace',
+          'data-volume-workspace': 'true',
+          role: 'region',
+          'aria-label': isSlider ? 'Rectangular prism model and dimension controls' : '3D volume model workspace',
+          className: 'space-y-3 rounded-2xl'
+        },
+          h('style', null,
+            '#volume-3d-workspace:fullscreen,#volume-3d-workspace:-webkit-full-screen{' +
+              'box-sizing:border-box;display:flex;flex-direction:column;gap:12px;width:100vw;height:100vh;' +
+              'padding:clamp(12px,2vw,24px);overflow:auto;background:#020617}' +
+            '#volume-3d-workspace:fullscreen [data-volume-dimension-controls="true"],' +
+            '#volume-3d-workspace:-webkit-full-screen [data-volume-dimension-controls="true"]{flex:0 0 auto;margin:0}' +
+            '#volume-3d-workspace:fullscreen #volume-3d-viewport,' +
+            '#volume-3d-workspace:-webkit-full-screen #volume-3d-viewport{' +
+              'flex:1 1 auto;min-height:min(58vh,640px)!important;border-radius:16px}'
+          ),
+          renderDimensionSliders(),
+          h('div', {
           id: 'volume-3d-viewport',
           className: 'relative bg-gradient-to-b from-slate-900 to-slate-800 rounded-xl border-2 border-emerald-300/30 flex items-center justify-center overflow-hidden cursor-grab active:cursor-grabbing select-none focus:outline-none focus:ring-2 focus:ring-emerald-400',
-          style: { minHeight: '350px', perspective: '900px', touchAction: 'none' },
+          style: { minHeight: 'clamp(400px, 52vh, 560px)', perspective: '900px', touchAction: 'none' },
           tabIndex: 0,
           role: 'application',
           'aria-label': isFreeform
@@ -3386,9 +3409,11 @@ window.StemLab = window.StemLab || {
             h('button', {
               type: 'button',
               'data-volume-fullscreen': 'true',
-              'aria-label': 'Toggle fullscreen for the 3D volume preview',
+              'aria-label': isSlider
+                ? 'Toggle fullscreen for the rectangular prism and dimension sliders'
+                : 'Toggle fullscreen for the 3D volume preview',
               onClick: function() {
-                var el = document.getElementById('volume-3d-viewport');
+                var el = document.getElementById('volume-3d-workspace');
                 if (!el) return;
                 if (window.__alloStemFS) { window.__alloStemFS(el); return; }
                 var inFull = document.fullscreenElement === el || document.webkitFullscreenElement === el;
@@ -3446,7 +3471,8 @@ window.StemLab = window.StemLab || {
             position: 'relative', width: fw+'px', height: fh+'px',
             visibility: glLive ? 'hidden' : 'visible'
           }
-          }, cubes)),
+          }, cubes))
+        ),
 
         // Layer slider (slider mode)
         isSlider && h('div', { className: 'flex items-center gap-2 bg-emerald-50 rounded-lg p-2 border border-emerald-100' },

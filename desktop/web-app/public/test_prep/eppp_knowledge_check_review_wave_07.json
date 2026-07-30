@@ -1,0 +1,497 @@
+{
+  "schemaVersion": 1,
+  "reviewWave": "knowledge-check-wave-07",
+  "reviewDate": "2026-07-28",
+  "scope": "Seventh claim-level source-review wave for learner-visible chapter knowledge checks, covering two high-risk or oversimplified records in each of the six domains that retained gated checks after Wave 06.",
+  "summary": {
+    "items": 12,
+    "domains": 6,
+    "itemsPerDomain": 2,
+    "sourceReviewedEditorialPass": 12,
+    "independentExpertReviewPending": 12,
+    "productionValidationPending": 12,
+    "domainCounts": {
+      "Assessment & Diagnosis": 2,
+      "Treatment, Intervention & Prevention": 2,
+      "Cognitive-Affective Bases of Behavior": 2,
+      "Social & Cultural Bases of Behavior": 2,
+      "Growth & Lifespan Development": 2,
+      "Research Methods & Statistics": 2
+    }
+  },
+  "releasePolicy": "Only source-reviewed-editorial-pass records are eligible for learner rendering. Source review does not replace independent expert review, psychometric evaluation, or production validation.",
+  "safeguards": [
+    "Screening scores and validity indicators are separated from diagnoses, legal conclusions, and inferences about intent.",
+    "Clinical and family-systems formulations retain individual assessment, role, consent, competence, confidentiality, and jurisdictional boundaries.",
+    "Classic cognitive and social findings are presented as conditional patterns rather than universal laws.",
+    "Developmental categories are treated as organizing constructs rather than fixed diagnoses or deterministic forecasts.",
+    "Statistical heuristics are distinguished from definitions, and exploratory analyses are distinguished from confirmatory tests.",
+    "Every record remains explicitly gated for independent expert and production validation."
+  ],
+  "items": [
+    {
+      "legacyId": "knowledge-check-1ecef8143975e305",
+      "chapterId": "ch-2",
+      "sectionId": "ch-2-section-5",
+      "domainId": 1,
+      "domain": "Assessment & Diagnosis",
+      "prompt": "A 68-year-old reports subtle memory change but still manages medications, finances, transportation, and other complex daily activities. Which assessment step is best supported?",
+      "choices": [
+        "Administer an authorized, validated MoCA version as a brief cognitive screen, interpret the result with appropriate norms and context, and pursue fuller evaluation when indicated",
+        "Diagnose mild neurocognitive disorder whenever a single MoCA score falls below the original cutoff, regardless of education, language, sensory access, or baseline",
+        "Rule out clinically meaningful cognitive change because the person still manages complex daily activities without another person's routine assistance",
+        "Use a global intelligence score as the diagnostic criterion because screening measures cannot contribute useful information about possible cognitive change"
+      ],
+      "answerIndex": 0,
+      "rationale": "The MoCA was developed and validated as a brief screening instrument, not as a stand-alone diagnosis. The original validation study supported sensitivity to mild cognitive impairment, while later work shows that cutoff performance and normative interpretation vary by sample and demographic adjustment. Preserved independence is clinically relevant, but it does not rule out mild impairment; it helps distinguish milder syndromes from dementia-level interference. A careful next step therefore uses an authorized, appropriate version, considers language, education, sensory and motor access, history, collateral information, medical contributors, baseline, and functional change, and follows an abnormal or concerning screen with a sufficiently comprehensive evaluation. No single score establishes etiology or disorder.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/15817019/",
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC3312027/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The Montreal Cognitive Assessment, MoCA: a brief screening tool for mild cognitive impairment",
+          "organization": "Journal of the American Geriatrics Society via U.S. National Library of Medicine",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/15817019/",
+          "whyReputable": "This is the peer-reviewed primary validation study that states the MoCA's intended screening purpose and reports its original diagnostic-accuracy results."
+        },
+        {
+          "title": "The diagnosis of mild cognitive impairment due to Alzheimer's disease: NIA-AA workgroup recommendations",
+          "organization": "National Institute on Aging and Alzheimer's Association workgroup via PubMed Central",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3312027/",
+          "whyReputable": "This consensus workgroup report is a primary clinical-criteria source that distinguishes cognitive decline with largely preserved independence from dementia and requires etiologic evaluation."
+        }
+      ],
+      "reviewNote": "Replaced single-cutoff and intact-function shortcuts with a screening-first, context-sensitive workflow that preserves the distinction among screening, syndrome, and etiology.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-07",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-f834f2ddbd7558ae",
+      "chapterId": "ch-3",
+      "sectionId": "ch-3-section-4",
+      "domainId": 1,
+      "domain": "Assessment & Diagnosis",
+      "prompt": "An MMPI-3 profile has elevated inconsistency and infrequent-response indicators. Before interpreting substantive scales or describing motive, what should the psychologist do?",
+      "choices": [
+        "Infer intentional malingering because any combination of inconsistency and infrequency scales directly measures a deceptive motive",
+        "Evaluate protocol interpretability with MMPI-3-specific guidance, then consider possible confounds and converging contextual evidence before drawing substantive or causal conclusions",
+        "Treat every substantive elevation as genuine because severe psychopathology automatically overrides evidence of inconsistent or infrequent responding",
+        "Substitute MMPI-2-RF thresholds because validity indicators with similar names have interchangeable cutoffs and meanings across test editions"
+      ],
+      "answerIndex": 1,
+      "rationale": "MMPI-3 validity scales are designed to identify potential threats to protocol validity, including inconsistent responding and forms of over- or underreporting. Their first use is to determine whether and with what qualifications the protocol can be interpreted. An elevated indicator does not by itself establish why the response pattern occurred or prove intentional deception. Interpretation must use the MMPI-3 manual and setting-specific evidence, including administration conditions, comprehension, reading and language factors, health, distress, incentives, and collateral data. Likewise, similarly named scales across editions do not authorize importing another edition's thresholds. Substantive interpretation should proceed only after protocol validity has been considered and any required caveats are documented.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.pearsonassessments.com/content/dam/school/global/clinical/us/assets/mmpi-3/mmpi-3-techman-ch1.pdf",
+        "https://www.jstor.org/stable/10.5749/jj.2059222"
+      ],
+      "sourceDetails": [
+        {
+          "title": "MMPI-3 Technical Manual, Chapter 1",
+          "organization": "University of Minnesota Press and Pearson Assessments",
+          "url": "https://www.pearsonassessments.com/content/dam/school/global/clinical/us/assets/mmpi-3/mmpi-3-techman-ch1.pdf",
+          "whyReputable": "This publisher-provided chapter from the MMPI-3 technical manual describes the instrument's validity-scale development and the response threats those scales assess."
+        },
+        {
+          "title": "Interpreting the MMPI-3",
+          "organization": "University of Minnesota Press",
+          "url": "https://www.jstor.org/stable/10.5749/jj.2059222",
+          "whyReputable": "This instrument-specific professional text explains that substantive interpretation follows consideration of protocol-validity threats, confounds, and indicated caveats."
+        }
+      ],
+      "reviewNote": "Made protocol interpretability the first decision, removed motive-by-scale reasoning, and explicitly prohibited transferring cutoffs across MMPI editions.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-07",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-bbe71b7c842b8242",
+      "chapterId": "ch-15",
+      "sectionId": "ch-15-section-4",
+      "domainId": 3,
+      "domain": "Treatment, Intervention & Prevention",
+      "prompt": "Parents in chronic conflict increasingly route messages through their adolescent and then focus exclusively on the adolescent's anxiety. Which response best reflects a bounded systems formulation?",
+      "choices": [
+        "Treat the anxiety as unreal because locating a family triangle establishes that the adolescent has no individual clinical needs",
+        "Conclude that the parents caused the disorder and confront them before assessing risk, functioning, development, or the adolescent's perspective",
+        "Assess the adolescent's symptoms and safety directly while exploring triangulation and helping family members communicate without recruiting the adolescent",
+        "Assign treatment from sibling position alone because Bowen theory makes birth order a sufficient explanation of symptom formation"
+      ],
+      "answerIndex": 2,
+      "rationale": "Bowen theory defines a triangle as a three-person relationship system in which tension can shift among relationships; the concept can organize inquiry into how a child becomes recruited into parental conflict. It does not prove that the adolescent's anxiety is unreal, identify a single cause, or eliminate the need for direct assessment. A defensible formulation therefore examines symptom severity, risk, functioning, development, individual and contextual contributors, and each family member's perspective while testing the interactional hypothesis. Intervention may reduce message routing and strengthen direct communication, but it should remain collaborative and responsive to safety. A theoretical family pattern is a hypothesis for assessment, not a diagnosis or deterministic account.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.thebowencenter.org/triangles"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Triangles",
+          "organization": "The Bowen Center for the Study of the Family",
+          "url": "https://www.thebowencenter.org/triangles",
+          "whyReputable": "The center is dedicated to developing and disseminating Bowen theory, making this an authoritative source for the model's definition and mechanism of triangles."
+        }
+      ],
+      "reviewNote": "Retained the model-specific triangle concept while adding direct symptom and safety assessment and excluding causal, diagnostic, and birth-order determinism.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-07",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-39ab56ea1cd78922",
+      "chapterId": "ch-17",
+      "sectionId": "ch-17-section-5",
+      "domainId": 3,
+      "domain": "Treatment, Intervention & Prevention",
+      "prompt": "A psychologist consults to a clinician but has no supervisory authority, and the clinician may reject the recommendation. Which statement best preserves role and ethical boundaries?",
+      "choices": [
+        "The absence of supervisory authority eliminates responsibility for competent recommendations and foreseeable consequences of the consultation",
+        "Receiving case information makes the consultant the client's treating psychologist even without agreement, consent, or a defined professional role",
+        "Indirect service permits disclosure of any identifiable information because consultation creates a blanket exception to confidentiality requirements",
+        "The consultee retains implementation authority, while the consultant still defines the role, practices within competence, limits disclosure, and supports recommendations with adequate information"
+      ],
+      "answerIndex": 3,
+      "rationale": "Consultation and supervision differ in authority: a consultant ordinarily advises, while the consultee retains the decision to implement. That distinction does not erase the consultant's professional obligations or automatically create a treatment relationship with the consultee's client. APA Ethics Code Standard 4.06 requires psychologists consulting with colleagues to avoid information that could reasonably identify a confidential party unless prior consent exists or disclosure cannot be avoided, and to disclose only what is necessary for the consultation. Competence, role clarification, adequate data, documentation, conflicts, applicable law, and foreseeable implications also remain relevant. The exact allocation of duties depends on the defined relationship and jurisdiction, so lack of supervisory power is not lack of accountability.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.apa.org/monitor/apr05/ethics.html",
+        "https://www.apa.org/ethics/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Disclosing confidential information in consultations and for didactic purposes",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/monitor/apr05/ethics.html",
+          "whyReputable": "This APA Ethics Office discussion reproduces and analyzes Ethics Code Standard 4.06 on identification risk, consent, necessity, and disclosure in consultation."
+        },
+        {
+          "title": "APA Ethics Office",
+          "organization": "American Psychological Association",
+          "url": "https://www.apa.org/ethics/",
+          "whyReputable": "This is APA's official ethics portal identifying the current Ethics Code and its applicability across psychologists' professional roles, including consultation."
+        }
+      ],
+      "reviewNote": "Separated advisory authority from ethical accountability and grounded the privacy boundary in the current APA Ethics Code rather than treating indirect work as exempt.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-07",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-c30cb125193c92da",
+      "chapterId": "ch-25",
+      "sectionId": "ch-25-section-5",
+      "domainId": 5,
+      "domain": "Cognitive-Affective Bases of Behavior",
+      "prompt": "After two years studying Spanish, a learner begins French and now retrieves Spanish words when trying to recall newly learned French vocabulary. Which explanation best fits?",
+      "choices": [
+        "Proactive interference, because previously learned Spanish is disrupting retrieval of the more recently learned French vocabulary",
+        "Retroactive interference, because learning French has impaired access to Spanish words that were acquired earlier",
+        "A source-monitoring error, because the learner remembers each word but attributes it to the wrong speaker or learning episode",
+        "Motivated forgetting, because unwanted French vocabulary is being intentionally suppressed to protect the earlier language"
+      ],
+      "answerIndex": 0,
+      "rationale": "Proactive interference describes a pattern in which earlier learning impairs acquisition or retrieval of newer material; here, prior Spanish responses intrude during recall of newly learned French. Retroactive interference reverses the direction: newer learning disrupts memory for earlier material. A source-monitoring error concerns attributing remembered content to the wrong source, and motivated forgetting requires a claim about motivational processes that the vignette does not supply. The item identifies the direction of interference shown by the stated retrieval error; it does not establish a single neural mechanism, predict that all bilingual learning produces interference, or rule out facilitation and strategy effects in other language-learning conditions.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://dictionary.apa.org/proactive-interference",
+        "https://dictionary.apa.org/retroactive-interference"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Proactive interference",
+          "organization": "APA Dictionary of Psychology",
+          "url": "https://dictionary.apa.org/proactive-interference",
+          "whyReputable": "APA's official psychology dictionary provides the discipline-specific definition needed to distinguish earlier material interfering with later learning or recall."
+        },
+        {
+          "title": "Retroactive interference",
+          "organization": "APA Dictionary of Psychology",
+          "url": "https://dictionary.apa.org/retroactive-interference",
+          "whyReputable": "APA's paired official definition establishes the opposite temporal direction and supports the item's contrast without relying on a mnemonic shortcut."
+        }
+      ],
+      "reviewNote": "Reframed the item around temporal direction and observable retrieval rather than a slogan, while excluding unsupported claims about motivation or universal bilingual interference.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-07",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-9feffd843f729c72",
+      "chapterId": "ch-27",
+      "sectionId": "ch-27-section-3",
+      "domainId": 5,
+      "domain": "Cognitive-Affective Bases of Behavior",
+      "prompt": "A child who already enjoys drawing receives an expected certificate contingent on each drawing. After certificates stop, free-choice drawing falls below baseline. Which interpretation is best?",
+      "choices": [
+        "Negative punishment is established because withdrawing any previously delivered reward necessarily reduces the behavior below its original baseline",
+        "The pattern is consistent with an overjustification effect, while reward effects still depend on expectancy, contingency, feedback, task interest, and context",
+        "An extinction burst is established because extinction is defined as a lasting decline below the pre-reward level after reinforcement ends",
+        "Learned helplessness is established because every reduction in persistence demonstrates a history of uncontrollable aversive outcomes"
+      ],
+      "answerIndex": 1,
+      "rationale": "The pattern is consistent with an overjustification account: an expected, task-contingent tangible reward for an activity that was already interesting can shift perceived reasons for engagement, with less later free-choice behavior after the reward is removed. Experimental and meta-analytic findings do not support the blanket claim that every reward undermines motivation. Effects vary with whether rewards are expected, tangible, task- or performance-contingent, informational or controlling, and with initial task interest; positive competence feedback can differ from controlling reward delivery. Negative punishment would describe a consequence arranged to decrease behavior, extinction does not by definition require a drop below the original baseline, and learned helplessness requires uncontrollable aversive experience not shown here.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://selfdeterminationtheory.org/wp-content/uploads/2014/04/1999_DeciKoestnerRyan_Meta.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "A meta-analytic review of experiments examining the effects of extrinsic rewards on intrinsic motivation",
+          "organization": "Psychological Bulletin and Self-Determination Theory research archive",
+          "url": "https://selfdeterminationtheory.org/wp-content/uploads/2014/04/1999_DeciKoestnerRyan_Meta.pdf",
+          "whyReputable": "This peer-reviewed meta-analysis synthesizes 128 experiments and directly evaluates how reward type, expectancy, contingency, and feedback qualify intrinsic-motivation effects."
+        }
+      ],
+      "reviewNote": "Preserved the best-fitting construct but replaced a reward-always-harms rule with evidence-based moderators and sharper distinctions from punishment, extinction, and helplessness.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-07",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-ec0a57cae0f7e71c",
+      "chapterId": "ch-33",
+      "sectionId": "ch-33-section-3",
+      "domainId": 6,
+      "domain": "Social & Cultural Bases of Behavior",
+      "prompt": "A frustrated person reports rising anger and plans to hit a punching bag while rehearsing grievances in order to prevent later aggression. Which conclusion is most defensible?",
+      "choices": [
+        "Frustration is sufficient to cause aggression, so aggressive discharge is the only intervention consistent with the frustration-aggression hypothesis",
+        "Aggression proves that frustration occurred, because the revised hypothesis treats frustration as both necessary and sufficient for aggression",
+        "Frustration can increase aggressive readiness, but appraisal and context shape behavior, and grievance-focused aggressive venting is not a reliably preventive catharsis",
+        "The absence of immediate aggression rules out any effect of frustration, because aggressive readiness cannot be regulated or redirected"
+      ],
+      "answerIndex": 2,
+      "rationale": "Contemporary use of the frustration-aggression tradition treats frustration as one possible antecedent that can increase aggressive affect or readiness, not as a necessary and sufficient cause of aggressive behavior. Appraisal, learned responses, cues, norms, regulation, alternatives, and situational constraints influence what follows. The catharsis claim also is not supported as a general prevention rule: experiments by Bushman and colleagues found that pro-catharsis messages increased interest in hitting a punching bag, and related grievance-focused venting can maintain rather than reliably discharge aggression. The correct answer therefore recognizes a probabilistic input and rejects deterministic inference in both directions; it does not prohibit exercise or claim that every form of emotional expression is harmful.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/10101875/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Catharsis, aggression, and persuasive influence: self-fulfilling or self-defeating prophecies?",
+          "organization": "Journal of Personality and Social Psychology via U.S. National Library of Medicine",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/10101875/",
+          "whyReputable": "This peer-reviewed primary experimental report directly tests pro-catharsis messaging, punching-bag choice, and subsequent aggressive responding rather than relying on folklore."
+        }
+      ],
+      "reviewNote": "Replaced the obsolete necessary-and-sufficient formulation and broad catharsis promise with a probabilistic model and evidence-bounded venting distinction.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-07",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-a867253a7a9be846",
+      "chapterId": "ch-34",
+      "sectionId": "ch-34-section-5",
+      "domainId": 6,
+      "domain": "Social & Cultural Bases of Behavior",
+      "prompt": "During a diagnostic assessment, a client's account of the problem, supports, help seeking, and treatment preferences may have important cultural meanings. What is the best use of the CFI?",
+      "choices": [
+        "Score the Cultural Formulation Interview as a stand-alone diagnostic test and replace the remainder of the clinical assessment when all 16 questions are answered",
+        "Use the interview only when clinician and client appear to belong to different racial or ethnic groups, because culture is otherwise clinically irrelevant",
+        "Assign the client an acculturation category from the interview and use that category to predict adherence without asking about language access or discrimination",
+        "Use its 16 questions to elicit the person's cultural definitions and context, then integrate that information with diagnostic, functional, safety, and access data"
+      ],
+      "answerIndex": 3,
+      "rationale": "The DSM-5-TR Cultural Formulation Interview is a set of 16 questions for eliciting how culture shapes the person's definition of the problem, perceived causes and context, stressors and supports, coping and help seeking, and preferences affecting care. It supplements the broader assessment; it is not a scored stand-alone diagnostic instrument, an acculturation typology, or a replacement for diagnostic criteria, risk and functional assessment, language-access planning, or direct inquiry about discrimination and barriers. Culture is relevant within as well as across apparent identity groups, and the client remains the source of their own meanings. The resulting formulation should be integrated with other evidence rather than used to stereotype or infer adherence.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://www.psychiatry.org/psychiatrists/practice/dsm/educational-resources/assessment-measures",
+        "https://www.psychiatry.org/getmedia/5cc5329d-3bd4-4c6a-bae1-dfd0d6496f44/APA-DSM5TR-CulturalFormulationInterview.pdf"
+      ],
+      "sourceDetails": [
+        {
+          "title": "DSM-5-TR Online Assessment Measures",
+          "organization": "American Psychiatric Association",
+          "url": "https://www.psychiatry.org/psychiatrists/practice/dsm/educational-resources/assessment-measures",
+          "whyReputable": "This official DSM resource identifies the CFI as 16 questions used during mental-health assessment to understand culture's impact on presentation and care."
+        },
+        {
+          "title": "DSM-5-TR Cultural Formulation Interview",
+          "organization": "American Psychiatric Association",
+          "url": "https://www.psychiatry.org/getmedia/5cc5329d-3bd4-4c6a-bae1-dfd0d6496f44/APA-DSM5TR-CulturalFormulationInterview.pdf",
+          "whyReputable": "This is the official interview form and primary source for the domains, wording, and intended elicitation function of the Cultural Formulation Interview."
+        }
+      ],
+      "reviewNote": "Clarified that the CFI is an elicitation framework integrated into assessment, not a diagnosis, identity trigger, acculturation test, or substitute for access and safety inquiry.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-07",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-ea24db735ee5824f",
+      "chapterId": "ch-36",
+      "sectionId": "ch-36-section-4",
+      "domainId": 7,
+      "domain": "Growth & Lifespan Development",
+      "prompt": "A clinician observes one tense parent-child interaction and considers using Baumrind-style parenting categories. Which use of the framework is most defensible?",
+      "choices": [
+        "Use warmth and demandingness as organizing dimensions, then assess repeated practices, goals, development, culture, stress, and reciprocal child-parent effects",
+        "Assign a fixed parenting-style diagnosis from the observed interaction because category membership is stable across tasks, children, and developmental periods",
+        "Predict the child's individual outcome from the four-style label because associations between parenting and adjustment establish one-way causation",
+        "Treat firm control as having the same function in every family because cultural meaning and developmental timing do not alter its interpretation"
+      ],
+      "answerIndex": 0,
+      "rationale": "Baumrind-style categories can organize observations around broad dimensions such as warmth or responsiveness and demandingness or control, but they are not diagnoses and should not be assigned from one interaction. Contemporary parenting research emphasizes more specific dimensions and practices, parents' goals and beliefs, developmental timing, cultural and socioeconomic context, and variation across children and situations. Parent and child characteristics also transact over time, so an association cannot be read as one-way causation or individual destiny. The defensible use is therefore hypothesis-generating: gather repeated, multi-informant evidence about what caregivers do, what the behavior means in context, how the child responds, and whether the pattern supports or impairs functioning and safety.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://pubmed.ncbi.nlm.nih.gov/28813261/",
+        "https://pubmed.ncbi.nlm.nih.gov/21461681/"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Current research on parenting styles, dimensions, and beliefs",
+          "organization": "Current Opinion in Psychology via U.S. National Library of Medicine",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/28813261/",
+          "whyReputable": "This peer-reviewed synthesis explains the field's shift toward specific parenting dimensions, beliefs, goals, and explicit attention to cultural and contextual variation."
+        },
+        {
+          "title": "Nature and nurturing: parenting in the context of child temperament",
+          "organization": "Clinical Child and Family Psychology Review via U.S. National Library of Medicine",
+          "url": "https://pubmed.ncbi.nlm.nih.gov/21461681/",
+          "whyReputable": "This peer-reviewed review evaluates bidirectional and interactive parent-child effects and supports avoiding a simple one-way causal interpretation of parenting labels."
+        }
+      ],
+      "reviewNote": "Converted a typology-label question into a context-sensitive formulation task with explicit safeguards against diagnosis, causal certainty, and cultural invariance.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-07",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-39ef201538b198a1",
+      "chapterId": "ch-39",
+      "sectionId": "ch-39-section-2",
+      "domainId": 7,
+      "domain": "Growth & Lifespan Development",
+      "prompt": "An older adult has objective cognitive decline but remains largely independent with medications, finances, transportation, and household tasks. Which conclusion is best pending full evaluation?",
+      "choices": [
+        "Typical aging must be assumed because preserved independence excludes any clinically meaningful cognitive syndrome or need for follow-up",
+        "A mild cognitive-impairment syndrome may fit, while etiology and diagnosis require history, function, objective testing, and exclusion of other causes",
+        "Major neurocognitive disorder is established because any objectively measured decline necessarily interferes with independent everyday functioning",
+        "Alzheimer's disease is established because a memory complaint uniquely identifies its pathology without biomarkers, medical evaluation, or longitudinal evidence"
+      ],
+      "answerIndex": 1,
+      "rationale": "Core clinical criteria for mild cognitive impairment require concern about cognitive change, objective evidence in one or more domains, and generally preserved independence, with no dementia. Mild inefficiency in complex tasks can occur even when the person still performs them independently. This syndrome-level description does not establish Alzheimer's disease or any other etiology: clinicians must consider delirium, medications, mood, sleep, sensory factors, vascular, neurologic, and other medical causes and integrate history, collateral report, objective testing, and longitudinal function. Conversely, preserved independence does not force a conclusion of typical aging. Major disorder requires decline that interferes with independence, so objective decline alone does not cross that functional boundary.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC3312027/",
+        "https://www.nia.nih.gov/news/alzheimers-diagnostic-guidelines-updated-first-time-decades"
+      ],
+      "sourceDetails": [
+        {
+          "title": "The diagnosis of mild cognitive impairment due to Alzheimer's disease: NIA-AA workgroup recommendations",
+          "organization": "National Institute on Aging and Alzheimer's Association workgroup via PubMed Central",
+          "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3312027/",
+          "whyReputable": "This primary consensus report defines the core clinical syndrome, preserved-independence boundary, and need to investigate alternative systemic and brain causes."
+        },
+        {
+          "title": "Alzheimer's diagnostic guidelines updated for first time in decades",
+          "organization": "National Institute on Aging",
+          "url": "https://www.nia.nih.gov/news/alzheimers-diagnostic-guidelines-updated-first-time-decades",
+          "whyReputable": "This official NIA summary distinguishes the MCI clinical stage from dementia and emphasizes measured change that does not compromise independence."
+        }
+      ],
+      "reviewNote": "Strengthened the mild-versus-major functional boundary and separated a provisional cognitive syndrome from Alzheimer's etiology and other differential causes.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-07",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-b2d4a9ffbd6262d8",
+      "chapterId": "ch-44",
+      "sectionId": "ch-44-section-4",
+      "domainId": 8,
+      "domain": "Research Methods & Statistics",
+      "prompt": "A researcher explores 20 outcomes, reports only the one with p < .05 as if it were the prespecified primary analysis, and omits the other 19 tests. Which appraisal is best?",
+      "choices": [
+        "This is publication bias because that term refers only to a researcher's decision to conceal analyses within a study that otherwise reaches publication",
+        "This is preregistration because selecting a primary outcome after seeing the data is equivalent to documenting a plan before data collection or access",
+        "This is selective analysis and reporting associated with p-hacking; undisclosed flexibility inflates false-positive risk and obscures confirmatory versus exploratory evidence",
+        "This proves the reported effect is false because one result below .05 among 20 tests cannot occur when every null hypothesis is true"
+      ],
+      "answerIndex": 2,
+      "rationale": "The defining problem is undisclosed analytic flexibility and selective reporting: the researcher searched multiple outcomes, retained the favorable result, and presented it as though it were the planned primary test. Simmons and colleagues demonstrated that flexible data collection, analysis, and reporting can markedly inflate false-positive rates. If 20 independent tests concern true nulls and each uses alpha .05, the expected count below .05 is one, but expectation is not a guarantee and dependence among tests changes the calculation. The vignette therefore does not prove this specific finding false. HARKing concerns presenting a post hoc hypothesis as a priori and can overlap, while publication bias usually describes selective availability across studies. Transparent labeling, multiplicity control, preregistration, and replication address different parts of the problem.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://doi.org/10.1177/0956797611417632"
+      ],
+      "sourceDetails": [
+        {
+          "title": "False-Positive Psychology: Undisclosed Flexibility in Data Collection and Analysis Allows Presenting Anything as Significant",
+          "organization": "Psychological Science",
+          "url": "https://doi.org/10.1177/0956797611417632",
+          "whyReputable": "This peer-reviewed primary simulation-and-experiment paper directly demonstrates how undisclosed researcher degrees of freedom can inflate false-positive findings."
+        }
+      ],
+      "reviewNote": "Separated within-study selective reporting from publication bias, preserved overlap with HARKing, and corrected the false claim that an expected count proves any observed result false.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-07",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    },
+    {
+      "legacyId": "knowledge-check-7932125100f8c528",
+      "chapterId": "ch-45",
+      "sectionId": "ch-45-section-2",
+      "domainId": 8,
+      "domain": "Research Methods & Statistics",
+      "prompt": "Investigators recruit initial participants from a needle-exchange program and ask each participant to refer other eligible people, without structured coupons or network weighting. What is this design?",
+      "choices": [
+        "Stratified random sampling, because recruiting through participant networks ensures proportional representation of every subgroup in the target population",
+        "Cluster probability sampling, because each participant's social contacts form randomly selected clusters with known inclusion probabilities",
+        "Respondent-driven sampling with population-unbiased estimates, because any peer-referral procedure automatically meets the assumptions of its estimators",
+        "Snowball or chain-referral sampling, which may improve access but can reflect seed choice and network structure unless additional design and analytic assumptions are met"
+      ],
+      "answerIndex": 3,
+      "rationale": "Beginning with accessible seeds and asking participants to recruit peers is the defining chain-referral feature of snowball sampling. It can help investigators reach networked or hard-to-enumerate populations, but the resulting sample can depend on seed selection, who is connected to whom, network size, homophily, and willingness to recruit or participate. Respondent-driven sampling is a more structured variant that uses controlled recruitment, typically coupons, and model-based adjustments; even then, population estimates depend on design and analytic assumptions. The vignette does not include those features, so it cannot promise known inclusion probabilities or unbiased population estimates. The initial site contributes convenience, but peer recruitment is the decisive feature requested by the question.",
+      "reviewStatus": "source-reviewed-editorial-pass",
+      "references": [
+        "https://doi.org/10.1525/sp.1997.44.2.03x0221m",
+        "https://www.publichealth.columbia.edu/research/population-health-methods/respondent-driven-sampling"
+      ],
+      "sourceDetails": [
+        {
+          "title": "Respondent-Driven Sampling: A New Approach to the Study of Hidden Populations",
+          "organization": "Social Problems",
+          "url": "https://doi.org/10.1525/sp.1997.44.2.03x0221m",
+          "whyReputable": "This is the foundational peer-reviewed methods paper defining respondent-driven sampling as a structured variant designed to address documented biases in chain-referral samples."
+        },
+        {
+          "title": "Respondent-Driven Sampling",
+          "organization": "Columbia University Mailman School of Public Health",
+          "url": "https://www.publichealth.columbia.edu/research/population-health-methods/respondent-driven-sampling",
+          "whyReputable": "This university public-health methods resource explains seeds, peer recruitment, coupon tracking, and statistical adjustments that distinguish RDS from ordinary snowball sampling."
+        }
+      ],
+      "reviewNote": "Made peer referral the decisive feature while distinguishing ordinary snowball sampling from RDS and avoiding categorical claims about impossibility or unbiased inference.",
+      "reviewDate": "2026-07-28",
+      "reviewMode": "claim-level-source-review-and-editorial-rewrite",
+      "reviewWave": "knowledge-check-wave-07",
+      "independentExpertStatus": "not-started",
+      "productionStatus": "not-production-validated"
+    }
+  ]
+}

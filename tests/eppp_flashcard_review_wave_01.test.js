@@ -76,7 +76,9 @@ describe('EPPP flashcard review wave 01', () => {
       expect(card.reviewArtifact).toBe('eppp_flashcard_review_wave_01.json');
       expect(card.sourceDetails).toEqual(item.sourceDetails);
       expect(card.independentExpertStatus).toBe('not-started');
-      expect(card.learnerVisible).toBe(false);
+      expect(card.productionStatus).toBe('not-production-validated');
+      expect(card.reviewArtifactLearnerVisible).toBe(false);
+      expect(card.learnerVisible).toBe(item.contentDisposition !== 'retire-redundant');
     }
   });
 
@@ -93,8 +95,5 @@ describe('EPPP flashcard review wave 01', () => {
       expect(source).not.toMatch(/Content QA passed/i);
     }
 
-    for (const name of ['content_inventory.json', 'content_inventory.md']) {
-      expect(readText(`desktop/web-app/public/test_prep/eppp_legacy/${name}`)).toBe(readText(`test_prep/eppp_legacy/${name}`));
-    }
   });
 });

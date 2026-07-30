@@ -228,18 +228,30 @@ describe('Code.gs protocol (real source, mocked Google services)', () => {
         expect(multilingual.terms.some(term => term.label === '\u5b66\u3073')).toBe(true);
 
         const held = call({ a: 'activityupsert', ...actor(students[0]), term: 'student@example.com' });
+        const heldSecond = call({ a: 'activityupsert', ...actor(students[1]), term: 'https://example.com' });
+        const heldThird = call({ a: 'activityupsert', ...actor(students[2]), term: '5551234567' });
         expect(held.own.status).toBe('pending');
-        expect(held.terms.some(term => term.label === 'student@example.com')).toBe(false);
+        expect(heldSecond.own.status).toBe('pending');
+        expect(heldThird.own.status).toBe('pending');
+        const protectedSummary = call({ a: 'getactivitysummary', ...actor(students[3]) });
+        expect(protectedSummary).toMatchObject({ participantCount: 1, revealed: false });
+        expect(protectedSummary.terms).toEqual([]);
         expect(call({ a: 'getactivityadmin', id, aid }).e).toBe('not-admin');
         const queue = call({ a: 'getactivityadmin', admin, id, aid });
         expect(queue.responses.find(row => row.uid === students[0].uid)).toMatchObject({ status: 'pending', text: 'student@example.com' });
         expect(call({ a: 'moderateactivity', ...actor(students[0]), status: 'approved' }).e).toBe('not-admin');
         expect(call({ a: 'moderateactivity', admin, id, aid, uid: students[0].uid, status: 'approved' }).ok).toBe(true);
-        const approved = call({ a: 'getactivitysummary', ...actor(students[1]) });
+        const belowThreshold = call({ a: 'getactivitysummary', ...actor(students[3]) });
+        expect(belowThreshold).toMatchObject({ participantCount: 2, revealed: false });
+        expect(belowThreshold.terms).toEqual([]);
+        expect(call({ a: 'moderateactivity', admin, id, aid, uid: students[1].uid, status: 'approved' }).ok).toBe(true);
+        const approved = call({ a: 'getactivitysummary', ...actor(students[3]) });
+        expect(approved).toMatchObject({ participantCount: 3, revealed: true });
         expect(approved.terms.some(term => term.label === 'student@example.com')).toBe(true);
         expect(call({ a: 'moderateactivity', admin, id, aid, uid: students[0].uid, status: 'hidden' }).ok).toBe(true);
-        const hidden = call({ a: 'getactivitysummary', ...actor(students[1]) });
-        expect(hidden.terms.some(term => term.label === 'student@example.com')).toBe(false);
+        const hidden = call({ a: 'getactivitysummary', ...actor(students[3]) });
+        expect(hidden).toMatchObject({ participantCount: 2, revealed: false });
+        expect(hidden.terms).toEqual([]);
 
         expect(call({ a: 'delpack', admin, id }).ok).toBe(true);
         expect(driveFiles.has(activityFile)).toBe(false);
@@ -677,8 +689,10 @@ describe('ANTI wiring pins', () => {
 
     it('keeps the shared Word Cloud poll loop stable while students type and renders safe ASCII fallbacks', () => {
         expect(anti).toContain('setTerm(current => current || result.own.text)');
-        expect(anti).toContain('[activityId, admin, clearCredential, ensureCredential, isTeacher, mailboxUrl, packId]);');
-        expect(anti).not.toContain('[activityId, admin, clearCredential, ensureCredential, isTeacher, mailboxUrl, packId, term]);');
+        expect(anti).toContain('[activityId, activityScope, admin, applySharedActivitySummary, clearCredential, ensureCredential, isTeacher, mailboxUrl, packId]);');
+        expect(anti).toContain('const requestSequence = ++requestSequenceRef.current;');
+        expect(anti).toContain('_alloNextSharedActivitySummaryOrder');
+        expect(anti).not.toContain('mailboxUrl, packId, term]);');
         expect(anti).toContain('item.count > 1 ? ` x${item.count}`');
         expect(anti).toContain("shortLabel: 'WC', title: 'Class word cloud'");
         expect(anti).not.toContain('<span aria-hidden="true">??</span> Class word cloud');

@@ -5,9 +5,10 @@ const path = require('path');
 
 const ROOT = __dirname;
 const SOURCE = path.join(ROOT, 'test_prep_hub_source.jsx');
-const BANK_SOURCE = path.join(ROOT, 'test_prep', 'eppp_native_items.json');
+const EPPP_PART_ONE_PACK_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_eppp_part_one_pack.cjs');
 const EPPP_2027_PREVIEW_PACK_SOURCE = path.join(ROOT, 'test_prep', 'eppp_2027_preview_pack.json');
 const REFERENCE_CATALOG_SOURCE = path.join(ROOT, 'test_prep', 'reference_catalog.json');
+const PACK_MANIFEST_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_test_prep_pack_manifest.cjs');
 const PARAPRO_PACK_SOURCE = path.join(ROOT, 'test_prep', 'parapro_pack.json');
 const SPECIAL_EDUCATION_5355_PACK_SOURCE = path.join(ROOT, 'test_prep', 'special_education_5355_pack.json');
 const SCHOOL_COUNSELOR_5422_PACK_SOURCE = path.join(ROOT, 'test_prep', 'school_counselor_5422_pack.json');
@@ -35,25 +36,11 @@ const DEPLOY_OUTPUT = path.join(ROOT, 'desktop/web-app', 'public', 'test_prep_hu
 const TMP = path.join(ROOT, '_tmp_test_prep_hub_entry.jsx');
 const COMPILED = TMP + '.compiled.js';
 const QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_eppp_native_pack.cjs');
-const INVENTORY_SCRIPT = path.join(ROOT, 'dev-tools', 'inventory_eppp_learning_content.cjs');
-const LEARNING_LIBRARY_SCRIPT = path.join(ROOT, 'dev-tools', 'build_eppp_learning_library_with_reviews.cjs');
-const DIAGRAM_QUALITY_WAVE_01_SCRIPT = path.join(ROOT, 'dev-tools', 'repair_eppp_diagram_quality_wave_01.cjs');
-const DIAGRAM_QUALITY_WAVE_02_SCRIPT = path.join(ROOT, 'dev-tools', 'repair_eppp_diagram_quality_wave_02.cjs');
-const DIAGRAM_QUALITY_WAVE_03_SCRIPT = path.join(ROOT, 'dev-tools', 'repair_eppp_diagram_quality_wave_03.cjs');
-const DIAGRAM_QUALITY_WAVE_04_SCRIPT = path.join(ROOT, 'dev-tools', 'repair_eppp_diagram_quality_wave_04.cjs');
-const DIAGRAM_QUALITY_WAVE_05_SCRIPT = path.join(ROOT, 'dev-tools', 'repair_eppp_diagram_quality_wave_05.cjs');
-const DIAGRAM_QUALITY_WAVE_06_SCRIPT = path.join(ROOT, 'dev-tools', 'repair_eppp_diagram_quality_wave_06.cjs');
-const DIAGRAM_QUALITY_WAVE_07_SCRIPT = path.join(ROOT, 'dev-tools', 'repair_eppp_diagram_quality_wave_07.cjs');
-const REVIEW_LEDGER_SCRIPT = path.join(ROOT, 'dev-tools', 'build_eppp_review_ledger.cjs');
-const NEXT_REVIEW_DOCKET_SCRIPT = path.join(ROOT, 'dev-tools', 'build_eppp_next_review_docket.cjs');
-const CURATION_500_SCRIPT = path.join(ROOT, 'dev-tools', 'build_eppp_500_curation_manifest.cjs');
-const CURATION_1000_SCRIPT = path.join(ROOT, 'dev-tools', 'build_eppp_1000_curation_manifest.cjs');
+const MIGRATION_ARCHIVE_SCRIPT = path.join(ROOT, 'dev-tools', 'build_eppp_migration_source_archive.cjs');
+const LEARNING_LIBRARY_SCRIPT = path.join(ROOT, 'dev-tools', 'build_eppp_learning_library.cjs');
 const EPPP_1500_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_eppp_1500_expansion.cjs');
 const EPPP_2027_PREVIEW_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_eppp_2027_preview.cjs');
 const EPPP_2027_PREVIEW_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_eppp_2027_preview.cjs');
-const CURATION_1500_SCRIPT = path.join(ROOT, 'dev-tools', 'build_eppp_1500_curation_manifest.cjs');
-const EXPANSION_AUDIT_SOURCE = path.join(ROOT, 'test_prep', 'eppp_native_expansion_1500_audit.json');
-const EXPANSION_AUDIT_DEPLOY = path.join(ROOT, 'desktop/web-app', 'public', 'test_prep', 'eppp_native_expansion_1500_audit.json');
 const PARAPRO_QA_SCRIPT = path.join(ROOT, 'dev-tools', 'qa_parapro_pack_release.cjs');
 const PARAPRO_BATCH2_SCRIPT = path.join(ROOT, 'dev-tools', 'build_parapro_batch_2.cjs');
 const PARAPRO_LIBRARY_BUILD_SCRIPT = path.join(ROOT, 'dev-tools', 'build_parapro_learning_library.cjs');
@@ -166,9 +153,9 @@ execSync(`node "${SPEECH_LANGUAGE_PATHOLOGY_5331_LIBRARY_BUILD_SCRIPT}"`, { cwd:
 execSync(`node "${SPEECH_LANGUAGE_PATHOLOGY_5331_LIBRARY_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
 execSync(`node "${SPEECH_LANGUAGE_PATHOLOGY_5331_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
 execSync(`node "${EPPP_1500_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+execSync(`node "${EPPP_PART_ONE_PACK_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
 execSync(`node "${EPPP_2027_PREVIEW_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
 execSync(`node "${EPPP_2027_PREVIEW_QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
-const bank = JSON.parse(fs.readFileSync(BANK_SOURCE, 'utf8'));
 const eppp2027PreviewPack = JSON.parse(fs.readFileSync(EPPP_2027_PREVIEW_PACK_SOURCE, 'utf8'));
 if (!eppp2027PreviewPack || eppp2027PreviewPack.id !== 'eppp-integrated-2027-preview' || eppp2027PreviewPack.status !== 'preview' || eppp2027PreviewPack.items?.length !== 20) throw new Error('Integrated EPPP 2027 preview pack is invalid.');
 const referenceCatalog = JSON.parse(fs.readFileSync(REFERENCE_CATALOG_SOURCE, 'utf8'));
@@ -233,7 +220,12 @@ execSync(`node "${APPLY_TEST_PREP_SOURCE_REVIEW_CORRECTIONS_SCRIPT}"`, { cwd: RO
 execSync(`node "${EXPAND_TEST_PREP_PACKS_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
 execSync(`node "${WRITE_TEST_PREP_ASSISTANT_REVIEW_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
 execSync(`node "${VERIFY_TEST_PREP_ASSISTANT_REVIEW_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
-if (!Array.isArray(bank) || !bank.length) throw new Error('EPPP native item bank is empty or invalid.');
+if (!skipEpppRefresh) {
+  execSync(`node "${MIGRATION_ARCHIVE_SCRIPT}" --verify`, { cwd: ROOT, stdio: 'inherit' });
+  execSync(`node "${LEARNING_LIBRARY_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+  execSync(`node "${QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
+}
+execSync(`node "${PACK_MANIFEST_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
 const paraProPack = JSON.parse(fs.readFileSync(PARAPRO_PACK_SOURCE, 'utf8'));
 if (!paraProPack || paraProPack.id !== 'parapro-1755-practice-1' || paraProPack.batchSize !== 100 || !Array.isArray(paraProPack.items) || paraProPack.items.length !== 500) {
   throw new Error('ParaPro release pack is empty or invalid.');
@@ -292,7 +284,6 @@ const plt595623Pack=JSON.parse(fs.readFileSync(PLT_5_9_5623_PACK_SOURCE,'utf8'))
 const plt7125624Pack=JSON.parse(fs.readFileSync(PLT_7_12_5624_PACK_SOURCE,'utf8'));if(plt7125624Pack.id!=='praxis-plt-grades-7-12-5624'||plt7125624Pack.items?.length!==500)throw Error('PLT Grades 7–12 5624 pack invalid');
 const schoolLibrarian5312Pack=JSON.parse(fs.readFileSync(SCHOOL_LIBRARIAN_5312_PACK_SOURCE,'utf8'));if(schoolLibrarian5312Pack.id!=='praxis-school-librarian-5312'||schoolLibrarian5312Pack.items?.length!==500)throw Error('School Librarian 5312 pack invalid');
 const bankPrelude = 'const TEST_PREP_REFERENCE_CATALOG = ' + JSON.stringify(referenceCatalog) + ';\n\n'
-  + 'const EPPP_NATIVE_ITEMS = ' + JSON.stringify(bank) + ';\n\n'
   + 'const EPPP_INTEGRATED_2027_PREVIEW_PACK = ' + JSON.stringify(eppp2027PreviewPack) + ';\n\n'
   + 'const PARAPRO_PRACTICE_PACK = ' + JSON.stringify(paraProPack) + ';\n\n'
   + 'const SPECIAL_EDUCATION_5355_PRACTICE_PACK = ' + JSON.stringify(specialEducation5355Pack) + ';\n\n'
@@ -373,6 +364,18 @@ ${compiled}
     preAnswerClarificationPolicy: testPrepPreAnswerClarificationPolicy,
     filterPreAnswerClarificationResponse: testPrepFilterPreAnswerClarificationResponse,
     buildClarificationPrompt: testPrepBuildClarificationPrompt,
+    repoAssetCandidates: testPrepRepoAssetCandidates,
+    fetchRepoJson: testPrepFetchRepoJson,
+    manifestSchemaVersion: TEST_PREP_PACK_MANIFEST_SCHEMA_VERSION,
+    portfolioCategories: TEST_PREP_PORTFOLIO_CATEGORIES.slice(),
+    normalizeManifest: normalizeTestPrepPackManifest,
+    validateManifest: validateTestPrepPackManifest,
+    listManifestEntries: listTestPrepManifestEntries,
+    fetchManifest: testPrepFetchPackManifest,
+    loadManifestPack: testPrepLoadManifestPack,
+    learningLibraryIdentity: testPrepLearningLibraryIdentity,
+    packSkillCatalog: testPrepPackSkillCatalog,
+    itemSkillIds: testPrepItemSkillIds,
     searchPack: testPrepSearchPack,
     normalizeFlashcardSchedule: normalizeTestPrepFlashcardSchedule,
     rateFlashcard: testPrepRateFlashcard,
@@ -396,21 +399,3 @@ fs.writeFileSync(OUTPUT, output, 'utf8');
 fs.mkdirSync(path.dirname(DEPLOY_OUTPUT), { recursive: true });
 fs.writeFileSync(DEPLOY_OUTPUT, output, 'utf8');
 console.log('Built test_prep_hub_module.js (' + output.split('\n').length + ' lines)');
-if (!skipEpppRefresh) {
-  execSync(`node "${QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
-  execSync(`node "${DIAGRAM_QUALITY_WAVE_01_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
-  execSync(`node "${DIAGRAM_QUALITY_WAVE_02_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
-  execSync(`node "${DIAGRAM_QUALITY_WAVE_03_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
-  execSync(`node "${DIAGRAM_QUALITY_WAVE_04_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
-  execSync(`node "${DIAGRAM_QUALITY_WAVE_05_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
-  execSync(`node "${DIAGRAM_QUALITY_WAVE_06_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
-  execSync(`node "${DIAGRAM_QUALITY_WAVE_07_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
-  execSync(`node "${LEARNING_LIBRARY_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
-  execSync(`node "${INVENTORY_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
-  execSync(`node "${REVIEW_LEDGER_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
-  execSync(`node "${NEXT_REVIEW_DOCKET_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
-
-  execSync(`node "${CURATION_1500_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
-  fs.copyFileSync(EXPANSION_AUDIT_SOURCE, EXPANSION_AUDIT_DEPLOY);
-}
-

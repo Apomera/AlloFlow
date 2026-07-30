@@ -4,7 +4,7 @@
  * (the one-click installable format for Claude Desktop; a .mcpb is a zip
  * with a manifest.json at its root).
  *
- *   node desktop/mcp/build_mcpb.cjs [--lean]
+ *   node desktop/mcp/build_mcpb.cjs [--lean] [--allow-unvalidated]
  *
  * Output: desktop/dist/mcpb/alloflow-remediation.mcpb  (dir is gitignored)
  *
@@ -39,6 +39,8 @@ const OUT_DIR = path.join(REPO_ROOT, 'desktop', 'dist', 'mcpb');
 const STAGING = path.join(OUT_DIR, 'staging');
 const BUNDLE = path.join(OUT_DIR, 'alloflow-remediation.mcpb');
 const LEAN = process.argv.includes('--lean');
+const ALLOW_UNVALIDATED = process.argv.includes('--allow-unvalidated');
+const MCPB_CLI_VERSION = '2.1.2';
 
 // zip_writer.cjs is required by the driver at load time — omitting it makes the packaged server
 // fail to start, not merely lose a feature.
@@ -48,7 +50,7 @@ const SERVER_FILES = ['alloflow-remediation-mcp-stdio.cjs', 'remediation_headles
 // than at pipeline boot — but it has to be IN the bundle or export_accessible_office cannot work
 // on a packaged install. Adding it was the 2026-07-28 capability-inventory finding: the connector
 // reached 11% of the pipeline, partly because capabilities lived in modules it never shipped.
-const ASSET_FILES = ['verification_policy_module.js', 'doc_builder_renderer_module.js', 'doc_pipeline_module.js', 'view_pdf_audit_module.js'];
+const ASSET_FILES = ['verification_policy_module.js', 'doc_builder_renderer_module.js', 'view_pdf_validator_module.js', 'doc_pipeline_module.js', 'view_pdf_audit_module.js'];
 const ASSET_DIRS = ['verapdf'];
 
 function log(m) { process.stderr.write('[build-mcpb] ' + m + '\n'); }
@@ -92,13 +94,19 @@ function buildManifest() {
     { name: 'remediation_job_cancel', description: 'Cancel a queued job or kill the running one.' },
   ];
   return {
-    manifest_version: '0.2',
+    $schema: 'https://raw.githubusercontent.com/modelcontextprotocol/mcpb/main/schemas/mcpb-manifest-v0.4.schema.json',
+    manifest_version: '0.4',
     name: 'alloflow-remediation',
     display_name: 'AlloFlow PDF Remediation',
     version: '0.3.0',
     description: 'Remediate PDFs (and DOCX/PPTX) for accessibility with AlloFlow\'s honesty-gated pipeline: audit, accessible-HTML rebuild, AI fix passes, tagged-PDF export, and independent PDF/UA-1 validation.',
-    long_description: 'Runs the real AlloFlow remediation pipeline headlessly on your machine. Requires Node.js 18+, a one-time `npx playwright install chromium`, network access, and a Google Gemini API key (documents are sent to the Gemini API under YOUR key - see PRIVACY.md). Long runs are exposed as background jobs with progress polling. Results carry AlloFlow\'s honesty surfaces verbatim: distribution verdict, before/after scores with source, fidelity notes, and a tagged PDF that only claims PDF/UA when it earned it.',
-    author: { name: 'Aaron Pomeranz' },
+    long_description: 'Runs the real AlloFlow remediation pipeline headlessly on your machine. Requires Node.js 18+ and a one-time Chromium download. AI-dependent tools require a Google Gemini API key and send the selected document to Gemini under your key; deterministic tools remain available without a key. Long runs use durable local job records and progress polling. See PRIVACY.md before processing student records. Results preserve AlloFlow\'s honesty surfaces: distribution verdict, sourced scores, fidelity notes, and a tagged PDF that only claims PDF/UA when it earned it.',
+    author: { name: 'Aaron Pomeranz', url: 'https://github.com/Apomera' },
+    homepage: 'https://apomera.github.io/AlloFlow/',
+    documentation: 'https://github.com/Apomera/AlloFlow/blob/main/desktop/mcp/README_REMEDIATION.md',
+    support: 'https://github.com/Apomera/AlloFlow/issues',
+    repository: { type: 'git', url: 'https://github.com/Apomera/AlloFlow.git' },
+    privacy_policies: ['https://github.com/Apomera/AlloFlow/blob/main/desktop/mcp/PRIVACY.md'],
     server: {
       type: 'node',
       entry_point: 'server/alloflow-remediation-mcp-stdio.cjs',
@@ -118,13 +126,13 @@ function buildManifest() {
         title: 'Gemini API key',
         description: 'From aistudio.google.com ("Get API key"; the free tier works). Documents you remediate are sent to the Gemini API under this key.',
         sensitive: true,
-        required: true,
+        required: false,
       },
     },
-    compatibility: { platforms: ['win32', 'darwin', 'linux'], runtimes: { node: '>=18' } },
+    compatibility: { claude_desktop: '>=1.0.0', platforms: ['win32', 'darwin', 'linux'], runtimes: { node: '>=18' } },
     tools,
     keywords: ['accessibility', 'pdf', 'remediation', 'wcag', 'pdf-ua', 'education'],
-    license: 'UNLICENSED',
+    license: 'AGPL-3.0-or-later',
   };
 }
 
@@ -133,7 +141,9 @@ function main() {
   const missing = []
     .concat(SERVER_FILES.filter((f) => !fs.existsSync(path.join(MCP_DIR, f))))
     .concat(ASSET_FILES.filter((f) => !fs.existsSync(path.join(REPO_ROOT, f))))
-    .concat(ASSET_DIRS.filter((d) => !fs.existsSync(path.join(REPO_ROOT, d))));
+    .concat(ASSET_DIRS.filter((d) => !fs.existsSync(path.join(REPO_ROOT, d))))
+    .concat(!fs.existsSync(path.join(MCP_DIR, 'PRIVACY.md')) ? ['PRIVACY.md'] : [])
+    .concat(!fs.existsSync(path.join(REPO_ROOT, 'LICENSE')) ? ['LICENSE'] : []);
   if (missing.length) { log('MISSING inputs: ' + missing.join(', ')); process.exit(1); }
 
   fs.rmSync(STAGING, { recursive: true, force: true });
@@ -144,13 +154,14 @@ function main() {
   for (const f of ASSET_FILES) copyRecursive(path.join(REPO_ROOT, f), path.join(STAGING, 'assets', f));
   for (const d of ASSET_DIRS) copyRecursive(path.join(REPO_ROOT, d), path.join(STAGING, 'assets', d));
   copyRecursive(path.join(MCP_DIR, 'PRIVACY.md'), path.join(STAGING, 'PRIVACY.md'));
+  copyRecursive(path.join(REPO_ROOT, 'LICENSE'), path.join(STAGING, 'LICENSE'));
   fs.writeFileSync(path.join(STAGING, 'manifest.json'), JSON.stringify(buildManifest(), null, 2), 'utf8');
 
   if (!LEAN) {
     log('installing playwright into the bundle (use --lean to skip; ~50MB)…');
     fs.writeFileSync(path.join(STAGING, 'package.json'), JSON.stringify({
       name: 'alloflow-remediation-mcpb', private: true, version: '0.3.0',
-      dependencies: { playwright: '^1.60.0' },
+      dependencies: { playwright: '1.60.0' },
     }, null, 2), 'utf8');
     execSync('npm install --omit=dev --no-audit --no-fund', { cwd: STAGING, stdio: ['ignore', 'inherit', 'inherit'] });
   } else {
@@ -158,21 +169,33 @@ function main() {
   }
 
   // Pack. A .mcpb IS a zip with manifest.json at the root. Prefer the official
-  // CLI (validates the manifest); fall back to PowerShell's Compress-Archive.
+  // pinned CLI because it validates the manifest. Validation failures are release
+  // failures, not evidence that the CLI is unavailable. A plain ZIP is available
+  // only through an explicit development-only escape hatch.
   fs.rmSync(BUNDLE, { force: true });
   let packed = false;
   try {
-    execSync('npx --yes @anthropic-ai/mcpb pack "' + STAGING + '" "' + BUNDLE + '"', { stdio: ['ignore', 'inherit', 'inherit'] });
+    execSync('npx --yes @anthropic-ai/mcpb@' + MCPB_CLI_VERSION + ' pack "' + STAGING + '" "' + BUNDLE + '"', { stdio: ['ignore', 'inherit', 'inherit'] });
     packed = fs.existsSync(BUNDLE);
-  } catch (_) { log('official mcpb CLI unavailable — falling back to zip'); }
+  } catch (error) {
+    if (!ALLOW_UNVALIDATED) {
+      log('ERROR: official MCPB validation/pack failed. No bundle was emitted.');
+      log('Fix the manifest or toolchain failure; use --allow-unvalidated only for a local diagnostic ZIP that must not be distributed.');
+      throw error;
+    }
+    log('--allow-unvalidated: official MCPB validation/pack failed; creating a diagnostic ZIP only');
+  }
   if (!packed) {
+    if (!ALLOW_UNVALIDATED) {
+      throw new Error('Official MCPB CLI exited without producing the expected bundle.');
+    }
     const zipTmp = BUNDLE + '.zip';
     fs.rmSync(zipTmp, { force: true });
     execSync('powershell -NoProfile -Command "Compress-Archive -Path \'' + STAGING + '\\*\' -DestinationPath \'' + zipTmp + '\' -Force"', { stdio: ['ignore', 'inherit', 'inherit'] });
     fs.renameSync(zipTmp, BUNDLE);
   }
   const mb = (fs.statSync(BUNDLE).size / 1024 / 1024).toFixed(1);
-  log('OK → ' + BUNDLE + ' (' + mb + ' MB)');
+  log((packed ? 'VALIDATED' : 'UNVALIDATED DIAGNOSTIC') + ' → ' + BUNDLE + ' (' + mb + ' MB)');
   log('Install: Claude Desktop → Settings → Extensions → drag the .mcpb in; it will prompt for the Gemini API key.');
   log('First run on a fresh machine: ask Claude to run `remediation_setup` (one-time ~200MB Chromium download).');
   log('Claude Desktop provides the Node runtime for type:node MCPB extensions; other hosts need Node 18+ on PATH.');

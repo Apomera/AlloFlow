@@ -96,7 +96,585 @@ function siWorkEvidence(payload) {
   return evidence;
 }
 
-function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
+
+// ── Submission Inbox -> AlloSheet aggregate privacy boundary ──────────────
+// The saved gradebook contains raw student responses, feedback, rubric prose,
+// names, document titles, and storage keys. This boundary copies none of those
+// fields. It works only from entries the educator explicitly saved to the
+// local gradebook and emits assignment-level aggregates under transfer-local
+// order codes. "Saved" is not represented as "human verified": current
+// persistence has no per-score review attestation, due date, late flag, or
+// structured rubric criterion.
+var SI_ALLOSHEET_MIN_SCORE_GROUP = 5;
+var SI_ALLOSHEET_MAX_ASSIGNMENTS = 50;
+var SI_ALLOSHEET_MAX_SOURCE_ENTRIES = 2000;
+var SI_ALLOSHEET_MAX_RESULTS_PER_ENTRY = 200;
+
+function siAlloSheetPlainObject(value) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  var prototype = Object.getPrototypeOf(value);
+  return prototype === Object.prototype || prototype === null;
+}
+
+function siAlloSheetAdapter() {
+  var adapter = window.AlloSheetTransferAdapter
+    || (window.AlloModules && window.AlloModules.AlloSheetTransferAdapter);
+  if (!adapter
+    || typeof adapter.column !== 'function'
+    || typeof adapter.table !== 'function'
+    || typeof adapter.envelope !== 'function'
+    || typeof adapter.withinDateRange !== 'function') {
+    throw new Error('The secure AlloSheet transfer adapter is still loading. Try again in a moment.');
+  }
+  return adapter;
+}
+
+function siAlloSheetTitle(value) {
+  return String(value == null ? '' : value)
+    .replace(/[\u0000-\u001f\u007f]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 160);
+}
+
+function siAlloSheetTime(value) {
+  if (value instanceof Date) {
+    var dateTime = value.getTime();
+    return Number.isFinite(dateTime) ? dateTime : null;
+  }
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+  var text = String(value == null ? '' : value).trim();
+  var match = /^(\d{4})-(\d{2})-(\d{2})(?:$|T)/.exec(text);
+  if (!match) return null;
+  var year = Number(match[1]);
+  var month = Number(match[2]);
+  var day = Number(match[3]);
+  var calendarDate = new Date(Date.UTC(year, month - 1, day));
+  if (calendarDate.getUTCFullYear() !== year
+    || calendarDate.getUTCMonth() !== month - 1
+    || calendarDate.getUTCDate() !== day) return null;
+  var parsed = Date.parse(text);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function siAlloSheetScore(value) {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return null;
+  return value >= 0 && value <= 100 ? value : null;
+}
+
+function siAlloSheetStatus(value) {
+  var status = String(value == null ? '' : value).trim().toLowerCase();
+  if (status === 'partially-correct' || status === 'partial') return 'partial';
+  if (status === 'correct' || status === 'incorrect' || status === 'unclear' || status === 'error') {
+    return status;
+  }
+  return 'other';
+}
+
+function siPrepareAlloSheetSavedSource(input) {
+  if (input && input.kind === 'submission-inbox-allosheet-source-v1' && Array.isArray(input.entries)) {
+    var preparedInvalid = 0;
+    var preparedTruncated = Math.max(
+      Math.max(0, input.entries.length - SI_ALLOSHEET_MAX_SOURCE_ENTRIES),
+      Math.max(0, Number(input.truncatedEntryCount) || 0)
+    );
+    var preparedTruncatedResults = Math.max(0, Number(input.truncatedGradeResultCount) || 0);
+    var copiedEntries = input.entries.slice(0, SI_ALLOSHEET_MAX_SOURCE_ENTRIES).map(function(entry, index) {
+      if (!siAlloSheetPlainObject(entry)) {
+        preparedInvalid += 1;
+        return null;
+      }
+      var assignmentKey = String(entry.assignmentKey || '');
+      var assignmentLabel = siAlloSheetTitle(entry.assignmentLabel);
+      var learnerToken = String(entry.learnerToken || '');
+      if (!/^S\d{1,6}$/.test(assignmentKey)
+        || !assignmentLabel
+        || !/^L\d{1,6}$/.test(learnerToken)) {
+        preparedInvalid += 1;
+        return null;
+      }
+      var sourceResults = Array.isArray(entry.gradeResults) ? entry.gradeResults : [];
+      preparedTruncatedResults += Math.max(0, sourceResults.length - SI_ALLOSHEET_MAX_RESULTS_PER_ENTRY);
+      var results = sourceResults.slice(0, SI_ALLOSHEET_MAX_RESULTS_PER_ENTRY).map(function(result) {
+        if (!siAlloSheetPlainObject(result)) return null;
+        return {
+          score: siAlloSheetScore(result.score),
+          status: siAlloSheetStatus(result.status)
+        };
+      }).filter(Boolean);
+      return {
+        index: index,
+        assignmentKey: assignmentKey,
+        assignmentLabel: assignmentLabel,
+        learnerToken: learnerToken,
+        submittedTime: typeof entry.submittedTime === 'number' && Number.isFinite(entry.submittedTime)
+          ? entry.submittedTime : null,
+        gradedTime: typeof entry.gradedTime === 'number' && Number.isFinite(entry.gradedTime)
+          ? entry.gradedTime : null,
+        hasSavedRubric: entry.hasSavedRubric === true,
+        gradeResults: results
+      };
+    }).filter(Boolean);
+    return {
+      kind: 'submission-inbox-allosheet-source-v1',
+      sourceEntryCount: Math.max(copiedEntries.length, Number(input.sourceEntryCount) || 0),
+      excludedEntryCount: Math.max(0, Number(input.excludedEntryCount) || 0) + preparedInvalid,
+      truncatedEntryCount: preparedTruncated,
+      truncatedGradeResultCount: preparedTruncatedResults,
+      entries: copiedEntries
+    };
+  }
+
+  var rawEntries = input && Array.isArray(input.gradebookEntries)
+    ? input.gradebookEntries : Array.isArray(input) ? input : [];
+  var assignmentTokens = new Map();
+  var nextAssignment = 1;
+  var learnerTokens = new Map();
+  var nextLearner = 1;
+  var excluded = 0;
+  var truncated = Math.max(0, rawEntries.length - SI_ALLOSHEET_MAX_SOURCE_ENTRIES);
+  var truncatedResults = 0;
+  var entries = rawEntries.slice(0, SI_ALLOSHEET_MAX_SOURCE_ENTRIES).map(function(entry, index) {
+    if (!siAlloSheetPlainObject(entry) || String(entry.source || '') !== 'offline-html') {
+      excluded += 1;
+      return null;
+    }
+    var documentTitle = siAlloSheetTitle(entry.docTitle);
+    var classTitle = siAlloSheetTitle(entry.className);
+    var assignmentLabel = siAlloSheetTitle(classTitle
+      ? documentTitle + ' - ' + classTitle : documentTitle);
+    var privateAssignmentKey = classTitle.toLocaleLowerCase()
+      + '\u0000' + documentTitle.toLocaleLowerCase();
+    var nickname = String(entry.nickname == null ? '' : entry.nickname).trim().toLocaleLowerCase();
+    var nicknameKey = classTitle.toLocaleLowerCase() + '\u0000' + nickname;
+    if (!assignmentLabel || !nickname) {
+      excluded += 1;
+      return null;
+    }
+    if (!assignmentTokens.has(privateAssignmentKey)) {
+      assignmentTokens.set(privateAssignmentKey, 'S' + String(nextAssignment++));
+    }
+    if (!learnerTokens.has(nicknameKey)) {
+      learnerTokens.set(nicknameKey, 'L' + String(nextLearner++));
+    }
+    var gradeResults = [];
+    if (siAlloSheetPlainObject(entry.grades)) {
+      var gradeKeys = Object.keys(entry.grades);
+      truncatedResults += Math.max(0, gradeKeys.length - SI_ALLOSHEET_MAX_RESULTS_PER_ENTRY);
+      gradeKeys.slice(0, SI_ALLOSHEET_MAX_RESULTS_PER_ENTRY).forEach(function(key) {
+        var result = entry.grades[key];
+        if (!siAlloSheetPlainObject(result)) return;
+        gradeResults.push({
+          score: siAlloSheetScore(result.score),
+          status: siAlloSheetStatus(result.status)
+        });
+      });
+    }
+    return {
+      index: index,
+      assignmentKey: assignmentTokens.get(privateAssignmentKey),
+      assignmentLabel: assignmentLabel,
+      learnerToken: learnerTokens.get(nicknameKey),
+      submittedTime: siAlloSheetTime(entry.submittedAt),
+      gradedTime: siAlloSheetTime(entry.gradedAt),
+      hasSavedRubric: typeof entry.rubric === 'string' && entry.rubric.trim() !== '',
+      gradeResults: gradeResults
+    };
+  }).filter(Boolean);
+
+  return {
+    kind: 'submission-inbox-allosheet-source-v1',
+    sourceEntryCount: rawEntries.length,
+    excludedEntryCount: excluded,
+    truncatedEntryCount: truncated,
+    truncatedGradeResultCount: truncatedResults,
+    entries: entries
+  };
+}
+
+function siAlloSheetWindow(range) {
+  return range === '30d' || range === 'all' ? range : '90d';
+}
+
+function siAlloSheetAttemptPolicy(value) {
+  return value === 'all-saved' ? 'all-saved' : 'latest-per-class-nickname';
+}
+
+function siAlloSheetDatedEntries(source, options, adapter, createdTime) {
+  var range = siAlloSheetWindow(options.dateRange);
+  var eligible = source.entries.filter(function(entry) {
+    return Number.isFinite(entry.gradedTime)
+      && adapter.withinDateRange(entry.gradedTime, range, createdTime);
+  });
+  if (siAlloSheetAttemptPolicy(options.attemptPolicy) === 'all-saved') {
+    return eligible.slice().sort(function(a, b) {
+      return a.assignmentLabel.localeCompare(b.assignmentLabel, undefined, { numeric: true, sensitivity: 'base' })
+        || a.assignmentKey.localeCompare(b.assignmentKey)
+        || a.gradedTime - b.gradedTime
+        || a.index - b.index;
+    });
+  }
+  var latest = new Map();
+  eligible.forEach(function(entry) {
+    var key = entry.assignmentKey + '\u0000' + entry.learnerToken;
+    var current = latest.get(key);
+    if (!current
+      || entry.gradedTime > current.gradedTime
+      || (entry.gradedTime === current.gradedTime && entry.index > current.index)) {
+      latest.set(key, entry);
+    }
+  });
+  return Array.from(latest.values()).sort(function(a, b) {
+    return a.assignmentLabel.localeCompare(b.assignmentLabel, undefined, { numeric: true, sensitivity: 'base' })
+      || a.assignmentKey.localeCompare(b.assignmentKey)
+      || a.gradedTime - b.gradedTime
+      || a.index - b.index;
+  });
+}
+
+function siSubmissionInboxAlloSheetOptions(input, options) {
+  var adapter = siAlloSheetAdapter();
+  var source = siPrepareAlloSheetSavedSource(input);
+  var opts = siAlloSheetPlainObject(options) ? options : {};
+  var createdTime = siAlloSheetTime(opts.createdAt);
+  if (createdTime === null) createdTime = Date.now();
+  var entries = siAlloSheetDatedEntries(source, opts, adapter, createdTime);
+  var assignmentMap = new Map();
+  entries.forEach(function(entry) {
+    if (!assignmentMap.has(entry.assignmentKey)) {
+      assignmentMap.set(entry.assignmentKey, {
+        key: entry.assignmentKey,
+        label: entry.assignmentLabel,
+        savedEntryCount: 0
+      });
+    }
+    assignmentMap.get(entry.assignmentKey).savedEntryCount += 1;
+  });
+  var assignments = Array.from(assignmentMap.values()).sort(function(a, b) {
+    return a.label.localeCompare(b.label, undefined, { numeric: true, sensitivity: 'base' })
+      || a.key.localeCompare(b.key);
+  });
+  var visible = assignments.slice(0, SI_ALLOSHEET_MAX_ASSIGNMENTS);
+  return {
+    source: source,
+    createdAt: new Date(createdTime).toISOString(),
+    dateRange: siAlloSheetWindow(opts.dateRange),
+    attemptPolicy: siAlloSheetAttemptPolicy(opts.attemptPolicy),
+    eligibleEntryCount: entries.length,
+    assignmentCount: assignments.length,
+    omittedAssignmentCount: Math.max(0, assignments.length - visible.length),
+    assignments: visible.map(function(item) {
+      return {
+        key: item.key,
+        label: item.label,
+        savedEntryCount: item.savedEntryCount
+      };
+    })
+  };
+}
+
+function siAlloSheetColumn(adapter, key, label, type) {
+  return adapter.column(key, label, type);
+}
+
+function siRoundScore(value) {
+  return Math.round(value * 100) / 100;
+}
+
+function siBuildSubmissionInboxAlloSheetEnvelope(input, options) {
+  var adapter = siAlloSheetAdapter();
+  var opts = siAlloSheetPlainObject(options) ? options : {};
+  var review = siSubmissionInboxAlloSheetOptions(input, opts);
+  var selectedKeys = Array.isArray(opts.assignmentKeys)
+    ? opts.assignmentKeys.map(function(key) { return String(key || ''); })
+        .filter(function(key) { return /^S\d{1,6}$/.test(key); })
+    : review.assignments.map(function(item) { return item.key; });
+  var available = new Set(review.assignments.map(function(item) { return item.key; }));
+  var selected = new Set(selectedKeys.filter(function(key) { return available.has(key); }));
+  if (selected.size === 0) throw new Error('Choose at least one saved assignment summary.');
+  var datasets = siAlloSheetPlainObject(opts.datasets) ? opts.datasets : {};
+  if (datasets.submissionSummary === false && datasets.scoreSummary === false) {
+    throw new Error('Choose at least one summary table.');
+  }
+
+  var createdTime = Date.parse(review.createdAt);
+  var datedEntries = siAlloSheetDatedEntries(review.source, {
+    dateRange: review.dateRange,
+    attemptPolicy: review.attemptPolicy
+  }, adapter, createdTime).filter(function(entry) {
+    return selected.has(entry.assignmentKey);
+  });
+  var selectedSorted = review.assignments.filter(function(item) {
+    return selected.has(item.key);
+  });
+  var assignmentCodes = new Map();
+  selectedSorted.forEach(function(item, index) {
+    assignmentCodes.set(item.key, 'A' + String(index + 1).padStart(3, '0'));
+  });
+  var grouped = new Map();
+  selectedSorted.forEach(function(item) { grouped.set(item.key, []); });
+  datedEntries.forEach(function(entry) {
+    if (grouped.has(entry.assignmentKey)) grouped.get(entry.assignmentKey).push(entry);
+  });
+
+  var tables = [];
+  var suppressedScoreSummaries = 0;
+  if (datasets.submissionSummary !== false) {
+    var submissionRows = selectedSorted.map(function(item, index) {
+      var entries = grouped.get(item.key) || [];
+      var learners = new Set(entries.map(function(entry) { return entry.learnerToken; }));
+      var submittedTimes = entries.map(function(entry) { return entry.submittedTime; })
+        .filter(function(time) {
+          return Number.isFinite(time) && adapter.withinDateRange(time, 'all', createdTime);
+        }).sort(function(a, b) { return a - b; });
+      var gradedTimes = entries.map(function(entry) { return entry.gradedTime; })
+        .filter(Number.isFinite).sort(function(a, b) { return a - b; });
+      var withRubric = entries.filter(function(entry) { return entry.hasSavedRubric; }).length;
+      return {
+        id: 'saved-assignment-' + String(index + 1),
+        values: {
+          assignment_code: assignmentCodes.get(item.key),
+          teacher_saved_submission_count: entries.length,
+          unique_class_nickname_count: learners.size,
+          submissions_with_saved_rubric: withRubric,
+          submissions_without_saved_rubric: Math.max(0, entries.length - withRubric),
+          first_submitted_date: submittedTimes.length ? adapter.toIsoDate(submittedTimes[0]) : '',
+          last_submitted_date: submittedTimes.length ? adapter.toIsoDate(submittedTimes[submittedTimes.length - 1]) : '',
+          last_saved_date: gradedTimes.length ? adapter.toIsoDate(gradedTimes[gradedTimes.length - 1]) : '',
+          saved_record_status: 'teacher_saved_not_review_attested'
+        }
+      };
+    });
+    tables.push(adapter.table({
+      id: 'saved_submission_summary',
+      title: 'Saved submission summary',
+      columns: [
+        siAlloSheetColumn(adapter, 'assignment_code', 'Assignment code', 'category'),
+        siAlloSheetColumn(adapter, 'teacher_saved_submission_count', 'Teacher-saved submissions', 'number'),
+        siAlloSheetColumn(adapter, 'unique_class_nickname_count', 'Unique saved class nicknames', 'number'),
+        siAlloSheetColumn(adapter, 'submissions_with_saved_rubric', 'Submissions with a saved rubric', 'number'),
+        siAlloSheetColumn(adapter, 'submissions_without_saved_rubric', 'Submissions without a saved rubric', 'number'),
+        siAlloSheetColumn(adapter, 'first_submitted_date', 'First submitted date', 'date'),
+        siAlloSheetColumn(adapter, 'last_submitted_date', 'Last submitted date', 'date'),
+        siAlloSheetColumn(adapter, 'last_saved_date', 'Last saved date', 'date'),
+        siAlloSheetColumn(adapter, 'saved_record_status', 'Saved record status', 'category')
+      ],
+      rows: submissionRows,
+      sourceRowCount: submissionRows.length
+    }));
+  }
+
+  if (datasets.scoreSummary !== false) {
+    var scoreRows = selectedSorted.map(function(item, index) {
+      var entries = grouped.get(item.key) || [];
+      var scores = [];
+      var errorCount = 0;
+      var invalidCount = 0;
+      var statuses = { correct: 0, partial: 0, incorrect: 0, unclear: 0, other: 0 };
+      entries.forEach(function(entry) {
+        entry.gradeResults.forEach(function(result) {
+          if (result.status === 'error') {
+            errorCount += 1;
+            return;
+          }
+          if (result.score === null) {
+            invalidCount += 1;
+            return;
+          }
+          scores.push(result.score);
+          statuses[result.status] = (statuses[result.status] || 0) + 1;
+        });
+      });
+      var bands = [
+        scores.filter(function(score) { return score < 40; }).length,
+        scores.filter(function(score) { return score >= 40 && score < 65; }).length,
+        scores.filter(function(score) { return score >= 65 && score < 85; }).length,
+        scores.filter(function(score) { return score >= 85; }).length
+      ];
+      var distributionCounts = bands.concat(Object.keys(statuses).map(function(key) { return statuses[key]; }));
+      var reportable = scores.length >= SI_ALLOSHEET_MIN_SCORE_GROUP
+        && !distributionCounts.some(function(count) {
+          return count > 0 && count < SI_ALLOSHEET_MIN_SCORE_GROUP;
+        });
+      if (scores.length > 0 && !reportable) suppressedScoreSummaries += 1;
+      var average = reportable
+        ? siRoundScore(scores.reduce(function(sum, score) { return sum + score; }, 0) / scores.length)
+        : null;
+      return {
+        id: 'saved-score-' + String(index + 1),
+        values: {
+          assignment_code: assignmentCodes.get(item.key),
+          teacher_saved_submission_count: entries.length,
+          scored_response_count: scores.length,
+          grading_error_count: errorCount,
+          invalid_score_result_count: invalidCount,
+          average_score_percent: average,
+          minimum_score_percent: reportable
+            ? scores.reduce(function(minimum, score) { return score < minimum ? score : minimum; }, scores[0])
+            : null,
+          maximum_score_percent: reportable
+            ? scores.reduce(function(maximum, score) { return score > maximum ? score : maximum; }, scores[0])
+            : null,
+          score_band_below_40_count: reportable ? bands[0] : null,
+          score_band_40_64_count: reportable ? bands[1] : null,
+          score_band_65_84_count: reportable ? bands[2] : null,
+          score_band_85_100_count: reportable ? bands[3] : null,
+          correct_status_count: reportable ? statuses.correct : null,
+          partial_status_count: reportable ? statuses.partial : null,
+          incorrect_status_count: reportable ? statuses.incorrect : null,
+          unclear_status_count: reportable ? statuses.unclear : null,
+          other_status_count: reportable ? statuses.other : null,
+          score_sample_status: scores.length === 0
+            ? 'no_valid_scores'
+            : reportable ? 'available' : 'suppressed_small_groups',
+          minimum_reportable_score_count: SI_ALLOSHEET_MIN_SCORE_GROUP
+        }
+      };
+    });
+    tables.push(adapter.table({
+      id: 'saved_score_summary',
+      title: 'Saved score summary',
+      columns: [
+        siAlloSheetColumn(adapter, 'assignment_code', 'Assignment code', 'category'),
+        siAlloSheetColumn(adapter, 'teacher_saved_submission_count', 'Teacher-saved submissions', 'number'),
+        siAlloSheetColumn(adapter, 'scored_response_count', 'Scored responses', 'number'),
+        siAlloSheetColumn(adapter, 'grading_error_count', 'Grading errors', 'number'),
+        siAlloSheetColumn(adapter, 'invalid_score_result_count', 'Invalid score results', 'number'),
+        siAlloSheetColumn(adapter, 'average_score_percent', 'Average score (percent)', 'number'),
+        siAlloSheetColumn(adapter, 'minimum_score_percent', 'Minimum score (percent)', 'number'),
+        siAlloSheetColumn(adapter, 'maximum_score_percent', 'Maximum score (percent)', 'number'),
+        siAlloSheetColumn(adapter, 'score_band_below_40_count', 'Scores below 40', 'number'),
+        siAlloSheetColumn(adapter, 'score_band_40_64_count', 'Scores from 40 to 64', 'number'),
+        siAlloSheetColumn(adapter, 'score_band_65_84_count', 'Scores from 65 to 84', 'number'),
+        siAlloSheetColumn(adapter, 'score_band_85_100_count', 'Scores from 85 to 100', 'number'),
+        siAlloSheetColumn(adapter, 'correct_status_count', 'Correct status count', 'number'),
+        siAlloSheetColumn(adapter, 'partial_status_count', 'Partial status count', 'number'),
+        siAlloSheetColumn(adapter, 'incorrect_status_count', 'Incorrect status count', 'number'),
+        siAlloSheetColumn(adapter, 'unclear_status_count', 'Unclear status count', 'number'),
+        siAlloSheetColumn(adapter, 'other_status_count', 'Other status count', 'number'),
+        siAlloSheetColumn(adapter, 'score_sample_status', 'Score sample status', 'category'),
+        siAlloSheetColumn(adapter, 'minimum_reportable_score_count', 'Minimum reportable score count', 'number')
+      ],
+      rows: scoreRows,
+      sourceRowCount: scoreRows.length
+    }));
+  }
+
+  var includedEntries = datedEntries.length;
+  return adapter.envelope({
+    source: {
+      tool: 'submission-inbox',
+      label: 'Submission Inbox saved gradebook',
+      version: '1'
+    },
+    title: 'Submission Inbox saved-grade summaries',
+    createdAt: review.createdAt,
+    classification: {
+      level: 'aggregate-education-data',
+      studentIdentifierIncluded: false,
+      freeTextNotesIncluded: false
+    },
+    privacy: {
+      scope: 'aggregate-saved-gradebook-summary',
+      identifierIncluded: false,
+      notesIncluded: false,
+      reducedData: true,
+      transferEnablesAI: false
+    },
+    tables: tables,
+    provenance: {
+      measurementWindow: review.dateRange,
+      attemptPolicy: review.attemptPolicy,
+      assignmentCodeType: 'transfer-local-order-code',
+      sourceSavedEntryCount: review.source.sourceEntryCount,
+      eligibleSavedEntryCount: review.eligibleEntryCount,
+      includedSavedEntryCount: includedEntries,
+      excludedMalformedEntryCount: review.source.excludedEntryCount,
+      truncatedSourceEntryCount: review.source.truncatedEntryCount || 0,
+      truncatedGradeResultCount: review.source.truncatedGradeResultCount || 0,
+      maximumGradeResultsPerSavedEntry: SI_ALLOSHEET_MAX_RESULTS_PER_ENTRY,
+      selectedAssignmentCount: selected.size,
+      omittedAssignmentOptionCount: review.omittedAssignmentCount,
+      minimumReportableScoreCount: SI_ALLOSHEET_MIN_SCORE_GROUP,
+      suppressedScoreSummaryCount: suppressedScoreSummaries,
+      scoreSuppressionRule: 'all-derived-score-statistics-if-any-nonzero-band-or-status-is-below-five',
+      dueDateSupport: false,
+      humanReviewAttestation: false,
+      savedRecordsMayContainAIAssistedScores: true,
+      resubmissionPolicy: review.attemptPolicy,
+      identitySemantics: {
+        stableLearnerIdentitySupport: false,
+        learnerGrouping: 'normalized-class-name-plus-nickname',
+        stableAssignmentIdentitySupport: false,
+        assignmentGrouping: 'normalized-class-name-plus-document-title'
+      },
+      excludedFields: [
+        'student-and-class-identifiers',
+        'assignment-titles-and-response-keys',
+        'raw-responses-and-feedback',
+        'rubric-context-exemplars-and-anchors',
+        'files-cryptographic-material-and-work-evidence'
+      ]
+    },
+    capabilities: { writeBack: false, aiEnabled: false }
+  });
+}
+
+function siIsolateAlloSheetReview(dialog) {
+  var snapshots = [];
+  if (!dialog || typeof document === 'undefined') return function() {};
+  var current = dialog;
+  while (current && current.parentElement) {
+    var parent = current.parentElement;
+    Array.prototype.forEach.call(parent.children, function(sibling) {
+      if (sibling === current) return;
+      snapshots.push({
+        element: sibling,
+        inert: sibling.inert === true,
+        ariaHidden: sibling.getAttribute('aria-hidden')
+      });
+      sibling.inert = true;
+      sibling.setAttribute('aria-hidden', 'true');
+    });
+    current = parent;
+    if (current === document.body) break;
+  }
+  return function() {
+    snapshots.forEach(function(snapshot) {
+      snapshot.element.inert = snapshot.inert;
+      if (snapshot.ariaHidden === null) snapshot.element.removeAttribute('aria-hidden');
+      else snapshot.element.setAttribute('aria-hidden', snapshot.ariaHidden);
+    });
+  };
+}
+
+function siTrapAlloSheetReviewFocus(event, container) {
+  if (event.key !== 'Tab' || !container) return;
+  var focusable = Array.from(container.querySelectorAll(
+    'button:not([disabled]), input:not([disabled]), select:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'
+  )).filter(function(node) {
+    return !node.hidden && node.getAttribute('aria-hidden') !== 'true';
+  });
+  if (!focusable.length) {
+    event.preventDefault();
+    container.focus();
+    return;
+  }
+  var first = focusable[0];
+  var last = focusable[focusable.length - 1];
+  if (!container.contains(document.activeElement)) {
+    event.preventDefault();
+    (event.shiftKey ? last : first).focus();
+  } else if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+}
+
+function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast, onOpenAlloSheet }) {
   if (!isOpen) return null;
 
   // ── UI localization state (drives tr() above) ──
@@ -158,6 +736,15 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
   // re-reads without needing a full remount.
   const [gradebookOpen, setGradebookOpen] = useState(false);
   const [gradebookRefresh, setGradebookRefresh] = useState(0);
+  const [showAlloSheetReview, setShowAlloSheetReview] = useState(false);
+  const [alloSheetSourceSnapshot, setAlloSheetSourceSnapshot] = useState(null);
+  const [alloSheetAsOf, setAlloSheetAsOf] = useState('');
+  const [alloSheetDateRange, setAlloSheetDateRange] = useState('90d');
+  const [alloSheetAttemptPolicy, setAlloSheetAttemptPolicy] = useState('latest-per-class-nickname');
+  const [alloSheetAssignments, setAlloSheetAssignments] = useState([]);
+  const [alloSheetDatasets, setAlloSheetDatasets] = useState({ submissionSummary: true, scoreSummary: true });
+  const [alloSheetBusy, setAlloSheetBusy] = useState(false);
+  const [alloSheetFeedback, setAlloSheetFeedback] = useState({ kind: '', text: '' });
   // Phase 3 v2.3 (May 12 2026): group-by pivot for the gradebook table.
   const [gradebookGroupBy, setGradebookGroupBy] = useState('submission');  // 'submission' | 'student'
   const [expandedStudent, setExpandedStudent] = useState(null);
@@ -191,6 +778,9 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
   const confirmationDialogRef = useRef(null);
   const confirmationCancelRef = useRef(null);
   const confirmationResolveRef = useRef(null);
+  const alloSheetReviewDialogRef = useRef(null);
+  const alloSheetReturnFocusRef = useRef(null);
+  const alloSheetBusyRef = useRef(false);
 
   const containDialogFocus = (event, container) => {
     if (event.key === 'Escape') {
@@ -243,6 +833,18 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
       if (previouslyFocused && typeof previouslyFocused.focus === 'function') previouslyFocused.focus();
     };
   }, [!!confirmation]);
+
+  React.useEffect(() => {
+    if (!showAlloSheetReview) return undefined;
+    const restoreIsolation = siIsolateAlloSheetReview(alloSheetReviewDialogRef.current);
+    const timer = setTimeout(() => alloSheetReviewDialogRef.current?.focus(), 0);
+    return () => {
+      clearTimeout(timer);
+      restoreIsolation();
+      const opener = alloSheetReturnFocusRef.current;
+      if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus();
+    };
+  }, [showAlloSheetReview]);
 
   const tx = t || ((k, fallback) => fallback || k);
 
@@ -948,6 +1550,697 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
     return { bg: '#fee2e2', color: '#991b1b' };
   };
 
+
+
+  const alloSheetReviewOptions = React.useMemo(() => {
+    if (!showAlloSheetReview || !alloSheetSourceSnapshot || !alloSheetAsOf) {
+      return {
+        review: null,
+        error: ''
+      };
+    }
+    try {
+      return {
+        review: siSubmissionInboxAlloSheetOptions(alloSheetSourceSnapshot, {
+          dateRange: alloSheetDateRange,
+          attemptPolicy: alloSheetAttemptPolicy,
+          createdAt: alloSheetAsOf
+        }),
+        error: ''
+      };
+    } catch (error) {
+      return {
+        review: null,
+        error: error && error.message
+          ? error.message
+          : 'Submission Inbox could not prepare the saved-grade review.'
+      };
+    }
+  }, [
+    showAlloSheetReview,
+    alloSheetSourceSnapshot,
+    alloSheetAsOf,
+    alloSheetDateRange,
+    alloSheetAttemptPolicy
+  ]);
+
+  const alloSheetPreview = React.useMemo(() => {
+    if (!showAlloSheetReview || !alloSheetSourceSnapshot || !alloSheetAsOf) {
+      return {
+        artifact: null,
+        error: ''
+      };
+    }
+    try {
+      return {
+        artifact: siBuildSubmissionInboxAlloSheetEnvelope(alloSheetSourceSnapshot, {
+          dateRange: alloSheetDateRange,
+          attemptPolicy: alloSheetAttemptPolicy,
+          assignmentKeys: alloSheetAssignments,
+          datasets: alloSheetDatasets,
+          createdAt: alloSheetAsOf
+        }),
+        error: ''
+      };
+    } catch (error) {
+      return {
+        artifact: null,
+        error: error && error.message
+          ? error.message
+          : 'Submission Inbox could not prepare a bounded AlloSheet preview.'
+      };
+    }
+  }, [
+    showAlloSheetReview,
+    alloSheetSourceSnapshot,
+    alloSheetAsOf,
+    alloSheetDateRange,
+    alloSheetAttemptPolicy,
+    alloSheetAssignments,
+    alloSheetDatasets
+  ]);
+
+  const openAlloSheetReview = (event) => {
+    if (gradebookEntries.length === 0) {
+      addToast && addToast(tr('Gradebook is empty.'), 'warn');
+      return;
+    }
+    if (typeof onOpenAlloSheet !== 'function') {
+      addToast && addToast(tr('AlloSheet is still loading. Try again in a moment.'), 'error');
+      return;
+    }
+    try {
+      const snapshot = siPrepareAlloSheetSavedSource({ gradebookEntries: gradebookEntries });
+      const asOf = new Date().toISOString();
+      const review = siSubmissionInboxAlloSheetOptions(snapshot, {
+        dateRange: '90d',
+        attemptPolicy: 'latest-per-class-nickname',
+        createdAt: asOf
+      });
+      alloSheetReturnFocusRef.current = event && event.currentTarget
+        ? event.currentTarget : document.activeElement;
+      alloSheetBusyRef.current = false;
+      setAlloSheetSourceSnapshot(snapshot);
+      setAlloSheetAsOf(asOf);
+      setAlloSheetDateRange('90d');
+      setAlloSheetAttemptPolicy('latest-per-class-nickname');
+      setAlloSheetAssignments(review.assignments.map(item => item.key));
+      setAlloSheetDatasets({ submissionSummary: true, scoreSummary: true });
+      setAlloSheetBusy(false);
+      setAlloSheetFeedback(review.assignments.length > 0
+        ? { kind: '', text: '' }
+        : {
+            kind: 'status',
+            text: 'No teacher-saved records have a valid saved date in the last 90 days. Choose another date window.'
+          });
+      setShowAlloSheetReview(true);
+    } catch (error) {
+      addToast && addToast(
+        error && error.message
+          ? error.message
+          : tr('Submission Inbox could not prepare the AlloSheet review.'),
+        'error'
+      );
+    }
+  };
+
+  const updateAlloSheetWindow = (dateRange, attemptPolicy) => {
+    setAlloSheetDateRange(dateRange);
+    setAlloSheetAttemptPolicy(attemptPolicy);
+    setAlloSheetFeedback({ kind: '', text: '' });
+    if (!alloSheetSourceSnapshot || !alloSheetAsOf) return;
+    try {
+      const review = siSubmissionInboxAlloSheetOptions(alloSheetSourceSnapshot, {
+        dateRange: dateRange,
+        attemptPolicy: attemptPolicy,
+        createdAt: alloSheetAsOf
+      });
+      setAlloSheetAssignments(review.assignments.map(item => item.key));
+      if (review.assignments.length === 0) {
+        setAlloSheetFeedback({
+          kind: 'status',
+          text: 'No teacher-saved records match this date window and attempt policy.'
+        });
+      }
+    } catch (error) {
+      setAlloSheetAssignments([]);
+      setAlloSheetFeedback({
+        kind: 'error',
+        text: error && error.message
+          ? error.message
+          : 'Submission Inbox could not update the saved-grade review.'
+      });
+    }
+  };
+
+  const closeAlloSheetReview = () => {
+    if (alloSheetBusyRef.current) return;
+    setShowAlloSheetReview(false);
+    setAlloSheetFeedback({ kind: '', text: '' });
+  };
+
+  const confirmAlloSheetReview = async () => {
+    if (alloSheetBusyRef.current || typeof onOpenAlloSheet !== 'function') return;
+    const artifact = alloSheetPreview.artifact;
+    if (!artifact || alloSheetPreview.error) {
+      setAlloSheetFeedback({
+        kind: 'error',
+        text: alloSheetPreview.error || 'No reviewed Submission Inbox table is ready to transfer.'
+      });
+      return;
+    }
+    if (!artifact.tables.some(table => table.rowCount > 0)) {
+      setAlloSheetFeedback({
+        kind: 'error',
+        text: 'No reviewed Submission Inbox rows match these choices.'
+      });
+      return;
+    }
+    alloSheetBusyRef.current = true;
+    setAlloSheetBusy(true);
+    setAlloSheetFeedback({
+      kind: 'status',
+      text: 'Opening AlloSheet and waiting for secure receipt...'
+    });
+    try {
+      const pending = onOpenAlloSheet(artifact);
+      const opened = pending && typeof pending.then === 'function'
+        ? await pending : pending;
+      if (opened === false || opened == null) throw new Error('AlloSheet did not open.');
+      setAlloSheetFeedback({ kind: '', text: '' });
+      setShowAlloSheetReview(false);
+      addToast && addToast(
+        tr('Reviewed Submission Inbox summaries were received for destination review in AlloSheet.'),
+        'success'
+      );
+    } catch (error) {
+      setAlloSheetFeedback({
+        kind: 'error',
+        text: error && error.message
+          ? error.message
+          : 'AlloSheet could not receive the reviewed Submission Inbox summaries.'
+      });
+    } finally {
+      alloSheetBusyRef.current = false;
+      setAlloSheetBusy(false);
+    }
+  };
+
+  const renderAlloSheetReview = () => {
+    if (!showAlloSheetReview || !window.ReactDOM || typeof window.ReactDOM.createPortal !== 'function') {
+      return null;
+    }
+    const e = React.createElement;
+    const review = alloSheetReviewOptions.review;
+    const artifact = alloSheetPreview.artifact;
+    const tables = artifact && Array.isArray(artifact.tables) ? artifact.tables : [];
+    const assignments = review && Array.isArray(review.assignments) ? review.assignments : [];
+    const assignmentReviewCodes = new Map();
+    assignments.filter(assignment => alloSheetAssignments.includes(assignment.key))
+      .forEach((assignment, index) => {
+        assignmentReviewCodes.set(assignment.key, 'A' + String(index + 1).padStart(3, '0'));
+      });
+    const datasetOptions = [
+      {
+        key: 'submissionSummary',
+        table: 'saved_submission_summary',
+        label: 'Saved submission summary',
+        description: 'Saved-record counts, unique class nicknames, rubric-presence counts, and assignment-group date bounds.'
+      },
+      {
+        key: 'scoreSummary',
+        table: 'saved_score_summary',
+        label: 'Saved score summary',
+        description: 'Score counts and privacy-suppressed score statistics from saved grade results.'
+      }
+    ];
+    const hasRows = tables.some(table => table.rowCount > 0);
+    const controlStyle = {
+      minHeight: 44,
+      width: '100%',
+      border: '2px solid #94a3b8',
+      borderRadius: 8,
+      background: 'white',
+      color: '#0f172a',
+      padding: '8px 10px',
+      fontSize: '0.9rem'
+    };
+    return window.ReactDOM.createPortal(e('div', {
+      role: 'presentation',
+      onClick: event => {
+        if (event.target === event.currentTarget && !alloSheetBusy) closeAlloSheetReview();
+      },
+      style: {
+        position: 'fixed',
+        inset: 0,
+        zIndex: 295,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 16,
+        background: 'rgba(15,23,42,0.82)'
+      }
+    }, e('div', {
+      ref: alloSheetReviewDialogRef,
+      role: 'dialog',
+      'aria-modal': 'true',
+      'aria-busy': alloSheetBusy ? 'true' : 'false',
+      'aria-labelledby': 'submission-inbox-allosheet-review-title',
+      'aria-describedby': 'submission-inbox-allosheet-review-description submission-inbox-allosheet-review-privacy',
+      tabIndex: -1,
+      onKeyDown: event => {
+        event.stopPropagation();
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          if (!alloSheetBusyRef.current) closeAlloSheetReview();
+          return;
+        }
+        siTrapAlloSheetReviewFocus(event, alloSheetReviewDialogRef.current);
+      },
+      style: {
+        width: '100%',
+        maxWidth: 820,
+        maxHeight: '92vh',
+        overflowY: 'auto',
+        borderRadius: 16,
+        border: '3px solid #a5b4fc',
+        background: 'white',
+        color: '#0f172a',
+        boxShadow: '0 24px 70px rgba(0,0,0,0.38)'
+      }
+    },
+      e('div', {
+        style: {
+          padding: '18px 20px',
+          borderBottom: '1px solid #cbd5e1',
+          background: '#eef2ff'
+        }
+      },
+        e('h2', {
+          id: 'submission-inbox-allosheet-review-title',
+          style: { margin: 0, color: '#312e81', fontSize: '1.25rem', fontWeight: 900 }
+        }, tr('Review Submission Inbox data for AlloSheet')),
+        e('p', {
+          id: 'submission-inbox-allosheet-review-description',
+          style: { margin: '7px 0 0', color: '#334155', fontSize: '0.88rem', lineHeight: 1.5 }
+        }, tr('Choose the saved assignment/class groups, date window, grouping policy, and exact summary tables. Submission Inbox remains authoritative and AlloSheet cannot write back.'))
+      ),
+      e('div', {
+        style: { display: 'grid', gap: 16, padding: 20, fontSize: '0.9rem' }
+      },
+        e('div', {
+          style: {
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gap: 12
+          }
+        },
+          e('div', null,
+            e('label', {
+              htmlFor: 'submission-inbox-allosheet-date-range',
+              style: { display: 'block', marginBottom: 5, fontWeight: 800 }
+            }, tr('Saved-date window')),
+            e('select', {
+              id: 'submission-inbox-allosheet-date-range',
+              value: alloSheetDateRange,
+              disabled: alloSheetBusy,
+              onChange: event => updateAlloSheetWindow(event.target.value, alloSheetAttemptPolicy),
+              style: controlStyle
+            },
+              e('option', { value: '30d' }, tr('Last 30 days')),
+              e('option', { value: '90d' }, tr('Last 90 days (recommended)')),
+              e('option', { value: 'all' }, tr('All available saved dates'))
+            )
+          ),
+          e('div', null,
+            e('label', {
+              htmlFor: 'submission-inbox-allosheet-attempt-policy',
+              style: { display: 'block', marginBottom: 5, fontWeight: 800 }
+            }, tr('Saved-attempt policy')),
+            e('select', {
+              id: 'submission-inbox-allosheet-attempt-policy',
+              value: alloSheetAttemptPolicy,
+              disabled: alloSheetBusy,
+              onChange: event => updateAlloSheetWindow(alloSheetDateRange, event.target.value),
+              style: controlStyle
+            },
+              e('option', { value: 'latest-per-class-nickname' }, tr('Latest saved record per class nickname and assignment/class group (recommended)')),
+              e('option', { value: 'all-saved' }, tr('All saved records, including resubmissions'))
+            )
+          )
+        ),
+        e('fieldset', {
+          disabled: alloSheetBusy,
+          style: {
+            margin: 0,
+            border: '2px solid #cbd5e1',
+            borderRadius: 12,
+            padding: 12
+          }
+        },
+          e('legend', {
+            style: { padding: '0 6px', fontWeight: 900, color: '#1e293b' }
+          }, tr('Saved assignment/class groups')),
+          e('p', {
+            style: { margin: '0 0 10px', color: '#475569', fontSize: '0.8rem' }
+          }, tr('Assignment and class labels are shown only for this source review. They are replaced by transfer-local codes before transfer.')),
+          assignments.length === 0
+            ? e('p', {
+                role: 'status',
+                style: { margin: 0, color: '#92400e', fontWeight: 700 }
+              }, tr('No saved assignment/class groups match these choices.'))
+            : e('div', {
+                style: {
+                  display: 'grid',
+                  gap: 7,
+                  maxHeight: 190,
+                  overflowY: 'auto',
+                  paddingRight: 4
+                }
+              }, assignments.map(assignment => e('label', {
+                key: assignment.key,
+                style: {
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: 9,
+                  minHeight: 44,
+                  padding: '9px 10px',
+                  border: '1px solid #94a3b8',
+                  borderRadius: 8,
+                  background: alloSheetAssignments.includes(assignment.key) ? '#eef2ff' : 'white',
+                  cursor: alloSheetBusy ? 'not-allowed' : 'pointer'
+                }
+              },
+                e('input', {
+                  type: 'checkbox',
+                  checked: alloSheetAssignments.includes(assignment.key),
+                  disabled: alloSheetBusy,
+                  onChange: event => {
+                    const checked = event.target.checked;
+                    setAlloSheetAssignments(previous => checked
+                      ? previous.concat([assignment.key]).filter((title, index, list) => list.indexOf(title) === index)
+                      : previous.filter(title => title !== assignment.key));
+                    setAlloSheetFeedback({ kind: '', text: '' });
+                  },
+                  style: { width: 20, height: 20, marginTop: 1, flexShrink: 0 }
+                }),
+                e('span', { style: { minWidth: 0 } },
+                  e('span', {
+                    style: { display: 'block', fontWeight: 800, overflowWrap: 'anywhere' }
+                  }, (assignmentReviewCodes.get(assignment.key)
+                    ? assignmentReviewCodes.get(assignment.key) + ' - ' : '') + assignment.label),
+                  e('span', {
+                    style: { display: 'block', marginTop: 2, color: '#475569', fontSize: '0.76rem' }
+                  }, assignment.savedEntryCount + ' saved record' + (assignment.savedEntryCount === 1 ? '' : 's'))
+                )
+              ))),
+          review && review.omittedAssignmentCount > 0 && e('p', {
+            role: 'status',
+            style: { margin: '9px 0 0', color: '#92400e', fontWeight: 700, fontSize: '0.8rem' }
+          }, review.omittedAssignmentCount + ' additional assignment option'
+            + (review.omittedAssignmentCount === 1 ? ' is' : 's are')
+            + ' omitted by the 50-assignment review limit.')
+        ),
+        e('fieldset', {
+          disabled: alloSheetBusy,
+          style: {
+            margin: 0,
+            border: '2px solid #cbd5e1',
+            borderRadius: 12,
+            padding: 12
+          }
+        },
+          e('legend', {
+            style: { padding: '0 6px', fontWeight: 900, color: '#1e293b' }
+          }, tr('Summary tables')),
+          e('div', { style: { display: 'grid', gap: 8 } }, datasetOptions.map(dataset => {
+            const table = tables.find(candidate => candidate.id === dataset.table);
+            return e('label', {
+              key: dataset.key,
+              style: {
+                display: 'grid',
+                gridTemplateColumns: '22px minmax(0, 1fr) auto',
+                alignItems: 'start',
+                gap: 8,
+                minHeight: 44,
+                padding: '9px 10px',
+                border: '1px solid #94a3b8',
+                borderRadius: 8
+              }
+            },
+              e('input', {
+                type: 'checkbox',
+                checked: alloSheetDatasets[dataset.key] !== false,
+                disabled: alloSheetBusy,
+                onChange: event => {
+                  const checked = event.target.checked;
+                  setAlloSheetDatasets(previous => ({
+                    ...previous,
+                    [dataset.key]: checked
+                  }));
+                  setAlloSheetFeedback({ kind: '', text: '' });
+                },
+                style: { width: 20, height: 20, marginTop: 1 }
+              }),
+              e('span', null,
+                e('span', { style: { display: 'block', fontWeight: 800 } }, tr(dataset.label)),
+                e('span', {
+                  style: { display: 'block', marginTop: 2, color: '#475569', fontSize: '0.76rem' }
+                }, tr(dataset.description))
+              ),
+              e('span', {
+                style: { color: '#475569', fontSize: '0.76rem', whiteSpace: 'nowrap' }
+              }, table ? table.rowCount + ' rows' : 'not selected')
+            );
+          }))
+        ),
+        e('p', {
+          id: 'submission-inbox-allosheet-review-privacy',
+          style: {
+            margin: 0,
+            padding: 12,
+            border: '2px solid #f59e0b',
+            borderRadius: 10,
+            background: '#fffbeb',
+            color: '#78350f',
+            lineHeight: 1.5
+          }
+        },
+          e('strong', null, tr('Privacy boundary: ')),
+          tr('The transfer uses aggregate assignment codes. Learner, class, and assignment names; response text and keys; AI feedback; rubric prose; files; storage keys; and work-evidence details are always excluded. Derived score statistics are blank when the total is below five or any nonzero score band or status group is below five.')
+        ),
+        e('section', {
+          'aria-labelledby': 'submission-inbox-allosheet-preview-heading',
+          style: {
+            padding: 13,
+            border: '2px solid #94a3b8',
+            borderRadius: 10,
+            background: '#f8fafc'
+          }
+        },
+          e('h3', {
+            id: 'submission-inbox-allosheet-preview-heading',
+            style: { margin: 0, fontSize: '1rem', fontWeight: 900 }
+          }, tr('Exact transfer preview')),
+          (alloSheetReviewOptions.error || alloSheetPreview.error) && e('p', {
+            role: 'alert',
+            style: {
+              margin: '9px 0 0',
+              padding: 10,
+              border: '1px solid #fca5a5',
+              borderRadius: 8,
+              background: '#fef2f2',
+              color: '#991b1b',
+              fontWeight: 700
+            }
+          }, alloSheetReviewOptions.error || alloSheetPreview.error),
+          !alloSheetReviewOptions.error && !alloSheetPreview.error && e('ul', {
+            style: { display: 'grid', gap: 9, margin: '10px 0 0', padding: 0, listStyle: 'none' }
+          }, tables.map(table => e('li', {
+            key: table.id,
+            style: {
+              padding: 10,
+              border: '1px solid #cbd5e1',
+              borderRadius: 8,
+              background: 'white'
+            }
+          },
+            e('div', { style: { fontWeight: 800 } }, tr(table.title)),
+            e('div', {
+              style: { marginTop: 3, color: '#475569', fontSize: '0.76rem' }
+            }, table.rowCount + ' rows and ' + table.columns.length + ' fixed fields'),
+            e('ul', {
+              'aria-label': table.title + ' fields',
+              style: {
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: 5,
+                margin: '8px 0 0',
+                padding: 0,
+                listStyle: 'none'
+              }
+            }, table.columns.map(column => e('li', {
+              key: column.key,
+              style: {
+                padding: '3px 6px',
+                border: '1px solid #94a3b8',
+                borderRadius: 5,
+                background: '#f8fafc',
+                fontSize: '0.7rem'
+              }
+            }, tr(column.label) + ' (' + column.type + ')')))
+          ))),
+          artifact && artifact.provenance
+            && artifact.provenance.truncatedSourceEntryCount > 0
+            && e('p', {
+              role: 'status',
+              style: {
+                margin: '9px 0 0',
+                padding: 8,
+                border: '1px solid #fbbf24',
+                borderRadius: 7,
+                background: '#fffbeb',
+                color: '#78350f',
+                fontWeight: 700
+              }
+            }, artifact.provenance.truncatedSourceEntryCount
+              + ' saved gradebook record'
+              + (artifact.provenance.truncatedSourceEntryCount === 1 ? ' was' : 's were')
+              + ' omitted by the 2,000-record source-review safety limit.'),
+          artifact && artifact.provenance
+            && artifact.provenance.truncatedGradeResultCount > 0
+            && e('p', {
+              role: 'status',
+              style: {
+                margin: '9px 0 0',
+                padding: 8,
+                border: '1px solid #fbbf24',
+                borderRadius: 7,
+                background: '#fffbeb',
+                color: '#78350f',
+                fontWeight: 700
+              }
+            }, artifact.provenance.truncatedGradeResultCount
+              + ' grade result'
+              + (artifact.provenance.truncatedGradeResultCount === 1 ? ' was' : 's were')
+              + ' omitted by the 200-results-per-saved-record safety limit.'),
+          artifact && artifact.provenance
+            && artifact.provenance.suppressedScoreSummaryCount > 0
+            && e('p', {
+              role: 'status',
+              style: {
+                margin: '9px 0 0',
+                padding: 8,
+                border: '1px solid #fbbf24',
+                borderRadius: 7,
+                background: '#fffbeb',
+                color: '#78350f',
+                fontWeight: 700
+              }
+            }, artifact.provenance.suppressedScoreSummaryCount
+              + ' score summary '
+              + (artifact.provenance.suppressedScoreSummaryCount === 1 ? 'is' : 'rows are')
+              + ' privacy-suppressed.')
+        ),
+        e('div', {
+          style: {
+            padding: 12,
+            border: '1px solid #fda4af',
+            borderRadius: 10,
+            background: '#fff1f2',
+            color: '#881337',
+            lineHeight: 1.5
+          }
+        },
+          e('p', { style: { margin: 0, fontWeight: 900 } }, tr('Saved-record integrity limits')),
+          e('p', { style: { margin: '5px 0 0', fontSize: '0.8rem' } },
+            tr('A teacher-saved record may contain AI-assisted scores; saving is not a human-review attestation. Submission Inbox does not currently store stable learner or assignment IDs, due dates, missing or late status, or structured rubric criteria. Grouping therefore uses normalized class name plus nickname and normalized class name plus document title; reused nicknames may merge, changed nicknames may split records, and repeated same-title documents in one class may share an assignment/class group. This transfer makes no human-verified, missing, late, or criterion-level claims.')
+          )
+        ),
+        e('div', {
+          style: {
+            padding: 12,
+            border: '1px solid #6ee7b7',
+            borderRadius: 10,
+            background: '#ecfdf5',
+            color: '#064e3b',
+            lineHeight: 1.5
+          }
+        },
+          e('p', { style: { margin: 0, fontWeight: 900 } }, tr('One-way reviewed copy')),
+          e('p', { style: { margin: '5px 0 0', fontSize: '0.8rem' } },
+            tr('This transfer does not enable AI, send data to an AI service, change Submission Inbox, or allow AlloSheet to write back.')
+          )
+        ),
+        alloSheetFeedback.text && e('p', {
+          role: alloSheetFeedback.kind === 'error' ? 'alert' : 'status',
+          'aria-live': alloSheetFeedback.kind === 'error' ? 'assertive' : 'polite',
+          style: {
+            margin: 0,
+            padding: 11,
+            border: alloSheetFeedback.kind === 'error' ? '1px solid #fca5a5' : '1px solid #a5b4fc',
+            borderRadius: 8,
+            background: alloSheetFeedback.kind === 'error' ? '#fef2f2' : '#eef2ff',
+            color: alloSheetFeedback.kind === 'error' ? '#991b1b' : '#312e81',
+            fontWeight: 700
+          }
+        }, alloSheetFeedback.text)
+      ),
+      e('div', {
+        style: {
+          position: 'sticky',
+          bottom: 0,
+          display: 'flex',
+          justifyContent: 'flex-end',
+          flexWrap: 'wrap',
+          gap: 9,
+          padding: '14px 20px',
+          borderTop: '1px solid #cbd5e1',
+          background: 'white'
+        }
+      },
+        e('button', {
+          type: 'button',
+          onClick: closeAlloSheetReview,
+          disabled: alloSheetBusy,
+          style: {
+            minHeight: 44,
+            padding: '8px 15px',
+            border: '2px solid #64748b',
+            borderRadius: 8,
+            background: 'white',
+            color: '#0f172a',
+            fontWeight: 800,
+            cursor: alloSheetBusy ? 'not-allowed' : 'pointer',
+            opacity: alloSheetBusy ? 0.55 : 1
+          }
+        }, tr('Cancel')),
+        e('button', {
+          type: 'button',
+          onClick: confirmAlloSheetReview,
+          disabled: alloSheetBusy
+            || !!alloSheetReviewOptions.error
+            || !!alloSheetPreview.error
+            || !hasRows,
+          style: {
+            minHeight: 44,
+            padding: '8px 17px',
+            border: '2px solid #3730a3',
+            borderRadius: 8,
+            background: '#4338ca',
+            color: 'white',
+            fontWeight: 900,
+            cursor: alloSheetBusy ? 'not-allowed' : 'pointer',
+            opacity: alloSheetBusy
+              || !!alloSheetReviewOptions.error
+              || !!alloSheetPreview.error
+              || !hasRows ? 0.55 : 1
+          }
+        }, alloSheetBusy ? tr('Waiting for AlloSheet...') : tr('Confirm and open AlloSheet'))
+      )
+    )), document.body);
+  };
+
   // rosterBadge accepts either a legacy 'known'|'unknown' string OR the
   // {kind, name} object returned by rosterMatch — fuzzy matches surface
   // the real roster name so a "TestKid" submission shows "✓ Test Kid".
@@ -980,7 +2273,8 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
   };
 
   // ── Render ──────────────────────────────────────────────────
-  return /*#__PURE__*/React.createElement('div', {
+  return /*#__PURE__*/React.createElement(React.Fragment, null,
+    /*#__PURE__*/React.createElement('div', {
     style: {
       position: 'fixed', inset: 0, zIndex: 270,
       background: 'rgba(15,23,42,0.8)', backdropFilter: 'blur(4px)',
@@ -1249,7 +2543,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
               /*#__PURE__*/React.createElement('span', { style: { display: 'inline-block', padding: '1px 8px', borderRadius: 999, background: '#bbf7d0', color: '#166534', fontSize: '0.7rem', fontWeight: 700 } }, gradebookEntries.length + ' saved'),
               /*#__PURE__*/React.createElement('span', { style: { fontSize: '0.75rem', fontWeight: 600, color: '#16a34a' } }, gradebookOpen ? '▾' : '▸')
             ),
-            gradebookEntries.length > 0 && /*#__PURE__*/React.createElement('div', { style: { display: 'flex', gap: 6, alignItems: 'center' } },
+            gradebookEntries.length > 0 && /*#__PURE__*/React.createElement('div', { style: { display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end', maxWidth: '100%' } },
               /*#__PURE__*/React.createElement('div', { style: { display: 'inline-flex', background: 'white', border: '1px solid #86efac', borderRadius: 6, padding: 2, fontSize: '0.74rem', fontWeight: 600 } },
                 /*#__PURE__*/React.createElement('button', {
                   type: 'button', onClick: () => setGradebookGroupBy('submission'),
@@ -1260,6 +2554,12 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
                   style: { padding: '4px 10px', background: gradebookGroupBy === 'student' ? '#16a34a' : 'transparent', color: gradebookGroupBy === 'student' ? 'white' : '#166534', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 700 }
                 }, tr('By student'))
               ),
+              typeof onOpenAlloSheet === 'function' && /*#__PURE__*/React.createElement('button', {
+                type: 'button', onClick: openAlloSheetReview,
+                'aria-haspopup': 'dialog',
+                title: tr('Review privacy-bounded saved-grade summaries before opening AlloSheet'),
+                style: { padding: '6px 12px', background: '#4338ca', color: 'white', border: '1px solid #3730a3', borderRadius: 6, fontWeight: 700, cursor: 'pointer', fontSize: '0.8rem' }
+              }, tr('Open in AlloSheet')),
               /*#__PURE__*/React.createElement('button', {
                 type: 'button', onClick: exportGradebookCsv,
                 title: tr('Download all saved grades as a CSV spreadsheet'),
@@ -1771,5 +3071,7 @@ function SubmissionInbox({ isOpen, onClose, rosterKey, t, addToast }) {
         )
       )
     )
-  );
+  ),
+  showAlloSheetReview && renderAlloSheetReview()
+);
 }

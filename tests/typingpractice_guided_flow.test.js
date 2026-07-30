@@ -42,7 +42,7 @@ describe('Typing Practice guided flow', () => {
 
   it('keeps drill results, sorting, and empty-state feedback synchronized', () => {
     expect(source).toContain('var visibleDrillIds = Object.keys(DRILLS)');
-    expect(source).toContain("'aria-live': 'polite'");
+    expect(source).toContain("h(TypingPracticeDebouncedStatus, {");
     expect(source).toContain("'aria-label': 'Sort drills'");
     expect(source).toContain("h('option', { value: 'quickest' }, 'Shortest first')");
     expect(source).toContain("h('option', { value: 'least-practiced' }, 'Least practiced first')");
@@ -54,7 +54,7 @@ describe('Typing Practice guided flow', () => {
     expect(source).toContain("if (key === '/')");
     expect(source).toContain("else if (key === 'g' || key === 'G')");
     expect(source).toContain("ref: drillSearchRef");
-    expect(source).toContain("setAnnounceText('Drill search cleared.')");
+    expect(source).toContain("id: 'tp-drill-results-announcer'");
     expect(source).toContain("{ keys: ['/']");
     expect(source).toContain("{ keys: ['G']");
   });
