@@ -67,6 +67,54 @@ window.StemLab = window.StemLab || {
   })();
 
 
+  // ═══ QUIZ OPTION ORDER ═══
+  // Both question banks were authored with the correct answer sitting at index 1:
+  // 22 of 30 in the practice bank and 8 of 12 in the boss rounds, 30 of 42 overall.
+  // A student who always picked the second choice scored ~71% knowing nothing, which
+  // makes the score meaningless as evidence of learning and rewards the wrong
+  // strategy. (The answer is also the uniquely longest option in 16 of 30 practice
+  // questions — a separate tell that needs the distractors rewritten, not reordered.)
+  //
+  // Deterministic on the question text rather than Math.random(): the order must be
+  // stable across re-renders, or an option would move out from under the student's
+  // pointer mid-answer and the selected/correct highlighting would shuffle while the
+  // result is on screen. Same question always gets the same order.
+  // Places the ANSWER at a hash-chosen slot rather than shuffling the whole list.
+  // A blind shuffle does not actually balance a bank this small — tried it, and the
+  // practice bank still peaked at 47% in one slot while the boss rounds moved to 58%
+  // in another. Choosing the answer's slot directly makes the distribution depend
+  // only on hash-mod-n, which is far more even. Distractor order follows.
+  function orderOptions(questionText, opts, answer) {
+    if (!opts || opts.length < 2) return opts || [];
+    var others = [];
+    var found = false;
+    for (var i = 0; i < opts.length; i++) {
+      if (!found && opts[i] === answer) { found = true; continue; }
+      others.push(opts[i]);
+    }
+    // Answer not present (or duplicated) — leave the order alone rather than guess.
+    if (!found) return opts.slice();
+
+    var seed = 2166136261;
+    for (var c = 0; c < questionText.length; c++) {
+      seed = ((seed ^ questionText.charCodeAt(c)) * 16777619) >>> 0;
+    }
+    // Avalanche the hash before taking a remainder. A multiplicative hash has weak
+    // LOW bits, and `seed % n` reads exactly those: without this the practice bank
+    // still landed 50% in one slot and the boss rounds got worse at 75%. Measured
+    // with the finaliser: 33% and 33%, which is the ideal for 3-4 options.
+    seed ^= seed >>> 16; seed = (seed * 2246822507) >>> 0;
+    seed ^= seed >>> 13; seed = (seed * 3266489909) >>> 0;
+    seed ^= seed >>> 16;
+    var target = (seed >>> 0) % opts.length;
+
+    var out = [];
+    var oi = 0;
+    for (var j = 0; j < opts.length; j++) out.push(j === target ? answer : others[oi++]);
+    return out;
+  }
+  window.__SemiconductorCore = { orderOptions: orderOptions };
+
   window.StemLab.registerTool('semiconductor', {
     icon: '\u{1F4A1}',
     label: 'Semiconductor Lab',
@@ -3286,7 +3334,7 @@ window.StemLab = window.StemLab || {
             current.topic && h('span', { className: 'text-[11px] uppercase tracking-wider text-cyan-500 mb-1 block' }, current.topic),
             h('p', { className: 'text-sm font-semibold text-white mb-3', role: 'status' }, current.q),
             h('div', { className: 'flex flex-col gap-2' },
-              current.opts.map(function(opt) {
+              orderOptions(current.q, current.opts, current.a).map(function(opt) {
                 var isSelected = d.challengeAnswer === opt;
                 var isCorrect = opt === current.a;
                 var showResult = d.challengeFeedback !== null;
@@ -3439,7 +3487,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'text-lg mb-1' }, currentRound.enemy),
             h('p', { className: 'text-sm text-white mb-3' }, currentRound.desc),
             h('div', { className: 'flex flex-col gap-2' },
-              currentRound.opts.map(function(opt) {
+              orderOptions(currentRound.desc, currentRound.opts, currentRound.answer).map(function(opt) {
                 var showResult = feedback !== null;
                 var isSelected = d.battleFeedback === opt || (showResult && feedback === 'wrong-' + opt);
                 var isCorrect = opt === currentRound.answer;
