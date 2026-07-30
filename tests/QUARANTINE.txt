@@ -19,93 +19,27 @@
 #   3. Format: <path>  # <n> failing · <first failing test>
 #
 # Baseline: 1386 files, 15483 assertions passing, 271 failing across the 89 files below.
+# 2026-07-29 — 69 files RELEASED back to the blocking job: they now pass.
+#   Verified independently before removal (69/69 files, 941 assertions, 0 failures),
+#   not just taken from the gate. The FLAKY block below is untouched by design.
 
-tests/anti_slimming_pins.test.js  # 3 failing · deps-builder dedupe pins (all three hosts) AlloFlowANTI.txt keeps every family builder + its call sites
 tests/app_shell_runtime_a11y.test.js  # 1 failing · application shell accessibility remediation provides a non-empty fallback name for the global mute button
-tests/audit_coherence_fixes.test.js  # 7 failing · audit coherence — expert-edit re-score cannot inflate past Equal Access C4: _reauditAndScore runs EA and takes
-tests/audit_scoring_hardening.test.js  # 1 failing · M2 — a chunk reply without issues[] is a failure, not a clean audit _auditOneChunk routes replies lacking a va
-tests/auto_continue_canonical_verification.test.js  # 1 failing · auto-continue canonical verification keeps the cached-module fallback in parity with unknown/manual verificati
-tests/autorepair_underhood_3d.test.js  # 1 failing · under-hood tour — content lives in the accessible DOM marks the 3D canvas container as decorative, not as the 
-tests/basic_math_wcag_browser.test.js  # 1 failing · Basic math tools WCAG regression in a real browser time challenge contrast passes WCAG A/AA and 320px reflow c
-tests/block_restyle_propose.test.js  # 17 failing · proposeRestyles: gates every AI pick through restyleBlock keeps a SAFE pick (a <br> paragraph → list) and retu
-tests/block_restyle.test.js  # 1 failing · anti-drift: exported on the factory + wired into the region editor via the proven splice path _restyleRegion r
 tests/brain_atlas_golden.test.js  # 25 failing · brainAtlas render goldens view: lateral renders + pins a digest
-tests/canvas_workspace_recovery.test.js  # 1 failing · Canvas workspace recovery integration contracts awaits the dedicated bridge with non-queued atomic recovery wr
-tests/chatgpt_phase1_reliability.test.js  # 1 failing · finding 4 — ONE absolute per-file wall the deadline is minted once at _processOne entry; both phases get only 
 tests/chatgpt_phase2_reliability.test.js  # 2 failing · finding 5 — sliced-audit coverage honesty ranges keep identity, failed ranges get one calm-gated sequential re
-tests/compare_popup_xss.test.js  # 1 failing · Compare popup — after-frame is hardened against AI-injected scripts accessibleHtml is stripped of active conte
-tests/compare_tagged_pdf_perf.test.js  # 1 failing · #5 Compare tagged PDF — no hang, lighter render with live progress the bridge bounds ensurePdfBase64 so the po
-tests/deep_dive_batch1_fixes.test.js  # 1 failing · H3 — Stop/staleness honored during the storm wait ANTI auto-continue passes shouldAbort AND re-checks abort/ge
-tests/deep_dive_batch2_fixes.test.js  # 1 failing · H7 — the batch wall cancels WORK, not just results the main fix loop self-terminates before the wall so keep-b
 tests/deep_dive_batch3_fixes.test.js  # 1 failing · M1/M2/M6 — circle-back covers null audits, respects the wall, and keeps the status honest M6: the wait ticks t
-tests/degraded_ai_display.test.js  # 3 failing · anti-drift: pipeline ships the degraded flag + deterministic fallback degraded keyed off null/_scoreDegraded/s
-tests/desktop_web_shell_boundary.test.js  # 1 failing · desktop web shell boundary uses the repurposed desktop path throughout tracked code
-tests/directions_objectives.test.js  # 1 failing · wiring pins mirror parity
-tests/directions_quest_map_travel.test.js  # 1 failing · mirror parity desktop/web-app/src mirror carries the identical feature
-tests/disclosure_reads_gate.test.js  # 1 failing · dead-disclosure gate — every produced disclosure has a reader check_disclosure_reads passes
-tests/doc_pipeline_verification_state.test.js  # 9 failing · canonical remediation verification-state matrix marks all three clean WCAG engines complete while ignoring PDF
-tests/docsuite_theme_contrast.test.js  # 1 failing · generated CSS is live and scoped ANTI carries the CURRENT generator output (no drift), exactly ONCE
 tests/expert_direct_edit.test.js  # 1 failing · anti-drift: the mini-audit is shared (no drift between Workbench + direct-edit) _reauditAndScore exists and fo
-tests/final_audit_estimated_minimum.test.js  # 1 failing · final audit estimated minimum score pipeline treats a missing final audit score as incomplete and carries esti
 tests/gemini_error_taxonomy_contract.test.js  # 0 failing · (suite failed to load)
-tests/h1_l3_hardening.test.js  # 1 failing · H1 — STEM image intel runs AFTER the token restore (real images) the classifier call now lives after the token
-tests/hub_modals_a11y.test.js  # 2 failing · Learning Hub launcher grid accessibility uses visible naming, explicit controls, decorative icons, and reduced
 tests/individual_remediation_polish.test.js  # 4 failing · remediation outcome is separate from verification completeness calls a target-reaching, axe-clean, AI-complete
-tests/issue_locator_resolver.test.js  # 1 failing · anti-drift: wired into both audit paths + verbatim prompt both audit paths normalize ONCE then attach iss.loca
-tests/lang_banner_fragment.test.js  # 10 failing · lang-banner-fragment — disclaimer always ships translation lane prepends the note to a body-inner FRAGMENT wit
-tests/lumen_documents_ui.test.js  # 1 failing · Lumen local-document import UI imports a selected local file, exposes provenance, and opens its exact page pas
 tests/lumen_render_golden.test.js  # 21 failing · Lumen — render golden master (SSR, §15) empty state — no observations (entry + sample, no chart)
-tests/lumen_source_controls_ui.test.js  # 1 failing · Lumen active sources, labels and stored-passage viewer persists source controls, filters retrieval scope and o
-tests/misc_handlers_error_alerts_a11y.test.js  # 1 failing · project-load error announcement accessibility announces invalid and unreadable projects once through the acces
-tests/non_eppp_eppp_guided_qa.test.js  # 1 failing · EPPP-guided QA for every non-EPPP test-prep pack binds the suite verdict to every reviewed source artifact
-tests/open_items_b3_b7_m11.test.js  # 6 failing · B3 — context reasons no longer make complete unreachable (live policy module) a clean static-web audit reaches
-tests/palette_ai_propose.test.js  # 1 failing · anti-drift: exported + wired into the picker, feeding the SAME clamp pipeline the picker has an AI-suggest for
-tests/palette_ui_wiring.test.js  # 3 failing · palette state + handlers _applyPalette uses the deterministic clamp+apply tools and re-audits (no AI)
-tests/particle_lab_3d_accessibility.test.js  # 1 failing · STEM Lab Three.js loading — single canonical path (sweep) no tool loads Three.js on its own: only the host mod
 tests/pdf_extraction_timeout.test.js  # 2 failing · pdf.js extraction/OCR awaits are timeboxed (anti-hang) the image-extraction loop awaits are wrapped in _withTi
-tests/pdf_pipeline_quick_bugs.test.js  # 3 failing · B2-2: "Fix Remaining" re-fix lane runs the main fidelity sweep + carries notes forward the Fix Remaining handl
-tests/persona_core_enhancements.test.js  # 1 failing · Persona core enhancement contracts invalidates stale summaries and trims an unanswered turn when the chat clos
-tests/persona_interview_behavior.test.js  # 2 failing · Persona interview state integrity preserves the completed turn and resource metadata when a portrait edit reso
-tests/pipeline_audit_fixes.test.js  # 3 failing · H-2: image-extraction pdf.js doc is destroyed in a finally (worker/transport leak) pdfDoc is hoisted to let an
 tests/pipeline_failmode_honesty.test.js  # 1 failing · post-remediation toast — never claim success when content integrity is in doubt anti-drift: the integrity-warn
-tests/pipeline_residuals_b6_issue2.test.js  # 1 failing · PDF-Issue2: the reliability experiment measures the PRODUCTION pipeline, not the legacy loop runTestRetestExpe
-tests/pipeline_selfreview_batchD.test.js  # 2 failing · #11 recov-score-order — re-audit success keys off the FRESH axe result anti-drift: _reAxeOk is computed from _
 tests/plt_k6_5622_pack.test.js  # 1 failing · Praxis PLT K–6 5622 diagnostic bank is candid that guided activities are not independent, expert-validated exa
-tests/prompt_fence_injection.test.js  # 1 failing · anti-drift: judge prompts are fence-hardened, transform prompts are NOT (fidelity) transform prompts keep RAW 
-tests/qr_student_shell.test.js  # 1 failing · Cloudflare student shell build wiring publishes the postbuild shell automatically and excludes the oversized a
-tests/read_aloud_artifact_host_integration.test.js  # 1 failing · read-aloud artifact host integration loads the contract, shared audio preparer, and private Persona runtime in
-tests/recov_score_reaudit.test.js  # 2 failing · recov-score-order — anti-drift on the gated re-audit block the gated, fail-soft re-audit/re-blend block is pre
-tests/reliability_quickwins.test.js  # 1 failing · anti-drift: zombie-run guard wired end-to-end the watchdog fire() bumps the generation + aborts the auto-conti
-tests/remediation_progress_trace.test.js  # 2 failing · remediation ownership and lifecycle regressions hydrates a mounted view and rejects superseded same-document r
-tests/remediation_run_reentry_guard.test.js  # 4 failing · one-click remediation re-entry guard rejects a concurrent single-file start without launching its worker
-tests/remediation_view_verification.test.js  # 5 failing · remediation view verification state marks complete evidence verified only when all three engines and review co
-tests/remediation_wcag22_upgrade.test.js  # 1 failing · remediation pipeline WCAG 2.2 upgrade moves cache identity when deterministic rules change
-tests/research_hub_workbench_runtime_a11y.test.js  # 1 failing · Research Hub evidence workbench runtime accessibility exposes labeled repair and import controls and has no se
-tests/restore_and_alt_hardening.test.js  # 1 failing · L4 — "axe-only clean" requires axe to have actually run gates the clean claim + log on reAxe being non-null
-tests/review_queue_fixes.test.js  # 1 failing · anti-drift: critic #1 + ocr-fidelity-5 ship in the source _keyOf reads .issue/.description/.text + widens to 8
-tests/roadready_canvas_alternatives_a11y.test.js  # 1 failing · RoadReady canvas alternatives explicitly excludes all 22 internal canvas buffers from the accessibility tree
-tests/school_librarian_5312.test.js  # 0 failing · (suite failed to load)
-tests/scoring_honesty.test.js  # 2 failing · anti-drift: doc_pipeline ships the audit-honesty fixes the chunked merge derives count from DISTINCT REAL page
-tests/scoring_weakest_layer.test.js  # 1 failing · anti-drift: the engine ships min (not mean) + a reproducible content score _scoreSource reports "min", not "bl
-tests/scoring_weighted_deduction_unify.test.js  # 4 failing · #5 weighted deduction — one formula, no chunk-boundary discontinuity the formula is Σ (deduction × count-weigh
-tests/solar_system_control_names_a11y.test.js  # 1 failing · Solar System control accessible names renders no unnamed form controls in the planet and field-journal view
-tests/standalone_reader_export.test.js  # 1 failing · standalone accessible HTML reader adds the same reader to translated, plain-language, and edited-preview HTML 
 tests/stem_big_tools_golden.test.js  # 8 failing · big STEM tool render goldens (default state) renders + pins a digest for roadReady
-tests/stem_canvas_stutter_fix.test.js  # 3 failing · DNA Lab canvas anti-stutter resizes only on change + persists the tick — stem_lab/stem_tool_dna.js
 tests/stem_graph_tools_golden.test.js  # 10 failing · math/logic graph cluster render goldens (default state) renders + pins a digest for algebraCAS
 tests/stem_longtail_tools_golden.test.js  # 9 failing · career/nature long-tail render goldens (default state) renders + pins a digest for decomposer
-tests/stem_plugin_fallback_allowlist.test.js  # 1 failing · STEM plugin fallback allowlist includes every real plugin-only registration so tiles do not render blank
 tests/stem_sim_tools_golden.test.js  # 15 failing · science-sim + studio render goldens renders + pins a digest for anatomy [ssr]
 tests/stem_tool_golden.test.js  # 11 failing · STEM tool render goldens (default state) renders + pins a digest for cellularLab
-tests/student_accessibility_contracts.test.js  # 1 failing · student-facing accessibility contracts canonical and deploy loaders both stamp the CURRENT content hash of eac
 tests/table_caption_ai_tier.test.js  # 0 failing · (suite failed to load)
-tests/takehome_shelf.test.js  # 1 failing · take-home: mirror parity desktop/web-app/src mirror carries the identical feature
-tests/test_prep_hub_render.test.js  # 1 failing · Test Prep Hub render flow studies flashcards and memory aids with persistent accessible controls
-tests/title_heading_promote.test.js  # 3 failing · proposeRestyles integration — title proposal is prepended + survives an AI failure prepends the title->h1 prop
-tests/tts_auth_latch_fallback.test.js  # 1 failing · Edit-Audio regenerate pathway pins (3-host) mirrors stay byte-identical (App.jsx quest-map drift healed 2026-0
-tests/vision_alt_spotcheck.test.js  # 5 failing · _visionAltSpotCheck flags a plausible-but-wrong alt as a disagreement, with the model reason and suggestion
-tests/wcag22_labeling.test.js  # 1 failing · language packs follow their English sources sampled packs: engine/pipeline keys say 2.2, ADA citations keep 2.
-tests/workflow_batch_fixes.test.js  # 2 failing · anti-drift: the host auto-continue loop scores by min + clears the degraded flag a completed FULL-COVERAGE re-
 
 # ── FLAKY UNDER FULL-SUITE LOAD (not deterministic failures) ──
 # These pass in isolation and failed only in the complete 1,299-file run: two are axe/jsdom
