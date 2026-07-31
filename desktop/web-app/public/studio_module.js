@@ -89,7 +89,16 @@
     'letter-portrait': { w: 816, h: 1056 },
     'letter-landscape': { w: 1056, h: 816 },
     'square': { w: 900, h: 900 },
+    // Slide deck (2026-07-31). 1280x720 is the 16:9 pixel size PptxGenJS's
+    // LAYOUT_16x9 maps to at 96 DPI (13.333in x 7.5in), so slide coordinates
+    // convert to inches by a single divide with no letterboxing.
+    'slide-16x9': { w: 1280, h: 720 },
   };
+  // PPTX stores ONE slide size for the whole presentation (<p:sldSz> is a
+  // presentation-level element, not a per-slide one), so every page in a
+  // document shares doc.canvas. Multi-page is therefore a page COUNT plus a
+  // `page` index on each object — never a per-page canvas.
+  var ST_MAX_PAGES = 200;
   var ST_RECENT_PROJECTS_KEY = 'allostudio_recent_projects';
   var ST_RECENT_PROJECT_LIMIT = 8;
   var ST_TEMPLATE_FAVORITES_KEY = 'allostudio_template_favorites';
@@ -371,6 +380,10 @@
       createdAt: now || 0,
       canvas: { preset: ST_CANVAS_PRESETS[preset] ? preset : 'letter-portrait', w: p.w, h: p.h, background: { fill: '#ffffff' } },
       objects: [],            // current scene cache — array order IS the reading order
+      // Page/slide count. Objects carry a `page` index (absent === 0), so every
+      // existing op keeps addressing objects by id and needs no page awareness.
+      // A v1 save has no pageCount and no object.page → it loads as a 1-page doc.
+      pageCount: 1,
       ledger: { version: 1, ops: [], checkpoints: [] },
       _redo: [],              // undone ops (session bookkeeping; harmless if saved)
     };
@@ -388,18 +401,97 @@
     return { x: Math.round(x), y: Math.round(y), w: Math.round(w), h: Math.round(h), rotation: stFiniteNumber(frame.rotation, 0) };
   }
 
-  // Apply ONE op to a scene ({title, canvas, objects}) — pure; unknown op types
+  // ── Page helpers ──
+  // An object with no `page` is on page 0. This is what makes every pre-2026-07-31
+  // save load correctly as a one-page document with no migration pass: absent
+  // means 0, and a doc with no pageCount has exactly one page.
+  function stObjectPage(o) {
+    var n = Math.round(stFiniteNumber(o && o.page, 0));
+    return n > 0 ? n : 0;
+  }
+  // Single writer for an object's page. Page 0 is stored as ABSENT so replaying
+  // a pre-page save reproduces its objects exactly (see object.add).
+  function stSetObjectPage(o, page, pageCount) {
+    var p = Math.max(0, Math.min(Math.round(stFiniteNumber(page, 0)), Math.max(1, Math.round(stFiniteNumber(pageCount, 1))) - 1));
+    if (p > 0) o.page = p; else delete o.page;
+    return o;
+  }
+  function stClampPageCount(n) {
+    var v = Math.round(stFiniteNumber(n, 1));
+    return Math.max(1, Math.min(v, ST_MAX_PAGES));
+  }
+  // Page count implied by a scene: the stored count, but never fewer pages than
+  // the objects actually reference (a hand-edited or truncated save must not
+  // strand objects on pages the editor won't render).
+  function stScenePageCount(scene) {
+    var stored = stClampPageCount(scene && scene.pageCount);
+    var maxRef = 0;
+    var objs = (scene && scene.objects) || [];
+    for (var i = 0; i < objs.length; i++) { var p = stObjectPage(objs[i]); if (p > maxRef) maxRef = p; }
+    return stClampPageCount(Math.max(stored, maxRef + 1));
+  }
+  // Objects on one page, in reading order (array order is the reading order).
+  function stObjectsOnPage(objects, page) {
+    return (objects || []).filter(function (o) { return stObjectPage(o) === page; });
+  }
+
+  // Apply ONE op to a scene ({title, canvas, objects, pageCount}) — pure; unknown op types
   // leave the scene unchanged (forward compatibility: an old build replaying a
   // newer save must not corrupt what it does understand).
   function stApplyOp(scene, op) {
     var objects = scene.objects.slice();
+    var pageCount = stScenePageCount(scene);
     var idx = function (id) { for (var i = 0; i < objects.length; i++) { if (objects[i].id === id) return i; } return -1; };
+    var out = function (title, canvas, objs, pages) {
+      return { title: title, canvas: canvas, objects: objs, pageCount: stClampPageCount(pages) };
+    };
     var t = op.type;
     if (t === 'object.add') {
       if (!op.object || typeof op.object !== 'object') return scene;
       var obj = stClone(op.object);
       obj.frame = stClampFrame(obj.frame, scene.canvas);
+      // Page 0 is written as ABSENT, never as `page: 0`. Replaying a pre-page
+      // save must reproduce its objects byte-for-byte, or the scene-vs-ledger
+      // check in stValidateDoc would reject every document saved before this
+      // schema landed.
+      var addPage = Math.max(0, Math.min(stObjectPage(obj), pageCount - 1));
+      if (addPage > 0) obj.page = addPage; else delete obj.page;
       objects.push(obj);
+    } else if (t === 'page.add') {
+      // Insert a blank page. Objects on later pages shift down one index so the
+      // insert is positional, not append-only.
+      if (pageCount < ST_MAX_PAGES) {
+        var at = Math.max(0, Math.min(Math.round(stFiniteNumber(op.at, pageCount)), pageCount));
+        objects = objects.map(function (ob) {
+          if (stObjectPage(ob) < at) return ob;
+          var c = stClone(ob); stSetObjectPage(c, stObjectPage(ob) + 1, pageCount + 1); return c;
+        });
+        pageCount += 1;
+      }
+    } else if (t === 'page.remove') {
+      // Removing a page deletes the objects that live on it. The last page can
+      // never be removed — a document always has at least one page.
+      if (pageCount > 1) {
+        var rp = Math.max(0, Math.min(Math.round(stFiniteNumber(op.at, pageCount - 1)), pageCount - 1));
+        objects = objects.filter(function (ob) { return stObjectPage(ob) !== rp; })
+          .map(function (ob) {
+            if (stObjectPage(ob) < rp) return ob;
+            var c = stClone(ob); stSetObjectPage(c, stObjectPage(ob) - 1, pageCount); return c;
+          });
+        pageCount -= 1;
+      }
+    } else if (t === 'page.reorder') {
+      var from = Math.max(0, Math.min(Math.round(stFiniteNumber(op.from, 0)), pageCount - 1));
+      var to = Math.max(0, Math.min(Math.round(stFiniteNumber(op.to, 0)), pageCount - 1));
+      if (from !== to) {
+        // Build the post-move page order, then invert it into old→new indices.
+        var order = []; for (var pi = 0; pi < pageCount; pi++) order.push(pi);
+        order.splice(to, 0, order.splice(from, 1)[0]);
+        var remap = {}; for (var ni = 0; ni < order.length; ni++) remap[order[ni]] = ni;
+        objects = objects.map(function (ob) {
+          var c = stClone(ob); stSetObjectPage(c, remap[stObjectPage(ob)] != null ? remap[stObjectPage(ob)] : stObjectPage(ob), pageCount); return c;
+        });
+      }
     } else if (t === 'object.remove') {
       var ri = idx(op.target); if (ri >= 0) objects.splice(ri, 1);
     } else if (t === 'object.update') {
@@ -429,11 +521,19 @@
     } else if (t === 'object.z') {
       var zi = idx(op.target);
       if (zi >= 0) { objects[zi] = stClone(objects[zi]); objects[zi].z = Math.round(stFiniteNumber(op.z, objects[zi].z || 1)); }
+    } else if (t === 'object.page') {
+      // Move an object to another page (frames are page-relative, so the frame
+      // is untouched — it lands at the same spot on the destination page).
+      var pi2 = idx(op.target);
+      if (pi2 >= 0) {
+        objects[pi2] = stClone(objects[pi2]);
+        stSetObjectPage(objects[pi2], Math.round(stFiniteNumber(op.page, 0)), pageCount);
+      }
     } else if (t === 'doc.retitle') {
-      return { title: String(op.title || 'Untitled'), canvas: scene.canvas, objects: objects };
+      return out(String(op.title || 'Untitled'), scene.canvas, objects, pageCount);
     } else if (t === 'canvas.background') {
       var c = stClone(scene.canvas); c.background = { fill: stSafeCssColor(op.fill, '#ffffff') };
-      return { title: scene.title, canvas: c, objects: objects };
+      return out(scene.title, c, objects, pageCount);
     } else if (t === 'canvas.resize') {
       // A known preset drives both dims + label; otherwise take explicit w/h.
       // Background is preserved (stClone). Objects re-clamp into the new page so
@@ -442,11 +542,11 @@
       if (ST_CANVAS_PRESETS[op.preset]) { rc.preset = op.preset; rc.w = ST_CANVAS_PRESETS[op.preset].w; rc.h = ST_CANVAS_PRESETS[op.preset].h; }
       else { rc.w = Math.max(ST_MIN_SIZE, Math.round(stFiniteNumber(op.w, rc.w))); rc.h = Math.max(ST_MIN_SIZE, Math.round(stFiniteNumber(op.h, rc.h))); rc.preset = 'custom'; }
       var reclamped = objects.map(function (ob) { var c2 = stClone(ob); c2.frame = stClampFrame(c2.frame, rc); return c2; });
-      return { title: scene.title, canvas: rc, objects: reclamped };
+      return out(scene.title, rc, reclamped, pageCount);
     } else if (t === 'doc.template') {
       // marker op (records which template seeded the doc) — no scene change
     }
-    return { title: scene.title, canvas: scene.canvas, objects: objects };
+    return out(scene.title, scene.canvas, objects, pageCount);
   }
 
   // Append an op to the doc's ledger and apply it. `actor` must be in the closed
@@ -462,11 +562,11 @@
     // object.add ops mint their object's id from the seq → deterministic replay
     if (op.type === 'object.add' && op.object && !op.object.id) op.object.id = 'o' + op.seq;
     doc.ledger.ops.push(op);
-    var next = stApplyOp({ title: doc.title, canvas: doc.canvas, objects: doc.objects }, op);
-    doc.title = next.title; doc.canvas = next.canvas; doc.objects = next.objects;
+    var next = stApplyOp({ title: doc.title, canvas: doc.canvas, objects: doc.objects, pageCount: doc.pageCount }, op);
+    doc.title = next.title; doc.canvas = next.canvas; doc.objects = next.objects; doc.pageCount = next.pageCount;
     doc._redo = []; // a new op invalidates the redo branch
     if (op.seq % ST_CHECKPOINT_EVERY === 0) {
-      doc.ledger.checkpoints.push({ atSeq: op.seq, title: doc.title, canvas: stClone(doc.canvas), objects: stClone(doc.objects) });
+      doc.ledger.checkpoints.push({ atSeq: op.seq, title: doc.title, canvas: stClone(doc.canvas), objects: stClone(doc.objects), pageCount: doc.pageCount });
     }
     return op;
   }
@@ -501,7 +601,7 @@
     var lastSeq = doc.ledger.ops.length ? doc.ledger.ops[doc.ledger.ops.length - 1].seq : 0;
     doc.ledger.checkpoints = (doc.ledger.checkpoints || []).filter(function (c) { return c.atSeq <= lastSeq; });
     var scene = stReplay(doc, lastSeq);
-    doc.title = scene.title; doc.canvas = scene.canvas; doc.objects = scene.objects;
+    doc.title = scene.title; doc.canvas = scene.canvas; doc.objects = scene.objects; doc.pageCount = stScenePageCount(scene);
     return true;
   }
   function stRedo(doc) {
@@ -511,10 +611,10 @@
     do {
       var op = doc._redo.pop();
       doc.ledger.ops.push(op);
-      var next = stApplyOp({ title: doc.title, canvas: doc.canvas, objects: doc.objects }, op);
-      doc.title = next.title; doc.canvas = next.canvas; doc.objects = next.objects;
+      var next = stApplyOp({ title: doc.title, canvas: doc.canvas, objects: doc.objects, pageCount: doc.pageCount }, op);
+      doc.title = next.title; doc.canvas = next.canvas; doc.objects = next.objects; doc.pageCount = next.pageCount;
       if (op.seq % ST_CHECKPOINT_EVERY === 0) {
-        doc.ledger.checkpoints.push({ atSeq: op.seq, title: doc.title, canvas: stClone(doc.canvas), objects: stClone(doc.objects) });
+        doc.ledger.checkpoints.push({ atSeq: op.seq, title: doc.title, canvas: stClone(doc.canvas), objects: stClone(doc.objects), pageCount: doc.pageCount });
       }
     } while (gestureId && doc._redo.length && stOpGestureId(doc._redo[doc._redo.length - 1]) === gestureId);
     return true;
@@ -526,7 +626,8 @@
     return {
       title: doc._baseTitle !== undefined ? doc._baseTitle : doc.title,
       canvas: { preset: bc.preset, w: bc.w, h: bc.h, background: { fill: '#ffffff' } },
-      objects: []
+      objects: [],
+      pageCount: 1 // creation is not an op; page.add/page.remove rebuild the count
     };
   }
   function stReplayWithCheckpoints(doc, toSeq, checkpoints) {
@@ -536,12 +637,12 @@
     for (var i = cache.length - 1; i >= 0; i--) {
       var c = cache[i];
       if (c && c.atSeq <= toSeq) {
-        start = { title: c.title, canvas: stClone(c.canvas), objects: stClone(c.objects) };
+        start = { title: c.title, canvas: stClone(c.canvas), objects: stClone(c.objects), pageCount: c.pageCount };
         fromSeq = c.atSeq;
         break;
       }
     }
-    var scene = { title: start.title, canvas: stClone(start.canvas), objects: stClone(start.objects) };
+    var scene = { title: start.title, canvas: stClone(start.canvas), objects: stClone(start.objects), pageCount: stScenePageCount(start) };
     var ops = doc && doc.ledger && Array.isArray(doc.ledger.ops) ? doc.ledger.ops : [];
     for (var j = 0; j < ops.length; j++) {
       var op = ops[j];
@@ -565,12 +666,13 @@
     out.ledger.ops.forEach(function (op) {
       scene = stApplyOp(scene, op);
       if (op.seq % ST_CHECKPOINT_EVERY === 0) {
-        out.ledger.checkpoints.push({ atSeq: op.seq, title: scene.title, canvas: stClone(scene.canvas), objects: stClone(scene.objects) });
+        out.ledger.checkpoints.push({ atSeq: op.seq, title: scene.title, canvas: stClone(scene.canvas), objects: stClone(scene.objects), pageCount: scene.pageCount });
       }
     });
     out.title = scene.title;
     out.canvas = scene.canvas;
     out.objects = scene.objects;
+    out.pageCount = stScenePageCount(scene);
     return out;
   }
   // Per-actor summary for the Process tab. activeMs sums gaps under 5 minutes —
@@ -622,6 +724,8 @@
       if (!o.id || typeof o.id !== 'string') errs.push(label + ' is missing an id');
       if (o.type !== 'text' && o.type !== 'image' && o.type !== 'shape') errs.push(label + ' has an unknown type');
       if (!stFrameIsFinite(o.frame) || o.frame.w <= 0 || o.frame.h <= 0) errs.push(label + ' has an invalid frame');
+      // `page` absent === page 0 (v1 saves). Present means it must be a real index.
+      if (o.page != null && (!Number.isInteger(o.page) || o.page < 0 || o.page >= ST_MAX_PAGES)) errs.push(label + ' has an invalid page index');
       if (o.type === 'text') {
         if (!Array.isArray(o.runs) || !o.runs[0] || typeof o.runs[0].text !== 'string') errs.push(label + ' has invalid text');
       } else if (o.type === 'image') {
@@ -631,6 +735,22 @@
         if (o.fit != null && o.fit !== 'cover' && o.fit !== 'contain') errs.push(label + ' has an invalid image fit');
       } else if (o.type === 'shape') {
         if (o.shape !== 'rect' && o.shape !== 'ellipse') errs.push(label + ' has an unknown shape');
+      }
+    }
+
+    // pageCount absent === 1 (v1 saves). Present means it must be a real count,
+    // and it must cover every page an object claims to be on.
+    if (doc.pageCount != null) {
+      if (!Number.isInteger(doc.pageCount) || doc.pageCount < 1) errs.push('Invalid page count');
+      else if (doc.pageCount > ST_MAX_PAGES) errs.push('Too many pages (limit ' + ST_MAX_PAGES + ')');
+      else if (Array.isArray(doc.objects)) {
+        for (var pgi = 0; pgi < doc.objects.length; pgi++) {
+          var op0 = doc.objects[pgi];
+          if (op0 && Number.isInteger(op0.page) && op0.page >= doc.pageCount) {
+            errs.push('Object #' + (pgi + 1) + ' is on page ' + (op0.page + 1) + ', past the document end');
+            break;
+          }
+        }
       }
     }
 
@@ -691,7 +811,10 @@
       try {
         var lastSeq = doc.ledger.ops.length ? doc.ledger.ops[doc.ledger.ops.length - 1].seq : 0;
         var canonical = stReplayCanonical(doc, lastSeq);
-        var live = { title: doc.title, canvas: doc.canvas, objects: doc.objects };
+        // pageCount is derived (stScenePageCount) on BOTH sides so a v1 save
+        // with no stored count still matches its replay.
+        canonical = { title: canonical.title, canvas: canonical.canvas, objects: canonical.objects, pageCount: stScenePageCount(canonical) };
+        var live = { title: doc.title, canvas: doc.canvas, objects: doc.objects, pageCount: stScenePageCount(doc) };
         if (!stDeepEqual(live, canonical)) errs.push('Current scene does not match the process history');
       } catch (e) {
         errs.push('Process history could not be replayed');
@@ -5952,6 +6075,11 @@
   AlloStudio.stReadRecentProjects = stReadRecentProjects;
   AlloStudio.stSaveRecentProject = stSaveRecentProject;
   AlloStudio.stSavePortfolioArtifact = stSavePortfolioArtifact;
+  AlloStudio.stObjectPage = stObjectPage;
+  AlloStudio.stScenePageCount = stScenePageCount;
+  AlloStudio.stObjectsOnPage = stObjectsOnPage;
+  AlloStudio.stClampPageCount = stClampPageCount;
+  AlloStudio.ST_MAX_PAGES = ST_MAX_PAGES;
   AlloStudio.ST_HONESTY_LINE = ST_HONESTY_LINE;
   AlloStudio.ST_CANVAS_PRESETS = ST_CANVAS_PRESETS;
   AlloStudio.ST_CHECKPOINT_EVERY = ST_CHECKPOINT_EVERY;
