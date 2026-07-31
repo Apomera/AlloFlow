@@ -58,11 +58,16 @@ describe('doping shows the intrinsic lattice before any dopant is chosen', () =>
   });
 
   it('switches to the doped description once a dopant is chosen', () => {
+    // The exact wording is pinned by semiconductor_canvas_alternatives_a11y; this
+    // only cares that the description stops calling the crystal intrinsic and
+    // names the dopant that was chosen.
     const n = renderTool('semiconductor', { semiconductor: { subtool: 'doping', dopant: 'phosphorus' } });
-    expect(n).toMatch(/Phosphorus \(P\) doped silicon/i);
-    expect(n).not.toMatch(/intrinsic silicon/i);
+    expect(n).toMatch(/Phosphorus \(P\)/);
+    expect(n).toMatch(/n-type/);
+    expect(n).not.toMatch(/Intrinsic silicon crystal/i);
 
     const p = renderTool('semiconductor', { semiconductor: { subtool: 'doping', dopant: 'boron' } });
-    expect(p).toMatch(/Boron \(B\) doped silicon/i);
+    expect(p).toMatch(/Boron \(B\)/);
+    expect(p).toMatch(/p-type/);
   });
 });

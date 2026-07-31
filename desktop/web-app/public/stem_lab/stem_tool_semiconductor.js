@@ -113,7 +113,21 @@ window.StemLab = window.StemLab || {
     for (var j = 0; j < opts.length; j++) out.push(j === target ? answer : others[oi++]);
     return out;
   }
-  window.__SemiconductorCore = { orderOptions: orderOptions };
+  // Spoken-friendly magnitude for transistor counts. A screen reader reading
+  // "208000000000" as digits is useless; "208 billion" is what a person would say.
+  // Only used in accessible descriptions, never in the plotted maths.
+  function formatTransistorCount(n) {
+    if (!isFinite(n) || n <= 0) return '0';
+    if (n >= 1e9) return (n / 1e9).toFixed(n >= 1e10 ? 0 : 1).replace(/\.0$/, '') + ' billion';
+    if (n >= 1e6) return (n / 1e6).toFixed(n >= 1e7 ? 0 : 1).replace(/\.0$/, '') + ' million';
+    if (n >= 1e3) return Math.round(n).toLocaleString('en-US');
+    return String(Math.round(n));
+  }
+
+  window.__SemiconductorCore = {
+    orderOptions: orderOptions,
+    formatTransistorCount: formatTransistorCount
+  };
 
   window.StemLab.registerTool('semiconductor', {
     icon: '\u{1F4A1}',
@@ -699,7 +713,12 @@ window.StemLab = window.StemLab || {
             id: 'semi-bandgap-canvas', width: 440, height: 240,
             className: 'w-full rounded-lg bg-slate-900 border border-slate-700',
             tabIndex: 0,
-            role: 'img', 'aria-label': 'Band gap diagram for ' + mat.name + ' at ' + tempK + 'K. Use the material buttons and temperature slider to change this visualization.'
+            role: 'img', 'aria-label': 'Band gap diagram for ' + mat.name + ' at ' + tempK + ' kelvin. '
+              + 'Band gap ' + Eg.toFixed(2) + ' electron volts. '
+              + (isConductor ? 'Conductor: the bands overlap, so electrons move freely.'
+                 : isInsulator ? 'Insulator: the gap is far too wide for thermal energy to bridge.'
+                 : 'Semiconductor: thermal energy lifts some electrons across the gap.')
+              + ' Use the material buttons and temperature slider to change this visualization.'
           }),
           sliderRow('Temperature', tempK, 50, 800, 10, function(v) { upd('temperature', v); }, ' K'),
           h('div', { className: 'flex flex-wrap items-center gap-3 mt-2' },
@@ -882,7 +901,11 @@ window.StemLab = window.StemLab || {
           h('canvas', { 
             id: 'semi-doping-canvas', width: 440, height: 300,
             className: 'w-full rounded-lg bg-slate-900 border border-slate-700',
-            role: 'img', 'aria-label': 'Crystal lattice showing ' + (dopantKey !== 'none' ? dopant.name + ' doped silicon' : 'intrinsic silicon')
+            role: 'img', 'aria-label': dopantKey !== 'none'
+              ? 'Silicon crystal lattice with ' + count + ' ' + dopant.name + ' atoms substituted in. '
+                + dopant.name + ' has ' + dopant.valence + ' valence electrons against silicon\u2019s 4, making this '
+                + dopant.type + '-type with ' + (dopant.type === 'n' ? 'free electrons' : 'holes') + ' as the majority carrier.'
+              : 'Intrinsic silicon crystal lattice. Every atom has 4 valence electrons, all shared in covalent bonds, so there are almost no free carriers.'
           }),
           sliderRow('Dopant atoms', count, 1, Math.floor(gridSize * gridSize * 0.3), 1, function(v) { upd('dopantCount', v); }),
           sliderRow('Grid size', gridSize, 4, 12, 1, function(v) { upd('crystalSize', v); }),
@@ -2638,7 +2661,18 @@ window.StemLab = window.StemLab || {
           h('canvas', { 
             id: 'semi-moore-canvas', width: 440, height: 240,
             className: 'w-full rounded-lg bg-slate-900 border border-slate-700',
-            role: 'img', 'aria-label': t('stem.semiconductor.moore_s_law_graph_showing_transistor_c', 'Moore\'s Law graph showing transistor counts from 1965 to 2030')
+            // Carries the DATA, not just the title. This was a fixed string, so a
+            // screen-reader user got "a graph exists" and nothing about the trend,
+            // the selected year, or how the real chip compares to the prediction --
+            // which is the entire point of the module. Everything named here is
+            // already on screen for a sighted user.
+            role: 'img', 'aria-label': 'Moore\'s Law graph, log scale, 1965 to 2030. '
+              + 'Selected year ' + year + '. '
+              + 'Nearest milestone: ' + nearest.name + ' in ' + nearest.year + ', '
+              + formatTransistorCount(nearest.transistors) + ' transistors'
+              + (nearest.node ? ' on a ' + nearest.node + ' process' : '') + '. '
+              + 'Moore\'s doubling prediction for ' + year + ' is '
+              + formatTransistorCount(moorePred) + '.'
           }),
           sliderRow('Year', year, 1965, 2030, 1, function(v) { upd('mooreYear', v); }, ''),
           h('div', { className: 'flex items-center gap-3 mt-2' },
@@ -2837,7 +2871,12 @@ window.StemLab = window.StemLab || {
           h('canvas', { 
             id: 'semi-qw-canvas', width: 440, height: 260,
             className: 'w-full rounded-lg bg-slate-900 border border-slate-700',
-            role: 'img', 'aria-label': 'Quantum well potential with ' + levels.length + ' energy levels'
+            role: 'img', 'aria-label': 'Quantum well potential for ' + qmat.name + ', '
+              + wellWidth + ' nanometres wide and ' + wellDepth + ' electron volts deep. '
+              + (levels.length
+                 ? levels.length + ' confined level' + (levels.length === 1 ? '' : 's') + ': '
+                   + levels.map(function(lv) { return 'n=' + lv.n + ' at ' + lv.E.toFixed(3) + ' eV'; }).join(', ') + '.'
+                 : 'No confined levels: the well is too shallow to bind an electron at this width.')
           }),
           sliderRow('Well Width', wellWidth, 1, 20, 0.5, function(v) { upd('qwWidth', v); }, ' nm'),
           sliderRow('Well Depth', wellDepth, 0.1, 1.0, 0.05, function(v) { upd('qwDepth', v); }, ' eV'),
