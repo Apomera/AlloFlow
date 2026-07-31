@@ -83,7 +83,7 @@ describe('Geology Explorer — resolution / detail refactor (world↔voxel decou
 describe('Geology Explorer — scene registry + Crystal Cavern (geode)', () => {
   it('crust stays the default scene and its generator is unchanged (registry is behavior-preserving)', () => {
     expect(P.sceneId()).toBe('crust');
-    expect(P.scenes()).toEqual(['crust', 'geode', 'deepEarth', 'subduction']);
+    expect(P.scenes()).toEqual(['crust', 'geode', 'deepEarth', 'subduction', 'ridge', 'hotspot']);
     P.setScene('crust');
     expect(P.rockKeyAt(1, 0, 1)).toBe('soil');
     expect(P.rockKeyAt(7, 7, 7)).toBe('intrusion');
@@ -121,7 +121,7 @@ describe('Geology Explorer — scene registry + Crystal Cavern (geode)', () => {
 
 describe('Geology Explorer — Deep Earth scene (radial structure + honest geotherm)', () => {
   it('is registered as a third scene without disturbing the crust default', () => {
-    expect(P.scenes()).toEqual(['crust', 'geode', 'deepEarth', 'subduction']);
+    expect(P.scenes()).toEqual(['crust', 'geode', 'deepEarth', 'subduction', 'ridge', 'hotspot']);
     expect(P.sceneId()).toBe('crust');                       // still the default after beforeEach
   });
 
@@ -319,7 +319,7 @@ describe('Geology Explorer — first-person explorer (pure flight + you-are-here
 
 describe('Geology Explorer — Subduction zone scene (convergent margin + thermal anomaly)', () => {
   it('is registered as a fourth scene and leaves crust the default', () => {
-    expect(P.scenes()).toEqual(['crust', 'geode', 'deepEarth', 'subduction']);
+    expect(P.scenes()).toEqual(['crust', 'geode', 'deepEarth', 'subduction', 'ridge', 'hotspot']);
     expect(P.sceneId()).toBe('crust');
   });
 
@@ -380,5 +380,168 @@ describe('Geology Explorer — Subduction zone scene (convergent margin + therma
     expect(P.fpBust('asthenosphere')).toMatch(/solid|flow/i);  // not a liquid the plates float on
     expect(P.fpBust('slab')).toMatch(/cold/i);
     expect(P.fpBust('oceanWater')).toBeNull();
+  });
+});
+
+describe('Geology Explorer — Mid-ocean ridge scene (divergent boundary)', () => {
+  const NX = 14, NY = 12;
+  const col = (x) => Array.from({ length: NY }, (_, y) => P.ridgeKeyAt(x, y, 0));
+
+  it('is registered as a fifth scene and leaves crust the default', () => {
+    expect(P.scenes()).toContain('ridge');
+    expect(P.sceneId()).toBe('crust');
+  });
+
+  it('lays the ophiolite sequence down a flank column: water → sediment → basalt → dikes → gabbro → mantle', () => {
+    const c = col(0);                                          // far flank (oldest crust)
+    const order = ['oceanWater', 'sediment', /basalt[NR]/, 'dikes', 'gabbro', 'lithMantle', 'asthenosphere'];
+    let oi = 0;
+    for (const key of c) {
+      while (oi < order.length && !(order[oi] instanceof RegExp ? order[oi].test(key) : key === order[oi])) oi += 1;
+      expect(oi, `unexpected key ${key} out of ophiolite order in ${c.join(',')}`).toBeLessThan(order.length);
+    }
+  });
+
+  it('magnetic stripes are SYMMETRIC about the axis (the 1963 spreading evidence)', () => {
+    // Mirror columns x and NX-1-x sit at equal distance from the axis → same polarity.
+    for (let x = 0; x < 5; x++) {
+      const y = 4;                                             // a row inside the pillow-basalt band on the flanks
+      const left = P.ridgeKeyAt(x, y, 0);
+      const right = P.ridgeKeyAt(NX - 1 - x, y, 0);
+      if (/^basalt[NR]$/.test(left) || /^basalt[NR]$/.test(right)) {
+        expect(left).toBe(right);
+      }
+    }
+    // And both polarities genuinely occur somewhere.
+    const all = [];
+    for (let x = 0; x < NX; x++) for (let y = 0; y < NY; y++) all.push(P.ridgeKeyAt(x, y, 0));
+    expect(all).toContain('basaltN');
+    expect(all).toContain('basaltR');
+  });
+
+  it('sediment thickens with age (distance) and the axis is bare', () => {
+    const count = (x, key) => col(x).filter((k) => k === key).length;
+    expect(count(6, 'sediment')).toBe(0);                      // axial column: brand-new crust
+    expect(count(0, 'sediment')).toBeGreaterThanOrEqual(count(4, 'sediment')); // older ≥ younger
+    expect(count(0, 'sediment')).toBeGreaterThan(0);
+  });
+
+  it('has an axial magma lens with upwelling mantle beneath, and a vent on the right flank', () => {
+    const axis = col(6);
+    expect(axis).toContain('axialMagma');
+    expect(axis[NY - 1]).toBe('asthenosphere');                // mantle rises right under the axis
+    const all = [];
+    for (let x = 0; x < NX; x++) for (let y = 0; y < NY; y++) all.push(P.ridgeKeyAt(x, y, 0));
+    expect(all).toContain('vent');
+    // The vent sits off-axis on the RIGHT flank only.
+    for (let x = 0; x < 7; x++) for (let y = 0; y < NY; y++) expect(P.ridgeKeyAt(x, y, 0)).not.toBe('vent');
+  });
+
+  it('geotherm tracks crust AGE: young basalt warmer than old, vent 350°C, no linear-depth artifacts', () => {
+    const g = (key) => P.ridgeGeotherm(5, key);
+    expect(g('basaltN').tempC).toBeGreaterThan(g('basaltR').tempC);  // young > old at like depth
+    expect(g('vent').tempC).toBe(350);                                // black-smoker fluid
+    expect(g('axialMagma').state).toBe('molten');
+    expect(g('asthenosphere').state).toMatch(/solid/i);               // ductile but SOLID
+    for (const k of ['oceanWater', 'sediment', 'basaltN', 'basaltR', 'dikes', 'gabbro', 'axialMagma', 'vent', 'lithMantle', 'asthenosphere']) {
+      expect(g(k).tempC).toBeLessThan(6000);
+    }
+  });
+
+  it('busts the right myths', () => {
+    expect(P.fpBust('basaltR')).toMatch(/stripe|revers/i);
+    expect(P.fpBust('axialMagma')).toMatch(/underwater|unseen/i);
+    expect(P.fpBust('vent')).toMatch(/chemistry|sunlight/i);
+  });
+});
+
+describe('Geology Explorer — Hotspot chain scene (intraplate volcanism)', () => {
+  const NX = 14, NY = 12;
+  const all = () => {
+    const out = [];
+    for (let x = 0; x < NX; x++) for (let y = 0; y < NY; y++) out.push(P.hotspotKeyAt(x, y, 0));
+    return out;
+  };
+
+  it('is registered as a sixth scene and leaves crust the default', () => {
+    expect(P.scenes()).toContain('hotspot');
+    expect(P.sceneId()).toBe('crust');
+  });
+
+  it('shows the age progression: active island above water, extinct island, drowned seamount', () => {
+    const keys = all();
+    for (const k of ['activeVolcano', 'oldIsland', 'seamount', 'oceanCrust', 'lithMantle', 'conduit', 'plume', 'asthenosphere', 'oceanWater']) {
+      expect(keys, `${k} reachable`).toContain(k);
+    }
+    // The seamount is DROWNED: water sits above its apex; the active island is not.
+    const topRow = (key) => {
+      for (let y = 0; y < NY; y++) for (let x = 0; x < NX; x++) if (P.hotspotKeyAt(x, y, 0) === key) return y;
+      return -1;
+    };
+    expect(topRow('activeVolcano')).toBe(0);                   // breaks the surface
+    expect(topRow('seamount')).toBeGreaterThan(0);             // submerged below at least one water row
+  });
+
+  it('the conduit feeds ONLY the volcano currently over the plume', () => {
+    // Every conduit voxel sits in the plume-aligned column band, none under the old island.
+    for (let x = 0; x < NX; x++) for (let y = 0; y < NY; y++) {
+      if (P.hotspotKeyAt(x, y, 0) === 'conduit') {
+        expect(Math.abs(x / (NX - 1) - 0.70)).toBeLessThan(0.05);
+      }
+    }
+  });
+
+  it('the plume rises from the bottom of the grid to the base of the plate', () => {
+    const plumeCol = Math.round(0.70 * (NX - 1));
+    expect(P.hotspotKeyAt(plumeCol, NY - 1, 0)).toBe('plume'); // tail reaches the bottom
+    const keys = [];
+    for (let y = 0; y < NY; y++) keys.push(P.hotspotKeyAt(plumeCol, y, 0));
+    expect(keys.filter((k) => k === 'plume').length).toBeGreaterThanOrEqual(3);
+  });
+
+  it('geotherm: plume is HOTTER than ambient mantle but still SOLID (the honest anomaly)', () => {
+    const g = (key) => P.hotspotGeotherm(100, key);
+    expect(g('plume').tempC).toBeGreaterThan(g('asthenosphere').tempC);
+    expect(g('plume').state).toMatch(/solid/i);                // hot rock, not a lava pipe
+    expect(g('conduit').state).toBe('molten');                 // only the melt fraction is molten
+    for (const k of ['oceanWater', 'activeVolcano', 'oldIsland', 'seamount', 'oceanCrust', 'lithMantle', 'conduit', 'plume', 'asthenosphere']) {
+      expect(g(k).tempC).toBeLessThan(6000);
+    }
+  });
+
+  it('busts the right myths', () => {
+    expect(P.fpBust('plume')).toMatch(/plate moves|fixed/i);
+    expect(P.fpBust('oldIsland')).toMatch(/off the plume|carried/i);
+    expect(P.fpBust('activeVolcano')).toMatch(/shield|runny/i);
+  });
+});
+
+describe('Geology Explorer — scene-aware quiz banks', () => {
+  it('every scene has a bank of well-formed questions', () => {
+    const banks = P.quizBanks();
+    for (const id of P.scenes()) {
+      const bank = banks[id];
+      expect(bank, `bank for ${id}`).toBeTruthy();
+      expect(bank.title.length).toBeGreaterThan(0);
+      expect(bank.items.length).toBeGreaterThanOrEqual(3);
+      for (const item of bank.items) {
+        expect(item.q.length).toBeGreaterThan(0);
+        expect(item.opts.length).toBeGreaterThanOrEqual(2);
+        expect(item.correct).toBeGreaterThanOrEqual(0);
+        expect(item.correct).toBeLessThan(item.opts.length);
+        expect(item.why.length, `explanation for "${item.q}"`).toBeGreaterThan(20);
+      }
+    }
+  });
+
+  it('pins the science of the key answers', () => {
+    const b = P.quizBanks();
+    const answer = (id, i) => b[id].items[i].opts[b[id].items[i].correct];
+    expect(answer('deepEarth', 0)).toMatch(/solid/i);            // mantle is solid
+    expect(answer('deepEarth', 1)).toMatch(/s-wave/i);           // liquid outer core evidence
+    expect(answer('subduction', 0)).toMatch(/wedge/i);           // magma from the wedge
+    expect(answer('ridge', 0)).toMatch(/spread/i);               // stripes prove spreading
+    expect(answer('hotspot', 0)).toMatch(/plate/i);              // the plate moves
+    expect(answer('geode', 0)).toMatch(/slow/i);                 // slow growth = big crystals
   });
 });

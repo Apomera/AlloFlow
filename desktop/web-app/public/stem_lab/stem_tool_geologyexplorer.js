@@ -36,7 +36,8 @@
     basalt:    { name: 'Basalt',            type: 'Igneous (extrusive)', color: 0x4a4a55, formation: 'Lava that ERUPTED and cooled FAST at the surface → crystals too tiny to see (the opposite of slow-cooled granite).', minerals: 'Plagioclase + pyroxene (fine-grained)', age: 'Newest rock — just erupted onto the surface.' }
   };
   var TYPE_COLOR = { 'Surface': '#92786a', 'Sedimentary': '#38bdf8', 'Igneous (intrusive)': '#ec4899', 'Igneous (extrusive)': '#f97316', 'Metamorphic': '#a78bfa', 'Molten': '#fb923c',
-    'Crust': '#92786a', 'Mantle': '#ef4444', 'Outer core': '#fb923c', 'Inner core': '#fbbf24', 'Mineral': '#22d3ee', 'Mineral (silica)': '#5eead4', 'Mineral (quartz)': '#a78bfa' };
+    'Crust': '#92786a', 'Mantle': '#ef4444', 'Outer core': '#fb923c', 'Inner core': '#fbbf24', 'Mineral': '#22d3ee', 'Mineral (silica)': '#5eead4', 'Mineral (quartz)': '#a78bfa',
+    'Water': '#38bdf8', 'Igneous (basalt)': '#64748b', 'Mantle (rigid)': '#b45309', 'Mantle (ductile)': '#ef4444', 'Mantle (plume)': '#f97316' };
   var ROCK_ORDER = ['soil', 'sandstone', 'shale', 'limestone', 'basement', 'magma', 'intrusion', 'marble', 'hornfels'];
   // Index fossils per depositional environment (illustrative). Sedimentary layers
   // record life; igneous/metamorphic/molten rock does not — melting and
@@ -225,7 +226,16 @@
     wedge: 'Myth-bust: the arc’s magma forms when slab WATER melts the mantle wedge — the slab itself mostly doesn’t melt.',
     asthenosphere: 'Myth-bust: the asthenosphere is SOLID rock that flows slowly — plates don’t float on a liquid.',
     slab: 'The slab is COLDER than the mantle around it — that’s why deep earthquakes fire off inside it.',
-    contCrust: 'Continental crust is too buoyant to subduct — so the dense ocean plate dives under it instead.'
+    contCrust: 'Continental crust is too buoyant to subduct — so the dense ocean plate dives under it instead.',
+    basaltN: 'Young crust rides HIGH because it’s hot and buoyant — the seafloor sinks as it cools and ages.',
+    basaltR: 'Myth-bust: the symmetric magnetic stripes are a tape recorder of field reversals — the 1963 proof of spreading.',
+    axialMagma: 'Most of Earth’s volcanism happens here — underwater, unseen, along 65,000 km of ridge.',
+    vent: 'A black smoker: ~350 °C mineral-rich water. Life here runs on CHEMISTRY, not sunlight.',
+    dikes: 'Every one of these vertical dikes is a frozen spreading event — the crust literally pulled apart here.',
+    plume: 'Myth-bust: the plume stays ~fixed — the PLATE moves. The island chain is a tape recorder of plate motion.',
+    oldIsland: 'Extinct: the plate carried it OFF the plume. Now it erodes above while the cooling plate sinks below.',
+    seamount: 'A drowned former island — hotspot chains continue underwater for thousands of km.',
+    activeVolcano: 'A SHIELD volcano: runny basalt, gentle slopes — nothing like a steep, explosive arc volcano.'
   };
   function fpBust(key) { return FP_BUST[key] || null; }
   function fpProbe(wx, wy, wz) {                              // you-are-here readout; defers all science to rockFacts (scene-aware)
@@ -301,6 +311,42 @@
     { q: 'Where would you expect to find fossils?',                             opts: ['In the granite pluton', 'In the shale', 'In the magma'],               correct: 1, why: 'Fossils form in sedimentary rock like shale; melting and metamorphism destroy them.' },
     { q: 'In a drill core, the OLDEST rock is…',                                opts: ['At the top', 'At the bottom'],                                          correct: 1, why: 'Layers stack oldest-first, so the deepest rock is the oldest — superposition.' }
   ];
+  // Scene-aware quiz banks: retrieval practice for EVERY scene, keyed by
+  // SCENE.id (crust keeps its original relative-dating bank). Each bank pins
+  // the scene's core idea and its misconception-busts.
+  var QUIZ_BANKS = {
+    crust:     { title: 'Test yourself — relative dating', items: QUIZ },
+    geode: { title: 'Test yourself — crystal caverns', items: [
+      { q: 'Why are geode crystals so LARGE?', opts: ['They grew very fast', 'They grew slowly with open space'], correct: 1, why: 'Slow growth plus room to grow makes big crystals — the same rule that makes granite coarse.' },
+      { q: 'What made the original hollow?', opts: ['An explosion', 'Acidic groundwater dissolving limestone'], correct: 1, why: 'Karst: slightly acidic water dissolves limestone, leaving voids that minerals later line.' },
+      { q: 'Amethyst’s purple colour comes from…', opts: ['Copper', 'Trace iron plus natural irradiation'], correct: 1, why: 'Iron impurities in quartz, altered by natural radiation, give amethyst its purple.' },
+      { q: 'Which formed FIRST?', opts: ['The quartz crystal points', 'The agate rind on the wall'], correct: 1, why: 'The rind precipitated on the void wall first; crystals then grew INWARD into the space.' }
+    ] },
+    deepEarth: { title: 'Test yourself — inside the Earth', items: [
+      { q: 'The mantle is mostly…', opts: ['Molten lava', 'Solid rock that slowly flows'], correct: 1, why: 'The mantle is SOLID — it convects by creep over millions of years; only a tiny fraction melts near the top.' },
+      { q: 'How do we know the OUTER core is liquid?', opts: ['We drilled into it', 'S-waves cannot pass through it'], correct: 1, why: 'Shear waves can’t travel through liquid — their shadow on the far side of Earth reveals the liquid outer core.' },
+      { q: 'The inner core is HOTTER than the outer core, yet solid. Why?', opts: ['It is a different metal', 'Pressure raises iron’s melting point'], correct: 1, why: 'At inner-core pressure, iron’s melting point rises above the local temperature — crushed solid despite ≈5200 °C.' },
+      { q: 'Earth’s magnetic field is generated by…', opts: ['The solid inner core spinning', 'Convection of liquid iron in the outer core'], correct: 1, why: 'The geodynamo: churning liquid iron-nickel in the outer core generates the field that shields us.' }
+    ] },
+    subduction: { title: 'Test yourself — subduction', items: [
+      { q: 'Arc-volcano magma comes from…', opts: ['The slab itself melting', 'Slab water melting the mantle WEDGE'], correct: 1, why: 'Water driven off the slab lowers the wedge’s melting point — the wedge partially melts, not the slab.' },
+      { q: 'Why does the OCEANIC plate sink?', opts: ['It is colder and denser', 'It is thinner'], correct: 0, why: 'Old oceanic plate is cold, dense basalt — heavy enough to sink. Thickness isn’t what decides.' },
+      { q: 'Deep earthquakes happen…', opts: ['In the hot mantle wedge', 'Inside the cold slab'], correct: 1, why: 'Only the cold, rigid slab is brittle enough to snap at depth — the hot wedge flows instead.' },
+      { q: 'Why doesn’t continental crust subduct?', opts: ['It is too buoyant', 'It is too strong'], correct: 0, why: 'Granite crust is low-density — like a cork, it’s too buoyant to be pushed under.' }
+    ] },
+    ridge: { title: 'Test yourself — seafloor spreading', items: [
+      { q: 'The symmetric magnetic stripes prove…', opts: ['Earth’s field never changes', 'New seafloor spreads out from the axis'], correct: 1, why: 'Cooling basalt records the field; reversals paint matching stripes on BOTH flanks — the 1963 evidence for spreading.' },
+      { q: 'Why does the ridge stand HIGH above the old seafloor?', opts: ['Young crust is hot and buoyant', 'Lava simply piles up there'], correct: 0, why: 'Young, hot crust rides high; as it ages it cools, densifies and SINKS — depth records age.' },
+      { q: 'Where is deep-sea sediment THICKEST?', opts: ['Right at the axis', 'Far from the axis'], correct: 1, why: 'Sediment rains down slowly forever — older (farther) seafloor has collected more. The axis is brand new and bare.' },
+      { q: 'Gabbro and pillow basalt are…', opts: ['Two different magmas', 'The same melt cooled at different speeds'], correct: 1, why: 'Same basaltic melt: erupted into seawater = fine-grained pillows; cooled slowly at depth = coarse gabbro.' }
+    ] },
+    hotspot: { title: 'Test yourself — hotspots', items: [
+      { q: 'The island CHAIN exists because…', opts: ['The plume wanders around', 'The PLATE moves over a ~fixed plume'], correct: 1, why: 'The plume stays put; the plate slides past, carrying each volcano off its magma supply — a tape recorder of plate motion.' },
+      { q: 'Which island is OLDEST?', opts: ['The one over the plume', 'The one farthest from the plume'], correct: 1, why: 'Age grows down the chain with distance — that age progression is textbook evidence that plates move.' },
+      { q: 'A shield volcano has gentle slopes because…', opts: ['Its runny basalt flows far', 'Its thick lava explodes'], correct: 0, why: 'Hot, runny basalt spreads in thin sheets — broad shields, unlike steep, explosive arc stratovolcanoes.' },
+      { q: 'Hotspot volcanoes sit…', opts: ['On plate boundaries', 'In the middle of plates'], correct: 1, why: 'Intraplate volcanism: the plume punches through the middle of a plate, far from any boundary.' }
+    ] }
+  };
 
   // ── Volcanic eruption narration (the extrusive-igneous story, staged) ──
   var ERUPT = [
@@ -418,6 +464,98 @@
     return { tempC: (T[key] != null ? T[key] : Math.round(15 + depthKm * 25)), presMPa: Math.round(depthKm * 30), state: (S[key] || 'solid') };
   }
 
+  // ── Scene 5: Mid-ocean ridge (divergent boundary) ───────────────────────────
+  // The counterpart to the subduction scene: crust is CREATED here. Teaches the
+  // ophiolite sequence (pillow basalt → sheeted dikes → gabbro), symmetric
+  // magnetic striping (the tape-recorder evidence that proved spreading),
+  // age-subsidence (young hot crust rides high; seafloor sinks as it cools),
+  // sediment thickening with age, and hydrothermal vents.
+  var RIDGE_ROCKS = {
+    oceanWater:    { name: 'Ocean',               type: 'Water',                color: 0x2b6cb0, depthKm: 0,  glow: 0, formation: 'Deepest far from the axis: as oceanic crust ages and cools it grows denser and SINKS — seafloor depth is a clock.', minerals: 'Seawater', age: 'Shallowest right over the young, hot ridge axis.' },
+    sediment:      { name: 'Deep-sea sediment',   type: 'Sedimentary',          color: 0xc9b98f, depthKm: 3,  glow: 0, formation: 'A slow rain of plankton shells and clay — a few cm per THOUSAND years. None on brand-new crust at the axis; thicker the older (farther) the seafloor.', minerals: 'Ooze, clay', age: 'Its thickness is a second clock: more sediment = older seafloor.' },
+    basaltN:       { name: 'Pillow basalt',       type: 'Igneous (extrusive)',  color: 0x33414d, depthKm: 3,  glow: 0, formation: 'Lava erupting into cold seawater freezes into pillow-shaped blobs. Iron minerals inside lock in the direction of Earth’s magnetic field as they cool.', minerals: 'Basalt (normal polarity)', age: 'Recorded today’s field direction when it cooled.' },
+    basaltR:       { name: 'Reversed-polarity basalt', type: 'Igneous (extrusive)', color: 0x50626f, depthKm: 3, glow: 0, formation: 'Same pillow basalt — but it cooled when Earth’s magnetic field pointed the OTHER way. The stripes mirror each other on both sides of the axis.', minerals: 'Basalt (reversed polarity)', age: 'The symmetric stripe pattern is how spreading was PROVEN in 1963.' },
+    dikes:         { name: 'Sheeted dikes',       type: 'Igneous (intrusive)',  color: 0x475366, depthKm: 4,  glow: 0, formation: 'Thousands of vertical magma cracks, each one a spreading event: the crust pulls apart, magma fills the gap, freezes, and is split by the NEXT crack.', minerals: 'Diabase', age: 'Each dike records one moment of spreading.' },
+    gabbro:        { name: 'Gabbro',              type: 'Igneous (intrusive)',  color: 0x3d4a43, depthKm: 6,  glow: 0, formation: 'The magma chamber’s floor, cooled SLOWLY at depth into coarse crystals — chemically the same melt as the pillow basalt above, cooled at a different speed.', minerals: 'Gabbro (coarse basalt)', age: 'Bottom layer of the ophiolite sequence.' },
+    axialMagma:    { name: 'Axial magma lens',    type: 'Molten',               color: 0xff7a33, depthKm: 2,  glow: 1, formation: 'A thin melt lens under the rift valley, fed by upwelling mantle that melts as pressure drops (decompression melting — no extra heat needed).', minerals: 'Basaltic melt', age: 'Feeds every eruption and every dike.' },
+    vent:          { name: 'Hydrothermal vent',   type: 'Mineral',              color: 0x18e0c8, depthKm: 2.5, glow: 1, formation: 'Seawater sinks into hot young crust, leaches metals, and jets back out at ~350 °C as a BLACK SMOKER, precipitating metal-sulfide chimneys.', minerals: 'Metal sulfides', age: 'Whole food webs live here on chemistry, not sunlight.' },
+    lithMantle:    { name: 'Lithospheric mantle', type: 'Mantle (rigid)',       color: 0x6b3f33, depthKm: 15, glow: 0, formation: 'Mantle frozen rigid onto the crust’s base. Nearly ABSENT at the hot axis; thickens with age as the plate cools — old plates are thick plates.', minerals: 'Peridotite', age: 'Its growing thickness is a third clock.' },
+    asthenosphere: { name: 'Asthenosphere',       type: 'Mantle (ductile)',     color: 0x8a2f22, depthKm: 30, glow: 0, formation: 'Solid mantle flowing slowly upward beneath the axis. As it rises, falling pressure lets a few percent of it melt — the source of ALL new ocean crust.', minerals: 'Peridotite', age: 'Wells up exactly where the plates pull apart.' }
+  };
+  function ridgeKeyAt(x, y, z) {
+    var fx = NX > 1 ? x / (NX - 1) : 0;
+    var fy = NY > 1 ? y / (NY - 1) : 0;
+    var d = Math.abs(fx - 0.5);                       // distance from the spreading axis
+    var waterBottom = 0.10 + d * 0.16;                // seafloor SINKS with age (axial high)
+    var sedThick = d > 0.08 ? (d - 0.08) * 0.22 : 0;  // no sediment on brand-new crust
+    if (fy < waterBottom) {
+      // one black-smoker chimney just off-axis on the right flank
+      if (d > 0.09 && d < 0.14 && fx > 0.5 && fy > waterBottom - 0.075) return 'vent';
+      return 'oceanWater';
+    }
+    if (fy < waterBottom + sedThick) return 'sediment';
+    var ct = waterBottom + sedThick;                  // top of igneous crust here
+    if (d < 0.045) {                                  // axial neovolcanic zone
+      if (fy < ct + 0.10) return 'basaltN';
+      if (fy < 0.60) return 'axialMagma';
+      return 'asthenosphere';                         // upwelling mantle right under the axis
+    }
+    if (fy < ct + 0.10) {                             // pillow-basalt layer, magnetically striped
+      var stripe = Math.floor((d - 0.045) / 0.09);
+      return (stripe % 2 === 0) ? 'basaltN' : 'basaltR';
+    }
+    if (fy < ct + 0.20) return 'dikes';
+    if (fy < ct + 0.34) return 'gabbro';
+    var lidBottom = ct + 0.34 + 0.05 + d * 0.55;      // lithosphere thickens with age
+    if (fy < lidBottom) return 'lithMantle';
+    return 'asthenosphere';
+  }
+  function ridgeGeotherm(depthKm, key) {
+    // Key-based: temperature here tracks crust AGE (distance), not just depth.
+    var T = { oceanWater: 2, sediment: 10, basaltN: 80, basaltR: 40, dikes: 150, gabbro: 300, axialMagma: 1200, vent: 350, lithMantle: 900, asthenosphere: 1330 };
+    var S = { oceanWater: 'liquid', sediment: 'soft (unconsolidated)', basaltN: 'solid (young, still cooling)', basaltR: 'solid (older, cooler)', dikes: 'solid', gabbro: 'solid', axialMagma: 'molten', vent: 'superheated water jet', lithMantle: 'solid (rigid)', asthenosphere: 'solid (ductile — flows)' };
+    return { tempC: (T[key] != null ? T[key] : Math.round(15 + depthKm * 25)), presMPa: Math.round(depthKm * 30), state: (S[key] || 'solid') };
+  }
+
+  // ── Scene 6: Hotspot island chain (intraplate volcanism) ────────────────────
+  // Hawaii-style: a ~fixed mantle plume under a MOVING plate writes a line of
+  // volcanoes — active over the plume, extinct and sinking downstream. Teaches
+  // intraplate volcanism, the age-progression evidence for plate motion, and
+  // shield (runny-basalt) vs arc (strato) volcanism.
+  var HOTSPOT_ROCKS = {
+    oceanWater:    { name: 'Ocean',               type: 'Water',               color: 0x2b6cb0, depthKm: 0,   glow: 0, formation: 'The plate under this ocean is moving — carrying each volcano off its magma supply.', minerals: 'Seawater', age: 'The conveyor belt.' },
+    activeVolcano: { name: 'Active shield volcano', type: 'Igneous (extrusive)', color: 0x445247, depthKm: 0, glow: 1, formation: 'Sits directly over the plume TODAY. Runny basalt builds broad, gentle SHIELD slopes — nothing like the steep, explosive arc volcanoes of a subduction zone.', minerals: 'Basalt, olivine', age: 'Youngest of the chain — still growing.' },
+    oldIsland:     { name: 'Extinct island',      type: 'Igneous (extrusive)', color: 0x6a6f5a, depthKm: 0,   glow: 0, formation: 'Carried OFF the plume by plate motion — its magma supply is gone. Now erosion grinds it down while the cooling plate beneath it slowly sinks.', minerals: 'Weathered basalt, soil', age: 'Older than the active island — age grows down the chain.' },
+    seamount:      { name: 'Drowned seamount',    type: 'Igneous (extrusive)', color: 0x4a5d68, depthKm: 1,   glow: 0, formation: 'A former island that eroded and subsided beneath the waves — the chain continues underwater for thousands of km (Hawaii’s Emperor Seamounts).', minerals: 'Basalt, coral caps', age: 'Oldest link shown — the chain is a plate-motion tape recorder.' },
+    oceanCrust:    { name: 'Oceanic crust',       type: 'Igneous (basalt)',    color: 0x33414d, depthKm: 8,   glow: 0, formation: 'Ordinary ocean floor the volcanoes are built on — made long ago at a mid-ocean ridge.', minerals: 'Basalt, gabbro', age: 'Rides the moving plate.' },
+    lithMantle:    { name: 'Lithospheric mantle', type: 'Mantle (rigid)',      color: 0x6b3f33, depthKm: 60,  glow: 0, formation: 'The rigid mantle lid that moves with the crust as one plate — the plume must burn through ALL of this to reach the surface.', minerals: 'Peridotite', age: 'Moves; the plume below does not.' },
+    conduit:       { name: 'Magma conduit',       type: 'Molten',              color: 0xff7a33, depthKm: 40,  glow: 1, formation: 'Melt from the plume head punching up through plate and crust to feed ONLY the volcano currently overhead.', minerals: 'Basaltic melt', age: 'Abandons each island as the plate carries it away.' },
+    plume:         { name: 'Mantle plume',        type: 'Mantle (plume)',      color: 0xe0512e, depthKm: 150, glow: 1, formation: 'A column of SOLID but extra-hot mantle (~200 °C above its surroundings) rising slowly from deep in the mantle. Near the top, falling pressure lets it partially melt.', minerals: 'Hot peridotite', age: 'Stays ~fixed while the plate above slides past — that is the whole trick.' },
+    asthenosphere: { name: 'Asthenosphere',       type: 'Mantle (ductile)',    color: 0x8a2f22, depthKm: 150, glow: 0, formation: 'Ordinary ductile mantle around the plume — solid rock that flows.', minerals: 'Peridotite', age: 'The plume is only slightly hotter — but that is enough.' }
+  };
+  function hotspotKeyAt(x, y, z) {
+    var fx = NX > 1 ? x / (NX - 1) : 0;
+    var fy = NY > 1 ? y / (NY - 1) : 0;
+    var sea = 0.16;
+    // Plate moves LEFT: active cone over the plume (right), older links downstream.
+    var cone = function (cx, h) { return fy < sea && fy >= (sea - h) + Math.abs(fx - cx) * 2.4; };
+    if (cone(0.70, 0.20)) return 'activeVolcano';
+    if (cone(0.46, 0.17)) return 'oldIsland';
+    if (cone(0.22, 0.11)) return 'seamount';        // apex below sea level — drowned
+    if (fy < sea) return 'oceanWater';
+    if (Math.abs(fx - 0.70) < 0.04 && fy < 0.42) return 'conduit';   // feeds ONLY the active island
+    if (fy < sea + 0.12) return 'oceanCrust';
+    if (Math.abs(fx - 0.70) < 0.11 && fy >= 0.42 && fy < 0.58) return 'plume';  // plume head, ponding under the plate
+    if (Math.abs(fx - 0.70) < 0.055 && fy >= 0.58) return 'plume';              // plume tail from depth
+    if (fy < 0.55) return 'lithMantle';
+    return 'asthenosphere';
+  }
+  function hotspotGeotherm(depthKm, key) {
+    var T = { oceanWater: 4, activeVolcano: 1150, oldIsland: 15, seamount: 4, oceanCrust: 150, lithMantle: 900, conduit: 1200, plume: 1550, asthenosphere: 1330 };
+    var S = { oceanWater: 'liquid', activeVolcano: 'erupting (runny basalt)', oldIsland: 'solid (extinct, eroding)', seamount: 'solid (drowned)', oceanCrust: 'solid', lithMantle: 'solid (rigid)', conduit: 'molten', plume: 'solid — but ~200 °C hotter than its surroundings', asthenosphere: 'solid (ductile — flows)' };
+    return { tempC: (T[key] != null ? T[key] : Math.round(15 + depthKm * 25)), presMPa: Math.round(depthKm * 30), state: (S[key] || 'solid') };
+  }
+
   var SCENES = {
     crust: {
       id: 'crust', label: '⛰️ Layered crust', gen: rockKeyAt, palette: ROCKS, order: ROCK_ORDER, voxelKeys: ROCK_ORDER,
@@ -446,6 +584,22 @@
       geotherm: subductionGeotherm, kmPerWorldH: 200,
       features: {},
       blurb: 'A convergent margin (schematic — not to scale). A dense OCEANIC plate on the left bends at the trench and sinks beneath a buoyant CONTINENTAL plate on the right. The cold slab carries seawater down; at about 100 km that water escapes and lowers the melting point of the overlying MANTLE WEDGE, which partially melts — and THAT melt rises to build the line of arc volcanoes (the Andes, Cascades, Japan). Three myths busted: the asthenosphere is SOLID rock that flows (not a liquid the plates float on); the magma comes from the fluxed WEDGE, not the melting slab; and continental crust is too buoyant to subduct. Fly in to feel the COLD slab against the HOT wedge.'
+    },
+    ridge: {
+      id: 'ridge', label: '🌋 Mid-ocean ridge', gen: ridgeKeyAt, palette: RIDGE_ROCKS,
+      order: ['oceanWater', 'sediment', 'basaltN', 'basaltR', 'dikes', 'gabbro', 'axialMagma', 'vent', 'lithMantle', 'asthenosphere'],
+      voxelKeys: ['oceanWater', 'sediment', 'basaltN', 'basaltR', 'dikes', 'gabbro', 'axialMagma', 'vent', 'lithMantle', 'asthenosphere'],
+      geotherm: ridgeGeotherm, kmPerWorldH: 30,
+      features: {},
+      blurb: 'A divergent boundary (schematic — not to scale): the place new seafloor is BORN. Mantle wells up beneath the rift, melts as the pressure drops, and freezes into three stacked layers — pillow basalt, sheeted dikes, gabbro (the ophiolite sequence). The pillow basalts record Earth’s magnetic field as they cool, so field REVERSALS paint symmetric stripes on both flanks — the tape-recorder evidence that proved seafloor spreading in 1963. Young crust rides HIGH because it is hot; as it ages it cools, sinks, and gathers sediment — depth and sediment are both clocks. Mid-ocean ridges wrap the planet like seams on a baseball: Earth’s longest mountain range and most of its volcanism, almost all of it unseen underwater. Find the black smoker on the right flank.'
+    },
+    hotspot: {
+      id: 'hotspot', label: '🏝️ Hotspot chain', gen: hotspotKeyAt, palette: HOTSPOT_ROCKS,
+      order: ['oceanWater', 'activeVolcano', 'oldIsland', 'seamount', 'oceanCrust', 'lithMantle', 'conduit', 'plume', 'asthenosphere'],
+      voxelKeys: ['oceanWater', 'activeVolcano', 'oldIsland', 'seamount', 'oceanCrust', 'lithMantle', 'conduit', 'plume', 'asthenosphere'],
+      geotherm: hotspotGeotherm, kmPerWorldH: 150,
+      features: {},
+      blurb: 'Intraplate volcanism (schematic — not to scale): volcanoes far from ANY plate boundary. A plume of solid-but-extra-hot mantle rises from deep below and partially melts near the top; the melt burns through the moving plate to build a SHIELD volcano of runny basalt — broad and gentle, nothing like a steep arc stratovolcano. The plume stays ~fixed while the PLATE slides past, so each volcano is carried off its magma supply, goes extinct, erodes, and sinks: active island over the plume, extinct island downstream, drowned seamount beyond. Age increasing down the chain is textbook evidence that plates move — Hawaii’s chain continues 6,000 km as the Emperor Seamounts.'
     }
   };
   var SCENE = SCENES.crust;
@@ -851,11 +1005,11 @@
   // baseline that locks current strata before the upcoming resolution refactor.
   try {
     window.__alloGeologyPure = {
-      rockKeyAt: rockKeyAt, geodeKeyAt: geodeKeyAt, deepEarthKeyAt: deepEarthKeyAt, subductionKeyAt: subductionKeyAt, hasFossilAt: hasFossilAt, computeCore: computeCore, rockFacts: rockFacts, aoCount: aoCount,
-      crustGeotherm: crustGeotherm, deepEarthGeotherm: deepEarthGeotherm, subductionGeotherm: subductionGeotherm, setGrid: setGrid, setScene: setScene, RES_MULT: RES_MULT, WORLD: WORLD,
+      rockKeyAt: rockKeyAt, geodeKeyAt: geodeKeyAt, deepEarthKeyAt: deepEarthKeyAt, subductionKeyAt: subductionKeyAt, ridgeKeyAt: ridgeKeyAt, hotspotKeyAt: hotspotKeyAt, hasFossilAt: hasFossilAt, computeCore: computeCore, rockFacts: rockFacts, aoCount: aoCount,
+      crustGeotherm: crustGeotherm, deepEarthGeotherm: deepEarthGeotherm, subductionGeotherm: subductionGeotherm, ridgeGeotherm: ridgeGeotherm, hotspotGeotherm: hotspotGeotherm, setGrid: setGrid, setScene: setScene, RES_MULT: RES_MULT, WORLD: WORLD,
       fpForward: fpForward, fpClampPitch: fpClampPitch, fpBounds: fpBounds, fpStep: fpStep, fpWorldToVoxel: fpWorldToVoxel,
       fpSeedPose: fpSeedPose, fpBob: fpBob, layerChanged: layerChanged, fpBlurb: fpBlurb, fpBust: fpBust, fpProbe: fpProbe, fpAnnounceText: fpAnnounceText, easeInOutCubic: easeInOutCubic,
-      scenes: function () { return Object.keys(SCENES); }, sceneId: function () { return SCENE.id; },
+      scenes: function () { return Object.keys(SCENES); }, sceneId: function () { return SCENE.id; }, quizBanks: function () { return QUIZ_BANKS; },
       grid: function () { return { NX: NX, NY: NY, NZ: NZ, KM_PER_VOXEL: KM_PER_VOXEL, VOXEL: VOXEL }; }
     };
   } catch (e) {}
@@ -942,8 +1096,9 @@
         setCore({ id: site.id, segs: segs, blurb: site.blurb });
         announce('Core sample, ' + site.label + '. Top to bottom: ' + segs.map(function (s) { return ROCKS[s.key].name; }).join(', ') + '. ' + site.blurb);
       }
-      function answerQuiz(i) { setQuizAns(i); var Q = QUIZ[quizI]; announce((i === Q.correct ? 'Correct. ' : 'Not quite. ') + Q.why); }
-      function nextQuiz() { var n = (quizI + 1) % QUIZ.length; setQuizI(n); setQuizAns(null); announce('Question ' + (n + 1) + '. ' + QUIZ[n].q); }
+      function sceneQuiz() { return QUIZ_BANKS[SCENE.id] || QUIZ_BANKS.crust; }
+      function answerQuiz(i) { setQuizAns(i); var Q = sceneQuiz().items[quizI]; announce((i === Q.correct ? 'Correct. ' : 'Not quite. ') + Q.why); }
+      function nextQuiz() { var B = sceneQuiz().items; var n = (quizI + 1) % B.length; setQuizI(n); setQuizAns(null); announce('Question ' + (n + 1) + '. ' + B[n].q); }
 
       // ── formation-history playback (assembles the crust in chronological order) ──
       function clearHistTimer() { if (histTimer.current) { clearTimeout(histTimer.current); histTimer.current = null; } }
@@ -1335,7 +1490,8 @@
 
       // ── relative-dating quiz (active recall) ──
       function quizPanel() {
-        var Q = QUIZ[quizI], revealed = quizAns != null;
+        var _bank = sceneQuiz(), _items = _bank.items;
+        var Q = _items[Math.min(quizI, _items.length - 1)], revealed = quizAns != null;
         function ansBtn(i) {
           var chosen = quizAns === i, right = i === Q.correct;
           var cls = !revealed
@@ -1345,10 +1501,10 @@
         }
         return h('div', { className: 'rounded-xl border p-3 ' + cardBg, role: 'region', 'aria-label': 'Relative dating quiz' },
           h('div', { className: 'flex items-center justify-between gap-2' },
-            h('span', { className: 'text-[12px] font-extrabold ' + ink }, '🧠 ' + t('stem.geology.quiz_title', 'Test yourself — relative dating')),
+            h('span', { className: 'text-[12px] font-extrabold ' + ink }, '🧠 ' + t('stem.geology.quiz_title', _bank.title)),
             h('button', { type: 'button', onClick: function () { var nv = !quizOn; setQuizOn(nv); if (nv) setQuizAns(null); }, 'aria-expanded': quizOn ? 'true' : 'false', className: 'transition-colors active:scale-[0.97] text-[11px] font-bold px-2.5 py-1 rounded-lg border ' + (quizOn ? 'bg-violet-600 border-violet-700 text-violet-50' : (isDark ? 'bg-slate-800 border-slate-600 text-slate-100 hover:bg-slate-700' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100')) }, quizOn ? t('stem.geology.quiz_hide', 'Hide') : t('stem.geology.quiz_start', 'Start'))),
           quizOn ? h('div', { className: 'mt-2' },
-            h('div', { className: 'text-[12px] font-semibold ' + ink }, (quizI + 1) + '/' + QUIZ.length + '. ' + Q.q),
+            h('div', { className: 'text-[12px] font-semibold ' + ink }, (Math.min(quizI, _items.length - 1) + 1) + '/' + _items.length + '. ' + Q.q),
             h('div', { className: 'flex flex-wrap gap-1.5 mt-1.5' }, Q.opts.map(function (_, i) { return ansBtn(i); })),
             revealed ? h('div', { className: 'mt-2 text-[11.5px] ' + (quizAns === Q.correct ? (isDark ? 'text-emerald-300' : 'text-emerald-700') : (isDark ? 'text-rose-300' : 'text-rose-700')) }, (quizAns === Q.correct ? '✓ ' : '✗ ') + Q.why) : null,
             revealed ? h('button', { type: 'button', onClick: nextQuiz, className: 'mt-2 ' + btn + btnIdle }, t('stem.geology.quiz_next', 'Next question →')) : null
@@ -1513,7 +1669,7 @@
             var on = scene === sid;
             return h('button', {
               key: sid, type: 'button', role: 'tab', 'aria-selected': on ? 'true' : 'false',
-              onClick: function () { if (sid === scene) return; setSceneState(sid); upd('scene', sid); setSlice(0); setExcavate(false); setSelected(null); setWaterOn(false); },
+              onClick: function () { if (sid === scene) return; setSceneState(sid); upd('scene', sid); setSlice(0); setExcavate(false); setSelected(null); setWaterOn(false); setQuizI(0); setQuizAns(null); },
               className: 'transition-colors active:scale-[0.97] text-xs font-bold px-3 py-1.5 rounded-lg border ' + (on ? 'bg-violet-600 border-violet-500 text-white' : (isDark ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100'))
             }, SCENES[sid].label);
           })),
@@ -1555,7 +1711,7 @@
                   return h('button', { key: site.id, type: 'button', onClick: function () { takeCore(site); }, 'aria-pressed': on ? 'true' : 'false', title: site.blurb, className: 'transition-colors active:scale-[0.97] text-[11px] font-bold px-2.5 py-1.5 rounded-lg border ' + (on ? 'bg-amber-500 border-amber-400 text-amber-950' : (isDark ? 'bg-slate-800 border-slate-600 text-slate-100 hover:bg-slate-700 hover:border-amber-400' : 'bg-white border-slate-300 text-slate-700 hover:bg-amber-50 hover:border-amber-400')) }, site.icon + ' ' + t('stem.geology.core_' + site.id, site.label));
                 })),
               corePanel()) : null))
-        , feat.quiz ? quizPanel() : null
+        , quizPanel()   // scene-aware since 2026-07-30: every scene has a QUIZ_BANKS entry
       );
     }
   });
