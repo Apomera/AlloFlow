@@ -3100,7 +3100,7 @@
         selectTab(next, true);
       }
 
-      return h('div', { className: 'iss-root', style: { maxWidth: 980 } },
+      return h('div', { className: 'iss-root', style: { maxWidth: 1440, margin: '0 auto' } },
         wcagStyles(),
         h('header', { className: 'iss-hero' },
           h('div', { className: 'iss-hero-copy' },

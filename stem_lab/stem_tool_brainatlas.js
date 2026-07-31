@@ -8,6 +8,23 @@
   if (document.head) document.head.appendChild(st);
 })();
 
+// Where this tool was loaded from — captured at parse time (document.currentScript
+// is null by the time the 3-D canvas mounts). In Gemini Canvas document.baseURI is
+// a blob: URL, which is an INVALID base for new URL() and throws — so every
+// local-asset path resolves against the script's own origin first, and a failed
+// resolution yields '' (callers filter it out and fall through to public CDNs).
+var __alloBrainAtlasScriptUrl = (function () {
+  if (typeof document === 'undefined') return '';
+  var current = document.currentScript;
+  return current && current.src ? current.src : '';
+})();
+function __alloBrainAtlasAssetUrl(fromScript, fromBase) {
+  try {
+    if (__alloBrainAtlasScriptUrl) return new URL(fromScript, __alloBrainAtlasScriptUrl).href;
+    return new URL(fromBase, document.baseURI).href;
+  } catch (_) { return ''; }
+}
+
 // Brain Atlas visual shell: scoped so the lab can be refined without touching shared chrome.
 (function() {
   if (typeof document === 'undefined') return;
@@ -6811,15 +6828,15 @@ var d = labToolData.brainAtlas || {};
             if (window.__alloBrainAtlas3DDependencies) return window.__alloBrainAtlas3DDependencies;
             var stem = window.StemLab;
             if (!stem || !stem.ensureThree || !stem.loadScriptResilient) return Promise.reject(new Error('The shared 3D engine is not available.'));
-            var coreLocal = new URL('vendor/three-r128/three.min.js', document.baseURI).href;
-            var orbitLocal = new URL('vendor/three-r128/OrbitControls.js', document.baseURI).href;
-            var gltfLocal = new URL('vendor/three-r128/GLTFLoader.js', document.baseURI).href;
-            var decoderLocal = new URL('vendor/meshoptimizer/meshopt_decoder.module.js', document.baseURI).href;
+            var coreLocal = __alloBrainAtlasAssetUrl('../vendor/three-r128/three.min.js', 'vendor/three-r128/three.min.js');
+            var orbitLocal = __alloBrainAtlasAssetUrl('../vendor/three-r128/OrbitControls.js', 'vendor/three-r128/OrbitControls.js');
+            var gltfLocal = __alloBrainAtlasAssetUrl('../vendor/three-r128/GLTFLoader.js', 'vendor/three-r128/GLTFLoader.js');
+            var decoderLocal = __alloBrainAtlasAssetUrl('../vendor/meshoptimizer/meshopt_decoder.module.js', 'vendor/meshoptimizer/meshopt_decoder.module.js');
             var promise = stem.loadScriptResilient([
               coreLocal,
               'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',
               'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js'
-            ], {
+            ].filter(Boolean), {
               cacheKey: 'three-core',
               check: function () { return !!window.THREE; },
               failMessage: 'The 3D engine could not load. The accessible 2D atlas remains available.'
@@ -6828,7 +6845,7 @@ var d = labToolData.brainAtlas || {};
                 orbitLocal,
                 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js',
                 'https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js'
-              ], {
+              ].filter(Boolean), {
                 cacheKey: 'three-orbit',
                 check: function () { return !!(window.THREE && window.THREE.OrbitControls); },
                 failMessage: 'The 3D camera controls could not start.'
@@ -6838,13 +6855,13 @@ var d = labToolData.brainAtlas || {};
                 gltfLocal,
                 'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js',
                 'https://unpkg.com/three@0.128.0/examples/js/loaders/GLTFLoader.js'
-              ], {
+              ].filter(Boolean), {
                 cacheKey: 'brain-atlas-gltf-r128',
                 check: function () { return !!(window.THREE && window.THREE.GLTFLoader); },
                 failMessage: 'The anatomy model loader could not start.'
               });            }).then(function () {
               if (window.MeshoptDecoder) return window.MeshoptDecoder.ready || true;
-              return import(decoderLocal).catch(function () {
+              return (decoderLocal ? import(decoderLocal) : Promise.reject(new Error('local decoder unavailable'))).catch(function () {
                 return import('https://cdn.jsdelivr.net/npm/meshoptimizer@1.2.0/meshopt_decoder.mjs');
               }).then(function (module) {
                 window.MeshoptDecoder = module.MeshoptDecoder || module.default || module;
@@ -7384,7 +7401,8 @@ var d = labToolData.brainAtlas || {};
 
               var loader = new THREE.GLTFLoader();
               loader.setMeshoptDecoder(deps.MeshoptDecoder);
-              var modelUrl = new URL('stem_lab/assets/brainatlas/alloflow-brain-atlas-meshopt.glb', document.baseURI).href;
+              var modelUrl = __alloBrainAtlasAssetUrl('assets/brainatlas/alloflow-brain-atlas-meshopt.glb', 'stem_lab/assets/brainatlas/alloflow-brain-atlas-meshopt.glb')
+                || 'https://alloflow-cdn.pages.dev/stem_lab/assets/brainatlas/alloflow-brain-atlas-meshopt.glb';
               loader.load(modelUrl, function (gltf) {
                 if (!state.alive || !canvas.isConnected) return;
                 state.root = gltf.scene;
