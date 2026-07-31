@@ -4,6 +4,16 @@
 use_default_settings: true
 
 server:
+  # Signs this instance's own session cookies and nothing else — it is not a
+  # credential to any account or external service, and SearXNG here is bound to
+  # the School Box and reachable only on the local network.
+  #
+  # It cannot be moved to an env var: SearXNG resolves settings only from YAML
+  # (searx/settings_loader.py reads SEARXNG_SETTINGS_PATH and nothing else), and
+  # the upstream image's sed-substitution trick needs a writable settings.yml,
+  # while this file is mounted read-only. To use a per-install value, generate
+  # one and mount your own copy over this path:
+  #     openssl rand -hex 32
   secret_key: "alloflow2026searxng"
   limiter: false
 

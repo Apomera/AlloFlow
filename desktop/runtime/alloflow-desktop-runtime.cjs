@@ -2540,6 +2540,12 @@ function prepareSchoolBoxEnv(config) {
     created = true;
   }
 
+  // The env file holds local service settings and credentials, so keep it owner-only.
+  // writeFileSync's `mode` is ignored when the file already exists and copyFileSync
+  // inherits the example's permissions, so set it explicitly here — this also tightens
+  // files created before this was enforced. No-op on Windows ACLs.
+  try { fs.chmodSync(paths.envFile, 0o600); } catch (_) {}
+
   let lines = fs.readFileSync(paths.envFile, 'utf8').split(/\r?\n/);
   const values = readEnvValues(paths.envFile);
   const pbPort = sanitizePort(values.PB_PORT, SCHOOLBOX_DEFAULT_PORTS.PB_PORT);
@@ -2563,7 +2569,7 @@ function prepareSchoolBoxEnv(config) {
   }
 
   if (changed) {
-    fs.writeFileSync(paths.envFile, lines.join('\n').replace(/\n*$/, '\n'), 'utf8');
+    fs.writeFileSync(paths.envFile, lines.join('\n').replace(/\n*$/, '\n'), { encoding: 'utf8', mode: 0o600 });
   }
 
   appendSchoolBoxLog(`${created ? 'Created' : 'Prepared'} School Box environment at ${paths.envFile}`);

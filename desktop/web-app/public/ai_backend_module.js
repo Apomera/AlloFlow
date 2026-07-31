@@ -1405,11 +1405,20 @@ class AIProvider {
         }
     }
 
+    // Gemini accepts the key as either ?key= or the x-goog-api-key header. Use the
+    // header: query strings land in browser history, proxy and server access logs,
+    // and Referer headers, so a URL-borne key leaks to places the request body never
+    // reaches. Callers must not add the key back into the URL.
+    _geminiHeaders(base = {}) {
+        const headers = { 'Content-Type': 'application/json', ...base };
+        if (this.apiKey) headers['x-goog-api-key'] = this.apiKey;
+        return headers;
+    }
+
     async _geminiGenerateText(prompt, { json, search, temperature, maxTokens, signal }) {
         const buildUrl = (model) => {
             this._debugLog(`[AIProvider] ✉ Using model: ${model}`);
-            const keyParam = this.apiKey ? `?key=${this.apiKey}` : '';
-            return `${this.baseUrl}/models/${model}:generateContent${keyParam}`;
+            return `${this.baseUrl}/models/${model}:generateContent`;
         };
 
         const payload = {
@@ -1433,7 +1442,7 @@ class AIProvider {
 
         const fetchOpts = {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: this._geminiHeaders(),
             body: JSON.stringify(payload),
             signal,
         };
@@ -1901,8 +1910,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     }
 
     async _geminiGenerateImage(prompt, width, quality) {
-        const keyParam = this.apiKey ? `?key=${this.apiKey}` : '';
-        const url = `${this.baseUrl}/models/${this.models.imagen}:predict${keyParam}`;
+        const url = `${this.baseUrl}/models/${this.models.imagen}:predict`;
         const payload = {
             instances: [{ prompt }],
             parameters: { sampleCount: 1 },
@@ -1911,7 +1919,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         const executeRequest = async () => {
             const response = await fetch(url, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: this._geminiHeaders(),
                 body: JSON.stringify(payload),
             });
 
@@ -2061,8 +2069,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     }
 
     async _geminiEditImage(prompt, base64Image, width, quality, referenceBase64) {
-        const keyParam = this.apiKey ? `?key=${this.apiKey}` : '';
-        const url = `${this.baseUrl}/models/${this.models.image}:generateContent${keyParam}`;
+        const url = `${this.baseUrl}/models/${this.models.image}:generateContent`;
 
         const parts = [
             { text: prompt },
@@ -2081,7 +2088,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         try {
             const response = await fetch(url, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: this._geminiHeaders(),
                 body: JSON.stringify(payload),
             });
             const data = await response.json();
@@ -2183,8 +2190,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     }
 
     async _geminiAnalyzeImage(prompt, base64Data, mimeType) {
-        const keyParam = this.apiKey ? `?key=${this.apiKey}` : '';
-        const url = `${this.baseUrl}/models/${this.models.vision}:generateContent${keyParam}`;
+        const url = `${this.baseUrl}/models/${this.models.vision}:generateContent`;
 
         const payload = {
             contents: [{
@@ -2197,7 +2203,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
 
         const response = await fetch(url, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: this._geminiHeaders(),
             body: JSON.stringify(payload),
         });
         const data = await response.json();
@@ -2280,10 +2286,9 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     }
 
     async _geminiAnalyzeAudio(prompt, base64Data, mimeType) {
-        const keyParam = this.apiKey ? `?key=${this.apiKey}` : '';
         // Use the vision/multimodal model — Gemini's flash/pro vision
         // models accept audio in the same payload shape.
-        const url = `${this.baseUrl}/models/${this.models.vision}:generateContent${keyParam}`;
+        const url = `${this.baseUrl}/models/${this.models.vision}:generateContent`;
 
         // Strip any data:audio/...;base64, prefix the caller may have left
         // on the string (recordAudioBlob returns a full data URI).
@@ -2305,7 +2310,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
 
         const response = await fetch(url, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: this._geminiHeaders(),
             body: JSON.stringify(payload),
         });
         const data = await response.json();
@@ -2391,8 +2396,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
 
         // Queue for serialization
         const task = this._ttsQueue.then(async () => {
-            const keyParam = this.apiKey ? `?key=${this.apiKey}` : '';
-            const url = `${this.baseUrl}/models/${this.models.tts}:generateContent${keyParam}`;
+            const url = `${this.baseUrl}/models/${this.models.tts}:generateContent`;
 
             const payload = {
                 contents: [{ parts: [{ text }] }],
@@ -2410,7 +2414,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 try {
                     const response = await fetch(url, {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: this._geminiHeaders(),
                         body: JSON.stringify(payload),
                     });
 
@@ -2540,7 +2544,8 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                     url = `${this.baseUrl}/api/tags`;
                     break;
                 case 'gemini':
-                    url = `${this.baseUrl}/models?key=${this.apiKey}`;
+                    url = `${this.baseUrl}/models`;
+                    if (this.apiKey) headers['x-goog-api-key'] = this.apiKey;
                     break;
                 case 'claude':
                     return [

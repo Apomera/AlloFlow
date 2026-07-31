@@ -463,7 +463,7 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
             return null;
         }
         console.log(`[URL Fetch] 🤖 Attempting Gemini URL Context fallback for ${targetUrl}`);
-        const urlCtxEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.default}:generateContent${apiKey ? `?key=${apiKey}` : ''}`;
+        const urlCtxEndpoint = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.default}:generateContent`;
         const urlCtxPayload = {
             contents: [{
                 parts: [{
@@ -478,7 +478,7 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
             const timeoutId = setTimeout(() => controller.abort(), 45000);
             const resp = await fetch(urlCtxEndpoint, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', ...(apiKey ? { 'x-goog-api-key': apiKey } : {}) },
                 body: JSON.stringify(urlCtxPayload),
                 signal: controller.signal
             });
@@ -519,7 +519,7 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
         if (toastCallback) toastCallback("🎬 YouTube detected — extracting transcript via Gemini...", "info");
         try {
             if (!targetUrl.startsWith('http')) targetUrl = 'https://' + targetUrl;
-            const ytUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.default}:generateContent${apiKey ? `?key=${apiKey}` : ''}`;
+            const ytUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.default}:generateContent`;
             const ytPayload = {
                 contents: [{
                     parts: [
@@ -531,7 +531,7 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
             };
             const ytResponse = await fetch(ytUrl, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', ...(apiKey ? { 'x-goog-api-key': apiKey } : {}) },
                 body: JSON.stringify(ytPayload)
             });
             if (!ytResponse.ok) {

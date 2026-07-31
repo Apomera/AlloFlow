@@ -229,7 +229,7 @@ const createTTS = (deps) => {
             try {
                 const taskResult = await (async () => {
             const baseUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.tts}:generateContent`;
-            const url = `${baseUrl}?key=${apiKey || ''}`;
+            const url = baseUrl;
             const decodeBase64 = (base64) => {
                  const binaryString = window.atob(base64);
                  const len = binaryString.length;
@@ -299,7 +299,7 @@ const createTTS = (deps) => {
             try {
               const response = await fetch(url, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', ...(apiKey ? { 'x-goog-api-key': apiKey } : {}) },
                 body: JSON.stringify(payload),
                 signal: fetchSignal
               });
@@ -344,7 +344,7 @@ const createTTS = (deps) => {
                           };
                           const retryResponse = await fetch(url, {
                               method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
+                              headers: { 'Content-Type': 'application/json', ...(apiKey ? { 'x-goog-api-key': apiKey } : {}) },
                               body: JSON.stringify(retryPayload),
                               signal: fetchSignal
                           });
@@ -1069,7 +1069,7 @@ const createTTS = (deps) => {
                 const queuedTask = state.botQueue.then(async () => {
                     console.log("[TTS-Bot] 🔄 Queue slot acquired, making API call...");
                     const baseUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.tts}:generateContent`;
-                    const url = `${baseUrl}${apiKey ? `?key=${apiKey}` : ''}`;
+                    const url = baseUrl;
                     const decodeBase64 = (base64) => {
                          const binaryString = window.atob(base64);
                          const len = binaryString.length;
@@ -1089,7 +1089,7 @@ const createTTS = (deps) => {
                     };
                     const response = await fetch(url, {
                       method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
+                      headers: { 'Content-Type': 'application/json', ...(apiKey ? { 'x-goog-api-key': apiKey } : {}) },
                       body: JSON.stringify(payload)
                     });
                     console.log("[TTS-Bot] API response status:", response.status, response.statusText);

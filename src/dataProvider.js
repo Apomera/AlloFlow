@@ -19,6 +19,50 @@
  * ╚══════════════════════════════════════════════════════════════════════════╝
  */
 
+// ─── Secure Random ──────────────────────────────────────────────────────────
+// Credentials and session codes must not come from Math.random(): it is seeded from
+// predictable state and is not a CSPRNG, so anonymous-account passwords and live-session
+// codes generated from it are guessable. Uses WebCrypto in the browser, node:crypto under
+// Node, and throws rather than silently degrading to a weak fallback.
+const _webcrypto = (typeof globalThis !== 'undefined' && globalThis.crypto && globalThis.crypto.getRandomValues)
+    ? globalThis.crypto
+    : (() => { try { return require('crypto').webcrypto; } catch (_) { return null; } })();
+
+// getRandomValues rejects requests over 65,536 bytes, so fill in chunks.
+function _randomBytes(count) {
+    if (!_webcrypto) throw new Error('No CSPRNG available: cannot generate credentials securely.');
+    const out = new Uint8Array(count);
+    for (let offset = 0; offset < count; offset += 65536) {
+        _webcrypto.getRandomValues(out.subarray(offset, Math.min(offset + 65536, count)));
+    }
+    return out;
+}
+
+// Uniform over `alphabet` via rejection sampling — modulo would bias toward early characters.
+function _secureString(length, alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789') {
+    const max = Math.floor(256 / alphabet.length) * alphabet.length;
+    let out = '';
+    while (out.length < length) {
+        for (const byte of _randomBytes(length - out.length + 8)) {
+            if (byte >= max) continue;
+            out += alphabet[byte % alphabet.length];
+            if (out.length === length) break;
+        }
+    }
+    return out;
+}
+
+// Uniform integer in [min, max] inclusive.
+function _secureInt(min, max) {
+    const range = max - min + 1;
+    const limit = Math.floor(4294967296 / range) * range;
+    for (;;) {
+        const b = _randomBytes(4);
+        const n = ((b[0] << 24) >>> 0) + (b[1] << 16) + (b[2] << 8) + b[3];
+        if (n < limit) return min + (n % range);
+    }
+}
+
 // ─── Field Operation Sentinels ──────────────────────────────────────────────
 // These are sentinel objects used to represent Firestore field operations.
 // Each backend adapter interprets them during write operations.
@@ -331,8 +375,8 @@ class PocketBaseAdapter {
     async signInAnonymously() {
         // PocketBase: create an anonymous user via the users collection
         try {
-            const uid = 'anon_' + Math.random().toString(36).substring(2, 12);
-            const password = Math.random().toString(36).substring(2, 18);
+            const uid = 'anon_' + _secureString(10);
+            const password = _secureString(32);
             // Create user
             await this._fetch('/api/collections/users/records', {
                 method: 'POST',
@@ -708,7 +752,7 @@ class DataProvider {
 
     // ─── Session Codes (4-digit) ───────────────────────────────────────────
     generateSessionCode() {
-        return String(Math.floor(1000 + Math.random() * 9000)); // 4-digit code
+        return String(_secureInt(1000, 9999)); // 4-digit code
     }
 
     // ─── Connection Test ──────────────────────────────────────────────────

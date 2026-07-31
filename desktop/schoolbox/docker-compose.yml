@@ -13,6 +13,11 @@ services:
       pocketbase:
         condition: service_healthy
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "${FRONTEND_CPUS:-1.0}"
+          memory: ${FRONTEND_MEMORY:-512m}
 
   pocketbase:
     image: ghcr.io/muchobien/pocketbase:latest
@@ -29,6 +34,11 @@ services:
       timeout: 5s
       start_period: 10s
       retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: "${POCKETBASE_CPUS:-2.0}"
+          memory: ${POCKETBASE_MEMORY:-1g}
 
   ollama:
     image: ollama/ollama:latest
@@ -38,6 +48,11 @@ services:
     volumes:
       - ollama_data:/root/.ollama
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "${OLLAMA_CPUS:-8.0}"
+          memory: ${OLLAMA_MEMORY:-16g}
 
   piper:
     image: rhasspy/wyoming-piper:latest
@@ -48,6 +63,11 @@ services:
       - piper_data:/data
     command: --voice en_US-amy-medium --data-dir /data --download-dir /data
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "${PIPER_CPUS:-2.0}"
+          memory: ${PIPER_MEMORY:-2g}
 
   searxng:
     image: searxng/searxng:latest
@@ -60,6 +80,11 @@ services:
       - ./searxng/settings.yml:/etc/searxng/settings.yml:ro
       - searxng_data:/etc/searxng
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "${SEARXNG_CPUS:-2.0}"
+          memory: ${SEARXNG_MEMORY:-1g}
 
 volumes:
   pocketbase_data:
