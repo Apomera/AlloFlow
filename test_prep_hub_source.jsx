@@ -4943,6 +4943,17 @@ function TestPrepHub(props) {
                       >
                         {actionLabel}
                       </button>
+                      {/* Study-first entry (2026-07-31): the learning library was only
+                          reachable AFTER committing to a practice set — but reviewing
+                          the content is the natural FIRST step for most candidates. */}
+                      {card.learningLibraryUrl && <button
+                        type="button"
+                        disabled={loading}
+                        onClick={() => openPackFromCatalog(card, 'library')}
+                        className="mt-2 ml-2 rounded-xl border border-indigo-300 bg-white px-4 py-3 text-sm font-black text-indigo-900 hover:bg-indigo-50 focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 disabled:cursor-wait disabled:opacity-50"
+                      >
+                        Study the learning library
+                      </button>}
                     </article>
                   );
                 })}

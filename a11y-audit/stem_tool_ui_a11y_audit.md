@@ -1,6 +1,6 @@
 # STEM Tool UI/UX Accessibility Audit
 
-Generated: 2026-07-30T04:55:55.898Z
+Generated: 2026-07-31T00:49:10.854Z
 
 ## Scope
 
@@ -110,7 +110,7 @@ Generated: 2026-07-30T04:55:55.898Z
 | `gameStudio` Game Design Studio | creativity | standard | 34 | 3 | 0 | 0 | 0 | 0 |  |
 | `geoQuiz` Geography Explorer | geo | standard | 12 | 2 | 0 | 0 | 0 | 0 |  |
 | `geoSandbox` Geometry Sandbox | math | standard | 0 | 0 | 0 | 0 | 0 | 0 |  |
-| `geologyExplorer` Geology Explorer | explore | standard | 23 | 1 | 0 | 0 | 0 | 1 | metadata x1 |
+| `geologyExplorer` Geology Explorer | explore | standard | 25 | 1 | 0 | 0 | 0 | 1 | metadata x1 |
 | `geometryProver` Geometry | math | standard | 17 | 0 | 0 | 0 | 0 | 0 |  |
 | `geometryWorld` Geometry World | explore | standard | 0 | 0 | 0 | 0 | 0 | 1 | metadata x1 |
 | `gisStudio` GIS Studio | geo | standard | 13 | 9 | 0 | 0 | 0 | 0 |  |

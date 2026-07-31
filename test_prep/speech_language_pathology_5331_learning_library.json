@@ -1,4 +1,5 @@
 {
+  "version": "1.0.0", "visibility": "public",
   "schemaVersion": 1,
   "generatedAt": "2026-07-23T17:23:50.961Z",
   "libraryId": "praxis-speech-language-pathology-5331-learning-library",

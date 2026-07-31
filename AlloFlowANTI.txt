@@ -9940,6 +9940,13 @@ Return ONLY JSON:
   
   const [showStudentEntry, setShowStudentEntry] = useState(false);
   const [showWizard, setShowWizard] = useState(true);
+  // Guided Mode always suppresses the QuickStart wizard. The HEADER guided
+  // entry closed it explicitly, but the Launch Pad guided card and the
+  // onboarding coach set guidedMode without touching it — so picking Teacher
+  // after the guided card landed in the wizard instead of the guided flow
+  // ("guided works from the header but not from the launch pad", 2026-07-31).
+  // Host-level rule so every entry path, present and future, is covered.
+  useEffect(() => { if (guidedMode) setShowWizard(false); }, [guidedMode]);
   // When set (e.g. from the idle panel's "Find a resource online"), the wizard
   // opens straight to that source step instead of step 1. Cleared once consumed.
   const [wizardInitialMode, setWizardInitialMode] = useState(null);

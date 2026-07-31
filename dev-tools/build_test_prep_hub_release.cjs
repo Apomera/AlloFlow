@@ -304,6 +304,12 @@ execFileSync(process.execPath,[epppMigrationArchivePath,'--verify'],{cwd:root,st
 execFileSync(process.execPath,[epppLearningLibraryBuildPath],{cwd:root,stdio:'inherit'});
 execFileSync(process.execPath,[epppPartOnePackBuildPath],{cwd:root,stdio:'inherit'});
 execFileSync(process.execPath,[epppNativeQaPath],{cwd:root,stdio:'inherit'});
+// Bind every learning-library JSON to its pack identity AFTER all library
+// generators and BEFORE the manifest recomputes digests: the hub's library
+// fetch runs strict bound-identity validation whenever the manifest entry
+// carries a sha256, and only the AP-pilot generator emits the full
+// packId/version/visibility trio itself (2026-07-31).
+execFileSync(process.execPath,[path.join(root,'dev-tools','stamp_learning_library_identity.cjs')],{cwd:root,stdio:'inherit'});
 execFileSync(process.execPath,[buildTestPrepPackManifestPath],{cwd:root,stdio:'inherit'});
 
 const originalSource = fs.readFileSync(sourcePath, 'utf8');

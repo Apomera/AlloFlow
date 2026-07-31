@@ -225,6 +225,10 @@ if (!skipEpppRefresh) {
   execSync(`node "${LEARNING_LIBRARY_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
   execSync(`node "${QA_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
 }
+// Bind every learning-library JSON to its pack identity BEFORE the manifest
+// recomputes digests — the hub's strict validator rejects unbound catalogs, and
+// only the AP-pilot generator emits the identity trio itself (2026-07-31).
+execSync(`node "${path.join(ROOT, 'dev-tools', 'stamp_learning_library_identity.cjs')}"`, { cwd: ROOT, stdio: 'inherit' });
 execSync(`node "${PACK_MANIFEST_BUILD_SCRIPT}"`, { cwd: ROOT, stdio: 'inherit' });
 const paraProPack = JSON.parse(fs.readFileSync(PARAPRO_PACK_SOURCE, 'utf8'));
 if (!paraProPack || paraProPack.id !== 'parapro-1755-practice-1' || paraProPack.batchSize !== 100 || !Array.isArray(paraProPack.items) || paraProPack.items.length !== 500) {
