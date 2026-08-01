@@ -13857,6 +13857,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         id: 'fl-active-panel',
         role: 'tabpanel',
         'aria-label': activeTabEntry.label,
+        'aria-labelledby': 'fl-tab-' + tab,
+        tabIndex: 0,
         style: { minWidth: 0 }
       },
       tab === 'home' ? homeTab() :
