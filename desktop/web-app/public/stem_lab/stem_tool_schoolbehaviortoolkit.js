@@ -1470,12 +1470,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
           { id: 'connect', label: __alloT('stem.schoolbehaviortoolkit.connect', 'Connect'), icon: '🔗' },
           { id: 'inquiry', label: __alloT('stem.schoolbehaviortoolkit.behavior_inquiry', 'Behavior Inquiry'), icon: '🧪' }
         ];
+        var schoolBehaviorTabKeyDown = function(e, index) {
+          var nextIndex = -1;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % 12;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + 11) % 12;
+          else if (e.key === 'Home') nextIndex = 0;
+          else if (e.key === 'End') nextIndex = 11;
+          if (nextIndex < 0) return;
+          e.preventDefault();
+          var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+          var nextTab = tabs[nextIndex];
+          if (nextTab) { nextTab.focus(); nextTab.click(); }
+        };
         return h('div', { role: 'tablist', 'aria-label': __alloT('stem.schoolbehaviortoolkit.school_behavior_toolkit_sections', 'School Behavior Toolkit sections'),
           style: { display: 'flex', gap: 4, padding: '14px 18px 0', overflowX: 'auto', borderBottom: '1px solid rgba(20,184,166,0.15)', alignItems: 'flex-end' } },
-          tabs.map(function(t) {
+          tabs.map(function(t, tabIndex) {
             var active = section === t.id;
             return h('button', {
-              key: t.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
+              key: t.id, role: 'tab', id: 'school-behavior-tab-' + t.id,
+              'aria-controls': 'school-behavior-panel-' + t.id,
+              'aria-selected': active ? 'true' : 'false', tabIndex: active ? 0 : -1,
+              onKeyDown: function(e) { schoolBehaviorTabKeyDown(e, tabIndex); },
               onClick: function() { setSection(t.id); },
               style: {
                 position: 'relative',
@@ -2134,7 +2149,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
       return h('div', { style: rootStyle, role: 'region', 'aria-label': __alloT('stem.schoolbehaviortoolkit.school_behavior_toolkit_2', 'School Behavior Toolkit') },
         renderHeader(),
         renderTabs(),
-        h('div', { style: { padding: 20 } },
+        h('div', { role: 'tabpanel', id: 'school-behavior-panel-' + section,
+          'aria-labelledby': 'school-behavior-tab-' + section, tabIndex: 0, style: { padding: 20 } },
           content
         )
       );
