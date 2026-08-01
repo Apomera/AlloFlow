@@ -926,6 +926,7 @@
                       h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
                       __alloT('stem.graphcalc.i_understand_explain_in_my_own_words', 'I understand — explain in my own words')),
                     iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); },
+                      'aria-label': __alloT('stem.graphcalc.explanation_input', 'Graphing calculator explanation'),
                       placeholder: __alloT('stem.graphcalc.explain_in_your_own_words_what_does_ea', 'Explain in your own words: what does each slider control?'),
                       style: { width: '100%', marginTop: '4px', minHeight: '50px', padding: '4px', background: gcPanel, color: gcText, border: '1px solid rgba(16,185,129,0.45)', borderRadius: '4px', fontSize: '10px', fontFamily: 'monospace' }, rows: 4 })
                   ),

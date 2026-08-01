@@ -32,6 +32,7 @@ describe('Graphing Calculator theme contrast', () => {
     expect(source).toContain('--gc-muted:#cbd5e1');
     expect(source).toContain('.theme-contrast .graphcalc-shell');
     expect(source).toContain('--gc-button-text:var(--allo-stem-button-text,#000)');
+    expect(source).toContain("'aria-label': __alloT('stem.graphcalc.explanation_input', 'Graphing calculator explanation')");
   });
 
   it('renders the main panel with contrast tokens instead of washed-out lavender controls', () => {
