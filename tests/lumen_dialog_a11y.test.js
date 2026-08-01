@@ -11,5 +11,7 @@ describe('Lumen confirmation dialog accessibility', () => {
     expect(source).toContain('window.AlloFlowUX && window.AlloFlowUX.confirm');
     expect(source).toContain('Confirm identifiable brief export');
     expect(source).toContain('Clear all data points');
+    expect(source).toContain("'aria-label': __alloT('stem.lumen.hypothesis_input', 'Evidence trend hypothesis')");
+    expect(source).toContain("'aria-label': __alloT('stem.lumen.explanation_input', 'Evidence trend explanation')");
   });
 });
