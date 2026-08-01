@@ -31,5 +31,7 @@ describe('AutoRepair Diagnose tabs accessibility', () => {
     expect(source).toContain("id: 'autorepair-diagnose-panel-' + dxView");
     expect(source).toContain("'aria-labelledby': 'autorepair-diagnose-tab-' + dxView");
     expect(source).toContain('tabIndex: 0');
+    expect(source).toContain("'aria-label': __alloT('stem.autorepair.hypothesis_input', 'Engine timing hypothesis')");
+    expect(source).toContain("'aria-label': __alloT('stem.autorepair.explanation_input', 'Engine timing explanation')");
   });
 });
