@@ -4660,16 +4660,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
           svg = svgSolarPvCell();
           caption = 'A silicon photovoltaic cell is two layers of silicon doped with different impurities (boron and phosphorus). Sunlight knocks electrons loose; the P-N junction’s electric field pushes them out one side; they flow through an external circuit as DC current; an inverter converts to AC for the grid.';
         }
+        var diagramTabKeyDown = function(e, index) {
+          var nextIndex = -1;
+          var total = DIAGRAM_TABS.length;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % total;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + total - 1) % total;
+          else if (e.key === 'Home') nextIndex = 0;
+          else if (e.key === 'End') nextIndex = total - 1;
+          if (nextIndex < 0) return;
+          e.preventDefault();
+          var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+          var nextTab = tabs[nextIndex];
+          if (nextTab) { nextTab.focus(); nextTab.click(); }
+        };
         return h('div', { style: { padding: 20, maxWidth: 980, margin: '0 auto', color: T.text } },
           backBar('🔬 Diagrams'),
           h('p', { style: { margin: '0 0 14px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
             __alloT('stem.renewables.labeled_cross_sections_of_how_four_com', 'Labeled cross-sections of how four common renewable systems actually work. Switch tabs to compare designs.')),
           h('div', { role: 'tablist', 'aria-label': __alloT('stem.renewables.schematic_diagrams', 'Schematic diagrams'),
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 } },
-            DIAGRAM_TABS.map(function(t) {
+            DIAGRAM_TABS.map(function(t, tabIndex) {
               var picked = current === t.id;
               return h('button', { key: t.id, role: 'tab',
+                id: 'renewables-diagram-tab-' + t.id,
+                'aria-controls': 'renewables-diagram-panel-' + t.id,
                 'aria-selected': picked ? 'true' : 'false',
+                tabIndex: picked ? 0 : -1,
+                onKeyDown: function(e) { diagramTabKeyDown(e, tabIndex); },
                 'data-rn-focusable': true,
                 onClick: function() { upd('diagramView', t.id); rnAnnounce(t.label + ' diagram'); },
                 style: btn({
@@ -4682,7 +4699,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
               }, t.icon + ' ' + t.label);
             })
           ),
-          h('div', { role: 'tabpanel',
+          h('div', { role: 'tabpanel', id: 'renewables-diagram-panel-' + current,
+            'aria-labelledby': 'renewables-diagram-tab-' + current, tabIndex: 0,
             style: { padding: 12, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 12 } },
             h('div', { style: { width: '100%', maxWidth: 920, margin: '0 auto', aspectRatio: '600 / 360' } }, svg),
             h('p', { style: { margin: '12px 4px 0', fontSize: 13, color: T.muted, lineHeight: 1.6 } }, caption)
