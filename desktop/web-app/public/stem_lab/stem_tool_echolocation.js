@@ -5288,7 +5288,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ mn: iq.fmin, mx: iq.fmax, dur: iq.sweepMs, c: category }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-100 text-[11px] font-bold text-slate-700 border border-slate-300' }, t('stem.echolocation.log', '📋 Log')),
               h('button', { onClick: function() { setIQ({ fmin: 40, fmax: 100, sweepMs: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-white text-[11px] font-semibold text-slate-600 border border-slate-300' }, t('stem.echolocation.reset', '↺ Reset'))
             ),
-            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.echolocation.hypothesis_when_does_the_call_become_f', 'Hypothesis: When does the call become FM vs CF?'),
+            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, 'aria-label': t('stem.echolocation.hypothesis_input', 'Sonar call-type hypothesis'), placeholder: t('stem.echolocation.hypothesis_when_does_the_call_become_f', 'Hypothesis: When does the call become FM vs CF?'),
               className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug mb-3', rows: 3 }),
             !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[11px] font-bold text-amber-800 border border-amber-300 mb-3' }, t('stem.echolocation.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
             iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[11px] text-slate-700 leading-relaxed mb-3' },
@@ -5299,7 +5299,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-800 cursor-pointer' },
                 h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                 t('stem.echolocation.i_understand_explain_in_own_words', 'I understand — explain in own words')),
-              iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.echolocation.explain_why_call_shape_bandwidth_durat', 'Explain why call shape (bandwidth + duration) determines suitability for different prey.'),
+              iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, 'aria-label': t('stem.echolocation.explanation_input', 'Sonar call-type explanation'), placeholder: t('stem.echolocation.explain_why_call_shape_bandwidth_durat', 'Explain why call shape (bandwidth + duration) determines suitability for different prey.'),
                 className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
             h('div', { className: 'mt-2 text-[10px] italic text-slate-500' }, t('stem.echolocation.design_note_discrete_4_category_sonar_', 'Design note: discrete 4-category sonar marker; no detection-rate score; no reveal — by design.'))
           );
