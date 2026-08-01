@@ -3420,7 +3420,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               );
             })
           ),
-          h('svg', { width: '100%', height: 80, viewBox: '0 0 320 80', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10 } },
+          h('svg', { width: '100%', height: 80, viewBox: '0 0 320 80', role: 'img', 'aria-label': t('stem.migration.fat_reserve_chart', 'Fat reserve chart showing the energy needed for the current flight.'), style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10 } },
             h('text', { x: 10, y: 18, fill: '#94a3b8', fontSize: 10 }, t('stem.migration.fat_reserve_kj', 'Fat reserve (kJ)')),
             h('rect', { x: 10, y: 24, width: 300, height: 22, fill: '#0f172a', stroke: '#1e293b' }),
             h('rect', { x: 10, y: 24, width: Math.min(300, pct * 300), height: 22, fill: sm.color, opacity: 0.85 }),
