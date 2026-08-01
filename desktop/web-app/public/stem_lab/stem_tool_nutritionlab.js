@@ -17769,6 +17769,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
 
         var stage = DIGESTION_STAGES[stageIdx];
 
+        function digestionStageTabKeyDown(e, index) {
+          var nextIndex = index;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % DIGESTION_STAGES.length;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index - 1 + DIGESTION_STAGES.length) % DIGESTION_STAGES.length;
+          else if (e.key === 'Home') nextIndex = 0;
+          else if (e.key === 'End') nextIndex = DIGESTION_STAGES.length - 1;
+          else return;
+          e.preventDefault();
+          var tabButtons = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+          if (tabButtons[nextIndex]) {
+            tabButtons[nextIndex].focus();
+            tabButtons[nextIndex].click();
+          }
+        }
+
         function next() {
           if (stageIdx < DIGESTION_STAGES.length - 1) {
             setStageIdx(stageIdx + 1);
@@ -17798,8 +17813,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                   return h('button', {
                     key: s.id,
                     role: 'tab',
+                    id: 'nutrition-digestion-tab-' + s.id,
+                    'aria-controls': 'nutrition-digestion-panel-' + s.id,
                     'aria-selected': sel ? 'true' : 'false',
+                    tabIndex: sel ? 0 : -1,
                     onClick: function() { setStageIdx(i); announce('Jumped to ' + s.name); },
+                    onKeyDown: function(e) { digestionStageTabKeyDown(e, i); },
                     className: 'flex items-center gap-2 px-3 py-2 rounded-xl border-2 font-bold text-sm transition focus:outline-none focus:ring-2 ring-emerald-500/40 ' +
                       (sel ? 'bg-emerald-700 text-white border-emerald-800 shadow' : 'bg-white text-slate-800 border-slate-300 hover:border-emerald-500')
                   },
@@ -17809,6 +17828,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 })
               )
             ),
+            h('div', {
+              role: 'tabpanel',
+              id: 'nutrition-digestion-panel-' + stage.id,
+              'aria-labelledby': 'nutrition-digestion-tab-' + stage.id,
+              tabIndex: 0
+            },
             // Stage hero
             h('div', { className: 'bg-gradient-to-br ' + stage.color + ' text-white rounded-2xl p-6 shadow-lg' },
               h('div', { className: 'flex items-center gap-4 mb-2' },
@@ -17904,6 +17929,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               extension: 'Pick one digestive enzyme from this module (amylase, pepsin, lipase, trypsin, lactase). Look up where it\'s made, what it breaks down, and what conditions involve too little or too much of it. Write a paragraph.',
               sources: 'Stage timing and enzyme info from Marieb & Hoehn, Human Anatomy & Physiology. Hormone signaling from Murray\'s Harper\'s Illustrated Biochemistry. Gut microbiome / SCFA effects from Sonnenburg & Bäckhed, Nature 2016 review.'
             })
+            )
           )
         );
       }
