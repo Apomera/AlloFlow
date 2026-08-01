@@ -1656,6 +1656,7 @@
             onChange: function (e) { setJustification(e.target.value.slice(0, 600)); },
             placeholder: pickedVerb ? (pickedVerb.hint + ' Be specific.') : 'How does this card belong here?',
             rows: 3,
+            'aria-label': 'Zone placement justification',
             // Disable typing during transcribing — the value is about to be
             // replaced by the AI transcript. Submitting disables too.
             disabled: submitting || voiceMode === 'transcribing',
