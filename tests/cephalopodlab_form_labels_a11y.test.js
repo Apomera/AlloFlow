@@ -66,6 +66,7 @@ describe('Cephalopod Lab form-control accessibility', () => {
     );
     expect(source).toContain("htmlFor: 'ch-explanation'");
     expect(source).toContain("id: 'ch-explanation'");
+    expect(source).toContain("'aria-pressed': active");
     expect(source).toContain('wcag_2_2_aa_changes_apply_on_next_dive');
   });
 

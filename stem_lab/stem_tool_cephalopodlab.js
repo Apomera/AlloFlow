@@ -17663,6 +17663,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 return h('button', {
                   key: k,
                   onClick: function() { setCH({ substrate: k }); },
+                  'aria-pressed': active,
                   className: 'px-2 py-1 rounded text-[11px] font-bold border transition-colors ' + (active ? 'bg-indigo-200 text-indigo-900 border-indigo-400' : 'bg-white text-slate-600 border-slate-300 hover:bg-indigo-50')
                 }, SUBSTRATES[k].label);
               })
