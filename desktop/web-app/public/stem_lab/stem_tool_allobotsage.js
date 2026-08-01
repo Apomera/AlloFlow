@@ -2343,7 +2343,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           // sectors gets tedious; presets let students save common configurations.
           available.length >= 3 && (function() {
             var presets = d.loadoutPresets || [];
-            function saveAsPreset() {
+            async function saveAsPreset() {
               if (equippedLoadout.length === 0) {
                 addToast('Equip at least 1 spell before saving a preset', 'info');
                 return;
@@ -2353,9 +2353,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 return;
               }
               var defaultName = 'Preset ' + (presets.length + 1);
-              var name = (typeof prompt === 'function') ? prompt('Name this preset:', defaultName) : defaultName;
-              if (name === null) return; // cancelled
-              name = (name || defaultName).slice(0, 24);
+              async function requestPresetName() {
+                var promptModule = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.PromptDialog && window.AlloModules.PromptDialog.PromptDialog;
+                var promptApi = typeof window !== 'undefined' && window.AlloFlowUX && window.AlloFlowUX.prompt;
+                var unavailable = 'Preset naming is unavailable, so your loadout was not saved.';
+                if (typeof promptModule !== 'function' || typeof promptApi !== 'function') {
+                  addToast(unavailable, 'warning');
+                  announceSR(unavailable);
+                  return null;
+                }
+                try {
+                  return await promptApi('Name this preset:', defaultName, {
+                    title: 'Name loadout preset',
+                    placeholder: 'For example: Crystal Nebula spells',
+                    confirmText: 'Save preset',
+                    cancelText: 'Cancel',
+                    maxLength: 24
+                  });
+                } catch (e) {
+                  var failed = 'The preset name dialog could not open, so your loadout was not saved.';
+                  addToast(failed, 'warning');
+                  announceSR(failed);
+                  return null;
+                }
+              }
+              var name = await requestPresetName();
+              if (name === null) { announceSR('Preset save cancelled.'); return; }
+              name = (String(name).trim() || defaultName).slice(0, 24);
               sfxClick();
               updKey('loadoutPresets', presets.concat([{ name: name, spellIds: equippedLoadout.slice() }]));
               addToast('\ud83d\udcbe Saved preset: ' + name, 'success');
@@ -2403,7 +2427,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                           })
                         ),
                         h('button', {
-                          onClick: function() { if (typeof confirm !== 'function' || confirm('Delete preset "' + p.name + '"?')) deletePreset(idx); },
+                          onClick: async function() {
+                            var confirmModule = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.ConfirmDialog && window.AlloModules.ConfirmDialog.ConfirmDialog;
+                            var confirmApi = typeof window !== 'undefined' && window.AlloFlowUX && window.AlloFlowUX.confirm;
+                            var unavailable = 'Preset deletion is unavailable right now, so the preset was kept.';
+                            if (typeof confirmModule !== 'function' || typeof confirmApi !== 'function') {
+                              addToast(unavailable, 'warning');
+                              announceSR(unavailable);
+                              return;
+                            }
+                            var confirmed = false;
+                            try {
+                              confirmed = await confirmApi('Delete preset "' + p.name + '"?', { title: 'Delete loadout preset', confirmText: 'Delete preset', cancelText: 'Keep preset', tone: 'warning' });
+                            } catch (e) {
+                              addToast(unavailable, 'warning');
+                              announceSR(unavailable);
+                              return;
+                            }
+                            if (confirmed) { deletePreset(idx); announceSR('Deleted preset: ' + p.name); }
+                            else announceSR('Preset kept.');
+                          },
                           className: 'transition-colors text-[12px] text-slate-400 hover:text-red-600 px-1 focus:ring-2 focus:ring-red-400 focus:outline-none rounded',
                           'aria-label': 'Delete preset ' + p.name
                         }, '\ud83d\uddd1')
@@ -3078,11 +3121,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           // Top bar
           h('div', { className: 'flex items-center gap-3 mb-3' },
             h('button', {
-              onClick: function() {
-                if (confirm('Abandon this Expedition? Progress in this run will be lost.')) {
+              onClick: async function() {
+                var confirmModule = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.ConfirmDialog && window.AlloModules.ConfirmDialog.ConfirmDialog;
+                var confirmApi = typeof window !== 'undefined' && window.AlloFlowUX && window.AlloFlowUX.confirm;
+                var unavailable = 'Expedition exit is unavailable right now, so your progress was kept.';
+                if (typeof confirmModule !== 'function' || typeof confirmApi !== 'function') {
+                  addToast(unavailable, 'warning');
+                  announceSR(unavailable);
+                  return;
+                }
+                var confirmed = false;
+                try {
+                  confirmed = await confirmApi('Abandon this Expedition? Progress in this run will be lost.', { title: 'Abandon expedition', confirmText: 'Abandon expedition', cancelText: 'Keep expedition', tone: 'warning' });
+                } catch (e) {
+                  addToast(unavailable, 'warning');
+                  announceSR(unavailable);
+                  return;
+                }
+                if (confirmed) {
                   sfxClick();
                   updSage({ phase: 'hub', expedition: null });
-                }
+                  announceSR('Expedition abandoned. Returned to the hub.');
+                } else announceSR('Expedition continued.');
               },
               className: 'transition-colors text-xs font-semibold text-slate-300 hover:text-slate-800 underline'
             }, t('stem.allobotsage.abandon', 'Abandon')),
