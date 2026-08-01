@@ -2658,18 +2658,38 @@ window.StemLab = window.StemLab || {
           { id: 'build', label: __alloT('stem.circuit.reference_tab_build', 'Build'), icon: '\uD83D\uDD0C' },
           { id: 'reference', label: __alloT('stem.circuit.reference_tab_reference', 'Reference'), icon: '\uD83D\uDCD8' }
         ];
+        var workspaceTabKeyDown = function(e, index) {
+          var nextIndex = -1;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % tabs.length;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + tabs.length - 1) % tabs.length;
+          else if (e.key === 'Home') nextIndex = 0;
+          else if (e.key === 'End') nextIndex = tabs.length - 1;
+          if (nextIndex < 0) return;
+          e.preventDefault();
+          var tabNodes = e.currentTarget && e.currentTarget.parentNode
+            ? e.currentTarget.parentNode.querySelectorAll('[role="tab"]')
+            : [];
+          var nextTab = tabNodes[nextIndex];
+          if (nextTab) {
+            nextTab.focus();
+            nextTab.click();
+          }
+        };
         return h('div', {
           className: 'max-w-3xl mx-auto mb-3 flex flex-wrap items-center gap-1 p-1 rounded-xl bg-slate-950/90 border border-slate-800 shadow-lg',
           role: 'tablist',
           'aria-label': __alloT('stem.circuit.aria_workspace', 'Circuit Builder workspace')
-        }, tabs.map(function(tab) {
+        }, tabs.map(function(tab, tabIndex) {
           var active = workspaceTab === tab.id;
           return h('button', {
             key: tab.id,
+            id: 'circuit-workspace-tab-' + tab.id,
             type: 'button',
             role: 'tab',
-            'aria-selected': active,
+            'aria-selected': active ? 'true' : 'false',
             'aria-controls': tab.id === 'reference' ? 'circuit-reference-panel' : 'circuit-build-panel',
+            tabIndex: active ? 0 : -1,
+            onKeyDown: function(e) { workspaceTabKeyDown(e, tabIndex); },
             onClick: function() { setExp({ workspaceTab: tab.id }); },
             className: 'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' +
               (active ? 'bg-yellow-400 text-slate-950 shadow-sm' : 'bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white')
@@ -4907,7 +4927,7 @@ window.StemLab = window.StemLab || {
         );
       }
 
-      var __circuitExpansions = h('div', { id: 'circuit-reference-panel', role: 'tabpanel', className: 'mt-4 max-w-3xl mx-auto' },
+      var __circuitExpansions = h('div', { id: 'circuit-reference-panel', role: 'tabpanel', 'aria-labelledby': 'circuit-workspace-tab-reference', tabIndex: 0, className: 'mt-4 max-w-3xl mx-auto' },
         expHeader(),
         expTabBar(),
         expSection && h('div', { className: 'mt-2' }, renderActiveSection())
@@ -4915,7 +4935,7 @@ window.StemLab = window.StemLab || {
 
       return h(React.Fragment, null,
         renderWorkspaceSwitch(),
-        workspaceTab === 'reference' ? __circuitExpansions : h('div', { id: 'circuit-build-panel', role: 'tabpanel' }, __circuitMainView)
+        workspaceTab === 'reference' ? __circuitExpansions : h('div', { id: 'circuit-build-panel', role: 'tabpanel', 'aria-labelledby': 'circuit-workspace-tab-build', tabIndex: 0 }, __circuitMainView)
       );
     }
   });
