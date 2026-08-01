@@ -19648,12 +19648,30 @@ test('no a11y violations', async () => {
 
       // ═══ RENDER ═══
       // Tab bar
+      var appLabTabKeyDown = function(e, index) {
+        var nextIndex = -1;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % TABS.length;
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + TABS.length - 1) % TABS.length;
+        else if (e.key === 'Home') nextIndex = 0;
+        else if (e.key === 'End') nextIndex = TABS.length - 1;
+        if (nextIndex < 0) return;
+        e.preventDefault();
+        var tabNodes = e.currentTarget && e.currentTarget.parentNode
+          ? e.currentTarget.parentNode.querySelectorAll('[role="tab"]')
+          : [];
+        var nextTab = tabNodes[nextIndex];
+        if (nextTab) {
+          nextTab.focus();
+          nextTab.click();
+        }
+      };
       var tabBar = h('div', { role: 'tablist', 'aria-label': __alloT('stem.applab.applab_sections', 'AppLab sections'),
         style: { display: 'flex', gap: '4px', flexShrink: 0, borderBottom: '2px solid #e5e7eb', paddingBottom: '6px', overflowX: 'auto' } },
-        TABS.map(function(t) {
+        TABS.map(function(t, ti) {
           var isActive = t.id === activeTab;
-          return h('button', { key: t.id, role: 'tab', 'aria-selected': isActive ? 'true' : 'false',
-            'aria-controls': 'applab-panel-' + t.id, title: t.desc,
+          return h('button', { key: t.id, id: 'applab-tab-' + t.id, role: 'tab', 'aria-selected': isActive ? 'true' : 'false',
+            'aria-controls': 'applab-panel-' + t.id, tabIndex: isActive ? 0 : -1, title: t.desc,
+            onKeyDown: function(e) { appLabTabKeyDown(e, ti); },
             onClick: function() { goToTab(t.id); },
             style: { padding: '8px 14px', border: 'none', background: isActive ? PURPLE : 'transparent',
               color: isActive ? '#fff' : '#6b7280', borderRadius: '10px', fontSize: '12px', fontWeight: isActive ? 800 : 600,
@@ -19690,27 +19708,28 @@ test('no a11y violations', async () => {
         tabBar,
 
         // ── LEARN tab ──
-        activeTab === 'learn' && h('div', { id: 'applab-panel-learn', role: 'tabpanel', 'aria-labelledby': 'tab-learn',
+        activeTab === 'learn' && h('div', { id: 'applab-panel-learn', role: 'tabpanel', 'aria-labelledby': 'applab-tab-learn', tabIndex: 0,
           style: { flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 } }, renderSplit('learn', LEARN_TOPICS)),
 
         // ── PRACTICE tab ──
-        activeTab === 'practice' && h('div', { id: 'applab-panel-practice', role: 'tabpanel',
+        activeTab === 'practice' && h('div', { id: 'applab-panel-practice', role: 'tabpanel', 'aria-labelledby': 'applab-tab-practice', tabIndex: 0,
           style: { flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 } }, renderSplit('practice', PRACTICE_TOPICS)),
 
         // ── PATTERNS tab ──
-        activeTab === 'patterns' && h('div', { id: 'applab-panel-patterns', role: 'tabpanel',
+        activeTab === 'patterns' && h('div', { id: 'applab-panel-patterns', role: 'tabpanel', 'aria-labelledby': 'applab-tab-patterns', tabIndex: 0,
           style: { flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 } }, renderSplit('patterns', PATTERN_TOPICS)),
 
         // ── QUALITY tab ──
-        activeTab === 'quality' && h('div', { id: 'applab-panel-quality', role: 'tabpanel',
+        activeTab === 'quality' && h('div', { id: 'applab-panel-quality', role: 'tabpanel', 'aria-labelledby': 'applab-tab-quality', tabIndex: 0,
           style: { flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 } }, renderSplit('quality', QUALITY_TOPICS)),
 
         // ── CAREER tab ──
-        activeTab === 'career' && h('div', { id: 'applab-panel-career', role: 'tabpanel',
+        activeTab === 'career' && h('div', { id: 'applab-panel-career', role: 'tabpanel', 'aria-labelledby': 'applab-tab-career', tabIndex: 0,
           style: { flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 } }, renderSplit('career', CAREER_TOPICS)),
 
         // ── BUILD tab: No app yet — show prompt input ──
-        activeTab === 'build' && !html && h('div', { style: { maxWidth: '700px', margin: '0 auto', width: '100%' } },
+        activeTab === 'build' && h('div', { id: 'applab-panel-build', role: 'tabpanel', 'aria-labelledby': 'applab-tab-build', tabIndex: 0, style: { flex: 1, minHeight: 0 } },
+          !html && h('div', { style: { maxWidth: '700px', margin: '0 auto', width: '100%' } },
 
           // ── Visual Pipeline Configurator ──
           h('details', { open: showPipelineConfig, style: { marginBottom: '12px', background: 'linear-gradient(135deg, var(--allo-stem-canvas, #0f172a), #1e1b4b)', borderRadius: '12px', border: '1px solid var(--allo-stem-border, #334155)', overflow: 'hidden' } },
@@ -20007,6 +20026,8 @@ test('no a11y violations', async () => {
                 style: btn('#fee2e2', '#991b1b', false), title: __alloT('stem.applab.start_over', 'Start over') }, __alloT('stem.applab.new', '\uD83D\uDDD1\uFE0F New'))
             )
           )
+        ),
+
         ),
 
         // Loading overlay
