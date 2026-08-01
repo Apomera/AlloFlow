@@ -36,7 +36,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
   if (!document.getElementById('echotrainer-a11y-css')) {
     var _s = document.createElement('style');
     _s.id = 'echotrainer-a11y-css';
-    _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-600 { color: #64748b !important; }';
+    _s.textContent = '@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } .text-slate-600 { color: #64748b !important; } .echotrainer-focus-canvas:focus-visible { outline: 3px solid #38bdf8 !important; outline-offset: 3px; }';
     document.head.appendChild(_s);
   }
 
@@ -1034,7 +1034,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
           });
         })();
         camera.aspect = rw / rh; camera.updateProjectionMatrix();
-        renderer.domElement.style.display = 'block'; renderer.domElement.style.borderRadius = '12px'; renderer.domElement.style.outline = 'none';
+        renderer.domElement.style.display = 'block'; renderer.domElement.style.borderRadius = '12px'; renderer.domElement.style.outline = 'none'; renderer.domElement.classList.add('echotrainer-focus-canvas');
         container.appendChild(renderer.domElement);
         rendererRef.current = renderer;
         var isLocked = false;
@@ -1833,12 +1833,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             (d.runHistory && d.runHistory.length > 0) ?
               h('table', { style: { width: '100%', fontSize: '10px', borderCollapse: 'collapse' } },
                 h('thead', null, h('tr', { style: { borderBottom: '1px solid ' + (isDark ? '#334155' : '#e2e8f0') } },
-                  h('th', { style: { textAlign: 'left', padding: '4px', color: isDark ? '#94a3b8' : '#64748b' } }, 'Env'),
-                  h('th', { style: { textAlign: 'left', padding: '4px', color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.echotrainer.mode', 'Mode')),
-                  h('th', { style: { textAlign: 'right', padding: '4px', color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.echotrainer.time', 'Time')),
-                  h('th', { style: { textAlign: 'right', padding: '4px', color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.echotrainer.clicks', 'Clicks')),
-                  h('th', { style: { textAlign: 'right', padding: '4px', color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.echotrainer.bumps', 'Bumps')),
-                  h('th', { style: { textAlign: 'right', padding: '4px', color: isDark ? '#94a3b8' : '#64748b' } }, 'XP')
+                  h('th', { scope: 'col', style: { textAlign: 'left', padding: '4px', color: isDark ? '#94a3b8' : '#64748b' } }, 'Env'),
+                  h('th', { scope: 'col', style: { textAlign: 'left', padding: '4px', color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.echotrainer.mode', 'Mode')),
+                  h('th', { scope: 'col', style: { textAlign: 'right', padding: '4px', color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.echotrainer.time', 'Time')),
+                  h('th', { scope: 'col', style: { textAlign: 'right', padding: '4px', color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.echotrainer.clicks', 'Clicks')),
+                  h('th', { scope: 'col', style: { textAlign: 'right', padding: '4px', color: isDark ? '#94a3b8' : '#64748b' } }, t('stem.echotrainer.bumps', 'Bumps')),
+                  h('th', { scope: 'col', style: { textAlign: 'right', padding: '4px', color: isDark ? '#94a3b8' : '#64748b' } }, 'XP')
                 )),
                 h('tbody', null, (d.runHistory || []).slice().reverse().map(function(run, idx) {
                   return h('tr', { key: idx, style: { borderBottom: '1px solid ' + (isDark ? '#1e293b' : '#f1f5f9') } },
@@ -1961,7 +1961,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
             h('div', { style: { position: 'absolute', left: '50%', top: 0, bottom: 0, width: '2px', background: 'rgba(163,190,252,0.4)', transform: 'translateX(-1px)' } })
           )
         ) : null,
-        !has3D ? h('canvas', { ref: canvasRef, role: 'application', 'aria-label': 'Echo navigation area. WASD to move, arrows to turn, Space to click. ' + ((d.viewMode || 'echo') === 'reveal' ? 'Map visible.' : 'Audio sonar mode \u2014 listen for echoes.'), tabIndex: 0, style: { width: '100%', flex: 1, minHeight: '350px', borderRadius: '12px', background: '#080810', display: 'block', cursor: 'crosshair', outline: 'none' }, onKeyDown: function(e) { if (e.code === 'Space') { e.preventDefault(); emitClick(); } keysRef.current[e.code] = true; }, onKeyUp: function(e) { keysRef.current[e.code] = false; } }) : null,
+        !has3D ? h('canvas', { ref: canvasRef, className: 'echotrainer-focus-canvas', role: 'application', 'aria-label': 'Echo navigation area. WASD to move, arrows to turn, Space to click. ' + ((d.viewMode || 'echo') === 'reveal' ? 'Map visible.' : 'Audio sonar mode \u2014 listen for echoes.'), tabIndex: 0, style: { width: '100%', flex: 1, minHeight: '350px', borderRadius: '12px', background: '#080810', display: 'block', cursor: 'crosshair' }, onKeyDown: function(e) { if (e.code === 'Space') { e.preventDefault(); emitClick(); } keysRef.current[e.code] = true; }, onKeyUp: function(e) { keysRef.current[e.code] = false; } }) : null,
         h('div', { style: { display: 'flex', gap: '12px', flexWrap: 'wrap', fontSize: '10px', color: isDark ? '#94a3b8' : '#64748b' } },
           has3D ? h('span', null, t('stem.echotrainer.click_to_lock_mouse_click_again_to_son', '\uD83D\uDDB1 Click to lock mouse, click again to sonar')) : null,
           h('span', null, '\uD83C\uDFAE WASD: Move' + (has3D ? ', Q/E: Strafe' : '/Arrows: Turn')),
