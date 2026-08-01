@@ -2677,6 +2677,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 onChange: function(e) { upd('aiQuestion', e.target.value); },
                 onKeyDown: function(e) { if (e.key === 'Enter') askAI(); },
                 placeholder: t('stem.fireecology.ask_about_fire_ecology_indigenous_prac', 'Ask about fire ecology, Indigenous practices, prescribed burning...'),
+                'aria-label': t('stem.fireecology.ai_question_input', 'Ask the AI fire ecology tutor'),
                 style: {
                   flex: 1, padding: '10px 14px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #334155)',
                   background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, outline: 'none'
