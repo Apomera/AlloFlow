@@ -18810,6 +18810,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           { id: 'school',   label: __alloT('stem.nutritionlab.school_meals_snap', 'School meals + SNAP') },
           { id: 'local',    label: __alloT('stem.nutritionlab.local_food_wabanaki', 'Local food + Wabanaki') }
         ];
+
+        function maineTabKeyDown(e, index) {
+          var nextIndex = index;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % tabs.length;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index - 1 + tabs.length) % tabs.length;
+          else if (e.key === 'Home') nextIndex = 0;
+          else if (e.key === 'End') nextIndex = tabs.length - 1;
+          else return;
+          e.preventDefault();
+          var tabButtons = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+          if (tabButtons[nextIndex]) {
+            tabButtons[nextIndex].focus();
+            tabButtons[nextIndex].click();
+          }
+        }
+
         var TAB_META = {
           seasons:   { accent: '#0284c7', soft: 'rgba(2,132,199,0.10)',  icon: '☀️',  title: __alloT('stem.nutritionlab.maine_winters_are_a_vitamin_d_problem', 'Maine winters are a vitamin D problem'), hint: __alloT('stem.nutritionlab.at_43_47_n_oct_mar_sun_is_too_low_for_', 'At 43–47°N, Oct–Mar sun is too low for skin to make D — no matter how long you’re outside.') },
           fisheries: { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '🐟',   title: __alloT('stem.nutritionlab.cold_water_fisheries_omega_3_powerhous', 'Cold-water fisheries → omega-3 powerhouse'), hint: __alloT('stem.nutritionlab.maine_lobster_herring_and_farm_raised_', 'Maine lobster, herring, and farm-raised salmon are world-class EPA/DHA sources.') },
@@ -18827,18 +18843,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 __alloT('stem.nutritionlab.maine_s_geography_climate_history_and_', 'Maine\'s geography, climate, history, and economy all shape what food looks like here. Long winters and northern latitude make vitamin D a documented public-health issue. World-class cold-water fisheries make Maine an omega-3 powerhouse. Rural distances and seasonal employment create real food-access challenges. Maine became the second state in the country to permanently fund free school meals for all kids. This module names the realities students live inside.'))
             ),
             h('div', { 'role': 'tablist', 'aria-label': __alloT('stem.nutritionlab.maine_food_reality_sections', 'Maine Food Reality sections'), className: 'flex flex-wrap gap-2' },
-              tabs.map(function(t) {
+              tabs.map(function(t, tabIndex) {
                 var sel = (tab === t.id);
                 return h('button', {
                   key: t.id,
                   role: 'tab',
+                  id: 'nutrition-maine-tab-' + t.id,
+                  'aria-controls': 'nutrition-maine-panel-' + t.id,
                   'aria-selected': sel ? 'true' : 'false',
+                  tabIndex: sel ? 0 : -1,
                   onClick: function() { setTab(t.id); announce(t.label); },
+                  onKeyDown: function(e) { maineTabKeyDown(e, tabIndex); },
                   className: 'px-3 py-2 rounded-xl border-2 font-bold text-sm transition focus:outline-none focus:ring-2 ring-emerald-500/40 ' +
                     (sel ? 'bg-stone-700 text-white border-stone-800 shadow' : 'bg-white text-slate-800 border-slate-300 hover:border-stone-500')
                 }, t.label);
               })
             ),
+            h('div', {
+              role: 'tabpanel',
+              id: 'nutrition-maine-panel-' + tab,
+              'aria-labelledby': 'nutrition-maine-tab-' + tab,
+              tabIndex: 0
+            },
             // Topic-accent hero band per tab
             (function() {
               var meta = TAB_META[tab] || TAB_META.seasons;
@@ -19011,6 +19037,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               extension: 'Map your nearest 3 grocery stores, your nearest farmers market (in season), your nearest food pantry, and the nearest WIC office. Then consider: how would your access change if you didn\'t have a car? If you had to walk?',
               sources: 'Maine CDC · USDA Economic Research Service · Maine DOE School Nutrition · Good Shepherd Food Bank · Maine 211 · Gulf of Maine Research Institute · Maine Department of Marine Resources · Wabanaki Public Health & Wellness · Maine Department of Agriculture, Conservation and Forestry.'
             })
+            )
           )
         );
       }
