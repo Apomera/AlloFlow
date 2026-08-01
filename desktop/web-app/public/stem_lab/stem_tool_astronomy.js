@@ -3612,7 +3612,7 @@
                 h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11.5, minWidth: 480 } },
                   h('thead', null, h('tr', null,
                     ['Object', 'App. mag (m)', 'Visibility'].map(function(c, i) {
-                      return h('th', { key: i, style: { padding: 5, textAlign: 'left', color: '#94a3b8', borderBottom: '1px solid #334155', fontWeight: 700 } }, c);
+                      return h('th', { key: i, scope: 'col', style: { padding: 5, textAlign: 'left', color: '#94a3b8', borderBottom: '1px solid #334155', fontWeight: 700 } }, c);
                     })
                   )),
                   h('tbody', null,
@@ -8101,8 +8101,8 @@
               h('div', { style: { fontSize: 13, fontWeight: 800, color: '#0f172a', marginBottom: 8 } }, __alloT('stem.astronomy.naked_eye_seasonal_sky_northern_hemisp', 'Naked-eye seasonal sky (Northern Hemisphere)')),
               h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11.5 } },
                 h('thead', null, h('tr', null,
-                  h('th', { style: { padding: 6, border: '1px solid #cbd5e1', background: '#f1f5f9', textAlign: 'left' } }, __alloT('stem.astronomy.season', 'Season')),
-                  h('th', { style: { padding: 6, border: '1px solid #cbd5e1', background: '#f1f5f9', textAlign: 'left' } }, __alloT('stem.astronomy.what_s_up', 'What\'s up'))
+                  h('th', { scope: 'col', style: { padding: 6, border: '1px solid #cbd5e1', background: '#f1f5f9', textAlign: 'left' } }, __alloT('stem.astronomy.season', 'Season')),
+                  h('th', { scope: 'col', style: { padding: 6, border: '1px solid #cbd5e1', background: '#f1f5f9', textAlign: 'left' } }, __alloT('stem.astronomy.what_s_up', 'What\'s up'))
                 )),
                 h('tbody', null,
                   [
