@@ -4731,10 +4731,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       // ─────────────────────────────────────────
       function renderDiagnose() {
         var dxView = d.dxView || 'overview';
+        var DX_TAB_IDS = ['overview', 'obd', 'listen', 'listenQuiz', 'fluid', 'visual'];
+        function dxTabKeyDown(e, index) {
+          var key = e.key;
+          if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
+          e.preventDefault();
+          var nextIndex = index;
+          if (key === 'ArrowRight' || key === 'ArrowDown') nextIndex = (index + 1) % DX_TAB_IDS.length;
+          if (key === 'ArrowLeft' || key === 'ArrowUp') nextIndex = (index - 1 + DX_TAB_IDS.length) % DX_TAB_IDS.length;
+          if (key === 'Home') nextIndex = 0;
+          if (key === 'End') nextIndex = DX_TAB_IDS.length - 1;
+          var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+          var nextTab = tabs[nextIndex];
+          if (nextTab) { nextTab.focus(); nextTab.click(); }
+        }
         function tabBtn(id, label) {
           var active = dxView === id;
           return h('button', { 'data-ar-focusable': true, role: 'tab',
+            id: 'autorepair-diagnose-tab-' + id,
+            'aria-controls': 'autorepair-diagnose-panel-' + id,
             'aria-selected': active ? 'true' : 'false',
+            tabIndex: active ? 0 : -1,
+            onKeyDown: function(e) { dxTabKeyDown(e, DX_TAB_IDS.indexOf(id)); },
             onClick: function() { upd('dxView', id); },
             style: Object.assign({}, btnSecondary(), { background: active ? T.accent : T.cardAlt, color: active ? '#0f172a' : T.text, fontWeight: active ? 800 : 600 }) }, label);
         }
@@ -5094,13 +5112,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             tabBtn('fluid', '🛢️ Fluids'),
             tabBtn('visual', '👁️ Visual')
           ),
-          dxView === 'overview' && dxOverview(),
-          dxView === 'obd' && dxObd(),
-          dxView === 'listen' && dxListen(),
-          dxView === 'listenQuiz' && dxListenQuiz(),
-          dxView === 'fluid' && dxFluid(),
-          dxView === 'visual' && dxVisual(),
-          disclaimerFooter()
+          h('div', { role: 'tabpanel',
+            id: 'autorepair-diagnose-panel-' + dxView,
+            'aria-labelledby': 'autorepair-diagnose-tab-' + dxView,
+            tabIndex: 0
+          },
+            dxView === 'overview' && dxOverview(),
+            dxView === 'obd' && dxObd(),
+            dxView === 'listen' && dxListen(),
+            dxView === 'listenQuiz' && dxListenQuiz(),
+            dxView === 'fluid' && dxFluid(),
+            dxView === 'visual' && dxVisual(),
+            disclaimerFooter()
+          )
         );
       }
 
