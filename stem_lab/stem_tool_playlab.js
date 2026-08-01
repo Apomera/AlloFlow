@@ -3650,6 +3650,21 @@ window.StemLab = window.StemLab || {
         }, extra || {});
       }
 
+      var PLAYLAB_SPORT_TABS = ['football', 'soccer'];
+      function playLabSportTabKeyDown(e, index) {
+        var key = e.key;
+        if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
+        e.preventDefault();
+        var nextIndex = index;
+        if (key === 'ArrowRight' || key === 'ArrowDown') nextIndex = (index + 1) % PLAYLAB_SPORT_TABS.length;
+        if (key === 'ArrowLeft' || key === 'ArrowUp') nextIndex = (index - 1 + PLAYLAB_SPORT_TABS.length) % PLAYLAB_SPORT_TABS.length;
+        if (key === 'Home') nextIndex = 0;
+        if (key === 'End') nextIndex = PLAYLAB_SPORT_TABS.length - 1;
+        var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+        var nextTab = tabs[nextIndex];
+        if (nextTab) { nextTab.focus(); nextTab.click(); }
+      }
+
       function pillBtn(label, sel, onClick, opts) {
         opts = opts || {};
         return h('button', {
@@ -3813,7 +3828,12 @@ window.StemLab = window.StemLab || {
             var sel = (d.sport || 'football') === sp.id;
             return h('button', {
               key: 'sport-' + sp.id,
+              id: 'playlab-sport-tab-' + sp.id,
               role: 'tab',
+              'aria-controls': 'playlab-sport-panel-' + sp.id,
+              'aria-selected': sel ? 'true' : 'false',
+              tabIndex: sel ? 0 : -1,
+              onKeyDown: function(e) { playLabSportTabKeyDown(e, PLAYLAB_SPORT_TABS.indexOf(sp.id)); },
               onClick: function() {
                 upd('sport', sp.id);
                 plAnnounce('Switched to ' + sp.label.replace(/^\S+\s/, '') + ' mode.');
@@ -3824,6 +3844,13 @@ window.StemLab = window.StemLab || {
             }, sp.label);
           })
         ),
+
+        h('div', {
+          role: 'tabpanel',
+          id: 'playlab-sport-panel-' + (d.sport || 'football'),
+          'aria-labelledby': 'playlab-sport-tab-' + (d.sport || 'football'),
+          tabIndex: 0
+        },
 
         // ── Sport-accent hero band (sport-flavored, dark-themed) ──
         // Workspace switch: default to the live field, keep scenario/stats extras opt-in.
@@ -4904,6 +4931,7 @@ window.StemLab = window.StemLab || {
               h('span', null, 'Coverages seen: ' + Object.keys(d.coveragesViewed || {}).length + ' / ' + COVERAGES.length)
             )
           )
+        )
         )
       );
     }
