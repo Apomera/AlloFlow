@@ -3970,7 +3970,7 @@ window.StemLab = window.StemLab || {
               h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ c: iq.conc, t: iq.tempK, m: iq.material, st: state }]).slice(-8) }); }, className: 'px-2 py-1 rounded bg-slate-700 text-[11px] font-bold text-slate-100 border border-slate-600' }, t('stem.semiconductor.log', '📋 Log')),
               h('button', { onClick: function() { setIQ({ conc: 5, tempK: 300, material: 'Si', log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-1 rounded bg-slate-900/70 text-[11px] font-semibold text-slate-300 border border-slate-700' }, t('stem.semiconductor.reset', '↺ Reset'))
             ),
-            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.semiconductor.hypothesis_how_does_temperature_affect', 'Hypothesis: How does temperature affect carrier concentration?'),
+            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, 'aria-label': t('stem.semiconductor.hypothesis_input', 'Semiconductor carrier concentration hypothesis'), placeholder: t('stem.semiconductor.hypothesis_how_does_temperature_affect', 'Hypothesis: How does temperature affect carrier concentration?'),
               className: 'w-full text-[12px] border border-slate-700 bg-slate-950/70 text-slate-100 placeholder:text-slate-500 rounded p-2 font-mono leading-snug', rows: 3 }),
             !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-900/30 text-[11px] font-bold text-amber-200 border border-amber-700' }, t('stem.semiconductor.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
             iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-900/20 border border-amber-700 text-[11px] text-amber-100 leading-relaxed' },
@@ -3980,7 +3980,7 @@ window.StemLab = window.StemLab || {
             h('label', { className: 'flex items-center gap-2 text-[12px] font-bold text-emerald-300 cursor-pointer' },
               h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
               t('stem.semiconductor.i_understand_explain_in_own_words', 'I understand — explain in own words')),
-            iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.semiconductor.explain_how_concentration_temperature_', 'Explain how concentration, temperature, and material jointly set the regime.'),
+            iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, 'aria-label': t('stem.semiconductor.explanation_input', 'Explain semiconductor carrier concentration'), placeholder: t('stem.semiconductor.explain_how_concentration_temperature_', 'Explain how concentration, temperature, and material jointly set the regime.'),
               className: 'w-full text-[12px] border border-emerald-700 bg-slate-950/70 text-slate-100 placeholder:text-slate-500 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
             h('div', { className: 'text-[10px] italic text-slate-500' }, t('stem.semiconductor.design_note_discrete_4_state_marker_no', 'Design note: discrete 4-state marker; no carrier-density score; no reveal — by design.'))
           );
