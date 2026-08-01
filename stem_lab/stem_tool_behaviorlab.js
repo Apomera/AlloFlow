@@ -3597,8 +3597,8 @@ dataRef.current = d;
                   iq.log.length > 0 && React.createElement("div", { style: { maxHeight: 60, overflow: 'auto', padding: 4, borderRadius: 4, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 6, fontSize: 9, fontFamily: 'monospace', lineHeight: 1.4 } },
                     iq.log.slice(-5).map(function(e, i) { return React.createElement("div", { key: i }, e.t + '  ' + e.state + ' \u00B7 ' + e.s + ' str' + e.str + ' alt' + e.alt + ' \u2192 ' + e.p); })
                   ),
-                  React.createElement("label", { style: { display: 'block', fontSize: 10, fontWeight: 700, opacity: 0.85, marginBottom: 3 } }, __alloT('stem.behaviorlab.your_hypothesis_why_does_vr_resist_ext', 'Your hypothesis (why does VR resist extinction so much?)')),
-                  React.createElement("textarea", { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.behaviorlab.e_g_vr_makes_every_action_potentially_', 'e.g., VR makes every action potentially the rewarded one \u2014 extinction never feels conclusive...'), style: { width: '100%', padding: 4, borderRadius: 4, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 10, marginBottom: 6, resize: 'vertical' } }),
+                  React.createElement("label", { htmlFor: 'behaviorlab-hypothesis', style: { display: 'block', fontSize: 10, fontWeight: 700, opacity: 0.85, marginBottom: 3 } }, __alloT('stem.behaviorlab.your_hypothesis_why_does_vr_resist_ext', 'Your hypothesis (why does VR resist extinction so much?)')),
+                  React.createElement("textarea", { id: 'behaviorlab-hypothesis', value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: __alloT('stem.behaviorlab.e_g_vr_makes_every_action_potentially_', 'e.g., VR makes every action potentially the rewarded one \u2014 extinction never feels conclusive...'), style: { width: '100%', padding: 4, borderRadius: 4, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 10, marginBottom: 6, resize: 'vertical' } }),
                   !iq.stuckRevealed && React.createElement("button", { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 8px', fontSize: 10, fontWeight: 700, borderRadius: 4, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 6 } }, __alloT('stem.behaviorlab.i_m_stuck_show_open_questions', "\uD83E\uDD14 I'm stuck \u2014 show open questions")),
                   iq.stuckRevealed && React.createElement("div", { style: { padding: 6, borderRadius: 4, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 10, marginBottom: 6, lineHeight: 1.5 } },
                     React.createElement("div", { style: { fontWeight: 700, color: sm.color, marginBottom: 3 } }, __alloT('stem.behaviorlab.open_questions_no_answer_key', 'Open questions (no answer key)')),
@@ -3613,7 +3613,7 @@ dataRef.current = d;
                     React.createElement("input", { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
                     React.createElement("span", null, __alloT('stem.behaviorlab.i_can_explain_why_this_schedule_streng', 'I can explain why this schedule + strength + alternative yields this persistence band.'))
                   ),
-                  iq.understood && React.createElement("textarea", { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.behaviorlab.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 4, borderRadius: 4, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 10, marginBottom: 4, resize: 'vertical' } }),
+                  iq.understood && React.createElement("textarea", { id: 'behaviorlab-explanation', 'aria-label': __alloT('stem.behaviorlab.explanation_label', 'Explain your prediction'), value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: __alloT('stem.behaviorlab.explain_in_your_own_words', 'Explain in your own words...'), style: { width: '100%', padding: 4, borderRadius: 4, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 10, marginBottom: 4, resize: 'vertical' } }),
                   React.createElement("p", { style: { margin: 0, fontSize: 9, fontStyle: 'italic', opacity: 0.6 } }, __alloT('stem.behaviorlab.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget \u2014 no score, no reveal, no answer dump. Skinner box terminology + matching-law extension. Persistence is multi-dimensional in real life; this is a teaching heuristic.'))
                 );
               })()
@@ -5119,6 +5119,8 @@ dataRef.current = d;
                 // Canvas for animated cumulative records
                 React.createElement("canvas", {
                   id: "bl-sched-compare-canvas",
+                  role: 'img',
+                  'aria-label': __alloT('stem.behaviorlab.schedule_comparison_chart', 'Animated cumulative response records comparing fixed ratio, variable ratio, fixed interval, and variable interval schedules.'),
                   style: { width: '100%', height: 200, display: 'block', borderRadius: 10, border: '1px solid rgba(100,116,139,0.3)' },
                   ref: function(cvs) {
                     if (!cvs) return;
