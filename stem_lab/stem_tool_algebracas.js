@@ -912,7 +912,7 @@ onSpeak: function(formats) {
               )
             ),
             h('div', { style: { borderRadius: '12px', border: '1px solid ' + BORDER, overflow: 'hidden', marginBottom: '8px', background: 'rgba(15,23,42,0.5)' } },
-              h('canvas', { ref: function(canvas) { if (canvas) setTimeout(function() { drawScale(canvas); }, 0); }, 'aria-label': t('stem.algebraCAS.interactive_algebra_balance_scale_visu', 'Interactive algebra balance scale visualization'), tabIndex: 0, style: { width: '100%', display: 'block' } })
+              h('canvas', { ref: function(canvas) { if (canvas) setTimeout(function() { drawScale(canvas); }, 0); }, role: 'img', 'aria-label': t('stem.algebraCAS.interactive_algebra_balance_scale_visu', 'Interactive algebra balance scale visualization'), tabIndex: 0, style: { width: '100%', display: 'block' } })
             ),
             scaleEq && !scaleSolved ? h('div', null,
               h('div', { style: { fontSize: '10px', fontWeight: '700', color: MUTED, textTransform: 'uppercase', marginBottom: '4px' } }, t('stem.algebraCAS.apply_to_both_sides', 'Apply to Both Sides')),
