@@ -2485,11 +2485,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       // ─────────────────────────────────────────
       function renderDisabilityAware() {
         var daSection = d.daSection || 'overview';
+        var DISABILITY_TAB_IDS = ['overview', 'deaf', 'autism', 'seizure', 'diabetes', 'hidden', 'self'];
+        function disabilityTabKeyDown(e, index) {
+          var key = e.key;
+          if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
+          e.preventDefault();
+          var nextIndex = index;
+          if (key === 'ArrowRight' || key === 'ArrowDown') nextIndex = (index + 1) % DISABILITY_TAB_IDS.length;
+          if (key === 'ArrowLeft' || key === 'ArrowUp') nextIndex = (index - 1 + DISABILITY_TAB_IDS.length) % DISABILITY_TAB_IDS.length;
+          if (key === 'Home') nextIndex = 0;
+          if (key === 'End') nextIndex = DISABILITY_TAB_IDS.length - 1;
+          var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+          var nextTab = tabs[nextIndex];
+          if (nextTab) { nextTab.focus(); nextTab.click(); }
+        }
 
         function tabBtn(id, label) {
           var active = daSection === id;
-          return h('button', { 'data-fr-focusable': true, key: id,
-            'aria-pressed': active ? 'true' : 'false',
+          return h('button', { 'data-fr-focusable': true, key: id, role: 'tab',
+            id: 'firstresponse-disability-tab-' + id,
+            'aria-controls': 'firstresponse-disability-panel-' + id,
+            'aria-selected': active ? 'true' : 'false',
+            tabIndex: active ? 0 : -1,
+            onKeyDown: function(e) { disabilityTabKeyDown(e, DISABILITY_TAB_IDS.indexOf(id)); },
             onClick: function() { upd('daSection', id); frAnnounce(label); },
             style: btn({
               padding: '6px 10px', fontSize: 11,
@@ -2646,13 +2664,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             tabBtn('hidden', 'Hidden disabilities'),
             tabBtn('self', 'You as helper')
           ),
-          daSection === 'overview' && daOverview(),
-          daSection === 'deaf' && daDeaf(),
-          daSection === 'autism' && daAutism(),
-          daSection === 'seizure' && daSeizure(),
-          daSection === 'diabetes' && daDiabetes(),
-          daSection === 'hidden' && daHidden(),
-          daSection === 'self' && daSelf(),
+          h('div', { role: 'tabpanel',
+            id: 'firstresponse-disability-panel-' + daSection,
+            'aria-labelledby': 'firstresponse-disability-tab-' + daSection,
+            tabIndex: 0
+          },
+            daSection === 'overview' && daOverview(),
+            daSection === 'deaf' && daDeaf(),
+            daSection === 'autism' && daAutism(),
+            daSection === 'seizure' && daSeizure(),
+            daSection === 'diabetes' && daDiabetes(),
+            daSection === 'hidden' && daHidden(),
+            daSection === 'self' && daSelf(),
+          ),
           h('div', { style: { marginTop: 12, textAlign: 'right' } },
             h('button', { 'data-fr-focusable': true,
               'aria-label': __alloT('stem.firstresponse.mark_disability_aware_module_complete', 'Mark disability-aware module complete'),
