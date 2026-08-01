@@ -1803,6 +1803,18 @@ window.StemLab = window.StemLab || {
 
 
       // ── Build UI ──
+      var statslabTabKeyDown = function(e, index) {
+        var nextIndex = -1;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % 8;
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + 7) % 8;
+        else if (e.key === 'Home') nextIndex = 0;
+        else if (e.key === 'End') nextIndex = 7;
+        if (nextIndex < 0) return;
+        e.preventDefault();
+        var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+        var nextTab = tabs[nextIndex];
+        if (nextTab) { nextTab.focus(); nextTab.click(); }
+      };
       return h('div', {
         style: {
           fontFamily: 'system-ui, sans-serif',
@@ -1856,13 +1868,17 @@ window.StemLab = window.StemLab || {
             { id: 'power', label: __alloT('stem.statslab.power', '🔋 Power'), desc: __alloT('stem.statslab.sample_size_calc', 'Sample size calc') },
             { id: 'mastery', label: __alloT('stem.statslab.mastery', '🏅 Mastery'), desc: __alloT('stem.statslab.ap_quiz_concept_progress', 'AP-quiz concept progress') },
             { id: 'inquiry', label: __alloT('stem.statslab.inquiry', '🔬 Inquiry'), desc: __alloT('stem.statslab.power_effect_alpha_sandbox', 'Power × effect × alpha sandbox') }
-          ].map(function(tab) {
+          ].map(function(tab, tabIndex) {
             var sel = d.mode === tab.id;
             return h('button', {
               key: tab.id,
               role: 'tab',
+              id: 'statslab-tab-' + tab.id,
+              'aria-controls': 'statslab-panel-' + tab.id,
               'aria-selected': sel,
+              tabIndex: sel ? 0 : -1,
               'data-sl-focusable': 'true',
+              onKeyDown: function(e) { statslabTabKeyDown(e, tabIndex); },
               onClick: function() { upd('mode', tab.id); },
               title: tab.desc,
               style: {
@@ -1890,6 +1906,10 @@ window.StemLab = window.StemLab || {
           };
           var meta = TAB_META[d.mode] || TAB_META.home;
           return h('div', {
+            role: 'tabpanel',
+            id: 'statslab-panel-' + d.mode,
+            'aria-labelledby': 'statslab-tab-' + d.mode,
+            tabIndex: 0,
             style: {
               background: 'linear-gradient(135deg, ' + meta.soft + ' 0%, rgba(15,23,42,0.4) 100%)',
               border: '1px solid ' + meta.accent + '55',
