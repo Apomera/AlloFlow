@@ -6209,10 +6209,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       // ─────────────────────────────────────────
       function renderEv() {
         var evView = d.evView || 'overview';
+        var EV_TAB_IDS = ['overview', 'safety', 'diffs'];
+        function evTabKeyDown(e, index) {
+          var key = e.key;
+          if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
+          e.preventDefault();
+          var nextIndex = index;
+          if (key === 'ArrowRight' || key === 'ArrowDown') nextIndex = (index + 1) % EV_TAB_IDS.length;
+          if (key === 'ArrowLeft' || key === 'ArrowUp') nextIndex = (index - 1 + EV_TAB_IDS.length) % EV_TAB_IDS.length;
+          if (key === 'Home') nextIndex = 0;
+          if (key === 'End') nextIndex = EV_TAB_IDS.length - 1;
+          var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+          var nextTab = tabs[nextIndex];
+          if (nextTab) { nextTab.focus(); nextTab.click(); }
+        }
         function tabBtn(id, label) {
           var active = evView === id;
           return h('button', { 'data-ar-focusable': true, role: 'tab',
+            id: 'autorepair-ev-tab-' + id,
+            'aria-controls': 'autorepair-ev-panel-' + id,
             'aria-selected': active ? 'true' : 'false',
+            tabIndex: active ? 0 : -1,
+            onKeyDown: function(e) { evTabKeyDown(e, EV_TAB_IDS.indexOf(id)); },
             onClick: function() { upd('evView', id); },
             style: Object.assign({}, btnSecondary(), { background: active ? T.accent : T.cardAlt, color: active ? '#0f172a' : T.text, fontWeight: active ? 800 : 600 }) }, label);
         }
@@ -6330,10 +6348,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             tabBtn('safety', '⚠️ HV safety'),
             tabBtn('diffs', '🔄 vs ICE')
           ),
-          evView === 'overview' && evOverview(),
-          evView === 'safety' && evSafetyTab(),
-          evView === 'diffs' && evDiffsTab(),
-          disclaimerFooter()
+          h('div', { role: 'tabpanel',
+            id: 'autorepair-ev-panel-' + evView,
+            'aria-labelledby': 'autorepair-ev-tab-' + evView,
+            tabIndex: 0
+          },
+            evView === 'overview' && evOverview(),
+            evView === 'safety' && evSafetyTab(),
+            evView === 'diffs' && evDiffsTab(),
+            disclaimerFooter()
+          )
         );
       }
 
