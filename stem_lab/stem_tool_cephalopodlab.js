@@ -779,6 +779,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         var sectionSearch = String(d.sectionSearch || '');
         var sectionSearchQuery = sectionSearch.trim().toLocaleLowerCase();
         var sectionSearchTerms = sectionSearchQuery ? sectionSearchQuery.split(/\s+/) : [];
+        var GROUP_TAB_IDS = TAB_GROUPS.map(function(g) { return g.id; });
+        var groupTabKeyDown = function(e, index) {
+          var nextIndex = -1;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % GROUP_TAB_IDS.length;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + GROUP_TAB_IDS.length - 1) % GROUP_TAB_IDS.length;
+          else if (e.key === 'Home') nextIndex = 0;
+          else if (e.key === 'End') nextIndex = GROUP_TAB_IDS.length - 1;
+          if (nextIndex < 0) return;
+          e.preventDefault();
+          var tabs = e.currentTarget && e.currentTarget.parentNode
+            ? e.currentTarget.parentNode.querySelectorAll('[role="tab"]')
+            : [];
+          var nextTab = tabs[nextIndex];
+          if (nextTab) {
+            nextTab.focus();
+            nextTab.click();
+          }
+        };
+        var SECTION_TAB_IDS = openGroup.tabs.map(function(t) { return t.id; });
+        var sectionTabKeyDown = function(e, index) {
+          var nextIndex = -1;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % SECTION_TAB_IDS.length;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + SECTION_TAB_IDS.length - 1) % SECTION_TAB_IDS.length;
+          else if (e.key === 'Home') nextIndex = 0;
+          else if (e.key === 'End') nextIndex = SECTION_TAB_IDS.length - 1;
+          if (nextIndex < 0) return;
+          e.preventDefault();
+          var tabs = e.currentTarget && e.currentTarget.parentNode
+            ? e.currentTarget.parentNode.querySelectorAll('[role="tab"]')
+            : [];
+          var nextTab = tabs[nextIndex];
+          if (nextTab) {
+            nextTab.focus();
+            nextTab.click();
+          }
+        };
         var sectionMatches = [];
         if (sectionSearchTerms.length) {
           TAB_GROUPS.forEach(function(g) {
@@ -797,9 +833,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           awardXP(1);
           clAnnounce('Opened ' + result.tab.label + ' in ' + result.group.label);
         }
-        function renderGroupBtn(g) {
+        function renderGroupBtn(g, gi) {
           var on = g.id === openGroup.id;
-          return h('button', { key: g.id, type: 'button', role: 'tab', 'aria-selected': on ? 'true' : 'false',
+          return h('button', { key: g.id, id: 'cephalopod-group-tab-' + g.id, type: 'button', role: 'tab',
+            'aria-selected': on ? 'true' : 'false', 'aria-controls': 'cephalopod-group-panel-' + g.id,
+            tabIndex: on ? 0 : -1, onKeyDown: function(e) { groupTabKeyDown(e, gi); },
             'aria-label': g.label + ' (' + g.tabs.length + ' section' + (g.tabs.length === 1 ? '' : 's') + ')',
             onClick: function() { setSection(g.tabs[0].id); awardXP(1); },
             style: {
@@ -814,9 +852,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             }
           }, g.label);
         }
-        function renderTab(t, accentColor) {
+        function renderTab(t, accentColor, ti) {
           var active = section === t.id;
-          return h('button', { key: t.id, type: 'button', role: 'tab', 'aria-selected': active ? 'true' : 'false',
+          return h('button', { key: t.id, id: 'cephalopod-section-tab-' + t.id, type: 'button', role: 'tab',
+            'aria-selected': active ? 'true' : 'false', 'aria-controls': 'cephalopod-section-panel-' + t.id,
+            tabIndex: active ? 0 : -1, onKeyDown: function(e) { sectionTabKeyDown(e, ti); },
             onClick: function() { setSection(t.id); awardXP(2); },
             style: {
               padding: '8px 12px',
@@ -853,13 +893,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           !sectionSearchQuery && h('div', { role: 'tablist', 'aria-label': __alloT('stem.cephalopodlab.cephalopod_lab_topic_areas', 'Cephalopod Lab topic areas'),
             style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
             TAB_GROUPS.map(renderGroupBtn)),
-          !sectionSearchQuery && h('div', { role: 'tablist', 'aria-label': openGroup.label + ' sections',
-            style: { display: 'flex', flexWrap: 'wrap', gap: 4, alignItems: 'center', paddingTop: 2 } },
-            h('span', { 'aria-hidden': 'true',
-              style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase',
-                color: openGroup.color, paddingRight: 6, marginRight: 2, borderRight: '1px solid ' + openGroup.color + '33', flexShrink: 0 } },
-              openGroup.label),
-            openGroup.tabs.map(function(t) { return renderTab(t, openGroup.color); })),
+          !sectionSearchQuery && h('div', { role: 'tabpanel', id: 'cephalopod-group-panel-' + openGroup.id,
+            'aria-labelledby': 'cephalopod-group-tab-' + openGroup.id, tabIndex: 0 },
+            h('div', { role: 'tablist', 'aria-label': openGroup.label + ' sections',
+              style: { display: 'flex', flexWrap: 'wrap', gap: 4, alignItems: 'center', paddingTop: 2 } },
+              h('span', { 'aria-hidden': 'true',
+                style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase',
+                  color: openGroup.color, paddingRight: 6, marginRight: 2, borderRight: '1px solid ' + openGroup.color + '33', flexShrink: 0 } },
+                openGroup.label),
+              openGroup.tabs.map(function(t, ti) { return renderTab(t, openGroup.color, ti); }))),
           sectionSearchQuery && h('div', { id: 'cl-section-search-results', role: 'group', 'aria-label': 'Matching Cephalopod Lab sections', style: { display: 'flex', flexWrap: 'wrap', gap: 6, paddingBottom: 8 } },
             sectionMatches.length ? sectionMatches.map(function(result) {
               return h('button', { key: result.tab.id, type: 'button',
@@ -20522,7 +20564,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       return h('div', { ref: dayAbandonAppRef, tabIndex: -1, style: rootStyle, role: 'region', 'aria-label': __alloT('stem.cephalopodlab.cephalopod_lab_2', 'Cephalopod Lab') },
         renderHeader(),
         renderTabs(),
-        h('div', { style: { padding: 20 } }, content),
+        h('div', { role: 'tabpanel', id: 'cephalopod-section-panel-' + section,
+          'aria-labelledby': 'cephalopod-section-tab-' + section, tabIndex: 0,
+          style: { padding: 20 } }, content),
         renderDayAbandonConfirmation()
       );
     }
