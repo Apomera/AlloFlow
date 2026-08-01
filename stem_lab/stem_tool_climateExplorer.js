@@ -10,7 +10,7 @@
   if (document.getElementById('ce-explorer-focus-css')) return;
   var st = document.createElement('style');
   st.id = 'ce-explorer-focus-css';
-  st.textContent = '.ce-explorer-root:focus-visible, .ce-explorer-root [role="tab"]:focus-visible { outline: 3px solid #fbbf24; outline-offset: 3px; }';
+  st.textContent = '.ce-explorer-root:focus-visible, .ce-explorer-root [role="tab"]:focus-visible, .ce-explorer-root button:focus-visible { outline: 3px solid #fbbf24; outline-offset: 3px; }';
   if (document.head) document.head.appendChild(st);
 })();
   if (document.head) document.head.appendChild(st);
@@ -1360,6 +1360,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
         // density, and heat shimmer live. Move a slider → watch the planet respond.
         (function() {
           var heroSignal, heroTicker;
+          var heroMotionPaused = !!d.heroMotionPaused;
           if (tab === 'renewables') {
             var heroFossil = Math.max(0, 100 - (rsSolar + rsWind + rsHydro + rsNuclear));
             heroSignal = Math.min(1, heroFossil / 100);
@@ -1379,7 +1380,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               ref: function(cv) {
                 if (!cv) return;
                 cv._ceSignal = heroSignal; // refreshed every render — the rAF loop reads live
-                if (cv._ceInit) return;
+                cv._cePaused = heroMotionPaused;
+                if (cv._ceInit) {
+                  if (!cv._cePaused && cv._ceResume) cv._ceResume();
+                  return;
+                }
                 cv._ceInit = true;
                 var g = cv.getContext('2d');
                 if (!g) return;
@@ -1391,7 +1396,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                 for (var hs = 0; hs < 60; hs++) heroStars.push({ x: Math.random(), y: Math.random() * 0.62, r: 0.3 + Math.random() * 1.1, tw: Math.random() * 6.28 });
                 function lerpCh(a, b, f) { return Math.round(a + (b - a) * f); }
                 function heroDraw() {
-                  if (!cv.isConnected) return;
+                  if (!cv.isConnected || cv._cePaused) return;
                   var W = cv.clientWidth || 600, H = cv.clientHeight || 130;
                   if (cv.width !== W * 2) { cv.width = W * 2; cv.height = H * 2; }
                   if (!heroRM) heroTick++;
@@ -1479,13 +1484,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
                     }
                     g.globalAlpha = 1;
                   }
-                  if (!heroRM) requestAnimationFrame(heroDraw);
+                  if (!heroRM && !cv._cePaused) requestAnimationFrame(heroDraw);
                 }
+                cv._ceResume = function() { cv._cePaused = false; heroDraw(); };
                 heroDraw();
               },
               style: { width: '100%', height: 130, display: 'block', background: '#020617' }
             }),
-            el('div', { style: { position: 'absolute', left: 12, bottom: 8, fontSize: 11, fontWeight: 700, color: 'rgba(226,232,240,0.92)', textShadow: '0 1px 3px rgba(0,0,0,0.85)', pointerEvents: 'none' } }, heroTicker)
+            el('button', { type: 'button', onClick: function() { upd('heroMotionPaused', !heroMotionPaused); }, 'aria-pressed': heroMotionPaused ? 'true' : 'false', 'aria-label': heroMotionPaused ? t('stem.climateExplorer.resume_atmospheric_animation', 'Resume atmospheric animation') : t('stem.climateExplorer.pause_atmospheric_animation', 'Pause atmospheric animation'), style: { position: 'absolute', right: 12, bottom: 8, padding: '5px 9px', borderRadius: 8, border: '1px solid rgba(251,191,36,0.55)', background: 'rgba(2,6,23,0.82)', color: '#fde68a', fontSize: 10, fontWeight: 800, cursor: 'pointer' } }, heroMotionPaused ? t('stem.climateExplorer.resume_animation', 'Resume animation') : t('stem.climateExplorer.pause_animation', 'Pause animation')),
+            el('div', { style: { position: 'absolute', left: 12, bottom: 8, fontSize: 11, fontWeight: 700, color: 'rgba(226,232,240,0.92)', textShadow: '0 1px 3px rgba(0,0,0,0.85)', pointerEvents: 'none', paddingRight: 110 } }, heroTicker)
           );
         })(),
 
