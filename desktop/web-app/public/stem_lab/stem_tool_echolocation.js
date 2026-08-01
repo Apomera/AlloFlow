@@ -933,6 +933,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
 
           // Renderer
           var cnv = document.createElement('canvas');
+          cnv.setAttribute('role', 'img');
+          cnv.setAttribute('aria-label', t('stem.echolocation.cave_3d_visualization', '3D echolocation cave visualization. Use the camera controls and sonar pulse button to explore.'));
           cnv.style.width = '100%'; cnv.style.height = '100%'; cnv.style.display = 'block';
           container.appendChild(cnv);
           try {
