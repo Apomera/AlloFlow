@@ -17372,6 +17372,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           { id: 'systems',      label: __alloT('stem.nutritionlab.2_three_energy_systems', '2. Three Energy Systems') },
           { id: 'distribution', label: __alloT('stem.nutritionlab.3_where_energy_goes', '3. Where Energy Goes') }
         ];
+
+        function energyTabKeyDown(e, index) {
+          var nextIndex = index;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % tabs.length;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index - 1 + tabs.length) % tabs.length;
+          else if (e.key === 'Home') nextIndex = 0;
+          else if (e.key === 'End') nextIndex = tabs.length - 1;
+          else return;
+          e.preventDefault();
+          var tabButtons = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+          if (tabButtons[nextIndex]) {
+            tabButtons[nextIndex].focus();
+            tabButtons[nextIndex].click();
+          }
+        }
+
         // Topic-accent hero metadata — keys off tab id so each section feels distinct.
         var TAB_META = {
           atp:          { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)',  icon: '⚡', title: __alloT('stem.nutritionlab.atp_your_cellular_energy_currency', 'ATP — your cellular energy currency'), hint: __alloT('stem.nutritionlab.every_cell_holds_50g_of_atp_and_recycl', 'Every cell holds ~50g of ATP and recycles it ~1,000× per day.') },
@@ -17410,18 +17426,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             ),
             // Tab strip
             h('div', { 'role': 'tablist', 'aria-label': __alloT('stem.nutritionlab.energy_metabolism_sections', 'Energy metabolism sections'), className: 'flex flex-wrap gap-2' },
-              tabs.map(function(t) {
+              tabs.map(function(t, tabIndex) {
                 var sel = (tab === t.id);
                 return h('button', {
                   key: t.id,
                   role: 'tab',
+                  id: 'nutrition-energy-tab-' + t.id,
+                  'aria-controls': 'nutrition-energy-panel-' + t.id,
                   'aria-selected': sel ? 'true' : 'false',
+                  tabIndex: sel ? 0 : -1,
                   onClick: function() { setTab(t.id); announce(t.label); },
+                  onKeyDown: function(e) { energyTabKeyDown(e, tabIndex); },
                   className: 'px-4 py-2 rounded-xl border-2 font-bold text-sm transition focus:outline-none focus:ring-2 ring-emerald-500/40 ' +
                     (sel ? 'bg-amber-700 text-white border-amber-800 shadow' : 'bg-white text-slate-800 border-slate-300 hover:border-amber-500')
                 }, t.label);
               })
             ),
+            h('div', {
+              role: 'tabpanel',
+              id: 'nutrition-energy-panel-' + tab,
+              'aria-labelledby': 'nutrition-energy-tab-' + tab,
+              tabIndex: 0
+            },
             // Topic-accent hero band (swaps with the active tab)
             (function() {
               var meta = TAB_META[tab] || TAB_META.atp;
@@ -17621,6 +17647,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               extension: 'Track ONE day of activity (not food). Note how many minutes you spent walking, sitting, sleeping, and any structured exercise. Use the kcal/min table to estimate the activity portion of your day. Then notice: this is descriptive — what does it tell you about how your body partitioned its work today?',
               sources: 'ATP and mitochondria from Lehninger Principles of Biochemistry. Energy-system breakdown adapted from ACSM Guidelines for Exercise Testing. Resting energy distribution from Brody, Nutritional Biochemistry (1999) and Wang et al., American Journal of Clinical Nutrition (2010).'
             })
+            )
           )
         );
       }
