@@ -455,6 +455,7 @@ function MathView(props) {
     className: "w-full p-2 border border-amber-200 rounded-lg focus:ring-2 focus:ring-amber-300 outline-none bg-amber-50/50 font-serif text-lg font-bold text-green-900",
     value: problem.answer || '',
     onChange: e => handleMathProblemEdit(pIdx, 'answer', e.target.value),
+    "aria-label": t('math.edit_answer') || `Edit answer for problem ${pIdx + 1}`,
     placeholder: t('common.placeholder_enter_answer')
   }) : /*#__PURE__*/React.createElement("div", {
     className: "text-lg font-bold text-green-900 font-serif"
