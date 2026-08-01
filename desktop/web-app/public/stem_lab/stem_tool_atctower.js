@@ -1653,6 +1653,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
           { id: 'lessons', label: t('stem.atctower.lessons', 'Lessons'), hint: t('stem.atctower.learn_the_math', 'Learn the math') },
           { id: 'badges', label: t('stem.atctower.badges', 'Badges'), hint: earnedCount + '/' + ATC_BADGES.length }
         ];
+        var ATC_TAB_ORDER = menuTabs.map(function(tab) { return tab.id; });
+        var atcTabKeyDown = function(e, index) {
+          var nextIndex = -1;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % ATC_TAB_ORDER.length;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + ATC_TAB_ORDER.length - 1) % ATC_TAB_ORDER.length;
+          else if (e.key === 'Home') nextIndex = 0;
+          else if (e.key === 'End') nextIndex = ATC_TAB_ORDER.length - 1;
+          if (nextIndex < 0) return;
+          e.preventDefault();
+          var tabs = e.currentTarget && e.currentTarget.parentNode
+            ? e.currentTarget.parentNode.querySelectorAll('[role="tab"]')
+            : [];
+          var nextTab = tabs[nextIndex];
+          if (nextTab) {
+            nextTab.focus();
+            nextTab.click();
+          }
+        };
         return h('section', {
           'data-atctower-command': 'true',
           'aria-labelledby': 'atctower-command-title',
@@ -1725,15 +1743,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
             )
           ),
           h('div', { role: 'tablist', 'aria-label': t('stem.atctower.tower_routes', 'Tower routes'), style: { padding: '0 24px 16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' } },
-            menuTabs.map(function(tab) {
+            menuTabs.map(function(tab, tabIndex) {
               var active = atcMenuPanel === tab.id;
-              return h('button', { key: tab.id, role: 'tab', 'aria-selected': active ? 'true' : 'false', onClick: function() { upd('atcMenuPanel', tab.id); }, style: { padding: '10px 12px', borderRadius: '10px', border: '1px solid ' + (active ? '#2dd4bf' : 'rgba(148, 163, 184, 0.26)'), background: active ? 'rgba(20,184,166,0.18)' : 'rgba(15,23,42,0.58)', color: active ? '#ccfbf1' : '#dbeafe', cursor: 'pointer', textAlign: 'left' } },
+              return h('button', { key: tab.id, id: 'stem-atctower-tab-' + tab.id, role: 'tab', 'aria-selected': active ? 'true' : 'false', 'aria-controls': 'stem-atctower-panel-' + tab.id, tabIndex: active ? 0 : -1, onKeyDown: function(e) { atcTabKeyDown(e, tabIndex); }, onClick: function() { upd('atcMenuPanel', tab.id); }, style: { padding: '10px 12px', borderRadius: '10px', border: '1px solid ' + (active ? '#2dd4bf' : 'rgba(148, 163, 184, 0.26)'), background: active ? 'rgba(20,184,166,0.18)' : 'rgba(15,23,42,0.58)', color: active ? '#ccfbf1' : '#dbeafe', cursor: 'pointer', textAlign: 'left' } },
                 h('div', { style: { fontSize: '13px', fontWeight: 900 } }, tab.label),
                 h('div', { style: { marginTop: '2px', fontSize: '11px', color: active ? '#99f6e4' : '#cbd5e1', fontWeight: 650 } }, tab.hint)
               );
             })
           ),
-          atcMenuPanel === 'airports' && h('div', { style: { padding: '0 24px 18px' } },
+          h('div', { role: 'tabpanel', id: 'stem-atctower-panel-' + atcMenuPanel, 'aria-labelledby': 'stem-atctower-tab-' + atcMenuPanel, tabIndex: 0 },
+            atcMenuPanel === 'airports' && h('div', { style: { padding: '0 24px 18px' } },
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '10px' } },
               AIRPORTS.map(function(apt) {
                 var tone = difficultyTone(apt.difficulty);
@@ -1822,6 +1841,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('atcTower'))) {
                 );
               })
             )
+          ),
           ),
           h('div', { style: { padding: '12px 24px 18px', borderTop: '1px solid rgba(148, 163, 184, 0.18)', display: 'flex', justifyContent: 'center', gap: '10px', flexWrap: 'wrap', background: 'rgba(2, 6, 23, 0.22)' } },
             [['Click/Tab', 'Select'], ['H', 'Heading'], ['S', 'Speed'], ['R', 'Runway'], ['C', 'Clear ILS'], ['G', 'Go Around'], ['P', 'Hold'], ['Space', 'Pause'], ['ESC', 'Exit']].map(function(item) {
