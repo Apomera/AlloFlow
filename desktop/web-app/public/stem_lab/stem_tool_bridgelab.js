@@ -1540,11 +1540,13 @@
               h('input', { type: 'text', value: d.designName || '',
                 onChange: function(e) { upd({ designName: e.target.value }); },
                 placeholder: __alloT('stem.bridgelab.design_name_e_g_marie_s_pedestrian_bri', 'Design name (e.g., "Marie\'s pedestrian bridge over Back Cove")'),
+                'aria-label': __alloT('stem.bridgelab.design_name', 'Bridge design name'),
                 style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid var(--allo-stem-border, #334155)', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, marginBottom: 8, fontFamily: 'inherit' }
               }),
               h('textarea', { value: d.designNotes || '',
                 onChange: function(e) { upd({ designNotes: e.target.value }); },
                 placeholder: __alloT('stem.bridgelab.why_this_material_what_are_the_constra', 'Why this material? What are the constraints? What would you improve?'),
+                'aria-label': __alloT('stem.bridgelab.design_notes', 'Bridge design notes'),
                 rows: 3,
                 style: { width: '100%', padding: 8, borderRadius: 6, border: '1px solid var(--allo-stem-border, #334155)', background: 'var(--allo-stem-canvas, #0f172a)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, resize: 'vertical', fontFamily: 'inherit' }
               })
