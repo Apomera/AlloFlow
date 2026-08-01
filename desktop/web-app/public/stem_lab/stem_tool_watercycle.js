@@ -1312,7 +1312,7 @@ const d = labToolData.waterCycle || {};
             var dd = def.deepDive;
             var applicable = STEWARD_TECHNIQUES.filter(function(t) { return t.appliesTo === 'any' || t.appliesTo.indexOf(id) >= 0; });
             return h('div', {
-              role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Watershed deep-dive: ' + def.name,
+              role: 'region', 'aria-labelledby': 'watercycle-deep-dive-title-' + def.id, tabIndex: 0,
               style: {
                 background: isDark
                   ? 'linear-gradient(135deg, ' + def.color + '20 0%, rgba(15,23,42,0.95) 60%)'
@@ -1328,7 +1328,7 @@ const d = labToolData.waterCycle || {};
                 h('span', { style: { fontSize: 36 } }, def.icon),
                 h('div', { style: { flex: 1 } },
                   h('div', { style: { fontSize: 11, color: def.color, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, t('stem.watercycle.watershed_deep_dive', 'Watershed deep-dive')),
-                  h('h3', { style: { margin: '2px 0 0', color: isDark ? '#fff' : '#0f172a', fontSize: 20 } }, def.name),
+                  h('h3', { id: 'watercycle-deep-dive-title-' + def.id, style: { margin: '2px 0 0', color: isDark ? '#fff' : '#0f172a', fontSize: 20 } }, def.name),
                   h('div', { style: { color: def.color, fontSize: 13, marginTop: 4, fontStyle: 'italic' } }, def.role)
                 ),
                 h('button', {
