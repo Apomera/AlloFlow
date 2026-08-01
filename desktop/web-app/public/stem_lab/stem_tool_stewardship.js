@@ -2057,7 +2057,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
             h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, __alloT('stem.stewardship.pick_a_hypothetical_project_setting_pr', 'Pick a hypothetical project setting. Predict how investment, time, community, and intervention complexity combine. No score, no reveal. (Note: this slider is intervention complexity, NOT biodiversity — higher biodiversity generally INCREASES resilience.)')),
             h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: '999rem', background: sm.color, color: '#000', fontSize: 11, fontWeight: 800, marginBottom: 6 } }, sm.label + ' · success odds ' + (successOdds * 100).toFixed(0) + '% · ROI proxy ' + roi.toFixed(2)),
             h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
-            h('svg', { width: '100%', height: 120, viewBox: '0 0 320 120', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
+            h('svg', { width: '100%', height: 120, viewBox: '0 0 320 120', role: 'img', 'aria-label': __alloT('stem.stewardship.trajectory_chart', 'Stewardship trajectory chart showing projected success odds and ROI proxy.'), style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
               h('rect', { x: 30, y: 30, width: 260, height: 60, fill: '#0f172a', stroke: '#1e293b' }),
               h('rect', { x: 30, y: 30, width: (successOdds * 260).toFixed(1), height: 60, fill: sm.color, opacity: 0.7 }),
               h('text', { x: 160, y: 65, fill: '#fff', fontSize: 12, fontWeight: 700, textAnchor: 'middle' }, 'success ' + (successOdds * 100).toFixed(0) + '%'),
