@@ -20004,12 +20004,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           { id: 'sweat',     label: __alloT('stem.nutritionlab.sweat_rate', 'Sweat Rate'),        icon: '🏃' }
         ];
 
-        function tabBtn(t) {
+        function hydrationTabKeyDown(e, index) {
+          var nextIndex = index;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % TABS.length;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index - 1 + TABS.length) % TABS.length;
+          else if (e.key === 'Home') nextIndex = 0;
+          else if (e.key === 'End') nextIndex = TABS.length - 1;
+          else return;
+          e.preventDefault();
+          var tabButtons = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+          if (tabButtons[nextIndex]) {
+            tabButtons[nextIndex].focus();
+            tabButtons[nextIndex].click();
+          }
+        }
+
+        function tabBtn(t, tabIndex) {
           var sel = (tab === t.id);
           return h('button', {
             key: t.id,
+            id: 'nutrition-hydration-tab-' + t.id,
+            'aria-controls': 'nutrition-hydration-panel-' + t.id,
             onClick: function() { setTab(t.id); },
+            onKeyDown: function(e) { hydrationTabKeyDown(e, tabIndex); },
             role: 'tab', 'aria-selected': sel ? 'true' : 'false',
+            tabIndex: sel ? 0 : -1,
             className: 'flex-1 px-3 py-2 rounded-lg text-xs md:text-sm font-bold transition-colors focus:outline-none focus:ring-2 ring-sky-500 ' +
               (sel ? 'bg-sky-700 text-white shadow' : 'bg-white text-slate-800 hover:bg-sky-50 border border-slate-300')
           }, t.icon + ' ' + t.label);
@@ -20054,6 +20073,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             h('div', { role: 'tablist', 'aria-label': __alloT('stem.nutritionlab.hydration_lab_sections', 'Hydration Lab sections'), className: 'flex flex-wrap gap-2' },
               TABS.map(tabBtn)
             ),
+            h('div', {
+              role: 'tabpanel',
+              id: 'nutrition-hydration-panel-' + tab,
+              'aria-labelledby': 'nutrition-hydration-tab-' + tab,
+              tabIndex: 0
+            },
 
             // ──────────── Tab: Daily Needs ────────────
             tab === 'needs' && h('div', { className: 'space-y-4' },
@@ -20301,6 +20326,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
                 'Read the AAP 2011 sports/energy drink Clinical Report (open access on Pediatrics) and identify the three claims you found most surprising.'
               ]
             })
+            )
           )
         );
       }
