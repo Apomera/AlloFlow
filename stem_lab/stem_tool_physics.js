@@ -2052,15 +2052,15 @@ const d = labToolData.physics;
 
               React.createElement("canvas", {
 
+                role: "application",
+
+                "aria-label": __alloT('stem.physics.aria_canvas', 'Physics projectile simulator — use arrow keys to adjust angle and velocity, Space to launch'),
+
                 ref: canvasRef,
 
                 id: "physicsCanvas",
 
                 tabIndex: 0,
-
-                role: "application",
-
-                "aria-label": __alloT('stem.physics.aria_canvas', 'Physics projectile simulator — use arrow keys to adjust angle and velocity, Space to launch'),
 
                 "data-angle": d.angle, "data-velocity": d.velocity, "data-gravity": d.gravity,
 
@@ -2099,7 +2099,7 @@ const d = labToolData.physics;
 
                 },
 
-                style: { width: "100%", height: "100%", display: "block", outline: "none" }
+                style: { width: "100%", height: "100%", display: "block" }
 
               })
 
@@ -3094,7 +3094,7 @@ const d = labToolData.physics;
                   h('table', { className: 'text-[10px] w-full border-collapse text-slate-700' },
                     h('thead', null, h('tr', { className: 'bg-slate-100' },
                       ['g', __alloT('stem.physics.iq_col_angle', 'angle\u00B0'), 'v', __alloT('stem.physics.iq_col_range', 'range m'), __alloT('stem.physics.iq_col_state', 'state')].map(function(c, i) {
-                        return h('th', { key: 'h' + i, className: 'px-2 py-1 border border-slate-200 text-left' }, c);
+                        return h('th', { key: 'h' + i, scope: 'col', className: 'px-2 py-1 border border-slate-200 text-left' }, c);
                       }))),
                     h('tbody', null, iq.log.map(function(o, idx) {
                       return h('tr', { key: 'lr' + idx },
