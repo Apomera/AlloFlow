@@ -3841,10 +3841,31 @@ window.StemLab = window.StemLab || {
         h(ArrowLeft, { size: 14 }), t('stem.semiconductor.back_to_stem_lab', ' Back to STEM Lab')
       );
 
-      var tabBar = h('div', { className: 'flex gap-1 mb-3 border-b border-slate-700 pb-2', role: 'tablist' },
-        ['explore', 'challenge', 'battle', 'learn'].map(function(tb) {
+      var semiconductorTabKeyDown = function(e, index) {
+        var nextIndex = -1;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % 4;
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + 3) % 4;
+        else if (e.key === 'Home') nextIndex = 0;
+        else if (e.key === 'End') nextIndex = 3;
+        if (nextIndex < 0) return;
+        e.preventDefault();
+        var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+        var nextTab = tabs[nextIndex];
+        if (nextTab) { nextTab.focus(); nextTab.click(); }
+      };
+
+      var tabBar = h('div', { className: 'flex gap-1 mb-3 border-b border-slate-700 pb-2', role: 'tablist', 'aria-label': t('stem.semiconductor.semiconductor_lab_navigation', 'Semiconductor Lab navigation') },
+        ['explore', 'challenge', 'battle', 'learn'].map(function(tb, tabIndex) {
           var labels = { explore: '\uD83D\uDD2C Explore', challenge: '\uD83C\uDFC6 Challenge', battle: '\u2694\uFE0F Battle', learn: '\uD83D\uDCDA Learn' };
-          return pill(labels[tb], tab === tb, function() { setStemLabTab(tb); if (announceToSR) announceToSR(tb + ' tab selected'); }, 'tab-' + tb);
+          var active = tab === tb;
+          return h('button', { key: 'tab-' + tb, type: 'button', role: 'tab',
+            id: 'semiconductor-tab-' + tb, 'aria-controls': 'semiconductor-panel-' + tb,
+            'aria-selected': active, tabIndex: active ? 0 : -1,
+            onKeyDown: function(e) { semiconductorTabKeyDown(e, tabIndex); },
+            onClick: function() { setStemLabTab(tb); if (announceToSR) announceToSR(tb + ' tab selected'); },
+            className: 'px-2.5 py-1 text-xs font-semibold rounded-full transition-all ' +
+              (active ? 'bg-cyan-700 text-white shadow-md' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')
+          }, labels[tb]);
         })
       );
 
@@ -4090,9 +4111,11 @@ window.StemLab = window.StemLab || {
         ),
         tabBar,
         commandPanel,
-        tabHero,
-        subtoolNav,
-        h('div', { className: 'flex-1 overflow-y-auto pr-1' }, content),
+        h('div', { role: 'tabpanel', id: 'semiconductor-panel-' + tab,
+          'aria-labelledby': 'semiconductor-tab-' + tab, tabIndex: 0 },
+          tabHero,
+          subtoolNav,
+          h('div', { className: 'flex-1 overflow-y-auto pr-1' }, content)),
         snapshotBtn
       );
     }

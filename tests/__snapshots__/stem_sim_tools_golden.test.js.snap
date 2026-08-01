@@ -327,13 +327,13 @@ exports[`science-sim + studio render goldens > renders + pins a digest for rocks
 
 exports[`science-sim + studio render goldens > renders + pins a digest for semiconductor [mount] 1`] = `
 {
-  "buttons": 67,
+  "buttons": 63,
   "canvases": 1,
   "inputs": 2,
-  "lengthBucket": 93,
+  "lengthBucket": 96,
   "paths": 0,
   "selects": 0,
-  "sha": "f0a193f75dc90651",
+  "sha": "5e9f148f0bd2ebdf",
   "svgs": 0,
 }
 `;
