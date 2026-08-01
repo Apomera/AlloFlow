@@ -17,5 +17,6 @@ describe('Fisher Lab active panel accessibility', () => {
     expect(source).toContain('id: \'fl-active-panel\'');
     expect(source).toContain("role: 'tabpanel'");
     expect(source).toContain('tabIndex: 0');
+    expect(source).toContain("'aria-label': 'Species ranking hypothesis'");
   });
 });
