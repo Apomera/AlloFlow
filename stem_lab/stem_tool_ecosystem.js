@@ -4481,7 +4481,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
               return t.appliesTo.indexOf(id) >= 0;
             });
             return h('div', {
-              role: 'dialog', 'aria-modal': 'true', 'aria-label': __alloT('stem.ecosystem.aria_cultural_deepdive_pre', 'Cultural deep-dive: ') + def.name,
+              role: 'region', 'aria-labelledby': 'ecosystem-deep-dive-title-' + def.id, tabIndex: 0,
               style: {
                 background: 'linear-gradient(135deg, ' + def.color + '20 0%, rgba(15,23,42,0.85) 60%)',
                 border: '1px solid ' + def.color + '88', borderLeft: '4px solid ' + def.color,
@@ -4492,7 +4492,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                 h('span', { style: { fontSize: 36 } }, def.icon),
                 h('div', { style: { flex: 1 } },
                   h('div', { style: { fontSize: 11, color: def.color, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, __alloT('stem.ecosystem.species_deepdive', 'Species deep-dive')),
-                  h('h3', { style: { margin: '2px 0 0', color: '#fff', fontSize: 20 } }, def.name),
+                  h('h3', { id: 'ecosystem-deep-dive-title-' + def.id, style: { margin: '2px 0 0', color: '#fff', fontSize: 20 } }, def.name),
                   h('div', { style: { color: def.color, fontSize: 13, marginTop: 4, fontStyle: 'italic' } }, def.role)
                 ),
                 h('button', { onClick: closeConservDeepDive,
