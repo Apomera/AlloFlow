@@ -1853,14 +1853,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
               ) : null
           )
         ),
-        (envType === 'simple_room' && tutStep < 4) ? h('div', { role: 'dialog', 'aria-label': 'Tutorial step ' + (tutStep + 1) + ' of 4', style: { background: isDark ? '#0f172a' : '#eff6ff', border: '2px solid #3b82f6', borderRadius: '12px', padding: '16px', position: 'relative', zIndex: 10 } },
+        (envType === 'simple_room' && tutStep < 4) ? h('div', { role: 'region', 'aria-label': 'Tutorial step ' + (tutStep + 1) + ' of 4', tabIndex: 0, style: { background: isDark ? '#0f172a' : '#eff6ff', border: '2px solid #3b82f6', borderRadius: '12px', padding: '16px', position: 'relative', zIndex: 10 } },
           h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' } }, h('span', { style: { fontSize: '14px', fontWeight: 800, color: '#3b82f6' } }, 'Tutorial ' + (tutStep + 1) + '/4'), h('span', { style: { fontSize: '12px', fontWeight: 700, color: isDark ? '#e2e8f0' : '#1e293b' } }, TUTORIAL_STEPS[tutStep].title)),
           h('p', { style: { fontSize: '12px', color: isDark ? '#94a3b8' : '#475569', lineHeight: 1.6, margin: '0 0 10px 0' } }, TUTORIAL_STEPS[tutStep].text),
           h('button', { onClick: function() { var next = tutStep + 1; upd('tutStep', next); if (next >= 4 && announceToSR) announceToSR('Tutorial complete! You are ready to explore on your own.'); }, 'aria-label': tutStep < 3 ? 'Next tutorial step' : 'Complete tutorial', style: { padding: '6px 16px', borderRadius: '8px', border: 'none', background: '#1d4ed8', color: '#fff', fontSize: '12px', fontWeight: 800, cursor: 'pointer' } }, tutStep < 3 ? 'Next \u2192' : 'Got It!')
         ) : null,
         // Distance challenge UI
         (d.distChallenge && d.distChallenge.active && !d.distChallenge.result) ? h('div', {
-          role: 'dialog', 'aria-label': t('stem.echotrainer.distance_estimation_challenge', 'Distance estimation challenge'),
+          role: 'region', 'aria-label': t('stem.echotrainer.distance_estimation_challenge', 'Distance estimation challenge'),
+          tabIndex: 0,
           style: { padding: '14px', borderRadius: '12px', border: '2px solid #7c3aed', background: isDark ? '#1e1033' : '#faf5ff', marginBottom: '8px' }
         },
           h('div', { style: { fontWeight: 800, fontSize: '13px', color: '#7c3aed', marginBottom: '6px' } }, t('stem.echotrainer.distance_challenge', '\uD83D\uDCCF Distance Challenge')),
@@ -1899,7 +1900,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echoTrainer'))
         ) : null,
         // ── Material Quiz UI ──
         (matQuiz && matQuiz.active && !matQuiz.result) ? h('div', {
-          role: 'dialog', 'aria-label': t('stem.echotrainer.material_identification_quiz', 'Material identification quiz'),
+          role: 'region', 'aria-label': t('stem.echotrainer.material_identification_quiz', 'Material identification quiz'),
+          tabIndex: 0,
           style: { padding: '14px', borderRadius: '12px', border: '2px solid #f59e0b', background: isDark ? '#1c1917' : '#fffbeb', marginBottom: '8px' }
         },
           h('div', { style: { fontWeight: 800, fontSize: '13px', color: '#f59e0b', marginBottom: '6px' } }, t('stem.echotrainer.material_quiz_2', '\uD83E\uDDCA Material Quiz')),

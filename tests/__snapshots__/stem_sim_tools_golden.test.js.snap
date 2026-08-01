@@ -138,7 +138,7 @@ exports[`science-sim + studio render goldens > renders + pins a digest for echoT
   "lengthBucket": 145,
   "paths": 6,
   "selects": 0,
-  "sha": "39c5155b3c62dc94",
+  "sha": "be346561ccf6f0a0",
   "svgs": 2,
 }
 `;
