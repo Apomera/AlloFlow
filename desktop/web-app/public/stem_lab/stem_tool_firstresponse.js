@@ -2029,11 +2029,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       // ─────────────────────────────────────────
       function renderBleed() {
         var bleedView = d.bleedView || 'overview';
+        var BLEED_TAB_IDS = ['overview', 'detail', 'tourniquet'];
+        function bleedTabKeyDown(e, index) {
+          var key = e.key;
+          if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
+          e.preventDefault();
+          var nextIndex = index;
+          if (key === 'ArrowRight' || key === 'ArrowDown') nextIndex = (index + 1) % BLEED_TAB_IDS.length;
+          if (key === 'ArrowLeft' || key === 'ArrowUp') nextIndex = (index - 1 + BLEED_TAB_IDS.length) % BLEED_TAB_IDS.length;
+          if (key === 'Home') nextIndex = 0;
+          if (key === 'End') nextIndex = BLEED_TAB_IDS.length - 1;
+          var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+          var nextTab = tabs[nextIndex];
+          if (nextTab) { nextTab.focus(); nextTab.click(); }
+        }
 
         function tabBtn(id, label) {
           var active = bleedView === id;
-          return h('button', { 'data-fr-focusable': true, key: id,
-            'aria-pressed': active ? 'true' : 'false',
+          return h('button', { 'data-fr-focusable': true, key: id, role: 'tab',
+            id: 'firstresponse-bleed-tab-' + id,
+            'aria-controls': 'firstresponse-bleed-panel-' + id,
+            'aria-selected': active ? 'true' : 'false',
+            tabIndex: active ? 0 : -1,
+            onKeyDown: function(e) { bleedTabKeyDown(e, BLEED_TAB_IDS.indexOf(id)); },
             onClick: function() { upd('bleedView', id); frAnnounce(label); },
             style: btn({
               padding: '6px 12px', fontSize: 12,
@@ -2221,10 +2239,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             tabBtn('detail', 'Detailed protocol'),
             tabBtn('tourniquet', 'Tourniquet placement')
           ),
-          bleedView === 'overview' && bleedOverview(),
-          bleedView === 'detail' && bleedDetail(),
-          bleedView === 'tourniquet' && bleedTourniquet(),
-          disclaimerFooter()
+          h('div', { role: 'tabpanel',
+            id: 'firstresponse-bleed-panel-' + bleedView,
+            'aria-labelledby': 'firstresponse-bleed-tab-' + bleedView,
+            tabIndex: 0
+          },
+            bleedView === 'overview' && bleedOverview(),
+            bleedView === 'detail' && bleedDetail(),
+            bleedView === 'tourniquet' && bleedTourniquet(),
+            disclaimerFooter()
+          )
         );
       }
 
