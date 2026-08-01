@@ -3189,6 +3189,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
         { id: 'inquiry', label: __alloT('stem.ecosystem.inquiry', 'Inquiry'), hint: __alloT('stem.ecosystem.route_inquiry_hint', 'Sweep variables and observe.') }
       ];
       var ecoTabNames = { explore: __alloT('stem.ecosystem.explore', 'Explore'), sandbox: __alloT('stem.ecosystem.sandbox', 'Sandbox'), conserve: __alloT('stem.ecosystem.conservation', 'Conservation'), inquiry: __alloT('stem.ecosystem.inquiry', 'Inquiry'), quiz: __alloT('stem.ecosystem.quiz', 'Quiz'), badges: __alloT('stem.ecosystem.badges', 'Badges') };
+      var ECO_TAB_ORDER = ['explore', 'sandbox', 'conserve', 'inquiry', 'quiz', 'badges'];
+      var ecoTabKeyDown = function(e, index) {
+        var nextIndex = -1;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % ECO_TAB_ORDER.length;
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + ECO_TAB_ORDER.length - 1) % ECO_TAB_ORDER.length;
+        else if (e.key === 'Home') nextIndex = 0;
+        else if (e.key === 'End') nextIndex = ECO_TAB_ORDER.length - 1;
+        if (nextIndex < 0) return;
+        e.preventDefault();
+        var tabs = e.currentTarget && e.currentTarget.parentNode
+          ? e.currentTarget.parentNode.querySelectorAll('[role="tab"]')
+          : [];
+        var nextTab = tabs[nextIndex];
+        if (nextTab) {
+          nextTab.focus();
+          nextTab.click();
+        }
+      };
 
       return h('div', { className: 'space-y-3 pb-4', 'data-ecosystem-tool': 'true' },
 
@@ -3277,7 +3295,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
 
         // ── Mode tabs (4 tabs now) ──
         h('div', { className: 'flex gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1', role: 'tablist', 'aria-label': __alloT('stem.ecosystem.aria_explorer_sections', 'Ecosystem Explorer sections') },
-          ['explore', 'sandbox', 'conserve', 'inquiry', 'quiz', 'badges'].map(function(t2) {
+          ECO_TAB_ORDER.map(function(t2, tabIndex) {
             var tabLabel = '';
             if (t2 === 'explore') tabLabel = '\uD83C\uDF3F ' + __alloT('stem.ecosystem.explore', 'Explore');
             else if (t2 === 'sandbox') tabLabel = '\uD83E\uDDEA ' + __alloT('stem.ecosystem.sandbox', 'Sandbox');
@@ -3286,7 +3304,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
             else if (t2 === 'quiz') tabLabel = '\u2753 ' + __alloT('stem.ecosystem.quiz', 'Quiz');
             else tabLabel = '\uD83C\uDFC5 ' + __alloT('stem.ecosystem.badges', 'Badges') + ' (' + badgeCount + '/' + BADGES.length + ')';
             return h('button', { key: t2,
+              id: 'stem-ecosystem-tab-' + t2,
               role: 'tab', 'aria-selected': tab === t2,
+              'aria-controls': 'stem-ecosystem-panel-' + t2,
+              tabIndex: tab === t2 ? 0 : -1,
+              onKeyDown: function(e) { ecoTabKeyDown(e, tabIndex); },
               className: 'flex-1 px-2 py-1.5 text-xs font-semibold rounded-md transition-all ' +
                 (tab === t2 ? 'bg-emerald-700 text-white shadow' : 'transition-colors text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-[0.97]'),
               onClick: function() {
@@ -3317,6 +3339,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
           };
           var meta = TAB_META[tab] || TAB_META.explore;
           return h('div', {
+            role: 'tabpanel', id: 'stem-ecosystem-panel-' + tab,
+            'aria-labelledby': 'stem-ecosystem-tab-' + tab, tabIndex: 0,
             className: 'mt-2',
             style: {
               padding: '12px 14px',
