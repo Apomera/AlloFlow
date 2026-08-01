@@ -690,6 +690,23 @@
       : mode === 'read' ? renderRead()
       : mode === 'translate' ? renderTranslate()
       : renderInquire();
+    var accessLensTabKeyDown = function (e, index) {
+      var nextIndex = -1;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % MODES.length;
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + MODES.length - 1) % MODES.length;
+      else if (e.key === 'Home') nextIndex = 0;
+      else if (e.key === 'End') nextIndex = MODES.length - 1;
+      if (nextIndex < 0) return;
+      e.preventDefault();
+      var tabs = e.currentTarget && e.currentTarget.parentNode
+        ? e.currentTarget.parentNode.querySelectorAll('[role="tab"]')
+        : [];
+      var nextTab = tabs[nextIndex];
+      if (nextTab) {
+        nextTab.focus();
+        nextTab.click();
+      }
+    };
 
     return h('div', { 'data-accesslens-tool': 'true', style: { display: 'flex', flexDirection: 'column', gap: '14px', color: C.text, fontFamily: 'inherit' } },
       h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' } },
@@ -704,12 +721,13 @@
           h('div', { style: { fontSize: '11px', color: C.sub } }, _t('stem.accessLens.subtitle', 'Point, snap, and understand: describe, read, translate, investigate')))),
       card(renderCapture(), { background: C.bg }),
       h('div', { role: 'tablist', 'aria-label': _t('stem.accessLens.tabs_label', 'Access Lens modes'), style: { display: 'flex', gap: '6px', flexWrap: 'wrap', borderBottom: '1px solid ' + C.border, paddingBottom: '8px' } },
-        MODES.map(function (m) {
+        MODES.map(function (m, tabIndex) {
           var active = mode === m.id;
           return h('button', {
             key: m.id, type: 'button', className: 'accesslens-tab', role: 'tab',
             id: 'accesslens-tab-' + m.id, 'aria-controls': 'accesslens-panel', 'aria-selected': active ? 'true' : 'false',
             tabIndex: active ? 0 : -1,
+            onKeyDown: function (e) { accessLensTabKeyDown(e, tabIndex); },
             onClick: function () { setMode(m.id); stopSpeech(); announce(m.label); },
             style: {
               padding: '7px 13px', borderRadius: '9px 9px 0 0', cursor: 'pointer', fontSize: '13px', fontWeight: 800,
