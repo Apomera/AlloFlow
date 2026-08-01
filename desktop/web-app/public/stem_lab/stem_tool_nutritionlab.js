@@ -16612,6 +16612,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         ];
         var current = tabs.filter(function(t) { return t.id === tab; })[0] || tabs[0];
 
+        function micronutrientTabKeyDown(e, index) {
+          var nextIndex = index;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % tabs.length;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index - 1 + tabs.length) % tabs.length;
+          else if (e.key === 'Home') nextIndex = 0;
+          else if (e.key === 'End') nextIndex = tabs.length - 1;
+          else return;
+          e.preventDefault();
+          var tabButtons = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+          if (tabButtons[nextIndex]) {
+            tabButtons[nextIndex].focus();
+            tabButtons[nextIndex].click();
+          }
+        }
+
         function detailPanel(item) {
           if (!item) return null;
           return h('div', {
@@ -16721,18 +16736,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
             })(),
             // Tab strip
             h('div', { 'role': 'tablist', 'aria-label': __alloT('stem.nutritionlab.nutrient_categories', 'Nutrient categories'), className: 'flex flex-wrap gap-2' },
-              tabs.map(function(t) {
+              tabs.map(function(t, tabIndex) {
                 var sel = (tab === t.id);
                 return h('button', {
                   key: t.id,
                   role: 'tab',
+                  id: 'nutrition-micro-tab-' + t.id,
+                  'aria-controls': 'nutrition-micro-panel-' + t.id,
                   'aria-selected': sel ? 'true' : 'false',
+                  tabIndex: sel ? 0 : -1,
                   onClick: function() { setTab(t.id); announce(t.label + ' selected'); },
+                  onKeyDown: function(e) { micronutrientTabKeyDown(e, tabIndex); },
                   className: 'px-4 py-2 rounded-xl border-2 font-bold text-sm transition focus:outline-none focus:ring-2 ring-emerald-500/40 ' +
                     (sel ? 'bg-emerald-700 text-white border-emerald-800 shadow' : 'bg-white text-slate-800 border-slate-300 hover:border-emerald-500')
                 }, t.label);
               })
             ),
+            h('div', {
+              role: 'tabpanel',
+              id: 'nutrition-micro-panel-' + tab,
+              'aria-labelledby': 'nutrition-micro-tab-' + tab,
+              tabIndex: 0
+            },
             // Card grid
             h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3' },
               current.data.map(function(item) {
@@ -16776,6 +16801,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               extension: 'Pick one nutrient from this atlas that you suspect you might be low on (be honest with yourself — fatigue, frequent colds, etc. — but don\'t self-diagnose). Look it up on the NIH Office of Dietary Supplements (ods.od.nih.gov) Fact Sheet. Find the section "Am I getting enough?" and read it. Note: if anything genuinely concerns you, talk to your doctor — never pursue a supplement based on a self-suspected deficiency.',
               sources: 'Function, sources, deficiency, and intake values from NIH Office of Dietary Supplements (ods.od.nih.gov) Fact Sheets. Maine-specific notes from clinical literature on northern-latitude vitamin D status. AAP guidance on iron and adolescent fatigue.'
             })
+            )
           )
         );
       }
