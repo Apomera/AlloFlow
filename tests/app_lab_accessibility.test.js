@@ -67,6 +67,8 @@ describe('App Lab accessibility', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
     expect(source).toContain("background: dis ? '#e5e7eb' : bg");
     expect(source).toContain("color: dis ? '#4b5563' : fg");
+    expect(source).toContain("'aria-label': __alloT('stem.applab.hypothesis_input', 'Prompt variance hypothesis')");
+    expect(source).toContain("'aria-label': __alloT('stem.applab.explanation_input', 'Prompt variance explanation')");
     expect(contrast('#4b5563', '#e5e7eb')).toBeGreaterThanOrEqual(4.5);
   });
 
