@@ -2068,7 +2068,7 @@
               color: blocks.length ? '#fff' : '#475569', fontWeight: 700, fontSize: 10, cursor: blocks.length ? 'pointer' : 'default'
             } }, '\uD83D\uDCCB Copy Share Code'),
             shareCode && el('div', { style: { marginBottom: 4 } },
-              el('textarea', { value: shareCode, readOnly: true, onClick: function (e) { e.target.select(); }, style: {
+              el('textarea', { value: shareCode, readOnly: true, 'aria-label': t('stem.archstudio.share_code', 'Share code to copy'), onClick: function (e) { e.target.select(); }, style: {
                 width: '100%', height: 50, padding: 6, background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 6,
                 color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: 8, fontFamily: 'monospace', resize: 'none'
               }, className: 'outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' })
@@ -2128,7 +2128,7 @@
               })
             ),
             el('div', { style: { display: 'flex', alignItems: 'center', gap: 4 } },
-              el('input', { type: 'color', value: customColor, onChange: function (e) { upd({ activeColor: e.target.value, customColor: e.target.value }); }, style: { width: 28, height: 22, border: 'none', padding: 0, cursor: 'pointer', background: 'transparent' } }),
+              el('input', { type: 'color', 'aria-label': t('stem.archstudio.custom_color', 'Custom color'), value: customColor, onChange: function (e) { upd({ activeColor: e.target.value, customColor: e.target.value }); }, style: { width: 28, height: 22, border: 'none', padding: 0, cursor: 'pointer', background: 'transparent' } }),
               el('span', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'monospace' } }, customColor),
               el('button', { onClick: function () { upd({ activeColor: customColor, mode: 'paint' }); }, style: {
                 marginLeft: 'auto', padding: '3px 8px', borderRadius: 6, border: 'none',
@@ -2203,10 +2203,10 @@
               : el('div', null,
                   el('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 4, textAlign: 'center', fontWeight: 600 } }, replayLabel),
                   el('div', { style: { display: 'flex', gap: 4, justifyContent: 'center' } },
-                    el('button', { onClick: function () { upd('replayStep', 0); }, style: { padding: '4px 8px', borderRadius: 6, border: '1px solid var(--allo-stem-border, #334155)', background: 'transparent', color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', fontSize: 10 } }, '\u23EE'),
-                    el('button', { onClick: function () { stepReplay(-1); }, disabled: replayStep <= 0, style: { padding: '4px 10px', borderRadius: 6, border: '1px solid var(--allo-stem-border, #334155)', background: 'transparent', color: replayStep > 0 ? '#e2e8f0' : '#475569', cursor: replayStep > 0 ? 'pointer' : 'default', fontSize: 10 } }, '\u25C0'),
-                    el('button', { onClick: function () { stepReplay(1); }, disabled: replayStep >= replayFrames, style: { padding: '4px 10px', borderRadius: 6, border: '1px solid var(--allo-stem-border, #334155)', background: 'transparent', color: replayStep < replayFrames ? '#e2e8f0' : '#475569', cursor: replayStep < replayFrames ? 'pointer' : 'default', fontSize: 10 } }, '\u25B6'),
-                    el('button', { onClick: function () { upd('replayStep', replayFrames); }, style: { padding: '4px 8px', borderRadius: 6, border: '1px solid var(--allo-stem-border, #334155)', background: 'transparent', color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', fontSize: 10 } }, '\u23ED')
+                    el('button', { type: 'button', 'aria-label': t('stem.archstudio.replay_first', 'Replay first construction step'), onClick: function () { upd('replayStep', 0); }, style: { padding: '4px 8px', borderRadius: 6, border: '1px solid var(--allo-stem-border, #334155)', background: 'transparent', color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', fontSize: 10 } }, '\u23EE'),
+                    el('button', { type: 'button', 'aria-label': t('stem.archstudio.replay_previous', 'Replay previous construction step'), onClick: function () { stepReplay(-1); }, disabled: replayStep <= 0, style: { padding: '4px 10px', borderRadius: 6, border: '1px solid var(--allo-stem-border, #334155)', background: 'transparent', color: replayStep > 0 ? '#e2e8f0' : '#475569', cursor: replayStep > 0 ? 'pointer' : 'default', fontSize: 10 } }, '\u25C0'),
+                    el('button', { type: 'button', 'aria-label': t('stem.archstudio.replay_next', 'Replay next construction step'), onClick: function () { stepReplay(1); }, disabled: replayStep >= replayFrames, style: { padding: '4px 10px', borderRadius: 6, border: '1px solid var(--allo-stem-border, #334155)', background: 'transparent', color: replayStep < replayFrames ? '#e2e8f0' : '#475569', cursor: replayStep < replayFrames ? 'pointer' : 'default', fontSize: 10 } }, '\u25B6'),
+                    el('button', { type: 'button', 'aria-label': t('stem.archstudio.replay_last', 'Replay final construction step'), onClick: function () { upd('replayStep', replayFrames); }, style: { padding: '4px 8px', borderRadius: 6, border: '1px solid var(--allo-stem-border, #334155)', background: 'transparent', color: 'var(--allo-stem-text-soft, #94a3b8)', cursor: 'pointer', fontSize: 10 } }, '\u23ED')
                   ),
                   el('div', { style: { marginTop: 4 } },
                     el('input', { type: 'range', 'aria-label': t('stem.archstudio.replay_step', 'replay step'), min: 0, max: replayFrames, value: replayStep >= 0 ? replayStep : replayFrames, onChange: function (e) { upd('replayStep', parseInt(e.target.value)); }, style: { width: '100%', accentColor: '#fbbf24' } })
@@ -2494,7 +2494,7 @@
             el('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ g: iq.gravMult, r: iq.rigidity, m: iq.mass, st: state }]).slice(-8) }); }, style: { padding: '4px 10px', background: '#0f172a', color: '#cbd5e1', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 10, fontWeight: 'bold', cursor: 'pointer' } }, '📋 Log'),
             el('button', { onClick: function() { setIQ({ gravMult: 1, rigidity: 80, mass: 50, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, style: { padding: '4px 10px', background: 'transparent', color: '#94a3b8', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 10, cursor: 'pointer' } }, '↺ Reset')
           ),
-          el('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.archstudio.hypothesis_when_does_rigidity_rescue_a', 'Hypothesis: When does rigidity rescue an overloaded structure?'),
+          el('textarea', { 'aria-label': t('stem.archstudio.hypothesis', 'Structural stability hypothesis'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.archstudio.hypothesis_when_does_rigidity_rescue_a', 'Hypothesis: When does rigidity rescue an overloaded structure?'),
             style: { width: '100%', minHeight: 50, padding: 6, background: '#0f172a', color: '#e2e8f0', border: '1px solid rgba(100,116,139,0.4)', borderRadius: 4, fontSize: 11, fontFamily: 'monospace', marginBottom: 8 }, rows: 2 }),
           !iq.stuckRevealed && el('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '4px 10px', background: 'rgba(251,191,36,0.15)', color: '#fbbf24', border: '1px solid rgba(251,191,36,0.5)', borderRadius: 4, fontSize: 10, fontWeight: 'bold', cursor: 'pointer', marginBottom: 8 } }, '🤔 Stuck — show open prompts'),
           iq.stuckRevealed && el('div', { style: { padding: 8, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 10, color: '#cbd5e1', marginBottom: 8 } },
@@ -2503,7 +2503,7 @@
               el('li', null, 'On Mars (gravMult=0.4), what mass becomes stable?'))),
           el('label', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, fontWeight: 'bold', color: '#34d399', cursor: 'pointer' } },
             el('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }), 'I understand — explain in own words'),
-          iq.understood && el('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.archstudio.explain_how_gravity_rigidity_and_mass_', 'Explain how gravity, rigidity, and mass interact to determine stability.'),
+          iq.understood && el('textarea', { 'aria-label': t('stem.archstudio.explanation', 'Explain structural stability'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.archstudio.explain_how_gravity_rigidity_and_mass_', 'Explain how gravity, rigidity, and mass interact to determine stability.'),
             style: { width: '100%', minHeight: 60, padding: 6, background: '#0f172a', color: '#e2e8f0', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4, fontSize: 11, fontFamily: 'monospace', marginTop: 4 }, rows: 3 }),
           el('div', { style: { marginTop: 6, fontSize: 9, fontStyle: 'italic', color: '#64748b' } }, 'Design note: discrete 4-state structural marker; no FEM score; no reveal — by design.')
         );
