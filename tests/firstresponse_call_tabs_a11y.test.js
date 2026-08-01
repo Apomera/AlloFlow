@@ -32,5 +32,7 @@ describe('First Response Call tabs accessibility', () => {
     expect(source).toContain("id: 'firstresponse-call-panel-' + callView");
     expect(source).toContain("'aria-labelledby': 'firstresponse-call-tab-' + callView");
     expect(source).toContain('tabIndex: 0');
+    expect(source).toContain("'aria-label': __alloT('stem.firstresponse.hypothesis_input', 'First-aid readiness hypothesis')");
+    expect(source).toContain("'aria-label': __alloT('stem.firstresponse.explanation_input', 'First-aid readiness explanation')");
   });
 });
