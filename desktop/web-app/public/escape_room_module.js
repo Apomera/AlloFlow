@@ -2132,6 +2132,7 @@ inputText.substring(0, 6000) + '\n' +
                   h('input', {
                     type: 'text',
                     value: puzzle[editField] || '',
+                    'aria-label': editLabel + ' for puzzle ' + (idx + 1),
                     onChange: function(e) {
                       handlers.updateEscapeRoomPuzzle(idx, editField, e.target.value);
                     },
@@ -2152,6 +2153,7 @@ inputText.substring(0, 6000) + '\n' +
                         h('input', {
                           type: 'text',
                           value: opt,
+                          'aria-label': 'Option ' + String.fromCharCode(65 + optIdx) + ' for puzzle ' + (idx + 1),
                           onChange: function(e) { handlers.updateEscapeRoomPuzzle(idx, 'options', { index: optIdx, text: e.target.value }); },
                           className: 'flex-1 p-1.5 text-xs border rounded-lg outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-1 transition-colors ' +
                             (optIdx === puzzle.correctIndex ? 'border-green-600 bg-green-50' : 'border-slate-200')
@@ -2201,6 +2203,7 @@ inputText.substring(0, 6000) + '\n' +
                     h('input', {
                       type: 'text',
                       value: puzzle.hint,
+                      'aria-label': 'Hint for puzzle ' + (idx + 1),
                       onChange: function(e) { handlers.updateEscapeRoomPuzzle(idx, 'hint', e.target.value); },
                       className: 'w-full mt-1 p-2 text-xs border border-slate-400 rounded-lg focus:border-amber-400 focus:ring-1 focus:ring-amber-200 outline-none'
                     })
@@ -2223,6 +2226,7 @@ inputText.substring(0, 6000) + '\n' +
                 h('input', {
                   type: 'text',
                   value: escapeRoomState.finalDoorPuzzle.sentence || '',
+                  'aria-label': 'Final door puzzle sentence',
                   onChange: function(e) { handlers.updateEscapeRoomFinalDoor('sentence', e.target.value); },
                   className: 'w-full p-2 text-sm border border-red-200 rounded-lg focus:border-red-400 mb-2'
                 }),
