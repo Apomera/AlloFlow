@@ -1616,6 +1616,24 @@
         : identifiedCount < 3
           ? 'Compare two more materials and look for depth, texture, or age patterns.'
           : 'Use a core, fossil, or dating tool to support an evidence-based history.';
+      var GEOLOGY_SCENE_ORDER = Object.keys(SCENES);
+      var geologySceneTabKeyDown = function(e, index) {
+        var nextIndex = -1;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % GEOLOGY_SCENE_ORDER.length;
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + GEOLOGY_SCENE_ORDER.length - 1) % GEOLOGY_SCENE_ORDER.length;
+        else if (e.key === 'Home') nextIndex = 0;
+        else if (e.key === 'End') nextIndex = GEOLOGY_SCENE_ORDER.length - 1;
+        if (nextIndex < 0) return;
+        e.preventDefault();
+        var tabs = e.currentTarget && e.currentTarget.parentNode
+          ? e.currentTarget.parentNode.querySelectorAll('[role="tab"]')
+          : [];
+        var nextTab = tabs[nextIndex];
+        if (nextTab) {
+          nextTab.focus();
+          nextTab.click();
+        }
+      };
 
       return h('div', { className: 'space-y-3 animate-in fade-in duration-200', 'data-geology-tool': 'true', 'data-geology-theme': isContrast ? 'contrast' : (isDark ? 'dark' : 'light'), style: isContrast ? { background: '#000000', color: '#ffffff', padding: '2px' } : null },
         // live region (SR)
@@ -1665,16 +1683,23 @@
         ),
         // scene picker (worlds) — switching rebuilds the 3D voxel scene
         h('div', { className: 'flex flex-wrap items-center gap-1.5', role: 'tablist', 'aria-label': t('stem.geology.scene', 'Scene') },
-          Object.keys(SCENES).map(function (sid) {
+          GEOLOGY_SCENE_ORDER.map(function (sid, sceneIndex) {
             var on = scene === sid;
             return h('button', {
-              key: sid, type: 'button', role: 'tab', 'aria-selected': on ? 'true' : 'false',
+              key: sid, type: 'button', role: 'tab',
+              id: 'stem-geology-tab-' + sid,
+              'aria-controls': 'stem-geology-panel-' + sid,
+              'aria-selected': on ? 'true' : 'false',
+              tabIndex: on ? 0 : -1,
+              onKeyDown: function(e) { geologySceneTabKeyDown(e, sceneIndex); },
               onClick: function () { if (sid === scene) return; setSceneState(sid); upd('scene', sid); setSlice(0); setExcavate(false); setSelected(null); setWaterOn(false); setQuizI(0); setQuizAns(null); },
               className: 'transition-colors active:scale-[0.97] text-xs font-bold px-3 py-1.5 rounded-lg border ' + (on ? 'bg-violet-600 border-violet-500 text-white' : (isDark ? 'bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700' : 'bg-white border-slate-300 text-slate-700 hover:bg-slate-100'))
             }, SCENES[sid].label);
           })),
         // main: viewport + controls (left) | info + cross-section + list (right)
-        h('div', { className: 'grid gap-3 lg:grid-cols-2 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]' },
+        h('div', { className: 'grid gap-3 lg:grid-cols-2 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]',
+          role: 'tabpanel', id: 'stem-geology-panel-' + scene,
+          'aria-labelledby': 'stem-geology-tab-' + scene, tabIndex: 0 },
           h('div', { className: 'space-y-2' },
             feat.history ? historyBar() : null,
             feat.volcano ? eruptionBar() : null,
