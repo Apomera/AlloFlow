@@ -23818,11 +23818,11 @@ p { font-size: 12px; color: #475569; margin-bottom: 6px; }
                 dateRange === 'custom' && h('div', { className: 'grid grid-cols-2 gap-4 mt-2' },
                     h('div', null,
                         h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, tt('behavior_lens.ui.from', 'From')),
-                        h('input', { type: 'date', value: customFrom, onChange: e => setCustomFrom(e.target.value), className: 'w-full px-3 py-2 border border-slate-400 rounded-lg text-xs' })
+                        h('input', { type: 'date', value: customFrom, onChange: e => setCustomFrom(e.target.value), 'aria-label': 'Custom report start date', className: 'w-full px-3 py-2 border border-slate-400 rounded-lg text-xs' })
                     ),
                     h('div', null,
                         h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase block mb-1' }, 'To'),
-                        h('input', { type: 'date', value: customTo, onChange: e => setCustomTo(e.target.value), className: 'w-full px-3 py-2 border border-slate-400 rounded-lg text-xs' })
+                        h('input', { type: 'date', value: customTo, onChange: e => setCustomTo(e.target.value), 'aria-label': 'Custom report end date', className: 'w-full px-3 py-2 border border-slate-400 rounded-lg text-xs' })
                     )
                 )
             ),
