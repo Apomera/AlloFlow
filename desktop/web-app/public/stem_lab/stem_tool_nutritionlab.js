@@ -19063,6 +19063,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           { id: 'maine',    label: __alloT('stem.nutritionlab.4_maine_programs', '4. Maine Programs') }
         ];
 
+        function careerTabKeyDown(e, index) {
+          var nextIndex = index;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % tabs.length;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index - 1 + tabs.length) % tabs.length;
+          else if (e.key === 'Home') nextIndex = 0;
+          else if (e.key === 'End') nextIndex = tabs.length - 1;
+          else return;
+          e.preventDefault();
+          var tabButtons = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+          if (tabButtons[nextIndex]) {
+            tabButtons[nextIndex].focus();
+            tabButtons[nextIndex].click();
+          }
+        }
+
         var CAREER_LADDER = [
           {
             tier: 1, name: __alloT('stem.nutritionlab.bachelor_s_degree', 'Bachelor\'s degree'),
@@ -19134,18 +19149,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               )
             ),
             h('div', { 'role': 'tablist', 'aria-label': __alloT('stem.nutritionlab.career_pathway_sections', 'Career Pathway sections'), className: 'flex flex-wrap gap-2' },
-              tabs.map(function(t) {
+              tabs.map(function(t, tabIndex) {
                 var sel = (view === t.id);
                 return h('button', {
                   key: t.id,
                   role: 'tab',
+                  id: 'nutrition-career-tab-' + t.id,
+                  'aria-controls': 'nutrition-career-panel-' + t.id,
                   'aria-selected': sel ? 'true' : 'false',
+                  tabIndex: sel ? 0 : -1,
                   onClick: function() { setLocalView(t.id); announce(t.label); },
+                  onKeyDown: function(e) { careerTabKeyDown(e, tabIndex); },
                   className: 'px-4 py-2 rounded-xl border-2 font-bold text-sm transition focus:outline-none focus:ring-2 ring-emerald-500/40 ' +
                     (sel ? 'bg-blue-700 text-white border-blue-800 shadow' : 'bg-white text-slate-800 border-slate-300 hover:border-blue-500')
                 }, t.label);
               })
             ),
+            h('div', {
+              role: 'tabpanel',
+              id: 'nutrition-career-panel-' + view,
+              'aria-labelledby': 'nutrition-career-tab-' + view,
+              tabIndex: 0
+            },
             view === 'overview' && h('div', { className: 'space-y-4' },
               h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
                 [
@@ -19286,6 +19311,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               extension: 'Look up one Maine RDN on LinkedIn or the Maine Academy of Nutrition and Dietetics website. Note: their educational path, current role, years of experience, any specialty certifications. Then write what stands out about that path.',
               sources: 'Commission on Dietetic Registration (cdrnet.org) · ACEND (eatrightpro.org/acend) · Maine Academy of Nutrition and Dietetics · UMaine Orono · Husson University · University of Southern Maine · University of New England · USDA · BLS Occupational Outlook Handbook for Dietitians and Nutritionists.'
             })
+            )
           )
         );
       }
