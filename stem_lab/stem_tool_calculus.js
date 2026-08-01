@@ -1977,6 +1977,19 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 ? 'Solve one problem, then use the feedback to explain any error.'
                 : 'Connect rate and accumulation through the Fundamental Theorem.';
 
+        var calculusTabKeyDown = function(e, index) {
+          var nextIndex = -1;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % 5;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + 4) % 5;
+          else if (e.key === 'Home') nextIndex = 0;
+          else if (e.key === 'End') nextIndex = 4;
+          if (nextIndex < 0) return;
+          e.preventDefault();
+          var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+          var nextTab = tabs[nextIndex];
+          if (nextTab) { nextTab.focus(); nextTab.click(); }
+        };
+
         return h('div', { className: 'max-w-5xl mx-auto animate-in fade-in duration-200' },
 
           h('style', null, css),
@@ -2027,8 +2040,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
 
           // Tab bar
           h('div', { className: 'flex gap-0 mb-3 overflow-x-auto border-b border-slate-200', role: 'tablist', 'aria-label': 'Calculus Tool sections' },
-            [['integral','\u222B Integral'],['derivative','\uD83D\uDCC8 Derivative'],['visualize','\uD83C\uDFAC Visualize'],['challenge','\uD83C\uDFAF Challenge'],['discover','\uD83D\uDD2C Discover']].map(function(item){
-              return h('button',{ key:item[0],onClick:function(){upd('tab',item[0]);},role:'tab','aria-selected':tab===item[0],className:'min-h-[2.5rem] whitespace-nowrap px-3 py-2 text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-red-400 '+(tab===item[0]?'border-b-2 border-red-600 text-red-700 -mb-px':'text-slate-600 hover:text-slate-700')},item[1]);
+            [['integral','\u222B Integral'],['derivative','\uD83D\uDCC8 Derivative'],['visualize','\uD83C\uDFAC Visualize'],['challenge','\uD83C\uDFAF Challenge'],['discover','\uD83D\uDD2C Discover']].map(function(item, tabIndex){
+              return h('button',{ key:item[0], id:'calculus-tab-'+item[0], 'aria-controls':'calculus-panel-'+item[0], onClick:function(){upd('tab',item[0]);}, onKeyDown:function(e){calculusTabKeyDown(e, tabIndex);}, role:'tab','aria-selected':tab===item[0], tabIndex:tab===item[0]?0:-1, className:'min-h-[2.5rem] whitespace-nowrap px-3 py-2 text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-red-400 '+(tab===item[0]?'border-b-2 border-red-600 text-red-700 -mb-px':'text-slate-600 hover:text-slate-700')},item[1]);
             })
           ),
 
@@ -2042,7 +2055,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               discover:   { accent: '#16a34a', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83D\uDD2C', title: 'Discover \u2014 the big ideas',           hint: 'Fundamental Theorem of Calculus: integration and differentiation are inverse operations. The single most beautiful result in mathematics. Newton + Leibniz, independently, ~1670s.' }
             };
             var meta = TAB_META[tab] || TAB_META.integral;
-            return h('div', {
+            return h('div', { role: 'tabpanel', id: 'calculus-panel-' + tab,
+              'aria-labelledby': 'calculus-tab-' + tab, tabIndex: 0,
               style: {
                 margin: '0 0 12px',
                 padding: '12px 14px',
