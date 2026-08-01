@@ -1306,10 +1306,29 @@ window.StemLab = window.StemLab || {
             ),
             showHeatmap && totalTracked > 0 && h('button', {
               onClick: function() {
-                if (confirm('Clear all mastery tracking? This resets per-fact stats but keeps badges and totals.')) {
-                  extUpd({ factScores: {} });
-                  announceToSR('Mastery tracking cleared');
+                var confirmModule = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.ConfirmDialog && window.AlloModules.ConfirmDialog.ConfirmDialog;
+                var confirmApi = typeof window !== 'undefined' && window.AlloFlowUX && window.AlloFlowUX.confirm;
+                var unavailable = 'Mastery reset is unavailable right now, so your tracking was kept.';
+                if (typeof confirmModule !== 'function' || typeof confirmApi !== 'function') {
+                  if (typeof addToast === 'function') addToast(unavailable, 'warning');
+                  announceToSR(unavailable);
+                  return;
                 }
+                confirmApi('Clear all mastery tracking? This resets per-fact stats but keeps badges and totals.', {
+                  title: 'Clear mastery tracking',
+                  detail: 'Your badges and totals will remain.',
+                  confirmText: 'Clear mastery data',
+                  cancelText: 'Keep mastery data',
+                  tone: 'warning'
+                }).then(function(confirmed) {
+                  if (confirmed) {
+                    extUpd({ factScores: {} });
+                    announceToSR('Mastery tracking cleared');
+                  } else announceToSR('Mastery tracking kept.');
+                }).catch(function() {
+                  if (typeof addToast === 'function') addToast(unavailable, 'warning');
+                  announceToSR(unavailable);
+                });
               },
               className: 'ml-auto text-[10px] font-bold text-rose-600 hover:text-rose-800 underline'
             }, t('stem.multtable.clear_mastery_data', 'Clear mastery data'))
