@@ -2779,6 +2779,19 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 { id: 'vor',     icon: '\uD83C\uDFAA', label: 'Vol. of Revolution', desc: 'Spin a curve \u2192 solid; stacked disks' },
                 { id: 'eps',     icon: '\uD83C\uDFAF', label: '\u03B5\u2013\u03B4 Game', desc: 'Formal limit: find the \u03B4 that traps f(x) inside \u03B5' }
               ];
+              function calculusVizTabKeyDown(e, index) {
+                var nextIndex = -1;
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % VIEWS.length;
+                else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index - 1 + VIEWS.length) % VIEWS.length;
+                else if (e.key === 'Home') nextIndex = 0;
+                else if (e.key === 'End') nextIndex = VIEWS.length - 1;
+                if (nextIndex < 0) return;
+                e.preventDefault();
+                var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+                var nextTab = tabs[nextIndex];
+                if (nextTab) { nextTab.focus(); nextTab.click(); }
+              }
+
               return h(React.Fragment, null,
                 // Header strip
                 h('div', { className: 'flex items-center gap-2 mb-2 text-xs text-slate-600' },
@@ -2792,7 +2805,10 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   VIEWS.map(function(v, vi) {
                     var active = vizView === v.id;
                     var btnAttrs = {
-                      key: v.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
+                      key: v.id, id: 'calculus-viz-tab-' + v.id, role: 'tab',
+                      'aria-controls': 'calculus-viz-panel-' + v.id,
+                      'aria-selected': active ? 'true' : 'false', tabIndex: active ? 0 : -1,
+                      onKeyDown: function(e) { calculusVizTabKeyDown(e, vi); },
                       onClick: function() { upd('vizView', v.id); },
                       title: v.desc,
                       className: 'px-3 py-1.5 rounded-lg border transition-all whitespace-nowrap ' + (active
@@ -2806,6 +2822,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     return h('button', btnAttrs, v.icon + ' ' + v.label);
                   })
                 ),
+                h('div', { role: 'tabpanel', id: 'calculus-viz-panel-' + vizView, 'aria-labelledby': 'calculus-viz-tab-' + vizView, tabIndex: 0 },
                 // Function picker (shown only for views that use it)
                 (vizView === 'zoom' || vizView === 'tangent' || vizView === 'ftc' || vizView === 'riemann') &&
                 h('div', { className: 'flex gap-1 flex-wrap text-[11px] mb-2' },
@@ -2873,6 +2890,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   vizView === 'related' && "A ladder slides. Bottom moves at 2 ft/s; top\u2019s speed depends on where we are. Geometry links the rates.",
                   vizView === 'vor'     && 'Spin f(x) around the x-axis. The disks stack into a solid. V = \u03C0 \u222B f(x)\u00B2 dx.',
                   vizView === 'eps'     && "For every tolerance \u03B5, find a \u03B4 small enough that f(x) stays inside \u03B5 whenever x is within \u03B4 of x\u2080."
+                )
                 )
               );
             })()
