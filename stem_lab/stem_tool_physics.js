@@ -3133,7 +3133,7 @@ const d = labToolData.physics;
                       __alloT('stem.physics.iq_understand_label', 'I think I understand the trade-offs \u2014 let me explain them in my own words'))),
                   iq.understood && h('textarea', { value: iq.explanation || '',
                     onChange: function(e) { setIQ({ explanation: e.target.value }); },
-                    placeholder: __alloT('stem.physics.iq_explain_placeholder', 'Explain in your own words: how do gravity, angle, and velocity interact? Why is 45\u00B0 special \u2014 or is it?'),
+                    'aria-label': __alloT('stem.physics.iq_explanation_input', 'Projectile physics explanation'), placeholder: __alloT('stem.physics.iq_explain_placeholder', 'Explain in your own words: how do gravity, angle, and velocity interact? Why is 45\u00B0 special \u2014 or is it?'),
                     className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug', rows: 4 }),
                   iq.understood && (iq.explanation || '').trim().length >= 40 && h('div', { className: 'mt-2 text-[10px] italic text-emerald-700' },
                     '\u2713 ' + __alloT('stem.physics.iq_saved_note', 'Saved. Notice \u2014 nobody checked your answer.'))
