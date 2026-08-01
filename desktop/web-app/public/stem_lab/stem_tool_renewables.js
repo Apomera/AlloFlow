@@ -3743,7 +3743,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
                 h('thead', null,
                   h('tr', null,
                     ['Yr', 'Installs', 'Revenue', 'Profit', 'Cash end', 'Sat', 'Event'].map(function(c, i) {
-                      return h('th', { key: i, style: { textAlign: 'left', padding: '4px 6px', color: T.dim, fontWeight: 700, borderBottom: '1px solid ' + T.border } }, c);
+                      return h('th', { key: i, scope: 'col', style: { textAlign: 'left', padding: '4px 6px', color: T.dim, fontWeight: 700, borderBottom: '1px solid ' + T.border } }, c);
                     })
                   )
                 ),
