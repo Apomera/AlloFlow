@@ -835,6 +835,23 @@
       var showFullBridgeNav = !!d.showBridgeLibrary || BRIDGE_CORE_TABS.indexOf(d.tab) === -1;
       var visibleBridgeTabs = showFullBridgeNav ? TABS : TABS.filter(function(tab) { return BRIDGE_CORE_TABS.indexOf(tab.id) !== -1; });
       var currentBridgeTab = TABS.find(function(tab) { return tab.id === d.tab; }) || TABS[0];
+      var bridgeTabKeyDown = function(e, index) {
+        var nextIndex = -1;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % visibleBridgeTabs.length;
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + visibleBridgeTabs.length - 1) % visibleBridgeTabs.length;
+        else if (e.key === 'Home') nextIndex = 0;
+        else if (e.key === 'End') nextIndex = visibleBridgeTabs.length - 1;
+        if (nextIndex < 0) return;
+        e.preventDefault();
+        var tabs = e.currentTarget && e.currentTarget.parentNode
+          ? e.currentTarget.parentNode.querySelectorAll('[role="tab"]')
+          : [];
+        var nextTab = tabs[nextIndex];
+        if (nextTab) {
+          nextTab.focus();
+          nextTab.click();
+        }
+      };
       var bridgeRoutes = [
         { id: 'build', label: __alloT('stem.bridgelab.route_stress', 'Stress test'), hint: __alloT('stem.bridgelab.route_stress_hint', 'Change span, loads, and truss style.') },
         { id: 'materials', label: __alloT('stem.bridgelab.route_materials', 'Materials'), hint: __alloT('stem.bridgelab.route_materials_hint', 'Compare strength, cost, and density.') },
@@ -863,11 +880,15 @@
         role: 'tablist', 'aria-label': __alloT('stem.bridgelab.bridge_engineering_sections', 'Bridge Engineering sections'),
         style: { display: 'flex', gap: 4, padding: '10px 12px', borderBottom: '1px solid var(--allo-stem-border, #1e293b)', overflowX: 'auto', flexShrink: 0, background: '#0a0e1a' }
       },
-        visibleBridgeTabs.map(function(t) {
+        visibleBridgeTabs.map(function(t, tabIndex) {
           var active = d.tab === t.id;
           return h('button', {
             key: t.id, role: 'tab', 'aria-selected': active,
+            id: 'stem-bridgelab-tab-' + t.id,
+            'aria-controls': 'stem-bridgelab-panel-' + t.id,
             'aria-label': t.label,
+            tabIndex: active ? 0 : -1,
+            onKeyDown: function(e) { bridgeTabKeyDown(e, tabIndex); },
             onClick: function() { upd({ tab: t.id }); },
             style: { padding: '6px 12px', borderRadius: 8, border: 'none', background: active ? 'rgba(245,158,11,0.25)' : 'transparent', color: active ? '#fbbf24' : '#94a3b8', fontWeight: active ? 700 : 500, fontSize: 12, cursor: 'pointer', whiteSpace: 'nowrap' }
           }, t.icon + ' ' + t.label);
@@ -5007,7 +5028,7 @@
           )
         ),
         tabBar,
-        h('div', { style: { flex: 1, overflow: 'auto' } }, body)
+        h('div', { role: 'tabpanel', id: 'stem-bridgelab-panel-' + d.tab, 'aria-labelledby': 'stem-bridgelab-tab-' + d.tab, tabIndex: 0, style: { flex: 1, overflow: 'auto' } }, body)
       );
     }
   });
