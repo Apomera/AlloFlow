@@ -3661,7 +3661,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
 
           function renderGlossaryPanel() {
             return h('div', {
-              role: 'dialog', 'aria-modal': 'true', 'aria-label': t('stem.fireecology.wabanaki_vocabulary_glossary', 'Wabanaki vocabulary glossary'),
+              role: 'region', 'aria-labelledby': 'fireecology-glossary-title', tabIndex: 0,
               style: {
                 background: 'linear-gradient(135deg, rgba(168,85,247,0.10) 0%, rgba(15,23,42,0.85) 60%)',
                 borderTop: '1px solid rgba(168,85,247,0.5)', borderRight: '1px solid rgba(168,85,247,0.5)', borderBottom: '1px solid rgba(168,85,247,0.5)', borderLeft: '4px solid #a855f7',
@@ -3672,7 +3672,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 h('span', { style: { fontSize: 30 } }, '📖'),
                 h('div', { style: { flex: 1 } },
                   h('div', { style: { fontSize: 11, color: '#a855f7', fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, t('stem.fireecology.vocabulary', 'Vocabulary')),
-                  h('h3', { style: { margin: '2px 0 0', color: '#fff', fontSize: 20 } }, t('stem.fireecology.wabanaki_vocabulary_in_this_sim', 'Wabanaki vocabulary in this sim'))
+                  h('h3', { id: 'fireecology-glossary-title', style: { margin: '2px 0 0', color: '#fff', fontSize: 20 } }, t('stem.fireecology.wabanaki_vocabulary_in_this_sim', 'Wabanaki vocabulary in this sim'))
                 ),
                 h('button', {
                   onClick: closeGlossary,
@@ -3723,9 +3723,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             if (!def || !def.deepDive) return null;
             var dd = def.deepDive;
             return h('div', {
-              role: 'dialog',
-              'aria-modal': 'true',
-              'aria-label': 'Cultural deep-dive: ' + def.name,
+              role: 'region',
+              'aria-labelledby': 'fireecology-deep-dive-title-' + def.id,
+              tabIndex: 0,
               style: {
                 background: 'linear-gradient(135deg, ' + def.color + '20 0%, rgba(15,23,42,0.85) 60%)',
                 border: '1px solid ' + def.color + '88',
@@ -3740,7 +3740,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 h('span', { style: { fontSize: 36 }, 'aria-hidden': 'true' }, def.icon),
                 h('div', { style: { flex: 1 } },
                   h('div', { style: { fontSize: 11, color: def.color, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, t('stem.fireecology.cultural_deep_dive', 'Cultural deep-dive')),
-                  h('h3', { style: { margin: '2px 0 0', color: '#fff', fontSize: 20 } }, def.name),
+                  h('h3', { id: 'fireecology-deep-dive-title-' + def.id, style: { margin: '2px 0 0', color: '#fff', fontSize: 20 } }, def.name),
                   h('div', { style: { color: def.color, fontSize: 13, marginTop: 4, fontStyle: 'italic' } }, dd.bilingual)
                 ),
                 h('button', {
