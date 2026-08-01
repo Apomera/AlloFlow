@@ -3154,6 +3154,20 @@ window.StemLab = window.StemLab || {
       // RENDER
       // ═══════════════════════════════════════════════════════
 
+      var lifeSkillsTabKeyDown = function(e, index) {
+        var nextIndex = -1;
+        var total = SUBTOOLS.length;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % total;
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + total - 1) % total;
+        else if (e.key === 'Home') nextIndex = 0;
+        else if (e.key === 'End') nextIndex = total - 1;
+        if (nextIndex < 0) return;
+        e.preventDefault();
+        var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+        var nextTab = tabs[nextIndex];
+        if (nextTab) { nextTab.focus(); nextTab.click(); }
+      };
+
       return h('div', { className: 'space-y-4' },
 
         // Badge toast
@@ -3179,11 +3193,14 @@ window.StemLab = window.StemLab || {
 
         // Sub-tool tabs
         h('div', { className: 'flex flex-wrap gap-1.5', role: 'tablist', },
-          SUBTOOLS.map(function(st) {
+          SUBTOOLS.map(function(st, tabIndex) {
             var active = tab === st.id;
-            return h('button', { key: st.id, onClick: function() { updMulti({ tab: st.id }); announceToSR('Switched to ' + st.label); },
+            return h('button', { key: st.id, id: 'lifeskills-tab-' + st.id,
+              'aria-controls': 'lifeskills-panel-' + st.id,
+              onClick: function() { updMulti({ tab: st.id }); announceToSR('Switched to ' + st.label); },
+              onKeyDown: function(e) { lifeSkillsTabKeyDown(e, tabIndex); },
               className: 'px-3 py-1.5 rounded-xl text-xs font-bold transition-all ' + (active ? 'bg-teal-700 text-white shadow-md' : 'bg-white/70 text-slate-600 hover:bg-teal-50 border border-slate-400'),
-              role: 'tab', 'aria-selected': active
+              role: 'tab', 'aria-selected': active, tabIndex: active ? 0 : -1
             }, st.icon + ' ' + st.label);
           })
         ),
@@ -3226,7 +3243,8 @@ window.StemLab = window.StemLab || {
             learn:      { accent: '#64748b', soft: 'rgba(100,116,139,0.10)', icon: '\uD83D\uDCDA', title: __alloT('stem.lifeskills.reference_glossary', 'Reference + glossary'),    hint: __alloT('stem.lifeskills.tax_brackets_fico_factor_weights_food_', 'Tax brackets, FICO factor weights, food-safe temp table, electrical breaker color-codes \u2014 the reference card you keep coming back to.') }
           };
           var meta = TAB_META[tab] || TAB_META.paycheck;
-          return h('div', {
+          return h('div', { role: 'tabpanel', id: 'lifeskills-panel-' + tab,
+            'aria-labelledby': 'lifeskills-tab-' + tab, tabIndex: 0,
             style: {
               padding: '12px 14px',
               borderRadius: 12,
