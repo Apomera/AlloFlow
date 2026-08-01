@@ -4029,6 +4029,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
       var anatomyCanvasRef = useRef(null);
 
       function renderBiologyTab() {
+        var BIOLOGY_SECTION_IDS = ['anatomy', 'species', 'conservation'];
+        var biologyTabKeyDown = function(e, index) {
+          var nextIndex = -1;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % BIOLOGY_SECTION_IDS.length;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + BIOLOGY_SECTION_IDS.length - 1) % BIOLOGY_SECTION_IDS.length;
+          else if (e.key === 'Home') nextIndex = 0;
+          else if (e.key === 'End') nextIndex = BIOLOGY_SECTION_IDS.length - 1;
+          if (nextIndex < 0) return;
+          e.preventDefault();
+          var tabs = e.currentTarget && e.currentTarget.parentNode
+            ? e.currentTarget.parentNode.querySelectorAll('[role="tab"]')
+            : [];
+          var nextTab = tabs[nextIndex];
+          if (nextTab) {
+            nextTab.focus();
+            nextTab.click();
+          }
+        };
         return h('div', { className: 'space-y-4' },
           // Sub-tabs
           h('div', { className: 'flex gap-2', role: 'tablist', 'aria-label': t('stem.echolocation.biology_sections', 'Biology sections') },
@@ -4039,21 +4057,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
             ].map(function(s, si) {
               var active = bioSection === s.id;
               return h('button', {
-                key: s.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
+                key: s.id, id: 'echolocation-biology-tab-' + s.id, role: 'tab',
+                'aria-selected': active ? 'true' : 'false', 'aria-controls': 'echolocation-biology-panel-' + s.id,
                 tabIndex: active ? 0 : -1,
                 'aria-label': s.label + ' section',
                 onClick: function() { upd('bioSection', s.id); },
-                onKeyDown: function(e) {
-                  var sections = ['anatomy', 'species', 'conservation'];
-                  if (e.key === 'ArrowRight') { e.preventDefault(); upd('bioSection', sections[(si + 1) % 3]); }
-                  if (e.key === 'ArrowLeft') { e.preventDefault(); upd('bioSection', sections[(si + 2) % 3]); }
-                },
+                onKeyDown: function(e) { biologyTabKeyDown(e, si); },
                 className: 'flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' +
                   (active ? 'bg-indigo-600 text-white shadow-md' : (isDark ? 'bg-indigo-900/40 text-indigo-300 hover:bg-indigo-800/50' : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'))
               }, h('span', { 'aria-hidden': 'true' }, s.icon), ' ', s.label);
             })
           ),
 
+          h('div', { role: 'tabpanel', id: 'echolocation-biology-panel-' + bioSection,
+            'aria-labelledby': 'echolocation-biology-tab-' + bioSection, tabIndex: 0 },
           // ANATOMY SECTION
           bioSection === 'anatomy' && h('div', { className: 'space-y-3' },
             h('div', { className: 'rounded-xl p-4 ' + (isDark ? 'bg-slate-800/60 border border-slate-700/50' : 'bg-white border border-slate-400') },
@@ -4408,6 +4425,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('echolocation')
               h('div', { className: 'mt-2 text-[11px] italic ' + (isDark ? 'text-emerald-400' : 'text-emerald-600') },
                 t('stem.echolocation.a_single_bat_box_can_house_50_200_bats', 'A single bat box can house 50-200 bats. Those bats will eat millions of insects each summer, naturally reducing mosquitoes and crop pests in your area. Science + engineering + conservation = win!'))
             )
+          )
           ));
       }
 
