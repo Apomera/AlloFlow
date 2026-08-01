@@ -5086,6 +5086,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('ecosystem'))) 
                     __alloT('stem.ecosystem.iq_understand_label', 'I think I understand the trade-offs — let me explain them in my own words'))),
                 iq.understood && h('textarea', { value: iq.explanation || '',
                   onChange: function(e) { setIQ({ explanation: e.target.value }); },
+                  'aria-label': __alloT('stem.ecosystem.explanation_input', 'Ecosystem trade-off explanation'),
                   placeholder: __alloT('stem.ecosystem.iq_explain_placeholder', 'Explain in your own words: how do predator birth, prey lifespan, and resource scarcity interact? Why does balanced cycling require something specific? When do predators win? When does the system collapse?'),
                   className: 'w-full text-[12px] border border-emerald-600 dark:border-emerald-700 rounded p-2 font-mono leading-snug bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200', rows: 4 }),
                 iq.understood && (iq.explanation || '').trim().length >= 40 && h('div', { className: 'mt-2 text-[10px] italic text-emerald-700 dark:text-emerald-400' },
