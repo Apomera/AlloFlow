@@ -14808,6 +14808,7 @@ Format as a professional, structured report with clear sections and headers. Kee
                     h('textarea', {
                         value: templateFields.additionalNotes,
                         onChange: e => updateField('additionalNotes', e.target.value),
+                        'aria-label': 'Additional consultation notes',
                         placeholder: 'Any other relevant information (medical, IEP goals, family context, etc.)',
                         rows: 2,
                         className: 'w-full border border-slate-400 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-400 outline-none resize-none'
@@ -15416,6 +15417,7 @@ Return ONLY a JSON object (no markdown, no explanation) with these exact keys:
                         h('textarea', {
                             value: examples,
                             onChange: (e) => setExamples(e.target.value),
+                            'aria-label': 'Examples of the target behavior',
                             placeholder: 'e.g.:\n\u2022 Throwing a pencil across the room\n\u2022 Pushing a peer\u2019s materials off desk',
                             rows: 4,
                             className: 'w-full border border-green-600 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-green-400 outline-none resize-none bg-green-50/50'
@@ -15426,6 +15428,7 @@ Return ONLY a JSON object (no markdown, no explanation) with these exact keys:
                         h('textarea', {
                             value: nonExamples,
                             onChange: (e) => setNonExamples(e.target.value),
+                            'aria-label': 'Non-examples of the target behavior',
                             placeholder: 'e.g.:\n\u2022 Accidentally bumping a peer\n\u2022 Dropping materials while standing up',
                             rows: 4,
                             className: 'w-full border border-red-600 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-red-400 outline-none resize-none bg-red-50/50'
@@ -17586,7 +17589,7 @@ Keep under 200 words. Use bullet points.`);
                 h('div', { className: 'bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl border border-purple-200 p-4' },
                     h('h3', { className: 'text-sm font-bold text-purple-800 mb-2' }, '🧠 AI Design Wizard'),
                     h('p', { className: 'text-[11px] text-purple-600 mb-2' }, tt('behavior_lens.ui.describe_your_research_question_and_let_ai_recomme', 'Describe your research question and let AI recommend the best design.')),
-                    h('textarea', { value: wizardQ, onChange: e => setWizardQ(e.target.value), placeholder: tt('behavior_lens.ph.eg_does_a_token_economy_reduce_offtask_behavior_du', 'e.g. "Does a token economy reduce off-task behavior during math instruction?"'), rows: 2, className: 'w-full text-xs border border-purple-600 rounded-lg px-3 py-2 mb-2 bg-white' }),
+                    h('textarea', { value: wizardQ, onChange: e => setWizardQ(e.target.value), 'aria-label': tt('behavior_lens.ui.design_wizard_research_question', 'Design wizard research question'), placeholder: tt('behavior_lens.ph.eg_does_a_token_economy_reduce_offtask_behavior_du', 'e.g. "Does a token economy reduce off-task behavior during math instruction?"'), rows: 2, className: 'w-full text-xs border border-purple-600 rounded-lg px-3 py-2 mb-2 bg-white' }),
                     h('button', { onClick: handleWizard, disabled: wizardLoading || !wizardQ.trim(), className: 'px-4 py-2 bg-purple-600 text-white rounded-lg text-xs font-bold hover:bg-purple-700 disabled:opacity-50' }, wizardLoading ? '⏳ Analyzing...' : '🧠 Get Recommendation'),
                     wizardResult && h('div', { className: 'mt-3 bg-white rounded-lg p-3 border border-purple-200 text-xs text-purple-700 whitespace-pre-wrap' }, wizardResult)
                 ),
@@ -17847,6 +17850,7 @@ Use a clear, professional tone suitable for an IEP team. Keep it structured and 
                 h('textarea', {
                     value: editedPlan,
                     onChange: e => setEditedPlan(e.target.value),
+                    'aria-label': 'Editable behavior intervention plan document',
                     className: 'w-full h-96 text-xs text-slate-700 border border-slate-400 rounded-lg p-3 font-mono leading-relaxed focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500'
                 }),
                 h('div', { className: 'flex justify-end gap-2 mt-4' },
