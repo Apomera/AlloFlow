@@ -1160,6 +1160,24 @@
       { id: 'patterns', label: 'Patterns', icon: '✨' },
       { id: 'learn', label: 'Learn', icon: '📖' }
     ];
+    var CELLULAR_TAB_IDS = TABS.map(function (tb) { return tb.id; });
+    var cellularTabKeyDown = function (e, index) {
+      var nextIndex = -1;
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % CELLULAR_TAB_IDS.length;
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + CELLULAR_TAB_IDS.length - 1) % CELLULAR_TAB_IDS.length;
+      else if (e.key === 'Home') nextIndex = 0;
+      else if (e.key === 'End') nextIndex = CELLULAR_TAB_IDS.length - 1;
+      if (nextIndex < 0) return;
+      e.preventDefault();
+      var tabs = e.currentTarget && e.currentTarget.parentNode
+        ? e.currentTarget.parentNode.querySelectorAll('[role="tab"]')
+        : [];
+      var nextTab = tabs[nextIndex];
+      if (nextTab) {
+        nextTab.focus();
+        nextTab.click();
+      }
+    };
     var body = tab === 'life' ? renderLifeTab()
       : tab === 'rules' ? renderRulesTab()
       : tab === 'patterns' ? renderPatternsTab()
@@ -1215,12 +1233,13 @@
       ),
       // tabs
       h('div', { role: 'tablist', 'aria-label': 'Cellular Automaton Lab sections', style: { display: 'flex', gap: '6px', flexWrap: 'wrap', borderBottom: '1px solid ' + C.border, paddingBottom: '8px' } },
-        TABS.map(function (tb) {
+        TABS.map(function (tb, ti) {
           var active = tab === tb.id;
           return h('button', {
             key: tb.id, type: 'button', className: 'cellularlab-tab', role: 'tab',
             id: 'cell-tab-' + tb.id, 'aria-controls': 'cell-panel', 'aria-selected': active ? 'true' : 'false',
             tabIndex: active ? 0 : -1,
+            onKeyDown: function (e) { cellularTabKeyDown(e, ti); },
             onClick: function () { setTab(tb.id); announce(tb.label + ' tab'); },
             style: { padding: '7px 13px', borderRadius: '9px 9px 0 0', cursor: 'pointer', fontSize: '13px', fontWeight: 800,
               borderTop: '1px solid ' + (active ? C.accent : 'transparent'), borderRight: '1px solid ' + (active ? C.accent : 'transparent'), borderBottom: 'none', borderLeft: '1px solid ' + (active ? C.accent : 'transparent'),
