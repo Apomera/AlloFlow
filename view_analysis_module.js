@@ -510,6 +510,8 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-1 p-2 bg-indigo-50 border-b border-indigo-100"
   }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "aria-label": t('formatting.bold') || 'Bold',
     onClick: () => handleFormatText('bold', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange),
     className: "p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors",
     title: t('formatting.bold')
@@ -517,12 +519,16 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
     size: 16,
     strokeWidth: 3
   })), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "aria-label": t('formatting.italic') || 'Italic',
     onClick: () => handleFormatText('italic', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange),
     className: "p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors",
     title: t('formatting.italic')
   }, /*#__PURE__*/React.createElement(Italic, {
     size: 16
   })), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "aria-label": t('formatting.highlight') || 'Highlight',
     onClick: () => handleFormatText('highlight', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange),
     className: "p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors",
     title: t('formatting.highlight')
@@ -531,26 +537,33 @@ Return ONLY the corrected text. No preamble, no explanation, no quote marks arou
   })), /*#__PURE__*/React.createElement("div", {
     className: "w-px h-4 bg-indigo-200 mx-1"
   }), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => handleFormatText('h1', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange),
     className: "p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors font-bold text-xs",
     title: t('formatting.h1')
   }, "H1"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => handleFormatText('h2', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange),
     className: "p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors font-bold text-xs",
     title: t('formatting.h2')
   }, "H2"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => handleFormatText('h3', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange),
     className: "p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors font-bold text-xs",
     title: t('formatting.h3') || 'Heading 3'
   }, "H3"), /*#__PURE__*/React.createElement("div", {
     className: "w-px h-4 bg-indigo-200 mx-1"
   }), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "aria-label": t('formatting.list') || 'Bulleted list',
     onClick: () => handleFormatText('list', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange),
     className: "p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors",
     title: t('formatting.list')
   }, /*#__PURE__*/React.createElement(List, {
     size: 16
   })), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "aria-label": t('formatting.numlist') || 'Numbered list',
     onClick: () => handleFormatText('numlist', analysisEditorRef, generatedContent?.data.originalText, handleAnalysisTextChange),
     className: "p-1.5 rounded hover:bg-indigo-200 text-indigo-800 transition-colors",
     title: t('formatting.numlist') || 'Numbered List'
