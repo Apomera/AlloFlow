@@ -1244,6 +1244,7 @@
                   type: 'range',
                   min: 32, max: 450, step: 1,
                   value: temp,
+                  'aria-label': __alloT('stem.bakingscience.oven_temperature', 'Oven temperature'),
                   onChange: function(e) { var nt = parseInt(e.target.value, 10); upd('ovenTemp', nt); recordNewEvents(nt); },
                   className: 'relative w-full accent-rose-500'
                 })
