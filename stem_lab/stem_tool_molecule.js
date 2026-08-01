@@ -4365,15 +4365,15 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
           React.createElement('div', { className: 'grid grid-cols-3 gap-3 mb-3' },
             React.createElement('div', null,
               React.createElement('label', { className: 'block text-[11px] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.molarity_m_mol_l', 'Molarity (M, mol/L)')),
-              React.createElement('input', { type: 'number', step: 0.01, value: c, onChange: function(e) { setExp({ molM: e.target.value }); }, className: 'w-full px-2 py-1 border border-slate-300 rounded text-[12px]', placeholder: '0.1' })
+              React.createElement('input', { type: 'number', step: 0.01, value: c, onChange: function(e) { setExp({ molM: e.target.value }); }, className: 'w-full px-2 py-1 border border-slate-300 rounded text-[12px]', placeholder: '0.1', 'aria-label': __alloT('stem.molecule.molarity_m_mol_l', 'Molarity (M, mol/L)') })
             ),
             React.createElement('div', null,
               React.createElement('label', { className: 'block text-[11px] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.volume_l', 'Volume (L)')),
-              React.createElement('input', { type: 'number', step: 0.01, value: v, onChange: function(e) { setExp({ molV: e.target.value }); }, className: 'w-full px-2 py-1 border border-slate-300 rounded text-[12px]', placeholder: '1.0' })
+              React.createElement('input', { type: 'number', step: 0.01, value: v, onChange: function(e) { setExp({ molV: e.target.value }); }, className: 'w-full px-2 py-1 border border-slate-300 rounded text-[12px]', placeholder: '1.0', 'aria-label': __alloT('stem.molecule.volume_l', 'Volume (L)') })
             ),
             React.createElement('div', null,
               React.createElement('label', { className: 'block text-[11px] font-bold text-slate-700 mb-1' }, __alloT('stem.molecule.molecular_weight_g_mol', 'Molecular weight (g/mol)')),
-              React.createElement('input', { type: 'number', step: 0.01, value: mw, onChange: function(e) { setExp({ molMW: e.target.value }); }, className: 'w-full px-2 py-1 border border-slate-300 rounded text-[12px]', placeholder: __alloT('stem.molecule.58_44_nacl', '58.44 (NaCl)') })
+              React.createElement('input', { type: 'number', step: 0.01, value: mw, onChange: function(e) { setExp({ molMW: e.target.value }); }, className: 'w-full px-2 py-1 border border-slate-300 rounded text-[12px]', placeholder: __alloT('stem.molecule.58_44_nacl', '58.44 (NaCl)'), 'aria-label': __alloT('stem.molecule.molecular_weight_g_mol', 'Molecular weight (g/mol)') })
             )
           ),
           React.createElement('div', { className: 'p-3 rounded-lg bg-indigo-50 border-2 border-indigo-300 text-center mb-3' },
