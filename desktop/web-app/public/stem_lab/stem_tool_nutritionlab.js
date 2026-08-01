@@ -18398,24 +18398,48 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           { id: 'recovery',  label: __alloT('stem.nutritionlab.6_recovery_is_real', '6. Recovery is real') }
         ];
 
+        function handleSectionKeyDown(e, index) {
+          var nextIndex = index;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % sections.length;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index - 1 + sections.length) % sections.length;
+          else if (e.key === 'Home') nextIndex = 0;
+          else if (e.key === 'End') nextIndex = sections.length - 1;
+          else return;
+          e.preventDefault();
+          var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+          if (tabs[nextIndex]) tabs[nextIndex].focus();
+          setSection(sections[nextIndex].id);
+          announce(sections[nextIndex].label);
+        }
+
         return h('div', { className: 'min-h-screen bg-slate-50' },
           h(BackBar, { icon: '💚', title: __alloT('stem.nutritionlab.eating_disorder_awareness_3', 'Eating Disorder Awareness') }),
           h('div', { className: 'p-6 max-w-3xl mx-auto space-y-5' },
             ResourceBar(),
             // Section nav
             h('div', { 'role': 'tablist', 'aria-label': __alloT('stem.nutritionlab.module_sections', 'Module sections'), className: 'flex flex-wrap gap-2' },
-              sections.map(function(s) {
+              sections.map(function(s, tabIndex) {
                 var sel = (section === s.id);
                 return h('button', {
                   key: s.id,
                   role: 'tab',
+                  id: 'nutrition-ed-tab-' + s.id,
+                  'aria-controls': 'nutrition-ed-panel-' + s.id,
                   'aria-selected': sel ? 'true' : 'false',
+                  tabIndex: sel ? 0 : -1,
                   onClick: function() { setSection(s.id); announce(s.label); },
+                  onKeyDown: function(e) { handleSectionKeyDown(e, tabIndex); },
                   className: 'px-3 py-2 rounded-xl border-2 font-bold text-xs transition focus:outline-none focus:ring-2 ring-emerald-500/40 ' +
                     (sel ? 'bg-emerald-700 text-white border-emerald-800 shadow' : 'bg-white text-slate-800 border-slate-300 hover:border-emerald-500')
                 }, s.label);
               })
             ),
+            h('div', {
+              role: 'tabpanel',
+              id: 'nutrition-ed-panel-' + section,
+              'aria-labelledby': 'nutrition-ed-tab-' + section,
+              tabIndex: 0
+            },
             section === 'overview' && h('div', { className: 'space-y-4' },
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5 space-y-3' },
                 h('h2', { className: 'text-xl font-black text-slate-800' }, __alloT('stem.nutritionlab.disordered_eating_is_on_a_spectrum', 'Disordered eating is on a spectrum')),
@@ -18681,6 +18705,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
               extension: 'Audit your own social media feed for one week. Note how often you encounter content that fits the red flags from this module. After the week: use platform tools (Not Interested, mute, unfollow, report) to actively shift the feed. Track what changes.',
               sources: 'NEDA (National Eating Disorders Association · nationaleatingdisorders.org). NIMH Eating Disorders information. AAP guidance on adolescent eating disorders. U.S. Surgeon General\'s 2023 Advisory on Social Media and Youth Mental Health (hhs.gov/surgeongeneral). Common Sense Media (commonsensemedia.org). NAMI Maine. Maine 211. Crisis Text Line. 988 Suicide & Crisis Lifeline.'
             })
+            )
           )
         );
       }
