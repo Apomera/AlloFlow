@@ -578,6 +578,18 @@ window.StemLab = window.StemLab || {
           : solverCount === 0
             ? 'Solve symbolically and compare each algebra step with the graph.'
             : 'Justify the boundary style and shading direction in words.';
+      var inequalityTabKeyDown = function(e, index) {
+        var nextIndex = -1;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % 2;
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + 1) % 2;
+        else if (e.key === 'Home') nextIndex = 0;
+        else if (e.key === 'End') nextIndex = 1;
+        if (nextIndex < 0) return;
+        e.preventDefault();
+        var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+        var nextTab = tabs[nextIndex];
+        if (nextTab) { nextTab.focus(); nextTab.click(); }
+      };
 
       return h('div', { className: 'max-w-5xl mx-auto animate-in fade-in duration-200' },
 
@@ -674,9 +686,13 @@ window.StemLab = window.StemLab || {
 
         // ── Mode tabs: 1D / 2D ──
         h('div', { className: 'flex gap-1 mb-3', role: 'tablist', },
-          ['1d', '2d'].map(function(m) {
+          ['1d', '2d'].map(function(m, tabIndex) {
             var labels = { '1d': '\uD83D\uDCCF ' + __alloT('stem.inequality.mode_number_line', 'Number Line'), '2d': '\uD83D\uDCC8 ' + __alloT('stem.inequality.mode_2d_graph', '2D Graph') };
             return h('button', { key: m, role: 'tab', 'aria-selected': graphMode === m,
+              id: 'stem-inequality-tab-' + m,
+              'aria-controls': 'stem-inequality-panel-' + m,
+              tabIndex: graphMode === m ? 0 : -1,
+              onKeyDown: function(e) { inequalityTabKeyDown(e, tabIndex); },
               onClick: function() { upd('graphMode', m); trackMode(m); },
               className: 'min-h-[2.5rem] whitespace-nowrap px-3 py-2 text-xs font-bold rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-fuchsia-400 ' +
                 (graphMode === m ? 'bg-fuchsia-600 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'),
@@ -693,6 +709,8 @@ window.StemLab = window.StemLab || {
           };
           var meta = MODE_META[graphMode] || MODE_META['1d'];
           return h('div', {
+            role: 'tabpanel', id: 'stem-inequality-panel-' + graphMode,
+            'aria-labelledby': 'stem-inequality-tab-' + graphMode, tabIndex: 0,
             style: {
               margin: '0 0 12px',
               padding: '12px 14px',
