@@ -2263,11 +2263,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       function renderChoking() {
         var chokeView = d.chokeView || 'select';
         var who = d.chokeWho || null; // 'adult' | 'child' | 'infant' | 'pregnant' | 'alone'
+        var CHOKING_TAB_IDS = ['select', 'protocol'];
+        function chokingTabKeyDown(e, index) {
+          var key = e.key;
+          if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
+          e.preventDefault();
+          var nextIndex = index;
+          if (key === 'ArrowRight' || key === 'ArrowDown') nextIndex = (index + 1) % CHOKING_TAB_IDS.length;
+          if (key === 'ArrowLeft' || key === 'ArrowUp') nextIndex = (index - 1 + CHOKING_TAB_IDS.length) % CHOKING_TAB_IDS.length;
+          if (key === 'Home') nextIndex = 0;
+          if (key === 'End') nextIndex = CHOKING_TAB_IDS.length - 1;
+          var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+          var nextTab = tabs[nextIndex];
+          if (nextTab) { nextTab.focus(); nextTab.click(); }
+        }
 
         function tabBtn(id, label) {
           var active = chokeView === id;
-          return h('button', { 'data-fr-focusable': true, key: id,
-            'aria-pressed': active ? 'true' : 'false',
+          return h('button', { 'data-fr-focusable': true, key: id, role: 'tab',
+            id: 'firstresponse-choking-tab-' + id,
+            'aria-controls': 'firstresponse-choking-panel-' + id,
+            'aria-selected': active ? 'true' : 'false',
+            tabIndex: active ? 0 : -1,
+            onKeyDown: function(e) { chokingTabKeyDown(e, CHOKING_TAB_IDS.indexOf(id)); },
             onClick: function() { upd('chokeView', id); frAnnounce(label); },
             style: btn({
               padding: '6px 12px', fontSize: 12,
@@ -2444,9 +2462,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             tabBtn('select', 'Pick who'),
             tabBtn('protocol', 'Protocol')
           ),
-          chokeView === 'select' && chokeSelect(),
-          chokeView === 'protocol' && chokeProtocol(),
-          disclaimerFooter()
+          h('div', { role: 'tabpanel',
+            id: 'firstresponse-choking-panel-' + chokeView,
+            'aria-labelledby': 'firstresponse-choking-tab-' + chokeView,
+            tabIndex: 0
+          },
+            chokeView === 'select' && chokeSelect(),
+            chokeView === 'protocol' && chokeProtocol(),
+            disclaimerFooter()
+          )
         );
       }
 
