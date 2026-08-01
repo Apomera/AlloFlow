@@ -879,17 +879,39 @@ window.StemLab = window.StemLab || {
             { id: 'distributive', icon: '\u2702\uFE0F', label: t('stem.areamodel.distributive', 'Distributive') },
             { id: 'multidigit', icon: '\uD83D\uDCCA', label: t('stem.areamodel.partial_products', 'Partial Products') },
             { id: 'word', icon: '\uD83D\uDCDD', label: t('stem.areamodel.word_problems', 'Word Problems') }
-          ].map(function(m) {
-            return h('button', { key: m.id,
+          ].map(function(m, tabIndex) {
+            var active = viewMode === m.id;
+            return h('button', { key: m.id, id: 'stem-areamodel-tab-' + m.id,
+              role: 'tab', 'aria-selected': active,
+              'aria-controls': 'stem-areamodel-panel-' + viewMode,
+              tabIndex: active ? 0 : -1,
+              onKeyDown: function(e) {
+                var next = tabIndex;
+                if (e.key === 'ArrowRight') next = (tabIndex + 1) % 4;
+                else if (e.key === 'ArrowLeft') next = (tabIndex - 1 + 4) % 4;
+                else if (e.key === 'Home') next = 0;
+                else if (e.key === 'End') next = 3;
+                else return;
+                e.preventDefault();
+                var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+                if (tabs[next]) tabs[next].focus();
+                var ids = ['basic', 'distributive', 'multidigit', 'word'];
+                upd({ viewMode: ids[next] });
+              },
               onClick: function() { sfxClick(); upd({ viewMode: m.id }); },
+              'aria-pressed': active,
               className: 'flex-1 py-2 px-3 rounded-lg text-sm font-bold transition-all ' +
-                (viewMode === m.id ? 'bg-white text-amber-800 shadow-sm' : 'text-amber-700 hover:text-amber-800')
+                (active ? 'bg-white text-amber-800 shadow-sm' : 'text-amber-700 hover:text-amber-800')
             }, m.icon + ' ' + m.label);
           })
         ),
 
         // ── Topic-accent hero band per mode ──
         h('section', {
+          id: 'stem-areamodel-panel-' + viewMode,
+          role: 'tabpanel',
+          'aria-labelledby': 'stem-areamodel-tab-' + viewMode,
+          tabIndex: 0,
           'data-areamodel-focus': 'true',
           className: 'rounded-2xl border border-amber-200 bg-white p-4 shadow-sm',
           style: { background: 'linear-gradient(135deg, #fffbeb 0%, #fff7ed 48%, #f8fafc 100%)' }
