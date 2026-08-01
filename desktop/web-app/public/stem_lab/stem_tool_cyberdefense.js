@@ -3358,7 +3358,7 @@
                   var answered = q.answered !== -1;
                   var gotIt = answered && q.answered === q.correctIdx;
                   var pct = warRoomQuizTotal > 0 ? Math.round(warRoomQuizCorrect / warRoomQuizTotal * 100) : 0;
-                  return el('div', { role: 'dialog', 'aria-label': t('stem.cyberdefense.quick_quiz', 'Quick Quiz'),
+                  return el('div', { role: 'region', 'aria-label': t('stem.cyberdefense.quick_quiz', 'Quick Quiz'), tabIndex: 0,
                     style: { padding: 16, borderRadius: 12, background: 'linear-gradient(135deg, rgba(236,72,153,0.1), rgba(168,85,247,0.06))', border: '2px solid rgba(236,72,153,0.45)', marginBottom: 14 } },
                     // Header
                     el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' } },
@@ -3469,7 +3469,7 @@
                          : step.outcome === 'detected' ? { c: '#3b82f6', label: 'DETECTED' }
                          : { c: '#ef4444', label: 'SUCCEEDED' };
                   var goStep = function(n) { upd('warRoomReplay', Object.assign({}, warRoomReplay, { stepIdx: n, playing: false })); };
-                  return el('div', { role: 'dialog', 'aria-label': t('stem.cyberdefense.campaign_replay', 'Campaign replay'),
+                  return el('div', { role: 'region', 'aria-label': t('stem.cyberdefense.campaign_replay', 'Campaign replay'), tabIndex: 0,
                     style: { padding: 16, borderRadius: 12, background: 'linear-gradient(135deg, rgba(236,72,153,0.1), rgba(168,85,247,0.06))', border: '2px solid rgba(236,72,153,0.4)', marginBottom: 14 } },
                     // Header row
                     el('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' } },
@@ -3548,7 +3548,7 @@
                 ),
 
                 // First-run welcome overlay (dismissible, shown once)
-                !warRoomWelcomeSeen && !warRoomActive && el('div', { role: 'dialog', 'aria-labelledby': 'warroom-welcome-title',
+                !warRoomWelcomeSeen && !warRoomActive && el('div', { role: 'region', 'aria-labelledby': 'warroom-welcome-title', tabIndex: 0,
                   style: { padding: 20, borderRadius: 14, background: 'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(244,63,94,0.08))', border: '2px solid rgba(99,102,241,0.4)', marginBottom: 14 } },
                   el('div', { 'aria-hidden': 'true', style: { fontSize: 44, textAlign: 'center', marginBottom: 8 } }, '\u2694\uFE0F'),
                   el('h3', { id: 'warroom-welcome-title', style: { margin: 0, textAlign: 'center', color: '#c7d2fe', fontSize: 20, fontWeight: 900 } }, 'Welcome to the SOC War Room'),
