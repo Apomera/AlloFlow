@@ -1656,11 +1656,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           };
         }, [cprView, bpm, audioOn]);
 
+        var CPR_TAB_IDS = ['overview', 'metronome', 'practice', 'aed'];
+        function cprTabKeyDown(e, index) {
+          var key = e.key;
+          if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
+          e.preventDefault();
+          var nextIndex = index;
+          if (key === 'ArrowRight' || key === 'ArrowDown') nextIndex = (index + 1) % CPR_TAB_IDS.length;
+          if (key === 'ArrowLeft' || key === 'ArrowUp') nextIndex = (index - 1 + CPR_TAB_IDS.length) % CPR_TAB_IDS.length;
+          if (key === 'Home') nextIndex = 0;
+          if (key === 'End') nextIndex = CPR_TAB_IDS.length - 1;
+          var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+          var nextTab = tabs[nextIndex];
+          if (nextTab) { nextTab.focus(); nextTab.click(); }
+        }
         function tabBtn(id, label) {
           var active = cprView === id;
-          return h('button', { 'data-fr-focusable': true, key: id,
-            'aria-pressed': active ? 'true' : 'false',
+          return h('button', { 'data-fr-focusable': true, key: id, role: 'tab',
+            id: 'firstresponse-cpr-tab-' + id,
+            'aria-controls': 'firstresponse-cpr-panel-' + id,
+            'aria-selected': active ? 'true' : 'false',
+            tabIndex: active ? 0 : -1,
             'aria-label': label + (active ? ' (current)' : ''),
+            onKeyDown: function(e) { cprTabKeyDown(e, CPR_TAB_IDS.indexOf(id)); },
             onClick: function() { upd('cprView', id); frAnnounce(label); },
             style: btn({
               padding: '6px 12px', fontSize: 12,
@@ -1988,11 +2006,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             tabBtn('practice', 'Practice'),
             tabBtn('aed', 'AED walkthrough')
           ),
-          cprView === 'overview' && cprOverview(),
-          cprView === 'metronome' && cprMetronome(),
-          cprView === 'practice' && cprPractice(),
-          cprView === 'aed' && cprAed(),
-          disclaimerFooter()
+          h('div', { role: 'tabpanel',
+            id: 'firstresponse-cpr-panel-' + cprView,
+            'aria-labelledby': 'firstresponse-cpr-tab-' + cprView,
+            tabIndex: 0
+          },
+            cprView === 'overview' && cprOverview(),
+            cprView === 'metronome' && cprMetronome(),
+            cprView === 'practice' && cprPractice(),
+            cprView === 'aed' && cprAed(),
+            disclaimerFooter()
+          )
         );
       }
 
