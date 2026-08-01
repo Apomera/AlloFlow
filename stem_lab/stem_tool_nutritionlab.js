@@ -13286,6 +13286,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     var data = props.data || { dinners: [] };
     var setData = props.setData;
     var dinners = data.dinners || [];
+    var notice_state = R_NL.useState('');
+    var notice = notice_state[0], setNotice = notice_state[1];
     var fs = R_NL.useState({ name: '', cuisine: '', complexity: 3, last_made: '', notes: '' });
     var form = fs[0]; var setForm = fs[1];
     function add() {
@@ -13297,12 +13299,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     }
     function remove(id) { setData({ dinners: dinners.filter(function(d) { return d.id !== id; }) }); }
     function pickRandom() {
-      if (dinners.length === 0) { alert('Add some dinners first!'); return; }
+      if (dinners.length === 0) { setNotice('Add some dinners first.'); return; }
       var r = dinners[Math.floor(Math.random() * dinners.length)];
-      alert('Tonight: ' + r.name + (r.cuisine ? ' (' + r.cuisine + ')' : ''));
+      setNotice('Tonight: ' + r.name + (r.cuisine ? ' (' + r.cuisine + ')' : ''));
     }
     return nlH('div', { style: { padding: 14 } },
       nlSection('My Dinner Roulette', 'Random pick from your repertoire — break decision fatigue', '#a855f7'),
+      notice && nlH('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: { padding: 8, borderRadius: 8, background: '#f3e8ff', color: '#5b21b6', fontWeight: 700 } }, notice),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
           nlInput({ value: form.name, onChange: function(e) { setForm(Object.assign({}, form, { name: e.target.value })); }, placeholder: 'Dinner name' }),
