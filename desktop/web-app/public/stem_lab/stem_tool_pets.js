@@ -2829,7 +2829,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                 style: { padding: '6px 12px', borderRadius: 8, background: T.cardAlt, color: T.accentHi, border: '1px solid ' + T.accent, fontSize: 11, fontWeight: 700, cursor: 'pointer' }
               }, tfsOpen ? 'Hide ▴' : 'Play →')
             ),
-            tfsOpen && h('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Toxic Foods Sleuth quiz game', style: { marginTop: 12 } },
+            tfsOpen && h('div', { role: 'region', 'aria-label': 'Toxic Foods Sleuth quiz game', tabIndex: 0, style: { marginTop: 12 } },
               tfsIdx < 0
                 ? h('div', { style: { textAlign: 'center', padding: '12px 8px' } },
                     h('p', { style: { color: T.muted, fontSize: 12, lineHeight: 1.55, marginBottom: 12 } },
