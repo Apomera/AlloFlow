@@ -917,6 +917,7 @@ window.StemLab = window.StemLab || {
               h('button', { onClick: function() { setIQ({ xVal: 0, coef: 1, bound: 5, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-white text-[10px] font-semibold text-slate-600 border border-slate-300' }, '↺ ' + __alloT('stem.inequality.reset', 'Reset'))
             ),
             h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.inequality.hypothesis_placeholder', 'Hypothesis: When does a negative coefficient flip the inequality?'),
+              'aria-label': __alloT('stem.inequality.hypothesis', 'Inequality relationship hypothesis'),
               className: 'w-full text-[11px] border border-slate-300 rounded p-1 font-mono leading-snug', rows: 2 }),
             !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[10px] font-bold text-amber-800 border border-amber-300' }, '🤔 ' + __alloT('stem.inequality.stuck_show_prompts', 'Stuck — show open prompts')),
             iq.stuckRevealed && h('div', { className: 'p-2 rounded bg-amber-50 border border-amber-200 text-[10px] text-slate-700' },
@@ -927,6 +928,7 @@ window.StemLab = window.StemLab || {
               h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-3 h-3' }),
               __alloT('stem.inequality.understand_explain', 'I understand — explain in own words')),
             iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.inequality.explain_placeholder', 'Explain inequality test logic.'),
+              'aria-label': __alloT('stem.inequality.explanation', 'Explain inequality test logic'),
               className: 'w-full text-[11px] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 }),
             h('div', { className: 'text-[10px] italic text-slate-500' }, __alloT('stem.inequality.design_note_test', 'Design note: discrete 3-state test marker; no answer reveal — by design.'))
           );
@@ -990,6 +992,7 @@ window.StemLab = window.StemLab || {
               var labels = { easy: '\uD83D\uDFE2 ' + __alloT('stem.inequality.tier_easy', 'Easy'), medium: '\uD83D\uDFE1 ' + __alloT('stem.inequality.tier_medium', 'Medium'), hard: '\uD83D\uDD34 ' + __alloT('stem.inequality.tier_hard', 'Hard'), all: '\uD83C\uDF1F ' + __alloT('stem.inequality.tier_all', 'All') };
               var isActive = quizTier === tier;
               return h('button', { key: tier,
+                'aria-pressed': isActive,
                 onClick: function() {
                   upd('quizTier', tier);
                   var nt = Object.assign({}, tiersUsed);
