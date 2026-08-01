@@ -1525,6 +1525,20 @@ function onTitrKey(e) {
   }
 }
 
+function onTitrTabKey(e, index) {
+  var key = e.key;
+  if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
+  e.preventDefault();
+  var nextIndex = index;
+  if (key === 'ArrowRight' || key === 'ArrowDown') nextIndex = (index + 1) % _TITR_TABS.length;
+  if (key === 'ArrowLeft' || key === 'ArrowUp') nextIndex = (index - 1 + _TITR_TABS.length) % _TITR_TABS.length;
+  if (key === 'Home') nextIndex = 0;
+  if (key === 'End') nextIndex = _TITR_TABS.length - 1;
+  var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+  var nextTab = tabs[nextIndex];
+  if (nextTab) { nextTab.focus(); nextTab.click(); }
+}
+
 // ── Main Lab Render (after safety check passed) ──
 return React.createElement("div", {
   className: "space-y-4 max-w-5xl mx-auto",
@@ -1694,8 +1708,12 @@ return React.createElement("div", {
       var active = labTab === tab.id;
       return React.createElement("button", { "aria-label": "Switch to " + tab.label + " tab",
         key: tab.id,
+        id: 'titration-tab-' + tab.id,
         role: "tab",
-        'aria-selected': active,
+        'aria-controls': 'titration-panel-' + tab.id,
+        'aria-selected': active ? "true" : "false",
+        tabIndex: active ? 0 : -1,
+        onKeyDown: function(e) { onTitrTabKey(e, _TITR_TABS.indexOf(tab.id)); },
         onClick: function() { upd('labTab', tab.id); },
         className: "px-3 py-1.5 rounded-full text-[11px] font-bold transition-all " +
           (active ? "text-white shadow-lg scale-105" : "transition-colors text-slate-200 hover:text-white bg-slate-800/50 hover:bg-slate-700/60 border border-slate-700 active:scale-[0.97]"),
@@ -1703,6 +1721,13 @@ return React.createElement("div", {
       }, tab.label);
     })
   ),
+
+  React.createElement("div", {
+    role: "tabpanel",
+    id: 'titration-panel-' + labTab,
+    'aria-labelledby': 'titration-tab-' + labTab,
+    tabIndex: 0
+  },
 
   // ── Topic-accent hero band (per tab) ──
   (function() {
@@ -3289,6 +3314,7 @@ return React.createElement("div", {
         __alloT('stem.titration.design_note_no_buffer_capacity_score_n', 'Design note: no buffer-capacity score, no reveal button, no quiz validation. Outcome is shown as a discrete 2-state marker (GOOD / POOR), not a continuous gradient — by design, to discourage optimization-gaming behavior. The point is the inquiry, not the number.'))
     );
   })()
+  )
 
 );
   }
