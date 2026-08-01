@@ -1726,6 +1726,7 @@
               ? 'How does ' + (fromCard ? fromCard.name : 'X') + ' ' + pickedVerb.label.toLowerCase() + ' ' + (toCard ? toCard.name : 'Y') + '? Be specific about the mechanism, direction, or condition.'
               : 'How do these two cards relate?',
             rows: 3,
+            'aria-label': 'Connection justification',
             disabled: submitting || voiceMode === 'transcribing',
             'aria-busy': voiceMode === 'transcribing' ? 'true' : 'false',
             style: { width: '100%', padding: '8px 10px', fontSize: '13px', fontFamily: 'inherit', color: palette.text || '#e2e8f0', background: palette.bg || '#0f172a', border: '1px solid ' + (palette.border || '#334155'), borderRadius: '6px', boxSizing: 'border-box', lineHeight: '1.5', resize: 'vertical' }
