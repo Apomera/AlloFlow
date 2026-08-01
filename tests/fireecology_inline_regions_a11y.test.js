@@ -22,5 +22,7 @@ describe('Fire Ecology inline panel accessibility', () => {
     expect(source).toContain("role: 'region',\n              'aria-labelledby': 'fireecology-deep-dive-title-' + def.id,\n              tabIndex: 0");
     expect(source).toContain("id: 'fireecology-deep-dive-title-' + def.id");
     expect(source).not.toContain("'aria-label': 'Cultural deep-dive: ' + def.name");
+    expect(source).toContain("'aria-label': t('stem.fireecology.hypothesis_input', 'Fire regime hypothesis')");
+    expect(source).toContain("'aria-label': t('stem.fireecology.explanation_input', 'Fire regime explanation')");
   });
 });
