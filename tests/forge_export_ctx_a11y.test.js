@@ -28,6 +28,12 @@ beforeAll(() => {
 });
 
 describe('Forge-exported ctx.a11yClick', () => {
+  it('names the AI description and target controls', () => {
+    const source = readFileSync(FORGE, 'utf8');
+    expect(source).toContain("'aria-label': t('stem.forge.describe', 'Describe the tool you want')");
+    expect(source).toContain("'aria-label': t('stem.forge.target', 'Target')");
+  });
+
   it('supplies the full control contract, onKeyDown included', () => {
     const props = generated.a11yClick(() => {});
     expect(props.role).toBe('button');

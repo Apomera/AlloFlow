@@ -728,12 +728,13 @@
                 h('label', { style: { fontSize: 13, fontWeight: 600 } }, t('stem.forge.describe', 'Describe the tool you want')),
                 h('textarea', {
                   value: desc, onChange: function (e) { setDesc(e.target.value); }, rows: 5,
+                  'aria-label': t('stem.forge.describe', 'Describe the tool you want'),
                   placeholder: t('stem.forge.placeholder', 'e.g. A lab where students drag charges around and see the electric field lines update live, with a quest to build a dipole.'),
                   style: { width: '100%', boxSizing: 'border-box', padding: 10, borderRadius: 8, border: '1px solid ' + border, background: panelBg, color: fg, font: '14px system-ui', resize: 'vertical' }
                 }),
                 h('div', { style: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
                   h('label', { style: { fontSize: 13 } }, t('stem.forge.target', 'Target') + ':'),
-                  h('select', { value: target, onChange: function (e) { setTarget(e.target.value); }, style: { padding: '6px 8px', borderRadius: 6, border: '1px solid ' + border, background: panelBg, color: fg } },
+                  h('select', { value: target, onChange: function (e) { setTarget(e.target.value); }, 'aria-label': t('stem.forge.target', 'Target'), style: { padding: '6px 8px', borderRadius: 6, border: '1px solid ' + border, background: panelBg, color: fg } },
                     h('option', { value: 'stem' }, 'STEM Lab'),
                     h('option', { value: 'sel' }, 'SEL Hub')),
                   h('button', { onClick: generate, disabled: busy, style: btn(true) }, busy ? t('stem.forge.working', 'Working…') : t('stem.forge.generate', 'Generate plugin'))
