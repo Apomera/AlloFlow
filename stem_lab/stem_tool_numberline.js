@@ -770,6 +770,7 @@ window.StemLab = window.StemLab || {
                   h('label', { className: 'block text-xs text-violet-700 mb-1 font-bold' }, t('stem.numberline.skip_by', 'Skip By')),
                   h('input', {
                     type: 'number', min: 1, max: 100, value: skipBy,
+                    'aria-label': t('stem.numberline.skip_by', 'Skip By'),
                     onChange: function(e) { upd({ skipBy: Math.max(1, parseInt(e.target.value) || 1) }); },
                     className: 'w-full px-3 py-1.5 text-sm border border-violet-600 rounded-lg text-center font-bold'
                   })
@@ -778,6 +779,7 @@ window.StemLab = window.StemLab || {
                   h('label', { className: 'block text-xs text-violet-700 mb-1 font-bold' }, t('stem.numberline.start_from', 'Start From')),
                   h('input', {
                     type: 'number', value: skipFrom,
+                    'aria-label': t('stem.numberline.start_from', 'Start From'),
                     onChange: function(e) { upd({ skipFrom: parseInt(e.target.value) || 0 }); },
                     className: 'w-full px-3 py-1.5 text-sm border border-violet-600 rounded-lg text-center font-bold'
                   })
@@ -786,6 +788,7 @@ window.StemLab = window.StemLab || {
                   h('label', { className: 'block text-xs text-violet-700 mb-1 font-bold' }, t('stem.numberline.how_many', 'How Many')),
                   h('input', {
                     type: 'number', min: 2, max: 20, value: skipCount,
+                    'aria-label': t('stem.numberline.how_many', 'How Many'),
                     onChange: function(e) { upd({ skipCount: Math.max(2, Math.min(20, parseInt(e.target.value) || 8)) }); },
                     className: 'w-full px-3 py-1.5 text-sm border border-violet-600 rounded-lg text-center font-bold'
                   })
@@ -1780,6 +1783,7 @@ window.StemLab = window.StemLab || {
                   onChange: function(e) { upd({ aiQuestion: e.target.value }); },
                   onKeyDown: function(e) { if (e.key === 'Enter' && aiQuestion.trim()) askAITutor(); },
                   placeholder: t('stem.numberline.ask_about_number_lines', 'Ask about number lines...'),
+                  'aria-label': t('stem.numberline.ask_about_number_lines', 'Ask about number lines...'),
                   className: 'flex-1 px-3 py-2 border border-sky-600 rounded-lg text-sm'
                 }),
                 h('button', { onClick: askAITutor,
@@ -2118,6 +2122,7 @@ window.StemLab = window.StemLab || {
                   }))
                 ),
                 h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: t('stem.numberline.hypothesis_free_text_when_do_two_fract', 'Hypothesis (free text): When do two fractions equal each other? When is one near ½?'),
+                  'aria-label': t('stem.numberline.hypothesis', 'Fraction relationship hypothesis'),
                   className: 'w-full text-[11px] border border-slate-300 rounded p-1 font-mono leading-snug mb-2', rows: 2 }),
                 !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[10px] font-bold text-amber-800 border border-amber-300 mb-2' }, t('stem.numberline.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
                 iq.stuckRevealed && h('div', { className: 'p-2 rounded bg-amber-50 border border-amber-200 text-[10px] text-slate-700 leading-relaxed mb-2' },
@@ -2130,6 +2135,7 @@ window.StemLab = window.StemLab || {
                     h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-3 h-3' }),
                     t('stem.numberline.i_understand_explain_in_my_own_words', 'I understand — explain in my own words')),
                   iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: t('stem.numberline.explain_how_to_compare_two_fractions_w', 'Explain how to compare two fractions without converting to decimals.'),
+                    'aria-label': t('stem.numberline.explanation', 'Explain how to compare two fractions'),
                     className: 'w-full text-[11px] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 })),
                 h('div', { className: 'mt-2 text-[9px] italic text-slate-500' }, t('stem.numberline.design_note_discrete_4_state_outcome_n', 'Design note: discrete 4-state outcome; no fraction-comparison score; no reveal — by design.'))
               );
