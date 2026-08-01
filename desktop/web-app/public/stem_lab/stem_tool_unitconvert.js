@@ -813,6 +813,24 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           '@keyframes ucWrong{0%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}100%{transform:translateX(0)}}' +
           '@keyframes ucFactSlide{from{transform:translateX(20px);opacity:0}to{transform:translateX(0);opacity:1}}' +
           '@keyframes spin{to{transform:rotate(360deg)}}';
+        var UNIT_CONVERT_TAB_ORDER = ['convert', 'table', 'quiz', 'wordproblem', 'magHunt'];
+        var unitConvertTabKeyDown = function(e, index) {
+          var nextIndex = -1;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % UNIT_CONVERT_TAB_ORDER.length;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + UNIT_CONVERT_TAB_ORDER.length - 1) % UNIT_CONVERT_TAB_ORDER.length;
+          else if (e.key === 'Home') nextIndex = 0;
+          else if (e.key === 'End') nextIndex = UNIT_CONVERT_TAB_ORDER.length - 1;
+          if (nextIndex < 0) return;
+          e.preventDefault();
+          var tabs = e.currentTarget && e.currentTarget.parentNode
+            ? e.currentTarget.parentNode.querySelectorAll('[role="tab"]')
+            : [];
+          var nextTab = tabs[nextIndex];
+          if (nextTab) {
+            nextTab.focus();
+            nextTab.click();
+          }
+        };
 
         // ── RENDER ──
         return h('div', { className: 'max-w-5xl mx-auto animate-in fade-in duration-200 outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-1', onKeyDown: handleKey, tabIndex: -1 },
@@ -938,8 +956,12 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           h('div', { className: 'flex gap-0 mb-3 overflow-x-auto border-b border-slate-200', role: 'tablist', 'aria-label': t('stem.unitconvert.unit_converter_sections', 'Unit Converter sections') },
             [['convert', '\uD83D\uDD04 Convert'], ['table', '\uD83D\uDCCA All Units'], ['quiz', '\uD83E\uDDE0 Quiz'], ['wordproblem', '\uD83D\uDCDD Word Problem'], ['magHunt', '\u2699\uFE0F Magnitude']].map(function(item, idx) {
               return h('button', { key: item[0],
+                id: 'stem-unitconvert-tab-' + item[0],
                 onClick: function() { upd('tab', item[0]); },
                 role: 'tab', 'aria-selected': tab === item[0],
+                'aria-controls': 'stem-unitconvert-panel-' + item[0],
+                tabIndex: tab === item[0] ? 0 : -1,
+                onKeyDown: function(e) { unitConvertTabKeyDown(e, idx); },
                 className: 'min-h-[2.5rem] whitespace-nowrap px-3 py-2 text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-cyan-400 ' + (tab === item[0] ? 'border-b-2 border-cyan-600 text-cyan-700 -mb-px' : 'transition-colors text-slate-600 hover:text-slate-700'),
                 title: (idx + 1) + ' key'
               }, item[1]);
@@ -957,6 +979,10 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             };
             var meta = TAB_META[tab] || TAB_META.convert;
             return h('div', {
+              role: 'tabpanel',
+              id: 'stem-unitconvert-panel-' + tab,
+              'aria-labelledby': 'stem-unitconvert-tab-' + tab,
+              tabIndex: 0,
               style: {
                 margin: '0 0 12px',
                 padding: '12px 14px',
