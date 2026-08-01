@@ -3790,14 +3790,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('climateExplore
               var dd = def.deepDive;
               var applicable = PATHWAY_TECHNIQUES.filter(function(t) { return t.appliesTo === 'any' || t.appliesTo.indexOf(id) >= 0; });
               return el('div', {
-                role: 'dialog', 'aria-modal': 'true',
+                role: 'region', 'aria-labelledby': 'climate-explorer-deep-dive-title-' + def.id, tabIndex: 0,
                 style: { background: 'linear-gradient(135deg, ' + def.color + '20 0%, var(--allo-stem-deeper, rgba(15,23,42,0.85)) 60%)', border: '1px solid ' + def.color + '88', borderLeft: '4px solid ' + def.color, borderRadius: 14, padding: 18, marginBottom: 16 }
               },
                 el('div', { style: { display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 10 } },
                   el('span', { style: { fontSize: 36 } }, def.icon),
                   el('div', { style: { flex: 1 } },
                     el('div', { style: { fontSize: 11, color: def.color, fontWeight: 700, letterSpacing: 0.5, textTransform: 'uppercase' } }, 'Sector deep-dive'),
-                    el('h3', { style: { margin: '2px 0 0', color: '#fff', fontSize: 20 } }, def.name),
+                    el('h3', { id: 'climate-explorer-deep-dive-title-' + def.id, style: { margin: '2px 0 0', color: '#fff', fontSize: 20 } }, def.name),
                     el('div', { style: { color: def.color, fontSize: 13, marginTop: 4, fontStyle: 'italic' } }, def.role)
                   ),
                   el('button', { onClick: closePathDeepDive,
