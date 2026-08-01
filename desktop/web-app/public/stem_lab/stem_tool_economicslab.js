@@ -1890,6 +1890,7 @@ var d = labToolData || {};
                 id: 'economicslab-panel-' + econTab,
                 role: 'tabpanel',
                 'aria-labelledby': 'economicslab-tab-' + econTab,
+                tabIndex: 0,
                 style: {
                   margin: '0 0 12px',
                   padding: '12px 14px',
