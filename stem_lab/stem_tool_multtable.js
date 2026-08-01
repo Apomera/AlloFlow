@@ -977,6 +977,22 @@ window.StemLab = window.StemLab || {
             ? 'Choose a fact family, predict the answer, then verify it with a visual strategy.'
             : 'Use an easy fact to derive one harder neighboring fact.';
 
+      function multTableTabKeyDown(e, index) {
+        var ids = ['practice', 'visual', 'patterns'];
+        var nextIndex = index;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % ids.length;
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index - 1 + ids.length) % ids.length;
+        else if (e.key === 'Home') nextIndex = 0;
+        else if (e.key === 'End') nextIndex = ids.length - 1;
+        else return;
+        e.preventDefault();
+        var tabButtons = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+        if (tabButtons[nextIndex]) {
+          tabButtons[nextIndex].focus();
+          tabButtons[nextIndex].click();
+        }
+      }
+
       return h('div', { className: 'space-y-4 max-w-5xl mx-auto animate-in fade-in duration-200' },
 
         // ── Header ──
@@ -1081,16 +1097,26 @@ window.StemLab = window.StemLab || {
             { id: 'practice', icon: '\uD83C\uDFAF', label: t('stem.multtable.practice', 'Practice') },
             { id: 'visual',   icon: '\uD83D\uDFE9', label: t('stem.multtable.visual', 'Visual') },
             { id: 'patterns', icon: '\uD83D\uDD0D', label: t('stem.multtable.patterns', 'Patterns') }
-          ].map(function(tb) {
+          ].map(function(tb, tabIndex) {
             var active = mtTab === tb.id;
             return h('button', { key: 'mtt-' + tb.id,
+              id: 'multtable-tab-' + tb.id,
+              'aria-controls': 'multtable-panel-' + tb.id,
               onClick: function() { playSound('default'); extUpd({ mtTab: tb.id }); },
+              onKeyDown: function(e) { multTableTabKeyDown(e, tabIndex); },
               role: 'tab', 'aria-selected': active,
+              tabIndex: active ? 0 : -1,
               className: 'min-h-[2.5rem] min-w-max flex-1 whitespace-nowrap py-2 px-3 rounded-lg text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-pink-400 ' +
                 (active ? 'bg-white text-pink-800 shadow-sm' : 'text-pink-600 hover:text-pink-800')
             }, tb.icon + ' ' + tb.label);
           })
         ),
+        h('div', {
+          role: 'tabpanel',
+          id: 'multtable-panel-' + mtTab,
+          'aria-labelledby': 'multtable-tab-' + mtTab,
+          tabIndex: 0
+        },
 
         // VISUAL TAB content
         mtTab === 'visual' && h('div', { className: 'allo-mt-bg-visual' }, renderVisual()),
@@ -1628,6 +1654,7 @@ window.StemLab = window.StemLab || {
           );
         })()
         )  // end of Practice tab wrapper
+        )
       );
     }
   });
