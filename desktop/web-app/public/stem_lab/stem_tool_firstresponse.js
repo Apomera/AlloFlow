@@ -1404,11 +1404,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         var pickedTag = d.callDecisionTag || null;
         var picked = pickedTag ? CALL_DECISIONS.filter(function(c) { return c.tag === pickedTag; })[0] : null;
 
+        var CALL_TAB_IDS = ['overview', 'tap-to-call', 'practice'];
+        function callTabKeyDown(e, index) {
+          var key = e.key;
+          if (key !== 'ArrowRight' && key !== 'ArrowDown' && key !== 'ArrowLeft' && key !== 'ArrowUp' && key !== 'Home' && key !== 'End') return;
+          e.preventDefault();
+          var nextIndex = index;
+          if (key === 'ArrowRight' || key === 'ArrowDown') nextIndex = (index + 1) % CALL_TAB_IDS.length;
+          if (key === 'ArrowLeft' || key === 'ArrowUp') nextIndex = (index - 1 + CALL_TAB_IDS.length) % CALL_TAB_IDS.length;
+          if (key === 'Home') nextIndex = 0;
+          if (key === 'End') nextIndex = CALL_TAB_IDS.length - 1;
+          var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
+          var nextTab = tabs[nextIndex];
+          if (nextTab) { nextTab.focus(); nextTab.click(); }
+        }
+
         function tabBtn(id, label) {
           var active = callView === id;
-          return h('button', { 'data-fr-focusable': true, key: id,
-            'aria-pressed': active ? 'true' : 'false',
+          return h('button', { 'data-fr-focusable': true, key: id, role: 'tab',
+            id: 'firstresponse-call-tab-' + id,
+            'aria-controls': 'firstresponse-call-panel-' + id,
+            'aria-selected': active ? 'true' : 'false',
+            tabIndex: active ? 0 : -1,
             'aria-label': label + (active ? ' (current)' : ''),
+            onKeyDown: function(e) { callTabKeyDown(e, CALL_TAB_IDS.indexOf(id)); },
             onClick: function() { upd('callView', id); frAnnounce(label); },
             style: btn({
               padding: '6px 12px', fontSize: 12,
@@ -1547,10 +1566,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             tabBtn('tap-to-call', 'Tap to call'),
             tabBtn('practice', 'Practice script')
           ),
-          callView === 'overview' && callOverview(),
-          callView === 'tap-to-call' && callTapToCall(),
-          callView === 'practice' && callPractice(),
-          disclaimerFooter()
+          h('div', { role: 'tabpanel',
+            id: 'firstresponse-call-panel-' + callView,
+            'aria-labelledby': 'firstresponse-call-tab-' + callView,
+            tabIndex: 0
+          },
+            callView === 'overview' && callOverview(),
+            callView === 'tap-to-call' && callTapToCall(),
+            callView === 'practice' && callPractice(),
+            disclaimerFooter()
+          )
         );
       }
 
