@@ -17143,6 +17143,7 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                         value: csvText,
                         onChange: (e) => setCsvText(e.target.value),
                         placeholder: tt('behavior_lens.ph.session_1_3nsession_2_7nsession_3_5n', 'Session 1: 3\nSession 2: 7\nSession 3: 5\n...'),
+                        'aria-label': tt('behavior_lens.ui.session_data_csv_input', 'Session data CSV input'),
                         rows: 5,
                         className: 'w-full text-xs border border-slate-400 rounded-lg px-3 py-2 bg-slate-50 font-mono focus:outline-none focus:ring-2 focus:ring-fuchsia-300'
                     }),
@@ -17234,11 +17235,11 @@ Remember: Stay in character for STUDENT_RESPONSE. Be a realistic student — sho
                     ),
                     h('div', null,
                         h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, tt('behavior_lens.ui.yaxis_label', 'Y-Axis Label')),
-                        h('input', { value: yAxisLabel, onChange: e => setYAxisLabel(e.target.value), className: 'w-full text-xs border border-slate-400 rounded-lg px-2 py-1.5 mt-1' })
+                        h('input', { value: yAxisLabel, onChange: e => setYAxisLabel(e.target.value), 'aria-label': tt('behavior_lens.ui.yaxis_label_input', 'Y-axis label'), className: 'w-full text-xs border border-slate-400 rounded-lg px-2 py-1.5 mt-1' })
                     ),
                     h('div', null,
                         h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, tt('behavior_lens.ui.xaxis_label', 'X-Axis Label')),
-                        h('input', { value: xAxisLabel, onChange: e => setXAxisLabel(e.target.value), className: 'w-full text-xs border border-slate-400 rounded-lg px-2 py-1.5 mt-1' })
+                        h('input', { value: xAxisLabel, onChange: e => setXAxisLabel(e.target.value), 'aria-label': tt('behavior_lens.ui.xaxis_label_input', 'X-axis label'), className: 'w-full text-xs border border-slate-400 rounded-lg px-2 py-1.5 mt-1' })
                     ),
                 ),
                 dataMode === 'auto' && behaviorNames.length > 1 && h('div', { className: 'flex gap-2 mt-2' },
