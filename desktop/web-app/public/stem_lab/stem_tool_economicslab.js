@@ -2175,6 +2175,8 @@ var d = labToolData || {};
 
                   type: 'text',
 
+                  'aria-label': t('stem.economicslab.advisor_question', 'Ask an economics question'),
+
                   value: d.advisorInput || '',
 
                   onChange: function (e) { upd('advisorInput', e.target.value); },
@@ -3796,6 +3798,8 @@ var d = labToolData || {};
 
                   type: 'text',
 
+                  'aria-label': t('stem.economicslab.market_theme', 'Market theme'),
+
                   value: d.smInput || '',
 
                   onChange: function (e) { upd('smInput', e.target.value); },
@@ -4313,6 +4317,8 @@ var d = labToolData || {};
 
                   type: 'text',
 
+                  'aria-label': t('stem.economicslab.business_idea', 'Business idea'),
+
                   value: d.enInput || '',
 
                   onChange: function (e) { upd('enInput', e.target.value); },
@@ -4823,7 +4829,7 @@ var d = labToolData || {};
                     );
                   })
                 ),
-                React.createElement('svg', { width: '100%', height: 120, viewBox: '0 0 320 120', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
+                React.createElement('svg', { width: '100%', height: 120, viewBox: '0 0 320 120', role: 'img', 'aria-label': t('stem.economicslab.policy_outcomes_chart', 'Policy outcomes chart for GDP, inflation, and unemployment'), style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 8 } },
                   React.createElement('line', { x1: 30, y1: 60, x2: 310, y2: 60, stroke: '#475569', strokeWidth: 1 }),
                   React.createElement('text', { x: 30, y: 110, fill: '#94a3b8', fontSize: 9 }, '\u0394GDP'),
                   React.createElement('text', { x: 130, y: 110, fill: '#94a3b8', fontSize: 9 }, '\u0394Inflation'),
@@ -4892,7 +4898,7 @@ var d = labToolData || {};
                   React.createElement('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
                   React.createElement('span', null, t('stem.economicslab.i_can_explain_why_this_policy_mix_yiel', 'I can explain why this policy mix yields this macroeconomic state.'))
                 ),
-                iq.understood && React.createElement('textarea', { value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: t('stem.economicslab.explain_in_your_own_words', 'Explain in your own words...'), className: 'w-full p-1.5 rounded text-[10px] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
+                iq.understood && React.createElement('textarea', { 'aria-label': t('stem.economicslab.policy_explanation', 'Explain your policy prediction'), value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: t('stem.economicslab.explain_in_your_own_words', 'Explain in your own words...'), className: 'w-full p-1.5 rounded text-[10px] mb-1', style: { background: '#0a0a1a', border: '1px solid ' + sm.border, color: '#e8f0f5', resize: 'vertical' } }),
                 React.createElement('p', { className: 'm-0 text-[9px] italic opacity-60' }, t('stem.economicslab.inquiry_widget_no_score_no_reveal_no_a', 'Inquiry widget \u2014 no score, no reveal, no answer dump. Coefficients are pedagogical heuristics, NOT a real macro model; real responses depend on monetary regime, slack, expectations, foreign trade. Macro is contested \u2014 economists disagree on signs and magnitudes.'))
               );
             })()
