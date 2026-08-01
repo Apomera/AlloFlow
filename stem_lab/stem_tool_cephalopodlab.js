@@ -15258,6 +15258,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           { id: 'symbiosis', label: __alloT('stem.cephalopodlab.bacterial_symbiosis', 'Bacterial Symbiosis'), icon: '🦠' },
           { id: 'counter', label: __alloT('stem.cephalopodlab.counter_illumination_sim', 'Counter-Illumination Sim'), icon: '🌗' }
         ];
+        var BIOLUX_TAB_IDS = SUBS.map(function(s) { return s.id; });
+        var bioluxTabKeyDown = function(e, index) {
+          var nextIndex = -1;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % BIOLUX_TAB_IDS.length;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + BIOLUX_TAB_IDS.length - 1) % BIOLUX_TAB_IDS.length;
+          else if (e.key === 'Home') nextIndex = 0;
+          else if (e.key === 'End') nextIndex = BIOLUX_TAB_IDS.length - 1;
+          if (nextIndex < 0) return;
+          e.preventDefault();
+          var tabs = e.currentTarget && e.currentTarget.parentNode
+            ? e.currentTarget.parentNode.querySelectorAll('[role="tab"]')
+            : [];
+          var nextTab = tabs[nextIndex];
+          if (nextTab) {
+            nextTab.focus();
+            nextTab.click();
+          }
+        };
         var PHOTOPHORES = [
           { id: 'simple', name: __alloT('stem.cephalopodlab.simple_diffuse', 'Simple Diffuse'), emoji: '⚪', color: 'var(--allo-stem-text, #cbd5e1)',
             description: __alloT('stem.cephalopodlab.a_sac_of_bioluminescent_tissue_or_bact', 'A sac of bioluminescent tissue (or bacteria) with no optical structures. Glows in all directions equally. Cheapest photophore design.'),
@@ -15303,9 +15321,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
 
           h('div', { role: 'tablist', 'aria-label': __alloT('stem.cephalopodlab.bioluminescence_sub_sections', 'Bioluminescence sub-sections'),
             style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 16 } },
-            SUBS.map(function(s) {
+            SUBS.map(function(s, si) {
               var active = view === s.id;
-              return h('button', { key: s.id, role: 'tab', 'aria-selected': active ? 'true' : 'false',
+              return h('button', { key: s.id, id: 'cephalopod-biolux-tab-' + s.id, role: 'tab',
+                'aria-selected': active ? 'true' : 'false', 'aria-controls': 'cephalopod-biolux-panel-' + s.id,
+                tabIndex: active ? 0 : -1, onKeyDown: function(e) { bioluxTabKeyDown(e, si); },
                 onClick: function() { setCL({ bioluxView: s.id }); awardXP(1); },
                 style: { padding: '8px 12px',
                   background: active ? 'rgba(99,102,241,0.3)' : 'rgba(15,23,42,0.5)',
@@ -15316,6 +15336,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('span', { 'aria-hidden': 'true' }, s.icon), s.label);
             })),
 
+          h('div', { role: 'tabpanel', id: 'cephalopod-biolux-panel-' + view,
+            'aria-labelledby': 'cephalopod-biolux-tab-' + view, tabIndex: 0 },
           view === 'overview' ? h('div', null,
             h('div', { style: cardStyle() },
               h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.the_reaction', '⚗️ The reaction')),
@@ -15573,6 +15595,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 h('p', { style: { margin: 0 } },
                   __alloT('stem.cephalopodlab.some_species_also_have_photoreceptors_', 'Some species also have photoreceptors NEXT TO their photophores. They detect their own output + adjust it. This closed-loop control is what makes real counter-illumination so precise.'))))
           ) : null
+          )
         );
       }
 
