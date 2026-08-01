@@ -2414,7 +2414,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               h('p',{className:'text-sm font-bold text-emerald-800 mb-1'},cq.question),
               h('p',{className:'text-[11px] text-emerald-600 mb-3 italic'},'\u222B x\u207F dx = x\u207F\u207A\u00B9/(n+1) + C. Enter a decimal; round to 3 places when needed.'),
               h('div',{className:'flex gap-2'},
-                h('input',{type:'number',step:'any',autoFocus:true,value:d._calcExactInput||'',onChange:function(e){upd('_calcExactInput',e.target.value);},onKeyDown:function(e){if(e.key==='Enter'&&d._calcExactInput)checkCalcAnswer(d._calcExactInput);},placeholder:'Type exact value\u2026',className:'flex-1 px-3 py-2 rounded-lg border-2 border-emerald-600 text-sm font-bold bg-white focus:border-emerald-500'}),
+                h('input',{type:'number',step:'any',autoFocus:true,value:d._calcExactInput||'','aria-label':'Exact integral value',onChange:function(e){upd('_calcExactInput',e.target.value);},onKeyDown:function(e){if(e.key==='Enter'&&d._calcExactInput)checkCalcAnswer(d._calcExactInput);},placeholder:'Type exact value\u2026',className:'flex-1 px-3 py-2 rounded-lg border-2 border-emerald-600 text-sm font-bold bg-white focus:border-emerald-500'}),
                 h('button',{"aria-label":"Check",onClick:function(){if(d._calcExactInput)checkCalcAnswer(d._calcExactInput);},className:'transition-colors px-4 py-2 bg-emerald-700 text-white rounded-lg text-xs font-bold hover:bg-emerald-800'},'Check \u2192')
               )
             ),
@@ -2479,7 +2479,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('p',{className:'text-xs text-slate-700 mb-2 font-bold'},'Now go to the Integral tab and find the error value for n=4. Come back and enter it below:'),
                   h('div',{ className:'flex gap-2 items-center'},
                     h('span',{ className:'text-xs font-bold text-slate-600'},'Error at n=4:'),
-                    h('input',{type:'number',step:'any',placeholder:'0.????',value:data.err4||'',onChange:function(e){saveData('err4',e.target.value);},className:'w-24 px-2 py-1 border-2 border-red-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
+                    h('input',{type:'number',step:'any',placeholder:'0.????',value:data.err4||'','aria-label':'Riemann-sum error at n equals 4',onChange:function(e){saveData('err4',e.target.value);},className:'w-24 px-2 py-1 border-2 border-red-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
                     h('button',{"aria-label":"Got it",disabled:!data.err4,onClick:function(){nextStep();stemBeep&&stemBeep('click');},className:'transition-colors px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-red-700'},'Got it \u2192')
                   )
                 ),
@@ -2503,7 +2503,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('p',{className:'text-xs text-slate-600 mb-3'},'Go to the Integral tab, set n=8 (using the slider), and record the error:'),
                   h('div',{ className:'flex gap-2 items-center mb-3'},
                     h('span',{ className:'text-xs font-bold text-slate-600'},'Error at n=8:'),
-                    h('input',{type:'number',step:'any',placeholder:'0.????',value:data.err8||'',onChange:function(e){saveData('err8',e.target.value);},className:'w-24 px-2 py-1 border-2 border-red-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
+                    h('input',{type:'number',step:'any',placeholder:'0.????',value:data.err8||'','aria-label':'Riemann-sum error at n equals 8',onChange:function(e){saveData('err8',e.target.value);},className:'w-24 px-2 py-1 border-2 border-red-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
                     h('button',{"aria-label":"Got it",disabled:!data.err8,onClick:function(){nextStep();stemBeep&&stemBeep('click');},className:'transition-colors px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-red-700'},'Got it \u2192')
                   )
                 ),
@@ -2524,7 +2524,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                       h('p',{className:'text-xs font-bold text-slate-700 mb-2'},'Now predict: what will the error be at n=16? (Hint: apply the same ratio again)'),
                       h('div',{ className:'flex gap-2 items-center'},
                         h('span',{ className:'text-xs font-bold text-slate-600'},'Predicted error at n=16:'),
-                        h('input',{type:'number',step:'any',placeholder:'0.????',value:data.predictN16||'',onChange:function(e){saveData('predictN16',e.target.value);},className:'w-24 px-2 py-1 border-2 border-violet-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
+                        h('input',{type:'number',step:'any',placeholder:'0.????',value:data.predictN16||'','aria-label':'Predicted error at n equals 16',onChange:function(e){saveData('predictN16',e.target.value);},className:'w-24 px-2 py-1 border-2 border-violet-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
                         h('button',{"aria-label":"Predict locked",disabled:!data.predictN16,onClick:function(){nextStep();stemBeep&&stemBeep('click');},className:'transition-colors px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-red-700'},'Predict locked \u2192')
                       )
                     );
@@ -2643,7 +2643,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     [['1','slope1'],['2','slope2'],['3','slope3']].map(function(item){
                       return h('div',{ key:item[0],className:'flex gap-2 items-center'},
                         h('span',{ className:'text-xs font-bold text-slate-600 w-24'},'f\u2032('+item[0]+') ='),
-                        h('input',{type:'number',step:'any',placeholder:'?',value:data[item[1]]||'',onChange:function(e){saveData(item[1],e.target.value);},className:'w-20 px-2 py-1 border-2 border-violet-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'})
+                        h('input',{type:'number',step:'any',placeholder:'?',value:data[item[1]]||'','aria-label':'Derivative value at x '+item[0],onChange:function(e){saveData(item[1],e.target.value);},className:'w-20 px-2 py-1 border-2 border-violet-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'})
                       );
                     })
                   ),
@@ -2675,7 +2675,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('p',{className:'text-xs font-bold text-slate-700 mb-2'},'Now change a=2 (f(x) = 2x\u00B2) on the Derivative tab. Measure f\u2032(1). What do you predict?'),
                   h('div',{ className:'flex gap-2 items-center mb-3'},
                     h('span',{ className:'text-xs font-bold'},'f\u2032(1) for 2x\u00B2:'),
-                    h('input',{type:'number',step:'any',placeholder:'?',value:data.slope2x||'',onChange:function(e){saveData('slope2x',e.target.value);},className:'w-20 px-2 py-1 border-2 border-violet-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
+                    h('input',{type:'number',step:'any',placeholder:'?',value:data.slope2x||'','aria-label':'Derivative at x equals 1 for 2x squared',onChange:function(e){saveData('slope2x',e.target.value);},className:'w-20 px-2 py-1 border-2 border-violet-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
                     h('button',{"aria-label":"Verify",disabled:!data.slope2x,onClick:nextStep,className:'transition-colors px-3 py-1.5 bg-violet-600 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-violet-700'},'Verify \u2192')
                   )
                 ),
@@ -2714,7 +2714,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('p',{className:'text-xs text-slate-600 mb-2'},'(Hint: Area of triangle = \u00BD \u00D7 base \u00D7 height. Base = 3, height = v(3) = 2\u00D73 = ?)'),
                   h('div',{ className:'flex gap-2 items-center'},
                     h('span',{ className:'text-xs font-bold'},'My triangle area:'),
-                    h('input',{type:'number',step:'any',placeholder:'? m',value:data.triangleArea||'',onChange:function(e){saveData('triangleArea',e.target.value);},className:'w-20 px-2 py-1 border-2 border-emerald-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
+                    h('input',{type:'number',step:'any',placeholder:'? m',value:data.triangleArea||'','aria-label':'Triangle area in meters',onChange:function(e){saveData('triangleArea',e.target.value);},className:'w-20 px-2 py-1 border-2 border-emerald-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
                     h('span',{ className:'text-xs text-slate-600'},'meters'),
                     h('button',{"aria-label":"Got it",disabled:!data.triangleArea,onClick:nextStep,className:'transition-colors px-3 py-1.5 bg-emerald-700 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-emerald-800'},'Got it \u2192')
                   )
@@ -2724,7 +2724,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('p',{className:'text-xs text-slate-600 mb-2'},'Go to the Integral tab. The exact value shown is the definite integral of v(t) = 2t from 0 to 3. What is it?'),
                   h('div',{ className:'flex gap-2 items-center mb-3'},
                     h('span',{ className:'text-xs font-bold'},'Integral value:'),
-                    h('input',{type:'number',step:'any',placeholder:'?',value:data.integralVal||'',onChange:function(e){saveData('integralVal',e.target.value);},className:'w-20 px-2 py-1 border-2 border-emerald-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
+                    h('input',{type:'number',step:'any',placeholder:'?',value:data.integralVal||'','aria-label':'Definite integral value in meters',onChange:function(e){saveData('integralVal',e.target.value);},className:'w-20 px-2 py-1 border-2 border-emerald-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
                     h('button',{"aria-label":"Verify",disabled:!data.integralVal,onClick:nextStep,className:'transition-colors px-3 py-1.5 bg-emerald-700 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-emerald-800'},'Verify \u2192')
                   )
                 ),
@@ -2739,7 +2739,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('p',{className:'text-xs font-bold text-slate-700 mb-2'},'Extension: change xMax to 5. How far does the car travel in 5 seconds? Predict first!'),
                   h('div',{ className:'flex gap-2 items-center'},
                     h('span',{ className:'text-xs font-bold'},'Distance in 5s (predicted):'),
-                    h('input',{type:'number',step:'any',placeholder:'? m',value:data.predict5||'',onChange:function(e){saveData('predict5',e.target.value);},className:'w-20 px-2 py-1 border-2 border-emerald-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
+                    h('input',{type:'number',step:'any',placeholder:'? m',value:data.predict5||'','aria-label':'Predicted distance in 5 seconds in meters',onChange:function(e){saveData('predict5',e.target.value);},className:'w-20 px-2 py-1 border-2 border-emerald-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
                     h('button',{"aria-label":"Test it",disabled:!data.predict5,onClick:function(){setLabToolData(function(prev){return Object.assign({},prev,{calculus:Object.assign({},prev.calculus,{xMax:5,tab:'discover'})});});nextStep();},className:'transition-colors px-3 py-1.5 bg-emerald-700 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-emerald-800'},'Test it \u2192')
                   )
                 ),
