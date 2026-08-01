@@ -2889,6 +2889,24 @@ window.StemLab = window.StemLab || {
           )
         );
       };
+      var VOLUME_TAB_ORDER = ['slider', 'freeform', 'word', 'displacement'];
+      var volumeTabKeyDown = function(e, index) {
+        var nextIndex = -1;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % VOLUME_TAB_ORDER.length;
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + VOLUME_TAB_ORDER.length - 1) % VOLUME_TAB_ORDER.length;
+        else if (e.key === 'Home') nextIndex = 0;
+        else if (e.key === 'End') nextIndex = VOLUME_TAB_ORDER.length - 1;
+        if (nextIndex < 0) return;
+        e.preventDefault();
+        var tabs = e.currentTarget && e.currentTarget.parentNode
+          ? e.currentTarget.parentNode.querySelectorAll('[role="tab"]')
+          : [];
+        var nextTab = tabs[nextIndex];
+        if (nextTab) {
+          nextTab.focus();
+          nextTab.click();
+        }
+      };
       return h('div', { className: 'space-y-4 max-w-5xl mx-auto animate-in fade-in duration-200 ' + bgClass },
         // Header
         h('section', { 'data-volume-command': 'true', className: 'overflow-hidden rounded-2xl border border-emerald-300/40 bg-gradient-to-br from-slate-950 via-emerald-950 to-teal-950 text-white shadow-xl' },
@@ -2950,29 +2968,41 @@ window.StemLab = window.StemLab || {
           // Mode toggle: dimensions, freeform, word problems, and displacement.
           h('div', { className: 'flex items-center gap-1 overflow-x-auto bg-emerald-50 rounded-lg p-1 border border-emerald-200', role: 'tablist', 'aria-label': __alloT('stem.volume.volume_modes', 'Volume modes') },
             h('button', { 'aria-label': __alloT('stem.volume.slider_mode', 'Slider mode'),
+              id: 'stem-volume-tab-slider',
               onClick: function() { upd({ mode: 'slider', builderChallenge: null, builderFeedback: null }); },
-              role: 'tab', 'aria-selected': mode === 'slider',
+              role: 'tab', 'aria-selected': mode === 'slider', 'aria-controls': 'stem-volume-panel-slider',
+              tabIndex: mode === 'slider' ? 0 : -1,
+              onKeyDown: function(e) { volumeTabKeyDown(e, 0); },
               className: 'min-h-[2.5rem] whitespace-nowrap px-3 py-2 rounded-md text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400 ' + (mode === 'slider' ? 'bg-white text-emerald-700 shadow-sm' : 'text-emerald-500 hover:text-emerald-700'),
               title: __alloT('stem.volume.slider_mode_s', 'Slider mode (S)')
             }, __alloT('stem.volume.slider', '\uD83C\uDF9A\uFE0F Slider')),
             h('button', { 'aria-label': __alloT('stem.volume.freeform_mode', 'Freeform mode'),
+              id: 'stem-volume-tab-freeform',
               onClick: function() { upd({ mode: 'freeform', challenge: null, feedback: null }); },
-              role: 'tab', 'aria-selected': isFreeform,
+              role: 'tab', 'aria-selected': isFreeform, 'aria-controls': 'stem-volume-panel-freeform',
+              tabIndex: isFreeform ? 0 : -1,
+              onKeyDown: function(e) { volumeTabKeyDown(e, 1); },
               className: 'min-h-[2.5rem] whitespace-nowrap px-3 py-2 rounded-md text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-indigo-400 ' + (isFreeform ? 'bg-white text-indigo-700 shadow-sm' : 'text-emerald-500 hover:text-emerald-700'),
               title: __alloT('stem.volume.freeform_mode_f', 'Freeform mode (F)')
             }, __alloT('stem.volume.freeform', '\uD83E\uDDF1 Freeform')),
             h('button', { 'aria-label': __alloT('stem.volume.word_problems_mode', 'Word Problems mode'),
+              id: 'stem-volume-tab-word',
               onClick: function() {
                 var ctx = WORD_CONTEXTS[wpCtxIdx % WORD_CONTEXTS.length];
                 upd({ mode: 'word', dims: ctx.defaults, challenge: null, feedback: null, builderChallenge: null, builderFeedback: null, wpFeedback: null });
               },
-              role: 'tab', 'aria-selected': isWord,
+              role: 'tab', 'aria-selected': isWord, 'aria-controls': 'stem-volume-panel-word',
+              tabIndex: isWord ? 0 : -1,
+              onKeyDown: function(e) { volumeTabKeyDown(e, 2); },
               className: 'min-h-[2.5rem] whitespace-nowrap px-3 py-2 rounded-md text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-amber-400 ' + (isWord ? 'bg-white text-amber-700 shadow-sm' : 'text-emerald-500 hover:text-emerald-700'),
               title: __alloT('stem.volume.word_problems_mode_w', 'Word Problems mode (W)')
             }, __alloT('stem.volume.word', '\uD83D\uDCDD Word')),
             h('button', { 'aria-label': 'Water Displacement Lab mode',
+              id: 'stem-volume-tab-displacement',
               onClick: function() { upd({ mode: 'displacement', challenge: null, feedback: null, builderChallenge: null, builderFeedback: null, showBuildLibrary: false }); announceToSR('Water Displacement Lab opened.'); },
-              role: 'tab', 'aria-selected': isDisplacement,
+              role: 'tab', 'aria-selected': isDisplacement, 'aria-controls': 'stem-volume-panel-displacement',
+              tabIndex: isDisplacement ? 0 : -1,
+              onKeyDown: function(e) { volumeTabKeyDown(e, 3); },
               className: 'min-h-[2.5rem] whitespace-nowrap px-3 py-2 rounded-md text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-sky-400 ' + (isDisplacement ? 'bg-white text-sky-800 shadow-sm' : 'text-emerald-500 hover:text-sky-700'),
               title: 'Water Displacement Lab mode (D)'
             }, '\uD83E\uDDEA Displacement')),
@@ -3080,6 +3110,10 @@ window.StemLab = window.StemLab || {
           var modeKey = isDisplacement ? 'displacement' : (isWord ? 'word' : (isFreeform ? 'freeform' : 'slider'));
           var meta = MODE_META[modeKey];
           return h('div', {
+            role: 'tabpanel',
+            id: 'stem-volume-panel-' + modeKey,
+            'aria-labelledby': 'stem-volume-tab-' + modeKey,
+            tabIndex: 0,
             style: {
               margin: '0 0 12px',
               padding: '12px 14px',
