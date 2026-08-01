@@ -5484,7 +5484,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
             }))
           ),
           h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); },
-            placeholder: __alloT('stem.renewables.hypothesis_free_text_how_much_storage_', 'Hypothesis: How do energy capacity, duration, and state of charge limit the power available for a mismatch?'),
+            'aria-label': __alloT('stem.renewables.hypothesis_input', 'Renewable-grid hypothesis'), placeholder: __alloT('stem.renewables.hypothesis_free_text_how_much_storage_', 'Hypothesis: How do energy capacity, duration, and state of charge limit the power available for a mismatch?'),
             className: 'w-full text-[12px] border border-slate-300 rounded p-2 font-mono leading-snug mb-3', rows: 3 }),
           !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); },
             className: 'px-2 py-1 rounded bg-amber-50 hover:bg-amber-100 text-[11px] font-bold text-amber-800 border border-amber-300 mb-3' },
@@ -5500,7 +5500,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('renewablesLab'
               h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
               __alloT('stem.renewables.i_think_i_understand_let_me_explain', 'I think I understand — let me explain')),
             iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); },
-              placeholder: __alloT('stem.renewables.explain_how_generation_demand_and_stor', 'Explain how generation, demand, and storage interact to determine grid state.'),
+              'aria-label': __alloT('stem.renewables.explanation_input', 'Renewable-grid explanation'), placeholder: __alloT('stem.renewables.explain_how_generation_demand_and_stor', 'Explain how generation, demand, and storage interact to determine grid state.'),
               className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 })),
           h('div', { className: 'mt-3 p-2 rounded bg-slate-50 border border-slate-200 text-[10px] italic text-slate-600' },
             __alloT('stem.renewables.design_note_discrete_3_state_outcome_n', 'Model limit: one-instant classroom classifier with an arbitrary 50 MW tolerance. It omits network constraints, reserves, ramp rates, losses, state evolution, market dispatch, protection systems, and actual frequency dynamics; labels are prompts, not predictions.'))
