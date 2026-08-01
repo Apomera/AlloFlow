@@ -3485,7 +3485,7 @@ const d = labToolData.wave;
             lab.understood && h('textarea', {
               value: lab.explanation || '',
               onChange: function(e) { setLab({ explanation: e.target.value }); },
-              placeholder: __alloT('stem.wave.sh_explanation_placeholder', 'Explain in your own words: what determines when a standing wave forms? What role does tension play? What role does frequency play? What is "n"?'),
+              'aria-label': __alloT('stem.wave.explanation_input', 'Standing-wave explanation'), placeholder: __alloT('stem.wave.sh_explanation_placeholder', 'Explain in your own words: what determines when a standing wave forms? What role does tension play? What role does frequency play? What is "n"?'),
               className: 'w-full text-[12px] border border-emerald-600 rounded p-2 font-mono leading-snug bg-white',
               rows: 4
             }),
